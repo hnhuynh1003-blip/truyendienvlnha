@@ -1399,24 +1399,34 @@
             .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent'))
             .map(m => m.name.replace('models/', ''));
 
-          const preferred = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-flash-latest', 'gemini-1.5-flash-latest', 'gemini-1.5-flash'];
-          for (let p of preferred) {
-            if (valid.includes(p)) {
-              localStorage.setItem('my_gemini_detected_model', p);
-              updateActiveModelInfo();
-              return p;
-            }
-          }
-          if (valid.length > 0) {
-            localStorage.setItem('my_gemini_detected_model', valid[0]);
+          // Danh sách ưu tiên quét các dòng Flash Lite mới nhất
+        const preferred = [
+          'gemini-3.5-flash-lite',
+          'gemini-3.1-flash-lite',
+          'gemini-2.5-flash-lite',
+          'gemini-2.0-flash-lite'
+        ];
+
+        for (let p of preferred) {
+          if (valid.includes(p)) {
+            localStorage.setItem('my_gemini_detected_model', p);
             updateActiveModelInfo();
-            return valid[0];
+            return p;
           }
         }
-      } catch (e) {
-        console.warn("Không thể dò model tự động:", e);
+
+        if (valid.length > 0) {
+          localStorage.setItem('my_gemini_detected_model', valid[0]);
+          updateActiveModelInfo();
+          return valid[0];
+        }
       }
-      return 'gemini-2.5-flash';
+    } catch (e) {
+      console.warn("Không thể dò model tự động:", e);
+    }
+    
+    // Nếu không quét được thì mặc định dùng bản Lite này
+    return 'gemini-2.5-flash-lite';
     }
 
     function updateActiveModelInfo() {
