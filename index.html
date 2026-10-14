@@ -170,7 +170,7 @@
       display: none !important;
     }
 
-    /* NÚT ĐIỀU HƯỚNG NỔI */
+    /* NÚT ĐIỀU HƯỚNG NỔI KHI CUỘN ĐỌC TRUYỆN */
     .floating-reading-controls {
       display: none;
       position: fixed;
@@ -196,7 +196,7 @@
       border-radius: 12px;
     }
 
-    /* BỘ LỌC TÌM KIẾM */
+    /* BỘ LỌC TÌM KIẾM TINH GỌN */
     .filter-panel {
       background: var(--card-bg);
       border: 1px solid var(--border);
@@ -547,7 +547,7 @@
     }
     .word-counter { font-size: 10px; color: var(--accent); text-align: right; }
 
-    /* THANH CÔNG CỤ TRỢ LÝ AI */
+    /* THANH TRỢ LÝ AI */
     .ai-toolbar {
       display: flex;
       gap: 6px;
@@ -1025,7 +1025,7 @@
     const docRef = db.collection("studio_data").doc("main_library");
 
     // ==========================================
-    // MODULE TÍCH HỢP GOOGLE GEMINI AI TRÊN WEB
+    // CƠ CHẾ GỌI GEMINI AI CHUẨN V1 VÀ AUTO-FALLBACK
     // ==========================================
     function configureAIKeyPrompt() {
       const current = localStorage.getItem('my_gemini_api_key') || '';
@@ -1051,38 +1051,60 @@
       const loader = document.getElementById('ai-status-loader');
       if (loader) loader.style.display = 'inline';
 
-      try {
-        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [
-              {
-                role: 'user',
-                parts: [{ text: `${systemPrompt}\n\n[Dữ liệu chương]:\n${userText}` }]
-              }
-            ]
-          })
-        });
+      // Danh sách các model tự động luân phiên (V1 chính thức -> V1beta mới)
+      const endpoints = [
+        `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${apiKey}`
+      ];
 
-        const data = await response.json();
-        if (loader) loader.style.display = 'none';
+      for (let i = 0; i < endpoints.length; i++) {
+        try {
+          const response = await fetch(endpoints[i], {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [
+                {
+                  role: 'user',
+                  parts: [{ text: `${systemPrompt}\n\n[Dữ liệu chương]:\n${userText}` }]
+                }
+              ]
+            })
+          });
 
-        if (data.error) {
-          alert(`Lỗi Gemini API: ${data.error.message || 'Key không hợp lệ'}`);
-          if (data.error.code === 400 || data.error.status === "INVALID_ARGUMENT") {
-            localStorage.removeItem('my_gemini_api_key');
+          const data = await response.json();
+
+          // Nếu model này bị 404 thì lập tức thử model kế tiếp trong danh sách
+          if (response.status === 404 || (data.error && data.error.code === 404)) {
+            continue;
           }
-          return null;
-        }
 
-        return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
-      } catch (err) {
-        if (loader) loader.style.display = 'none';
-        alert("Lỗi kết nối AI: " + err.message);
-        return null;
+          if (loader) loader.style.display = 'none';
+
+          if (data.error) {
+            alert(`Lỗi Gemini API: ${data.error.message || 'Key không hợp lệ'}`);
+            if (data.error.code === 400 || data.error.status === "INVALID_ARGUMENT") {
+              localStorage.removeItem('my_gemini_api_key');
+            }
+            return null;
+          }
+
+          const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (resultText) return resultText;
+        } catch (err) {
+          if (i === endpoints.length - 1) {
+            if (loader) loader.style.display = 'none';
+            alert("Lỗi kết nối AI: " + err.message);
+            return null;
+          }
+        }
       }
+
+      if (loader) loader.style.display = 'none';
+      alert("Không tìm thấy model AI khả dụng với API Key này. Vui lòng kiểm tra lại Key trên aistudio.google.com");
+      return null;
     }
 
     async function handleAIAssist(type) {
