@@ -528,25 +528,6 @@
 
     .phone-home-bar { width: 70px; height: 4px; background: #475569; border-radius: 2px; margin: 6px auto; cursor: pointer; }
 
-    /* MODAL */
-    .modal-overlay {
-      display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85);
-      z-index: 1200; justify-content: center; align-items: center; padding: 14px;
-    }
-    .modal-card {
-      background: var(--card-bg); border: 1px solid var(--accent); border-radius: 12px;
-      width: 100%; max-width: 580px; max-height: 90vh; overflow-y: auto; padding: 16px;
-      display: flex; flex-direction: column; gap: 10px;
-    }
-    .modal-card h2 { color: var(--neon); font-size: 16px; }
-    .modal-field { display: flex; flex-direction: column; gap: 4px; }
-    .modal-field label { font-size: 11px; color: var(--text-dim); }
-    .modal-field input, .modal-field textarea, .modal-field select {
-      background: var(--bg-main); border: 1px solid var(--border); border-radius: 6px;
-      padding: 8px 10px; color: var(--text); font-family: inherit; outline: none; font-size: 13px;
-    }
-    .word-counter { font-size: 10px; color: var(--accent); text-align: right; }
-
     /* THANH TRỢ LÝ AI */
     .ai-toolbar {
       display: flex;
@@ -569,6 +550,25 @@
       cursor: pointer;
     }
     .ai-btn:hover { background: var(--accent); color: #000; }
+
+    /* MODAL */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85);
+      z-index: 1200; justify-content: center; align-items: center; padding: 14px;
+    }
+    .modal-card {
+      background: var(--card-bg); border: 1px solid var(--accent); border-radius: 12px;
+      width: 100%; max-width: 580px; max-height: 90vh; overflow-y: auto; padding: 16px;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .modal-card h2 { color: var(--neon); font-size: 16px; }
+    .modal-field { display: flex; flex-direction: column; gap: 4px; }
+    .modal-field label { font-size: 11px; color: var(--text-dim); }
+    .modal-field input, .modal-field textarea, .modal-field select {
+      background: var(--bg-main); border: 1px solid var(--border); border-radius: 6px;
+      padding: 8px 10px; color: var(--text); font-family: inherit; outline: none; font-size: 13px;
+    }
+    .word-counter { font-size: 10px; color: var(--accent); text-align: right; }
   </style>
 </head>
 <body>
@@ -1410,7 +1410,6 @@ Quy tắc nhập vai:
       const el = document.getElementById('chat-loading-bubble');
       if (el) el.remove();
 
-      // BÁO LỖI MINH BẠCH VÀO KHUNG CHAT NẾU GẶP SỰ CỐ
       if (res.error) {
         chatHistories[charId].push({ role: 'system', text: `⚠️ [LỖI HỆ THỐNG]: ${res.error}` });
         saveChatHistories();
@@ -1663,6 +1662,9 @@ Quy tắc nhập vai:
       }
     }
 
+    // ==========================================
+    // CÁC HÀM QUẢN TRỊ NHÂN VẬT THỦ CÔNG
+    // ==========================================
     function openAddCharacterModal() {
       const novel = getSelectedCodexNovel();
       if (!novel) { alert("Vui lòng tạo truyện trước!"); return; }
@@ -1734,6 +1736,209 @@ Quy tắc nhập vai:
         renderCodexList();
         renderChatDropdown();
       }
+    }
+
+    // ==========================================
+    // CƠ CHẾ ĐĂNG NHẬP VÀ ĐÓNG MODAL AN TOÀN
+    // ==========================================
+    function closeModals() {
+      ['story-modal', 'chapter-modal', 'char-modal', 'auth-modal', 'gift-modal'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+      });
+      if (typeof isZen !== 'undefined' && isZen) toggleZenMode();
+    }
+
+    function togglePhone() {
+      const phone = document.getElementById('cyber-phone');
+      phone.style.display = (phone.style.display === 'flex') ? 'none' : 'flex';
+      if (phone.style.display === 'flex') {
+        updatePhoneUI();
+        startCooldownTicker();
+        updateActiveModelInfo();
+      }
+    }
+
+    function phoneHome() {
+      document.querySelectorAll('.phone-sub-app').forEach(el => el.style.display = 'none');
+      document.getElementById('phone-home-screen').style.display = 'flex';
+    }
+
+    function openPhoneApp(appName) {
+      document.getElementById('phone-home-screen').style.display = 'none';
+      document.querySelectorAll('.phone-sub-app').forEach(el => el.style.display = 'none');
+      document.getElementById(`phone-app-${appName}`).style.display = 'flex';
+
+      if (appName === 'codex') {
+        renderCodexDropdown();
+        renderCodexList();
+      } else if (appName === 'chat') {
+        renderChatDropdown();
+      } else if (appName === 'inventory') {
+        renderInventory();
+        startCooldownTicker();
+      } else if (appName === 'quests') {
+        renderQuests();
+      } else if (appName === 'shop') {
+        renderShop();
+      } else if (appName === 'settings') {
+        updateActiveModelInfo();
+      }
+    }
+
+    function filterInventory(tab, btn) {
+      inventoryTab = tab;
+      document.querySelectorAll('#phone-app-inventory .filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderInventory();
+    }
+
+    function renderInventory() {
+      const container = document.getElementById('inventory-container');
+      container.innerHTML = "";
+
+      let items = userProfile.inventory || [];
+      if (inventoryTab !== 'ALL') {
+        items = items.filter(i => i.type === inventoryTab);
+      }
+
+      if (items.length === 0) {
+        container.innerHTML = `<div style="text-align:center; color:#64748b; font-size:11px; padding:16px;">Hòm đồ mục này trống.</div>`;
+        return;
+      }
+
+      items.forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.className = 'item-card';
+        div.innerHTML = `
+          <div style="font-size:20px;">${item.icon}</div>
+          <div style="flex:1;">
+            <div style="display:flex; align-items:center; gap:4px;">
+              <span class="rank-tag rank-${item.rank}">${item.rank}</span>
+              <span style="font-size:11px; font-weight:bold; color:var(--text-white);">${escapeHtml(item.name)}</span>
+            </div>
+            <div style="font-size:9px; color:#94a3b8; margin-top:1px;">${escapeHtml(item.desc)}</div>
+          </div>
+          <button class="btn btn-danger" style="padding:1px 5px; font-size:8px;" onclick="discardItem(${idx})">Vứt</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function discardItem(idx) {
+      userProfile.inventory.splice(idx, 1);
+      saveCurrentAccount();
+      renderInventory();
+    }
+
+    function filterQuestTab(tab, btn) {
+      questTab = tab;
+      document.querySelectorAll('#phone-app-quests .filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderQuests();
+    }
+
+    function renderQuests() {
+      const container = document.getElementById('quests-container');
+      container.innerHTML = "";
+
+      let list = userProfile.quests || [];
+      if (questTab !== 'ALL') {
+        list = list.filter(q => q.type === questTab);
+      }
+
+      if (list.length === 0) {
+        container.innerHTML = `<div style="text-align:center; color:#64748b; font-size:11px; padding:16px;">Không có nhiệm vụ mục này.</div>`;
+        return;
+      }
+
+      list.forEach(q => {
+        const isReady = q.current >= q.target && !q.claimed;
+        const percent = Math.min(100, Math.round((q.current / q.target) * 100));
+
+        const div = document.createElement('div');
+        div.className = `quest-card ${isReady ? 'ready-claim' : ''} ${q.claimed ? 'completed' : ''}`;
+
+        let actionBtnHtml = '';
+        if (q.claimed) {
+          actionBtnHtml = `<span style="font-size:10px; color:#10b981; font-weight:bold;">✔ Đã nhận</span>`;
+        } else if (isReady) {
+          actionBtnHtml = `<button class="btn btn-primary" style="padding:2px 6px; font-size:9px; background:var(--gold); border-color:var(--gold); color:#000; font-weight:bold;" onclick="claimQuestReward('${q.id}')">🎁 Nhận</button>`;
+        } else {
+          actionBtnHtml = `<span style="font-size:9px; color:#94a3b8;">(${q.current}/${q.target})</span>`;
+        }
+
+        div.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="rank-tag rank-D">${q.type}</span>
+            <span style="font-size:9px; color:var(--gold); font-weight:bold;">+${q.rewardCoin} 🪙</span>
+          </div>
+          <div style="font-size:11px; font-weight:bold; color:var(--text-white); margin-top:2px;">${escapeHtml(q.title)}</div>
+          <div class="quest-prog-bar">
+            <div class="quest-prog-fill" style="width: ${percent}%;"></div>
+          </div>
+          <div style="display:flex; justify-content:flex-end; align-items:center; margin-top:2px;">
+            ${actionBtnHtml}
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function renderShop() {
+      document.getElementById('shop-currency-val').textContent = userProfile.currency;
+      const container = document.getElementById('shop-items-container');
+      container.innerHTML = "";
+
+      SHOP_CATALOG.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'item-card';
+        div.innerHTML = `
+          <div style="font-size:18px;">${item.icon}</div>
+          <div style="flex:1;">
+            <div style="display:flex; align-items:center; gap:4px;">
+              <span class="rank-tag rank-${item.rank}">${item.rank}</span>
+              <span style="font-size:11px; font-weight:bold; color:var(--text-white);">${escapeHtml(item.name)}</span>
+            </div>
+            <div style="font-size:9px; color:var(--gold); font-weight:bold; margin-top:1px;">${item.price} 🪙 Xu</div>
+          </div>
+          <button class="btn" style="padding:3px 6px; font-size:9px;" onclick="buyShopItem('${item.id}')">Mua</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function buyShopItem(shopItemId) {
+      const item = SHOP_CATALOG.find(i => i.id === shopItemId);
+      if (!item) return;
+
+      if (userProfile.currency < item.price) {
+        alert("Bạn không đủ Xu Ký Tự!");
+        return;
+      }
+
+      userProfile.currency -= item.price;
+      userProfile.inventory.unshift({ ...item, instanceId: "item-" + Date.now() });
+      addExp(20);
+
+      showSystemAlert("GIAO DỊCH THÀNH CÔNG", `Đã mua: [${item.rank}] ${item.name} (-${item.price} Xu)`);
+      saveCurrentAccount();
+      renderShop();
+    }
+
+    function setReadingFontSize(size) {
+      document.documentElement.style.setProperty('--read-size', size + 'px');
+    }
+
+    function setTheme(theme) {
+      document.body.className = '';
+      if (theme === 'warm') document.body.classList.add('theme-warm');
+      if (theme === 'oled') document.body.classList.add('theme-oled');
+      applyUserRole();
+    }
+
+    function escapeHtml(str) {
+      return (str || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
     const initialNovels = [
@@ -1827,69 +2032,98 @@ Quy tắc nhập vai:
     }
 
     function saveCurrentAccount() {
-      if (currentUsername) {
-        const localKey = `profile_${currentUsername}`;
-        localStorage.setItem(localKey, JSON.stringify(userProfile));
-        
-        db.collection("user_profiles").doc(currentUsername).set({
-          username: currentUsername,
-          name: userProfile.name,
-          title: userProfile.title,
-          level: userProfile.level,
-          exp: userProfile.exp,
-          currency: userProfile.currency,
-          inventory: userProfile.inventory,
-          quests: userProfile.quests,
-          lootedChapters: userProfile.lootedChapters || {},
-          collectedCharacters: userProfile.collectedCharacters || {},
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true }).catch(e => console.log("Lỗi lưu user:", e));
+      if (!currentUsername) return;
+
+      const localKey = `profile_${currentUsername}`;
+      localStorage.setItem(localKey, JSON.stringify(userProfile));
+
+      const cloudData = {
+        username: currentUsername || "guest",
+        name: userProfile.name || currentUsername || "Kẻ Lang Bạt",
+        title: userProfile.title || "Thực Thể Ký Tự",
+        level: parseInt(userProfile.level) || 1,
+        exp: parseInt(userProfile.exp) || 0,
+        currency: parseInt(userProfile.currency) || 50,
+        inventory: Array.isArray(userProfile.inventory) ? userProfile.inventory : [],
+        quests: Array.isArray(userProfile.quests) ? userProfile.quests : DEFAULT_SYSTEM_QUESTS,
+        lootedChapters: userProfile.lootedChapters || {},
+        collectedCharacters: userProfile.collectedCharacters || {}
+      };
+
+      try {
+        db.collection("user_profiles").doc(currentUsername).set(cloudData, { merge: true })
+          .catch(e => console.warn("Lỗi đồng bộ (offline):", e));
+      } catch (err) {
+        console.warn(err);
       }
       updatePhoneUI();
     }
 
     function openAuthModal() {
-      document.getElementById('auth-username').value = currentUsername || '';
-      document.getElementById('auth-modal').style.display = 'flex';
+      const uInput = document.getElementById('auth-username');
+      if (uInput) uInput.value = currentUsername || '';
+      const m = document.getElementById('auth-modal');
+      if (m) m.style.display = 'flex';
     }
 
     function handleAuthSubmit() {
-      const usernameInput = document.getElementById('auth-username').value.trim().toLowerCase();
-      if (!usernameInput) {
-        alert("Vui lòng nhập tên tài khoản!");
-        return;
-      }
+      try {
+        const uEl = document.getElementById('auth-username');
+        const usernameInput = uEl ? uEl.value.trim().toLowerCase() : '';
+        if (!usernameInput) {
+          alert("Vui lòng nhập tên tài khoản!");
+          return;
+        }
 
-      currentUsername = usernameInput;
-      localStorage.setItem('my_current_logged_user', currentUsername);
-      
-      const localKey = `profile_${currentUsername}`;
-      const saved = localStorage.getItem(localKey);
-      if (saved) {
-        userProfile = JSON.parse(saved);
-      } else {
-        userProfile.username = currentUsername;
-        userProfile.name = currentUsername;
-        userProfile.level = 1;
-        userProfile.exp = 0;
-        userProfile.currency = 50;
-        userProfile.lootedChapters = {};
-        userProfile.collectedCharacters = {};
-        userProfile.inventory = [
-          { id: "init-1", name: "Mẩu Bánh Mì Mốc", rank: "F", type: "FOOD", icon: "🍞", desc: "Khô khốc, chống đói lúc tuyệt vọng." },
-          { id: "init-2", name: "Dao Gọt Trái Cây Cũ", rank: "E", type: "WEAPON", icon: "🔪", desc: "Vũ khí thô sơ nhất để tự vệ." }
-        ];
-        userProfile.quests = DEFAULT_SYSTEM_QUESTS;
-      }
+        currentUsername = usernameInput;
+        localStorage.setItem('my_current_logged_user', currentUsername);
 
-      userProfile.role = "reader";
-      saveCurrentAccount();
-      document.getElementById('account-status-btn').textContent = `👤 ${currentUsername}`;
-      document.getElementById('profile-account-id').textContent = `ID: ${currentUsername}`;
-      closeModals();
-      applyUserRole();
-      showSystemAlert("ĐĂNG NHẬP THÀNH CÔNG", `Chào mừng [${currentUsername}] vào hệ thống!`);
-      renderHome();
+        const localKey = `profile_${currentUsername}`;
+        const saved = localStorage.getItem(localKey);
+        userProfile = null;
+
+        if (saved) {
+          try { userProfile = JSON.parse(saved); } catch (e) {}
+        }
+
+        if (!userProfile) {
+          userProfile = {
+            username: currentUsername,
+            name: currentUsername,
+            title: "Thực Thể Ký Tự",
+            level: 1,
+            exp: 0,
+            currency: 50,
+            role: "reader",
+            lootedChapters: {},
+            collectedCharacters: {},
+            inventory: [
+              { id: "init-1", name: "Mẩu Bánh Mì Mốc", rank: "F", type: "FOOD", icon: "🍞", desc: "Khô khốc, chống đói lúc tuyệt vọng." },
+              { id: "init-2", name: "Dao Gọt Trái Cây Cũ", rank: "E", type: "WEAPON", icon: "🔪", desc: "Vũ khí thô sơ nhất để tự vệ." }
+            ],
+            quests: DEFAULT_SYSTEM_QUESTS
+          };
+        }
+
+        userProfile.role = "reader";
+        if (!userProfile.title) userProfile.title = "Thực Thể Ký Tự";
+
+        saveCurrentAccount();
+
+        const accBtn = document.getElementById('account-status-btn');
+        if (accBtn) accBtn.textContent = `👤 ${currentUsername}`;
+        const profId = document.getElementById('profile-account-id');
+        if (profId) profId.textContent = `ID: ${currentUsername}`;
+
+        closeModals();
+        applyUserRole();
+        showSystemAlert("ĐĂNG NHẬP THÀNH CÔNG", `Chào mừng [${currentUsername}] vào hệ thống!`);
+        renderHome();
+      } catch (err) {
+        console.error("Lỗi đăng nhập:", err);
+        closeModals();
+        renderHome();
+      }
     }
 
     novels.forEach(n => {
@@ -2806,207 +3040,6 @@ Quy tắc nhập vai:
         saveDB();
         openCover(selectedNovelIndex);
       }
-    }
-
-    function closeModals() {
-      document.getElementById('story-modal').style.display = 'none';
-      document.getElementById('chapter-modal').style.display = 'none';
-      document.getElementById('char-modal').style.display = 'none';
-      document.getElementById('auth-modal').style.display = 'none';
-      document.getElementById('gift-modal').style.display = 'none';
-      if (isZen) toggleZenMode();
-    }
-
-    function togglePhone() {
-      const phone = document.getElementById('cyber-phone');
-      phone.style.display = (phone.style.display === 'flex') ? 'none' : 'flex';
-      if (phone.style.display === 'flex') {
-        updatePhoneUI();
-        startCooldownTicker();
-        updateActiveModelInfo();
-      }
-    }
-
-    function phoneHome() {
-      document.querySelectorAll('.phone-sub-app').forEach(el => el.style.display = 'none');
-      document.getElementById('phone-home-screen').style.display = 'flex';
-    }
-
-    function openPhoneApp(appName) {
-      document.getElementById('phone-home-screen').style.display = 'none';
-      document.querySelectorAll('.phone-sub-app').forEach(el => el.style.display = 'none');
-      document.getElementById(`phone-app-${appName}`).style.display = 'flex';
-
-      if (appName === 'codex') {
-        renderCodexDropdown();
-        renderCodexList();
-      } else if (appName === 'chat') {
-        renderChatDropdown();
-      } else if (appName === 'inventory') {
-        renderInventory();
-        startCooldownTicker();
-      } else if (appName === 'quests') {
-        renderQuests();
-      } else if (appName === 'shop') {
-        renderShop();
-      } else if (appName === 'settings') {
-        updateActiveModelInfo();
-      }
-    }
-
-    function filterInventory(tab, btn) {
-      inventoryTab = tab;
-      document.querySelectorAll('#phone-app-inventory .filter-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      renderInventory();
-    }
-
-    function renderInventory() {
-      const container = document.getElementById('inventory-container');
-      container.innerHTML = "";
-
-      let items = userProfile.inventory || [];
-      if (inventoryTab !== 'ALL') {
-        items = items.filter(i => i.type === inventoryTab);
-      }
-
-      if (items.length === 0) {
-        container.innerHTML = `<div style="text-align:center; color:#64748b; font-size:11px; padding:16px;">Hòm đồ mục này trống.</div>`;
-        return;
-      }
-
-      items.forEach((item, idx) => {
-        const div = document.createElement('div');
-        div.className = 'item-card';
-        div.innerHTML = `
-          <div style="font-size:20px;">${item.icon}</div>
-          <div style="flex:1;">
-            <div style="display:flex; align-items:center; gap:4px;">
-              <span class="rank-tag rank-${item.rank}">${item.rank}</span>
-              <span style="font-size:11px; font-weight:bold; color:var(--text-white);">${escapeHtml(item.name)}</span>
-            </div>
-            <div style="font-size:9px; color:#94a3b8; margin-top:1px;">${escapeHtml(item.desc)}</div>
-          </div>
-          <button class="btn btn-danger" style="padding:1px 5px; font-size:8px;" onclick="discardItem(${idx})">Vứt</button>
-        `;
-        container.appendChild(div);
-      });
-    }
-
-    function discardItem(idx) {
-      userProfile.inventory.splice(idx, 1);
-      saveCurrentAccount();
-      renderInventory();
-    }
-
-    function filterQuestTab(tab, btn) {
-      questTab = tab;
-      document.querySelectorAll('#phone-app-quests .filter-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      renderQuests();
-    }
-
-    function renderQuests() {
-      const container = document.getElementById('quests-container');
-      container.innerHTML = "";
-
-      let list = userProfile.quests || [];
-      if (questTab !== 'ALL') {
-        list = list.filter(q => q.type === questTab);
-      }
-
-      if (list.length === 0) {
-        container.innerHTML = `<div style="text-align:center; color:#64748b; font-size:11px; padding:16px;">Không có nhiệm vụ mục này.</div>`;
-        return;
-      }
-
-      list.forEach(q => {
-        const isReady = q.current >= q.target && !q.claimed;
-        const percent = Math.min(100, Math.round((q.current / q.target) * 100));
-
-        const div = document.createElement('div');
-        div.className = `quest-card ${isReady ? 'ready-claim' : ''} ${q.claimed ? 'completed' : ''}`;
-
-        let actionBtnHtml = '';
-        if (q.claimed) {
-          actionBtnHtml = `<span style="font-size:10px; color:#10b981; font-weight:bold;">✔ Đã nhận</span>`;
-        } else if (isReady) {
-          actionBtnHtml = `<button class="btn btn-primary" style="padding:2px 6px; font-size:9px; background:var(--gold); border-color:var(--gold); color:#000; font-weight:bold;" onclick="claimQuestReward('${q.id}')">🎁 Nhận</button>`;
-        } else {
-          actionBtnHtml = `<span style="font-size:9px; color:#94a3b8;">(${q.current}/${q.target})</span>`;
-        }
-
-        div.innerHTML = `
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span class="rank-tag rank-D">${q.type}</span>
-            <span style="font-size:9px; color:var(--gold); font-weight:bold;">+${q.rewardCoin} 🪙</span>
-          </div>
-          <div style="font-size:11px; font-weight:bold; color:var(--text-white); margin-top:2px;">${escapeHtml(q.title)}</div>
-          <div class="quest-prog-bar">
-            <div class="quest-prog-fill" style="width: ${percent}%;"></div>
-          </div>
-          <div style="display:flex; justify-content:flex-end; align-items:center; margin-top:2px;">
-            ${actionBtnHtml}
-          </div>
-        `;
-        container.appendChild(div);
-      });
-    }
-
-    function renderShop() {
-      document.getElementById('shop-currency-val').textContent = userProfile.currency;
-      const container = document.getElementById('shop-items-container');
-      container.innerHTML = "";
-
-      SHOP_CATALOG.forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'item-card';
-        div.innerHTML = `
-          <div style="font-size:18px;">${item.icon}</div>
-          <div style="flex:1;">
-            <div style="display:flex; align-items:center; gap:4px;">
-              <span class="rank-tag rank-${item.rank}">${item.rank}</span>
-              <span style="font-size:11px; font-weight:bold; color:var(--text-white);">${escapeHtml(item.name)}</span>
-            </div>
-            <div style="font-size:9px; color:var(--gold); font-weight:bold; margin-top:1px;">${item.price} 🪙 Xu</div>
-          </div>
-          <button class="btn" style="padding:3px 6px; font-size:9px;" onclick="buyShopItem('${item.id}')">Mua</button>
-        `;
-        container.appendChild(div);
-      });
-    }
-
-    function buyShopItem(shopItemId) {
-      const item = SHOP_CATALOG.find(i => i.id === shopItemId);
-      if (!item) return;
-
-      if (userProfile.currency < item.price) {
-        alert("Bạn không đủ Xu Ký Tự!");
-        return;
-      }
-
-      userProfile.currency -= item.price;
-      userProfile.inventory.unshift({ ...item, instanceId: "item-" + Date.now() });
-      addExp(20);
-
-      showSystemAlert("GIAO DỊCH THÀNH CÔNG", `Đã mua: [${item.rank}] ${item.name} (-${item.price} Xu)`);
-      saveCurrentAccount();
-      renderShop();
-    }
-
-    function setReadingFontSize(size) {
-      document.documentElement.style.setProperty('--read-size', size + 'px');
-    }
-
-    function setTheme(theme) {
-      document.body.className = '';
-      if (theme === 'warm') document.body.classList.add('theme-warm');
-      if (theme === 'oled') document.body.classList.add('theme-oled');
-      applyUserRole();
-    }
-
-    function escapeHtml(str) {
-      return (str || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
     loadLocalAccountProfile();
