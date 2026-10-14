@@ -170,7 +170,7 @@
       display: none !important;
     }
 
-    /* NÚT ĐIỀU HƯỚNG NỔI KHI CUỘN ĐỌC TRUYỆN */
+    /* NÚT ĐIỀU HƯỚNG NỔI */
     .floating-reading-controls {
       display: none;
       position: fixed;
@@ -196,7 +196,7 @@
       border-radius: 12px;
     }
 
-    /* BỘ LỌC TÌM KIẾM TINH GỌN */
+    /* BỘ LỌC TÌM KIẾM */
     .filter-panel {
       background: var(--card-bg);
       border: 1px solid var(--border);
@@ -750,6 +750,11 @@
             <div class="app-box" style="background: #ec4899;">📑</div>
             <div class="app-label">Nhân Vật</div>
           </div>
+          <!-- APP TRÒ CHUYỆN NHẬP VAI -->
+          <div class="app-icon" onclick="openPhoneApp('chat')">
+            <div class="app-box" style="background: #06b6d4;">💬</div>
+            <div class="app-label">Liên Lạc</div>
+          </div>
           <div class="app-icon" onclick="openPhoneApp('shop')">
             <div class="app-box" style="background: #10b981;">🛒</div>
             <div class="app-label">Cửa Hàng</div>
@@ -815,6 +820,28 @@
         </div>
 
         <div id="quests-container"></div>
+      </div>
+
+      <!-- APP: TRÒ CHUYỆN / LIÊN LẠC NHẬP VAI NHÂN VẬT -->
+      <div class="phone-sub-app" id="phone-app-chat" style="padding: 8px; display: none; flex-direction: column; height: 100%;">
+        <div class="phone-app-header" style="margin-bottom: 6px;">
+          <div style="display:flex; align-items:center; gap:4px;">
+            <button class="phone-back-btn" onclick="phoneHome()">‹</button>
+            <span>Tần Số Linh Hồn</span>
+          </div>
+          <button class="btn" style="padding: 2px 6px; font-size: 9px;" onclick="clearCurrentChat()">Xóa chat</button>
+        </div>
+
+        <div style="margin-bottom: 6px;">
+          <select id="chat-character-selector" onchange="switchChatCharacter()" style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 4px; color: #fff; font-size: 11px; outline: none;"></select>
+        </div>
+
+        <div id="chat-messages-container" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 8px; background: rgba(10, 14, 20, 0.6); border-radius: 8px; border: 1px solid #1f2937; margin-bottom: 6px;"></div>
+
+        <div style="display: flex; gap: 4px;">
+          <input type="text" id="chat-user-input" autocomplete="off" placeholder="Gửi tín hiệu..." style="flex: 1; background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 6px 8px; color: #fff; font-size: 11px; outline: none;" onkeydown="if(event.key==='Enter') sendChatMessage()">
+          <button class="btn btn-primary" style="padding: 4px 8px; font-size: 11px;" onclick="sendChatMessage()">Gửi</button>
+        </div>
       </div>
 
       <!-- APP: CỬA HÀNG -->
@@ -938,7 +965,7 @@
     </div>
   </div>
 
-  <!-- MODAL: VIẾT CHƯƠNG (CÓ TRỢ LÝ AI & TẮT GỢI Ý CHƯƠNG CŨ) -->
+  <!-- MODAL: VIẾT CHƯƠNG -->
   <div class="modal-overlay" id="chapter-modal">
     <div class="modal-card" id="chapter-modal-card">
       <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -946,7 +973,6 @@
         <button class="btn" onclick="toggleZenMode()">⛶ Zen</button>
       </div>
 
-      <!-- THANH TRỢ LÝ AI DÀNH RIÊNG CHO SÁNG TÁC -->
       <div class="ai-toolbar">
         <span style="font-size:10px; font-weight:bold; color:var(--gold);">🤖 AI Trợ Lý:</span>
         <button type="button" class="ai-btn" onclick="handleAIAssist('continue')">✨ Viết tiếp</button>
@@ -1025,7 +1051,7 @@
     const docRef = db.collection("studio_data").doc("main_library");
 
     // ==========================================
-    // CƠ CHẾ GỌI GEMINI AI CHUẨN V1 VÀ AUTO-FALLBACK
+    // CƠ CHẾ GỌI GEMINI AI CẬP NHẬT THEO YÊU CẦU
     // ==========================================
     function configureAIKeyPrompt() {
       const current = localStorage.getItem('my_gemini_api_key') || '';
@@ -1051,12 +1077,11 @@
       const loader = document.getElementById('ai-status-loader');
       if (loader) loader.style.display = 'inline';
 
-      // Danh sách các model tự động luân phiên (V1 chính thức -> V1beta mới)
+      // ENDPOINTS CHÍNH XÁC THEO YÊU CẦU CỦA BẠN
       const endpoints = [
-        `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`,
-        `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${apiKey}`
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`
       ];
 
       for (let i = 0; i < endpoints.length; i++) {
@@ -1068,7 +1093,7 @@
               contents: [
                 {
                   role: 'user',
-                  parts: [{ text: `${systemPrompt}\n\n[Dữ liệu chương]:\n${userText}` }]
+                  parts: [{ text: `${systemPrompt}\n\n[Dữ liệu]:\n${userText}` }]
                 }
               ]
             })
@@ -1076,9 +1101,8 @@
 
           const data = await response.json();
 
-          // Nếu model này bị 404 thì lập tức thử model kế tiếp trong danh sách
           if (response.status === 404 || (data.error && data.error.code === 404)) {
-            continue;
+            continue; // Tự động đổi sang model tiếp theo nếu model này chưa khả dụng
           }
 
           if (loader) loader.style.display = 'none';
@@ -1103,7 +1127,7 @@
       }
 
       if (loader) loader.style.display = 'none';
-      alert("Không tìm thấy model AI khả dụng với API Key này. Vui lòng kiểm tra lại Key trên aistudio.google.com");
+      alert("Không tìm thấy model AI khả dụng với API Key này.");
       return null;
     }
 
@@ -1114,7 +1138,7 @@
 
       if (type === 'continue') {
         if (!text) {
-          alert("Vui lòng viết vài câu mở đầu trước để AI có thể hiểu bối cảnh và viết tiếp!");
+          alert("Vui lòng viết vài câu mở đầu trước!");
           return;
         }
         const sys = "Bạn là đồng tác giả tiểu thuyết vô hạn lưu, glitch, hệ thống rùng rợn bí ẩn. Dựa trên tên chương và các đoạn văn sau, hãy viết tiếp đoạn tiếp theo khoảng 150-250 từ với giọng văn đồng nhất, gợi cảm giác hồi hộp bí ẩn. Trả về trực tiếp nội dung văn bản tiếp nối, không kèm lời chào hỏi.";
@@ -1131,17 +1155,134 @@
         }
         const sys = "Bạn là biên tập viên văn học chuyên nghiệp. Hãy chỉnh sửa, trau chuốt câu cú, từ ngữ cho đoạn văn sau mượt mà, sâu sắc và ấn tượng hơn mà không làm thay đổi cốt truyện gốc. Trả về toàn bộ đoạn văn bản đã hoàn thiện.";
         const result = await callGeminiAI(sys, text);
-        if (result && confirm("AI đã hoàn thành trau chuốt. Bạn có muốn thay thế nội dung hiện tại bằng bản mới này không?")) {
+        if (result && confirm("AI đã hoàn thành trau chuốt. Thay thế nội dung hiện tại bằng bản mới này?")) {
           contentArea.value = result.trim();
           onChapterInput();
         }
       } 
       else if (type === 'ideas') {
         const sys = "Dựa trên nội dung chương này, hãy gợi ý ngắn gọn 3 hướng rẽ tình tiết (plot twist / sự kiện kỳ bí) bất ngờ và kịch tính nhất để tác giả chọn lựa viết tiếp.";
-        const result = await callGeminiAI(sys, `Tiêu đề: ${titleInput.value}\nNội dung:\n${text || '[Chưa có nội dung, hãy gợi ý tình tiết ngẫu nhiên theo thể loại vô hạn lưu]'}`);
+        const result = await callGeminiAI(sys, `Tiêu đề: ${titleInput.value}\nNội dung:\n${text || '[Chưa có nội dung]'}`);
         if (result) {
           alert("💡 GỢI Ý TÌNH TIẾT TỪ AI:\n\n" + result);
         }
+      }
+    }
+
+    // ==========================================
+    // LOGIC APP TRÒ CHUYỆN / LIÊN LẠC NHẬP VAI
+    // ==========================================
+    let chatHistories = JSON.parse(localStorage.getItem('my_chat_roleplay_histories')) || {};
+
+    function saveChatHistories() {
+      localStorage.setItem('my_chat_roleplay_histories', JSON.stringify(chatHistories));
+    }
+
+    function renderChatDropdown() {
+      const selector = document.getElementById('chat-character-selector');
+      if (!selector) return;
+      selector.innerHTML = "";
+      const novel = novels[selectedNovelIndex] || novels[0];
+      const chars = novel.characters || [];
+      if (chars.length === 0) {
+        selector.innerHTML = "<option value=''>Chưa có nhân vật nào trong sổ tay</option>";
+        return;
+      }
+      chars.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = `${c.name} (${c.role || 'Nhân vật'})`;
+        selector.appendChild(opt);
+      });
+      switchChatCharacter();
+    }
+
+    function switchChatCharacter() {
+      const charId = document.getElementById('chat-character-selector').value;
+      renderChatMessages(charId);
+    }
+
+    function renderChatMessages(charId) {
+      const container = document.getElementById('chat-messages-container');
+      if (!container) return;
+      container.innerHTML = "";
+      const history = chatHistories[charId] || [];
+
+      const novel = novels[selectedNovelIndex] || novels[0];
+      const char = (novel.characters || []).find(c => c.id === charId);
+
+      if (history.length === 0) {
+        const name = char ? char.name : 'nhân vật';
+        container.innerHTML = `<div style="text-align: center; color: #64748b; font-size: 10px; margin-top: 20px;">[Đã mở tần số kết nối với ${escapeHtml(name)}]<br>Hãy gửi một tin nhắn để bắt đầu đối thoại...</div>`;
+        return;
+      }
+
+      history.forEach(msg => {
+        const div = document.createElement('div');
+        const isUser = msg.role === 'user';
+        div.style.cssText = `max-width: 82%; padding: 6px 10px; border-radius: 10px; font-size: 11px; line-height: 1.4; word-break: break-word; ${
+          isUser
+            ? 'align-self: flex-end; background: rgba(69, 162, 158, 0.25); border: 1px solid var(--accent); color: var(--text-white);'
+            : 'align-self: flex-start; background: #1e293b; border: 1px solid #334155; color: var(--neon);'
+        }`;
+        div.textContent = msg.text;
+        container.appendChild(div);
+      });
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function clearCurrentChat() {
+      const charId = document.getElementById('chat-character-selector').value;
+      if (charId && confirm("Xóa toàn bộ lịch sử trò chuyện với nhân vật này?")) {
+        chatHistories[charId] = [];
+        saveChatHistories();
+        renderChatMessages(charId);
+      }
+    }
+
+    async function sendChatMessage() {
+      const input = document.getElementById('chat-user-input');
+      const text = input.value.trim();
+      const charId = document.getElementById('chat-character-selector').value;
+      if (!text || !charId) return;
+
+      const novel = novels[selectedNovelIndex] || novels[0];
+      const char = (novel.characters || []).find(c => c.id === charId);
+      if (!char) return;
+
+      if (!chatHistories[charId]) chatHistories[charId] = [];
+      chatHistories[charId].push({ role: 'user', text });
+      input.value = "";
+      renderChatMessages(charId);
+      saveChatHistories();
+
+      const container = document.getElementById('chat-messages-container');
+      const loadingDiv = document.createElement('div');
+      loadingDiv.id = 'chat-loading-bubble';
+      loadingDiv.style.cssText = "align-self: flex-start; color: var(--text-dim); font-size: 10px; font-style: italic;";
+      loadingDiv.textContent = `[${char.name} đang gửi tín hiệu...]`;
+      container.appendChild(loadingDiv);
+      container.scrollTop = container.scrollHeight;
+
+      const sysPrompt = `Bạn đang nhập vai hoàn toàn vào nhân vật "${char.name}" trong tiểu thuyết mang tên "${novel.title}".
+Hồ sơ nhân vật:
+- Vai trò: ${char.role || 'Chưa rõ'}
+- Trạng thái hiện tại: ${char.status || 'Chưa rõ'}
+- Ghi chú bối cảnh/ký ức: ${char.note || 'Không có'}
+Người đang nhắn tin với bạn là nhân vật chính (người chơi).
+Quy tắc phản hồi:
+1. Trả lời theo đúng tính cách, cảm xúc, tông giọng và ký ức của nhân vật.
+2. Trả lời ngắn gọn (1 đến 3 câu), tự nhiên như đang nhắn tin qua thiết bị cầm tay.
+3. Tuyệt đối không xưng là AI, không phá vỡ vỏ bọc nhân vật.`;
+
+      const reply = await callGeminiAI(sysPrompt, text);
+      const el = document.getElementById('chat-loading-bubble');
+      if (el) el.remove();
+
+      if (reply) {
+        chatHistories[charId].push({ role: 'model', text: reply.trim() });
+        saveChatHistories();
+        renderChatMessages(charId);
       }
     }
 
@@ -1224,7 +1365,9 @@
         },
         characters: [
           { id: "c1", name: "Tôi", role: "Nhân vật chính", status: "Mảnh vụn dữ liệu lỗi", note: "Linh hồn lang bạt qua hàng ngàn năm tích lũy tri thức." },
-          { id: "c2", name: "Ôn Tri Hành", role: "Cố nhân", status: "Mất kết nối", note: "Bóng hình không còn xuất hiện sau khi hệ thống trục trặc." }
+          { id: "c2", name: "Ôn Tri Hành", role: "Cố nhân", status: "Mất kết nối", note: "Bóng hình không còn xuất hiện sau khi hệ thống trục trặc." },
+          { id: "c3", name: "Thẩm Cẩm Thư", role: "Cố nhân", status: "Mất kết nối", note: "Một trong những người từng đi qua đời nhân vật chính." },
+          { id: "c4", name: "Tô Thanh Lạc", role: "Ký ức nhạt nhòa", status: "Bị phong tỏa", note: "Gắn liền với cơn mưa Thượng Hải và phòng net tồi tàn." }
         ],
         chapters: [
           {
@@ -2411,6 +2554,8 @@
       if (appName === 'codex') {
         renderCodexDropdown();
         renderCodexList();
+      } else if (appName === 'chat') {
+        renderChatDropdown();
       } else if (appName === 'inventory') {
         renderInventory();
         startCooldownTicker();
