@@ -625,7 +625,7 @@
             <button class="filter-btn" onclick="filterStatus('Đang ra', this)">Đang ra</button>
             <button class="filter-btn" onclick="filterStatus('Hoàn thành', this)">Hoàn thành</button>
           </div>
-          <div style="font-size: 10px; color: var(--accent);" id="search-result-count">Hiển thị 2 truyện</div>
+          <div style="font-size: 10px; color: var(--accent);" id="search-result-count">Hiển thị truyện</div>
         </div>
       </div>
 
@@ -745,10 +745,10 @@
             <div class="app-box" style="background: #f59e0b;">📜</div>
             <div class="app-label">Nhiệm Vụ</div>
           </div>
-          <!-- BỘ SƯU TẬP NHÂN VẬT & LIÊN KẾT LINH HỒN -->
-          <div class="app-icon" onclick="openPhoneApp('collection')">
+          <!-- APP NHÂN VẬT & LINH HỒN (TẬP TRUNG) -->
+          <div class="app-icon" onclick="openPhoneApp('codex')">
             <div class="app-box" style="background: #ec4899;">🎴</div>
-            <div class="app-label">Bộ Sưu Tập</div>
+            <div class="app-label">Nhân Vật</div>
           </div>
           <!-- APP TRÒ CHUYỆN NHẬP VAI -->
           <div class="app-icon" onclick="openPhoneApp('chat')">
@@ -822,17 +822,22 @@
         <div id="quests-container"></div>
       </div>
 
-      <!-- APP: BỘ SƯU TẬP NHÂN VẬT & LIÊN KẾT LINH HỒN -->
-      <div class="phone-sub-app" id="phone-app-collection">
+      <!-- APP: NHÂN VẬT & KẾT NỐI LINH HỒN (ĐÃ MỞ KHÓA NÚT THÊM CHO MỌI NGƯỜI) -->
+      <div class="phone-sub-app" id="phone-app-codex">
         <div class="phone-app-header">
           <div style="display:flex; align-items:center; gap:4px;">
             <button class="phone-back-btn" onclick="phoneHome()">‹</button>
-            <span>Bộ Sưu Tập Liên Kết</span>
+            <span>Nhân Vật & Linh Hồn</span>
           </div>
-          <button class="btn" style="padding: 2px 6px; font-size: 9px;" onclick="openManualAddCollectionModal()">+ Thêm Thẻ</button>
+          <!-- BỎ HOÀN TOÀN admin-only ĐỂ AI CŨNG CÓ NÚT THÊM -->
+          <button class="btn" style="padding: 2px 7px; font-size: 10px; color: var(--neon); border-color: var(--neon);" onclick="openAddCharacterModal()">+ Thêm</button>
         </div>
-        <p style="font-size:10px; color:#94a3b8; margin-bottom:8px; line-height:1.4;">Đọc xong truyện hoặc tặng quà để lưu giữ và nâng cao mức độ liên kết linh hồn với nhân vật.</p>
-        <div id="collection-cards-container"></div>
+
+        <div style="margin-bottom: 8px;">
+          <select id="codex-novel-selector" onchange="renderCodexList()" style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 5px; color: #fff; font-size: 11px; outline: none;"></select>
+        </div>
+
+        <div id="codex-container"></div>
       </div>
 
       <!-- APP: TRÒ CHUYỆN / LIÊN LẠC NHẬP VAI -->
@@ -912,33 +917,6 @@
       <div id="gift-inventory-list" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; margin: 8px 0;"></div>
       <div style="display: flex; justify-content: flex-end;">
         <button class="btn" onclick="closeModals()">Đóng</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: THÊM THỦ CÔNG NHÂN VẬT VÀO BỘ SƯU TẬP -->
-  <div class="modal-overlay" id="custom-char-modal">
-    <div class="modal-card" style="max-width: 380px;">
-      <h2>🎴 THÊM NHÂN VẬT VÀO BỘ SƯU TẬP</h2>
-      <div class="modal-field">
-        <label>Tên nhân vật:</label>
-        <input type="text" id="custom-char-name" autocomplete="off" placeholder="Ví dụ: Ôn Tri Hành, Tô Thanh Lạc...">
-      </div>
-      <div class="modal-field">
-        <label>Xuất xứ / Tên truyện:</label>
-        <input type="text" id="custom-char-novel" autocomplete="off" placeholder="Ví dụ: truyện điên vl">
-      </div>
-      <div class="modal-field">
-        <label>Vai trò / Danh phận:</label>
-        <input type="text" id="custom-char-role" autocomplete="off" placeholder="Cố nhân, Đồng hành...">
-      </div>
-      <div class="modal-field">
-        <label>Tính cách / Ký ức / Ghi chú đặc biệt:</label>
-        <textarea id="custom-char-note" autocomplete="off" style="height: 70px;" placeholder="Ghi chú tính cách để AI nhập vai chính xác..."></textarea>
-      </div>
-      <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px;">
-        <button class="btn" onclick="closeModals()">Hủy</button>
-        <button class="btn btn-primary" onclick="saveCustomCharacterToCollection()">Lưu Bộ Sưu Tập</button>
       </div>
     </div>
   </div>
@@ -1041,6 +1019,33 @@
     </div>
   </div>
 
+  <!-- MODAL: THÊM / SỬA NHÂN VẬT -->
+  <div class="modal-overlay" id="char-modal">
+    <div class="modal-card">
+      <h2 id="char-modal-heading">THÊM NHÂN VẬT MỚI</h2>
+      <div class="modal-field">
+        <label>Tên nhân vật:</label>
+        <input type="text" id="char-input-name" autocomplete="off" placeholder="Ví dụ: Ôn Tri Hành">
+      </div>
+      <div class="modal-field">
+        <label>Vai trò:</label>
+        <input type="text" id="char-input-role" autocomplete="off" placeholder="Nhân vật chính, Cố nhân...">
+      </div>
+      <div class="modal-field">
+        <label>Trạng thái:</label>
+        <input type="text" id="char-input-status" autocomplete="off" placeholder="Còn sống, Mất kết nối, Bị phong tỏa...">
+      </div>
+      <div class="modal-field">
+        <label>Ghi chú tính cách / Ký ức (Để AI nhập vai trò chuyện):</label>
+        <textarea id="char-input-note" autocomplete="off" style="height: 70px;" placeholder="Ghi chú tính cách, cảm xúc của nhân vật..."></textarea>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px;">
+        <button class="btn" onclick="closeModals()">Hủy</button>
+        <button class="btn btn-primary" onclick="saveCharacterModal()">Lưu Nhân Vật</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -1063,7 +1068,7 @@
     const docRef = db.collection("studio_data").doc("main_library");
 
     // ==========================================
-    // 2 HÀM GEMINI AI MỚI: CẬP NHẬT TRÍ NHỚ ĐA LƯỢT (MULTI-TURN)
+    // CƠ CHẾ GỌI GEMINI AI & TRÍ NHỚ ĐA LƯỢT
     // ==========================================
     function configureAIKeyPrompt() {
       const current = localStorage.getItem('my_gemini_api_key') || '';
@@ -1106,7 +1111,6 @@ Quy tắc nhập vai:
 2. Trả lời tự nhiên, ngắn gọn (1 - 3 câu) như đang gửi tin nhắn qua thiết bị cầm tay.
 3. Tuyệt đối không xưng là AI hay trợ lý ảo, không phá vỡ vỏ bọc nhân vật.`;
 
-      // Lấy 8 tin nhắn gần nhất để AI nhớ liên tục mạch hội thoại
       const recentHistory = chatHistory.slice(-8).map(msg => ({
         role: msg.role === 'user' ? 'user' : 'model',
         parts: [{ text: msg.text }]
@@ -1254,7 +1258,6 @@ Quy tắc nhập vai:
       const novel = novels[selectedNovelIndex] || novels[0];
       const list = [...(novel.characters || [])];
       
-      // Ghép thêm các nhân vật từ bộ sưu tập cá nhân nếu chưa có
       if (userProfile.collectedCharacters) {
         Object.values(userProfile.collectedCharacters).forEach(colChar => {
           if (!list.some(c => c.id === colChar.id)) {
@@ -1359,7 +1362,6 @@ Quy tắc nhập vai:
       container.appendChild(loadingDiv);
       container.scrollTop = container.scrollHeight;
 
-      // GỌI HÀM GEMINI KÈM THEO TRÍ NHỚ ĐA LƯỢT (RECENT HISTORY)
       const reply = await callGeminiAIChat(char, chatHistories[charId]);
       const el = document.getElementById('chat-loading-bubble');
       if (el) el.remove();
@@ -1372,55 +1374,121 @@ Quy tắc nhập vai:
     }
 
     // ==========================================
-    // CƠ CHẾ BỘ SƯU TẬP NHÂN VẬT & TẶNG QUÀ NPC
+    // NÂNG CẤP CODEX: TÍCH HỢP KẾT NỐI LINH HỒN & QUÀ TẶNG
     // ==========================================
-    function renderCollectionApp() {
-      const container = document.getElementById('collection-cards-container');
-      container.innerHTML = "";
-      const collection = userProfile.collectedCharacters || {};
-      const keys = Object.keys(collection);
+    function getSelectedCodexNovel() {
+      const selector = document.getElementById('codex-novel-selector');
+      const novelId = selector ? selector.value : null;
+      return novels.find(n => n.id === novelId) || novels[selectedNovelIndex] || novels[0];
+    }
 
-      if (keys.length === 0) {
-        container.innerHTML = `<div style="text-align:center; color:#64748b; font-size:11px; padding:24px 10px;">Chưa có nhân vật nào trong bộ sưu tập.<br>Đọc xong một chương truyện hoặc bấm "+ Thêm Thẻ" để lưu giữ nhân vật!</div>`;
+    function renderCodexDropdown() {
+      const selector = document.getElementById('codex-novel-selector');
+      if (!selector) return;
+      selector.innerHTML = "";
+      novels.forEach((n, idx) => {
+        const opt = document.createElement('option');
+        opt.value = n.id;
+        opt.textContent = `${n.title} (${(n.characters || []).length} nhân vật)`;
+        if (idx === selectedNovelIndex) opt.selected = true;
+        selector.appendChild(opt);
+      });
+    }
+
+    function renderCodexList() {
+      const novel = getSelectedCodexNovel();
+      const container = document.getElementById('codex-container');
+      if (!container) return;
+      container.innerHTML = "";
+
+      if (!novel || !novel.characters || novel.characters.length === 0) {
+        container.innerHTML = `
+          <div style="text-align:center; padding: 24px 8px; color: #64748b; font-size: 11px;">
+            <div>Chưa có nhân vật nào trong tác phẩm này.</div>
+            <button class="btn btn-primary" style="margin-top: 10px; width: 100%; font-size: 11px;" onclick="openAddCharacterModal()">+ Tạo Nhân Vật Mới</button>
+            <button class="btn btn-gold" style="margin-top: 8px; width: 100%; font-size: 11px;" onclick="loadSampleCharactersToCurrentNovel()">📥 Nạp Cố Nhân Mẫu (Ôn Tri Hành, Tô Thanh Lạc...)</button>
+          </div>
+        `;
         return;
       }
 
-      keys.forEach(k => {
-        const char = collection[k];
-        const affinity = char.affinity || 10;
+      novel.characters.forEach((c, idx) => {
         const div = document.createElement('div');
         div.className = 'character-card';
         div.style.flexDirection = 'column';
         div.style.alignItems = 'stretch';
         div.style.gap = '6px';
 
+        const affinity = (userProfile.collectedCharacters && userProfile.collectedCharacters[c.id]) 
+          ? userProfile.collectedCharacters[c.id].affinity || 10 
+          : 10;
+
         div.innerHTML = `
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <div style="display:flex; align-items:center; gap:6px;">
-              <span style="font-size:20px;">🎴</span>
-              <div>
-                <span style="font-size:12px; font-weight:bold; color:var(--neon);">${escapeHtml(char.name)}</span>
-                <span style="font-size:9px; color:var(--text-dim); margin-left:4px;">[${escapeHtml(char.novelTitle || 'Vô hạn lưu')}]</span>
-              </div>
+              <span style="font-size:18px;">👤</span>
+              <span style="font-size: 12px; font-weight: bold; color: var(--neon);">${escapeHtml(c.name)}</span>
+              <span style="font-size: 9px; color: var(--text-dim);">[${escapeHtml(c.role || 'Chưa rõ')}]</span>
             </div>
-            <span style="font-size:10px; color:var(--gold); font-weight:bold;">❤️ ${affinity}%</span>
-          </div>
-          <div style="font-size:10px; color:#94a3b8; line-height:1.4;">${escapeHtml(char.note || char.role || 'Nhân vật liên kết linh hồn')}</div>
-          
-          <div style="background:#0f172a; height:4px; border-radius:2px; overflow:hidden;">
-            <div style="background:var(--gold); height:100%; width:${Math.min(100, affinity)}%;"></div>
+            <span style="font-size: 10px; color: var(--gold); font-weight:bold;">❤️ ${affinity}%</span>
           </div>
 
+          <div style="font-size: 10px; color: var(--red);">Trạng thái: ${escapeHtml(c.status || 'Bình thường')}</div>
+          <div style="font-size: 10px; color: #94a3b8; line-height:1.4;">${escapeHtml(c.note || '')}</div>
+
           <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:2px;">
-            <button class="btn btn-gold" style="padding:2px 8px; font-size:9px;" onclick="openGiftModalForChar('${char.id}')">🎁 Tặng quà</button>
-            <button class="btn btn-primary" style="padding:2px 8px; font-size:9px;" onclick="openChatWithChar('${char.id}')">💬 Trò chuyện</button>
+            <button class="btn btn-gold" style="padding: 2px 7px; font-size: 9px;" onclick="openGiftModalForChar('${c.id}')">🎁 Tặng Quà</button>
+            <button class="btn btn-primary" style="padding: 2px 7px; font-size: 9px;" onclick="connectSoulAndChat('${c.id}')">⚡ Kết Nối & Chat</button>
+            <button class="btn" style="padding: 2px 6px; font-size: 9px;" onclick="openEditCharacterModal(${idx})">Sửa</button>
+            <button class="btn btn-danger" style="padding: 2px 6px; font-size: 9px;" onclick="deleteCharacterFromCodex(${idx})">Xóa</button>
           </div>
         `;
         container.appendChild(div);
       });
     }
 
-    function openChatWithChar(charId) {
+    function loadSampleCharactersToCurrentNovel() {
+      const novel = getSelectedCodexNovel();
+      if (!novel) return;
+
+      if (!novel.characters) novel.characters = [];
+      const samples = [
+        { id: "c_otk", name: "Ôn Tri Hành", role: "Cố nhân", status: "Mất kết nối", note: "Bóng hình không còn xuất hiện sau khi hệ thống trục trặc." },
+        { id: "c_ttl", name: "Tô Thanh Lạc", role: "Ký ức nhạt nhòa", status: "Bị phong tỏa", note: "Gắn liền với cơn mưa Thượng Hải và phòng net tồi tàn." },
+        { id: "c_tct", name: "Thẩm Cẩm Thư", role: "Cố nhân", status: "Mất kết nối", note: "Người từng đi qua cuộc đời nhân vật chính." }
+      ];
+
+      samples.forEach(s => {
+        if (!novel.characters.some(existing => existing.name === s.name)) {
+          novel.characters.push(s);
+        }
+      });
+
+      saveDB();
+      renderCodexDropdown();
+      renderCodexList();
+      showSystemAlert("ĐÃ NẠP NHÂN VẬT MẪU", `Đã thêm 3 cố nhân vào [${novel.title}]!`);
+    }
+
+    function connectSoulAndChat(charId) {
+      const chars = getCombinedCharactersList();
+      const char = chars.find(c => c.id === charId);
+      if (!char) return;
+
+      if (!userProfile.collectedCharacters) userProfile.collectedCharacters = {};
+      if (!userProfile.collectedCharacters[char.id]) {
+        userProfile.collectedCharacters[char.id] = {
+          id: char.id,
+          name: char.name,
+          role: char.role,
+          note: char.note,
+          novelTitle: (getSelectedCodexNovel() || {}).title || 'Vô hạn lưu',
+          affinity: 15
+        };
+        saveCurrentAccount();
+        showSystemAlert("LIÊN KẾT THÀNH CÔNG", `Đã mở kết nối linh hồn với [${char.name}]!`);
+      }
+
       openPhoneApp('chat');
       const selector = document.getElementById('chat-character-selector');
       if (selector) {
@@ -1435,7 +1503,7 @@ Quy tắc nhập vai:
       if (!char) return;
 
       document.getElementById('gift-modal-heading').textContent = `🎁 TẶNG QUÀ: ${char.name}`;
-      document.getElementById('gift-modal-desc').textContent = `Tặng vật phẩm để tăng mức độ liên kết linh hồn với [${char.name}].`;
+      document.getElementById('gift-modal-desc').textContent = `Tặng vật phẩm để tăng mức độ gắn kết linh hồn với [${char.name}].`;
 
       const listContainer = document.getElementById('gift-inventory-list');
       listContainer.innerHTML = "";
@@ -1477,10 +1545,8 @@ Quy tắc nhập vai:
       const char = chars.find(c => c.id === charId);
       if (!char) return;
 
-      // Xóa món đồ khỏi kho đồ
       userProfile.inventory.splice(itemIdx, 1);
 
-      // Điểm thân mật tăng theo phẩm cấp
       const rankBonus = { "F": 5, "E": 10, "D": 15, "C": 25, "B": 35, "A": 50, "S": 75, "SS": 100, "SSS": 100 };
       const gain = rankBonus[item.rank] || 10;
 
@@ -1491,7 +1557,7 @@ Quy tắc nhập vai:
           name: char.name,
           role: char.role,
           note: char.note,
-          novelTitle: (novels[selectedNovelIndex] || {}).title || 'Vô hạn lưu',
+          novelTitle: (getSelectedCodexNovel() || {}).title || 'Vô hạn lưu',
           affinity: 10
         };
       }
@@ -1501,16 +1567,15 @@ Quy tắc nhập vai:
       closeModals();
 
       showSystemAlert("TẶNG QUÀ THÀNH CÔNG", `Đã tặng [${item.name}] cho ${char.name} (+${gain}% Thân Mật) ❤️`);
-      renderCollectionApp();
+      renderCodexList();
 
-      // Nếu đang trong cửa sổ chat, nhân vật lập tức gửi lời phản hồi cảm ơn theo tính cách
       if (document.getElementById('phone-app-chat').style.display === 'flex') {
         switchChatCharacter();
         if (!chatHistories[char.id]) chatHistories[char.id] = [];
         chatHistories[char.id].push({ role: 'user', text: `[Tôi đã gửi tặng bạn: ${item.name} (${item.rank})]` });
         renderChatMessages(char.id);
 
-        const giftPrompt = `Người chơi vừa tặng bạn món quà: "${item.name}" (Phẩm cấp: ${item.rank}, Mô tả: ${item.desc}). Hãy phản hồi ngắn gọn lại theo đúng tính cách của bạn (xúc động, bối rối, lạnh lùng hay trân trọng).`;
+        const giftPrompt = `Người chơi vừa tặng bạn món quà: "${item.name}" (Phẩm cấp: ${item.rank}, Mô tả: ${item.desc}). Hãy phản hồi ngắn gọn lại theo đúng tính cách của bạn.`;
         const reply = await callGeminiAIChat(char, chatHistories[char.id]);
         if (reply) {
           chatHistories[char.id].push({ role: 'model', text: reply.trim() });
@@ -1520,44 +1585,6 @@ Quy tắc nhập vai:
       }
     }
 
-    function openManualAddCollectionModal() {
-      document.getElementById('custom-char-name').value = '';
-      document.getElementById('custom-char-novel').value = (novels[selectedNovelIndex] || {}).title || 'truyện điên vl';
-      document.getElementById('custom-char-role').value = '';
-      document.getElementById('custom-char-note').value = '';
-      document.getElementById('custom-char-modal').style.display = 'flex';
-    }
-
-    function saveCustomCharacterToCollection() {
-      const name = document.getElementById('custom-char-name').value.trim();
-      const novelTitle = document.getElementById('custom-char-novel').value.trim();
-      const role = document.getElementById('custom-char-role').value.trim();
-      const note = document.getElementById('custom-char-note').value.trim();
-
-      if (!name) { alert("Vui lòng nhập tên nhân vật!"); return; }
-
-      const id = "custom_char_" + Date.now();
-      if (!userProfile.collectedCharacters) userProfile.collectedCharacters = {};
-
-      userProfile.collectedCharacters[id] = {
-        id,
-        name,
-        novelTitle: novelTitle || 'Vô hạn lưu',
-        role: role || 'Đồng hành',
-        note: note || 'Nhân vật được tạo thủ công',
-        affinity: 20
-      };
-
-      saveCurrentAccount();
-      closeModals();
-      showSystemAlert("ĐÃ LƯU THẺ NHÂN VẬT", `Đã thêm [${name}] vào Bộ Sưu Tập!`);
-      renderCollectionApp();
-      renderChatDropdown();
-    }
-
-    // ==========================================
-    // TỰ ĐỘNG THU THẬP NHÂN VẬT KHI ĐỌC CHƯƠNG TRUYỆN
-    // ==========================================
     function autoDiscoverCharactersFromNovel(novel) {
       if (!novel || !novel.characters || novel.characters.length === 0) return;
       if (!userProfile.collectedCharacters) userProfile.collectedCharacters = {};
@@ -1580,7 +1607,84 @@ Quy tắc nhập vai:
 
       if (hasNew) {
         saveCurrentAccount();
-        showSystemAlert("THU THẬP KÝ ỨC", `Đã lưu các nhân vật của [${novel.title}] vào Bộ Sưu Tập!`);
+        showSystemAlert("THU THẬP KÝ ỨC", `Đã lưu nhân vật của [${novel.title}] vào hệ thống!`);
+        renderChatDropdown();
+      }
+    }
+
+    // ==========================================
+    // CÁC HÀM QUẢN TRỊ NHÂN VẬT THỦ CÔNG
+    // ==========================================
+    function openAddCharacterModal() {
+      const novel = getSelectedCodexNovel();
+      if (!novel) { alert("Vui lòng tạo truyện trước!"); return; }
+      editingCharIndex = null;
+      document.getElementById('char-modal-heading').textContent = `THÊM NHÂN VẬT - [${novel.title}]`;
+      document.getElementById('char-input-name').value = '';
+      document.getElementById('char-input-role').value = '';
+      document.getElementById('char-input-status').value = 'Còn sống';
+      document.getElementById('char-input-note').value = '';
+      document.getElementById('char-modal').style.display = 'flex';
+    }
+
+    function openEditCharacterModal(idx) {
+      const novel = getSelectedCodexNovel();
+      editingCharIndex = idx;
+      const c = novel.characters[idx];
+      document.getElementById('char-modal-heading').textContent = `CHỈNH SỬA: ${c.name}`;
+      document.getElementById('char-input-name').value = c.name;
+      document.getElementById('char-input-role').value = c.role || '';
+      document.getElementById('char-input-status').value = c.status || '';
+      document.getElementById('char-input-note').value = c.note || '';
+      document.getElementById('char-modal').style.display = 'flex';
+    }
+
+    function saveCharacterModal() {
+      const novel = getSelectedCodexNovel();
+      const name = document.getElementById('char-input-name').value.trim();
+      const role = document.getElementById('char-input-role').value.trim();
+      const status = document.getElementById('char-input-status').value.trim();
+      const note = document.getElementById('char-input-note').value.trim();
+
+      if (!name) { alert("Vui lòng nhập tên nhân vật!"); return; }
+      if (!novel.characters) novel.characters = [];
+
+      const charId = editingCharIndex !== null ? novel.characters[editingCharIndex].id : ("char_" + Date.now());
+
+      if (editingCharIndex !== null) {
+        novel.characters[editingCharIndex] = { ...novel.characters[editingCharIndex], name, role, status, note };
+      } else {
+        novel.characters.push({ id: charId, name, role, status, note });
+      }
+
+      // Tự động kết nối vào bộ sưu tập cá nhân
+      if (!userProfile.collectedCharacters) userProfile.collectedCharacters = {};
+      userProfile.collectedCharacters[charId] = {
+        id: charId,
+        name,
+        role,
+        status,
+        note,
+        novelTitle: novel.title,
+        affinity: 20
+      };
+
+      saveDB();
+      saveCurrentAccount();
+      closeModals();
+      renderCodexDropdown();
+      renderCodexList();
+      renderChatDropdown();
+      showSystemAlert("LƯU THÀNH CÔNG", `Đã cập nhật nhân vật [${name}]!`);
+    }
+
+    function deleteCharacterFromCodex(idx) {
+      const novel = getSelectedCodexNovel();
+      if (confirm(`Bạn có chắc muốn xóa nhân vật "${novel.characters[idx].name}"?`)) {
+        novel.characters.splice(idx, 1);
+        saveDB();
+        renderCodexDropdown();
+        renderCodexList();
         renderChatDropdown();
       }
     }
@@ -2723,9 +2827,9 @@ Quy tắc nhập vai:
     function closeModals() {
       document.getElementById('story-modal').style.display = 'none';
       document.getElementById('chapter-modal').style.display = 'none';
+      document.getElementById('char-modal').style.display = 'none';
       document.getElementById('auth-modal').style.display = 'none';
       document.getElementById('gift-modal').style.display = 'none';
-      document.getElementById('custom-char-modal').style.display = 'none';
       if (isZen) toggleZenMode();
     }
 
@@ -2748,8 +2852,9 @@ Quy tắc nhập vai:
       document.querySelectorAll('.phone-sub-app').forEach(el => el.style.display = 'none');
       document.getElementById(`phone-app-${appName}`).style.display = 'flex';
 
-      if (appName === 'collection') {
-        renderCollectionApp();
+      if (appName === 'codex') {
+        renderCodexDropdown();
+        renderCodexList();
       } else if (appName === 'chat') {
         renderChatDropdown();
       } else if (appName === 'inventory') {
