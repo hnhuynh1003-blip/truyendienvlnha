@@ -322,7 +322,7 @@
       max-width: 320px;
     }
 
-    /* DANH SÁCH TRUYỆN */
+    /* NOVEL GRID */
     .novel-grid {
       display: grid;
       grid-template-columns: 1fr;
@@ -745,12 +745,10 @@
             <div class="app-box" style="background: #f59e0b;">📜</div>
             <div class="app-label">Nhiệm Vụ</div>
           </div>
-          <!-- APP NHÂN VẬT & LINH HỒN -->
           <div class="app-icon" onclick="openPhoneApp('codex')">
             <div class="app-box" style="background: #ec4899;">🎴</div>
             <div class="app-label">Nhân Vật</div>
           </div>
-          <!-- APP TRÒ CHUYỆN NHẬP VAI -->
           <div class="app-icon" onclick="openPhoneApp('chat')">
             <div class="app-box" style="background: #06b6d4;">💬</div>
             <div class="app-label">Liên Lạc</div>
@@ -1051,12 +1049,14 @@
   </div>
 
   <script>
+    // 1. KHỞI TẠO SERVICE WORKER PWA
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js').catch((err) => console.log('SW error:', err));
       });
     }
 
+    // 2. KHỞI TẠO FIREBASE
     const firebaseConfig = {
       apiKey: "AIzaSyCzZF18xI8nM1TLqR1q3x7HxZYE-0_VMtk",
       authDomain: "truyendienvl.firebaseapp.com",
@@ -1071,9 +1071,311 @@
     const db = firebase.firestore();
     const docRef = db.collection("studio_data").doc("main_library");
 
-    // ==========================================
-    // CƠ CHẾ DÒ TÌM MODEL GOOGLE GEMINI TỰ ĐỘNG
-    // ==========================================
+    // 3. TOÀN BỘ DANH MỤC HẰNG SỐ (ĐẶT Ở ĐẦU SCRIPT ĐỂ CHỐNG LỖI NOT DEFINED)
+    const MASTER_LOOT_TABLE = [
+      { id: "f1", name: "Mẩu Bánh Mì Mốc", rank: "F", type: "FOOD", icon: "🍞", desc: "Khô khốc, chống đói lúc tuyệt vọng." },
+      { id: "f2", name: "Chai Nước Suối Dở", rank: "F", type: "FOOD", icon: "🧴", desc: "Còn sót lại vài giọt nước khoáng ấm." },
+      { id: "e1", name: "Mì Tôm Cay Dung Thành", rank: "E", type: "FOOD", icon: "🍜", desc: "Món ăn quen thuộc thời còn ở phòng net." },
+      { id: "e2", name: "Lon Cà Phê Đen", rank: "E", type: "FOOD", icon: "☕", desc: "Tỉnh táo giữa luồng dữ liệu rối loạn." },
+      { id: "e3", name: "Dao Gọt Trái Cây Cũ", rank: "E", type: "WEAPON", icon: "🔪", desc: "Vũ khí thô sơ nhất để tự vệ." },
+      { id: "d1", name: "Hộp Bò Hầm Quân Dụng", rank: "D", type: "FOOD", icon: "🥫", desc: "Bổ sung lượng calo lớn trong phó bản." },
+      { id: "c1", name: "Dao Găm Quân Đội M9", rank: "C", type: "WEAPON", icon: "🗡️", desc: "Lưỡi thép đen bén ngọt chuẩn cận chiến." },
+      { id: "b1", name: "Súng Trường Tấn Công", rank: "B", type: "WEAPON", icon: "⚡", desc: "Băng đạn 30 viên quét sạch quái cấp thấp." },
+      { id: "b2", name: "Kiếm Katana Thép Đen", rank: "B", type: "WEAPON", icon: "⚔️", desc: "Rèn từ quặng thép đặc biệt." },
+      { id: "s1", name: "Súng Bắn Tỉa Phân Rã", rank: "S", type: "WEAPON", icon: "🔭", desc: "Bắn ra chùm hạt làm tan rã cấu trúc vật chất." },
+      { id: "sss1", name: "Mã Nguồn SYS_ERR_0x000F89", rank: "SSS", type: "ITEM", icon: "🌌", desc: "Quyền năng tối cao thao túng quy tắc DUDU." }
+    ];
+
+    const SHOP_CATALOG = [
+      { id: "shop-food-1", name: "Lon Cà Phê Phòng Net", rank: "E", price: 10, icon: "☕", type: "FOOD", desc: "Hồi phục tinh thần đọc truyện." },
+      { id: "shop-food-2", name: "Hộp Bò Hầm Quân Dụng", rank: "D", price: 25, icon: "🥫", type: "FOOD", desc: "Lương khô sinh tồn cao cấp." },
+      { id: "shop-wpn-1", name: "Dao Găm Quân Đội M9", rank: "C", price: 40, icon: "🗡️", type: "WEAPON", desc: "Vũ khí cận chiến sắc bén." },
+      { id: "shop-wpn-3", name: "Kiếm Katana Thép Đen", rank: "B", price: 120, icon: "⚔️", type: "WEAPON", desc: "Vũ khí diệt dị thể." },
+      { id: "shop-sss", name: "Mảnh Vỡ 0x000F89", rank: "SSS", price: 300, icon: "🌌", type: "ITEM", desc: "Vật phẩm tối thượng hệ thống." }
+    ];
+
+    const DEFAULT_SYSTEM_QUESTS = [
+      { id: "q_daily_read", type: "DAILY", title: "Duyệt Đọc Dữ Liệu", desc: "Đọc tích lũy 2 chương truyện bất kỳ.", current: 0, target: 2, rewardExp: 30, rewardCoin: 25, claimed: false },
+      { id: "q_daily_loot", type: "DAILY", title: "Thu Thập Tàn Tích", desc: "Lục lọi hoặc nhặt trang bị 2 lần.", current: 0, target: 2, rewardExp: 25, rewardCoin: 20, claimed: false },
+      { id: "q_main_intro", type: "MAIN", title: "[Chính Tuyến] Bước Vào Không Gian Trắng", desc: "Đọc trọn vẹn Chương 1 của truyện điên vl.", current: 0, target: 1, rewardExp: 50, rewardCoin: 50, claimed: false },
+      { id: "q_main_write", type: "MAIN", title: "[Chính Tuyến] Sáng Tạo Thế Giới", desc: "Tự tạo hoặc sửa thêm 1 chương truyện mới.", current: 0, target: 1, rewardExp: 60, rewardCoin: 60, claimed: false }
+    ];
+
+    const initialNovels = [
+      {
+        id: "truyen-dien-vl",
+        title: "truyện điên vl",
+        author: "Tôi",
+        genre: "Vô hạn lưu, Hệ thống, Glitch",
+        status: "Đang ra",
+        desc: "Linh hồn lang bạt rơi vào khoảng không vô tận của một hệ thống trục trặc.",
+        coverImage: "",
+        updatedAt: "2026-10-09",
+        introData: {
+          title: "VĂN ÁN // GLITCH RECORD",
+          code: "SYS_ERR_0x000F89",
+          text: `[Lỗi kết nối máy chủ cốt lõi: 0x000F89]\n[Ký ức thực thể: Phong tỏa 68%...]\n[Kho đồ cá nhân: Khóa quyền truy cập]\n[Chuyển giao mục tiêu: Ngẫu nhiên...]`
+        },
+        characters: [
+          { id: "c1", name: "Tôi", role: "Nhân vật chính", status: "Mảnh vụn dữ liệu lỗi", note: "Linh hồn lang bạt qua hàng ngàn năm tích lũy tri thức." },
+          { id: "c2", name: "Ôn Tri Hành", role: "Cố nhân", status: "Mất kết nối", note: "Bóng hình không còn xuất hiện sau khi hệ thống trục trặc." },
+          { id: "c3", name: "Thẩm Cẩm Thư", role: "Cố nhân", status: "Mất kết nối", note: "Một trong những người từng đi qua đời nhân vật chính." },
+          { id: "c4", name: "Tô Thanh Lạc", role: "Ký ức nhạt nhòa", status: "Bị phong tỏa", note: "Gắn liền với cơn mưa Thượng Hải và phòng net tồi tàn." }
+        ],
+        chapters: [
+          {
+            id: "ch-1",
+            title: "Chương 1: Khoảng Trắng Của Kẻ Lang Bạt",
+            content: `Khi nhịp tim cuối cùng ở tầng hầm Dung Thành vụt tắt, tôi không rơi vào bóng tối vĩnh hằng như mình từng mong đợi.\n\nCái chết đối với một kẻ mang linh hồn lang bạt như tôi chưa từng là điểm dừng chân. Nó chỉ là một lần hệ thống trục trặc tự động khởi động lại. Một không gian trắng xóa vô tận, không có trọng lực, không có tiếng thở, và hoàn toàn vắng bóng bóng hình của Ôn Tri Hành hay Thẩm Cẩm Thư. Trước mắt tôi trôi nổi một giao diện bán trong suốt méo mó, nhấp nháy những dòng mã nguồn gãy khúc.`,
+            createdAt: "2026-10-09",
+            updatedAt: "2026-10-09",
+            wordCount: 92,
+            authorNote: "Khởi đầu của một hành trình mới."
+          }
+        ]
+      }
+    ];
+
+    // 4. TOÀN BỘ BIẾN TOÀN CỤC (KHAI BÁO NGAY ĐẦU ĐỂ CHỐNG LỖI INITIALIZATION)
+    let novels = JSON.parse(localStorage.getItem('my_novels_library_db')) || initialNovels;
+    let currentUsername = localStorage.getItem('my_current_logged_user') || "";
+    
+    let userProfile = {
+      username: "guest",
+      name: "Kẻ Lang Bạt",
+      title: "Thực Thể Ký Tự",
+      exp: 40,
+      level: 1,
+      currency: 50,
+      role: "reader", 
+      lootedChapters: {},
+      collectedCharacters: {},
+      inventory: [
+        { id: "init-1", name: "Mẩu Bánh Mì Mốc", rank: "F", type: "FOOD", icon: "🍞", desc: "Khô khốc, chống đói lúc tuyệt vọng." },
+        { id: "init-2", name: "Dao Gọt Trái Cây Cũ", rank: "E", type: "WEAPON", icon: "🔪", desc: "Vũ khí thô sơ nhất để tự vệ." }
+      ],
+      quests: DEFAULT_SYSTEM_QUESTS
+    };
+
+    let selectedNovelIndex = 0;
+    let selectedChapterIndex = 0;
+    let isEditingStory = false;
+    let editingChapterIndex = null;
+    let editingCharIndex = null;
+    let isReversedOrder = false;
+    let currentFilterStatus = "ALL";
+    let selectedTag = "ALL";
+    let searchQuery = "";
+    let sortMode = "NEWEST_UPDATE";
+    let inventoryTab = "ALL";
+    let questTab = "ALL";
+    let isZen = false;
+
+    const COOLDOWN_DURATION = 10 * 60 * 1000;
+    let lastLootTimestamp = parseInt(localStorage.getItem('my_last_loot_ts')) || 0;
+    let cooldownTimerInterval = null;
+    let chatHistories = JSON.parse(localStorage.getItem('my_chat_roleplay_histories')) || {};
+
+    // 5. CƠ CHẾ ÂM THANH & THÔNG BÁO HỆ THỐNG
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playTone(freq, duration, type = 'sine') {
+      try {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch(e) {}
+    }
+
+    function playSystemSound() {
+      playTone(523.25, 0.08, 'triangle');
+      setTimeout(() => playTone(659.25, 0.08, 'triangle'), 80);
+      setTimeout(() => playTone(783.99, 0.15, 'sine'), 160);
+    }
+
+    function showSystemAlert(title, message) {
+      playSystemSound();
+      const banner = document.getElementById('system-alert-banner');
+      if (banner) {
+        document.getElementById('sys-alert-title').textContent = title;
+        document.getElementById('sys-alert-body').textContent = message;
+        banner.style.display = 'block';
+        setTimeout(() => { banner.style.display = 'none'; }, 2800);
+      }
+    }
+
+    // 6. CƠ CHẾ ĐĂNG NHẬP & QUẢN LÝ TÀI KHOẢN (AN TOÀN TUYỆT ĐỐI)
+    function closeModals() {
+      ['story-modal', 'chapter-modal', 'char-modal', 'auth-modal', 'gift-modal'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+      });
+      if (isZen) toggleZenMode();
+    }
+
+    function applyUserRole() {
+      const btn = document.getElementById('role-toggle-btn');
+      if (userProfile.role === 'admin') {
+        document.body.classList.remove('is-reader');
+        if (btn) {
+          btn.textContent = "👑 Tác Giả";
+          btn.classList.remove('reader');
+        }
+      } else {
+        document.body.classList.add('is-reader');
+        if (btn) {
+          btn.textContent = "📖 Độc Giả";
+          btn.classList.add('reader');
+        }
+      }
+    }
+
+    function toggleUserRole() {
+      userProfile.role = (userProfile.role === 'admin') ? 'reader' : 'admin';
+      applyUserRole();
+      saveCurrentAccount();
+    }
+
+    function saveCurrentAccount() {
+      if (!currentUsername) return;
+
+      const localKey = `profile_${currentUsername}`;
+      localStorage.setItem(localKey, JSON.stringify(userProfile));
+
+      const cloudData = {
+        username: currentUsername || "guest",
+        name: userProfile.name || currentUsername || "Kẻ Lang Bạt",
+        title: userProfile.title || "Thực Thể Ký Tự",
+        level: parseInt(userProfile.level) || 1,
+        exp: parseInt(userProfile.exp) || 0,
+        currency: parseInt(userProfile.currency) || 50,
+        inventory: Array.isArray(userProfile.inventory) ? userProfile.inventory : [],
+        quests: Array.isArray(userProfile.quests) ? userProfile.quests : DEFAULT_SYSTEM_QUESTS,
+        lootedChapters: userProfile.lootedChapters || {},
+        collectedCharacters: userProfile.collectedCharacters || {}
+      };
+
+      try {
+        db.collection("user_profiles").doc(currentUsername).set(cloudData, { merge: true })
+          .catch(err => console.warn("Lỗi đồng bộ Firebase (vẫn chạy offline):", err));
+      } catch (e) {
+        console.warn("Không gửi được lên Firebase:", e);
+      }
+
+      updatePhoneUI();
+    }
+
+    function openAuthModal() {
+      const uInput = document.getElementById('auth-username');
+      if (uInput) uInput.value = currentUsername || '';
+      const m = document.getElementById('auth-modal');
+      if (m) m.style.display = 'flex';
+    }
+
+    function handleAuthSubmit() {
+      try {
+        const uEl = document.getElementById('auth-username');
+        const usernameInput = uEl ? uEl.value.trim().toLowerCase() : '';
+        if (!usernameInput) {
+          alert("Vui lòng nhập tên tài khoản!");
+          return;
+        }
+
+        currentUsername = usernameInput;
+        localStorage.setItem('my_current_logged_user', currentUsername);
+
+        const localKey = `profile_${currentUsername}`;
+        const saved = localStorage.getItem(localKey);
+        userProfile = null;
+
+        if (saved) {
+          try { userProfile = JSON.parse(saved); } catch (e) {}
+        }
+
+        if (!userProfile) {
+          userProfile = {
+            username: currentUsername,
+            name: currentUsername,
+            title: "Thực Thể Ký Tự",
+            level: 1,
+            exp: 0,
+            currency: 50,
+            role: "reader",
+            lootedChapters: {},
+            collectedCharacters: {},
+            inventory: [
+              { id: "init-1", name: "Mẩu Bánh Mì Mốc", rank: "F", type: "FOOD", icon: "🍞", desc: "Khô khốc, chống đói lúc tuyệt vọng." },
+              { id: "init-2", name: "Dao Gọt Trái Cây Cũ", rank: "E", type: "WEAPON", icon: "🔪", desc: "Vũ khí thô sơ nhất để tự vệ." }
+            ],
+            quests: DEFAULT_SYSTEM_QUESTS
+          };
+        }
+
+        userProfile.role = "reader";
+        if (!userProfile.title) userProfile.title = "Thực Thể Ký Tự";
+
+        const accBtn = document.getElementById('account-status-btn');
+        if (accBtn) accBtn.textContent = `👤 ${currentUsername}`;
+        const profId = document.getElementById('profile-account-id');
+        if (profId) profId.textContent = `ID: ${currentUsername}`;
+
+        closeModals();
+        applyUserRole();
+        showSystemAlert("ĐĂNG NHẬP THÀNH CÔNG", `Chào mừng [${currentUsername}] vào hệ thống!`);
+        renderHome();
+        saveCurrentAccount();
+      } catch (err) {
+        console.error("Lỗi đăng nhập:", err);
+        closeModals();
+        renderHome();
+      }
+    }
+
+    function loadLocalAccountProfile() {
+      if (!currentUsername) {
+        setTimeout(openAuthModal, 600);
+      } else {
+        const localKey = `profile_${currentUsername}`;
+        const saved = localStorage.getItem(localKey);
+        if (saved) {
+          try { userProfile = JSON.parse(saved); } catch (e) {}
+        }
+        if (!userProfile.lootedChapters) userProfile.lootedChapters = {};
+        if (!userProfile.collectedCharacters) userProfile.collectedCharacters = {};
+        userProfile.role = "reader";
+
+        const accBtn = document.getElementById('account-status-btn');
+        if (accBtn) accBtn.textContent = `👤 ${currentUsername}`;
+        const profId = document.getElementById('profile-account-id');
+        if (profId) profId.textContent = `ID: ${currentUsername}`;
+        
+        db.collection("user_profiles").doc(currentUsername).get().then(doc => {
+          if (doc.exists) {
+            const cloudData = doc.data();
+            userProfile.level = Math.max(userProfile.level, cloudData.level || 1);
+            userProfile.exp = Math.max(userProfile.exp, cloudData.exp || 0);
+            userProfile.currency = Math.max(userProfile.currency, cloudData.currency || 0);
+            if (cloudData.inventory) userProfile.inventory = cloudData.inventory;
+            if (cloudData.quests) userProfile.quests = cloudData.quests;
+            if (cloudData.lootedChapters) userProfile.lootedChapters = { ...userProfile.lootedChapters, ...cloudData.lootedChapters };
+            if (cloudData.collectedCharacters) userProfile.collectedCharacters = { ...userProfile.collectedCharacters, ...cloudData.collectedCharacters };
+            saveCurrentAccount();
+          }
+        }).catch(err => console.log("Offline mode:", err));
+      }
+      applyUserRole();
+      updatePhoneUI();
+      updateActiveModelInfo();
+    }
+
+    // 7. CƠ CHẾ GỌI AI GEMINI (TỰ ĐỘNG DÒ TÌM MODEL VÀ GHI NHỚ HỘI THOẠI)
     function configureAIKeyPrompt() {
       const current = localStorage.getItem('my_gemini_api_key') || '';
       const key = prompt("Nhập Google Gemini API Key của bạn (Lấy miễn phí tại aistudio.google.com):", current);
@@ -1149,11 +1451,10 @@
       }
     }
 
-    // GỌI CHAT CÓ TRÍ NHỚ ĐA LƯỢT VÀ BÁO LỖI MINH BẠCH
     async function callGeminiAIChat(char, chatHistory) {
       let apiKey = localStorage.getItem('my_gemini_api_key');
       if (!apiKey) {
-        return { error: "Bạn chưa nhập Gemini API Key. Hãy vào ứng dụng Cài Đặt [⚙️] trong Cyber Phone để nhập Key!" };
+        return { error: "Bạn chưa nhập Gemini API Key. Hãy vào Cài Đặt [⚙️] trong Cyber Phone để nhập Key!" };
       }
 
       const loader = document.getElementById('ai-status-loader');
@@ -1284,11 +1585,7 @@ Quy tắc nhập vai:
       }
     }
 
-    // ==========================================
-    // LOGIC APP TRÒ CHUYỆN & TẶNG QUÀ NPC
-    // ==========================================
-    let chatHistories = JSON.parse(localStorage.getItem('my_chat_roleplay_histories')) || {};
-
+    // 8. LOGIC CHAT, BỘ SƯU TẬP & TẶNG QUÀ NPC
     function saveChatHistories() {
       localStorage.setItem('my_chat_roleplay_histories', JSON.stringify(chatHistories));
     }
@@ -1424,9 +1721,7 @@ Quy tắc nhập vai:
       }
     }
 
-    // ==========================================
-    // NÂNG CẤP CODEX: KẾT NỐI LINH HỒN & QUÀ TẶNG
-    // ==========================================
+    // 9. QUẢN TRỊ CODEX NHÂN VẬT & LINH HỒN
     function getSelectedCodexNovel() {
       const selector = document.getElementById('codex-novel-selector');
       const novelId = selector ? selector.value : null;
@@ -1662,9 +1957,6 @@ Quy tắc nhập vai:
       }
     }
 
-    // ==========================================
-    // CÁC HÀM QUẢN TRỊ NHÂN VẬT THỦ CÔNG
-    // ==========================================
     function openAddCharacterModal() {
       const novel = getSelectedCodexNovel();
       if (!novel) { alert("Vui lòng tạo truyện trước!"); return; }
@@ -1738,17 +2030,7 @@ Quy tắc nhập vai:
       }
     }
 
-    // ==========================================
-    // CƠ CHẾ ĐĂNG NHẬP VÀ ĐÓNG MODAL AN TOÀN
-    // ==========================================
-    function closeModals() {
-      ['story-modal', 'chapter-modal', 'char-modal', 'auth-modal', 'gift-modal'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = 'none';
-      });
-      if (typeof isZen !== 'undefined' && isZen) toggleZenMode();
-    }
-
+    // 10. ĐIỀU HƯỚNG GIAO DIỆN & TỦ TRUYỆN
     function togglePhone() {
       const phone = document.getElementById('cyber-phone');
       phone.style.display = (phone.style.display === 'flex') ? 'none' : 'flex';
@@ -1939,235 +2221,6 @@ Quy tắc nhập vai:
 
     function escapeHtml(str) {
       return (str || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    }
-
-    const initialNovels = [
-      {
-        id: "truyen-dien-vl",
-        title: "truyện điên vl",
-        author: "Tôi",
-        genre: "Vô hạn lưu, Hệ thống, Glitch",
-        status: "Đang ra",
-        desc: "Linh hồn lang bạt rơi vào khoảng không vô tận của một hệ thống trục trặc.",
-        coverImage: "",
-        updatedAt: "2026-10-09",
-        introData: {
-          title: "VĂN ÁN // GLITCH RECORD",
-          code: "SYS_ERR_0x000F89",
-          text: `[Lỗi kết nối máy chủ cốt lõi: 0x000F89]\n[Ký ức thực thể: Phong tỏa 68%...]\n[Kho đồ cá nhân: Khóa quyền truy cập]\n[Chuyển giao mục tiêu: Ngẫu nhiên...]`
-        },
-        characters: [
-          { id: "c1", name: "Tôi", role: "Nhân vật chính", status: "Mảnh vụn dữ liệu lỗi", note: "Linh hồn lang bạt qua hàng ngàn năm tích lũy tri thức." },
-          { id: "c2", name: "Ôn Tri Hành", role: "Cố nhân", status: "Mất kết nối", note: "Bóng hình không còn xuất hiện sau khi hệ thống trục trặc." },
-          { id: "c3", name: "Thẩm Cẩm Thư", role: "Cố nhân", status: "Mất kết nối", note: "Một trong những người từng đi qua đời nhân vật chính." },
-          { id: "c4", name: "Tô Thanh Lạc", role: "Ký ức nhạt nhòa", status: "Bị phong tỏa", note: "Gắn liền với cơn mưa Thượng Hải và phòng net tồi tàn." }
-        ],
-        chapters: [
-          {
-            id: "ch-1",
-            title: "Chương 1: Khoảng Trắng Của Kẻ Lang Bạt",
-            content: `Khi nhịp tim cuối cùng ở tầng hầm Dung Thành vụt tắt, tôi không rơi vào bóng tối vĩnh hằng như mình từng mong đợi.\n\nCái chết đối với một kẻ mang linh hồn lang bạt như tôi chưa từng là điểm dừng chân. Nó chỉ là một lần hệ thống trục trặc tự động khởi động lại. Một không gian trắng xóa vô tận, không có trọng lực, không có tiếng thở, và hoàn toàn vắng bóng bóng hình của Ôn Tri Hành hay Thẩm Cẩm Thư. Trước mắt tôi trôi nổi một giao diện bán trong suốt méo mó, nhấp nháy những dòng mã nguồn gãy khúc.`,
-            createdAt: "2026-10-09",
-            updatedAt: "2026-10-09",
-            wordCount: 92,
-            authorNote: "Khởi đầu của một hành trình mới."
-          }
-        ]
-      }
-    ];
-
-    let novels = JSON.parse(localStorage.getItem('my_novels_library_db')) || initialNovels;
-    let currentUsername = localStorage.getItem('my_current_logged_user') || "";
-    
-    let userProfile = {
-      username: "guest",
-      name: "Kẻ Lang Bạt",
-      title: "Thực Thể Ký Tự",
-      exp: 40,
-      level: 1,
-      currency: 50,
-      role: "reader", 
-      lootedChapters: {},
-      collectedCharacters: {},
-      inventory: [
-        { id: "init-1", name: "Mẩu Bánh Mì Mốc", rank: "F", type: "FOOD", icon: "🍞", desc: "Khô khốc, chống đói lúc tuyệt vọng." },
-        { id: "init-2", name: "Dao Gọt Trái Cây Cũ", rank: "E", type: "WEAPON", icon: "🔪", desc: "Vũ khí thô sơ nhất để tự vệ." }
-      ],
-      quests: DEFAULT_SYSTEM_QUESTS
-    };
-
-    function loadLocalAccountProfile() {
-      if (!currentUsername) {
-        setTimeout(openAuthModal, 600);
-      } else {
-        const localKey = `profile_${currentUsername}`;
-        const saved = localStorage.getItem(localKey);
-        if (saved) {
-          userProfile = JSON.parse(saved);
-        }
-        if (!userProfile.lootedChapters) userProfile.lootedChapters = {};
-        if (!userProfile.collectedCharacters) userProfile.collectedCharacters = {};
-        userProfile.role = "reader";
-
-        document.getElementById('account-status-btn').textContent = `👤 ${currentUsername}`;
-        document.getElementById('profile-account-id').textContent = `ID: ${currentUsername}`;
-        
-        db.collection("user_profiles").doc(currentUsername).get().then(doc => {
-          if (doc.exists) {
-            const cloudData = doc.data();
-            userProfile.level = Math.max(userProfile.level, cloudData.level || 1);
-            userProfile.exp = Math.max(userProfile.exp, cloudData.exp || 0);
-            userProfile.currency = Math.max(userProfile.currency, cloudData.currency || 0);
-            if (cloudData.inventory) userProfile.inventory = cloudData.inventory;
-            if (cloudData.quests) userProfile.quests = cloudData.quests;
-            if (cloudData.lootedChapters) userProfile.lootedChapters = { ...userProfile.lootedChapters, ...cloudData.lootedChapters };
-            if (cloudData.collectedCharacters) userProfile.collectedCharacters = { ...userProfile.collectedCharacters, ...cloudData.collectedCharacters };
-            saveCurrentAccount();
-          }
-        }).catch(err => console.log("Chưa có cloud profile:", err));
-      }
-      applyUserRole();
-      updatePhoneUI();
-      updateActiveModelInfo();
-    }
-
-    function saveCurrentAccount() {
-      if (!currentUsername) return;
-
-      const localKey = `profile_${currentUsername}`;
-      localStorage.setItem(localKey, JSON.stringify(userProfile));
-
-      const cloudData = {
-        username: currentUsername || "guest",
-        name: userProfile.name || currentUsername || "Kẻ Lang Bạt",
-        title: userProfile.title || "Thực Thể Ký Tự",
-        level: parseInt(userProfile.level) || 1,
-        exp: parseInt(userProfile.exp) || 0,
-        currency: parseInt(userProfile.currency) || 50,
-        inventory: Array.isArray(userProfile.inventory) ? userProfile.inventory : [],
-        quests: Array.isArray(userProfile.quests) ? userProfile.quests : DEFAULT_SYSTEM_QUESTS,
-        lootedChapters: userProfile.lootedChapters || {},
-        collectedCharacters: userProfile.collectedCharacters || {}
-      };
-
-      try {
-        db.collection("user_profiles").doc(currentUsername).set(cloudData, { merge: true })
-          .catch(e => console.warn("Lỗi đồng bộ (offline):", e));
-      } catch (err) {
-        console.warn(err);
-      }
-      updatePhoneUI();
-    }
-
-    function openAuthModal() {
-      const uInput = document.getElementById('auth-username');
-      if (uInput) uInput.value = currentUsername || '';
-      const m = document.getElementById('auth-modal');
-      if (m) m.style.display = 'flex';
-    }
-
-    function handleAuthSubmit() {
-      try {
-        const uEl = document.getElementById('auth-username');
-        const usernameInput = uEl ? uEl.value.trim().toLowerCase() : '';
-        if (!usernameInput) {
-          alert("Vui lòng nhập tên tài khoản!");
-          return;
-        }
-
-        currentUsername = usernameInput;
-        localStorage.setItem('my_current_logged_user', currentUsername);
-
-        const localKey = `profile_${currentUsername}`;
-        const saved = localStorage.getItem(localKey);
-        userProfile = null;
-
-        if (saved) {
-          try { userProfile = JSON.parse(saved); } catch (e) {}
-        }
-
-        if (!userProfile) {
-          userProfile = {
-            username: currentUsername,
-            name: currentUsername,
-            title: "Thực Thể Ký Tự",
-            level: 1,
-            exp: 0,
-            currency: 50,
-            role: "reader",
-            lootedChapters: {},
-            collectedCharacters: {},
-            inventory: [
-              { id: "init-1", name: "Mẩu Bánh Mì Mốc", rank: "F", type: "FOOD", icon: "🍞", desc: "Khô khốc, chống đói lúc tuyệt vọng." },
-              { id: "init-2", name: "Dao Gọt Trái Cây Cũ", rank: "E", type: "WEAPON", icon: "🔪", desc: "Vũ khí thô sơ nhất để tự vệ." }
-            ],
-            quests: DEFAULT_SYSTEM_QUESTS
-          };
-        }
-
-        userProfile.role = "reader";
-        if (!userProfile.title) userProfile.title = "Thực Thể Ký Tự";
-
-        saveCurrentAccount();
-
-        const accBtn = document.getElementById('account-status-btn');
-        if (accBtn) accBtn.textContent = `👤 ${currentUsername}`;
-        const profId = document.getElementById('profile-account-id');
-        if (profId) profId.textContent = `ID: ${currentUsername}`;
-
-        closeModals();
-        applyUserRole();
-        showSystemAlert("ĐĂNG NHẬP THÀNH CÔNG", `Chào mừng [${currentUsername}] vào hệ thống!`);
-        renderHome();
-      } catch (err) {
-        console.error("Lỗi đăng nhập:", err);
-        closeModals();
-        renderHome();
-      }
-    }
-
-    novels.forEach(n => {
-      if (!n.characters) n.characters = [];
-      if (!n.updatedAt) n.updatedAt = "2026-10-09";
-    });
-
-    let selectedNovelIndex = 0;
-    let selectedChapterIndex = 0;
-    let isEditingStory = false;
-    let editingChapterIndex = null;
-    let editingCharIndex = null;
-    let isReversedOrder = false;
-    
-    let currentFilterStatus = "ALL";
-    let selectedTag = "ALL";
-    let searchQuery = "";
-    let sortMode = "NEWEST_UPDATE";
-
-    let inventoryTab = "ALL";
-    let questTab = "ALL";
-    let isZen = false;
-
-    const COOLDOWN_DURATION = 10 * 60 * 1000;
-    let lastLootTimestamp = parseInt(localStorage.getItem('my_last_loot_ts')) || 0;
-    let cooldownTimerInterval = null;
-
-    function applyUserRole() {
-      const btn = document.getElementById('role-toggle-btn');
-      if (userProfile.role === 'admin') {
-        document.body.classList.remove('is-reader');
-        btn.textContent = "👑 Tác Giả";
-        btn.classList.remove('reader');
-      } else {
-        document.body.classList.add('is-reader');
-        btn.textContent = "📖 Độc Giả";
-        btn.classList.add('reader');
-      }
-    }
-
-    function toggleUserRole() {
-      userProfile.role = (userProfile.role === 'admin') ? 'reader' : 'admin';
-      applyUserRole();
-      saveCurrentAccount();
     }
 
     function saveDB() {
@@ -3042,6 +3095,7 @@ Quy tắc nhập vai:
       }
     }
 
+    // 11. KHỞI CHẠY HỆ THỐNG
     loadLocalAccountProfile();
     renderHome();
     startCooldownTicker();
