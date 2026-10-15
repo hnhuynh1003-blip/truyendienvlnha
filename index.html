@@ -1821,14 +1821,14 @@ Quy tắc phản hồi:
       if (res.error) {
         chatHistories[requestChatKey].push({ role: 'system', text: `⚠️ [LỖI HỆ THỐNG]: ${res.error}` });
         saveChatHistories();
-        renderChatMessages(charId);
+        if (document.getElementById('chat-character-selector').value === charId) renderChatMessages(charId);
         return;
       }
 
       if (res.text) {
         chatHistories[requestChatKey].push({ role: 'model', text: res.text });
         saveChatHistories();
-        renderChatMessages(charId);
+        if (document.getElementById('chat-character-selector').value === charId) renderChatMessages(charId);
       }
     }
 
@@ -2022,7 +2022,7 @@ Quy tắc phản hồi:
         if (res.text) {
           chatHistories[giftChatKey].push({ role: 'model', text: res.text });
           saveChatHistories();
-          renderChatMessages(char.id);
+          if (document.getElementById('chat-character-selector').value === char.id) renderChatMessages(char.id);
         }
       }
     }
