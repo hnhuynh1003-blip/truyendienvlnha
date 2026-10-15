@@ -838,7 +838,7 @@
             <button class="phone-back-btn" onclick="phoneHome()">‹</button>
             <span>Nhân Vật & Linh Hồn</span>
           </div>
-          <button class="btn" style="padding: 2px 7px; font-size: 10px; color: var(--neon); border-color: var(--neon);" onclick="openAddCharacterModal()">+ Thêm</button>
+          <button class="btn admin-only" style="padding: 2px 7px; font-size: 10px; color: var(--neon); border-color: var(--neon);" onclick="openAddCharacterModal()">+ Thêm</button>
         </div>
 
         <div style="margin-bottom: 8px;">
@@ -914,6 +914,7 @@
           <button class="btn" style="width:100%; font-size:10px;" onclick="configureAIKeyPrompt()">🔑 Cài đặt / Đổi Gemini API Key</button>
           <button class="btn btn-primary" style="width:100%; font-size:10px;" onclick="testGeminiAPIConnection()">🔍 Kiểm Tra Kết Nối AI (Test Key)</button>
           <div id="ai-current-model-info" style="font-size:9px; color:#94a3b8; text-align:center;">Model: Đang tự động dò tìm</div>
+      <button class="btn" style="width:100%;font-size:10px;" onclick="importLegacyChatsToCurrentStory()">📥 Nhập lịch sử chat cũ (có xác nhận)</button>
         </div>
       </div>
 
@@ -1096,6 +1097,14 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
+    // ?sandbox=1: client-only testing, NEVER writes to production Firestore.
+    const IS_SANDBOX_MODE = new URLSearchParams(window.location.search).get('sandbox') === '1';
+    if (IS_SANDBOX_MODE) {
+      const banner = document.createElement('div');
+      banner.textContent = '🧪 SANDBOX — Dữ liệu thử nghiệm cục bộ, không đồng bộ máy chủ';
+      banner.style.cssText = 'position:sticky;top:0;z-index:9999;text-align:center;background:#78350f;color:#fff;padding:5px;font-size:12px;';
+      document.body.prepend(banner);
+    }
     const docRef = db.collection("studio_data").doc("main_library");
 
     const MASTER_LOOT_TABLE = [
@@ -1163,8 +1172,8 @@
       }
     ];
 
-    let novels = JSON.parse(localStorage.getItem('my_novels_library_db')) || initialNovels;
-    let currentUsername = localStorage.getItem('my_current_logged_user') || "";
+    let novels = JSON.parse(localStorage.getItem(IS_SANDBOX_MODE ? 'dudu-sandbox-library' : 'my_novels_library_db')) || initialNovels;
+    let currentUsername = localStorage.getItem(IS_SANDBOX_MODE ? 'dudu-sandbox-current-user' : 'my_current_logged_user') || "";
     
     let userProfile = {
       username: "guest",
@@ -1208,7 +1217,7 @@
 
     // Browser-local account/story separation (not a security boundary).
     function scopedLocalKey(kind, storyId = 'global') {
-      return 'dudu-v2:' + encodeURIComponent(currentUsername || 'guest')
+      return (IS_SANDBOX_MODE ? 'dudu-sandbox-v2:' : 'dudu-v2:') + encodeURIComponent(currentUsername || 'guest')
         + ':' + encodeURIComponent(storyId) + ':' + kind;
     }
     function chatKey(charId, storyId = activeChatNovelId || (novels[selectedNovelIndex] || {}).id) {
@@ -1325,7 +1334,7 @@
     function saveCurrentAccount() {
       if (!currentUsername) return;
 
-      const localKey = `profile_${currentUsername}`;
+      const localKey = IS_SANDBOX_MODE ? scopedLocalKey('profile') : `profile_${currentUsername}`;
       localStorage.setItem(localKey, JSON.stringify(userProfile));
 
       const cloudData = {
@@ -1342,6 +1351,7 @@
         storyStates: userProfile.storyStates || {}
       };
 
+      if (IS_SANDBOX_MODE) { updatePhoneUI(); return; }
       try {
         db.collection("user_profiles").doc(currentUsername).set(cloudData, { merge: true })
           .catch(err => console.warn("Lỗi đồng bộ Firebase (vẫn chạy offline):", err));
@@ -1369,9 +1379,9 @@
         }
 
         currentUsername = usernameInput;
-        localStorage.setItem('my_current_logged_user', currentUsername);
+        localStorage.setItem(IS_SANDBOX_MODE ? 'dudu-sandbox-current-user' : 'my_current_logged_user', currentUsername);
 
-        const localKey = `profile_${currentUsername}`;
+        const localKey = IS_SANDBOX_MODE ? scopedLocalKey('profile') : `profile_${currentUsername}`;
         const saved = localStorage.getItem(localKey);
         userProfile = null;
 
@@ -1424,7 +1434,7 @@
       if (!currentUsername) {
         setTimeout(openAuthModal, 600);
       } else {
-        const localKey = `profile_${currentUsername}`;
+        const localKey = IS_SANDBOX_MODE ? scopedLocalKey('profile') : `profile_${currentUsername}`;
         const saved = localStorage.getItem(localKey);
         if (saved) {
           try { userProfile = JSON.parse(saved); } catch (e) {}
@@ -1441,7 +1451,7 @@
         if (profId) profId.textContent = `ID: ${currentUsername}`;
         
         const requestedUsername = currentUsername;
-        db.collection("user_profiles").doc(requestedUsername).get().then(doc => {
+        if (!IS_SANDBOX_MODE) db.collection("user_profiles").doc(requestedUsername).get().then(doc => {
           if (currentUsername !== requestedUsername) return;
           if (doc.exists) {
             const cloudData = doc.data();
@@ -1674,6 +1684,26 @@ Quy tắc phản hồi:
     function saveChatHistories() {
       localStorage.setItem(scopedLocalKey('chats'), JSON.stringify(chatHistories));
     }
+    function importLegacyChatsToCurrentStory() {
+      let legacy;
+      try { legacy = JSON.parse(localStorage.getItem('my_chat_roleplay_histories') || '{}'); }
+      catch (_) { alert('Dữ liệu chat cũ không đọc được.'); return; }
+      const novel = novels.find(n => n.id === activeChatNovelId) || novels[selectedNovelIndex];
+      if (!novel) return;
+      const matches = (novel.characters || []).filter(c =>
+        Array.isArray(legacy[c.id]) && legacy[c.id].length && isNpcUnlocked(novel.id, c.id)
+        && (!chatHistories[chatKey(c.id, novel.id)] || !chatHistories[chatKey(c.id, novel.id)].length)
+      );
+      if (!matches.length) { alert('Không có hội thoại cũ phù hợp để nhập cho truyện đang chọn.'); return; }
+      const names = matches.map(c => c.name).join(', ');
+      if (!confirm('Lịch sử cũ không ghi rõ tài khoản và truyện. Chỉ tiếp tục nếu chắc chắn đây là chat của bạn trong ' + novel.title + '.\nNPC: ' + names + '\nNhập vào tài khoản này?')) return;
+      matches.forEach(c => {
+        chatHistories[chatKey(c.id, novel.id)] = legacy[c.id].map(m => ({ role: m.role, text: m.text }));
+      });
+      saveChatHistories();
+      renderChatDropdown();
+      alert('Đã nhập bản sao các cuộc trò chuyện. Dữ liệu cũ vẫn được giữ nguyên.');
+    }
 
     function getCombinedCharactersList() {
       const novel = novels.find(n => n.id === activeChatNovelId) || novels[selectedNovelIndex] || novels[0];
@@ -1767,8 +1797,10 @@ Quy tắc phản hồi:
       const char = chars.find(c => c.id === charId);
       const storyId = activeChatNovelId || (novels[selectedNovelIndex] || {}).id;
       if (!char || !isNpcUnlocked(storyId, charId)) return;
-      if (!chatHistories[chatKey(charId)]) chatHistories[chatKey(charId)] = [];
-      chatHistories[chatKey(charId)].push({ role: 'user', text });
+      const requestUser = currentUsername;
+      const requestChatKey = chatKey(charId, storyId);
+      if (!chatHistories[requestChatKey]) chatHistories[requestChatKey] = [];
+      chatHistories[requestChatKey].push({ role: 'user', text });
       input.value = "";
       renderChatMessages(charId);
       saveChatHistories();
@@ -1781,19 +1813,20 @@ Quy tắc phản hồi:
       container.appendChild(loadingDiv);
       container.scrollTop = container.scrollHeight;
 
-      const res = await callGeminiAIChat(char, chatHistories[chatKey(charId)]);
+      const res = await callGeminiAIChat(char, chatHistories[requestChatKey]);
+      if (currentUsername !== requestUser || activeChatNovelId !== storyId) return;
       const el = document.getElementById('chat-loading-bubble');
       if (el) el.remove();
 
       if (res.error) {
-        chatHistories[chatKey(charId)].push({ role: 'system', text: `⚠️ [LỖI HỆ THỐNG]: ${res.error}` });
+        chatHistories[requestChatKey].push({ role: 'system', text: `⚠️ [LỖI HỆ THỐNG]: ${res.error}` });
         saveChatHistories();
         renderChatMessages(charId);
         return;
       }
 
       if (res.text) {
-        chatHistories[chatKey(charId)].push({ role: 'model', text: res.text });
+        chatHistories[requestChatKey].push({ role: 'model', text: res.text });
         saveChatHistories();
         renderChatMessages(charId);
       }
@@ -1863,9 +1896,11 @@ Quy tắc phản hồi:
 
           <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:2px;">
             <button class="btn btn-gold" style="padding: 2px 7px; font-size: 9px;" onclick="openGiftModalForChar('${c.id}')">🎁 Tặng Quà</button>
-            <button class="btn btn-primary" style="padding: 2px 7px; font-size: 9px;" onclick="connectSoulAndChat('${c.id}', '${novel.id}')">⚡ Kết Nối & Chat</button>
-            <button class="btn" style="padding: 2px 6px; font-size: 9px;" onclick="openEditCharacterModal(${idx})">Sửa</button>
-            <button class="btn btn-danger" style="padding: 2px 6px; font-size: 9px;" onclick="deleteCharacterFromCodex(${idx})">Xóa</button>
+            ${isNpcUnlocked(novel.id, c.id)
+              ? `<button class="btn btn-primary" style="padding: 2px 7px; font-size: 9px;" onclick="connectSoulAndChat('${c.id}', '${novel.id}')">💬 Trò chuyện</button>`
+              : '<span style="font-size:10px; color:var(--text-dim);">🔒 Chưa mở khóa</span>'}
+            <button class="btn admin-only" style="padding: 2px 6px; font-size: 9px;" onclick="openEditCharacterModal(${idx})">Sửa</button>
+            <button class="btn btn-danger admin-only" style="padding: 2px 6px; font-size: 9px;" onclick="deleteCharacterFromCodex(${idx})">Xóa</button>
           </div>
         `;
         container.appendChild(div);
@@ -1959,6 +1994,7 @@ Quy tắc phản hồi:
       if (!char) return;
 
       const giftStory = activeChatNovelId || (novels[selectedNovelIndex] || {}).id;
+      const giftUser = currentUsername;
       if (!isNpcUnlocked(giftStory, char.id)) return;
       userProfile.inventory.splice(itemIdx, 1);
 
@@ -1980,9 +2016,11 @@ Quy tắc phản hồi:
         renderChatMessages(char.id);
 
         const giftPrompt = `Người chơi vừa tặng bạn món quà: "${item.name}" (Phẩm cấp: ${item.rank}, Mô tả: ${item.desc}). Hãy phản hồi ngắn gọn lại theo đúng tính cách của bạn.`;
-        const res = await callGeminiAIChat(char, chatHistories[chatKey(char.id)]);
+        const giftChatKey = chatKey(char.id, giftStory);
+        const res = await callGeminiAIChat(char, chatHistories[giftChatKey]);
+        if (currentUsername !== giftUser || activeChatNovelId !== giftStory) return;
         if (res.text) {
-          chatHistories[chatKey(char.id)].push({ role: 'model', text: res.text });
+          chatHistories[giftChatKey].push({ role: 'model', text: res.text });
           saveChatHistories();
           renderChatMessages(char.id);
         }
@@ -2077,6 +2115,7 @@ Quy tắc phản hồi:
     }
 
     function deleteCharacterFromCodex(idx) {
+      if (userProfile.role !== 'admin') return;
       const novel = getSelectedCodexNovel();
       if (confirm(`Bạn có chắc muốn xóa nhân vật "${novel.characters[idx].name}"?`)) {
         novel.characters.splice(idx, 1);
@@ -2280,8 +2319,13 @@ Quy tắc phản hồi:
     }
 
     function saveDB() {
-      localStorage.setItem('my_novels_library_db', JSON.stringify(novels));
+      localStorage.setItem(IS_SANDBOX_MODE ? 'dudu-sandbox-library' : 'my_novels_library_db', JSON.stringify(novels));
       saveCurrentAccount();
+      if (IS_SANDBOX_MODE) {
+        const indicator = document.getElementById('cloud-indicator');
+        if (indicator) indicator.textContent = '🧪 Sandbox';
+        return;
+      }
 
       const indicator = document.getElementById('cloud-indicator');
       if (indicator) indicator.textContent = "☁️ Đang lưu...";
@@ -2298,7 +2342,7 @@ Quy tắc phản hồi:
       });
     }
 
-    docRef.onSnapshot((doc) => {
+    if (!IS_SANDBOX_MODE) docRef.onSnapshot((doc) => {
       const indicator = document.getElementById('cloud-indicator');
       if (doc.exists) {
         const data = doc.data();
