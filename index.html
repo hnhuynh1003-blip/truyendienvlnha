@@ -3301,10 +3301,13 @@
         const edit=document.createElement('button');
         edit.type='button';edit.className='btn';edit.textContent='Sửa';
         edit.addEventListener('click',()=>openAuthorItemModal(context,item.id));
+        const clone=document.createElement('button');
+        clone.type='button';clone.className='btn';clone.textContent='Nhân bản';
+        clone.addEventListener('click',()=>openAuthorItemModal(context,item.id,true));
         const archive=document.createElement('button');
         archive.type='button';archive.className='btn';archive.textContent='Lưu trữ';
         archive.addEventListener('click',()=>archiveAuthorItem(context,item.id));
-        row.append(name,edit,archive);container.append(row);
+        row.append(name,edit,clone,archive);container.append(row);
       }
     }
     function archiveAuthorItem(context,itemId){
@@ -3317,7 +3320,7 @@
         if(context==='chapter')renderChapterStoryItemLinks();
       }
     }
-    function openAuthorItemModal(context,itemId=null){
+    function openAuthorItemModal(context,itemId=null,duplicate=false){
       if(!canEditStories()||!['story','chapter'].includes(context))return;
       const novel=novels[selectedNovelIndex];
       if(!novel)return;
@@ -3328,11 +3331,12 @@
       const chapterId=context==='chapter'?chapter.id:null;
       const original=itemId?(novel.specialItems||[]).find(i=>i.id===itemId):null;
       if(itemId&&(!original||original.chapterId!==chapterId||original.storyId!==novel.id))return;
-      editingAuthorItemId=itemId;
+      editingAuthorItemId=duplicate?null:itemId;
       editingAuthorItemStoryId=novel.id;
       editingAuthorItemChapterId=chapterId;
       authorItemEditorContext=context;
-      document.getElementById('author-item-heading').textContent=itemId?'✏️ Sửa kỷ vật':'🎁 Tạo vật phẩm '+(context==='story'?'truyện':'chương');
+      document.getElementById('author-item-heading').textContent=duplicate?'🎁 Nhân bản vật phẩm'
+        :itemId?'✏️ Sửa kỷ vật':'🎁 Tạo vật phẩm '+(context==='story'?'truyện':'chương');
       document.getElementById('author-item-name').value=original?.name||'';
       document.getElementById('author-item-rank').value=original?.rank||'E';
       document.getElementById('author-item-type').value=original?.type||'ITEM';
