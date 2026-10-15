@@ -14,7 +14,7 @@ async function main() {
     if (!filepath.startsWith(root + path.sep)) { res.writeHead(403).end(); return; }
     fs.readFile(filepath, (err, bytes) => {
       if (err) { res.writeHead(404).end(); return; }
-      res.writeHead(200, { 'content-type': filepath.endsWith('.js') ? 'text/javascript' : 'text/html; charset=utf-8' }).end(bytes);
+      res.writeHead(200, { 'content-type': filepath.endsWith('.js') ? 'text/javascript' : filepath.endsWith('.css') ? 'text/css; charset=utf-8' : 'text/html; charset=utf-8' }).end(bytes);
     });
   });
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
@@ -1076,6 +1076,81 @@ async function main() {
         label:DuduStoryDates.display(getNovelLatestDate(story))};
     });
     assert.deepEqual(storyDatesBrowser,{day:'2026-10-15',label:'15/10/2026'});
+
+    // V11 Cyber Phone: accessible shortcut navigation, responsive layout and
+    // functional button feedback. Fake Firebase; absolutely no live writes.
+    await page.setViewportSize({width:1280,height:800});
+    const phoneDesktop=await page.evaluate(()=>{
+      const phone=document.getElementById('cyber-phone');
+      if(phone.style.display==='flex')togglePhone();
+      togglePhone();
+      const fab=document.getElementById('phone-fab');
+      const shortcuts=[...document.querySelectorAll('#cyber-phone .app-icon')];
+      const style=getComputedStyle(phone);
+      const styleButton=getComputedStyle(shortcuts[0]);
+      return {
+        opened:phone.style.display==='flex',
+        themed:document.body.classList.contains('dudu-phone-v11'),
+        ariaExpanded:fab.getAttribute('aria-expanded'),
+        ariaHidden:phone.getAttribute('aria-hidden'),
+        clock:document.getElementById('phone-clock').textContent,
+        appCount:shortcuts.length,
+        nativeButtons:shortcuts.every(x=>x.tagName==='BUTTON'),
+        phoneWidth:phone.getBoundingClientRect().width,
+        cardRadius:styleButton.borderRadius,
+        phoneBorder:style.borderTopColor,
+        writes:window.__firestoreWrites.length
+      };
+    });
+    assert.equal(phoneDesktop.opened,true);
+    assert.equal(phoneDesktop.themed,true);
+    assert.equal(phoneDesktop.ariaExpanded,'true');
+    assert.equal(phoneDesktop.ariaHidden,'false');
+    assert.match(phoneDesktop.clock,/^\d{2}:\d{2}$/);
+    assert.equal(phoneDesktop.appCount,8);
+    assert.equal(phoneDesktop.nativeButtons,true);
+    assert.ok(phoneDesktop.phoneWidth>=350&&phoneDesktop.phoneWidth<=390);
+    assert.notEqual(phoneDesktop.cardRadius,'0px');
+    assert.notEqual(phoneDesktop.phoneBorder,'rgb(51, 65, 85)',
+      'Phone must use new lavender border');
+    await page.getByRole('button',{name:'Mở Kho Đồ'}).click();
+    const openedInventory=await page.evaluate(()=>({
+      inventory:document.getElementById('phone-app-inventory').style.display,
+      home:document.getElementById('phone-home-screen').style.display
+    }));
+    assert.equal(openedInventory.inventory,'flex');
+    assert.equal(openedInventory.home,'none');
+    await page.getByRole('button',{name:'Về màn hình chính của Cyber Phone'}).click();
+    assert.equal(await page.locator('#phone-home-screen').evaluate(x=>x.style.display),'flex');
+    await page.getByRole('button',{name:'Mở Liên Lạc'}).click();
+    assert.equal(await page.locator('#phone-app-chat').evaluate(x=>x.style.display),'flex');
+    await page.keyboard.press('Escape');
+    assert.equal(await page.locator('#cyber-phone').evaluate(x=>x.style.display),'none');
+    assert.equal(await page.locator('#phone-fab').getAttribute('aria-expanded'),'false');
+    assert.equal(await page.locator('#phone-fab').evaluate(x=>document.activeElement===x),true);
+    for(const [width,height] of [[375,812],[320,640]]) {
+      await page.setViewportSize({width,height});
+      const layout=await page.evaluate(()=>{
+        togglePhone();
+        const phone=document.getElementById('cyber-phone');
+        const rect=phone.getBoundingClientRect();
+        const screen=phone.querySelector('.phone-screen').getBoundingClientRect();
+        return {width:innerWidth,height:innerHeight,
+          left:rect.left,right:rect.right,top:rect.top,bottom:rect.bottom,
+          cardW:rect.width,screenW:screen.width,homeOverflow:
+            document.getElementById('phone-home-screen').scrollWidth-
+            document.getElementById('phone-home-screen').clientWidth};
+      });
+      assert.ok(layout.left>=0&&layout.right<=width+1,
+        'Cyber Phone must fit narrow viewport width: '+JSON.stringify(layout));
+      assert.ok(layout.top>=0&&layout.bottom<=height+1,
+        'Cyber Phone must fit viewport height: '+JSON.stringify(layout));
+      assert.ok(layout.screenW>200,'Cyber Phone content must remain usable');
+      assert.ok(layout.homeOverflow<=1,'App icons must not cause horizontal overflow');
+      await page.getByRole('button',{name:'Đóng Cyber Phone'}).click();
+      assert.equal(await page.locator('#cyber-phone').evaluate(x=>x.style.display),'none');
+    }
+    await page.setViewportSize({width:1280,height:800});
 
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
     console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));
