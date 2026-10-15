@@ -1,0 +1,72 @@
+/* V21 player-avatar conflict rehearsal: intentionally sandbox-only. */
+body.dudu-phone-v11 .dudu-avatar-v21-demo{
+ margin:15px 0 3px;padding:12px;
+ border:1px solid #9184c488;border-radius:14px;
+ background:linear-gradient(155deg,#292644,#182b40);
+}
+body.dudu-phone-v11 .dudu-avatar-v21-demo p{
+ margin:4px 0 11px;color:#c9c8dd;font-size:10px;
+ line-height:1.55;
+}
+body.dudu-phone-v11 .dudu-avatar-v21-tabs{
+ display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;
+}
+body.dudu-phone-v11 .dudu-avatar-v21-tabs>button{
+ appearance:none;border:1px solid #a398ce;
+ background:linear-gradient(145deg,#614a85,#305875);
+ border-radius:10px;min-height:34px;
+ color:#f6edff;padding:7px 10px;
+ font-size:10px;font-weight:700;cursor:pointer;
+ flex:1 1 130px;
+}
+body.dudu-phone-v11 .dudu-avatar-v21-tabs>button:hover:not(:disabled){
+ filter:brightness(1.13);
+}
+body.dudu-phone-v11 .dudu-avatar-v21-tabs>button:disabled{
+ opacity:.45;cursor:not-allowed;
+}
+body.dudu-phone-v11 .dudu-avatar-v21-tabs>button:focus-visible{
+ outline:2px solid #a9f1fa;outline-offset:2px;
+}
+body.dudu-phone-v11 #player-avatar-sync-review-v21[hidden]{
+ display:none !important;
+}
+body.dudu-phone-v11 #player-avatar-sync-review-v21:not([hidden]){
+ display:block;margin-top:12px;padding:10px;
+ border:1px solid #8e78bb;border-radius:12px;
+ background:#121b32a1;
+}
+body.dudu-phone-v11 .dudu-avatar-v21-status{
+ color:#f9c6e0;font-size:11px;font-weight:800;
+ margin:3px 0 8px;
+}
+body.dudu-phone-v11 .dudu-avatar-v21-compare{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:8px;
+}
+body.dudu-phone-v11 .dudu-avatar-v21-compare>div{
+ border:1px solid #7779a05e;border-radius:10px;
+ background:#26324a;padding:9px;min-width:0;
+}
+body.dudu-phone-v11 .dudu-avatar-v21-compare strong{
+ display:block;font-size:10px;color:#c6eef6;margin-bottom:5px;
+}
+body.dudu-phone-v11 .dudu-avatar-v21-compare span{
+ font-size:10px;color:#e7dcf7;
+ overflow-wrap:anywhere;line-height:1.45;
+}
+body.dudu-phone-v11 .dudu-avatar-v21-result{
+ color:#cbd7ee;font-size:10px;
+ line-height:1.6;padding:8px 0;
+}
+@media(max-width:360px){
+ body.dudu-phone-v11 .dudu-avatar-v21-compare{
+  grid-template-columns:minmax(0,1fr);
+ }
+ body.dudu-phone-v11 .dudu-avatar-v21-demo{padding:9px;}
+}
+@media(prefers-reduced-motion:reduce){
+ body.dudu-phone-v11 .dudu-avatar-v21-demo *{
+  animation:none!important;transition:none!important;
+ }
+}
