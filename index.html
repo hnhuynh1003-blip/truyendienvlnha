@@ -1038,7 +1038,7 @@
         <button type="button" class="ai-btn" onclick="handleAIAssist('continue')">✨ Viết tiếp</button>
         <button type="button" class="ai-btn" onclick="handleAIAssist('polish')">✍️ Trau chuốt</button>
         <button type="button" class="ai-btn" onclick="handleAIAssist('ideas')">💡 Gợi ý Plot</button>
-        <button type="button" class="ai-btn" style="border-color:#64748b; color:#94a3b8;" onclick="configureAIKeyPrompt()">⚙️ Cài Key</button>
+        <button type="button" class="ai-btn" style="border-color:#64748b; color:#94a3b8;" onclick="testGeminiAPIConnection()">🔒 AI bảo mật</button>
         <span id="ai-status-loader" style="display:none; font-size:10px; color:var(--neon);">Đang suy nghĩ...</span>
       </div>
 
@@ -1523,174 +1523,71 @@
     }
 
     // ==========================================
-    // CƠ CHẾ DÒ TÌM VÀ GỌI GEMINI TỰ ĐỘNG CHUYỂN MODEL KHI 503 / 429
+    // GEMINI AI — CHỈ GỌI FIREBASE CLOUD FUNCTIONS ĐÃ XÁC THỰC
     // ==========================================
-    function configureAIKeyPrompt() {
-      const current = localStorage.getItem('my_gemini_api_key') || '';
-      const key = prompt("Nhập Google Gemini API Key của bạn (Lấy miễn phí tại aistudio.google.com):", current);
-      if (key !== null) {
-        localStorage.setItem('my_gemini_api_key', key.trim());
-        localStorage.removeItem('my_gemini_detected_model');
-        alert(key.trim() ? "Đã lưu API Key thành công!" : "Đã xóa API Key.");
-        updateActiveModelInfo();
-      }
-    }
-
     function updateActiveModelInfo() {
       const el = document.getElementById('ai-current-model-info');
       if (!el) return;
-      const model = localStorage.getItem('my_gemini_detected_model') || 'Tự động luân phiên';
-      const key = localStorage.getItem('my_gemini_api_key');
-      el.textContent = key ? `Model: ${model}` : 'Chưa cấu hình API Key';
+      el.textContent = DuduAI.isConfigured()
+        ? 'Gemini qua máy chủ bảo mật · giới hạn 25 lượt/ngày'
+        : 'AI chưa triển khai: tác giả cần cấu hình Cloud Functions và App Check.';
     }
 
     async function testGeminiAPIConnection() {
-      const apiKey = localStorage.getItem('my_gemini_api_key');
-      if (!apiKey) {
-        alert("Bạn chưa nhập Gemini API Key!");
+      const result = await DuduAI.status();
+      if (result.error) {
+        alert('⚠️ ' + result.error);
         return;
       }
-
-      showSystemAlert("ĐANG KẾT NỐI...", "Đang kiểm tra kết nối với Google AI...");
-      let successModel = null;
-
-      for (let m of AI_FAILOVER_MODELS) {
-        try {
-          const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${apiKey}`;
-          const res = await fetch(endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: "hi" }] }] })
-          });
-          const data = await res.json();
-          if (res.status === 200 && data.candidates) {
-            successModel = m;
-            break;
-          }
-        } catch(e) {}
-      }
-
-      if (successModel) {
-        localStorage.setItem('my_gemini_detected_model', successModel);
-        updateActiveModelInfo();
-        alert(`✅ KẾT NỐI THÀNH CÔNG!\nModel hoạt động tốt nhất hiện tại: ${successModel}`);
-      } else {
-        alert(`❌ Không thể kết nối. Vui lòng kiểm tra lại Key trên aistudio.google.com.`);
-      }
+      alert('✅ Máy chủ AI đã kết nối. Bạn còn ' + result.remaining +
+        '/' + result.dailyLimit + ' lượt AI hôm nay. Ngân sách hệ thống còn ' +
+        result.globalRemaining + ' lượt.');
     }
 
     async function callGeminiAIChat(char, chatHistory) {
-      let apiKey = localStorage.getItem('my_gemini_api_key');
-      if (!apiKey) {
-        return { error: "Bạn chưa nhập Gemini API Key. Hãy vào Cài Đặt [⚙️] trong Cyber Phone để nhập Key!" };
-      }
-
       const loader = document.getElementById('ai-status-loader');
       if (loader) loader.style.display = 'inline';
-
-      const novel = novels.find(n => n.id === activeChatNovelId) || novels[selectedNovelIndex] || novels[0];
-      const unlocked = getStoryProgress(novel.id).collectedCharacters;
-      const charAffinity = unlocked[char.id] ? unlocked[char.id].affinity || 10 : 10;
-
-      // PROMPT BẢO ĐẢM TÍNH CÁCH NHẬP VAI KHÔNG PHÁ VỠ VỎ BỌC
-      const systemInstruction = `Bạn đang nhập vai hoàn toàn vào nhân vật "${char.name}" trong tiểu thuyết "${novel.title}".
-Hồ sơ nhân vật:
-- Vai trò: ${char.role || 'Chưa rõ'}
-- Trạng thái: ${char.status || 'Chưa rõ'}
-- Thiết lập tính cách & Ký ức: ${char.note || 'Không có'}
-- Mức độ gắn kết linh hồn với người chơi: ${charAffinity}% (Càng cao càng tin tưởng, dịu dàng hoặc cởi mở).
-Người đang nhắn tin với bạn là nhân vật chính (người chơi).
-Quy tắc phản hồi:
-1. Giữ nguyên tính cách, cảm xúc, phong thái và ký ức nhân vật trong truyện.
-2. Trả lời tự nhiên, ngắn gọn (1 - 3 câu) như đang gửi tin nhắn qua thiết bị cầm tay.
-3. Tuyệt đối không xưng là AI hay trợ lý ảo, không phá vỡ vỏ bọc nhân vật.`;
-
-      const recentHistory = chatHistory
-        .filter(m => m.role === 'user' || m.role === 'model')
-        .slice(-8)
-        .map(msg => ({
-          role: msg.role === 'user' ? 'user' : 'model',
-          parts: [{ text: msg.text }]
-        }));
-
-      if (recentHistory.length > 0 && recentHistory[0].role === 'user') {
-        recentHistory[0].parts[0].text = `[Chỉ dẫn hệ thống: ${systemInstruction}]\n\n` + recentHistory[0].parts[0].text;
-      }
-
-      // THỬ TẤT CẢ CÁC MODEL: NẾU GẶP 503, 429 HOẶC 404 THÌ TỰ ĐỘNG CHUYỂN TIẾP NGAY
-      let lastErrorMessage = "";
-
-      for (let m of AI_FAILOVER_MODELS) {
-        try {
-          const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${apiKey}`;
-          const response = await fetch(endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: recentHistory })
-          });
-
-          const data = await response.json();
-
-          // NẾU GẶP 503 (QUÁ TẢI), 429 (HẾT LƯỢT) HOẶC 404 -> CHUYỂN TIẾP NGAY MODEL TIẾP THEO
-          if (response.status !== 200 || data.error) {
-            lastErrorMessage = data.error ? data.error.message : `Lỗi ${response.status}`;
-            console.warn(`Model ${m} gặp sự cố (${response.status}), tự động nhảy sang model khác...`);
-            continue;
-          }
-
-          const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (resultText) {
-            if (loader) loader.style.display = 'none';
-            localStorage.setItem('my_gemini_detected_model', m);
-            updateActiveModelInfo();
-            return { text: resultText.trim() };
-          }
-        } catch (err) {
-          console.warn(`Lỗi mạng khi gọi ${m}:`, err);
+      try {
+        const novel = novels.find(n => n.id === activeChatNovelId) || novels[selectedNovelIndex] || novels[0];
+        const unlocked = getStoryProgress(novel.id).collectedCharacters;
+        const charAffinity = unlocked[char.id] ? unlocked[char.id].affinity || 10 : 10;
+        const instruction = [
+          'Bạn đang nhập vai hoàn toàn vào nhân vật "' + char.name + '" trong tiểu thuyết "' + novel.title + '".',
+          'Hồ sơ nhân vật:',
+          '- Vai trò: ' + (char.role || 'Chưa rõ'),
+          '- Trạng thái: ' + (char.status || 'Chưa rõ'),
+          '- Thiết lập tính cách và ký ức: ' + (char.note || 'Không có'),
+          '- Mức độ gắn kết linh hồn: ' + charAffinity + '%.',
+          'Người đang nhắn tin với bạn là người chơi.',
+          'Giữ đúng tính cách và ký ức của nhân vật trong bối cảnh hư cấu.',
+          'Trả lời tự nhiên, ngắn gọn (1-3 câu) như tin nhắn, hạn chế thoát vai.'
+        ].join('\n');
+        const messages = chatHistory
+          .filter(m => (m.role === 'user' || m.role === 'model') && typeof m.text === 'string')
+          .slice(-8)
+          .map(m => ({ role: m.role, text: m.text }));
+        if (!messages.length || messages[messages.length - 1].role !== 'user') {
+          return {error:'Chưa có tin nhắn mới để gửi tới NPC.'};
         }
+        return await DuduAI.generate('chat',instruction,messages);
+      } finally {
+        if (loader) loader.style.display = 'none';
       }
-
-      if (loader) loader.style.display = 'none';
-      return { error: `Toàn bộ server AI đang quá tải (${lastErrorMessage}). Vui lòng bấm gửi lại sau vài giây!` };
     }
 
     async function callGeminiAI(systemPrompt, userText) {
-      let apiKey = localStorage.getItem('my_gemini_api_key');
-      if (!apiKey) {
-        alert("Vui lòng vào Cyber Phone -> Cài Đặt [⚙️] để nhập Google Gemini API Key!");
-        return null;
-      }
-
       const loader = document.getElementById('ai-status-loader');
       if (loader) loader.style.display = 'inline';
-
-      for (let m of AI_FAILOVER_MODELS) {
-        try {
-          const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${apiKey}`;
-          const response = await fetch(endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ role: 'user', parts: [{ text: `${systemPrompt}\n\n[Dữ liệu]:\n${userText}` }] }]
-            })
-          });
-
-          const data = await response.json();
-          if (response.status !== 200 || data.error) continue;
-
-          const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (resultText) {
-            if (loader) loader.style.display = 'none';
-            localStorage.setItem('my_gemini_detected_model', m);
-            updateActiveModelInfo();
-            return resultText;
-          }
-        } catch (err) {}
+      try {
+        const result = await DuduAI.generate('assist',systemPrompt,[{role:'user',text:userText}]);
+        if (result.error) {
+          alert('⚠️ ' + result.error);
+          return null;
+        }
+        return result.text || null;
+      } finally {
+        if (loader) loader.style.display = 'none';
       }
-
-      if (loader) loader.style.display = 'none';
-      alert("❌ Máy chủ AI đang bận. Hãy thử lại sau vài giây!");
-      return null;
     }
 
     async function handleAIAssist(type) {
