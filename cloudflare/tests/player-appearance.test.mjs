@@ -73,7 +73,7 @@ test('Worker feature kill switch and per-UID Durable Object binding remain OFF',
  assert.match(worker,/env\.PLAYER_AVATAR_SYNC_ENABLED!=='true'/);
  assert.match(worker,/const identity=await verifyFirebaseIdToken\(req,env\.PROJECT_ID\)/);
  assert.match(worker,/getByName\('player-avatar-'\+identity\.uid\)/);
- assert.match(worker,/normalizeAppearanceSave\(body,identity\)/);
+ assert.match(worker,/normalizeAppearanceSave\(body,identity,awards\)/);
  assert.match(worker,/store\.save\(approved,Date\.now\(\)\)/);
  assert.match(config,/tag = "v3-player-appearance-sqlite"/);
  assert.match(config,/name = "DUDU_PLAYER_APPEARANCE"/);
