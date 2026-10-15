@@ -15,7 +15,7 @@ test('browser never contains direct Gemini calls or asks end users for a Gemini 
   assert.match(proxy,/localStorage\.removeItem\('my_gemini_api_key'\)/);
   assert.match(proxy,/getIdToken\(\)/,'Client must send Firebase ID token');
   assert.match(proxy,/Bearer /);
-  assert.match(proxy,/const WORKER_URL = '';/,'Client stays disabled until Worker URL is reviewed');
+  assert.match(proxy,/const WORKER_URL = 'https:\/\/dudu-ai-staging\.dudu-studio-ai\.workers\.dev';/,'Only the confirmed public Cloudflare endpoint is embedded');
   assert.doesNotMatch(proxy,/httpsCallable|ReCaptchaEnterpriseProvider|gemini-api-key/i);
 });
 
