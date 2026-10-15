@@ -14,7 +14,7 @@ async function main() {
     if (!filepath.startsWith(root + path.sep)) { res.writeHead(403).end(); return; }
     fs.readFile(filepath, (err, bytes) => {
       if (err) { res.writeHead(404).end(); return; }
-      res.writeHead(200, { 'content-type': filepath.endsWith('.js') ? 'text/javascript' : filepath.endsWith('.css') ? 'text/css; charset=utf-8' : 'text/html; charset=utf-8' }).end(bytes);
+      res.writeHead(200, { 'content-type': filepath.endsWith('.js') ? 'text/javascript' : filepath.endsWith('.css') ? 'text/css; charset=utf-8' : filepath.endsWith('.webp') ? 'image/webp' : 'text/html; charset=utf-8' }).end(bytes);
     });
   });
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
@@ -1127,6 +1127,78 @@ async function main() {
     assert.equal(animeV14.oldPortraitRestored,true);
     assert.equal(animeV14.countPreserved,true);
     assert.equal(animeV14.writes,0);
+
+    // V15: fullscreen portraits use a locally bundled high-res WebP,
+    // restore keyboard focus and cannot be opened for locked reader NPCs.
+    await page.setViewportSize({width:375,height:812});
+    const portraitV15=await page.evaluate(()=>{
+      const story=novels[selectedNovelIndex];
+      const originalCharacters=JSON.stringify(story.characters);
+      const originalRole=userProfile.role;
+      const beforeWrites=window.__firestoreWrites.length;
+      userProfile.role='admin';applyUserRole();
+      const npc=story.characters.find(c=>c?.id&&!c.archived);
+      if(!npc)return {missing:true};
+      npc.portraitAnimeId='anime-moon-blue';
+      if(document.getElementById('cyber-phone').style.display!=='flex')togglePhone();
+      openPhoneApp('codex');
+      document.getElementById('codex-novel-selector').value=story.id;
+      renderCodexList();
+      const view=document.querySelector('#codex-container .dudu-npc-v12-card .npc-v15-view-button');
+      const actionExists=!!view;
+      view?.click();
+      const modal=document.getElementById('npc-v15-viewer');
+      const stage=modal.querySelector('.npc-v15-stage');
+      const rect=stage.getBoundingClientRect();
+      return {missing:false,actionExists,
+        open:modal.style.display==='flex',
+        modalAria:modal.getAttribute('aria-hidden'),
+        named:document.getElementById('npc-v15-title').textContent===npc.name,
+        focus:document.activeElement?.id,
+        fit:rect.left>=0&&rect.right<=innerWidth+1&&rect.top>=0&&rect.bottom<=innerHeight+1,
+        viewerPortrait:document.getElementById('npc-v15-image').dataset.npcId,
+        npcId:npc.id,beforeWrites,originalCharacters,originalRole};
+    });
+    assert.equal(portraitV15.missing,false);
+    assert.equal(portraitV15.actionExists,true);
+    assert.equal(portraitV15.open,true);
+    assert.equal(portraitV15.modalAria,'false');
+    assert.equal(portraitV15.named,true);
+    assert.equal(portraitV15.focus,'npc-v15-close');
+    assert.equal(portraitV15.fit,true);
+    assert.equal(portraitV15.viewerPortrait,portraitV15.npcId);
+    await page.waitForFunction(()=>
+      document.getElementById('npc-v15-image')?.style.backgroundImage
+        .includes('assets/npc/concepts/female-anime-candidates-v15.webp'),
+      {timeout:10000});
+    await page.keyboard.press('Escape');
+    assert.equal(await page.locator('#npc-v15-viewer').getAttribute('aria-hidden'),'true');
+    assert.equal(await page.locator('#npc-v15-viewer').evaluate(x=>x.style.display),'none');
+    assert.equal(await page.evaluate(()=>document.activeElement?.classList.contains('npc-v15-view-button')),true);
+    const rejectedView=await page.evaluate(()=>{
+      const story=novels[selectedNovelIndex];
+      const npc=story.characters.find(x=>x?.id&&!x.archived);
+      const progress=getStoryProgress(story.id);
+      const before=progress.collectedCharacters[npc.id];
+      delete progress.collectedCharacters[npc.id];
+      userProfile.role='reader';applyUserRole();
+      const result=openNpcPortraitViewer(npc,story.id);
+      const hidden=document.getElementById('npc-v15-viewer').style.display==='none';
+      if(before)progress.collectedCharacters[npc.id]=before;
+      return {result,hidden};
+    });
+    assert.equal(rejectedView.result,false);
+    assert.equal(rejectedView.hidden,true);
+    const finalV15=await page.evaluate((data)=>{
+      const story=novels[selectedNovelIndex];
+      story.characters=JSON.parse(data.originalCharacters);
+      userProfile.role=data.originalRole;applyUserRole();
+      renderCodexList();
+      return {writes:window.__firestoreWrites.length-data.beforeWrites};
+    },portraitV15);
+    assert.equal(finalV15.writes,0,'Opening portraits cannot write to Firestore');
+    await page.evaluate(()=>{if(document.getElementById('cyber-phone').style.display==='flex')togglePhone();});
+
 
     const storyDatesBrowser=await page.evaluate(()=>{
       const story={updatedAt:'2026-10-15',
