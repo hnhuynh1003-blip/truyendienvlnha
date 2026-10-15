@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {cleanId,normalizedPublication,normalizedPrivateDraft,parseScopedIds,isChapterMature,MIN_CHAPTER_ELAPSED_MS}
+import {cleanId,normalizedPublication,normalizedPrivateDraft,normalizedDraftApproval,parseScopedIds,isChapterMature,MIN_CHAPTER_ELAPSED_MS}
   from '../src/collectible-rules.mjs';
 
 const release=(overrides={})=>({
@@ -86,4 +86,25 @@ test('private draft validation rejects invalid scopes, IDs and random grants',()
     {...body,item:{...body.item,npcId:'../other'}},
     {...body,item:{...body.item,desc:''}}
   ])assert.equal(normalizedPrivateDraft(bad),null,JSON.stringify(bad));
+});
+
+test('publication approval only accepts an exact server draft version and explicit dual confirmation',()=>{
+  const valid={storyId:'story-1',itemId:'author-item-secret-1',
+    expectedUpdatedAt:1792051200000,confirmPublicRelease:true,
+    confirmRevealToOwner:true};
+  assert.deepEqual(normalizedDraftApproval(valid),
+    {storyId:valid.storyId,itemId:valid.itemId,
+      expectedUpdatedAt:valid.expectedUpdatedAt});
+  assert.ok(Object.isFrozen(normalizedDraftApproval(valid)));
+  for(const input of [
+    {...valid,confirmPublicRelease:false},
+    {...valid,confirmRevealToOwner:false},
+    {...valid,expectedUpdatedAt:0},
+    {...valid,expectedUpdatedAt:1.5},
+    {...valid,expectedUpdatedAt:'1792051200000'},
+    {...valid,itemId:'sss1'},
+    {...valid,storyId:'../other'},
+    {...valid,itemId:'author-item-bad/name'},
+    null
+  ])assert.equal(normalizedDraftApproval(input),null);
 });
