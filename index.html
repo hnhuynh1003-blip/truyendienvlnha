@@ -2350,10 +2350,11 @@
             badge.setAttribute('role','img');
             badge.setAttribute('aria-label','Avatar người chơi');
             div.prepend(badge);
-            renderPlayerAvatarV16(badge);
           }
         }
         container.appendChild(div);
+        const avatarBadge=div.querySelector('.dudu-player-chat-badge-v16');
+        if(avatarBadge)renderPlayerAvatarV16(avatarBadge);
       });
       container.scrollTop = container.scrollHeight;
     }
