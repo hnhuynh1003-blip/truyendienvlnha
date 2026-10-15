@@ -28,6 +28,7 @@
   <script src="js/npc-trust-v2-r5.js"></script>
   <script src="js/npc-persona-v2-r6.js"></script>
   <script src="js/npc-author-v2-r7.js"></script>
+  <script src="js/story-dates-v1.js"></script>
   <script src="js/loot-rules-v2.js"></script>
   <script src="js/author-items-v1.js"></script>
   <script src="js/npc-editor-v1.js"></script>
@@ -3005,7 +3006,7 @@
           novels = data.novels;
           novels.forEach(n => {
             if (!n.characters) n.characters = [];
-            if (!n.updatedAt) n.updatedAt = "2026-10-09";
+            // Missing timestamps are unknown, never backfilled with a fixed date.
           });
           localStorage.setItem('my_novels_library_db', JSON.stringify(novels));
         }
@@ -3285,11 +3286,7 @@
     }
 
     function getNovelLatestDate(novel) {
-      if (novel.chapters && novel.chapters.length > 0) {
-        const lastCh = novel.chapters[novel.chapters.length - 1];
-        return lastCh.updatedAt || lastCh.createdAt || novel.updatedAt || "2026-10-09";
-      }
-      return novel.updatedAt || "2026-10-09";
+      return DuduStoryDates.latest(novel);
     }
 
     function handleCoverFileUpload(event) {
@@ -3417,8 +3414,8 @@
       }
 
       filtered.sort((a, b) => {
-        const dateA = new Date(getNovelLatestDate(a)).getTime() || 0;
-        const dateB = new Date(getNovelLatestDate(b)).getTime() || 0;
+        const dateA = DuduStoryDates.ordering(getNovelLatestDate(a));
+        const dateB = DuduStoryDates.ordering(getNovelLatestDate(b));
 
         if (sortMode === 'NEWEST_UPDATE') return dateB - dateA;
         if (sortMode === 'OLDEST_UPDATE') return dateA - dateB;
@@ -3469,7 +3466,7 @@
               <div class="novel-desc">${escapeHtml(novel.desc || novel.title)}</div>
             </div>
             <div class="novel-meta">
-              <span style="color:var(--text-dim)">⏱ ${latestDate}</span>
+              <span style="color:var(--text-dim)">⏱ ${DuduStoryDates.display(latestDate)}</span>
               <button class="${readButtonClass}" style="padding: 3px 8px; font-size: 10px;" onclick="smartReadAction(${originalIndex}, event)">${readButtonText}</button>
             </div>
           </div>
@@ -4207,7 +4204,7 @@
       const status = document.getElementById('story-modal-status').value;
       const desc = document.getElementById('story-modal-desc').value.trim();
       const introText = document.getElementById('story-modal-intro').value.trim();
-      const nowStr = new Date().toISOString().slice(0, 10);
+      const nowStr = DuduStoryDates.localToday();
 
       if (!title) { alert("Vui lòng nhập tên truyện!"); return; }
 
@@ -4236,6 +4233,7 @@
           status,
           desc,
           coverImage: finalCover || "",
+          createdAt: nowStr,
           updatedAt: nowStr,
           introData: {
             title: "VĂN ÁN // GLITCH RECORD",
@@ -4384,7 +4382,7 @@
       // Selected IDs persist even when the available-NPC list is collapsed.
 
       const wordCount = countWords(content);
-      const nowStr = new Date().toISOString().slice(0, 10);
+      const nowStr = DuduStoryDates.localToday();
       novels[selectedNovelIndex].updatedAt = nowStr;
 
       if (editingChapterIndex !== null) {
