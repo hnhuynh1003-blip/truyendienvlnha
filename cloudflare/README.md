@@ -9,7 +9,7 @@
 - Google Gemini API key stays in **Cloudflare Secrets**, never `index.html`, localStorage or GitHub.
 - AI Disabled switch `AI_ENABLED = "false"` by default. No Gemini calls can run while disabled.
 - One SQLite-backed Durable Object serializes rate limits atomically: 25 successful admission attempts/UID/day, 200 total/day UTC, 10 s cooldown, one in-flight per UID. Same object used by all accounts to prevent race-condition overrun.
-- Selected model `gemini-2.5-flash-lite` is controlled by Worker. Input 12k characters max, 12 messages max; output max 320 tokens chat or 850 tokens author assist. `assist` requires a verified Firebase custom claim `admin:true`.
+- Selected model `gemini-3.5-flash-lite` is controlled by Worker (staging code only; deployed Worker is not updated automatically). Input 12k characters max, 12 messages max; output max 320 tokens chat or 850 tokens author assist. `assist` requires a verified Firebase custom claim `admin:true`.
 - A "use" counts when request is admitted, even if Gemini fails. Quotas apply to this Worker; provider limits and Cloudflare daily limits are separate. The Worker does **not** validate NPC unlock state server-side yet; do not assume gameplay/economy are secure.
 - This beta has JWT + quotas + origin checks; Cloudflare Turnstile and abuse reporting may be added later. Free Cloudflare Workers and free Gemini quotas are independent.
 
