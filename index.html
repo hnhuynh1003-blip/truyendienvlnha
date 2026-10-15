@@ -7,6 +7,7 @@
   
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="css/phone-ui-v11.css">
+  <link rel="stylesheet" href="css/phone-ui-v12-dossiers.css">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -896,6 +897,7 @@
           <input id="inventory-v2-search" type="search" placeholder="Tìm vật phẩm..." aria-label="Tìm trong kho đồ" oninput="renderInventory()" style="min-width:130px;flex:1;background:#111827;color:#e2e8f0;border:1px solid #334155;border-radius:6px;padding:6px;font-size:11px;"/>
           <span id="inventory-v2-count" style="font-size:10px;color:#94a3b8;"></span>
         </div>
+        <section id="inventory-v12-detail" aria-live="polite" aria-label="Chi tiết vật phẩm"></section>
         <div id="inventory-container"></div>
       </div>
 
@@ -1511,6 +1513,7 @@
     let searchQuery = "";
     let sortMode = "NEWEST_UPDATE";
     let inventoryTab = "ALL";
+    let inventoryDetailSelection = null;
     let questTab = "ALL";
     let isZen = false;
 
@@ -2398,20 +2401,46 @@
           
           </div>
         `;
-        if(IS_SANDBOX_MODE){
+        if (IS_SANDBOX_MODE) {
+          div.classList.add('dudu-npc-v12-card');
+          const unlocked = !!npcProgress && isNpcUnlocked(novel.id,c.id);
+          const view = unlocked ? DuduNpcRelationshipV2.previewRelationship(
+            npcProgress,'sandbox-user',novel.id,c.id) : null;
+          const affection = view?Math.max(0,Math.min(100,Number(view.affinity)||0)):0;
+          const trust = view?Math.max(0,Math.min(100,Number(view.relationshipV2.trust)||0)):0;
+          const stage = DuduNpcRelationStages.stage({
+            unlocked:!!view,affinity:affection,trust,
+            approvedMilestones:[],completedMilestones:[]
+          });
+          const stageLabel = {
+            LOCKED:'Chưa mở khóa',ACQUAINTED:'Quen biết',
+            FRIENDLY:'Thân thiện',TRUSTED:'Tin cậy',BONDED:'Gắn bó'
+          }[stage]||'Chưa mở khóa';
+          // Reuse all existing action buttons: a new profile view must never
+          // bypass gift permissions, unlocks or author controls.
+          const first = div.firstElementChild;
+          first.className='dudu-npc-v12-top';
+          first.innerHTML =
+            '<div class="dudu-npc-v12-portrait" data-npc-portrait="1" role="img" '+
+              'aria-label="Chân dung '+escapeHtml(c.name)+'">👤</div>'+
+            '<div class="dudu-npc-v12-summary">'+
+              '<div class="dudu-npc-v12-name">'+escapeHtml(c.name)+'</div>'+
+              '<div class="dudu-npc-v12-role">'+escapeHtml(c.role||'Chưa rõ')+'</div>'+
+              '<div class="dudu-npc-v12-status">'+escapeHtml(c.status||'Bình thường')+'</div>'+
+              '<div class="dudu-npc-v12-stage">✦ '+stageLabel+'</div>'+
+              '<div class="dudu-npc-v12-stat-row"><span>❤️ Thiện cảm</span>'+
+                '<div class="dudu-npc-v12-meter"><div class="dudu-npc-v12-meter-fill" style="width:'+affection+'%"></div></div>'+
+                '<span>'+affection+'/100</span></div>'+
+              '<div class="dudu-npc-v12-stat-row"><span>🛡 Tin tưởng</span>'+
+                '<div class="dudu-npc-v12-meter"><div class="dudu-npc-v12-meter-fill is-trust" style="width:'+trust+'%"></div></div>'+
+                '<span>'+trust+'/100</span></div>'+
+            '</div>';
+          const second = div.children[1];
+          if(second)second.style.display='none';
+          const actionBar=div.children[2];
+          if(actionBar)actionBar.classList.add('dudu-npc-v12-actions');
           const preview=div.querySelector('[data-npc-portrait]');
-          if(preview){
-            const preset=DuduNpcPersonaR6.previewNpc(c);
-            const palette={otk:'#155e75',ttl:'#6d28d9',tct:'#92400e'};
-            preview.textContent=(c.name||'NPC').trim().split(/\s+/).slice(-2)
-              .map(part=>part[0]||'').join('').toLocaleUpperCase('vi');
-            preview.title='Ảnh tạm — chưa phải minh họa nhân vật chính thức';
-            preview.style.cssText='display:inline-flex;align-items:center;justify-content:center;'+
-              'width:28px;height:28px;min-width:28px;border-radius:9px;color:#f8fafc;font-weight:700;'+
-              'background:'+(palette[preset?.previewPortraitKey]||'#334155')+
-              ';font-size:11px;border:1px solid #64748b;';
-            renderNpcPortraitPreview(preview,c,novel.id);
-          }
+          if(preview)renderNpcPortraitPreview(preview,c,novel.id);
         }
         container.appendChild(div);
       });
@@ -3038,6 +3067,57 @@
       renderInventory();
     }
 
+    // Read-only inspector: never grants, consumes or changes an inventory item.
+    function renderInventoryDetail(){
+      const panel=document.getElementById('inventory-v12-detail');
+      if(!panel)return;
+      panel.replaceChildren();
+      if(!IS_SANDBOX_MODE){panel.style.display='none';return;}
+      const inventory=Array.isArray(userProfile.inventory)?userProfile.inventory:[];
+      const item=inventory.find(i=>i===inventoryDetailSelection);
+      if(!item){
+        inventoryDetailSelection=null;panel.style.display='none';return;
+      }
+      const canonical=DuduItemCatalog.byId(item.id||item.itemId);
+      const rank=DuduItemCatalog.RANKS.includes(item.rank)?item.rank:'F';
+      const protectedItem=item.discardable===false||item.unique===true||
+        canonical?.discardable===false||canonical?.unique===true||
+        canonical?.scope==='DUDU';
+      const typeNames={FOOD:'Đồ ăn',WEAPON:'Vũ khí',ITEM:'Vật dụng'};
+      const rankNames={F:'Phổ thông',E:'Phổ thông',D:'Cơ bản',
+        C:'Khá hiếm',B:'Hiếm',A:'Quý hiếm',S:'Sử thi',SS:'Huyền thoại',SSS:'Tối thượng'};
+      const header=document.createElement('div');
+      header.className='dudu-inventory-v12-detail-head';
+      const icon=document.createElement('div');
+      icon.className='dudu-inventory-v12-detail-icon';
+      icon.textContent=item.icon||canonical?.icon||'🎒';
+      const info=document.createElement('div');
+      info.style.cssText='flex:1;min-width:0;';
+      const name=document.createElement('div');
+      name.className='dudu-inventory-v12-detail-name';
+      name.textContent=item.name||canonical?.name||'Vật phẩm';
+      const meta=document.createElement('div');
+      meta.className='dudu-inventory-v12-detail-meta';
+      meta.textContent=rank+' · '+(rankNames[rank]||'Chưa rõ')+' · '+
+        (typeNames[item.type]||'Vật phẩm');
+      info.append(name,meta);
+      const close=document.createElement('button');
+      close.type='button';close.className='btn';
+      close.textContent='×';close.title='Đóng chi tiết';
+      close.setAttribute('aria-label','Đóng chi tiết vật phẩm');
+      close.addEventListener('click',()=>{
+        inventoryDetailSelection=null;renderInventory();
+      });
+      header.append(icon,info,close);
+      const desc=document.createElement('div');
+      desc.className='dudu-inventory-v12-detail-desc';
+      const infoText=typeof item.desc==='string'?item.desc:canonical?.desc;
+      desc.textContent=(infoText||'Chưa có mô tả cho vật phẩm này.')+
+        (protectedItem?'\n🔒 Vật phẩm được bảo vệ — không thể vứt.':'');
+      panel.append(header,desc);
+      panel.style.display='block';
+    }
+
     function renderInventory() {
       const container=document.getElementById('inventory-container');
       if(!container)return;
@@ -3047,6 +3127,7 @@
       const q=IS_SANDBOX_MODE ?
         (document.getElementById('inventory-v2-search')?.value||'').trim().toLocaleLowerCase('vi'):'';
       const originals=Array.isArray(userProfile.inventory)?userProfile.inventory:[];
+      renderInventoryDetail();
       const items=originals.map((item,index)=>({item,index})).filter(({item})=>
         (inventoryTab==='ALL'||item.type===inventoryTab)&&
         (!q||String(item.name||'').toLocaleLowerCase('vi').includes(q)));
@@ -3065,9 +3146,14 @@
           canonical?.scope==='DUDU';
         const div=document.createElement('div');
         div.className='item-card';
+        if(IS_SANDBOX_MODE){
+          div.classList.add('dudu-inventory-v12-row');
+          if(item===inventoryDetailSelection)div.classList.add('is-selected');
+        }
         const glyph=document.createElement('span');
         glyph.textContent=item.icon||canonical?.icon||'🎒';
         glyph.style.cssText='font-size:22px;min-width:33px;text-align:center;';
+        if(IS_SANDBOX_MODE)glyph.className='dudu-inventory-v12-icon';
         const body=document.createElement('div');
         body.style.cssText='flex:1;min-width:0;';
         const rank=document.createElement('span');
@@ -3091,7 +3177,19 @@
         btn.disabled=protectedItem;
         if(protectedItem)btn.title='Không được vứt kỷ vật độc quyền.';
         else btn.addEventListener('click',()=>discardItem(index));
-        div.append(glyph,body,btn);container.append(div);
+        if(IS_SANDBOX_MODE){
+          const details=document.createElement('button');
+          details.type='button';details.className='btn dudu-inventory-v12-open';
+          details.textContent='Chi tiết';
+          details.setAttribute('aria-label','Xem chi tiết '+String(item.name||'vật phẩm'));
+          details.setAttribute('aria-expanded',item===inventoryDetailSelection?'true':'false');
+          details.addEventListener('click',()=>{
+            inventoryDetailSelection=item===inventoryDetailSelection?null:item;
+            renderInventory();
+          });
+          div.append(glyph,body,details,btn);
+        }else div.append(glyph,body,btn);
+        container.append(div);
       }
     }
 
