@@ -345,6 +345,49 @@ async function main() {
       delete window.__vaultFixture;
     });
 
+    // Self-grant is strictly a confirmed author-side F STORY_EVENT test
+    // control. Sandbox cannot call even the mocked grant method.
+    const isolatedSelfTest=await page.evaluate(async()=>{
+      const original=window.DuduCollectiblesClient;
+      window.__selfGrantAttempts=0;
+      const draft={storyId:'truyen-dien-vl',itemId:'author-item-only-test',
+        chapterId:null,npcId:null,name:'Kỷ vật kiểm thử tự cấp',
+        rank:'F',method:'STORY_EVENT',summary:'Fake data',updatedAt:1792051200000};
+      window.DuduCollectiblesClient={...original,
+        previewPrivateDraft:async()=>({ok:true,draft,release:{
+          method:'STORY_EVENT',chapterId:null,disabled:false,publishedAt:1792051200000
+        }}),
+        grantStoryTestToSelf:async()=>{window.__selfGrantAttempts++;return {ok:true,alreadyOwned:false};}
+      };
+      try{
+        openEditStoryModal();
+        await openAuthorReleasePreview('story',{storyId:draft.storyId,
+          itemId:draft.itemId,chapterId:null});
+        const visible=document.getElementById('author-release-test-area').style.display;
+        await testGrantStoryToSelf();
+        const blockedAttempts=window.__selfGrantAttempts;
+        cancelAuthorReleasePreview();
+        window.DuduCollectiblesClient.previewPrivateDraft=async()=>({ok:true,
+          draft:{...draft,chapterId:'ch-1',method:'CHAPTER_EVENT'},
+          release:{method:'CHAPTER_EVENT',chapterId:'ch-1',disabled:false}});
+        closeModals();
+        openEditChapterModal(0);
+        await openAuthorReleasePreview('chapter',{storyId:draft.storyId,
+          itemId:draft.itemId,chapterId:'ch-1'});
+        const chapterVisible=document.getElementById('author-release-test-area').style.display;
+        cancelAuthorReleasePreview();
+        closeModals();
+        return {visible,blockedAttempts,chapterVisible,
+          writes:window.__firestoreWrites.length,
+          inventory:userProfile.inventory.length};
+      }finally{window.DuduCollectiblesClient=original;}
+    });
+    assert.equal(isolatedSelfTest.visible,'block','Only verified F story test item shows self-grant control');
+    assert.equal(isolatedSelfTest.blockedAttempts,0,'Sandbox may not grant even through a mocked gateway');
+    assert.equal(isolatedSelfTest.chapterVisible,'none','CHAPTER_EVENT cannot expose admin self-grant');
+    assert.equal(isolatedSelfTest.writes,0,'No production Firestore writes');
+    assert.equal(isolatedSelfTest.inventory,2,'No local reward mutation');
+
     await page.evaluate(() => {
       openCreateChapterModal();
       document.getElementById('chapter-modal-title').value = 'Kiểm thử chương dài';
