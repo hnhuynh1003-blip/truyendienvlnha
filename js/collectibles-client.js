@@ -26,14 +26,20 @@
       return {ok:true,items:payload.items.slice(0,500)};
     }catch(_){return {ok:false,reason:'unavailable',items:[]};}
   }
-  async function authorRequest(endpoint,data){
+  async function authorRequest(endpoint,data,expectedUid=null){
     if(sandbox)return {ok:false,reason:'sandbox'};
     const auth=root.firebase?.auth?.();
     const user=auth?.currentUser;
     if(!user)return {ok:false,reason:'unauthenticated'};
+    if(expectedUid&&user.uid!==expectedUid)return {ok:false,reason:'account-changed'};
     // Server verifies admin:true custom claim; UI role is not a trust boundary.
     try {
       const jwt=await user.getIdToken();
+      // Reject an auth switch during async token retrieval BEFORE sending
+      // the admin grant. A user switching accounts must never receive a
+      // reward requested by a previous Firebase UID.
+      if(expectedUid&&root.firebase?.auth?.()?.currentUser?.uid!==expectedUid)
+        return {ok:false,reason:'account-changed'};
       const res=await fetch(WORKER_URL+endpoint,{
         method:'POST',
         headers:{Authorization:'Bearer '+jwt,'Content-Type':'application/json'},
@@ -70,7 +76,7 @@
     const uid=user.uid;
     const result=await authorRequest('/v1/collectibles/admin/grant',{
       uid,storyId,itemId
-    });
+    },uid);
     if(root.firebase?.auth?.()?.currentUser?.uid!==uid)
       return {ok:false,reason:'account-changed'};
     return result;
