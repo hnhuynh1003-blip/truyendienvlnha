@@ -1006,6 +1006,29 @@
     </div>
   </div>
 
+  <!-- ONLY author-side preview; never shown to general readers. -->
+  <div class="modal-overlay" id="author-release-modal">
+    <div class="modal-card" style="max-width:450px;">
+      <h2>🔐 Xem trước phát hành kỷ vật</h2>
+      <p style="font-size:11px;line-height:1.6;color:var(--gold);">
+        Vật phẩm vẫn nằm trong kho riêng. Sau khi phát hành, chỉ người được
+        máy chủ xác nhận sở hữu mới thấy thông tin đầy đủ trong Bảo Tàng.
+        Việc phát hành KHÔNG tự cấp kỷ vật cho người chơi.
+      </p>
+      <div id="author-release-preview" style="font-size:12px;line-height:1.65;white-space:pre-wrap;padding:8px;border:1px solid var(--border);border-radius:6px;"></div>
+      <p style="font-size:10px;color:var(--text-dim);margin-top:6px;">
+        Phần thưởng chương vẫn bị khóa nhận tự động. Nếu có nội dung chưa phù hợp
+        để công bố, hãy quay lại chỉnh sửa bản thảo.
+      </p>
+      <p id="author-release-error" role="alert" style="min-height:14px;font-size:11px;color:#fca5a5;"></p>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:8px;">
+        <button type="button" class="btn" onclick="cancelAuthorReleasePreview()">Quay lại</button>
+        <button type="button" id="author-release-approve" class="btn btn-primary"
+          onclick="approveAuthorRelease()">Xác nhận phát hành</button>
+      </div>
+    </div>
+  </div>
+
   <!-- BIÊN TẬP VẬT PHẨM ĐỘC QUYỀN: lưu metadata truyện, KHÔNG cấp đồ -->
   <div class="modal-overlay" id="author-item-modal">
     <div class="modal-card" style="max-width:460px;">
@@ -1343,6 +1366,7 @@
     let editingAuthorItemChapterId = null;
     let editingPrivateDraft = false;
     let privateDraftRequestCounter = 0;
+    let pendingAuthorRelease = null;
     let isReversedOrder = false;
     let currentFilterStatus = "ALL";
     let selectedTag = "ALL";
@@ -1440,7 +1464,7 @@
     }
 
     function closeModals() {
-      ['story-modal', 'chapter-modal', 'char-modal', 'auth-modal', 'gift-modal', 'author-item-modal'].forEach(id => {
+      ['story-modal', 'chapter-modal', 'char-modal', 'auth-modal', 'gift-modal', 'author-item-modal', 'author-release-modal'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.style.display = 'none';
       });
@@ -3408,6 +3432,10 @@
         const edit=document.createElement('button');
         edit.type='button';edit.className='btn';edit.textContent='Sửa kín';
         edit.addEventListener('click',()=>openPrivateAuthorItemModal(context,draft));
+        const preview=document.createElement('button');
+        preview.type='button';preview.className='btn';
+        preview.textContent='Duyệt phát hành';
+        preview.addEventListener('click',()=>openAuthorReleasePreview(context,draft));
         const archive=document.createElement('button');
         archive.type='button';archive.className='btn';archive.textContent='Lưu trữ';
         archive.addEventListener('click',async()=>{
@@ -3416,9 +3444,86 @@
           if(saved.ok)renderPrivateAuthorItems(context);
           else showSystemAlert('KHÔNG THỂ LƯU TRỮ','Kho riêng chưa sẵn sàng.');
         });
-        row.append(name,edit,archive);target.append(row);
+        row.append(name,edit,preview,archive);target.append(row);
       }
     }
+    async function openAuthorReleasePreview(context,draft){
+      if(!canEditStories()||!['story','chapter'].includes(context))return;
+      const novel=novels[selectedNovelIndex];
+      const chapter=context==='chapter'?novel?.chapters?.[editingChapterIndex]:null;
+      if(!novel||draft?.storyId!==novel.id||
+          draft.chapterId!==(context==='chapter'?chapter?.id||null:null))return;
+      // Never trust the draft list as the final published revision.
+      const username=currentUsername;
+      const response=await DuduCollectiblesClient.previewPrivateDraft(novel.id,draft.itemId);
+      if(username!==currentUsername||novels[selectedNovelIndex]?.id!==novel.id||
+         !canEditStories())return;
+      if(!response.ok||!response.draft){
+        showSystemAlert('CHƯA THỂ DUYỆT','Không đọc được bản thảo kín từ máy chủ.');
+        return;
+      }
+      const verified=response.draft;
+      if(verified.storyId!==novel.id||verified.itemId!==draft.itemId||
+         !Number.isSafeInteger(verified.updatedAt))return;
+      pendingAuthorRelease={storyId:verified.storyId,itemId:verified.itemId,
+        expectedUpdatedAt:verified.updatedAt,username,context};
+      const copy=[
+        'Truyện: '+verified.storyId,
+        'Chương: '+(verified.chapterId||'Toàn truyện'),
+        'NPC: '+(verified.npcId||'Không gắn'),
+        'Tên: '+verified.name,
+        'Phẩm: '+verified.rank,
+        'Cách nhận: '+verified.method,
+        'Mô tả: '+verified.summary,
+        response.release?'Trạng thái: Đã từng phát hành':'Trạng thái: Bản thảo chưa phát hành'
+      ].join('\n');
+      document.getElementById('author-release-preview').textContent=copy;
+      document.getElementById('author-release-error').textContent='';
+      document.getElementById(context+'-modal').style.display='none';
+      document.getElementById('author-release-modal').style.display='flex';
+      document.getElementById('author-release-approve').disabled=
+        !['STORY_EVENT','CHAPTER_EVENT'].includes(verified.method);
+      if(!['STORY_EVENT','CHAPTER_EVENT'].includes(verified.method))
+        document.getElementById('author-release-error').textContent=
+          'Vật phẩm chỉ sưu tầm chưa có sự kiện phát hành. Hãy chọn một sự kiện trong bản thảo.';
+    }
+    function cancelAuthorReleasePreview(){
+      document.getElementById('author-release-modal').style.display='none';
+      const context=pendingAuthorRelease?.context;
+      const storyId=pendingAuthorRelease?.storyId;
+      pendingAuthorRelease=null;
+      if(context&&canEditStories()&&novels[selectedNovelIndex]?.id===storyId)
+        document.getElementById(context+'-modal').style.display='flex';
+    }
+    async function approveAuthorRelease(){
+      const pending=pendingAuthorRelease;
+      if(!pending||!canEditStories()||pending.username!==currentUsername||
+         novels[selectedNovelIndex]?.id!==pending.storyId)return;
+      if(!confirm('Xác nhận công bố kỷ vật này cho cơ chế phát hành?\nChỉ tài khoản đã nhận mới thấy chi tiết. Hiện chưa tự cấp đồ.'))return;
+      const button=document.getElementById('author-release-approve');
+      if(button.disabled)return;
+      button.disabled=true;
+      try{
+        const result=await DuduCollectiblesClient.publishPrivateDraft({
+          storyId:pending.storyId,itemId:pending.itemId,
+          expectedUpdatedAt:pending.expectedUpdatedAt,
+          confirmPublicRelease:true,confirmRevealToOwner:true
+        });
+        if(pendingAuthorRelease!==pending||pending.username!==currentUsername)return;
+        if(!result.ok){
+          document.getElementById('author-release-error').textContent=
+            result.reason==='stale-draft'
+              ?'Bản thảo đã thay đổi. Hãy quay lại xem trước phiên bản mới.'
+              :'Không thể phát hành. Kiểm tra quyền tác giả và trạng thái máy chủ.';
+          return;
+        }
+        const context=pending.context;
+        cancelAuthorReleasePreview();
+        renderPrivateAuthorItems(context);
+        showSystemAlert('ĐÃ PHÊ DUYỆT','Đã phát hành quy tắc kỷ vật. Chưa phát quà cho tài khoản nào.');
+      }finally{button.disabled=false;}
+    }
+
     function openPrivateAuthorItemModal(context,draft){
       if(!canEditStories())return;
       const novel=novels[selectedNovelIndex];
