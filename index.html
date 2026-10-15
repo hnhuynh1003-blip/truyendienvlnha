@@ -23,6 +23,7 @@
   <script src="js/npc-memory-v2.js"></script>
   <script src="js/item-catalog-v2.js"></script>
   <script src="js/loot-rules-v2.js"></script>
+  <script src="js/author-items-v1.js"></script>
 
   <style>
     :root {
@@ -989,6 +990,43 @@
     </div>
   </div>
 
+  <!-- BIÊN TẬP VẬT PHẨM ĐỘC QUYỀN: lưu metadata truyện, KHÔNG cấp đồ -->
+  <div class="modal-overlay" id="author-item-modal">
+    <div class="modal-card" style="max-width:460px;">
+      <h2 id="author-item-heading">🎁 Vật phẩm truyện</h2>
+      <p style="font-size:10px;color:var(--gold);line-height:1.5;">Danh mục truyện hiện được lưu trong thư viện công khai. Không ghi spoiler hoặc nội dung chưa công bố vào mô tả. Lưu vật phẩm không tự phát cho người chơi.</p>
+      <div class="modal-field"><label for="author-item-name">Tên vật phẩm *</label><input id="author-item-name" maxlength="70" autocomplete="off" placeholder="Ví dụ: Đồng hồ bỏ túi"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;">
+        <div class="modal-field"><label for="author-item-rank">Phẩm cấp</label>
+          <select id="author-item-rank"><option>F</option><option>E</option><option>D</option><option>C</option><option>B</option><option>A</option><option>S</option><option>SS</option><option>SSS</option></select>
+        </div>
+        <div class="modal-field"><label for="author-item-type">Loại</label>
+          <select id="author-item-type"><option value="ITEM">Kỷ vật / Đồ sưu tầm</option><option value="FOOD">Thức ăn</option><option value="WEAPON">Trang bị</option></select>
+        </div>
+      </div>
+      <div class="modal-field"><label for="author-item-icon">Biểu tượng</label><input id="author-item-icon" maxlength="12" value="🎁" placeholder="🎁"></div>
+      <div class="modal-field"><label for="author-item-desc">Mô tả ngắn *</label><textarea id="author-item-desc" maxlength="240" style="height:66px;" placeholder="Thông tin công khai, không tiết lộ tình tiết chưa xuất bản."></textarea></div>
+      <div class="modal-field"><label for="author-item-npc">Liên kết NPC (nếu có)</label><select id="author-item-npc"><option value="">Không gắn NPC</option></select></div>
+      <div class="modal-field"><label for="author-item-method">Cách nhận dự kiến (chưa tự phát trong đợt này)</label>
+        <select id="author-item-method">
+          <option value="COLLECTION_ONLY">Chỉ trưng bày trong danh mục</option>
+          <option value="STORY_EVENT">Sự kiện của truyện</option>
+          <option value="CHAPTER_EVENT">Sự kiện của chương</option>
+        </select>
+      </div>
+      <details style="font-size:11px;margin:8px 0;color:var(--text-dim);">
+        <summary style="cursor:pointer;">Tùy chọn nâng cao</summary>
+        <label style="display:flex;align-items:center;gap:6px;margin:8px 0;"><input type="checkbox" id="author-item-unique" checked> Chỉ được giữ một bản</label>
+        <label style="display:flex;align-items:center;gap:6px;margin:8px 0;"><input type="checkbox" id="author-item-giftable"> Cho phép tặng NPC trong tương lai</label>
+      </details>
+      <p id="author-item-error" role="alert" style="min-height:13px;color:#fca5a5;font-size:11px;"></p>
+      <div style="display:flex;justify-content:flex-end;gap:8px;">
+        <button type="button" class="btn" onclick="cancelAuthorItemModal()">Quay lại</button>
+        <button type="button" class="btn btn-primary" onclick="saveAuthorItemModal()">Lưu vật phẩm</button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: TẠO / SỬA TRUYỆN -->
   <div class="modal-overlay" id="story-modal">
     <div class="modal-card">
@@ -1024,6 +1062,12 @@
       <div class="modal-field">
         <label>Khung văn án mở đầu (Glitch record):</label>
         <textarea id="story-modal-intro" autocomplete="off" style="height: 80px;" placeholder="Mã nguồn lỗi, trích dẫn bối cảnh..."></textarea>
+      </div>
+      <div class="modal-field">
+        <label>🎁 Vật phẩm độc quyền truyện</label>
+        <div id="story-author-items" style="font-size:11px;max-height:140px;overflow:auto;"></div>
+        <button type="button" id="story-add-item-btn" class="btn admin-only" onclick="openAuthorItemModal('story')" style="margin-top:6px;">+ Thêm vật phẩm truyện</button>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:3px;">Hãy lưu truyện mới trước khi tạo vật phẩm.</div>
       </div>
       <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px;">
         <button class="btn" onclick="closeModals()">Hủy</button>
@@ -1083,6 +1127,20 @@
         <div id="chapter-modal-npc-picker" style="display:flex; flex-wrap:wrap; gap:6px; background:#0b0f15; padding:8px; border-radius:6px; border:1px solid #1f2937;"></div>
       </div>
 
+      <div class="modal-field">
+        <label>🎁 Vật phẩm độc quyền chương</label>
+        <div id="chapter-author-items" style="font-size:11px;max-height:140px;overflow:auto;"></div>
+        <button type="button" id="chapter-add-item-btn" class="btn admin-only" onclick="openAuthorItemModal('chapter')" style="margin-top:6px;">+ Thêm vật phẩm chương</button>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:3px;">Lưu chương mới trước khi tạo kỷ vật chương. Chỉ tạo dữ liệu, chưa phát phần thưởng.</div>
+      </div>
+      <div class="modal-field">
+        <label for="chapter-story-item-picker">Liên kết vật phẩm đã tạo ở truyện</label>
+        <div style="display:flex;gap:5px;align-items:center;">
+          <select id="chapter-story-item-picker" style="flex:1;min-width:0;"><option value="">Chọn vật phẩm truyện...</option></select>
+          <button type="button" class="btn admin-only" onclick="linkStoryItemToChapter()">Gắn</button>
+        </div>
+        <div id="chapter-linked-story-items" style="font-size:11px;margin-top:5px;"></div>
+      </div>
       <div class="modal-field">
         <label>Lời nhắn của tác giả:</label>
         <input type="text" id="chapter-modal-author-note" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Lời bình hoặc thông báo...">
@@ -1254,6 +1312,11 @@
     let editingCharNovelId = null;
     let returnToChapterAfterCharModal = false;
     let pendingChapterNpcSelection = [];
+    let pendingChapterStoryItemIds = [];
+    let authorItemEditorContext = null;
+    let editingAuthorItemId = null;
+    let editingAuthorItemStoryId = null;
+    let editingAuthorItemChapterId = null;
     let isReversedOrder = false;
     let currentFilterStatus = "ALL";
     let selectedTag = "ALL";
@@ -1351,7 +1414,7 @@
     }
 
     function closeModals() {
-      ['story-modal', 'chapter-modal', 'char-modal', 'auth-modal', 'gift-modal'].forEach(id => {
+      ['story-modal', 'chapter-modal', 'char-modal', 'auth-modal', 'gift-modal', 'author-item-modal'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.style.display = 'none';
       });
@@ -3210,6 +3273,160 @@
       localStorage.setItem(scopedLocalKey('draft', novels[selectedNovelIndex].id), JSON.stringify({ title, content, time: Date.now() }));
     }
 
+
+    // === PHASE 3: author-only story/chapter collectible definitions. ===
+    function renderAuthorItemList(context) {
+      const novel=novels[selectedNovelIndex];
+      const container=document.getElementById(context==='story'?'story-author-items':'chapter-author-items');
+      const addButton=document.getElementById(context==='story'?'story-add-item-btn':'chapter-add-item-btn');
+      if(!container||!novel)return;
+      const chapter=context==='chapter'&&editingChapterIndex!==null
+        ? novel.chapters[editingChapterIndex]:null;
+      const chapterId=context==='chapter'?chapter?.id||null:null;
+      const enabled=context==='story'?isEditingStory:!!chapterId;
+      if(addButton)addButton.disabled=!enabled;
+      container.replaceChildren();
+      if(!enabled){
+        container.textContent=context==='story'?'Lưu truyện trước khi thêm vật phẩm.':'Lưu chương trước khi thêm vật phẩm.';
+        return;
+      }
+      const entries=DuduAuthorItems.list(novel,{chapterId});
+      if(!entries.length)container.textContent='Chưa có vật phẩm riêng.';
+      for(const item of entries){
+        const row=document.createElement('div');
+        row.style.cssText='display:flex;gap:6px;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);';
+        const name=document.createElement('span');
+        name.style.flex='1';
+        name.textContent=item.icon+' ['+item.rank+'] '+item.name;
+        const edit=document.createElement('button');
+        edit.type='button';edit.className='btn';edit.textContent='Sửa';
+        edit.addEventListener('click',()=>openAuthorItemModal(context,item.id));
+        const archive=document.createElement('button');
+        archive.type='button';archive.className='btn';archive.textContent='Lưu trữ';
+        archive.addEventListener('click',()=>archiveAuthorItem(context,item.id));
+        row.append(name,edit,archive);container.append(row);
+      }
+    }
+    function archiveAuthorItem(context,itemId){
+      if(!canEditStories())return;
+      const novel=novels[selectedNovelIndex];
+      if(!novel||!confirm('Lưu trữ món này? ID được giữ để bảo toàn dữ liệu cũ.'))return;
+      if(DuduAuthorItems.archive(novel,itemId)){
+        saveDB();
+        renderAuthorItemList(context);
+        if(context==='chapter')renderChapterStoryItemLinks();
+      }
+    }
+    function openAuthorItemModal(context,itemId=null){
+      if(!canEditStories()||!['story','chapter'].includes(context))return;
+      const novel=novels[selectedNovelIndex];
+      if(!novel)return;
+      const chapter=context==='chapter'?novel.chapters[editingChapterIndex]:null;
+      if((context==='story'&&!isEditingStory)||(context==='chapter'&&!chapter?.id)){
+        showSystemAlert('CHƯA LƯU','Hãy lưu truyện/chương trước khi thêm vật phẩm.');return;
+      }
+      const chapterId=context==='chapter'?chapter.id:null;
+      const original=itemId?(novel.specialItems||[]).find(i=>i.id===itemId):null;
+      if(itemId&&(!original||original.chapterId!==chapterId||original.storyId!==novel.id))return;
+      editingAuthorItemId=itemId;
+      editingAuthorItemStoryId=novel.id;
+      editingAuthorItemChapterId=chapterId;
+      authorItemEditorContext=context;
+      document.getElementById('author-item-heading').textContent=itemId?'✏️ Sửa kỷ vật':'🎁 Tạo vật phẩm '+(context==='story'?'truyện':'chương');
+      document.getElementById('author-item-name').value=original?.name||'';
+      document.getElementById('author-item-rank').value=original?.rank||'E';
+      document.getElementById('author-item-type').value=original?.type||'ITEM';
+      document.getElementById('author-item-icon').value=original?.icon||'🎁';
+      document.getElementById('author-item-desc').value=original?.desc||'';
+      const npcPicker=document.getElementById('author-item-npc');
+      npcPicker.replaceChildren();
+      const defaultOpt=document.createElement('option');
+      defaultOpt.value='';defaultOpt.textContent='Không gắn NPC';
+      npcPicker.append(defaultOpt);
+      for(const npc of novel.characters||[]){
+        const option=document.createElement('option');
+        option.value=npc.id;option.textContent=npc.name;
+        npcPicker.append(option);
+      }
+      npcPicker.value=original?.npcId||'';
+      const methodSelect=document.getElementById('author-item-method');
+      methodSelect.querySelector('option[value="CHAPTER_EVENT"]').disabled=context!=='chapter';
+      methodSelect.value=original?.acquisition?.method||'COLLECTION_ONLY';
+      document.getElementById('author-item-unique').checked=original?.unique!==false;
+      document.getElementById('author-item-giftable').checked=original?.giftable===true;
+      document.getElementById('author-item-error').textContent='';
+      document.getElementById(context+'-modal').style.display='none';
+      document.getElementById('author-item-modal').style.display='flex';
+    }
+    function cancelAuthorItemModal(){
+      document.getElementById('author-item-modal').style.display='none';
+      if(authorItemEditorContext)
+        document.getElementById(authorItemEditorContext+'-modal').style.display='flex';
+      authorItemEditorContext=null;
+    }
+    function saveAuthorItemModal(){
+      if(!canEditStories()||!authorItemEditorContext)return;
+      const novel=novels.find(n=>n.id===editingAuthorItemStoryId);
+      if(!novel)return;
+      const input={
+        name:document.getElementById('author-item-name').value,
+        rank:document.getElementById('author-item-rank').value,
+        type:document.getElementById('author-item-type').value,
+        icon:document.getElementById('author-item-icon').value,
+        desc:document.getElementById('author-item-desc').value,
+        npcId:document.getElementById('author-item-npc').value||null,
+        method:document.getElementById('author-item-method').value,
+        unique:document.getElementById('author-item-unique').checked,
+        giftable:document.getElementById('author-item-giftable').checked
+      };
+      try{
+        const saved=DuduAuthorItems.addOrEdit(novel,input,{
+          chapterId:editingAuthorItemChapterId,itemId:editingAuthorItemId
+        });
+        saveDB();
+        const context=authorItemEditorContext;
+        cancelAuthorItemModal();
+        renderAuthorItemList(context);
+        if(context==='chapter')renderChapterStoryItemLinks();
+        showSystemAlert('ĐÃ LƯU VẬT PHẨM',saved.name+' được thêm vào danh mục, chưa cấp cho người chơi.');
+      }catch(error){
+        document.getElementById('author-item-error').textContent=error.message||'Dữ liệu vật phẩm không hợp lệ.';
+      }
+    }
+    function renderChapterStoryItemLinks(){
+      const novel=novels[selectedNovelIndex];
+      const picker=document.getElementById('chapter-story-item-picker');
+      const container=document.getElementById('chapter-linked-story-items');
+      if(!picker||!container||!novel)return;
+      picker.replaceChildren();
+      const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='Chọn vật phẩm truyện...';picker.append(placeholder);
+      const all=DuduAuthorItems.list(novel);
+      for(const item of all){
+        const opt=document.createElement('option');opt.value=item.id;opt.textContent=item.icon+' '+item.name;
+        picker.append(opt);
+      }
+      container.replaceChildren();
+      const ids=new Set(all.map(i=>i.id));
+      pendingChapterStoryItemIds=pendingChapterStoryItemIds.filter(id=>ids.has(id));
+      for(const id of pendingChapterStoryItemIds){
+        const record=all.find(i=>i.id===id);
+        const row=document.createElement('div');
+        row.style.cssText='display:flex;gap:6px;align-items:center;padding:3px 0;';
+        const name=document.createElement('span');name.style.flex='1';name.textContent=record.icon+' '+record.name;
+        const remove=document.createElement('button');remove.type='button';remove.className='btn';remove.textContent='Bỏ gắn';
+        remove.addEventListener('click',()=>{pendingChapterStoryItemIds=pendingChapterStoryItemIds.filter(x=>x!==id);renderChapterStoryItemLinks();});
+        row.append(name,remove);container.append(row);
+      }
+    }
+    function linkStoryItemToChapter(){
+      if(!canEditStories())return;
+      const id=document.getElementById('chapter-story-item-picker').value;
+      const story=novels[selectedNovelIndex];
+      if(!id||!DuduAuthorItems.list(story).some(item=>item.id===id))return;
+      if(!pendingChapterStoryItemIds.includes(id))pendingChapterStoryItemIds.push(id);
+      renderChapterStoryItemLinks();
+    }
+
     function openStoryModal() {
       isEditingStory = false;
       document.getElementById('story-modal-heading').textContent = "THÊM TÁC PHẨM MỚI";
@@ -3222,6 +3439,7 @@
       document.getElementById('story-modal-desc').value = '';
       document.getElementById('story-modal-intro').value = '';
       document.getElementById('story-modal').style.display = 'flex';
+      renderAuthorItemList('story');
     }
 
     function openEditStoryModal() {
@@ -3237,6 +3455,7 @@
       document.getElementById('story-modal-desc').value = current.desc || '';
       document.getElementById('story-modal-intro').value = current.introData ? current.introData.text : (current.intro || '');
       document.getElementById('story-modal').style.display = 'flex';
+      renderAuthorItemList('story');
     }
 
     function saveStoryModal() {
@@ -3360,6 +3579,9 @@
 
       document.getElementById('chapter-npc-filter').value = '';
       renderChapterNpcPicker([]);
+      pendingChapterStoryItemIds=[];
+      renderAuthorItemList('chapter');
+      renderChapterStoryItemLinks();
       document.getElementById('chapter-modal').style.display = 'flex';
     }
 
@@ -3375,6 +3597,9 @@
 
       document.getElementById('chapter-npc-filter').value = '';
       renderChapterNpcPicker(ch.characterIds || []);
+      pendingChapterStoryItemIds=Array.isArray(ch.storyItemIds)?[...new Set(ch.storyItemIds)]:[];
+      renderAuthorItemList('chapter');
+      renderChapterStoryItemLinks();
       document.getElementById('chapter-modal').style.display = 'flex';
     }
 
@@ -3412,6 +3637,8 @@
         ch.wordCount = wordCount;
         ch.updatedAt = nowStr;
         ch.characterIds = selectedNpcIds;
+        ch.storyItemIds = [...pendingChapterStoryItemIds];
+        if (!ch.id) ch.id = 'ch-' + (crypto.randomUUID ? crypto.randomUUID() : Date.now());
 
         saveDB();
         closeModals();
@@ -3430,7 +3657,8 @@
           wordCount,
           authorNote,
           realmTag,
-          characterIds: selectedNpcIds
+          characterIds: selectedNpcIds,
+          storyItemIds: [...pendingChapterStoryItemIds]
         });
         addExp(35);
         advanceQuest('q_main_write', 1);
