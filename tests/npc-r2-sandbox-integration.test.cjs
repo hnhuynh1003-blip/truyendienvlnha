@@ -14,6 +14,6 @@ test('R2 commit is isolated to sandbox and never removes inventory on refusal',(
  assert.ok(fn.includes('if (IS_SANDBOX_MODE) {'));
  const sandbox=fn.slice(fn.indexOf('if (IS_SANDBOX_MODE) {'),fn.indexOf('      const rankBonus'));
  assert.ok(sandbox.indexOf("plan.status !== 'ACCEPT'")<sandbox.indexOf('userProfile.inventory.splice(itemIdx,1)'));
- assert.ok(sandbox.indexOf('return;\n      }')>sandbox.indexOf('saveCurrentAccount()'));
+ assert.match(sandbox,/saveCurrentAccount\(\);[\s\S]*?renderCodexList\(\);\s*return;\s*\}/);
  assert.ok(fn.includes('const rankBonus = { "F": 5, "E": 10'), 'Live legacy path remains unchanged');
 });
