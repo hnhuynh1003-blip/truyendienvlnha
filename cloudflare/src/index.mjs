@@ -54,19 +54,22 @@ async function handlePlayerAppearance(req,env,path,origin){
     return error('avatar-sync-unavailable','Lưu trữ avatar chưa sẵn sàng.',503,origin,env);
   const store=env.DUDU_PLAYER_APPEARANCE.getByName('player-avatar-'+identity.uid);
   try{
+    // These rows are from a UID-scoped, server-owned SQL ledger, never JSON.
+    // This gate is OFF until a trusted achievement issuer has been audited.
+    const awards=env.AVATAR_AWARDS_ENABLED==='true'?await store.verifiedAwards():[];
     if(path==='/v1/player-avatar/mine')
-      return json(displayState(await store.mine(),identity),200,origin,env);
+      return json(displayState(await store.mine(),identity,awards),200,origin,env);
     if(!req.headers.get('Content-Type')?.toLowerCase().startsWith('application/json'))
       return error('invalid-content','Yêu cầu phải là JSON.',415,origin,env);
     const body=await limitedJson(req);
-    const approved=normalizeAppearanceSave(body,identity);
+    const approved=normalizeAppearanceSave(body,identity,awards);
     if(!approved)
       return error('invalid-avatar','Không thể lưu avatar hoặc khung chưa sở hữu.',400,origin,env);
     const result=await store.save(approved,Date.now());
     if(!result.ok)
       return json({error:{code:result.code,message:'Bản lưu đã thay đổi ở thiết bị khác.'},
         revision:result.revision},409,origin,env);
-    return json(displayState(result,identity),200,origin,env);
+    return json(displayState(result,identity,awards),200,origin,env);
   }catch(err){
     console.warn('Player appearance store unavailable:',err?.name||'unavailable');
     return error('avatar-sync-unavailable','Đồng bộ avatar tạm gián đoạn.',503,origin,env);
