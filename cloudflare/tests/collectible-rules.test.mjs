@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {cleanId,normalizedPublication,normalizedPrivateDraft,normalizedDraftApproval,parseScopedIds,isChapterMature,MIN_CHAPTER_ELAPSED_MS}
+import {cleanId,normalizedPublication,normalizedPrivateDraft,normalizedDraftApproval,isEligibleSelfTestGrant,parseScopedIds,isChapterMature,MIN_CHAPTER_ELAPSED_MS}
   from '../src/collectible-rules.mjs';
 
 const release=(overrides={})=>({
@@ -107,4 +107,19 @@ test('publication approval only accepts an exact server draft version and explic
     {...valid,itemId:'author-item-bad/name'},
     null
   ])assert.equal(normalizedDraftApproval(input),null);
+});
+
+test('server allows only F-ranked, active, released whole-story collectibles explicitly marked kiểm thử',()=>{
+  const good={method:'STORY_EVENT',rank:'F',name:'Kỷ vật kiểm thử sở hữu DUDU',
+    chapterId:null,disabled:0};
+  assert.equal(isEligibleSelfTestGrant(good),true);
+  assert.equal(isEligibleSelfTestGrant({...good,name:'KIỂM THỬ - DUDU'}),true);
+  for(const changes of [
+    {rank:'A'},{rank:'SS'},{method:'CHAPTER_EVENT'},
+    {chapterId:'ch-1'},{disabled:1},{disabled:true},
+    {name:'Kỷ vật thật của người chơi'},{name:''},
+    {name:null},{method:'COLLECTION_ONLY'}
+  ])assert.equal(isEligibleSelfTestGrant({...good,...changes}),false,
+    JSON.stringify(changes));
+  assert.equal(isEligibleSelfTestGrant(null),false);
 });
