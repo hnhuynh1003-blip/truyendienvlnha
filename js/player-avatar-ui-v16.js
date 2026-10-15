@@ -149,13 +149,24 @@ function renderPlayerAvatarEditorV16(){
   for(const frame of DuduPlayerAvatarV16.FRAMES){
     const btn=document.createElement('button');
     btn.type='button';btn.disabled=!DuduPlayerAvatarV16.canChooseFrame(frame.id);
-    btn.title=btn.disabled?'Chưa mở khóa':frame.name;
+    const lockReason={
+      legend:'Chờ xác minh thành tựu truyện từ máy chủ',
+      soulbond:'Chờ xác minh mốc quan hệ NPC từ máy chủ',
+      author:'Chỉ mở khi tài khoản được máy chủ xác thực là Tác Giả'
+    };
+    btn.title=btn.disabled?(lockReason[frame.id]||'Chưa mở khóa'):frame.name;
     btn.setAttribute('aria-pressed',String(draft.frameId===frame.id));
     const dot=document.createElement('span');
     dot.className='dudu-avatar-v16-frame-dot';
     dot.style.setProperty('--frame-color',frame.color);
     const text=document.createElement('span');
     text.textContent=frame.name+(btn.disabled?' 🔒':'');
+    if(btn.disabled){
+      const reason=document.createElement('small');
+      reason.className='dudu-avatar-v18-lock-reason';
+      reason.textContent=lockReason[frame.id]||'Chưa mở khóa';
+      text.append(reason);
+    }
     btn.append(dot,text);
     btn.addEventListener('click',()=>{
       if(!DuduPlayerAvatarV16.canChooseFrame(frame.id))return;
