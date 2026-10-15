@@ -25,13 +25,17 @@
 - Không kéo câu chào kịch bản, tin lỗi hoặc thông tin không liên quan vào phần hồi tưởng. Khi không tìm được thông tin phù hợp, chỉ gửi lịch sử gần đây.
 - Toàn bộ lịch sử cũ vẫn được giữ nguyên. Tối đa 4 tin hồi tưởng + 8 tin gần đây = 12 tin (phù hợp giới hạn API backend thử nghiệm).
 
-**Phần 2.2 sẽ thực hiện sau, chưa coi là hoàn thành:**
+**Đã triển khai phần 2.2 — Sổ ký ức sự kiện cục bộ có nguồn và quan hệ:**
 
-- Định nghĩa ba vùng dữ liệu theo `uid / storyId / npcId`: hồ sơ gốc do tác giả viết; sự kiện/quan hệ quan trọng; vài lượt hội thoại gần đây.
-- Thiết kế sự kiện ký ức dạng có nguồn (chương/quest/chat), thời gian, quyền truy cập và mức chắc chắn; không để người chơi tự ghi đè hồ sơ NPC chuẩn.
-- Chỉ nạp ký ức phù hợp khi cần, thay vì toàn bộ log. Không tự tóm tắt bí mật hoặc suy đoán làm thành sự thật.
-- Kiểm thử bảo toàn lịch sử cũ, cách ly truyện/tài khoản/NPC và thay đổi phiên đăng nhập giữa các lượt AI.
-- Chỉ tính token sau khi có model/backend thực và dữ liệu thực tế; cắt bừa ký tự có thể mất ngữ cảnh nên không coi đó là bộ nhớ hoàn chỉnh.
+- `js/npc-memory-v2.js` lưu **riêng theo UID / storyId / npcId** với khoá cục bộ phiên bản hóa, và `sandbox` tách biệt hoàn toàn dữ liệu thật. Dữ liệu mới hoàn toàn **bổ sung**, không xoá hoặc đổi cấu trúc save cũ.
+- **Ba tầng nguồn:** (1) hồ sơ chính thức `novel.characters[]` do tác giả tạo; (2) trạng thái quan hệ và mức thân mật sẵn có trong `userProfile.storyStates`; (3) nhật ký tương tác người chơi–NPC và tặng quà, có nhãn nguồn và mức độ tin cậy.
+- Sự kiện chat gồm **đúng lời người chơi đã gửi / phản hồi NPC đã tạo**; lời người chơi chỉ là lời kể, **không thể biến thành thiết lập chính thức của truyện**. Quà được gắn nhãn `game-local`, **chưa xác minh bởi máy chủ**. Không tự bịa sự kiện, không tự tăng cấp, EXP, thân mật, xu.
+- Tối đa **40 sự kiện đã ghi/NPC trên thiết bị**, tối đa 240 ký tự lời người chơi, 260 ký tự câu trả lời cho mỗi sự kiện; loại bỏ bản ghi lâu nhất khi vượt hạn mức. Chỉ chọn tối đa **2 sự kiện liên quan** cho một câu hỏi; phần tóm tắt sự kiện được giới hạn 460 ký tự, không tốn thêm lượt Gemini.
+- Các ghi chú sự kiện đặt trong **ngữ cảnh người dùng không đáng tin**, không ghép vào chỉ dẫn hệ thống hoặc cho phép ghi đè hồ sơ tác giả. Lịch sử gần nhất (tối đa 8 lượt) và tối đa 1 cặp hội thoại liên quan trước đó giúp không vượt 12 tin của adapter.
+- Xóa trò chuyện được xác nhận sẽ xóa cả sổ ký ức riêng của NPC, và ngăn phản hồi AI đến muộn tái tạo dữ liệu đã xóa. Kiểm thử cục bộ + Chromium: cách ly tài khoản/truyện/NPC, nguồn, tăng trưởng, xóa, thử lại.
+- **Giới hạn cần nói rõ:** Đây là bộ nhớ dài hạn trong **cùng thiết bị/trình duyệt**, không phải đồng bộ nhiều thiết bị, lưu vĩnh viễn hay ngân hàng ký ức vô hạn. Nó phụ thuộc `localStorage` (có thể bị xóa, có quota). Bản ghi không được máy chủ xác minh; hệ thống kinh tế/quà tặng còn cần xử lý an toàn về sau.
+
+**Phần tiếp theo sau 2.2, chưa triển khai:** Đồng bộ bộ nhớ giữa thiết bị, mở khóa ký ức dựa trên quest/chapter do backend xác minh, tóm tắt theo tầng không suy đoán, và cơ chế xuất/sao lưu dữ liệu khi phát hành thực tế.
 
 ## Đợt 3 — Gemini qua Cloudflare Workers Free (không cần Firebase Blaze)
 
