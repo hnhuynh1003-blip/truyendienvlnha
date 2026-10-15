@@ -12,13 +12,13 @@
   const PRESETS=Object.freeze({
     c_otk:Object.freeze({name:'Ôn Tri Hành',
       giftPreferences:Object.freeze({likedTags:['PRACTICAL'],dislikedTags:['DANGEROUS'],reactionStyle:'reserved'}),
-      portraitKey:'otk',role:'Cố nhân'}),
+      portraitKey:'otk',gender:'female',portraitPresetId:'portrait-f-11',role:'Cố nhân'}),
     c_ttl:Object.freeze({name:'Tô Thanh Lạc',
       giftPreferences:Object.freeze({likedTags:['DRINK_COFFEE'],dislikedTags:['DANGEROUS'],reactionStyle:'gentle'}),
-      portraitKey:'ttl',role:'Ký ức'}),
+      portraitKey:'ttl',gender:'female',portraitPresetId:'portrait-f-12',role:'Ký ức'}),
     c_tct:Object.freeze({name:'Thẩm Cẩm Thư',
       giftPreferences:Object.freeze({likedTags:['KEEPSAKE'],dislikedTags:['DANGEROUS'],reactionStyle:'default'}),
-      portraitKey:'tct',role:'Cố nhân'})
+      portraitKey:'tct',gender:'female',portraitPresetId:'portrait-f-04',role:'Cố nhân'})
   });
   const CONVERSATIONS=Object.freeze({
     c_otk:Object.freeze({prompt:'Một người bạn đang kiệt sức vì công việc. Bạn sẽ nói gì?',
@@ -45,16 +45,26 @@
       CONVERSATIONS[npc.id]:null;
     return p||DEFAULT_CONVERSATION;
   }
+  const CANONICAL_IDS=Object.freeze({
+    c2:'c_otk',c3:'c_tct',c4:'c_ttl'
+  });
+  function matchingPreset(npc){
+    if(!npc||typeof npc!=='object')return null;
+    const key=Object.hasOwn(PRESETS,npc.id)?npc.id:CANONICAL_IDS[npc.id];
+    const preset=key?PRESETS[key]:null;
+    return preset?.name===npc.name?preset:null;
+  }
   function previewNpc(npc){
     if(!npc||typeof npc!=='object')return null;
-    const preset=Object.hasOwn(PRESETS,npc.id)&&PRESETS[npc.id].name===npc.name?
-      PRESETS[npc.id]:null;
+    const preset=matchingPreset(npc);
     const preferences=npc.giftPreferences!=null?rules.normalizePreferences(npc.giftPreferences):
       rules.normalizePreferences(preset?.giftPreferences);
     if(!preferences)return null;
     return Object.freeze({...npc,giftPreferences:preferences,
       previewPortraitKey:preset?.portraitKey||null,
+      previewGender:preset?.gender||null,
+      previewPortraitPresetId:preset?.portraitPresetId||null,
       previewPersonaSource:npc.giftPreferences!=null?'author':'sandbox-default'});
   }
-  return Object.freeze({PRESETS,CONVERSATIONS,dailyConversation,previewNpc});
+  return Object.freeze({PRESETS,CANONICAL_IDS,CONVERSATIONS,dailyConversation,previewNpc});
 });
