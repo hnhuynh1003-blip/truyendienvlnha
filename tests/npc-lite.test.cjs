@@ -46,3 +46,12 @@ test('AI context is bounded without mutating full saved history',()=>{
   assert.equal(history[0].text.length,2000);
   assert.ok(npc.boundedInstruction('x'.repeat(3000)).length<1300);
 });
+
+test('NPC short replies reflect persona while keeping token use at zero',()=>{
+  const warm=npc.script('Xin chào',{id:'same',name:'Lan',note:'Cô ấy rất dịu dàng và ấm áp'},[]);
+  const cold=npc.script('Xin chào',{id:'same',name:'Lan',note:'Lạnh lùng và ít nói'},[]);
+  const playful=npc.script('Xin chào',{id:'same',name:'Lan',note:'Tinh nghịch và vui vẻ'},[]);
+  assert.ok(warm?.text && cold?.text && playful?.text);
+  assert.notEqual(warm.text,cold.text);
+  assert.notEqual(playful.text,cold.text);
+});
