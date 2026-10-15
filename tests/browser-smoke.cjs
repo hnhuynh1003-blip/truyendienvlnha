@@ -794,6 +794,52 @@ async function main() {
     assert.equal(relationshipSandbox.writes,0,
       'Gift sandbox never writes production Firestore');
 
+    // R4: switch among the THREE pre-existing NPC IDs. Never create/unlock in live data.
+    const npcSwitches=await page.evaluate(()=>{
+      const novel=novels[selectedNovelIndex],ids=['c_otk','c_ttl','c_tct'];
+      const original=JSON.stringify(userProfile),oldChat=activeChatNovelId;
+      const select=document.getElementById('chat-character-selector');
+      const previousOptions=select.innerHTML,previousValue=select.value;
+      activeChatNovelId=novel.id;
+      const previousCharacters=novel.characters;
+      // Preview fixture only: reference existing canonical IDs, no publication.
+      novel.characters=[...previousCharacters];
+      for(const [i,id] of ids.entries()){
+        if(!novel.characters.some(n=>n.id===id))
+          novel.characters.push({id,name:['Ôn Tri Hành','Tô Thanh Lạc','Thẩm Cẩm Thư'][i]});
+      }
+      const state=getStoryProgress(novel.id);
+      for(const [i,id] of ids.entries())
+        state.collectedCharacters[id]={id,affinity:[39,65,90][i],
+          relationshipV2:{version:1,trust:[0,25,60][i]}};
+      select.innerHTML='';
+      for(const id of ids){const opt=document.createElement('option');opt.value=id;opt.textContent=id;select.appendChild(opt);}
+      const outputs=ids.map(id=>{
+        select.value=id;switchChatCharacter();
+        return {id,text:document.getElementById('npc-relationship-r3-preview').textContent,
+          displayed:document.getElementById('npc-relationship-r3-preview').style.display};
+      });
+      select.innerHTML=previousOptions;select.value=previousValue;
+      novel.characters=previousCharacters;
+      userProfile=JSON.parse(original);activeChatNovelId=oldChat;
+      return {outputs,writes:window.__firestoreWrites.length};
+    });
+    assert.equal(npcSwitches.outputs.length,3);
+    assert.match(npcSwitches.outputs[0].text,/Thiện cảm: 39\/100[\\s\\S]*Tin tưởng: 0\/100/);
+    assert.match(npcSwitches.outputs[1].text,/Thiện cảm: 65\/100[\\s\\S]*Tin tưởng: 25\/100/);
+    assert.match(npcSwitches.outputs[2].text,/Thiện cảm: 90\/100[\\s\\S]*Tin tưởng: 60\/100/);
+    assert.ok(npcSwitches.outputs.every(x=>x.displayed==='block'));
+    assert.equal(npcSwitches.writes,0,'Switching NPC does not write Firestore');
+    // Check compact panel fits narrow mobile view without document-level overflow.
+    await page.setViewportSize({width:375,height:812});
+    const phoneLayout=await page.evaluate(()=>{
+      const panel=document.getElementById('npc-relationship-r3-preview');
+      return {docWidth:document.documentElement.scrollWidth,windowWidth:innerWidth,
+        help:!!document.getElementById('npc-relationship-r4-help'),panelWidth:panel.getBoundingClientRect().width};
+    });
+    assert.equal(phoneLayout.help,true);
+    assert.ok(phoneLayout.panelWidth>0);
+
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
     console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));
   } finally {
