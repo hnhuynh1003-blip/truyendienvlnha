@@ -1,13 +1,7 @@
-import {createRemoteJWKSet,jwtVerify} from 'jose';
+import {verifyFirebaseIdToken} from './auth.mjs';
 import {validRequest,quotaMessage} from './limits.mjs';
 export {DuduQuota} from './quota.mjs';
 
-// JWKS is fetched only from Google's published Firebase Auth signing keys.
-// DO NOT accept unsigned JWTs, browser-supplied UID, or custom API URLs.
-const FIREBASE_JWKS=createRemoteJWKSet(
-  new URL('https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com'),
-  {timeoutDuration:4000,cooldownDuration:30000,cacheMaxAge:3600000}
-);
 const MODEL='gemini-2.5-flash-lite';
 const MAX_BODY_BYTES=18000;
 
@@ -40,25 +34,6 @@ function json(data,status,origin,env){
 }
 function error(code,message,status,origin,env){
   return json({error:{code,message}},status,origin,env);
-}
-async function verifiedFirebaseUser(req,projectId){
-  if(!/^[a-z0-9-]{1,64}$/.test(projectId||''))return null;
-  const match=/^Bearer ([A-Za-z0-9_\-.]+)$/.exec(req.headers.get('Authorization')||'');
-  if(!match||match[1].length>12000)return null;
-  try {
-    const {payload}=await jwtVerify(match[1],FIREBASE_JWKS,{
-      audience:projectId,issuer:'https://securetoken.google.com/'+projectId,
-      algorithms:['RS256'],clockTolerance:30,maxTokenAge:'1h'
-    });
-    const now=Math.floor(Date.now()/1000);
-    if(typeof payload.sub!=='string'||!payload.sub||payload.sub.length>128 ||
-       !Number.isFinite(payload.iat)||payload.iat>now+30 ||
-       !Number.isFinite(payload.auth_time)||payload.auth_time>now+30) return null;
-    return {uid:payload.sub,admin:payload.admin===true};
-  } catch(err){
-    // Never echo raw JWT, claims, signing keys or detailed verifier errors.
-    return null;
-  }
 }
 async function limitedJson(req){
   const declared=Number(req.headers.get('Content-Length')||0);
@@ -140,7 +115,7 @@ export default {
     }
     // Admin must explicitly flip kill-switch AFTER verifying billing and secret.
     if(env.AI_ENABLED!=='true')return error('ai-disabled','Kết nối NPC AI chưa được kích hoạt.',503,origin,env);
-    const user=await verifiedFirebaseUser(req,env.PROJECT_ID);
+    const user=await verifyFirebaseIdToken(req,env.PROJECT_ID);
     if(!user)return error('unauthenticated','Hãy đăng nhập DUDU Studio bằng Firebase.',401,origin,env);
     const bucket=env.DUDU_QUOTA.getByName('global-budget-v1');
     if(path==='/v1/status'){
