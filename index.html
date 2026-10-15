@@ -2542,6 +2542,9 @@
     function npcSelectPortraitPreset(id){
       if(!IS_SANDBOX_MODE)return;
       if(id&&!DuduNpcPortraitLibrary.preset(id))return;
+      // Invalidate a pending image upload whenever a new choice is made.
+      const picker=document.getElementById('npc-r8-gallery-panel');
+      if(picker)picker.dataset.uploadRequest='';
       document.getElementById('npc-r8-preset-id').value=id||'';
       document.getElementById('npc-r8-upload-id').value='';
       if(id)document.getElementById('npc-r7-portrait').value='';
@@ -2648,7 +2651,8 @@
         const dataUrl=canvas.toDataURL('image/jpeg',0.76);
         const id=DuduNpcPortraitLibrary.makeId();
         const saved=await DuduNpcPortraitLibrary.saveUpload(uid,storyId,id,dataUrl);
-        if(!saved||picker.dataset.uploadRequest!==token||editingCharNovelId!==storyId||
+        if(!saved||document.getElementById('char-modal')?.style.display!=='flex'||
+           picker.dataset.uploadRequest!==token||editingCharNovelId!==storyId||
            currentUsername!==uid&&!(uid==='sandbox-guest'&&!currentUsername))return;
         document.getElementById('npc-r8-preset-id').value='';
         document.getElementById('npc-r8-upload-id').value=id;
