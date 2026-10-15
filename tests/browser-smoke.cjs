@@ -1397,6 +1397,105 @@ async function main() {
     await page.evaluate(()=>{togglePhone();phoneHome();});
     await page.setViewportSize({width:1280,height:800});
 
+    // V16: player avatar and decorative frame are a local profile choice only.
+    await page.setViewportSize({width:375,height:812});
+    const playerV16=await page.evaluate(async()=>{
+      if(document.getElementById('cyber-phone').style.display!=='flex')togglePhone();
+      const original=JSON.stringify(userProfile);
+      const writesBefore=window.__firestoreWrites.length;
+      updatePhoneUI();
+      const initialAvatar=playerAvatarCurrentV16();
+      const initialFrame=document.getElementById('player-avatar-v1').dataset.frame;
+      openPlayerAvatarEditorV16();
+      const modal=document.getElementById('player-avatar-v16-modal');
+      const frames=document.querySelectorAll('#player-avatar-v16-frames button');
+      const frameCount=frames.length;
+      const locked=[...frames].filter(x=>x.disabled).length;
+      selectPlayerAvatarKindV16('anime');
+      const animeCount=document.querySelectorAll('#player-avatar-v16-preset-grid button').length;
+      document.querySelectorAll('#player-avatar-v16-preset-grid button')[2].click();
+      document.querySelectorAll('#player-avatar-v16-frames button')[3].click();
+      const pending={
+        kind:playerAvatarDraftV16.kind,
+        frameId:playerAvatarDraftV16.frameId,
+        presetId:playerAvatarDraftV16.presetId,
+        unchanged:JSON.stringify(userProfile)===original
+      };
+      closePlayerAvatarEditorV16();
+      openPlayerAvatarEditorV16();
+      const cancelled=playerAvatarDraftV16.kind===initialAvatar.kind&&
+        playerAvatarDraftV16.frameId===initialAvatar.frameId;
+      selectPlayerAvatarKindV16('vector');
+      const vectorCount=document.querySelectorAll('#player-avatar-v16-preset-grid button').length;
+      document.querySelectorAll('#player-avatar-v16-preset-grid button')[4].click();
+      document.querySelectorAll('#player-avatar-v16-frames button')[1].click();
+      savePlayerAvatarV16();
+      const saved=JSON.parse(localStorage.getItem(scopedLocalKey('profile'))||'{}').playerAvatar;
+      const rendered={
+        profile:document.getElementById('player-avatar-v1').dataset.frame,
+        header:document.getElementById('player-avatar-header-v16').dataset.frame,
+        home:document.getElementById('phone-player-avatar-v16').dataset.frame
+      };
+      openPlayerAvatarEditorV16();
+      selectPlayerAvatarKindV16('upload');
+      const canvas=document.createElement('canvas');
+      canvas.width=48;canvas.height=48;
+      const ctx=canvas.getContext('2d');ctx.fillStyle='#a487db';ctx.fillRect(0,0,48,48);
+      const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+      const file=new File([blob],'player.png',{type:'image/png'});
+      await uploadPlayerAvatarV16({target:{files:[file],value:''}});
+      const uploadedId=playerAvatarDraftV16.uploadId;
+      const ownImg=await DuduNpcPortraitLibrary.readUpload(
+        playerAvatarOwnerV16(),DuduPlayerAvatarV16.SCOPE,uploadedId);
+      const otherImg=await DuduNpcPortraitLibrary.readUpload(
+        'another-user',DuduPlayerAvatarV16.SCOPE,uploadedId);
+      savePlayerAvatarV16();
+      const uploadSaved=userProfile.playerAvatar?.uploadId===uploadedId;
+      const profileBytes=JSON.stringify(userProfile);
+      userProfile=JSON.parse(original);
+      saveCurrentAccount();
+      return {initialFrame,initialAvatar,frameCount,locked,animeCount,pending,
+        cancelled,vectorCount,saved,rendered,uploadedId,uploadSaved,
+        ownImg:typeof ownImg==='string'&&ownImg.startsWith('data:image/jpeg;base64,'),
+        otherImg,smallProfile:profileBytes.length<original.length+300,
+        writes:window.__firestoreWrites.length-writesBefore,
+        dialogHidden:modal.style.display==='none'};
+    });
+    assert.equal(playerV16.initialFrame,'none');
+    assert.equal(playerV16.frameCount,9);
+    assert.equal(playerV16.locked,3);
+    assert.equal(playerV16.animeCount,4);
+    assert.deepEqual(playerV16.pending,{
+      kind:'anime',frameId:'sakura',presetId:'anime-peach-court',unchanged:true
+    });
+    assert.equal(playerV16.cancelled,true);
+    assert.equal(playerV16.vectorCount,72);
+    assert.equal(playerV16.saved.kind,'vector');
+    assert.equal(playerV16.saved.frameId,'moon');
+    assert.equal(playerV16.saved.presetId,'portrait-f-05');
+    assert.deepEqual(playerV16.rendered,{profile:'moon',header:'moon',home:'moon'});
+    assert.match(playerV16.uploadedId,/^own-/);
+    assert.equal(playerV16.uploadSaved,true);
+    assert.equal(playerV16.ownImg,true);
+    assert.equal(playerV16.otherImg,null,'One Sandbox user cannot load another local image key');
+    assert.equal(playerV16.smallProfile,true,'Photo data must not be embedded in profile');
+    assert.equal(playerV16.writes,0,'V16 never writes Firestore');
+    assert.equal(playerV16.dialogHidden,true);
+    await page.evaluate(()=>openPlayerAvatarEditorV16());
+    const avatarLayout=await page.evaluate(()=>{
+      const rect=document.querySelector('.dudu-avatar-v16-window').getBoundingClientRect();
+      return {left:rect.left,right:rect.right,top:rect.top,bottom:rect.bottom,
+        width:innerWidth,height:innerHeight};
+    });
+    assert.ok(avatarLayout.left>=0&&avatarLayout.right<=avatarLayout.width+1);
+    assert.ok(avatarLayout.top>=0&&avatarLayout.bottom<=avatarLayout.height+1);
+    await page.keyboard.press('Escape');
+    assert.equal(await page.locator('#player-avatar-v16-modal').getAttribute('aria-hidden'),'true');
+    assert.equal(await page.locator('#cyber-phone').evaluate(x=>x.style.display),'flex',
+      'Closing player avatar editor cannot close the phone behind it');
+    await page.evaluate(()=>{togglePhone();phoneHome();});
+    await page.setViewportSize({width:1280,height:800});
+
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
     console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));
   } finally {
