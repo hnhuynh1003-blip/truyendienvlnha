@@ -9,7 +9,15 @@ const png=(side=256)=>{
  };
  dim(side,16);dim(side,20);b[24]=8;b[25]=6;return b;
 };
-const output=()=>({bytes:png(256),mime:'image/png',fullyDecoded:true,
+const webp=(width=256,height=256)=>{
+ const b=new Uint8Array(30);
+ b.set([82,73,70,70,22,0,0,0,87,69,66,80,86,80,56,88,10,0,0,0,0,0,0,0]);
+ const w=width-1,h=height-1;
+ b.set([w&255,(w>>>8)&255,(w>>>16)&255,
+   h&255,(h>>>8)&255,(h>>>16)&255],24);
+ return b;
+};
+const output=()=>({bytes:webp(),mime:'image/webp',fullyDecoded:true,
   metadataStripped:true,animated:false});
 const trusted=()=>({quarantinedBytes:png(),originalMime:'image/png',
  uid:'readerUid',assetId:'asset-001',
@@ -21,8 +29,13 @@ test('output only private normalized variants with a valid compressed signature'
  // different MIME while retaining a PNG header must be rejected.
  assert.deepEqual(await preparePrivateAvatarVariant(c),
    {ok:false,code:'unsafe-output'});
- const valid={...c,decodeAndTranscode:async()=>({...output(),mime:'image/jpeg'})};
- assert.equal((await preparePrivateAvatarVariant(valid)).ok,false);
+ const valid={...c,decodeAndTranscode:async()=>output()};
+ const result=await preparePrivateAvatarVariant(valid);
+ assert.equal(result.ok,true);
+ assert.equal(result.publishable,false);
+ assert.equal(result.mime,'image/webp');
+ assert.equal(result.state,'PRIVATE_VARIANT_READY');
+ assert.equal(Object.hasOwn(result,'url'),false);
 });
 test('normalizer refuses missing decoder/moderator, malformed or oversized originals',async()=>{
  for(const change of [
@@ -63,12 +76,14 @@ test('a trusted image processor must explicitly request clipping and EXIF remova
  let moderationSeen;
  input.moderate=async(x)=>{moderationSeen=x;return {approved:true,reviewerType:'trusted-server'};};
  const done=await preparePrivateAvatarVariant(input);
- assert.equal(done.ok,false,'Unapproved PNG output format must not pass');
+ assert.equal(done.ok,true,'Trusted codec and server moderation approve private variant');
+ assert.equal(done.publishable,false);
  assert.deepEqual(argumentsSeen.maxSide,512);
  assert.equal(argumentsSeen.stripMetadata,true);
  assert.equal(argumentsSeen.forceSquare,true);
  assert.equal(argumentsSeen.allowAnimation,false);
- assert.equal(moderationSeen,undefined);
+ assert.equal(moderationSeen.mime,'image/webp');
+ assert.equal(moderationSeen.ownerUid,'readerUid');
 });
 test('new finalizer not wired to any Worker route, no public image URLs',async()=>{
  const fs=await import('node:fs');const path=await import('node:path');
