@@ -1,0 +1,126 @@
+/* DUDU V15 — immersive character portrait viewer in Sandbox only. */
+body.dudu-phone-v11.npc-v15-modal-open{overflow:hidden;}
+body.dudu-phone-v11 .npc-v15-viewer{
+ position:fixed;inset:0;z-index:15000;
+ display:none;align-items:center;justify-content:center;
+ padding:max(12px,env(safe-area-inset-top,0px)) 14px
+   max(12px,env(safe-area-inset-bottom,0px));
+ background:rgba(5,7,20,.92);
+ backdrop-filter:blur(14px);
+ -webkit-backdrop-filter:blur(14px);
+ overflow-y:auto;
+}
+body.dudu-phone-v11 .npc-v15-stage{
+ position:relative;display:grid;
+ grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);
+ align-items:stretch;
+ width:min(900px,100%);
+ max-height:calc(100dvh - 24px);
+ min-height:min(520px,calc(100dvh - 24px));
+ overflow:hidden;
+ border:1px solid #ac91dd;
+ border-radius:22px;
+ background:linear-gradient(145deg,#272345,#101932 66%,#221b3b);
+ box-shadow:0 18px 90px #000c,0 0 35px #a27acc44,inset 0 1px #fffb;
+}
+body.dudu-phone-v11 .npc-v15-image{
+ position:relative;
+ display:grid;place-items:center;
+ min-height:360px;min-width:0;
+ overflow:hidden;
+ background-color:#1d2443;
+ background-size:cover;
+ background-position:center;
+ background-repeat:no-repeat;
+ font-size:42px;color:#c8c4e6;
+ isolation:isolate;
+}
+body.dudu-phone-v11 .npc-v15-image::after{
+ content:"";position:absolute;inset:0;
+ border-right:1px solid #e3c2f75b;pointer-events:none;
+ background:linear-gradient(to right,transparent 78%,#1b1a3633);
+}
+body.dudu-phone-v11 .npc-v15-image>img{
+ width:100% !important;height:100% !important;
+ max-width:none;object-fit:cover !important;border-radius:0 !important;
+}
+body.dudu-phone-v11 .npc-v15-details{
+ min-width:0;display:flex;flex-direction:column;
+ justify-content:center;gap:13px;padding:clamp(18px,3vw,42px);
+ color:#f0eafd;overflow-y:auto;
+}
+body.dudu-phone-v11 .npc-v15-eyebrow{
+ font-size:10px;letter-spacing:.22em;
+ color:#b5eefa;text-transform:uppercase;font-weight:700;
+}
+body.dudu-phone-v11 #npc-v15-title{
+ margin:0;color:#f8e8ff;
+ font-size:clamp(24px,3vw,38px);line-height:1.2;
+ text-shadow:0 0 18px #b88be851;overflow-wrap:anywhere;
+}
+body.dudu-phone-v11 #npc-v15-role{
+ font-size:15px;color:#b5e5f1;font-weight:700;
+}
+body.dudu-phone-v11 #npc-v15-status{
+ font-size:12px;color:#f4bcd8;
+}
+body.dudu-phone-v11 #npc-v15-note{
+ color:#cfc8e4;font-size:13px;line-height:1.75;
+ white-space:pre-wrap;overflow-wrap:anywhere;
+}
+body.dudu-phone-v11 .npc-v15-disclaimer{
+ border-top:1px solid #9b7eb74d;padding-top:15px;
+ font-size:10px;line-height:1.5;color:#a7a4c4;
+}
+body.dudu-phone-v11 .npc-v15-close{
+ position:absolute;top:13px;right:13px;z-index:2;
+ appearance:none;display:grid;place-items:center;
+ width:43px;height:43px;border:1px solid #e0c4f8a8;
+ border-radius:15px;color:#fdf7ff;
+ font-size:28px;cursor:pointer;line-height:1;
+ background:linear-gradient(145deg,#68487d,#263755);
+ box-shadow:0 6px 17px #02061799;
+}
+body.dudu-phone-v11 .npc-v15-close:hover{background:#94649a;}
+body.dudu-phone-v11 .npc-v15-close:focus-visible{
+ outline:3px solid #96eaff;outline-offset:3px;
+}
+body.dudu-phone-v11 #cyber-phone .npc-v15-view-button{
+ background:linear-gradient(135deg,#6552a7,#327ca9) !important;
+ color:#f9f2ff !important;
+ border:1px solid #b9b0f4 !important;
+}
+body.dudu-phone-v11 #cyber-phone .npc-v15-chat-button{
+ min-height:33px;max-width:70px;white-space:nowrap;font-size:10px !important;
+ padding:5px 7px !important;
+ background:linear-gradient(145deg,#674d91,#335f85) !important;
+}
+@media(max-width:640px){
+ body.dudu-phone-v11 .npc-v15-viewer{align-items:flex-start;padding:8px;}
+ body.dudu-phone-v11 .npc-v15-stage{
+   display:flex;flex-direction:column;
+   width:100%;max-width:420px;max-height:calc(100dvh - 16px);
+   min-height:0;
+   margin:auto;
+ }
+ body.dudu-phone-v11 .npc-v15-image{
+   min-height:0;aspect-ratio:3/4;
+   width:100%;flex-shrink:1;
+   max-height:65dvh;
+ }
+ body.dudu-phone-v11 .npc-v15-details{
+   padding:16px 19px 20px;gap:7px;
+   min-height:0;overflow-y:auto;
+ }
+ body.dudu-phone-v11 #npc-v15-title{font-size:23px;}
+ body.dudu-phone-v11 #npc-v15-note{font-size:11px;line-height:1.5;}
+ body.dudu-phone-v11 .npc-v15-close{width:41px;height:41px;top:8px;right:8px;}
+}
+@media(max-width:360px){
+ body.dudu-phone-v11 .npc-v15-image{max-height:56dvh;}
+ body.dudu-phone-v11 .npc-v15-details{padding:12px 15px;}
+}
+@media(prefers-reduced-motion:reduce){
+ body.dudu-phone-v11 .npc-v15-viewer,
+ body.dudu-phone-v11 .npc-v15-stage{animation:none !important;transition:none !important;}
+}
