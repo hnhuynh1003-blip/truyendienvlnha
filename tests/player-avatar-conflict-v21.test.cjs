@@ -19,7 +19,7 @@ test('V21 is clearly an offline-only illustration, not live account sync',()=>{
  assert.match(html,/src="js\/player-avatar-conflict-ui-v21.js"/);
  assert.match(html,/href="css\/player-avatar-conflict-v21.css"/);
  assert.match(ui,/if\(!IS_SANDBOX_MODE\)return/);
- assert.match(ui,/Đồng bộ máy chủ đang tắt/);
+ assert.match(html,/Đồng bộ máy chủ đang tắt/);
  assert.match(ui,/DuduPlayerAvatarSyncPlanV20\.review\(/);
  assert.match(ui,/DuduPlayerAvatarSyncPlanV20\.explicitChoice\(/);
  assert.doesNotMatch(ui,/\bfetch\s*\(|indexedDB\.|localStorage\.|saveCurrentAccount\(|saveDB\(|userProfile\.playerAvatar\s*=/);
@@ -31,7 +31,7 @@ test('V21 safely locks the simulated photo scenario and protects unsupported ser
  assert.match(ui,/use\.disabled=!plan\.canUseServer/);
  assert.match(ui,/Không thể ghi đè ảnh riêng/);
  assert.match(ui,/Không gửi ảnh lên mạng/);
- assert.match(ui,/Máy chủ \(giả lập\)/);
+ assert.match(html,/Máy chủ \(giả lập\)/);
 });
 test('V21 preview gets torn down on editor close and account reopen',()=>{
  assert.equal((avatarUi.match(/closePlayerAvatarSyncReviewV21\(\)/g)||[]).length,2);
