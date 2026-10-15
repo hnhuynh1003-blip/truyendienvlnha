@@ -1113,6 +1113,7 @@ async function main() {
     assert.notEqual(phoneDesktop.cardRadius,'0px');
     assert.notEqual(phoneDesktop.phoneBorder,'rgb(51, 65, 85)',
       'Phone must use new lavender border');
+    await page.evaluate(()=>phoneHome());
     await page.getByRole('button',{name:'Mở Kho Đồ'}).click();
     const openedInventory=await page.evaluate(()=>({
       inventory:document.getElementById('phone-app-inventory').style.display,
