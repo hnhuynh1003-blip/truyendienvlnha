@@ -841,6 +841,74 @@ async function main() {
     assert.equal(phoneLayout.help,true);
     assert.ok(Number.isFinite(phoneLayout.panelWidth), 'Hidden phone panel must not cause layout exceptions');
 
+    // R5/R6 + inventory: behavior in a browser with fake Firebase only.
+    const expansionSmoke=await page.evaluate(()=>{
+      const novel=novels[selectedNovelIndex];
+      const oldCharacters=novel.characters;
+      const snapshot=JSON.stringify(userProfile);
+      const originalChatNovel=activeChatNovelId;
+      const oldOptions=document.getElementById('chat-character-selector').innerHTML;
+      const oldSelection=document.getElementById('chat-character-selector').value;
+      const oldTab=inventoryTab;
+      const originals=Array.isArray(userProfile.inventory)?userProfile.inventory:[];
+      const ids=['c_otk','c_ttl','c_tct'];
+      novel.characters=[...oldCharacters];
+      for(const [idx,id] of ids.entries())if(!novel.characters.some(c=>c.id===id)){
+        novel.characters.push({id,name:['Ôn Tri Hành','Tô Thanh Lạc','Thẩm Cẩm Thư'][idx]});
+      }
+      activeChatNovelId=novel.id;
+      const state=getStoryProgress(novel.id);
+      state.collectedCharacters.c_otk={id:'c_otk',affinity:39,relationshipV2:{trust:0}};
+      const writesBefore=window.__firestoreWrites.length;
+      openPhoneApp('chat');
+      const sel=document.getElementById('chat-character-selector');
+      sel.value='c_otk';switchChatCharacter();
+      const firstBefore=state.collectedCharacters.c_otk.relationshipV2.trust;
+      npcDailyCheckin();
+      const afterFirst=state.collectedCharacters.c_otk.relationshipV2.trust;
+      const saved=JSON.parse(localStorage.getItem(scopedLocalKey('profile'))||'{}');
+      const savedTrust=saved.storyStates?.[novel.id]?.collectedCharacters?.c_otk?.relationshipV2?.trust;
+      npcDailyCheckin();
+      const afterRepeat=state.collectedCharacters.c_otk.relationshipV2.trust;
+      const disabled=document.getElementById('npc-daily-checkin-btn').disabled;
+      const portrait=document.getElementById('npc-portrait-v1').textContent;
+      userProfile.inventory=[
+        {...DuduItemCatalog.byId('f1')},
+        {...DuduItemCatalog.byId('e3')},
+        {...DuduItemCatalog.souvenirs[0]}
+      ];
+      inventoryTab='WEAPON';
+      openPhoneApp('inventory');
+      const filtered=document.getElementById('inventory-container').textContent;
+      const search=document.getElementById('inventory-v2-search');
+      search.value='DAO';
+      renderInventory();
+      const searchCount=document.getElementById('inventory-v2-count').textContent;
+      discardItem(2);
+      const protectedStillThere=userProfile.inventory.some(i=>i.scope==='DUDU');
+      discardItem(1);
+      const correctRemoved=userProfile.inventory.every(i=>i.id!=='e3')&&
+        userProfile.inventory.some(i=>i.id==='f1');
+      userProfile=JSON.parse(snapshot);saveCurrentAccount();
+      novel.characters=oldCharacters;
+      activeChatNovelId=originalChatNovel;inventoryTab=oldTab;
+      sel.innerHTML=oldOptions;sel.value=oldSelection;
+      return {firstBefore,afterFirst,afterRepeat,savedTrust,disabled,portrait,
+        filtered,searchCount,protectedStillThere,correctRemoved,
+        writes:window.__firestoreWrites.length-writesBefore};
+    });
+    assert.equal(expansionSmoke.firstBefore,0);
+    assert.equal(expansionSmoke.afterFirst,3);
+    assert.equal(expansionSmoke.afterRepeat,3,'One check-in per NPC/day');
+    assert.equal(expansionSmoke.savedTrust,3,'Sandbox trust persists locally');
+    assert.equal(expansionSmoke.disabled,true);
+    assert.ok(expansionSmoke.portrait.length>0,'NPC avatar initials must render');
+    assert.match(expansionSmoke.filtered,/Dao Gọt Trái Cây Cũ/);
+    assert.match(expansionSmoke.searchCount,/1\/3/);
+    assert.equal(expansionSmoke.protectedStillThere,true,'Souvenir must not be discarded');
+    assert.equal(expansionSmoke.correctRemoved,true,'Filtering must not delete a different item');
+    assert.equal(expansionSmoke.writes,0,'Sandbox R5 and inventory never write Firestore');
+
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
     console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));
   } finally {
