@@ -2207,7 +2207,7 @@
         div.innerHTML = `
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <div style="display:flex; align-items:center; gap:6px;">
-              <span style="font-size:18px;">👤</span>
+              <span data-npc-portrait="1" style="font-size:18px;">👤</span>
               <span style="font-size: 12px; font-weight: bold; color: var(--neon);">${escapeHtml(c.name)}</span>
               <span style="font-size: 9px; color: var(--text-dim);">[${escapeHtml(c.role || 'Chưa rõ')}]</span>
             </div>
@@ -2228,6 +2228,20 @@
           
           </div>
         `;
+        if(IS_SANDBOX_MODE){
+          const preview=div.querySelector('[data-npc-portrait]');
+          if(preview){
+            const preset=DuduNpcPersonaR6.previewNpc(c);
+            const palette={otk:'#155e75',ttl:'#6d28d9',tct:'#92400e'};
+            preview.textContent=(c.name||'NPC').trim().split(/\s+/).slice(-2)
+              .map(part=>part[0]||'').join('').toLocaleUpperCase('vi');
+            preview.title='Ảnh tạm — chưa phải minh họa nhân vật chính thức';
+            preview.style.cssText='display:inline-flex;align-items:center;justify-content:center;'+
+              'width:28px;height:28px;min-width:28px;border-radius:9px;color:#f8fafc;font-weight:700;'+
+              'background:'+(palette[preset?.previewPortraitKey]||'#334155')+
+              ';font-size:11px;border:1px solid #64748b;';
+          }
+        }
         container.appendChild(div);
       });
     }
