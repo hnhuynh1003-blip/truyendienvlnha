@@ -1866,6 +1866,7 @@
           saved, 'sandbox-user', storyId, char.id);
         const affection = relation ? relation.affinity : 0;
         const trust = relation ? relation.relationshipV2.trust : 0;
+        const ceiling = DuduNpcRelationshipV2.affinityCeiling(trust);
         // Preview-only. Milestones cannot be inferred from affinity, chat or gifts.
         // Author-approved and independently verified milestones are not yet wired.
         const stage = DuduNpcRelationStages.stage({
@@ -1876,7 +1877,8 @@
           FRIENDLY:'Thân thiện',TRUSTED:'Tin cậy',BONDED:'Gắn bó'};
         affinityEl.textContent = '❤️ ' + affection + '%';
         panel.textContent = '❤️ Thiện cảm: '+affection+'/100  •  🛡️ Tin tưởng: '+
-          trust+'/100  •  '+(labels[stage]||'Chưa kết nối');
+          trust+'/100  •  '+(labels[stage]||'Chưa kết nối')+
+          '  •  Trần thiện cảm mới: '+ceiling+'/100';
         panel.title = 'Thử nghiệm R3: các giai đoạn cao cần mốc truyện đã được xác minh.';
       } else {
         if(panel)panel.style.display='none';
