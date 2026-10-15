@@ -954,18 +954,18 @@
         <p style="font-size:11px;color:var(--text-dim);">Đăng nhập an toàn để lưu tiến trình riêng của bạn.</p>
         <button class="btn btn-primary" style="width:100%;margin-top:8px;" onclick="DuduAuth.google()">Đăng nhập bằng Google</button>
         <div class="modal-field" style="text-align:left;margin-top:8px;">
-          <label>Email:</label><input type="email" id="auth-email" autocomplete="email" placeholder="email@example.com">
+          <label for="auth-email">Email:</label><input type="email" id="auth-email" autocomplete="email" inputmode="email" placeholder="email@example.com">
         </div>
         <div class="modal-field" style="text-align:left;">
-          <label>Mật khẩu:</label><input type="password" id="auth-password" autocomplete="current-password" placeholder="Ít nhất 6 ký tự">
+          <label for="auth-password">Mật khẩu Firebase:</label><input type="password" id="auth-password" autocomplete="current-password" placeholder="Mật khẩu đã tạo trên Firebase">
         </div>
         <div style="display:flex;gap:8px;">
-          <button class="btn btn-primary" style="flex:1;" onclick="DuduAuth.email(false)">Đăng nhập</button>
-          <button class="btn" style="flex:1;" onclick="DuduAuth.email(true)">Đăng ký</button>
+          <button id="auth-email-login-btn" type="button" class="btn btn-primary" style="flex:1;" onclick="DuduAuth.email(false)">Đăng nhập</button>
+          <button id="auth-email-register-btn" type="button" class="btn" style="flex:1;" onclick="DuduAuth.email(true)">Đăng ký</button>
         </div>
         <button class="btn" style="width:100%;margin-top:8px;" onclick="DuduAuth.signout()">Đăng xuất</button>
       </div>
-      <p id="auth-status-message" style="font-size:11px;color:var(--gold);margin-top:8px;" role="status"></p>
+      <p id="auth-status-message" style="font-size:12px;color:var(--gold);margin-top:10px;line-height:1.6;min-height:20px;" role="status" aria-live="polite"></p>
       <button class="btn" style="width:100%;margin-top:8px;" onclick="closeModals()">Đóng</button>
     </div>
   </div>
