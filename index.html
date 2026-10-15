@@ -24,6 +24,7 @@
   <script src="js/item-catalog-v2.js"></script>
   <script src="js/npc-relationship-v2-r1.js"></script>
   <script src="js/npc-gift-v2-r2.js"></script>
+  <script src="js/npc-relationship-v2-r3.js"></script>
   <script src="js/loot-rules-v2.js"></script>
   <script src="js/author-items-v1.js"></script>
   <script src="js/npc-editor-v1.js"></script>
@@ -903,6 +904,7 @@
           <span style="font-size:10px; color:var(--gold); white-space:nowrap;" id="chat-char-affinity">❤️ 10%</span>
         </div>
 
+        <div id="npc-relationship-r3-preview" role="status" aria-live="polite" style="display:none; font-size:10px; line-height:1.4; padding:5px 7px; margin-bottom:6px; border:1px solid #334155; border-radius:6px; color:#cbd5e1; background:#17212f;"></div>
         <div id="chat-messages-container" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 8px; background: rgba(10, 14, 20, 0.6); border-radius: 8px; border: 1px solid #1f2937; margin-bottom: 6px;"></div>
         <div id="chat-connection-status" role="status" aria-live="polite" style="display:none; font-size:10px; color:var(--gold); padding:3px 5px; line-height:1.35;">
           <span id="chat-connection-message"></span>
@@ -1856,10 +1858,33 @@
       const storyId = activeChatNovelId || (novels[selectedNovelIndex] || {}).id;
       const unlocked = getStoryProgress(storyId).collectedCharacters;
       const affinityEl = document.getElementById('chat-char-affinity');
-      if (char && unlocked[char.id]) {
-        affinityEl.textContent = `❤️ ${unlocked[char.id].affinity || 10}%`;
+      const panel = document.getElementById('npc-relationship-r3-preview');
+      if (IS_SANDBOX_MODE && panel) {
+        panel.style.display = 'block';
+        const saved = char && unlocked[char.id];
+        const relation = saved && DuduNpcRelationshipV2.previewRelationship(
+          saved, 'sandbox-user', storyId, char.id);
+        const affection = relation ? relation.affinity : 0;
+        const trust = relation ? relation.relationshipV2.trust : 0;
+        // Preview-only. Milestones cannot be inferred from affinity, chat or gifts.
+        // Author-approved and independently verified milestones are not yet wired.
+        const stage = DuduNpcRelationStages.stage({
+          unlocked:!!relation,affinity:affection,trust,
+          approvedMilestones:[],completedMilestones:[]
+        });
+        const labels={LOCKED:'Chưa kết nối',ACQUAINTED:'Quen biết',
+          FRIENDLY:'Thân thiện',TRUSTED:'Tin cậy',BONDED:'Gắn bó'};
+        affinityEl.textContent = '❤️ ' + affection + '%';
+        panel.textContent = '❤️ Thiện cảm: '+affection+'/100  •  🛡️ Tin tưởng: '+
+          trust+'/100  •  '+(labels[stage]||'Chưa kết nối');
+        panel.title = 'Thử nghiệm R3: các giai đoạn cao cần mốc truyện đã được xác minh.';
       } else {
-        affinityEl.textContent = `❤️ 10%`;
+        if(panel)panel.style.display='none';
+        if (char && unlocked[char.id]) {
+          affinityEl.textContent = `❤️ ${unlocked[char.id].affinity || 10}%`;
+        } else {
+          affinityEl.textContent = `❤️ 10%`;
+        }
       }
       renderChatMessages(charId);
     }
