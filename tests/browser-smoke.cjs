@@ -978,6 +978,65 @@ async function main() {
       'Editing must not create or unlock extra NPCs');
     assert.equal(npcR7Author.writes,0,'R7 sandbox authoring cannot write Firestore');
 
+    // R8: author picks one of 24 feminine prototype portraits or uploads a
+    // local image. Never moves the binary into the public novel / Firestore.
+    const portraitBrowser=await page.evaluate(async()=>{
+      const story=novels[selectedNovelIndex];
+      const idx=story.characters.findIndex(n=>n&&n.id);
+      if(idx<0)return {missing:true};
+      const original=JSON.stringify(story.characters);
+      const originalRole=userProfile.role,priorNovel=editingCharNovelId;
+      const beforeWrites=window.__firestoreWrites.length;
+      userProfile.role='admin';applyUserRole();
+      renderCodexDropdown();
+      document.getElementById('codex-novel-selector').value=story.id;
+      openEditCharacterModal(idx);
+      const choices=document.querySelectorAll('#npc-r8-gallery [data-portrait-id]').length;
+      npcSelectPortraitPreset('portrait-f-07');
+      const preview=document.getElementById('npc-r8-preview');
+      const presetPreview=preview.src.startsWith('data:image/svg+xml');
+      saveCharacterModal();
+      const id=story.characters[idx].id;
+      const selected=story.characters[idx].portraitPresetId;
+      openEditCharacterModal(idx);
+      const canvas=document.createElement('canvas');canvas.width=60;canvas.height=60;
+      const ctx=canvas.getContext('2d');ctx.fillStyle='#663399';ctx.fillRect(0,0,60,60);
+      const blob=await new Promise(done=>canvas.toBlob(done,'image/png'));
+      const file=new File([blob],'avatar.png',{type:'image/png'});
+      await npcUploadPortrait({target:{files:[file],value:''}});
+      const uploadId=document.getElementById('npc-r8-upload-id').value;
+      const ownSrc=await DuduNpcPortraitLibrary.readUpload(
+        currentUsername||'sandbox-guest',story.id,uploadId);
+      const otherSrc=await DuduNpcPortraitLibrary.readUpload(
+        'not-the-user',story.id,uploadId);
+      saveCharacterModal();
+      const uploaded=story.characters[idx].portraitUploadId;
+      const sameCount=story.characters.length===JSON.parse(original).length;
+      story.characters=JSON.parse(original);
+      localStorage.setItem('dudu-sandbox-library',JSON.stringify(novels));
+      userProfile.role=originalRole;applyUserRole();editingCharNovelId=priorNovel;
+      return {missing:false,choices,presetPreview,selected,uploadId,uploaded,
+        ownSrc:typeof ownSrc==='string'&&ownSrc.startsWith('data:image/jpeg;base64,'),
+        otherSrc,sameCount,writes:window.__firestoreWrites.length-beforeWrites};
+    });
+    assert.equal(portraitBrowser.missing,false);
+    assert.equal(portraitBrowser.choices,24);
+    assert.equal(portraitBrowser.presetPreview,true);
+    assert.equal(portraitBrowser.selected,'portrait-f-07');
+    assert.ok(/^own-/.test(portraitBrowser.uploadId));
+    assert.equal(portraitBrowser.uploaded,portraitBrowser.uploadId);
+    assert.equal(portraitBrowser.ownSrc,true);
+    assert.equal(portraitBrowser.otherSrc,null,'Uploaded portrait is scoped to sandbox identity');
+    assert.equal(portraitBrowser.sameCount,true,'Choosing portrait never creates NPC');
+    assert.equal(portraitBrowser.writes,0,'No real Firestore writes while selecting pictures');
+    const storyDatesBrowser=await page.evaluate(()=>{
+      const story={updatedAt:'2026-10-15',
+        chapters:[{updatedAt:'2026-10-09'},{updatedAt:'2026-10-11'}]};
+      return {day:getNovelLatestDate(story),
+        label:DuduStoryDates.display(getNovelLatestDate(story))};
+    });
+    assert.deepEqual(storyDatesBrowser,{day:'2026-10-15',label:'15/10/2026'});
+
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
     console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));
   } finally {
