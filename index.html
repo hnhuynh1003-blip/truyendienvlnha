@@ -1389,6 +1389,11 @@
     }
 
     function openAuthModal() {
+      if (document.getElementById('chapter-modal').style.display === 'flex' ||
+          document.getElementById('char-modal').style.display === 'flex') {
+        showSystemAlert('CHƯA ĐÓNG TRÌNH SOẠN', 'Đóng trình soạn chương hoặc NPC trước khi đổi tài khoản.');
+        return;
+      }
       const uInput = document.getElementById('auth-username');
       if (uInput) uInput.value = IS_SANDBOX_MODE ? currentUsername : '';
       document.getElementById('auth-sandbox-controls').style.display = IS_SANDBOX_MODE ? 'block' : 'none';
