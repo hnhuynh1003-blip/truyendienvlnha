@@ -88,6 +88,7 @@ async function main() {
     await page.evaluate(() => {
       chatHistories['truyen-dien-vl::c2'] = [{ role: 'user', text: 'private from tester-a' }];
       saveChatHistories();
+      closeModals();
       openAuthModal();
     });
     await page.locator('#auth-username').fill('tester-b');
