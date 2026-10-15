@@ -15,6 +15,8 @@
   <!-- FIREBASE SDK COMPAT -->
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
+  <script src="js/auth-v2.js"></script>
 
   <style>
     :root {
@@ -940,15 +942,31 @@
       <h2>🔑 ĐĂNG NHẬP HỆ THỐNG</h2>
       <p style="font-size: 11px; color: var(--text-dim);">Đăng nhập tài khoản riêng để lưu Kho Đồ, Xu, Cấp Độ độc lập.</p>
       
-      <div class="modal-field" style="text-align: left; margin-top: 8px;">
-        <label>Tên đăng nhập:</label>
-        <input type="text" id="auth-username" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Ví dụ: dudu_phone hoặc reader_pc">
+      <div id="auth-sandbox-controls">
+        <p style="font-size:11px;color:var(--gold);">Chế độ Sandbox: tên tài khoản chỉ dùng để thử nghiệm cục bộ.</p>
+        <div class="modal-field" style="text-align:left;margin-top:8px;">
+          <label>Tên thử nghiệm:</label>
+          <input type="text" id="auth-username" autocomplete="off" placeholder="tester-a">
+        </div>
+        <button class="btn btn-primary" style="width:100%;" onclick="handleAuthSubmit()">Đổi tài khoản thử</button>
       </div>
-
-      <div style="display: flex; gap: 8px; margin-top: 10px;">
-        <button class="btn" style="flex:1" onclick="closeModals()">Đóng</button>
-        <button class="btn btn-primary" style="flex:1" onclick="handleAuthSubmit()">Xác Nhận</button>
+      <div id="auth-secure-controls" style="display:none;">
+        <p style="font-size:11px;color:var(--text-dim);">Đăng nhập an toàn để lưu tiến trình riêng của bạn.</p>
+        <button class="btn btn-primary" style="width:100%;margin-top:8px;" onclick="DuduAuth.google()">Đăng nhập bằng Google</button>
+        <div class="modal-field" style="text-align:left;margin-top:8px;">
+          <label>Email:</label><input type="email" id="auth-email" autocomplete="email" placeholder="email@example.com">
+        </div>
+        <div class="modal-field" style="text-align:left;">
+          <label>Mật khẩu:</label><input type="password" id="auth-password" autocomplete="current-password" placeholder="Ít nhất 6 ký tự">
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-primary" style="flex:1;" onclick="DuduAuth.email(false)">Đăng nhập</button>
+          <button class="btn" style="flex:1;" onclick="DuduAuth.email(true)">Đăng ký</button>
+        </div>
+        <button class="btn" style="width:100%;margin-top:8px;" onclick="DuduAuth.signout()">Đăng xuất</button>
       </div>
+      <p id="auth-status-message" style="font-size:11px;color:var(--gold);margin-top:8px;" role="status"></p>
+      <button class="btn" style="width:100%;margin-top:8px;" onclick="closeModals()">Đóng</button>
     </div>
   </div>
 
@@ -1173,7 +1191,7 @@
     ];
 
     let novels = JSON.parse(localStorage.getItem(IS_SANDBOX_MODE ? 'dudu-sandbox-library' : 'my_novels_library_db')) || initialNovels;
-    let currentUsername = localStorage.getItem(IS_SANDBOX_MODE ? 'dudu-sandbox-current-user' : 'my_current_logged_user') || "";
+    let currentUsername = IS_SANDBOX_MODE ? (localStorage.getItem('dudu-sandbox-current-user') || '') : '';
     
     let userProfile = {
       username: "guest",
@@ -1308,9 +1326,13 @@
       if (isZen) toggleZenMode();
     }
 
+    function canEditStories() {
+      return userProfile.role === 'admin' && (IS_SANDBOX_MODE || DuduAuth.isAdmin());
+    }
+
     function applyUserRole() {
       const btn = document.getElementById('role-toggle-btn');
-      if (userProfile.role === 'admin') {
+      if (canEditStories()) {
         document.body.classList.remove('is-reader');
         if (btn) {
           btn.textContent = "👑 Tác Giả";
@@ -1326,13 +1348,17 @@
     }
 
     function toggleUserRole() {
+      if (!IS_SANDBOX_MODE && !DuduAuth.isAdmin()) {
+        showSystemAlert('KHÔNG CÓ QUYỀN', 'Quyền Tác giả phải được cấp bởi quản trị viên.');
+        return;
+      }
       userProfile.role = (userProfile.role === 'admin') ? 'reader' : 'admin';
       applyUserRole();
       saveCurrentAccount();
     }
 
     function saveCurrentAccount() {
-      if (!currentUsername) return;
+      if (!currentUsername || (!IS_SANDBOX_MODE && (!DuduAuth.isReady() || DuduAuth.uid() !== currentUsername))) return;
 
       const localKey = IS_SANDBOX_MODE ? scopedLocalKey('profile') : `profile_${currentUsername}`;
       localStorage.setItem(localKey, JSON.stringify(userProfile));
@@ -1353,7 +1379,7 @@
 
       if (IS_SANDBOX_MODE) { updatePhoneUI(); return; }
       try {
-        db.collection("user_profiles").doc(currentUsername).set(cloudData, { merge: true })
+        db.collection("profiles_v2").doc(DuduAuth.uid()).set(cloudData, { merge: true })
           .catch(err => console.warn("Lỗi đồng bộ Firebase (vẫn chạy offline):", err));
       } catch (e) {
         console.warn("Không gửi được lên Firebase:", e);
@@ -1364,12 +1390,19 @@
 
     function openAuthModal() {
       const uInput = document.getElementById('auth-username');
-      if (uInput) uInput.value = currentUsername || '';
+      if (uInput) uInput.value = IS_SANDBOX_MODE ? currentUsername : '';
+      document.getElementById('auth-sandbox-controls').style.display = IS_SANDBOX_MODE ? 'block' : 'none';
+      document.getElementById('auth-secure-controls').style.display = IS_SANDBOX_MODE ? 'none' : 'block';
+      if (!IS_SANDBOX_MODE) DuduAuth.showStatus();
       const m = document.getElementById('auth-modal');
       if (m) m.style.display = 'flex';
     }
 
     function handleAuthSubmit() {
+      if (!IS_SANDBOX_MODE) {
+        alert('Vui lòng sử dụng đăng nhập Google hoặc Email.');
+        return;
+      }
       try {
         const uEl = document.getElementById('auth-username');
         const usernameInput = uEl ? uEl.value.trim().toLowerCase() : '';
@@ -1431,6 +1464,7 @@
     }
 
     function loadLocalAccountProfile() {
+      if (!IS_SANDBOX_MODE) { DuduAuth.init(); return; }
       if (!currentUsername) {
         setTimeout(openAuthModal, 600);
       } else {
@@ -2028,7 +2062,7 @@ Quy tắc phản hồi:
     }
 
     function openAddCharacterModal(fromChapter = false) {
-      if (userProfile.role !== 'admin') return;
+      if (!canEditStories()) return;
       const novel = fromChapter ? novels[selectedNovelIndex] : getSelectedCodexNovel();
       if (!novel) { alert("Vui lòng tạo truyện trước!"); return; }
       editingCharIndex = null;
@@ -2059,7 +2093,7 @@ Quy tắc phản hồi:
     }
 
     function openEditCharacterModal(idx) {
-      if (userProfile.role !== 'admin') return;
+      if (!canEditStories()) return;
       const novel = getSelectedCodexNovel();
       editingCharIndex = idx;
       editingCharNovelId = novel.id;
@@ -2076,7 +2110,7 @@ Quy tắc phản hồi:
     }
 
     function saveCharacterModal() {
-      if (userProfile.role !== 'admin') return;
+      if (!canEditStories()) return;
       const novel = novels.find(n => n.id === editingCharNovelId);
       if (!novel) { alert("Không tìm thấy truyện gốc của NPC."); return; }
       const name = document.getElementById('char-input-name').value.trim();
@@ -2115,7 +2149,7 @@ Quy tắc phản hồi:
     }
 
     function deleteCharacterFromCodex(idx) {
-      if (userProfile.role !== 'admin') return;
+      if (!canEditStories()) return;
       const novel = getSelectedCodexNovel();
       if (confirm(`Bạn có chắc muốn xóa nhân vật "${novel.characters[idx].name}"?`)) {
         novel.characters.splice(idx, 1);
@@ -2319,6 +2353,10 @@ Quy tắc phản hồi:
     }
 
     function saveDB() {
+      if (!IS_SANDBOX_MODE && !canEditStories()) {
+        showSystemAlert('CHỈ ĐỌC', 'Chỉ Tác giả được cấp quyền mới có thể cập nhật truyện.');
+        return;
+      }
       localStorage.setItem(IS_SANDBOX_MODE ? 'dudu-sandbox-library' : 'my_novels_library_db', JSON.stringify(novels));
       saveCurrentAccount();
       if (IS_SANDBOX_MODE) {
@@ -2887,6 +2925,7 @@ Quy tắc phản hồi:
     }
 
     function deleteCurrentNovel() {
+      if (!canEditStories()) return;
       if (confirm(`Bạn có chắc muốn xóa tác phẩm "${novels[selectedNovelIndex].title}" không?`)) {
         novels.splice(selectedNovelIndex, 1);
         saveDB();
@@ -3113,6 +3152,7 @@ Quy tắc phản hồi:
     }
 
     function saveStoryModal() {
+      if (!canEditStories()) return;
       const title = document.getElementById('story-modal-title').value.trim();
       const coverUrlInput = document.getElementById('story-modal-cover-url').value.trim();
       const coverBase64 = document.getElementById('story-modal-cover-base64').value;
@@ -3256,6 +3296,7 @@ Quy tắc phản hồi:
     }
 
     function saveChapterModal() {
+      if (!canEditStories()) return;
       const title = document.getElementById('chapter-modal-title').value.trim();
       const content = document.getElementById('chapter-modal-content').value.trim();
       const authorNote = document.getElementById('chapter-modal-author-note').value.trim();
@@ -3307,6 +3348,7 @@ Quy tắc phản hồi:
     }
 
     function deleteChapter(chIdx) {
+      if (!canEditStories()) return;
       if (confirm(`Bạn có chắc muốn xóa "${novels[selectedNovelIndex].chapters[chIdx].title}" không?`)) {
         novels[selectedNovelIndex].chapters.splice(chIdx, 1);
         saveDB();
