@@ -1,0 +1,31 @@
+/* V13 illustrated inventory miniatures — protected Sandbox scope. */
+body.dudu-phone-v11 #cyber-phone .dudu-item-v13-frame {
+  overflow:hidden;padding:0 !important;
+  border-color:var(--rarity-glow,#74809e) !important;
+  background:linear-gradient(145deg,#101833,#252e52) !important;
+  box-shadow:0 0 9px color-mix(in srgb,var(--rarity-glow,#74809e) 33%,transparent),
+    inset 0 1px #ffffff44 !important;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-item-v13-art {
+  display:block;width:100%;height:100%;object-fit:cover;
+  user-select:none;-webkit-user-drag:none;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-inventory-v12-row[data-rarity] {
+  border-left:3px solid var(--rarity-glow,#8997b5) !important;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-inventory-v12-row[data-rarity="SSS"],
+body.dudu-phone-v11 #cyber-phone .dudu-inventory-v12-row[data-rarity="SS"],
+body.dudu-phone-v11 #cyber-phone .dudu-inventory-v12-row[data-rarity="S"] {
+  background:linear-gradient(135deg,#38304e,#242d4c) !important;
+  box-shadow:inset 0 1px #ffffff2e,
+    0 0 13px color-mix(in srgb,var(--rarity-glow) 27%,transparent);
+}
+body.dudu-phone-v11 #cyber-phone #inventory-v12-detail
+ .dudu-inventory-v12-detail-icon.dudu-item-v13-frame{
+  width:58px;height:58px;min-width:58px;border-radius:14px;
+}
+@media(prefers-reduced-motion:reduce) {
+  body.dudu-phone-v11 #cyber-phone .dudu-item-v13-frame {
+    animation:none !important;
+  }
+}
