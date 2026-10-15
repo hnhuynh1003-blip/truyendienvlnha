@@ -75,7 +75,7 @@
     // accept an arbitrary reader UID in this experimental UI.
     const uid=user.uid;
     const result=await authorRequest('/v1/collectibles/admin/grant',{
-      uid,storyId,itemId
+      storyId,itemId // Recipient UID is exclusively derived from the signed JWT.
     },uid);
     if(root.firebase?.auth?.()?.currentUser?.uid!==uid)
       return {ok:false,reason:'account-changed'};
