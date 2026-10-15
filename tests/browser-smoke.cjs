@@ -222,6 +222,32 @@ async function main() {
     assert.equal(npcLongMemory.chatCleared,true);
     assert.equal(npcLongMemory.writes,0,'Sandbox must make no production writes');
 
+    const lateAI = await page.evaluate(async () => {
+      const novel=novels[selectedNovelIndex];
+      const char=novel.characters.find(c=>c.name==='Nhân vật thử nghiệm');
+      const key=chatKey(char.id,novel.id);
+      let begin;
+      const started=new Promise(resolve=>{begin=resolve;});
+      let finish;
+      DuduAI.generate=()=>new Promise(resolve=>{finish=resolve;begin();});
+      document.getElementById('chat-user-input').value='Bạn còn nhớ bí mật của khu rừng không?';
+      const pending=sendChatMessage();
+      await started;
+      window.confirm=()=>true;
+      clearCurrentChat();
+      finish({text:'Phản hồi AI đã đến muộn.'});
+      await pending;
+      return {
+        chatCount:(chatHistories[key]||[]).length,
+        memoryCount:npcMemoryStore(novel.id,char.id).list().length,
+        storedKey:localStorage.getItem(scopedLocalKey('chats')),
+        writes:window.__firestoreWrites.length
+      };
+    });
+    assert.equal(lateAI.chatCount,0,'Late AI must not re-create a cleared conversation');
+    assert.equal(lateAI.memoryCount,0,'Late AI must not re-create deleted NPC memories');
+    assert.equal(lateAI.writes,0);
+
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
     console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));
   } finally {
