@@ -838,8 +838,13 @@
           <button class="filter-btn active" id="inv-tab-all" onclick="filterInventory('ALL', this)">Tất cả</button>
           <button class="filter-btn" id="inv-tab-food" onclick="filterInventory('FOOD', this)">Đồ ăn</button>
           <button class="filter-btn" id="inv-tab-weapon" onclick="filterInventory('WEAPON', this)">Vũ khí</button>
+          <button class="filter-btn" id="inv-tab-item" onclick="filterInventory('ITEM', this)">Vật dụng</button>
         </div>
 
+        <div id="inventory-v2-toolbar" style="display:none;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 8px;">
+          <input id="inventory-v2-search" type="search" placeholder="Tìm vật phẩm..." aria-label="Tìm trong kho đồ" oninput="renderInventory()" style="min-width:130px;flex:1;background:#111827;color:#e2e8f0;border:1px solid #334155;border-radius:6px;padding:6px;font-size:11px;"/>
+          <span id="inventory-v2-count" style="font-size:10px;color:#94a3b8;"></span>
+        </div>
         <div id="inventory-container"></div>
       </div>
 
@@ -2581,38 +2586,73 @@
     }
 
     function renderInventory() {
-      const container = document.getElementById('inventory-container');
-      container.innerHTML = "";
-
-      let items = userProfile.inventory || [];
-      if (inventoryTab !== 'ALL') {
-        items = items.filter(i => i.type === inventoryTab);
+      const container=document.getElementById('inventory-container');
+      if(!container)return;
+      container.replaceChildren();
+      const toolbar=document.getElementById('inventory-v2-toolbar');
+      if(toolbar)toolbar.style.display=IS_SANDBOX_MODE?'flex':'none';
+      const q=IS_SANDBOX_MODE ?
+        (document.getElementById('inventory-v2-search')?.value||'').trim().toLocaleLowerCase('vi'):'';
+      const originals=Array.isArray(userProfile.inventory)?userProfile.inventory:[];
+      const items=originals.map((item,index)=>({item,index})).filter(({item})=>
+        (inventoryTab==='ALL'||item.type===inventoryTab)&&
+        (!q||String(item.name||'').toLocaleLowerCase('vi').includes(q)));
+      const count=document.getElementById('inventory-v2-count');
+      if(count)count.textContent=items.length+'/'+originals.length+' món';
+      if(!items.length){
+        const empty=document.createElement('div');
+        empty.style.cssText='text-align:center;color:#94a3b8;font-size:11px;padding:16px;';
+        empty.textContent='Không có vật phẩm phù hợp.';
+        container.append(empty);return;
       }
-
-      if (items.length === 0) {
-        container.innerHTML = `<div style="text-align:center; color:#64748b; font-size:11px; padding:16px;">Hòm đồ mục này trống.</div>`;
-        return;
+      for(const {item,index} of items){
+        const canonical=DuduItemCatalog.byId(item.id||item.itemId);
+        const protectedItem=canonical?.discardable===false||
+          item.discardable===false||item.unique===true||canonical?.unique===true||
+          canonical?.scope==='DUDU';
+        const div=document.createElement('div');
+        div.className='item-card';
+        const glyph=document.createElement('span');
+        glyph.textContent=item.icon||canonical?.icon||'🎒';
+        glyph.style.cssText='font-size:22px;min-width:33px;text-align:center;';
+        const body=document.createElement('div');
+        body.style.cssText='flex:1;min-width:0;';
+        const rank=document.createElement('span');
+        const safeRank=DuduItemCatalog.RANKS.includes(item.rank)?item.rank:'F';
+        rank.className='rank-tag rank-'+safeRank;
+        rank.textContent=safeRank;
+        const name=document.createElement('span');
+        name.textContent=item.name||canonical?.name||'Vật phẩm';
+        name.style.cssText='font-size:11px;font-weight:bold;color:var(--text-white);overflow-wrap:anywhere;margin-left:5px;';
+        body.append(rank,name);
+        if(IS_SANDBOX_MODE){
+          const description=document.createElement('div');
+          description.textContent=protectedItem?'🔒 Kỷ vật được bảo vệ':
+            (item.desc||canonical?.desc||'Vật phẩm trong hành trang');
+          description.style.cssText='font-size:9px;color:#94a3b8;margin-top:3px;line-height:1.4;';
+          body.append(description);
+        }
+        const btn=document.createElement('button');
+        btn.className='btn btn-danger';btn.textContent=protectedItem?'Khóa':'Vứt';
+        btn.style.cssText='padding:2px 6px;font-size:9px;';
+        btn.disabled=protectedItem;
+        if(protectedItem)btn.title='Không được vứt kỷ vật độc quyền.';
+        else btn.addEventListener('click',()=>discardItem(index));
+        div.append(glyph,body,btn);container.append(div);
       }
-
-      items.forEach((item, idx) => {
-        const div = document.createElement('div');
-        div.className = 'item-card';
-        div.innerHTML = `
-          <div style="font-size:20px;">${item.icon}</div>
-          <div style="flex:1;">
-            <div style="display:flex; align-items:center; gap:4px;">
-              <span class="rank-tag rank-${item.rank}">${item.rank}</span>
-              <span style="font-size:11px; font-weight:bold; color:var(--text-white);">${escapeHtml(item.name)}</span>
-            </div>
-          </div>
-          <button class="btn btn-danger" style="padding:1px 5px; font-size:8px;" onclick="discardItem(${idx})">Vứt</button>
-        `;
-        container.appendChild(div);
-      });
     }
 
     function discardItem(idx) {
-      userProfile.inventory.splice(idx, 1);
+      const inventory=userProfile.inventory;
+      if(!Array.isArray(inventory)||!Number.isSafeInteger(idx)||idx<0||idx>=inventory.length)return;
+      const item=inventory[idx];
+      const canonical=DuduItemCatalog.byId(item.id||item.itemId);
+      if(item.discardable===false||item.unique===true||canonical?.discardable===false||
+         canonical?.unique===true||canonical?.scope==='DUDU'){
+        showSystemAlert('KỶ VẬT ĐƯỢC BẢO VỆ','Không thể vứt vật phẩm sưu tầm độc quyền.');
+        return;
+      }
+      inventory.splice(idx,1);
       saveCurrentAccount();
       renderInventory();
     }
