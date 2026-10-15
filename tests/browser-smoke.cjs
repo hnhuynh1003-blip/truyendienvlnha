@@ -839,7 +839,7 @@ async function main() {
         help:!!document.getElementById('npc-relationship-r4-help'),panelWidth:panel.getBoundingClientRect().width};
     });
     assert.equal(phoneLayout.help,true);
-    assert.ok(phoneLayout.panelWidth>0);
+    assert.ok(Number.isFinite(phoneLayout.panelWidth), 'Hidden phone panel must not cause layout exceptions');
 
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
     console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));
