@@ -61,6 +61,18 @@ export function normalizedPrivateDraft(body){
   });
 }
 
+// Publishing must reference a server-held draft at the exact previewed version.
+// Full name/description NEVER come from the publish request.
+export function normalizedDraftApproval(body){
+  if(!body||typeof body!=='object'||Array.isArray(body))return null;
+  const storyId=cleanId(body.storyId),itemId=cleanId(body.itemId);
+  const version=body.expectedUpdatedAt;
+  if(!storyId||!itemId||!itemId.startsWith('author-item-')||
+     !Number.isSafeInteger(version)||version<=0||
+     body.confirmPublicRelease!==true||body.confirmRevealToOwner!==true)return null;
+  return Object.freeze({storyId,itemId,expectedUpdatedAt:version});
+}
+
 export function parseScopedIds(body,{withItem=false,withChapter=false,withUid=false}={}){
   if(!body||typeof body!=='object'||Array.isArray(body))return null;
   const storyId=cleanId(body.storyId);
