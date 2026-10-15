@@ -20,6 +20,36 @@ export class DuduPlayerAppearance extends DurableObject {
       granted_at INTEGER NOT NULL,
       UNIQUE(source,evidence_id)
     )`);
+    this.sql.exec(`CREATE TABLE IF NOT EXISTS award_events (
+      event_id TEXT PRIMARY KEY,frame_id TEXT NOT NULL,
+      evidence_id TEXT NOT NULL,received_at INTEGER NOT NULL
+    )`);
+  }
+  recordSignedAward(event,now){
+    // Gateway validates the webhook signature. This DO is per verified target
+    // UID; event.uid is never accepted as a browser-controlled parameter.
+    if(!event||!Number.isSafeInteger(now))return {ok:false,code:'invalid-event'};
+    return this.ctx.storage.transactionSync(()=>{
+      const previous=this.sql.exec(`SELECT frame_id AS frameId,
+        evidence_id AS evidenceId FROM award_events WHERE event_id=?`,
+        event.eventId).toArray()[0];
+      if(previous)return previous.frameId===event.frameId&&
+          previous.evidenceId===event.evidenceId?
+          {ok:true,alreadyProcessed:true}:{ok:false,code:'event-reuse'};
+      const existing=this.sql.exec(`SELECT source,evidence_id AS evidenceId
+        FROM frame_awards WHERE frame_id=?`,event.frameId).toArray()[0];
+      if(existing){
+        // A frame is earned once. A different event cannot overwrite proof.
+        return {ok:true,alreadyOwned:true};
+      }
+      this.sql.exec(`INSERT INTO frame_awards
+        (frame_id,source,evidence_id,granted_at) VALUES(?,?,?,?)`,
+        event.frameId,event.source,event.evidenceId,now);
+      this.sql.exec(`INSERT INTO award_events
+        (event_id,frame_id,evidence_id,received_at) VALUES(?,?,?,?)`,
+        event.eventId,event.frameId,event.evidenceId,now);
+      return {ok:true,granted:true};
+    });
   }
   verifiedAwards(){
     return this.sql.exec(`SELECT frame_id AS frameId,source,
