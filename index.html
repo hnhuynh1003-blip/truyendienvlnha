@@ -1949,6 +1949,27 @@
       switchChatCharacter();
     }
 
+    function renderNpcPortraitPreview(element,npc){
+      if(!IS_SANDBOX_MODE||!element||!npc)return;
+      const path=typeof npc.portraitPath==='string'&&
+        DuduNpcAuthorR7.ALLOWED_PORTRAIT.test(npc.portraitPath)?npc.portraitPath:null;
+      element.dataset.npcId=npc.id;
+      element.textContent=(npc.name||'NPC').trim().split(/\s+/).slice(-2)
+        .map(x=>x[0]||'').join('').toLocaleUpperCase('vi');
+      if(!path){element.title='Chân dung tạm, chưa có ảnh chính thức';return;}
+      const img=document.createElement('img');
+      img.alt='Chân dung '+(npc.name||'NPC');
+      img.loading='lazy';img.decoding='async';
+      img.style.cssText='display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit;';
+      img.onload=()=>{
+        if(element.isConnected&&element.dataset.npcId===npc.id)element.replaceChildren(img);
+      };
+      img.onerror=()=>{
+        if(element.dataset.npcId===npc.id)element.title='Chưa tìm thấy ảnh, dùng chữ đại diện';
+      };
+      img.src='./'+path;
+    }
+
     function switchChatCharacter() {
       hideNpcConnectionStatus();
       const choicePanel=document.getElementById('npc-daily-choice-card');
@@ -1971,6 +1992,7 @@
           const presets={c_otk:0,c_ttl:1,c_tct:2};
           portrait.style.background=palette[presets[char.id]??0];
           portrait.title='Ảnh tạm cho '+char.name+' — chưa phải minh họa chính thức';
+          renderNpcPortraitPreview(portrait,char);
         }
       }
       const panel = document.getElementById('npc-relationship-r3-preview');
@@ -2295,6 +2317,7 @@
               'width:28px;height:28px;min-width:28px;border-radius:9px;color:#f8fafc;font-weight:700;'+
               'background:'+(palette[preset?.previewPortraitKey]||'#334155')+
               ';font-size:11px;border:1px solid #64748b;';
+            renderNpcPortraitPreview(preview,c);
           }
         }
         container.appendChild(div);
