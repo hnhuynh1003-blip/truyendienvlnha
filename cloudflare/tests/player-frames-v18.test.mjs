@@ -59,6 +59,10 @@ test('worker has no route to mint awards and reward gate is OFF',async()=>{
  assert.match(worker,/displayState\(await store\.mine\(\),identity,awards\)/);
  assert.match(store,/CREATE TABLE IF NOT EXISTS frame_awards/);
  assert.match(store,/UNIQUE\(source,evidence_id\)/);
- assert.doesNotMatch(store,/INSERT INTO frame_awards|UPDATE frame_awards/);
+ assert.match(store,/recordSignedAward\(event,now\)/);
+ assert.match(store,/INSERT INTO frame_awards/);
+ assert.match(store,/INSERT INTO award_events/);
+ assert.match(worker,/AVATAR_AWARD_ISSUER_ENABLED!=='true'/);
+ assert.match(worker,/verifyAwardWebhook\(/);
  assert.doesNotMatch(worker,/player-avatar\/grant|avatar\/award|clientAchievement/);
 });
