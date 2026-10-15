@@ -1489,11 +1489,50 @@ async function main() {
     });
     assert.ok(avatarLayout.left>=0&&avatarLayout.right<=avatarLayout.width+1);
     assert.ok(avatarLayout.top>=0&&avatarLayout.bottom<=avatarLayout.height+1);
+    // V21: real clicks on offline-only comparison; no profile/server writes.
+    const beforeV21=await page.evaluate(()=>({
+      profile:JSON.stringify(userProfile),
+      writes:window.__firestoreWrites.length
+    }));
+    await page.getByRole('button',{
+      name:'Thử so sánh avatar thiết bị với avatar mẫu máy chủ'
+    }).click();
+    assert.equal(await page.locator('#player-avatar-sync-review-v21').evaluate(x=>x.hidden),false);
+    assert.match(await page.locator('#player-avatar-sync-review-status-v21').textContent(),
+      /Hai phiên bản khác nhau/);
+    await page.getByRole('button',{name:'Mô phỏng giữ trên thiết bị'}).click();
+    assert.match(await page.locator('#player-avatar-sync-outcome-v21').textContent(),
+      /Chưa gửi, chưa lưu/);
+    await page.getByRole('button',{name:'Thử tình huống bảo vệ ảnh cục bộ'}).click();
+    assert.match(await page.locator('#player-avatar-sync-review-status-v21').textContent(),
+      /Ảnh tự tải chỉ nằm trên thiết bị/);
+    assert.equal(await page.locator('#player-avatar-sync-keep-v21').isDisabled(),true);
+    assert.equal(await page.locator('#player-avatar-sync-use-v21').isDisabled(),true);
+    const afterV21=await page.evaluate(()=>({
+      profile:JSON.stringify(userProfile),writes:window.__firestoreWrites.length
+    }));
+    assert.deepEqual(afterV21,beforeV21,
+      'Previewing remote conflicts must never alter profile or Firestore');
     await page.keyboard.press('Escape');
     assert.equal(await page.locator('#player-avatar-v16-modal').getAttribute('aria-hidden'),'true');
     assert.equal(await page.locator('#cyber-phone').evaluate(x=>x.style.display),'flex',
       'Closing player avatar editor cannot close the phone behind it');
-    await page.evaluate(()=>{togglePhone();phoneHome();});
+    await page.evaluate(()=>openPlayerAvatarEditorV16());
+    assert.equal(await page.locator('#player-avatar-sync-review-v21').evaluate(x=>x.hidden),true,
+      'Reopening editor must discard previous demo server snapshot');
+    await page.setViewportSize({width:320,height:640});
+    const v21Mobile=await page.evaluate(()=>{
+      renderPlayerAvatarSyncReviewV21('compare');
+      const w=document.querySelector('.dudu-avatar-v16-window').getBoundingClientRect();
+      const section=document.getElementById('player-avatar-sync-review-v21');
+      return {left:w.left,right:w.right,top:w.top,bottom:w.bottom,
+        overflow:section.scrollWidth-section.clientWidth,
+        deviceWidth:innerWidth,deviceHeight:innerHeight};
+    });
+    assert.ok(v21Mobile.left>=0&&v21Mobile.right<=v21Mobile.deviceWidth+1);
+    assert.ok(v21Mobile.top>=0&&v21Mobile.bottom<=v21Mobile.deviceHeight+1);
+    assert.ok(v21Mobile.overflow<=1,'V21 comparison must not overflow narrow phone');
+    await page.evaluate(()=>{closePlayerAvatarEditorV16();togglePhone();phoneHome();});
     await page.setViewportSize({width:1280,height:800});
 
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
