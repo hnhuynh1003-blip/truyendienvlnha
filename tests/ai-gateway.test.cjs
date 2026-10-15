@@ -42,13 +42,14 @@ test('server-side service is enforced with secret + App Check, and quota docs st
 
 test('Cloudflare gateway independently verifies Firebase JWT and limits cost',()=>{
   const worker=load('cloudflare/src/index.mjs');
+  const auth=load('cloudflare/src/auth.mjs');
   const quota=load('cloudflare/src/quota.mjs');
   const config=load('cloudflare/wrangler.toml');
   const html=load('index.html');
-  assert.match(worker,/jwtVerify\(/);
-  assert.match(worker,/createRemoteJWKSet\(/);
-  assert.match(worker,/algorithms:\['RS256'\]/);
-  assert.match(worker,/securetoken\.google\.com/);
+  assert.match(auth,/jwtVerify\(/);
+  assert.match(auth,/createRemoteJWKSet\(/);
+  assert.match(auth,/algorithms:\['RS256'\]/);
+  assert.match(auth,/securetoken\.google\.com/);
   assert.match(worker,/AI_ENABLED!=='true'/);
   assert.match(worker,/env\.GEMINI_API_KEY/);
   assert.match(worker,/DUDU_QUOTA\.getByName\('global-budget-v1'\)/);
