@@ -29,5 +29,26 @@
       position:(p.slot*100/3)+'% center'
     });
   }
-  return Object.freeze({CANDIDATES,get,styleFor});
+  const HIRES='./assets/npc/concepts/female-anime-candidates-v15.webp';
+  let preload=null;
+  function hiResStyleFor(id){
+    const p=get(id);
+    return p?Object.freeze({
+      image:'url("'+HIRES+'")',
+      size:'400% 100%',
+      position:(p.slot*100/3)+'% center'
+    }):null;
+  }
+  function ensureHiRes(){
+    if(typeof Image==='undefined')return Promise.resolve(false);
+    if(preload)return preload;
+    preload=new Promise(resolve=>{
+      const img=new Image();
+      img.onload=()=>resolve(img.naturalWidth===1920&&img.naturalHeight===640);
+      img.onerror=()=>resolve(false);
+      img.src=HIRES;
+    });
+    return preload;
+  }
+  return Object.freeze({CANDIDATES,get,styleFor,HIRES,hiResStyleFor,ensureHiRes});
 });
