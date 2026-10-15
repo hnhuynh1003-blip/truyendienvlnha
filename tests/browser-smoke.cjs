@@ -1148,7 +1148,7 @@ async function main() {
         'Cyber Phone must fit viewport height: '+JSON.stringify(layout));
       assert.ok(layout.screenW>200,'Cyber Phone content must remain usable');
       assert.ok(layout.homeOverflow<=1,'App icons must not cause horizontal overflow');
-      await page.getByRole('button',{name:'Đóng Cyber Phone'}).click();
+      await page.locator('#cyber-phone .phone-close-btn').click();
       assert.equal(await page.locator('#cyber-phone').evaluate(x=>x.style.display),'none');
     }
     await page.setViewportSize({width:1280,height:800});
