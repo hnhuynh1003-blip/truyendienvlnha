@@ -380,6 +380,28 @@ async function main() {
       'Editing and reopening a chapter must not reset reading rewards');
     assert.equal(realmEditor.writes,0);
 
+    // Switching to another sandbox identity must not reuse the previous
+    // user's chapter loot claims, reading rewards or inventory instances.
+    await page.evaluate(()=>openAuthModal());
+    await page.locator('#auth-username').fill('tester-a');
+    await page.getByRole('button',{name:'Đổi tài khoản thử'}).click();
+    const otherAccountLoot = await page.evaluate(()=>{
+      const novel=novels[selectedNovelIndex];
+      const taggedKey=novel.id+'_phase2-realm-chapter';
+      return {
+        username:currentUsername,
+        claimed:!!userProfile.lootedChapters?.[taggedKey],
+        rewarded:!!userProfile.readRewards?.[taggedKey],
+        hasTaggedDrop:(userProfile.inventory||[]).some(item=>item.obtainedFrom?.chapterId==='phase2-realm-chapter'),
+        writes:window.__firestoreWrites.length
+      };
+    });
+    assert.equal(otherAccountLoot.username,'tester-a');
+    assert.equal(otherAccountLoot.claimed,false,'Chapter claims must not leak between users');
+    assert.equal(otherAccountLoot.rewarded,false,'One-time read rewards must not leak between users');
+    assert.equal(otherAccountLoot.hasTaggedDrop,false,'Loot inventory must not leak between users');
+    assert.equal(otherAccountLoot.writes,0);
+
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
     console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));
   } finally {
