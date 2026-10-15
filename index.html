@@ -27,6 +27,7 @@
   <script src="js/npc-relationship-v2-r3.js"></script>
   <script src="js/npc-trust-v2-r5.js"></script>
   <script src="js/npc-persona-v2-r6.js"></script>
+  <script src="js/npc-author-v2-r7.js"></script>
   <script src="js/loot-rules-v2.js"></script>
   <script src="js/author-items-v1.js"></script>
   <script src="js/npc-editor-v1.js"></script>
@@ -1146,6 +1147,28 @@
         <div id="story-private-items" style="font-size:11px;max-height:150px;overflow:auto;margin-top:5px;"></div>
         <button type="button" id="story-add-item-btn" class="btn admin-only" onclick="openAuthorItemModal('story')" style="margin-top:6px;">+ Thêm vật phẩm truyện</button>
         <div style="font-size:10px;color:var(--text-dim);margin-top:3px;">Hãy lưu truyện mới trước khi tạo vật phẩm.</div>
+      </div>
+      <div id="npc-r7-author-fields" style="display:none;margin:8px 0;padding:9px;border:1px solid #245269;border-radius:8px;background:#102334;">
+        <div style="color:#67e8f9;font-size:11px;font-weight:bold;margin-bottom:5px;">Sở thích & chân dung NPC · Sandbox</div>
+        <label style="display:flex;align-items:center;gap:6px;font-size:10px;">
+          <input id="npc-r7-use-custom" type="checkbox" onchange="toggleNpcR7Custom()"> Tự thiết lập sở thích
+        </label>
+        <div id="npc-r7-tags" style="display:none;">
+          <label style="font-size:10px;">Thích (tag cách nhau dấu phẩy)</label>
+          <input id="npc-r7-liked" type="text" placeholder="PRACTICAL, DRINK_COFFEE" autocomplete="off"/>
+          <label style="font-size:10px;">Không thích (tag cách nhau dấu phẩy)</label>
+          <input id="npc-r7-disliked" type="text" placeholder="DANGEROUS" autocomplete="off"/>
+          <label style="font-size:10px;">Từ chối (tag cách nhau dấu phẩy)</label>
+          <input id="npc-r7-refused" type="text" placeholder="BOUNDARY_VIOLATION" autocomplete="off"/>
+          <label style="font-size:10px;">Kiểu phản hồi</label>
+          <select id="npc-r7-style">
+            <option value="default">Bình thường</option><option value="reserved">Kín đáo</option>
+            <option value="gentle">Dịu dàng</option><option value="cheerful">Vui vẻ</option>
+          </select>
+        </div>
+        <label style="font-size:10px;">Ảnh nhân vật trong dự án (tùy chọn)</label>
+        <input id="npc-r7-portrait" autocomplete="off" type="text" placeholder="assets/npc/ten-nhan-vat.webp"/>
+        <div style="font-size:9px;color:#94a3b8;margin-top:5px;">Chỉ dùng ảnh cùng website từ assets/npc. Không tải ảnh ngoài hoặc tự mở khóa NPC.</div>
       </div>
       <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px;">
         <button class="btn" onclick="closeModals()">Hủy</button>
@@ -2448,6 +2471,51 @@
       }
     }
 
+    function toggleNpcR7Custom(){
+      const checked=!!document.getElementById('npc-r7-use-custom')?.checked;
+      const panel=document.getElementById('npc-r7-tags');
+      if(panel)panel.style.display=checked?'block':'none';
+    }
+    function setNpcR7Fields(npc){
+      const wrapper=document.getElementById('npc-r7-author-fields');
+      if(!wrapper)return;
+      wrapper.style.display=IS_SANDBOX_MODE?'block':'none';
+      if(!IS_SANDBOX_MODE)return;
+      const p=npc?.giftPreferences||{};
+      document.getElementById('npc-r7-use-custom').checked=!!npc?.giftPreferences;
+      for(const [field,key] of [['liked','likedTags'],['disliked','dislikedTags'],
+        ['refused','refusedTags']]){
+        document.getElementById('npc-r7-'+field).value=
+          Array.isArray(p[key])?p[key].join(', '):'';
+      }
+      document.getElementById('npc-r7-style').value=
+        ['default','reserved','gentle','cheerful'].includes(p.reactionStyle)?
+          p.reactionStyle:'default';
+      document.getElementById('npc-r7-portrait').value=npc?.portraitPath||'';
+      toggleNpcR7Custom();
+    }
+    function readNpcR7Fields(id){
+      if(!IS_SANDBOX_MODE)return null;
+      const custom=document.getElementById('npc-r7-use-custom').checked;
+      const tags=key=>document.getElementById('npc-r7-'+key).value
+        .split(',').map(x=>x.trim().toUpperCase()).filter(Boolean);
+      const preferences=custom?{
+        likedTags:tags('liked'),dislikedTags:tags('disliked'),
+        refusedTags:tags('refused'),
+        reactionStyle:document.getElementById('npc-r7-style').value
+      }:null;
+      const normalized=DuduNpcAuthorR7.normalizeDraft({id},{
+        giftPreferences:preferences,
+        portraitPath:document.getElementById('npc-r7-portrait').value.trim()
+      });
+      if(!normalized){
+        showSystemAlert('THÔNG TIN NPC KHÔNG HỢP LỆ',
+          'Kiểm tra tag trùng hoặc đường dẫn ảnh (assets/npc/*.png, jpg, jpeg, webp).');
+        return false;
+      }
+      return {custom,normalized};
+    }
+
     function openAddCharacterModal(fromChapter = false) {
       if (!canEditStories()) return;
       const novel = fromChapter ? novels[selectedNovelIndex] : getSelectedCodexNovel();
@@ -2464,6 +2532,7 @@
       document.getElementById('char-input-note').value = '';
       document.getElementById('char-input-aliases').value = '';
       document.getElementById('char-input-origin').value = '';
+      setNpcR7Fields(null);
       document.getElementById('char-modal').style.display = 'flex';
     }
 
@@ -2491,6 +2560,7 @@
       document.getElementById('char-input-note').value = c.note || '';
       document.getElementById('char-input-aliases').value = (c.aliases || []).join(', ');
       document.getElementById('char-input-origin').value = c.originWorld || '';
+      setNpcR7Fields(c);
       document.getElementById('char-modal').style.display = 'flex';
     }
 
@@ -2512,12 +2582,22 @@
       const charId = editingCharIndex !== null ? novel.characters[editingCharIndex].id
         : ("char_" + (crypto.randomUUID ? crypto.randomUUID() : Date.now() + "_" + Math.random().toString(36).slice(2)));
 
+      const r7=IS_SANDBOX_MODE?readNpcR7Fields(charId):null;
+      if(IS_SANDBOX_MODE&&r7===false)return;
       if (editingCharIndex !== null) {
         novel.characters[editingCharIndex] = { ...novel.characters[editingCharIndex], name, role, status, note, aliases, originWorld };
       } else {
         novel.characters.push({ id: charId, name, role, status, note, aliases, originWorld });
       }
 
+      if(IS_SANDBOX_MODE&&r7){
+        const edited=novel.characters[editingCharIndex!==null?editingCharIndex:
+          novel.characters.length-1];
+        if(r7.custom)edited.giftPreferences={...r7.normalized.giftPreferences};
+        else delete edited.giftPreferences;
+        if(r7.normalized.portraitPath)edited.portraitPath=r7.normalized.portraitPath;
+        else delete edited.portraitPath;
+      }
       // Authoring a canonical NPC is NOT permission to chat with that NPC.
       saveDB();
       closeModals();
