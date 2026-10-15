@@ -1022,6 +1022,15 @@
         để công bố, hãy quay lại chỉnh sửa bản thảo.
       </p>
       <p id="author-release-error" role="alert" style="min-height:14px;font-size:11px;color:#fca5a5;"></p>
+      <div id="author-release-test-area" style="display:none;border-top:1px solid var(--border);padding-top:9px;margin-top:8px;">
+        <p style="font-size:10px;color:var(--text-dim);margin:0 0 7px;">
+          Chỉ thử với kỷ vật cấp F, loại STORY_EVENT có tên chứa “kiểm thử”.
+          Cấp cho chính tài khoản Admin đang đăng nhập; ghi nhận thật và tồn tại
+          trong Bảo Tàng sau khi thử. Không cấp cho độc giả khác.
+        </p>
+        <button type="button" id="author-release-selftest" class="btn" onclick="testGrantStoryToSelf()">🧪 Cấp thử cho chính tôi</button>
+        <span id="author-release-test-status" role="status" style="display:block;font-size:11px;margin-top:6px;"></span>
+      </div>
       <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:8px;">
         <button type="button" class="btn" onclick="cancelAuthorReleasePreview()">Quay lại</button>
         <button type="button" id="author-release-approve" class="btn btn-primary"
@@ -3507,8 +3516,15 @@
       const verified=response.draft;
       if(verified.storyId!==novel.id||verified.itemId!==draft.itemId||
          !Number.isSafeInteger(verified.updatedAt))return;
+      // Never enable self-grant for chapter collectibles or real valuables.
+      // Release state must be re-read from the server, not inferred from client drafts.
+      const isTestRelease=context==='story'&&verified.chapterId===null&&
+        verified.method==='STORY_EVENT'&&verified.rank==='F'&&
+        /kiểm thử/i.test(verified.name||'')&&
+        response.release?.method==='STORY_EVENT'&&
+        response.release?.chapterId===null&&response.release?.disabled===false;
       pendingAuthorRelease={storyId:verified.storyId,itemId:verified.itemId,
-        expectedUpdatedAt:verified.updatedAt,username,context};
+        expectedUpdatedAt:verified.updatedAt,username,context,isTestRelease};
       const copy=[
         'Truyện: '+verified.storyId,
         'Chương: '+(verified.chapterId||'Toàn truyện'),
@@ -3521,6 +3537,9 @@
       ].join('\n');
       document.getElementById('author-release-preview').textContent=copy;
       document.getElementById('author-release-error').textContent='';
+      document.getElementById('author-release-test-area').style.display=
+        isTestRelease?'block':'none';
+      document.getElementById('author-release-test-status').textContent='';
       document.getElementById(context+'-modal').style.display='none';
       document.getElementById('author-release-modal').style.display='flex';
       document.getElementById('author-release-approve').disabled=
@@ -3529,6 +3548,35 @@
         document.getElementById('author-release-error').textContent=
           'Vật phẩm chỉ sưu tầm chưa có sự kiện phát hành. Hãy chọn một sự kiện trong bản thảo.';
     }
+    async function testGrantStoryToSelf(){
+      const pending=pendingAuthorRelease;
+      if(!pending?.isTestRelease||!canEditStories()||
+         IS_SANDBOX_MODE||pending.username!==currentUsername||
+         novels[selectedNovelIndex]?.id!==pending.storyId||
+         !DuduAuth.isAdmin()||DuduAuth.uid()!==currentUsername)return;
+      const msg='Đây là cấp kỷ vật KIỂM THỬ cấp F thật vào Bảo Tàng của chính bạn.\\n'+
+        'Kỷ vật sẽ được lưu lâu dài kể cả sau khi lưu trữ bản thảo.\\n'+
+        'Không thể hoàn tác trong giao diện hiện tại. Bạn vẫn muốn thử?';
+      if(!confirm(msg))return;
+      const btn=document.getElementById('author-release-selftest');
+      const status=document.getElementById('author-release-test-status');
+      if(btn.disabled)return;
+      btn.disabled=true;
+      status.textContent='Đang kiểm tra sổ sở hữu trên máy chủ...';
+      try{
+        const result=await DuduCollectiblesClient.grantStoryTestToSelf(
+          pending.storyId,pending.itemId);
+        if(pending!==pendingAuthorRelease||pending.username!==currentUsername)return;
+        if(!result.ok){
+          status.textContent='Không thể cấp thử: '+(result.reason||'Máy chủ từ chối.');
+          return;
+        }
+        status.textContent=result.alreadyOwned
+          ?'✔ Chống nhận trùng hoạt động: tài khoản này đã sở hữu kỷ vật, không cấp thêm.'
+          :'✔ Đã cấp kỷ vật thử nghiệm cho chính tài khoản này đúng 1 lần. Hãy mở Bảo Tàng để xem.';
+      }finally{btn.disabled=false;}
+    }
+
     function cancelAuthorReleasePreview(){
       document.getElementById('author-release-modal').style.display='none';
       const context=pendingAuthorRelease?.context;
