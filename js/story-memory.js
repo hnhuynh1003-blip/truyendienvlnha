@@ -14,7 +14,7 @@
     'the','nao','sao','duoc','khong','nua','hay','day','roi','luc','noi','chuyen',
     'nhan','vat','nho','con','ve','chung','ta','da','tung','gia','su','theo','kieu',
     'chao','xin','cam','on','dieu','nay','kia','nhu','nhieu','rat','lieu','hom',
-    'nay','hom','qua','bay','gio','vang','vay','nhe','nha','vua','xong','lan'
+    'nay','hom','qua','bay','gio','vay','nhe','nha','vua','xong','lan'
   ]);
   function normalize(value) {
     return String(value||'').normalize('NFD')
