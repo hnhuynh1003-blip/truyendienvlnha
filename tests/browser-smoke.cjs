@@ -1195,14 +1195,15 @@ async function main() {
       const first=document.querySelector('#inventory-container .dudu-inventory-v12-open');
       first?.click();
       const inspector=document.getElementById('inventory-v12-detail');
-      const artNodes=[...document.querySelectorAll('#inventory-container .dudu-item-v13-art')];
+      const itemRows=[...document.querySelectorAll('#inventory-container .dudu-inventory-v12-row')];
+      const artNodes=itemRows.flatMap(row=>[...row.querySelectorAll('img.dudu-item-v13-art')]);
       const illustrations={
         iconCount:artNodes.length,
+        artPerRow:itemRows.map(row=>row.querySelectorAll('img.dudu-item-v13-art').length),
         allSvg:artNodes.every(img=>img.src.startsWith('data:image/svg+xml')),
-        rarityCount:document.querySelectorAll('#inventory-container [data-rarity]').length,
-        inspectorArt:!!inspector.querySelector('.dudu-item-v13-art'),
-        ranks:[...document.querySelectorAll('#inventory-container .dudu-inventory-v12-row')]
-          .map(x=>x.dataset.rarity)
+        rarityCount:itemRows.filter(row=>!!row.dataset.rarity).length,
+        inspectorArt:!!inspector.querySelector('img.dudu-item-v13-art'),
+        ranks:itemRows.map(x=>x.dataset.rarity)
       };
       const details={
         illustrations,
@@ -1234,7 +1235,9 @@ async function main() {
     assert.ok(dossierV12.profileData.actionCount>=2);
     assert.ok(dossierV12.profileData.codexOverflow<=1,
       'NPC cards must fit 375px phone without horizontal scrolling');
-    assert.equal(dossierV12.details.illustrations.iconCount,3);
+    assert.equal(dossierV12.details.illustrations.iconCount,3,
+      JSON.stringify(dossierV12.details.illustrations));
+    assert.deepEqual(dossierV12.details.illustrations.artPerRow,[1,1,1]);
     assert.equal(dossierV12.details.illustrations.allSvg,true);
     assert.equal(dossierV12.details.illustrations.rarityCount,3);
     assert.equal(dossierV12.details.illustrations.inspectorArt,true);
