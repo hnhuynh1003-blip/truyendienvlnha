@@ -23,10 +23,10 @@ export class DuduQuota extends DurableObject {
     return this.ctx.storage.transactionSync(()=>{
       const user=this.sql.exec(
         'SELECT calls,last_at,active_until FROM user_usage WHERE day=? AND uid=?',day,uid
-      ).one() || null;
+      ).toArray()[0] || null;
       const global=this.sql.exec(
         'SELECT calls FROM global_usage WHERE day=?',day
-      ).one() || null;
+      ).toArray()[0] || null;
       const failure=quotaFailure(user,global,now);
       if(failure) return {ok:false,code:failure,message:quotaMessage(failure)};
       this.sql.exec(`INSERT INTO user_usage (day,uid,calls,last_at,active_until,active_id)
@@ -46,8 +46,8 @@ export class DuduQuota extends DurableObject {
   }
   status(uid,now){
     const day=utcDay(now);
-    const user=this.sql.exec('SELECT calls FROM user_usage WHERE day=? AND uid=?',day,uid).one();
-    const global=this.sql.exec('SELECT calls FROM global_usage WHERE day=?',day).one();
+    const user=this.sql.exec('SELECT calls FROM user_usage WHERE day=? AND uid=?',day,uid).toArray()[0] || null;
+    const global=this.sql.exec('SELECT calls FROM global_usage WHERE day=?',day).toArray()[0] || null;
     return {dailyLimit:USER_DAILY_LIMIT,remaining:Math.max(0,USER_DAILY_LIMIT-Number(user?.calls||0)),
       globalRemaining:Math.max(0,GLOBAL_DAILY_LIMIT-Number(global?.calls||0))};
   }
