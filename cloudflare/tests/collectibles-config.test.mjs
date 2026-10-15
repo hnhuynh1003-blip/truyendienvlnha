@@ -54,3 +54,19 @@ test('archiving a secret disables future release claims but does not delete owne
   assert.match(archive,/UPDATE releases SET disabled=1/);
   assert.doesNotMatch(archive,/DELETE FROM ownership/);
 });
+
+test('staging admin award rejects foreign UID and cannot grant non-test/rare/story chapter items',()=>{
+  assert.match(worker,/path==='\/v1\/collectibles\/admin\/grant'/);
+  assert.match(worker,/body\.uid!=null&&body\.uid!==user\.uid/);
+  assert.match(worker,/await bucket\.grant\(user\.uid,ids\.storyId,ids\.itemId,now\)/);
+  assert.doesNotMatch(worker,/await bucket\.grant\(ids\.uid/);
+  const method=ledger.split('  grant(uid,storyId,itemId,now){')[1]?.split('  mine(uid){')[0];
+  assert.ok(method,'Server ledger must have the self-test method');
+  assert.match(method,/item\.rank!=='F'/);
+  assert.match(method,/item\.method!=='STORY_EVENT'/);
+  assert.match(method,/item\.chapterId!==null/);
+  assert.match(method,/\.includes\('kiểm thử'\)/);
+  assert.match(method,/item\.disabled/);
+  assert.match(method,/PRIMARY KEY|alreadyOwned|alreadyOwned:true/);
+  assert.match(method,/transactionSync/);
+});
