@@ -1968,25 +1968,41 @@
       switchChatCharacter();
     }
 
-    function renderNpcPortraitPreview(element,npc){
-      if(!IS_SANDBOX_MODE||!element||!npc)return;
-      const path=typeof npc.portraitPath==='string'&&
-        DuduNpcAuthorR7.ALLOWED_PORTRAIT.test(npc.portraitPath)?npc.portraitPath:null;
+    function renderNpcPortraitPreview(element,npc,storyId){
+      if(!IS_SANDBOX_MODE||!element||!npc||!storyId)return;
+      const token=String(Date.now())+'-'+Math.random().toString(36).slice(2);
+      element.dataset.portraitToken=token;
       element.dataset.npcId=npc.id;
       element.textContent=(npc.name||'NPC').trim().split(/\s+/).slice(-2)
         .map(x=>x[0]||'').join('').toLocaleUpperCase('vi');
-      if(!path){element.title='Chân dung tạm, chưa có ảnh chính thức';return;}
-      const img=document.createElement('img');
-      img.alt='Chân dung '+(npc.name||'NPC');
-      img.loading='lazy';img.decoding='async';
-      img.style.cssText='display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit;';
-      img.onload=()=>{
-        if(element.isConnected&&element.dataset.npcId===npc.id)element.replaceChildren(img);
+      element.title='Ảnh nhân vật xem trước';
+      const setImage=src=>{
+        if(!src)return;
+        const img=document.createElement('img');
+        img.alt='Chân dung '+(npc.name||'NPC');
+        img.loading='eager';img.decoding='async';
+        img.style.cssText='display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit;';
+        img.onload=()=>{
+          if(element.isConnected&&element.dataset.portraitToken===token&&
+             element.dataset.npcId===npc.id)element.replaceChildren(img);
+        };
+        img.onerror=()=>{if(element.dataset.portraitToken===token)
+          element.title='Chưa tìm thấy ảnh, đang dùng đại diện dự phòng';};
+        img.src=src;
       };
-      img.onerror=()=>{
-        if(element.dataset.npcId===npc.id)element.title='Chưa tìm thấy ảnh, dùng chữ đại diện';
-      };
-      img.src='./'+path;
+      const authored=npc.portraitPresetId;
+      const recommended=DuduNpcPersonaR6.previewNpc(npc)?.previewPortraitPresetId;
+      const preset=DuduNpcPortraitLibrary.preset(authored)?authored:recommended;
+      const packaged=typeof npc.portraitPath==='string'&&
+        DuduNpcAuthorR7.ALLOWED_PORTRAIT.test(npc.portraitPath)?'./'+npc.portraitPath:null;
+      if(npc.portraitUploadId&&typeof npc.portraitUploadId==='string'){
+        const uid=currentUsername||'sandbox-guest';
+        DuduNpcPortraitLibrary.readUpload(uid,storyId,npc.portraitUploadId)
+          .then(data=>setImage(data|| (packaged||DuduNpcPortraitLibrary.sourceFor(preset))))
+          .catch(()=>setImage(packaged||DuduNpcPortraitLibrary.sourceFor(preset)));
+      }else{
+        setImage(packaged||DuduNpcPortraitLibrary.sourceFor(preset));
+      }
     }
 
     function switchChatCharacter() {
@@ -2011,7 +2027,7 @@
           const presets={c_otk:0,c_ttl:1,c_tct:2};
           portrait.style.background=palette[presets[char.id]??0];
           portrait.title='Ảnh tạm cho '+char.name+' — chưa phải minh họa chính thức';
-          renderNpcPortraitPreview(portrait,char);
+          renderNpcPortraitPreview(portrait,char,storyId);
         }
       }
       const panel = document.getElementById('npc-relationship-r3-preview');
@@ -2336,7 +2352,7 @@
               'width:28px;height:28px;min-width:28px;border-radius:9px;color:#f8fafc;font-weight:700;'+
               'background:'+(palette[preset?.previewPortraitKey]||'#334155')+
               ';font-size:11px;border:1px solid #64748b;';
-            renderNpcPortraitPreview(preview,c);
+            renderNpcPortraitPreview(preview,c,novel.id);
           }
         }
         container.appendChild(div);
