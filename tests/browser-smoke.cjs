@@ -132,6 +132,24 @@ async function main() {
     assert.equal(chapterItem.listCount,1);
     assert.equal(chapterItem.inventory,2);
     assert.equal(chapterItem.writes,0);
+    // Quick duplicate preserves fields but must allocate a distinct persistent ID.
+    await page.evaluate(()=>openAuthorItemModal('chapter',chapterItem.id,true));
+    assert.equal(await page.locator('#author-item-name').inputValue(),'Bức thư chương đầu');
+    await page.locator('#author-item-name').fill('Bức thư bản thứ hai');
+    await page.getByRole('button',{name:'Lưu vật phẩm'}).click();
+    const cloned = await page.evaluate(()=>{
+      const rows=DuduAuthorItems.list(novels[selectedNovelIndex],{chapterId:'ch-1'});
+      return {count:rows.length,uniqueIds:new Set(rows.map(i=>i.id)).size,
+        sameNpc:rows.every(i=>i.npcId==='c2'),
+        sameChapter:rows.every(i=>i.chapterId==='ch-1'),
+        inventory:userProfile.inventory.length};
+    });
+    assert.equal(cloned.count,2);
+    assert.equal(cloned.uniqueIds,2);
+    assert.equal(cloned.sameNpc,true);
+    assert.equal(cloned.sameChapter,true);
+    assert.equal(cloned.inventory,2);
+
     const readerBlocked = await page.evaluate(()=>{
       closeModals();userProfile.role='reader';applyUserRole();
       openAuthorItemModal('story');
