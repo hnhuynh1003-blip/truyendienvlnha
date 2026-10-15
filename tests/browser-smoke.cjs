@@ -833,6 +833,7 @@ async function main() {
     // Check compact panel fits narrow mobile view without document-level overflow.
     await page.setViewportSize({width:375,height:812});
     const phoneLayout=await page.evaluate(()=>{
+      openPhoneApp('chat');
       const panel=document.getElementById('npc-relationship-r3-preview');
       return {docWidth:document.documentElement.scrollWidth,windowWidth:innerWidth,
         help:!!document.getElementById('npc-relationship-r4-help'),panelWidth:panel.getBoundingClientRect().width};
