@@ -33,8 +33,10 @@ test('admin self-grant sends ONLY authenticated current UID, never an arbitrary 
     assert.match(req.url,/\/v1\/collectibles\/admin\/grant$/);
     assert.equal(req.method,'POST');
     assert.equal(req.authorization,'Bearer mock-jwt');
-    assert.deepEqual(req.body,{uid:s.uid,storyId:'story-1',
+    assert.deepEqual(req.body,{storyId:'story-1',
       itemId:'author-item-fixture'});
+    assert.equal(Object.hasOwn(req.body,'uid'),false,
+      'Browser must never submit or choose the recipient UID');
   }
 });
 test('sandbox, guest, and server permission failures cannot mint ownership',async()=>{
