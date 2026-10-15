@@ -28,9 +28,9 @@ test('story questions, long messages, mixed intent and misleading phrases always
 });
 test('script replies rotate per character but never modify state',()=>{
   const char={id:'lan',name:'Lan',note:'Câu chuyện của cô ấy'};
-  const old={role:'user',text:'Chào'};
+  const old=[{role:'user',text:'Chào'},{role:'model',text:'Chào nhé.',source:'script'}];
   const first=npc.script('Chào',char,[]);
-  const second=npc.script('Chào',char,[old]);
+  const second=npc.script('Chào',char,old);
   assert.notEqual(first.text,second.text);
   assert.equal(char.note,'Câu chuyện của cô ấy');
 });
@@ -54,4 +54,20 @@ test('NPC short replies reflect persona while keeping token use at zero',()=>{
   assert.ok(warm?.text && cold?.text && playful?.text);
   assert.notEqual(warm.text,cold.text);
   assert.notEqual(playful.text,cold.text);
+});
+
+test('story, emotional state and unanswered chat disable free scripts',()=>{
+  const char={id:'lan',name:'Lan',status:'Bình thường',note:'Lạnh lùng'};
+  const scripted={role:'model',text:'Chào nhé.',source:'script'};
+  const ai={role:'model',text:'Tôi chưa từng quên ngày hôm ấy.'};
+  assert.equal(npc.script('Chào Lan',char,[{role:'user',text:'Bạn còn nhớ không?'},ai]),null);
+  assert.equal(npc.script('Cảm ơn',char,[{role:'user',text:'Bạn ổn chứ?'}]),null);
+  assert.equal(npc.script('Chào', {...char,status:'Bị thương nặng'},[]),null);
+  assert.equal(npc.script('Chào', {...char,status:'Mất kết nối'},[]),null);
+  assert.equal(npc.script('Chào', {...char,status:'Bình thường'},[]).source,'script');
+  assert.equal(npc.script('Chào', char,[{role:'user',text:'Chào'},scripted]).source,'script');
+  assert.equal(npc.script('Chào',char,[
+    {role:'user',text:'Chào'},scripted,
+    {role:'user',text:'Chào'},scripted
+  ]),null,'Do not let a character repeat the same greeting forever');
 });
