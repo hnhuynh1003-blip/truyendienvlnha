@@ -3,8 +3,10 @@
  */
 let avatarV22Session=null;
 let avatarV22LastReview=null;
-const avatarV22Enabled=IS_SANDBOX_MODE&&
-  new URLSearchParams(location.search).get('avatarSync')==='staging';
+function avatarV22Enabled(){
+  return typeof IS_SANDBOX_MODE!=='undefined'&&IS_SANDBOX_MODE&&
+    new URLSearchParams(location.search).get('avatarSync')==='staging';
+}
 function avatarV22Status(message){
  const e=document.getElementById('player-avatar-v22-status');
  if(e)e.textContent=message;
@@ -17,7 +19,7 @@ function avatarV22Identity(){
  }catch(_){return null;}
 }
 function avatarV22Instance(){
- if(!avatarV22Enabled)return null;
+ if(!avatarV22Enabled())return null;
  if(!avatarV22Session){
    avatarV22Session=DuduAvatarStagingV22.create({
      enabled:true,identity:avatarV22Identity,
@@ -53,7 +55,7 @@ function avatarV22Reset(){
  if(root)root.hidden=true;
 }
 async function avatarV22SignIn(){
- if(!avatarV22Enabled)return;
+ if(!avatarV22Enabled())return;
  try{
    const auth=firebase.auth();
    if(!auth?.currentUser){
@@ -68,12 +70,12 @@ async function avatarV22SignIn(){
  }
 }
 async function avatarV22Inspect(){
- if(!avatarV22Enabled)return;
+ if(!avatarV22Enabled())return;
  avatarV22Reset();
  avatarV22Status('Đang xác minh UID và đọc lựa chọn avatar từ staging...');
  const action=avatarV22Instance();
  const result=await action.inspect();
- if(!avatarV22Enabled||document.getElementById('player-avatar-v16-modal')?.style.display!=='flex')
+ if(!avatarV22Enabled()||document.getElementById('player-avatar-v16-modal')?.style.display!=='flex')
    return;
  if(!result.ok){
    const messages={
@@ -109,18 +111,19 @@ async function avatarV22Inspect(){
    !review.canUseServer||review.status==='identical';
 }
 async function avatarV22Choose(choice){
- if(!avatarV22Enabled||!avatarV22LastReview)return;
+ if(!avatarV22Enabled()||!avatarV22LastReview)return;
  const owner=avatarV22Identity()?.uid;
  if(!owner||owner!==currentUsername){
    avatarV22Reset();avatarV22Status('Đã thay đổi tài khoản. Không áp dụng.');
    return;
  }
- const btns=['player-avatar-v22-keep','player-avatar-v22-server'];
- const buttons=btns.map(id=>document.getElementById(id));
- if(buttons.some(b=>b.disabled)) {
-   // Buttons are disabled during a running request, not evidence of ownership.
-   return;
- }
+ const buttons=[
+   document.getElementById('player-avatar-v22-keep'),
+   document.getElementById('player-avatar-v22-server')
+ ];
+ const selected=choice==='use-device'?buttons[0]:
+   choice==='use-server'?buttons[1]:null;
+ if(!selected||selected.disabled)return;
  buttons.forEach(b=>b.disabled=true);
  avatarV22Status('Đang xử lý lựa chọn đã xác nhận...');
  const outcome=await avatarV22Instance().resolve(choice);
@@ -139,6 +142,5 @@ async function avatarV22Choose(choice){
 function avatarV22InitPanel(){
  const box=document.getElementById('player-avatar-v22-panel');
  if(!box)return;
- box.hidden=!avatarV22Enabled;
+ box.hidden=!avatarV22Enabled();
 }
-avatarV22InitPanel();
