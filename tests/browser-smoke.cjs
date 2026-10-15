@@ -1541,6 +1541,7 @@ async function main() {
       {waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>typeof handleAuthSubmit==='function');
     await page.waitForTimeout(750);
+    await page.evaluate(()=>openAuthModal());
     await page.locator('#auth-username').fill('uid_a');
     await page.getByRole('button',{name:'Đổi tài khoản thử'}).click();
     const stagingInit=await page.evaluate(()=>{
