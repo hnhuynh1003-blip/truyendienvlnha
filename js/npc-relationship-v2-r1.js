@@ -148,11 +148,16 @@
     });
     return Object.freeze({uid,storyId,npcId,affinity,relationshipV2:v2});
   }
+  // Trust unlocks NEW affinity gains, never clamps historical affinity.
+  function affinityCeiling(trust){
+    const t=Number.isFinite(trust)?Math.max(0,trust):0;
+    return t<20?40:t<50?70:100;
+  }
   function canBeGifted(item){
     return !!item&&item.giftable===true&&item.unique!==true&&
       item.scope!=='DUDU'&&item.scope!=='STORY'&&item.scope!=='CHAPTER'&&
       item.archived!==true;
   }
   return Object.freeze({VERSION,CONFIG,TAGS,CATALOG_TAGS,STAGES,STYLES,
-    normalizePreferences,itemTags,validScope,previewRelationship,canBeGifted});
+    normalizePreferences,itemTags,validScope,previewRelationship,affinityCeiling,canBeGifted});
 });
