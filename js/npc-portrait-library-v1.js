@@ -17,22 +17,41 @@
     ['#466d55','#95cba3','#243d37'],['#9a7138','#f2ca86','#523c2b'],
     ['#375f97','#93bdff','#223251'],['#885c9d','#d0a4e9','#40274c']
   ];
-  // Preserve all 24 existing female IDs; add male and neutral presentation
-  // without altering saved references or creating new NPC identities.
-  const GENDERS=Object.freeze(['female','male','neutral']);
+  // R10 default gallery: 60 female + 12 male. Keep all previously
+  // selectable IDs resolvable (including older male/neutral portraits) so
+  // saved author choices are never silently reassigned to a different face.
+  const GENDERS=Object.freeze(['female','male']);
   const WORLDS=Object.freeze(['modern','historical','fantasy']);
-  const CATALOG=Object.freeze(GENDERS.flatMap((gender,g)=>NAMES.map((name,i)=>
-    Object.freeze({
-      id:'portrait-'+['f','m','n'][g]+'-'+String(i+1).padStart(2,'0'),
-      label:name,gender,
-      world:WORLDS[(i+g)%WORLDS.length],
-      mood:name.toLocaleLowerCase('vi'),hair:(i+g*2)%6,
-      palette:(i+g*3)%COLORS.length,skin:(i+g)%4,eyes:i%3
-    }))));
-  const BY_ID=new Map(CATALOG.map(p=>[p.id,p]));
+  function entry(gender,index,group,legacy=false){
+    const i=index-1;
+    const previous=gender==='female'?0:gender==='male'?1:2;
+    const old=index<=24;
+    const mood=NAMES[i%NAMES.length];
+    const suffix=gender==='female'&&index>24?
+      ' '+(index<=48?'II':'III'):'';
+    return Object.freeze({
+      id:'portrait-'+group+'-'+String(index).padStart(2,'0'),
+      label:mood+suffix,gender,
+      world:WORLDS[(i+(old?previous:0))%WORLDS.length],
+      mood:mood.toLocaleLowerCase('vi'),hair:old?(i+previous*2)%6:(i+3)%6,
+      palette:old?(i+previous*3)%COLORS.length:(i+5)%COLORS.length,
+      skin:old?(i+previous)%4:(i+2)%4,eyes:i%3,
+      ...(legacy?{legacy:true}:{})
+    });
+  }
+  const CATALOG=Object.freeze([
+    ...Array.from({length:60},(_,i)=>entry('female',i+1,'f')),
+    ...Array.from({length:12},(_,i)=>entry('male',i+1,'m'))
+  ]);
+  const LEGACY=Object.freeze([
+    ...Array.from({length:12},(_,i)=>entry('male',i+13,'m',true)),
+    ...Array.from({length:24},(_,i)=>entry('neutral',i+1,'n',true))
+  ]);
+  const BY_ID=new Map([...CATALOG,...LEGACY].map(p=>[p.id,p]));
   function preset(id){return typeof id==='string'?BY_ID.get(id)||null:null;}
-  function normalized(text){
-    return String(text||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+  function normalized(value){
+    return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .replace(/đ/g,'d').replace(/Đ/g,'d')
       .toLocaleLowerCase('vi').trim();
   }
   function search({gender='all',world='all',query='',limit=100}={}){
@@ -132,5 +151,5 @@
     });}finally{db.close();}
   }
   function makeId(){return 'own-'+Date.now()+'-'+Math.random().toString(36).slice(2,9);}
-  return Object.freeze({CATALOG,GENDERS,WORLDS,preset,search,sourceFor,keyFor,makeId,saveUpload,readUpload});
+  return Object.freeze({CATALOG,LEGACY,GENDERS,WORLDS,preset,search,sourceFor,keyFor,makeId,saveUpload,readUpload});
 });
