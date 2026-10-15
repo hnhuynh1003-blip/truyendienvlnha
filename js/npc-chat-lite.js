@@ -84,13 +84,33 @@
     }
     return null; // Real story requests and questions go to AI, never guessed replies.
   }
+  // A free canned reply is only safe when no unresolved story/emotion context
+  // is being continued. A brief "chào" inside an ongoing AI conversation
+  // must be handled in context by the AI, not by a random generic line.
+  function hasSensitiveStatus(char) {
+    const status=normalized(char?.status || '');
+    return /(bi thuong|nguy hiem|truy duoi|phan boi|ke thu|gian du|hoang loan|khung hoang|mat ket noi|mat tich|bi phong toa|danh nhau|chien dau|nguy kich|bat tinh|bi bat)/.test(status);
+  }
+  function canUseScript(kind,char,history) {
+    if (!kind || hasSensitiveStatus(char)) return false;
+    const recent=(Array.isArray(history)?history:[])
+      .filter(m=>m && (m.role==='user'||m.role==='model')).slice(-8);
+    if (!recent.length) return true;
+    // A pending unanswered message is not an invitation to switch to small talk.
+    if (recent[recent.length-1].role!=='model') return false;
+    // Even a one-word message after a meaningful AI answer may carry subtext.
+    if (recent.some(m=>m.role==='model' && m.source!=='script')) return false;
+    // Do not repeat indefinitely or make characters appear scripted.
+    const recentSameIntent=recent.filter(m=>m.role==='user' && intent(m.text,char?.name)===kind).length;
+    if (recentSameIntent>=2) return false;
+    return true;
+  }
   function script(text,char,previousMessages) {
     const kind=intent(text,char?.name);
-    if (!kind) return null;
     const history=Array.isArray(previousMessages)?previousMessages:[];
+    if (!canUseScript(kind,char,history)) return null;
     const name=typeof char?.name==='string' ? char.name.trim() : '';
     const id=typeof char?.id==='string'?char.id:'npc';
-    // Stable per-character variety with deterministic rotation over consecutive greetings.
     const salt=Array.from(id).reduce((a,c)=>(a+c.charCodeAt(0))%101,0);
     const count=history.filter(m=>m?.role==='user' && intent(m.text,char?.name)===kind).length;
     const style=personaStyle(char);
