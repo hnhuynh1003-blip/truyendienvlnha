@@ -75,3 +75,19 @@ Trình duyệt chạy `?sandbox=1` chỉ có dữ liệu giả lập; không g�
 - Phân quyền nội dung **bản thảo chưa công khai**: hiện thư viện `main_library` có quyền đọc công khai, cần tách truyện xuất bản khỏi bản nháp trước khi phát hành.
 
 **Bảo vệ người dùng:** không đăng nội dung chat cá nhân hoặc API key lên issue/PR. Chỉ truyền dữ liệu thật sau khi chấp nhận chính sách dịch vụ Gemini và thông báo xử lý dữ liệu.
+
+## C. Tối ưu token / giữ cảm giác trò chuyện tự nhiên (đã code trên nhánh thử nghiệm)
+
+- `js/npc-chat-lite.js` nhận diện **đúng các câu giao tiếp ngắn độc lập**: chào, cảm ơn, tạm biệt, chúc ngủ ngon; kể cả khi gọi đúng tên nhân vật.
+- Các câu này trả lời theo nhóm tính cách của NPC (lạnh lùng, vui vẻ, dịu dàng hoặc trung tính) bằng kịch bản cục bộ, **0 lượt Gemini / 0 token Gemini**.
+- Phân loại rất bảo thủ: "Chào Lan, kể về thế giới trước đây" **không được tính là câu chào**, mà cần AI thật để trả lời đúng nội dung truyện.
+- Hội thoại đầy đủ vẫn giữ nguyên trong bộ nhớ cục bộ theo UID/truyện/NPC; chỉ **tối đa 8 tin gần nhất**, mỗi tin cũ tối đa 400 ký tự, tin mới tối đa 1.000 ký tự và phần thiết lập dài của NPC tối đa 1.200 ký tự được gửi lên AI. Đây là cơ chế tạm thời: chưa có hệ thống truy xuất ký ức dài hạn.
+- Chặn gửi đồng thời nhiều yêu cầu AI cùng NPC trong cùng một tài khoản, tránh tiêu hao lượt vì bấm liên tục. Câu chào kịch bản không cộng EXP, xu, thân mật, nhiệm vụ hay vật phẩm.
+- Người chơi **không bị buộc nhìn thanh năng lượng hoặc trả token trực tiếp**; quota của máy chủ vẫn cần tồn tại để giới hạn ngân sách. Mức 25 lượt/người/ngày, 200 toàn hệ thống/ngày hiện là cấu hình thử nghiệm, không phải cam kết số tin nhắn miễn phí hoặc hạn mức của Gemini.
+- Chưa sử dụng prompt caching của Gemini: chi phí, số token tính phí và chính sách caching phải được đánh giá sau khi chọn backend và model thật.
+
+### Lưu ý riêng khi chủ dự án dùng Firebase Spark miễn phí
+
+Cloud Functions gen 2 trong thư mục `functions/` chỉ là **mã chuẩn bị cho phương án Blaze**, không thể phát hành lên Firebase Spark. Tối ưu chat kịch bản ở frontend vẫn hoạt động với Spark miễn phí mà **không cần Gemini key**.
+
+Để bật Gemini thật mà vẫn giữ Spark: cần **thay hẳn AI adapter và backend sang Cloudflare Workers**, giữ xác thực Firebase ID token do Worker kiểm tra chữ ký, dùng Cloudflare Secrets để lưu key và quota phía máy chủ. **Chưa làm/triển khai bước Cloudflare** và chưa nhập bất kỳ API key thật nào. Không được triển khai cấu hình demo mà bỏ qua kiểm tra JWT, hạn mức và bí mật.
