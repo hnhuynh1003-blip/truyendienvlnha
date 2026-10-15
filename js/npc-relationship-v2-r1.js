@@ -143,6 +143,12 @@
         existing.acceptedGiftCountUtc>=0?existing.acceptedGiftCountUtc:0,
       acceptedInstanceIds:Object.freeze(Array.isArray(existing?.acceptedInstanceIds)?
         existing.acceptedInstanceIds.filter(asId).slice(-100):[]),
+      acceptedGiftEventIds:Object.freeze(Array.isArray(existing?.acceptedGiftEventIds)?
+        existing.acceptedGiftEventIds.filter(asId).slice(-100):[]),
+      lastCheckinUtc:typeof existing?.lastCheckinUtc==='string'?
+        existing.lastCheckinUtc:'',
+      trustEventIds:Object.freeze(Array.isArray(existing?.trustEventIds)?
+        existing.trustEventIds.filter(asId).slice(-100):[]),
       milestones:Object.freeze(Array.isArray(existing?.milestones)?
         existing.milestones.filter(asId).slice(-100):[])
     });
