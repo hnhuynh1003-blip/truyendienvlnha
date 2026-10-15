@@ -4,6 +4,7 @@ export {DuduQuota} from './quota.mjs';
 export {DuduCollectibles} from './collectibles.mjs';
 export {DuduPlayerAppearance} from './player-appearance.mjs';
 import {normalizeAppearanceSave,displayState} from './player-appearance-rules.mjs';
+import {verifyAwardWebhook,EVENT_MAX_BYTES} from './avatar-award-webhook.mjs';
 import {normalizedPrivateDraft,normalizedDraftApproval,parseScopedIds,cleanId} from './collectible-rules.mjs';
 
 const MODEL='gemini-3.5-flash-lite';
@@ -36,6 +37,58 @@ function json(data,status,origin,env){
 }
 function error(code,message,status,origin,env){
   return json({error:{code,message}},status,origin,env);
+}
+
+async function boundedEventBytes(req){
+  const length=Number(req.headers.get('Content-Length')||0);
+  if(!Number.isFinite(length)||length>EVENT_MAX_BYTES)return null;
+  if(!req.body)return null;
+  const reader=req.body.getReader();
+  let count=0;
+  const chunks=[];
+  try{
+    while(true){
+      const {done,value}=await reader.read();
+      if(done)break;
+      count+=value.byteLength;
+      if(count>EVENT_MAX_BYTES){await reader.cancel();return null;}
+      chunks.push(value);
+    }
+    const bytes=new Uint8Array(count);let offset=0;
+    for(const part of chunks){bytes.set(part,offset);offset+=part.length;}
+    return bytes;
+  }catch(_){return null;}
+  finally{reader.releaseLock();}
+}
+async function handleSignedFrameEvidence(req,env,origin){
+  // No browsers, no public unlock buttons, no Firebase reader/admin self-grant.
+  // Must be signed by an independently deployed, trusted service.
+  if(env.AVATAR_AWARD_ISSUER_ENABLED!=='true'||env.AVATAR_AWARDS_ENABLED!=='true')
+    return error('frame-events-disabled','Sự kiện cấp khung chưa mở.',503,origin,env);
+  if(req.method!=='POST')return error('method-not-allowed','Phương thức không hợp lệ.',405,origin,env);
+  if(origin)return error('origin-forbidden','Không chấp nhận yêu cầu từ trình duyệt.',403,origin,env);
+  if(!req.headers.get('Content-Type')?.toLowerCase().startsWith('application/json'))
+    return error('invalid-content','Yêu cầu phải là JSON.',415,origin,env);
+  const bytes=await boundedEventBytes(req);
+  if(!bytes)return error('invalid-event','Sự kiện quá lớn hoặc không hợp lệ.',400,origin,env);
+  const now=Date.now();
+  const event=await verifyAwardWebhook({
+    rawBytes:bytes,
+    timestamp:req.headers.get('X-Dudu-Event-Time'),
+    signature:req.headers.get('X-Dudu-Event-Signature'),
+    secret:env.AVATAR_EVENT_HMAC_SECRET,now
+  });
+  if(!event)return error('invalid-signature','Chữ ký hoặc bằng chứng không hợp lệ.',401,origin,env);
+  if(!env.DUDU_PLAYER_APPEARANCE)
+    return error('avatar-sync-unavailable','Sổ lưu khung chưa sẵn sàng.',503,origin,env);
+  try{
+    const store=env.DUDU_PLAYER_APPEARANCE.getByName('player-avatar-'+event.uid);
+    const result=await store.recordSignedAward(event,now);
+    return json(result,result.ok?200:409,origin,env);
+  }catch(err){
+    console.warn('Frame evidence ledger unavailable:',err?.name||'unavailable');
+    return error('award-unavailable','Chưa lưu được bằng chứng.',503,origin,env);
+  }
 }
 
 const PLAYER_APPEARANCE_PATHS=Object.freeze({
@@ -245,6 +298,8 @@ export default {
   async fetch(req,env){
     const origin=req.headers.get('Origin');
     const path=new URL(req.url).pathname;
+    if(path==='/v1/internal/frame-evidence')
+      return handleSignedFrameEvidence(req,env,origin);
     const allowed=!origin||allowOrigin(origin,env);
     if(!allowed)return error('origin-blocked','Nguồn yêu cầu không được phép.',403,origin,env);
     if(req.method==='OPTIONS'){
