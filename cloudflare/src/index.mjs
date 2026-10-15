@@ -50,6 +50,11 @@ async function handleCollectibles(req,env,path,origin){
   // Separate from AI_ENABLED; both feature gates default to OFF in staging.
   if(env.COLLECTIBLES_ENABLED!=='true')
     return error('collectibles-disabled','Bảo tàng kỷ vật chưa mở nhận thưởng.',503,origin,env);
+  // A client timer is not evidence that a chapter was read.
+  // Even when the admin vault is enabled, reader self-claims stay OFF.
+  if((path==='/v1/collectibles/begin'||path==='/v1/collectibles/claim')&&
+     env.COLLECTIBLE_SELF_CLAIM_ENABLED!=='true')
+    return error('self-claim-disabled','Phần thưởng đọc chương chưa được mở.',503,origin,env);
   const user=await verifyFirebaseIdToken(req,env.PROJECT_ID);
   if(!user)return error('unauthenticated','Vui lòng đăng nhập DUDU Studio.',401,origin,env);
   if(path.startsWith('/v1/collectibles/admin/')&&!user.admin)
