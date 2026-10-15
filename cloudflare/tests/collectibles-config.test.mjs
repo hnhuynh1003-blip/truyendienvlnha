@@ -67,3 +67,10 @@ test('staging admin award rejects foreign UID and cannot grant non-test/rare/sto
   assert.match(method,/PRIMARY KEY|alreadyOwned|alreadyOwned:true/);
   assert.match(method,/transactionSync/);
 });
+
+test('staging browser CORS never trusts arbitrary localhost ports or domains',()=>{
+  assert.match(worker,/origin==='http:\/\/localhost:5500'/);
+  assert.match(worker,/origin==='http:\/\/127\.0\.0\.1:5500'/);
+  assert.doesNotMatch(worker,/u\.hostname==='localhost'/);
+  assert.match(worker,/origin===env\.ALLOWED_ORIGIN/);
+});
