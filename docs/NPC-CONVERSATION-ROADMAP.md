@@ -18,7 +18,14 @@
 
 ## Đợt 2 — Ký ức có ngữ cảnh, giảm token mà không quên chuyện
 
-**Sau khi đợt 1 được kiểm tra:**
+**Đã triển khai phần 2.1 — truy xuất lịch sử chat cũ tại thiết bị, không cần gọi thêm Gemini:**
+
+- `js/story-memory.js` lấy nhiều nhất **hai cặp tin user/NPC cũ** thực sự liên quan đến câu hỏi hiện tại, theo từ khóa và độ gần đây. Mỗi tin hồi tưởng được rút xuống tối đa 220 ký tự.
+- Lấy dữ liệu từ `chatHistories[storyId + '::' + npcId]` đã được tải riêng theo UID của tài khoản hiện tại; không tạo ký ức hoặc nguồn dữ liệu giả.
+- Không kéo câu chào kịch bản, tin lỗi hoặc thông tin không liên quan vào phần hồi tưởng. Khi không tìm được thông tin phù hợp, chỉ gửi lịch sử gần đây.
+- Toàn bộ lịch sử cũ vẫn được giữ nguyên. Tối đa 4 tin hồi tưởng + 8 tin gần đây = 12 tin (phù hợp giới hạn API backend thử nghiệm).
+
+**Phần 2.2 sẽ thực hiện sau, chưa coi là hoàn thành:**
 
 - Định nghĩa ba vùng dữ liệu theo `uid / storyId / npcId`: hồ sơ gốc do tác giả viết; sự kiện/quan hệ quan trọng; vài lượt hội thoại gần đây.
 - Thiết kế sự kiện ký ức dạng có nguồn (chương/quest/chat), thời gian, quyền truy cập và mức chắc chắn; không để người chơi tự ghi đè hồ sơ NPC chuẩn.
