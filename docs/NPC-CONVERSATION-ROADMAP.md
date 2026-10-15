@@ -39,11 +39,19 @@
 
 ## Đợt 3 — Gemini qua Cloudflare Workers Free (không cần Firebase Blaze)
 
-**Phụ thuộc vào chủ dự án cấu hình Cloudflare:** triển khai Worker riêng, lưu Gemini key trong Secrets, xác minh Firebase ID token phía Worker, kiểm soát CORS/App Check hoặc biện pháp chống lạm dụng tương đương, quota theo UID và toàn hệ thống trong kho lưu trữ an toàn. Đảm bảo quota không thể bị vượt khi gọi song song. Cấu hình model còn hỗ trợ hạn mức miễn phí; test lỗi 429/503.
+**Đã hoàn thành phần code và kiểm thử ngoại tuyến; CHƯA triển khai tài khoản Cloudflare:**
 
-> Thư mục `functions/` trước đó là **bản thiết kế Firebase Blaze**, hiện **chưa triển khai** và không hoạt động trên Spark. Trước khi bật live cần thay frontend adapter qua Worker, không chạy song song hai backend AI.
+- Worker riêng tại `cloudflare/`, với `wrangler.toml` cấu hình SQLite Durable Object dùng được trên Workers Free; giới hạn đồng thời bằng transaction SQL trong một Durable Object chung.
+- Kiểm tra chữ ký RSA của Firebase ID token với JWKS Google, audience `truyendienvl`, issuer, expiration, `auth_time`; độc giả không được dùng API hỗ trợ tác giả.
+- Gateway kiểm soát CORS, giới hạn input/output, bảo vệ Gemini key trong Cloudflare Secret, chống spam theo UID, hạn mức 25/người/ngày và 200/toàn hệ thống/ngày.
+- Bài kiểm thử tạo JWT thật trong CI để thử token hợp lệ, giả mạo chữ ký, sai issuer/audience và hết hạn. Wrangler bundle chạy ở chế độ `--dry-run`, **không đăng nhập/deploy Cloudflare**.
+- `js/ai-proxy.js` đã chuyển sang Cloudflare HTTP. `WORKER_URL` để trống; Worker `AI_ENABLED = "false"`. Tại thời điểm này UI vẫn dùng hội thoại kịch bản cho câu chào và báo gián đoạn nếu cần AI.
+- Hướng dẫn an toàn: `cloudflare/README.md`. **Bước tiếp theo cần chủ tài khoản tự mở Cloudflare và triển khai Worker tắt AI** để lấy URL công khai. Không chia sẻ Gemini key, email hoặc tài khoản.
+- Firebase vẫn là Spark; `functions/` là kiến trúc Blaze **không triển khai**. Không chạy đồng thời hai backend.
 
-**Ngân sách:** dù Cloudflare Workers Free có hạn mức yêu cầu, token Gemini vẫn có quota độc lập. Giữ kill switch để ngắt AI khi hết giới hạn, không đưa key vào mã frontend, kiểm thử sai/giả mạo token.
+**Chưa hoàn thành và không được tuyên bố đã sẵn sàng công khai:** chạy thử Cloudflare thật với Firebase ID token của người dùng, Turnstile/App Check hoặc giải pháp chống lạm dụng bổ sung khi cần, nhập key vào Secrets, kiểm tra hạn mức Gemini thực tế, audit token usage, triển khai site beta riêng và phê duyệt bật `AI_ENABLED`. CORS không ngăn được client tự tạo request ngoài trình duyệt; xác thực chữ ký và quota mới là ranh giới chính.
+
+**Ngân sách:** Cloudflare Workers Free và Gemini miễn phí là hai hệ thống hạn mức độc lập; Worker chỉ chặn quá hạn mức **do DUDU tự đặt**, không bảo đảm không vượt bất kỳ hạn mức dịch vụ Gemini nào.
 
 ## Đợt 4 — Kiểm thử phát hành
 
