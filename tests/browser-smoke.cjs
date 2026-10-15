@@ -1069,6 +1069,65 @@ async function main() {
     assert.equal(portraitBrowser.raceSelected,true,'A late upload must not override the chosen image');
     assert.equal(portraitBrowser.sameCount,true,'Choosing portrait never creates NPC');
     assert.equal(portraitBrowser.writes,0,'No real Firestore writes while selecting pictures');
+    // V14: real WebP candidate saved only by explicit author choice.
+    const animeV14=await page.evaluate(()=>{
+      const story=novels[selectedNovelIndex];
+      const idx=story.characters.findIndex(c=>c?.id);
+      if(idx<0)return {missing:true};
+      const originals=JSON.stringify(story.characters);
+      const oldRole=userProfile.role,oldEditing=editingCharNovelId;
+      const initialWrites=window.__firestoreWrites.length;
+      userProfile.role='admin';applyUserRole();renderCodexDropdown();
+      document.getElementById('codex-novel-selector').value=story.id;
+      const npc=story.characters[idx];
+      const previous=!!npc.portraitAnimeId;
+      openEditCharacterModal(idx);
+      const available=document.querySelectorAll('#npc-v14-anime-gallery button[data-anime-id]').length;
+      const initialSelection=document.getElementById('npc-v14-anime-id').value;
+      npcSelectAnimeCandidate('anime-moon-violet');
+      const chosen=document.getElementById('npc-v14-anime-id').value;
+      const otherUnselected=!document.getElementById('npc-r8-upload-id').value&&
+        !document.getElementById('npc-r8-preset-id').value;
+      saveCharacterModal();
+      const saved=story.characters[idx].portraitAnimeId;
+      openEditCharacterModal(idx);
+      const restored=document.getElementById('npc-v14-anime-id').value;
+      const selectedButton=document.querySelector(
+        '#npc-v14-anime-gallery button[data-anime-id="anime-moon-violet"]'
+      ).getAttribute('aria-pressed');
+      const portrait=document.createElement('div');
+      portrait.style.cssText='height:140px;width:100px;';
+      portrait.id='anime-v14-temp';
+      document.body.append(portrait);
+      renderNpcPortraitPreview(portrait,story.characters[idx],story.id);
+      const visible=portrait.style.backgroundImage.includes('data:image/webp;base64,')&&
+        !portrait.textContent&&portrait.style.backgroundSize==='400% 100%';
+      portrait.remove();
+      npcSelectPortraitPreset('portrait-f-07');
+      const cleared=document.getElementById('npc-v14-anime-id').value==='';
+      saveCharacterModal();
+      const oldPortraitRestored=story.characters[idx].portraitPresetId==='portrait-f-07'&&
+        !Object.hasOwn(story.characters[idx],'portraitAnimeId');
+      story.characters=JSON.parse(originals);
+      userProfile.role=oldRole;applyUserRole();saveDB();
+      editingCharNovelId=oldEditing;
+      return {available,previous,initialSelection,chosen,otherUnselected,saved,
+        restored,selectedButton,visible,cleared,oldPortraitRestored,
+        countPreserved:story.characters.length===JSON.parse(originals).length,
+        writes:window.__firestoreWrites.length-initialWrites};
+    });
+    assert.equal(animeV14.available,4);
+    assert.equal(animeV14.chosen,'anime-moon-violet');
+    assert.equal(animeV14.otherUnselected,true);
+    assert.equal(animeV14.saved,'anime-moon-violet');
+    assert.equal(animeV14.restored,'anime-moon-violet');
+    assert.equal(animeV14.selectedButton,'true');
+    assert.equal(animeV14.visible,true);
+    assert.equal(animeV14.cleared,true);
+    assert.equal(animeV14.oldPortraitRestored,true);
+    assert.equal(animeV14.countPreserved,true);
+    assert.equal(animeV14.writes,0);
+
     const storyDatesBrowser=await page.evaluate(()=>{
       const story={updatedAt:'2026-10-15',
         chapters:[{updatedAt:'2026-10-09'},{updatedAt:'2026-10-11'}]};
