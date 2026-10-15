@@ -78,12 +78,19 @@ export class DuduCollectibles extends DurableObject {
     return {items};
   }
   archivePrivateDraft(storyId,itemId){
-    const previous=this.sql.exec('SELECT 1 AS ok FROM private_drafts WHERE story_id=? AND item_id=?',
-      storyId,itemId).toArray()[0];
-    if(!previous)return {ok:false,code:'not-found'};
-    this.sql.exec('UPDATE private_drafts SET archived=1 WHERE story_id=? AND item_id=?',
-      storyId,itemId);
-    return {ok:true};
+    return this.ctx.storage.transactionSync(()=>{
+      const previous=this.sql.exec(
+        'SELECT 1 AS ok FROM private_drafts WHERE story_id=? AND item_id=?',
+        storyId,itemId).toArray()[0];
+      if(!previous)return {ok:false,code:'not-found'};
+      this.sql.exec('UPDATE private_drafts SET archived=1 WHERE story_id=? AND item_id=?',
+        storyId,itemId);
+      // An archived secret cannot continue to mint new claims. Prior confirmed
+      // ownership remains; the museum may still show already owned items.
+      this.sql.exec('UPDATE releases SET disabled=1 WHERE story_id=? AND item_id=?',
+        storyId,itemId);
+      return {ok:true};
+    });
   }
   draftPreview(storyId,itemId){
     const draft=this.sql.exec(`SELECT story_id AS storyId,item_id AS itemId,
