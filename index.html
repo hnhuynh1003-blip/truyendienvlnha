@@ -1149,31 +1149,6 @@
         <button type="button" id="story-add-item-btn" class="btn admin-only" onclick="openAuthorItemModal('story')" style="margin-top:6px;">+ Thêm vật phẩm truyện</button>
         <div style="font-size:10px;color:var(--text-dim);margin-top:3px;">Hãy lưu truyện mới trước khi tạo vật phẩm.</div>
       </div>
-      <div id="npc-r7-author-fields" style="display:none;margin:8px 0;padding:9px;border:1px solid #245269;border-radius:8px;background:#102334;">
-        <div style="color:#67e8f9;font-size:11px;font-weight:bold;margin-bottom:5px;">Sở thích & chân dung NPC · Sandbox</div>
-        <label style="display:flex;align-items:center;gap:6px;font-size:10px;">
-          <input id="npc-r7-use-custom" type="checkbox" onchange="toggleNpcR7Custom()"> Tự thiết lập sở thích
-        </label>
-        <div id="npc-r7-tags" style="display:none;">
-          <label style="font-size:10px;">Thích (tag cách nhau dấu phẩy)</label>
-          <input id="npc-r7-liked" type="text" placeholder="PRACTICAL, DRINK_COFFEE" autocomplete="off"/>
-          <label style="font-size:10px;">Không thích (tag cách nhau dấu phẩy)</label>
-          <input id="npc-r7-disliked" type="text" placeholder="DANGEROUS" autocomplete="off"/>
-          <label style="font-size:10px;">Từ chối (tag cách nhau dấu phẩy)</label>
-          <input id="npc-r7-refused" type="text" placeholder="BOUNDARY_VIOLATION" autocomplete="off"/>
-          <label style="font-size:10px;">Kiểu phản hồi</label>
-          <select id="npc-r7-style">
-            <option value="default">Bình thường</option><option value="reserved">Kín đáo</option>
-            <option value="gentle">Dịu dàng</option><option value="cheerful">Vui vẻ</option>
-          </select>
-        </div>
-        <label style="font-size:10px;">Ảnh nhân vật trong dự án (tùy chọn)</label>
-        <input id="npc-r7-portrait" autocomplete="off" type="text" placeholder="assets/npc/ten-nhan-vat.webp"/>
-        <div style="font-size:9px;color:#94a3b8;margin-top:5px;">Chỉ dùng ảnh cùng website từ assets/npc. Không tải ảnh ngoài hoặc tự mở khóa NPC.</div>
-        <label for="npc-r7-milestones" style="font-size:10px;">Mốc truyện riêng (chỉ phác thảo)</label>
-        <textarea id="npc-r7-milestones" rows="3" placeholder="id_moc|id_chuong|30" style="width:100%;font-size:10px;" spellcheck="false"></textarea>
-        <div style="font-size:9px;color:#94a3b8;margin-top:2px;">Mỗi dòng: mã mốc | mã chương | Tin tưởng tối thiểu. Chưa xác nhận hoàn thành và không phát thưởng.</div>
-      </div>
       <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px;">
         <button class="btn" onclick="closeModals()">Hủy</button>
         <button class="btn btn-primary" onclick="saveStoryModal()">Lưu</button>
@@ -1287,6 +1262,31 @@
       <div class="modal-field">
         <label>Thiết lập tính cách / Ký ức (AI dùng làm prompt nhập vai ngầm):</label>
         <textarea id="char-input-note" autocomplete="off" style="height: 100px;" placeholder="Ghi chú tính cách, cảm xúc, lối xưng hô..."></textarea>
+      </div>
+      <div id="npc-r7-author-fields" style="display:none;margin:8px 0;padding:9px;border:1px solid #245269;border-radius:8px;background:#102334;">
+        <div style="color:#67e8f9;font-size:11px;font-weight:bold;margin-bottom:5px;">Sở thích & chân dung NPC · Sandbox</div>
+        <label style="display:flex;align-items:center;gap:6px;font-size:10px;">
+          <input id="npc-r7-use-custom" type="checkbox" onchange="toggleNpcR7Custom()"> Tự thiết lập sở thích
+        </label>
+        <div id="npc-r7-tags" style="display:none;">
+          <label style="font-size:10px;">Thích (tag cách nhau dấu phẩy)</label>
+          <input id="npc-r7-liked" type="text" placeholder="PRACTICAL, DRINK_COFFEE" autocomplete="off"/>
+          <label style="font-size:10px;">Không thích (tag cách nhau dấu phẩy)</label>
+          <input id="npc-r7-disliked" type="text" placeholder="DANGEROUS" autocomplete="off"/>
+          <label style="font-size:10px;">Từ chối (tag cách nhau dấu phẩy)</label>
+          <input id="npc-r7-refused" type="text" placeholder="BOUNDARY_VIOLATION" autocomplete="off"/>
+          <label style="font-size:10px;">Kiểu phản hồi</label>
+          <select id="npc-r7-style">
+            <option value="default">Bình thường</option><option value="reserved">Kín đáo</option>
+            <option value="gentle">Dịu dàng</option><option value="cheerful">Vui vẻ</option>
+          </select>
+        </div>
+        <label style="font-size:10px;">Ảnh nhân vật trong dự án (tùy chọn)</label>
+        <input id="npc-r7-portrait" autocomplete="off" type="text" placeholder="assets/npc/ten-nhan-vat.webp"/>
+        <div style="font-size:9px;color:#94a3b8;margin-top:5px;">Chỉ dùng ảnh cùng website từ assets/npc. Không tải ảnh ngoài hoặc tự mở khóa NPC.</div>
+        <label for="npc-r7-milestones" style="font-size:10px;">Mốc truyện riêng (chỉ phác thảo)</label>
+        <textarea id="npc-r7-milestones" rows="3" placeholder="id_moc|id_chuong|30" style="width:100%;font-size:10px;" spellcheck="false"></textarea>
+        <div style="font-size:9px;color:#94a3b8;margin-top:2px;">Mỗi dòng: mã mốc | mã chương | Tin tưởng tối thiểu. Chưa xác nhận hoàn thành và không phát thưởng.</div>
       </div>
       <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px;">
         <button class="btn" onclick="cancelCharacterModal()">Hủy</button>
