@@ -1024,6 +1024,10 @@
       <!-- KHU VỰC GÁN NPC VÀO CHƯƠNG NÀY CHO ADMIN -->
       <div class="modal-field">
         <label style="color:var(--neon); font-weight:bold;">⚡ Nhân vật xuất hiện trong chương này (để độc giả liên kết):</label>
+        <div style="display:flex; gap:6px; margin-bottom:6px; align-items:center;">
+          <input id="chapter-npc-filter" type="search" aria-label="Tìm NPC theo tên hoặc biệt danh" placeholder="Tìm nhân vật hoặc biệt danh..." oninput="filterChapterNpcPicker()" style="flex:1; min-width:0;">
+          <button type="button" class="btn admin-only" onclick="openAddCharacterModal(true)">+ Tạo NPC</button>
+        </div>
         <div id="chapter-modal-npc-picker" style="display:flex; flex-wrap:wrap; gap:6px; background:#0b0f15; padding:8px; border-radius:6px; border:1px solid #1f2937;"></div>
       </div>
 
@@ -1055,11 +1059,19 @@
         <input type="text" id="char-input-status" autocomplete="off" placeholder="Còn sống, Mất kết nối, Bị phong tỏa...">
       </div>
       <div class="modal-field">
+        <label>Biệt danh / tên gọi khác (cách nhau bằng dấu phẩy):</label>
+        <input type="text" id="char-input-aliases" autocomplete="off" placeholder="Ví dụ: Bác sĩ Ôn, A Hành">
+      </div>
+      <div class="modal-field">
+        <label>Thế giới nguyên bản:</label>
+        <input type="text" id="char-input-origin" autocomplete="off" placeholder="Ví dụ: Dung Thành">
+      </div>
+      <div class="modal-field">
         <label>Thiết lập tính cách / Ký ức (AI dùng làm prompt nhập vai ngầm):</label>
         <textarea id="char-input-note" autocomplete="off" style="height: 100px;" placeholder="Ghi chú tính cách, cảm xúc, lối xưng hô..."></textarea>
       </div>
       <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px;">
-        <button class="btn" onclick="closeModals()">Hủy</button>
+        <button class="btn" onclick="cancelCharacterModal()">Hủy</button>
         <button class="btn btn-primary" onclick="saveCharacterModal()">Lưu Nhân Vật</button>
       </div>
     </div>
@@ -1176,6 +1188,9 @@
     let isEditingStory = false;
     let editingChapterIndex = null;
     let editingCharIndex = null;
+    let editingCharNovelId = null;
+    let returnToChapterAfterCharModal = false;
+    let pendingChapterNpcSelection = [];
     let isReversedOrder = false;
     let currentFilterStatus = "ALL";
     let selectedTag = "ALL";
@@ -1974,33 +1989,62 @@ Quy tắc phản hồi:
       }
     }
 
-    function openAddCharacterModal() {
-      const novel = getSelectedCodexNovel();
+    function openAddCharacterModal(fromChapter = false) {
+      if (userProfile.role !== 'admin') return;
+      const novel = fromChapter ? novels[selectedNovelIndex] : getSelectedCodexNovel();
       if (!novel) { alert("Vui lòng tạo truyện trước!"); return; }
       editingCharIndex = null;
+      editingCharNovelId = novel.id;
+      returnToChapterAfterCharModal = fromChapter;
+      pendingChapterNpcSelection = fromChapter
+        ? Array.from(document.querySelectorAll('#chapter-modal-npc-picker input:checked')).map(el => el.value)
+        : [];
+      if (fromChapter) document.getElementById('chapter-modal').style.display = 'none';
       document.getElementById('char-modal-heading').textContent = `THÊM NHÂN VẬT - [${novel.title}]`;
       document.getElementById('char-input-name').value = '';
       document.getElementById('char-input-role').value = '';
       document.getElementById('char-input-status').value = 'Còn sống';
       document.getElementById('char-input-note').value = '';
+      document.getElementById('char-input-aliases').value = '';
+      document.getElementById('char-input-origin').value = '';
       document.getElementById('char-modal').style.display = 'flex';
     }
 
+    function cancelCharacterModal() {
+      document.getElementById('char-modal').style.display = 'none';
+      if (returnToChapterAfterCharModal) {
+        renderChapterNpcPicker(pendingChapterNpcSelection);
+        document.getElementById('chapter-modal').style.display = 'flex';
+      }
+      returnToChapterAfterCharModal = false;
+      editingCharNovelId = null;
+    }
+
     function openEditCharacterModal(idx) {
+      if (userProfile.role !== 'admin') return;
       const novel = getSelectedCodexNovel();
       editingCharIndex = idx;
+      editingCharNovelId = novel.id;
+      returnToChapterAfterCharModal = false;
       const c = novel.characters[idx];
       document.getElementById('char-modal-heading').textContent = `CHỈNH SỬA: ${c.name}`;
       document.getElementById('char-input-name').value = c.name;
       document.getElementById('char-input-role').value = c.role || '';
       document.getElementById('char-input-status').value = c.status || '';
       document.getElementById('char-input-note').value = c.note || '';
+      document.getElementById('char-input-aliases').value = (c.aliases || []).join(', ');
+      document.getElementById('char-input-origin').value = c.originWorld || '';
       document.getElementById('char-modal').style.display = 'flex';
     }
 
     function saveCharacterModal() {
-      const novel = getSelectedCodexNovel();
+      if (userProfile.role !== 'admin') return;
+      const novel = novels.find(n => n.id === editingCharNovelId);
+      if (!novel) { alert("Không tìm thấy truyện gốc của NPC."); return; }
       const name = document.getElementById('char-input-name').value.trim();
+      const aliases = document.getElementById('char-input-aliases').value
+        .split(',').map(x => x.trim()).filter(Boolean);
+      const originWorld = document.getElementById('char-input-origin').value.trim();
       const role = document.getElementById('char-input-role').value.trim();
       const status = document.getElementById('char-input-status').value.trim();
       const note = document.getElementById('char-input-note').value.trim();
@@ -2008,32 +2052,28 @@ Quy tắc phản hồi:
       if (!name) { alert("Vui lòng nhập tên nhân vật!"); return; }
       if (!novel.characters) novel.characters = [];
 
-      const charId = editingCharIndex !== null ? novel.characters[editingCharIndex].id : ("char_" + Date.now());
+      const charId = editingCharIndex !== null ? novel.characters[editingCharIndex].id
+        : ("char_" + (crypto.randomUUID ? crypto.randomUUID() : Date.now() + "_" + Math.random().toString(36).slice(2)));
 
       if (editingCharIndex !== null) {
-        novel.characters[editingCharIndex] = { ...novel.characters[editingCharIndex], name, role, status, note };
+        novel.characters[editingCharIndex] = { ...novel.characters[editingCharIndex], name, role, status, note, aliases, originWorld };
       } else {
-        novel.characters.push({ id: charId, name, role, status, note });
+        novel.characters.push({ id: charId, name, role, status, note, aliases, originWorld });
       }
 
-      if (!userProfile.collectedCharacters) userProfile.collectedCharacters = {};
-      userProfile.collectedCharacters[charId] = {
-        id: charId,
-        name,
-        role,
-        status,
-        note,
-        novelTitle: novel.title,
-        affinity: 20
-      };
-
+      // Authoring a canonical NPC is NOT permission to chat with that NPC.
       saveDB();
-      saveCurrentAccount();
       closeModals();
       renderCodexDropdown();
       renderCodexList();
       renderChatDropdown();
-      showSystemAlert("LƯU THÀNH CÔNG", `Đã lưu nhân vật [${name}]!`);
+      if (returnToChapterAfterCharModal) {
+        renderChapterNpcPicker([...pendingChapterNpcSelection, charId]);
+        document.getElementById('chapter-modal').style.display = 'flex';
+        returnToChapterAfterCharModal = false;
+      }
+      editingCharNovelId = null;
+      showSystemAlert("LƯU THÀNH CÔNG", `Đã lưu nhân vật [${name}] cho truyện [${novel.title}]!`);
     }
 
     function deleteCharacterFromCodex(idx) {
@@ -3093,6 +3133,13 @@ Quy tắc phản hồi:
     // ==========================================
     // SOẠN THẢO CHƯƠNG: TÍCH CHỌN NHÂN VẬT GẮN VÀO CHƯƠNG
     // ==========================================
+    function filterChapterNpcPicker() {
+      const q = (document.getElementById('chapter-npc-filter').value || '').trim().toLocaleLowerCase('vi');
+      document.querySelectorAll('#chapter-modal-npc-picker label').forEach(label => {
+        label.style.display = (label.dataset.npcSearch || '').includes(q) ? 'inline-flex' : 'none';
+      });
+    }
+
     function renderChapterNpcPicker(selectedIds = []) {
       const picker = document.getElementById('chapter-modal-npc-picker');
       picker.innerHTML = "";
@@ -3107,6 +3154,7 @@ Quy tắc phản hồi:
       chars.forEach(c => {
         const isChecked = selectedIds.includes(c.id);
         const label = document.createElement('label');
+        label.dataset.npcSearch = [c.name, ...(c.aliases || [])].join(' ').toLocaleLowerCase('vi');
         label.style.cssText = "display:inline-flex; align-items:center; gap:4px; font-size:11px; background:#141b24; padding:4px 8px; border-radius:6px; border:1px solid #334155; cursor:pointer;";
         label.innerHTML = `
           <input type="checkbox" value="${c.id}" ${isChecked ? 'checked' : ''} style="accent-color:var(--neon);">
@@ -3114,6 +3162,7 @@ Quy tắc phản hồi:
         `;
         picker.appendChild(label);
       });
+      filterChapterNpcPicker();
     }
 
     function openCreateChapterModal() {
@@ -3136,6 +3185,7 @@ Quy tắc phản hồi:
       const nextNum = (currentNovel.chapters ? currentNovel.chapters.length : 0) + 1;
       document.getElementById('chapter-modal-title').placeholder = `Ví dụ: Chương ${nextNum}: Tiêu đề chương`;
 
+      document.getElementById('chapter-npc-filter').value = '';
       renderChapterNpcPicker([]);
       document.getElementById('chapter-modal').style.display = 'flex';
     }
@@ -3149,6 +3199,7 @@ Quy tắc phản hồi:
       document.getElementById('chapter-modal-author-note').value = ch.authorNote || '';
       updateWordCountPreview();
 
+      document.getElementById('chapter-npc-filter').value = '';
       renderChapterNpcPicker(ch.characterIds || []);
       document.getElementById('chapter-modal').style.display = 'flex';
     }
