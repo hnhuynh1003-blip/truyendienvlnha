@@ -14,7 +14,7 @@ test('gallery preserves 24 feminine portraits and adds 48 new neutral/masculine 
  assert.equal(portraits.search({query:'thanh lich'}).length,3);
  assert.equal(portraits.search({gender:'female',query:'LẠNH LÙNG'}).length,1);
  assert.equal(portraits.search({gender:'male',world:'fantasy'}).length,8);
- assert.equal(new Set(portraits.CATALOG.map(x=>x.id)).size,24);
+ assert.equal(new Set(portraits.CATALOG.map(x=>x.id)).size,72);
  for(const p of portraits.CATALOG){
   assert.ok(['female','male','neutral'].includes(p.gender));
   assert.match(portraits.sourceFor(p.id),/^data:image\/svg\+xml;charset=utf-8,/);
