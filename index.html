@@ -904,7 +904,7 @@
           <span style="font-size:10px; color:var(--gold); white-space:nowrap;" id="chat-char-affinity">❤️ 10%</span>
         </div>
 
-        <div id="npc-relationship-r3-preview" role="status" aria-live="polite" style="display:none; font-size:10px; line-height:1.4; padding:5px 7px; margin-bottom:6px; border:1px solid #334155; border-radius:6px; color:#cbd5e1; background:#17212f;"></div>
+        <div id="npc-relationship-r3-preview" role="status" aria-live="polite" style="display:none; font-size:10px; line-height:1.4; padding:5px 7px; margin-bottom:6px; border:1px solid #334155; border-radius:6px; color:#cbd5e1; background:#17212f;"><span id="npc-relationship-r4-values"></span><button type="button" id="npc-relationship-r4-help" aria-label="Giải thích quan hệ NPC" title="Giải thích quan hệ NPC" onclick="showNpcRelationshipHelp()" style="float:right; background:transparent; color:#fbbf24; border:1px solid #475569; border-radius:50%; font-size:10px; width:18px; height:18px; cursor:pointer;">?</button></div>
         <div id="chat-messages-container" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 8px; background: rgba(10, 14, 20, 0.6); border-radius: 8px; border: 1px solid #1f2937; margin-bottom: 6px;"></div>
         <div id="chat-connection-status" role="status" aria-live="polite" style="display:none; font-size:10px; color:var(--gold); padding:3px 5px; line-height:1.35;">
           <span id="chat-connection-message"></span>
@@ -1850,6 +1850,11 @@
       switchChatCharacter();
     }
 
+    function showNpcRelationshipHelp() {
+      if (!IS_SANDBOX_MODE) return;
+      showSystemAlert('QUAN HỆ NPC V2', 'Thiện cảm thể hiện sự quý mến; Tin tưởng mở trần Thiện cảm: 0–19 → 40, 20–49 → 70, 50+ → 100. Quà phù hợp có thể tăng Tin tưởng, quà không nhận không mất. Mỗi NPC có tiến độ riêng. Mốc Tin cậy/Gắn bó cần sự kiện truyện xác minh.');
+    }
+
     function switchChatCharacter() {
       hideNpcConnectionStatus();
       const charId = document.getElementById('chat-character-selector').value;
@@ -1876,7 +1881,7 @@
         const labels={LOCKED:'Chưa kết nối',ACQUAINTED:'Quen biết',
           FRIENDLY:'Thân thiện',TRUSTED:'Tin cậy',BONDED:'Gắn bó'};
         affinityEl.textContent = '❤️ ' + affection + '%';
-        panel.textContent = '❤️ Thiện cảm: '+affection+'/100  •  🛡️ Tin tưởng: '+
+        document.getElementById('npc-relationship-r4-values').textContent = '❤️ Thiện cảm: '+affection+'/100  •  🛡️ Tin tưởng: '+
           trust+'/100  •  '+(labels[stage]||'Chưa kết nối')+
           '  •  Trần thiện cảm mới: '+ceiling+'/100';
         panel.title = 'Thử nghiệm R3: các giai đoạn cao cần mốc truyện đã được xác minh.';
@@ -2208,7 +2213,9 @@
       const char = chars.find(c => c.id === charId);
       if (!char) { showSystemAlert("CHƯA LIÊN KẾT", "Cần mở khóa NPC trước khi tặng quà."); return; }
       document.getElementById('gift-modal-heading').textContent = `🎁 TẶNG QUÀ: ${char.name}`;
-      document.getElementById('gift-modal-desc').textContent = `Tặng vật phẩm để tăng mức độ gắn kết linh hồn với [${char.name}].`;
+      document.getElementById('gift-modal-desc').textContent = IS_SANDBOX_MODE
+        ? '🎁 Tặng quà theo sở thích. Quà bị từ chối hoặc đang hồi không mất. 3 lượt/NPC/ngày, cách 5 phút; Tin tưởng mở trần Thiện cảm.'
+        : `Tặng vật phẩm để tăng mức độ gắn kết linh hồn với [${char.name}].`;
 
       const listContainer = document.getElementById('gift-inventory-list');
       listContainer.innerHTML = "";
