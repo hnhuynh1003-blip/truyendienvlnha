@@ -1,0 +1,45 @@
+/* Server-only item release validation. Published rules are explicit admin acts,
+ * not inferred by Gemini, chapter titles, the browser, or editable user profiles.
+ */
+export const MIN_CHAPTER_ELAPSED_MS=90_000;
+const ID=/^[a-zA-Z0-9][a-zA-Z0-9_-]{0,127}$/;
+const RANKS=new Set(['F','E','D','C','B','A','S','SS','SSS']);
+const METHODS=new Set(['CHAPTER_EVENT','STORY_EVENT']);
+export function cleanId(s){return typeof s==='string'&&ID.test(s)?s:null;}
+export function normalizedPublication(request){
+  if(!request||typeof request!=='object'||Array.isArray(request))return null;
+  const item=request.item;
+  if(!item||typeof item!=='object'||Array.isArray(item))return null;
+  const storyId=cleanId(item.storyId);
+  const itemId=cleanId(item.id);
+  const chapterId=item.chapterId===null?null:cleanId(item.chapterId);
+  const method=item.acquisition?.method;
+  const name=typeof item.name==='string'?item.name.trim():'';
+  const icon=typeof item.icon==='string'?item.icon.trim():'';
+  const rank=item.rank;
+  if(!storyId||!itemId||!itemId.startsWith('author-item-')||
+    !METHODS.has(method)||!RANKS.has(rank)||!name||name.length>70||
+    !icon||icon.length>12||item.archived===true||item.published!==true)return null;
+  if(method==='CHAPTER_EVENT'?!chapterId:chapterId!==null)return null;
+  if(item.scope!==(chapterId?'CHAPTER':'STORY'))return null;
+  // Admin must explicitly confirm that this is safe for public release.
+  if(request.confirmPublicRelease!==true)return null;
+  const npcId=item.npcId===null||item.npcId===undefined?null:cleanId(item.npcId);
+  if(item.npcId!=null&&!npcId)return null;
+  const summary=typeof item.desc==='string'?item.desc.trim():'';
+  if(!summary||summary.length>240)return null;
+  return Object.freeze({storyId,itemId,chapterId,npcId,name,rank,icon,
+    summary,method,unique:true});
+}
+export function parseScopedIds(body,{withItem=false,withChapter=false,withUid=false}={}){
+  if(!body||typeof body!=='object'||Array.isArray(body))return null;
+  const storyId=cleanId(body.storyId);
+  const itemId=withItem?cleanId(body.itemId):null;
+  const chapterId=withChapter?cleanId(body.chapterId):null;
+  const uid=withUid?cleanId(body.uid):null;
+  if(!storyId||(withItem&&!itemId)||(withChapter&&!chapterId)||(withUid&&!uid))return null;
+  return {storyId,itemId,chapterId,uid};
+}
+export function isChapterMature(start,now){
+  return Number.isFinite(start)&&Number.isFinite(now)&&now>=start+MIN_CHAPTER_ELAPSED_MS;
+}
