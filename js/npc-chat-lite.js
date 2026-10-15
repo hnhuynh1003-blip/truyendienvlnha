@@ -43,21 +43,28 @@
       .replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase()
       .replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();
   }
-  function intent(text) {
+  function intent(text,characterName) {
     const s=normalized(text);
-    if (!s || s.length>40) return null;
-    for (const [kind,forms] of Object.entries(INTENTS)) if (forms.has(s)) return kind;
-    return null; // Any detailed question goes to real AI; avoid fake story answers.
+    if (!s || s.length>55) return null;
+    const npc=normalized(characterName);
+    const candidates=[s];
+    // "Chào Lan" / "Cảm ơn Lan" are still simple greetings, provided the
+    // extra words exactly match the selected character's name.
+    if (npc && s.endsWith(' '+npc)) candidates.push(s.slice(0,-npc.length-1));
+    for (const candidate of candidates) {
+      for (const [kind,forms] of Object.entries(INTENTS)) if (forms.has(candidate)) return kind;
+    }
+    return null; // Real story requests and questions go to AI, never guessed replies.
   }
   function script(text,char,previousMessages) {
-    const kind=intent(text);
+    const kind=intent(text,char?.name);
     if (!kind) return null;
     const history=Array.isArray(previousMessages)?previousMessages:[];
     const name=typeof char?.name==='string' ? char.name.trim() : '';
     const id=typeof char?.id==='string'?char.id:'npc';
     // Stable per-character variety with deterministic rotation over consecutive greetings.
     const salt=Array.from(id).reduce((a,c)=>(a+c.charCodeAt(0))%101,0);
-    const count=history.filter(m=>m?.role==='user' && intent(m.text)===kind).length;
+    const count=history.filter(m=>m?.role==='user' && intent(m.text,char?.name)===kind).length;
     const lines=SCRIPT_LINES[kind];
     const line=lines[(count+salt)%lines.length];
     return {text:line,source:'script',intent:kind,npc:name};
