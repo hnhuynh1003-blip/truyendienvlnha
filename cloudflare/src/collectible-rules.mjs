@@ -85,7 +85,7 @@ export function parseScopedIds(body,{withItem=false,withChapter=false,withUid=fa
 // A temporary staging-only award gate: never turn arbitrary released
 // collectibles into mintable rewards simply by invoking the admin API.
 export function isEligibleSelfTestGrant(item){
-  return !!item&&item.disabled!==true&&item.disabled!==1&&
+  return !!item&&(item.disabled===0||item.disabled===false)&&
     item.method==='STORY_EVENT'&&item.chapterId===null&&item.rank==='F'&&
     typeof item.name==='string'&&
     item.name.toLocaleLowerCase('vi').includes('kiểm thử');
