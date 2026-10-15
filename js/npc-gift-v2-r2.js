@@ -48,8 +48,13 @@
     const multiplier=count===0?1:count===1?0.5:0.25;
     const gain=Math.min(rules.CONFIG.maxAffinityGainPerGift,Math.max(1,Math.floor(base*multiplier)));
     const affinity=Number.isFinite(relationship.affinity)?relationship.affinity:20;
-    const delta=Object.freeze({affinity:Math.max(0,Math.min(gain,100-affinity)),
-      trust:liked&&count===0?1:0});
+    const trust=Number.isFinite(old.trust)?old.trust:0;
+    const trustGain=liked&&count===0?1:0;
+    // This gift may build trust, but the new ceiling applies only to gains.
+    // Legacy affinity above the ceiling is NEVER reduced or overwritten.
+    const ceiling=rules.affinityCeiling(trust+trustGain);
+    const delta=Object.freeze({affinity:Math.max(0,Math.min(gain,ceiling-affinity)),
+      trust:trustGain});
     return Object.freeze({status:'ACCEPT',reason:liked?'liked':'neutral',
       consumesItem:true,delta,day,instanceId,giftEventId,
       nextCount:count+1,lastGiftAt:now});
