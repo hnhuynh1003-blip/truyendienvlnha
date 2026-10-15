@@ -805,7 +805,8 @@
           <span></span>
         </div>
         <div style="text-align: center; margin-bottom: 10px;">
-          <div style="font-size: 32px;">🧙‍♂️</div>
+          <div id="player-avatar-v1" aria-label="Ảnh đại diện người chơi (bản xem trước)" role="img" style="display:none;margin:0 auto 6px;width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#4338ca,#0891b2);box-shadow:0 0 0 2px #334155;align-items:center;justify-content:center;color:#f8fafc;font-weight:800;font-size:22px;">DU</div>
+          <div id="player-avatar-legacy" style="font-size: 32px;">🧙‍♂️</div>
           <div style="font-weight: bold; color: var(--neon); font-size: 14px;" id="profile-name">Kẻ Lang Bạt</div>
           <div style="font-size: 10px; color: #64748b;" id="profile-title">Người Thao Túng Mã Nguồn</div>
           <div style="font-size: 9px; color: var(--gold); margin-top: 2px;" id="profile-account-id">ID: Khách</div>
@@ -907,6 +908,7 @@
         </div>
 
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+          <div id="npc-portrait-v1" role="img" aria-label="Ảnh đại diện nhân vật (bản xem trước)" style="display:none;align-items:center;justify-content:center;width:38px;height:38px;min-width:38px;border-radius:12px;background:linear-gradient(140deg,#475569,#0e7490);color:#fff;border:1px solid #64748b;font-size:14px;font-weight:700;margin-right:4px;">NPC</div>
           <select id="chat-character-selector" onchange="switchChatCharacter()" style="flex:1; background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 4px; color: #fff; font-size: 11px; outline: none; margin-right:6px;"></select>
           <span style="font-size:10px; color:var(--gold); white-space:nowrap;" id="chat-char-affinity">❤️ 10%</span>
         </div>
@@ -1902,6 +1904,20 @@
       const storyId = activeChatNovelId || (novels[selectedNovelIndex] || {}).id;
       const unlocked = getStoryProgress(storyId).collectedCharacters;
       const affinityEl = document.getElementById('chat-char-affinity');
+      const portrait=document.getElementById('npc-portrait-v1');
+      if(portrait){
+        portrait.style.display=IS_SANDBOX_MODE&&char?'flex':'none';
+        if(char){
+          portrait.textContent=(char.name||'NPC').trim().split(/\s+/).slice(-2)
+            .map(x=>x[0]||'').join('').toUpperCase();
+          const palette=['linear-gradient(135deg,#0f766e,#1d4ed8)',
+            'linear-gradient(135deg,#7c3aed,#db2777)',
+            'linear-gradient(135deg,#92400e,#b45309)'];
+          const presets={c_otk:0,c_ttl:1,c_tct:2};
+          portrait.style.background=palette[presets[char.id]??0];
+          portrait.title='Ảnh tạm cho '+char.name+' — chưa phải minh họa chính thức';
+        }
+      }
       const panel = document.getElementById('npc-relationship-r3-preview');
       if (IS_SANDBOX_MODE && panel) {
         panel.style.display = 'block';
@@ -2844,6 +2860,14 @@
       const shopCoinEl = document.getElementById('shop-currency-val');
       if (shopCoinEl) shopCoinEl.textContent = userProfile.currency;
 
+      const playerPreview=document.getElementById('player-avatar-v1');
+      const legacyAvatar=document.getElementById('player-avatar-legacy');
+      if(playerPreview&&legacyAvatar){
+        playerPreview.style.display=IS_SANDBOX_MODE?'flex':'none';
+        legacyAvatar.style.display=IS_SANDBOX_MODE?'none':'block';
+        const segments=String(userProfile.name||currentUsername||'DU').trim().split(/\s+/);
+        playerPreview.textContent=segments.slice(-2).map(w=>w[0]||'').join('').toLocaleUpperCase('vi').slice(0,3);
+      }
       const profNameEl = document.getElementById('profile-name');
       if (profNameEl) profNameEl.textContent = userProfile.name || 'Kẻ Lang Bạt';
 
