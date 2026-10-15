@@ -33,5 +33,5 @@ test('unpublished author drafts live only in admin-only SQL and never appear in 
   assert.match(worker,/path\.startsWith\('\/v1\/collectibles\/admin\/'\)&&!user\.admin/);
   assert.match(worker,/await bucket\.upsertDraft\(rule,now\)/);
   assert.match(worker,/await bucket\.listPrivateDrafts\(scoped\.storyId,body\.chapterId\|\|null\)/);
-  assert.doesNotMatch(ledger,/firebase\\.firestore\\(|collection\\(['\"]studio_data|userProfile\\.inventory/);
+  assert.doesNotMatch(ledger,/userProfile\.inventory|firebase\.firestore|collection\(['\"]studio_data/);
 });
