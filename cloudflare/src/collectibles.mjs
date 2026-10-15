@@ -40,13 +40,15 @@ export class DuduCollectibles extends DurableObject {
     return this.ctx.storage.transactionSync(()=>{
       const itemId=rule.itemId||'author-item-'+crypto.randomUUID();
       const previous=this.sql.exec(
-        'SELECT chapter_id,archived FROM private_drafts WHERE story_id=? AND item_id=?',
+        'SELECT chapter_id,archived,updated_at FROM private_drafts WHERE story_id=? AND item_id=?',
         rule.storyId,itemId
       ).toArray()[0];
       if(rule.itemId&&!previous)return {ok:false,code:'not-found'};
       if(previous&&(previous.chapter_id||null)!==(rule.chapterId||null))
         return {ok:false,code:'immutable-scope'};
       if(previous?.archived)return {ok:false,code:'archived'};
+      // Ensure the draft revision changes even when edits occur within a ms.
+      const updatedAt=previous?Math.max(now,Number(previous.updated_at||0)+1):now;
       this.sql.exec(`INSERT INTO private_drafts
         (story_id,item_id,chapter_id,npc_id,name,rank,type,icon,summary,method,
          created_at,updated_at,archived)
@@ -56,7 +58,7 @@ export class DuduCollectibles extends DurableObject {
          type=excluded.type,icon=excluded.icon,summary=excluded.summary,
          method=excluded.method,updated_at=excluded.updated_at`,
         rule.storyId,itemId,rule.chapterId,rule.npcId,
-        rule.name,rule.rank,rule.type,rule.icon,rule.summary,rule.method,now,now);
+        rule.name,rule.rank,rule.type,rule.icon,rule.summary,rule.method,now,updatedAt);
       return {ok:true,storyId:rule.storyId,itemId};
     });
   }
@@ -83,22 +85,54 @@ export class DuduCollectibles extends DurableObject {
       storyId,itemId);
     return {ok:true};
   }
-  publish(rule,now){
+  draftPreview(storyId,itemId){
+    const draft=this.sql.exec(`SELECT story_id AS storyId,item_id AS itemId,
+      chapter_id AS chapterId,npc_id AS npcId,name,rank,type,icon,
+      summary,method,updated_at AS updatedAt
+      FROM private_drafts
+      WHERE story_id=? AND item_id=? AND archived=0`,
+      storyId,itemId).toArray()[0];
+    if(!draft)return {ok:false,code:'not-found'};
+    const current=this.sql.exec(`SELECT disabled,method,chapter_id AS chapterId,
+      published_at AS publishedAt FROM releases WHERE story_id=? AND item_id=?`,
+      storyId,itemId).toArray()[0];
+    return {ok:true,draft,
+      release:current?{disabled:!!current.disabled,method:current.method,
+        chapterId:current.chapterId,publishedAt:current.publishedAt}:null};
+  }
+  publishDraft(approval,now){
     return this.ctx.storage.transactionSync(()=>{
-      const old=this.sql.exec('SELECT method,chapter_id FROM releases WHERE story_id=? AND item_id=?',
-        rule.storyId,rule.itemId).toArray()[0];
-      // Do not silently move a released item between claim routes.
-      if(old&&(old.method!==rule.method||(old.chapter_id||null)!==(rule.chapterId||null)))
+      const draft=this.sql.exec(`SELECT story_id AS storyId,item_id AS itemId,
+        chapter_id AS chapterId,npc_id AS npcId,name,rank,icon,summary,
+        method,updated_at AS updatedAt,archived
+        FROM private_drafts WHERE story_id=? AND item_id=?`,
+        approval.storyId,approval.itemId).toArray()[0];
+      if(!draft||draft.archived)return {ok:false,code:'not-found'};
+      if(Number(draft.updatedAt)!==approval.expectedUpdatedAt)
+        return {ok:false,code:'stale-draft'};
+      if(!['CHAPTER_EVENT','STORY_EVENT'].includes(draft.method))
+        return {ok:false,code:'not-releasable'};
+      if(draft.method==='CHAPTER_EVENT'?!draft.chapterId:draft.chapterId!==null)
+        return {ok:false,code:'invalid-scope'};
+      const previous=this.sql.exec(`SELECT chapter_id AS chapterId,method,disabled
+        FROM releases WHERE story_id=? AND item_id=?`,
+        approval.storyId,approval.itemId).toArray()[0];
+      if(previous&&(previous.method!==draft.method||
+          (previous.chapterId||null)!==(draft.chapterId||null)))
         return {ok:false,code:'immutable-release'};
-      this.sql.exec(`INSERT INTO releases (
-          story_id,item_id,chapter_id,npc_id,name,rank,icon,summary,method,published_at,disabled
-        ) VALUES (?,?,?,?,?,?,?,?,?,?,0)
+      // Admin has already previewed a server-owned record. Never use item text
+      // from approval payload, nor publish an unpublished/archived/changed draft.
+      this.sql.exec(`INSERT INTO releases
+        (story_id,item_id,chapter_id,npc_id,name,rank,icon,summary,method,published_at,disabled)
+        VALUES (?,?,?,?,?,?,?,?,?,?,0)
         ON CONFLICT(story_id,item_id) DO UPDATE SET
           npc_id=excluded.npc_id,name=excluded.name,rank=excluded.rank,
-          icon=excluded.icon,summary=excluded.summary,disabled=0`,
-        rule.storyId,rule.itemId,rule.chapterId,rule.npcId,rule.name,rule.rank,
-        rule.icon,rule.summary,rule.method,now);
-      return {ok:true,storyId:rule.storyId,itemId:rule.itemId};
+          icon=excluded.icon,summary=excluded.summary,published_at=excluded.published_at,
+          disabled=0`,
+        draft.storyId,draft.itemId,draft.chapterId,draft.npcId,draft.name,
+        draft.rank,draft.icon,draft.summary,draft.method,now);
+      return {ok:true,storyId:draft.storyId,itemId:draft.itemId,
+        method:draft.method};
     });
   }
   disable(storyId,itemId){
