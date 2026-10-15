@@ -31,6 +31,34 @@
       'Đêm đã muộn rồi. Nghỉ ngơi đi, tôi vẫn ổn.'
     ]
   });
+  // Short, safe personality variations; these never invent NPC-specific memories.
+  const PERSONALITY_LINES = Object.freeze({
+    reserved: {
+      greeting:['Ừ, tôi nghe đây.','Là bạn sao? Có chuyện gì?','Chào. Tôi vẫn ở đây.'],
+      thanks:['Không cần khách sáo.','Ừ, không có gì.','Tôi hiểu. Đừng bận tâm.'],
+      goodbye:['Đi cẩn thận.','Tạm biệt.','Ừ, hẹn gặp lại.'],
+      goodnight:['Ngủ ngon.','Đêm muộn rồi, nghỉ đi.','Đừng thức quá khuya.']
+    },
+    cheerful: {
+      greeting:['A, là bạn đây rồi!','Chào chào! Hôm nay có gì vui nào?','Bạn đến đúng lúc quá!'],
+      thanks:['Hì hì, có gì đâu!','Đừng khách sáo thế chứ!','Lần sau lại kể tôi nghe nữa nhé!'],
+      goodbye:['Tạm biệt nha, nhớ quay lại đó!','Hẹn gặp lại!','Bye bye, đi vui vẻ nhé!'],
+      goodnight:['Ngủ ngon, mơ đẹp nha!','Chúc bạn một đêm thật vui!','Mai lại nói chuyện tiếp nhé!']
+    },
+    gentle: {
+      greeting:['Chào bạn. Hôm nay mọi chuyện ổn chứ?','Tôi ở đây, cứ nói với tôi nhé.','Lại gặp nhau rồi. Tôi rất vui.'],
+      thanks:['Không cần cảm ơn đâu.','Tôi vui vì giúp được bạn.','Có gì đâu, bạn cứ yên tâm.'],
+      goodbye:['Hẹn gặp lại, chăm sóc bản thân nhé.','Tạm biệt bạn. Đường về bình an.','Tôi sẽ đợi bạn quay lại.'],
+      goodnight:['Chúc ngủ ngon, nghỉ ngơi thật tốt nhé.','Đêm nay hãy ngủ thật yên bình.','Hẹn gặp lại vào ngày mai nhé.']
+    }
+  });
+  function personaStyle(char) {
+    const profile=normalized((char?.note||'')+' '+(char?.role||''));
+    if (/\b(lanh lung|kiem loi|it noi|tram tinh|kho gan)\b/.test(profile)) return 'reserved';
+    if (/\b(tinh nghich|vui ve|hoat bat|hai huoc|nhanh nhen)\b/.test(profile)) return 'cheerful';
+    if (/\b(diu dang|am ap|hien lanh|nhe nhang|tot bung)\b/.test(profile)) return 'gentle';
+    return 'default';
+  }
   const INTENTS = Object.freeze({
     greeting: new Set(['hi', 'hello', 'hey', 'chao', 'xin chao', 'chao ban', 'chao nha', 'hello ban']),
     thanks: new Set(['cam on', 'cam on ban', 'thanks', 'thank you', 'cam on nha']),
@@ -65,7 +93,8 @@
     // Stable per-character variety with deterministic rotation over consecutive greetings.
     const salt=Array.from(id).reduce((a,c)=>(a+c.charCodeAt(0))%101,0);
     const count=history.filter(m=>m?.role==='user' && intent(m.text,char?.name)===kind).length;
-    const lines=SCRIPT_LINES[kind];
+    const style=personaStyle(char);
+    const lines=style==='default' ? SCRIPT_LINES[kind] : PERSONALITY_LINES[style][kind];
     const line=lines[(count+salt)%lines.length];
     return {text:line,source:'script',intent:kind,npc:name};
   }
