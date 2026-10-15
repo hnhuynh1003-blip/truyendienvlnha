@@ -70,6 +70,16 @@ async function main() {
     assert.equal(catalogSnapshot.inventoryCount,2,'Defining 70 items must not grant inventory items');
     assert.equal(catalogSnapshot.legacyRandomCount,11,'Phase 1 must leave old loot pool untouched');
     assert.equal(catalogSnapshot.firestoreWrites,0,'Catalog has no backend writes');
+    const museumSandbox=await page.evaluate(async()=>{
+      openPhoneApp('museum');
+      await renderMuseum();
+      const message=document.getElementById('museum-items').textContent;
+      const writes=window.__firestoreWrites.length;
+      phoneHome();
+      return {message,writes};
+    });
+    assert.match(museumSandbox.message,/Sandbox không kết nối sổ sở hữu/);
+    assert.equal(museumSandbox.writes,0,'Museum sandbox cannot mutate Firestore or live inventory');
 
     // Author-only item editor: story catalog, NPC references and chapter linking.
     await page.evaluate(() => openEditStoryModal());
