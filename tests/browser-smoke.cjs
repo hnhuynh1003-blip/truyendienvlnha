@@ -133,7 +133,7 @@ async function main() {
     assert.equal(chapterItem.inventory,2);
     assert.equal(chapterItem.writes,0);
     // Quick duplicate preserves fields but must allocate a distinct persistent ID.
-    await page.evaluate(()=>openAuthorItemModal('chapter',chapterItem.id,true));
+    await page.evaluate(itemId=>openAuthorItemModal('chapter',itemId,true),chapterItem.id);
     assert.equal(await page.locator('#author-item-name').inputValue(),'Bức thư chương đầu');
     await page.locator('#author-item-name').fill('Bức thư bản thứ hai');
     await page.getByRole('button',{name:'Lưu vật phẩm'}).click();
