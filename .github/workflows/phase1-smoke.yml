@@ -1,0 +1,19 @@
+name: DUDU Phase 1 Smoke
+on:
+  pull_request:
+    branches: [fixapp]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Configure Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify JavaScript and scope rules
+        run: node --test tests/phase1-smoke.test.cjs
