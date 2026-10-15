@@ -39,6 +39,7 @@
   <script src="js/npc-portrait-library-v1.js"></script>
   <script src="js/npc-anime-candidates-v14.js"></script>
   <script src="js/player-avatar-v16.js"></script>
+  <script src="js/player-avatar-ui-v16.js"></script>
   <script src="js/loot-rules-v2.js"></script>
   <script src="js/author-items-v1.js"></script>
   <script src="js/npc-editor-v1.js"></script>
@@ -2343,6 +2344,14 @@
               : 'align-self: flex-start; background: #1e293b; border: 1px solid #334155; color: var(--neon);'
           }`;
           div.textContent = msg.text;
+          if(isUser&&IS_SANDBOX_MODE){
+            const badge=document.createElement('span');
+            badge.className='dudu-player-avatar-v16 dudu-player-chat-badge-v16';
+            badge.setAttribute('role','img');
+            badge.setAttribute('aria-label','Avatar người chơi');
+            div.prepend(badge);
+            renderPlayerAvatarV16(badge);
+          }
         }
         container.appendChild(div);
       });
@@ -3694,14 +3703,9 @@
       const shopCoinEl = document.getElementById('shop-currency-val');
       if (shopCoinEl) shopCoinEl.textContent = userProfile.currency;
 
-      const playerPreview=document.getElementById('player-avatar-v1');
       const legacyAvatar=document.getElementById('player-avatar-legacy');
-      if(playerPreview&&legacyAvatar){
-        playerPreview.style.display=IS_SANDBOX_MODE?'flex':'none';
-        legacyAvatar.style.display=IS_SANDBOX_MODE?'none':'block';
-        const segments=String(userProfile.name||currentUsername||'DU').trim().split(/\s+/);
-        playerPreview.textContent=segments.slice(-2).map(w=>w[0]||'').join('').toLocaleUpperCase('vi').slice(0,3);
-      }
+      if(legacyAvatar)legacyAvatar.style.display=IS_SANDBOX_MODE?'none':'block';
+      if(IS_SANDBOX_MODE)renderPlayerAvatarPlacesV16();
       const profNameEl = document.getElementById('profile-name');
       if (profNameEl) profNameEl.textContent = userProfile.name || 'Kẻ Lang Bạt';
 
