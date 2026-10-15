@@ -9,6 +9,7 @@ ALLOWED_ORIGIN = "https://hnhuynh1003-blip.github.io"
 AI_ENABLED = "false"
 COLLECTIBLES_ENABLED = "false"
 COLLECTIBLE_SELF_CLAIM_ENABLED = "false"
+PLAYER_AVATAR_SYNC_ENABLED = "false"
 MODEL = "gemini-3.5-flash-lite"
 
 [[durable_objects.bindings]]
@@ -26,3 +27,11 @@ new_sqlite_classes = ["DuduQuota"]
 [[migrations]]
 tag = "v2-collectibles-sqlite"
 new_sqlite_classes = ["DuduCollectibles"]
+
+[[durable_objects.bindings]]
+name = "DUDU_PLAYER_APPEARANCE"
+class_name = "DuduPlayerAppearance"
+
+[[migrations]]
+tag = "v3-player-appearance-sqlite"
+new_sqlite_classes = ["DuduPlayerAppearance"]
