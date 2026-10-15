@@ -22,6 +22,7 @@
   <script src="js/story-memory.js"></script>
   <script src="js/npc-memory-v2.js"></script>
   <script src="js/item-catalog-v2.js"></script>
+  <script src="js/loot-rules-v2.js"></script>
 
   <style>
     :root {
@@ -1221,6 +1222,7 @@
       currency: 50,
       role: "reader", 
       lootedChapters: {},
+      readRewards: {},
       collectedCharacters: {},
       inventory: [
         { id: "init-1", name: "Mẩu Bánh Mì Mốc", rank: "F", type: "FOOD", icon: "🍞", desc: "Khô khốc, chống đói lúc tuyệt vọng." },
@@ -1388,6 +1390,7 @@
         inventory: Array.isArray(userProfile.inventory) ? userProfile.inventory : [],
         quests: Array.isArray(userProfile.quests) ? userProfile.quests : DEFAULT_SYSTEM_QUESTS,
         lootedChapters: userProfile.lootedChapters || {},
+        readRewards: userProfile.readRewards || {},
         collectedCharacters: userProfile.collectedCharacters || {},
         storyStates: userProfile.storyStates || {}
       };
@@ -1452,6 +1455,7 @@
             currency: 50,
             role: "reader",
             lootedChapters: {},
+            readRewards: {},
             collectedCharacters: {},
             inventory: [
               { id: "init-1", name: "Mẩu Bánh Mì Mốc", rank: "F", type: "FOOD", icon: "🍞", desc: "Khô khốc, chống đói lúc tuyệt vọng." },
@@ -1494,6 +1498,7 @@
           try { userProfile = JSON.parse(saved); } catch (e) {}
         }
         if (!userProfile.lootedChapters) userProfile.lootedChapters = {};
+        if (!userProfile.readRewards) userProfile.readRewards = {};
         if (!userProfile.collectedCharacters) userProfile.collectedCharacters = {};
         if (!userProfile.storyStates) userProfile.storyStates = {};
         loadScopedInteractionState();
@@ -2613,73 +2618,70 @@
 
     function claimChapterLootDrop() {
       const novel = novels[selectedNovelIndex];
-      const ch = novel.chapters[selectedChapterIndex];
-      const lootKey = `${novel.id}_${ch.id || selectedChapterIndex}`;
-
-      if (!userProfile.lootedChapters) userProfile.lootedChapters = {};
-      
-      if (userProfile.lootedChapters[lootKey]) {
+      const chapter = novel?.chapters?.[selectedChapterIndex];
+      if (!novel || !chapter) return;
+      const lootKey = `${novel.id}_${chapter.id || selectedChapterIndex}`;
+      if (userProfile.lootedChapters?.[lootKey]) {
         showSystemAlert("KHÔNG CÒN TÀN TÍCH", "Chương này bạn đã nhặt quà rồi!");
         return;
       }
-
-      userProfile.lootedChapters[lootKey] = true;
-      rollLootDrop(true);
-      updateChapterLootButtonState();
+      if (rollLootDrop(true,novel,chapter)) updateChapterLootButtonState();
     }
 
-    function rollLootDrop(isFreeFromChapter = false) {
+    function rollLootDrop(isFreeFromChapter = false, sourceNovel = null, sourceChapter = null) {
       const now = Date.now();
-
-      if (!isFreeFromChapter && (now - lastLootTimestamp < COOLDOWN_DURATION)) {
-        const remainSec = Math.ceil((COOLDOWN_DURATION - (now - lastLootTimestamp)) / 1000);
-        const mins = Math.floor(remainSec / 60);
-        const secs = remainSec % 60;
-        showSystemAlert("HỆ THỐNG ĐANG NẠP LẠI", `Vui lòng chờ ${mins}p ${secs}s!`);
-        return;
+      if (!isFreeFromChapter && now-lastLootTimestamp < COOLDOWN_DURATION) {
+        const remainSec = Math.ceil((COOLDOWN_DURATION-(now-lastLootTimestamp))/1000);
+        showSystemAlert("HỆ THỐNG ĐANG NẠP LẠI", `Vui lòng chờ ${Math.floor(remainSec/60)}p ${remainSec%60}s!`);
+        return false;
+      }
+      let lootKey = null;
+      if (isFreeFromChapter) {
+        const idx = sourceNovel?.chapters?.indexOf(sourceChapter);
+        if (!sourceNovel || !sourceChapter || idx < 0) return false;
+        lootKey = `${sourceNovel.id}_${sourceChapter.id || idx}`;
+        if (userProfile.lootedChapters?.[lootKey]) return false;
       }
 
-      const roll = Math.random() * 10000;
-      let targetRank = "F";
+      // Only explicit author-tagged realms can add a realm's items.
+      // The generic Cyber Phone loot button always uses common items.
+      const realmTag = isFreeFromChapter ? DuduLootRules.realmTagFor(sourceChapter,sourceNovel) : null;
+      const result = DuduLootRules.pick({realmTag});
+      const reward = result && DuduLootRules.rewardFor(result.rank);
+      if (!result || !reward) {
+        showSystemAlert("TẦN SỐ RƠI ĐỒ LỖI", "Chưa có vật phẩm phù hợp để thu thập. Bạn chưa mất lượt.");
+        return false;
+      }
 
-      if (roll < 5000) targetRank = "F";
-      else if (roll < 8000) targetRank = "E";
-      else if (roll < 9200) targetRank = "D";
-      else if (roll < 9700) targetRank = "C";
-      else if (roll < 9900) targetRank = "B";
-      else if (roll < 9970) targetRank = "A";
-      else if (roll < 9995) targetRank = "S";
-      else if (roll < 9999) targetRank = "SS";
-      else targetRank = "SSS";
+      const copy = {
+        ...result.item,
+        instanceId: 'item-' + (crypto.randomUUID ? crypto.randomUUID() : now+'-'+Math.random().toString(36).slice(2)),
+        obtainedFrom: isFreeFromChapter ? {
+          kind:'CHAPTER',storyId:sourceNovel.id,chapterId:sourceChapter.id || String(sourceNovel.chapters.indexOf(sourceChapter))
+        } : {kind:'GLOBAL'}
+      };
 
-      const pool = MASTER_LOOT_TABLE.filter(item => item.rank === targetRank);
-      const picked = pool[Math.floor(Math.random() * pool.length)] || MASTER_LOOT_TABLE[0];
-
-      let bonusCoins = Math.floor(Math.random() * 3) + 1;
-      if (["B", "A"].includes(targetRank)) bonusCoins = 15;
-      if (["S", "SS"].includes(targetRank)) bonusCoins = 50;
-      if (targetRank === "SSS") bonusCoins = 200;
-
-      userProfile.currency += bonusCoins;
-      userProfile.inventory.unshift({ ...picked, instanceId: "item-" + Date.now() });
-      addExp(targetRank === 'SSS' ? 100 : (targetRank === 'S' ? 40 : 10));
-
+      userProfile.lootedChapters ||= {};
+      userProfile.inventory ||= [];
+      if (lootKey) userProfile.lootedChapters[lootKey] = true;
+      userProfile.inventory.unshift(copy);
+      userProfile.currency = (Number(userProfile.currency)||0) + reward.coins;
       if (!isFreeFromChapter) {
         lastLootTimestamp = now;
         localStorage.setItem(scopedLocalKey('loot-cooldown'), now.toString());
         startCooldownTicker();
       }
+      addExp(reward.exp);
+      advanceQuest('q_daily_loot',1);
 
-      advanceQuest('q_daily_loot', 1);
-
-      if (["S", "SS", "SSS"].includes(targetRank)) {
-        showSystemAlert("💥 DỊ THƯỜNG BẠO KÍCH!", `BẠN ĐÃ NHẶT ĐƯỢC [${picked.rank}] ${picked.name}! (+${bonusCoins} Xu)`);
+      if (['S','SS','SSS'].includes(result.rank)) {
+        showSystemAlert("💥 DỊ THƯỜNG BẠO KÍCH!", `BẠN ĐÃ NHẶT ĐƯỢC [${result.rank}] ${result.item.name}! (+${reward.coins} Xu)`);
       } else {
-        showSystemAlert("TÀN TÍCH DỮ LIỆU", `Nhặt được: [${picked.rank}] ${picked.name} (+${bonusCoins} Xu)`);
+        showSystemAlert("TÀN TÍCH DỮ LIỆU", `Nhặt được: [${result.rank}] ${result.item.name} (+${reward.coins} Xu)`);
       }
-
       saveCurrentAccount();
       renderInventory();
+      return true;
     }
 
     function countWords(str) {
@@ -3036,9 +3038,16 @@
 
       updateChapterLootButtonState();
 
-      addExp(5);
-      advanceQuest('q_daily_read', 1);
-      if (chIdx === 0) advanceQuest('q_main_intro', 1);
+      // Reward the first visit to a distinct chapter only once per UID/story.
+      // This limits reload/open spam; it is NOT proof of actual reading.
+      userProfile.readRewards ||= {};
+      const readKey = `${novel.id}_${ch.id || chIdx}`;
+      if (!userProfile.readRewards[readKey]) {
+        userProfile.readRewards[readKey] = true;
+        addExp(5);
+        advanceQuest('q_daily_read', 1);
+        if (chIdx === 0) advanceQuest('q_main_intro', 1);
+      }
 
       setTimeout(() => {
         window.scrollTo({ top: scrollPos, behavior: scrollPos ? 'smooth' : 'auto' });
