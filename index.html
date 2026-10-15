@@ -22,6 +22,8 @@
   <script src="js/story-memory.js"></script>
   <script src="js/npc-memory-v2.js"></script>
   <script src="js/item-catalog-v2.js"></script>
+  <script src="js/npc-relationship-v2-r1.js"></script>
+  <script src="js/npc-gift-v2-r2.js"></script>
   <script src="js/loot-rules-v2.js"></script>
   <script src="js/author-items-v1.js"></script>
   <script src="js/npc-editor-v1.js"></script>
@@ -2224,6 +2226,48 @@
       const giftStory = activeChatNovelId || (novels[selectedNovelIndex] || {}).id;
       const giftUser = currentUsername;
       if (!isNpcUnlocked(giftStory, char.id)) return;
+      // R2 sandbox only. Existing live gift behavior is unchanged.
+      if (IS_SANDBOX_MODE) {
+        const progress = getStoryProgress(giftStory).collectedCharacters[char.id];
+        const canonical = DuduItemCatalog.byId(item.id || item.itemId);
+        const safeItem = canonical && canonical.scope !== 'LEGACY' ? canonical : null;
+        const relationship = DuduNpcRelationshipV2.previewRelationship(
+          progress, 'sandbox-user', giftStory, char.id);
+        if (!relationship || !safeItem) {
+          showSystemAlert('KHÔNG THỂ TẶNG', 'Vật phẩm chưa được xác thực cho thử nghiệm.');
+          return;
+        }
+        const now = Date.now();
+        const eventId = 'sandbox-gift-' + now + '-' + Math.random().toString(36).slice(2,10);
+        const plan = DuduNpcGiftR2.evaluateGift({
+          npc:char,item:safeItem,relationship:{...relationship,unlocked:true},
+          now,instanceId:eventId,giftEventId:eventId
+        });
+        if (plan.status !== 'ACCEPT') {
+          showSystemAlert('CHƯA THỂ TẶNG QUÀ', plan.status === 'COOLDOWN'
+            ? 'NPC cần nghỉ giữa các lượt tặng hoặc đã đủ 3 lượt hôm nay.'
+            : 'NPC không nhận món quà này. Vật phẩm vẫn còn trong kho.');
+          return;
+        }
+        // Synchronous sandbox commit: no await between verification and removal.
+        if (userProfile.inventory[itemIdx] !== item) return;
+        const next = {...relationship.relationshipV2,
+          lastGiftAt:plan.lastGiftAt,giftDayUtc:plan.day,
+          acceptedGiftCountUtc:plan.nextCount,
+          acceptedInstanceIds:[...(relationship.relationshipV2.acceptedInstanceIds||[]),eventId].slice(-100),
+          acceptedGiftEventIds:[...(relationship.relationshipV2.acceptedGiftEventIds||[]),eventId].slice(-100),
+          trust:Math.min(100,relationship.relationshipV2.trust+plan.delta.trust)};
+        userProfile.inventory.splice(itemIdx,1);
+        progress.affinity=Math.min(100,relationship.affinity+plan.delta.affinity);
+        progress.relationshipV2=next;
+        saveCurrentAccount();
+        npcMemoryStore(giftStory,char.id,giftUser)?.addGift(item.name,item.rank,eventId);
+        closeModals();
+        showSystemAlert('TẶNG QUÀ THÀNH CÔNG',
+          'NPC đã nhận '+item.name+' (+'+plan.delta.affinity+' Thiện cảm, +'+plan.delta.trust+' Tin tưởng).');
+        renderCodexList();
+        return;
+      }
       userProfile.inventory.splice(itemIdx, 1);
 
       const rankBonus = { "F": 5, "E": 10, "D": 15, "C": 25, "B": 35, "A": 50, "S": 75, "SS": 100, "SSS": 100 };
