@@ -141,7 +141,7 @@ async function main() {
     assert.equal(npcEfficient.callsAfterGreeting, 0, 'Greetings must not call Gemini');
     assert.equal(npcEfficient.remoteCalls, 1, 'Story-specific chat still calls AI');
     assert.equal(npcEfficient.purpose, 'chat');
-    assert.ok(npcEfficient.instructionLength < 1800, 'Long NPC notes are budgeted');
+    assert.ok(npcEfficient.instructionLength < 2300, 'Long NPC notes stay within the 3000-character backend instruction cap');
     assert.ok(npcEfficient.remoteLastLength <= 1001, 'AI request is trimmed');
     assert.ok(npcEfficient.fullSavedLength > 1001, 'Full chat history remains saved');
     assert.equal(npcEfficient.writes, 0, 'Sandbox must stay isolated');
