@@ -13,8 +13,10 @@ test('browser never contains direct Gemini calls or asks end users for a Gemini 
   assert.match(html,/DuduAI\.generate\('assist'/);
   assert.doesNotMatch(proxy,/localStorage\.(?:getItem|setItem)\(['"]my_gemini_api_key/);
   assert.match(proxy,/localStorage\.removeItem\('my_gemini_api_key'\)/);
-  assert.match(proxy,/ReCaptchaEnterpriseProvider/);
-  assert.match(proxy,/firebase\.functions\(REGION\)/);
+  assert.match(proxy,/getIdToken\(\)/,'Client must send Firebase ID token');
+  assert.match(proxy,/Bearer /);
+  assert.match(proxy,/const WORKER_URL = '';/,'Client stays disabled until Worker URL is reviewed');
+  assert.doesNotMatch(proxy,/httpsCallable|ReCaptchaEnterpriseProvider|gemini-api-key/i);
 });
 
 test('phone distinguishes shared library counts from player progress',()=>{
@@ -36,4 +38,24 @@ test('server-side service is enforced with secret + App Check, and quota docs st
   assert.match(code,/ai_global_usage_v2/);
   assert.match(code,/ai_usage_v2/);
   assert.match(rules,/match \/\{document=\*\*\}[\s\S]*?allow read, write: if false;/);
+});
+
+test('Cloudflare gateway independently verifies Firebase JWT and limits cost',()=>{
+  const worker=load('cloudflare/src/index.mjs');
+  const quota=load('cloudflare/src/quota.mjs');
+  const config=load('cloudflare/wrangler.toml');
+  const html=load('index.html');
+  assert.match(worker,/jwtVerify\(/);
+  assert.match(worker,/createRemoteJWKSet\(/);
+  assert.match(worker,/algorithms:\['RS256'\]/);
+  assert.match(worker,/securetoken\.google\.com/);
+  assert.match(worker,/AI_ENABLED!=='true'/);
+  assert.match(worker,/env\.GEMINI_API_KEY/);
+  assert.match(worker,/DUDU_QUOTA\.getByName\('global-budget-v1'\)/);
+  assert.match(quota,/transactionSync\(/);
+  assert.match(quota,/global_usage/);
+  assert.match(quota,/user_usage/);
+  assert.match(config,/new_sqlite_classes/);
+  assert.match(config,/AI_ENABLED = "false"/);
+  assert.doesNotMatch(html,/firebase-functions-compat|firebase-app-check-compat/);
 });
