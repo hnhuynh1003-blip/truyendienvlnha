@@ -1195,7 +1195,17 @@ async function main() {
       const first=document.querySelector('#inventory-container .dudu-inventory-v12-open');
       first?.click();
       const inspector=document.getElementById('inventory-v12-detail');
+      const artNodes=[...document.querySelectorAll('#inventory-container .dudu-item-v13-art')];
+      const illustrations={
+        iconCount:artNodes.length,
+        allSvg:artNodes.every(img=>img.src.startsWith('data:image/svg+xml')),
+        rarityCount:document.querySelectorAll('#inventory-container [data-rarity]').length,
+        inspectorArt:!!inspector.querySelector('.dudu-item-v13-art'),
+        ranks:[...document.querySelectorAll('#inventory-container .dudu-inventory-v12-row')]
+          .map(x=>x.dataset.rarity)
+      };
       const details={
+        illustrations,
         rows,
         visible:inspector.style.display,
         text:inspector.textContent,
@@ -1224,6 +1234,11 @@ async function main() {
     assert.ok(dossierV12.profileData.actionCount>=2);
     assert.ok(dossierV12.profileData.codexOverflow<=1,
       'NPC cards must fit 375px phone without horizontal scrolling');
+    assert.equal(dossierV12.details.illustrations.iconCount,3);
+    assert.equal(dossierV12.details.illustrations.allSvg,true);
+    assert.equal(dossierV12.details.illustrations.rarityCount,3);
+    assert.equal(dossierV12.details.illustrations.inspectorArt,true);
+    assert.deepEqual(dossierV12.details.illustrations.ranks,['F','E','F']);
     assert.equal(dossierV12.details.rows,3);
     assert.equal(dossierV12.details.openButtons,3);
     assert.equal(dossierV12.details.visible,'block');
