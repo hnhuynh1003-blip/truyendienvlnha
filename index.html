@@ -932,8 +932,8 @@
         <div style="margin-top: 10px; border-top: 1px solid #334155; padding-top: 8px; display:flex; flex-direction:column; gap:6px;">
           <div style="font-size:10px; color:var(--gold); font-weight:bold;">🤖 NPC AI — KẾT NỐI BẢO MẬT</div>
           <div style="font-size:10px;color:var(--text-dim);">Chỉ cần tài khoản DUDU Studio, không nhập Gemini API key.</div>
-          <button class="btn btn-primary" style="width:100%; font-size:10px;" onclick="testGeminiAPIConnection()">🔍 Kiểm tra trạng thái và lượt AI</button>
-          <div id="ai-current-model-info" style="font-size:9px; color:#94a3b8; text-align:center;">AI đang chờ triển khai Cloud Functions</div>
+          <button class="btn btn-primary admin-only" style="width:100%; font-size:10px;" onclick="testGeminiAPIConnection()">🔍 Kiểm tra máy chủ AI (Tác giả)</button>
+          <div id="ai-current-model-info" style="font-size:9px; color:#94a3b8; text-align:center;">Tần số NPC chưa sẵn sàng</div>
       <button class="btn" style="width:100%;font-size:10px;" onclick="importLegacyChatsToCurrentStory()">📥 Nhập lịch sử chat cũ (có xác nhận)</button>
         </div>
       </div>
@@ -1535,11 +1535,12 @@
       const el = document.getElementById('ai-current-model-info');
       if (!el) return;
       el.textContent = DuduAI.isConfigured()
-        ? 'Gemini qua máy chủ bảo mật · giới hạn 25 lượt/ngày'
-        : 'AI chưa triển khai: tác giả cần cấu hình Cloud Functions và App Check.';
+        ? 'Tần số liên lạc NPC: Sẵn sàng'
+        : 'Tần số liên lạc NPC: Chưa sẵn sàng';
     }
 
     async function testGeminiAPIConnection() {
+      if (!canEditStories()) return;
       const result = await DuduAI.status();
       if (result.error) {
         alert('⚠️ ' + result.error);
