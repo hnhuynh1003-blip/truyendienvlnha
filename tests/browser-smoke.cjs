@@ -101,8 +101,52 @@ async function main() {
     assert.equal(swapped.username, 'tester-b');
     assert.ok(!swapped.chats.includes('private from tester-a'), 'Chat must remain scoped to tester-a');
     assert.equal(swapped.writes, 0);
+
+    const npcEfficient = await page.evaluate(async () => {
+      const novel = novels[selectedNovelIndex];
+      const char = novel.characters.find(c => c.name === 'Nhân vật thử nghiệm');
+      getStoryProgress(novel.id).collectedCharacters[char.id] = { affinity: 12 };
+      activeChatNovelId = novel.id;
+      renderChatDropdown();
+      let remoteCalls = 0;
+      let lastRequest = null;
+      DuduAI.generate = async (purpose, instruction, messages) => {
+        remoteCalls++;
+        lastRequest = { purpose, instruction, messages };
+        return { text: 'Tôi nghe đây, kể tôi nghe thêm nhé.' };
+      };
+      const input = document.getElementById('chat-user-input');
+      input.value = 'Xin chào Nhân vật thử nghiệm!';
+      await sendChatMessage();
+      const conversationKey = chatKey(char.id, novel.id);
+      const free = chatHistories[conversationKey].at(-1);
+      const callsAfterGreeting = remoteCalls;
+
+      char.note = 'a'.repeat(4000);
+      const question = 'Bạn còn nhớ chuyện chúng ta đã trải qua không? ' + 'x'.repeat(1400);
+      input.value = question;
+      await sendChatMessage();
+      const fullSaved = chatHistories[conversationKey].at(-2).text;
+      return {
+        freeSource: free?.source, freeText: free?.text,
+        callsAfterGreeting, remoteCalls, purpose: lastRequest?.purpose,
+        instructionLength: lastRequest?.instruction.length,
+        remoteLastLength: lastRequest?.messages.at(-1).text.length,
+        fullSavedLength: fullSaved.length,
+        writes: window.__firestoreWrites.length
+      };
+    });
+    assert.equal(npcEfficient.freeSource, 'script');
+    assert.ok(npcEfficient.freeText.length > 15);
+    assert.equal(npcEfficient.callsAfterGreeting, 0, 'Greetings must not call Gemini');
+    assert.equal(npcEfficient.remoteCalls, 1, 'Story-specific chat still calls AI');
+    assert.equal(npcEfficient.purpose, 'chat');
+    assert.ok(npcEfficient.instructionLength < 1800, 'Long NPC notes are budgeted');
+    assert.ok(npcEfficient.remoteLastLength <= 1001, 'AI request is trimmed');
+    assert.ok(npcEfficient.fullSavedLength > 1001, 'Full chat history remains saved');
+    assert.equal(npcEfficient.writes, 0, 'Sandbox must stay isolated');
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
-    console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped));
+    console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));
   } finally {
     if (browser) await browser.close();
     await new Promise(resolve => server.close(resolve));
