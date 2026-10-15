@@ -2,7 +2,7 @@ import {verifyFirebaseIdToken} from './auth.mjs';
 import {validRequest,quotaMessage} from './limits.mjs';
 export {DuduQuota} from './quota.mjs';
 export {DuduCollectibles} from './collectibles.mjs';
-import {normalizedPublication,parseScopedIds} from './collectible-rules.mjs';
+import {normalizedPublication,normalizedPrivateDraft,parseScopedIds,cleanId} from './collectible-rules.mjs';
 
 const MODEL='gemini-3.5-flash-lite';
 const MAX_BODY_BYTES=18000;
@@ -44,7 +44,10 @@ const COLLECTIBLE_PATHS=Object.freeze({
   '/v1/collectibles/claim':'POST',
   '/v1/collectibles/admin/publish':'POST',
   '/v1/collectibles/admin/disable':'POST',
-  '/v1/collectibles/admin/grant':'POST'
+  '/v1/collectibles/admin/grant':'POST',
+  '/v1/collectibles/admin/draft/save':'POST',
+  '/v1/collectibles/admin/draft/list':'POST',
+  '/v1/collectibles/admin/draft/archive':'POST'
 });
 async function handleCollectibles(req,env,path,origin){
   // Separate from AI_ENABLED; both feature gates default to OFF in staging.
@@ -71,6 +74,24 @@ async function handleCollectibles(req,env,path,origin){
   try{
     if(path==='/v1/collectibles/mine')
       return json({items:await bucket.mine(user.uid)},200,origin,env);
+    if(path==='/v1/collectibles/admin/draft/save'){
+      const rule=normalizedPrivateDraft(body);
+      if(!rule)return error('invalid-draft','Thông tin bản thảo chưa hợp lệ.',400,origin,env);
+      const result=await bucket.upsertDraft(rule,now);
+      return json(result,result.ok?200:409,origin,env);
+    }
+    if(path==='/v1/collectibles/admin/draft/list'){
+      const scoped=parseScopedIds(body);
+      if(!scoped||(body.chapterId!=null&&!cleanId(body.chapterId)))
+        return error('invalid-request','Mã truyện hoặc chương không hợp lệ.',400,origin,env);
+      return json(await bucket.listPrivateDrafts(scoped.storyId,body.chapterId||null),200,origin,env);
+    }
+    if(path==='/v1/collectibles/admin/draft/archive'){
+      const ids=parseScopedIds(body,{withItem:true});
+      if(!ids)return error('invalid-request','Mã bản thảo không hợp lệ.',400,origin,env);
+      const result=await bucket.archivePrivateDraft(ids.storyId,ids.itemId);
+      return json(result,result.ok?200:404,origin,env);
+    }
     if(path==='/v1/collectibles/admin/publish'){
       const rule=normalizedPublication(body);
       if(!rule)return error('invalid-release','Bản phát hành vật phẩm không hợp lệ.',400,origin,env);
