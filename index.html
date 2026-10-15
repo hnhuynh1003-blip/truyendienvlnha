@@ -25,6 +25,8 @@
   <script src="js/npc-relationship-v2-r1.js"></script>
   <script src="js/npc-gift-v2-r2.js"></script>
   <script src="js/npc-relationship-v2-r3.js"></script>
+  <script src="js/npc-trust-v2-r5.js"></script>
+  <script src="js/npc-persona-v2-r6.js"></script>
   <script src="js/loot-rules-v2.js"></script>
   <script src="js/author-items-v1.js"></script>
   <script src="js/npc-editor-v1.js"></script>
@@ -904,7 +906,10 @@
           <span style="font-size:10px; color:var(--gold); white-space:nowrap;" id="chat-char-affinity">❤️ 10%</span>
         </div>
 
-        <div id="npc-relationship-r3-preview" role="status" aria-live="polite" style="display:none; font-size:10px; line-height:1.4; padding:5px 7px; margin-bottom:6px; border:1px solid #334155; border-radius:6px; color:#cbd5e1; background:#17212f;"><span id="npc-relationship-r4-values"></span><button type="button" id="npc-relationship-r4-help" aria-label="Giải thích quan hệ NPC" title="Giải thích quan hệ NPC" onclick="showNpcRelationshipHelp()" style="float:right; background:transparent; color:#fbbf24; border:1px solid #475569; border-radius:50%; font-size:10px; width:18px; height:18px; cursor:pointer;">?</button></div>
+        <div id="npc-relationship-r3-preview" role="status" aria-live="polite" style="display:none; font-size:10px; line-height:1.4; padding:5px 7px; margin-bottom:6px; border:1px solid #334155; border-radius:6px; color:#cbd5e1; background:#17212f;"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+          <span id="npc-relationship-r4-values" style="flex:1;min-width:150px;"></span>
+          <button type="button" id="npc-daily-checkin-btn" onclick="npcDailyCheckin()" title="Hỏi thăm một lần mỗi ngày trong Sandbox" style="border:1px solid #3c6c66;background:#164e47;color:#bbf7d0;border-radius:6px;padding:3px 6px;font-size:10px;">🤝 Hỏi thăm</button>
+        </div><button type="button" id="npc-relationship-r4-help" aria-label="Giải thích quan hệ NPC" title="Giải thích quan hệ NPC" onclick="showNpcRelationshipHelp()" style="float:right; background:transparent; color:#fbbf24; border:1px solid #475569; border-radius:50%; font-size:10px; width:18px; height:18px; cursor:pointer;">?</button></div>
         <div id="chat-messages-container" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 8px; background: rgba(10, 14, 20, 0.6); border-radius: 8px; border: 1px solid #1f2937; margin-bottom: 6px;"></div>
         <div id="chat-connection-status" role="status" aria-live="polite" style="display:none; font-size:10px; color:var(--gold); padding:3px 5px; line-height:1.35;">
           <span id="chat-connection-message"></span>
@@ -1855,6 +1860,35 @@
       showSystemAlert('QUAN HỆ NPC V2', 'Thiện cảm thể hiện sự quý mến; Tin tưởng mở trần Thiện cảm: 0–19 → 40, 20–49 → 70, 50+ → 100. Quà phù hợp có thể tăng Tin tưởng, quà không nhận không mất. Mỗi NPC có tiến độ riêng. Mốc Tin cậy/Gắn bó cần sự kiện truyện xác minh.');
     }
 
+    function npcDailyCheckin() {
+      if (!IS_SANDBOX_MODE || !currentUsername) return;
+      const npcId = document.getElementById('chat-character-selector')?.value;
+      const storyId = activeChatNovelId || (novels[selectedNovelIndex] || {}).id;
+      const npc = getCombinedCharactersList().find(c => c.id === npcId);
+      if (!npc || !storyId || !isNpcUnlocked(storyId,npcId)) return;
+      const existing=getStoryProgress(storyId).collectedCharacters[npcId];
+      const view=DuduNpcRelationshipV2.previewRelationship(existing,'sandbox-user',storyId,npcId);
+      if(!view)return;
+      const eventId='checkin-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);
+      const plan=DuduNpcTrustR5.evaluateCheckin({
+        uid:'sandbox-user',storyId,npcId,unlocked:true,relationship:view,
+        eventId,now:Date.now()
+      });
+      if(!plan.ok){
+        showSystemAlert('HỎI THĂM NPC', plan.reason==='daily-limit'
+          ? 'Hôm nay bạn đã hỏi thăm NPC này rồi, ngày mai quay lại nhé.'
+          : 'Không thể cộng thêm Tin tưởng ở thời điểm này.');
+        return;
+      }
+      const updated=DuduNpcTrustR5.applyCheckin(view,plan);
+      if(!updated)return;
+      existing.relationshipV2=updated;
+      saveCurrentAccount();
+      showSystemAlert('KẾT NỐI TỐT HƠN',
+        npc.name+' cảm nhận được sự quan tâm của bạn. +'+plan.gain+' Tin tưởng (thử nghiệm Sandbox).');
+      switchChatCharacter();
+    }
+
     function switchChatCharacter() {
       hideNpcConnectionStatus();
       const charId = document.getElementById('chat-character-selector').value;
@@ -1872,6 +1906,14 @@
         const affection = relation ? relation.affinity : 0;
         const trust = relation ? relation.relationshipV2.trust : 0;
         const ceiling = DuduNpcRelationshipV2.affinityCeiling(trust);
+        const checkin=document.getElementById('npc-daily-checkin-btn');
+        if(checkin){
+          const today=new Date().toISOString().slice(0,10);
+          const done=!!relation&&relation.relationshipV2.lastCheckinUtc===today;
+          checkin.disabled=!relation||done||trust>=100;
+          checkin.textContent=done?'✓ Đã hỏi thăm':'🤝 Hỏi thăm';
+          checkin.style.opacity=checkin.disabled?'0.5':'1';
+        }
         // Preview-only. Milestones cannot be inferred from affinity, chat or gifts.
         // Author-approved and independently verified milestones are not yet wired.
         const stage = DuduNpcRelationStages.stage({
@@ -2274,13 +2316,16 @@
         const now = Date.now();
         const eventId = 'sandbox-gift-' + now + '-' + Math.random().toString(36).slice(2,10);
         const plan = DuduNpcGiftR2.evaluateGift({
-          npc:char,item:safeItem,relationship:{...relationship,unlocked:true},
+          npc:DuduNpcPersonaR6.previewNpc(char)||char,item:safeItem,relationship:{...relationship,unlocked:true},
           now,instanceId:eventId,giftEventId:eventId
         });
         if (plan.status !== 'ACCEPT') {
           showSystemAlert('CHƯA THỂ TẶNG QUÀ', plan.status === 'COOLDOWN'
             ? 'NPC cần nghỉ giữa các lượt tặng hoặc đã đủ 3 lượt hôm nay.'
-            : 'NPC không nhận món quà này. Vật phẩm vẫn còn trong kho.');
+            : plan.reason==='affinity-locked-by-trust'
+              ? 'Cần xây dựng thêm Tin tưởng trước khi tặng quà tăng Thiện cảm. Vật phẩm vẫn còn.'
+              : DuduNpcRelationStages.react(DuduNpcPersonaR6.previewNpc(char)?.giftPreferences?.reactionStyle,
+                  'REFUSE')+' Vật phẩm vẫn còn trong kho.');
           return;
         }
         // Synchronous sandbox commit: no await between verification and removal.
