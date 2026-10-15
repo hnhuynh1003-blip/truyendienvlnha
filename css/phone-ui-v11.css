@@ -1,0 +1,248 @@
+/* DUDU Cyber Phone V11 — sandbox visual layer only.
+ * Scoped to body.dudu-phone-v11 to preserve the published phone styling.
+ * Preserves all existing element IDs, callbacks, saves, rewards and permissions.
+ */
+body.dudu-phone-v11 {
+  --dudu-phone-ink:#edecff;
+  --dudu-phone-muted:#b3b6d3;
+  --dudu-phone-lilac:#d3a5ff;
+  --dudu-phone-cyan:#8eeaff;
+  --dudu-phone-pink:#ff9dcd;
+  --dudu-phone-stroke:rgba(191,159,252,.28);
+}
+body.dudu-phone-v11 #phone-fab {
+  width:58px;height:58px;bottom:calc(18px + env(safe-area-inset-bottom,0px));
+  right:18px;padding:0;border:1px solid #b99ce5;border-radius:20px;
+  color:#f5ecff;font-size:24px;
+  background:radial-gradient(circle at 26% 18%,#5552a7 0%,#28254d 46%,#111a35 100%);
+  box-shadow:0 0 0 3px #131b32,0 7px 24px #050816b0,0 0 21px #bc83ff63,inset 0 1px #ffffff88;
+  transition:transform .2s ease,box-shadow .2s ease;
+}
+body.dudu-phone-v11 #phone-fab:hover {transform:translateY(-3px);box-shadow:0 0 0 3px #131b32,0 9px 25px #050816c5,0 0 25px #d58ffc99;}
+body.dudu-phone-v11 #phone-fab:active {transform:scale(.94);}
+body.dudu-phone-v11.dudu-phone-open #phone-fab {opacity:0;pointer-events:none;}
+body.dudu-phone-v11 #cyber-phone {
+  right:18px;bottom:calc(89px + env(safe-area-inset-bottom,0px));
+  width:384px;max-width:calc(100vw - 36px);
+  height:min(654px,calc(100dvh - 115px));
+  min-height:0;
+  color:var(--dudu-phone-ink);
+  border:1px solid #b49ddd;border-radius:30px;
+  background:linear-gradient(160deg,#26274e 0%,#121a36 44%,#141631 100%);
+  box-shadow:0 24px 70px #020512e8,0 0 0 4px #0e1429,0 0 40px #a47be83c,inset 0 1px #ffffff55;
+  isolation:isolate;
+  animation:dudu-phone-enter .25s ease-out both;
+}
+body.dudu-phone-v11 #cyber-phone::before {
+  content:"";position:absolute;inset:0 0 auto;height:145px;pointer-events:none;
+  background:radial-gradient(ellipse at 55% 0%,#b5a5ff2b,transparent 74%);
+}
+body.dudu-phone-v11 #cyber-phone .phone-speaker {
+  flex:none;width:62px;height:5px;margin:9px auto 4px;
+  background:linear-gradient(90deg,#586489,#9bb5db,#586489);
+  box-shadow:0 1px 5px #0b1026;border-radius:12px;
+}
+body.dudu-phone-v11 #cyber-phone .phone-screen {
+  min-height:0;margin:5px 8px 7px;
+  border:1px solid #766fa46e;border-radius:24px;
+  background:radial-gradient(ellipse at top right,#41316a51,transparent 48%),
+    linear-gradient(160deg,#121b35,#14142a 65%,#101c37);
+  box-shadow:inset 0 1px #ffffff1a,inset 0 0 30px #080f27a0;
+}
+body.dudu-phone-v11 #cyber-phone .phone-status-bar {
+  flex:none;align-items:center;min-height:37px;padding:6px 12px 5px;
+  color:#cfcaea;border-bottom:1px solid #aa96d033;
+  letter-spacing:.05em;font-size:10px;
+}
+body.dudu-phone-v11 #cyber-phone #phone-clock {font-weight:800;color:#e6e0ff;font-variant-numeric:tabular-nums;}
+body.dudu-phone-v11 #cyber-phone .phone-system-label {font-size:9px;letter-spacing:.15em;color:#a9eafa;}
+body.dudu-phone-v11 #cyber-phone .phone-close-btn {
+  appearance:none;display:grid;place-items:center;
+  width:27px;height:27px;border:1px solid #a98ed475;border-radius:10px;
+  background:#372d59;cursor:pointer;color:#f8e9ff;font-size:17px;line-height:1;
+}
+body.dudu-phone-v11 #cyber-phone .phone-close-btn:hover {background:#69457b;}
+body.dudu-phone-v11 #cyber-phone #phone-home-screen {
+  min-height:0;overflow-y:auto;padding:16px 13px 12px;
+  gap:13px;justify-content:flex-start;
+  background:
+    radial-gradient(circle at 50% 22%,#9763cb2b,transparent 45%),
+    linear-gradient(180deg,#1b21405e,transparent);
+  scrollbar-width:thin;scrollbar-color:#735a9f transparent;
+}
+body.dudu-phone-v11 #cyber-phone .phone-widgets {
+  padding:14px 14px 12px;text-align:left;border-radius:18px;
+  border:1px solid #a894da75;
+  background:linear-gradient(145deg,#4a386e99,#1f31589c 66%,#19274b);
+  box-shadow:inset 0 1px #ffffff24,0 8px 24px #080d2a73;
+}
+body.dudu-phone-v11 #cyber-phone .widget-level {font-weight:800;font-size:15px;color:#eee8ff;letter-spacing:.01em;}
+body.dudu-phone-v11 #cyber-phone .widget-exp-bar {
+  height:8px;border-radius:10px;background:#141b37;
+  margin:12px 0 8px;border:1px solid #77679655;
+}
+body.dudu-phone-v11 #cyber-phone .widget-exp-fill {
+  border-radius:10px;background:linear-gradient(90deg,#7adcf5,#c59bff,#ffacd7);
+  box-shadow:0 0 14px #bb93feaa;
+}
+body.dudu-phone-v11 #cyber-phone .widget-currency {color:#ffe2a1;}
+body.dudu-phone-v11 #cyber-phone .phone-app-grid {
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:9px;margin:2px 0 8px;align-content:start;
+}
+body.dudu-phone-v11 #cyber-phone .app-icon {
+  appearance:none;border:1px solid #8c7dad43;border-radius:14px;
+  background:linear-gradient(150deg,#352b55cf,#1a2641c7);
+  padding:9px 3px 8px;min-height:92px;width:100%;
+  color:#e7e1f8;font:inherit;text-align:center;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;
+  box-shadow:inset 0 1px #ffffff18,0 5px 13px #090d235e;
+  transition:transform .16s ease,border-color .16s ease,background .16s ease,box-shadow .16s ease;
+}
+body.dudu-phone-v11 #cyber-phone .app-icon:hover,
+body.dudu-phone-v11 #cyber-phone .app-icon:focus-visible {
+  transform:translateY(-2px);border-color:#d6b4ff;
+  background:linear-gradient(150deg,#514074,#26385c);
+  box-shadow:0 8px 20px #080d2580,0 0 13px #b988ff3a;
+}
+body.dudu-phone-v11 #cyber-phone .app-icon:active {transform:scale(.96);}
+body.dudu-phone-v11 #cyber-phone .app-box {
+  width:47px;height:47px;border-radius:15px;font-size:23px;
+  color:#fff;border:1px solid #ffffff55;
+  box-shadow:0 4px 14px #080a2399,inset 0 1px #ffffff75;
+}
+body.dudu-phone-v11 #cyber-phone .app-label {
+  color:#e7e0f8;font-weight:650;font-size:10px;line-height:1.25;
+}
+body.dudu-phone-v11 #cyber-phone .phone-home-caption {color:#b9b2d6;font-size:9px;text-align:center;letter-spacing:.14em;margin-top:auto;padding:5px 0;}
+body.dudu-phone-v11 #cyber-phone .phone-sub-app {
+  min-height:0;padding:12px 11px 13px;overflow-x:hidden;
+  scrollbar-width:thin;scrollbar-color:#745a9e transparent;
+  color:#e7e5ff;
+}
+body.dudu-phone-v11 #cyber-phone .phone-app-header {
+  min-height:45px;flex:none;display:flex;gap:7px;
+  border-bottom:1px solid #ab99d448;padding:0 0 8px;margin-bottom:12px;
+  color:#f3e6ff;font-size:12px;letter-spacing:.02em;
+}
+body.dudu-phone-v11 #cyber-phone .phone-app-header>span,
+body.dudu-phone-v11 #cyber-phone .phone-app-header>div {min-width:0;}
+body.dudu-phone-v11 #cyber-phone .phone-back-btn {
+  flex:none;display:grid;place-items:center;
+  width:34px;height:34px;border:1px solid #9f87d86b;border-radius:11px;
+  background:linear-gradient(145deg,#40375e,#243451);
+  color:#f2e9ff;font-size:23px;line-height:1;cursor:pointer;
+}
+body.dudu-phone-v11 #cyber-phone .phone-back-btn:hover {background:#574378;}
+body.dudu-phone-v11 #cyber-phone .phone-sub-app .btn {
+  border-color:#b49ad8a6;color:#f8e8ff;
+  background:linear-gradient(150deg,#4e3769,#252d53);
+  border-radius:11px;padding:7px 10px;min-height:33px;
+  font-size:11px;font-weight:700;
+  box-shadow:inset 0 1px #ffffff2e,0 3px 9px #080e225e;
+  transition:filter .15s ease,transform .15s ease,box-shadow .15s ease;
+}
+body.dudu-phone-v11 #cyber-phone .phone-sub-app .btn:hover:not(:disabled) {filter:brightness(1.19);transform:translateY(-1px);color:#fff;}
+body.dudu-phone-v11 #cyber-phone .phone-sub-app .btn:active:not(:disabled) {transform:scale(.97);}
+body.dudu-phone-v11 #cyber-phone .phone-sub-app .btn-primary {
+  background:linear-gradient(135deg,#7c67ea,#38b6d4);border-color:#9bdcff;color:#fff;
+}
+body.dudu-phone-v11 #cyber-phone .phone-sub-app .btn-gold {
+  background:linear-gradient(135deg,#bd628f,#a13b7e);border-color:#ffc0dc;color:#fff;
+}
+body.dudu-phone-v11 #cyber-phone .phone-sub-app .btn-danger {
+  background:#4d263d;border-color:#d87b9d;color:#ffd9e7;
+}
+body.dudu-phone-v11 #cyber-phone button:disabled {opacity:.5;cursor:not-allowed;filter:saturate(.45);}
+body.dudu-phone-v11 #cyber-phone .filter-btn {
+  border:1px solid #79698d;border-radius:999px;
+  background:#232c48;padding:7px 11px;min-height:31px;
+  color:#cfc9e5;font-size:10px;white-space:nowrap;cursor:pointer;
+}
+body.dudu-phone-v11 #cyber-phone .filter-btn.active {
+  color:#fff;background:linear-gradient(135deg,#805cb5,#a24fae);
+  border-color:#e9b9fc;box-shadow:0 0 12px #ba81f956;
+}
+body.dudu-phone-v11 #cyber-phone .item-card,
+body.dudu-phone-v11 #cyber-phone .character-card,
+body.dudu-phone-v11 #cyber-phone .quest-card {
+  background:linear-gradient(135deg,#262746,#1b2944);
+  border:1px solid #877bac77;border-radius:13px;
+  padding:10px;box-shadow:inset 0 1px #ffffff19,0 4px 12px #080b2140;
+}
+body.dudu-phone-v11 #cyber-phone .quest-card.ready-claim {border-color:#e2bb8b;}
+body.dudu-phone-v11 #cyber-phone .quest-card.completed {opacity:.75;}
+body.dudu-phone-v11 #cyber-phone input:not([type=checkbox]),
+body.dudu-phone-v11 #cyber-phone select,
+body.dudu-phone-v11 #cyber-phone textarea {
+  min-width:0;max-width:100%;color:#faf7ff;
+  border:1px solid #7a6e9b !important;border-radius:10px !important;
+  background:#151d39 !important;min-height:34px;
+}
+body.dudu-phone-v11 #cyber-phone input:focus-visible,
+body.dudu-phone-v11 #cyber-phone select:focus-visible,
+body.dudu-phone-v11 #cyber-phone textarea:focus-visible,
+body.dudu-phone-v11 #cyber-phone button:focus-visible,
+body.dudu-phone-v11 #phone-fab:focus-visible {
+  outline:2px solid #aceeff !important;outline-offset:2px;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-inventory>.phone-app-header {gap:6px;}
+body.dudu-phone-v11 #cyber-phone #phone-app-inventory>div:nth-of-type(2),
+body.dudu-phone-v11 #cyber-phone #phone-app-quests>div:nth-of-type(2) {
+  flex-wrap:wrap;
+}
+body.dudu-phone-v11 #cyber-phone #chat-messages-container {
+  background:linear-gradient(160deg,#101d35,#1b1e3d);
+  border:1px solid #796ea260;border-radius:14px;padding:10px !important;
+}
+body.dudu-phone-v11 #cyber-phone #npc-relationship-r3-preview {
+  background:linear-gradient(110deg,#36294e,#182c4a) !important;
+  border:1px solid #a987c083 !important;border-radius:12px !important;
+  padding:9px !important;color:#f1e7ff !important;
+}
+body.dudu-phone-v11 #cyber-phone #npc-daily-checkin-btn {
+  color:#e4fff9 !important;border:1px solid #6ac0d1 !important;
+  background:linear-gradient(125deg,#205265,#253f76) !important;
+  border-radius:10px !important;padding:6px 8px !important;
+}
+body.dudu-phone-v11 #cyber-phone #npc-daily-choice-card {
+  border:1px solid #a48ad38a !important;border-radius:12px !important;
+  background:linear-gradient(125deg,#212444,#1b354d) !important;
+  padding:11px !important;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat {min-height:0 !important;}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat #chat-user-input {flex:1;min-width:0;font-size:12px !important;padding:8px 10px !important;}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat #chat-char-affinity {color:#ffc4dd !important;}
+body.dudu-phone-v11 #cyber-phone .phone-home-bar {
+  flex:none;display:block;border:0;
+  width:80px;height:5px;padding:0;background:#8b81b8;border-radius:10px;
+  margin:7px auto 9px;box-shadow:0 0 8px #b398ec66;cursor:pointer;
+}
+@keyframes dudu-phone-enter {
+  from {opacity:0;transform:translateY(12px) scale(.97);}
+  to {opacity:1;transform:translateY(0) scale(1);}
+}
+@media(max-width:480px) {
+  body.dudu-phone-v11 #cyber-phone {
+    width:calc(100vw - 16px);max-width:calc(100vw - 16px);
+    height:calc(100dvh - 20px - env(safe-area-inset-bottom,0px));
+    bottom:calc(10px + env(safe-area-inset-bottom,0px));
+    right:8px;border-radius:24px;
+  }
+  body.dudu-phone-v11 #cyber-phone .phone-screen {margin:4px 6px 6px;border-radius:19px;}
+  body.dudu-phone-v11 #cyber-phone .phone-app-grid {gap:7px;}
+  body.dudu-phone-v11 #cyber-phone .app-icon {padding:8px 2px;min-height:83px;}
+  body.dudu-phone-v11 #cyber-phone .app-box {width:42px;height:42px;font-size:21px;}
+  body.dudu-phone-v11 #cyber-phone .phone-sub-app {padding:10px 9px 11px;}
+}
+@media(max-width:330px) {
+  body.dudu-phone-v11 #cyber-phone .phone-app-grid {grid-template-columns:repeat(3,minmax(0,1fr));}
+  body.dudu-phone-v11 #cyber-phone .phone-app-header {font-size:11px;flex-wrap:wrap;}
+  body.dudu-phone-v11 #cyber-phone .phone-app-header .btn {padding:5px 6px;min-height:30px;}
+}
+@media(prefers-reduced-motion:reduce) {
+  body.dudu-phone-v11 #cyber-phone {animation:none !important;}
+  body.dudu-phone-v11 #cyber-phone .app-icon,
+  body.dudu-phone-v11 #phone-fab,
+  body.dudu-phone-v11 #cyber-phone .btn {transition:none !important;}
+}
