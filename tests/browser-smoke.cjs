@@ -1024,13 +1024,21 @@ async function main() {
         'not-the-user',story.id,uploadId);
       saveCharacterModal();
       const uploaded=story.characters[idx].portraitUploadId;
+      // In-flight upload must not override a more recent explicit gallery choice.
+      openEditCharacterModal(idx);
+      const lateUpload=npcUploadPortrait({target:{files:[file],value:''}});
+      npcSelectPortraitPreset('portrait-m-02');
+      await lateUpload;
+      const raceSelected=document.getElementById('npc-r8-preset-id').value==='portrait-m-02'&&
+        document.getElementById('npc-r8-upload-id').value==='';
+      closeModals();
       const sameCount=story.characters.length===JSON.parse(original).length;
       story.characters=JSON.parse(original);
       localStorage.setItem('dudu-sandbox-library',JSON.stringify(novels));
       userProfile.role=originalRole;applyUserRole();editingCharNovelId=priorNovel;
       return {missing:false,choices,filteredMale,filteredFantasy,filteredMood,presetPreview,selected,uploadId,uploaded,
         ownSrc:typeof ownSrc==='string'&&ownSrc.startsWith('data:image/jpeg;base64,'),
-        otherSrc,sameCount,writes:window.__firestoreWrites.length-beforeWrites};
+        otherSrc,raceSelected,sameCount,writes:window.__firestoreWrites.length-beforeWrites};
     });
     assert.equal(portraitBrowser.missing,false);
     assert.equal(portraitBrowser.choices,72);
@@ -1043,6 +1051,7 @@ async function main() {
     assert.equal(portraitBrowser.uploaded,portraitBrowser.uploadId);
     assert.equal(portraitBrowser.ownSrc,true);
     assert.equal(portraitBrowser.otherSrc,null,'Uploaded portrait is scoped to sandbox identity');
+    assert.equal(portraitBrowser.raceSelected,true,'A late upload must not override the chosen image');
     assert.equal(portraitBrowser.sameCount,true,'Choosing portrait never creates NPC');
     assert.equal(portraitBrowser.writes,0,'No real Firestore writes while selecting pictures');
     const storyDatesBrowser=await page.evaluate(()=>{
