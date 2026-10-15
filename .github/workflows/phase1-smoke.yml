@@ -16,4 +16,4 @@ jobs:
         with:
           node-version: '22'
       - name: Verify JavaScript and scope rules
-        run: node --test tests/phase1-smoke.test.cjs
+        run: node --test tests/*.test.cjs
