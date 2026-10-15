@@ -1535,6 +1535,108 @@ async function main() {
     await page.evaluate(()=>{closePlayerAvatarEditorV16();togglePhone();phoneHome();});
     await page.setViewportSize({width:1280,height:800});
 
+    // V22: second visit with explicit staging opt-in; fake JWT and backend.
+    // NEVER contacts Firebase Auth, Worker, Firestore or R2 services.
+    await page.goto('http://127.0.0.1:'+port+'/?sandbox=1&avatarSync=staging',
+      {waitUntil:'domcontentloaded'});
+    await page.waitForFunction(()=>typeof handleAuthSubmit==='function');
+    await page.waitForTimeout(750);
+    await page.locator('#auth-username').fill('uid_a');
+    await page.getByRole('button',{name:'Đổi tài khoản thử'}).click();
+    const stagingInit=await page.evaluate(()=>{
+      window.__v22State={revision:0,avatar:{kind:'anime',
+        presetId:'anime-moon-violet',frameId:'violet'},calls:[],auth:'uid_a'};
+      window.firebase.auth=()=>({currentUser:{
+        uid:window.__v22State.auth,getIdToken:async()=> 'verified-'+window.__v22State.auth}});
+      window.DuduPlayerAvatarSyncV17={createClient:({getIdToken})=>({
+        read:async()=>{
+          const token=await getIdToken();
+          window.__v22State.calls.push({method:'GET',token});
+          return {ok:true,revision:window.__v22State.revision,
+            avatar:{...window.__v22State.avatar},
+            availableFrames:['none','moon','violet','sakura','cyber','starlight'],
+            lockedFrames:['legend','soulbond','author'],uploadsEnabled:false};
+        },
+        save:async(avatar,expectedRevision)=>{
+          const token=await getIdToken();
+          window.__v22State.calls.push({method:'POST',token,expectedRevision,avatar});
+          if(expectedRevision!==window.__v22State.revision)
+            return {ok:false,code:'revision-conflict',
+              revision:window.__v22State.revision};
+          window.__v22State.avatar={...avatar};
+          window.__v22State.revision++;
+          return {ok:true,revision:window.__v22State.revision};
+        }
+      })};
+      const original=JSON.stringify(userProfile);
+      openPlayerAvatarEditorV16();
+      return {visible:!document.getElementById('player-avatar-v22-panel').hidden,
+        original,profile:userProfile.playerAvatar,
+        owner:currentUsername,uid:avatarV22Identity()?.uid,
+        firestore:window.__firestoreWrites.length};
+    });
+    assert.equal(stagingInit.visible,true);
+    assert.equal(stagingInit.owner,stagingInit.uid);
+    assert.equal(stagingInit.owner,'uid_a');
+    await page.getByRole('button',{name:'Đọc staging'}).click();
+    assert.equal(await page.locator('#player-avatar-v22-review').evaluate(x=>x.hidden),false);
+    assert.match(await page.locator('#player-avatar-v22-remote').textContent(),/revision 0/);
+    assert.equal(await page.locator('#player-avatar-v22-server').isDisabled(),false);
+    assert.equal(await page.locator('#player-avatar-v22-keep').isDisabled(),false);
+    assert.equal(await page.evaluate(()=>JSON.stringify(userProfile)),stagingInit.original,
+      'Reading staging must not apply profile automatically');
+    await page.getByRole('button',{name:'Xác nhận dùng avatar máy chủ'}).click();
+    assert.match(await page.locator('#player-avatar-v22-status').textContent(),/Đã lưu bản staging/);
+    assert.equal(await page.evaluate(()=>userProfile.playerAvatar?.presetId),'anime-moon-violet');
+    assert.equal(await page.evaluate(()=>window.__v22State.calls.length),1,
+      'Applying server snapshot must not send POST');
+    await page.evaluate(()=>{userProfile.playerAvatar={
+      kind:'anime',presetId:'anime-moon-blue',frameId:'moon'};saveCurrentAccount();});
+    await page.getByRole('button',{name:'Đọc staging'}).click();
+    await page.getByRole('button',{name:'Xác nhận giữ avatar thiết bị'}).click();
+    assert.equal(await page.evaluate(()=>window.__v22State.revision),1);
+    assert.equal(await page.evaluate(()=>window.__v22State.avatar.presetId),'anime-moon-blue');
+    // A changed server revision results in 409 and requires fresh user choice.
+    await page.evaluate(()=>{userProfile.playerAvatar={
+      kind:'anime',presetId:'anime-peach-court',frameId:'sakura'};saveCurrentAccount();});
+    await page.getByRole('button',{name:'Đọc staging'}).click();
+    await page.evaluate(()=>{window.__v22State.revision=7;});
+    await page.getByRole('button',{name:'Xác nhận giữ avatar thiết bị'}).click();
+    assert.match(await page.locator('#player-avatar-v22-status').textContent(),/409/);
+    assert.equal(await page.evaluate(()=>window.__v22State.avatar.presetId),'anime-moon-blue');
+    // Browser-local photos must remain protected and never be POSTed.
+    const photoV22=await page.evaluate(async()=>{
+      userProfile.playerAvatar={kind:'upload',uploadId:'own-photo-example',
+        presetId:'',frameId:'moon'};
+      saveCurrentAccount();
+      await avatarV22Inspect();
+      return {
+        status:document.getElementById('player-avatar-v22-status').textContent,
+        keepDisabled:document.getElementById('player-avatar-v22-keep').disabled,
+        serverDisabled:document.getElementById('player-avatar-v22-server').disabled,
+        posts:window.__v22State.calls.filter(c=>c.method==='POST').length
+      };
+    });
+    assert.match(photoV22.status,/Ảnh tự tải/);
+    assert.equal(photoV22.keepDisabled,true);
+    assert.equal(photoV22.serverDisabled,true);
+    assert.equal(photoV22.posts,2);
+    // UID mismatch refuses reading before any token/API operation.
+    const foreignV22=await page.evaluate(async()=>{
+      window.__v22State.auth='someone_else';
+      const before=window.__v22State.calls.length;
+      await avatarV22Inspect();
+      return {changedCalls:window.__v22State.calls.length-before,
+        status:document.getElementById('player-avatar-v22-status').textContent,
+        photo:userProfile.playerAvatar.uploadId,
+        writes:window.__firestoreWrites.length};
+    });
+    assert.equal(foreignV22.changedCalls,0);
+    assert.match(foreignV22.status,/UID/);
+    assert.equal(foreignV22.photo,'own-photo-example');
+    assert.equal(foreignV22.writes,0);
+    await page.evaluate(()=>closePlayerAvatarEditorV16());
+
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
     console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));
   } finally {
