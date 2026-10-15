@@ -1030,6 +1030,11 @@
           <option value="CHAPTER_EVENT">Sự kiện của chương</option>
         </select>
       </div>
+      <label style="display:flex;align-items:start;gap:7px;font-size:12px;color:var(--gold);cursor:pointer;">
+        <input type="checkbox" id="author-item-private">
+        <span>🔒 Vật phẩm bí mật — lưu riêng trên Cloudflare, KHÔNG đưa vào thư viện công khai</span>
+      </label>
+      <p style="font-size:10px;color:var(--text-dim);">Nếu kho riêng chưa hoạt động, nút Lưu sẽ báo lỗi và giữ nội dung đang nhập. Không có cơ chế tự chuyển sang lưu công khai.</p>
       <details style="font-size:11px;margin:8px 0;color:var(--text-dim);">
         <summary style="cursor:pointer;">Tùy chọn nâng cao</summary>
         <label style="display:flex;align-items:center;gap:6px;margin:8px 0;"><input type="checkbox" id="author-item-unique" checked> Chỉ được giữ một bản</label>
@@ -1038,7 +1043,7 @@
       <p id="author-item-error" role="alert" style="min-height:13px;color:#fca5a5;font-size:11px;"></p>
       <div style="display:flex;justify-content:flex-end;gap:8px;">
         <button type="button" class="btn" onclick="cancelAuthorItemModal()">Quay lại</button>
-        <button type="button" class="btn btn-primary" onclick="saveAuthorItemModal()">Lưu vật phẩm</button>
+        <button type="button" id="author-item-save-btn" class="btn btn-primary" onclick="saveAuthorItemModal()">Lưu vật phẩm</button>
       </div>
     </div>
   </div>
@@ -1082,6 +1087,7 @@
       <div class="modal-field">
         <label>🎁 Vật phẩm độc quyền truyện</label>
         <div id="story-author-items" style="font-size:11px;max-height:140px;overflow:auto;"></div>
+        <div id="story-private-items" style="font-size:11px;max-height:150px;overflow:auto;margin-top:5px;"></div>
         <button type="button" id="story-add-item-btn" class="btn admin-only" onclick="openAuthorItemModal('story')" style="margin-top:6px;">+ Thêm vật phẩm truyện</button>
         <div style="font-size:10px;color:var(--text-dim);margin-top:3px;">Hãy lưu truyện mới trước khi tạo vật phẩm.</div>
       </div>
@@ -1146,6 +1152,7 @@
       <div class="modal-field">
         <label>🎁 Vật phẩm độc quyền chương</label>
         <div id="chapter-author-items" style="font-size:11px;max-height:140px;overflow:auto;"></div>
+        <div id="chapter-private-items" style="font-size:11px;max-height:150px;overflow:auto;margin-top:5px;"></div>
         <button type="button" id="chapter-add-item-btn" class="btn admin-only" onclick="openAuthorItemModal('chapter')" style="margin-top:6px;">+ Thêm vật phẩm chương</button>
         <div style="font-size:10px;color:var(--text-dim);margin-top:3px;">Lưu chương mới trước khi tạo kỷ vật chương. Chỉ tạo dữ liệu, chưa phát phần thưởng.</div>
       </div>
@@ -1334,6 +1341,8 @@
     let editingAuthorItemId = null;
     let editingAuthorItemStoryId = null;
     let editingAuthorItemChapterId = null;
+    let editingPrivateDraft = false;
+    let privateDraftRequestCounter = 0;
     let isReversedOrder = false;
     let currentFilterStatus = "ALL";
     let selectedTag = "ALL";
@@ -3347,6 +3356,7 @@
       }
       const entries=DuduAuthorItems.list(novel,{chapterId});
       if(!entries.length)container.textContent='Chưa có vật phẩm riêng.';
+      renderPrivateAuthorItems(context);
       for(const item of entries){
         const row=document.createElement('div');
         row.style.cssText='display:flex;gap:6px;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);';
@@ -3365,6 +3375,72 @@
         row.append(name,edit,clone,archive);container.append(row);
       }
     }
+    async function renderPrivateAuthorItems(context){
+      if(!canEditStories())return;
+      const novel=novels[selectedNovelIndex];
+      const target=document.getElementById(context+'-private-items');
+      if(!novel||!target)return;
+      const chapter=context==='chapter'?novel.chapters[editingChapterIndex]:null;
+      if(context==='chapter'&&!chapter?.id){target.textContent='';return;}
+      if(context==='story'&&!isEditingStory){target.textContent='';return;}
+      const storyId=novel.id,chapterId=chapter?.id||null;
+      const token=++privateDraftRequestCounter;
+      target.textContent='🔒 Đang kiểm tra kho bản thảo riêng...';
+      const res=await DuduCollectiblesClient.listPrivateDrafts(storyId,chapterId);
+      if(token!==privateDraftRequestCounter||!canEditStories()||
+         novels[selectedNovelIndex]?.id!==storyId||target.isConnected===false)return;
+      target.replaceChildren();
+      if(!res.ok){
+        target.textContent=res.reason==='sandbox'?'🔒 Kho riêng tắt trong Sandbox.'
+          :res.reason==='disabled'?'🔒 Kho bản thảo riêng chưa được kích hoạt.'
+          :'🔒 Chưa thể tải kho bản thảo riêng.';
+        return;
+      }
+      const title=document.createElement('div');
+      title.textContent='🔒 Bản thảo chỉ tác giả xem ('+(res.items||[]).length+')';
+      title.style.color='var(--gold)';target.append(title);
+      for(const draft of res.items||[]){
+        if(draft.storyId!==storyId||draft.chapterId!==chapterId)continue;
+        const row=document.createElement('div');
+        row.style.cssText='display:flex;align-items:center;gap:5px;padding:4px 0;';
+        const name=document.createElement('span');
+        name.style.flex='1';name.textContent=(draft.icon||'🎁')+' ['+draft.rank+'] '+draft.name;
+        const edit=document.createElement('button');
+        edit.type='button';edit.className='btn';edit.textContent='Sửa kín';
+        edit.addEventListener('click',()=>openPrivateAuthorItemModal(context,draft));
+        const archive=document.createElement('button');
+        archive.type='button';archive.className='btn';archive.textContent='Lưu trữ';
+        archive.addEventListener('click',async()=>{
+          if(!canEditStories()||!confirm('Lưu trữ bản thảo riêng?'))return;
+          const saved=await DuduCollectiblesClient.archivePrivateDraft(storyId,draft.itemId);
+          if(saved.ok)renderPrivateAuthorItems(context);
+          else showSystemAlert('KHÔNG THỂ LƯU TRỮ','Kho riêng chưa sẵn sàng.');
+        });
+        row.append(name,edit,archive);target.append(row);
+      }
+    }
+    function openPrivateAuthorItemModal(context,draft){
+      if(!canEditStories())return;
+      const novel=novels[selectedNovelIndex];
+      const chapter=context==='chapter'?novel.chapters[editingChapterIndex]:null;
+      if(!novel||draft?.storyId!==novel.id||
+         draft.chapterId!==(context==='chapter'?chapter?.id||null:null))return;
+      openAuthorItemModal(context);
+      if(authorItemEditorContext!==context)return;
+      editingPrivateDraft=true;
+      editingAuthorItemId=draft.itemId;
+      document.getElementById('author-item-private').checked=true;
+      document.getElementById('author-item-private').disabled=true;
+      document.getElementById('author-item-heading').textContent='🔒 Sửa bản thảo bí mật';
+      document.getElementById('author-item-name').value=draft.name;
+      document.getElementById('author-item-rank').value=draft.rank;
+      document.getElementById('author-item-type').value=draft.type;
+      document.getElementById('author-item-icon').value=draft.icon;
+      document.getElementById('author-item-desc').value=draft.summary;
+      document.getElementById('author-item-npc').value=draft.npcId||'';
+      document.getElementById('author-item-method').value=draft.method;
+    }
+
     function archiveAuthorItem(context,itemId){
       if(!canEditStories())return;
       const novel=novels[selectedNovelIndex];
@@ -3387,6 +3463,9 @@
       const original=itemId?(novel.specialItems||[]).find(i=>i.id===itemId):null;
       if(itemId&&(!original||original.chapterId!==chapterId||original.storyId!==novel.id))return;
       editingAuthorItemId=duplicate?null:itemId;
+      editingPrivateDraft=false;
+      document.getElementById('author-item-private').checked=false;
+      document.getElementById('author-item-private').disabled=!!itemId&&!duplicate;
       editingAuthorItemStoryId=novel.id;
       editingAuthorItemChapterId=chapterId;
       authorItemEditorContext=context;
@@ -3422,8 +3501,9 @@
       if(authorItemEditorContext)
         document.getElementById(authorItemEditorContext+'-modal').style.display='flex';
       authorItemEditorContext=null;
+      editingPrivateDraft=false;
     }
-    function saveAuthorItemModal(){
+    async function saveAuthorItemModal(){
       if(!canEditStories()||!authorItemEditorContext)return;
       const novel=novels.find(n=>n.id===editingAuthorItemStoryId);
       if(!novel)return;
@@ -3439,6 +3519,31 @@
         giftable:document.getElementById('author-item-giftable').checked
       };
       try{
+        const secret=document.getElementById('author-item-private').checked;
+        if(editingPrivateDraft&&!secret)throw Error('Không được chuyển bản thảo bí mật sang công khai bằng nút Lưu.');
+        if(secret){
+          // NEVER call saveDB() or addOrEdit() for private metadata.
+          // A disabled/unreachable server leaves the editor open and does not
+          // silently fall back to public Firestore/localStorage.
+          const saveButton=document.getElementById('author-item-save-btn');
+          if(saveButton.disabled)return;
+          saveButton.disabled=true;
+          try {
+            const result=await DuduCollectiblesClient.savePrivateDraft({
+              storyId:novel.id,chapterId:editingAuthorItemChapterId,
+              itemId:editingPrivateDraft?editingAuthorItemId:null,item:input
+            });
+            if(!result.ok)
+              throw Error(result.reason==='sandbox'||result.reason==='disabled'
+                ?'Kho bí mật chưa mở. Vật phẩm chưa được lưu; không có dữ liệu nào được công khai.'
+                :'Không thể lưu vào kho bí mật. Vui lòng thử lại sau.');
+            const context=authorItemEditorContext;
+            cancelAuthorItemModal();
+            renderPrivateAuthorItems(context);
+            showSystemAlert('ĐÃ LƯU RIÊNG','Bản thảo kỷ vật được lưu kín trên máy chủ; chưa phát hành.');
+          }finally{saveButton.disabled=false;}
+          return;
+        }
         const saved=DuduAuthorItems.addOrEdit(novel,input,{
           chapterId:editingAuthorItemChapterId,itemId:editingAuthorItemId
         });
