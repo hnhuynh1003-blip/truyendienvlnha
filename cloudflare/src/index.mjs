@@ -2,7 +2,7 @@ import {verifyFirebaseIdToken} from './auth.mjs';
 import {validRequest,quotaMessage} from './limits.mjs';
 export {DuduQuota} from './quota.mjs';
 export {DuduCollectibles} from './collectibles.mjs';
-import {normalizedPublication,normalizedPrivateDraft,parseScopedIds,cleanId} from './collectible-rules.mjs';
+import {normalizedPrivateDraft,normalizedDraftApproval,parseScopedIds,cleanId} from './collectible-rules.mjs';
 
 const MODEL='gemini-3.5-flash-lite';
 const MAX_BODY_BYTES=18000;
@@ -43,6 +43,7 @@ const COLLECTIBLE_PATHS=Object.freeze({
   '/v1/collectibles/begin':'POST',
   '/v1/collectibles/claim':'POST',
   '/v1/collectibles/admin/publish':'POST',
+  '/v1/collectibles/admin/draft/preview':'POST',
   '/v1/collectibles/admin/disable':'POST',
   '/v1/collectibles/admin/grant':'POST',
   '/v1/collectibles/admin/draft/save':'POST',
@@ -92,10 +93,19 @@ async function handleCollectibles(req,env,path,origin){
       const result=await bucket.archivePrivateDraft(ids.storyId,ids.itemId);
       return json(result,result.ok?200:404,origin,env);
     }
+    if(path==='/v1/collectibles/admin/draft/preview'){
+      const ids=parseScopedIds(body,{withItem:true});
+      if(!ids||!ids.itemId.startsWith('author-item-'))
+        return error('invalid-preview','Mã bản thảo không hợp lệ.',400,origin,env);
+      const state=await bucket.draftPreview(ids.storyId,ids.itemId);
+      return json(state,state.ok?200:404,origin,env);
+    }
     if(path==='/v1/collectibles/admin/publish'){
-      const rule=normalizedPublication(body);
-      if(!rule)return error('invalid-release','Bản phát hành vật phẩm không hợp lệ.',400,origin,env);
-      const state=await bucket.publish(rule,now);
+      // Approval is bound to a server-held draft revision, not client-supplied
+      // item names or story scope. Only signed Firebase admin JWT can publish.
+      const approval=normalizedDraftApproval(body);
+      if(!approval)return error('invalid-release','Vui lòng xem trước và xác nhận phát hành.',400,origin,env);
+      const state=await bucket.publishDraft(approval,now);
       return json(state,state.ok?200:409,origin,env);
     }
     if(path==='/v1/collectibles/admin/disable'){
