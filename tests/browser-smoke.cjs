@@ -169,6 +169,85 @@ async function main() {
     });
     assert.equal(readerBlocked,true,'Reader cannot open author item editor');
 
+    // 4B: a secret draft MUST fail closed in sandbox and never be copied into
+    // the publicly readable story library, even if the author clicks Save.
+    await page.evaluate(()=>openEditStoryModal());
+    await page.locator('#story-add-item-btn').click();
+    await page.locator('#author-item-name').fill('BÍ MẬT NHÂN VẬT CHƯA CÔNG BỐ');
+    await page.locator('#author-item-desc').fill('Tình tiết chỉ tác giả được xem.');
+    await page.locator('#author-item-private').check();
+    await page.getByRole('button',{name:'Lưu vật phẩm'}).click();
+    const vaultOff = await page.evaluate(()=>{
+      const publicLibrary=JSON.stringify(novels);
+      const allStorage=Object.entries(localStorage).map(([key,val])=>key+'='+val).join(' ');
+      return {
+        editorOpen:document.getElementById('author-item-modal').style.display==='flex',
+        error:document.getElementById('author-item-error').textContent,
+        publicLeak:publicLibrary.includes('BÍ MẬT NHÂN VẬT CHƯA CÔNG BỐ'),
+        localLeak:allStorage.includes('BÍ MẬT NHÂN VẬT CHƯA CÔNG BỐ'),
+        writes:window.__firestoreWrites.length
+      };
+    });
+    assert.equal(vaultOff.editorOpen,true,'Failed secret save must keep editor and typed draft');
+    assert.match(vaultOff.error,/Kho bí mật chưa mở/);
+    assert.equal(vaultOff.publicLeak,false,'No secret title in public novel JSON');
+    assert.equal(vaultOff.localLeak,false,'No secret title in localStorage');
+    assert.equal(vaultOff.writes,0,'No production Firestore write in sandbox');
+    await page.evaluate(()=>cancelAuthorItemModal());
+
+    // A mocked successful server response proves the private branch never
+    // falls back to novel.specialItems/saveDB. No real network or Cloudflare call.
+    await page.evaluate(()=>{
+      window.__originalCollectiblesClient=window.DuduCollectiblesClient;
+      window.__vaultFixture=[];
+      window.DuduCollectiblesClient={
+        ...window.__originalCollectiblesClient,
+        savePrivateDraft:async body=>{
+          window.__vaultFixture.push({
+            storyId:body.storyId,chapterId:body.chapterId,
+            itemId:'author-item-private-fixture',npcId:body.item.npcId||null,
+            name:body.item.name,rank:body.item.rank,type:body.item.type,
+            icon:body.item.icon,summary:body.item.desc,method:body.item.method
+          });
+          return {ok:true,itemId:'author-item-private-fixture'};
+        },
+        listPrivateDrafts:async(storyId,chapterId)=>({
+          ok:true,items:window.__vaultFixture.filter(r=>r.storyId===storyId&&r.chapterId===chapterId)
+        }),
+        archivePrivateDraft:async()=>({ok:true})
+      };
+    });
+    await page.locator('#story-add-item-btn').click();
+    await page.locator('#author-item-name').fill('KẾT THÚC CÒN GIẤU');
+    await page.locator('#author-item-desc').fill('Thông tin không được đăng trước.');
+    await page.locator('#author-item-private').check();
+    await page.getByRole('button',{name:'Lưu vật phẩm'}).click();
+    await page.waitForFunction(()=>
+      document.getElementById('story-private-items').textContent.includes('KẾT THÚC CÒN GIẤU'));
+    const vaultMock = await page.evaluate(()=>{
+      const serialized=JSON.stringify(novels);
+      const storage=Object.entries(localStorage).map(([k,v])=>k+v).join('');
+      const record=window.__vaultFixture[0];
+      return {storyId:record?.storyId,itemId:record?.itemId,
+        publicLeak:serialized.includes('KẾT THÚC CÒN GIẤU'),
+        localLeak:storage.includes('KẾT THÚC CÒN GIẤU'),
+        inventory:userProfile.inventory.length,
+        writes:window.__firestoreWrites.length,
+        privateList:document.getElementById('story-private-items').textContent};
+    });
+    assert.equal(vaultMock.storyId,'truyen-dien-vl');
+    assert.equal(vaultMock.itemId,'author-item-private-fixture');
+    assert.equal(vaultMock.publicLeak,false);
+    assert.equal(vaultMock.localLeak,false);
+    assert.equal(vaultMock.inventory,2);
+    assert.equal(vaultMock.writes,0);
+    assert.match(vaultMock.privateList,/Bản thảo chỉ tác giả xem/);
+    await page.evaluate(()=>{
+      closeModals();
+      window.DuduCollectiblesClient=window.__originalCollectiblesClient;
+      delete window.__vaultFixture;
+    });
+
     await page.evaluate(() => {
       openCreateChapterModal();
       document.getElementById('chapter-modal-title').value = 'Kiểm thử chương dài';
