@@ -2105,6 +2105,20 @@
           element.style.backgroundPosition=candidate.position;
           element.style.backgroundRepeat='no-repeat';
           element.title='Chân dung anime thử nghiệm do tác giả lựa chọn';
+          // The 120px concept thumbnail appears immediately; the 480px atlas
+          // upgrades it only when the local image is loaded and NPC is unchanged.
+          const expectedId=npc.portraitAnimeId;
+          DuduNpcAnimeCandidatesV14.ensureHiRes().then(ok=>{
+            if(!ok||element.dataset.portraitToken!==token||
+               element.dataset.npcId!==npc.id||!element.isConnected)return;
+            const hiRes=DuduNpcAnimeCandidatesV14.hiResStyleFor(expectedId);
+            if(hiRes){
+              element.style.backgroundImage=hiRes.image;
+              element.style.backgroundSize=hiRes.size;
+              element.style.backgroundPosition=hiRes.position;
+            }
+          }).catch(()=>{});
+
         }else setImage(packaged||DuduNpcPortraitLibrary.sourceFor(preset));
       };
       if(npc.portraitUploadId&&typeof npc.portraitUploadId==='string'){
@@ -2129,7 +2143,9 @@
       title.textContent=canonical.name||'NPC';
       document.getElementById('npc-v15-role').textContent=canonical.role||'Chưa rõ vai trò';
       document.getElementById('npc-v15-status').textContent=canonical.status||'Chưa rõ trạng thái';
-      document.getElementById('npc-v15-note').textContent=canonical.note||'Chưa có ghi chú về nhân vật.';
+      document.getElementById('npc-v15-note').textContent=canEditStories()?
+        (canonical.note||'Chưa có ghi chú về nhân vật.'):
+        'Thông tin chi tiết sẽ được mở dần theo nội dung truyện.';
       modal.style.display='flex';modal.setAttribute('aria-hidden','false');
       document.body.classList.add('npc-v15-modal-open');
       portrait.setAttribute('aria-label','Chân dung '+title.textContent);
@@ -2761,6 +2777,15 @@
       const panel=document.getElementById('npc-v14-anime-preview');
       panel.style.display='block';panel.style.backgroundImage=art.image;
       panel.style.backgroundSize=art.size;panel.style.backgroundPosition=art.position;
+      DuduNpcAnimeCandidatesV14.ensureHiRes().then(ok=>{
+        if(!ok||document.getElementById('npc-v14-anime-id')?.value!==id)return;
+        const hiRes=DuduNpcAnimeCandidatesV14.hiResStyleFor(id);
+        if(hiRes){
+          panel.style.backgroundImage=hiRes.image;
+          panel.style.backgroundSize=hiRes.size;
+          panel.style.backgroundPosition=hiRes.position;
+        }
+      }).catch(()=>{});
       document.getElementById('npc-v14-anime-label').textContent=p.label+' · '+p.mood;
       document.getElementById('npc-r8-selection-label').textContent='Ảnh anime: '+p.label;
       const image=document.getElementById('npc-r8-preview');
