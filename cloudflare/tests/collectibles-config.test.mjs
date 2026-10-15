@@ -45,3 +45,12 @@ test('release route cannot publish client-crafted item metadata or skip admin pr
   assert.match(ledger,/FROM private_drafts WHERE story_id=\? AND item_id=\?/);
   assert.match(ledger,/this\.ctx\.storage\.transactionSync/);
 });
+
+test('archiving a secret disables future release claims but does not delete ownership',()=>{
+  const archive=ledger.split('archivePrivateDraft(storyId,itemId){')[1]?.split('  draftPreview(')[0];
+  assert.ok(archive,'Archive method must exist');
+  assert.match(archive,/transactionSync/);
+  assert.match(archive,/UPDATE private_drafts SET archived=1/);
+  assert.match(archive,/UPDATE releases SET disabled=1/);
+  assert.doesNotMatch(archive,/DELETE FROM ownership/);
+});
