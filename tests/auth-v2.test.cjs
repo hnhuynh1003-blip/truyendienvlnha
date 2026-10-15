@@ -96,7 +96,7 @@ test('private browsing: missing email and password show immediate, focused feedb
   assert.match(h.elements['auth-status-message'].textContent, /chưa nhập email/i);
   assert.equal(h.elements['auth-email'].focused, true);
   assert.equal(calls, 0);
-  h.elements['auth-email'].value = 'reader@example.test';
+  h.context.document.getElementById('auth-email').value = 'reader@example.test';
   await h.context.DuduAuth.email(false);
   assert.match(h.elements['auth-status-message'].textContent, /chưa nhập mật khẩu/i);
   assert.equal(h.elements['auth-password'].focused, true);
@@ -110,8 +110,8 @@ test('private browsing: explicit email credentials authenticate without prior sa
     entries.push({ email, password, disabled: h.elements['auth-email-login-btn'].disabled });
     return {};
   };
-  h.elements['auth-email'].value = '  reader@example.test  ';
-  h.elements['auth-password'].value = 'six-char-password';
+  h.context.document.getElementById('auth-email').value = '  reader@example.test  ';
+  h.context.document.getElementById('auth-password').value = 'six-char-password';
   await h.context.DuduAuth.email(false);
   assert.equal(entries.length, 1);
   assert.equal(entries[0].email, 'reader@example.test');
@@ -127,8 +127,8 @@ test('private browsing: Firebase invalid credentials show an actionable message'
   h.account.signInWithEmailAndPassword = async () => {
     throw { code: 'auth/invalid-credential' };
   };
-  h.elements['auth-email'].value = 'reader@example.test';
-  h.elements['auth-password'].value = 'wrong-password';
+  h.context.document.getElementById('auth-email').value = 'reader@example.test';
+  h.context.document.getElementById('auth-password').value = 'wrong-password';
   await h.context.DuduAuth.email(false);
   assert.match(h.elements['auth-status-message'].textContent, /Email hoặc mật khẩu chưa đúng/);
   assert.equal(h.elements['auth-email-login-btn'].disabled, false);
