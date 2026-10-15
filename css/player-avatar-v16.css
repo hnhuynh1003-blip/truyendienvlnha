@@ -160,6 +160,11 @@ body.dudu-phone-v11 #player-avatar-v16-upload{color:#d5cfeb;font-size:11px;max-w
 body.dudu-phone-v11 #player-avatar-v16-status{
  color:#c9bee2;font-size:10px;min-height:16px;margin:5px 0;
 }
+/* The existing sticky site header is already dense on mobile.
+   Home/Profile in Cyber Phone remains the mobile avatar entry point. */
+@media(max-width:720px){
+ body.dudu-phone-v11 #player-avatar-header-v16{display:none !important;}
+}
 @media(max-width:420px){
  body.dudu-phone-v11 .dudu-avatar-v16-preset-grid{grid-template-columns:repeat(4,minmax(0,1fr));}
  body.dudu-phone-v11 .dudu-avatar-v16-frames{grid-template-columns:repeat(2,minmax(0,1fr));}
