@@ -9,7 +9,7 @@ body.dudu-phone-v11 #cyber-phone .dudu-npc-v12-card {
   background:linear-gradient(140deg,#282344,#1b2b46) !important;
 }
 body.dudu-phone-v11 #cyber-phone .dudu-npc-v12-top {
-  display:grid;grid-template-columns:88px minmax(0,1fr);
+  display:grid !important;grid-template-columns:88px minmax(0,1fr);
   align-items:stretch;gap:10px;min-width:0;
 }
 body.dudu-phone-v11 #cyber-phone .dudu-npc-v12-portrait {
