@@ -58,6 +58,19 @@ async function main() {
     await page.waitForFunction(() => document.getElementById('account-status-btn').textContent.includes('tester-a'));
     await page.locator('#role-toggle-btn').click();
 
+    const catalogSnapshot = await page.evaluate(() => ({
+      count:window.DuduItemCatalog?.items.length,
+      errors:window.DuduItemCatalog?.validate(),
+      inventoryCount:userProfile.inventory.length,
+      legacyRandomCount:MASTER_LOOT_TABLE.length,
+      firestoreWrites:window.__firestoreWrites.length
+    }));
+    assert.equal(catalogSnapshot.count,70,'Catalog must load in the browser');
+    assert.deepEqual(catalogSnapshot.errors,[],'Catalog schema is valid');
+    assert.equal(catalogSnapshot.inventoryCount,2,'Defining 70 items must not grant inventory items');
+    assert.equal(catalogSnapshot.legacyRandomCount,11,'Phase 1 must leave old loot pool untouched');
+    assert.equal(catalogSnapshot.firestoreWrites,0,'Catalog has no backend writes');
+
     await page.evaluate(() => {
       openCreateChapterModal();
       document.getElementById('chapter-modal-title').value = 'Kiểm thử chương dài';
