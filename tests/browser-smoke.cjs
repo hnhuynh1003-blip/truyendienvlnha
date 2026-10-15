@@ -200,6 +200,7 @@ async function main() {
     await page.evaluate(()=>{
       const novel=novels[selectedNovelIndex];
       novel.characters.push({id:'temp-npc-typo',name:'NPC GÕ NHẦM',role:'Thử'});
+      if(document.getElementById('cyber-phone').style.display!=='flex')togglePhone();
       openPhoneApp('codex');
     });
     const typoCard=page.locator('.character-card').filter({hasText:'NPC GÕ NHẦM'});
@@ -226,7 +227,7 @@ async function main() {
     const restored=await page.evaluate(()=>novels[selectedNovelIndex].characters
       .find(c=>c.id==='temp-npc-typo')?.archived);
     assert.equal(restored,false,'Author can restore a wrongfully archived NPC');
-    await page.evaluate(()=>{showArchivedNpcs=false;phoneHome();});
+    await page.evaluate(()=>{showArchivedNpcs=false;phoneHome();togglePhone();});
 
     // 4B: a secret draft MUST fail closed in sandbox and never be copied into
     // the publicly readable story library, even if the author clicks Save.
