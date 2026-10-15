@@ -518,7 +518,9 @@ async function main() {
       const otherStory=DuduNpcMemory.open(localStorage,currentUsername,'different-story',char.id,true).list();
       const otherNpc=DuduNpcMemory.open(localStorage,currentUsername,novel.id,'different-npc',true).list();
       // Gift is recorded as local game interaction, not verified author canon.
-      const gift=userProfile.inventory[0]?.name;
+      // R2 Sandbox requires an explicitly catalogued, giftable item.
+      userProfile.inventory.unshift({...DuduItemCatalog.common[0]});
+      const gift=userProfile.inventory[0].name;
       await executeGiftItem(char.id,0);
       const gifts=memory.list().filter(e=>e.type==='gift');
       let calledMessages=[];
