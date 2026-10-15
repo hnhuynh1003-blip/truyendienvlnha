@@ -1,0 +1,106 @@
+import {DurableObject} from 'cloudflare:workers';
+import {isChapterMature} from './collectible-rules.mjs';
+
+/* Server-side collectible ownership ledger.
+ * Separate from client-written Firestore profile inventory. All methods receive
+ * a Firebase-verified UID from the Worker; only authenticated admin may publish
+ * rules and grant manually. No economic item is minted in the browser.
+ */
+export class DuduCollectibles extends DurableObject {
+  constructor(ctx,env){
+    super(ctx,env);
+    this.sql=ctx.storage.sql;
+    this.sql.exec(`CREATE TABLE IF NOT EXISTS releases (
+      story_id TEXT NOT NULL,item_id TEXT NOT NULL,chapter_id TEXT,
+      npc_id TEXT,name TEXT NOT NULL,rank TEXT NOT NULL,icon TEXT NOT NULL,
+      summary TEXT NOT NULL,method TEXT NOT NULL,published_at INTEGER NOT NULL,
+      disabled INTEGER NOT NULL DEFAULT 0,
+      PRIMARY KEY (story_id,item_id)
+    )`);
+    this.sql.exec(`CREATE TABLE IF NOT EXISTS chapter_sessions (
+      uid TEXT NOT NULL,story_id TEXT NOT NULL,chapter_id TEXT NOT NULL,
+      started_at INTEGER NOT NULL,PRIMARY KEY(uid,story_id,chapter_id)
+    )`);
+    this.sql.exec(`CREATE TABLE IF NOT EXISTS ownership (
+      uid TEXT NOT NULL,story_id TEXT NOT NULL,item_id TEXT NOT NULL,
+      granted_at INTEGER NOT NULL,source TEXT NOT NULL,
+      PRIMARY KEY(uid,story_id,item_id)
+    )`);
+  }
+  publish(rule,now){
+    return this.ctx.storage.transactionSync(()=>{
+      const old=this.sql.exec('SELECT method,chapter_id FROM releases WHERE story_id=? AND item_id=?',
+        rule.storyId,rule.itemId).toArray()[0];
+      // Do not silently move a released item between claim routes.
+      if(old&&(old.method!==rule.method||(old.chapter_id||null)!==(rule.chapterId||null)))
+        return {ok:false,code:'immutable-release'};
+      this.sql.exec(`INSERT INTO releases (
+          story_id,item_id,chapter_id,npc_id,name,rank,icon,summary,method,published_at,disabled
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,0)
+        ON CONFLICT(story_id,item_id) DO UPDATE SET
+          npc_id=excluded.npc_id,name=excluded.name,rank=excluded.rank,
+          icon=excluded.icon,summary=excluded.summary,disabled=0`,
+        rule.storyId,rule.itemId,rule.chapterId,rule.npcId,rule.name,rule.rank,
+        rule.icon,rule.summary,rule.method,now);
+      return {ok:true,storyId:rule.storyId,itemId:rule.itemId};
+    });
+  }
+  disable(storyId,itemId){
+    const released=this.sql.exec(
+      'SELECT item_id FROM releases WHERE story_id=? AND item_id=?',storyId,itemId).toArray()[0];
+    if(!released)return {ok:false,code:'not-found'};
+    this.sql.exec('UPDATE releases SET disabled=1 WHERE story_id=? AND item_id=?',storyId,itemId);
+    return {ok:true};
+  }
+  begin(uid,storyId,chapterId,now){
+    // No title, description, or item ID sent back before completion.
+    const available=this.sql.exec(`SELECT 1 AS eligible FROM releases
+      WHERE story_id=? AND chapter_id=? AND method='CHAPTER_EVENT' AND disabled=0 LIMIT 1`,
+      storyId,chapterId).toArray()[0];
+    if(!available)return {ok:false,code:'not-available'};
+    this.sql.exec(`INSERT INTO chapter_sessions(uid,story_id,chapter_id,started_at)
+      VALUES (?,?,?,?) ON CONFLICT(uid,story_id,chapter_id) DO NOTHING`,
+      uid,storyId,chapterId,now);
+    return {ok:true,started:true};
+  }
+  claim(uid,storyId,chapterId,itemId,now){
+    return this.ctx.storage.transactionSync(()=>{
+      const item=this.sql.exec(`SELECT item_id,method,chapter_id,disabled FROM releases
+        WHERE story_id=? AND item_id=?`,storyId,itemId).toArray()[0];
+      if(!item||item.method!=='CHAPTER_EVENT'||item.chapter_id!==chapterId||item.disabled)
+        return {ok:false,code:'not-available'};
+      const owned=this.sql.exec('SELECT 1 AS yes FROM ownership WHERE uid=? AND story_id=? AND item_id=?',
+        uid,storyId,itemId).toArray()[0];
+      if(owned)return {ok:true,alreadyOwned:true};
+      const session=this.sql.exec(`SELECT started_at FROM chapter_sessions
+        WHERE uid=? AND story_id=? AND chapter_id=?`,uid,storyId,chapterId).toArray()[0];
+      if(!session||!isChapterMature(Number(session.started_at),now))
+        return {ok:false,code:'not-ready'};
+      this.sql.exec(`INSERT INTO ownership(uid,story_id,item_id,granted_at,source)
+        VALUES (?,?,?,?,'CHAPTER_EVENT')`,uid,storyId,itemId,now);
+      return {ok:true,alreadyOwned:false};
+    });
+  }
+  grant(uid,storyId,itemId,now){
+    return this.ctx.storage.transactionSync(()=>{
+      const item=this.sql.exec(`SELECT method,disabled FROM releases
+        WHERE story_id=? AND item_id=?`,storyId,itemId).toArray()[0];
+      if(!item||item.disabled||item.method!=='STORY_EVENT')
+        return {ok:false,code:'not-available'};
+      const existed=this.sql.exec('SELECT 1 AS yes FROM ownership WHERE uid=? AND story_id=? AND item_id=?',
+        uid,storyId,itemId).toArray()[0];
+      if(existed)return {ok:true,alreadyOwned:true};
+      this.sql.exec(`INSERT INTO ownership(uid,story_id,item_id,granted_at,source)
+        VALUES (?,?,?,?,'STORY_EVENT')`,uid,storyId,itemId,now);
+      return {ok:true,alreadyOwned:false};
+    });
+  }
+  mine(uid){
+    return this.sql.exec(`SELECT o.story_id AS storyId,o.item_id AS itemId,
+      o.granted_at AS grantedAt,o.source,
+      r.name,r.rank,r.icon,r.summary,r.npc_id AS npcId
+      FROM ownership o LEFT JOIN releases r
+      ON o.story_id=r.story_id AND o.item_id=r.item_id
+      WHERE o.uid=? ORDER BY o.granted_at DESC LIMIT 500`,uid).toArray();
+  }
+}
