@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {cleanId,normalizedPublication,parseScopedIds,isChapterMature,MIN_CHAPTER_ELAPSED_MS}
+import {cleanId,normalizedPublication,normalizedPrivateDraft,parseScopedIds,isChapterMature,MIN_CHAPTER_ELAPSED_MS}
   from '../src/collectible-rules.mjs';
 
 const release=(overrides={})=>({
@@ -56,4 +56,34 @@ test('server elapsed time is the minimum gate, not evidence of real reading',()=
   assert.equal(isChapterMature(start,start+90000),true);
   assert.equal(isChapterMature(start,start+90001),true);
   assert.equal(isChapterMature(start,NaN),false);
+});
+
+test('private author drafts accept unpublished spoilers without making a public release',()=>{
+  const body={storyId:'truyen-dien-vl',chapterId:'ch-1',
+    item:{name:'Bí mật cuối chương',desc:'Chi tiết chỉ tác giả xem.',
+      rank:'SS',type:'ITEM',icon:'🔒',npcId:'c2',method:'CHAPTER_EVENT'}};
+  const record=normalizedPrivateDraft(body);
+  assert.deepEqual(record,{storyId:'truyen-dien-vl',chapterId:'ch-1',
+    itemId:null,npcId:'c2',name:'Bí mật cuối chương',
+    summary:'Chi tiết chỉ tác giả xem.',rank:'SS',type:'ITEM',icon:'🔒',method:'CHAPTER_EVENT'});
+  assert.equal(normalizedPublication({item:body.item,confirmPublicRelease:true}),null,
+    'Private form input is not an authorized public release');
+  assert.ok(Object.isFrozen(record));
+  assert.equal(normalizedPrivateDraft({...body,itemId:'author-item-private001'})?.itemId,'author-item-private001');
+});
+test('private draft validation rejects invalid scopes, IDs and random grants',()=>{
+  const body={storyId:'story-1',chapterId:null,
+    item:{name:'Tên',desc:'Mô tả',rank:'E',type:'ITEM',icon:'🎁',
+      method:'COLLECTION_ONLY'}};
+  assert.equal(normalizedPrivateDraft(body)?.chapterId,null);
+  for(const bad of [
+    {...body,storyId:'../files'},
+    {...body,chapterId:'ch?'},
+    {...body,itemId:'sss1'},
+    {...body,item:{...body.item,rank:'Z'}},
+    {...body,item:{...body.item,method:'RANDOM'}},
+    {...body,item:{...body.item,method:'CHAPTER_EVENT'}},
+    {...body,item:{...body.item,npcId:'../other'}},
+    {...body,item:{...body.item,desc:''}}
+  ])assert.equal(normalizedPrivateDraft(bad),null,JSON.stringify(bad));
 });
