@@ -145,6 +145,39 @@ async function main() {
     assert.ok(npcEfficient.remoteLastLength <= 1001, 'AI request is trimmed');
     assert.ok(npcEfficient.fullSavedLength > 1001, 'Full chat history remains saved');
     assert.equal(npcEfficient.writes, 0, 'Sandbox must stay isolated');
+
+    const npcContinuity = await page.evaluate(async () => {
+      const novel = novels[selectedNovelIndex];
+      const char = novel.characters.find(c => c.name === 'Nhân vật thử nghiệm');
+      const key = chatKey(char.id, novel.id);
+      let apiCalls = 0;
+      DuduAI.isConfigured = () => true;
+      DuduAI.generate = async () => { apiCalls++; return {error:'AI mock unavailable'}; };
+      const input = document.getElementById('chat-user-input');
+      input.value = 'Cảm ơn!';
+      await sendChatMessage();
+      const afterFailure = chatHistories[key].length;
+      const noFakeNpcReply = chatHistories[key].at(-1).role === 'user';
+      const hasLegacyErrorBubble = chatHistories[key].some(m => m.role === 'system' && m.text.includes('AI mock unavailable'));
+      const outageVisible = document.getElementById('chat-connection-status').style.display === 'block';
+      const retryVisible = document.getElementById('chat-retry-btn').style.display === 'inline-block';
+      DuduAI.generate = async () => { apiCalls++; return {text:'Tôi hiểu điều bạn muốn nói.'}; };
+      await retryLastNpcReply();
+      return {
+        apiCalls, afterFailure, afterRetry:chatHistories[key].length,
+        noFakeNpcReply, hasLegacyErrorBubble, outageVisible, retryVisible,
+        restored:chatHistories[key].at(-1).text,
+        hiddenAfterRetry:document.getElementById('chat-connection-status').style.display === 'none'
+      };
+    });
+    assert.equal(npcContinuity.apiCalls, 2, 'Thanks after meaningful AI context should go to AI, and retry calls only once');
+    assert.equal(npcContinuity.noFakeNpcReply, true);
+    assert.equal(npcContinuity.hasLegacyErrorBubble, false, 'Error diagnostics must not impersonate NPC dialogue');
+    assert.equal(npcContinuity.outageVisible, true);
+    assert.equal(npcContinuity.retryVisible, true);
+    assert.equal(npcContinuity.afterRetry, npcContinuity.afterFailure + 1, 'Retry must not duplicate user message');
+    assert.equal(npcContinuity.hiddenAfterRetry, true);
+    assert.match(npcContinuity.restored,/Tôi hiểu/);
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
     console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));
   } finally {
