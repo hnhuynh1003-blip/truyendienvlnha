@@ -865,6 +865,8 @@ async function main() {
       sel.value='c_otk';switchChatCharacter();
       const firstBefore=state.collectedCharacters.c_otk.relationshipV2.trust;
       npcDailyCheckin();
+      const choiceVisible=document.getElementById('npc-daily-choice-card').style.display;
+      npcSubmitDailyChoice('thoughtful');
       const afterFirst=state.collectedCharacters.c_otk.relationshipV2.trust;
       const saved=JSON.parse(localStorage.getItem(scopedLocalKey('profile'))||'{}');
       const savedTrust=saved.storyStates?.[novel.id]?.collectedCharacters?.c_otk?.relationshipV2?.trust;
@@ -893,11 +895,12 @@ async function main() {
       novel.characters=oldCharacters;
       activeChatNovelId=originalChatNovel;inventoryTab=oldTab;
       sel.innerHTML=oldOptions;sel.value=oldSelection;
-      return {firstBefore,afterFirst,afterRepeat,savedTrust,disabled,portrait,
+      return {firstBefore,afterFirst,afterRepeat,savedTrust,disabled,choiceVisible,portrait,
         filtered,searchCount,protectedStillThere,correctRemoved,
         writes:window.__firestoreWrites.length-writesBefore};
     });
     assert.equal(expansionSmoke.firstBefore,0);
+    assert.equal(expansionSmoke.choiceVisible,'block','Daily trust uses a deliberate dialogue choice');
     assert.equal(expansionSmoke.afterFirst,3);
     assert.equal(expansionSmoke.afterRepeat,3,'One check-in per NPC/day');
     assert.equal(expansionSmoke.savedTrust,3,'Sandbox trust persists locally');
