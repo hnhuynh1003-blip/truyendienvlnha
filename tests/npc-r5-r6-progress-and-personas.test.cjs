@@ -46,7 +46,7 @@ test('R6 persona fallbacks follow existing IDs only and author preferences overr
  assert.deepEqual(personas.previewNpc({...npc,name:'Khác'}).giftPreferences.likedTags,[]);
  assert.equal(personas.previewNpc({...npc,giftPreferences:{likedTags:['INVALID']}}),null);
 });
-test('R6 explicit item classification differentiates 3 tastes, doesn't mint souvenir',()=>{
+test('R6 explicit item tags differentiate three NPC tastes without minting souvenir',()=>{
  for(const [id,tag] of [['common-gauze','PRACTICAL'],['e2','DRINK_COFFEE'],
    ['urban-oneway-ticket','KEEPSAKE'],['b1','DANGEROUS']]){
   assert.ok(rules.itemTags(catalog.byId(id)).includes(tag),id);
