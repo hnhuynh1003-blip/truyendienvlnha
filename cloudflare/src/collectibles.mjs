@@ -21,11 +21,67 @@ export class DuduCollectibles extends DurableObject {
       uid TEXT NOT NULL,story_id TEXT NOT NULL,chapter_id TEXT NOT NULL,
       started_at INTEGER NOT NULL,PRIMARY KEY(uid,story_id,chapter_id)
     )`);
+    // Private author vault: NEVER mirrored into public studio_data/main_library.
+    this.sql.exec(`CREATE TABLE IF NOT EXISTS private_drafts (
+      story_id TEXT NOT NULL,item_id TEXT NOT NULL,chapter_id TEXT,
+      npc_id TEXT,name TEXT NOT NULL,rank TEXT NOT NULL,type TEXT NOT NULL,
+      icon TEXT NOT NULL,summary TEXT NOT NULL,method TEXT NOT NULL,
+      created_at INTEGER NOT NULL,updated_at INTEGER NOT NULL,
+      archived INTEGER NOT NULL DEFAULT 0,
+      PRIMARY KEY(story_id,item_id)
+    )`);
     this.sql.exec(`CREATE TABLE IF NOT EXISTS ownership (
       uid TEXT NOT NULL,story_id TEXT NOT NULL,item_id TEXT NOT NULL,
       granted_at INTEGER NOT NULL,source TEXT NOT NULL,
       PRIMARY KEY(uid,story_id,item_id)
     )`);
+  }
+  upsertDraft(rule,now){
+    return this.ctx.storage.transactionSync(()=>{
+      const itemId=rule.itemId||'author-item-'+crypto.randomUUID();
+      const previous=this.sql.exec(
+        'SELECT chapter_id,archived FROM private_drafts WHERE story_id=? AND item_id=?',
+        rule.storyId,itemId
+      ).toArray()[0];
+      if(rule.itemId&&!previous)return {ok:false,code:'not-found'};
+      if(previous&&(previous.chapter_id||null)!==(rule.chapterId||null))
+        return {ok:false,code:'immutable-scope'};
+      if(previous?.archived)return {ok:false,code:'archived'};
+      this.sql.exec(`INSERT INTO private_drafts
+        (story_id,item_id,chapter_id,npc_id,name,rank,type,icon,summary,method,
+         created_at,updated_at,archived)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,0)
+        ON CONFLICT(story_id,item_id) DO UPDATE SET
+         npc_id=excluded.npc_id,name=excluded.name,rank=excluded.rank,
+         type=excluded.type,icon=excluded.icon,summary=excluded.summary,
+         method=excluded.method,updated_at=excluded.updated_at`,
+        rule.storyId,itemId,rule.chapterId,rule.npcId,
+        rule.name,rule.rank,rule.type,rule.icon,rule.summary,rule.method,now,now);
+      return {ok:true,storyId:rule.storyId,itemId};
+    });
+  }
+  listPrivateDrafts(storyId,chapterId){
+    // Admin-only API must call this. No public endpoint can list drafts.
+    const items=chapterId===null?
+      this.sql.exec(`SELECT story_id AS storyId,item_id AS itemId,
+        chapter_id AS chapterId,npc_id AS npcId,name,rank,type,icon,
+        summary,method,updated_at AS updatedAt
+        FROM private_drafts WHERE story_id=? AND chapter_id IS NULL
+        AND archived=0 ORDER BY updated_at DESC LIMIT 150`,storyId).toArray()
+      :this.sql.exec(`SELECT story_id AS storyId,item_id AS itemId,
+        chapter_id AS chapterId,npc_id AS npcId,name,rank,type,icon,
+        summary,method,updated_at AS updatedAt
+        FROM private_drafts WHERE story_id=? AND chapter_id=?
+        AND archived=0 ORDER BY updated_at DESC LIMIT 150`,storyId,chapterId).toArray();
+    return {items};
+  }
+  archivePrivateDraft(storyId,itemId){
+    const previous=this.sql.exec('SELECT 1 AS ok FROM private_drafts WHERE story_id=? AND item_id=?',
+      storyId,itemId).toArray()[0];
+    if(!previous)return {ok:false,code:'not-found'};
+    this.sql.exec('UPDATE private_drafts SET archived=1 WHERE story_id=? AND item_id=?',
+      storyId,itemId);
+    return {ok:true};
   }
   publish(rule,now){
     return this.ctx.storage.transactionSync(()=>{
