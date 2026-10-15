@@ -17,14 +17,35 @@
     ['#466d55','#95cba3','#243d37'],['#9a7138','#f2ca86','#523c2b'],
     ['#375f97','#93bdff','#223251'],['#885c9d','#d0a4e9','#40274c']
   ];
-  const CATALOG=Object.freeze(NAMES.map((name,i)=>Object.freeze({
-    id:'portrait-f-'+String(i+1).padStart(2,'0'),label:name,
-    gender:'female',mood:name.toLocaleLowerCase('vi'),hair:i%6,
-    palette:i%COLORS.length,skin:i%4,eyes:i%3
-  })));
-  const IDS=new Set(CATALOG.map(x=>x.id));
+  // Preserve all 24 existing female IDs; add male and neutral presentation
+  // without altering saved references or creating new NPC identities.
+  const GENDERS=Object.freeze(['female','male','neutral']);
+  const WORLDS=Object.freeze(['modern','historical','fantasy']);
+  const CATALOG=Object.freeze(GENDERS.flatMap((gender,g)=>NAMES.map((name,i)=>
+    Object.freeze({
+      id:'portrait-'+['f','m','n'][g]+'-'+String(i+1).padStart(2,'0'),
+      label:name,gender,
+      world:WORLDS[(i+g)%WORLDS.length],
+      mood:name.toLocaleLowerCase('vi'),hair:(i+g*2)%6,
+      palette:(i+g*3)%COLORS.length,skin:(i+g)%4,eyes:i%3
+    }))));
+  const BY_ID=new Map(CATALOG.map(p=>[p.id,p]));
+  function preset(id){return typeof id==='string'?BY_ID.get(id)||null:null;}
+  function normalized(text){
+    return String(text||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .toLocaleLowerCase('vi').trim();
+  }
+  function search({gender='all',world='all',query='',limit=100}={}){
+    const validGender=gender==='all'||GENDERS.includes(gender)?gender:'all';
+    const validWorld=world==='all'||WORLDS.includes(world)?world:'all';
+    const q=normalized(query);
+    const max=Number.isSafeInteger(limit)?Math.max(0,Math.min(1000,limit)):100;
+    return CATALOG.filter(p=>(validGender==='all'||p.gender===validGender)&&
+      (validWorld==='all'||p.world===validWorld)&&
+      (!q||normalized(p.label+' '+p.gender+' '+p.world+' '+p.id).includes(q)))
+      .slice(0,max);
+  }
   function escapeXml(v){return String(v).replace(/[<>&"'\u0000-\u001f]/g,'');}
-  function preset(id){return CATALOG.find(p=>p.id===id)||null;}
   function svgFor(id){
     const p=preset(id);if(!p)return null;
     const [dark,light,deep]=COLORS[p.palette];
@@ -38,6 +59,12 @@
       'M34 79 Q51 27 93 27 Q118 40 121 78 L96 45 Q70 60 51 49Z',
       'M36 75 Q45 22 97 27 Q123 44 123 83 L105 60 Q79 37 50 66Z'
     ][p.hair];
+    const genderHair=p.gender==='male'?
+      'M39 81 Q36 42 51 33 Q74 17 103 30 Q125 42 122 78 L113 64 Q85 55 54 66 L44 94Z':
+      p.gender==='neutral'?
+      'M34 80 Q35 29 81 24 Q119 30 127 80 L111 60 Q83 45 52 59Z':
+      fringe;
+    const longHair=p.gender==='female';
     const eyes=p.eyes===0?'M57 88 Q66 83 75 88 M91 88 Q100 83 109 88':
       p.eyes===1?'M57 88 Q66 91 75 88 M91 88 Q100 91 109 88':
       'M57 88 L75 88 M91 88 L109 88';
@@ -49,10 +76,10 @@
       <circle cx="125" cy="28" r="45" fill="${light}" opacity=".15"/>
       <path d="M9 164 Q11 125 55 120 L105 120 Q152 125 154 164" fill="${light}"/>
       <path d="M59 119 L80 143 L101 119" fill="#f9e9df"/>
-      <path d="M38 80 Q27 35 68 23 Q124 12 127 74 L118 132 Q113 143 101 151 L103 109 L57 111 L57 151 Q34 143 38 80Z" fill="${hair}"/>
+      ${longHair?'<path d="M38 80 Q27 35 68 23 Q124 12 127 74 L118 132 Q113 143 101 151 L103 109 L57 111 L57 151 Q34 143 38 80Z" fill="'+hair+'"/>':'<path d="M34 75 Q35 27 85 23 Q125 28 126 75 L112 85 L101 52 L52 60 L42 91Z" fill="'+hair+'"/>'}
       <rect x="69" y="107" width="24" height="29" rx="9" fill="${skin}"/>
       <ellipse cx="81" cy="78" rx="36" ry="46" fill="${skin}"/>
-      <path d="${fringe}" fill="${hair}"/>
+      <path d="${genderHair}" fill="${hair}"/>
       <path d="${eyes}" fill="none" stroke="#28212d" stroke-width="2.6" stroke-linecap="round"/>
       <path d="M82 87 l-2 11 4 1" fill="none" stroke="#be856d" stroke-width="1.8" stroke-linecap="round"/>
       <path d="M73 108 Q82 114 91 107" fill="none" stroke="#ad6677" stroke-width="2" stroke-linecap="round"/>
@@ -105,5 +132,5 @@
     });}finally{db.close();}
   }
   function makeId(){return 'own-'+Date.now()+'-'+Math.random().toString(36).slice(2,9);}
-  return Object.freeze({CATALOG,preset,sourceFor,keyFor,makeId,saveUpload,readUpload});
+  return Object.freeze({CATALOG,GENDERS,WORLDS,preset,search,sourceFor,keyFor,makeId,saveUpload,readUpload});
 });
