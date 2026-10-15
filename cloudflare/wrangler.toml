@@ -7,12 +7,21 @@ workers_dev = true
 PROJECT_ID = "truyendienvl"
 ALLOWED_ORIGIN = "https://hnhuynh1003-blip.github.io"
 AI_ENABLED = "false"
+COLLECTIBLES_ENABLED = "false"
 MODEL = "gemini-3.5-flash-lite"
 
 [[durable_objects.bindings]]
 name = "DUDU_QUOTA"
 class_name = "DuduQuota"
 
+[[durable_objects.bindings]]
+name = "DUDU_COLLECTIBLES"
+class_name = "DuduCollectibles"
+
 [[migrations]]
 tag = "v1-sqlite"
 new_sqlite_classes = ["DuduQuota"]
+
+[[migrations]]
+tag = "v2-collectibles-sqlite"
+new_sqlite_classes = ["DuduCollectibles"]
