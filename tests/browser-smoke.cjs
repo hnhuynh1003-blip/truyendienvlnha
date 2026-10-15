@@ -1159,6 +1159,7 @@ async function main() {
       const snapshot=JSON.stringify(userProfile);
       const oldTab=inventoryTab,oldSelection=inventoryDetailSelection;
       const initialWrites=window.__firestoreWrites.length;
+      if(document.getElementById('cyber-phone').style.display!=='flex')togglePhone();
       openPhoneApp('codex');
       const novel=getSelectedCodexNovel();
       const char=(novel?.characters||[]).find(c=>!c.archived);
