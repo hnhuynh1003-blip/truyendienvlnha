@@ -34,6 +34,7 @@
   <script src="js/npc-author-v2-r7.js"></script>
   <script src="js/story-dates-v1.js"></script>
   <script src="js/npc-portrait-library-v1.js"></script>
+  <script src="js/npc-anime-candidates-v14.js"></script>
   <script src="js/loot-rules-v2.js"></script>
   <script src="js/author-items-v1.js"></script>
   <script src="js/npc-editor-v1.js"></script>
@@ -1336,6 +1337,17 @@
         <label style="font-size:10px;">Ảnh nhân vật trong dự án (tùy chọn)</label>
         <input id="npc-r7-portrait" autocomplete="off" type="text" placeholder="assets/npc/ten-nhan-vat.webp"/>
         <div style="font-size:9px;color:#94a3b8;margin-top:5px;">Chỉ dùng ảnh cùng website từ assets/npc. Không tải ảnh ngoài hoặc tự mở khóa NPC.</div>
+        <section id="npc-v14-art-panel" aria-label="Chọn chân dung anime nữ" style="display:none;margin-top:8px;">
+          <div style="font-size:11px;color:#e6ceff;font-weight:800;">✦ Chân dung anime nữ · 4 bản đề xuất</div>
+          <div style="font-size:9px;color:#aaa9c8;line-height:1.5;margin:4px 0 7px;">Ảnh minh họa thử. Không tự xác nhận ngoại hình chính thức của NPC; chỉ sử dụng khi tác giả bấm chọn.</div>
+          <div id="npc-v14-anime-gallery" role="group" aria-label="Chọn ảnh anime nữ"></div>
+          <div class="npc-v14-preview-line">
+            <div id="npc-v14-anime-preview" aria-label="Xem trước ảnh anime" role="img"></div>
+            <span id="npc-v14-anime-label">Chưa chọn ảnh anime</span>
+            <button type="button" class="btn" onclick="npcSelectAnimeCandidate('')">Bỏ chọn</button>
+          </div>
+          <input id="npc-v14-anime-id" type="hidden"/>
+        </section>
         <div id="npc-r8-gallery-panel" style="margin-top:7px;padding:7px;background:#0c1b2c;border:1px solid #374151;border-radius:9px;">
           <div style="color:#bae6fd;font-size:11px;font-weight:700;">Thư viện nữ 60 · nam 12</div>
           <div style="font-size:9px;color:#94a3b8;margin:3px 0;">Ưu tiên ảnh nữ, tìm theo tính cách và bối cảnh. Ba NPC thử nghiệm đều là nữ. Ảnh vector chỉ là bản mẫu.</div>
@@ -2618,12 +2630,79 @@
       }
     }
 
+    function npcClearAnimeVisual(){
+      const preview=document.getElementById('npc-v14-anime-preview');
+      if(preview){preview.style.display='none';preview.style.backgroundImage='none';}
+      document.getElementById('npc-v14-anime-label').textContent='Chưa chọn ảnh anime';
+      document.querySelectorAll('#npc-v14-anime-gallery button[data-anime-id]').forEach(b=>{
+        const active=b.dataset.animeId===document.getElementById('npc-v14-anime-id').value;
+        b.setAttribute('aria-pressed',active?'true':'false');
+      });
+    }
+    function npcSelectAnimeCandidate(id){
+      if(!IS_SANDBOX_MODE)return;
+      if(id&&!DuduNpcAnimeCandidatesV14.get(id))return;
+      if(id){
+        // Reuse existing cancellation: no late local upload may override this choice.
+        npcSelectPortraitPreset('');
+        document.getElementById('npc-r7-portrait').value='';
+      }
+      document.getElementById('npc-v14-anime-id').value=id||'';
+      npcClearAnimeVisual();
+      if(!id){
+        document.getElementById('npc-r8-selection-label').textContent='Chưa chọn hình riêng';
+        return;
+      }
+      const p=DuduNpcAnimeCandidatesV14.get(id);
+      const art=DuduNpcAnimeCandidatesV14.styleFor(id);
+      const panel=document.getElementById('npc-v14-anime-preview');
+      panel.style.display='block';panel.style.backgroundImage=art.image;
+      panel.style.backgroundSize=art.size;panel.style.backgroundPosition=art.position;
+      document.getElementById('npc-v14-anime-label').textContent=p.label+' · '+p.mood;
+      document.getElementById('npc-r8-selection-label').textContent='Ảnh anime: '+p.label;
+      const image=document.getElementById('npc-r8-preview');
+      image.style.display='none';image.removeAttribute('src');
+      document.querySelectorAll('#npc-v14-anime-gallery button[data-anime-id]').forEach(b=>{
+        b.setAttribute('aria-pressed',b.dataset.animeId===id?'true':'false');
+      });
+    }
+    function npcRenderAnimeChoices(npc){
+      if(!IS_SANDBOX_MODE)return;
+      const panel=document.getElementById('npc-v14-art-panel');
+      panel.style.display='block';
+      const gallery=document.getElementById('npc-v14-anime-gallery');
+      gallery.replaceChildren();
+      for(const candidate of DuduNpcAnimeCandidatesV14.CANDIDATES){
+        const style=DuduNpcAnimeCandidatesV14.styleFor(candidate.id);
+        const button=document.createElement('button');
+        button.type='button';button.dataset.animeId=candidate.id;
+        button.className='npc-v14-anime-tile';
+        button.setAttribute('aria-label','Chọn '+candidate.label);
+        button.setAttribute('aria-pressed','false');
+        const image=document.createElement('span');
+        image.className='npc-v14-anime-thumb';
+        image.setAttribute('aria-hidden','true');
+        image.style.backgroundImage=style.image;image.style.backgroundSize=style.size;
+        image.style.backgroundPosition=style.position;
+        const text=document.createElement('span');
+        text.textContent=candidate.label;
+        button.append(image,text);
+        button.addEventListener('click',()=>npcSelectAnimeCandidate(candidate.id));
+        gallery.append(button);
+      }
+      const saved=npc?.portraitAnimeId;
+      if(DuduNpcAnimeCandidatesV14.get(saved))npcSelectAnimeCandidate(saved);
+      else {document.getElementById('npc-v14-anime-id').value='';npcClearAnimeVisual();}
+    }
+
     function npcSelectPortraitPreset(id){
       if(!IS_SANDBOX_MODE)return;
       if(id&&!DuduNpcPortraitLibrary.preset(id))return;
       // Invalidate a pending image upload whenever a new choice is made.
       const picker=document.getElementById('npc-r8-gallery-panel');
       if(picker)picker.dataset.uploadRequest='';
+      const anime=document.getElementById('npc-v14-anime-id');
+      if(anime){anime.value='';npcClearAnimeVisual();}
       document.getElementById('npc-r8-preset-id').value=id||'';
       document.getElementById('npc-r8-upload-id').value='';
       if(id)document.getElementById('npc-r7-portrait').value='';
@@ -2734,6 +2813,8 @@
         if(!saved||document.getElementById('char-modal')?.style.display!=='flex'||
            picker.dataset.uploadRequest!==token||editingCharNovelId!==storyId||
            currentUsername!==uid&&!(uid==='sandbox-guest'&&!currentUsername))return;
+        document.getElementById('npc-v14-anime-id').value='';
+        npcClearAnimeVisual();
         document.getElementById('npc-r8-preset-id').value='';
         document.getElementById('npc-r8-upload-id').value=id;
         document.getElementById('npc-r7-portrait').value='';
@@ -2767,6 +2848,7 @@
           p.reactionStyle:'default';
       document.getElementById('npc-r7-portrait').value=npc?.portraitPath||'';
       npcRenderPortraitGallery(npc);
+      npcRenderAnimeChoices(npc);
       const editorNovel=novels.find(n=>n.id===editingCharNovelId);
       const key=npc&&editorNovel?DuduNpcAuthorR7.sandboxMilestoneDraftKey(editorNovel.id,npc.id):null;
       let draft=null;
@@ -2815,9 +2897,11 @@
       }
       const presetId=document.getElementById('npc-r8-preset-id').value;
       const uploadId=document.getElementById('npc-r8-upload-id').value;
+      const animeId=document.getElementById('npc-v14-anime-id').value;
+      if(animeId&&!DuduNpcAnimeCandidatesV14.get(animeId))return false;
       if(presetId&&!DuduNpcPortraitLibrary.preset(presetId))return false;
       if(uploadId&&!/^own-[a-zA-Z0-9-]{1,60}$/.test(uploadId))return false;
-      return {custom,normalized,milestonePlan,presetId,uploadId};
+      return {custom,normalized,milestonePlan,presetId,uploadId,animeId};
     }
 
     function openAddCharacterModal(fromChapter = false) {
@@ -2899,6 +2983,8 @@
           novel.characters.length-1];
         if(r7.custom)edited.giftPreferences={...r7.normalized.giftPreferences};
         else delete edited.giftPreferences;
+        if(r7.animeId)edited.portraitAnimeId=r7.animeId;
+        else delete edited.portraitAnimeId;
         if(r7.presetId)edited.portraitPresetId=r7.presetId;
         else delete edited.portraitPresetId;
         if(r7.uploadId)edited.portraitUploadId=r7.uploadId;
