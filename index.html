@@ -592,7 +592,52 @@
       padding: 8px 10px; color: var(--text); font-family: inherit; outline: none; font-size: 13px;
     }
     .word-counter { font-size: 10px; color: var(--accent); text-align: right; }
-  </style>
+  
+    /* Sandbox portrait picker inspired by the approved violet/moonlight mockups.
+       Scoped to the NPC editor: no changes to published story-reader UI. */
+    #npc-r7-author-fields {
+      border:1px solid #635384 !important;
+      border-radius:14px !important;
+      background:linear-gradient(145deg,#101d37 0%,#16152f 60%,#202039 100%) !important;
+      box-shadow:inset 0 1px 0 rgba(214,192,255,.16);
+    }
+    #npc-r8-gallery-panel {
+      background:linear-gradient(160deg,#161936,#1d1738 65%,#0b1c35) !important;
+      border-color:#635182 !important;
+      border-radius:14px !important;
+    }
+    #npc-r8-gallery {
+      grid-template-columns:repeat(auto-fit,minmax(72px,1fr)) !important;
+      max-height:265px !important;
+      gap:8px !important;
+      overscroll-behavior:contain;
+    }
+    #npc-r8-gallery .npc-v10-portrait-tile {
+      min-width:0; padding:3px;
+      border:2px solid #554775;border-radius:10px;
+      background:linear-gradient(155deg,#352851,#131e38);
+      box-shadow:0 3px 9px #04091766;color:#efe4ff;
+      font-size:10px;cursor:pointer;
+      transition:transform .14s ease,box-shadow .14s ease,border-color .14s ease;
+    }
+    #npc-r8-gallery .npc-v10-portrait-tile:hover,
+    #npc-r8-gallery .npc-v10-portrait-tile:focus-visible {
+      transform:translateY(-2px);border-color:#d3a6f3;
+      box-shadow:0 0 11px #b17df36b;
+    }
+    #npc-r8-gallery .npc-v10-portrait-tile[aria-pressed="true"] {
+      border-color:#efc4f8 !important;
+      box-shadow:0 0 14px #c379f590,inset 0 0 3px #d7baff55;
+    }
+    #npc-r8-gallery .npc-v10-portrait-tile img {display:block;}
+    #npc-r9-filter-bar input:focus-visible,#npc-r9-filter-bar select:focus-visible {
+      outline:2px solid #d6a7ff;outline-offset:1px;
+    }
+    @media(max-width:420px) {
+      #npc-r8-gallery{grid-template-columns:repeat(3,minmax(0,1fr)) !important;}
+      #npc-r9-filter-bar>*{min-width:0 !important;}
+    }
+</style>
 </head>
 <body>
 
@@ -1286,11 +1331,11 @@
         <input id="npc-r7-portrait" autocomplete="off" type="text" placeholder="assets/npc/ten-nhan-vat.webp"/>
         <div style="font-size:9px;color:#94a3b8;margin-top:5px;">Chỉ dùng ảnh cùng website từ assets/npc. Không tải ảnh ngoài hoặc tự mở khóa NPC.</div>
         <div id="npc-r8-gallery-panel" style="margin-top:7px;padding:7px;background:#0c1b2c;border:1px solid #374151;border-radius:9px;">
-          <div style="color:#bae6fd;font-size:11px;font-weight:700;">Thư viện ảnh NPC • 72 hình mẫu</div>
-          <div style="font-size:9px;color:#94a3b8;margin:3px 0;">Lọc theo giới tính, thế giới và tính cách. Ba NPC hiện tại đều là nữ; hình vẫn là bản vector thử nghiệm.</div>
+          <div style="color:#bae6fd;font-size:11px;font-weight:700;">Thư viện nữ 60 · nam 12</div>
+          <div style="font-size:9px;color:#94a3b8;margin:3px 0;">Ưu tiên ảnh nữ, tìm theo tính cách và bối cảnh. Ba NPC thử nghiệm đều là nữ. Ảnh vector chỉ là bản mẫu.</div>
           <div id="npc-r9-filter-bar" style="display:flex;flex-wrap:wrap;gap:5px;margin:6px 0;">
             <select id="npc-r9-gender" aria-label="Giới tính hình mẫu" onchange="npcRenderPortraitChoices()" style="min-width:95px;flex:1;background:#172334;color:#f8fafc;border:1px solid #475569;border-radius:5px;font-size:10px;padding:5px;">
-              <option value="all">Tất cả giới</option><option value="female">Nữ</option><option value="male">Nam</option><option value="neutral">Trung tính</option>
+              <option value="all">Tất cả (72)</option><option value="female">Nữ (60)</option><option value="male">Nam (12)</option>
             </select>
             <select id="npc-r9-world" aria-label="Bối cảnh hình mẫu" onchange="npcRenderPortraitChoices()" style="min-width:90px;flex:1;background:#172334;color:#f8fafc;border:1px solid #475569;border-radius:5px;font-size:10px;padding:5px;">
               <option value="all">Mọi bối cảnh</option><option value="modern">Hiện đại</option><option value="historical">Cổ trang</option><option value="fantasy">Huyền huyễn</option>
@@ -2554,7 +2599,8 @@
       if(src)img.src=src;
       else img.removeAttribute('src');
       document.getElementById('npc-r8-selection-label').textContent=
-        id?'Hình mẫu: '+DuduNpcPortraitLibrary.preset(id).label:'Chưa chọn hình riêng';
+        id?'Hình mẫu: '+DuduNpcPortraitLibrary.preset(id).label+
+          (DuduNpcPortraitLibrary.preset(id).legacy?' (lưu từ bản cũ)':''):'Chưa chọn hình riêng';
       document.querySelectorAll('#npc-r8-gallery [data-portrait-id]').forEach(b=>{
         b.setAttribute('aria-pressed',b.dataset.portraitId===id?'true':'false');
         b.style.borderColor=b.dataset.portraitId===id?'#fbbf24':'#475569';
@@ -2580,9 +2626,8 @@
         btn.setAttribute('aria-label',btn.title);
         const selected=p.id===current;
         btn.setAttribute('aria-pressed',selected?'true':'false');
-        btn.style.cssText='background:#1e293b;border:2px solid '+
-          (selected?'#fbbf24':'#475569')+
-          ';border-radius:7px;padding:2px;color:#e2e8f0;font-size:8px;cursor:pointer;';
+        btn.className='npc-v10-portrait-tile';
+        btn.style.borderColor=selected?'#fbbf24':'#554775';
         const image=document.createElement('img');
         image.src=DuduNpcPortraitLibrary.sourceFor(p.id);
         image.alt='';image.loading='lazy';
@@ -2603,7 +2648,8 @@
       if(!IS_SANDBOX_MODE)return;
       const selected=DuduNpcPortraitLibrary.preset(npc?.portraitPresetId);
       const suggested=DuduNpcPersonaR6.previewNpc(npc)?.previewGender;
-      document.getElementById('npc-r9-gender').value=selected?.gender||
+      document.getElementById('npc-r9-gender').value=
+        DuduNpcPortraitLibrary.GENDERS.includes(selected?.gender)?selected.gender:
         (suggested==='female'?'female':'all');
       document.getElementById('npc-r9-world').value='all';
       document.getElementById('npc-r9-search').value='';
