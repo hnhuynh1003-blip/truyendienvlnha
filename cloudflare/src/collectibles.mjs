@@ -180,9 +180,16 @@ export class DuduCollectibles extends DurableObject {
   }
   grant(uid,storyId,itemId,now){
     return this.ctx.storage.transactionSync(()=>{
-      const item=this.sql.exec(`SELECT method,disabled FROM releases
-        WHERE story_id=? AND item_id=?`,storyId,itemId).toArray()[0];
-      if(!item||item.disabled||item.method!=='STORY_EVENT')
+      const item=this.sql.exec(`SELECT method,disabled,rank,name,chapter_id AS chapterId
+        FROM releases WHERE story_id=? AND item_id=?`,storyId,itemId).toArray()[0];
+      // Do not trust the browser's UI-only F/test eligibility checks.
+      // For staging this endpoint grants ONLY an F-rank STORY_EVENT test
+      // relic to the already JWT-verified admin UID (enforced at gateway).
+      // Introduce a separate reviewed workflow for real reader awards later.
+      if(!item||item.disabled||item.method!=='STORY_EVENT'||
+         item.chapterId!==null||item.rank!=='F'||
+         typeof item.name!=='string'||
+         !item.name.toLocaleLowerCase('vi').includes('kiểm thử'))
         return {ok:false,code:'not-available'};
       const existed=this.sql.exec('SELECT 1 AS yes FROM ownership WHERE uid=? AND story_id=? AND item_id=?',
         uid,storyId,itemId).toArray()[0];
