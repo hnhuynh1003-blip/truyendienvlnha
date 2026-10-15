@@ -75,5 +75,8 @@ test('planner has no network, no local writes and is not wired to production',()
  const source=fs.readFileSync(path.join(__dirname,'../js/player-avatar-sync-plan-v20.js'),'utf8');
  const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
  assert.doesNotMatch(source,/\bfetch\s*\(|localStorage\.|indexedDB\.|saveCurrentAccount\(/);
- assert.doesNotMatch(html,/src="js\/player-avatar-sync-plan-v20.js"/);
+ // V21 uses this planner for a read-only UI simulation, not network sync.
+ assert.match(html,/src="js\/player-avatar-sync-plan-v20.js"/);
+ const ui=fs.readFileSync(path.join(__dirname,'../js/player-avatar-conflict-ui-v21.js'),'utf8');
+ assert.doesNotMatch(ui,/\bfetch\s*\(|localStorage\.|indexedDB\.|saveCurrentAccount\(/);
 });
