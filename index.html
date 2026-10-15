@@ -2351,6 +2351,29 @@
       });
       const statChEl = document.getElementById('stat-chapters');
       if (statChEl) statChEl.textContent = totalCh;
+
+      // Personal numbers are tied to the logged-in Firebase UID, not the shared novels array.
+      const reading = novels.reduce((sum, novel) =>
+        sum + (localStorage.getItem(scopedLocalKey('bookmark', novel.id)) ? 1 : 0), 0);
+      const uniqueUnlocked = new Set();
+      for (const [storyId, state] of Object.entries(userProfile.storyStates || {})) {
+        if (state && typeof state === 'object') {
+          Object.keys(state.collectedCharacters || {}).forEach(id => uniqueUnlocked.add(storyId + '::' + id));
+        }
+      }
+      const personalStats = {
+        'stat-personal-reading': reading,
+        'stat-personal-npcs': uniqueUnlocked.size,
+        'stat-personal-items': Array.isArray(userProfile.inventory) ? userProfile.inventory.length : 0,
+        'stat-personal-level': userProfile.level,
+        'stat-personal-coins': userProfile.currency
+      };
+      Object.entries(personalStats).forEach(([id, count]) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = count;
+      });
+      const guestTip = document.getElementById('profile-guest-tip');
+      if (guestTip) guestTip.style.display = (!IS_SANDBOX_MODE && !DuduAuth.isReady()) ? 'block' : 'none';
     }
 
     function addExp(amount) {
