@@ -2,6 +2,8 @@ import {verifyFirebaseIdToken} from './auth.mjs';
 import {validRequest,quotaMessage} from './limits.mjs';
 export {DuduQuota} from './quota.mjs';
 export {DuduCollectibles} from './collectibles.mjs';
+export {DuduPlayerAppearance} from './player-appearance.mjs';
+import {normalizeAppearanceSave,displayState} from './player-appearance-rules.mjs';
 import {normalizedPrivateDraft,normalizedDraftApproval,parseScopedIds,cleanId} from './collectible-rules.mjs';
 
 const MODEL='gemini-3.5-flash-lite';
@@ -34,6 +36,41 @@ function json(data,status,origin,env){
 }
 function error(code,message,status,origin,env){
   return json({error:{code,message}},status,origin,env);
+}
+
+const PLAYER_APPEARANCE_PATHS=Object.freeze({
+  '/v1/player-avatar/mine':'GET',
+  '/v1/player-avatar/save':'POST'
+});
+async function handlePlayerAppearance(req,env,path,origin){
+  // Server feature gate defaults OFF. A future owner-approved deployment
+  // is required to activate synchronization, never browser-only switches.
+  if(env.PLAYER_AVATAR_SYNC_ENABLED!=='true')
+    return error('avatar-sync-disabled','Đồng bộ avatar chưa được mở.',503,origin,env);
+  const identity=await verifyFirebaseIdToken(req,env.PROJECT_ID);
+  if(!identity)return error('unauthenticated','Vui lòng đăng nhập bằng Firebase.',401,origin,env);
+  // Object selection uses the verified user sub, NOT UID from JSON/path.
+  if(!env.DUDU_PLAYER_APPEARANCE)
+    return error('avatar-sync-unavailable','Lưu trữ avatar chưa sẵn sàng.',503,origin,env);
+  const store=env.DUDU_PLAYER_APPEARANCE.getByName('player-avatar-'+identity.uid);
+  try{
+    if(path==='/v1/player-avatar/mine')
+      return json(displayState(await store.mine(),identity),200,origin,env);
+    if(!req.headers.get('Content-Type')?.toLowerCase().startsWith('application/json'))
+      return error('invalid-content','Yêu cầu phải là JSON.',415,origin,env);
+    const body=await limitedJson(req);
+    const approved=normalizeAppearanceSave(body,identity);
+    if(!approved)
+      return error('invalid-avatar','Không thể lưu avatar hoặc khung chưa sở hữu.',400,origin,env);
+    const result=await store.save(approved,Date.now());
+    if(!result.ok)
+      return json({error:{code:result.code,message:'Bản lưu đã thay đổi ở thiết bị khác.'},
+        revision:result.revision},409,origin,env);
+    return json(displayState(result,identity),200,origin,env);
+  }catch(err){
+    console.warn('Player appearance store unavailable:',err?.name||'unavailable');
+    return error('avatar-sync-unavailable','Đồng bộ avatar tạm gián đoạn.',503,origin,env);
+  }
 }
 
 const COLLECTIBLE_PATHS=Object.freeze({
@@ -209,12 +246,17 @@ export default {
     if(!allowed)return error('origin-blocked','Nguồn yêu cầu không được phép.',403,origin,env);
     if(req.method==='OPTIONS'){
       if(!origin||!allowOrigin(origin,env))return error('origin-blocked','Nguồn yêu cầu không được phép.',403,origin,env);
-      if(!['/v1/generate','/v1/status',...Object.keys(COLLECTIBLE_PATHS)].includes(path))
+      if(!['/v1/generate','/v1/status',...Object.keys(COLLECTIBLE_PATHS),...Object.keys(PLAYER_APPEARANCE_PATHS)].includes(path))
         return error('not-found','Không tìm thấy đường dẫn.',404,origin,env);
       return new Response(null,{status:204,headers:headers(origin,env)});
     }
     if(path==='/health'&&req.method==='GET'){
       return json({service:'dudu-ai',enabled:env.AI_ENABLED==='true',model:MODEL},200,origin,env);
+    }
+    if(path in PLAYER_APPEARANCE_PATHS){
+      if(req.method!==PLAYER_APPEARANCE_PATHS[path])
+        return error('method-not-allowed','Phương thức không được hỗ trợ.',405,origin,env);
+      return handlePlayerAppearance(req,env,path,origin);
     }
     if(path in COLLECTIBLE_PATHS){
       if(req.method!==COLLECTIBLE_PATHS[path])
