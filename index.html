@@ -882,6 +882,10 @@
         </div>
 
         <div id="chat-messages-container" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 8px; background: rgba(10, 14, 20, 0.6); border-radius: 8px; border: 1px solid #1f2937; margin-bottom: 6px;"></div>
+        <div id="chat-connection-status" role="status" aria-live="polite" style="display:none; font-size:10px; color:var(--gold); padding:3px 5px; line-height:1.35;">
+          <span id="chat-connection-message"></span>
+          <button id="chat-retry-btn" class="btn" style="display:none; font-size:10px; padding:2px 6px; margin-left:4px;" onclick="retryLastNpcReply()">Thử lại</button>
+        </div>
 
         <div style="display: flex; gap: 4px;">
           <input type="text" id="chat-user-input" autocomplete="off" placeholder="Gửi tin nhắn..." style="flex: 1; background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 6px 8px; color: #fff; font-size: 11px; outline: none;" onkeydown="if(event.key==='Enter') sendChatMessage()">
@@ -1669,6 +1673,7 @@
     }
 
     function switchChatCharacter() {
+      hideNpcConnectionStatus();
       const charId = document.getElementById('chat-character-selector').value;
       const chars = getCombinedCharactersList();
       const char = chars.find(c => c.id === charId);
@@ -1720,75 +1725,132 @@
       const charId = document.getElementById('chat-character-selector').value;
       if (charId && confirm("Xóa toàn bộ lịch sử trò chuyện với nhân vật này?")) {
         chatHistories[chatKey(charId)] = [];
+        pendingNpcRetry = null;
+        hideNpcConnectionStatus();
         saveChatHistories();
         renderChatMessages(charId);
       }
     }
 
     const chatRequestsInFlight = new Set();
+    let pendingNpcRetry = null;
+
+    function hideNpcConnectionStatus() {
+      const box = document.getElementById('chat-connection-status');
+      if (box) box.style.display = 'none';
+    }
+    function showNpcConnectionStatus(message,retryable) {
+      const box = document.getElementById('chat-connection-status');
+      const label = document.getElementById('chat-connection-message');
+      const retry = document.getElementById('chat-retry-btn');
+      if (label) label.textContent = message;
+      if (retry) retry.style.display = retryable ? 'inline-block' : 'none';
+      if (box) box.style.display = 'block';
+    }
+
+    async function deliverNpcReply(char,storyId,requestUser,requestChatKey) {
+      const inFlightKey = requestUser + '::' + requestChatKey;
+      if (chatRequestsInFlight.has(inFlightKey)) return;
+      chatRequestsInFlight.add(inFlightKey);
+      hideNpcConnectionStatus();
+
+      const container = document.getElementById('chat-messages-container');
+      const loadingDiv = document.createElement('div');
+      loadingDiv.id = 'chat-loading-bubble';
+      loadingDiv.style.cssText = 'align-self:flex-start;color:var(--text-dim);font-size:10px;font-style:italic;';
+      loadingDiv.textContent = char.name + ' đang soạn tin nhắn...';
+      if (container && document.getElementById('chat-character-selector').value === char.id) {
+        container.appendChild(loadingDiv);
+        container.scrollTop = container.scrollHeight;
+      }
+
+      let res;
+      try {
+        res = await callGeminiAIChat(char, chatHistories[requestChatKey] || []);
+      } catch (error) {
+        console.warn('NPC connection failed:', error?.code || 'unknown');
+        res = {error:'Không thể kết nối lúc này.'};
+      } finally {
+        chatRequestsInFlight.delete(inFlightKey);
+      }
+      // Never render one account/story/NPC response inside another conversation.
+      if (currentUsername !== requestUser || activeChatNovelId !== storyId) return;
+      const sameNpc = document.getElementById('chat-character-selector').value === char.id;
+      if (sameNpc) {
+        const loader = document.getElementById('chat-loading-bubble');
+        if (loader) loader.remove();
+      }
+
+      if (res?.error) {
+        console.warn('NPC reply unavailable:', res.error);
+        pendingNpcRetry = {user:requestUser,storyId,charId:char.id,key:requestChatKey};
+        if (sameNpc) {
+          showNpcConnectionStatus(
+            'Tín hiệu tạm gián đoạn. Tin nhắn vẫn được giữ lại trên thiết bị.',
+            DuduAI.isConfigured()
+          );
+        }
+        return;
+      }
+      if (res?.text) {
+        chatHistories[requestChatKey].push({role:'model',text:res.text});
+        saveChatHistories();
+        if (pendingNpcRetry?.key === requestChatKey) pendingNpcRetry = null;
+        if (sameNpc) {
+          hideNpcConnectionStatus();
+          renderChatMessages(char.id);
+        }
+      }
+    }
+
+    async function retryLastNpcReply() {
+      const retry=pendingNpcRetry;
+      if (!retry || currentUsername !== retry.user || activeChatNovelId !== retry.storyId) return;
+      const active=document.getElementById('chat-character-selector').value;
+      if (active !== retry.charId || chatRequestsInFlight.has(retry.user+'::'+retry.key)) return;
+      const messages=chatHistories[retry.key] || [];
+      if (messages[messages.length-1]?.role !== 'user') {
+        pendingNpcRetry=null;
+        hideNpcConnectionStatus();
+        return;
+      }
+      const char=getCombinedCharactersList().find(c=>c.id===retry.charId);
+      if (!char || !isNpcUnlocked(retry.storyId,char.id)) return;
+      await deliverNpcReply(char,retry.storyId,retry.user,retry.key);
+    }
+
     async function sendChatMessage() {
       const input = document.getElementById('chat-user-input');
       const text = input.value.trim();
       const charId = document.getElementById('chat-character-selector').value;
       if (!text || !charId) return;
 
-      const chars = getCombinedCharactersList();
-      const char = chars.find(c => c.id === charId);
+      const char = getCombinedCharactersList().find(c => c.id === charId);
       const storyId = activeChatNovelId || (novels[selectedNovelIndex] || {}).id;
-      if (!char || !isNpcUnlocked(storyId, charId)) return;
+      if (!char || !isNpcUnlocked(storyId,charId)) return;
       const requestUser = currentUsername;
-      const requestChatKey = chatKey(charId, storyId);
-      const inFlightKey = requestUser + '::' + requestChatKey;
-      if (chatRequestsInFlight.has(inFlightKey)) return;
-      if (!chatHistories[requestChatKey]) chatHistories[requestChatKey] = [];
-      const previousMessages = chatHistories[requestChatKey];
-      const scripted = DuduNpcLite.script(text, char, previousMessages);
-      chatHistories[requestChatKey].push({ role: 'user', text });
-      input.value = "";
+      const requestChatKey = chatKey(charId,storyId);
+      if (chatRequestsInFlight.has(requestUser+'::'+requestChatKey)) return;
+
+      if (!chatHistories[requestChatKey]) chatHistories[requestChatKey]=[];
+      const previousMessages=chatHistories[requestChatKey];
+      const scripted=DuduNpcLite.script(text,char,previousMessages);
+
+      chatHistories[requestChatKey].push({role:'user',text});
+      input.value='';
+      pendingNpcRetry=null;
+      hideNpcConnectionStatus();
+
       if (scripted) {
-        // Genuinely free (zero Gemini calls). No XP/affinity/item reward is granted.
-        chatHistories[requestChatKey].push({ role: 'model', text: scripted.text, source: 'script' });
+        // No API requests, no quests, no game economy changes.
+        chatHistories[requestChatKey].push({role:'model',text:scripted.text,source:'script'});
         saveChatHistories();
         renderChatMessages(charId);
         return;
       }
       renderChatMessages(charId);
       saveChatHistories();
-
-      const container = document.getElementById('chat-messages-container');
-      const loadingDiv = document.createElement('div');
-      loadingDiv.id = 'chat-loading-bubble';
-      loadingDiv.style.cssText = "align-self: flex-start; color: var(--text-dim); font-size: 10px; font-style: italic;";
-      loadingDiv.textContent = `[${char.name} đang suy nghĩ phản hồi...]`;
-      container.appendChild(loadingDiv);
-      container.scrollTop = container.scrollHeight;
-
-      chatRequestsInFlight.add(inFlightKey);
-      let res;
-      try {
-        res = await callGeminiAIChat(char, chatHistories[requestChatKey]);
-      } catch (error) {
-        console.warn('NPC AI chat failed:', error?.code || 'unknown');
-        res = {error:'Không kết nối được AI lúc này. Hãy thử lại sau.'};
-      } finally {
-        chatRequestsInFlight.delete(inFlightKey);
-      }
-      if (currentUsername !== requestUser || activeChatNovelId !== storyId) return;
-      const el = document.getElementById('chat-loading-bubble');
-      if (el) el.remove();
-
-      if (res.error) {
-        chatHistories[requestChatKey].push({ role: 'system', text: `⚠️ [LỖI HỆ THỐNG]: ${res.error}` });
-        saveChatHistories();
-        if (document.getElementById('chat-character-selector').value === charId) renderChatMessages(charId);
-        return;
-      }
-
-      if (res.text) {
-        chatHistories[requestChatKey].push({ role: 'model', text: res.text });
-        saveChatHistories();
-        if (document.getElementById('chat-character-selector').value === charId) renderChatMessages(charId);
-      }
+      await deliverNpcReply(char,storyId,requestUser,requestChatKey);
     }
 
     // ==========================================
