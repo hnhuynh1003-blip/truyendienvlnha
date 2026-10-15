@@ -1545,6 +1545,8 @@ async function main() {
     await page.locator('#auth-username').fill('uid_a');
     await page.getByRole('button',{name:'Đổi tài khoản thử'}).click();
     const stagingInit=await page.evaluate(()=>{
+      // Re-establish the observable mock on page reload; no production SDK writes.
+      window.__firestoreWrites=window.__firestoreWrites||[];
       window.__v22State={revision:0,avatar:{kind:'anime',
         presetId:'anime-moon-violet',frameId:'violet'},calls:[],auth:'uid_a'};
       window.firebase.auth=()=>({currentUser:{
