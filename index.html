@@ -1059,6 +1059,20 @@
         <div class="word-counter" id="ch-word-preview">0 từ</div>
       </div>
       
+      <div class="modal-field">
+        <label for="chapter-modal-realm-tag">🌌 Vị diện cho bảng rơi của chương (tùy chọn):</label>
+        <select id="chapter-modal-realm-tag">
+          <option value="">Chỉ vật phẩm phổ thông (không gán vị diện)</option>
+          <option value="URBAN">Đô thị hiện đại</option>
+          <option value="APOCALYPSE">Tận thế sinh tồn</option>
+          <option value="CULTIVATION">Tu tiên</option>
+          <option value="FANTASY">Huyền huyễn</option>
+          <option value="SCIFI">Khoa học viễn tưởng</option>
+          <option value="HORROR">Kinh dị / Phó bản</option>
+        </select>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:3px;">Chỉ ảnh hưởng vật phẩm phổ thông/vị diện; không phát kỷ vật truyện, NPC hoặc DUDU.</div>
+      </div>
+
       <!-- KHU VỰC GÁN NPC VÀO CHƯƠNG NÀY CHO ADMIN -->
       <div class="modal-field">
         <label style="color:var(--neon); font-weight:bold;">⚡ Nhân vật xuất hiện trong chương này (để độc giả liên kết):</label>
@@ -3323,6 +3337,7 @@
       }
 
       document.getElementById('chapter-modal-author-note').value = '';
+      document.getElementById('chapter-modal-realm-tag').value = '';
       updateWordCountPreview();
 
       const currentNovel = novels[selectedNovelIndex];
@@ -3341,6 +3356,7 @@
       document.getElementById('chapter-modal-title').value = ch.title;
       document.getElementById('chapter-modal-content').value = ch.content;
       document.getElementById('chapter-modal-author-note').value = ch.authorNote || '';
+      document.getElementById('chapter-modal-realm-tag').value = DuduItemCatalog.REALM_TAGS.includes(ch.realmTag) ? ch.realmTag : '';
       updateWordCountPreview();
 
       document.getElementById('chapter-npc-filter').value = '';
@@ -3360,6 +3376,8 @@
       const title = document.getElementById('chapter-modal-title').value.trim();
       const content = document.getElementById('chapter-modal-content').value.trim();
       const authorNote = document.getElementById('chapter-modal-author-note').value.trim();
+      const realmTagInput = document.getElementById('chapter-modal-realm-tag').value;
+      const realmTag = DuduItemCatalog.REALM_TAGS.includes(realmTagInput) ? realmTagInput : null;
 
       if (!title || !content) { alert("Vui lòng điền đủ tên chương và nội dung!"); return; }
 
@@ -3376,6 +3394,7 @@
         ch.title = title;
         ch.content = content;
         ch.authorNote = authorNote;
+        ch.realmTag = realmTag;
         ch.wordCount = wordCount;
         ch.updatedAt = nowStr;
         ch.characterIds = selectedNpcIds;
@@ -3396,6 +3415,7 @@
           updatedAt: nowStr,
           wordCount,
           authorNote,
+          realmTag,
           characterIds: selectedNpcIds
         });
         addExp(35);
