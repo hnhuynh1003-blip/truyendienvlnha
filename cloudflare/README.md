@@ -1,6 +1,6 @@
 # DUDU Studio AI Gateway — Cloudflare Workers Free
 
-**Code status:** staged/test-only. Worker defaults to **AI_DISABLED**, with Gemini key missing; verified public Worker URL is now configured in the staging frontend. Nothing is deployed to your Cloudflare account by GitHub Actions. Firebase remains on Spark, site remains on GitHub Pages. Do not merge into live `fixapp` yet.
+**Code status (15/10/2026):** staged/test-only on feature branch. The operator already deployed `dudu-ai-staging.dudu-studio-ai.workers.dev` and stored `GEMINI_API_KEY` as a Cloudflare Secret. **AI remains OFF**; `COLLECTIBLES_ENABLED` is also **OFF** in the new source. Current deployed Worker is not automatically updated by GitHub commits. Gemini 3.5 Flash Lite in GitHub does not automatically replace the deployed model. Firebase remains Spark, GitHub Pages production is unchanged. **Do not redeploy or merge into `fixapp` until the owner approves a controlled staging test.**
 
 ## Security design
 
@@ -13,7 +13,7 @@
 - A "use" counts when request is admitted, even if Gemini fails. Quotas apply to this Worker; provider limits and Cloudflare daily limits are separate. The Worker does **not** validate NPC unlock state server-side yet; do not assume gameplay/economy are secure.
 - This beta has JWT + quotas + origin checks; Cloudflare Turnstile and abuse reporting may be added later. Free Cloudflare Workers and free Gemini quotas are independent.
 
-## Bước 1 — Thử triển khai Worker nhưng giữ AI TẮT
+## Lịch sử Bước 1 — Worker đã triển khai, AI vẫn TẮT
 
 1. From GitHub, download the ZIP of branch `feat/identity-npc-editor-v2` or `git clone` it. Do **not** use the older ZIP previously extracted.
 2. Extract and open **Command Prompt** in the `cloudflare` directory (the one containing `wrangler.toml`).
@@ -28,7 +28,7 @@
    ```
 4. On first login, a browser opens to grant Wrangler access to YOUR Cloudflare account. Confirm the displayed Cloudflare account; do not share any access token with anyone.
 5. The first `wrangler deploy` creates the **dudu-ai-staging** Worker and one SQLite-backed Durable Object. The Worker is a public endpoint but cannot call Gemini while disabled.
-6. Wrangler prints an HTTPS `workers.dev` URL. Check `https://<your-workers-dev-url>/health` in browser. Expected JSON: `{"service":"dudu-ai","enabled":false,"model":"gemini-2.5-flash-lite"}`.
+6. Wrangler prints an HTTPS `workers.dev` URL. Check `https://<your-workers-dev-url>/health` in browser. The live Worker may report the **older deployed model** until the operator redeploys new code. `enabled:false` must remain true while testing. Do not use this as a signal to turn AI on.
 7. Only share the **public Worker URL** (no account email, no token, no API key) back in chat so the frontend may be connected in the NEXT step.
 
 **The above is the complete safe first deployment. STOP here.** It neither asks for Gemini API key nor enables paid calls. Do not edit `AI_ENABLED` yourself yet.
@@ -50,3 +50,11 @@
 - GitHub Pages source contains only public Firebase web configuration, not the secret Gemini API key.
 - If Cloudflare displays an upgrade/billing prompt, **do not add card/upgrade** in this step. Report the exact text for review.
 - The Worker stores quota accounting in Durable Object; it does not store private chat content. The Gemini prompt is forwarded to Google when AI is enabled.
+
+
+## Đợt 4A — Sổ sở hữu kỷ vật (chưa kích hoạt)
+
+- Xem `docs/COLLECTIBLES-SERVER-PHASE4A.md` về quyền sở hữu server-side, thư viện public và những phần **chưa an toàn để bật thưởng thật**.
+- `COLLECTIBLES_ENABLED="false"` là công tắc **độc lập** với `AI_ENABLED="false"`; cả hai đều tắt.
+- Worker source chứa DO mới `DUDU_COLLECTIBLES` và migration SQL `v2-collectibles-sqlite`. Workflow GitHub chỉ `wrangler deploy --dry-run`, không sửa tài khoản Cloudflare.
+- Chưa có xác thực đọc hoàn thành và chưa có bảo mật dữ liệu vật phẩm spoiler; **không bật công tắc nhận kỷ vật**.
