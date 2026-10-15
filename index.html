@@ -1186,9 +1186,49 @@
     let isZen = false;
 
     const COOLDOWN_DURATION = 10 * 60 * 1000;
-    let lastLootTimestamp = parseInt(localStorage.getItem('my_last_loot_ts')) || 0;
+    let lastLootTimestamp = 0;
     let cooldownTimerInterval = null;
-    let chatHistories = JSON.parse(localStorage.getItem('my_chat_roleplay_histories')) || {};
+    let chatHistories = {};
+    let activeChatNovelId = null;
+
+    // Browser-local account/story separation (not a security boundary).
+    function scopedLocalKey(kind, storyId = 'global') {
+      return 'dudu-v2:' + encodeURIComponent(currentUsername || 'guest')
+        + ':' + encodeURIComponent(storyId) + ':' + kind;
+    }
+    function chatKey(charId, storyId = activeChatNovelId || (novels[selectedNovelIndex] || {}).id) {
+      return storyId + '::' + charId;
+    }
+    function loadScopedInteractionState() {
+      try { chatHistories = JSON.parse(localStorage.getItem(scopedLocalKey('chats')) || '{}'); }
+      catch (_) { chatHistories = {}; }
+      lastLootTimestamp = parseInt(localStorage.getItem(scopedLocalKey('loot-cooldown')), 10) || 0;
+      activeChatNovelId = null;
+    }
+    function getStoryProgress(storyId) {
+      if (!userProfile.storyStates) userProfile.storyStates = {};
+      if (!userProfile.storyStates[storyId]) userProfile.storyStates[storyId] = { collectedCharacters: {} };
+      const progress = userProfile.storyStates[storyId];
+      if (!progress.collectedCharacters) progress.collectedCharacters = {};
+      // Copy legacy unlocks only when the story can be identified confidently.
+      const novel = novels.find(n => n.id === storyId);
+      if (novel && userProfile.collectedCharacters) {
+        (novel.characters || []).forEach(c => {
+          const old = userProfile.collectedCharacters[c.id];
+          const unambiguous = old && (
+            old.novelTitle === novel.title ||
+            (!old.novelTitle && novels.filter(n => (n.characters || []).some(x => x.id === c.id)).length === 1)
+          );
+          if (!progress.collectedCharacters[c.id] && unambiguous) {
+            progress.collectedCharacters[c.id] = { ...old };
+          }
+        });
+      }
+      return progress;
+    }
+    function isNpcUnlocked(storyId, charId) {
+      return Boolean(getStoryProgress(storyId).collectedCharacters[charId]);
+    }
 
     // DANH SÁCH MODEL GEMINI CẢI TIẾN TỰ ĐỘNG CHUYỂN ĐỔI KHI QUÁ TẢI (503 / 429)
     const AI_FAILOVER_MODELS = [
@@ -1283,7 +1323,8 @@
         inventory: Array.isArray(userProfile.inventory) ? userProfile.inventory : [],
         quests: Array.isArray(userProfile.quests) ? userProfile.quests : DEFAULT_SYSTEM_QUESTS,
         lootedChapters: userProfile.lootedChapters || {},
-        collectedCharacters: userProfile.collectedCharacters || {}
+        collectedCharacters: userProfile.collectedCharacters || {},
+        storyStates: userProfile.storyStates || {}
       };
 
       try {
@@ -1343,6 +1384,8 @@
         }
 
         userProfile.role = "reader";
+        if (!userProfile.storyStates) userProfile.storyStates = {};
+        loadScopedInteractionState();
         if (!userProfile.title) userProfile.title = "Thực Thể Ký Tự";
 
         const accBtn = document.getElementById('account-status-btn');
@@ -1373,6 +1416,8 @@
         }
         if (!userProfile.lootedChapters) userProfile.lootedChapters = {};
         if (!userProfile.collectedCharacters) userProfile.collectedCharacters = {};
+        if (!userProfile.storyStates) userProfile.storyStates = {};
+        loadScopedInteractionState();
         userProfile.role = "reader";
 
         const accBtn = document.getElementById('account-status-btn');
@@ -1380,7 +1425,9 @@
         const profId = document.getElementById('profile-account-id');
         if (profId) profId.textContent = `ID: ${currentUsername}`;
         
-        db.collection("user_profiles").doc(currentUsername).get().then(doc => {
+        const requestedUsername = currentUsername;
+        db.collection("user_profiles").doc(requestedUsername).get().then(doc => {
+          if (currentUsername !== requestedUsername) return;
           if (doc.exists) {
             const cloudData = doc.data();
             userProfile.level = Math.max(userProfile.level, cloudData.level || 1);
@@ -1390,6 +1437,15 @@
             if (cloudData.quests) userProfile.quests = cloudData.quests;
             if (cloudData.lootedChapters) userProfile.lootedChapters = { ...userProfile.lootedChapters, ...cloudData.lootedChapters };
             if (cloudData.collectedCharacters) userProfile.collectedCharacters = { ...userProfile.collectedCharacters, ...cloudData.collectedCharacters };
+            if (cloudData.storyStates) {
+              Object.entries(cloudData.storyStates).forEach(([id, cloud]) => {
+                const local = getStoryProgress(id);
+                userProfile.storyStates[id] = {
+                  ...local, ...cloud,
+                  collectedCharacters: { ...local.collectedCharacters, ...(cloud.collectedCharacters || {}) }
+                };
+              });
+            }
             saveCurrentAccount();
           }
         }).catch(err => console.log("Offline mode:", err));
@@ -1465,10 +1521,9 @@
       const loader = document.getElementById('ai-status-loader');
       if (loader) loader.style.display = 'inline';
 
-      const novel = novels[selectedNovelIndex] || novels[0];
-      const charAffinity = (userProfile.collectedCharacters && userProfile.collectedCharacters[char.id]) 
-        ? userProfile.collectedCharacters[char.id].affinity || 10 
-        : 10;
+      const novel = novels.find(n => n.id === activeChatNovelId) || novels[selectedNovelIndex] || novels[0];
+      const unlocked = getStoryProgress(novel.id).collectedCharacters;
+      const charAffinity = unlocked[char.id] ? unlocked[char.id].affinity || 10 : 10;
 
       // PROMPT BẢO ĐẢM TÍNH CÁCH NHẬP VAI KHÔNG PHÁ VỠ VỎ BỌC
       const systemInstruction = `Bạn đang nhập vai hoàn toàn vào nhân vật "${char.name}" trong tiểu thuyết "${novel.title}".
@@ -1602,21 +1657,13 @@ Quy tắc phản hồi:
     }
 
     function saveChatHistories() {
-      localStorage.setItem('my_chat_roleplay_histories', JSON.stringify(chatHistories));
+      localStorage.setItem(scopedLocalKey('chats'), JSON.stringify(chatHistories));
     }
 
     function getCombinedCharactersList() {
-      const novel = novels[selectedNovelIndex] || novels[0];
-      const list = [...(novel.characters || [])];
-      
-      if (userProfile.collectedCharacters) {
-        Object.values(userProfile.collectedCharacters).forEach(colChar => {
-          if (!list.some(c => c.id === colChar.id)) {
-            list.push(colChar);
-          }
-        });
-      }
-      return list;
+      const novel = novels.find(n => n.id === activeChatNovelId) || novels[selectedNovelIndex] || novels[0];
+      if (!novel) return [];
+      return (novel.characters || []).filter(c => isNpcUnlocked(novel.id, c.id));
     }
 
     function renderChatDropdown() {
@@ -1642,10 +1689,11 @@ Quy tắc phản hồi:
       const charId = document.getElementById('chat-character-selector').value;
       const chars = getCombinedCharactersList();
       const char = chars.find(c => c.id === charId);
-      
+      const storyId = activeChatNovelId || (novels[selectedNovelIndex] || {}).id;
+      const unlocked = getStoryProgress(storyId).collectedCharacters;
       const affinityEl = document.getElementById('chat-char-affinity');
-      if (char && userProfile.collectedCharacters && userProfile.collectedCharacters[char.id]) {
-        affinityEl.textContent = `❤️ ${userProfile.collectedCharacters[char.id].affinity || 10}%`;
+      if (char && unlocked[char.id]) {
+        affinityEl.textContent = `❤️ ${unlocked[char.id].affinity || 10}%`;
       } else {
         affinityEl.textContent = `❤️ 10%`;
       }
@@ -1656,7 +1704,7 @@ Quy tắc phản hồi:
       const container = document.getElementById('chat-messages-container');
       if (!container) return;
       container.innerHTML = "";
-      const history = chatHistories[charId] || [];
+      const history = chatHistories[chatKey(charId)] || [];
       const chars = getCombinedCharactersList();
       const char = chars.find(c => c.id === charId);
 
@@ -1688,7 +1736,7 @@ Quy tắc phản hồi:
     function clearCurrentChat() {
       const charId = document.getElementById('chat-character-selector').value;
       if (charId && confirm("Xóa toàn bộ lịch sử trò chuyện với nhân vật này?")) {
-        chatHistories[charId] = [];
+        chatHistories[chatKey(charId)] = [];
         saveChatHistories();
         renderChatMessages(charId);
       }
@@ -1702,10 +1750,10 @@ Quy tắc phản hồi:
 
       const chars = getCombinedCharactersList();
       const char = chars.find(c => c.id === charId);
-      if (!char) return;
-
-      if (!chatHistories[charId]) chatHistories[charId] = [];
-      chatHistories[charId].push({ role: 'user', text });
+      const storyId = activeChatNovelId || (novels[selectedNovelIndex] || {}).id;
+      if (!char || !isNpcUnlocked(storyId, charId)) return;
+      if (!chatHistories[chatKey(charId)]) chatHistories[chatKey(charId)] = [];
+      chatHistories[chatKey(charId)].push({ role: 'user', text });
       input.value = "";
       renderChatMessages(charId);
       saveChatHistories();
@@ -1718,19 +1766,19 @@ Quy tắc phản hồi:
       container.appendChild(loadingDiv);
       container.scrollTop = container.scrollHeight;
 
-      const res = await callGeminiAIChat(char, chatHistories[charId]);
+      const res = await callGeminiAIChat(char, chatHistories[chatKey(charId)]);
       const el = document.getElementById('chat-loading-bubble');
       if (el) el.remove();
 
       if (res.error) {
-        chatHistories[charId].push({ role: 'system', text: `⚠️ [LỖI HỆ THỐNG]: ${res.error}` });
+        chatHistories[chatKey(charId)].push({ role: 'system', text: `⚠️ [LỖI HỆ THỐNG]: ${res.error}` });
         saveChatHistories();
         renderChatMessages(charId);
         return;
       }
 
       if (res.text) {
-        chatHistories[charId].push({ role: 'model', text: res.text });
+        chatHistories[chatKey(charId)].push({ role: 'model', text: res.text });
         saveChatHistories();
         renderChatMessages(charId);
       }
@@ -1782,9 +1830,8 @@ Quy tắc phản hồi:
         div.style.alignItems = 'stretch';
         div.style.gap = '6px';
 
-        const affinity = (userProfile.collectedCharacters && userProfile.collectedCharacters[c.id]) 
-          ? userProfile.collectedCharacters[c.id].affinity || 10 
-          : 10;
+        const npcProgress = getStoryProgress(novel.id).collectedCharacters[c.id];
+        const affinity = npcProgress ? npcProgress.affinity || 10 : 0;
 
         // THẺ GỌN GÀNG: KHÔNG IN ĐOẠN PROMPT TÍNH CÁCH DÀI
         div.innerHTML = `
@@ -1801,7 +1848,7 @@ Quy tắc phản hồi:
 
           <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:2px;">
             <button class="btn btn-gold" style="padding: 2px 7px; font-size: 9px;" onclick="openGiftModalForChar('${c.id}')">🎁 Tặng Quà</button>
-            <button class="btn btn-primary" style="padding: 2px 7px; font-size: 9px;" onclick="connectSoulAndChat('${c.id}')">⚡ Kết Nối & Chat</button>
+            <button class="btn btn-primary" style="padding: 2px 7px; font-size: 9px;" onclick="connectSoulAndChat('${c.id}', '${novel.id}')">⚡ Kết Nối & Chat</button>
             <button class="btn" style="padding: 2px 6px; font-size: 9px;" onclick="openEditCharacterModal(${idx})">Sửa</button>
             <button class="btn btn-danger" style="padding: 2px 6px; font-size: 9px;" onclick="deleteCharacterFromCodex(${idx})">Xóa</button>
           </div>
@@ -1833,25 +1880,14 @@ Quy tắc phản hồi:
       showSystemAlert("ĐÃ NẠP NHÂN VẬT MẪU", `Đã thêm 3 cố nhân vào [${novel.title}]!`);
     }
 
-    function connectSoulAndChat(charId) {
-      const chars = getCombinedCharactersList();
-      const char = chars.find(c => c.id === charId);
-      if (!char) return;
-
-      if (!userProfile.collectedCharacters) userProfile.collectedCharacters = {};
-      if (!userProfile.collectedCharacters[char.id]) {
-        userProfile.collectedCharacters[char.id] = {
-          id: char.id,
-          name: char.name,
-          role: char.role,
-          note: char.note,
-          novelTitle: (getSelectedCodexNovel() || {}).title || 'Vô hạn lưu',
-          affinity: 15
-        };
-        saveCurrentAccount();
-        showSystemAlert("LIÊN KẾT THÀNH CÔNG", `Đã mở kết nối linh hồn với [${char.name}]!`);
+    function connectSoulAndChat(charId, storyId = (getSelectedCodexNovel() || {}).id) {
+      const novel = novels.find(n => n.id === storyId);
+      const char = novel && (novel.characters || []).find(c => c.id === charId);
+      if (!char || !isNpcUnlocked(storyId, charId)) {
+        showSystemAlert("CHƯA MỞ KHÓA", "Hãy hoàn thành bước liên kết NPC trước khi chat.");
+        return;
       }
-
+      activeChatNovelId = storyId;
       openPhoneApp('chat');
       const selector = document.getElementById('chat-character-selector');
       if (selector) {
@@ -1863,8 +1899,7 @@ Quy tắc phản hồi:
     function openGiftModalForChar(charId) {
       const chars = getCombinedCharactersList();
       const char = chars.find(c => c.id === charId);
-      if (!char) return;
-
+      if (!char) { showSystemAlert("CHƯA LIÊN KẾT", "Cần mở khóa NPC trước khi tặng quà."); return; }
       document.getElementById('gift-modal-heading').textContent = `🎁 TẶNG QUÀ: ${char.name}`;
       document.getElementById('gift-modal-desc').textContent = `Tặng vật phẩm để tăng mức độ gắn kết linh hồn với [${char.name}].`;
 
@@ -1908,24 +1943,15 @@ Quy tắc phản hồi:
       const char = chars.find(c => c.id === charId);
       if (!char) return;
 
+      const giftStory = activeChatNovelId || (novels[selectedNovelIndex] || {}).id;
+      if (!isNpcUnlocked(giftStory, char.id)) return;
       userProfile.inventory.splice(itemIdx, 1);
 
       const rankBonus = { "F": 5, "E": 10, "D": 15, "C": 25, "B": 35, "A": 50, "S": 75, "SS": 100, "SSS": 100 };
       const gain = rankBonus[item.rank] || 10;
 
-      if (!userProfile.collectedCharacters) userProfile.collectedCharacters = {};
-      if (!userProfile.collectedCharacters[char.id]) {
-        userProfile.collectedCharacters[char.id] = {
-          id: char.id,
-          name: char.name,
-          role: char.role,
-          note: char.note,
-          novelTitle: (getSelectedCodexNovel() || {}).title || 'Vô hạn lưu',
-          affinity: 10
-        };
-      }
-
-      userProfile.collectedCharacters[char.id].affinity = Math.min(100, (userProfile.collectedCharacters[char.id].affinity || 10) + gain);
+      const npcProgress = getStoryProgress(giftStory).collectedCharacters[char.id];
+      npcProgress.affinity = Math.min(100, (npcProgress.affinity || 10) + gain);
       saveCurrentAccount();
       closeModals();
 
@@ -1934,14 +1960,14 @@ Quy tắc phản hồi:
 
       if (document.getElementById('phone-app-chat').style.display === 'flex') {
         switchChatCharacter();
-        if (!chatHistories[char.id]) chatHistories[char.id] = [];
-        chatHistories[char.id].push({ role: 'user', text: `[Tôi vừa gửi tặng bạn món quà: ${item.name} (${item.rank})]` });
+        if (!chatHistories[chatKey(char.id)]) chatHistories[chatKey(char.id)] = [];
+        chatHistories[chatKey(char.id)].push({ role: 'user', text: `[Tôi vừa gửi tặng bạn món quà: ${item.name} (${item.rank})]` });
         renderChatMessages(char.id);
 
         const giftPrompt = `Người chơi vừa tặng bạn món quà: "${item.name}" (Phẩm cấp: ${item.rank}, Mô tả: ${item.desc}). Hãy phản hồi ngắn gọn lại theo đúng tính cách của bạn.`;
-        const res = await callGeminiAIChat(char, chatHistories[char.id]);
+        const res = await callGeminiAIChat(char, chatHistories[chatKey(char.id)]);
         if (res.text) {
-          chatHistories[char.id].push({ role: 'model', text: res.text });
+          chatHistories[chatKey(char.id)].push({ role: 'model', text: res.text });
           saveChatHistories();
           renderChatMessages(char.id);
         }
@@ -2045,6 +2071,7 @@ Quy tắc phản hồi:
         renderCodexDropdown();
         renderCodexList();
       } else if (appName === 'chat') {
+        if (!activeChatNovelId) activeChatNovelId = (novels[selectedNovelIndex] || {}).id;
         renderChatDropdown();
       } else if (appName === 'inventory') {
         renderInventory();
@@ -2466,7 +2493,7 @@ Quy tắc phản hồi:
 
       if (!isFreeFromChapter) {
         lastLootTimestamp = now;
-        localStorage.setItem('my_last_loot_ts', now.toString());
+        localStorage.setItem(scopedLocalKey('loot-cooldown'), now.toString());
         startCooldownTicker();
       }
 
@@ -2584,7 +2611,7 @@ Quy tắc phản hồi:
         return;
       }
 
-      const bookmark = JSON.parse(localStorage.getItem(`bookmark_${novel.id}`));
+      const bookmark = JSON.parse(localStorage.getItem(scopedLocalKey('bookmark', novel.id)));
       
       if (bookmark && typeof bookmark.chIdx === 'number' && novel.chapters[bookmark.chIdx]) {
         readChapter(bookmark.chIdx, bookmark.scrollTop || 0);
@@ -2654,7 +2681,7 @@ Quy tắc phản hồi:
         const coverBg = novel.coverImage ? `background-image: url('${novel.coverImage}');` : '';
         const tagBadgesHtml = (novel.genre || "Tiểu thuyết").split(/[,/]+/).slice(0, 3).map(t => `<span class="tag">${escapeHtml(t.trim())}</span>`).join(" ");
 
-        const bookmark = JSON.parse(localStorage.getItem(`bookmark_${novel.id}`));
+        const bookmark = JSON.parse(localStorage.getItem(scopedLocalKey('bookmark', novel.id)));
         let readButtonText = "▶ Đọc ngay";
         let readButtonClass = "btn btn-primary";
 
@@ -2699,6 +2726,7 @@ Quy tắc phản hồi:
 
     function openCover(idx) {
       selectedNovelIndex = idx;
+      activeChatNovelId = novels[idx].id;
       const novel = novels[idx];
 
       document.getElementById('home-view').style.display = 'none';
@@ -2723,7 +2751,7 @@ Quy tắc phản hồi:
       document.getElementById('intro-box-code').textContent = intro.code || "SYS_INITIALIZED";
       document.getElementById('book-intro').textContent = intro.text || novel.intro || "[ Không có dữ liệu văn án ]";
 
-      const bookmark = JSON.parse(localStorage.getItem(`bookmark_${novel.id}`));
+      const bookmark = JSON.parse(localStorage.getItem(scopedLocalKey('bookmark', novel.id)));
       const mainReadBtn = document.getElementById('btn-main-reading-action');
 
       if (bookmark && typeof bookmark.chIdx === 'number' && novel.chapters && novel.chapters[bookmark.chIdx]) {
@@ -2791,6 +2819,7 @@ Quy tắc phản hồi:
     // ==========================================
     function readChapter(chIdx, scrollPos = 0) {
       selectedChapterIndex = chIdx;
+      activeChatNovelId = novels[selectedNovelIndex].id;
       const novel = novels[selectedNovelIndex];
       const ch = novel.chapters[chIdx];
 
@@ -2826,7 +2855,7 @@ Quy tắc phản hồi:
       document.getElementById('btn-prev-ch').style.visibility = (chIdx > 0) ? 'visible' : 'hidden';
       document.getElementById('btn-next-ch').style.visibility = (chIdx < novel.chapters.length - 1) ? 'visible' : 'hidden';
 
-      localStorage.setItem(`bookmark_${novel.id}`, JSON.stringify({
+      localStorage.setItem(scopedLocalKey('bookmark', novel.id), JSON.stringify({
         chIdx: chIdx,
         scrollTop: scrollPos || 0
       }));
@@ -2862,7 +2891,7 @@ Quy tắc phản hồi:
       listEl.innerHTML = "";
 
       npcs.forEach(c => {
-        const isUnlocked = userProfile.collectedCharacters && userProfile.collectedCharacters[c.id];
+        const isUnlocked = isNpcUnlocked(novel.id, c.id);
         const card = document.createElement('div');
         card.className = 'soul-npc-card';
 
@@ -2878,7 +2907,7 @@ Quy tắc phản hồi:
           </div>
           <div>
             ${isUnlocked 
-              ? `<button class="btn btn-primary" style="padding:4px 8px; font-size:10px;" onclick="connectSoulAndChat('${c.id}')">💬 Trò Chuyện</button>`
+              ? `<button class="btn btn-primary" style="padding:4px 8px; font-size:10px;" onclick="connectSoulAndChat('${c.id}', '${novel.id}')">💬 Trò Chuyện</button>`
               : `<button class="btn btn-gold" style="padding:4px 8px; font-size:10px;" onclick="unlockChapterCharacter('${c.id}', '${escapeHtml(novel.title)}')">⚡ Kết Nối Linh Hồn</button>`
             }
           </div>
@@ -2892,8 +2921,8 @@ Quy tắc phản hồi:
       const char = (novel.characters || []).find(c => c.id === charId);
       if (!char) return;
 
-      if (!userProfile.collectedCharacters) userProfile.collectedCharacters = {};
-      userProfile.collectedCharacters[char.id] = {
+      const unlocked = getStoryProgress(novel.id).collectedCharacters;
+      unlocked[char.id] = {
         id: char.id,
         name: char.name,
         role: char.role,
@@ -2932,7 +2961,7 @@ Quy tắc phản hồi:
 
         const novel = novels[selectedNovelIndex];
         if (novel && novel.chapters && novel.chapters.length > 0) {
-          localStorage.setItem(`bookmark_${novel.id}`, JSON.stringify({
+          localStorage.setItem(scopedLocalKey('bookmark', novel.id), JSON.stringify({
             chIdx: selectedChapterIndex,
             scrollTop: winScroll
           }));
@@ -2967,7 +2996,7 @@ Quy tắc phản hồi:
       updateWordCountPreview();
       const content = document.getElementById('chapter-modal-content').value;
       const title = document.getElementById('chapter-modal-title').value;
-      localStorage.setItem('my_auto_draft', JSON.stringify({ title, content, time: Date.now() }));
+      localStorage.setItem(scopedLocalKey('draft', novels[selectedNovelIndex].id), JSON.stringify({ title, content, time: Date.now() }));
     }
 
     function openStoryModal() {
@@ -3091,7 +3120,7 @@ Quy tắc phản hồi:
       editingChapterIndex = null;
       document.getElementById('chapter-modal-heading').textContent = "VIẾT CHƯƠNG MỚI";
       
-      const draft = JSON.parse(localStorage.getItem('my_auto_draft'));
+      const draft = JSON.parse(localStorage.getItem(scopedLocalKey('draft', novels[selectedNovelIndex].id)));
       if (draft && draft.content && confirm("Phát hiện bản thảo chưa lưu. Khôi phục lại?")) {
         document.getElementById('chapter-modal-title').value = draft.title || '';
         document.getElementById('chapter-modal-content').value = draft.content || '';
@@ -3175,7 +3204,7 @@ Quy tắc phản hồi:
         });
         addExp(35);
         advanceQuest('q_main_write', 1);
-        localStorage.removeItem('my_auto_draft');
+        localStorage.removeItem(scopedLocalKey('draft', novels[selectedNovelIndex].id));
         saveDB();
         closeModals();
         openCover(selectedNovelIndex);
