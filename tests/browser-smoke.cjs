@@ -1181,6 +1181,9 @@ async function main() {
           document.getElementById('phone-app-codex').clientWidth
       };
       inventoryTab='ALL';
+      const searchInput=document.getElementById('inventory-v2-search');
+      const priorSearch=searchInput.value;
+      searchInput.value='';
       userProfile.inventory=[
         {...DuduItemCatalog.byId('f1')},
         {...DuduItemCatalog.byId('e3')},
@@ -1206,6 +1209,7 @@ async function main() {
       details.writes=window.__firestoreWrites.length-initialWrites;
       userProfile=JSON.parse(snapshot);
       inventoryTab=oldTab;inventoryDetailSelection=oldSelection;
+      searchInput.value=priorSearch;
       renderInventory();phoneHome();
       return {profileData,details};
     });
