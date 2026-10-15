@@ -53,3 +53,16 @@ test('self-test uses story grant API, never chapter timer claim API',()=>{
   assert.match(clientCode,/root\.firebase\?\.auth\?\.\(\)\?\.currentUser/);
   assert.doesNotMatch(clientCode,/authorRequest\('\/v1\/collectibles\/claim'/);
 });
+
+test('a Firebase account switch during token retrieval cannot send an old-UID admin grant',async()=>{
+  const s=session();
+  const existing=s.auth.currentUser;
+  existing.getIdToken=async()=>{
+    s.auth.currentUser={uid:'different-admin',getIdToken:async()=> 'other-token'};
+    return 'old-token';
+  };
+  const answer=await s.client.grantStoryTestToSelf('story-1','author-item-fixture');
+  assert.equal(answer.ok,false);
+  assert.equal(answer.reason,'account-changed');
+  assert.equal(s.calls.length,0,'No request is sent after switching Firebase identity');
+});
