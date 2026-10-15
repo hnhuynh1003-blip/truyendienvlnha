@@ -214,12 +214,22 @@ async function main() {
         listPrivateDrafts:async(storyId,chapterId)=>({
           ok:true,items:window.__vaultFixture.filter(r=>r.storyId===storyId&&r.chapterId===chapterId)
         }),
-        archivePrivateDraft:async()=>({ok:true})
+        archivePrivateDraft:async()=>({ok:true}),
+        previewPrivateDraft:async(storyId,itemId)=>{
+          const draft=window.__vaultFixture.find(x=>x.storyId===storyId&&x.itemId===itemId);
+          return {ok:!!draft,draft:draft?{...draft,updatedAt:1792051200000}:null,release:null};
+        },
+        publishPrivateDraft:async approval=>{
+          window.__releaseApproval=approval;
+          return {ok:true,storyId:approval.storyId,itemId:approval.itemId,
+            method:'STORY_EVENT'};
+        }
       };
     });
     await page.locator('#story-add-item-btn').click();
     await page.locator('#author-item-name').fill('KẾT THÚC CÒN GIẤU');
     await page.locator('#author-item-desc').fill('Thông tin không được đăng trước.');
+    await page.locator('#author-item-method').selectOption('STORY_EVENT');
     await page.locator('#author-item-private').check();
     await page.getByRole('button',{name:'Lưu vật phẩm'}).click();
     await page.waitForFunction(()=>
@@ -242,6 +252,33 @@ async function main() {
     assert.equal(vaultMock.inventory,2);
     assert.equal(vaultMock.writes,0);
     assert.match(vaultMock.privateList,/Bản thảo chỉ tác giả xem/);
+
+    await page.getByRole('button',{name:'Duyệt phát hành'}).click();
+    await page.waitForFunction(()=>document.getElementById('author-release-modal').style.display==='flex');
+    assert.match(await page.locator('#author-release-preview').textContent(),/KẾT THÚC CÒN GIẤU/);
+    assert.equal(await page.locator('#author-release-approve').isDisabled(),false,
+      'A story event draft may be approved after a fresh server preview');
+    page.once('dialog',dialog=>dialog.accept());
+    await page.locator('#author-release-approve').click();
+    const approved=await page.evaluate(()=>{
+      const a=window.__releaseApproval||{};
+      return {storyId:a.storyId,itemId:a.itemId,
+        expectedUpdatedAt:a.expectedUpdatedAt,
+        confirmPublicRelease:a.confirmPublicRelease,
+        confirmRevealToOwner:a.confirmRevealToOwner,
+        publicLeak:JSON.stringify(novels).includes('KẾT THÚC CÒN GIẤU'),
+        writes:window.__firestoreWrites.length,
+        inventory:userProfile.inventory.length};
+    });
+    assert.equal(approved.storyId,'truyen-dien-vl');
+    assert.equal(approved.itemId,'author-item-private-fixture');
+    assert.equal(approved.expectedUpdatedAt,1792051200000);
+    assert.equal(approved.confirmPublicRelease,true);
+    assert.equal(approved.confirmRevealToOwner,true);
+    assert.equal(approved.publicLeak,false,'Approved server release must not mirror secrets into the public story');
+    assert.equal(approved.writes,0);
+    assert.equal(approved.inventory,2,'Publication must not grant the collectible to anybody');
+
     await page.evaluate(()=>{
       closeModals();
       window.DuduCollectiblesClient=window.__originalCollectiblesClient;
