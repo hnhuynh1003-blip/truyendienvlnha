@@ -1,6 +1,6 @@
 # DUDU Studio AI Gateway — Cloudflare Workers Free
 
-**Code status:** staged/test-only. Worker defaults to **AI_DISABLED**, with Gemini key missing and frontend URL blank. Nothing is deployed to your Cloudflare account by GitHub Actions. Firebase remains on Spark, site remains on GitHub Pages. Do not merge into live `fixapp` yet.
+**Code status:** staged/test-only. Worker defaults to **AI_DISABLED**, with Gemini key missing; verified public Worker URL is now configured in the staging frontend. Nothing is deployed to your Cloudflare account by GitHub Actions. Firebase remains on Spark, site remains on GitHub Pages. Do not merge into live `fixapp` yet.
 
 ## Security design
 
@@ -38,7 +38,7 @@
 - Google AI Studio: verify API access, project/model quota and free tier eligibility. Rotate any exposed old key.
 - From the same `cloudflare` folder, enter `npx wrangler secret put GEMINI_API_KEY`; Wrangler prompts for the value privately. NEVER paste the value into chat/GitHub, terminal command arguments, screenshots or `wrangler.toml`.
 - Set a limited test window, choose a trusted Firebase test account, review Cloudflare logs, optional Turnstile, quotas and Cloudflare billing settings.
-- Update public `WORKER_URL` in `js/ai-proxy.js` on this feature branch with the exact deployed worker URL.
+- Public `WORKER_URL` has been updated to `https://dudu-ai-staging.dudu-studio-ai.workers.dev` after the operator confirmed its `/health` endpoint returned `enabled:false`. Do not change to another URL without verifying ownership.
 - ONLY after a controlled dry run, change Worker `AI_ENABLED` to `true` and redeploy **with explicit approval**. Stop/rollback by returning it to `false`.
 - Test real Firebase Auth token validity, access permissions, Firebase account switching, failures, rate limiting and Gemini token usage. Staging website should use separate copy of frontend, not production.
 - Finally review draft PR before any merge.
