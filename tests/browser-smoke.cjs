@@ -330,7 +330,32 @@ async function main() {
     assert.equal(lootPhase2.scifi.cooldownAfterOne,lootPhase2.scifi.cooldownBefore+1);
     assert.equal(lootPhase2.freeCountAfter,lootPhase2.scifi.cooldownAfterOne);
     assert.equal(lootPhase2.firestoreWrites,0,'Sandbox must not update production Firestore');
-    
+
+    const realmEditor = await page.evaluate(() => {
+      userProfile.role='admin'; // sandbox fixture only; never production Firebase
+      applyUserRole();
+      const novel=novels[selectedNovelIndex];
+      const alreadyRewarded=userProfile.readRewards[novel.id+'_'+(novel.chapters[0].id||0)];
+      openEditChapterModal(0);
+      const select=document.getElementById('chapter-modal-realm-tag');
+      const initiallyEmpty=select.value==='';
+      select.value='CULTIVATION';
+      saveChapterModal();
+      openEditChapterModal(0);
+      const persisted=document.getElementById('chapter-modal-realm-tag').value;
+      const original=novel.chapters[0].realmTag;
+      closeModals();
+      return {initiallyEmpty,persisted,original,alreadyRewarded,
+        stillRewarded:userProfile.readRewards[novel.id+'_'+(novel.chapters[0].id||0)],
+        writes:window.__firestoreWrites.length};
+    });
+    assert.equal(realmEditor.initiallyEmpty,true);
+    assert.equal(realmEditor.persisted,'CULTIVATION','Author-assigned chapter tag must survive save/reopen');
+    assert.equal(realmEditor.original,'CULTIVATION');
+    assert.equal(realmEditor.stillRewarded,realmEditor.alreadyRewarded,
+      'Editing and reopening a chapter must not reset reading rewards');
+    assert.equal(realmEditor.writes,0);
+
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
     console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));
   } finally {
