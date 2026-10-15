@@ -1,6 +1,6 @@
-/* Read-only UI for server-confirmed collectible ownership.
- * Item definitions and locally editable userProfile.inventory are NOT proof.
- * Server claims and public release remain disabled until owner-approved rollout.
+/* Server-confirmed collectible owner list and guarded author editorial tools.
+ * Item definitions and browser inventory are NOT proof of ownership. Only
+ * a deliberate author-only self-test can grant an F-rank STORY_EVENT item.
  */
 (function(root){
   'use strict';
@@ -61,8 +61,22 @@
   function publishPrivateDraft(approval){
     return authorRequest('/v1/collectibles/admin/publish',approval);
   }
+  async function grantStoryTestToSelf(storyId,itemId){
+    if(sandbox)return {ok:false,reason:'sandbox'};
+    const user=root.firebase?.auth?.()?.currentUser;
+    if(!user?.uid)return {ok:false,reason:'unauthenticated'};
+    // Admin chooses their OWN Firebase UID automatically; never ask for or
+    // accept an arbitrary reader UID in this experimental UI.
+    const uid=user.uid;
+    const result=await authorRequest('/v1/collectibles/admin/grant',{
+      uid,storyId,itemId
+    });
+    if(root.firebase?.auth?.()?.currentUser?.uid!==uid)
+      return {ok:false,reason:'account-changed'};
+    return result;
+  }
   root.DuduCollectiblesClient=Object.freeze({
     init,mine,savePrivateDraft,listPrivateDrafts,archivePrivateDraft,
-    previewPrivateDraft,publishPrivateDraft
+    previewPrivateDraft,publishPrivateDraft,grantStoryTestToSelf
   });
 })(typeof window!=='undefined'?window:globalThis);
