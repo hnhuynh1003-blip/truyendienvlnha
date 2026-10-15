@@ -24,6 +24,7 @@
   <script src="js/story-memory.js"></script>
   <script src="js/npc-memory-v2.js"></script>
   <script src="js/item-catalog-v2.js"></script>
+  <script src="js/item-visuals-v13.js"></script>
   <script src="js/npc-relationship-v2-r1.js"></script>
   <script src="js/npc-gift-v2-r2.js"></script>
   <script src="js/npc-relationship-v2-r3.js"></script>
@@ -3067,6 +3068,23 @@
       renderInventory();
     }
 
+    // Render approved art metadata without reading or changing item ownership.
+    function renderSandboxItemArt(element,item){
+      if(!IS_SANDBOX_MODE||!element||!item)return;
+      const visual=DuduItemArtV13.visual(DuduItemCatalog.byId(item.id||item.itemId)||item);
+      if(!visual)return;
+      const art=document.createElement('img');
+      art.alt='';
+      art.loading='lazy';art.decoding='async';
+      art.width=76;art.height=76;art.src=visual.src;
+      art.className='dudu-item-v13-art';
+      element.replaceChildren(art);
+      element.classList.add('dudu-item-v13-frame');
+      element.style.setProperty('--rarity-glow',visual.light);
+      element.dataset.rarity=visual.rank;
+      element.title='Minh họa vật phẩm: phẩm cấp '+visual.rank;
+    }
+
     // Read-only inspector: never grants, consumes or changes an inventory item.
     function renderInventoryDetail(){
       const panel=document.getElementById('inventory-v12-detail');
@@ -3091,6 +3109,7 @@
       const icon=document.createElement('div');
       icon.className='dudu-inventory-v12-detail-icon';
       icon.textContent=item.icon||canonical?.icon||'🎒';
+      renderSandboxItemArt(icon,item);
       const info=document.createElement('div');
       info.style.cssText='flex:1;min-width:0;';
       const name=document.createElement('div');
@@ -3147,13 +3166,18 @@
         const div=document.createElement('div');
         div.className='item-card';
         if(IS_SANDBOX_MODE){
+          const rank=DuduItemArtV13.visual(DuduItemCatalog.byId(item.id||item.itemId)||item);
+          if(rank){div.dataset.rarity=rank.rank;div.style.setProperty('--rarity-glow',rank.light);}
           div.classList.add('dudu-inventory-v12-row');
           if(item===inventoryDetailSelection)div.classList.add('is-selected');
         }
         const glyph=document.createElement('span');
         glyph.textContent=item.icon||canonical?.icon||'🎒';
         glyph.style.cssText='font-size:22px;min-width:33px;text-align:center;';
-        if(IS_SANDBOX_MODE)glyph.className='dudu-inventory-v12-icon';
+        if(IS_SANDBOX_MODE){
+          glyph.className='dudu-inventory-v12-icon';
+          renderSandboxItemArt(glyph,item);
+        }
         const body=document.createElement('div');
         body.style.cssText='flex:1;min-width:0;';
         const rank=document.createElement('span');
