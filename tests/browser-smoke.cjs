@@ -261,6 +261,76 @@ async function main() {
     assert.equal(lateAI.memoryCount,0,'Late AI must not re-create deleted NPC memories');
     assert.equal(lateAI.writes,0);
 
+    // Phase 2: unique chapter rewards, real rarity and author-assigned realm only.
+    const lootPhase2 = await page.evaluate(() => {
+      const novel=novels[selectedNovelIndex];
+      const ch=novel.chapters[0];
+      const readKey=novel.id+'_'+(ch.id||0);
+      userProfile.readRewards ||= {};
+      delete userProfile.readRewards[readKey];
+      const expBefore=userProfile.exp;
+      readChapter(0);
+      const expFirst=userProfile.exp;
+      const alreadyCounted=userProfile.readRewards[readKey]===true;
+      readChapter(0);
+      const expSecond=userProfile.exp;
+      const oldRandom=Math.random;
+      Math.random=()=>0.999999;
+      let base,scifi,freeOk,freeAgain,freeCountBefore,freeCountAfter;
+      try {
+        freeCountBefore=userProfile.inventory.length;
+        claimChapterLootDrop();
+        freeOk=userProfile.lootedChapters[readKey]===true;
+        const drop=userProfile.inventory[0];
+        base={id:drop.id,rank:drop.rank,scope:drop.scope,source:drop.obtainedFrom,
+          namedChapter:drop.obtainedFrom?.storyId===novel.id};
+        const countOnce=userProfile.inventory.length;
+        claimChapterLootDrop();
+        freeAgain=userProfile.inventory.length===countOnce;
+        const second={id:'phase2-realm-chapter',title:'Chương thử vị diện',
+          content:'Nội dung dành cho kiểm thử thế giới.',realmTag:'SCIFI'};
+        novel.chapters.push(second);
+        readChapter(novel.chapters.length-1);
+        claimChapterLootDrop();
+        const item=userProfile.inventory[0];
+        scifi={rank:item.rank,scope:item.scope,realmTag:item.realmTag,source:item.obtainedFrom,
+          chapterClaim:userProfile.lootedChapters[novel.id+'_'+second.id]};
+        const cooldownBefore=userProfile.inventory.length;
+        const rollOne=rollLootDrop(false);
+        const cooldownAfterOne=userProfile.inventory.length;
+        const rollTwo=rollLootDrop(false);
+        freeCountAfter=userProfile.inventory.length;
+        scifi.rollOne=rollOne;
+        scifi.rollTwo=rollTwo;
+        scifi.cooldownBefore=cooldownBefore;
+        scifi.cooldownAfterOne=cooldownAfterOne;
+      } finally {
+        Math.random=oldRandom;
+      }
+      return {
+        expBefore,expFirst,expSecond,alreadyCounted,freeOk,freeAgain,
+        freeCountBefore,freeCountAfter,base,scifi,
+        firestoreWrites:window.__firestoreWrites.length
+      };
+    });
+    assert.equal(lootPhase2.alreadyCounted,true);
+    assert.equal(lootPhase2.expFirst-lootPhase2.expBefore,5,'First chapter open gets a one-time reward');
+    assert.equal(lootPhase2.expSecond,lootPhase2.expFirst,'Re-opening chapter must never repeat EXP');
+    assert.equal(lootPhase2.freeOk,true);
+    assert.equal(lootPhase2.freeAgain,true,'Same chapter cannot grant a second drop');
+    assert.equal(lootPhase2.base.scope,'COMMON','Untagged chapter must use global item pool');
+    assert.equal(lootPhase2.base.rank,'B','Empty higher ranks must not silently become F');
+    assert.equal(lootPhase2.base.namedChapter,true);
+    assert.equal(lootPhase2.scifi.scope,'REALM');
+    assert.equal(lootPhase2.scifi.realmTag,'SCIFI');
+    assert.equal(lootPhase2.scifi.rank,'S');
+    assert.equal(lootPhase2.scifi.chapterClaim,true);
+    assert.equal(lootPhase2.scifi.rollOne,true);
+    assert.equal(lootPhase2.scifi.rollTwo,false,'Cooldown must block repeated free loot button');
+    assert.equal(lootPhase2.scifi.cooldownAfterOne,lootPhase2.scifi.cooldownBefore+1);
+    assert.equal(lootPhase2.freeCountAfter,lootPhase2.scifi.cooldownAfterOne);
+    assert.equal(lootPhase2.firestoreWrites,0,'Sandbox must not update production Firestore');
+    
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
     console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));
   } finally {
