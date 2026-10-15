@@ -20,7 +20,7 @@ body.dudu-phone-v11 #phone-fab {
 }
 body.dudu-phone-v11 #phone-fab:hover {transform:translateY(-3px);box-shadow:0 0 0 3px #131b32,0 9px 25px #050816c5,0 0 25px #d58ffc99;}
 body.dudu-phone-v11 #phone-fab:active {transform:scale(.94);}
-body.dudu-phone-v11.dudu-phone-open #phone-fab {opacity:0;pointer-events:none;}
+body.dudu-phone-v11.dudu-phone-open #phone-fab {opacity:0;visibility:hidden;pointer-events:none;}
 body.dudu-phone-v11 #cyber-phone {
   right:18px;bottom:calc(89px + env(safe-area-inset-bottom,0px));
   width:384px;max-width:calc(100vw - 36px);
@@ -218,6 +218,51 @@ body.dudu-phone-v11 #cyber-phone .phone-home-bar {
   width:80px;height:5px;padding:0;background:#8b81b8;border-radius:10px;
   margin:7px auto 9px;box-shadow:0 0 8px #b398ec66;cursor:pointer;
 }
+/* Consistent buttons throughout the Sandbox without touching live CSS. */
+body.dudu-phone-v11 :is(header,.container,.modal-card) .btn {
+  border-radius:10px;min-height:34px;
+  padding:7px 11px;font-size:11px;font-weight:650;
+  color:#f7ecff;border:1px solid #9b8bc5a6;
+  background:linear-gradient(145deg,#47365f,#243753);
+  box-shadow:inset 0 1px #ffffff34,0 3px 10px #060b2545;
+  transition:transform .16s ease,filter .16s ease,box-shadow .16s ease;
+}
+body.dudu-phone-v11 :is(header,.container,.modal-card) .btn-primary {
+  color:#fff;border-color:#b7c8f6;
+  background:linear-gradient(135deg,#7760c6,#3787bd);
+}
+body.dudu-phone-v11 :is(header,.container,.modal-card) .btn-gold {
+  color:#2f1b2e;border-color:#f4c791;
+  background:linear-gradient(135deg,#f6c889,#eb96bb);
+}
+body.dudu-phone-v11 :is(header,.container,.modal-card) .btn-danger {
+  color:#ffe3ed;border-color:#e5a6ba;
+  background:linear-gradient(135deg,#72344e,#552844);
+}
+body.dudu-phone-v11 :is(header,.container,.modal-card) .btn:hover:not(:disabled) {
+  filter:brightness(1.13);transform:translateY(-1px);
+  box-shadow:inset 0 1px #ffffff55,0 5px 16px #070c2869;
+}
+body.dudu-phone-v11 :is(header,.container,.modal-card) .btn:active:not(:disabled) {
+  transform:translateY(1px) scale(.98);
+}
+body.dudu-phone-v11 :is(header,.container,.modal-card) .btn:disabled {
+  opacity:.45;cursor:not-allowed;filter:saturate(.45);
+}
+body.dudu-phone-v11 :is(header,.container,.modal-card) .btn:focus-visible,
+body.dudu-phone-v11 :is(header,.container,.modal-card) .filter-btn:focus-visible {
+  outline:2px solid #a7edff;outline-offset:2px;
+}
+body.dudu-phone-v11 :is(.container,.modal-card) .filter-btn {
+  border-radius:999px;min-height:31px;padding:6px 10px;
+  border:1px solid #736a91;background:#222b49;color:#c9c5e4;
+  transition:background .15s ease,border-color .15s ease;
+}
+body.dudu-phone-v11 :is(.container,.modal-card) .filter-btn.active {
+  background:linear-gradient(130deg,#6751ac,#a35cae);
+  border-color:#e4baf0;color:#fff;box-shadow:0 0 11px #b78aff35;
+}
+
 @keyframes dudu-phone-enter {
   from {opacity:0;transform:translateY(12px) scale(.97);}
   to {opacity:1;transform:translateY(0) scale(1);}
