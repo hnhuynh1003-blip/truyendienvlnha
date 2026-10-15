@@ -71,6 +71,76 @@ async function main() {
     assert.equal(catalogSnapshot.legacyRandomCount,11,'Phase 1 must leave old loot pool untouched');
     assert.equal(catalogSnapshot.firestoreWrites,0,'Catalog has no backend writes');
 
+    // Author-only item editor: story catalog, NPC references and chapter linking.
+    await page.evaluate(() => openEditStoryModal());
+    await page.locator('#story-add-item-btn').click();
+    await page.locator('#author-item-name').fill('Đồng hồ của Ôn Tri Hành');
+    await page.locator('#author-item-desc').fill('Chiếc đồng hồ bỏ túi đã được nhắc trong truyện.');
+    await page.locator('#author-item-rank').selectOption('A');
+    await page.locator('#author-item-npc').selectOption('c2');
+    await page.getByRole('button',{name:'Lưu vật phẩm'}).click();
+    const storyItem = await page.evaluate(()=>{
+      const novel=novels[selectedNovelIndex],item=novel.specialItems?.[0];
+      return {id:item?.id,storyId:item?.storyId,npcId:item?.npcId,
+        scope:item?.scope,acquisition:item?.acquisition?.method,
+        inventory:userProfile.inventory.length,writes:window.__firestoreWrites.length,
+        returned:document.getElementById('story-modal').style.display==='flex'};
+    });
+    assert.match(storyItem.id,/^author-item-/);
+    assert.equal(storyItem.storyId,'truyen-dien-vl');
+    assert.equal(storyItem.npcId,'c2');
+    assert.equal(storyItem.scope,'STORY');
+    assert.equal(storyItem.acquisition,'COLLECTION_ONLY');
+    assert.equal(storyItem.inventory,2,'Defining an item does not award it');
+    assert.equal(storyItem.writes,0);
+    assert.equal(storyItem.returned,true,'Item modal should return to story editor');
+
+    await page.evaluate(()=>{closeModals();openEditChapterModal(0);});
+    await page.locator('#chapter-story-item-picker').selectOption(storyItem.id);
+    await page.getByRole('button',{name:'Gắn',exact:true}).click();
+    await page.getByRole('button',{name:'Lưu Nội Dung'}).click();
+    const linked = await page.evaluate(()=>{
+      const novel=novels[selectedNovelIndex];
+      return {linked:novel.chapters[0].storyItemIds||[],
+        storyItemCount:novel.specialItems.length,
+        inventory:userProfile.inventory.length};
+    });
+    assert.deepEqual(linked.linked,[storyItem.id]);
+    assert.equal(linked.storyItemCount,1,'Linking never copies or awards an item');
+    assert.equal(linked.inventory,2);
+
+    await page.evaluate(()=>openEditChapterModal(0));
+    await page.locator('#chapter-add-item-btn').click();
+    await page.locator('#author-item-name').fill('Bức thư chương đầu');
+    await page.locator('#author-item-desc').fill('Một bức thư xuất hiện trong chương đầu.');
+    await page.locator('#author-item-method').selectOption('CHAPTER_EVENT');
+    await page.locator('#author-item-npc').selectOption('c2');
+    await page.getByRole('button',{name:'Lưu vật phẩm'}).click();
+    const chapterItem = await page.evaluate(()=>{
+      const novel=novels[selectedNovelIndex],item=novel.specialItems.find(x=>x.scope==='CHAPTER');
+      return {id:item?.id,chapterId:item?.chapterId,storyId:item?.storyId,
+        npcId:item?.npcId,method:item?.acquisition?.method,
+        listCount:document.getElementById('chapter-author-items').children.length,
+        errors:DuduAuthorItems.validateCollection(novel),
+        inventory:userProfile.inventory.length,writes:window.__firestoreWrites.length};
+    });
+    assert.match(chapterItem.id,/^author-item-/);
+    assert.equal(chapterItem.chapterId,'ch-1');
+    assert.equal(chapterItem.npcId,'c2');
+    assert.equal(chapterItem.method,'CHAPTER_EVENT');
+    assert.deepEqual(chapterItem.errors,[]);
+    assert.equal(chapterItem.listCount,1);
+    assert.equal(chapterItem.inventory,2);
+    assert.equal(chapterItem.writes,0);
+    const readerBlocked = await page.evaluate(()=>{
+      closeModals();userProfile.role='reader';applyUserRole();
+      openAuthorItemModal('story');
+      const hidden=document.getElementById('author-item-modal').style.display!=='flex';
+      userProfile.role='admin';applyUserRole();
+      return hidden;
+    });
+    assert.equal(readerBlocked,true,'Reader cannot open author item editor');
+
     await page.evaluate(() => {
       openCreateChapterModal();
       document.getElementById('chapter-modal-title').value = 'Kiểm thử chương dài';
