@@ -1169,6 +1169,9 @@
         <label style="font-size:10px;">Ảnh nhân vật trong dự án (tùy chọn)</label>
         <input id="npc-r7-portrait" autocomplete="off" type="text" placeholder="assets/npc/ten-nhan-vat.webp"/>
         <div style="font-size:9px;color:#94a3b8;margin-top:5px;">Chỉ dùng ảnh cùng website từ assets/npc. Không tải ảnh ngoài hoặc tự mở khóa NPC.</div>
+        <label for="npc-r7-milestones" style="font-size:10px;">Mốc truyện riêng (chỉ phác thảo)</label>
+        <textarea id="npc-r7-milestones" rows="3" placeholder="id_moc|id_chuong|30" style="width:100%;font-size:10px;" spellcheck="false"></textarea>
+        <div style="font-size:9px;color:#94a3b8;margin-top:2px;">Mỗi dòng: mã mốc | mã chương | Tin tưởng tối thiểu. Chưa xác nhận hoàn thành và không phát thưởng.</div>
       </div>
       <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px;">
         <button class="btn" onclick="closeModals()">Hủy</button>
@@ -2515,6 +2518,12 @@
         ['default','reserved','gentle','cheerful'].includes(p.reactionStyle)?
           p.reactionStyle:'default';
       document.getElementById('npc-r7-portrait').value=npc?.portraitPath||'';
+      const editorNovel=novels.find(n=>n.id===editingCharNovelId);
+      const key=npc&&editorNovel?DuduNpcAuthorR7.sandboxMilestoneDraftKey(editorNovel.id,npc.id):null;
+      let draft=null;
+      try{draft=key?JSON.parse(localStorage.getItem(key)||'null'):null;}catch(_){}
+      document.getElementById('npc-r7-milestones').value=
+        (draft?.milestones||[]).map(m=>m.id+'|'+m.chapterId+'|'+m.minimumTrust).join('\n');
       toggleNpcR7Custom();
     }
     function readNpcR7Fields(id){
@@ -2536,7 +2545,26 @@
           'Kiểm tra tag trùng hoặc đường dẫn ảnh (assets/npc/*.png, jpg, jpeg, webp).');
         return false;
       }
-      return {custom,normalized};
+      const novel=novels.find(n=>n.id===editingCharNovelId);
+      const lines=document.getElementById('npc-r7-milestones').value.trim();
+      const milestones=lines?lines.split(/\r?\n/).map(line=>{
+        const cells=line.split('|').map(x=>x.trim());
+        return cells.length===3?{id:cells[0],chapterId:cells[1],
+          minimumTrust:Number(cells[2])}:null;
+      }):[];
+      if(milestones.some(x=>x===null||!Number.isInteger(x.minimumTrust)||
+         x.minimumTrust<0||x.minimumTrust>100)){
+        showSystemAlert('MỐC TRUYỆN CHƯA HỢP LỆ','Mỗi dòng cần mã mốc | mã chương có thật | điểm Tin tưởng 0–100.');
+        return false;
+      }
+      const milestonePlan=DuduNpcAuthorR7.validateMilestonePlan(
+        {milestones},{storyId:novel?.id,npcId:id,
+          knownChapterIds:(novel?.chapters||[]).map(ch=>ch.id)});
+      if(!milestonePlan){
+        showSystemAlert('MỐC TRUYỆN CHƯA HỢP LỆ','Chương chưa có ID hợp lệ, mã trùng hoặc có mốc không thuộc truyện.');
+        return false;
+      }
+      return {custom,normalized,milestonePlan};
     }
 
     function openAddCharacterModal(fromChapter = false) {
@@ -2620,6 +2648,15 @@
         else delete edited.giftPreferences;
         if(r7.normalized.portraitPath)edited.portraitPath=r7.normalized.portraitPath;
         else delete edited.portraitPath;
+      }
+      // Draft plans are local-only, never copied into the public novel library.
+      if(IS_SANDBOX_MODE&&r7){
+        const key=DuduNpcAuthorR7.sandboxMilestoneDraftKey(novel.id,charId);
+        if(key){
+          if(r7.milestonePlan.milestones.length)
+            localStorage.setItem(key,JSON.stringify(r7.milestonePlan));
+          else localStorage.removeItem(key);
+        }
       }
       // Authoring a canonical NPC is NOT permission to chat with that NPC.
       saveDB();
