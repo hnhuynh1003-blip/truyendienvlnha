@@ -61,3 +61,22 @@
 - Test trình duyệt desktop/mobile, bản ghi nhớ và sự kiện NPC. Chỉ merge sau khi có duyệt riêng.
 
 **Nguyên tắc không đổi:** chất lượng nhập vai và dữ liệu cá nhân > tiết kiệm token bằng mọi giá. Không nhét thêm nút/token bar vào Cyber Phone trong các đợt này.
+
+
+## Quy tắc thiết kế mới: Truyện dẫn dắt, NPC giữ chân (đã thống nhất ngày 15/10/2026)
+
+**Định hướng đã chốt, KHÔNG tự ý đổi luật game cho tới khi đợt riêng được kiểm tra:**
+
+- Lối chơi cốt lõi: mở truyện → theo dõi diễn biến → gặp nhân vật → tùy chọn liên kết linh hồn → giữ liên lạc với **NPC yêu thích**, kể cả khi chưa đọc chương mới.
+- Không bắt độc giả chat với hàng loạt NPC; không có nhiệm vụ/ngày dạng "chat đủ 10 nhân vật"; không ép đổi NPC để đủ điểm.
+- Trò chuyện với NPC mở khóa được duy trì lâu dài; không khóa cuộc trò chuyện chỉ vì hết chỉ tiêu đọc hàng ngày. Hạn mức kỹ thuật Gemini phía máy chủ có thể áp dụng khi API quota cạn, nhưng **không phải điểm năng lượng xã hội** trong game.
+- Người chơi đọc chương mới sẽ khám phá tình tiết/nhân vật/bí mật mới. Những sự kiện mới có thể mở thêm **chủ đề, ký ức xác thực, lựa chọn** khi trò chuyện với người cũ, chứ không khóa quyền chat đã mở.
+- Đặc biệt tránh **spoiler**: prompt NPC phải được lọc theo `storyId`, `chapterProgress`, NPC đã gặp và quyền tiết lộ của tác giả. Việc chứa `char.note` toàn bộ hoặc biết sự kiện chương sau là rủi ro; hiện **chưa triển khai lọc spoiler**. Chưa triển khai cũng không được tuyên bố NPC luôn bảo vệ bí mật truyện.
+- Chỉ ghi nhận hoàn thành chương khi sự kiện đọc thực sự đáng tin; không sử dụng chỉ số cuộn/nhấp nút đơn lẻ để cấp lợi ích kinh tế. Trình duyệt không phải backend chống gian lận.
+- KPI đánh giá: tỷ lệ người quay lại đọc, số chương hoàn thành, mức quan tâm NPC được mở khóa, sự tự nhiên/không lộ spoiler, không chỉ số cuộc trò chuyện.
+
+**Lộ trình nhỏ, để tránh xung đột:** (1) chọn model staging và kiểm thử; (2) đo hội thoại NPC yêu thích với 1–2 nhân vật; (3) thiết kế chống spoiler theo chương; (4) tính năng tương tác bám theo sự kiện đọc; (5) mở beta sau khi bảo mật chi phí và kiểm thử. Không làm tất cả cùng lúc.
+
+**Chọn model ở nhánh thử nghiệm:** `cloudflare/wrangler.toml` và `cloudflare/src/index.mjs` đã chuẩn bị đổi sang `gemini-3.5-flash-lite` theo quota 500/ngày mà tác giả thấy trong Google AI Studio. `gemini-3.1-flash-lite` là model đối chứng trong vòng thử sau; `gemini-3.8-flash` để dành trường hợp đặc biệt nếu thực sự có lợi. Không dùng fallback tự động khi chưa có đo lường, và **không giả định quota của một model cộng dồn sang model khác**.
+
+**Ranh giới vận hành:** Worker đã được tạo ở `dudu-ai-staging.dudu-studio-ai.workers.dev`, key được chủ dự án lưu trong Cloudflare Secret, nhưng môi trường đã deploy vẫn dùng model cũ và `AI_ENABLED=false`. Thay đổi GitHub chưa tự cập nhật Worker: cần tải bản nhánh mới rồi chạy `npx wrangler deploy` riêng khi sẵn sàng. Không bật AI cho khách trước khi chạy thử đăng nhập/quota thật.
