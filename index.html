@@ -917,6 +917,13 @@
           <span id="npc-relationship-r4-values" style="flex:1;min-width:150px;"></span>
           <button type="button" id="npc-daily-checkin-btn" onclick="npcDailyCheckin()" title="Hỏi thăm một lần mỗi ngày trong Sandbox" style="border:1px solid #3c6c66;background:#164e47;color:#bbf7d0;border-radius:6px;padding:3px 6px;font-size:10px;">🤝 Hỏi thăm</button>
         </div><button type="button" id="npc-relationship-r4-help" aria-label="Giải thích quan hệ NPC" title="Giải thích quan hệ NPC" onclick="showNpcRelationshipHelp()" style="float:right; background:transparent; color:#fbbf24; border:1px solid #475569; border-radius:50%; font-size:10px; width:18px; height:18px; cursor:pointer;">?</button></div>
+        <div id="npc-daily-choice-card" style="display:none;padding:7px;margin:0 0 6px;border:1px solid #29565c;border-radius:8px;background:#0d2835;">
+          <div id="npc-daily-choice-prompt" style="font-size:10px;color:#dbeafe;margin-bottom:5px;"></div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px;">
+            <button type="button" id="npc-daily-choice-thoughtful" onclick="npcSubmitDailyChoice('thoughtful')" style="flex:1;min-width:120px;border:1px solid #14b8a6;border-radius:6px;background:#134e4a;color:#ccfbf1;padding:5px;font-size:10px;"></button>
+            <button type="button" id="npc-daily-choice-casual" onclick="npcSubmitDailyChoice('casual')" style="flex:1;min-width:120px;border:1px solid #475569;border-radius:6px;background:#1e293b;color:#cbd5e1;padding:5px;font-size:10px;"></button>
+          </div>
+        </div>
         <div id="chat-messages-container" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 8px; background: rgba(10, 14, 20, 0.6); border-radius: 8px; border: 1px solid #1f2937; margin-bottom: 6px;"></div>
         <div id="chat-connection-status" role="status" aria-live="polite" style="display:none; font-size:10px; color:var(--gold); padding:3px 5px; line-height:1.35;">
           <span id="chat-connection-message"></span>
@@ -1868,36 +1875,61 @@
     }
 
     function npcDailyCheckin() {
-      if (!IS_SANDBOX_MODE || !currentUsername) return;
-      const npcId = document.getElementById('chat-character-selector')?.value;
-      const storyId = activeChatNovelId || (novels[selectedNovelIndex] || {}).id;
-      const npc = getCombinedCharactersList().find(c => c.id === npcId);
-      if (!npc || !storyId || !isNpcUnlocked(storyId,npcId)) return;
+      if(!IS_SANDBOX_MODE||!currentUsername)return;
+      const npcId=document.getElementById('chat-character-selector')?.value;
+      const storyId=activeChatNovelId||(novels[selectedNovelIndex]||{}).id;
+      const npc=getCombinedCharactersList().find(c=>c.id===npcId);
+      if(!npc||!storyId||!isNpcUnlocked(storyId,npcId))return;
+      const panel=document.getElementById('npc-daily-choice-card');
+      if(!panel)return;
+      const scenario=DuduNpcPersonaR6.dailyConversation(npc);
+      panel.dataset.npcId=npcId;
+      panel.dataset.storyId=storyId;
+      document.getElementById('npc-daily-choice-prompt').textContent=scenario.prompt;
+      document.getElementById('npc-daily-choice-thoughtful').textContent=scenario.thoughtful;
+      document.getElementById('npc-daily-choice-casual').textContent=scenario.casual;
+      panel.style.display='block';
+    }
+
+    function npcSubmitDailyChoice(choiceId) {
+      if(!IS_SANDBOX_MODE||!currentUsername)return;
+      const panel=document.getElementById('npc-daily-choice-card');
+      const npcId=document.getElementById('chat-character-selector')?.value;
+      const storyId=activeChatNovelId||(novels[selectedNovelIndex]||{}).id;
+      if(!panel||panel.style.display!=='block'||panel.dataset.npcId!==npcId||
+         panel.dataset.storyId!==storyId||!['thoughtful','casual'].includes(choiceId))return;
+      const npc=getCombinedCharactersList().find(c=>c.id===npcId);
+      if(!npc||!isNpcUnlocked(storyId,npcId))return;
       const existing=getStoryProgress(storyId).collectedCharacters[npcId];
       const view=DuduNpcRelationshipV2.previewRelationship(existing,'sandbox-user',storyId,npcId);
       if(!view)return;
       const eventId='checkin-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);
       const plan=DuduNpcTrustR5.evaluateCheckin({
         uid:'sandbox-user',storyId,npcId,unlocked:true,relationship:view,
-        eventId,now:Date.now()
+        eventId,choiceId,now:Date.now()
       });
+      panel.style.display='none';
       if(!plan.ok){
-        showSystemAlert('HỎI THĂM NPC', plan.reason==='daily-limit'
-          ? 'Hôm nay bạn đã hỏi thăm NPC này rồi, ngày mai quay lại nhé.'
-          : 'Không thể cộng thêm Tin tưởng ở thời điểm này.');
+        showSystemAlert('HỎI THĂM NPC',plan.reason==='daily-limit'
+          ?'Hôm nay bạn đã trò chuyện sâu với NPC này rồi.'
+          :'Chưa thể cộng thêm Tin tưởng ở thời điểm này.');
         return;
       }
       const updated=DuduNpcTrustR5.applyCheckin(view,plan);
       if(!updated)return;
       existing.relationshipV2=updated;
       saveCurrentAccount();
-      showSystemAlert('KẾT NỐI TỐT HƠN',
-        npc.name+' cảm nhận được sự quan tâm của bạn. +'+plan.gain+' Tin tưởng (thử nghiệm Sandbox).');
+      const scene=DuduNpcPersonaR6.dailyConversation(npc);
+      showSystemAlert(npc.name,
+        (choiceId==='thoughtful'?scene.replyThoughtful:scene.replyCasual)+
+        ' +'+plan.gain+' Tin tưởng (Sandbox).');
       switchChatCharacter();
     }
 
     function switchChatCharacter() {
       hideNpcConnectionStatus();
+      const choicePanel=document.getElementById('npc-daily-choice-card');
+      if(choicePanel)choicePanel.style.display='none';
       const charId = document.getElementById('chat-character-selector').value;
       const chars = getCombinedCharactersList();
       const char = chars.find(c => c.id === charId);
