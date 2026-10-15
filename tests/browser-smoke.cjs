@@ -992,6 +992,19 @@ async function main() {
       document.getElementById('codex-novel-selector').value=story.id;
       openEditCharacterModal(idx);
       const choices=document.querySelectorAll('#npc-r8-gallery [data-portrait-id]').length;
+      document.getElementById('npc-r9-gender').value='male';
+      npcRenderPortraitChoices();
+      const filteredMale=document.querySelectorAll('#npc-r8-gallery [data-portrait-id]').length;
+      document.getElementById('npc-r9-world').value='fantasy';
+      npcRenderPortraitChoices();
+      const filteredFantasy=document.querySelectorAll('#npc-r8-gallery [data-portrait-id]').length;
+      document.getElementById('npc-r9-search').value='trầm tĩnh';
+      npcRenderPortraitChoices();
+      const filteredMood=document.querySelectorAll('#npc-r8-gallery [data-portrait-id]').length;
+      document.getElementById('npc-r9-gender').value='all';
+      document.getElementById('npc-r9-world').value='all';
+      document.getElementById('npc-r9-search').value='';
+      npcRenderPortraitChoices();
       npcSelectPortraitPreset('portrait-f-07');
       const preview=document.getElementById('npc-r8-preview');
       const presetPreview=preview.src.startsWith('data:image/svg+xml');
@@ -1015,12 +1028,15 @@ async function main() {
       story.characters=JSON.parse(original);
       localStorage.setItem('dudu-sandbox-library',JSON.stringify(novels));
       userProfile.role=originalRole;applyUserRole();editingCharNovelId=priorNovel;
-      return {missing:false,choices,presetPreview,selected,uploadId,uploaded,
+      return {missing:false,choices,filteredMale,filteredFantasy,filteredMood,presetPreview,selected,uploadId,uploaded,
         ownSrc:typeof ownSrc==='string'&&ownSrc.startsWith('data:image/jpeg;base64,'),
         otherSrc,sameCount,writes:window.__firestoreWrites.length-beforeWrites};
     });
     assert.equal(portraitBrowser.missing,false);
-    assert.equal(portraitBrowser.choices,24);
+    assert.equal(portraitBrowser.choices,72);
+    assert.equal(portraitBrowser.filteredMale,24);
+    assert.equal(portraitBrowser.filteredFantasy,8);
+    assert.equal(portraitBrowser.filteredMood,0);
     assert.equal(portraitBrowser.presetPreview,true);
     assert.equal(portraitBrowser.selected,'portrait-f-07');
     assert.ok(/^own-/.test(portraitBrowser.uploadId));
