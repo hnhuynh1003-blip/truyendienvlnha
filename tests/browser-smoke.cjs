@@ -912,6 +912,72 @@ async function main() {
     assert.equal(expansionSmoke.correctRemoved,true,'Filtering must not delete a different item');
     assert.equal(expansionSmoke.writes,0,'Sandbox R5 and inventory never write Firestore');
 
+    // R7 author preview: preferences and secret milestone DRAFT remain sandbox-local.
+    const npcR7Author=await page.evaluate(()=>{
+      const story=novels[selectedNovelIndex];
+      const npcIndex=(story.characters||[]).findIndex(c=>c&&c.id);
+      if(npcIndex<0)return {missing:true};
+      const originalCharacters=JSON.stringify(story.characters);
+      const originalRole=userProfile.role;
+      const previousChapter=story.chapters.find(ch=>ch.id);
+      const originalStoryId=editingCharNovelId;
+      const originalSelection=document.getElementById('codex-novel-selector').value;
+      const writesBefore=window.__firestoreWrites.length;
+      userProfile.role='admin';applyUserRole();
+      renderCodexDropdown();
+      document.getElementById('codex-novel-selector').value=story.id;
+      const npc=story.characters[npcIndex],id=npc.id;
+      openEditCharacterModal(npcIndex);
+      const sectionVisible=document.getElementById('npc-r7-author-fields').style.display;
+      document.getElementById('npc-r7-use-custom').checked=true;
+      toggleNpcR7Custom();
+      document.getElementById('npc-r7-liked').value='PRACTICAL';
+      document.getElementById('npc-r7-disliked').value='DANGEROUS';
+      document.getElementById('npc-r7-style').value='reserved';
+      document.getElementById('npc-r7-portrait').value='https://evil.example/x.webp';
+      document.getElementById('npc-r7-milestones').value=
+        'r7-trust|'+previousChapter.id+'|30';
+      saveCharacterModal();
+      const invalidRejected=!story.characters[npcIndex].portraitPath;
+      document.getElementById('npc-r7-portrait').value='assets/npc/test-r7.webp';
+      saveCharacterModal();
+      const after=story.characters[npcIndex];
+      const key=DuduNpcAuthorR7.sandboxMilestoneDraftKey(story.id,id);
+      const draft=JSON.parse(localStorage.getItem(key)||'null');
+      const publicNovel=JSON.parse(localStorage.getItem('dudu-sandbox-library')||'[]')
+        .find(n=>n.id===story.id);
+      openEditCharacterModal(npcIndex);
+      const reloadedPortrait=document.getElementById('npc-r7-portrait').value;
+      const reloadedMilestone=document.getElementById('npc-r7-milestones').value;
+      closeModals();
+      const result={missing:false,sectionVisible,invalidRejected,
+        preference:after.giftPreferences?.likedTags?.[0],
+        portrait:after.portraitPath,reloadedPortrait,reloadedMilestone,
+        draftOnly:draft?.verified===false&&draft?.milestones?.[0]?.chapterId===previousChapter.id,
+        notPublic:!(publicNovel?.characters?.[npcIndex]?.milestones),
+        originalCount:JSON.parse(originalCharacters).length,
+        afterCount:story.characters.length,
+        writes:window.__firestoreWrites.length-writesBefore};
+      story.characters=JSON.parse(originalCharacters);
+      localStorage.removeItem(key);
+      userProfile.role=originalRole;applyUserRole();saveDB();
+      editingCharNovelId=originalStoryId;
+      document.getElementById('codex-novel-selector').value=originalSelection;
+      return result;
+    });
+    assert.equal(npcR7Author.missing,false,'Sandbox fixture must have an NPC');
+    assert.equal(npcR7Author.sectionVisible,'block');
+    assert.equal(npcR7Author.invalidRejected,true,'External art URLs must be blocked');
+    assert.equal(npcR7Author.preference,'PRACTICAL');
+    assert.equal(npcR7Author.portrait,'assets/npc/test-r7.webp');
+    assert.equal(npcR7Author.reloadedPortrait,'assets/npc/test-r7.webp');
+    assert.match(npcR7Author.reloadedMilestone,/r7-trust\\|/);
+    assert.equal(npcR7Author.draftOnly,true,'Milestones must stay unverified private drafts');
+    assert.equal(npcR7Author.notPublic,true,'Milestones must not enter public novel');
+    assert.equal(npcR7Author.originalCount,npcR7Author.afterCount,
+      'Editing must not create or unlock extra NPCs');
+    assert.equal(npcR7Author.writes,0,'R7 sandbox authoring cannot write Firestore');
+
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
     console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));
   } finally {
