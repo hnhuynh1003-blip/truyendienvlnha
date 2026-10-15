@@ -745,6 +745,55 @@ async function main() {
     assert.equal(otherAccountLoot.hasTaggedDrop,false,'Loot inventory must not leak between users');
     assert.equal(otherAccountLoot.writes,0);
 
+    // R2/R3 sandbox gameplay: gift lifecycle, cap, persistence and no cloud writes.
+    const relationshipSandbox = await page.evaluate(async () => {
+      const novel=novels[selectedNovelIndex],char=novel.characters.find(x=>!x.archived);
+      const beforeProfile=JSON.stringify(userProfile);
+      const beforeActive=activeChatNovelId;
+      activeChatNovelId=novel.id;
+      const progress=getStoryProgress(novel.id);
+      progress.collectedCharacters[char.id]={id:char.id,affinity:39,
+        relationshipV2:{version:1,trust:0,stage:'ACQUAINTED',lastGiftAt:0,
+          giftDayUtc:'',acceptedGiftCountUtc:0,acceptedInstanceIds:[]}};
+      userProfile.inventory=[{...DuduItemCatalog.common[0]},{...DuduItemCatalog.common[0]}];
+      const writesBefore=window.__firestoreWrites.length;
+      const first=await executeGiftItem(char.id,0);
+      const afterFirst={affinity:progress.collectedCharacters[char.id].affinity,
+        trust:progress.collectedCharacters[char.id].relationshipV2.trust,
+        count:userProfile.inventory.length};
+      await executeGiftItem(char.id,0);
+      const afterRetry={affinity:progress.collectedCharacters[char.id].affinity,
+        count:userProfile.inventory.length};
+      progress.collectedCharacters[char.id].relationshipV2.lastGiftAt=0;
+      progress.collectedCharacters[char.id].relationshipV2.giftDayUtc='';
+      progress.collectedCharacters[char.id].relationshipV2.acceptedGiftCountUtc=0;
+      await executeGiftItem(char.id,0);
+      const atCap={affinity:progress.collectedCharacters[char.id].affinity,
+        count:userProfile.inventory.length};
+      const stored=JSON.parse(localStorage.getItem(scopedLocalKey('profile'))||'null');
+      const savedAffinity=stored?.storyStates?.[novel.id]?.collectedCharacters?.[char.id]?.affinity;
+      const panel=document.getElementById('npc-relationship-r3-preview');
+      const select=document.getElementById('chat-character-selector');
+      select.value=char.id;
+      switchChatCharacter();
+      const panelText=panel.textContent;
+      const writes=window.__firestoreWrites.length-writesBefore;
+      userProfile=JSON.parse(beforeProfile);
+      activeChatNovelId=beforeActive;
+      saveCurrentAccount();
+      return {afterFirst,afterRetry,atCap,savedAffinity,panelText,writes};
+    });
+    assert.deepEqual(relationshipSandbox.afterFirst,{affinity:40,trust:0,count:1});
+    assert.deepEqual(relationshipSandbox.afterRetry,{affinity:40,count:1},
+      'Immediate repeat cannot consume the second gift');
+    assert.deepEqual(relationshipSandbox.atCap,{affinity:40,count:1},
+      'At trust 0, a neutral gift cannot exceed 40 or consume the item');
+    assert.equal(relationshipSandbox.savedAffinity,40,
+      'Sandbox profile must persist relationship state before restoration');
+    assert.match(relationshipSandbox.panelText,/Trần thiện cảm mới: 40\/100/);
+    assert.equal(relationshipSandbox.writes,0,
+      'Gift sandbox never writes production Firestore');
+
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
     console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));
   } finally {
