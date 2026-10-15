@@ -55,6 +55,8 @@
     const ceiling=rules.affinityCeiling(trust+trustGain);
     const delta=Object.freeze({affinity:Math.max(0,Math.min(gain,ceiling-affinity)),
       trust:trustGain});
+    // Do not consume neutral gifts when the NPC can gain nothing.
+    if(delta.affinity===0&&delta.trust===0)return refusal('affinity-locked-by-trust');
     return Object.freeze({status:'ACCEPT',reason:liked?'liked':'neutral',
       consumesItem:true,delta,day,instanceId,giftEventId,
       nextCount:count+1,lastGiftAt:now});
