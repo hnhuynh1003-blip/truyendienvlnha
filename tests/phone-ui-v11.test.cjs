@@ -9,7 +9,7 @@ test('V11 sandbox stylesheet and toggles remain isolated from production',()=>{
   assert.match(html,/rel="stylesheet" href="css\/phone-ui-v11\.css"/);
   assert.match(html,/if \(IS_SANDBOX_MODE\) \{\s*document\.body\.classList\.add\('dudu-phone-v11'\)/);
   assert.match(html,/document\.body\.classList\.toggle\('dudu-phone-open', opened\)/);
-  assert.match(html,/body\.dudu-phone-v11 #cyber-phone/);
+  assert.match(css,/body\.dudu-phone-v11 #cyber-phone/);
   assert.match(html,/role="dialog" aria-label="Cyber Phone DUDU"/);
   assert.ok(!/(^|\n)\s*#cyber-phone\s*\{/.test(css),
     'V11 may style the live phone only through the Sandbox body class');
