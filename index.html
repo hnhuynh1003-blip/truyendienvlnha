@@ -6,6 +6,7 @@
   <title>DUDU Studio</title>
   
   <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/phone-ui-v11.css">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -545,7 +546,7 @@
     .widget-currency { font-size: 10px; color: var(--gold); font-weight: bold; }
 
     .phone-app-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 8px 0; }
-    .app-icon { display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; }
+    .app-icon { appearance:none; display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer; border:0; padding:0; width:100%; background:transparent; color:inherit; font:inherit; text-align:center; }
     .app-box {
       width: 44px; height: 44px; border-radius: 10px; display: flex; justify-content: center;
       align-items: center; font-size: 18px; box-shadow: 0 4px 8px rgba(0,0,0,0.3);
@@ -785,14 +786,15 @@
   </div>
 
   <!-- CYBER MINI PHONE -->
-  <div id="phone-fab" onclick="togglePhone()" title="Hệ Thống [P]">📱</div>
+  <button type="button" id="phone-fab" onclick="togglePhone()" title="Hệ Thống [P]" aria-controls="cyber-phone" aria-expanded="false" aria-label="Mở Cyber Phone">📱</button>
 
-  <div id="cyber-phone">
+  <div id="cyber-phone" role="dialog" aria-label="Cyber Phone DUDU" aria-modal="false" aria-hidden="true">
     <div class="phone-speaker"></div>
     <div class="phone-screen">
       <div class="phone-status-bar">
-        <span>12:00</span>
-        <span>SYSTEM_V2.6 ⚡</span>
+        <span id="phone-clock">--:--</span>
+        <span class="phone-system-label">✦ DUDU LINK</span>
+        <button type="button" class="phone-close-btn" onclick="togglePhone()" title="Đóng điện thoại" aria-label="Đóng Cyber Phone">×</button>
       </div>
 
       <div id="phone-home-screen">
@@ -808,41 +810,41 @@
         </div>
 
         <div class="phone-app-grid">
-          <div class="app-icon" onclick="openPhoneApp('profile')">
+          <button type="button" class="app-icon" onclick="openPhoneApp('profile')" aria-label="Mở Cá Nhân">
             <div class="app-box" style="background: #3b82f6;">👤</div>
             <div class="app-label">Cá Nhân</div>
-          </div>
-          <div class="app-icon" onclick="openPhoneApp('inventory')">
+          </button>
+          <button type="button" class="app-icon" onclick="openPhoneApp('inventory')" aria-label="Mở Kho Đồ">
             <div class="app-box" style="background: #8b5cf6;">🎒</div>
             <div class="app-label">Kho Đồ</div>
-          </div>
-          <div class="app-icon" onclick="openPhoneApp('quests')">
+          </button>
+          <button type="button" class="app-icon" onclick="openPhoneApp('quests')" aria-label="Mở Nhiệm Vụ">
             <div class="app-box" style="background: #f59e0b;">📜</div>
             <div class="app-label">Nhiệm Vụ</div>
-          </div>
-          <div class="app-icon" onclick="openPhoneApp('codex')">
+          </button>
+          <button type="button" class="app-icon" onclick="openPhoneApp('codex')" aria-label="Mở Nhân Vật">
             <div class="app-box" style="background: #ec4899;">🎴</div>
             <div class="app-label">Nhân Vật</div>
-          </div>
-          <div class="app-icon" onclick="openPhoneApp('chat')">
+          </button>
+          <button type="button" class="app-icon" onclick="openPhoneApp('chat')" aria-label="Mở Liên Lạc">
             <div class="app-box" style="background: #06b6d4;">💬</div>
             <div class="app-label">Liên Lạc</div>
-          </div>
-          <div class="app-icon" onclick="openPhoneApp('shop')">
+          </button>
+          <button type="button" class="app-icon" onclick="openPhoneApp('shop')" aria-label="Mở Cửa Hàng">
             <div class="app-box" style="background: #10b981;">🛒</div>
             <div class="app-label">Cửa Hàng</div>
-          </div>
-          <div class="app-icon" onclick="openPhoneApp('museum')">
+          </button>
+          <button type="button" class="app-icon" onclick="openPhoneApp('museum')" aria-label="Mở Bảo Tàng">
             <div class="app-box" style="background: #b45309;">🏛️</div>
             <div class="app-label">Bảo Tàng</div>
-          </div>
-          <div class="app-icon" onclick="openPhoneApp('settings')">
+          </button>
+          <button type="button" class="app-icon" onclick="openPhoneApp('settings')" aria-label="Mở Cài Đặt">
             <div class="app-box" style="background: #64748b;">⚙️</div>
             <div class="app-label">Cài Đặt</div>
-          </div>
+          </button>
         </div>
 
-        <div style="text-align: center; font-size: 9px; color: #475569;">DUDU LINK SYSTEM ONLINE</div>
+        <div class="phone-home-caption">✦ DUDU LINK · NHÂN DUYÊN · TAM GIỚI ✦</div>
       </div>
 
       <!-- APP: HỒ SƠ -->
@@ -1028,7 +1030,7 @@
         </div>
       </div>
 
-      <div class="phone-home-bar" onclick="phoneHome()"></div>
+      <button type="button" class="phone-home-bar" onclick="phoneHome()" aria-label="Về màn hình chính của Cyber Phone" title="Màn hình chính"></button>
     </div>
   </div>
 
@@ -1389,6 +1391,7 @@
     DuduAI.init(IS_SANDBOX_MODE);
     DuduCollectiblesClient.init(IS_SANDBOX_MODE);
     if (IS_SANDBOX_MODE) {
+      document.body.classList.add('dudu-phone-v11');
       const banner = document.createElement('div');
       banner.textContent = '🧪 SANDBOX — Dữ liệu thử nghiệm cục bộ, không đồng bộ máy chủ';
       banner.style.cssText = 'position:sticky;top:0;z-index:9999;text-align:center;background:#78350f;color:#fff;padding:5px;font-size:12px;';
@@ -2929,13 +2932,37 @@
 
     function togglePhone() {
       const phone = document.getElementById('cyber-phone');
-      phone.style.display = (phone.style.display === 'flex') ? 'none' : 'flex';
-      if (phone.style.display === 'flex') {
+      const opened = phone.style.display !== 'flex';
+      phone.style.display = opened ? 'flex' : 'none';
+      if (IS_SANDBOX_MODE) {
+        document.body.classList.toggle('dudu-phone-open', opened);
+        phone.setAttribute('aria-hidden', opened ? 'false' : 'true');
+        const trigger = document.getElementById('phone-fab');
+        trigger.setAttribute('aria-expanded', opened ? 'true' : 'false');
+        trigger.setAttribute('aria-label', opened ? 'Đóng Cyber Phone' : 'Mở Cyber Phone');
+        if (opened) {
+          const clock = document.getElementById('phone-clock');
+          if (clock) clock.textContent = new Intl.DateTimeFormat('vi-VN', {
+            hour:'2-digit',minute:'2-digit',hour12:false
+          }).format(new Date());
+        } else trigger.focus({preventScroll:true});
+      }
+      if (opened) {
         updatePhoneUI();
         startCooldownTicker();
         updateActiveModelInfo();
       }
     }
+
+    // Escape closes only the Sandbox phone; other modal controls keep focus.
+    document.addEventListener('keydown', event => {
+      if (!IS_SANDBOX_MODE || event.key !== 'Escape') return;
+      const phone=document.getElementById('cyber-phone');
+      if (phone?.style.display !== 'flex') return;
+      const modalOpen=[...document.querySelectorAll('.modal-overlay')].some(
+        element=>element.style.display==='flex');
+      if (!modalOpen) togglePhone();
+    });
 
     function phoneHome() {
       document.querySelectorAll('.phone-sub-app').forEach(el => el.style.display = 'none');
