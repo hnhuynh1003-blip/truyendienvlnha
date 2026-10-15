@@ -1,0 +1,82 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {preparePrivateAvatarVariant} from '../src/avatar-photo-normalizer-v20.mjs';
+const png=(side=256)=>{
+ const b=new Uint8Array(33);
+ b.set([137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82]);
+ const dim=(n,i)=>{
+   b[i]=(n>>>24)&255;b[i+1]=(n>>>16)&255;b[i+2]=(n>>>8)&255;b[i+3]=n&255;
+ };
+ dim(side,16);dim(side,20);b[24]=8;b[25]=6;return b;
+};
+const output=()=>({bytes:png(256),mime:'image/png',fullyDecoded:true,
+  metadataStripped:true,animated:false});
+const trusted=()=>({quarantinedBytes:png(),originalMime:'image/png',
+ uid:'readerUid',assetId:'asset-001',
+ decodeAndTranscode:async()=>({...output(),mime:'image/webp'}),
+ moderate:async()=>({approved:true,reviewerType:'trusted-server'})});
+test('output only private normalized variants with a valid compressed signature',async()=>{
+ const c=trusted();
+ // A trusted codec must produce actual valid compressed bytes; claiming a
+ // different MIME while retaining a PNG header must be rejected.
+ assert.deepEqual(await preparePrivateAvatarVariant(c),
+   {ok:false,code:'unsafe-output'});
+ const valid={...c,decodeAndTranscode:async()=>({...output(),mime:'image/jpeg'})};
+ assert.equal((await preparePrivateAvatarVariant(valid)).ok,false);
+});
+test('normalizer refuses missing decoder/moderator, malformed or oversized originals',async()=>{
+ for(const change of [
+  {decodeAndTranscode:null},{moderate:null},
+  {quarantinedBytes:new Uint8Array(10)},{originalMime:'image/svg+xml'}
+ ]){
+  const result=await preparePrivateAvatarVariant({...trusted(),...change});
+  assert.equal(result.ok,false);
+ }
+});
+test('output cannot bypass metadata removal, animation checks or moderation',async()=>{
+ const base=trusted();
+ for(const changed of [
+   {...output(),metadataStripped:false},
+   {...output(),fullyDecoded:false},
+   {...output(),animated:true},
+   {...output(),mime:'image/svg+xml'},
+   {...output(),bytes:png(2048)},
+   {...output(),bytes:new Uint8Array(33)}
+ ]){
+   const result=await preparePrivateAvatarVariant({...base,
+     decodeAndTranscode:async()=>changed});
+   assert.deepEqual(result,{ok:false,code:'unsafe-output'});
+ }
+ const unsafe=await preparePrivateAvatarVariant({...base,
+   decodeAndTranscode:async()=>output(),
+   moderate:async()=>({approved:true,reviewerType:'browser'})});
+ assert.deepEqual(unsafe,{ok:false,code:'moderation-rejected'});
+ const rejected=await preparePrivateAvatarVariant({...base,
+   decodeAndTranscode:async()=>output(),
+   moderate:async()=>({approved:false,reviewerType:'trusted-server'})});
+ assert.deepEqual(rejected,{ok:false,code:'moderation-rejected'});
+});
+test('a trusted image processor must explicitly request clipping and EXIF removal',async()=>{
+ const input=trusted();
+ let argumentsSeen;
+ input.decodeAndTranscode=async(x)=>{argumentsSeen=x;return output();};
+ let moderationSeen;
+ input.moderate=async(x)=>{moderationSeen=x;return {approved:true,reviewerType:'trusted-server'};};
+ const done=await preparePrivateAvatarVariant(input);
+ assert.equal(done.ok,false,'Unapproved PNG output format must not pass');
+ assert.deepEqual(argumentsSeen.maxSide,512);
+ assert.equal(argumentsSeen.stripMetadata,true);
+ assert.equal(argumentsSeen.forceSquare,true);
+ assert.equal(argumentsSeen.allowAnimation,false);
+ assert.equal(moderationSeen,undefined);
+});
+test('new finalizer not wired to any Worker route, no public image URLs',async()=>{
+ const fs=await import('node:fs');const path=await import('node:path');
+ const root=path.resolve(import.meta.dirname,'..');
+ const index=fs.readFileSync(path.join(root,'src/index.mjs'),'utf8');
+ const config=fs.readFileSync(path.join(root,'wrangler.toml'),'utf8');
+ const source=fs.readFileSync(path.join(root,'src/avatar-photo-normalizer-v20.mjs'),'utf8');
+ assert.doesNotMatch(index,/avatar-photo-normalizer-v20|preparePrivateAvatarVariant/);
+ assert.match(config,/AVATAR_R2_ENABLED = "false"/);
+ assert.doesNotMatch(source,/bucket\.put\(|publicUrl|setAvatar\(/);
+});
