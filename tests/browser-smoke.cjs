@@ -331,6 +331,30 @@ async function main() {
     assert.equal(lootPhase2.freeCountAfter,lootPhase2.scifi.cooldownAfterOne);
     assert.equal(lootPhase2.firestoreWrites,0,'Sandbox must not update production Firestore');
 
+    const readDaily = await page.evaluate(() => {
+      const novel=novels[selectedNovelIndex];
+      const chapter=novel.chapters[0];
+      const rewardKey=novel.id+'_'+(chapter.id||0);
+      const quest=userProfile.quests.find(q=>q.id==='q_daily_read');
+      quest.current=0;
+      quest.claimed=false;
+      userProfile.dailyReadLog={day:'2000-01-01',chapters:[]};
+      const expBefore=userProfile.exp;
+      readChapter(0);
+      const counted=quest.current;
+      readChapter(0);
+      const countedAgain=quest.current;
+      return {counted,countedAgain,expBefore,expAfter:userProfile.exp,
+        rewarded:userProfile.readRewards[rewardKey]===true,
+        day:userProfile.dailyReadLog.day,
+        distinct:userProfile.dailyReadLog.chapters.length};
+    });
+    assert.equal(readDaily.counted,1,'Previously opened chapters may count towards a new-day quest');
+    assert.equal(readDaily.countedAgain,1,'Same chapter must not repeat daily quest progress today');
+    assert.equal(readDaily.expAfter,readDaily.expBefore,'Daily reading must never duplicate first-time EXP');
+    assert.equal(readDaily.rewarded,true);
+    assert.equal(readDaily.distinct,1);
+
     const realmEditor = await page.evaluate(() => {
       userProfile.role='admin'; // sandbox fixture only; never production Firebase
       applyUserRole();
