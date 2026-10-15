@@ -1,5 +1,5 @@
 import {DurableObject} from 'cloudflare:workers';
-import {isChapterMature} from './collectible-rules.mjs';
+import {isChapterMature,isEligibleSelfTestGrant} from './collectible-rules.mjs';
 
 /* Server-side collectible ownership ledger.
  * Separate from client-written Firestore profile inventory. All methods receive
@@ -186,10 +186,7 @@ export class DuduCollectibles extends DurableObject {
       // For staging this endpoint grants ONLY an F-rank STORY_EVENT test
       // relic to the already JWT-verified admin UID (enforced at gateway).
       // Introduce a separate reviewed workflow for real reader awards later.
-      if(!item||item.disabled||item.method!=='STORY_EVENT'||
-         item.chapterId!==null||item.rank!=='F'||
-         typeof item.name!=='string'||
-         !item.name.toLocaleLowerCase('vi').includes('kiểm thử'))
+      if(!isEligibleSelfTestGrant(item))
         return {ok:false,code:'not-available'};
       const existed=this.sql.exec('SELECT 1 AS yes FROM ownership WHERE uid=? AND story_id=? AND item_id=?',
         uid,storyId,itemId).toArray()[0];
