@@ -12,7 +12,7 @@
   const CONFIG=Object.freeze({maxAffinityGainPerGift:8,scoredGiftsPerNpcUtcDay:3,
     giftCooldownMs:300000,refusedGiftConsumesItem:false});
   const TAGS=Object.freeze(['COMMON_ITEM','REALM_ITEM','COLLECTIBLE',
-    'FOOD','PRACTICAL','DRINK_COFFEE','DANGEROUS','BOUNDARY_VIOLATION']);
+    'FOOD','PRACTICAL','DRINK_COFFEE','KEEPSAKE','DANGEROUS','BOUNDARY_VIOLATION']);
   // Explicit ID-indexed registry; neutral baseline tags intentionally do not
   // imply an NPC likes an item. Future editorial tags require review.
   const CATALOG_TAGS=Object.freeze({
@@ -87,6 +87,17 @@
     'dudu-founders-badge': Object.freeze(['COLLECTIBLE']),
     'sss1': Object.freeze(['COLLECTIBLE'])
   });
+  // Manually reviewed item ID mapping; never infer from names or Gemini.
+  const EDITORIAL_GIFT_TAGS=Object.freeze({
+    'common-gauze':['PRACTICAL'],'common-basic-medkit':['PRACTICAL'],
+    'common-repair-kit':['PRACTICAL'],'common-water-filter':['PRACTICAL'],
+    'common-bottled-water':['PRACTICAL'],
+    'e2':['DRINK_COFFEE'],'urban-coffee':['DRINK_COFFEE'],
+    'urban-oneway-ticket':['KEEPSAKE'],'urban-old-newspaper':['KEEPSAKE'],
+    'urban-recorder':['KEEPSAKE'],
+    'e3':['DANGEROUS'],'c1':['DANGEROUS'],
+    'b1':['DANGEROUS'],'b2':['DANGEROUS'],'s1':['DANGEROUS']
+  });
   const ID=/^[a-zA-Z0-9][a-zA-Z0-9_-]{0,159}$/;
   const STAGES=Object.freeze(['ACQUAINTED','FRIENDLY','TRUSTED','BONDED']);
   const STYLES=Object.freeze(['default','reserved','cheerful','gentle']);
@@ -114,7 +125,7 @@
     if(!item||!asId(item.id))return null;
     const tags=CATALOG_TAGS[item.id];
     // Story items require author-assigned tags: never infer them from title.
-    if(tags)return tags;
+    if(tags)return Object.freeze([...tags,...(EDITORIAL_GIFT_TAGS[item.id]||[])]);
     if(!item.id.startsWith('author-item-'))return null;
     if(!Array.isArray(item.giftTags)||item.giftTags.length>TAGS.length||
       item.giftTags.some(t=>!TAGS.includes(t))||
@@ -164,6 +175,6 @@
       item.scope!=='DUDU'&&item.scope!=='STORY'&&item.scope!=='CHAPTER'&&
       item.archived!==true;
   }
-  return Object.freeze({VERSION,CONFIG,TAGS,CATALOG_TAGS,STAGES,STYLES,
+  return Object.freeze({VERSION,CONFIG,TAGS,CATALOG_TAGS,EDITORIAL_GIFT_TAGS,STAGES,STYLES,
     normalizePreferences,itemTags,validScope,previewRelationship,affinityCeiling,canBeGifted});
 });
