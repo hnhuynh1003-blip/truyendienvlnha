@@ -5,6 +5,8 @@ export {DuduCollectibles} from './collectibles.mjs';
 export {DuduPlayerAppearance} from './player-appearance.mjs';
 import {normalizeAppearanceSave,displayState} from './player-appearance-rules.mjs';
 import {verifyAwardWebhook,EVENT_MAX_BYTES} from './avatar-award-webhook.mjs';
+import {IMAGE_LIMITS} from './avatar-image-policy.mjs';
+import {putQuarantinedPhoto,deleteQuarantinedPhoto} from './avatar-r2-quarantine.mjs';
 import {normalizedPrivateDraft,normalizedDraftApproval,parseScopedIds,cleanId} from './collectible-rules.mjs';
 
 const MODEL='gemini-3.5-flash-lite';
@@ -91,6 +93,63 @@ async function handleSignedFrameEvidence(req,env,origin){
   }
 }
 
+const AVATAR_DRAFT_PATHS=Object.freeze({
+  '/v1/avatar-drafts/upload':'POST',
+  '/v1/avatar-drafts/delete':'POST'
+});
+async function boundedPhotoBytes(req){
+  const declared=Number(req.headers.get('Content-Length')||0);
+  if(!Number.isFinite(declared)||declared>IMAGE_LIMITS.maxBytes||!req.body)return null;
+  const reader=req.body.getReader();
+  let total=0;const chunks=[];
+  try{
+    while(true){
+      const {value,done}=await reader.read();
+      if(done)break;
+      total+=value.byteLength;
+      if(total>IMAGE_LIMITS.maxBytes){await reader.cancel();return null;}
+      chunks.push(value);
+    }
+    const bytes=new Uint8Array(total);let offset=0;
+    for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.byteLength;}
+    return bytes;
+  }catch(_){return null;}
+  finally{reader.releaseLock();}
+}
+async function handleAvatarDraft(req,env,path,origin){
+  // No public image reads: this stores raw bytes in a PRIVATE quarantine only.
+  if(env.AVATAR_R2_ENABLED!=='true')
+    return error('avatar-uploads-disabled','Lưu ảnh trên máy chủ chưa được mở.',503,origin,env);
+  const identity=await verifyFirebaseIdToken(req,env.PROJECT_ID);
+  if(!identity)return error('unauthenticated','Cần đăng nhập Firebase.',401,origin,env);
+  if(!env.DUDU_AVATAR_PRIVATE_BUCKET||!env.DUDU_PLAYER_APPEARANCE)
+    return error('avatar-storage-unavailable','Kho lưu trữ chưa được cấu hình.',503,origin,env);
+  const bucket=env.DUDU_AVATAR_PRIVATE_BUCKET;
+  const store=env.DUDU_PLAYER_APPEARANCE.getByName('player-avatar-'+identity.uid);
+  let result;
+  if(path==='/v1/avatar-drafts/upload'){
+    const mime=req.headers.get('Content-Type')?.toLowerCase();
+    if(!IMAGE_LIMITS.allowedMimes.includes(mime))
+      return error('invalid-media','Loại ảnh chưa được hỗ trợ.',415,origin,env);
+    const bytes=await boundedPhotoBytes(req);
+    if(!bytes)return error('invalid-image','Ảnh vượt dung lượng hoặc không hợp lệ.',413,origin,env);
+    result=await putQuarantinedPhoto({
+      uid:identity.uid,bytes,mime,bucket,store,now:Date.now(),
+      uuid:crypto.randomUUID()
+    });
+  }else{
+    if(!req.headers.get('Content-Type')?.toLowerCase().startsWith('application/json'))
+      return error('invalid-content','Yêu cầu phải là JSON.',415,origin,env);
+    const body=await limitedJson(req);
+    if(!body||Object.keys(body).sort().join(',')!=='assetId')
+      return error('invalid-request','Mã ảnh không hợp lệ.',400,origin,env);
+    result=await deleteQuarantinedPhoto({
+      uid:identity.uid,assetId:body.assetId,bucket,store
+    });
+  }
+  // IDs only; never expose R2 keys, original bytes or external URLs.
+  return json(result,result.ok?200:result.code==='photo-quota'?429:400,origin,env);
+}
 const PLAYER_APPEARANCE_PATHS=Object.freeze({
   '/v1/player-avatar/mine':'GET',
   '/v1/player-avatar/save':'POST'
@@ -304,12 +363,17 @@ export default {
     if(!allowed)return error('origin-blocked','Nguồn yêu cầu không được phép.',403,origin,env);
     if(req.method==='OPTIONS'){
       if(!origin||!allowOrigin(origin,env))return error('origin-blocked','Nguồn yêu cầu không được phép.',403,origin,env);
-      if(!['/v1/generate','/v1/status',...Object.keys(COLLECTIBLE_PATHS),...Object.keys(PLAYER_APPEARANCE_PATHS)].includes(path))
+      if(!['/v1/generate','/v1/status',...Object.keys(COLLECTIBLE_PATHS),...Object.keys(PLAYER_APPEARANCE_PATHS),...Object.keys(AVATAR_DRAFT_PATHS)].includes(path))
         return error('not-found','Không tìm thấy đường dẫn.',404,origin,env);
       return new Response(null,{status:204,headers:headers(origin,env)});
     }
     if(path==='/health'&&req.method==='GET'){
       return json({service:'dudu-ai',enabled:env.AI_ENABLED==='true',model:MODEL},200,origin,env);
+    }
+    if(path in AVATAR_DRAFT_PATHS){
+      if(req.method!==AVATAR_DRAFT_PATHS[path])
+        return error('method-not-allowed','Phương thức không được hỗ trợ.',405,origin,env);
+      return handleAvatarDraft(req,env,path,origin);
     }
     if(path in PLAYER_APPEARANCE_PATHS){
       if(req.method!==PLAYER_APPEARANCE_PATHS[path])
