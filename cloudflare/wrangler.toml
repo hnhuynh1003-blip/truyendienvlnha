@@ -10,6 +10,8 @@ AI_ENABLED = "false"
 COLLECTIBLES_ENABLED = "false"
 COLLECTIBLE_SELF_CLAIM_ENABLED = "false"
 PLAYER_AVATAR_SYNC_ENABLED = "false"
+AVATAR_AWARDS_ENABLED = "false"
+AVATAR_R2_ENABLED = "false"
 MODEL = "gemini-3.5-flash-lite"
 
 [[durable_objects.bindings]]
