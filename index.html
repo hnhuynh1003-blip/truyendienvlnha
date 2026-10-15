@@ -16,7 +16,10 @@
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-functions-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-check-compat.js"></script>
   <script src="js/auth-v2.js"></script>
+  <script src="js/ai-proxy.js"></script>
 
   <style>
     :root {
@@ -793,8 +796,17 @@
           <div style="font-size: 9px; color: var(--gold); margin-top: 2px;" id="profile-account-id">ID: Khách</div>
         </div>
         <div style="background: #1e293b; padding: 8px; border-radius: 8px; font-size: 11px; margin-bottom: 8px;">
-          <div>📚 Số truyện: <b id="stat-novels" style="color:var(--neon)">1</b></div>
-          <div style="margin-top: 2px;">📝 Tổng chương: <b id="stat-chapters" style="color:var(--neon)">1</b></div>
+          <div style="color:var(--gold);font-weight:bold;margin-bottom:3px;">📚 THƯ VIỆN DUDU (DÙNG CHUNG)</div>
+          <div>Số truyện công khai: <b id="stat-novels" style="color:var(--neon)">0</b></div>
+          <div>Tổng chương trong thư viện: <b id="stat-chapters" style="color:var(--neon)">0</b></div>
+        </div>
+        <div style="background: #1e293b; padding: 8px; border-radius: 8px; font-size: 11px; margin-bottom: 8px;">
+          <div style="color:var(--gold);font-weight:bold;margin-bottom:3px;">👤 TIẾN TRÌNH RIÊNG CỦA TÔI</div>
+          <div>Truyện đã mở đọc: <b id="stat-personal-reading" style="color:var(--neon)">0</b></div>
+          <div>NPC đã mở khóa: <b id="stat-personal-npcs" style="color:var(--neon)">0</b></div>
+          <div>Kho đồ: <b id="stat-personal-items" style="color:var(--neon)">0</b> vật phẩm</div>
+          <div>Cấp độ: <b id="stat-personal-level" style="color:var(--neon)">1</b> · Xu: <b id="stat-personal-coins" style="color:var(--neon)">0</b></div>
+          <div id="profile-guest-tip" style="color:#94a3b8;font-size:10px;margin-top:4px;display:none;">Đang xem với tư cách khách; đăng nhập để đồng bộ tiến trình.</div>
         </div>
         <button class="btn" style="width: 100%; font-size: 10px;" onclick="openAuthModal()">Đổi Tài Khoản / Đăng Xuất</button>
       </div>
@@ -912,10 +924,10 @@
         </div>
         
         <div style="margin-top: 10px; border-top: 1px solid #334155; padding-top: 8px; display:flex; flex-direction:column; gap:6px;">
-          <div style="font-size:10px; color:var(--gold); font-weight:bold;">🤖 Cấu Hình Google Gemini AI:</div>
-          <button class="btn" style="width:100%; font-size:10px;" onclick="configureAIKeyPrompt()">🔑 Cài đặt / Đổi Gemini API Key</button>
-          <button class="btn btn-primary" style="width:100%; font-size:10px;" onclick="testGeminiAPIConnection()">🔍 Kiểm Tra Kết Nối AI (Test Key)</button>
-          <div id="ai-current-model-info" style="font-size:9px; color:#94a3b8; text-align:center;">Model: Đang tự động dò tìm</div>
+          <div style="font-size:10px; color:var(--gold); font-weight:bold;">🤖 NPC AI — KẾT NỐI BẢO MẬT</div>
+          <div style="font-size:10px;color:var(--text-dim);">Chỉ cần tài khoản DUDU Studio, không nhập Gemini API key.</div>
+          <button class="btn btn-primary" style="width:100%; font-size:10px;" onclick="testGeminiAPIConnection()">🔍 Kiểm tra trạng thái và lượt AI</button>
+          <div id="ai-current-model-info" style="font-size:9px; color:#94a3b8; text-align:center;">AI đang chờ triển khai Cloud Functions</div>
       <button class="btn" style="width:100%;font-size:10px;" onclick="importLegacyChatsToCurrentStory()">📥 Nhập lịch sử chat cũ (có xác nhận)</button>
         </div>
       </div>
@@ -1117,6 +1129,7 @@
     const db = firebase.firestore();
     // ?sandbox=1: client-only testing, NEVER writes to production Firestore.
     const IS_SANDBOX_MODE = new URLSearchParams(window.location.search).get('sandbox') === '1';
+    DuduAI.init(IS_SANDBOX_MODE);
     if (IS_SANDBOX_MODE) {
       const banner = document.createElement('div');
       banner.textContent = '🧪 SANDBOX — Dữ liệu thử nghiệm cục bộ, không đồng bộ máy chủ';
@@ -1272,17 +1285,7 @@
       return Boolean(getStoryProgress(storyId).collectedCharacters[charId]);
     }
 
-    // DANH SÁCH MODEL GEMINI CẢI TIẾN TỰ ĐỘNG CHUYỂN ĐỔI KHI QUÁ TẢI (503 / 429)
-    const AI_FAILOVER_MODELS = [
-      'gemini-2.0-flash',
-      'gemini-1.5-flash',
-      'gemini-1.5-flash-8b',
-      'gemini-2.0-flash-lite',
-      'gemini-2.5-flash-lite',
-      'gemini-3.8-flash',
-      'gemini-3.5-flash-lite',
-      'gemini-3.1-flash-lite'
-    ];
+    // Model selection and failover are controlled exclusively by the server.
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     function playTone(freq, duration, type = 'sine') {
