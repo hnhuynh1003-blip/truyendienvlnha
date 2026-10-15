@@ -2,7 +2,7 @@ import {verifyFirebaseIdToken} from './auth.mjs';
 import {validRequest,quotaMessage} from './limits.mjs';
 export {DuduQuota} from './quota.mjs';
 
-const MODEL='gemini-2.5-flash-lite';
+const MODEL='gemini-3.5-flash-lite';
 const MAX_BODY_BYTES=18000;
 
 function allowOrigin(origin,env) {
