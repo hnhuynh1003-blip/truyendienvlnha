@@ -24,6 +24,7 @@
   <script src="js/item-catalog-v2.js"></script>
   <script src="js/loot-rules-v2.js"></script>
   <script src="js/author-items-v1.js"></script>
+  <script src="js/npc-editor-v1.js"></script>
   <script src="js/collectibles-client.js"></script>
 
   <style>
@@ -1165,10 +1166,12 @@
       <!-- KHU VỰC GÁN NPC VÀO CHƯƠNG NÀY CHO ADMIN -->
       <div class="modal-field">
         <label style="color:var(--neon); font-weight:bold;">⚡ Nhân vật xuất hiện trong chương này (để độc giả liên kết):</label>
-        <div style="display:flex; gap:6px; margin-bottom:6px; align-items:center;">
-          <input id="chapter-npc-filter" type="search" aria-label="Tìm NPC theo tên hoặc biệt danh" placeholder="Tìm nhân vật hoặc biệt danh..." oninput="filterChapterNpcPicker()" style="flex:1; min-width:0;">
+        <div style="display:flex;gap:6px;margin-bottom:6px;align-items:center;flex-wrap:wrap;">
+          <button id="chapter-npc-show-all" type="button" class="btn admin-only" onclick="toggleChapterNpcPicker()">+ Chọn từ Sổ Tay</button>
           <button type="button" class="btn admin-only" onclick="openAddCharacterModal(true)">+ Tạo NPC</button>
         </div>
+        <input id="chapter-npc-filter" type="search" aria-label="Tìm NPC theo tên hoặc biệt danh" placeholder="Tìm NPC để gắn vào chương..." oninput="filterChapterNpcPicker()" style="width:100%;min-width:0;display:none;margin-bottom:6px;">
+        <div style="font-size:10px;color:var(--text-dim);margin-bottom:5px;" id="chapter-npc-hint">Chỉ hiện NPC đã chọn. Muốn thêm, mở Sổ Tay ở trên.</div>
         <div id="chapter-modal-npc-picker" style="display:flex; flex-wrap:wrap; gap:6px; background:#0b0f15; padding:8px; border-radius:6px; border:1px solid #1f2937;"></div>
       </div>
 
@@ -1359,6 +1362,9 @@
     let editingCharNovelId = null;
     let returnToChapterAfterCharModal = false;
     let pendingChapterNpcSelection = [];
+    let chapterNpcSelectedIds = new Set();
+    let chapterNpcExpanded = false;
+    let showArchivedNpcs = false;
     let pendingChapterStoryItemIds = [];
     let authorItemEditorContext = null;
     let editingAuthorItemId = null;
@@ -2065,9 +2071,25 @@
         return;
       }
 
-      novel.characters.forEach((c, idx) => {
+      const archivedCount=novel.characters.filter(c=>c.archived).length;
+      if(canEditStories()&&archivedCount){
+        const row=document.createElement('div');
+        row.style.cssText='display:flex;justify-content:flex-end;align-items:center;gap:6px;margin-bottom:6px;';
+        const btn=document.createElement('button');btn.className='btn';
+        btn.textContent=showArchivedNpcs?'Ẩn NPC lưu trữ':'Xem NPC lưu trữ ('+archivedCount+')';
+        btn.addEventListener('click',toggleArchivedNpcs);row.append(btn);container.append(row);
+      }
+      const visibleCharacters=novel.characters
+        .map((c,idx)=>({c,idx})).filter(({c})=>!c.archived||(showArchivedNpcs&&canEditStories()));
+      if(!visibleCharacters.length){
+        const empty=document.createElement('p');empty.style.cssText='font-size:11px;color:var(--text-dim);';
+        empty.textContent='Không có NPC đang hoạt động. Bạn có thể khôi phục NPC đã lưu trữ.';
+        container.append(empty);
+      }
+      visibleCharacters.forEach(({c,idx}) => {
         const div = document.createElement('div');
         div.className = 'character-card';
+        if(c.archived)div.style.opacity='0.75';
         div.style.flexDirection = 'column';
         div.style.alignItems = 'stretch';
         div.style.gap = '6px';
@@ -2094,7 +2116,10 @@
               ? `<button class="btn btn-primary" style="padding: 2px 7px; font-size: 9px;" onclick="connectSoulAndChat('${c.id}', '${novel.id}')">💬 Trò chuyện</button>`
               : '<span style="font-size:10px; color:var(--text-dim);">🔒 Chưa mở khóa</span>'}
             <button class="btn admin-only" style="padding: 2px 6px; font-size: 9px;" onclick="openEditCharacterModal(${idx})">Sửa</button>
-            <button class="btn btn-danger admin-only" style="padding: 2px 6px; font-size: 9px;" onclick="deleteCharacterFromCodex(${idx})">Xóa</button>
+            ${c.archived
+              ? `<button class="btn admin-only" style="padding:2px 6px;font-size:9px;" onclick="restoreCharacterFromCodex(${idx})">Khôi phục</button>`
+              : `<button class="btn admin-only" style="padding:2px 6px;font-size:9px;" onclick="deleteCharacterFromCodex(${idx})">Lưu trữ</button>`}
+          
           </div>
         `;
         container.appendChild(div);
@@ -2231,9 +2256,7 @@
       editingCharIndex = null;
       editingCharNovelId = novel.id;
       returnToChapterAfterCharModal = fromChapter;
-      pendingChapterNpcSelection = fromChapter
-        ? Array.from(document.querySelectorAll('#chapter-modal-npc-picker input:checked')).map(el => el.value)
-        : [];
+      pendingChapterNpcSelection=fromChapter?[...chapterNpcSelectedIds]:[];
       if (fromChapter) document.getElementById('chapter-modal').style.display = 'none';
       document.getElementById('char-modal-heading').textContent = `THÊM NHÂN VẬT - [${novel.title}]`;
       document.getElementById('char-input-name').value = '';
@@ -2311,16 +2334,35 @@
       showSystemAlert("LƯU THÀNH CÔNG", `Đã lưu nhân vật [${name}] cho truyện [${novel.title}]!`);
     }
 
-    function deleteCharacterFromCodex(idx) {
-      if (!canEditStories()) return;
-      const novel = getSelectedCodexNovel();
-      if (confirm(`Bạn có chắc muốn xóa nhân vật "${novel.characters[idx].name}"?`)) {
-        novel.characters.splice(idx, 1);
-        saveDB();
-        renderCodexDropdown();
-        renderCodexList();
-        renderChatDropdown();
-      }
+    function deleteCharacterFromCodex(idx){
+      // Legacy entry point now deliberately ARCHIVES, never destructively
+      // deletes a character that may belong to readers or private drafts.
+      if(!canEditStories())return;
+      const novel=getSelectedCodexNovel();
+      const npc=novel?.characters?.[idx];
+      if(!npc||npc.archived)return;
+      const refs=DuduNpcEditor.usage(novel,npc.id);
+      const note=refs.chapterCount+' chương và '+refs.itemCount+' kỷ vật công khai.';
+      if(!confirm('Lưu trữ NPC "'+npc.name+'"?\\nLiên kết hiện có: '+note+
+        '\\nNPC sẽ ẩn khỏi danh sách chọn mới, nhưng ID, lịch sử và các liên kết cũ được giữ.'))return;
+      DuduNpcEditor.archive(novel,npc.id);
+      saveDB();
+      renderCodexDropdown();renderCodexList();renderChatDropdown();
+      showSystemAlert('ĐÃ LƯU TRỮ','NPC được ẩn an toàn. Có thể khôi phục trong Sổ Tay.');
+    }
+    function restoreCharacterFromCodex(idx){
+      if(!canEditStories())return;
+      const novel=getSelectedCodexNovel(),npc=novel?.characters?.[idx];
+      if(!npc||!npc.archived)return;
+      DuduNpcEditor.restore(novel,npc.id);
+      saveDB();
+      renderCodexDropdown();renderCodexList();renderChatDropdown();
+      showSystemAlert('ĐÃ KHÔI PHỤC','NPC có thể được gắn vào các chương mới.');
+    }
+    function toggleArchivedNpcs(){
+      if(!canEditStories())return;
+      showArchivedNpcs=!showArchivedNpcs;
+      renderCodexList();
     }
 
     function togglePhone() {
@@ -3793,40 +3835,66 @@
     // ==========================================
     // SOẠN THẢO CHƯƠNG: TÍCH CHỌN NHÂN VẬT GẮN VÀO CHƯƠNG
     // ==========================================
-    function filterChapterNpcPicker() {
-      const q = (document.getElementById('chapter-npc-filter').value || '').trim().toLocaleLowerCase('vi');
-      document.querySelectorAll('#chapter-modal-npc-picker label').forEach(label => {
-        label.style.display = (label.dataset.npcSearch || '').includes(q) ? 'inline-flex' : 'none';
-      });
+    function filterChapterNpcPicker(){
+      renderChapterNpcPicker();
     }
-
-    function renderChapterNpcPicker(selectedIds = []) {
-      const picker = document.getElementById('chapter-modal-npc-picker');
-      picker.innerHTML = "";
-      const novel = novels[selectedNovelIndex];
-      const chars = novel.characters || [];
-
-      if (chars.length === 0) {
-        picker.innerHTML = `<span style="font-size:10px; color:#64748b;">Truyện này chưa có nhân vật nào trong Sổ Tay. Bạn có thể mở app Nhân Vật để tạo thêm.</span>`;
-        return;
+    function toggleChapterNpcPicker(){
+      if(!canEditStories())return;
+      chapterNpcExpanded=!chapterNpcExpanded;
+      document.getElementById('chapter-npc-filter').value='';
+      renderChapterNpcPicker();
+    }
+    function setChapterNpcChecked(id,checked){
+      if(!canEditStories())return;
+      const story=novels[selectedNovelIndex];
+      const npc=(story?.characters||[]).find(c=>c.id===id);
+      if(!npc||(checked&&npc.archived))return;
+      if(checked)chapterNpcSelectedIds.add(id);
+      else chapterNpcSelectedIds.delete(id);
+      renderChapterNpcPicker();
+    }
+    function renderChapterNpcPicker(selectedIds){
+      const picker=document.getElementById('chapter-modal-npc-picker');
+      const novel=novels[selectedNovelIndex];
+      if(!picker||!novel)return;
+      if(Array.isArray(selectedIds))chapterNpcSelectedIds=new Set(selectedIds);
+      const filter=document.getElementById('chapter-npc-filter');
+      const q=(filter?.value||'').trim();
+      const expanded=chapterNpcExpanded||!!q;
+      const btn=document.getElementById('chapter-npc-show-all');
+      const activeCount=DuduNpcEditor.activeCount(novel);
+      if(btn)btn.textContent=chapterNpcExpanded?'− Thu gọn danh sách':'+ Chọn từ Sổ Tay ('+activeCount+')';
+      if(filter)filter.style.display=chapterNpcExpanded?'block':'none';
+      const hint=document.getElementById('chapter-npc-hint');
+      if(hint)hint.textContent='Đã gắn '+chapterNpcSelectedIds.size+' NPC · Bỏ dấu chọn để gỡ khỏi chương, không xóa nhân vật.';
+      picker.replaceChildren();
+      const entries=DuduNpcEditor.visible(novel,[...chapterNpcSelectedIds],expanded,q);
+      if(!entries.length){
+        const empty=document.createElement('span');empty.style.cssText='font-size:11px;color:var(--text-dim);';
+        empty.textContent=q?'Không có NPC phù hợp.':chapterNpcSelectedIds.size
+          ?'NPC đã chọn không còn trong Sổ Tay. Hãy kiểm tra dữ liệu.'
+          :expanded?'Truyện chưa có NPC hoạt động. Bạn có thể tạo một NPC mới.'
+          :'Chưa chọn NPC nào cho chương này.';
+        picker.append(empty);return;
       }
-
-      chars.forEach(c => {
-        const isChecked = selectedIds.includes(c.id);
-        const label = document.createElement('label');
-        label.dataset.npcSearch = [c.name, ...(c.aliases || [])].join(' ').toLocaleLowerCase('vi');
-        label.style.cssText = "display:inline-flex; align-items:center; gap:4px; font-size:11px; background:#141b24; padding:4px 8px; border-radius:6px; border:1px solid #334155; cursor:pointer;";
-        label.innerHTML = `
-          <input type="checkbox" value="${c.id}" ${isChecked ? 'checked' : ''} style="accent-color:var(--neon);">
-          <span style="color:${isChecked ? 'var(--neon)' : '#cbd5e1'}; font-weight:${isChecked ? 'bold' : 'normal'};">${escapeHtml(c.name)}</span>
-        `;
-        picker.appendChild(label);
-      });
-      filterChapterNpcPicker();
+      for(const npc of entries){
+        const label=document.createElement('label');
+        label.style.cssText='display:inline-flex;align-items:center;gap:5px;font-size:11px;background:#141b24;padding:5px 8px;border-radius:6px;border:1px solid #334155;cursor:pointer;';
+        const checkbox=document.createElement('input');
+        checkbox.type='checkbox';checkbox.value=npc.id;
+        checkbox.checked=chapterNpcSelectedIds.has(npc.id);
+        checkbox.style.accentColor='var(--neon)';
+        checkbox.addEventListener('change',()=>setChapterNpcChecked(npc.id,checkbox.checked));
+        const name=document.createElement('span');name.textContent=npc.name+(npc.archived?' (đã lưu trữ)':'');
+        name.style.color=checkbox.checked?'var(--neon)':'#cbd5e1';
+        label.append(checkbox,name);picker.append(label);
+      }
     }
 
     function openCreateChapterModal() {
       editingChapterIndex = null;
+      chapterNpcExpanded=false;
+      chapterNpcSelectedIds=new Set();
       document.getElementById('chapter-modal-heading').textContent = "VIẾT CHƯƠNG MỚI";
       
       const draft = JSON.parse(localStorage.getItem(scopedLocalKey('draft', novels[selectedNovelIndex].id)));
@@ -3856,6 +3924,7 @@
 
     function openEditChapterModal(chIdx) {
       editingChapterIndex = chIdx;
+      chapterNpcExpanded=false;
       const ch = novels[selectedNovelIndex].chapters[chIdx];
       document.getElementById('chapter-modal-heading').textContent = `CHỈNH SỬA: ${ch.title}`;
       document.getElementById('chapter-modal-title').value = ch.title;
@@ -3890,8 +3959,8 @@
       if (!title || !content) { alert("Vui lòng điền đủ tên chương và nội dung!"); return; }
 
       // LẤY CÁC NHÂN VẬT ĐƯỢC TÍCH CHỌN CHO CHƯƠNG NÀY
-      const checkedBoxes = document.querySelectorAll('#chapter-modal-npc-picker input[type="checkbox"]:checked');
-      const selectedNpcIds = Array.from(checkedBoxes).map(cb => cb.value);
+      const selectedNpcIds=[...chapterNpcSelectedIds];
+      // Selected IDs persist even when the available-NPC list is collapsed.
 
       const wordCount = countWords(content);
       const nowStr = new Date().toISOString().slice(0, 10);
