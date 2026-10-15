@@ -24,6 +24,7 @@
   <script src="js/item-catalog-v2.js"></script>
   <script src="js/loot-rules-v2.js"></script>
   <script src="js/author-items-v1.js"></script>
+  <script src="js/collectibles-client.js"></script>
 
   <style>
     :root {
@@ -777,6 +778,10 @@
             <div class="app-box" style="background: #10b981;">🛒</div>
             <div class="app-label">Cửa Hàng</div>
           </div>
+          <div class="app-icon" onclick="openPhoneApp('museum')">
+            <div class="app-box" style="background: #b45309;">🏛️</div>
+            <div class="app-label">Bảo Tàng</div>
+          </div>
           <div class="app-icon" onclick="openPhoneApp('settings')">
             <div class="app-box" style="background: #64748b;">⚙️</div>
             <div class="app-label">Cài Đặt</div>
@@ -830,6 +835,17 @@
         </div>
 
         <div id="inventory-container"></div>
+      </div>
+
+      <!-- APP: BẢO TÀNG KỶ VẬT (chỉ dữ liệu sở hữu máy chủ) -->
+      <div class="phone-sub-app" id="phone-app-museum">
+        <div class="phone-app-header">
+          <button class="phone-back-btn" onclick="phoneHome()">‹</button>
+          <span>🏛️ Bảo Tàng Ký Ức</span>
+          <button type="button" class="btn" style="padding:2px 6px;font-size:9px;" onclick="renderMuseum()">↻</button>
+        </div>
+        <p style="font-size:10px;color:var(--text-dim);line-height:1.5;margin:6px 0;">Chỉ hiện những kỷ vật đã được máy chủ xác nhận. Đồ nhặt trong kho thường không đồng nghĩa với kỷ vật hiếm.</p>
+        <div id="museum-items" aria-live="polite" style="overflow-y:auto;max-height:300px;font-size:11px;">Chưa tải bộ sưu tập.</div>
       </div>
 
       <!-- APP: NHIỆM VỤ -->
@@ -1209,6 +1225,7 @@
     // ?sandbox=1: client-only testing, NEVER writes to production Firestore.
     const IS_SANDBOX_MODE = new URLSearchParams(window.location.search).get('sandbox') === '1';
     DuduAI.init(IS_SANDBOX_MODE);
+    DuduCollectiblesClient.init(IS_SANDBOX_MODE);
     if (IS_SANDBOX_MODE) {
       const banner = document.createElement('div');
       banner.textContent = '🧪 SANDBOX — Dữ liệu thử nghiệm cục bộ, không đồng bộ máy chủ';
@@ -2302,12 +2319,50 @@
       } else if (appName === 'inventory') {
         renderInventory();
         startCooldownTicker();
+      } else if (appName === 'museum') {
+        renderMuseum();
       } else if (appName === 'quests') {
         renderQuests();
       } else if (appName === 'shop') {
         renderShop();
       } else if (appName === 'settings') {
         updateActiveModelInfo();
+      }
+    }
+
+    async function renderMuseum() {
+      const container=document.getElementById('museum-items');
+      if(!container)return;
+      container.textContent='Đang kiểm tra sổ kỷ vật...';
+      const identity=currentUsername;
+      const response=await DuduCollectiblesClient.mine();
+      // Late replies from a previously logged-in user must never cross sessions.
+      if(identity!==currentUsername ||
+         document.getElementById('phone-app-museum').style.display!=='flex')return;
+      container.replaceChildren();
+      if(!response.ok){
+        container.textContent=response.reason==='sandbox'
+          ? '🧪 Sandbox không kết nối sổ sở hữu máy chủ và không phát kỷ vật thật.'
+          : response.reason==='unauthenticated'
+            ? 'Vui lòng đăng nhập để xem kỷ vật đã được xác nhận.'
+            : 'Bảo tàng đang ở chế độ chuẩn bị. Chưa mở nhận kỷ vật cho người chơi.';
+        return;
+      }
+      if(!response.items.length){
+        container.textContent='Chưa có kỷ vật máy chủ nào được xác nhận cho tài khoản này.';
+        return;
+      }
+      for(const item of response.items){
+        const row=document.createElement('div');
+        row.style.cssText='display:flex;gap:7px;align-items:start;border-bottom:1px solid var(--border);padding:8px 3px;';
+        const icon=document.createElement('span');icon.style.fontSize='20px';
+        icon.textContent=typeof item.icon==='string'?item.icon:'🎁';
+        const info=document.createElement('div');
+        const name=document.createElement('div');name.style.fontWeight='bold';
+        name.textContent='['+(item.rank||'?')+'] '+(item.name||'Kỷ vật đã lưu');
+        const desc=document.createElement('div');desc.style.color='var(--text-dim)';
+        desc.textContent=item.summary||'Đã ghi nhận vào Bảo Tàng Ký Ức.';
+        info.append(name,desc);row.append(icon,info);container.append(row);
       }
     }
 
