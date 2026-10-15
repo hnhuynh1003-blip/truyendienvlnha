@@ -1153,6 +1153,96 @@ async function main() {
     }
     await page.setViewportSize({width:1280,height:800});
 
+    // V12: real DOM profile layout and read-only inventory inspector in sandbox.
+    await page.setViewportSize({width:375,height:812});
+    const dossierV12=await page.evaluate(()=>{
+      const snapshot=JSON.stringify(userProfile);
+      const oldTab=inventoryTab,oldSelection=inventoryDetailSelection;
+      const initialWrites=window.__firestoreWrites.length;
+      openPhoneApp('codex');
+      const novel=getSelectedCodexNovel();
+      const char=(novel?.characters||[]).find(c=>!c.archived);
+      if(!char)return {error:'no character fixture'};
+      const progress=getStoryProgress(novel.id);
+      progress.collectedCharacters[char.id]={id:char.id,affinity:52,relationshipV2:{trust:25}};
+      renderCodexList();
+      const card=document.querySelector('#codex-container .dudu-npc-v12-card');
+      const top=card?.querySelector('.dudu-npc-v12-top');
+      const portrait=card?.querySelector('.dudu-npc-v12-portrait');
+      const profile=card?.querySelector('.dudu-npc-v12-summary')?.textContent||'';
+      const profileData={
+        count:document.querySelectorAll('#codex-container .dudu-npc-v12-card').length,
+        layout:top?getComputedStyle(top).display:null,
+        portraitWidth:portrait?.getBoundingClientRect().width||0,
+        body:profile,
+        actionCount:card?.querySelectorAll('.dudu-npc-v12-actions .btn').length||0,
+        codexOverflow:document.getElementById('phone-app-codex').scrollWidth-
+          document.getElementById('phone-app-codex').clientWidth
+      };
+      inventoryTab='ALL';
+      userProfile.inventory=[
+        {...DuduItemCatalog.byId('f1')},
+        {...DuduItemCatalog.byId('e3')},
+        {...DuduItemCatalog.souvenirs[0]}
+      ];
+      openPhoneApp('inventory');
+      const inventoryBefore=JSON.stringify(userProfile.inventory);
+      const rows=document.querySelectorAll('#inventory-container .dudu-inventory-v12-row').length;
+      const first=document.querySelector('#inventory-container .dudu-inventory-v12-open');
+      first?.click();
+      const inspector=document.getElementById('inventory-v12-detail');
+      const details={
+        rows,
+        visible:inspector.style.display,
+        text:inspector.textContent,
+        afterView:JSON.stringify(userProfile.inventory),
+        openButtons:document.querySelectorAll('#inventory-container .dudu-inventory-v12-open').length
+      };
+      const close=inspector.querySelector('button[aria-label="Đóng chi tiết vật phẩm"]');
+      close?.click();
+      details.closed=inspector.style.display==='none';
+      details.sameInventory=details.afterView===inventoryBefore;
+      details.writes=window.__firestoreWrites.length-initialWrites;
+      userProfile=JSON.parse(snapshot);
+      inventoryTab=oldTab;inventoryDetailSelection=oldSelection;
+      renderInventory();phoneHome();
+      return {profileData,details};
+    });
+    assert.ok(!dossierV12.error,dossierV12.error||'Dossier fixture valid');
+    assert.ok(dossierV12.profileData.count>=1);
+    assert.equal(dossierV12.profileData.layout,'grid');
+    assert.ok(dossierV12.profileData.portraitWidth>=70);
+    assert.match(dossierV12.profileData.body,/Thiện cảm/);
+    assert.match(dossierV12.profileData.body,/52\/100/);
+    assert.match(dossierV12.profileData.body,/Tin tưởng/);
+    assert.match(dossierV12.profileData.body,/25\/100/);
+    assert.ok(dossierV12.profileData.actionCount>=2);
+    assert.ok(dossierV12.profileData.codexOverflow<=1,
+      'NPC cards must fit 375px phone without horizontal scrolling');
+    assert.equal(dossierV12.details.rows,3);
+    assert.equal(dossierV12.details.openButtons,3);
+    assert.equal(dossierV12.details.visible,'block');
+    assert.match(dossierV12.details.text,/Mẩu Bánh Mì Mốc/);
+    assert.equal(dossierV12.details.closed,true);
+    assert.equal(dossierV12.details.sameInventory,true);
+    assert.equal(dossierV12.details.writes,0);
+    await page.setViewportSize({width:320,height:640});
+    const narrowDossier=await page.evaluate(()=>{
+      if(document.getElementById('cyber-phone').style.display!=='flex')togglePhone();
+      openPhoneApp('codex');
+      const phone=document.getElementById('cyber-phone');
+      const content=document.getElementById('phone-app-codex');
+      return {
+        phoneRight:phone.getBoundingClientRect().right,
+        overflow:content.scrollWidth-content.clientWidth,
+        width:innerWidth
+      };
+    });
+    assert.ok(narrowDossier.phoneRight<=narrowDossier.width+1);
+    assert.ok(narrowDossier.overflow<=1);
+    await page.evaluate(()=>{togglePhone();phoneHome();});
+    await page.setViewportSize({width:1280,height:800});
+
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
     console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));
   } finally {
