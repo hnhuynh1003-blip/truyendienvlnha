@@ -1,61 +1,61 @@
-/* DUDU Studio Gemini client: only talks to authenticated callable Functions.
- * Never store or send a Gemini API key from the browser.
+/* DUDU AI client — Cloudflare Workers gateway for Firebase Spark projects.
+ * Gemini key is a Cloudflare Secret, NEVER sent to browser or stored in localStorage.
+ * Keep WORKER_URL empty until Worker deployment and review have completed.
  */
 (function () {
   'use strict';
-  const REGION = 'asia-southeast1';
-  // Public site key (NOT a Gemini API key). Register it in Firebase App Check first.
-  // Keep empty to disable AI safely until rollout is approved.
-  const RECAPTCHA_ENTERPRISE_SITE_KEY = '';
-  let initialized = false;
-
-  function explain(error) {
-    const code = (error && error.code || '').replace(/^functions\//, '');
-    if (code === 'unauthenticated') return 'Hãy đăng nhập DUDU Studio để dùng AI.';
-    if (code === 'resource-exhausted' || code === 'invalid-argument') return error.message || 'Đã đạt giới hạn AI.';
-    if (code === 'failed-precondition') return 'Máy chủ AI chưa được cấu hình đầy đủ.';
-    if (code === 'unavailable' || code === 'deadline-exceeded') return 'AI tạm thời không khả dụng. Hãy thử lại sau.';
-    if (code === 'not-found') return 'Chưa triển khai máy chủ AI trên Firebase.';
-    if (code === 'permission-denied') return 'Kết nối AI bị từ chối. Hãy kiểm tra Firebase App Check.';
-    return 'Không kết nối được AI. Hãy kiểm tra cấu hình Firebase và đường truyền.';
+  const WORKER_URL = ''; // Example after review: https://dudu-ai-staging.<account>.workers.dev
+  let sandbox = false;
+  function base() {return typeof WORKER_URL==='string'?WORKER_URL.trim().replace(/\/+$/,''):'';}
+  function init(isSandbox) {
+    sandbox = !!isSandbox;
+    try{localStorage.removeItem('my_gemini_api_key');}catch(_){}
   }
-
-  function init(sandbox) {
-    if (sandbox) return;
-    // Legacy versions stored private API keys in localStorage, which is unsafe.
-    // This branch never reads or uses the old key.
-    try { localStorage.removeItem('my_gemini_api_key'); } catch (_) {}
-    if (!RECAPTCHA_ENTERPRISE_SITE_KEY) return; // fail closed; no unprotected requests
-    try {
-      firebase.appCheck().activate(
-        new firebase.appCheck.ReCaptchaEnterpriseProvider(RECAPTCHA_ENTERPRISE_SITE_KEY),
-        true
-      );
-      initialized = true;
-    } catch (error) {
-      console.warn('App Check startup failed:', error?.code || 'unknown');
-    }
-  }
-  function isConfigured() { return initialized; }
-  function available() {
-    if (!initialized) return 'Máy chủ AI chưa kích hoạt. Tác giả cần cấu hình App Check và triển khai Cloud Functions.';
-    if (!firebase.auth().currentUser) return 'Hãy đăng nhập DUDU Studio để trò chuyện với NPC bằng AI.';
+  function isConfigured(){return !sandbox && /^https:\/\/[^\s/]+$/.test(base());}
+  function available(){
+    if(sandbox) return 'Chế độ thử nghiệm không gọi API AI thật.';
+    if(!isConfigured())return 'Tần số liên lạc NPC chưa được kích hoạt.';
+    if(!firebase.auth()?.currentUser)return 'Bạn cần đăng nhập để kết nối NPC.';
     return null;
   }
-  async function call(name,data) {
+  function explain(data,status){
+    const error=data?.error;
+    const code=error?.code;
+    if(code==='unauthenticated'||status===401)return 'Hãy đăng nhập DUDU Studio trước khi trò chuyện.';
+    if(code==='daily-user'||code==='daily-global'||code==='cooldown'||code==='in-flight')
+      return error.message||'Vui lòng đợi trước khi tiếp tục trò chuyện.';
+    if(code==='ai-disabled'||status===503)return 'Tần số NPC AI chưa sẵn sàng.';
+    if(code==='ai-busy'||status===429)return error?.message||'Tần số NPC đang bận.';
+    if(status===400)return 'Tin nhắn quá dài hoặc không phù hợp giới hạn AI.';
+    return error?.message||'Kết nối NPC tạm thời gián đoạn. Hãy thử lại sau.';
+  }
+  async function call(method,path,data){
     const error=available();
-    if (error) return {error};
-    try {
-      const callable=firebase.app().functions ? firebase.app().functions(REGION).httpsCallable(name) : firebase.functions(REGION).httpsCallable(name);
-      const response=await callable(data);
-      return response.data || {error:'Máy chủ AI trả về dữ liệu trống.'};
-    } catch (failure) {
-      return {error:explain(failure)};
+    if(error)return {error};
+    try{
+      const idToken=await firebase.auth().currentUser.getIdToken();
+      if(sandbox)return {error:'Chế độ thử nghiệm không gọi API AI thật.'};
+      const response=await fetch(base()+path,{
+        method,
+        headers:{'Authorization':'Bearer '+idToken,
+          ...(method==='POST'?{'Content-Type':'application/json'}:{})},
+        ...(method==='POST'?{body:JSON.stringify(data)}:{}),
+        cache:'no-store',
+        signal:AbortSignal.timeout(32000)
+      });
+      const body=await response.json().catch(()=>null);
+      if(!response.ok||body?.error)return {error:explain(body,response.status)};
+      return body || {error:'Máy chủ không trả lời.'};
+    }catch(e){
+      console.warn('DUDU AI gateway unavailable:',e?.name||'network');
+      return {error:'Tần số NPC tạm thời gián đoạn.'};
     }
   }
-  function generate(purpose,instruction,messages) {
-    return call('duduAiGenerate',{purpose,instruction,messages});
+  function generate(purpose,instruction,messages){
+    return call('POST','/v1/generate',{purpose,instruction,messages});
   }
-  function status() { return call('duduAiStatus',{}); }
+  function status(){
+    return call('GET','/v1/status');
+  }
   window.DuduAI={init,isConfigured,generate,status};
 })();
