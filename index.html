@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="css/npc-portrait-viewer-v15.css">
   <link rel="stylesheet" href="css/player-avatar-v16.css">
   <link rel="stylesheet" href="css/player-avatar-conflict-v21.css">
+  <link rel="stylesheet" href="css/player-avatar-sync-v22.css">
   <link rel="stylesheet" href="css/item-visuals-v13.css">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -43,6 +44,9 @@
   <script src="js/player-avatar-ui-v16.js"></script>
   <script src="js/player-avatar-sync-plan-v20.js"></script>
   <script src="js/player-avatar-conflict-ui-v21.js"></script>
+  <script src="js/player-avatar-sync-v17.js"></script>
+  <script src="js/player-avatar-staging-v22.js"></script>
+  <script src="js/player-avatar-sync-ui-v22.js"></script>
   <script src="js/loot-rules-v2.js"></script>
   <script src="js/author-items-v1.js"></script>
   <script src="js/npc-editor-v1.js"></script>
@@ -1114,6 +1118,32 @@
         <p style="font-size:10px;color:#aeb4d2;line-height:1.45;">
           Khung sự kiện và Tri Kỷ hiện chỉ là xem trước, chưa được mở khóa.
         </p>
+        <section id="player-avatar-v22-panel" class="dudu-avatar-v22-panel" hidden
+          aria-label="Đồng bộ avatar Firebase trên staging">
+          <div class="dudu-avatar-v16-section-label">4. Đồng bộ avatar mẫu qua Firebase (staging)</div>
+          <p><strong>Chỉ staging, cần đăng nhập Firebase có UID trùng tài khoản thử.</strong>
+            Không tự đồng bộ, không tải ảnh của bạn lên. Chỉ lưu ID avatar mẫu và khung miễn phí.</p>
+          <div class="dudu-avatar-v22-actions">
+            <button type="button" onclick="avatarV22SignIn()">Xác thực Google</button>
+            <button type="button" onclick="avatarV22Inspect()">Đọc staging</button>
+          </div>
+          <p id="player-avatar-v22-status" role="status" aria-live="polite">
+            Chưa kết nối. Worker staging có thể đang tắt đồng bộ.</p>
+          <section id="player-avatar-v22-review" hidden aria-label="So sánh lựa chọn avatar thật">
+            <div class="dudu-avatar-v21-compare">
+              <div><strong>Avatar thiết bị</strong><span id="player-avatar-v22-local"></span></div>
+              <div><strong>Avatar máy chủ (đã xác thực)</strong>
+                <span id="player-avatar-v22-remote"></span></div>
+            </div>
+            <p>Chỉ áp dụng khi bạn xác nhận, không bao giờ tự ghi đè.</p>
+            <div class="dudu-avatar-v22-actions">
+              <button type="button" id="player-avatar-v22-keep"
+                onclick="avatarV22Choose('use-device')">Xác nhận giữ avatar thiết bị</button>
+              <button type="button" id="player-avatar-v22-server"
+                onclick="avatarV22Choose('use-server')">Xác nhận dùng avatar máy chủ</button>
+            </div>
+          </section>
+        </section>
         <div class="dudu-avatar-v21-demo">
           <div class="dudu-avatar-v16-section-label">3. Đối chiếu avatar nhiều thiết bị (mô phỏng)</div>
           <p>Đồng bộ máy chủ đang tắt. Hai ví dụ dưới đây <strong>không đọc dữ liệu thật</strong> và không sửa save.</p>
