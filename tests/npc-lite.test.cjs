@@ -10,6 +10,8 @@ test('only short standalone pleasantries consume zero AI requests',()=>{
     assert.equal(result.source,'script');
     assert.ok(result.text.length>20);
   }
+  assert.equal(npc.script('Chào Lan!',{id:'lan',name:'Lan'},[]).intent,'greeting');
+  assert.equal(npc.script('Cảm ơn Ôn Tri Hành',{id:'otk',name:'Ôn Tri Hành'},[]).intent,'thanks');
 });
 test('story questions, long messages, mixed intent and misleading phrases always require AI',()=>{
   for(const text of [
