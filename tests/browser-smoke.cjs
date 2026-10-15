@@ -468,6 +468,30 @@ async function main() {
       'Editing and reopening a chapter must not reset reading rewards');
     assert.equal(realmEditor.writes,0);
 
+    const migratedLegacyChapter = await page.evaluate(()=>{
+      userProfile.role='admin';applyUserRole();
+      const novel=novels[selectedNovelIndex];
+      const idx=novel.chapters.length;
+      const oldKey=novel.id+'_'+idx;
+      novel.chapters.push({title:'Chương cũ chưa ID',content:'Một chương di sản.',characterIds:[]});
+      userProfile.lootedChapters[oldKey]=true;
+      userProfile.readRewards[oldKey]=true;
+      userProfile.dailyReadLog={day:new Date().toISOString().slice(0,10),chapters:[oldKey]};
+      openEditChapterModal(idx);
+      saveChapterModal();
+      const ch=novel.chapters[idx];
+      const nextKey=novel.id+'_'+ch.id;
+      return {id:ch.id,loot:!!userProfile.lootedChapters[nextKey],
+        read:!!userProfile.readRewards[nextKey],
+        daily:userProfile.dailyReadLog.chapters.includes(nextKey),
+        writes:window.__firestoreWrites.length};
+    });
+    assert.match(migratedLegacyChapter.id,/^ch-/);
+    assert.equal(migratedLegacyChapter.loot,true,'Legacy loot claim survives stable chapter ID migration');
+    assert.equal(migratedLegacyChapter.read,true,'Legacy read EXP claim survives migration');
+    assert.equal(migratedLegacyChapter.daily,true,'Daily read log survives migration');
+    assert.equal(migratedLegacyChapter.writes,0);
+
     // Switching to another sandbox identity must not reuse the previous
     // user's chapter loot claims, reading rewards or inventory instances.
     await page.evaluate(()=>openAuthModal());
