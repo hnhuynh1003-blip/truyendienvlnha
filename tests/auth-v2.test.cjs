@@ -24,7 +24,7 @@ function harness() {
         get: async () => ({ exists: !!record, data: () => record })
       }) }) })
     },
-    document: { getElementById: id => (elements[id] ||= { style: {}, textContent: '', value: '' }) },
+    document: { getElementById: id => (elements[id] ||= { style: {}, textContent: '', value: '', disabled: false, focused: false, focus() { this.focused = true; } }) },
     localStorage: { getItem: () => null },
     currentUsername: 'legacy-user',
     userProfile: { username: 'guest', role: 'reader', name: 'Guest', storyStates: {}, collectedCharacters: {} },
@@ -86,4 +86,50 @@ test('switching accounts resets chat state instead of reusing a previous profile
   assert.equal(h.context.userProfile.name, 'B');
   assert.equal(h.context.chatHistories['one::npc'], undefined);
   assert.equal(h.context.currentUsername, 'reader-b');
+});
+
+test('private browsing: missing email and password show immediate, focused feedback', async () => {
+  const h = harness();
+  let calls = 0;
+  h.account.signInWithEmailAndPassword = async () => { calls++; };
+  await h.context.DuduAuth.email(false);
+  assert.match(h.elements['auth-status-message'].textContent, /chưa nhập email/i);
+  assert.equal(h.elements['auth-email'].focused, true);
+  assert.equal(calls, 0);
+  h.elements['auth-email'].value = 'reader@example.test';
+  await h.context.DuduAuth.email(false);
+  assert.match(h.elements['auth-status-message'].textContent, /chưa nhập mật khẩu/i);
+  assert.equal(h.elements['auth-password'].focused, true);
+  assert.equal(calls, 0);
+});
+
+test('private browsing: explicit email credentials authenticate without prior saved session', async () => {
+  const h = harness();
+  const entries = [];
+  h.account.signInWithEmailAndPassword = async (email, password) => {
+    entries.push({ email, password, disabled: h.elements['auth-email-login-btn'].disabled });
+    return {};
+  };
+  h.elements['auth-email'].value = '  reader@example.test  ';
+  h.elements['auth-password'].value = 'six-char-password';
+  await h.context.DuduAuth.email(false);
+  assert.equal(entries.length, 1);
+  assert.equal(entries[0].email, 'reader@example.test');
+  assert.equal(entries[0].password, 'six-char-password');
+  assert.equal(entries[0].disabled, true);
+  assert.match(h.elements['auth-status-message'].textContent, /Đã xác thực/i);
+  assert.equal(h.elements['auth-email-login-btn'].disabled, false);
+  assert.equal(h.elements['auth-password'].value, '');
+});
+
+test('private browsing: Firebase invalid credentials show an actionable message', async () => {
+  const h = harness();
+  h.account.signInWithEmailAndPassword = async () => {
+    throw { code: 'auth/invalid-credential' };
+  };
+  h.elements['auth-email'].value = 'reader@example.test';
+  h.elements['auth-password'].value = 'wrong-password';
+  await h.context.DuduAuth.email(false);
+  assert.match(h.elements['auth-status-message'].textContent, /Email hoặc mật khẩu chưa đúng/);
+  assert.equal(h.elements['auth-email-login-btn'].disabled, false);
 });
