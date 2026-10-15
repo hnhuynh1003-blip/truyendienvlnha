@@ -2,7 +2,7 @@
 **2026-10-15 · only feat/identity-npc-editor-v2 · NOT MERGED OR DEPLOYED**
 
 ## Implemented in local Sandbox
-- R5: one `🤝 Hỏi thăm` per **unlocked** NPC per UTC day, grants **+3 trust** (max 100) and saves only local sandbox profile. Event IDs deduplicated, no AI/EXP/coins/collectibles; no automatic NPC unlock. No server-authoritative progression yet.
+- R5: one scripted `🤝 Hỏi thăm` dialogue choice per **unlocked** NPC per UTC day, grants **+3 trust** for attentive responses or **+1 trust** for casual responses (max 100) and saves only local sandbox profile. Event IDs deduplicated, no AI/EXP/coins/collectibles; no automatic NPC unlock. No server-authoritative progression yet.
 - Relationship affection ceiling: trust 0–19 → 40, 20–49 → 70, 50+ → 100; historical affection is not reduced.
 - R6: local-only preview presets for the three existing NPC IDs: `c_otk`, `c_ttl`, `c_tct`. This is a **provisional gameplay test** (not canonical character lore). An author-set `giftPreferences` takes precedence. No NPC is created, rewritten or unlocked.
 - Gift tags are manually assigned to catalog IDs for practical supplies, coffee, keepsakes and dangerous items. No guessing by AI text.
