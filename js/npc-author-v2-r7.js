@@ -42,6 +42,11 @@
     return Object.freeze({storyId,npcId,milestones:Object.freeze(milestones),
       mode:'AUTHOR_DRAFT_ONLY',verified:false});
   }
+  function sandboxMilestoneDraftKey(storyId,npcId){
+    if(!rel?.validScope('sandbox-author',storyId,npcId))return null;
+    return 'dudu-sandbox:npc-milestone-draft:'+encodeURIComponent(storyId)+
+      ':'+encodeURIComponent(npcId);
+  }
   function previewMilestoneStatus(plan){
     return Object.freeze({readyForPublication:false,verified:false,
       // No browser-side completion flags may be promoted to trusted lore.
@@ -49,5 +54,5 @@
       count:plan?.milestones?.length||0});
   }
   return Object.freeze({normalizeDraft,validateMilestonePlan,
-    previewMilestoneStatus,ALLOWED_PORTRAIT});
+    previewMilestoneStatus,sandboxMilestoneDraftKey,ALLOWED_PORTRAIT});
 });
