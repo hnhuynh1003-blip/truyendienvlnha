@@ -24,6 +24,52 @@ export class DuduPlayerAppearance extends DurableObject {
       event_id TEXT PRIMARY KEY,frame_id TEXT NOT NULL,
       evidence_id TEXT NOT NULL,received_at INTEGER NOT NULL
     )`);
+    this.sql.exec(`CREATE TABLE IF NOT EXISTS photo_drafts (
+      asset_id TEXT PRIMARY KEY,
+      status TEXT NOT NULL CHECK(status IN ('PENDING','QUARANTINED')),
+      reserved_at INTEGER NOT NULL,stored_at INTEGER
+    )`);
+  }
+  reservePhotoDraft(assetId,now){
+    if(typeof assetId!=='string'||!Number.isSafeInteger(now))
+      return {ok:false,code:'invalid-request'};
+    return this.ctx.storage.transactionSync(()=>{
+      this.sql.exec(`DELETE FROM photo_drafts
+        WHERE status='PENDING' AND reserved_at<?`,now-10*60*1000);
+      const active=this.sql.exec(`SELECT COUNT(*) AS qty FROM photo_drafts`).toArray()[0];
+      if(Number(active.qty)>=3)return {ok:false,code:'photo-quota'};
+      this.sql.exec(`INSERT INTO photo_drafts
+        (asset_id,status,reserved_at) VALUES(?,'PENDING',?)`,assetId,now);
+      return {ok:true};
+    });
+  }
+  finalizePhotoDraft(assetId,now){
+    return this.ctx.storage.transactionSync(()=>{
+      const owned=this.sql.exec(`SELECT status FROM photo_drafts WHERE asset_id=?`,
+        assetId).toArray()[0];
+      if(!owned||owned.status!=='PENDING')return {ok:false,code:'no-reservation'};
+      this.sql.exec(`UPDATE photo_drafts SET status='QUARANTINED',stored_at=?
+        WHERE asset_id=? AND status='PENDING'`,now,assetId);
+      return {ok:true,quarantined:true};
+    });
+  }
+  abandonPhotoDraft(assetId){
+    this.sql.exec(`DELETE FROM photo_drafts
+      WHERE asset_id=? AND status='PENDING'`,assetId);
+    return {ok:true};
+  }
+  ownPhotoDraft(assetId){
+    const item=this.sql.exec(`SELECT status FROM photo_drafts
+      WHERE asset_id=?`,assetId).toArray()[0];
+    return {owned:item?.status==='QUARANTINED'};
+  }
+  removePhotoDraft(assetId){
+    return this.ctx.storage.transactionSync(()=>{
+      const exists=this.ownPhotoDraft(assetId);
+      if(!exists.owned)return {ok:false,code:'not-found'};
+      this.sql.exec(`DELETE FROM photo_drafts WHERE asset_id=?`,assetId);
+      return {ok:true};
+    });
   }
   recordSignedAward(event,now){
     // Gateway validates the webhook signature. This DO is per verified target
