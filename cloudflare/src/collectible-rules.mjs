@@ -31,6 +31,36 @@ export function normalizedPublication(request){
   return Object.freeze({storyId,itemId,chapterId,npcId,name,rank,icon,
     summary,method,unique:true});
 }
+
+const DRAFT_METHODS=new Set(['COLLECTION_ONLY','STORY_EVENT','CHAPTER_EVENT']);
+const ITEM_TYPES=new Set(['ITEM','FOOD','WEAPON']);
+// Server-side, admin-only draft. NEVER mirror this object to public Firestore.
+export function normalizedPrivateDraft(body){
+  if(!body||typeof body!=='object'||Array.isArray(body))return null;
+  const item=body.item;
+  if(!item||typeof item!=='object'||Array.isArray(item))return null;
+  const storyId=cleanId(body.storyId);
+  const chapterId=body.chapterId==null?null:cleanId(body.chapterId);
+  const itemId=body.itemId==null?null:cleanId(body.itemId);
+  const npcId=item.npcId==null?null:cleanId(item.npcId);
+  const name=typeof item.name==='string'?item.name.trim():'';
+  const summary=typeof item.desc==='string'?item.desc.trim():'';
+  const icon=typeof item.icon==='string'?item.icon.trim():'🎁';
+  const method=item.method||'COLLECTION_ONLY';
+  if(!storyId||(body.chapterId!=null&&!chapterId)||
+    (body.itemId!=null&&(!itemId||!itemId.startsWith('author-item-')))||
+    (item.npcId!=null&&!npcId)||
+    !name||name.length>70||!summary||summary.length>240||
+    !icon||icon.length>12||!RANKS.has(item.rank)||
+    !ITEM_TYPES.has(item.type)||!DRAFT_METHODS.has(method)||
+    (method==='CHAPTER_EVENT'&&!chapterId)||
+    (method==='STORY_EVENT'&&chapterId))return null;
+  return Object.freeze({
+    storyId,chapterId,itemId,npcId,
+    name,summary,icon,rank:item.rank,type:item.type,method
+  });
+}
+
 export function parseScopedIds(body,{withItem=false,withChapter=false,withUid=false}={}){
   if(!body||typeof body!=='object'||Array.isArray(body))return null;
   const storyId=cleanId(body.storyId);
