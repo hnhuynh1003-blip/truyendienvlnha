@@ -64,8 +64,11 @@
       renderHome();
       updatePhoneUI();
       const btn = document.getElementById('account-status-btn');
-      if (btn) btn.textContent = '👤 Đăng nhập';
-      openAuthModal();
+      if (btn) btn.textContent = '👤 Khách · Đăng nhập';
+      const prof = document.getElementById('profile-account-id');
+      if (prof) prof.textContent = 'Khách (không đồng bộ)';
+      // Public stories are readable without forcing an authentication dialog.
+      // Account button, private save and AI actions still require Firebase login.
       return;
     }
 
