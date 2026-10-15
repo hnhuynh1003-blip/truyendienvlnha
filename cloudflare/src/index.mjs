@@ -115,9 +115,13 @@ async function handleCollectibles(req,env,path,origin){
       return json(state,state.ok?200:404,origin,env);
     }
     if(path==='/v1/collectibles/admin/grant'){
-      const ids=parseScopedIds(body,{withItem:true,withUid:true});
+      // Staging self-test ONLY. Never accept a recipient UID from the client:
+      // a verified admin may grant only to their own Firebase identity.
+      const ids=parseScopedIds(body,{withItem:true});
       if(!ids)return error('invalid-request','Thông tin phát thưởng không hợp lệ.',400,origin,env);
-      const state=await bucket.grant(ids.uid,ids.storyId,ids.itemId,now);
+      if(body.uid!=null&&body.uid!==user.uid)
+        return error('recipient-forbidden','Không được cấp thưởng cho UID khác trong giai đoạn kiểm thử.',403,origin,env);
+      const state=await bucket.grant(user.uid,ids.storyId,ids.itemId,now);
       return json(state,state.ok?200:409,origin,env);
     }
     if(path==='/v1/collectibles/begin'){
