@@ -55,7 +55,14 @@
   function archivePrivateDraft(storyId,itemId){
     return authorRequest('/v1/collectibles/admin/draft/archive',{storyId,itemId});
   }
+  function previewPrivateDraft(storyId,itemId){
+    return authorRequest('/v1/collectibles/admin/draft/preview',{storyId,itemId});
+  }
+  function publishPrivateDraft(approval){
+    return authorRequest('/v1/collectibles/admin/publish',approval);
+  }
   root.DuduCollectiblesClient=Object.freeze({
-    init,mine,savePrivateDraft,listPrivateDrafts,archivePrivateDraft
+    init,mine,savePrivateDraft,listPrivateDrafts,archivePrivateDraft,
+    previewPrivateDraft,publishPrivateDraft
   });
 })(typeof window!=='undefined'?window:globalThis);
