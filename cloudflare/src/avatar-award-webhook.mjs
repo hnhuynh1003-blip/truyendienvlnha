@@ -11,7 +11,7 @@ const GOOD_ID=/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/;
 const UID=/^[A-Za-z0-9_-]{1,128}$/;
 export function normalizeAwardEvent(value,now){
   if(!value||typeof value!=='object'||Array.isArray(value)||
-     Object.keys(value).sort().join(',')!=='evidenceId,eventId,frameId,occurredAt,source,uid')return null;
+     Object.keys(value).sort().join(',')!=='eventId,evidenceId,frameId,occurredAt,source,uid')return null;
   const {uid,frameId,source,evidenceId,eventId,occurredAt}=value;
   if(typeof uid!=='string'||!UID.test(uid)||
      !Object.hasOwn(SERVER_AWARD_SOURCES,frameId)||
