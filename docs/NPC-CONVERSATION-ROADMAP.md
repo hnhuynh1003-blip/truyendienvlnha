@@ -45,7 +45,7 @@
 - Kiểm tra chữ ký RSA của Firebase ID token với JWKS Google, audience `truyendienvl`, issuer, expiration, `auth_time`; độc giả không được dùng API hỗ trợ tác giả.
 - Gateway kiểm soát CORS, giới hạn input/output, bảo vệ Gemini key trong Cloudflare Secret, chống spam theo UID, hạn mức 25/người/ngày và 200/toàn hệ thống/ngày.
 - Bài kiểm thử tạo JWT thật trong CI để thử token hợp lệ, giả mạo chữ ký, sai issuer/audience và hết hạn. Wrangler bundle chạy ở chế độ `--dry-run`, **không đăng nhập/deploy Cloudflare**.
-- `js/ai-proxy.js` đã chuyển sang Cloudflare HTTP. `WORKER_URL` để trống; Worker `AI_ENABLED = "false"`. Tại thời điểm này UI vẫn dùng hội thoại kịch bản cho câu chào và báo gián đoạn nếu cần AI.
+- `js/ai-proxy.js` đã chuyển sang Cloudflare HTTP. `WORKER_URL` đã điền đường dẫn staging công khai do chủ dự án xác nhận truy cập được; Worker `AI_ENABLED = "false"`. Tại thời điểm này UI vẫn dùng hội thoại kịch bản cho câu chào và báo gián đoạn nếu cần AI.
 - Hướng dẫn an toàn: `cloudflare/README.md`. **Bước tiếp theo cần chủ tài khoản tự mở Cloudflare và triển khai Worker tắt AI** để lấy URL công khai. Không chia sẻ Gemini key, email hoặc tài khoản.
 - Firebase vẫn là Spark; `functions/` là kiến trúc Blaze **không triển khai**. Không chạy đồng thời hai backend.
 
