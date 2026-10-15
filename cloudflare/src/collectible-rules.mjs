@@ -82,6 +82,15 @@ export function parseScopedIds(body,{withItem=false,withChapter=false,withUid=fa
   if(!storyId||(withItem&&!itemId)||(withChapter&&!chapterId)||(withUid&&!uid))return null;
   return {storyId,itemId,chapterId,uid};
 }
+// A temporary staging-only award gate: never turn arbitrary released
+// collectibles into mintable rewards simply by invoking the admin API.
+export function isEligibleSelfTestGrant(item){
+  return !!item&&item.disabled!==true&&item.disabled!==1&&
+    item.method==='STORY_EVENT'&&item.chapterId===null&&item.rank==='F'&&
+    typeof item.name==='string'&&
+    item.name.toLocaleLowerCase('vi').includes('kiểm thử');
+}
+
 export function isChapterMature(start,now){
   return Number.isFinite(start)&&Number.isFinite(now)&&now>=start+MIN_CHAPTER_ELAPSED_MS;
 }
