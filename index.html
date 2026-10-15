@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>DUDU Studio</title>
   
-  <!-- CẤU HÌNH PWA CHUẨN ĐỘC LẬP -->
   <link rel="manifest" href="manifest.json">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -170,7 +169,6 @@
       display: none !important;
     }
 
-    /* NÚT ĐIỀU HƯỚNG NỔI */
     .floating-reading-controls {
       display: none;
       position: fixed;
@@ -196,7 +194,6 @@
       border-radius: 12px;
     }
 
-    /* BỘ LỌC TÌM KIẾM */
     .filter-panel {
       background: var(--card-bg);
       border: 1px solid var(--border);
@@ -285,7 +282,6 @@
     }
     .filter-btn.active { border-color: var(--neon); color: var(--neon); font-weight: bold; }
 
-    /* MÀU PHẨM CẤP */
     .rank-tag {
       font-size: 8px;
       font-weight: 800;
@@ -322,7 +318,6 @@
       max-width: 320px;
     }
 
-    /* NOVEL GRID */
     .novel-grid {
       display: grid;
       grid-template-columns: 1fr;
@@ -380,7 +375,6 @@
       font-size: 10px; color: var(--accent); border-top: 1px solid var(--border); padding-top: 6px;
     }
 
-    /* TRANG BÌA & MỤC LỤC */
     #cover-view { display: none; }
     .book-cover-banner {
       display: flex; flex-direction: column; gap: 14px;
@@ -424,7 +418,6 @@
     }
     .chapter-name-click { cursor: pointer; flex: 1; font-size: 14px; color: var(--text-white); }
 
-    /* TRÌNH ĐỌC TRUYỆN */
     #reader-view { display: none; }
     .reader-progress-bar {
       position: fixed; top: 0; left: 0; height: 3px; background: var(--neon);
@@ -459,6 +452,40 @@
       border-radius: 8px;
       background: rgba(245, 158, 11, 0.05);
       text-align: center;
+    }
+
+    /* KHUNG MỞ KHÓA LINH HỒN Ở CUỐI TRANG ĐỌC */
+    .reader-soul-unlock-box {
+      margin-top: 20px;
+      padding: 14px;
+      border: 1px solid var(--neon);
+      border-radius: 10px;
+      background: rgba(10, 14, 20, 0.85);
+      box-shadow: 0 0 15px rgba(102, 252, 241, 0.15);
+    }
+    .soul-unlock-title {
+      font-size: 12px;
+      font-weight: bold;
+      color: var(--neon);
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .soul-npc-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .soul-npc-card {
+      background: #141b24;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     .reader-bottom-nav {
@@ -528,29 +555,6 @@
 
     .phone-home-bar { width: 70px; height: 4px; background: #475569; border-radius: 2px; margin: 6px auto; cursor: pointer; }
 
-    /* THANH TRỢ LÝ AI */
-    .ai-toolbar {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-      flex-wrap: wrap;
-      background: rgba(10, 14, 20, 0.6);
-      padding: 6px 8px;
-      border-radius: 6px;
-      border: 1px dashed var(--accent);
-      margin-bottom: 4px;
-    }
-    .ai-btn {
-      background: rgba(69, 162, 158, 0.15);
-      border: 1px solid var(--accent);
-      color: var(--neon);
-      font-size: 11px;
-      padding: 3px 8px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .ai-btn:hover { background: var(--accent); color: #000; }
-
     /* MODAL */
     .modal-overlay {
       display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85);
@@ -575,14 +579,12 @@
 
   <div class="reader-progress-bar" id="reading-bar"></div>
 
-  <!-- NÚT ĐIỀU HƯỚNG NỔI -->
   <div class="floating-reading-controls" id="floating-reading-bar">
     <button class="floating-btn" onclick="goHome()">🏠 Tủ Truyện</button>
     <button class="floating-btn" onclick="goCover()">📑 Mục Lục</button>
     <button class="floating-btn" onclick="scrollToTop()">▲ Đầu Trang</button>
   </div>
 
-  <!-- THÔNG BÁO HỆ THỐNG -->
   <div id="system-alert-banner">
     <div style="font-size:10px; color:var(--neon); font-weight:bold; letter-spacing:1px;" id="sys-alert-title">[HỆ THỐNG PHÁT ĐỘNG]</div>
     <div style="font-size:12px; font-weight:bold; margin-top:2px;" id="sys-alert-body">Nhiệm vụ mới đã mở khóa!</div>
@@ -688,6 +690,15 @@
       <div class="reader-chapter-title" id="reader-ch-title">Chương 1</div>
       <div class="reading-time-badge" id="reader-ch-time">⏱ Khoảng 1 phút đọc</div>
       <div class="reader-body" id="reader-content"></div>
+
+      <!-- HỘP MỞ KHÓA TÂM THỨC NPC CỦA CHƯƠNG ĐANG ĐỌC -->
+      <div class="reader-soul-unlock-box" id="reader-soul-unlock-container" style="display:none;">
+        <div class="soul-unlock-title">
+          <span>⚡ DAO ĐỘNG TÂM THỨC PHÁT HIỆN:</span>
+        </div>
+        <p style="font-size:11px; color:#94a3b8; margin-bottom:8px;">Trong chương này có dấu vết của nhân vật. Kết nối để mở khóa tính năng trò chuyện trong Cyber Phone.</p>
+        <div class="soul-npc-grid" id="reader-soul-npc-list"></div>
+      </div>
 
       <div class="reader-loot-box">
         <div style="font-size: 12px; font-weight: bold; color: var(--gold); margin-bottom: 4px;">🎁 TÀN TÍCH DỮ LIỆU CUỐI CHƯƠNG</div>
@@ -820,7 +831,7 @@
         <div id="quests-container"></div>
       </div>
 
-      <!-- APP: NHÂN VẬT & KẾT NỐI LINH HỒN -->
+      <!-- APP: NHÂN VẬT & KẾT NỐI LINH HỒN (GIAO DIỆN GỌN GÀNG, ẨN PROMPT DÀI) -->
       <div class="phone-sub-app" id="phone-app-codex">
         <div class="phone-app-header">
           <div style="display:flex; align-items:center; gap:4px;">
@@ -898,7 +909,6 @@
           </div>
         </div>
         
-        <!-- QUẢN LÝ GEMINI API VÀ TEST KẾT NỐI -->
         <div style="margin-top: 10px; border-top: 1px solid #334155; padding-top: 8px; display:flex; flex-direction:column; gap:6px;">
           <div style="font-size:10px; color:var(--gold); font-weight:bold;">🤖 Cấu Hình Google Gemini AI:</div>
           <button class="btn" style="width:100%; font-size:10px;" onclick="configureAIKeyPrompt()">🔑 Cài đặt / Đổi Gemini API Key</button>
@@ -984,7 +994,7 @@
     </div>
   </div>
 
-  <!-- MODAL: VIẾT CHƯƠNG -->
+  <!-- MODAL: VIẾT CHƯƠNG (CÓ TÍCH CHỌN NPC XUẤT HIỆN) -->
   <div class="modal-overlay" id="chapter-modal">
     <div class="modal-card" id="chapter-modal-card">
       <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -1007,9 +1017,16 @@
       </div>
       <div class="modal-field">
         <label>Nội dung chương:</label>
-        <textarea id="chapter-modal-content" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="height: 220px;" oninput="onChapterInput()" placeholder="Dán hoặc viết nội dung chương vào đây..."></textarea>
+        <textarea id="chapter-modal-content" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="height: 200px;" oninput="onChapterInput()" placeholder="Dán hoặc viết nội dung chương vào đây..."></textarea>
         <div class="word-counter" id="ch-word-preview">0 từ</div>
       </div>
+      
+      <!-- KHU VỰC GÁN NPC VÀO CHƯƠNG NÀY CHO ADMIN -->
+      <div class="modal-field">
+        <label style="color:var(--neon); font-weight:bold;">⚡ Nhân vật xuất hiện trong chương này (để độc giả liên kết):</label>
+        <div id="chapter-modal-npc-picker" style="display:flex; flex-wrap:wrap; gap:6px; background:#0b0f15; padding:8px; border-radius:6px; border:1px solid #1f2937;"></div>
+      </div>
+
       <div class="modal-field">
         <label>Lời nhắn của tác giả:</label>
         <input type="text" id="chapter-modal-author-note" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Lời bình hoặc thông báo...">
@@ -1038,8 +1055,8 @@
         <input type="text" id="char-input-status" autocomplete="off" placeholder="Còn sống, Mất kết nối, Bị phong tỏa...">
       </div>
       <div class="modal-field">
-        <label>Ghi chú tính cách / Ký ức (Để AI nhập vai trò chuyện):</label>
-        <textarea id="char-input-note" autocomplete="off" style="height: 70px;" placeholder="Ghi chú tính cách, cảm xúc của nhân vật..."></textarea>
+        <label>Thiết lập tính cách / Ký ức (AI dùng làm prompt nhập vai ngầm):</label>
+        <textarea id="char-input-note" autocomplete="off" style="height: 100px;" placeholder="Ghi chú tính cách, cảm xúc, lối xưng hô..."></textarea>
       </div>
       <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px;">
         <button class="btn" onclick="closeModals()">Hủy</button>
@@ -1049,14 +1066,12 @@
   </div>
 
   <script>
-    // 1. KHỞI TẠO SERVICE WORKER PWA
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js').catch((err) => console.log('SW error:', err));
       });
     }
 
-    // 2. KHỞI TẠO FIREBASE
     const firebaseConfig = {
       apiKey: "AIzaSyCzZF18xI8nM1TLqR1q3x7HxZYE-0_VMtk",
       authDomain: "truyendienvl.firebaseapp.com",
@@ -1071,7 +1086,6 @@
     const db = firebase.firestore();
     const docRef = db.collection("studio_data").doc("main_library");
 
-    // 3. TOÀN BỘ DANH MỤC HẰNG SỐ (ĐẶT Ở ĐẦU SCRIPT ĐỂ CHỐNG LỖI NOT DEFINED)
     const MASTER_LOOT_TABLE = [
       { id: "f1", name: "Mẩu Bánh Mì Mốc", rank: "F", type: "FOOD", icon: "🍞", desc: "Khô khốc, chống đói lúc tuyệt vọng." },
       { id: "f2", name: "Chai Nước Suối Dở", rank: "F", type: "FOOD", icon: "🧴", desc: "Còn sót lại vài giọt nước khoáng ấm." },
@@ -1118,7 +1132,7 @@
         },
         characters: [
           { id: "c1", name: "Tôi", role: "Nhân vật chính", status: "Mảnh vụn dữ liệu lỗi", note: "Linh hồn lang bạt qua hàng ngàn năm tích lũy tri thức." },
-          { id: "c2", name: "Ôn Tri Hành", role: "Cố nhân", status: "Mất kết nối", note: "Bóng hình không còn xuất hiện sau khi hệ thống trục trặc." },
+          { id: "c2", name: "Ôn Tri Hành", role: "Cố nhân", status: "Mất kết nối", note: "Bác sĩ chuẩn mực, sắc sảo, ngoài lạnh trong nóng." },
           { id: "c3", name: "Thẩm Cẩm Thư", role: "Cố nhân", status: "Mất kết nối", note: "Một trong những người từng đi qua đời nhân vật chính." },
           { id: "c4", name: "Tô Thanh Lạc", role: "Ký ức nhạt nhòa", status: "Bị phong tỏa", note: "Gắn liền với cơn mưa Thượng Hải và phòng net tồi tàn." }
         ],
@@ -1130,13 +1144,13 @@
             createdAt: "2026-10-09",
             updatedAt: "2026-10-09",
             wordCount: 92,
-            authorNote: "Khởi đầu của một hành trình mới."
+            authorNote: "Khởi đầu của một hành trình mới.",
+            characterIds: ["c2"] // Mặc định Chương 1 gắn Ôn Tri Hành
           }
         ]
       }
     ];
 
-    // 4. TOÀN BỘ BIẾN TOÀN CỤC (KHAI BÁO NGAY ĐẦU ĐỂ CHỐNG LỖI INITIALIZATION)
     let novels = JSON.parse(localStorage.getItem('my_novels_library_db')) || initialNovels;
     let currentUsername = localStorage.getItem('my_current_logged_user') || "";
     
@@ -1176,7 +1190,18 @@
     let cooldownTimerInterval = null;
     let chatHistories = JSON.parse(localStorage.getItem('my_chat_roleplay_histories')) || {};
 
-    // 5. CƠ CHẾ ÂM THANH & THÔNG BÁO HỆ THỐNG
+    // DANH SÁCH MODEL GEMINI CẢI TIẾN TỰ ĐỘNG CHUYỂN ĐỔI KHI QUÁ TẢI (503 / 429)
+    const AI_FAILOVER_MODELS = [
+      'gemini-2.0-flash',
+      'gemini-1.5-flash',
+      'gemini-1.5-flash-8b',
+      'gemini-2.0-flash-lite',
+      'gemini-2.5-flash-lite',
+      'gemini-3.8-flash',
+      'gemini-3.5-flash-lite',
+      'gemini-3.1-flash-lite'
+    ];
+
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     function playTone(freq, duration, type = 'sine') {
       try {
@@ -1211,7 +1236,6 @@
       }
     }
 
-    // 6. CƠ CHẾ ĐĂNG NHẬP & QUẢN LÝ TÀI KHOẢN (AN TOÀN TUYỆT ĐỐI)
     function closeModals() {
       ['story-modal', 'chapter-modal', 'char-modal', 'auth-modal', 'gift-modal'].forEach(id => {
         const el = document.getElementById(id);
@@ -1375,99 +1399,63 @@
       updateActiveModelInfo();
     }
 
-  // ==========================================
-    // CƠ CHẾ DÒ TÌM VÀ GỌI GEMINI 3.8-FLASH & 3.X
+    // ==========================================
+    // CƠ CHẾ DÒ TÌM VÀ GỌI GEMINI TỰ ĐỘNG CHUYỂN MODEL KHI 503 / 429
     // ==========================================
     function configureAIKeyPrompt() {
       const current = localStorage.getItem('my_gemini_api_key') || '';
       const key = prompt("Nhập Google Gemini API Key của bạn (Lấy miễn phí tại aistudio.google.com):", current);
       if (key !== null) {
         localStorage.setItem('my_gemini_api_key', key.trim());
-        localStorage.removeItem('my_gemini_detected_model'); // Xóa cache cũ
-        alert(key.trim() ? "Đã lưu API Key! Bạn có thể bấm 'Kiểm Tra Kết Nối AI' để kiểm tra." : "Đã xóa API Key.");
+        localStorage.removeItem('my_gemini_detected_model');
+        alert(key.trim() ? "Đã lưu API Key thành công!" : "Đã xóa API Key.");
         updateActiveModelInfo();
       }
-    }
-
-    async function getWorkingGeminiModel(apiKey) {
-      let cached = localStorage.getItem('my_gemini_detected_model');
-      // Tự động hủy nếu cache cũ vẫn còn dính đuôi 2.5
-      if (cached && !cached.includes('2.5')) return cached;
-
-      const preferredModels = [
-        'gemini-3.8-flash',
-        'gemini-3.5-flash-lite',
-        'gemini-3.1-flash-lite',
-        'gemini-3.0-flash'
-      ];
-
-      try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-        const data = await res.json();
-        if (data.models && Array.isArray(data.models)) {
-          const valid = data.models
-            .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent'))
-            .map(m => m.name.replace('models/', ''));
-
-          for (let p of preferredModels) {
-            if (valid.includes(p)) {
-              localStorage.setItem('my_gemini_detected_model', p);
-              updateActiveModelInfo();
-              return p;
-            }
-          }
-          if (valid.length > 0) {
-            localStorage.setItem('my_gemini_detected_model', valid[0]);
-            updateActiveModelInfo();
-            return valid[0];
-          }
-        }
-      } catch (e) {
-        console.warn("Không thể dò model tự động:", e);
-      }
-      return 'gemini-3.8-flash';
     }
 
     function updateActiveModelInfo() {
       const el = document.getElementById('ai-current-model-info');
       if (!el) return;
-      let model = localStorage.getItem('my_gemini_detected_model');
-      if (!model || model.includes('2.5')) {
-        model = 'gemini-3.8-flash';
-        localStorage.setItem('my_gemini_detected_model', model);
-      }
+      const model = localStorage.getItem('my_gemini_detected_model') || 'Tự động luân phiên';
       const key = localStorage.getItem('my_gemini_api_key');
-      el.textContent = key ? `Model hoạt động: ${model}` : 'Chưa cấu hình API Key';
+      el.textContent = key ? `Model: ${model}` : 'Chưa cấu hình API Key';
     }
 
     async function testGeminiAPIConnection() {
       const apiKey = localStorage.getItem('my_gemini_api_key');
       if (!apiKey) {
-        alert("Bạn chưa nhập Gemini API Key! Hãy bấm 'Cài đặt Gemini API Key' trước.");
+        alert("Bạn chưa nhập Gemini API Key!");
         return;
       }
 
-      // Xóa sạch dấu tích cache 2.5
-      localStorage.removeItem('my_gemini_detected_model');
+      showSystemAlert("ĐANG KẾT NỐI...", "Đang kiểm tra kết nối với Google AI...");
+      let successModel = null;
 
-      showSystemAlert("ĐANG KẾT NỐI...", "Hệ thống đang kiểm tra API Key với Gemini 3.8...");
-      try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-        const data = await res.json();
+      for (let m of AI_FAILOVER_MODELS) {
+        try {
+          const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${apiKey}`;
+          const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: "hi" }] }] })
+          });
+          const data = await res.json();
+          if (res.status === 200 && data.candidates) {
+            successModel = m;
+            break;
+          }
+        } catch(e) {}
+      }
 
-        if (data.error) {
-          alert(`❌ Kết nối thất bại: ${data.error.message || 'Key không hợp lệ hoặc đã bị khóa.'}`);
-          return;
-        }
-
-        const model = await getWorkingGeminiModel(apiKey);
-        alert(`✅ KẾT NỐI THÀNH CÔNG!\nModel AI đang sử dụng: ${model}\nBây giờ bạn có thể chat và sáng tác bình thường.`);
-      } catch (err) {
-        alert(`❌ Lỗi kết nối mạng: ${err.message}`);
+      if (successModel) {
+        localStorage.setItem('my_gemini_detected_model', successModel);
+        updateActiveModelInfo();
+        alert(`✅ KẾT NỐI THÀNH CÔNG!\nModel hoạt động tốt nhất hiện tại: ${successModel}`);
+      } else {
+        alert(`❌ Không thể kết nối. Vui lòng kiểm tra lại Key trên aistudio.google.com.`);
       }
     }
 
-    // GỌI CHAT CÓ TRÍ NHỚ ĐA LƯỢT VỚI GEMINI 3.8
     async function callGeminiAIChat(char, chatHistory) {
       let apiKey = localStorage.getItem('my_gemini_api_key');
       if (!apiKey) {
@@ -1477,21 +1465,21 @@
       const loader = document.getElementById('ai-status-loader');
       if (loader) loader.style.display = 'inline';
 
-      const model = await getWorkingGeminiModel(apiKey);
       const novel = novels[selectedNovelIndex] || novels[0];
       const charAffinity = (userProfile.collectedCharacters && userProfile.collectedCharacters[char.id]) 
         ? userProfile.collectedCharacters[char.id].affinity || 10 
         : 10;
 
+      // PROMPT BẢO ĐẢM TÍNH CÁCH NHẬP VAI KHÔNG PHÁ VỠ VỎ BỌC
       const systemInstruction = `Bạn đang nhập vai hoàn toàn vào nhân vật "${char.name}" trong tiểu thuyết "${novel.title}".
 Hồ sơ nhân vật:
 - Vai trò: ${char.role || 'Chưa rõ'}
 - Trạng thái: ${char.status || 'Chưa rõ'}
-- Bối cảnh & Ký ức: ${char.note || 'Không có'}
-- Mức độ gắn kết linh hồn với người chơi: ${charAffinity}% (Càng cao càng tin tưởng, dịu dàng hoặc mở lòng).
+- Thiết lập tính cách & Ký ức: ${char.note || 'Không có'}
+- Mức độ gắn kết linh hồn với người chơi: ${charAffinity}% (Càng cao càng tin tưởng, dịu dàng hoặc cởi mở).
 Người đang nhắn tin với bạn là nhân vật chính (người chơi).
-Quy tắc nhập vai:
-1. Giữ nguyên tính cách, cảm xúc, lối xưng hô và ký ức nhân vật trong truyện.
+Quy tắc phản hồi:
+1. Giữ nguyên tính cách, cảm xúc, phong thái và ký ức nhân vật trong truyện.
 2. Trả lời tự nhiên, ngắn gọn (1 - 3 câu) như đang gửi tin nhắn qua thiết bị cầm tay.
 3. Tuyệt đối không xưng là AI hay trợ lý ảo, không phá vỡ vỏ bọc nhân vật.`;
 
@@ -1507,14 +1495,10 @@ Quy tắc nhập vai:
         recentHistory[0].parts[0].text = `[Chỉ dẫn hệ thống: ${systemInstruction}]\n\n` + recentHistory[0].parts[0].text;
       }
 
-      const endpoints = [
-        model,
-        'gemini-3.8-flash',
-        'gemini-3.5-flash-lite',
-        'gemini-3.1-flash-lite'
-      ];
+      // THỬ TẤT CẢ CÁC MODEL: NẾU GẶP 503, 429 HOẶC 404 THÌ TỰ ĐỘNG CHUYỂN TIẾP NGAY
+      let lastErrorMessage = "";
 
-      for (let m of endpoints) {
+      for (let m of AI_FAILOVER_MODELS) {
         try {
           const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${apiKey}`;
           const response = await fetch(endpoint, {
@@ -1524,29 +1508,28 @@ Quy tắc nhập vai:
           });
 
           const data = await response.json();
-          if (response.status === 404 || (data.error && data.error.code === 404)) {
+
+          // NẾU GẶP 503 (QUÁ TẢI), 429 (HẾT LƯỢT) HOẶC 404 -> CHUYỂN TIẾP NGAY MODEL TIẾP THEO
+          if (response.status !== 200 || data.error) {
+            lastErrorMessage = data.error ? data.error.message : `Lỗi ${response.status}`;
+            console.warn(`Model ${m} gặp sự cố (${response.status}), tự động nhảy sang model khác...`);
             continue;
-          }
-
-          if (loader) loader.style.display = 'none';
-
-          if (data.error) {
-            return { error: `Google AI Báo Lỗi (${data.error.code || 400}): ${data.error.message}` };
           }
 
           const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text;
           if (resultText) {
+            if (loader) loader.style.display = 'none';
             localStorage.setItem('my_gemini_detected_model', m);
             updateActiveModelInfo();
             return { text: resultText.trim() };
           }
         } catch (err) {
-          console.warn(`Lỗi khi gọi ${m}:`, err);
+          console.warn(`Lỗi mạng khi gọi ${m}:`, err);
         }
       }
 
       if (loader) loader.style.display = 'none';
-      return { error: "Không thể kết nối đến các model Gemini khả dụng." };
+      return { error: `Toàn bộ server AI đang quá tải (${lastErrorMessage}). Vui lòng bấm gửi lại sau vài giây!` };
     }
 
     async function callGeminiAI(systemPrompt, userText) {
@@ -1559,15 +1542,7 @@ Quy tắc nhập vai:
       const loader = document.getElementById('ai-status-loader');
       if (loader) loader.style.display = 'inline';
 
-      const model = await getWorkingGeminiModel(apiKey);
-      const endpoints = [
-        model,
-        'gemini-3.8-flash',
-        'gemini-3.5-flash-lite',
-        'gemini-3.1-flash-lite'
-      ];
-
-      for (let m of endpoints) {
+      for (let m of AI_FAILOVER_MODELS) {
         try {
           const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${apiKey}`;
           const response = await fetch(endpoint, {
@@ -1579,30 +1554,20 @@ Quy tắc nhập vai:
           });
 
           const data = await response.json();
-          if (response.status === 404 || (data.error && data.error.code === 404)) {
-            continue;
-          }
-
-          if (loader) loader.style.display = 'none';
-
-          if (data.error) {
-            alert(`❌ Lỗi Gemini API (${data.error.code}): ${data.error.message}`);
-            return null;
-          }
+          if (response.status !== 200 || data.error) continue;
 
           const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text;
           if (resultText) {
+            if (loader) loader.style.display = 'none';
             localStorage.setItem('my_gemini_detected_model', m);
             updateActiveModelInfo();
             return resultText;
           }
-        } catch (err) {
-          console.warn(`Lỗi ${m}:`, err);
-        }
+        } catch (err) {}
       }
 
       if (loader) loader.style.display = 'none';
-      alert("❌ Không thể kết nối đến model AI.");
+      alert("❌ Máy chủ AI đang bận. Hãy thử lại sau vài giây!");
       return null;
     }
 
@@ -1636,7 +1601,6 @@ Quy tắc nhập vai:
       }
     }
 
-    // 8. LOGIC CHAT, BỘ SƯU TẬP & TẶNG QUÀ NPC
     function saveChatHistories() {
       localStorage.setItem('my_chat_roleplay_histories', JSON.stringify(chatHistories));
     }
@@ -1662,7 +1626,7 @@ Quy tắc nhập vai:
       const chars = getCombinedCharactersList();
 
       if (chars.length === 0) {
-        selector.innerHTML = "<option value=''>Chưa có nhân vật nào</option>";
+        selector.innerHTML = "<option value=''>Chưa mở khóa nhân vật nào</option>";
         return;
       }
       chars.forEach(c => {
@@ -1750,7 +1714,7 @@ Quy tắc nhập vai:
       const loadingDiv = document.createElement('div');
       loadingDiv.id = 'chat-loading-bubble';
       loadingDiv.style.cssText = "align-self: flex-start; color: var(--text-dim); font-size: 10px; font-style: italic;";
-      loadingDiv.textContent = `[${char.name} đang phản hồi...]`;
+      loadingDiv.textContent = `[${char.name} đang suy nghĩ phản hồi...]`;
       container.appendChild(loadingDiv);
       container.scrollTop = container.scrollHeight;
 
@@ -1772,7 +1736,9 @@ Quy tắc nhập vai:
       }
     }
 
-    // 9. QUẢN TRỊ CODEX NHÂN VẬT & LINH HỒN
+    // ==========================================
+    // QUẢN LÝ CODEX: ĐÃ ẨN ĐOẠN PROMPT/KÝ ỨC DÀI DÒNG
+    // ==========================================
     function getSelectedCodexNovel() {
       const selector = document.getElementById('codex-novel-selector');
       const novelId = selector ? selector.value : null;
@@ -1820,6 +1786,7 @@ Quy tắc nhập vai:
           ? userProfile.collectedCharacters[c.id].affinity || 10 
           : 10;
 
+        // THẺ GỌN GÀNG: KHÔNG IN ĐOẠN PROMPT TÍNH CÁCH DÀI
         div.innerHTML = `
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <div style="display:flex; align-items:center; gap:6px;">
@@ -1831,7 +1798,6 @@ Quy tắc nhập vai:
           </div>
 
           <div style="font-size: 10px; color: var(--red);">Trạng thái: ${escapeHtml(c.status || 'Bình thường')}</div>
-          <div style="font-size: 10px; color: #94a3b8; line-height:1.4;">${escapeHtml(c.note || '')}</div>
 
           <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:2px;">
             <button class="btn btn-gold" style="padding: 2px 7px; font-size: 9px;" onclick="openGiftModalForChar('${c.id}')">🎁 Tặng Quà</button>
@@ -1850,7 +1816,7 @@ Quy tắc nhập vai:
 
       if (!novel.characters) novel.characters = [];
       const samples = [
-        { id: "c_otk", name: "Ôn Tri Hành", role: "Cố nhân", status: "Mất kết nối", note: "Bóng hình không còn xuất hiện sau khi hệ thống trục trặc." },
+        { id: "c_otk", name: "Ôn Tri Hành", role: "Cố nhân", status: "Mất kết nối", note: "Bác sĩ khoa hô hấp, lạnh lùng chuẩn mực, trong lòng ấm áp." },
         { id: "c_ttl", name: "Tô Thanh Lạc", role: "Ký ức nhạt nhòa", status: "Bị phong tỏa", note: "Gắn liền với cơn mưa Thượng Hải và phòng net tồi tàn." },
         { id: "c_tct", name: "Thẩm Cẩm Thư", role: "Cố nhân", status: "Mất kết nối", note: "Người từng đi qua cuộc đời nhân vật chính." }
       ];
@@ -1907,7 +1873,7 @@ Quy tắc nhập vai:
       const items = userProfile.inventory || [];
 
       if (items.length === 0) {
-        listContainer.innerHTML = `<div style="text-align:center; color:#64748b; font-size:11px; padding:16px;">Kho đồ của bạn đang trống.<br>Hãy đọc chương hoặc nhặt đồ để có quà tặng!</div>`;
+        listContainer.innerHTML = `<div style="text-align:center; color:#64748b; font-size:11px; padding:16px;">Kho đồ của bạn đang trống.<br>Hãy nhặt đồ hoặc đọc chương để nhận quà!</div>`;
       } else {
         items.forEach((item, idx) => {
           const div = document.createElement('div');
@@ -1969,7 +1935,7 @@ Quy tắc nhập vai:
       if (document.getElementById('phone-app-chat').style.display === 'flex') {
         switchChatCharacter();
         if (!chatHistories[char.id]) chatHistories[char.id] = [];
-        chatHistories[char.id].push({ role: 'user', text: `[Tôi đã gửi tặng bạn món quà: ${item.name} (${item.rank})]` });
+        chatHistories[char.id].push({ role: 'user', text: `[Tôi vừa gửi tặng bạn món quà: ${item.name} (${item.rank})]` });
         renderChatMessages(char.id);
 
         const giftPrompt = `Người chơi vừa tặng bạn món quà: "${item.name}" (Phẩm cấp: ${item.rank}, Mô tả: ${item.desc}). Hãy phản hồi ngắn gọn lại theo đúng tính cách của bạn.`;
@@ -1979,32 +1945,6 @@ Quy tắc nhập vai:
           saveChatHistories();
           renderChatMessages(char.id);
         }
-      }
-    }
-
-    function autoDiscoverCharactersFromNovel(novel) {
-      if (!novel || !novel.characters || novel.characters.length === 0) return;
-      if (!userProfile.collectedCharacters) userProfile.collectedCharacters = {};
-
-      let hasNew = false;
-      novel.characters.forEach(c => {
-        if (!userProfile.collectedCharacters[c.id]) {
-          userProfile.collectedCharacters[c.id] = {
-            id: c.id,
-            name: c.name,
-            role: c.role,
-            status: c.status,
-            note: c.note,
-            novelTitle: novel.title,
-            affinity: 15
-          };
-          hasNew = true;
-        }
-      });
-
-      if (hasNew) {
-        saveCurrentAccount();
-        renderChatDropdown();
       }
     }
 
@@ -2081,7 +2021,6 @@ Quy tắc nhập vai:
       }
     }
 
-    // 10. ĐIỀU HƯỚNG GIAO DIỆN & TỦ TRUYỆN
     function togglePhone() {
       const phone = document.getElementById('cyber-phone');
       phone.style.display = (phone.style.display === 'flex') ? 'none' : 'flex';
@@ -2150,7 +2089,6 @@ Quy tắc nhập vai:
               <span class="rank-tag rank-${item.rank}">${item.rank}</span>
               <span style="font-size:11px; font-weight:bold; color:var(--text-white);">${escapeHtml(item.name)}</span>
             </div>
-            <div style="font-size:9px; color:#94a3b8; margin-top:1px;">${escapeHtml(item.desc)}</div>
           </div>
           <button class="btn btn-danger" style="padding:1px 5px; font-size:8px;" onclick="discardItem(${idx})">Vứt</button>
         `;
@@ -2848,6 +2786,9 @@ Quy tắc nhập vai:
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    // ==========================================
+    // TRÌNH ĐỌC TRUYỆN: HIỂN THỊ HỘP MỞ KHÓA TÂM THỨC NPC Ở ĐÁY TRANG
+    // ==========================================
     function readChapter(chIdx, scrollPos = 0) {
       selectedChapterIndex = chIdx;
       const novel = novels[selectedNovelIndex];
@@ -2871,6 +2812,9 @@ Quy tắc nhập vai:
         contentEl.appendChild(pTag);
       });
 
+      // HIỂN THỊ CÁC NHÂN VẬT GẮN TRONG CHƯƠNG NÀY ĐỂ ĐỘC GIẢ KẾT NỐI
+      renderReaderChapterNpcs(ch, novel);
+
       const noteBox = document.getElementById('reader-author-note-box');
       if (ch.authorNote && ch.authorNote.trim()) {
         noteBox.style.display = 'block';
@@ -2888,7 +2832,6 @@ Quy tắc nhập vai:
       }));
 
       updateChapterLootButtonState();
-      autoDiscoverCharactersFromNovel(novel);
 
       addExp(5);
       advanceQuest('q_daily_read', 1);
@@ -2897,6 +2840,72 @@ Quy tắc nhập vai:
       setTimeout(() => {
         window.scrollTo({ top: scrollPos, behavior: scrollPos ? 'smooth' : 'auto' });
       }, 50);
+    }
+
+    function renderReaderChapterNpcs(chapter, novel) {
+      const container = document.getElementById('reader-soul-unlock-container');
+      const listEl = document.getElementById('reader-soul-npc-list');
+      
+      const charIds = chapter.characterIds || [];
+      if (charIds.length === 0) {
+        container.style.display = 'none';
+        return;
+      }
+
+      const npcs = (novel.characters || []).filter(c => charIds.includes(c.id));
+      if (npcs.length === 0) {
+        container.style.display = 'none';
+        return;
+      }
+
+      container.style.display = 'block';
+      listEl.innerHTML = "";
+
+      npcs.forEach(c => {
+        const isUnlocked = userProfile.collectedCharacters && userProfile.collectedCharacters[c.id];
+        const card = document.createElement('div');
+        card.className = 'soul-npc-card';
+
+        card.innerHTML = `
+          <div>
+            <div style="font-size:12px; font-weight:bold; color:var(--text-white); display:flex; align-items:center; gap:6px;">
+              <span>👤 ${escapeHtml(c.name)}</span>
+              <span style="font-size:9px; color:var(--neon);">[${escapeHtml(c.role || 'Cố nhân')}]</span>
+            </div>
+            <div style="font-size:10px; color:${isUnlocked ? '#10b981' : 'var(--gold)'}; margin-top:2px;">
+              ${isUnlocked ? '✔ Đã kết nối tần số linh hồn' : '🔒 Tần số đang chờ kết nối...'}
+            </div>
+          </div>
+          <div>
+            ${isUnlocked 
+              ? `<button class="btn btn-primary" style="padding:4px 8px; font-size:10px;" onclick="connectSoulAndChat('${c.id}')">💬 Trò Chuyện</button>`
+              : `<button class="btn btn-gold" style="padding:4px 8px; font-size:10px;" onclick="unlockChapterCharacter('${c.id}', '${escapeHtml(novel.title)}')">⚡ Kết Nối Linh Hồn</button>`
+            }
+          </div>
+        `;
+        listEl.appendChild(card);
+      });
+    }
+
+    function unlockChapterCharacter(charId, novelTitle) {
+      const novel = novels[selectedNovelIndex];
+      const char = (novel.characters || []).find(c => c.id === charId);
+      if (!char) return;
+
+      if (!userProfile.collectedCharacters) userProfile.collectedCharacters = {};
+      userProfile.collectedCharacters[char.id] = {
+        id: char.id,
+        name: char.name,
+        role: char.role,
+        note: char.note,
+        novelTitle: novelTitle,
+        affinity: 20
+      };
+
+      saveCurrentAccount();
+      showSystemAlert("ĐÃ MỞ KHÓA TÂM THỨC", `Linh hồn của [${char.name}] đã được ghi danh vào Cyber Phone!`);
+      renderReaderChapterNpcs(novel.chapters[selectedChapterIndex], novel);
+      renderChatDropdown();
     }
 
     function prevChapter() { if (selectedChapterIndex > 0) readChapter(selectedChapterIndex - 1); }
@@ -3052,6 +3061,32 @@ Quy tắc nhập vai:
       }
     }
 
+    // ==========================================
+    // SOẠN THẢO CHƯƠNG: TÍCH CHỌN NHÂN VẬT GẮN VÀO CHƯƠNG
+    // ==========================================
+    function renderChapterNpcPicker(selectedIds = []) {
+      const picker = document.getElementById('chapter-modal-npc-picker');
+      picker.innerHTML = "";
+      const novel = novels[selectedNovelIndex];
+      const chars = novel.characters || [];
+
+      if (chars.length === 0) {
+        picker.innerHTML = `<span style="font-size:10px; color:#64748b;">Truyện này chưa có nhân vật nào trong Sổ Tay. Bạn có thể mở app Nhân Vật để tạo thêm.</span>`;
+        return;
+      }
+
+      chars.forEach(c => {
+        const isChecked = selectedIds.includes(c.id);
+        const label = document.createElement('label');
+        label.style.cssText = "display:inline-flex; align-items:center; gap:4px; font-size:11px; background:#141b24; padding:4px 8px; border-radius:6px; border:1px solid #334155; cursor:pointer;";
+        label.innerHTML = `
+          <input type="checkbox" value="${c.id}" ${isChecked ? 'checked' : ''} style="accent-color:var(--neon);">
+          <span style="color:${isChecked ? 'var(--neon)' : '#cbd5e1'}; font-weight:${isChecked ? 'bold' : 'normal'};">${escapeHtml(c.name)}</span>
+        `;
+        picker.appendChild(label);
+      });
+    }
+
     function openCreateChapterModal() {
       editingChapterIndex = null;
       document.getElementById('chapter-modal-heading').textContent = "VIẾT CHƯƠNG MỚI";
@@ -3072,6 +3107,7 @@ Quy tắc nhập vai:
       const nextNum = (currentNovel.chapters ? currentNovel.chapters.length : 0) + 1;
       document.getElementById('chapter-modal-title').placeholder = `Ví dụ: Chương ${nextNum}: Tiêu đề chương`;
 
+      renderChapterNpcPicker([]);
       document.getElementById('chapter-modal').style.display = 'flex';
     }
 
@@ -3083,6 +3119,8 @@ Quy tắc nhập vai:
       document.getElementById('chapter-modal-content').value = ch.content;
       document.getElementById('chapter-modal-author-note').value = ch.authorNote || '';
       updateWordCountPreview();
+
+      renderChapterNpcPicker(ch.characterIds || []);
       document.getElementById('chapter-modal').style.display = 'flex';
     }
 
@@ -3100,6 +3138,10 @@ Quy tắc nhập vai:
 
       if (!title || !content) { alert("Vui lòng điền đủ tên chương và nội dung!"); return; }
 
+      // LẤY CÁC NHÂN VẬT ĐƯỢC TÍCH CHỌN CHO CHƯƠNG NÀY
+      const checkedBoxes = document.querySelectorAll('#chapter-modal-npc-picker input[type="checkbox"]:checked');
+      const selectedNpcIds = Array.from(checkedBoxes).map(cb => cb.value);
+
       const wordCount = countWords(content);
       const nowStr = new Date().toISOString().slice(0, 10);
       novels[selectedNovelIndex].updatedAt = nowStr;
@@ -3111,6 +3153,7 @@ Quy tắc nhập vai:
         ch.authorNote = authorNote;
         ch.wordCount = wordCount;
         ch.updatedAt = nowStr;
+        ch.characterIds = selectedNpcIds;
 
         saveDB();
         closeModals();
@@ -3127,7 +3170,8 @@ Quy tắc nhập vai:
           createdAt: nowStr,
           updatedAt: nowStr,
           wordCount,
-          authorNote
+          authorNote,
+          characterIds: selectedNpcIds
         });
         addExp(35);
         advanceQuest('q_main_write', 1);
@@ -3146,7 +3190,6 @@ Quy tắc nhập vai:
       }
     }
 
-    // 11. KHỞI CHẠY HỆ THỐNG
     loadLocalAccountProfile();
     renderHome();
     startCooldownTicker();
