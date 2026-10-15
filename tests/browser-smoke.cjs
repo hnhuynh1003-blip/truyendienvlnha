@@ -81,6 +81,32 @@ async function main() {
     assert.match(museumSandbox.message,/Sandbox không kết nối sổ sở hữu/);
     assert.equal(museumSandbox.writes,0,'Museum sandbox cannot mutate Firestore or live inventory');
 
+    // NPC editor: compact chapter picker keeps selection stable when expanding
+    // and collapsing; a fresh chapter does not display all old NPC chips.
+    const compactNpc=await page.evaluate(()=>{
+      openEditChapterModal(0);
+      const picker=document.getElementById('chapter-modal-npc-picker');
+      const initially=[...picker.querySelectorAll('input')].map(i=>({id:i.value,checked:i.checked}));
+      toggleChapterNpcPicker();
+      const expanded=[...picker.querySelectorAll('input')].map(i=>i.value);
+      toggleChapterNpcPicker();
+      const after=[...picker.querySelectorAll('input')].filter(i=>i.checked).map(i=>i.value);
+      closeModals();openCreateChapterModal();
+      const empty=document.getElementById('chapter-modal-npc-picker').textContent;
+      const initialCount=document.querySelectorAll('#chapter-modal-npc-picker input').length;
+      closeModals();
+      return {initially,expanded,after,empty,initialCount};
+    });
+    assert.deepEqual(compactNpc.initially,[{id:'c2',checked:true}],
+      'Edit chapter starts with its own connected NPC only');
+    assert.ok(compactNpc.expanded.length>compactNpc.initially.length,
+      'Author can expand all active NPCs in Sổ Tay');
+    assert.deepEqual(compactNpc.after,['c2'],
+      'Opening/closing NPC search must not lose selected chapter IDs');
+    assert.match(compactNpc.empty,/Chưa chọn NPC nào/);
+    assert.equal(compactNpc.initialCount,0,
+      'New chapter should not dump all previous NPCs onto the editor');
+
     // Author-only item editor: story catalog, NPC references and chapter linking.
     await page.evaluate(() => openEditStoryModal());
     await page.locator('#story-add-item-btn').click();
@@ -168,6 +194,39 @@ async function main() {
       return hidden;
     });
     assert.equal(readerBlocked,true,'Reader cannot open author item editor');
+
+    // Archive is reversible and must never delete NPC definitions, public
+    // chapter connections or existing collectible NPC references.
+    await page.evaluate(()=>{
+      const novel=novels[selectedNovelIndex];
+      novel.characters.push({id:'temp-npc-typo',name:'NPC GÕ NHẦM',role:'Thử'});
+      openPhoneApp('codex');
+    });
+    const typoCard=page.locator('.character-card').filter({hasText:'NPC GÕ NHẦM'});
+    assert.equal(await typoCard.count(),1);
+    page.once('dialog',dialog=>dialog.accept());
+    await typoCard.getByRole('button',{name:'Lưu trữ'}).click();
+    const archivedNpc=await page.evaluate(()=>{
+      const story=novels[selectedNovelIndex];
+      return {archived:story.characters.find(c=>c.id==='temp-npc-typo')?.archived,
+        characterCount:story.characters.length,
+        chapterLinks:[...(story.chapters[0].characterIds||[])],
+        publicItemNpcIds:story.specialItems.map(x=>x.npcId),
+        writes:window.__firestoreWrites.length};
+    });
+    assert.equal(archivedNpc.archived,true);
+    assert.equal(archivedNpc.characterCount,5,'Archive preserves permanent NPC records');
+    assert.deepEqual(archivedNpc.chapterLinks,['c2']);
+    assert.ok(archivedNpc.publicItemNpcIds.includes('c2'));
+    assert.equal(archivedNpc.writes,0);
+    assert.equal(await typoCard.count(),0,'Archived NPC disappears from normal Codex');
+    await page.getByRole('button',{name:/Xem NPC lưu trữ/}).click();
+    const archivedCard=page.locator('.character-card').filter({hasText:'NPC GÕ NHẦM'});
+    await archivedCard.getByRole('button',{name:'Khôi phục'}).click();
+    const restored=await page.evaluate(()=>novels[selectedNovelIndex].characters
+      .find(c=>c.id==='temp-npc-typo')?.archived);
+    assert.equal(restored,false,'Author can restore a wrongfully archived NPC');
+    await page.evaluate(()=>{showArchivedNpcs=false;phoneHome();});
 
     // 4B: a secret draft MUST fail closed in sandbox and never be copied into
     // the publicly readable story library, even if the author clicks Save.
