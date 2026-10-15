@@ -25,12 +25,11 @@ const trusted=()=>({quarantinedBytes:png(),originalMime:'image/png',
  moderate:async()=>({approved:true,reviewerType:'trusted-server'})});
 test('output only private normalized variants with a valid compressed signature',async()=>{
  const c=trusted();
- // A trusted codec must produce actual valid compressed bytes; claiming a
- // different MIME while retaining a PNG header must be rejected.
- assert.deepEqual(await preparePrivateAvatarVariant(c),
+ // A trusted codec must produce matching compressed bytes and MIME.
+ const invalid={...c,decodeAndTranscode:async()=>({...output(),mime:'image/jpeg'})};
+ assert.deepEqual(await preparePrivateAvatarVariant(invalid),
    {ok:false,code:'unsafe-output'});
- const valid={...c,decodeAndTranscode:async()=>output()};
- const result=await preparePrivateAvatarVariant(valid);
+ const result=await preparePrivateAvatarVariant(c);
  assert.equal(result.ok,true);
  assert.equal(result.publishable,false);
  assert.equal(result.mime,'image/webp');
