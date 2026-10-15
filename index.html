@@ -3642,7 +3642,25 @@
         ch.updatedAt = nowStr;
         ch.characterIds = selectedNpcIds;
         ch.storyItemIds = [...pendingChapterStoryItemIds];
-        if (!ch.id) ch.id = 'ch-' + (crypto.randomUUID ? crypto.randomUUID() : Date.now());
+        if (!ch.id) {
+          // Legacy chapters without an ID used their array index in saved
+          // reward/loot keys. Preserve those claims when issuing a stable ID.
+          const previousKey = novels[selectedNovelIndex].id + '_' + editingChapterIndex;
+          ch.id = 'ch-' + (crypto.randomUUID ? crypto.randomUUID() : Date.now());
+          const nextKey = novels[selectedNovelIndex].id + '_' + ch.id;
+          if (userProfile.lootedChapters?.[previousKey]) {
+            userProfile.lootedChapters[nextKey] = true;
+          }
+          if (userProfile.readRewards?.[previousKey]) {
+            userProfile.readRewards[nextKey] = true;
+          }
+          if (Array.isArray(userProfile.dailyReadLog?.chapters) &&
+              userProfile.dailyReadLog.chapters.includes(previousKey)) {
+            userProfile.dailyReadLog.chapters =
+              [...new Set(userProfile.dailyReadLog.chapters.map(key =>
+                key === previousKey ? nextKey : key))];
+          }
+        }
 
         saveDB();
         closeModals();
