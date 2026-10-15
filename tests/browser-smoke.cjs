@@ -991,7 +991,12 @@ async function main() {
       renderCodexDropdown();
       document.getElementById('codex-novel-selector').value=story.id;
       openEditCharacterModal(idx);
+      document.getElementById('npc-r9-gender').value='all';
+      npcRenderPortraitChoices();
       const choices=document.querySelectorAll('#npc-r8-gallery [data-portrait-id]').length;
+      document.getElementById('npc-r9-gender').value='female';
+      npcRenderPortraitChoices();
+      const filteredFemale=document.querySelectorAll('#npc-r8-gallery [data-portrait-id]').length;
       document.getElementById('npc-r9-gender').value='male';
       npcRenderPortraitChoices();
       const filteredMale=document.querySelectorAll('#npc-r8-gallery [data-portrait-id]').length;
@@ -1011,6 +1016,14 @@ async function main() {
       saveCharacterModal();
       const id=story.characters[idx].id;
       const selected=story.characters[idx].portraitPresetId;
+      openEditCharacterModal(idx);
+      npcSelectPortraitPreset('portrait-n-03');
+      saveCharacterModal();
+      openEditCharacterModal(idx);
+      const legacyPreserved=document.getElementById('npc-r8-preset-id').value==='portrait-n-03'&&
+        document.getElementById('npc-r8-selection-label').textContent.includes('lưu từ bản cũ');
+      npcSelectPortraitPreset('portrait-f-07');
+      saveCharacterModal();
       openEditCharacterModal(idx);
       const canvas=document.createElement('canvas');canvas.width=60;canvas.height=60;
       const ctx=canvas.getContext('2d');ctx.fillStyle='#663399';ctx.fillRect(0,0,60,60);
@@ -1036,17 +1049,19 @@ async function main() {
       story.characters=JSON.parse(original);
       localStorage.setItem('dudu-sandbox-library',JSON.stringify(novels));
       userProfile.role=originalRole;applyUserRole();editingCharNovelId=priorNovel;
-      return {missing:false,choices,filteredMale,filteredFantasy,filteredMood,presetPreview,selected,uploadId,uploaded,
+      return {missing:false,choices,filteredFemale,filteredMale,filteredFantasy,filteredMood,legacyPreserved,presetPreview,selected,uploadId,uploaded,
         ownSrc:typeof ownSrc==='string'&&ownSrc.startsWith('data:image/jpeg;base64,'),
         otherSrc,raceSelected,sameCount,writes:window.__firestoreWrites.length-beforeWrites};
     });
     assert.equal(portraitBrowser.missing,false);
     assert.equal(portraitBrowser.choices,72);
-    assert.equal(portraitBrowser.filteredMale,24);
-    assert.equal(portraitBrowser.filteredFantasy,8);
+    assert.equal(portraitBrowser.filteredFemale,60);
+    assert.equal(portraitBrowser.filteredMale,12);
+    assert.equal(portraitBrowser.filteredFantasy,4);
     assert.equal(portraitBrowser.filteredMood,0);
     assert.equal(portraitBrowser.presetPreview,true);
     assert.equal(portraitBrowser.selected,'portrait-f-07');
+    assert.equal(portraitBrowser.legacyPreserved,true,'Previously saved neutral images must still load');
     assert.ok(/^own-/.test(portraitBrowser.uploadId));
     assert.equal(portraitBrowser.uploaded,portraitBrowser.uploadId);
     assert.equal(portraitBrowser.ownSrc,true);
