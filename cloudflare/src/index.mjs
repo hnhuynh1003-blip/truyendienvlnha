@@ -10,11 +10,9 @@ const MAX_BODY_BYTES=18000;
 function allowOrigin(origin,env) {
   if (!origin) return false;
   if (origin===env.ALLOWED_ORIGIN)return true;
-  try {
-    const u=new URL(origin);
-    // Browser localhost for local testing only; no wildcard external domains.
-    return u.protocol==='http:'&&(u.hostname==='localhost'||u.hostname==='127.0.0.1');
-  } catch(_){return false;}
+  // Local testing is explicitly limited to the documented port 5500.
+  // CORS is a browser restriction, not a substitute for signed JWT and claims.
+  return origin==='http://localhost:5500'||origin==='http://127.0.0.1:5500';
 }
 function headers(origin,env) {
   const h=new Headers({
