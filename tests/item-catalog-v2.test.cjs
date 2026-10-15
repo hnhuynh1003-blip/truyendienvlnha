@@ -54,12 +54,12 @@ test('preview drop pools do not leak relics between dimensions',()=>{
   assert.deepEqual(catalog.previewDropPool({realmTag:'UNKNOWN_REALM'}),[]);
   assert.deepEqual(catalog.previewDropPool({rank:'X'}),[]);
 });
-test('catalog definitions are read-only and never change existing random-loot gameplay',()=>{
+test('catalog definitions stay immutable and random awards now use only the scoped v2 pool',()=>{
   assert.ok(Object.isFrozen(catalog.items));
   assert.ok(Object.isFrozen(catalog.byId('f1')));
   assert.ok(Object.isFrozen(catalog.byId('f1').acquisition));
   const html=fs.readFileSync(path.resolve(__dirname,'..','index.html'),'utf8');
-  assert.match(html,/const MASTER_LOOT_TABLE = \[/);
-  assert.match(html,/const pool = MASTER_LOOT_TABLE\.filter\(item => item\.rank === targetRank\)/);
-  assert.doesNotMatch(html,/DuduItemCatalog\.previewDropPool\(/);
+  assert.match(html,/const MASTER_LOOT_TABLE = \[/,'Legacy data must remain for old owners');
+  assert.match(html,/DuduLootRules\.pick\(\{realmTag\}\)/);
+  assert.doesNotMatch(html,/MASTER_LOOT_TABLE\.filter\(item => item\.rank === targetRank\)/);
 });
