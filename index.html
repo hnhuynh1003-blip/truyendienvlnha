@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="css/phone-ui-v12-dossiers.css">
   <link rel="stylesheet" href="css/npc-anime-v14.css">
   <link rel="stylesheet" href="css/npc-portrait-viewer-v15.css">
+  <link rel="stylesheet" href="css/player-avatar-v16.css">
   <link rel="stylesheet" href="css/item-visuals-v13.css">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -37,6 +38,7 @@
   <script src="js/story-dates-v1.js"></script>
   <script src="js/npc-portrait-library-v1.js"></script>
   <script src="js/npc-anime-candidates-v14.js"></script>
+  <script src="js/player-avatar-v16.js"></script>
   <script src="js/loot-rules-v2.js"></script>
   <script src="js/author-items-v1.js"></script>
   <script src="js/npc-editor-v1.js"></script>
@@ -668,6 +670,7 @@
     <div class="header-controls">
       <span class="cloud-status" id="cloud-indicator">☁️ Đã đồng bộ</span>
       <span class="user-info-badge" id="account-status-btn" onclick="openAuthModal()">👤 Khách</span>
+      <button type="button" id="player-avatar-header-v16" class="dudu-player-avatar-v16" style="display:none" onclick="openPlayerAvatarEditorV16()" aria-label="Đổi ảnh và khung tài khoản"></button>
       <span class="role-badge reader" id="role-toggle-btn" onclick="toggleUserRole()">📖 Độc Giả</span>
       <button class="btn btn-primary admin-only" onclick="openStoryModal()">+ Tạo</button>
     </div>
@@ -815,6 +818,10 @@
           </div>
         </div>
 
+        <button type="button" id="player-avatar-home-v16" class="dudu-avatar-home-v16" style="display:none" onclick="openPhoneApp('profile')" aria-label="Xem hồ sơ và khung avatar">
+          <span id="phone-player-avatar-v16" class="dudu-player-avatar-v16" aria-hidden="true"></span>
+          <span><strong id="phone-player-name-v16"></strong><small>✦ Hồ sơ · Avatar & khung nhân vật</small></span>
+        </button>
         <div class="phone-app-grid">
           <button type="button" class="app-icon" onclick="openPhoneApp('profile')" aria-label="Mở Cá Nhân">
             <div class="app-box" style="background: #3b82f6;">👤</div>
@@ -861,7 +868,8 @@
           <span></span>
         </div>
         <div style="text-align: center; margin-bottom: 10px;">
-          <div id="player-avatar-v1" aria-label="Ảnh đại diện người chơi (bản xem trước)" role="img" style="display:none;margin:0 auto 6px;width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#4338ca,#0891b2);box-shadow:0 0 0 2px #334155;align-items:center;justify-content:center;color:#f8fafc;font-weight:800;font-size:22px;">DU</div>
+          <button type="button" id="player-avatar-v1" class="dudu-player-avatar-v16" aria-label="Thay ảnh và khung nhân vật" onclick="openPlayerAvatarEditorV16()" style="display:none">DU</button>
+          <button type="button" id="player-avatar-edit-v16" class="dudu-avatar-edit-v16" onclick="openPlayerAvatarEditorV16()" style="display:none;margin:4px auto 8px;">✦ Đổi avatar & khung</button>
           <div id="player-avatar-legacy" style="font-size: 32px;">🧙‍♂️</div>
           <div style="font-weight: bold; color: var(--neon); font-size: 14px;" id="profile-name">Kẻ Lang Bạt</div>
           <div style="font-size: 10px; color: #64748b;" id="profile-title">Người Thao Túng Mã Nguồn</div>
@@ -1058,6 +1066,55 @@
         <div id="npc-v15-status"></div>
         <div id="npc-v15-note"></div>
         <div class="npc-v15-disclaimer">Bản xem trước tại Sandbox · ảnh anime là concept do tác giả chọn</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="player-avatar-v16-modal" class="dudu-avatar-v16-modal" role="dialog"
+    aria-label="Tùy chỉnh avatar và khung người chơi" aria-modal="true" aria-hidden="true"
+    style="display:none" tabindex="-1">
+    <div class="dudu-avatar-v16-window">
+      <div class="dudu-avatar-v16-header">
+        <h2>✦ Avatar & khung nhân vật</h2>
+        <button type="button" class="btn" id="player-avatar-v16-close"
+          onclick="closePlayerAvatarEditorV16()" aria-label="Đóng trình chọn avatar">×</button>
+      </div>
+      <div class="dudu-avatar-v16-scroll">
+        <div class="dudu-avatar-v16-preview">
+          <div id="player-avatar-preview-v16" class="dudu-player-avatar-v16" role="img"
+            aria-label="Xem trước avatar và khung"></div>
+          <div class="dudu-avatar-v16-preview-info">
+            <div id="player-avatar-preview-name-v16"></div>
+            <div id="player-avatar-preview-frame-v16"></div>
+            <small style="display:block;margin-top:8px;color:#9fa8cb;font-size:10px;">
+              Bản thử nghiệm · chỉ lưu cục bộ, không thay vật phẩm hay thành tựu
+            </small>
+          </div>
+        </div>
+        <div class="dudu-avatar-v16-section-label">1. Chọn chân dung</div>
+        <div id="player-avatar-v16-kind" class="dudu-avatar-v16-tabset" role="group"
+          aria-label="Loại hình đại diện"></div>
+        <div id="player-avatar-v16-preset-grid" class="dudu-avatar-v16-preset-grid"
+          role="group" aria-label="Chọn hình avatar"></div>
+        <div id="player-avatar-v16-upload-panel" style="display:none;margin-top:11px;">
+          <label for="player-avatar-v16-upload" style="font-size:11px;">
+            Tải ảnh JPG / PNG / WebP của bạn (tối đa 5MB)
+          </label>
+          <input id="player-avatar-v16-upload" type="file" accept="image/jpeg,image/png,image/webp"
+            onchange="uploadPlayerAvatarV16(event)">
+          <div id="player-avatar-v16-status" role="status" aria-live="polite"></div>
+        </div>
+        <div class="dudu-avatar-v16-section-label">2. Chọn khung</div>
+        <div id="player-avatar-v16-frames" class="dudu-avatar-v16-frames"
+          role="group" aria-label="Khung avatar"></div>
+        <p style="font-size:10px;color:#aeb4d2;line-height:1.45;">
+          Khung sự kiện và Tri Kỷ hiện chỉ là xem trước, chưa được mở khóa.
+        </p>
+      </div>
+      <div class="dudu-avatar-v16-footer">
+        <button type="button" class="btn" onclick="closePlayerAvatarEditorV16()">Hủy</button>
+        <button type="button" class="btn btn-primary" id="player-avatar-v16-save"
+          onclick="savePlayerAvatarV16()">Lưu avatar</button>
       </div>
     </div>
   </section>
