@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="css/phone-ui-v11.css">
   <link rel="stylesheet" href="css/phone-ui-v12-dossiers.css">
   <link rel="stylesheet" href="css/npc-anime-v14.css">
+  <link rel="stylesheet" href="css/npc-portrait-viewer-v15.css">
   <link rel="stylesheet" href="css/item-visuals-v13.css">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -965,6 +966,9 @@
 
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
           <div id="npc-portrait-v1" role="img" aria-label="Ảnh đại diện nhân vật (bản xem trước)" style="display:none;align-items:center;justify-content:center;width:38px;height:38px;min-width:38px;border-radius:12px;background:linear-gradient(140deg,#475569,#0e7490);color:#fff;border:1px solid #64748b;font-size:14px;font-weight:700;margin-right:4px;">NPC</div>
+          <button type="button" id="npc-v15-chat-view" class="btn npc-v15-chat-button"
+            onclick="openChatNpcPortraitViewer()" aria-label="Xem chân dung NPC"
+            style="display:none;">Xem ảnh</button>
           <select id="chat-character-selector" onchange="switchChatCharacter()" style="flex:1; background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 4px; color: #fff; font-size: 11px; outline: none; margin-right:6px;"></select>
           <span style="font-size:10px; color:var(--gold); white-space:nowrap;" id="chat-char-affinity">❤️ 10%</span>
         </div>
@@ -1039,6 +1043,24 @@
       <button type="button" class="phone-home-bar" onclick="phoneHome()" aria-label="Về màn hình chính của Cyber Phone" title="Màn hình chính"></button>
     </div>
   </div>
+
+  <section id="npc-v15-viewer" class="npc-v15-viewer" role="dialog"
+    aria-modal="true" aria-label="Chân dung nhân vật" aria-hidden="true"
+    aria-labelledby="npc-v15-title" style="display:none;" tabindex="-1">
+    <div class="npc-v15-stage">
+      <button type="button" id="npc-v15-close" class="npc-v15-close"
+        onclick="closeNpcPortraitViewer()" aria-label="Đóng chân dung">×</button>
+      <div id="npc-v15-image" class="npc-v15-image" role="img" aria-label="Ảnh nhân vật"></div>
+      <div class="npc-v15-details">
+        <div class="npc-v15-eyebrow">✦ DUDU · HỒ SƠ NHÂN VẬT</div>
+        <h2 id="npc-v15-title"></h2>
+        <div id="npc-v15-role"></div>
+        <div id="npc-v15-status"></div>
+        <div id="npc-v15-note"></div>
+        <div class="npc-v15-disclaimer">Bản xem trước tại Sandbox · ảnh anime là concept do tác giả chọn</div>
+      </div>
+    </div>
+  </section>
 
   <!-- MODAL: TẶNG QUÀ CHO NPC -->
   <div class="modal-overlay" id="gift-modal">
@@ -2093,6 +2115,62 @@
       }else fallback();
     }
 
+    let npcPortraitViewerReturnFocus=null;
+    function openNpcPortraitViewer(npc,storyId,opener=null){
+      if(!IS_SANDBOX_MODE||!npc||!storyId)return false;
+      const story=novels.find(n=>n.id===storyId);
+      const canonical=story?.characters?.find(c=>c.id===npc.id&&!c.archived);
+      if(!canonical||(!canEditStories()&&!isNpcUnlocked(storyId,npc.id)))return false;
+      const modal=document.getElementById('npc-v15-viewer');
+      const portrait=document.getElementById('npc-v15-image');
+      if(!modal||!portrait)return false;
+      npcPortraitViewerReturnFocus=opener||document.activeElement;
+      const title=document.getElementById('npc-v15-title');
+      title.textContent=canonical.name||'NPC';
+      document.getElementById('npc-v15-role').textContent=canonical.role||'Chưa rõ vai trò';
+      document.getElementById('npc-v15-status').textContent=canonical.status||'Chưa rõ trạng thái';
+      document.getElementById('npc-v15-note').textContent=canonical.note||'Chưa có ghi chú về nhân vật.';
+      modal.style.display='flex';modal.setAttribute('aria-hidden','false');
+      document.body.classList.add('npc-v15-modal-open');
+      portrait.setAttribute('aria-label','Chân dung '+title.textContent);
+      renderNpcPortraitPreview(portrait,canonical,storyId);
+      document.getElementById('npc-v15-close').focus({preventScroll:true});
+      return true;
+    }
+    function closeNpcPortraitViewer(){
+      const modal=document.getElementById('npc-v15-viewer');
+      if(!modal||modal.style.display!=='flex')return;
+      modal.style.display='none';modal.setAttribute('aria-hidden','true');
+      document.body.classList.remove('npc-v15-modal-open');
+      const portrait=document.getElementById('npc-v15-image');
+      // Prevent asynchronous image load from reopening or changing closed modal.
+      portrait.dataset.portraitToken='closed';
+      portrait.replaceChildren();portrait.style.backgroundImage='none';
+      const target=npcPortraitViewerReturnFocus;
+      npcPortraitViewerReturnFocus=null;
+      if(target?.isConnected&&typeof target.focus==='function')
+        target.focus({preventScroll:true});
+    }
+    function openChatNpcPortraitViewer(){
+      if(!IS_SANDBOX_MODE)return false;
+      const storyId=activeChatNovelId||(novels[selectedNovelIndex]||{}).id;
+      const npcId=document.getElementById('chat-character-selector')?.value;
+      const story=novels.find(n=>n.id===storyId);
+      const npc=story?.characters?.find(c=>c.id===npcId);
+      return openNpcPortraitViewer(npc,storyId,document.getElementById('npc-v15-chat-view'));
+    }
+    document.addEventListener('keydown',event=>{
+      const modal=document.getElementById('npc-v15-viewer');
+      if(!IS_SANDBOX_MODE||modal?.style.display!=='flex')return;
+      if(event.key==='Escape'){event.preventDefault();closeNpcPortraitViewer();}
+      if(event.key==='Tab'){
+        event.preventDefault();document.getElementById('npc-v15-close').focus();
+      }
+    });
+    document.getElementById('npc-v15-viewer')?.addEventListener('click',event=>{
+      if(event.target===event.currentTarget)closeNpcPortraitViewer();
+    });
+
     function switchChatCharacter() {
       hideNpcConnectionStatus();
       const choicePanel=document.getElementById('npc-daily-choice-card');
@@ -2102,6 +2180,9 @@
       const char = chars.find(c => c.id === charId);
       const storyId = activeChatNovelId || (novels[selectedNovelIndex] || {}).id;
       const unlocked = getStoryProgress(storyId).collectedCharacters;
+      const portraitViewButton=document.getElementById('npc-v15-chat-view');
+      if(portraitViewButton)portraitViewButton.style.display=
+        IS_SANDBOX_MODE&&char&&isNpcUnlocked(storyId,charId)?'inline-flex':'none';
       const affinityEl = document.getElementById('chat-char-affinity');
       const portrait=document.getElementById('npc-portrait-v1');
       if(portrait){
@@ -2466,6 +2547,15 @@
           if(second)second.style.display='none';
           const actionBar=div.children[2];
           if(actionBar)actionBar.classList.add('dudu-npc-v12-actions');
+          if(actionBar&&(canEditStories()||unlocked)){
+            const viewButton=document.createElement('button');
+            viewButton.type='button';viewButton.className='btn npc-v15-view-button';
+            viewButton.textContent='✦ Xem chân dung';
+            viewButton.setAttribute('aria-label','Xem chân dung '+String(c.name||'NPC'));
+            viewButton.addEventListener('click',()=>openNpcPortraitViewer(c,novel.id,viewButton));
+            actionBar.prepend(viewButton);
+          }
+
           const preview=div.querySelector('[data-npc-portrait]');
           if(preview)renderNpcPortraitPreview(preview,c,novel.id);
         }
