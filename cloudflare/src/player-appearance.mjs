@@ -12,6 +12,19 @@ export class DuduPlayerAppearance extends DurableObject {
       preset_id TEXT NOT NULL, frame_id TEXT NOT NULL,
       updated_at INTEGER NOT NULL
     )`);
+    // Read-only until a separately audited server event issuer exists.
+    // No public/API method inserts frame awards, by design.
+    this.sql.exec(`CREATE TABLE IF NOT EXISTS frame_awards (
+      frame_id TEXT PRIMARY KEY CHECK(frame_id IN ('legend','soulbond')),
+      source TEXT NOT NULL,evidence_id TEXT NOT NULL,
+      granted_at INTEGER NOT NULL,
+      UNIQUE(source,evidence_id)
+    )`);
+  }
+  verifiedAwards(){
+    return this.sql.exec(`SELECT frame_id AS frameId,source,
+      evidence_id AS evidenceId,granted_at AS grantedAt
+      FROM frame_awards ORDER BY granted_at ASC LIMIT 10`).toArray();
   }
   mine(){
     const row=this.sql.exec(`SELECT revision,kind,preset_id AS presetId,
