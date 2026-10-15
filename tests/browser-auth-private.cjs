@@ -69,6 +69,11 @@ const assert = require('node:assert/strict');
       await route.fulfill({status:200, contentType:'application/javascript', body:mock});
     });
     await page.goto('http://127.0.0.1:' + server.address().port + '/', {waitUntil:'domcontentloaded'});
+    await page.waitForFunction(() => typeof window.DuduAuth !== 'undefined' && document.getElementById('account-status-btn').textContent.includes('Khách'));
+    // Guest can read public novels without a forced login prompt.
+    assert.notEqual(await page.locator('#auth-modal').evaluate(el => el.style.display), 'flex');
+    assert.equal(await page.locator('#stat-personal-reading').innerText(), '0');
+    await page.locator('#account-status-btn').click();
     await page.waitForFunction(() => document.getElementById('auth-modal').style.display === 'flex');
     assert.equal(await page.locator('#auth-email').inputValue(), '');
     assert.equal(await page.locator('#auth-password').inputValue(), '');
