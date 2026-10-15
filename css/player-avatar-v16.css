@@ -149,6 +149,12 @@ body.dudu-phone-v11 .dudu-avatar-v16-frame-dot{
  border-radius:7px;box-shadow:0 0 7px var(--frame-color);
 }
 body.dudu-phone-v11 .dudu-avatar-v16-frames button:disabled{opacity:.48;cursor:not-allowed;}
+body.dudu-phone-v11 .dudu-avatar-v16-frame-dot+span{min-width:0;overflow-wrap:anywhere;}
+body.dudu-phone-v11 .dudu-avatar-v18-lock-reason{
+ display:block;margin-top:3px;font-size:9px;line-height:1.35;
+ color:#abb4d1;font-weight:500;
+}
+
 body.dudu-phone-v11 .dudu-avatar-v16-footer{
  display:flex;gap:9px;justify-content:flex-end;
  padding:12px 14px;border-top:1px solid #8672a36b;
