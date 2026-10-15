@@ -1,6 +1,8 @@
 import {verifyFirebaseIdToken} from './auth.mjs';
 import {validRequest,quotaMessage} from './limits.mjs';
 export {DuduQuota} from './quota.mjs';
+export {DuduCollectibles} from './collectibles.mjs';
+import {normalizedPublication,parseScopedIds} from './collectible-rules.mjs';
 
 const MODEL='gemini-3.5-flash-lite';
 const MAX_BODY_BYTES=18000;
@@ -35,6 +37,72 @@ function json(data,status,origin,env){
 function error(code,message,status,origin,env){
   return json({error:{code,message}},status,origin,env);
 }
+
+const COLLECTIBLE_PATHS=Object.freeze({
+  '/v1/collectibles/mine':'GET',
+  '/v1/collectibles/begin':'POST',
+  '/v1/collectibles/claim':'POST',
+  '/v1/collectibles/admin/publish':'POST',
+  '/v1/collectibles/admin/disable':'POST',
+  '/v1/collectibles/admin/grant':'POST'
+});
+async function handleCollectibles(req,env,path,origin){
+  // Separate from AI_ENABLED; both feature gates default to OFF in staging.
+  if(env.COLLECTIBLES_ENABLED!=='true')
+    return error('collectibles-disabled','Bảo tàng kỷ vật chưa mở nhận thưởng.',503,origin,env);
+  const user=await verifyFirebaseIdToken(req,env.PROJECT_ID);
+  if(!user)return error('unauthenticated','Vui lòng đăng nhập DUDU Studio.',401,origin,env);
+  if(path.startsWith('/v1/collectibles/admin/')&&!user.admin)
+    return error('forbidden','Chỉ tác giả có quyền phát hành vật phẩm.',403,origin,env);
+  let body=null;
+  if(req.method==='POST'){
+    if(!req.headers.get('Content-Type')?.toLowerCase().startsWith('application/json'))
+      return error('invalid-content','Yêu cầu phải là JSON.',415,origin,env);
+    body=await limitedJson(req);
+    if(!body)return error('invalid-request','Dữ liệu không hợp lệ hoặc quá dài.',400,origin,env);
+  }
+  const bucket=env.DUDU_COLLECTIBLES.getByName('collectibles-global-v1');
+  const now=Date.now();
+  try{
+    if(path==='/v1/collectibles/mine')
+      return json({items:await bucket.mine(user.uid)},200,origin,env);
+    if(path==='/v1/collectibles/admin/publish'){
+      const rule=normalizedPublication(body);
+      if(!rule)return error('invalid-release','Bản phát hành vật phẩm không hợp lệ.',400,origin,env);
+      const state=await bucket.publish(rule,now);
+      return json(state,state.ok?200:409,origin,env);
+    }
+    if(path==='/v1/collectibles/admin/disable'){
+      const ids=parseScopedIds(body,{withItem:true});
+      if(!ids)return error('invalid-request','Mã truyện hoặc vật phẩm không hợp lệ.',400,origin,env);
+      const state=await bucket.disable(ids.storyId,ids.itemId);
+      return json(state,state.ok?200:404,origin,env);
+    }
+    if(path==='/v1/collectibles/admin/grant'){
+      const ids=parseScopedIds(body,{withItem:true,withUid:true});
+      if(!ids)return error('invalid-request','Thông tin phát thưởng không hợp lệ.',400,origin,env);
+      const state=await bucket.grant(ids.uid,ids.storyId,ids.itemId,now);
+      return json(state,state.ok?200:409,origin,env);
+    }
+    if(path==='/v1/collectibles/begin'){
+      const ids=parseScopedIds(body,{withChapter:true});
+      if(!ids)return error('invalid-request','Thông tin chương không hợp lệ.',400,origin,env);
+      const state=await bucket.begin(user.uid,ids.storyId,ids.chapterId,now);
+      return json(state,state.ok?200:404,origin,env);
+    }
+    if(path==='/v1/collectibles/claim'){
+      const ids=parseScopedIds(body,{withItem:true,withChapter:true});
+      if(!ids)return error('invalid-request','Thông tin kỷ vật không hợp lệ.',400,origin,env);
+      const state=await bucket.claim(user.uid,ids.storyId,ids.chapterId,ids.itemId,now);
+      return json(state,state.ok?200:409,origin,env);
+    }
+  }catch(err){
+    console.warn('Collectibles ledger unavailable:',err?.name||'unavailable');
+    return error('ledger-unavailable','Bảo tàng kỷ vật tạm gián đoạn.',503,origin,env);
+  }
+  return error('not-found','Không tìm thấy đường dẫn.',404,origin,env);
+}
+
 async function limitedJson(req){
   const declared=Number(req.headers.get('Content-Length')||0);
   if(declared>MAX_BODY_BYTES)return null;
@@ -103,13 +171,20 @@ export default {
     if(!allowed)return error('origin-blocked','Nguồn yêu cầu không được phép.',403,origin,env);
     if(req.method==='OPTIONS'){
       if(!origin||!allowOrigin(origin,env))return error('origin-blocked','Nguồn yêu cầu không được phép.',403,origin,env);
-      if(!['/v1/generate','/v1/status'].includes(path))return error('not-found','Không tìm thấy đường dẫn.',404,origin,env);
+      if(!['/v1/generate','/v1/status',...Object.keys(COLLECTIBLE_PATHS)].includes(path))
+        return error('not-found','Không tìm thấy đường dẫn.',404,origin,env);
       return new Response(null,{status:204,headers:headers(origin,env)});
     }
     if(path==='/health'&&req.method==='GET'){
       return json({service:'dudu-ai',enabled:env.AI_ENABLED==='true',model:MODEL},200,origin,env);
     }
-    if(!['/v1/generate','/v1/status'].includes(path))return error('not-found','Không tìm thấy đường dẫn.',404,origin,env);
+    if(path in COLLECTIBLE_PATHS){
+      if(req.method!==COLLECTIBLE_PATHS[path])
+        return error('method-not-allowed','Phương thức không được hỗ trợ.',405,origin,env);
+      return handleCollectibles(req,env,path,origin);
+    }
+    if(!['/v1/generate','/v1/status'].includes(path))
+      return error('not-found','Không tìm thấy đường dẫn.',404,origin,env);
     if((path==='/v1/generate'&&req.method!=='POST')||(path==='/v1/status'&&req.method!=='GET')){
       return error('method-not-allowed','Phương thức không được hỗ trợ.',405,origin,env);
     }
