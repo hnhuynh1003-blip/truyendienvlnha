@@ -1750,6 +1750,8 @@
       const charId = document.getElementById('chat-character-selector').value;
       if (charId && confirm("Xóa lịch sử trò chuyện VÀ các ký ức tương tác đã lưu trên thiết bị với NPC này?")) {
         const storyId=activeChatNovelId || (novels[selectedNovelIndex] || {}).id;
+        const requestId=currentUsername+'::'+chatKey(charId,storyId);
+        chatConversationGeneration.set(requestId,(chatConversationGeneration.get(requestId)||0)+1);
         npcMemoryStore(storyId,charId)?.forget();
         chatHistories[chatKey(charId,storyId)] = [];
         pendingNpcRetry = null;
@@ -1760,6 +1762,7 @@
     }
 
     const chatRequestsInFlight = new Set();
+    const chatConversationGeneration = new Map();
     let pendingNpcRetry = null;
 
     function hideNpcConnectionStatus() {
@@ -1779,6 +1782,7 @@
       const inFlightKey = requestUser + '::' + requestChatKey;
       if (chatRequestsInFlight.has(inFlightKey)) return;
       chatRequestsInFlight.add(inFlightKey);
+      const generation=chatConversationGeneration.get(inFlightKey)||0;
       hideNpcConnectionStatus();
 
       const container = document.getElementById('chat-messages-container');
@@ -1800,6 +1804,8 @@
       } finally {
         chatRequestsInFlight.delete(inFlightKey);
       }
+      // A cleared thread must never be restored by an earlier pending AI reply.
+      if ((chatConversationGeneration.get(inFlightKey)||0)!==generation) return;
       // Never render one account/story/NPC response inside another conversation.
       if (currentUsername !== requestUser || activeChatNovelId !== storyId) return;
       const sameNpc = document.getElementById('chat-character-selector').value === char.id;
