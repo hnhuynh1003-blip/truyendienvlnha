@@ -825,9 +825,9 @@ async function main() {
       return {outputs,writes:window.__firestoreWrites.length};
     });
     assert.equal(npcSwitches.outputs.length,3);
-    assert.match(npcSwitches.outputs[0].text,/Thiện cảm: 39\/100[\\s\\S]*Tin tưởng: 0\/100/);
-    assert.match(npcSwitches.outputs[1].text,/Thiện cảm: 65\/100[\\s\\S]*Tin tưởng: 25\/100/);
-    assert.match(npcSwitches.outputs[2].text,/Thiện cảm: 90\/100[\\s\\S]*Tin tưởng: 60\/100/);
+    assert.match(npcSwitches.outputs[0].text,/Thiện cảm: 39\/100[\s\S]*Tin tưởng: 0\/100/);
+    assert.match(npcSwitches.outputs[1].text,/Thiện cảm: 65\/100[\s\S]*Tin tưởng: 25\/100/);
+    assert.match(npcSwitches.outputs[2].text,/Thiện cảm: 90\/100[\s\S]*Tin tưởng: 60\/100/);
     assert.ok(npcSwitches.outputs.every(x=>x.displayed==='block'));
     assert.equal(npcSwitches.writes,0,'Switching NPC does not write Firestore');
     // Check compact panel fits narrow mobile view without document-level overflow.
