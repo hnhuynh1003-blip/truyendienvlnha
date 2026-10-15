@@ -2178,7 +2178,10 @@
     document.addEventListener('keydown',event=>{
       const modal=document.getElementById('npc-v15-viewer');
       if(!IS_SANDBOX_MODE||modal?.style.display!=='flex')return;
-      if(event.key==='Escape'){event.preventDefault();closeNpcPortraitViewer();}
+      if(event.key==='Escape'){
+        event.preventDefault();event.stopImmediatePropagation();
+        closeNpcPortraitViewer();
+      }
       if(event.key==='Tab'){
         event.preventDefault();document.getElementById('npc-v15-close').focus();
       }
