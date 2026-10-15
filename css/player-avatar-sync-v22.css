@@ -1,0 +1,39 @@
+/* V22 opt-in Firebase metadata sync review, never default enabled. */
+body.dudu-phone-v11 #player-avatar-v22-panel {
+  padding:12px;margin-top:13px;border:1px solid #74b5c67f;
+  background:linear-gradient(145deg,#1b3447,#22223d);border-radius:14px;
+}
+body.dudu-phone-v11 #player-avatar-v22-panel[hidden],
+body.dudu-phone-v11 #player-avatar-v22-review[hidden] {display:none!important;}
+body.dudu-phone-v11 #player-avatar-v22-panel p {
+  color:#c9dbe6;font-size:10px;line-height:1.5;margin:7px 0;
+}
+body.dudu-phone-v11 .dudu-avatar-v22-actions {
+  display:flex;flex-wrap:wrap;gap:8px;margin:11px 0 8px;
+}
+body.dudu-phone-v11 .dudu-avatar-v22-actions button {
+  appearance:none;cursor:pointer;min-height:38px;padding:9px 12px;
+  background:linear-gradient(125deg,#36758d,#66518f);
+  color:#fbf1ff;border:1px solid #99d4e6;border-radius:11px;
+  font-size:10px;font-weight:700;flex:1 1 130px;
+}
+body.dudu-phone-v11 .dudu-avatar-v22-actions button:focus-visible {
+  outline:2px solid #cbf9ff;outline-offset:2px;
+}
+body.dudu-phone-v11 .dudu-avatar-v22-actions button:disabled {
+  opacity:.45;cursor:not-allowed;filter:grayscale(.6);
+}
+body.dudu-phone-v11 #player-avatar-v22-review {
+  border-top:1px solid #91abcb5c;margin-top:12px;padding-top:10px;
+}
+body.dudu-phone-v11 #player-avatar-v22-status {
+  min-height:22px;padding:5px 0;color:#dcf6f2;
+  font-weight:650;overflow-wrap:anywhere;
+}
+@media(max-width:360px){
+ body.dudu-phone-v11 #player-avatar-v22-panel{padding:9px;}
+ body.dudu-phone-v11 .dudu-avatar-v22-actions button{flex-basis:100%;}
+}
+@media(prefers-reduced-motion:reduce){
+ body.dudu-phone-v11 #player-avatar-v22-panel *{animation:none!important;transition:none!important;}
+}
