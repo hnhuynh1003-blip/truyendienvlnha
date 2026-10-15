@@ -35,3 +35,13 @@ test('unpublished author drafts live only in admin-only SQL and never appear in 
   assert.match(worker,/await bucket\.listPrivateDrafts\(scoped\.storyId,body\.chapterId\|\|null\)/);
   assert.doesNotMatch(ledger,/userProfile\.inventory|firebase\.firestore|collection\(['\"]studio_data/);
 });
+
+test('release route cannot publish client-crafted item metadata or skip admin preview',()=>{
+  assert.match(worker,/normalizedDraftApproval\(body\)/);
+  assert.match(worker,/await bucket\.draftPreview\(ids\.storyId,ids\.itemId\)/);
+  assert.match(worker,/await bucket\.publishDraft\(approval,now\)/);
+  assert.doesNotMatch(worker,/await bucket\.publish\(rule,now\)/);
+  assert.match(ledger,/Number\(draft\.updatedAt\)!==approval\.expectedUpdatedAt/);
+  assert.match(ledger,/FROM private_drafts WHERE story_id=\? AND item_id=\?/);
+  assert.match(ledger,/this\.ctx\.storage\.transactionSync/);
+});
