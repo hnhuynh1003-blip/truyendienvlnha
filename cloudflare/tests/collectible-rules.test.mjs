@@ -116,7 +116,7 @@ test('server allows only F-ranked, active, released whole-story collectibles exp
   assert.equal(isEligibleSelfTestGrant({...good,name:'KIỂM THỬ - DUDU'}),true);
   for(const changes of [
     {rank:'A'},{rank:'SS'},{method:'CHAPTER_EVENT'},
-    {chapterId:'ch-1'},{disabled:1},{disabled:true},
+    {chapterId:'ch-1'},{disabled:1},{disabled:true},{disabled:null},{disabled:undefined},
     {name:'Kỷ vật thật của người chơi'},{name:''},
     {name:null},{method:'COLLECTION_ONLY'}
   ])assert.equal(isEligibleSelfTestGrant({...good,...changes}),false,
