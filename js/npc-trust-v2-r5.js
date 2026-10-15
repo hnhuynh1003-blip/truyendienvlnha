@@ -12,10 +12,11 @@
   'use strict';
   const CHECK_IN_GAIN=3;
   function evaluateCheckin({uid,storyId,npcId,unlocked,relationship,now=Date.now(),
-    eventId}={}){
+    eventId,choiceId='thoughtful'}={}){
     const fail=(reason)=>Object.freeze({ok:false,reason,gain:0});
     if(!rules||!rules.validScope(uid,storyId,npcId)||!unlocked||
        !relationship||!Number.isFinite(now)||now<0||
+       !['thoughtful','casual'].includes(choiceId)||
        typeof eventId!=='string'||!/^[a-zA-Z0-9][a-zA-Z0-9_-]{0,159}$/.test(eventId))
       return fail('invalid-or-locked');
     const day=new Date(now).toISOString().slice(0,10);
@@ -25,9 +26,9 @@
     if(existing.lastCheckinUtc===day)return fail('daily-limit');
     const oldTrust=Number.isFinite(existing.trust)?
       Math.max(0,Math.min(100,existing.trust)):0;
-    const gain=Math.max(0,Math.min(CHECK_IN_GAIN,100-oldTrust));
+    const gain=Math.max(0,Math.min(choiceId==='thoughtful'?CHECK_IN_GAIN:1,100-oldTrust));
     if(!gain)return fail('max-trust');
-    return Object.freeze({ok:true,kind:'CHECK_IN',gain,day,eventId});
+    return Object.freeze({ok:true,kind:'CHECK_IN',gain,day,eventId,choiceId});
   }
   function applyCheckin(relationship,plan){
     if(!plan?.ok||plan.kind!=='CHECK_IN'||!relationship)return null;
