@@ -4,7 +4,7 @@
  */
 (function () {
   'use strict';
-  const WORKER_URL = ''; // Example after review: https://dudu-ai-staging.<account>.workers.dev
+  const WORKER_URL = 'https://dudu-ai-staging.dudu-studio-ai.workers.dev'; // Public endpoint; GEMINI_API_KEY stays secret in Cloudflare.
   let sandbox = false;
   function base() {return typeof WORKER_URL==='string'?WORKER_URL.trim().replace(/\/+$/,''):'';}
   function init(isSandbox) {
