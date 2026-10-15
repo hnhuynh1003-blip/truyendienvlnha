@@ -178,6 +178,50 @@ async function main() {
     assert.equal(npcContinuity.afterRetry, npcContinuity.afterFailure + 1, 'Retry must not duplicate user message');
     assert.equal(npcContinuity.hiddenAfterRetry, true);
     assert.match(npcContinuity.restored,/Tôi hiểu/);
+
+    const npcLongMemory = await page.evaluate(async () => {
+      const novel=novels[selectedNovelIndex];
+      const char=novel.characters.find(c=>c.name==='Nhân vật thử nghiệm');
+      const memory=npcMemoryStore(novel.id,char.id);
+      const original=memory.list();
+      const otherUser=DuduNpcMemory.open(localStorage,'tester-a',novel.id,char.id,true).list();
+      const otherStory=DuduNpcMemory.open(localStorage,currentUsername,'different-story',char.id,true).list();
+      const otherNpc=DuduNpcMemory.open(localStorage,currentUsername,novel.id,'different-npc',true).list();
+      // Gift is recorded as local game interaction, not verified author canon.
+      const gift=userProfile.inventory[0]?.name;
+      await executeGiftItem(char.id,0);
+      const gifts=memory.list().filter(e=>e.type==='gift');
+      let calledMessages=[];
+      DuduAI.generate=async (purpose,instruction,messages)=>{
+        calledMessages=messages;
+        return {text:'Tôi nhớ chuyện ấy, nhưng hãy kể thêm nhé.'};
+      };
+      const input=document.getElementById('chat-user-input');
+      input.value='Bạn còn nhớ món '+gift+' tôi đã tặng không?';
+      await sendChatMessage();
+      const hasMemoryRequest=calledMessages.some(m=>m.role==='user'&&m.text.includes('Nhật ký tương tác')&&m.text.includes(gift));
+      window.confirm=()=>true;
+      clearCurrentChat();
+      return {
+        originalCount:original.length,
+        otherUser:otherUser.length,otherStory:otherStory.length,otherNpc:otherNpc.length,
+        giftCount:gifts.length,giftProvenance:gifts[0]?.provenance,
+        hasMemoryRequest,deleted:memory.list().length===0,
+        chatCleared:(chatHistories[chatKey(char.id,novel.id)]||[]).length===0,
+        writes:window.__firestoreWrites.length
+      };
+    });
+    assert.ok(npcLongMemory.originalCount>=2,'Successful AI replies should become local conversation records');
+    assert.equal(npcLongMemory.otherUser,0,'No other account memory leakage');
+    assert.equal(npcLongMemory.otherStory,0,'No other story memory leakage');
+    assert.equal(npcLongMemory.otherNpc,0,'No other NPC memory leakage');
+    assert.equal(npcLongMemory.giftCount,1);
+    assert.equal(npcLongMemory.giftProvenance,'game-local');
+    assert.equal(npcLongMemory.hasMemoryRequest,true,'Relevant recorded gift must be recalled with untrusted provenance');
+    assert.equal(npcLongMemory.deleted,true,'Deleting conversation must delete related local memory');
+    assert.equal(npcLongMemory.chatCleared,true);
+    assert.equal(npcLongMemory.writes,0,'Sandbox must make no production writes');
+
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
     console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));
   } finally {
