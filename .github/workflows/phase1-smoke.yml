@@ -21,12 +21,13 @@ jobs:
           node --test functions/tests/*.test.cjs
           node --check functions/index.js
           node --check js/ai-proxy.js
-          node --test cloudflare/tests/*.test.mjs
           node --check cloudflare/src/index.mjs
+          node --check cloudflare/src/auth.mjs
           node --check cloudflare/src/quota.mjs
-      - name: Bundle Cloudflare Worker without deploying
+      - name: Test and bundle Cloudflare Worker without deploying
         run: |
           npm install --prefix cloudflare --no-audit --no-fund
+          npm test --prefix cloudflare
           npm run build --prefix cloudflare
   browser:
     runs-on: ubuntu-latest
