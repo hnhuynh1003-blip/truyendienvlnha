@@ -1237,6 +1237,7 @@
       role: "reader", 
       lootedChapters: {},
       readRewards: {},
+      dailyReadLog: { day: '', chapters: [] },
       collectedCharacters: {},
       inventory: [
         { id: "init-1", name: "Mẩu Bánh Mì Mốc", rank: "F", type: "FOOD", icon: "🍞", desc: "Khô khốc, chống đói lúc tuyệt vọng." },
@@ -1405,6 +1406,7 @@
         quests: Array.isArray(userProfile.quests) ? userProfile.quests : DEFAULT_SYSTEM_QUESTS,
         lootedChapters: userProfile.lootedChapters || {},
         readRewards: userProfile.readRewards || {},
+        dailyReadLog: userProfile.dailyReadLog || { day: '', chapters: [] },
         collectedCharacters: userProfile.collectedCharacters || {},
         storyStates: userProfile.storyStates || {}
       };
@@ -1470,6 +1472,7 @@
             role: "reader",
             lootedChapters: {},
             readRewards: {},
+            dailyReadLog: { day: '', chapters: [] },
             collectedCharacters: {},
             inventory: [
               { id: "init-1", name: "Mẩu Bánh Mì Mốc", rank: "F", type: "FOOD", icon: "🍞", desc: "Khô khốc, chống đói lúc tuyệt vọng." },
@@ -3052,15 +3055,26 @@
 
       updateChapterLootButtonState();
 
-      // Reward the first visit to a distinct chapter only once per UID/story.
-      // This limits reload/open spam; it is NOT proof of actual reading.
+      // EXP reward: once ever per UID/story/chapter. Opening the chapter is
+      // NOT proof of finishing the reading (server verification is future work).
       userProfile.readRewards ||= {};
       const readKey = `${novel.id}_${ch.id || chIdx}`;
       if (!userProfile.readRewards[readKey]) {
         userProfile.readRewards[readKey] = true;
         addExp(5);
-        advanceQuest('q_daily_read', 1);
-        if (chIdx === 0) advanceQuest('q_main_intro', 1);
+        if (chIdx === 0) advanceQuest('q_main_intro',1);
+      }
+      // Daily reading quest is separate: distinct chapters once per UTC day,
+      // so long-running readers are not locked out after finishing this story.
+      const today = new Date().toISOString().slice(0,10);
+      if (!userProfile.dailyReadLog || userProfile.dailyReadLog.day !== today ||
+          !Array.isArray(userProfile.dailyReadLog.chapters)) {
+        userProfile.dailyReadLog = {day:today,chapters:[]};
+      }
+      if (!userProfile.dailyReadLog.chapters.includes(readKey)) {
+        userProfile.dailyReadLog.chapters.push(readKey);
+        advanceQuest('q_daily_read',1);
+        saveCurrentAccount();
       }
 
       setTimeout(() => {
