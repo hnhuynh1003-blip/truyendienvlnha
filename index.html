@@ -2934,18 +2934,19 @@
       const phone = document.getElementById('cyber-phone');
       const opened = phone.style.display !== 'flex';
       phone.style.display = opened ? 'flex' : 'none';
+      phone.setAttribute('aria-hidden', opened ? 'false' : 'true');
+      if (opened) {
+        const clock=document.getElementById('phone-clock');
+        if(clock)clock.textContent=new Intl.DateTimeFormat('vi-VN',{
+          hour:'2-digit',minute:'2-digit',hour12:false
+        }).format(new Date());
+      }
       if (IS_SANDBOX_MODE) {
         document.body.classList.toggle('dudu-phone-open', opened);
-        phone.setAttribute('aria-hidden', opened ? 'false' : 'true');
         const trigger = document.getElementById('phone-fab');
         trigger.setAttribute('aria-expanded', opened ? 'true' : 'false');
         trigger.setAttribute('aria-label', opened ? 'Đóng Cyber Phone' : 'Mở Cyber Phone');
-        if (opened) {
-          const clock = document.getElementById('phone-clock');
-          if (clock) clock.textContent = new Intl.DateTimeFormat('vi-VN', {
-            hour:'2-digit',minute:'2-digit',hour12:false
-          }).format(new Date());
-        } else trigger.focus({preventScroll:true});
+        if (!opened) trigger.focus({preventScroll:true});
       }
       if (opened) {
         updatePhoneUI();
