@@ -72,7 +72,7 @@ test('admin creation does not grant chat access; chapter picker supports creatin
 });
 
 test('sandbox disables cloud reads, writes and live listeners', () => {
-  assert.match(script, /if \(!IS_SANDBOX_MODE\) db\.collection\("user_profiles"\)/);
+  assert.match(script, /function loadLocalAccountProfile\(\) \{\s*if \(!IS_SANDBOX_MODE\) \{ DuduAuth\.init\(\); return; \}/);
   assert.match(script, /if \(!IS_SANDBOX_MODE\) docRef\.onSnapshot/);
   assert.match(script, /if \(IS_SANDBOX_MODE\) \{ updatePhoneUI\(\); return; \}/);
   assert.match(script, /if \(IS_SANDBOX_MODE\) \{[\s\S]*?indicator\.textContent = '🧪 Sandbox';[\s\S]*?return;/);
