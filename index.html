@@ -8,6 +8,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="css/phone-ui-v11.css">
   <link rel="stylesheet" href="css/phone-ui-v12-dossiers.css">
+  <link rel="stylesheet" href="css/npc-anime-v14.css">
   <link rel="stylesheet" href="css/item-visuals-v13.css">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2048,6 +2049,8 @@
       const token=String(Date.now())+'-'+Math.random().toString(36).slice(2);
       element.dataset.portraitToken=token;
       element.dataset.npcId=npc.id;
+      element.style.backgroundImage='none';
+      element.style.backgroundSize='';element.style.backgroundPosition='';
       element.textContent=(npc.name||'NPC').trim().split(/\s+/).slice(-2)
         .map(x=>x[0]||'').join('').toLocaleUpperCase('vi');
       element.title='Ảnh nhân vật xem trước';
@@ -2070,14 +2073,24 @@
       const preset=DuduNpcPortraitLibrary.preset(authored)?authored:recommended;
       const packaged=typeof npc.portraitPath==='string'&&
         DuduNpcAuthorR7.ALLOWED_PORTRAIT.test(npc.portraitPath)?'./'+npc.portraitPath:null;
+      const candidate=DuduNpcAnimeCandidatesV14.styleFor(npc.portraitAnimeId);
+      const fallback=()=>{
+        if(candidate){
+          if(!element.isConnected||element.dataset.portraitToken!==token)return;
+          element.textContent='';
+          element.style.backgroundImage=candidate.image;
+          element.style.backgroundSize=candidate.size;
+          element.style.backgroundPosition=candidate.position;
+          element.style.backgroundRepeat='no-repeat';
+          element.title='Chân dung anime thử nghiệm do tác giả lựa chọn';
+        }else setImage(packaged||DuduNpcPortraitLibrary.sourceFor(preset));
+      };
       if(npc.portraitUploadId&&typeof npc.portraitUploadId==='string'){
         const uid=currentUsername||'sandbox-guest';
         DuduNpcPortraitLibrary.readUpload(uid,storyId,npc.portraitUploadId)
-          .then(data=>setImage(data|| (packaged||DuduNpcPortraitLibrary.sourceFor(preset))))
-          .catch(()=>setImage(packaged||DuduNpcPortraitLibrary.sourceFor(preset)));
-      }else{
-        setImage(packaged||DuduNpcPortraitLibrary.sourceFor(preset));
-      }
+          .then(data=>data?setImage(data):fallback())
+          .catch(fallback);
+      }else fallback();
     }
 
     function switchChatCharacter() {
