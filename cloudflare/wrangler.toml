@@ -1,0 +1,18 @@
+name = "dudu-ai-staging"
+main = "src/index.mjs"
+compatibility_date = "2026-10-01"
+workers_dev = true
+
+[vars]
+PROJECT_ID = "truyendienvl"
+ALLOWED_ORIGIN = "https://hnhuynh1003-blip.github.io"
+AI_ENABLED = "false"
+MODEL = "gemini-2.5-flash-lite"
+
+[[durable_objects.bindings]]
+name = "DUDU_QUOTA"
+class_name = "DuduQuota"
+
+[[migrations]]
+tag = "v1-sqlite"
+new_sqlite_classes = ["DuduQuota"]
