@@ -184,6 +184,8 @@ function openPlayerAvatarEditorV16(){
   playerAvatarUploadGenerationV16++;
   playerAvatarEditOwnerV16=playerAvatarOwnerV16();
   playerAvatarDraftV16={...playerAvatarCurrentV16()};
+  if(typeof closePlayerAvatarSyncReviewV21==='function')
+    closePlayerAvatarSyncReviewV21();
   modal.style.display='flex';modal.setAttribute('aria-hidden','false');
   renderPlayerAvatarEditorV16();
   document.getElementById('player-avatar-v16-close').focus({preventScroll:true});
@@ -194,6 +196,8 @@ function closePlayerAvatarEditorV16(){
   modal.style.display='none';modal.setAttribute('aria-hidden','true');
   playerAvatarUploadGenerationV16++;
   playerAvatarDraftV16=null;playerAvatarEditOwnerV16=null;
+  if(typeof closePlayerAvatarSyncReviewV21==='function')
+    closePlayerAvatarSyncReviewV21();
   const focus=playerAvatarReturnFocusV16;
   playerAvatarReturnFocusV16=null;
   if(focus?.isConnected)focus.focus({preventScroll:true});
