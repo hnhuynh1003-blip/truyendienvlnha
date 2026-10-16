@@ -31,6 +31,7 @@
   <link rel="stylesheet" href="css/phone-wallpaper-v37-gallery.css?v=3">
   <link rel="stylesheet" href="css/npc-portrait-v38.css?v=1">
   <link rel="stylesheet" href="css/npc-portrait-v39.css?v=2">
+  <link rel="stylesheet" href="css/inventory-v42.css?v=1">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -47,6 +48,8 @@
   <script src="js/story-memory.js"></script>
   <script src="js/npc-memory-v2.js"></script>
   <script src="js/item-catalog-v2.js"></script>
+  <script src="js/inventory-model-v42.js?v=1"></script>
+  <script src="js/inventory-view-v42.js?v=1"></script>
   <script src="js/item-visuals-v13.js"></script>
   <script src="js/npc-relationship-v2-r1.js"></script>
   <script src="js/npc-gift-v2-r2.js"></script>
@@ -940,12 +943,37 @@
           <button class="filter-btn" id="inv-tab-item" onclick="filterInventory('ITEM', this)">Vật dụng</button>
         </div>
 
-        <div id="inventory-v2-toolbar" class="dudu-v27-inventory-toolbar" style="display:none;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 8px;">
-          <input id="inventory-v2-search" type="search" placeholder="Tìm vật phẩm..." aria-label="Tìm trong kho đồ" oninput="renderInventory()" style="min-width:130px;flex:1;background:#111827;color:#e2e8f0;border:1px solid #334155;border-radius:6px;padding:6px;font-size:11px;"/>
-          <span id="inventory-v2-count" style="font-size:10px;color:#94a3b8;"></span>
+        <div id="inventory-v2-toolbar" class="dudu-v27-inventory-toolbar dudu-v42-toolbar" style="display:none;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 8px;">
+          <div class="dudu-v42-search-row">
+            <input id="inventory-v2-search" type="search" placeholder="Tìm tên hoặc mã vật phẩm..."
+              aria-label="Tìm trong kho đồ" oninput="DuduInventoryViewV42.reset()"
+              style="min-width:0;flex:1;background:#111827;color:#e2e8f0;border:1px solid #334155;border-radius:6px;padding:6px;font-size:11px;"/>
+            <span id="inventory-v2-count" role="status" aria-live="polite" style="font-size:10px;color:#94a3b8;"></span>
+          </div>
+          <input id="inventory-v42-category" type="hidden" value="ALL">
+          <div id="inventory-v42-categories" class="dudu-v42-category-strip" role="group" aria-label="Lọc theo vai trò vật phẩm">
+            <button type="button" data-category="ALL" aria-pressed="true" onclick="DuduInventoryViewV42.chooseCategory('ALL')">Tất cả</button>
+<button type="button" data-category="CONSUMABLE" aria-pressed="false" onclick="DuduInventoryViewV42.chooseCategory('CONSUMABLE')">Tiêu hao</button>
+<button type="button" data-category="EQUIPMENT" aria-pressed="false" onclick="DuduInventoryViewV42.chooseCategory('EQUIPMENT')">Trang bị</button>
+<button type="button" data-category="MATERIAL" aria-pressed="false" onclick="DuduInventoryViewV42.chooseCategory('MATERIAL')">Nguyên liệu</button>
+<button type="button" data-category="TOOL" aria-pressed="false" onclick="DuduInventoryViewV42.chooseCategory('TOOL')">Công cụ</button>
+<button type="button" data-category="STORY_PROP" aria-pressed="false" onclick="DuduInventoryViewV42.chooseCategory('STORY_PROP')">Đạo cụ</button>
+<button type="button" data-category="COLLECTIBLE" aria-pressed="false" onclick="DuduInventoryViewV42.chooseCategory('COLLECTIBLE')">Kỷ vật</button>
+<button type="button" data-category="OTHER" aria-pressed="false" onclick="DuduInventoryViewV42.chooseCategory('OTHER')">Khác</button>
+          </div>
+          <details class="dudu-v42-more-filter" id="inventory-v42-options">
+            <summary>Bộ lọc nâng cao · Thế giới, phẩm chất, truyện <span aria-hidden="true">⌄</span></summary>
+            <div class="dudu-v42-filter-fields">
+              <label>Phẩm chất<select id="inventory-v42-rank" onchange="DuduInventoryViewV42.reset()"><option value="ALL">F–SSS</option><option value="F">F</option><option value="E">E</option><option value="D">D</option><option value="C">C</option><option value="B">B</option><option value="A">A</option><option value="S">S</option><option value="SS">SS</option><option value="SSS">SSS</option></select></label>
+              <label>Thế giới<select id="inventory-v42-realm" onchange="DuduInventoryViewV42.reset()"><option value="ALL">Mọi thế giới</option><option value="URBAN">Hiện đại</option><option value="APOCALYPSE">Tận thế</option><option value="CULTIVATION">Tu tiên</option><option value="FANTASY">Huyền huyễn</option><option value="SCIFI">Viễn tưởng</option><option value="HORROR">Kinh dị</option></select></label>
+              <label>Truyện nhận được<select id="inventory-v42-story" onchange="DuduInventoryViewV42.reset()"><option value="ALL">Mọi truyện</option><option value="GLOBAL">Không gắn truyện</option></select></label>
+              <label>Sắp xếp<select id="inventory-v42-sort" onchange="DuduInventoryViewV42.reset()"><option value="recent">Theo vị trí trong kho</option><option value="name">Theo tên A–Z</option><option value="rank_desc">Phẩm chất cao trước</option><option value="rank_asc">Phẩm chất thấp trước</option></select></label>
+            </div>
+          </details>
         </div>
         <section id="inventory-v12-detail" aria-live="polite" aria-label="Chi tiết vật phẩm"></section>
         <div id="inventory-container" aria-label="Các ô vật phẩm trong hành trang"></div>
+        <button type="button" id="inventory-v42-more" hidden onclick="DuduInventoryViewV42.more()">Xem thêm vật phẩm</button>
       </div>
 
       <!-- APP: BẢO TÀNG KỶ VẬT (chỉ dữ liệu sở hữu máy chủ) -->
@@ -1691,7 +1719,7 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=41-1').catch((err) => console.log('SW error:', err));
+        navigator.serviceWorker.register('./sw.js?v=42-1').catch((err) => console.log('SW error:', err));
       });
     }
 
@@ -1974,7 +2002,7 @@
         title: userProfile.title || "Thực Thể Ký Tự",
         level: parseInt(userProfile.level) || 1,
         exp: parseInt(userProfile.exp) || 0,
-        currency: parseInt(userProfile.currency) || 50,
+        currency: Number.isFinite(Number(userProfile.currency)) ? Math.max(0,Math.floor(Number(userProfile.currency))) : 50,
         inventory: Array.isArray(userProfile.inventory) ? userProfile.inventory : [],
         quests: Array.isArray(userProfile.quests) ? userProfile.quests : DEFAULT_SYSTEM_QUESTS,
         lootedChapters: userProfile.lootedChapters || {},
@@ -3810,6 +3838,22 @@ document.getElementById('phone-home-screen').style.display = 'none';
     }
 
     function renderInventory() {
+      if(IS_SANDBOX_MODE&&window.DuduInventoryViewV42){
+        const current=Array.isArray(userProfile.inventory)?userProfile.inventory:[];
+        if(inventoryDetailSelection&&!current.includes(inventoryDetailSelection))inventoryDetailSelection=null;
+        const heading=document.querySelector('#phone-app-inventory .phone-app-header span');
+        if(heading)heading.textContent='Kho Xuyên Thế Giới';
+        const ready=DuduInventoryViewV42.render({
+          inventory:current,selected:inventoryDetailSelection,stories:novels,art:DuduItemArtV13,
+          onSelect(item){inventoryDetailSelection=item;renderInventory();},
+          onClose(){inventoryDetailSelection=null;renderInventory();},
+          onDiscard(index){
+            if(userProfile.inventory!==current)return;
+            inventoryDetailSelection=null;discardItem(index);
+          }
+        });
+        if(ready)return;
+      }
       const container=document.getElementById('inventory-container');
       if(!container)return;
       container.replaceChildren();
