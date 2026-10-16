@@ -613,11 +613,11 @@ async function main() {
         const recordedToday=userProfile.lootedChapters[readKey];
         userProfile.lootedChapters[readKey]=DuduLootCadenceV42.dayKey(Date.now()-86400000);
         claimChapterLootDrop();
-        const yesterdayRefresh=userProfile.inventory.length===countOnce+1 &&
+        yesterdayRefresh=userProfile.inventory.length===countOnce+1 &&
           userProfile.lootedChapters[readKey]===recordedToday;
         const countAfterRefresh=userProfile.inventory.length;
         claimChapterLootDrop();
-        const stillDailyLocked=userProfile.inventory.length===countAfterRefresh;
+        stillDailyLocked=userProfile.inventory.length===countAfterRefresh;
         const second={id:'phase2-realm-chapter',title:'Chương thử vị diện',
           content:'Nội dung dành cho kiểm thử thế giới.',realmTag:'SCIFI'};
         novel.chapters.push(second);
