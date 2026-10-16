@@ -97,10 +97,20 @@
   if(detail.chapterId)fact('Chương (ID)',detail.chapterId);
   fact('Chức năng RPG','Chưa kích hoạt trong V42');
   if(detail.protected)fact('Sở hữu','Đồ bảo vệ · Không được vứt');
+  // User-owned browser items are not proof of a server-verified relic.
+  // verifiedCollectible is always false in this model: the museum has its
+  // own authenticated, read-only ledger.
+  if(detail.scope==='DUDU'&&!detail.verifiedCollectible)
+   fact('Xác minh','Kiểm tra tại Bảo Tàng Ký Ức');
   const footer=make('div','dudu-v42-inspector-footer');
   const status=make('span','dudu-v42-inspector-status',detail.giftable?
     'Quà NPC: tùy điều kiện tặng':'Quà NPC: chưa được phép hoặc chưa xác nhận');
   footer.append(status);
+  if(detail.scope==='DUDU'&&typeof args.onMuseum==='function'){
+   const museum=make('button','btn dudu-v42-museum','Xem Bảo Tàng');
+   museum.type='button';museum.addEventListener('click',()=>args.onMuseum());
+   footer.append(museum);
+  }
   if(!detail.protected){
    const discard=make('button','btn btn-danger dudu-v42-discard','Vứt vật phẩm');
    discard.type='button';
