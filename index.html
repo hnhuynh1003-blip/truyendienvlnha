@@ -28,6 +28,7 @@
   <link rel="stylesheet" href="css/phone-settings-v35.css?v=1">
   <link rel="stylesheet" href="css/phone-wallpaper-v36-custom.css?v=1">
   <link rel="stylesheet" href="css/phone-wallpaper-v37-gallery.css?v=3">
+  <link rel="stylesheet" href="css/npc-portrait-v38.css?v=1">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -2362,8 +2363,8 @@
         img.loading='eager';img.decoding='async';
         img.style.cssText='display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit;';
         img.onload=()=>{
-          if(element.isConnected&&element.dataset.portraitToken===token&&
-             element.dataset.npcId===npc.id)element.replaceChildren(img);
+          if(element.dataset.portraitToken===token&&
+             element.dataset.npcId===npc.id){element.style.backgroundImage='none';element.replaceChildren(img);}
         };
         img.onerror=()=>{if(element.dataset.portraitToken===token)
           element.title='Chưa tìm thấy ảnh, đang dùng đại diện dự phòng';};
@@ -2377,7 +2378,7 @@
       const candidate=DuduNpcAnimeCandidatesV14.styleFor(npc.portraitAnimeId);
       const fallback=()=>{
         if(candidate){
-          if(!element.isConnected||element.dataset.portraitToken!==token)return;
+          if(element.dataset.portraitToken!==token)return;
           element.textContent='';
           element.style.backgroundImage=candidate.image;
           element.style.backgroundSize=candidate.size;
@@ -2389,7 +2390,7 @@
           const expectedId=npc.portraitAnimeId;
           DuduNpcAnimeCandidatesV14.ensureHiRes().then(ok=>{
             if(!ok||element.dataset.portraitToken!==token||
-               element.dataset.npcId!==npc.id||!element.isConnected)return;
+               element.dataset.npcId!==npc.id)return;
             const hiRes=DuduNpcAnimeCandidatesV14.hiResStyleFor(expectedId);
             if(hiRes){
               element.style.backgroundImage=hiRes.image;
@@ -3138,6 +3139,12 @@
         image.setAttribute('aria-hidden','true');
         image.style.backgroundImage=style.image;image.style.backgroundSize=style.size;
         image.style.backgroundPosition=style.position;
+        DuduNpcAnimeCandidatesV14.ensureHiRes().then(ok=>{
+          if(!ok||!image.isConnected||button.dataset.animeId!==candidate.id)return;
+          const hd=DuduNpcAnimeCandidatesV14.hiResStyleFor(candidate.id);
+          if(hd){image.style.backgroundImage=hd.image;
+            image.style.backgroundSize=hd.size;image.style.backgroundPosition=hd.position;}
+        }).catch(()=>{});
         const text=document.createElement('span');
         text.textContent=candidate.label;
         button.append(image,text);
@@ -3255,13 +3262,23 @@
           const picture=new Image();picture.onload=()=>resolve(picture);
           picture.onerror=()=>reject(new Error('invalid-image'));picture.src=objectUrl;
         });
-        const canvas=document.createElement('canvas');canvas.width=256;canvas.height=256;
+        const canvas=document.createElement('canvas');
         const ctx=canvas.getContext('2d');
-        ctx.fillStyle='#19283a';ctx.fillRect(0,0,256,256);
+        if(!ctx)throw new Error('canvas-unavailable');
         const side=Math.min(image.naturalWidth,image.naturalHeight);
         const sx=(image.naturalWidth-side)/2,sy=(image.naturalHeight-side)/2;
-        ctx.drawImage(image,sx,sy,side,side,0,0,256,256);
-        const dataUrl=canvas.toDataURL('image/jpeg',0.76);
+        // Previously forced every uploaded portrait to a 256px JPEG.
+        // Prefer 640/512px and adapt to the existing 180k data URL limit.
+        let dataUrl='';
+        for(const [size,quality] of [[640,.87],[512,.84],[448,.82],[384,.8],[320,.78],[256,.76]]){
+          canvas.width=size;canvas.height=size;
+          ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+          ctx.fillStyle='#19283a';ctx.fillRect(0,0,size,size);
+          ctx.drawImage(image,sx,sy,side,side,0,0,size,size);
+          const attempt=canvas.toDataURL('image/jpeg',quality);
+          if(attempt.length<=180000){dataUrl=attempt;break;}
+        }
+        if(!dataUrl)throw new Error('portrait-too-large');
         const id=DuduNpcPortraitLibrary.makeId();
         const saved=await DuduNpcPortraitLibrary.saveUpload(uid,storyId,id,dataUrl);
         if(!saved)return;
@@ -4817,7 +4834,18 @@ document.getElementById('phone-home-screen').style.display = 'none';
             }
           </div>
         `;
-        listEl.appendChild(card);
+        if(IS_SANDBOX_MODE){
+          const profile=card.firstElementChild;
+          profile.classList.add('dudu-v38-soul-profile');
+          const detail=document.createElement('div');detail.className='dudu-v38-soul-details';
+          while(profile.firstChild)detail.appendChild(profile.firstChild);
+          const avatar=document.createElement('span');avatar.className='dudu-v38-soul-avatar';
+          avatar.textContent='👤';avatar.setAttribute('role','img');
+          avatar.setAttribute('aria-label',isUnlocked?'Chân dung '+c.name:'NPC chưa kết nối');
+          profile.append(avatar,detail);
+          listEl.appendChild(card);
+          if(isUnlocked)renderNpcPortraitPreview(avatar,c,novel.id);
+        }else listEl.appendChild(card);
       });
     }
 
@@ -5579,7 +5607,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
     renderHome();
     startCooldownTicker();
   </script>
-<script src="js/phone-inbox-v33.js?v=3"></script>
+<script src="js/phone-inbox-v33.js?v=4"></script>
 <script src="js/phone-wallpaper-v34.js?v=2"></script>
 <script src="js/phone-settings-v35.js?v=1"></script>
 <script src="js/phone-wallpaper-v36-custom.js?v=1"></script>
