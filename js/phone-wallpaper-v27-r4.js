@@ -16,7 +16,11 @@
     Object.freeze({id:'world-xianxia',name:'Tiên hiệp',description:'Núi tiên và mây trăng'}),
     Object.freeze({id:'world-modern',name:'Hiện đại',description:'Hoàng hôn hoa anh đào'}),
     Object.freeze({id:'world-cyberpunk',name:'Cyberpunk',description:'Thành phố ánh neon'}),
-    Object.freeze({id:'world-gothic',name:'Huyền bí',description:'Cung điện trong đêm'})
+    Object.freeze({id:'world-gothic',name:'Huyền bí',description:'Cung điện trong đêm'}),
+    Object.freeze({id:'v34-night',name:'Ngân hà đêm',description:'Đêm trăng và những dãy núi'}),
+    Object.freeze({id:'v34-room',name:'Phòng nhỏ',description:'Góc phòng hoàng hôn ấm áp'}),
+    Object.freeze({id:'v34-sakura',name:'Lối hoa đào',description:'Đường hoa anh đào cuối chiều'}),
+    Object.freeze({id:'v34-neon',name:'Thành phố neon',description:'Đô thị rực sáng về đêm'})
   ]);
   const IDS=new Set(PRESETS.map(p=>p.id));
   const PREFIX='dudu-sandbox:phone-wallpaper:v27-r4:';
