@@ -1188,6 +1188,7 @@ async function main() {
       const progress=getStoryProgress(story.id);
       const hadUnlock=Object.prototype.hasOwnProperty.call(progress.collectedCharacters,npc.id);
       const oldUnlock=progress.collectedCharacters[npc.id];
+      const oldChatNovelId=activeChatNovelId;
       if(!hadUnlock)progress.collectedCharacters[npc.id]={id:npc.id,affinity:10};
       try{
         activeChatNovelId=story.id;
@@ -1204,6 +1205,7 @@ async function main() {
           focus:document.activeElement?.id,
           buttonCount:document.querySelectorAll('#phone-app-chat .npc-v15-chat-button').length};
       }finally{
+        activeChatNovelId=oldChatNovelId;
         if(hadUnlock)progress.collectedCharacters[npc.id]=oldUnlock;
         else delete progress.collectedCharacters[npc.id];
       }
