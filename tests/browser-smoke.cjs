@@ -1611,7 +1611,7 @@ async function main() {
       const buttons=[...grid.querySelectorAll('button.dudu-v29-read-button')];
       const validButtons=buttons.every(b=>b.type==='button'&&b.getAttribute('aria-label')?.startsWith('Mở truyện'));
       const noDuplicateHome=[...document.querySelectorAll('#phone-home-screen .app-icon')].every(b=>
-        b.getAttribute('onclick')!=="openPhoneApp('codex')");
+        b.getAttribute('onclick')!=="openPhoneApp('profile')");
       const directStory=document.querySelector('#phone-home-screen .app-icon[onclick="openPhoneApp(\'stories\')"]');
       phoneHome();
       return {cards:grid.children.length,expected:novels.length,validButtons,
