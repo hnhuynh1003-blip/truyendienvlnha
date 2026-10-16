@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dudu-studio-v34-wallpaper-20261016-r2';
+const CACHE_NAME = 'dudu-studio-v35-settings-20261016-r1';
 self.addEventListener('install', (event) => { self.skipWaiting(); });
 self.addEventListener('activate', (event) => {
   event.waitUntil((async()=>{
