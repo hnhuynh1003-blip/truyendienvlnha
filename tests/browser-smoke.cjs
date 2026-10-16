@@ -2463,6 +2463,66 @@ async function main() {
       trust:38,affinity:79,updatedInContacts:true,archivedNotInAll:true,
       archiveReadable:true,archiveHistoryPreserved:true,authorRestored:true,noWrites:true
     },'Rename, author archive and personal hide must never erase progress or write Firestore');
+    // V43.4: a chosen favorite gets independent, bounded interaction streaks.
+    // A max-Trust NPC remains available for deliberate daily check-ins.
+    const npcBondV43=await page.evaluate(()=>{
+      const novel=novels[selectedNovelIndex],oldCharacters=novel.characters;
+      const before=JSON.stringify(userProfile),previousChat=activeChatNovelId;
+      const writes=window.__firestoreWrites.length;
+      const npc={id:'v43-bond-fixture',name:'Bạn gắn kết V43',role:'Cố nhân'};
+      const other={id:'v43-bond-other',name:'Bạn khác',role:'Cố nhân'};
+      try{
+        novel.characters=[...oldCharacters,npc,other];
+        const p=getStoryProgress(novel.id);
+        p.collectedCharacters[npc.id]={id:npc.id,affinity:84,
+          relationshipV2:{trust:100,lastCheckinUtc:''}};
+        p.collectedCharacters[other.id]={id:other.id,affinity:30,
+          relationshipV2:{trust:20}};
+        if(document.getElementById('cyber-phone').style.display!=='flex')togglePhone();
+        openPhoneApp('codex');
+        const chosen=v43ChooseFavoriteNpc(novel.id,npc.id);
+        const favorite=p.favoriteNpcV43;
+        const pressed=[...document.querySelectorAll('#codex-container .dudu-v43-bond-favorite')]
+         .some(b=>b.textContent.includes('♥')&&b.getAttribute('aria-pressed')==='true');
+        npcCheckInFromCodexV31(novel.id,npc.id);
+        const choiceVisible=document.getElementById('npc-daily-choice-card').style.display==='block';
+        npcSubmitDailyChoice('thoughtful');
+        const v=p.collectedCharacters[npc.id];
+        const streak=v.npcBondV43;
+        const label=[...document.querySelectorAll('#codex-container .dudu-v43-bond-row')]
+          .some(row=>row.textContent.includes('1 ngày gắn kết'));
+        npcCheckInFromCodexV31(novel.id,npc.id);
+        npcSubmitDailyChoice('casual');
+        const duplicate=(v.npcBondV43.current===1&&v.npcBondV43.totalDays===1);
+        const giftSameDay=v43RecordNpcBond(novel.id,npc.id,'gift')===null;
+        const chatSameDay=v43RecordNpcBond(novel.id,npc.id,'conversation')===null;
+        const otherNotTouched=!p.collectedCharacters[other.id].npcBondV43;
+        const selectOther=v43ChooseFavoriteNpc(novel.id,other.id);
+        const favoriteAfter=p.favoriteNpcV43;
+        const oldStreakStillThere=v.npcBondV43.current===1;
+        const removed=v43ChooseFavoriteNpc(novel.id,other.id);
+        const unset=p.favoriteNpcV43==='';
+        const accountIsolated=DuduNpcBondV43.norm({}).totalDays===0;
+        return {chosen,favorite,pressed,choiceVisible,label,
+         current:streak.current,total:streak.totalDays,trust:v.relationshipV2.trust,
+         duplicate,giftSameDay,chatSameDay,otherNotTouched,
+         selectOther,favoriteAfter,oldStreakStillThere,removed,unset,
+         accountIsolated,noWrites:window.__firestoreWrites.length===writes};
+      }finally{
+        novel.characters=oldCharacters;userProfile=JSON.parse(before);
+        activeChatNovelId=previousChat;
+        saveCurrentAccount();phoneHome();
+      }
+    });
+    assert.deepEqual(npcBondV43,{
+      chosen:true,favorite:'v43-bond-fixture',pressed:true,choiceVisible:true,
+      label:true,current:1,total:1,trust:100,duplicate:true,
+      giftSameDay:true,chatSameDay:true,otherNotTouched:true,
+      selectOther:true,favoriteAfter:'v43-bond-other',
+      oldStreakStillThere:true,removed:true,unset:true,
+      accountIsolated:true,noWrites:true
+    },'V43.4 must preserve Trust, daily idempotence, favorites and account isolation');
+
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
     console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));
   } finally {

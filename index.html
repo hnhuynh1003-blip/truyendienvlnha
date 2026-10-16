@@ -33,6 +33,7 @@
   <link rel="stylesheet" href="css/npc-portrait-v39.css?v=2">
   <link rel="stylesheet" href="css/inventory-v42.css?v=3">
   <link rel="stylesheet" href="css/companion-v43.css?v=1">
+  <link rel="stylesheet" href="css/npc-bond-v43.css?v=1">
   <link rel="stylesheet" href="css/npc-diary-ui.css?v=1">
   <link rel="stylesheet" href="css/soul-link-v43.css?v=1">
   <meta name="mobile-web-app-capable" content="yes">
@@ -81,6 +82,7 @@
   <script src="js/loot-rules-v2.js"></script>
   <script src="js/loot-cadence-v42.js?v=1"></script>
   <script src="js/companion-rules-v43.js?v=1"></script>
+  <script src="js/npc-bond-v43.js?v=1"></script>
   <script src="js/soul-link-v43.js?v=1"></script>
   <script src="js/author-items-v1.js"></script>
   <script src="js/npc-editor-v1.js"></script>
@@ -2414,6 +2416,38 @@
       panel.style.display='block';
     }
 
+
+    // V43.4: confirmed interactions only; local Sandbox progress in existing
+    // account/story/NPC record. This never grants Xu, EXP, items or entitlements.
+    function v43RecordNpcBond(storyId,npcId,type,day=DuduNpcBondV43.utcDay()){
+      if(!IS_SANDBOX_MODE||!currentUsername||
+         !DuduNpcRelationshipV2.validScope(currentUsername,storyId,npcId))
+        return null;
+      const novel=novels.find(n=>n?.id===storyId);
+      if(!novel?.characters?.some(n=>n.id===npcId&&!n.archived))return null;
+      const progress=getStoryProgress(storyId).collectedCharacters[npcId];
+      if(!progress)return null;
+      const result=DuduNpcBondV43.record(progress.npcBondV43,{type,day});
+      if(!result.ok)return null;
+      progress.npcBondV43=result.state;
+      saveCurrentAccount();
+      return result;
+    }
+    function v43ChooseFavoriteNpc(storyId,npcId){
+      if(!IS_SANDBOX_MODE||!currentUsername)return false;
+      const novel=novels.find(n=>n.id===storyId);
+      if(!novel?.characters?.some(n=>n.id===npcId&&!n.archived))return false;
+      const progress=getStoryProgress(storyId);
+      const unlocked=Object.keys(progress.collectedCharacters||{}).filter(id=>
+        novel.characters.some(n=>n.id===id&&!n.archived));
+      const choice=DuduNpcBondV43.favoriteChoice(progress.favoriteNpcV43,npcId,unlocked);
+      if(!choice.ok)return false;
+      progress.favoriteNpcV43=choice.selected;
+      saveCurrentAccount();
+      renderCodexList();
+      return true;
+    }
+
     function npcSubmitDailyChoice(choiceId) {
       if(!IS_SANDBOX_MODE||!currentUsername)return;
       const panel=document.getElementById('npc-daily-choice-card');
@@ -2432,20 +2466,31 @@
         eventId,choiceId,now:Date.now()
       });
       panel.style.display='none';
-      if(!plan.ok){
+      let trustGain=0;
+      if(plan.ok){
+        const updated=DuduNpcTrustR5.applyCheckin(view,plan);
+        if(!updated)return;
+        existing.relationshipV2=updated;
+        trustGain=plan.gain;
+      }else if(plan.reason==='max-trust'){
+        // At 100 Trust, daily dialogue still counts as a genuine interaction,
+        // but it MUST NOT mint extra Trust or other rewards.
+        const today=new Date().toISOString().slice(0,10);
+        if(view.relationshipV2.lastCheckinUtc===today)return;
+        existing.relationshipV2={...(existing.relationshipV2||{}),lastCheckinUtc:today};
+      }else{
         showSystemAlert('HỎI THĂM NPC',plan.reason==='daily-limit'
           ?'Hôm nay bạn đã trò chuyện sâu với NPC này rồi.'
           :'Chưa thể cộng thêm Tin tưởng ở thời điểm này.');
         return;
       }
-      const updated=DuduNpcTrustR5.applyCheckin(view,plan);
-      if(!updated)return;
-      existing.relationshipV2=updated;
-      saveCurrentAccount();
+      const bond=v43RecordNpcBond(storyId,npcId,'checkin');
+      if(!bond)saveCurrentAccount();
       const scene=DuduNpcPersonaR6.dailyConversation(npc);
       showSystemAlert(npc.name,
         (choiceId==='thoughtful'?scene.replyThoughtful:scene.replyCasual)+
-        ' +'+plan.gain+' Tin tưởng (Sandbox).');
+        (trustGain?' +'+trustGain+' Tin tưởng.':' Tin tưởng đã đạt tối đa.')+
+        (bond?' 🔥 '+bond.state.current+' ngày gắn kết.':''));
       switchChatCharacter();
       if(document.getElementById('phone-app-codex')?.style.display==='flex')
         renderCodexList();
@@ -2629,7 +2674,7 @@
         if(checkin){
           const today=new Date().toISOString().slice(0,10);
           const done=!!relation&&relation.relationshipV2.lastCheckinUtc===today;
-          checkin.disabled=!relation||done||trust>=100;
+          checkin.disabled=!relation||done;
           checkin.textContent=done?'✓ Đã hỏi thăm':'🤝 Hỏi thăm';
           checkin.style.opacity=checkin.disabled?'0.5':'1';
         }
@@ -2791,6 +2836,10 @@
         const history = chatHistories[requestChatKey] || [];
         const lastUser = [...history].reverse().find(m => m?.role === 'user' && typeof m.text === 'string');
         chatHistories[requestChatKey].push({role:'model',text:res.text});
+        // Count one successful AI exchange per UTC day; never count scripted
+        // greetings, unsent text, errors, retries or late/deleted responses.
+        if(lastUser&&lastUser.text.trim().length>=4)
+          v43RecordNpcBond(storyId,char.id,'conversation');
         if (lastUser && isNpcUnlocked(storyId,char.id)) {
           const ref = 'reply-' + Date.now() + '-' + Math.random().toString(36).slice(2,9);
           npcMemoryStore(storyId,char.id,requestUser)?.addExchange(lastUser.text,res.text,ref);
@@ -2996,7 +3045,7 @@
             checkin.type='button';checkin.className='btn dudu-v31-progress-checkin';
             const done=view?.relationshipV2?.lastCheckinUtc===new Date().toISOString().slice(0,10);
             checkin.textContent=done?'✓ Đã hỏi thăm':'🤝 Hỏi thăm';
-            checkin.disabled=!!done||trust>=100||!currentUsername;
+            checkin.disabled=!!done||!currentUsername;
             checkin.addEventListener('click',()=>npcCheckInFromCodexV31(novel.id,c.id));
             actionBar.prepend(checkin);
           }
@@ -3010,6 +3059,33 @@
             else preview.setAttribute('aria-label','Chân dung '+c.name+' chưa mở khóa');
             renderNpcPortraitPreview(preview,c,novel.id);
           }
+        }
+        // V43.4 engagement belongs in Sổ Tay, not over the chat composer.
+        if(IS_SANDBOX_MODE&&npcProgress&&currentUsername&&!c.archived){
+          const storyProgress=getStoryProgress(novel.id);
+          const bond=DuduNpcBondV43.norm(npcProgress.npcBondV43);
+          const active=DuduNpcBondV43.shownCurrent(bond);
+          const favorite=storyProgress.favoriteNpcV43===c.id;
+          const line=document.createElement('div');
+          line.className='dudu-v43-bond-row';
+          const label=document.createElement('div');
+          label.className='dudu-v43-bond-stats';
+          const icon=document.createElement('strong');
+          icon.textContent='🔥 '+active+' ngày gắn kết';
+          const detail=document.createElement('small');
+          detail.textContent='Kỷ lục '+bond.best+' ngày · Đã tương tác '+bond.totalDays+' ngày'+
+            (bond.lastDay===DuduNpcBondV43.utcDay()?' · Hôm nay ✓':'');
+          const milestones=document.createElement('small');
+          milestones.textContent='Mốc kỷ niệm: '+DuduNpcBondV43.MILESTONES.map(day=>
+            (bond.best>=day?'✦':'◇')+day).join(' · ')+' ngày';
+          label.append(icon,detail,milestones);
+          const button=document.createElement('button');
+          button.type='button';button.className='dudu-v43-bond-favorite';
+          button.textContent=favorite?'♥ Yêu thích':'☆ Yêu thích';
+          button.setAttribute('aria-pressed',String(favorite));
+          button.setAttribute('aria-label',(favorite?'Bỏ đánh dấu ':'Đánh dấu ')+c.name+' là NPC yêu thích');
+          button.addEventListener('click',()=>v43ChooseFavoriteNpc(novel.id,c.id));
+          line.append(label,button);div.append(line);
         }
         container.appendChild(div);
       });
@@ -3149,7 +3225,7 @@
         userProfile.inventory.splice(itemIdx,1);
         progress.affinity=Math.min(100,relationship.affinity+plan.delta.affinity);
         progress.relationshipV2=next;
-        saveCurrentAccount();
+        if(!v43RecordNpcBond(giftStory,char.id,'gift'))saveCurrentAccount();
         npcMemoryStore(giftStory,char.id,giftUser)?.addGift(item.name,item.rank,eventId);
         closeModals();
         showSystemAlert('TẶNG QUÀ THÀNH CÔNG',
