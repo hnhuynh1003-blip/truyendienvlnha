@@ -2114,8 +2114,8 @@ async function main() {
             profileVisible:getComputedStyle(avatar).display!=='none',
             miniText:mini.textContent,
             oldDashboard:getComputedStyle(app.querySelector('.phone-widgets')).clipPath,
-            backgroundFirst:first.includes('xianxia.webp'),
-            backgroundSecond:second.includes('gothic.webp'),
+            backgroundFirst:first.includes('sakura-lane.svg'),
+            backgroundSecond:second.includes('aurora-night.svg'),
             changed:first!==second,
             homeClear:firstWall==='none',
             dockWithinHome:d.bottom<=r.bottom+3,
@@ -2136,8 +2136,8 @@ async function main() {
       assert.ok(v30.profileHeight<80,'Avatar pill must be compact');
       assert.match(v30.miniText,/Lv\.\d+.*Xu/);
       assert.equal(v30.oldDashboard,'inset(50%)');
-      assert.equal(v30.backgroundFirst,true,'xianxia art visible as screen background');
-      assert.equal(v30.backgroundSecond,true,'gothic art visible as screen background');
+      assert.equal(v30.backgroundFirst,true,'V34 Xianxia fallback art visible as screen background');
+      assert.equal(v30.backgroundSecond,true,'V34 Gothic fallback art visible as screen background');
       assert.equal(v30.changed,true,'Wallpaper choice visibly changes screen');
       assert.equal(v30.homeClear,true,'Home must not paint a second opaque layer');
       assert.equal(v30.dockWithinHome,true,'Dock fits inside Cyber Phone');
