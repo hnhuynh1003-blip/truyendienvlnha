@@ -1037,40 +1037,40 @@
         <div id="shop-items-container"></div>
       </div>
 
-      <!-- APP: CÀI ĐẶT -->
+      <!-- APP: CÀI ĐẶT — tách hiển thị khỏi công cụ phụ -->
       <div class="phone-sub-app" id="phone-app-settings">
         <div class="phone-app-header">
-          <button class="phone-back-btn" onclick="phoneHome()">‹</button>
+          <button type="button" class="phone-back-btn" onclick="phoneHome()" aria-label="Về màn hình chính">‹</button>
           <span>Cài Đặt</span>
-          <span></span>
         </div>
-        <div style="margin-bottom: 10px;">
-          <label style="font-size: 10px; color: #94a3b8;">Cỡ chữ đọc:</label>
-          <div style="display: flex; gap: 6px; margin-top: 3px;">
-            <button class="btn" style="flex:1; padding:3px;" onclick="setReadingFontSize(16)">16px</button>
-            <button class="btn" style="flex:1; padding:3px;" onclick="setReadingFontSize(18)">18px</button>
-            <button class="btn" style="flex:1; padding:3px;" onclick="setReadingFontSize(21)">21px</button>
+        <section class="dudu-v27-settings-card" aria-labelledby="dudu-v27-reading-title">
+          <h3 id="dudu-v27-reading-title">✦ Trải nghiệm đọc</h3>
+          <div class="dudu-v27-settings-label">Cỡ chữ</div>
+          <div class="dudu-v27-options" role="group" aria-label="Cỡ chữ đọc">
+            <button type="button" class="btn" data-dudu-font-size="16" onclick="setReadingFontSize(16)">Nhỏ</button>
+            <button type="button" class="btn" data-dudu-font-size="18" onclick="setReadingFontSize(18)">Vừa</button>
+            <button type="button" class="btn" data-dudu-font-size="21" onclick="setReadingFontSize(21)">Lớn</button>
           </div>
-        </div>
-        <div style="margin-bottom: 10px;">
-          <label style="font-size: 10px; color: #94a3b8;">Chủ đề màu:</label>
-          <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 3px;">
-            <button class="btn" onclick="setTheme('default')">Dark Terminal</button>
-            <button class="btn" onclick="setTheme('warm')">Warm Paper</button>
-            <button class="btn" onclick="setTheme('oled')">OLED Black</button>
+          <div class="dudu-v27-settings-label">Giao diện</div>
+          <div class="dudu-v27-options" role="group" aria-label="Chủ đề màu">
+            <button type="button" class="btn" data-dudu-theme="default" onclick="setTheme('default')">Tối</button>
+            <button type="button" class="btn" data-dudu-theme="warm" onclick="setTheme('warm')">Giấy ấm</button>
+            <button type="button" class="btn" data-dudu-theme="oled" onclick="setTheme('oled')">OLED</button>
           </div>
-        </div>
-        
-        <div style="margin-top: 10px; border-top: 1px solid #334155; padding-top: 8px; display:flex; flex-direction:column; gap:6px;">
-          <div style="font-size:10px; color:var(--gold); font-weight:bold;">🤖 NPC AI — KẾT NỐI BẢO MẬT</div>
-          <div style="font-size:10px;color:var(--text-dim);">Chỉ cần tài khoản DUDU Studio, không nhập Gemini API key.</div>
-          <button class="btn btn-primary admin-only" style="width:100%; font-size:10px;" onclick="testGeminiAPIConnection()">🔍 Kiểm tra máy chủ AI (Tác giả)</button>
-          <div id="ai-current-model-info" style="font-size:9px; color:#94a3b8; text-align:center;">Tần số NPC chưa sẵn sàng</div>
-      <button class="btn" style="width:100%;font-size:10px;" onclick="importLegacyChatsToCurrentStory()">📥 Nhập lịch sử chat cũ (có xác nhận)</button>
-        </div>
+        </section>
+        <details class="dudu-v27-details dudu-v27-tools" id="dudu-v27-tools">
+          <summary>⚙ Công cụ &amp; dữ liệu <span class="dudu-v27-more-hint">Nâng cao</span></summary>
+          <div class="dudu-v27-tools-content">
+            <div class="dudu-v27-tools-heading">🤖 Kết nối NPC AI</div>
+            <div id="ai-current-model-info" role="status">Tần số NPC chưa sẵn sàng</div>
+            <button type="button" class="btn btn-primary admin-only" onclick="testGeminiAPIConnection()">Kiểm tra máy chủ AI</button>
+            <button type="button" class="btn" onclick="importLegacyChatsToCurrentStory()">Nhập lịch sử chat cũ</button>
+            <small>Nhập lịch sử có bước xác nhận và không thay thế dữ liệu nếu bạn chưa đồng ý.</small>
+          </div>
+        </details>
       </div>
 
-      <button type="button" class="phone-home-bar" onclick="phoneHome()" aria-label="Về màn hình chính của Cyber Phone" title="Màn hình chính"></button>
+            <button type="button" class="phone-home-bar" onclick="phoneHome()" aria-label="Về màn hình chính của Cyber Phone" title="Màn hình chính"></button>
     </div>
   </div>
 
@@ -2681,10 +2681,15 @@
             ${isNpcUnlocked(novel.id, c.id)
               ? `<button class="btn btn-primary" style="padding: 2px 7px; font-size: 9px;" onclick="connectSoulAndChat('${c.id}', '${novel.id}')">💬 Trò chuyện</button>`
               : '<span style="font-size:10px; color:var(--text-dim);">🔒 Chưa mở khóa</span>'}
-            <button class="btn admin-only" style="padding: 2px 6px; font-size: 9px;" onclick="openEditCharacterModal(${idx})">Sửa</button>
-            ${c.archived
-              ? `<button class="btn admin-only" style="padding:2px 6px;font-size:9px;" onclick="restoreCharacterFromCodex(${idx})">Khôi phục</button>`
-              : `<button class="btn admin-only" style="padding:2px 6px;font-size:9px;" onclick="deleteCharacterFromCodex(${idx})">Lưu trữ</button>`}
+            <details class="dudu-v27-npc-admin admin-only">
+              <summary aria-label="Quản lý nhân vật">Quản lý ···</summary>
+              <div class="dudu-v27-npc-admin-panel">
+                <button type="button" class="btn" onclick="openEditCharacterModal(${idx})">✎ Sửa</button>
+                ${c.archived
+                  ? `<button type="button" class="btn" onclick="restoreCharacterFromCodex(${idx})">Khôi phục</button>`
+                  : `<button type="button" class="btn btn-danger" onclick="deleteCharacterFromCodex(${idx})">Lưu trữ</button>`}
+              </div>
+            </details>
           
           </div>
         `;
