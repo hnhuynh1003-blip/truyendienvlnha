@@ -48,7 +48,7 @@
   <script src="js/story-memory.js"></script>
   <script src="js/npc-memory-v2.js"></script>
   <script src="js/item-catalog-v2.js"></script>
-  <script src="js/inventory-model-v42.js?v=3"></script>
+  <script src="js/inventory-model-v42.js?v=4"></script>
   <script src="js/inventory-view-v42.js?v=4"></script>
   <script src="js/item-visuals-v13.js"></script>
   <script src="js/npc-relationship-v2-r1.js"></script>
@@ -1719,7 +1719,7 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=42-5').catch((err) => console.log('SW error:', err));
+        navigator.serviceWorker.register('./sw.js?v=42-6').catch((err) => console.log('SW error:', err));
       });
     }
 
@@ -1829,8 +1829,8 @@
       dailyReadLog: { day: '', chapters: [] },
       collectedCharacters: {},
       inventory: [
-        { id: "init-1", name: "Mẩu Bánh Mì Mốc", rank: "F", type: "FOOD", icon: "🍞", desc: "Khô khốc, chống đói lúc tuyệt vọng." },
-        { id: "init-2", name: "Dao Gọt Trái Cây Cũ", rank: "E", type: "WEAPON", icon: "🔪", desc: "Vũ khí thô sơ nhất để tự vệ." }
+        { ...DuduItemCatalog.byId('f1'), instanceId: 'starter-f1', obtainedFrom: {kind:'STARTER'} },
+        { ...DuduItemCatalog.byId('e3'), instanceId: 'starter-e3', obtainedFrom: {kind:'STARTER'} }
       ],
       quests: DEFAULT_SYSTEM_QUESTS
     };
@@ -2076,8 +2076,8 @@
             dailyReadLog: { day: '', chapters: [] },
             collectedCharacters: {},
             inventory: [
-              { id: "init-1", name: "Mẩu Bánh Mì Mốc", rank: "F", type: "FOOD", icon: "🍞", desc: "Khô khốc, chống đói lúc tuyệt vọng." },
-              { id: "init-2", name: "Dao Gọt Trái Cây Cũ", rank: "E", type: "WEAPON", icon: "🔪", desc: "Vũ khí thô sơ nhất để tự vệ." }
+              { ...DuduItemCatalog.byId('f1'), instanceId: 'starter-f1', obtainedFrom: {kind:'STARTER'} },
+              { ...DuduItemCatalog.byId('e3'), instanceId: 'starter-e3', obtainedFrom: {kind:'STARTER'} }
             ],
             quests: DEFAULT_SYSTEM_QUESTS
           };
@@ -3067,7 +3067,9 @@
       if (IS_SANDBOX_MODE) {
         const progress = getStoryProgress(giftStory).collectedCharacters[char.id];
         const canonical = DuduItemCatalog.byId(item.id || item.itemId);
-        const safeItem = canonical && canonical.scope !== 'LEGACY' ? canonical : null;
+        const safeItem = canonical && canonical.scope !== 'LEGACY' ? canonical :
+          (DuduInventoryV42.canonicalFor(item)?.scope==='COMMON' &&
+           DuduInventoryV42.starterAlias(item) ? DuduInventoryV42.canonicalFor(item) : null);
         const relationship = DuduNpcRelationshipV2.previewRelationship(
           progress, 'sandbox-user', giftStory, char.id);
         if (!relationship || !safeItem) {
