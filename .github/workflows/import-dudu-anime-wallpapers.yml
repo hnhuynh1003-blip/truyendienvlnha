@@ -1,0 +1,58 @@
+name: Import DUDU anime wallpapers
+on:
+  push:
+    paths:
+      - ".github/workflows/import-dudu-anime-wallpapers.yml"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install --quiet Pillow
+      - name: Download and optimize licensed backgrounds
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from urllib.request import Request, urlopen
+          from io import BytesIO
+          from PIL import Image, ImageOps
+          sources = {
+              "sakura-valley": "https://cdn.pixabay.com/photo/2024/05/21/16/54/anime-landscape-8778603_1280.jpg",
+              "city-rain": "https://cdn.pixabay.com/photo/2025/01/13/12/38/city-9330382_1280.jpg",
+              "city-night": "https://cdn.pixabay.com/photo/2025/01/13/12/38/city-9330381_1280.jpg",
+          }
+          target = Path("assets/wallpapers/v37")
+          target.mkdir(parents=True, exist_ok=True)
+          for name, url in sources.items():
+              req = Request(url, headers={"User-Agent": "Mozilla/5.0 DUDU-Studio-Wallpaper-Import/1.0"})
+              with urlopen(req, timeout=35) as response:
+                  raw = response.read()
+              if len(raw) > 12000000:
+                  raise ValueError(f"Source image is too large: {name}")
+              image = Image.open(BytesIO(raw)).convert("RGB")
+              if image.width < 750 or image.height < 1300:
+                  raise ValueError(f"Source image unexpectedly small: {name} ({image.size})")
+              image = ImageOps.fit(image, (1080, 1920), method=Image.Resampling.LANCZOS)
+              out = target / (name + ".webp")
+              image.save(out, "WEBP", quality=87, method=6)
+              print(name, out, out.stat().st_size)
+          PY
+      - name: Commit wallpapers to repository
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/wallpapers/v37
+          if ! git diff --cached --quiet; then
+            git commit -m "assets: import optimized anime wallpapers for DUDU V37"
+            git push
+          fi
