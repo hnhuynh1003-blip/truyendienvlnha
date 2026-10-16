@@ -156,7 +156,7 @@
        if(!node)return;
        node.dataset.portraitToken='v39-unassigned';
        node.style.backgroundImage='none';
-       node.textContent=String(npc?.name||'NPC').trim().split(/\\s+/)
+       node.textContent=String(npc?.name||'NPC').trim().split(/\s+/)
          .slice(-2).map(part=>part.charAt(0)).join('').toUpperCase();
        return;
      }
