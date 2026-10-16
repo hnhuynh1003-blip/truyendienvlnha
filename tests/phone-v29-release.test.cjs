@@ -23,7 +23,7 @@ test('V29 story navigator survives V30 dedicated NPC app and dock',()=>{
  assert.doesNotMatch(renderer,/saveDB\(|saveCurrentAccount\(|firebase\./);
 });
 test('V29 four world illustrated personal choices preserve account isolation and invalid path rejection',()=>{
- assert.equal(wallpaper.PRESETS.length,8);
+ assert.equal(wallpaper.PRESETS.length,16);
  const worlds=wallpaper.PRESETS.filter(x=>x.id.startsWith('world-'));
  assert.deepEqual(worlds.map(x=>x.id),['world-xianxia','world-modern','world-cyberpunk','world-gothic']);
  for(const world of worlds)assert.match(html,new RegExp('data-dudu-wallpaper-choice="'+world.id+'"'));
