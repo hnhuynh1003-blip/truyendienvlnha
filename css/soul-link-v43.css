@@ -1,0 +1,35 @@
+/* V43.3 local soul link preview, compact inside Sổ Tay and chapter NPC cards. */
+body.dudu-phone-v11 #cyber-phone .dudu-v43-soul-summary{
+ padding:11px;border:1px solid #927bc777;background:linear-gradient(145deg,#2b2e53,#1c344a);
+ border-radius:13px;margin:0 0 9px;color:#eaf1ff;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-soul-heading{
+ display:flex;justify-content:space-between;gap:7px;align-items:center;
+ font-size:12px;font-weight:750;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-soul-heading strong{
+ font-size:11px;color:#d1b9ff;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-soul-summary p{
+ font-size:10px;line-height:1.5;margin:6px 0;color:#ccd7ec;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-soul-buttons{
+ display:flex;flex-wrap:wrap;gap:7px;margin-top:8px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-soul-buttons button,
+body.dudu-phone-v11 #cyber-phone .dudu-v43-soul-footer button{
+ border:1px solid #9c9fe190;background:#38466c;color:#f4f4ff;
+ border-radius:8px;padding:7px 9px;font:inherit;font-size:10px;cursor:pointer;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-soul-buttons button:disabled{
+ opacity:.45;cursor:default;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-soul-footer{
+ display:flex;align-items:center;justify-content:space-between;gap:9px;
+ background:#2b2c4966;border:1px solid #9d92c355;
+ border-radius:9px;padding:6px 9px;font-size:10px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-soul-footer span{color:#ddd4fa;}
+body .dudu-v43-soul-chapter-hint{
+ display:block;color:#dbcefc;font-size:10px;line-height:1.4;margin-top:4px;
+}

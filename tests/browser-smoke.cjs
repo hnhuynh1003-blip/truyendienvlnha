@@ -2324,6 +2324,69 @@ async function main() {
     }
     await page.setViewportSize({width:1280,height:720});
 
+    // V43.3: Sandbox-only unlock uses earned NPC-scoped fragments, key and Xu.
+    const v43Soul=await page.evaluate(()=>{
+      const story=novels[selectedNovelIndex];
+      const oldChars=story.characters,oldChapters=story.chapters;
+      const oldProfile=JSON.stringify(userProfile),oldIndex=selectedChapterIndex;
+      const oldChat=activeChatNovelId;
+      const writes=window.__firestoreWrites.length;
+      const npc={id:'v43-soul-fixture',name:'Nhân vật V43 kiểm thử',role:'Cố nhân'};
+      const a={id:'v43-fragment-a',title:'Chương mảnh A',characterIds:[npc.id],content:'Thử nghiệm'};
+      const b={id:'v43-fragment-b',title:'Chương mảnh B',characterIds:[npc.id],content:'Thử nghiệm'};
+      try{
+        story.characters=[...oldChars,npc];story.chapters=[...oldChapters,a,b];
+        selectedChapterIndex=story.chapters.length-2;
+        const startCount=DuduSoulLinkV43.count(userProfile.soulLinkV43,story.id,npc.id);
+        renderReaderChapterNpcs(a,story);
+        const beforeCard=document.querySelector('#reader-soul-npc-list .dudu-v43-soul-chapter-hint')?.textContent||'';
+        const tooEarly=DuduSoulLinkUIV43.link(story.id,npc.id);
+        const first=DuduSoulLinkUIV43.recordChapter(story,a,Date.parse('2026-10-16T12:00:00Z'));
+        const repeated=DuduSoulLinkUIV43.recordChapter(story,a,Date.parse('2026-10-16T12:00:00Z'));
+        const second=DuduSoulLinkUIV43.recordChapter(story,b,Date.parse('2026-10-17T12:00:00Z'));
+        const third=DuduSoulLinkUIV43.recordChapter(story,a,Date.parse('2026-10-18T12:00:00Z'));
+        const ready=DuduSoulLinkV43.count(userProfile.soulLinkV43,story.id,npc.id);
+        const firstQuest=DuduSoulLinkUIV43.claimQuest();
+        const questAgain=DuduSoulLinkUIV43.claimQuest();
+        const coinsBefore=userProfile.currency;
+        userProfile.currency=100;
+        const linked=DuduSoulLinkUIV43.link(story.id,npc.id);
+        const coinsAfter=userProfile.currency;
+        const linkedNpc=getStoryProgress(story.id).collectedCharacters[npc.id];
+        const duplicate=DuduSoulLinkUIV43.link(story.id,npc.id);
+        const duplicateCoins=userProfile.currency;
+        renderReaderChapterNpcs(a,story);
+        const chatButton=[...document.querySelectorAll('#reader-soul-npc-list button')].some(x=>x.textContent.includes('Trò Chuyện'));
+        openPhoneApp('codex');
+        const hasLedger=!!document.getElementById('dudu-v43-soul-summary');
+        return {startCount,beforeCard,tooEarly,first,repeated,second,third,ready,
+          firstQuest,questAgain,coinsBefore,linked,coinsAfter,linkedNpc,
+          duplicate,duplicateCoins,chatButton,hasLedger,
+          noWrites:window.__firestoreWrites.length===writes};
+      }finally{
+        story.characters=oldChars;story.chapters=oldChapters;
+        userProfile=JSON.parse(oldProfile);selectedChapterIndex=oldIndex;
+        activeChatNovelId=oldChat;
+        saveCurrentAccount();
+        phoneHome();
+      }
+    });
+    assert.equal(v43Soul.startCount,0);
+    assert.match(v43Soul.beforeCard,/0\/3 mảnh/);
+    assert.equal(v43Soul.tooEarly,false);
+    assert.deepEqual([v43Soul.first,v43Soul.repeated,v43Soul.second,v43Soul.third],[1,0,1,1]);
+    assert.equal(v43Soul.ready,3);
+    assert.equal(v43Soul.firstQuest,true);
+    assert.equal(v43Soul.questAgain,false);
+    assert.equal(v43Soul.linked,true);
+    assert.equal(v43Soul.coinsAfter,80);
+    assert.equal(v43Soul.linkedNpc?.linkedVia,'sandbox-soul-v43');
+    assert.equal(v43Soul.duplicate,false);
+    assert.equal(v43Soul.duplicateCoins,80);
+    assert.equal(v43Soul.chatButton,true);
+    assert.equal(v43Soul.hasLedger,true);
+    assert.equal(v43Soul.noWrites,true,'V43.3 Sandbox must never write production Firestore');
+
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
     console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));
   } finally {
