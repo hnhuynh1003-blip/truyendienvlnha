@@ -2153,6 +2153,115 @@ async function main() {
     assert.equal(v31.chatBoxTransparent,true);
     assert.equal(v31.writes,0);
 
+    // V32: unlocked NPC virtual red packets, single debit, no affinity rewards,
+    // account-local storage; chat gift control present and modal keyboard-safe.
+    const socialV32=await page.evaluate(()=>{
+      if(document.getElementById('cyber-phone').style.display!=='flex')togglePhone();
+      openPhoneApp('chat');
+      const story=novels.find(n=>n.id===activeChatNovelId)||novels[selectedNovelIndex];
+      const candidate=(story?.characters||[]).find(c=>!c.archived);
+      if(!candidate)return {error:'missing NPC fixture'};
+      const selected=document.getElementById('chat-character-selector');
+      const progress=getStoryProgress(story.id);
+      const oldProgress=structuredClone(progress);
+      const beforeProfile=structuredClone(userProfile);
+      const beforeAccount=currentUsername;
+      const ledgerKey=scopedLocalKey('profile');
+      const prevStored=localStorage.getItem(ledgerKey);
+      const startWrites=window.__firestoreWrites.length;
+      try{
+        activeChatNovelId=story.id;
+        currentUsername='v32-local-test';
+        userProfile.currency=101;
+        progress.collectedCharacters[candidate.id]=progress.collectedCharacters[candidate.id]||{id:candidate.id,affinity:21};
+        renderChatDropdown();selected.value=candidate.id;switchChatCharacter();
+        const giftBtn=document.getElementById('dudu-v32-gift-button');
+        const packetBtn=document.getElementById('dudu-v32-envelope-button');
+        const bothActive=!giftBtn.disabled&&!packetBtn.disabled;
+        openRedPacketV32();
+        const modal=document.getElementById('dudu-v32-envelope-overlay');
+        const modalOpen=modal.style.display==='flex'&&modal.getAttribute('aria-hidden')==='false';
+        const disabledHigh=[520,1314].every(v=>document.querySelector('[data-dudu-v32-amount="'+v+'"]').disabled);
+        pickRedPacketV32(50);
+        const beforeBalance=userProfile.currency;
+        const beforeAffinity=progress.collectedCharacters[candidate.id].affinity;
+        confirmRedPacketV32();
+        const afterBalance=userProfile.currency;
+        const afterAffinity=progress.collectedCharacters[candidate.id].affinity;
+        const record=progress.redPacketsV32?.[candidate.id];
+        const packetShown=!!document.querySelector('#chat-messages-container .dudu-v32-red-packet-card');
+        const closed=modal.getAttribute('aria-hidden')==='true';
+        confirmRedPacketV32();
+        const doubleSafe=userProfile.currency===afterBalance&&record?.events.length===1;
+        openRedPacketV32();
+        const blocked=document.getElementById('dudu-v32-envelope-confirm').disabled;
+        closeRedPacketV32();
+        return {bothActive,modalOpen,disabledHigh,beforeBalance,afterBalance,
+          beforeAffinity,afterAffinity,packetShown,closed,doubleSafe,
+          cooldownBlocked:blocked,events:record?.events.length||0,
+          firestoreWrites:window.__firestoreWrites.length-startWrites};
+      }finally{
+        userProfile=beforeProfile;currentUsername=beforeAccount;
+        if(prevStored===null)localStorage.removeItem(ledgerKey);else localStorage.setItem(ledgerKey,prevStored);
+        phoneHome();
+      }
+    });
+    assert.equal(socialV32.bothActive,true);
+    assert.equal(socialV32.modalOpen,true);
+    assert.equal(socialV32.disabledHigh,true);
+    assert.equal(socialV32.beforeBalance,101);
+    assert.equal(socialV32.afterBalance,51);
+    assert.equal(socialV32.beforeAffinity,socialV32.afterAffinity);
+    assert.equal(socialV32.packetShown,true);
+    assert.equal(socialV32.closed,true);
+    assert.equal(socialV32.doubleSafe,true);
+    assert.equal(socialV32.cooldownBlocked,true);
+    assert.equal(socialV32.events,1);
+    assert.equal(socialV32.firestoreWrites,0);
+
+    // Mobile action sheet: controls stay within screen and remain tappable.
+    for(const width of [320,375,390]){
+      await page.setViewportSize({width,height:680});
+      const sheetV32=await page.evaluate(()=>{
+        if(document.getElementById('cyber-phone').style.display!=='flex')togglePhone();
+        openPhoneApp('chat');
+        const story=novels.find(n=>n.id===activeChatNovelId)||novels[selectedNovelIndex];
+        const npc=(story?.characters||[]).find(x=>!x.archived);
+        if(!npc)return {missingFixture:true};
+        const p=getStoryProgress(story.id);
+        const prev=p.collectedCharacters[npc.id];
+        const user=currentUsername;
+        try{
+          activeChatNovelId=story.id;
+          currentUsername=user||'v32-mobile-fixture';
+          p.collectedCharacters[npc.id]=prev||{id:npc.id,affinity:15};
+          renderChatDropdown();
+          document.getElementById('chat-character-selector').value=npc.id;
+          switchChatCharacter();
+          openRedPacketV32();
+          const modal=document.getElementById('dudu-v32-envelope-sheet')||
+            document.querySelector('.dudu-v32-envelope-sheet');
+          const rect=modal.getBoundingClientRect();
+          const scr=document.querySelector('#cyber-phone .phone-screen').getBoundingClientRect();
+          const root=document.getElementById('dudu-v32-envelope-overlay');
+          const minTop=rect.top>=scr.top-1;
+          const fits=rect.right<=innerWidth+1&&rect.left>=-1&&rect.bottom<=innerHeight+1;
+          const display=getComputedStyle(root).display;
+          return {minTop,fits,display,buttons:modal.querySelectorAll('[data-dudu-v32-amount]').length,
+            label:document.getElementById('dudu-v32-envelope-recipient').textContent};
+        }finally{
+          closeRedPacketV32();
+          if(prev===undefined)delete p.collectedCharacters[npc.id];else p.collectedCharacters[npc.id]=prev;
+          currentUsername=user;phoneHome();
+        }
+      });
+      assert.equal(sheetV32.minTop,true,'sheet top stays within phone');
+      assert.equal(sheetV32.fits,true,'red packet sheet fits '+width+'px screen');
+      assert.equal(sheetV32.display,'flex');
+      assert.equal(sheetV32.buttons,5);
+    }
+    await page.setViewportSize({width:1280,height:720});
+
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
     console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));
   } finally {

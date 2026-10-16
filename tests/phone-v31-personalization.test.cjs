@@ -37,13 +37,13 @@ test('V31 settings use selected font only and do not alter chapter reading CSS',
  assert.doesNotMatch(css,/--font-reading\s*:/);
  assert.match(css,/#cyber-phone \:is\(button,input,select,textarea\)/);
 });
-test('V31 chat is wallpaper-backed, relationship UI and checkin are in NPC catalog',()=>{
+test('V32 chat is wallpaper-backed, restores gifting, NPC progress stays in catalog',()=>{
  assert.match(html,/id="npc-v31-relation-host"/);
  assert.match(html,/function moveNpcProgressV31\(\)/);
  assert.match(html,/function npcCheckInFromCodexV31\(storyId,npcId\)/);
  assert.match(html,/checkin\.addEventListener\('click'/);
  const chat=html.slice(html.indexOf('<!-- APP: TRÒ CHUYỆN'),html.indexOf('<!-- APP: CỬA HÀNG -->'));
- assert.doesNotMatch(chat,/onclick="openGiftModalFromChat\(\)"/);
+ assert.match(chat,/onclick="openGiftModalFromChat\(\)"/);
  assert.match(chat,/id="chat-messages-container"/);
  assert.match(css,/#phone-app-chat\{[\s\S]*?background:linear-gradient\(180deg,#0711249c/);
  assert.match(css,/\.dudu-v31-bubble/);
