@@ -53,6 +53,10 @@
     }
   });
   function personaStyle(char) {
+    // Explicit author preferences or canonical Sandbox previews take priority.
+    // Do not infer story lore, relationship changes, or hidden personality traits.
+    const declared=char?.giftPreferences?.reactionStyle;
+    if(['reserved','cheerful','gentle','default'].includes(declared))return declared;
     const profile=normalized((char?.note||'')+' '+(char?.role||''));
     if (/\b(lanh lung|kiem loi|it noi|tram tinh|kho gan)\b/.test(profile)) return 'reserved';
     if (/\b(tinh nghich|vui ve|hoat bat|hai huoc|nhanh nhen)\b/.test(profile)) return 'cheerful';

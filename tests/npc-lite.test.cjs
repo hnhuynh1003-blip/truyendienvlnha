@@ -71,3 +71,20 @@ test('story, emotional state and unanswered chat disable free scripts',()=>{
     {role:'user',text:'Chào'},scripted
   ]),null,'Do not let a character repeat the same greeting forever');
 });
+
+
+test('Sandbox NPC small talk respects authored and approved preview reaction styles',()=>{
+  const personas=require('../js/npc-persona-v2-r6.js');
+  const a=personas.previewNpc({id:'c_otk',name:'Ôn Tri Hành',note:'Tính cách vui vẻ'});
+  const b=personas.previewNpc({id:'c_ttl',name:'Tô Thanh Lạc',note:'Lạnh lùng'});
+  const c=personas.previewNpc({id:'c_tct',name:'Thẩm Cẩm Thư',
+   giftPreferences:{reactionStyle:'cheerful',likedTags:['KEEPSAKE']}});
+  const first=npc.script('Xin chào',a,[]);
+  const second=npc.script('Xin chào',b,[]);
+  const third=npc.script('Xin chào',c,[]);
+  assert.equal(first.source,'script');
+  assert.match(first.text,/Ừ|tôi|Tôi/);
+  assert.match(second.text,/Hôm nay|cứ nói|Lại gặp/);
+  assert.match(third.text,/A,|Chào chào|đúng lúc/);
+  assert.equal(npc.script('Bạn có biết bí mật của chương cuối không?',c,[]),null);
+});

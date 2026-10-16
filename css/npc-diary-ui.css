@@ -1,0 +1,49 @@
+/* Sandbox NPC memory diary: lives in the chat + menu, not another permanent panel. */
+body.dudu-phone-v11 #cyber-phone #phone-app-chat{position:relative;}
+body.dudu-phone-v11 #cyber-phone .dudu-npc-diary-menu-btn{
+ display:block;width:100%;text-align:left;border:1px solid #7195bc55;
+ border-radius:9px;padding:9px 11px;background:#243c56;color:#eef7ff;
+ font:inherit;font-size:12px;cursor:pointer;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-npc-diary[hidden]{display:none!important;}
+body.dudu-phone-v11 #cyber-phone .dudu-npc-diary{
+ position:absolute;inset:0;z-index:75;display:flex;justify-content:center;
+ align-items:flex-end;background:#030b17ba;padding:9px 6px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-npc-diary-sheet{
+ display:flex;flex-direction:column;width:100%;max-width:430px;max-height:85%;
+ border-radius:17px;border:1px solid #8bb9df77;background:linear-gradient(150deg,#1b304a,#111d33);
+ box-shadow:0 14px 35px #000a;overflow:hidden;color:#edf5ff;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-npc-diary-head{
+ position:static;display:flex;align-items:center;justify-content:space-between;
+ gap:10px;background:#1d334e;padding:10px 14px;border-bottom:1px solid #9ab6d451;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-npc-diary-head strong{font-size:13px;line-height:1.35;}
+body.dudu-phone-v11 #cyber-phone .dudu-npc-diary-close{
+ min-height:34px;min-width:34px;border-radius:10px;background:#2a4564;
+ border:1px solid #9ab6d474;color:#fff;font-size:24px;line-height:1;cursor:pointer;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-npc-diary-note{
+ font-size:10px;line-height:1.45;padding:10px 13px;color:#c0d5ec;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-npc-diary-list{
+ min-height:0;overflow:auto;overscroll-behavior:contain;
+ display:flex;flex-direction:column;gap:8px;padding:0 11px 12px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-npc-diary-entry{
+ background:#253b58;border:1px solid #759dc15c;
+ padding:9px 10px;border-radius:10px;min-width:0;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-npc-diary-kind{
+ display:block;font-size:10px;font-weight:700;color:#acd7ff;margin-bottom:4px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-npc-diary-entry p{
+ font-size:11px;line-height:1.45;overflow-wrap:anywhere;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-npc-diary-secondary{
+ color:#b6c9dd;margin-top:4px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-npc-diary-empty{
+ font-size:11px;color:#cad8eb;padding:18px 6px;text-align:center;
+}

@@ -580,13 +580,25 @@ async function main() {
       input.value='Bạn còn nhớ món '+gift+' tôi đã tặng không?';
       await sendChatMessage();
       const hasMemoryRequest=calledMessages.some(m=>m.role==='user'&&m.text.includes('Nhật ký tương tác')&&m.text.includes(gift));
+      // Diary stays inside the + menu, reads only this unlocked NPC's local memory.
+      openPhoneApp('chat');
+      document.querySelector('.dudu-v33-tabs [data-tab="all"]')?.click();
+      const thread=[...document.querySelectorAll('#dudu-v33-inbox-list .dudu-v33-thread')]
+        .find(el=>el.querySelector('strong')?.textContent===char.name);
+      thread?.click();
+      const diaryButton=document.getElementById('dudu-npc-diary-open');
+      diaryButton?.click();
+      const diaryVisible=!document.getElementById('dudu-npc-diary').hidden;
+      const diaryHasGift=document.getElementById('dudu-npc-diary-list').textContent.includes(gift);
+      const diaryCaveat=document.querySelector('.dudu-npc-diary-note')?.textContent.includes('không phải tình tiết chính thức');
+      const diaryClosed=(()=>{DuduNpcDiary.close();return document.getElementById('dudu-npc-diary').hidden;})();
       window.confirm=()=>true;
       clearCurrentChat();
       return {
         originalCount:original.length,
         otherUser:otherUser.length,otherStory:otherStory.length,otherNpc:otherNpc.length,
         giftCount:gifts.length,giftProvenance:gifts[0]?.provenance,
-        hasMemoryRequest,deleted:memory.list().length===0,
+        hasMemoryRequest,diaryVisible,diaryHasGift,diaryCaveat,diaryClosed,deleted:memory.list().length===0,
         chatCleared:(chatHistories[chatKey(char.id,novel.id)]||[]).length===0,
         writes:window.__firestoreWrites.length
       };
@@ -598,6 +610,10 @@ async function main() {
     assert.equal(npcLongMemory.giftCount,1);
     assert.equal(npcLongMemory.giftProvenance,'game-local');
     assert.equal(npcLongMemory.hasMemoryRequest,true,'Relevant recorded gift must be recalled with untrusted provenance');
+    assert.equal(npcLongMemory.diaryVisible,true,'NPC memory diary opens from the compact chat menu');
+    assert.equal(npcLongMemory.diaryHasGift,true,'Diary shows the gift belonging to this NPC only');
+    assert.equal(npcLongMemory.diaryCaveat,true,'Diary distinguishes player claims from story canon');
+    assert.equal(npcLongMemory.diaryClosed,true,'Diary close restores the previous conversation');
     assert.equal(npcLongMemory.deleted,true,'Deleting conversation must delete related local memory');
     assert.equal(npcLongMemory.chatCleared,true);
     assert.equal(npcLongMemory.writes,0,'Sandbox must make no production writes');

@@ -33,6 +33,7 @@
   <link rel="stylesheet" href="css/npc-portrait-v39.css?v=2">
   <link rel="stylesheet" href="css/inventory-v42.css?v=3">
   <link rel="stylesheet" href="css/companion-v43.css?v=1">
+  <link rel="stylesheet" href="css/npc-diary-ui.css?v=1">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -2796,7 +2797,11 @@
 
       if (!chatHistories[requestChatKey]) chatHistories[requestChatKey]=[];
       const previousMessages=chatHistories[requestChatKey];
-      const scripted=DuduNpcLite.script(text,char,previousMessages);
+      // Use the author-approved style or a canonical preview persona in Sandbox.
+      // Unmatched NPCs retain the existing conservative role/note fallback.
+      const preview=IS_SANDBOX_MODE?DuduNpcPersonaR6.previewNpc(char):null;
+      const dialogueNpc=preview&&(preview.previewPersonaSource==='author'||preview.previewPortraitKey)?preview:char;
+      const scripted=DuduNpcLite.script(text,dialogueNpc,previousMessages);
 
       chatHistories[requestChatKey].push({role:'user',text});
       input.value='';
@@ -5708,6 +5713,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/npc-portrait-v39.js?v=2"></script>
 <script src="js/phone-inbox-v33.js?v=43-1"></script>
 <script src="js/companion-ui-v43.js?v=1"></script>
+<script src="js/npc-diary-ui.js?v=1"></script>
 <script src="js/phone-wallpaper-v34.js?v=2"></script>
 <script src="js/phone-settings-v35.js?v=1"></script>
 <script src="js/phone-wallpaper-v36-custom.js?v=1"></script>
