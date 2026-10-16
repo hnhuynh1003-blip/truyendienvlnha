@@ -1540,6 +1540,69 @@ async function main() {
     assert.equal(wallpaperR4.unchanged,true);
     assert.equal(wallpaperR4.writes,0);
 
+    // V28 R5 — world/personal wallpaper tracks the currently selected story.
+    // Test transitions on Cyber Phone without making any Firebase or story writes.
+    const worldV28=await page.evaluate(()=>{
+      const account=currentUsername,profileBefore=JSON.stringify(userProfile);
+      const writes=window.__firestoreWrites.length;
+      const owner=account||'sandbox-guest';
+      const key=DuduMultiverseArtV28.keyFor(owner);
+      const modeBefore=localStorage.getItem(key);
+      const storedPersonal=DuduPhoneWallpaperV27.keyFor(owner);
+      const personalBefore=localStorage.getItem(storedPersonal);
+      const oldNovelIndex=selectedNovelIndex;
+      const story=novels[oldNovelIndex];
+      const hadGenre=story&&Object.prototype.hasOwnProperty.call(story,'genre');
+      const oldGenre=story?.genre;
+      const oldWorldId=story?.worldArtId;
+      const hadWorldId=story&&Object.prototype.hasOwnProperty.call(story,'worldArtId');
+      const oldChat=activeChatNovelId;
+      try{
+        if(document.getElementById('cyber-phone').style.display!=='flex')togglePhone();
+        openPhoneApp('settings');
+        setPhoneWallpaperV27('jade');
+        setPhoneWallpaperModeV28('world');
+        const selected=document.querySelector('#phone-app-settings [data-wallpaper-mode="world"]')?.getAttribute('aria-pressed');
+        if(story){
+          story.genre='Tiên hiệp';
+          delete story.worldArtId;
+          activeChatNovelId=null;
+        }
+        phoneHome();
+        const matched=document.body.dataset.duduPhoneWallpaper;
+        if(story)story.genre='Chưa phân loại';
+        phoneHome();
+        const fallback=document.body.dataset.duduPhoneWallpaper;
+        setPhoneWallpaperModeV28('personal');
+        const personal=document.body.dataset.duduPhoneWallpaper;
+        const galleryIsPresent=!!document.getElementById('npc-v28-npc-gallery');
+        return {
+          selected,matched,fallback,personal,galleryIsPresent,
+          saved:JSON.stringify(userProfile)===profileBefore,
+          writes:window.__firestoreWrites.length-writes,
+          modeCount:document.querySelectorAll('#phone-app-settings [data-wallpaper-mode]').length
+        };
+      }finally{
+        currentUsername=account;activeChatNovelId=oldChat;selectedNovelIndex=oldNovelIndex;
+        if(story){
+          if(hadGenre)story.genre=oldGenre;else delete story.genre;
+          if(hadWorldId)story.worldArtId=oldWorldId;else delete story.worldArtId;
+        }
+        if(modeBefore===null)localStorage.removeItem(key);else localStorage.setItem(key,modeBefore);
+        if(personalBefore===null)localStorage.removeItem(storedPersonal);
+        else localStorage.setItem(storedPersonal,personalBefore);
+        phoneHome();
+      }
+    });
+    assert.equal(worldV28.selected,'true');
+    assert.equal(worldV28.matched,'world-xianxia');
+    assert.equal(worldV28.fallback,'jade');
+    assert.equal(worldV28.personal,'jade');
+    assert.equal(worldV28.galleryIsPresent,true);
+    assert.equal(worldV28.modeCount,2);
+    assert.equal(worldV28.saved,true);
+    assert.equal(worldV28.writes,0);
+
     // V27 R3: inventory instances are individually selectable square tiles,
     // no repetitive open/discard action bars. Vứt only in confirmed inspector.
     const grid375=await page.evaluate(()=>{
