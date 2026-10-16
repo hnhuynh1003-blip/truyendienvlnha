@@ -1,0 +1,80 @@
+/* DUDU V27 R4 — local CSS Cyber Phone backgrounds. Sandbox-only.
+ * Dark scrims preserve foreground/button contrast. No network images.
+ */
+body.dudu-phone-v11[data-dudu-phone-wallpaper="midnight"] #cyber-phone{
+ --dudu-r4-wallpaper:radial-gradient(circle at 72% 25%,#7655a66d,transparent 36%),linear-gradient(155deg,#1d2348,#142036 60%,#29204b);
+}
+body.dudu-phone-v11[data-dudu-phone-wallpaper="sakura"] #cyber-phone{
+ --dudu-r4-wallpaper:radial-gradient(circle at 82% 16%,#f09ad78a 0%,transparent 34%),radial-gradient(circle at 17% 72%,#ee9cb45a,transparent 43%),linear-gradient(150deg,#432944,#25315b 73%,#352343);
+}
+body.dudu-phone-v11[data-dudu-phone-wallpaper="astral"] #cyber-phone{
+ --dudu-r4-wallpaper:radial-gradient(circle at 74% 19%,#7ba2f9bd 0%,transparent 9%),radial-gradient(circle at 23% 60%,#8a74d87a,transparent 37%),radial-gradient(circle at 86% 86%,#70dae276,transparent 27%),linear-gradient(160deg,#172749,#281b50 60%,#1c3159);
+}
+body.dudu-phone-v11[data-dudu-phone-wallpaper="jade"] #cyber-phone{
+ --dudu-r4-wallpaper:radial-gradient(ellipse at 80% 14%,#90d4bc73,transparent 43%),radial-gradient(ellipse at 9% 75%,#52a99b4e,transparent 43%),linear-gradient(155deg,#193c4c,#162e44 58%,#164345);
+}
+body.dudu-phone-v11[data-dudu-phone-wallpaper] #cyber-phone .phone-screen{
+ background:linear-gradient(175deg,#0d162cdd,#12182fce),var(--dudu-r4-wallpaper) !important;
+}
+body.dudu-phone-v11[data-dudu-phone-wallpaper] #cyber-phone #phone-home-screen{
+ background:linear-gradient(180deg,#15203a29,#071328b0),var(--dudu-r4-wallpaper) !important;
+ background-position:center;background-size:cover;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v27-wallpaper-picker{
+ display:flex;flex-direction:column;gap:9px;
+ padding:12px;border:1px solid #9c8cc57d;border-radius:15px;
+ background:linear-gradient(145deg,#2c2c4f,#1c2c44);
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v27-wallpaper-picker h3{
+ font-size:12px;color:#eedbff;margin:0;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v27-wallpaper-picker small{
+ color:#b8c6df;font-size:9px;line-height:1.4;
+}
+body.dudu-phone-v11 #cyber-phone #dudu-v27-wallpaper-feedback{
+ font-size:10px;color:#a8efe4;min-height:0;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v27-wallpaper-grid{
+ display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v27-wallpaper-option{
+ appearance:none;min-width:0;display:flex;flex-direction:column;
+ align-items:center;gap:5px;padding:5px 3px 7px;
+ cursor:pointer;border:1px solid #786eaa;border-radius:11px;
+ background:#202b48;color:#efe4ff;font:inherit;font-size:9px;
+ transition:transform .15s ease,border-color .15s ease;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v27-wallpaper-option[aria-pressed="true"]{
+ border-color:#a5e9ff;box-shadow:0 0 0 2px #a1dcf866;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v27-wallpaper-option:focus-visible{
+ outline:3px solid #b5f6ff;outline-offset:1px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v27-wallpaper-art{
+ width:min(100%,56px);aspect-ratio:3/4;min-height:54px;
+ border:1px solid #c9b7ec85;border-radius:8px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v27-wallpaper-art.is-midnight{
+ background:radial-gradient(circle at 70% 28%,#7163b9,transparent 40%),linear-gradient(130deg,#171d3d,#26325e);
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v27-wallpaper-art.is-sakura{
+ background:radial-gradient(circle at 75% 25%,#f5afdd,transparent 48%),linear-gradient(130deg,#482e65,#bd729b);
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v27-wallpaper-art.is-astral{
+ background:radial-gradient(circle at 70% 15%,#bcd3ff,transparent 18%),radial-gradient(circle at 35% 70%,#a28ddc,transparent 55%),linear-gradient(130deg,#142c53,#423773);
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v27-wallpaper-art.is-jade{
+ background:radial-gradient(circle at 65% 20%,#8de0ce,transparent 44%),linear-gradient(120deg,#1d4b50,#23596f);
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v27-wallpaper-option>span:last-child{
+ overflow-wrap:anywhere;text-align:center;line-height:1.3;
+}
+@media(max-width:360px){
+ body.dudu-phone-v11 #cyber-phone .dudu-v27-wallpaper-grid{gap:4px;}
+ body.dudu-phone-v11 #cyber-phone .dudu-v27-wallpaper-option{
+   font-size:9px;padding:4px 2px 6px;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ body.dudu-phone-v11 #cyber-phone .dudu-v27-wallpaper-option{transition:none;}
+}

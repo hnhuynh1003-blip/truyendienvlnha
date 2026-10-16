@@ -1485,6 +1485,61 @@ async function main() {
     assert.equal(dossierV12.details.sameInventory,true);
     assert.equal(dossierV12.details.writes,0);
 
+    // V27 R4 — wallpapers are purely local UI options, isolated by account.
+    const wallpaperR4=await page.evaluate(()=>{
+      const beforeUser=currentUsername;
+      const beforeProfile=JSON.stringify(userProfile);
+      const beforeWrites=window.__firestoreWrites.length;
+      const aKey=DuduPhoneWallpaperV27.keyFor(beforeUser);
+      const bKey=DuduPhoneWallpaperV27.keyFor('wallpaper-second-account');
+      const originalA=localStorage.getItem(aKey);
+      const originalB=localStorage.getItem(bKey);
+      try{
+        if(document.getElementById('cyber-phone').style.display!=='flex')togglePhone();
+        openPhoneApp('settings');
+        const choices=document.querySelectorAll('#phone-app-settings [data-dudu-wallpaper-choice]');
+        const initial=document.body.dataset.duduPhoneWallpaper;
+        setPhoneWallpaperV27('sakura');
+        const chosen=document.body.dataset.duduPhoneWallpaper;
+        const selected=document.querySelector('[data-dudu-wallpaper-choice="sakura"]').getAttribute('aria-pressed');
+        const beforeBackground=getComputedStyle(document.getElementById('phone-home-screen')).backgroundImage;
+        currentUsername='wallpaper-second-account';
+        renderPhoneWallpaperV27();
+        const otherBefore=document.body.dataset.duduPhoneWallpaper;
+        setPhoneWallpaperV27('jade');
+        const otherChosen=document.body.dataset.duduPhoneWallpaper;
+        currentUsername=beforeUser;
+        updatePhoneUI();
+        const back=document.body.dataset.duduPhoneWallpaper;
+        const restoredBackground=getComputedStyle(document.getElementById('phone-home-screen')).backgroundImage;
+        setPhoneWallpaperV27('../../unsafe');
+        const invalidIgnored=document.body.dataset.duduPhoneWallpaper===back;
+        return {
+          initial,choices:choices.length,chosen,selected,otherBefore,otherChosen,back,
+          stylesDifferent:beforeBackground!==restoredBackground?false:beforeBackground.includes('radial-gradient'),
+          invalidIgnored,unchanged:JSON.stringify(userProfile)===beforeProfile,
+          writes:window.__firestoreWrites.length-beforeWrites
+        };
+      }finally{
+        currentUsername=beforeUser;
+        if(originalA===null)localStorage.removeItem(aKey);
+        else localStorage.setItem(aKey,originalA);
+        if(originalB===null)localStorage.removeItem(bKey);
+        else localStorage.setItem(bKey,originalB);
+        renderPhoneWallpaperV27();
+        phoneHome();
+      }
+    });
+    assert.equal(wallpaperR4.choices,4);
+    assert.equal(wallpaperR4.chosen,'sakura');
+    assert.equal(wallpaperR4.selected,'true');
+    assert.equal(wallpaperR4.otherBefore,'midnight');
+    assert.equal(wallpaperR4.otherChosen,'jade');
+    assert.equal(wallpaperR4.back,'sakura');
+    assert.equal(wallpaperR4.invalidIgnored,true);
+    assert.equal(wallpaperR4.unchanged,true);
+    assert.equal(wallpaperR4.writes,0);
+
     // V27 R3: inventory instances are individually selectable square tiles,
     // no repetitive open/discard action bars. Vứt only in confirmed inspector.
     const grid375=await page.evaluate(()=>{
