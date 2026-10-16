@@ -1415,6 +1415,12 @@ async function main() {
       const close=inspector.querySelector('button[aria-label="Đóng chi tiết vật phẩm"]');
       close?.click();
       details.closed=inspector.hidden;
+      document.querySelector('#inventory-container .dudu-v42-slot')?.click();
+      document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true}));
+      details.escapeClosed=inspector.hidden;
+      document.querySelector('#inventory-container .dudu-v42-slot')?.click();
+      inspector.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true}));
+      details.backdropClosed=inspector.hidden;
       details.sameInventory=details.afterView===inventoryBefore;
       details.writes=window.__firestoreWrites.length-initialWrites;
       userProfile=JSON.parse(snapshot);
@@ -1447,6 +1453,8 @@ async function main() {
     assert.equal(dossierV12.details.modalInsidePhone,true);
     assert.match(dossierV12.details.text,/Mẩu Bánh Mì Mốc/);
     assert.equal(dossierV12.details.closed,true);
+    assert.equal(dossierV12.details.escapeClosed,true);
+    assert.equal(dossierV12.details.backdropClosed,true);
     assert.equal(dossierV12.details.sameInventory,true);
     assert.equal(dossierV12.details.writes,0);
 
