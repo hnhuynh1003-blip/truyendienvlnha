@@ -12,7 +12,11 @@
     Object.freeze({id:'midnight',name:'DUDU đêm',description:'Tím xanh dịu, nền mặc định'}),
     Object.freeze({id:'sakura',name:'Hoa anh đào',description:'Hồng tím êm dịu'}),
     Object.freeze({id:'astral',name:'Ngân hà',description:'Xanh tím huyền ảo'}),
-    Object.freeze({id:'jade',name:'Thanh ngọc',description:'Xanh ngọc trầm ấm'})
+    Object.freeze({id:'jade',name:'Thanh ngọc',description:'Xanh ngọc trầm ấm'}),
+    Object.freeze({id:'world-xianxia',name:'Tiên hiệp',description:'Núi tiên và mây trăng'}),
+    Object.freeze({id:'world-modern',name:'Hiện đại',description:'Hoàng hôn hoa anh đào'}),
+    Object.freeze({id:'world-cyberpunk',name:'Cyberpunk',description:'Thành phố ánh neon'}),
+    Object.freeze({id:'world-gothic',name:'Huyền bí',description:'Cung điện trong đêm'})
   ]);
   const IDS=new Set(PRESETS.map(p=>p.id));
   const PREFIX='dudu-sandbox:phone-wallpaper:v27-r4:';
