@@ -108,3 +108,15 @@ test('V42.4: origin filter does not divide COMMON loot by acquisition story',()=
  assert.equal(story.entries[0].detail.id,'author-item-abc');
  assert.equal(all.inventoryTotal,4);
 });
+
+test('V42.4: scarce rank B–SSS items remain separate even when catalog says non-unique',()=>{
+ const rareA=drop('b1',1,'story-A','ch-1');
+ const rareB=drop('b1',2,'story-B','ch-2');
+ const relic1=drop('cult-ancient-relic-shard',3,'story-A','ch-1');
+ const relic2=drop('cult-ancient-relic-shard',4,'story-B','ch-4');
+ const result=model.displayList([rareA,rareB,relic1,relic2]);
+ assert.equal(result.total,4);
+ assert.deepEqual(result.entries.map(e=>e.count),[1,1,1,1]);
+ assert.equal(model.stackKey(rareA),null);
+ assert.equal(model.stackKey(relic1),null);
+});
