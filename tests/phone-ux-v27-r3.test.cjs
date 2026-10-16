@@ -52,7 +52,7 @@ test('V27 R3 protects source-of-truth inventory instances and existing save + di
  assert.match(render,/if\(!items\.length\)\{/);
 });
 test('V27 R3 keeps quest actions but protects reset, museum server ownership and shop purchases',()=>{
- const quests=slice('<!-- APP: NHIỆM VỤ -->','<!-- APP: NHÂN VẬT');
+ const quests=slice('<!-- APP: NHIỆM VỤ -->','<!-- APP: THƯ VIỆN TRUYỆN');
  assert.match(quests,/dudu-v27-quest-menu/);
  assert.match(quests,/onclick="refreshDailyQuests\(\)"/);
  const refresh=slice('    function refreshDailyQuests() {','    function triggerEasterEgg()');
