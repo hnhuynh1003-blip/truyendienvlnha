@@ -2143,7 +2143,7 @@ async function main() {
     assert.equal(v31.serifSize,true);
     assert.equal(v31.serifSelected,'true');
     assert.equal(v31.nunito,true);
-    assert.deepEqual(v31.other,DuduPhoneTypographyV31.DEFAULT);
+    assert.deepEqual(v31.other,{font:'be',size:'normal'});
     assert.equal(v31.relationMoved,true);
     assert.equal(v31.choiceMoved,true);
     assert.match(v31.chatHeader,/Liên Lạc/);
