@@ -1183,18 +1183,30 @@ async function main() {
     const chatPortraitV27=await page.evaluate(()=>{
       const story=novels[selectedNovelIndex];
       const npc=story.characters.find(c=>c?.id&&!c.archived);
-      activeChatNovelId=story.id;
-      openPhoneApp('chat');
-      const selector=document.getElementById('chat-character-selector');
-      selector.value=npc.id;
-      switchChatCharacter();
-      const portrait=document.getElementById('npc-portrait-v1');
-      const enabled=portrait?.tagName==='BUTTON'&&!portrait.disabled;
-      const noDuplicate=!document.getElementById('npc-v15-chat-view');
-      portrait?.click();
-      return {enabled,noDuplicate,open:document.getElementById('npc-v15-viewer').style.display==='flex',
-        focus:document.activeElement?.id,
-        buttonCount:document.querySelectorAll('#phone-app-chat .npc-v15-chat-button').length};
+      // Chat lists unlocked characters only. Grant a reversible, in-memory
+      // preview unlock to exercise the viewer, without persistence or writes.
+      const progress=getStoryProgress(story.id);
+      const hadUnlock=Object.prototype.hasOwnProperty.call(progress.collectedCharacters,npc.id);
+      const oldUnlock=progress.collectedCharacters[npc.id];
+      if(!hadUnlock)progress.collectedCharacters[npc.id]={id:npc.id,affinity:10};
+      try{
+        activeChatNovelId=story.id;
+        openPhoneApp('chat');
+        const selector=document.getElementById('chat-character-selector');
+        selector.value=npc.id;
+        switchChatCharacter();
+        const portrait=document.getElementById('npc-portrait-v1');
+        const enabled=portrait?.tagName==='BUTTON'&&!portrait.disabled;
+        const noDuplicate=!document.getElementById('npc-v15-chat-view');
+        portrait?.click();
+        return {enabled,noDuplicate,
+          open:document.getElementById('npc-v15-viewer').style.display==='flex',
+          focus:document.activeElement?.id,
+          buttonCount:document.querySelectorAll('#phone-app-chat .npc-v15-chat-button').length};
+      }finally{
+        if(hadUnlock)progress.collectedCharacters[npc.id]=oldUnlock;
+        else delete progress.collectedCharacters[npc.id];
+      }
     });
     assert.equal(chatPortraitV27.enabled,true);
     assert.equal(chatPortraitV27.noDuplicate,true);
