@@ -58,7 +58,7 @@ test('V16 Sandbox UI fields integrated into home, account, profile and chat',()=
   'player-avatar-v16-frames','player-avatar-v16-preset-grid','player-avatar-preview-v16']){
    assert.ok(html.includes('id="'+id+'"'),id);
  }
- assert.match(html,/src="js\/player-avatar-ui-v16.js"/);
+ assert.match(html,/src="js\/player-avatar-ui-v16.js(?:\?v=[^"]+)?"/);
  assert.match(html,/href="css\/player-avatar-v16.css"/);
  assert.match(html,/if\(IS_SANDBOX_MODE\)renderPlayerAvatarPlacesV16\(\)/);
  assert.match(html,/if\(avatarBadge\)renderPlayerAvatarV16\(avatarBadge\)/);
