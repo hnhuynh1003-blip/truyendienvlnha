@@ -2776,7 +2776,7 @@ async function main() {
         const visibleBefore=present(uid+'free')&&!present(uid+'linked')&&
           !present(uid+'chapter-item');
         const hiddenNote=[...document.querySelectorAll('.dudu-v43-market-locked')]
-          .some(node=>node.textContent.includes('2 vật phẩm'));
+          .some(node=>/\d+ vật phẩm gắn chương chưa đọc/.test(node.textContent));
         const previewOnly=document.querySelectorAll(
           '#shop-items-container [data-scope="STORY"] button, #shop-items-container [data-scope="CHAPTER"] button'
         ).length===0;
