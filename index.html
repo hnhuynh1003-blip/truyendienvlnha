@@ -2453,6 +2453,8 @@
     }
 
     function clearCurrentChat() {
+      const more=document.getElementById('chat-v27-more');
+      if(more)more.open=false;
       const charId = document.getElementById('chat-character-selector').value;
       if (charId && confirm("Xóa lịch sử trò chuyện VÀ các ký ức tương tác đã lưu trên thiết bị với NPC này?")) {
         const storyId=activeChatNovelId || (novels[selectedNovelIndex] || {}).id;
@@ -3404,6 +3406,7 @@
         renderShop();
       } else if (appName === 'settings') {
         updateActiveModelInfo();
+        syncPhoneDisplayOptionsV27();
       }
     }
 
@@ -3709,15 +3712,31 @@
       renderShop();
     }
 
-    function setReadingFontSize(size) {
-      document.documentElement.style.setProperty('--read-size', size + 'px');
+    function syncPhoneDisplayOptionsV27(){
+      const font=Number.parseInt(
+        document.documentElement.style.getPropertyValue('--read-size'),10)||16;
+      const theme=document.body.classList.contains('theme-warm')?'warm':
+        document.body.classList.contains('theme-oled')?'oled':'default';
+      document.querySelectorAll('#phone-app-settings [data-dudu-font-size]').forEach(button=>{
+        button.setAttribute('aria-pressed',String(Number(button.dataset.duduFontSize)===font));
+      });
+      document.querySelectorAll('#phone-app-settings [data-dudu-theme]').forEach(button=>{
+        button.setAttribute('aria-pressed',String(button.dataset.duduTheme===theme));
+      });
     }
-
+    function setReadingFontSize(size) {
+      if(![16,18,21].includes(size))return;
+      document.documentElement.style.setProperty('--read-size', size + 'px');
+      syncPhoneDisplayOptionsV27();
+    }
     function setTheme(theme) {
-      document.body.className = '';
-      if (theme === 'warm') document.body.classList.add('theme-warm');
-      if (theme === 'oled') document.body.classList.add('theme-oled');
+      if(!['default','warm','oled'].includes(theme))return;
+      // Preserve Sandbox phone state, reader/admin classes and modal state.
+      document.body.classList.remove('theme-warm','theme-oled');
+      if(theme==='warm')document.body.classList.add('theme-warm');
+      if(theme==='oled')document.body.classList.add('theme-oled');
       applyUserRole();
+      syncPhoneDisplayOptionsV27();
     }
 
     function escapeHtml(str) {
