@@ -29,3 +29,25 @@ body.dudu-phone-v11 #cyber-phone .dudu-v33-tools>summary::-webkit-details-marker
 body.dudu-phone-v11 #cyber-phone .dudu-v33-tools .dudu-v32-contact-actions{position:absolute;z-index:35;top:40px;left:0;background:#1a2942;border:1px solid #a9b9d177;padding:8px;border-radius:13px;box-shadow:0 10px 25px #0008;width:max-content;max-width:260px;}
 body.dudu-phone-v11 #cyber-phone #phone-app-chat.dudu-v33-chat-open #chat-messages-container{min-height:0!important;flex:1!important;background:#0b1623bc!important;}
 body.dudu-phone-v11 #cyber-phone #phone-app-chat.dudu-v33-chat-open .dudu-v32-contact-feedback:empty{display:none!important;}
+
+/* V33 R3: single-contact header, balanced vector plus, clearer artwork. */
+body.dudu-phone-v11 #cyber-phone #phone-app-chat.dudu-v33-chat-open #chat-character-selector{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;opacity:0!important;pointer-events:none!important;clip-path:inset(50%)!important;}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat .dudu-v33-chat-name{display:block;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;color:#f8faff;font-weight:700;}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat .dudu-v33-tools.in-header{position:relative;z-index:42;flex:none;}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat .dudu-v33-tools.in-header>summary{width:34px;height:34px;padding:0;border-radius:11px;background:linear-gradient(155deg,#294561,#1b3049);border:1px solid #9cb4cd82;display:grid;place-items:center;box-shadow:inset 0 1px #ffffff25;line-height:1;}
+body.dudu-phone-v11 #cyber-phone .dudu-v33-plus-icon{display:block;position:relative;width:14px;height:14px;}
+body.dudu-phone-v11 #cyber-phone .dudu-v33-plus-icon:before,
+body.dudu-phone-v11 #cyber-phone .dudu-v33-plus-icon:after{content:"";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#f8fafc;border-radius:2px;}
+body.dudu-phone-v11 #cyber-phone .dudu-v33-plus-icon:before{width:14px;height:2px;}
+body.dudu-phone-v11 #cyber-phone .dudu-v33-plus-icon:after{width:2px;height:14px;}
+body.dudu-phone-v11 #cyber-phone .dudu-v33-menu{position:absolute;top:39px;right:0;left:auto;width:max-content;max-width:min(265px,80vw);padding:8px;border:1px solid #aac1db75;border-radius:13px;background:#1b2940f7;box-shadow:0 12px 28px #03071399;display:flex;flex-direction:column;gap:7px;}
+body.dudu-phone-v11 #cyber-phone .dudu-v33-tools:not([open]) .dudu-v33-menu{display:none;}
+body.dudu-phone-v11 #cyber-phone .dudu-v33-menu .dudu-v32-contact-actions{position:static!important;display:flex!important;width:auto!important;max-width:100%;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;}
+body.dudu-phone-v11 #cyber-phone .dudu-v33-menu .dudu-v32-relation-chip{display:none;}
+body.dudu-phone-v11 #cyber-phone .dudu-v33-menu>.btn{display:block;width:100%;font-size:11px;padding:8px;border-radius:9px;}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat.dudu-v33-inbox .dudu-v27-chat-actions{display:none!important;}
+/* Improve phone wallpaper clarity: preserve the original HD pixels and reduce dark overlays. */
+body.dudu-phone-v11[data-dudu-phone-wallpaper] #cyber-phone .phone-screen{background-image:linear-gradient(180deg,#040a1508 0%,#06102312 65%,#07112638 100%),var(--dudu-v30-art)!important;background-position:center!important;background-size:cover!important;filter:none!important;}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat{background:linear-gradient(165deg,#0b1626e6,#13243adf)!important;}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat #chat-messages-container{background:#0c1a2aac!important;}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat.dudu-v33-chat-open .dudu-v27-chat-persona{position:relative;gap:8px;}
