@@ -85,15 +85,44 @@ body.dudu-phone-v11 .npc-v15-close:hover{background:#94649a;}
 body.dudu-phone-v11 .npc-v15-close:focus-visible{
  outline:3px solid #96eaff;outline-offset:3px;
 }
-body.dudu-phone-v11 #cyber-phone .npc-v15-view-button{
- background:linear-gradient(135deg,#6552a7,#327ca9) !important;
- color:#f9f2ff !important;
- border:1px solid #b9b0f4 !important;
+/* V27: portraits are the controls. No redundant "View image" buttons. */
+body.dudu-phone-v11 #cyber-phone .dudu-npc-v27-chat-portrait,
+body.dudu-phone-v11 #cyber-phone .dudu-npc-v12-portrait{
+ appearance:none;
+ padding:0;
+ cursor:zoom-in;
+ color:#faf3ff;
+ transition:border-color .16s ease, box-shadow .16s ease, transform .16s ease;
 }
-body.dudu-phone-v11 #cyber-phone .npc-v15-chat-button{
- min-height:33px;max-width:70px;white-space:nowrap;font-size:10px !important;
- padding:5px 7px !important;
- background:linear-gradient(145deg,#674d91,#335f85) !important;
+body.dudu-phone-v11 #cyber-phone .dudu-npc-v27-chat-portrait{
+ flex:none;
+ position:relative;
+ overflow:hidden;
+ box-shadow:0 4px 13px #02061788;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-npc-v27-chat-portrait img,
+body.dudu-phone-v11 #cyber-phone .dudu-npc-v12-portrait img{
+ pointer-events:none;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-npc-v27-chat-portrait:not(:disabled):hover,
+body.dudu-phone-v11 #cyber-phone .dudu-npc-v12-portrait:not(:disabled):hover{
+ border-color:#e9caff;
+ box-shadow:0 0 0 2px #bb91ee77,0 6px 18px #060a28aa;
+ transform:translateY(-1px);
+}
+body.dudu-phone-v11 #cyber-phone .dudu-npc-v27-chat-portrait:focus-visible,
+body.dudu-phone-v11 #cyber-phone .dudu-npc-v12-portrait:focus-visible{
+ outline:3px solid #99ebff;
+ outline-offset:3px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-npc-v27-chat-portrait:disabled,
+body.dudu-phone-v11 #cyber-phone .dudu-npc-v12-portrait:disabled{
+ cursor:not-allowed;
+ opacity:.72;
+}
+@media(prefers-reduced-motion:reduce){
+ body.dudu-phone-v11 #cyber-phone .dudu-npc-v27-chat-portrait,
+ body.dudu-phone-v11 #cyber-phone .dudu-npc-v12-portrait{transition:none;transform:none;}
 }
 @media(max-width:640px){
  body.dudu-phone-v11 .npc-v15-viewer{align-items:flex-start;padding:8px;}
