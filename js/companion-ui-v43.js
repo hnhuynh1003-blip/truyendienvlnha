@@ -44,6 +44,7 @@
   if(s.lastSeenDay!==today){s.lastSeenDay=today;dirty=true;}
   if(dirty&&currentOwner===currentUsername)store(s);
   owner=currentUsername;
+  if(shown)render();
   if(typeof root.duduV33Render==='function')root.duduV33Render();
  }
  function inboxSummary(){
@@ -185,7 +186,7 @@
   app.append(panel);
   if(canUse())accountReady();
  }
+ root.DuduCompanionV43=Object.freeze({open,hide,back,accountReady,inboxSummary,render});
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
  else init();
- root.DuduCompanionV43=Object.freeze({open,hide,back,accountReady,inboxSummary,render});
 })(typeof window!=='undefined'?window:{});
