@@ -130,8 +130,11 @@ async function main() {
     // Guest state must never show any cached user's personal NPC milestones.
     const guestMuseum=await page.evaluate(async()=>{
       const savedUsername=currentUsername,savedProfile=userProfile;
+      const phone=document.getElementById('cyber-phone');
+      const phoneWasOpen=phone?.style.display==='flex';
       const firestoreCount=window.__firestoreWrites.length;
       try{
+        if(!phoneWasOpen)togglePhone();
         currentUsername='';
         // Deliberately LEAVE prior user's profile object in memory:
         // a guest MUST NOT see that person's progress.
@@ -152,6 +155,7 @@ async function main() {
       }finally{
         currentUsername=savedUsername;userProfile=savedProfile;
         phoneHome();
+        if(!phoneWasOpen&&phone.style.display==='flex')togglePhone();
       }
     });
     assert.deepEqual(guestMuseum,{
