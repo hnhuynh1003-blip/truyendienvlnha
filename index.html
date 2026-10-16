@@ -55,10 +55,10 @@
   <script src="js/story-memory.js"></script>
   <script src="js/npc-memory-v2.js"></script>
   <script src="js/item-catalog-v2.js"></script>
-  <script src="js/economy-core-v43.js?v=2"></script>
+  <script src="js/economy-core-v43.js?v=3"></script>
   <script src="js/story-market-v43.js?v=1"></script>
-  <script src="js/inventory-model-v42.js?v=4"></script>
-  <script src="js/inventory-view-v42.js?v=4"></script>
+  <script src="js/inventory-model-v42.js?v=5"></script>
+  <script src="js/inventory-view-v42.js?v=5"></script>
   <script src="js/item-visuals-v13.js"></script>
   <script src="js/npc-relationship-v2-r1.js"></script>
   <script src="js/npc-gift-v2-r2.js"></script>
@@ -86,6 +86,7 @@
   <script src="js/player-avatar-sync-ui-v22.js"></script>
   <script src="js/loot-rules-v2.js"></script>
   <script src="js/loot-cadence-v42.js?v=1"></script>
+  <script src="js/item-actions-v43.js?v=1"></script>
   <script src="js/companion-rules-v43.js?v=1"></script>
   <script src="js/npc-bond-v43.js?v=1"></script>
   <script src="js/museum-memories-v43.js?v=1"></script>
@@ -4037,6 +4038,62 @@ document.getElementById('phone-home-screen').style.display = 'none';
       panel.style.display='block';
     }
 
+
+    // V43.5.3 — consume one verified local SHOP instance, never chapter claims.
+    function useFunctionItemV43(item){
+      if(!IS_SANDBOX_MODE||!currentUsername||!window.DuduItemActionsV43)return false;
+      const plan=DuduItemActionsV43.quote({
+        inventory:userProfile.inventory,state:userProfile.itemActionsV43,
+        itemInstanceId:item?.instanceId,lastLootTimestamp
+      });
+      if(!plan.ok){
+        const reason={
+          'no-cooldown':'Nút nhặt đồ đã sẵn sàng. Chỉ dùng khi đang hồi chiêu.',
+          'daily-limit':'Hôm nay đã dùng tối đa 2 Bộ Nạp Tần Số.',
+          'already-used':'Vật phẩm này đã được sử dụng.',
+          'unowned-or-invalid':'Vật phẩm chưa được xác minh trong Kho Sandbox.'
+        };
+        showSystemAlert('CHƯA THỂ SỬ DỤNG',
+          reason[plan.reason]||'Không thể sử dụng vật phẩm tại thời điểm này.');
+        renderInventory();
+        return false;
+      }
+      const cooldownKey=scopedLocalKey('loot-cooldown');
+      const previousKeyValue=localStorage.getItem(cooldownKey);
+      const snapshot={
+        inventory:userProfile.inventory,actions:userProfile.itemActionsV43,
+        timestamp:lastLootTimestamp,selected:inventoryDetailSelection
+      };
+      try{
+        localStorage.setItem(cooldownKey,'0');
+        userProfile.inventory=plan.inventory;
+        userProfile.itemActionsV43=plan.state;
+        lastLootTimestamp=0;
+        inventoryDetailSelection=null;
+        saveCurrentAccount();
+      }catch(_){
+        userProfile.inventory=snapshot.inventory;
+        userProfile.itemActionsV43=snapshot.actions;
+        lastLootTimestamp=snapshot.timestamp;
+        inventoryDetailSelection=snapshot.selected;
+        try{
+          if(previousKeyValue===null)localStorage.removeItem(cooldownKey);
+          else localStorage.setItem(cooldownKey,previousKeyValue);
+          saveCurrentAccount();
+        }catch(__){}
+        showSystemAlert('CHƯA LƯU ĐƯỢC',
+          'Thiết bị chưa thể lưu việc dùng vật phẩm. Đã hoàn tác.');
+        return false;
+      }
+      startCooldownTicker();
+      renderInventory();
+      showSystemAlert('🔋 NẠP NĂNG LƯỢNG THÀNH CÔNG',
+        'Đã xóa hồi chiêu nhặt đồ Điện thoại. Còn '+
+        (DuduItemActionsV43.MAX_USE_PER_DAY-plan.state.used)+
+        ' lần dùng hôm nay. Không thay đổi lượt nhặt theo chương.');
+      return true;
+    }
+
     function renderInventory() {
       if(IS_SANDBOX_MODE&&window.DuduInventoryViewV42){
         const current=Array.isArray(userProfile.inventory)?userProfile.inventory:[];
@@ -4050,6 +4107,17 @@ document.getElementById('phone-home-screen').style.display = 'none';
           onDiscard(index){
             if(userProfile.inventory!==current)return;
             inventoryDetailSelection=null;discardItem(index);
+          },
+          usageFor(item){
+            if(item?.id!==DuduEconomyCoreV43.TOOL_ID)return null;
+            return DuduItemActionsV43.availability({
+              inventory:current,state:userProfile.itemActionsV43,
+              itemInstanceId:item.instanceId,lastLootTimestamp
+            });
+          },
+          onUse(item){
+            if(userProfile.inventory!==current)return false;
+            return useFunctionItemV43(item);
           },
           onMuseum(){
             inventoryDetailSelection=null;
@@ -5945,7 +6013,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/npc-portrait-v39.js?v=2"></script>
 <script src="js/phone-inbox-v33.js?v=43-2"></script>
 <script src="js/companion-ui-v43.js?v=1"></script>
-<script src="js/market-ui-v43.js?v=2"></script>
+<script src="js/market-ui-v43.js?v=3"></script>
 <script src="js/economy-runtime-v43.js?v=2"></script>
 <script src="js/museum-memories-ui-v43.js?v=2"></script>
 <script src="js/npc-diary-ui.js?v=1"></script>
