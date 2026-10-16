@@ -29,6 +29,12 @@ export class DuduPlayerAppearance extends DurableObject {
       status TEXT NOT NULL CHECK(status IN ('PENDING','QUARANTINED')),
       reserved_at INTEGER NOT NULL,stored_at INTEGER
     )`);
+    this.sql.exec(`CREATE TABLE IF NOT EXISTS photo_variants (
+      asset_id TEXT PRIMARY KEY,
+      format TEXT NOT NULL CHECK(format IN ('webp','jpeg')),
+      processed_at INTEGER NOT NULL,
+      FOREIGN KEY(asset_id) REFERENCES photo_drafts(asset_id)
+    )`);
   }
   reservePhotoDraft(assetId,now){
     if(typeof assetId!=='string'||!Number.isSafeInteger(now))
@@ -58,15 +64,46 @@ export class DuduPlayerAppearance extends DurableObject {
       WHERE asset_id=? AND status='PENDING'`,assetId);
     return {ok:true};
   }
+  listPrivatePhotoDrafts(){
+    // Return only owner-scoped metadata; no R2 keys, image bytes or URLs.
+    return this.sql.exec(`SELECT p.asset_id AS assetId,
+      p.status,p.reserved_at AS reservedAt,p.stored_at AS storedAt,
+      CASE WHEN v.asset_id IS NULL THEN 0 ELSE 1 END AS processed
+      FROM photo_drafts p LEFT JOIN photo_variants v ON v.asset_id=p.asset_id
+      WHERE p.status='QUARANTINED'
+      ORDER BY p.reserved_at DESC LIMIT 3`).toArray().map(row=>({
+        assetId:row.assetId,status:row.status,
+        reservedAt:Number(row.reservedAt),storedAt:Number(row.storedAt),
+        processed:row.processed===1
+      }));
+  }
+  markPrivateVariant(assetId,format,now){
+    if(!['webp','jpeg'].includes(format)||!Number.isSafeInteger(now))
+      return {ok:false,code:'invalid-variant'};
+    return this.ctx.storage.transactionSync(()=>{
+      const owned=this.ownPhotoDraft(assetId);
+      if(!owned.owned)return {ok:false,code:'not-found'};
+      const existing=this.sql.exec(`SELECT format FROM photo_variants
+        WHERE asset_id=?`,assetId).toArray()[0];
+      if(existing)return {ok:false,code:'already-processed'};
+      this.sql.exec(`INSERT INTO photo_variants
+        (asset_id,format,processed_at) VALUES(?,?,?)`,assetId,format,now);
+      return {ok:true};
+    });
+  }
   ownPhotoDraft(assetId){
     const item=this.sql.exec(`SELECT status FROM photo_drafts
       WHERE asset_id=?`,assetId).toArray()[0];
-    return {owned:item?.status==='QUARANTINED'};
+    const variant=item?.status==='QUARANTINED'?this.sql.exec(
+      `SELECT format FROM photo_variants WHERE asset_id=?`,assetId
+    ).toArray()[0]:null;
+    return {owned:item?.status==='QUARANTINED',variantFormat:variant?.format||null};
   }
   removePhotoDraft(assetId){
     return this.ctx.storage.transactionSync(()=>{
       const exists=this.ownPhotoDraft(assetId);
       if(!exists.owned)return {ok:false,code:'not-found'};
+      this.sql.exec(`DELETE FROM photo_variants WHERE asset_id=?`,assetId);
       this.sql.exec(`DELETE FROM photo_drafts WHERE asset_id=?`,assetId);
       return {ok:true};
     });
