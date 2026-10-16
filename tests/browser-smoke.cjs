@@ -1530,7 +1530,7 @@ async function main() {
         phoneHome();
       }
     });
-    assert.equal(wallpaperR4.choices,4);
+    assert.equal(wallpaperR4.choices,8);
     assert.equal(wallpaperR4.chosen,'sakura');
     assert.equal(wallpaperR4.selected,'true');
     assert.equal(wallpaperR4.otherBefore,'midnight');
