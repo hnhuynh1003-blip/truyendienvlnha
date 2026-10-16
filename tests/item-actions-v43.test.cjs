@@ -49,7 +49,11 @@ test('V43.5.3: consume one exact instance and clear ONLY phone cooldown',()=>{
  assert.equal(actions.quote({inventory:plan.inventory,itemInstanceId:instance.instanceId,
   state:plan.state,lastLootTimestamp:now-1000,now}).ok,false);
  assert.equal(actions.availability({inventory,itemInstanceId:instance.instanceId,
-  state:plan.state,lastLootTimestamp:0,now}).reason,'no-cooldown');
+  state:plan.state,lastLootTimestamp:0,now}).reason,'already-used');
+ const stillOwned={...instance,instanceId:'shop-cell-not-used'};
+ assert.equal(actions.availability({inventory:[stillOwned],
+  itemInstanceId:stillOwned.instanceId,state:plan.state,
+  lastLootTimestamp:0,now}).reason,'no-cooldown');
 });
 test('V43.5.3: reject no active timer, fake tool, double use and daily cap',()=>{
  const {instance}=item();
