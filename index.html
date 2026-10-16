@@ -31,7 +31,7 @@
   <link rel="stylesheet" href="css/phone-wallpaper-v37-gallery.css?v=3">
   <link rel="stylesheet" href="css/npc-portrait-v38.css?v=1">
   <link rel="stylesheet" href="css/npc-portrait-v39.css?v=2">
-  <link rel="stylesheet" href="css/inventory-v42.css?v=1">
+  <link rel="stylesheet" href="css/inventory-v42.css?v=2">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -49,7 +49,7 @@
   <script src="js/npc-memory-v2.js"></script>
   <script src="js/item-catalog-v2.js"></script>
   <script src="js/inventory-model-v42.js?v=1"></script>
-  <script src="js/inventory-view-v42.js?v=2"></script>
+  <script src="js/inventory-view-v42.js?v=3"></script>
   <script src="js/item-visuals-v13.js"></script>
   <script src="js/npc-relationship-v2-r1.js"></script>
   <script src="js/npc-gift-v2-r2.js"></script>
@@ -948,7 +948,7 @@
             <input id="inventory-v2-search" type="search" placeholder="Tìm tên hoặc mã vật phẩm..."
               aria-label="Tìm trong kho đồ" oninput="DuduInventoryViewV42.reset()"
               style="min-width:0;flex:1;background:#111827;color:#e2e8f0;border:1px solid #334155;border-radius:6px;padding:6px;font-size:11px;"/>
-            <span id="inventory-v2-count" role="status" aria-live="polite" style="font-size:10px;color:#94a3b8;"></span>
+            <span id="inventory-v2-count" hidden aria-hidden="true"></span>
           </div>
           <input id="inventory-v42-category" type="hidden" value="ALL">
           <div id="inventory-v42-categories" class="dudu-v42-category-strip" role="group" aria-label="Lọc theo vai trò vật phẩm">
@@ -1719,7 +1719,7 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=42-2').catch((err) => console.log('SW error:', err));
+        navigator.serviceWorker.register('./sw.js?v=42-3').catch((err) => console.log('SW error:', err));
       });
     }
 
@@ -3596,6 +3596,7 @@
       const opened = phone.style.display !== 'flex';
       phone.style.display = opened ? 'flex' : 'none';
       phone.setAttribute('aria-hidden', opened ? 'false' : 'true');
+      if(IS_SANDBOX_MODE&&!opened){inventoryDetailSelection=null;window.DuduInventoryViewV42?.close();}
       if (opened) {
         const clock=document.getElementById('phone-clock');
         if(clock)clock.textContent=new Intl.DateTimeFormat('vi-VN',{
@@ -3628,6 +3629,7 @@
     });
 
     function phoneHome() {
+      if(IS_SANDBOX_MODE){inventoryDetailSelection=null;window.DuduInventoryViewV42?.close();}
             closeRedPacketV32();
 document.querySelectorAll('.phone-sub-app').forEach(el => el.style.display = 'none');
       document.getElementById('phone-home-screen').style.display = 'flex';
@@ -3635,6 +3637,7 @@ document.querySelectorAll('.phone-sub-app').forEach(el => el.style.display = 'no
     }
 
     function openPhoneApp(appName) {
+      if(IS_SANDBOX_MODE&&appName!=='inventory'){inventoryDetailSelection=null;window.DuduInventoryViewV42?.close();}
             closeRedPacketV32();
 document.getElementById('phone-home-screen').style.display = 'none';
       document.querySelectorAll('.phone-sub-app').forEach(el => el.style.display = 'none');
