@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dudu-studio-v28-preview-20261016';
+const CACHE_NAME = 'dudu-studio-v33-inbox-20261016-r2';
 self.addEventListener('install', (event) => { self.skipWaiting(); });
 self.addEventListener('activate', (event) => {
   event.waitUntil((async()=>{
