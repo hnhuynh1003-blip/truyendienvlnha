@@ -3619,7 +3619,7 @@
           }
           slot.title='Xem chi tiết '+(item.name||canonical?.name||'vật phẩm');
           slot.addEventListener('click',()=>{
-            inventoryDetailSelection=selected?null:item;
+            inventoryDetailSelection=item===inventoryDetailSelection?null:item;
             renderInventory();
             if(!selected){
               const itemButton=[...container.querySelectorAll('.dudu-v27-inventory-slot')]
