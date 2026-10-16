@@ -1,0 +1,37 @@
+// REVIEW ONLY — DO NOT DEPLOY before Firebase Auth migration and backups.
+// Applying this to the live project immediately WILL block the legacy app.
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+    function isAdmin() {
+      return signedIn() && request.auth.token.admin == true;
+    }
+
+    // Legacy shared story library. Only verified admins may edit it.
+    match /studio_data/main_library {
+      allow get, list: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Transitional v2 profile documents. Never use editable usernames as IDs.
+    // NOTE: Client-authoritative XP/currency/inventory remain exploitable;
+    // move reward and inventory writes to trusted backend before full release.
+    match /profiles_v2/{uid} {
+      allow get: if signedIn() && request.auth.uid == uid;
+      allow list: if false;
+      allow create, update, delete: if signedIn() && request.auth.uid == uid;
+    }
+
+    // Prevent legacy username-based profile access in the v2 release.
+    match /user_profiles/{legacyName} {
+      allow read, write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
