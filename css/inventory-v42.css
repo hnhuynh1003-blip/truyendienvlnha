@@ -1,0 +1,153 @@
+/* V42.2 — read-only premium inventory for Sandbox.
+ * Scope is strict; published reader layout remains unchanged.
+ */
+body.dudu-phone-v11 #cyber-phone #phone-app-inventory{
+ position:relative;min-width:0;isolation:isolate;
+ --v42-ink:#e9eefc;--v42-muted:#acbadb;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-inventory>.dudu-v27-inventory-filters{
+ display:none!important;
+}
+body.dudu-phone-v11 #cyber-phone #inventory-v2-toolbar.dudu-v42-toolbar{
+ display:flex;flex-direction:column;align-items:stretch!important;
+ gap:8px!important;padding:4px 0 9px;margin:0 0 5px!important;
+ width:100%;box-sizing:border-box;min-width:0;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v42-search-row{
+ display:flex;align-items:center;gap:8px;min-width:0;width:100%;
+}
+body.dudu-phone-v11 #cyber-phone #inventory-v2-search{
+ flex:1 1 auto;min-width:0;border:1px solid #687eaf!important;
+ border-radius:11px!important;padding:9px 10px!important;background:#15243c!important;
+ color:#eef5ff!important;font-size:11px!important;
+}
+body.dudu-phone-v11 #cyber-phone #inventory-v2-count{
+ flex:none;max-width:100px;line-height:1.3;text-align:right;
+ color:#bac9e5!important;font-size:9px!important;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v42-category-strip{
+ display:flex;gap:5px;overflow-x:auto;max-width:100%;min-width:0;
+ scrollbar-width:thin;padding:0 1px 3px;overscroll-behavior-x:contain;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v42-category-strip button{
+ flex:0 0 auto;min-height:31px;min-width:0;
+ padding:6px 9px;border-radius:9px;border:1px solid #66769a;
+ color:#cedaf4;background:linear-gradient(135deg,#26344e,#171f37);
+ font-size:10px;font-weight:650;cursor:pointer;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v42-category-strip button.active,
+body.dudu-phone-v11 #cyber-phone .dudu-v42-category-strip button[aria-pressed="true"]{
+ color:#fff;border-color:#c5a3ec;background:linear-gradient(120deg,#594277,#284c68);
+ box-shadow:inset 0 1px #ffffff2e;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v42-more-filter{
+ padding:0;border-radius:10px;border:1px solid #64799a7d;
+ background:#1a2943;color:#cddcf5;min-width:0;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v42-more-filter>summary{
+ padding:8px 10px;list-style:none;cursor:pointer;
+ font-weight:700;font-size:10px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v42-more-filter>summary::-webkit-details-marker{display:none}
+body.dudu-phone-v11 #cyber-phone .dudu-v42-filter-fields{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;
+ padding:7px 9px 10px;border-top:1px solid #6e81a44a;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v42-filter-fields label{
+ display:flex;flex-direction:column;gap:3px;min-width:0;
+ color:#c1cbe2;font-size:9px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v42-filter-fields select{
+ min-width:0;width:100%;max-width:100%;padding:7px 5px;
+ border:1px solid #6e86a7;border-radius:7px;
+ background:#102039;color:#f2eaff;font:inherit;font-size:10px;
+}
+body.dudu-phone-v11 #cyber-phone #inventory-container.dudu-v42-grid{
+ display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+ align-content:start;align-items:stretch;gap:8px;min-width:0;
+ padding:4px 1px 8px;margin:0;overflow:visible;
+}
+body.dudu-phone-v11 #cyber-phone #inventory-container .dudu-v42-slot{
+ min-width:0;max-width:100%;min-height:125px!important;
+ position:relative;overflow:hidden;padding:9px 5px 8px!important;
+}
+body.dudu-phone-v11 #cyber-phone #inventory-container .dudu-v42-slot .dudu-v27-slot-name{
+ overflow:hidden;overflow-wrap:anywhere;font-size:9px!important;line-height:1.35!important;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v42-art img{
+ object-fit:contain;width:100%;height:100%;image-rendering:auto;
+}
+body.dudu-phone-v11 #cyber-phone #inventory-v42-more:not([hidden]){
+ display:block;width:100%;margin-top:10px;padding:9px;
+ background:linear-gradient(130deg,#3c5673,#41355c);
+ border:1px solid #9cadd0;border-radius:11px;
+ color:#edf7ff;font-weight:700;font-size:11px;cursor:pointer;
+}
+body.dudu-phone-v11 #cyber-phone #inventory-v42-more[hidden]{display:none!important}
+body.dudu-phone-v11 #cyber-phone #inventory-v12-detail.dudu-v42-detail-open{
+ display:block!important;position:sticky;bottom:7px;
+ z-index:25;order:3;
+ max-height:min(63vh,390px);overflow:auto;
+ margin:0 0 8px;padding:12px;border-radius:16px;
+ border:1px solid #c0afe3b8;box-shadow:0 -8px 25px #060a1ccc,0 0 0 1px #352c56;
+ background:linear-gradient(155deg,#282444,#13273f);
+ scrollbar-width:thin;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v42-inspector-head{
+ display:flex;align-items:center;gap:8px;min-width:0;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v42-large-art{
+ width:61px;height:65px;flex:none;min-width:0;border-radius:12px;
+ background:#192a47;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v42-inspector-info{
+ display:flex;flex-direction:column;gap:3px;min-width:0;flex:1;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v42-inspector-name{
+ color:#fff1fa;font-size:13px;overflow-wrap:anywhere;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v42-inspector-info small{
+ color:#cdbce4;font-size:10px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v42-code{
+ font-size:9px;line-height:1.4;white-space:normal;overflow-wrap:anywhere;color:#b7dff1;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v42-close{
+ align-self:flex-start;flex:none;width:27px;height:27px;
+ border:1px solid #aab9d277;background:#243450;border-radius:8px;
+ color:#fff;font-size:18px;cursor:pointer;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v42-inspector-desc{
+ color:#e0dcf3;font-size:11px;line-height:1.5;margin:9px 0;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v42-inspector-facts{
+ display:flex;flex-direction:column;gap:4px;
+ border-top:1px solid #a5a1c84f;padding-top:7px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v42-fact{
+ display:flex;justify-content:space-between;align-items:start;gap:9px;min-width:0;
+ font-size:10px;line-height:1.4;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v42-fact>span{
+ color:#b9c6df;flex:0 0 36%;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v42-fact>strong{
+ color:#f1ecfc;text-align:right;font-weight:650;overflow-wrap:anywhere;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v42-inspector-footer{
+ display:flex;gap:8px;align-items:center;justify-content:space-between;
+ flex-wrap:wrap;border-top:1px solid #a5a1c84f;padding-top:9px;margin-top:9px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v42-inspector-status{
+ color:#adc7dc;font-size:10px;line-height:1.5;flex:1;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v42-discard{flex:none;font-size:10px}
+@media(max-width:365px){
+ body.dudu-phone-v11 #cyber-phone #inventory-container.dudu-v42-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px;
+ }
+ body.dudu-phone-v11 #cyber-phone #inventory-v2-count{max-width:74px}
+}
+@media(prefers-reduced-motion:reduce){
+ body.dudu-phone-v11 #cyber-phone .dudu-v42-category-strip{scroll-behavior:auto}
+}
