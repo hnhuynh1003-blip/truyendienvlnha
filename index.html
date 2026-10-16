@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="css/player-avatar-sync-v22.css">
   <link rel="stylesheet" href="css/item-visuals-v13.css">
   <link rel="stylesheet" href="css/phone-ux-v27-r3.css">
+  <link rel="stylesheet" href="css/phone-wallpaper-v27-r4.css">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -43,6 +44,7 @@
   <script src="js/npc-portrait-library-v1.js"></script>
   <script src="js/npc-anime-candidates-v14.js"></script>
   <script src="js/player-avatar-v16.js"></script>
+  <script src="js/phone-wallpaper-v27-r4.js"></script>
   <script src="js/player-avatar-ui-v16.js"></script>
   <script src="js/player-avatar-sync-plan-v20.js"></script>
   <script src="js/player-avatar-conflict-ui-v21.js"></script>
@@ -1066,6 +1068,17 @@
             <button type="button" class="btn" data-dudu-theme="warm" onclick="setTheme('warm')">Giấy ấm</button>
             <button type="button" class="btn" data-dudu-theme="oled" onclick="setTheme('oled')">OLED</button>
           </div>
+        </section>
+        <section class="dudu-v27-wallpaper-picker" aria-labelledby="dudu-v27-wallpaper-heading">
+          <h3 id="dudu-v27-wallpaper-heading">✦ Hình nền điện thoại</h3>
+          <div class="dudu-v27-wallpaper-grid" role="group" aria-label="Chọn hình nền Cyber Phone">
+            <button type="button" class="dudu-v27-wallpaper-option" data-dudu-wallpaper-choice="midnight" onclick="setPhoneWallpaperV27('midnight')" aria-pressed="true"><span class="dudu-v27-wallpaper-art is-midnight" aria-hidden="true"></span><span>DUDU đêm</span></button>
+            <button type="button" class="dudu-v27-wallpaper-option" data-dudu-wallpaper-choice="sakura" onclick="setPhoneWallpaperV27('sakura')" aria-pressed="false"><span class="dudu-v27-wallpaper-art is-sakura" aria-hidden="true"></span><span>Hoa anh đào</span></button>
+            <button type="button" class="dudu-v27-wallpaper-option" data-dudu-wallpaper-choice="astral" onclick="setPhoneWallpaperV27('astral')" aria-pressed="false"><span class="dudu-v27-wallpaper-art is-astral" aria-hidden="true"></span><span>Ngân hà</span></button>
+            <button type="button" class="dudu-v27-wallpaper-option" data-dudu-wallpaper-choice="jade" onclick="setPhoneWallpaperV27('jade')" aria-pressed="false"><span class="dudu-v27-wallpaper-art is-jade" aria-hidden="true"></span><span>Thanh ngọc</span></button>
+          </div>
+          <small>Chỉ thay hình nền Cyber Phone trên thiết bị này. Không ảnh hưởng truyện hoặc dữ liệu nhân vật.</small>
+          <div id="dudu-v27-wallpaper-feedback" aria-live="polite" role="status"></div>
         </section>
         <details class="dudu-v27-details dudu-v27-tools" id="dudu-v27-tools">
           <summary>⚙ Công cụ &amp; dữ liệu <span class="dudu-v27-more-hint">Nâng cao</span></summary>
@@ -3372,6 +3385,7 @@
         if (!opened) trigger.focus({preventScroll:true});
       }
       if (opened) {
+        renderPhoneWallpaperV27();
         updatePhoneUI();
         startCooldownTicker();
         updateActiveModelInfo();
@@ -3416,6 +3430,7 @@
       } else if (appName === 'settings') {
         updateActiveModelInfo();
         syncPhoneDisplayOptionsV27();
+        renderPhoneWallpaperV27();
       }
     }
 
@@ -3766,6 +3781,29 @@
       renderShop();
     }
 
+    // Local wallpaper does not touch the Firestore profile or story saves.
+    function phoneWallpaperOwnerV27(){
+      if(!IS_SANDBOX_MODE)return null;
+      return currentUsername||'sandbox-guest';
+    }
+    function renderPhoneWallpaperV27(){
+      if(!IS_SANDBOX_MODE||!window.DuduPhoneWallpaperV27)return;
+      const chosen=DuduPhoneWallpaperV27.read(localStorage,phoneWallpaperOwnerV27());
+      document.body.dataset.duduPhoneWallpaper=chosen;
+      document.querySelectorAll('#phone-app-settings [data-dudu-wallpaper-choice]').forEach(button=>{
+        button.setAttribute('aria-pressed',
+          String(button.dataset.duduWallpaperChoice===chosen));
+      });
+    }
+    function setPhoneWallpaperV27(id){
+      if(!IS_SANDBOX_MODE||!window.DuduPhoneWallpaperV27)return;
+      if(!DuduPhoneWallpaperV27.PRESETS.some(p=>p.id===id))return;
+      const saved=DuduPhoneWallpaperV27.write(localStorage,phoneWallpaperOwnerV27(),id);
+      if(saved)renderPhoneWallpaperV27();
+      const feedback=document.getElementById('dudu-v27-wallpaper-feedback');
+      if(feedback)feedback.textContent=saved?
+        'Đã đổi hình nền điện thoại.':'Không thể lưu hình nền trên thiết bị này.';
+    }
     function syncPhoneDisplayOptionsV27(){
       const font=Number.parseInt(
         document.documentElement.style.getPropertyValue('--read-size'),10)||16;
