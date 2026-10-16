@@ -29,6 +29,20 @@ test('catalog items have visible defined art with safe unknown fallback',()=>{
  }
  assert.equal(art.visual({id:'custom',rank:'__proto__',type:'ITEM'}).rank,'F');
 });
+test('frequency cell has dedicated battery illustration, never fallback parcel',()=>{
+ const tool={
+  id:'dudu-tool-frequency-cell-v43',rank:'D',type:'ITEM',scope:'FUNCTIONAL'
+ };
+ const artCell=art.visual(tool);
+ assert.equal(artCell.shape,'frequencyCell');
+ assert.notEqual(artCell.src,art.visual({id:'unlisted-common',rank:'D',type:'ITEM'}).src);
+ const svg=decodeURIComponent(artCell.src.slice(artCell.src.indexOf(',')+1));
+ assert.match(svg,/M40 25L29 41/,'has its own lightning bolt artwork');
+ assert.match(svg,/stroke="#a5efff"/,'bright casing differentiates power tool');
+ assert.equal(art.visual({...tool,icon:'📦'}).shape,'frequencyCell');
+ assert.equal(art.visual({id:'future-tool',rank:'D',type:'ITEM',
+   scope:'FUNCTIONAL'}).shape,'device','other future functional items also avoid generic parcel');
+});
 test('SVG cannot interpolate unsafe item-provided HTML',()=>{
  const fake={id:'<svg onload=alert(1)>',name:'<img src=x onerror=alert(2)>',
   rank:'F',type:'ITEM',desc:'<script>alert(1)</script>'};

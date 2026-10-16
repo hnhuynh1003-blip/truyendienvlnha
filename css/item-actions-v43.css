@@ -15,3 +15,19 @@ body.dudu-phone-v11 #cyber-phone .dudu-v43-use-item:focus-visible{
 body.dudu-phone-v11 #cyber-phone .dudu-v43-use-hint{
  flex-basis:100%;font-size:9px;color:#bccbdf;line-height:1.35;
 }
+
+
+/* Clear visual identity in the inventory grid: functional battery, not parcel. */
+body.dudu-phone-v11 #cyber-phone #inventory-container .dudu-v43-tool-slot{
+ border-color:#7ddad9bd!important;
+ background:linear-gradient(160deg,#173852,#202944 75%)!important;
+}
+body.dudu-phone-v11 #cyber-phone #inventory-container .dudu-v43-tool-marker{
+ position:absolute;top:5px;right:5px;z-index:3;
+ width:19px;height:19px;display:grid;place-items:center;
+ border:1px solid #8feae0bc;border-radius:7px;
+ background:#205f6ac9;color:#fff3ac;font-size:11px;line-height:1;
+ box-shadow:0 1px 7px #06192bbc;pointer-events:none;
+}
+body.dudu-phone-v11 #cyber-phone #inventory-container .dudu-v43-tool-slot
+.dudu-v27-slot-name{color:#e3fffa!important;}

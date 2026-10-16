@@ -2848,6 +2848,9 @@ async function main() {
         const itemDetail=DuduInventoryV42.inspect(owned);
         const detailReady=itemDetail?.category==='TOOL'&&
           itemDetail?.usageStatus==='CLEAR_PHONE_COOLDOWN';
+        const dedicatedArt=DuduItemArtV13.visual(itemDetail);
+        const artworkIsBattery=dedicatedArt?.shape==='frequencyCell';
+        const iconNotParcel=dedicatedArt?.shape!=='parcel';
         const noCooldown=DuduItemActionsV43.quote({
           inventory:userProfile.inventory,itemInstanceId:owned.instanceId,
           lastLootTimestamp:0
@@ -2859,6 +2862,11 @@ async function main() {
         const activeModal=document.getElementById('inventory-v42-modal');
         const button=activeModal?.querySelector('.dudu-v43-use-item');
         const enabled=!!button&&!button.disabled&&activeModal.hidden===false;
+        const modalHasBattery=activeModal?.querySelector('img.dudu-item-v13-art')?.
+          src===dedicatedArt.src;
+        const sourceCorrect=activeModal?.textContent.includes('Vật phẩm chức năng DUDU');
+        const toolMarkerCss=!!document.querySelector('#inventory-container .dudu-v43-tool-marker')||
+          !!document.querySelector('#inventory-v42-modal .dudu-v43-use-item');
         button?.click();
         const afterUse=userProfile.itemActionsV43?.used;
         const removed=!userProfile.inventory.includes(owned);
@@ -2889,7 +2897,8 @@ async function main() {
           state:userProfile.itemActionsV43,lastLootTimestamp:Date.now()
         }).canUse===false;
         return {hasTool,priceShown,purchased,purchaseCost,provenance,noGift,
-          detailReady,noCooldown,enabled,afterUse,removed,cleared,readable,
+          detailReady,artworkIsBattery,iconNotParcel,noCooldown,enabled,
+          modalHasBattery,sourceCorrect,toolMarkerCss,afterUse,removed,cleared,readable,
           chapterSafe,expSafe,persisted,noSameInstance,purchaseAgain,
           boughtToday,thirdDenied,consumedSecond,usesTwo,lockedAfterCap,
           noWrites:window.__firestoreWrites.length===priorWrites,
@@ -2911,8 +2920,10 @@ async function main() {
     });
     assert.deepEqual(frequencyCellV4353,{
       hasTool:true,priceShown:true,purchased:true,purchaseCost:30,
-      provenance:'SHOP',noGift:true,detailReady:true,noCooldown:true,
-      enabled:true,afterUse:1,removed:true,cleared:true,readable:true,
+      provenance:'SHOP',noGift:true,detailReady:true,
+      artworkIsBattery:true,iconNotParcel:true,noCooldown:true,
+      enabled:true,modalHasBattery:true,sourceCorrect:true,toolMarkerCss:true,
+      afterUse:1,removed:true,cleared:true,readable:true,
       chapterSafe:true,expSafe:true,persisted:true,
       noSameInstance:true,purchaseAgain:true,boughtToday:true,thirdDenied:true,
       consumedSecond:true,usesTwo:true,lockedAfterCap:true,noWrites:true,

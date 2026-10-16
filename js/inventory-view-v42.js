@@ -155,6 +155,7 @@
     detail.scope==='REALM'?'Chung trong thế giới '+(model.REALMS[detail.realm]||''): 
     detail.scope==='COMMON'?'Chung toàn hệ thống':
     detail.scope==='LEGACY'?'Đồ cũ được bảo lưu':
+    detail.scope==='FUNCTIONAL'?'Vật phẩm chức năng DUDU':
     detail.scope==='STORY'||detail.scope==='CHAPTER'?'Vật phẩm tác giả':'Dữ liệu cũ / cửa hàng');
   if(detail.storyId){
    const novel=(args.stories||[]).find(x=>x?.id===detail.storyId);
@@ -262,7 +263,9 @@
    slot.dataset.rarity=detail.rank;slot.dataset.category=detail.category;
    const selected=!!current&&current===entry;
    slot.classList.toggle('is-selected',selected);
-   slot.setAttribute('aria-label','Xem chi tiết '+detail.name+(entry.count>1?' · '+entry.count+' món':''));
+   slot.setAttribute('aria-label',
+     (detail.usageStatus==='CLEAR_PHONE_COOLDOWN'?'Xem chi tiết và dùng ':'Xem chi tiết ')+
+     detail.name+(entry.count>1?' · '+entry.count+' món':''));
    slot.setAttribute('aria-expanded',String(selected));
    slot.setAttribute('aria-controls','inventory-v42-modal');
    const art=artwork(detail,args.art);
@@ -270,6 +273,13 @@
    const badge=make('span','dudu-v27-slot-rarity',detail.rank);
    const label=make('span','dudu-v27-slot-name',detail.name);
    slot.append(art.container,badge,label);
+   if(detail.usageStatus==='CLEAR_PHONE_COOLDOWN'){
+    slot.classList.add('dudu-v43-tool-slot');
+    const marker=make('span','dudu-v43-tool-marker','⚡');
+    marker.title='Vật phẩm chức năng · nhấn để sử dụng khi đang hồi chiêu';
+    marker.setAttribute('aria-hidden','true');
+    slot.append(marker);
+   }
    if(entry.count>1){
      const quantity=make('span','dudu-v42-slot-quantity','×'+entry.count);
      quantity.setAttribute('aria-label','Số lượng '+entry.count);
