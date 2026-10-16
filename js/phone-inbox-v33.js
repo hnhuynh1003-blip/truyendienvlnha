@@ -23,6 +23,7 @@ function show(mode){
  if(back)back.hidden=inbox;
  const home=app.querySelector('.phone-app-header .phone-back-btn');
  if(home)home.style.display=inbox?'':'none';
+ if(!inbox){const sel=$('chat-character-selector');const name=$('dudu-v33-chat-name');if(name&&sel)name.textContent=sel.selectedOptions[0]?.textContent?.replace(/\\s*\\([^)]*\\)\\s*$/,'')||'Nhân vật';}
  if(inbox)render();
 }
 function render(){
@@ -61,6 +62,8 @@ function init(){
  const list=document.createElement('div');list.id='dudu-v33-inbox-list';list.className='dudu-v33-inbox-list';
  panel.append(tabs,search,list);
  const head=app.querySelector('.phone-app-header');head.after(panel);
+ const persona=app.querySelector('.dudu-v27-chat-persona');
+ if(persona){const name=document.createElement('strong');name.id='dudu-v33-chat-name';name.className='dudu-v33-chat-name';const sel=$('chat-character-selector');sel?.after(name);}
  const back=document.createElement('button');back.type='button';back.id='dudu-v33-chat-back';back.textContent='‹';back.title='Về danh sách hội thoại';back.setAttribute('aria-label','Về danh sách hội thoại');back.hidden=true;back.addEventListener('click',()=>show('inbox'));
  head.querySelector('.phone-back-btn')?.after(back);
  const actions=$('dudu-v32-gift-button')?.parentElement;
