@@ -842,9 +842,9 @@ async function main() {
         day:'2000-01-01',events:[]};
       const expBefore=userProfile.exp;
       readChapter(0);
-      const counted=quest.current;
+      const counted=userProfile.quests.find(q=>q.id==='q_daily_read').current;
       readChapter(0);
-      const countedAgain=quest.current;
+      const countedAgain=userProfile.quests.find(q=>q.id==='q_daily_read').current;
       return {counted,countedAgain,expBefore,expAfter:userProfile.exp,
         rewarded:userProfile.readRewards[rewardKey]===true,
         day:userProfile.dailyReadLog.day,
