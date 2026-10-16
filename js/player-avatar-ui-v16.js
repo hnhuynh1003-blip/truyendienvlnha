@@ -132,7 +132,7 @@ function renderPlayerAvatarEditorV16(){
   let items=draft.kind==='anime'?
     DuduNpcAnimeCandidatesV14.CANDIDATES.map(p=>({id:p.id,name:p.label,kind:'anime'})):
     draft.kind==='vector'?
-      DuduNpcPortraitLibrary.CATALOG.filter(p=>/^portrait-[fm]-\\d{2}$/.test(p.id))
+      DuduNpcPortraitLibrary.CATALOG.filter(p=>/^portrait-[fm]-\d{2}$/.test(p.id))
         .map(p=>({id:p.id,name:p.id,kind:'vector',gender:p.gender})):[]; 
   if(draft.kind==='vector'){
     const gender=document.getElementById('player-avatar-v41-gender')?.value||'all';
