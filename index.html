@@ -29,7 +29,7 @@
   <link rel="stylesheet" href="css/phone-wallpaper-v36-custom.css?v=1">
   <link rel="stylesheet" href="css/phone-wallpaper-v37-gallery.css?v=3">
   <link rel="stylesheet" href="css/npc-portrait-v38.css?v=1">
-  <link rel="stylesheet" href="css/npc-portrait-v39.css?v=1">
+  <link rel="stylesheet" href="css/npc-portrait-v39.css?v=2">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -645,11 +645,17 @@
       border-color:#635182 !important;
       border-radius:14px !important;
     }
+    /* V39: older max-height without overflow allowed gallery rows to paint
+       over "Xem thêm", "Bỏ chọn" and image upload controls. */
     #npc-r8-gallery {
-      grid-template-columns:repeat(auto-fit,minmax(72px,1fr)) !important;
-      max-height:265px !important;
+      grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+      max-height:325px !important;
+      overflow-y:auto !important;
+      overflow-x:hidden !important;
+      align-content:start !important;
       gap:8px !important;
       overscroll-behavior:contain;
+      padding:2px 3px 8px;
     }
     #npc-r8-gallery .npc-v10-portrait-tile {
       min-width:0; padding:3px;
