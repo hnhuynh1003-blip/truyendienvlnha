@@ -10,9 +10,9 @@ function store(){
  const values=new Map();
  return {getItem:k=>values.get(k)||null,setItem:(k,v)=>values.set(k,v),keys:()=>[...values.keys()]};
 }
-test('V27 R4 four safe wallpaper presets, invalid identifiers fail closed',()=>{
- assert.equal(wp.PRESETS.length,4);
- assert.deepEqual(wp.PRESETS.map(x=>x.id),['midnight','sakura','astral','jade']);
+test('V27 R4 plus V29 eight safe wallpaper presets, invalid identifiers fail closed',()=>{
+ assert.equal(wp.PRESETS.length,8);
+ assert.deepEqual(wp.PRESETS.map(x=>x.id),['midnight','sakura','astral','jade','world-xianxia','world-modern','world-cyberpunk','world-gothic']);
  assert.equal(wp.normalize('astral'),'astral');
  assert.equal(wp.normalize('../../evil.css'),wp.DEFAULT);
  assert.equal(wp.keyFor('../../another-user'),null);
