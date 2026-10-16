@@ -136,6 +136,87 @@
       nextOffset:Math.min(entries.length,safeOffset+safeLimit)
     });
   }
+
+  // A stack is only a VIEW. Never rewrite / group the original owned array.
+  // Ignore acquisition provenance when the canonical ID is COMMON or REALM.
+  // Keep extras, custom stats, unique items and author collectibles separate.
+  const STACK_SOURCE_FIELDS=new Set(['instanceId','obtainedFrom']);
+  function stackKey(record){
+    if(!plain(record))return null;
+    const item=catalog?.byId(idOf(record));
+    if(!item||!['COMMON','REALM'].includes(item.scope)||
+       item.unique===true||item.discardable===false||
+       record.unique===true||record.discardable===false||
+       record.stackable===false)return null;
+    const keys=new Set([...Object.keys(item),...STACK_SOURCE_FIELDS]);
+    for(const k of Object.keys(record)){
+      if(!keys.has(k))return null;
+      if(STACK_SOURCE_FIELDS.has(k))continue;
+      // Reject variants or overwritten catalog fields; never silently drop
+      // durability/enchantments/expiry and other future per-instance metadata.
+      if(JSON.stringify(record[k])!==JSON.stringify(item[k]))return null;
+    }
+    return item.scope+':'+item.id;
+  }
+  function commonDetail(detail){
+    if(!detail)return detail;
+    if(detail.scope==='COMMON')return Object.freeze({...detail,
+      storyId:null,chapterId:null,worldLabel:'Dùng chung mọi truyện'});
+    if(detail.scope==='REALM')return Object.freeze({...detail,
+      storyId:null,chapterId:null,worldLabel:(REALMS[detail.realm]||'Thế giới')+
+      ' · Chung theo thế giới'});
+    return detail;
+  }
+  // Group BEFORE pagination. One slot can represent 1..N original instances.
+  // indices and items remain available so discard/gifting always operate
+  // on EXACTLY one existing instance, never on an invented quantity record.
+  function displayList(inventory,{category='ALL',query='',rank='ALL',
+    realm='ALL',storyId='ALL',order='recent',offset=0,limit=24}={}){
+    const src=Array.isArray(inventory)?inventory:[];
+    const groups=[],seen=new Map();
+    src.forEach((item,index)=>{
+      const detail=inspect(item);if(!detail)return;
+      const key=stackKey(item);
+      if(key&&seen.has(key)){
+        const group=groups[seen.get(key)];
+        group.indices.push(index);group.items.push(item);return;
+      }
+      const group={item,index,detail:commonDetail(detail),
+        indices:[index],items:[item],stackable:!!key};
+      if(key)seen.set(key,groups.length);
+      groups.push(group);
+    });
+    const cat=Object.hasOwn(CATEGORIES,category)?category:'ALL';
+    const rarity=rank==='ALL'||RANKS.includes(rank)?rank:'ALL';
+    const world=realm==='ALL'||Object.hasOwn(REALMS,realm)?realm:'ALL';
+    const story=typeof storyId==='string'?storyId:'ALL';
+    const search=typeof query==='string'?query.trim().toLocaleLowerCase('vi'):'';
+    const filtered=groups.filter(({detail})=>
+      (cat==='ALL'||detail.category===cat)&&
+      (rarity==='ALL'||detail.rank===rarity)&&
+      (world==='ALL'||detail.realm===world)&&
+      (story==='ALL'||(story==='GLOBAL'?!detail.storyId:detail.storyId===story))&&
+      (!search||(detail.name+' '+detail.id).toLocaleLowerCase('vi').includes(search)));
+    if(order==='name')
+      filtered.sort((a,b)=>a.detail.name.localeCompare(b.detail.name,'vi')||a.index-b.index);
+    else if(order==='rank_desc')
+      filtered.sort((a,b)=>RANKS.indexOf(b.detail.rank)-RANKS.indexOf(a.detail.rank)||a.index-b.index);
+    else if(order==='rank_asc')
+      filtered.sort((a,b)=>RANKS.indexOf(a.detail.rank)-RANKS.indexOf(b.detail.rank)||a.index-b.index);
+    const safeOffset=Number.isSafeInteger(offset)&&offset>0?offset:0;
+    const safeLimit=Number.isSafeInteger(limit)&&limit>0?Math.min(limit,100):24;
+    return Object.freeze({
+      total:filtered.length,inventoryTotal:src.length,
+      visibleCopies:filtered.reduce((sum,g)=>sum+g.items.length,0),
+      entries:Object.freeze(filtered.slice(safeOffset,safeOffset+safeLimit).map(g=>
+        Object.freeze({item:g.item,index:g.index,detail:g.detail,
+          count:g.items.length,stackable:g.stackable,
+          indices:Object.freeze([...g.indices]),items:Object.freeze([...g.items])}))),
+      hasMore:filtered.length>safeOffset+safeLimit,
+      nextOffset:Math.min(filtered.length,safeOffset+safeLimit)
+    });
+  }
+
   function validateCatalog(){
     const errors=[];
     const all=catalog?.items||[];
@@ -151,5 +232,5 @@
     return Object.freeze(errors);
   }
   return Object.freeze({VERSION,CATEGORIES,REALMS,RANKS,ROLE_IDS,idOf,
-    categoryFor,inspect,list,validateCatalog});
+    categoryFor,inspect,list,stackKey,displayList,validateCatalog});
 });
