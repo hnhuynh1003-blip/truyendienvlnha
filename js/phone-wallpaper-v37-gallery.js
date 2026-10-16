@@ -3,9 +3,50 @@
 'use strict';
 const ITEMS=[
   {id:'v37-sakura',label:'Thung lũng hoa',note:'Rực rỡ sắc xuân'},
-  {id:'v37-city-rain',label:'Phố đêm',note:'Ánh đèn và mưa'},
-  {id:'v37-city-night',label:'Đô thị neon',note:'Thành phố lúc khuya'}
+  {id:'v37-city-rain',label:'Phố đêm',note:'Mưa đêm · vàng hổ phách'},
+  {id:'v37-city-night',label:'Đô thị neon',note:'Xanh điện · tím hồng'}
 ];
+
+/* The "Theo truyện" tab configures an automatic mode, not a second
+   copy of the old V34 image gallery. Keep legacy world buttons in the
+   DOM for compatibility, but present semantic genre information instead. */
+function separateStoryMode(){
+ const panel=document.querySelector('.dudu-v35-gallery-panel[data-dudu-v35-tab="world"]');
+ if(!panel||panel.querySelector('.dudu-v37-world-kinds'))return;
+ const duplicates=panel.querySelector('.dudu-v29-world-gallery');
+ if(duplicates){duplicates.hidden=true;duplicates.setAttribute('aria-hidden','true');}
+ const heading=panel.querySelector('h3');
+ if(heading)heading.textContent='Tự đổi hình nền theo truyện';
+ const intro=panel.querySelector('p');
+ if(intro)intro.textContent='Bật chế độ Theo thế giới truyện để điện thoại tự chọn nền theo thể loại tác phẩm đang đọc.';
+ const overview=document.createElement('div');
+ overview.className='dudu-v37-world-kinds';
+ overview.setAttribute('aria-label','Những thể loại hỗ trợ');
+ const kinds=[
+  ['☁️','Tiên hiệp','Tu tiên · huyền huyễn'],
+  ['🏙️','Hiện đại','Đô thị · học đường'],
+  ['⚡','Viễn tưởng','Cyberpunk · công nghệ'],
+  ['🌙','Huyền bí','Kinh dị · bí ẩn']
+ ];
+ kinds.forEach(([icon,name,description])=>{
+  const item=document.createElement('div');item.className='dudu-v37-world-kind';
+  const symbol=document.createElement('span');symbol.className='dudu-v37-world-symbol';
+  symbol.textContent=icon;symbol.setAttribute('aria-hidden','true');
+  const copy=document.createElement('span');copy.className='dudu-v37-world-copy';
+  const label=document.createElement('strong');label.textContent=name;
+  const note=document.createElement('small');note.textContent=description;
+  copy.append(label,note);item.append(symbol,copy);overview.append(item);
+ });
+ const mode=panel.querySelector('.dudu-v28-mode');
+ if(mode)mode.before(overview);else panel.append(overview);
+ const info=panel.querySelector('#dudu-v28-active-world');
+ if(info){
+  const hint=document.createElement('p');hint.className='dudu-v37-world-hint';
+  hint.textContent='Không cần chọn từng ảnh. Nếu truyện không xác định được thể loại, DUDU sẽ giữ hình nền cá nhân hiện tại.';
+  info.after(hint);
+ }
+}
+
 function init(){
  if(!document.body.classList.contains('dudu-phone-v11'))return;
  const tabs=document.querySelector('.dudu-v35-gallery-tabs');
@@ -47,6 +88,7 @@ function init(){
  });
  panel.append(h,p,grid);
  panels.prepend(panel);
+ separateStoryMode();
  open.addEventListener('click',()=>{tab.click();},{passive:true});
  document.querySelectorAll('[data-dudu-wallpaper-choice]').forEach(b=>{if(b.classList.contains('dudu-v37-choice'))return;});
 }
