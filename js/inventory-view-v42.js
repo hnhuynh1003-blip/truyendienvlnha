@@ -32,16 +32,15 @@
  function storyOptions(inventory,stories=[]){
   const select=$('inventory-v42-story');if(!select)return;
   const selected=select.value||'ALL', ids=new Map();
-  for(const story of stories||[]){
-   if(story?.id&&typeof story.id==='string')ids.set(story.id,String(story.title||story.id));
-  }
+  const storyNames=new Map((stories||[]).filter(x=>typeof x?.id==='string')
+    .map(x=>[x.id,String(x.title||x.id)]));
   for(const item of Array.isArray(inventory)?inventory:[]){
    const detail=model.inspect(item);
-   // Common loot is global; realm loot is shared across a world.
-   // Chapter-of-acquisition is retained in saves, not used as a new inventory source.
+   // The story filter only lists ACTUAL bound items; not every story
+   // visited when picking up a global COMMON or realm-shared drop.
    if(['COMMON','REALM'].includes(detail?.scope))continue;
    const sid=detail?.storyId;
-   if(sid&&!ids.has(sid))ids.set(sid,sid);
+   if(sid&&!ids.has(sid))ids.set(sid,storyNames.get(sid)||sid);
   }
   const signature=JSON.stringify([...ids]);
   if(select.dataset.inventory42Options===signature)return;
