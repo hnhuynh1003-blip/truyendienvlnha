@@ -20,7 +20,8 @@
     Object.freeze({id:'v34-night',name:'Ngân hà đêm',description:'Đêm trăng và những dãy núi'}),
     Object.freeze({id:'v34-room',name:'Phòng nhỏ',description:'Góc phòng hoàng hôn ấm áp'}),
     Object.freeze({id:'v34-sakura',name:'Lối hoa đào',description:'Đường hoa anh đào cuối chiều'}),
-    Object.freeze({id:'v34-neon',name:'Thành phố neon',description:'Đô thị rực sáng về đêm'})
+    Object.freeze({id:'v34-neon',name:'Thành phố neon',description:'Đô thị rực sáng về đêm'}),
+    Object.freeze({id:'v36-custom',name:'Ảnh của tôi',description:'Ảnh riêng trên thiết bị'})
   ]);
   const IDS=new Set(PRESETS.map(p=>p.id));
   const PREFIX='dudu-sandbox:phone-wallpaper:v27-r4:';
