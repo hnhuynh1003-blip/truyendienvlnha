@@ -852,9 +852,9 @@
             <div class="app-box" style="background: #f59e0b;">📜</div>
             <div class="app-label">Nhiệm Vụ</div>
           </button>
-          <button type="button" class="app-icon" onclick="openPhoneApp('codex')" aria-label="Mở Nhân Vật">
-            <div class="app-box" style="background: #ec4899;">🎴</div>
-            <div class="app-label">Nhân Vật</div>
+          <button type="button" class="app-icon" onclick="openPhoneApp('stories')" aria-label="Mở danh sách truyện">
+            <div class="app-box" style="background: #a855f7;">📚</div>
+            <div class="app-label">Truyện</div>
           </button>
           <button type="button" class="app-icon" onclick="openPhoneApp('chat')" aria-label="Mở Liên Lạc">
             <div class="app-box" style="background: #06b6d4;">💬</div>
@@ -969,7 +969,17 @@
         <div id="quests-container" class="dudu-v27-quest-list"></div>
       </div>
 
-      <!-- APP: NHÂN VẬT & KẾT NỐI LINH HỒN (GIAO DIỆN GỌN GÀNG, ẨN PROMPT DÀI) -->
+      <!-- APP: THƯ VIỆN TRUYỆN – read-only story navigator -->
+      <div class="phone-sub-app" id="phone-app-stories">
+        <div class="phone-app-header">
+          <button type="button" class="phone-back-btn" onclick="phoneHome()" aria-label="Về màn hình chính">‹</button>
+          <span>Thư Viện Truyện</span><span></span>
+        </div>
+        <div class="dudu-v29-story-intro">Chọn tác phẩm để xem mục lục và tiếp tục đọc.</div>
+        <div class="dudu-v29-story-grid" id="dudu-v29-story-grid" role="list" aria-label="Danh sách truyện"></div>
+      </div>
+
+      <!-- APP: DANH BẠ NPC – mở từ Liên Lạc, không chiếm ô màn hình chính -->
       <div class="phone-sub-app" id="phone-app-codex">
         <div class="phone-app-header">
           <div style="display:flex; align-items:center; gap:4px;">
@@ -998,6 +1008,7 @@
             <details id="chat-v27-more" class="dudu-v27-more">
               <summary aria-label="Tùy chọn liên lạc" title="Tùy chọn">⋯</summary>
               <div class="dudu-v27-more-panel">
+                <button type="button" class="btn" onclick="openPhoneApp('codex')">Danh bạ NPC</button>
                 <button type="button" class="btn btn-danger" onclick="clearCurrentChat()">Xóa cuộc trò chuyện</button>
               </div>
             </details>
@@ -3436,7 +3447,9 @@
       document.querySelectorAll('.phone-sub-app').forEach(el => el.style.display = 'none');
       document.getElementById(`phone-app-${appName}`).style.display = 'flex';
 
-      if (appName === 'codex') {
+      if (appName === 'stories') {
+        renderPhoneStoryListV29();
+      } else if (appName === 'codex') {
         renderCodexDropdown();
         renderCodexList();
       } else if (appName === 'chat') {
@@ -3458,6 +3471,43 @@
       }
       // Current story may change as reader moves between Codex/Chat/Settings.
       if(IS_SANDBOX_MODE)renderPhoneWallpaperV27();
+    }
+
+    // V29: reads already-loaded stories; never modifies account or Firebase state.
+    function renderPhoneStoryListV29(){
+      const host=document.getElementById('dudu-v29-story-grid');
+      if(!host)return;
+      host.replaceChildren();
+      if(!Array.isArray(novels)||!novels.length){
+        const empty=document.createElement('p');empty.className='dudu-v29-stories-empty';
+        empty.textContent='Thư viện chưa có truyện nào.';host.append(empty);return;
+      }
+      novels.forEach(novel=>{
+        if(!novel||!novel.id)return;
+        const item=document.createElement('article');item.className='dudu-v29-story-card';
+        item.setAttribute('role','listitem');
+        const artwork=document.createElement('div');artwork.className='dudu-v29-story-cover';
+        artwork.textContent='✦';
+        const body=document.createElement('div');body.className='dudu-v29-story-info';
+        const name=document.createElement('strong');name.textContent=novel.title||'Truyện chưa đặt tên';
+        const detail=document.createElement('small');
+        detail.textContent=(novel.genre||'Chưa phân loại')+' · '+
+          (Array.isArray(novel.chapters)?novel.chapters.length:0)+' chương';
+        const button=document.createElement('button');button.type='button';
+        button.className='dudu-v29-read-button';button.textContent='Mở truyện ›';
+        button.setAttribute('aria-label','Mở truyện '+(novel.title||'chưa đặt tên'));
+        button.addEventListener('click',()=>openPhoneStoryV29(novel.id));
+        body.append(name,detail,button);item.append(artwork,body);host.append(item);
+      });
+    }
+    function openPhoneStoryV29(storyId){
+      const index=Array.isArray(novels)?novels.findIndex(n=>n&&n.id===storyId):-1;
+      if(index<0)return false;
+      const phone=document.getElementById('cyber-phone');
+      if(phone?.style.display==='flex')togglePhone();
+      openCover(index);
+      if(IS_SANDBOX_MODE)renderPhoneWallpaperV27();
+      return true;
     }
 
     async function renderMuseum() {
