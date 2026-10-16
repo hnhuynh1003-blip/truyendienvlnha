@@ -186,6 +186,8 @@ function openPlayerAvatarEditorV16(){
   playerAvatarUploadGenerationV16++;
   playerAvatarEditOwnerV16=playerAvatarOwnerV16();
   playerAvatarDraftV16={...playerAvatarCurrentV16()};
+  const feedback=document.getElementById('player-avatar-v23-feedback');
+  if(feedback)feedback.textContent='';
   if(typeof closePlayerAvatarSyncReviewV21==='function')
     closePlayerAvatarSyncReviewV21();
   if(typeof avatarV22Reset==='function')avatarV22Reset();
@@ -256,10 +258,18 @@ async function deletePlayerAvatarLocalV23(){
   renderPlayerAvatarEditorV16();
   try{
     await DuduNpcPortraitLibrary.deleteUpload(uid,DuduPlayerAvatarV16.SCOPE,id);
-    if(active())status.textContent='Ảnh đã xóa trên thiết bị này. Avatar mặc định được giữ lại.';
+    if(active()){
+      status.textContent='Ảnh đã xóa trên thiết bị này. Avatar mặc định được giữ lại.';
+      const notice=document.getElementById('player-avatar-v23-feedback');
+      if(notice)notice.textContent=status.textContent;
+    }
     return true;
   }catch(_){
-    if(active())status.textContent='Avatar đã đổi về mặc định, nhưng chưa dọn được ảnh cũ trên thiết bị.';
+    if(active()){
+      status.textContent='Avatar đã đổi về mặc định, nhưng chưa dọn được ảnh cũ trên thiết bị.';
+      const notice=document.getElementById('player-avatar-v23-feedback');
+      if(notice)notice.textContent=status.textContent;
+    }
     return false;
   }
 }
