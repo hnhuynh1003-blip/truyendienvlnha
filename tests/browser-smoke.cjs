@@ -70,6 +70,52 @@ async function main() {
     assert.equal(catalogSnapshot.inventoryCount,2,'Defining 70 items must not grant inventory items');
     assert.equal(catalogSnapshot.legacyRandomCount,11,'Phase 1 must leave old loot pool untouched');
     assert.equal(catalogSnapshot.firestoreWrites,0,'Catalog has no backend writes');
+    // V43: DUDU remains first contact even when no story NPC is unlocked.
+    // All money/memory changes in this test are strictly local and rolled back.
+    const companionSmoke=await page.evaluate(()=>{
+      const backup=JSON.stringify(userProfile);
+      const currencyBefore=Number(userProfile.currency);
+      const prevOpen=document.getElementById('cyber-phone').style.display==='flex';
+      if(!prevOpen)togglePhone();
+      openPhoneApp('chat');
+      const first=document.querySelector('#dudu-v33-inbox-list .dudu-v33-thread');
+      const pinned=!!first?.classList.contains('dudu-v43-system-contact');
+      const name=first?.textContent||'';
+      first?.click();
+      const app=document.getElementById('phone-app-chat');
+      const panel=document.getElementById('dudu-v43-companion');
+      const visible=app?.classList.contains('dudu-v43-companion-open')&&
+        getComputedStyle(panel).display==='flex';
+      const input=document.getElementById('dudu-v43-message-input');
+      input.value='Hướng dẫn nhặt đồ';
+      document.querySelector('.dudu-v43-composer').requestSubmit();
+      const history=userProfile.duduCompanionV43?.messages||[];
+      const scriptedHelp=history.some(m=>m.role==='model'&&/2 phút/.test(m.text));
+      const chatCount=userProfile.duduCompanionV43?.chat?.count||0;
+      const claim=document.getElementById('dudu-v43-checkin');
+      claim.click();
+      const currencyAfter=Number(userProfile.currency);
+      const claimed=claim.disabled&&userProfile.duduCompanionV43.login.count===1;
+      claim.click();
+      const noDouble=Number(userProfile.currency)===currencyAfter;
+      window.DuduCompanionV43.back();
+      const back=app.classList.contains('dudu-v33-inbox');
+      userProfile=JSON.parse(backup);saveCurrentAccount();
+      phoneHome();if(!prevOpen)togglePhone();
+      return {pinned,name,visible,scriptedHelp,chatCount,claimed,noDouble,back,
+       increment:currencyAfter-currencyBefore,writes:window.__firestoreWrites.length};
+    });
+    assert.equal(companionSmoke.pinned,true,'DUDU must be the first conversation');
+    assert.match(companionSmoke.name,/DUDU/);
+    assert.equal(companionSmoke.visible,true,'DUDU companion UI opens inside Cyber Phone');
+    assert.equal(companionSmoke.scriptedHelp,true,'DUDU can explain the real loot cooldown');
+    assert.equal(companionSmoke.chatCount,1,'First valid conversation counts toward daily streak');
+    assert.equal(companionSmoke.claimed,true,'Claim is one time per local day');
+    assert.equal(companionSmoke.noDouble,true,'Repeated clicks cannot grant duplicate coins');
+    assert.equal(companionSmoke.increment,3,'First Sandbox check-in awards three Xu');
+    assert.equal(companionSmoke.back,true,'Return to contacts from DUDU');
+    assert.equal(companionSmoke.writes,0,'DUDU Sandbox never calls production Firestore');
+
     const museumSandbox=await page.evaluate(async()=>{
       openPhoneApp('museum');
       await renderMuseum();
