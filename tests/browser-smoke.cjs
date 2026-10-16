@@ -205,6 +205,7 @@ async function main() {
     });
     const typoCard=page.locator('.character-card').filter({hasText:'NPC GÕ NHẦM'});
     assert.equal(await typoCard.count(),1);
+    await typoCard.locator('.dudu-v27-npc-admin > summary').click();
     page.once('dialog',dialog=>dialog.accept());
     await typoCard.getByRole('button',{name:'Lưu trữ'}).click();
     const archivedNpc=await page.evaluate(()=>{
@@ -223,6 +224,7 @@ async function main() {
     assert.equal(await typoCard.count(),0,'Archived NPC disappears from normal Codex');
     await page.getByRole('button',{name:/Xem NPC lưu trữ/}).click();
     const archivedCard=page.locator('.character-card').filter({hasText:'NPC GÕ NHẦM'});
+    await archivedCard.locator('.dudu-v27-npc-admin > summary').click();
     await archivedCard.getByRole('button',{name:'Khôi phục'}).click();
     const restored=await page.evaluate(()=>novels[selectedNovelIndex].characters
       .find(c=>c.id==='temp-npc-typo')?.archived);
