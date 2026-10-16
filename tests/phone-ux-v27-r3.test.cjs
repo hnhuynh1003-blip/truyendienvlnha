@@ -28,7 +28,7 @@ test('V27 R3 has a Sandbox-only dense inventory grid without changing public row
 });
 test('V27 R3 no inline Vứt on every tile; inspector handles protected/unique only after confirmation',()=>{
  const render=slice('    function renderInventory() {','    function discardItem(idx) {');
- const inspect=slice('    function renderInventoryDetail() {','    function renderInventory() {');
+ const inspect=slice('    function renderInventoryDetail(){','    function renderInventory() {');
  assert.match(render,/if\(IS_SANDBOX_MODE\)\{/);
  assert.match(render,/slot\.append\(artwork,badge,name\)/);
  assert.doesNotMatch(render,/details\.textContent='Chi tiết'/);
