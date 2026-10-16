@@ -909,7 +909,7 @@ async function main() {
     assert.equal(expansionSmoke.disabled,true);
     assert.ok(expansionSmoke.portrait.length>0,'NPC avatar initials must render');
     assert.match(expansionSmoke.filtered,/Dao Gọt Trái Cây Cũ/);
-    assert.match(expansionSmoke.searchCount,/1\/3/);
+    assert.match(expansionSmoke.searchCount,/Hiện 1\/1 · Sở hữu 3 vật phẩm|1\/3/);
     assert.equal(expansionSmoke.protectedStillThere,true,'Souvenir must not be discarded');
     assert.equal(expansionSmoke.correctRemoved,true,'Filtering must not delete a different item');
     assert.equal(expansionSmoke.writes,0,'Sandbox R5 and inventory never write Firestore');
