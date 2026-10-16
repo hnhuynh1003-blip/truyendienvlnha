@@ -16,6 +16,7 @@ function preview(npc){
 }
 function show(mode){
  const app=$('phone-app-chat');if(!app)return;
+ app.classList.remove('dudu-v43-companion-open');
  const inbox=mode!=='chat';
  app.classList.toggle('dudu-v33-inbox',inbox);
  app.classList.toggle('dudu-v33-chat-open',!inbox);
@@ -30,11 +31,30 @@ function render(){
  const root=$('dudu-v33-inbox-list');if(!root)return;
  root.replaceChildren();
  const query=($('dudu-v33-search')?.value||'').trim().toLocaleLowerCase('vi');
+ // DUDU is a SYSTEM contact, not a story character. Pin first, even when
+ // the player has zero NPCs and has never sent a message.
+ if(IS_SANDBOX_MODE&&currentUsername&&window.DuduCompanionV43){
+  const info=window.DuduCompanionV43.inboxSummary();
+  if(!query||('dudu đồng hành hệ thống '+info.text).toLocaleLowerCase('vi').includes(query)){
+   const button=document.createElement('button');
+   button.type='button';button.className='dudu-v33-thread dudu-v43-system-contact';
+   const avatar=document.createElement('span');avatar.className='dudu-v33-avatar';
+   avatar.textContent='✦';
+   const desc=document.createElement('span');desc.className='dudu-v33-thread-copy';
+   const title=document.createElement('strong');title.textContent='DUDU';
+   const snippet=document.createElement('small');snippet.textContent=info.text.slice(0,76);
+   const chevron=document.createElement('span');chevron.className='dudu-v33-chevron';
+   chevron.textContent='›';
+   desc.append(title,snippet);button.append(avatar,desc,chevron);
+   button.addEventListener('click',()=>window.DuduCompanionV43.open());
+   root.append(button);
+  }
+ }
  const names=(getCombinedCharactersList()||[]).filter(n=>n&&!n.archived);
  const records=names.map(n=>({npc:n,info:preview(n)}))
    .filter(r=>(filter==='all'||r.info.count>0)&&(!query||String(r.npc.name||'').toLocaleLowerCase('vi').includes(query)||r.info.text.toLocaleLowerCase('vi').includes(query)))
    .sort((a,b)=>b.info.count-a.info.count);
- if(!records.length){const empty=document.createElement('p');empty.className='dudu-v33-empty';empty.textContent=filter==='recent'?'Chưa có hội thoại. Vào Danh bạ để chọn NPC và bắt đầu nhắn tin.':'Không tìm thấy NPC phù hợp.';root.append(empty);return;}
+ if(!records.length&&!root.children.length){const empty=document.createElement('p');empty.className='dudu-v33-empty';empty.textContent=filter==='recent'?'Chưa có hội thoại. Vào Danh bạ để chọn NPC và bắt đầu nhắn tin.':'Không tìm thấy NPC phù hợp.';root.append(empty);return;}
  for(const {npc,info} of records){
   const button=document.createElement('button');button.type='button';button.className='dudu-v33-thread';
   const avatar=document.createElement('span');avatar.className='dudu-v33-avatar';avatar.textContent=String(npc.name||'N').trim().charAt(0).toUpperCase();
@@ -97,4 +117,5 @@ function init(){
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 window.duduV33ShowInbox=()=>show('inbox');
+window.duduV33Render=render;
 })();
