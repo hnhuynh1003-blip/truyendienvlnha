@@ -47,6 +47,7 @@
   <script src="js/player-avatar-v16.js"></script>
   <script src="js/phone-wallpaper-v27-r4.js"></script>
   <script src="js/dudu-multiverse-art-v28-r5.js"></script>
+  <script src="js/dudu-multiverse-ui-v28-r5.js"></script>
   <script src="js/player-avatar-ui-v16.js"></script>
   <script src="js/player-avatar-sync-plan-v20.js"></script>
   <script src="js/player-avatar-conflict-ui-v21.js"></script>
@@ -3141,9 +3142,15 @@
         const dataUrl=canvas.toDataURL('image/jpeg',0.76);
         const id=DuduNpcPortraitLibrary.makeId();
         const saved=await DuduNpcPortraitLibrary.saveUpload(uid,storyId,id,dataUrl);
-        if(!saved||document.getElementById('char-modal')?.style.display!=='flex'||
+        if(!saved)return;
+        if(document.getElementById('char-modal')?.style.display!=='flex'||
            picker.dataset.uploadRequest!==token||editingCharNovelId!==storyId||
-           currentUsername!==uid&&!(uid==='sandbox-guest'&&!currentUsername))return;
+           currentUsername!==uid&&!(uid==='sandbox-guest'&&!currentUsername)){
+          // IDB write completed after the editor closed or account changed.
+          // Delete only the captured owner's newly uploaded portrait.
+          try{await DuduNpcPortraitLibrary.deleteUpload(uid,storyId,id);}catch(_){}
+          return;
+        }
         document.getElementById('npc-v14-anime-id').value='';
         npcClearAnimeVisual();
         document.getElementById('npc-r8-preset-id').value='';
@@ -3180,6 +3187,7 @@
       document.getElementById('npc-r7-portrait').value=npc?.portraitPath||'';
       npcRenderPortraitGallery(npc);
       npcRenderAnimeChoices(npc);
+      renderNpcArtPackV28();
       const editorNovel=novels.find(n=>n.id===editingCharNovelId);
       const key=npc&&editorNovel?DuduNpcAuthorR7.sandboxMilestoneDraftKey(editorNovel.id,npc.id):null;
       let draft=null;
