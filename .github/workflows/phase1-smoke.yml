@@ -3,7 +3,7 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [fixapp, feat/identity-npc-editor-v2, feat/dudu-v24-verified-milestones, feat/dudu-v25-trusted-milestone-ledger, feat/dudu-v26-verified-producers, feat/dudu-v27-phone-sandbox-ux-r1, feat/dudu-v27-phone-sandbox-ux-r2, feat/dudu-v27-phone-sandbox-ux-r3, feat/dudu-v27-phone-wallpaper-avatar-audit-r4]
+    branches: [main, fixapp, feat/identity-npc-editor-v2, feat/dudu-v24-verified-milestones, feat/dudu-v25-trusted-milestone-ledger, feat/dudu-v26-verified-producers, feat/dudu-v27-phone-sandbox-ux-r1, feat/dudu-v27-phone-sandbox-ux-r2, feat/dudu-v27-phone-sandbox-ux-r3, feat/dudu-v27-phone-wallpaper-avatar-audit-r4]
   workflow_dispatch:
 permissions:
   contents: read
