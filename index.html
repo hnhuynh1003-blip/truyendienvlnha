@@ -3890,6 +3890,7 @@
     });
 
     function updatePhoneUI() {
+      if(IS_SANDBOX_MODE)renderPhoneWallpaperV27();
       userProfile.level = Math.max(1, parseInt(userProfile.level) || 1);
       userProfile.exp = Math.max(0, parseInt(userProfile.exp) || 0);
       userProfile.currency = Math.max(0, parseInt(userProfile.currency) || 0);
