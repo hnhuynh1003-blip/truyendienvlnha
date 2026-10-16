@@ -99,6 +99,10 @@ body.dudu-phone-v11 #cyber-phone .dudu-v34-new-choice[data-dudu-wallpaper-choice
 body.dudu-phone-v11 #cyber-phone .dudu-v34-new-choice[data-dudu-wallpaper-choice="v34-sakura"] .dudu-v34-thumb{background-image:url("../assets/wallpapers/v34/sakura-lane.svg");}
 body.dudu-phone-v11 #cyber-phone .dudu-v34-new-choice[data-dudu-wallpaper-choice="v34-neon"] .dudu-v34-thumb{background-image:url("../assets/wallpapers/v34/neon-city.svg");}
 body.dudu-phone-v11 #cyber-phone .dudu-v34-scroll .dudu-v27-wallpaper-art{width:100%!important;height:92px!important;border-radius:9px!important;}
+body.dudu-phone-v11 #cyber-phone .dudu-v34-scroll .dudu-v29-world-gallery button[data-dudu-wallpaper-choice="world-xianxia"]>span{background-image:url("../assets/wallpapers/v34/sakura-lane.svg")!important;}
+body.dudu-phone-v11 #cyber-phone .dudu-v34-scroll .dudu-v29-world-gallery button[data-dudu-wallpaper-choice="world-modern"]>span{background-image:url("../assets/wallpapers/v34/cozy-room.svg")!important;}
+body.dudu-phone-v11 #cyber-phone .dudu-v34-scroll .dudu-v29-world-gallery button[data-dudu-wallpaper-choice="world-cyberpunk"]>span{background-image:url("../assets/wallpapers/v34/neon-city.svg")!important;}
+body.dudu-phone-v11 #cyber-phone .dudu-v34-scroll .dudu-v29-world-gallery button[data-dudu-wallpaper-choice="world-gothic"]>span{background-image:url("../assets/wallpapers/v34/aurora-night.svg")!important;}
 body.dudu-phone-v11 #cyber-phone .dudu-v34-scroll .dudu-v29-world-gallery button>span{display:block;width:100%;height:92px;background-size:cover;border-radius:9px;}
 body.dudu-phone-v11 #cyber-phone .dudu-v34-scroll .dudu-v28-mode{margin-top:14px;}
 body.dudu-phone-v11 #cyber-phone .dudu-v34-scroll .dudu-v28-active-world{font-size:10px;line-height:1.4;padding:8px;}
