@@ -19,12 +19,12 @@ test('V27 R2 profile keeps all seven source-of-truth stat bindings, without repe
  assert.match(part,/<details class="dudu-v27-details dudu-v27-library">/);
  assert.match(part,/onclick="openAuthModal\(\)"/);
 });
-test('V31 chat keeps safe delete and NPC callbacks while gifting moves into Nhân Vật',()=>{
+test('V32 chat restores gift button but NPC details remain in Nhân Vật',()=>{
  const part=block('id="phone-app-chat"','<!-- APP: CỬA HÀNG -->');
  assert.match(part,/id="chat-v27-more"/);
  assert.match(part,/class="dudu-v27-more-panel"/);
  assert.match(part,/onclick="clearCurrentChat\(\)"/);
- assert.doesNotMatch(part,/onclick="openGiftModalFromChat\(\)"/);
+ assert.match(part,/onclick="openGiftModalFromChat\(\)"/);
  assert.match(html,/onclick="openGiftModalForChar\('\$\{c\.id\}'\)"/);
  assert.match(html,/function npcCheckInFromCodexV31\(storyId,npcId\)/);
  assert.match(html,/confirm\("Xóa lịch sử trò chuyện VÀ các ký ức tương tác/);
