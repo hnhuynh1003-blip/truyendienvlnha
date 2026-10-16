@@ -73,7 +73,7 @@ test('V24 Tri Ky frame requires author approval, a read proof AND server bond pr
  assert.equal(signed.ok,true);
  assert.deepEqual(f.calls.map(x=>x[0]),
    ['completion','approval','chapter','bond']);
- assert.deepEqual(f.calls[3][1],{uid,storyId,npcId});
+ assert.deepEqual(f.calls[3][1],{uid,storyId,npcId,milestoneId});
  const result=await verifyAwardWebhook({
    rawBytes:signed.body,timestamp:signed.timestamp,
    signature:signed.signature,secret:KEY,now:NOW
