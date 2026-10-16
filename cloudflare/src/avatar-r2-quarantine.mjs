@@ -4,6 +4,7 @@
  * R2 binding remains absent and upload feature flag is OFF by default.
  */
 import {inspectImageHeader,privateObjectKey} from './avatar-image-policy.mjs';
+import {privateVariantKey} from './avatar-photo-finalize-v23.mjs';
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 export async function putQuarantinedPhoto({uid,bytes,mime,bucket,store,now,uuid}){
   if(!bucket||!store||!Number.isSafeInteger(now))
@@ -38,6 +39,13 @@ export async function deleteQuarantinedPhoto({uid,assetId,bucket,store}){
   const owned=await store.ownPhotoDraft(assetId);
   if(!owned?.owned)return {ok:false,code:'not-found'};
   try{
+    // Delete the approved PRIVATE derivative as well as the original.
+    // The ledger is deleted only after both physical objects are removed.
+    if(owned.variantFormat){
+      const variantKey=privateVariantKey(uid,assetId,owned.variantFormat);
+      if(!variantKey)return {ok:false,code:'invalid-variant'};
+      await bucket.delete(variantKey);
+    }
     await bucket.delete(key);
     return await store.removePhotoDraft(assetId);
   }catch(_){return {ok:false,code:'delete-unavailable'};}
