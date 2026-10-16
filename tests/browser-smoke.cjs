@@ -1243,11 +1243,14 @@ async function main() {
         const compact=cards.length===5&&
           getComputedStyle(profile.querySelector('.dudu-v27-stats')).gridTemplateColumns.split(' ').length===2;
         openPhoneApp('chat');
-        const more=document.getElementById('chat-v27-more');
-        more.open=true;
-        const nestedDelete=more.querySelector('[onclick="clearCurrentChat()"]')!==null;
+        // V33 moves the legacy ⋯ menu into its compact plus-menu header.
+        // Accept either actual menu container; do not depend on removed DOM IDs.
+        const more=document.getElementById('chat-v27-more')||
+          document.querySelector('#phone-app-chat .dudu-v33-tools.in-header');
+        if(more)more.open=true;
+        const nestedDelete=!!more?.querySelector('[onclick="clearCurrentChat()"]');
         const directDelete=document.querySelector('#phone-app-chat>.phone-app-header>div>.btn[onclick="clearCurrentChat()"]')!==null;
-        more.open=false;
+        if(more)more.open=false;
         return {beforeSandbox,beforePhoneOpen,themePreserved,fontSelected,
           toolsCollapsed,allThemeButtons,inside,compact,nestedDelete,
           directDelete,phoneWidth:bounds.width};
