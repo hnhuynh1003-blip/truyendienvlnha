@@ -112,6 +112,8 @@ function renderPlayerAvatarEditorV16(){
   grid.replaceChildren();
   document.getElementById('player-avatar-v16-upload-panel').style.display=
     draft.kind==='upload'?'block':'none';
+  const remove=document.getElementById('player-avatar-v23-delete-local');
+  if(remove)remove.style.display=draft.kind==='upload'&&draft.uploadId?'inline-flex':'none';
   grid.style.display=['anime','vector'].includes(draft.kind)?'grid':'none';
   const items=draft.kind==='anime'?
     DuduNpcAnimeCandidatesV14.CANDIDATES.map(p=>({id:p.id,name:p.label,kind:'anime'})):
@@ -220,6 +222,46 @@ function savePlayerAvatarV16(){
   const npcId=document.getElementById('chat-character-selector')?.value;
   if(npcId)renderChatMessages(npcId);
   closePlayerAvatarEditorV16();
+}
+async function deletePlayerAvatarLocalV23(){
+  if(!IS_SANDBOX_MODE||!playerAvatarDraftV16||
+     playerAvatarDraftV16.kind!=='upload')return false;
+  const uid=playerAvatarOwnerV16();
+  const id=playerAvatarDraftV16.uploadId;
+  if(!uid||playerAvatarEditOwnerV16!==uid||
+     !/^own-[a-zA-Z0-9-]{1,60}$/.test(id))return false;
+  // Deletion is irreversible on this device; remote copies (if they exist)
+  // are not touched by the Sandbox action.
+  if(!window.confirm('Xóa ảnh avatar này trên thiết bị? Không thể khôi phục ảnh đã xóa.'))return false;
+  const generation=++playerAvatarUploadGenerationV16;
+  const active=()=>playerAvatarEditOwnerV16===uid&&
+    playerAvatarOwnerV16()===uid&&
+    generation===playerAvatarUploadGenerationV16&&
+    document.getElementById('player-avatar-v16-modal')?.style.display==='flex';
+  if(!active())return false;
+  const status=document.getElementById('player-avatar-v16-status');
+  const savedId=userProfile.playerAvatar?.kind==='upload'?
+    userProfile.playerAvatar.uploadId:null;
+  // Save fallback first. A failed IndexedDB delete can only orphan a local
+  // image, not leave an active avatar pointing to missing bytes.
+  if(savedId===id){
+    userProfile.playerAvatar={kind:'initials',presetId:'',uploadId:'',frameId:
+      DuduPlayerAvatarV16.canChooseFrame(userProfile.playerAvatar.frameId)?
+        userProfile.playerAvatar.frameId:'none'};
+    saveCurrentAccount();
+  }
+  playerAvatarDraftV16={kind:'initials',presetId:'',uploadId:'',
+    frameId:playerAvatarDraftV16.frameId};
+  renderPlayerAvatarPlacesV16();
+  renderPlayerAvatarEditorV16();
+  try{
+    await DuduNpcPortraitLibrary.deleteUpload(uid,DuduPlayerAvatarV16.SCOPE,id);
+    if(active())status.textContent='Ảnh đã xóa trên thiết bị này. Avatar mặc định được giữ lại.';
+    return true;
+  }catch(_){
+    if(active())status.textContent='Avatar đã đổi về mặc định, nhưng chưa dọn được ảnh cũ trên thiết bị.';
+    return false;
+  }
 }
 async function uploadPlayerAvatarV16(event){
   if(!IS_SANDBOX_MODE||!playerAvatarDraftV16||!playerAvatarEditOwnerV16)return;
