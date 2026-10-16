@@ -131,3 +131,12 @@ body.dudu-phone-v11 #cyber-phone .dudu-v29-world-gallery>button[aria-pressed="tr
 body.dudu-phone-v11 #cyber-phone .dudu-v29-world-gallery>button:focus-visible{
  outline:2px solid #adf8ff;outline-offset:2px;
 }
+
+/* V29: the default DUDU đêm wallpaper now includes a restrained piece of the
+ * multiverse concept artwork, so new users see imagery before opening Settings.
+ * Existing per-account wallpaper choices are unchanged. */
+body.dudu-phone-v11[data-dudu-phone-wallpaper="midnight"] #cyber-phone {
+ --dudu-r4-wallpaper:
+   linear-gradient(180deg,#17183b6b,#09132eac 83%),
+   url("../assets/wallpapers/worlds/cyberpunk.webp");
+}
