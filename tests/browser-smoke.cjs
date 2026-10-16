@@ -893,8 +893,9 @@ async function main() {
       for(const id of ids){const opt=document.createElement('option');opt.value=id;opt.textContent=id;select.appendChild(opt);}
       const outputs=ids.map(id=>{
         select.value=id;switchChatCharacter();
-        return {id,text:document.getElementById('npc-relationship-r3-preview').textContent,
-          displayed:document.getElementById('npc-relationship-r3-preview').style.display};
+        const panel=document.getElementById('npc-relationship-r3-preview');
+        return {id,text:panel.textContent,displayed:panel.style.display,
+          inCodex:!!panel.closest('#npc-v31-relation-host')};
       });
       select.innerHTML=previousOptions;select.value=previousValue;
       novel.characters=previousCharacters;
@@ -905,7 +906,9 @@ async function main() {
     assert.match(npcSwitches.outputs[0].text,/Thiện cảm: 39\/100[\s\S]*Tin tưởng: 0\/100/);
     assert.match(npcSwitches.outputs[1].text,/Thiện cảm: 65\/100[\s\S]*Tin tưởng: 25\/100/);
     assert.match(npcSwitches.outputs[2].text,/Thiện cảm: 90\/100[\s\S]*Tin tưởng: 60\/100/);
-    assert.ok(npcSwitches.outputs.every(x=>x.displayed==='block'));
+    assert.ok(npcSwitches.outputs.every(x=>
+      x.displayed===(x.inCodex?'none':'block')),
+      'NPC stats live inside character cards; no stale global progress above another NPC');
     assert.equal(npcSwitches.writes,0,'Switching NPC does not write Firestore');
     // Check compact panel fits narrow mobile view without document-level overflow.
     await page.setViewportSize({width:375,height:812});
