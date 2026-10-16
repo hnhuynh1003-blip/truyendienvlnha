@@ -3443,7 +3443,9 @@
       }
       for(const item of response.items){
         const row=document.createElement('div');
-        row.style.cssText='display:flex;gap:7px;align-items:start;border-bottom:1px solid var(--border);padding:8px 3px;';
+        row.className='dudu-v27-museum-entry';
+        if(!IS_SANDBOX_MODE)
+          row.style.cssText='display:flex;gap:7px;align-items:start;border-bottom:1px solid var(--border);padding:8px 3px;';
         const icon=document.createElement('span');icon.style.fontSize='20px';
         icon.textContent=typeof item.icon==='string'?item.icon:'🎁';
         const info=document.createElement('div');
@@ -3966,6 +3968,9 @@
     }
 
     function refreshDailyQuests() {
+      const menu=document.querySelector('#phone-app-quests .dudu-v27-quest-menu');
+      if(menu)menu.open=false;
+      if(IS_SANDBOX_MODE&&!confirm('Đặt lại toàn bộ tiến trình nhiệm vụ ngày? Thao tác này không thể hoàn tác.'))return;
       userProfile.quests.forEach(q => {
         if (q.type === 'DAILY') {
           q.current = 0;
