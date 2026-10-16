@@ -20,6 +20,7 @@
   <link rel="stylesheet" href="css/phone-ux-v27-r3.css">
   <link rel="stylesheet" href="css/phone-wallpaper-v27-r4.css">
   <link rel="stylesheet" href="css/dudu-multiverse-art-v28-r5.css">
+  <link rel="stylesheet" href="css/phone-floating-v30.css?v=1">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -837,43 +838,36 @@
 
         <button type="button" id="player-avatar-home-v16" class="dudu-avatar-home-v16" style="display:none" onclick="openPhoneApp('profile')" aria-label="Xem hồ sơ và khung avatar">
           <span id="phone-player-avatar-v16" class="dudu-player-avatar-v16" aria-hidden="true"></span>
-          <span><strong id="phone-player-name-v16"></strong><small>✦ Hồ sơ · Avatar & khung nhân vật</small></span>
+          <span><strong id="phone-player-name-v16"></strong><small id="dudu-v30-account-meta">Lv.1 · 50 Xu</small></span>
         </button>
-        <div class="phone-app-grid">
-          <button type="button" class="app-icon" onclick="openPhoneApp('profile')" aria-label="Mở Cá Nhân">
-            <div class="app-box" style="background: #3b82f6;">👤</div>
-            <div class="app-label">Cá Nhân</div>
-          </button>
+        <div class="phone-app-grid" aria-label="Ứng dụng thường dùng">
           <button type="button" class="app-icon" onclick="openPhoneApp('inventory')" aria-label="Mở Kho Đồ">
-            <div class="app-box" style="background: #8b5cf6;">🎒</div>
-            <div class="app-label">Kho Đồ</div>
+            <div class="app-box" style="background:#8b5cf6;">🎒</div><div class="app-label">Kho Đồ</div>
           </button>
           <button type="button" class="app-icon" onclick="openPhoneApp('quests')" aria-label="Mở Nhiệm Vụ">
-            <div class="app-box" style="background: #f59e0b;">📜</div>
-            <div class="app-label">Nhiệm Vụ</div>
-          </button>
-          <button type="button" class="app-icon" onclick="openPhoneApp('stories')" aria-label="Mở danh sách truyện">
-            <div class="app-box" style="background: #a855f7;">📚</div>
-            <div class="app-label">Truyện</div>
-          </button>
-          <button type="button" class="app-icon" onclick="openPhoneApp('chat')" aria-label="Mở Liên Lạc">
-            <div class="app-box" style="background: #06b6d4;">💬</div>
-            <div class="app-label">Liên Lạc</div>
+            <div class="app-box" style="background:#f59e0b;">📜</div><div class="app-label">Nhiệm Vụ</div>
           </button>
           <button type="button" class="app-icon" onclick="openPhoneApp('shop')" aria-label="Mở Cửa Hàng">
-            <div class="app-box" style="background: #10b981;">🛒</div>
-            <div class="app-label">Cửa Hàng</div>
+            <div class="app-box" style="background:#10b981;">🛒</div><div class="app-label">Cửa Hàng</div>
           </button>
           <button type="button" class="app-icon" onclick="openPhoneApp('museum')" aria-label="Mở Bảo Tàng">
-            <div class="app-box" style="background: #b45309;">🏛️</div>
-            <div class="app-label">Bảo Tàng</div>
-          </button>
-          <button type="button" class="app-icon" onclick="openPhoneApp('settings')" aria-label="Mở Cài Đặt">
-            <div class="app-box" style="background: #64748b;">⚙️</div>
-            <div class="app-label">Cài Đặt</div>
+            <div class="app-box" style="background:#b45309;">🏛️</div><div class="app-label">Bảo Tàng</div>
           </button>
         </div>
-
+        <nav class="dudu-v30-dock" aria-label="Ứng dụng chính">
+          <button type="button" class="app-icon" onclick="openPhoneApp('stories')" aria-label="Mở Truyện">
+            <div class="app-box" style="background:#a855f7;">📚</div><div class="app-label">Truyện</div>
+          </button>
+          <button type="button" class="app-icon" onclick="openPhoneApp('codex')" aria-label="Mở Nhân Vật">
+            <div class="app-box" style="background:#ec4899;">🎴</div><div class="app-label">Nhân Vật</div>
+          </button>
+          <button type="button" class="app-icon" onclick="openPhoneApp('chat')" aria-label="Mở Liên Lạc">
+            <div class="app-box" style="background:#06b6d4;">💬</div><div class="app-label">Liên Lạc</div>
+          </button>
+          <button type="button" class="app-icon" onclick="openPhoneApp('settings')" aria-label="Mở Cài Đặt">
+            <div class="app-box" style="background:#64748b;">⚙️</div><div class="app-label">Cài Đặt</div>
+          </button>
+        </nav>
         <div class="phone-home-caption">✦ DUDU LINK · NHÂN DUYÊN · TAM GIỚI ✦</div>
       </div>
 
@@ -1008,7 +1002,6 @@
             <details id="chat-v27-more" class="dudu-v27-more">
               <summary aria-label="Tùy chọn liên lạc" title="Tùy chọn">⋯</summary>
               <div class="dudu-v27-more-panel">
-                <button type="button" class="btn" onclick="openPhoneApp('codex')">Danh bạ NPC</button>
                 <button type="button" class="btn btn-danger" onclick="clearCurrentChat()">Xóa cuộc trò chuyện</button>
               </div>
             </details>
@@ -4025,6 +4018,9 @@
 
       const coinEl = document.getElementById('phone-currency-display');
       if (coinEl) coinEl.textContent = `🪙 ${userProfile.currency} Xu`;
+      const miniMeta=document.getElementById('dudu-v30-account-meta');
+      if(miniMeta)miniMeta.textContent='Lv.'+userProfile.level+' · 🪙 '+
+        userProfile.currency.toLocaleString('vi-VN')+' Xu';
 
       const shopCoinEl = document.getElementById('shop-currency-val');
       if (shopCoinEl) shopCoinEl.textContent = userProfile.currency;

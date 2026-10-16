@@ -1611,7 +1611,7 @@ async function main() {
       const buttons=[...grid.querySelectorAll('button.dudu-v29-read-button')];
       const validButtons=buttons.every(b=>b.type==='button'&&b.getAttribute('aria-label')?.startsWith('Mở truyện'));
       const noDuplicateHome=[...document.querySelectorAll('#phone-home-screen .app-icon')].every(b=>
-        b.getAttribute('onclick')!=="openPhoneApp('codex')");
+        b.getAttribute('onclick')!=="openPhoneApp('profile')");
       const directStory=document.querySelector('#phone-home-screen .app-icon[onclick="openPhoneApp(\'stories\')"]');
       phoneHome();
       return {cards:grid.children.length,expected:novels.length,validButtons,
@@ -2036,6 +2036,68 @@ async function main() {
       'Deleting avatar must not touch other local user namespace');
     assert.equal(deletedV23.restored,true);
     assert.equal(deletedV23.firestoreWrites,0);
+
+    // V30 A+B: real phone-space constraints, dock wiring and visible wallpaper.
+    for(const width of [320,375,390]){
+      await page.setViewportSize({width,height:640});
+      const v30=await page.evaluate(()=>{
+        if(document.getElementById('cyber-phone').style.display!=='flex')togglePhone();
+        phoneHome();
+        const app=document.getElementById('phone-home-screen');
+        const screen=document.querySelector('#cyber-phone .phone-screen');
+        const dock=document.querySelector('#cyber-phone .dudu-v30-dock');
+        const buttons=[...app.querySelectorAll('.app-icon')];
+        const visibleAppIds=buttons.map(x=>x.getAttribute('onclick'));
+        const avatar=document.getElementById('player-avatar-home-v16');
+        const mini=document.getElementById('dudu-v30-account-meta');
+        const owner=phoneWallpaperOwnerV27();
+        const key=DuduPhoneWallpaperV27.keyFor(owner);
+        const keyMode=DuduMultiverseArtV28.keyFor(owner);
+        const old=localStorage.getItem(key),oldMode=localStorage.getItem(keyMode);
+        try{
+          setPhoneWallpaperV27('world-xianxia');
+          const first=getComputedStyle(screen).backgroundImage;
+          const firstWall=getComputedStyle(app).backgroundImage;
+          setPhoneWallpaperV27('world-gothic');
+          const second=getComputedStyle(screen).backgroundImage;
+          const r=app.getBoundingClientRect(),d=dock.getBoundingClientRect();
+          return {
+            apps:buttons.length,visibleAppIds,
+            dockCount:dock.querySelectorAll('.app-icon').length,
+            profileHeight:avatar.getBoundingClientRect().height,
+            profileVisible:getComputedStyle(avatar).display!=='none',
+            miniText:mini.textContent,
+            oldDashboard:getComputedStyle(app.querySelector('.phone-widgets')).clipPath,
+            backgroundFirst:first.includes('xianxia.webp'),
+            backgroundSecond:second.includes('gothic.webp'),
+            changed:first!==second,
+            homeClear:firstWall==='none',
+            dockWithinHome:d.bottom<=r.bottom+3,
+            horizontalOverflow:app.scrollWidth>app.clientWidth+2,
+            mediaWidth:window.innerWidth
+          };
+        }finally{
+          if(old===null)localStorage.removeItem(key);else localStorage.setItem(key,old);
+          if(oldMode===null)localStorage.removeItem(keyMode);else localStorage.setItem(keyMode,oldMode);
+          renderPhoneWallpaperV27();
+        }
+      });
+      assert.equal(v30.apps,8,'Home includes all 8 app shortcuts');
+      assert.equal(v30.dockCount,4,'Dock has only four primary apps');
+      assert.equal(v30.visibleAppIds.some(s=>s.includes("openPhoneApp('profile')")),false);
+      assert.equal(v30.visibleAppIds.some(s=>s.includes("openPhoneApp('codex')")),true);
+      assert.equal(v30.profileVisible,true);
+      assert.ok(v30.profileHeight<80,'Avatar pill must be compact');
+      assert.match(v30.miniText,/Lv\.\d+.*Xu/);
+      assert.equal(v30.oldDashboard,'inset(50%)');
+      assert.equal(v30.backgroundFirst,true,'xianxia art visible as screen background');
+      assert.equal(v30.backgroundSecond,true,'gothic art visible as screen background');
+      assert.equal(v30.changed,true,'Wallpaper choice visibly changes screen');
+      assert.equal(v30.homeClear,true,'Home must not paint a second opaque layer');
+      assert.equal(v30.dockWithinHome,true,'Dock fits inside Cyber Phone');
+      assert.equal(v30.horizontalOverflow,false,'No home horizontal overflow');
+    }
+    await page.setViewportSize({width:1280,height:720});
 
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
     console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));

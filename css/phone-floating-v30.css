@@ -1,0 +1,142 @@
+/* DUDU V30 — A+B Floating Phone, Sandbox-only.
+ * Wallpaper fills the entire screen. Apps and dock are translucent overlays.
+ * Existing story, inventory, NPC, reward and account handlers stay intact.
+ */
+body.dudu-phone-v11 #cyber-phone {
+ --dudu-v30-art:url("../assets/wallpapers/worlds/cyberpunk.webp");
+ --dudu-v30-dim:rgba(7,12,26,.20);
+}
+body.dudu-phone-v11[data-dudu-phone-wallpaper="midnight"] #cyber-phone {--dudu-v30-art:url("../assets/wallpapers/worlds/cyberpunk.webp");}
+body.dudu-phone-v11[data-dudu-phone-wallpaper="sakura"] #cyber-phone {--dudu-v30-art:radial-gradient(circle at 65% 21%,#ffd8ec90,transparent 37%),linear-gradient(160deg,#503959,#49345d,#222e59);}
+body.dudu-phone-v11[data-dudu-phone-wallpaper="astral"] #cyber-phone {--dudu-v30-art:radial-gradient(circle at 68% 20%,#afdaffad,transparent 22%),linear-gradient(160deg,#1c3b76,#332b72,#19224d);}
+body.dudu-phone-v11[data-dudu-phone-wallpaper="jade"] #cyber-phone {--dudu-v30-art:radial-gradient(circle at 70% 16%,#8fedc688,transparent 31%),linear-gradient(160deg,#244f4d,#194452,#182744);}
+body.dudu-phone-v11[data-dudu-phone-wallpaper="world-xianxia"] #cyber-phone {--dudu-v30-art:url("../assets/wallpapers/worlds/xianxia.webp");}
+body.dudu-phone-v11[data-dudu-phone-wallpaper="world-modern"] #cyber-phone {--dudu-v30-art:url("../assets/wallpapers/worlds/modern.webp");}
+body.dudu-phone-v11[data-dudu-phone-wallpaper="world-cyberpunk"] #cyber-phone {--dudu-v30-art:url("../assets/wallpapers/worlds/cyberpunk.webp");}
+body.dudu-phone-v11[data-dudu-phone-wallpaper="world-gothic"] #cyber-phone {--dudu-v30-art:url("../assets/wallpapers/worlds/gothic.webp");}
+body.dudu-phone-v11[data-dudu-phone-wallpaper] #cyber-phone .phone-screen {
+ /* Correct V28 root cause: opaque gradient previously painted ON TOP of image. */
+ background-image:linear-gradient(180deg,#03091a08 2%,#07102712 48%,#060f268f 100%),var(--dudu-v30-art) !important;
+ background-position:center,center !important;background-size:cover !important;
+ background-repeat:no-repeat !important;
+ overflow:hidden;
+}
+body.dudu-phone-v11[data-dudu-phone-wallpaper] #cyber-phone #phone-home-screen {
+ display:flex;flex-direction:column;min-height:0;height:100%;
+ padding:10px 11px 8px !important;gap:0 !important;
+ overflow-y:auto;overflow-x:hidden;
+ background:transparent !important;
+ background-image:none !important;
+}
+body.dudu-phone-v11 #cyber-phone .phone-status-bar {
+ background:#11182a12;border-bottom:0;min-height:32px;padding:4px 12px;
+ color:white;text-shadow:0 1px 4px #101730;
+}
+body.dudu-phone-v11 #cyber-phone .phone-speaker {height:4px;margin:8px auto 3px;}
+body.dudu-phone-v11 #cyber-phone .phone-system-label {color:#e5efff;}
+body.dudu-phone-v11 #cyber-phone .phone-close-btn{
+ background:#121c34a3;border:1px solid #ffffff42;
+}
+body.dudu-phone-v11 #cyber-phone .phone-widgets {
+ /* Keep existing exp/coin elements and update hooks, hide redundant dashboard. */
+ position:absolute !important;width:1px !important;height:1px !important;
+ padding:0 !important;margin:0 !important;overflow:hidden !important;
+ clip-path:inset(50%);border:0 !important;pointer-events:none;
+}
+body.dudu-phone-v11 #cyber-phone #player-avatar-home-v16.dudu-avatar-home-v16{
+ flex:none;display:flex;gap:9px;align-items:center;
+ width:max-content;max-width:100%;min-height:53px;
+ padding:6px 12px 6px 7px;margin:3px 0 0;
+ border-radius:999px;border:1px solid #fff7;
+ background:#11183180;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+ box-shadow:0 4px 15px #03071845;
+ text-shadow:0 1px 4px #050b1e;
+}
+body.dudu-phone-v11 #cyber-phone #phone-player-avatar-v16{
+ width:37px;height:37px;font-size:13px;flex:none;border-radius:50%;
+}
+body.dudu-phone-v11 #cyber-phone #phone-player-name-v16{
+ font-size:11px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+ max-width:165px;
+}
+body.dudu-phone-v11 #cyber-phone #dudu-v30-account-meta{
+ color:#e9d9ad;font-size:10px;font-weight:650;margin-top:2px;
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+body.dudu-phone-v11 #cyber-phone #phone-home-screen>.phone-app-grid{
+ margin-top:auto !important;margin-bottom:9px;
+ display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+ gap:5px;align-items:start;flex:none;
+}
+body.dudu-phone-v11 #cyber-phone #phone-home-screen .app-icon{
+ appearance:none;background:transparent !important;border:0 !important;
+ box-shadow:none !important;transform:none;
+ min-height:76px;padding:4px 1px 2px;width:100%;
+ display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+ gap:5px;cursor:pointer;text-align:center;
+}
+body.dudu-phone-v11 #cyber-phone #phone-home-screen .app-icon:hover,
+body.dudu-phone-v11 #cyber-phone #phone-home-screen .app-icon:focus-visible{
+ background:#ffffff14 !important;border-radius:14px;
+}
+body.dudu-phone-v11 #cyber-phone #phone-home-screen .app-box{
+ width:47px;height:47px;display:grid;place-items:center;
+ border:1px solid #f1efff5e;border-radius:15px;
+ background:#1c2b4a80 !important;
+ backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+ box-shadow:inset 0 1px 0 #ffffff59,0 4px 13px #030c1d51;
+ font-size:23px;color:#fff;
+}
+body.dudu-phone-v11 #cyber-phone #phone-home-screen .app-label{
+ font-size:10px;line-height:1.2;font-weight:670;
+ color:#fff;text-shadow:0 1px 4px #010818,0 2px 8px #010818;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v30-dock{
+ flex:none;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+ gap:2px;padding:9px 5px 3px;
+ border:1px solid #e7e8ff47;border-radius:21px;
+ background:#151f3999;
+ backdrop-filter:blur(19px);-webkit-backdrop-filter:blur(19px);
+ box-shadow:inset 0 1px #ffffff30,0 4px 20px #03081742;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v30-dock .app-icon{
+ min-height:68px !important;padding:2px 1px !important;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v30-dock .app-box{
+ width:43px !important;height:43px !important;
+ font-size:21px !important;border-radius:14px !important;
+}
+body.dudu-phone-v11 #cyber-phone .phone-home-caption{display:none !important;}
+body.dudu-phone-v11 #cyber-phone .phone-sub-app {
+ /* Apps take over phone screen, not overlay each other; contents scroll inside. */
+ background:linear-gradient(170deg,#10172cf3,#182039f7);
+ overflow-y:auto;min-height:0;flex:1;
+}
+body.dudu-phone-v11 #cyber-phone .phone-home-bar {
+ height:4px;width:72px;box-shadow:none;background:#dce5f4bd;
+ margin:6px auto 8px;
+}
+/* Keep the phone close button below the sticky Sandbox notice on narrow
+ * screens; otherwise the notice intercepts taps at the top edge. */
+@media(max-width:480px){
+ body.dudu-phone-v11 #cyber-phone{
+   height:calc(100dvh - 56px - env(safe-area-inset-bottom,0px));
+   bottom:calc(10px + env(safe-area-inset-bottom,0px));
+ }
+}
+@media(max-width:360px){
+ body.dudu-phone-v11 #cyber-phone #phone-home-screen{padding:8px 7px 6px !important;}
+ body.dudu-phone-v11 #cyber-phone #phone-home-screen .app-box{width:42px;height:42px;font-size:20px;}
+ body.dudu-phone-v11 #cyber-phone .dudu-v30-dock{padding:7px 2px 2px;}
+ body.dudu-phone-v11 #cyber-phone .dudu-v30-dock .app-box{width:40px !important;height:40px !important;}
+ body.dudu-phone-v11 #cyber-phone #player-avatar-home-v16.dudu-avatar-home-v16{padding:5px 9px 5px 5px;}
+}
+@media(max-height:550px){
+ body.dudu-phone-v11 #cyber-phone #phone-home-screen .app-icon{min-height:65px;}
+ body.dudu-phone-v11 #cyber-phone #phone-home-screen .app-box{width:39px;height:39px;font-size:19px;}
+ body.dudu-phone-v11 #cyber-phone .dudu-v30-dock{padding:5px 2px 1px;}
+ body.dudu-phone-v11 #cyber-phone #player-avatar-home-v16.dudu-avatar-home-v16{min-height:42px;}
+}
+@media(prefers-reduced-motion:reduce){
+ body.dudu-phone-v11 #cyber-phone #phone-home-screen .app-icon{transition:none;}
+}

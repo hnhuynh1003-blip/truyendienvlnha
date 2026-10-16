@@ -7,12 +7,12 @@ const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const art=require('../js/dudu-multiverse-art-v28-r5.js');
 const wallpaper=require('../js/phone-wallpaper-v27-r4.js');
 
-test('V29 home links to actual stories, Codex remains accessible under Liên Lạc',()=>{
- assert.match(html,/class="app-icon" onclick="openPhoneApp\('stories'\)" aria-label="Mở danh sách truyện"/);
- assert.doesNotMatch(html,/class="app-icon" onclick="openPhoneApp\('codex'\)"/);
+test('V29 story navigator survives V30 dedicated NPC app and dock',()=>{
+ assert.match(html,/class="app-icon" onclick="openPhoneApp\('stories'\)" aria-label="Mở Truyện"/);
+ assert.match(html,/class="app-icon" onclick="openPhoneApp\('codex'\)" aria-label="Mở Nhân Vật"/);
  assert.match(html,/id="phone-app-stories"/);
  assert.match(html,/id="dudu-v29-story-grid"/);
- assert.match(html,/onclick="openPhoneApp\('codex'\)">Danh bạ NPC/);
+ assert.doesNotMatch(html,/onclick="openPhoneApp\('codex'\)">Danh bạ NPC/);
  assert.match(html,/function renderPhoneStoryListV29\(\)/);
  assert.match(html,/function openPhoneStoryV29\(storyId\)/);
  assert.match(html,/openCover\(index\)/);
