@@ -205,6 +205,7 @@ async function main() {
     });
     const typoCard=page.locator('.character-card').filter({hasText:'NPC GÕ NHẦM'});
     assert.equal(await typoCard.count(),1);
+    await typoCard.locator('.dudu-v27-npc-admin > summary').click();
     page.once('dialog',dialog=>dialog.accept());
     await typoCard.getByRole('button',{name:'Lưu trữ'}).click();
     const archivedNpc=await page.evaluate(()=>{
@@ -223,6 +224,7 @@ async function main() {
     assert.equal(await typoCard.count(),0,'Archived NPC disappears from normal Codex');
     await page.getByRole('button',{name:/Xem NPC lưu trữ/}).click();
     const archivedCard=page.locator('.character-card').filter({hasText:'NPC GÕ NHẦM'});
+    await archivedCard.locator('.dudu-v27-npc-admin > summary').click();
     await archivedCard.getByRole('button',{name:'Khôi phục'}).click();
     const restored=await page.evaluate(()=>novels[selectedNovelIndex].characters
       .find(c=>c.id==='temp-npc-typo')?.archived);
@@ -1249,6 +1251,66 @@ async function main() {
         label:DuduStoryDates.display(getNovelLatestDate(story))};
     });
     assert.deepEqual(storyDatesBrowser,{day:'2026-10-15',label:'15/10/2026'});
+
+    // V27 R2 — 360px phone settings, compact profile and non-destructive
+    // overflow navigation; no author/story writes or account save mutation.
+    await page.setViewportSize({width:360,height:760});
+    const phoneR2=await page.evaluate(()=>{
+      const phone=document.getElementById('cyber-phone');
+      const wasOpen=phone.style.display==='flex';
+      if(!wasOpen)togglePhone();
+      try{
+        openPhoneApp('settings');
+        const beforeSandbox=document.body.classList.contains('dudu-phone-v11');
+        const beforePhoneOpen=document.body.classList.contains('dudu-phone-open');
+        const oldFont=document.documentElement.style.getPropertyValue('--read-size');
+        const oldTheme=document.body.classList.contains('theme-warm')?'warm':
+          document.body.classList.contains('theme-oled')?'oled':'default';
+        setTheme('warm');
+        const themePreserved=document.body.classList.contains('dudu-phone-v11')&&
+          document.body.classList.contains('dudu-phone-open')&&
+          document.querySelector('[data-dudu-theme="warm"]')?.getAttribute('aria-pressed')==='true';
+        setReadingFontSize(21);
+        const fontSelected=document.querySelector('[data-dudu-font-size="21"]')?.getAttribute('aria-pressed')==='true';
+        const toolsCollapsed=!document.getElementById('dudu-v27-tools').open;
+        const allThemeButtons=document.querySelectorAll('#phone-app-settings [data-dudu-theme]').length;
+        setTheme(oldTheme);
+        document.documentElement.style.setProperty('--read-size',oldFont);
+        syncPhoneDisplayOptionsV27();
+        openPhoneApp('profile');
+        const profile=document.getElementById('phone-app-profile');
+        const cards=[...profile.querySelectorAll('.dudu-v27-stat')];
+        const bounds=phone.getBoundingClientRect();
+        const inside=cards.every(x=>{
+          const r=x.getBoundingClientRect();
+          return r.left>=bounds.left-1&&r.right<=bounds.right+1;
+        });
+        const compact=cards.length===5&&
+          getComputedStyle(profile.querySelector('.dudu-v27-stats')).gridTemplateColumns.split(' ').length===2;
+        openPhoneApp('chat');
+        const more=document.getElementById('chat-v27-more');
+        more.open=true;
+        const nestedDelete=more.querySelector('[onclick="clearCurrentChat()"]')!==null;
+        const directDelete=document.querySelector('#phone-app-chat>.phone-app-header>div>.btn[onclick="clearCurrentChat()"]')!==null;
+        more.open=false;
+        return {beforeSandbox,beforePhoneOpen,themePreserved,fontSelected,
+          toolsCollapsed,allThemeButtons,inside,compact,nestedDelete,
+          directDelete,phoneWidth:bounds.width};
+      }finally{
+        if(!wasOpen&&phone.style.display==='flex')togglePhone();
+      }
+    });
+    assert.equal(phoneR2.beforeSandbox,true);
+    assert.equal(phoneR2.beforePhoneOpen,true);
+    assert.equal(phoneR2.themePreserved,true);
+    assert.equal(phoneR2.fontSelected,true);
+    assert.equal(phoneR2.toolsCollapsed,true);
+    assert.equal(phoneR2.allThemeButtons,3);
+    assert.equal(phoneR2.inside,true);
+    assert.equal(phoneR2.compact,true);
+    assert.equal(phoneR2.nestedDelete,true);
+    assert.equal(phoneR2.directDelete,false);
+    assert.ok(phoneR2.phoneWidth<=360);
 
     // V11 Cyber Phone: accessible shortcut navigation, responsive layout and
     // functional button feedback. Fake Firebase; absolutely no live writes.

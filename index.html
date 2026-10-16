@@ -8,6 +8,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="css/phone-ui-v11.css">
   <link rel="stylesheet" href="css/phone-ui-v12-dossiers.css">
+  <link rel="stylesheet" href="css/phone-ux-v27-r2.css">
   <link rel="stylesheet" href="css/npc-anime-v14.css">
   <link rel="stylesheet" href="css/npc-portrait-viewer-v15.css">
   <link rel="stylesheet" href="css/player-avatar-v16.css">
@@ -875,27 +876,30 @@
           <span>Hồ Sơ Danh Tính</span>
           <span></span>
         </div>
-        <div style="text-align: center; margin-bottom: 10px;">
+        <div class="dudu-v27-profile-hero">
           <button type="button" id="player-avatar-v1" class="dudu-player-avatar-v16" aria-label="Thay ảnh và khung nhân vật" onclick="openPlayerAvatarEditorV16()" style="display:none">DU</button>
-          <div id="player-avatar-legacy" style="font-size: 32px;">🧙‍♂️</div>
-          <div style="font-weight: bold; color: var(--neon); font-size: 14px;" id="profile-name">Kẻ Lang Bạt</div>
-          <div style="font-size: 10px; color: #64748b;" id="profile-title">Người Thao Túng Mã Nguồn</div>
-          <div style="font-size: 9px; color: var(--gold); margin-top: 2px;" id="profile-account-id">ID: Khách</div>
+          <div id="player-avatar-legacy" style="font-size:32px">🧙‍♂️</div>
+          <div id="profile-name" class="dudu-v27-profile-name">Kẻ Lang Bạt</div>
+          <div id="profile-title" class="dudu-v27-profile-title">Người Thao Túng Mã Nguồn</div>
+          <div id="profile-account-id" class="dudu-v27-profile-id">ID: Khách</div>
         </div>
-        <div style="background: #1e293b; padding: 8px; border-radius: 8px; font-size: 11px; margin-bottom: 8px;">
-          <div style="color:var(--gold);font-weight:bold;margin-bottom:3px;">📚 THƯ VIỆN DUDU (DÙNG CHUNG)</div>
-          <div>Số truyện công khai: <b id="stat-novels" style="color:var(--neon)">0</b></div>
-          <div>Tổng chương trong thư viện: <b id="stat-chapters" style="color:var(--neon)">0</b></div>
+        <div class="dudu-v27-section-heading">✦ Tiến trình của tôi</div>
+        <div class="dudu-v27-stats" role="group" aria-label="Tiến trình tài khoản">
+          <div class="dudu-v27-stat"><span>Truyện đã đọc</span><b id="stat-personal-reading">0</b></div>
+          <div class="dudu-v27-stat"><span>Nhân vật</span><b id="stat-personal-npcs">0</b></div>
+          <div class="dudu-v27-stat"><span>Kho đồ</span><b><span id="stat-personal-items">0</span> món</b></div>
+          <div class="dudu-v27-stat"><span>Cấp độ</span><b id="stat-personal-level">1</b></div>
+          <div class="dudu-v27-stat"><span>Xu</span><b id="stat-personal-coins">0</b></div>
         </div>
-        <div style="background: #1e293b; padding: 8px; border-radius: 8px; font-size: 11px; margin-bottom: 8px;">
-          <div style="color:var(--gold);font-weight:bold;margin-bottom:3px;">👤 TIẾN TRÌNH RIÊNG CỦA TÔI</div>
-          <div>Truyện đã mở đọc: <b id="stat-personal-reading" style="color:var(--neon)">0</b></div>
-          <div>NPC đã mở khóa: <b id="stat-personal-npcs" style="color:var(--neon)">0</b></div>
-          <div>Kho đồ: <b id="stat-personal-items" style="color:var(--neon)">0</b> vật phẩm</div>
-          <div>Cấp độ: <b id="stat-personal-level" style="color:var(--neon)">1</b> · Xu: <b id="stat-personal-coins" style="color:var(--neon)">0</b></div>
-          <div id="profile-guest-tip" style="color:#94a3b8;font-size:10px;margin-top:4px;display:none;">Đang xem với tư cách khách; đăng nhập để đồng bộ tiến trình.</div>
-        </div>
-        <button class="btn" style="width: 100%; font-size: 10px;" onclick="openAuthModal()">Đổi Tài Khoản / Đăng Xuất</button>
+        <div id="profile-guest-tip" class="dudu-v27-profile-tip" style="display:none;">Đang xem với tư cách khách; đăng nhập để đồng bộ tiến trình.</div>
+        <details class="dudu-v27-details dudu-v27-library">
+          <summary>📚 Thống kê thư viện <span class="dudu-v27-more-hint">Dùng chung</span></summary>
+          <div class="dudu-v27-library-grid">
+            <span>Truyện công khai <b id="stat-novels">0</b></span>
+            <span>Tổng chương <b id="stat-chapters">0</b></span>
+          </div>
+        </details>
+        <button type="button" class="btn dudu-v27-account-btn" onclick="openAuthModal()">Tài khoản &amp; đăng xuất</button>
       </div>
 
       <!-- APP: KHO ĐỒ -->
@@ -973,13 +977,18 @@
             <button class="phone-back-btn" onclick="phoneHome()">‹</button>
             <span>Tần Số Linh Hồn</span>
           </div>
-          <div style="display: flex; gap: 4px;">
-            <button class="btn btn-gold" style="padding: 2px 6px; font-size: 9px;" onclick="openGiftModalFromChat()">🎁 Tặng Quà</button>
-            <button class="btn" style="padding: 2px 6px; font-size: 9px;" onclick="clearCurrentChat()">Xóa</button>
+          <div class="dudu-v27-chat-actions">
+            <button type="button" class="btn btn-gold" onclick="openGiftModalFromChat()">🎁 Tặng quà</button>
+            <details id="chat-v27-more" class="dudu-v27-more">
+              <summary aria-label="Tùy chọn liên lạc" title="Tùy chọn">⋯</summary>
+              <div class="dudu-v27-more-panel">
+                <button type="button" class="btn btn-danger" onclick="clearCurrentChat()">Xóa cuộc trò chuyện</button>
+              </div>
+            </details>
           </div>
         </div>
 
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+        <div class="dudu-v27-chat-persona">
           <button type="button" id="npc-portrait-v1" class="dudu-npc-v27-chat-portrait"
             onclick="openChatNpcPortraitViewer()" aria-label="Xem chân dung NPC"
             aria-haspopup="dialog"
@@ -988,11 +997,17 @@
           <span style="font-size:10px; color:var(--gold); white-space:nowrap;" id="chat-char-affinity">❤️ 10%</span>
         </div>
 
-        <div id="npc-relationship-r3-preview" role="status" aria-live="polite" style="display:none; font-size:10px; line-height:1.4; padding:5px 7px; margin-bottom:6px; border:1px solid #334155; border-radius:6px; color:#cbd5e1; background:#17212f;"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-          <span id="npc-relationship-r4-values" style="flex:1;min-width:150px;"></span>
-          <button type="button" id="npc-daily-checkin-btn" onclick="npcDailyCheckin()" title="Hỏi thăm một lần mỗi ngày trong Sandbox" style="border:1px solid #3c6c66;background:#164e47;color:#bbf7d0;border-radius:6px;padding:3px 6px;font-size:10px;">🤝 Hỏi thăm</button>
-        </div><button type="button" id="npc-relationship-r4-help" aria-label="Giải thích quan hệ NPC" title="Giải thích quan hệ NPC" onclick="showNpcRelationshipHelp()" style="float:right; background:transparent; color:#fbbf24; border:1px solid #475569; border-radius:50%; font-size:10px; width:18px; height:18px; cursor:pointer;">?</button></div>
-        <div id="npc-daily-choice-card" style="display:none;padding:7px;margin:0 0 6px;border:1px solid #29565c;border-radius:8px;background:#0d2835;">
+        <div id="npc-relationship-r3-preview" class="dudu-v27-relation" role="group" aria-label="Quan hệ nhân vật" style="display:none;">
+          <div class="dudu-v27-relation-bar">
+            <details id="npc-v27-relation-details" class="dudu-v27-relation-details">
+              <summary id="npc-v27-relation-summary">🛡 Tin tưởng · Quen biết</summary>
+              <div id="npc-relationship-r4-values" class="dudu-v27-relation-values"></div>
+            </details>
+            <button type="button" id="npc-daily-checkin-btn" onclick="npcDailyCheckin()" title="Hỏi thăm một lần mỗi ngày trong Sandbox">🤝 Hỏi thăm</button>
+            <button type="button" id="npc-relationship-r4-help" aria-label="Giải thích quan hệ NPC" title="Giải thích quan hệ NPC" onclick="showNpcRelationshipHelp()">?</button>
+          </div>
+        </div>
+                <div id="npc-daily-choice-card" style="display:none;padding:7px;margin:0 0 6px;border:1px solid #29565c;border-radius:8px;background:#0d2835;">
           <div id="npc-daily-choice-prompt" style="font-size:10px;color:#dbeafe;margin-bottom:5px;"></div>
           <div style="display:flex;flex-wrap:wrap;gap:5px;">
             <button type="button" id="npc-daily-choice-thoughtful" onclick="npcSubmitDailyChoice('thoughtful')" style="flex:1;min-width:120px;border:1px solid #14b8a6;border-radius:6px;background:#134e4a;color:#ccfbf1;padding:5px;font-size:10px;"></button>
@@ -1022,40 +1037,40 @@
         <div id="shop-items-container"></div>
       </div>
 
-      <!-- APP: CÀI ĐẶT -->
+      <!-- APP: CÀI ĐẶT — tách hiển thị khỏi công cụ phụ -->
       <div class="phone-sub-app" id="phone-app-settings">
         <div class="phone-app-header">
-          <button class="phone-back-btn" onclick="phoneHome()">‹</button>
+          <button type="button" class="phone-back-btn" onclick="phoneHome()" aria-label="Về màn hình chính">‹</button>
           <span>Cài Đặt</span>
-          <span></span>
         </div>
-        <div style="margin-bottom: 10px;">
-          <label style="font-size: 10px; color: #94a3b8;">Cỡ chữ đọc:</label>
-          <div style="display: flex; gap: 6px; margin-top: 3px;">
-            <button class="btn" style="flex:1; padding:3px;" onclick="setReadingFontSize(16)">16px</button>
-            <button class="btn" style="flex:1; padding:3px;" onclick="setReadingFontSize(18)">18px</button>
-            <button class="btn" style="flex:1; padding:3px;" onclick="setReadingFontSize(21)">21px</button>
+        <section class="dudu-v27-settings-card" aria-labelledby="dudu-v27-reading-title">
+          <h3 id="dudu-v27-reading-title">✦ Trải nghiệm đọc</h3>
+          <div class="dudu-v27-settings-label">Cỡ chữ</div>
+          <div class="dudu-v27-options" role="group" aria-label="Cỡ chữ đọc">
+            <button type="button" class="btn" data-dudu-font-size="16" onclick="setReadingFontSize(16)">Nhỏ</button>
+            <button type="button" class="btn" data-dudu-font-size="18" onclick="setReadingFontSize(18)">Vừa</button>
+            <button type="button" class="btn" data-dudu-font-size="21" onclick="setReadingFontSize(21)">Lớn</button>
           </div>
-        </div>
-        <div style="margin-bottom: 10px;">
-          <label style="font-size: 10px; color: #94a3b8;">Chủ đề màu:</label>
-          <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 3px;">
-            <button class="btn" onclick="setTheme('default')">Dark Terminal</button>
-            <button class="btn" onclick="setTheme('warm')">Warm Paper</button>
-            <button class="btn" onclick="setTheme('oled')">OLED Black</button>
+          <div class="dudu-v27-settings-label">Giao diện</div>
+          <div class="dudu-v27-options" role="group" aria-label="Chủ đề màu">
+            <button type="button" class="btn" data-dudu-theme="default" onclick="setTheme('default')">Tối</button>
+            <button type="button" class="btn" data-dudu-theme="warm" onclick="setTheme('warm')">Giấy ấm</button>
+            <button type="button" class="btn" data-dudu-theme="oled" onclick="setTheme('oled')">OLED</button>
           </div>
-        </div>
-        
-        <div style="margin-top: 10px; border-top: 1px solid #334155; padding-top: 8px; display:flex; flex-direction:column; gap:6px;">
-          <div style="font-size:10px; color:var(--gold); font-weight:bold;">🤖 NPC AI — KẾT NỐI BẢO MẬT</div>
-          <div style="font-size:10px;color:var(--text-dim);">Chỉ cần tài khoản DUDU Studio, không nhập Gemini API key.</div>
-          <button class="btn btn-primary admin-only" style="width:100%; font-size:10px;" onclick="testGeminiAPIConnection()">🔍 Kiểm tra máy chủ AI (Tác giả)</button>
-          <div id="ai-current-model-info" style="font-size:9px; color:#94a3b8; text-align:center;">Tần số NPC chưa sẵn sàng</div>
-      <button class="btn" style="width:100%;font-size:10px;" onclick="importLegacyChatsToCurrentStory()">📥 Nhập lịch sử chat cũ (có xác nhận)</button>
-        </div>
+        </section>
+        <details class="dudu-v27-details dudu-v27-tools" id="dudu-v27-tools">
+          <summary>⚙ Công cụ &amp; dữ liệu <span class="dudu-v27-more-hint">Nâng cao</span></summary>
+          <div class="dudu-v27-tools-content">
+            <div class="dudu-v27-tools-heading">🤖 Kết nối NPC AI</div>
+            <div id="ai-current-model-info" role="status">Tần số NPC chưa sẵn sàng</div>
+            <button type="button" class="btn btn-primary admin-only" onclick="testGeminiAPIConnection()">Kiểm tra máy chủ AI</button>
+            <button type="button" class="btn" onclick="importLegacyChatsToCurrentStory()">Nhập lịch sử chat cũ</button>
+            <small>Nhập lịch sử có bước xác nhận và không thay thế dữ liệu nếu bạn chưa đồng ý.</small>
+          </div>
+        </details>
       </div>
 
-      <button type="button" class="phone-home-bar" onclick="phoneHome()" aria-label="Về màn hình chính của Cyber Phone" title="Màn hình chính"></button>
+            <button type="button" class="phone-home-bar" onclick="phoneHome()" aria-label="Về màn hình chính của Cyber Phone" title="Màn hình chính"></button>
     </div>
   </div>
 
@@ -2318,6 +2333,10 @@
       hideNpcConnectionStatus();
       const choicePanel=document.getElementById('npc-daily-choice-card');
       if(choicePanel)choicePanel.style.display='none';
+      const chatMore=document.getElementById('chat-v27-more');
+      if(chatMore)chatMore.open=false;
+      const relationDetails=document.getElementById('npc-v27-relation-details');
+      if(relationDetails)relationDetails.open=false;
       const charId = document.getElementById('chat-character-selector').value;
       const chars = getCombinedCharactersList();
       const char = chars.find(c => c.id === charId);
@@ -2373,6 +2392,9 @@
         const labels={LOCKED:'Chưa kết nối',ACQUAINTED:'Quen biết',
           FRIENDLY:'Thân thiện',TRUSTED:'Tin cậy',BONDED:'Gắn bó'};
         affinityEl.textContent = '❤️ ' + affection + '%';
+        const relationSummary=document.getElementById('npc-v27-relation-summary');
+        if(relationSummary)relationSummary.textContent=
+          '🛡 ' + trust + '/100 · ' + (labels[stage]||'Chưa kết nối');
         document.getElementById('npc-relationship-r4-values').textContent = '❤️ Thiện cảm: '+affection+'/100  •  🛡️ Tin tưởng: '+
           trust+'/100  •  '+(labels[stage]||'Chưa kết nối')+
           '  •  Trần thiện cảm mới: '+ceiling+'/100';
@@ -2431,6 +2453,8 @@
     }
 
     function clearCurrentChat() {
+      const more=document.getElementById('chat-v27-more');
+      if(more)more.open=false;
       const charId = document.getElementById('chat-character-selector').value;
       if (charId && confirm("Xóa lịch sử trò chuyện VÀ các ký ức tương tác đã lưu trên thiết bị với NPC này?")) {
         const storyId=activeChatNovelId || (novels[selectedNovelIndex] || {}).id;
@@ -2659,10 +2683,15 @@
             ${isNpcUnlocked(novel.id, c.id)
               ? `<button class="btn btn-primary" style="padding: 2px 7px; font-size: 9px;" onclick="connectSoulAndChat('${c.id}', '${novel.id}')">💬 Trò chuyện</button>`
               : '<span style="font-size:10px; color:var(--text-dim);">🔒 Chưa mở khóa</span>'}
-            <button class="btn admin-only" style="padding: 2px 6px; font-size: 9px;" onclick="openEditCharacterModal(${idx})">Sửa</button>
-            ${c.archived
-              ? `<button class="btn admin-only" style="padding:2px 6px;font-size:9px;" onclick="restoreCharacterFromCodex(${idx})">Khôi phục</button>`
-              : `<button class="btn admin-only" style="padding:2px 6px;font-size:9px;" onclick="deleteCharacterFromCodex(${idx})">Lưu trữ</button>`}
+            <details class="dudu-v27-npc-admin admin-only">
+              <summary aria-label="Quản lý nhân vật">Quản lý ···</summary>
+              <div class="dudu-v27-npc-admin-panel">
+                <button type="button" class="btn" onclick="openEditCharacterModal(${idx})">✎ Sửa</button>
+                ${c.archived
+                  ? `<button type="button" class="btn" onclick="restoreCharacterFromCodex(${idx})">Khôi phục</button>`
+                  : `<button type="button" class="btn btn-danger" onclick="deleteCharacterFromCodex(${idx})">Lưu trữ</button>`}
+              </div>
+            </details>
           
           </div>
         `;
@@ -3377,6 +3406,7 @@
         renderShop();
       } else if (appName === 'settings') {
         updateActiveModelInfo();
+        syncPhoneDisplayOptionsV27();
       }
     }
 
@@ -3682,15 +3712,31 @@
       renderShop();
     }
 
-    function setReadingFontSize(size) {
-      document.documentElement.style.setProperty('--read-size', size + 'px');
+    function syncPhoneDisplayOptionsV27(){
+      const font=Number.parseInt(
+        document.documentElement.style.getPropertyValue('--read-size'),10)||16;
+      const theme=document.body.classList.contains('theme-warm')?'warm':
+        document.body.classList.contains('theme-oled')?'oled':'default';
+      document.querySelectorAll('#phone-app-settings [data-dudu-font-size]').forEach(button=>{
+        button.setAttribute('aria-pressed',String(Number(button.dataset.duduFontSize)===font));
+      });
+      document.querySelectorAll('#phone-app-settings [data-dudu-theme]').forEach(button=>{
+        button.setAttribute('aria-pressed',String(button.dataset.duduTheme===theme));
+      });
     }
-
+    function setReadingFontSize(size) {
+      if(![16,18,21].includes(size))return;
+      document.documentElement.style.setProperty('--read-size', size + 'px');
+      syncPhoneDisplayOptionsV27();
+    }
     function setTheme(theme) {
-      document.body.className = '';
-      if (theme === 'warm') document.body.classList.add('theme-warm');
-      if (theme === 'oled') document.body.classList.add('theme-oled');
+      if(!['default','warm','oled'].includes(theme))return;
+      // Preserve Sandbox phone state, reader/admin classes and modal state.
+      document.body.classList.remove('theme-warm','theme-oled');
+      if(theme==='warm')document.body.classList.add('theme-warm');
+      if(theme==='oled')document.body.classList.add('theme-oled');
       applyUserRole();
+      syncPhoneDisplayOptionsV27();
     }
 
     function escapeHtml(str) {
