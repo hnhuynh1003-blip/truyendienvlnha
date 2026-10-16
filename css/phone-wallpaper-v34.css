@@ -8,6 +8,11 @@ body.dudu-phone-v11[data-dudu-phone-wallpaper="v34-night"] #cyber-phone{--dudu-v
 body.dudu-phone-v11[data-dudu-phone-wallpaper="v34-room"] #cyber-phone{--dudu-v30-art:url("../assets/wallpapers/v34/cozy-room.svg");}
 body.dudu-phone-v11[data-dudu-phone-wallpaper="v34-sakura"] #cyber-phone{--dudu-v30-art:url("../assets/wallpapers/v34/sakura-lane.svg");}
 body.dudu-phone-v11[data-dudu-phone-wallpaper="v34-neon"] #cyber-phone{--dudu-v30-art:url("../assets/wallpapers/v34/neon-city.svg");}
+/* Retire blurry V28 scene files for world-based selections as well. */
+body.dudu-phone-v11[data-dudu-phone-wallpaper="world-xianxia"] #cyber-phone{--dudu-v30-art:url("../assets/wallpapers/v34/sakura-lane.svg");}
+body.dudu-phone-v11[data-dudu-phone-wallpaper="world-modern"] #cyber-phone{--dudu-v30-art:url("../assets/wallpapers/v34/cozy-room.svg");}
+body.dudu-phone-v11[data-dudu-phone-wallpaper="world-cyberpunk"] #cyber-phone{--dudu-v30-art:url("../assets/wallpapers/v34/neon-city.svg");}
+body.dudu-phone-v11[data-dudu-phone-wallpaper="world-gothic"] #cyber-phone{--dudu-v30-art:url("../assets/wallpapers/v34/aurora-night.svg");}
 body.dudu-phone-v11[data-dudu-phone-wallpaper] #cyber-phone .phone-screen{
  background-image:linear-gradient(180deg,#0308190a 0%,#05112616 62%,#070e213b 100%),var(--dudu-v30-art)!important;
  background-position:center center!important;background-repeat:no-repeat!important;
