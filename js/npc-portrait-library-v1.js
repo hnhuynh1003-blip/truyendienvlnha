@@ -32,8 +32,8 @@
       ...(legacy?{legacy:true}:{})
     });
   }
-  // Stable ID-only gallery: the original 72 avatars retain their appearance.
-  // Four existing HD anime candidates are now selectable in this same library.
+  // V40: The 72 stable F/M IDs now render the approved premium anime WebP art.
+  // Four supplementary HD anime choices remain selectable for older stories.
   const ANIME=Object.freeze([
     ['portrait-a-01','anime-moon-blue'],
     ['portrait-a-02','anime-moon-violet'],
@@ -43,9 +43,9 @@
     id,animeId,gender:'female',world:'fantasy',kind:'anime',label:'Anime · '+id
   })));
   const CATALOG=Object.freeze([
-    ...ANIME,
     ...Array.from({length:60},(_,i)=>entry('female',i+1,'f')),
-    ...Array.from({length:12},(_,i)=>entry('male',i+1,'m'))
+    ...Array.from({length:12},(_,i)=>entry('male',i+1,'m')),
+    ...ANIME
   ]);
   const LEGACY=Object.freeze([
     ...Array.from({length:12},(_,i)=>entry('male',i+13,'m',true)),
