@@ -126,6 +126,70 @@ async function main() {
     });
     assert.match(museumSandbox.message,/Sandbox không kết nối sổ sở hữu/);
     assert.equal(museumSandbox.writes,0,'Museum sandbox cannot mutate Firestore or live inventory');
+    // V43.5 read-only Museum album: DUDU / unlocked NPC can be previewed,
+    // but no sandbox milestone may become a real collectible or inventory item.
+    const museumV435=await page.evaluate(async()=>{
+      const story=novels[selectedNovelIndex],oldCharacters=story.characters;
+      const oldUsername=currentUsername,oldProfile=userProfile;
+      const backup=JSON.stringify(userProfile),writes=window.__firestoreWrites.length;
+      const originalInventory=JSON.stringify(userProfile.inventory);
+      const npc={id:'museum-v43-5-test',name:'NPC Kỷ Niệm',role:'Cố nhân'};
+      try{
+        story.characters=[...oldCharacters,npc];
+        const p=getStoryProgress(story.id);
+        p.collectedCharacters[npc.id]={id:npc.id,affinity:57,
+          relationshipV2:{trust:30},
+          npcBondV43:{version:1,lastDay:'2026-10-17',current:14,best:14,totalDays:14}};
+        userProfile.duduCompanionV43={...DuduCompanionRulesV43.empty(),
+          milestones:['dudu-letter-3','dudu-rose-7']};
+        openPhoneApp('museum');
+        await renderMuseum();
+        const album=document.getElementById('dudu-v43-memory-album');
+        const select=document.getElementById('dudu-v43-memory-source');
+        const duduCards=album?.querySelectorAll('.dudu-v43-memory-card').length;
+        const duduEarned=album?.querySelectorAll('.dudu-v43-memory-card.is-earned').length;
+        const duduLabel=album?.querySelector('.dudu-v43-memory-counter')?.textContent;
+        const serverNote=document.getElementById('museum-items')?.textContent||'';
+        select.value=DuduMuseumMemoriesV43.ownerKey(story.id,npc.id);
+        select.dispatchEvent(new Event('change',{bubbles:true}));
+        const npcCards=album?.querySelectorAll('.dudu-v43-memory-card').length;
+        const npcEarned=album?.querySelectorAll('.dudu-v43-memory-card.is-earned').length;
+        const npcLabel=album?.querySelector('.dudu-v43-memory-counter')?.textContent;
+        const preserved=[p.collectedCharacters[npc.id].affinity,
+          p.collectedCharacters[npc.id].relationshipV2.trust];
+        const noGrant=JSON.stringify(userProfile.inventory)===originalInventory &&
+          window.__firestoreWrites.length===writes;
+        // New UID must not inherit the previously selected account's album.
+        currentUsername='v435-other-account';
+        userProfile={storyStates:{},duduCompanionV43:undefined};
+        DuduMuseumMemoriesUIV43.render();
+        const other=document.getElementById('dudu-v43-memory-album');
+        const isolated=other?.dataset.owner===currentUsername &&
+          other.querySelectorAll('.dudu-v43-memory-card').length===6 &&
+          other.querySelectorAll('.dudu-v43-memory-card.is-earned').length===0 &&
+          other.querySelector('#dudu-v43-memory-source').options.length===1;
+        return {duduCards,duduEarned,duduLabel,npcCards,npcEarned,npcLabel,
+          serverNote,preserved,noGrant,isolated};
+      }finally{
+        currentUsername=oldUsername;
+        userProfile=oldProfile;
+        Object.assign(userProfile,JSON.parse(backup));
+        story.characters=oldCharacters;
+        DuduMuseumMemoriesUIV43.render();
+        phoneHome();
+      }
+    });
+    assert.equal(museumV435.duduCards,6);
+    assert.equal(museumV435.duduEarned,2);
+    assert.match(museumV435.duduLabel,/2\/6 mốc/);
+    assert.equal(museumV435.npcCards,4);
+    assert.equal(museumV435.npcEarned,3);
+    assert.match(museumV435.npcLabel,/3\/4 mốc/);
+    assert.match(museumV435.serverNote,/Sandbox không kết nối sổ sở hữu/);
+    assert.deepEqual(museumV435.preserved,[57,30]);
+    assert.equal(museumV435.noGrant,true);
+    assert.equal(museumV435.isolated,true,'Switching UID must never reveal another reader album');
+
 
     // NPC editor: compact chapter picker keeps selection stable when expanding
     // and collapsing; a fresh chapter does not display all old NPC chips.

@@ -1,0 +1,81 @@
+/* V43.5 compact Sandbox memory album; server-verified Museum stays separate. */
+body.dudu-phone-v11 #cyber-phone .dudu-v43-memory-album{
+  display:flex;flex-direction:column;gap:8px;flex:none;
+  margin:0 0 10px;padding:11px 10px 12px;
+  border:1px solid #c3a2df91;border-radius:14px;
+  background:linear-gradient(145deg,#34294de8,#1b3447f0);
+  color:#f5edff;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-memory-head{
+  display:flex;align-items:center;justify-content:space-between;gap:7px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-memory-head strong{
+  color:#f5e0fb;font-size:12px;font-weight:800;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-memory-tag{
+  border:1px solid #cfb0e07d;border-radius:20px;padding:3px 6px;
+  font-size:9px;color:#f8d9f1;background:#55395d8c;
+  white-space:nowrap;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-memory-description,
+body.dudu-phone-v11 #cyber-phone .dudu-v43-memory-note{
+  font-size:10px;line-height:1.5;margin:0;color:#d8d4eb;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-memory-note{
+  color:#bfc7d9;font-size:9px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-memory-select{
+  width:100%;max-width:100%;min-height:36px;padding:7px 9px;
+  border:1px solid #a7add480;border-radius:10px;
+  background:#202b45;color:#eef1ff;font-size:11px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-memory-counter{
+  font-size:10px;font-weight:700;color:#f4dda8;margin:0;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-memory-progress{
+  width:100%;height:5px;background:#101e33;overflow:hidden;
+  border-radius:10px;border:1px solid #8690af6b;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-memory-fill{
+  display:block;height:100%;border-radius:inherit;
+  background:linear-gradient(90deg,#e0acdb,#f6db93);transition:width .2s;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-memory-grid{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-memory-card{
+  display:flex;align-items:center;gap:8px;min-width:0;padding:8px 6px;
+  border-radius:11px;background:#19243dcc;border:1px solid #6c81a275;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-memory-card.is-earned{
+  background:linear-gradient(135deg,#4c3a5c,#534553);
+  border-color:#e0c29b99;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-memory-icon{
+  flex:none;display:grid;place-items:center;
+  width:30px;height:30px;border-radius:9px;
+  color:#c3cbdd;background:#27314a;font-size:17px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-memory-card.is-earned .dudu-v43-memory-icon{
+  color:#ffe3aa;background:#70517a;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-memory-card-copy{
+  flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-memory-card-copy strong{
+  font-size:10px;line-height:1.3;overflow-wrap:anywhere;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-memory-card-copy small{
+  font-size:9px;color:#c2bfd9;line-height:1.3;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-memory-card.is-earned .dudu-v43-memory-card-copy small{
+  color:#ffe7c3;
+}
+@media(max-width:355px){
+  body.dudu-phone-v11 #cyber-phone .dudu-v43-memory-card{gap:5px;padding:7px 4px;}
+  body.dudu-phone-v11 #cyber-phone .dudu-v43-memory-icon{width:25px;height:26px;font-size:15px;}
+  body.dudu-phone-v11 #cyber-phone .dudu-v43-memory-card-copy strong{font-size:9px;}
+}
+@media(prefers-reduced-motion:reduce){
+  body.dudu-phone-v11 #cyber-phone .dudu-v43-memory-fill{transition:none;}
+}

@@ -34,6 +34,7 @@
   <link rel="stylesheet" href="css/inventory-v42.css?v=3">
   <link rel="stylesheet" href="css/companion-v43.css?v=1">
   <link rel="stylesheet" href="css/npc-bond-v43.css?v=2">
+  <link rel="stylesheet" href="css/museum-memories-v43.css?v=1">
   <link rel="stylesheet" href="css/npc-diary-ui.css?v=1">
   <link rel="stylesheet" href="css/soul-link-v43.css?v=2">
   <meta name="mobile-web-app-capable" content="yes">
@@ -83,6 +84,7 @@
   <script src="js/loot-cadence-v42.js?v=1"></script>
   <script src="js/companion-rules-v43.js?v=1"></script>
   <script src="js/npc-bond-v43.js?v=1"></script>
+  <script src="js/museum-memories-v43.js?v=1"></script>
   <script src="js/soul-link-v43.js?v=1"></script>
   <script src="js/author-items-v1.js"></script>
   <script src="js/npc-editor-v1.js"></script>
@@ -3884,6 +3886,9 @@ document.getElementById('phone-home-screen').style.display = 'none';
     async function renderMuseum() {
       const container=document.getElementById('museum-items');
       if(!container)return;
+      // V43.5 local journal is READ ONLY, independent from verified collectibles.
+      // Live Museum client/server ownership checks remain unchanged.
+      window.DuduMuseumMemoriesUIV43?.render();
       container.textContent='Đang kiểm tra sổ kỷ vật...';
       const identity=currentUsername;
       const response=await DuduCollectiblesClient.mine();
@@ -5918,6 +5923,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/npc-portrait-v39.js?v=2"></script>
 <script src="js/phone-inbox-v33.js?v=43-2"></script>
 <script src="js/companion-ui-v43.js?v=1"></script>
+<script src="js/museum-memories-ui-v43.js?v=1"></script>
 <script src="js/npc-diary-ui.js?v=1"></script>
 <script src="js/soul-link-ui-v43.js?v=2"></script>
 <script src="js/phone-wallpaper-v34.js?v=2"></script>
