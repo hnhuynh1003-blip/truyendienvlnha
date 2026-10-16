@@ -1815,6 +1815,11 @@ async function main() {
         playerAvatarDraftV16.frameId===initialAvatar.frameId;
       selectPlayerAvatarKindV16('vector');
       const vectorCount=document.querySelectorAll('#player-avatar-v16-preset-grid button').length;
+      const vectorTotal=DuduNpcPortraitLibrary.CATALOG.filter(p=>/^portrait-[fm]-\d{2}$/.test(p.id)).length;
+      const moreButton=document.getElementById('player-avatar-v41-more');
+      const hasMore=!!moreButton&&!moreButton.hidden;
+      moreButton?.click();
+      const nextPageCount=document.querySelectorAll('#player-avatar-v16-preset-grid button').length;
       document.querySelectorAll('#player-avatar-v16-preset-grid button')[4].click();
       document.querySelectorAll('#player-avatar-v16-frames button')[1].click();
       savePlayerAvatarV16();
@@ -1843,7 +1848,7 @@ async function main() {
       userProfile=JSON.parse(original);
       saveCurrentAccount();
       return {initialFrame,initialAvatar,frameCount,locked,animeCount,pending,
-        cancelled,vectorCount,saved,rendered,uploadedId,uploadSaved,
+        cancelled,vectorCount,vectorTotal,hasMore,nextPageCount,saved,rendered,uploadedId,uploadSaved,
         ownImg:typeof ownImg==='string'&&ownImg.startsWith('data:image/jpeg;base64,'),
         otherImg,smallProfile:profileBytes.length<original.length+300,
         writes:window.__firestoreWrites.length-writesBefore,
@@ -1857,7 +1862,10 @@ async function main() {
       kind:'anime',frameId:'sakura',presetId:'anime-peach-court',unchanged:true
     });
     assert.equal(playerV16.cancelled,true);
-    assert.equal(playerV16.vectorCount,72);
+    assert.equal(playerV16.vectorTotal,72,'All V40 F01–F60 and M01–M12 IDs remain available');
+    assert.equal(playerV16.vectorCount,12,'V41 initially renders only 12 portraits for mobile');
+    assert.equal(playerV16.hasMore,true,'Avatar gallery has a Load more control');
+    assert.equal(playerV16.nextPageCount,24,'Load more reveals the next 12 portraits');
     assert.equal(playerV16.saved.kind,'vector');
     assert.equal(playerV16.saved.frameId,'moon');
     assert.equal(playerV16.saved.presetId,'portrait-f-05');
