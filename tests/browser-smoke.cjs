@@ -1144,13 +1144,15 @@ async function main() {
       openPhoneApp('codex');
       document.getElementById('codex-novel-selector').value=story.id;
       renderCodexList();
-      const view=document.querySelector('#codex-container .dudu-npc-v12-card .npc-v15-view-button');
+      const view=document.querySelector('#codex-container .dudu-npc-v12-card button[data-npc-portrait]');
       const actionExists=!!view;
       view?.click();
       const modal=document.getElementById('npc-v15-viewer');
       const stage=modal.querySelector('.npc-v15-stage');
       const rect=stage.getBoundingClientRect();
       return {missing:false,actionExists,
+        duplicateViewerButtons:document.querySelectorAll('#codex-container .npc-v15-view-button').length,
+        viewIsPhoto:view?.classList.contains('dudu-npc-v12-portrait'),
         open:modal.style.display==='flex',
         modalAria:modal.getAttribute('aria-hidden'),
         named:document.getElementById('npc-v15-title').textContent===npc.name,
@@ -1161,6 +1163,8 @@ async function main() {
     });
     assert.equal(portraitV15.missing,false);
     assert.equal(portraitV15.actionExists,true);
+    assert.equal(portraitV15.viewIsPhoto,true);
+    assert.equal(portraitV15.duplicateViewerButtons,0);
     assert.equal(portraitV15.open,true);
     assert.equal(portraitV15.modalAria,'false');
     assert.equal(portraitV15.named,true);
@@ -1174,7 +1178,45 @@ async function main() {
     await page.keyboard.press('Escape');
     assert.equal(await page.locator('#npc-v15-viewer').getAttribute('aria-hidden'),'true');
     assert.equal(await page.locator('#npc-v15-viewer').evaluate(x=>x.style.display),'none');
-    assert.equal(await page.evaluate(()=>document.activeElement?.classList.contains('npc-v15-view-button')),true);
+    assert.equal(await page.evaluate(()=>document.activeElement?.classList.contains('dudu-npc-v12-portrait')),true);
+    // V27: Chat avatar itself opens the same viewer; no duplicate button.
+    const chatPortraitV27=await page.evaluate(()=>{
+      const story=novels[selectedNovelIndex];
+      const npc=story.characters.find(c=>c?.id&&!c.archived);
+      // Chat lists unlocked characters only. Grant a reversible, in-memory
+      // preview unlock to exercise the viewer, without persistence or writes.
+      const progress=getStoryProgress(story.id);
+      const hadUnlock=Object.prototype.hasOwnProperty.call(progress.collectedCharacters,npc.id);
+      const oldUnlock=progress.collectedCharacters[npc.id];
+      const oldChatNovelId=activeChatNovelId;
+      if(!hadUnlock)progress.collectedCharacters[npc.id]={id:npc.id,affinity:10};
+      try{
+        activeChatNovelId=story.id;
+        openPhoneApp('chat');
+        const selector=document.getElementById('chat-character-selector');
+        selector.value=npc.id;
+        switchChatCharacter();
+        const portrait=document.getElementById('npc-portrait-v1');
+        const enabled=portrait?.tagName==='BUTTON'&&!portrait.disabled;
+        const noDuplicate=!document.getElementById('npc-v15-chat-view');
+        portrait?.click();
+        return {enabled,noDuplicate,
+          open:document.getElementById('npc-v15-viewer').style.display==='flex',
+          focus:document.activeElement?.id,
+          buttonCount:document.querySelectorAll('#phone-app-chat .npc-v15-chat-button').length};
+      }finally{
+        activeChatNovelId=oldChatNovelId;
+        if(hadUnlock)progress.collectedCharacters[npc.id]=oldUnlock;
+        else delete progress.collectedCharacters[npc.id];
+      }
+    });
+    assert.equal(chatPortraitV27.enabled,true);
+    assert.equal(chatPortraitV27.noDuplicate,true);
+    assert.equal(chatPortraitV27.open,true);
+    assert.equal(chatPortraitV27.focus,'npc-v15-close');
+    assert.equal(chatPortraitV27.buttonCount,0);
+    await page.keyboard.press('Escape');
+    assert.equal(await page.evaluate(()=>document.activeElement?.id),'npc-portrait-v1');
     const rejectedView=await page.evaluate(()=>{
       const story=novels[selectedNovelIndex];
       const npc=story.characters.find(x=>x?.id&&!x.archived);

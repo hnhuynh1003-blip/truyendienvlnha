@@ -877,7 +877,6 @@
         </div>
         <div style="text-align: center; margin-bottom: 10px;">
           <button type="button" id="player-avatar-v1" class="dudu-player-avatar-v16" aria-label="Thay ảnh và khung nhân vật" onclick="openPlayerAvatarEditorV16()" style="display:none">DU</button>
-          <button type="button" id="player-avatar-edit-v16" class="dudu-avatar-edit-v16" onclick="openPlayerAvatarEditorV16()" style="display:none;margin:4px auto 8px;">✦ Đổi avatar & khung</button>
           <div id="player-avatar-legacy" style="font-size: 32px;">🧙‍♂️</div>
           <div style="font-weight: bold; color: var(--neon); font-size: 14px;" id="profile-name">Kẻ Lang Bạt</div>
           <div style="font-size: 10px; color: #64748b;" id="profile-title">Người Thao Túng Mã Nguồn</div>
@@ -981,10 +980,10 @@
         </div>
 
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
-          <div id="npc-portrait-v1" role="img" aria-label="Ảnh đại diện nhân vật (bản xem trước)" style="display:none;align-items:center;justify-content:center;width:38px;height:38px;min-width:38px;border-radius:12px;background:linear-gradient(140deg,#475569,#0e7490);color:#fff;border:1px solid #64748b;font-size:14px;font-weight:700;margin-right:4px;">NPC</div>
-          <button type="button" id="npc-v15-chat-view" class="btn npc-v15-chat-button"
+          <button type="button" id="npc-portrait-v1" class="dudu-npc-v27-chat-portrait"
             onclick="openChatNpcPortraitViewer()" aria-label="Xem chân dung NPC"
-            style="display:none;">Xem ảnh</button>
+            aria-haspopup="dialog"
+            style="display:none;align-items:center;justify-content:center;width:44px;height:44px;min-width:44px;border-radius:12px;background:linear-gradient(140deg,#475569,#0e7490);color:#fff;border:1px solid #64748b;font-size:14px;font-weight:700;margin-right:8px;">NPC</button>
           <select id="chat-character-selector" onchange="switchChatCharacter()" style="flex:1; background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 4px; color: #fff; font-size: 11px; outline: none; margin-right:6px;"></select>
           <span style="font-size:10px; color:var(--gold); white-space:nowrap;" id="chat-char-affinity">❤️ 10%</span>
         </div>
@@ -2298,7 +2297,7 @@
       const npcId=document.getElementById('chat-character-selector')?.value;
       const story=novels.find(n=>n.id===storyId);
       const npc=story?.characters?.find(c=>c.id===npcId);
-      return openNpcPortraitViewer(npc,storyId,document.getElementById('npc-v15-chat-view'));
+      return openNpcPortraitViewer(npc,storyId,document.getElementById('npc-portrait-v1'));
     }
     document.addEventListener('keydown',event=>{
       const modal=document.getElementById('npc-v15-viewer');
@@ -2324,13 +2323,18 @@
       const char = chars.find(c => c.id === charId);
       const storyId = activeChatNovelId || (novels[selectedNovelIndex] || {}).id;
       const unlocked = getStoryProgress(storyId).collectedCharacters;
-      const portraitViewButton=document.getElementById('npc-v15-chat-view');
-      if(portraitViewButton)portraitViewButton.style.display=
-        IS_SANDBOX_MODE&&char&&isNpcUnlocked(storyId,charId)?'inline-flex':'none';
       const affinityEl = document.getElementById('chat-char-affinity');
       const portrait=document.getElementById('npc-portrait-v1');
       if(portrait){
         portrait.style.display=IS_SANDBOX_MODE&&char?'flex':'none';
+        // The thumbnail is the only viewer control. Never reveal locked NPC details.
+        const canViewPortrait=!!(IS_SANDBOX_MODE&&char&&
+          (canEditStories()||isNpcUnlocked(storyId,charId)));
+        portrait.disabled=!canViewPortrait;
+        portrait.classList.toggle('is-locked',!canViewPortrait);
+        portrait.setAttribute('aria-label',char?
+          (canViewPortrait?'Xem chân dung ':'Chân dung chưa mở khóa: ')+char.name:
+          'Chưa chọn nhân vật');
         if(char){
           portrait.textContent=(char.name||'NPC').trim().split(/\s+/).slice(-2)
             .map(x=>x[0]||'').join('').toUpperCase();
@@ -2682,8 +2686,8 @@
           const first = div.firstElementChild;
           first.className='dudu-npc-v12-top';
           first.innerHTML =
-            '<div class="dudu-npc-v12-portrait" data-npc-portrait="1" role="img" '+
-              'aria-label="Chân dung '+escapeHtml(c.name)+'">👤</div>'+
+            '<button type="button" class="dudu-npc-v12-portrait" data-npc-portrait="1" '+
+              'aria-haspopup="dialog" aria-label="Xem chân dung '+escapeHtml(c.name)+'">👤</button>'+
             '<div class="dudu-npc-v12-summary">'+
               '<div class="dudu-npc-v12-name">'+escapeHtml(c.name)+'</div>'+
               '<div class="dudu-npc-v12-role">'+escapeHtml(c.role||'Chưa rõ')+'</div>'+
@@ -2700,17 +2704,16 @@
           if(second)second.style.display='none';
           const actionBar=div.children[2];
           if(actionBar)actionBar.classList.add('dudu-npc-v12-actions');
-          if(actionBar&&(canEditStories()||unlocked)){
-            const viewButton=document.createElement('button');
-            viewButton.type='button';viewButton.className='btn npc-v15-view-button';
-            viewButton.textContent='✦ Xem chân dung';
-            viewButton.setAttribute('aria-label','Xem chân dung '+String(c.name||'NPC'));
-            viewButton.addEventListener('click',()=>openNpcPortraitViewer(c,novel.id,viewButton));
-            actionBar.prepend(viewButton);
-          }
-
           const preview=div.querySelector('[data-npc-portrait]');
-          if(preview)renderNpcPortraitPreview(preview,c,novel.id);
+          if(preview){
+            const canViewPortrait=canEditStories()||unlocked;
+            preview.disabled=!canViewPortrait;
+            preview.classList.toggle('is-locked',!canViewPortrait);
+            if(canViewPortrait)preview.addEventListener('click',
+              ()=>openNpcPortraitViewer(c,novel.id,preview));
+            else preview.setAttribute('aria-label','Chân dung '+c.name+' chưa mở khóa');
+            renderNpcPortraitPreview(preview,c,novel.id);
+          }
         }
         container.appendChild(div);
       });

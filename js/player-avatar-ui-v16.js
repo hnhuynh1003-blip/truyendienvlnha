@@ -73,8 +73,6 @@ function renderPlayerAvatarPlacesV16(){
   }
   const home=document.getElementById('player-avatar-home-v16');
   if(home)home.style.display='flex';
-  const edit=document.getElementById('player-avatar-edit-v16');
-  if(edit)edit.style.display='block';
   const text=document.getElementById('phone-player-name-v16');
   if(text)text.textContent=userProfile.name||currentUsername||'Kẻ Lang Bạt';
 }
