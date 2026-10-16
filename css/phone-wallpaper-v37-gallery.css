@@ -1,12 +1,12 @@
 /* DUDU V37 — featured anime wallpaper collection. */
 body.dudu-phone-v11[data-dudu-phone-wallpaper="v37-sakura"] #cyber-phone{
- --dudu-v30-art:url("https://cdn.pixabay.com/photo/2024/05/21/16/54/anime-landscape-8778603_1280.jpg");
+ --dudu-v30-art:url("../assets/wallpapers/v37/sakura-valley.webp");
 }
 body.dudu-phone-v11[data-dudu-phone-wallpaper="v37-city-rain"] #cyber-phone{
- --dudu-v30-art:url("https://cdn.pixabay.com/photo/2025/01/13/12/38/city-9330382_1280.jpg");
+ --dudu-v30-art:url("../assets/wallpapers/v37/city-rain.webp");
 }
 body.dudu-phone-v11[data-dudu-phone-wallpaper="v37-city-night"] #cyber-phone{
- --dudu-v30-art:url("https://cdn.pixabay.com/photo/2025/01/13/12/38/city-9330381_1280.jpg");
+ --dudu-v30-art:url("../assets/wallpapers/v37/city-night.webp");
 }
 body.dudu-phone-v11 #cyber-phone .dudu-v35-gallery-tabs{
  display:flex!important;grid-template-columns:none!important;overflow-x:auto;scrollbar-width:none;gap:3px!important;
@@ -32,13 +32,13 @@ body.dudu-phone-v11 #cyber-phone .dudu-v37-thumb{
  background-size:cover;background-position:center;background-color:#263754;
 }
 body.dudu-phone-v11 #cyber-phone .dudu-v37-choice[data-dudu-wallpaper-choice="v37-sakura"] .dudu-v37-thumb{
- background-image:url("https://cdn.pixabay.com/photo/2024/05/21/16/54/anime-landscape-8778603_1280.jpg");
+ background-image:url("../assets/wallpapers/v37/sakura-valley.webp");
 }
 body.dudu-phone-v11 #cyber-phone .dudu-v37-choice[data-dudu-wallpaper-choice="v37-city-rain"] .dudu-v37-thumb{
- background-image:url("https://cdn.pixabay.com/photo/2025/01/13/12/38/city-9330382_1280.jpg");
+ background-image:url("../assets/wallpapers/v37/city-rain.webp");
 }
 body.dudu-phone-v11 #cyber-phone .dudu-v37-choice[data-dudu-wallpaper-choice="v37-city-night"] .dudu-v37-thumb{
- background-image:url("https://cdn.pixabay.com/photo/2025/01/13/12/38/city-9330381_1280.jpg");
+ background-image:url("../assets/wallpapers/v37/city-night.webp");
 }
 body.dudu-phone-v11 #cyber-phone .dudu-v37-caption{display:flex;flex-direction:column;gap:2px;padding:0 3px 3px;}
 body.dudu-phone-v11 #cyber-phone .dudu-v37-caption strong{font-size:11px;line-height:1.2;}
