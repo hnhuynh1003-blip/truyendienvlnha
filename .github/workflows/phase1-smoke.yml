@@ -1,7 +1,7 @@
 name: DUDU Phase 1 Smoke
 on:
   pull_request:
-    branches: [fixapp, feat/identity-npc-editor-v2, feat/dudu-v24-verified-milestones]
+    branches: [fixapp, feat/identity-npc-editor-v2, feat/dudu-v24-verified-milestones, feat/dudu-v25-trusted-milestone-ledger]
   workflow_dispatch:
 permissions:
   contents: read
