@@ -22,6 +22,7 @@
   <link rel="stylesheet" href="css/dudu-multiverse-art-v28-r5.css">
   <link rel="stylesheet" href="css/phone-floating-v30.css?v=1">
   <link rel="stylesheet" href="css/phone-refinement-v31.css?v=1">
+  <link rel="stylesheet" href="css/phone-social-v32.css?v=1">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -52,6 +53,7 @@
   <script src="js/phone-wallpaper-v27-r4.js"></script>
   <script src="js/dudu-multiverse-art-v28-r5.js"></script>
   <script src="js/phone-typography-v31.js"></script>
+  <script src="js/red-packet-v32.js"></script>
   <script src="js/dudu-multiverse-ui-v28-r5.js"></script>
   <script src="js/player-avatar-ui-v16.js"></script>
   <script src="js/player-avatar-sync-plan-v20.js"></script>
@@ -1019,6 +1021,13 @@
           <span style="font-size:10px; color:var(--gold); white-space:nowrap;" id="chat-char-affinity">❤️ 10%</span>
         </div>
 
+        
+        <nav class="dudu-v32-contact-actions" aria-label="Tương tác với NPC">
+          <span class="dudu-v32-relation-chip" id="dudu-v32-mini-affinity" aria-live="polite">❤️ Chưa kết nối</span>
+          <button type="button" id="dudu-v32-gift-button" class="dudu-v32-action is-gift" onclick="openGiftModalFromChat()" aria-label="Tặng quà cho NPC">🎁 Quà</button>
+          <button type="button" id="dudu-v32-envelope-button" class="dudu-v32-action is-envelope" onclick="openRedPacketV32()" aria-label="Gửi phong bao bằng xu trò chơi">🧧 Phong bao</button>
+        </nav>
+        <div class="dudu-v32-contact-feedback" role="status" aria-live="polite" id="dudu-v32-contact-feedback"></div>
         <div id="npc-relationship-r3-preview" class="dudu-v27-relation" role="group" aria-label="Quan hệ nhân vật" style="display:none;">
           <div class="dudu-v27-relation-bar">
             <details id="npc-v27-relation-details" class="dudu-v27-relation-details">
@@ -1046,6 +1055,34 @@
           <input type="text" id="chat-user-input" autocomplete="off" placeholder="Gửi tin nhắn..." style="flex: 1; background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 6px 8px; color: #fff; font-size: 11px; outline: none;" onkeydown="if(event.key==='Enter') sendChatMessage()">
           <button class="btn btn-primary" style="padding: 4px 8px; font-size: 11px;" onclick="sendChatMessage()">Gửi</button>
         </div>
+        <div class="dudu-v32-envelope-overlay" id="dudu-v32-envelope-overlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="dudu-v32-envelope-title" aria-hidden="true">
+          <div class="dudu-v32-envelope-scrim" onclick="closeRedPacketV32()" aria-hidden="true"></div>
+          <div class="dudu-v32-envelope-sheet">
+            <div class="dudu-v32-envelope-handle"></div>
+            <div class="dudu-v32-envelope-heading">
+              <strong id="dudu-v32-envelope-title">🧧 Gửi phong bao</strong>
+              <button type="button" onclick="closeRedPacketV32()" aria-label="Đóng phong bao">✕</button>
+            </div>
+            <p id="dudu-v32-envelope-recipient">Gửi cho NPC</p>
+            <div class="dudu-v32-envelope-balance" id="dudu-v32-envelope-balance">Số dư: 0 Xu</div>
+            <div class="dudu-v32-envelope-amounts" role="group" aria-label="Chọn số xu gửi">
+              <button type="button" data-dudu-v32-amount="10" onclick="pickRedPacketV32(10)">10 Xu</button>
+              <button type="button" data-dudu-v32-amount="50" onclick="pickRedPacketV32(50)">50 Xu</button>
+              <button type="button" data-dudu-v32-amount="100" onclick="pickRedPacketV32(100)">100 Xu</button>
+              <button type="button" data-dudu-v32-amount="520" onclick="pickRedPacketV32(520)">520 Xu</button>
+              <button type="button" data-dudu-v32-amount="1314" onclick="pickRedPacketV32(1314)">1314 Xu</button>
+            </div>
+            <label class="dudu-v32-envelope-note-label" for="dudu-v32-envelope-note">Lời nhắn tùy chọn</label>
+            <input type="text" id="dudu-v32-envelope-note" maxlength="60" placeholder="Chút tấm lòng gửi bạn..." autocomplete="off">
+            <small>Xu ảo trong Sandbox. Không chuyển tiền thật, không tự tăng thiện cảm. Tối đa 3 phong bao/NPC/ngày, cách nhau 5 phút.</small>
+            <div class="dudu-v32-envelope-result" role="status" aria-live="polite" id="dudu-v32-envelope-result"></div>
+            <div class="dudu-v32-envelope-buttons">
+              <button type="button" onclick="closeRedPacketV32()">Để sau</button>
+              <button type="button" id="dudu-v32-envelope-confirm" onclick="confirmRedPacketV32()">Xác nhận gửi</button>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <!-- APP: CỬA HÀNG -->
@@ -2931,8 +2968,12 @@
     }
 
     function openGiftModalFromChat() {
-      const charId = document.getElementById('chat-character-selector').value;
-      if (charId) openGiftModalForChar(charId);
+      const charId=document.getElementById('chat-character-selector')?.value;
+      const storyId=activeChatNovelId||(novels[selectedNovelIndex]||{}).id;
+      if(!charId||!storyId||!isNpcUnlocked(storyId,charId)){
+        showSystemAlert('CHƯA THỂ TẶNG','Cần mở khóa NPC trong truyện trước khi gửi quà.');return;
+      }
+      openGiftModalForChar(charId);
     }
 
     async function executeGiftItem(charId, itemIdx) {
