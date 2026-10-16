@@ -18,6 +18,9 @@
    node.style.backgroundSize='cover';
    node.style.backgroundPosition='center';
    node.style.backgroundRepeat='no-repeat';
+   // The approved 72 F/M portraits take precedence over legacy SVG avatars.
+   // Custom uploaded photographs still override any preset.
+   if(!customSrc&&window.DuduNpcPremiumV40?.paint(node,id))return;
    const item=library.preset(id);
    if(item?.animeId){
      const lo=anime.styleFor(item.animeId);
