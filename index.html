@@ -49,7 +49,7 @@
   <script src="js/npc-memory-v2.js"></script>
   <script src="js/item-catalog-v2.js"></script>
   <script src="js/inventory-model-v42.js?v=1"></script>
-  <script src="js/inventory-view-v42.js?v=1"></script>
+  <script src="js/inventory-view-v42.js?v=2"></script>
   <script src="js/item-visuals-v13.js"></script>
   <script src="js/npc-relationship-v2-r1.js"></script>
   <script src="js/npc-gift-v2-r2.js"></script>
@@ -1719,7 +1719,7 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=42-1').catch((err) => console.log('SW error:', err));
+        navigator.serviceWorker.register('./sw.js?v=42-2').catch((err) => console.log('SW error:', err));
       });
     }
 
@@ -3850,6 +3850,11 @@ document.getElementById('phone-home-screen').style.display = 'none';
           onDiscard(index){
             if(userProfile.inventory!==current)return;
             inventoryDetailSelection=null;discardItem(index);
+          },
+          onMuseum(){
+            inventoryDetailSelection=null;
+            DuduInventoryViewV42.close();
+            openPhoneApp('museum'); // read-only, authenticated server inventory
           }
         });
         if(ready)return;
