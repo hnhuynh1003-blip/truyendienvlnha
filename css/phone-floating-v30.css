@@ -116,6 +116,14 @@ body.dudu-phone-v11 #cyber-phone .phone-home-bar {
  height:4px;width:72px;box-shadow:none;background:#dce5f4bd;
  margin:6px auto 8px;
 }
+/* Keep the phone close button below the sticky Sandbox notice on narrow
+ * screens; otherwise the notice intercepts taps at the top edge. */
+@media(max-width:480px){
+ body.dudu-phone-v11 #cyber-phone{
+   height:calc(100dvh - 56px - env(safe-area-inset-bottom,0px));
+   bottom:calc(10px + env(safe-area-inset-bottom,0px));
+ }
+}
 @media(max-width:360px){
  body.dudu-phone-v11 #cyber-phone #phone-home-screen{padding:8px 7px 6px !important;}
  body.dudu-phone-v11 #cyber-phone #phone-home-screen .app-box{width:42px;height:42px;font-size:20px;}
