@@ -120,10 +120,13 @@
  function summary(host){
    if(!sandbox())return;
    const s=state();
-   const section=node('section','dudu-v43-soul-summary');
+   // Keep the economy accessible without making it the first giant Sổ Tay card.
+   const section=node('details','dudu-v43-soul-summary');
    section.id='dudu-v43-soul-summary';
-   const title=node('div','dudu-v43-soul-heading','✦ Liên kết linh hồn');
-   title.append(node('strong','', '🔑 '+s.keys+' khóa'));
+   const title=node('summary','dudu-v43-soul-heading');
+   title.append(node('span','', '✦ Liên kết linh hồn'),
+     node('strong','', '🔑 '+s.keys+' khóa'));
+   const body=node('div','dudu-v43-soul-content');
    const description=node('p','', 'Nhặt đồ ở chương có NPC để lấy 3 mảnh. Liên kết cần 1 khóa + 20 Xu.');
    const progress=node('p','',s.questClaimed?'✓ Đã nhận Khóa Liên Kết từ nhiệm vụ':
      'Tín Hiệu Đầu Tiên: '+Math.min(2,s.chapters.length)+'/2 chương có mảnh');
@@ -135,8 +138,11 @@
      claim.type='button';claim.disabled=s.chapters.length<rules.QUEST_CHAPTERS;
      claim.addEventListener('click',claimQuest);buttons.append(claim);
    }
-   section.append(title,description,progress,buttons);
-   host.prepend(section);
+   body.append(description,progress,buttons);
+   section.append(title,body);
+   const overview=host.querySelector('#dudu-v43-bond-overview');
+   if(overview)overview.after(section);
+   else host.prepend(section);
  }
  const oldCodex=root.renderCodexList;
  if(typeof oldCodex==='function')root.renderCodexList=function(){

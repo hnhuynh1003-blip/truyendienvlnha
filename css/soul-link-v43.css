@@ -33,3 +33,24 @@ body.dudu-phone-v11 #cyber-phone .dudu-v43-soul-footer span{color:#ddd4fa;}
 body .dudu-v43-soul-chapter-hint{
  display:block;color:#dbcefc;font-size:10px;line-height:1.4;margin-top:4px;
 }
+
+
+/* V43.4 UX repair: the soul economy is an expandable secondary control. */
+body.dudu-phone-v11 #cyber-phone details.dudu-v43-soul-summary{
+ padding:0;overflow:hidden;margin:0 0 8px;
+}
+body.dudu-phone-v11 #cyber-phone details.dudu-v43-soul-summary>summary{
+ display:flex;align-items:center;justify-content:space-between;gap:7px;
+ padding:10px 12px;list-style:none;cursor:pointer;min-height:40px;
+}
+body.dudu-phone-v11 #cyber-phone details.dudu-v43-soul-summary>summary::-webkit-details-marker{display:none;}
+body.dudu-phone-v11 #cyber-phone details.dudu-v43-soul-summary>summary::after{
+ content:'⌄';color:#c3c4ee;margin-left:2px;font-size:16px;
+}
+body.dudu-phone-v11 #cyber-phone details.dudu-v43-soul-summary[open]>summary::after{content:'⌃';}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-soul-content{
+ padding:0 11px 11px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-soul-summary>summary:focus-visible{
+ outline:2px solid #a3e1ff;outline-offset:-2px;
+}

@@ -33,9 +33,9 @@
   <link rel="stylesheet" href="css/npc-portrait-v39.css?v=2">
   <link rel="stylesheet" href="css/inventory-v42.css?v=3">
   <link rel="stylesheet" href="css/companion-v43.css?v=1">
-  <link rel="stylesheet" href="css/npc-bond-v43.css?v=1">
+  <link rel="stylesheet" href="css/npc-bond-v43.css?v=2">
   <link rel="stylesheet" href="css/npc-diary-ui.css?v=1">
-  <link rel="stylesheet" href="css/soul-link-v43.css?v=1">
+  <link rel="stylesheet" href="css/soul-link-v43.css?v=2">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -2663,7 +2663,9 @@
       }
       const panel = document.getElementById('npc-relationship-r3-preview');
       if (IS_SANDBOX_MODE && panel) {
-        panel.style.display = 'block';
+        // The Sổ Tay already renders relation meters inside each NPC card.
+        // Never show a stale global relationship box above another character.
+        panel.style.display = panel.closest('#npc-v31-relation-host')?'none':'block';
         const saved = char && unlocked[char.id];
         const relation = saved && DuduNpcRelationshipV2.previewRelationship(
           saved, 'sandbox-user', storyId, char.id);
@@ -2929,11 +2931,55 @@
       });
     }
 
+    // V43.4: show all milestones even when a story has zero linked NPCs.
+    // Unlike collectibles, these are client-only journal markers.
+    function renderV43BondOverview(host,novel){
+      if(!IS_SANDBOX_MODE||!currentUsername||!novel)return;
+      const progress=getStoryProgress(novel.id);
+      const unlocked=(novel.characters||[]).filter(c=>c&&!c.archived&&
+        progress.collectedCharacters[c.id]);
+      const favorite=unlocked.find(c=>c.id===progress.favoriteNpcV43);
+      const featured=favorite||unlocked[0]||null;
+      const bond=featured?DuduNpcBondV43.norm(
+        progress.collectedCharacters[featured.id].npcBondV43):DuduNpcBondV43.empty();
+      const section=document.createElement('section');
+      section.id='dudu-v43-bond-overview';
+      section.className='dudu-v43-bond-overview';
+      const heading=document.createElement('div');
+      heading.className='dudu-v43-bond-overview-head';
+      const title=document.createElement('strong');title.textContent='💞 Kỷ niệm gắn kết';
+      const streak=document.createElement('span');streak.textContent=featured?
+        '🔥 '+DuduNpcBondV43.shownCurrent(bond)+' ngày':'Chưa liên kết';
+      heading.append(title,streak);
+      const context=document.createElement('p');
+      context.textContent=featured?
+        (favorite?'NPC yêu thích: ':'Đang xem: ')+featured.name+
+        ' · Kỷ lục '+bond.best+' ngày':
+        'Chưa có NPC được liên kết. Các mốc sẽ sáng lên khi bạn gắn kết với một NPC.';
+      const badges=document.createElement('div');
+      badges.className='dudu-v43-bond-milestones';
+      badges.setAttribute('aria-label','Các mốc kỷ niệm gắn kết NPC');
+      for(const day of DuduNpcBondV43.MILESTONES){
+        const earned=!!featured&&bond.best>=day;
+        const badge=document.createElement('span');
+        badge.className='dudu-v43-bond-milestone'+(earned?' is-earned':'');
+        badge.textContent=(earned?'✦ ':'◇ ')+day+' ngày';
+        badge.title=earned?'Đã ghi nhận trong Sandbox':'Chưa đạt';
+        badges.append(badge);
+      }
+      const note=document.createElement('small');
+      note.className='dudu-v43-bond-overview-note';
+      note.textContent='Mốc thử nghiệm · chưa cấp kỷ vật Bảo Tàng';
+      section.append(heading,context,badges,note);
+      host.append(section);
+    }
+
     function renderCodexList() {
       const novel = getSelectedCodexNovel();
       const container = document.getElementById('codex-container');
       if (!container) return;
       container.innerHTML = "";
+      renderV43BondOverview(container,novel);
 
       if (!novel || !novel.characters || novel.characters.length === 0) {
         container.innerHTML = `
@@ -5873,7 +5919,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/phone-inbox-v33.js?v=43-2"></script>
 <script src="js/companion-ui-v43.js?v=1"></script>
 <script src="js/npc-diary-ui.js?v=1"></script>
-<script src="js/soul-link-ui-v43.js?v=1"></script>
+<script src="js/soul-link-ui-v43.js?v=2"></script>
 <script src="js/phone-wallpaper-v34.js?v=2"></script>
 <script src="js/phone-settings-v35.js?v=1"></script>
 <script src="js/phone-wallpaper-v36-custom.js?v=1"></script>

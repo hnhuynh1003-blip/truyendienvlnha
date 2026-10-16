@@ -2480,11 +2480,18 @@ async function main() {
           relationshipV2:{trust:20}};
         if(document.getElementById('cyber-phone').style.display!=='flex')togglePhone();
         openPhoneApp('codex');
+        const overview=document.getElementById('dudu-v43-bond-overview');
+        const visibleMilestones=overview?.querySelectorAll('.dudu-v43-bond-milestone').length===4 &&
+          [...overview.querySelectorAll('.dudu-v43-bond-milestone')].map(n=>n.textContent).join(' ').includes('30 ngày');
+        const soul=document.getElementById('dudu-v43-soul-summary');
+        const compactSoul=soul?.tagName==='DETAILS'&&!soul.open;
+        const overviewFirst=document.querySelector('#codex-container')?.firstElementChild===overview;
         const chosen=v43ChooseFavoriteNpc(novel.id,npc.id);
         const favorite=p.favoriteNpcV43;
         const pressed=[...document.querySelectorAll('#codex-container .dudu-v43-bond-favorite')]
          .some(b=>b.textContent.includes('♥')&&b.getAttribute('aria-pressed')==='true');
         npcCheckInFromCodexV31(novel.id,npc.id);
+        const noStaleGlobal=document.getElementById('npc-relationship-r3-preview')?.style.display==='none';
         const choiceVisible=document.getElementById('npc-daily-choice-card').style.display==='block';
         npcSubmitDailyChoice('thoughtful');
         const v=p.collectedCharacters[npc.id];
@@ -2503,7 +2510,8 @@ async function main() {
         const removed=v43ChooseFavoriteNpc(novel.id,other.id);
         const unset=p.favoriteNpcV43==='';
         const accountIsolated=DuduNpcBondV43.norm({}).totalDays===0;
-        return {chosen,favorite,pressed,choiceVisible,label,
+        return {visibleMilestones,compactSoul,overviewFirst,noStaleGlobal,
+         chosen,favorite,pressed,choiceVisible,label,
          current:streak.current,total:streak.totalDays,trust:v.relationshipV2.trust,
          duplicate,giftSameDay,chatSameDay,otherNotTouched,
          selectOther,favoriteAfter,oldStreakStillThere,removed,unset,
@@ -2515,6 +2523,7 @@ async function main() {
       }
     });
     assert.deepEqual(npcBondV43,{
+      visibleMilestones:true,compactSoul:true,overviewFirst:true,noStaleGlobal:true,
       chosen:true,favorite:'v43-bond-fixture',pressed:true,choiceVisible:true,
       label:true,current:1,total:1,trust:100,duplicate:true,
       giftSameDay:true,chatSameDay:true,otherNotTouched:true,
