@@ -150,6 +150,17 @@
       req.onerror=()=>reject(req.error);
     });}finally{db.close();}
   }
+  async function deleteUpload(uid,storyId,id){
+    const key=keyFor(uid,storyId,id);if(!key)return false;
+    const db=await openDb();
+    try{return await new Promise((resolve,reject)=>{
+      const tx=db.transaction(STORE,'readwrite');
+      tx.objectStore(STORE).delete(key);
+      tx.oncomplete=()=>resolve(true);
+      tx.onerror=()=>reject(tx.error);
+      tx.onabort=()=>reject(tx.error||new Error('delete-aborted'));
+    });}finally{db.close();}
+  }
   function makeId(){return 'own-'+Date.now()+'-'+Math.random().toString(36).slice(2,9);}
-  return Object.freeze({CATALOG,LEGACY,GENDERS,WORLDS,preset,search,sourceFor,keyFor,makeId,saveUpload,readUpload});
+  return Object.freeze({CATALOG,LEGACY,GENDERS,WORLDS,preset,search,sourceFor,keyFor,makeId,saveUpload,readUpload,deleteUpload});
 });
