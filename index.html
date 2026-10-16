@@ -4135,11 +4135,11 @@ document.getElementById('phone-home-screen').style.display = 'none';
         {wallpaperId:chosen,worldId:null,usedFallback:false};
       document.body.dataset.duduPhoneWallpaper=resolved.wallpaperId;
       renderPhoneTypographyV31();
-      document.querySelectorAll('#phone-app-settings [data-dudu-wallpaper-choice]').forEach(button=>{
+      document.querySelectorAll('#cyber-phone [data-dudu-wallpaper-choice]').forEach(button=>{
         button.setAttribute('aria-pressed',
           String(button.dataset.duduWallpaperChoice===chosen));
       });
-      document.querySelectorAll('#phone-app-settings [data-wallpaper-mode]').forEach(button=>{
+      document.querySelectorAll('#cyber-phone [data-wallpaper-mode]').forEach(button=>{
         button.setAttribute('aria-pressed',String(button.dataset.wallpaperMode===mode));
       });
       const info=document.getElementById('dudu-v28-active-world');
@@ -4148,6 +4148,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
         resolved.worldId?
           'Đang dùng nền theo truyện: '+art.WORLDS.find(w=>w.id===resolved.worldId).label:
           'Truyện này chưa có thể loại nền phù hợp: giữ hình nền cá nhân.';
+      // V44: options were moved into the modal; keep the preview in sync.
+      window.DuduWallpaperGalleryV34?.sync?.();
     }
     function setPhoneWallpaperModeV28(mode){
       if(!IS_SANDBOX_MODE||!window.DuduMultiverseArtV28)return;

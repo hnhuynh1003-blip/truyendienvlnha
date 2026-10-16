@@ -1529,11 +1529,14 @@ async function main() {
       try{
         if(document.getElementById('cyber-phone').style.display!=='flex')togglePhone();
         openPhoneApp('settings');
-        const choices=document.querySelectorAll('#phone-app-settings [data-dudu-wallpaper-choice]');
+        const gallery=document.getElementById('dudu-v34-overlay');
+        const choices=gallery?.querySelectorAll('[data-dudu-wallpaper-choice]')||[];
+        const animeCount=gallery?.querySelectorAll('#dudu-v37-anime-panel [data-dudu-wallpaper-choice]').length||0;
         const initial=document.body.dataset.duduPhoneWallpaper;
         setPhoneWallpaperV27('sakura');
         const chosen=document.body.dataset.duduPhoneWallpaper;
-        const selected=document.querySelector('[data-dudu-wallpaper-choice="sakura"]').getAttribute('aria-pressed');
+        const selected=gallery?.querySelector('[data-dudu-wallpaper-choice="sakura"]')?.getAttribute('aria-pressed');
+        const currentName=document.getElementById('dudu-v34-current-name')?.textContent;
         const beforeBackground=getComputedStyle(document.getElementById('phone-home-screen')).backgroundImage;
         currentUsername='wallpaper-second-account';
         renderPhoneWallpaperV27();
@@ -1547,7 +1550,7 @@ async function main() {
         setPhoneWallpaperV27('../../unsafe');
         const invalidIgnored=document.body.dataset.duduPhoneWallpaper===back;
         return {
-          initial,choices:choices.length,chosen,selected,otherBefore,otherChosen,back,
+          initial,choices:choices.length,animeCount,chosen,selected,currentName,otherBefore,otherChosen,back,
           stylesDifferent:beforeBackground!==restoredBackground?false:beforeBackground.includes('radial-gradient'),
           invalidIgnored,unchanged:JSON.stringify(userProfile)===beforeProfile,
           writes:window.__firestoreWrites.length-beforeWrites
@@ -1562,7 +1565,9 @@ async function main() {
         phoneHome();
       }
     });
-    assert.equal(wallpaperR4.choices,8);
+    assert.equal(wallpaperR4.choices,15,'V44 gallery includes 4 calm, 4 world, 4 classic and 3 anime choices');
+    assert.equal(wallpaperR4.animeCount,3,'Anime wallpapers live in the gallery, not Settings');
+    assert.equal(wallpaperR4.currentName,'Hoa anh đào','V44 preview updates when wallpaper selection changes');
     assert.equal(wallpaperR4.chosen,'sakura');
     assert.equal(wallpaperR4.selected,'true');
     assert.equal(wallpaperR4.otherBefore,'midnight');
@@ -1594,7 +1599,7 @@ async function main() {
         openPhoneApp('settings');
         setPhoneWallpaperV27('jade');
         setPhoneWallpaperModeV28('world');
-        const selected=document.querySelector('#phone-app-settings [data-wallpaper-mode="world"]')?.getAttribute('aria-pressed');
+        const selected=document.querySelector('#dudu-v34-overlay [data-wallpaper-mode="world"]')?.getAttribute('aria-pressed');
         if(story){
           story.genre='Tiên hiệp';
           delete story.worldArtId;
@@ -1612,7 +1617,7 @@ async function main() {
           selected,matched,fallback,personal,galleryIsPresent,
           saved:JSON.stringify(userProfile)===profileBefore,
           writes:window.__firestoreWrites.length-writes,
-          modeCount:document.querySelectorAll('#phone-app-settings [data-wallpaper-mode]').length
+          modeCount:document.querySelectorAll('#dudu-v34-overlay [data-wallpaper-mode]').length
         };
       }finally{
         currentUsername=account;activeChatNovelId=oldChat;selectedNovelIndex=oldNovelIndex;
