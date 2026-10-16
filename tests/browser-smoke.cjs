@@ -836,6 +836,10 @@ async function main() {
       quest.current=0;
       quest.claimed=false;
       userProfile.dailyReadLog={day:'2000-01-01',chapters:[]};
+      // Simulate the new calendar day across BOTH legacy read log and V43
+      // idempotency ledger, not a same-day manual reset of only one flag.
+      userProfile.economyV43={...DuduEconomyCoreV43.norm(userProfile.economyV43),
+        day:'2000-01-01',events:[]};
       const expBefore=userProfile.exp;
       readChapter(0);
       const counted=quest.current;
