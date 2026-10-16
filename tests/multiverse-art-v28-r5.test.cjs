@@ -65,7 +65,7 @@ test('V28 world wallpaper controls never write Firestore or alter story/characte
  assert.match(html,/function setPhoneWallpaperModeV28\(mode\)/);
  assert.match(html,/function activeStoryForWallpaperV28\(\)/);
  assert.match(html,/DuduMultiverseArtV28\.writeMode\(localStorage/);
- assert.match(html,/DuduMultiverseArtV28\.readMode\(localStorage/);
+ assert.match(html,/art\.readMode\(localStorage/);
  assert.match(html,/resolved\.worldId/);
  assert.doesNotMatch(art.toString(),/saveCurrentAccount\(|firebase|fetch\(/);
  assert.match(css,/data-dudu-phone-wallpaper="world-xianxia"/);
