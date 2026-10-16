@@ -88,3 +88,44 @@
 @media(max-width:420px){
  #npc-r8-gallery-panel .dudu-v39-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
+
+/* V39.1: give scrolling portrait thumbnails their own paint area.
+   Action, selection and upload controls must remain outside the grid. */
+#npc-r8-gallery-panel .dudu-v39-picker-body{display:flex;flex-direction:column;min-width:0;gap:8px}
+#npc-r8-gallery-panel #npc-r8-gallery{
+ flex:none;display:grid;position:relative;isolation:isolate;
+ min-width:0;width:100%;box-sizing:border-box;
+ scrollbar-gutter:stable;
+}
+#npc-r8-gallery-panel .dudu-v39-tile{
+ position:relative;display:flex;float:none;width:100%;max-width:100%;
+ height:auto;min-height:0;box-sizing:border-box;z-index:0;
+ overflow:hidden;white-space:normal;
+}
+#npc-r8-gallery-panel .dudu-v39-tile-art{flex:none;min-height:0}
+#npc-r8-gallery-panel .dudu-v39-tile>span:last-child{
+ display:block;position:static;min-height:0;line-height:1.25;
+ font-size:9px;text-overflow:ellipsis;overflow:hidden;
+}
+#npc-r8-gallery-panel #npc-v39-more,
+#npc-r8-gallery-panel .dudu-v39-selection,
+#npc-r8-gallery-panel .dudu-v39-upload-label,
+#npc-r8-gallery-panel #npc-r8-upload-file,
+#npc-r8-gallery-panel #npc-v39-upload-help,
+#npc-r8-gallery-panel #npc-v39-upload-feedback{
+ flex:none;position:relative;z-index:1;clear:both;
+ margin-left:0;margin-right:0;
+}
+#npc-r8-gallery-panel .dudu-v39-selection{
+ padding:8px;border:1px solid #647da16b;border-radius:10px;
+ background:#182740;flex-wrap:wrap;
+}
+#npc-r8-gallery-panel #npc-v39-more{margin:0}
+#npc-r8-gallery-panel .dudu-v39-preview{display:block!important}
+#npc-r8-gallery-panel #npc-r8-selection-label{display:block!important}
+#npc-r8-gallery-panel #npc-r8-upload-file{
+ height:auto;min-height:30px;max-width:100%;box-sizing:border-box;
+}
+@media(max-width:420px){
+ #npc-r8-gallery-panel #npc-r8-gallery{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
