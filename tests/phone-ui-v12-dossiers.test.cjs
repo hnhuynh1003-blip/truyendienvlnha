@@ -18,7 +18,10 @@ test('NPC V12 profile renders in sandbox only and never changes unlock or save f
 });
 test('inventory detail is read only, uses same object identity and safe DOM',()=>{
   const a=html.indexOf('function renderInventoryDetail()');
-  const b=html.indexOf('function renderInventory()');
+  // The V43.5.3 mutation handler is intentionally outside the read-only
+  // V12 inspector; inspect only the original function boundary.
+  const dedicated=html.indexOf('function useFunctionItemV43(',a);
+  const b=dedicated>a?dedicated:html.indexOf('function renderInventory()',a);
   const fn=html.slice(a,b);
   assert.ok(a>0&&b>a);
   assert.match(fn,/inventory\.find\(i=>i===inventoryDetailSelection\)/);
