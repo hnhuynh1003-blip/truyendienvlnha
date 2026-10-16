@@ -1144,6 +1144,12 @@ async function main() {
       try{
         activeChatNovelId=story.id;
         openPhoneApp('chat');
+        // V33 deliberately opens the inbox first. Navigate to the conversation
+        // via the real contacts UI so the portrait opener can receive focus.
+        document.querySelector('.dudu-v33-tabs button[data-tab="all"]')?.click();
+        const thread=[...document.querySelectorAll('#dudu-v33-inbox-list .dudu-v33-thread')]
+          .find(b=>b.querySelector('strong')?.textContent===npc.name);
+        thread?.click();
         const selector=document.getElementById('chat-character-selector');
         selector.value=npc.id;
         switchChatCharacter();
