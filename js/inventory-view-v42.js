@@ -9,7 +9,7 @@
  if(root)root.DuduInventoryViewV42=api;
 })(typeof window!=='undefined'?window:null,function(model,catalog){
  'use strict';
- let pageSize=24,last=null;
+ let pageSize=24,last=null,focusIndex=null;
  const $=id=>typeof document!=='undefined'?document.getElementById(id):null;
  const make=(tag,klass,value)=>{
   const node=document.createElement(tag);
@@ -61,16 +61,77 @@
   }
   return {container,color:data?.light||'#988fb8'};
  }
+
+ // Keep the modal at phone-root level: it must never be a sticky grid child.
+ function ensureModal(){
+  if(typeof document==='undefined')return null;
+  let overlay=$('inventory-v42-modal');
+  if(overlay)return overlay;
+  const host=$('cyber-phone');
+  if(!host)return null;
+  overlay=make('div','dudu-v42-modal-overlay');
+  overlay.id='inventory-v42-modal';overlay.hidden=true;
+  overlay.setAttribute('aria-hidden','true');
+  const dialog=make('div','dudu-v42-modal-dialog');
+  dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');
+  dialog.setAttribute('aria-labelledby','inventory-v42-modal-heading');
+  dialog.setAttribute('aria-describedby','inventory-v42-modal-description');
+  dialog.tabIndex=-1;
+  const scroll=make('section','dudu-v42-dialog-scroll');
+  scroll.id='inventory-v42-modal-scroll';
+  dialog.append(scroll);overlay.append(dialog);host.append(overlay);
+  overlay.addEventListener('pointerdown',event=>{
+    if(event.target===overlay&&last?.onClose)last.onClose();
+  });
+  // Intercept Escape before the parent phone's shortcuts, trap focus inside.
+  document.addEventListener('keydown',event=>{
+    if(overlay.hidden||!overlay.isConnected)return;
+    if(event.key==='Escape'){
+      event.preventDefault();event.stopImmediatePropagation();
+      if(last?.onClose)last.onClose();
+    }else if(event.key==='Tab'){
+      const focusables=[...dialog.querySelectorAll('button:not(:disabled),[href],input:not(:disabled),select:not(:disabled),[tabindex]:not([tabindex="-1"])')]
+        .filter(el=>el.getClientRects().length);
+      if(!focusables.length){event.preventDefault();dialog.focus();return;}
+      const first=focusables[0],lastFocus=focusables[focusables.length-1];
+      if(event.shiftKey&&(document.activeElement===first||!dialog.contains(document.activeElement))){
+        event.preventDefault();lastFocus.focus();
+      }else if(!event.shiftKey&&(document.activeElement===lastFocus||!dialog.contains(document.activeElement))){
+        event.preventDefault();first.focus();
+      }
+    }
+  },true);
+  return overlay;
+ }
+ function hideModal(restoreFocus=true){
+  const overlay=$('inventory-v42-modal');
+  if(!overlay||overlay.hidden)return;
+  overlay.hidden=true;overlay.setAttribute('aria-hidden','true');
+  overlay.querySelector('#inventory-v42-modal-scroll')?.replaceChildren();
+  if(restoreFocus&&Number.isSafeInteger(focusIndex)){
+    const app=$('phone-app-inventory');
+    if(app?.style.display==='flex'){
+      const target=$('inventory-container')?.querySelector('[data-inventory-index="'+focusIndex+'"]');
+      if(target?.isConnected)target.focus({preventScroll:true});
+    }
+  }
+ }
+
  function inspector({detail,entry,args}){
-  const panel=$('inventory-v12-detail');if(!panel)return;
+  const legacy=$('inventory-v12-detail');
+  if(legacy){legacy.replaceChildren();legacy.style.display='none';}
+  const overlay=ensureModal();if(!overlay)return;
+  const panel=$('inventory-v42-modal-scroll');
+  if(!detail){hideModal();return;}
+  if(!panel)return;
+  focusIndex=entry.index;
   panel.replaceChildren();
-  panel.classList.remove('dudu-v42-detail-open');
-  if(!detail){panel.style.display='none';return;}
   const head=make('div','dudu-v42-inspector-head');
   const {container:icon}=artwork(detail,args.art);
   icon.classList.add('dudu-v42-large-art');
   const info=make('div','dudu-v42-inspector-info');
   const title=make('strong','dudu-v42-inspector-name',detail.name);
+  title.id='inventory-v42-modal-heading';
   const sub=make('small','',detail.rank+' · '+detail.categoryLabel+' · '+detail.worldLabel);
   const id=make('code','dudu-v42-code',detail.id||'legacy-unknown');
   info.append(title,sub,id);
@@ -79,6 +140,7 @@
   close.addEventListener('click',()=>args.onClose());
   head.append(icon,info,close);
   const desc=make('p','dudu-v42-inspector-desc',detail.description);
+  desc.id='inventory-v42-modal-description';
   const facts=make('div','dudu-v42-inspector-facts');
   function fact(key,value){
    const row=make('div','dudu-v42-fact');
@@ -122,8 +184,9 @@
    footer.append(discard);
   }
   panel.append(head,desc,facts,footer);
-  panel.style.display='block';
-  panel.classList.add('dudu-v42-detail-open');
+  const wasHidden=overlay.hidden;
+  overlay.hidden=false;overlay.setAttribute('aria-hidden','false');
+  if(wasHidden){panel.scrollTop=0;close.focus({preventScroll:true});}
  }
  function render(args){
   if(!model||!args||typeof document==='undefined')return false;
@@ -137,9 +200,10 @@
   const result=model.list(args.inventory,options);
   const all=model.list(args.inventory,{...options,category:'ALL',query:'',rank:'ALL',
     realm:'ALL',storyId:'ALL',limit:1}).total;
+  // Count deliberately omitted from the search row (mobile space).
+  // Keep the status node empty for compatibility with legacy scripts.
   const count=$('inventory-v2-count');
-  if(count)count.textContent='Hiện '+result.entries.length+'/'+result.total+
-   ' · Sở hữu '+all+' vật phẩm';
+  if(count){count.textContent='';count.hidden=true;}
   const categoryPicker=$('inventory-v42-categories');
   if(categoryPicker)for(const button of categoryPicker.querySelectorAll('button[data-category]')){
    const active=button.dataset.category===options.category;
@@ -195,8 +259,9 @@
   input.value=category;reset();
  }
  function close(){
-  const panel=$('inventory-v12-detail');
-  if(panel){panel.replaceChildren();panel.classList.remove('dudu-v42-detail-open');panel.style.display='none';}
+  hideModal(false);
+  const legacy=$('inventory-v12-detail');
+  if(legacy){legacy.replaceChildren();legacy.style.display='none';}
  }
  return Object.freeze({render,reset,more,chooseCategory,close,filters});
 });
