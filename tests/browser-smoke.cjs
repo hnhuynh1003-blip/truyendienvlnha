@@ -909,7 +909,7 @@ async function main() {
     assert.equal(expansionSmoke.disabled,true);
     assert.ok(expansionSmoke.portrait.length>0,'NPC avatar initials must render');
     assert.match(expansionSmoke.filtered,/Dao Gọt Trái Cây Cũ/);
-    assert.match(expansionSmoke.searchCount,/Hiện 1\/1 · Sở hữu 3 vật phẩm|1\/3/);
+    assert.equal(expansionSmoke.searchCount,'');
     assert.equal(expansionSmoke.protectedStillThere,true,'Souvenir must not be discarded');
     assert.equal(expansionSmoke.correctRemoved,true,'Filtering must not delete a different item');
     assert.equal(expansionSmoke.writes,0,'Sandbox R5 and inventory never write Firestore');
@@ -1387,7 +1387,7 @@ async function main() {
       const rows=document.querySelectorAll('#inventory-container .dudu-inventory-v12-row').length;
       const first=document.querySelector('#inventory-container .dudu-inventory-v12-open');
       first?.click();
-      const inspector=document.getElementById('inventory-v12-detail');
+      const inspector=document.getElementById('inventory-v42-modal');
       const itemRows=[...document.querySelectorAll('#inventory-container .dudu-inventory-v12-row')];
       const artNodes=itemRows.flatMap(row=>[...row.querySelectorAll('img.dudu-item-v13-art')]);
       const illustrations={
@@ -1401,14 +1401,20 @@ async function main() {
       const details={
         illustrations,
         rows,
-        visible:inspector.style.display,
+        visible:!inspector.hidden,
+        modalInsidePhone:(()=>{
+          const dialog=inspector.querySelector('.dudu-v42-modal-dialog')?.getBoundingClientRect();
+          const phone=document.getElementById('cyber-phone').getBoundingClientRect();
+          return !!dialog&&dialog.left>=phone.left&&dialog.right<=phone.right&&
+            dialog.top>=phone.top&&dialog.bottom<=phone.bottom;
+        })(),
         text:inspector.textContent,
         afterView:JSON.stringify(userProfile.inventory),
         openButtons:document.querySelectorAll('#inventory-container .dudu-inventory-v12-open').length
       };
       const close=inspector.querySelector('button[aria-label="Đóng chi tiết vật phẩm"]');
       close?.click();
-      details.closed=inspector.style.display==='none';
+      details.closed=inspector.hidden;
       details.sameInventory=details.afterView===inventoryBefore;
       details.writes=window.__firestoreWrites.length-initialWrites;
       userProfile=JSON.parse(snapshot);
@@ -1437,7 +1443,8 @@ async function main() {
     assert.deepEqual(dossierV12.details.illustrations.ranks,['F','E','F']);
     assert.equal(dossierV12.details.rows,3);
     assert.equal(dossierV12.details.openButtons,3);
-    assert.equal(dossierV12.details.visible,'block');
+    assert.equal(dossierV12.details.visible,true);
+    assert.equal(dossierV12.details.modalInsidePhone,true);
     assert.match(dossierV12.details.text,/Mẩu Bánh Mì Mốc/);
     assert.equal(dossierV12.details.closed,true);
     assert.equal(dossierV12.details.sameInventory,true);
@@ -1622,16 +1629,17 @@ async function main() {
         const tileIconCount=tiles.filter(tile=>!!tile.querySelector('img.dudu-item-v13-art')).length;
         const before=JSON.stringify(userProfile.inventory);
         tiles[0].click();
-        const inspector=document.getElementById('inventory-v12-detail');
-        const open=inspector.style.display==='block';
-        const inspectDiscard=inspector.querySelector('.dudu-v27-inventory-actions .btn-danger');
+        const inspector=document.getElementById('inventory-v42-modal');
+        const open=!inspector.hidden;
+        const inspectDiscard=inspector.querySelector('.dudu-v42-discard');
         window.confirm=()=>false;
         inspectDiscard?.click();
         const canceled=JSON.stringify(userProfile.inventory)===before;
+        inspector.querySelector('[aria-label="Đóng chi tiết vật phẩm"]')?.click();
         const protectedTile=[...grid.querySelectorAll('.dudu-v27-inventory-slot')]
           .find(tile=>tile.textContent.includes('🔒'));
         protectedTile?.click();
-        const protectedNoDiscard=!inspector.querySelector('.dudu-v27-inventory-actions .btn-danger');
+        const protectedNoDiscard=!inspector.querySelector('.dudu-v42-discard');
         const protectedTag=!!protectedTile;
         const count=tiles.length;
         return {count,actualColumns,widthOK,open,canceled,protectedNoDiscard,
@@ -1647,7 +1655,7 @@ async function main() {
       }
     });
     assert.equal(grid375.count,3);
-    assert.equal(grid375.actualColumns,4);
+    assert.equal(grid375.actualColumns,3);
     assert.equal(grid375.widthOK,true);
     assert.equal(grid375.open,true);
     assert.equal(grid375.canceled,true);
@@ -1684,7 +1692,7 @@ async function main() {
         renderInventory();phoneHome();
       }
     });
-    assert.equal(grid320.cols,3);
+    assert.equal(grid320.cols,2);
     assert.equal(grid320.tiles,3);
     assert.ok(grid320.overflow<=1,'Inventory grid must not overflow 320px phone');
 
