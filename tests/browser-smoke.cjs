@@ -1603,6 +1603,40 @@ async function main() {
     assert.equal(worldV28.saved,true);
     assert.equal(worldV28.writes,0);
 
+    // V29 actual phone release: the main shortcut opens real story cards.
+    const storyAppV29=await page.evaluate(()=>{
+      if(document.getElementById('cyber-phone').style.display!=='flex')togglePhone();
+      openPhoneApp('stories');
+      const grid=document.getElementById('dudu-v29-story-grid');
+      const buttons=[...grid.querySelectorAll('button.dudu-v29-read-button')];
+      const validButtons=buttons.every(b=>b.type==='button'&&b.getAttribute('aria-label')?.startsWith('Mở truyện'));
+      const noDuplicateHome=[...document.querySelectorAll('#phone-home-screen .app-icon')].every(b=>
+        b.getAttribute('onclick')!=="openPhoneApp('codex')");
+      const directStory=document.querySelector('#phone-home-screen .app-icon[onclick="openPhoneApp(\'stories\')"]');
+      phoneHome();
+      return {cards:grid.children.length,expected:novels.length,validButtons,
+        directStory:!!directStory,noDuplicateHome};
+    });
+    assert.equal(storyAppV29.cards,storyAppV29.expected);
+    assert.equal(storyAppV29.validButtons,true);
+    assert.equal(storyAppV29.directStory,true);
+    assert.equal(storyAppV29.noDuplicateHome,true);
+
+    // All preview assets must decode in Chromium, not just pass RIFF header checks.
+    const imageV29=await page.evaluate(async()=>{
+      const images=[
+        ...DuduMultiverseArtV28.NPC.map(n=>'./'+n.portraitPath),
+        ...DuduMultiverseArtV28.NPC.map(n=>'./'+n.avatarPath),
+        ...DuduMultiverseArtV28.WORLDS.map(w=>'./'+w.image)
+      ];
+      return await Promise.all(images.map(src=>new Promise(resolve=>{
+        const img=new Image();img.onload=()=>resolve({src,ok:img.naturalWidth>0&&img.naturalHeight>0});
+        img.onerror=()=>resolve({src,ok:false});img.src=src;
+      })));
+    });
+    assert.equal(imageV29.length,16);
+    assert.deepEqual(imageV29.filter(x=>!x.ok),[]);
+
     // V27 R3: inventory instances are individually selectable square tiles,
     // no repetitive open/discard action bars. Vứt only in confirmed inspector.
     const grid375=await page.evaluate(()=>{
