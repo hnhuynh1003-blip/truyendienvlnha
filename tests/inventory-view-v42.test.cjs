@@ -9,7 +9,7 @@ const model=require('../js/inventory-model-v42.js');
 
 test('V42: new inventory implementation is wired only for Sandbox; reader keeps legacy',()=>{
  assert.match(html,/src="js\/inventory-model-v42.js\?v=1"/);
- assert.match(html,/src="js\/inventory-view-v42.js\?v=1"/);
+ assert.match(html,/src="js\/inventory-view-v42.js\?v=\d+"/);
  assert.ok(html.indexOf('src="js/inventory-model-v42.js')<
    html.indexOf('src="js/inventory-view-v42.js'));
  assert.match(html,/if\(IS_SANDBOX_MODE&&window\.DuduInventoryViewV42\)/);
