@@ -2252,7 +2252,7 @@ async function main() {
           renderPhoneWallpaperV27();
         }
       });
-      assert.equal(v30.apps,8,'Home includes all 8 app shortcuts');
+      assert.equal(v30.apps,9,'Home includes nine Sandbox app shortcuts, including DUDU FUN');
       assert.equal(v30.dockCount,4,'Dock has only four primary apps');
       assert.equal(v30.visibleAppIds.some(s=>s.includes("openPhoneApp('profile')")),false);
       assert.equal(v30.visibleAppIds.some(s=>s.includes("openPhoneApp('codex')")),true);
