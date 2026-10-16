@@ -95,7 +95,8 @@ async function handleSignedFrameEvidence(req,env,origin){
 
 const AVATAR_DRAFT_PATHS=Object.freeze({
   '/v1/avatar-drafts/upload':'POST',
-  '/v1/avatar-drafts/delete':'POST'
+  '/v1/avatar-drafts/delete':'POST',
+  '/v1/avatar-drafts/mine':'GET'
 });
 async function boundedPhotoBytes(req){
   const declared=Number(req.headers.get('Content-Length')||0);
@@ -126,6 +127,15 @@ async function handleAvatarDraft(req,env,path,origin){
     return error('avatar-storage-unavailable','Kho lưu trữ chưa được cấu hình.',503,origin,env);
   const bucket=env.DUDU_AVATAR_PRIVATE_BUCKET;
   const store=env.DUDU_PLAYER_APPEARANCE.getByName('player-avatar-'+identity.uid);
+  if(path==='/v1/avatar-drafts/mine'){
+    try{
+      const drafts=await store.listPrivatePhotoDrafts();
+      return json({drafts,uploadsEnabled:true,imagesPublic:false},
+        200,origin,env);
+    }catch(_){
+      return error('drafts-unavailable','Không thể đọc danh sách ảnh riêng tư.',503,origin,env);
+    }
+  }
   let result;
   if(path==='/v1/avatar-drafts/upload'){
     const mime=req.headers.get('Content-Type')?.toLowerCase();
