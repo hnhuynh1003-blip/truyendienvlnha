@@ -39,9 +39,9 @@ jobs:
               if len(raw) > 12000000:
                   raise ValueError(f"Source image is too large: {name}")
               image = Image.open(BytesIO(raw)).convert("RGB")
-              if image.width < 750 or image.height < 1300:
+              if image.width < 700 or image.height < 1200:
                   raise ValueError(f"Source image unexpectedly small: {name} ({image.size})")
-              image = ImageOps.fit(image, (1080, 1920), method=Image.Resampling.LANCZOS)
+              image = ImageOps.fit(image, (720, 1280), method=Image.Resampling.LANCZOS)
               out = target / (name + ".webp")
               image.save(out, "WEBP", quality=87, method=6)
               print(name, out, out.stat().st_size)
