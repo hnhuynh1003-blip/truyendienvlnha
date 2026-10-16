@@ -1,0 +1,36 @@
+/* DUDU V38: canonical NPC portraits throughout chat, contacts and soul cards. */
+body.dudu-phone-v11 #cyber-phone .dudu-v33-avatar{
+ overflow:hidden;background-repeat:no-repeat;
+ background-color:#253b56;background-size:cover;
+ background-position:center;isolation:isolate;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v33-avatar img{
+ display:block;width:100%;height:100%;object-fit:cover;
+ border-radius:inherit;image-rendering:auto;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-npc-v12-portrait,
+body.dudu-phone-v11 #cyber-phone .dudu-npc-v27-chat-portrait,
+body.dudu-phone-v11 .npc-v15-image{
+ background-repeat:no-repeat;image-rendering:auto;
+}
+body.dudu-phone-v11 .soul-npc-card{gap:9px;}
+body.dudu-phone-v11 .dudu-v38-soul-profile{
+ display:flex;align-items:center;gap:10px;flex:1;min-width:0;
+}
+body.dudu-phone-v11 .dudu-v38-soul-details{min-width:0;flex:1;}
+body.dudu-phone-v11 .dudu-v38-soul-avatar{
+ flex:none;display:grid;place-items:center;
+ width:51px;height:63px;overflow:hidden;border-radius:12px;
+ background:linear-gradient(135deg,#344e75,#28304b);
+ background-position:center;background-size:cover;background-repeat:no-repeat;
+ border:1px solid #b8c2e288;color:#cdd8f2;font-size:23px;
+}
+body.dudu-phone-v11 .dudu-v38-soul-avatar img{
+ display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit;
+}
+body.dudu-phone-v11 .soul-npc-card>div:last-child{flex:none;}
+@media(max-width:390px){
+ body.dudu-phone-v11 .soul-npc-card{padding:8px;gap:7px;}
+ body.dudu-phone-v11 .dudu-v38-soul-avatar{width:42px;height:52px;}
+ body.dudu-phone-v11 .soul-npc-card .btn{font-size:9px!important;padding:6px!important;}
+}
