@@ -24,7 +24,7 @@
   <link rel="stylesheet" href="css/phone-refinement-v31.css?v=1">
   <link rel="stylesheet" href="css/phone-social-v32.css?v=1">
   <link rel="stylesheet" href="css/phone-inbox-v33.css?v=3">
-  <link rel="stylesheet" href="css/phone-wallpaper-v34.css?v=1">
+  <link rel="stylesheet" href="css/phone-wallpaper-v34.css?v=2">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -52,7 +52,7 @@
   <script src="js/npc-portrait-library-v1.js"></script>
   <script src="js/npc-anime-candidates-v14.js"></script>
   <script src="js/player-avatar-v16.js"></script>
-  <script src="js/phone-wallpaper-v27-r4.js"></script>
+  <script src="js/phone-wallpaper-v27-r4.js?v=34-2"></script>
   <script src="js/dudu-multiverse-art-v28-r5.js"></script>
   <script src="js/phone-typography-v31.js"></script>
   <script src="js/red-packet-v32.js"></script>
@@ -1653,7 +1653,7 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=34-1').catch((err) => console.log('SW error:', err));
+        navigator.serviceWorker.register('./sw.js?v=34-2').catch((err) => console.log('SW error:', err));
       });
     }
 
@@ -5577,6 +5577,6 @@ document.getElementById('phone-home-screen').style.display = 'none';
     startCooldownTicker();
   </script>
 <script src="js/phone-inbox-v33.js?v=3"></script>
-<script src="js/phone-wallpaper-v34.js?v=1"></script>
+<script src="js/phone-wallpaper-v34.js?v=2"></script>
 </body>
 </html>
