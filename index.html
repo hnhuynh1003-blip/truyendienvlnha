@@ -54,7 +54,7 @@
   <script src="js/npc-persona-v2-r6.js"></script>
   <script src="js/npc-author-v2-r7.js"></script>
   <script src="js/story-dates-v1.js"></script>
-  <script src="js/npc-portrait-library-v1.js?v=39-1"></script>
+  <script src="js/npc-portrait-library-v1.js?v=40-1"></script>
   <script src="js/npc-anime-candidates-v14.js"></script>
   <script src="js/player-avatar-v16.js"></script>
   <script src="js/phone-wallpaper-v27-r4.js?v=37-1"></script>
@@ -1615,7 +1615,7 @@
             <span class="dudu-v39-chevron" aria-hidden="true">⌄</span>
           </summary>
           <div class="dudu-v39-picker-body">
-            <p class="dudu-v39-tip">76 ảnh theo mã ID: 60 nữ, 12 nam, 4 anime nét cao. Tính cách được thiết lập riêng cho NPC.</p>
+            <p class="dudu-v39-tip">72 ảnh anime premium (60 nữ, 12 nam) + 4 ảnh bổ sung. Tính cách được thiết lập riêng cho NPC.</p>
             <div id="npc-r9-filter-bar" class="dudu-v39-filters">
               <select id="npc-r9-gender" aria-label="Lọc ảnh theo giới tính" onchange="npcResetPortraitPageV39()">
                 <option value="all">Tất cả (76)</option><option value="female">Nữ (64)</option><option value="male">Nam (12)</option>
@@ -1671,7 +1671,7 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=39-1').catch((err) => console.log('SW error:', err));
+        navigator.serviceWorker.register('./sw.js?v=40-1').catch((err) => console.log('SW error:', err));
       });
     }
 
@@ -2385,12 +2385,16 @@
         img.src=src;
       };
       const authored=npc.portraitPresetId;
-      const recommended=DuduNpcPersonaR6.previewNpc(npc)?.previewPortraitPresetId;
-      const preset=DuduNpcPortraitLibrary.preset(authored)?authored:recommended;
+      // Image selection remains independent from personality.
+      const preset=DuduNpcPortraitLibrary.preset(authored)?authored:null;
       const packaged=typeof npc.portraitPath==='string'&&
         DuduNpcAuthorR7.ALLOWED_PORTRAIT.test(npc.portraitPath)?'./'+npc.portraitPath:null;
       const candidate=DuduNpcAnimeCandidatesV14.styleFor(npc.portraitAnimeId);
       const fallback=()=>{
+        if(!packaged&&window.DuduNpcPremiumV40?.paint(element,preset)){
+          element.title='Chân dung anime premium '+preset;
+          return;
+        }
         if(candidate){
           if(element.dataset.portraitToken!==token)return;
           element.textContent='';
@@ -5621,7 +5625,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
     renderHome();
     startCooldownTicker();
   </script>
-<script src="js/npc-portrait-v39.js?v=1"></script>
+<script src="js/npc-premium-v40.js?v=1"></script>
+<script src="js/npc-portrait-v39.js?v=2"></script>
 <script src="js/phone-inbox-v33.js?v=4"></script>
 <script src="js/phone-wallpaper-v34.js?v=2"></script>
 <script src="js/phone-settings-v35.js?v=1"></script>
