@@ -54,6 +54,7 @@
   <script src="js/dudu-multiverse-art-v28-r5.js"></script>
   <script src="js/phone-typography-v31.js"></script>
   <script src="js/red-packet-v32.js"></script>
+  <script src="js/chat-social-v32.js"></script>
   <script src="js/dudu-multiverse-ui-v28-r5.js"></script>
   <script src="js/player-avatar-ui-v16.js"></script>
   <script src="js/player-avatar-sync-plan-v20.js"></script>
@@ -2542,6 +2543,7 @@
         }
       }
       renderChatMessages(charId);
+      if(IS_SANDBOX_MODE)syncRedPacketButtonsV32();
     }
 
     function renderChatMessages(charId) {
@@ -2555,6 +2557,7 @@
       if (history.length === 0) {
         const name = char ? char.name : 'nhân vật';
         container.innerHTML = `<div class="dudu-v31-chat-empty" style="text-align: center; color: #64748b; font-size: 10px; margin-top: 20px;">[Đã mở tần số kết nối với ${escapeHtml(name)}]<br>Hãy gửi tin nhắn để trò chuyện...</div>`;
+        renderRedPacketEventsV32(container,activeChatNovelId||(novels[selectedNovelIndex]||{}).id,charId);
         return;
       }
 
@@ -2584,7 +2587,8 @@
         const avatarBadge=div.querySelector('.dudu-player-chat-badge-v16');
         if(avatarBadge)renderPlayerAvatarV16(avatarBadge);
       });
-      container.scrollTop = container.scrollHeight;
+      renderRedPacketEventsV32(container,activeChatNovelId||(novels[selectedNovelIndex]||{}).id,charId);
+      container.scrollTop=container.scrollHeight;
     }
 
     function clearCurrentChat() {
@@ -3536,13 +3540,15 @@
     });
 
     function phoneHome() {
-      document.querySelectorAll('.phone-sub-app').forEach(el => el.style.display = 'none');
+            closeRedPacketV32();
+document.querySelectorAll('.phone-sub-app').forEach(el => el.style.display = 'none');
       document.getElementById('phone-home-screen').style.display = 'flex';
       if(IS_SANDBOX_MODE)renderPhoneWallpaperV27();
     }
 
     function openPhoneApp(appName) {
-      document.getElementById('phone-home-screen').style.display = 'none';
+            closeRedPacketV32();
+document.getElementById('phone-home-screen').style.display = 'none';
       document.querySelectorAll('.phone-sub-app').forEach(el => el.style.display = 'none');
       document.getElementById(`phone-app-${appName}`).style.display = 'flex';
 
