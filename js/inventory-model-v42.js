@@ -105,6 +105,8 @@
     const realm=typeof approved?.realmTag==='string'&&REALMS[approved.realmTag]?
       approved.realmTag:null;
     const origin=plain(record.obtainedFrom)?record.obtainedFrom:{};
+    const acquisitionKind=['SHOP','CHAPTER','GLOBAL','STARTER'].includes(origin.kind)?
+      origin.kind:null;
     const storyId=typeof origin.storyId==='string'&&origin.storyId?
       origin.storyId:typeof record.storyId==='string'&&record.storyId?record.storyId:null;
     const chapterId=typeof origin.chapterId==='string'&&origin.chapterId?
@@ -115,6 +117,7 @@
     return Object.freeze({
       id:alias||id,originalId:id,instanceId:typeof record.instanceId==='string'?record.instanceId:null,
       name,description,rank,type,scope,realm,storyId,chapterId,
+      acquisitionKind,
       category,categoryLabel:CATEGORIES[category],worldLabel:realm?REALMS[realm]:
         storyId?'Theo truyện':'Chung',
       icon:typeof record.icon==='string'?record.icon:approved?.icon||'🎒',

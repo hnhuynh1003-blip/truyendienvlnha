@@ -26,7 +26,9 @@
    'common-health-box':42,'common-signal-device':48
  });
  const PURCHASE_PER_ITEM_PER_DAY=3, PURCHASE_TOTAL_PER_DAY=8;
- const EVENT_TO_QUEST=Object.freeze({LOOT_SUCCESS:'q_daily_loot'});
+ const EVENT_TO_QUEST=Object.freeze({
+   LOOT_SUCCESS:'q_daily_loot',READ_CHAPTER:'q_daily_read'
+ });
  const KEY_LIMIT=96;
  const validDay=d=>typeof d==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&
    !Number.isNaN(Date.parse(d+'T00:00:00Z'))&&

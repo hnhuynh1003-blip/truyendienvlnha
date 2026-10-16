@@ -80,6 +80,7 @@
   if(!plan.ok)return false;
   userProfile.economyV43=plan.state;
   old.advanceQuest(plan.questId,1);
+  if(typeof root.renderQuests==='function')root.renderQuests();
   return true;
  }
  root.renderShop=function(){
@@ -89,7 +90,9 @@
   if(balance)balance.textContent=String(userProfile.currency||0);
   return root.DuduMarketUIV43?.render({
    host,coins:Number(userProfile.currency)||0,
-   state:userProfile.economyV43,onBuy:buy
+   state:userProfile.economyV43,onBuy:buy,
+   stories:typeof novels!=='undefined'?novels:[],
+   readRewards:userProfile.readRewards||{}
   })||false;
  };
  root.buyShopItem=buy;

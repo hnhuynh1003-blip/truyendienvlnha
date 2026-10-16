@@ -161,6 +161,12 @@
    fact('Truyện',novel?.title||detail.storyId);
   }
   if(detail.chapterId)fact('Chương (ID)',detail.chapterId);
+  if(detail.acquisitionKind){
+   fact('Cách nhận (bản lưu trên thiết bị)',{
+    SHOP:'Mua tại DUDU MARKET',CHAPTER:'Thu thập tại chương',
+    GLOBAL:'Thu thập trong điện thoại',STARTER:'Vật phẩm ban đầu'
+   }[detail.acquisitionKind]);
+  }
   fact('Chức năng RPG','Chưa kích hoạt trong V42');
   if(detail.protected)fact('Sở hữu','Đồ bảo vệ · Không được vứt');
   // User-owned browser items are not proof of a server-verified relic.

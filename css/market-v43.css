@@ -105,3 +105,19 @@ body.dudu-phone-v11 #cyber-phone .dudu-v43-quest-status{
  border:1px solid #8ea6bf78;border-radius:9px;
  background:#21334b9c;color:#d8e7fa;font-size:10px;line-height:1.4;
 }
+
+
+/* V43.5.2 story item previews are informational, never purchase/claim buttons. */
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-story{
+ flex:1;min-width:0;max-width:100%;padding:8px 9px;border-radius:8px;
+ color:#f0edff;background:#202f47;border:1px solid #8894b675;
+ font:inherit;font-size:11px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-story[hidden]{display:none!important;}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-locked{
+ margin:0 0 7px;padding:7px 9px;font-size:10px;line-height:1.4;
+ border-radius:8px;background:#303047;border:1px solid #8b82a56b;color:#dacfe5;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-copy .dudu-v43-market-provenance{
+ display:block;font-size:9px;color:#ddc8ab;line-height:1.3;
+}

@@ -4,8 +4,9 @@
 (function(root){
  'use strict';
  const core=root.DuduEconomyCoreV43;
+ const storyCatalog=root.DuduStoryMarketV43;
  if(!core)return;
- let tab='COMMON',realm='URBAN',query='';
+ let tab='COMMON',realm='URBAN',query='',storyId='';
  const REALMS={URBAN:'Hiện đại',APOCALYPSE:'Tận thế',CULTIVATION:'Tu tiên',
   FANTASY:'Huyền huyễn',SCIFI:'Viễn tưởng',HORROR:'Kinh dị'};
  const make=(tag,cls,copy)=>{
@@ -14,7 +15,7 @@
    if(copy!==undefined)node.textContent=String(copy);
    return node;
  };
- function render({host,coins,state,onBuy}={}){
+ function render({host,coins,state,onBuy,stories=[],readRewards={}}={}){
    if(!host||typeof onBuy!=='function')return false;
    host.replaceChildren();
    const toolbar=make('section','dudu-v43-market-toolbar');
@@ -27,7 +28,9 @@
      ['DUDU','Kỷ vật'],['STORY','Theo truyện'],['TOOLS','Chức năng']]){
      const button=make('button','dudu-v43-market-tab'+(id===tab?' is-active':''),label);
      button.type='button';button.setAttribute('aria-pressed',String(tab===id));
-     button.addEventListener('click',()=>{tab=id;render({host,coins,state,onBuy});});
+     button.addEventListener('click',()=>{
+       tab=id;render({host,coins,state,onBuy,stories,readRewards});
+     });
      tabs.append(button);
    }
    const filters=make('div','dudu-v43-market-filters');
@@ -51,6 +54,19 @@
      realm=realmSelector.value;draw();
    });
    filters.append(realmSelector);
+   const storySelector=make('select','dudu-v43-market-story');
+   storySelector.setAttribute('aria-label','Chọn truyện để xem danh mục vật phẩm');
+   const storyOptions=storyCatalog?.options(stories)||[];
+   if(!storyOptions.some(s=>s.id===storyId))storyId=storyOptions[0]?.id||'';
+   for(const source of storyOptions){
+     const option=make('option','',source.title);option.value=source.id;
+     storySelector.append(option);
+   }
+   if(storyId)storySelector.value=storyId;
+   storySelector.addEventListener('change',()=>{
+     storyId=storySelector.value;draw();
+   });
+   filters.append(storySelector);
    const hint=make('p','dudu-v43-market-hint');
    const collection=make('div','dudu-v43-market-grid');
    const footer=make('small','dudu-v43-market-footer',
@@ -59,7 +75,8 @@
    host.append(toolbar,collection,footer);
    function draw(){
      realmSelector.hidden=tab!=='REALM';
-     input.hidden=tab==='STORY'||tab==='TOOLS';
+     storySelector.hidden=tab!=='STORY'||!storyOptions.length;
+     input.hidden=tab==='TOOLS';
      const ledger=core.norm(state);
      if(tab==='COMMON'){
        hint.textContent='🪙 '+coins+' Xu · '+ledger.total+'/'+core.PURCHASE_TOTAL_PER_DAY+
@@ -69,23 +86,34 @@
      }else if(tab==='DUDU'){
        hint.textContent='Kỷ vật hệ thống: xem nguồn gốc, không mở bán. Quyền sở hữu phải được máy chủ xác nhận.';
      }else if(tab==='STORY'){
-       hint.textContent='Kỷ vật truyện/chương do tác giả quản lý. Chỉ hiển thị sau khi phát hành an toàn, không bán tự động.';
+       hint.textContent='Danh mục tác giả (chỉ xem) · không phải đồ sở hữu hoặc phần thưởng được cấp.';
      }else{
        hint.textContent='Vật phẩm tiêu hao và Bộ Nạp Tần Số đang chuẩn bị. Chưa mở mua hoặc dùng để tránh farm lượt.';
      }
      collection.replaceChildren();
-     if(tab==='STORY'||tab==='TOOLS'){
-       const empty=make('div','dudu-v43-market-placeholder',
-         tab==='STORY'?'📖 Vật phẩm truyện/chương được phát hành theo sự kiện hoặc nhiệm vụ đã xác nhận.':
-         '🔋 Sắp có: vật phẩm hồi lượt nhặt, hộp quà giao lưu và vật phẩm tiêu hao.');
-       collection.append(empty);return;
-     }
-     const items=core.preview({tab,realmTag:realm,query});
-     if(!items.length){
-       collection.append(make('p','dudu-v43-market-empty','Không có vật phẩm khớp bộ lọc.'));
+     if(tab==='TOOLS'){
+       collection.append(make('div','dudu-v43-market-placeholder',
+         '🔋 Sắp có: vật phẩm hồi lượt nhặt, hộp quà giao lưu và vật phẩm tiêu hao.'));
        return;
      }
-     for(const item of items){
+     const storyIndex=tab==='STORY'?storyCatalog?.index({stories,storyId,readRewards}):null;
+     if(tab==='STORY'&&storyIndex?.hidden){
+       const shield=make('p','dudu-v43-market-locked',
+         '🔒 '+storyIndex.hidden+' vật phẩm gắn chương chưa đọc được ẩn tên.');
+       collection.append(shield);
+     }
+     const items=tab==='STORY'?(storyIndex?.items||[]):
+       core.preview({tab,realmTag:realm,query});
+     const searchText=query.trim().toLocaleLowerCase('vi');
+     const visible=tab==='STORY'&&searchText?
+       items.filter(x=>(x.name+' '+x.desc+' '+x.rank).toLocaleLowerCase('vi').includes(searchText)):items;
+     if(!visible.length){
+       collection.append(make('p','dudu-v43-market-empty',
+         tab==='STORY'?'Chưa có vật phẩm công khai cho truyện này hoặc bạn chưa mở chương liên quan.':
+         'Không có vật phẩm khớp bộ lọc.'));
+       return;
+     }
+     for(const item of visible){
        const card=make('article','dudu-v43-market-item');
        card.dataset.itemId=item.id;
        card.dataset.scope=item.scope;
@@ -96,9 +124,18 @@
        const meta=make('span','',item.rank+' · '+
          (item.scope==='COMMON'?'Phổ thông':
           item.scope==='REALM'?'Vị diện '+REALMS[item.realmTag]:
+          item.scope==='STORY'?'Riêng truyện':
+          item.scope==='CHAPTER'?'Riêng chương':
           'Kỷ vật DUDU'));
        const description=make('small','',item.desc||item.description||'');
        info.append(meta,description);
+       if(tab==='STORY'){
+         const context=make('small','dudu-v43-market-provenance',
+           item.scope==='CHAPTER'?
+             '📖 '+item.chapterTitle+' · '+item.sourceLabel:
+             '📖 '+item.storyTitle+' · '+item.sourceLabel);
+         info.append(context);
+       }
        const right=make('div','dudu-v43-market-buy');
        if(tab==='COMMON'){
          const n=ledger.counts[item.id]||0;
@@ -112,7 +149,7 @@
          right.append(button,make('small','',n+'/'+core.PURCHASE_PER_ITEM_PER_DAY+' hôm nay'));
        }else{
          right.append(make('span','dudu-v43-market-not-sale',
-           tab==='REALM'?'Nhặt theo chương':'Không bán'));
+           tab==='REALM'?'Nhặt theo chương':tab==='STORY'?'Chưa cấp':'Không bán'));
        }
        card.append(artwork,info,right);
        collection.append(card);

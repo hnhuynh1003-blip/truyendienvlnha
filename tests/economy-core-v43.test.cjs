@@ -41,6 +41,19 @@ test('DUDU market quotes purchases immutably and limits daily spending',()=>{
  assert.deepEqual(item.obtainedFrom,{kind:'SHOP',source:'DUDU_MARKET'});
  assert.equal(item.price,undefined);
 });
+test('chapter read events are deduplicated per day and never become item grants',()=>{
+ const one=core.recordEvent(null,{type:'READ_CHAPTER',eventId:'story-a_ch-1',day});
+ assert.equal(one.ok,true);
+ assert.equal(one.questId,'q_daily_read');
+ assert.equal(core.recordEvent(one.state,{type:'READ_CHAPTER',
+   eventId:'story-a_ch-1',day}).reason,'duplicate');
+ const other=core.recordEvent(one.state,{type:'READ_CHAPTER',
+   eventId:'story-b_ch-1',day});
+ assert.equal(other.ok,true,'IDs are story scoped');
+ assert.equal(core.recordEvent(one.state,{type:'READ_CHAPTER',
+   eventId:'story-a_ch-1',day:'2026-10-18'}).ok,true);
+ assert.equal(core.recordEvent(null,{type:'READ_CHAPTER',eventId:'',day}).ok,false);
+});
 test('duplicate gameplay events do not increase quests or coin payouts',()=>{
  const quest=[{id:'q_daily_loot',type:'DAILY',current:0,target:2,claimed:false}];
  const first=core.recordEvent(null,{type:'LOOT_SUCCESS',eventId:'drop-01',day});

@@ -2729,6 +2729,83 @@ async function main() {
       afterDuplicate:1,afterReset:1,noWrites:true
     },'DUDU V43.5 Sandbox shop uses canonical catalog and idempotent daily quests');
 
+    // V43.5.2: catalog of author-created items is read-only, spoiler-gated,
+    // scoped by story and never alters another player's inventory or server.
+    const shopStoryV4352=await page.evaluate(()=>{
+      const novel=novels[selectedNovelIndex];
+      const priorChapters=novel.chapters,priorItems=novel.specialItems;
+      const priorReads=userProfile.readRewards;
+      const writes=window.__firestoreWrites.length;
+      const originalBalance=userProfile.currency;
+      const originalInventory=userProfile.inventory;
+      const phone=document.getElementById('cyber-phone');
+      const wasOpen=phone.style.display==='flex';
+      const uid='v4352-';
+      try{
+        novel.chapters=[...priorChapters,{
+          id:uid+'chapter',title:'Chương sau',content:'Thử',
+          storyItemIds:[uid+'linked']
+        }];
+        novel.specialItems=[...(priorItems||[]),
+          {id:uid+'free',name:'Thẻ của tác giả',rank:'D',type:'ITEM',
+            scope:'STORY',storyId:novel.id,chapterId:null,
+            published:true,acquisition:{method:'STORY_EVENT'}},
+          {id:uid+'linked',name:'Bí mật cuối chương',rank:'A',type:'ITEM',
+            scope:'STORY',storyId:novel.id,chapterId:null,
+            published:true,acquisition:{method:'STORY_EVENT'}},
+          {id:uid+'chapter-item',name:'Quà của chương',rank:'S',type:'ITEM',
+            scope:'CHAPTER',storyId:novel.id,chapterId:uid+'chapter',
+            published:true,acquisition:{method:'CHAPTER_EVENT'}},
+          {id:uid+'archived',name:'Lưu trữ',rank:'SS',type:'ITEM',
+            scope:'STORY',storyId:novel.id,chapterId:null,
+            published:true,archived:true,acquisition:{method:'STORY_EVENT'}}
+        ];
+        userProfile.readRewards={};
+        if(!wasOpen)togglePhone();
+        openPhoneApp('shop');
+        let tabs=[...document.querySelectorAll('.dudu-v43-market-tab')];
+        tabs.find(b=>b.textContent==='Theo truyện').click();
+        const select=document.querySelector('.dudu-v43-market-story');
+        select.value=novel.id;select.dispatchEvent(new Event('change',{bubbles:true}));
+        const present=id=>!!document.querySelector(
+          '#shop-items-container [data-item-id="'+id+'"]');
+        const visibleBefore=present(uid+'free')&&!present(uid+'linked')&&
+          !present(uid+'chapter-item');
+        const hiddenNote=[...document.querySelectorAll('.dudu-v43-market-locked')]
+          .some(node=>node.textContent.includes('2 vật phẩm'));
+        const previewOnly=document.querySelectorAll(
+          '#shop-items-container [data-scope="STORY"] button, #shop-items-container [data-scope="CHAPTER"] button'
+        ).length===0;
+        userProfile.readRewards[novel.id+'_'+uid+'chapter']=true;
+        renderShop();
+        const visibleAfter=present(uid+'linked')&&present(uid+'chapter-item');
+        const sourceText=[...document.querySelectorAll('.dudu-v43-market-provenance')]
+          .some(el=>el.textContent.includes('Sự kiện chương'));
+        const archivedHidden=!present(uid+'archived');
+        const purchaseDenied=buyShopItem(uid+'chapter-item')===false;
+        const item=DuduInventoryV42.inspect({
+          ...DuduItemCatalog.byId('common-biscuit'),instanceId:'fixture-shop',
+          obtainedFrom:{kind:'SHOP',source:'DUDU_MARKET'}
+        });
+        const shopSource=item?.acquisitionKind==='SHOP';
+        const balanceSafe=userProfile.currency===originalBalance;
+        const ownedSafe=userProfile.inventory===originalInventory;
+        return {visibleBefore,hiddenNote,previewOnly,visibleAfter,
+          sourceText,archivedHidden,purchaseDenied,shopSource,balanceSafe,
+          ownedSafe,noWrites:window.__firestoreWrites.length===writes};
+      }finally{
+        novel.chapters=priorChapters;novel.specialItems=priorItems;
+        userProfile.readRewards=priorReads;
+        phoneHome();
+        if(!wasOpen&&phone.style.display==='flex')togglePhone();
+      }
+    });
+    assert.deepEqual(shopStoryV4352,{
+      visibleBefore:true,hiddenNote:true,previewOnly:true,
+      visibleAfter:true,sourceText:true,archivedHidden:true,
+      purchaseDenied:true,shopSource:true,balanceSafe:true,ownedSafe:true,noWrites:true
+    },'Story/chapter preview must hide unreached names, never mint items or cash');
+
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
     console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));
   } finally {
