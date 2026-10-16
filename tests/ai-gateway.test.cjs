@@ -21,7 +21,10 @@ test('browser never contains direct Gemini calls or asks end users for a Gemini 
 
 test('phone distinguishes shared library counts from player progress',()=>{
   const html=load('index.html');
-  assert.match(html,/THƯ VIỆN DUDU \(DÙNG CHUNG\)/);
+  assert.match(html,/Thống kê thư viện/);
+  assert.match(html,/Dùng chung/);
+  assert.match(html,/id="stat-novels"/);
+  assert.match(html,/id="stat-chapters"/);
   for(const id of ['stat-personal-reading','stat-personal-npcs','stat-personal-items','stat-personal-level','stat-personal-coins']) {
     assert.match(html,new RegExp('id="'+id+'"'));
     assert.match(html,new RegExp("'"+id+"'"));
