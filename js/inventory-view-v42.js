@@ -36,7 +36,11 @@
    if(story?.id&&typeof story.id==='string')ids.set(story.id,String(story.title||story.id));
   }
   for(const item of Array.isArray(inventory)?inventory:[]){
-   const sid=model.inspect(item)?.storyId;
+   const detail=model.inspect(item);
+   // Common loot is global; realm loot is shared across a world.
+   // Chapter-of-acquisition is retained in saves, not used as a new inventory source.
+   if(['COMMON','REALM'].includes(detail?.scope))continue;
+   const sid=detail?.storyId;
    if(sid&&!ids.has(sid))ids.set(sid,sid);
   }
   const signature=JSON.stringify([...ids]);
@@ -147,9 +151,10 @@
    row.append(make('span','',key),make('strong','',value));facts.append(row);
   }
   fact('Phẩm chất',detail.rank);
+  if(entry.count>1)fact('Số lượng sở hữu','×'+entry.count);
   fact('Nguồn',detail.scope==='DUDU'?'Kỷ vật hệ thống':
-    detail.scope==='REALM'?'Vật phẩm thế giới':
-    detail.scope==='COMMON'?'Vật phẩm phổ thông':
+    detail.scope==='REALM'?'Chung trong thế giới '+(model.REALMS[detail.realm]||''): 
+    detail.scope==='COMMON'?'Chung toàn hệ thống':
     detail.scope==='LEGACY'?'Đồ cũ được bảo lưu':
     detail.scope==='STORY'||detail.scope==='CHAPTER'?'Vật phẩm tác giả':'Dữ liệu cũ / cửa hàng');
   if(detail.storyId){
@@ -174,12 +179,12 @@
    footer.append(museum);
   }
   if(!detail.protected){
-   const discard=make('button','btn btn-danger dudu-v42-discard','Vứt vật phẩm');
+   const discard=make('button','btn btn-danger dudu-v42-discard',entry.count>1?'Vứt 1 vật phẩm':'Vứt vật phẩm');
    discard.type='button';
    discard.addEventListener('click',()=>{
     if(!Array.isArray(args.inventory)||args.inventory[entry.index]!==entry.item)return;
-    if(!confirm('Vứt '+detail.name+' khỏi hành trang?'))return;
-    args.onDiscard(entry.index);
+    if(!confirm('Vứt 1 '+detail.name+' khỏi hành trang?'))return;
+    args.onDiscard(entry.index); // one concrete instance, not the whole visual stack
    });
    footer.append(discard);
   }
@@ -197,8 +202,8 @@
   container.classList.add('dudu-v27-inventory-grid','dudu-v42-grid');
   storyOptions(args.inventory,args.stories);
   const options=filters();
-  const result=model.list(args.inventory,options);
-  const all=model.list(args.inventory,{...options,category:'ALL',query:'',rank:'ALL',
+  const result=model.displayList(args.inventory,options);
+  const all=model.displayList(args.inventory,{...options,category:'ALL',query:'',rank:'ALL',
     realm:'ALL',storyId:'ALL',limit:1}).total;
   // Count deliberately omitted from the search row (mobile space).
   // Keep the status node empty for compatibility with legacy scripts.
@@ -214,22 +219,27 @@
    container.append(make('p','dudu-v27-inventory-empty',
      all?'Không có vật phẩm phù hợp bộ lọc.':'Hành trang còn trống. Đồ nhặt được sẽ xuất hiện ở đây.'));
   }
-  const current=result.entries.find(row=>row.item===args.selected)||null;
+  const current=result.entries.find(row=>row.items.includes(args.selected))||null;
   for(const entry of result.entries){
    const detail=entry.detail;
    const slot=make('button','item-card dudu-inventory-v12-row dudu-inventory-v12-open dudu-v27-inventory-slot dudu-v42-slot');
    slot.type='button';slot.dataset.inventoryIndex=String(entry.index);
    slot.dataset.rarity=detail.rank;slot.dataset.category=detail.category;
-   const selected=current?.item===entry.item;
+   const selected=!!current&&current===entry;
    slot.classList.toggle('is-selected',selected);
-   slot.setAttribute('aria-label','Xem chi tiết '+detail.name);
+   slot.setAttribute('aria-label','Xem chi tiết '+detail.name+(entry.count>1?' · '+entry.count+' món':''));
    slot.setAttribute('aria-expanded',String(selected));
-   slot.setAttribute('aria-controls','inventory-v12-detail');
+   slot.setAttribute('aria-controls','inventory-v42-modal');
    const art=artwork(detail,args.art);
    slot.style.setProperty('--rarity-glow',art.color);
    const badge=make('span','dudu-v27-slot-rarity',detail.rank);
    const label=make('span','dudu-v27-slot-name',detail.name);
    slot.append(art.container,badge,label);
+   if(entry.count>1){
+     const quantity=make('span','dudu-v42-slot-quantity','×'+entry.count);
+     quantity.setAttribute('aria-label','Số lượng '+entry.count);
+     slot.append(quantity);
+   }
    if(detail.protected){
     const lock=make('span','dudu-v27-slot-lock','🔒');
     lock.setAttribute('aria-hidden','true');slot.append(lock);
