@@ -313,7 +313,14 @@ async function uploadPlayerAvatarV16(event){
     const id=DuduNpcPortraitLibrary.makeId();
     if(!await DuduNpcPortraitLibrary.saveUpload(
       owner,DuduPlayerAvatarV16.SCOPE,id,dataUrl))throw Error('save failed');
-    if(!active())return;
+    // V27 audit: closing the editor or switching accounts while IndexedDB
+    // finishes would leave an unreferenced local photo. Clean up only the
+    // exact captured owner+scope+new ID; NEVER attach it to another account.
+    if(!active()){
+      try{await DuduNpcPortraitLibrary.deleteUpload(
+        owner,DuduPlayerAvatarV16.SCOPE,id);}catch(_){}
+      return;
+    }
     playerAvatarDraftV16={...playerAvatarDraftV16,kind:'upload',
       uploadId:id,presetId:''};
     renderPlayerAvatarEditorV16();
