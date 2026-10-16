@@ -21,6 +21,7 @@
   <link rel="stylesheet" href="css/phone-wallpaper-v27-r4.css">
   <link rel="stylesheet" href="css/dudu-multiverse-art-v28-r5.css">
   <link rel="stylesheet" href="css/phone-floating-v30.css?v=1">
+  <link rel="stylesheet" href="css/phone-refinement-v31.css?v=1">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -50,6 +51,7 @@
   <script src="js/player-avatar-v16.js"></script>
   <script src="js/phone-wallpaper-v27-r4.js"></script>
   <script src="js/dudu-multiverse-art-v28-r5.js"></script>
+  <script src="js/phone-typography-v31.js"></script>
   <script src="js/dudu-multiverse-ui-v28-r5.js"></script>
   <script src="js/player-avatar-ui-v16.js"></script>
   <script src="js/player-avatar-sync-plan-v20.js"></script>
@@ -987,6 +989,7 @@
           <select id="codex-novel-selector" onchange="renderCodexList()" style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 5px; color: #fff; font-size: 11px; outline: none;"></select>
         </div>
 
+        <div id="npc-v31-relation-host" aria-label="Tiến độ NPC đang chọn"></div>
         <div id="codex-container"></div>
       </div>
 
@@ -995,10 +998,9 @@
         <div class="phone-app-header" style="margin-bottom: 6px;">
           <div style="display:flex; align-items:center; gap:4px;">
             <button class="phone-back-btn" onclick="phoneHome()">‹</button>
-            <span>Tần Số Linh Hồn</span>
+            <span>Liên Lạc</span>
           </div>
           <div class="dudu-v27-chat-actions">
-            <button type="button" class="btn btn-gold" onclick="openGiftModalFromChat()">🎁 Tặng quà</button>
             <details id="chat-v27-more" class="dudu-v27-more">
               <summary aria-label="Tùy chọn liên lạc" title="Tùy chọn">⋯</summary>
               <div class="dudu-v27-more-panel">
@@ -1077,6 +1079,22 @@
             <button type="button" class="btn" data-dudu-theme="warm" onclick="setTheme('warm')">Giấy ấm</button>
             <button type="button" class="btn" data-dudu-theme="oled" onclick="setTheme('oled')">OLED</button>
           </div>
+        </section>
+        <section class="dudu-v27-settings-card dudu-v31-font-card" aria-labelledby="dudu-v31-font-heading">
+          <h3 id="dudu-v31-font-heading">✦ Kiểu chữ Cyber Phone</h3>
+          <div class="dudu-v31-font-options" role="group" aria-label="Font chữ điện thoại">
+            <button type="button" class="dudu-v31-font-option" data-dudu-v31-font="be" aria-pressed="true" onclick="setPhoneFontV31('be')">Be Vietnam Pro</button>
+            <button type="button" class="dudu-v31-font-option" data-dudu-v31-font="quicksand" aria-pressed="false" onclick="setPhoneFontV31('quicksand')">Quicksand</button>
+            <button type="button" class="dudu-v31-font-option" data-dudu-v31-font="nunito" aria-pressed="false" onclick="setPhoneFontV31('nunito')">Nunito</button>
+            <button type="button" class="dudu-v31-font-option" data-dudu-v31-font="serif" aria-pressed="false" onclick="setPhoneFontV31('serif')">Noto Serif</button>
+          </div>
+          <div class="dudu-v27-settings-label">Cỡ chữ điện thoại</div>
+          <div class="dudu-v31-size-options" role="group" aria-label="Cỡ chữ Cyber Phone">
+            <button type="button" class="dudu-v31-size-option" data-dudu-v31-size="small" aria-pressed="false" onclick="setPhoneSizeV31('small')">Nhỏ</button>
+            <button type="button" class="dudu-v31-size-option" data-dudu-v31-size="normal" aria-pressed="true" onclick="setPhoneSizeV31('normal')">Vừa</button>
+            <button type="button" class="dudu-v31-size-option" data-dudu-v31-size="large" aria-pressed="false" onclick="setPhoneSizeV31('large')">Lớn</button>
+          </div>
+          <small class="dudu-v31-font-note">Chỉ áp dụng cho điện thoại; không thay đổi font nội dung chương truyện. Font mới cần kết nối mạng lần đầu.</small>
         </section>
         <section class="dudu-v27-wallpaper-picker" aria-labelledby="dudu-v27-wallpaper-heading">
           <h3 id="dudu-v27-wallpaper-heading">✦ Hình nền điện thoại</h3>
@@ -2201,6 +2219,35 @@
       showSystemAlert('QUAN HỆ NPC V2', 'Thiện cảm thể hiện sự quý mến; Tin tưởng mở trần Thiện cảm: 0–19 → 40, 20–49 → 70, 50+ → 100. Quà phù hợp có thể tăng Tin tưởng, quà không nhận không mất. Mỗi NPC có tiến độ riêng. Mốc Tin cậy/Gắn bó cần sự kiện truyện xác minh.');
     }
 
+    function moveNpcProgressV31(){
+      if(!IS_SANDBOX_MODE)return;
+      const host=document.getElementById('npc-v31-relation-host');
+      const relation=document.getElementById('npc-relationship-r3-preview');
+      const choice=document.getElementById('npc-daily-choice-card');
+      if(!host||!relation||!choice)return;
+      if(relation.parentElement!==host){
+        host.append(relation,choice);
+        // Cards show each NPC's progress. Do not show stale details from
+        // a previous chat until the player chooses a specific NPC.
+        relation.style.display='none';
+        choice.style.display='none';
+      }
+    }
+    function npcCheckInFromCodexV31(storyId,npcId){
+      if(!IS_SANDBOX_MODE||!currentUsername||!isNpcUnlocked(storyId,npcId))return;
+      const novel=novels.find(n=>n?.id===storyId);
+      if(!novel||!novel.characters?.some(c=>c.id===npcId&&!c.archived))return;
+      activeChatNovelId=storyId;
+      moveNpcProgressV31();
+      renderChatDropdown();
+      const select=document.getElementById('chat-character-selector');
+      if(!select)return;
+      select.value=npcId;
+      switchChatCharacter();
+      npcDailyCheckin();
+      document.getElementById('npc-v31-relation-host')?.scrollIntoView({block:'nearest'});
+    }
+
     function npcDailyCheckin() {
       if(!IS_SANDBOX_MODE||!currentUsername)return;
       const npcId=document.getElementById('chat-character-selector')?.value;
@@ -2251,6 +2298,8 @@
         (choiceId==='thoughtful'?scene.replyThoughtful:scene.replyCasual)+
         ' +'+plan.gain+' Tin tưởng (Sandbox).');
       switchChatCharacter();
+      if(document.getElementById('phone-app-codex')?.style.display==='flex')
+        renderCodexList();
     }
 
     function renderNpcPortraitPreview(element,npc,storyId){
@@ -2468,7 +2517,7 @@
 
       if (history.length === 0) {
         const name = char ? char.name : 'nhân vật';
-        container.innerHTML = `<div style="text-align: center; color: #64748b; font-size: 10px; margin-top: 20px;">[Đã mở tần số kết nối với ${escapeHtml(name)}]<br>Hãy gửi tin nhắn để trò chuyện...</div>`;
+        container.innerHTML = `<div class="dudu-v31-chat-empty" style="text-align: center; color: #64748b; font-size: 10px; margin-top: 20px;">[Đã mở tần số kết nối với ${escapeHtml(name)}]<br>Hãy gửi tin nhắn để trò chuyện...</div>`;
         return;
       }
 
@@ -2479,6 +2528,7 @@
           div.textContent = msg.text;
         } else {
           const isUser = msg.role === 'user';
+          div.classList.add('dudu-v31-bubble',isUser?'is-player':'is-npc');
           div.style.cssText = `max-width: 82%; padding: 6px 10px; border-radius: 10px; font-size: 11px; line-height: 1.4; word-break: break-word; ${
             isUser
               ? 'align-self: flex-end; background: rgba(69, 162, 158, 0.25); border: 1px solid var(--accent); color: var(--text-white);'
@@ -2781,6 +2831,15 @@
           if(second)second.style.display='none';
           const actionBar=div.children[2];
           if(actionBar)actionBar.classList.add('dudu-npc-v12-actions');
+          if(actionBar&&unlocked&&!c.archived){
+            const checkin=document.createElement('button');
+            checkin.type='button';checkin.className='btn dudu-v31-progress-checkin';
+            const done=view?.relationshipV2?.lastCheckinUtc===new Date().toISOString().slice(0,10);
+            checkin.textContent=done?'✓ Đã hỏi thăm':'🤝 Hỏi thăm';
+            checkin.disabled=!!done||trust>=100||!currentUsername;
+            checkin.addEventListener('click',()=>npcCheckInFromCodexV31(novel.id,c.id));
+            actionBar.prepend(checkin);
+          }
           const preview=div.querySelector('[data-npc-portrait]');
           if(preview){
             const canViewPortrait=canEditStories()||unlocked;
@@ -3449,6 +3508,7 @@
       if (appName === 'stories') {
         renderPhoneStoryListV29();
       } else if (appName === 'codex') {
+        moveNpcProgressV31();
         renderCodexDropdown();
         renderCodexList();
       } else if (appName === 'chat') {
@@ -3867,6 +3927,39 @@
       return (chatVisible&&novels.find(n=>n.id===activeChatNovelId))||
         novels[selectedNovelIndex]||null;
     }
+    function renderPhoneTypographyV31(){
+      if(!IS_SANDBOX_MODE||!window.DuduPhoneTypographyV31)return;
+      const settings=DuduPhoneTypographyV31.read(localStorage,phoneWallpaperOwnerV27());
+      const phone=document.getElementById('cyber-phone');
+      if(!phone)return;
+      const font=DuduPhoneTypographyV31.fontById(settings.font);
+      phone.style.setProperty('--dudu-v31-font',font.family);
+      phone.dataset.duduV31Size=settings.size;
+      // Only request a font if selected; never download all four on each visit.
+      if(!document.getElementById('dudu-v31-font-link-'+font.id)){
+        const link=document.createElement('link');
+        link.id='dudu-v31-font-link-'+font.id;
+        link.rel='stylesheet';link.href=font.url;
+        document.head.append(link);
+      }
+      document.querySelectorAll('#phone-app-settings [data-dudu-v31-font]').forEach(button=>
+        button.setAttribute('aria-pressed',String(button.dataset.duduV31Font===settings.font)));
+      document.querySelectorAll('#phone-app-settings [data-dudu-v31-size]').forEach(button=>
+        button.setAttribute('aria-pressed',String(button.dataset.duduV31Size===settings.size)));
+    }
+    function setPhoneFontV31(id){
+      if(!IS_SANDBOX_MODE||!window.DuduPhoneTypographyV31)return;
+      const state=DuduPhoneTypographyV31.read(localStorage,phoneWallpaperOwnerV27());
+      if(!DuduPhoneTypographyV31.write(localStorage,phoneWallpaperOwnerV27(),{...state,font:id}))return;
+      renderPhoneTypographyV31();
+    }
+    function setPhoneSizeV31(size){
+      if(!IS_SANDBOX_MODE||!window.DuduPhoneTypographyV31)return;
+      const state=DuduPhoneTypographyV31.read(localStorage,phoneWallpaperOwnerV27());
+      if(!DuduPhoneTypographyV31.write(localStorage,phoneWallpaperOwnerV27(),{...state,size}))return;
+      renderPhoneTypographyV31();
+    }
+
     function renderPhoneWallpaperV27(){
       if(!IS_SANDBOX_MODE||!window.DuduPhoneWallpaperV27)return;
       const owner=phoneWallpaperOwnerV27();
@@ -3876,6 +3969,7 @@
       const resolved=art?art.resolve({mode,personal:chosen,story:activeStoryForWallpaperV28()}):
         {wallpaperId:chosen,worldId:null,usedFallback:false};
       document.body.dataset.duduPhoneWallpaper=resolved.wallpaperId;
+      renderPhoneTypographyV31();
       document.querySelectorAll('#phone-app-settings [data-dudu-wallpaper-choice]').forEach(button=>{
         button.setAttribute('aria-pressed',
           String(button.dataset.duduWallpaperChoice===chosen));

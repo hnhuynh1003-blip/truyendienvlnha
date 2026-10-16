@@ -2099,6 +2099,60 @@ async function main() {
     }
     await page.setViewportSize({width:1280,height:720});
 
+    // V31: account-only phone fonts, live font/size switching and safe NPC
+    // progress moved out of the chat screen. No cloud writes.
+    const v31=await page.evaluate(()=>{
+      const beforeWrites=window.__firestoreWrites.length;
+      const owner=phoneWallpaperOwnerV27();
+      const key=DuduPhoneTypographyV31.keyFor(owner);
+      const old=localStorage.getItem(key);
+      if(document.getElementById('cyber-phone').style.display!=='flex')togglePhone();
+      try{
+        openPhoneApp('settings');
+        setPhoneFontV31('serif');setPhoneSizeV31('large');
+        const phone=document.getElementById('cyber-phone');
+        const serif=phone.style.getPropertyValue('--dudu-v31-font').includes('Noto Serif');
+        const serifSize=phone.dataset.duduV31Size==='large';
+        const serifSelected=document.querySelector('[data-dudu-v31-font="serif"]').getAttribute('aria-pressed');
+        setPhoneFontV31('nunito');setPhoneSizeV31('normal');
+        const nunito=phone.style.getPropertyValue('--dudu-v31-font').includes('Nunito');
+        const otherOwner='v31-second-account';
+        const other=DuduPhoneTypographyV31.read(localStorage,otherOwner);
+        openPhoneApp('codex');
+        const relationHost=document.getElementById('npc-v31-relation-host');
+        const relationMoved=relationHost.contains(document.getElementById('npc-relationship-r3-preview'));
+        const choiceMoved=relationHost.contains(document.getElementById('npc-daily-choice-card'));
+        const checkins=document.querySelectorAll('#phone-app-codex .dudu-v31-progress-checkin').length;
+        openPhoneApp('chat');
+        const chatHeader=document.querySelector('#phone-app-chat .phone-app-header').textContent;
+        const relationshipHidden=getComputedStyle(document.getElementById('npc-relationship-r3-preview')).display==='none' ||
+          !document.getElementById('phone-app-chat').contains(document.getElementById('npc-relationship-r3-preview'));
+        const chatStyles=getComputedStyle(document.getElementById('phone-app-chat'));
+        const chatBackground=chatStyles.backgroundImage.includes('linear-gradient');
+        const messages=getComputedStyle(document.getElementById('chat-messages-container'));
+        return {serif,serifSize,serifSelected,nunito,other,relationMoved,choiceMoved,
+          checkins,chatHeader,relationshipHidden,chatBackground,chatBoxTransparent:
+          !messages.backgroundColor.includes('rgb(16, 29, 53)'),
+          writes:window.__firestoreWrites.length-beforeWrites};
+      } finally {
+        if(old===null)localStorage.removeItem(key);else localStorage.setItem(key,old);
+        renderPhoneTypographyV31();phoneHome();
+      }
+    });
+    assert.equal(v31.serif,true);
+    assert.equal(v31.serifSize,true);
+    assert.equal(v31.serifSelected,'true');
+    assert.equal(v31.nunito,true);
+    assert.deepEqual(v31.other,{font:'be',size:'normal'});
+    assert.equal(v31.relationMoved,true);
+    assert.equal(v31.choiceMoved,true);
+    assert.match(v31.chatHeader,/Liên Lạc/);
+    assert.doesNotMatch(v31.chatHeader,/Tặng quà/);
+    assert.equal(v31.relationshipHidden,true);
+    assert.equal(v31.chatBackground,true);
+    assert.equal(v31.chatBoxTransparent,true);
+    assert.equal(v31.writes,0);
+
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
     console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));
   } finally {
