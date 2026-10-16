@@ -7,7 +7,7 @@ const vm = require('node:vm');
 const path = require('node:path');
 
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
-const script = (html.match(/<script>([\s\S]*?)<\/script>\s*<\/body>/i) || [])[1];
+const script = (html.match(/<script>([\s\S]*?)<\/script>/i) || [])[1];
 assert.ok(script, 'Main inline JS is present');
 
 function segment(from, until) {
