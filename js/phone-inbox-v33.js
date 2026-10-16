@@ -23,7 +23,7 @@ function show(mode){
  if(back)back.hidden=inbox;
  const home=app.querySelector('.phone-app-header .phone-back-btn');
  if(home)home.style.display=inbox?'':'none';
- if(!inbox){const sel=$('chat-character-selector');const name=$('dudu-v33-chat-name');if(name&&sel)name.textContent=sel.selectedOptions[0]?.textContent?.replace(/\\s*\\([^)]*\\)\\s*$/,'')||'Nhân vật';}
+ if(!inbox){const sel=$('chat-character-selector');const name=$('dudu-v33-chat-name');if(name&&sel)name.textContent=sel.selectedOptions[0]?.textContent?.replace(/\s*\([^)]*\)\s*$/,'')||'Nhân vật';}
  if(inbox)render();
 }
 function render(){
