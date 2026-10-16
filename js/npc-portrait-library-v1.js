@@ -7,10 +7,6 @@
   if(root)root.DuduNpcPortraitLibrary=api;
 })(typeof window!=='undefined'?window:null,function(){
   'use strict';
-  const NAMES=['Trầm tĩnh','Dịu dàng','Bí ẩn','Thanh lịch','Năng động','Kiên cường',
-    'Mơ mộng','Tự tin','Ấm áp','Thông thái','Lạnh lùng','Hoài niệm',
-    'Điềm đạm','Vui vẻ','Lãng mạn','Thực tế','Dũng cảm','Tinh tế',
-    'Tự do','Sắc sảo','Trung thành','Trầm mặc','Thân thiện','Nghị lực'];
   const COLORS=[
     ['#5b3e8c','#c89ee9','#2b1f41'],['#c06a95','#ffc5df','#553048'],
     ['#296879','#81cbd4','#173a50'],['#894f4b','#efab9f','#4c2d31'],
@@ -26,20 +22,28 @@
     const i=index-1;
     const previous=gender==='female'?0:gender==='male'?1:2;
     const old=index<=24;
-    const mood=NAMES[i%NAMES.length];
-    const suffix=gender==='female'&&index>24?
-      ' '+(index<=48?'II':'III'):'';
+    const id='portrait-'+group+'-'+String(index).padStart(2,'0');
     return Object.freeze({
-      id:'portrait-'+group+'-'+String(index).padStart(2,'0'),
-      label:mood+suffix,gender,
+      id,label:(gender==='female'?'Nữ':gender==='male'?'Nam':'Khác')+' · '+id,gender,
       world:WORLDS[(i+(old?previous:0))%WORLDS.length],
-      mood:mood.toLocaleLowerCase('vi'),hair:old?(i+previous*2)%6:(i+3)%6,
+      hair:old?(i+previous*2)%6:(i+3)%6,
       palette:old?(i+previous*3)%COLORS.length:(i+5)%COLORS.length,
       skin:old?(i+previous)%4:(i+2)%4,eyes:i%3,
       ...(legacy?{legacy:true}:{})
     });
   }
+  // Stable ID-only gallery: the original 72 avatars retain their appearance.
+  // Four existing HD anime candidates are now selectable in this same library.
+  const ANIME=Object.freeze([
+    ['portrait-a-01','anime-moon-blue'],
+    ['portrait-a-02','anime-moon-violet'],
+    ['portrait-a-03','anime-peach-court'],
+    ['portrait-a-04','anime-adventurer']
+  ].map(([id,animeId])=>Object.freeze({
+    id,animeId,gender:'female',world:'fantasy',kind:'anime',label:'Anime · '+id
+  })));
   const CATALOG=Object.freeze([
+    ...ANIME,
     ...Array.from({length:60},(_,i)=>entry('female',i+1,'f')),
     ...Array.from({length:12},(_,i)=>entry('male',i+1,'m'))
   ]);
@@ -67,6 +71,7 @@
   function escapeXml(v){return String(v).replace(/[<>&"'\u0000-\u001f]/g,'');}
   function svgFor(id){
     const p=preset(id);if(!p)return null;
+    if(p.kind==='anime')return null; // Render the HD atlas using the UI sprite crop.
     const [dark,light,deep]=COLORS[p.palette];
     const skin=['#f4c9ac','#e8ad89','#bc846b','#f1d4bb'][p.skin];
     const hair=['#251d30','#514035','#342a45','#6b4a3b','#2c414a','#4a252e'][p.hair];
@@ -162,5 +167,5 @@
     });}finally{db.close();}
   }
   function makeId(){return 'own-'+Date.now()+'-'+Math.random().toString(36).slice(2,9);}
-  return Object.freeze({CATALOG,LEGACY,GENDERS,WORLDS,preset,search,sourceFor,keyFor,makeId,saveUpload,readUpload,deleteUpload});
+  return Object.freeze({CATALOG,ANIME,LEGACY,GENDERS,WORLDS,preset,search,sourceFor,keyFor,makeId,saveUpload,readUpload,deleteUpload});
 });
