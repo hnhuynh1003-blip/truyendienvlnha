@@ -97,8 +97,11 @@
       RANKS.includes(record.rank)?record.rank:'F';
     const type=['FOOD','WEAPON','ITEM'].includes(source.type)?source.type:
       ['FOOD','WEAPON','ITEM'].includes(record.type)?record.type:'ITEM';
-    const scope=approved?.scope||
-      (['STORY','CHAPTER'].includes(record.scope)?record.scope:'UNKNOWN');
+    const functional=(id==='dudu-tool-frequency-cell-v43'&&
+      record.scope==='FUNCTIONAL'&&record.obtainedFrom?.kind==='SHOP'&&
+      record.obtainedFrom?.source==='DUDU_MARKET');
+    const scope=approved?.scope||(functional?'FUNCTIONAL':
+      ['STORY','CHAPTER'].includes(record.scope)?record.scope:'UNKNOWN');
     const unique=approved?.unique===true||record.unique===true;
     const protectedItem=unique||approved?.discardable===false||
       record.discardable===false||scope==='DUDU';
@@ -111,7 +114,7 @@
       origin.storyId:typeof record.storyId==='string'&&record.storyId?record.storyId:null;
     const chapterId=typeof origin.chapterId==='string'&&origin.chapterId?
       origin.chapterId:typeof record.chapterId==='string'&&record.chapterId?record.chapterId:null;
-    const category=categoryFor({id:alias||id,type,scope});
+    const category=functional?'TOOL':categoryFor({id:alias||id,type,scope});
     const name=String(record.name||approved?.name||'Vật phẩm chưa xác định');
     const description=String(record.desc||record.description||approved?.desc||'Chưa có mô tả.');
     return Object.freeze({
@@ -122,11 +125,11 @@
         storyId?'Theo truyện':'Chung',
       icon:typeof record.icon==='string'?record.icon:approved?.icon||'🎒',
       protected:protectedItem,unique,
-      giftable:approved?approved.giftable===true&&!protectedItem:
+      giftable:functional?false:approved?approved.giftable===true&&!protectedItem:
         record.giftable===true&&!protectedItem,
       archive:approved?.archived===true||record.archived===true,
       verifiedCollectible:false, // Browser inventory never proves server ownership.
-      usageStatus:'NOT_IMPLEMENTED' // V42 never grants new item actions.
+      usageStatus:functional?'CLEAR_PHONE_COOLDOWN':'NOT_IMPLEMENTED'
     });
   }
   function list(inventory,{category='ALL',query='',rank='ALL',realm='ALL',

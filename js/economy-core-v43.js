@@ -25,7 +25,19 @@
    'common-repair-kit':30,'common-compass':24,'common-tent':35,
    'common-health-box':42,'common-signal-device':48
  });
- const PURCHASE_PER_ITEM_PER_DAY=3, PURCHASE_TOTAL_PER_DAY=8;
+ const TOOL_ID='dudu-tool-frequency-cell-v43';
+ const TOOL=Object.freeze({
+   id:TOOL_ID,itemId:TOOL_ID,
+   name:'Bộ Nạp Tần Số',icon:'🔋',rank:'D',type:'ITEM',
+   desc:'Xóa hồi chiêu nhặt đồ của Điện thoại (2 phút). Không hồi lượt nhặt chương.',
+   description:'Xóa hồi chiêu nhặt đồ của Điện thoại (2 phút). Không hồi lượt nhặt chương.',
+   scope:'FUNCTIONAL',acquisition:Object.freeze({method:'SHOP'}),
+   price:30,storeCategory:'TOOL',unique:false,maxOwned:null,
+   giftable:false,tradeable:false,discardable:true,published:true,
+   schemaVersion:2
+ });
+ const PURCHASE_PER_ITEM_PER_DAY=3, PURCHASE_TOTAL_PER_DAY=8,
+   TOOL_PURCHASES_PER_DAY=2;
  const EVENT_TO_QUEST=Object.freeze({
    LOOT_SUCCESS:'q_daily_loot',READ_CHAPTER:'q_daily_read'
  });
@@ -46,10 +58,11 @@
       raw.day!==day)return state;
    const counts=raw.counts;
    if(counts&&typeof counts==='object'&&!Array.isArray(counts)){
-     for(const id of SHOP_IDS){
+     for(const id of [...SHOP_IDS,TOOL_ID]){
        const n=counts[id];
        if(Number.isSafeInteger(n)&&n>=0)
-         state.counts[id]=Math.min(PURCHASE_PER_ITEM_PER_DAY,n);
+         state.counts[id]=Math.min(id===TOOL_ID?TOOL_PURCHASES_PER_DAY:
+           PURCHASE_PER_ITEM_PER_DAY,n);
      }
    }
    state.total=Math.min(PURCHASE_TOTAL_PER_DAY,
@@ -69,7 +82,7 @@
        item.type==='FOOD'?'FOOD':'SUPPLIES'});
    });
  }
- const stock=shopCatalog(), byId=new Map(stock.map(item=>[item.id,item]));
+ const stock=shopCatalog(), byId=new Map([...stock,TOOL].map(item=>[item.id,item]));
  function preview({tab='COMMON',realmTag=null,query=''}={}){
    const text=typeof query==='string'?query.trim().toLocaleLowerCase('vi').slice(0,60):'';
    let items=[];
@@ -77,6 +90,7 @@
    else if(tab==='REALM'&&catalog.REALM_TAGS.includes(realmTag))
      items=catalog.list({scope:'REALM',realmTag});
    else if(tab==='DUDU')items=catalog.list({scope:'DUDU'});
+   else if(tab==='TOOLS')items=[TOOL];
    return items.filter(item=>
      !text||[item.name,item.desc,item.rank].some(v=>
        String(v||'').toLocaleLowerCase('vi').includes(text)));
@@ -89,7 +103,8 @@
       inventoryCount<0||inventoryCount>=500)
      return {ok:false,reason:'invalid-balance-or-cap',state:next};
    if(next.total>=PURCHASE_TOTAL_PER_DAY||
-      (next.counts[itemId]||0)>=PURCHASE_PER_ITEM_PER_DAY)
+      (next.counts[itemId]||0)>=(itemId===TOOL_ID?
+       TOOL_PURCHASES_PER_DAY:PURCHASE_PER_ITEM_PER_DAY))
      return {ok:false,reason:'daily-limit',state:next};
    if(coins<product.price)return {ok:false,reason:'not-enough-coins',state:next};
    const newCounts={...next.counts,[itemId]:(next.counts[itemId]||0)+1};
@@ -125,7 +140,8 @@
    const {price,storeCategory,...item}=product;
    return {...item,instanceId:id,obtainedFrom:{kind:'SHOP',source:'DUDU_MARKET'}};
  }
- return Object.freeze({VERSION,SHOP_IDS,PRICES,PURCHASE_PER_ITEM_PER_DAY,
+ return Object.freeze({VERSION,SHOP_IDS,PRICES,TOOL_ID,TOOL,TOOL_PURCHASES_PER_DAY,
+   PURCHASE_PER_ITEM_PER_DAY,
    PURCHASE_TOTAL_PER_DAY,EVENT_TO_QUEST,localDay,norm,shopCatalog,preview,
    quotePurchase,recordEvent,applyQuestProgress,rolloverQuests,instance});
 });

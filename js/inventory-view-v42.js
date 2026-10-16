@@ -167,7 +167,14 @@
     GLOBAL:'Thu thập trong điện thoại',STARTER:'Vật phẩm ban đầu'
    }[detail.acquisitionKind]);
   }
-  fact('Chức năng RPG','Chưa kích hoạt trong V42');
+  if(detail.usageStatus==='CLEAR_PHONE_COOLDOWN'){
+    const usage=typeof args.usageFor==='function'?args.usageFor(entry.item):null;
+    fact('Công dụng','Xóa 2 phút hồi chiêu nhặt đồ Điện thoại');
+    fact('Giới hạn trong ngày',(usage?.used||0)+'/'+(usage?.limit||2)+' lần');
+    fact('Lượt nhặt theo chương','Không thay đổi');
+  }else{
+    fact('Chức năng RPG','Chưa kích hoạt trong V42');
+  }
   if(detail.protected)fact('Sở hữu','Đồ bảo vệ · Không được vứt');
   // User-owned browser items are not proof of a server-verified relic.
   // verifiedCollectible is always false in this model: the museum has its
@@ -178,6 +185,29 @@
   const status=make('span','dudu-v42-inspector-status',detail.giftable?
     'Quà NPC: tùy điều kiện tặng':'Quà NPC: chưa được phép hoặc chưa xác nhận');
   footer.append(status);
+  if(detail.usageStatus==='CLEAR_PHONE_COOLDOWN'&&
+    typeof args.usageFor==='function'&&typeof args.onUse==='function'){
+    const usage=args.usageFor(entry.item);
+    const button=make('button','btn dudu-v43-use-item','🔋 Sử dụng');
+    button.type='button';
+    button.disabled=!usage?.canUse;
+    button.title=usage?.reason==='no-cooldown'?
+      'Chỉ dùng khi nút nhặt đồ đang hồi chiêu.':
+      usage?.reason==='daily-limit'?'Đã dùng tối đa 2 lần hôm nay.':
+      usage?.canUse?'Xóa ngay thời gian chờ nhặt đồ trong Điện thoại.':
+      'Vật phẩm không hợp lệ hoặc đã sử dụng.';
+    button.addEventListener('click',()=>{
+      if(!Array.isArray(args.inventory)||args.inventory[entry.index]!==entry.item)return;
+      args.onUse(entry.item);
+    });
+    footer.append(button);
+    if(!usage?.canUse){
+      footer.append(make('small','dudu-v43-use-hint',
+        usage?.reason==='no-cooldown'?'Chỉ dùng khi đồng hồ nhặt đồ đang chạy.':
+        usage?.reason==='daily-limit'?'Đã đạt giới hạn 2 lượt dùng/ngày.':
+        'Chưa đủ điều kiện sử dụng.'));
+    }
+  }
   if(detail.scope==='DUDU'&&typeof args.onMuseum==='function'){
    const museum=make('button','btn dudu-v42-museum','Xem Bảo Tàng');
    museum.type='button';museum.addEventListener('click',()=>args.onMuseum());

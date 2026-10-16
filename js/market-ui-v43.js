@@ -76,7 +76,7 @@
    function draw(){
      realmSelector.hidden=tab!=='REALM';
      storySelector.hidden=tab!=='STORY'||!storyOptions.length;
-     input.hidden=tab==='TOOLS';
+     input.hidden=false;
      const ledger=core.norm(state);
      if(tab==='COMMON'){
        hint.textContent='🪙 '+coins+' Xu · '+ledger.total+'/'+core.PURCHASE_TOTAL_PER_DAY+
@@ -88,14 +88,9 @@
      }else if(tab==='STORY'){
        hint.textContent='Danh mục tác giả (chỉ xem) · không phải đồ sở hữu hoặc phần thưởng được cấp.';
      }else{
-       hint.textContent='Vật phẩm tiêu hao và Bộ Nạp Tần Số đang chuẩn bị. Chưa mở mua hoặc dùng để tránh farm lượt.';
+       hint.textContent='🔋 Bộ Nạp Tần Số: xóa thời gian chờ nhặt đồ trên Điện thoại. Tối đa 2 lần mua và sử dụng/ngày; không ảnh hưởng nhặt theo chương.';
      }
      collection.replaceChildren();
-     if(tab==='TOOLS'){
-       collection.append(make('div','dudu-v43-market-placeholder',
-         '🔋 Sắp có: vật phẩm hồi lượt nhặt, hộp quà giao lưu và vật phẩm tiêu hao.'));
-       return;
-     }
      const storyIndex=tab==='STORY'?storyCatalog?.index({stories,storyId,readRewards}):null;
      if(tab==='STORY'&&storyIndex?.hidden){
        const shield=make('p','dudu-v43-market-locked',
@@ -126,6 +121,7 @@
           item.scope==='REALM'?'Vị diện '+REALMS[item.realmTag]:
           item.scope==='STORY'?'Riêng truyện':
           item.scope==='CHAPTER'?'Riêng chương':
+          item.scope==='FUNCTIONAL'?'Công cụ tiêu hao':
           'Kỷ vật DUDU'));
        const description=make('small','',item.desc||item.description||'');
        info.append(meta,description);
@@ -137,16 +133,18 @@
          info.append(context);
        }
        const right=make('div','dudu-v43-market-buy');
-       if(tab==='COMMON'){
+       if(tab==='COMMON'||tab==='TOOLS'){
          const n=ledger.counts[item.id]||0;
+         const limit=item.id===core.TOOL_ID?core.TOOL_PURCHASES_PER_DAY:
+           core.PURCHASE_PER_ITEM_PER_DAY;
          right.append(make('strong','',item.price+' Xu'));
          const button=make('button','btn','Mua');
          button.type='button';
          button.disabled=ledger.total>=core.PURCHASE_TOTAL_PER_DAY||
-           n>=core.PURCHASE_PER_ITEM_PER_DAY||coins<item.price;
+           n>=limit||coins<item.price;
          button.setAttribute('aria-label','Mua '+item.name+' giá '+item.price+' Xu');
          button.addEventListener('click',()=>onBuy(item.id));
-         right.append(button,make('small','',n+'/'+core.PURCHASE_PER_ITEM_PER_DAY+' hôm nay'));
+         right.append(button,make('small','',n+'/'+limit+' hôm nay'));
        }else{
          right.append(make('span','dudu-v43-market-not-sale',
            tab==='REALM'?'Nhặt theo chương':tab==='STORY'?'Chưa cấp':'Không bán'));

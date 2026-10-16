@@ -2810,6 +2810,115 @@ async function main() {
       purchaseDenied:true,shopSource:true,balanceSafe:true,ownedSafe:true,noWrites:true
     },'Story/chapter preview must hide unreached names, never mint items or cash');
 
+    // V43.5.3: buy functional item → use from V42 inventory modal →
+    // clear ONLY phone loot cooldown, with persisted consumption and daily cap.
+    const frequencyCellV4353=await page.evaluate(()=>{
+      const before=JSON.stringify(userProfile);
+      const previousSelection=inventoryDetailSelection;
+      const oldTimestamp=lastLootTimestamp;
+      const key=scopedLocalKey('loot-cooldown');
+      const oldKey=localStorage.getItem(key);
+      const priorWrites=window.__firestoreWrites.length;
+      const phone=document.getElementById('cyber-phone');
+      const wasOpen=phone.style.display==='flex';
+      const identity=currentUsername;
+      try{
+        userProfile.currency=250;
+        userProfile.economyV43=undefined;
+        userProfile.itemActionsV43=undefined;
+        userProfile.inventory=Array.isArray(userProfile.inventory)?
+          structuredClone(userProfile.inventory):[];
+        const xp=userProfile.exp,level=userProfile.level;
+        const chapterClaims=JSON.stringify(userProfile.lootedChapters);
+        if(!wasOpen)togglePhone();
+        openPhoneApp('shop');
+        const toolTab=[...document.querySelectorAll('.dudu-v43-market-tab')]
+          .find(x=>x.textContent==='Chức năng');
+        toolTab.click();
+        const itemId=DuduEconomyCoreV43.TOOL_ID;
+        const card=document.querySelector('#shop-items-container [data-item-id="'+itemId+'"]');
+        const hasTool=!!card&&card.textContent.includes('Bộ Nạp Tần Số');
+        const priceShown=card?.textContent.includes('30 Xu');
+        const balance=userProfile.currency;
+        const purchased=buyShopItem(itemId);
+        const purchaseCost=balance-userProfile.currency;
+        const owned=userProfile.inventory.find(i=>i.id===itemId);
+        const provenance=owned?.obtainedFrom?.kind;
+        const noGift=owned?.giftable===false;
+        const itemDetail=DuduInventoryV42.inspect(owned);
+        const detailReady=itemDetail?.category==='TOOL'&&
+          itemDetail?.usageStatus==='CLEAR_PHONE_COOLDOWN';
+        const noCooldown=DuduItemActionsV43.quote({
+          inventory:userProfile.inventory,itemInstanceId:owned.instanceId,
+          lastLootTimestamp:0
+        }).reason==='no-cooldown';
+        lastLootTimestamp=Date.now();
+        localStorage.setItem(key,String(lastLootTimestamp));
+        inventoryDetailSelection=owned;
+        openPhoneApp('inventory');
+        const activeModal=document.getElementById('inventory-v42-modal');
+        const button=activeModal?.querySelector('.dudu-v43-use-item');
+        const enabled=!!button&&!button.disabled&&activeModal.hidden===false;
+        button?.click();
+        const afterUse=userProfile.itemActionsV43?.used;
+        const removed=!userProfile.inventory.includes(owned);
+        const cleared=lastLootTimestamp===0&&localStorage.getItem(key)==='0';
+        const readable=!!document.getElementById('btn-inventory-loot')?.disabled===false;
+        const chapterSafe=JSON.stringify(userProfile.lootedChapters)===chapterClaims;
+        const expSafe=userProfile.exp===xp&&userProfile.level===level;
+        const usedDay=DuduEconomyCoreV43.localDay();
+        const persistedProfile=JSON.parse(localStorage.getItem(scopedLocalKey('profile'))||'{}');
+        const persisted=!!persistedProfile.itemActionsV43 &&
+          persistedProfile.itemActionsV43.used===1 &&
+          !persistedProfile.inventory?.some(i=>i.instanceId===owned.instanceId);
+        const noSameInstance=DuduItemActionsV43.quote({
+          inventory:userProfile.inventory,itemInstanceId:owned.instanceId,
+          lastLootTimestamp:Date.now()
+        }).ok===false;
+        const purchaseAgain=buyShopItem(itemId);
+        const boughtToday=userProfile.economyV43.counts[itemId]===2;
+        const thirdDenied=buyShopItem(itemId)===false;
+        const second=userProfile.inventory.find(i=>i.id===itemId);
+        lastLootTimestamp=Date.now();
+        localStorage.setItem(key,String(lastLootTimestamp));
+        const consumedSecond=useFunctionItemV43(second);
+        const usesTwo=userProfile.itemActionsV43?.used===2;
+        const lockedAfterCap=!!DuduItemActionsV43.availability({
+          inventory:[{...owned,instanceId:'shop-extra-3'}],
+          itemInstanceId:'shop-extra-3',
+          state:userProfile.itemActionsV43,lastLootTimestamp:Date.now()
+        }).canUse===false;
+        return {hasTool,priceShown,purchased,purchaseCost,provenance,noGift,
+          detailReady,noCooldown,enabled,afterUse,removed,cleared,readable,
+          chapterSafe,expSafe,persisted,noSameInstance,purchaseAgain,
+          boughtToday,thirdDenied,consumedSecond,usesTwo,lockedAfterCap,
+          noWrites:window.__firestoreWrites.length===priorWrites,
+          sameOwner:identity===currentUsername};
+      }finally{
+        userProfile=JSON.parse(before);
+        inventoryDetailSelection=previousSelection;
+        lastLootTimestamp=oldTimestamp;
+        try{
+          if(oldKey===null)localStorage.removeItem(key);
+          else localStorage.setItem(key,oldKey);
+          saveCurrentAccount();
+        }catch(_){}
+        DuduInventoryViewV42.close();
+        phoneHome();
+        startCooldownTicker();
+        if(!wasOpen&&phone.style.display==='flex')togglePhone();
+      }
+    });
+    assert.deepEqual(frequencyCellV4353,{
+      hasTool:true,priceShown:true,purchased:true,purchaseCost:30,
+      provenance:'SHOP',noGift:true,detailReady:true,noCooldown:true,
+      enabled:true,afterUse:1,removed:true,cleared:true,readable:true,
+      chapterSafe:true,expSafe:true,persisted:true,
+      noSameInstance:true,purchaseAgain:true,boughtToday:true,thirdDenied:true,
+      consumedSecond:true,usesTwo:true,lockedAfterCap:true,noWrites:true,
+      sameOwner:true
+    },'V43.5.3 consumable must not mint rewards, reset chapters or cross accounts');
+
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
     console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));
   } finally {
