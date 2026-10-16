@@ -82,8 +82,13 @@ function sync(){
  const presets=window.DuduPhoneWallpaperV27?.PRESETS||[];
  const selected=presets.find(p=>p.id===id);
  preview.textContent=selected?.name||'Hình nền đang dùng';
- const btns=document.querySelectorAll('#dudu-v34-overlay [data-dudu-wallpaper-choice]');
- btns.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.duduWallpaperChoice===id)));
+ const owner=typeof phoneWallpaperOwnerV27==='function'?phoneWallpaperOwnerV27():null;
+ const saved=window.DuduPhoneWallpaperV27?.read(localStorage,owner)||id;
+ const mode=window.DuduMultiverseArtV28?.readMode(localStorage,owner)||'personal';
+ document.querySelectorAll('#dudu-v34-overlay [data-dudu-wallpaper-choice]')
+  .forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.duduWallpaperChoice===saved)));
+ document.querySelectorAll('#dudu-v34-overlay [data-wallpaper-mode]')
+  .forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.wallpaperMode===mode)));
 }
 function show(){
  const modal=$('dudu-v34-overlay');if(!modal)return;
