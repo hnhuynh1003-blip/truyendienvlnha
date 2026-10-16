@@ -21,6 +21,9 @@
     Object.freeze({id:'v34-room',name:'Phòng nhỏ',description:'Góc phòng hoàng hôn ấm áp'}),
     Object.freeze({id:'v34-sakura',name:'Lối hoa đào',description:'Đường hoa anh đào cuối chiều'}),
     Object.freeze({id:'v34-neon',name:'Thành phố neon',description:'Đô thị rực sáng về đêm'}),
+    Object.freeze({id:'v37-sakura',name:'Thung lũng hoa',description:'Tranh anime phong cảnh hoa đào'}),
+    Object.freeze({id:'v37-city-rain',name:'Phố đêm',description:'Tranh anime đường phố đêm'}),
+    Object.freeze({id:'v37-city-night',name:'Đô thị neon',description:'Tranh anime đô thị hiện đại'}),
     Object.freeze({id:'v36-custom',name:'Ảnh của tôi',description:'Ảnh riêng trên thiết bị'})
   ]);
   const IDS=new Set(PRESETS.map(p=>p.id));
