@@ -106,6 +106,9 @@ export class V25TrustedMilestoneLedger{
       return conflict('approval-revision-conflict');
     if(event.kind==='APPROVAL_REVOKED'&&!prev)
       return conflict('approval-not-found');
+    // Approval revisions must never be backdated to validate old gameplay.
+    if(prev&&event.reviewedAt<=Number(prev.reviewedAt))
+      return conflict('approval-timestamp-regression');
     const revoked=event.kind==='APPROVAL_REVOKED';
     const frameId=revoked?prev.frameId:event.frameId;
     const chapterId=revoked?prev.chapterId:event.chapterId;
