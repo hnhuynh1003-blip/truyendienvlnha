@@ -165,7 +165,8 @@
   if(detail.acquisitionKind){
    fact('Cách nhận (bản lưu trên thiết bị)',{
     SHOP:'Mua tại DUDU MARKET',CHAPTER:'Thu thập tại chương',
-    GLOBAL:'Thu thập trong điện thoại',STARTER:'Vật phẩm ban đầu'
+    GLOBAL:'Thu thập trong điện thoại',STARTER:'Vật phẩm ban đầu',
+    EVENT:'Nhận qua hoạt động DUDU FUN (Sandbox)'
    }[detail.acquisitionKind]);
   }
   if(detail.usageStatus==='CLEAR_PHONE_COOLDOWN'){

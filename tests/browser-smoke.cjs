@@ -2930,6 +2930,117 @@ async function main() {
       sameOwner:true
     },'V43.5.3 consumable must not mint rewards, reset chapters or cross accounts');
 
+    // V43.5.4: daily free mini-games must record a ticket/box before reveal,
+    // persist puzzle progress, award once, preserve the real economy and UID.
+    const funV4354=await page.evaluate(()=>{
+      const savedProfile=structuredClone(userProfile);
+      const uid=currentUsername,priorWrites=window.__firestoreWrites.length;
+      const phone=document.getElementById('cyber-phone');
+      const wasOpen=phone.style.display==='flex';
+      try{
+        userProfile.currency=100;
+        userProfile.inventory=structuredClone(userProfile.inventory||[]);
+        delete userProfile.duduFunV43;
+        const chapterClaims=JSON.stringify(userProfile.lootedChapters);
+        const trust=JSON.stringify(userProfile.storyStates);
+        const exp=userProfile.exp,level=userProfile.level;
+        if(!wasOpen)togglePhone();
+        openPhoneApp('fun');
+        const app=document.getElementById('phone-app-fun');
+        const launch=document.getElementById('dudu-fun-launch-v43');
+        const appVisible=app.style.display==='flex'&&!launch.hidden;
+        const boxes=app.querySelectorAll('.dudu-fun-box').length;
+        const coinsBefore=userProfile.currency;
+        app.querySelector('.dudu-fun-box[data-theme="moon"]').click();
+        const startingRound=userProfile.duduFunV43.rounds.box;
+        const noCoinSpent=userProfile.currency===coinsBefore;
+        const pendingSaved=JSON.parse(localStorage.getItem(scopedLocalKey('profile')))
+          .duduFunV43.rounds.box.status==='playing';
+        const samePrize=DuduFunRulesV43.begin(userProfile.duduFunV43,
+          {type:'box',theme:'star',roll:0,seed:3}).reason==='already-started';
+        // Exit/re-enter must resume the same precommitted prize.
+        const beforePrize=JSON.stringify(startingRound.reward);
+        phoneHome();openPhoneApp('fun');
+        const resumed=userProfile.duduFunV43.rounds.box.status==='playing'&&
+          JSON.stringify(userProfile.duduFunV43.rounds.box.reward)===beforePrize;
+        for(const symbol of DuduFunRulesV43.sequence(startingRound.seed)){
+          const button=app.querySelectorAll('.dudu-fun-symbol')[symbol];
+          button.click();
+        }
+        const ready=userProfile.duduFunV43.rounds.box.status==='ready';
+        const purseBefore=userProfile.currency;
+        const invBefore=userProfile.inventory.length;
+        const prize=userProfile.duduFunV43.rounds.box.reward;
+        app.querySelector('.dudu-fun-claim').click();
+        const claimed=userProfile.duduFunV43.rounds.box.status==='claimed';
+        const boxPayout=prize.kind==='COIN'?
+          userProfile.currency===purseBefore+prize.amount&&
+          userProfile.inventory.length===invBefore:
+          userProfile.currency===purseBefore&&
+          userProfile.inventory.length===invBefore+1 &&
+          userProfile.inventory[0].obtainedFrom.kind==='EVENT' &&
+          DuduInventoryV42.inspect(userProfile.inventory[0]).acquisitionKind==='EVENT';
+        const noSecondBox=DuduFunRulesV43.claim(userProfile.duduFunV43,
+          {type:'box',coins:userProfile.currency,inventory:userProfile.inventory}).ok===false;
+        const boxCoins=userProfile.currency,boxOwned=userProfile.inventory.length;
+        DuduFunUIV43.render();
+        const stillClaimed=userProfile.currency===boxCoins&&
+          userProfile.inventory.length===boxOwned&&
+          app.querySelector('.dudu-fun-box')===null;
+        const ticketTab=[...app.querySelectorAll('.dudu-fun-tab')]
+          .find(x=>x.textContent.includes('Vé Số'));
+        ticketTab.click();
+        app.querySelector('.dudu-fun-start').click();
+        const ticketSeed=userProfile.duduFunV43.rounds.ticket.seed;
+        const ticketPending=JSON.parse(localStorage.getItem(scopedLocalKey('profile')))
+          .duduFunV43.rounds.ticket.status==='playing';
+        for(const index of [0,2,8]){
+          app.querySelector('.dudu-fun-scratch[data-scratch="'+index+'"]').click();
+        }
+        const scratchCount=userProfile.duduFunV43.rounds.ticket.cells.length;
+        const ticketReady=userProfile.duduFunV43.rounds.ticket.status==='ready';
+        const ticketPrize=userProfile.duduFunV43.rounds.ticket.reward.amount;
+        const beforeTicketCoins=userProfile.currency;
+        app.querySelector('.dudu-fun-claim').click();
+        const ticketCoins=userProfile.currency===beforeTicketCoins+ticketPrize;
+        const done=DuduFunRulesV43.progress(userProfile.duduFunV43).done===2;
+        const history=userProfile.duduFunV43.history.length===2;
+        const resultSaved=JSON.parse(localStorage.getItem(scopedLocalKey('profile')))
+          .duduFunV43.rounds.ticket.status==='claimed';
+        const ticketKeptSeed=userProfile.duduFunV43.rounds.ticket.seed===ticketSeed;
+        const noTicketReroll=DuduFunRulesV43.begin(userProfile.duduFunV43,
+          {type:'ticket',roll:.999,seed:20}).ok===false;
+        // Read-only guest: leaving an old in-memory profile must not show rewards.
+        currentUsername='';
+        DuduFunUIV43.render();
+        const guestSafe=!!app.querySelector('.dudu-fun-guest')&&
+          !app.querySelector('.dudu-fun-win');
+        currentUsername=uid;
+        const safe=JSON.stringify(userProfile.lootedChapters)===chapterClaims&&
+          JSON.stringify(userProfile.storyStates)===trust&&
+          userProfile.exp===exp&&userProfile.level===level;
+        return {appVisible,boxes,noCoinSpent,pendingSaved,samePrize,
+          resumed,ready,claimed,boxPayout,noSecondBox,stillClaimed,
+          ticketPending,scratchCount,ticketReady,ticketCoins,done,history,
+          resultSaved,ticketKeptSeed,noTicketReroll,guestSafe,safe,
+          noWrites:window.__firestoreWrites.length===priorWrites};
+      }finally{
+        currentUsername=uid;
+        userProfile=savedProfile;
+        saveCurrentAccount();
+        DuduFunUIV43.render();
+        phoneHome();
+        if(!wasOpen&&phone.style.display==='flex')togglePhone();
+      }
+    });
+    assert.deepEqual(funV4354,{
+      appVisible:true,boxes:3,noCoinSpent:true,pendingSaved:true,samePrize:true,
+      resumed:true,ready:true,claimed:true,boxPayout:true,noSecondBox:true,
+      stillClaimed:true,ticketPending:true,scratchCount:3,ticketReady:true,
+      ticketCoins:true,done:true,history:true,resultSaved:true,
+      ticketKeptSeed:true,noTicketReroll:true,guestSafe:true,safe:true,noWrites:true
+    },'DUDU FUN Sandbox rewards must be committed once and isolated from live');
+
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
     console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));
   } finally {

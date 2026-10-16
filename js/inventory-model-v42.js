@@ -108,7 +108,7 @@
     const realm=typeof approved?.realmTag==='string'&&REALMS[approved.realmTag]?
       approved.realmTag:null;
     const origin=plain(record.obtainedFrom)?record.obtainedFrom:{};
-    const acquisitionKind=['SHOP','CHAPTER','GLOBAL','STARTER'].includes(origin.kind)?
+    const acquisitionKind=['SHOP','CHAPTER','GLOBAL','STARTER','EVENT'].includes(origin.kind)?
       origin.kind:null;
     const storyId=typeof origin.storyId==='string'&&origin.storyId?
       origin.storyId:typeof record.storyId==='string'&&record.storyId?record.storyId:null;
