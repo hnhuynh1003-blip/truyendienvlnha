@@ -980,155 +980,104 @@ async function main() {
       'Editing must not create or unlock extra NPCs');
     assert.equal(npcR7Author.writes,0,'R7 sandbox authoring cannot write Firestore');
 
-    // R8: author picks one of 24 feminine prototype portraits or uploads a
-    // local image. Never moves the binary into the public novel / Firestore.
+    // V39 unified gallery — 72 original IDs + 4 HD anime, no personality labels.
     const portraitBrowser=await page.evaluate(async()=>{
       const story=novels[selectedNovelIndex];
-      const idx=story.characters.findIndex(n=>n&&n.id);
+      const idx=story.characters.findIndex(n=>n?.id);
       if(idx<0)return {missing:true};
       const original=JSON.stringify(story.characters);
       const originalRole=userProfile.role,priorNovel=editingCharNovelId;
       const beforeWrites=window.__firestoreWrites.length;
-      userProfile.role='admin';applyUserRole();
-      renderCodexDropdown();
+      userProfile.role='admin';applyUserRole();renderCodexDropdown();
       document.getElementById('codex-novel-selector').value=story.id;
-      openEditCharacterModal(idx);
-      document.getElementById('npc-r9-gender').value='all';
-      npcRenderPortraitChoices();
-      const choices=document.querySelectorAll('#npc-r8-gallery [data-portrait-id]').length;
-      document.getElementById('npc-r9-gender').value='female';
-      npcRenderPortraitChoices();
-      const filteredFemale=document.querySelectorAll('#npc-r8-gallery [data-portrait-id]').length;
-      document.getElementById('npc-r9-gender').value='male';
-      npcRenderPortraitChoices();
-      const filteredMale=document.querySelectorAll('#npc-r8-gallery [data-portrait-id]').length;
-      document.getElementById('npc-r9-world').value='fantasy';
-      npcRenderPortraitChoices();
-      const filteredFantasy=document.querySelectorAll('#npc-r8-gallery [data-portrait-id]').length;
-      document.getElementById('npc-r9-search').value='trầm tĩnh';
-      npcRenderPortraitChoices();
-      const filteredMood=document.querySelectorAll('#npc-r8-gallery [data-portrait-id]').length;
-      document.getElementById('npc-r9-gender').value='all';
-      document.getElementById('npc-r9-world').value='all';
-      document.getElementById('npc-r9-search').value='';
-      npcRenderPortraitChoices();
-      npcSelectPortraitPreset('portrait-f-07');
-      const preview=document.getElementById('npc-r8-preview');
-      const presetPreview=preview.src.startsWith('data:image/svg+xml');
-      saveCharacterModal();
-      const id=story.characters[idx].id;
-      const selected=story.characters[idx].portraitPresetId;
-      openEditCharacterModal(idx);
-      npcSelectPortraitPreset('portrait-n-03');
-      saveCharacterModal();
-      openEditCharacterModal(idx);
-      const legacyPreserved=document.getElementById('npc-r8-preset-id').value==='portrait-n-03'&&
-        document.getElementById('npc-r8-selection-label').textContent.includes('lưu từ bản cũ');
-      npcSelectPortraitPreset('portrait-f-07');
-      saveCharacterModal();
-      openEditCharacterModal(idx);
-      const canvas=document.createElement('canvas');canvas.width=60;canvas.height=60;
-      const ctx=canvas.getContext('2d');ctx.fillStyle='#663399';ctx.fillRect(0,0,60,60);
-      const blob=await new Promise(done=>canvas.toBlob(done,'image/png'));
-      const file=new File([blob],'avatar.png',{type:'image/png'});
-      await npcUploadPortrait({target:{files:[file],value:''}});
-      const uploadId=document.getElementById('npc-r8-upload-id').value;
-      const ownSrc=await DuduNpcPortraitLibrary.readUpload(
-        currentUsername||'sandbox-guest',story.id,uploadId);
-      const otherSrc=await DuduNpcPortraitLibrary.readUpload(
-        'not-the-user',story.id,uploadId);
-      saveCharacterModal();
-      const uploaded=story.characters[idx].portraitUploadId;
-      // In-flight upload must not override a more recent explicit gallery choice.
-      openEditCharacterModal(idx);
-      const lateUpload=npcUploadPortrait({target:{files:[file],value:''}});
-      npcSelectPortraitPreset('portrait-m-02');
-      await lateUpload;
-      const raceSelected=document.getElementById('npc-r8-preset-id').value==='portrait-m-02'&&
-        document.getElementById('npc-r8-upload-id').value==='';
-      closeModals();
-      const sameCount=story.characters.length===JSON.parse(original).length;
-      story.characters=JSON.parse(original);
-      localStorage.setItem('dudu-sandbox-library',JSON.stringify(novels));
-      userProfile.role=originalRole;applyUserRole();editingCharNovelId=priorNovel;
-      return {missing:false,choices,filteredFemale,filteredMale,filteredFantasy,filteredMood,legacyPreserved,presetPreview,selected,uploadId,uploaded,
-        ownSrc:typeof ownSrc==='string'&&ownSrc.startsWith('data:image/jpeg;base64,'),
-        otherSrc,raceSelected,sameCount,writes:window.__firestoreWrites.length-beforeWrites};
+      try{
+        openEditCharacterModal(idx);
+        const box=document.getElementById('npc-r8-gallery-panel');
+        const collapsed=!box.open;
+        const oldSectionsHidden=['npc-v28-art-pack','npc-v14-art-panel'].every(id=>
+          getComputedStyle(document.getElementById(id)).display==='none');
+        box.open=true;
+        npcRenderPortraitChoices();
+        const initiallyRendered=document.querySelectorAll('#npc-r8-gallery [data-portrait-id]').length;
+        const seenAnime=!!document.querySelector('#npc-r8-gallery [data-portrait-id="portrait-a-01"]');
+        const library=window.DuduNpcPortraitLibrary;
+        const total=library.CATALOG.length;
+        const female=library.search({gender:'female'}).length;
+        const male=library.search({gender:'male'}).length;
+        const IDnotMood=library.search({query:'trầm tĩnh'}).length===0&&
+          library.search({query:'portrait-a-01'}).length===1;
+        npcSelectPortraitPreset('portrait-a-01');
+        const selectedId=document.getElementById('npc-r8-preset-id').value;
+        const autoCollapsed=!box.open;
+        saveCharacterModal();
+        const saved=story.characters[idx].portraitPresetId;
+        openEditCharacterModal(idx);
+        const restored=document.getElementById('npc-r8-preset-id').value;
+        const portrait=document.createElement('div');
+        document.body.append(portrait);
+        renderNpcPortraitPreview(portrait,story.characters[idx],story.id);
+        const rendersAtlas=portrait.style.backgroundImage.includes('data:image/webp;base64')||
+          portrait.style.backgroundImage.includes('female-anime-candidates-v15.webp');
+        portrait.remove();
+        npcSelectPortraitPreset('portrait-n-03');
+        saveCharacterModal();
+        openEditCharacterModal(idx);
+        const legacyPreserved=document.getElementById('npc-r8-preset-id').value==='portrait-n-03';
+        npcSelectPortraitPreset('portrait-f-07');
+        saveCharacterModal();
+        openEditCharacterModal(idx);
+        const canvas=document.createElement('canvas');canvas.width=60;canvas.height=60;
+        const ctx=canvas.getContext('2d');ctx.fillStyle='#663399';ctx.fillRect(0,0,60,60);
+        const blob=await new Promise(done=>canvas.toBlob(done,'image/png'));
+        const file=new File([blob],'avatar.png',{type:'image/png'});
+        await npcUploadPortrait({target:{files:[file],value:''}});
+        const uploadId=document.getElementById('npc-r8-upload-id').value;
+        const ownSrc=await library.readUpload(currentUsername||'sandbox-guest',story.id,uploadId);
+        const otherSrc=await library.readUpload('not-the-user',story.id,uploadId);
+        saveCharacterModal();
+        const uploaded=story.characters[idx].portraitUploadId;
+        openEditCharacterModal(idx);
+        const lateUpload=npcUploadPortrait({target:{files:[file],value:''}});
+        npcSelectPortraitPreset('portrait-m-02');
+        await lateUpload;
+        const raceSelected=document.getElementById('npc-r8-preset-id').value==='portrait-m-02'&&
+          document.getElementById('npc-r8-upload-id').value==='';
+        closeModals();
+        return {missing:false,collapsed,oldSectionsHidden,initiallyRendered,seenAnime,
+          total,female,male,IDnotMood,selectedId,autoCollapsed,saved,restored,
+          rendersAtlas,legacyPreserved,uploadId,uploaded,
+          ownSrc:typeof ownSrc==='string'&&ownSrc.startsWith('data:image/jpeg;base64,'),
+          otherSrc,raceSelected,
+          sameCount:story.characters.length===JSON.parse(original).length,
+          writes:window.__firestoreWrites.length-beforeWrites};
+      }finally{
+        story.characters=JSON.parse(original);
+        localStorage.setItem('dudu-sandbox-library',JSON.stringify(novels));
+        userProfile.role=originalRole;applyUserRole();editingCharNovelId=priorNovel;
+      }
     });
     assert.equal(portraitBrowser.missing,false);
-    assert.equal(portraitBrowser.choices,72);
-    assert.equal(portraitBrowser.filteredFemale,60);
-    assert.equal(portraitBrowser.filteredMale,12);
-    assert.equal(portraitBrowser.filteredFantasy,4);
-    assert.equal(portraitBrowser.filteredMood,0);
-    assert.equal(portraitBrowser.presetPreview,true);
-    assert.equal(portraitBrowser.selected,'portrait-f-07');
-    assert.equal(portraitBrowser.legacyPreserved,true,'Previously saved neutral images must still load');
+    assert.equal(portraitBrowser.total,76);
+    assert.equal(portraitBrowser.female,64);
+    assert.equal(portraitBrowser.male,12);
+    assert.equal(portraitBrowser.collapsed,true);
+    assert.equal(portraitBrowser.oldSectionsHidden,true);
+    assert.equal(portraitBrowser.initiallyRendered,24);
+    assert.equal(portraitBrowser.seenAnime,true);
+    assert.equal(portraitBrowser.IDnotMood,true);
+    assert.equal(portraitBrowser.selectedId,'portrait-a-01');
+    assert.equal(portraitBrowser.autoCollapsed,true);
+    assert.equal(portraitBrowser.saved,'portrait-a-01');
+    assert.equal(portraitBrowser.restored,'portrait-a-01');
+    assert.equal(portraitBrowser.rendersAtlas,true);
+    assert.equal(portraitBrowser.legacyPreserved,true);
     assert.ok(/^own-/.test(portraitBrowser.uploadId));
     assert.equal(portraitBrowser.uploaded,portraitBrowser.uploadId);
     assert.equal(portraitBrowser.ownSrc,true);
-    assert.equal(portraitBrowser.otherSrc,null,'Uploaded portrait is scoped to sandbox identity');
-    assert.equal(portraitBrowser.raceSelected,true,'A late upload must not override the chosen image');
-    assert.equal(portraitBrowser.sameCount,true,'Choosing portrait never creates NPC');
-    assert.equal(portraitBrowser.writes,0,'No real Firestore writes while selecting pictures');
-    // V14: real WebP candidate saved only by explicit author choice.
-    const animeV14=await page.evaluate(()=>{
-      const story=novels[selectedNovelIndex];
-      const idx=story.characters.findIndex(c=>c?.id);
-      if(idx<0)return {missing:true};
-      const originals=JSON.stringify(story.characters);
-      const oldRole=userProfile.role,oldEditing=editingCharNovelId;
-      const initialWrites=window.__firestoreWrites.length;
-      userProfile.role='admin';applyUserRole();renderCodexDropdown();
-      document.getElementById('codex-novel-selector').value=story.id;
-      const npc=story.characters[idx];
-      const previous=!!npc.portraitAnimeId;
-      openEditCharacterModal(idx);
-      const available=document.querySelectorAll('#npc-v14-anime-gallery button[data-anime-id]').length;
-      const initialSelection=document.getElementById('npc-v14-anime-id').value;
-      npcSelectAnimeCandidate('anime-moon-violet');
-      const chosen=document.getElementById('npc-v14-anime-id').value;
-      const otherUnselected=!document.getElementById('npc-r8-upload-id').value&&
-        !document.getElementById('npc-r8-preset-id').value;
-      saveCharacterModal();
-      const saved=story.characters[idx].portraitAnimeId;
-      openEditCharacterModal(idx);
-      const restored=document.getElementById('npc-v14-anime-id').value;
-      const selectedButton=document.querySelector(
-        '#npc-v14-anime-gallery button[data-anime-id="anime-moon-violet"]'
-      ).getAttribute('aria-pressed');
-      const portrait=document.createElement('div');
-      portrait.style.cssText='height:140px;width:100px;';
-      portrait.id='anime-v14-temp';
-      document.body.append(portrait);
-      renderNpcPortraitPreview(portrait,story.characters[idx],story.id);
-      const visible=portrait.style.backgroundImage.includes('data:image/webp;base64,')&&
-        !portrait.textContent&&portrait.style.backgroundSize==='400% 100%';
-      portrait.remove();
-      npcSelectPortraitPreset('portrait-f-07');
-      const cleared=document.getElementById('npc-v14-anime-id').value==='';
-      saveCharacterModal();
-      const oldPortraitRestored=story.characters[idx].portraitPresetId==='portrait-f-07'&&
-        !Object.hasOwn(story.characters[idx],'portraitAnimeId');
-      story.characters=JSON.parse(originals);
-      userProfile.role=oldRole;applyUserRole();saveDB();
-      editingCharNovelId=oldEditing;
-      return {available,previous,initialSelection,chosen,otherUnselected,saved,
-        restored,selectedButton,visible,cleared,oldPortraitRestored,
-        countPreserved:story.characters.length===JSON.parse(originals).length,
-        writes:window.__firestoreWrites.length-initialWrites};
-    });
-    assert.equal(animeV14.available,4);
-    assert.equal(animeV14.chosen,'anime-moon-violet');
-    assert.equal(animeV14.otherUnselected,true);
-    assert.equal(animeV14.saved,'anime-moon-violet');
-    assert.equal(animeV14.restored,'anime-moon-violet');
-    assert.equal(animeV14.selectedButton,'true');
-    assert.equal(animeV14.visible,true);
-    assert.equal(animeV14.cleared,true);
-    assert.equal(animeV14.oldPortraitRestored,true);
-    assert.equal(animeV14.countPreserved,true);
-    assert.equal(animeV14.writes,0);
+    assert.equal(portraitBrowser.otherSrc,null);
+    assert.equal(portraitBrowser.raceSelected,true);
+    assert.equal(portraitBrowser.sameCount,true);
+    assert.equal(portraitBrowser.writes,0);
 
     // V15: fullscreen portraits use a locally bundled high-res WebP,
     // restore keyboard focus and cannot be opened for locked reader NPCs.
