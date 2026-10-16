@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="css/player-avatar-conflict-v21.css">
   <link rel="stylesheet" href="css/player-avatar-sync-v22.css">
   <link rel="stylesheet" href="css/item-visuals-v13.css">
+  <link rel="stylesheet" href="css/phone-ux-v27-r3.css">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -910,19 +911,19 @@
           <button class="btn" id="btn-inventory-loot" style="padding: 2px 7px; font-size: 9px;" onclick="rollLootDrop(false)">🎲 Nhặt đồ</button>
         </div>
         
-        <div style="display:flex; gap:4px; margin-bottom:8px;">
+        <div class="dudu-v27-inventory-filters" role="group" aria-label="Lọc kho đồ">
           <button class="filter-btn active" id="inv-tab-all" onclick="filterInventory('ALL', this)">Tất cả</button>
           <button class="filter-btn" id="inv-tab-food" onclick="filterInventory('FOOD', this)">Đồ ăn</button>
           <button class="filter-btn" id="inv-tab-weapon" onclick="filterInventory('WEAPON', this)">Vũ khí</button>
           <button class="filter-btn" id="inv-tab-item" onclick="filterInventory('ITEM', this)">Vật dụng</button>
         </div>
 
-        <div id="inventory-v2-toolbar" style="display:none;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 8px;">
+        <div id="inventory-v2-toolbar" class="dudu-v27-inventory-toolbar" style="display:none;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 8px;">
           <input id="inventory-v2-search" type="search" placeholder="Tìm vật phẩm..." aria-label="Tìm trong kho đồ" oninput="renderInventory()" style="min-width:130px;flex:1;background:#111827;color:#e2e8f0;border:1px solid #334155;border-radius:6px;padding:6px;font-size:11px;"/>
           <span id="inventory-v2-count" style="font-size:10px;color:#94a3b8;"></span>
         </div>
         <section id="inventory-v12-detail" aria-live="polite" aria-label="Chi tiết vật phẩm"></section>
-        <div id="inventory-container"></div>
+        <div id="inventory-container" aria-label="Các ô vật phẩm trong hành trang"></div>
       </div>
 
       <!-- APP: BẢO TÀNG KỶ VẬT (chỉ dữ liệu sở hữu máy chủ) -->
@@ -930,9 +931,12 @@
         <div class="phone-app-header">
           <button class="phone-back-btn" onclick="phoneHome()">‹</button>
           <span>🏛️ Bảo Tàng Ký Ức</span>
-          <button type="button" class="btn" style="padding:2px 6px;font-size:9px;" onclick="renderMuseum()">↻</button>
+          <button type="button" class="btn dudu-v27-museum-refresh" title="Làm mới kỷ vật" aria-label="Làm mới bảo tàng" onclick="renderMuseum()">↻</button>
         </div>
-        <p style="font-size:10px;color:var(--text-dim);line-height:1.5;margin:6px 0;">Chỉ hiện những kỷ vật đã được máy chủ xác nhận. Đồ nhặt trong kho thường không đồng nghĩa với kỷ vật hiếm.</p>
+        <details class="dudu-v27-details dudu-v27-museum-help">
+          <summary>ⓘ Kỷ vật được xác nhận <span class="dudu-v27-more-hint">Tìm hiểu</span></summary>
+          <p>Chỉ hiển thị kỷ vật có xác nhận từ máy chủ. Vật phẩm nhặt trong kho thông thường không phải kỷ vật hiếm và không tự mở khóa phần thưởng.</p>
+        </details>
         <div id="museum-items" aria-live="polite" style="overflow-y:auto;max-height:300px;font-size:11px;">Chưa tải bộ sưu tập.</div>
       </div>
 
@@ -941,7 +945,12 @@
         <div class="phone-app-header">
           <button class="phone-back-btn" onclick="phoneHome()">‹</button>
           <span>Nhiệm Vụ Hệ Thống</span>
-          <button class="btn" style="padding: 2px 5px; font-size: 9px;" onclick="refreshDailyQuests()">🔄 Reset</button>
+          <details class="dudu-v27-quest-menu">
+            <summary title="Tùy chọn nhiệm vụ" aria-label="Tùy chọn nhiệm vụ">⋯</summary>
+            <div class="dudu-v27-quest-tools">
+              <button type="button" class="btn btn-danger" onclick="refreshDailyQuests()">Đặt lại nhiệm vụ ngày</button>
+            </div>
+          </details>
         </div>
         
         <div style="display:flex; gap:4px; margin-bottom:8px;">
@@ -950,7 +959,7 @@
           <button class="filter-btn" onclick="filterQuestTab('MAIN', this)">Chính tuyến</button>
         </div>
 
-        <div id="quests-container"></div>
+        <div id="quests-container" class="dudu-v27-quest-list"></div>
       </div>
 
       <!-- APP: NHÂN VẬT & KẾT NỐI LINH HỒN (GIAO DIỆN GỌN GÀNG, ẨN PROMPT DÀI) -->
@@ -1034,7 +1043,7 @@
           <span></span>
         </div>
         <div style="font-size:10px; color:var(--gold); margin-bottom:6px;">Số dư: <b id="shop-currency-val">50</b> 🪙 Xu</div>
-        <div id="shop-items-container"></div>
+        <div id="shop-items-container" class="dudu-v27-shop-grid"></div>
       </div>
 
       <!-- APP: CÀI ĐẶT — tách hiển thị khỏi công cụ phụ -->
