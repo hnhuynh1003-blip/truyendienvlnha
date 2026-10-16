@@ -69,7 +69,8 @@ export function createV24EvidenceReader({
         !Number.isInteger(approval.minimumTrust)||
         approval.minimumTrust<50||approval.minimumTrust>100)return null;
       const bond=await loadBondProof({
-        uid,storyId:completion.storyId,npcId:approval.npcId
+        uid,storyId:completion.storyId,npcId:approval.npcId,
+        milestoneId:approval.milestoneId
       });
       if(!obj(bond)||bond.uid!==uid||
         bond.storyId!==completion.storyId||bond.npcId!==approval.npcId||
