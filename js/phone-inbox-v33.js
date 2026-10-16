@@ -64,11 +64,22 @@ function init(){
  const back=document.createElement('button');back.type='button';back.id='dudu-v33-chat-back';back.textContent='‹';back.title='Về danh sách hội thoại';back.setAttribute('aria-label','Về danh sách hội thoại');back.hidden=true;back.addEventListener('click',()=>show('inbox'));
  head.querySelector('.phone-back-btn')?.after(back);
  const actions=$('dudu-v32-gift-button')?.parentElement;
- if(actions){
-  const details=document.createElement('details');details.className='dudu-v33-tools';
-  const summary=document.createElement('summary');summary.textContent='＋';summary.title='Quà và phong bao';summary.setAttribute('aria-label','Mở công cụ tặng quà và phong bao');
-  actions.before(details);details.append(summary,actions);
-  actions.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{details.open=false;}));
+ const moreHost=app.querySelector('.dudu-v27-chat-actions');
+ const oldMore=$('chat-v27-more');
+ if(actions&&moreHost){
+  const details=document.createElement('details');details.className='dudu-v33-tools in-header';
+  const summary=document.createElement('summary');
+  summary.title='Tùy chọn cuộc trò chuyện';
+  summary.setAttribute('aria-label','Mở tùy chọn tặng quà và phong bao');
+  const plus=document.createElement('span');plus.className='dudu-v33-plus-icon';plus.setAttribute('aria-hidden','true');summary.append(plus);
+  const menu=document.createElement('div');menu.className='dudu-v33-menu';
+  if(oldMore){
+   const clear=oldMore.querySelector('button');
+   if(clear){clear.addEventListener('click',()=>details.open=false);menu.append(clear);}
+   oldMore.remove();
+  }
+  details.append(summary,menu);menu.prepend(actions);moreHost.append(details);
+  menu.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{details.open=false;}));
  }
  const original=window.openPhoneApp;
  if(typeof original==='function')window.openPhoneApp=function(name){const result=original.apply(this,arguments);if(name==='chat')show('inbox');return result;};
