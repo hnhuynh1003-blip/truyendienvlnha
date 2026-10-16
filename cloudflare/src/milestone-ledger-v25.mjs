@@ -209,6 +209,15 @@ export class V25TrustedMilestoneLedger{
     return row?{...row,status:'VERIFIED_COMPLETE',
       verifiedBy:'TRUSTED_SERVER'}:null;
   }
+  // V26 trusted author signer needs revoked heads as well as approved ones.
+  // Never expose this internal capability as a reader-facing API.
+  getApprovalHead({storyId,milestoneId}={}){
+    const row=this.#approval(storyId,milestoneId);
+    return row?Object.freeze({
+      storyId:row.storyId,milestoneId:row.milestoneId,
+      revision:Number(row.revision),status:row.status
+    }):null;
+  }
   getApproval({storyId,milestoneId}={}){
     const row=this.#approval(storyId,milestoneId);
     return row?.status==='APPROVED'?{
