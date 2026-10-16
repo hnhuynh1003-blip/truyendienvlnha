@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="css/npc-anime-v14.css">
   <link rel="stylesheet" href="css/npc-portrait-viewer-v15.css">
   <link rel="stylesheet" href="css/player-avatar-v16.css">
+  <link rel="stylesheet" href="css/player-avatar-v41.css?v=1">
   <link rel="stylesheet" href="css/player-avatar-conflict-v21.css">
   <link rel="stylesheet" href="css/player-avatar-sync-v22.css">
   <link rel="stylesheet" href="css/item-visuals-v13.css">
@@ -57,13 +58,15 @@
   <script src="js/npc-portrait-library-v1.js?v=40-1"></script>
   <script src="js/npc-anime-candidates-v14.js"></script>
   <script src="js/player-avatar-v16.js"></script>
+  <script src="js/npc-premium-v40.js?v=1"></script>
+  <script src="js/player-avatar-compress-v41.js?v=1"></script>
   <script src="js/phone-wallpaper-v27-r4.js?v=37-1"></script>
   <script src="js/dudu-multiverse-art-v28-r5.js"></script>
   <script src="js/phone-typography-v31.js"></script>
   <script src="js/red-packet-v32.js"></script>
   <script src="js/chat-social-v32.js"></script>
   <script src="js/dudu-multiverse-ui-v28-r5.js"></script>
-  <script src="js/player-avatar-ui-v16.js"></script>
+  <script src="js/player-avatar-ui-v16.js?v=41-2"></script>
   <script src="js/player-avatar-sync-plan-v20.js"></script>
   <script src="js/player-avatar-conflict-ui-v21.js"></script>
   <script src="js/player-avatar-sync-v17.js"></script>
@@ -1229,11 +1232,28 @@
         <div class="dudu-avatar-v16-section-label">1. Chọn chân dung</div>
         <div id="player-avatar-v16-kind" class="dudu-avatar-v16-tabset" role="group"
           aria-label="Loại hình đại diện"></div>
+        <div id="player-avatar-v41-controls" class="dudu-avatar-v41-controls" hidden>
+          <div class="dudu-avatar-v41-filters">
+            <select id="player-avatar-v41-gender" aria-label="Lọc chân dung anime"
+              onchange="playerAvatarGalleryFilterV41()">
+              <option value="all">Tất cả 72 ảnh</option>
+              <option value="female">Nữ · 60 ảnh</option>
+              <option value="male">Nam · 12 ảnh</option>
+            </select>
+            <input id="player-avatar-v41-search" type="search" autocomplete="off"
+              placeholder="Tìm ID: portrait-f-01…"
+              aria-label="Tìm chân dung theo ID"
+              oninput="playerAvatarGalleryFilterV41()">
+          </div>
+          <small id="player-avatar-v41-count" role="status" aria-live="polite"></small>
+        </div>
         <div id="player-avatar-v16-preset-grid" class="dudu-avatar-v16-preset-grid"
           role="group" aria-label="Chọn hình avatar"></div>
+        <button type="button" class="dudu-avatar-v41-more" id="player-avatar-v41-more"
+          hidden onclick="playerAvatarGalleryMoreV41()">Xem thêm</button>
         <div id="player-avatar-v16-upload-panel" style="display:none;margin-top:11px;">
           <label for="player-avatar-v16-upload" style="font-size:11px;">
-            Tải ảnh JPG / PNG / WebP của bạn (tối đa 5MB)
+            Tải ảnh riêng (JPG, PNG, WebP). Ảnh lớn hơn 5 MB sẽ tự nén; tệp gốc tối đa 40 MB.
           </label>
           <input id="player-avatar-v16-upload" type="file" accept="image/jpeg,image/png,image/webp"
             onchange="uploadPlayerAvatarV16(event)">
@@ -1671,7 +1691,7 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=40-1').catch((err) => console.log('SW error:', err));
+        navigator.serviceWorker.register('./sw.js?v=41-1').catch((err) => console.log('SW error:', err));
       });
     }
 
@@ -5625,7 +5645,6 @@ document.getElementById('phone-home-screen').style.display = 'none';
     renderHome();
     startCooldownTicker();
   </script>
-<script src="js/npc-premium-v40.js?v=1"></script>
 <script src="js/npc-portrait-v39.js?v=2"></script>
 <script src="js/phone-inbox-v33.js?v=4"></script>
 <script src="js/phone-wallpaper-v34.js?v=2"></script>
