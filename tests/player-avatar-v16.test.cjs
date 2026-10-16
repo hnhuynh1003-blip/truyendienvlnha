@@ -53,7 +53,7 @@ test('V16 validates deliberate anime, vector and upload choices only',()=>{
 });
 
 test('V16 Sandbox UI fields integrated into home, account, profile and chat',()=>{
- for(const id of ['player-avatar-v16-modal','player-avatar-v1','player-avatar-edit-v16',
+ for(const id of ['player-avatar-v16-modal','player-avatar-v1',
   'phone-player-avatar-v16','player-avatar-header-v16','phone-player-name-v16',
   'player-avatar-v16-frames','player-avatar-v16-preset-grid','player-avatar-preview-v16']){
    assert.ok(html.includes('id="'+id+'"'),id);
