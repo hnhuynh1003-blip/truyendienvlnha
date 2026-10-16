@@ -1,0 +1,63 @@
+/* V14: compact curated female anime portraits. Author-only sandbox module.
+ * Portraits are concept candidates; nothing here modifies story canon.
+ */
+#npc-v14-art-panel{
+ border:1px solid #9572bf;
+ border-radius:13px;
+ background:linear-gradient(145deg,#222042,#151c36);
+ padding:10px;
+ box-shadow:inset 0 1px #faf1ff1d;
+}
+#npc-v14-anime-gallery{
+ display:grid;
+ grid-template-columns:repeat(4,minmax(0,1fr));
+ gap:7px;
+}
+#npc-v14-anime-gallery .npc-v14-anime-tile{
+ min-width:0;
+ display:flex;flex-direction:column;align-items:stretch;gap:4px;
+ padding:3px;
+ border:2px solid #584d78;border-radius:10px;
+ background:linear-gradient(145deg,#392a53,#1c2841);
+ color:#eee2fa;
+ font-size:9px;line-height:1.3;cursor:pointer;
+ transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease;
+}
+#npc-v14-anime-gallery .npc-v14-anime-tile:hover,
+#npc-v14-anime-gallery .npc-v14-anime-tile:focus-visible{
+ outline:2px solid #b4eeff;outline-offset:1px;
+ transform:translateY(-2px);border-color:#d5c2f9;
+}
+#npc-v14-anime-gallery .npc-v14-anime-tile[aria-pressed="true"]{
+ border-color:#f1c8ee;
+ box-shadow:0 0 13px #d39cfa8c;
+}
+#npc-v14-anime-gallery .npc-v14-anime-thumb{
+ display:block;width:100%;aspect-ratio:3/4;border-radius:7px;
+ background-color:#372954;background-repeat:no-repeat;
+ border:1px solid #ddd0f635;
+}
+#npc-v14-art-panel .npc-v14-preview-line{
+ display:flex;gap:9px;align-items:center;min-width:0;
+ margin-top:9px;
+}
+#npc-v14-art-panel #npc-v14-anime-preview{
+ display:none;width:57px;height:75px;flex:0 0 57px;border-radius:11px;
+ border:1px solid #eac4f4;background-repeat:no-repeat;
+ background-color:#1c2541;
+ box-shadow:0 3px 9px #080b235a;
+}
+#npc-v14-art-panel #npc-v14-anime-label{
+ flex:1;min-width:0;overflow-wrap:anywhere;
+ font-size:10px;line-height:1.5;color:#d7caf1;
+}
+#npc-v14-art-panel .npc-v14-preview-line>.btn{
+ font-size:10px;padding:5px 8px;min-width:60px;
+}
+@media(max-width:420px){
+ #npc-v14-anime-gallery{grid-template-columns:repeat(2,minmax(0,1fr));}
+ #npc-v14-anime-gallery .npc-v14-anime-thumb{max-height:145px;}
+}
+@media(prefers-reduced-motion:reduce){
+ #npc-v14-anime-gallery .npc-v14-anime-tile{transition:none;}
+}

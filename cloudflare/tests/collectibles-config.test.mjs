@@ -1,0 +1,76 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+const root=path.resolve(import.meta.dirname,'..');
+const worker=fs.readFileSync(path.join(root,'src/index.mjs'),'utf8');
+const wrangler=fs.readFileSync(path.join(root,'wrangler.toml'),'utf8');
+const ledger=fs.readFileSync(path.join(root,'src/collectibles.mjs'),'utf8');
+test('collectibles have independent OFF switch and separate SQLite object',()=>{
+  assert.match(wrangler,/COLLECTIBLES_ENABLED = "false"/);
+  assert.match(wrangler,/COLLECTIBLE_SELF_CLAIM_ENABLED = "false"/);
+  assert.match(worker,/env\.COLLECTIBLE_SELF_CLAIM_ENABLED!=='true'/);
+  assert.match(worker,/path==='\/v1\/collectibles\/claim'/);
+  assert.match(wrangler,/AI_ENABLED = "false"/);
+  assert.match(wrangler,/name = "DUDU_COLLECTIBLES"/);
+  assert.match(wrangler,/tag = "v2-collectibles-sqlite"/);
+  assert.match(worker,/if\(env\.COLLECTIBLES_ENABLED!=='true'\)/);
+  assert.match(worker,/const user=await verifyFirebaseIdToken\(req,env\.PROJECT_ID\)/);
+  assert.match(worker,/path\.startsWith\('\/v1\/collectibles\/admin\/'\)&&!user\.admin/);
+});
+test('claims use verified uid and server-owned SQL ledger, never browser inventory',()=>{
+  assert.match(worker,/await bucket\.claim\(user\.uid,ids\.storyId,ids\.chapterId,ids\.itemId,now\)/);
+  assert.match(worker,/await bucket\.mine\(user\.uid\)/);
+  assert.match(ledger,/PRIMARY KEY\(uid,story_id,item_id\)/);
+  assert.match(ledger,/this\.ctx\.storage\.transactionSync/);
+  assert.doesNotMatch(ledger,/userProfile|localStorage|Gemini/);
+});
+
+test('unpublished author drafts live only in admin-only SQL and never appear in public library responses',()=>{
+  assert.match(ledger,/CREATE TABLE IF NOT EXISTS private_drafts/);
+  assert.match(ledger,/upsertDraft\(rule,now\)/);
+  assert.match(ledger,/listPrivateDrafts\(storyId,chapterId\)/);
+  assert.match(worker,/path\.startsWith\('\/v1\/collectibles\/admin\/'\)&&!user\.admin/);
+  assert.match(worker,/await bucket\.upsertDraft\(rule,now\)/);
+  assert.match(worker,/await bucket\.listPrivateDrafts\(scoped\.storyId,body\.chapterId\|\|null\)/);
+  assert.doesNotMatch(ledger,/userProfile\.inventory|firebase\.firestore|collection\(['\"]studio_data/);
+});
+
+test('release route cannot publish client-crafted item metadata or skip admin preview',()=>{
+  assert.match(worker,/normalizedDraftApproval\(body\)/);
+  assert.match(worker,/await bucket\.draftPreview\(ids\.storyId,ids\.itemId\)/);
+  assert.match(worker,/await bucket\.publishDraft\(approval,now\)/);
+  assert.doesNotMatch(worker,/await bucket\.publish\(rule,now\)/);
+  assert.match(ledger,/Number\(draft\.updatedAt\)!==approval\.expectedUpdatedAt/);
+  assert.match(ledger,/FROM private_drafts WHERE story_id=\? AND item_id=\?/);
+  assert.match(ledger,/this\.ctx\.storage\.transactionSync/);
+});
+
+test('archiving a secret disables future release claims but does not delete ownership',()=>{
+  const archive=ledger.split('archivePrivateDraft(storyId,itemId){')[1]?.split('  draftPreview(')[0];
+  assert.ok(archive,'Archive method must exist');
+  assert.match(archive,/transactionSync/);
+  assert.match(archive,/UPDATE private_drafts SET archived=1/);
+  assert.match(archive,/UPDATE releases SET disabled=1/);
+  assert.doesNotMatch(archive,/DELETE FROM ownership/);
+});
+
+test('staging admin award rejects foreign UID and cannot grant non-test/rare/story chapter items',()=>{
+  assert.match(worker,/path==='\/v1\/collectibles\/admin\/grant'/);
+  assert.match(worker,/body\.uid!=null&&body\.uid!==user\.uid/);
+  assert.match(worker,/await bucket\.grant\(user\.uid,ids\.storyId,ids\.itemId,now\)/);
+  assert.doesNotMatch(worker,/await bucket\.grant\(ids\.uid/);
+  const method=ledger.split('  grant(uid,storyId,itemId,now){')[1]?.split('  mine(uid){')[0];
+  assert.ok(method,'Server ledger must have the self-test method');
+  assert.match(method,/isEligibleSelfTestGrant\(item\)/);
+  assert.match(ledger,/import \{isChapterMature,isEligibleSelfTestGrant\}/);
+  assert.match(method,/PRIMARY KEY|alreadyOwned|alreadyOwned:true/);
+  assert.match(method,/transactionSync/);
+});
+
+test('staging browser CORS never trusts arbitrary localhost ports or domains',()=>{
+  assert.match(worker,/origin==='http:\/\/localhost:5500'/);
+  assert.match(worker,/origin==='http:\/\/127\.0\.0\.1:5500'/);
+  assert.doesNotMatch(worker,/u\.hostname==='localhost'/);
+  assert.match(worker,/origin===env\.ALLOWED_ORIGIN/);
+});

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<defs>
+<radialGradient id="nebula" cx=".48" cy=".35" r=".73"><stop stop-color="#493ac6"/><stop offset=".55" stop-color="#14174a"/><stop offset="1" stop-color="#070e29"/></radialGradient>
+<linearGradient id="gold" x1=".2" y1="1" x2=".8" y2="0"><stop stop-color="#d78a32"/><stop offset=".5" stop-color="#fff0b8"/><stop offset="1" stop-color="#f4ba5f"/></linearGradient>
+<linearGradient id="sky" x1=".1" y1=".3" x2=".85" y2=".8"><stop stop-color="#35c9ff"/><stop offset=".5" stop-color="#9279f8"/><stop offset="1" stop-color="#e79af9"/></linearGradient>
+<filter id="glow" x="-35%" y="-35%" width="170%" height="170%"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<rect x="5" y="5" width="502" height="502" rx="114" fill="url(#nebula)" stroke="#725ff5" stroke-width="9"/>
+<g fill="none" stroke="url(#sky)" stroke-width="17" stroke-linecap="round" filter="url(#glow)">
+ <path d="M120 95C253 16 391 102 382 215S252 337 214 224 343 98 315 187 233 246 240 191"/>
+</g>
+<g fill="#ffdc92"><circle cx="94" cy="134" r="6"/><circle cx="418" cy="130" r="5"/><circle cx="358" cy="68" r="4"/><circle cx="130" cy="250" r="3"/><circle cx="410" cy="264" r="3"/></g>
+<path d="M256 350C204 311 126 299 64 325v106c67-25 143-17 192 25 48-42 128-50 192-25V325c-65-26-142-12-192 25z" fill="#111739" stroke="url(#gold)" stroke-width="18" stroke-linejoin="round"/>
+<path d="M255 359C197 331 134 322 91 339v61c51-14 111-9 164 29V359zm2 0c58-28 121-37 164-20v61c-51-14-111-9-164 29V359z" fill="#ffe3a0" stroke="#f9b964" stroke-width="5"/>
+<path d="M255 356V430" stroke="#bb752c" stroke-width="7"/>
+<path d="M256 369l9 19 19 9-19 9-9 19-9-19-19-9 19-9z" fill="#fff8db" stroke="#f7a54f" stroke-width="2"/>
+</svg>

@@ -1,0 +1,51 @@
+name: DUDU Phase 1 Smoke
+on:
+  pull_request:
+    branches: [fixapp, feat/identity-npc-editor-v2, feat/dudu-v24-verified-milestones, feat/dudu-v25-trusted-milestone-ledger, feat/dudu-v26-verified-producers, feat/dudu-v27-phone-sandbox-ux-r1, feat/dudu-v27-phone-sandbox-ux-r2, feat/dudu-v27-phone-sandbox-ux-r3, feat/dudu-v27-phone-wallpaper-avatar-audit-r4]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Configure Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Verify JavaScript, scope, Gemini gateway and quota guards
+        run: |
+          node --test tests/*.test.cjs
+          node --test functions/tests/*.test.cjs
+          node --check functions/index.js
+          node --check js/ai-proxy.js
+          node --check js/collectibles-client.js
+          node --check cloudflare/src/collectible-rules.mjs
+          node --check cloudflare/src/collectibles.mjs
+          node --check cloudflare/src/index.mjs
+          node --check cloudflare/src/auth.mjs
+          node --check cloudflare/src/quota.mjs
+      - name: Test and bundle Cloudflare Worker without deploying
+        run: |
+          npm install --prefix cloudflare --no-audit --no-fund
+          npm test --prefix cloudflare
+          npm run build --prefix cloudflare
+  browser:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Configure Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Install headless browser
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install chromium --with-deps
+      - name: Verify chapter editor and sandbox isolation in Chromium
+        run: |
+          node tests/browser-smoke.cjs
+          node tests/browser-auth-private.cjs

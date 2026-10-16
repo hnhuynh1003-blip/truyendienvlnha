@@ -1,0 +1,25 @@
+{
+  "name": "DUDU Studio — Multiverse Stories",
+  "short_name": "DUDU",
+  "description": "Đọc truyện và khám phá các thế giới cùng nhân vật NPC.",
+  "start_url": "./index.html?sandbox=1",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b1132",
+  "theme_color": "#21134c",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "assets/branding/dudu-app-icon.webp",
+      "sizes": "64x64",
+      "type": "image/webp",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/branding/dudu-app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
