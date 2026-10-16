@@ -3,10 +3,14 @@ body.dudu-phone-v11[data-dudu-phone-wallpaper="v37-sakura"] #cyber-phone{
  --dudu-v30-art:url("../assets/wallpapers/v37/sakura-valley.webp");
 }
 body.dudu-phone-v11[data-dudu-phone-wallpaper="v37-city-rain"] #cyber-phone{
- --dudu-v30-art:url("../assets/wallpapers/v37/city-rain.webp");
+ --dudu-v30-art:
+  linear-gradient(165deg,rgba(250,194,100,.18),rgba(226,137,65,.36) 53%,rgba(115,63,48,.28)),
+  url("../assets/wallpapers/v37/city-rain.webp");
 }
 body.dudu-phone-v11[data-dudu-phone-wallpaper="v37-city-night"] #cyber-phone{
- --dudu-v30-art:url("../assets/wallpapers/v37/city-night.webp");
+ --dudu-v30-art:
+  linear-gradient(150deg,rgba(38,125,245,.24),rgba(34,35,151,.32) 47%,rgba(215,52,170,.37)),
+  url("../assets/wallpapers/v37/city-night.webp");
 }
 body.dudu-phone-v11 #cyber-phone .dudu-v35-gallery-tabs{
  display:flex!important;grid-template-columns:none!important;overflow-x:auto;scrollbar-width:none;gap:3px!important;
@@ -35,11 +39,41 @@ body.dudu-phone-v11 #cyber-phone .dudu-v37-choice[data-dudu-wallpaper-choice="v3
  background-image:url("../assets/wallpapers/v37/sakura-valley.webp");
 }
 body.dudu-phone-v11 #cyber-phone .dudu-v37-choice[data-dudu-wallpaper-choice="v37-city-rain"] .dudu-v37-thumb{
- background-image:url("../assets/wallpapers/v37/city-rain.webp");
+ background-image:linear-gradient(165deg,rgba(250,194,100,.18),rgba(226,137,65,.36) 53%,rgba(115,63,48,.28)),url("../assets/wallpapers/v37/city-rain.webp");
 }
 body.dudu-phone-v11 #cyber-phone .dudu-v37-choice[data-dudu-wallpaper-choice="v37-city-night"] .dudu-v37-thumb{
- background-image:url("../assets/wallpapers/v37/city-night.webp");
+ background-image:linear-gradient(150deg,rgba(38,125,245,.24),rgba(34,35,151,.32) 47%,rgba(215,52,170,.37)),url("../assets/wallpapers/v37/city-night.webp");
 }
 body.dudu-phone-v11 #cyber-phone .dudu-v37-caption{display:flex;flex-direction:column;gap:2px;padding:0 3px 3px;}
 body.dudu-phone-v11 #cyber-phone .dudu-v37-caption strong{font-size:11px;line-height:1.2;}
 body.dudu-phone-v11 #cyber-phone .dudu-v37-caption small{font-size:9px;color:#b4c6da;}
+
+/* V37 refinement — automatic story mode is a setting, not duplicated art. */
+body.dudu-phone-v11 #cyber-phone
+ .dudu-v35-gallery-panel[data-dudu-v35-tab="world"] .dudu-v29-world-gallery{
+ display:none!important;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v37-world-kinds{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:6px 0 12px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v37-world-kind{
+ display:flex;align-items:flex-start;gap:7px;min-width:0;
+ padding:10px 7px;border-radius:12px;
+ border:1px solid #7998b657;background:linear-gradient(155deg,#233650,#172b40);
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v37-world-symbol{
+ display:grid;place-items:center;flex:none;width:27px;height:27px;
+ background:#33506b;border-radius:9px;font-size:16px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v37-world-copy{
+ display:flex;flex-direction:column;gap:3px;min-width:0;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v37-world-copy strong{
+ color:#eaf5ff;font-size:10px;line-height:1.3;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v37-world-copy small{
+ color:#b3c7da;font-size:9px;line-height:1.4;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v37-world-hint{
+ font-size:10px;color:#b3c7da;line-height:1.45;margin:9px 0 4px;
+}
