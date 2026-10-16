@@ -99,3 +99,35 @@ body.dudu-phone-v11 #cyber-phone .dudu-v29-read-button:focus-visible{
 body.dudu-phone-v11 #cyber-phone .dudu-v29-stories-empty{
  text-align:center;color:#b5c2d9;font-size:11px;line-height:1.5;padding:30px 5px;
 }
+
+/* V29: illustration picker. Each world wallpaper keeps a gradient fallback. */
+body.dudu-phone-v11 #cyber-phone .dudu-v29-world-gallery{
+ display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v29-world-gallery>button{
+ appearance:none;display:flex;flex-direction:column;align-items:center;
+ border:1px solid #7682b0;border-radius:10px;background:#192740;color:#e8eafd;
+ cursor:pointer;padding:5px 2px;min-width:0;gap:4px;font-size:9px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v29-world-gallery>button span{
+ display:block;width:100%;max-width:57px;aspect-ratio:3/4;
+ border:1px solid #989ccd77;border-radius:7px;background-size:cover;background-position:center;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v29-world-gallery .is-xianxia{
+ background-image:linear-gradient(155deg,#516181aa,#132f52ba),url("../assets/wallpapers/worlds/xianxia.webp");
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v29-world-gallery .is-modern{
+ background-image:linear-gradient(155deg,#d28d9c66,#584d7b77),url("../assets/wallpapers/worlds/modern.webp");
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v29-world-gallery .is-cyberpunk{
+ background-image:linear-gradient(155deg,#5d4dba66,#21194c77),url("../assets/wallpapers/worlds/cyberpunk.webp");
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v29-world-gallery .is-gothic{
+ background-image:linear-gradient(155deg,#6a476166,#0c102477),url("../assets/wallpapers/worlds/gothic.webp");
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v29-world-gallery>button[aria-pressed="true"]{
+ border-color:#9df1ff;box-shadow:0 0 0 1px #a7efff90;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v29-world-gallery>button:focus-visible{
+ outline:2px solid #adf8ff;outline-offset:2px;
+}
