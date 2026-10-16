@@ -2225,7 +2225,13 @@
       const relation=document.getElementById('npc-relationship-r3-preview');
       const choice=document.getElementById('npc-daily-choice-card');
       if(!host||!relation||!choice)return;
-      if(relation.parentElement!==host)host.append(relation,choice);
+      if(relation.parentElement!==host){
+        host.append(relation,choice);
+        // Cards show each NPC's progress. Do not show stale details from
+        // a previous chat until the player chooses a specific NPC.
+        relation.style.display='none';
+        choice.style.display='none';
+      }
     }
     function npcCheckInFromCodexV31(storyId,npcId){
       if(!IS_SANDBOX_MODE||!currentUsername||!isNpcUnlocked(storyId,npcId))return;
