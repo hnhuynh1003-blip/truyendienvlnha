@@ -1640,6 +1640,53 @@ async function main() {
     assert.equal(foreignV22.writes,0);
     await page.evaluate(()=>closePlayerAvatarEditorV16());
 
+    // V23 local avatar deletion: confirmation, safe fallback and UID isolation.
+    const deletedV23=await page.evaluate(async()=>{
+      const saved=JSON.stringify(userProfile);
+      const owner=currentUsername;
+      const id=DuduNpcPortraitLibrary.makeId();
+      const canvas=document.createElement('canvas');
+      canvas.width=48;canvas.height=48;
+      const ctx=canvas.getContext('2d');
+      ctx.fillStyle='#9b8acc';ctx.fillRect(0,0,48,48);
+      const picture=canvas.toDataURL('image/jpeg',.75);
+      const scope=DuduPlayerAvatarV16.SCOPE;
+      const made=await DuduNpcPortraitLibrary.saveUpload(owner,scope,id,picture);
+      const other=await DuduNpcPortraitLibrary.saveUpload('second-user',scope,id,picture);
+      userProfile.playerAvatar={kind:'upload',uploadId:id,presetId:'',frameId:'moon'};
+      saveCurrentAccount();
+      openPlayerAvatarEditorV16();
+      const button=document.getElementById('player-avatar-v23-delete-local');
+      const visible=button.style.display==='inline-flex';
+      const originalConfirm=window.confirm;
+      window.confirm=()=>false;
+      const canceled=await deletePlayerAvatarLocalV23();
+      const imageBefore=await DuduNpcPortraitLibrary.readUpload(owner,scope,id);
+      window.confirm=()=>true;
+      const deleted=await deletePlayerAvatarLocalV23();
+      window.confirm=originalConfirm;
+      const imageAfter=await DuduNpcPortraitLibrary.readUpload(owner,scope,id);
+      const imageOther=await DuduNpcPortraitLibrary.readUpload('second-user',scope,id);
+      const restored=userProfile.playerAvatar?.kind==='initials';
+      closePlayerAvatarEditorV16();
+      userProfile=JSON.parse(saved);saveCurrentAccount();
+      await DuduNpcPortraitLibrary.deleteUpload('second-user',scope,id);
+      return {made,other,visible,canceled,deleted,imageBefore:!!imageBefore,
+        imageAfter,otherSafe:!!imageOther,restored,
+        firestoreWrites:window.__firestoreWrites.length};
+    });
+    assert.equal(deletedV23.made,true);
+    assert.equal(deletedV23.other,true);
+    assert.equal(deletedV23.visible,true);
+    assert.equal(deletedV23.canceled,false);
+    assert.equal(deletedV23.imageBefore,true);
+    assert.equal(deletedV23.deleted,true);
+    assert.equal(deletedV23.imageAfter,null);
+    assert.equal(deletedV23.otherSafe,true,
+      'Deleting avatar must not touch other local user namespace');
+    assert.equal(deletedV23.restored,true);
+    assert.equal(deletedV23.firestoreWrites,0);
+
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
     console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));
   } finally {
