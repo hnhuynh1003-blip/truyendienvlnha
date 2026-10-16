@@ -2181,6 +2181,7 @@
         selector.appendChild(opt);
       });
       switchChatCharacter();
+      if(IS_SANDBOX_MODE)renderPhoneWallpaperV27();
     }
 
     function showNpcRelationshipHelp() {
@@ -3425,6 +3426,7 @@
     function phoneHome() {
       document.querySelectorAll('.phone-sub-app').forEach(el => el.style.display = 'none');
       document.getElementById('phone-home-screen').style.display = 'flex';
+      if(IS_SANDBOX_MODE)renderPhoneWallpaperV27();
     }
 
     function openPhoneApp(appName) {
@@ -3452,6 +3454,8 @@
         syncPhoneDisplayOptionsV27();
         renderPhoneWallpaperV27();
       }
+      // Current story may change as reader moves between Codex/Chat/Settings.
+      if(IS_SANDBOX_MODE)renderPhoneWallpaperV27();
     }
 
     async function renderMuseum() {
