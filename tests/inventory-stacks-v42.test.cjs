@@ -120,3 +120,36 @@ test('V42.4: scarce rank B–SSS items remain separate even when catalog says no
  assert.equal(model.stackKey(rareA),null);
  assert.equal(model.stackKey(relic1),null);
 });
+
+test('V42.5: exact old init-1/init-2 starters display together with canonical f1/e3',()=>{
+ const oldBread={id:'init-1',name:'Mẩu Bánh Mì Mốc',rank:'F',
+  type:'FOOD',icon:'🍞',desc:'Khô khốc, chống đói lúc tuyệt vọng.'};
+ const oldKnife={id:'init-2',name:'Dao Gọt Trái Cây Cũ',rank:'E',
+  type:'WEAPON',icon:'🔪',desc:'Vũ khí thô sơ nhất để tự vệ.'};
+ const owned=[oldBread,drop('f1',1,'story-B','chapter-7'),
+  oldKnife,drop('e3',2,'story-C','chapter-5')];
+ const before=JSON.stringify(owned);
+ const grouped=model.displayList(owned);
+ assert.equal(grouped.total,2);
+ assert.deepEqual(grouped.entries.map(x=>({id:x.detail.id,count:x.count})),
+  [{id:'f1',count:2},{id:'e3',count:2}]);
+ assert.equal(grouped.entries[0].detail.originalId,'init-1');
+ assert.equal(grouped.entries[1].detail.originalId,'init-2');
+ assert.equal(model.starterAlias(oldBread),'f1');
+ assert.equal(model.starterAlias(oldKnife),'e3');
+ assert.equal(model.canonicalFor(oldBread),catalog.byId('f1'));
+ assert.equal(JSON.stringify(owned),before);
+});
+test('V42.5: altered old items and user-defined init IDs are NOT auto-merged',()=>{
+ const fake={id:'init-1',name:'Một món không phải bánh mì',
+  rank:'F',type:'FOOD',icon:'🍞',desc:'Khô khốc, chống đói lúc tuyệt vọng.'};
+ const changed={id:'init-1',name:'Mẩu Bánh Mì Mốc',rank:'F',
+  type:'FOOD',icon:'🍞',desc:'Khô khốc, chống đói lúc tuyệt vọng.',
+  effect:{attack:999}};
+ assert.equal(model.starterAlias(fake),null);
+ assert.equal(model.starterAlias(changed),null);
+ assert.equal(model.stackKey(fake),null);
+ assert.equal(model.stackKey(changed),null);
+ const owned=[fake,changed,drop('f1',3,'story-B','ch1')];
+ assert.equal(model.displayList(owned).total,3);
+});
