@@ -3,6 +3,20 @@
 'use strict';
 const $=id=>document.getElementById(id);
 let filter='recent';
+function hiddenContacts(storyId=story()){
+ const life=window.DuduNpcLifecycleV43;
+ return currentUsername&&life?life.readHidden(localStorage,currentUsername,storyId,IS_SANDBOX_MODE):[];
+}
+function changeVisibility(npcId,hidden){
+ const life=window.DuduNpcLifecycleV43,storyId=story();
+ if(!life||!currentUsername||!getCombinedCharactersList().some(n=>n.id===npcId))return;
+ if(!life.toggleHidden(localStorage,currentUsername,storyId,npcId,IS_SANDBOX_MODE,hidden)){
+  if(typeof showSystemAlert==='function')
+   showSystemAlert('CHƯA LƯU ĐƯỢC','Tùy chọn ẩn danh bạ trên thiết bị chưa được lưu.');
+  return;
+ }
+ render();
+}
 function story(){return activeChatNovelId||(novels[selectedNovelIndex]||{}).id;}
 function preview(npc){
   try {
@@ -33,7 +47,7 @@ function render(){
  const query=($('dudu-v33-search')?.value||'').trim().toLocaleLowerCase('vi');
  // DUDU is a SYSTEM contact, not a story character. Pin first, even when
  // the player has zero NPCs and has never sent a message.
- if(IS_SANDBOX_MODE&&currentUsername&&window.DuduCompanionV43){
+ if(filter!=='hidden'&&IS_SANDBOX_MODE&&currentUsername&&window.DuduCompanionV43){
   const info=window.DuduCompanionV43.inboxSummary();
   if(!query||('dudu đồng hành hệ thống '+info.text).toLocaleLowerCase('vi').includes(query)){
    const button=document.createElement('button');
@@ -50,11 +64,21 @@ function render(){
    root.append(button);
   }
  }
- const names=(getCombinedCharactersList()||[]).filter(n=>n&&!n.archived);
+ const hidden=hiddenContacts(),life=window.DuduNpcLifecycleV43;
+ const names=(getCombinedCharactersList()||[]).filter(n=>n&&
+   (life?life.visibleContact(n,hidden,filter):
+     (filter!=='hidden'&&!n.archived)));
  const records=names.map(n=>({npc:n,info:preview(n)}))
-   .filter(r=>(filter==='all'||r.info.count>0)&&(!query||String(r.npc.name||'').toLocaleLowerCase('vi').includes(query)||r.info.text.toLocaleLowerCase('vi').includes(query)))
+   .filter(r=>(filter==='all'||filter==='hidden'||r.info.count>0)&&
+    (!query||String(r.npc.name||'').toLocaleLowerCase('vi').includes(query)||r.info.text.toLocaleLowerCase('vi').includes(query)))
    .sort((a,b)=>b.info.count-a.info.count);
- if(!records.length&&!root.children.length){const empty=document.createElement('p');empty.className='dudu-v33-empty';empty.textContent=filter==='recent'?'Chưa có hội thoại. Vào Danh bạ để chọn NPC và bắt đầu nhắn tin.':'Không tìm thấy NPC phù hợp.';root.append(empty);return;}
+ if(!records.length&&!root.children.length){
+   const empty=document.createElement('p');empty.className='dudu-v33-empty';
+   empty.textContent=filter==='hidden'?'Chưa có NPC bị ẩn hoặc lưu trữ.':
+     filter==='recent'?'Chưa có hội thoại. Vào Danh bạ để chọn NPC và bắt đầu nhắn tin.':
+     'Không tìm thấy NPC phù hợp.';
+   root.append(empty);return;
+ }
  for(const {npc,info} of records){
   const button=document.createElement('button');button.type='button';button.className='dudu-v33-thread';
   const avatar=document.createElement('span');avatar.className='dudu-v33-avatar';avatar.textContent=String(npc.name||'N').trim().charAt(0).toUpperCase();
@@ -63,9 +87,29 @@ function render(){
   const snippet=document.createElement('small');snippet.textContent=info.text;
   infoBox.append(title,snippet);
   const chevron=document.createElement('span');chevron.className='dudu-v33-chevron';chevron.textContent='›';
+  if(npc.archived){
+   const archived=document.createElement('small');archived.className='dudu-v43-contact-archived';
+   archived.textContent='Tác giả đã lưu trữ · lịch sử vẫn được giữ';
+   infoBox.append(archived);
+  }
   button.append(avatar,infoBox,chevron);
   button.addEventListener('click',()=>{const sel=$('chat-character-selector');if(!sel)return;sel.value=npc.id;switchChatCharacter();show('chat');});
-  root.append(button);
+  const row=document.createElement('div');row.className='dudu-v43-contact-row';
+  row.append(button);
+  // A personal device-only preference: never delete the canonical NPC or conversation.
+  if(currentUsername&&life){
+   const concealed=hidden.includes(npc.id);
+   const toggle=document.createElement('button');
+   toggle.type='button';toggle.className='dudu-v43-contact-toggle';
+   toggle.textContent=concealed?'Hiện':npc.archived?'Lưu trữ':'Ẩn';
+   toggle.disabled=npc.archived&&!concealed;
+   toggle.title=concealed?'Hiện lại NPC trong danh bạ':
+     npc.archived?'Tác giả đã lưu trữ NPC này':'Ẩn NPC trên thiết bị này';
+   toggle.setAttribute('aria-label',(concealed?'Hiện lại ':'Ẩn ')+(npc.name||'NPC')+' trong danh bạ cá nhân');
+   toggle.addEventListener('click',()=>changeVisibility(npc.id,!concealed));
+   row.append(toggle);
+  }
+  root.append(row);
   // Render the same canonical NPC portrait used by chat and Sổ Tay.
   // The node is already connected: async uploads and anime atlases can paint.
   if(typeof renderNpcPortraitPreview==='function')
@@ -76,7 +120,7 @@ function init(){
  const app=$('phone-app-chat');if(!app||$('dudu-v33-inbox-panel'))return;
  const panel=document.createElement('section');panel.id='dudu-v33-inbox-panel';panel.className='dudu-v33-inbox-panel';
  const tabs=document.createElement('div');tabs.className='dudu-v33-tabs';
- [['recent','Hội thoại'],['all','Danh bạ']].forEach(([id,label])=>{
+ [['recent','Hội thoại'],['all','Danh bạ'],['hidden','Đã ẩn']].forEach(([id,label])=>{
   const b=document.createElement('button');b.type='button';b.textContent=label;b.dataset.tab=id;
   b.setAttribute('aria-pressed',String(filter===id));b.addEventListener('click',()=>{
    filter=id;tabs.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.tab===id)));render();

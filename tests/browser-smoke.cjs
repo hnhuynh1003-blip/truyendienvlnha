@@ -2387,6 +2387,82 @@ async function main() {
     assert.equal(v43Soul.hasLedger,true);
     assert.equal(v43Soul.noWrites,true,'V43.3 Sandbox must never write production Firestore');
 
+    // V43 lifecycle: renamed NPCs stay connected by ID; reader hide is personal.
+    const npcLifecycle=await page.evaluate(()=>{
+      const novel=novels[selectedNovelIndex];
+      const originalCharacters=novel.characters,oldChatNovel=activeChatNovelId;
+      const accountBackup=JSON.stringify(userProfile);
+      const npc={id:'v43-reader-privacy',name:'Tên thử nghiệm cũ',role:'Cố nhân',note:'Ít nói',
+        portraitPresetId:'portrait-f-01'};
+      const key=DuduNpcLifecycleV43.hiddenKey(currentUsername,novel.id,IS_SANDBOX_MODE);
+      const savedHidden=localStorage.getItem(key);
+      const beforeWrites=window.__firestoreWrites.length;
+      const out={};
+      try {
+        novel.characters=[...originalCharacters,npc];
+        const profile=getStoryProgress(novel.id);
+        profile.collectedCharacters[npc.id]={
+          id:npc.id,name:npc.name,affinity:79,relationshipV2:{trust:38},
+          novelTitle:novel.title,linkedVia:'sandbox-soul-v43'
+        };
+        activeChatNovelId=novel.id;
+        if(document.getElementById('cyber-phone').style.display!=='flex')togglePhone();
+        openPhoneApp('chat');
+        const tab=which=>document.querySelector('.dudu-v33-tabs button[data-tab="'+which+'"]')?.click();
+        const thread=()=>[...document.querySelectorAll('#dudu-v33-inbox-list .dudu-v33-thread')]
+          .find(b=>b.querySelector('strong')?.textContent===npc.name);
+        tab('all');
+        out.initial=!!thread();
+        const row=thread()?.closest('.dudu-v43-contact-row');
+        row?.querySelector('.dudu-v43-contact-toggle')?.click();
+        out.hiddenInAll=!thread();
+        tab('hidden');
+        out.inHidden=!!thread();
+        out.unchangedData=profile.collectedCharacters[npc.id].affinity===79 &&
+          profile.collectedCharacters[npc.id].relationshipV2.trust===38;
+        thread()?.closest('.dudu-v43-contact-row')?.querySelector('.dudu-v43-contact-toggle')?.click();
+        tab('all');
+        out.restored=!!thread();
+        npc.name='Tên tác giả đã sửa';npc.role='Bạn đồng hành';
+        npc.note='Dịu dàng';npc.portraitPresetId='portrait-f-22';
+        const canonical=getStoryProgress(novel.id).collectedCharacters[npc.id];
+        out.newName=canonical.name;
+        out.newPortrait=canonical.portraitPresetId;
+        out.trust=canonical.relationshipV2.trust;
+        out.affinity=canonical.affinity;
+        renderChatDropdown();
+        window.duduV33Render?.();
+        out.updatedInContacts=!!thread();
+        DuduNpcEditor.archive(novel,npc.id);
+        renderChatDropdown();window.duduV33Render?.();
+        out.archivedNotInAll=!thread();
+        tab('hidden');
+        const archived=thread();
+        out.archiveReadable=!!archived&&archived.textContent.includes('Tác giả đã lưu trữ');
+        out.archiveHistoryPreserved=!!profile.collectedCharacters[npc.id]&&
+          isNpcUnlocked(novel.id,npc.id);
+        DuduNpcEditor.restore(novel,npc.id);
+        renderChatDropdown();window.duduV33Render?.();
+        tab('all');
+        out.authorRestored=!!thread();
+        out.noWrites=window.__firestoreWrites.length===beforeWrites;
+        return out;
+      }finally{
+        novel.characters=originalCharacters;
+        activeChatNovelId=oldChatNovel;
+        userProfile=JSON.parse(accountBackup);
+        if(savedHidden===null)localStorage.removeItem(key);
+        else localStorage.setItem(key,savedHidden);
+        saveCurrentAccount();
+        phoneHome();
+      }
+    });
+    assert.deepEqual(npcLifecycle,{
+      initial:true,hiddenInAll:true,inHidden:true,unchangedData:true,
+      restored:true,newName:'Tên tác giả đã sửa',newPortrait:'portrait-f-22',
+      trust:38,affinity:79,updatedInContacts:true,archivedNotInAll:true,
+      archiveReadable:true,archiveHistoryPreserved:true,authorRestored:true,noWrites:true
+    },'Rename, author archive and personal hide must never erase progress or write Firestore');
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
     console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));
   } finally {

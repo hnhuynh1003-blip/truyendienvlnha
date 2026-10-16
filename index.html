@@ -24,7 +24,7 @@
   <link rel="stylesheet" href="css/phone-floating-v30.css?v=1">
   <link rel="stylesheet" href="css/phone-refinement-v31.css?v=1">
   <link rel="stylesheet" href="css/phone-social-v32.css?v=1">
-  <link rel="stylesheet" href="css/phone-inbox-v33.css?v=3">
+  <link rel="stylesheet" href="css/phone-inbox-v33.css?v=4">
   <link rel="stylesheet" href="css/phone-wallpaper-v34.css?v=2">
   <link rel="stylesheet" href="css/phone-settings-v35.css?v=1">
   <link rel="stylesheet" href="css/phone-wallpaper-v36-custom.css?v=1">
@@ -84,6 +84,7 @@
   <script src="js/soul-link-v43.js?v=1"></script>
   <script src="js/author-items-v1.js"></script>
   <script src="js/npc-editor-v1.js"></script>
+  <script src="js/npc-lifecycle-v43.js?v=1"></script>
   <script src="js/collectibles-client.js"></script>
 
   <style>
@@ -1915,10 +1916,43 @@
           }
         });
       }
+      // Canonical author metadata always supersedes display fields cached in
+      // a reader's unlocked NPC, without changing progress or granting access.
+      if(novel&&window.DuduNpcLifecycleV43)
+        DuduNpcLifecycleV43.updateLinked(novel,progress);
       return progress;
     }
     function isNpcUnlocked(storyId, charId) {
       return Boolean(getStoryProgress(storyId).collectedCharacters[charId]);
+    }
+
+    function refreshNpcViewsAfterLibraryUpdate(){
+      // Refresh only open views; never reset contact selection or old chats.
+      const reading=document.getElementById('reader-view');
+      const currentNovel=novels[selectedNovelIndex];
+      if(reading?.style.display==='block'){
+        const chapter=currentNovel?.chapters?.[selectedChapterIndex];
+        if(chapter)renderReaderChapterNpcs(chapter,currentNovel);
+      }
+      const codex=document.getElementById('phone-app-codex');
+      if(codex?.style.display==='flex'){
+        const existingStory=document.getElementById('codex-novel-selector')?.value;
+        renderCodexDropdown();
+        if(existingStory&&novels.some(n=>n.id===existingStory))
+          document.getElementById('codex-novel-selector').value=existingStory;
+        renderCodexList();
+      }
+      const chat=document.getElementById('phone-app-chat');
+      if(chat?.style.display==='flex'){
+        const selected=document.getElementById('chat-character-selector')?.value;
+        const open=chat.classList.contains('dudu-v33-chat-open');
+        renderChatDropdown();
+        const selector=document.getElementById('chat-character-selector');
+        if(selected&&[...selector.options].some(o=>o.value===selected)){
+          selector.value=selected;switchChatCharacter();
+        }else if(open)window.duduV33ShowInbox?.();
+        window.duduV33Render?.();
+      }
     }
 
     // Model selection and failover are controlled exclusively by the server.
@@ -2310,6 +2344,7 @@
     function renderChatDropdown() {
       const selector = document.getElementById('chat-character-selector');
       if (!selector) return;
+      const previous=selector.value;
       selector.innerHTML = "";
       const chars = getCombinedCharactersList();
 
@@ -2323,6 +2358,7 @@
         opt.textContent = `${c.name} (${c.role || 'Nhân vật'})`;
         selector.appendChild(opt);
       });
+      if(previous&&chars.some(c=>c.id===previous))selector.value=previous;
       switchChatCharacter();
       if(IS_SANDBOX_MODE)renderPhoneWallpaperV27();
     }
@@ -3564,6 +3600,7 @@
       renderCodexDropdown();
       renderCodexList();
       renderChatDropdown();
+      window.duduV33Render?.();
       if (returnToChapterAfterCharModal) {
         renderChapterNpcPicker([...pendingChapterNpcSelection, charId]);
         document.getElementById('chapter-modal').style.display = 'flex';
@@ -3587,6 +3624,7 @@
       DuduNpcEditor.archive(novel,npc.id);
       saveDB();
       renderCodexDropdown();renderCodexList();renderChatDropdown();
+      window.duduV33Render?.();
       showSystemAlert('ĐÃ LƯU TRỮ','NPC được ẩn an toàn. Có thể khôi phục trong Sổ Tay.');
     }
     function restoreCharacterFromCodex(idx){
@@ -3596,6 +3634,7 @@
       DuduNpcEditor.restore(novel,npc.id);
       saveDB();
       renderCodexDropdown();renderCodexList();renderChatDropdown();
+      window.duduV33Render?.();
       showSystemAlert('ĐÃ KHÔI PHỤC','NPC có thể được gắn vào các chương mới.');
     }
     function toggleArchivedNpcs(){
@@ -4217,6 +4256,10 @@ document.getElementById('phone-home-screen').style.display = 'none';
         showSystemAlert('CHỈ ĐỌC', 'Chỉ Tác giả được cấp quyền mới có thể cập nhật truyện.');
         return;
       }
+      // Update cached author metadata by stable NPC ID, never erase player progress.
+      if(userProfile?.storyStates)novels.forEach(n=>{
+        if(userProfile.storyStates[n.id])DuduNpcLifecycleV43.updateLinked(n,userProfile.storyStates[n.id]);
+      });
       localStorage.setItem(IS_SANDBOX_MODE ? 'dudu-sandbox-library' : 'my_novels_library_db', JSON.stringify(novels));
       saveCurrentAccount();
       if (IS_SANDBOX_MODE) {
@@ -4253,8 +4296,21 @@ document.getElementById('phone-home-screen').style.display = 'none';
           localStorage.setItem('my_novels_library_db', JSON.stringify(novels));
         }
 
+        // A public library snapshot cannot rewrite reader progress on the server.
+        if(currentUsername&&userProfile?.storyStates){
+          let changed=0;
+          novels.forEach(n=>{
+            if(userProfile.storyStates[n.id])
+              changed+=DuduNpcLifecycleV43.updateLinked(n,userProfile.storyStates[n.id]);
+          });
+          if(changed){
+            try{localStorage.setItem('profile_'+currentUsername,JSON.stringify(userProfile));}
+            catch(_){}
+          }
+        }
         renderHome();
         updatePhoneUI();
+        refreshNpcViewsAfterLibraryUpdate();
         if (indicator) indicator.textContent = "☁️ Đã đồng bộ";
       } else {
         if (indicator) indicator.textContent = "☁️ Sẵn sàng";
@@ -4264,6 +4320,29 @@ document.getElementById('phone-home-screen').style.display = 'none';
       if (indicator) indicator.textContent = "⚠️ Offline mode";
       renderHome();
       updatePhoneUI();
+    });
+
+    // Sandbox author/reader tabs on the SAME browser share this local library.
+    // A real cross-device publish still requires the authenticated live library.
+    window.addEventListener('storage',event=>{
+      if(!IS_SANDBOX_MODE||event.key!=='dudu-sandbox-library'||!event.newValue)return;
+      if(['story-modal','chapter-modal','char-modal'].some(id=>
+        document.getElementById(id)?.style.display==='flex'))return;
+      try{
+        const next=JSON.parse(event.newValue);
+        if(!Array.isArray(next)||!next.length||!next.every(n=>
+          typeof n?.id==='string'&&Array.isArray(n.characters)))return;
+        novels=next;
+        if(currentUsername&&userProfile?.storyStates){
+          let changed=0;
+          novels.forEach(n=>{
+            if(userProfile.storyStates[n.id])
+              changed+=DuduNpcLifecycleV43.updateLinked(n,userProfile.storyStates[n.id]);
+          });
+          if(changed)localStorage.setItem(scopedLocalKey('profile'),JSON.stringify(userProfile));
+        }
+        renderHome();updatePhoneUI();refreshNpcViewsAfterLibraryUpdate();
+      }catch(_){/* Malformed external storage data never erases the local library. */}
     });
 
     function updatePhoneUI() {
@@ -4908,7 +4987,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
         return;
       }
 
-      const npcs = (novel.characters || []).filter(c => charIds.includes(c.id));
+      const npcs = (novel.characters || []).filter(c => charIds.includes(c.id)&&
+        (!c.archived||isNpcUnlocked(novel.id,c.id)));
       if (npcs.length === 0) {
         container.style.display = 'none';
         return;
@@ -4957,9 +5037,10 @@ document.getElementById('phone-home-screen').style.display = 'none';
     function unlockChapterCharacter(charId, novelTitle) {
       const novel = novels[selectedNovelIndex];
       const char = (novel.characters || []).find(c => c.id === charId);
-      if (!char) return;
+      if (!char || char.archived) return;
 
       const unlocked = getStoryProgress(novel.id).collectedCharacters;
+      if(unlocked[char.id])return; // Do not reset existing NPC relationships.
       unlocked[char.id] = {
         id: char.id,
         name: char.name,
@@ -5713,7 +5794,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
     startCooldownTicker();
   </script>
 <script src="js/npc-portrait-v39.js?v=2"></script>
-<script src="js/phone-inbox-v33.js?v=43-1"></script>
+<script src="js/phone-inbox-v33.js?v=43-2"></script>
 <script src="js/companion-ui-v43.js?v=1"></script>
 <script src="js/npc-diary-ui.js?v=1"></script>
 <script src="js/soul-link-ui-v43.js?v=1"></script>

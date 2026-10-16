@@ -51,3 +51,32 @@ body.dudu-phone-v11[data-dudu-phone-wallpaper] #cyber-phone .phone-screen{backgr
 body.dudu-phone-v11 #cyber-phone #phone-app-chat{background:linear-gradient(165deg,#0b1626e6,#13243adf)!important;}
 body.dudu-phone-v11 #cyber-phone #phone-app-chat #chat-messages-container{background:#0c1a2aac!important;}
 body.dudu-phone-v11 #cyber-phone #phone-app-chat.dudu-v33-chat-open .dudu-v27-chat-persona{position:relative;gap:8px;}
+
+
+/* V43: third tab + private hide/restore beside each conversation, without
+   nesting clickable controls or shrinking the chat conversation area. */
+body.dudu-phone-v11 #cyber-phone .dudu-v33-tabs{
+  grid-template-columns:repeat(3,minmax(0,1fr));gap:3px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v33-tabs button{
+  font-size:11px;padding:5px 2px;white-space:nowrap;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-contact-row{
+  display:flex;align-items:center;gap:5px;min-width:0;
+  border-bottom:1px solid #8ba4c123;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-contact-row .dudu-v33-thread{
+  flex:1;min-width:0;width:auto;border-bottom:0;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-contact-toggle{
+  flex:none;min-width:44px;min-height:33px;padding:5px 7px;
+  border:1px solid #9ab0d069;border-radius:9px;
+  background:#243750;color:#e2ecff;font-size:10px;
+  cursor:pointer;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-contact-toggle:disabled{
+  color:#b0bcd0;opacity:.7;cursor:default;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-contact-archived{
+  color:#e8bd83!important;
+}
