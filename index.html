@@ -17,6 +17,7 @@
   <link rel="stylesheet" href="css/item-visuals-v13.css">
   <link rel="stylesheet" href="css/phone-ux-v27-r3.css">
   <link rel="stylesheet" href="css/phone-wallpaper-v27-r4.css">
+  <link rel="stylesheet" href="css/dudu-multiverse-art-v28-r5.css">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -45,6 +46,7 @@
   <script src="js/npc-anime-candidates-v14.js"></script>
   <script src="js/player-avatar-v16.js"></script>
   <script src="js/phone-wallpaper-v27-r4.js"></script>
+  <script src="js/dudu-multiverse-art-v28-r5.js"></script>
   <script src="js/player-avatar-ui-v16.js"></script>
   <script src="js/player-avatar-sync-plan-v20.js"></script>
   <script src="js/player-avatar-conflict-ui-v21.js"></script>
@@ -1077,7 +1079,12 @@
             <button type="button" class="dudu-v27-wallpaper-option" data-dudu-wallpaper-choice="astral" onclick="setPhoneWallpaperV27('astral')" aria-pressed="false"><span class="dudu-v27-wallpaper-art is-astral" aria-hidden="true"></span><span>Ngân hà</span></button>
             <button type="button" class="dudu-v27-wallpaper-option" data-dudu-wallpaper-choice="jade" onclick="setPhoneWallpaperV27('jade')" aria-pressed="false"><span class="dudu-v27-wallpaper-art is-jade" aria-hidden="true"></span><span>Thanh ngọc</span></button>
           </div>
-          <small>Chỉ thay hình nền Cyber Phone trên thiết bị này. Không ảnh hưởng truyện hoặc dữ liệu nhân vật.</small>
+          <div class="dudu-v28-mode" role="group" aria-label="Chế độ hình nền">
+            <button type="button" data-wallpaper-mode="personal" aria-pressed="true" onclick="setPhoneWallpaperModeV28('personal')">Hình nền cá nhân</button>
+            <button type="button" data-wallpaper-mode="world" aria-pressed="false" onclick="setPhoneWallpaperModeV28('world')">Theo thế giới truyện</button>
+          </div>
+          <div class="dudu-v28-active-world" id="dudu-v28-active-world" role="status" aria-live="polite">Khi truyện chưa có thể loại phù hợp, sử dụng hình nền cá nhân.</div>
+          <small>Hình nền được lưu riêng theo tài khoản trên thiết bị. Đổi theo thế giới sẽ dựa vào thể loại truyện đang chọn; không ghi vào dữ liệu truyện.</small>
           <div id="dudu-v27-wallpaper-feedback" aria-live="polite" role="status"></div>
         </section>
         <details class="dudu-v27-details dudu-v27-tools" id="dudu-v27-tools">
@@ -1520,6 +1527,11 @@
         </div>
         <label style="font-size:10px;">Ảnh nhân vật trong dự án (tùy chọn)</label>
         <input id="npc-r7-portrait" autocomplete="off" type="text" placeholder="assets/npc/ten-nhan-vat.webp"/>
+        <section id="npc-v28-art-pack" class="dudu-v28-art-pack" aria-label="Sáu chân dung NPC V28">
+          <div style="font-size:11px;color:#c6e8ff;font-weight:800;">✦ Bộ chân dung NPC đa thế giới · V01–V06</div>
+          <div class="dudu-v28-npc-gallery" id="npc-v28-npc-gallery"></div>
+          <div class="dudu-v28-npc-warning">Tác giả nhấn vào ảnh đã tải để chọn; ảnh thiếu sẽ bị khóa. Chọn ảnh không tự tạo NPC hoặc mở khóa nhân vật.</div>
+        </section>
         <div style="font-size:9px;color:#94a3b8;margin-top:5px;">Chỉ dùng ảnh cùng website từ assets/npc. Không tải ảnh ngoài hoặc tự mở khóa NPC.</div>
         <section id="npc-v14-art-panel" aria-label="Chọn chân dung anime nữ" style="display:none;margin-top:8px;">
           <div style="font-size:11px;color:#e6ceff;font-weight:800;">✦ Chân dung anime nữ · 4 bản đề xuất</div>
@@ -3786,23 +3798,57 @@
       if(!IS_SANDBOX_MODE)return null;
       return currentUsername||'sandbox-guest';
     }
+    function activeStoryForWallpaperV28(){
+      const chat=document.getElementById('phone-app-chat');
+      const chatVisible=chat?.style.display==='flex';
+      return (chatVisible&&novels.find(n=>n.id===activeChatNovelId))||
+        novels[selectedNovelIndex]||null;
+    }
     function renderPhoneWallpaperV27(){
       if(!IS_SANDBOX_MODE||!window.DuduPhoneWallpaperV27)return;
-      const chosen=DuduPhoneWallpaperV27.read(localStorage,phoneWallpaperOwnerV27());
-      document.body.dataset.duduPhoneWallpaper=chosen;
+      const owner=phoneWallpaperOwnerV27();
+      const chosen=DuduPhoneWallpaperV27.read(localStorage,owner);
+      const art=window.DuduMultiverseArtV28;
+      const mode=art?art.readMode(localStorage,owner):'personal';
+      const resolved=art?art.resolve({mode,personal:chosen,story:activeStoryForWallpaperV28()}):
+        {wallpaperId:chosen,worldId:null,usedFallback:false};
+      document.body.dataset.duduPhoneWallpaper=resolved.wallpaperId;
       document.querySelectorAll('#phone-app-settings [data-dudu-wallpaper-choice]').forEach(button=>{
         button.setAttribute('aria-pressed',
           String(button.dataset.duduWallpaperChoice===chosen));
       });
+      document.querySelectorAll('#phone-app-settings [data-wallpaper-mode]').forEach(button=>{
+        button.setAttribute('aria-pressed',String(button.dataset.wallpaperMode===mode));
+      });
+      const info=document.getElementById('dudu-v28-active-world');
+      if(info&&art)info.textContent=mode==='personal'?
+        'Đang sử dụng hình nền cá nhân của bạn.':
+        resolved.worldId?
+          'Đang dùng nền theo truyện: '+art.WORLDS.find(w=>w.id===resolved.worldId).label:
+          'Truyện này chưa có thể loại nền phù hợp: giữ hình nền cá nhân.';
+    }
+    function setPhoneWallpaperModeV28(mode){
+      if(!IS_SANDBOX_MODE||!window.DuduMultiverseArtV28)return;
+      if(!DuduMultiverseArtV28.writeMode(localStorage,phoneWallpaperOwnerV27(),mode)){
+        const feedback=document.getElementById('dudu-v27-wallpaper-feedback');
+        if(feedback)feedback.textContent='Không lưu được chế độ hình nền.';
+        return;
+      }
+      renderPhoneWallpaperV27();
     }
     function setPhoneWallpaperV27(id){
       if(!IS_SANDBOX_MODE||!window.DuduPhoneWallpaperV27)return;
       if(!DuduPhoneWallpaperV27.PRESETS.some(p=>p.id===id))return;
       const saved=DuduPhoneWallpaperV27.write(localStorage,phoneWallpaperOwnerV27(),id);
-      if(saved)renderPhoneWallpaperV27();
+      if(saved){
+        // Explicitly choosing a personal swatch returns to personal mode.
+        if(window.DuduMultiverseArtV28)
+          DuduMultiverseArtV28.writeMode(localStorage,phoneWallpaperOwnerV27(),'personal');
+        renderPhoneWallpaperV27();
+      }
       const feedback=document.getElementById('dudu-v27-wallpaper-feedback');
       if(feedback)feedback.textContent=saved?
-        'Đã đổi hình nền điện thoại.':'Không thể lưu hình nền trên thiết bị này.';
+        'Đã đổi hình nền cá nhân.':'Không thể lưu hình nền trên thiết bị này.';
     }
     function syncPhoneDisplayOptionsV27(){
       const font=Number.parseInt(
