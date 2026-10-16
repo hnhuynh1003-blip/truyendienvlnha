@@ -76,6 +76,7 @@
   <script src="js/player-avatar-staging-v22.js"></script>
   <script src="js/player-avatar-sync-ui-v22.js"></script>
   <script src="js/loot-rules-v2.js"></script>
+  <script src="js/loot-cadence-v42.js?v=1"></script>
   <script src="js/author-items-v1.js"></script>
   <script src="js/npc-editor-v1.js"></script>
   <script src="js/collectibles-client.js"></script>
@@ -1719,7 +1720,7 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=42-6').catch((err) => console.log('SW error:', err));
+        navigator.serviceWorker.register('./sw.js?v=42-7').catch((err) => console.log('SW error:', err));
       });
     }
 
@@ -1864,7 +1865,7 @@
     let questTab = "ALL";
     let isZen = false;
 
-    const COOLDOWN_DURATION = 10 * 60 * 1000;
+    const COOLDOWN_DURATION = DuduLootCadenceV42.PHONE_COOLDOWN_MS;
     let lastLootTimestamp = 0;
     let cooldownTimerInterval = null;
     let chatHistories = {};
@@ -4394,30 +4395,30 @@ document.getElementById('phone-home-screen').style.display = 'none';
 
     function startCooldownTicker() {
       if (cooldownTimerInterval) clearInterval(cooldownTimerInterval);
+      cooldownTimerInterval = null;
 
       function updateBtnState() {
         const btn = document.getElementById('btn-inventory-loot');
         if (!btn) return;
 
-        const now = Date.now();
-        const diff = now - lastLootTimestamp;
-
-        if (diff < COOLDOWN_DURATION) {
-          const remainSec = Math.ceil((COOLDOWN_DURATION - diff) / 1000);
-          const mins = Math.floor(remainSec / 60);
-          const secs = remainSec % 60;
+        const remainingMs=DuduLootCadenceV42.phoneRemainingMs(lastLootTimestamp);
+        if (remainingMs > 0) {
+          const remainingSec = Math.ceil(remainingMs / 1000);
+          const mins = Math.floor(remainingSec / 60);
+          const secs = remainingSec % 60;
           btn.disabled = true;
           btn.textContent = `⏳ ${mins}:${secs < 10 ? '0' : ''}${secs}`;
         } else {
           btn.disabled = false;
-          btn.textContent = `🎲 Nhặt đồ`;
-          clearInterval(cooldownTimerInterval);
+          btn.textContent = '🎲 Nhặt đồ';
+          if (cooldownTimerInterval) clearInterval(cooldownTimerInterval);
           cooldownTimerInterval = null;
         }
       }
 
       updateBtnState();
-      cooldownTimerInterval = setInterval(updateBtnState, 1000);
+      if (DuduLootCadenceV42.phoneRemainingMs(lastLootTimestamp)>0)
+        cooldownTimerInterval = setInterval(updateBtnState, 1000);
     }
 
     function updateChapterLootButtonState() {
@@ -4429,14 +4430,14 @@ document.getElementById('phone-home-screen').style.display = 'none';
       if (!ch || !lootBtn) return;
 
       const lootKey = `${novel.id}_${ch.id || selectedChapterIndex}`;
-      if (userProfile.lootedChapters && userProfile.lootedChapters[lootKey]) {
+      if (DuduLootCadenceV42.claimedToday(userProfile.lootedChapters?.[lootKey])) {
         lootBtn.disabled = true;
-        lootBtn.textContent = "✔ Đã thu thập tàn tích";
-        lootDesc.textContent = "Bạn đã khám phá toàn bộ tàn tích của chương này rồi.";
+        lootBtn.textContent = "✔ Hôm nay đã thu thập";
+        lootDesc.textContent = "Mỗi chương nhặt 1 lần/ngày. Ngày mới sẽ mở lại lượt.";
       } else {
         lootBtn.disabled = false;
         lootBtn.textContent = "🎲 Lục Lọi Bảo Vật Ngay";
-        lootDesc.textContent = "Mỗi chương truyện chỉ chứa 1 mảnh tàn tích dữ liệu duy nhất.";
+        lootDesc.textContent = "Mỗi chương được nhặt 1 lần/ngày; không phải chờ hồi Kho Đồ.";
       }
     }
 
@@ -4445,8 +4446,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
       const chapter = novel?.chapters?.[selectedChapterIndex];
       if (!novel || !chapter) return;
       const lootKey = `${novel.id}_${chapter.id || selectedChapterIndex}`;
-      if (userProfile.lootedChapters?.[lootKey]) {
-        showSystemAlert("KHÔNG CÒN TÀN TÍCH", "Chương này bạn đã nhặt quà rồi!");
+      if (DuduLootCadenceV42.claimedToday(userProfile.lootedChapters?.[lootKey])) {
+        showSystemAlert("ĐÃ THU THẬP HÔM NAY", "Chương này hôm nay đã được nhặt. Hãy quay lại vào ngày mai!");
         return;
       }
       if (rollLootDrop(true,novel,chapter)) updateChapterLootButtonState();
@@ -4454,8 +4455,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
 
     function rollLootDrop(isFreeFromChapter = false, sourceNovel = null, sourceChapter = null) {
       const now = Date.now();
-      if (!isFreeFromChapter && now-lastLootTimestamp < COOLDOWN_DURATION) {
-        const remainSec = Math.ceil((COOLDOWN_DURATION-(now-lastLootTimestamp))/1000);
+      if (!isFreeFromChapter && DuduLootCadenceV42.phoneRemainingMs(lastLootTimestamp,now)>0) {
+        const remainSec = Math.ceil(DuduLootCadenceV42.phoneRemainingMs(lastLootTimestamp,now)/1000);
         showSystemAlert("HỆ THỐNG ĐANG NẠP LẠI", `Vui lòng chờ ${Math.floor(remainSec/60)}p ${remainSec%60}s!`);
         return false;
       }
@@ -4464,7 +4465,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
         const idx = sourceNovel?.chapters?.indexOf(sourceChapter);
         if (!sourceNovel || !sourceChapter || idx < 0) return false;
         lootKey = `${sourceNovel.id}_${sourceChapter.id || idx}`;
-        if (userProfile.lootedChapters?.[lootKey]) return false;
+        if (DuduLootCadenceV42.claimedToday(userProfile.lootedChapters?.[lootKey],now)) return false;
       }
 
       // Only explicit author-tagged realms can add a realm's items.
@@ -4487,7 +4488,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 
       userProfile.lootedChapters ||= {};
       userProfile.inventory ||= [];
-      if (lootKey) userProfile.lootedChapters[lootKey] = true;
+      if (lootKey) userProfile.lootedChapters[lootKey] = DuduLootCadenceV42.nextClaimValue(now);
       userProfile.inventory.unshift(copy);
       userProfile.currency = (Number(userProfile.currency)||0) + reward.coins;
       if (!isFreeFromChapter) {
