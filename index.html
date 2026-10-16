@@ -1918,7 +1918,7 @@
       }
       // Canonical author metadata always supersedes display fields cached in
       // a reader's unlocked NPC, without changing progress or granting access.
-      if(novel&&window.DuduNpcLifecycleV43)
+      if(novel&&typeof DuduNpcLifecycleV43!=='undefined')
         DuduNpcLifecycleV43.updateLinked(novel,progress);
       return progress;
     }
