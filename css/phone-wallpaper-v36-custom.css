@@ -1,0 +1,12 @@
+/* DUDU V36: custom wallpaper import on device; no giant settings panels. */
+body.dudu-phone-v11 #cyber-phone .dudu-v36-personal-panel{padding:9px 3px;}
+body.dudu-phone-v11 #cyber-phone .dudu-v36-personal-panel h3{font-size:13px!important;color:#f4f7ff;margin:6px 0;}
+body.dudu-phone-v11 #cyber-phone .dudu-v36-personal-panel p{font-size:10px;line-height:1.55;color:#b4c8da;margin:8px 0;}
+body.dudu-phone-v11 #cyber-phone .dudu-v36-import{
+ display:grid;place-items:center;width:100%;min-height:90px;
+ border-radius:14px;border:1px dashed #8dc9eeaa;cursor:pointer;
+ background:linear-gradient(155deg,#1b344f,#18293e);font-size:12px;font-weight:750;
+ color:#e8faff;text-align:center;padding:12px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v36-import:focus-within{outline:2px solid #9fdefc;}
+body.dudu-phone-v11 #cyber-phone #dudu-v36-status{min-height:24px;color:#b8f0df;font-size:11px;}
