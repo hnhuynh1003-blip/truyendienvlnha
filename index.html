@@ -2483,7 +2483,7 @@
       if(event.key==='Tab'){
         event.preventDefault();document.getElementById('npc-v15-close').focus();
       }
-    });
+    },true);
     document.getElementById('npc-v15-viewer')?.addEventListener('click',event=>{
       if(event.target===event.currentTarget)closeNpcPortraitViewer();
     });
