@@ -39,8 +39,23 @@
  const PURCHASE_PER_ITEM_PER_DAY=3, PURCHASE_TOTAL_PER_DAY=8,
    TOOL_PURCHASES_PER_DAY=2;
  const EVENT_TO_QUEST=Object.freeze({
-   LOOT_SUCCESS:'q_daily_loot',READ_CHAPTER:'q_daily_read'
+   LOOT_SUCCESS:'q_daily_loot',READ_CHAPTER:'q_daily_read',
+   FUN_CLAIM:'q_daily_fun',NPC_GIFT:'q_daily_npc'
  });
+ const EXTRA_DAILY_QUESTS=Object.freeze([
+  Object.freeze({id:'q_daily_fun',type:'DAILY',title:'Giải Trí DUDU',
+   desc:'Hoàn thành và nhận thưởng 1 trò trong DUDU FUN.',
+   current:0,target:1,rewardExp:10,rewardCoin:10,claimed:false}),
+  Object.freeze({id:'q_daily_npc',type:'DAILY',title:'Gửi Một Món Quà',
+   desc:'Tặng thành công 1 món quà cho NPC đã mở khóa.',
+   current:0,target:1,rewardExp:15,rewardCoin:10,claimed:false})
+ ]);
+ function ensureQuests(raw){
+  const existing=Array.isArray(raw)?raw:[];
+  const ids=new Set(existing.map(q=>q?.id));
+  const missing=EXTRA_DAILY_QUESTS.filter(q=>!ids.has(q.id));
+  return missing.length?[...existing,...missing.map(q=>({...q}))]:existing;
+ }
  const KEY_LIMIT=96;
  const validDay=d=>typeof d==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&
    !Number.isNaN(Date.parse(d+'T00:00:00Z'))&&
@@ -142,6 +157,7 @@
  }
  return Object.freeze({VERSION,SHOP_IDS,PRICES,TOOL_ID,TOOL,TOOL_PURCHASES_PER_DAY,
    PURCHASE_PER_ITEM_PER_DAY,
-   PURCHASE_TOTAL_PER_DAY,EVENT_TO_QUEST,localDay,norm,shopCatalog,preview,
+   PURCHASE_TOTAL_PER_DAY,EVENT_TO_QUEST,EXTRA_DAILY_QUESTS,ensureQuests,
+   localDay,norm,shopCatalog,preview,
    quotePurchase,recordEvent,applyQuestProgress,rolloverQuests,instance});
 });

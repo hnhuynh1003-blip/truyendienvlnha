@@ -56,7 +56,7 @@
   <script src="js/story-memory.js"></script>
   <script src="js/npc-memory-v2.js"></script>
   <script src="js/item-catalog-v2.js"></script>
-  <script src="js/economy-core-v43.js?v=3"></script>
+  <script src="js/economy-core-v43.js?v=4"></script>
   <script src="js/dudu-fun-rules-v43.js?v=1"></script>
   <script src="js/story-market-v43.js?v=1"></script>
   <script src="js/inventory-model-v42.js?v=7"></script>
@@ -3273,7 +3273,7 @@
         const eventId = 'sandbox-gift-' + now + '-' + Math.random().toString(36).slice(2,10);
         const plan = DuduNpcGiftR2.evaluateGift({
           npc:DuduNpcPersonaR6.previewNpc(char)||char,item:safeItem,relationship:{...relationship,unlocked:true},
-          now,instanceId:eventId,giftEventId:eventId
+          now,instanceId:item.instanceId||eventId,giftEventId:eventId
         });
         if (plan.status !== 'ACCEPT') {
           showSystemAlert('CHƯA THỂ TẶNG QUÀ', plan.status === 'COOLDOWN'
@@ -3289,14 +3289,39 @@
         const next = {...relationship.relationshipV2,
           lastGiftAt:plan.lastGiftAt,giftDayUtc:plan.day,
           acceptedGiftCountUtc:plan.nextCount,
-          acceptedInstanceIds:[...(relationship.relationshipV2.acceptedInstanceIds||[]),eventId].slice(-100),
+          acceptedInstanceIds:[...(relationship.relationshipV2.acceptedInstanceIds||[]),item.instanceId||eventId].slice(-100),
           acceptedGiftEventIds:[...(relationship.relationshipV2.acceptedGiftEventIds||[]),eventId].slice(-100),
           trust:Math.min(100,relationship.relationshipV2.trust+plan.delta.trust)};
-        userProfile.inventory.splice(itemIdx,1);
-        progress.affinity=Math.min(100,relationship.affinity+plan.delta.affinity);
-        progress.relationshipV2=next;
-        if(!v43RecordNpcBond(giftStory,char.id,'gift'))saveCurrentAccount();
-        npcMemoryStore(giftStory,char.id,giftUser)?.addGift(item.name,item.rank,eventId);
+        const event=window.DuduEconomyRuntimeV43?.prepareQuestEvent('NPC_GIFT',eventId);
+        const before={
+          inventory:userProfile.inventory,affinity:progress.affinity,
+          relationship:progress.relationshipV2,bond:progress.npcBondV43,
+          quests:userProfile.quests,economy:userProfile.economyV43
+        };
+        try{
+          // Inventory, NPC bond and quest event share a Sandbox profile commit.
+          userProfile.inventory=before.inventory.filter((_,i)=>i!==itemIdx);
+          progress.affinity=Math.min(100,relationship.affinity+plan.delta.affinity);
+          progress.relationshipV2=next;
+          if(event){
+            userProfile.quests=event.quests;
+            userProfile.economyV43=event.ledger;
+          }
+          if(!v43RecordNpcBond(giftStory,char.id,'gift'))saveCurrentAccount();
+        }catch(_){
+          userProfile.inventory=before.inventory;
+          progress.affinity=before.affinity;
+          progress.relationshipV2=before.relationship;
+          if(before.bond===undefined)delete progress.npcBondV43;
+          else progress.npcBondV43=before.bond;
+          userProfile.quests=before.quests;
+          if(before.economy===undefined)delete userProfile.economyV43;
+          else userProfile.economyV43=before.economy;
+          showSystemAlert('TẶNG QUÀ CHƯA LƯU ĐƯỢC',
+            'Không trừ vật phẩm hoặc ghi tiến độ khi lưu hồ sơ thất bại.');
+          return;
+        }
+        try{npcMemoryStore(giftStory,char.id,giftUser)?.addGift(item.name,item.rank,eventId);}catch(_){}
         closeModals();
         showSystemAlert('TẶNG QUÀ THÀNH CÔNG',
           'NPC đã nhận '+item.name+' (+'+plan.delta.affinity+' Thiện cảm, +'+plan.delta.trust+' Tin tưởng).');
@@ -4794,6 +4819,12 @@ document.getElementById('phone-home-screen').style.display = 'none';
       // Only explicit author-tagged realms can add a realm's items.
       // The generic Cyber Phone loot button always uses common items.
       const realmTag = isFreeFromChapter ? DuduLootRules.realmTagFor(sourceChapter,sourceNovel) : null;
+      // One instance always consumes one physical slot, even in visual stacks.
+      if (!Array.isArray(userProfile.inventory)) userProfile.inventory=[];
+      if (userProfile.inventory.length>=500) {
+        showSystemAlert('KHO ĐỒ ĐÃ ĐẦY','Kho chứa tối đa 500 vật phẩm. Dọn một ô trước khi nhặt tiếp.');
+        return false;
+      }
       const result = DuduLootRules.pick({realmTag});
       const reward = result && DuduLootRules.rewardFor(result.rank);
       if (!result || !reward) {
@@ -5194,7 +5225,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       }
       // Daily reading quest is separate: distinct chapters once per UTC day,
       // so long-running readers are not locked out after finishing this story.
-      const today = new Date().toISOString().slice(0,10);
+      const today = DuduEconomyCoreV43.localDay();
       if (!userProfile.dailyReadLog || userProfile.dailyReadLog.day !== today ||
           !Array.isArray(userProfile.dailyReadLog.chapters)) {
         userProfile.dailyReadLog = {day:today,chapters:[]};
@@ -6033,8 +6064,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/phone-inbox-v33.js?v=43-2"></script>
 <script src="js/companion-ui-v43.js?v=1"></script>
 <script src="js/market-ui-v43.js?v=3"></script>
-<script src="js/dudu-fun-ui-v43.js?v=1"></script>
-<script src="js/economy-runtime-v43.js?v=2"></script>
+<script src="js/dudu-fun-ui-v43.js?v=2"></script>
+<script src="js/economy-runtime-v43.js?v=3"></script>
 <script src="js/museum-memories-ui-v43.js?v=2"></script>
 <script src="js/npc-diary-ui.js?v=1"></script>
 <script src="js/soul-link-ui-v43.js?v=2"></script>

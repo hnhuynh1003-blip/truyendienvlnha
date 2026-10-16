@@ -20,12 +20,33 @@
  };
  function rotate(){
   if(!owner()||!Array.isArray(userProfile.quests))return false;
-  const plan=core.rolloverQuests(userProfile.quests,userProfile.questsDayV43);
-  if(!plan.ok||(!plan.changed&&userProfile.questsDayV43===plan.day))return false;
-  userProfile.questsDayV43=plan.day;
-  if(plan.changed)userProfile.quests=plan.quests;
-  saveCurrentAccount();
-  return plan.changed;
+  const baseline=core.ensureQuests(userProfile.quests);
+  const plan=core.rolloverQuests(baseline,userProfile.questsDayV43);
+  if(!plan.ok)return false;
+  const needsSave=baseline!==userProfile.quests||plan.changed||
+    userProfile.questsDayV43!==plan.day;
+  if(!needsSave)return false;
+  const before={quests:userProfile.quests,day:userProfile.questsDayV43};
+  try{
+   userProfile.quests=plan.quests;
+   userProfile.questsDayV43=plan.day;
+   saveCurrentAccount();
+   return plan.changed;
+  }catch(_){
+   userProfile.quests=before.quests;
+   if(before.day===undefined)delete userProfile.questsDayV43;
+   else userProfile.questsDayV43=before.day;
+   return false;
+  }
+ }
+ function prepareQuestEvent(type,eventId){
+  if(!owner())return null;
+  rotate();
+  const plan=core.recordEvent(userProfile.economyV43,{type,eventId});
+  if(!plan.ok)return null;
+  const quests=core.applyQuestProgress(
+   core.ensureQuests(userProfile.quests),plan.questId);
+  return {ledger:plan.state,quests,questId:plan.questId};
  }
  function buy(itemId){
   if(!sandbox())return old.buy(itemId);
@@ -74,12 +95,19 @@
   return true;
  }
  function questEvent(type,eventId){
-  if(!owner())return false;
-  rotate();
-  const plan=core.recordEvent(userProfile.economyV43,{type,eventId});
-  if(!plan.ok)return false;
-  userProfile.economyV43=plan.state;
-  old.advanceQuest(plan.questId,1);
+  const plan=prepareQuestEvent(type,eventId);
+  if(!plan)return false;
+  const prior={ledger:userProfile.economyV43,quests:userProfile.quests};
+  try{
+   userProfile.economyV43=plan.ledger;
+   userProfile.quests=plan.quests;
+   saveCurrentAccount();
+  }catch(_){
+   if(prior.ledger===undefined)delete userProfile.economyV43;
+   else userProfile.economyV43=prior.ledger;
+   userProfile.quests=prior.quests;
+   return false;
+  }
   if(typeof root.renderQuests==='function')root.renderQuests();
   return true;
  }
@@ -141,5 +169,5 @@
   root.renderQuests();
   return false;
  };
- root.DuduEconomyRuntimeV43=Object.freeze({buy,rotate,questEvent});
+ root.DuduEconomyRuntimeV43=Object.freeze({buy,rotate,prepareQuestEvent,questEvent});
 })(typeof window!=='undefined'?window:{});

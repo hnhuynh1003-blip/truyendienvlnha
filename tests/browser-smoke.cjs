@@ -2703,11 +2703,11 @@ async function main() {
         const questStatus=!!document.querySelector(
           '#quests-container .dudu-v43-quest-status');
         const firstEvent=DuduEconomyRuntimeV43.questEvent('LOOT_SUCCESS','fixture-drop-v43');
-        const firstProgress=q.current;
+        const firstProgress=userProfile.quests.find(x=>x.id==='q_daily_loot').current;
         const secondEvent=DuduEconomyRuntimeV43.questEvent('LOOT_SUCCESS','fixture-drop-v43');
-        const afterDuplicate=q.current;
+        const afterDuplicate=userProfile.quests.find(x=>x.id==='q_daily_loot').current;
         refreshDailyQuests();
-        const afterReset=q.current;
+        const afterReset=userProfile.quests.find(x=>x.id==='q_daily_loot').current;
         return {common,marketFullWidth,hasLegacySss,realmCount,realmSafe,noRealmPurchases,
           duduCount,noDuduPurchases,success,moneyAfter,
           ownedId:owned.id,ownedOrigin:owned.obtainedFrom.kind,
@@ -3040,6 +3040,89 @@ async function main() {
       ticketCoins:true,done:true,history:true,resultSaved:true,
       ticketKeptSeed:true,noTicketReroll:true,guestSafe:true,safe:true,noWrites:true
     },'DUDU FUN Sandbox rewards must be committed once and isolated from live');
+
+    // V43.6: one connected sandbox account across market, inventory,
+    // DUDU FUN, daily quests and NPC gifting (no verified/server writes).
+    const integratedV436=await page.evaluate(async()=>{
+      const savedProfile=structuredClone(userProfile);
+      const previousNovel=activeChatNovelId;
+      const writes=window.__firestoreWrites.length;
+      const phone=document.getElementById('cyber-phone');
+      const wasOpen=phone.style.display==='flex';
+      try{
+        const day=DuduEconomyCoreV43.localDay();
+        userProfile.currency=500;
+        userProfile.level=15;userProfile.exp=0;
+        userProfile.questsDayV43=day;
+        userProfile.quests=structuredClone(DEFAULT_SYSTEM_QUESTS);
+        delete userProfile.economyV43;
+        delete userProfile.duduFunV43;
+        if(!wasOpen)togglePhone();
+        openPhoneApp('quests');
+        const added=userProfile.quests.some(q=>q.id==='q_daily_fun')&&
+          userProfile.quests.some(q=>q.id==='q_daily_npc');
+        const questVisible=document.getElementById('quests-container')
+          .textContent.includes('Giải Trí DUDU');
+        openPhoneApp('shop');
+        const toolBought=buyShopItem(DuduEconomyCoreV43.TOOL_ID);
+        const tool=userProfile.inventory[0];
+        const inventoryTool=DuduInventoryV42.inspect(tool).category==='TOOL';
+        openPhoneApp('inventory');
+        const toolInUI=document.getElementById('inventory-container')
+          .textContent.includes('Bộ Nạp Tần Số');
+        openPhoneApp('fun');
+        const app=document.getElementById('phone-app-fun');
+        [...app.querySelectorAll('.dudu-fun-tab')]
+          .find(btn=>btn.textContent.includes('Hộp Mù')).click();
+        app.querySelector('.dudu-fun-box[data-theme="star"]').click();
+        const seq=DuduFunRulesV43.sequence(userProfile.duduFunV43.rounds.box.seed);
+        for(const symbol of seq)app.querySelectorAll('.dudu-fun-symbol')[symbol].click();
+        app.querySelector('.dudu-fun-claim').click();
+        const afterFun=userProfile.quests.find(q=>q.id==='q_daily_fun').current;
+        const funSaved=JSON.parse(localStorage.getItem(scopedLocalKey('profile'))).quests
+          .some(q=>q.id==='q_daily_fun'&&q.current===1);
+        const afterGame=userProfile.currency;
+        claimQuestReward('q_daily_fun');
+        const questReward=userProfile.currency===afterGame+10;
+        claimQuestReward('q_daily_fun');
+        const noDoubleQuest=userProfile.currency===afterGame+10;
+        const novel=novels[selectedNovelIndex];
+        const char=novel?.characters?.find(c=>!c.archived);
+        let giftGranted=false,giftSaved=false,consumedOnce=false;
+        if(char){
+          activeChatNovelId=novel.id;
+          const p=getStoryProgress(novel.id);
+          p.collectedCharacters[char.id]={id:char.id,affinity:39,
+            relationshipV2:{version:1,trust:0,stage:'ACQUAINTED',
+              lastGiftAt:0,giftDayUtc:'',acceptedGiftCountUtc:0,
+              acceptedInstanceIds:[],acceptedGiftEventIds:[]}};
+          const giftItem={...DuduItemCatalog.common[0],
+            instanceId:'v436-npc-sandbox-gift'};
+          userProfile.inventory.push(giftItem);
+          const count=userProfile.inventory.length;
+          await executeGiftItem(char.id,count-1);
+          giftGranted=userProfile.quests.find(q=>q.id==='q_daily_npc').current===1;
+          consumedOnce=userProfile.inventory.length===count-1&&
+            !userProfile.inventory.some(i=>i.instanceId===giftItem.instanceId);
+          giftSaved=JSON.parse(localStorage.getItem(scopedLocalKey('profile'))).quests
+            .some(q=>q.id==='q_daily_npc'&&q.current===1);
+        }
+        return {added,questVisible,toolBought,inventoryTool,toolInUI,
+          afterFun,funSaved,questReward,noDoubleQuest,
+          giftGranted,consumedOnce,giftSaved,
+          noServerWrites:window.__firestoreWrites.length===writes};
+      }finally{
+        userProfile=savedProfile;activeChatNovelId=previousNovel;
+        saveCurrentAccount();
+        phoneHome();
+        if(!wasOpen&&phone.style.display==='flex')togglePhone();
+      }
+    });
+    assert.deepEqual(integratedV436,{
+      added:true,questVisible:true,toolBought:true,inventoryTool:true,toolInUI:true,
+      afterFun:1,funSaved:true,questReward:true,noDoubleQuest:true,
+      giftGranted:true,consumedOnce:true,giftSaved:true,noServerWrites:true
+    },'V43.6 links Market/Inventory/FUN/NPC/Quests in the same Sandbox account');
 
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
     console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));

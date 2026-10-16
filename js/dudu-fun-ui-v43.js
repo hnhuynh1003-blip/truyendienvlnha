@@ -80,17 +80,28 @@
     message(names[plan.reason]||'Chưa đủ điều kiện nhận thưởng.');
     return false;
    }
+   // Commit the game reward AND its daily quest event in one local profile write.
+   const event=root.DuduEconomyRuntimeV43?.prepareQuestEvent(
+    'FUN_CLAIM',open+'-'+root.DuduEconomyCoreV43.localDay());
    const old={state:userProfile.duduFunV43,currency:userProfile.currency,
-    inventory:userProfile.inventory};
+    inventory:userProfile.inventory,quests:userProfile.quests,
+    economy:userProfile.economyV43};
    try{
     userProfile.duduFunV43=plan.state;
     userProfile.currency=plan.coins;
     userProfile.inventory=plan.inventory;
+    if(event){
+     userProfile.quests=event.quests;
+     userProfile.economyV43=event.ledger;
+    }
     saveCurrentAccount();
    }catch(_){
     userProfile.duduFunV43=old.state;
     userProfile.currency=old.currency;
     userProfile.inventory=old.inventory;
+    userProfile.quests=old.quests;
+    if(old.economy===undefined)delete userProfile.economyV43;
+    else userProfile.economyV43=old.economy;
     message('Không lưu được phần thưởng. Chưa ghi nhận nhận thưởng.');
     return false;
    }
