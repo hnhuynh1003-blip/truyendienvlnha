@@ -597,7 +597,7 @@ async function main() {
       const expSecond=userProfile.exp;
       const oldRandom=Math.random;
       Math.random=()=>0.999999;
-      let base,scifi,freeOk,freeAgain,freeCountBefore,freeCountAfter;
+      let base,scifi,freeOk,freeAgain,freeCountBefore,freeCountAfter,yesterdayRefresh,stillDailyLocked;
       try {
         freeCountBefore=userProfile.inventory.length;
         claimChapterLootDrop();
