@@ -71,7 +71,7 @@ test('V42: full filtering by realm, rank, source story, category and Vietnamese 
  assert.equal(model.list(owned,{category:'MATERIAL'}).total,2);
  assert.equal(model.list(owned,{rank:'F'}).total,2);
  assert.equal(model.list(owned,{query:'linh thạch'}).total,1);
- assert.equal(model.list(owned,{order:'rank_desc'}).entries[0].detail.id,'dudu-first-chapter');
+ assert.equal(model.list(owned,{order:'rank_desc'}).entries[0].detail.id,'scifi-quantum-chip');
 });
 test('V42: stable pagination respects original indexes and never fabricates ownership',()=>{
  const owned=Array.from({length:51},(_,i)=>({
