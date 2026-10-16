@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="css/npc-portrait-v38.css?v=1">
   <link rel="stylesheet" href="css/npc-portrait-v39.css?v=2">
   <link rel="stylesheet" href="css/inventory-v42.css?v=3">
+  <link rel="stylesheet" href="css/companion-v43.css?v=1">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -77,6 +78,7 @@
   <script src="js/player-avatar-sync-ui-v22.js"></script>
   <script src="js/loot-rules-v2.js"></script>
   <script src="js/loot-cadence-v42.js?v=1"></script>
+  <script src="js/companion-rules-v43.js?v=1"></script>
   <script src="js/author-items-v1.js"></script>
   <script src="js/npc-editor-v1.js"></script>
   <script src="js/collectibles-client.js"></script>
@@ -1720,7 +1722,7 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=42-7').catch((err) => console.log('SW error:', err));
+        navigator.serviceWorker.register('./sw.js?v=43-1').catch((err) => console.log('SW error:', err));
       });
     }
 
@@ -2099,6 +2101,7 @@
         showSystemAlert("ĐĂNG NHẬP THÀNH CÔNG", `Chào mừng [${currentUsername}] vào hệ thống!`);
         renderHome();
         saveCurrentAccount();
+        if(IS_SANDBOX_MODE)window.DuduCompanionV43?.accountReady();
       } catch (err) {
         console.error("Lỗi đăng nhập:", err);
         closeModals();
@@ -5701,7 +5704,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
     startCooldownTicker();
   </script>
 <script src="js/npc-portrait-v39.js?v=2"></script>
-<script src="js/phone-inbox-v33.js?v=4"></script>
+<script src="js/phone-inbox-v33.js?v=43-1"></script>
+<script src="js/companion-ui-v43.js?v=1"></script>
 <script src="js/phone-wallpaper-v34.js?v=2"></script>
 <script src="js/phone-settings-v35.js?v=1"></script>
 <script src="js/phone-wallpaper-v36-custom.js?v=1"></script>
