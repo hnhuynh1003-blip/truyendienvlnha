@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="css/player-avatar-conflict-v21.css">
   <link rel="stylesheet" href="css/player-avatar-sync-v22.css">
   <link rel="stylesheet" href="css/item-visuals-v13.css">
+  <link rel="stylesheet" href="css/phone-ux-v27-r3.css">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -910,19 +911,19 @@
           <button class="btn" id="btn-inventory-loot" style="padding: 2px 7px; font-size: 9px;" onclick="rollLootDrop(false)">🎲 Nhặt đồ</button>
         </div>
         
-        <div style="display:flex; gap:4px; margin-bottom:8px;">
+        <div class="dudu-v27-inventory-filters" role="group" aria-label="Lọc kho đồ">
           <button class="filter-btn active" id="inv-tab-all" onclick="filterInventory('ALL', this)">Tất cả</button>
           <button class="filter-btn" id="inv-tab-food" onclick="filterInventory('FOOD', this)">Đồ ăn</button>
           <button class="filter-btn" id="inv-tab-weapon" onclick="filterInventory('WEAPON', this)">Vũ khí</button>
           <button class="filter-btn" id="inv-tab-item" onclick="filterInventory('ITEM', this)">Vật dụng</button>
         </div>
 
-        <div id="inventory-v2-toolbar" style="display:none;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 8px;">
+        <div id="inventory-v2-toolbar" class="dudu-v27-inventory-toolbar" style="display:none;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 8px;">
           <input id="inventory-v2-search" type="search" placeholder="Tìm vật phẩm..." aria-label="Tìm trong kho đồ" oninput="renderInventory()" style="min-width:130px;flex:1;background:#111827;color:#e2e8f0;border:1px solid #334155;border-radius:6px;padding:6px;font-size:11px;"/>
           <span id="inventory-v2-count" style="font-size:10px;color:#94a3b8;"></span>
         </div>
         <section id="inventory-v12-detail" aria-live="polite" aria-label="Chi tiết vật phẩm"></section>
-        <div id="inventory-container"></div>
+        <div id="inventory-container" aria-label="Các ô vật phẩm trong hành trang"></div>
       </div>
 
       <!-- APP: BẢO TÀNG KỶ VẬT (chỉ dữ liệu sở hữu máy chủ) -->
@@ -930,9 +931,12 @@
         <div class="phone-app-header">
           <button class="phone-back-btn" onclick="phoneHome()">‹</button>
           <span>🏛️ Bảo Tàng Ký Ức</span>
-          <button type="button" class="btn" style="padding:2px 6px;font-size:9px;" onclick="renderMuseum()">↻</button>
+          <button type="button" class="btn dudu-v27-museum-refresh" title="Làm mới kỷ vật" aria-label="Làm mới bảo tàng" onclick="renderMuseum()">↻</button>
         </div>
-        <p style="font-size:10px;color:var(--text-dim);line-height:1.5;margin:6px 0;">Chỉ hiện những kỷ vật đã được máy chủ xác nhận. Đồ nhặt trong kho thường không đồng nghĩa với kỷ vật hiếm.</p>
+        <details class="dudu-v27-details dudu-v27-museum-help">
+          <summary>ⓘ Kỷ vật được xác nhận <span class="dudu-v27-more-hint">Tìm hiểu</span></summary>
+          <p>Chỉ hiển thị kỷ vật có xác nhận từ máy chủ. Vật phẩm nhặt trong kho thông thường không phải kỷ vật hiếm và không tự mở khóa phần thưởng.</p>
+        </details>
         <div id="museum-items" aria-live="polite" style="overflow-y:auto;max-height:300px;font-size:11px;">Chưa tải bộ sưu tập.</div>
       </div>
 
@@ -941,7 +945,12 @@
         <div class="phone-app-header">
           <button class="phone-back-btn" onclick="phoneHome()">‹</button>
           <span>Nhiệm Vụ Hệ Thống</span>
-          <button class="btn" style="padding: 2px 5px; font-size: 9px;" onclick="refreshDailyQuests()">🔄 Reset</button>
+          <details class="dudu-v27-quest-menu">
+            <summary title="Tùy chọn nhiệm vụ" aria-label="Tùy chọn nhiệm vụ">⋯</summary>
+            <div class="dudu-v27-quest-tools">
+              <button type="button" class="btn btn-danger" onclick="refreshDailyQuests()">Đặt lại nhiệm vụ ngày</button>
+            </div>
+          </details>
         </div>
         
         <div style="display:flex; gap:4px; margin-bottom:8px;">
@@ -950,7 +959,7 @@
           <button class="filter-btn" onclick="filterQuestTab('MAIN', this)">Chính tuyến</button>
         </div>
 
-        <div id="quests-container"></div>
+        <div id="quests-container" class="dudu-v27-quest-list"></div>
       </div>
 
       <!-- APP: NHÂN VẬT & KẾT NỐI LINH HỒN (GIAO DIỆN GỌN GÀNG, ẨN PROMPT DÀI) -->
@@ -1034,7 +1043,7 @@
           <span></span>
         </div>
         <div style="font-size:10px; color:var(--gold); margin-bottom:6px;">Số dư: <b id="shop-currency-val">50</b> 🪙 Xu</div>
-        <div id="shop-items-container"></div>
+        <div id="shop-items-container" class="dudu-v27-shop-grid"></div>
       </div>
 
       <!-- APP: CÀI ĐẶT — tách hiển thị khỏi công cụ phụ -->
@@ -3434,7 +3443,9 @@
       }
       for(const item of response.items){
         const row=document.createElement('div');
-        row.style.cssText='display:flex;gap:7px;align-items:start;border-bottom:1px solid var(--border);padding:8px 3px;';
+        row.className='dudu-v27-museum-entry';
+        if(!IS_SANDBOX_MODE)
+          row.style.cssText='display:flex;gap:7px;align-items:start;border-bottom:1px solid var(--border);padding:8px 3px;';
         const icon=document.createElement('span');icon.style.fontSize='20px';
         icon.textContent=typeof item.icon==='string'?item.icon:'🎁';
         const info=document.createElement('div');
@@ -3519,6 +3530,25 @@
       desc.textContent=(infoText||'Chưa có mô tả cho vật phẩm này.')+
         (protectedItem?'\n🔒 Vật phẩm được bảo vệ — không thể vứt.':'');
       panel.append(header,desc);
+      // Destructive action lives only in the inspector, never on every slot.
+      // The original instance reference is checked again after confirmation.
+      if(!protectedItem){
+        const actions=document.createElement('div');
+        actions.className='dudu-v27-inventory-actions';
+        const discard=document.createElement('button');
+        discard.type='button';discard.className='btn btn-danger';
+        discard.textContent='Vứt vật phẩm';
+        discard.setAttribute('aria-label','Vứt '+String(item.name||'vật phẩm'));
+        discard.addEventListener('click',()=>{
+          if(inventoryDetailSelection!==item)return;
+          if(!confirm('Vứt '+String(item.name||'vật phẩm')+' khỏi hành trang?'))return;
+          const idx=userProfile.inventory.indexOf(item);
+          if(idx<0)return;
+          inventoryDetailSelection=null;
+          discardItem(idx);
+        });
+        actions.append(discard);panel.append(actions);
+      }
       panel.style.display='block';
     }
 
@@ -3526,21 +3556,27 @@
       const container=document.getElementById('inventory-container');
       if(!container)return;
       container.replaceChildren();
+      container.classList.toggle('dudu-v27-inventory-grid',!!IS_SANDBOX_MODE);
       const toolbar=document.getElementById('inventory-v2-toolbar');
       if(toolbar)toolbar.style.display=IS_SANDBOX_MODE?'flex':'none';
-      const q=IS_SANDBOX_MODE ?
+      const q=IS_SANDBOX_MODE?
         (document.getElementById('inventory-v2-search')?.value||'').trim().toLocaleLowerCase('vi'):'';
       const originals=Array.isArray(userProfile.inventory)?userProfile.inventory:[];
-      renderInventoryDetail();
       const items=originals.map((item,index)=>({item,index})).filter(({item})=>
         (inventoryTab==='ALL'||item.type===inventoryTab)&&
         (!q||String(item.name||'').toLocaleLowerCase('vi').includes(q)));
+      // A filtered-out item must not leave a stale inspector above an unrelated grid.
+      if(inventoryDetailSelection&&!items.some(({item})=>item===inventoryDetailSelection))
+        inventoryDetailSelection=null;
+      renderInventoryDetail();
       const count=document.getElementById('inventory-v2-count');
       if(count)count.textContent=items.length+'/'+originals.length+' món';
       if(!items.length){
         const empty=document.createElement('div');
-        empty.style.cssText='text-align:center;color:#94a3b8;font-size:11px;padding:16px;';
-        empty.textContent='Không có vật phẩm phù hợp.';
+        empty.className='dudu-v27-inventory-empty';
+        empty.textContent=originals.length?
+          'Không tìm thấy vật phẩm trong nhóm này. Thử đổi bộ lọc nhé.':
+          'Hành trang còn trống. Vật phẩm nhặt được sẽ xuất hiện ở đây.';
         container.append(empty);return;
       }
       for(const {item,index} of items){
@@ -3548,56 +3584,74 @@
         const protectedItem=canonical?.discardable===false||
           item.discardable===false||item.unique===true||canonical?.unique===true||
           canonical?.scope==='DUDU';
+        const safeRank=DuduItemCatalog.RANKS.includes(item.rank)?item.rank:'F';
+        if(IS_SANDBOX_MODE){
+          // Each owned instance gets its own slot. Do not merge rare/unique
+          // instances or change their indexes: discard uses the original index.
+          const slot=document.createElement('button');
+          slot.type='button';
+          slot.className='item-card dudu-inventory-v12-row dudu-inventory-v12-open dudu-v27-inventory-slot';
+          slot.dataset.inventoryIndex=String(index);
+          slot.dataset.rarity=safeRank;
+          slot.setAttribute('aria-label','Xem chi tiết '+String(item.name||canonical?.name||'vật phẩm'));
+          slot.setAttribute('aria-controls','inventory-v12-detail');
+          const selected=item===inventoryDetailSelection;
+          slot.setAttribute('aria-expanded',selected?'true':'false');
+          if(selected)slot.classList.add('is-selected');
+          const rarity=DuduItemArtV13.visual(canonical||item);
+          if(rarity)slot.style.setProperty('--rarity-glow',rarity.light);
+          const artwork=document.createElement('span');
+          artwork.className='dudu-inventory-v12-icon dudu-v27-slot-art';
+          artwork.textContent=item.icon||canonical?.icon||'🎒';
+          renderSandboxItemArt(artwork,item);
+          const badge=document.createElement('span');
+          badge.className='dudu-v27-slot-rarity';
+          badge.textContent=safeRank;
+          const name=document.createElement('span');
+          name.className='dudu-v27-slot-name';
+          name.textContent=item.name||canonical?.name||'Vật phẩm';
+          slot.append(artwork,badge,name);
+          if(protectedItem){
+            const lock=document.createElement('span');
+            lock.className='dudu-v27-slot-lock';
+            lock.textContent='🔒';lock.setAttribute('aria-hidden','true');
+            slot.append(lock);
+          }
+          slot.title='Xem chi tiết '+(item.name||canonical?.name||'vật phẩm');
+          slot.addEventListener('click',()=>{
+            inventoryDetailSelection=item===inventoryDetailSelection?null:item;
+            renderInventory();
+            if(!selected){
+              const itemButton=[...container.querySelectorAll('.dudu-v27-inventory-slot')]
+                .find(element=>element.dataset.inventoryIndex===String(index));
+              if(itemButton)itemButton.focus({preventScroll:true});
+            }
+          });
+          container.append(slot);
+          continue;
+        }
+        // Existing live reader inventory remains unchanged.
         const div=document.createElement('div');
         div.className='item-card';
-        if(IS_SANDBOX_MODE){
-          const rank=DuduItemArtV13.visual(DuduItemCatalog.byId(item.id||item.itemId)||item);
-          if(rank){div.dataset.rarity=rank.rank;div.style.setProperty('--rarity-glow',rank.light);}
-          div.classList.add('dudu-inventory-v12-row');
-          if(item===inventoryDetailSelection)div.classList.add('is-selected');
-        }
         const glyph=document.createElement('span');
         glyph.textContent=item.icon||canonical?.icon||'🎒';
         glyph.style.cssText='font-size:22px;min-width:33px;text-align:center;';
-        if(IS_SANDBOX_MODE){
-          glyph.className='dudu-inventory-v12-icon';
-          renderSandboxItemArt(glyph,item);
-        }
         const body=document.createElement('div');
         body.style.cssText='flex:1;min-width:0;';
         const rank=document.createElement('span');
-        const safeRank=DuduItemCatalog.RANKS.includes(item.rank)?item.rank:'F';
         rank.className='rank-tag rank-'+safeRank;
         rank.textContent=safeRank;
         const name=document.createElement('span');
         name.textContent=item.name||canonical?.name||'Vật phẩm';
         name.style.cssText='font-size:11px;font-weight:bold;color:var(--text-white);overflow-wrap:anywhere;margin-left:5px;';
         body.append(rank,name);
-        if(IS_SANDBOX_MODE){
-          const description=document.createElement('div');
-          description.textContent=protectedItem?'🔒 Kỷ vật được bảo vệ':
-            (item.desc||canonical?.desc||'Vật phẩm trong hành trang');
-          description.style.cssText='font-size:9px;color:#94a3b8;margin-top:3px;line-height:1.4;';
-          body.append(description);
-        }
         const btn=document.createElement('button');
         btn.className='btn btn-danger';btn.textContent=protectedItem?'Khóa':'Vứt';
         btn.style.cssText='padding:2px 6px;font-size:9px;';
         btn.disabled=protectedItem;
         if(protectedItem)btn.title='Không được vứt kỷ vật độc quyền.';
         else btn.addEventListener('click',()=>discardItem(index));
-        if(IS_SANDBOX_MODE){
-          const details=document.createElement('button');
-          details.type='button';details.className='btn dudu-inventory-v12-open';
-          details.textContent='Chi tiết';
-          details.setAttribute('aria-label','Xem chi tiết '+String(item.name||'vật phẩm'));
-          details.setAttribute('aria-expanded',item===inventoryDetailSelection?'true':'false');
-          details.addEventListener('click',()=>{
-            inventoryDetailSelection=item===inventoryDetailSelection?null:item;
-            renderInventory();
-          });
-          div.append(glyph,body,details,btn);
-        }else div.append(glyph,body,btn);
+        div.append(glyph,body,btn);
         container.append(div);
       }
     }
@@ -3914,6 +3968,9 @@
     }
 
     function refreshDailyQuests() {
+      const menu=document.querySelector('#phone-app-quests .dudu-v27-quest-menu');
+      if(menu)menu.open=false;
+      if(IS_SANDBOX_MODE&&!confirm('Đặt lại toàn bộ tiến trình nhiệm vụ ngày? Thao tác này không thể hoàn tác.'))return;
       userProfile.quests.forEach(q => {
         if (q.type === 'DAILY') {
           q.current = 0;

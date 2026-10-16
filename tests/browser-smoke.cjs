@@ -1484,6 +1484,100 @@ async function main() {
     assert.equal(dossierV12.details.closed,true);
     assert.equal(dossierV12.details.sameInventory,true);
     assert.equal(dossierV12.details.writes,0);
+
+    // V27 R3: inventory instances are individually selectable square tiles,
+    // no repetitive open/discard action bars. Vứt only in confirmed inspector.
+    const grid375=await page.evaluate(()=>{
+      const saved=JSON.stringify(userProfile),beforeWrites=window.__firestoreWrites.length;
+      const beforeSelection=inventoryDetailSelection,beforeTab=inventoryTab;
+      const priorSearch=document.getElementById('inventory-v2-search').value;
+      const oldConfirm=window.confirm;
+      try{
+        inventoryTab='ALL';inventoryDetailSelection=null;
+        document.getElementById('inventory-v2-search').value='';
+        userProfile.inventory=[
+          {...DuduItemCatalog.byId('f1')},
+          {...DuduItemCatalog.byId('e3')},
+          {...DuduItemCatalog.souvenirs[0]}
+        ];
+        openPhoneApp('inventory');
+        const grid=document.getElementById('inventory-container');
+        const tiles=[...grid.querySelectorAll('.dudu-v27-inventory-slot')];
+        const computed=getComputedStyle(grid);
+        const card=tiles[0]?.getBoundingClientRect();
+        const actualColumns=computed.gridTemplateColumns.split(' ').length;
+        const right=grid.getBoundingClientRect().right;
+        const widthOK=tiles.every(tile=>tile.getBoundingClientRect().right<=right+1);
+        const discardOnTiles=tiles.some(tile=>!!tile.querySelector('.btn-danger'));
+        const tileIconCount=tiles.filter(tile=>!!tile.querySelector('img.dudu-item-v13-art')).length;
+        const before=JSON.stringify(userProfile.inventory);
+        tiles[0].click();
+        const inspector=document.getElementById('inventory-v12-detail');
+        const open=inspector.style.display==='block';
+        const inspectDiscard=inspector.querySelector('.dudu-v27-inventory-actions .btn-danger');
+        window.confirm=()=>false;
+        inspectDiscard?.click();
+        const canceled=JSON.stringify(userProfile.inventory)===before;
+        const protectedTile=[...grid.querySelectorAll('.dudu-v27-inventory-slot')]
+          .find(tile=>tile.textContent.includes('🔒'));
+        protectedTile?.click();
+        const protectedNoDiscard=!inspector.querySelector('.dudu-v27-inventory-actions .btn-danger');
+        const protectedTag=!!protectedTile;
+        const count=tiles.length;
+        return {count,actualColumns,widthOK,open,canceled,protectedNoDiscard,
+          protectedTag,discardOnTiles,tileIconCount,
+          approxSquare:card?.width>=55&&card?.height>=card.width,
+          writes:window.__firestoreWrites.length-beforeWrites};
+      }finally{
+        window.confirm=oldConfirm;
+        userProfile=JSON.parse(saved);
+        inventoryTab=beforeTab;inventoryDetailSelection=beforeSelection;
+        document.getElementById('inventory-v2-search').value=priorSearch;
+        renderInventory();phoneHome();
+      }
+    });
+    assert.equal(grid375.count,3);
+    assert.equal(grid375.actualColumns,4);
+    assert.equal(grid375.widthOK,true);
+    assert.equal(grid375.open,true);
+    assert.equal(grid375.canceled,true);
+    assert.equal(grid375.protectedNoDiscard,true);
+    assert.equal(grid375.protectedTag,true);
+    assert.equal(grid375.discardOnTiles,false);
+    assert.equal(grid375.tileIconCount,3);
+    assert.equal(grid375.approxSquare,true);
+    assert.equal(grid375.writes,0);
+    await page.setViewportSize({width:320,height:640});
+    const grid320=await page.evaluate(()=>{
+      const saved=JSON.stringify(userProfile),selection=inventoryDetailSelection;
+      const tab=inventoryTab,search=document.getElementById('inventory-v2-search');
+      const searchBefore=search.value;
+      try{
+        userProfile.inventory=[
+          {...DuduItemCatalog.byId('f1')},
+          {...DuduItemCatalog.byId('e3')},
+          {...DuduItemCatalog.souvenirs[0]}
+        ];
+        inventoryTab='ALL';inventoryDetailSelection=null;search.value='';
+        if(document.getElementById('cyber-phone').style.display!=='flex')togglePhone();
+        openPhoneApp('inventory');
+        const grid=document.getElementById('inventory-container');
+        return {
+          cols:getComputedStyle(grid).gridTemplateColumns.split(' ').length,
+          overflow:document.getElementById('phone-app-inventory').scrollWidth-
+            document.getElementById('phone-app-inventory').clientWidth,
+          tiles:grid.querySelectorAll('.dudu-v27-inventory-slot').length
+        };
+      }finally{
+        userProfile=JSON.parse(saved);
+        inventoryTab=tab;inventoryDetailSelection=selection;search.value=searchBefore;
+        renderInventory();phoneHome();
+      }
+    });
+    assert.equal(grid320.cols,3);
+    assert.equal(grid320.tiles,3);
+    assert.ok(grid320.overflow<=1,'Inventory grid must not overflow 320px phone');
+
     await page.setViewportSize({width:320,height:640});
     const narrowDossier=await page.evaluate(()=>{
       if(document.getElementById('cyber-phone').style.display!=='flex')togglePhone();
