@@ -43,7 +43,8 @@ test('V27 R4 markup includes settings, no uploaded remote photo or story save wr
  assert.match(html,/id="dudu-v27-wallpaper-heading"/);
  assert.match(html,/function setPhoneWallpaperV27\(id\)/);
  assert.match(html,/if\(!IS_SANDBOX_MODE\|\|!window\.DuduPhoneWallpaperV27\)return/);
- for(const p of wp.PRESETS){
+ // V34/V37 wallpapers are built by dedicated modules, not V27 static markup.
+ for(const p of wp.PRESETS.slice(0,8)){
   assert.match(html,new RegExp('data-dudu-wallpaper-choice="'+p.id+'"'));
   assert.match(html,new RegExp("setPhoneWallpaperV27\\('"+p.id+"'\\)"));
  }
