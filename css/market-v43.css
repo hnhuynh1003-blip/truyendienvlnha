@@ -94,3 +94,14 @@ body.dudu-phone-v11 #cyber-phone .dudu-v43-market-footer{
  body.dudu-phone-v11 #cyber-phone .dudu-v43-market-item{gap:5px;padding:6px}
  body.dudu-phone-v11 #cyber-phone .dudu-v43-market-buy{min-width:55px}
 }
+
+
+/* Replace V27's 2-column grid: V43 market needs full-width toolbar + rows. */
+body.dudu-phone-v11 #cyber-phone #shop-items-container.dudu-v27-shop-grid{
+ display:block!important;min-width:0;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-quest-status{
+ margin:0 0 8px;padding:8px 10px;
+ border:1px solid #8ea6bf78;border-radius:9px;
+ background:#21334b9c;color:#d8e7fa;font-size:10px;line-height:1.4;
+}

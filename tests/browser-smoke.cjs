@@ -2649,6 +2649,8 @@ async function main() {
         userProfile.quests=structuredClone(userProfile.quests||[]);
         if(!wasOpen)togglePhone();
         openPhoneApp('shop');
+        const marketFullWidth=getComputedStyle(
+          document.getElementById('shop-items-container')).display==='block';
         const itemCards=()=>[...document.querySelectorAll('#shop-items-container [data-item-id]')];
         const common=itemCards().length;
         const hasLegacySss=itemCards().some(card=>
@@ -2690,17 +2692,23 @@ async function main() {
         openPhoneApp('quests');
         q=userProfile.quests.find(x=>x.id==='q_daily_loot');
         const rolled=q.current===0&&q.claimed===false;
+        const resetControl=document.querySelector(
+          '#phone-app-quests .dudu-v27-quest-tools button');
+        const resetDisabled=!!resetControl?.disabled &&
+          resetControl.textContent.includes('Tự làm mới');
+        const questStatus=!!document.querySelector(
+          '#quests-container .dudu-v43-quest-status');
         const firstEvent=DuduEconomyRuntimeV43.questEvent('LOOT_SUCCESS','fixture-drop-v43');
         const firstProgress=q.current;
         const secondEvent=DuduEconomyRuntimeV43.questEvent('LOOT_SUCCESS','fixture-drop-v43');
         const afterDuplicate=q.current;
         refreshDailyQuests();
         const afterReset=q.current;
-        return {common,hasLegacySss,realmCount,realmSafe,noRealmPurchases,
+        return {common,marketFullWidth,hasLegacySss,realmCount,realmSafe,noRealmPurchases,
           duduCount,noDuduPurchases,success,moneyAfter,
           ownedId:owned.id,ownedOrigin:owned.obtainedFrom.kind,
           buyAgain,buyThird,blocked,noDuplicate,blockedSss,xpUnchanged,
-          dailyCount,rolled,firstEvent,secondEvent,firstProgress,
+          dailyCount,rolled,resetDisabled,questStatus,firstEvent,secondEvent,firstProgress,
           afterDuplicate,afterReset,noWrites:window.__firestoreWrites.length===writes};
       }finally{
         userProfile=JSON.parse(previous);
@@ -2711,12 +2719,13 @@ async function main() {
       }
     });
     assert.deepEqual(economyV43,{
-      common:12,hasLegacySss:false,realmCount:5,realmSafe:true,
+      common:12,marketFullWidth:true,hasLegacySss:false,realmCount:5,realmSafe:true,
       noRealmPurchases:true,duduCount:15,noDuduPurchases:true,
       success:true,moneyAfter:132,ownedId:'common-biscuit',ownedOrigin:'SHOP',
       buyAgain:true,buyThird:true,blocked:false,noDuplicate:true,
       blockedSss:false,xpUnchanged:true,dailyCount:3,
-      rolled:true,firstEvent:true,secondEvent:false,firstProgress:1,
+      rolled:true,resetDisabled:true,questStatus:true,
+      firstEvent:true,secondEvent:false,firstProgress:1,
       afterDuplicate:1,afterReset:1,noWrites:true
     },'DUDU V43.5 Sandbox shop uses canonical catalog and idempotent daily quests');
 

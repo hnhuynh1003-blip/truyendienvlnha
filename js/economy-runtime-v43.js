@@ -95,7 +95,30 @@
  root.buyShopItem=buy;
  root.renderQuests=function(){
   if(sandbox())rotate();
-  return old.renderQuests.apply(this,arguments);
+  const result=old.renderQuests.apply(this,arguments);
+  if(sandbox()){
+   const reset=document.querySelector('#phone-app-quests .dudu-v27-quest-tools button');
+   if(reset){
+    reset.disabled=true;
+    reset.classList.remove('btn-danger');
+    reset.textContent='Tự làm mới theo ngày';
+    reset.title='Nhiệm vụ hằng ngày chỉ được đặt lại khi chuyển sang ngày mới';
+   }
+   const host=document.getElementById('quests-container');
+   if(host){
+    const oldBanner=host.querySelector('.dudu-v43-quest-status');
+    oldBanner?.remove();
+    const banner=document.createElement('div');
+    banner.className='dudu-v43-quest-status';
+    const daily=(Array.isArray(userProfile.quests)?userProfile.quests:[])
+      .filter(q=>q.type==='DAILY');
+    const done=daily.filter(q=>q.claimed).length;
+    banner.textContent='✦ Nhiệm vụ hôm nay · '+done+'/'+daily.length+
+     ' đã nhận · Tự làm mới khi sang ngày mới';
+    host.prepend(banner);
+   }
+  }
+  return result;
  };
  root.advanceQuest=function(){
   if(sandbox())rotate();
