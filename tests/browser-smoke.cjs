@@ -999,7 +999,7 @@ async function main() {
         box.open=true;
         npcRenderPortraitChoices();
         const initiallyRendered=document.querySelectorAll('#npc-r8-gallery [data-portrait-id]').length;
-        const seenAnime=!!document.querySelector('#npc-r8-gallery [data-portrait-id="portrait-a-01"]');
+        const seenAnime=!!document.querySelector('#npc-r8-gallery [data-portrait-id="portrait-f-01"]');
         const library=window.DuduNpcPortraitLibrary;
         const total=library.CATALOG.length;
         const female=library.search({gender:'female'}).length;
