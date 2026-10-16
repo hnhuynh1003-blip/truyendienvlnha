@@ -5,6 +5,7 @@ let playerAvatarDraftV16=null;
 let playerAvatarEditOwnerV16=null;
 let playerAvatarUploadGenerationV16=0;
 let playerAvatarReturnFocusV16=null;
+let playerAvatarVisibleCountV41=12;
 function playerAvatarOwnerV16(){
   return DuduPlayerAvatarV16.uploadIdentity(currentUsername||'sandbox-guest');
 }
@@ -54,7 +55,19 @@ function renderPlayerAvatarV16(element,selection=playerAvatarCurrentV16()){
       if(ok)setImage(DuduNpcAnimeCandidatesV14.hiResStyleFor(safe.presetId),true);
     }).catch(()=>{});
   }else if(safe.kind==='vector'){
-    setImage(DuduNpcPortraitLibrary.sourceFor(safe.presetId));
+    // Older saves keep kind=vector, but the approved F/M IDs now use V40 anime
+    // sheets consistently in every player/avatar and NPC portrait location.
+    const premium=window.DuduNpcPremiumV40?.styleFor(safe.presetId);
+    if(premium)setImage(premium,true);
+    else {
+      const oldAnime=DuduNpcPortraitLibrary.preset(safe.presetId)?.animeId;
+      if(oldAnime){
+        setImage(DuduNpcAnimeCandidatesV14.styleFor(oldAnime),true);
+        DuduNpcAnimeCandidatesV14.ensureHiRes().then(ok=>{
+          if(ok)setImage(DuduNpcAnimeCandidatesV14.hiResStyleFor(oldAnime),true);
+        }).catch(()=>{});
+      }else setImage(DuduNpcPortraitLibrary.sourceFor(safe.presetId));
+    }
   }else if(safe.kind==='upload'&&owner){
     DuduNpcPortraitLibrary.readUpload(owner,DuduPlayerAvatarV16.SCOPE,safe.uploadId)
       .then(src=>{
@@ -79,6 +92,7 @@ function renderPlayerAvatarPlacesV16(){
 function selectPlayerAvatarKindV16(kind){
   if(!playerAvatarDraftV16||!['initials','anime','vector','upload'].includes(kind))return;
   playerAvatarUploadGenerationV16++;
+  playerAvatarVisibleCountV41=12;
   const old=playerAvatarDraftV16;
   playerAvatarDraftV16={kind,frameId:old.frameId,uploadId:kind==='upload'?old.uploadId:'',
     presetId:kind==='anime'?
@@ -98,8 +112,8 @@ function renderPlayerAvatarEditorV16(){
   const tabs=document.getElementById('player-avatar-v16-kind');
   tabs.replaceChildren();
   for(const type of [
-    ['initials','Chữ mặc định'],['anime','Anime nữ'],
-    ['vector','Hình mẫu'],['upload','Ảnh của tôi']
+    ['initials','Chữ mặc định'],['vector','Anime 72'],
+    ['anime','Anime bổ sung'],['upload','Ảnh của tôi']
   ]){
     const btn=document.createElement('button');btn.type='button';btn.textContent=type[1];
     btn.setAttribute('aria-pressed',String(draft.kind===type[0]));
@@ -108,18 +122,35 @@ function renderPlayerAvatarEditorV16(){
   }
   const grid=document.getElementById('player-avatar-v16-preset-grid');
   grid.replaceChildren();
+  const extraControls=document.getElementById('player-avatar-v41-controls');
+  if(extraControls)extraControls.hidden=draft.kind!=='vector';
   document.getElementById('player-avatar-v16-upload-panel').style.display=
     draft.kind==='upload'?'block':'none';
   const remove=document.getElementById('player-avatar-v23-delete-local');
   if(remove)remove.style.display=draft.kind==='upload'&&draft.uploadId?'inline-flex':'none';
   grid.style.display=['anime','vector'].includes(draft.kind)?'grid':'none';
-  const items=draft.kind==='anime'?
+  let items=draft.kind==='anime'?
     DuduNpcAnimeCandidatesV14.CANDIDATES.map(p=>({id:p.id,name:p.label,kind:'anime'})):
     draft.kind==='vector'?
-      DuduNpcPortraitLibrary.CATALOG.map(p=>({
-        id:p.id,name:p.label+' · '+(p.gender==='male'?'Nam':'Nữ'),kind:'vector'
-      })):[];
-  for(const item of items){
+      DuduNpcPortraitLibrary.CATALOG.filter(p=>/^portrait-[fm]-\\d{2}$/.test(p.id))
+        .map(p=>({id:p.id,name:p.id,kind:'vector',gender:p.gender})):[]; 
+  if(draft.kind==='vector'){
+    const gender=document.getElementById('player-avatar-v41-gender')?.value||'all';
+    const search=(document.getElementById('player-avatar-v41-search')?.value||'')
+      .trim().toLocaleLowerCase('vi');
+    items=items.filter(item=>(gender==='all'||item.gender===gender)&&
+      (!search||item.id.toLocaleLowerCase('vi').includes(search)));
+  }
+  const visible=draft.kind==='vector'?items.slice(0,playerAvatarVisibleCountV41):items;
+  const summary=document.getElementById('player-avatar-v41-count');
+  if(summary)summary.textContent=draft.kind==='vector'?
+    'Đang hiển thị '+visible.length+'/'+items.length+' chân dung · gán theo ID, không gắn tính cách':'';
+  const more=document.getElementById('player-avatar-v41-more');
+  if(more){
+    more.hidden=draft.kind!=='vector'||visible.length>=items.length;
+    more.textContent='Xem thêm '+Math.min(12,items.length-visible.length)+' ảnh';
+  }
+  for(const item of visible){
     const btn=document.createElement('button');
     btn.type='button';btn.title=item.name;
     btn.setAttribute('aria-label','Chọn '+item.name);
@@ -128,12 +159,31 @@ function renderPlayerAvatarEditorV16(){
     visual.className='dudu-avatar-v16-thumb';
     if(item.kind==='anime'){
       const art=DuduNpcAnimeCandidatesV14.styleFor(item.id);
-      visual.style.backgroundImage=art.image;
-      visual.style.backgroundSize=art.size;
-      visual.style.backgroundPosition=art.position;
+      if(art){
+        visual.style.backgroundImage=art.image;
+        visual.style.backgroundSize=art.size;
+        visual.style.backgroundPosition=art.position;
+      }
+      DuduNpcAnimeCandidatesV14.ensureHiRes().then(ok=>{
+        if(!ok||!visual.isConnected)return;
+        const full=DuduNpcAnimeCandidatesV14.hiResStyleFor(item.id);
+        if(full){
+          visual.style.backgroundImage=full.image;
+          visual.style.backgroundSize=full.size;
+          visual.style.backgroundPosition=full.position;
+        }
+      }).catch(()=>{});
     }else{
-      const img=document.createElement('img');img.alt='';img.loading='lazy';
-      img.src=DuduNpcPortraitLibrary.sourceFor(item.id);visual.append(img);
+      const premium=window.DuduNpcPremiumV40?.styleFor(item.id);
+      if(premium){
+        visual.style.backgroundImage=premium.image;
+        visual.style.backgroundSize=premium.size;
+        visual.style.backgroundPosition=premium.position;
+      }else{
+        const img=document.createElement('img');img.alt='';img.loading='lazy';
+        img.src=DuduNpcPortraitLibrary.sourceFor(item.id);
+        visual.append(img);
+      }
     }
     const label=document.createElement('span');label.textContent=item.name;
     btn.append(visual,label);
@@ -176,6 +226,14 @@ function renderPlayerAvatarEditorV16(){
     frames.append(btn);
   }
 }
+function playerAvatarGalleryFilterV41(){
+  playerAvatarVisibleCountV41=12;
+  renderPlayerAvatarEditorV16();
+}
+function playerAvatarGalleryMoreV41(){
+  playerAvatarVisibleCountV41+=12;
+  renderPlayerAvatarEditorV16();
+}
 function openPlayerAvatarEditorV16(){
   if(!IS_SANDBOX_MODE)return;
   const modal=document.getElementById('player-avatar-v16-modal');
@@ -184,6 +242,11 @@ function openPlayerAvatarEditorV16(){
   playerAvatarUploadGenerationV16++;
   playerAvatarEditOwnerV16=playerAvatarOwnerV16();
   playerAvatarDraftV16={...playerAvatarCurrentV16()};
+  playerAvatarVisibleCountV41=12;
+  const gender=document.getElementById('player-avatar-v41-gender');
+  const search=document.getElementById('player-avatar-v41-search');
+  if(gender)gender.value='all';
+  if(search)search.value='';
   const feedback=document.getElementById('player-avatar-v23-feedback');
   if(feedback)feedback.textContent='';
   if(typeof closePlayerAvatarSyncReviewV21==='function')
@@ -276,46 +339,44 @@ async function uploadPlayerAvatarV16(event){
   const input=event.target,file=input.files?.[0];input.value='';
   if(!file)return;
   const status=document.getElementById('player-avatar-v16-status');
-  if(!['image/jpeg','image/png','image/webp'].includes(file.type)||
-     file.size>5*1024*1024||file.size<16){
-    status.textContent='Chỉ nhận JPG, PNG, WebP dưới 5MB.';return;
+  const policy=window.DuduPlayerAvatarCompressV41;
+  const error=policy?.validateFile(file)||(!policy?'missing-policy':null);
+  if(error){
+    status.textContent=error==='too-large'?
+      'Ảnh gốc vượt 40 MB. Hãy giảm dung lượng tệp rồi chọn lại.':
+      'Chỉ hỗ trợ ảnh JPG, PNG hoặc WebP hợp lệ (tệp gốc tối đa 40 MB).';
+    return;
   }
   const owner=playerAvatarEditOwnerV16;
   const generation=++playerAvatarUploadGenerationV16;
   const objectUrl=URL.createObjectURL(file);
-  status.textContent='Đang xử lý ảnh trên thiết bị...';
+  const originalMB=(file.size/1048576).toFixed(2);
+  status.textContent=file.size>5*1048576?
+    'Ảnh '+originalMB+' MB — đang tự giảm kích thước và nén trên thiết bị…':
+    'Đang tối ưu độ nét ảnh '+originalMB+' MB trên thiết bị…';
+  const active=()=>generation===playerAvatarUploadGenerationV16&&
+    owner===playerAvatarOwnerV16()&&
+    owner===playerAvatarEditOwnerV16&&
+    document.getElementById('player-avatar-v16-modal')?.style.display==='flex';
   try{
     const image=await new Promise((resolve,reject)=>{
       const img=new Image();
-      img.onload=()=>resolve(img);img.onerror=()=>reject(new Error('invalid image'));
+      img.onload=()=>resolve(img);
+      img.onerror=()=>reject(new Error('invalid-image'));
       img.src=objectUrl;
     });
-    if(!image.naturalWidth||!image.naturalHeight||
-       image.naturalWidth*image.naturalHeight>24000000)
-      throw Error('unsupported dimensions');
-    const canvas=document.createElement('canvas');
-    let dataUrl='';
-    for(const [edge,quality] of [[256,.75],[192,.65],[144,.55]]){
-      canvas.width=edge;canvas.height=edge;
-      const ctx=canvas.getContext('2d');
-      if(!ctx)throw Error('missing canvas');
-      const side=Math.min(image.naturalWidth,image.naturalHeight);
-      ctx.drawImage(image,(image.naturalWidth-side)/2,
-        (image.naturalHeight-side)/2,side,side,0,0,edge,edge);
-      dataUrl=canvas.toDataURL('image/jpeg',quality);
-      if(DuduPlayerAvatarV16.isValidImageDataURL(dataUrl))break;
-    }
-    if(!DuduPlayerAvatarV16.isValidImageDataURL(dataUrl))throw Error('too large');
-    const active=()=>generation===playerAvatarUploadGenerationV16&&
-      owner===playerAvatarOwnerV16()&&
-      document.getElementById('player-avatar-v16-modal').style.display==='flex';
+    if(!active())return;
+    const result=policy.resize(image,{
+      createCanvas:()=>document.createElement('canvas'),
+      checkUrl:value=>DuduPlayerAvatarV16.isValidImageDataURL(value)
+    });
     if(!active())return;
     const id=DuduNpcPortraitLibrary.makeId();
     if(!await DuduNpcPortraitLibrary.saveUpload(
-      owner,DuduPlayerAvatarV16.SCOPE,id,dataUrl))throw Error('save failed');
-    // V27 audit: closing the editor or switching accounts while IndexedDB
-    // finishes would leave an unreferenced local photo. Clean up only the
-    // exact captured owner+scope+new ID; NEVER attach it to another account.
+      owner,DuduPlayerAvatarV16.SCOPE,id,result.dataUrl))
+      throw Error('storage-failed');
+    // The upload belongs ONLY to the owner captured before any await.
+    // A late IndexedDB write is discarded when the editor/account changes.
     if(!active()){
       try{await DuduNpcPortraitLibrary.deleteUpload(
         owner,DuduPlayerAvatarV16.SCOPE,id);}catch(_){}
@@ -324,9 +385,15 @@ async function uploadPlayerAvatarV16(event){
     playerAvatarDraftV16={...playerAvatarDraftV16,kind:'upload',
       uploadId:id,presetId:''};
     renderPlayerAvatarEditorV16();
-    status.textContent='Ảnh đã sẵn sàng. Bấm Lưu avatar để áp dụng.';
-  }catch(_){status.textContent='Không đọc/lưu được ảnh. Thử một ảnh khác.';}
-  finally{URL.revokeObjectURL(objectUrl);}
+    status.textContent='Đã nén '+originalMB+' MB → '+Math.ceil(result.bytes/1024)+
+      ' KB ('+result.edge+'×'+result.edge+' px). Bấm Lưu avatar để áp dụng.';
+  }catch(error){
+    if(active())status.textContent=error?.message==='unsupported-dimensions'?
+      'Ảnh quá lớn về số pixel hoặc bị lỗi. Thử ảnh khác có độ phân giải thấp hơn.':
+      'Không thể xử lý/lưu ảnh này. Hãy thử JPG, PNG hoặc WebP khác.';
+  }finally{
+    URL.revokeObjectURL(objectUrl);
+  }
 }
 // Capture Escape to avoid accidentally closing the phone behind the editor.
 document.addEventListener('keydown',event=>{
