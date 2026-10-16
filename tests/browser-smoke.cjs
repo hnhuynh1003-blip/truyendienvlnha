@@ -2219,6 +2219,49 @@ async function main() {
     assert.equal(socialV32.events,1);
     assert.equal(socialV32.firestoreWrites,0);
 
+    // Mobile action sheet: controls stay within screen and remain tappable.
+    for(const width of [320,375,390]){
+      await page.setViewportSize({width,height:680});
+      const sheetV32=await page.evaluate(()=>{
+        if(document.getElementById('cyber-phone').style.display!=='flex')togglePhone();
+        openPhoneApp('chat');
+        const story=novels.find(n=>n.id===activeChatNovelId)||novels[selectedNovelIndex];
+        const npc=(story?.characters||[]).find(x=>!x.archived);
+        if(!npc)return {missingFixture:true};
+        const p=getStoryProgress(story.id);
+        const prev=p.collectedCharacters[npc.id];
+        const user=currentUsername;
+        try{
+          activeChatNovelId=story.id;
+          currentUsername=user||'v32-mobile-fixture';
+          p.collectedCharacters[npc.id]=prev||{id:npc.id,affinity:15};
+          renderChatDropdown();
+          document.getElementById('chat-character-selector').value=npc.id;
+          switchChatCharacter();
+          openRedPacketV32();
+          const modal=document.getElementById('dudu-v32-envelope-sheet')||
+            document.querySelector('.dudu-v32-envelope-sheet');
+          const rect=modal.getBoundingClientRect();
+          const scr=document.querySelector('#cyber-phone .phone-screen').getBoundingClientRect();
+          const root=document.getElementById('dudu-v32-envelope-overlay');
+          const minTop=rect.top>=scr.top-1;
+          const fits=rect.right<=innerWidth+1&&rect.left>=-1&&rect.bottom<=innerHeight+1;
+          const display=getComputedStyle(root).display;
+          return {minTop,fits,display,buttons:modal.querySelectorAll('[data-dudu-v32-amount]').length,
+            label:document.getElementById('dudu-v32-envelope-recipient').textContent};
+        }finally{
+          closeRedPacketV32();
+          if(prev===undefined)delete p.collectedCharacters[npc.id];else p.collectedCharacters[npc.id]=prev;
+          currentUsername=user;phoneHome();
+        }
+      });
+      assert.equal(sheetV32.minTop,true,'sheet top stays within phone');
+      assert.equal(sheetV32.fits,true,'red packet sheet fits '+width+'px screen');
+      assert.equal(sheetV32.display,'flex');
+      assert.equal(sheetV32.buttons,5);
+    }
+    await page.setViewportSize({width:1280,height:720});
+
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
     console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));
   } finally {
