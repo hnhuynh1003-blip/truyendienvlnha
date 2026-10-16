@@ -1,0 +1,96 @@
+/* V43.5 shop — clean mobile-first grid, no large banners or multiline menus. */
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-toolbar{
+  display:flex;flex-direction:column;gap:8px;margin-bottom:8px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-intro{
+  display:flex;justify-content:space-between;align-items:center;gap:8px;
+  color:#f3e3ff;font-size:12px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-intro small{
+  font-size:9px;color:#bfcfe6;text-align:right;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-tabs{
+  display:flex;gap:4px;overflow-x:auto;padding:2px 0 5px;
+  scrollbar-width:thin;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-tab{
+  flex:none;min-width:65px;padding:7px 9px;border-radius:10px;
+  color:#bfcce2;border:1px solid #7a91bb6b;background:#25344a;
+  font:inherit;font-size:10px;cursor:pointer;white-space:nowrap;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-tab.is-active{
+  background:#5b4169;color:#fff0fc;border-color:#d5abe6c4;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-filters{
+  display:flex;gap:6px;align-items:center;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-search,
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-realm{
+  padding:7px 8px;border-radius:8px;min-width:0;
+  background:#1b3042;color:#edf4ff;
+  border:1px solid #8ca6c46b;font:inherit;font-size:11px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-search{flex:1;}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-realm{width:100px;flex:none;}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-realm[hidden],
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-search[hidden]{display:none!important;}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-hint{
+ margin:0;line-height:1.45;color:#cfcee5;font-size:10px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-grid{
+ display:flex;flex-direction:column;gap:6px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-item{
+ display:flex;align-items:center;gap:9px;min-width:0;
+ border-radius:10px;border:1px solid #667caa80;
+ padding:8px;background:linear-gradient(125deg,#1f2e47,#292743);
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-icon{
+ width:40px;height:40px;flex:none;border-radius:9px;
+ background:#343853;display:grid;place-items:center;font-size:22px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-copy{
+ flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-copy strong{
+ font-size:11px;line-height:1.25;color:#f6f1ff;overflow-wrap:anywhere;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-copy span{
+ font-size:9px;color:#dbb9ec;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-copy small{
+ font-size:9px;line-height:1.3;color:#c7d2e3;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-buy{
+ display:flex;align-items:center;justify-content:center;
+ flex-direction:column;gap:5px;flex:none;min-width:64px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-buy strong{
+ font-size:11px;color:#ffdd9d;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-buy button{
+ min-width:55px;min-height:28px;padding:4px 9px;font-size:10px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-buy button:disabled{
+ opacity:.42;cursor:not-allowed;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-buy small{
+ font-size:8px;color:#b6c2d8;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-not-sale{
+ padding:5px;border-radius:7px;font-size:9px;
+ background:#29334b;color:#cabfe2;text-align:center;max-width:75px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-placeholder,
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-empty{
+ padding:16px 10px;border:1px dashed #7988a6;border-radius:10px;
+ color:#c5cee1;text-align:center;font-size:11px;line-height:1.5;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-footer{
+ display:block;margin-top:8px;color:#a8b3ce;font-size:9px;line-height:1.4;
+}
+@media(max-width:355px){
+ body.dudu-phone-v11 #cyber-phone .dudu-v43-market-icon{width:33px;height:35px;font-size:19px}
+ body.dudu-phone-v11 #cyber-phone .dudu-v43-market-item{gap:5px;padding:6px}
+ body.dudu-phone-v11 #cyber-phone .dudu-v43-market-buy{min-width:55px}
+}

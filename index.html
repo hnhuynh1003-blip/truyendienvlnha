@@ -34,6 +34,7 @@
   <link rel="stylesheet" href="css/inventory-v42.css?v=3">
   <link rel="stylesheet" href="css/companion-v43.css?v=1">
   <link rel="stylesheet" href="css/npc-bond-v43.css?v=2">
+  <link rel="stylesheet" href="css/market-v43.css?v=1">
   <link rel="stylesheet" href="css/museum-memories-v43.css?v=1">
   <link rel="stylesheet" href="css/npc-diary-ui.css?v=1">
   <link rel="stylesheet" href="css/soul-link-v43.css?v=2">
@@ -53,6 +54,7 @@
   <script src="js/story-memory.js"></script>
   <script src="js/npc-memory-v2.js"></script>
   <script src="js/item-catalog-v2.js"></script>
+  <script src="js/economy-core-v43.js?v=1"></script>
   <script src="js/inventory-model-v42.js?v=4"></script>
   <script src="js/inventory-view-v42.js?v=4"></script>
   <script src="js/item-visuals-v13.js"></script>
@@ -4729,7 +4731,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
         startCooldownTicker();
       }
       addExp(reward.exp);
-      advanceQuest('q_daily_loot',1);
+      if(IS_SANDBOX_MODE)window.DuduEconomyRuntimeV43?.questEvent('LOOT_SUCCESS',copy.instanceId);
+      else advanceQuest('q_daily_loot',1);
 
       if (['S','SS','SSS'].includes(result.rank)) {
         showSystemAlert("💥 DỊ THƯỜNG BẠO KÍCH!", `BẠN ĐÃ NHẶT ĐƯỢC [${result.rank}] ${result.item.name}! (+${reward.coins} Xu)`);
@@ -5937,6 +5940,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/npc-portrait-v39.js?v=2"></script>
 <script src="js/phone-inbox-v33.js?v=43-2"></script>
 <script src="js/companion-ui-v43.js?v=1"></script>
+<script src="js/market-ui-v43.js?v=1"></script>
+<script src="js/economy-runtime-v43.js?v=1"></script>
 <script src="js/museum-memories-ui-v43.js?v=2"></script>
 <script src="js/npc-diary-ui.js?v=1"></script>
 <script src="js/soul-link-ui-v43.js?v=2"></script>
