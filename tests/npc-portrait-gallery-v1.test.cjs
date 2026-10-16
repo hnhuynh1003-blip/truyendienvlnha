@@ -6,19 +6,20 @@ const fs=require('node:fs');
 const html=fs.readFileSync(require('node:path').resolve(__dirname,'../index.html'),'utf8');
 
 test('R10 gallery has 60 female and 12 male selectable portraits; no neutral in picker',()=>{
- assert.equal(portraits.CATALOG.length,72);
- assert.equal(portraits.search({gender:'female'}).length,60);
+ assert.equal(portraits.CATALOG.length,76);
+ assert.equal(portraits.search({gender:'female'}).length,64);
  assert.equal(portraits.search({gender:'male'}).length,12);
  assert.equal(portraits.GENDERS.includes('neutral'),false);
  assert.equal(portraits.search({world:'historical'}).length,24);
  assert.equal(portraits.search({gender:'female',world:'historical'}).length,20);
- assert.equal(portraits.search({query:'thanh lich'}).length,4);
- assert.equal(portraits.search({gender:'female',query:'LẠNH LÙNG'}).length,3);
+ assert.equal(portraits.search({query:'portrait-a-01'}).length,1);
+ assert.equal(portraits.search({gender:'female',query:'LẠNH LÙNG'}).length,0);
  assert.equal(portraits.search({gender:'male',world:'fantasy'}).length,4);
- assert.equal(new Set(portraits.CATALOG.map(x=>x.id)).size,72);
+ assert.equal(new Set(portraits.CATALOG.map(x=>x.id)).size,76);
  for(const p of portraits.CATALOG){
   assert.ok(['female','male'].includes(p.gender));
-  assert.match(portraits.sourceFor(p.id),/^data:image\/svg\+xml;charset=utf-8,/);
+  if(p.kind==='anime')assert.equal(portraits.sourceFor(p.id),null);
+  else assert.match(portraits.sourceFor(p.id),/^data:image\/svg\+xml;charset=utf-8,/);
   assert.equal(portraits.preset(p.id)?.id,p.id);
  }
  assert.equal(portraits.sourceFor('no-such-id'),null);
@@ -43,7 +44,7 @@ test('R10 retains every legacy male/neutral ID as a read-only compatible portrai
   assert.match(portraits.sourceFor(n),/^data:image\/svg\+xml/);
  }
  const ids=[...portraits.CATALOG,...portraits.LEGACY].map(x=>x.id);
- assert.equal(new Set(ids).size,108);
+ assert.equal(new Set(ids).size,112);
 });
 test('all three existing sample NPCs are female, including initial seed IDs',()=>{
  const expected=[
@@ -72,12 +73,12 @@ test('gallery controls belong to character editor and not story editor',()=>{
  assert.ok(gallery>start,'Gallery must appear after opening NPC editor');
  assert.ok(gallery>storyEnd,'Gallery must not appear in story modal');
  assert.match(html,/id="npc-r9-gender"/);
- assert.match(html,/Thư viện nữ 60 · nam 12/);
+ assert.match(html,/76 ảnh theo mã ID: 60 nữ, 12 nam, 4 anime nét cao/);
  assert.doesNotMatch(html,/<option value="neutral">Trung tính<\/option>/);
- assert.match(html,/className='npc-v10-portrait-tile'/);
+ assert.match(html,/class="dudu-v39-portrait-picker"/);
  assert.match(html,/id="npc-r9-world"/);
  assert.match(html,/id="npc-r9-search"/);
- assert.match(html,/function npcRenderPortraitChoices\(\)/);
+ assert.match(html,/js\/npc-portrait-v39\.js/);
  assert.match(html,/npcUploadPortrait\(event\)/);
  assert.match(html,/renderNpcPortraitPreview\(portrait,char,storyId\)/);
  assert.match(html,/renderNpcPortraitPreview\(preview,c,novel\.id\)/);
