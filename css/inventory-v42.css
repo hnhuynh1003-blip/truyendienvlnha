@@ -191,3 +191,23 @@ body.dudu-phone-v11 #cyber-phone .dudu-v42-discard{flex:none;font-size:10px}
   padding:9px;
  }
 }
+
+/* V42.4 — common/realm loot stacks are visual only; originals remain saved. */
+body.dudu-phone-v11 #cyber-phone #inventory-container .dudu-v42-slot-quantity{
+ position:absolute;top:4px;right:4px;z-index:2;
+ display:flex;align-items:center;justify-content:center;white-space:nowrap;
+ min-width:25px;min-height:19px;padding:2px 5px;box-sizing:border-box;
+ border-radius:7px;border:1px solid #8fe2f3a8;
+ background:linear-gradient(130deg,#153d52,#284368);
+ color:#e8ffff;font-size:10px;font-weight:850;line-height:1;
+ box-shadow:0 1px 5px #050f25c5;
+ font-variant-numeric:tabular-nums;
+}
+body.dudu-phone-v11 #cyber-phone #inventory-container .dudu-v42-slot-quantity+ .dudu-v27-slot-lock{
+ display:none;
+}
+@media(max-width:365px){
+ body.dudu-phone-v11 #cyber-phone #inventory-container .dudu-v42-slot-quantity{
+  min-width:23px;font-size:10px;padding:2px 4px;
+ }
+}
