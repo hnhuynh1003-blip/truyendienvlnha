@@ -39,7 +39,7 @@ test('item art is Sandbox-only and preserves original inventory controls',()=>{
  assert.match(html,/src="js\/item-visuals-v13.js"/);
  assert.match(html,/href="css\/item-visuals-v13.css"/);
  assert.match(html,/function renderSandboxItemArt\(element,item\)\{\s*if\(!IS_SANDBOX_MODE/);
- assert.match(html,/renderSandboxItemArt\(glyph,item\)/);
+ assert.match(html,/renderSandboxItemArt\(artwork,item\)/);
  assert.match(html,/renderSandboxItemArt\(icon,item\)/);
  const from=html.indexOf('function renderSandboxItemArt(');
  const to=html.indexOf('function renderInventoryDetail()',from);
