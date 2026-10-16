@@ -51,7 +51,30 @@
       byRole.set(id,role);
     }
   }
+  // Legacy starter IDs map to canonical metadata only in memory and display.
+  // Original stored item records are deliberately NEVER rewritten.
+  const STARTER_ALIASES=Object.freeze({
+    'init-1':Object.freeze({canonical:'f1',name:'Mẩu Bánh Mì Mốc',
+      rank:'F',type:'FOOD',icon:'🍞',desc:'Khô khốc, chống đói lúc tuyệt vọng.'}),
+    'init-2':Object.freeze({canonical:'e3',name:'Dao Gọt Trái Cây Cũ',
+      rank:'E',type:'WEAPON',icon:'🔪',desc:'Vũ khí thô sơ nhất để tự vệ.'})
+  });
+  const STARTER_ALLOWED_FIELDS=new Set(['id','itemId','name','rank','type',
+    'icon','desc','instanceId','obtainedFrom']);
   const plain=x=>x&&typeof x==='object'&&!Array.isArray(x);
+  function starterAlias(record){
+    if(!plain(record))return null;
+    const known=STARTER_ALIASES[record.id];
+    if(!known||Object.keys(record).some(key=>!STARTER_ALLOWED_FIELDS.has(key)))
+      return null;
+    for(const key of ['name','rank','type','icon','desc'])
+      if(record[key]!==known[key])return null;
+    if(record.itemId!==undefined&&record.itemId!==record.id)return null;
+    return known.canonical;
+  }
+  function canonicalFor(record){
+    return catalog?.byId(starterAlias(record)||idOf(record))||null;
+  }
   function idOf(record){
     const id=record?.id||record?.itemId;
     return typeof id==='string'?id:'';
@@ -67,7 +90,8 @@
   function inspect(record){
     if(!plain(record))return null;
     const id=idOf(record);
-    const approved=catalog?.byId(id)||null;
+    const alias=starterAlias(record);
+    const approved=catalog?.byId(alias||id)||null;
     const source=approved||record;
     const rank=RANKS.includes(source.rank)?source.rank:
       RANKS.includes(record.rank)?record.rank:'F';
@@ -85,11 +109,11 @@
       origin.storyId:typeof record.storyId==='string'&&record.storyId?record.storyId:null;
     const chapterId=typeof origin.chapterId==='string'&&origin.chapterId?
       origin.chapterId:typeof record.chapterId==='string'&&record.chapterId?record.chapterId:null;
-    const category=categoryFor({id,type,scope});
+    const category=categoryFor({id:alias||id,type,scope});
     const name=String(record.name||approved?.name||'Vật phẩm chưa xác định');
     const description=String(record.desc||record.description||approved?.desc||'Chưa có mô tả.');
     return Object.freeze({
-      id,instanceId:typeof record.instanceId==='string'?record.instanceId:null,
+      id:alias||id,originalId:id,instanceId:typeof record.instanceId==='string'?record.instanceId:null,
       name,description,rank,type,scope,realm,storyId,chapterId,
       category,categoryLabel:CATEGORIES[category],worldLabel:realm?REALMS[realm]:
         storyId?'Theo truyện':'Chung',
@@ -143,13 +167,17 @@
   const STACK_SOURCE_FIELDS=new Set(['instanceId','obtainedFrom']);
   function stackKey(record){
     if(!plain(record))return null;
-    const item=catalog?.byId(idOf(record));
+    const alias=starterAlias(record);
+    const item=catalog?.byId(alias||idOf(record));
     if(!item||!['COMMON','REALM'].includes(item.scope)||
        // Rank B+ and story-significant rare finds remain individual slots.
        !['F','E','D','C'].includes(item.rank)||
        item.unique===true||item.discardable===false||
        record.unique===true||record.discardable===false||
        record.stackable===false)return null;
+    // Old starter descriptions differ by design; exact legacy signature
+    // was validated above. Other records need strict canonical equality.
+    if(alias)return item.scope+':'+item.id;
     const keys=new Set([...Object.keys(item),...STACK_SOURCE_FIELDS]);
     for(const k of Object.keys(record)){
       if(!keys.has(k))return null;
@@ -234,5 +262,5 @@
     return Object.freeze(errors);
   }
   return Object.freeze({VERSION,CATEGORIES,REALMS,RANKS,ROLE_IDS,idOf,
-    categoryFor,inspect,list,stackKey,displayList,validateCatalog});
+    categoryFor,inspect,list,stackKey,displayList,starterAlias,canonicalFor,validateCatalog});
 });
