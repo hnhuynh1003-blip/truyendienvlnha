@@ -63,7 +63,7 @@ function makeStore(){
      db.exec(query);return {toArray:()=>[]};
    }
    const statement=db.prepare(query);
-   const rows=statement.readonly?statement.all(...args):
+   const rows=/^\s*SELECT\b/i.test(query)?statement.all(...args):
      (statement.run(...args),[]);
    return {toArray:()=>rows};
  }};
