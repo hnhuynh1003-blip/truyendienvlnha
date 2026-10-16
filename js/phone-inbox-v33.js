@@ -46,6 +46,10 @@ function render(){
   button.append(avatar,infoBox,chevron);
   button.addEventListener('click',()=>{const sel=$('chat-character-selector');if(!sel)return;sel.value=npc.id;switchChatCharacter();show('chat');});
   root.append(button);
+  // Render the same canonical NPC portrait used by chat and Sổ Tay.
+  // The node is already connected: async uploads and anime atlases can paint.
+  if(typeof renderNpcPortraitPreview==='function')
+   renderNpcPortraitPreview(avatar,npc,story());
  }
 }
 function init(){
