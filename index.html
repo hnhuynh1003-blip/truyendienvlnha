@@ -35,6 +35,7 @@
   <link rel="stylesheet" href="css/companion-v43.css?v=1">
   <link rel="stylesheet" href="css/npc-bond-v43.css?v=2">
   <link rel="stylesheet" href="css/market-v43.css?v=2">
+  <link rel="stylesheet" href="css/dudu-fun-v43.css?v=1">
   <link rel="stylesheet" href="css/item-actions-v43.css?v=43-5-3b">
   <link rel="stylesheet" href="css/museum-memories-v43.css?v=1">
   <link rel="stylesheet" href="css/npc-diary-ui.css?v=1">
@@ -56,6 +57,7 @@
   <script src="js/npc-memory-v2.js"></script>
   <script src="js/item-catalog-v2.js"></script>
   <script src="js/economy-core-v43.js?v=3"></script>
+  <script src="js/dudu-fun-rules-v43.js?v=1"></script>
   <script src="js/story-market-v43.js?v=1"></script>
   <script src="js/inventory-model-v42.js?v=7"></script>
   <script src="js/inventory-view-v42.js?v=7"></script>
@@ -890,6 +892,11 @@
           <button type="button" class="app-icon" onclick="openPhoneApp('shop')" aria-label="Mở Cửa Hàng">
             <div class="app-box" style="background:#10b981;">🛒</div><div class="app-label">Cửa Hàng</div>
           </button>
+          <button type="button" class="app-icon" id="dudu-fun-launch-v43"
+            onclick="openPhoneApp('fun')" aria-label="Mở DUDU FUN" hidden>
+            <div class="app-box" style="background:linear-gradient(130deg,#b35395,#674daa);">🎁</div>
+            <div class="app-label">DUDU FUN</div>
+          </button>
           <button type="button" class="app-icon" onclick="openPhoneApp('museum')" aria-label="Mở Bảo Tàng">
             <div class="app-box" style="background:#b45309;">🏛️</div><div class="app-label">Bảo Tàng</div>
           </button>
@@ -1155,6 +1162,16 @@
         </div>
         <div style="font-size:10px; color:var(--gold); margin-bottom:6px;">Số dư: <b id="shop-currency-val">50</b> 🪙 Xu</div>
         <div id="shop-items-container" class="dudu-v27-shop-grid"></div>
+      </div>
+
+      <!-- APP: DUDU FUN V43.5.4 — Sandbox-only, free daily mini-games -->
+      <div class="phone-sub-app" id="phone-app-fun">
+        <div class="phone-app-header">
+          <button type="button" class="phone-back-btn" onclick="phoneHome()" aria-label="Trở về">‹</button>
+          <span>✦ DUDU FUN</span>
+          <span></span>
+        </div>
+        <div id="dudu-fun-content-v43" aria-live="polite"></div>
       </div>
 
       <!-- APP: CÀI ĐẶT — tách hiển thị khỏi công cụ phụ -->
@@ -3838,6 +3855,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
         startCooldownTicker();
       } else if (appName === 'museum') {
         renderMuseum();
+      } else if (appName === 'fun') {
+        window.DuduFunUIV43?.render();
       } else if (appName === 'quests') {
         renderQuests();
       } else if (appName === 'shop') {
@@ -6014,6 +6033,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/phone-inbox-v33.js?v=43-2"></script>
 <script src="js/companion-ui-v43.js?v=1"></script>
 <script src="js/market-ui-v43.js?v=3"></script>
+<script src="js/dudu-fun-ui-v43.js?v=1"></script>
 <script src="js/economy-runtime-v43.js?v=2"></script>
 <script src="js/museum-memories-ui-v43.js?v=2"></script>
 <script src="js/npc-diary-ui.js?v=1"></script>
