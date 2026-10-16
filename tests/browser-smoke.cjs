@@ -126,6 +126,39 @@ async function main() {
     });
     assert.match(museumSandbox.message,/Sandbox không kết nối sổ sở hữu/);
     assert.equal(museumSandbox.writes,0,'Museum sandbox cannot mutate Firestore or live inventory');
+    // Screenshot regression: guests see the preview album, not an empty Museum.
+    // Guest state must never show any cached user's personal NPC milestones.
+    const guestMuseum=await page.evaluate(async()=>{
+      const savedUsername=currentUsername,savedProfile=userProfile;
+      const firestoreCount=window.__firestoreWrites.length;
+      try{
+        currentUsername='';
+        // Deliberately LEAVE prior user's profile object in memory:
+        // a guest MUST NOT see that person's progress.
+        openPhoneApp('museum');
+        await renderMuseum();
+        const album=document.getElementById('dudu-v43-memory-album');
+        const museum=document.getElementById('phone-app-museum');
+        const verified=museum.querySelector('.dudu-v27-museum-help');
+        const options=album?.querySelectorAll('#dudu-v43-memory-source option').length;
+        const cards=album?.querySelectorAll('.dudu-v43-memory-card').length;
+        const earned=album?.querySelectorAll('.dudu-v43-memory-card.is-earned').length;
+        const mountedFirst=!!album&&!!verified&&
+          !!(album.compareDocumentPosition(verified)&Node.DOCUMENT_POSITION_FOLLOWING);
+        const visible=!!album&&album.getBoundingClientRect().height>0;
+        const hint=album?.textContent.includes('Chưa đăng nhập Sandbox');
+        return {exists:!!album,mountedFirst,visible,options,cards,earned,hint,
+          noWrites:window.__firestoreWrites.length===firestoreCount};
+      }finally{
+        currentUsername=savedUsername;userProfile=savedProfile;
+        phoneHome();
+      }
+    });
+    assert.deepEqual(guestMuseum,{
+      exists:true,mountedFirst:true,visible:true,options:1,cards:6,earned:0,
+      hint:true,noWrites:true
+    },'Sandbox Museum must show 6 locked DUDU previews without requiring login');
+
     // V43.5 read-only Museum album: DUDU / unlocked NPC can be previewed,
     // but no sandbox milestone may become a real collectible or inventory item.
     const museumV435=await page.evaluate(async()=>{

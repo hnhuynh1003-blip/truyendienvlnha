@@ -3887,8 +3887,22 @@ document.getElementById('phone-home-screen').style.display = 'none';
       const container=document.getElementById('museum-items');
       if(!container)return;
       // V43.5 local journal is READ ONLY, independent from verified collectibles.
-      // Live Museum client/server ownership checks remain unchanged.
-      window.DuduMuseumMemoriesUIV43?.render();
+      // Never silently hide the Sandbox album if its script failed to load.
+      if(IS_SANDBOX_MODE){
+        const albumModule=window.DuduMuseumMemoriesUIV43;
+        if(albumModule?.render){
+          albumModule.render();
+        }else{
+          let fallback=document.getElementById('dudu-v43-memory-fallback');
+          if(!fallback){
+            fallback=document.createElement('p');
+            fallback.id='dudu-v43-memory-fallback';
+            fallback.style.cssText='padding:12px;margin:0 0 9px;border:1px solid #997fa6;border-radius:12px;color:#eedff9;font-size:11px;';
+            fallback.textContent='Album Kỷ Niệm chưa tải được. Hãy làm mới trang để cập nhật V43.5.';
+            container.closest('#phone-app-museum')?.querySelector('.dudu-v27-museum-help')?.before(fallback);
+          }
+        }
+      }
       container.textContent='Đang kiểm tra sổ kỷ vật...';
       const identity=currentUsername;
       const response=await DuduCollectiblesClient.mine();
@@ -5923,7 +5937,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/npc-portrait-v39.js?v=2"></script>
 <script src="js/phone-inbox-v33.js?v=43-2"></script>
 <script src="js/companion-ui-v43.js?v=1"></script>
-<script src="js/museum-memories-ui-v43.js?v=1"></script>
+<script src="js/museum-memories-ui-v43.js?v=2"></script>
 <script src="js/npc-diary-ui.js?v=1"></script>
 <script src="js/soul-link-ui-v43.js?v=2"></script>
 <script src="js/phone-wallpaper-v34.js?v=2"></script>

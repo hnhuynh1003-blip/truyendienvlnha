@@ -5,8 +5,10 @@
  'use strict';
  const rules=root.DuduMuseumMemoriesV43;
  const byId=id=>document.getElementById(id);
- const ready=()=>!!rules&&typeof IS_SANDBOX_MODE!=='undefined'&&
-   IS_SANDBOX_MODE&&typeof currentUsername==='string'&&!!currentUsername;
+ // The preview must remain visible to Sandbox guests. Guest mode is always
+ // EMPTY: no cached profile, NPCs, hidden account data or achievements leak.
+ const sandbox=()=>!!rules&&typeof IS_SANDBOX_MODE!=='undefined'&&IS_SANDBOX_MODE;
+ const signedIn=()=>sandbox()&&typeof currentUsername==='string'&&!!currentUsername;
  const node=(tag,cls,label)=>{
    const el=document.createElement(tag);
    if(cls)el.className=cls;
@@ -17,27 +19,29 @@
    const serverContainer=byId('museum-items');
    if(!serverContainer)return;
    const existing=byId('dudu-v43-memory-album');
-   if(!ready()){
+   if(!sandbox()){
      existing?.remove();
      return;
    }
+   const owner=signedIn()?currentUsername:'';
    const previousOwner=existing?.dataset.owner;
-   const previousSelection=previousOwner===currentUsername?
+   const previousSelection=owner&&previousOwner===owner?
      existing.querySelector('#dudu-v43-memory-source')?.value:null;
    existing?.remove();
-   const groups=rules.catalog({
-     companionState:userProfile.duduCompanionV43,
-     novels,storyStates:userProfile.storyStates
-   });
+   const groups=owner?
+     rules.catalog({companionState:userProfile?.duduCompanionV43,
+       novels,storyStates:userProfile?.storyStates}):
+     [rules.dudu(null)];
    const album=node('section','dudu-v43-memory-album');
    album.id='dudu-v43-memory-album';
-   album.dataset.owner=currentUsername;
+   album.dataset.owner=owner;
    album.setAttribute('aria-label','Album kỷ niệm tình bạn thử nghiệm');
    const header=node('div','dudu-v43-memory-head');
    header.append(node('strong','','✦ Album kỷ niệm'),
      node('span','dudu-v43-memory-tag','Sandbox · xem trước'));
    const description=node('p','dudu-v43-memory-description',
-     'Kỷ niệm từ các ngày gắn kết. Chỉ xem, không phải kỷ vật đã cấp.');
+     owner?'Kỷ niệm từ các ngày gắn kết. Chỉ xem, không phải kỷ vật đã cấp.':
+       'Chưa đăng nhập Sandbox. Đăng nhập để xem kỷ niệm của bạn; các mốc bên dưới chỉ là hình mẫu.');
    const chooser=node('select','dudu-v43-memory-select');
    chooser.id='dudu-v43-memory-source';
    chooser.setAttribute('aria-label','Xem kỷ niệm DUDU hoặc NPC đã liên kết');
@@ -65,9 +69,9 @@
    const progressFill=node('span','dudu-v43-memory-fill');progress.append(progressFill);
    const cards=node('div','dudu-v43-memory-grid');
    const note=node('p','dudu-v43-memory-note',
-     'Các dấu mốc này lưu trên thiết bị và không xác minh được quyền sở hữu kỷ vật. Bảo Tàng chính thức vẫn kiểm tra máy chủ ở mục bên dưới.');
+     'Kỷ niệm chỉ là tiến độ thử nghiệm, không phải kỷ vật đã xác minh. Bảo Tàng chính thức kiểm tra quyền sở hữu tại máy chủ.');
    function update(){
-     if(!ready()||album.dataset.owner!==currentUsername)return;
+     if(!sandbox()||album.dataset.owner!==(signedIn()?currentUsername:''))return;
      const entry=groups.find(g=>g.key===chooser.value)||groups[0];
      counter.textContent=entry.earned+'/'+entry.total+' mốc đã ghi nhận'+
        (entry.type==='npc'?' · '+entry.storyTitle:'');
@@ -90,7 +94,10 @@
    }
    chooser.addEventListener('change',update);
    album.append(header,description,chooser,counter,progress,cards,note);
-   serverContainer.before(album);
+   // Album comes FIRST, never under the locked, server-only Museum banner.
+   const museum=serverContainer.closest('#phone-app-museum');
+   const verified=museum?.querySelector('.dudu-v27-museum-help');
+   (verified||serverContainer).before(album);
    update();
  }
  root.DuduMuseumMemoriesUIV43=Object.freeze({render});
