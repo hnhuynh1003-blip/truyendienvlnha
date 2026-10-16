@@ -73,7 +73,7 @@ test('gallery controls belong to character editor and not story editor',()=>{
  assert.ok(gallery>start,'Gallery must appear after opening NPC editor');
  assert.ok(gallery>storyEnd,'Gallery must not appear in story modal');
  assert.match(html,/id="npc-r9-gender"/);
- assert.match(html,/76 ảnh theo mã ID: 60 nữ, 12 nam, 4 anime nét cao/);
+ assert.match(html,/72 ảnh anime premium \(60 nữ, 12 nam\) \+ 4 ảnh bổ sung\./);
  assert.doesNotMatch(html,/<option value="neutral">Trung tính<\/option>/);
  assert.match(html,/class="dudu-v39-portrait-picker"/);
  assert.match(html,/id="npc-r9-world"/);
