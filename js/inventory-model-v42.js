@@ -145,6 +145,8 @@
     if(!plain(record))return null;
     const item=catalog?.byId(idOf(record));
     if(!item||!['COMMON','REALM'].includes(item.scope)||
+       // Rank B+ and story-significant rare finds remain individual slots.
+       !['F','E','D','C'].includes(item.rank)||
        item.unique===true||item.discardable===false||
        record.unique===true||record.discardable===false||
        record.stackable===false)return null;
