@@ -2853,13 +2853,14 @@
       if (!novel) return;
       const matches = (novel.characters || []).filter(c =>
         Array.isArray(legacy[c.id]) && legacy[c.id].length && isNpcUnlocked(novel.id, c.id)
-        && (!chatHistories[chatKey(c.id, novel.id)] || !chatHistories[chatKey(c.id, novel.id)].length)
+        && (!chatHistories[legacyChatKey(c.id, novel.id)] ||
+          !chatHistories[legacyChatKey(c.id, novel.id)].length)
       );
       if (!matches.length) { alert('Không có hội thoại cũ phù hợp để nhập cho truyện đang chọn.'); return; }
       const names = matches.map(c => c.name).join(', ');
       if (!confirm('Lịch sử cũ không ghi rõ tài khoản và truyện. Chỉ tiếp tục nếu chắc chắn đây là chat của bạn trong ' + novel.title + '.\nNPC: ' + names + '\nNhập vào tài khoản này?')) return;
       matches.forEach(c => {
-        chatHistories[chatKey(c.id, novel.id)] = legacy[c.id].map(m => ({ role: m.role, text: m.text }));
+        chatHistories[legacyChatKey(c.id, novel.id)] = legacy[c.id].map(m => ({ role: m.role, text: m.text }));
       });
       saveChatHistories();
       renderChatDropdown();
@@ -3322,7 +3323,8 @@
       const more=document.getElementById('chat-v27-more');
       if(more)more.open=false;
       const charId = document.getElementById('chat-character-selector').value;
-      if (charId && confirm("Xóa lịch sử trò chuyện VÀ các ký ức tương tác đã lưu trên thiết bị với NPC này?")) {
+      if(!v56CurrentRole()||!charId)return;
+      if (charId && confirm("Xóa hội thoại và ký ức NPC của RIÊNG VAI đang chọn? Vai khác và lịch sử V55 không bị xóa.")) {
         const storyId=activeChatNovelId || (novels[selectedNovelIndex] || {}).id;
         const requestId=currentUsername+'::'+chatKey(charId,storyId);
         chatConversationGeneration.set(requestId,(chatConversationGeneration.get(requestId)||0)+1);
@@ -3910,7 +3912,7 @@
       const gain = rankBonus[item.rank] || 10;
 
       const npcProgress = getStoryProgress(giftStory).collectedCharacters[char.id];
-      npcProgress.affinity = Math.min(100, (npcProgress.affinity || 10) + gain);
+      npcProgress.affinity = Math.min(100, (npcProgress.affinity || 10) + gain); // legacy Sandbox shared inventory only
       saveCurrentAccount();
       // This is a local interaction record, NOT a verified game-economy fact.
       const giftRef = 'gift-' + Date.now() + '-' + Math.random().toString(36).slice(2,9);
@@ -3927,9 +3929,12 @@
         renderChatMessages(char.id);
 
         const giftPrompt = `Người chơi vừa tặng bạn món quà: "${item.name}" (Phẩm cấp: ${item.rank}, Mô tả: ${item.desc}). Hãy phản hồi ngắn gọn lại theo đúng tính cách của bạn.`;
-        const giftChatKey = chatKey(char.id, giftStory);
-        const res = await callGeminiAIChat(char, chatHistories[giftChatKey]);
-        if (currentUsername !== giftUser || activeChatNovelId !== giftStory) return;
+        const giftRole=v56CurrentRole(giftStory);
+        const giftChatKey = chatKey(char.id,giftStory,giftRole?.id);
+        if(!giftRole||!giftChatKey)return;
+        const res = await callGeminiAIChat(char,chatHistories[giftChatKey],giftRole);
+        if (currentUsername !== giftUser || activeChatNovelId !== giftStory ||
+          v56CurrentRole(giftStory)?.id!==giftRole.id) return;
         if (res.text) {
           chatHistories[giftChatKey].push({ role: 'model', text: res.text });
           saveChatHistories();
