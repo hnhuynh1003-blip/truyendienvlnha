@@ -38,7 +38,10 @@ test('retries, malformed actions and storage failures do not publish phantom wri
 test('Sandbox wiring has no reachable live Pilot panel and main guard precedes storage',()=>{
  const html=fs.readFileSync(require('node:path').join(__dirname,'../index.html'),'utf8');
  assert.match(html,/DuduSandboxDiscussionUI\?\.render/);
- assert.doesNotMatch(html,/DuduPilotLabUIV451\?\.render|DuduStoryPilotCommentsV452\?\.render/);
+ assert.match(html,/const IS_PILOT_STAGING_MODE = IS_SANDBOX_MODE && DUDU_QUERY\.get\('pilot'\) === '1'/);
+ assert.match(html,/DuduPilotLabUIV451\?\.render/);
+ assert.match(html,/DuduStoryPilotCommentsV452\?\.render/);
+ assert.match(html,/if\(IS_PILOT_STAGING_MODE\)/);
  const ui=fs.readFileSync(require('node:path').join(__dirname,'../js/sandbox-discussion-ui.js'),'utf8');
  assert.ok(ui.indexOf('if(!sandbox||!storyId)return false')<ui.indexOf('create(root.localStorage)'));
  assert.doesNotMatch(ui,/fetch\(|firebase|DuduPilotClient/);
