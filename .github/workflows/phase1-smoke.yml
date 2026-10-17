@@ -29,6 +29,13 @@ jobs:
           node --check cloudflare/src/index.mjs
           node --check cloudflare/src/auth.mjs
           node --check cloudflare/src/quota.mjs
+      - name: Parse V52 manual Firebase deploy script (never execute)
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $parseErrors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile('scripts/deploy-economy-v52.ps1', [ref]$tokens, [ref]$parseErrors) | Out-Null
+          if ($parseErrors.Count -gt 0) { $parseErrors | ForEach-Object { Write-Error $_.ToString() }; exit 1 }
       - name: Test and bundle Cloudflare Worker without deploying
         run: |
           npm install --prefix cloudflare --no-audit --no-fund
