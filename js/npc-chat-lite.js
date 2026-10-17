@@ -123,6 +123,44 @@
     return {text:line,source:'script',intent:kind,npc:name};
   }
 
+  // V53 Spark Personal: limited offline dialogue for a single reader.
+  // Explicitly scripted; not Gemini or an inference model. Never creates
+  // canonical story facts, gifts, EXP, Xu, affinity or relationship progress.
+  function offlineReply(text,char,history=[]) {
+    const input=normalized(text).slice(0,400);
+    const label=String(char?.name||'Nhân vật').slice(0,70);
+    const role=String(char?.role||'').trim().slice(0,100);
+    const status=String(char?.status||'').trim().slice(0,120);
+    const note=String(char?.note||'').trim().slice(0,180);
+    const count=(Array.isArray(history)?history:[]).filter(m=>m?.role==='user').length;
+    const style=personaStyle(char);
+    let answer='';
+    if(/\\b(ten|ten gi|la ai|ban la ai)\\b/.test(input)) {
+      answer='Tôi là '+label+(role?', '+role.toLowerCase():'')+'. Bạn muốn biết thêm điều gì về tôi?';
+    } else if(/\\b(tinh cach|so thich|thich gi|con nguoi)\\b/.test(input)) {
+      answer=note?'Theo những gì được viết về tôi: '+note+'.':'Tính cách của tôi còn tùy vào câu chuyện được tác giả kể. Bạn muốn hỏi điều gì cụ thể?';
+    } else if(/\\b(tinh trang|hien tai|dang o dau|o dau|the nao)\\b/.test(input)) {
+      answer=status?'Tình trạng hiện tại của tôi được ghi là: '+status+'.':'Tác giả chưa xác định rõ tình trạng hiện tại của tôi.';
+    } else if(/\\b(buon|co don|lo lang|so hai|met moi|kho khan)\\b/.test(input)) {
+      answer=style==='reserved'?'Tôi nghe. Bạn có muốn kể thêm chuyện vừa xảy ra không?':
+        'Tôi đang nghe đây. Bạn muốn kể điều gì khiến bạn thấy như vậy?';
+    } else if(/\\b(truyen|chuong|the gioi|cot truyen|bi mat)\\b/.test(input)) {
+      answer='Chúng ta chỉ có thể dựa vào những chương đã được kể. Tôi không muốn đoán trước bí mật của tác giả. Bạn muốn nói về tình tiết nào?';
+    } else if(/\\b(hom nay|ngay mai|ngay hom qua)\\b/.test(input)) {
+      answer='Có điều gì trong hôm nay bạn muốn chia sẻ với tôi không?';
+    } else if(/[?？]$/.test(String(text).trim())) {
+      answer='Câu hỏi thú vị đấy. Tôi chưa có đủ dữ kiện trong truyện để trả lời chắc chắn. Bạn có thể nói rõ hơn không?';
+    } else {
+      const options=style==='reserved'
+        ? ['Ừ, tôi đang nghe. Kể tiếp đi.','Tôi hiểu ý bạn. Rồi chuyện gì xảy ra?','Tôi sẽ không vội kết luận. Bạn nói tiếp đi.']
+        : style==='cheerful'
+          ? ['Nghe thú vị quá! Kể tiếp cho tôi đi!','Ồ, rồi sau đó thì sao?','Tôi tò mò rồi đó, bạn kể thêm nhé!']
+          : ['Tôi đang lắng nghe. Bạn có thể kể thêm không?','Điều đó khiến bạn nghĩ gì?','Tôi muốn nghe thêm điều bạn vừa kể.'];
+      answer=options[count%options.length];
+    }
+    return {text:answer,source:'offline-script',npc:label};
+  }
+
   function boundedInstruction(persona,max=1200) {
     if (typeof persona!=='string')return '';
     return persona.length>max ? persona.slice(0,max).trimEnd()+'\n[Phần ghi chú còn lại chưa được nạp trong lượt này.]' : persona;
@@ -138,5 +176,5 @@
       return {role:m.role,text:text.length>max?'…'+text.slice(-max):text};
     });
   }
-  return Object.freeze({intent,script,boundedInstruction,boundedContext});
+  return Object.freeze({intent,script,offlineReply,boundedInstruction,boundedContext});
 });
