@@ -2738,7 +2738,7 @@ async function main() {
       }
     });
     assert.deepEqual(economyV43,{
-      common:12,marketFullWidth:true,hasLegacySss:false,realmCount:5,realmSafe:true,
+      common:12,marketFullWidth:true,hasLegacySss:false,realmCount:20,realmSafe:true,
       noRealmPurchases:true,duduCount:15,noDuduPurchases:true,
       success:true,moneyAfter:132,ownedId:'common-biscuit',ownedOrigin:'SHOP',
       buyAgain:true,buyThird:true,blocked:false,noDuplicate:true,
