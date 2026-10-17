@@ -46,7 +46,7 @@ test('V45.1 never initializes a Firebase session or network on module load',()=>
  assert.equal(x.apps.length,1);
  assert.equal(x.requests.length,0);
  assert.equal(x.instance.session().signed,false);
- assert.equal(x.apps.length,2,'secondary Auth app only, not default profile app');
+ assert.equal(x.apps.length,1,'opening Sandbox Pilot UI cannot initialize Auth');
  assert.equal(x.instance.session().approved,false);
  assert.equal(x.requests.length,0);
 });
