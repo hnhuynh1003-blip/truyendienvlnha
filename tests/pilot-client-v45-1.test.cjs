@@ -27,6 +27,9 @@ function fixture(){
  },auth:authFn};
  const fetch=async(url,opts)=>{
   requests.push({url,opts});
+  if(url.endsWith('/v1/status')){
+   return {ok:true,status:200,json:async()=>({service:'dudu-ai',enabled:false})};
+  }
   if(url.endsWith('/v1/pilot/status')){
    return {ok:true,status:200,json:async()=>({
     ok:true,role:'READER_A',preflightOnly:true,storageIsolated:true,
@@ -55,6 +58,23 @@ test('V45.1 never initializes a Firebase session or network on module load',()=>
  assert.equal(x.instance.session().signed,false);
  assert.equal(x.apps.length,1,'opening Sandbox Pilot UI cannot initialize Auth');
  assert.equal(x.instance.session().approved,false);
+ assert.equal(x.requests.length,0);
+});
+test('V47.2 probe is read-only, works before Firebase login and does not initialize Auth',async()=>{
+ const x=fixture();
+ const result=await x.instance.probe();
+ assert.deepEqual(result,{ok:true,service:'dudu-ai',aiEnabled:false});
+ assert.equal(x.apps.length,1);
+ assert.equal(x.instance.session().signed,false);
+ assert.equal(x.requests.length,1);
+ assert.ok(x.requests[0].url.endsWith('/v1/status'));
+ assert.equal(x.requests[0].opts.headers,undefined);
+ assert.equal(x.requests[0].opts.method,'GET');
+});
+test('V47.2 token refresh failure is distinct from Worker network failure',async()=>{
+ const x=fixture();await x.instance.login();
+ x.auth.currentUser={uid:'reader_a_123',getIdToken:async()=>{throw Error('token unavailable')}};
+ assert.equal((await x.instance.status()).code,'firebase-token-unavailable');
  assert.equal(x.requests.length,0);
 });
 test('V45.1 uses a separate named Firebase app with session-only persistence',async()=>{
@@ -142,8 +162,8 @@ test('Live Pilot panel is disconnected from the fictional Sandbox laboratory',()
  const html=file('index.html');
  const ui=file('js/pilot-lab-ui-v45-1.js');
  assert.match(html,/id="pilot-v451-content"/);
- assert.match(html,/js\/pilot-client-v45-1\.js\?v=45-2/);
- assert.match(html,/js\/pilot-lab-ui-v45-1\.js\?v=45-2/);
+ assert.match(html,/js\/pilot-client-v45-1\.js\?v=47-2/);
+ assert.match(html,/js\/pilot-lab-ui-v45-1\.js\?v=47-2/);
  assert.match(html,/css\/pilot-v45-1\.css\?v=45-1-r2/);
  assert.match(html,/DuduPilotLabUIV451\?\.render/);
  assert.match(html,/IS_PILOT_STAGING_MODE/);
