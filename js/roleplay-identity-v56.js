@@ -14,7 +14,9 @@
  const PRONOUNS=Object.freeze({male:'Nam',female:'Nữ',neutral:'Không cố định'});
  const MAX_PROFILES=6;
  const AVATAR_IDS=Object.freeze(['account','initials','anime-moon-blue',
-   'anime-moon-violet','anime-peach-court','anime-adventurer']);
+   'anime-moon-violet','anime-peach-court','anime-adventurer',
+   ...Array.from({length:60},(_,i)=>'portrait-f-'+String(i+1).padStart(2,'0')),
+   ...Array.from({length:12},(_,i)=>'portrait-m-'+String(i+1).padStart(2,'0'))]);
  const clean=(v,n)=>String(typeof v==='string'?v:'').replace(/[\u0000-\u001f\u007f]/g,' ').trim().replace(/\s+/g,' ').slice(0,n);
  const validId=s=>typeof s==='string'&&/^[a-z0-9_-]{1,64}$/.test(s);
  const validScope=s=>typeof s==='string'&&s.length>0&&s.length<=160;
