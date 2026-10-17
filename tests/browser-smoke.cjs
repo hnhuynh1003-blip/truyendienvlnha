@@ -3252,6 +3252,9 @@ async function main() {
         const pending=!!userProfile.functionalV438.pending;
         const beforeBuy=userProfile.currency;
         openPhoneApp('shop');
+        // Market remembers the Tools tab between visits; switch explicitly.
+        [...document.querySelectorAll('.dudu-v43-market-tab')]
+          .find(el=>el.textContent==='Mua sắm')?.click();
         const priceShown=[...document.querySelectorAll('.dudu-v43-market-item')]
          .some(el=>el.dataset.itemId==='common-signal-device'&&
             el.textContent.includes('36 Xu'));
