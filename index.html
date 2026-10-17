@@ -748,6 +748,7 @@
 </style>
   <link rel="stylesheet" href="css/phone-compact-v50.css?v=50-1">
   <link rel="stylesheet" href="css/economy-live-v52.css?v=52-1">
+  <style>body.dudu-spark-personal-mode #dudu-spark-chat-tip{display:block !important;}</style>
 </head>
 <body>
 
@@ -1209,6 +1210,7 @@
           </div>
         </div>
         <div id="chat-messages-container" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 8px; background: rgba(10, 14, 20, 0.6); border-radius: 8px; border: 1px solid #1f2937; margin-bottom: 6px;"></div>
+        <div id="dudu-spark-chat-tip" style="display:none;font-size:9px;color:#d2dee9;text-align:center;margin:0 0 4px" aria-label="Chế độ trò chuyện kịch bản">💬 Trò chuyện kịch bản miễn phí · Không dùng AI trực tuyến · Lưu trên thiết bị</div>
         <div id="chat-connection-status" role="status" aria-live="polite" style="display:none; font-size:10px; color:var(--gold); padding:3px 5px; line-height:1.35;">
           <span id="chat-connection-message"></span>
           <button id="chat-retry-btn" class="btn" style="display:none; font-size:10px; padding:2px 6px; margin-left:4px;" onclick="retryLastNpcReply()">Thử lại</button>
@@ -1897,6 +1899,9 @@
     // ?sandbox=1: client-only testing, NEVER writes to production Firestore.
     const DUDU_QUERY = new URLSearchParams(window.location.search);
     const IS_SANDBOX_MODE = DUDU_QUERY.get('sandbox') === '1';
+    // V53: single-reader Spark mode; no Firebase Functions or paid AI required.
+    // Local NPC scripts never change wallet, items, quests or relationship rewards.
+    const DUDU_SPARK_PERSONAL_MODE = !IS_SANDBOX_MODE;
     // V47 requires both sandbox=1 and pilot=1; neither default mode can access Pilot.
     const IS_PILOT_STAGING_MODE = IS_SANDBOX_MODE && DUDU_QUERY.get('pilot') === '1';
     DuduAI.init(IS_SANDBOX_MODE);
@@ -1904,6 +1909,7 @@
     // V49.5: keep sandbox data isolated, but use the same phone layout in production.
     document.body.classList.add('dudu-phone-v11');
     document.body.classList.add(IS_SANDBOX_MODE ? 'dudu-sandbox-mode' : 'dudu-live-mode');
+    if(DUDU_SPARK_PERSONAL_MODE)document.body.classList.add('dudu-spark-personal-mode');
     if (IS_SANDBOX_MODE) {
       const banner = document.createElement('div');
       banner.textContent = IS_PILOT_STAGING_MODE ?
@@ -3119,6 +3125,17 @@
         renderChatMessages(charId);
         return;
       }
+      if(DUDU_SPARK_PERSONAL_MODE) {
+        // Personal Spark is deliberately offline: no Cloudflare/Gemini API calls,
+        // no reward mutation, but per-UID + story + NPC chat history is preserved.
+        const local = DuduNpcLite.offlineReply(text,dialogueNpc,previousMessages);
+        if(local?.text)chatHistories[requestChatKey].push({
+          role:'model',text:local.text,source:'offline-script'
+        });
+        saveChatHistories();
+        renderChatMessages(charId);
+        return;
+      }
       renderChatMessages(charId);
       saveChatHistories();
       await deliverNpcReply(char,storyId,requestUser,requestChatKey);
@@ -4084,7 +4101,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
         window.DuduInventoryHubV439?.reset();
         window.DuduWorldCollectionV441?.reset();
         renderInventory();
-        if(!IS_SANDBOX_MODE)window.DuduEconomyLiveV52?.openInventory();
+        if(!IS_SANDBOX_MODE&&!DUDU_SPARK_PERSONAL_MODE)window.DuduEconomyLiveV52?.openInventory();
         startCooldownTicker();
       } else if (appName === 'author-mail') {
         renderAuthorMailV443();
@@ -4107,10 +4124,10 @@ document.getElementById('phone-home-screen').style.display = 'none';
         window.DuduFunUIV43?.render();
       } else if (appName === 'quests') {
         renderQuests();
-        if(!IS_SANDBOX_MODE)window.DuduEconomyLiveV52?.openQuests();
+        if(!IS_SANDBOX_MODE&&!DUDU_SPARK_PERSONAL_MODE)window.DuduEconomyLiveV52?.openQuests();
       } else if (appName === 'shop') {
         renderShop();
-        if(!IS_SANDBOX_MODE)window.DuduEconomyLiveV52?.openShop();
+        if(!IS_SANDBOX_MODE&&!DUDU_SPARK_PERSONAL_MODE)window.DuduEconomyLiveV52?.openShop();
       } else if (appName === 'settings') {
         updateActiveModelInfo();
         syncPhoneDisplayOptionsV27();
