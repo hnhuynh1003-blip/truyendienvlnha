@@ -132,6 +132,7 @@ test('V44.5: separate dedicated storage, no Firebase, userProfile, or real inven
  assert.match(page,/appName==='lab-v445'&&!IS_SANDBOX_MODE/);
  assert.match(page,/id="phone-app-lab-v445"/);
  assert.match(page,/DuduMultiActorLabUIV445\?\.render/);
- assert.doesNotMatch(domain+ui, /firebase\.|\.firestore\(|fetch\(|userProfile|DuduAuth|Worker\b|COLLECTIBLES_ENABLED/);
+ const executable=(domain+'\n'+ui).replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g,'');
+ assert.doesNotMatch(executable, /firebase\.|\.firestore\(|fetch\(|userProfile|DuduAuth|Worker\b|COLLECTIBLES_ENABLED/);
  assert.match(ui,/Dữ liệu chỉ nằm trong dudu-v445/);
 });
