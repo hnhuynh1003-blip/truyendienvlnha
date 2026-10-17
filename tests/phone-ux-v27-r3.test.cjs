@@ -9,11 +9,11 @@ const slice=(start,end)=>{
  assert.ok(i>=0&&j>i,start);
  return html.slice(i,j);
 };
-test('V27 R3 has a Sandbox-only dense inventory grid without changing public row behavior',()=>{
+test('V49.7 keeps a read-only compact grid in live mode without permitting destructive actions',()=>{
  assert.match(html,/href="css\/phone-ux-v27-r3\.css"/);
  const render=slice('    function renderInventory() {','    function discardItem(idx) {');
- assert.match(render,/container\.classList\.toggle\('dudu-v27-inventory-grid',!!IS_SANDBOX_MODE\)/);
- assert.match(render,/if\(IS_SANDBOX_MODE\)\{/);
+ assert.match(render,/container\.classList\.add\('dudu-v27-inventory-grid'\)/);
+ assert.match(render,/\/\/ Each owned instance gets its own slot/);
  assert.match(render,/document\.createElement\('button'\)/);
  assert.match(render,/dudu-v27-inventory-slot/);
  assert.match(render,/aria-controls','inventory-v12-detail/);
@@ -29,10 +29,11 @@ test('V27 R3 has a Sandbox-only dense inventory grid without changing public row
 test('V27 R3 no inline Vứt on every tile; inspector handles protected/unique only after confirmation',()=>{
  const render=slice('    function renderInventory() {','    function discardItem(idx) {');
  const inspect=slice('    function renderInventoryDetail(){','    function renderInventory() {');
- assert.match(render,/if\(IS_SANDBOX_MODE\)\{/);
+ assert.match(render,/\/\/ Each owned instance gets its own slot/);
  assert.match(render,/slot\.append\(artwork,badge,name\)/);
  assert.doesNotMatch(render,/details\.textContent='Chi tiết'/);
- assert.match(inspect,/if\(!protectedItem\)\{/);
+ assert.match(inspect,/if\(IS_SANDBOX_MODE&&!protectedItem\)\{/);
+ assert.match(inspect,/Giao dịch, tiêu hao và chuyển quà cần xác thực máy chủ/);
  assert.match(inspect,/Vứt vật phẩm/);
  assert.match(inspect,/if\(!confirm\(/);
  assert.match(inspect,/userProfile\.inventory\.indexOf\(item\)/);
