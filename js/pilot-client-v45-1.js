@@ -70,6 +70,23 @@
     return {ok:!!service.currentUser,session:session()};
    }catch(e){return reject(e?.code||'login-failed')}
   }
+  // V47: Firebase Authentication email/password; credentials are handed directly
+  // to Firebase SDK and never cached in localStorage, logs or Worker requests.
+  async function loginEmail(email,password){
+   if(typeof email!=='string'||typeof password!=='string'||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())||
+      password.length<6||password.length>1024)return reject('invalid-credentials');
+   const fb=sdk();
+   if(!fb)return reject('firebase-unavailable');
+   clear();
+   try{
+    const service=getAuth();
+    await service.setPersistence(fb.auth.Auth.Persistence.SESSION);
+    await service.signInWithEmailAndPassword(email.trim(),password);
+    clear();
+    return {ok:!!service.currentUser,session:session()};
+   }catch(e){return reject(e?.code||'login-failed')}
+  }
   async function logout(){
    clear();
    try{await getAuth().signOut();return {ok:true}}
@@ -183,7 +200,7 @@
    return request('/v1/comments/admin/moderate',{method:'POST',
     body:{commentId,hidden}});
   }
-  return Object.freeze({APP_NAME,ORIGIN,session,login,logout,status,
+  return Object.freeze({APP_NAME,ORIGIN,session,login,loginEmail,logout,status,
    list,post,report,inbox,markInboxRead,register,reports,moderate});
  }
  // One secondary Firebase Auth session shared by the phone QA and story UI.
