@@ -1,0 +1,41 @@
+const {test}=require('node:test');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const source=p=>fs.readFileSync(path.join(__dirname,'..',p),'utf8');
+test('V49 real Firebase import is separate from the local Sandbox path',()=>{
+ const html=source('index.html');
+ assert.match(html,/const IS_SANDBOX_MODE = DUDU_QUERY\.get\('sandbox'\) === '1'/);
+ assert.match(html,/if\(!IS_SANDBOX_MODE\)refreshEpubCloudBooksV49\(\)/);
+ assert.match(html,/DuduEpubProductionV49\.publicBooks\(db\)/);
+ assert.match(html,/window\.DuduEpubProductionV49/);
+ assert.match(html,/cloudApi:window\.DuduEpubProductionV49/);
+ assert.match(html,/firestore:\(\)=>db/);
+ assert.match(html,/js\/epub-production-v49\.js\?v=49-1/);
+ assert.match(html,/js\/epub-import-v48\.js\?v=49-1/);
+ const ui=source('js/epub-import-v48.js');
+ assert.match(ui,/Lưu truyện và các chương lên Firebase/);
+ assert.match(ui,/Xác nhận xuất bản cho độc giả/);
+ assert.match(ui,/Hãy chọn EPUB và chờ tách chương thành công/);
+ assert.match(ui,/cloudBtn\.textContent=.*Tuỳ chọn/);
+ assert.match(ui,/sandboxBtn\.hidden=!options\.sandbox/);
+ assert.match(ui,/publishBtn\.hidden=!!options\.sandbox/);
+});
+test('V49 public book content is read lazily, not written into legacy library',()=>{
+ const html=source('index.html');
+ assert.match(html,/const legacyLibrary=IS_SANDBOX_MODE\?novels:novels\.filter\(n=>!n\._cloudV49\)/);
+ assert.match(html,/novels: legacyLibrary/);
+ assert.match(html,/novels=novels\.filter\(n=>!n\._cloudV49\)\.concat\(epubPublishedBooksV49\)/);
+ assert.match(html,/DuduEpubProductionV49\.readChapter\(db,bookId,chapterId\)/);
+ assert.match(html,/novels\[selectedNovelIndex\]\?\._cloudV49/);
+ assert.match(html,/JSON\.stringify\(data\.novels\)/);
+});
+test('Firestore rules snippet explicitly protects drafts and does not replace deployed rules',()=>{
+ const rules=source('security/firestore-epub-v49.rules.review');
+ assert.match(rules,/NOT FOR BLIND DEPLOYMENT/);
+ assert.match(rules,/request\.auth\.token\.admin == true/);
+ assert.match(rules,/resource\.data\.status == 'published'/);
+ assert.match(rules,/request\.resource\.data\.status == 'importing'/);
+ assert.match(rules,/allow delete: if false/);
+ assert.doesNotMatch(source('firebase.json'),/"firestore":/);
+});
