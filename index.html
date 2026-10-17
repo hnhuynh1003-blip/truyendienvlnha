@@ -102,7 +102,8 @@
   <script src="js/story-comments-pilot-v45-2.js?v=45-2"></script>
   <script src="js/sandbox-discussion.js?v=46-1"></script>
   <script src="js/sandbox-discussion-ui.js?v=46-1"></script>
-  <script src="js/epub-import-v48.js?v=48-1"></script>
+  <script src="js/epub-import-v48.js?v=49-1"></script>
+  <script src="js/epub-production-v49.js?v=49-1"></script>
   <script src="js/npc-portrait-library-v1.js?v=40-1"></script>
   <script src="js/npc-anime-candidates-v14.js"></script>
   <script src="js/player-avatar-v16.js"></script>
@@ -1946,6 +1947,24 @@
     ];
 
     let novels = JSON.parse(localStorage.getItem(IS_SANDBOX_MODE ? 'dudu-sandbox-library' : 'my_novels_library_db')) || initialNovels;
+    // V49 production EPUBs live in separate Firestore story/chapter documents.
+    let epubPublishedBooksV49 = [];
+    async function refreshEpubCloudBooksV49(){
+      if(IS_SANDBOX_MODE||!window.DuduEpubProductionV49)return;
+      try{
+        epubPublishedBooksV49=await DuduEpubProductionV49.publicBooks(db);
+        mergeEpubCloudBooksV49();
+        renderHome();
+      }catch(err){console.warn('V49: không tải được truyện EPUB',err?.code||err?.message)}
+    }
+    function mergeEpubCloudBooksV49(){
+      if(IS_SANDBOX_MODE)return;
+      const selectedId=novels[selectedNovelIndex]?.id;
+      novels=novels.filter(n=>!n._cloudV49).concat(epubPublishedBooksV49);
+      const selected=novels.findIndex(n=>n.id===selectedId);
+      if(selected>=0)selectedNovelIndex=selected;
+      else selectedNovelIndex=Math.min(Math.max(selectedNovelIndex,0),Math.max(novels.length-1,0));
+    }
     let currentUsername = IS_SANDBOX_MODE ? (localStorage.getItem('dudu-sandbox-current-user') || '') : '';
     
     let userProfile = {
@@ -4894,7 +4913,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
       if(userProfile?.storyStates)novels.forEach(n=>{
         if(userProfile.storyStates[n.id])DuduNpcLifecycleV43.updateLinked(n,userProfile.storyStates[n.id]);
       });
-      localStorage.setItem(IS_SANDBOX_MODE ? 'dudu-sandbox-library' : 'my_novels_library_db', JSON.stringify(novels));
+      const legacyLibrary=IS_SANDBOX_MODE?novels:novels.filter(n=>!n._cloudV49);
+      localStorage.setItem(IS_SANDBOX_MODE ? 'dudu-sandbox-library' : 'my_novels_library_db', JSON.stringify(legacyLibrary));
       saveCurrentAccount();
       if (IS_SANDBOX_MODE) {
         const indicator = document.getElementById('cloud-indicator');
@@ -4906,7 +4926,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       if (indicator) indicator.textContent = "☁️ Đang lưu...";
 
       docRef.set({
-        novels: novels,
+        novels: legacyLibrary,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true })
       .then(() => {
@@ -4923,6 +4943,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
         const data = doc.data();
         if (data.novels && Array.isArray(data.novels) && data.novels.length > 0) {
           novels = data.novels;
+          mergeEpubCloudBooksV49();
           novels.forEach(n => {
             if (!n.characters) n.characters = [];
             // Missing timestamps are unknown, never backfilled with a fixed date.
@@ -6299,6 +6320,9 @@ document.getElementById('phone-home-screen').style.display = 'none';
         author:userProfile.name||'Tác giả',
         sandbox:IS_SANDBOX_MODE,
         canEdit:()=>canEditStories(),
+        cloudApi:window.DuduEpubProductionV49,
+        firestore:()=>db,
+        onPublished:()=>refreshEpubCloudBooksV49(),
         saveDB:()=>saveDB(),
         onSaved:()=>{renderHome();updatePhoneUI()},
         uid:()=>DuduAuth.uid(),
@@ -6606,6 +6630,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 
     loadLocalAccountProfile();
     renderHome();
+    if(!IS_SANDBOX_MODE)refreshEpubCloudBooksV49();
     startCooldownTicker();
   </script>
 <script src="js/npc-portrait-v39.js?v=2"></script>
