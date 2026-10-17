@@ -186,6 +186,10 @@ async function handleGifts(req,env,path,origin){
   pilot.status,origin,env);
  if(!env.DUDU_GIFT_LEDGER)
   return error('gift-storage-unavailable','Sổ giao dịch chưa sẵn sàng.',503,origin,env);
+ // A blocked settlement must not parse or mutate any request payload.
+ if((path==='/v1/gifts/send'||path==='/v1/gifts/decide')&&
+   (env.GIFT_SETTLEMENT_ENABLED!=='true'||env.PILOT_SETTLEMENT_ENABLED!=='true'))
+  return error('gift-settlement-disabled','Chưa mở ký gửi và chuyển sở hữu.',503,origin,env);
  let body=null;
  if(req.method==='POST'){
   if(!req.headers.get('Content-Type')?.toLowerCase().startsWith('application/json'))
@@ -193,9 +197,6 @@ async function handleGifts(req,env,path,origin){
   body=await limitedJson(req);
   if(!body)return error('invalid-request','Yêu cầu không hợp lệ.',400,origin,env);
  }
- if((path==='/v1/gifts/send'||path==='/v1/gifts/decide')&&
-   (env.GIFT_SETTLEMENT_ENABLED!=='true'||env.PILOT_SETTLEMENT_ENABLED!=='true'))
-  return error('gift-settlement-disabled','Chưa mở ký gửi và chuyển sở hữu.',503,origin,env);
  try{
   const store=env.DUDU_GIFT_LEDGER.getByName(pilot.giftStore);
   let out;
