@@ -106,6 +106,15 @@
   if(!quest||quest.claimed||!Number.isSafeInteger(quest.target)||quest.target<=0||
     !Number.isSafeInteger(quest.current)||quest.current<quest.target)return reject('not-ready');
   const canonical=DEFINITION_MAP.get(id);
+  // V44.8: the receipt survives a partially restored claimed flag.
+  // Day/event quests may award again next day, weekly quests next week;
+  // story/NPC/main quests are one-time achievements.
+  const cadence=canonical?.type||quest.type;
+  const alreadyAwarded=s.history.some(row=>row.id===id&&(
+   cadence==='DAILY'||cadence==='EVENT'?row.day===day:
+   cadence==='WEEKLY'?weekStart(row.day)===weekStart(day):true
+  ));
+  if(alreadyAwarded)return reject('duplicate-reward');
   const newCoin=canonical?canonical.rewardCoin:quest.rewardCoin;
   const newExp=canonical?canonical.rewardExp:quest.rewardExp;
   if(!Number.isSafeInteger(newCoin)||newCoin<0||newCoin>250||
