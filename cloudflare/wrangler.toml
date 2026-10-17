@@ -6,9 +6,7 @@ workers_dev = true
 [vars]
 PROJECT_ID = "truyendienvl"
 ALLOWED_ORIGIN = "https://hnhuynh1003-blip.github.io"
-# V54: personal NPC AI requested. Deploy only after GEMINI_API_KEY Secret is set;
-# Firebase Spark does not run or bill this Worker. DO quotas stay enforced.
-AI_ENABLED = "true"
+AI_ENABLED = "false"
 COLLECTIBLES_ENABLED = "false"
 COLLECTIBLE_SELF_CLAIM_ENABLED = "false"
 PLAYER_AVATAR_SYNC_ENABLED = "false"
