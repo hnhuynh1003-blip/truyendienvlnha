@@ -5,9 +5,10 @@ const path=require('node:path');
 const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
 const css=fs.readFileSync(path.join(__dirname,'../css/phone-ui-v11.css'),'utf8');
 
-test('V11 sandbox stylesheet and toggles remain isolated from production',()=>{
-  assert.match(html,/rel="stylesheet" href="css\/phone-ui-v11\.css"/);
-  assert.match(html,/if \(IS_SANDBOX_MODE\) \{\s*document\.body\.classList\.add\('dudu-phone-v11'\)/);
+test('V49.8 phone visuals apply to live Firebase accounts while sandbox remains separate',()=>{
+  assert.match(html,/rel="stylesheet" href="css\/phone-ui-v11\.css(?:\?v=[\w-]+)?"/);
+  assert.match(html,/document\.body\.classList\.add\('dudu-phone-v11'\)/);
+  assert.match(html,/document\.body\.classList\.add\(IS_SANDBOX_MODE \? 'dudu-sandbox-mode' : 'dudu-live-mode'\)/);
   assert.match(html,/document\.body\.classList\.toggle\('dudu-phone-open', opened\)/);
   assert.match(css,/body\.dudu-phone-v11 #cyber-phone/);
   assert.match(html,/role="dialog" aria-label="Cyber Phone DUDU"/);
