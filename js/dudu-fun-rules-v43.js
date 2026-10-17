@@ -53,6 +53,10 @@
    const phase=type===TYPE_BOX?
      Math.max(0,Math.min(3,Number.isInteger(value.step)?value.step:0)):
      cells.length;
+   // V44.9: a saved READY or CLAIMED state must contain proof that the
+   // minigame's required three inputs were actually completed.
+   if(value.status!=='playing'&&phase!==3)return null;
+   if(value.status==='playing'&&phase===3)return null;
    return {type,day,status:value.status,seed:value.seed,
      theme:BOX_THEMES.includes(value.theme)?value.theme:'star',
      step:type===TYPE_BOX?phase:0,cells:type===TYPE_TICKET?cells:[],
