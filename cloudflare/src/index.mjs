@@ -510,13 +510,23 @@ async function gemini(payload,env){
   }
   if(!response.ok){
     console.warn('Gemini upstream HTTP status:',response.status);
-    const limit=[429,503].includes(response.status);
-    const unavailable=[400,403,404].includes(response.status);
-    return {error:{code:limit?'ai-busy':unavailable?'model-unavailable':'upstream-error',
-      message:limit?'Model đã hết hạn mức hoặc Gemini đang bận.':
-        unavailable?'Model này chưa được API key hỗ trợ hoặc không sẵn sàng. Hãy chọn model khác.':
-        'Không thể nhận phản hồi từ AI.'},
-      status:limit?429:unavailable?409:502};
+    // V56.4: never misreport API-key authorization or malformed payload as missing model.
+    // Do not expose upstream raw details, key, project identity, or prompts.
+    const errorKind=response.status===400?'invalid-upstream-request':
+      response.status===401||response.status===403?'gemini-access-denied':
+      response.status===404?'model-unavailable':
+      response.status===429?'gemini-rate-limit':
+      response.status===503?'gemini-overloaded':'upstream-error';
+    const details={
+      'invalid-upstream-request':'Yêu cầu gửi đến Gemini không hợp lệ (HTTP 400). Cần kiểm tra cấu trúc prompt và model.',
+      'gemini-access-denied':'Gemini từ chối API key hoặc quyền truy cập project (HTTP '+response.status+'). Kiểm tra khóa API, quyền sử dụng và billing.',
+      'model-unavailable':'Model '+model+' không có trên API của project hoặc không hỗ trợ generateContent (HTTP 404).',
+      'gemini-rate-limit':'Đã chạm hạn mức Gemini của project/model (HTTP 429).',
+      'gemini-overloaded':'Máy chủ Gemini đang quá tải (HTTP 503).',
+      'upstream-error':'Không thể nhận phản hồi từ Gemini (HTTP '+response.status+').'
+    };
+    return {error:{code:errorKind,message:details[errorKind]},
+      status:response.status===429?429:response.status===503?502:response.status===404?409:502};
   }
   let data;
   try{data=await response.json();}catch(_){
