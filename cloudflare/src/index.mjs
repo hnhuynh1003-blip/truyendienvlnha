@@ -15,8 +15,8 @@ import {IMAGE_LIMITS} from './avatar-image-policy.mjs';
 import {putQuarantinedPhoto,deleteQuarantinedPhoto} from './avatar-r2-quarantine.mjs';
 import {normalizedPrivateDraft,normalizedDraftApproval,parseScopedIds,cleanId} from './collectible-rules.mjs';
 
-import {NPC_MODELS,DEFAULT_MODEL} from './npc-models.mjs';
-const MODEL=DEFAULT_MODEL;
+import {NPC_MODELS} from './npc-models.mjs';
+const MODEL='gemini-3.5-flash-lite'; // same ID as server model registry; kept literal for isolated route tests
 const MAX_BODY_BYTES=18000;
 
 function allowOrigin(origin,env) {
