@@ -1,0 +1,14 @@
+/* V48 EPUB intake is author-only and scoped to its modal. */
+#epub-import-modal .modal-card{width:min(680px,94vw);max-width:94vw;max-height:86vh;overflow-y:auto}
+#epub-import-content{display:grid;gap:11px;font-size:12px;line-height:1.5}
+#epub-import-content>p{margin:0;color:var(--text-dim,#cbd5e1)}
+#epub-import-content>input,#epub-import-content>select{width:100%;min-width:0;max-width:100%;padding:9px;border-radius:8px;background:#141b24;color:#ecf7ff;border:1px solid #485a70;box-sizing:border-box}
+#epub-import-content input[type=file]{font-size:12px}
+#epub-import-content input:focus-visible,#epub-import-content select:focus-visible{outline:2px solid #48d5f0}
+#epub-import-content .dudu-epub-preview{display:grid;gap:5px;max-height:32vh;overflow-y:auto;border:1px solid #405469;border-radius:9px;padding:6px;background:rgba(10,20,35,.5)}
+#epub-import-content .dudu-epub-item{padding:6px 8px;border-bottom:1px solid rgba(185,210,231,.17);overflow-wrap:anywhere}
+#epub-import-content .dudu-epub-status{min-height:26px;color:#9ee8f3;overflow-wrap:anywhere;white-space:pre-wrap}
+#epub-import-content .dudu-epub-actions{display:flex;gap:8px;flex-wrap:wrap}
+#epub-import-content .dudu-epub-actions .btn{flex:1 1 145px;white-space:normal;min-height:42px}
+#epub-import-content .dudu-epub-actions .btn[hidden]{display:none!important}
+@media(max-width:420px){#epub-import-modal .modal-card{padding:12px}#epub-import-content .dudu-epub-actions{display:grid}}
