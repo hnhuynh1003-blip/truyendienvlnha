@@ -2764,7 +2764,7 @@
           'Hồ sơ nhân vật:',
           '- Vai trò: ' + (char.role || 'Chưa rõ'),
           '- Trạng thái: ' + (char.status || 'Chưa rõ'),
-          '- Thiết lập tính cách và ký ức: ' + DuduNpcLite.boundedInstruction(char.note || 'Không có'),
+          '- Thiết lập tính cách và ký ức: ' + DuduNpcLite.boundedInstruction(char.note || 'Không có',850),
           '- Thế giới xuất thân do tác giả xác định: ' + (char.originWorld || 'Chưa xác định'),
           '- Mức độ gắn kết linh hồn: ' + charAffinity + '% (' + DuduNpcMemory.relationship(charAffinity) + ').',
           DuduRoleplayV56.prompt(requestRole,novel),
