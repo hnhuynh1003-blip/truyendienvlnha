@@ -49,7 +49,7 @@ test('V43.9: only truly canonical common stock may be sold, low stable buyback',
  assert.equal(engine.sell({inventory:plan.inventory,itemInstanceId:a.instanceId,
   coins:plan.coins,tradeState:plan.state,day}).ok,false);
  assert.equal(engine.sell({inventory:[a],itemInstanceId:a.instanceId,
-  coins:1e9,tradeState:plan.state,day}).reason,'wallet-limit');
+  coins:1e9,tradeState:null,day}).reason,'wallet-limit');
  const capped=engine.state({version:1,day,sold:12,usedIds:[],listings:[],history:[]},day);
  assert.equal(engine.sell({inventory:[b],itemInstanceId:b.instanceId,
   coins:100,tradeState:capped,day}).reason,'daily-limit');
