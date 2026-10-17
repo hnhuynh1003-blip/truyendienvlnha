@@ -3733,6 +3733,13 @@ async function main() {
         const rendered=host.textContent.includes('PHÒNG THỬ NGHIỆM')&&
           host.textContent.includes('Độc giả A');
         const storageSeparated=key!==scopedLocalKey('profile');
+        // V45.1 is an OPTIONAL second UI. Rendering must not invoke Firebase
+        // Auth, production writes, or any Worker request before user consent.
+        const pilotHost=document.getElementById('pilot-v451-content');
+        const pilotMounted=!!pilotHost&&
+          pilotHost.textContent.includes('Kiểm thử UID Firebase thật');
+        const pilotNoAutoAuth=!firebase.apps.some(app=>
+          app.name==='dudu-v451-pilot-auth');
         const start=JSON.parse(JSON.stringify(DuduMultiActorLabV445.initial()));
         DuduMultiActorLabUIV445.reset();
         const A=host.querySelector('.dudu-v445-actor[data-actor="A"]')
@@ -3777,7 +3784,8 @@ async function main() {
         const profileStorageUntouched=
           localStorage.getItem(scopedLocalKey('profile'))===profileStorageBefore;
         const noCloud=window.__firestoreWrites.length===writes;
-        return {rendered,storageSeparated,A,pending,stayedInMemory,noDuplicate,
+        return {rendered,storageSeparated,pilotMounted,pilotNoAutoAuth,
+          A,pending,stayedInMemory,noDuplicate,
           authorView,authorInbox,transferred,audit,offline,offlineNoSend,
           online,original,warehouseUntouched,profileStorageUntouched,noCloud,
           labViewWidth};
@@ -3789,7 +3797,8 @@ async function main() {
       }
     });
     assert.deepEqual({...labV445,labViewWidth:0},{
-      rendered:true,storageSeparated:true,A:true,pending:true,
+      rendered:true,storageSeparated:true,pilotMounted:true,pilotNoAutoAuth:true,
+      A:true,pending:true,
       stayedInMemory:true,noDuplicate:true,authorView:true,authorInbox:true,
       transferred:true,audit:true,offline:true,offlineNoSend:true,
       online:true,original:true,warehouseUntouched:true,
