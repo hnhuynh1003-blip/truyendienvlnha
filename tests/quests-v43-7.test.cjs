@@ -45,7 +45,10 @@ test('V43.7 week begins on Monday and resets only weekly; event resets daily',()
  assert.equal(next.changed,false);
 });
 test('V43.7 records a chapter once daily, but story quest only once EVER',()=>{
- let qs=quest.ensure(core.ensureQuests([])),state,ledger;
+ let qs=quest.ensure(core.ensureQuests([
+  {id:'q_daily_read',type:'DAILY',target:2,current:0,claimed:false},
+  {id:'q_daily_loot',type:'DAILY',target:2,current:0,claimed:false}
+ ])),state,ledger;
  const first=event(qs,state,ledger,'READ_CHAPTER','story1_chapter1');
  assert.equal(first.ok,true);qs=first.quests;state=first.state;ledger=first.ledger;
  assert.equal(get(qs,'q_week_read').current,1);
@@ -125,7 +128,7 @@ test('V43.7 client setup and UI must not write verified collectibles',()=>{
  assert.match(html,/quest-engine-v43-7\.js/);
  assert.match(html,/quest-ui-v43-7\.js/);
  assert.match(html,/quests-v43-7\.css/);
- assert.match(html,/prepareQuestEvent\('NPC_CHECKIN'/);
+ assert.match(html,/prepareQuestEvent\\(\\s*'NPC_CHECKIN'/);
  assert.match(runtime,/MARKET_PURCHASE/);
  assert.match(runtime,/questsV437\.reward/);
  assert.match(fun,/userProfile\.questV437=event\.questState/);
