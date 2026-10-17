@@ -1,0 +1,93 @@
+// DUDU V53 Spark Personal — reviewed merge candidate, NOT deployed.
+// Purpose: private personal author imports EPUB chapters to Firestore on Spark,
+// while public readers may only read published books.
+// Assumes the existing Firebase Admin custom claim admin == true.
+// IMPORTANT: Inspect/backup ACTUAL deployed rules before replacing them.
+// NO Firebase Functions, Blaze plan or Firebase Storage needed for EPUB text.
+//
+// This file mirrors the prior user-provided deployed Rules, plus the strictly
+// scoped epub_stories_v49 additions. Live configuration may since have changed.
+rules_version = '2';
+service cloud.firestore {
+ match /databases/{database}/documents {
+  function author() {
+   return request.auth != null && request.auth.token.admin == true;
+  }
+  function ownsBook(bookId) {
+   return author() &&
+     get(/databases/$(database)/documents/epub_stories_v49/$(bookId)).data.ownerUid == request.auth.uid;
+  }
+  function publishedBook(bookId) {
+   return get(/databases/$(database)/documents/epub_stories_v49/$(bookId)).data.status == 'published';
+  }
+
+  // Existing shared story library; do not broaden production author role.
+  match /studio_data/main_library {
+   allow read: if true;
+   allow write: if author();
+  }
+  // Existing personal progress/profile, not a verified server wallet.
+  match /profiles_v2/{uid} {
+   allow read, write: if request.auth != null && request.auth.uid == uid;
+  }
+  match /user_profiles/{username} {
+   allow read, write: if false;
+  }
+
+  // Dedicated EPUB metadata with a stable owner UID.
+  match /epub_stories_v49/{bookId} {
+   allow get: if resource.data.status == 'published'
+     || (author() && resource.data.ownerUid == request.auth.uid);
+   // publicBooks() always queries where(status == published), limit <= 60.
+   allow list: if resource.data.status == 'published'
+     && request.query.limit <= 60;
+   allow create: if author()
+     && request.resource.data.ownerUid == request.auth.uid
+     && request.resource.data.status == 'importing'
+     && request.resource.data.chapterCount is int
+     && request.resource.data.chapterCount >= 1
+     && request.resource.data.chapterCount <= 160
+     && request.resource.data.chapterIndex is list
+     && request.resource.data.chapterIndex.size() == request.resource.data.chapterCount
+     && request.resource.data.title is string
+     && request.resource.data.title.size() <= 140;
+   allow update: if author()
+     && resource.data.ownerUid == request.auth.uid
+     && request.resource.data.ownerUid == resource.data.ownerUid
+     && request.resource.data.diff(resource.data).affectedKeys()
+       .hasOnly(['status','updatedAt','publishedAt'])
+     && ((resource.data.status == 'importing'
+           && request.resource.data.status == 'draft')
+         || (resource.data.status == 'draft'
+           && request.resource.data.status == 'published'));
+   allow delete: if false;
+
+   match /chapters/{chapterId} {
+    allow get: if publishedBook(bookId) || ownsBook(bookId);
+    // importDraft verification reads all chapter IDs before publication.
+    allow list: if ownsBook(bookId);
+    allow create: if ownsBook(bookId) && !publishedBook(bookId)
+      && request.resource.data.id == chapterId
+      && request.resource.data.content is string
+      && request.resource.data.content.size() <= 220000
+      && request.resource.data.title is string
+      && request.resource.data.title.size() <= 140
+      && request.resource.data.order is int;
+    allow update, delete: if false;
+   }
+  }
+
+  // V52 economy remains inaccessible on Spark (no Functions deployed).
+  match /economy_accounts_v52/{uid} {
+   allow read, write: if false;
+   match /items/{itemId} { allow read, write: if false; }
+   match /receipts/{receiptId} { allow read, write: if false; }
+  }
+  match /system_config/economy_v52 {
+   allow read, write: if false;
+  }
+  match /{document=**} {
+   allow read, write: if false;
+  }
+ }
+}
