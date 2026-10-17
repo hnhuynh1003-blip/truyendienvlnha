@@ -1,0 +1,23 @@
+/* V46 dedicated Sandbox styles; scoped to avoid changing production UI. */
+.dudu-sandbox-v46{display:grid;gap:10px;min-width:0;box-sizing:border-box;font:inherit;color:#ecf8ff}
+.dudu-sandbox-v46 *{box-sizing:border-box}
+.dudu-sandbox-v46 h3,.dudu-sandbox-v46 h4{margin:0;font-size:14px;color:#d7faff}
+.dudu-sandbox-v46>p{margin:0;line-height:1.45;font-size:12px}
+.dudu-sandbox-v46 label{font-size:12px;font-weight:700}
+.dudu-sandbox-v46 select,.dudu-sandbox-v46 textarea{background:#113047;color:#fff;border:1px solid #7eb5c5;border-radius:8px;padding:9px;font:inherit;font-size:12px;max-width:100%;min-width:0}
+.dudu-sandbox-v46 textarea{display:block;width:100%;min-height:76px;resize:vertical}
+.dudu-sandbox-v46 button{background:#236077;color:#fff;border:1px solid #79b6ca;border-radius:9px;min-height:36px;padding:8px 10px;cursor:pointer;font:inherit;font-size:12px}
+.dudu-sandbox-v46 button:focus-visible,.dudu-sandbox-v46 select:focus-visible,.dudu-sandbox-v46 textarea:focus-visible{outline:2px solid #b2f4ff;outline-offset:2px}
+.dudu-sandbox-v46-form{display:grid;gap:8px;min-width:0}
+.dudu-sandbox-v46-form>p{color:#b9d8e4;font-size:11px;margin:0;line-height:1.4}
+.dudu-sandbox-v46-section{display:grid;gap:8px;border:1px solid rgba(110,192,214,.32);padding:10px;border-radius:10px;background:rgba(10,42,60,.35);min-width:0}
+.dudu-sandbox-v46-section>p{margin:0;font-size:12px;overflow-wrap:anywhere}
+.dudu-sandbox-v46-notice{background:rgba(115,192,206,.11);padding:9px;border-radius:9px;display:flex;flex-wrap:wrap;align-items:center;gap:5px 8px}
+.dudu-sandbox-v46-notice.unread{border-left:3px solid #5be7cf;background:rgba(63,151,169,.21)}
+.dudu-sandbox-v46-notice strong,.dudu-sandbox-v46-notice small{font-size:11px}
+.dudu-sandbox-v46-notice p{margin:0;flex-basis:100%;font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere}
+.dudu-sandbox-v46-comment{display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+.dudu-sandbox-v46-comment>strong,.dudu-sandbox-v46-comment>p{flex-basis:100%;margin:0}
+.dudu-sandbox-v46-comment.nested{margin-left:14px}
+.dudu-sandbox-v46-comment.hidden-comment{border-style:dashed;opacity:.78}
+@media(max-width:420px){.dudu-sandbox-v46{padding:8px;gap:8px}.dudu-sandbox-v46-section{padding:8px}.dudu-sandbox-v46-comment{padding:8px}.dudu-sandbox-v46 button{flex:1 1 auto}}
