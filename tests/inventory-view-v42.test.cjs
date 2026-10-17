@@ -29,7 +29,7 @@ test('V42: eight stable role controls, world, story and rank filters in compact 
  assert.match(html,/Bộ lọc nâng cao/);
  assert.match(css,/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
  assert.match(view,/pageSize=24/);
- assert.match(view,/model\.displayList\(args\.inventory,options\)/);
+ assert.match(view,/model\.displayList\(args\.inventory,\{\.\.\.options/);
 });
 test('V42: inspector stays read-only for RPG and has protected-item discard guard',()=>{
  assert.match(view,/NOT_IMPLEMENTED|Chưa kích hoạt trong V42/);
@@ -70,7 +70,7 @@ test('V42.3: redundant counter is hidden and navigation closes the detail modal'
 });
 
 test('V42.4: only shareable loot shows ×N; story picker omits chapters of generic loot',()=>{
- assert.match(view,/const result=model\.displayList\(args\.inventory,options\)/);
+ assert.match(view,/const result=model\.displayList\(args\.inventory,\{\.\.\.options/);
  assert.match(view,/row\.items\.includes\(args\.selected\)/);
  assert.match(view,/entry\.count>1/);
  assert.match(view,/dudu-v42-slot-quantity/);
