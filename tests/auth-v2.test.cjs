@@ -18,13 +18,20 @@ function harness() {
   const logs = [];
   const context = {
     IS_SANDBOX_MODE: false,
+    setTimeout, clearTimeout,
     firebase: {
       auth: authFactory,
       firestore: () => ({ collection: () => ({ doc: uid => ({
         get: async () => ({ exists: !!record, data: () => record })
       }) }) })
     },
-    document: { getElementById: id => (elements[id] ||= { style: {}, textContent: '', value: '', disabled: false, focused: false, focus() { this.focused = true; } }) },
+    document: {
+      createElement: () => ({style:{},addEventListener(){}}),
+      getElementById: id => (elements[id] ||= {
+        style: {}, textContent: '', value: '', disabled: false, focused: false,
+        focus() { this.focused = true; }, insertAdjacentElement() {}
+      })
+    },
     localStorage: { getItem: () => null },
     currentUsername: 'legacy-user',
     userProfile: { username: 'guest', role: 'reader', name: 'Guest', storyStates: {}, collectedCharacters: {} },
