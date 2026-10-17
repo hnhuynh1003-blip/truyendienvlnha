@@ -52,6 +52,6 @@ test('V44.3: item issuer and author binding are not exposed as public routes',()
  assert.doesNotMatch(worker,/\/v1\/gifts\/admin\/mint|\/v1\/gifts\/admin\/bind/);
  assert.doesNotMatch(ledger,/mintTrusted\(|seedAuthorFromClient/);
  assert.match(ledger,/quoteGift\(\{senderUid:uid,\.\.\.e/);
- assert.match(ledger,/from './g|const/i); 
+ assert.match(ledger,/import \{quoteGift,transition,STAGES\}/);
  assert.match(worker,/path==='\/v1\/gifts\/author-inbox'/);
 });
