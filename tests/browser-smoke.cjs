@@ -3477,6 +3477,10 @@ async function main() {
         openCover(0);
         const story=document.getElementById('story-comments-v442');
         const storyPanel=story?.querySelector('.dudu-v442-shell');
+        const sharedStory=document.getElementById('story-comments-pilot-v452');
+        const sharedStoryMounted=!!sharedStory&&
+          !sharedStory.hidden&&
+          sharedStory.querySelector('.dudu-v452-shell')?.open===true;
         const storyInitiallyCollapsed=!story.hidden&&!storyPanel.open;
         storyPanel.querySelector('summary').click();
         const form=story.querySelector('.dudu-v442-form');
@@ -3492,6 +3496,12 @@ async function main() {
         readChapter(0);
         const chapter=document.getElementById('chapter-comments-v442');
         const chapterPanel=chapter?.querySelector('.dudu-v442-shell');
+        const sharedChapter=document.getElementById('chapter-comments-pilot-v452');
+        const sharedChapterMounted=!!sharedChapter&&
+          !sharedChapter.hidden&&
+          sharedChapter.querySelector('.dudu-v452-shell')?.open===true;
+        const pilotNoAutoAuth=!firebase.apps.some(app=>
+          app.name==='dudu-v451-pilot-auth');
         const chapterInitiallyCollapsed=!chapter.hidden&&!chapterPanel.open;
         chapterPanel.querySelector('summary').click();
         const chapterForm=chapter.querySelector('.dudu-v442-form');
@@ -3505,6 +3515,7 @@ async function main() {
         const noCloud=window.__firestoreWrites.length===writes;
         const noPublicBadge=chapter.textContent.includes('nhật ký bình luận riêng của tài khoản');
         return {storyInitiallyCollapsed,storySaved,escaped,giftNoServer,
+          sharedStoryMounted,sharedChapterMounted,pilotNoAutoAuth,
           chapterInitiallyCollapsed,chapterSaved,storySeparated,noCloud,noPublicBadge};
       }finally{
         userProfile=previous;
@@ -3515,6 +3526,7 @@ async function main() {
     });
     assert.deepEqual(discussionV442,{
       storyInitiallyCollapsed:true,storySaved:true,escaped:true,giftNoServer:true,
+      sharedStoryMounted:true,sharedChapterMounted:true,pilotNoAutoAuth:true,
       chapterInitiallyCollapsed:true,chapterSaved:true,storySeparated:true,
       noCloud:true,noPublicBadge:true
     },'V44.2 local comments and chapter separation, with gift/send lock');
