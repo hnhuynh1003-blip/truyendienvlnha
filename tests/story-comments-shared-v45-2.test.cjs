@@ -30,7 +30,7 @@ test('V45.2: reader and cover display shared Pilot board separately from private
  assert.match(index,/js\/story-comments-pilot-v45-2\.js\?v=45-2/);
  assert.match(index,/css\/story-comments-pilot-v45-2\.css\?v=45-2/);
  const local=from('js/story-comments-ui-v44-2.js');
- assert.match(local,/Bản thử nghiệm riêng tư trên thiết bị/);
+ assert.match(local,/nhật ký bình luận riêng của tài khoản/);
  const shared=from('js/story-comments-pilot-v45-2.js');
  assert.match(shared,/A và B chỉ thấy bình luận của nhau/);
  assert.match(shared,/api\.list\(storyId,chapterId\)/);
