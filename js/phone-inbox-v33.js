@@ -47,7 +47,8 @@ function render(){
  const query=($('dudu-v33-search')?.value||'').trim().toLocaleLowerCase('vi');
  // DUDU is a SYSTEM contact, not a story character. Pin first, even when
  // the player has zero NPCs and has never sent a message.
- if(filter!=='hidden'&&IS_SANDBOX_MODE&&currentUsername&&window.DuduCompanionV43){
+ if(filter!=='hidden'&&currentUsername&&window.DuduCompanionV43&&
+    (IS_SANDBOX_MODE||(window.DuduAuth?.isReady?.()&&window.DuduAuth.uid()===currentUsername))){
   const info=window.DuduCompanionV43.inboxSummary();
   if(!query||('dudu đồng hành hệ thống '+info.text).toLocaleLowerCase('vi').includes(query)){
    const button=document.createElement('button');
