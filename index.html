@@ -1183,6 +1183,8 @@
         <section id="dudu-v56-role-box" aria-label="Danh tính nhập vai trong truyện"
           style="margin:0 0 7px;padding:7px;border:1px solid #315a6e;border-radius:9px;background:rgba(16,35,52,.94);font-size:11px">
           <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
+            <span id="dudu-v56-role-avatar" role="img" aria-label="Chân dung vai nhập"
+               style="width:34px;height:34px;min-width:34px;border-radius:10px;border:1px solid #4a98ac;display:flex;align-items:center;justify-content:center;background:#193749;color:#e1ffff;font-size:13px;font-weight:700;overflow:hidden">?</span>
             <label for="dudu-v56-role-select" style="font-size:10px;color:#a5f3fc;white-space:nowrap">Vai của bạn</label>
             <select id="dudu-v56-role-select" onchange="v56SelectRole()" style="flex:1;min-width:110px;padding:5px;border-radius:6px;border:1px solid #42526d;background:#101e31;color:#f0f8ff;font-size:10px"></select>
             <button class="btn" type="button" onclick="v56OpenRoleEditor(false)" style="padding:4px 6px;font-size:10px">+ Tạo</button>
@@ -1208,6 +1210,15 @@
               <textarea id="dudu-v56-backstory" maxlength="240" rows="2" placeholder="Nhân vật của bạn xuất thân từ đâu..."
                 style="width:100%;box-sizing:border-box;background:#17263a;color:#fff;border:1px solid #50627e;border-radius:6px;padding:7px"></textarea>
             </div>
+            <label for="dudu-v56-avatar" style="display:block;margin:7px 0 4px">Chân dung riêng của vai</label>
+            <select id="dudu-v56-avatar" style="width:100%;padding:7px;border-radius:6px;background:#17263a;color:#fff">
+              <option value="account">Dùng avatar tài khoản DUDU</option>
+              <option value="initials">Chữ cái từ tên nhân vật</option>
+              <option value="anime-moon-blue">Anime · Ánh trăng xanh</option>
+              <option value="anime-moon-violet">Anime · Trăng tím</option>
+              <option value="anime-peach-court">Anime · Cung đình</option>
+              <option value="anime-adventurer">Anime · Lữ khách</option>
+            </select>
             <p id="dudu-v56-role-error" role="alert" style="font-size:10px;color:#fda4af"></p>
             <div style="display:flex;gap:6px">
               <button class="btn btn-primary" type="button" onclick="v56SaveRole()" style="flex:1;font-size:10px">Lưu & nhập vai</button>
