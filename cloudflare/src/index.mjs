@@ -3,6 +3,9 @@ import {validRequest,quotaMessage} from './limits.mjs';
 export {DuduQuota} from './quota.mjs';
 export {DuduCollectibles} from './collectibles.mjs';
 export {DuduPlayerAppearance} from './player-appearance.mjs';
+export {DuduDiscussion} from './comments-v44-2.mjs';
+import {scope,postBody,reportBody,moderatorBody,registerBody}
+ from './comment-policy-v44-2.mjs';
 import {normalizeAppearanceSave,displayState} from './player-appearance-rules.mjs';
 import {verifyAwardWebhook,EVENT_MAX_BYTES} from './avatar-award-webhook.mjs';
 import {IMAGE_LIMITS} from './avatar-image-policy.mjs';
@@ -160,6 +163,85 @@ async function handleAvatarDraft(req,env,path,origin){
   // IDs only; never expose R2 keys, original bytes or external URLs.
   return json(result,result.ok?200:result.code==='photo-quota'?429:400,origin,env);
 }
+/* V44.2 public discussion preparation — OFF until approved backend rollout.
+ * Every write is checked against JWT and global SQLite DO registry.
+ * Never import browser comments or trust client author roles.
+ */
+const COMMENT_PATHS=Object.freeze({
+ '/v1/comments/list':'GET',
+ '/v1/comments/create':'POST',
+ '/v1/comments/report':'POST',
+ '/v1/comments/inbox':'GET',
+ '/v1/comments/inbox/read':'POST',
+ '/v1/comments/admin/register':'POST',
+ '/v1/comments/admin/moderate':'POST',
+ '/v1/comments/admin/reports':'GET'
+});
+async function handleComments(req,env,path,origin){
+ if(env.COMMENTS_ENABLED!=='true')
+  return error('comments-disabled','Bình luận công khai chưa được mở.',503,origin,env);
+ if(!env.DUDU_DISCUSSION)
+  return error('discussion-unavailable','Máy chủ bình luận chưa sẵn sàng.',503,origin,env);
+ const adminPath=path.startsWith('/v1/comments/admin/');
+ let user=null;
+ if(path!=='/v1/comments/list'){
+  user=await verifyFirebaseIdToken(req,env.PROJECT_ID);
+  if(!user)return error('unauthenticated','Đăng nhập Firebase để bình luận.',401,origin,env);
+  if(adminPath&&!user.admin)
+   return error('forbidden','Yêu cầu quyền quản trị đã xác minh.',403,origin,env);
+ }
+ let body=null;
+ if(req.method==='POST'){
+  if(!req.headers.get('Content-Type')?.toLowerCase().startsWith('application/json'))
+   return error('invalid-content','Yêu cầu JSON.',415,origin,env);
+  body=await limitedJson(req);
+  if(!body)return error('invalid-request','Nội dung yêu cầu không hợp lệ.',400,origin,env);
+ }
+ const store=env.DUDU_DISCUSSION.getByName('comments-global-v1');
+ const now=Date.now();
+ try{
+  let out;
+  if(path==='/v1/comments/list'){
+   const url=new URL(req.url);
+   const selected=scope({
+    storyId:url.searchParams.get('storyId'),
+    chapterId:url.searchParams.get('chapterId')
+   });
+   if(!selected)return error('invalid-scope','Mã truyện/chương không hợp lệ.',400,origin,env);
+   out=await store.list(selected);
+  }else if(path==='/v1/comments/create'){
+   const parsed=postBody(body);
+   if(!parsed)return error('invalid-comment','Bình luận không hợp lệ.',400,origin,env);
+   out=await store.post(parsed,user.uid,now);
+  }else if(path==='/v1/comments/report'){
+   const parsed=reportBody(body);
+   if(!parsed)return error('invalid-report','Báo cáo không hợp lệ.',400,origin,env);
+   out=await store.report(parsed,user.uid,now);
+  }else if(path==='/v1/comments/inbox'){
+   out=await store.inbox(user.uid);
+  }else if(path==='/v1/comments/inbox/read'){
+   if(Object.keys(body).length!==0)return error('invalid-request','Không gửi dữ liệu phụ.',400,origin,env);
+   out=await store.markRead(user.uid);
+  }else if(path==='/v1/comments/admin/register'){
+   const parsed=registerBody(body);
+   if(!parsed)return error('invalid-register','Danh sách chương không hợp lệ.',400,origin,env);
+   out=await store.register(parsed,user.uid,now);
+  }else if(path==='/v1/comments/admin/moderate'){
+   const parsed=moderatorBody(body);
+   if(!parsed)return error('invalid-moderation','Thao tác kiểm duyệt không hợp lệ.',400,origin,env);
+   out=await store.moderate(parsed,user.uid);
+  }else if(path==='/v1/comments/admin/reports'){
+   out=await store.reports();
+  }else return error('not-found','Không tìm thấy chức năng.',404,origin,env);
+  return json(out,out?.ok?200:
+   ['cooldown','daily-limit','thread-full'].includes(out?.code)?429:
+   ['unknown-scope','not-found'].includes(out?.code)?404:409,origin,env);
+ }catch(err){
+  console.warn('Discussion ledger unavailable:',err?.name||'unavailable');
+  return error('discussion-unavailable','Bình luận tạm gián đoạn.',503,origin,env);
+ }
+}
+
 const PLAYER_APPEARANCE_PATHS=Object.freeze({
   '/v1/player-avatar/mine':'GET',
   '/v1/player-avatar/save':'POST'
@@ -373,12 +455,17 @@ export default {
     if(!allowed)return error('origin-blocked','Nguồn yêu cầu không được phép.',403,origin,env);
     if(req.method==='OPTIONS'){
       if(!origin||!allowOrigin(origin,env))return error('origin-blocked','Nguồn yêu cầu không được phép.',403,origin,env);
-      if(!['/v1/generate','/v1/status',...Object.keys(COLLECTIBLE_PATHS),...Object.keys(PLAYER_APPEARANCE_PATHS),...Object.keys(AVATAR_DRAFT_PATHS)].includes(path))
+      if(!['/v1/generate','/v1/status',...Object.keys(COLLECTIBLE_PATHS),...Object.keys(PLAYER_APPEARANCE_PATHS),...Object.keys(AVATAR_DRAFT_PATHS),...Object.keys(COMMENT_PATHS)].includes(path))
         return error('not-found','Không tìm thấy đường dẫn.',404,origin,env);
       return new Response(null,{status:204,headers:headers(origin,env)});
     }
     if(path==='/health'&&req.method==='GET'){
       return json({service:'dudu-ai',enabled:env.AI_ENABLED==='true',model:MODEL},200,origin,env);
+    }
+    if(path in COMMENT_PATHS){
+      if(req.method!==COMMENT_PATHS[path])
+        return error('method-not-allowed','Phương thức không được hỗ trợ.',405,origin,env);
+      return handleComments(req,env,path,origin);
     }
     if(path in AVATAR_DRAFT_PATHS){
       if(req.method!==AVATAR_DRAFT_PATHS[path])
