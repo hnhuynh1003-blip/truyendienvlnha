@@ -116,7 +116,8 @@
   for(const actor of engine.ACTORS){
    const act=button(actor.icon+' '+actor.name,
     'dudu-v445-actor'+(current.active===actor.id?' active':''),()=>{
-     replyTo=null;dispatch({type:'SWITCH',actor:actor.id});
+     // A retry belongs to the sender who created it, not the next role.
+     replyTo=null;lastRequest=null;dispatch({type:'SWITCH',actor:actor.id});
     });
    act.dataset.actor=actor.id;
    act.setAttribute('aria-pressed',String(current.active===actor.id));
