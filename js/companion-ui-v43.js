@@ -5,16 +5,27 @@
  'use strict';
  const rules=root.DuduCompanionRulesV43;
  const el=id=>document.getElementById(id);
- const canUse=()=>typeof IS_SANDBOX_MODE!=='undefined'&&IS_SANDBOX_MODE&&
-  typeof currentUsername==='string'&&!!currentUsername&&!!rules;
+ const sandbox=()=>typeof IS_SANDBOX_MODE!=='undefined'&&IS_SANDBOX_MODE;
+ const canUse=()=>!!rules&&typeof currentUsername==='string'&&!!currentUsername&&
+  (sandbox()||!!(root.DuduAuth?.isReady?.()&&root.DuduAuth.uid()===currentUsername));
+ const localKey=()=>!sandbox()&&canUse()?'dudu:companion:local:v51:'+currentUsername:null;
  let shown=false,owner='';
  const create=(tag,cls,text)=>{
   const e=document.createElement(tag);if(cls)e.className=cls;
   if(text!==undefined)e.textContent=String(text);return e;
  };
- function state(){return rules.norm(userProfile?.duduCompanionV43);}
+ function state(){
+  if(sandbox())return rules.norm(userProfile?.duduCompanionV43);
+  const key=localKey();if(!key)return rules.norm(null);
+  try{return rules.norm(JSON.parse(localStorage.getItem(key)||'null'));}
+  catch(_){return rules.norm(null);}
+ }
  function store(next){
   if(!canUse())return false;
+  if(!sandbox()){
+   try{localStorage.setItem(localKey(),JSON.stringify(rules.norm(next)));return true;}
+   catch(_){return false;}
+  }
   const before=userProfile.duduCompanionV43;
   try{
    userProfile.duduCompanionV43=rules.norm(next);
@@ -72,12 +83,13 @@
   if(button){
    const received=s.login.day===today;
    button.disabled=received;
-   button.textContent=received?'✓ Đã nhận quà hôm nay':'Nhận quà điểm danh';
+   button.textContent=sandbox()?(received?'✓ Đã nhận quà hôm nay':'Nhận quà điểm danh'):
+    (received?'✓ Đã điểm danh':'Điểm danh');
   }
   const nextDay=s.login.day===today?s.login.count:s.login.count+1;
   if(info)info.textContent=s.login.day===today?
    'Đã điểm danh hôm nay · quay lại ngày mai':
-   'Quà dự kiến: '+rules.COIN_DAYS[(Math.max(1,nextDay)-1)%7]+' Xu thử nghiệm';
+   sandbox()?'Quà dự kiến: '+rules.COIN_DAYS[(Math.max(1,nextDay)-1)%7]+' Xu thử nghiệm':'Ghi nhận kỷ niệm trên thiết bị · không phát Xu';
   const badge=el('dudu-v43-milestones');
   if(badge){
    badge.replaceChildren();
@@ -86,7 +98,7 @@
     const cell=create('div','dudu-v43-milestone'+(won?' is-earned':''));
     const icon=create('span','',milestone.icon);
     const text=create('span','',milestone.name+' · '+milestone.day+' ngày');
-    const stateText=create('small','',won?'Đã ghi nhận (Sandbox)':'Chưa đạt');
+    const stateText=create('small','',won?(sandbox()?'Đã ghi nhận (Sandbox)':'Đã ghi nhận trên thiết bị'):'Chưa đạt');
     cell.append(icon,text,stateText);badge.append(cell);
    }
   }
@@ -131,6 +143,12 @@
   if(!canUse()||!shown||owner!==currentUsername)return;
   const previous=state(),plan=rules.checkin(previous);
   if(!plan.ok)return;
+  if(!sandbox()){
+   const next=plan.state;
+   addMessage(next,'model','Điểm danh đã lưu trên thiết bị. Chúc cậu có một ngày đọc truyện vui vẻ!');
+   if(store(next)){render();root.duduV33Render?.();}
+   return;
+  }
   const oldBalance=Number(userProfile.currency);
   if(!Number.isSafeInteger(oldBalance)||oldBalance<0||
      oldBalance+plan.coins>1e9)return;
@@ -179,7 +197,7 @@
   const summary=create('summary','','🎁 Nhật ký điểm danh & kỷ niệm');
   const claim=create('button','dudu-v43-checkin','Nhận quà điểm danh');
   claim.id='dudu-v43-checkin';claim.type='button';claim.addEventListener('click',checkin);
-  const note=create('small','dudu-v43-note','Xu và mốc kỷ niệm chỉ lưu ở Sandbox; chưa phải kỷ vật Bảo Tàng được xác nhận.');
+  const note=create('small','dudu-v43-note',sandbox()?'Xu và mốc kỷ niệm chỉ lưu ở Sandbox; chưa phải kỷ vật Bảo Tàng được xác nhận.':'Nhật ký DUDU chỉ lưu trên thiết bị; không cấp Xu hay kỷ vật thật.');
   const reward=create('small','dudu-v43-reward-info','');reward.id='dudu-v43-reward-info';
   const badges=create('div','dudu-v43-milestones','');badges.id='dudu-v43-milestones';
   diary.append(summary,claim,reward,note,badges);
