@@ -41,6 +41,7 @@
   <link rel="stylesheet" href="css/npc-diary-ui.css?v=1">
   <link rel="stylesheet" href="css/soul-link-v43.css?v=2">
   <link rel="stylesheet" href="css/quests-v43-7.css?v=1">
+  <link rel="stylesheet" href="css/inventory-v43-8.css?v=1">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -57,12 +58,12 @@
   <script src="js/story-memory.js"></script>
   <script src="js/npc-memory-v2.js"></script>
   <script src="js/item-catalog-v2.js"></script>
-  <script src="js/economy-core-v43.js?v=5"></script>
-  <script src="js/quest-engine-v43-7.js?v=1"></script>
+  <script src="js/economy-core-v43.js?v=6"></script>
+  <script src="js/quest-engine-v43-7.js?v=2"></script>
   <script src="js/dudu-fun-rules-v43.js?v=1"></script>
   <script src="js/story-market-v43.js?v=1"></script>
-  <script src="js/inventory-model-v42.js?v=7"></script>
-  <script src="js/inventory-view-v42.js?v=7"></script>
+  <script src="js/inventory-model-v42.js?v=8"></script>
+  <script src="js/inventory-view-v42.js?v=8"></script>
   <script src="js/item-visuals-v13.js?v=43-5-3b"></script>
   <script src="js/npc-relationship-v2-r1.js"></script>
   <script src="js/npc-gift-v2-r2.js"></script>
@@ -91,6 +92,7 @@
   <script src="js/loot-rules-v2.js"></script>
   <script src="js/loot-cadence-v42.js?v=1"></script>
   <script src="js/item-actions-v43.js?v=1"></script>
+  <script src="js/functional-items-v43-8.js?v=1"></script>
   <script src="js/companion-rules-v43.js?v=1"></script>
   <script src="js/npc-bond-v43.js?v=1"></script>
   <script src="js/museum-memories-v43.js?v=1"></script>
@@ -974,6 +976,10 @@
               aria-label="Tìm trong kho đồ" oninput="DuduInventoryViewV42.reset()"
               style="min-width:0;flex:1;background:#111827;color:#e2e8f0;border:1px solid #334155;border-radius:6px;padding:6px;font-size:11px;"/>
             <span id="inventory-v2-count" hidden aria-hidden="true"></span>
+          </div>
+          <div class="dudu-v438-quick">
+            <span id="inventory-v438-capacity">Kho · 0/500</span>
+            <button type="button" onclick="DuduInventoryViewV42.chooseCategory('TOOL')">⚡ Công cụ</button>
           </div>
           <input id="inventory-v42-category" type="hidden" value="ALL">
           <div id="inventory-v42-categories" class="dudu-v42-category-strip" role="group" aria-label="Lọc theo vai trò vật phẩm">
@@ -4164,6 +4170,84 @@ document.getElementById('phone-home-screen').style.display = 'none';
       return true;
     }
 
+    // V43.8 — transactional consumables. A supply kit gives common-only
+    // items, a pulse shortens PHONE cooldown, a coupon discounts next purchase.
+    // Never changes chapter loot or grants authenticated collectible ownership.
+    function useFunctionItemV438(item){
+      if(!IS_SANDBOX_MODE||!currentUsername)return false;
+      if(item?.id===DuduEconomyCoreV43.TOOL_ID)return useFunctionItemV43(item);
+      const rules=window.DuduFunctionalItemsV438;
+      if(!rules)return false;
+      const plan=rules.quoteUse({
+        inventory:userProfile.inventory,state:userProfile.functionalV438,
+        itemInstanceId:item?.instanceId,lastLootTimestamp
+      });
+      if(!plan.ok){
+        const reason={
+          'inventory-full':'Kho cần một ô trống trước khi mở Gói Tiếp Tế.',
+          'coupon-active':'Bạn đã kích hoạt một phiếu. Hãy mua đồ trước khi dùng phiếu khác.',
+          'daily-limit':'Đã hết lượt dùng món này hôm nay.',
+          'no-cooldown':'Nút nhặt đồ đã sẵn sàng, chưa cần tăng tốc.',
+          'already-used':'Vật phẩm này đã dùng rồi.',
+          'unowned-or-invalid':'Không xác nhận được vật phẩm từ Cửa hàng Sandbox.'
+        };
+        showSystemAlert('KHÔNG THỂ SỬ DỤNG',reason[plan.reason]||'Chưa đủ điều kiện.');
+        return false;
+      }
+      const event=window.DuduEconomyRuntimeV43?.prepareQuestEvent('ITEM_USE',item.instanceId);
+      const cooldownKey=scopedLocalKey('loot-cooldown');
+      const previousKeyValue=localStorage.getItem(cooldownKey);
+      const previous={
+        inventory:userProfile.inventory,functional:userProfile.functionalV438,
+        quests:userProfile.quests,questState:userProfile.questV437,
+        economy:userProfile.economyV43,
+        timestamp:lastLootTimestamp,selected:inventoryDetailSelection
+      };
+      try{
+        if(plan.itemId===DuduEconomyCoreV43.PULSE_ID)
+          localStorage.setItem(cooldownKey,String(plan.lastLootTimestamp||0));
+        userProfile.inventory=plan.inventory;
+        userProfile.functionalV438=plan.state;
+        if(event){
+          userProfile.quests=event.quests;
+          userProfile.questV437=event.questState;
+          userProfile.economyV43=event.ledger;
+        }
+        lastLootTimestamp=plan.lastLootTimestamp;
+        inventoryDetailSelection=null;
+        saveCurrentAccount();
+      }catch(_){
+        userProfile.inventory=previous.inventory;
+        if(previous.functional===undefined)delete userProfile.functionalV438;
+        else userProfile.functionalV438=previous.functional;
+        userProfile.quests=previous.quests;
+        if(previous.questState===undefined)delete userProfile.questV437;
+        else userProfile.questV437=previous.questState;
+        if(previous.economy===undefined)delete userProfile.economyV43;
+        else userProfile.economyV43=previous.economy;
+        lastLootTimestamp=previous.timestamp;
+        inventoryDetailSelection=previous.selected;
+        try{
+          if(plan.itemId===DuduEconomyCoreV43.PULSE_ID){
+            if(previousKeyValue===null)localStorage.removeItem(cooldownKey);
+            else localStorage.setItem(cooldownKey,previousKeyValue);
+          }
+          saveCurrentAccount();
+        }catch(__){}
+        showSystemAlert('CHƯA LƯU ĐƯỢC','Đã hoàn tác sử dụng vật phẩm.');
+        return false;
+      }
+      if(plan.itemId===DuduEconomyCoreV43.PULSE_ID)startCooldownTicker();
+      renderInventory();
+      showSystemAlert('CÔNG CỤ ĐÃ KÍCH HOẠT',
+        plan.itemId===DuduEconomyCoreV43.SUPPLY_ID?
+        'Đã nhận 1 Nước Uống Đóng Chai và 1 Bánh Quy Khô vào Kho.':
+        plan.itemId===DuduEconomyCoreV43.PULSE_ID?
+        'Hồi chiêu nhặt đồ Điện thoại giảm 60 giây. Không đổi lượt nhặt chương.':
+        'Phiếu giảm 25% (tối đa 12 Xu) đã sẵn sàng cho lần mua hàng phổ thông hôm nay.');
+      return true;
+    }
+
     function renderInventory() {
       if(IS_SANDBOX_MODE&&window.DuduInventoryViewV42){
         const current=Array.isArray(userProfile.inventory)?userProfile.inventory:[];
@@ -4179,15 +4263,21 @@ document.getElementById('phone-home-screen').style.display = 'none';
             inventoryDetailSelection=null;discardItem(index);
           },
           usageFor(item){
-            if(item?.id!==DuduEconomyCoreV43.TOOL_ID)return null;
-            return DuduItemActionsV43.availability({
-              inventory:current,state:userProfile.itemActionsV43,
-              itemInstanceId:item.instanceId,lastLootTimestamp
-            });
+            if(item?.id===DuduEconomyCoreV43.TOOL_ID)
+              return DuduItemActionsV43.availability({
+                inventory:current,state:userProfile.itemActionsV43,
+                itemInstanceId:item.instanceId,lastLootTimestamp
+              });
+            if(DuduEconomyCoreV43.FUNCTIONAL_IDS.includes(item?.id))
+              return DuduFunctionalItemsV438.availability({
+                inventory:current,state:userProfile.functionalV438,
+                itemInstanceId:item.instanceId,lastLootTimestamp
+              });
+            return null;
           },
           onUse(item){
             if(userProfile.inventory!==current)return false;
-            return useFunctionItemV43(item);
+            return useFunctionItemV438(item);
           },
           onMuseum(){
             inventoryDetailSelection=null;
@@ -6089,10 +6179,10 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/npc-portrait-v39.js?v=2"></script>
 <script src="js/phone-inbox-v33.js?v=43-2"></script>
 <script src="js/companion-ui-v43.js?v=1"></script>
-<script src="js/market-ui-v43.js?v=3"></script>
+<script src="js/market-ui-v43.js?v=4"></script>
 <script src="js/dudu-fun-ui-v43.js?v=3"></script>
 <script src="js/quest-ui-v43-7.js?v=1"></script>
-<script src="js/economy-runtime-v43.js?v=4"></script>
+<script src="js/economy-runtime-v43.js?v=5"></script>
 <script src="js/museum-memories-ui-v43.js?v=2"></script>
 <script src="js/npc-diary-ui.js?v=1"></script>
 <script src="js/soul-link-ui-v43.js?v=2"></script>

@@ -3194,6 +3194,95 @@ async function main() {
       duduProgress:true,npcProgress:true,storyShows:true,noWrites:true
     },'V43.7 quests, reward journal and weekly/story/NPC/FUN/UI integration');
 
+    // V43.8 — end-to-end: shop tools -> inventory modal -> use -> coupon
+    // redemption -> daily mission, all in one sandbox account, no cloud writes.
+    const functionalV438=await page.evaluate(()=>{
+      const before=structuredClone(userProfile);
+      const beforeTimestamp=lastLootTimestamp;
+      const key=scopedLocalKey('loot-cooldown');
+      const originalKey=localStorage.getItem(key);
+      const firestoreWrites=window.__firestoreWrites.length;
+      const phone=document.getElementById('cyber-phone');
+      const wasOpen=phone.style.display==='flex';
+      try{
+        userProfile.currency=300;
+        userProfile.quests=structuredClone(DEFAULT_SYSTEM_QUESTS);
+        userProfile.questsDayV43=DuduEconomyCoreV43.localDay();
+        delete userProfile.economyV43;delete userProfile.functionalV438;
+        delete userProfile.questV437;
+        userProfile.inventory=[];
+        lastLootTimestamp=0;
+        localStorage.setItem(key,'0');
+        if(!wasOpen)togglePhone();
+        openPhoneApp('shop');
+        const ids=DuduEconomyCoreV43;
+        const boughtSupply=buyShopItem(ids.SUPPLY_ID);
+        const boughtPulse=buyShopItem(ids.PULSE_ID);
+        const boughtCoupon=buyShopItem(ids.COUPON_ID);
+        const boughtCell=buyShopItem(ids.TOOL_ID);
+        const inventory=userProfile.inventory;
+        const kit=inventory.find(x=>x.id===ids.SUPPLY_ID);
+        const pulse=inventory.find(x=>x.id===ids.PULSE_ID);
+        const coupon=inventory.find(x=>x.id===ids.COUPON_ID);
+        openPhoneApp('inventory');
+        const capacity=!!document.getElementById('inventory-v438-capacity')
+          ?.textContent.includes('/500');
+        const shortcut=!!document.querySelector('.dudu-v438-quick button');
+        const kitSlot=[...document.querySelectorAll('#inventory-container [data-inventory-index]')]
+          .find(el=>userProfile.inventory[Number(el.dataset.inventoryIndex)]===kit);
+        kitSlot?.click();
+        const modalText=document.getElementById('inventory-v42-modal-scroll')?.textContent||'';
+        const details=modalText.includes('Nước Uống Đóng Chai')&&modalText.includes('Bánh Quy Khô');
+        const useBtn=document.querySelector('#inventory-v42-modal .dudu-v43-use-item');
+        const canUse=!!useBtn&&!useBtn.disabled;
+        useBtn?.click();
+        const kitConsumed=!userProfile.inventory.includes(kit);
+        const hasSupplies=userProfile.inventory.some(x=>x.id==='common-bottled-water'&&
+          x.obtainedFrom?.source==='DUDU_SUPPLY_V438')&&
+          userProfile.inventory.some(x=>x.id==='common-biscuit'&&
+          x.obtainedFrom?.source==='DUDU_SUPPLY_V438');
+        const q=userProfile.quests.find(x=>x.id==='q_daily_tool');
+        const progressed=q?.current===1;
+        lastLootTimestamp=Date.now()-1000;
+        localStorage.setItem(key,String(lastLootTimestamp));
+        const pulseWorked=useFunctionItemV438(pulse);
+        const remaining=DuduLootCadenceV42.phoneRemainingMs(lastLootTimestamp);
+        const shortened=remaining>0&&remaining<65000;
+        const activated=useFunctionItemV438(coupon);
+        const pending=!!userProfile.functionalV438.pending;
+        const beforeBuy=userProfile.currency;
+        openPhoneApp('shop');
+        const priceShown=[...document.querySelectorAll('.dudu-v43-market-item')]
+         .some(el=>el.dataset.itemId==='common-signal-device'&&
+            el.textContent.includes('36 Xu'));
+        const boughtDiscounted=buyShopItem('common-signal-device');
+        const discounted=userProfile.currency===beforeBuy-36;
+        const couponSpent=!userProfile.functionalV438.pending;
+        const noDouble=useFunctionItemV438(coupon)===false;
+        return {boughtSupply,boughtPulse,boughtCoupon,boughtCell,
+         capacity,shortcut,details,canUse,kitConsumed,hasSupplies,progressed,
+         pulseWorked,shortened,activated,pending,priceShown,boughtDiscounted,
+         discounted,couponSpent,noDouble,
+         noWrites:window.__firestoreWrites.length===firestoreWrites};
+      }finally{
+        userProfile=before;
+        lastLootTimestamp=beforeTimestamp;
+        if(originalKey===null)localStorage.removeItem(key);
+        else localStorage.setItem(key,originalKey);
+        inventoryDetailSelection=null;
+        saveCurrentAccount();
+        phoneHome();
+        if(!wasOpen&&phone.style.display==='flex')togglePhone();
+      }
+    });
+    assert.deepEqual(functionalV438,{
+      boughtSupply:true,boughtPulse:true,boughtCoupon:true,boughtCell:true,
+      capacity:true,shortcut:true,details:true,canUse:true,kitConsumed:true,
+      hasSupplies:true,progressed:true,pulseWorked:true,shortened:true,
+      activated:true,pending:true,priceShown:true,boughtDiscounted:true,
+      discounted:true,couponSpent:true,noDouble:true,noWrites:true
+    },'V43.8 functional tools, supplies, coupon, UI and quest integration');
+
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
     console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));
   } finally {

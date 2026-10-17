@@ -169,11 +169,20 @@
     EVENT:'Nhận qua hoạt động DUDU FUN (Sandbox)'
    }[detail.acquisitionKind]);
   }
-  if(detail.usageStatus==='CLEAR_PHONE_COOLDOWN'){
+  if(detail.usageStatus!=='NOT_IMPLEMENTED'){
     const usage=typeof args.usageFor==='function'?args.usageFor(entry.item):null;
-    fact('Công dụng','Xóa 2 phút hồi chiêu nhặt đồ Điện thoại');
-    fact('Giới hạn trong ngày',(usage?.used||0)+'/'+(usage?.limit||2)+' lần');
-    fact('Lượt nhặt theo chương','Không thay đổi');
+    const descriptions={
+     CLEAR_PHONE_COOLDOWN:'Xóa toàn bộ hồi chiêu nhặt đồ Điện thoại',
+     SHORTEN_PHONE_COOLDOWN:'Giảm tối đa 60 giây hồi chiêu Điện thoại',
+     OPEN_SUPPLY:'Mở 1 Nước Uống Đóng Chai + 1 Bánh Quy Khô',
+     ACTIVATE_COUPON:'Kích hoạt -25% (tối đa 12 Xu) cho 1 món phổ thông hôm nay'
+    };
+    fact('Công dụng',descriptions[detail.usageStatus]||'Công cụ tiêu hao');
+    fact('Đã dùng hôm nay',(usage?.used||0)+'/'+(usage?.limit||2));
+    if(['CLEAR_PHONE_COOLDOWN','SHORTEN_PHONE_COOLDOWN'].includes(detail.usageStatus))
+     fact('Nhặt theo chương','Không thay đổi');
+    if(detail.usageStatus==='ACTIVATE_COUPON')
+     fact('Điều kiện','Một phiếu hiệu lực cùng ngày, không giảm vật phẩm chức năng');
   }else{
     fact('Chức năng RPG','Chưa kích hoạt trong V42');
   }
@@ -187,16 +196,20 @@
   const status=make('span','dudu-v42-inspector-status',detail.giftable?
     'Quà NPC: tùy điều kiện tặng':'Quà NPC: chưa được phép hoặc chưa xác nhận');
   footer.append(status);
-  if(detail.usageStatus==='CLEAR_PHONE_COOLDOWN'&&
+  if(detail.usageStatus!=='NOT_IMPLEMENTED'&&
     typeof args.usageFor==='function'&&typeof args.onUse==='function'){
     const usage=args.usageFor(entry.item);
-    const button=make('button','btn dudu-v43-use-item','🔋 Sử dụng');
+    const button=make('button','btn dudu-v43-use-item',
+     detail.usageStatus==='OPEN_SUPPLY'?'📦 Mở gói':
+     detail.usageStatus==='ACTIVATE_COUPON'?'🎟️ Kích hoạt':'⚡ Sử dụng');
     button.type='button';
     button.disabled=!usage?.canUse;
     button.title=usage?.reason==='no-cooldown'?
       'Chỉ dùng khi nút nhặt đồ đang hồi chiêu.':
-      usage?.reason==='daily-limit'?'Đã dùng tối đa 2 lần hôm nay.':
-      usage?.canUse?'Xóa ngay thời gian chờ nhặt đồ trong Điện thoại.':
+      usage?.reason==='daily-limit'?'Đã hết lượt dùng hôm nay.':
+      usage?.reason==='coupon-active'?'Đang có một phiếu giảm giá chờ mua.':
+      usage?.reason==='inventory-full'?'Kho cần ít nhất một ô trống.':
+      usage?.canUse?'Tiêu hao 1 vật phẩm chức năng trong Sandbox.':
       'Vật phẩm không hợp lệ hoặc đã sử dụng.';
     button.addEventListener('click',()=>{
       if(!Array.isArray(args.inventory)||args.inventory[entry.index]!==entry.item)return;
@@ -206,7 +219,9 @@
     if(!usage?.canUse){
       footer.append(make('small','dudu-v43-use-hint',
         usage?.reason==='no-cooldown'?'Chỉ dùng khi đồng hồ nhặt đồ đang chạy.':
-        usage?.reason==='daily-limit'?'Đã đạt giới hạn 2 lượt dùng/ngày.':
+        usage?.reason==='daily-limit'?'Đã đạt giới hạn dùng hôm nay.':
+        usage?.reason==='coupon-active'?'Đã có một phiếu đang chờ dùng.':
+        usage?.reason==='inventory-full'?'Cần dọn kho để nhận 2 món tiếp tế.':
         'Chưa đủ điều kiện sử dụng.'));
     }
   }
@@ -246,6 +261,13 @@
   // Keep the status node empty for compatibility with legacy scripts.
   const count=$('inventory-v2-count');
   if(count){count.textContent='';count.hidden=true;}
+  const capacity=$('inventory-v438-capacity');
+  if(capacity){
+   const num=Array.isArray(args.inventory)?args.inventory.length:0;
+   const tools=(args.inventory||[]).filter(x=>
+     model.inspect(x)?.category==='TOOL').length;
+   capacity.textContent='🎒 '+num+'/500 vật phẩm · '+tools+' công cụ';
+  }
   const categoryPicker=$('inventory-v42-categories');
   if(categoryPicker)for(const button of categoryPicker.querySelectorAll('button[data-category]')){
    const active=button.dataset.category===options.category;
@@ -265,7 +287,7 @@
    const selected=!!current&&current===entry;
    slot.classList.toggle('is-selected',selected);
    slot.setAttribute('aria-label',
-     (detail.usageStatus==='CLEAR_PHONE_COOLDOWN'?'Xem chi tiết và dùng ':'Xem chi tiết ')+
+     (detail.usageStatus!=='NOT_IMPLEMENTED'?'Xem chi tiết và dùng ':'Xem chi tiết ')+
      detail.name+(entry.count>1?' · '+entry.count+' món':''));
    slot.setAttribute('aria-expanded',String(selected));
    slot.setAttribute('aria-controls','inventory-v42-modal');
@@ -274,10 +296,12 @@
    const badge=make('span','dudu-v27-slot-rarity',detail.rank);
    const label=make('span','dudu-v27-slot-name',detail.name);
    slot.append(art.container,badge,label);
-   if(detail.usageStatus==='CLEAR_PHONE_COOLDOWN'){
+   if(detail.usageStatus!=='NOT_IMPLEMENTED'){
     slot.classList.add('dudu-v43-tool-slot');
-    const marker=make('span','dudu-v43-tool-marker','⚡');
-    marker.title='Vật phẩm chức năng · nhấn để sử dụng khi đang hồi chiêu';
+    const marker=make('span','dudu-v43-tool-marker',
+     detail.usageStatus==='OPEN_SUPPLY'?'📦':
+     detail.usageStatus==='ACTIVATE_COUPON'?'🎟️':'⚡');
+    marker.title='Vật phẩm chức năng · nhấn để xem công dụng và sử dụng';
     marker.setAttribute('aria-hidden','true');
     slot.append(marker);
    }

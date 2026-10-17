@@ -18,7 +18,7 @@ test('V43.5.3: real cell is a functional shop item and excludes rare/quest items
  assert.equal(cell.instance.scope,'FUNCTIONAL');
  assert.equal(cell.instance.obtainedFrom.kind,'SHOP');
  assert.equal(core.shopCatalog().length,12,'existing 12 common items preserved');
- assert.equal(core.preview({tab:'TOOLS'}).length,1);
+ assert.equal(core.preview({tab:'TOOLS'}).length,4,'V43.8 expands tool catalog, preserving old cell');
  assert.equal(core.preview({tab:'COMMON'}).some(i=>i.id===core.TOOL_ID),false);
  assert.equal(core.preview({tab:'DUDU'}).some(i=>i.id===core.TOOL_ID),false);
  assert.equal(core.quotePurchase({itemId:'sss1',coins:100000,day:core.localDay(now)}).ok,false);

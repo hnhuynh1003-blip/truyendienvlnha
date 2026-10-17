@@ -1,0 +1,38 @@
+/* DUDU V43.8 — inventory utility controls and premium tool affordances.
+ * Scoped to Sandbox Cyber Phone. Does not modify legacy reader interface. */
+body.dudu-phone-v11 #cyber-phone .dudu-v438-quick{
+ display:flex;justify-content:space-between;align-items:center;gap:8px;
+ padding:6px 8px;margin:2px 0 6px;border-radius:10px;
+ border:1px solid #6a85a577;background:linear-gradient(110deg,#202c49,#243548);
+ color:#d7dff4;font-size:10px;font-variant-numeric:tabular-nums;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v438-quick button{
+ padding:6px 10px;border:1px solid #a0a9d57c;border-radius:9px;
+ color:#f4eaff;font-size:10px;font-weight:700;background:#503d67;
+ cursor:pointer;white-space:nowrap;min-height:30px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v438-quick button:focus-visible{
+ outline:2px solid #afefff;outline-offset:2px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-tool-slot{
+ border-color:#d5b6f7bb!important;background:linear-gradient(145deg,#2f2a58,#1d3550)!important;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-tool-slot .dudu-v43-tool-marker{
+ display:grid!important;place-items:center;min-width:22px;height:22px;
+ background:#3b3159de;border:1px solid #cbb3eea1;box-shadow:0 2px 5px #070b198a;
+ border-radius:8px;font-size:13px;position:absolute;right:3px;bottom:3px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-use-item{
+ border:1px solid #b9a6e4!important;background:linear-gradient(125deg,#7a558e,#4c6490)!important;
+ color:#fff7ff!important;font-weight:800!important;padding:8px 12px!important;
+ border-radius:9px!important;min-height:34px;white-space:nowrap;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-use-item:disabled{
+ filter:grayscale(.5);opacity:.55;cursor:not-allowed!important;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v438-discount{
+ color:#99f0bc;font-size:9px;font-weight:800;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-item[data-scope="FUNCTIONAL"]{
+ background:linear-gradient(115deg,#28304c,#30294e);border-color:#9d8fcb80;
+}

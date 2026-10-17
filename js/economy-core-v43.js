@@ -36,12 +36,44 @@
    giftable:false,tradeable:false,discardable:true,published:true,
    schemaVersion:2
  });
+ const SUPPLY_ID='dudu-tool-supply-kit-v438';
+ const PULSE_ID='dudu-tool-time-pulse-v438';
+ const COUPON_ID='dudu-tool-discount-v438';
+ const ADDITIONAL_TOOLS=Object.freeze([
+  Object.freeze({
+   id:SUPPLY_ID,itemId:SUPPLY_ID,name:'Gói Tiếp Tế Hành Trình',icon:'📦',rank:'D',type:'ITEM',
+   desc:'Mở thành 1 nước uống và 1 bánh quy phổ thông. Không chứa kỷ vật.',
+   description:'Mở thành 1 nước uống và 1 bánh quy phổ thông. Không chứa kỷ vật.',
+   scope:'FUNCTIONAL',acquisition:Object.freeze({method:'SHOP'}),price:20,
+   storeCategory:'TOOL',unique:false,maxOwned:null,giftable:false,
+   tradeable:false,discardable:true,published:true,schemaVersion:2
+  }),
+  Object.freeze({
+   id:PULSE_ID,itemId:PULSE_ID,name:'Xung Thời Gian',icon:'⏳',rank:'D',type:'ITEM',
+   desc:'Giảm 60 giây hồi chiêu nhặt đồ Điện thoại, không thay lượt chương.',
+   description:'Giảm 60 giây hồi chiêu nhặt đồ Điện thoại, không thay lượt chương.',
+   scope:'FUNCTIONAL',acquisition:Object.freeze({method:'SHOP'}),price:16,
+   storeCategory:'TOOL',unique:false,maxOwned:null,giftable:false,
+   tradeable:false,discardable:true,published:true,schemaVersion:2
+  }),
+  Object.freeze({
+   id:COUPON_ID,itemId:COUPON_ID,name:'Phiếu Ưu Đãi DUDU',icon:'🎟️',rank:'D',type:'ITEM',
+   desc:'Kích hoạt giảm 25% (tối đa 12 Xu) cho 1 món phổ thông cùng ngày.',
+   description:'Kích hoạt giảm 25% (tối đa 12 Xu) cho 1 món phổ thông cùng ngày.',
+   scope:'FUNCTIONAL',acquisition:Object.freeze({method:'SHOP'}),price:9,
+   storeCategory:'TOOL',unique:false,maxOwned:null,giftable:false,
+   tradeable:false,discardable:true,published:true,schemaVersion:2
+  })
+ ]);
+ const FUNCTIONAL_TOOLS=Object.freeze([TOOL,...ADDITIONAL_TOOLS]);
+ const FUNCTIONAL_IDS=Object.freeze(FUNCTIONAL_TOOLS.map(x=>x.id));
+ const TOOL_LIMITS=Object.freeze({[TOOL_ID]:2,[SUPPLY_ID]:2,[PULSE_ID]:2,[COUPON_ID]:1});
  const PURCHASE_PER_ITEM_PER_DAY=3, PURCHASE_TOTAL_PER_DAY=8,
    TOOL_PURCHASES_PER_DAY=2;
  const EVENT_TO_QUEST=Object.freeze({
    LOOT_SUCCESS:'q_daily_loot',READ_CHAPTER:'q_daily_read',
    FUN_CLAIM:'q_daily_fun',NPC_GIFT:'q_daily_npc',
-   MARKET_PURCHASE:null,NPC_CHECKIN:null,DUDU_CHECKIN:null
+   MARKET_PURCHASE:null,NPC_CHECKIN:null,DUDU_CHECKIN:null,ITEM_USE:null
  });
  const EXTRA_DAILY_QUESTS=Object.freeze([
   Object.freeze({id:'q_daily_fun',type:'DAILY',title:'Giải Trí DUDU',
@@ -74,11 +106,10 @@
       raw.day!==day)return state;
    const counts=raw.counts;
    if(counts&&typeof counts==='object'&&!Array.isArray(counts)){
-     for(const id of [...SHOP_IDS,TOOL_ID]){
+     for(const id of [...SHOP_IDS,...FUNCTIONAL_IDS]){
        const n=counts[id];
        if(Number.isSafeInteger(n)&&n>=0)
-         state.counts[id]=Math.min(id===TOOL_ID?TOOL_PURCHASES_PER_DAY:
-           PURCHASE_PER_ITEM_PER_DAY,n);
+         state.counts[id]=Math.min(TOOL_LIMITS[id]||PURCHASE_PER_ITEM_PER_DAY,n);
      }
    }
    state.total=Math.min(PURCHASE_TOTAL_PER_DAY,
@@ -98,7 +129,7 @@
        item.type==='FOOD'?'FOOD':'SUPPLIES'});
    });
  }
- const stock=shopCatalog(), byId=new Map([...stock,TOOL].map(item=>[item.id,item]));
+ const stock=shopCatalog(), byId=new Map([...stock,...FUNCTIONAL_TOOLS].map(item=>[item.id,item]));
  function preview({tab='COMMON',realmTag=null,query=''}={}){
    const text=typeof query==='string'?query.trim().toLocaleLowerCase('vi').slice(0,60):'';
    let items=[];
@@ -106,25 +137,27 @@
    else if(tab==='REALM'&&catalog.REALM_TAGS.includes(realmTag))
      items=catalog.list({scope:'REALM',realmTag});
    else if(tab==='DUDU')items=catalog.list({scope:'DUDU'});
-   else if(tab==='TOOLS')items=[TOOL];
+   else if(tab==='TOOLS')items=FUNCTIONAL_TOOLS;
    return items.filter(item=>
      !text||[item.name,item.desc,item.rank].some(v=>
        String(v||'').toLocaleLowerCase('vi').includes(text)));
  }
- function quotePurchase({itemId,coins,state,day=localDay(),inventoryCount=0}={}){
+ function quotePurchase({itemId,coins,state,day=localDay(),inventoryCount=0,discount=0}={}){
    const product=byId.get(itemId);
    const next=norm(state,day);
    if(!product)return {ok:false,reason:'not-for-sale',state:next};
    if(!validDay(day)||!safeCoins(coins)||!Number.isSafeInteger(inventoryCount)||
-      inventoryCount<0||inventoryCount>=500)
+      inventoryCount<0||inventoryCount>=500||
+      !Number.isSafeInteger(discount)||discount<0||discount>12||
+      (discount>0&&(!SHOP_IDS.includes(itemId)||discount>=product.price)))
      return {ok:false,reason:'invalid-balance-or-cap',state:next};
    if(next.total>=PURCHASE_TOTAL_PER_DAY||
-      (next.counts[itemId]||0)>=(itemId===TOOL_ID?
-       TOOL_PURCHASES_PER_DAY:PURCHASE_PER_ITEM_PER_DAY))
+      (next.counts[itemId]||0)>=(TOOL_LIMITS[itemId]||PURCHASE_PER_ITEM_PER_DAY))
      return {ok:false,reason:'daily-limit',state:next};
-   if(coins<product.price)return {ok:false,reason:'not-enough-coins',state:next};
+   if(coins<product.price-discount)return {ok:false,reason:'not-enough-coins',state:next};
    const newCounts={...next.counts,[itemId]:(next.counts[itemId]||0)+1};
-   return {ok:true,product,coins:coins-product.price,
+   return {ok:true,product,discount,charged:product.price-discount,
+     coins:coins-product.price+discount,
      state:{...next,counts:newCounts,total:next.total+1}};
  }
  function recordEvent(raw,{type,eventId,day=localDay()}={}){
@@ -157,6 +190,7 @@
    return {...item,instanceId:id,obtainedFrom:{kind:'SHOP',source:'DUDU_MARKET'}};
  }
  return Object.freeze({VERSION,SHOP_IDS,PRICES,TOOL_ID,TOOL,TOOL_PURCHASES_PER_DAY,
+   SUPPLY_ID,PULSE_ID,COUPON_ID,ADDITIONAL_TOOLS,FUNCTIONAL_TOOLS,FUNCTIONAL_IDS,TOOL_LIMITS,
    PURCHASE_PER_ITEM_PER_DAY,
    PURCHASE_TOTAL_PER_DAY,EVENT_TO_QUEST,EXTRA_DAILY_QUESTS,ensureQuests,
    localDay,norm,shopCatalog,preview,

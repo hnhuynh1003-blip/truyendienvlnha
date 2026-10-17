@@ -6,6 +6,7 @@
  'use strict';
  const core=root.DuduEconomyCoreV43;
  const questsV437=root.DuduQuestEngineV437;
+ const functionalV438=root.DuduFunctionalItemsV438;
  if(!core||typeof root.renderShop!=='function'||typeof root.buyShopItem!=='function')
    return;
  const old={
@@ -67,9 +68,13 @@
   }
   const balance=userProfile.currency;
   const inventory=Array.isArray(userProfile.inventory)?userProfile.inventory:[];
+  const product=core.preview({tab:'COMMON'}).find(item=>item.id===itemId);
+  const coupon=functionalV438?.discount(userProfile.functionalV438,{
+   itemId,price:product?.price||0});
+  const discount=coupon?.amount||0;
   const plan=core.quotePurchase({
    itemId,coins:balance,state:userProfile.economyV43,
-   inventoryCount:inventory.length
+   inventoryCount:inventory.length,discount
   });
   if(!plan.ok){
    const descriptions={
@@ -85,14 +90,18 @@
    crypto.randomUUID():Date.now()+'-'+Math.random().toString(36).slice(2));
   const item=core.instance(plan.product,instanceId);
   if(!item)return false;
+  const couponRedemption=discount?functionalV438?.redeem(
+   userProfile.functionalV438,{itemId,price:plan.product.price}):null;
+  if(discount&&(!couponRedemption?.ok||couponRedemption.amount!==discount))return false;
   const event=prepareQuestEvent('MARKET_PURCHASE',instanceId);
   const previous={coins:userProfile.currency,inventory:userProfile.inventory,
    ledger:userProfile.economyV43,quests:userProfile.quests,
-   questState:userProfile.questV437};
+   questState:userProfile.questV437,functional:userProfile.functionalV438};
   try{
    userProfile.currency=plan.coins;
    userProfile.inventory=[item,...inventory];
    userProfile.economyV43=event?{...plan.state,events:event.ledger.events}:plan.state;
+   if(couponRedemption)userProfile.functionalV438=couponRedemption.state;
    if(event){
     userProfile.quests=event.quests;
     userProfile.questV437=event.questState;
@@ -106,11 +115,15 @@
    userProfile.quests=previous.quests;
    if(previous.questState===undefined)delete userProfile.questV437;
    else userProfile.questV437=previous.questState;
+   if(previous.functional===undefined)delete userProfile.functionalV438;
+   else userProfile.functionalV438=previous.functional;
    alertMessage('GIAO DỊCH CHƯA LƯU','Thiết bị chưa lưu được. Đã hoàn trả Xu và vật phẩm.');
    return false;
   }
   alertMessage('ĐÃ MUA THÀNH CÔNG',
-    item.name+' (-'+plan.product.price+' Xu). Xem trong Kho Xuyên Thế Giới.');
+    item.name+' (-'+plan.charged+' Xu'+
+    (plan.discount?' · giảm '+plan.discount+' Xu bằng phiếu':'')+
+    '). Xem trong Kho Xuyên Thế Giới.');
   root.renderShop();
   return true;
  }
@@ -144,7 +157,8 @@
    host,coins:Number(userProfile.currency)||0,
    state:userProfile.economyV43,onBuy:buy,
    stories:typeof novels!=='undefined'?novels:[],
-   readRewards:userProfile.readRewards||{}
+   readRewards:userProfile.readRewards||{},
+   functionalState:userProfile.functionalV438
   })||false;
  };
  root.buyShopItem=buy;

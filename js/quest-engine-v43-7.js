@@ -12,6 +12,7 @@
  const VERSION=1,MAX_COINS=1e9,MAX_INV=500;
  const DEFINITIONS=Object.freeze([
   {id:'q_daily_dudu',type:'DAILY',title:'Lời Chào Mỗi Ngày',desc:'Điểm danh với DUDU một lần.',icon:'💬',target:1,rewardExp:8,rewardCoin:8},
+  {id:'q_daily_tool',type:'DAILY',title:'Kích Hoạt Công Cụ',desc:'Dùng thành công 1 vật phẩm chức năng mới trong Kho.',icon:'🧰',target:1,rewardExp:8,rewardCoin:6},
   {id:'q_week_read',type:'WEEKLY',title:'Hành Trình Trang Sách',desc:'Mở 5 chương trong tuần (mỗi chương một lần/ngày).',icon:'📚',target:5,rewardExp:35,rewardCoin:35},
   {id:'q_week_loot',type:'WEEKLY',title:'Tay Săn Tàn Tích',desc:'Nhặt thành công 5 vật phẩm trong tuần.',icon:'🎒',target:5,rewardExp:30,rewardCoin:25},
   {id:'q_week_fun',type:'WEEKLY',title:'Người Bạn Giải Trí',desc:'Nhận thưởng DUDU FUN 3 lần trong tuần.',icon:'🎲',target:3,rewardExp:25,rewardCoin:20},
@@ -29,7 +30,8 @@
   NPC_GIFT:['q_npc_gifts'],
   NPC_CHECKIN:['q_npc_visits'],
   MARKET_PURCHASE:['q_week_shop'],
-  DUDU_CHECKIN:['q_daily_dudu']
+  DUDU_CHECKIN:['q_daily_dudu'],
+  ITEM_USE:['q_daily_tool']
  });
  const validDay=d=>typeof d==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&
   Number.isFinite(Date.parse(d+'T00:00:00Z'))&&

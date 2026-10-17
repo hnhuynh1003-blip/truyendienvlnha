@@ -15,7 +15,8 @@
    if(copy!==undefined)node.textContent=String(copy);
    return node;
  };
- function render({host,coins,state,onBuy,stories=[],readRewards={}}={}){
+ function render({host,coins,state,onBuy,stories=[],readRewards={},
+   functionalState=null}={}){
    if(!host||typeof onBuy!=='function')return false;
    host.replaceChildren();
    const toolbar=make('section','dudu-v43-market-toolbar');
@@ -29,7 +30,7 @@
      const button=make('button','dudu-v43-market-tab'+(id===tab?' is-active':''),label);
      button.type='button';button.setAttribute('aria-pressed',String(tab===id));
      button.addEventListener('click',()=>{
-       tab=id;render({host,coins,state,onBuy,stories,readRewards});
+       tab=id;render({host,coins,state,onBuy,stories,readRewards,functionalState});
      });
      tabs.append(button);
    }
@@ -78,9 +79,12 @@
      storySelector.hidden=tab!=='STORY'||!storyOptions.length;
      input.hidden=false;
      const ledger=core.norm(state);
+     const utility=root.DuduFunctionalItemsV438;
+     const pending=utility?.norm(functionalState).pending;
      if(tab==='COMMON'){
        hint.textContent='🪙 '+coins+' Xu · '+ledger.total+'/'+core.PURCHASE_TOTAL_PER_DAY+
-         ' lượt mua hôm nay · Mua hàng không cộng EXP';
+         ' lượt mua hôm nay · Mua hàng không cộng EXP'+
+         (pending?' · 🎟️ Phiếu -25% đang chờ áp dụng':'');
      }else if(tab==='REALM'){
        hint.textContent='Vật phẩm vị diện chỉ rơi ở chương được tác giả gắn đúng thế giới. Chưa bán bằng Xu.';
      }else if(tab==='DUDU'){
@@ -88,7 +92,7 @@
      }else if(tab==='STORY'){
        hint.textContent='Danh mục tác giả (chỉ xem) · không phải đồ sở hữu hoặc phần thưởng được cấp.';
      }else{
-       hint.textContent='🔋 Bộ Nạp Tần Số: xóa thời gian chờ nhặt đồ trên Điện thoại. Tối đa 2 lần mua và sử dụng/ngày; không ảnh hưởng nhặt theo chương.';
+       hint.textContent='Công cụ Sandbox: nạp hồi chiêu, gia tốc 60 giây, gói tiếp tế và phiếu giảm giá. Không thay lượt nhặt theo chương.';
      }
      collection.replaceChildren();
      const storyIndex=tab==='STORY'?storyCatalog?.index({stories,storyId,readRewards}):null;
@@ -135,14 +139,18 @@
        const right=make('div','dudu-v43-market-buy');
        if(tab==='COMMON'||tab==='TOOLS'){
          const n=ledger.counts[item.id]||0;
-         const limit=item.id===core.TOOL_ID?core.TOOL_PURCHASES_PER_DAY:
-           core.PURCHASE_PER_ITEM_PER_DAY;
-         right.append(make('strong','',item.price+' Xu'));
+         const limit=core.TOOL_LIMITS[item.id]||core.PURCHASE_PER_ITEM_PER_DAY;
+         const save=tab==='COMMON'?(utility?.discount(functionalState,{
+           itemId:item.id,price:item.price}).amount||0):0;
+         right.append(make('strong','',save?
+           (item.price-save)+' Xu':item.price+' Xu'));
+         if(save)right.append(make('small','dudu-v438-discount',
+           '−'+save+' Xu (phiếu)'));
          const button=make('button','btn','Mua');
          button.type='button';
          button.disabled=ledger.total>=core.PURCHASE_TOTAL_PER_DAY||
-           n>=limit||coins<item.price;
-         button.setAttribute('aria-label','Mua '+item.name+' giá '+item.price+' Xu');
+           n>=limit||coins<item.price-save;
+         button.setAttribute('aria-label','Mua '+item.name+' giá '+(item.price-save)+' Xu');
          button.addEventListener('click',()=>onBuy(item.id));
          right.append(button,make('small','',n+'/'+limit+' hôm nay'));
        }else{

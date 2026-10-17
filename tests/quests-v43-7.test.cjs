@@ -17,12 +17,12 @@ test('V43.7 preserves old quest IDs and adds nine differentiated tasks exactly o
  const old=[{id:'q_main_write',type:'MAIN',target:1,current:1,claimed:false},
   ...core.EXTRA_DAILY_QUESTS.map(q=>({...q}))];
  const quests=quest.ensure(core.ensureQuests(old));
- assert.equal(quests.length,old.length+9);
+ assert.equal(quests.length,old.length+10);
  assert.equal(get(quests,'q_main_write').current,1);
  assert.equal(quest.ensure(quests),quests);
  assert.deepEqual(quest.DEFINITIONS.map(q=>q.type).reduce((o,t)=>
   ({...o,[t]:(o[t]||0)+1}),{}),
-  {DAILY:1,WEEKLY:4,STORY:1,NPC:2,EVENT:1});
+  {DAILY:2,WEEKLY:4,STORY:1,NPC:2,EVENT:1});
  assert.equal(new Set(quests.map(q=>q.id)).size,quests.length);
 });
 test('V43.7 week begins on Monday and resets only weekly; event resets daily',()=>{

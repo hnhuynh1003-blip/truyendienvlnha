@@ -6,10 +6,12 @@
 (function(root,factory){
   'use strict';
   const api=factory(typeof module==='object'&&module.exports?
-    require('./item-catalog-v2.js'):root?.DuduItemCatalog);
+    require('./item-catalog-v2.js'):root?.DuduItemCatalog,
+    typeof module==='object'&&module.exports?
+    require('./economy-core-v43.js'):root?.DuduEconomyCoreV43);
   if(typeof module==='object'&&module.exports)module.exports=api;
   if(root)root.DuduInventoryV42=api;
-})(typeof window!=='undefined'?window:null,function(catalog){
+})(typeof window!=='undefined'?window:null,function(catalog,core){
   'use strict';
   const VERSION=42;
   const CATEGORIES=Object.freeze({
@@ -97,9 +99,9 @@
       RANKS.includes(record.rank)?record.rank:'F';
     const type=['FOOD','WEAPON','ITEM'].includes(source.type)?source.type:
       ['FOOD','WEAPON','ITEM'].includes(record.type)?record.type:'ITEM';
-    const functional=(id==='dudu-tool-frequency-cell-v43'&&
+    const functional=(core?.FUNCTIONAL_IDS||['dudu-tool-frequency-cell-v43']).includes(id)&&
       record.scope==='FUNCTIONAL'&&record.obtainedFrom?.kind==='SHOP'&&
-      record.obtainedFrom?.source==='DUDU_MARKET');
+      record.obtainedFrom?.source==='DUDU_MARKET';
     const scope=approved?.scope||(functional?'FUNCTIONAL':
       ['STORY','CHAPTER'].includes(record.scope)?record.scope:'UNKNOWN');
     const unique=approved?.unique===true||record.unique===true;
@@ -129,7 +131,12 @@
         record.giftable===true&&!protectedItem,
       archive:approved?.archived===true||record.archived===true,
       verifiedCollectible:false, // Browser inventory never proves server ownership.
-      usageStatus:functional?'CLEAR_PHONE_COOLDOWN':'NOT_IMPLEMENTED'
+      usageStatus:functional?({
+       [core?.TOOL_ID||'dudu-tool-frequency-cell-v43']:'CLEAR_PHONE_COOLDOWN',
+       [core?.SUPPLY_ID]:'OPEN_SUPPLY',
+       [core?.PULSE_ID]:'SHORTEN_PHONE_COOLDOWN',
+       [core?.COUPON_ID]:'ACTIVATE_COUPON'
+      }[id]||'NOT_IMPLEMENTED'):'NOT_IMPLEMENTED'
     });
   }
   function list(inventory,{category='ALL',query='',rank='ALL',realm='ALL',
