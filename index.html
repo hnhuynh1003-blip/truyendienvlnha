@@ -66,6 +66,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-storage-compat.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-functions-compat.js"></script>
   <script src="js/auth-v2.js?v=49-3"></script>
   <script src="js/ai-proxy.js"></script>
   <script src="js/npc-chat-lite.js"></script>
@@ -744,6 +745,7 @@
     }
 </style>
   <link rel="stylesheet" href="css/phone-compact-v50.css?v=50-1">
+  <link rel="stylesheet" href="css/economy-live-v52.css?v=52-1">
 </head>
 <body>
 
@@ -1255,7 +1257,7 @@
         <div id="shop-items-container" class="dudu-v27-shop-grid"></div>
       </div>
 
-      <!-- APP: DUDU FUN V43.5.4 — Sandbox-only, free daily mini-games -->
+      <!-- APP: DUDU FUN — local practice on live accounts, sandbox rewards unchanged -->
       <div class="phone-sub-app" id="phone-app-fun">
         <div class="phone-app-header">
           <button type="button" class="phone-back-btn" onclick="phoneHome()" aria-label="Trở về">‹</button>
@@ -4060,6 +4062,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
         window.DuduInventoryHubV439?.reset();
         window.DuduWorldCollectionV441?.reset();
         renderInventory();
+        if(!IS_SANDBOX_MODE)window.DuduEconomyLiveV52?.openInventory();
         startCooldownTicker();
       } else if (appName === 'author-mail') {
         renderAuthorMailV443();
@@ -4082,8 +4085,10 @@ document.getElementById('phone-home-screen').style.display = 'none';
         window.DuduFunUIV43?.render();
       } else if (appName === 'quests') {
         renderQuests();
+        if(!IS_SANDBOX_MODE)window.DuduEconomyLiveV52?.openQuests();
       } else if (appName === 'shop') {
         renderShop();
+        if(!IS_SANDBOX_MODE)window.DuduEconomyLiveV52?.openShop();
       } else if (appName === 'settings') {
         updateActiveModelInfo();
         syncPhoneDisplayOptionsV27();
@@ -6697,10 +6702,11 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/npc-portrait-v39.js?v=2"></script>
 <script src="js/phone-inbox-v33.js?v=51-1"></script>
 <script src="js/companion-ui-v43.js?v=51-1"></script>
-<script src="js/market-ui-v43.js?v=51-1"></script>
+<script src="js/market-ui-v43.js?v=52-1"></script>
 <script src="js/dudu-fun-ui-v43.js?v=51-1"></script>
 <script src="js/quest-ui-v43-7.js?v=51-1"></script>
 <script src="js/economy-runtime-v43.js?v=51-1"></script>
+<script src="js/economy-live-v52.js?v=52-1"></script>
 <script src="js/museum-memories-ui-v43.js?v=2"></script>
 <script src="js/npc-diary-ui.js?v=1"></script>
 <script src="js/soul-link-ui-v43.js?v=2"></script>
