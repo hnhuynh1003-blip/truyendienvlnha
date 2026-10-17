@@ -150,17 +150,19 @@
   if(auth.currentUser?.uid!==uid)throw Error('Tài khoản đăng nhập đã thay đổi trong lúc tải');
   return {path:key};
  }
- let state={file:null,parsed:null,busy:false};
+ let state={file:null,parsed:null,busy:false,cloudDraft:null};
  function open(options={}){
   if(!options.canEdit?.())return false;
   const modal=root?.document?.getElementById('epub-import-modal');
   const host=root?.document?.getElementById('epub-import-content');
   if(!modal||!host)return false;
-  state={file:null,parsed:null,busy:false};
+  state={file:null,parsed:null,busy:false,cloudDraft:null};
   const doc=root.document;
   const el=(tag,copy)=>{const x=doc.createElement(tag);if(copy!=null)x.textContent=copy;return x};
   host.replaceChildren();
-  const help=el('p','Chọn EPUB → hệ thống tự đọc tên sách và tách chương. Xem trước trước khi quyết định lưu. Không tự đăng truyện hoặc thay đổi dữ liệu Firebase.');
+  const help=el('p',options.sandbox?
+    'Chọn EPUB → tách chương → xem trước → nhập vào Sandbox. Không thay đổi Firebase.':
+    'Chọn EPUB → tách chương → xem trước → lưu bản thảo có các chương lên Firebase → xác nhận xuất bản. Không ghi đè truyện cũ.');
   const input=el('input');input.type='file';input.accept='.epub,application/epub+zip';
   input.setAttribute('aria-label','Chọn tệp EPUB');
   const status=el('p','');status.setAttribute('role','status');status.className='dudu-epub-status';
@@ -179,7 +181,7 @@
   };
   const makeParsed=()=>state.parsed?{...state.parsed,title:safeName(title.value)||state.parsed.title}:null;
   input.onchange=()=>run(async()=>{
-   const file=input.files?.[0];state.file=file;state.parsed=null;
+   const file=input.files?.[0];state.file=file;state.parsed=null;state.cloudDraft=null;
    list.replaceChildren();status.textContent='Đang phân tích EPUB trên thiết bị…';
    if(!validFile(file))throw Error('Tệp phải có đuôi .epub và dung lượng tối đa 15 MB');
    const parsed=await parse(file);state.parsed=parsed;title.value=parsed.title;
@@ -217,7 +219,41 @@
    status.textContent='✅ Đã tải EPUB lên Firebase Storage (quyền truy cập phụ thuộc Rules đã triển khai): '+stored.path+
      '. Chưa xuất bản thành chương cho độc giả; đây là kho bản thảo an toàn.';
   }));
+
   cloudBtn.hidden=!!options.sandbox;
+  const production=options.cloudApi;
+  let publishBtn;
+  const saveCloud=button('Lưu truyện và các chương lên Firebase (bản thảo)',()=>run(async()=>{
+   if(options.sandbox||!options.canEdit?.())throw Error('Chỉ dành cho tài khoản tác giả thật');
+   if(!production||!options.firestore?.()||!options.auth?.())throw Error('Chưa có Firebase Firestore hoặc bộ lưu EPUB');
+   if(!state.parsed)throw Error('Hãy chọn EPUB và chờ tách chương thành công');
+   if(state.cloudDraft)throw Error('Bản thảo đã lưu, không nhập trùng; hãy xuất bản hoặc đóng');
+   const parsed=makeParsed();
+   if(!parsed)throw Error('Không đọc được nội dung EPUB');
+   if(!root.confirm('Lưu '+parsed.chapters.length+' chương EPUB thành bản thảo riêng trên Firestore? Dữ liệu hiện có không bị thay thế.'))return;
+   status.textContent='Đang lưu bản thảo Firebase; chưa công khai cho độc giả…';
+   const stored=await production.importDraft(parsed,{
+    db:options.firestore(),auth:options.auth(),
+    onProgress:percent=>{status.textContent='Đang lưu chương trên Firebase: '+percent+'%'}
+   });
+   state.cloudDraft=stored;publishBtn.disabled=false;
+   status.textContent='✅ Đã lưu '+stored.chapterCount+' chương dưới dạng bản thảo Firebase. Chưa công khai. Bạn có thể xác nhận xuất bản.';
+  }));
+  saveCloud.hidden=!!options.sandbox;
+  publishBtn=button('Xác nhận xuất bản cho độc giả',()=>run(async()=>{
+   if(options.sandbox||!options.canEdit?.())throw Error('Chỉ tác giả thật được xuất bản');
+   if(!state.cloudDraft)throw Error('Hãy lưu bản thảo đầy đủ lên Firebase trước');
+   if(!root.confirm('Bạn xác nhận có quyền phát hành nội dung EPUB này, đồng thời muốn công khai tác phẩm '+state.cloudDraft.title+' cho độc giả?'))return;
+   status.textContent='Đang xác minh đủ chương và xuất bản…';
+   const published=await production.publishDraft(state.cloudDraft.id,{
+    db:options.firestore(),auth:options.auth(),confirmRights:true
+   });
+   status.textContent='✅ Đã xuất bản '+published.chapterCount+' chương lên Firebase. Tải lại Tủ Truyện để thấy tác phẩm.';
+   publishBtn.disabled=true;
+   options.onPublished?.();
+  }));
+  publishBtn.disabled=true;publishBtn.hidden=!!options.sandbox;
+
   button('Đóng',()=>{modal.style.display='none'});
   host.append(help,input,title);
   if(options.sandbox)host.append(el('p','Nhập vào truyện:'),target);
