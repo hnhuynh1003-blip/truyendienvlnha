@@ -49,7 +49,7 @@ test('V44.2 server: public storage gate OFF and only signed admin may register/m
  assert.match(wr,/new_sqlite_classes = \["DuduDiscussion"\]/);
  assert.match(worker,/if\(env\.COMMENTS_ENABLED!=='true'\)/);
  assert.match(worker,/await verifyFirebaseIdToken\(req,env.PROJECT_ID\)/);
- assert.match(worker,/if\(adminPath&&!user\.admin\)/);
+ assert.match(worker,/if\(adminPath&&\(!user\.admin\|\|pilot\.role!=='AUTHOR'\)\)/);
  assert.match(worker,/store\.register\(parsed,user\.uid,now\)/);
  assert.match(worker,/store\.moderate\(parsed,user\.uid\)/);
  assert.match(worker,/store\.report\(parsed,user\.uid,now\)/);
