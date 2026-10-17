@@ -177,7 +177,7 @@
   if(questsV437&&root.DuduQuestUIV437)
    return root.DuduQuestUIV437.render({
     host:document.getElementById('quests-container'),
-    quests:readOnly?(Array.isArray(userProfile.quests)?userProfile.quests:[]):owner()?userProfile.quests:[],
+    quests:readOnly?(questsV437?.ensure(core.ensureQuests(Array.isArray(userProfile.quests)?userProfile.quests:[]))||[]):owner()?userProfile.quests:[],
     questState:readOnly?userProfile.questV437:owner()?userProfile.questV437:null,
     signed:readOnly?!!(root.DuduAuth?.isReady?.()&&root.DuduAuth.uid()===currentUsername):owner(),
     onClaim:readOnly?null:root.claimQuestReward,readOnly
