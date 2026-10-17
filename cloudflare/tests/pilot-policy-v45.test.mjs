@@ -66,5 +66,7 @@ test('V45: pilot routes rely on signed UID and separated stores, not public list
  assert.match(config,/COMMENTS_ENABLED = "false"/);
  assert.match(config,/GIFTS_ENABLED = "false"/);
  assert.match(config,/GIFT_SETTLEMENT_ENABLED = "false"/);
+ assert.match(config,/PILOT_SETTLEMENT_ENABLED = "false"/);
+ assert.match(code,/env\.PILOT_SETTLEMENT_ENABLED!=='true'/);
  assert.doesNotMatch(config,/PILOT_(READER_A_UID|READER_B_UID|AUTHOR_UID)\s*=/);
 });
