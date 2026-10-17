@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dudu-studio-v37-anime-art-20261016-r1';
+const CACHE_NAME = 'dudu-studio-v49-6-phone-release';
 self.addEventListener('install', (event) => { self.skipWaiting(); });
 self.addEventListener('activate', (event) => {
   event.waitUntil((async()=>{
