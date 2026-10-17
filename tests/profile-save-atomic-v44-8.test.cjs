@@ -12,7 +12,7 @@ const start=html.indexOf('function saveCurrentAccount() {');
 const end=html.indexOf('function openAuthModal()',start);
 assert.ok(start>=0&&end>start,'inline save function exists on main');
 const source=html.slice(start,end).trim();
-function setup(throws=false,withCollection=true){
+function setup(throws=false,withCollection=true,renderThrows=false){
  const profile={currency:80,inventory:[{instanceId:'new-item'}],
   collectionV441:{found:['old-item']},quests:[],exp:0,level:1};
  const writes=[],phone=[];
@@ -23,7 +23,11 @@ function setup(throws=false,withCollection=true){
   userProfile:profile,window:{DuduWorldCollectionV441:withCollection?collection:null},
   DuduWorldCollectionV441:collection,DEFAULT_SYSTEM_QUESTS:[],
   scopedLocalKey:key=>'sandbox-uid:'+key,
-  updatePhoneUI:()=>phone.push(true),
+  updatePhoneUI:()=>{
+   if(renderThrows)throw Error('render crash after persisted commit');
+   phone.push(true);
+  },
+  console:{warn:()=>{}},
   localStorage:{setItem:(key,value)=>{
    if(throws)throw Error('QuotaExceededError');
    writes.push({key,value,collectionAtWrite:profile.collectionV441.found.slice()});
@@ -57,4 +61,12 @@ test('V44.8: no world collection module retains original profile behavior',()=>{
  save();
  assert.equal(writes.length,1);
  assert.deepEqual(profile.collectionV441,{found:['old-item']});
+});
+
+test('V44.9: a UI refresh exception does not roll back an already committed profile',()=>{
+ const {save,profile,writes,phone}=setup(false,true,true);
+ assert.doesNotThrow(()=>save());
+ assert.equal(writes.length,1,'disk commit must survive a Phone render error');
+ assert.deepEqual(profile.collectionV441.found,['old-item','new-item']);
+ assert.equal(phone.length,0,'mocked UI failed as requested');
 });
