@@ -12,6 +12,8 @@ test('V52.3 Enterprise App Check uses a configured public key while retaining ba
  assert.match(html,/firebase-app-check-compat\.js/);
  assert.match(html,/js\/appcheck-sitekey-v52\.js\?v=52-3/);
  assert.match(html,/new firebase\.appCheck\.ReCaptchaEnterpriseProvider\(/);
+ assert.match(html,/isProductionAppCheck = new URLSearchParams\(window\.location\.search\)\.get\('sandbox'\) !== '1'/);
+ assert.match(html,/typeof firebase\.appCheck==='function'/);
  assert.match(html,/DUDU_RECAPTCHA_ENTERPRISE_SITE_KEY\.trim\(\)/);
  const keySource=file('js/appcheck-sitekey-v52.js');
  assert.match(keySource,/DUDU_RECAPTCHA_ENTERPRISE_SITE_KEY = '[A-Za-z0-9_-]+'/);
