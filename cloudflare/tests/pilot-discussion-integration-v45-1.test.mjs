@@ -27,7 +27,7 @@ const verify=async req=>{
  const header=req.headers.get('Authorization')||'';
  if(!header.startsWith('Bearer stub-'))return null;
  const uid=header.slice('Bearer stub-'.length);
- return {uid,admin:uid==='author_123456'};
+ return {uid,admin:uid==='author_123456'||uid==='reader_admin_123456'};
 };
 const worker=new Function('verifyFirebaseIdToken','pilotAccess','scope',
  'postBody','reportBody','moderatorBody','registerBody',
@@ -153,5 +153,81 @@ test('V45.1 different namespace never sees previous Pilot comment data',async()=
   assert.equal(isolated.status,404,'new namespace has independent registry');
   assert.equal(x.stores.size,2);
   assert.notEqual([...x.stores.keys()][0],[...x.stores.keys()][1]);
+ }finally{x.close()}
+});
+
+test('V45.1 R2 reader with signed admin claim still cannot register or moderate Pilot',async()=>{
+ const x=setup();
+ try{
+  const readerAdmin='reader_admin_123456';
+  const custom={...x.env,PILOT_READER_B_UID:readerAdmin};
+  const p=await call(custom,'/v1/pilot/status',readerAdmin);
+  assert.equal(p.status,200);
+  assert.equal(p.data.role,'READER_B');
+  assert.equal(p.data.canManagePilot,false);
+  assert.equal((await call(custom,'/v1/comments/admin/register',
+   readerAdmin,{storyId:'story01',chapterIds:['ch01']})).status,403);
+  assert.equal(x.stores.size,0);
+  const signedAuthor=await call(custom,'/v1/pilot/status','author_123456');
+  assert.equal(signedAuthor.status,200);
+  assert.equal(signedAuthor.data.canManagePilot,true);
+  const reader=await call(custom,'/v1/pilot/status','reader_a_123456');
+  assert.equal(reader.data.canManagePilot,false);
+ }finally{x.close()}
+});
+test('V45.1 R2 cross-UID reply inbox, report, moderation and namespace isolation',async()=>{
+ const x=setup();
+ try{
+  const a=baseEnv.PILOT_READER_A_UID,b=baseEnv.PILOT_READER_B_UID;
+  const author=baseEnv.PILOT_AUTHOR_UID;
+  const scopePath='/v1/comments/list?storyId=pilot-story&chapterId=ch-01';
+  assert.equal((await call(x.env,'/v1/comments/admin/register',author,{
+   storyId:'pilot-story',chapterIds:['ch-01']
+  })).status,200);
+  const first=await call(x.env,'/v1/comments/create',a,{
+   storyId:'pilot-story',chapterId:'ch-01',parentId:null,
+   text:'Nội dung ban đầu',requestId:'ra-001'
+  });
+  assert.equal(first.status,200);
+  const answered=await call(x.env,'/v1/comments/create',b,{
+   storyId:'pilot-story',chapterId:'ch-01',
+   parentId:first.data.id,text:'B phản hồi A',requestId:'rb-001'
+  });
+  assert.equal(answered.status,200);
+  const inboxA=await call(x.env,'/v1/comments/inbox',a);
+  assert.equal(inboxA.status,200);
+  assert.equal(inboxA.data.notifications.length,1);
+  const inboxB=await call(x.env,'/v1/comments/inbox',b);
+  assert.equal(inboxB.data.notifications.length,0);
+  assert.equal((await call(x.env,'/v1/comments/inbox/read',a,{})).status,200);
+  assert.equal((await call(x.env,'/v1/comments/inbox',a)).data.notifications[0].read,1);
+  const report=await call(x.env,'/v1/comments/report',a,
+   {commentId:answered.data.id,reason:'SPOILER'});
+  assert.equal(report.status,200);
+  const duplicate=await call(x.env,'/v1/comments/report',a,
+   {commentId:answered.data.id,reason:'SPOILER'});
+  assert.equal(duplicate.data.alreadyReported,true);
+  const reports=await call(x.env,'/v1/comments/admin/reports',author);
+  assert.equal(reports.status,200);
+  assert.equal(reports.data.reports.length,1);
+  const denied=await call(x.env,'/v1/comments/admin/moderate',b,{
+   commentId:answered.data.id,hidden:true
+  });
+  assert.equal(denied.status,403);
+  const hidden=await call(x.env,'/v1/comments/admin/moderate',author,{
+   commentId:answered.data.id,hidden:true
+  });
+  assert.equal(hidden.status,200);
+  assert.equal((await call(x.env,scopePath,a)).data.comments.length,1);
+  // The A notice points at hidden B comment and disappears when moderated.
+  assert.equal((await call(x.env,'/v1/comments/inbox',a)).data.notifications.length,0);
+  const revived=await call(x.env,'/v1/comments/admin/moderate',author,{
+   commentId:answered.data.id,hidden:false
+  });
+  assert.equal(revived.status,200);
+  assert.equal((await call(x.env,scopePath,a)).data.comments.length,2);
+  const separate={...x.env,PILOT_NAMESPACE:'v45-second-room'};
+  assert.equal((await call(separate,scopePath,a)).status,404);
+  assert.equal(x.stores.size,2);
  }finally{x.close()}
 });
