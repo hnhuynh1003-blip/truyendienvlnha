@@ -149,3 +149,37 @@ test('V43.9: no authenticated transfer, fabricated public comments or remote cal
  assert.match(ui,/AWAITING_SERVER|ký gửi|Chưa có người mua/);
  assert.doesNotMatch(core+ui,/db\.collection|fetch\(|DuduCollectiblesClient|firebase|addDoc\(/);
 });
+
+
+test('V44.6: reject forged, conflicting and duplicated persisted auction lots',()=>{
+ const rare=create('fantasy-ruins-seal','safe-instance');
+ const plan=engine.list({inventory:[rare],itemInstanceId:rare.instanceId,
+  stories,ask:250,day});
+ assert.equal(plan.ok,true);
+ const base=plan.state;
+ const invalids=[
+  row=>{row.status='ACCEPTED';},
+  row=>{row.item.name='Forged';},
+  row=>{row.item.rank='SSS';},
+  row=>{row.item.scope='DUDU';},
+  row=>{row.storyId='s2';},
+  row=>{row.chapterId='unknown';},
+  row=>{row.realm='SCIFI';},
+  row=>{row.item.obtainedFrom={kind:'GLOBAL'};},
+  row=>{row.id='auction-other';}
+ ];
+ for(const mutate of invalids){
+  const altered=JSON.parse(JSON.stringify(base));
+  mutate(altered.listings[0]);
+  const normalized=engine.state(altered,day);
+  assert.equal(normalized.listings.length,0,'reject tampered persisted custody');
+  assert.equal(engine.cancel({inventory:[],tradeState:altered,
+   listingId:plan.listing.id,day}).reason,'not-listed');
+ }
+ const copies=JSON.parse(JSON.stringify(base));
+ copies.listings.push({...copies.listings[0],id:'auction-other-copy'});
+ assert.equal(engine.state(copies,day).listings.length,1,
+  'one physical instance may be escrowed only once');
+ assert.equal(engine.state(base,'2026-10-18').listings.length,1,
+  'legitimate held items survive day rollover');
+});
