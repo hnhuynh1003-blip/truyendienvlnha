@@ -495,7 +495,7 @@ async function gemini(payload,env){
     systemInstruction:payload.systemInstruction,contents:payload.contents,
     generationConfig:{
       temperature:payload.purpose==='chat'?0.8:0.65,
-      maxOutputTokens:payload.purpose==='chat'?320:850
+      maxOutputTokens:payload.purpose==='chat'?640:850
     }
   };
   let response;
@@ -511,9 +511,12 @@ async function gemini(payload,env){
   if(!response.ok){
     console.warn('Gemini upstream HTTP status:',response.status);
     const limit=[429,503].includes(response.status);
-    return {error:{code:limit?'ai-busy':'upstream-error',
-      message:limit?'Gemini đang quá tải hoặc hết hạn mức dự án.':'Không thể nhận phản hồi từ AI.'},
-      status:limit?429:502};
+    const unavailable=[400,403,404].includes(response.status);
+    return {error:{code:limit?'ai-busy':unavailable?'model-unavailable':'upstream-error',
+      message:limit?'Model đã hết hạn mức hoặc Gemini đang bận.':
+        unavailable?'Model này chưa được API key hỗ trợ hoặc không sẵn sàng. Hãy chọn model khác.':
+        'Không thể nhận phản hồi từ AI.'},
+      status:limit?429:unavailable?409:502};
   }
   let data;
   try{data=await response.json();}catch(_){
