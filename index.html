@@ -1210,7 +1210,7 @@
           </div>
         </div>
         <div id="chat-messages-container" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 8px; background: rgba(10, 14, 20, 0.6); border-radius: 8px; border: 1px solid #1f2937; margin-bottom: 6px;"></div>
-        <div id="dudu-spark-chat-tip" style="display:none;font-size:9px;color:#d2dee9;text-align:center;margin:0 0 4px" aria-label="Chế độ trò chuyện kịch bản">💬 Trò chuyện kịch bản miễn phí · Không dùng AI trực tuyến · Lưu trên thiết bị</div>
+        <div id="dudu-spark-chat-tip" style="display:none;font-size:9px;color:#d2dee9;text-align:center;margin:0 0 4px" aria-label="Chế độ trò chuyện kịch bản">✦ NPC AI trực tuyến qua Cloudflare · Có hạn mức theo ngày · Lưu hội thoại trên thiết bị</div>
         <div id="chat-connection-status" role="status" aria-live="polite" style="display:none; font-size:10px; color:var(--gold); padding:3px 5px; line-height:1.35;">
           <span id="chat-connection-message"></span>
           <button id="chat-retry-btn" class="btn" style="display:none; font-size:10px; padding:2px 6px; margin-left:4px;" onclick="retryLastNpcReply()">Thử lại</button>
@@ -1902,6 +1902,7 @@
     // V53: single-reader Spark mode; no Firebase Functions or paid AI required.
     // Local NPC scripts never change wallet, items, quests or relationship rewards.
     const DUDU_SPARK_PERSONAL_MODE = !IS_SANDBOX_MODE;
+    const DUDU_NPC_AI_MODE = !IS_SANDBOX_MODE; // Cloudflare/Gemini; Firebase Spark remains free.
     // V47 requires both sandbox=1 and pilot=1; neither default mode can access Pilot.
     const IS_PILOT_STAGING_MODE = IS_SANDBOX_MODE && DUDU_QUERY.get('pilot') === '1';
     DuduAI.init(IS_SANDBOX_MODE);
@@ -3118,15 +3119,15 @@
       pendingNpcRetry=null;
       hideNpcConnectionStatus();
 
-      if (scripted) {
-        // No API requests, no quests, no game economy changes.
+      if (scripted && !DUDU_NPC_AI_MODE) {
+        // Sandbox scripts remain free; production NPC messages always go to AI.
         chatHistories[requestChatKey].push({role:'model',text:scripted.text,source:'script'});
         saveChatHistories();
         renderChatMessages(charId);
         return;
       }
-      if(DUDU_SPARK_PERSONAL_MODE) {
-        // Personal Spark is deliberately offline: no Cloudflare/Gemini API calls,
+      if(DUDU_SPARK_PERSONAL_MODE && !DUDU_NPC_AI_MODE) {
+        // Optional conservative fallback only when explicit AI mode is disabled,
         // no reward mutation, but per-UID + story + NPC chat history is preserved.
         const local = DuduNpcLite.offlineReply(text,dialogueNpc,previousMessages);
         if(local?.text)chatHistories[requestChatKey].push({
