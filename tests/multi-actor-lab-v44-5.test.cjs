@@ -136,3 +136,48 @@ test('V44.5: separate dedicated storage, no Firebase, userProfile, or real inven
  assert.doesNotMatch(executable, /firebase\.|\.firestore\(|fetch\(|userProfile|DuduAuth|Worker\b|COLLECTIBLES_ENABLED/);
  assert.match(ui,/Dữ liệu chỉ nằm trong dudu-v445/);
 });
+
+
+test('V44.5.1: audit rejects item identity swaps and wrong realm provenance',()=>{
+ const s=lab.initial();
+ const swap=JSON.parse(JSON.stringify(s));
+ swap.items[0].itemId='common-bottled-water';
+ swap.items[0].name='Nước Uống Đóng Chai';
+ swap.items[0].icon='💧';
+ assert.ok(lab.audit(swap).includes('invalid-seed-provenance'));
+ const realm=JSON.parse(JSON.stringify(s));
+ const item=realm.items.find(i=>i.itemId==='cult-spirit-fragment');
+ item.sourceStoryId='another-story';
+ assert.ok(lab.audit(realm).includes('invalid-seed-provenance'));
+ assert.equal(lab.run(realm,{type:'POST',requestId:'forged',text:'Không cho phép'})
+   .reason,'corrupt-state');
+});
+test('V44.5.1: audit rejects mismatched comment sender and duplicate request IDs',()=>{
+ const posted=perform(lab.initial(),sample('lab-item-1')).state;
+ const forged=JSON.parse(JSON.stringify(posted));
+ forged.transfers[0].senderId='B';
+ assert.ok(lab.audit(forged).includes('invalid-transfer-comment-link'));
+ const unrelated=JSON.parse(JSON.stringify(posted));
+ unrelated.transfers[0].requestId='different-request';
+ assert.ok(lab.audit(unrelated).includes('invalid-transfer-comment-link'));
+ const repeated=JSON.parse(JSON.stringify(posted));
+ repeated.comments.push({...repeated.comments[0],id:'another-comment'});
+ assert.ok(lab.audit(repeated).includes('invalid-comment'));
+});
+test('V44.5.1: idempotent replay still works when comment quota is full',()=>{
+ let state=lab.initial();
+ for(let i=0;i<99;i++){
+  state=perform(state,{type:'POST',requestId:'quota-'+i,
+   text:'Bình luận đủ dài '+i}).state;
+ }
+ const request=sample('lab-item-1');
+ state=perform(state,request).state;
+ assert.equal(state.comments.length,100);
+ assert.equal(state.transfers.length,1);
+ const replay=lab.run(state,request);
+ assert.equal(replay.ok,true);
+ assert.equal(replay.alreadyApplied,true);
+ assert.strictEqual(replay.state,state);
+ assert.equal(lab.run(state,{type:'POST',requestId:'quota-over',
+  text:'Thêm bình luận'}).reason,'comment-limit');
+});
