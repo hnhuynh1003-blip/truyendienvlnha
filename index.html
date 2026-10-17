@@ -71,7 +71,7 @@
   <script src="js/appcheck-sitekey-v52.js?v=52-3"></script>
   <script src="js/auth-v2.js?v=49-3"></script>
   <script src="js/ai-proxy.js"></script>
-  <script src="js/npc-chat-lite.js"></script>
+  <script src="js/npc-chat-lite.js?v=53-1"></script>
   <script src="js/story-memory.js"></script>
   <script src="js/npc-memory-v2.js"></script>
   <script src="js/world-items-v44-1.js?v=1"></script>
@@ -105,7 +105,7 @@
   <script src="js/story-comments-pilot-v45-2.js?v=45-2"></script>
   <script src="js/sandbox-discussion.js?v=46-1"></script>
   <script src="js/sandbox-discussion-ui.js?v=46-1"></script>
-  <script src="js/epub-import-v48.js?v=49-1"></script>
+  <script src="js/epub-import-v48.js?v=53-1"></script>
   <script src="js/epub-production-v49.js?v=49-1"></script>
   <script src="js/npc-portrait-library-v1.js?v=40-1"></script>
   <script src="js/npc-anime-candidates-v14.js"></script>
@@ -6421,6 +6421,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
         novels,
         author:userProfile.name||'Tác giả',
         sandbox:IS_SANDBOX_MODE,
+        sparkPersonal:DUDU_SPARK_PERSONAL_MODE,
         canEdit:()=>canEditStories(),
         cloudApi:window.DuduEpubProductionV49,
         firestore:()=>db,
