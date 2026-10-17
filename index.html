@@ -8,7 +8,7 @@
   <link rel="manifest" href="manifest.json?v=49-4">
   <link rel="icon" type="image/webp" href="assets/branding/dudu-app-icon.webp?v=20261016">
   <link rel="apple-touch-icon" href="assets/branding/dudu-app-icon.webp?v=20261016">
-  <link rel="stylesheet" href="css/phone-ui-v11.css">
+  <link rel="stylesheet" href="css/phone-ui-v11.css?v=49-6">
   <link rel="stylesheet" href="css/phone-ui-v12-dossiers.css">
   <link rel="stylesheet" href="css/phone-ux-v27-r2.css">
   <link rel="stylesheet" href="css/npc-anime-v14.css">
@@ -21,7 +21,7 @@
   <link rel="stylesheet" href="css/phone-ux-v27-r3.css">
   <link rel="stylesheet" href="css/phone-wallpaper-v27-r4.css">
   <link rel="stylesheet" href="css/dudu-multiverse-art-v28-r5.css">
-  <link rel="stylesheet" href="css/phone-floating-v30.css?v=1">
+  <link rel="stylesheet" href="css/phone-floating-v30.css?v=49-6">
   <link rel="stylesheet" href="css/phone-refinement-v31.css?v=1">
   <link rel="stylesheet" href="css/phone-social-v32.css?v=1">
   <link rel="stylesheet" href="css/phone-inbox-v33.css?v=4">
@@ -2520,7 +2520,7 @@
       });
       if(previous&&chars.some(c=>c.id===previous))selector.value=previous;
       switchChatCharacter();
-      if(IS_SANDBOX_MODE)renderPhoneWallpaperV27();
+      renderPhoneWallpaperV27();
     }
 
     function showNpcRelationshipHelp() {
@@ -4016,7 +4016,7 @@
             closeRedPacketV32();
 document.querySelectorAll('.phone-sub-app').forEach(el => el.style.display = 'none');
       document.getElementById('phone-home-screen').style.display = 'flex';
-      if(IS_SANDBOX_MODE)renderPhoneWallpaperV27();
+      renderPhoneWallpaperV27();
     }
 
     function openPhoneApp(appName) {
@@ -4070,7 +4070,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
         renderPhoneWallpaperV27();
       }
       // Current story may change as reader moves between Codex/Chat/Settings.
-      if(IS_SANDBOX_MODE)renderPhoneWallpaperV27();
+      renderPhoneWallpaperV27();
     }
 
     // V29: reads already-loaded stories; never modifies account or Firebase state.
@@ -4106,7 +4106,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       const phone=document.getElementById('cyber-phone');
       if(phone?.style.display==='flex')togglePhone();
       openCover(index);
-      if(IS_SANDBOX_MODE)renderPhoneWallpaperV27();
+      renderPhoneWallpaperV27();
       return true;
     }
 
@@ -4826,7 +4826,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
     }
 
     function renderPhoneWallpaperV27(){
-      if(!IS_SANDBOX_MODE||!window.DuduPhoneWallpaperV27)return;
+      if(!window.DuduPhoneWallpaperV27)return;
       const owner=phoneWallpaperOwnerV27();
       const chosen=DuduPhoneWallpaperV27.read(localStorage,owner);
       const art=window.DuduMultiverseArtV28;
@@ -5002,7 +5002,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
     });
 
     function updatePhoneUI() {
-      if(IS_SANDBOX_MODE)renderPhoneWallpaperV27();
+      renderPhoneWallpaperV27();
       userProfile.level = Math.max(1, parseInt(userProfile.level) || 1);
       userProfile.exp = Math.max(0, parseInt(userProfile.exp) || 0);
       userProfile.currency = Math.max(0, parseInt(userProfile.currency) || 0);
@@ -5029,8 +5029,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
       if (shopCoinEl) shopCoinEl.textContent = userProfile.currency;
 
       const legacyAvatar=document.getElementById('player-avatar-legacy');
-      if(legacyAvatar)legacyAvatar.style.display=IS_SANDBOX_MODE?'none':'block';
-      if(IS_SANDBOX_MODE)renderPlayerAvatarPlacesV16();
+      if(legacyAvatar)legacyAvatar.style.display='none';
+      renderPlayerAvatarPlacesV16();
       const profNameEl = document.getElementById('profile-name');
       if (profNameEl) profNameEl.textContent = userProfile.name || 'Kẻ Lang Bạt';
 
