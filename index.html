@@ -111,6 +111,7 @@
   <script src="js/npc-portrait-library-v1.js?v=40-1"></script>
   <script src="js/npc-anime-candidates-v14.js"></script>
   <script src="js/player-avatar-v16.js"></script>
+  <script src="js/roleplay-identity-v56.js?v=56-1"></script>
   <script src="js/npc-premium-v40.js?v=1"></script>
   <script src="js/player-avatar-compress-v41.js?v=1"></script>
   <script src="js/phone-wallpaper-v27-r4.js?v=37-1"></script>
@@ -1177,6 +1178,48 @@
           </div>
         </div>
 
+
+        <!-- V56: selected role is specific to signed-in UID + story; no automatic legacy migration. -->
+        <section id="dudu-v56-role-box" aria-label="Danh tính nhập vai trong truyện"
+          style="margin:0 0 7px;padding:7px;border:1px solid #315a6e;border-radius:9px;background:rgba(16,35,52,.94);font-size:11px">
+          <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
+            <label for="dudu-v56-role-select" style="font-size:10px;color:#a5f3fc;white-space:nowrap">Vai của bạn</label>
+            <select id="dudu-v56-role-select" onchange="v56SelectRole()" style="flex:1;min-width:110px;padding:5px;border-radius:6px;border:1px solid #42526d;background:#101e31;color:#f0f8ff;font-size:10px"></select>
+            <button class="btn" type="button" onclick="v56OpenRoleEditor(false)" style="padding:4px 6px;font-size:10px">+ Tạo</button>
+            <button class="btn" type="button" onclick="v56OpenRoleEditor(true)" style="padding:4px 6px;font-size:10px">Sửa</button>
+          </div>
+          <p id="dudu-v56-role-note" style="font-size:10px;line-height:1.45;margin:5px 0 0;color:#bad8e6"></p>
+          <div id="dudu-v56-role-editor" hidden style="padding:9px 3px 4px;margin-top:7px;border-top:1px solid #325468">
+            <label for="dudu-v56-mode" style="display:block;margin:4px 0">Kiểu nhập vai</label>
+            <select id="dudu-v56-mode" onchange="v56ModeChanged()" style="width:100%;padding:7px;border-radius:6px;background:#17263a;color:#fff"></select>
+            <div id="dudu-v56-canon-group" hidden style="margin-top:7px">
+              <label for="dudu-v56-canon" style="display:block;margin-bottom:4px">Nhân vật chính do tác giả xác nhận</label>
+              <select id="dudu-v56-canon" style="width:100%;padding:7px;border-radius:6px;background:#17263a;color:#fff"></select>
+            </div>
+            <div id="dudu-v56-custom-group">
+              <label for="dudu-v56-name" style="display:block;margin:7px 0 4px">Tên NPC gọi bạn</label>
+              <input id="dudu-v56-name" maxlength="40" autocomplete="off" placeholder="Tên nhân vật của bạn"
+                style="width:100%;box-sizing:border-box;background:#17263a;color:#fff;border:1px solid #50627e;border-radius:6px;padding:7px"/>
+              <label for="dudu-v56-pronouns" style="display:block;margin:7px 0 4px">Cách xưng hô</label>
+              <select id="dudu-v56-pronouns" style="width:100%;padding:7px;border-radius:6px;background:#17263a;color:#fff">
+                <option value="neutral">Không cố định</option><option value="male">Nam</option><option value="female">Nữ</option>
+              </select>
+              <label for="dudu-v56-backstory" style="display:block;margin:7px 0 4px">Tiểu sử ngắn (không thay đổi cốt truyện)</label>
+              <textarea id="dudu-v56-backstory" maxlength="240" rows="2" placeholder="Nhân vật của bạn xuất thân từ đâu..."
+                style="width:100%;box-sizing:border-box;background:#17263a;color:#fff;border:1px solid #50627e;border-radius:6px;padding:7px"></textarea>
+            </div>
+            <p id="dudu-v56-role-error" role="alert" style="font-size:10px;color:#fda4af"></p>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-primary" type="button" onclick="v56SaveRole()" style="flex:1;font-size:10px">Lưu & nhập vai</button>
+              <button class="btn" type="button" onclick="v56CloseRoleEditor()" style="font-size:10px">Đóng</button>
+            </div>
+            <small style="display:block;margin-top:6px;color:#a4bacc">Mỗi truyện có tối đa 6 vai; lưu theo tài khoản trên thiết bị. Chuyển vai không xóa hội thoại cũ.</small>
+          </div>
+          <button id="dudu-v56-import-legacy" type="button" onclick="v56ImportLegacyChat()"
+             style="display:none;margin-top:5px;background:none;border:0;text-decoration:underline;color:#93c5fd;font-size:10px;padding:0">
+            Nhập bản sao hội thoại V55 chưa gán vai vào vai này
+          </button>
+        </section>
         <div class="dudu-v27-chat-persona">
           <button type="button" id="npc-portrait-v1" class="dudu-npc-v27-chat-portrait"
             onclick="openChatNpcPortraitViewer()" aria-label="Xem chân dung NPC"
@@ -1225,7 +1268,7 @@
 
         <div style="display: flex; gap: 4px;">
           <input type="text" id="chat-user-input" autocomplete="off" placeholder="Gửi tin nhắn..." style="flex: 1; background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 6px 8px; color: #fff; font-size: 11px; outline: none;" onkeydown="if(event.key==='Enter') sendChatMessage()">
-          <button class="btn btn-primary" style="padding: 4px 8px; font-size: 11px;" onclick="sendChatMessage()">Gửi</button>
+          <button id="dudu-v56-send" class="btn btn-primary" style="padding: 4px 8px; font-size: 11px;" onclick="sendChatMessage()">Gửi</button>
         </div>
         <div class="dudu-v32-envelope-overlay" id="dudu-v32-envelope-overlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="dudu-v32-envelope-title" aria-hidden="true">
           <div class="dudu-v32-envelope-scrim" onclick="closeRedPacketV32()" aria-hidden="true"></div>
