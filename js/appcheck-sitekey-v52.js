@@ -6,4 +6,4 @@
  * API secret, service-account key or legacy reCAPTCHA Classic secret.
  * Empty key intentionally leaves trusted economy Functions fail-closed.
  */
-window.DUDU_RECAPTCHA_ENTERPRISE_SITE_KEY = '';
+window.DUDU_RECAPTCHA_ENTERPRISE_SITE_KEY = '6LcunvMtAAAAAEXSQ0JKOuj-7LfRkTA7gWI4BXWk';
