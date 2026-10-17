@@ -36,3 +36,19 @@
  background:rgba(89,158,188,.15);color:#e8f5ff}
 .dudu-v451-status.is-error{background:rgba(174,66,78,.18);color:#ffd0d5}
 @media(max-width:360px){#pilot-v451-content{padding:8px 7px 18px}.dudu-v451{padding:11px 9px}.dudu-v451-actions{gap:6px}}
+
+/* V45.1 R2: account-specific notices, per-comment reporting and admin QA. */
+.dudu-v451-admin{margin:12px 0;border:1px solid rgba(151,204,226,.32);
+ border-radius:12px;padding:9px 10px;background:rgba(34,65,79,.27)}
+.dudu-v451-admin summary{cursor:pointer;font-size:12px;font-weight:700;
+ line-height:1.55;color:#d9f3ff}
+.dudu-v451-admin summary:focus-visible{outline:2px solid #b4eaff;outline-offset:3px}
+.dudu-v451-reply-banner{display:flex;gap:7px;align-items:center;
+ flex-wrap:wrap;padding:8px 9px;margin:8px 0;background:rgba(27,118,126,.18);
+ border-radius:10px;font-size:11px;color:#d4faff}
+.dudu-v451-reason{flex:1 1 85px;min-width:0;background:#243651;
+ border:1px solid rgba(186,199,227,.4);border-radius:10px;
+ padding:8px;color:#eef6ff;font-size:11px}
+.dudu-v451-reason:focus-visible{outline:2px solid #a8edff;outline-offset:2px}
+.dudu-v451-comment .dudu-v451-actions{margin:7px 0 1px}
+.dudu-v451-comment .dudu-v451-btn{flex:1 1 86px}
