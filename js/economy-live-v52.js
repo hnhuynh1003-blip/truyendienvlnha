@@ -32,6 +32,7 @@
   if(!account){snapshot=disabled('Đăng nhập Firebase để xem tài sản đã xác thực.');owner='';return snapshot;}
   if(!force&&account===owner&&snapshot?.enabled)return snapshot;
   if(!force&&loading&&account===owner)return loading;
+  if(owner!==account)snapshot=null;
   owner=account;
   loading=(async()=>{
    try{
@@ -89,7 +90,8 @@
  const pendingKey=account=>'dudu-v52-purchase-pending:'+account;
  async function purchase(itemId){
   const account=uid();
-  if(!account||busy||!snapshot?.enabled||!snapshot.saleIds?.includes(itemId))return false;
+  if(!account||owner!==account||busy||!snapshot?.enabled||
+   !snapshot.saleIds?.includes(itemId))return false;
   let requestId='';
   try{
    const prior=JSON.parse(sessionStorage.getItem(pendingKey(account))||'null');
