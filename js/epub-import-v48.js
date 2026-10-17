@@ -182,7 +182,8 @@
     [...buttons.children].forEach(x=>{
      x.disabled=x.dataset.requiresDraft==='true'?
       !(state.cloudDraft&&state.cloudDraft.status==='draft'):
-      x.dataset.onceOnly==='true'?!!state.cloudDraft:false;
+      x.dataset.onceOnly==='true'?!!state.cloudDraft:
+      x.dataset.requiresParsed==='true'?!state.parsed:false;
     });
    }
   };
@@ -213,7 +214,7 @@
    status.textContent='✅ Đã nhập '+parsed.chapters.length+' chương vào thư viện Sandbox. Đóng cửa sổ để xem truyện.';
    options.onSaved?.();
   }));
-  sandboxBtn.hidden=!options.sandbox;
+  sandboxBtn.hidden=!options.sandbox;sandboxBtn.dataset.requiresParsed='true';
   const cloudBtn=button('Lưu tệp EPUB gốc lên Firebase Storage',()=>run(async()=>{
    if(options.sandbox||!options.canEdit?.())throw Error('Chỉ tài khoản tác giả Firebase thật được lưu tệp');
    if(!state.parsed||!state.file)throw Error('Hãy chọn và kiểm tra EPUB trước');
@@ -227,7 +228,8 @@
      '. Chưa xuất bản thành chương cho độc giả; đây là kho bản thảo an toàn.';
   }));
 
-  cloudBtn.hidden=!!options.sandbox;
+  cloudBtn.hidden=!!options.sandbox;cloudBtn.dataset.requiresParsed='true';
+  cloudBtn.textContent='(Tuỳ chọn) Sao lưu file EPUB gốc vào Storage';
   const production=options.cloudApi;
   let publishBtn;
   const saveCloud=button('Lưu truyện và các chương lên Firebase (bản thảo)',()=>run(async()=>{
@@ -247,6 +249,7 @@
    status.textContent='✅ Đã lưu '+stored.chapterCount+' chương dưới dạng bản thảo Firebase. Chưa công khai. Bạn có thể xác nhận xuất bản.';
   }));
   saveCloud.hidden=!!options.sandbox;saveCloud.dataset.onceOnly='true';
+  saveCloud.dataset.requiresParsed='true';
   publishBtn=button('Xác nhận xuất bản cho độc giả',()=>run(async()=>{
    if(options.sandbox||!options.canEdit?.())throw Error('Chỉ tác giả thật được xuất bản');
    if(!state.cloudDraft)throw Error('Hãy lưu bản thảo đầy đủ lên Firebase trước');
@@ -261,7 +264,15 @@
    options.onPublished?.();
   }));
   publishBtn.disabled=true;publishBtn.hidden=!!options.sandbox;publishBtn.dataset.requiresDraft='true';
-
+  if(!options.sandbox){
+   buttons.insertBefore(saveCloud,cloudBtn);
+   buttons.insertBefore(publishBtn,cloudBtn);
+  }
+  // Prevent uploading an EPUB before parsing succeeds (the old message
+  // "Hãy chọn và kiểm tra EPUB trước" gave no useful explanation).
+  for(const control of buttons.children){
+   if(control.dataset.requiresParsed==='true')control.disabled=true;
+  }
   button('Đóng',()=>{modal.style.display='none'});
   host.append(help,input,title);
   if(options.sandbox)host.append(el('p','Nhập vào truyện:'),target);
