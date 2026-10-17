@@ -28,11 +28,19 @@
   'network-unavailable':'Không thể kết nối Worker staging.',
   timeout:'Kết nối staging quá thời hạn.',
   'login-failed':'Không hoàn tất đăng nhập Google.',
-  'endpoint-denied':'Tính năng không thuộc phạm vi Pilot V45.1.'
+  'endpoint-denied':'Tính năng không thuộc phạm vi Pilot V45.1.',
+  'pilot-admin-required':'Chỉ quản trị viên có JWT admin đã xác thực trong vai Tác giả Pilot mới được quản lý phạm vi.',
+  'invalid-register':'Mã truyện hoặc danh sách mã chương không hợp lệ.',
+  'invalid-report':'Mã bình luận hoặc lý do báo cáo không hợp lệ.',
+  'invalid-moderation':'Không thể kiểm duyệt bình luận này.',
+  'not-found':'Không tìm thấy bình luận.',
+  'own-comment':'Không thể báo cáo bình luận của chính mình.',
+  'idempotency-conflict':'Mã yêu cầu đã sử dụng cho nội dung khác.'
  };
  const client=()=>root.DuduPilotClientV451;
  let api=null,host=null,busy=false,notice='',kind='info',rows=[];
  let scopeInput={storyId:'',chapterId:'',text:''},requestId=null;
+ let replyTo=null,notifications=[],moderation=[],chapterList='';
  let status=null;
  function use(){if(!api)api=client()?.create();return api}
  const explain=res=>errors[res?.code]||
@@ -60,7 +68,9 @@
   input.value=value;input.placeholder=placeholder;
   input.maxLength=multi?600:160;
   input.addEventListener('input',()=>{
-   scopeInput[key]=input.value;requestId=null;
+   if(key==='chapterList')chapterList=input.value;
+   else scopeInput[key]=input.value;
+   requestId=null;
   });
   wrap.append(input);return wrap;
  }
@@ -98,7 +108,8 @@
       '. Kết nối tới vùng staging riêng.':explain(result),!result.ok);
    }),'primary'));
    toolbar.append(action('Đăng xuất Pilot',()=>perform(async()=>{
-    await instance.logout();rows=[];status=null;requestId=null;
+    await instance.logout();rows=[];notifications=[];moderation=[];
+    replyTo=null;status=null;requestId=null;
     inform('Đã đóng phiên Google Pilot; dữ liệu Sandbox giả lập không đổi.');
    })));
   }
@@ -110,6 +121,70 @@
     ' · Chuyển sở hữu: '+(status.gates?.settlement?
       'Cần kiểm tra thêm khóa server':'KHÓA'));
    box.append(flags);
+   const tools=el('div','dudu-v451-actions');
+   tools.append(action('Thông báo trả lời',()=>perform(async()=>{
+    const result=await instance.inbox();
+    if(result.ok){
+     notifications=Array.isArray(result.notifications)?result.notifications.slice(-30):[];
+     inform('Đã tải '+notifications.length+' thông báo của tài khoản hiện tại.');
+    }else inform(explain(result),true);
+   })));
+   tools.append(action('Đánh dấu đã đọc',()=>perform(async()=>{
+    const result=await instance.markInboxRead();
+    if(result.ok){
+     notifications=notifications.map(x=>({...x,read:1}));
+     inform('Đã đánh dấu thông báo của phiên Pilot là đã đọc.');
+    }else inform(explain(result),true);
+   })));
+   box.append(tools);
+   if(notifications.length){
+    const inbox=el('div','dudu-v451-feed');
+    inbox.append(el('strong','','Thông báo của tài khoản hiện tại'));
+    for(const n of notifications.slice(-6)){
+     inbox.append(el('p','dudu-v451-comment',
+       (n.read?'Đã đọc · ':'Mới · ')+(n.text||'Có trả lời mới')));
+    }
+    box.append(inbox);
+   }
+   if(session.canManagePilot&&status.canManagePilot===true){
+    const admin=el('details','dudu-v451-admin');
+    const title=el('summary','','Quản trị phạm vi thử nghiệm (JWT admin)');
+    admin.append(title,el('p','dudu-v451-note',
+     'Chỉ dùng mã truyện/chương thử nghiệm. Đăng ký lại sẽ thay danh sách chương được phép.'));
+    admin.append(field('Mã chương đăng ký (cách nhau bằng dấu phẩy)',
+      chapterList,'chapterList','chapter-01,chapter-02'));
+    admin.append(action('Đăng ký truyện/chương Pilot',()=>perform(async()=>{
+     const ids=chapterList.split(',').map(x=>x.trim()).filter(Boolean);
+     const result=await instance.register(scopeInput.storyId,ids);
+     inform(result.ok?'Đã đăng ký '+result.chapterCount+
+       ' chương trong sổ staging.':explain(result),!result.ok);
+    }),'primary'));
+    admin.append(action('Xem báo cáo cần kiểm duyệt',()=>perform(async()=>{
+     const result=await instance.reports();
+     if(result.ok){
+      moderation=Array.isArray(result.reports)?result.reports.slice(-30):[];
+      inform('Đã tải '+moderation.length+' báo cáo của Pilot.');
+     }else inform(explain(result),true);
+    })));
+    if(moderation.length){
+     const audit=el('div','dudu-v451-feed');
+     for(const row of moderation.slice(-10)){
+      const note=el('article','dudu-v451-comment');
+      note.append(el('span','',row.reason||'Báo cáo'),
+       el('p','',row.text||''));
+      note.append(action(row.hidden?'Hiện lại bình luận':'Ẩn bình luận',()=>perform(async()=>{
+       const result=await instance.moderate(row.commentId,!Boolean(row.hidden));
+       if(result.ok){
+        row.hidden=result.hidden?1:0;
+        inform('Đã cập nhật trạng thái kiểm duyệt trên staging.');
+       }else inform(explain(result),true);
+      })));
+      audit.append(note);
+     }
+     admin.append(audit);
+    }
+    box.append(admin);
+   }
    const area=el('div','dudu-v451-form');
    area.append(field('Mã truyện',scopeInput.storyId,'storyId','story-id'),
     field('Mã chương (có thể để trống)',scopeInput.chapterId,
@@ -117,6 +192,13 @@
     field('Nội dung bình luận thử',scopeInput.text,'text',
      'Lời nhắn giữa các tài khoản Pilot…',true));
    box.append(area);
+   if(replyTo){
+    const noticeReply=el('div','dudu-v451-reply-banner','Đang trả lời bình luận: '+replyTo.slice(0,10)+'…');
+    noticeReply.append(action('Hủy trả lời',()=>{
+     replyTo=null;requestId=null;render({host,sandbox:true});
+    }));
+    box.append(noticeReply);
+   }
    const buttons=el('div','dudu-v451-actions');
    buttons.append(action('Đọc bình luận staging',()=>perform(async()=>{
     const result=await instance.list(scopeInput.storyId,
@@ -134,9 +216,9 @@
      requestId='v451-'+crypto.randomUUID();
     }
     const result=await instance.post({...scopeInput,
-     chapterId:scopeInput.chapterId||null,requestId});
+     chapterId:scopeInput.chapterId||null,requestId,parentId:replyTo});
     if(result.ok){
-     requestId=null;scopeInput.text='';
+     requestId=null;scopeInput.text='';replyTo=null;
      inform(result.alreadyPosted?'Yêu cầu đã được ghi trước đó; không đăng lặp.':
       'Đã lưu bình luận thử trên staging.');
     }else inform(explain(result),true);
@@ -149,6 +231,27 @@
      const line=el('article','dudu-v451-comment');
      line.append(el('span','',row.name||'Độc giả'),
       el('p','',row.text||''));
+     const rowActions=el('div','dudu-v451-actions');
+     if(!row.parentId){
+      rowActions.append(action('Trả lời',()=>{
+       replyTo=row.id;requestId=null;
+       inform('Nhập lời nhắn, sau đó chọn “Gửi bình luận thử”.');
+       render({host,sandbox:true});
+      }));
+     }
+     const select=el('select','dudu-v451-reason');
+     select.setAttribute('aria-label','Lý do báo cáo');
+     for(const [value,label] of [
+      ['SPAM','Spam'],['SPOILER','Lộ nội dung'],['HARASSMENT','Quấy rối'],['OTHER','Khác']
+     ]){
+      const option=el('option','',label);option.value=value;select.append(option);
+     }
+     rowActions.append(select,action('Báo cáo',()=>perform(async()=>{
+      const result=await instance.report(row.id,select.value);
+      inform(result.ok?(result.alreadyReported?'Đã báo cáo trước đó.':
+       'Đã gửi báo cáo tới sổ kiểm duyệt Pilot.'):explain(result),!result.ok);
+     })));
+     line.append(rowActions);
      feed.append(line);
     }
     box.append(feed);
