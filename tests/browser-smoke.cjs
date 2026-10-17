@@ -3485,7 +3485,7 @@ async function main() {
         const storySaved=userProfile.commentsV442?.comments.length===1&&
           userProfile.commentsV442.comments[0].chapterId===null;
         const escaped=story.textContent.includes('Truyện này rất cuốn');
-        const giftNoServer=story.querySelector('.dudu-v443-author-lock')===null&&
+        const giftNoServer=story.querySelector('.dudu-v443-gift-picker')?.hidden===true&&
           story.querySelector('.dudu-v442-gift')!==null;
         userProfile.commentsV442.comments[0].createdAt=Date.now()-60000;
         readChapter(0);
