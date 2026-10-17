@@ -61,7 +61,10 @@
    questState:next?.state||userProfile.questV437,questId:plan.questId};
  }
  function buy(itemId){
-  if(!sandbox())return old.buy(itemId);
+  if(!sandbox()){
+   alertMessage('CHƯA MỞ GIAO DỊCH','Bạn có thể xem danh mục mới. Mua vật phẩm trên tài khoản thật cần xác thực máy chủ.');
+   return false;
+  }
   if(!owner()){
    alertMessage('CẦN ĐĂNG NHẬP','Đăng nhập Sandbox trước khi mua vật phẩm.');
    return false;
@@ -149,13 +152,13 @@
   return true;
  }
  root.renderShop=function(){
-  if(!sandbox())return old.renderShop.apply(this,arguments);
+  const readOnly=!sandbox();
   const host=document.getElementById('shop-items-container');
   const balance=document.getElementById('shop-currency-val');
   if(balance)balance.textContent=String(userProfile.currency||0);
   return root.DuduMarketUIV43?.render({
    host,coins:Number(userProfile.currency)||0,
-   state:userProfile.economyV43,onBuy:buy,
+   state:userProfile.economyV43,onBuy:buy,readOnly,
    stories:typeof novels!=='undefined'?novels:[],
    readRewards:userProfile.readRewards||{},
    functionalState:userProfile.functionalV438
@@ -163,8 +166,8 @@
  };
  root.buyShopItem=buy;
  root.renderQuests=function(){
-  if(!sandbox())return old.renderQuests.apply(this,arguments);
-  rotate();
+  const readOnly=!sandbox();
+  if(!readOnly)rotate();
   const reset=document.querySelector('#phone-app-quests .dudu-v27-quest-tools button');
   if(reset){
    reset.disabled=true;reset.classList.remove('btn-danger');
@@ -174,9 +177,10 @@
   if(questsV437&&root.DuduQuestUIV437)
    return root.DuduQuestUIV437.render({
     host:document.getElementById('quests-container'),
-    quests:owner()?userProfile.quests:[],
-    questState:owner()?userProfile.questV437:null,
-    signed:owner(),onClaim:root.claimQuestReward
+    quests:readOnly?(Array.isArray(userProfile.quests)?userProfile.quests:[]):owner()?userProfile.quests:[],
+    questState:readOnly?userProfile.questV437:owner()?userProfile.questV437:null,
+    signed:readOnly?!!(root.DuduAuth?.isReady?.()&&root.DuduAuth.uid()===currentUsername):owner(),
+    onClaim:readOnly?null:root.claimQuestReward,readOnly
    });
   return old.renderQuests.apply(this,arguments);
  };
@@ -185,7 +189,10 @@
   return old.advanceQuest.apply(this,arguments);
  };
  root.claimQuestReward=function(id){
-  if(!sandbox())return old.claimQuestReward.apply(this,arguments);
+  if(!sandbox()){
+   alertMessage('CHƯA MỞ NHẬN THƯỞNG','Nhiệm vụ trên tài khoản thật hiện chỉ để theo dõi; phần thưởng yêu cầu máy chủ.');
+   return false;
+  }
   if(!owner()||!questsV437)return false;
   rotate();
   const plan=questsV437.reward({
@@ -225,7 +232,10 @@
   return true;
  };
  root.refreshDailyQuests=function(){
-  if(!sandbox())return old.refreshDailyQuests.apply(this,arguments);
+  if(!sandbox()){
+   alertMessage('NHIỆM VỤ HẰNG NGÀY','Bản chính không cho đặt lại thủ công hoặc nhận thưởng lặp.');
+   return false;
+  }
   const menu=document.querySelector('#phone-app-quests .dudu-v27-quest-menu');
   if(menu)menu.open=false;
   rotate();
