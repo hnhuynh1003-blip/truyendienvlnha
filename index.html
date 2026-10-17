@@ -5069,7 +5069,9 @@ document.getElementById('phone-home-screen').style.display = 'none';
         if (el) el.textContent = count;
       });
       const guestTip = document.getElementById('profile-guest-tip');
-      if (guestTip) guestTip.style.display = (!IS_SANDBOX_MODE && !DuduAuth.isReady()) ? 'block' : 'none';
+      // Firebase identity is separate from the profile load. A verified Google UID
+      // should never be described as "Khách" solely due to a slow Firestore read.
+      if (guestTip) guestTip.style.display = (!IS_SANDBOX_MODE && !DuduAuth.uid()) ? 'block' : 'none';
     }
 
     function addExp(amount) {
