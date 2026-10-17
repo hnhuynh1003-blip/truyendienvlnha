@@ -110,6 +110,9 @@
   // Day/event quests may award again next day, weekly quests next week;
   // story/NPC/main quests are one-time achievements.
   const cadence=canonical?.type||quest.type;
+  // A past-day clock rollback is not a new entitlement.
+  if(s.history.some(row=>row.id===id&&row.day>day))
+   return reject('clock-backwards');
   const alreadyAwarded=s.history.some(row=>row.id===id&&(
    cadence==='DAILY'||cadence==='EVENT'?row.day===day:
    cadence==='WEEKLY'?weekStart(row.day)===weekStart(day):true
