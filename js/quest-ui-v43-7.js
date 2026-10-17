@@ -15,7 +15,7 @@
   if(copy!==undefined)el.textContent=String(copy);
   return el;
  };
- function render({host,quests=[],questState=null,signed=false,onClaim}={}){
+ function render({host,quests=[],questState=null,signed=false,onClaim,readOnly=false}={}){
   if(!host)return false;
   host.replaceChildren();
   host.classList.add('dudu-v437-quest-root');
@@ -24,7 +24,7 @@
   if(!signed){
    const blank=$('div','dudu-v437-empty');
    blank.append($('strong','','🔒 Nhiệm vụ cá nhân'),
-    $('p','','Đăng nhập tài khoản thử nghiệm để lưu tiến độ và nhận thưởng trong Sandbox.'));
+    $('p','',readOnly?'Đăng nhập Firebase để xem tiến độ hiện tại.':'Đăng nhập tài khoản thử nghiệm để lưu tiến độ và nhận thưởng trong Sandbox.'));
    host.append(blank);return true;
   }
   const rows=Array.isArray(quests)?quests:[];
@@ -54,7 +54,7 @@
    const btn=$('button','dudu-v437-tab'+(tab===id?' is-active':''),name);
    btn.type='button';btn.setAttribute('aria-pressed',String(tab===id));
    btn.title=name+' · '+count+' nhiệm vụ';
-   btn.addEventListener('click',()=>{tab=id;render({host,quests,questState,signed,onClaim});});
+   btn.addEventListener('click',()=>{tab=id;render({host,quests,questState,signed,onClaim,readOnly});});
    nav.append(btn);
   }
   host.append(nav);
@@ -103,11 +103,13 @@
    const reward=$('span','dudu-v437-reward','🪙 '+(q.rewardCoin||0)+
     ' Xu · ✦ '+(q.rewardExp||0)+' EXP'+item);
    bottom.append(reward);
-   if(ready&&typeof onClaim==='function'){
+   if(ready&&!readOnly&&typeof onClaim==='function'){
     const btn=$('button','dudu-v437-claim','Nhận ›');
     btn.type='button';btn.setAttribute('aria-label','Nhận thưởng '+q.title);
     btn.addEventListener('click',()=>onClaim(q.id));
     bottom.append(btn);
+   }else if(ready&&readOnly){
+    bottom.append($('span','dudu-v437-received','Chờ xác thực'));
    }else if(q.claimed){
     bottom.append($('span','dudu-v437-received','Hoàn tất'));
    }
@@ -126,7 +128,8 @@
     $('strong','','+'+line.coins+' Xu / '+line.exp+' EXP'));
    history.append(h);
   }
-  host.append(history,$('p','dudu-v437-disclaimer',
+  host.append(history,$('p','dudu-v437-disclaimer',readOnly?
+   'Tiến độ tham khảo từ hồ sơ hiện tại. Nhận Xu, EXP hoặc vật phẩm phải được máy chủ xác thực.':
    'Chỉ là tiến độ và phần thưởng trên thiết bị Sandbox; không cấp kỷ vật thật hoặc quyền máy chủ.'));
   return true;
  }
