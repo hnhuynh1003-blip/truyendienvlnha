@@ -38,7 +38,12 @@ body.dudu-phone-v11 #cyber-phone .phone-close-btn{
  background:#121c34a3;border:1px solid #ffffff42;
 }
 /* V49.7: display the real profile dashboard, never hide EXP/LV/currency. */
-body.dudu-phone-v11 #cyber-phone #phone-home-screen .phone-widgets {
+body.dudu-phone-v11.dudu-sandbox-mode #cyber-phone #phone-home-screen .phone-widgets {
+ position:absolute !important;width:1px !important;height:1px !important;
+ padding:0 !important;margin:0 !important;overflow:hidden !important;
+ clip-path:inset(50%);border:0 !important;pointer-events:none;
+}
+body.dudu-phone-v11.dudu-live-mode #cyber-phone #phone-home-screen .phone-widgets {
  display:block !important;position:relative !important;
  width:100% !important;height:auto !important;min-height:0 !important;
  padding:12px 13px 11px !important;margin:3px 0 9px !important;
@@ -48,10 +53,10 @@ body.dudu-phone-v11 #cyber-phone #phone-home-screen .phone-widgets {
  background:linear-gradient(140deg,#1c2547db,#242c51c7) !important;
  box-shadow:inset 0 1px #ffffff24,0 8px 24px #02071655;
 }
-body.dudu-phone-v11 #cyber-phone #phone-home-screen .widget-exp-bar {
+body.dudu-phone-v11.dudu-live-mode #cyber-phone #phone-home-screen .widget-exp-bar {
  height:8px;overflow:hidden;
 }
-body.dudu-phone-v11 #cyber-phone #phone-home-screen .widget-exp-fill {
+body.dudu-phone-v11.dudu-live-mode #cyber-phone #phone-home-screen .widget-exp-fill {
  height:100%;
 }
 body.dudu-phone-v11 #cyber-phone #player-avatar-home-v16.dudu-avatar-home-v16{
@@ -75,7 +80,7 @@ body.dudu-phone-v11 #cyber-phone #dudu-v30-account-meta{
  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 body.dudu-phone-v11 #cyber-phone #phone-home-screen>.phone-app-grid{
- margin-top:10px !important;margin-bottom:9px;
+ margin-top:auto !important;margin-bottom:9px;
  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
  gap:5px;align-items:start;flex:none;
 }
@@ -152,3 +157,6 @@ body.dudu-phone-v11 #cyber-phone .phone-home-bar {
 @media(prefers-reduced-motion:reduce){
  body.dudu-phone-v11 #cyber-phone #phone-home-screen .app-icon{transition:none;}
 }
+
+/* Live accounts show actions near their own LV/EXP panel; sandbox's established layout is unchanged. */
+body.dudu-phone-v11.dudu-live-mode #cyber-phone #phone-home-screen>.phone-app-grid {margin-top:10px !important;}
