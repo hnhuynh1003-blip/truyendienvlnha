@@ -57,7 +57,7 @@ test('V44 compact: tools, shop, auction, gifting remain discoverable without alw
  const source=read('js/inventory-hub-v43-9.js');
  const view=read('js/inventory-view-v42.js');
  const css=read('css/inventory-compact-v44.css');
- assert.match(source,/data\.mode=id/);
+ assert.match(source,/button\.dataset\.mode=id/);
  assert.match(source,/dudu-v440-help/);
  assert.match(source,/dudu-v440-history/);
  assert.match(source,/s\.listings/);
