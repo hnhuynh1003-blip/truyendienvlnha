@@ -37,7 +37,9 @@
    return auth;
   }
   function current(){
-   try{return getAuth().currentUser||null}catch(_){return null}
+   // Rendering the Pilot panel must not even initialize Firebase Auth.
+   // The isolated Auth app is created only by an explicit Login action.
+   return auth?.currentUser||null;
   }
   function session(){
    const user=current();
