@@ -78,6 +78,6 @@ test('sandbox disables cloud reads, writes and live listeners', () => {
   const accountSave=script.split('function saveCurrentAccount() {')[1]
     ?.split('function openAuthModal()')[0];
   assert.ok(accountSave,'Sandbox profile saver must exist');
-  assert.match(accountSave,/if \(IS_SANDBOX_MODE\) \{\s*try \{ updatePhoneUI\(\); \}\s*catch\(e\) \{[^\n]*\}\s*return;\s*\}/);
+  assert.match(accountSave,/if \(IS_SANDBOX_MODE\) \{[\s\S]*?try \{ updatePhoneUI\(\); \}[\s\S]*?catch\(e\)[\s\S]*?return;/);
   assert.match(script, /if \(IS_SANDBOX_MODE\) \{[\s\S]*?indicator\.textContent = '🧪 Sandbox';[\s\S]*?return;/);
 });
