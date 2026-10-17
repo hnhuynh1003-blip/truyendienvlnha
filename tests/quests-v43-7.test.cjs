@@ -172,3 +172,16 @@ test('V44.8: weekly receipts reset only next Monday, permanent rewards stay lock
   id:'q_npc_visits',coins:0,exp:0,level:1,inventory:[],
   day:'2026-10-19'}).reason,'duplicate-reward');
 });
+
+
+test('V44.9: do not re-award a quest by moving the clock backward',()=>{
+ const date='2026-10-18',previous='2026-10-17';
+ const quests=quest.ensure([]).map(q=>q.id==='q_daily_tool'?
+  {...q,current:q.target,claimed:false}:q);
+ const won=quest.reward({quests,id:'q_daily_tool',
+  coins:0,exp:0,level:1,inventory:[],day:date});
+ assert.equal(won.ok,true);
+ const replay=quest.reward({quests,questState:won.state,id:'q_daily_tool',
+  coins:won.coins,exp:won.exp,level:won.level,inventory:[],day:previous});
+ assert.equal(replay.reason,'clock-backwards');
+});
