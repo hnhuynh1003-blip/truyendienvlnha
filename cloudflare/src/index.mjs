@@ -15,7 +15,8 @@ import {IMAGE_LIMITS} from './avatar-image-policy.mjs';
 import {putQuarantinedPhoto,deleteQuarantinedPhoto} from './avatar-r2-quarantine.mjs';
 import {normalizedPrivateDraft,normalizedDraftApproval,parseScopedIds,cleanId} from './collectible-rules.mjs';
 
-const MODEL='gemini-3.5-flash-lite';
+import {NPC_MODELS,DEFAULT_MODEL} from './npc-models.mjs';
+const MODEL=DEFAULT_MODEL;
 const MAX_BODY_BYTES=18000;
 
 function allowOrigin(origin,env) {
@@ -489,7 +490,7 @@ async function limitedJson(req){
 }
 async function gemini(payload,env){
   if(!env.GEMINI_API_KEY)return {error:{code:'not-configured',message:'Máy chủ AI chưa có khóa bí mật.'},status:503};
-  const model=env.MODEL===MODEL?env.MODEL:MODEL;
+  const model=payload.model||MODEL; // selected only after server allowlist validation
   const body={
     systemInstruction:payload.systemInstruction,contents:payload.contents,
     generationConfig:{
@@ -542,7 +543,7 @@ export default {
       return new Response(null,{status:204,headers:headers(origin,env)});
     }
     if(path==='/health'&&req.method==='GET'){
-      return json({service:'dudu-ai',enabled:env.AI_ENABLED==='true',model:MODEL},200,origin,env);
+      return json({service:'dudu-ai',enabled:env.AI_ENABLED==='true',model:MODEL,models:NPC_MODELS},200,origin,env);
     }
     if(path==='/v1/pilot/status'){
       if(req.method!=='GET')
@@ -587,7 +588,7 @@ export default {
     if(path==='/v1/status'){
       try {
         const state=await bucket.status(user.uid,Date.now());
-        return json({...state,enabled:true},200,origin,env);
+        return json({...state,enabled:true,models:NPC_MODELS,defaultModel:MODEL},200,origin,env);
       }catch(_){return error('quota-unavailable','Không thể đọc hạn mức AI.',503,origin,env);}
     }
     if(!req.headers.get('Content-Type')?.toLowerCase().startsWith('application/json')){
