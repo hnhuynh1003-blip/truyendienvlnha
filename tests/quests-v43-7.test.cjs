@@ -136,3 +136,39 @@ test('V43.7 client setup and UI must not write verified collectibles',()=>{
  assert.doesNotMatch(runtime,/DuduCollectiblesClient\.grant|db\.collection\(/);
  assert.doesNotMatch(ui,/DuduCollectiblesClient\.grant|db\.collection\(/);
 });
+
+
+test('V44.8: persisted receipt denies a duplicate award after claimed flag loss',()=>{
+ const day='2026-10-17';
+ const base=quest.ensure([]);
+ const ready=id=>base.map(q=>q.id===id?{...q,current:q.target,claimed:false}:q);
+ const initial=quest.reward({quests:ready('q_daily_tool'),id:'q_daily_tool',
+  coins:0,exp:0,level:1,inventory:[],day});
+ assert.equal(initial.ok,true);
+ const accidentalReset=ready('q_daily_tool');
+ assert.equal(quest.reward({quests:accidentalReset,questState:initial.state,
+  id:'q_daily_tool',coins:initial.coins,exp:initial.exp,level:initial.level,
+  inventory:[],day}).reason,'duplicate-reward');
+ assert.equal(quest.reward({quests:accidentalReset,questState:initial.state,
+  id:'q_daily_tool',coins:0,exp:0,level:1,inventory:[],
+  day:'2026-10-18'}).ok,true,'new day should legitimately reopen daily task');
+});
+test('V44.8: weekly receipts reset only next Monday, permanent rewards stay locked',()=>{
+ const base=quest.ensure([]);
+ const ready=id=>base.map(q=>q.id===id?{...q,current:q.target,claimed:false}:q);
+ const w=quest.reward({quests:ready('q_week_shop'),id:'q_week_shop',
+  coins:0,exp:0,level:1,inventory:[],day:'2026-10-18'});
+ assert.equal(w.ok,true);
+ const oldWeek=quest.reward({quests:ready('q_week_shop'),questState:w.state,
+  id:'q_week_shop',coins:0,exp:0,level:1,inventory:[],day:'2026-10-18'});
+ assert.equal(oldWeek.reason,'duplicate-reward');
+ const nextWeek=quest.reward({quests:ready('q_week_shop'),questState:w.state,
+  id:'q_week_shop',coins:0,exp:0,level:1,inventory:[],day:'2026-10-19'});
+ assert.equal(nextWeek.ok,true);
+ const forever=quest.reward({quests:ready('q_npc_visits'),id:'q_npc_visits',
+  coins:0,exp:0,level:1,inventory:[],day});
+ assert.equal(forever.ok,true);
+ assert.equal(quest.reward({quests:ready('q_npc_visits'),questState:forever.state,
+  id:'q_npc_visits',coins:0,exp:0,level:1,inventory:[],
+  day:'2026-10-19'}).reason,'duplicate-reward');
+});
