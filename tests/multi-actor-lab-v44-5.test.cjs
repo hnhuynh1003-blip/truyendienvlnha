@@ -181,3 +181,22 @@ test('V44.5.1: idempotent replay still works when comment quota is full',()=>{
  assert.equal(lab.run(state,{type:'POST',requestId:'quota-over',
   text:'Thêm bình luận'}).reason,'comment-limit');
 });
+
+
+test('V44.5.1: invalid persisted records are reported instead of crashing audit',()=>{
+ const invalidItem=lab.initial();invalidItem.items[0]=null;
+ assert.ok(lab.audit(invalidItem).includes('invalid-item'));
+ const invalidComment=lab.initial();invalidComment.comments=[null];
+ assert.ok(lab.audit(invalidComment).includes('invalid-comment'));
+ const invalidTransfer=lab.initial();invalidTransfer.transfers=[null];
+ assert.ok(lab.audit(invalidTransfer).includes('invalid-receipt'));
+ const malformedParent=lab.initial();
+ malformedParent.comments=[null,{
+  id:'comment-1',requestId:'comment-request-1',
+  authorId:'A',parentId:'missing',text:'Bình luận sai nguồn',
+  storyId:lab.STORY.id,chapterId:lab.STORY.chapterId
+ }];
+ assert.ok(lab.audit(malformedParent).includes('invalid-reply'));
+ const imageSwap=lab.initial();imageSwap.items[0].icon='❌';
+ assert.ok(lab.audit(imageSwap).includes('invalid-item-definition'));
+});
