@@ -315,7 +315,8 @@ async function handlePilotStatus(req,env,origin){
    gates:{
     comments:env.COMMENTS_ENABLED==='true',
     gifts:env.GIFTS_ENABLED==='true',
-    settlement:env.GIFT_SETTLEMENT_ENABLED==='true'
+    settlement:env.GIFT_SETTLEMENT_ENABLED==='true'&&
+     env.PILOT_SETTLEMENT_ENABLED==='true'
    }},200,origin,env);
 }
 
