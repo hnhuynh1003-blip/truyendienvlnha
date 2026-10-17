@@ -70,7 +70,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-check-compat.js"></script>
   <script src="js/appcheck-sitekey-v52.js?v=52-3"></script>
   <script src="js/auth-v2.js?v=49-3"></script>
-  <script src="js/ai-proxy.js"></script>
+  <script src="js/ai-proxy.js?v=55-1"></script>
   <script src="js/npc-chat-lite.js?v=53-1"></script>
   <script src="js/player-reset-v54.js?v=54-1"></script>
   <script src="js/story-memory.js"></script>
@@ -1212,6 +1212,12 @@
         </div>
         <div id="chat-messages-container" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 8px; background: rgba(10, 14, 20, 0.6); border-radius: 8px; border: 1px solid #1f2937; margin-bottom: 6px;"></div>
         <div id="dudu-spark-chat-tip" style="display:none;font-size:9px;color:#d2dee9;text-align:center;margin:0 0 4px" aria-label="Chế độ trò chuyện kịch bản">✦ Hội thoại NPC dùng Gemini qua Cloudflare khi máy chủ được kích hoạt · Có hạn mức · Lưu trên thiết bị</div>
+        <div id="dudu-v55-model-bar" style="display:flex;align-items:center;gap:5px;margin:2px 0 5px;font-size:10px" aria-label="Chọn model AI của NPC">
+          <label for="dudu-v55-model-select" style="flex:none;color:#9fe5df">AI</label>
+          <select id="dudu-v55-model-select" onchange="chooseNpcModelV55()" aria-label="Model Gemini dùng cho NPC" style="flex:1;min-width:0;max-width:100%;border:1px solid #52627b;border-radius:7px;background:#172438;color:#e5f3ff;font-size:10px;padding:6px 3px"></select>
+          <button type="button" class="btn" onclick="refreshNpcQuotaV55()" title="Kiểm tra số lượt AI còn lại" aria-label="Xem lượt AI còn lại" style="flex:none;padding:5px 6px;font-size:10px">Lượt</button>
+          <span id="dudu-v55-quota" role="status" aria-live="polite" style="color:#9ae8cc;font-size:9px;flex:none;min-width:25px">—</span>
+        </div>
         <div id="chat-connection-status" role="status" aria-live="polite" style="display:none; font-size:10px; color:var(--gold); padding:3px 5px; line-height:1.35;">
           <span id="chat-connection-message"></span>
           <button id="chat-retry-btn" class="btn" style="display:none; font-size:10px; padding:2px 6px; margin-left:4px;" onclick="retryLastNpcReply()">Thử lại</button>
@@ -2464,6 +2470,44 @@
     // ==========================================
     // GEMINI AI — CHỈ GỌI FIREBASE CLOUD FUNCTIONS ĐÃ XÁC THỰC
     // ==========================================
+    function syncNpcModelV55(){
+      const selector=document.getElementById('dudu-v55-model-select');
+      if(!selector || !window.DuduAI?.models)return;
+      const previous=DuduAI.model();
+      selector.replaceChildren();
+      for(const model of DuduAI.models){
+        const option=document.createElement('option');
+        option.value=model.id;option.textContent=model.label;
+        selector.append(option);
+      }
+      selector.value=previous;
+      selector.disabled=IS_SANDBOX_MODE;
+    }
+    function chooseNpcModelV55(){
+      const selector=document.getElementById('dudu-v55-model-select');
+      if(!selector)return;
+      if(!DuduAI.setModel(selector.value)){
+        selector.value=DuduAI.model();
+        return;
+      }
+      const note=document.getElementById('dudu-v55-quota');
+      if(note)note.title='Model mới sẽ được dùng cho tin nhắn tiếp theo.';
+    }
+    async function refreshNpcQuotaV55(){
+      const label=document.getElementById('dudu-v55-quota');
+      if(!label||IS_SANDBOX_MODE)return;
+      const account=currentUsername;
+      if(!DuduAuth.isReady()||DuduAuth.uid()!==account){
+        label.textContent='Đăng nhập';return;
+      }
+      const info=await DuduAI.status();
+      if(currentUsername!==account)return;
+      label.textContent=info?.error?'Chưa bật':(String(info.remaining)+'/'+String(info.dailyLimit));
+      label.title=info?.error?info.error:
+        'Số lượt dùng AI còn lại trên máy chủ (UTC). Mỗi model chia sẻ cùng hạn mức.';
+      // Never expose unapproved model options from arbitrary server responses.
+    }
+
     function updateActiveModelInfo() {
       const el = document.getElementById('ai-current-model-info');
       if (!el) return;
@@ -3018,6 +3062,12 @@
               : 'align-self: flex-start; background: #1e293b; border: 1px solid #334155; color: var(--neon);'
           }`;
           div.textContent = msg.text;
+          if(!isUser&&msg.model&&window.DuduAI?.models?.some(m=>m.id===msg.model)){
+            const meta=document.createElement('small');
+            meta.textContent='✦ '+msg.model;
+            meta.style.cssText='display:block;opacity:.65;font-size:9px;margin-top:3px';
+            div.append(meta);
+          }
           if(isUser&&IS_SANDBOX_MODE){
             const badge=document.createElement('span');
             badge.className='dudu-player-avatar-v16 dudu-player-chat-badge-v16';
@@ -3109,7 +3159,7 @@
         pendingNpcRetry = {user:requestUser,storyId,charId:char.id,key:requestChatKey};
         if (sameNpc) {
           showNpcConnectionStatus(
-            'Tín hiệu tạm gián đoạn. Tin nhắn vẫn được giữ lại trên thiết bị.',
+            res.error+' · Tin nhắn đã lưu trên thiết bị.',
             DuduAI.isConfigured()
           );
         }
@@ -3118,7 +3168,9 @@
       if (res?.text) {
         const history = chatHistories[requestChatKey] || [];
         const lastUser = [...history].reverse().find(m => m?.role === 'user' && typeof m.text === 'string');
-        chatHistories[requestChatKey].push({role:'model',text:res.text});
+        chatHistories[requestChatKey].push({role:'model',text:res.text,
+          ...(window.DuduAI?.models?.some(m=>m.id===res.model)?{model:res.model}:{})
+        });
         // Count one successful AI exchange per UTC day; never count scripted
         // greetings, unsent text, errors, retries or late/deleted responses.
         if(lastUser&&lastUser.text.trim().length>=4)
@@ -3132,6 +3184,7 @@
         if (sameNpc) {
           hideNpcConnectionStatus();
           renderChatMessages(char.id);
+          if(!IS_SANDBOX_MODE)void refreshNpcQuotaV55();
         }
       }
     }
@@ -4157,6 +4210,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
       } else if (appName === 'chat') {
         if (!activeChatNovelId) activeChatNovelId = (novels[selectedNovelIndex] || {}).id;
         renderChatDropdown();
+        syncNpcModelV55();
+        if(!IS_SANDBOX_MODE)void refreshNpcQuotaV55();
       } else if (appName === 'inventory') {
         window.DuduInventoryHubV439?.reset();
         window.DuduWorldCollectionV441?.reset();
