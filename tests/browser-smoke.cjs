@@ -3771,12 +3771,12 @@ async function main() {
         const reset=JSON.parse(localStorage.getItem(key));
         const original=reset.items.length===start.items.length&&
           reset.comments.length===0&&reset.transfers.length===0;
+        const labViewWidth=host.getBoundingClientRect().width;
         openPhoneApp('inventory');
         const warehouseUntouched=JSON.stringify(userProfile)===profileBefore;
         const profileStorageUntouched=
           localStorage.getItem(scopedLocalKey('profile'))===profileStorageBefore;
         const noCloud=window.__firestoreWrites.length===writes;
-        const labViewWidth=host.getBoundingClientRect().width;
         return {rendered,storageSeparated,A,pending,stayedInMemory,noDuplicate,
           authorView,authorInbox,transferred,audit,offline,offlineNoSend,
           online,original,warehouseUntouched,profileStorageUntouched,noCloud,
