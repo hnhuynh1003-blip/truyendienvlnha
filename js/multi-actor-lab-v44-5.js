@@ -50,12 +50,19 @@
     typeof raw.offline!=='boolean'||!Array.isArray(raw.items)||
     !Array.isArray(raw.comments)||!Array.isArray(raw.transfers)||
     !Array.isArray(raw.events))return ['invalid-schema'];
-  const all=new Set(),receiptIds=new Set(),requestIds=new Set(),commentIds=new Set();
+  const all=new Set(),receiptIds=new Set(),requestIds=new Set(),
+   commentIds=new Set(),commentRequestIds=new Set();
   for(const item of raw.items){
    if(!safeString(item?.instanceId)||all.has(item.instanceId)){
     errors.push('duplicate-or-invalid-instance');continue;
    }
    all.add(item.instanceId);
+   // A laboratory item may change hands, but its issued identity and
+   // source must never change. Catalog matches alone are insufficient.
+   const issued=seed.findIndex((_,i)=>item.instanceId==='lab-item-'+(i+1));
+   if(issued<0||seed[issued][1]!==item.itemId||
+     item.sourceStoryId!==(item.scope==='REALM'?STORY.id:null))
+    errors.push('invalid-seed-provenance');
    const canonical=catalog?.byId(item.itemId);
    if(!canonical||canonical.name!==item.name||canonical.scope!==item.scope||
     canonical.realmTag!==item.realmTag)errors.push('invalid-item-definition');
@@ -66,10 +73,12 @@
   for(const comment of raw.comments){
    if(!safeString(comment?.id)||commentIds.has(comment.id)||
     !knownActor(comment.authorId)||!safeString(comment.requestId)||
+    commentRequestIds.has(comment.requestId)||
     comment.storyId!==STORY.id||comment.chapterId!==STORY.chapterId||
     typeof comment.text!=='string'||!comment.text.trim()||
     comment.text.length>300)errors.push('invalid-comment');
    commentIds.add(comment.id);
+   commentRequestIds.add(comment.requestId);
   }
   for(const comment of raw.comments){
    if(comment.parentId&&(!commentIds.has(comment.parentId)||
@@ -84,6 +93,10 @@
     !safeString(transfer.requestId)||requestIds.has(transfer.requestId)||
     !commentIds.has(transfer.commentId))errors.push('invalid-receipt');
    receiptIds.add(transfer.id);requestIds.add(transfer.requestId);
+   const comment=raw.comments.find(c=>c.id===transfer.commentId);
+   if(!comment||comment.authorId!==transfer.senderId||
+      comment.requestId!==transfer.requestId)
+    errors.push('invalid-transfer-comment-link');
    const item=raw.items.find(x=>x.instanceId===transfer.instanceId);
    if(!item){errors.push('receipt-item-missing');continue}
    if(transfer.status==='PENDING'&&
@@ -133,7 +146,6 @@
   if(old.offline)return reject('simulated-offline',old);
   const n=clone(old),actor=old.active;
   if(action.type==='POST'){
-   if(n.comments.length>=MAX_COMMENTS)return reject('comment-limit',old);
    const text=normText(action.text);
    if(text.length<2||text.length>300)return reject('invalid-comment',old);
    if(!safeString(action.requestId))return reject('invalid-request-id',old);
@@ -148,6 +160,8 @@
       return reject('idempotency-conflict',old);
     return {ok:true,state:old,alreadyApplied:true,message:'Đã nhận yêu cầu này trước đó; không trừ thêm vật phẩm.'};
    }
+   // A retry must be recognized even after the comment quota is exhausted.
+   if(n.comments.length>=MAX_COMMENTS)return reject('comment-limit',old);
    const parent=action.parentId?
     n.comments.find(c=>c.id===action.parentId):null;
    if(action.parentId&&(!parent||parent.parentId))
