@@ -72,6 +72,7 @@
   <script src="js/auth-v2.js?v=49-3"></script>
   <script src="js/ai-proxy.js"></script>
   <script src="js/npc-chat-lite.js?v=53-1"></script>
+  <script src="js/player-reset-v54.js?v=54-1"></script>
   <script src="js/story-memory.js"></script>
   <script src="js/npc-memory-v2.js"></script>
   <script src="js/world-items-v44-1.js?v=1"></script>
@@ -1210,7 +1211,7 @@
           </div>
         </div>
         <div id="chat-messages-container" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 8px; background: rgba(10, 14, 20, 0.6); border-radius: 8px; border: 1px solid #1f2937; margin-bottom: 6px;"></div>
-        <div id="dudu-spark-chat-tip" style="display:none;font-size:9px;color:#d2dee9;text-align:center;margin:0 0 4px" aria-label="Chế độ trò chuyện kịch bản">✦ NPC AI trực tuyến qua Cloudflare · Có hạn mức theo ngày · Lưu hội thoại trên thiết bị</div>
+        <div id="dudu-spark-chat-tip" style="display:none;font-size:9px;color:#d2dee9;text-align:center;margin:0 0 4px" aria-label="Chế độ trò chuyện kịch bản">✦ Hội thoại NPC dùng Gemini qua Cloudflare khi máy chủ được kích hoạt · Có hạn mức · Lưu trên thiết bị</div>
         <div id="chat-connection-status" role="status" aria-live="polite" style="display:none; font-size:10px; color:var(--gold); padding:3px 5px; line-height:1.35;">
           <span id="chat-connection-message"></span>
           <button id="chat-retry-btn" class="btn" style="display:none; font-size:10px; padding:2px 6px; margin-left:4px;" onclick="retryLastNpcReply()">Thử lại</button>
@@ -1277,6 +1278,11 @@
           <button type="button" class="phone-back-btn" onclick="phoneHome()" aria-label="Về màn hình chính">‹</button>
           <span>Cài Đặt</span>
         </div>
+        <section class="dudu-v54-reset-settings" aria-labelledby="dudu-v54-reset-title" style="padding:10px;margin:8px 0;border-radius:12px;border:1px solid #975b6a;background:rgba(45,25,40,.78)">
+          <h3 id="dudu-v54-reset-title" style="font-size:12px;margin:0 0 5px;color:#fbcfe8">Khởi tạo lại người chơi</h3>
+          <p style="font-size:10px;line-height:1.5;margin:0 0 9px;color:#f1d9e0">Giữ nguyên truyện và NPC tác giả. Sao lưu rồi xóa tiến độ, Xu, Kho đồ, thiện cảm, tin tưởng và hội thoại cũ của tài khoản hiện tại.</p>
+          <button type="button" class="btn btn-danger" id="dudu-v54-reset-action" onclick="duduResetPlayerV54()" style="width:100%">Sao lưu và đặt lại tiến độ</button>
+        </section>
         <section class="dudu-v27-settings-card" aria-labelledby="dudu-v27-reading-title">
           <h3 id="dudu-v27-reading-title">✦ Trải nghiệm đọc</h3>
           <div class="dudu-v27-settings-label">Cỡ chữ</div>
@@ -2215,6 +2221,7 @@
     }
 
     function saveCurrentAccount() {
+      if (window.DUDU_RESET_IN_PROGRESS) return;
       if (!currentUsername || (!IS_SANDBOX_MODE && (!DuduAuth.isReady() || DuduAuth.uid() !== currentUsername))) return;
 
       // V44.8: prepare collection discovery without mutating the live
@@ -2265,6 +2272,58 @@
 
       try { updatePhoneUI(); }
       catch(e) { console.warn('V44.9: cập nhật Phone sau lưu gặp lỗi:',e); }
+    }
+
+    // V54: owner-confirmed one-time reset. Preserves all authored stories,
+    // chapters, EPUB content, NPC catalog, custom Auth claims and Google login.
+    async function duduResetPlayerV54(){
+      if(IS_SANDBOX_MODE || window.DUDU_RESET_IN_PROGRESS) return;
+      if(!DuduAuth.isReady() || DuduAuth.uid()!==currentUsername){
+        showSystemAlert('CHƯA ĐỒNG BỘ','Hãy đăng nhập và chờ Firebase tải hồ sơ xong.');return;
+      }
+      const uid=currentUsername,auth=firebase.auth();
+      if(!window.DuduPersonalResetV54)return;
+      const begin=confirm('ĐẶT LẠI TIẾN ĐỘ NGƯỜI CHƠI?\\n\\nSẽ xóa Xu, EXP, Kho đồ, nhiệm vụ, NPC đã mở khóa, thiện cảm/tin tưởng và trò chuyện của tài khoản này.\\n\\nTRUYỆN, CHƯƠNG, CHÂN DUNG và nhân vật do tác giả tạo vẫn giữ nguyên.\\n\\nBạn sẽ được tải bản sao lưu tiến độ trước khi xác nhận.'); 
+      if(!begin)return;
+      const action=document.getElementById('dudu-v54-reset-action');
+      if(action)action.disabled=true;
+      window.DUDU_RESET_IN_PROGRESS=true;
+      try{
+        DuduPersonalResetV54.safetyCheck(uid,auth);
+        const ref=db.collection('profiles_v2').doc(uid);
+        // Get from server, never reset from a stale cached profile snapshot.
+        const snap=await ref.get({source:'server'});
+        DuduPersonalResetV54.safetyCheck(uid,auth);
+        const data=DuduPersonalResetV54.backup(uid,snap.exists?snap.data():null,localStorage);
+        const json=JSON.stringify(data,null,2);
+        const url=URL.createObjectURL(new Blob([json],{type:'application/json'}));
+        const a=document.createElement('a');a.href=url;
+        a.download='DUDU-progress-backup-'+new Date().toISOString().slice(0,10)+'.json';
+        document.body.append(a);a.click();a.remove();
+        setTimeout(()=>URL.revokeObjectURL(url),60000);
+        const phrase=prompt('Đã yêu cầu tải bản sao lưu tiến độ.\\nHãy kiểm tra tệp đã tải trước khi tiếp tục.\\nNhập chính xác DAT LAI để xóa tiến độ tài khoản (giữ nguyên truyện):');
+        if(phrase!=='DAT LAI')return;
+        DuduPersonalResetV54.safetyCheck(uid,auth);
+        const fresh=DuduPersonalResetV54.freshProfile(uid,
+          auth.currentUser.displayName||auth.currentUser.email||'Độc giả',
+          DuduAuth.isAdmin(),DEFAULT_SYSTEM_QUESTS);
+        // Full replace instead of merge: old progress fields must not survive.
+        await ref.set(fresh);
+        DuduPersonalResetV54.safetyCheck(uid,auth);
+        // Only clear local keys belonging to this UID and historical unscoped chat.
+        for(const key of DuduPersonalResetV54.ownedKeys(localStorage,uid))localStorage.removeItem(key);
+        localStorage.setItem('profile_'+uid,JSON.stringify(fresh));
+        userProfile=fresh;chatHistories={};lastLootTimestamp=0;activeChatNovelId=null;
+        // Library persistence and authored NPC definitions were never touched.
+        alert('Đã đặt lại tiến độ Firebase và bộ nhớ thiết bị của tài khoản này. Truyện được giữ nguyên. Hãy đọc lại các chương để mở khóa NPC.');
+        window.location.reload();
+      }catch(e){
+        console.warn('DUDU player reset:',e?.code||e?.message||'failed');
+        alert('Chưa hoàn tất đặt lại. Dữ liệu truyện không bị tác động. '+(e?.message||'Kiểm tra kết nối Firebase.'));
+      }finally{
+        window.DUDU_RESET_IN_PROGRESS=false;
+        if(action)action.disabled=false;
+      }
     }
 
     function openAuthModal() {
