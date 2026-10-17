@@ -6,3 +6,7 @@ node_modules/
 .env.*
 !*.example
 *.log
+
+# Ephemeral staging deployment inputs (never commit)
+.pilot-v45-activation.toml
+.pilot-v45-secrets.json
