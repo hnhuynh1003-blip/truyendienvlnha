@@ -92,6 +92,25 @@
    try{await getAuth().signOut();return {ok:true}}
    catch(_){return reject('logout-failed')}
   }
+  // V47.1 explicit unauthenticated diagnostic. Read-only, fixed staging origin.
+  // It never initializes Firebase, sends a token, or changes a Worker gate.
+  async function probe(){
+   const call=transport();
+   if(typeof call!=='function')return reject('network-unavailable');
+   try{
+    const response=await call(ORIGIN+'/v1/status',{
+     method:'GET',cache:'no-store',
+     ...(typeof AbortSignal!=='undefined'&&typeof AbortSignal.timeout==='function'?
+      {signal:AbortSignal.timeout(10000)}:{})
+    });
+    const data=await response.json().catch(()=>null);
+    if(!response.ok||data?.service!=='dudu-ai')
+     return reject('worker-unexpected-response');
+    return {ok:true,service:data.service,aiEnabled:data.enabled===true};
+   }catch(e){
+    return reject(e?.name==='TimeoutError'?'timeout':'network-unavailable');
+   }
+  }
   async function request(path,{method='GET',body=null}={}){
    const user=current();
    if(!user)return reject('pilot-login-required');
@@ -107,7 +126,9 @@
    if(typeof call!=='function')return reject('network-unavailable');
    const requestEpoch=epoch;
    try{
-    const token=await user.getIdToken();
+    let token;
+    try{token=await user.getIdToken()}
+    catch(_){return reject('firebase-token-unavailable')}
     if(current()?.uid!==user.uid||epoch!==requestEpoch)
      return reject('session-changed');
     const response=await call(ORIGIN+path,{
@@ -200,7 +221,7 @@
    return request('/v1/comments/admin/moderate',{method:'POST',
     body:{commentId,hidden}});
   }
-  return Object.freeze({APP_NAME,ORIGIN,session,login,loginEmail,logout,status,
+  return Object.freeze({APP_NAME,ORIGIN,session,login,loginEmail,logout,probe,status,
    list,post,report,inbox,markInboxRead,register,reports,moderate});
  }
  // One secondary Firebase Auth session shared by the phone QA and story UI.
