@@ -152,3 +152,9 @@ body.dudu-phone-v11 #cyber-phone .dudu-v439-tab:focus-visible,
 body.dudu-phone-v11 #cyber-phone .dudu-v439-action-card button:focus-visible{
  outline:2px solid #b5ecff;outline-offset:2px;
 }
+
+@media (max-width:360px){
+ body.dudu-phone-v11 #cyber-phone #inventory-container.dudu-v42-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ }
+}
