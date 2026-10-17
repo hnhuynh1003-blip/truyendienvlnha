@@ -79,6 +79,15 @@ test('V45: status preflight is read-only and never exposes allowed UID secrets',
  const unsupported=await worker.fetch(request('/v1/pilot/status','author_009876','POST'),e);
  assert.equal(unsupported.status,405);
 });
+test('V45: a separate settlement kill switch blocks gift sends even if regular gate opens',async()=>{
+ let touched=0;
+ const e={...env(),GIFT_SETTLEMENT_ENABLED:'true',PILOT_SETTLEMENT_ENABLED:'false',
+  DUDU_GIFT_LEDGER:{getByName(){touched++;throw Error('must remain sealed')}}};
+ const response=await worker.fetch(request('/v1/gifts/send','reader_001234','POST'),e);
+ assert.equal(response.status,503);
+ assert.equal((await body(response)).error.code,'gift-settlement-disabled');
+ assert.equal(touched,0);
+});
 test('V45: no feature flag or incomplete configuration creates pilot data',async()=>{
  let hits=0;
  const e={...env(),DUDU_DISCUSSION:{getByName(){hits++;throw Error('no access')}}};
