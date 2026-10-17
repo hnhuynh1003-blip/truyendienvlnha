@@ -72,7 +72,7 @@
     total:state.daily?.total||0,counts:state.daily?.counts||{},events:[]}:userProfile?.economyV43,
    stories:typeof novels!=='undefined'?novels:[],
    readRewards:userProfile?.readRewards||{},
-   functionalState:userProfile?.functionalV438,
+   functionalState:state.enabled?null:userProfile?.functionalV438,
    readOnly:!state.enabled,saleIds:state.enabled?state.saleIds:[],
    onBuy:purchase
   });
@@ -141,8 +141,11 @@
      receipt.alreadyClaimed?'Đã ghi nhận hôm nay.':'+'+receipt.award.coins+
      ' Xu · +'+receipt.award.exp+' EXP đã được máy chủ xác thực.');
    }catch(error){
-    if(uid()===account)root.showSystemAlert?.('CHƯA ĐIỂM DANH ĐƯỢC',
-      'Chưa có xác nhận từ máy chủ. Hãy thử lại sau khi thiết lập Functions/App Check.');
+    if(uid()===account){
+      button.disabled=false;
+      root.showSystemAlert?.('CHƯA ĐIỂM DANH ĐƯỢC',
+       'Chưa có xác nhận từ máy chủ. Hãy thử lại sau khi thiết lập Functions/App Check.');
+    }
    }finally{busy=false;}
   };
   host.append(button);
