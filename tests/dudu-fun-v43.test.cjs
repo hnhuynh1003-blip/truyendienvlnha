@@ -76,3 +76,35 @@ test('Ngày mới không cộng lại thành tích cũ; dữ liệu giả không
  assert.equal(fun.begin(null,{type:'box',day,seed:42,roll:0}).ok,true);
  assert.equal(fun.norm(null,day).history.length,0);
 });
+
+
+test('V44.8: a retained same-day receipt prevents a lost round from rerolling',()=>{
+ const started=fun.begin(null,{type:'box',day,seed:0,roll:0});
+ let state=started.state;
+ for(const choice of fun.sequence(0))
+  state=fun.advance(state,{type:'box',choice,day}).state;
+ const claimed=fun.claim(state,{type:'box',coins:100,inventory:[],day});
+ assert.equal(claimed.ok,true);
+ const repaired={...claimed.state,rounds:{...claimed.state.rounds,box:null}};
+ assert.equal(fun.begin(repaired,{type:'box',day,roll:.99,seed:10}).reason,
+  'already-claimed');
+ const forgedReady={...repaired,rounds:{...repaired.rounds,
+  box:{...state.rounds.box}}};
+ assert.equal(fun.claim(forgedReady,{type:'box',day,coins:105,inventory:[]}).reason,
+  'already-claimed');
+ assert.equal(fun.begin(repaired,{type:'ticket',day,roll:0,seed:23}).ok,true,
+  'one claimed game must not block the other daily game');
+});
+test('V44.8: rolling device date backward does not reissue yesterday’s reward',()=>{
+ const tomorrow='2026-10-18';
+ const first=fun.begin(null,{type:'ticket',day:tomorrow,seed:2,roll:0});
+ assert.equal(first.ok,true);
+ assert.equal(fun.begin(first.state,{type:'ticket',day,seed:2,roll:0}).reason,
+  'clock-backwards');
+ let finished=first.state;
+ for(const cell of [0,1,2])
+  finished=fun.advance(finished,{type:'ticket',choice:cell,day:tomorrow}).state;
+ assert.equal(fun.claim(finished,{type:'ticket',day,coins:0}).reason,
+  'not-ready-or-claimed',
+  'expired/rolled-back round cannot claim');
+});
