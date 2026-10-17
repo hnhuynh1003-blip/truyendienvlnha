@@ -768,7 +768,7 @@
       <button type="button" id="player-avatar-header-v16" class="dudu-player-avatar-v16" style="display:none" onclick="openPlayerAvatarEditorV16()" aria-label="Đổi ảnh và khung tài khoản"></button>
       <span class="role-badge reader" id="role-toggle-btn" onclick="toggleUserRole()">📖 Độc Giả</span>
       <button class="btn btn-primary admin-only" onclick="openStoryModal()">+ Tạo</button>
-      <button type="button" class="btn admin-only" onclick="openEpubImportV48()" title="Nhập EPUB vào Sandbox hoặc lưu bản thảo riêng trên Firebase">📘 EPUB</button>
+      
     </div>
   </header>
 
@@ -1607,7 +1607,10 @@
   <!-- MODAL: TẠO / SỬA TRUYỆN -->
   <div class="modal-overlay" id="story-modal">
     <div class="modal-card">
-      <h2 id="story-modal-heading">THÊM TÁC PHẨM MỚI</h2>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+        <h2 id="story-modal-heading">THÊM TÁC PHẨM MỚI</h2>
+        <button type="button" class="btn" onclick="openEpubImportV48()" title="Tự tách chương EPUB và xem trước">📘 Nhập EPUB</button>
+      </div>
       <div class="modal-field">
         <label>Tên tác phẩm:</label>
         <input type="text" id="story-modal-title" autocomplete="off" placeholder="Ví dụ: truyện điên vl">
@@ -6290,6 +6293,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 
     function openEpubImportV48() {
       if(!canEditStories())return;
+      closeModals();
       window.DuduEpubImportV48?.open({
         novels,
         author:userProfile.name||'Tác giả',
