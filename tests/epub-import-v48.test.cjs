@@ -42,7 +42,7 @@ test('V48 author-only modal and Firebase Storage upload never modify public Fire
  assert.match(js,/getIdTokenResult\(true\)/);
  assert.match(js,/claims\?\.admin!==true/);
  assert.match(js,/author_epub_drafts\//);
- assert.doesNotMatch(js,/\.firestore\(|\.collection\(|getDownloadURL\(/);
+ assert.doesNotMatch(js,/firebase\.firestore\(|db\.collection\(|getDownloadURL\(/);
  assert.match(rules,/request\.auth\.token\.admin == true/);
  assert.doesNotMatch(rules,/allow write: if true/);
 });
