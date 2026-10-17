@@ -2124,13 +2124,16 @@
     function saveCurrentAccount() {
       if (!currentUsername || (!IS_SANDBOX_MODE && (!DuduAuth.isReady() || DuduAuth.uid() !== currentUsername))) return;
 
-      // Additive, local-only collection memory: never mint server rewards.
-      if(IS_SANDBOX_MODE&&window.DuduWorldCollectionV441){
-        userProfile.collectionV441=DuduWorldCollectionV441.record(
-          userProfile.collectionV441,userProfile.inventory);
-      }
+      // V44.8: prepare collection discovery without mutating the live
+      // profile until its complete Sandbox profile write has succeeded.
+      const hasCollection=IS_SANDBOX_MODE&&!!window.DuduWorldCollectionV441;
+      const nextCollection=hasCollection?DuduWorldCollectionV441.record(
+        userProfile.collectionV441,userProfile.inventory):undefined;
       const localKey = IS_SANDBOX_MODE ? scopedLocalKey('profile') : `profile_${currentUsername}`;
-      localStorage.setItem(localKey, JSON.stringify(userProfile));
+      const nextProfile=hasCollection?
+        {...userProfile,collectionV441:nextCollection}:userProfile;
+      localStorage.setItem(localKey, JSON.stringify(nextProfile));
+      if(hasCollection)userProfile.collectionV441=nextCollection;
 
       const cloudData = {
         username: currentUsername || "guest",
