@@ -764,7 +764,7 @@
       <span>✦ DUDU STUDIO</span>
     </div>
     <div class="header-controls">
-      <span class="cloud-status" id="cloud-indicator">☁️ Đã đồng bộ</span>
+      <span class="cloud-status" id="cloud-indicator">☁️ Đang kết nối thư viện</span>
       <span class="user-info-badge" id="account-status-btn" onclick="openAuthModal()">👤 Khách</span>
       <button type="button" id="player-avatar-header-v16" class="dudu-player-avatar-v16" style="display:none" onclick="openPlayerAvatarEditorV16()" aria-label="Đổi ảnh và khung tài khoản"></button>
       <span class="role-badge reader" id="role-toggle-btn" onclick="toggleUserRole()">📖 Độc Giả</span>
@@ -4967,7 +4967,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
         renderHome();
         updatePhoneUI();
         refreshNpcViewsAfterLibraryUpdate();
-        if (indicator) indicator.textContent = "☁️ Đã đồng bộ";
+        if (indicator) indicator.textContent = "☁️ Đã tải thư viện";
       } else {
         if (indicator) indicator.textContent = "☁️ Sẵn sàng";
       }
