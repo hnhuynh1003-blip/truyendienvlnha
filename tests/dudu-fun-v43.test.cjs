@@ -108,3 +108,19 @@ test('V44.8: rolling device date backward does not reissue yesterday’s reward'
   'not-ready-or-claimed',
   'expired/rolled-back round cannot claim');
 });
+
+
+test('V44.9: recovered READY state requires three completed minigame steps',()=>{
+ const box=fun.begin(null,{type:'box',day,seed:12,roll:0});
+ const forgedBox={...box.state,rounds:{...box.state.rounds,
+  box:{...box.state.rounds.box,status:'ready',step:0}}};
+ assert.equal(fun.norm(forgedBox,day).rounds.box,null);
+ assert.equal(fun.claim(forgedBox,{type:'box',day,coins:0,inventory:[]}).ok,false);
+ const ticket=fun.begin(null,{type:'ticket',day,seed:3,roll:0});
+ const forgedTicket={...ticket.state,rounds:{...ticket.state.rounds,
+  ticket:{...ticket.state.rounds.ticket,status:'claimed',cells:[0]}}};
+ assert.equal(fun.norm(forgedTicket,day).rounds.ticket,null);
+ const doneTicket={...ticket.state,rounds:{...ticket.state.rounds,
+  ticket:{...ticket.state.rounds.ticket,status:'ready',cells:[0,1,2]}}};
+ assert.equal(fun.claim(doneTicket,{type:'ticket',day,coins:0,inventory:[]}).ok,true);
+});
