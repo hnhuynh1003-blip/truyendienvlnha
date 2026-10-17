@@ -1,8 +1,9 @@
 // Pure logic shared by Worker and tests. Never trust usage counters from browsers.
-export const USER_DAILY_LIMIT=25;
-export const GLOBAL_DAILY_LIMIT=200;
-export const MIN_INTERVAL_MS=10_000;
+export const USER_DAILY_LIMIT=120;
+export const GLOBAL_DAILY_LIMIT=250;
+export const MIN_INTERVAL_MS=5_000;
 export const MAX_TOTAL_INPUT=12_000;
+import {resolveModel} from './npc-models.mjs';
 export function utcDay(ms) {return new Date(ms).toISOString().slice(0,10);}
 export function validRequest(data, isAdmin=false) {
   if (!data || typeof data!=='object' || Array.isArray(data)) return null;
@@ -19,7 +20,10 @@ export function validRequest(data, isAdmin=false) {
     messages.push({role:message.role,parts:[{text:message.text}]});
   }
   if(length>MAX_TOTAL_INPUT||messages.at(-1).role!=='user')return null;
-  return {purpose:data.purpose,systemInstruction:{parts:[{text:data.instruction}]},contents:messages};
+  // A model ID is accepted only from the server's explicit text-model allowlist.
+  const model=data.purpose==='chat'?resolveModel(data.model):resolveModel(undefined);
+  if(!model)return null;
+  return {purpose:data.purpose,model,systemInstruction:{parts:[{text:data.instruction}]},contents:messages};
 }
 export function quotaFailure(user,global,now){
   if(Number(user?.calls||0)>=USER_DAILY_LIMIT)return 'daily-user';
@@ -32,7 +36,7 @@ export function quotaMessage(code){
   switch(code){
     case 'daily-user':return 'Bạn đã sử dụng hết lượt NPC AI hôm nay. Hãy quay lại ngày mai.';
     case 'daily-global':return 'Tần số NPC AI của DUDU hôm nay đã đạt giới hạn. Hãy thử ngày mai.';
-    case 'cooldown':return 'Vui lòng đợi ít nhất 10 giây giữa các yêu cầu AI.';
+    case 'cooldown':return 'Vui lòng đợi ít nhất 5 giây giữa các yêu cầu AI.';
     case 'in-flight':return 'NPC đang trả lời tin nhắn trước, vui lòng đợi.';
     default:return 'Không thể xử lý lượt AI vào lúc này.';
   }
