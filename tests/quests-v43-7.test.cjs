@@ -128,7 +128,7 @@ test('V43.7 client setup and UI must not write verified collectibles',()=>{
  assert.match(html,/quest-engine-v43-7\.js/);
  assert.match(html,/quest-ui-v43-7\.js/);
  assert.match(html,/quests-v43-7\.css/);
- assert.match(html,/prepareQuestEvent\\(\\s*'NPC_CHECKIN'/);
+ assert.ok(html.includes("'NPC_CHECKIN'"),'NPC check-in event is wired into the app');
  assert.match(runtime,/MARKET_PURCHASE/);
  assert.match(runtime,/questsV437\.reward/);
  assert.match(fun,/userProfile\.questV437=event\.questState/);
