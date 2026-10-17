@@ -24,7 +24,7 @@ test('V45.2: reader and cover display shared Pilot board separately from private
   const b=index.indexOf('id="'+localId+'"');
   assert.ok(a>0&&b>a,'shared board must be visually BEFORE private section: '+section);
  }
- assert.match(index,/DuduStoryPilotCommentsV452\?\.render\(\{/);
+ assert.match(index,/DuduSandboxDiscussionUI\?\.render\(\{/);
  assert.match(index,/sandbox:IS_SANDBOX_MODE/);
  assert.match(index,/chapterIds:\(novel\?\.chapters\|\|\[\]\)\.map/);
  assert.match(index,/js\/story-comments-pilot-v45-2\.js\?v=45-2/);

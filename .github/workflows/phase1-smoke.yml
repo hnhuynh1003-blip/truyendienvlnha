@@ -51,3 +51,4 @@ jobs:
         run: |
           node tests/browser-smoke.cjs
           node tests/browser-auth-private.cjs
+          node --test tests/browser-sandbox-discussion.cjs

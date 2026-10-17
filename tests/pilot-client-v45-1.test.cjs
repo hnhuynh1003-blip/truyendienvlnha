@@ -113,14 +113,14 @@ test('V45.1 detects a swapped Firebase UID before reusing approval',async()=>{
  assert.equal((await x.instance.list('story01')).code,'pilot-check-required');
  assert.equal(x.requests.length,1);
 });
-test('V45.1 is mounted only inside the Sandbox laboratory view',()=>{
+test('Live Pilot panel is disconnected from the fictional Sandbox laboratory',()=>{
  const html=file('index.html');
  const ui=file('js/pilot-lab-ui-v45-1.js');
  assert.match(html,/id="pilot-v451-content"/);
  assert.match(html,/js\/pilot-client-v45-1\.js\?v=45-2/);
  assert.match(html,/js\/pilot-lab-ui-v45-1\.js\?v=45-2/);
  assert.match(html,/css\/pilot-v45-1\.css\?v=45-1-r2/);
- assert.match(html,/DuduPilotLabUIV451\?\.render\(\{[\s\S]*?sandbox:IS_SANDBOX_MODE/);
+ assert.doesNotMatch(html,/DuduPilotLabUIV451\?\.render/);
  assert.match(ui,/if\(!sandbox\|\|!client\(\)\)/);
  assert.doesNotMatch(ui,/firebase\.firestore\(|db\.collection\(|userProfile\./);
 });

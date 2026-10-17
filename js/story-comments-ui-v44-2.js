@@ -36,7 +36,7 @@
    chapterId?(chapterTitle||'Chương truyện'):(storyTitle||'Tác phẩm'));
   content.append(scope);
   const dev=el('p','dudu-v442-local-warning',
-   'Đây là nhật ký bình luận riêng của tài khoản, không đồng bộ cho testA/testB. Hãy sử dụng mục “Bình luận chung Pilot” bên trên để cả hai tài khoản cùng xem.');
+   'Đây là nhật ký bình luận riêng của tài khoản, không đồng bộ cho testA/testB. Hãy sử dụng mục “Bình luận chung Sandbox” bên trên để cả hai tài khoản cùng xem.');
   content.append(dev);
   const notifications=rule.inbox(state,uid);
   if(notifications.length){

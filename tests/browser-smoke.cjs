@@ -3480,7 +3480,7 @@ async function main() {
         const sharedStory=document.getElementById('story-comments-pilot-v452');
         const sharedStoryMounted=!!sharedStory&&
           !sharedStory.hidden&&
-          sharedStory.querySelector('.dudu-v452-shell')?.open===true;
+          sharedStory.textContent.includes('Bình luận chung Sandbox');
         const storyInitiallyCollapsed=!story.hidden&&!storyPanel.open;
         storyPanel.querySelector('summary').click();
         const form=story.querySelector('.dudu-v442-form');
@@ -3499,7 +3499,7 @@ async function main() {
         const sharedChapter=document.getElementById('chapter-comments-pilot-v452');
         const sharedChapterMounted=!!sharedChapter&&
           !sharedChapter.hidden&&
-          sharedChapter.querySelector('.dudu-v452-shell')?.open===true;
+          sharedChapter.textContent.includes('Bình luận chung Sandbox');
         const pilotNoAutoAuth=!firebase.apps.some(app=>
           app.name==='dudu-v451-pilot-auth');
         const chapterInitiallyCollapsed=!chapter.hidden&&!chapterPanel.open;
@@ -3809,7 +3809,7 @@ async function main() {
       }
     });
     assert.deepEqual({...labV445,labViewWidth:0},{
-      rendered:true,storageSeparated:true,pilotMounted:true,pilotNoAutoAuth:true,
+      rendered:true,storageSeparated:true,pilotMounted:false,pilotNoAutoAuth:true,
       A:true,pending:true,
       stayedInMemory:true,noDuplicate:true,authorView:true,authorInbox:true,
       transferred:true,audit:true,offline:true,offlineNoSend:true,

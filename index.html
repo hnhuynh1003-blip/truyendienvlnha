@@ -96,6 +96,8 @@
   <script src="js/pilot-client-v45-1.js?v=45-2"></script>
   <script src="js/pilot-lab-ui-v45-1.js?v=45-2"></script>
   <script src="js/story-comments-pilot-v45-2.js?v=45-2"></script>
+  <script src="js/sandbox-discussion.js?v=1"></script>
+  <script src="js/sandbox-discussion-ui.js?v=1"></script>
   <script src="js/npc-portrait-library-v1.js?v=40-1"></script>
   <script src="js/npc-anime-candidates-v14.js"></script>
   <script src="js/player-avatar-v16.js"></script>
@@ -4004,10 +4006,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
           host:document.getElementById('lab-v445-content'),
           sandbox:IS_SANDBOX_MODE
         });
-        window.DuduPilotLabUIV451?.render({
-          host:document.getElementById('pilot-v451-content'),
-          sandbox:IS_SANDBOX_MODE
-        });
+        const pilotHost=document.getElementById('pilot-v451-content');
+        pilotHost.replaceChildren();pilotHost.hidden=true;
       } else if (appName === 'museum') {
         renderMuseum();
       } else if (appName === 'fun') {
@@ -5477,9 +5477,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
       if(!host||!window.DuduStoryCommentsUIV442)return false;
       const novel=novels[selectedNovelIndex];
       const chapter=view==='chapter'?novel?.chapters?.[selectedChapterIndex]:null;
-      // V45.2: shared Pilot discussion is distinct from the V44.2
-      // profile-local journal. The Worker authorizes by signed UID.
-      window.DuduStoryPilotCommentsV452?.render({
+      // Fictional roles share an origin-local Sandbox ledger.
+      window.DuduSandboxDiscussionUI?.render({
         host:document.getElementById(view==='chapter'?
           'chapter-comments-pilot-v452':'story-comments-pilot-v452'),
         storyId:novel?.id,
