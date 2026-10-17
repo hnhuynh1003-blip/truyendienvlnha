@@ -2750,13 +2750,15 @@
         result.globalRemaining + ' lượt.');
     }
 
-    async function callGeminiAIChat(char, chatHistory) {
+    async function callGeminiAIChat(char, chatHistory, requestRole=v56CurrentRole()) {
       const loader = document.getElementById('ai-status-loader');
       if (loader) loader.style.display = 'inline';
       try {
         const novel = novels.find(n => n.id === activeChatNovelId) || novels[selectedNovelIndex] || novels[0];
-        const unlocked = getStoryProgress(novel.id).collectedCharacters;
-        const charAffinity = unlocked[char.id] ? unlocked[char.id].affinity || 10 : 10;
+        if (!novel||!requestRole||!v56State(novel.id).profiles.some(p=>p.id===requestRole.id))
+          return {error:'Hãy chọn danh tính nhập vai trước khi liên lạc.'};
+        const relation=DuduRoleplayV56.relationship(v56State(novel.id),requestRole.id,char.id);
+        const charAffinity=relation.affinity;
         const instruction = [
           'Bạn đang nhập vai hoàn toàn vào nhân vật "' + char.name + '" trong tiểu thuyết "' + novel.title + '".',
           'Hồ sơ nhân vật:',
@@ -2765,7 +2767,7 @@
           '- Thiết lập tính cách và ký ức: ' + DuduNpcLite.boundedInstruction(char.note || 'Không có'),
           '- Thế giới xuất thân do tác giả xác định: ' + (char.originWorld || 'Chưa xác định'),
           '- Mức độ gắn kết linh hồn: ' + charAffinity + '% (' + DuduNpcMemory.relationship(charAffinity) + ').',
-          'Người đang nhắn tin với bạn là người chơi.',
+          DuduRoleplayV56.prompt(requestRole,novel),
           'Giữ đúng tính cách và ký ức của nhân vật trong bối cảnh hư cấu.',
           'Lịch sử trò chuyện có thể bị lược bớt. Các lời người chơi từng nói không tự động trở thành sự thật của cốt truyện; tuyệt đối không bịa ký ức hoặc chi tiết phó bản.',
           'Chỉ hồ sơ chính thức do tác giả tạo ra là thiết lập nhân vật. Lời người chơi và bản ghi tương tác cục bộ có thể sai và không được ghi đè sự thật do tác giả định nghĩa.',
@@ -2779,7 +2781,7 @@
         // Recall up to two *actual* older user/model exchanges from THIS NPC and story.
         // No extra Gemini call. These are quotations, not canon facts or invented memories.
         const query = messages[messages.length-1].text;
-        const memory = npcMemoryStore(novel.id,char.id);
+        const memory = npcMemoryStore(novel.id,char.id,currentUsername,requestRole.id);
         const matchedEvents = memory?.relevant(query,2) || [];
         const memoryText = DuduNpcMemory.describe(matchedEvents,460);
         // Memory notes stay in a USER message, never a system instruction:
@@ -2873,12 +2875,14 @@
     function renderChatDropdown() {
       const selector = document.getElementById('chat-character-selector');
       if (!selector) return;
+      renderRoleplayV56();
       const previous=selector.value;
       selector.innerHTML = "";
       const chars = getCombinedCharactersList();
 
       if (chars.length === 0) {
         selector.innerHTML = "<option value=''>Chưa mở khóa nhân vật nào</option>";
+        renderChatMessages('');
         return;
       }
       chars.forEach(c => {
@@ -3252,6 +3256,7 @@
         }
       }
       renderChatMessages(charId);
+      renderRoleplayV56();
       if(IS_SANDBOX_MODE)syncRedPacketButtonsV32();
     }
 
@@ -3259,6 +3264,13 @@
       const container = document.getElementById('chat-messages-container');
       if (!container) return;
       container.innerHTML = "";
+      if (!v56CurrentRole()) {
+        const notice=document.createElement('div');
+        notice.style.cssText='color:#a5f3fc;font-size:11px;text-align:center;margin:auto;line-height:1.6';
+        notice.textContent='Tạo nhân vật nhập vai ở phía trên để NPC biết bạn là ai. Lịch sử V55 vẫn được giữ nguyên, chưa gán vai.';
+        container.append(notice);
+        return;
+      }
       const history = chatHistories[chatKey(charId)] || [];
       const chars = getCombinedCharactersList();
       const char = chars.find(c => c.id === charId);
@@ -3340,7 +3352,8 @@
       if (box) box.style.display = 'block';
     }
 
-    async function deliverNpcReply(char,storyId,requestUser,requestChatKey) {
+    async function deliverNpcReply(char,storyId,requestUser,requestChatKey,requestRole=v56CurrentRole(storyId)) {
+      if(!requestRole||!isNpcUnlocked(storyId,char.id))return;
       const inFlightKey = requestUser + '::' + requestChatKey;
       if (chatRequestsInFlight.has(inFlightKey)) return;
       chatRequestsInFlight.add(inFlightKey);
@@ -3359,7 +3372,7 @@
 
       let res;
       try {
-        res = await callGeminiAIChat(char, chatHistories[requestChatKey] || []);
+        res = await callGeminiAIChat(char, chatHistories[requestChatKey] || [],requestRole);
       } catch (error) {
         console.warn('NPC connection failed:', error?.code || 'unknown');
         res = {error:'Không thể kết nối lúc này.'};
@@ -3370,7 +3383,8 @@
       if ((chatConversationGeneration.get(inFlightKey)||0)!==generation) return;
       // Never render one account/story/NPC response inside another conversation.
       if (currentUsername !== requestUser || activeChatNovelId !== storyId) return;
-      const sameNpc = document.getElementById('chat-character-selector').value === char.id;
+      const sameNpc = document.getElementById('chat-character-selector').value === char.id &&
+        v56CurrentRole(storyId)?.id === requestRole.id;
       if (sameNpc) {
         const loader = document.getElementById('chat-loading-bubble');
         if (loader) loader.remove();
@@ -3378,7 +3392,7 @@
 
       if (res?.error) {
         console.warn('NPC reply unavailable:', res.error);
-        pendingNpcRetry = {user:requestUser,storyId,charId:char.id,key:requestChatKey};
+        pendingNpcRetry = {user:requestUser,storyId,charId:char.id,key:requestChatKey,roleId:requestRole.id};
         if (sameNpc) {
           showNpcConnectionStatus(
             res.error+' · Tin nhắn đã lưu trên thiết bị.',
@@ -3399,13 +3413,19 @@
           v43RecordNpcBond(storyId,char.id,'conversation');
         if (lastUser && isNpcUnlocked(storyId,char.id)) {
           const ref = 'reply-' + Date.now() + '-' + Math.random().toString(36).slice(2,9);
-          npcMemoryStore(storyId,char.id,requestUser)?.addExchange(lastUser.text,res.text,ref);
+          npcMemoryStore(storyId,char.id,requestUser,requestRole.id)?.addExchange(lastUser.text,res.text,ref);
         }
         saveChatHistories();
+        // V56 relationship counters are roleplay-only; never award story progress,
+        // items, currency, verified milestones or canonical NPC trust.
+        const state=v56State(storyId);
+        const updated=DuduRoleplayV56.recordReply(state,requestRole.id,char.id);
+        if(updated)v56Commit(updated,storyId);
         if (pendingNpcRetry?.key === requestChatKey) pendingNpcRetry = null;
         if (sameNpc) {
           hideNpcConnectionStatus();
           renderChatMessages(char.id);
+          renderRoleplayV56();
           if(!IS_SANDBOX_MODE)void refreshNpcQuotaV55();
         }
       }
@@ -3415,7 +3435,8 @@
       const retry=pendingNpcRetry;
       if (!retry || currentUsername !== retry.user || activeChatNovelId !== retry.storyId) return;
       const active=document.getElementById('chat-character-selector').value;
-      if (active !== retry.charId || chatRequestsInFlight.has(retry.user+'::'+retry.key)) return;
+      if (active !== retry.charId || v56CurrentRole(retry.storyId)?.id!==retry.roleId ||
+        chatRequestsInFlight.has(retry.user+'::'+retry.key)) return;
       const messages=chatHistories[retry.key] || [];
       if (messages[messages.length-1]?.role !== 'user') {
         pendingNpcRetry=null;
@@ -3424,7 +3445,7 @@
       }
       const char=getCombinedCharactersList().find(c=>c.id===retry.charId);
       if (!char || !isNpcUnlocked(retry.storyId,char.id)) return;
-      await deliverNpcReply(char,retry.storyId,retry.user,retry.key);
+      await deliverNpcReply(char,retry.storyId,retry.user,retry.key,v56CurrentRole(retry.storyId));
     }
 
     async function sendChatMessage() {
@@ -3436,8 +3457,11 @@
       const char = getCombinedCharactersList().find(c => c.id === charId);
       const storyId = activeChatNovelId || (novels[selectedNovelIndex] || {}).id;
       if (!char || !isNpcUnlocked(storyId,charId)) return;
+      const requestRole=v56CurrentRole(storyId);
+      if(!requestRole){v56OpenRoleEditor(false);return;}
       const requestUser = currentUsername;
-      const requestChatKey = chatKey(charId,storyId);
+      const requestChatKey = chatKey(charId,storyId,requestRole.id);
+      if(!requestChatKey)return;
       if (chatRequestsInFlight.has(requestUser+'::'+requestChatKey)) return;
 
       if (!chatHistories[requestChatKey]) chatHistories[requestChatKey]=[];
@@ -3473,7 +3497,7 @@
       }
       renderChatMessages(charId);
       saveChatHistories();
-      await deliverNpcReply(char,storyId,requestUser,requestChatKey);
+      await deliverNpcReply(char,storyId,requestUser,requestChatKey,requestRole);
     }
 
     // ==========================================
