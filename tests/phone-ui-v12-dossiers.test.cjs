@@ -5,13 +5,14 @@ const path=require('node:path');
 const html=fs.readFileSync(path.resolve(__dirname,'../index.html'),'utf8');
 const css=fs.readFileSync(path.resolve(__dirname,'../css/phone-ui-v12-dossiers.css'),'utf8');
 
-test('NPC V12 profile renders in sandbox only and never changes unlock or save flow',()=>{
-  assert.match(html,/if \(IS_SANDBOX_MODE\) \{\s*div\.classList\.add\('dudu-npc-v12-card'\)/);
+test('NPC V12 profile is also read-only for verified live users; gift grants remain gated',()=>{
+  assert.match(html,/if \(IS_SANDBOX_MODE \|\| \(window\.DuduAuth\?\.isReady/);
+  assert.match(html,/if\(actionBar&&unlocked&&!c\.archived&&IS_SANDBOX_MODE\)/);
   assert.match(html,/DuduNpcRelationshipV2\.previewRelationship/);
   assert.match(html,/approvedMilestones:\[\],completedMilestones:\[\]/);
   assert.match(html,/class="dudu-npc-v12-portrait" data-npc-portrait="1"/);
   assert.match(html,/renderNpcPortraitPreview\(preview,c,novel\.id\)/);
-  const block=html.slice(html.indexOf("if (IS_SANDBOX_MODE) {\n          div.classList.add('dudu-npc-v12-card');"),
+  const block=html.slice(html.indexOf("div.classList.add('dudu-npc-v12-card');"),
     html.indexOf('container.appendChild(div);',html.indexOf('function renderCodexList()')));
   assert.doesNotMatch(block,/inventory\.splice|saveCurrentAccount\(|saveDB\(|unlockChapterCharacter\(/);
   assert.match(css,/body\.dudu-phone-v11 #cyber-phone \.dudu-npc-v12-top/);
