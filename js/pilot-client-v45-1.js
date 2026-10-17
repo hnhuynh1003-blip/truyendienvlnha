@@ -1,8 +1,7 @@
-/* DUDU V45.1 — read/write of PILOT discussion only, in isolated Worker DO.
- * Deliberately separate Firebase Auth named app. No Firestore reads/writes;
- * never touches DuduAuth, userProfile, localStorage inventory, gifts or Xu.
- * No API is contacted without a user action, verified pilot session, and
- * successful read-only /v1/pilot/status preflight.
+/* DUDU V45.1 R2 — Firebase UID Pilot client. Intentionally isolated:
+ * named Firebase Auth app, SESSION persistence; no production DuduAuth,
+ * Firestore, inventory, Xu or gift actions. API routes are fixed allowlist.
+ * Pilot status is a signed-user preflight, not an author grant.
  */
 (function(root,factory){
  'use strict';
@@ -14,98 +13,122 @@
  const APP_NAME='dudu-v451-pilot-auth';
  const ORIGIN='https://dudu-ai-staging.dudu-studio-ai.workers.dev';
  const ID=/^[A-Za-z0-9][\w:-]{0,159}$/;
- const MAX_TEXT=600;
- const cleanScope=(storyId,chapterId)=>typeof storyId==='string'&&
-  ID.test(storyId)&&(!chapterId||typeof chapterId==='string'&&
-  ID.test(chapterId))?{storyId,chapterId:chapterId||null}:null;
+ const REASONS=Object.freeze(['SPAM','HARASSMENT','SPOILER','OTHER']);
+ const ROUTES=Object.freeze({
+  '/v1/pilot/status':'GET',
+  '/v1/comments/list':'GET',
+  '/v1/comments/create':'POST',
+  '/v1/comments/report':'POST',
+  '/v1/comments/inbox':'GET',
+  '/v1/comments/inbox/read':'POST',
+  '/v1/comments/admin/register':'POST',
+  '/v1/comments/admin/reports':'GET',
+  '/v1/comments/admin/moderate':'POST'
+ });
  const reject=code=>({ok:false,code});
+ const validId=x=>typeof x==='string'&&ID.test(x);
+ const cleanScope=(storyId,chapterId)=>validId(storyId)&&
+  (chapterId==null||chapterId===''||validId(chapterId))?
+  {storyId,chapterId:chapterId||null}:null;
+ const plain=x=>!!x&&typeof x==='object'&&!Array.isArray(x);
+ const exact=(obj,keys)=>plain(obj)&&
+  Object.keys(obj).every(k=>keys.includes(k));
  function create(deps={}){
-  const firebaseSdk=()=>deps.firebase||(
-   typeof firebase!=='undefined'?firebase:null);
-  const send=()=>deps.fetch||(
-   typeof fetch!=='undefined'?fetch:null);
-  let auth=null,verifiedUid='',lastStatus=null;
+  const sdk=()=>deps.firebase||(typeof firebase!=='undefined'?firebase:null);
+  const transport=()=>deps.fetch||(typeof fetch!=='undefined'?fetch:null);
+  let auth=null,approvedUid='',approved=null,epoch=0;
   function getAuth(){
    if(auth)return auth;
-   const sdk=firebaseSdk();
-   if(!sdk||typeof sdk.auth!=='function'||
-    typeof sdk.initializeApp!=='function'||typeof sdk.app!=='function')
-     throw Error('firebase-unavailable');
-   const app=sdk.apps?.find(x=>x.name===APP_NAME)||
-    sdk.initializeApp(sdk.app().options,APP_NAME);
-   auth=sdk.auth(app);
+   const fb=sdk();
+   if(!fb||typeof fb.auth!=='function'||
+    typeof fb.initializeApp!=='function'||typeof fb.app!=='function')
+    throw Error('firebase-unavailable');
+   const app=fb.apps?.find(x=>x.name===APP_NAME)||
+    fb.initializeApp(fb.app().options,APP_NAME);
+   auth=fb.auth(app);
    return auth;
   }
-  function current(){
-   // Rendering the Pilot panel must not even initialize Firebase Auth.
-   // The isolated Auth app is created only by an explicit Login action.
-   return auth?.currentUser||null;
-  }
+  function current(){return auth?.currentUser||null}
+  function clear(){approvedUid='';approved=null;epoch++}
   function session(){
    const user=current();
-   return {signed:!!user,
-    // No other user identifier is exposed or stored by the Pilot UI.
-    uidHint:user?String(user.uid).slice(0,6)+'…':null,
-    approved:!!user&&verifiedUid===user.uid&&lastStatus?.ok===true,
-    role:verifiedUid===user?.uid?lastStatus?.role||null:null};
+   const allowed=!!user&&approvedUid===user.uid&&approved?.ok===true;
+   return {signed:!!user,uidHint:user?String(user.uid).slice(0,6)+'…':null,
+    approved:allowed,role:allowed?approved.role:null,
+    canManagePilot:allowed&&approved.canManagePilot===true};
   }
   async function login(){
-   const sdk=firebaseSdk();
-   if(!sdk)return reject('firebase-unavailable');
+   const fb=sdk();
+   if(!fb)return reject('firebase-unavailable');
+   clear();
    try{
     const service=getAuth();
-    await service.setPersistence(sdk.auth.Auth.Persistence.SESSION);
-    await service.signInWithPopup(new sdk.auth.GoogleAuthProvider());
-    verifiedUid='';lastStatus=null;
+    await service.setPersistence(fb.auth.Auth.Persistence.SESSION);
+    await service.signInWithPopup(new fb.auth.GoogleAuthProvider());
+    clear();
     return {ok:!!service.currentUser,session:session()};
    }catch(e){return reject(e?.code||'login-failed')}
   }
   async function logout(){
-   try{
-    await getAuth().signOut();
-    verifiedUid='';lastStatus=null;
-    return {ok:true};
-   }catch(_){return reject('logout-failed')}
+   clear();
+   try{await getAuth().signOut();return {ok:true}}
+   catch(_){return reject('logout-failed')}
   }
   async function request(path,{method='GET',body=null}={}){
    const user=current();
    if(!user)return reject('pilot-login-required');
-   if(![
-    '/v1/pilot/status','/v1/comments/list',
-    '/v1/comments/create'
-   ].includes(path.split('?')[0]))return reject('endpoint-denied');
-   if(path!=='/v1/pilot/status'&&
-     (verifiedUid!==user.uid||lastStatus?.ok!==true))
-     return reject('pilot-check-required');
-   const client=send();
-   if(typeof client!=='function')return reject('network-unavailable');
+   const route=path.split('?')[0];
+   if(!Object.hasOwn(ROUTES,route)||ROUTES[route]!==method)
+    return reject('endpoint-denied');
+   if(route!=='/v1/pilot/status'&&
+    (approvedUid!==user.uid||approved?.ok!==true))
+    return reject('pilot-check-required');
+   if(route.startsWith('/v1/comments/admin/')&&
+    approved?.canManagePilot!==true)return reject('pilot-admin-required');
+   const call=transport();
+   if(typeof call!=='function')return reject('network-unavailable');
+   const requestEpoch=epoch;
    try{
     const token=await user.getIdToken();
-    // Login can switch account while awaiting token; avoid mixed-UID requests.
-    if(current()?.uid!==user.uid)return reject('session-changed');
-    const url=ORIGIN+path;
-    const response=await client(url,{method,
-     headers:{Authorization:'Bearer '+token,
+    if(current()?.uid!==user.uid||epoch!==requestEpoch)
+     return reject('session-changed');
+    const response=await call(ORIGIN+path,{
+     method,headers:{Authorization:'Bearer '+token,
       ...(method==='POST'?{'Content-Type':'application/json'}:{})},
      ...(method==='POST'?{body:JSON.stringify(body)}:{}),
      cache:'no-store',
      ...(typeof AbortSignal!=='undefined'&&typeof AbortSignal.timeout==='function'?
       {signal:AbortSignal.timeout(15000)}:{})
     });
+    // A logout/account swap during fetch must not deliver data to the new user.
+    if(current()?.uid!==user.uid||epoch!==requestEpoch)
+     return reject('session-changed');
     const data=await response.json().catch(()=>null);
-    if(!response.ok||data?.error)return reject(
-      data?.error?.code||('http-'+response.status));
-    return data&&typeof data==='object'?{...data,ok:true}:reject('bad-response');
-   }catch(e){return reject(e?.name==='TimeoutError'?'timeout':'network-unavailable')}
+    if(current()?.uid!==user.uid||epoch!==requestEpoch)
+     return reject('session-changed');
+    if(!response.ok||data?.error){
+     const code=data?.error?.code||('http-'+response.status);
+     if(response.status===401||response.status===403)clear();
+     return reject(code);
+    }
+    return plain(data)?{...data,ok:data.ok===true}:
+     reject('bad-response');
+   }catch(e){
+    if(current()?.uid!==user.uid||epoch!==requestEpoch)
+     return reject('session-changed');
+    return reject(e?.name==='TimeoutError'?'timeout':'network-unavailable');
+   }
   }
   async function status(){
-   verifiedUid='';lastStatus=null;
+   clear();
    const user=current();
    if(!user)return reject('pilot-login-required');
+   const currentEpoch=epoch;
    const result=await request('/v1/pilot/status');
    if(result.ok&&['READER_A','READER_B','AUTHOR'].includes(result.role)&&
-     result.preflightOnly===true&&current()?.uid===user.uid){
-    verifiedUid=user.uid;lastStatus=result;
+    result.preflightOnly===true&&current()?.uid===user.uid&&
+    epoch===currentEpoch){
+    approvedUid=user.uid;approved=result;
    }
    return result;
   }
@@ -116,16 +139,51 @@
    if(s.chapterId)q.set('chapterId',s.chapterId);
    return request('/v1/comments/list?'+q.toString());
   }
-  async function post({storyId,chapterId=null,text,requestId}={}){
-   const s=cleanScope(storyId,chapterId);
+  async function post(input={}){
+   if(!exact(input,['storyId','chapterId','text','requestId',
+      'parentId','displayName']))return reject('invalid-comment');
+   const s=cleanScope(input.storyId,input.chapterId);
+   const text=input.text;
    if(!s||typeof text!=='string'||text.trim().length<2||
-    text.trim().length>MAX_TEXT||/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(text)||
-    typeof requestId!=='string'||!ID.test(requestId))
+    text.trim().length>600||
+    /[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(text)||
+    !validId(input.requestId)||
+    !(input.parentId==null||validId(input.parentId))||
+    (input.displayName!==undefined&&
+     (typeof input.displayName!=='string'||input.displayName.length>50)))
     return reject('invalid-comment');
-   return request('/v1/comments/create',{method:'POST',
-    body:{...s,text:text.trim(),requestId}});
+   return request('/v1/comments/create',{method:'POST',body:{
+    ...s,text:text.trim(),requestId:input.requestId,
+    parentId:input.parentId||null,
+    ...(input.displayName!==undefined?{displayName:input.displayName}:{})
+   }});
   }
-  return Object.freeze({APP_NAME,ORIGIN,session,login,logout,status,list,post});
+  async function report(commentId,reason){
+   if(!validId(commentId)||!REASONS.includes(reason))
+    return reject('invalid-report');
+   return request('/v1/comments/report',{method:'POST',
+    body:{commentId,reason}});
+  }
+  async function inbox(){return request('/v1/comments/inbox')}
+  async function markInboxRead(){return request('/v1/comments/inbox/read',{
+   method:'POST',body:{}
+  })}
+  async function register(storyId,chapterIds){
+   if(!validId(storyId)||!Array.isArray(chapterIds)||
+    chapterIds.length>500||chapterIds.some(x=>!validId(x))||
+    new Set(chapterIds).size!==chapterIds.length)return reject('invalid-register');
+   return request('/v1/comments/admin/register',{method:'POST',
+    body:{storyId,chapterIds}});
+  }
+  async function reports(){return request('/v1/comments/admin/reports')}
+  async function moderate(commentId,hidden){
+   if(!validId(commentId)||typeof hidden!=='boolean')
+    return reject('invalid-moderation');
+   return request('/v1/comments/admin/moderate',{method:'POST',
+    body:{commentId,hidden}});
+  }
+  return Object.freeze({APP_NAME,ORIGIN,session,login,logout,status,
+   list,post,report,inbox,markInboxRead,register,reports,moderate});
  }
  return Object.freeze({APP_NAME,ORIGIN,cleanScope,create});
 });
