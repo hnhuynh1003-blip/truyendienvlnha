@@ -4948,7 +4948,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
             if (!n.characters) n.characters = [];
             // Missing timestamps are unknown, never backfilled with a fixed date.
           });
-          localStorage.setItem('my_novels_library_db', JSON.stringify(novels));
+          localStorage.setItem('my_novels_library_db', JSON.stringify(data.novels));
         }
 
         // A public library snapshot cannot rewrite reader progress on the server.
@@ -5628,6 +5628,12 @@ document.getElementById('phone-home-screen').style.display = 'none';
       selectedNovelIndex = idx;
       activeChatNovelId = novels[idx].id;
       const novel = novels[idx];
+      for(const action of ['openEditStoryModal()','deleteCurrentNovel()']){
+        const button=document.querySelector('#cover-view [onclick="'+action+'"]');
+        if(button)button.style.display=novel._cloudV49?'none':'';
+      }
+      const chapterAdd=document.querySelector('#cover-view [onclick="openCreateChapterModal()"]');
+      if(chapterAdd)chapterAdd.style.display=novel._cloudV49?'none':'';
 
       document.getElementById('home-view').style.display = 'none';
       document.getElementById('reader-view').style.display = 'none';
@@ -5704,7 +5710,10 @@ document.getElementById('phone-home-screen').style.display = 'none';
     }
 
     function deleteCurrentNovel() {
-      if (!canEditStories()) return;
+      if (!canEditStories()||novels[selectedNovelIndex]?._cloudV49){
+        if(novels[selectedNovelIndex]?._cloudV49)alert('Không xóa truyện Firebase mới bằng nút xóa thư viện cũ.');
+        return;
+      }
       if (confirm(`Bạn có chắc muốn xóa tác phẩm "${novels[selectedNovelIndex].title}" không?`)) {
         novels.splice(selectedNovelIndex, 1);
         saveDB();
@@ -5720,6 +5729,19 @@ document.getElementById('phone-home-screen').style.display = 'none';
     // TRÌNH ĐỌC TRUYỆN: HIỂN THỊ HỘP MỞ KHÓA TÂM THỨC NPC Ở ĐÁY TRANG
     // ==========================================
     function readChapter(chIdx, scrollPos = 0) {
+      const pendingBook=novels[selectedNovelIndex];
+      const pendingChapter=pendingBook?.chapters?.[chIdx];
+      if(pendingBook?._cloudV49 && pendingChapter && typeof pendingChapter.content!=='string'){
+        const bookId=pendingBook.id,chapterId=pendingChapter.id;
+        DuduEpubProductionV49.readChapter(db,bookId,chapterId)
+         .then(result=>{
+          if(novels[selectedNovelIndex]?.id!==bookId||
+            novels[selectedNovelIndex]?.chapters?.[chIdx]?.id!==chapterId)return;
+          pendingChapter.content=result.content;
+          readChapter(chIdx,scrollPos);
+         }).catch(err=>alert('Chưa thể tải chương EPUB: '+(err.message||'Firebase không phản hồi')));
+        return;
+      }
       window.DuduGiftPickerV4431?.closeActive();
       selectedChapterIndex = chIdx;
       activeChatNovelId = novels[selectedNovelIndex].id;
@@ -6347,6 +6369,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
     }
 
     function openEditStoryModal() {
+      if(novels[selectedNovelIndex]?._cloudV49){alert('Truyện EPUB dùng bộ lưu Firebase riêng; chưa hỗ trợ sửa bằng trình biên tập cũ.');return;}
       isEditingStory = true;
       const current = novels[selectedNovelIndex];
       document.getElementById('story-modal-heading').textContent = "CHỈNH SỬA TÁC PHẨM";
@@ -6363,7 +6386,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
     }
 
     function saveStoryModal() {
-      if (!canEditStories()) return;
+      if (!canEditStories()||(isEditingStory&&novels[selectedNovelIndex]?._cloudV49)) return;
       const title = document.getElementById('story-modal-title').value.trim();
       const coverUrlInput = document.getElementById('story-modal-cover-url').value.trim();
       const coverBase64 = document.getElementById('story-modal-cover-base64').value;
@@ -6486,6 +6509,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
     }
 
     function openCreateChapterModal() {
+      if(novels[selectedNovelIndex]?._cloudV49){alert('Không thể thêm chương EPUB từ trình soạn cũ.');return;}
       editingChapterIndex = null;
       chapterNpcExpanded=false;
       chapterNpcSelectedIds=new Set();
@@ -6517,6 +6541,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
     }
 
     function openEditChapterModal(chIdx) {
+      if(novels[selectedNovelIndex]?._cloudV49){alert('Chương EPUB đã tách khỏi thư viện cũ; không sửa tại đây.');return;}
       editingChapterIndex = chIdx;
       chapterNpcExpanded=false;
       const ch = novels[selectedNovelIndex].chapters[chIdx];
@@ -6543,7 +6568,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
     }
 
     function saveChapterModal() {
-      if (!canEditStories()) return;
+      if (!canEditStories()||novels[selectedNovelIndex]?._cloudV49) return;
       const title = document.getElementById('chapter-modal-title').value.trim();
       const content = document.getElementById('chapter-modal-content').value.trim();
       const authorNote = document.getElementById('chapter-modal-author-note').value.trim();
@@ -6620,7 +6645,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
     }
 
     function deleteChapter(chIdx) {
-      if (!canEditStories()) return;
+      if (!canEditStories()||novels[selectedNovelIndex]?._cloudV49) return;
       if (confirm(`Bạn có chắc muốn xóa "${novels[selectedNovelIndex].chapters[chIdx].title}" không?`)) {
         novels[selectedNovelIndex].chapters.splice(chIdx, 1);
         saveDB();
