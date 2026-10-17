@@ -56,30 +56,76 @@
     chatHistories = {};
     activeChatNovelId = null;
   }
+  function showRetry(show) {
+    const el = document.getElementById('auth-retry-profile-btn');
+    if (el) el.style.display = show ? 'block' : 'none';
+  }
+  function readableProfileError(error) {
+    if (error?.code === 'permission-denied') {
+      return 'Firestore từ chối đọc profiles_v2 của tài khoản. Cần kiểm tra Rules đang triển khai; không sửa quyền hay xóa dữ liệu.';
+    }
+    if (error?.code === 'profile/timeout') {
+      return 'Quá thời gian tải hồ sơ từ Firebase (15 giây). Kiểm tra mạng hoặc thử tải lại.';
+    }
+    if (error?.code === 'unavailable' || error?.code === 'auth/network-request-failed') {
+      return 'Firestore hoặc Firebase Auth hiện không khả dụng. Kiểm tra mạng rồi thử tải lại hồ sơ.';
+    }
+    return 'Không thể tải hồ sơ: ' + (error?.code || error?.message || 'lỗi chưa xác định') + '.';
+  }
+  function withTimeout(promise, label) {
+    let timer;
+    const timeout = new Promise((_, reject) => {
+      timer = setTimeout(() => {
+        const error = new Error(label + ' timed out');
+        error.code = 'profile/timeout';
+        reject(error);
+      }, 15000);
+    });
+    return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+  }
+  function refreshSessionUI() {
+    // A phone/widget render error must never invalidate Firebase authentication.
+    for (const fn of [applyUserRole, renderHome, updatePhoneUI, updateActiveModelInfo]) {
+      try { fn(); } catch (error) { console.warn('DUDU session UI:', error); }
+    }
+  }
+  let profileError = '';
   async function applySession(account) {
     const ticket = ++generation;
     resetSession();
+    profileError = '';
+    showRetry(false);
     if (!account) {
-      applyUserRole();
-      renderHome();
-      updatePhoneUI();
       const btn = document.getElementById('account-status-btn');
       if (btn) btn.textContent = '👤 Khách · Đăng nhập';
       const prof = document.getElementById('profile-account-id');
       if (prof) prof.textContent = 'Khách (không đồng bộ)';
-      // Public stories are readable without forcing an authentication dialog.
-      // Account button, private save and AI actions still require Firebase login.
+      refreshSessionUI();
       return;
     }
 
+    // Firebase authentication is already confirmed at this point.
+    // Display the authenticated identity immediately, instead of showing Guest
+    // while waiting for a slow/blocked Firestore profile read.
+    currentUsername = account.uid;
+    userProfile.username = account.uid;
+    userProfile.name = account.displayName || account.email || 'Độc giả';
+    userProfile.role = 'reader';
+    const label = account.displayName || account.email || 'Độc giả';
+    const btn = document.getElementById('account-status-btn');
+    const prof = document.getElementById('profile-account-id');
+    if (btn) btn.textContent = '👤 ' + label + ' · Đang tải';
+    if (prof) prof.textContent = 'Firebase UID: ' + account.uid.slice(0, 8) + '… (đang tải)';
+    status('Đã xác thực Firebase. Đang tải hồ sơ người chơi…');
+    refreshSessionUI();
+
     try {
       const [token, snapshot] = await Promise.all([
-        account.getIdTokenResult(),
-        firebase.firestore().collection('profiles_v2').doc(account.uid).get()
+        withTimeout(account.getIdTokenResult(), 'Firebase token'),
+        withTimeout(firebase.firestore().collection('profiles_v2').doc(account.uid).get(), 'Firestore profile')
       ]);
       if (ticket !== generation || client.currentUser?.uid !== account.uid) return;
 
-      currentUsername = account.uid; // Never use an editable display name as the account key.
       const cloudData = snapshot.exists ? snapshot.data() : null;
       if (cloudData) userProfile = { ...JSON.parse(defaultProfile), ...cloudData };
       else {
@@ -91,38 +137,56 @@
       }
       userProfile.username = account.uid;
       userProfile.name = cloudData?.name || account.displayName || account.email || 'Độc giả';
-      admin = token.claims.admin === true;
-      userProfile.role = admin ? 'admin' : 'reader'; // The cached profile never grants admin.
+      admin = token.claims?.admin === true;
+      userProfile.role = admin ? 'admin' : 'reader'; // Never trust a cached profile for permissions.
       userProfile.storyStates ||= {};
       userProfile.collectedCharacters ||= {};
       loadScopedInteractionState();
       ready = true;
-
-      const btn = document.getElementById('account-status-btn');
-      if (btn) btn.textContent = '👤 ' + (account.displayName || account.email || 'Độc giả');
-      const prof = document.getElementById('profile-account-id');
+      profileError = '';
+      if (btn) btn.textContent = '👤 ' + label;
       if (prof) prof.textContent = 'Firebase UID: ' + account.uid.slice(0, 8) + '…';
+      showRetry(false);
       closeModals();
-      applyUserRole();
-      renderHome();
-      updatePhoneUI();
-      updateActiveModelInfo();
+      refreshSessionUI();
     } catch (error) {
-      if (ticket !== generation) return;
-      admin = false;
+      if (ticket !== generation || client.currentUser?.uid !== account.uid) return;
+      // Authentication succeeded, but the profile could not be read.
+      // Keep the authenticated identity and deny edits/cloud profile writes
+      // until the server-side check succeeds; do NOT present this as Guest.
       ready = false;
+      admin = false;
       userProfile.role = 'reader';
-      applyUserRole();
-      renderHome();
+      profileError = 'Đã đăng nhập Firebase (' + label + '), nhưng ' + readableProfileError(error);
+      if (btn) btn.textContent = '👤 ' + label + ' · Lỗi hồ sơ';
+      if (prof) prof.textContent = 'Firebase UID: ' + account.uid.slice(0, 8) + '… (chưa đồng bộ)';
+      console.warn('DUDU Firebase profile loading:', error);
+      refreshSessionUI();
       openAuthModal();
-      fail(error);
+      status(profileError);
+      showRetry(true);
     }
+  }
+  function retry() {
+    if (client?.currentUser) return applySession(client.currentUser);
+    status('Chưa có tài khoản Firebase đăng nhập.');
   }
   function init() {
     if (IS_SANDBOX_MODE || client) return;
     defaultProfile = JSON.stringify(userProfile);
     client = firebase.auth();
     showControls();
+    const message = document.getElementById('auth-status-message');
+    if (message && !document.getElementById('auth-retry-profile-btn')) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.id = 'auth-retry-profile-btn';
+      button.className = 'btn';
+      button.textContent = '↻ Thử tải lại hồ sơ Firebase';
+      button.style.cssText = 'display:none;width:100%;margin:6px 0;';
+      button.addEventListener('click', retry);
+      message.insertAdjacentElement('afterend', button);
+    }
     client.onAuthStateChanged(applySession, fail);
   }
   async function google() {
@@ -169,7 +233,7 @@
       else await client.signInWithEmailAndPassword(address, password);
       // onAuthStateChanged loads the profile; completion of signIn alone
       // does not prove that the profile is synced with Firestore.
-      status('Đã xác thực. Đang tải hồ sơ người chơi…');
+      if (!ready && !profileError) status('Đã xác thực. Đang tải hồ sơ người chơi…');
       passwordInput.value = '';
     } catch (error) {
       fail(error);
@@ -184,15 +248,18 @@
   function showStatus() {
     showControls();
     const account = client?.currentUser;
-    status(account
-      ? 'Đang đăng nhập: ' + (account.email || account.displayName || 'Firebase')
-      : 'Nhập email và mật khẩu Firebase bạn đã tạo. Chế độ ẩn danh thường không tự điền mật khẩu.');
+    status(!account
+      ? 'Nhập email và mật khẩu Firebase bạn đã tạo. Chế độ ẩn danh thường không tự điền mật khẩu.'
+      : profileError || (ready
+        ? 'Đã đăng nhập Firebase: ' + (account.email || account.displayName || 'Firebase')
+        : 'Đã xác thực Firebase. Đang tải hồ sơ người chơi…'));
+    showRetry(!!account && !!profileError);
   }
   function canAuthor() {
     return !!client?.currentUser && ready && admin;
   }
   window.DuduAuth = {
-    init, google, email, signout, showStatus,
+    init, google, email, signout, showStatus, retry,
     isReady: () => ready && !!client?.currentUser,
     isAdmin: canAuthor,
     uid: () => client?.currentUser?.uid || null
