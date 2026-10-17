@@ -103,7 +103,7 @@
     !safeString(transfer.requestId)||requestIds.has(transfer.requestId)||
     !commentIds.has(transfer.commentId))errors.push('invalid-receipt');
    receiptIds.add(transfer.id);requestIds.add(transfer.requestId);
-   const comment=raw.comments.find(c=>c.id===transfer.commentId);
+   const comment=raw.comments.find(c=>c?.id===transfer.commentId);
    if(!comment||comment.authorId!==transfer.senderId||
       comment.requestId!==transfer.requestId)
     errors.push('invalid-transfer-comment-link');
