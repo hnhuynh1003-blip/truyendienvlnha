@@ -2216,7 +2216,17 @@
       if(pronouns)pronouns.value=current?.pronouns||'neutral';
       if(bio)bio.value=current?.backstory||'';
       const avatar=document.getElementById('dudu-v56-avatar');
-      if(avatar)avatar.value=current?.avatar||'account';
+      if(avatar){
+        // V56.4: preexisting character art only, without mutating V55 profile data.
+        const existing=new Set(Array.from(avatar.options).map(o=>o.value));
+        for(const id of DuduRoleplayV56.AVATAR_IDS){
+          if(existing.has(id))continue;
+          const option=document.createElement('option');
+          option.value=id;option.textContent='DUDU · '+id.replace('portrait-f-','Nữ ').replace('portrait-m-','Nam ');
+          avatar.append(option);
+        }
+        avatar.value=current?.avatar||'account';
+      }
       const err=document.getElementById('dudu-v56-role-error');
       if(err)err.textContent='';
       editor.hidden=false;
@@ -2299,13 +2309,19 @@
         // Reuse validated account avatar/frames. No new unlock rights.
         renderPlayerAvatarV16(el);
       }else if(role.avatar&&role.avatar!=='initials'){
-        // Only preapproved built-in DUDU portrait IDs can reach this renderer.
-        const sprite=DuduNpcAnimeCandidatesV14.styleFor(role.avatar);
+        // Use existing premium portrait sprites, never grant avatar frames or items.
+        const portrait=/^portrait-[fm]-\d{2}$/.test(role.avatar);
+        const sprite=portrait?window.DuduNpcPremiumV40?.styleFor(role.avatar):
+          DuduNpcAnimeCandidatesV14.styleFor(role.avatar);
         if(sprite){
           el.style.backgroundImage=sprite.image;
           el.style.backgroundSize=sprite.size;
           el.style.backgroundPosition=sprite.position;
           el.textContent='';
+        }else if(portrait){
+          const src=DuduNpcPortraitLibrary.sourceFor(role.avatar);
+          if(src){const img=document.createElement('img');img.src=src;img.alt='';
+            img.loading='lazy';el.replaceChildren(img);}
         }
       }
     }
