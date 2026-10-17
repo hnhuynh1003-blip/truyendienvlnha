@@ -28,7 +28,7 @@
   const shell=el('details','dudu-v442-shell');
   shell.open=expanded;
   const head=el('summary','dudu-v442-header');
-  head.append(el('span','','💬 '+(chapterId?'Bình luận chương':'Bình luận truyện')),
+  head.append(el('span','','🔒 '+(chapterId?'Nhật ký bình luận chương riêng':'Nhật ký bình luận truyện riêng')),
    el('small','',comments.length+' bình luận · Mở / đóng'));
   shell.append(head);
   const content=el('div','dudu-v442-content');
@@ -36,7 +36,7 @@
    chapterId?(chapterTitle||'Chương truyện'):(storyTitle||'Tác phẩm'));
   content.append(scope);
   const dev=el('p','dudu-v442-local-warning',
-   'Bản thử nghiệm riêng tư trên thiết bị. Bình luận, báo cáo và thông báo chưa xuất hiện với tài khoản khác.');
+   'Đây là nhật ký bình luận riêng của tài khoản, không đồng bộ cho testA/testB. Hãy sử dụng mục “Bình luận chung Pilot” bên trên để cả hai tài khoản cùng xem.');
   content.append(dev);
   const notifications=rule.inbox(state,uid);
   if(notifications.length){
@@ -123,7 +123,7 @@
   });
   selectedCard.append(selectedText,changeGift,removeGift);
   gift.setAttribute('aria-expanded','false');
-  const publish=el('button','dudu-v442-publish','Đăng thử');
+  const publish=el('button','dudu-v442-publish','Lưu bình luận riêng');
   publish.type='submit';publish.disabled=!uid;
   actions.append(gift,publish);
   composer.append(field,actions,selectedCard,status);
