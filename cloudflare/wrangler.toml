@@ -19,6 +19,9 @@ GIFT_SETTLEMENT_ENABLED = "false"
 # V45 pilot remains OFF. UID secrets and an explicit v45-* namespace are
 # required separately; never enter real Firebase UIDs in this public repo.
 PILOT_ENABLED = "false"
+# A second settlement-specific kill switch. Do NOT enable without server
+# provenance, cross-DO outbox/saga and independent pilot audit.
+PILOT_SETTLEMENT_ENABLED = "false"
 MODEL = "gemini-3.5-flash-lite"
 
 [[durable_objects.bindings]]
