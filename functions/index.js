@@ -4,6 +4,8 @@ const {defineSecret}=require('firebase-functions/params');
 const {initializeApp}=require('firebase-admin/app');
 const {getFirestore}=require('firebase-admin/firestore');
 const crypto=require('node:crypto');
+const EconomyV52=require('./lib/economy-v52');
+
 const {
   MAX_USER_DAILY,MAX_GLOBAL_DAILY,LEASE_MS,dayUTC,validateRequest,quotaFailure
 }=require('./lib/ai-limits');
@@ -116,4 +118,124 @@ exports.duduAiStatus=onCall(baseOptions,async request=>{
     remaining:Math.max(0,MAX_USER_DAILY-(userSnap.data()?.calls||0)),
     globalRemaining:Math.max(0,MAX_GLOBAL_DAILY-(globalSnap.data()?.calls||0))
   };
+});
+
+/* V52 trusted economy — defaults to DISABLED until project admin explicitly
+ * configures App Check, deploys Functions and sets
+ * system_config/economy_v52 {enabled:true,schemaVersion:52}.
+ * Does not read or migrate mutable profiles_v2 Xu/EXP/inventory.
+ */
+const ECONOMY_COLLECTION='economy_accounts_v52';
+const economyOptions={...baseOptions,maxInstances:2,timeoutSeconds:30};
+function economyAccountRef(uid){return db.collection(ECONOMY_COLLECTION).doc(uid);}
+function economyGateRef(){return db.doc('system_config/economy_v52');}
+function economyEnabled(snap){
+ return !!snap.exists&&snap.data()?.enabled===true&&snap.data()?.schemaVersion===52;
+}
+function economyFailure(reason){
+ const messages={
+  'already-claimed':'Bạn đã điểm danh hôm nay.',
+  'daily-limit':'Bạn đã đạt giới hạn mua hàng hôm nay.',
+  'inventory-full':'Kho máy chủ đã đầy.',
+  'not-enough-coins':'Ví Xu máy chủ chưa đủ.',
+  'wallet-cap':'Ví đã đạt giới hạn Xu.',
+  'not-for-sale':'Vật phẩm này chưa được mở bán.',
+  'clock-backwards':'Ngày trên máy chủ không hợp lệ.'
+ };
+ throw new HttpsError(reason==='not-enough-coins'?'failed-precondition':'failed-precondition',
+  messages[reason]||'Giao dịch chưa hợp lệ.');
+}
+function safeEconomyAccount(snap){
+ try{return EconomyV52.account(snap.exists?snap.data():null);}
+ catch(_){throw new HttpsError('failed-precondition','Dữ liệu ví máy chủ cần được quản trị viên kiểm tra.');}
+}
+exports.duduEconomyStatus=onCall(economyOptions,async request=>{
+ const uid=requireUser(request);
+ const gate=await economyGateRef().get();
+ if(!economyEnabled(gate))return {enabled:false,mode:'server-disabled',schemaVersion:52};
+ const ref=economyAccountRef(uid);
+ const [snap,items]=await Promise.all([
+  ref.get(),ref.collection('items').orderBy('createdAt','desc').limit(30).get()
+ ]);
+ const account=safeEconomyAccount(snap);
+ return {enabled:true,schemaVersion:52,uid,serverDay:EconomyV52.utcDay(Date.now()),
+  balance:account.balance,level:account.level,exp:account.exp,
+  inventoryCount:account.inventoryCount,checkinDay:account.checkinDay,
+  daily:account.daily,
+  saleIds:Object.keys(EconomyV52.PRICES),
+  items:items.docs.map(doc=>({instanceId:doc.id,
+   itemId:doc.data().itemId,source:'SERVER_SHOP',createdAt:doc.data().createdAt}))};
+});
+exports.duduEconomyDailyCheckIn=onCall(economyOptions,async request=>{
+ const uid=requireUser(request);
+ // Ignore all client-submitted progress, dates, currency, and credentials.
+ if(request.data&&Object.keys(request.data).length)
+  throw new HttpsError('invalid-argument','Yêu cầu điểm danh không hợp lệ.');
+ const now=Date.now(),day=EconomyV52.utcDay(now),user=economyAccountRef(uid);
+ const receipt=user.collection('receipts').doc('checkin-'+day);
+ return db.runTransaction(async tx=>{
+  const [gate,old,prior]=await Promise.all([
+   tx.get(economyGateRef()),tx.get(user),tx.get(receipt)
+  ]);
+  if(!economyEnabled(gate))
+   throw new HttpsError('failed-precondition','Kinh tế máy chủ chưa được quản trị viên kích hoạt.');
+  const before=safeEconomyAccount(old);
+  if(prior.exists)return {ok:true,alreadyClaimed:true,
+   balance:before.balance,level:before.level,exp:before.exp,serverDay:day};
+  let plan;
+  try{plan=EconomyV52.checkinPlan(before,day);}
+  catch(_){throw new HttpsError('failed-precondition','Hồ sơ kinh tế không hợp lệ.');}
+  if(!plan.ok)economyFailure(plan.reason);
+  tx.set(user,{...plan.account,schemaVersion:52,updatedAt:now},{merge:true});
+  tx.create(receipt,{action:'DAILY_CHECKIN',day,coins:plan.award.coins,
+   exp:plan.award.exp,createdAt:now});
+  return {ok:true,alreadyClaimed:false,balance:plan.account.balance,
+   level:plan.account.level,exp:plan.account.exp,
+   serverDay:day,award:plan.award};
+ });
+});
+exports.duduEconomyPurchase=onCall(economyOptions,async request=>{
+ const uid=requireUser(request);
+ const data=request.data;
+ if(!data||typeof data!=='object'||Array.isArray(data)||
+  Object.keys(data).length!==2||
+  typeof data.itemId!=='string'||!EconomyV52.validRequestId(data.requestId))
+  throw new HttpsError('invalid-argument','Mã vật phẩm hoặc yêu cầu mua không hợp lệ.');
+ // Only an ID and an idempotency key are accepted. Never trust client price.
+ const itemId=data.itemId,requestId=data.requestId,price=EconomyV52.PRICES[itemId];
+ if(!Number.isSafeInteger(price))
+  throw new HttpsError('failed-precondition','Vật phẩm không được bán bằng Xu máy chủ.');
+ const user=economyAccountRef(uid),receipt=user.collection('receipts').doc('buy-'+requestId);
+ const instanceId='p-'+requestId;
+ const itemRef=user.collection('items').doc(instanceId);
+ const now=Date.now(),day=EconomyV52.utcDay(now);
+ return db.runTransaction(async tx=>{
+  const [gate,old,prior]=await Promise.all([
+   tx.get(economyGateRef()),tx.get(user),tx.get(receipt)
+  ]);
+  if(!economyEnabled(gate))
+   throw new HttpsError('failed-precondition','Kinh tế máy chủ chưa được kích hoạt.');
+  const before=safeEconomyAccount(old);
+  if(prior.exists){
+   const logged=prior.data();
+   if(logged.itemId!==itemId)
+    throw new HttpsError('already-exists','Mã giao dịch đã dùng cho một sản phẩm khác.');
+   return {ok:true,replayed:true,itemId,instanceId,
+    price:logged.price,balance:logged.balanceAfter,
+    inventoryCount:logged.inventoryCountAfter,serverDay:logged.day};
+  }
+  let plan;
+  try{plan=EconomyV52.purchasePlan(before,itemId,day);}
+  catch(_){throw new HttpsError('failed-precondition','Hồ sơ kinh tế không hợp lệ.');}
+  if(!plan.ok)economyFailure(plan.reason);
+  tx.set(user,{...plan.account,schemaVersion:52,updatedAt:now},{merge:true});
+  tx.create(itemRef,{itemId,source:'SERVER_SHOP',createdAt:now,
+   receiptId:receipt.id,price:plan.price});
+  tx.create(receipt,{action:'SHOP_PURCHASE',itemId,price:plan.price,day,
+   balanceAfter:plan.account.balance,inventoryCountAfter:plan.account.inventoryCount,
+   createdAt:now});
+  return {ok:true,replayed:false,itemId,instanceId,
+   price:plan.price,balance:plan.account.balance,
+   inventoryCount:plan.account.inventoryCount,serverDay:day};
+ });
 });
