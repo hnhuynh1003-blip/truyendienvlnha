@@ -94,7 +94,13 @@
       !BOX_THEMES.includes(theme)||!Number.isSafeInteger(seed)||
       seed<0||seed>1000000||!Number.isFinite(roll)||roll<0||roll>=1)
      return {ok:false,reason:'invalid-input',state};
+   if(raw?.version===VERSION&&validDay(raw.day)&&raw.day>day)
+     return {ok:false,reason:'clock-backwards',state};
    if(state.rounds[type])return {ok:false,reason:'already-started',state};
+   // V44.8: claim history is a second replay barrier if a saved round
+   // disappears while a prior same-day prize receipt remains.
+   if(state.history.some(x=>x.day===day&&x.type===type))
+     return {ok:false,reason:'already-claimed',state};
    const reward=pick(type===TYPE_BOX?BOX_POOL:TICKET_POOL,roll);
    if(!reward)return {ok:false,reason:'invalid-roll',state};
    const round={type,day,status:'playing',seed,theme,
@@ -129,6 +135,10 @@
    const state=norm(raw,day),round=state.rounds[type];
    if(!validType(type)||!round||round.status!=='ready')
      return {ok:false,reason:'not-ready-or-claimed',state};
+   if(raw?.version===VERSION&&validDay(raw.day)&&raw.day>day)
+     return {ok:false,reason:'clock-backwards',state};
+   if(state.history.some(x=>x.day===day&&x.type===type))
+     return {ok:false,reason:'already-claimed',state};
    if(!Number.isSafeInteger(coins)||coins<0||coins>1e9||
       !Array.isArray(inventory))return {ok:false,reason:'invalid-balance',state};
    const prize=round.reward;
