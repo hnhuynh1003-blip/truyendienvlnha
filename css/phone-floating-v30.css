@@ -37,11 +37,22 @@ body.dudu-phone-v11 #cyber-phone .phone-system-label {color:#e5efff;}
 body.dudu-phone-v11 #cyber-phone .phone-close-btn{
  background:#121c34a3;border:1px solid #ffffff42;
 }
-body.dudu-phone-v11 #cyber-phone .phone-widgets {
- /* Keep existing exp/coin elements and update hooks, hide redundant dashboard. */
- position:absolute !important;width:1px !important;height:1px !important;
- padding:0 !important;margin:0 !important;overflow:hidden !important;
- clip-path:inset(50%);border:0 !important;pointer-events:none;
+/* V49.7: display the real profile dashboard, never hide EXP/LV/currency. */
+body.dudu-phone-v11 #cyber-phone #phone-home-screen .phone-widgets {
+ display:block !important;position:relative !important;
+ width:100% !important;height:auto !important;min-height:0 !important;
+ padding:12px 13px 11px !important;margin:3px 0 9px !important;
+ clip:auto !important;clip-path:none !important;
+ overflow:visible !important;pointer-events:auto !important;
+ border:1px solid #e3dbff50 !important;border-radius:16px;
+ background:linear-gradient(140deg,#1c2547db,#242c51c7) !important;
+ box-shadow:inset 0 1px #ffffff24,0 8px 24px #02071655;
+}
+body.dudu-phone-v11 #cyber-phone #phone-home-screen .widget-exp-bar {
+ height:8px;overflow:hidden;
+}
+body.dudu-phone-v11 #cyber-phone #phone-home-screen .widget-exp-fill {
+ height:100%;
 }
 body.dudu-phone-v11 #cyber-phone #player-avatar-home-v16.dudu-avatar-home-v16{
  flex:none;display:flex;gap:9px;align-items:center;
@@ -64,7 +75,7 @@ body.dudu-phone-v11 #cyber-phone #dudu-v30-account-meta{
  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 body.dudu-phone-v11 #cyber-phone #phone-home-screen>.phone-app-grid{
- margin-top:auto !important;margin-bottom:9px;
+ margin-top:10px !important;margin-bottom:9px;
  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
  gap:5px;align-items:start;flex:none;
 }
@@ -92,6 +103,7 @@ body.dudu-phone-v11 #cyber-phone #phone-home-screen .app-label{
  color:#fff;text-shadow:0 1px 4px #010818,0 2px 8px #010818;
 }
 body.dudu-phone-v11 #cyber-phone .dudu-v30-dock{
+ margin-top:auto;
  flex:none;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
  gap:2px;padding:9px 5px 3px;
  border:1px solid #e7e8ff47;border-radius:21px;
