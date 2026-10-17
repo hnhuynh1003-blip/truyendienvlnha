@@ -20,7 +20,11 @@ const t0=1760668000000;
 function setup(){
  const db=new DatabaseSync(':memory:');
  const sql={exec(q,...args){
-  if(!args.length){db.exec(q);return {toArray:()=>[]};}
+  if(!args.length){
+   if(/^\s*(SELECT|WITH|PRAGMA)/i.test(q))
+    return {toArray:()=>db.prepare(q).all()};
+   db.exec(q);return {toArray:()=>[]};
+  }
   const statement=db.prepare(q);
   if(/^\s*(SELECT|WITH|PRAGMA)/i.test(q)){
    const rows=statement.all(...args);

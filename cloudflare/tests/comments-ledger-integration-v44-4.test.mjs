@@ -14,7 +14,11 @@ const {DuduDiscussion}=await import('data:text/javascript,'+encodeURIComponent(s
 function setup(){
  const db=new DatabaseSync(':memory:');
  const sql={exec(query,...args){
-  if(!args.length){db.exec(query);return {toArray:()=>[]};}
+  if(!args.length){
+   if(/^\s*(SELECT|WITH|PRAGMA)/i.test(query))
+    return {toArray:()=>db.prepare(query).all()};
+   db.exec(query);return {toArray:()=>[]};
+  }
   const stmt=db.prepare(query);
   if(/^\s*(SELECT|WITH)/i.test(query)){
    const result=stmt.all(...args);return {toArray:()=>result};
