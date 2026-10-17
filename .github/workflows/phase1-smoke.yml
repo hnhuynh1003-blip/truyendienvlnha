@@ -52,3 +52,4 @@ jobs:
           node tests/browser-smoke.cjs
           node tests/browser-auth-private.cjs
           node --test tests/browser-sandbox-discussion.cjs
+          node --test tests/browser-epub-import-v48.cjs
