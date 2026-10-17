@@ -2151,7 +2151,13 @@
         storyStates: userProfile.storyStates || {}
       };
 
-      if (IS_SANDBOX_MODE) { updatePhoneUI(); return; }
+      if (IS_SANDBOX_MODE) {
+        // The profile write above has committed. A broken UI refresh must
+        // never throw into a caller and cause a false transaction rollback.
+        try { updatePhoneUI(); }
+        catch(e) { console.warn('V44.9: cập nhật Phone sau lưu gặp lỗi:',e); }
+        return;
+      }
       try {
         db.collection("profiles_v2").doc(DuduAuth.uid()).set(cloudData, { merge: true })
           .catch(err => console.warn("Lỗi đồng bộ Firebase (vẫn chạy offline):", err));
@@ -2159,7 +2165,8 @@
         console.warn("Không gửi được lên Firebase:", e);
       }
 
-      updatePhoneUI();
+      try { updatePhoneUI(); }
+      catch(e) { console.warn('V44.9: cập nhật Phone sau lưu gặp lỗi:',e); }
     }
 
     function openAuthModal() {
