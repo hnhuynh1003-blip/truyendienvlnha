@@ -7,13 +7,16 @@ const html=file('index.html');
 const client=file('js/economy-live-v52.js');
 const market=file('js/market-ui-v43.js');
 const backend=file('functions/index.js');
-test('V52 client SDK and App Check are explicitly configured but site key is empty by default',()=>{
+test('V52.3 Enterprise App Check uses a configured public key while retaining backend enforcement',()=>{
  assert.match(html,/firebase-functions-compat\.js/);
  assert.match(html,/firebase-app-check-compat\.js/);
- assert.match(html,/js\/appcheck-sitekey-v52\.js\?v=52-2/);
+ assert.match(html,/js\/appcheck-sitekey-v52\.js\?v=52-3/);
  assert.match(html,/new firebase\.appCheck\.ReCaptchaEnterpriseProvider\(/);
  assert.match(html,/DUDU_RECAPTCHA_ENTERPRISE_SITE_KEY\.trim\(\)/);
- assert.match(file('js/appcheck-sitekey-v52.js'),/DUDU_RECAPTCHA_ENTERPRISE_SITE_KEY = ''/);
+ const keySource=file('js/appcheck-sitekey-v52.js');
+ assert.match(keySource,/DUDU_RECAPTCHA_ENTERPRISE_SITE_KEY = '[A-Za-z0-9_-]+'/);
+ assert.doesNotMatch(keySource,/DUDU_RECAPTCHA_ENTERPRISE_SITE_KEY = ''/);
+ assert.doesNotMatch(keySource,/SECRET_KEY|PRIVATE_KEY|serviceAccount/);
  assert.match(backend,/enforceAppCheck:true/);
 });
 test('V52 buttons call only verified Firebase callable endpoints',()=>{
