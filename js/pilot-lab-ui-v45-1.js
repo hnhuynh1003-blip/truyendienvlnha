@@ -27,8 +27,10 @@
   'session-changed':'Tài khoản đã đổi, hãy xác minh Pilot lại.',
   'invalid-scope':'Mã truyện hoặc chương không hợp lệ.',
   'invalid-comment':'Nội dung bình luận cần từ 2 đến 600 ký tự.',
-  'network-unavailable':'Không thể kết nối Worker staging.',
-  timeout:'Kết nối staging quá thời hạn.',
+  'network-unavailable':'Chưa kết nối được Worker staging. Hãy thử “Kiểm tra kết nối Worker” trước; kiểm tra địa chỉ, mạng và CORS.',
+  'worker-unexpected-response':'Địa chỉ staging có phản hồi nhưng không đúng dịch vụ DUDU.',
+  'firebase-token-unavailable':'Firebase chưa cấp được token đăng nhập. Hãy đăng xuất và đăng nhập lại tài khoản thử nghiệm.',
+  timeout:'Worker staging không phản hồi trong thời gian chờ. Kiểm tra tình trạng triển khai và mạng.',
   'login-failed':'Không hoàn tất đăng nhập Google.',
   'endpoint-denied':'Tính năng không thuộc phạm vi Pilot V45.1.',
   'pilot-admin-required':'Chỉ quản trị viên có JWT admin đã xác thực trong vai Tác giả Pilot mới được quản lý phạm vi.',
@@ -143,6 +145,12 @@
     inform('Đã đóng phiên Google Pilot; dữ liệu Sandbox giả lập không đổi.');
    })));
   }
+  toolbar.append(action('Kiểm tra kết nối Worker',()=>perform(async()=>{
+    const result=await instance.probe();
+    inform(result.ok?
+      'Đã kết nối Worker staging. Đây chỉ là kiểm tra mạng; quyền Pilot vẫn cần kích hoạt riêng.':
+      explain(result),!result.ok);
+  })));
   box.append(toolbar);
   if(session.approved&&status?.ok){
    const flags=el('div','dudu-v451-flags',
