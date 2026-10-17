@@ -42,7 +42,7 @@
  let scopeInput={storyId:'',chapterId:'',text:''},requestId=null;
  let replyTo=null,notifications=[],moderation=[],chapterList='';
  let status=null;
- function use(){if(!api)api=client()?.create();return api}
+ function use(){if(!api)api=client()?.getShared?.()||client()?.create();return api}
  const explain=res=>errors[res?.code]||
    (typeof res?.code==='string'?'Máy chủ phản hồi: '+res.code:
    'Không hoàn tất thao tác. Vui lòng kiểm tra kết nối.');
