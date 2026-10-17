@@ -8,7 +8,7 @@
   `cloudflare/wrangler.toml` remains false for rollback and staging tests.
 - All other server features (market, gifts, comments, collectibles, pilot) remain OFF.
 - Firebase JWT verification and Durable Object quotas remain required:
-  25 AI calls per UID per UTC day, 200 total per day, 10 seconds between calls.
+  V55: 120 AI calls per UID per UTC day, 250 total per day, 5 seconds between calls.
 - The configured model is `gemini-3.5-flash-lite`. Whether that model/API key
   has a free allowance and what charges could apply depend on the actual
   Gemini Developer API account, **not** on Firebase Spark.
