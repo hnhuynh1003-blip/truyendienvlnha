@@ -21,7 +21,7 @@ test('V30 Home has 4 floating apps + 4 dock apps and no duplicate personal short
  assert.doesNotMatch(home,/id="quests-container"/);
 });
 test('V30 wallpaper CSS overrides opaque old layers and shows full-screen artwork',()=>{
- assert.match(html,/href="css\/phone-floating-v30.css\?v=1"/);
+ assert.match(html,/href="css\/phone-floating-v30.css\?v=[\w-]+"/);
  assert.match(css,/body\.dudu-phone-v11\[data-dudu-phone-wallpaper\] #cyber-phone \.phone-screen/);
  assert.match(css,/body\.dudu-phone-v11\[data-dudu-phone-wallpaper\] #cyber-phone #phone-home-screen/);
  assert.match(css,/background-image:none !important/);
@@ -36,6 +36,7 @@ test('V30 retains exp/coins update hooks, safely shows compact account meta',()=
  assert.match(html,/id="phone-currency-display"/);
  assert.match(html,/id="phone-exp-fill"/);
  assert.match(html,/miniMeta\.textContent=/);
- assert.match(css,/clip-path:inset\(50%\)/);
+ assert.match(css,/body\.dudu-phone-v11\.dudu-live-mode[\s\S]*?clip-path:none !important/);
+ assert.match(css,/body\.dudu-phone-v11\.dudu-sandbox-mode[\s\S]*?clip-path:inset\(50%\)/);
  assert.doesNotMatch(css,/(?:^|\n)\s*body\s*\{/);
 });
