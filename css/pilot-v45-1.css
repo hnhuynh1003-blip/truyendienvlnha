@@ -1,0 +1,38 @@
+/* V45.1 sandbox-only Pilot panel: deliberately compact under fictitious lab. */
+#pilot-v451-content{max-width:100%;padding:10px 11px 22px;box-sizing:border-box}
+#pilot-v451-content[hidden]{display:none!important}
+.dudu-v451{font-family:inherit;max-width:100%;box-sizing:border-box;overflow-wrap:anywhere;
+ border:1px solid rgba(148,163,184,.35);border-radius:18px;
+ background:linear-gradient(145deg,rgba(18,31,56,.97),rgba(36,31,63,.96));
+ color:#f1f5f9;padding:14px 12px;box-shadow:0 8px 22px rgba(4,9,24,.17)}
+.dudu-v451-kicker{color:#b5efff;font-size:10px;font-weight:800;letter-spacing:.12em}
+.dudu-v451 h3{margin:6px 0 4px;font-size:16px;line-height:1.35;color:#f8fafc}
+.dudu-v451-note,.dudu-v451-disclaimer{font-size:11px;line-height:1.55;color:#d0d9eb;margin:4px 0 10px}
+.dudu-v451-identity,.dudu-v451-flags{font-size:11px;border:1px solid rgba(174,207,248,.25);
+ border-radius:12px;background:rgba(255,255,255,.07);padding:9px 10px;margin:10px 0}
+.dudu-v451-flags{background:rgba(15,109,110,.16);color:#b7eae2;line-height:1.6}
+.dudu-v451-actions{display:flex;gap:7px;flex-wrap:wrap;margin:9px 0}
+.dudu-v451-btn{border:1px solid rgba(186,199,227,.4);border-radius:10px;
+ padding:9px 10px;min-height:36px;cursor:pointer;background:#243651;color:#ecf6ff;
+ font:600 11px/1.35 inherit;flex:1 1 106px;white-space:normal}
+.dudu-v451-btn.primary{background:linear-gradient(120deg,#19748b,#3e4999);border-color:rgba(169,224,255,.44)}
+.dudu-v451-btn:disabled{opacity:.57;cursor:wait}
+.dudu-v451-btn:focus-visible,.dudu-v451 input:focus-visible,
+.dudu-v451 textarea:focus-visible{outline:2px solid #a8edff;outline-offset:2px}
+.dudu-v451-form{display:grid;gap:8px;min-width:0;margin:10px 0}
+.dudu-v451-field{display:grid;gap:4px;min-width:0;font-size:11px;color:#e2e8f0;font-weight:600}
+.dudu-v451-field input,.dudu-v451-field textarea{box-sizing:border-box;min-width:0;width:100%;
+ border-radius:10px;border:1px solid rgba(186,199,227,.45);background:rgba(8,21,42,.75);
+ color:#f7fbff;font:400 12px/1.4 inherit;padding:9px 10px;resize:vertical}
+.dudu-v451-field input::placeholder,.dudu-v451-field textarea::placeholder{color:#a9b6d0}
+.dudu-v451-feed{display:grid;gap:7px;margin:12px 0}
+.dudu-v451-feed>strong{font-size:12px}
+.dudu-v451-comment{padding:8px 10px;border:1px solid rgba(183,212,241,.21);
+ border-radius:10px;background:rgba(255,255,255,.05)}
+.dudu-v451-comment span{font-weight:700;font-size:11px;color:#aee7ff}
+.dudu-v451-comment p{font-size:11px;line-height:1.5;color:#f1f5f9;
+ margin:4px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.dudu-v451-status{font-size:11px;line-height:1.5;border-radius:10px;padding:8px 9px;
+ background:rgba(89,158,188,.15);color:#e8f5ff}
+.dudu-v451-status.is-error{background:rgba(174,66,78,.18);color:#ffd0d5}
+@media(max-width:360px){#pilot-v451-content{padding:8px 7px 18px}.dudu-v451{padding:11px 9px}.dudu-v451-actions{gap:6px}}
