@@ -69,6 +69,10 @@ jobs:
       - name: Verify staging deployment bundle without writing
         working-directory: cloudflare
         run: npx wrangler deploy --config .pilot-v45-activation.toml --dry-run
+      - name: First close all staging gates before swapping allowlisted UIDs
+        if: inputs.operation == 'enable'
+        working-directory: cloudflare
+        run: npx wrangler deploy --config wrangler.toml
       - name: Upload verified Pilot UID secrets (only on enable)
         if: inputs.operation == 'enable'
         working-directory: cloudflare
