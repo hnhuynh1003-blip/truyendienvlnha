@@ -1,0 +1,66 @@
+name = "dudu-ai-staging"
+main = "src/index.mjs"
+compatibility_date = "2026-10-01"
+workers_dev = true
+
+[vars]
+PROJECT_ID = "truyendienvl"
+ALLOWED_ORIGIN = "https://hnhuynh1003-blip.github.io"
+# V54 manual NPC AI activation; requires valid Worker GEMINI_API_KEY Secret.
+AI_ENABLED = "true"
+COLLECTIBLES_ENABLED = "false"
+COLLECTIBLE_SELF_CLAIM_ENABLED = "false"
+PLAYER_AVATAR_SYNC_ENABLED = "false"
+AVATAR_AWARDS_ENABLED = "false"
+AVATAR_AWARD_ISSUER_ENABLED = "false"
+AVATAR_R2_ENABLED = "false"
+COMMENTS_ENABLED = "false"
+GIFTS_ENABLED = "false"
+GIFT_SETTLEMENT_ENABLED = "false"
+# V45 pilot remains OFF. UID secrets and an explicit v45-* namespace are
+# required separately; never enter real Firebase UIDs in this public repo.
+PILOT_ENABLED = "false"
+# A second settlement-specific kill switch. Do NOT enable without server
+# provenance, cross-DO outbox/saga and independent pilot audit.
+PILOT_SETTLEMENT_ENABLED = "false"
+MODEL = "gemini-3.5-flash-lite"
+
+[[durable_objects.bindings]]
+name = "DUDU_QUOTA"
+class_name = "DuduQuota"
+
+[[durable_objects.bindings]]
+name = "DUDU_COLLECTIBLES"
+class_name = "DuduCollectibles"
+
+[[migrations]]
+tag = "v1-sqlite"
+new_sqlite_classes = ["DuduQuota"]
+
+[[migrations]]
+tag = "v2-collectibles-sqlite"
+new_sqlite_classes = ["DuduCollectibles"]
+
+[[durable_objects.bindings]]
+name = "DUDU_PLAYER_APPEARANCE"
+class_name = "DuduPlayerAppearance"
+
+[[migrations]]
+tag = "v3-player-appearance-sqlite"
+new_sqlite_classes = ["DuduPlayerAppearance"]
+
+[[durable_objects.bindings]]
+name = "DUDU_DISCUSSION"
+class_name = "DuduDiscussion"
+
+[[migrations]]
+tag = "v4-comments-sqlite"
+new_sqlite_classes = ["DuduDiscussion"]
+
+[[durable_objects.bindings]]
+name = "DUDU_GIFT_LEDGER"
+class_name = "DuduGiftLedger"
+
+[[migrations]]
+tag = "v5-gift-ledger-sqlite"
+new_sqlite_classes = ["DuduGiftLedger"]
