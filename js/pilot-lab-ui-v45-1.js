@@ -96,13 +96,15 @@
   box.append(identity);
   const toolbar=el('div','dudu-v451-actions');
   if(!session.signed)toolbar.append(action('Đăng nhập Google Pilot',()=>perform(async()=>{
+   rows=[];notifications=[];moderation=[];status=null;replyTo=null;
    const result=await instance.login();
    inform(result.ok?'Đã đăng nhập phiên riêng. Chọn “Kiểm tra quyền Pilot”.':
     explain(result),!result.ok);
   }),'primary'));
   else{
    toolbar.append(action('Kiểm tra quyền Pilot',()=>perform(async()=>{
-    const result=await instance.status();
+    rows=[];notifications=[];moderation=[];replyTo=null;requestId=null;
+   const result=await instance.status();
     status=result.ok?result:null;
     inform(result.ok?'UID được phép: '+(roleLabel[result.role]||result.role)+
       '. Kết nối tới vùng staging riêng.':explain(result),!result.ok);
