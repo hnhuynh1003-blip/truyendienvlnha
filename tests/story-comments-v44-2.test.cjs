@@ -104,7 +104,7 @@ test('V44.2: UI uses safe text nodes; no fake public comments or item transfer',
  assert.match(html,/renderStoryCommentsV442\('chapter'\)/);
  assert.match(ui,/n\.textContent=String\(text\)/);
  assert.match(ui,/gift\.disabled=!uid\|\|!giftChoices\.length/);
- assert.match(ui,/Bản thử nghiệm riêng tư/);
+ assert.match(ui,/nhật ký bình luận riêng của tài khoản/);
  assert.match(ui,/chưa gửi quản trị viên/);
  assert.match(ui,/Thiệp ủng hộ Sandbox/);
  assert.doesNotMatch(ui+model,/innerHTML\s*=|firebase\.firestore|fetch\(|grant\(|sendGift/);
