@@ -3125,7 +3125,8 @@
     // V43.4: show all milestones even when a story has zero linked NPCs.
     // Unlike collectibles, these are client-only journal markers.
     function renderV43BondOverview(host,novel){
-      if(!IS_SANDBOX_MODE||!currentUsername||!novel)return;
+      if(!currentUsername||!novel||(!IS_SANDBOX_MODE&&
+        !(window.DuduAuth?.isReady?.()&&window.DuduAuth.uid()===currentUsername)))return;
       const progress=getStoryProgress(novel.id);
       const unlocked=(novel.characters||[]).filter(c=>c&&!c.archived&&
         progress.collectedCharacters[c.id]);
@@ -3155,12 +3156,13 @@
         const badge=document.createElement('span');
         badge.className='dudu-v43-bond-milestone'+(earned?' is-earned':'');
         badge.textContent=(earned?'✦ ':'◇ ')+day+' ngày';
-        badge.title=earned?'Đã ghi nhận trong Sandbox':'Chưa đạt';
+        badge.title=earned?(IS_SANDBOX_MODE?'Đã ghi nhận trong Sandbox':'Nhật ký cá nhân; chưa xác thực máy chủ'):'Chưa đạt';
         badges.append(badge);
       }
       const note=document.createElement('small');
       note.className='dudu-v43-bond-overview-note';
-      note.textContent='Mốc thử nghiệm · chưa cấp kỷ vật Bảo Tàng';
+      note.textContent=IS_SANDBOX_MODE?'Mốc thử nghiệm · chưa cấp kỷ vật Bảo Tàng':
+        'Lịch sử gắn kết tham khảo · không cấp kỷ vật máy chủ';
       section.append(heading,context,badges,note);
       host.append(section);
     }
@@ -3173,13 +3175,15 @@
       renderV43BondOverview(container,novel);
 
       if (!novel || !novel.characters || novel.characters.length === 0) {
-        container.innerHTML = `
-          <div style="text-align:center; padding: 24px 8px; color: #64748b; font-size: 11px;">
-            <div>Chưa có nhân vật nào trong tác phẩm này.</div>
-            <button class="btn btn-primary" style="margin-top: 10px; width: 100%; font-size: 11px;" onclick="openAddCharacterModal()">+ Tạo Nhân Vật Mới</button>
-            <button class="btn btn-gold" style="margin-top: 8px; width: 100%; font-size: 11px;" onclick="loadSampleCharactersToCurrentNovel()">📥 Nạp Cố Nhân Mẫu (Ôn Tri Hành, Tô Thanh Lạc...)</button>
-          </div>
-        `;
+        const message=document.createElement('p');
+        message.className='dudu-v43-bond-overview-note';
+        message.textContent='Tác phẩm này chưa có NPC đang hoạt động.';
+        container.append(message);
+        if(canEditStories()){
+          const add=document.createElement('button');add.className='btn btn-primary';
+          add.textContent='+ Tạo nhân vật';add.addEventListener('click',openAddCharacterModal);
+          container.append(add);
+        }
         return;
       }
 
@@ -3239,7 +3243,7 @@
           
           </div>
         `;
-        if (IS_SANDBOX_MODE) {
+        if (IS_SANDBOX_MODE || (window.DuduAuth?.isReady?.()&&window.DuduAuth.uid()===currentUsername)) {
           div.classList.add('dudu-npc-v12-card');
           const unlocked = !!npcProgress && isNpcUnlocked(novel.id,c.id);
           const view = unlocked ? DuduNpcRelationshipV2.previewRelationship(
@@ -3277,7 +3281,7 @@
           if(second)second.style.display='none';
           const actionBar=div.children[2];
           if(actionBar)actionBar.classList.add('dudu-npc-v12-actions');
-          if(actionBar&&unlocked&&!c.archived){
+          if(actionBar&&unlocked&&!c.archived&&IS_SANDBOX_MODE){
             const checkin=document.createElement('button');
             checkin.type='button';checkin.className='btn dudu-v31-progress-checkin';
             const done=view?.relationshipV2?.lastCheckinUtc===new Date().toISOString().slice(0,10);
@@ -3298,7 +3302,7 @@
           }
         }
         // V43.4 engagement belongs in Sổ Tay, not over the chat composer.
-        if(IS_SANDBOX_MODE&&npcProgress&&currentUsername&&!c.archived){
+        if((IS_SANDBOX_MODE||window.DuduAuth?.isReady?.())&&npcProgress&&currentUsername&&!c.archived){
           const storyProgress=getStoryProgress(novel.id);
           const bond=DuduNpcBondV43.norm(npcProgress.npcBondV43);
           const active=DuduNpcBondV43.shownCurrent(bond);
@@ -3321,7 +3325,8 @@
           button.textContent=favorite?'♥ Yêu thích':'☆ Yêu thích';
           button.setAttribute('aria-pressed',String(favorite));
           button.setAttribute('aria-label',(favorite?'Bỏ đánh dấu ':'Đánh dấu ')+c.name+' là NPC yêu thích');
-          button.addEventListener('click',()=>v43ChooseFavoriteNpc(novel.id,c.id));
+          if(IS_SANDBOX_MODE)button.addEventListener('click',()=>v43ChooseFavoriteNpc(novel.id,c.id));
+          else {button.disabled=true;button.title='Lưu NPC yêu thích yêu cầu cơ chế server xác thực';}
           line.append(label,button);div.append(line);
         }
         container.appendChild(div);
