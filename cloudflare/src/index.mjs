@@ -4,6 +4,8 @@ export {DuduQuota} from './quota.mjs';
 export {DuduCollectibles} from './collectibles.mjs';
 export {DuduPlayerAppearance} from './player-appearance.mjs';
 export {DuduDiscussion} from './comments-v44-2.mjs';
+export {DuduGiftLedger} from './gift-ledger-v44-3.mjs';
+import {requestGift,requestDecision} from './gift-requests-v44-3.mjs';
 import {scope,postBody,reportBody,moderatorBody,registerBody}
  from './comment-policy-v44-2.mjs';
 import {normalizeAppearanceSave,displayState} from './player-appearance-rules.mjs';
@@ -163,6 +165,56 @@ async function handleAvatarDraft(req,env,path,origin){
   // IDs only; never expose R2 keys, original bytes or external URLs.
   return json(result,result.ok?200:result.code==='photo-quota'?429:400,origin,env);
 }
+// V44.3: no trusted issuer or author binding exposed through this public API.
+// An independent verified ledger population and operational approval are needed.
+// Gifts are intentionally disabled in staging, including preview and receipts.
+const GIFT_PATHS=Object.freeze({
+ '/v1/gifts/preview':'POST',
+ '/v1/gifts/send':'POST',
+ '/v1/gifts/outgoing':'GET',
+ '/v1/gifts/author-inbox':'GET',
+ '/v1/gifts/decide':'POST'
+});
+async function handleGifts(req,env,path,origin){
+ if(env.GIFTS_ENABLED!=='true')
+  return error('gifts-disabled','Chuyển vật phẩm thật chưa được mở.',503,origin,env);
+ const identity=await verifyFirebaseIdToken(req,env.PROJECT_ID);
+ if(!identity)return error('unauthenticated','Đăng nhập Firebase.',401,origin,env);
+ if(!env.DUDU_GIFT_LEDGER)
+  return error('gift-storage-unavailable','Sổ giao dịch chưa sẵn sàng.',503,origin,env);
+ let body=null;
+ if(req.method==='POST'){
+  if(!req.headers.get('Content-Type')?.toLowerCase().startsWith('application/json'))
+   return error('invalid-content','Chỉ nhận JSON.',415,origin,env);
+  body=await limitedJson(req);
+  if(!body)return error('invalid-request','Yêu cầu không hợp lệ.',400,origin,env);
+ }
+ if((path==='/v1/gifts/send'||path==='/v1/gifts/decide')&&
+   env.GIFT_SETTLEMENT_ENABLED!=='true')
+  return error('gift-settlement-disabled','Chưa mở ký gửi và chuyển sở hữu.',503,origin,env);
+ try{
+  const store=env.DUDU_GIFT_LEDGER.getByName('gift-global-v1');
+  let out;
+  if(path==='/v1/gifts/preview'||path==='/v1/gifts/send'){
+   const data=requestGift(body);
+   if(!data)return error('invalid-gift','Thông tin quà không hợp lệ.',400,origin,env);
+   out=path==='/v1/gifts/send'?
+     await store.send(data,identity.uid,Date.now()):
+     await store.quote(data,identity.uid,Date.now());
+  }else if(path==='/v1/gifts/outgoing')out=await store.outgoing(identity.uid);
+  else if(path==='/v1/gifts/author-inbox')out=await store.authorInbox(identity.uid);
+  else if(path==='/v1/gifts/decide'){
+   const data=requestDecision(body);
+   if(!data)return error('invalid-decision','Quyết định không hợp lệ.',400,origin,env);
+   out=await store.decide(data,identity.uid,Date.now());
+  }
+  return json(out,out?.ok?200:out?.code==='forbidden'?403:409,origin,env);
+ }catch(e){
+  console.warn('Gift ledger unavailable:',e?.name||'unavailable');
+  return error('gift-storage-unavailable','Không thể xử lý quà.',503,origin,env);
+ }
+}
+
 /* V44.2 public discussion preparation — OFF until approved backend rollout.
  * Every write is checked against JWT and global SQLite DO registry.
  * Never import browser comments or trust client author roles.
@@ -455,12 +507,17 @@ export default {
     if(!allowed)return error('origin-blocked','Nguồn yêu cầu không được phép.',403,origin,env);
     if(req.method==='OPTIONS'){
       if(!origin||!allowOrigin(origin,env))return error('origin-blocked','Nguồn yêu cầu không được phép.',403,origin,env);
-      if(!['/v1/generate','/v1/status',...Object.keys(COLLECTIBLE_PATHS),...Object.keys(PLAYER_APPEARANCE_PATHS),...Object.keys(AVATAR_DRAFT_PATHS),...Object.keys(COMMENT_PATHS)].includes(path))
+      if(!['/v1/generate','/v1/status',...Object.keys(COLLECTIBLE_PATHS),...Object.keys(PLAYER_APPEARANCE_PATHS),...Object.keys(AVATAR_DRAFT_PATHS),...Object.keys(COMMENT_PATHS),...Object.keys(GIFT_PATHS)].includes(path))
         return error('not-found','Không tìm thấy đường dẫn.',404,origin,env);
       return new Response(null,{status:204,headers:headers(origin,env)});
     }
     if(path==='/health'&&req.method==='GET'){
       return json({service:'dudu-ai',enabled:env.AI_ENABLED==='true',model:MODEL},200,origin,env);
+    }
+    if(path in GIFT_PATHS){
+      if(req.method!==GIFT_PATHS[path])
+        return error('method-not-allowed','Phương thức không hợp lệ.',405,origin,env);
+      return handleGifts(req,env,path,origin);
     }
     if(path in COMMENT_PATHS){
       if(req.method!==COMMENT_PATHS[path])

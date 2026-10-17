@@ -15,7 +15,7 @@
   catch(_){return ''}};
  let inReply=null;
  function render({host,storyId,chapterId=null,storyTitle='',chapterTitle='',
-  uid,name,state=null,onSave,isSandbox=false}={}){
+  uid,name,state=null,onSave,isSandbox=false,giftChoices=[]}={}){
   if(!host||!R())return false;
   const rule=R(), old=host.querySelector('.dudu-v442-shell');
   const expanded=!!old?.open;
@@ -56,7 +56,7 @@
    }
    content.append(inbox);
   }
-  function send(parentId,textarea,button){
+  function send(parentId,textarea,button,attach=null){
    if(!uid){status.textContent='Đăng nhập Sandbox trước khi viết.';return}
    const id='comment-'+(root.crypto?.randomUUID?.()||
     Date.now()+'-'+Math.random().toString(36).slice(2));
@@ -69,8 +69,14 @@
      'Nội dung không hợp lệ (2–600 ký tự) hoặc bình luận đã đầy.';
     return;
    }
+   const ok=onSave?.(result.state,attach?{
+    commentId:result.comment.id,itemInstanceId:attach
+   }:null);
+   if(ok===false){
+    status.textContent='Không thể ghi thiệp quà; bình luận chưa được lưu.';
+    return;
+   }
    textarea.value='';inReply=null;button.disabled=true;
-   onSave?.(result.state);
   }
   const status=el('p','dudu-v442-status');status.setAttribute('role','status');
   const composer=el('form','dudu-v442-form');
@@ -80,15 +86,36 @@
    'Đăng nhập Sandbox để viết bình luận';
   field.disabled=!uid;
   const actions=el('div','dudu-v442-actions');
-  const gift=el('button','dudu-v442-gift','🎁 Đính kèm quà');
-  gift.type='button';gift.disabled=true;
-  gift.title='V44.3: chỉ mở sau khi xác minh quyền sở hữu và hộp thư tác giả';
+  const gift=el('button','dudu-v442-gift','🎁 Đính kèm');
+  gift.type='button';gift.disabled=!uid||!giftChoices.length;
+  gift.title=giftChoices.length?
+   'Gắn quà Sandbox vào bình luận — không gửi tác giả thật':
+   'Không có vật phẩm phù hợp hoặc bạn chưa đăng nhập';
+  const picker=el('div','dudu-v443-gift-picker');picker.hidden=true;
+  const destination=el('label','dudu-v443-target','Đích nhận: 📚 Ủng hộ truyện (Sandbox)');
+  const author=el('small','dudu-v443-author-lock',
+    '🔒 Tặng trực tiếp tác giả: đang khóa — chưa xác minh UID và sổ vật phẩm máy chủ.');
+  const select=el('select','dudu-v443-gift-select');
+  const none=el('option','','Không đính kèm');none.value='';select.append(none);
+  for(const candidate of giftChoices){
+   const option=el('option','',candidate.icon+' '+candidate.name);
+   option.value=candidate.instanceId;select.append(option);
+  }
+  picker.append(destination,select,author,
+   el('small','dudu-v443-note',
+    'Khi đăng: trừ 1 món trong Kho Sandbox và lưu thiệp ủng hộ tại bình luận này. Không gửi vật phẩm, Xu hoặc thông báo tới tác giả thật.'));
+  gift.addEventListener('click',()=>{
+   picker.hidden=!picker.hidden;
+   gift.setAttribute('aria-expanded',String(!picker.hidden));
+  });
+  gift.setAttribute('aria-expanded','false');
   const publish=el('button','dudu-v442-publish','Đăng thử');
   publish.type='submit';publish.disabled=!uid;
   actions.append(gift,publish);
-  composer.append(field,actions,status);
+  composer.append(field,actions,picker,status);
   composer.addEventListener('submit',e=>{
-   e.preventDefault();send(null,field,publish);
+   e.preventDefault();
+   send(null,field,publish,picker.hidden?null:(select.value||null));
   });
   content.append(composer);
   const list=el('div','dudu-v442-list');
@@ -100,12 +127,20 @@
    const meta=el('div','dudu-v442-meta');
    meta.append(el('strong','',comment.name),el('small','',date(comment.createdAt)));
    item.append(meta,el('p','dudu-v442-text',comment.text));
+   if(comment.gift?.deliveryStatus==='LOCAL_JOURNAL_ONLY'){
+    const badge=el('div','dudu-v443-attached-gift',
+      (comment.gift.icon||'🎁')+' '+comment.gift.itemName+
+      ' · Thiệp ủng hộ Sandbox');
+    badge.title='Chưa giao đến tác giả; chỉ ghi trong nhật ký riêng.';
+    item.append(badge);
+   }
    const bar=el('div','dudu-v442-action-bar');
    if(!nested){
     const reply=el('button','dudu-v442-small','↪ Trả lời');
     reply.type='button';reply.addEventListener('click',()=>{
      inReply=inReply===comment.id?null:comment.id;
-     render({host,storyId,chapterId,storyTitle,chapterTitle,uid,name,state,onSave,isSandbox});
+     render({host,storyId,chapterId,storyTitle,chapterTitle,uid,name,state,
+      onSave,isSandbox,giftChoices});
     });bar.append(reply);
    }
    if(comment.uid===uid){
@@ -160,7 +195,7 @@
   }
   content.append(list);
   content.append(el('small','dudu-v442-footer',
-   'Đăng tối đa 20 bình luận/ngày, cách nhau 45 giây; không kèm vật phẩm thật. Đã báo cáo chỉ là ghi chú Sandbox, chưa gửi quản trị viên.'));
+   'Tối đa 20 bình luận/ngày · cách nhau 45 giây. Thiệp quà chỉ ở Sandbox, không phải quà gửi tác giả thật. Báo cáo chưa gửi quản trị viên.'));
   shell.append(content);
   host.append(shell);
   return true;

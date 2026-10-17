@@ -14,6 +14,8 @@ AVATAR_AWARDS_ENABLED = "false"
 AVATAR_AWARD_ISSUER_ENABLED = "false"
 AVATAR_R2_ENABLED = "false"
 COMMENTS_ENABLED = "false"
+GIFTS_ENABLED = "false"
+GIFT_SETTLEMENT_ENABLED = "false"
 MODEL = "gemini-3.5-flash-lite"
 
 [[durable_objects.bindings]]
@@ -47,3 +49,11 @@ class_name = "DuduDiscussion"
 [[migrations]]
 tag = "v4-comments-sqlite"
 new_sqlite_classes = ["DuduDiscussion"]
+
+[[durable_objects.bindings]]
+name = "DUDU_GIFT_LEDGER"
+class_name = "DuduGiftLedger"
+
+[[migrations]]
+tag = "v5-gift-ledger-sqlite"
+new_sqlite_classes = ["DuduGiftLedger"]

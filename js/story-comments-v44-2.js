@@ -30,9 +30,16 @@
      item.text.trim().length<MIN_TEXT||!Number.isSafeInteger(item.createdAt)||
      item.createdAt<=0||typeof item.name!=='string')continue;
    seen.add(item.id);
+   const gift=item.gift?.deliveryStatus==='LOCAL_JOURNAL_ONLY'&&
+     item.gift?.recipientKind==='STORY_SANDBOX'&&valid(item.gift?.instanceId)&&
+     typeof item.gift?.itemName==='string'&&item.gift.itemName.length<=80?
+     {deliveryStatus:'LOCAL_JOURNAL_ONLY',recipientKind:'STORY_SANDBOX',
+      instanceId:item.gift.instanceId,itemName:item.gift.itemName,
+      icon:String(item.gift.icon||'🎁').slice(0,8)}:undefined;
    state.comments.push({id:item.id,storyId:item.storyId,chapterId:item.chapterId,
     parentId:valid(item.parentId)?item.parentId:null,uid:item.uid,
-    name:item.name.slice(0,50),text:item.text,createdAt:item.createdAt});
+    name:item.name.slice(0,50),text:item.text,createdAt:item.createdAt,
+    ...(gift?{gift}:{})});
   }
   state.reports=Array.isArray(raw.reports)?raw.reports.filter(x=>
    valid(x?.commentId)&&valid(x?.reporterUid)&&REASONS.includes(x?.reason)&&
@@ -88,6 +95,20 @@
   return {ok:true,comment,state:{...state,comments:[...state.comments,comment],
    notices:notices.slice(-100)}};
  }
+ // Pure receipt link for local Sandbox journal only. Does NOT mean that a
+ // message, item or notification reached another account or author.
+ function attachLocalGift({state:raw,commentId,item}={}){
+  const state=normalize(raw);
+  const row=state.comments.find(x=>x.id===commentId);
+  if(!row||row.gift||!item||!valid(item.instanceId)||
+    typeof item.name!=='string'||item.name.length>80)
+   return {ok:false,reason:'invalid-local-gift'};
+  const gift={deliveryStatus:'LOCAL_JOURNAL_ONLY',
+    recipientKind:'STORY_SANDBOX',instanceId:item.instanceId,
+    itemName:item.name,icon:String(item.icon||'🎁').slice(0,8)};
+  return {ok:true,state:{...state,comments:state.comments.map(x=>
+    x.id===commentId?{...x,gift}:x)}};
+ }
  function report({state:raw,uid,commentId,reason,now=Date.now()}={}){
   const state=normalize(raw);
   if(!valid(uid)||!valid(commentId)||!REASONS.includes(reason)||
@@ -118,5 +139,5 @@
    n.recipientUid===uid?{...n,read:true}:n)}};
  }
  return Object.freeze({VERSION,MAX_TEXT,MAX_DAILY,COOLDOWN_MS,REASONS,
-  normalize,visible,post,report,hide,inbox,markRead});
+  normalize,visible,post,attachLocalGift,report,hide,inbox,markRead});
 });

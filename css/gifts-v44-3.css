@@ -1,0 +1,57 @@
+/* DUDU V44.3 · compact gift attachment and author mailbox. */
+.dudu-v443-gift-picker{
+ display:flex;flex-direction:column;gap:7px;
+ padding:10px;border:1px solid #b59bcc97;border-radius:11px;
+ background:linear-gradient(130deg,#2d2a46,#1c3447);
+}
+.dudu-v443-gift-picker[hidden]{display:none!important}
+.dudu-v443-target{font-size:11px;font-weight:800;color:#f4e0fe}
+.dudu-v443-gift-select{
+ width:100%;box-sizing:border-box;min-height:35px;
+ padding:7px;background:#131e32;color:#eef1ff;
+ border:1px solid #96a2c5;border-radius:8px;font-size:11px;
+}
+.dudu-v443-author-lock{
+ font-size:10px;line-height:1.45;color:#decde5;
+ border-radius:7px;padding:7px;background:#151e32ae;
+}
+.dudu-v443-note{font-size:10px;line-height:1.55;color:#cad4ea}
+.dudu-v443-attached-gift{
+ display:flex;align-items:center;margin:6px 0;
+ background:#343052;color:#ffe5fd;border:1px solid #b7a4cb;
+ border-radius:9px;padding:8px;font-size:10px;font-weight:750;
+ line-height:1.4;overflow-wrap:anywhere;
+}
+#author-mail-v443-content{
+ display:flex;flex-direction:column;gap:9px;max-width:100%;
+ padding:5px 0 15px;
+}
+#author-mail-v443-content .dudu-v443-mail-head{
+ font-size:12px;letter-spacing:.08em;font-weight:850;
+ color:#fae8ff;border-bottom:1px solid #9882b25c;padding:8px 2px;
+}
+#author-mail-v443-content .dudu-v443-mail-locked{
+ padding:10px;border-radius:12px;border:1px solid #a99dca;
+ background:linear-gradient(130deg,#2e304e,#1c3149);
+ color:#e9e2f9;font-size:11px;line-height:1.6;
+}
+#author-mail-v443-content .dudu-v443-mail-section{
+ display:flex;flex-direction:column;gap:7px;padding:10px;
+ border:1px solid #69849f96;background:#16263e;
+ border-radius:12px;color:#f4e8fa;font-size:11px;font-weight:750;
+}
+#author-mail-v443-content .dudu-v443-mail-section>p{
+ font-size:10px;font-weight:400;color:#c5d5ea;line-height:1.5;margin:0;
+}
+#author-mail-v443-content .dudu-v443-mail-entry{
+ padding:9px;border:1px solid #7189a8;border-radius:9px;
+ display:flex;flex-direction:column;gap:4px;
+ background:#21324b;
+}
+#author-mail-v443-content .dudu-v443-mail-entry strong{font-size:10px;line-height:1.5}
+#author-mail-v443-content .dudu-v443-mail-entry small{
+ color:#c7d4eb;font-size:9px;font-weight:500;
+}
+#author-mail-v443-content .dudu-v443-mail-entry p{
+ color:#f0dceb;font-size:10px;font-weight:400;line-height:1.5;margin:2px 0;
+}

@@ -3485,7 +3485,8 @@ async function main() {
         const storySaved=userProfile.commentsV442?.comments.length===1&&
           userProfile.commentsV442.comments[0].chapterId===null;
         const escaped=story.textContent.includes('Truyện này rất cuốn');
-        const giftDisabled=story.querySelector('.dudu-v442-gift')?.disabled===true;
+        const giftNoServer=story.querySelector('.dudu-v443-author-lock')===null&&
+          story.querySelector('.dudu-v442-gift')!==null;
         userProfile.commentsV442.comments[0].createdAt=Date.now()-60000;
         readChapter(0);
         const chapter=document.getElementById('chapter-comments-v442');
@@ -3502,7 +3503,7 @@ async function main() {
           userProfile.commentsV442,novels[0].id,null).length===1;
         const noCloud=window.__firestoreWrites.length===writes;
         const noPublicBadge=chapter.textContent.includes('Bản thử nghiệm riêng tư');
-        return {storyInitiallyCollapsed,storySaved,escaped,giftDisabled,
+        return {storyInitiallyCollapsed,storySaved,escaped,giftNoServer,
           chapterInitiallyCollapsed,chapterSaved,storySeparated,noCloud,noPublicBadge};
       }finally{
         userProfile=previous;
@@ -3512,10 +3513,68 @@ async function main() {
       }
     });
     assert.deepEqual(discussionV442,{
-      storyInitiallyCollapsed:true,storySaved:true,escaped:true,giftDisabled:true,
+      storyInitiallyCollapsed:true,storySaved:true,escaped:true,giftNoServer:true,
       chapterInitiallyCollapsed:true,chapterSaved:true,storySeparated:true,
       noCloud:true,noPublicBadge:true
     },'V44.2 local comments and chapter separation, with gift/send lock');
+
+    // V44.3: a Sandbox comment can record an item as a local support note,
+    // atomically remove the Sandbox instance, and show ONLY outbound journal
+    // in author mailbox. No recipient payout, cross-account grants or writes.
+    const giftsV443=await page.evaluate(()=>{
+      const backup=structuredClone(userProfile);
+      const prevNovel=selectedNovelIndex,prevChapter=selectedChapterIndex;
+      const wasPhone=document.getElementById('cyber-phone').style.display==='flex';
+      const writes=window.__firestoreWrites.length;
+      try{
+        selectedNovelIndex=0;
+        userProfile.commentsV442=null;
+        userProfile.inventoryTradeV439=null;
+        const item={...DuduItemCatalog.byId('common-biscuit'),
+          instanceId:'gift-v443-sandbox-a',
+          obtainedFrom:{kind:'SHOP',source:'DUDU_MARKET'}};
+        userProfile.inventory=[item];
+        openCover(0);
+        const host=document.getElementById('story-comments-v442');
+        host.querySelector('.dudu-v442-shell').open=true;
+        const pick=host.querySelector('.dudu-v442-gift');
+        const possible=!pick.disabled;
+        pick.click();
+        const select=host.querySelector('.dudu-v443-gift-select');
+        select.value=item.instanceId;
+        const form=host.querySelector('.dudu-v442-form');
+        form.querySelector('textarea').value='Tặng thiệp ủng hộ để cảm ơn tác giả!';
+        form.requestSubmit();
+        const posted=userProfile.commentsV442?.comments?.length===1;
+        const stored=userProfile.commentsV442?.comments?.[0]?.gift;
+        const attached=stored?.instanceId===item.instanceId&&
+          stored?.deliveryStatus==='LOCAL_JOURNAL_ONLY';
+        const removed=!userProfile.inventory.some(x=>x.instanceId===item.instanceId);
+        const logged=userProfile.inventoryTradeV439.history.some(x=>
+          x.action==='GIFT'&&x.instanceId===item.instanceId&&
+          x.recipientKind==='STORY_SANDBOX');
+        const badge=host.textContent.includes('Thiệp ủng hộ Sandbox');
+        if(!wasPhone)togglePhone();
+        openPhoneApp('author-mail');
+        const inbox=document.getElementById('author-mail-v443-content');
+        const outbound=inbox.textContent.includes('Bánh Quy Khô')&&
+          inbox.textContent.includes('Chỉ nhật ký cá nhân');
+        const noIncoming=inbox.textContent.includes('Chưa có dữ liệu quà đến');
+        const noServer=window.__firestoreWrites.length===writes;
+        return {possible,posted,attached,removed,logged,badge,outbound,
+          noIncoming,noServer};
+      }finally{
+        userProfile=backup;selectedNovelIndex=prevNovel;
+        selectedChapterIndex=prevChapter;
+        saveCurrentAccount();
+        phoneHome();if(!wasPhone&&document.getElementById('cyber-phone').style.display==='flex')
+          togglePhone();
+        goHome();
+      }
+    });
+    assert.deepEqual(giftsV443,{possible:true,posted:true,attached:true,
+      removed:true,logged:true,badge:true,outbound:true,noIncoming:true,
+      noServer:true},'V44.3 local gift card and honest author mailbox');
 
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
     console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));

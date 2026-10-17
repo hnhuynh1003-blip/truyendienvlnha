@@ -47,6 +47,7 @@
   <link rel="stylesheet" href="css/inventory-compact-v44.css?v=1">
   <link rel="stylesheet" href="css/world-collection-v44-1.css?v=1">
   <link rel="stylesheet" href="css/story-comments-v44-2.css?v=1">
+  <link rel="stylesheet" href="css/gifts-v44-3.css?v=1">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -82,8 +83,8 @@
   <script src="js/npc-persona-v2-r6.js"></script>
   <script src="js/npc-author-v2-r7.js"></script>
   <script src="js/story-dates-v1.js"></script>
-  <script src="js/story-comments-v44-2.js?v=1"></script>
-  <script src="js/story-comments-ui-v44-2.js?v=1"></script>
+  <script src="js/story-comments-v44-2.js?v=2"></script>
+  <script src="js/story-comments-ui-v44-2.js?v=2"></script>
   <script src="js/npc-portrait-library-v1.js?v=40-1"></script>
   <script src="js/npc-anime-candidates-v14.js"></script>
   <script src="js/player-avatar-v16.js"></script>
@@ -917,6 +918,9 @@
             <div class="app-box" style="background:linear-gradient(130deg,#b35395,#674daa);">🎁</div>
             <div class="app-label">DUDU FUN</div>
           </button>
+          <button type="button" class="app-icon" onclick="openPhoneApp('author-mail')" aria-label="Mở Hộp thư tác giả">
+            <div class="app-box" style="background:linear-gradient(125deg,#875b9b,#406685);">💌</div><div class="app-label">Hộp thư</div>
+          </button>
           <button type="button" class="app-icon" onclick="openPhoneApp('museum')" aria-label="Mở Bảo Tàng">
             <div class="app-box" style="background:#b45309;">🏛️</div><div class="app-label">Bảo Tàng</div>
           </button>
@@ -1026,6 +1030,17 @@
         <section id="inventory-v12-detail" aria-live="polite" aria-label="Chi tiết vật phẩm"></section>
         <div id="inventory-container" aria-label="Các ô vật phẩm trong hành trang"></div>
         <button type="button" id="inventory-v42-more" hidden onclick="DuduInventoryViewV42.more()">Xem thêm vật phẩm</button>
+      </div>
+
+      <!-- V44.3 author inbox: verified server gifts are gated OFF.
+           Only personal Sandbox outbound journal is currently available. -->
+      <div class="phone-sub-app" id="phone-app-author-mail">
+        <div class="phone-app-header">
+          <button type="button" class="phone-back-btn" onclick="phoneHome()">‹</button>
+          <span>💌 Hộp Thư Tác Giả</span>
+          <span></span>
+        </div>
+        <div id="author-mail-v443-content" aria-live="polite"></div>
       </div>
 
       <!-- APP: BẢO TÀNG KỶ VẬT (chỉ dữ liệu sở hữu máy chủ) -->
@@ -3938,6 +3953,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
         window.DuduWorldCollectionV441?.reset();
         renderInventory();
         startCooldownTicker();
+      } else if (appName === 'author-mail') {
+        renderAuthorMailV443();
       } else if (appName === 'museum') {
         renderMuseum();
       } else if (appName === 'fun') {
@@ -5362,6 +5379,43 @@ document.getElementById('phone-home-screen').style.display = 'none';
       renderHome();
     }
 
+    // V44.3: author inbox does not invent incoming gifts from client profiles.
+    // Verified gifts require server-bound author UID and atomic item ownership.
+    function renderAuthorMailV443(){
+      const host=document.getElementById('author-mail-v443-content');
+      if(!host)return false;
+      host.replaceChildren();
+      const h=(tag,klass,text)=>{
+        const n=document.createElement(tag);
+        if(klass)n.className=klass;
+        if(text!==undefined)n.textContent=String(text);
+        return n;
+      };
+      host.append(h('div','dudu-v443-mail-head','HỘP THƯ · NHẬN QUÀ'));
+      const warning=h('div','dudu-v443-mail-locked',
+        '🔒 Chưa mở nhận quà thật. Hộp thư chỉ hiển thị quà đã xác minh từ máy chủ khi đăng nhập bằng tài khoản tác giả được liên kết với truyện.');
+      host.append(warning);
+      const tabs=h('div','dudu-v443-mail-section','📨 Thư đến đã xác minh');
+      tabs.append(h('p','','Chưa có dữ liệu quà đến được xác minh. Không nhận quà từ bình luận Sandbox.'));
+      host.append(tabs);
+      const history=DuduInventoryTradeV439?.state(userProfile.inventoryTradeV439)?.history||[];
+      const list=history.filter(x=>x.action==='GIFT'&&
+        (x.deliveryStatus==='LOCAL_JOURNAL_ONLY'||!x.deliveryStatus)).slice(-12).reverse();
+      const outgoing=h('div','dudu-v443-mail-section',
+        '📤 Thiệp ủng hộ của tôi · '+list.length);
+      if(!list.length)outgoing.append(h('p','','Bạn chưa lưu thiệp ủng hộ nào trong Sandbox.'));
+      for(const gift of list){
+        const story=novels.find(x=>x.id===gift.storyId);
+        const item=h('article','dudu-v443-mail-entry');
+        item.append(h('strong','',(gift.name||'Vật phẩm')+' · '+(story?.title||'Truyện')),
+          h('small','','Chỉ nhật ký cá nhân · Chưa đến tác giả'));
+        if(gift.note)item.append(h('p','',gift.note));
+        outgoing.append(item);
+      }
+      host.append(outgoing);
+      return true;
+    }
+
     // V44.2: Sandbox-local prototype. Neither the name nor local UID is
     // trusted to publish public comments. V44.3 needs a verified server.
     function renderStoryCommentsV442(view){
@@ -5379,11 +5433,51 @@ document.getElementById('phone-home-screen').style.display = 'none';
         storyTitle:novel.title,chapterTitle:chapter?.title||'',
         uid:currentUsername||null,name:userProfile.name||currentUsername||'Độc giả',
         state:userProfile.commentsV442,isSandbox:IS_SANDBOX_MODE,
-        onSave(next){
+        giftChoices:(Array.isArray(userProfile.inventory)?userProfile.inventory:[])
+          .filter(item=>{
+            const target=DuduInventoryTradeV439.storyTargets(item,novels)
+              .find(x=>x.id===id);
+            return !!target&&(!chapter||
+              target.chapters.some(x=>x.id===(chapter.id||String(selectedChapterIndex))));
+          }).slice(0,100).map(item=>({instanceId:item.instanceId,
+            name:item.name,icon:item.icon||'🎁'})),
+        onSave(next,attach){
           if(!IS_SANDBOX_MODE||!currentUsername||
             novels[selectedNovelIndex]?.id!==id)return false;
-          userProfile.commentsV442=next;
-          saveCurrentAccount();
+          const before={comments:userProfile.commentsV442,
+            inventory:userProfile.inventory,trade:userProfile.inventoryTradeV439};
+          let commentState=next,tradePlan=null;
+          if(attach){
+            const item=DuduInventoryTradeV439.owned(
+              userProfile.inventory,attach.itemInstanceId);
+            if(!item)return false;
+            tradePlan=DuduInventoryTradeV439.storyGift({
+              inventory:userProfile.inventory,
+              itemInstanceId:item.instanceId,stories:novels,storyId:id,
+              chapterId:chapter?(chapter.id||String(selectedChapterIndex)):null,
+              note:'Đính kèm bình luận Sandbox',
+              tradeState:userProfile.inventoryTradeV439
+            });
+            if(!tradePlan.ok)return false;
+            const linked=DuduStoryCommentsV442.attachLocalGift({
+              state:next,commentId:attach.commentId,item
+            });
+            if(!linked.ok)return false;
+            commentState=linked.state;
+          }
+          try{
+            userProfile.commentsV442=commentState;
+            if(tradePlan){
+              userProfile.inventory=tradePlan.inventory;
+              userProfile.inventoryTradeV439=tradePlan.state;
+            }
+            saveCurrentAccount();
+          }catch(err){
+            userProfile.commentsV442=before.comments;
+            userProfile.inventory=before.inventory;
+            userProfile.inventoryTradeV439=before.trade;
+            return false;
+          }
           renderStoryCommentsV442(view);
           return true;
         }
