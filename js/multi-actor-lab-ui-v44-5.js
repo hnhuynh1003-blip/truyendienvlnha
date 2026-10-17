@@ -8,6 +8,14 @@
  let current=null,pendingReset=false,replyTo=null,lastRequest=null;
  let notice='',corrupt=false,hostElement=null;
  const model=()=>root.DuduMultiActorLabV445;
+ // V44.7: keep stable internal ledger codes but display reader-friendly states.
+ const GIFT_STATUS=Object.freeze({
+  PENDING:'Đang chờ nhận',
+  ACCEPTED:'Đã nhận',
+  DECLINED:'Đã từ chối · Quà đã hoàn trả',
+  CANCELLED:'Đã hủy · Quà đã hoàn trả'
+ });
+ const giftStatus=status=>GIFT_STATUS[status]||'Trạng thái chưa xác định';
  const el=(tag,klass,text)=>{
   const n=document.createElement(tag);
   if(klass)n.className=klass;
@@ -153,7 +161,7 @@
     el('p','',c.text));
    const gift=current.transfers.find(t=>t.commentId===c.id);
    if(gift)card.append(el('small','',
-    gift.itemIcon+' '+gift.itemName+' · '+gift.status+' · '+engine.tagOf(gift.recipientId)));
+    gift.itemIcon+' '+gift.itemName+' · '+giftStatus(gift.status)+' · '+engine.tagOf(gift.recipientId)));
    if(!c.parentId){
     const reply=button('↪ Trả lời','dudu-v445-reply',()=>{
      replyTo=c.id;render({host,sandbox});
@@ -224,7 +232,7 @@
   for(const gift of received){
    const entry=el('article','dudu-v445-mail');
    entry.append(el('strong','',
-    gift.itemIcon+' '+gift.itemName+' · '+gift.status),
+    gift.itemIcon+' '+gift.itemName+' · '+giftStatus(gift.status)),
     el('small','','Từ '+engine.tagOf(gift.senderId)));
    if(gift.status==='PENDING'){
     const ops=el('div','dudu-v445-mail-actions');
@@ -244,7 +252,7 @@
   if(!sent.length)out.append(el('p','dudu-v445-empty','Chưa có giao dịch gửi.'));
   for(const gift of sent){
    const card=el('article','dudu-v445-mail');
-   card.append(el('strong','',gift.itemIcon+' '+gift.itemName+' · '+gift.status),
+   card.append(el('strong','',gift.itemIcon+' '+gift.itemName+' · '+giftStatus(gift.status)),
     el('small','','Đến '+engine.tagOf(gift.recipientId)));
    if(gift.status==='PENDING'){
     const cancel=button('Hủy và nhận lại','dudu-v445-quiet',()=>dispatch({
