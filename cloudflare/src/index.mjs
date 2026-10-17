@@ -271,7 +271,11 @@ async function handleComments(req,env,path,origin){
   }else if(path==='/v1/comments/create'){
    const parsed=postBody(body);
    if(!parsed)return error('invalid-comment','Bình luận không hợp lệ.',400,origin,env);
-   out=await store.post(parsed,user.uid,now);
+   // The browser cannot impersonate an author or another Pilot participant
+   // by supplying displayName. Labels come exclusively from signed UID role.
+   const identityLabel=pilot.role==='AUTHOR'?'Tác giả (Pilot)':
+    pilot.role==='READER_A'?'Độc giả A':'Độc giả B';
+   out=await store.post({...parsed,displayName:identityLabel},user.uid,now);
   }else if(path==='/v1/comments/report'){
    const parsed=reportBody(body);
    if(!parsed)return error('invalid-report','Báo cáo không hợp lệ.',400,origin,env);
