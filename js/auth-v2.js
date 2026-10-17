@@ -65,7 +65,9 @@
       return 'Firestore từ chối đọc profiles_v2 của tài khoản. Cần kiểm tra Rules đang triển khai; không sửa quyền hay xóa dữ liệu.';
     }
     if (error?.code === 'profile/timeout') {
-      return 'Quá thời gian tải hồ sơ từ Firebase (15 giây). Kiểm tra mạng hoặc thử tải lại.';
+      return error?.stage === 'Firebase token'
+        ? 'Quá thời gian xác minh token Firebase (15 giây). Bạn vẫn đăng nhập Google; thử tải lại hồ sơ.'
+        : 'Quá thời gian đọc hồ sơ Firestore (15 giây). Bạn vẫn đăng nhập Google; thử tải lại hồ sơ.';
     }
     if (error?.code === 'unavailable' || error?.code === 'auth/network-request-failed') {
       return 'Firestore hoặc Firebase Auth hiện không khả dụng. Kiểm tra mạng rồi thử tải lại hồ sơ.';
@@ -78,6 +80,7 @@
       timer = setTimeout(() => {
         const error = new Error(label + ' timed out');
         error.code = 'profile/timeout';
+        error.stage = label;
         reject(error);
       }, 15000);
     });
