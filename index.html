@@ -2121,14 +2121,193 @@
       return (IS_SANDBOX_MODE ? 'dudu-sandbox-v2:' : 'dudu-v2:') + encodeURIComponent(currentUsername || 'guest')
         + ':' + encodeURIComponent(storyId) + ':' + kind;
     }
-    function chatKey(charId, storyId = activeChatNovelId || (novels[selectedNovelIndex] || {}).id) {
-      return storyId + '::' + charId;
+    // V56: independent locally scoped identity per UID + story.
+    // The original V55 story/NPC chat remains intact as legacy until explicit import.
+    let v56EditingRoleId = null;
+    function v56Novel(storyId=activeChatNovelId||(novels[selectedNovelIndex]||{}).id) {
+      return novels.find(n=>n.id===storyId)||null;
     }
-    function npcMemoryStore(storyId, charId, uid = currentUsername) {
-      if (!uid || !storyId || !charId) return null;
-      // A signed-in UID or a local sandbox nickname is a required memory scope.
-      if (!IS_SANDBOX_MODE && (!DuduAuth.isReady() || DuduAuth.uid() !== uid)) return null;
-      return DuduNpcMemory.open(localStorage,uid,storyId,charId,IS_SANDBOX_MODE);
+    function v56State(storyId){
+      const novel=v56Novel(storyId);
+      if(!novel||!currentUsername)return DuduRoleplayV56.empty();
+      if(!IS_SANDBOX_MODE&&(!DuduAuth.isReady()||DuduAuth.uid()!==currentUsername))
+        return DuduRoleplayV56.empty();
+      return DuduRoleplayV56.load(localStorage,currentUsername,novel,IS_SANDBOX_MODE);
+    }
+    function v56CurrentRole(storyId){
+      return DuduRoleplayV56.active(v56State(storyId));
+    }
+    function v56Commit(next,storyId=activeChatNovelId) {
+      const novel=v56Novel(storyId);
+      if(!novel||!currentUsername||(!IS_SANDBOX_MODE&&
+        (!DuduAuth.isReady()||DuduAuth.uid()!==currentUsername)))return false;
+      return DuduRoleplayV56.save(localStorage,currentUsername,novel,IS_SANDBOX_MODE,next);
+    }
+    function legacyChatKey(charId,storyId){
+      return DuduRoleplayV56.legacyChatKey(storyId,charId);
+    }
+    function chatKey(charId,storyId=activeChatNovelId||(novels[selectedNovelIndex]||{}).id,
+      roleId=v56CurrentRole(storyId)?.id) {
+      return DuduRoleplayV56.chatKey(storyId,roleId,charId);
+    }
+    function npcMemoryStore(storyId,charId,uid=currentUsername,roleId=v56CurrentRole(storyId)?.id){
+      if(!uid||!storyId||!charId||!roleId)return null;
+      if(!IS_SANDBOX_MODE&&(!DuduAuth.isReady()||DuduAuth.uid()!==uid))return null;
+      const scopedId=DuduRoleplayV56.memoryNpcId(roleId,charId);
+      if(!scopedId)return null;
+      return DuduNpcMemory.open(localStorage,uid,storyId,scopedId,IS_SANDBOX_MODE);
+    }
+    function v56RenderRoleEditorOptions(){
+      const story=v56Novel();
+      const picker=document.getElementById('dudu-v56-mode');
+      const canon=document.getElementById('dudu-v56-canon');
+      if(!story||!picker||!canon)return;
+      picker.replaceChildren();
+      const candidates=DuduRoleplayV56.candidates(story);
+      for(const [id,label] of Object.entries(DuduRoleplayV56.MODES)){
+        if(!DuduRoleplayV56.allowedModes(story).includes(id))continue;
+        const opt=document.createElement('option');
+        opt.value=id;opt.textContent=label;
+        opt.disabled=id==='main'&&!candidates.length;
+        picker.append(opt);
+      }
+      canon.replaceChildren();
+      for(const ch of candidates){
+        const opt=document.createElement('option');
+        opt.value=ch.id;opt.textContent=ch.name;
+        canon.append(opt);
+      }
+    }
+    function v56ModeChanged(){
+      const mode=document.getElementById('dudu-v56-mode')?.value;
+      const canon=document.getElementById('dudu-v56-canon-group');
+      const custom=document.getElementById('dudu-v56-custom-group');
+      if(canon)canon.hidden=mode!=='main';
+      if(custom)custom.hidden=mode==='main';
+    }
+    function v56OpenRoleEditor(edit){
+      const editor=document.getElementById('dudu-v56-role-editor');
+      const picker=document.getElementById('dudu-v56-mode');
+      if(!editor||!picker||!currentUsername)return;
+      const current=edit?v56CurrentRole():null;
+      v56EditingRoleId=current?.id||null;
+      v56RenderRoleEditorOptions();
+      const chosen=current?.mode||(picker.querySelector('option:not(:disabled)')?.value||'traveler');
+      picker.value=chosen;
+      // Editing an existing identity must never retroactively change its mode.
+      picker.disabled=!!current;
+      const canon=document.getElementById('dudu-v56-canon');
+      if(canon&&current?.protagonistId)canon.value=current.protagonistId;
+      const name=document.getElementById('dudu-v56-name');
+      const pronouns=document.getElementById('dudu-v56-pronouns');
+      const bio=document.getElementById('dudu-v56-backstory');
+      if(name)name.value=current?.mode!=='main'?(current?.name||''):'';
+      if(pronouns)pronouns.value=current?.pronouns||'neutral';
+      if(bio)bio.value=current?.backstory||'';
+      const err=document.getElementById('dudu-v56-role-error');
+      if(err)err.textContent='';
+      editor.hidden=false;
+      v56ModeChanged();
+      if(!edit&&!current)name?.focus({preventScroll:true});
+    }
+    function v56CloseRoleEditor(){
+      const editor=document.getElementById('dudu-v56-role-editor');
+      if(editor)editor.hidden=true;
+      v56EditingRoleId=null;
+    }
+    function v56SaveRole(){
+      const story=v56Novel(),state=v56State(story?.id);
+      const error=document.getElementById('dudu-v56-role-error');
+      if(!story){if(error)error.textContent='Chưa chọn truyện.';return;}
+      const mode=document.getElementById('dudu-v56-mode')?.value;
+      const canonId=document.getElementById('dudu-v56-canon')?.value;
+      const candidate=DuduRoleplayV56.candidates(story).find(x=>x.id===canonId);
+      const input={id:v56EditingRoleId||undefined,mode,
+        name:mode==='main'?(candidate?.name||''):document.getElementById('dudu-v56-name')?.value,
+        protagonistId:mode==='main'?canonId:null,
+        pronouns:document.getElementById('dudu-v56-pronouns')?.value,
+        backstory:document.getElementById('dudu-v56-backstory')?.value};
+      const result=DuduRoleplayV56.upsert(state,input,story);
+      if(result.error){if(error)error.textContent=result.error;return;}
+      if(!v56Commit(result.state,story.id)){
+        if(error)error.textContent='Không lưu được hồ sơ trên thiết bị. Kiểm tra bộ nhớ trình duyệt.';
+        return;
+      }
+      v56CloseRoleEditor();
+      pendingNpcRetry=null;
+      hideNpcConnectionStatus();
+      renderRoleplayV56();
+      renderChatDropdown();
+    }
+    function v56SelectRole(){
+      const select=document.getElementById('dudu-v56-role-select');
+      if(!select?.value)return;
+      const state=v56State();
+      const next=DuduRoleplayV56.select(state,select.value);
+      if(!next||!v56Commit(next))return;
+      pendingNpcRetry=null;
+      hideNpcConnectionStatus();
+      v56CloseRoleEditor();
+      renderRoleplayV56();
+      switchChatCharacter();
+    }
+    function v56ImportLegacyChat(){
+      const role=v56CurrentRole();
+      const story=v56Novel();
+      const npcId=document.getElementById('chat-character-selector')?.value;
+      if(!role||!story||!npcId||!isNpcUnlocked(story.id,npcId))return;
+      const source=chatHistories[legacyChatKey(npcId,story.id)];
+      const target=chatKey(npcId,story.id);
+      if(!Array.isArray(source)||!source.length||!target||
+        (Array.isArray(chatHistories[target])&&chatHistories[target].length))return;
+      if(!confirm('Sao chép hội thoại V55 CHƯA GÁN VAI vào '+role.name+'? '+
+        'Lịch sử gốc vẫn được giữ nguyên. Không sao chép ký ức, điểm quan hệ hay quyền mở khóa.'))return;
+      // Allow only well-formed text exchanges; never treat arbitrary saved data as commands.
+      chatHistories[target]=source.filter(x=>x&&['user','model','system'].includes(x.role)&&
+        typeof x.text==='string').slice(-100).map(x=>({role:x.role,text:x.text.slice(0,5000),
+          ...(typeof x.model==='string'?{model:x.model}:{})}));
+      saveChatHistories();
+      renderChatMessages(npcId);
+      renderRoleplayV56();
+    }
+    function renderRoleplayV56(){
+      const story=v56Novel(),state=v56State(story?.id);
+      const role=DuduRoleplayV56.active(state);
+      const picker=document.getElementById('dudu-v56-role-select');
+      const note=document.getElementById('dudu-v56-role-note');
+      if(picker){
+        picker.replaceChildren();
+        if(!state.profiles.length){
+          const o=document.createElement('option');o.value='';o.textContent='Chưa có nhân vật nhập vai';
+          picker.append(o);
+        }else for(const p of state.profiles){
+          const o=document.createElement('option');o.value=p.id;
+          o.textContent=p.name+' · '+DuduRoleplayV56.MODES[p.mode];
+          picker.append(o);
+        }
+        picker.value=role?.id||'';
+        picker.disabled=!role;
+      }
+      if(note)note.textContent=role?
+        'Bạn đang là '+role.name+' · '+DuduRoleplayV56.MODES[role.mode]+
+          ' · Ký ức NPC và hội thoại lưu riêng theo vai.':
+        'Hãy tạo nhân vật để NPC biết bạn là ai trước khi trò chuyện.';
+      const input=document.getElementById('chat-user-input');
+      const send=document.getElementById('dudu-v56-send');
+      if(input)input.disabled=!role;
+      if(send)send.disabled=!role;
+      const importBtn=document.getElementById('dudu-v56-import-legacy');
+      const charId=document.getElementById('chat-character-selector')?.value;
+      const old=charId&&story?.id?chatHistories[legacyChatKey(charId,story.id)]:null;
+      const newKey=charId&&story?.id&&role?chatKey(charId,story.id):null;
+      if(importBtn)importBtn.style.display=role&&Array.isArray(old)&&old.length&&
+        (!newKey||!chatHistories[newKey]?.length)?'block':'none';
+      if(!role && document.getElementById('phone-app-chat')?.style.display==='flex' &&
+        document.getElementById('dudu-v56-role-editor')?.hidden) v56OpenRoleEditor(false);
+      if(role){
+        const rel=DuduRoleplayV56.relationship(state,role.id,charId);
+        if(note)note.textContent+=' · ❤️ '+rel.affinity+' / 🛡 '+rel.trust+' (quan hệ nhập vai)';
+      }
     }
     function loadScopedInteractionState() {
       try { chatHistories = JSON.parse(localStorage.getItem(scopedLocalKey('chats')) || '{}'); }
