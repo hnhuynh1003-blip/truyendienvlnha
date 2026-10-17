@@ -134,3 +134,15 @@ test('V43.8 wiring only Sandbox, no direct Firebase/verified collectible writes'
  assert.match(view,/dudu-v43-use-item/);
  assert.doesNotMatch(read('js/functional-items-v43-8.js'),/db\.collection|grantCollectible|fetch\(/);
 });
+
+
+test('V44.8: supply kit cannot duplicate a pre-existing output instance',()=>{
+ const kit=supply();
+ const outputId='supply-'+kit.instanceId+'-0';
+ const oldWater={...catalog.byId('common-bottled-water'),instanceId:outputId,
+  obtainedFrom:{kind:'EVENT',source:'DUDU_SUPPLY_V438',eventId:kit.instanceId}};
+ const result=quote(kit,{inventory:[kit,oldWater]});
+ assert.equal(result.ok,false);
+ assert.equal(result.reason,'duplicate-output-instance');
+ assert.equal(oldWater.instanceId,outputId);
+});
