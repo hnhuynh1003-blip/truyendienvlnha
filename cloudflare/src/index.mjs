@@ -1,4 +1,5 @@
 import {verifyFirebaseIdToken} from './auth.mjs';
+import {pilotAccess} from './pilot-policy-v45.mjs';
 import {validRequest,quotaMessage} from './limits.mjs';
 export {DuduQuota} from './quota.mjs';
 export {DuduCollectibles} from './collectibles.mjs';
@@ -180,6 +181,9 @@ async function handleGifts(req,env,path,origin){
   return error('gifts-disabled','Chuyển vật phẩm thật chưa được mở.',503,origin,env);
  const identity=await verifyFirebaseIdToken(req,env.PROJECT_ID);
  if(!identity)return error('unauthenticated','Đăng nhập Firebase.',401,origin,env);
+ const pilot=pilotAccess(env,identity);
+ if(!pilot.ok)return error(pilot.code,'Tài khoản không thuộc Pilot V45 hoặc cấu hình chưa mở.',
+  pilot.status,origin,env);
  if(!env.DUDU_GIFT_LEDGER)
   return error('gift-storage-unavailable','Sổ giao dịch chưa sẵn sàng.',503,origin,env);
  let body=null;
@@ -193,7 +197,7 @@ async function handleGifts(req,env,path,origin){
    env.GIFT_SETTLEMENT_ENABLED!=='true')
   return error('gift-settlement-disabled','Chưa mở ký gửi và chuyển sở hữu.',503,origin,env);
  try{
-  const store=env.DUDU_GIFT_LEDGER.getByName('gift-global-v1');
+  const store=env.DUDU_GIFT_LEDGER.getByName(pilot.giftStore);
   let out;
   if(path==='/v1/gifts/preview'||path==='/v1/gifts/send'){
    const data=requestGift(body);
@@ -215,7 +219,7 @@ async function handleGifts(req,env,path,origin){
  }
 }
 
-/* V44.2 public discussion preparation — OFF until approved backend rollout.
+/* V44.2 discussion preparation — OFF until approved backend rollout.
  * Every write is checked against JWT and global SQLite DO registry.
  * Never import browser comments or trust client author roles.
  */
@@ -235,13 +239,15 @@ async function handleComments(req,env,path,origin){
  if(!env.DUDU_DISCUSSION)
   return error('discussion-unavailable','Máy chủ bình luận chưa sẵn sàng.',503,origin,env);
  const adminPath=path.startsWith('/v1/comments/admin/');
- let user=null;
- if(path!=='/v1/comments/list'){
-  user=await verifyFirebaseIdToken(req,env.PROJECT_ID);
-  if(!user)return error('unauthenticated','Đăng nhập Firebase để bình luận.',401,origin,env);
-  if(adminPath&&!user.admin)
-   return error('forbidden','Yêu cầu quyền quản trị đã xác minh.',403,origin,env);
- }
+ // Every Pilot route, including list, requires a signed and allowlisted UID.
+ // Do not let an unauthenticated reader enumerate test story/comment records.
+ const user=await verifyFirebaseIdToken(req,env.PROJECT_ID);
+ if(!user)return error('unauthenticated','Đăng nhập Firebase để bình luận.',401,origin,env);
+ const pilot=pilotAccess(env,user);
+ if(!pilot.ok)return error(pilot.code,'Tài khoản không thuộc Pilot V45 hoặc cấu hình chưa mở.',
+   pilot.status,origin,env);
+ if(adminPath&&!user.admin)
+  return error('forbidden','Yêu cầu quyền quản trị đã xác minh.',403,origin,env);
  let body=null;
  if(req.method==='POST'){
   if(!req.headers.get('Content-Type')?.toLowerCase().startsWith('application/json'))
@@ -249,7 +255,7 @@ async function handleComments(req,env,path,origin){
   body=await limitedJson(req);
   if(!body)return error('invalid-request','Nội dung yêu cầu không hợp lệ.',400,origin,env);
  }
- const store=env.DUDU_DISCUSSION.getByName('comments-global-v1');
+ const store=env.DUDU_DISCUSSION.getByName(pilot.commentStore);
  const now=Date.now();
  try{
   let out;
@@ -292,6 +298,23 @@ async function handleComments(req,env,path,origin){
   console.warn('Discussion ledger unavailable:',err?.name||'unavailable');
   return error('discussion-unavailable','Bình luận tạm gián đoạn.',503,origin,env);
  }
+}
+
+// V45.0 read-only preflight. Does not grant roles, register stories,
+// import inventory, or change any feature flag / Durable Object.
+async function handlePilotStatus(req,env,origin){
+ const user=await verifyFirebaseIdToken(req,env.PROJECT_ID);
+ if(!user)return error('unauthenticated','Đăng nhập Firebase.',401,origin,env);
+ const pilot=pilotAccess(env,user);
+ if(!pilot.ok)return error(pilot.code,'Pilot V45 chưa mở cho tài khoản này.',
+   pilot.status,origin,env);
+ return json({ok:true,version:'V45.0',role:pilot.role,
+   storageIsolated:true,preflightOnly:true,
+   gates:{
+    comments:env.COMMENTS_ENABLED==='true',
+    gifts:env.GIFTS_ENABLED==='true',
+    settlement:env.GIFT_SETTLEMENT_ENABLED==='true'
+   }},200,origin,env);
 }
 
 const PLAYER_APPEARANCE_PATHS=Object.freeze({
@@ -507,12 +530,17 @@ export default {
     if(!allowed)return error('origin-blocked','Nguồn yêu cầu không được phép.',403,origin,env);
     if(req.method==='OPTIONS'){
       if(!origin||!allowOrigin(origin,env))return error('origin-blocked','Nguồn yêu cầu không được phép.',403,origin,env);
-      if(!['/v1/generate','/v1/status',...Object.keys(COLLECTIBLE_PATHS),...Object.keys(PLAYER_APPEARANCE_PATHS),...Object.keys(AVATAR_DRAFT_PATHS),...Object.keys(COMMENT_PATHS),...Object.keys(GIFT_PATHS)].includes(path))
+      if(!['/v1/generate','/v1/status',...Object.keys(COLLECTIBLE_PATHS),...Object.keys(PLAYER_APPEARANCE_PATHS),...Object.keys(AVATAR_DRAFT_PATHS),...Object.keys(COMMENT_PATHS),...Object.keys(GIFT_PATHS),'/v1/pilot/status'].includes(path))
         return error('not-found','Không tìm thấy đường dẫn.',404,origin,env);
       return new Response(null,{status:204,headers:headers(origin,env)});
     }
     if(path==='/health'&&req.method==='GET'){
       return json({service:'dudu-ai',enabled:env.AI_ENABLED==='true',model:MODEL},200,origin,env);
+    }
+    if(path==='/v1/pilot/status'){
+      if(req.method!=='GET')
+        return error('method-not-allowed','Phương thức không được hỗ trợ.',405,origin,env);
+      return handlePilotStatus(req,env,origin);
     }
     if(path in GIFT_PATHS){
       if(req.method!==GIFT_PATHS[path])
