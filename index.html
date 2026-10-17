@@ -51,6 +51,7 @@
   <link rel="stylesheet" href="css/gift-picker-v44-3-1.css?v=1">
   <link rel="stylesheet" href="css/multi-actor-lab-v44-5.css?v=1">
   <link rel="stylesheet" href="css/pilot-v45-1.css?v=45-1-r2">
+  <link rel="stylesheet" href="css/story-comments-pilot-v45-2.css?v=45-2">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -92,8 +93,9 @@
   <script src="js/story-comments-ui-v44-2.js?v=3"></script>
   <script src="js/multi-actor-lab-v44-5.js?v=44-9"></script>
   <script src="js/multi-actor-lab-ui-v44-5.js?v=44-9"></script>
-  <script src="js/pilot-client-v45-1.js?v=45-1-r2"></script>
-  <script src="js/pilot-lab-ui-v45-1.js?v=45-1-r2"></script>
+  <script src="js/pilot-client-v45-1.js?v=45-2"></script>
+  <script src="js/pilot-lab-ui-v45-1.js?v=45-2"></script>
+  <script src="js/story-comments-pilot-v45-2.js?v=45-2"></script>
   <script src="js/npc-portrait-library-v1.js?v=40-1"></script>
   <script src="js/npc-anime-candidates-v14.js"></script>
   <script src="js/player-avatar-v16.js"></script>
@@ -835,6 +837,8 @@
         </div>
       </div>
       <div class="chapter-items" id="chapter-list-container"></div>
+      <section id="story-comments-pilot-v452" class="dudu-v452-host"
+        aria-label="Bình luận chung Pilot của truyện" hidden></section>
       <section id="story-comments-v442" class="dudu-v442-host"
         aria-label="Bình luận của truyện" hidden></section>
     </div>
@@ -873,6 +877,8 @@
         <div id="reader-author-note-content"></div>
       </div>
 
+      <section id="chapter-comments-pilot-v452" class="dudu-v452-host"
+        aria-label="Bình luận chung Pilot của chương" hidden></section>
       <section id="chapter-comments-v442" class="dudu-v442-host"
         aria-label="Bình luận của chương" hidden></section>
       <div class="reader-bottom-nav">
@@ -5471,6 +5477,17 @@ document.getElementById('phone-home-screen').style.display = 'none';
       if(!host||!window.DuduStoryCommentsUIV442)return false;
       const novel=novels[selectedNovelIndex];
       const chapter=view==='chapter'?novel?.chapters?.[selectedChapterIndex]:null;
+      // V45.2: shared Pilot discussion is distinct from the V44.2
+      // profile-local journal. The Worker authorizes by signed UID.
+      window.DuduStoryPilotCommentsV452?.render({
+        host:document.getElementById(view==='chapter'?
+          'chapter-comments-pilot-v452':'story-comments-pilot-v452'),
+        storyId:novel?.id,
+        chapterId:chapter?(chapter.id||String(selectedChapterIndex)):null,
+        storyTitle:novel?.title||'',chapterTitle:chapter?.title||'',
+        chapterIds:(novel?.chapters||[]).map((ch,i)=>ch.id||String(i)),
+        sandbox:IS_SANDBOX_MODE
+      });
       if(!IS_SANDBOX_MODE||!novel||view==='chapter'&&!chapter){
         host.hidden=true;host.replaceChildren();return false;
       }
