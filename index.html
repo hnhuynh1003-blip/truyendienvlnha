@@ -48,6 +48,7 @@
   <link rel="stylesheet" href="css/world-collection-v44-1.css?v=1">
   <link rel="stylesheet" href="css/story-comments-v44-2.css?v=1">
   <link rel="stylesheet" href="css/gifts-v44-3.css?v=1">
+  <link rel="stylesheet" href="css/gift-picker-v44-3-1.css?v=1">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -84,7 +85,9 @@
   <script src="js/npc-author-v2-r7.js"></script>
   <script src="js/story-dates-v1.js"></script>
   <script src="js/story-comments-v44-2.js?v=2"></script>
-  <script src="js/story-comments-ui-v44-2.js?v=2"></script>
+  <script src="js/gift-picker-model-v44-3-1.js?v=1"></script>
+  <script src="js/gift-picker-v44-3-1.js?v=1"></script>
+  <script src="js/story-comments-ui-v44-2.js?v=3"></script>
   <script src="js/npc-portrait-library-v1.js?v=40-1"></script>
   <script src="js/npc-anime-candidates-v14.js"></script>
   <script src="js/player-avatar-v16.js"></script>
@@ -5439,8 +5442,14 @@ document.getElementById('phone-home-screen').style.display = 'none';
               .find(x=>x.id===id);
             return !!target&&(!chapter||
               target.chapters.some(x=>x.id===(chapter.id||String(selectedChapterIndex))));
-          }).slice(0,100).map(item=>({instanceId:item.instanceId,
-            name:item.name,icon:item.icon||'🎁'})),
+          }).map((item,index)=>({instanceId:item.instanceId,
+            itemId:item.id||item.itemId,
+            name:item.name,icon:item.icon||'🎁',
+            description:item.description||'',rank:item.rank,
+            scope:item.scope,type:item.type,
+            category:DuduInventoryV42.inspect(item)?.category||'OTHER',
+            recent:index<8
+          })),
         onSave(next,attach){
           if(!IS_SANDBOX_MODE||!currentUsername||
             novels[selectedNovelIndex]?.id!==id)return false;

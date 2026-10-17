@@ -3485,8 +3485,9 @@ async function main() {
         const storySaved=userProfile.commentsV442?.comments.length===1&&
           userProfile.commentsV442.comments[0].chapterId===null;
         const escaped=story.textContent.includes('Truyện này rất cuốn');
-        const giftNoServer=story.querySelector('.dudu-v443-gift-picker')?.hidden===true&&
-          story.querySelector('.dudu-v442-gift')!==null;
+        const giftNoServer=story.querySelector('.dudu-v442-gift')!==null&&
+          story.querySelector('.dudu-v4431-attached-chip')?.hidden===true&&
+          !document.querySelector('.dudu-v4431-overlay');
         userProfile.commentsV442.comments[0].createdAt=Date.now()-60000;
         readChapter(0);
         const chapter=document.getElementById('chapter-comments-v442');
@@ -3518,6 +3519,81 @@ async function main() {
       noCloud:true,noPublicBadge:true
     },'V44.2 local comments and chapter separation, with gift/send lock');
 
+    // V44.3.1: compact picker search, grouping, pagination, Escape/close,
+    // mobile clipping and no mutation until comment submission.
+    const quickGiftV4431=await page.evaluate(()=>{
+      const before=structuredClone(userProfile);
+      const prevNovel=selectedNovelIndex,prevChapter=selectedChapterIndex;
+      const writes=window.__firestoreWrites.length;
+      try{
+        selectedNovelIndex=0;
+        const items=DuduItemCatalog.common.slice(0,15).map((x,i)=>({
+          ...x,instanceId:'picker-unique-'+i,
+          obtainedFrom:{kind:'SHOP',source:'DUDU_MARKET'}
+        }));
+        const duplicate={...items[0],
+          instanceId:'picker-duplicate-extra',
+          obtainedFrom:{kind:'SHOP',source:'DUDU_MARKET'}};
+        items.unshift(duplicate);
+        userProfile.inventory=items;
+        openCover(0);
+        const host=document.getElementById('story-comments-v442');
+        const panel=host.querySelector('.dudu-v442-shell');panel.open=true;
+        const candidates=items.filter(x=>
+          DuduInventoryTradeV439.storyTargets(x,novels)
+            .some(y=>y.id===novels[0].id));
+        host.querySelector('.dudu-v442-gift').click();
+        const mask=document.querySelector('.dudu-v4431-overlay');
+        const exists=!!mask;
+        const noNativeSelect=!host.querySelector('.dudu-v443-gift-select');
+        const list=mask?.querySelector('.dudu-v4431-grid');
+        const firstPage=list?.querySelectorAll('.dudu-v4431-card').length<=8;
+        const more=!!mask?.querySelector('.dudu-v4431-more:not([hidden])');
+        const groups=DuduGiftPickerModelV4431.groups(candidates.map((x,i)=>({
+          itemId:x.id,instanceId:x.instanceId,name:x.name,icon:x.icon,
+          rank:x.rank,scope:x.scope,
+          category:DuduInventoryV42.inspect(x)?.category,
+          recent:i<8
+        })));
+        const grouped=groups.length<candidates.length;
+        const search=mask.querySelector('.dudu-v4431-search');
+        const target=groups[0].name;
+        search.value=target;
+        search.dispatchEvent(new Event('input',{bubbles:true}));
+        const found=mask.querySelectorAll('.dudu-v4431-card').length>=1&&
+          mask.querySelector('.dudu-v4431-count').textContent.includes('loại');
+        search.value='khong-tim-thay-vat-pham-xyz';
+        search.dispatchEvent(new Event('input',{bubbles:true}));
+        const empty=!!mask.querySelector('.dudu-v4431-empty');
+        search.value='';
+        search.dispatchEvent(new Event('input',{bubbles:true}));
+        mask.querySelector('[data-filter="COMMON"]')?.click();
+        const filterApplied=mask.querySelector('[data-filter="COMMON"]')
+          ?.getAttribute('aria-pressed')==='true';
+        mask.querySelector('.dudu-v4431-more:not([hidden])')?.click();
+        const expanded=list.querySelectorAll('.dudu-v4431-card').length>8;
+        const dialog=mask.querySelector('.dudu-v4431-dialog');
+        const rect=dialog.getBoundingClientRect();
+        const fit=rect.width<=innerWidth&&rect.height<=innerHeight;
+        document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+        const closed=!document.querySelector('.dudu-v4431-overlay');
+        const unchanged=userProfile.inventory.length===items.length;
+        return {exists,noNativeSelect,firstPage,more,grouped,found,empty,
+          filterApplied,expanded,fit,closed,unchanged,
+          noWrites:window.__firestoreWrites.length===writes};
+      }finally{
+        document.querySelector('.dudu-v4431-close')?.click();
+        userProfile=before;
+        selectedNovelIndex=prevNovel;selectedChapterIndex=prevChapter;
+        saveCurrentAccount();goHome();
+      }
+    });
+    assert.deepEqual(quickGiftV4431,{
+      exists:true,noNativeSelect:true,firstPage:true,more:true,grouped:true,
+      found:true,empty:true,filterApplied:true,expanded:true,fit:true,
+      closed:true,unchanged:true,noWrites:true
+    },'V44.3.1 compact selector groups, searches and fits without item loss');
+
     // V44.3: a Sandbox comment can record an item as a local support note,
     // atomically remove the Sandbox instance, and show ONLY outbound journal
     // in author mailbox. No recipient payout, cross-account grants or writes.
@@ -3540,8 +3616,12 @@ async function main() {
         const pick=host.querySelector('.dudu-v442-gift');
         const possible=!pick.disabled;
         pick.click();
-        const select=host.querySelector('.dudu-v443-gift-select');
-        select.value=item.instanceId;
+        const modal=document.querySelector('.dudu-v4431-overlay');
+        const opened=!!modal&&!!modal.querySelector('[role="dialog"][aria-modal="true"]');
+        const giftCard=modal?.querySelector('.dudu-v4431-card');
+        giftCard?.click();
+        modal?.querySelector('.dudu-v4431-apply')?.click();
+        const chosen=host.querySelector('.dudu-v4431-attached-chip')?.hidden===false;
         const form=host.querySelector('.dudu-v442-form');
         form.querySelector('textarea').value='Tặng thiệp ủng hộ để cảm ơn tác giả!';
         form.requestSubmit();
@@ -3561,7 +3641,7 @@ async function main() {
           inbox.textContent.includes('Chỉ nhật ký cá nhân');
         const noIncoming=inbox.textContent.includes('Chưa có dữ liệu quà đến');
         const noServer=window.__firestoreWrites.length===writes;
-        return {possible,posted,attached,removed,logged,badge,outbound,
+        return {possible,opened,chosen,posted,attached,removed,logged,badge,outbound,
           noIncoming,noServer};
       }finally{
         userProfile=backup;selectedNovelIndex=prevNovel;
@@ -3572,9 +3652,9 @@ async function main() {
         goHome();
       }
     });
-    assert.deepEqual(giftsV443,{possible:true,posted:true,attached:true,
-      removed:true,logged:true,badge:true,outbound:true,noIncoming:true,
-      noServer:true},'V44.3 local gift card and honest author mailbox');
+    assert.deepEqual(giftsV443,{possible:true,opened:true,chosen:true,
+      posted:true,attached:true,removed:true,logged:true,badge:true,outbound:true,
+      noIncoming:true,noServer:true},'V44.3 local gift card and honest author mailbox');
 
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
     console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));

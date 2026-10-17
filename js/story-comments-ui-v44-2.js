@@ -86,36 +86,50 @@
    'Đăng nhập Sandbox để viết bình luận';
   field.disabled=!uid;
   const actions=el('div','dudu-v442-actions');
+  // V44.3.1: one compact picker outside the reading layout. Never dump
+  // hundreds of owned item names inside a native <select> or a full-height panel.
+  let selectedGiftId=null;
   const gift=el('button','dudu-v442-gift','🎁 Đính kèm');
   gift.type='button';gift.disabled=!uid||!giftChoices.length;
   gift.title=giftChoices.length?
-   'Gắn quà Sandbox vào bình luận — không gửi tác giả thật':
+   'Mở cửa sổ tìm và chọn quà trong Kho Sandbox':
    'Không có vật phẩm phù hợp hoặc bạn chưa đăng nhập';
-  const picker=el('div','dudu-v443-gift-picker');picker.hidden=true;
-  const destination=el('label','dudu-v443-target','Đích nhận: 📚 Ủng hộ truyện (Sandbox)');
-  const author=el('small','dudu-v443-author-lock',
-    '🔒 Tặng trực tiếp tác giả: đang khóa — chưa xác minh UID và sổ vật phẩm máy chủ.');
-  const select=el('select','dudu-v443-gift-select');
-  const none=el('option','','Không đính kèm');none.value='';select.append(none);
-  for(const candidate of giftChoices){
-   const option=el('option','',candidate.icon+' '+candidate.name);
-   option.value=candidate.instanceId;select.append(option);
-  }
-  picker.append(destination,select,author,
-   el('small','dudu-v443-note',
-    'Khi đăng: trừ 1 món trong Kho Sandbox và lưu thiệp ủng hộ tại bình luận này. Không gửi vật phẩm, Xu hoặc thông báo tới tác giả thật.'));
-  gift.addEventListener('click',()=>{
-   picker.hidden=!picker.hidden;
-   gift.setAttribute('aria-expanded',String(!picker.hidden));
+  const selectedCard=el('div','dudu-v4431-attached-chip');
+  selectedCard.hidden=true;
+  const selectedText=el('span','dudu-v4431-attached-name');
+  const changeGift=el('button','dudu-v4431-chip-edit','Đổi');
+  changeGift.type='button';
+  const removeGift=el('button','dudu-v4431-chip-remove','×');
+  removeGift.type='button';removeGift.setAttribute('aria-label','Bỏ vật phẩm đính kèm');
+  const selectGift=()=>{
+   if(!root.DuduGiftPickerV4431||!giftChoices.length)return;
+   gift.setAttribute('aria-expanded','true');
+   root.DuduGiftPickerV4431.open({choices:giftChoices,
+    selectedInstanceId:selectedGiftId,
+    onChoose(instanceId,row){
+     selectedGiftId=instanceId;
+     selectedText.textContent=row.icon+' '+row.name+' ×1 · Thiệp Sandbox';
+     selectedCard.hidden=false;
+     gift.textContent='🎁 Đã chọn quà';
+     gift.setAttribute('aria-expanded','false');
+    },
+    onClose(){gift.setAttribute('aria-expanded','false')}
+   });
+  };
+  gift.addEventListener('click',selectGift);
+  changeGift.addEventListener('click',selectGift);
+  removeGift.addEventListener('click',()=>{
+   selectedGiftId=null;selectedCard.hidden=true;gift.textContent='🎁 Đính kèm';
   });
+  selectedCard.append(selectedText,changeGift,removeGift);
   gift.setAttribute('aria-expanded','false');
   const publish=el('button','dudu-v442-publish','Đăng thử');
   publish.type='submit';publish.disabled=!uid;
   actions.append(gift,publish);
-  composer.append(field,actions,picker,status);
+  composer.append(field,actions,selectedCard,status);
   composer.addEventListener('submit',e=>{
    e.preventDefault();
-   send(null,field,publish,picker.hidden?null:(select.value||null));
+   send(null,field,publish,selectedGiftId);
   });
   content.append(composer);
   const list=el('div','dudu-v442-list');

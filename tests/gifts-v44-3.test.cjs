@@ -48,7 +48,7 @@ test('V44.3: mailbox never treats local sent notes as verified incoming gifts',(
  assert.match(html,/function renderAuthorMailV443\(\)/);
  assert.match(html,/Chưa có dữ liệu quà đến được xác minh/);
  assert.match(html,/localStorage\.setItem\(localKey/);
- assert.match(ui,/dudu-v443-gift-picker/);
+ assert.match(ui,/dudu-v4431-attached-chip/);
  assert.match(fs.readFileSync(path.join(__dirname,'../js/story-comments-v44-2.js'),'utf8'),/recipientKind/);
  assert.match(ui,/LOCAL_JOURNAL_ONLY/);
  assert.doesNotMatch(ui,/fetch\(|firebase\.firestore|grant\(/);

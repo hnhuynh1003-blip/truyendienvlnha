@@ -1,0 +1,167 @@
+/* V44.3.1 · Searchable premium gift selection, never a giant native dropdown. */
+.dudu-v4431-overlay{
+ position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;
+ justify-content:center;background:#050918c9;backdrop-filter:blur(5px);
+ padding:12px;box-sizing:border-box;
+}
+.dudu-v4431-dialog{
+ --gift-ink:#f4edff;--gift-muted:#bfcde4;
+ box-sizing:border-box;display:flex;flex-direction:column;gap:9px;
+ width:min(100%,430px);max-height:min(640px,calc(100dvh - 24px));
+ min-height:0;min-width:0;padding:14px;border-radius:18px;
+ border:1px solid #bfa3da99;
+ color:var(--gift-ink);background:linear-gradient(160deg,#25253f,#152c41 73%,#1e223e);
+ box-shadow:0 18px 55px #000a, inset 0 1px #fff2;
+ font-family:inherit;font-size:12px;line-height:1.35;
+}
+.dudu-v4431-header,.dudu-v4431-heading{display:flex;gap:5px}
+.dudu-v4431-header{align-items:center;justify-content:space-between}
+.dudu-v4431-heading{flex-direction:column;min-width:0}
+.dudu-v4431-heading strong{font-size:15px;color:#fbeaff;font-weight:850}
+.dudu-v4431-heading small{font-size:10px;color:#b8c9e4}
+.dudu-v4431-close{
+ width:30px;height:30px;flex:none;border:1px solid #b3a2cb7d;
+ border-radius:10px;color:#f6e9ff;font-size:20px;line-height:1;
+ background:#39405e;cursor:pointer;
+}
+.dudu-v4431-search-wrap{
+ display:flex;align-items:center;gap:7px;height:38px;flex:none;
+ border:1px solid #8da9c5c0;border-radius:11px;background:#0e2037;
+ padding:0 11px;color:#b6cfec;font-size:19px;
+}
+.dudu-v4431-search{
+ width:100%;min-width:0;height:36px;border:0;outline:0;
+ background:transparent;color:#f6f0ff;font:inherit;font-size:12px;
+}
+.dudu-v4431-search::placeholder{color:#a3b5cd}
+.dudu-v4431-search:focus-visible{outline:0}
+.dudu-v4431-search-wrap:focus-within{border-color:#d6b9f9;box-shadow:0 0 0 2px #cba6ef28}
+.dudu-v4431-filters{
+ display:flex;gap:5px;overflow-x:auto;min-height:32px;flex:none;
+ padding:0 0 3px;scrollbar-width:thin;
+}
+.dudu-v4431-chip{
+ flex:none;min-height:28px;padding:5px 9px;border-radius:9px;
+ border:1px solid #7188ac9e;background:#1b314a;color:#d9e4f5;
+ font:750 10px/1.2 inherit;cursor:pointer;white-space:nowrap;
+}
+.dudu-v4431-chip.active{
+ border-color:#d3b4e5;background:linear-gradient(120deg,#6c4f87,#396782);
+ color:#fff8ff;
+}
+.dudu-v4431-intro{
+ color:#cedff0;font-size:10px;line-height:1.4;
+ padding:5px 8px;border:1px solid #677ea25f;border-radius:8px;
+ background:#15243a;
+}
+.dudu-v4431-results{color:#bfcee7}
+.dudu-v4431-count{font-size:10px}
+.dudu-v4431-scroll{
+ display:flex;flex-direction:column;gap:8px;min-height:0;
+ overflow-y:auto;overscroll-behavior:contain;
+ scrollbar-color:#817ca9 #182b40;scrollbar-width:thin;padding:1px 2px;
+}
+.dudu-v4431-grid{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;
+}
+.dudu-v4431-card{
+ display:flex;align-items:center;gap:7px;position:relative;
+ width:100%;min-width:0;min-height:62px;text-align:left;
+ border:1px solid #6b789a9c;border-radius:11px;
+ background:linear-gradient(145deg,#2e344c,#19293f);
+ color:#f5ecff;padding:8px 6px;cursor:pointer;
+}
+.dudu-v4431-card.selected{
+ border-color:#e2b6f6;background:linear-gradient(140deg,#554366,#294963);
+ box-shadow:0 0 0 1px #c0a1e055;
+}
+.dudu-v4431-art{
+ display:grid;place-items:center;flex:none;width:30px;height:34px;
+ font-size:22px;border-radius:9px;background:#131f33;
+}
+.dudu-v4431-info{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}
+.dudu-v4431-info strong{
+ font-size:10px;font-weight:800;line-height:1.25;
+ overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+ overflow-wrap:anywhere;
+}
+.dudu-v4431-info small{color:#b5c7e0;font-size:9px;line-height:1.1}
+.dudu-v4431-qty{
+ flex:none;align-self:flex-start;line-height:1;
+ padding:4px 5px;border-radius:6px;background:#5b4a79;color:#fff1ff;
+ font-size:10px;font-weight:900;
+}
+.dudu-v4431-more{
+ min-height:31px;background:#263c57;color:#e7e8ff;
+ border:1px solid #9f9bc77c;border-radius:10px;font-size:10px;
+ font-weight:750;cursor:pointer;
+}
+.dudu-v4431-more[hidden]{display:none!important}
+.dudu-v4431-empty{
+ grid-column:1/-1;padding:20px 10px;text-align:center;
+ color:#c3d0e2;font-size:11px;line-height:1.45;
+}
+.dudu-v4431-preview{
+ flex:none;display:flex;flex-direction:column;gap:7px;
+ border-top:1px solid #8294b15c;padding-top:9px;
+}
+.dudu-v4431-preview-detail{
+ display:flex;align-items:center;gap:9px;min-height:43px;
+ border:1px solid #887eae70;border-radius:10px;padding:7px;
+ background:#1b2a43;
+}
+.dudu-v4431-preview-icon{
+ font-size:22px;display:grid;place-items:center;
+ flex:none;width:30px;
+}
+.dudu-v4431-preview-text{
+ display:flex;flex-direction:column;gap:4px;min-width:0;color:#d9e5fa;
+ font-size:11px;line-height:1.3;
+}
+.dudu-v4431-preview-text strong{color:#ffe8ff;font-size:11px}
+.dudu-v4431-preview-text small{color:#b9cce7;font-size:9px}
+.dudu-v4431-footer{display:flex;gap:7px}
+.dudu-v4431-cancel,.dudu-v4431-apply{
+ border-radius:10px;min-height:36px;padding:8px 12px;cursor:pointer;
+ font-family:inherit;font-weight:800;font-size:11px;
+}
+.dudu-v4431-cancel{
+ background:#243751;color:#d8e6f8;border:1px solid #7893b7;
+}
+.dudu-v4431-apply{
+ flex:1;background:linear-gradient(120deg,#94649e,#486f9e);
+ border:1px solid #d5b4eb;color:#fff;
+}
+.dudu-v4431-apply:disabled{opacity:.45;cursor:not-allowed}
+.dudu-v4431-legal{color:#bdcbe0;font-size:9px;line-height:1.35}
+.dudu-v4431-card:focus-visible,.dudu-v4431-chip:focus-visible,
+.dudu-v4431-apply:focus-visible,.dudu-v4431-close:focus-visible,
+.dudu-v4431-more:focus-visible{
+ outline:2px solid #abe7ff;outline-offset:1px;
+}
+.dudu-v4431-attached-chip{
+ display:flex;align-items:center;gap:6px;min-width:0;
+ background:linear-gradient(115deg,#3d3259,#233f50);
+ border:1px solid #a697c8;border-radius:9px;padding:6px 8px;
+ color:#ffeafe;font-size:10px;line-height:1.35;
+}
+.dudu-v4431-attached-chip[hidden]{display:none!important}
+.dudu-v4431-attached-name{flex:1;min-width:0;overflow-wrap:anywhere}
+.dudu-v4431-chip-edit,.dudu-v4431-chip-remove{
+ flex:none;min-height:27px;background:#374b68;
+ color:#e5eeff;border:1px solid #9b9cc0;border-radius:7px;
+ font-weight:750;padding:4px 8px;font-size:10px;cursor:pointer;
+}
+@media(max-width:380px){
+ .dudu-v4431-overlay{padding:7px}
+ .dudu-v4431-dialog{padding:10px;gap:7px;max-height:calc(100dvh - 14px);border-radius:14px}
+ .dudu-v4431-grid{gap:5px}
+ .dudu-v4431-card{padding:6px 5px;min-height:57px;gap:5px}
+ .dudu-v4431-art{width:25px;font-size:19px}
+ .dudu-v4431-info strong{font-size:9px}
+ .dudu-v4431-qty{font-size:9px;padding:3px}
+}
+@media(max-height:520px){
+ .dudu-v4431-dialog{max-height:calc(100dvh - 12px);gap:5px}
+ .dudu-v4431-card{min-height:50px}
+}
