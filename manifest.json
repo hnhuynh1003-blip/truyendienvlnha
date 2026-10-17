@@ -2,7 +2,7 @@
   "name": "DUDU Studio — Multiverse Stories",
   "short_name": "DUDU",
   "description": "Đọc truyện và khám phá các thế giới cùng nhân vật NPC.",
-  "start_url": "./index.html?sandbox=1",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#0b1132",
