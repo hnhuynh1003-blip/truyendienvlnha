@@ -85,7 +85,7 @@
     'FUN_CLAIM',open+'-'+root.DuduEconomyCoreV43.localDay());
    const old={state:userProfile.duduFunV43,currency:userProfile.currency,
     inventory:userProfile.inventory,quests:userProfile.quests,
-    economy:userProfile.economyV43};
+    economy:userProfile.economyV43,questState:userProfile.questV437};
    try{
     userProfile.duduFunV43=plan.state;
     userProfile.currency=plan.coins;
@@ -93,6 +93,7 @@
     if(event){
      userProfile.quests=event.quests;
      userProfile.economyV43=event.ledger;
+     userProfile.questV437=event.questState;
     }
     saveCurrentAccount();
    }catch(_){
@@ -102,6 +103,8 @@
     userProfile.quests=old.quests;
     if(old.economy===undefined)delete userProfile.economyV43;
     else userProfile.economyV43=old.economy;
+    if(old.questState===undefined)delete userProfile.questV437;
+    else userProfile.questV437=old.questState;
     message('Không lưu được phần thưởng. Chưa ghi nhận nhận thưởng.');
     return false;
    }

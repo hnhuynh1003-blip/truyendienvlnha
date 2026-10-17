@@ -3124,6 +3124,76 @@ async function main() {
       giftGranted:true,consumedOnce:true,giftSaved:true,noServerWrites:true
     },'V43.6 links Market/Inventory/FUN/NPC/Quests in the same Sandbox account');
 
+    // V43.7: account-scoped Quest 2.0 renders all categories and commits
+    // Market / reading / FUN / check-in progress and rewards in Sandbox.
+    const questsV437=await page.evaluate(()=>{
+      const snapshot=structuredClone(userProfile);
+      const writes=window.__firestoreWrites.length;
+      const phone=document.getElementById('cyber-phone');
+      const wasOpen=phone.style.display==='flex';
+      try{
+        userProfile.currency=500;userProfile.level=20;userProfile.exp=0;
+        userProfile.quests=structuredClone(DEFAULT_SYSTEM_QUESTS);
+        delete userProfile.questV437;
+        delete userProfile.economyV43;
+        userProfile.questsDayV43=DuduEconomyCoreV43.localDay();
+        if(!wasOpen)togglePhone();
+        openPhoneApp('quests');
+        const host=document.getElementById('quests-container');
+        const tabCount=host.querySelectorAll('.dudu-v437-tab').length;
+        const legacyHidden=document.getElementById('quest-legacy-tabs-v43').hidden;
+        const byId=id=>userProfile.quests.find(q=>q.id===id);
+        const added=!!byId('q_week_read')&&!!byId('q_story_reader')&&
+          !!byId('q_npc_gifts')&&!!byId('q_event_fun');
+        host.querySelector('.dudu-v437-tab:nth-child(3)').click();
+        const weeklyCards=host.querySelectorAll('.dudu-v437-card').length;
+        openPhoneApp('shop');
+        const bought1=buyShopItem('common-biscuit');
+        const bought2=buyShopItem('common-bottled-water');
+        const shopProgress=byId('q_week_shop').current;
+        openPhoneApp('quests');
+        host.querySelector('.dudu-v437-tab:nth-child(3)').click();
+        const ready=!!host.querySelector('[data-quest-id="q_week_shop"] .dudu-v437-claim');
+        const beforeClaim=userProfile.currency;
+        host.querySelector('[data-quest-id="q_week_shop"] .dudu-v437-claim').click();
+        const received=userProfile.currency===beforeClaim+12&&
+          byId('q_week_shop').claimed;
+        const history=userProfile.questV437.history.some(h=>h.id==='q_week_shop');
+        const retry=claimQuestReward('q_week_shop');
+        const noDouble=retry===false&&userProfile.currency===beforeClaim+12;
+        const read=DuduEconomyRuntimeV43.questEvent('READ_CHAPTER','v437-fixture-ch1');
+        const readAgain=DuduEconomyRuntimeV43.questEvent('READ_CHAPTER','v437-fixture-ch1');
+        const progressRead=byId('q_week_read').current===1&&
+          byId('q_story_reader').current===1&&read&&!readAgain;
+        const fun1=DuduEconomyRuntimeV43.questEvent('FUN_CLAIM','v437-box');
+        const fun2=DuduEconomyRuntimeV43.questEvent('FUN_CLAIM','v437-ticket');
+        const eventDone=fun1&&fun2&&byId('q_event_fun').current===2;
+        const dudu=DuduEconomyRuntimeV43.questEvent('DUDU_CHECKIN','v437-day');
+        const duduProgress=dudu&&byId('q_daily_dudu').current===1;
+        const npc=DuduEconomyRuntimeV43.questEvent('NPC_CHECKIN','v437-npc');
+        const npcProgress=npc&&byId('q_npc_visits').current===1;
+        openPhoneApp('quests');
+        const storyTab=[...host.querySelectorAll('.dudu-v437-tab')]
+          .find(b=>b.textContent==='Truyện');
+        storyTab.click();
+        const storyShows=!!host.querySelector('[data-quest-id="q_story_reader"]')&&
+          !!host.querySelector('[data-quest-id="q_main_intro"]');
+        return {tabCount,legacyHidden,added,weeklyCards,bought1,bought2,
+          shopProgress,ready,received,history,noDouble,progressRead,
+          eventDone,duduProgress,npcProgress,storyShows,
+          noWrites:window.__firestoreWrites.length===writes};
+      }finally{
+        userProfile=snapshot;saveCurrentAccount();phoneHome();
+        if(!wasOpen&&phone.style.display==='flex')togglePhone();
+      }
+    });
+    assert.deepEqual(questsV437,{
+      tabCount:6,legacyHidden:true,added:true,weeklyCards:4,
+      bought1:true,bought2:true,shopProgress:2,ready:true,received:true,
+      history:true,noDouble:true,progressRead:true,eventDone:true,
+      duduProgress:true,npcProgress:true,storyShows:true,noWrites:true
+    },'V43.7 quests, reward journal and weekly/story/NPC/FUN/UI integration');
+
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
     console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));
   } finally {

@@ -40,6 +40,7 @@
   <link rel="stylesheet" href="css/museum-memories-v43.css?v=1">
   <link rel="stylesheet" href="css/npc-diary-ui.css?v=1">
   <link rel="stylesheet" href="css/soul-link-v43.css?v=2">
+  <link rel="stylesheet" href="css/quests-v43-7.css?v=1">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -56,7 +57,8 @@
   <script src="js/story-memory.js"></script>
   <script src="js/npc-memory-v2.js"></script>
   <script src="js/item-catalog-v2.js"></script>
-  <script src="js/economy-core-v43.js?v=4"></script>
+  <script src="js/economy-core-v43.js?v=5"></script>
+  <script src="js/quest-engine-v43-7.js?v=1"></script>
   <script src="js/dudu-fun-rules-v43.js?v=1"></script>
   <script src="js/story-market-v43.js?v=1"></script>
   <script src="js/inventory-model-v42.js?v=7"></script>
@@ -1026,7 +1028,7 @@
           </details>
         </div>
         
-        <div style="display:flex; gap:4px; margin-bottom:8px;">
+        <div id="quest-legacy-tabs-v43" style="display:flex; gap:4px; margin-bottom:8px;">
           <button class="filter-btn active" onclick="filterQuestTab('ALL', this)">Tất cả</button>
           <button class="filter-btn" onclick="filterQuestTab('DAILY', this)">Hàng ngày</button>
           <button class="filter-btn" onclick="filterQuestTab('MAIN', this)">Chính tuyến</button>
@@ -2453,8 +2455,28 @@
       if(!progress)return null;
       const result=DuduNpcBondV43.record(progress.npcBondV43,{type,day});
       if(!result.ok)return null;
-      progress.npcBondV43=result.state;
-      saveCurrentAccount();
+      const event=type==='checkin'?window.DuduEconomyRuntimeV43?.prepareQuestEvent(
+        'NPC_CHECKIN',storyId.slice(0,30)+':'+npcId.slice(0,30)+':'+day):null;
+      const before={bond:progress.npcBondV43,quests:userProfile.quests,
+        economy:userProfile.economyV43,questState:userProfile.questV437};
+      try{
+        progress.npcBondV43=result.state;
+        if(event){
+          userProfile.quests=event.quests;
+          userProfile.economyV43=event.ledger;
+          userProfile.questV437=event.questState;
+        }
+        saveCurrentAccount();
+      }catch(_){
+        if(before.bond===undefined)delete progress.npcBondV43;
+        else progress.npcBondV43=before.bond;
+        userProfile.quests=before.quests;
+        if(before.economy===undefined)delete userProfile.economyV43;
+        else userProfile.economyV43=before.economy;
+        if(before.questState===undefined)delete userProfile.questV437;
+        else userProfile.questV437=before.questState;
+        return null;
+      }
       return result;
     }
     function v43ChooseFavoriteNpc(storyId,npcId){
@@ -3296,7 +3318,8 @@
         const before={
           inventory:userProfile.inventory,affinity:progress.affinity,
           relationship:progress.relationshipV2,bond:progress.npcBondV43,
-          quests:userProfile.quests,economy:userProfile.economyV43
+          quests:userProfile.quests,economy:userProfile.economyV43,
+          questState:userProfile.questV437
         };
         try{
           // Inventory, NPC bond and quest event share a Sandbox profile commit.
@@ -3306,6 +3329,7 @@
           if(event){
             userProfile.quests=event.quests;
             userProfile.economyV43=event.ledger;
+            userProfile.questV437=event.questState;
           }
           if(!v43RecordNpcBond(giftStory,char.id,'gift'))saveCurrentAccount();
         }catch(_){
@@ -3317,6 +3341,8 @@
           userProfile.quests=before.quests;
           if(before.economy===undefined)delete userProfile.economyV43;
           else userProfile.economyV43=before.economy;
+          if(before.questState===undefined)delete userProfile.questV437;
+          else userProfile.questV437=before.questState;
           showSystemAlert('TẶNG QUÀ CHƯA LƯU ĐƯỢC',
             'Không trừ vật phẩm hoặc ghi tiến độ khi lưu hồ sơ thất bại.');
           return;
@@ -6064,8 +6090,9 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/phone-inbox-v33.js?v=43-2"></script>
 <script src="js/companion-ui-v43.js?v=1"></script>
 <script src="js/market-ui-v43.js?v=3"></script>
-<script src="js/dudu-fun-ui-v43.js?v=2"></script>
-<script src="js/economy-runtime-v43.js?v=3"></script>
+<script src="js/dudu-fun-ui-v43.js?v=3"></script>
+<script src="js/quest-ui-v43-7.js?v=1"></script>
+<script src="js/economy-runtime-v43.js?v=4"></script>
 <script src="js/museum-memories-ui-v43.js?v=2"></script>
 <script src="js/npc-diary-ui.js?v=1"></script>
 <script src="js/soul-link-ui-v43.js?v=2"></script>

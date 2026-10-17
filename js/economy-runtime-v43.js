@@ -5,6 +5,7 @@
 (function(root){
  'use strict';
  const core=root.DuduEconomyCoreV43;
+ const questsV437=root.DuduQuestEngineV437;
  if(!core||typeof root.renderShop!=='function'||typeof root.buyShopItem!=='function')
    return;
  const old={
@@ -20,22 +21,30 @@
  };
  function rotate(){
   if(!owner()||!Array.isArray(userProfile.quests))return false;
+  const old={quests:userProfile.quests,day:userProfile.questsDayV43,
+   state:userProfile.questV437};
   const baseline=core.ensureQuests(userProfile.quests);
-  const plan=core.rolloverQuests(baseline,userProfile.questsDayV43);
+  const extended=questsV437?questsV437.ensure(baseline):baseline;
+  const plan=core.rolloverQuests(extended,old.day);
   if(!plan.ok)return false;
-  const needsSave=baseline!==userProfile.quests||plan.changed||
-    userProfile.questsDayV43!==plan.day;
+  const weekly=questsV437?.rotate(plan.quests,old.state,
+   {day:plan.day,previousDay:old.day})||{ok:true,quests:plan.quests,state:old.state};
+  if(!weekly.ok)return false;
+  const needsSave=extended!==old.quests||plan.changed||weekly.changed||
+   old.day!==plan.day||JSON.stringify(old.state||null)!==JSON.stringify(weekly.state||null);
   if(!needsSave)return false;
-  const before={quests:userProfile.quests,day:userProfile.questsDayV43};
   try{
-   userProfile.quests=plan.quests;
+   userProfile.quests=weekly.quests;
    userProfile.questsDayV43=plan.day;
+   if(questsV437)userProfile.questV437=weekly.state;
    saveCurrentAccount();
-   return plan.changed;
+   return plan.changed||Boolean(weekly.changed);
   }catch(_){
-   userProfile.quests=before.quests;
-   if(before.day===undefined)delete userProfile.questsDayV43;
-   else userProfile.questsDayV43=before.day;
+   userProfile.quests=old.quests;
+   if(old.day===undefined)delete userProfile.questsDayV43;
+   else userProfile.questsDayV43=old.day;
+   if(old.state===undefined)delete userProfile.questV437;
+   else userProfile.questV437=old.state;
    return false;
   }
  }
@@ -44,9 +53,11 @@
   rotate();
   const plan=core.recordEvent(userProfile.economyV43,{type,eventId});
   if(!plan.ok)return null;
-  const quests=core.applyQuestProgress(
-   core.ensureQuests(userProfile.quests),plan.questId);
-  return {ledger:plan.state,quests,questId:plan.questId};
+  const current=core.applyQuestProgress(userProfile.quests,plan.questId);
+  const next=questsV437?.progress(current,userProfile.questV437,{type,eventId});
+  if(questsV437&&!next)return null;
+  return {ledger:plan.state,quests:next?.quests||current,
+   questState:next?.state||userProfile.questV437,questId:plan.questId};
  }
  function buy(itemId){
   if(!sandbox())return old.buy(itemId);
@@ -74,18 +85,27 @@
    crypto.randomUUID():Date.now()+'-'+Math.random().toString(36).slice(2));
   const item=core.instance(plan.product,instanceId);
   if(!item)return false;
+  const event=prepareQuestEvent('MARKET_PURCHASE',instanceId);
   const previous={coins:userProfile.currency,inventory:userProfile.inventory,
-   ledger:userProfile.economyV43};
+   ledger:userProfile.economyV43,quests:userProfile.quests,
+   questState:userProfile.questV437};
   try{
    userProfile.currency=plan.coins;
    userProfile.inventory=[item,...inventory];
-   userProfile.economyV43=plan.state;
+   userProfile.economyV43=event?{...plan.state,events:event.ledger.events}:plan.state;
+   if(event){
+    userProfile.quests=event.quests;
+    userProfile.questV437=event.questState;
+   }
    saveCurrentAccount();
   }catch(_){
    userProfile.currency=previous.coins;
    userProfile.inventory=previous.inventory;
    if(previous.ledger===undefined)delete userProfile.economyV43;
    else userProfile.economyV43=previous.ledger;
+   userProfile.quests=previous.quests;
+   if(previous.questState===undefined)delete userProfile.questV437;
+   else userProfile.questV437=previous.questState;
    alertMessage('GIAO DỊCH CHƯA LƯU','Thiết bị chưa lưu được. Đã hoàn trả Xu và vật phẩm.');
    return false;
   }
@@ -97,15 +117,19 @@
  function questEvent(type,eventId){
   const plan=prepareQuestEvent(type,eventId);
   if(!plan)return false;
-  const prior={ledger:userProfile.economyV43,quests:userProfile.quests};
+  const prior={ledger:userProfile.economyV43,quests:userProfile.quests,
+   questState:userProfile.questV437};
   try{
    userProfile.economyV43=plan.ledger;
    userProfile.quests=plan.quests;
+   if(questsV437)userProfile.questV437=plan.questState;
    saveCurrentAccount();
   }catch(_){
    if(prior.ledger===undefined)delete userProfile.economyV43;
    else userProfile.economyV43=prior.ledger;
    userProfile.quests=prior.quests;
+   if(prior.questState===undefined)delete userProfile.questV437;
+   else userProfile.questV437=prior.questState;
    return false;
   }
   if(typeof root.renderQuests==='function')root.renderQuests();
@@ -125,39 +149,66 @@
  };
  root.buyShopItem=buy;
  root.renderQuests=function(){
-  if(sandbox())rotate();
-  const result=old.renderQuests.apply(this,arguments);
-  if(sandbox()){
-   const reset=document.querySelector('#phone-app-quests .dudu-v27-quest-tools button');
-   if(reset){
-    reset.disabled=true;
-    reset.classList.remove('btn-danger');
-    reset.textContent='Tự làm mới theo ngày';
-    reset.title='Nhiệm vụ hằng ngày chỉ được đặt lại khi chuyển sang ngày mới';
-   }
-   const host=document.getElementById('quests-container');
-   if(host){
-    const oldBanner=host.querySelector('.dudu-v43-quest-status');
-    oldBanner?.remove();
-    const banner=document.createElement('div');
-    banner.className='dudu-v43-quest-status';
-    const daily=(Array.isArray(userProfile.quests)?userProfile.quests:[])
-      .filter(q=>q.type==='DAILY');
-    const done=daily.filter(q=>q.claimed).length;
-    banner.textContent='✦ Nhiệm vụ hôm nay · '+done+'/'+daily.length+
-     ' đã nhận · Tự làm mới khi sang ngày mới';
-    host.prepend(banner);
-   }
+  if(!sandbox())return old.renderQuests.apply(this,arguments);
+  rotate();
+  const reset=document.querySelector('#phone-app-quests .dudu-v27-quest-tools button');
+  if(reset){
+   reset.disabled=true;reset.classList.remove('btn-danger');
+   reset.textContent='Tự làm mới theo ngày';
+   reset.title='Không thể đặt lại thủ công để nhận Xu trùng';
   }
-  return result;
+  if(questsV437&&root.DuduQuestUIV437)
+   return root.DuduQuestUIV437.render({
+    host:document.getElementById('quests-container'),
+    quests:owner()?userProfile.quests:[],
+    questState:owner()?userProfile.questV437:null,
+    signed:owner(),onClaim:root.claimQuestReward
+   });
+  return old.renderQuests.apply(this,arguments);
  };
  root.advanceQuest=function(){
   if(sandbox())rotate();
   return old.advanceQuest.apply(this,arguments);
  };
- root.claimQuestReward=function(){
-  if(sandbox())rotate();
-  return old.claimQuestReward.apply(this,arguments);
+ root.claimQuestReward=function(id){
+  if(!sandbox())return old.claimQuestReward.apply(this,arguments);
+  if(!owner()||!questsV437)return false;
+  rotate();
+  const plan=questsV437.reward({
+   quests:userProfile.quests,questState:userProfile.questV437,id,
+   coins:userProfile.currency,exp:userProfile.exp,level:userProfile.level,
+   inventory:userProfile.inventory
+  });
+  if(!plan.ok){
+   const reasons={'inventory-full':'Kho đã đầy, hãy dọn chỗ trước khi nhận.',
+    'wallet-cap':'Ví Xu đã chạm giới hạn.',
+    'not-ready':'Nhiệm vụ chưa hoàn thành hoặc đã nhận.',
+    'duplicate-reward':'Vật phẩm thưởng đã tồn tại.'};
+   alertMessage('CHƯA NHẬN ĐƯỢC',reasons[plan.reason]||
+    'Dữ liệu phần thưởng chưa hợp lệ.');
+   return false;
+  }
+  const oldState={quests:userProfile.quests,questV437:userProfile.questV437,
+   currency:userProfile.currency,exp:userProfile.exp,level:userProfile.level,
+   inventory:userProfile.inventory};
+  try{
+   userProfile.quests=plan.quests;
+   userProfile.questV437=plan.state;
+   userProfile.currency=plan.coins;
+   userProfile.exp=plan.exp;userProfile.level=plan.level;
+   userProfile.inventory=plan.inventory;
+   saveCurrentAccount();
+  }catch(_){
+   Object.assign(userProfile,oldState);
+   if(oldState.questV437===undefined)delete userProfile.questV437;
+   alertMessage('LƯU THẤT BẠI','Chưa nhận Xu, EXP hoặc vật phẩm. Hãy thử lại.');
+   return false;
+  }
+  root.renderQuests();
+  alertMessage('NHIỆM VỤ HOÀN TẤT','+'+plan.award.coins+' Xu · +'+
+   plan.award.exp+' EXP'+(plan.award.itemId?' · Tặng 1 vật phẩm vào Kho':'')+
+   (plan.levelUps?' · Thăng '+plan.levelUps+' cấp':''));
+  return true;
  };
  root.refreshDailyQuests=function(){
   if(!sandbox())return old.refreshDailyQuests.apply(this,arguments);

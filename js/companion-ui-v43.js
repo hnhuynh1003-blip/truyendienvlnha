@@ -132,12 +132,30 @@
   const previous=state(),plan=rules.checkin(previous);
   if(!plan.ok)return;
   const oldBalance=Number(userProfile.currency);
-  if(!Number.isFinite(oldBalance)||oldBalance<0)return;
+  if(!Number.isSafeInteger(oldBalance)||oldBalance<0||
+     oldBalance+plan.coins>1e9)return;
   const oldState=userProfile.duduCompanionV43;
-  userProfile.currency=Math.floor(oldBalance)+plan.coins;
+  const prev={quests:userProfile.quests,economy:userProfile.economyV43,
+   questState:userProfile.questV437};
+  const event=root.DuduEconomyRuntimeV43?.prepareQuestEvent(
+   'DUDU_CHECKIN',rules.localDay());
+  userProfile.currency=oldBalance+plan.coins;
+  if(event){
+   userProfile.quests=event.quests;
+   userProfile.economyV43=event.ledger;
+   userProfile.questV437=event.questState;
+  }
   const next=plan.state;
   addMessage(next,'model','Cậu điểm danh thành công! Hôm nay nhận '+plan.coins+' Xu thử nghiệm. Hẹn cậu trong những trang truyện mới nhé.');
-  if(!store(next)){userProfile.currency=oldBalance;userProfile.duduCompanionV43=oldState;return;}
+  if(!store(next)){
+   userProfile.currency=oldBalance;userProfile.duduCompanionV43=oldState;
+   userProfile.quests=prev.quests;
+   if(prev.economy===undefined)delete userProfile.economyV43;
+   else userProfile.economyV43=prev.economy;
+   if(prev.questState===undefined)delete userProfile.questV437;
+   else userProfile.questV437=prev.questState;
+   return;
+  }
   render();root.duduV33Render?.();
  }
  function init(){

@@ -40,7 +40,8 @@
    TOOL_PURCHASES_PER_DAY=2;
  const EVENT_TO_QUEST=Object.freeze({
    LOOT_SUCCESS:'q_daily_loot',READ_CHAPTER:'q_daily_read',
-   FUN_CLAIM:'q_daily_fun',NPC_GIFT:'q_daily_npc'
+   FUN_CLAIM:'q_daily_fun',NPC_GIFT:'q_daily_npc',
+   MARKET_PURCHASE:null,NPC_CHECKIN:null,DUDU_CHECKIN:null
  });
  const EXTRA_DAILY_QUESTS=Object.freeze([
   Object.freeze({id:'q_daily_fun',type:'DAILY',title:'Giải Trí DUDU',
