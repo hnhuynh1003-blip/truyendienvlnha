@@ -2215,6 +2215,8 @@
       if(name)name.value=current?.mode!=='main'?(current?.name||''):'';
       if(pronouns)pronouns.value=current?.pronouns||'neutral';
       if(bio)bio.value=current?.backstory||'';
+      const avatar=document.getElementById('dudu-v56-avatar');
+      if(avatar)avatar.value=current?.avatar||'account';
       const err=document.getElementById('dudu-v56-role-error');
       if(err)err.textContent='';
       editor.hidden=false;
@@ -2237,6 +2239,7 @@
         name:mode==='main'?(candidate?.name||''):document.getElementById('dudu-v56-name')?.value,
         protagonistId:mode==='main'?canonId:null,
         pronouns:document.getElementById('dudu-v56-pronouns')?.value,
+        avatar:document.getElementById('dudu-v56-avatar')?.value,
         backstory:document.getElementById('dudu-v56-backstory')?.value};
       const result=DuduRoleplayV56.upsert(state,input,story);
       if(result.error){if(error)error.textContent=result.error;return;}
@@ -2281,9 +2284,35 @@
       renderChatMessages(npcId);
       renderRoleplayV56();
     }
+    function v56RenderRoleAvatar(role){
+      const el=document.getElementById('dudu-v56-role-avatar');
+      if(!el)return;
+      el.classList.remove('dudu-player-avatar-v16');
+      el.style.backgroundImage='none';
+      el.style.backgroundSize='auto';
+      el.style.backgroundPosition='center';
+      el.replaceChildren();
+      el.textContent=role?DuduPlayerAvatarV16.initials(role.name):'?';
+      el.setAttribute('aria-label',role?'Chân dung vai '+role.name:'Chưa tạo nhân vật');
+      if(!role)return;
+      if(role.avatar==='account'&&typeof renderPlayerAvatarV16==='function'){
+        // Reuse validated account avatar/frames. No new unlock rights.
+        renderPlayerAvatarV16(el);
+      }else if(role.avatar&&role.avatar!=='initials'){
+        // Only preapproved built-in DUDU portrait IDs can reach this renderer.
+        const sprite=DuduNpcAnimeCandidatesV14.styleFor(role.avatar);
+        if(sprite){
+          el.style.backgroundImage=sprite.image;
+          el.style.backgroundSize=sprite.size;
+          el.style.backgroundPosition=sprite.position;
+          el.textContent='';
+        }
+      }
+    }
     function renderRoleplayV56(){
       const story=v56Novel(),state=v56State(story?.id);
       const role=DuduRoleplayV56.active(state);
+      v56RenderRoleAvatar(role);
       const picker=document.getElementById('dudu-v56-role-select');
       const note=document.getElementById('dudu-v56-role-note');
       if(picker){
