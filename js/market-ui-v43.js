@@ -16,7 +16,7 @@
    return node;
  };
  function render({host,coins,state,onBuy,stories=[],readRewards={},
-   functionalState=null,readOnly=false}={}){
+   functionalState=null,readOnly=false,saleIds=null}={}){
    if(!host||typeof onBuy!=='function')return false;
    host.replaceChildren();
    const toolbar=make('section','dudu-v43-market-toolbar');
@@ -30,7 +30,7 @@
      const button=make('button','dudu-v43-market-tab'+(id===tab?' is-active':''),label);
      button.type='button';button.setAttribute('aria-pressed',String(tab===id));
      button.addEventListener('click',()=>{
-       tab=id;render({host,coins,state,onBuy,stories,readRewards,functionalState,readOnly});
+       tab=id;render({host,coins,state,onBuy,stories,readRewards,functionalState,readOnly,saleIds});
      });
      tabs.append(button);
    }
@@ -149,9 +149,13 @@
            '−'+save+' Xu (phiếu)'));
          const button=make('button','btn','Mua');
          button.type='button';
-         button.disabled=readOnly||ledger.total>=core.PURCHASE_TOTAL_PER_DAY||
+         button.disabled=readOnly||(Array.isArray(saleIds)&&!saleIds.includes(item.id))||
+           ledger.total>=core.PURCHASE_TOTAL_PER_DAY||
            n>=limit||coins<item.price-save;
-         if(readOnly){button.textContent='Chưa mở';button.title='Chỉ xem sản phẩm; chưa có giao dịch Xu được xác thực';}
+         if(readOnly||(Array.isArray(saleIds)&&!saleIds.includes(item.id))){
+           button.textContent='Chưa mở';
+           button.title='Vật phẩm này chưa hỗ trợ mua trên máy chủ';
+         }
          button.setAttribute('aria-label',readOnly?'Xem '+item.name+'; chưa hỗ trợ mua':'Mua '+item.name+' giá '+(item.price-save)+' Xu');
          button.addEventListener('click',()=>onBuy(item.id));
          right.append(button,make('small','',n+'/'+limit+' hôm nay'));
