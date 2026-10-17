@@ -6,7 +6,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 const src = fs.readFileSync(path.join(__dirname, '../js/auth-v2.js'), 'utf8');
 
-function harness() {
+function harness(options = {}) {
   let onChange, record;
   const account = {
     currentUser: null,
@@ -18,11 +18,11 @@ function harness() {
   const logs = [];
   const context = {
     IS_SANDBOX_MODE: false,
-    setTimeout, clearTimeout,
+    setTimeout: options.setTimeout || setTimeout, clearTimeout,
     firebase: {
       auth: authFactory,
       firestore: () => ({ collection: () => ({ doc: uid => ({
-        get: async () => ({ exists: !!record, data: () => record })
+        get: async () => options.profileGet ? options.profileGet(record) : ({ exists: !!record, data: () => record })
       }) }) })
     },
     document: {
@@ -139,4 +139,45 @@ test('private browsing: Firebase invalid credentials show an actionable message'
   await h.context.DuduAuth.email(false);
   assert.match(h.elements['auth-status-message'].textContent, /Email hoặc mật khẩu chưa đúng/);
   assert.equal(h.elements['auth-email-login-btn'].disabled, false);
+});
+
+test('successful Google identity appears before slow Firestore read and is never shown as Guest', async () => {
+  let resolveProfile;
+  const pending = new Promise(resolve => { resolveProfile = resolve; });
+  const h = harness({ profileGet: () => pending });
+  const login = h.login('google-uid', {}, null);
+  // Promise.all pauses on Firestore; authenticated account label must already be visible.
+  await Promise.resolve();
+  assert.match(h.elements['account-status-btn'].textContent, /google-uid.*Đang tải/);
+  assert.match(h.elements['profile-account-id'].textContent, /Firebase UID/);
+  assert.equal(h.context.DuduAuth.isReady(), false);
+  resolveProfile({ exists: false });
+  await login;
+  assert.equal(h.context.DuduAuth.isReady(), true);
+  assert.doesNotMatch(h.elements['account-status-btn'].textContent, /Khách|Lỗi hồ sơ/);
+  assert.equal(h.elements['auth-status-message'].textContent.includes('Không thể'), false);
+});
+
+test('Firestore permission denied keeps Firebase identity, reports failure, and refuses author rights', async () => {
+  const denied = Object.assign(new Error('denied'), { code: 'permission-denied' });
+  const h = harness({ profileGet: async () => { throw denied; } });
+  await h.login('owner-google', { admin: true }, null);
+  assert.equal(h.context.DuduAuth.isReady(), false);
+  assert.equal(h.context.DuduAuth.isAdmin(), false);
+  assert.equal(h.context.currentUsername, 'owner-google');
+  assert.match(h.elements['account-status-btn'].textContent, /owner-google.*Lỗi hồ sơ/);
+  assert.match(h.elements['auth-status-message'].textContent, /Firestore từ chối/i);
+  assert.equal(h.elements['auth-retry-profile-btn'].style.display, 'block');
+});
+
+test('a never-resolving profile cannot leave authenticated user displayed as Guest indefinitely', async () => {
+  const h = harness({
+    profileGet: () => new Promise(() => {}),
+    setTimeout: (fn) => setTimeout(fn, 8)
+  });
+  await h.login('uid-stall', {}, null);
+  assert.equal(h.context.currentUsername, 'uid-stall');
+  assert.equal(h.context.DuduAuth.isReady(), false);
+  assert.match(h.elements['account-status-btn'].textContent, /Lỗi hồ sơ/);
+  assert.match(h.elements['auth-status-message'].textContent, /Quá thời gian/);
 });
