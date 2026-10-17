@@ -11,6 +11,13 @@ function fixture(){
  const auth={currentUser:null,
   setPersistence:async value=>auths.push(value),
   signInWithPopup:async()=>{auth.currentUser=user},
+  signInWithEmailAndPassword:async(email,password)=>{
+   if(email==='reader-b@example.test'&&password==='exampleTest!7'){
+    auth.currentUser={uid:'reader_b_456',getIdToken:async()=> 'signed-token-b'};
+    return;
+   }
+   throw {code:'auth/invalid-credential'};
+  },
   signOut:async()=>{auth.currentUser=null}};
  const authFn=()=>auth;
  authFn.Auth={Persistence:{SESSION:'SESSION_ONLY'}};
@@ -62,6 +69,24 @@ test('V45.1 uses a separate named Firebase app with session-only persistence',as
  const out=await x.instance.logout();
  assert.equal(out.ok,true);
  assert.equal(x.instance.session().signed,false);
+});
+test('V47 signs in Email/Password with Firebase SDK only; role checked separately',async()=>{
+ const x=fixture();
+ assert.equal((await x.instance.loginEmail('invalid','a')).code,'invalid-credentials');
+ assert.equal(x.apps.length,1);
+ assert.equal(x.requests.length,0);
+ const logged=await x.instance.loginEmail('reader-b@example.test','exampleTest!7');
+ assert.equal(logged.ok,true);
+ assert.equal(x.instance.session().signed,true);
+ assert.equal(x.instance.session().approved,false);
+ assert.match(x.instance.session().uidHint,/reader/);
+ assert.equal(x.apps[1].name,'dudu-v451-pilot-auth');
+ assert.deepEqual(x.auths,['SESSION_ONLY']);
+ assert.equal(x.requests.length,0);
+ assert.equal((await x.instance.list('story01')).code,'pilot-check-required');
+ const previous=x.instance.session().sessionRevision;
+ assert.equal((await x.instance.loginEmail('reader-b@example.test','incorrect-password')).code,'auth/invalid-credential');
+ assert.ok(x.instance.session().sessionRevision>previous);
 });
 test('V45.1 requires successful allowlisted status before reading/writing comments',async()=>{
  const x=fixture();
