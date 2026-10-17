@@ -60,7 +60,11 @@ test('Cloudflare gateway independently verifies Firebase JWT and limits cost',()
   assert.match(quota,/global_usage/);
   assert.match(quota,/user_usage/);
   assert.match(config,/new_sqlite_classes/);
-  assert.match(config,/AI_ENABLED = "true"/);
+  assert.match(config,/AI_ENABLED = "false"/);
+  const aiConfig=load('cloudflare/wrangler.npc-ai-v54.toml');
+  assert.match(aiConfig,/AI_ENABLED = "true"/);
+  for(const flag of ['COLLECTIBLES_ENABLED','COMMENTS_ENABLED','GIFTS_ENABLED','PILOT_ENABLED','GIFT_SETTLEMENT_ENABLED'])
+    assert.match(aiConfig,new RegExp(flag+' = "false"'));
   assert.match(html,/const DUDU_NPC_AI_MODE = !IS_SANDBOX_MODE/);
   assert.match(worker,/if\(!env\.GEMINI_API_KEY\)return error\(\x27ai-disabled\x27/);
   assert.match(html,/firebase-functions-compat/,'V52 economy uses callable Functions independently of the AI gateway');
