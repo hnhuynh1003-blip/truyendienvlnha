@@ -1870,8 +1870,9 @@
     const IS_PILOT_STAGING_MODE = IS_SANDBOX_MODE && DUDU_QUERY.get('pilot') === '1';
     DuduAI.init(IS_SANDBOX_MODE);
     DuduCollectiblesClient.init(IS_SANDBOX_MODE);
+    // V49.5: keep sandbox data isolated, but use the same phone layout in production.
+    document.body.classList.add('dudu-phone-v11');
     if (IS_SANDBOX_MODE) {
-      document.body.classList.add('dudu-phone-v11');
       const banner = document.createElement('div');
       banner.textContent = IS_PILOT_STAGING_MODE ?
         '🧪 V47 PILOT STAGING — Bình luận Firebase riêng; không dùng Xu, Kho hay quà thật' :
