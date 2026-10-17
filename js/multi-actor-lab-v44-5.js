@@ -67,8 +67,8 @@
      item.sourceStoryId!==(item.scope==='REALM'?STORY.id:null))
     errors.push('invalid-seed-provenance');
    const canonical=catalog?.byId(item.itemId);
-   if(!canonical||canonical.name!==item.name||canonical.scope!==item.scope||
-    canonical.realmTag!==item.realmTag)errors.push('invalid-item-definition');
+   if(!canonical||canonical.name!==item.name||canonical.icon!==item.icon||
+    canonical.scope!==item.scope||canonical.realmTag!==item.realmTag)errors.push('invalid-item-definition');
    if(!['USER','ESCROW'].includes(item.holderType))errors.push('invalid-holder');
    if(item.holderType==='USER'&&!knownActor(item.holderId))
     errors.push('unknown-item-owner');
@@ -89,7 +89,7 @@
   for(const comment of raw.comments){
    if(!comment||typeof comment!=='object')continue;
    if(comment.parentId&&(!commentIds.has(comment.parentId)||
-    raw.comments.find(x=>x.id===comment.parentId)?.parentId))
+    raw.comments.find(x=>x?.id===comment.parentId)?.parentId))
     errors.push('invalid-reply');
   }
   for(const transfer of raw.transfers){
@@ -107,7 +107,7 @@
    if(!comment||comment.authorId!==transfer.senderId||
       comment.requestId!==transfer.requestId)
     errors.push('invalid-transfer-comment-link');
-   const item=raw.items.find(x=>x.instanceId===transfer.instanceId);
+   const item=raw.items.find(x=>x?.instanceId===transfer.instanceId);
    if(!item){errors.push('receipt-item-missing');continue}
    if(transfer.status==='PENDING'&&
     (item.holderType!=='ESCROW'||item.holderId!==transfer.id))
@@ -121,11 +121,12 @@
   for(const item of raw.items){
    if(!item||typeof item!=='object')continue;
    if(item.holderType==='ESCROW'&&!raw.transfers.some(t=>
-    t.id===item.holderId&&t.instanceId===item.instanceId&&t.status==='PENDING'))
+    t?.id===item.holderId&&t.instanceId===item.instanceId&&t.status==='PENDING'))
     errors.push('orphaned-escrow');
   }
   if(raw.items.length!==seed.length)errors.push('unexpected-item-count');
-  if(raw.comments.length>MAX_COMMENTS||raw.transfers.length>MAX_TRANSFERS)
+  if(raw.comments.length>MAX_COMMENTS||raw.transfers.length>MAX_TRANSFERS||
+     raw.events.length>20)
    errors.push('limit-exceeded');
   return [...new Set(errors)];
  }
