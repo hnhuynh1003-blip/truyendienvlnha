@@ -1,0 +1,30 @@
+// DUDU V52 — REVIEW SNIPPET ONLY. Do not overwrite existing live Firestore
+// Rules. Merge after backing up and comparing the currently deployed rules.
+// Server-authoritative economy is accessed ONLY by Cloud Functions Admin SDK.
+// Client access must remain denied to prevent changing Xu, item ownership,
+// daily receipts or the active production feature gate.
+//
+// Insert these match blocks within the existing
+// service cloud.firestore { match /databases/{database}/documents { ... } }.
+//
+// Production clients call callable Functions with Firebase Auth + App Check.
+// Admin SDK bypasses Firestore Rules and validates the UID, server catalog,
+// balance and idempotency IN SERVER TRANSACTIONS.
+match /economy_accounts_v52/{uid} {
+  allow read, write: if false;
+  match /items/{itemId} {
+    allow read, write: if false;
+  }
+  match /receipts/{receiptId} {
+    allow read, write: if false;
+  }
+}
+match /system_config/economy_v52 {
+  allow read, write: if false;
+}
+
+// IMPORTANT: Firestore Rules ALLOW statements are additive. This snippet
+// cannot cancel any overlapping wildcard allow rule. Audit existing matches
+// for /economy_accounts_v52/** and /system_config/economy_v52 and test denial
+// as signed-in reader, guest and author in the Firestore Emulator.
+// Never merge legacy profiles_v2 fields into the verified server wallet.
