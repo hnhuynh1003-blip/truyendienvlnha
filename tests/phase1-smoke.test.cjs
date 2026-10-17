@@ -21,24 +21,33 @@ test('inline JavaScript parses', () => {
   assert.doesNotThrow(() => new vm.Script(script));
 });
 
-test('account, story and sandbox keys do not overlap', () => {
-  const helpers = segment('function scopedLocalKey(', 'function loadScopedInteractionState()');
-  const context = {
-    IS_SANDBOX_MODE: false,
-    currentUsername: 'alice',
-    selectedNovelIndex: 0,
-    activeChatNovelId: 'story-a',
-    novels: [{ id: 'story-a' }],
+test('V56 account, story, role and sandbox keys do not overlap', () => {
+  const roleplay=require('../js/roleplay-identity-v56.js');
+  const helpers=segment('function scopedLocalKey(', 'function loadScopedInteractionState()');
+  const m=new Map();
+  const localStorage={getItem:k=>m.get(k)??null,setItem:(k,v)=>m.set(k,v)};
+  const novel={id:'story-a',characters:[]};
+  const initial=roleplay.upsert(roleplay.empty(),
+    {id:'role-a',mode:'traveler',name:'Alice'},novel);
+  assert.ok(initial.state);
+  assert.ok(roleplay.save(localStorage,'alice',novel,false,initial.state));
+  const context={
+    IS_SANDBOX_MODE:false,currentUsername:'alice',localStorage,
+    DuduRoleplayV56:roleplay,
+    DuduAuth:{isReady:()=>true,uid:()=>context.currentUsername},
+    selectedNovelIndex:0,activeChatNovelId:'story-a',novels:[novel],
     encodeURIComponent
   };
-  const api = vm.runInNewContext(helpers + '\n({ scopedLocalKey, chatKey })', context);
-  const aliceKey = api.scopedLocalKey('bookmark', 'story-a');
-  assert.notEqual(aliceKey, api.scopedLocalKey('bookmark', 'story-b'));
-  assert.equal(api.chatKey('same-npc'), 'story-a::same-npc');
-  context.currentUsername = 'bob';
-  assert.notEqual(aliceKey, api.scopedLocalKey('bookmark', 'story-a'));
-  context.IS_SANDBOX_MODE = true;
-  assert.match(api.scopedLocalKey('bookmark', 'story-a'), /^dudu-sandbox-v2:/);
+  const api=vm.runInNewContext(helpers+'\n({scopedLocalKey,chatKey})',context);
+  const aliceKey=api.scopedLocalKey('bookmark','story-a');
+  assert.notEqual(aliceKey,api.scopedLocalKey('bookmark','story-b'));
+  assert.equal(api.chatKey('same-npc'),'story-a::role56:role-a::same-npc');
+  context.currentUsername='bob';
+  assert.notEqual(aliceKey,api.scopedLocalKey('bookmark','story-a'));
+  assert.equal(api.chatKey('same-npc'),null,'Bob must create their own role');
+  context.IS_SANDBOX_MODE=true;
+  assert.match(api.scopedLocalKey('bookmark','story-a'),/^dudu-sandbox-v2:/);
+  assert.equal(api.chatKey('same-npc'),null,'Sandbox must not reuse production role');
 });
 
 test('legacy NPC unlocks are migrated only to an unambiguous story', () => {
