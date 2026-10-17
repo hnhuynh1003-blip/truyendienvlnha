@@ -10,9 +10,10 @@ const backend=file('functions/index.js');
 test('V52 client SDK and App Check are explicitly configured but site key is empty by default',()=>{
  assert.match(html,/firebase-functions-compat\.js/);
  assert.match(html,/firebase-app-check-compat\.js/);
- assert.match(html,/js\/appcheck-sitekey-v52\.js\?v=52-1/);
- assert.match(html,/firebase\.appCheck\(\)\.activate\(window\.DUDU_RECAPTCHA_V3_SITE_KEY\.trim\(\),true\)/);
- assert.match(file('js/appcheck-sitekey-v52.js'),/DUDU_RECAPTCHA_V3_SITE_KEY = ''/);
+ assert.match(html,/js\/appcheck-sitekey-v52\.js\?v=52-2/);
+ assert.match(html,/new firebase\.appCheck\.ReCaptchaEnterpriseProvider\(/);
+ assert.match(html,/DUDU_RECAPTCHA_ENTERPRISE_SITE_KEY\.trim\(\)/);
+ assert.match(file('js/appcheck-sitekey-v52.js'),/DUDU_RECAPTCHA_ENTERPRISE_SITE_KEY = ''/);
  assert.match(backend,/enforceAppCheck:true/);
 });
 test('V52 buttons call only verified Firebase callable endpoints',()=>{
