@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dudu-studio-v49-6-phone-release';
+const CACHE_NAME = 'dudu-studio-v51-1-live-phone-release';
 self.addEventListener('install', (event) => { self.skipWaiting(); });
 self.addEventListener('activate', (event) => {
   event.waitUntil((async()=>{
