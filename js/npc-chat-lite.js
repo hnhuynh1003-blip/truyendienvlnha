@@ -135,18 +135,18 @@
     const count=(Array.isArray(history)?history:[]).filter(m=>m?.role==='user').length;
     const style=personaStyle(char);
     let answer='';
-    if(/\\b(ten|ten gi|la ai|ban la ai)\\b/.test(input)) {
+    if(/\b(ten|ten gi|la ai|ban la ai)\b/.test(input)) {
       answer='Tôi là '+label+(role?', '+role.toLowerCase():'')+'. Bạn muốn biết thêm điều gì về tôi?';
-    } else if(/\\b(tinh cach|so thich|thich gi|con nguoi)\\b/.test(input)) {
+    } else if(/\b(tinh cach|so thich|thich gi|con nguoi)\b/.test(input)) {
       answer=note?'Theo những gì được viết về tôi: '+note+'.':'Tính cách của tôi còn tùy vào câu chuyện được tác giả kể. Bạn muốn hỏi điều gì cụ thể?';
-    } else if(/\\b(tinh trang|hien tai|dang o dau|o dau|the nao)\\b/.test(input)) {
+    } else if(/\b(tinh trang|hien tai|dang o dau|o dau|the nao)\b/.test(input)) {
       answer=status?'Tình trạng hiện tại của tôi được ghi là: '+status+'.':'Tác giả chưa xác định rõ tình trạng hiện tại của tôi.';
-    } else if(/\\b(buon|co don|lo lang|so hai|met moi|kho khan)\\b/.test(input)) {
+    } else if(/\b(buon|co don|lo lang|so hai|met moi|kho khan)\b/.test(input)) {
       answer=style==='reserved'?'Tôi nghe. Bạn có muốn kể thêm chuyện vừa xảy ra không?':
         'Tôi đang nghe đây. Bạn muốn kể điều gì khiến bạn thấy như vậy?';
-    } else if(/\\b(truyen|chuong|the gioi|cot truyen|bi mat)\\b/.test(input)) {
+    } else if(/\b(truyen|chuong|the gioi|cot truyen|bi mat)\b/.test(input)) {
       answer='Chúng ta chỉ có thể dựa vào những chương đã được kể. Tôi không muốn đoán trước bí mật của tác giả. Bạn muốn nói về tình tiết nào?';
-    } else if(/\\b(hom nay|ngay mai|ngay hom qua)\\b/.test(input)) {
+    } else if(/\b(hom nay|ngay mai|ngay hom qua)\b/.test(input)) {
       answer='Có điều gì trong hôm nay bạn muốn chia sẻ với tôi không?';
     } else if(/[?？]$/.test(String(text).trim())) {
       answer='Câu hỏi thú vị đấy. Tôi chưa có đủ dữ kiện trong truyện để trả lời chắc chắn. Bạn có thể nói rõ hơn không?';
