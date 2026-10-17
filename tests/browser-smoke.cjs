@@ -3656,6 +3656,65 @@ async function main() {
       posted:true,attached:true,removed:true,logged:true,badge:true,outbound:true,
       noIncoming:true,noServer:true},'V44.3 local gift card and honest author mailbox');
 
+    // V44.4: simulated storage quota failure must roll back BOTH local item
+    // and comment. An orphaned modal must disappear on reader navigation.
+    const rollbackV444=await page.evaluate(()=>{
+      const backup=structuredClone(userProfile);
+      const oldNovel=selectedNovelIndex,oldChapter=selectedChapterIndex;
+      const priorSetter=Storage.prototype.setItem;
+      const writes=window.__firestoreWrites.length;
+      let forced=false;
+      try{
+        selectedNovelIndex=0;
+        userProfile.commentsV442=null;
+        userProfile.inventoryTradeV439=null;
+        const biscuit={...DuduItemCatalog.byId('common-biscuit'),
+         instanceId:'sandbox-rollback-check',
+         obtainedFrom:{kind:'SHOP',source:'DUDU_MARKET'}};
+        userProfile.inventory=[biscuit];
+        openCover(0);
+        const host=document.getElementById('story-comments-v442');
+        host.querySelector('.dudu-v442-shell').open=true;
+        host.querySelector('.dudu-v442-gift').click();
+        document.querySelector('.dudu-v4431-card')?.click();
+        document.querySelector('.dudu-v4431-apply')?.click();
+        const form=host.querySelector('.dudu-v442-form');
+        form.querySelector('textarea').value='Kiểm thử hoàn nguyên khi lưu bị lỗi';
+        const key=scopedLocalKey('profile'),beforeRaw=localStorage.getItem(key);
+        Storage.prototype.setItem=function(k,value){
+          if(k===key){forced=true;throw new DOMException('Quota exceeded','QuotaExceededError');}
+          return priorSetter.call(this,k,value);
+        };
+        form.requestSubmit();
+        const preserved=!!userProfile.inventory.find(x=>x.instanceId===biscuit.instanceId);
+        const noPost=!userProfile.commentsV442?.comments?.length;
+        const noReceipt=!userProfile.inventoryTradeV439?.history?.length;
+        const unchangedStorage=localStorage.getItem(key)===beforeRaw;
+        const notice=host.textContent.includes('Không thể ghi thiệp quà');
+        Storage.prototype.setItem=priorSetter;
+        openCover(0);
+        const freshHost=document.getElementById('story-comments-v442');
+        freshHost.querySelector('.dudu-v442-shell').open=true;
+        freshHost.querySelector('.dudu-v442-gift').click();
+        const active=!!document.querySelector('.dudu-v4431-overlay');
+        goHome();
+        const navigatedClosed=!document.querySelector('.dudu-v4431-overlay');
+        return {forced,preserved,noPost,noReceipt,unchangedStorage,notice,
+          active,navigatedClosed,noWrites:window.__firestoreWrites.length===writes};
+      }finally{
+        Storage.prototype.setItem=priorSetter;
+        window.DuduGiftPickerV4431?.closeActive();
+        userProfile=backup;
+        selectedNovelIndex=oldNovel;selectedChapterIndex=oldChapter;
+        saveCurrentAccount();goHome();
+      }
+    });
+    assert.deepEqual(rollbackV444,{
+      forced:true,preserved:true,noPost:true,noReceipt:true,
+      unchangedStorage:true,notice:true,active:true,navigatedClosed:true,
+      noWrites:true
+    },'V44.4 storage quota rollback, honest UI and navigation cleanup');
+
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
     console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));
   } finally {
