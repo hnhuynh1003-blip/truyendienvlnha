@@ -16,7 +16,7 @@
    return node;
  };
  function render({host,coins,state,onBuy,stories=[],readRewards={},
-   functionalState=null}={}){
+   functionalState=null,readOnly=false}={}){
    if(!host||typeof onBuy!=='function')return false;
    host.replaceChildren();
    const toolbar=make('section','dudu-v43-market-toolbar');
@@ -30,7 +30,7 @@
      const button=make('button','dudu-v43-market-tab'+(id===tab?' is-active':''),label);
      button.type='button';button.setAttribute('aria-pressed',String(tab===id));
      button.addEventListener('click',()=>{
-       tab=id;render({host,coins,state,onBuy,stories,readRewards,functionalState});
+       tab=id;render({host,coins,state,onBuy,stories,readRewards,functionalState,readOnly});
      });
      tabs.append(button);
    }
@@ -71,6 +71,7 @@
    const hint=make('p','dudu-v43-market-hint');
    const collection=make('div','dudu-v43-market-grid');
    const footer=make('small','dudu-v43-market-footer',
+     readOnly?'Chế độ tham khảo · Không trừ Xu, không cấp vật phẩm. Giao dịch thật cần máy chủ xác nhận.':
      'Vật phẩm có nguồn gốc và ID cố định. Kỷ vật thật chỉ do máy chủ xác nhận.');
    toolbar.append(tabs,filters,hint);
    host.append(toolbar,collection,footer);
@@ -148,9 +149,10 @@
            '−'+save+' Xu (phiếu)'));
          const button=make('button','btn','Mua');
          button.type='button';
-         button.disabled=ledger.total>=core.PURCHASE_TOTAL_PER_DAY||
+         button.disabled=readOnly||ledger.total>=core.PURCHASE_TOTAL_PER_DAY||
            n>=limit||coins<item.price-save;
-         button.setAttribute('aria-label','Mua '+item.name+' giá '+(item.price-save)+' Xu');
+         if(readOnly){button.textContent='Chưa mở';button.title='Chỉ xem sản phẩm; chưa có giao dịch Xu được xác thực';}
+         button.setAttribute('aria-label',readOnly?'Xem '+item.name+'; chưa hỗ trợ mua':'Mua '+item.name+' giá '+(item.price-save)+' Xu');
          button.addEventListener('click',()=>onBuy(item.id));
          right.append(button,make('small','',n+'/'+limit+' hôm nay'));
        }else{
