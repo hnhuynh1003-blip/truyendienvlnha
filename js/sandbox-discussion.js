@@ -38,7 +38,8 @@
      return old;
     }
     const parent=action.parentId?s.comments.find(c=>c.id===action.parentId):null;
-    if(action.parentId&&(!parent||parent.parentId||!scope(parent,action)||parent.hidden))throw Error('Trả lời sai truyện/chương');
+    if(action.parentId&&parent?.hidden)throw Error('Không thể trả lời bình luận đã ẩn');
+    if(action.parentId&&(!parent||parent.parentId||!scope(parent,action)))throw Error('Trả lời sai truyện/chương');
     if(s.comments.length>=1000)throw Error('Kho thử đã đầy');
     const stamp=now();
     if(!Number.isFinite(stamp)||stamp<0)throw Error('Thời gian không hợp lệ');
