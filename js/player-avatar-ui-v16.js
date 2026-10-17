@@ -7,7 +7,7 @@ let playerAvatarUploadGenerationV16=0;
 let playerAvatarReturnFocusV16=null;
 let playerAvatarVisibleCountV41=12;
 function playerAvatarOwnerV16(){
-  return DuduPlayerAvatarV16.uploadIdentity(currentUsername||(IS_SANDBOX_MODE?'sandbox-guest':''));
+  return DuduPlayerAvatarV16.uploadIdentity(IS_SANDBOX_MODE ? (currentUsername||'sandbox-guest') : (currentUsername?'live-'+currentUsername:''));
 }
 // Live mode requires verified Firebase ownership; images stay device-local.
 function playerAvatarAllowedV497(){
