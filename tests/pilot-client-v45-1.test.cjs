@@ -117,8 +117,8 @@ test('V45.1 is mounted only inside the Sandbox laboratory view',()=>{
  const html=file('index.html');
  const ui=file('js/pilot-lab-ui-v45-1.js');
  assert.match(html,/id="pilot-v451-content"/);
- assert.match(html,/js\/pilot-client-v45-1\.js\?v=45-1/);
- assert.match(html,/js\/pilot-lab-ui-v45-1\.js\?v=45-1/);
+ assert.match(html,/js\/pilot-client-v45-1\.js\?v=45-1-r2/);
+ assert.match(html,/js\/pilot-lab-ui-v45-1\.js\?v=45-1-r2/);
  assert.match(html,/css\/pilot-v45-1\.css\?v=45-1/);
  assert.match(html,/DuduPilotLabUIV451\?\.render\(\{[\s\S]*?sandbox:IS_SANDBOX_MODE/);
  assert.match(ui,/if\(!sandbox\|\|!client\(\)\)/);
