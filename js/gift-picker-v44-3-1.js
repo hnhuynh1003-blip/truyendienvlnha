@@ -155,5 +155,6 @@
   active={close};
   return {close};
  }
- root.DuduGiftPickerV4431=Object.freeze({open});
+ function closeActive(){active?.close();}
+ root.DuduGiftPickerV4431=Object.freeze({open,closeActive});
 })(typeof window!=='undefined'?window:{});

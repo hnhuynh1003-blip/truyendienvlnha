@@ -86,7 +86,7 @@
   <script src="js/story-dates-v1.js"></script>
   <script src="js/story-comments-v44-2.js?v=2"></script>
   <script src="js/gift-picker-model-v44-3-1.js?v=1"></script>
-  <script src="js/gift-picker-v44-3-1.js?v=1"></script>
+  <script src="js/gift-picker-v44-3-1.js?v=2"></script>
   <script src="js/story-comments-ui-v44-2.js?v=3"></script>
   <script src="js/npc-portrait-library-v1.js?v=40-1"></script>
   <script src="js/npc-anime-candidates-v14.js"></script>
@@ -5454,7 +5454,10 @@ document.getElementById('phone-home-screen').style.display = 'none';
           if(!IS_SANDBOX_MODE||!currentUsername||
             novels[selectedNovelIndex]?.id!==id)return false;
           const before={comments:userProfile.commentsV442,
-            inventory:userProfile.inventory,trade:userProfile.inventoryTradeV439};
+            inventory:userProfile.inventory,trade:userProfile.inventoryTradeV439,
+            collection:userProfile.collectionV441};
+          const profileKey=scopedLocalKey('profile');
+          let savedRaw=null;
           let commentState=next,tradePlan=null;
           if(attach){
             const item=DuduInventoryTradeV439.owned(
@@ -5475,6 +5478,9 @@ document.getElementById('phone-home-screen').style.display = 'none';
             commentState=linked.state;
           }
           try{
+            // Save one complete profile: comment and gift item custody must not
+            // diverge if quota/storage or UI refresh throws mid-save.
+            savedRaw=localStorage.getItem(profileKey);
             userProfile.commentsV442=commentState;
             if(tradePlan){
               userProfile.inventory=tradePlan.inventory;
@@ -5485,6 +5491,13 @@ document.getElementById('phone-home-screen').style.display = 'none';
             userProfile.commentsV442=before.comments;
             userProfile.inventory=before.inventory;
             userProfile.inventoryTradeV439=before.trade;
+            userProfile.collectionV441=before.collection;
+            try{
+              if(savedRaw===null)localStorage.removeItem(profileKey);
+              else localStorage.setItem(profileKey,savedRaw);
+            }catch(restoreErr){
+              console.warn('Sandbox gift profile restore unavailable',restoreErr?.name||'error');
+            }
             return false;
           }
           renderStoryCommentsV442(view);
@@ -5494,6 +5507,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
     }
 
     function openCover(idx) {
+      window.DuduGiftPickerV4431?.closeActive();
       selectedNovelIndex = idx;
       activeChatNovelId = novels[idx].id;
       const novel = novels[idx];
@@ -5589,6 +5603,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
     // TRÌNH ĐỌC TRUYỆN: HIỂN THỊ HỘP MỞ KHÓA TÂM THỨC NPC Ở ĐÁY TRANG
     // ==========================================
     function readChapter(chIdx, scrollPos = 0) {
+      window.DuduGiftPickerV4431?.closeActive();
       selectedChapterIndex = chIdx;
       activeChatNovelId = novels[selectedNovelIndex].id;
       const novel = novels[selectedNovelIndex];
@@ -5779,6 +5794,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
     });
 
     function goHome() {
+      window.DuduGiftPickerV4431?.closeActive();
       document.getElementById('cover-view').style.display = 'none';
       document.getElementById('reader-view').style.display = 'none';
       document.getElementById('home-view').style.display = 'block';

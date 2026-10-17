@@ -70,6 +70,8 @@ export class DuduGiftLedger extends DurableObject{
   const p=requestGift(request);
   if(!p||!ID(uid))return fail('invalid-request');
   const e=this.getEvidence(p.storyId,p.chapterId,p.itemInstanceId);
+  if(p.chapterId&&(!e.chapter||e.chapter.status!=='PUBLISHED'||
+    e.chapter.storyId!==p.storyId))return fail('chapter-unavailable');
   const q=quoteGift({senderUid:uid,...e,destination:p.destination,note:p.note,now});
   if(!q.ok)return fail(q.reason);
   return {ok:true,previewOnly:true,canTransferNow:false,
@@ -91,13 +93,15 @@ export class DuduGiftLedger extends DurableObject{
     return {ok:true,alreadyApplied:true,...existing};
    }
    const e=this.getEvidence(p.storyId,p.chapterId,p.itemInstanceId);
+   if(p.chapterId&&(!e.chapter||e.chapter.status!=='PUBLISHED'||
+      e.chapter.storyId!==p.storyId))return fail('chapter-unavailable');
    const quoted=quoteGift({senderUid:uid,...e,destination:p.destination,note:p.note,now});
    if(!quoted.ok)return fail(quoted.reason);
    const q=quoted.quote,transferId='gift-'+crypto.randomUUID();
    const author=q.recipientType==='AUTHOR_UID',status=author?STAGES.PENDING:STAGES.ACCEPTED;
    const holder=author?('ESCROW:'+transferId):q.recipientKey;
    // No item can exist in two owners: one SQL transaction owns status & receipt.
-   const updated=this.sql.exec(`UPDATE trusted_items
+   this.sql.exec(`UPDATE trusted_items
     SET holder_type=?,holder_key=?,status=?
     WHERE instance_id=? AND holder_type='USER' AND holder_key=? AND status='OWNED'`,
     author?'ESCROW':'VAULT',holder,author?'ESCROW':'VAULT',
@@ -137,6 +141,18 @@ export class DuduGiftLedger extends DurableObject{
    if(result.alreadyApplied)return {ok:true,alreadyApplied:true,status:t.status};
    if(t.status!==STAGES.PENDING||t.recipient_type!=='AUTHOR_UID')
     return fail('finalized');
+   // Author UID and binding revision must remain current when accepting or
+   // declining. Sender cancellation stays available after reassignment.
+   if(p.action==='ACCEPT'||p.action==='DECLINE'){
+    const binding=this.sql.exec(`SELECT owner_uid AS ownerUid,
+     binding_status AS bindingStatus,revision,status
+     FROM trusted_stories WHERE story_id=?`,t.story_id).toArray()[0];
+    if(!binding||binding.status!=='PUBLISHED'||
+       binding.bindingStatus!=='VERIFIED'||
+       binding.ownerUid!==t.recipient_key||
+       binding.revision!==t.author_revision)
+     return fail('author-binding-changed');
+   }
    const item=this.sql.exec('SELECT holder_type,holder_key,status FROM trusted_items WHERE instance_id=?',
     t.item_instance_id).toArray()[0];
    if(item?.holder_type!=='ESCROW'||item?.holder_key!=='ESCROW:'+t.transfer_id||
@@ -154,11 +170,16 @@ export class DuduGiftLedger extends DurableObject{
  }
  authorInbox(uid){
   if(!ID(uid))return fail('unauthenticated');
-  const rows=this.sql.exec(`SELECT transfer_id AS transferId,
-   story_id AS storyId,chapter_id AS chapterId,note,status,
-   created_at AS createdAt,item_instance_id AS itemInstanceId
-   FROM gift_receipts WHERE recipient_type='AUTHOR_UID' AND recipient_key=?
-   ORDER BY created_at DESC LIMIT 60`,uid).toArray();
+  const rows=this.sql.exec(`SELECT g.transfer_id AS transferId,
+   g.story_id AS storyId,g.chapter_id AS chapterId,g.note,g.status,
+   g.created_at AS createdAt,g.item_instance_id AS itemInstanceId
+   FROM gift_receipts g
+   LEFT JOIN trusted_stories s ON s.story_id=g.story_id
+   WHERE g.recipient_type='AUTHOR_UID' AND g.recipient_key=?
+    AND (g.status!='PENDING' OR
+      (s.owner_uid=g.recipient_key AND s.binding_status='VERIFIED'
+       AND s.status='PUBLISHED' AND s.revision=g.author_revision))
+   ORDER BY g.created_at DESC LIMIT 60`,uid).toArray();
   return {ok:true,items:rows};
  }
  outgoing(uid){
