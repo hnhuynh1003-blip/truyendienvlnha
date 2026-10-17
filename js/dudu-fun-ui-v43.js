@@ -13,8 +13,19 @@
   if(text!==undefined)n.textContent=String(text);
   return n;
  };
- const enabled=()=>typeof IS_SANDBOX_MODE!=='undefined'&&IS_SANDBOX_MODE;
- const signed=()=>enabled()&&typeof currentUsername==='string'&&!!currentUsername;
+ const sandbox=()=>typeof IS_SANDBOX_MODE!=='undefined'&&IS_SANDBOX_MODE;
+ const signed=()=>!!currentUsername&&(sandbox()||
+  (!!root.DuduAuth?.isReady?.()&&root.DuduAuth.uid()===currentUsername));
+ // Production game rounds live only on this device under a verified UID;
+ // no Firestore wallet, inventory or server entitlements are modified.
+ const localKey=()=>signed()&&!sandbox()?'dudu-fun:practice:v51:'+currentUsername:null;
+ function stored(){
+  if(sandbox())return userProfile.duduFunV43;
+  const key=localKey();
+  if(!key)return null;
+  try{return JSON.parse(localStorage.getItem(key)||'null');}
+  catch(_){return null;}
+ }
  let open='box',hint=true,processing=false;
  function rng(){
   const a=new Uint32Array(2);
@@ -23,6 +34,10 @@
  }
  function saveNewState(next){
   if(!signed())return false;
+  if(!sandbox()){
+   const key=localKey();if(!key)return false;
+   try{localStorage.setItem(key,JSON.stringify(rules.norm(next)));return true;}catch(_){return false;}
+  }
   const old=userProfile.duduFunV43;
   try{
    userProfile.duduFunV43=next;
@@ -42,7 +57,7 @@
   processing=true;
   try{
    const random=rng();
-   const result=rules.begin(userProfile.duduFunV43,{type:open,theme,
+   const result=rules.begin(stored(),{type:open,theme,
     roll:random.roll,seed:random.seed});
    if(!result.ok){message('Lượt hôm nay đã bắt đầu hoặc đã sử dụng.');return;}
    if(!saveNewState(result.state)){
@@ -55,7 +70,7 @@
   if(!signed()||processing)return;
   processing=true;
   try{
-   const result=rules.advance(userProfile.duduFunV43,{type:open,choice});
+   const result=rules.advance(stored(),{type:open,choice});
    if(!result.ok)return;
    if(!saveNewState(result.state)){
     message('Chưa lưu được tiến độ. Hãy thử lại.');return;
@@ -69,7 +84,7 @@
   if(!signed()||processing)return false;
   processing=true;
   try{
-   const plan=rules.claim(userProfile.duduFunV43,{
+   const plan=rules.claim(stored(),{
     type:open,coins:userProfile.currency,
     inventory:userProfile.inventory
    });
@@ -79,6 +94,12 @@
      'not-ready-or-claimed':'Hãy hoàn thành trò chơi trước khi nhận thưởng.'};
     message(names[plan.reason]||'Chưa đủ điều kiện nhận thưởng.');
     return false;
+   }
+   if(!sandbox()){
+    if(!saveNewState(plan.state)){message('Không lưu được lượt chơi trên thiết bị.');return false;}
+    render();
+    message('Hoàn tất lượt giải trí! Kết quả chỉ mang tính minh họa, không cộng Xu hay vật phẩm.');
+    return true;
    }
    // Commit the game reward AND its daily quest event in one local profile write.
    const event=root.DuduEconomyRuntimeV43?.prepareQuestEvent(
@@ -117,7 +138,7 @@
   }finally{processing=false;}
  }
  function view(){
-  return rules.norm(signed()?userProfile.duduFunV43:null);
+  return rules.norm(signed()?stored():null);
  }
  function heading(container){
   const top=el('div','dudu-fun-top');
@@ -125,7 +146,7 @@
   name.append(el('strong','','✦ DUDU FUN'),
     el('span','','Giải trí sau mỗi chương truyện'));
   const money=el('span','dudu-fun-balance',
-    signed()?'🪙 '+userProfile.currency+' Xu':'Khách');
+    signed()?(sandbox()?'🪙 '+userProfile.currency+' Xu':'🎮 Giải trí'):'Khách');
   top.append(name,money);
   container.append(top);
   const state=view(),status=rules.progress(state);
@@ -137,7 +158,7 @@
   rail.append(fill);
   container.append(meter,rail);
   const caption=el('small','dudu-fun-disclaimer',
-   '2 trò miễn phí/ngày · Xu và vật phẩm chỉ thuộc Sandbox · Không bán lượt chơi');
+   sandbox()?'2 trò miễn phí/ngày · Xu và vật phẩm chỉ thuộc Sandbox · Không bán lượt chơi':'2 trò giải trí/ngày trên thiết bị · Không cộng Xu hoặc vật phẩm');
   container.append(caption);
  }
  function boxes(rootNode,round){
@@ -182,14 +203,14 @@
  }
  function claimButton(target){
   const button=el('button','dudu-fun-claim','🎁 Nhận phần thưởng');
-  button.type='button';button.addEventListener('click',claim);
+  button.type='button';if(!sandbox())button.textContent='✓ Hoàn tất lượt';button.addEventListener('click',claim);
   target.append(button);
  }
  function rewardPanel(target,reward){
   const r=el('div','dudu-fun-win');
   r.append(el('span','',reward.kind==='COIN'?'🪙':'🎁'),
    el('strong','',reward.kind==='COIN'?'+'+reward.amount+' Xu':reward.label),
-   el('small','','Đã nhận trong Sandbox · quay lại ngày mai'));
+   el('small','',sandbox()?'Đã nhận trong Sandbox · quay lại ngày mai':'Kết quả minh họa · không cộng tài sản'));
   target.append(r);
  }
  function lottery(rootNode,round){
@@ -238,14 +259,10 @@
  function render(){
   const host=$('dudu-fun-content-v43');if(!host)return false;
   host.replaceChildren();
-  if(!enabled()){
-   host.append(el('p','dudu-fun-guest','DUDU FUN đang được thử nghiệm riêng trong Sandbox.'));
-   return false;
-  }
   heading(host);
   if(!signed()){
    host.append(el('p','dudu-fun-guest',
-    'Đăng nhập Sandbox để nhận lượt chơi riêng của tài khoản. Chưa có phần thưởng nào được tạo.'));
+    sandbox()?'Đăng nhập Sandbox để nhận lượt chơi riêng của tài khoản. Chưa có phần thưởng nào được tạo.':'Đăng nhập tài khoản Firebase để lưu lượt chơi giải trí trên thiết bị.'));
    return true;
   }
   const tabs=el('div','dudu-fun-tabs');
@@ -264,12 +281,12 @@
   host.append(el('p','dudu-fun-notice',''));
   history(host,state);
   host.append(el('small','dudu-fun-disclaimer',
-   'Tỷ lệ Hộp Mù: 50% 5 Xu · 25% 9 Xu · 15% bánh quy · 10% đồ uống. Vé Số: 50% 3 Xu · 30% 6 Xu · 15% 10 Xu · 4% 20 Xu · 1% 40 Xu. Không có tiền thật hoặc giải đổi tiền.'));
+   sandbox()?'Tỷ lệ Hộp Mù: 50% 5 Xu · 25% 9 Xu · 15% bánh quy · 10% đồ uống. Vé Số: 50% 3 Xu · 30% 6 Xu · 15% 10 Xu · 4% 20 Xu · 1% 40 Xu. Không có tiền thật hoặc giải đổi tiền.':'DUDU FUN trên bản chính là trò chơi miễn phí, kết quả minh họa. Không thay đổi Xu, EXP, Kho hoặc quyền sở hữu.'));
   return true;
  }
  function init(){
   const launch=$('dudu-fun-launch-v43');
-  if(launch)launch.hidden=!enabled();
+  if(launch)launch.hidden=false;
  }
  root.DuduFunUIV43=Object.freeze({init,render});
  init();
