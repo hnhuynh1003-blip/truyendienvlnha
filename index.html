@@ -743,6 +743,7 @@
       #npc-r9-filter-bar>*{min-width:0 !important;}
     }
 </style>
+  <link rel="stylesheet" href="css/phone-compact-v50.css?v=50-1">
 </head>
 <body>
 
@@ -912,20 +913,26 @@
       </div>
 
       <div id="phone-home-screen">
-        <div class="phone-widgets">
-          <div class="widget-level" id="phone-level-display">LV.1 - Kẻ Lang Bạt</div>
-          <div class="widget-exp-bar">
-            <div class="widget-exp-fill" id="phone-exp-fill"></div>
-          </div>
-          <div style="display:flex; justify-content:space-between; font-size:9px; color:#64748b;">
-            <span id="phone-exp-text">EXP: 0 / 100</span>
-            <span class="widget-currency" id="phone-currency-display">🪙 50 Xu</span>
-          </div>
-        </div>
-
-        <button type="button" id="player-avatar-home-v16" class="dudu-avatar-home-v16" style="display:none" onclick="openPhoneApp('profile')" aria-label="Xem hồ sơ và khung avatar">
+        <!-- V50 compact identity: the ONLY account / level / EXP / coins dashboard on phone. -->
+        <button type="button" id="player-avatar-home-v16" class="dudu-avatar-home-v16 dudu-v50-compact-profile" style="display:none" onclick="openPhoneApp('profile')" aria-label="Xem hồ sơ và khung avatar">
           <span id="phone-player-avatar-v16" class="dudu-player-avatar-v16" aria-hidden="true"></span>
-          <span><strong id="phone-player-name-v16"></strong><small id="dudu-v30-account-meta">Lv.1 · 50 Xu</small></span>
+          <span class="dudu-v50-account-details">
+            <span class="dudu-v50-account-head">
+              <strong id="phone-player-name-v16">Kẻ Lang Bạt</strong>
+              <span class="widget-currency" id="phone-currency-display">🪙 50 Xu</span>
+            </span>
+            <span class="phone-widgets">
+              <span class="dudu-v50-progress-meta">
+                <span class="widget-level" id="phone-level-display">LV.1 - Kẻ Lang Bạt</span>
+                <span id="phone-exp-text">EXP: 0 / 100</span>
+              </span>
+              <span class="widget-exp-bar" id="phone-exp-track-v50" role="progressbar" aria-label="Kinh nghiệm nhân vật" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                <span class="widget-exp-fill" id="phone-exp-fill"></span>
+              </span>
+            </span>
+            <!-- Sandbox continues using its original pill; live mode hides this duplicate. -->
+            <small id="dudu-v30-account-meta">Lv.1 · 🪙 50 Xu</small>
+          </span>
         </button>
         <div class="phone-app-grid" aria-label="Ứng dụng thường dùng">
           <button type="button" class="app-icon" onclick="openPhoneApp('inventory')" aria-label="Mở Kho Đồ">
@@ -5030,9 +5037,15 @@ document.getElementById('phone-home-screen').style.display = 'none';
 
       const fillEl = document.getElementById('phone-exp-fill');
       if (fillEl) fillEl.style.width = `${percent}%`;
+      const expTrack=document.getElementById('phone-exp-track-v50');
+      if(expTrack){
+        expTrack.setAttribute('aria-valuemax',String(expNeeded));
+        expTrack.setAttribute('aria-valuenow',String(Math.min(userProfile.exp,expNeeded)));
+        expTrack.title='EXP: '+userProfile.exp+' / '+expNeeded;
+      }
 
       const expTextEl = document.getElementById('phone-exp-text');
-      if (expTextEl) expTextEl.textContent = `EXP: ${userProfile.exp} / ${expNeeded}`;
+      if (expTextEl) expTextEl.textContent = userProfile.exp + '/' + expNeeded + ' EXP';
 
       const coinEl = document.getElementById('phone-currency-display');
       if (coinEl) coinEl.textContent = `🪙 ${userProfile.currency} Xu`;
