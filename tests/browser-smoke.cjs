@@ -586,7 +586,13 @@ async function main() {
       const char = novel.characters.find(c => c.name === 'Nhân vật thử nghiệm');
       getStoryProgress(novel.id).collectedCharacters[char.id] = { affinity: 12 };
       activeChatNovelId = novel.id;
+      // V56 requires an explicit selected role before any NPC contact.
+      const created=DuduRoleplayV56.upsert(DuduRoleplayV56.empty(),{
+        id:'traveler-qa',mode:'traveler',name:'Người kiểm thử',pronouns:'neutral'
+      },novel);
+      if(created.error||!v56Commit(created.state,novel.id))throw Error('V56 role setup failed');
       renderChatDropdown();
+      if(v56CurrentRole(novel.id)?.id!=='traveler-qa')throw Error('V56 role not selected');
       let remoteCalls = 0;
       let lastRequest = null;
       DuduAI.generate = async (purpose, instruction, messages) => {
