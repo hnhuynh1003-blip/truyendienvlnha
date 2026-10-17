@@ -37,7 +37,8 @@ test('V48 author-only modal and Firebase Storage upload never modify public Fire
  assert.match(html,/openEpubImportV48\(\)/);
  assert.match(html,/canEdit:\(\)=>canEditStories\(\)/);
  assert.match(html,/firebase-storage-compat\.js/);
- assert.match(html,/js\/epub-import-v48\.js\?v=48-1/);
+ assert.match(html,/js\/epub-import-v48\.js\?v=49-1/);
+ assert.match(html,/js\/epub-production-v49\.js\?v=49-1/);
  assert.match(js,/getIdTokenResult\(true\)/);
  assert.match(js,/claims\?\.admin!==true/);
  assert.match(js,/author_epub_drafts\//);
