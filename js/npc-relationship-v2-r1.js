@@ -3,10 +3,11 @@
  */
 (function(root,factory){
   'use strict';
-  const api=factory();
+  const api=factory(typeof module==='object'&&module.exports?
+    require('./world-items-v44-1.js'):root?.DuduWorldItemsV441);
   if(typeof module==='object'&&module.exports)module.exports=api;
   if(root)root.DuduNpcRelationshipV2=api;
-})(typeof window!=='undefined'?window:null,function(){
+})(typeof window!=='undefined'?window:null,function(worldPack){
   'use strict';
   const VERSION=1;
   const CONFIG=Object.freeze({maxAffinityGainPerGift:8,scoredGiftsPerNpcUtcDay:3,
@@ -85,7 +86,12 @@
     'dudu-multiverse-seal': Object.freeze(['COLLECTIBLE']),
     'dudu-first-season': Object.freeze(['COLLECTIBLE']),
     'dudu-founders-badge': Object.freeze(['COLLECTIBLE']),
-    'sss1': Object.freeze(['COLLECTIBLE'])
+    'sss1': Object.freeze(['COLLECTIBLE']),
+    // V44.1 additions have neutral, editorial-approved realm identity.
+    // Do not derive dangerous/favorite tags from an item's name.
+    ...Object.fromEntries((worldPack?.items||[]).map(x=>[
+      x.id,Object.freeze(['REALM_ITEM'])
+    ]))
   });
   // Manually reviewed item ID mapping; never infer from names or Gemini.
   const EDITORIAL_GIFT_TAGS=Object.freeze({

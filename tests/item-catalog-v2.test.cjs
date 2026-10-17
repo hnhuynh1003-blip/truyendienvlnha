@@ -60,6 +60,6 @@ test('catalog definitions stay immutable and random awards now use only the scop
   assert.ok(Object.isFrozen(catalog.byId('f1').acquisition));
   const html=fs.readFileSync(path.resolve(__dirname,'..','index.html'),'utf8');
   assert.match(html,/const MASTER_LOOT_TABLE = \[/,'Legacy data must remain for old owners');
-  assert.match(html,/DuduLootRules\.pick\(\{realmTag\}\)/);
+  assert.match(html,/DuduLootRules\.pick\(\{realmTag,seenIds\}\)/);
   assert.doesNotMatch(html,/MASTER_LOOT_TABLE\.filter\(item => item\.rank === targetRank\)/);
 });

@@ -14,7 +14,7 @@ test('DUDU market offers canonical COMMON items only: never SSS, DUDU, author it
  assert.equal(core.quotePurchase({itemId:'shop-sss',coins:1000,day}).ok,false);
  assert.equal(core.quotePurchase({itemId:'author-item-123',coins:1000,day}).ok,false);
  const realms=core.preview({tab:'REALM',realmTag:'CULTIVATION'});
- assert.equal(realms.length,5);
+ assert.equal(realms.length,20);
  assert.ok(realms.every(i=>i.scope==='REALM'&&i.realmTag==='CULTIVATION'));
  assert.deepEqual(core.preview({tab:'REALM',realmTag:'INVALID'}),[]);
  assert.equal(core.preview({tab:'DUDU'}).length,15);

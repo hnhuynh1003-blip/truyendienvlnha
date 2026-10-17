@@ -65,9 +65,9 @@ async function main() {
       legacyRandomCount:MASTER_LOOT_TABLE.length,
       firestoreWrites:window.__firestoreWrites.length
     }));
-    assert.equal(catalogSnapshot.count,70,'Catalog must load in the browser');
+    assert.equal(catalogSnapshot.count,160,'Expanded 160-item catalog must load in the browser');
     assert.deepEqual(catalogSnapshot.errors,[],'Catalog schema is valid');
-    assert.equal(catalogSnapshot.inventoryCount,2,'Defining 70 items must not grant inventory items');
+    assert.equal(catalogSnapshot.inventoryCount,2,'Defining 160 items must not grant inventory items');
     assert.equal(catalogSnapshot.legacyRandomCount,11,'Phase 1 must leave old loot pool untouched');
     assert.equal(catalogSnapshot.firestoreWrites,0,'Catalog has no backend writes');
     // V43: DUDU remains first contact even when no story NPC is unlocked.

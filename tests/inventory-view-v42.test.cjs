@@ -8,7 +8,7 @@ const css=fs.readFileSync(path.join(__dirname,'../css/inventory-v42.css'),'utf8'
 const model=require('../js/inventory-model-v42.js');
 
 test('V42: new inventory implementation is wired only for Sandbox; reader keeps legacy',()=>{
- assert.match(html,/src="js\/inventory-model-v42.js\?v=\d+"/);
+ assert.match(html,/src="js\/inventory-model-v42.js\?v=[\w-]+"/);
  assert.match(html,/src="js\/inventory-view-v42.js\?v=\d+"/);
  assert.ok(html.indexOf('src="js/inventory-model-v42.js')<
    html.indexOf('src="js/inventory-view-v42.js'));
