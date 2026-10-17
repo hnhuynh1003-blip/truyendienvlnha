@@ -185,5 +185,9 @@
   return Object.freeze({APP_NAME,ORIGIN,session,login,logout,status,
    list,post,report,inbox,markInboxRead,register,reports,moderate});
  }
- return Object.freeze({APP_NAME,ORIGIN,cleanScope,create});
+ // One secondary Firebase Auth session shared by the phone QA and story UI.
+ // Never instantiates Firebase or calls a network API merely by requesting it.
+ let shared=null;
+ function getShared(){if(!shared)shared=create();return shared}
+ return Object.freeze({APP_NAME,ORIGIN,cleanScope,create,getShared});
 });
