@@ -91,7 +91,13 @@
     const p=catalog.byId(id);
     if(!p||p.scope!=='COMMON'||p.unique||p.discardable===false)
      return {ok:false,reason:'invalid-catalog'};
-    extras.push({...p,instanceId:'supply-'+itemInstanceId+'-'+n,
+    const outputId='supply-'+itemInstanceId+'-'+n;
+    // V44.8: an old save/replayed supply receipt must not mint an
+    // instanceId that is already present in the physical warehouse.
+    if(next.some(x=>x?.instanceId===outputId)||
+       extras.some(x=>x.instanceId===outputId))
+     return {ok:false,reason:'duplicate-output-instance'};
+    extras.push({...p,instanceId:outputId,
      obtainedFrom:{kind:'EVENT',source:'DUDU_SUPPLY_V438',eventId:itemInstanceId}});
    }
    next=[...extras,...next];
