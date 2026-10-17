@@ -23,3 +23,12 @@
 - Trạng thái hiện tại: chỉ hoàn tất phần code và test; chưa được xác nhận ba UID, JWT admin, environment secrets, hoặc enable staging.
 
 Liên quan: [Quy trình kích hoạt staging](DUDU-V45-PILOT-STAGING-ACTIVATION.md).
+
+## V47.2 — Chẩn đoán lỗi "Không thể kết nối Worker staging"
+
+1. Trong giao diện `?sandbox=1&pilot=1&v=47-2` vào Điện thoại → Phòng Thử Nghiệm, bấm **Kiểm tra kết nối Worker**. Nút này gọi `GET https://dudu-ai-staging.dudu-studio-ai.workers.dev/v1/status` **không cần đăng nhập, không gửi Authorization và không thay đổi máy chủ**.
+2. Nếu kết quả **"Đã kết nối Worker staging"**, mạng/URL có thể truy cập được; nút **Kiểm tra quyền Pilot** vẫn phụ thuộc vào ba UID, namespace và workflow `enable`. Worker bật nhưng Pilot tắt phải trả lỗi rõ `pilot-disabled`, **không phải** `network-unavailable`.
+3. Nếu **"Chưa kết nối được Worker staging"**, mở trực tiếp địa chỉ `/v1/status` trong trình duyệt. Nếu trang báo không truy cập được thì kiểm tra Cloudflare Worker đã deploy hay chưa, DNS/firewall hoặc tên workers.dev. Nếu URL mở được JSON `{"service":"dudu-ai",...}` mà app vẫn lỗi, kiểm tra CORS/console theo nguồn `https://hnhuynh1003-blip.github.io`.
+4. Nếu **"Firebase chưa cấp được token"**, xác minh lại phiên đăng nhập ứng dụng Firebase Authentication. Đăng nhập Firebase CLI hay Firebase Console không cấp token cho phiên web Pilot.
+5. Hệ thống GitHub Actions tại thời điểm chuẩn bị tài liệu chưa có workflow `workflow_dispatch` kích hoạt Pilot. Push trang GitHub Pages **không** deploy Cloudflare Worker. **Không tự bật Pilot nếu chưa có đủ 3 UID khác nhau, claim admin và quyền Cloudflare.**
+
