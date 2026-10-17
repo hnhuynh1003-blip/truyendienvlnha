@@ -70,6 +70,6 @@ test('V54 all live NPC replies route through server AI and do not silently subst
  const chat=html.slice(start,end);
  assert.match(chat,/if \(scripted && !DUDU_NPC_AI_MODE\)/);
  assert.match(chat,/if\(DUDU_SPARK_PERSONAL_MODE && !DUDU_NPC_AI_MODE\)/);
- assert.match(chat,/await deliverNpcReply\(char,storyId,requestUser,requestChatKey\)/);
+ assert.match(chat,/await deliverNpcReply\(char,storyId,requestUser,requestChatKey,requestRole\)/);
  assert.match(html,/const DUDU_NPC_AI_MODE = !IS_SANDBOX_MODE/);
 });
