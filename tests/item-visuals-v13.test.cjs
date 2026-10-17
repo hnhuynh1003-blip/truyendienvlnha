@@ -49,10 +49,10 @@ test('SVG cannot interpolate unsafe item-provided HTML',()=>{
  const svg=decodeURIComponent(art.visual(fake).src.split(',')[1]);
  assert.doesNotMatch(svg,/onload|onerror|alert|<script|src=x/);
 });
-test('item art is Sandbox-only and preserves original inventory controls',()=>{
+test('item art works for sandbox and read-only live inventory without mutating ownership',()=>{
  assert.match(html,/src="js\/item-visuals-v13.js(?:\?v=[\w-]+)?"/);
  assert.match(html,/href="css\/item-visuals-v13.css"/);
- assert.match(html,/function renderSandboxItemArt\(element,item\)\{\s*if\(!IS_SANDBOX_MODE/);
+ assert.match(html,/function renderSandboxItemArt\(element,item\)\{\s*if\(!element\|\|!item\)return/);
  assert.match(html,/renderSandboxItemArt\(artwork,item\)/);
  assert.match(html,/renderSandboxItemArt\(icon,item\)/);
  const from=html.indexOf('function renderSandboxItemArt(');
