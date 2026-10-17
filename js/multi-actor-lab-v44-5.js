@@ -53,6 +53,9 @@
   const all=new Set(),receiptIds=new Set(),requestIds=new Set(),
    commentIds=new Set(),commentRequestIds=new Set();
   for(const item of raw.items){
+   if(!item||typeof item!=='object'){
+    errors.push('invalid-item');continue;
+   }
    if(!safeString(item?.instanceId)||all.has(item.instanceId)){
     errors.push('duplicate-or-invalid-instance');continue;
    }
@@ -71,6 +74,9 @@
     errors.push('unknown-item-owner');
   }
   for(const comment of raw.comments){
+   if(!comment||typeof comment!=='object'){
+    errors.push('invalid-comment');continue;
+   }
    if(!safeString(comment?.id)||commentIds.has(comment.id)||
     !knownActor(comment.authorId)||!safeString(comment.requestId)||
     commentRequestIds.has(comment.requestId)||
@@ -81,11 +87,15 @@
    commentRequestIds.add(comment.requestId);
   }
   for(const comment of raw.comments){
+   if(!comment||typeof comment!=='object')continue;
    if(comment.parentId&&(!commentIds.has(comment.parentId)||
     raw.comments.find(x=>x.id===comment.parentId)?.parentId))
     errors.push('invalid-reply');
   }
   for(const transfer of raw.transfers){
+   if(!transfer||typeof transfer!=='object'){
+    errors.push('invalid-receipt');continue;
+   }
    if(!safeString(transfer?.id)||receiptIds.has(transfer.id)||
     !knownActor(transfer.senderId)||!knownActor(transfer.recipientId)||
     transfer.senderId===transfer.recipientId||
@@ -109,6 +119,7 @@
     errors.push('returned-still-in-escrow');
   }
   for(const item of raw.items){
+   if(!item||typeof item!=='object')continue;
    if(item.holderType==='ESCROW'&&!raw.transfers.some(t=>
     t.id===item.holderId&&t.instanceId===item.instanceId&&t.status==='PENDING'))
     errors.push('orphaned-escrow');
