@@ -6,6 +6,35 @@
   'use strict';
   const WORKER_URL = 'https://dudu-ai-staging.dudu-studio-ai.workers.dev'; // Public endpoint; GEMINI_API_KEY stays secret in Cloudflare.
   let sandbox = false;
+  const DEFAULT_MODEL='gemini-3.5-flash-lite';
+  // Only text-only API calls; IDs are mirrored by a stricter server allowlist.
+  const MODELS=Object.freeze([
+    ['gemini-3.5-flash-lite','3.5 Flash-Lite · nhanh'],
+    ['gemini-3.1-flash-lite','3.1 Flash-Lite · nhẹ'],
+    ['gemini-3.6-flash','3.6 Flash · nhập vai'],
+    ['gemini-3.8-flash','3.8 Flash · mới'],
+    ['gemini-3-flash-preview','3 Flash Preview'],
+    ['gemini-2.5-flash-lite','2.5 Flash-Lite · cũ'],
+    ['gemini-2.5-flash','2.5 Flash · cũ']
+  ].map(([id,label])=>Object.freeze({id,label})));
+  function modelStorageKey(){
+    const uid=firebase?.auth?.()?.currentUser?.uid;
+    return uid&&!sandbox?'dudu-v2:'+encodeURIComponent(uid)+':global:npc-model':null;
+  }
+  function model(){
+    const key=modelStorageKey();
+    if(!key)return DEFAULT_MODEL;
+    try{
+      const saved=localStorage.getItem(key);
+      return MODELS.some(x=>x.id===saved)?saved:DEFAULT_MODEL;
+    }catch(_){return DEFAULT_MODEL;}
+  }
+  function setModel(id){
+    if(!MODELS.some(x=>x.id===id))return false;
+    const key=modelStorageKey();
+    if(!key)return false;
+    try{localStorage.setItem(key,id);return true;}catch(_){return false;}
+  }
   function base() {return typeof WORKER_URL==='string'?WORKER_URL.trim().replace(/\/+$/,''):'';}
   function init(isSandbox) {
     sandbox = !!isSandbox;
@@ -52,10 +81,12 @@
     }
   }
   function generate(purpose,instruction,messages){
-    return call('POST','/v1/generate',{purpose,instruction,messages});
+    return call('POST','/v1/generate',{
+      purpose,instruction,messages,...(purpose==='chat'?{model:model()}:{})
+    });
   }
   function status(){
     return call('GET','/v1/status');
   }
-  window.DuduAI={init,isConfigured,generate,status};
+  window.DuduAI={init,isConfigured,generate,status,model,setModel,models:MODELS};
 })();
