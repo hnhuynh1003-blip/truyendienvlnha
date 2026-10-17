@@ -1,0 +1,49 @@
+// DUDU V49 — FIRESTORE RULE SNIPPET FOR REVIEW, NOT FOR BLIND DEPLOYMENT.
+// Merge with the ACTUAL deployed Firestore Rules. Do not replace the existing
+// project rules with just this snippet, and always back up current rules first.
+//
+// Add inside: service cloud.firestore { match /databases/{database}/documents { ... } }
+// It uses unique function names so as not to collide with other rules.
+function epubIsAdminV49() {
+  return request.auth != null && request.auth.token.admin == true;
+}
+function epubOwnerV49(storyId) {
+  return epubIsAdminV49() &&
+    get(/databases/$(database)/documents/epub_stories_v49/$(storyId)).data.ownerUid == request.auth.uid;
+}
+match /epub_stories_v49/{storyId} {
+  // Unpublished drafts are visible only to verified Firebase administrators.
+  allow get, list: if epubIsAdminV49() ||
+    resource.data.status == 'published';
+  allow create: if epubIsAdminV49() &&
+    request.resource.data.ownerUid == request.auth.uid &&
+    request.resource.data.status == 'importing' &&
+    request.resource.data.chapterCount is int &&
+    request.resource.data.chapterCount >= 1 &&
+    request.resource.data.chapterCount <= 160 &&
+    request.resource.data.chapterIndex is list &&
+    request.resource.data.chapterIndex.size() == request.resource.data.chapterCount;
+  allow update: if epubIsAdminV49() &&
+    resource.data.ownerUid == request.auth.uid &&
+    request.resource.data.ownerUid == resource.data.ownerUid &&
+    request.resource.data.chapterCount == resource.data.chapterCount &&
+    request.resource.data.chapterIndex == resource.data.chapterIndex &&
+    ((resource.data.status == 'importing' && request.resource.data.status == 'draft') ||
+     (resource.data.status == 'draft' && request.resource.data.status == 'published'));
+  allow delete: if false;  // Explicit archival workflow required.
+  match /chapters/{chapterId} {
+    allow get, list: if epubIsAdminV49() ||
+      get(/databases/$(database)/documents/epub_stories_v49/$(storyId)).data.status == 'published';
+    allow create: if epubOwnerV49(storyId) &&
+      get(/databases/$(database)/documents/epub_stories_v49/$(storyId)).data.status == 'importing' &&
+      request.resource.data.id == chapterId &&
+      request.resource.data.title is string &&
+      request.resource.data.content is string &&
+      request.resource.data.content.size() <= 420000;
+    allow update, delete: if false;
+  }
+}
+// Important: author admin claims must be assigned by a trusted backend/Admin SDK.
+// The client checks admin for user feedback, but only deployed Rules enforce it.
+// Verify with Rules emulator: guest published read, guest private read denied,
+// reader write denied, admin import -> draft -> published, foreign UID blocked.
