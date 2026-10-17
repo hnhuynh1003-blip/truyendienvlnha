@@ -100,7 +100,7 @@
      status.textContent=message(res);return;
     }
     lastSnapshot.set(key,{comments:Array.isArray(res.comments)?res.comments:[],
-     uidHint:who.uidHint});
+     sessionRevision:who.sessionRevision});
     redraw();
    },'primary'));
    if(auth.canManagePilot){
@@ -147,12 +147,12 @@
      }
      requestId='v452-'+root.crypto.randomUUID();
     }
-    const uidHint=api.session().uidHint;
+    const sessionRevision=api.session().sessionRevision;
     submit.disabled=true;status.textContent='Đang gửi bình luận chung…';
     const result=await api.post({storyId,chapterId,requestId,
      parentId:lastReply?.key===key?lastReply.commentId:null,text});
     submit.disabled=false;
-    if(host.dataset.pilotScope!==key||uidHint!==api.session().uidHint)return;
+    if(host.dataset.pilotScope!==key||sessionRevision!==api.session().sessionRevision)return;
     if(!result.ok){
      status.textContent=message(result);return;
     }
@@ -164,14 +164,14 @@
     // a client-predicted comment before a server receipt exists.
     const refreshed=await api.list(storyId,chapterId);
     if(host.dataset.pilotScope===key&&refreshed.ok){
-     lastSnapshot.set(key,{comments:refreshed.comments||[],uidHint});
+     lastSnapshot.set(key,{comments:refreshed.comments||[],sessionRevision});
      redraw();
     }
    });
    body.append(form);
   }
   // Cache only belongs to verified Pilot session. No localStorage persistence.
-  const visible=auth.approved&&current?.uidHint===auth.uidHint&&
+  const visible=auth.approved&&current?.sessionRevision===auth.sessionRevision&&
    Array.isArray(current.comments)?current.comments:[];
   const listing=E('div','dudu-v452-list');
   if(!visible.length)listing.append(E('p','dudu-v452-empty',
