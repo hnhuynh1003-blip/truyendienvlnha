@@ -1,0 +1,27 @@
+/* V52 trusted economy status panels. Strictly scoped to Cyber Phone. */
+body.dudu-phone-v11 #cyber-phone .dudu-v52-status{
+ display:flex;flex-direction:column;align-items:stretch;gap:6px;
+ flex:none;min-width:0;padding:10px 11px;margin:7px 0;
+ border:1px solid #76b8ca6b;border-radius:13px;
+ background:linear-gradient(125deg,#0d2938df,#1d233eda);
+ color:#eaf7ff;font-size:11px;line-height:1.45;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v52-status strong{
+ font-size:11px;color:#9becf7;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v52-status small{
+ color:#c5cfeb;font-size:10px;overflow-wrap:anywhere;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v52-status .btn{
+ align-self:stretch;min-height:34px;touch-action:manipulation;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v52-item{
+ display:flex;align-items:center;gap:7px;min-height:30px;
+ padding:5px 0;border-bottom:1px solid #d7f6ff20;color:#e8e9f5;
+}
+body.dudu-phone-v11 #cyber-phone #dudu-v52-server-items{
+ max-height:36vh;overflow-y:auto;
+}
+@media(max-width:360px){
+ body.dudu-phone-v11 #cyber-phone .dudu-v52-status{padding:8px;margin:5px 0;}
+}
