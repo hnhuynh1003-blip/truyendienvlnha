@@ -61,5 +61,6 @@ test('Cloudflare gateway independently verifies Firebase JWT and limits cost',()
   assert.match(quota,/user_usage/);
   assert.match(config,/new_sqlite_classes/);
   assert.match(config,/AI_ENABLED = "false"/);
-  assert.doesNotMatch(html,/firebase-functions-compat|firebase-app-check-compat/);
+  assert.match(html,/firebase-functions-compat/,'V52 economy uses callable Functions independently of the AI gateway');
+  assert.doesNotMatch(html,/firebase\.functions\(\)\.httpsCallable\(['"]duduAiGenerate/);
 });
