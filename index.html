@@ -3290,10 +3290,18 @@
         panel.title = 'Thử nghiệm R3: các giai đoạn cao cần mốc truyện đã được xác minh.';
       } else {
         if(panel)panel.style.display='none';
-        if (char && unlocked[char.id]) {
-          affinityEl.textContent = `❤️ ${unlocked[char.id].affinity || 10}%`;
-        } else {
-          affinityEl.textContent = `❤️ 10%`;
+        const activeRole=v56CurrentRole(storyId);
+        if(!IS_SANDBOX_MODE){
+          // Production shows this ROLE's relationship, not the shared V55 NPC bond.
+          const relation=activeRole?DuduRoleplayV56.relationship(
+            v56State(storyId),activeRole.id,charId):null;
+          affinityEl.textContent=activeRole&&char?
+            '❤️ '+relation.affinity+'%':'❤️ —';
+          affinityEl.title='Thiện cảm nhập vai của danh tính đang chọn, riêng với NPC này';
+        }else if(char&&unlocked[char.id]){
+          affinityEl.textContent=`❤️ ${unlocked[char.id].affinity || 10}%`;
+        }else{
+          affinityEl.textContent='❤️ 10%';
         }
       }
       renderChatMessages(charId);
@@ -3963,22 +3971,26 @@
       renderCodexList();
 
       if (document.getElementById('phone-app-chat').style.display === 'flex') {
-        switchChatCharacter();
-        if (!chatHistories[chatKey(char.id)]) chatHistories[chatKey(char.id)] = [];
-        chatHistories[chatKey(char.id)].push({ role: 'user', text: `[Tôi vừa gửi tặng bạn món quà: ${item.name} (${item.rank})]` });
-        renderChatMessages(char.id);
-
-        const giftPrompt = `Người chơi vừa tặng bạn món quà: "${item.name}" (Phẩm cấp: ${item.rank}, Mô tả: ${item.desc}). Hãy phản hồi ngắn gọn lại theo đúng tính cách của bạn.`;
         const giftRole=v56CurrentRole(giftStory);
-        const giftChatKey = chatKey(char.id,giftStory,giftRole?.id);
+        const giftChatKey=giftRole?chatKey(char.id,giftStory,giftRole.id):null;
+        // Never create a "null" chat transcript or attach gifts to a different role.
         if(!giftRole||!giftChatKey)return;
-        const res = await callGeminiAIChat(char,chatHistories[giftChatKey],giftRole);
-        if (currentUsername !== giftUser || activeChatNovelId !== giftStory ||
-          v56CurrentRole(giftStory)?.id!==giftRole.id) return;
-        if (res.text) {
-          chatHistories[giftChatKey].push({ role: 'model', text: res.text });
+        switchChatCharacter();
+        const sentText=`[Tôi vừa gửi tặng bạn món quà: ${item.name} (${item.rank})]`;
+        if(!Array.isArray(chatHistories[giftChatKey]))chatHistories[giftChatKey]=[];
+        chatHistories[giftChatKey].push({role:'user',text:sentText});
+        saveChatHistories();
+        renderChatMessages(char.id);
+        const res=await callGeminiAIChat(char,chatHistories[giftChatKey],giftRole);
+        // A role switch, story switch or account switch cannot attach a late reply.
+        if(currentUsername!==giftUser||activeChatNovelId!==giftStory||
+           v56CurrentRole(giftStory)?.id!==giftRole.id)return;
+        if(res?.text&&Array.isArray(chatHistories[giftChatKey])){
+          chatHistories[giftChatKey].push({role:'model',text:res.text,
+            ...(window.DuduAI?.models?.some(m=>m.id===res.model)?{model:res.model}:{})});
           saveChatHistories();
-          if (document.getElementById('chat-character-selector').value === char.id) renderChatMessages(char.id);
+          if(document.getElementById('chat-character-selector')?.value===char.id)
+            renderChatMessages(char.id);
         }
       }
     }
