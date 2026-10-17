@@ -3286,6 +3286,96 @@ async function main() {
       discounted:true,couponSpent:true,noDouble:true,noWrites:true
     },'V43.8 functional tools, supplies, coupon, UI and quest integration');
 
+    // V43.9: upgraded warehouse, genuine buyback, chapter/realm escrow,
+    // story-gift journal, clear non-usable tool labels, account isolation.
+    const warehouseV439=await page.evaluate(()=>{
+      const previous=structuredClone(userProfile);
+      const wasPhoneOpen=document.getElementById('cyber-phone').style.display==='flex';
+      const previousRealm=novels[0]?.chapters?.[0]?.realmTag;
+      const previousStoryRealm=novels[0]?.realmTag;
+      const writes=window.__firestoreWrites.length;
+      const chapter=novels[0]?.chapters?.[0];
+      if(!chapter)return {error:'no-story-chapter'};
+      const rare={...DuduItemCatalog.byId('fantasy-ruins-seal'),
+       instanceId:'item-v439-rare',obtainedFrom:{
+        kind:'CHAPTER',storyId:novels[0].id,chapterId:chapter.id}};
+      const normal={...DuduItemCatalog.byId('common-biscuit'),
+       instanceId:'shop-v439-snack',obtainedFrom:{kind:'SHOP',source:'DUDU_MARKET'}};
+      const gift={...DuduItemCatalog.byId('common-bottled-water'),
+       instanceId:'shop-v439-gift',obtainedFrom:{kind:'SHOP',source:'DUDU_MARKET'}};
+      const prop={...DuduItemCatalog.byId('common-flashlight'),
+       instanceId:'shop-v439-prop',obtainedFrom:{kind:'SHOP',source:'DUDU_MARKET'}};
+      try{
+       chapter.realmTag='FANTASY';
+       novels[0].realmTag='FANTASY';
+       userProfile.inventory=[normal,gift,rare,prop];
+       userProfile.currency=100;
+       delete userProfile.inventoryTradeV439;
+       inventoryDetailSelection=null;
+       if(!wasPhoneOpen)togglePhone();
+       openPhoneApp('inventory');
+       const hub=document.getElementById('inventory-v439-hub');
+       const newLayout=hub.textContent.includes('KHO XUYÊN THẾ GIỚI')&&
+        hub.querySelectorAll('.dudu-v439-tab').length===4;
+       DuduInventoryViewV42.chooseCategory('ACTIVATABLE');
+       const activeOnly=document.querySelectorAll('#inventory-container .dudu-v42-slot').length===0;
+       DuduInventoryViewV42.chooseCategory('ALL');
+       const positions=[...document.querySelectorAll('#inventory-container .dudu-v42-slot')];
+       const hasRibbons=positions.some(x=>x.textContent.includes('⚖️ Ký gửi'))&&
+        positions.some(x=>x.textContent.includes('🪙 Bán'));
+       const propNotUseable=DuduInventoryTradeV439.actionStatus(prop,novels).useable===false;
+       const clickedSell=sellInventoryV439(normal);
+       const saleCount=userProfile.inventoryTradeV439.sold===1;
+       const sellValue=DuduInventoryTradeV439.saleValue(normal);
+       const paid=userProfile.currency===100+sellValue;
+       const listed=listAuctionV439(rare,130);
+       const missingInBag=!userProfile.inventory.includes(rare);
+       const escrow=userProfile.inventoryTradeV439.listings.length===1;
+       const auctionView=[...hub.querySelectorAll('.dudu-v439-tab')].find(x=>x.textContent.includes('Đấu giá'));
+       auctionView?.click();
+       const auctionUI=hub.textContent.includes('130 Xu')&&
+        !!hub.querySelector('.dudu-v439-lot button');
+       const cancelled=cancelAuctionV439(userProfile.inventoryTradeV439.listings[0].id);
+       const returned=userProfile.inventory[0]===rare;
+       const note='Cảm ơn thế giới này';
+       const giftSaved=giftStoryV439(gift,novels[0].id,chapter.id,note);
+       const giftNote=userProfile.inventoryTradeV439.history.some(h=>
+        h.action==='GIFT'&&h.note===note&&h.storyId===novels[0].id);
+       const giftRemoved=!userProfile.inventory.includes(gift);
+       const journalVisible=hub.textContent.includes(note);
+       const noRealAuctionIncome=userProfile.currency===100+sellValue;
+       const escapedOtherWorld=DuduInventoryTradeV439.storyGift({
+         inventory:[{...DuduItemCatalog.byId('fantasy-blood-gem'),
+          instanceId:'item-cross',obtainedFrom:{kind:'CHAPTER',
+           storyId:novels[0].id,chapterId:chapter.id}}],
+         itemInstanceId:'item-cross',stories:novels,storyId:novels[1]?.id||'not-found',
+         note:'wrong'}).ok===false;
+       return {newLayout,activeOnly,hasRibbons,propNotUseable,clickedSell,
+         saleCount,paid,listed,missingInBag,escrow,auctionUI,
+         cancelled,returned,giftSaved,giftNote,giftRemoved,journalVisible,
+         noRealAuctionIncome,escapedOtherWorld,
+         noWrites:window.__firestoreWrites.length===writes};
+      }finally{
+       userProfile=previous;
+       if(previousRealm===undefined)delete chapter.realmTag;
+       else chapter.realmTag=previousRealm;
+       if(previousStoryRealm===undefined)delete novels[0].realmTag;
+       else novels[0].realmTag=previousStoryRealm;
+       inventoryDetailSelection=null;
+       saveCurrentAccount();DuduInventoryViewV42.chooseCategory('ALL');
+       phoneHome();
+       if(!wasPhoneOpen&&document.getElementById('cyber-phone').style.display==='flex')
+        togglePhone();
+      }
+    });
+    assert.deepEqual(warehouseV439,{
+      newLayout:true,activeOnly:true,hasRibbons:true,propNotUseable:true,
+      clickedSell:true,saleCount:true,paid:true,listed:true,missingInBag:true,
+      escrow:true,auctionUI:true,cancelled:true,returned:true,giftSaved:true,
+      giftNote:true,giftRemoved:true,journalVisible:true,
+      noRealAuctionIncome:true,escapedOtherWorld:true,noWrites:true
+    },'V43.9 warehouse, trade, escrow, story gift and zero cloud grants');
+
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
     console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));
   } finally {

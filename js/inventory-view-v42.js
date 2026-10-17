@@ -186,6 +186,13 @@
   }else{
     fact('Chức năng RPG','Chưa kích hoạt trong V42');
   }
+  const tradeStatus=typeof args.tradeStatus==='function'?args.tradeStatus(entry.item):null;
+  if(tradeStatus){
+   fact('Trạng thái',tradeStatus.label);
+   if(tradeStatus.rare)fact('Thị trường hiếm',tradeStatus.auction?
+    'Đủ điều kiện ký gửi thử nghiệm':'Khóa giao dịch / chưa xác nhận nguồn gốc');
+   if(tradeStatus.buyback)fact('Giá thu mua Sandbox',tradeStatus.buyback+' Xu / món');
+  }
   if(detail.protected)fact('Sở hữu','Đồ bảo vệ · Không được vứt');
   // User-owned browser items are not proof of a server-verified relic.
   // verifiedCollectible is always false in this model: the museum has its
@@ -229,6 +236,68 @@
    const museum=make('button','btn dudu-v42-museum','Xem Bảo Tàng');
    museum.type='button';museum.addEventListener('click',()=>args.onMuseum());
    footer.append(museum);
+  }
+  if(tradeStatus?.buyback&&typeof args.onSell==='function'){
+   const sell=make('button','btn dudu-v439-sell','🪙 Bán · +'+tradeStatus.buyback+' Xu');
+   sell.type='button';sell.addEventListener('click',()=>{
+    if(!Array.isArray(args.inventory)||args.inventory[entry.index]!==entry.item)return;
+    if(!confirm('Bán 1 '+detail.name+' để nhận '+tradeStatus.buyback+' Xu Sandbox?'))return;
+    args.onSell(entry.item);
+   });footer.append(sell);
+  }
+  if(tradeStatus?.auction&&typeof args.onAuction==='function'){
+   const listing=make('details','dudu-v439-action-card');
+   listing.append(make('summary','','⚖️ Đưa vào đấu giá thử'));
+   const lbl=make('label','','Giá đề xuất (10–5000 Xu)');
+   const price=make('input','dudu-v439-ask');
+   price.type='number';price.min='10';price.max='5000';price.step='1';price.value='80';
+   lbl.append(price);
+   const notice=make('small','','Vật phẩm chuyển vào ký gửi. Chưa mở đặt giá thật hoặc thanh toán.');
+   const button=make('button','btn dudu-v439-list','Niêm yết thử');
+   button.type='button';button.addEventListener('click',()=>{
+    if(!Array.isArray(args.inventory)||args.inventory[entry.index]!==entry.item)return;
+    args.onAuction(entry.item,Number(price.value));
+   });
+   listing.append(lbl,notice,button);footer.append(listing);
+  }
+  if(tradeStatus?.giftTargets&&typeof args.onStoryGift==='function'&&
+    typeof args.storyGiftTargets==='function'){
+   const targets=args.storyGiftTargets(entry.item);
+   if(targets.length){
+    const gift=make('details','dudu-v439-action-card');
+    gift.append(make('summary','','💌 Tặng cho truyện · Ghi lời nhắn'));
+    const storyLabel=make('label','','Chọn truyện');
+    const story=make('select','dudu-v439-story-pick');
+    for(const target of targets){
+     const option=make('option','',target.title);option.value=target.id;story.append(option);
+    }
+    storyLabel.append(story);
+    const chapterLabel=make('label','','Chương (không bắt buộc)');
+    const chapter=make('select','dudu-v439-chapter-pick');
+    const refreshChapters=()=>{
+     chapter.replaceChildren();
+     const rootOption=make('option','','Cả truyện');rootOption.value='';chapter.append(rootOption);
+     const target=targets.find(x=>x.id===story.value);
+     for(const ch of target?.chapters||[]){
+      const option=make('option','',ch.title);option.value=ch.id;chapter.append(option);
+     }
+    };
+    story.addEventListener('change',refreshChapters);refreshChapters();
+    chapterLabel.append(chapter);
+    const noteLabel=make('label','','Lời nhắn riêng · tối đa 160 ký tự');
+    const note=make('textarea','dudu-v439-note');note.maxLength=160;note.rows=2;
+    note.placeholder='Viết lời nhắn khi tặng quà cho truyện...';
+    noteLabel.append(note);
+    gift.append(storyLabel,chapterLabel,noteLabel,
+     make('small','','Nhật ký thử nghiệm nội bộ, chưa phải bình luận công khai hoặc quà đến tác giả.'));
+    const button=make('button','btn dudu-v439-gift','Gửi quà Sandbox');
+    button.type='button';button.addEventListener('click',()=>{
+     if(!Array.isArray(args.inventory)||args.inventory[entry.index]!==entry.item)return;
+     if(!confirm('Dùng 1 '+detail.name+' làm quà trong nhật ký Sandbox?'))return;
+     args.onStoryGift(entry.item,story.value,chapter.value||null,note.value);
+    });
+    gift.append(button);footer.append(gift);
+   }
   }
   if(!detail.protected){
    const discard=make('button','btn btn-danger dudu-v42-discard',entry.count>1?'Vứt 1 vật phẩm':'Vứt vật phẩm');
@@ -296,6 +365,12 @@
    const badge=make('span','dudu-v27-slot-rarity',detail.rank);
    const label=make('span','dudu-v27-slot-name',detail.name);
    slot.append(art.container,badge,label);
+   const action=typeof args.tradeStatus==='function'?args.tradeStatus(entry.item):null;
+   const hint=action?.useable?'⚡ Dùng':action?.auction?'⚖️ Ký gửi':
+     action?.buyback?'🪙 Bán':action?.giftTargets?'💌 Tặng':
+     detail.protected?'🔒 Khóa':'📦 Lưu trữ';
+   const ribbon=make('span','dudu-v439-slot-hint',hint);
+   slot.append(ribbon);
    if(detail.usageStatus!=='NOT_IMPLEMENTED'){
     slot.classList.add('dudu-v43-tool-slot');
     const marker=make('span','dudu-v43-tool-marker',

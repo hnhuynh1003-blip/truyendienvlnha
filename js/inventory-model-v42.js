@@ -16,7 +16,7 @@
   const VERSION=42;
   const CATEGORIES=Object.freeze({
     ALL:'Tất cả',CONSUMABLE:'Tiêu hao',EQUIPMENT:'Trang bị',
-    MATERIAL:'Nguyên liệu',TOOL:'Công cụ',STORY_PROP:'Đạo cụ truyện',
+    MATERIAL:'Nguyên liệu',TOOL:'Dụng cụ',ACTIVATABLE:'Dùng được',STORY_PROP:'Đạo cụ truyện',
     COLLECTIBLE:'Kỷ vật',OTHER:'Khác'
   });
   const REALMS=Object.freeze({
@@ -149,7 +149,7 @@
     const search=typeof query==='string'?query.trim().toLocaleLowerCase('vi'):'';
     const entries=src.map((item,index)=>({item,index,detail:inspect(item)}))
       .filter(row=>row.detail&&
-        (cat==='ALL'||row.detail.category===cat)&&
+        (cat==='ALL'||(cat==='ACTIVATABLE'?row.detail.usageStatus!=='NOT_IMPLEMENTED':row.detail.category===cat))&&
         (rarity==='ALL'||row.detail.rank===rarity)&&
         (world==='ALL'||row.detail.realm===world)&&
         (story==='ALL'||(story==='GLOBAL'?!row.detail.storyId:row.detail.storyId===story))&&
@@ -235,7 +235,7 @@
     const story=typeof storyId==='string'?storyId:'ALL';
     const search=typeof query==='string'?query.trim().toLocaleLowerCase('vi'):'';
     const filtered=groups.filter(({detail})=>
-      (cat==='ALL'||detail.category===cat)&&
+      (cat==='ALL'||(cat==='ACTIVATABLE'?detail.usageStatus!=='NOT_IMPLEMENTED':detail.category===cat))&&
       (rarity==='ALL'||detail.rank===rarity)&&
       (world==='ALL'||detail.realm===world)&&
       (story==='ALL'||(story==='GLOBAL'?!detail.storyId:detail.storyId===story))&&

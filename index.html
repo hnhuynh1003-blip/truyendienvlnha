@@ -42,6 +42,7 @@
   <link rel="stylesheet" href="css/soul-link-v43.css?v=2">
   <link rel="stylesheet" href="css/quests-v43-7.css?v=1">
   <link rel="stylesheet" href="css/inventory-v43-8.css?v=1">
+  <link rel="stylesheet" href="css/inventory-v43-9.css?v=1">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -62,8 +63,10 @@
   <script src="js/quest-engine-v43-7.js?v=2"></script>
   <script src="js/dudu-fun-rules-v43.js?v=1"></script>
   <script src="js/story-market-v43.js?v=1"></script>
-  <script src="js/inventory-model-v42.js?v=8"></script>
-  <script src="js/inventory-view-v42.js?v=8"></script>
+  <script src="js/inventory-model-v42.js?v=9"></script>
+  <script src="js/inventory-trade-v43-9.js?v=1"></script>
+  <script src="js/inventory-hub-v43-9.js?v=1"></script>
+  <script src="js/inventory-view-v42.js?v=9"></script>
   <script src="js/item-visuals-v13.js?v=43-5-3b"></script>
   <script src="js/npc-relationship-v2-r1.js"></script>
   <script src="js/npc-gift-v2-r2.js"></script>
@@ -979,7 +982,7 @@
           </div>
           <div class="dudu-v438-quick">
             <span id="inventory-v438-capacity">Kho · 0/500</span>
-            <button type="button" onclick="DuduInventoryViewV42.chooseCategory('TOOL')">⚡ Công cụ</button>
+            <button type="button" onclick="DuduInventoryViewV42.chooseCategory('ACTIVATABLE')">⚡ Dùng được</button>
           </div>
           <input id="inventory-v42-category" type="hidden" value="ALL">
           <div id="inventory-v42-categories" class="dudu-v42-category-strip" role="group" aria-label="Lọc theo vai trò vật phẩm">
@@ -987,7 +990,8 @@
 <button type="button" data-category="CONSUMABLE" aria-pressed="false" onclick="DuduInventoryViewV42.chooseCategory('CONSUMABLE')">Tiêu hao</button>
 <button type="button" data-category="EQUIPMENT" aria-pressed="false" onclick="DuduInventoryViewV42.chooseCategory('EQUIPMENT')">Trang bị</button>
 <button type="button" data-category="MATERIAL" aria-pressed="false" onclick="DuduInventoryViewV42.chooseCategory('MATERIAL')">Nguyên liệu</button>
-<button type="button" data-category="TOOL" aria-pressed="false" onclick="DuduInventoryViewV42.chooseCategory('TOOL')">Công cụ</button>
+<button type="button" data-category="TOOL" aria-pressed="false" onclick="DuduInventoryViewV42.chooseCategory('TOOL')">Dụng cụ</button>
+<button type="button" data-category="ACTIVATABLE" aria-pressed="false" onclick="DuduInventoryViewV42.chooseCategory('ACTIVATABLE')">Dùng được</button>
 <button type="button" data-category="STORY_PROP" aria-pressed="false" onclick="DuduInventoryViewV42.chooseCategory('STORY_PROP')">Đạo cụ</button>
 <button type="button" data-category="COLLECTIBLE" aria-pressed="false" onclick="DuduInventoryViewV42.chooseCategory('COLLECTIBLE')">Kỷ vật</button>
 <button type="button" data-category="OTHER" aria-pressed="false" onclick="DuduInventoryViewV42.chooseCategory('OTHER')">Khác</button>
@@ -1002,6 +1006,7 @@
             </div>
           </details>
         </div>
+        <section id="inventory-v439-hub" aria-label="Quản lý và giao dịch kho Sandbox"></section>
         <section id="inventory-v12-detail" aria-live="polite" aria-label="Chi tiết vật phẩm"></section>
         <div id="inventory-container" aria-label="Các ô vật phẩm trong hành trang"></div>
         <button type="button" id="inventory-v42-more" hidden onclick="DuduInventoryViewV42.more()">Xem thêm vật phẩm</button>
@@ -4248,12 +4253,106 @@ document.getElementById('phone-home-screen').style.display = 'none';
       return true;
     }
 
+    // V43.9 · Sandbox-only physical inventory circulation.
+    // Escrow auctions have NO other-account bids or real payout.
+    function commitInventoryTradeV439(plan,headline,detail){
+      if(!IS_SANDBOX_MODE||!currentUsername||!plan?.ok)return false;
+      const before={inventory:userProfile.inventory,currency:userProfile.currency,
+        trade:userProfile.inventoryTradeV439,selected:inventoryDetailSelection};
+      try{
+        userProfile.inventory=plan.inventory;
+        userProfile.inventoryTradeV439=plan.state;
+        if(Number.isSafeInteger(plan.coins))userProfile.currency=plan.coins;
+        inventoryDetailSelection=null;
+        saveCurrentAccount();
+      }catch(_){
+        userProfile.inventory=before.inventory;
+        userProfile.currency=before.currency;
+        if(before.trade===undefined)delete userProfile.inventoryTradeV439;
+        else userProfile.inventoryTradeV439=before.trade;
+        inventoryDetailSelection=before.selected;
+        showSystemAlert('KHÔNG LƯU ĐƯỢC','Đã hoàn tác giao dịch, không mất vật phẩm hay Xu.');
+        return false;
+      }
+      renderInventory();
+      showSystemAlert(headline,detail);
+      return true;
+    }
+    function sellInventoryV439(item){
+      if(!IS_SANDBOX_MODE||!currentUsername)return false;
+      const plan=DuduInventoryTradeV439.sell({
+        inventory:userProfile.inventory,itemInstanceId:item?.instanceId,
+        coins:userProfile.currency,tradeState:userProfile.inventoryTradeV439
+      });
+      if(!plan.ok){
+        showSystemAlert('CHƯA THỂ BÁN',plan.reason==='daily-limit'?
+          'Hôm nay đã đạt 12 món bán.':'Không thể bán món không hợp lệ, đã khóa hoặc không còn sở hữu.');
+        return false;
+      }
+      return commitInventoryTradeV439(plan,'ĐÃ BÁN VẬT PHẨM',
+        item.name+' · +'+plan.price+' Xu Sandbox vào ví.');
+    }
+    function listAuctionV439(item,ask){
+      if(!IS_SANDBOX_MODE||!currentUsername)return false;
+      const plan=DuduInventoryTradeV439.list({
+        inventory:userProfile.inventory,itemInstanceId:item?.instanceId,
+        tradeState:userProfile.inventoryTradeV439,stories:novels,ask
+      });
+      if(!plan.ok){
+        showSystemAlert('KHÔNG THỂ NIÊM YẾT',
+          plan.reason==='listing-limit'?'Đã có đủ 8 lô ký gửi.':
+          plan.reason==='ask-invalid'?'Giá đề xuất phải là số nguyên từ 10 đến 5000 Xu.':
+          'Chỉ hỗ trợ đồ B–SSS nhặt ở chương đã xác định đúng thế giới và có thể chuyển nhượng.');
+        return false;
+      }
+      return commitInventoryTradeV439(plan,'ĐÃ KÝ GỬI THỬ',
+        item.name+' · '+ask+' Xu đề xuất. Chưa có trả giá thật; rút lô bất cứ lúc nào.');
+    }
+    function cancelAuctionV439(listingId){
+      if(!IS_SANDBOX_MODE||!currentUsername)return false;
+      const plan=DuduInventoryTradeV439.cancel({
+        inventory:userProfile.inventory,tradeState:userProfile.inventoryTradeV439,listingId
+      });
+      if(!plan.ok){
+        showSystemAlert('CHƯA THỂ RÚT LÔ',
+          plan.reason==='inventory-full'?'Kho đã đầy (500 món), hãy dọn trước.':
+          'Lô niêm yết không tồn tại hoặc vật phẩm đã nằm trong Kho.');
+        return false;
+      }
+      return commitInventoryTradeV439(plan,'ĐÃ RÚT LÔ',
+        'Vật phẩm ký gửi đã được hoàn về Kho, không thay đổi Xu.');
+    }
+    function giftStoryV439(item,storyId,chapterId,note){
+      if(!IS_SANDBOX_MODE||!currentUsername)return false;
+      const plan=DuduInventoryTradeV439.storyGift({
+        inventory:userProfile.inventory,itemInstanceId:item?.instanceId,
+        tradeState:userProfile.inventoryTradeV439,stories:novels,
+        storyId,chapterId,note
+      });
+      if(!plan.ok){
+        showSystemAlert('CHƯA THỂ TẶNG',
+          plan.reason==='story-mismatch'||plan.reason==='chapter-mismatch'?
+          'Truyện/chương không trùng với nguồn thế giới và vật phẩm đã sở hữu.':
+          'Vật phẩm không hợp lệ hoặc lời nhắn quá 160 ký tự.');
+        return false;
+      }
+      return commitInventoryTradeV439(plan,'ĐÃ GHI THIỆP QUÀ',
+        'Đã lưu lời nhắn tặng '+item.name+' vào nhật ký Sandbox cá nhân. Chưa chuyển quà hay bình luận công khai.');
+    }
+
     function renderInventory() {
       if(IS_SANDBOX_MODE&&window.DuduInventoryViewV42){
         const current=Array.isArray(userProfile.inventory)?userProfile.inventory:[];
         if(inventoryDetailSelection&&!current.includes(inventoryDetailSelection))inventoryDetailSelection=null;
         const heading=document.querySelector('#phone-app-inventory .phone-app-header span');
         if(heading)heading.textContent='Kho Xuyên Thế Giới';
+        const hub=document.getElementById('inventory-v439-hub');
+        window.DuduInventoryHubV439?.render({
+          host:hub,inventory:current,coins:userProfile.currency,
+          state:userProfile.inventoryTradeV439,stories:novels,
+          onCancel:cancelAuctionV439,
+          onFilter:category=>DuduInventoryViewV42.chooseCategory(category)
+        });
         const ready=DuduInventoryViewV42.render({
           inventory:current,selected:inventoryDetailSelection,stories:novels,art:DuduItemArtV13,
           onSelect(item){inventoryDetailSelection=item;renderInventory();},
@@ -4278,6 +4377,24 @@ document.getElementById('phone-home-screen').style.display = 'none';
           onUse(item){
             if(userProfile.inventory!==current)return false;
             return useFunctionItemV438(item);
+          },
+          tradeStatus(item){
+            return DuduInventoryTradeV439.actionStatus(item,novels);
+          },
+          storyGiftTargets(item){
+            return DuduInventoryTradeV439.storyTargets(item,novels);
+          },
+          onSell(item){
+            if(userProfile.inventory!==current)return false;
+            return sellInventoryV439(item);
+          },
+          onAuction(item,ask){
+            if(userProfile.inventory!==current)return false;
+            return listAuctionV439(item,ask);
+          },
+          onStoryGift(item,storyId,chapterId,note){
+            if(userProfile.inventory!==current)return false;
+            return giftStoryV439(item,storyId,chapterId,note);
           },
           onMuseum(){
             inventoryDetailSelection=null;
