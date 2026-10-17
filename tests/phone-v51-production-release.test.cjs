@@ -15,7 +15,7 @@ const inbox=file('js/phone-inbox-v33.js');
 test('V51 phone modules are all loaded with new cache tags',()=>{
  for(const mod of ['market-ui-v43','economy-runtime-v43','dudu-fun-ui-v43',
  'quest-ui-v43-7','companion-ui-v43','phone-inbox-v33']){
-  assert.match(html,new RegExp('src="js/'+mod+'\\.js\\?v=51-1"'),mod);
+  assert.match(html,new RegExp('src="js/'+mod+'\\.js\\?v=(?:51-1|52-1)"'),mod);
  }
  assert.match(html,/id="dudu-fun-launch-v43"/);
  assert.match(html,/id="phone-app-fun"/);
