@@ -3503,7 +3503,7 @@ async function main() {
         const storySeparated=DuduStoryCommentsV442.visible(
           userProfile.commentsV442,novels[0].id,null).length===1;
         const noCloud=window.__firestoreWrites.length===writes;
-        const noPublicBadge=chapter.textContent.includes('Bản thử nghiệm riêng tư');
+        const noPublicBadge=chapter.textContent.includes('nhật ký bình luận riêng của tài khoản');
         return {storyInitiallyCollapsed,storySaved,escaped,giftNoServer,
           chapterInitiallyCollapsed,chapterSaved,storySeparated,noCloud,noPublicBadge};
       }finally{
