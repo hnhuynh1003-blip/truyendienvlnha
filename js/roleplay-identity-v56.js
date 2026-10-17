@@ -13,6 +13,8 @@
    traveler:'Người lạc giới / qua đường',observer:'Người quan sát ngoài cuộc'});
  const PRONOUNS=Object.freeze({male:'Nam',female:'Nữ',neutral:'Không cố định'});
  const MAX_PROFILES=6;
+ const AVATAR_IDS=Object.freeze(['account','initials','anime-moon-blue',
+   'anime-moon-violet','anime-peach-court','anime-adventurer']);
  const clean=(v,n)=>String(typeof v==='string'?v:'').replace(/[\u0000-\u001f\u007f]/g,' ').trim().replace(/\s+/g,' ').slice(0,n);
  const validId=s=>typeof s==='string'&&/^[a-z0-9_-]{1,64}$/.test(s);
  const validScope=s=>typeof s==='string'&&s.length>0&&s.length<=160;
@@ -46,7 +48,8 @@
      const char=candidates(novel).find(c=>c.id===protagonistId);
      if(!char||char.name!==name)return null;
    }
-   return {id:item.id,mode:item.mode,name,pronouns:
+   return {id:item.id,mode:item.mode,name,
+     avatar:AVATAR_IDS.includes(item.avatar)?item.avatar:'account',pronouns:
      Object.hasOwn(PRONOUNS,item.pronouns)?item.pronouns:'neutral',
      backstory:item.mode==='main'?'':backstory,
      protagonistId:protagonistId||null};
@@ -169,7 +172,7 @@
    lines.push('- Tôn trọng tiến độ đọc; nếu chưa có bằng chứng, không khẳng định NPC đã quen biết người này.');
    return lines.join('\n');
  }
- return Object.freeze({MODES,PRONOUNS,MAX_PROFILES,key,empty,load,save,active,
+ return Object.freeze({MODES,PRONOUNS,AVATAR_IDS,MAX_PROFILES,key,empty,load,save,active,
    candidates,allowedModes,upsert,select,chatKey,legacyChatKey,memoryNpcId,
    relationship,recordReply,prompt});
 });
