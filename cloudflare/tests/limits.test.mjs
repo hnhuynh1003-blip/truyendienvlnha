@@ -5,9 +5,9 @@ import {USER_DAILY_LIMIT,GLOBAL_DAILY_LIMIT,MIN_INTERVAL_MS,validRequest,quotaFa
 test('UTC day rollover and fixed limits',()=>{
   assert.equal(utcDay(Date.parse('2026-10-15T23:59:00Z')),'2026-10-15');
   assert.equal(utcDay(Date.parse('2026-10-16T00:00:00Z')),'2026-10-16');
-  assert.equal(USER_DAILY_LIMIT,25);
-  assert.equal(GLOBAL_DAILY_LIMIT,200);
-  assert.equal(MIN_INTERVAL_MS,10000);
+  assert.equal(USER_DAILY_LIMIT,120);
+  assert.equal(GLOBAL_DAILY_LIMIT,250);
+  assert.equal(MIN_INTERVAL_MS,5000);
 });
 test('server validates chat schema and prevents unconstrained prompts',()=>{
   const input={purpose:'chat',instruction:'Nhập vai nhân vật',messages:[{role:'user',text:'Xin chào'}]};
@@ -29,11 +29,14 @@ test('global, per-user, cooldown and in-flight quota are separate',()=>{
   assert.equal(quotaFailure(empty,{calls:0},now),null);
 });
 test('request limits do not accept client-provided identity or custom model',()=>{
-  const input={purpose:'chat',instruction:'a',messages:[{role:'user',text:'b'}],
-    uid:'forged-user',model:'expensive-model'};
-  const parsed=validRequest(input);
+  const base={purpose:'chat',instruction:'a',messages:[{role:'user',text:'b'}],uid:'forged-user'};
+  const parsed=validRequest({...base,model:'gemini-3.8-flash'});
   assert.ok(parsed);
   assert.equal(parsed.uid,undefined);
-  assert.equal(parsed.model,undefined);
+  assert.equal(parsed.model,'gemini-3.8-flash');
   assert.equal(parsed.contents[0].parts[0].text,'b');
+  assert.equal(validRequest({...base,model:'expensive-model'}),null);
+  assert.equal(validRequest({...base,model:'../../../../model'}),null);
+  assert.equal(validRequest({...base,model:'gemini-3.1-pro-preview'}),null);
+  assert.equal(validRequest({...base,purpose:'assist',model:'gemini-3.8-flash'},true).model,'gemini-3.5-flash-lite');
 });
