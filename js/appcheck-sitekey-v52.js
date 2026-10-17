@@ -1,7 +1,9 @@
-/* DUDU V52 public App Check configuration.
- * Set this to the PUBLIC reCAPTCHA v3 site key registered for the Firebase web
- * app in Firebase Console > Security > App Check.
- * Do not put the reCAPTCHA SECRET key here. Blank means V52 fail-closed.
- * This is configuration only; no Firebase writes happen here.
+/* DUDU V52.2 — public Fraud Defense (reCAPTCHA Enterprise) App Check key.
+ * Create a score-based WEB key for hnhuynh1003-blip.github.io in the
+ * Google Cloud project truyendienvl, then register THAT key in Firebase
+ * App Check -> webtruyendien -> Fraud Defense.
+ * Insert only the PUBLIC reCAPTCHA Enterprise key below. Never publish an
+ * API secret, service-account key or legacy reCAPTCHA Classic secret.
+ * Empty key intentionally leaves trusted economy Functions fail-closed.
  */
-window.DUDU_RECAPTCHA_V3_SITE_KEY = '';
+window.DUDU_RECAPTCHA_ENTERPRISE_SITE_KEY = '';
