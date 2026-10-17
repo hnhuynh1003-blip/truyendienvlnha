@@ -49,6 +49,7 @@
   <link rel="stylesheet" href="css/story-comments-v44-2.css?v=1">
   <link rel="stylesheet" href="css/gifts-v44-3.css?v=1">
   <link rel="stylesheet" href="css/gift-picker-v44-3-1.css?v=1">
+  <link rel="stylesheet" href="css/multi-actor-lab-v44-5.css?v=1">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -88,6 +89,8 @@
   <script src="js/gift-picker-model-v44-3-1.js?v=1"></script>
   <script src="js/gift-picker-v44-3-1.js?v=2"></script>
   <script src="js/story-comments-ui-v44-2.js?v=3"></script>
+  <script src="js/multi-actor-lab-v44-5.js?v=1"></script>
+  <script src="js/multi-actor-lab-ui-v44-5.js?v=1"></script>
   <script src="js/npc-portrait-library-v1.js?v=40-1"></script>
   <script src="js/npc-anime-candidates-v14.js"></script>
   <script src="js/player-avatar-v16.js"></script>
@@ -924,6 +927,11 @@
           <button type="button" class="app-icon" onclick="openPhoneApp('author-mail')" aria-label="Mở Hộp thư tác giả">
             <div class="app-box" style="background:linear-gradient(125deg,#875b9b,#406685);">💌</div><div class="app-label">Hộp thư</div>
           </button>
+          <button type="button" class="app-icon" id="dudu-lab-launch-v445"
+            style="display:none" onclick="openPhoneApp('lab-v445')" aria-label="Mở phòng thử nghiệm ba nhân vật">
+            <div class="app-box" style="background:linear-gradient(125deg,#524ea4,#316f8d);">🧪</div>
+            <div class="app-label">Phòng thử</div>
+          </button>
           <button type="button" class="app-icon" onclick="openPhoneApp('museum')" aria-label="Mở Bảo Tàng">
             <div class="app-box" style="background:#b45309;">🏛️</div><div class="app-label">Bảo Tàng</div>
           </button>
@@ -1044,6 +1052,16 @@
           <span></span>
         </div>
         <div id="author-mail-v443-content" aria-live="polite"></div>
+      </div>
+
+      <!-- V44.5 isolated three-actor simulator. Not Firebase identities. -->
+      <div class="phone-sub-app" id="phone-app-lab-v445">
+        <div class="phone-app-header">
+          <button type="button" class="phone-back-btn" onclick="phoneHome()">‹</button>
+          <span>🧪 Phòng Thử Nghiệm</span>
+          <span></span>
+        </div>
+        <div id="lab-v445-content" aria-label="Phòng thử nghiệm độc lập" aria-live="polite"></div>
       </div>
 
       <!-- APP: BẢO TÀNG KỶ VẬT (chỉ dữ liệu sở hữu máy chủ) -->
@@ -3891,6 +3909,8 @@
     }
 
     function togglePhone() {
+      const labLaunch=document.getElementById('dudu-lab-launch-v445');
+      if(labLaunch)labLaunch.style.display=IS_SANDBOX_MODE?'flex':'none';
       const phone = document.getElementById('cyber-phone');
       const opened = phone.style.display !== 'flex';
       phone.style.display = opened ? 'flex' : 'none';
@@ -3936,6 +3956,7 @@ document.querySelectorAll('.phone-sub-app').forEach(el => el.style.display = 'no
     }
 
     function openPhoneApp(appName) {
+      if(appName==='lab-v445'&&!IS_SANDBOX_MODE)return;
       if(IS_SANDBOX_MODE&&appName!=='inventory'){inventoryDetailSelection=null;window.DuduInventoryViewV42?.close();}
             closeRedPacketV32();
 document.getElementById('phone-home-screen').style.display = 'none';
@@ -3958,6 +3979,11 @@ document.getElementById('phone-home-screen').style.display = 'none';
         startCooldownTicker();
       } else if (appName === 'author-mail') {
         renderAuthorMailV443();
+      } else if (appName === 'lab-v445') {
+        window.DuduMultiActorLabUIV445?.render({
+          host:document.getElementById('lab-v445-content'),
+          sandbox:IS_SANDBOX_MODE
+        });
       } else if (appName === 'museum') {
         renderMuseum();
       } else if (appName === 'fun') {

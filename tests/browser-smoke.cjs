@@ -1483,7 +1483,7 @@ async function main() {
     assert.equal(phoneDesktop.ariaExpanded,'true');
     assert.equal(phoneDesktop.ariaHidden,'false');
     assert.match(phoneDesktop.clock,/^\d{2}:\d{2}$/);
-    assert.equal(phoneDesktop.appCount,10,'V44.3 author mailbox is the tenth Sandbox phone app');
+    assert.equal(phoneDesktop.appCount,11,'V44.5 adds an isolated Sandbox testing room');
     assert.equal(phoneDesktop.nativeButtons,true);
     assert.ok(phoneDesktop.phoneWidth>=350&&phoneDesktop.phoneWidth<=390);
     assert.notEqual(phoneDesktop.cardRadius,'0px');
@@ -2267,7 +2267,7 @@ async function main() {
           renderPhoneWallpaperV27();
         }
       });
-      assert.equal(v30.apps,10,'Home includes 10 Sandbox shortcuts, including author mailbox');
+      assert.equal(v30.apps,11,'Home includes an isolated Sandbox lab shortcut');
       assert.equal(v30.dockCount,4,'Dock has only four primary apps');
       assert.equal(v30.visibleAppIds.some(s=>s.includes("openPhoneApp('profile')")),false);
       assert.equal(v30.visibleAppIds.some(s=>s.includes("openPhoneApp('codex')")),true);
@@ -3714,6 +3714,89 @@ async function main() {
       unchangedStorage:true,notice:true,active:true,navigatedClosed:true,
       noWrites:true
     },'V44.4 storage quota rollback, honest UI and navigation cleanup');
+
+    // V44.5: mobile Sandbox laboratory has independent persistent local data.
+    // Switching fictional actors, posting a gift, accepting and replaying it
+    // MUST NOT touch real userProfile, coins, inventory or Firebase writes.
+    const labV445=await page.evaluate(()=>{
+      const profileBefore=JSON.stringify(userProfile);
+      const profileStorageBefore=localStorage.getItem(scopedLocalKey('profile'));
+      const writes=window.__firestoreWrites.length;
+      const key=DuduMultiActorLabUIV445.key;
+      const old=localStorage.getItem(key);
+      const phone=document.getElementById('cyber-phone');
+      const wasOpen=phone.style.display==='flex';
+      try{
+        if(!wasOpen)togglePhone();
+        openPhoneApp('lab-v445');
+        const host=document.getElementById('lab-v445-content');
+        const rendered=host.textContent.includes('PHÒNG THỬ NGHIỆM')&&
+          host.textContent.includes('Độc giả A');
+        const storageSeparated=key!==scopedLocalKey('profile');
+        const start=JSON.parse(JSON.stringify(DuduMultiActorLabV445.initial()));
+        DuduMultiActorLabUIV445.reset();
+        const A=host.querySelector('.dudu-v445-actor[data-actor="A"]')
+          ?.getAttribute('aria-pressed')==='true';
+        const form=host.querySelector('.dudu-v445-composer');
+        form.querySelector('textarea').value='Thử gửi thiệp quà từ độc giả A';
+        form.querySelector('.dudu-v445-send-options select').value='lab-item-1';
+        form.requestSubmit();
+        const sent=JSON.parse(localStorage.getItem(key));
+        const pending=sent.transfers.length===1&&
+          sent.transfers[0].status==='PENDING'&&
+          sent.items.find(x=>x.instanceId==='lab-item-1')?.holderType==='ESCROW';
+        const stayedInMemory=host.textContent.includes('PENDING');
+        const uiRetry=host.querySelector('[data-action="retry"]');
+        uiRetry?.click();
+        const retry=JSON.parse(localStorage.getItem(key));
+        const noDuplicate=retry.transfers.length===1&&retry.comments.length===1;
+        host.querySelector('[data-actor="AUTHOR"]')?.click();
+        const authorView=host.querySelector('.dudu-v445-actor[data-actor="AUTHOR"]')
+          ?.getAttribute('aria-pressed')==='true';
+        const authorInbox=host.querySelector('.dudu-v445-mail [data-decision="ACCEPT"]')!==null;
+        host.querySelector('[data-decision="ACCEPT"]')?.click();
+        const accepted=JSON.parse(localStorage.getItem(key));
+        const transferred=accepted.transfers[0]?.status==='ACCEPTED'&&
+          accepted.items.find(x=>x.instanceId==='lab-item-1')?.holderId==='AUTHOR'&&
+          !accepted.items.some(x=>x.holderType==='ESCROW');
+        const audit=DuduMultiActorLabV445.audit(accepted).length===0;
+        host.querySelector('[data-action="offline"]')?.click();
+        const offline=JSON.parse(localStorage.getItem(key)).offline===true;
+        const offlineNoSend=host.querySelector('[data-action="send"]')?.disabled===true;
+        host.querySelector('[data-action="offline"]')?.click();
+        const online=JSON.parse(localStorage.getItem(key)).offline===false;
+        const resetButton=host.querySelector('.dudu-v445-reset');
+        resetButton?.click();
+        host.querySelector('.dudu-v445-reset')?.click();
+        const reset=JSON.parse(localStorage.getItem(key));
+        const original=reset.items.length===start.items.length&&
+          reset.comments.length===0&&reset.transfers.length===0;
+        openPhoneApp('inventory');
+        const warehouseUntouched=JSON.stringify(userProfile)===profileBefore;
+        const profileStorageUntouched=
+          localStorage.getItem(scopedLocalKey('profile'))===profileStorageBefore;
+        const noCloud=window.__firestoreWrites.length===writes;
+        const labViewWidth=host.getBoundingClientRect().width;
+        return {rendered,storageSeparated,A,pending,stayedInMemory,noDuplicate,
+          authorView,authorInbox,transferred,audit,offline,offlineNoSend,
+          online,original,warehouseUntouched,profileStorageUntouched,noCloud,
+          labViewWidth};
+      }finally{
+        if(old===null)localStorage.removeItem(key);
+        else localStorage.setItem(key,old);
+        phoneHome();
+        if(!wasOpen&&phone.style.display==='flex')togglePhone();
+      }
+    });
+    assert.deepEqual({...labV445,labViewWidth:0},{
+      rendered:true,storageSeparated:true,A:true,pending:true,
+      stayedInMemory:true,noDuplicate:true,authorView:true,authorInbox:true,
+      transferred:true,audit:true,offline:true,offlineNoSend:true,
+      online:true,original:true,warehouseUntouched:true,
+      profileStorageUntouched:true,noCloud:true,labViewWidth:0
+    },'V44.5 isolated actors, transfer lifecycle and Sandbox storage');
+    assert.ok(labV445.labViewWidth>0&&labV445.labViewWidth<400,
+      'Three-actor lab must fit inside the mobile phone');
 
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
     console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));
