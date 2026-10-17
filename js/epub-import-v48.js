@@ -208,12 +208,13 @@
   const cloudBtn=button('Lưu tệp EPUB gốc lên Firebase Storage',()=>run(async()=>{
    if(options.sandbox||!options.canEdit?.())throw Error('Chỉ tài khoản tác giả Firebase thật được lưu tệp');
    if(!state.parsed||!state.file)throw Error('Hãy chọn và kiểm tra EPUB trước');
+   if(!root.confirm('Tệp EPUB gốc sẽ lên Firebase Storage. Bạn đã kiểm tra Rules hiện hành chỉ cho phép tác giả được quyền truy cập, tài khoản có quyền admin đã xác minh và dự án đã bật Cloud Storage/Blaze? Nếu chưa, hãy chọn Hủy để không tải lên.'))return;
    status.textContent='Đang tải EPUB lên Firebase Storage…';
    const stored=await uploadOriginal(state.file,{
     uid:options.uid(),auth:options.auth(),storage:options.storage(),
     onProgress:p=>{status.textContent='Đang tải EPUB lên Firebase Storage: '+p+'%'}
    });
-   status.textContent='✅ EPUB đã lưu riêng trên Firebase Storage: '+stored.path+
+   status.textContent='✅ Đã tải EPUB lên Firebase Storage (quyền truy cập phụ thuộc Rules đã triển khai): '+stored.path+
      '. Chưa xuất bản thành chương cho độc giả; đây là kho bản thảo an toàn.';
   }));
   cloudBtn.hidden=!!options.sandbox;
