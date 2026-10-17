@@ -97,7 +97,8 @@ test('V45.1 A and B exchange actual SQLite comments only inside pilot',async()=>
   });
   assert.equal(registry.status,200,'server-admin registry preparation');
   const message={storyId:'story-01',chapterId:'chapter-01',parentId:null,
-   text:'Xin chào từ tài khoản A',requestId:'req_a_0001'};
+   text:'Xin chào từ tài khoản A',requestId:'req_a_0001',
+   displayName:'TÁC GIẢ TỰ XƯNG'};
   const first=await call(x.env,'/v1/comments/create',a,message);
   assert.equal(first.status,200);
   const replay=await call(x.env,'/v1/comments/create',a,message);
@@ -107,6 +108,8 @@ test('V45.1 A and B exchange actual SQLite comments only inside pilot',async()=>
   assert.equal(readB.status,200);
   assert.equal(readB.data.comments.length,1);
   assert.equal(readB.data.comments[0].text,message.text);
+  assert.equal(readB.data.comments[0].name,'Độc giả A',
+   'spoofed display name must be replaced with verified role');
   assert.equal(Object.hasOwn(readB.data.comments[0],'uid'),false);
   const reply=await call(x.env,'/v1/comments/create',b,{
    storyId:'story-01',chapterId:'chapter-01',
@@ -115,6 +118,7 @@ test('V45.1 A and B exchange actual SQLite comments only inside pilot',async()=>
   assert.equal(reply.status,200);
   const readA=await call(x.env,path,a);
   assert.equal(readA.data.comments.length,2);
+  assert.equal(readA.data.comments[1].name,'Độc giả B');
   assert.equal(x.stores.size,1);
   assert.equal([...x.stores.keys()][0],'comments-pilot-v45-separate-qa');
  }finally{x.close()}
