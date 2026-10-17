@@ -53,6 +53,7 @@
   <link rel="stylesheet" href="css/pilot-v45-1.css?v=45-1-r2">
   <link rel="stylesheet" href="css/story-comments-pilot-v45-2.css?v=45-2">
   <link rel="stylesheet" href="css/sandbox-discussion-v46.css?v=46-1">
+  <link rel="stylesheet" href="css/epub-import-v48.css?v=48-1">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -62,6 +63,8 @@
   <!-- FIREBASE SDK COMPAT -->
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-storage-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
   <script src="js/auth-v2.js"></script>
   <script src="js/ai-proxy.js"></script>
@@ -99,6 +102,7 @@
   <script src="js/story-comments-pilot-v45-2.js?v=45-2"></script>
   <script src="js/sandbox-discussion.js?v=46-1"></script>
   <script src="js/sandbox-discussion-ui.js?v=46-1"></script>
+  <script src="js/epub-import-v48.js?v=48-1"></script>
   <script src="js/npc-portrait-library-v1.js?v=40-1"></script>
   <script src="js/npc-anime-candidates-v14.js"></script>
   <script src="js/player-avatar-v16.js"></script>
@@ -764,6 +768,7 @@
       <button type="button" id="player-avatar-header-v16" class="dudu-player-avatar-v16" style="display:none" onclick="openPlayerAvatarEditorV16()" aria-label="Đổi ảnh và khung tài khoản"></button>
       <span class="role-badge reader" id="role-toggle-btn" onclick="toggleUserRole()">📖 Độc Giả</span>
       <button class="btn btn-primary admin-only" onclick="openStoryModal()">+ Tạo</button>
+      <button type="button" class="btn admin-only" onclick="openEpubImportV48()" title="Nhập EPUB vào Sandbox hoặc lưu bản thảo riêng trên Firebase">📘 EPUB</button>
     </div>
   </header>
 
@@ -1591,6 +1596,14 @@
     </div>
   </div>
 
+  <!-- V48 EPUB author import; gated again in JavaScript and by Firebase Storage rules. -->
+  <div class="modal-overlay" id="epub-import-modal">
+    <div class="modal-card">
+      <h2>📘 Nhập EPUB</h2>
+      <div id="epub-import-content" aria-live="polite"></div>
+    </div>
+  </div>
+
   <!-- MODAL: TẠO / SỬA TRUYỆN -->
   <div class="modal-overlay" id="story-modal">
     <div class="modal-card">
@@ -2101,7 +2114,7 @@
     }
 
     function closeModals() {
-      ['story-modal', 'chapter-modal', 'char-modal', 'auth-modal', 'gift-modal', 'author-item-modal', 'author-release-modal'].forEach(id => {
+      ['story-modal', 'chapter-modal', 'char-modal', 'auth-modal', 'gift-modal', 'author-item-modal', 'author-release-modal', 'epub-import-modal'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.style.display = 'none';
       });
@@ -6273,6 +6286,21 @@ document.getElementById('phone-home-screen').style.display = 'none';
       if(!id||!DuduAuthorItems.list(story).some(item=>item.id===id))return;
       if(!pendingChapterStoryItemIds.includes(id))pendingChapterStoryItemIds.push(id);
       renderChapterStoryItemLinks();
+    }
+
+    function openEpubImportV48() {
+      if(!canEditStories())return;
+      window.DuduEpubImportV48?.open({
+        novels,
+        author:userProfile.name||'Tác giả',
+        sandbox:IS_SANDBOX_MODE,
+        canEdit:()=>canEditStories(),
+        saveDB:()=>saveDB(),
+        onSaved:()=>{renderHome();updatePhoneUI()},
+        uid:()=>DuduAuth.uid(),
+        auth:()=>firebase.auth(),
+        storage:()=>firebase.storage()
+      });
     }
 
     function openStoryModal() {
