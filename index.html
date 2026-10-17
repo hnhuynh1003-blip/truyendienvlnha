@@ -45,6 +45,7 @@
   <link rel="stylesheet" href="css/inventory-v43-9.css?v=1">
   <link rel="stylesheet" href="css/gift-recipient-v44.css?v=1">
   <link rel="stylesheet" href="css/inventory-compact-v44.css?v=1">
+  <link rel="stylesheet" href="css/world-collection-v44-1.css?v=1">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -60,12 +61,14 @@
   <script src="js/npc-chat-lite.js"></script>
   <script src="js/story-memory.js"></script>
   <script src="js/npc-memory-v2.js"></script>
-  <script src="js/item-catalog-v2.js"></script>
+  <script src="js/world-items-v44-1.js?v=1"></script>
+  <script src="js/item-catalog-v2.js?v=44-1"></script>
+  <script src="js/world-collection-v44-1.js?v=1"></script>
   <script src="js/economy-core-v43.js?v=6"></script>
   <script src="js/quest-engine-v43-7.js?v=2"></script>
   <script src="js/dudu-fun-rules-v43.js?v=1"></script>
   <script src="js/story-market-v43.js?v=1"></script>
-  <script src="js/inventory-model-v42.js?v=10"></script>
+  <script src="js/inventory-model-v42.js?v=44-1"></script>
   <script src="js/inventory-trade-v43-9.js?v=2"></script>
   <script src="js/gift-recipient-v44.js?v=1"></script>
   <script src="js/inventory-hub-v43-9.js?v=2"></script>
@@ -95,7 +98,7 @@
   <script src="js/player-avatar-sync-v17.js"></script>
   <script src="js/player-avatar-staging-v22.js"></script>
   <script src="js/player-avatar-sync-ui-v22.js"></script>
-  <script src="js/loot-rules-v2.js"></script>
+  <script src="js/loot-rules-v2.js?v=44-1"></script>
   <script src="js/loot-cadence-v42.js?v=1"></script>
   <script src="js/item-actions-v43.js?v=1"></script>
   <script src="js/functional-items-v43-8.js?v=1"></script>
@@ -977,6 +980,7 @@
         </div>
 
         <section id="inventory-v439-hub" aria-label="Quản lý và giao dịch kho Sandbox"></section>
+        <section id="inventory-v441-collection" class="dudu-v441-panel" aria-label="Sổ Sưu Tập Thế Giới" hidden></section>
         <div id="inventory-v2-toolbar" class="dudu-v27-inventory-toolbar dudu-v42-toolbar" style="display:none;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 8px;">
           <div class="dudu-v42-search-row">
             <input id="inventory-v2-search" type="search" placeholder="Tìm tên hoặc mã vật phẩm..."
@@ -987,7 +991,8 @@
           </div>
           <div class="dudu-v438-quick">
             <span id="inventory-v438-capacity">Kho · 0/500</span>
-            <button type="button" onclick="DuduInventoryViewV42.chooseCategory('ACTIVATABLE')">⚡ Dùng được</button>
+            <button type="button" onclick="DuduInventoryViewV42.chooseCategory('ACTIVATABLE')">⚡ Dùng</button>
+            <button type="button" class="dudu-v441-open" title="Sổ Sưu Tập Thế Giới" aria-label="Mở Sổ Sưu Tập Thế Giới" aria-controls="inventory-v441-collection" onclick="DuduWorldCollectionV441.toggle()">📚</button>
           </div>
           <input id="inventory-v42-category" type="hidden" value="ALL">
           <div id="inventory-v42-categories" class="dudu-v42-category-strip" role="group" aria-label="Lọc theo vai trò vật phẩm">
@@ -2076,6 +2081,11 @@
     function saveCurrentAccount() {
       if (!currentUsername || (!IS_SANDBOX_MODE && (!DuduAuth.isReady() || DuduAuth.uid() !== currentUsername))) return;
 
+      // Additive, local-only collection memory: never mint server rewards.
+      if(IS_SANDBOX_MODE&&window.DuduWorldCollectionV441){
+        userProfile.collectionV441=DuduWorldCollectionV441.record(
+          userProfile.collectionV441,userProfile.inventory);
+      }
       const localKey = IS_SANDBOX_MODE ? scopedLocalKey('profile') : `profile_${currentUsername}`;
       localStorage.setItem(localKey, JSON.stringify(userProfile));
 
@@ -3918,6 +3928,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
         renderChatDropdown();
       } else if (appName === 'inventory') {
         window.DuduInventoryHubV439?.reset();
+        window.DuduWorldCollectionV441?.reset();
         renderInventory();
         startCooldownTicker();
       } else if (appName === 'museum') {
@@ -4352,6 +4363,12 @@ document.getElementById('phone-home-screen').style.display = 'none';
         const heading=document.querySelector('#phone-app-inventory .phone-app-header span');
         if(heading)heading.textContent='Kho Xuyên Thế Giới';
         const hub=document.getElementById('inventory-v439-hub');
+        userProfile.collectionV441=window.DuduWorldCollectionV441?.record(
+          userProfile.collectionV441,current)||userProfile.collectionV441;
+        window.DuduWorldCollectionV441?.render({
+          host:document.getElementById('inventory-v441-collection'),
+          inventory:current,history:userProfile.collectionV441
+        });
         const mode=window.DuduInventoryHubV439?.active()||'overview';
         window.DuduInventoryHubV439?.render({
           host:hub,inventory:current,coins:userProfile.currency,
@@ -5080,7 +5097,9 @@ document.getElementById('phone-home-screen').style.display = 'none';
         showSystemAlert('KHO ĐỒ ĐÃ ĐẦY','Kho chứa tối đa 500 vật phẩm. Dọn một ô trước khi nhặt tiếp.');
         return false;
       }
-      const result = DuduLootRules.pick({realmTag});
+      const seenIds=[...new Set([...(Array.isArray(userProfile.lootSeenV441)?
+        userProfile.lootSeenV441:[]),...userProfile.inventory.map(x=>x?.id)])];
+      const result = DuduLootRules.pick({realmTag,seenIds});
       const reward = result && DuduLootRules.rewardFor(result.rank);
       if (!result || !reward) {
         showSystemAlert("TẦN SỐ RƠI ĐỒ LỖI", "Chưa có vật phẩm phù hợp để thu thập. Bạn chưa mất lượt.");
@@ -5099,6 +5118,12 @@ document.getElementById('phone-home-screen').style.display = 'none';
       userProfile.inventory ||= [];
       if (lootKey) userProfile.lootedChapters[lootKey] = DuduLootCadenceV42.nextClaimValue(now);
       userProfile.inventory.unshift(copy);
+      if(IS_SANDBOX_MODE){
+        userProfile.lootSeenV441=[...new Set([...(Array.isArray(userProfile.lootSeenV441)?
+          userProfile.lootSeenV441:[]),copy.id])].slice(-160);
+        userProfile.collectionV441=window.DuduWorldCollectionV441?.record(
+          userProfile.collectionV441,userProfile.inventory)||userProfile.collectionV441;
+      }
       userProfile.currency = (Number(userProfile.currency)||0) + reward.coins;
       if (!isFreeFromChapter) {
         lastLootTimestamp = now;

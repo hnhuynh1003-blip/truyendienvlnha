@@ -4,13 +4,13 @@ const fs=require('node:fs');
 const path=require('node:path');
 const catalog=require('../js/item-catalog-v2.js');
 
-test('approved catalog has exactly 25 common, 30 realm and 15 DUDU items',()=>{
-  assert.equal(catalog.items.length,70);
+test('V44.1 catalog has 25 common, 120 realm and 15 DUDU items',()=>{
+  assert.equal(catalog.items.length,160);
   assert.equal(catalog.common.length,25);
-  assert.equal(catalog.realms.length,30);
+  assert.equal(catalog.realms.length,120);
   assert.equal(catalog.souvenirs.length,15);
   assert.equal(catalog.validate().length,0,catalog.validate().join('; '));
-  for(const realmTag of catalog.REALM_TAGS) assert.equal(catalog.list({scope:'REALM',realmTag}).length,5);
+  for(const realmTag of catalog.REALM_TAGS) assert.equal(catalog.list({scope:'REALM',realmTag}).length,20);
 });
 test('permanent IDs and legacy objects are preserved without editing inventories',()=>{
   const oldIds=['f1','f2','e2','e3','d1','c1','b1','b2','s1','sss1'];
@@ -22,7 +22,7 @@ test('permanent IDs and legacy objects are preserved without editing inventories
   assert.equal(catalog.byId('e1').name,'Mì Tôm Cay Dung Thành');
   assert.equal(catalog.byId('e1').archived,true);
   assert.equal(catalog.byId('missing-item'),null);
-  assert.equal(new Set(catalog.items.map(x=>x.id)).size,70);
+  assert.equal(new Set(catalog.items.map(x=>x.id)).size,160);
   assert.ok(catalog.items.every(x=>x.id===x.itemId));
 });
 test('DUDU memorabilia are collectible by milestone/event, not random loot or gifts',()=>{
@@ -44,8 +44,8 @@ test('preview drop pools do not leak relics between dimensions',()=>{
   assert.ok(general.every(x=>x.scope==='COMMON'));
   assert.equal(general.length,25);
   const scifi=catalog.previewDropPool({realmTag:'SCIFI'});
-  assert.equal(scifi.length,30);
-  assert.equal(scifi.filter(x=>x.scope==='REALM').length,5);
+  assert.equal(scifi.length,43);
+  assert.equal(scifi.filter(x=>x.scope==='REALM').length,18);
   assert.ok(scifi.some(x=>x.id==='s1'));
   assert.equal(scifi.some(x=>x.id==='fantasy-ruins-seal'),false);
   assert.ok(catalog.previewDropPool({realmTag:'SCIFI',rank:'S'}).some(x=>x.id==='s1'));

@@ -5,12 +5,14 @@
  */
 (function (root, factory) {
   'use strict';
-  const catalog = factory();
+  const pack=typeof module==='object'&&module.exports?
+    require('./world-items-v44-1.js'):root?.DuduWorldItemsV441;
+  const catalog = factory(pack);
   if (typeof module === 'object' && module.exports) module.exports = catalog;
   if (root) root.DuduItemCatalog = catalog;
-})(typeof window !== 'undefined' ? window : null, function () {
+})(typeof window !== 'undefined' ? window : null, function (worldPack) {
   'use strict';
-  const VERSION = 2;
+  const VERSION = 3;
   const RANKS = Object.freeze(['F','E','D','C','B','A','S','SS','SSS']);
   const REALM_TAGS = Object.freeze(['URBAN','APOCALYPSE','CULTIVATION','FANTASY','SCIFI','HORROR']);
 
@@ -616,8 +618,14 @@
     });
   }
   const common = COMMON_SOURCE.map(row => item(...row,'COMMON',null,'RANDOM'));
-  const realms = REALM_TAGS.flatMap(tag =>
+  const legacyRealms = REALM_TAGS.flatMap(tag =>
     REALM_SOURCE[tag].map(row => item(...row,'REALM',tag,'RANDOM')));
+  // New world pack is additive; legacy 70 IDs and their metadata are unchanged.
+  const additions=(worldPack?.items||[]).map(x=>item(
+    x.id,x.name,x.rank,x.type,x.icon,x.description,
+    'REALM',x.realmTag,x.method,{rpgRole:x.rpgRole,worldPack:'V44.1'}
+  ));
+  const realms = [...legacyRealms,...additions];
   const souvenirs = DUDU_SOURCE.map(row => {
     const [id,name,rank,icon,desc,method] = row;
     return item(id,name,rank,'ITEM',icon,desc,'DUDU',null,method,
@@ -668,11 +676,18 @@
       if(x.scope!=='REALM'&&x.realmTag!==null)errors.push('Unexpected realm tag: '+x.id);
       if(x.scope==='DUDU'&&(x.acquisition.method==='RANDOM'||x.giftable||x.discardable||!x.unique))errors.push('Invalid collector guard: '+x.id);
     }
-    if(scopes.COMMON!==25||scopes.REALM!==30||scopes.DUDU!==15)errors.push('Unexpected catalog counts: '+JSON.stringify(scopes));
-    if(items.length!==70)errors.push('Expected exactly 70 records');
+    if(scopes.COMMON!==25||scopes.REALM!==120||scopes.DUDU!==15)errors.push('Unexpected catalog counts: '+JSON.stringify(scopes));
+    if(items.length!==160)errors.push('Expected exactly 160 records');
+    for(const tag of REALM_TAGS){
+      const inRealm=realms.filter(x=>x.realmTag===tag);
+      if(inRealm.length!==20)errors.push('Unexpected realm size: '+tag);
+      if(inRealm.filter(x=>x.worldPack==='V44.1'&&x.acquisition.method==='CHAPTER_EVENT').length!==2)
+        errors.push('Invalid chapter-gated count: '+tag);
+    }
     return Object.freeze(errors);
   }
   return Object.freeze({VERSION,RANKS,REALM_TAGS,items,common:Object.freeze(common),
     realms:Object.freeze(realms),souvenirs:Object.freeze(souvenirs),
+    legacyItemCount:70,worldExpansionCount:additions.length,
     byId,list,previewDropPool,validate});
 });

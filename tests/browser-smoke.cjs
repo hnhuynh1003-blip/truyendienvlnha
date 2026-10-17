@@ -3411,6 +3411,60 @@ async function main() {
       noRealAuctionIncome:true,escapedOtherWorld:true,noWrites:true
     },'V43.9 warehouse, trade, escrow, story gift and zero cloud grants');
 
+    // V44.1: compact world collection should be hidden until requested,
+    // count actual catalog discoveries, retain progress when item is removed
+    // and never write server/cloud grants.
+    const worldV441=await page.evaluate(()=>{
+      const previous=structuredClone(userProfile);
+      const wasOpen=document.getElementById('cyber-phone').style.display==='flex';
+      const writes=window.__firestoreWrites.length;
+      try{
+        if(!wasOpen)togglePhone();
+        userProfile.inventory=[{
+          ...DuduItemCatalog.byId('cult-v441-01'),instanceId:'v441-existing',
+          obtainedFrom:{kind:'CHAPTER',storyId:'v441-source',chapterId:'c1'}
+        }];
+        userProfile.currency=18;
+        delete userProfile.collectionV441;
+        openPhoneApp('inventory');
+        const panel=document.getElementById('inventory-v441-collection');
+        const hiddenByDefault=panel.hidden===true;
+        const catalogSize=DuduItemCatalog.items.length===160&&
+          DuduItemCatalog.list({scope:'REALM',realmTag:'CULTIVATION'}).length===20;
+        document.querySelector('.dudu-v441-open')?.click();
+        const revealed=panel.hidden===false;
+        const buttons=panel.querySelectorAll('.dudu-v441-world');
+        const worlds=buttons.length===6;
+        const cultivation=[...buttons].find(x=>x.textContent.includes('Tu tiên'));
+        cultivation?.click();
+        const catalog20=panel.querySelectorAll('.dudu-v441-collectible').length===20;
+        const oneFound=panel.querySelectorAll('.dudu-v441-collectible.found').length===1;
+        const localOnly=userProfile.collectionV441?.found?.CULTIVATION?.includes('cult-v441-01')===true;
+        userProfile.inventory=[];
+        renderInventory();
+        const retained=panel.querySelectorAll('.dudu-v441-collectible.found').length===1;
+        const noGrantedRelic=DuduItemCatalog.previewDropPool({realmTag:'CULTIVATION'})
+          .every(x=>x.acquisition.method==='RANDOM');
+        DuduWorldCollectionV441.toggle();
+        const closed=panel.hidden===true;
+        return {hiddenByDefault,catalogSize,revealed,worlds,catalog20,oneFound,
+          localOnly,retained,noGrantedRelic,closed,
+          noWrites:window.__firestoreWrites.length===writes};
+      }finally{
+        userProfile=previous;
+        DuduWorldCollectionV441.reset();
+        inventoryDetailSelection=null;
+        saveCurrentAccount();
+        phoneHome();
+        if(!wasOpen&&document.getElementById('cyber-phone').style.display==='flex')
+          togglePhone();
+      }
+    });
+    assert.deepEqual(worldV441,{
+      hiddenByDefault:true,catalogSize:true,revealed:true,worlds:true,catalog20:true,
+      oneFound:true,localOnly:true,retained:true,noGrantedRelic:true,closed:true,noWrites:true
+    },'V44.1 world catalog, local discovery and protected reward pools');
+
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
     console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));
   } finally {

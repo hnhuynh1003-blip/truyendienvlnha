@@ -3,10 +3,10 @@ const assert=require('node:assert/strict');
 const model=require('../js/inventory-model-v42.js');
 const catalog=require('../js/item-catalog-v2.js');
 
-test('V42: all 70 canonical IDs retain their ranks, scopes and explicit roles',()=>{
+test('V44.1: legacy 70 canonical IDs retain their ranks, scopes and explicit roles',()=>{
  assert.equal(model.validateCatalog().length,0);
  const groups={};
- for(const item of catalog.items){
+ for(const item of catalog.items.filter(x=>!x.worldPack)){
   const card=model.inspect(item);
   assert.equal(card.id,item.id);
   assert.equal(card.rank,item.rank);

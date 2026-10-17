@@ -86,7 +86,10 @@
     if(record.scope==='DUDU')return 'COLLECTIBLE';
     if(record.type==='FOOD')return 'CONSUMABLE';
     if(record.type==='WEAPON')return 'EQUIPMENT';
+    const canonical=catalog?.byId(idOf(record));
+    const expansionRole=canonical?.worldPack==='V44.1'?canonical.rpgRole:null;
     return byRole.get(idOf(record))||
+      (['MATERIAL','TOOL','STORY_PROP'].includes(expansionRole)?expansionRole:null)||
       (record.scope==='STORY'||record.scope==='CHAPTER'?'STORY_PROP':'OTHER');
   }
   function inspect(record){
@@ -264,7 +267,7 @@
   function validateCatalog(){
     const errors=[];
     const all=catalog?.items||[];
-    if(all.length!==70)errors.push('Expected 70 legacy catalog records');
+    if(all.length!==160)errors.push('Expected 160 catalog records (70 legacy + 90 world)');
     const seen=new Set();
     for(const row of all){
       const category=categoryFor(row);

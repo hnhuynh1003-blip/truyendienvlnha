@@ -16,8 +16,16 @@
     const tag=chapter?.realmTag ?? story?.realmTag ?? null;
     return typeof tag==='string'&&catalog.REALM_TAGS.includes(tag)?tag:null;
   }
-  function pick({realmTag=null,random=Math.random}={}){
-    // Unknown realm is NOT interpreted as one of the other realms.
+  // F/E/D/C weights remain 100% rank-first. New items of rank B/A are
+  // chapter-gated and cannot enter the RANDOM pool. Within an eligible rank,
+  // story loot visibly favors world-specific items and new discoveries.
+  const WORLD_CHANCE=0.65,UNSEEN_BOOST=3;
+  function sample(random){
+    const value=Number(random());
+    if(!Number.isFinite(value))return null;
+    return Math.max(0,Math.min(1-Number.EPSILON,value));
+  }
+  function pick({realmTag=null,random=Math.random,seenIds=[]}={}){
     const pool=catalog.previewDropPool({realmTag});
     if(!pool.length)return null;
     const groups=catalog.RANKS.map(rank=>({rank,weight:BASE_WEIGHTS[rank],
@@ -25,17 +33,31 @@
       .filter(group=>group.choices.length&&group.weight>0);
     if(!groups.length)return null;
     const total=groups.reduce((sum,group)=>sum+group.weight,0);
-    const u=Math.max(0,Math.min(1-Number.EPSILON,Number(random())));
-    if(!Number.isFinite(u))return null;
+    const u=sample(random);if(u===null)return null;
     let target=u*total;
     let selected=groups[groups.length-1];
     for(const group of groups){
       if(target<group.weight){selected=group;break;}
       target-=group.weight;
     }
-    const v=Math.max(0,Math.min(1-Number.EPSILON,Number(random())));
-    if(!Number.isFinite(v))return null;
-    const record=selected.choices[Math.floor(v*selected.choices.length)];
+    let choices=selected.choices;
+    if(realmTag){
+      const realmChoices=choices.filter(x=>x.scope==='REALM'&&x.realmTag===realmTag);
+      const commonChoices=choices.filter(x=>x.scope==='COMMON');
+      if(realmChoices.length&&commonChoices.length){
+        const sourceRoll=sample(random);if(sourceRoll===null)return null;
+        choices=sourceRoll<WORLD_CHANCE?realmChoices:commonChoices;
+      }
+    }
+    const known=new Set(Array.isArray(seenIds)?seenIds:[]);
+    const weights=choices.map(x=>known.has(x.id)?1:UNSEEN_BOOST);
+    const sum=weights.reduce((a,b)=>a+b,0);
+    const v=sample(random);if(v===null)return null;
+    let targetChoice=v*sum,record=choices[choices.length-1];
+    for(let i=0;i<choices.length;i++){
+      if(targetChoice<weights[i]){record=choices[i];break;}
+      targetChoice-=weights[i];
+    }
     return record?{item:record,rank:record.rank,realmTag:record.realmTag}:null;
   }
   function rewardFor(rank,random=Math.random){
@@ -47,5 +69,5 @@
     const exp=rank==='SSS'?100:rank==='S'?40:10;
     return {coins,exp};
   }
-  return Object.freeze({BASE_WEIGHTS,realmTagFor,pick,rewardFor});
+  return Object.freeze({BASE_WEIGHTS,WORLD_CHANCE,UNSEEN_BOOST,realmTagFor,pick,rewardFor});
 });
