@@ -1483,7 +1483,7 @@ async function main() {
     assert.equal(phoneDesktop.ariaExpanded,'true');
     assert.equal(phoneDesktop.ariaHidden,'false');
     assert.match(phoneDesktop.clock,/^\d{2}:\d{2}$/);
-    assert.equal(phoneDesktop.appCount,9,'DUDU FUN is the ninth Sandbox phone app');
+    assert.equal(phoneDesktop.appCount,10,'V44.3 author mailbox is the tenth Sandbox phone app');
     assert.equal(phoneDesktop.nativeButtons,true);
     assert.ok(phoneDesktop.phoneWidth>=350&&phoneDesktop.phoneWidth<=390);
     assert.notEqual(phoneDesktop.cardRadius,'0px');
