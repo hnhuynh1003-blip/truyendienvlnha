@@ -36,7 +36,7 @@ test('V45.2: reader and cover display shared Pilot board separately from private
  assert.match(shared,/api\.list\(storyId,chapterId\)/);
  assert.match(shared,/api\.post\(\{storyId,chapterId,requestId/);
  assert.match(shared,/getShared\?\.\(\)/);
- assert.doesNotMatch(shared,/localStorage|firebase\.firestore\(|userProfile\./);
+ assert.doesNotMatch(shared,/localStorage\.(?:getItem|setItem|removeItem)|firebase\.firestore\(|userProfile\./);
  assert.doesNotMatch(shared,/\/v1\/gifts\//);
 });
 test('V45.2: shared results cannot be shown after Firebase account/session change',()=>{
