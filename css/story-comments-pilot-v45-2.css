@@ -1,0 +1,37 @@
+/* V45.2 Shared Pilot discussions: distinct from V44 local journal */
+.dudu-v452-host{display:block;margin:12px 0;max-width:100%;box-sizing:border-box}
+.dudu-v452-host[hidden]{display:none!important}
+.dudu-v452-shell{border:1px solid rgba(53,137,162,.38);border-radius:14px;
+ background:linear-gradient(150deg,rgba(13,37,49,.91),rgba(28,44,70,.9));
+ color:#f1f5f9;overflow:hidden;box-shadow:0 6px 22px rgba(7,18,33,.15)}
+.dudu-v452-head{cursor:pointer;font-size:14px;font-weight:800;padding:12px;
+ background:rgba(32,91,121,.25);color:#e1faff}
+.dudu-v452-head:focus-visible{outline:2px solid #a6e5ff;outline-offset:-2px}
+.dudu-v452-body{padding:11px;display:grid;gap:9px;min-width:0}
+.dudu-v452-explain,.dudu-v452-foot{font-size:11px;line-height:1.55;color:#c6dfec;margin:0}
+.dudu-v452-scope{font-size:12px;font-weight:700;color:#fff}
+.dudu-v452-controls{display:flex;gap:7px;flex-wrap:wrap}
+.dudu-v452-button{font:600 12px/1.3 inherit;cursor:pointer;
+ border:1px solid rgba(175,208,234,.45);background:#28445b;color:#eefbff;
+ border-radius:9px;padding:9px 10px;min-height:37px}
+.dudu-v452-button.primary{background:#1c7a90}
+.dudu-v452-button:focus-visible,.dudu-v452-input:focus-visible{
+ outline:2px solid #9ce7ff;outline-offset:2px}
+.dudu-v452-button:disabled{opacity:.58;cursor:wait}
+.dudu-v452-form{display:grid;gap:7px}
+.dudu-v452-input{width:100%;min-width:0;max-width:100%;box-sizing:border-box;
+ border:1px solid rgba(187,218,238,.4);border-radius:9px;background:#102b3e;
+ color:white;font:400 13px/1.45 inherit;padding:10px;resize:vertical}
+.dudu-v452-status{font-size:11px;padding:8px 10px;border-radius:9px;
+ background:rgba(43,110,138,.18);color:#d8f4ff;line-height:1.55;margin:0}
+.dudu-v452-reply{font-size:11px;color:#a9efff;display:flex;gap:8px;align-items:center}
+.dudu-v452-reply:empty{display:none}
+.dudu-v452-list{display:grid;gap:7px;min-width:0}
+.dudu-v452-comment{border:1px solid rgba(178,215,232,.25);border-radius:11px;
+ background:rgba(255,255,255,.055);padding:10px;overflow-wrap:anywhere}
+.dudu-v452-comment.nested{margin-left:17px;border-left:3px solid #61bdd0}
+.dudu-v452-comment strong{font-size:12px;color:#aff4ff}
+.dudu-v452-comment p{font-size:12px;white-space:pre-wrap;line-height:1.5;
+ margin:5px 0 7px;color:#f4f9ff}
+.dudu-v452-empty{color:#bdcce0;font-size:11px;margin:4px 0}
+@media(max-width:375px){.dudu-v452-body{padding:9px}.dudu-v452-controls .dudu-v452-button{flex:1 1 120px}}
