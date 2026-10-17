@@ -74,6 +74,10 @@ test('admin creation does not grant chat access; chapter picker supports creatin
 test('sandbox disables cloud reads, writes and live listeners', () => {
   assert.match(script, /function loadLocalAccountProfile\(\) \{\s*if \(!IS_SANDBOX_MODE\) \{ DuduAuth\.init\(\); return; \}/);
   assert.match(script, /if \(!IS_SANDBOX_MODE\) docRef\.onSnapshot/);
-  assert.match(script, /if \(IS_SANDBOX_MODE\) \{ updatePhoneUI\(\); return; \}/);
+  // V44.9 persists first; UI rendering errors must not undo a committed save.
+  const accountSave=script.split('function saveCurrentAccount() {')[1]
+    ?.split('function openAuthModal()')[0];
+  assert.ok(accountSave,'Sandbox profile saver must exist');
+  assert.match(accountSave,/if \(IS_SANDBOX_MODE\) \{\s*try \{ updatePhoneUI\(\); \}\s*catch\(e\) \{[^\n]*\}\s*return;\s*\}/);
   assert.match(script, /if \(IS_SANDBOX_MODE\) \{[\s\S]*?indicator\.textContent = '🧪 Sandbox';[\s\S]*?return;/);
 });
