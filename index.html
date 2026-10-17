@@ -1875,13 +1875,23 @@
     firebase.initializeApp(firebaseConfig);
     // V52: only activate App Check with an administrator-provisioned PUBLIC site key.
     // Absent key keeps trusted callable economy fail-closed; never bypass App Check.
-    if(typeof window.DUDU_RECAPTCHA_ENTERPRISE_SITE_KEY==='string' &&
-       window.DUDU_RECAPTCHA_ENTERPRISE_SITE_KEY.trim()){
-      firebase.appCheck().activate(
-        new firebase.appCheck.ReCaptchaEnterpriseProvider(
-          window.DUDU_RECAPTCHA_ENTERPRISE_SITE_KEY.trim()
-        ),true
-      );
+    const isProductionAppCheck = new URLSearchParams(window.location.search).get('sandbox') !== '1';
+    if(isProductionAppCheck &&
+       typeof window.DUDU_RECAPTCHA_ENTERPRISE_SITE_KEY==='string' &&
+       window.DUDU_RECAPTCHA_ENTERPRISE_SITE_KEY.trim() &&
+       typeof firebase.appCheck==='function' &&
+       typeof firebase.appCheck.ReCaptchaEnterpriseProvider==='function'){
+      try{
+        firebase.appCheck().activate(
+          new firebase.appCheck.ReCaptchaEnterpriseProvider(
+            window.DUDU_RECAPTCHA_ENTERPRISE_SITE_KEY.trim()
+          ),true
+        );
+      }catch(error){
+        // Do not break Firebase Auth/library when App Check is unavailable.
+        // Enforced Cloud Functions still reject requests without a valid token.
+        console.warn('DUDU App Check initialization unavailable:',error?.code||'init-failed');
+      }
     }
     const db = firebase.firestore();
     // ?sandbox=1: client-only testing, NEVER writes to production Firestore.
