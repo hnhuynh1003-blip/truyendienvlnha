@@ -162,7 +162,9 @@
   host.replaceChildren();
   const help=el('p',options.sandbox?
     'Chọn EPUB → tách chương → xem trước → nhập vào Sandbox. Không thay đổi Firebase.':
-    'Chọn EPUB → tách chương → xem trước → lưu bản thảo có các chương lên Firebase → xác nhận xuất bản. Không ghi đè truyện cũ.');
+    options.sparkPersonal
+      ? 'Spark miễn phí: Tách chương trên thiết bị → lưu bản thảo văn bản vào Firestore → xuất bản. Không cần Storage/Functions/Blaze. Chỉ lưu được khi EPUB Rules và quyền Tác giả Firebase đã được xác nhận.'
+      : 'Chọn EPUB → tách chương → xem trước → lưu bản thảo có các chương lên Firebase → xác nhận xuất bản. Không ghi đè truyện cũ.');
   const input=el('input');input.type='file';input.accept='.epub,application/epub+zip';
   input.setAttribute('aria-label','Chọn tệp EPUB');
   const status=el('p','');status.setAttribute('role','status');status.className='dudu-epub-status';
@@ -228,7 +230,7 @@
      '. Chưa xuất bản thành chương cho độc giả; đây là kho bản thảo an toàn.';
   }));
 
-  cloudBtn.hidden=!!options.sandbox;cloudBtn.dataset.requiresParsed='true';
+  cloudBtn.hidden=!!options.sandbox||!!options.sparkPersonal;cloudBtn.dataset.requiresParsed='true';
   cloudBtn.textContent='(Tuỳ chọn) Sao lưu file EPUB gốc vào Storage';
   const production=options.cloudApi;
   let publishBtn;
