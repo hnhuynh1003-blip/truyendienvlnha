@@ -27,10 +27,23 @@
    x&&['SELL','GIFT','LIST','CANCEL'].includes(x.action)&&
    valid(x.instanceId)&&valid(x.day)&&
    typeof x.name==='string').slice(-MAX_HISTORY):[];
-  const listings=Array.isArray(raw.listings)?raw.listings.filter(x=>
-   x&&valid(x.id)&&x.item&&typeof x.item==='object'&&valid(x.item.instanceId)&&
-   valid(x.day)&&isFiniteInt(x.ask)&&x.ask>=10&&x.ask<=5000
-  ).slice(0,MAX_LISTINGS):[];
+  // V44.6: persist only drafts created from canonical B+ realm chapter
+  // items. De-duplicate physical identities before allowing withdrawals.
+  const listingIds=new Set(),escrowItems=new Set();
+  const listings=Array.isArray(raw.listings)?raw.listings.filter(x=>{
+   if(!x||!valid(x.id)||!x.item||typeof x.item!=='object'||
+      !valid(x.item.instanceId)||!valid(x.day)||!isFiniteInt(x.ask)||
+      x.ask<10||x.ask>5000||x.status!=='AWAITING_SERVER')return false;
+   const canonical=known(x.item),origin=x.item.obtainedFrom;
+   if(!canonical||canonical.scope!=='REALM'||
+      !AUCTION_RANKS.includes(canonical.rank)||origin?.kind!=='CHAPTER'||
+      !valid(origin.storyId)||!valid(origin.chapterId)||
+      x.storyId!==origin.storyId||x.chapterId!==origin.chapterId||
+      x.realm!==canonical.realmTag||x.id!=='auction-'+x.item.instanceId||
+      listingIds.has(x.id)||escrowItems.has(x.item.instanceId))return false;
+   listingIds.add(x.id);escrowItems.add(x.item.instanceId);
+   return true;
+  }).slice(0,MAX_LISTINGS):[];
   if(raw.day!==day)return {...blank,listings,history};
   return {...blank,
    sold:isFiniteInt(raw.sold)?Math.min(DAILY_SALES,raw.sold):0,
@@ -126,7 +139,7 @@
   if(!row)return {ok:false,reason:'not-listed'};
   if(!Array.isArray(inventory)||inventory.length>=MAX_OWNED)
    return {ok:false,reason:'inventory-full'};
-  if(inventory.some(x=>x.instanceId===row.item.instanceId))
+  if(inventory.some(x=>x?.instanceId===row.item.instanceId))
    return {ok:false,reason:'duplicate'};
   return {ok:true,inventory:[row.item,...inventory],
    state:{...s,listings:s.listings.filter(x=>x!==row),
