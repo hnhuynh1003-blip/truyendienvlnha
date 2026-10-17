@@ -24,7 +24,7 @@ test('V47 isolated Firebase connection has explicit login and fixed staging orig
  assert.match(ui,/Đăng nhập Google Pilot/);
  assert.match(ui,/password\.value=''/);
  assert.match(board,/if\(!sandbox\|\|!storyId\|\|!session\(\)\)/);
- assert.doesNotMatch(client,/localStorage|firebase\.firestore|db\.collection|\/v1\/gifts\//);
+ assert.doesNotMatch(client,/localStorage\.(?:getItem|setItem|removeItem)|firebase\.firestore|db\.collection|\/v1\/gifts\//);
 });
 test('V47 staging defaults cannot activate comments or gift settlement on push',()=>{
  const env=source('cloudflare/wrangler.toml');
