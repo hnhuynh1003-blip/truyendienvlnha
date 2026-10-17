@@ -55,7 +55,8 @@
    const allowed=!!user&&approvedUid===user.uid&&approved?.ok===true;
    return {signed:!!user,uidHint:user?String(user.uid).slice(0,6)+'…':null,
     approved:allowed,role:allowed?approved.role:null,
-    canManagePilot:allowed&&approved.canManagePilot===true};
+    canManagePilot:allowed&&approved.canManagePilot===true,
+    sessionRevision:epoch};
   }
   async function login(){
    const fb=sdk();
