@@ -2359,10 +2359,17 @@ async function main() {
       const beforeAccount=currentUsername;
       const ledgerKey=scopedLocalKey('profile');
       const prevStored=localStorage.getItem(ledgerKey);
+      const roleKey=DuduRoleplayV56.key('v32-local-test',story.id,true);
+      const oldRole=localStorage.getItem(roleKey);
       const startWrites=window.__firestoreWrites.length;
       try{
         activeChatNovelId=story.id;
         currentUsername='v32-local-test';
+        const createdRole=DuduRoleplayV56.upsert(DuduRoleplayV56.empty(),{
+          id:'v32-fixture',mode:'traveler',name:'Người gửi phong bao'
+        },story);
+        if(!createdRole.state||!v56Commit(createdRole.state,story.id))
+          throw Error('V56 fixture role not saved');
         userProfile.currency=101;
         progress.collectedCharacters[candidate.id]=progress.collectedCharacters[candidate.id]||{id:candidate.id,affinity:21};
         renderChatDropdown();selected.value=candidate.id;switchChatCharacter();
@@ -2394,6 +2401,7 @@ async function main() {
       }finally{
         userProfile=beforeProfile;currentUsername=beforeAccount;
         if(prevStored===null)localStorage.removeItem(ledgerKey);else localStorage.setItem(ledgerKey,prevStored);
+        if(oldRole===null)localStorage.removeItem(roleKey);else localStorage.setItem(roleKey,oldRole);
         phoneHome();
       }
     });
