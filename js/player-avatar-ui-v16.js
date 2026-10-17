@@ -1,4 +1,4 @@
-/* DUDU V16 player avatar editor. Sandbox only.
+/* DUDU V49.7: identity-isolated avatar editor for sandbox and verified live accounts.
  * Uses local sandbox profile fields and the existing per-user IndexedDB store.
  */
 let playerAvatarDraftV16=null;
@@ -7,7 +7,13 @@ let playerAvatarUploadGenerationV16=0;
 let playerAvatarReturnFocusV16=null;
 let playerAvatarVisibleCountV41=12;
 function playerAvatarOwnerV16(){
-  return DuduPlayerAvatarV16.uploadIdentity(currentUsername||'sandbox-guest');
+  return DuduPlayerAvatarV16.uploadIdentity(currentUsername||(IS_SANDBOX_MODE?'sandbox-guest':''));
+}
+// Live mode requires verified Firebase ownership; images stay device-local.
+function playerAvatarAllowedV497(){
+  return IS_SANDBOX_MODE ||
+    (!!window.DuduAuth?.isReady?.() && !!currentUsername &&
+     window.DuduAuth.uid()===currentUsername);
 }
 function playerAvatarOptionsV16(){
   return {vectorIds:DuduNpcPortraitLibrary.CATALOG.map(p=>p.id)};
@@ -16,7 +22,7 @@ function playerAvatarCurrentV16(){
   return DuduPlayerAvatarV16.safeState(userProfile,playerAvatarOptionsV16());
 }
 function renderPlayerAvatarV16(element,selection=playerAvatarCurrentV16()){
-  if(!IS_SANDBOX_MODE||!element)return;
+  if(!playerAvatarAllowedV497()||!element)return;
   const safe=DuduPlayerAvatarV16.validate(selection,playerAvatarOptionsV16())||
     DuduPlayerAvatarV16.safeState(null,playerAvatarOptionsV16());
   const frame=DuduPlayerAvatarV16.frame(safe.frameId);
@@ -76,7 +82,7 @@ function renderPlayerAvatarV16(element,selection=playerAvatarCurrentV16()){
   }
 }
 function renderPlayerAvatarPlacesV16(){
-  if(!IS_SANDBOX_MODE)return;
+  if(!playerAvatarAllowedV497())return;
   for(const [id,display] of [
     ['player-avatar-v1','grid'],['phone-player-avatar-v16','grid'],
     ['player-avatar-header-v16','grid']
@@ -102,7 +108,7 @@ function selectPlayerAvatarKindV16(kind){
   renderPlayerAvatarEditorV16();
 }
 function renderPlayerAvatarEditorV16(){
-  if(!IS_SANDBOX_MODE||!playerAvatarDraftV16)return;
+  if(!playerAvatarAllowedV497()||!playerAvatarDraftV16)return;
   const draft=playerAvatarDraftV16;
   renderPlayerAvatarV16(document.getElementById('player-avatar-preview-v16'),draft);
   document.getElementById('player-avatar-preview-name-v16').textContent=
@@ -235,7 +241,7 @@ function playerAvatarGalleryMoreV41(){
   renderPlayerAvatarEditorV16();
 }
 function openPlayerAvatarEditorV16(){
-  if(!IS_SANDBOX_MODE)return;
+  if(!playerAvatarAllowedV497())return;
   const modal=document.getElementById('player-avatar-v16-modal');
   if(!modal)return;
   playerAvatarReturnFocusV16=document.activeElement;
@@ -271,7 +277,7 @@ function closePlayerAvatarEditorV16(){
   if(focus?.isConnected)focus.focus({preventScroll:true});
 }
 function savePlayerAvatarV16(){
-  if(!IS_SANDBOX_MODE||!playerAvatarDraftV16||
+  if(!playerAvatarAllowedV497()||!playerAvatarDraftV16||
      playerAvatarEditOwnerV16!==playerAvatarOwnerV16())return;
   const valid=DuduPlayerAvatarV16.validate(playerAvatarDraftV16,playerAvatarOptionsV16());
   if(!valid){
@@ -287,7 +293,7 @@ function savePlayerAvatarV16(){
   closePlayerAvatarEditorV16();
 }
 async function deletePlayerAvatarLocalV23(){
-  if(!IS_SANDBOX_MODE||!playerAvatarDraftV16||
+  if(!playerAvatarAllowedV497()||!playerAvatarDraftV16||
      playerAvatarDraftV16.kind!=='upload')return false;
   const uid=playerAvatarOwnerV16();
   const id=playerAvatarDraftV16.uploadId;
@@ -335,7 +341,7 @@ async function deletePlayerAvatarLocalV23(){
   }
 }
 async function uploadPlayerAvatarV16(event){
-  if(!IS_SANDBOX_MODE||!playerAvatarDraftV16||!playerAvatarEditOwnerV16)return;
+  if(!playerAvatarAllowedV497()||!playerAvatarDraftV16||!playerAvatarEditOwnerV16)return;
   const input=event.target,file=input.files?.[0];input.value='';
   if(!file)return;
   const status=document.getElementById('player-avatar-v16-status');
@@ -398,7 +404,7 @@ async function uploadPlayerAvatarV16(event){
 // Capture Escape to avoid accidentally closing the phone behind the editor.
 document.addEventListener('keydown',event=>{
   const modal=document.getElementById('player-avatar-v16-modal');
-  if(!IS_SANDBOX_MODE||modal?.style.display!=='flex')return;
+  if(!playerAvatarAllowedV497()||modal?.style.display!=='flex')return;
   if(event.key==='Escape'){
     event.preventDefault();event.stopImmediatePropagation();closePlayerAvatarEditorV16();
   }else if(event.key==='Tab'){
