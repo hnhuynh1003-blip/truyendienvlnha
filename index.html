@@ -8,7 +8,7 @@
   <link rel="manifest" href="manifest.json?v=49-4">
   <link rel="icon" type="image/webp" href="assets/branding/dudu-app-icon.webp?v=20261016">
   <link rel="apple-touch-icon" href="assets/branding/dudu-app-icon.webp?v=20261016">
-  <link rel="stylesheet" href="css/phone-ui-v11.css?v=49-6">
+  <link rel="stylesheet" href="css/phone-ui-v11.css?v=49-7">
   <link rel="stylesheet" href="css/phone-ui-v12-dossiers.css">
   <link rel="stylesheet" href="css/phone-ux-v27-r2.css">
   <link rel="stylesheet" href="css/npc-anime-v14.css">
@@ -21,7 +21,7 @@
   <link rel="stylesheet" href="css/phone-ux-v27-r3.css">
   <link rel="stylesheet" href="css/phone-wallpaper-v27-r4.css">
   <link rel="stylesheet" href="css/dudu-multiverse-art-v28-r5.css">
-  <link rel="stylesheet" href="css/phone-floating-v30.css?v=49-6">
+  <link rel="stylesheet" href="css/phone-floating-v30.css?v=49-7">
   <link rel="stylesheet" href="css/phone-refinement-v31.css?v=1">
   <link rel="stylesheet" href="css/phone-social-v32.css?v=1">
   <link rel="stylesheet" href="css/phone-inbox-v33.css?v=4">
@@ -115,7 +115,7 @@
   <script src="js/red-packet-v32.js"></script>
   <script src="js/chat-social-v32.js"></script>
   <script src="js/dudu-multiverse-ui-v28-r5.js"></script>
-  <script src="js/player-avatar-ui-v16.js?v=41-2"></script>
+  <script src="js/player-avatar-ui-v16.js?v=49-7"></script>
   <script src="js/player-avatar-sync-plan-v20.js"></script>
   <script src="js/player-avatar-conflict-ui-v21.js"></script>
   <script src="js/player-avatar-sync-v17.js"></script>
@@ -3979,14 +3979,14 @@
       const opened = phone.style.display !== 'flex';
       phone.style.display = opened ? 'flex' : 'none';
       phone.setAttribute('aria-hidden', opened ? 'false' : 'true');
-      if(IS_SANDBOX_MODE&&!opened){inventoryDetailSelection=null;window.DuduInventoryViewV42?.close();}
+      if(!opened){inventoryDetailSelection=null;window.DuduInventoryViewV42?.close();}
       if (opened) {
         const clock=document.getElementById('phone-clock');
         if(clock)clock.textContent=new Intl.DateTimeFormat('vi-VN',{
           hour:'2-digit',minute:'2-digit',hour12:false
         }).format(new Date());
       }
-      if (IS_SANDBOX_MODE) {
+      {
         document.body.classList.toggle('dudu-phone-open', opened);
         const trigger = document.getElementById('phone-fab');
         trigger.setAttribute('aria-expanded', opened ? 'true' : 'false');
@@ -4003,7 +4003,7 @@
 
     // Escape closes only the Sandbox phone; other modal controls keep focus.
     document.addEventListener('keydown', event => {
-      if (!IS_SANDBOX_MODE || event.key !== 'Escape') return;
+      if (event.key !== 'Escape') return;
       const phone=document.getElementById('cyber-phone');
       if (phone?.style.display !== 'flex') return;
       const modalOpen=[...document.querySelectorAll('.modal-overlay')].some(
@@ -4012,7 +4012,7 @@
     });
 
     function phoneHome() {
-      if(IS_SANDBOX_MODE){inventoryDetailSelection=null;window.DuduInventoryViewV42?.close();}
+      {inventoryDetailSelection=null;window.DuduInventoryViewV42?.close();}
             closeRedPacketV32();
 document.querySelectorAll('.phone-sub-app').forEach(el => el.style.display = 'none');
       document.getElementById('phone-home-screen').style.display = 'flex';
@@ -4021,11 +4021,13 @@ document.querySelectorAll('.phone-sub-app').forEach(el => el.style.display = 'no
 
     function openPhoneApp(appName) {
       if(appName==='lab-v445'&&!IS_SANDBOX_MODE)return;
-      if(IS_SANDBOX_MODE&&appName!=='inventory'){inventoryDetailSelection=null;window.DuduInventoryViewV42?.close();}
+      if(appName!=='inventory'){inventoryDetailSelection=null;window.DuduInventoryViewV42?.close();}
             closeRedPacketV32();
 document.getElementById('phone-home-screen').style.display = 'none';
       document.querySelectorAll('.phone-sub-app').forEach(el => el.style.display = 'none');
-      document.getElementById(`phone-app-${appName}`).style.display = 'flex';
+      const app=document.getElementById(`phone-app-${appName}`);
+      if(!app){phoneHome();showSystemAlert('ỨNG DỤNG KHÔNG KHẢ DỤNG','Ứng dụng này chưa được cài vào điện thoại.');return;}
+      app.style.display = 'flex';
 
       if (appName === 'stories') {
         renderPhoneStoryListV29();
@@ -4783,8 +4785,10 @@ document.getElementById('phone-home-screen').style.display = 'none';
 
     // Local wallpaper does not touch the Firestore profile or story saves.
     function phoneWallpaperOwnerV27(){
-      if(!IS_SANDBOX_MODE)return null;
-      return currentUsername||'sandbox-guest';
+      // Device-only preferences: sandbox nicknames and verified UIDs never share keys.
+      if(IS_SANDBOX_MODE)return currentUsername||'sandbox-guest';
+      return DuduAuth.isReady() && DuduAuth.uid()===currentUsername
+        ? 'live-'+currentUsername : null;
     }
     function activeStoryForWallpaperV28(){
       const chat=document.getElementById('phone-app-chat');
@@ -4793,7 +4797,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
         novels[selectedNovelIndex]||null;
     }
     function renderPhoneTypographyV31(){
-      if(!IS_SANDBOX_MODE||!window.DuduPhoneTypographyV31)return;
+      if(!phoneWallpaperOwnerV27()||!window.DuduPhoneTypographyV31)return;
       const settings=DuduPhoneTypographyV31.read(localStorage,phoneWallpaperOwnerV27());
       const phone=document.getElementById('cyber-phone');
       if(!phone)return;
@@ -4852,7 +4856,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       window.DuduWallpaperGalleryV34?.sync?.();
     }
     function setPhoneWallpaperModeV28(mode){
-      if(!IS_SANDBOX_MODE||!window.DuduMultiverseArtV28)return;
+      if(!phoneWallpaperOwnerV27()||!window.DuduMultiverseArtV28)return;
       if(!DuduMultiverseArtV28.writeMode(localStorage,phoneWallpaperOwnerV27(),mode)){
         const feedback=document.getElementById('dudu-v27-wallpaper-feedback');
         if(feedback)feedback.textContent='Không lưu được chế độ hình nền.';
@@ -4861,7 +4865,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       renderPhoneWallpaperV27();
     }
     function setPhoneWallpaperV27(id){
-      if(!IS_SANDBOX_MODE||!window.DuduPhoneWallpaperV27)return;
+      if(!phoneWallpaperOwnerV27()||!window.DuduPhoneWallpaperV27)return;
       if(!DuduPhoneWallpaperV27.PRESETS.some(p=>p.id===id))return;
       const saved=DuduPhoneWallpaperV27.write(localStorage,phoneWallpaperOwnerV27(),id);
       if(saved){
