@@ -1,0 +1,21 @@
+/* V44.0 · explicit gift destinations and author verification warning.
+ * Scoped to Sandbox Cyber Phone; production reader remains untouched.
+ */
+body.dudu-phone-v11 #cyber-phone .dudu-v44-recipient{
+ border:1px solid #a49ed394;border-radius:10px;
+ background:linear-gradient(135deg,#203a4a,#302947);
+ padding:9px;display:flex;flex-direction:column;gap:5px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v44-recipient strong{
+ color:#e4f5ff;font-size:11px;line-height:1.4;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v44-recipient small{
+ color:#c5d4ed;font-size:10px;line-height:1.5;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v44-recipient-locked{
+ background:#151e35be;border:1px dashed #ad98bd8c;border-radius:8px;
+ padding:8px;color:#dfc9e6;font-size:10px;line-height:1.5;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v439-gift{
+ min-height:38px;
+}

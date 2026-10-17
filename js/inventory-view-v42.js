@@ -284,16 +284,31 @@
     };
     story.addEventListener('change',refreshChapters);refreshChapters();
     chapterLabel.append(chapter);
+    // A public story object never proves its author's Firebase UID.
+    // In V44.0 only the local STORY_SANDBOX destination is enabled.
+    const recipient=make('div','dudu-v44-recipient');
+    const recipientTitle=make('strong','','📚 Ủng hộ truyện');
+    const recipientDesc=make('small','','');
+    const authorLocked=make('div','dudu-v44-recipient-locked',
+      '🔒 Gửi trực tiếp tác giả: chưa mở · cần xác minh UID chủ truyện và quyền sở hữu trên máy chủ.');
+    const refreshRecipient=()=>{
+      const result=typeof args.recipientFor==='function'?
+       args.recipientFor(story.value):null;
+      recipientDesc.textContent=result?.description||
+        'Chỉ lưu thiệp vào nhật ký Sandbox cá nhân, không chuyển cho tác giả.';
+    };
+    story.addEventListener('change',refreshRecipient);refreshRecipient();
+    recipient.append(recipientTitle,recipientDesc,authorLocked);
     const noteLabel=make('label','','Lời nhắn riêng · tối đa 160 ký tự');
     const note=make('textarea','dudu-v439-note');note.maxLength=160;note.rows=2;
     note.placeholder='Viết lời nhắn khi tặng quà cho truyện...';
     noteLabel.append(note);
-    gift.append(storyLabel,chapterLabel,noteLabel,
-     make('small','','Nhật ký thử nghiệm nội bộ, chưa phải bình luận công khai hoặc quà đến tác giả.'));
-    const button=make('button','btn dudu-v439-gift','Gửi quà Sandbox');
+    gift.append(storyLabel,chapterLabel,recipient,noteLabel,
+     make('small','','V44.0 · Chỉ lưu ở Sandbox. Đồ sẽ bị trừ khỏi Kho Sandbox và ghi nhật ký, nhưng không gửi sang tài khoản khác.'));
+    const button=make('button','btn dudu-v439-gift','Lưu thiệp ủng hộ Sandbox');
     button.type='button';button.addEventListener('click',()=>{
      if(!Array.isArray(args.inventory)||args.inventory[entry.index]!==entry.item)return;
-     if(!confirm('Dùng 1 '+detail.name+' làm quà trong nhật ký Sandbox?'))return;
+     if(!confirm('Dùng 1 '+detail.name+' để ghi thiệp ủng hộ trong Sandbox? Quà KHÔNG được gửi tới tài khoản tác giả.'))return;
      args.onStoryGift(entry.item,story.value,chapter.value||null,note.value);
     });
     gift.append(button);footer.append(gift);

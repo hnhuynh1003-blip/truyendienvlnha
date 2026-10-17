@@ -43,6 +43,7 @@
   <link rel="stylesheet" href="css/quests-v43-7.css?v=1">
   <link rel="stylesheet" href="css/inventory-v43-8.css?v=1">
   <link rel="stylesheet" href="css/inventory-v43-9.css?v=1">
+  <link rel="stylesheet" href="css/gift-recipient-v44.css?v=1">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -64,9 +65,10 @@
   <script src="js/dudu-fun-rules-v43.js?v=1"></script>
   <script src="js/story-market-v43.js?v=1"></script>
   <script src="js/inventory-model-v42.js?v=9"></script>
-  <script src="js/inventory-trade-v43-9.js?v=1"></script>
+  <script src="js/inventory-trade-v43-9.js?v=2"></script>
+  <script src="js/gift-recipient-v44.js?v=1"></script>
   <script src="js/inventory-hub-v43-9.js?v=1"></script>
-  <script src="js/inventory-view-v42.js?v=9"></script>
+  <script src="js/inventory-view-v42.js?v=10"></script>
   <script src="js/item-visuals-v13.js?v=43-5-3b"></script>
   <script src="js/npc-relationship-v2-r1.js"></script>
   <script src="js/npc-gift-v2-r2.js"></script>
@@ -4336,8 +4338,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
           'Vật phẩm không hợp lệ hoặc lời nhắn quá 160 ký tự.');
         return false;
       }
-      return commitInventoryTradeV439(plan,'ĐÃ GHI THIỆP QUÀ',
-        'Đã lưu lời nhắn tặng '+item.name+' vào nhật ký Sandbox cá nhân. Chưa chuyển quà hay bình luận công khai.');
+      return commitInventoryTradeV439(plan,'ĐÃ LƯU THIỆP ỦNG HỘ',
+        'Đã lưu thiệp '+item.name+' trong nhật ký Sandbox cá nhân. Chưa giao quà đến tác giả, chưa đăng bình luận công khai.');
     }
 
     function renderInventory() {
@@ -4383,6 +4385,9 @@ document.getElementById('phone-home-screen').style.display = 'none';
           },
           storyGiftTargets(item){
             return DuduInventoryTradeV439.storyTargets(item,novels);
+          },
+          recipientFor(storyId){
+            return DuduGiftRecipientV44.preview(novels.find(x=>x.id===storyId));
           },
           onSell(item){
             if(userProfile.inventory!==current)return false;

@@ -3323,6 +3323,14 @@ async function main() {
        const positions=[...document.querySelectorAll('#inventory-container .dudu-v42-slot')];
        const hasRibbons=positions.some(x=>x.textContent.includes('⚖️ Ký gửi'))&&
         positions.some(x=>x.textContent.includes('🪙 Bán'));
+       // V44.0: selecting a gift must identify the local recipient and
+       // visibly lock AUTHOR delivery until a verified server UID exists.
+       inventoryDetailSelection=gift;renderInventory();
+       const giftPanel=document.getElementById('inventory-v42-modal-scroll');
+       const giftDestinationClear=!!giftPanel?.querySelector('.dudu-v44-recipient')&&
+        giftPanel.textContent.includes('Gửi trực tiếp tác giả: chưa mở')&&
+        giftPanel.textContent.includes('Chỉ lưu lời nhắn trên thiết bị');
+       inventoryDetailSelection=null;renderInventory();
        const propNotUseable=DuduInventoryTradeV439.actionStatus(prop,novels).useable===false;
        const clickedSell=sellInventoryV439(normal);
        const saleCount=userProfile.inventoryTradeV439.sold===1;
@@ -3342,6 +3350,9 @@ async function main() {
        const giftNote=userProfile.inventoryTradeV439.history.some(h=>
         h.action==='GIFT'&&h.note===note&&h.storyId===novels[0].id);
        const giftRemoved=!userProfile.inventory.includes(gift);
+       const localOnlyReceipt=userProfile.inventoryTradeV439.history.some(h=>
+        h.action==='GIFT'&&h.recipientKind==='STORY_SANDBOX'&&
+        h.deliveryStatus==='LOCAL_JOURNAL_ONLY');
        const journalVisible=hub.textContent.includes(note);
        const noRealAuctionIncome=userProfile.currency===100+sellValue;
        const escapedOtherWorld=DuduInventoryTradeV439.storyGift({
@@ -3353,6 +3364,7 @@ async function main() {
        return {newLayout,activeOnly,hasRibbons,propNotUseable,clickedSell,
          saleCount,paid,listed,missingInBag,escrow,auctionUI,
          cancelled,returned,giftSaved,giftNote,giftRemoved,journalVisible,
+         giftDestinationClear,localOnlyReceipt,
          noRealAuctionIncome,escapedOtherWorld,
          noWrites:window.__firestoreWrites.length===writes};
       }finally{
@@ -3373,6 +3385,7 @@ async function main() {
       clickedSell:true,saleCount:true,paid:true,listed:true,missingInBag:true,
       escrow:true,auctionUI:true,cancelled:true,returned:true,giftSaved:true,
       giftNote:true,giftRemoved:true,journalVisible:true,
+      giftDestinationClear:true,localOnlyReceipt:true,
       noRealAuctionIncome:true,escapedOtherWorld:true,noWrites:true
     },'V43.9 warehouse, trade, escrow, story gift and zero cloud grants');
 

@@ -161,7 +161,8 @@
   return {ok:true,inventory:inventory.filter(x=>x!==item),
    state:{...s,usedIds:[...s.usedIds,itemInstanceId].slice(-80),
     history:recordHistory(s,'GIFT',item,day,{
-     storyId,chapterId,note:note.trim(),scope:item.scope
+     storyId,chapterId,note:note.trim(),scope:item.scope,
+     recipientKind:'STORY_SANDBOX',deliveryStatus:'LOCAL_JOURNAL_ONLY'
     })}};
  }
  function actionStatus(item,stories){
