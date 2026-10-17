@@ -3745,7 +3745,7 @@ async function main() {
         const pending=sent.transfers.length===1&&
           sent.transfers[0].status==='PENDING'&&
           sent.items.find(x=>x.instanceId==='lab-item-1')?.holderType==='ESCROW';
-        const stayedInMemory=host.textContent.includes('PENDING');
+        const stayedInMemory=host.textContent.includes('Đang chờ nhận');
         const uiRetry=host.querySelector('[data-action="retry"]');
         uiRetry?.click();
         const retry=JSON.parse(localStorage.getItem(key));
