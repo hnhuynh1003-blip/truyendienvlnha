@@ -2202,7 +2202,12 @@
         readRewards: userProfile.readRewards || {},
         dailyReadLog: userProfile.dailyReadLog || { day: '', chapters: [] },
         collectedCharacters: userProfile.collectedCharacters || {},
-        storyStates: userProfile.storyStates || {}
+        storyStates: userProfile.storyStates || {},
+        // Avatar choices/frames are cosmetic and validated on save, not privileges.
+        ...(userProfile.playerAvatar && window.DuduPlayerAvatarV16
+          ? {playerAvatar: DuduPlayerAvatarV16.safeState(userProfile,{
+              vectorIds:DuduNpcPortraitLibrary.CATALOG.map(p=>p.id)
+            })} : {})
       };
 
       if (IS_SANDBOX_MODE) {
@@ -4176,7 +4181,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 
     // Render approved art metadata without reading or changing item ownership.
     function renderSandboxItemArt(element,item){
-      if(!IS_SANDBOX_MODE||!element||!item)return;
+      if(!element||!item)return;
       const visual=DuduItemArtV13.visual(DuduItemCatalog.byId(item.id||item.itemId)||item);
       if(!visual)return;
       const art=document.createElement('img');
@@ -4196,7 +4201,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       const panel=document.getElementById('inventory-v12-detail');
       if(!panel)return;
       panel.replaceChildren();
-      if(!IS_SANDBOX_MODE){panel.style.display='none';return;}
+      if(!IS_SANDBOX_MODE && !DuduAuth.isReady()){panel.style.display='none';return;}
       const inventory=Array.isArray(userProfile.inventory)?userProfile.inventory:[];
       const item=inventory.find(i=>i===inventoryDetailSelection);
       if(!item){
@@ -4240,9 +4245,15 @@ document.getElementById('phone-home-screen').style.display = 'none';
       desc.textContent=(infoText||'Chưa có mô tả cho vật phẩm này.')+
         (protectedItem?'\n🔒 Vật phẩm được bảo vệ — không thể vứt.':'');
       panel.append(header,desc);
+      if(!IS_SANDBOX_MODE){
+        const note=document.createElement('p');
+        note.className='dudu-inventory-v12-detail-desc';
+        note.textContent='Thông tin vật phẩm từ hồ sơ hiện tại. Giao dịch, tiêu hao và chuyển quà cần xác thực máy chủ.';
+        panel.append(note);
+      }
       // Destructive action lives only in the inspector, never on every slot.
       // The original instance reference is checked again after confirmation.
-      if(!protectedItem){
+      if(IS_SANDBOX_MODE&&!protectedItem){
         const actions=document.createElement('div');
         actions.className='dudu-v27-inventory-actions';
         const discard=document.createElement('button');
@@ -4573,11 +4584,10 @@ document.getElementById('phone-home-screen').style.display = 'none';
       const container=document.getElementById('inventory-container');
       if(!container)return;
       container.replaceChildren();
-      container.classList.toggle('dudu-v27-inventory-grid',!!IS_SANDBOX_MODE);
+      container.classList.add('dudu-v27-inventory-grid');
       const toolbar=document.getElementById('inventory-v2-toolbar');
-      if(toolbar)toolbar.style.display=IS_SANDBOX_MODE?'flex':'none';
-      const q=IS_SANDBOX_MODE?
-        (document.getElementById('inventory-v2-search')?.value||'').trim().toLocaleLowerCase('vi'):'';
+      if(toolbar)toolbar.style.display='flex';
+      const q=(document.getElementById('inventory-v2-search')?.value||'').trim().toLocaleLowerCase('vi');
       const originals=Array.isArray(userProfile.inventory)?userProfile.inventory:[];
       const items=originals.map((item,index)=>({item,index})).filter(({item})=>
         (inventoryTab==='ALL'||item.type===inventoryTab)&&
@@ -4602,7 +4612,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
           item.discardable===false||item.unique===true||canonical?.unique===true||
           canonical?.scope==='DUDU';
         const safeRank=DuduItemCatalog.RANKS.includes(item.rank)?item.rank:'F';
-        if(IS_SANDBOX_MODE){
+        {
           // Each owned instance gets its own slot. Do not merge rare/unique
           // instances or change their indexes: discard uses the original index.
           const slot=document.createElement('button');
