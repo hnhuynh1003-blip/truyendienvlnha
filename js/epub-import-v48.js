@@ -177,7 +177,14 @@
    if(state.busy)return;
    state.busy=true;[...buttons.children].forEach(x=>x.disabled=true);
    try{await task()}catch(e){status.textContent='⚠️ '+(e?.message||'Không thể xử lý EPUB')}
-   finally{state.busy=false;[...buttons.children].forEach(x=>x.disabled=false)}
+   finally{
+    state.busy=false;
+    [...buttons.children].forEach(x=>{
+     x.disabled=x.dataset.requiresDraft==='true'?
+      !(state.cloudDraft&&state.cloudDraft.status==='draft'):
+      x.dataset.onceOnly==='true'?!!state.cloudDraft:false;
+    });
+   }
   };
   const makeParsed=()=>state.parsed?{...state.parsed,title:safeName(title.value)||state.parsed.title}:null;
   input.onchange=()=>run(async()=>{
@@ -239,7 +246,7 @@
    state.cloudDraft=stored;publishBtn.disabled=false;
    status.textContent='✅ Đã lưu '+stored.chapterCount+' chương dưới dạng bản thảo Firebase. Chưa công khai. Bạn có thể xác nhận xuất bản.';
   }));
-  saveCloud.hidden=!!options.sandbox;
+  saveCloud.hidden=!!options.sandbox;saveCloud.dataset.onceOnly='true';
   publishBtn=button('Xác nhận xuất bản cho độc giả',()=>run(async()=>{
    if(options.sandbox||!options.canEdit?.())throw Error('Chỉ tác giả thật được xuất bản');
    if(!state.cloudDraft)throw Error('Hãy lưu bản thảo đầy đủ lên Firebase trước');
@@ -249,10 +256,11 @@
     db:options.firestore(),auth:options.auth(),confirmRights:true
    });
    status.textContent='✅ Đã xuất bản '+published.chapterCount+' chương lên Firebase. Tải lại Tủ Truyện để thấy tác phẩm.';
+   state.cloudDraft.status='published';
    publishBtn.disabled=true;
    options.onPublished?.();
   }));
-  publishBtn.disabled=true;publishBtn.hidden=!!options.sandbox;
+  publishBtn.disabled=true;publishBtn.hidden=!!options.sandbox;publishBtn.dataset.requiresDraft='true';
 
   button('Đóng',()=>{modal.style.display='none'});
   host.append(help,input,title);
