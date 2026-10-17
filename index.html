@@ -50,6 +50,7 @@
   <link rel="stylesheet" href="css/gifts-v44-3.css?v=1">
   <link rel="stylesheet" href="css/gift-picker-v44-3-1.css?v=1">
   <link rel="stylesheet" href="css/multi-actor-lab-v44-5.css?v=1">
+  <link rel="stylesheet" href="css/pilot-v45-1.css?v=45-1">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -91,6 +92,8 @@
   <script src="js/story-comments-ui-v44-2.js?v=3"></script>
   <script src="js/multi-actor-lab-v44-5.js?v=44-9"></script>
   <script src="js/multi-actor-lab-ui-v44-5.js?v=44-9"></script>
+  <script src="js/pilot-client-v45-1.js?v=45-1"></script>
+  <script src="js/pilot-lab-ui-v45-1.js?v=45-1"></script>
   <script src="js/npc-portrait-library-v1.js?v=40-1"></script>
   <script src="js/npc-anime-candidates-v14.js"></script>
   <script src="js/player-avatar-v16.js"></script>
@@ -1062,6 +1065,7 @@
           <span></span>
         </div>
         <div id="lab-v445-content" aria-label="Phòng thử nghiệm độc lập" aria-live="polite"></div>
+        <div id="pilot-v451-content" aria-label="Phiên Firebase Pilot riêng biệt" aria-live="polite"></div>
       </div>
 
       <!-- APP: BẢO TÀNG KỶ VẬT (chỉ dữ liệu sở hữu máy chủ) -->
@@ -3992,6 +3996,10 @@ document.getElementById('phone-home-screen').style.display = 'none';
       } else if (appName === 'lab-v445') {
         window.DuduMultiActorLabUIV445?.render({
           host:document.getElementById('lab-v445-content'),
+          sandbox:IS_SANDBOX_MODE
+        });
+        window.DuduPilotLabUIV451?.render({
+          host:document.getElementById('pilot-v451-content'),
           sandbox:IS_SANDBOX_MODE
         });
       } else if (appName === 'museum') {
