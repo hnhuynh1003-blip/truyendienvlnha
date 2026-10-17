@@ -17,7 +17,9 @@
   'pilot-config-incomplete':'Staging chưa đủ 3 UID và mã vùng lưu trữ riêng.',
   'pilot-forbidden':'UID hiện tại không thuộc nhóm ba tài khoản Pilot.',
   unauthenticated:'Phiên Firebase chưa hợp lệ hoặc đã hết hạn.',
-  'pilot-login-required':'Hãy đăng nhập Google vào phiên Pilot riêng.',
+  'pilot-login-required':'Hãy đăng nhập Firebase vào phiên Pilot riêng.',
+  'invalid-credentials':'Email hoặc mật khẩu thử nghiệm không hợp lệ.',
+  'auth/invalid-credential':'Thông tin đăng nhập Firebase chưa đúng.',
   'pilot-check-required':'Hãy xác nhận quyền Pilot trước khi mở bình luận.',
   'unknown-scope':'Truyện/chương chưa được quản trị viên đăng ký ở staging.',
   cooldown:'Bình luận quá nhanh. Hãy thử lại sau.',
@@ -84,9 +86,9 @@
   host.hidden=false;
   const box=el('section','dudu-v451');
   box.append(el('div','dudu-v451-kicker','PILOT V45.1 · STAGING'),
-   el('h3','', 'Kiểm thử UID Firebase thật'),
+   el('h3','', 'Kiểm thử UID Firebase thật · V47'),
    el('p','dudu-v451-note',
-    'Khác phòng giả lập A/B/Tác giả ở trên: đây là phiên Google độc lập, chỉ liên hệ Worker staging. Không đọc hồ sơ, Kho hay Xu thật.'));
+    'Khác phòng giả lập A/B/Tác giả ở trên: đây là phiên Firebase riêng (Google hoặc Email/Password), chỉ liên hệ Worker staging. Không đọc hồ sơ, Kho hay Xu thật.'));
   const instance=use(),session=instance?.session()||{signed:false};
   const identity=el('div','dudu-v451-identity',
    session.signed?'Phiên Firebase: '+session.uidHint+
@@ -101,6 +103,32 @@
    inform(result.ok?'Đã đăng nhập phiên riêng. Chọn “Kiểm tra quyền Pilot”.':
     explain(result),!result.ok);
   }),'primary'));
+  if(!session.signed){
+   const emailForm=el('form','dudu-v451-form');
+   const title=el('label','dudu-v451-field');
+   title.append(el('span','','Email Firebase thử nghiệm'));
+   const email=el('input');email.type='email';email.autocomplete='username';email.required=true;email.placeholder='test-reader@example.com';
+   title.append(email);
+   const passwordLabel=el('label','dudu-v451-field');
+   passwordLabel.append(el('span','','Mật khẩu Firebase thử nghiệm'));
+   const password=el('input');password.type='password';password.autocomplete='current-password';password.required=true;password.minLength=6;
+   passwordLabel.append(password);
+   const submit=action('Đăng nhập Email/Password Pilot',()=>{});
+   submit.type='submit';
+   emailForm.append(title,passwordLabel,submit);
+   emailForm.addEventListener('submit',event=>{
+    event.preventDefault();
+    const address=email.value.trim(),secret=password.value;
+    password.value='';
+    perform(async()=>{
+     rows=[];notifications=[];moderation=[];status=null;replyTo=null;
+     const result=await instance.loginEmail(address,secret);
+     inform(result.ok?'Đã đăng nhập Firebase. Chọn “Kiểm tra quyền Pilot”.':
+      explain(result),!result.ok);
+    });
+   });
+   box.append(emailForm,el('p','dudu-v451-note','Mật khẩu chỉ gửi trực tiếp đến Firebase Authentication qua SDK. Không lưu vào Sandbox hay Cloudflare Worker.'));
+  }
   else{
    toolbar.append(action('Kiểm tra quyền Pilot',()=>perform(async()=>{
     rows=[];notifications=[];moderation=[];replyTo=null;requestId=null;
