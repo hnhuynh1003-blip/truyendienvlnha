@@ -1876,11 +1876,22 @@ async function main() {
         if(document.getElementById('cyber-phone').style.display!=='flex')togglePhone();
         openPhoneApp('inventory');
         const grid=document.getElementById('inventory-container');
+        const panel=document.getElementById('phone-app-inventory');
+        const first=grid.querySelector('.dudu-v42-slot');
+        const filter=document.getElementById('inventory-v42-options');
+        const compact=!!document.getElementById('inventory-v439-hub').querySelector('.dudu-v439-nav')&&
+          !document.querySelector('.dudu-v439-metrics');
+        const itemNearTop=first.getBoundingClientRect().top-
+          panel.getBoundingClientRect().top<280;
+        const filterCollapsed=getComputedStyle(filter).display==='none';
+        DuduInventoryViewV42.toggleAdvanced();
+        const filterOpens=filter.open&&getComputedStyle(filter).display!=='none';
+        DuduInventoryViewV42.toggleAdvanced();
         return {
           cols:getComputedStyle(grid).gridTemplateColumns.split(' ').length,
-          overflow:document.getElementById('phone-app-inventory').scrollWidth-
-            document.getElementById('phone-app-inventory').clientWidth,
-          tiles:grid.querySelectorAll('.dudu-v27-inventory-slot').length
+          overflow:panel.scrollWidth-panel.clientWidth,
+          tiles:grid.querySelectorAll('.dudu-v27-inventory-slot').length,
+          compact,itemNearTop,filterCollapsed,filterOpens
         };
       }finally{
         userProfile=JSON.parse(saved);
@@ -1890,6 +1901,10 @@ async function main() {
     });
     assert.equal(grid320.cols,2);
     assert.equal(grid320.tiles,3);
+    assert.equal(grid320.compact,true,'No duplicated dashboard metrics');
+    assert.equal(grid320.itemNearTop,true,'Items should show near the top of a small phone');
+    assert.equal(grid320.filterCollapsed,true,'Advanced filters start collapsed');
+    assert.equal(grid320.filterOpens,true,'Compact filter button opens advanced fields');
     assert.ok(grid320.overflow<=1,'Inventory grid must not overflow 320px phone');
 
     await page.setViewportSize({width:320,height:640});
@@ -3315,8 +3330,9 @@ async function main() {
        if(!wasPhoneOpen)togglePhone();
        openPhoneApp('inventory');
        const hub=document.getElementById('inventory-v439-hub');
-       const newLayout=hub.textContent.includes('KHO XUYÊN THẾ GIỚI')&&
-        hub.querySelectorAll('.dudu-v439-tab').length===4;
+       const newLayout=hub.querySelectorAll('.dudu-v439-tab').length===4&&
+        !hub.querySelector('.dudu-v439-metrics')&&
+        hub.dataset.mode==='overview';
        DuduInventoryViewV42.chooseCategory('ACTIVATABLE');
        const activeOnly=document.querySelectorAll('#inventory-container .dudu-v42-slot').length===0;
        DuduInventoryViewV42.chooseCategory('ALL');
@@ -3336,6 +3352,12 @@ async function main() {
        const saleCount=userProfile.inventoryTradeV439.sold===1;
        const sellValue=DuduInventoryTradeV439.saleValue(normal);
        const paid=userProfile.currency===100+sellValue;
+       const marketTab=[...hub.querySelectorAll('.dudu-v439-tab')]
+         .find(x=>x.dataset.mode==='market');
+       marketTab?.click();
+       const marketGrid=[...document.querySelectorAll('#inventory-container .dudu-v42-slot')];
+       const marketOnly=hub.dataset.mode==='market'&&marketGrid.length===2&&
+        marketGrid.every(x=>x.textContent.includes('🪙 Bán'));
        const listed=listAuctionV439(rare,130);
        const missingInBag=!userProfile.inventory.includes(rare);
        const escrow=userProfile.inventoryTradeV439.listings.length===1;
@@ -3362,7 +3384,7 @@ async function main() {
          itemInstanceId:'item-cross',stories:novels,storyId:novels[1]?.id||'not-found',
          note:'wrong'}).ok===false;
        return {newLayout,activeOnly,hasRibbons,propNotUseable,clickedSell,
-         saleCount,paid,listed,missingInBag,escrow,auctionUI,
+         saleCount,paid,marketOnly,listed,missingInBag,escrow,auctionUI,
          cancelled,returned,giftSaved,giftNote,giftRemoved,journalVisible,
          giftDestinationClear,localOnlyReceipt,
          noRealAuctionIncome,escapedOtherWorld,
@@ -3382,7 +3404,7 @@ async function main() {
     });
     assert.deepEqual(warehouseV439,{
       newLayout:true,activeOnly:true,hasRibbons:true,propNotUseable:true,
-      clickedSell:true,saleCount:true,paid:true,listed:true,missingInBag:true,
+      clickedSell:true,saleCount:true,paid:true,marketOnly:true,listed:true,missingInBag:true,
       escrow:true,auctionUI:true,cancelled:true,returned:true,giftSaved:true,
       giftNote:true,giftRemoved:true,journalVisible:true,
       giftDestinationClear:true,localOnlyReceipt:true,

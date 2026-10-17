@@ -214,7 +214,7 @@
   // indices and items remain available so discard/gifting always operate
   // on EXACTLY one existing instance, never on an invented quantity record.
   function displayList(inventory,{category='ALL',query='',rank='ALL',
-    realm='ALL',storyId='ALL',order='recent',offset=0,limit=24}={}){
+    realm='ALL',storyId='ALL',order='recent',offset=0,limit=24,predicate=null}={}){
     const src=Array.isArray(inventory)?inventory:[];
     const groups=[],seen=new Map();
     src.forEach((item,index)=>{
@@ -234,12 +234,13 @@
     const world=realm==='ALL'||Object.hasOwn(REALMS,realm)?realm:'ALL';
     const story=typeof storyId==='string'?storyId:'ALL';
     const search=typeof query==='string'?query.trim().toLocaleLowerCase('vi'):'';
-    const filtered=groups.filter(({detail})=>
+    const filtered=groups.filter(({detail,item})=>
       (cat==='ALL'||(cat==='ACTIVATABLE'?detail.usageStatus!=='NOT_IMPLEMENTED':detail.category===cat))&&
       (rarity==='ALL'||detail.rank===rarity)&&
       (world==='ALL'||detail.realm===world)&&
       (story==='ALL'||(story==='GLOBAL'?!detail.storyId:detail.storyId===story))&&
-      (!search||(detail.name+' '+detail.id).toLocaleLowerCase('vi').includes(search)));
+      (!search||(detail.name+' '+detail.id).toLocaleLowerCase('vi').includes(search))&&
+      (typeof predicate!=='function'||predicate(item,detail)));
     if(order==='name')
       filtered.sort((a,b)=>a.detail.name.localeCompare(b.detail.name,'vi')||a.index-b.index);
     else if(order==='rank_desc')

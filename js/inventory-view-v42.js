@@ -338,7 +338,8 @@
   container.classList.add('dudu-v27-inventory-grid','dudu-v42-grid');
   storyOptions(args.inventory,args.stories);
   const options=filters();
-  const result=model.displayList(args.inventory,options);
+  const result=model.displayList(args.inventory,{...options,
+   predicate:typeof args.itemFilter==='function'?args.itemFilter:null});
   const all=model.displayList(args.inventory,{...options,category:'ALL',query:'',rank:'ALL',
     realm:'ALL',storyId:'ALL',limit:1}).total;
   // Count deliberately omitted from the search row (mobile space).
@@ -348,10 +349,12 @@
   const capacity=$('inventory-v438-capacity');
   if(capacity){
    const num=Array.isArray(args.inventory)?args.inventory.length:0;
-   const tools=(args.inventory||[]).filter(x=>
-     model.inspect(x)?.category==='TOOL').length;
-   capacity.textContent='🎒 '+num+'/500 vật phẩm · '+tools+' công cụ';
+   const coins=Number.isFinite(Number(args.coins))?Number(args.coins):0;
+   capacity.textContent='🎒 '+num+'/500   ·   🪙 '+coins.toLocaleString('vi-VN')+' Xu';
   }
+  const advanced=$('inventory-v42-options');
+  const advancedButton=document.querySelector('.dudu-v440-filter-toggle');
+  if(advancedButton)advancedButton.setAttribute('aria-expanded',String(!!advanced?.open));
   const categoryPicker=$('inventory-v42-categories');
   if(categoryPicker)for(const button of categoryPicker.querySelectorAll('button[data-category]')){
    const active=button.dataset.category===options.category;
@@ -360,6 +363,9 @@
   container.replaceChildren();
   if(!result.total){
    container.append(make('p','dudu-v27-inventory-empty',
+     args.viewMode==='market'?'Không có vật phẩm phổ thông đủ điều kiện bán.':
+     args.viewMode==='auction'?'Không có vật phẩm phù hợp để ký gửi thử.':
+     args.viewMode==='gifts'?'Chưa có vật phẩm phù hợp để tặng truyện.':
      all?'Không có vật phẩm phù hợp bộ lọc.':'Hành trang còn trống. Đồ nhặt được sẽ xuất hiện ở đây.'));
   }
   const current=result.entries.find(row=>row.items.includes(args.selected))||null;
@@ -428,10 +434,18 @@
   if(!input||!Object.hasOwn(model?.CATEGORIES||{},category))return;
   input.value=category;reset();
  }
+ function toggleAdvanced(){
+  const panel=$('inventory-v42-options');
+  if(!panel)return false;
+  panel.open=!panel.open;
+  const button=document.querySelector('.dudu-v440-filter-toggle');
+  if(button)button.setAttribute('aria-expanded',String(panel.open));
+  return panel.open;
+ }
  function close(){
   hideModal(false);
   const legacy=$('inventory-v12-detail');
   if(legacy){legacy.replaceChildren();legacy.style.display='none';}
  }
- return Object.freeze({render,reset,more,chooseCategory,close,filters});
+ return Object.freeze({render,reset,more,chooseCategory,toggleAdvanced,close,filters});
 });

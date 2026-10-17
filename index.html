@@ -44,6 +44,7 @@
   <link rel="stylesheet" href="css/inventory-v43-8.css?v=1">
   <link rel="stylesheet" href="css/inventory-v43-9.css?v=1">
   <link rel="stylesheet" href="css/gift-recipient-v44.css?v=1">
+  <link rel="stylesheet" href="css/inventory-compact-v44.css?v=1">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -64,11 +65,11 @@
   <script src="js/quest-engine-v43-7.js?v=2"></script>
   <script src="js/dudu-fun-rules-v43.js?v=1"></script>
   <script src="js/story-market-v43.js?v=1"></script>
-  <script src="js/inventory-model-v42.js?v=9"></script>
+  <script src="js/inventory-model-v42.js?v=10"></script>
   <script src="js/inventory-trade-v43-9.js?v=2"></script>
   <script src="js/gift-recipient-v44.js?v=1"></script>
-  <script src="js/inventory-hub-v43-9.js?v=1"></script>
-  <script src="js/inventory-view-v42.js?v=10"></script>
+  <script src="js/inventory-hub-v43-9.js?v=2"></script>
+  <script src="js/inventory-view-v42.js?v=11"></script>
   <script src="js/item-visuals-v13.js?v=43-5-3b"></script>
   <script src="js/npc-relationship-v2-r1.js"></script>
   <script src="js/npc-gift-v2-r2.js"></script>
@@ -975,12 +976,14 @@
           <button class="filter-btn" id="inv-tab-item" onclick="filterInventory('ITEM', this)">Vật dụng</button>
         </div>
 
+        <section id="inventory-v439-hub" aria-label="Quản lý và giao dịch kho Sandbox"></section>
         <div id="inventory-v2-toolbar" class="dudu-v27-inventory-toolbar dudu-v42-toolbar" style="display:none;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 8px;">
           <div class="dudu-v42-search-row">
             <input id="inventory-v2-search" type="search" placeholder="Tìm tên hoặc mã vật phẩm..."
               aria-label="Tìm trong kho đồ" oninput="DuduInventoryViewV42.reset()"
               style="min-width:0;flex:1;background:#111827;color:#e2e8f0;border:1px solid #334155;border-radius:6px;padding:6px;font-size:11px;"/>
             <span id="inventory-v2-count" hidden aria-hidden="true"></span>
+            <button type="button" class="dudu-v440-filter-toggle" aria-label="Bộ lọc nâng cao" aria-controls="inventory-v42-options" aria-expanded="false" title="Lọc theo thế giới, phẩm chất, truyện" onclick="DuduInventoryViewV42.toggleAdvanced()">☷</button>
           </div>
           <div class="dudu-v438-quick">
             <span id="inventory-v438-capacity">Kho · 0/500</span>
@@ -1008,7 +1011,6 @@
             </div>
           </details>
         </div>
-        <section id="inventory-v439-hub" aria-label="Quản lý và giao dịch kho Sandbox"></section>
         <section id="inventory-v12-detail" aria-live="polite" aria-label="Chi tiết vật phẩm"></section>
         <div id="inventory-container" aria-label="Các ô vật phẩm trong hành trang"></div>
         <button type="button" id="inventory-v42-more" hidden onclick="DuduInventoryViewV42.more()">Xem thêm vật phẩm</button>
@@ -3915,6 +3917,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
         if (!activeChatNovelId) activeChatNovelId = (novels[selectedNovelIndex] || {}).id;
         renderChatDropdown();
       } else if (appName === 'inventory') {
+        window.DuduInventoryHubV439?.reset();
         renderInventory();
         startCooldownTicker();
       } else if (appName === 'museum') {
@@ -4349,14 +4352,28 @@ document.getElementById('phone-home-screen').style.display = 'none';
         const heading=document.querySelector('#phone-app-inventory .phone-app-header span');
         if(heading)heading.textContent='Kho Xuyên Thế Giới';
         const hub=document.getElementById('inventory-v439-hub');
+        const mode=window.DuduInventoryHubV439?.active()||'overview';
         window.DuduInventoryHubV439?.render({
           host:hub,inventory:current,coins:userProfile.currency,
           state:userProfile.inventoryTradeV439,stories:novels,
           onCancel:cancelAuctionV439,
-          onFilter:category=>DuduInventoryViewV42.chooseCategory(category)
+          onFilter:category=>DuduInventoryViewV42.chooseCategory(category),
+          onModeChange(){
+            inventoryDetailSelection=null;
+            DuduInventoryViewV42.close();
+            const category=document.getElementById('inventory-v42-category');
+            if(category)category.value='ALL';
+            const query=document.getElementById('inventory-v2-search');
+            if(query)query.value='';
+            renderInventory();
+          }
         });
+        const itemFilter=mode==='market'?(item=>DuduInventoryTradeV439.saleValue(item)>0):
+          mode==='auction'?(item=>DuduInventoryTradeV439.lore(item,novels)?.eligible===true):
+          mode==='gifts'?(item=>DuduInventoryTradeV439.storyTargets(item,novels).length>0):null;
         const ready=DuduInventoryViewV42.render({
           inventory:current,selected:inventoryDetailSelection,stories:novels,art:DuduItemArtV13,
+          coins:userProfile.currency,itemFilter,viewMode:mode,
           onSelect(item){inventoryDetailSelection=item;renderInventory();},
           onClose(){inventoryDetailSelection=null;renderInventory();},
           onDiscard(index){

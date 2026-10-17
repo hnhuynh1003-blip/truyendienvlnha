@@ -1,98 +1,115 @@
-/* DUDU V43.9 — inventory market/journal overview, Sandbox-only. */
+/* DUDU V44.0.1 — compact, inventory-first phone navigation.
+ * The default view is the grid, not a dashboard of repeated labels.
+ * V43.9 sandbox trade/escrow/gift contracts remain unchanged.
+ */
 (function(root){
  'use strict';
  let pane='overview';
  const $=(tag,cls,t)=>{
-  const x=document.createElement(tag);if(cls)x.className=cls;
-  if(t!==undefined)x.textContent=String(t);return x;
+  const x=document.createElement(tag);
+  if(cls)x.className=cls;
+  if(t!==undefined)x.textContent=String(t);
+  return x;
  };
  const fmt=n=>new Intl.NumberFormat('vi-VN').format(n);
- function render({host,inventory=[],coins=0,state,stories=[],onCancel,onFilter}={}){
+ const TITLES=Object.freeze({
+  overview:'Kho đồ',market:'Bán thường',auction:'Đấu giá',gifts:'Quà truyện'
+ });
+ function active(){return pane;}
+ function reset(){pane='overview';}
+ function render({host,inventory=[],coins=0,state,stories=[],
+  onCancel,onFilter,onModeChange}={}){
   if(!host||!root.DuduInventoryTradeV439)return false;
   const rules=root.DuduInventoryTradeV439,s=rules.state(state);
   host.replaceChildren();
-  host.className='dudu-v439-hub';
-  const title=$('div','dudu-v439-header');
-  const tagline=$('div','');
-  tagline.append($('strong','','KHO XUYÊN THẾ GIỚI'),
-   $('small','','Quản lý · Sử dụng · Giao dịch · Nguồn gốc'));
-  const wallet=$('span','dudu-v439-wallet','🪙 '+fmt(coins)+' Xu');
-  title.append(tagline,wallet);host.append(title);
-  const metrics=$('div','dudu-v439-metrics');
-  const usable=inventory.filter(x=>rules.actionStatus(x,stories)?.useable).length;
-  const saleable=inventory.filter(x=>rules.saleValue(x)>0).length;
-  const lots=s.listings.length;
-  for(const [label,num] of [['Vật phẩm',inventory.length+'/500'],
-   ['Dùng được',usable],['Bán thường',saleable],['Niêm yết',lots+'/'+rules.MAX_LISTINGS]]){
-   const box=$('div','dudu-v439-metric');
-   box.append($('small','',label),$('strong','',num));metrics.append(box);
-  }
-  host.append(metrics);
-  const tabs=$('nav','dudu-v439-nav');
-  tabs.setAttribute('aria-label','Chế độ xem kho');
-  for(const [id,label] of [['overview','🎒 Kho đồ'],
-   ['market','🪙 Bán thường'],['auction','⚖️ Đấu giá'],['gifts','💌 Quà truyện']]){
-   const button=$('button','dudu-v439-tab'+(pane===id?' active':''),label);
-   button.type='button';button.setAttribute('aria-pressed',String(pane===id));
+  host.className='dudu-v439-hub dudu-v440-compact';
+  host.dataset.mode=pane;
+  const nav=$('nav','dudu-v439-nav');
+  nav.setAttribute('aria-label','Chế độ xem Kho Xuyên Thế Giới');
+  const tabs=[
+   ['overview','🎒','Kho'],
+   ['market','🪙','Bán'],
+   ['auction','⚖️','Đấu giá'],
+   ['gifts','💌','Tặng']
+  ];
+  for(const [id,emoji,label] of tabs){
+   const button=$('button','dudu-v439-tab'+(pane===id?' active':''),emoji+' '+label);
+   button.type='button';button.dataset.mode=id;
+   button.setAttribute('aria-pressed',String(pane===id));
+   button.setAttribute('aria-label',TITLES[id]);
    button.addEventListener('click',()=>{
+    if(pane===id)return;
     pane=id;
-    render({host,inventory,coins,state,stories,onCancel,onFilter});
+    if(typeof onModeChange==='function')onModeChange(id);
+    else render({host,inventory,coins,state,stories,onCancel,onFilter});
+    host.querySelector('.dudu-v439-tab[data-mode="'+id+'"]')?.focus({preventScroll:true});
    });
-   tabs.append(button);
+   nav.append(button);
   }
-  host.append(tabs);
-  const content=$('section','dudu-v439-pane');
-  if(pane==='overview'){
-   content.append($('p','','Chạm vào vật phẩm để xem nguồn gốc, công dụng và thao tác được phép. Vật phẩm chỉ là đạo cụ sẽ không có nút sử dụng giả.'));
-   const quick=$('button','dudu-v439-quick','⚡ Xem những món dùng được');
-   quick.type='button';quick.addEventListener('click',()=>onFilter?.('ACTIVATABLE'));
-   content.append(quick);
-  }else if(pane==='market'){
-   content.append($('strong','','Quầy thu mua vật phẩm phổ thông'));
-   content.append($('p','','Bán từng món trong chi tiết Kho. Giá thu mua thấp hơn giá mua; giới hạn 12 món mỗi ngày. Không nhận vật phẩm chức năng, đồ hiếm và kỷ vật.'));
-   const count=$('div','dudu-v439-remaining',
-    'Hôm nay đã bán: '+s.sold+'/'+rules.DAILY_SALES+' · '+saleable+' món đủ điều kiện');
-   content.append(count);
-   const jump=$('button','dudu-v439-quick','Lọc đồ có thể bán');
-   jump.type='button';jump.addEventListener('click',()=>onFilter?.('ALL'));
-   content.append(jump);
-  }else if(pane==='auction'){
-   content.append($('strong','','Sàn đấu giá · Kho niêm yết thử nghiệm'));
-   content.append($('p','','Chỉ nhận vật phẩm hiếm B–SSS nhặt từ chương có thế giới khớp nguồn gốc. Khi niêm yết, món đồ chuyển vào kho ký gửi. Chưa có người mua, trả giá hay chuyển Xu thật; có thể hủy để nhận lại nguyên món.'));
-   if(!s.listings.length)content.append($('div','dudu-v439-empty','Chưa có lô nào. Chọn một vật phẩm hiếm đủ điều kiện trong Kho để niêm yết.'));
-   for(const lot of s.listings){
-    const card=$('article','dudu-v439-lot');
-    const info=$('div','dudu-v439-lot-info');
-    const novel=stories.find(x=>x?.id===lot.storyId);
-    info.append($('strong','',(lot.item.icon||'🎁')+' '+lot.item.name),
-     $('small','',lot.item.rank+' · '+(novel?.title||lot.storyId)+
-      ' · '+(lot.realm||'')+' · '+fmt(lot.ask)+' Xu (giá đề xuất)'),
-     $('small','','Đang ký gửi · chưa mở đấu giá liên tài khoản'));
-    const cancel=$('button','','Rút lô');
-    cancel.type='button';cancel.addEventListener('click',()=>onCancel?.(lot.id));
-    card.append(info,cancel);content.append(card);
+  host.append(nav);
+
+  if(pane!=='overview'){
+   const eligible=inventory.filter(x=>rules.saleValue(x)>0).length;
+   const giftable=inventory.filter(x=>rules.storyTargets(x,stories).length>0).length;
+   const intro=$('div','dudu-v440-mode-summary');
+   const modeStatus=pane==='market'?
+    'Có '+eligible+' món · Đã bán '+s.sold+'/'+rules.DAILY_SALES:
+    pane==='auction'?'Ký gửi '+s.listings.length+'/'+rules.MAX_LISTINGS:
+    'Có '+giftable+' món phù hợp';
+   intro.append($('strong','',modeStatus));
+   const help=$('details','dudu-v440-help');
+   const summary=$('summary','','?');
+   summary.setAttribute('aria-label','Hướng dẫn '+TITLES[pane]);
+   summary.title='Hướng dẫn '+TITLES[pane];
+   help.append(summary);
+   const desc=$('p','',pane==='market'?
+    'Nhấn vào món phổ thông trong lưới rồi chọn Bán. Giá thu mua thấp hơn giá mua; tối đa 12 món/ngày. Không bán kỷ vật hoặc đồ khóa.':
+    pane==='auction'?
+    'Chỉ ký gửi thử vật phẩm hiếm đúng nguồn chương/thế giới. Chưa có mua bán giữa người chơi; rút lô để lấy lại vật phẩm.':
+    'Chọn vật phẩm và ghi thiệp ủng hộ truyện. Chỉ có hiệu lực trong Sandbox, chưa chuyển đồ cho tác giả hoặc đăng bình luận.');
+   help.append(desc);intro.append(help);
+   const historyCount=s.history.length;
+   if(historyCount){
+    const history=$('details','dudu-v440-history');
+    const heading=$('summary','','↺ '+historyCount);
+    heading.title='Xem nhật ký giao dịch';
+    heading.setAttribute('aria-label','Xem '+historyCount+' giao dịch gần đây');
+    history.append(heading);
+    const list=$('div','dudu-v440-history-items');
+    const labels={SELL:'Bán',GIFT:'Ủng hộ',LIST:'Ký gửi',CANCEL:'Rút'};
+    for(const h of s.history.slice(-12).reverse()){
+     const row=$('div','dudu-v440-history-item');
+     const story=stories.find(x=>x?.id===h.storyId);
+     row.append($('span','',h.day+' · '+(labels[h.action]||h.action)+
+      ' '+h.name+(story?' → '+story.title:'')));
+     if(h.action==='SELL')row.append($('strong','', '+'+fmt(h.coins)+' Xu'));
+     if(h.note)row.append($('small','', '“'+h.note+'”'));
+     list.append(row);
+    }
+    history.append(list);intro.append(history);
    }
-  }else{
-   content.append($('strong','','Thiệp tặng quà cho truyện'));
-   content.append($('p','','Mở vật phẩm rồi chọn “Tặng cho truyện”. Có thể ghi lời nhắn và chọn chương phù hợp. Phiên bản này chỉ ghi vào nhật ký Sandbox của bạn; không đăng bình luận công khai hoặc chuyển quà đến tác giả.'));
-  }
-  if(s.history.length){
-   const history=$('details','dudu-v439-history');
-   history.append($('summary','','Lịch sử giao dịch · '+s.history.length));
-   const actionLabels={SELL:'Đã bán',GIFT:'Tặng truyện',LIST:'Ký gửi',CANCEL:'Rút lô'};
-   for(const h of s.history.slice(-12).reverse()){
-    const line=$('div','dudu-v439-history-line');
-    const story=stories.find(x=>x.id===h.storyId);
-    line.append($('span','',h.day+' · '+actionLabels[h.action]+' '+h.name+
-     (story?' → '+story.title:'')),
-     $('strong','',h.action==='SELL'?'+'+h.coins+' Xu':h.action==='LIST'?
-      fmt(h.ask)+' Xu (đề xuất)':''));
-    if(h.note)line.append($('small','', '“'+h.note+'”'));
-    history.append(line);
+   host.append(intro);
+   if(pane==='auction'){
+    const content=$('section','dudu-v439-pane dudu-v440-escrow');
+    if(!s.listings.length){
+     content.append($('span','dudu-v439-empty','Chưa có lô ký gửi'));
+    }
+    for(const lot of s.listings){
+     const card=$('article','dudu-v439-lot');
+     const info=$('div','dudu-v439-lot-info');
+     const story=stories.find(x=>x?.id===lot.storyId);
+     info.append($('strong','',(lot.item.icon||'🎁')+' '+lot.item.name),
+      $('small','',lot.item.rank+' · '+(story?.title||lot.storyId)+
+       ' · '+fmt(lot.ask)+' Xu đề xuất'));
+     const cancel=$('button','','Rút lô');
+     cancel.type='button';
+     cancel.addEventListener('click',()=>onCancel?.(lot.id));
+     card.append(info,cancel);content.append(card);
+    }
+    host.append(content);
    }
-   content.append(history);
   }
-  host.append(content);return true;
+  return true;
  }
- root.DuduInventoryHubV439=Object.freeze({render});
+ root.DuduInventoryHubV439=Object.freeze({render,active,reset});
 })(typeof window!=='undefined'?window:{});

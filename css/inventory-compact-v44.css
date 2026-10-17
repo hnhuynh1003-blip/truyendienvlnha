@@ -1,0 +1,161 @@
+/* DUDU V44.0.1 · inventory-first, compact Cyber Phone warehouse.
+ * Override the old V42/V43.9 dashboard without changing economy or trade rules.
+ */
+body.dudu-phone-v11 #cyber-phone #phone-app-inventory{
+ --warehouse-line:#777fa998;
+}
+body.dudu-phone-v11 #cyber-phone #inventory-v439-hub.dudu-v440-compact{
+ margin:2px 0 5px!important;padding:0!important;gap:5px!important;
+ border:0!important;background:none!important;box-shadow:none!important;
+ border-radius:0!important;min-width:0;
+}
+body.dudu-phone-v11 #cyber-phone #inventory-v439-hub .dudu-v439-nav{
+ display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+ gap:5px;min-width:0;
+}
+body.dudu-phone-v11 #cyber-phone #inventory-v439-hub .dudu-v439-tab{
+ display:flex;justify-content:center;align-items:center;min-width:0;
+ min-height:34px;padding:5px 2px;border-radius:10px;
+ background:linear-gradient(160deg,#2a3551,#1c2942);
+ border:1px solid #657b9fac;color:#dce5f7;
+ font-family:inherit;font-size:10px;font-weight:700;line-height:1.15;
+ white-space:nowrap;box-shadow:none;cursor:pointer;
+}
+body.dudu-phone-v11 #cyber-phone #inventory-v439-hub .dudu-v439-tab.active{
+ background:linear-gradient(125deg,#695181,#3a6683);
+ border-color:#c4b8eca8;color:#fff5ff;
+ box-shadow:inset 0 1px #ffffff25;
+}
+body.dudu-phone-v11 #cyber-phone #inventory-v439-hub .dudu-v440-mode-summary{
+ display:flex;flex-wrap:wrap;align-items:center;gap:5px;
+ padding:4px 7px;min-height:26px;
+ background:#192943b0;border:1px solid #7286a35e;border-radius:9px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v440-mode-summary>strong{
+ flex:1;min-width:0;font-size:10px;color:#d9e8ff;line-height:1.3;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v440-help,
+body.dudu-phone-v11 #cyber-phone .dudu-v440-history{
+ position:relative;margin:0;border:0;padding:0;background:none;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v440-help>summary,
+body.dudu-phone-v11 #cyber-phone .dudu-v440-history>summary{
+ display:grid;place-items:center;list-style:none;
+ height:25px;min-width:25px;padding:0 3px;
+ border-radius:7px;border:1px solid #768dad89;
+ color:#e1e7ff;background:#283954;cursor:pointer;
+ font-size:12px;font-weight:800;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v440-help>summary::-webkit-details-marker,
+body.dudu-phone-v11 #cyber-phone .dudu-v440-history>summary::-webkit-details-marker{
+ display:none;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v440-help>p,
+body.dudu-phone-v11 #cyber-phone .dudu-v440-history-items{
+ position:relative;z-index:2;flex-basis:100%;width:100%;
+ max-width:245px;margin:4px 0 0 0;padding:9px;
+ box-sizing:border-box;border:1px solid #9aa8c5ab;border-radius:9px;
+ background:#121e34;color:#e4ebfb;
+ box-shadow:0 8px 18px #060a1bbd;font-size:10px;line-height:1.5;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v440-history-items{
+ max-height:170px;overflow:auto;min-width:210px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v440-history-item{
+ display:flex;flex-wrap:wrap;gap:5px;justify-content:space-between;
+ padding:5px 0;border-bottom:1px solid #91a3c23b;font-size:9px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v440-history-item span{flex:1}
+body.dudu-phone-v11 #cyber-phone .dudu-v440-history-item strong{color:#ffe6bd}
+body.dudu-phone-v11 #cyber-phone .dudu-v440-history-item small{flex-basis:100%}
+body.dudu-phone-v11 #cyber-phone #inventory-v2-toolbar.dudu-v42-toolbar{
+ gap:5px!important;padding:0!important;margin:0 0 4px!important;
+ min-width:0;
+}
+body.dudu-phone-v11 #cyber-phone #inventory-v2-toolbar .dudu-v438-quick{
+ order:-2;min-height:26px;margin:0!important;
+ padding:1px 3px!important;border:0!important;border-radius:0;
+ box-shadow:none;background:none!important;font-size:10px!important;
+ color:#dce9fc;gap:6px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v438-quick button{
+ min-height:26px!important;padding:3px 8px!important;
+ font-size:10px!important;border-radius:8px;
+}
+body.dudu-phone-v11 #cyber-phone #inventory-v2-toolbar .dudu-v42-search-row{
+ order:-1;gap:5px!important;min-height:33px;
+}
+body.dudu-phone-v11 #cyber-phone #inventory-v2-search{
+ box-sizing:border-box;height:34px!important;
+ padding:6px 10px!important;font-size:11px!important;
+ border-radius:9px!important;background:#17253c!important;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v440-filter-toggle{
+ flex:none;display:grid;place-items:center;
+ width:35px;height:34px;padding:0;margin:0;
+ border-radius:9px;border:1px solid #7991b1b6;
+ background:linear-gradient(145deg,#2a3858,#243c54);
+ color:#e3eeff;font-size:19px;cursor:pointer;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v440-filter-toggle[aria-expanded="true"]{
+ background:linear-gradient(145deg,#645077,#3c5f7d);
+ color:#fff2ff;border-color:#c3addf;
+}
+body.dudu-phone-v11 #cyber-phone #inventory-v42-categories{
+ order:0;gap:4px!important;padding:0 0 2px!important;
+}
+body.dudu-phone-v11 #cyber-phone #inventory-v42-categories button{
+ min-height:28px!important;padding:4px 8px!important;
+ font-size:10px!important;border-radius:8px;
+}
+body.dudu-phone-v11 #cyber-phone #inventory-v42-categories button[data-category="ACTIVATABLE"]{
+ display:none!important; /* quick ⚡ action already exists above */
+}
+body.dudu-phone-v11 #cyber-phone #inventory-v42-options:not([open]){
+ display:none!important;
+}
+body.dudu-phone-v11 #cyber-phone #inventory-v42-options[open]{
+ display:block!important;order:1;width:100%;margin:0;
+}
+body.dudu-phone-v11 #cyber-phone #inventory-v42-options>summary{
+ padding:6px 10px!important;
+}
+body.dudu-phone-v11 #cyber-phone #inventory-container.dudu-v42-grid{
+ margin:0!important;padding:2px 1px 9px!important;
+ gap:6px!important;align-content:start;
+}
+body.dudu-phone-v11 #cyber-phone #inventory-container .dudu-v42-slot{
+ min-height:108px!important;padding-top:5px!important;
+ padding-bottom:21px!important;border-radius:11px!important;
+}
+body.dudu-phone-v11 #cyber-phone #inventory-container .dudu-v42-slot .dudu-v27-slot-name{
+ line-height:1.24!important;font-size:9px!important;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v439-slot-hint{
+ bottom:3px;left:3px;right:3px;
+ border-radius:5px;font-size:8px;line-height:1.1;padding:3px 1px;
+}
+body.dudu-phone-v11 #cyber-phone #inventory-container .dudu-v43-tool-marker{
+ display:none!important; /* no duplicate overlay over the compact action label */
+}
+body.dudu-phone-v11 #cyber-phone #inventory-v439-hub .dudu-v439-pane.dudu-v440-escrow{
+ padding:0!important;gap:4px!important;font-size:10px;
+}
+body.dudu-phone-v11 #cyber-phone #inventory-v439-hub .dudu-v439-empty{
+ padding:5px 8px!important;font-size:10px;
+}
+body.dudu-phone-v11 #cyber-phone #inventory-v439-hub .dudu-v439-lot{
+ padding:6px!important;gap:5px!important;border-radius:9px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v440-filter-toggle:focus-visible,
+body.dudu-phone-v11 #cyber-phone .dudu-v439-tab:focus-visible{
+ outline:2px solid #b2eaff;outline-offset:2px;
+}
+@media(max-width:365px){
+ body.dudu-phone-v11 #cyber-phone #inventory-container.dudu-v42-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ }
+ body.dudu-phone-v11 #cyber-phone #inventory-v439-hub .dudu-v439-tab{
+  font-size:9px!important;
+ }
+}
