@@ -247,7 +247,7 @@ async function handleComments(req,env,path,origin){
  const pilot=pilotAccess(env,user);
  if(!pilot.ok)return error(pilot.code,'Tài khoản không thuộc Pilot V45 hoặc cấu hình chưa mở.',
    pilot.status,origin,env);
- if(adminPath&&!user.admin)
+ if(adminPath&&(!user.admin||pilot.role!=='AUTHOR'))
   return error('forbidden','Yêu cầu quyền quản trị đã xác minh.',403,origin,env);
  let body=null;
  if(req.method==='POST'){
@@ -309,7 +309,8 @@ async function handlePilotStatus(req,env,origin){
  const pilot=pilotAccess(env,user);
  if(!pilot.ok)return error(pilot.code,'Pilot V45 chưa mở cho tài khoản này.',
    pilot.status,origin,env);
- return json({ok:true,version:'V45.0',role:pilot.role,
+ return json({ok:true,version:'V45.1',role:pilot.role,
+   canManagePilot:pilot.role==='AUTHOR'&&user.admin===true,
    storageIsolated:true,preflightOnly:true,
    gates:{
     comments:env.COMMENTS_ENABLED==='true',
