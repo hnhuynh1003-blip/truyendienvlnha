@@ -1,0 +1,89 @@
+name: DUDU V45 Pilot Staging (Manual Only)
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: "Choose isolated comments staging activation or emergency shutdown"
+        type: choice
+        options:
+          - enable
+          - disable
+        default: disable
+        required: true
+      confirmation:
+        description: "For enable type ENABLE_V45_SHARED_COMMENTS; for disable type DISABLE_V45_SHARED_COMMENTS"
+        type: string
+        required: true
+permissions:
+  contents: read
+concurrency:
+  group: dudu-v45-manual-staging-activation
+  cancel-in-progress: false
+jobs:
+  deploy:
+    name: Manually control dudu-ai-staging (no gifts)
+    runs-on: ubuntu-24.04
+    environment: dudu-pilot-staging
+    if: github.ref == 'refs/heads/main'
+    timeout-minutes: 20
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      - name: Checkout trusted main
+        uses: actions/checkout@v4
+      - name: Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Require explicit approval and cloud credentials
+        shell: bash
+        env:
+          V45_OPERATION: ${{ inputs.operation }}
+          PILOT_ACTIVATION_CONFIRM: ${{ inputs.confirmation }}
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN" || { echo "Missing Cloudflare API token secret"; exit 1; }
+          test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo "Missing Cloudflare account ID secret"; exit 1; }
+          if [ "$V45_OPERATION" = enable ]; then
+            test "$PILOT_ACTIVATION_CONFIRM" = 'ENABLE_V45_SHARED_COMMENTS' || exit 1
+          else
+            test "$V45_OPERATION" = disable || exit 1
+            test "$PILOT_ACTIVATION_CONFIRM" = 'DISABLE_V45_SHARED_COMMENTS' || exit 1
+          fi
+      - name: Install Worker dependencies
+        run: npm install --prefix cloudflare --no-audit --no-fund
+      - name: Run Worker safety tests before deployment
+        run: npm test --prefix cloudflare
+      - name: Prepare ephemeral staging-only config and UID secret payload
+        working-directory: cloudflare
+        env:
+          V45_OPERATION: ${{ inputs.operation }}
+          PILOT_ACTIVATION_CONFIRM: ${{ inputs.confirmation }}
+          PILOT_READER_A_UID: ${{ secrets.PILOT_READER_A_UID }}
+          PILOT_READER_B_UID: ${{ secrets.PILOT_READER_B_UID }}
+          PILOT_AUTHOR_UID: ${{ secrets.PILOT_AUTHOR_UID }}
+          PILOT_NAMESPACE: ${{ secrets.PILOT_NAMESPACE }}
+        run: node scripts/pilot-activation-v45.mjs "$V45_OPERATION"
+      - name: Verify staging deployment bundle without writing
+        working-directory: cloudflare
+        run: npx wrangler deploy --config .pilot-v45-activation.toml --dry-run
+      - name: Upload verified Pilot UID secrets (only on enable)
+        if: inputs.operation == 'enable'
+        working-directory: cloudflare
+        run: npx wrangler secret bulk .pilot-v45-secrets.json --config wrangler.toml
+      - name: Deploy isolated Pilot configuration or disable all staging flags
+        working-directory: cloudflare
+        run: npx wrangler deploy --config .pilot-v45-activation.toml
+      - name: Verify unauthenticated Pilot endpoint is denied
+        shell: bash
+        run: |
+          set -euo pipefail
+          status="$(curl -sS --max-time 18 -o /tmp/dudu-pilot-probe.json -w '%{http_code}'             https://dudu-ai-staging.dudu-studio-ai.workers.dev/v1/pilot/status)"
+          test "$status" = 401 || { echo "Pilot expected HTTP 401 for anonymous"; exit 1; }
+          echo "Anonymous Pilot request denied (401). Requires Firebase JWT for real-user validation."
+      - name: Wipe deployment UID material
+        if: always()
+        working-directory: cloudflare
+        run: rm -f .pilot-v45-secrets.json .pilot-v45-activation.toml
