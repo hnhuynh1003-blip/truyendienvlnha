@@ -1847,13 +1847,18 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     // ?sandbox=1: client-only testing, NEVER writes to production Firestore.
-    const IS_SANDBOX_MODE = new URLSearchParams(window.location.search).get('sandbox') === '1';
+    const DUDU_QUERY = new URLSearchParams(window.location.search);
+    const IS_SANDBOX_MODE = DUDU_QUERY.get('sandbox') === '1';
+    // V47 requires both sandbox=1 and pilot=1; neither default mode can access Pilot.
+    const IS_PILOT_STAGING_MODE = IS_SANDBOX_MODE && DUDU_QUERY.get('pilot') === '1';
     DuduAI.init(IS_SANDBOX_MODE);
     DuduCollectiblesClient.init(IS_SANDBOX_MODE);
     if (IS_SANDBOX_MODE) {
       document.body.classList.add('dudu-phone-v11');
       const banner = document.createElement('div');
-      banner.textContent = '🧪 SANDBOX — Dữ liệu thử nghiệm cục bộ, không đồng bộ máy chủ';
+      banner.textContent = IS_PILOT_STAGING_MODE ?
+        '🧪 V47 PILOT STAGING — Bình luận Firebase riêng; không dùng Xu, Kho hay quà thật' :
+        '🧪 SANDBOX — Dữ liệu thử nghiệm cục bộ, không đồng bộ máy chủ';
       banner.style.cssText = 'position:sticky;top:0;z-index:9999;text-align:center;background:#78350f;color:#fff;padding:5px;font-size:12px;';
       document.body.prepend(banner);
     }
@@ -4008,7 +4013,13 @@ document.getElementById('phone-home-screen').style.display = 'none';
           sandbox:IS_SANDBOX_MODE
         });
         const pilotHost=document.getElementById('pilot-v451-content');
-        pilotHost.replaceChildren();pilotHost.hidden=true;
+        if(IS_PILOT_STAGING_MODE){
+          window.DuduPilotLabUIV451?.render({
+            host:pilotHost,sandbox:IS_PILOT_STAGING_MODE
+          });
+        }else if(pilotHost){
+          pilotHost.replaceChildren();pilotHost.hidden=true;
+        }
       } else if (appName === 'museum') {
         renderMuseum();
       } else if (appName === 'fun') {
@@ -5478,8 +5489,9 @@ document.getElementById('phone-home-screen').style.display = 'none';
       if(!host||!window.DuduStoryCommentsUIV442)return false;
       const novel=novels[selectedNovelIndex];
       const chapter=view==='chapter'?novel?.chapters?.[selectedChapterIndex]:null;
-      // Fictional roles share an origin-local Sandbox ledger.
-      window.DuduSandboxDiscussionUI?.render({
+      // V47 selects Firebase Pilot only with an explicit staging opt-in.
+      // Default Sandbox retains the V46 origin-local fictional board.
+      const sharedBoardOptions={
         host:document.getElementById(view==='chapter'?
           'chapter-comments-pilot-v452':'story-comments-pilot-v452'),
         storyId:novel?.id,
@@ -5487,7 +5499,14 @@ document.getElementById('phone-home-screen').style.display = 'none';
         storyTitle:novel?.title||'',chapterTitle:chapter?.title||'',
         chapterIds:(novel?.chapters||[]).map((ch,i)=>ch.id||String(i)),
         sandbox:IS_SANDBOX_MODE
-      });
+      };
+      if(IS_PILOT_STAGING_MODE){
+        window.DuduStoryPilotCommentsV452?.render({
+          ...sharedBoardOptions,sandbox:IS_PILOT_STAGING_MODE
+        });
+      }else{
+        window.DuduSandboxDiscussionUI?.render(sharedBoardOptions);
+      }
       if(!IS_SANDBOX_MODE||!novel||view==='chapter'&&!chapter){
         host.hidden=true;host.replaceChildren();return false;
       }
