@@ -1,0 +1,70 @@
+/* V44.2 · quiet comments panel for novel cover and chapter reader.
+ * Collapsed by default: no wall of comments below the text.
+ */
+.dudu-v442-host{margin:16px auto;max-width:750px;min-width:0}
+.dudu-v442-host[hidden]{display:none!important}
+.dudu-v442-shell{
+ border:1px solid #786e9ea3;border-radius:14px;
+ background:linear-gradient(135deg,#20263b,#151d32);
+ color:#e1e9f7;overflow:hidden;
+ box-shadow:0 8px 18px #04081859;
+}
+.dudu-v442-shell>summary{list-style:none;cursor:pointer}
+.dudu-v442-shell>summary::-webkit-details-marker{display:none}
+.dudu-v442-header{
+ display:flex;align-items:center;justify-content:space-between;gap:7px;
+ padding:11px 13px;font-size:12px;font-weight:800;
+ background:linear-gradient(110deg,#343354,#24374d);
+}
+.dudu-v442-header small{font-size:9px;font-weight:600;color:#b8c7e5}
+.dudu-v442-content{padding:10px 12px 12px;display:flex;flex-direction:column;gap:9px}
+.dudu-v442-scope{font-size:11px;font-weight:750;color:#f6e4ff}
+.dudu-v442-local-warning{
+ margin:0;font-size:10px;line-height:1.5;color:#c5b9db;
+ border:1px dashed #756d9d;border-radius:8px;padding:7px 8px;
+}
+.dudu-v442-notices{border:1px solid #6380997a;border-radius:8px;padding:7px}
+.dudu-v442-notices summary{font-size:10px;cursor:pointer;color:#e5d7fc}
+.dudu-v442-notices p{margin:5px 0;font-size:10px}
+.dudu-v442-form,.dudu-v442-reply-form{display:flex;flex-direction:column;gap:6px}
+.dudu-v442-input{box-sizing:border-box;resize:vertical;width:100%;min-width:0;
+ background:#0f1c2f;color:#f0f5ff;border:1px solid #6e83a4;
+ border-radius:9px;padding:9px;font:400 12px/1.5 inherit;
+}
+.dudu-v442-input:focus-visible{outline:2px solid #a8dfff;outline-offset:1px}
+.dudu-v442-actions{display:flex;justify-content:space-between;gap:7px}
+.dudu-v442-actions button,.dudu-v442-reply-form button{
+ border-radius:9px;padding:7px 10px;font-size:10px;min-height:32px;
+ font-weight:750;border:1px solid #a6a0d0a6;
+}
+.dudu-v442-gift{background:#323b52;color:#cbd3e3}
+.dudu-v442-publish{background:linear-gradient(110deg,#755084,#356b8c);color:#fff6ff}
+.dudu-v442-actions button:disabled,.dudu-v442-reply-form button:disabled{
+ opacity:.55;cursor:not-allowed;
+}
+.dudu-v442-status{margin:0;font-size:10px;line-height:1.4;color:#f2c6a7}
+.dudu-v442-list{display:flex;flex-direction:column;gap:7px;max-height:520px;overflow-y:auto}
+.dudu-v442-empty{font-size:11px;text-align:center;color:#b7c6da;margin:9px 0}
+.dudu-v442-item{padding:9px;border-radius:10px;border:1px solid #5c719180;
+ background:#172439;min-width:0}
+.dudu-v442-item.nested{margin:8px 0 0 14px;border-left:2px solid #bca1dd;
+ background:#212a43}
+.dudu-v442-meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.dudu-v442-meta strong{font-size:10px;color:#ffe4f9}
+.dudu-v442-meta small{font-size:9px;color:#a8bbd4}
+.dudu-v442-text{font-size:11px;white-space:pre-wrap;overflow-wrap:anywhere;
+ line-height:1.55;color:#e5ecfa;margin:6px 0}
+.dudu-v442-action-bar{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.dudu-v442-small{background:#2b3952;color:#dce7fc;font-size:10px;
+ border:1px solid #647d9d;border-radius:7px;padding:5px 8px;cursor:pointer}
+.dudu-v442-report{display:flex;align-items:center;gap:6px;margin:7px 0}
+.dudu-v442-report[hidden]{display:none!important}
+.dudu-v442-reason{max-width:140px;min-width:0;background:#1b2d45;color:#f8f4ff;
+ padding:5px;border:1px solid #829abb;border-radius:7px;font-size:10px}
+.dudu-v442-footer{font-size:9px;color:#aab9ce;line-height:1.5}
+@media(max-width:440px){
+ .dudu-v442-host{margin:10px 4px}
+ .dudu-v442-header{padding:10px;font-size:11px}
+ .dudu-v442-content{padding:9px}
+ .dudu-v442-item.nested{margin-left:8px}
+}

@@ -3465,6 +3465,58 @@ async function main() {
       oneFound:true,localOnly:true,retained:true,noGrantedRelic:true,closed:true,noWrites:true
     },'V44.1 world catalog, local discovery and protected reward pools');
 
+    // V44.2: novel and chapter comments appear only in Sandbox, open
+    // collapsed, and only write browser account profile (never Firestore).
+    const discussionV442=await page.evaluate(()=>{
+      const previous=structuredClone(userProfile);
+      const previousNovel=selectedNovelIndex,previousChapter=selectedChapterIndex;
+      const writes=window.__firestoreWrites.length;
+      try{
+        selectedNovelIndex=0;
+        delete userProfile.commentsV442;
+        openCover(0);
+        const story=document.getElementById('story-comments-v442');
+        const storyPanel=story?.querySelector('.dudu-v442-shell');
+        const storyInitiallyCollapsed=!story.hidden&&!storyPanel.open;
+        storyPanel.querySelector('summary').click();
+        const form=story.querySelector('.dudu-v442-form');
+        form.querySelector('textarea').value='Truyện này rất cuốn và thú vị!';
+        form.requestSubmit();
+        const storySaved=userProfile.commentsV442?.comments.length===1&&
+          userProfile.commentsV442.comments[0].chapterId===null;
+        const escaped=story.textContent.includes('Truyện này rất cuốn');
+        const giftDisabled=story.querySelector('.dudu-v442-gift')?.disabled===true;
+        userProfile.commentsV442.comments[0].createdAt=Date.now()-60000;
+        readChapter(0);
+        const chapter=document.getElementById('chapter-comments-v442');
+        const chapterPanel=chapter?.querySelector('.dudu-v442-shell');
+        const chapterInitiallyCollapsed=!chapter.hidden&&!chapterPanel.open;
+        chapterPanel.querySelector('summary').click();
+        const chapterForm=chapter.querySelector('.dudu-v442-form');
+        chapterForm.querySelector('textarea').value='Chương một thật nhiều bất ngờ!';
+        chapterForm.requestSubmit();
+        const chapterId=novels[0].chapters[0].id||'0';
+        const records=DuduStoryCommentsV442.visible(userProfile.commentsV442,novels[0].id,chapterId);
+        const chapterSaved=records.length===1&&records[0].chapterId===chapterId;
+        const storySeparated=DuduStoryCommentsV442.visible(
+          userProfile.commentsV442,novels[0].id,null).length===1;
+        const noCloud=window.__firestoreWrites.length===writes;
+        const noPublicBadge=chapter.textContent.includes('Bản thử nghiệm riêng tư');
+        return {storyInitiallyCollapsed,storySaved,escaped,giftDisabled,
+          chapterInitiallyCollapsed,chapterSaved,storySeparated,noCloud,noPublicBadge};
+      }finally{
+        userProfile=previous;
+        selectedNovelIndex=previousNovel;selectedChapterIndex=previousChapter;
+        saveCurrentAccount();
+        goHome();
+      }
+    });
+    assert.deepEqual(discussionV442,{
+      storyInitiallyCollapsed:true,storySaved:true,escaped:true,giftDisabled:true,
+      chapterInitiallyCollapsed:true,chapterSaved:true,storySeparated:true,
+      noCloud:true,noPublicBadge:true
+    },'V44.2 local comments and chapter separation, with gift/send lock');
+
     assert.deepEqual(failures, [], 'Browser should have no uncaught exceptions');
     console.log('Browser sandbox smoke PASS:', JSON.stringify(verified), JSON.stringify(swapped), JSON.stringify(npcEfficient));
   } finally {

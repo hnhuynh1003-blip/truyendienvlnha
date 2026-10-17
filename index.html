@@ -46,6 +46,7 @@
   <link rel="stylesheet" href="css/gift-recipient-v44.css?v=1">
   <link rel="stylesheet" href="css/inventory-compact-v44.css?v=1">
   <link rel="stylesheet" href="css/world-collection-v44-1.css?v=1">
+  <link rel="stylesheet" href="css/story-comments-v44-2.css?v=1">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -81,6 +82,8 @@
   <script src="js/npc-persona-v2-r6.js"></script>
   <script src="js/npc-author-v2-r7.js"></script>
   <script src="js/story-dates-v1.js"></script>
+  <script src="js/story-comments-v44-2.js?v=1"></script>
+  <script src="js/story-comments-ui-v44-2.js?v=1"></script>
   <script src="js/npc-portrait-library-v1.js?v=40-1"></script>
   <script src="js/npc-anime-candidates-v14.js"></script>
   <script src="js/player-avatar-v16.js"></script>
@@ -822,6 +825,8 @@
         </div>
       </div>
       <div class="chapter-items" id="chapter-list-container"></div>
+      <section id="story-comments-v442" class="dudu-v442-host"
+        aria-label="Bình luận của truyện" hidden></section>
     </div>
 
     <!-- 3. TRÌNH ĐỌC TRUYỆN -->
@@ -858,6 +863,8 @@
         <div id="reader-author-note-content"></div>
       </div>
 
+      <section id="chapter-comments-v442" class="dudu-v442-host"
+        aria-label="Bình luận của chương" hidden></section>
       <div class="reader-bottom-nav">
         <button class="btn" id="btn-prev-ch" onclick="prevChapter()">‹ Trước</button>
         <button class="btn" onclick="goCover()">Mục lục</button>
@@ -5355,6 +5362,34 @@ document.getElementById('phone-home-screen').style.display = 'none';
       renderHome();
     }
 
+    // V44.2: Sandbox-local prototype. Neither the name nor local UID is
+    // trusted to publish public comments. V44.3 needs a verified server.
+    function renderStoryCommentsV442(view){
+      const host=document.getElementById(view==='chapter'?
+        'chapter-comments-v442':'story-comments-v442');
+      if(!host||!window.DuduStoryCommentsUIV442)return false;
+      const novel=novels[selectedNovelIndex];
+      const chapter=view==='chapter'?novel?.chapters?.[selectedChapterIndex]:null;
+      if(!IS_SANDBOX_MODE||!novel||view==='chapter'&&!chapter){
+        host.hidden=true;host.replaceChildren();return false;
+      }
+      const id=novel.id;
+      return DuduStoryCommentsUIV442.render({
+        host,storyId:id,chapterId:chapter?(chapter.id||String(selectedChapterIndex)):null,
+        storyTitle:novel.title,chapterTitle:chapter?.title||'',
+        uid:currentUsername||null,name:userProfile.name||currentUsername||'Độc giả',
+        state:userProfile.commentsV442,isSandbox:IS_SANDBOX_MODE,
+        onSave(next){
+          if(!IS_SANDBOX_MODE||!currentUsername||
+            novels[selectedNovelIndex]?.id!==id)return false;
+          userProfile.commentsV442=next;
+          saveCurrentAccount();
+          renderStoryCommentsV442(view);
+          return true;
+        }
+      });
+    }
+
     function openCover(idx) {
       selectedNovelIndex = idx;
       activeChatNovelId = novels[idx].id;
@@ -5394,6 +5429,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       }
 
       renderChapterIndex();
+      renderStoryCommentsV442('story');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -5493,6 +5529,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       }));
 
       updateChapterLootButtonState();
+      renderStoryCommentsV442('chapter');
 
       // EXP reward: once ever per UID/story/chapter. Opening the chapter is
       // NOT proof of finishing the reading (server verification is future work).
