@@ -60,9 +60,9 @@ test('V16 Sandbox UI fields integrated into home, account, profile and chat',()=
  }
  assert.match(html,/src="js\/player-avatar-ui-v16.js(?:\?v=[^"]+)?"/);
  assert.match(html,/href="css\/player-avatar-v16.css"/);
- assert.match(html,/if\(IS_SANDBOX_MODE\)renderPlayerAvatarPlacesV16\(\)/);
+ assert.match(html,/renderPlayerAvatarPlacesV16\(\)/);
  assert.match(html,/if\(avatarBadge\)renderPlayerAvatarV16\(avatarBadge\)/);
- assert.match(source,/if\(!IS_SANDBOX_MODE\|\|!playerAvatarDraftV16\|\|/);
+ assert.match(source,/if\(!playerAvatarAllowedV497\(\)\|\|!playerAvatarDraftV16\|\|/);
  assert.match(source,/DuduNpcPortraitLibrary\.saveUpload\(/);
  assert.match(source,/DuduPlayerAvatarV16\.SCOPE/);
  assert.match(source,/saveCurrentAccount\(\)/);
@@ -76,6 +76,6 @@ test('V16 does not grant frames via client and has no remote upload',()=>{
  assert.match(source,/Chờ xác minh thành tựu truyện từ máy chủ/);
  assert.match(source,/Chờ xác minh mốc quan hệ NPC từ máy chủ/);
  assert.match(source,/Chỉ mở khi tài khoản được máy chủ xác thực là Tác Giả/);
- assert.match(source,/if\(!IS_SANDBOX_MODE\)/);
+ assert.match(source,/window\.DuduAuth\.uid\(\)===currentUsername/);
  assert.doesNotMatch(source,/userProfile\.currency\s*[+*=-]|userProfile\.inventory\.push/);
 });
