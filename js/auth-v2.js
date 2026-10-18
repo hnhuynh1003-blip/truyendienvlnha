@@ -70,8 +70,59 @@
     activeChatNovelId = null;
   }
   function showRetry(show) {
-    const el = document.getElementById('auth-retry-profile-btn');
-    if (el) el.style.display = show ? 'block' : 'none';
+    for (const id of ['auth-retry-profile-btn','auth-diagnose-firestore-btn']) {
+      const el = document.getElementById(id);
+      if (el) el.style.display = show ? 'block' : 'none';
+    }
+  }
+  function firestoreProbeMessage(code) {
+    switch (code) {
+      case 200: return 'Firestore REST: HTTP 200 — tài khoản đọc được hồ sơ trên máy chủ. Rules đọc đang cho phép; cần kiểm tra kết nối Firestore SDK trong trình duyệt.';
+      case 404: return 'Firestore REST: HTTP 404 — yêu cầu được xử lý nhưng không thấy tài liệu hồ sơ (hoặc sai đường dẫn database). Cần kiểm tra profiles_v2/{UID}, không tự tạo tài khoản khác.';
+      case 401: return 'Firestore REST: HTTP 401 — token hoặc quyền xác thực của yêu cầu không hợp lệ.';
+      case 403: return 'Firestore REST: HTTP 403 — yêu cầu bị từ chối. Cần đối chiếu Rules profiles_v2/{UID} và quyền API/project đang chạy.';
+      case 429: return 'Firestore REST: HTTP 429 — máy chủ trả lỗi hạn mức. Không liên quan đến số lượng hai tài khoản.';
+      default: return 'Firestore REST: HTTP '+code+' — cần kiểm tra phản hồi máy chủ và cấu hình Firestore.';
+    }
+  }
+  // Read-only diagnostic using the same end-user ID token; never log or display
+  // its value or the profile's contents. It cannot modify Security Rules.
+  async function diagnoseFirestore() {
+    const account = client?.currentUser;
+    if (!account || IS_SANDBOX_MODE) {
+      status('Cần đăng nhập Firebase trên bản chính thức trước khi chẩn đoán.');
+      return;
+    }
+    const uid = account.uid, ticket = generation;
+    const button = document.getElementById('auth-diagnose-firestore-btn');
+    if (button) button.disabled = true;
+    status('Đang kiểm tra đường truy cập Firestore (chỉ đọc)…');
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 10000);
+    try {
+      const idToken = await withTimeout(account.getIdToken(), 'Firebase token');
+      if (ticket !== generation || client.currentUser?.uid !== uid) return;
+      const projectId = firebase.app?.()?.options?.projectId || 'truyendienvl';
+      const endpoint = 'https://firestore.googleapis.com/v1/projects/'
+        + encodeURIComponent(projectId) + '/databases/(default)/documents/profiles_v2/'
+        + encodeURIComponent(uid);
+      const response = await fetch(endpoint, {
+        method:'GET', headers:{Authorization:'Bearer '+idToken},
+        cache:'no-store', signal:controller.signal
+      });
+      if (ticket !== generation || client.currentUser?.uid !== uid) return;
+      status(firestoreProbeMessage(response.status));
+    } catch (error) {
+      if (ticket !== generation || client.currentUser?.uid !== uid) return;
+      status(error?.name==='AbortError'
+        ? 'Firestore REST: hết 10 giây — đường truyền đến firestore.googleapis.com bị chặn, gián đoạn hoặc phản hồi quá chậm.'
+        : error?.code==='profile/timeout'
+          ? 'Không lấy được Firebase ID token để chẩn đoán. Kiểm tra kết nối Firebase Auth.'
+          : 'Firestore REST không thể kết nối từ trình duyệt. Kiểm tra mạng, chặn quảng cáo, DNS, VPN và Developer Tools → Network.');
+    } finally {
+      clearTimeout(timer);
+      if (button) button.disabled = false;
+    }
   }
   function readableProfileError(error) {
     if (error?.code === 'permission-denied') {
@@ -212,6 +263,17 @@
       button.addEventListener('click', retry);
       message.insertAdjacentElement('afterend', button);
     }
+    if (message && !document.getElementById('auth-diagnose-firestore-btn')) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.id = 'auth-diagnose-firestore-btn';
+      button.className = 'btn';
+      button.textContent = '🔎 Chẩn đoán Firestore (chỉ đọc)';
+      button.style.cssText = 'display:none;width:100%;margin:6px 0;';
+      button.addEventListener('click', diagnoseFirestore);
+      const retryButton = document.getElementById('auth-retry-profile-btn');
+      (retryButton || message).insertAdjacentElement('afterend', button);
+    }
     client.onAuthStateChanged(applySession, fail);
   }
   async function google() {
@@ -284,7 +346,7 @@
     return !!client?.currentUser && ready && admin;
   }
   window.DuduAuth = {
-    init, google, email, signout, showStatus, retry,
+    init, google, email, signout, showStatus, retry, diagnoseFirestore,
     isReady: () => ready && !!client?.currentUser,
     isAdmin: canAuthor,
     uid: () => client?.currentUser?.uid || null
