@@ -21,6 +21,19 @@
       case 'auth/user-not-found':
       case 'auth/invalid-login-credentials':
         return 'Email hoặc mật khẩu chưa đúng. Nếu bạn vừa tạo tài khoản bằng Email/Mật khẩu, hãy dùng mật khẩu Firebase đã đặt.';
+      case 'auth/email-already-in-use':
+        return 'Email này đã có tài khoản Firebase. Hãy chọn Đăng nhập thay vì Đăng ký; không tạo tài khoản mới.';
+      case 'auth/account-exists-with-different-credential':
+        return 'Email này đã đăng ký bằng phương thức khác. Hãy đăng nhập bằng phương thức cũ trước; không tự gộp tài khoản.';
+      case 'auth/invalid-email':
+        return 'Địa chỉ email chưa đúng định dạng.';
+      case 'auth/user-disabled':
+        return 'Tài khoản này đang bị vô hiệu hóa trên Firebase. Hãy kiểm tra trong Firebase Console.';
+      case 'auth/popup-blocked':
+        return 'Trình duyệt đang chặn cửa sổ Google. Hãy cho phép pop-up từ DUDU và thử lại.';
+      case 'auth/popup-closed-by-user':
+      case 'auth/cancelled-popup-request':
+        return 'Cửa sổ đăng nhập Google đã đóng hoặc bị thay thế. Hãy thử lại một lần.';
       case 'auth/network-request-failed':
         return 'Không kết nối được máy chủ đăng nhập. Vui lòng kiểm tra mạng và thử lại.';
       case 'auth/too-many-requests':
@@ -132,10 +145,19 @@
       const cloudData = snapshot.exists ? snapshot.data() : null;
       if (cloudData) userProfile = { ...JSON.parse(defaultProfile), ...cloudData };
       else {
-        const backup = localStorage.getItem(scopedLocalKey('profile'));
+        // V56.5: saveCurrentAccount() has always written profile_<UID>.
+        // Check that exact owner-scoped backup first; retain the historical
+        // V55 scoped key as a fallback without migrating or deleting either.
+        const backup = localStorage.getItem('profile_' + account.uid)
+          || localStorage.getItem(scopedLocalKey('profile'));
         if (backup) {
-          try { userProfile = { ...JSON.parse(defaultProfile), ...JSON.parse(backup) }; }
-          catch (err) { console.warn('Local profile backup unreadable', err); }
+          try {
+            const parsed = JSON.parse(backup);
+            if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+              && (!parsed.username || parsed.username === account.uid)) {
+              userProfile = { ...JSON.parse(defaultProfile), ...parsed };
+            }
+          } catch (err) { console.warn('Local profile backup unreadable', err); }
         }
       }
       userProfile.username = account.uid;
