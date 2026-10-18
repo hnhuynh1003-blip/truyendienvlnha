@@ -18,6 +18,7 @@ function harness(options = {}) {
   const logs = [];
   const context = {
     IS_SANDBOX_MODE: false,
+    DuduFirestoreProfileFallbackV567: options.enableFallback ? require('../js/firestore-profile-fallback-v56-7.js') : undefined,
     setTimeout: options.setTimeout || setTimeout, clearTimeout, AbortController,
     fetch: options.fetch || (async () => { throw new Error('No mock HTTP route'); }),
     firebase: {
