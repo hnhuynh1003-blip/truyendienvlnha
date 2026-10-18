@@ -1,0 +1,153 @@
+/* DUDU V56.12 · Messenger-first conversation layout.
+ * Pure presentation; preserve all existing IDs, handlers and stored data.
+ * Only scoped to the phone chat, no global story/editor changes.
+ */
+body.dudu-phone-v11 #cyber-phone #phone-app-chat.dudu-v33-chat-open{
+  gap:4px!important;padding:5px 6px 7px!important;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat.dudu-v33-chat-open>.phone-app-header{
+  min-height:34px!important;padding:4px 6px!important;
+  margin:0!important;border-radius:12px!important;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat .dudu-v27-chat-actions{
+  display:flex;align-items:center;gap:5px;min-width:0;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v5612-sr-only{
+  position:absolute!important;width:1px!important;height:1px!important;
+  margin:-1px!important;padding:0!important;overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat #dudu-v56-role-box{
+  position:relative;flex:none;margin:0!important;padding:4px 6px!important;
+  border-radius:11px!important;background:#132336bc!important;
+}
+body.dudu-phone-v11 #cyber-phone #dudu-v56-role-box>div:first-child{
+  flex-wrap:nowrap!important;gap:5px!important;min-width:0;
+}
+body.dudu-phone-v11 #cyber-phone #dudu-v56-role-avatar{
+  width:28px!important;height:28px!important;min-width:28px!important;
+  border-radius:50%!important;font-size:11px!important;
+}
+body.dudu-phone-v11 #cyber-phone #dudu-v56-role-select{
+  flex:1!important;min-width:0!important;max-width:100%!important;
+  min-height:29px!important;font-size:11px!important;
+  padding:4px 23px 4px 6px!important;border-radius:10px!important;
+  text-overflow:ellipsis;white-space:nowrap;
+}
+body.dudu-phone-v11 #cyber-phone #dudu-v56-role-box.dudu-v5612-role-active #dudu-v56-role-note{
+  display:none!important;
+}
+body.dudu-phone-v11 #cyber-phone #dudu-v56-role-note{
+  margin:4px 1px 1px!important;font-size:10px!important;
+  line-height:1.35!important;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v5612-role-tools{
+  position:relative;flex:none;z-index:54;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v5612-role-tools>summary{
+  width:29px;height:29px;box-sizing:border-box;border-radius:9px;
+  display:grid;place-items:center;list-style:none;cursor:pointer;
+  font-weight:700;font-size:18px;line-height:1;
+  color:#d5e9ff;border:1px solid #7395b476;background:#20364f;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v5612-role-tools>summary::-webkit-details-marker{display:none;}
+body.dudu-phone-v11 #cyber-phone .dudu-v5612-role-menu{
+  position:absolute;z-index:56;top:33px;right:0;width:132px;
+  padding:6px;display:grid;gap:5px;border-radius:12px;
+  background:#14233af5;border:1px solid #a4bfd277;
+  box-shadow:0 9px 24px #0009;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v5612-role-tools:not([open]) .dudu-v5612-role-menu{display:none;}
+body.dudu-phone-v11 #cyber-phone .dudu-v5612-role-menu>.btn{
+  min-height:31px!important;padding:5px 6px!important;font-size:11px!important;
+  text-align:left;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat.dudu-v33-chat-open .dudu-v27-chat-persona{
+  min-height:34px!important;padding:2px 6px!important;margin:0!important;
+  gap:6px!important;background:#12213b92!important;
+  border:1px solid #c7d9ef1d!important;border-radius:12px!important;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat.dudu-v33-chat-open #npc-portrait-v1{
+  width:29px!important;height:29px!important;min-width:29px!important;
+  border-radius:50%!important;margin:0 4px 0 0!important;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat .dudu-v33-chat-name{
+  font-size:12px!important;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat #dudu-spark-chat-tip{
+  display:none!important;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat.dudu-v33-chat-open #chat-messages-container{
+  flex:1 1 0%!important;min-height:0!important;
+  margin:0!important;padding:7px 7px!important;gap:7px!important;
+  border-radius:13px!important;
+  background:#0a1626bd!important;
+}
+body.dudu-phone-v11 #cyber-phone #chat-messages-container .dudu-v31-bubble{
+  max-width:83%!important;padding:7px 10px!important;
+  line-height:1.46!important;border-radius:15px!important;
+  font-size:calc(var(--dudu-v31-size,11px) + 1px)!important;
+}
+body.dudu-phone-v11 #cyber-phone #chat-messages-container .dudu-v31-bubble small{
+  font-size:9px!important;opacity:.52!important;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat #chat-connection-status{
+  flex:none;max-height:84px;overflow:auto;
+  border:1px solid #bd945b66;border-radius:9px;
+  background:#352914bf;padding:5px 7px!important;
+  font-size:10px!important;line-height:1.4!important;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat #chat-user-input{
+  min-height:36px!important;padding:7px 10px!important;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat #dudu-v56-send{
+  min-height:35px!important;padding:5px 10px!important;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat .dudu-v5612-ai-settings{
+  position:relative;flex:none;z-index:52;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat .dudu-v5612-ai-settings>summary{
+  width:33px;height:32px;box-sizing:border-box;
+  border:1px solid #7d99b97e;border-radius:10px;
+  list-style:none;cursor:pointer;display:grid;place-items:center;
+  background:#223c56;color:#ccf2f1;font-weight:750;font-size:11px;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat .dudu-v5612-ai-settings>summary::-webkit-details-marker{display:none;}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat .dudu-v5612-ai-panel{
+  position:absolute;right:-41px;top:37px;z-index:80;
+  box-sizing:border-box;width:min(280px,calc(100vw - 72px));
+  border:1px solid #9ac0d380;border-radius:12px;padding:9px;
+  background:#12253cf9;box-shadow:0 10px 26px #000b;
+  color:#e9f5ff;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat .dudu-v5612-ai-panel>small{
+  display:block;font-size:10px;color:#b2c9e1;margin:0 0 5px;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat .dudu-v5612-ai-settings:not([open]) .dudu-v5612-ai-panel{
+  display:none;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat .dudu-v5612-ai-panel #dudu-v55-model-bar{
+  display:flex!important;flex-wrap:wrap;gap:5px!important;
+  margin:0!important;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat .dudu-v5612-ai-panel #dudu-v55-model-select{
+  min-width:0!important;flex:1!important;
+  font-size:11px!important;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat .dudu-v5612-ai-panel #dudu-v55-quota{
+  font-size:10px!important;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat.dudu-v33-inbox .dudu-v5612-ai-settings{
+  display:none!important;
+}
+@media(max-width:375px){
+  body.dudu-phone-v11 #cyber-phone #phone-app-chat.dudu-v33-chat-open{
+    gap:3px!important;padding:4px 5px 6px!important;
+  }
+  body.dudu-phone-v11 #cyber-phone #dudu-v56-role-select{
+    font-size:10px!important;
+  }
+  body.dudu-phone-v11 #cyber-phone #phone-app-chat .dudu-v5612-ai-panel{
+    width:min(250px,calc(100vw - 64px));
+  }
+}
