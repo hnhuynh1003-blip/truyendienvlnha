@@ -33,7 +33,7 @@ test('V56.13 strict dialogue instruction forbids gestures and reserves gameplay 
  assert.match(prompt,/CÁCH DÙNG TỪ/);
  const aiFn=html.split('async function callGeminiAIChat(')[1]?.split('async function callGeminiAI(')[0];
  assert.ok(aiFn);
- assert.match(aiFn,/DuduNpcDialogueV5613\?\.instruction\(\)/);
+ assert.match(aiFn,/DuduNpcProfileV5615\?\.compile\(/);
  assert.doesNotMatch(aiFn,/Bạn đang nhập vai hoàn toàn/);
  assert.match(aiFn,/KHÔNG dựng cảnh nhập vai/);
  assert.match(html,/src="js\/npc-dialogue-v56-13\.js\?v=56-13"/);
