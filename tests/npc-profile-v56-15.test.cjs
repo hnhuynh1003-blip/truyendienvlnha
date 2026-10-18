@@ -71,7 +71,7 @@ test('V56.15 no memory on generic player resemblance or invalid chapter marker',
 [CÁCH NHẮN TIN]\nTrả lời ngắn.`;
  const c={...npc,note:raw};
  const text=prompt(c,{query:'Tôi tên A Du, muốn kết bạn.',readRewards:{'test-story_chap-3':true}});
- assert.match(text,/Không gán ký ức/);
+ assert.match(text,/KHÔNG gán ký ức/i);
  assert.doesNotMatch(text,/Tử Du mất/);
 });
 test('V56.15 final chat safeguards are never truncated even with extremely long notes',()=>{
