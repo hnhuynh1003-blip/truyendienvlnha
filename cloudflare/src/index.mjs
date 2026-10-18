@@ -17,6 +17,7 @@ import {normalizedPrivateDraft,normalizedDraftApproval,parseScopedIds,cleanId} f
 
 import {NPC_MODELS} from './npc-models.mjs';
 import {classifyGemini400} from './gemini-error-v56-10.mjs';
+import {textOnlyNpcContents} from './npc-chat-format-v56-11.mjs';
 const MODEL='gemini-3.5-flash-lite'; // same ID as server model registry; kept literal for isolated route tests
 const MAX_BODY_BYTES=18000;
 
@@ -493,7 +494,12 @@ async function gemini(payload,env){
   if(!env.GEMINI_API_KEY)return {error:{code:'not-configured',message:'Máy chủ AI chưa có khóa bí mật.'},status:503};
   const model=payload.model||MODEL; // selected only after server allowlist validation
   const body={
-    systemInstruction:payload.systemInstruction,contents:payload.contents,
+    systemInstruction:payload.systemInstruction,
+    // V56.11: standard NPC text does not call tools. Replay stored text
+    // as quoted context in one user turn; no synthetic unsigned model parts.
+    contents:payload.purpose==='chat'
+      ? (textOnlyNpcContents(payload.contents)||payload.contents)
+      : payload.contents,
     generationConfig:{
       temperature:payload.purpose==='chat'?0.8:0.65,
       maxOutputTokens:payload.purpose==='chat'?640:850
