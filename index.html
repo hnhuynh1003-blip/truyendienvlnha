@@ -6538,7 +6538,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       if(!IS_SANDBOX_MODE&&DuduAuth.isReady()&&
         document.getElementById('reader-view')?.style.display==='block'){
         const story=novels[selectedNovelIndex];
-        const position=story?DuduPersonalSyncV568.localBookmark(
+        const position=story&&window.DuduPersonalSyncV568?DuduPersonalSyncV568.localBookmark(
           localStorage,scopedLocalKey('bookmark',story.id)):null;
         if(story&&position){
           userProfile.readingBookmarksV568 ||= {};
