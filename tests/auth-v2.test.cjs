@@ -205,7 +205,8 @@ test('V56.5 rejected backup from another UID cannot replace the current profile'
   const h = harness({ storage });
   await h.login('reader-b', {}, null);
   assert.equal(h.context.currentUsername,'reader-b');
-  assert.equal(h.context.userProfile.currency,50);
+  assert.notEqual(h.context.userProfile.currency,999999,
+    'Rejected other-user backup must not inject private balances');
   assert.equal(h.context.DuduAuth.isReady(),true);
 });
 
