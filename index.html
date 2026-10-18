@@ -70,7 +70,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-check-compat.js"></script>
   <script src="js/appcheck-sitekey-v52.js?v=52-3"></script>
   <script src="js/firestore-profile-fallback-v56-7.js?v=56-7"></script>
-  <script src="js/auth-v2.js?v=56-8"></script>
+  <script src="js/auth-v2.js?v=56-9"></script>
   <script src="js/ai-proxy.js?v=55-1"></script>
   <script src="js/npc-chat-lite.js?v=53-1"></script>
   <script src="js/player-reset-v54.js?v=54-1"></script>
@@ -114,6 +114,7 @@
   <script src="js/player-avatar-v16.js"></script>
   <script src="js/roleplay-identity-v56.js?v=56-1"></script>
   <script src="js/personal-sync-v56-8.js?v=56-8"></script>
+  <script src="js/personal-cloud-v56-9.js?v=56-9"></script>
   <script src="js/npc-premium-v40.js?v=1"></script>
   <script src="js/player-avatar-compress-v41.js?v=1"></script>
   <script src="js/phone-wallpaper-v27-r4.js?v=37-1"></script>
@@ -2145,6 +2146,59 @@
       return (IS_SANDBOX_MODE ? 'dudu-sandbox-v2:' : 'dudu-v2:') + encodeURIComponent(currentUsername || 'guest')
         + ':' + encodeURIComponent(storyId) + ':' + kind;
     }
+    // V56.9: authenticated, narrowly scoped REST writes. Never silently treat
+    // a pending local Firestore SDK write as proof of cross-device sync.
+    let v569Migrations=[];
+    let v569Pending=0;
+    function v569Status(message){
+      const el=document.getElementById('dudu-v569-sync-status');
+      if(el)el.textContent=message;
+    }
+    async function v569PatchPreference(kind,storyId=null,value=null){
+      if(IS_SANDBOX_MODE||!window.DuduPersonalCloudV569||
+        !DuduAuth.isReady()||DuduAuth.uid()!==currentUsername)return false;
+      const account=firebase.auth().currentUser;
+      if(!account||account.uid!==currentUsername)return false;
+      const uid=account.uid;
+      const projectId=firebase.app().options.projectId;
+      v569Pending++;
+      v569Status('☁️ Đang đồng bộ tùy chỉnh cá nhân…');
+      try{
+        const opts={account,projectId,fetchFn:fetch,
+          isCurrent:owner=>DuduAuth.isReady()&&
+            DuduAuth.uid()===owner&&currentUsername===owner};
+        if(kind==='bookmark'){opts.storyId=storyId;opts.bookmark=value;}
+        else if(kind==='phone')opts.appearance=value;
+        else return false;
+        const result=await DuduPersonalCloudV569.patch(opts);
+        if(result.saved){
+          v569Status('☁️ Tiến độ và tùy chỉnh đã lưu lên Firebase.');
+          return true;
+        }
+        return false;
+      }catch(error){
+        console.warn('DUDU personal sync:',error?.code||error?.name||'failed');
+        v569Status('⚠️ Chưa đồng bộ Firebase ('+
+          (error?.httpStatus||error?.code||'mạng')+'). Dữ liệu vẫn còn trên thiết bị này.');
+        return false;
+      }finally{v569Pending=Math.max(0,v569Pending-1);}
+    }
+    function v569SyncBookmark(storyId){
+      const bookmark=userProfile.readingBookmarksV568?.[storyId];
+      if(bookmark)return v569PatchPreference('bookmark',storyId,bookmark);
+    }
+    function v569SyncPhone(){
+      if(userProfile.phoneAppearanceV568)
+        return v569PatchPreference('phone',null,userProfile.phoneAppearanceV568);
+    }
+    function v569FlushMigrations(){
+      if(!DuduAuth.isReady()||DuduAuth.uid()!==currentUsername)return;
+      const pending=v569Migrations.splice(0);
+      for(const task of pending){
+        if(task.kind==='phone')v569SyncPhone();
+        else if(task.kind==='bookmark')v569SyncBookmark(task.id);
+      }
+    }
     // V56.8 — cross-device resume and built-in phone preferences, scoped to UID.
     // Device-only uploaded wallpapers, chat and custom avatar blobs are untouched.
     function v568ReadBookmarkForNovel(novel){
@@ -2173,12 +2227,18 @@
     function v568SavePhoneAppearance(){
       if(IS_SANDBOX_MODE||!DuduAuth.isReady()||DuduAuth.uid()!==currentUsername)return;
       const next=v568PhoneFromDevice();
-      if(next){userProfile.phoneAppearanceV568=next;saveCurrentAccount();}
+      if(next){userProfile.phoneAppearanceV568=next;saveCurrentAccount();v569SyncPhone();}
     }
     function hydratePersonalSyncV568(){
       if(IS_SANDBOX_MODE||!currentUsername||!window.DuduPersonalSyncV568)return false;
+      const previous=DuduPersonalSyncV568.safeBookmarks(userProfile.readingBookmarksV568);
       let migrated=DuduPersonalSyncV568.hydrateBookmarks(localStorage,userProfile,novels,
         id=>scopedLocalKey('bookmark',id));
+      v569Migrations=[];
+      for(const [id,value] of Object.entries(userProfile.readingBookmarksV568||{})){
+        const old=previous[id];
+        if(!old||old.updatedAt<value.updatedAt)v569Migrations.push({kind:'bookmark',id});
+      }
       const owner='live-'+currentUsername;
       const image=window.DuduPhoneWallpaperV27,mode=window.DuduMultiverseArtV28;
       const typography=window.DuduPhoneTypographyV31;
@@ -2199,6 +2259,7 @@
         const existing=[image.keyFor(owner),mode.keyFor(owner),typography.keyFor(owner)]
           .some(key=>{try{return !!key&&localStorage.getItem(key)!==null;}catch(_){return false;}});
         if(existing){userProfile.phoneAppearanceV568=v568PhoneFromDevice();
+          if(userProfile.phoneAppearanceV568)v569Migrations.push({kind:'phone'});
           migrated=!!userProfile.phoneAppearanceV568||migrated;}
       }
       return migrated;
@@ -2604,10 +2665,6 @@
         dailyReadLog: userProfile.dailyReadLog || { day: '', chapters: [] },
         collectedCharacters: userProfile.collectedCharacters || {},
         storyStates: userProfile.storyStates || {},
-        ...(window.DuduPersonalSyncV568&&userProfile.readingBookmarksV568
-          ? {readingBookmarksV568:DuduPersonalSyncV568.safeBookmarks(userProfile.readingBookmarksV568)} : {}),
-        ...(window.DuduPersonalSyncV568&&userProfile.phoneAppearanceV568
-          ? {phoneAppearanceV568:DuduPersonalSyncV568.cleanAppearance(userProfile.phoneAppearanceV568)} : {}),
         // Avatar choices/frames are cosmetic and validated on save, not privileges.
         ...(userProfile.playerAvatar && window.DuduPlayerAvatarV16
           ? {playerAvatar: DuduPlayerAvatarV16.safeState(userProfile,{
@@ -6414,8 +6471,12 @@ document.getElementById('phone-home-screen').style.display = 'none';
         // Preserve V55 Sandbox's local save after first daily chapter.
         if(IS_SANDBOX_MODE)saveCurrentAccount();
       }
-      // Position must sync even when daily chapter rewards were already earned.
-      if(!IS_SANDBOX_MODE&&DuduAuth.isReady())saveCurrentAccount();
+      // Save independent of daily rewards. The personal-only REST PATCH
+      // avoids a hung Firestore SDK write dropping cross-device bookmarks.
+      if(!IS_SANDBOX_MODE&&DuduAuth.isReady()){
+        saveCurrentAccount();
+        v569SyncBookmark(novel.id);
+      }
 
       setTimeout(() => {
         window.scrollTo({ top: scrollPos, behavior: scrollPos ? 'smooth' : 'auto' });
@@ -6544,6 +6605,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
           userProfile.readingBookmarksV568 ||= {};
           userProfile.readingBookmarksV568[story.id]=position;
           saveCurrentAccount();
+          v569SyncBookmark(story.id);
         }
       }
       window.DuduGiftPickerV4431?.closeActive();
