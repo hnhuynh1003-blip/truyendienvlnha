@@ -89,12 +89,18 @@ test('V58 HTTP 400 and DUDU budget restrictions never trigger fallback',async()=
   assert.equal(malformed.error.code,'invalid-upstream-request');
   assert.equal(calls.length,0);
   assert.equal(failoverAllowed('daily-global'),false);
+  assert.equal(failoverAllowed('upstream-unavailable'),false,'timeout must not create a late second billable request');
   assert.equal(failoverAllowed('gemini-invalid-parameters'),false);
   const noApproval=await routeNpcAi(payload,{
     ...env,DUDU_WORKERS_AI_APPROVED:'false'
   },async()=>({error:{code:'gemini-rate-limit'},status:429}));
   assert.equal(noApproval.error.code,'gemini-rate-limit');
   assert.equal(calls.length,0);
+  const timedOut=await routeNpcAi(payload,env,async()=>({
+    error:{code:'upstream-unavailable'},status:502
+  }));
+  assert.equal(timedOut.error.code,'upstream-unavailable');
+  assert.equal(calls.length,0,'do not invoke a second provider after client deadline risk');
 });
 
 test('V58 one configured-free Workers AI fallback on provider 429; preserve NPC identity and quota',async()=>{
