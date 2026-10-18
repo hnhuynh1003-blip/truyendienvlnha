@@ -6411,6 +6411,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
         // This is NOT server proof of reading or eligibility for rare items.
         if(IS_SANDBOX_MODE)window.DuduEconomyRuntimeV43?.questEvent('READ_CHAPTER',readKey);
         else advanceQuest('q_daily_read',1);
+        // Preserve V55 Sandbox's local save after first daily chapter.
+        if(IS_SANDBOX_MODE)saveCurrentAccount();
       }
       // Position must sync even when daily chapter rewards were already earned.
       if(!IS_SANDBOX_MODE&&DuduAuth.isReady())saveCurrentAccount();
