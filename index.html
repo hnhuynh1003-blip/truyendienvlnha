@@ -3000,7 +3000,8 @@
         const instruction=window.DuduNpcProfileV5615?.compile({
           char,novel,role:requestRole,relation,query,
           roleInstruction:DuduRoleplayV56.prompt(requestRole,novel),
-          readRewards:userProfile.readRewards||{}
+          readRewards:userProfile.readRewards||{},
+          messageGuidance:window.DuduNpcReplyStyleV5612?.guidance(query)||''
         })||(
           'Chỉ nhắn tin trực tiếp với người đọc. Không tả cảnh hoặc hành động. '+
           'Tên người nhắn: '+String(requestRole.name||'').slice(0,80)+
