@@ -44,5 +44,5 @@ test('V57.1 never forwards malformed historical model turns to Gemini',()=>{
  assert.match(source,/if\(payload\.purpose==='chat'&&!npcContents\)/);
  assert.match(source,/contents:payload\.purpose==='chat'\?npcContents:payload\.contents/);
  assert.doesNotMatch(source,/textOnlyNpcContents\(payload\.contents\)\s*\|\|\s*payload\.contents/);
- assert.match(source,/if\(!result\.error\)/,'Should never generate a fake model reply after an error');
+ assert.match(source,/if\(result\.error\)return json\(\{error:result\.error\}/,'Do not generate a fake model reply after an error');
 });
