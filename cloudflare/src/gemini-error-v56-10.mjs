@@ -6,6 +6,13 @@ export function classifyGemini400(message) {
   if(/multiturn.*alternate|alternate.*user.*model|first.*turn.*user|function call turns.*user/i.test(safe))
     return {code:'gemini-turn-format',
       message:'Gemini từ chối thứ tự lượt user/model (HTTP 400). DUDU đã cập nhật cách ghép ngữ cảnh; hãy thử lại sau khi Worker được triển khai.'};
+  // V57.1: only emit finite diagnostic codes. Never return Google's raw body.
+  if(/(?:temperature|top[_ ]?p|top[_ ]?k|thinking[_ ]?(?:budget|level)|generation.?config|unsupported (?:parameter|field)|unknown (?:name|field))/i.test(safe))
+    return {code:'gemini-invalid-parameters',
+      message:'Gemini từ chối tham số tạo nội dung (HTTP 400). Cần kiểm tra generationConfig của Worker; tin nhắn được giữ lại.'};
+  if(/(?:model .*(?:not found|not available|not supported|unsupported)|(?:invalid|unsupported) model|model.*does not support)/i.test(safe))
+    return {code:'gemini-model-request',
+      message:'Gemini từ chối model hoặc phương thức gọi (HTTP 400). Hãy kiểm tra quyền truy cập model và endpoint; tin nhắn được giữ lại.'};
   if(/contents.*(empty|not specified|invalid)|parts.*(missing|required)|invalid.*role/i.test(safe))
     return {code:'gemini-content-format',
       message:'Gemini từ chối nội dung hoặc vai trò tin nhắn (HTTP 400). Hãy gửi lại lượt cuối.'};
