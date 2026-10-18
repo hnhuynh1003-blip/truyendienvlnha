@@ -11,7 +11,7 @@ test('V49 real Firebase import is separate from the local Sandbox path',()=>{
  assert.match(html,/window\.DuduEpubProductionV49/);
  assert.match(html,/cloudApi:window\.DuduEpubProductionV49/);
  assert.match(html,/firestore:\(\)=>db/);
- assert.match(html,/js\/epub-production-v49\.js\?v=49-1/);
+ assert.match(html,/js\/epub-production-v49\.js\?v=57-1/);
  assert.match(html,/js\/epub-import-v48\.js\?v=57-1/);
  const ui=source('js/epub-import-v48.js');
  assert.match(ui,/Lưu truyện và các chương lên Firebase/);
