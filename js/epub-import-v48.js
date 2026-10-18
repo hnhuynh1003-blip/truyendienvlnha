@@ -156,8 +156,11 @@
   return updated;
  }
  async function uploadOriginal(file,{uid,auth,storage,onProgress=()=>{}}={}){
-  // Storage upload is optional, never part of the Spark Firestore book import.
-  if(!validFile(file))throw Error('Tệp EPUB không hợp lệ hoặc vượt 30 MB');
+  // Storage backup is separate and disabled on Spark. Its existing V48
+  // Storage Rules are capped at 15 MB; do not imply that parsing up to
+  // 30 MB grants a larger Storage write.
+  if(!validFile(file)||file.size>15*1024*1024)
+   throw Error('Sao lưu EPUB gốc lên Storage chỉ hỗ trợ tối đa 15 MB và cần Rules/Blaze');
   if(!auth||!storage||!uid)throw Error('Firebase Storage hoặc tài khoản tác giả chưa sẵn sàng');
   const user=auth.currentUser;
   if(!user||user.uid!==uid)throw Error('Tài khoản đăng nhập đã thay đổi');
