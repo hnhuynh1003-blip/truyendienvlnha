@@ -2418,6 +2418,8 @@
         return;
       }
       v56CloseRoleEditor();
+      const selfMenu=document.getElementById('dudu-v5614-self-menu');
+      if(selfMenu)selfMenu.open=false;
       pendingNpcRetry=null;
       hideNpcConnectionStatus();
       renderRoleplayV56();
@@ -2432,6 +2434,8 @@
       pendingNpcRetry=null;
       hideNpcConnectionStatus();
       v56CloseRoleEditor();
+      const selfMenu=document.getElementById('dudu-v5614-self-menu');
+      if(selfMenu)selfMenu.open=false;
       renderRoleplayV56();
       switchChatCharacter();
     }
