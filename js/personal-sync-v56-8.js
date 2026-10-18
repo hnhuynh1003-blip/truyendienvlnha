@@ -81,6 +81,33 @@
  function hydrateBookmarks(storage,profile,novels,keyFor){
   const cloud=safeBookmarks(profile.readingBookmarksV568);
   let migrated=false;
+  // A reader can authenticate before the shared story catalog finishes loading.
+  // Discover ONLY this UID's V55 bookmark keys without requiring novels[] first.
+  try{
+    const probe='dudu_v569_probe';
+    const sample=keyFor(probe);
+    const marker=encodeURIComponent(probe)+':bookmark';
+    if(sample&&sample.endsWith(marker)&&typeof storage?.key==='function'){
+      const prefix=sample.slice(0,-marker.length);
+      const found=Math.min(Number(storage.length)||0,2000);
+      for(let i=0;i<found;i++){
+        const key=storage.key(i);
+        if(typeof key!=='string'||!key.startsWith(prefix)||!key.endsWith(':bookmark'))continue;
+        const encoded=key.slice(prefix.length,-':bookmark'.length);
+        let storyId;
+        try{storyId=decodeURIComponent(encoded);}catch(_){continue;}
+        if(!validStory(storyId))continue;
+        const local=localBookmark(storage,key);
+        const previous=cloud[storyId];
+        if(local&&(!previous||local.updatedAt>previous.updatedAt)){
+          Object.defineProperty(cloud,storyId,{
+            value:local,enumerable:true,writable:true,configurable:true
+          });
+          migrated=true;
+        }
+      }
+    }
+  }catch(_){/* Private browsing can restrict localStorage enumeration. */}
   for(const novel of novels||[]){
    if(!validStory(novel?.id))continue;
    const key=keyFor(novel.id);
