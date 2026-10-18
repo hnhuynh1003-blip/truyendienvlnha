@@ -18,7 +18,8 @@ function harness(options = {}) {
   const logs = [];
   const context = {
     IS_SANDBOX_MODE: false,
-    setTimeout: options.setTimeout || setTimeout, clearTimeout,
+    setTimeout: options.setTimeout || setTimeout, clearTimeout, AbortController,
+    fetch: options.fetch || (async () => { throw new Error('No mock HTTP route'); }),
     firebase: {
       auth: authFactory,
       firestore: () => ({ collection: () => ({ doc: uid => ({
@@ -56,7 +57,8 @@ function harness(options = {}) {
       record = profile;
       const user = {
         uid, email: uid + '@example.test', displayName: uid,
-        getIdTokenResult: async () => ({ claims })
+        getIdTokenResult: async () => ({ claims }),
+        getIdToken: async () => 'mock-firebase-id-token'
       };
       account.currentUser = user;
       await onChange(user);
@@ -234,4 +236,35 @@ test('V56.5 two-account login errors explain credentials without auto-linking ac
   assert.match(src,/không tự gộp tài khoản/);
   assert.match(src,/auth\/email-already-in-use/);
   assert.equal(typeof h.context.DuduAuth.google,'function');
+});
+
+test('V56.6 diagnose uses only authenticated Firestore GET, never writes or leaks ID tokens', async () => {
+  const requests = [];
+  const h=harness({ fetch: async (url, options) => {
+    requests.push({url, options});
+    return {status:403};
+  }});
+  await h.login('reader-a', {}, null);
+  await h.context.DuduAuth.diagnoseFirestore();
+  assert.equal(requests.length,1);
+  assert.match(requests[0].url,/\/documents\/profiles_v2\/reader-a$/);
+  assert.equal(requests[0].options.method,'GET');
+  assert.equal(requests[0].options.headers.Authorization,'Bearer mock-firebase-id-token');
+  assert.match(h.elements['auth-status-message'].textContent,/HTTP 403/);
+  assert.doesNotMatch(h.elements['auth-status-message'].textContent,/mock-firebase-id-token/);
+  assert.equal(h.elements['auth-diagnose-firestore-btn'].disabled,false);
+});
+
+test('V56.6 REST 200 differentiates Firestore SDK connection from Rules failure',async () => {
+  const h=harness({fetch:async () => ({status:200})});
+  await h.login('reader-a',{},null);
+  await h.context.DuduAuth.diagnoseFirestore();
+  assert.match(h.elements['auth-status-message'].textContent,/HTTP 200.*Rules đọc đang cho phép/);
+});
+
+test('V56.6 REST 404 identifies missing profile without creating user data',async () => {
+  const h=harness({fetch:async () => ({status:404})});
+  await h.login('reader-b',{},null);
+  await h.context.DuduAuth.diagnoseFirestore();
+  assert.match(h.elements['auth-status-message'].textContent,/HTTP 404.*không thấy tài liệu/);
 });
