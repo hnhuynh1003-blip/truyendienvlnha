@@ -43,8 +43,8 @@ test('V56.12 controls are compact but preserve chat and roleplay IDs',()=>{
 });
 test('V56.12 AI and role settings remain operable, with compact view by default',()=>{
  const chat=html.slice(html.indexOf('id="phone-app-chat"'),html.indexOf('id="dudu-v32-envelope-overlay"'));
- assert.ok(chat.includes('onclick="v56OpenRoleEditor(false)'));
- assert.ok(chat.includes('onclick="v56OpenRoleEditor(true)'));
+ assert.match(chat,/onclick="[^"]*v56OpenRoleEditor\(false\)"/);
+ assert.match(chat,/onclick="[^"]*v56OpenRoleEditor\(true\)"/);
  assert.ok(chat.includes('onchange="chooseNpcModelV55()"'));
  assert.ok(chat.includes('onclick="refreshNpcQuotaV55()"'));
  assert.ok(chat.includes('onclick="sendChatMessage()"'));
