@@ -10,7 +10,15 @@ export const NPC_MODELS=Object.freeze([
   Object.freeze({id:'gemini-2.5-flash-lite',label:'2.5 Flash-Lite · cũ'}),
   Object.freeze({id:'gemini-2.5-flash',label:'2.5 Flash · cũ'})
 ]);
+// V58 keeps the original seven Gemini IDs stable. Workers AI is separately
+// allowlisted and visible ONLY when the server verifies explicit free-only gates.
+export {WORKERS_AI_MODELS,isWorkersAiModel} from './ai-router-v58.mjs';
+import {isWorkersAiModel} from './ai-router-v58.mjs';
 const IDS=new Set(NPC_MODELS.map(x=>x.id));
+export function resolveNpcModel(id){
+  if(id===undefined||id===null||id==='')return DEFAULT_MODEL;
+  return IDS.has(id)||isWorkersAiModel(id)?id:null;
+}
 export function allowedModel(id) {
   return typeof id==='string'&&IDS.has(id);
 }
