@@ -2958,6 +2958,12 @@
       }
       const info=await DuduAI.status();
       if(currentUsername!==account)return;
+      // V58: advertise secondary models ONLY after authenticated server status
+      // confirms the operator has explicitly enabled a free provider.
+      if(!info?.error && typeof DuduAI.updateModelsFromStatus==='function'){
+        DuduAI.updateModelsFromStatus(info);
+        syncNpcModelV55();
+      }
       label.textContent=info?.error?'Chưa bật':(String(info.remaining)+'/'+String(info.dailyLimit));
       label.title=info?.error?info.error:
         'Số lượt dùng AI còn lại trên máy chủ (UTC). Mỗi model chia sẻ cùng hạn mức.';
