@@ -72,7 +72,8 @@
   <script src="js/firestore-profile-fallback-v56-7.js?v=56-7"></script>
   <script src="js/auth-v2.js?v=56-9"></script>
   <script src="js/npc-context-v56-10.js?v=56-10"></script>
-  <script src="js/ai-proxy.js?v=56-10"></script>
+  <script src="js/npc-auto-model-v56-11.js?v=56-11"></script>
+  <script src="js/ai-proxy.js?v=56-11"></script>
   <script src="js/npc-chat-lite.js?v=53-1"></script>
   <script src="js/player-reset-v54.js?v=54-1"></script>
   <script src="js/story-memory.js"></script>
@@ -2906,7 +2907,9 @@
         return;
       }
       const note=document.getElementById('dudu-v55-quota');
-      if(note)note.title='Model mới sẽ được dùng cho tin nhắn tiếp theo.';
+      if(note)note.title=selector.value==='auto'
+        ? 'Auto chọn model dựa vào câu hỏi mới nhất, không thêm lượt AI; vẫn có thể đổi thủ công.'
+        : 'Model thủ công sẽ được dùng cho tin nhắn tiếp theo.';
     }
     async function refreshNpcQuotaV55(){
       const label=document.getElementById('dudu-v55-quota');
@@ -2983,7 +2986,7 @@
         const relevantHistory = DuduStoryMemory.recall(chatHistory,query,{maxPairs:memoryText?1:2});
         const context=window.DuduNpcContextV5610?.compose(messages,relevantHistory,memoryText,12,9500);
         if(!context?.length)return {error:'Không thể chuẩn bị ngữ cảnh NPC. Tin nhắn đã được giữ lại để thử lại.'};
-        return await DuduAI.generate('chat',instruction.slice(0,3000),context);
+        return await DuduAI.generate('chat',instruction.slice(0,3000),context,query);
       } finally {
         if (loader) loader.style.display = 'none';
       }
