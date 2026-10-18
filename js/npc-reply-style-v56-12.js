@@ -20,6 +20,8 @@
   }
   function guidance(query){
     if(greeting(query))return 'TIN NHẮN ĐIỆN THOẠI: Người chơi chỉ chào hỏi hoặc nói một câu xã giao. Đáp lại 1 câu ngắn 5–25 từ, tự nhiên đúng cá tính NPC. KHÔNG kể chuyện, không tự dựng triệu chứng, nhiệm vụ, cảnh báo hệ thống hay sự kiện mới. Không viết lời dẫn trong dấu ngoặc.';
+    if(/\b(?:làm quen|kết bạn|nói chuyện)\b/i.test(String(query||'')))
+      return 'Người chơi muốn làm quen, không phải bệnh nhân hoặc người gây rối. Trả lời thân thiện vừa phải hoặc dè dặt 1 câu ngắn, không trách móc về thời gian/bệnh viện.';
     if(wantsDetail(query))return 'Người chơi yêu cầu trả lời chi tiết. Trả lời đủ ý trong giọng NPC, có thể dài hơn bình thường; không bịa sự kiện truyện chưa được tác giả xác nhận.';
     return 'TIN NHẮN ĐIỆN THOẠI: Chỉ đáp trực tiếp lời người chơi mới nhắn, thường 1–2 câu (tối đa khoảng 60 từ). Có thể ngập ngừng, đùa nhẹ hoặc hỏi ngược một câu khi hợp cá tính. Không tự thêm [Hệ thống], nhiệm vụ, kịch bản, tình huống khẩn cấp hoặc lời dẫn truyện. Không giải thích dài nếu chưa được hỏi.';
   }
@@ -36,20 +38,23 @@
     text=text.replace(/^(?:\[(?:Hệ thống|System|Trạng thái|Status)\s*:[^\]]{0,260}\]\s*)+/i,'').trim();
     if(!text)return typeof answer==='string'?answer.trim():'';
     if(wantsDetail(query))return text;
-    if(greeting(query)){
+    const casual=/\b(?:làm quen|kết bạn|nói chuyện|chỉ muốn làm quen|mình muốn làm quen|tôi chỉ muốn làm quen)\b/i.test(String(query||''));
+    if(greeting(query)||casual){
       const sentences=text.match(/[^.!?。！？…]+[.!?。！？…]+|[^.!?。！？…]+$/g)||[];
       const first=sentences[0]?.trim()||text;
       const second=sentences[1]?.trim()||'';
-      // A natural short two-part chat reply ("Chào. Có chuyện gì?")
-      // should not be cut to a single word just because of punctuation.
-      const concise=second&&words(first).length<=4&&
-        words(first+' '+second).length<=14?first+' '+second:first;
-      return trimToWords(concise,26);
+      const concise=second&&words(first).length<=5&&
+        words(first+' '+second).length<=18?first+' '+second:first;
+      return trimToWords(concise,28);
     }
-    if(words(text).length<=70)return text;
+    if(words(text).length<=45)return text;
     const sentences=text.match(/[^.!?。！？]+[.!?。！？]+|[^.!?。！？]+$/g)||[];
+    const first=sentences[0]?.trim()||text;
     const firstTwo=sentences.slice(0,2).join(' ').trim();
-    return trimToWords(firstTwo||text,70);
+    // Prefer complete sentences to avoid cutting a natural instant message mid-word.
+    if(words(firstTwo).length<=45)return firstTwo;
+    if(words(first).length>=12&&words(first).length<=45)return first;
+    return trimToWords(firstTwo||text,45);
   }
   return Object.freeze({greeting,wantsDetail,guidance,format});
 });
