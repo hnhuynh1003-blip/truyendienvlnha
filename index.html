@@ -3600,7 +3600,9 @@
         pendingNpcRetry = {user:requestUser,storyId,charId:char.id,key:requestChatKey,roleId:requestRole.id};
         if (sameNpc) {
           showNpcConnectionStatus(
-            res.error+' · Tin nhắn đã lưu trên thiết bị.',
+            res.error+' · Tin nhắn đã lưu trên thiết bị.'+
+              (res.model?' · Model đã gọi: '+res.model:'')+
+              (res.code?' · Mã lỗi: '+res.code:''),
             DuduAI.isConfigured()
           );
         }
