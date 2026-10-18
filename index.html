@@ -70,7 +70,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-check-compat.js"></script>
   <script src="js/appcheck-sitekey-v52.js?v=52-3"></script>
   <script src="js/firestore-profile-fallback-v56-7.js?v=56-7"></script>
-  <script src="js/auth-v2.js?v=56-7"></script>
+  <script src="js/auth-v2.js?v=56-8"></script>
   <script src="js/ai-proxy.js?v=55-1"></script>
   <script src="js/npc-chat-lite.js?v=53-1"></script>
   <script src="js/player-reset-v54.js?v=54-1"></script>
@@ -113,6 +113,7 @@
   <script src="js/npc-anime-candidates-v14.js"></script>
   <script src="js/player-avatar-v16.js"></script>
   <script src="js/roleplay-identity-v56.js?v=56-1"></script>
+  <script src="js/personal-sync-v56-8.js?v=56-8"></script>
   <script src="js/npc-premium-v40.js?v=1"></script>
   <script src="js/player-avatar-compress-v41.js?v=1"></script>
   <script src="js/phone-wallpaper-v27-r4.js?v=37-1"></script>
@@ -2144,6 +2145,64 @@
       return (IS_SANDBOX_MODE ? 'dudu-sandbox-v2:' : 'dudu-v2:') + encodeURIComponent(currentUsername || 'guest')
         + ':' + encodeURIComponent(storyId) + ':' + kind;
     }
+    // V56.8 — cross-device resume and built-in phone preferences, scoped to UID.
+    // Device-only uploaded wallpapers, chat and custom avatar blobs are untouched.
+    function v568ReadBookmarkForNovel(novel){
+      if(!novel||!window.DuduPersonalSyncV568)return null;
+      const local=DuduPersonalSyncV568.localBookmark(localStorage,scopedLocalKey('bookmark',novel.id));
+      return DuduPersonalSyncV568.bookmarkForNovel(local,novel)||
+        DuduPersonalSyncV568.bookmarkForNovel(userProfile.readingBookmarksV568?.[novel.id],novel);
+    }
+    function v568PhoneFromDevice(){
+      if(!window.DuduPersonalSyncV568||!currentUsername)return null;
+      const owner='live-'+currentUsername;
+      const image=window.DuduPhoneWallpaperV27,mode=window.DuduMultiverseArtV28;
+      const typography=window.DuduPhoneTypographyV31;
+      if(!image||!mode||!typography)return null;
+      const wallpaper=image.read(localStorage,owner),font=typography.read(localStorage,owner);
+      const previous=userProfile.phoneAppearanceV568;
+      return DuduPersonalSyncV568.cleanAppearance({
+        wallpaper:wallpaper==='v36-custom'?(previous?.wallpaper||'midnight'):wallpaper,
+        mode:mode.readMode(localStorage,owner),font:font.font,size:font.size,
+        readerFontSize:parseInt(document.documentElement.style.getPropertyValue('--read-size'),10)||16,
+        theme:document.body.classList.contains('theme-warm')?'warm':
+          document.body.classList.contains('theme-oled')?'oled':'default',
+        updatedAt:Date.now()
+      });
+    }
+    function v568SavePhoneAppearance(){
+      if(IS_SANDBOX_MODE||!DuduAuth.isReady()||DuduAuth.uid()!==currentUsername)return;
+      const next=v568PhoneFromDevice();
+      if(next){userProfile.phoneAppearanceV568=next;saveCurrentAccount();}
+    }
+    function hydratePersonalSyncV568(){
+      if(IS_SANDBOX_MODE||!currentUsername||!window.DuduPersonalSyncV568)return false;
+      let migrated=DuduPersonalSyncV568.hydrateBookmarks(localStorage,userProfile,novels,
+        id=>scopedLocalKey('bookmark',id));
+      const owner='live-'+currentUsername;
+      const image=window.DuduPhoneWallpaperV27,mode=window.DuduMultiverseArtV28;
+      const typography=window.DuduPhoneTypographyV31;
+      if(!image||!mode||!typography)return migrated;
+      const cloud=DuduPersonalSyncV568.cleanAppearance(userProfile.phoneAppearanceV568);
+      if(cloud){
+        userProfile.phoneAppearanceV568=cloud;
+        // Keep personal photos local. Other devices receive the built-in preset.
+        if(image.read(localStorage,owner)!=='v36-custom')
+          image.write(localStorage,owner,cloud.wallpaper);
+        mode.writeMode(localStorage,owner,cloud.mode);
+        typography.write(localStorage,owner,{font:cloud.font,size:cloud.size});
+        document.documentElement.style.setProperty('--read-size',cloud.readerFontSize+'px');
+        document.body.classList.remove('theme-warm','theme-oled');
+        if(cloud.theme==='warm')document.body.classList.add('theme-warm');
+        if(cloud.theme==='oled')document.body.classList.add('theme-oled');
+      }else{
+        const existing=[image.keyFor(owner),mode.keyFor(owner),typography.keyFor(owner)]
+          .some(key=>{try{return !!key&&localStorage.getItem(key)!==null;}catch(_){return false;}});
+        if(existing){userProfile.phoneAppearanceV568=v568PhoneFromDevice();
+          migrated=!!userProfile.phoneAppearanceV568||migrated;}
+      }
+      return migrated;
+    }
     // V56: independent locally scoped identity per UID + story.
     // The original V55 story/NPC chat remains intact as legacy until explicit import.
     let v56EditingRoleId = null;
@@ -2545,6 +2604,10 @@
         dailyReadLog: userProfile.dailyReadLog || { day: '', chapters: [] },
         collectedCharacters: userProfile.collectedCharacters || {},
         storyStates: userProfile.storyStates || {},
+        ...(window.DuduPersonalSyncV568&&userProfile.readingBookmarksV568
+          ? {readingBookmarksV568:DuduPersonalSyncV568.safeBookmarks(userProfile.readingBookmarksV568)} : {}),
+        ...(window.DuduPersonalSyncV568&&userProfile.phoneAppearanceV568
+          ? {phoneAppearanceV568:DuduPersonalSyncV568.cleanAppearance(userProfile.phoneAppearanceV568)} : {}),
         // Avatar choices/frames are cosmetic and validated on save, not privileges.
         ...(userProfile.playerAvatar && window.DuduPlayerAvatarV16
           ? {playerAvatar: DuduPlayerAvatarV16.safeState(userProfile,{
@@ -5894,7 +5957,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
         return;
       }
 
-      const bookmark = JSON.parse(localStorage.getItem(scopedLocalKey('bookmark', novel.id)));
+      const bookmark = v568ReadBookmarkForNovel(novel);
       
       if (bookmark && typeof bookmark.chIdx === 'number' && novel.chapters[bookmark.chIdx]) {
         readChapter(bookmark.chIdx, bookmark.scrollTop || 0);
@@ -5964,7 +6027,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
         const coverBg = novel.coverImage ? `background-image: url('${novel.coverImage}');` : '';
         const tagBadgesHtml = (novel.genre || "Tiểu thuyết").split(/[,/]+/).slice(0, 3).map(t => `<span class="tag">${escapeHtml(t.trim())}</span>`).join(" ");
 
-        const bookmark = JSON.parse(localStorage.getItem(scopedLocalKey('bookmark', novel.id)));
+        const bookmark = v568ReadBookmarkForNovel(novel);
         let readButtonText = "▶ Đọc ngay";
         let readButtonClass = "btn btn-primary";
 
@@ -6183,7 +6246,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       document.getElementById('intro-box-code').textContent = intro.code || "SYS_INITIALIZED";
       document.getElementById('book-intro').textContent = intro.text || novel.intro || "[ Không có dữ liệu văn án ]";
 
-      const bookmark = JSON.parse(localStorage.getItem(scopedLocalKey('bookmark', novel.id)));
+      const bookmark = v568ReadBookmarkForNovel(novel);
       const mainReadBtn = document.getElementById('btn-main-reading-action');
 
       if (bookmark && typeof bookmark.chIdx === 'number' && novel.chapters && novel.chapters[bookmark.chIdx]) {
@@ -6306,10 +6369,16 @@ document.getElementById('phone-home-screen').style.display = 'none';
       document.getElementById('btn-prev-ch').style.visibility = (chIdx > 0) ? 'visible' : 'hidden';
       document.getElementById('btn-next-ch').style.visibility = (chIdx < novel.chapters.length - 1) ? 'visible' : 'hidden';
 
-      localStorage.setItem(scopedLocalKey('bookmark', novel.id), JSON.stringify({
-        chIdx: chIdx,
-        scrollTop: scrollPos || 0
-      }));
+      if(window.DuduPersonalSyncV568){
+        const saved=DuduPersonalSyncV568.captureChapter(novel,chIdx,scrollPos||0);
+        if(saved){
+          localStorage.setItem(scopedLocalKey('bookmark',novel.id),JSON.stringify(saved));
+          if(!IS_SANDBOX_MODE&&DuduAuth.isReady()){
+            userProfile.readingBookmarksV568 ||= {};
+            userProfile.readingBookmarksV568[novel.id]=saved;
+          }
+        }
+      }
 
       updateChapterLootButtonState();
       renderStoryCommentsV442('chapter');
@@ -6336,8 +6405,9 @@ document.getElementById('phone-home-screen').style.display = 'none';
         // This is NOT server proof of reading or eligibility for rare items.
         if(IS_SANDBOX_MODE)window.DuduEconomyRuntimeV43?.questEvent('READ_CHAPTER',readKey);
         else advanceQuest('q_daily_read',1);
-        saveCurrentAccount();
       }
+      // Position must sync even when daily chapter rewards were already earned.
+      if(!IS_SANDBOX_MODE&&DuduAuth.isReady())saveCurrentAccount();
 
       setTimeout(() => {
         window.scrollTo({ top: scrollPos, behavior: scrollPos ? 'smooth' : 'auto' });
@@ -6447,10 +6517,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
 
         const novel = novels[selectedNovelIndex];
         if (novel && novel.chapters && novel.chapters.length > 0) {
-          localStorage.setItem(scopedLocalKey('bookmark', novel.id), JSON.stringify({
-            chIdx: selectedChapterIndex,
-            scrollTop: winScroll
-          }));
+          const current=window.DuduPersonalSyncV568?.captureChapter(novel,selectedChapterIndex,winScroll);
+          if(current)localStorage.setItem(scopedLocalKey('bookmark',novel.id),JSON.stringify(current));
         }
       } else {
         document.getElementById('reading-bar').style.width = '0%';
@@ -6459,6 +6527,17 @@ document.getElementById('phone-home-screen').style.display = 'none';
     });
 
     function goHome() {
+      if(!IS_SANDBOX_MODE&&DuduAuth.isReady()&&
+        document.getElementById('reader-view')?.style.display==='block'){
+        const story=novels[selectedNovelIndex];
+        const position=story?DuduPersonalSyncV568.localBookmark(
+          localStorage,scopedLocalKey('bookmark',story.id)):null;
+        if(story&&position){
+          userProfile.readingBookmarksV568 ||= {};
+          userProfile.readingBookmarksV568[story.id]=position;
+          saveCurrentAccount();
+        }
+      }
       window.DuduGiftPickerV4431?.closeActive();
       document.getElementById('cover-view').style.display = 'none';
       document.getElementById('reader-view').style.display = 'none';
