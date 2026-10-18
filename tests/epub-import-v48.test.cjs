@@ -6,7 +6,7 @@ const epub=require('../js/epub-import-v48.js');
 test('V48 rejects invalid EPUB file, traversal, unsafe schemes and oversized file',()=>{
  assert.equal(epub.validFile({name:'sample.epub',size:1024}),true);
  assert.equal(epub.validFile({name:'sample.txt',size:1024}),false);
- assert.equal(epub.validFile({name:'book.epub',size:15*1024*1024+1}),false);
+ assert.equal(epub.validFile({name:'book.epub',size:30*1024*1024+1}),false);
  assert.equal(epub.safePath('../../evil.xhtml','OEBPS/package.opf'),null);
  assert.equal(epub.safePath('https://attacker.test/test.xhtml'),null);
  assert.equal(epub.safePath('/etc/passwd'),null);
