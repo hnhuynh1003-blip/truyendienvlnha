@@ -28,7 +28,10 @@ export function availableWorkersModels(env){
 export function failoverAllowed(code){
   // A malformed prompt (HTTP 400), auth failure or project-budget exhaustion
   // must NOT be bypassed by trying more models/providers.
-  return ['gemini-rate-limit','gemini-overloaded','upstream-unavailable',
+  // gemini upstream-unavailable may already mean a 25-second timeout.
+  // A second provider request could outlive the browser's 32-second deadline
+  // and consume quota without ever reaching the player.
+  return ['gemini-rate-limit','gemini-overloaded',
     'model-unavailable','upstream-error'].includes(code);
 }
 
