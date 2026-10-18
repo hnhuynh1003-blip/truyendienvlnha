@@ -42,7 +42,7 @@ export function extractWorkersAiText(result){
   if(typeof value==='string')return value.trim();
   if(Array.isArray(value))return value
     .filter(x=>x?.type==='text'&&typeof x?.text==='string')
-    .map(x=>x.text).join('\\n').trim();
+    .map(x=>x.text).join('\n').trim();
   return '';
 }
 
