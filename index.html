@@ -2925,6 +2925,8 @@
       if(note)note.title=selector.value==='auto'
         ? 'Auto chọn model dựa vào câu hỏi mới nhất, không thêm lượt AI; vẫn có thể đổi thủ công.'
         : 'Model thủ công sẽ được dùng cho tin nhắn tiếp theo.';
+      const menu=document.getElementById('dudu-v5612-ai-settings');
+      if(menu)menu.open=false;
     }
     async function refreshNpcQuotaV55(){
       const label=document.getElementById('dudu-v55-quota');
