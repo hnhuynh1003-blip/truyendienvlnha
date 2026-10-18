@@ -493,13 +493,15 @@ async function limitedJson(req){
 async function gemini(payload,env){
   if(!env.GEMINI_API_KEY)return {error:{code:'not-configured',message:'Máy chủ AI chưa có khóa bí mật.'},status:503};
   const model=payload.model||MODEL; // selected only after server allowlist validation
+  // V57.1: never silently fall back to incompatible legacy multi-turn content.
+  // A malformed transcript is rejected locally; Google must only see valid text.
+  const npcContents=payload.purpose==='chat'?textOnlyNpcContents(payload.contents):null;
+  if(payload.purpose==='chat'&&!npcContents)return {error:{
+    code:'gemini-content-format',message:'Không thể chuẩn hóa hội thoại NPC. Tin nhắn đã được giữ để thử lại.'
+  },status:400};
   const body={
     systemInstruction:payload.systemInstruction,
-    // V56.11: standard NPC text does not call tools. Replay stored text
-    // as quoted context in one user turn; no synthetic unsigned model parts.
-    contents:payload.purpose==='chat'
-      ? (textOnlyNpcContents(payload.contents)||payload.contents)
-      : payload.contents,
+    contents:payload.purpose==='chat'?npcContents:payload.contents,
     generationConfig:{
       // Gemini 3.6+ deprecates custom temperature. Leave provider defaults to
       // avoid model-specific invalid-argument responses in mixed Auto routing.
