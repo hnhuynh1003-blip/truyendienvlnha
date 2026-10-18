@@ -5393,16 +5393,18 @@ document.getElementById('phone-home-screen').style.display = 'none';
         button.setAttribute('aria-pressed',String(button.dataset.duduV31Size===settings.size)));
     }
     function setPhoneFontV31(id){
-      if(!IS_SANDBOX_MODE||!window.DuduPhoneTypographyV31)return;
+      if(!phoneWallpaperOwnerV27()||!window.DuduPhoneTypographyV31)return;
       const state=DuduPhoneTypographyV31.read(localStorage,phoneWallpaperOwnerV27());
       if(!DuduPhoneTypographyV31.write(localStorage,phoneWallpaperOwnerV27(),{...state,font:id}))return;
       renderPhoneTypographyV31();
+      v568SavePhoneAppearance();
     }
     function setPhoneSizeV31(size){
-      if(!IS_SANDBOX_MODE||!window.DuduPhoneTypographyV31)return;
+      if(!phoneWallpaperOwnerV27()||!window.DuduPhoneTypographyV31)return;
       const state=DuduPhoneTypographyV31.read(localStorage,phoneWallpaperOwnerV27());
       if(!DuduPhoneTypographyV31.write(localStorage,phoneWallpaperOwnerV27(),{...state,size}))return;
       renderPhoneTypographyV31();
+      v568SavePhoneAppearance();
     }
 
     function renderPhoneWallpaperV27(){
@@ -5439,6 +5441,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
         return;
       }
       renderPhoneWallpaperV27();
+      v568SavePhoneAppearance();
     }
     function setPhoneWallpaperV27(id){
       if(!phoneWallpaperOwnerV27()||!window.DuduPhoneWallpaperV27)return;
@@ -5449,6 +5452,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
         if(window.DuduMultiverseArtV28)
           DuduMultiverseArtV28.writeMode(localStorage,phoneWallpaperOwnerV27(),'personal');
         renderPhoneWallpaperV27();
+        v568SavePhoneAppearance();
       }
       const feedback=document.getElementById('dudu-v27-wallpaper-feedback');
       if(feedback)feedback.textContent=saved?
@@ -5470,6 +5474,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       if(![16,18,21].includes(size))return;
       document.documentElement.style.setProperty('--read-size', size + 'px');
       syncPhoneDisplayOptionsV27();
+      v568SavePhoneAppearance();
     }
     function setTheme(theme) {
       if(!['default','warm','oled'].includes(theme))return;
@@ -5479,6 +5484,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       if(theme==='oled')document.body.classList.add('theme-oled');
       applyUserRole();
       syncPhoneDisplayOptionsV27();
+      v568SavePhoneAppearance();
     }
 
     function escapeHtml(str) {
