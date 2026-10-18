@@ -32,6 +32,20 @@ export function failoverAllowed(code){
     'model-unavailable','upstream-error'].includes(code);
 }
 
+// Cloudflare Workers AI text models can return either {response} or an
+// OpenAI-compatible {choices:[{message:{content}}]}. Treat reasoning and
+// tool-call output as non-display content; never echo it to the NPC chat.
+export function extractWorkersAiText(result){
+  const choice=result?.choices?.[0]?.message?.content;
+  const legacy=result?.response??result?.result?.response??result?.output_text;
+  const value=choice??legacy;
+  if(typeof value==='string')return value.trim();
+  if(Array.isArray(value))return value
+    .filter(x=>x?.type==='text'&&typeof x?.text==='string')
+    .map(x=>x.text).join('\\n').trim();
+  return '';
+}
+
 export async function workersAiNpc(payload,env){
   if(!isWorkersAiModel(payload?.model))
     return {error:{code:'model-unavailable',message:'Model Workers AI không nằm trong danh sách DUDU.'},status:409};
@@ -47,12 +61,16 @@ export async function workersAiNpc(payload,env){
       messages:[{role:'system',content:instruction},{role:'user',content:question}],
       max_completion_tokens:640
     });
-    const value=result?.response??result?.result?.response??result?.output_text;
-    const answer=typeof value==='string'?value.trim():'';
+    const answer=extractWorkersAiText(result);
     if(!answer)
       return {error:{code:'empty-response',message:'Workers AI chưa tạo được lời nhắn NPC.'},status:502};
+    const usage=result?.usage||result?.result?.usage||{};
     return {data:{text:answer,model:payload.model,provider:'workers-ai',
-      usage:{inputTokens:0,outputTokens:0,totalTokens:0}},status:200};
+      usage:{
+        inputTokens:Math.max(0,Number(usage.prompt_tokens||usage.input_tokens)||0),
+        outputTokens:Math.max(0,Number(usage.completion_tokens||usage.output_tokens)||0),
+        totalTokens:Math.max(0,Number(usage.total_tokens)||0)
+      }},status:200};
   }catch(e){
     // Never expose upstream error body, prompts or token-bearing stack traces.
     const status=Number(e?.status)||0;
