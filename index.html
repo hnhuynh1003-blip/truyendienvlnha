@@ -69,7 +69,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-functions-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-check-compat.js"></script>
   <script src="js/appcheck-sitekey-v52.js?v=52-3"></script>
-  <script src="js/auth-v2.js?v=56-6"></script>
+  <script src="js/firestore-profile-fallback-v56-7.js?v=56-7"></script>
+  <script src="js/auth-v2.js?v=56-7"></script>
   <script src="js/ai-proxy.js?v=55-1"></script>
   <script src="js/npc-chat-lite.js?v=53-1"></script>
   <script src="js/player-reset-v54.js?v=54-1"></script>
@@ -1941,6 +1942,17 @@
     };
 
     firebase.initializeApp(firebaseConfig);
+    // V56.7: some browser/network proxies stall the Firestore WebChannel
+    // indefinitely although the authenticated Firestore REST endpoint works.
+    // Configure long polling BEFORE first Firestore read/write. No Rules,
+    // permissions or account data changes.
+    try {
+      const firestoreTransport=firebase.firestore();
+      if(typeof firestoreTransport.settings==='function')
+        firestoreTransport.settings({experimentalForceLongPolling:true});
+    }catch(error){
+      console.warn('Firestore long-polling configuration:',error?.code||'unchanged');
+    }
     // V52: only activate App Check with an administrator-provisioned PUBLIC site key.
     // Absent key keeps trusted callable economy fail-closed; never bypass App Check.
     const isProductionAppCheck = new URLSearchParams(window.location.search).get('sandbox') !== '1';
