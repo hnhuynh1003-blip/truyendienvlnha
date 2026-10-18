@@ -262,9 +262,12 @@
       closeModals();
       refreshSessionUI();
       if (migratedPersonal && typeof window.saveCurrentAccount==='function') {
-        // No reset or merge of unrelated UIDs; normal authorized profile sync.
+        // Legacy profile backup remains available locally; remote preference
+        // writes happen only via narrow authenticated field-mask requests.
         window.saveCurrentAccount();
       }
+      if (typeof window.v569FlushMigrations==='function')
+        window.v569FlushMigrations();
     } catch (error) {
       if (ticket !== generation || client.currentUser?.uid !== account.uid) return;
       // Authentication succeeded, but the profile could not be read.
