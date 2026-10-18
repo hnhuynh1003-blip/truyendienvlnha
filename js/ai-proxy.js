@@ -55,7 +55,11 @@
       return error.message||'Vui lòng đợi trước khi tiếp tục trò chuyện.';
     if(code==='ai-disabled'||status===503)return 'Tần số NPC AI chưa sẵn sàng.';
     if(code==='ai-busy'||status===429)return error?.message||'Tần số NPC đang bận.';
-    if(status===400)return 'Tin nhắn quá dài hoặc không phù hợp giới hạn AI.';
+    if(code==='invalid-request'||code==='invalid-content')
+      return error?.message||'Yêu cầu NPC vượt giới hạn 12 tin hoặc 12.000 ký tự.';
+    if(code==='invalid-upstream-request'||code==='gemini-turn-format')
+      return error?.message||'Gemini từ chối định dạng hội thoại. Hãy thử lại sau khi cập nhật.';
+    if(status===400)return error?.message||'Yêu cầu NPC không hợp lệ; tin nhắn vẫn được lưu.';
     return error?.message||'Kết nối NPC tạm thời gián đoạn. Hãy thử lại sau.';
   }
   async function call(method,path,data){
