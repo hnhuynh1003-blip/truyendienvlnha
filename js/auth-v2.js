@@ -249,6 +249,11 @@
       userProfile.storyStates ||= {};
       userProfile.collectedCharacters ||= {};
       loadScopedInteractionState();
+      // V56.8: restore per-UID reader position and built-in phone appearance
+      // only after the authenticated profile is loaded. Legacy local bookmarks
+      // are imported only when the corresponding cloud entry is absent.
+      const migratedPersonal = typeof window.hydratePersonalSyncV568==='function'
+        ? window.hydratePersonalSyncV568() : false;
       ready = true;
       profileError = '';
       if (btn) btn.textContent = '👤 ' + label;
@@ -256,6 +261,10 @@
       showRetry(false);
       closeModals();
       refreshSessionUI();
+      if (migratedPersonal && typeof window.saveCurrentAccount==='function') {
+        // No reset or merge of unrelated UIDs; normal authorized profile sync.
+        window.saveCurrentAccount();
+      }
     } catch (error) {
       if (ticket !== generation || client.currentUser?.uid !== account.uid) return;
       // Authentication succeeded, but the profile could not be read.
