@@ -16,6 +16,7 @@ import {putQuarantinedPhoto,deleteQuarantinedPhoto} from './avatar-r2-quarantine
 import {normalizedPrivateDraft,normalizedDraftApproval,parseScopedIds,cleanId} from './collectible-rules.mjs';
 
 import {NPC_MODELS} from './npc-models.mjs';
+import {classifyGemini400} from './gemini-error-v56-10.mjs';
 const MODEL='gemini-3.5-flash-lite'; // same ID as server model registry; kept literal for isolated route tests
 const MAX_BODY_BYTES=18000;
 
@@ -510,9 +511,17 @@ async function gemini(payload,env){
   }
   if(!response.ok){
     console.warn('Gemini upstream HTTP status:',response.status);
-    // V56.4: never misreport API-key authorization or malformed payload as missing model.
-    // Do not expose upstream raw details, key, project identity, or prompts.
-    const errorKind=response.status===400?'invalid-upstream-request':
+    // V56.10: distinguish Google HTTP 400 structural failures from access
+    // errors. Classify only known phrases, never log raw Google error bodies.
+    let upstream400=null;
+    if(response.status===400){
+      try{
+        const upstream=await response.json();
+        upstream400=classifyGemini400(upstream?.error?.message);
+      }catch(_){upstream400=classifyGemini400('');}
+      console.warn('Gemini HTTP 400 class:',upstream400.code);
+    }
+    const errorKind=response.status===400?upstream400.code:
       response.status===401||response.status===403?'gemini-access-denied':
       response.status===404?'model-unavailable':
       response.status===429?'gemini-rate-limit':
@@ -525,7 +534,7 @@ async function gemini(payload,env){
       'gemini-overloaded':'Máy chủ Gemini đang quá tải (HTTP 503).',
       'upstream-error':'Không thể nhận phản hồi từ Gemini (HTTP '+response.status+').'
     };
-    return {error:{code:errorKind,message:details[errorKind]},
+    return {error:{code:errorKind,message:upstream400?.message||details[errorKind]},
       status:response.status===429?429:response.status===503?502:response.status===404?409:502};
   }
   let data;
