@@ -80,6 +80,7 @@ body.dudu-phone-v11 #cyber-phone #dudu-v5614-self-menu:not([open])>#dudu-v56-rol
 body.dudu-phone-v11 #cyber-phone #dudu-v5614-self-menu #dudu-v56-role-avatar{
   width:34px!important;height:34px!important;min-width:34px!important;
 }
+body.dudu-phone-v11 #cyber-phone #dudu-v5614-self-menu #dudu-v56-role-box.dudu-v5612-role-active #dudu-v56-role-note,
 body.dudu-phone-v11 #cyber-phone #dudu-v5614-self-menu #dudu-v56-role-note{
   display:block!important;
 }
