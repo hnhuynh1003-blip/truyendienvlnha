@@ -15,6 +15,25 @@
  const utf8len=s=>new TextEncoder().encode(s).length;
  const forbidden=/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/;
  const now=()=>new Date().toISOString();
+ const validCover=s=>typeof s==='string'&&s.length<32000&&
+  /^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/.test(s);
+ // A deterministic import fingerprint prevents resuming with a different
+ // EPUB, notice selection or chapter ordering. This is not authorization;
+ // Firestore owner/admin Rules remain the security boundary.
+ function fingerprint(chapters){
+  let a=2166136261,b=5381;
+  const feed=str=>{
+   for(let i=0;i<str.length;i++){
+    const c=str.charCodeAt(i);
+    a=Math.imul(a^c,16777619);
+    b=(Math.imul(b,33)^c)>>>0;
+   }
+  };
+  feed(String(chapters.length));
+  for(const ch of chapters){feed('\u0000'+ch.title+'\u0001'+ch.content+'\u0002');}
+  return 'v57-'+(a>>>0).toString(16).padStart(8,'0')+
+    (b>>>0).toString(16).padStart(8,'0')+'-'+chapters.length;
+ }
  const requireAdmin=async(auth)=>{
   const current=auth?.currentUser;
   if(!current?.uid)throw Error('Cần đăng nhập Firebase với tài khoản tác giả');
@@ -40,48 +59,76 @@
   if(!token||!/^[0-9a-f-]{36}$/i.test(token))throw Error('Không thể tạo ID an toàn');
   return 'epub-'+token;
  }
- async function importDraft(parsed,{db,auth,onProgress=()=>{},bookId}={}){
+ async function importDraft(parsed,{db,auth,onProgress=()=>{},onCreated=()=>{},bookId,resumeBookId}={}){
   if(!db?.collection)throw Error('Firestore chưa sẵn sàng');
   const uid=await requireAdmin(auth);
   const chapters=manifest(parsed),title=String(parsed.title||'').trim().slice(0,140);
   if(!title)throw Error('Thiếu tên truyện');
-  const id=bookId||newId();
-  if(!identifier(id))throw Error('ID truyện không hợp lệ');
+  const id=resumeBookId||bookId||newId();
+  if(!identifier(id)||resumeBookId&&bookId)throw Error('ID truyện không hợp lệ');
   const ref=db.collection(COLLECTION).doc(id);
-  // Fail closed: never update or overwrite an already-existing book.
   const existing=await ref.get();
-  if(existing.exists)throw Error('Mã truyện đã tồn tại; không được ghi đè');
-  const stamp=now();
+  const restoring=!!resumeBookId;
+  if(existing.exists&&!restoring)throw Error('Mã truyện đã tồn tại; không được ghi đè');
+  if(!existing.exists&&restoring)throw Error('Không tìm thấy bản nhập EPUB dang dở');
+  const stamp=now(),stampFingerprint=fingerprint(chapters);
   const chapterIndex=chapters.map((ch,i)=>({
    id:'chapter-'+String(i+1).padStart(4,'0'),title:ch.title,
    wordCount:ch.wordCount,order:i
   }));
-  const cover={id,title,author:String(parsed.author||'').slice(0,140)||'Tác giả',
-   genre:'Nhập EPUB',status:'importing',ownerUid:uid,chapterCount:chapters.length,
-   chapterIndex,createdAt:stamp,updatedAt:stamp,sourceName:String(parsed.sourceName||'').slice(0,180),
-   importSchema:49};
-  // Readers never see importing/draft. A crash leaves an unlisted draft,
-  // not a half-published book.
-  await ref.set(cover);
+  if(restoring){
+   const past=existing.data();
+   if(past.ownerUid!==uid||past.status!=='importing'||
+     past.importFingerprint!==stampFingerprint||
+     past.chapterCount!==chapters.length||
+     !Array.isArray(past.chapterIndex)||
+     chapterIndex.some((ch,i)=>past.chapterIndex[i]?.id!==ch.id||
+       past.chapterIndex[i]?.title!==ch.title))
+     throw Error('Bản thảo không trùng EPUB/chương hoặc không thuộc tài khoản này; không thể tiếp tục');
+  }else{
+   const cover={id,title,author:String(parsed.author||'').slice(0,140)||'Tác giả',
+    genre:'Nhập EPUB',status:'importing',ownerUid:uid,chapterCount:chapters.length,
+    chapterIndex,createdAt:stamp,updatedAt:stamp,sourceName:String(parsed.sourceName||'').slice(0,180),
+    importSchema:57,importFingerprint:stampFingerprint,
+    coverImage:validCover(parsed.coverImage)?parsed.coverImage:''};
+   // Never expose a half-imported book. Existing V49 documents remain intact.
+   await ref.set(cover);
+  }
+  // The caller records this ID immediately. Reloading the page cannot
+  // silently publish, and the same file can resume without overwriting.
+  onCreated(id);
   try{
    for(let i=0;i<chapters.length;i+=4){
     if(auth.currentUser?.uid!==uid)throw Error('Phiên Firebase thay đổi khi đang nhập');
     const batch=db.batch();
+    let pending=0;
     for(let j=i;j<Math.min(i+4,chapters.length);j++){
-     batch.set(ref.collection('chapters').doc(chapterIndex[j].id),
-      {id:chapterIndex[j].id,order:j,title:chapters[j].title,
-       content:chapters[j].content,wordCount:chapters[j].wordCount});
+     const doc=ref.collection('chapters').doc(chapterIndex[j].id);
+     const value={id:chapterIndex[j].id,order:j,title:chapters[j].title,
+       content:chapters[j].content,wordCount:chapters[j].wordCount};
+     if(restoring){
+       const prior=await doc.get();
+       if(prior.exists){
+         const saved=prior.data();
+         if(saved.content!==value.content||saved.title!==value.title||saved.order!==value.order)
+           throw Error('Chương đã lưu khác nội dung hiện tại; ngừng để tránh trộn sách');
+         continue;
+       }
+     }
+     batch.set(doc,value);pending++;
     }
-    await batch.commit();
+    if(pending)await batch.commit();
     onProgress(Math.round(100*Math.min(i+4,chapters.length)/chapters.length));
    }
    if(auth.currentUser?.uid!==uid)throw Error('Phiên Firebase thay đổi khi hoàn tất');
    await ref.update({status:'draft',updatedAt:now()});
-   return {id,title,chapterCount:chapters.length,status:'draft'};
+   return {id,title,chapterCount:chapters.length,status:'draft',resumed:restoring};
   }catch(err){
-   // Keep the record private. Do not delete chapters on a transient failure,
-   // as that would make the failure irreversible without a second upload.
-   throw Error('Đã ngừng nhập an toàn; bản thảo chưa công khai ('+id+'). '+(err.message||'Lỗi không xác định'));
+   // Keep the importing record and finished chapters private for safe retry.
+   const failure=new Error('Đã ngừng nhập an toàn; bản thảo chưa công khai ('+id+'). '+
+    (err.message||'Lỗi không xác định'));
+   failure.draftId=id;
+   throw failure;
   }
  }
  async function publishDraft(bookId,{db,auth,confirmRights=false}={}){
@@ -114,7 +161,8 @@
    if(!identifier(s.id)||chapterIndex.length>MAX_CHAPTERS||!chapterIndex.length)return null;
    return {id:s.id,title:String(d.title||'Truyện EPUB').slice(0,140),
     author:String(d.author||'Tác giả').slice(0,140),status:'Đang ra',
-    genre:'EPUB',desc:'Nhập từ sách điện tử',coverImage:'',
+    genre:'EPUB',desc:'Nhập từ sách điện tử',
+    coverImage:validCover(d.coverImage)?d.coverImage:'',
     updatedAt:(d.updatedAt||'').slice(0,10),createdAt:(d.createdAt||'').slice(0,10),
     introData:{title:'SÁCH ĐIỆN TỬ',code:'EPUB',text:''},
     _cloudV49:true,characters:[],chapters:chapterIndex.map((ch,i)=>({
@@ -134,6 +182,6 @@
   if(!doc.exists||!doc.data()?.content)throw Error('Không tìm thấy nội dung chương');
   return {content:String(doc.data().content),title:String(doc.data().title)};
  }
- return Object.freeze({COLLECTION,MAX_CHAPTER_BYTES,manifest,requireAdmin,
+ return Object.freeze({COLLECTION,MAX_CHAPTER_BYTES,manifest,fingerprint,validCover,requireAdmin,
   importDraft,publishDraft,publicBooks,readChapter});
 });
