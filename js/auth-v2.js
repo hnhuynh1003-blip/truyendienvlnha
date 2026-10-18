@@ -129,6 +129,8 @@
       return 'Firestore từ chối đọc profiles_v2 của tài khoản. Cần kiểm tra Rules đang triển khai; không sửa quyền hay xóa dữ liệu.';
     }
     if (error?.code === 'profile/timeout') {
+      if(error?.stage==='Firestore SDK + REST')
+        return 'Cả kết nối Firestore SDK và REST đều chưa tải được hồ sơ. Kiểm tra mạng và thử tải lại; không cần đổi Rules nếu chẩn đoán REST báo HTTP 200.';
       return error?.stage === 'Firebase token'
         ? 'Quá thời gian xác minh token Firebase (15 giây). Bạn vẫn đăng nhập Google; thử tải lại hồ sơ.'
         : 'Quá thời gian đọc hồ sơ Firestore (15 giây). Bạn vẫn đăng nhập Google; thử tải lại hồ sơ.';
@@ -138,7 +140,7 @@
     }
     return 'Không thể tải hồ sơ: ' + (error?.code || error?.message || 'lỗi chưa xác định') + '.';
   }
-  function withTimeout(promise, label) {
+  function withTimeout(promise, label, durationMs=15000) {
     let timer;
     const timeout = new Promise((_, reject) => {
       timer = setTimeout(() => {
@@ -146,9 +148,38 @@
         error.code = 'profile/timeout';
         error.stage = label;
         reject(error);
-      }, 15000);
+      }, durationMs);
     });
     return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+  }
+  async function readProfile(account) {
+    // First try the regular Firestore SDK, including long polling configured
+    // on startup; fall back only when its transport times out or is unavailable.
+    try {
+      return await withTimeout(
+        firebase.firestore().collection('profiles_v2').doc(account.uid).get(),
+        'Firestore profile', 5000);
+    } catch (sdkError) {
+      if(!['profile/timeout','unavailable','deadline-exceeded'].includes(sdkError?.code))
+        throw sdkError;
+      const helper=window.DuduFirestoreProfileFallbackV567;
+      if(!helper?.read)throw sdkError;
+      try {
+        const projectId=firebase.app?.()?.options?.projectId||'truyendienvl';
+        const result=await withTimeout(helper.read(account,projectId,fetch,10000),
+          'Firestore REST', 12500);
+        console.info('DUDU: Firestore profile loaded using authenticated REST fallback.');
+        return result;
+      } catch(restError) {
+        // REST uses the same UID/token and deployed Rules. Distinguish
+        // actual permission denial from an SDK transport timeout.
+        if(['permission-denied','unauthenticated'].includes(restError?.code))
+          throw restError;
+        const combined=Object.assign(new Error('Firestore SDK and REST profile read failed'),
+          {code:'profile/timeout',stage:'Firestore SDK + REST'});
+        throw combined;
+      }
+    }
   }
   function refreshSessionUI() {
     // A phone/widget render error must never invalidate Firebase authentication.
@@ -189,7 +220,7 @@
     try {
       const [token, snapshot] = await Promise.all([
         withTimeout(account.getIdTokenResult(), 'Firebase token'),
-        withTimeout(firebase.firestore().collection('profiles_v2').doc(account.uid).get(), 'Firestore profile')
+        readProfile(account)
       ]);
       if (ticket !== generation || client.currentUser?.uid !== account.uid) return;
 
