@@ -22,7 +22,7 @@ function harness(options = {}) {
     firebase: {
       auth: authFactory,
       firestore: () => ({ collection: () => ({ doc: uid => ({
-        get: async () => options.profileGet ? options.profileGet(record) : ({ exists: !!record, data: () => record })
+        get: async () => options.profileGet ? options.profileGet(record,uid) : ({ exists: !!record, data: () => record })
       }) }) })
     },
     document: {
@@ -32,7 +32,7 @@ function harness(options = {}) {
         focus() { this.focused = true; }, insertAdjacentElement() {}
       })
     },
-    localStorage: { getItem: () => null },
+    localStorage: { getItem: key => options.storage?.get(key) ?? null },
     currentUsername: 'legacy-user',
     userProfile: { username: 'guest', role: 'reader', name: 'Guest', storyStates: {}, collectedCharacters: {} },
     chatHistories: { old: [] },
@@ -180,4 +180,57 @@ test('a never-resolving profile cannot leave authenticated user displayed as Gue
   assert.equal(h.context.DuduAuth.isReady(), false);
   assert.match(h.elements['account-status-btn'].textContent, /Lỗi hồ sơ/);
   assert.match(h.elements['auth-status-message'].textContent, /Quá thời gian/);
+});
+
+test('V56.5 missing Firestore profiles restore only each owner\'s legacy V55 local backup', async () => {
+  const storage = new Map([
+    ['profile_reader-a', JSON.stringify({username:'reader-a',name:'A Backup',currency:120})],
+    ['profile_reader-b', JSON.stringify({username:'reader-b',name:'B Backup',currency:65})]
+  ]);
+  const h = harness({ storage });
+  await h.login('reader-a', {}, null);
+  assert.equal(h.context.userProfile.name, 'reader-a', 'Google display name remains authoritative');
+  assert.equal(h.context.userProfile.currency, 120);
+  await h.login('reader-b', {}, null);
+  assert.equal(h.context.currentUsername,'reader-b');
+  assert.equal(h.context.userProfile.currency,65);
+  assert.equal(h.context.DuduAuth.isReady(),true);
+  assert.equal(h.context.chatHistories.old,undefined);
+});
+
+test('V56.5 rejected backup from another UID cannot replace the current profile', async () => {
+  const storage = new Map([
+    ['profile_reader-b', JSON.stringify({username:'reader-a',currency:999999})]
+  ]);
+  const h = harness({ storage });
+  await h.login('reader-b', {}, null);
+  assert.equal(h.context.currentUsername,'reader-b');
+  assert.equal(h.context.userProfile.currency,50);
+  assert.equal(h.context.DuduAuth.isReady(),true);
+});
+
+test('V56.5 delayed Firebase profile response from account A cannot override account B', async () => {
+  let releaseA;
+  const pendingA = new Promise(resolve => { releaseA=resolve; });
+  const h = harness({profileGet:(_record,uid)=>uid==='reader-a'
+    ? pendingA : Promise.resolve({exists:true,data:()=>({name:'B Name',currency:5})})});
+  const loginA = h.login('reader-a', {}, null);
+  await Promise.resolve();
+  await h.login('reader-b', {}, null);
+  releaseA({exists:true,data:()=>({name:'Old A',currency:900})});
+  await loginA;
+  assert.equal(h.context.currentUsername,'reader-b');
+  assert.equal(h.context.userProfile.name,'B Name');
+  assert.equal(h.context.userProfile.currency,5);
+  assert.equal(h.context.DuduAuth.isReady(),true);
+});
+
+test('V56.5 two-account login errors explain credentials without auto-linking accounts', () => {
+  const h=harness();
+  h.context.DuduAuth.showStatus();
+  // Guard the wording in code; never convert an auth collision into a merge.
+  assert.match(src,/auth\/account-exists-with-different-credential/);
+  assert.match(src,/không tự gộp tài khoản/);
+  assert.match(src,/auth\/email-already-in-use/);
+  assert.equal(typeof h.context.DuduAuth.google,'function');
 });
