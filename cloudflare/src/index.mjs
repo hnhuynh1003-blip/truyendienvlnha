@@ -18,6 +18,7 @@ import {normalizedPrivateDraft,normalizedDraftApproval,parseScopedIds,cleanId} f
 import {NPC_MODELS} from './npc-models.mjs';
 import {classifyGemini400} from './gemini-error-v56-10.mjs';
 import {textOnlyNpcContents} from './npc-chat-format-v56-11.mjs';
+import {routeNpcAi,isWorkersAiModel,availableWorkersModels} from './ai-router-v58.mjs';
 const MODEL='gemini-3.5-flash-lite'; // same ID as server model registry; kept literal for isolated route tests
 const MAX_BODY_BYTES=18000;
 
@@ -574,7 +575,7 @@ export default {
       return new Response(null,{status:204,headers:headers(origin,env)});
     }
     if(path==='/health'&&req.method==='GET'){
-      return json({service:'dudu-ai',enabled:env.AI_ENABLED==='true',model:MODEL,models:NPC_MODELS},200,origin,env);
+      return json({service:'dudu-ai',enabled:env.AI_ENABLED==='true',model:MODEL,models:[...NPC_MODELS,...availableWorkersModels(env)],freeOnly:true},200,origin,env);
     }
     if(path==='/v1/pilot/status'){
       if(req.method!=='GET')
@@ -619,7 +620,7 @@ export default {
     if(path==='/v1/status'){
       try {
         const state=await bucket.status(user.uid,Date.now());
-        return json({...state,enabled:true,models:NPC_MODELS,defaultModel:MODEL},200,origin,env);
+        return json({...state,enabled:true,models:[...NPC_MODELS,...availableWorkersModels(env)],defaultModel:MODEL,freeOnly:true},200,origin,env);
       }catch(_){return error('quota-unavailable','Không thể đọc hạn mức AI.',503,origin,env);}
     }
     if(!req.headers.get('Content-Type')?.toLowerCase().startsWith('application/json')){
@@ -628,7 +629,7 @@ export default {
     const parsed=await limitedJson(req);
     const payload=validRequest(parsed,user.admin);
     if(!payload)return error('invalid-request','Nội dung quá dài hoặc không hợp lệ.',400,origin,env);
-    if(!env.GEMINI_API_KEY)return error('ai-disabled','Máy chủ AI chưa được cấu hình.',503,origin,env);
+    if(!env.GEMINI_API_KEY&&!isWorkersAiModel(payload.model))return error('ai-disabled','Máy chủ AI chưa được cấu hình.',503,origin,env);
     let lease;
     try{lease=await bucket.reserve(user.uid,Date.now());}
     catch(_){return error('quota-unavailable','Máy chủ giới hạn AI đang bận.',503,origin,env);}
@@ -636,7 +637,9 @@ export default {
       return error(lease?.code||'quota-error',lease?.message||quotaMessage(lease?.code),429,origin,env);
     }
     try {
-      const result=await gemini(payload,env);
+      const result=payload.purpose==='chat'
+        ?await routeNpcAi(payload,env,gemini)
+        :await gemini(payload,env);
       if(result.error)return json({error:result.error},result.status,origin,env);
       return json(result.data,result.status,origin,env);
     } finally {
