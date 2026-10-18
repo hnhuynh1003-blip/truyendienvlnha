@@ -1,0 +1,99 @@
+name: DUDU V57.1 safe Worker deploy (manual)
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: 'Type DEPLOY_V57_1 to deploy only the approved Gemini 400 fix'
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: dudu-v57-1-safe-worker-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate deployment approval and exact audited Worker
+        env:
+          CONFIRMATION: ${{ inputs.confirmation }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$CONFIRMATION" = "DEPLOY_V57_1" || { echo "STOP: confirmation mismatch"; exit 1; }
+          test -n "$CLOUDFLARE_API_TOKEN" || { echo "STOP: CLOUDFLARE_API_TOKEN GitHub secret missing"; exit 1; }
+          test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo "STOP: CLOUDFLARE_ACCOUNT_ID GitHub secret missing"; exit 1; }
+          test "$(git hash-object cloudflare/src/index.mjs)" = "90d0b3cff4181f6a4b4067d44bb4e4b998175b78" ||
+            { echo "STOP: Worker changed after V57.1 audit. Re-review required."; exit 1; }
+          test "$(git hash-object cloudflare/wrangler.npc-ai-v54.toml)" = "9e60aef327291c097d4e1eb8fa418537460ce0c5" ||
+            { echo "STOP: Worker config changed after V57.1 audit."; exit 1; }
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install and run Cloudflare tests
+        run: |
+          npm install --prefix cloudflare --no-audit --no-fund
+          npm test --prefix cloudflare
+          node --check cloudflare/src/index.mjs
+      - name: Dry-run bundle
+        working-directory: cloudflare
+        run: npx wrangler deploy --config wrangler.npc-ai-v54.toml --dry-run
+
+      # Never replace dashboard variables or DO bindings blindly. Compare to
+      # the currently deployed Worker before proceeding. No secret values log.
+      - name: Verify existing Worker settings match the audited deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --silent --show-error --fail --max-time 30 \
+            --header "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/dudu-ai-staging/settings" > "$RUNNER_TEMP/dudu-live-settings.json"
+          python3 - <<'PY'
+          import json,os,tomllib
+          from pathlib import Path
+          path=Path(os.environ['RUNNER_TEMP'])/'dudu-live-settings.json'
+          doc=json.loads(path.read_text(encoding='utf-8'))
+          result=doc.get('result') if doc.get('success') is True else None
+          if not isinstance(result,dict) or not isinstance(result.get('bindings'),list):
+              raise SystemExit('STOP: cannot verify live Cloudflare Worker bindings.')
+          live=result['bindings']
+          with open('cloudflare/wrangler.npc-ai-v54.toml','rb') as f: cfg=tomllib.load(f)
+          if cfg.get('name')!='dudu-ai-staging' or cfg.get('vars',{}).get('AI_ENABLED')!='true':
+              raise SystemExit('STOP: Worker name or AI flag unexpected.')
+          expected_vars={k:str(v) for k,v in cfg.get('vars',{}).items()}
+          current_vars={b['name']:str(b.get('text','')) for b in live if b.get('type')=='plain_text'}
+          differences=sorted(k for k,v in expected_vars.items() if current_vars.get(k)!=v)
+          if differences:
+              raise SystemExit('STOP: live variables differ from config: '+', '.join(differences)+'. No deploy.')
+          expected_dos={(b['name'],b['class_name']) for b in cfg['durable_objects']['bindings']}
+          current_dos={(b.get('name'),b.get('class_name')) for b in live if b.get('type')=='durable_object_namespace'}
+          if current_dos!=expected_dos:
+              raise SystemExit('STOP: Durable Object bindings differ. No deploy.')
+          unexpected=sorted(set(b.get('type','') for b in live)-{'plain_text','secret_text','durable_object_namespace'})
+          if unexpected:
+              raise SystemExit('STOP: other live binding types exist: '+', '.join(unexpected)+'. No deploy.')
+          secrets={b.get('name') for b in live if b.get('type')=='secret_text'}
+          if 'GEMINI_API_KEY' not in secrets:
+              raise SystemExit('STOP: GEMINI_API_KEY secret not confirmed. No deploy.')
+          print('PASS: existing flags, Durable Objects, and Gemini secret presence confirmed; no secret values shown.')
+          PY
+      - name: Deploy approved V57.1 Worker (preserve dashboard variables)
+        working-directory: cloudflare
+        run: npx wrangler deploy --config wrangler.npc-ai-v54.toml --keep-vars
+      - name: Verify Worker health
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --silent --show-error --fail --max-time 20 \
+            https://dudu-ai-staging.dudu-studio-ai.workers.dev/health \
+            | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d.get("service")=="dudu-ai" and d.get("enabled") is True, "Worker health incorrect"; print("PASS: DUDU AI Worker health OK")'
