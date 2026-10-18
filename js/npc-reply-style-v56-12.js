@@ -37,9 +37,14 @@
     if(!text)return typeof answer==='string'?answer.trim():'';
     if(wantsDetail(query))return text;
     if(greeting(query)){
-      const sentence=text.match(/^([\s\S]*?[.!?。！？…])(?:\s|$)/);
-      const first=sentence?.[1]?.trim()||text;
-      return trimToWords(first,26);
+      const sentences=text.match(/[^.!?。！？…]+[.!?。！？…]+|[^.!?。！？…]+$/g)||[];
+      const first=sentences[0]?.trim()||text;
+      const second=sentences[1]?.trim()||'';
+      // A natural short two-part chat reply ("Chào. Có chuyện gì?")
+      // should not be cut to a single word just because of punctuation.
+      const concise=second&&words(first).length<=4&&
+        words(first+' '+second).length<=14?first+' '+second:first;
+      return trimToWords(concise,26);
     }
     if(words(text).length<=70)return text;
     const sentences=text.match(/[^.!?。！？]+[.!?。！？]+|[^.!?。！？]+$/g)||[];
