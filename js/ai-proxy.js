@@ -79,7 +79,12 @@
         signal:AbortSignal.timeout(32000)
       });
       const body=await response.json().catch(()=>null);
-      if(!response.ok||body?.error)return {error:explain(body,response.status)};
+      if(!response.ok||body?.error)return {
+        error:explain(body,response.status),
+        // Diagnostic only: the exact allowlisted model attempted by this user.
+        model:method==='POST'&&MODELS.some(x=>x.id===data?.model)?data.model:undefined,
+        code:typeof body?.error?.code==='string'?body.error.code:'http-'+response.status
+      };
       return body || {error:'Máy chủ không trả lời.'};
     }catch(e){
       console.warn('DUDU AI gateway unavailable:',e?.name||'network');
