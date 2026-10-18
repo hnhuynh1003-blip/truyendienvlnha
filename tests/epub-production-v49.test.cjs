@@ -77,3 +77,63 @@ test('oversized chapter UTF-8 content refused before any Firestore writes',async
   {db:store,auth,bookId:'epub-huge'}),/giới hạn/);
  assert.equal(store.stories.size,0);
 });
+
+test('V57 resume interrupted private import without overwriting prior chapters',async()=>{
+ const store=db();
+ const original=store.batch;
+ let batchNo=0;
+ store.batch=()=>{const b=original(),commit=b.commit;
+  b.commit=async()=>{batchNo++;if(batchNo===2)throw Error('offline');return commit();};
+  return b;
+ };
+ const long={...sample,chapters:Array.from({length:9},(_,i)=>({
+  title:'Chương '+(i+1),content:'Dòng 1\\nDòng 2 — '+i
+ }))};
+ const seen=[];
+ let failed;
+ try{
+  await api.importDraft(long,{db:store,auth,bookId:'epub-v57-recovery',onCreated:id=>seen.push(id)});
+ }catch(err){failed=err}
+ assert.ok(failed);
+ assert.equal(failed.draftId,'epub-v57-recovery');
+ assert.equal(store.stories.get('epub-v57-recovery').status,'importing');
+ assert.equal(store.chapters.size,4);
+ const preserved=store.chapters.get('epub-v57-recovery:chapter-0001');
+ store.batch=original;
+ const result=await api.importDraft(long,{db:store,auth,resumeBookId:failed.draftId,
+  onCreated:id=>seen.push(id)});
+ assert.equal(result.status,'draft');
+ assert.equal(result.resumed,true);
+ assert.equal(store.chapters.size,9);
+ assert.deepEqual(store.chapters.get('epub-v57-recovery:chapter-0001'),preserved);
+ assert.deepEqual(seen,['epub-v57-recovery','epub-v57-recovery']);
+ const recovered=await api.importDraft(long,{db:store,auth,resumeBookId:'epub-v57-recovery'});
+ assert.equal(recovered.status,'draft');
+ assert.equal(recovered.resumed,true);
+});
+test('V57 refuses wrong source, wrong owner or existing published story on resume',async()=>{
+ const store=db();
+ const original=store.batch;store.batch=()=>{const b=original();b.commit=async()=>{throw Error('interrupted')};return b};
+ const parsed={...sample,chapters:[{title:'Một',content:'Nguyên tác\n\nĐoạn 1'}]};
+ await assert.rejects(api.importDraft(parsed,{db:store,auth,bookId:'epub-v57-original'}));
+ store.batch=original;
+ await assert.rejects(api.importDraft({...parsed,chapters:[{title:'Một',content:'ĐÃ ĐỔI'}]},
+  {db:store,auth,resumeBookId:'epub-v57-original'}),/không trùng/);
+ const foreign={currentUser:{uid:'another-author',getIdTokenResult:async()=>({claims:{admin:true}})}};
+ await assert.rejects(api.importDraft(parsed,{db:store,auth:foreign,resumeBookId:'epub-v57-original'}),/không trùng/);
+ const result=await api.importDraft(parsed,{db:store,auth,resumeBookId:'epub-v57-original'});
+ await api.publishDraft(result.id,{db:store,auth,confirmRights:true});
+ await assert.rejects(api.importDraft(parsed,{db:store,auth,resumeBookId:'epub-v57-original'}),/không trùng/);
+});
+test('V57 bounded cover thumbnail is public only after explicit publish',async()=>{
+ const store=db(),img='data:image/jpeg;base64,AQIDBA==';
+ const draft=await api.importDraft({...sample,coverImage:img},{db:store,auth,bookId:'epub-v57-cover'});
+ assert.equal(store.stories.get(draft.id).coverImage,img);
+ assert.equal((await api.publicBooks(store)).length,0);
+ await api.publishDraft(draft.id,{db:store,auth,confirmRights:true});
+ assert.equal((await api.publicBooks(store))[0].coverImage,img);
+ const huge='data:image/jpeg;base64,'+'a'.repeat(40000);
+ const other=await api.importDraft({...sample,coverImage:huge},{db:store,auth,bookId:'epub-v57-large-cover'});
+ assert.equal(store.stories.get(other.id).coverImage,'');
+ assert.equal(api.validCover('https://example.com/unsafe.jpg'),false);
+});
