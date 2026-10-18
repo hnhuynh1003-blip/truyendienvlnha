@@ -20,7 +20,7 @@ test('V56.12 greeting is one short in-character sentence',()=>{
 });
 test('V56.12 removes system prefaces without modifying normal historical messages',()=>{
  const original='[Hệ thống: trạng thái tạm thời.] Ôn Tri Hành nhìn lên. Cô vẫn đang nghe đây. Để tôi kể hết cả chuyện này.';
- assert.equal(reply.format(original,'xin chào'),'Ôn Tri Hành nhìn lên.');
+ assert.equal(reply.format(original,'xin chào'),'Ôn Tri Hành nhìn lên. Cô vẫn đang nghe đây.');
  assert.match(reply.guidance('Cô hôm nay thế nào?'),/1–2 câu/);
  assert.equal(reply.format('Tôi đang đây.','Cô hôm nay thế nào?'),'Tôi đang đây.');
 });
