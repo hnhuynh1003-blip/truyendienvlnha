@@ -54,3 +54,13 @@ V57.1:
 - Chẩn đoán nguyên nhân HTTP 400 từ log upstream đã lọc sau một test có kiểm soát; tuyệt đối không đoán “đã sửa”.
 - Hoàn tất kiểm thử đăng nhập thực tế AU / độc giả khi có staging và chủ tài khoản xác nhận.
 - Mở rộng V58.2: provider adapters mới **chỉ sau khi đánh giá được chi phí**, AI Director dùng điều kiện cốt truyện và kiểm thử bằng các nhánh truyện đã mở khóa.
+
+
+## V58 R1.1 – 18/10/2026: ổn định router và giới hạn chi phí
+
+- V57.1 đã gộp vào `main` tại PR #15. Tuy nhiên GitHub Actions deploy **chưa chạy được** vì thiếu `CLOUDFLARE_API_TOKEN` (và cần xác nhận `CLOUDFLARE_ACCOUNT_ID`) trong repository secrets. Không thể xác nhận Gemini HTTP 400 hết cho đến khi deploy và test AU/độc giả thật.
+- Worker AI nhận `choices[0].message.content` (OpenAI-compatible) **hoặc** `response` dạng cũ; tuyệt đối không trả `reasoning` hoặc `tool_calls` lên ứng dụng Liên lạc. `usage` được chuẩn hóa.
+- Fallback giới hạn một lần với `gemini-rate-limit`, `gemini-overloaded`, `model-unavailable`, `upstream-error` khi chủ dự án đã bật hợp lệ. Không fallback với `upstream-unavailable` (có thể là timeout sau 25 giây; trình duyệt chỉ chờ 32 giây), HTTP 400, lỗi xác thực hoặc hết ngân sách.
+- Cloudflare Free cho Workers AI có 10.000 Neurons miễn phí/ngày; tài khoản Workers Paid có thể tính phí sau ngưỡng này. Phần mềm **không thể tự xác minh tài khoản đang Free**. Vì vậy mọi cờ Workers AI/fallback ở cấu hình chính vẫn là `false`; chưa bật cho người đọc.
+- Đã đồng bộ nhánh V58 với commit `main` chứa PR #15; `main` không được merge V58 tự động.
+- Bài kiểm thử mock chỉ kiểm tra giao thức và cấu trúc; không xác nhận dịch vụ AI thật hoạt động, không xác nhận Cloudflare billing.
