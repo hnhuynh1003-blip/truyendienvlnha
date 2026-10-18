@@ -86,12 +86,13 @@
       return {error:'Tần số NPC tạm thời gián đoạn.'};
     }
   }
-  function generate(purpose,instruction,messages){
+  function generate(purpose,instruction,messages,currentQuestion){
     const chosen=model();
     // No additional request is made to select a model. Manual choices take
     // precedence; Auto only routes among the existing server allowlist.
     const resolved=chosen===AUTO?
-      (window.DuduNpcAutoModelV5611?.route(messages)||DEFAULT_MODEL):chosen;
+      (window.DuduNpcAutoModelV5611?.route(currentQuestion
+        ?[{role:'user',text:currentQuestion}]:messages)||DEFAULT_MODEL):chosen;
     return call('POST','/v1/generate',{
       purpose,instruction,messages,...(purpose==='chat'?{model:resolved}:{})
     });
