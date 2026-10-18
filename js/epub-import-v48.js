@@ -208,6 +208,24 @@
   const info=el('small','');info.style.cssText='display:block;font-size:11px;margin:6px 0;white-space:pre-line;';
   const buttons=el('div');buttons.className='dudu-epub-actions';
   const button=(caption,handler)=>{const b=el('button',caption);b.type='button';b.className='btn';b.onclick=handler;buttons.append(b);return b};
+  // A crash-safe pointer for this signed-in author only. It is not a bearer
+  // token and cannot grant write access; Firestore still verifies owner/admin.
+  const resumeKey=()=>{
+    const uid=options.uid?.();
+    return uid?'dudu-epub-v57-pending:'+encodeURIComponent(uid):'';
+  };
+  const getResume=()=>{
+    try{return resumeKey()?root.localStorage?.getItem(resumeKey())||'':''}
+    catch(_){return ''}
+  };
+  const setResume=id=>{
+    try{const key=resumeKey();if(key&&id)root.localStorage?.setItem(key,id)}
+    catch(_){}
+  };
+  const clearResume=()=>{
+    try{const key=resumeKey();if(key)root.localStorage?.removeItem(key)}
+    catch(_){}
+  };
   const run=async task=>{
    if(state.busy)return;
    state.busy=true;[...buttons.children].forEach(x=>x.disabled=true);
@@ -215,7 +233,8 @@
    finally{
     state.busy=false;
     [...buttons.children].forEach(x=>{
-     x.disabled=x.dataset.requiresDraft==='true'?
+     x.disabled=x.dataset.requiresResume==='true'?(!state.parsed||!getResume()):
+      x.dataset.requiresDraft==='true'?
       !(state.cloudDraft&&state.cloudDraft.status==='draft'):
       x.dataset.onceOnly==='true'?!!state.cloudDraft:
       x.dataset.requiresParsed==='true'?!state.parsed:false;
@@ -242,7 +261,8 @@
    else coverPreview.removeAttribute('src');
    const selected=makeParsed();
    status.textContent='Đã nhận '+parsed.chapters.length+' mục văn bản; dự kiến nhập '+
-     selected.chapters.length+' ('+parsed.totalChars.toLocaleString('vi-VN')+' ký tự).';
+     selected.chapters.length+' ('+parsed.totalChars.toLocaleString('vi-VN')+' ký tự).'+
+     (getResume()?' Có bản nhập Firebase từng gián đoạn; có thể bấm Tiếp tục sau khi kiểm tra tệp.':'');
    info.textContent=(parsed.skippedMetadata?'Đã bỏ '+parsed.skippedMetadata+' trang bìa/thông tin tệp. ':'')+
      (parsed.noticeCount?'Có '+parsed.noticeCount+' trang thông báo tùy chọn. ':'')+
      (parsed.coverImage?'Ảnh bìa được thu nhỏ để lưu cùng truyện. ':
@@ -298,14 +318,33 @@
    if(!root.confirm('Lưu '+parsed.chapters.length+' chương EPUB thành bản thảo riêng trên Firestore? Dữ liệu hiện có không bị thay thế.'))return;
    status.textContent='Đang lưu bản thảo Firebase; chưa công khai cho độc giả…';
    const stored=await production.importDraft(parsed,{
-    db:options.firestore(),auth:options.auth(),
+    db:options.firestore(),auth:options.auth(),onCreated:id=>setResume(id),
     onProgress:percent=>{status.textContent='Đang lưu chương trên Firebase: '+percent+'%'}
    });
-   state.cloudDraft=stored;publishBtn.disabled=false;
+   state.cloudDraft=stored;clearResume();publishBtn.disabled=false;
    status.textContent='✅ Đã lưu '+stored.chapterCount+' chương dưới dạng bản thảo Firebase. Chưa công khai. Bạn có thể xác nhận xuất bản.';
   }));
   saveCloud.hidden=!!options.sandbox;saveCloud.dataset.onceOnly='true';
   saveCloud.dataset.requiresParsed='true';
+  const resumeBtn=button('↻ Tiếp tục bản nhập Firebase dang dở',()=>run(async()=>{
+   if(options.sandbox||!options.canEdit?.())throw Error('Chỉ tác giả Firebase được tiếp tục bản nhập');
+   if(!production||!options.firestore?.()||!options.auth?.())throw Error('Firebase chưa sẵn sàng');
+   const id=getResume(),parsed=makeParsed();
+   if(!id||!parsed)throw Error('Chưa có bản nhập và EPUB gốc để đối chiếu');
+   if(state.cloudDraft)throw Error('Bản thảo hiện tại đã sẵn sàng');
+   if(!root.confirm('Tiếp tục kiểm tra bản thảo '+id+
+      ' bằng tệp EPUB đã chọn? Chỉ các chương chưa có sẽ được lưu; không ghi đè dữ liệu cũ.'))return;
+   status.textContent='Đang kiểm tra bản thảo dang dở và các chương chưa lưu…';
+   const stored=await production.importDraft(parsed,{
+    db:options.firestore(),auth:options.auth(),resumeBookId:id,
+    onCreated:resumed=>setResume(resumed),
+    onProgress:percent=>{status.textContent='Đang tiếp tục chương Firebase: '+percent+'%'}
+   });
+   state.cloudDraft=stored;clearResume();publishBtn.disabled=false;
+   status.textContent='✅ Đã khôi phục bản thảo riêng tư '+stored.chapterCount+' chương. Chưa công khai.';
+  }));
+  resumeBtn.hidden=!!options.sandbox;
+  resumeBtn.dataset.requiresResume='true';
   publishBtn=button('Xác nhận xuất bản cho độc giả',()=>run(async()=>{
    if(options.sandbox||!options.canEdit?.())throw Error('Chỉ tác giả thật được xuất bản');
    if(!state.cloudDraft)throw Error('Hãy lưu bản thảo đầy đủ lên Firebase trước');
@@ -322,12 +361,14 @@
   publishBtn.disabled=true;publishBtn.hidden=!!options.sandbox;publishBtn.dataset.requiresDraft='true';
   if(!options.sandbox){
    buttons.insertBefore(saveCloud,cloudBtn);
+   buttons.insertBefore(resumeBtn,cloudBtn);
    buttons.insertBefore(publishBtn,cloudBtn);
   }
   // Prevent uploading an EPUB before parsing succeeds (the old message
   // "Hãy chọn và kiểm tra EPUB trước" gave no useful explanation).
   for(const control of buttons.children){
-   if(control.dataset.requiresParsed==='true')control.disabled=true;
+   if(control.dataset.requiresParsed==='true'||control.dataset.requiresResume==='true')
+     control.disabled=true;
   }
   button('Đóng',()=>{modal.style.display='none'});
   host.append(help,input,title,coverPreview,noticeLabel,info);
