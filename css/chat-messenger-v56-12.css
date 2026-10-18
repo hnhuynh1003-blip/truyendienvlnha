@@ -37,6 +37,10 @@ body.dudu-phone-v11 #cyber-phone #dudu-v56-role-select{
 body.dudu-phone-v11 #cyber-phone #dudu-v56-role-box.dudu-v5612-role-active #dudu-v56-role-note{
   display:none!important;
 }
+body.dudu-phone-v11 #cyber-phone #dudu-v56-role-editor:not([hidden]){
+  max-height:min(48vh,330px);overflow-y:auto;overscroll-behavior:contain;
+  scrollbar-width:thin;padding-right:5px!important;
+}
 body.dudu-phone-v11 #cyber-phone #dudu-v56-role-note{
   margin:4px 1px 1px!important;font-size:10px!important;
   line-height:1.35!important;
