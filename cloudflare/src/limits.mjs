@@ -20,10 +20,23 @@ export function validRequest(data, isAdmin=false) {
     messages.push({role:message.role,parts:[{text:message.text}]});
   }
   if(length>MAX_TOTAL_INPUT||messages.at(-1).role!=='user')return null;
+  // V56.10: Gemini multi-turn history must start with user and alternate
+  // between user/model. Older browser builds can send a dangling model or
+  // append local-memory user notes twice. Normalize AFTER validating payload
+  // bounds, preserving the final human message and never adding content.
+  const contents=[];
+  for(const entry of messages){
+    if(!contents.length&&entry.role==='model')continue;
+    const previous=contents.at(-1);
+    if(previous?.role===entry.role){
+      previous.parts.push(...entry.parts);
+    }else contents.push({role:entry.role,parts:[...entry.parts]});
+  }
+  if(!contents.length||contents[0].role!=='user'||contents.at(-1).role!=='user')return null;
   // A model ID is accepted only from the server's explicit text-model allowlist.
   const model=data.purpose==='chat'?resolveModel(data.model):resolveModel(undefined);
   if(!model)return null;
-  return {purpose:data.purpose,model,systemInstruction:{parts:[{text:data.instruction}]},contents:messages};
+  return {purpose:data.purpose,model,systemInstruction:{parts:[{text:data.instruction}]},contents};
 }
 export function quotaFailure(user,global,now){
   if(Number(user?.calls||0)>=USER_DAILY_LIMIT)return 'daily-user';
