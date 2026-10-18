@@ -14,7 +14,7 @@ function init(){
  const art=document.createElement('span');art.className='dudu-v34-current-art';art.setAttribute('aria-hidden','true');
  const meta=document.createElement('div');meta.className='dudu-v34-current-meta';
  const name=document.createElement('strong');name.id='dudu-v34-current-name';
- const description=document.createElement('small');description.textContent='Đổi nền mà không thay đổi dữ liệu tài khoản.';
+ const description=document.createElement('small');description.textContent='Bộ nền có sẵn đồng bộ với tài khoản Firebase; ảnh tự tải vẫn lưu trên thiết bị.';
  const plus=document.createElement('button');plus.type='button';plus.id='dudu-v34-open';
  const plusIcon=document.createElement('span');plusIcon.className='dudu-v34-plus';plusIcon.setAttribute('aria-hidden','true');
  plus.append(plusIcon,document.createTextNode('Chọn hình nền'));
@@ -52,7 +52,7 @@ function init(){
  if(mode)scroll.append(mode);
  if(info)scroll.append(info);
  const note=document.createElement('p');note.className='dudu-v34-note';
- note.textContent='Nền được lưu riêng theo tài khoản trên thiết bị. Đổi nền không thay đổi nội dung truyện hay tin nhắn.';
+ note.textContent='Bộ nền có sẵn và chế độ theo truyện được đồng bộ khi đăng nhập Firebase. Ảnh tự tải chỉ có trên thiết bị đã chọn, không đưa lên máy chủ.';
  scroll.append(note);
  sheet.append(header,scroll);overlay.append(sheet);phone.append(overlay);
  scroll.addEventListener('click',event=>{
