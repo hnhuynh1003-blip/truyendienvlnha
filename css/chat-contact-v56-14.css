@@ -1,0 +1,103 @@
+/* DUDU V56.14 — compact real-messenger contact header.
+ * The player role and A/B/C editor are kept in the "Tôi" menu; the current
+ * unlocked NPC's portrait/name are the only primary contact identity.
+ * UI-only: no Firebase, memory, relation or story modifications.
+ */
+body.dudu-phone-v11 #cyber-phone #phone-app-chat .phone-app-header{
+  position:relative;z-index:60;overflow:visible!important;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat .phone-app-header>div:first-child{
+  display:flex;align-items:center;gap:7px!important;flex:1;min-width:0;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat.dudu-v33-chat-open #dudu-v5614-inbox-title{
+  display:none!important;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat #dudu-v5614-npc-name{
+  display:none;min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;color:#f7fbff;font-weight:750;font-size:13px;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat.dudu-v33-chat-open #dudu-v5614-npc-name{
+  display:block;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat #npc-portrait-v1{
+  width:32px!important;height:32px!important;min-width:32px!important;
+  padding:0!important;margin:0!important;
+  border-radius:50%!important;overflow:hidden!important;
+  border:1px solid #9cb8d19c!important;box-shadow:0 1px 7px #0006;
+  opacity:1!important;filter:none!important;font-size:11px!important;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat #npc-portrait-v1:disabled{
+  cursor:default;opacity:1!important;filter:none!important;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat #npc-portrait-v1 img{
+  width:100%!important;height:100%!important;object-fit:cover!important;
+  border-radius:inherit!important;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat.dudu-v33-inbox #npc-portrait-v1,
+body.dudu-phone-v11 #cyber-phone #phone-app-chat.dudu-v33-inbox #dudu-v5614-npc-name{
+  display:none!important;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat.dudu-v33-inbox #dudu-v5614-self-menu{
+  display:none!important;
+}
+/* Retain the character selector in DOM for all existing events/inbox sync,
+   but render only one NPC header—not a duplicate card under the player role. */
+body.dudu-phone-v11 #cyber-phone #phone-app-chat.dudu-v33-chat-open .dudu-v27-chat-persona{
+  display:none!important;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat .phone-app-header .dudu-v27-chat-actions{
+  gap:4px!important;flex:none!important;
+}
+body.dudu-phone-v11 #cyber-phone #dudu-v5614-self-menu{
+  position:relative;flex:none;z-index:65;
+}
+body.dudu-phone-v11 #cyber-phone #dudu-v5614-self-menu>summary{
+  display:grid;place-items:center;width:33px;height:32px;box-sizing:border-box;
+  padding:0;border-radius:10px;border:1px solid #7d99b97e;
+  color:#f4e9d6;background:#223c56;
+  font-size:11px;font-weight:750;list-style:none;cursor:pointer;
+}
+body.dudu-phone-v11 #cyber-phone #dudu-v5614-self-menu>summary::-webkit-details-marker{
+  display:none;
+}
+body.dudu-phone-v11 #cyber-phone #dudu-v5614-self-menu[open]>summary{
+  border-color:#88dbf1;background:#30526c;
+}
+/* The existing role editor remains the sole source of truth, inside a menu. */
+body.dudu-phone-v11 #cyber-phone #dudu-v5614-self-menu>#dudu-v56-role-box{
+  position:absolute!important;z-index:76;top:37px;right:-78px;
+  width:min(316px,calc(100vw - 78px));max-width:calc(100vw - 66px);
+  box-sizing:border-box;margin:0!important;
+  padding:10px!important;border:1px solid #83b6cb9c!important;
+  border-radius:13px!important;background:#12233bf9!important;
+  box-shadow:0 16px 35px #010915cc;
+  max-height:min(70vh,440px);overflow-x:hidden;overflow-y:auto;
+  overscroll-behavior:contain;
+}
+body.dudu-phone-v11 #cyber-phone #dudu-v5614-self-menu:not([open])>#dudu-v56-role-box{
+  display:none!important;
+}
+body.dudu-phone-v11 #cyber-phone #dudu-v5614-self-menu #dudu-v56-role-avatar{
+  width:34px!important;height:34px!important;min-width:34px!important;
+}
+body.dudu-phone-v11 #cyber-phone #dudu-v5614-self-menu #dudu-v56-role-note{
+  display:block!important;
+}
+body.dudu-phone-v11 #cyber-phone #dudu-v5614-self-menu #dudu-v56-role-select{
+  flex:1;min-width:0!important;width:auto!important;
+}
+body.dudu-phone-v11 #cyber-phone #dudu-v5614-self-menu #dudu-v5612-role-tools{
+  z-index:77;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-chat.dudu-v33-chat-open #chat-messages-container{
+  flex:1 1 0%!important;min-height:0!important;
+}
+@media(max-width:375px){
+ body.dudu-phone-v11 #cyber-phone #phone-app-chat .phone-app-header>div:first-child{gap:5px!important;}
+ body.dudu-phone-v11 #cyber-phone #phone-app-chat #npc-portrait-v1{
+   width:30px!important;height:30px!important;min-width:30px!important;
+ }
+ body.dudu-phone-v11 #cyber-phone #dudu-v5614-self-menu>#dudu-v56-role-box{
+   right:-72px;width:min(284px,calc(100vw - 62px));max-height:65vh;
+ }
+}
