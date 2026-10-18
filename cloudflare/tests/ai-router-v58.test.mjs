@@ -5,7 +5,7 @@ import {validRequest} from '../src/limits.mjs';
 import {classifyGemini400} from '../src/gemini-error-v56-10.mjs';
 import {textOnlyNpcContents} from '../src/npc-chat-format-v56-11.mjs';
 import {routeNpcAi,workersAiNpc,workersAiFreeApproved,
-  availableWorkersModels,WORKERS_AI_MODELS,isWorkersAiModel,failoverAllowed
+  availableWorkersModels,WORKERS_AI_MODELS,isWorkersAiModel,failoverAllowed,extractWorkersAiText
 } from '../src/ai-router-v58.mjs';
 
 const base=(role='Khách mới',model='gemini-3.5-flash-lite')=>({
@@ -109,6 +109,31 @@ test('V58 one configured-free Workers AI fallback on provider 429; preserve NPC 
   assert.match(calls[0].options.messages[0].content,/Người quan sát/);
   assert.equal(calls[0].options.messages.at(-1).role,'user');
   assert.deepEqual(calls[0].options.messages.map(m=>m.role),['system','user']);
+});
+
+
+test('V58 normalizes Workers AI chat completion output but never reveals reasoning',()=>{
+  assert.equal(extractWorkersAiText({response:'  Chào bạn  '}),'Chào bạn');
+  assert.equal(extractWorkersAiText({choices:[{message:{content:'  Tôi đang chờ bạn.  ',reasoning:'SECRET'}}]}),
+    'Tôi đang chờ bạn.');
+  assert.equal(extractWorkersAiText({choices:[{message:{content:[{type:'text',text:'Một'},{type:'tool_call',name:'secret'},{type:'text',text:'Hai'}]}}]}),
+    'Một\nHai');
+  assert.equal(extractWorkersAiText({choices:[{message:{content:null,reasoning:'hidden'}}]}),'');
+  assert.equal(extractWorkersAiText({result:{response:'Trả lời cũ'}}),'Trả lời cũ');
+});
+test('V58 Workers AI actual choices schema yields NPC text with token counters',async()=>{
+  const {env,calls}=freeEnv();
+  env.AI.run=async(model,options)=>{
+    calls.push({model,options});
+    return {choices:[{message:{role:'assistant',content:'Xin chào, người quan sát.',reasoning:'not allowed'}}],
+      usage:{prompt_tokens:55,completion_tokens:11,total_tokens:66}};
+  };
+  const payload=validRequest(base('Người quan sát',WORKERS_AI_MODELS[0].id));
+  const result=await workersAiNpc(payload,env);
+  assert.equal(result.status,200);
+  assert.equal(result.data.text,'Xin chào, người quan sát.');
+  assert.deepEqual(result.data.usage,{inputTokens:55,outputTokens:11,totalTokens:66});
+  assert.equal(calls.length,1);
 });
 
 test('V58 no paid provider URL or direct chargeable AI gateway introduced',()=>{
