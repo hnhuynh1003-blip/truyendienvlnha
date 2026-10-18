@@ -65,7 +65,7 @@ test('V56.7 REST missing document is non-destructive, HTTP 403 remains denied',a
 });
 
 test('V56.7 invalid REST response is rejected rather than treating it as an empty profile',()=>{
- assert.throws(()=>api.decodeDocument({fields:{name:{stringValue:'ok'}},fake:1}).nonexistent.foo);
+ assert.deepEqual(api.decodeDocument({fields:{name:{stringValue:'ok'}}}),{name:'ok'});
  assert.throws(()=>api.decodeDocument({fake:true}),error=>error.code==='profile/rest-invalid');
  assert.deepEqual(api.decodeDocument({name:'document-name'}),{});
 });
