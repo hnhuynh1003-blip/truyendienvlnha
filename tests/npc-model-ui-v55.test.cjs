@@ -13,13 +13,13 @@ test('V55 shows compact model picker and server-only usage counter in Contacts',
  assert.match(html,/function refreshNpcQuotaV55\(\)/);
  assert.match(html,/DuduAI\.status\(\)/);
  assert.match(html,/if\(!IS_SANDBOX_MODE\)void refreshNpcQuotaV55\(\)/);
- assert.match(html,/src="js\/ai-proxy\.js\?v=56-10"/);
+ assert.match(html,/src="js\/ai-proxy\.js\?v=56-11"/);
 });
 
 test('V55 stores selected model per Firebase UID and labels each AI response',()=>{
  assert.match(client,/encodeURIComponent\(uid\)\+':global:npc-model'/);
  assert.match(client,/MODELS\.some\(x=>x\.id===id\)/);
- assert.match(client,/purpose==='chat'\?\{model:model\(\)\}:\{\}/);
+ assert.match(client,/purpose==='chat'\?\{model:resolved\}:\{\}/);
  assert.match(html,/chatHistories\[requestChatKey\]\.push\(\{role:'model',text:res\.text,/);
  assert.match(html,/meta\.textContent='✦ '\+msg\.model/);
  assert.match(html,/res\.error\+' · Tin nhắn đã lưu trên thiết bị\.'/);
