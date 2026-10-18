@@ -501,7 +501,8 @@ async function gemini(payload,env){
       ? (textOnlyNpcContents(payload.contents)||payload.contents)
       : payload.contents,
     generationConfig:{
-      temperature:payload.purpose==='chat'?0.8:0.65,
+      // Gemini 3.6+ deprecates custom temperature. Leave provider defaults to
+      // avoid model-specific invalid-argument responses in mixed Auto routing.
       maxOutputTokens:payload.purpose==='chat'?640:850
     }
   };
