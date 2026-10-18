@@ -306,3 +306,33 @@ test('V56.7 authenticated REST denial does not grant profile or author rights',a
  assert.equal(h.context.DuduAuth.isAdmin(),false);
  assert.match(h.elements['auth-status-message'].textContent,/Firestore từ chối/);
 });
+
+test('V56.7 slow REST response from A never overrides signed-in account B',async()=>{
+ let releaseA;
+ const slowA=new Promise(resolve=>{releaseA=resolve;});
+ let signalStart;
+ const started=new Promise(resolve=>{signalStart=resolve;});
+ const h=harness({
+  enableFallback:true,
+  setTimeout:(fn)=>setTimeout(fn,18),
+  profileGet:(_record,uid)=>uid==='reader-a'?new Promise(()=>{}):
+    Promise.resolve({exists:true,data:()=>({name:'Account B',currency:4})}),
+  fetch:async()=>{
+   signalStart();
+   await slowA;
+   return {status:200,json:async()=>({
+     name:'projects/truyendienvl/databases/(default)/documents/profiles_v2/reader-a',
+     fields:{name:{stringValue:'Account A'},currency:{integerValue:'900'}}
+   })};
+  }
+ });
+ const a=h.login('reader-a',{},null);
+ await started;
+ await h.login('reader-b',{},null);
+ releaseA();
+ await a;
+ assert.equal(h.context.currentUsername,'reader-b');
+ assert.equal(h.context.userProfile.name,'Account B');
+ assert.equal(h.context.userProfile.currency,4);
+ assert.equal(h.context.DuduAuth.isReady(),true);
+});
