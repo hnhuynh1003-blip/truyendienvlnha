@@ -78,7 +78,7 @@
   }));
   if(restoring){
    const past=existing.data();
-   if(past.ownerUid!==uid||past.status!=='importing'||
+   if(past.ownerUid!==uid||!['importing','draft'].includes(past.status)||
      past.importFingerprint!==stampFingerprint||
      past.chapterCount!==chapters.length||
      !Array.isArray(past.chapterIndex)||
@@ -97,6 +97,10 @@
   // The caller records this ID immediately. Reloading the page cannot
   // silently publish, and the same file can resume without overwriting.
   onCreated(id);
+  if(restoring&&existing.data().status==='draft'){
+   onProgress(100);
+   return {id,title,chapterCount:chapters.length,status:'draft',resumed:true};
+  }
   try{
    for(let i=0;i<chapters.length;i+=4){
     if(auth.currentUser?.uid!==uid)throw Error('Phiên Firebase thay đổi khi đang nhập');
