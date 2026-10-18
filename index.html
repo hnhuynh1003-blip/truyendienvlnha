@@ -3284,7 +3284,10 @@
     }
 
     function renderNpcPortraitPreview(element,npc,storyId){
-      if(!element||!npc||!storyId||!isNpcUnlocked(storyId,npc.id))return;
+      // Editor preview in Sandbox must work before an NPC is unlocked.
+      // Production reader previews remain restricted to unlocked NPCs.
+      if(!element||!npc||!storyId||
+        (!IS_SANDBOX_MODE&&!isNpcUnlocked(storyId,npc.id)))return;
       const token=String(Date.now())+'-'+Math.random().toString(36).slice(2);
       element.dataset.portraitToken=token;
       element.dataset.npcId=npc.id;
@@ -3435,7 +3438,7 @@
         const canViewPortrait=!!(IS_SANDBOX_MODE&&char&&
           (canEditStories()||isNpcUnlocked(storyId,charId)));
         portrait.disabled=!canViewPortrait;
-        portrait.classList.toggle('is-locked',!char);
+        portrait.classList.toggle('is-locked',!canViewPortrait);
         // The Sandbox portrait viewer remains Sandbox-only.
         portrait.tabIndex=canViewPortrait?0:-1;
         portrait.setAttribute('aria-label',char?
