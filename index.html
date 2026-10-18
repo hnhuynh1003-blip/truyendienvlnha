@@ -1949,7 +1949,7 @@
     try {
       const firestoreTransport=firebase.firestore();
       if(typeof firestoreTransport.settings==='function')
-        firestoreTransport.settings({experimentalForceLongPolling:true});
+        firestoreTransport.settings({experimentalForceLongPolling:true,experimentalAutoDetectLongPolling:false});
     }catch(error){
       console.warn('Firestore long-polling configuration:',error?.code||'unchanged');
     }
