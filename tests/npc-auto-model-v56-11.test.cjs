@@ -24,6 +24,8 @@ test('V56.11 client auto ID stays local and never becomes an invalid Gemini API 
  assert.match(html,/src="js\/npc-auto-model-v56-11\.js\?v=56-11"/);
  assert.match(html,/src="js\/ai-proxy\.js\?v=56-11"/);
  assert.match(html,/DuduAI\.generate\('chat',instruction\.slice\(0,3000\),context,query\)/);
+ assert.match(html,/Model đã gọi: /);
+ assert.match(html,/Mã lỗi: /);
 });
 test('V56.11 manual selection preserved per UID with no hidden retries',()=>{
  assert.match(client,/MODELS\.some\(x=>x\.id===id\)/);
