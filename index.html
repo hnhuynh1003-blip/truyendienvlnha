@@ -3010,7 +3010,7 @@
         const relevantHistory = DuduStoryMemory.recall(chatHistory,query,{maxPairs:memoryText?1:2});
         const context=window.DuduNpcContextV5610?.compose(messages,relevantHistory,memoryText,12,9500);
         if(!context?.length)return {error:'Không thể chuẩn bị ngữ cảnh NPC. Tin nhắn đã được giữ lại để thử lại.'};
-        return await DuduAI.generate('chat',instruction.slice(0,3000),context,query);
+        return await DuduAI.generate('chat',instruction.slice(0,2200),context,query);
       } finally {
         if (loader) loader.style.display = 'none';
       }
