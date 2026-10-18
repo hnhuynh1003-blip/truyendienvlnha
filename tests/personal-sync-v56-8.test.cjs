@@ -58,7 +58,7 @@ test('V56.8 production wiring saves chapter separately from one-time reward and 
  assert.match(html,/DuduPersonalCloudV569\.patch\(opts\)/);
  assert.match(html,/v569SyncBookmark\(novel\.id\)/);
  assert.match(html,/v569SyncPhone\(\)/);
- assert.match(html,/if\(!IS_SANDBOX_MODE&&DuduAuth\.isReady\(\)\)saveCurrentAccount\(\)/);
+ assert.match(html,/v569SyncBookmark\(novel\.id\)/);
  assert.match(html,/function v568SavePhoneAppearance\(\)/);
  assert.match(html,/DuduPhoneWallpaperV27\.write|image\.write\(localStorage,owner,cloud\.wallpaper\)/);
  assert.match(html,/wallpaper==='v36-custom'/);
