@@ -28,7 +28,7 @@ test('V55 model routing remains server-controlled and separate from author-only 
  assert.equal(validRequest({...base,purpose:'assist',model:'gemini-3.8-flash'},false),null);
  const worker=fs.readFileSync(new URL('../src/index.mjs',import.meta.url),'utf8');
  assert.match(worker,/const model=payload\.model\|\|MODEL/);
- assert.match(worker,/return json\(\{\.\.\.state,enabled:true,models:NPC_MODELS/);
+ assert.match(worker,/return json\(\{\.\.\.state,enabled:true,models:\[\.\.\.NPC_MODELS,\.\.\.availableWorkersModels\(env\)\]/);
  assert.match(worker,/\bverifyFirebaseIdToken\(req,env\.PROJECT_ID\)/);
  assert.match(worker,/await bucket\.reserve\(user\.uid,Date\.now\(\)\)/);
  assert.doesNotMatch(worker,/model=parsed\?\.model|request\.data\.model/);
