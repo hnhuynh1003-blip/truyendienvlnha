@@ -86,19 +86,27 @@
  function approvedMemory(memory,query,novel,readRewards){
   if(!memory||typeof query!=='string'||query.trim().length<3)return '';
   const lines=memory.split('\n'),out=[];
-  const q=norm(query),qWords=q.split(/[^a-z0-9]+/).filter(w=>w.length>=4);
-  if(!qWords.length)return '';
+  const q=norm(query);
+  const stop=new Set(['khong','trong','chuyen','nhung','nhieu','theo','nguoi',
+    'minh','cung','chung','biet','muon','nghe','tung','thoi','gian','ban','cua',
+    'nhin','dang','duoc','phai','nhan','nhieu','khien','nay','sao','chao']);
+  const qWords=q.split(/[^a-z0-9]+/).filter(w=>w.length>=5&&!stop.has(w));
+  // Proper names shorter than 5 characters require an exact multi-word match.
+  const named=['tu du','te giac','bac ha','ung thu','cam thu','trong dem'];
+  const namedMatches=named.filter(term=>q.includes(term));
+  if(!qWords.length&&!namedMatches.length)return '';
   for(const line of lines){
    const match=line.match(/^\s*(?:[-•*]\s*)?\[TỪ CHƯƠNG:\s*([^\]]+)\]\s*(.+)$/i);
    if(!match||!gateChapter(match[1],novel,readRewards))continue;
    const content=cleanText(match[2]);
    const words=norm(content);
-   if(qWords.some(w=>words.includes(w)))out.push(content.slice(0,170));
+   if(qWords.some(w=>words.includes(w))||
+      namedMatches.some(phrase=>words.includes(phrase)))out.push(content.slice(0,170));
    if(out.join(' ').length>=320)break;
   }
   return out.join(' ').slice(0,350);
  }
- function compile({char,novel,role,relation,roleInstruction,query,readRewards}={}){
+ function compile({char,novel,role,relation,roleInstruction,query,readRewards,messageGuidance}={}){
   const p=parse(char?.note);
   const who=cleanText(char?.name||'NPC').slice(0,110);
   const title=cleanText(novel?.title||'truyện').slice(0,110);
@@ -123,15 +131,16 @@
   const ending='ƯU TIÊN CAO NHẤT: phản hồi đúng TIN NHẮN MỚI NHẤT bằng 1–2 câu như người thật đang chat. '+ 
     'Không tự phát bệnh án, tình tiết cũ, giảng đạo hoặc độc thoại khi người đọc chỉ chào hỏi/làm quen. '+ 
     'Không suy diễn vai A/B/C, không tiết lộ tình tiết chưa mở. Cảm xúc chỉ thể hiện qua lời nói, tuyệt đối không viết văn tả cảnh.';
-  const required=[header,identity,persona,style,ending];
+  const guide=cleanText(messageGuidance).slice(0,340);
+  const required=[header,identity,persona,style,guide,ending].filter(Boolean);
   let result=required.join('\n');
   if(memoryPart&&result.length+memoryPart.length+1<=MAX_INSTRUCTION)
-    result=[header,identity,persona,style,memoryPart,ending].join('\n');
+    result=[header,identity,persona,style,memoryPart,guide,ending].filter(Boolean).join('\n');
   // Required content has fixed per-field budgets. If exceptionally oversized,
   // omit optional author-style and trim only traits, never the final safety rules.
   if(result.length>MAX_INSTRUCTION){
    result=[header,identity,persona.slice(0,Math.max(300,persona.length-(result.length-MAX_INSTRUCTION)-30)),
-     ending].join('\n');
+     guide,ending].filter(Boolean).join('\n');
   }
   return result.length<=MAX_INSTRUCTION?result:result.slice(0,MAX_INSTRUCTION-ending.length-1)+'\n'+ending;
  }
