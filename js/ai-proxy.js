@@ -7,8 +7,10 @@
   const WORKER_URL = 'https://dudu-ai-staging.dudu-studio-ai.workers.dev'; // Public endpoint; GEMINI_API_KEY stays secret in Cloudflare.
   let sandbox = false;
   const DEFAULT_MODEL='gemini-3.5-flash-lite';
-  // Only text-only API calls; IDs are mirrored by a stricter server allowlist.
+  const AUTO='auto'; // Browser-only routing option, never an API model ID.
+  // Auto routes to one of the seven explicitly allowlisted Gemini models.
   const MODELS=Object.freeze([
+    ['auto','✦ Tự động · phù hợp câu hỏi'],
     ['gemini-3.5-flash-lite','3.5 Flash-Lite · nhanh'],
     ['gemini-3.1-flash-lite','3.1 Flash-Lite · nhẹ'],
     ['gemini-3.6-flash','3.6 Flash · nhập vai'],
@@ -23,11 +25,11 @@
   }
   function model(){
     const key=modelStorageKey();
-    if(!key)return DEFAULT_MODEL;
+    if(!key)return AUTO;
     try{
       const saved=localStorage.getItem(key);
-      return MODELS.some(x=>x.id===saved)?saved:DEFAULT_MODEL;
-    }catch(_){return DEFAULT_MODEL;}
+      return MODELS.some(x=>x.id===saved)?saved:AUTO;
+    }catch(_){return AUTO;}
   }
   function setModel(id){
     if(!MODELS.some(x=>x.id===id))return false;
@@ -85,8 +87,13 @@
     }
   }
   function generate(purpose,instruction,messages){
+    const chosen=model();
+    // No additional request is made to select a model. Manual choices take
+    // precedence; Auto only routes among the existing server allowlist.
+    const resolved=chosen===AUTO?
+      (window.DuduNpcAutoModelV5611?.route(messages)||DEFAULT_MODEL):chosen;
     return call('POST','/v1/generate',{
-      purpose,instruction,messages,...(purpose==='chat'?{model:model()}:{})
+      purpose,instruction,messages,...(purpose==='chat'?{model:resolved}:{})
     });
   }
   function status(){
