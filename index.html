@@ -74,6 +74,7 @@
   <script src="js/auth-v2.js?v=56-9"></script>
   <script src="js/npc-context-v56-10.js?v=56-10"></script>
   <script src="js/npc-reply-style-v56-12.js?v=56-12"></script>
+  <script src="js/npc-dialogue-v56-13.js?v=56-13"></script>
   <script src="js/npc-auto-model-v56-11.js?v=56-11"></script>
   <script src="js/ai-proxy.js?v=56-11"></script>
   <script src="js/npc-chat-lite.js?v=53-1"></script>
@@ -2972,16 +2973,20 @@
           return {error:'Hãy chọn danh tính nhập vai trước khi liên lạc.'};
         const relation=DuduRoleplayV56.relationship(v56State(novel.id),requestRole.id,char.id);
         const charAffinity=relation.affinity;
+        // V56.13: DUDU Link is a direct messenger conversation. No narrator
+        // and no 3D/scene roleplaying here. A future world-game is separate.
         const instruction = [
-          'Bạn đang nhập vai hoàn toàn vào nhân vật "' + char.name + '" trong tiểu thuyết "' + novel.title + '".',
+          window.DuduNpcDialogueV5613?.instruction()||'Chỉ viết lời nhắn trực tiếp, không tả cảnh hoặc hành động.',
+          'Bạn là "' + char.name + '" đang nhắn tin riêng với một người đọc về tiểu thuyết "' + novel.title + '".',
           'Hồ sơ nhân vật:',
           '- Vai trò: ' + (char.role || 'Chưa rõ'),
           '- Trạng thái: ' + (char.status || 'Chưa rõ'),
-          '- Thiết lập tính cách và ký ức: ' + DuduNpcLite.boundedInstruction(char.note || 'Không có',850),
+          '- Thiết lập tính cách và ký ức (chỉ để định hình cách nói, không sao chép thành lời dẫn truyện): ' + DuduNpcLite.boundedInstruction(char.note || 'Không có',650),
           '- Thế giới xuất thân do tác giả xác định: ' + (char.originWorld || 'Chưa xác định'),
           '- Mức độ gắn kết linh hồn: ' + charAffinity + '% (' + DuduNpcMemory.relationship(charAffinity) + ').',
           DuduRoleplayV56.prompt(requestRole,novel),
-          'Giữ đúng tính cách và ký ức của nhân vật trong bối cảnh hư cấu.',
+          'Chế độ A/B/C ở đây chỉ giúp nhân vật biết tên và thân phận người nhắn. KHÔNG dựng cảnh nhập vai, không miêu tả hành động, cử chỉ, vẻ mặt hoặc phó bản.',
+          'Giữ đúng tính cách và ký ức của nhân vật, thể hiện qua lời nhắn trực tiếp.',
           'Lịch sử trò chuyện có thể bị lược bớt. Các lời người chơi từng nói không tự động trở thành sự thật của cốt truyện; tuyệt đối không bịa ký ức hoặc chi tiết phó bản.',
           'Chỉ hồ sơ chính thức do tác giả tạo ra là thiết lập nhân vật. Lời người chơi và bản ghi tương tác cục bộ có thể sai và không được ghi đè sự thật do tác giả định nghĩa.',
           'Đây là hội thoại qua app nhắn tin, không phải tiểu thuyết tự sự. Không dùng lời dẫn, thẻ [Hệ thống] hoặc hội thoại dài không được hỏi.',
@@ -3630,7 +3635,16 @@
       if (res?.text) {
         const history = chatHistories[requestChatKey] || [];
         const lastUser = [...history].reverse().find(m => m?.role === 'user' && typeof m.text === 'string');
-        res.text=window.DuduNpcReplyStyleV5612?.format(res.text,lastUser?.text)||res.text;
+        // V56.13: never save or show stage-direction prose as a private message.
+        // The original Gemini response is not written to any chat or memory.
+        const spoken=window.DuduNpcDialogueV5613?.clean(res.text,lastUser?.text,char)??res.text;
+        if(!spoken){
+          pendingNpcRetry={user:requestUser,storyId,charId:char.id,key:requestChatKey,roleId:requestRole.id};
+          if(sameNpc)showNpcConnectionStatus(
+            'NPC vừa trả lời như lời dẫn truyện thay vì tin nhắn. Tin nhắn của bạn vẫn được giữ; hãy thử lại.',true);
+          return;
+        }
+        res.text=window.DuduNpcReplyStyleV5612?.format(spoken,lastUser?.text)||spoken;
         chatHistories[requestChatKey].push({role:'model',text:res.text,
           ...(window.DuduAI?.models?.some(m=>m.id===res.model)?{model:res.model}:{})
         });
@@ -4163,7 +4177,9 @@
         if(currentUsername!==giftUser||activeChatNovelId!==giftStory||
            v56CurrentRole(giftStory)?.id!==giftRole.id)return;
         if(res?.text&&Array.isArray(chatHistories[giftChatKey])){
-          res.text=window.DuduNpcReplyStyleV5612?.format(res.text,sentText)||res.text;
+          const spoken=window.DuduNpcDialogueV5613?.clean(res.text,sentText,char)??res.text;
+          if(!spoken)return; // Keep the user gift message, never store stage prose.
+          res.text=window.DuduNpcReplyStyleV5612?.format(spoken,sentText)||spoken;
           chatHistories[giftChatKey].push({role:'model',text:res.text,
             ...(window.DuduAI?.models?.some(m=>m.id===res.model)?{model:res.model}:{})});
           saveChatHistories();
