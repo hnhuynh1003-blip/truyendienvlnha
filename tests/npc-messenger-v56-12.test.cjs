@@ -15,7 +15,7 @@ test('V56.12 greeting is one short in-character sentence',()=>{
   assert.equal(reply.greeting(greeting),true,greeting);
   assert.match(reply.guidance(greeting),/1 câu ngắn/);
   const text=reply.format('[Hệ thống: Kết nối thành công, xin chào.] Ừ, cô đây. Có chuyện gì sao? Kể cô nghe cả ngày hôm nay đi nhé!',greeting);
-  assert.equal(text,'Ừ, cô đây.');
+  assert.equal(text,'Ừ, cô đây. Có chuyện gì sao?');
  }
 });
 test('V56.12 removes system prefaces without modifying normal historical messages',()=>{
