@@ -269,3 +269,40 @@ test('V56.6 REST 404 identifies missing profile without creating user data',asyn
   await h.context.DuduAuth.diagnoseFirestore();
   assert.match(h.elements['auth-status-message'].textContent,/HTTP 404.*không thấy tài liệu/);
 });
+
+test('V56.7 recovers original profile when Firestore SDK stalls but REST succeeds',async()=>{
+ const requests=[];
+ const h=harness({
+  enableFallback:true,
+  setTimeout:(fn)=>setTimeout(fn,8),
+  profileGet:()=>new Promise(()=>{}),
+  fetch:async(url,options)=>{
+   requests.push({url,options});
+   return {status:200,json:async()=>({name:'projects/truyendienvl/databases/(default)/documents/profiles_v2/reader-a',
+    fields:{name:{stringValue:'Reader A'},currency:{integerValue:'312'},
+     storyStates:{mapValue:{fields:{story1:{mapValue:{fields:{chapter:{integerValue:'6'}}}}}}}
+    }})};
+  }
+ });
+ await h.login('reader-a',{},null);
+ assert.equal(h.context.DuduAuth.isReady(),true);
+ assert.equal(h.context.currentUsername,'reader-a');
+ assert.equal(h.context.userProfile.name,'Reader A');
+ assert.equal(h.context.userProfile.currency,312);
+ assert.equal(h.context.userProfile.storyStates.story1.chapter,6);
+ assert.equal(requests.length,1);
+ assert.equal(requests[0].options.method,'GET');
+});
+
+test('V56.7 authenticated REST denial does not grant profile or author rights',async()=>{
+ const h=harness({
+  enableFallback:true,
+  setTimeout:(fn)=>setTimeout(fn,8),
+  profileGet:()=>new Promise(()=>{}),
+  fetch:async()=>({status:403})
+ });
+ await h.login('reader-a',{admin:true},null);
+ assert.equal(h.context.DuduAuth.isReady(),false);
+ assert.equal(h.context.DuduAuth.isAdmin(),false);
+ assert.match(h.elements['auth-status-message'].textContent,/Firestore từ chối/);
+});
