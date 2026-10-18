@@ -35,7 +35,7 @@ test('V56.13 strict dialogue instruction forbids gestures and reserves gameplay 
  assert.ok(aiFn);
  assert.match(aiFn,/DuduNpcProfileV5615\?\.compile\(/);
  assert.doesNotMatch(aiFn,/Bạn đang nhập vai hoàn toàn/);
- assert.match(aiFn,/KHÔNG dựng cảnh nhập vai/);
+ assert.match(aiFn,/roleInstruction:DuduRoleplayV56\.prompt/);
  assert.match(html,/src="js\/npc-dialogue-v56-13\.js\?v=56-13"/);
 });
 test('V56.13 postprocessing happens before chat and NPC memory persistence',()=>{
