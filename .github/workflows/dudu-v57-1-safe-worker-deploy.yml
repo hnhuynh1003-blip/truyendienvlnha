@@ -30,8 +30,17 @@ jobs:
         run: |
           set -euo pipefail
           test "$CONFIRMATION" = "DEPLOY_V57_1" || { echo "STOP: confirmation mismatch"; exit 1; }
-          test -n "$CLOUDFLARE_API_TOKEN" || { echo "STOP: CLOUDFLARE_API_TOKEN GitHub secret missing"; exit 1; }
-          test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo "STOP: CLOUDFLARE_ACCOUNT_ID GitHub secret missing"; exit 1; }
+          if test -z "$CLOUDFLARE_API_TOKEN" || test -z "$CLOUDFLARE_ACCOUNT_ID"; then
+            echo "::error title=Cloudflare credentials missing::Deployment blocked. Configure both repository secrets CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID."
+            {
+              echo "### DUDU V57.1 — chưa triển khai (thiếu quyền Cloudflare)"
+              echo "Tạo hai GitHub Actions Secrets: \`CLOUDFLARE_API_TOKEN\` và \`CLOUDFLARE_ACCOUNT_ID\`."
+              echo "1. [GitHub Repository Secrets](https://github.com/hnhuynh1003-blip/truyendienvlnha/settings/secrets/actions)"
+              echo "2. [Cloudflare Dashboard](https://dash.cloudflare.com/)"
+              echo "Không gửi token vào Issue, PR, chat hoặc mã nguồn. Sau khi thêm cả hai mới Run workflow lại."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
           test "$(git hash-object cloudflare/src/index.mjs)" = "90d0b3cff4181f6a4b4067d44bb4e4b998175b78" ||
             { echo "STOP: Worker changed after V57.1 audit. Re-review required."; exit 1; }
           test "$(git hash-object cloudflare/wrangler.npc-ai-v54.toml)" = "9e60aef327291c097d4e1eb8fa418537460ce0c5" ||
