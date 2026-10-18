@@ -1,5 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
 import {textOnlyNpcContents} from '../src/npc-chat-format-v56-11.mjs';
 import {validRequest} from '../src/limits.mjs';
 import {resolveModel,NPC_MODELS} from '../src/npc-models.mjs';
@@ -48,4 +49,10 @@ test('V56.11 model server allowlist remains strictly seven IDs, Auto cannot reac
 });
 test('V56.11 invalid final model turn cannot be submitted',()=>{
  assert.equal(textOnlyNpcContents([{role:'model',parts:[{text:'Chào'}]}]),null);
+});
+
+test('V56.11 production Worker compacts NPC chat and does not override deprecated Gemini sampling values',()=>{
+ const worker=readFileSync(new URL('../src/index.mjs',import.meta.url),'utf8');
+ assert.match(worker,/textOnlyNpcContents\(payload\.contents\)/);
+ assert.doesNotMatch(worker,/temperature:payload\.purpose/);
 });
