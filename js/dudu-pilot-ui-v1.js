@@ -110,6 +110,9 @@
  function mount(){
   const list=id('d60-worlds-list');
   if(!list||id('dudu-pilot-entry-v1'))return;
+  // The site shell now renders an explicit stable playtest link itself.
+  // Keep old auto-mount only as a fallback for pages with an older shell.
+  if(typeof list.querySelector==='function'&&list.querySelector('.dudu-pilot-entry-inline'))return;
   const entry=el('aside','dudu-pilot-entry');
   entry.id='dudu-pilot-entry-v1';
   const copy=el('div','dudu-pilot-entry-copy');
