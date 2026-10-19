@@ -275,8 +275,20 @@ async function main() {
       const visible=app?.classList.contains('dudu-v43-companion-open')&&
         getComputedStyle(panel).display==='flex';
       const input=document.getElementById('dudu-v43-message-input');
+      const diary=document.getElementById('dudu-v43-diary');
+      const messengerLayout={
+        textarea:input?.tagName==='TEXTAREA',
+        menuInHead:diary?.parentElement?.classList.contains('dudu-v43-head'),
+        hiddenTools:diary?.open===false &&
+          diary?.querySelector('.dudu-v43-shortcuts')!==null,
+        compactPanel:panel?.children.length===3,
+        viewportHelper:window.DuduMessengerV672?.version===2
+      };
       input.value='Hướng dẫn nhặt đồ';
+      input.dispatchEvent(new Event('input',{bubbles:true}));
+      const enabledBefore=document.querySelector('.dudu-v672-send')?.disabled===false;
       document.querySelector('.dudu-v43-composer').requestSubmit();
+      const disabledAfter=document.querySelector('.dudu-v672-send')?.disabled===true;
       const history=userProfile.duduCompanionV43?.messages||[];
       const scriptedHelp=history.some(m=>m.role==='model'&&/2 phút/.test(m.text));
       const chatCount=userProfile.duduCompanionV43?.chat?.count||0;
@@ -291,11 +303,17 @@ async function main() {
       userProfile=JSON.parse(backup);saveCurrentAccount();
       phoneHome();if(!prevOpen)togglePhone();
       return {pinned,name,visible,scriptedHelp,chatCount,claimed,noDouble,back,
+       messengerLayout,enabledBefore,disabledAfter,
        increment:currencyAfter-currencyBefore,writes:window.__firestoreWrites.length};
     });
     assert.equal(companionSmoke.pinned,true,'DUDU must be the first conversation');
     assert.match(companionSmoke.name,/DUDU/);
     assert.equal(companionSmoke.visible,true,'DUDU companion UI opens inside Cyber Phone');
+    assert.deepEqual(companionSmoke.messengerLayout,{
+      textarea:true,menuInHead:true,hiddenTools:true,compactPanel:true,viewportHelper:true
+    },'V67.2 keeps messenger uncluttered without changing V43 persistence');
+    assert.equal(companionSmoke.enabledBefore,true,'DUDU send enables for a nonblank draft');
+    assert.equal(companionSmoke.disabledAfter,true,'DUDU send resets after successful save');
     assert.equal(companionSmoke.scriptedHelp,true,'DUDU can explain the real loot cooldown');
     assert.equal(companionSmoke.chatCount,1,'First valid conversation counts toward daily streak');
     assert.equal(companionSmoke.claimed,true,'Claim is one time per local day');
