@@ -191,3 +191,11 @@ body.dudu-site-v60.theme-warm,body.dudu-site-v60.theme-oled {background:var(--bg
  .d61-hero-actions {margin-top:12px!important}
  .d61-portal {opacity:.23}
 }
+
+/* V62: world discovery uses real published novels; upcoming gateway stays informational. */
+#d60-worlds .d62-gateway{padding:15px 18px;margin:15px 0 4px;border-color:rgba(169,149,237,.25)}
+#d60-worlds .d62-gateway p{margin:9px 0 0;font-size:12px;line-height:1.6}
+#d60-worlds .d60-grid{margin-top:10px}
+#d60-worlds .d60-bookaction:focus-visible,
+#d60-worlds .d60-navitem:focus-visible{outline:2px solid #ddcbff;outline-offset:3px}
+@media(max-width:760px){#d60-worlds .d62-gateway{padding:12px 13px}#d60-worlds .d60-grid{gap:10px}}
