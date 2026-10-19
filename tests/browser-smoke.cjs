@@ -84,6 +84,37 @@ async function main() {
     assert.ok(mobileSite.heroHeight<280,'Mobile hero should leave room for visible story content');
     assert.equal(mobileSite.navigationVisible,true,'Mobile bottom navigation visible');
     assert.equal(mobileSite.overflow,false,'Homepage should not overflow viewport horizontally');
+    // V67.0: verify all existing Phone apps share one stable inventory and retain mounts.
+    await page.waitForFunction(()=>window.DuduPhoneAppsV67?.specs?.length===12);
+    const phoneAudit=await page.evaluate(()=>{
+      const app=window.DuduPhoneAppsV67;
+      const entries=app.snapshot();
+      return {
+        count:entries.length,
+        mounted:entries.filter(x=>x.mounted).length,
+        missingModules:entries.filter(x=>x.state==='missing_entrypoint').map(x=>x.id),
+        decisions:Object.fromEntries(entries.map(x=>[x.id,x.decision])),
+        profileRenderer:app.get('profile')?.entrypointDetected===true,
+        messengerRenderer:app.get('chat')?.entrypointDetected===true,
+        questsRenderer:app.get('quests')?.entrypointDetected===true,
+        inventoryRenderer:app.get('inventory')?.entrypointDetected===true,
+        shopRenderer:app.get('shop')?.entrypointDetected===true,
+        unknownId:app.get('unknown')===null,
+        noFirestoreWrites:window.__firestoreWrites.length===0
+      };
+    });
+    assert.equal(phoneAudit.count,12,'Cyber Phone must keep all 12 original apps');
+    assert.equal(phoneAudit.mounted,12,'Every Phone app should retain its DOM mount');
+    assert.deepEqual(phoneAudit.missingModules,[],
+      'Phone app entrypoints should remain loaded: '+phoneAudit.missingModules.join(', '));
+    assert.equal(phoneAudit.decisions.chat,'modernize');
+    assert.equal(phoneAudit.decisions.quests,'bridge');
+    assert.equal(phoneAudit.decisions.inventory,'retain');
+    assert.ok(phoneAudit.profileRenderer&&phoneAudit.messengerRenderer&&
+      phoneAudit.questsRenderer&&phoneAudit.inventoryRenderer&&phoneAudit.shopRenderer,
+      'Core Phone renderer entrypoints must exist');
+    assert.equal(phoneAudit.unknownId,true);
+    assert.equal(phoneAudit.noFirestoreWrites,true);
     // World Atlas V64: compact two-column mobile display, not a second novel library.
     await page.evaluate(() => DuduSiteV60.navigate('worlds'));
     await page.locator('#d60-worlds .d64-world-card').first().waitFor();
