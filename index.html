@@ -78,7 +78,7 @@
   <script src="js/npc-dialogue-v56-13.js?v=56-13"></script>
   <script src="js/npc-profile-v56-15.js?v=56-15"></script>
   <script src="js/npc-auto-model-v56-11.js?v=56-11"></script>
-  <script src="js/ai-proxy.js?v=58-1-npc-output"></script>
+  <script src="js/ai-proxy.js?v=58-2-mobile"></script>
   <script src="js/npc-chat-lite.js?v=53-1"></script>
   <script src="js/player-reset-v54.js?v=54-1"></script>
   <script src="js/story-memory.js"></script>
@@ -2945,7 +2945,7 @@
       const note=document.getElementById('dudu-v55-quota');
       if(note)note.title=selector.value==='auto'
         ? 'Tự động ưu tiên Workers AI miễn phí khi đã được bật; nếu chưa thì chọn Gemini theo câu hỏi.'
-        : 'Model thủ công sẽ được dùng cho tin nhắn tiếp theo.';
+        : 'Ưu tiên model bạn chọn; khi Gemini lỗi, DUDU có thể chuyển một lần sang GLM miễn phí và ghi rõ dưới tin nhắn.';
       const menu=document.getElementById('dudu-v5612-ai-settings');
       if(menu)menu.open=false;
     }
@@ -3558,7 +3558,9 @@
           div.textContent = msg.text;
           if(!isUser&&msg.model&&window.DuduAI?.models?.some(m=>m.id===msg.model)){
             const meta=document.createElement('small');
-            meta.textContent='✦ '+msg.model;
+            const source=typeof msg.fallbackFrom==='string'&&window.DuduAI?.models?.some(m=>m.id===msg.fallbackFrom)
+              ?msg.fallbackFrom:null;
+            meta.textContent=source?'✦ '+source+' → '+msg.model+' (dự phòng)':'✦ '+msg.model;
             meta.style.cssText='display:block;opacity:.65;font-size:9px;margin-top:3px';
             div.append(meta);
           }
@@ -3680,7 +3682,9 @@
         }
         res.text=window.DuduNpcReplyStyleV5612?.format(spoken,lastUser?.text)||spoken;
         chatHistories[requestChatKey].push({role:'model',text:res.text,
-          ...(window.DuduAI?.models?.some(m=>m.id===res.model)?{model:res.model}:{})
+          ...(window.DuduAI?.models?.some(m=>m.id===res.model)?{model:res.model}:{}),
+          ...(res.fallbackFrom&&window.DuduAI?.models?.some(m=>m.id===res.fallbackFrom)
+            ?{fallbackFrom:res.fallbackFrom}:{})
         });
         // Count one successful AI exchange per UTC day; never count scripted
         // greetings, unsent text, errors, retries or late/deleted responses.
