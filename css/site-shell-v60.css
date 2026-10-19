@@ -1,0 +1,80 @@
+/* DUDU Studio 2.0 — additive discovery shell; legacy reading and phone untouched. */
+body.dudu-site-v60 {background:linear-gradient(180deg,#161c2c 0px,#101522 720px,var(--bg-main) 1400px);color:#e5eaf3}
+body.dudu-site-v60 header {background:rgba(16,21,34,.97);border-bottom:1px solid rgba(204,210,233,.15);gap:10px}
+body.dudu-site-v60 header .brand {color:#efeafc;letter-spacing:.05em}
+body.dudu-site-v60 .container {max-width:1100px;padding:28px 20px 110px}
+.d60-topnav {display:flex;flex:1;align-items:center;justify-content:center;gap:4px;min-width:0}
+.d60-navitem {color:#bdc8da;border:0;background:transparent;border-radius:10px;padding:9px 11px;cursor:pointer;font-size:12px;font-weight:700;white-space:nowrap}
+.d60-navitem:hover,.d60-navitem[aria-current=page] {background:rgba(169,149,237,.18);color:#fff}
+.d60-bottomnav {display:none}
+.d60-page {display:none;color:#f0f0f7}
+.d60-page h1,.d60-page h2,.d60-page h3 {line-height:1.35;color:#faf8ff}
+.d60-page p {color:#bcc7d8}
+.d60-kicker {font-size:11px;color:#ddbb82!important;letter-spacing:.15em;font-weight:800}
+.d60-hero {position:relative;overflow:hidden;border:1px solid rgba(169,149,237,.32);border-radius:24px;background:radial-gradient(circle at 80% 10%,rgba(169,149,237,.2),transparent 45%),linear-gradient(115deg,#29324a,#141d30);padding:42px 39px}
+.d60-hero:before {content:"✦";position:absolute;right:4%;top:-70px;font-size:260px;line-height:1;color:rgba(221,187,130,.075);pointer-events:none}
+.d60-hero h1 {font-size:clamp(27px,4vw,43px);letter-spacing:-.04em;max-width:720px;margin:10px 0 8px}
+.d60-hero p {max-width:660px;line-height:1.8;font-size:14px}
+.d60-actions {display:flex;gap:9px;flex-wrap:wrap;margin-top:21px}
+.d60-btn {background:#a995ed;border:1px solid transparent;color:#111525;border-radius:10px;cursor:pointer;padding:10px 15px;font-size:12px;font-weight:800}
+.d60-btn:hover {filter:brightness(1.09)}
+.d60-btn.secondary {background:rgba(255,255,255,.055);color:#f1edfd;border-color:rgba(222,224,242,.2)}
+.d60-section {margin-top:31px}
+.d60-sectionhead {display:flex;align-items:center;justify-content:space-between;gap:13px;margin-bottom:15px}
+.d60-sectionhead h2 {font-size:21px}
+.d60-textlink {color:#ddcbff;cursor:pointer;background:none;border:0;font-size:12px;font-weight:700}
+.d60-textlink:hover {text-decoration:underline}
+.d60-grid {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.d60-book {min-width:0;display:flex;flex-direction:column;gap:7px;padding:9px;border:1px solid rgba(190,202,226,.17);border-radius:15px;background:rgba(27,36,52,.82)}
+.d60-cover {background:linear-gradient(150deg,#3b3a60,#1a2237);border-radius:10px;aspect-ratio:2/3;display:flex;align-items:center;justify-content:center;font-size:30px;color:#b8a6e6;overflow:hidden}
+.d60-cover img {height:100%;width:100%;display:block;object-fit:cover}
+.d60-title {font-size:13px;color:#f8f6ff;font-weight:750;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.d60-meta {font-size:11px;color:#aab8cb;line-height:1.5}
+.d60-bookaction {margin-top:auto;border:1px solid rgba(169,149,237,.4);border-radius:8px;padding:8px;background:rgba(169,149,237,.1);color:#eadfff;font-size:12px;font-weight:700;cursor:pointer;text-align:left}
+.d60-bookaction:hover {background:rgba(169,149,237,.22)}
+.d60-card {border:1px solid rgba(190,202,226,.17);border-radius:16px;background:linear-gradient(125deg,rgba(38,46,68,.9),rgba(24,32,47,.9));padding:22px}
+.d60-card h3 {font-size:17px;margin:6px 0}
+.d60-card p {line-height:1.75;font-size:13px}
+.d60-two {display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.d60-resume {display:flex;align-items:center;gap:17px}
+.d60-resume .d60-cover {height:112px;flex:0 0 75px}
+.d60-resume .d60-btn {margin-top:9px}
+.d60-chips {display:flex;flex-wrap:wrap;gap:8px}
+.d60-chip {border:1px solid rgba(190,202,226,.22);border-radius:999px;padding:8px 13px;color:#e4dff0;background:#222c40;font-size:12px;cursor:pointer}
+.d60-chip:hover {border-color:#a995ed}
+.d60-empty {border:1px dashed rgba(190,202,226,.27);border-radius:14px;padding:28px;color:#b8c7da;font-size:13px;line-height:1.7}
+.d60-badge {display:inline-block;padding:4px 9px;border:1px solid rgba(169,149,237,.35);border-radius:999px;color:#e6d8ff;background:rgba(169,149,237,.12);font-size:10px;letter-spacing:.05em}
+.d60-page-title {font-size:31px;margin:8px 0 9px}
+.d60-intro {font-size:14px;line-height:1.8;margin-bottom:24px}
+.d60-library-intro {margin-bottom:21px}
+.d60-library-intro h1 {color:#f7f5ff;font-size:30px}
+.d60-library-intro p {font-size:13px;color:#b7c3d5;margin-top:7px}
+body.dudu-site-v60 #home-view .filter-panel {background:rgba(27,36,52,.92);border:1px solid rgba(190,202,226,.18);padding:17px;border-radius:15px}
+body.dudu-site-v60 #home-view .novel-card {border-radius:15px;overflow:hidden}
+body.dudu-site-v60 #cover-view,body.dudu-site-v60 #reader-view {max-width:880px;margin-left:auto;margin-right:auto}
+body.dudu-site-v60.theme-warm,body.dudu-site-v60.theme-oled {background:var(--bg-main)}
+@media(max-width:1060px) {
+ body.dudu-site-v60 header .cloud-status {display:none}
+ .d60-navitem {padding:8px}
+}
+@media(max-width:760px) {
+ body.dudu-site-v60 header {padding:8px 10px}
+ body.dudu-site-v60 .container {padding:18px 13px 108px}
+ body.dudu-site-v60 header .role-badge {display:none}
+ .d60-topnav {display:none}
+ .d60-bottomnav {position:fixed;bottom:0;left:0;right:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:5px 5px calc(5px + env(safe-area-inset-bottom));background:rgba(16,21,34,.98);border-top:1px solid rgba(190,202,226,.23);z-index:200;backdrop-filter:blur(16px)}
+ .d60-bottomnav .d60-navitem {font-size:11px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:5px 2px;min-width:0}
+ .d60-icon {font-size:20px;line-height:1.2}
+ .d60-hero {padding:31px 22px}
+ .d60-hero:before {font-size:150px;right:-12px;top:-7px}
+ .d60-hero h1 {font-size:28px}
+ .d60-grid {grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .d60-two {grid-template-columns:1fr}
+ .d60-sectionhead h2 {font-size:18px}
+ .d60-page-title {font-size:25px}
+ .d60-section {margin-top:26px}
+ body.dudu-site-v60 #phone-fab {bottom:calc(78px + env(safe-area-inset-bottom));right:12px}
+ body.dudu-site-v60 .floating-reading-controls {bottom:calc(88px + env(safe-area-inset-bottom))}
+}
+@media(max-width:390px) {body.dudu-site-v60 header .brand {font-size:13px}body.dudu-site-v60 header .user-info-badge {display:none} .d60-hero h1 {font-size:25px}}
+@media(prefers-reduced-motion:reduce) {.d60-navitem,.d60-btn {transition:none}}
