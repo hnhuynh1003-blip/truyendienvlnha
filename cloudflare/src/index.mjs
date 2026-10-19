@@ -537,6 +537,7 @@ async function gemini(payload,env){
       console.warn('Gemini HTTP 400 class:',upstream400.code);
       console.warn('Gemini HTTP 400 diagnostic:',JSON.stringify({
         reference,model,googleStatus:upstream400.diagnostic.upstreamStatus,
+        prerequisite:upstream400.diagnostic.prerequisite,
         field:upstream400.diagnostic.field,
         instructionSize:upstream400.diagnostic.instructionSize,
         contentSize:upstream400.diagnostic.contentSize,
