@@ -17,7 +17,7 @@
    catch(_){}
    return uid?'firebase:'+uid:'guest';
  };
- let installed=false,owner=accountKey(),last=null,queued=false,identityChanged=false;
+ let installed=false,owner=accountKey(),last=null,queued=false;
  function state(){
    const phone=id('cyber-phone'),open=phone?.style.display==='flex';
    const active=apps().find(a=>id(a.elementId)?.style.display==='flex')||null;
@@ -31,11 +31,10 @@
    }
    return Object.freeze({
      open:!!open,appId,home:!!open&&!!home&&!active,
-     conversation,accountChanged:identityChanged
+     conversation
    });
  }
- function emit(reason,force=false){
-   identityChanged=false;
+ function emit(reason,force=false,accountChanged=false){
    const next=state(),changed=force||!last||
      last.open!==next.open||last.appId!==next.appId||
      last.home!==next.home||last.conversation!==next.conversation;
@@ -44,7 +43,7 @@
    if(typeof root.CustomEvent==='function'&&typeof doc.dispatchEvent==='function')
      doc.dispatchEvent(new root.CustomEvent('dudu:phone:lifecycle',{
        detail:Object.freeze({reason,open:next.open,appId:next.appId,
-         home:next.home,conversation:next.conversation,accountChanged:force})
+         home:next.home,conversation:next.conversation,accountChanged})
      }));
    return next;
  }
@@ -67,7 +66,6 @@
    const next=accountKey();
    if(owner===next)return false;
    owner=next;
-   identityChanged=true;
    // Close BEFORE another account can view the old account's app.
    if(id('cyber-phone')?.style.display==='flex'&&typeof root.togglePhone==='function'){
      try{root.togglePhone();}catch(e){console.warn('DUDU phone close on account switch:',e);}
@@ -77,7 +75,7 @@
    if(typeof root.phoneHome==='function'){
      try{root.phoneHome();}catch(e){console.warn('DUDU phone home on account switch:',e);}
    }
-   emit('account-change',true);
+   emit('account-change',true,true);
    return true;
  }
  function refresh(reason='refresh'){
