@@ -263,7 +263,7 @@
    atlasTitles.append(element('span','d64-atlas-kicker','DUDU · WORLDS'),
      element('h1','d60-page-title','Vạn giới'));
    atlasHeading.append(atlasTitles);
-   const seal=element('span','d64-atlas-seal','Khế ước · F → E');
+   const seal=element('span','d64-atlas-seal','Khế ước · F/E');
    atlasHeading.append(seal);
    worlds.append(atlasHeading);
    const worldList=element('div','');worldList.id='d60-worlds-list';worlds.append(worldList);
