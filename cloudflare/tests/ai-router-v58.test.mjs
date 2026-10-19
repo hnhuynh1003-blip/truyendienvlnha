@@ -139,6 +139,7 @@ test('V58 one configured-free Workers AI fallback on provider 429; preserve NPC 
   assert.match(calls[0].options.messages[0].content,/Người quan sát/);
   assert.equal(calls[0].options.messages.at(-1).role,'user');
   assert.deepEqual(calls[0].options.messages.map(m=>m.role),['system','user']);
+  assert.equal(calls[0].options.chat_template_kwargs.enable_thinking,false);
 });
 
 
@@ -191,6 +192,51 @@ test('V58 Cloudflare free quota and paid model errors are fail-closed',async()=>
   assert.doesNotMatch(JSON.stringify(result),/PRIVATE-ACCOUNT-DETAIL/);
 });
 
+
+test('V58.1 both AU and reader use visible-only output with reasoning disabled',async()=>{
+  for(const role of ['Tác giả','Độc giả']){
+    for(const model of WORKERS_AI_MODELS){
+      const {env,calls}=freeEnv();
+      const data=await workersAiNpc(validRequest(base(role,model.id)),env);
+      assert.equal(data.status,200);
+      assert.equal(data.data.provider,'workers-ai');
+      assert.equal(calls.length,1);
+      assert.equal(calls[0].options.chat_template_kwargs.enable_thinking,false,
+        'disable reasoning to avoid consuming 640 output tokens on internal thinking');
+      assert.equal(calls[0].options.max_completion_tokens,640);
+      assert.ok(calls[0].options.messages[0].content.includes(role));
+      assert.equal(calls[0].options.messages[1].role,'user');
+    }
+  }
+});
+test('V58.1 an empty AI reply due to output length is reported correctly',async()=>{
+  const {env}=freeEnv();
+  env.AI.run=async()=>({
+    choices:[{finish_reason:'length',message:{content:'',reasoning:'PRIVATE THINKING'}}],
+    usage:{prompt_tokens:90,completion_tokens:640}
+  });
+  const payload=validRequest(base('Khách thử',WORKERS_AI_MODELS[0].id));
+  const r=await workersAiNpc(payload,env);
+  assert.equal(r.status,502);
+  assert.equal(r.error.code,'workers-ai-output-truncated');
+  assert.ok(!JSON.stringify(r).includes('PRIVATE THINKING'));
+});
+test('V58.1 report actual failed Workers fallback instead of original Gemini failure',async()=>{
+  const {env,calls}=freeEnv();
+  env.AI.run=async(model,options)=>{
+    calls.push({model,options});
+    return {choices:[{finish_reason:'length',message:{content:'',reasoning:'SECRET'}}]};
+  };
+  const payload=validRequest(base('Độc giả'));
+  const r=await routeNpcAi(payload,env,async()=>({
+    error:{code:'gemini-location-restricted'},status:502
+  }));
+  assert.equal(calls.length,1,'never cascade further AI calls');
+  assert.equal(r.error.code,'workers-ai-output-truncated');
+  assert.equal(r.error.model,WORKERS_AI_MODELS[0].id);
+  assert.equal(r.error.fallbackFrom,payload.model);
+  assert.ok(!JSON.stringify(r).includes('SECRET'));
+});
 test('V58 no paid provider URL or direct chargeable AI gateway introduced',()=>{
   const router=fs.readFileSync(new URL('../src/ai-router-v58.mjs',import.meta.url),'utf8');
   assert.doesNotMatch(router,/api\.openai\.com|api\.anthropic\.com|api\.deepseek\.com/);
