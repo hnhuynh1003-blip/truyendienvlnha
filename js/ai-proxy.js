@@ -8,16 +8,13 @@
   let sandbox = false;
   const DEFAULT_MODEL='gemini-3.5-flash-lite';
   const AUTO='auto'; // Browser-only routing option, never an API model ID.
-  // Auto routes to one of the seven explicitly allowlisted Gemini models.
+  // Auto routes only to Gemini 3.1+ models explicitly allowlisted by the Worker.
   const MODELS=Object.freeze([
     ['auto','✦ Tự động · phù hợp câu hỏi'],
     ['gemini-3.5-flash-lite','3.5 Flash-Lite · nhanh'],
     ['gemini-3.1-flash-lite','3.1 Flash-Lite · nhẹ'],
     ['gemini-3.6-flash','3.6 Flash · nhập vai'],
-    ['gemini-3.8-flash','3.8 Flash · mới'],
-    ['gemini-3-flash-preview','3 Flash Preview'],
-    ['gemini-2.5-flash-lite','2.5 Flash-Lite · cũ'],
-    ['gemini-2.5-flash','2.5 Flash · cũ']
+    ['gemini-3.8-flash','3.8 Flash · mới']
   ].map(([id,label])=>Object.freeze({id,label})));
   function modelStorageKey(){
     const uid=firebase?.auth?.()?.currentUser?.uid;
@@ -28,7 +25,11 @@
     if(!key)return AUTO;
     try{
       const saved=localStorage.getItem(key);
-      return MODELS.some(x=>x.id===saved)?saved:AUTO;
+      if(MODELS.some(x=>x.id===saved))return saved;
+      // V57.2: per-UID legacy selections (2.5 / 3 Preview) migrate to Auto.
+      // Preserve all roleplay profiles, NPC chats, and story data.
+      if(saved)localStorage.setItem(key,AUTO);
+      return AUTO;
     }catch(_){return AUTO;}
   }
   function setModel(id){
