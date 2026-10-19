@@ -1,0 +1,72 @@
+/* DUDU V65 world dossiers + author template; modal-only, compact on mobile. */
+#d60-worlds .d64-world-card{touch-action:manipulation;cursor:pointer;
+  transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease}
+#d60-worlds .d64-world-card:hover{border-color:rgba(var(--atlas-accent),.65);
+  box-shadow:0 5px 18px rgba(0,0,0,.13),inset 0 1px rgba(255,255,255,.05)}
+#d60-worlds .d64-world-card:focus-visible{outline:2px solid #d9c9ff;outline-offset:3px}
+#d60-worlds .d64-world-card:active{transform:scale(.985)}
+.d65-dialog{width:min(440px,calc(100vw - 26px));max-height:min(85dvh,700px);
+  padding:0;overflow:auto;border:1px solid rgba(190,170,240,.35);border-radius:18px;
+  background:radial-gradient(ellipse at 90% 0%,rgba(125,106,194,.19),transparent 48%),
+  linear-gradient(160deg,#232b42,#121a2a 75%);color:#f4f0ff;
+  box-shadow:0 24px 90px rgba(0,0,0,.65)}
+.d65-dialog::backdrop{background:rgba(5,9,19,.77);backdrop-filter:blur(5px)}
+.d65-dialog-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+  padding:19px 20px 13px;border-bottom:1px solid rgba(174,170,218,.15)}
+.d65-dialog-titles{min-width:0}
+.d65-kicker{display:block;color:#ab9fcf;letter-spacing:.12em;
+  font:700 9px/1.3 ui-monospace,Consolas,monospace}
+.d65-dialog-title{font-size:20px;line-height:1.3;font-weight:800;
+  letter-spacing:-.025em;color:#f8f5ff;margin:6px 0 0;overflow-wrap:anywhere}
+.d65-close{display:grid;place-items:center;flex:0 0 33px;width:33px;height:33px;
+  padding:0;border:1px solid rgba(200,197,229,.2);border-radius:9px;
+  background:rgba(255,255,255,.06);color:#ebe5fa;cursor:pointer;
+  font:400 24px/1 ui-sans-serif,system-ui,sans-serif}
+.d65-close:focus-visible,.d65-studio-action:focus-visible,.d65-studio-import:focus-visible,
+.d65-select:focus-visible{outline:2px solid #d9c9ff;outline-offset:2px}
+.d65-dossier{--d65-accent:166,165,218;padding:13px 20px 20px}
+.d65-dossier.d63-tone-mist{--d65-accent:153,191,218}
+.d65-dossier.d63-tone-star{--d65-accent:186,151,237}
+.d65-dossier.d63-tone-forest{--d65-accent:138,193,164}
+.d65-dossier.d63-tone-sea{--d65-accent:120,184,205}
+.d65-dossier.d63-tone-city{--d65-accent:223,168,188}
+.d65-dossier.d63-tone-clock{--d65-accent:210,184,127}
+.d65-dossier-mark{display:grid;place-items:center;margin:0 auto;
+  width:86px;height:86px;border:1px solid rgba(var(--d65-accent),.32);border-radius:50%;
+  background:radial-gradient(circle,rgba(var(--d65-accent),.17),rgba(var(--d65-accent),.035));
+  font:400 49px/1 Georgia,serif;color:rgb(var(--d65-accent));
+  text-shadow:0 0 19px rgba(var(--d65-accent),.35)}
+.d65-dossier-level{text-align:center;color:#a9b6cc;font-size:11px;margin:12px 0 0}
+.d65-dossier-lore{font-size:13px;line-height:1.65;color:#d8d9e6;text-align:center;
+  margin:13px 0 16px}
+.d65-dossier-locked{display:flex;justify-content:center;align-items:center;gap:7px;
+  color:#c9badb;border-top:1px solid rgba(185,182,219,.15);
+  padding-top:13px;font-size:11px;font-weight:700}
+.d65-lock-mark{color:#b7a2d8}
+.d65-studio{padding:18px 20px 22px}
+.d65-label{display:block;color:#b9bfd6;font-size:11px;font-weight:750;margin:0 0 7px}
+.d65-select{display:block;width:100%;border:1px solid rgba(187,171,227,.3);
+ border-radius:9px;padding:10px 12px;background:#1b2539;color:#f2eefa;font:600 13px system-ui}
+.d65-studio-controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px;align-items:center}
+.d65-studio-action,.d65-studio-import{display:inline-flex;align-items:center;
+  justify-content:center;padding:10px 13px;border-radius:9px;min-height:38px;
+  font-size:12px;font-weight:760;cursor:pointer}
+.d65-studio-action{border:1px solid #b3a0dc;background:#a995ed;color:#16162b}
+.d65-studio-import{border:1px solid rgba(186,168,223,.37);
+  background:rgba(169,149,237,.08);color:#e5dcfa}
+.d65-studio-file{position:absolute!important;width:1px;height:1px;
+  opacity:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.d65-studio-result{color:#b8c5d8;font-size:11px;line-height:1.5;
+ min-height:16px;margin:11px 0 0;overflow-wrap:anywhere}
+@media(max-width:520px){
+ .d65-dialog{width:calc(100vw - 24px);max-height:calc(100dvh - 28px);border-radius:15px}
+ .d65-dialog-head{padding:16px 16px 12px}
+ .d65-dialog-title{font-size:18px}
+ .d65-dossier{padding:11px 16px 17px}
+ .d65-dossier-mark{width:74px;height:74px;font-size:42px}
+ .d65-studio{padding:16px}
+ .d65-studio-controls>*{flex:1 1 auto}
+}
+@media(prefers-reduced-motion:reduce){
+ #d60-worlds .d64-world-card{transition:none}
+}
