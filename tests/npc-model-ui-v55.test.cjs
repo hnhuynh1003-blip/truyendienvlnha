@@ -13,7 +13,7 @@ test('V55 shows compact model picker and server-only usage counter in Contacts',
  assert.match(html,/function refreshNpcQuotaV55\(\)/);
  assert.match(html,/DuduAI\.status\(\)/);
  assert.match(html,/if\(!IS_SANDBOX_MODE\)void refreshNpcQuotaV55\(\)/);
- assert.match(html,/src="js\/ai-proxy\.js\?v=58-r3"/);
+ assert.match(html,/src="js\/ai-proxy\.js\?v=58-free-au-reader"/);
 });
 
 test('V55 stores selected model per Firebase UID and labels each AI response',()=>{
@@ -38,4 +38,12 @@ test('V58 hides retired Gemini model options and migrates saved choices',()=>{
  const picker=client.slice(0,client.indexOf('const WORKERS_OPTIONS='));
  for(const id of ['gemini-2.5-flash-lite','gemini-2.5-flash','gemini-3-flash-preview'])
   assert.equal(picker.includes("['"+id+"',"),false,'old model in UI: '+id);
+});
+
+test('V58 authenticated AU/reader Auto prefers approved Free Workers AI',()=>{
+ const proxy=require('fs').readFileSync(require('path').resolve(__dirname,'../js/ai-proxy.js'),'utf8');
+ assert.match(proxy,/const preferredFree=purpose==='chat'/);
+ assert.match(proxy,/MODELS\.some\(x=>x\.id==='@cf\/zai-org\/glm-4\.7-flash'\)/);
+ assert.match(proxy,/preferredFree\|\|window\.DuduNpcAutoModelV5611/);
+ assert.match(proxy,/updateModelsFromStatus\(status\)/);
 });
