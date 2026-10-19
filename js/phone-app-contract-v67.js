@@ -25,7 +25,7 @@
  const byId=Object.freeze(Object.fromEntries(specs.map(s=>[s.id,s])));
  function rendererPresent(spec){
    const provider=root[spec.entrypoint];
-   return typeof provider==='function'||Boolean(provider&&typeof provider==='object');
+   return typeof provider==='function'||Boolean(provider&&typeof provider.render==='function');
  }
  function inspect(spec){
    const isSandbox=typeof IS_SANDBOX_MODE!=='undefined'&&IS_SANDBOX_MODE===true;
