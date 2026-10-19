@@ -12,13 +12,20 @@ const css=fs.readFileSync(path.join(root,'css/dudu-messenger-v67-2.css'),'utf8')
 class Element {
   constructor(tag='div',id=''){
     this.tagName=tag.toUpperCase();this.id=id;this.children=[];
-    this.events={};this.attributes={};this.style={};this.value='';
+    this.events={};this.attributes={};this.style={};this.dataset={};this.value='';
     this.textContent='';this.open=false;this.disabled=false;
     this.scrollTop=0;this.scrollHeight=500;this.clientHeight=100;this.hidden=false;
-    const classes=new Set();
+    this._classes=new Set();
+    const classes=this._classes;
     this.classList={add(...v){v.forEach(x=>classes.add(x));},remove(...v){v.forEach(x=>classes.delete(x));},
       contains(x){return classes.has(x);}};
   }
+  set className(value){
+    this._className=String(value);
+    this._classes.clear();
+    for(const name of this._className.split(/\\s+/).filter(Boolean))this._classes.add(name);
+  }
+  get className(){return this._className||'';}
   append(...items){this.children.push(...items);}
   replaceChildren(...items){this.children=[...items];}
   setAttribute(key,value){this.attributes[key]=value;}
