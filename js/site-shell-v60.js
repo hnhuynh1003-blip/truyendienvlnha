@@ -129,20 +129,20 @@
 
  }
  // V64 World Atlas: compact mobile-first coordinates; detailed lore stays in the registry.
- function worldCard(w,index){
-   const card=element('article','d64-world-card d63-tone-'+w.tone);
-   card.dataset.worldId=w.worldId;
-   card.setAttribute('aria-label',w.name+', cấp '+w.tier+', chưa phát hành');
+ function worldCard(g,index){
+   // Genre gate, NOT one playable F/E world.
+   const card=element('article','d64-world-card d63-tone-'+g.tone);
+   card.dataset.genreId=g.genreId;
+   card.setAttribute('aria-label','Thể loại '+g.name+', xem kho nhiệm vụ');
    const top=element('div','d64-card-top');
    top.append(element('span','d64-card-number',String(index+1).padStart(2,'0')),
-     element('span','d64-card-tier','CẤP '+w.tier));
-   const crest=element('div','d64-world-crest',w.symbol);
-   crest.setAttribute('aria-hidden','true');
-   const title=element('h3','d64-card-title',w.name);
-   const category=element('p','d64-card-category',String(w.kind||'').split(' · ')[0]);
-   const label=element('div','d64-card-info');
-   label.append(title,category);
-   card.append(top,crest,label);
+     element('span','d64-card-tier','F · E'));
+   const crest=element('div','d64-world-crest',g.symbol);crest.setAttribute('aria-hidden','true');
+   const info=element('div','d64-card-info');
+   const total=window.DuduWorldTaxonomyV66.byGenre(g.genreId).length;
+   info.append(element('h3','d64-card-title',g.name),
+     element('p','d64-card-category',total+' phó bản sơ cấp'));
+   card.append(top,crest,info);
    return card;
  }
  function unverifiedCard(w){
@@ -156,35 +156,32 @@
  }
  function fillWorlds(){
    const root=id('d60-worlds-list');if(!root)return;
-   // Every site refresh replaces content; preserve the user's disclosure choice.
    const wasOpen=!!root.querySelector('details.d64-unknown')?.open;
    root.replaceChildren();
-   const registry=window.DuduWorldRegistryV63;
-   if(!registry||!Array.isArray(registry.starterWorlds)){
-     root.append(element('p','d60-empty','Không thể tải bản đồ thế giới.'));
+   const taxonomy=window.DuduWorldTaxonomyV66;
+   if(!taxonomy||!Array.isArray(taxonomy.genres)){
+     root.append(element('p','d60-empty','Không thể tải bản đồ thể loại.'));
      return;
    }
    const starter=element('section','d64-world-section');
    const heading=element('div','d64-sectionhead');
-   heading.append(element('h2','','Tọa độ cấp thấp'),
-     element('span','d64-world-count',String(registry.starterWorlds.length).padStart(2,'0')+' TỌA ĐỘ'));
+   heading.append(element('h2','','Sáu thế giới lớn'),
+     element('span','d64-world-count',taxonomy.missions.length+' NHIỆM VỤ F–E'));
    const grid=element('div','d64-world-grid');
-   registry.starterWorlds.forEach((w,i)=>grid.append(worldCard(w,i)));
+   taxonomy.genres.forEach((g,i)=>grid.append(worldCard(g,i)));
    starter.append(heading,grid);
-   const hidden=element('details','d64-unknown');
-   hidden.open=wasOpen;
+   const unknowns=window.DuduWorldRegistryV63?.unverifiedWorlds||[];
+   const hidden=element('details','d64-unknown');hidden.open=wasOpen;
    const summary=element('summary','d64-unknown-summary');
-   const left=element('span','d64-unknown-heading');
-   const marker=element('span','d64-unknown-marker','◇');
+   const left=element('span','d64-unknown-heading'),marker=element('span','d64-unknown-marker','◇');
    marker.setAttribute('aria-hidden','true');
-   left.append(marker,element('span','','Chưa kiểm chứng'));
-   summary.append(left,element('span','d64-unknown-count',
-     String((registry.unverifiedWorlds||[]).length).padStart(2,'0')),
+   left.append(marker,element('span','','Ngoài phân loại'));
+   summary.append(left,element('span','d64-unknown-count',String(unknowns.length).padStart(2,'0')),
      element('span','d64-unknown-arrow','⌄'));
    summary.lastChild.setAttribute('aria-hidden','true');
    hidden.append(summary);
    const unknownGrid=element('div','d64-unknown-grid');
-   (registry.unverifiedWorlds||[]).forEach(w=>unknownGrid.append(unverifiedCard(w)));
+   unknowns.forEach(w=>unknownGrid.append(unverifiedCard(w)));
    hidden.append(unknownGrid);
    root.append(starter,hidden);
  }
@@ -206,7 +203,7 @@
    root.append(button('✎ Tạo tác phẩm',()=>openStoryModal()),
      button('▤ Nhập EPUB',()=>openEpubImportV48(),'d60-btn secondary'),
      button('📚 Quản lý trong Thư viện',()=>navigate('library'),'d60-btn secondary'),
-     button('◇ Khung kịch bản',()=>window.DuduWorldUXV65?.openAuthorStudio(),'d60-btn secondary'));
+     button('◇ Khung kịch bản',()=>window.DuduWorldUXV66?.openAuthorStudio(),'d60-btn secondary'));
  }
  function refresh(){
    if(refreshPending)return;refreshPending=true;
@@ -262,7 +259,7 @@
    atlasTitles.append(element('span','d64-atlas-kicker','DUDU · WORLDS'),
      element('h1','d60-page-title','Vạn giới'));
    atlasHeading.append(atlasTitles);
-   const seal=element('span','d64-atlas-seal','Đang kiến tạo');
+   const seal=element('span','d64-atlas-seal','Khế ước · F → E');
    atlasHeading.append(seal);
    worlds.append(atlasHeading);
    const worldList=element('div','');worldList.id='d60-worlds-list';worlds.append(worldList);
