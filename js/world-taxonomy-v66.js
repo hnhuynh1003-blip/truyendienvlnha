@@ -96,21 +96,22 @@ function pickPreview({genreId=null,tier='F',seenMissionIds=[],recentGenreIds=[],
  const n=Number(random());const index=Math.min(pool.length-1,Math.max(0,Math.floor((Number.isFinite(n)?n:0)*pool.length)));
  return pool[index];
 }
-function entryCheck({pactVerified=false,serverRank=null,missionId=null,scenarioPublished=false}={}){
+function entryCheck({pactVerified=false,authorizedMissionTiers=[],missionId=null,scenarioPublished=false}={}){
  if(pactVerified!==true)return Object.freeze({allowed:false,reason:'pact_required'});
  const mission=missions.find(m=>m.missionId===missionId);
  if(!mission)return Object.freeze({allowed:false,reason:'unknown_mission'});
- const ranks=['F','E','D','C','B','A','S'];
- if(!ranks.includes(serverRank)||ranks.indexOf(serverRank)<ranks.indexOf(mission.tier))
+ // System rank and mission grade are different concepts. The real server computes
+ // eligible F/E tiers from signed pact and progression, never the browser.
+ if(!Array.isArray(authorizedMissionTiers)||!authorizedMissionTiers.includes(mission.tier))
    return Object.freeze({allowed:false,reason:'rank_locked'});
  if(mission.status!=='published'||mission.available!==true||scenarioPublished!==true)
    return Object.freeze({allowed:false,reason:'scenario_unpublished'});
- // Still deny: real entry must be server-authorized with a signed mission token.
  return Object.freeze({allowed:false,reason:'server_authorization_required'});
 }
 window.DuduWorldTaxonomyV66=Object.freeze({
  version:1,genres:gateMap,missions,tiers:Object.freeze(['F','E']),
- contractPolicy:Object.freeze({required:true,verifiedByServer:true,entryRank:'F'}),
+ contractPolicy:Object.freeze({required:true,verifiedByServer:true,
+   starterMissionTiers:Object.freeze(['F','E']),promotionServerControlled:true}),
  byGenre,pickPreview,entryCheck
 });
 })();
