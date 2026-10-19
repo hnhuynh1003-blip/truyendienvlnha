@@ -18,7 +18,7 @@
    ['progress',/(thang cap|cap he thong|cap bac|exp|kinh nghiem|len cap|rank|xep hang|thanh tich he thong)/],
    ['mission',/(nhiem vu|pho ban|quest|f\/e|cap f|cap e|nhiem vu so cap|nhiem vu ngau nhien)/],
    ['world',/(van gioi|the gioi|co dai|hien dai|nien dai|tu tien|mat the|tuong lai|chu de truyen)/],
-   ['wallet',/(so du|vi xu|tien xu|bao nhieu xu|kiem tra xu|tai san|qua thuong|nhan thuong|cong xu|tang xu|phat xu)/],
+   ['wallet',/(so du|vi xu|tien xu|bao nhieu xu|kiem tra xu|tai san|qua thuong|nhan thuong|cong xu|tang xu|phat xu|\\bxu\\b)/],
    ['account',/(tai khoan|dang nhap|firebase|ho so|dang xuat|uid|quyen tac gia)/],
    ['system',/(he thong|dudu co the|dudu lam gi|tinh nang|trang thai|cong cu|giup do)/]
  ]);
