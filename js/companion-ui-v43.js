@@ -254,7 +254,9 @@
    const filled=text.value.trim().length>0;
    submit.disabled=!filled;
    text.style.height='auto';
-   text.style.height=Math.min(text.scrollHeight,104)+'px';
+   const measuredHeight=text.scrollHeight;
+   // Hidden panels report zero height before first open; keep CSS minimum.
+   text.style.height=measuredHeight>0?Math.min(measuredHeight,104)+'px':'';
    if(status.dataset.state==='error'){status.textContent='';delete status.dataset.state;}
   };
   text.addEventListener('input',adjustInput);
