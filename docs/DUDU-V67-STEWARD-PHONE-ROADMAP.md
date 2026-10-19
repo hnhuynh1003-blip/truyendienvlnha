@@ -30,7 +30,8 @@ DUDU remains the welcoming personality, never the sole source of truth.
 - Findings and specific retain/bridge/modernize decisions: `docs/DUDU-V67-APP-BASELINE-AUDIT.md`.
 - Static source checks do not demonstrate functioning chat, network, Android/iOS layout or server ownership. Do not move on to risky rewrites or claim full interoperability without browser/device checks.
 - V67.1 shared Phone navigation/account lifecycle is **implemented at source level**, via `js/phone-lifecycle-v67-1.js`. It reuses all original Phone functions, tracks visible app state, emits one read-only lifecycle event, and hides volatile chat screens on UID change while preserving stored messages. See `docs/DUDU-V67-1-PHONE-LIFECYCLE.md`.
-- Next functional work: **run browser/device gates for V67.1**, then **V67.2 DUDU messenger** and **V67.3 stewardship**. Existing NPC roleplay, item economy, author and story data stay untouched.
+- V67.2 Messenger UI has been **implemented at source level**: V43 chat upgraded with compact header, collapsible diary, larger bubble area, multiline composer, keyboard/IME guard, scrollback preservation and mobile viewport handling. Legacy history, rules and NPC chat stay intact. See `docs/DUDU-V67-2-MESSENGER.md`.
+- Next functional work: **run real Chromium/device gates for V67.1–V67.2**, then **V67.3 DUDU System Steward**. Existing NPC roleplay, item economy, author and story data stay untouched.
 
 ## Proposed implementation batches
 
