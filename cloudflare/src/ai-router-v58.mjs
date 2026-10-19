@@ -90,8 +90,13 @@ export async function workersAiNpc(payload,env){
     // GLM/Gemma default to reasoning; with a 640-token cap, inference can
     // finish after thinking without producing visible assistant text.
     // Cloudflare supports this input field on BOTH Free models.
+    // Keep responses conversational and Vietnamese-only. Do not erase the
+    // author's NPC persona / the reader's selected identity in the instruction.
+    const npcReplyRule='[QUY TẮC NHẮN TIN] Chỉ trả lời bằng tiếng Việt (trừ tên riêng), không xen chữ Hán. '+ 
+      'Bạn là NPC được mô tả ở trên, không nhập vai người dùng. Xưng hô đúng vai và hồ sơ, '+
+      'trả lời trực tiếp tin cuối bằng 1-3 câu tự nhiên, không lặp, không viết lời dẫn truyện.';
     const result=await env.AI.run(payload.model,{
-      messages:[{role:'system',content:instruction},{role:'user',content:question}],
+      messages:[{role:'system',content:instruction+'\n'+npcReplyRule},{role:'user',content:question}],
       chat_template_kwargs:{enable_thinking:false},
       max_completion_tokens:640
     },{rejectIfBusy:true});
