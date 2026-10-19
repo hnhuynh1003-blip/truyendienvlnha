@@ -1,9 +1,9 @@
-name: DUDU V57.3 Gemini 3.1+ safe Worker deploy (manual)
+name: DUDU V57.4 Gemini 3.1+ safe Worker deploy (manual)
 on:
   workflow_dispatch:
     inputs:
       confirmation:
-        description: 'Type DEPLOY_V57_3 to deploy approved Gemini 3.1+ catalog'
+        description: 'Type DEPLOY_V57_4 to deploy approved Gemini 3.1+ catalog'
         required: true
         type: string
 permissions:
@@ -29,11 +29,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$CONFIRMATION" = "DEPLOY_V57_3" || { echo "STOP: confirmation mismatch"; exit 1; }
+          test "$CONFIRMATION" = "DEPLOY_V57_4" || { echo "STOP: confirmation mismatch"; exit 1; }
           if test -z "$CLOUDFLARE_API_TOKEN" || test -z "$CLOUDFLARE_ACCOUNT_ID"; then
             echo "::error title=Cloudflare credentials missing::Deployment blocked. Configure both repository secrets CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID."
             {
-              echo "### DUDU V57.3 — chưa triển khai (thiếu quyền Cloudflare)"
+              echo "### DUDU V57.4 — chưa triển khai (thiếu quyền Cloudflare)"
               echo "Tạo hai GitHub Actions Secrets: \`CLOUDFLARE_API_TOKEN\` và \`CLOUDFLARE_ACCOUNT_ID\`."
               echo "1. [GitHub Repository Secrets](https://github.com/hnhuynh1003-blip/truyendienvlnha/settings/secrets/actions)"
               echo "2. [Cloudflare Dashboard](https://dash.cloudflare.com/)"
@@ -41,14 +41,14 @@ jobs:
             } >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
-          test "$(git hash-object cloudflare/src/index.mjs)" = "e88ea46a3e9d60caff84dace2f8137b75d6fbf00" ||
+          test "$(git hash-object cloudflare/src/index.mjs)" = "73877160725fe84298b3e8b69b5f5776764deecf" ||
             { echo "STOP: Worker changed after V57.1 audit. Re-review required."; exit 1; }
           test "$(git hash-object cloudflare/wrangler.npc-ai-v54.toml)" = "9e60aef327291c097d4e1eb8fa418537460ce0c5" ||
-            { echo "STOP: Worker config changed after V57.3 audit."; exit 1; }
+            { echo "STOP: Worker config changed after V57.4 audit."; exit 1; }
           test "$(git hash-object cloudflare/src/npc-models.mjs)" = "fb2799384798cb48a8c98d0e513e00c9c8867667" ||
             { echo "STOP: Gemini model catalog differs from approved 3.1+ allowlist."; exit 1; }
           test "$(git hash-object cloudflare/src/gemini-diagnostics-v57-3.mjs)" = "8e59fb900fbfb6f2310d0f427a8a51b1561cc1d3" ||
-            { echo "STOP: Gemini diagnostics module differs from reviewed V57.3."; exit 1; }
+            { echo "STOP: Gemini diagnostics module differs from reviewed V57.4."; exit 1; }
 
       - uses: actions/setup-node@v7
         with:
@@ -100,7 +100,7 @@ jobs:
               raise SystemExit('STOP: GEMINI_API_KEY secret not confirmed. No deploy.')
           print('PASS: existing flags, Durable Objects, and Gemini secret presence confirmed; no secret values shown.')
           PY
-      - name: Deploy approved V57.1 Worker (preserve dashboard variables)
+      - name: Deploy approved V57.4 Worker (preserve dashboard variables)
         working-directory: cloudflare
         run: npx wrangler deploy --config wrangler.npc-ai-v54.toml --keep-vars
       - name: Verify Worker health

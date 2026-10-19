@@ -47,7 +47,7 @@ test('V57.3 no unsafe upstream error fields or precision leaks',()=>{
     assert.ok(['FAILED_PRECONDITION','INVALID_ARGUMENT','UNSPECIFIED'].includes(r.diagnostic.upstreamStatus));
     assert.equal(r.diagnostic.field,'unknown');
     assert.deepEqual(Object.keys(r.diagnostic).sort(),
-      ['contentSize','contentTurns','field','instructionSize','upstreamStatus'].sort());
+      ['contentSize','contentTurns','field','instructionSize','prerequisite','upstreamStatus'].sort());
     assert.ok(!JSON.stringify(r).includes('character secret'));
   }
   assert.equal(summarizeGemini400({},{}).diagnostic.contentSize,'empty');
@@ -74,4 +74,37 @@ test('V57.3 production UI receives correlation reference, not token or raw error
   assert.match(browser,/reference:\/\^\[a-f0-9\]\{8\}\$\/\.test/);
   assert.match(html,/Mã kiểm tra: /);
   assert.match(html,/src="js\/ai-proxy\.js\?v=57-3"/);
+});
+
+test('V57.4 Google FAILED_PRECONDITION location is not misreported as reader permissions',()=>{
+ const p=req('Bạn đọc');
+ const result=summarizeGemini400({
+  status:'FAILED_PRECONDITION',
+  message:'User location is not supported for the API use. PRIVATE-NPC-TEXT'
+ },{systemInstruction:p.systemInstruction,contents:p.contents});
+ assert.equal(result.code,'gemini-location-restricted');
+ assert.equal(result.diagnostic.prerequisite,'location');
+ assert.match(result.message,/khu vực/i);
+ assert.ok(!JSON.stringify(result).includes('PRIVATE-NPC-TEXT'));
+ assert.ok(!JSON.stringify(result).includes('Bạn đọc'));
+});
+test('V57.4 separates billing prerequisite without starting payments',()=>{
+ const r=summarizeGemini400({status:'FAILED_PRECONDITION',
+  message:'Billing is not enabled for the project. PRIVATE-API-KEY'},{
+    systemInstruction:{parts:[{text:'SECRET-SYSTEM'}]},
+    contents:[{role:'user',parts:[{text:'PRIVATE-CHAT'}]}]
+  });
+ assert.equal(r.code,'gemini-billing-prerequisite');
+ assert.equal(r.diagnostic.prerequisite,'billing');
+ assert.ok(!JSON.stringify(r).includes('SECRET-SYSTEM'));
+ assert.ok(!JSON.stringify(r).includes('PRIVATE-CHAT'));
+ assert.ok(!JSON.stringify(r).includes('PRIVATE-API-KEY'));
+});
+test('V57.4 ambiguous precondition remains ambiguous; do not auto-enable billing',()=>{
+ const r=summarizeGemini400({status:'FAILED_PRECONDITION',
+  message:'an unspecified precondition remains unmet'},{
+  systemInstruction:{parts:[{text:'Do not disclose this'}]},
+  contents:[{role:'user',parts:[{text:'Hi'}]}]});
+ assert.equal(r.code,'gemini-prerequisite');
+ assert.equal(r.diagnostic.prerequisite,'unknown');
 });
