@@ -78,7 +78,7 @@
   <script src="js/npc-dialogue-v56-13.js?v=56-13"></script>
   <script src="js/npc-profile-v56-15.js?v=56-15"></script>
   <script src="js/npc-auto-model-v56-11.js?v=56-11"></script>
-  <script src="js/ai-proxy.js?v=57-2"></script>
+  <script src="js/ai-proxy.js?v=57-3"></script>
   <script src="js/npc-chat-lite.js?v=53-1"></script>
   <script src="js/player-reset-v54.js?v=54-1"></script>
   <script src="js/story-memory.js"></script>
@@ -3652,7 +3652,9 @@
           showNpcConnectionStatus(
             res.error+' · Tin nhắn đã lưu trên thiết bị.'+
               (res.model?' · Model đã gọi: '+res.model:'')+
-              (res.code?' · Mã lỗi: '+res.code:''),
+              (res.code?' · Mã lỗi: '+res.code:'')+
+              (res.reference?' · Mã kiểm tra: '+res.reference:'')+
+              (res.field?' · Nhóm dữ liệu: '+res.field:''),
             DuduAI.isConfigured()
           );
         }
