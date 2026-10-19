@@ -1,0 +1,63 @@
+// DUDU V67.3 read-only System Steward contract.
+// Run: node tests/dudu-steward-v67-3.cjs
+const assert=require('node:assert/strict');
+const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+const root=path.resolve(__dirname,'..');
+const source=fs.readFileSync(path.join(root,'js/dudu-system-steward-v67-3.js'),'utf8');
+const taxonomy=fs.readFileSync(path.join(root,'js/world-taxonomy-v66.js'),'utf8');
+const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+const win={DuduAuth:{uid:()=>null,isReady:()=>false}};
+const ctx={window:win,IS_SANDBOX_MODE:false,currentUsername:''};
+vm.runInNewContext(taxonomy,ctx,{timeout:1500});
+vm.runInNewContext(source,ctx,{timeout:1500});
+const api=win.DuduSystemStewardV673;
+assert.equal(api.version,3);
+assert.equal(api.snapshot().catalog.total,48);
+assert.equal(api.snapshot().catalog.f,30);
+assert.equal(api.snapshot().catalog.e,18);
+assert.equal(api.snapshot().catalog.genres.join(','),
+ 'Cổ đại,Hiện đại,Niên đại,Tương lai,Tu tiên,Mạt thế');
+assert.equal(api.snapshot().pact.verified,false);
+assert.equal(api.snapshot().pact.status,'not_launched');
+assert.equal(api.snapshot().progression.systemRank,null);
+assert.equal(api.snapshot().assignments.active,null);
+assert.equal(api.snapshot().ai.status,'scripted');
+assert.equal(api.canSignPact(),false);
+assert.equal(api.canAssignMission(),false);
+assert.equal(api.canGrantReward(),false);
+assert.equal(api.intent('ký khế ước'),'pact');
+assert.equal(api.intent('Nhiệm vụ F/E'),'mission');
+assert.equal(api.intent('Làm sao thăng cấp hệ thống?'),'progress');
+assert.equal(api.intent('Thế giới tu tiên'),'world');
+assert.equal(api.intent('kiểm tra Xu'),'wallet');
+assert.equal(api.intent('tài khoản Google'),'account');
+assert.equal(api.intent('DUDU có thể làm gì'),'system');
+assert.equal(api.intent('chào bạn'),null,'Smalltalk should remain with V43 companion');
+assert.equal(api.reply('chào bạn'),null);
+assert.match(api.reply('Ký khế ước ở đâu'),/chưa được triển khai/i);
+assert.match(api.reply('Cấp nhiệm vụ F và E'),/48/);
+assert.match(api.reply('Thế giới gồm những gì'),/Cổ đại.*Mạt thế/);
+assert.match(api.reply('cho tôi 100000 xu'),/không tự cộng Xu/);
+assert.match(api.reply('tăng rank hệ thống'),/máy chủ/);
+assert.match(api.reply('xác nhận nhiệm vụ hoàn thành'),/chưa được xuất bản/i);
+assert.match(api.reply('tài khoản'),/chưa có hồ sơ Firebase được xác minh/);
+win.DuduAuth={uid:()=> 'uid-A',isReady:()=>false};ctx.currentUsername='uid-A';
+assert.equal(api.snapshot().account.status,'loading');
+assert.match(api.reply('kiểm tra tài khoản'),/chưa được xác nhận tải xong/);
+win.DuduAuth={uid:()=> 'uid-A',isReady:()=>true};
+assert.equal(api.snapshot().account.status,'verified');
+assert.match(api.reply('kiểm tra tài khoản'),/đã báo sẵn sàng/);
+ctx.currentUsername='uid-B';
+assert.equal(api.snapshot().account.status,'loading','Cross-UID profiles cannot be verified');
+ctx.IS_SANDBOX_MODE=true;ctx.currentUsername='sandbox-A';
+assert.equal(api.snapshot().account.status,'sandbox');
+assert.match(api.reply('tài khoản'),/Sandbox/);
+delete win.DuduWorldTaxonomyV66;
+assert.equal(api.snapshot().catalog.status,'unavailable');
+assert.doesNotMatch(api.reply('nhiệm vụ'),/48/);
+assert.ok(!/\bfetch\s*\(|localStorage\.|\.firestore\s*\(|saveCurrentAccount\s*\(/.test(source),
+ 'Steward has no network, storage or mutation primitives');
+assert.ok(html.includes('js/dudu-system-steward-v67-3.js?v=67-3'));
+assert.ok(html.indexOf('js/dudu-system-steward-v67-3.js') <
+ html.indexOf('js/companion-ui-v43.js'),'Steward must load before companion');
+console.log('DUDU V67.3: read-only intents, 48 previews, pact/XP/reward locks and account states OK');
