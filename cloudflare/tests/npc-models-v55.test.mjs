@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import {NPC_MODELS,DEFAULT_MODEL,allowedModel,resolveModel} from '../src/npc-models.mjs';
 import {validRequest,USER_DAILY_LIMIT,GLOBAL_DAILY_LIMIT,MIN_INTERVAL_MS} from '../src/limits.mjs';
 
-test('V57.2 exposes only Gemini 3.1+ NPC models',()=>{
+test('V58 keeps only four Gemini 3.1+ models',()=>{
  assert.equal(DEFAULT_MODEL,'gemini-3.5-flash-lite');
  assert.equal(NPC_MODELS.length,4);
  assert.equal(new Set(NPC_MODELS.map(m=>m.id)).size,NPC_MODELS.length);
@@ -15,7 +15,7 @@ test('V57.2 exposes only Gemini 3.1+ NPC models',()=>{
  }
  assert.equal(resolveModel('gemini-3.1-pro-preview'),null);
  for(const legacy of ['gemini-2.5-flash','gemini-2.5-flash-lite','gemini-3-flash-preview']){
-  assert.equal(allowedModel(legacy),false,'legacy model should be blocked: '+legacy);
+  assert.equal(allowedModel(legacy),false);
   assert.equal(resolveModel(legacy),null);
  }
  assert.equal(resolveModel('../foo'),null);
@@ -29,12 +29,12 @@ test('V55 model routing remains server-controlled and separate from author-only 
  }
  assert.equal(validRequest({...base,model:'paid-secret-model'}),null);
  for(const legacy of ['gemini-2.5-flash','gemini-2.5-flash-lite','gemini-3-flash-preview'])
-   assert.equal(validRequest({...base,model:legacy}),null,'server must reject '+legacy);
+  assert.equal(validRequest({...base,model:legacy}),null);
  assert.equal(validRequest({...base,purpose:'assist',model:'gemini-3.8-flash'},true).model,DEFAULT_MODEL);
  assert.equal(validRequest({...base,purpose:'assist',model:'gemini-3.8-flash'},false),null);
  const worker=fs.readFileSync(new URL('../src/index.mjs',import.meta.url),'utf8');
  assert.match(worker,/const model=payload\.model\|\|MODEL/);
- assert.match(worker,/return json\(\{\.\.\.state,enabled:true,models:NPC_MODELS/);
+ assert.match(worker,/return json\(\{\.\.\.state,enabled:true,models:\[\.\.\.NPC_MODELS,\.\.\.availableWorkersModels\(env\)\]/);
  assert.match(worker,/\bverifyFirebaseIdToken\(req,env\.PROJECT_ID\)/);
  assert.match(worker,/await bucket\.reserve\(user\.uid,Date\.now\(\)\)/);
  assert.doesNotMatch(worker,/model=parsed\?\.model|request\.data\.model/);

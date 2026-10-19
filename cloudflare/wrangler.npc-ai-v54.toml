@@ -24,6 +24,17 @@ PILOT_ENABLED = "false"
 # provenance, cross-DO outbox/saga and independent pilot audit.
 PILOT_SETTLEMENT_ENABLED = "false"
 MODEL = "gemini-3.5-flash-lite"
+# V58 Free opt-in approved by project owner on 2026-10-19 for AU and reader.
+# Cloudflare Workers Free enforces 10,000 Neurons/day. Never enable Paid.
+DUDU_AI_FREE_ONLY = "true"
+DUDU_WORKERS_AI_APPROVED = "true"
+DUDU_WORKERS_ACCOUNT_FREE_VERIFIED = "true"
+DUDU_AI_FALLBACK_ENABLED = "true"
+DUDU_PAID_PROVIDERS_ENABLED = "false"
+
+# AI binding may run only after Firebase auth, DO quota, and Free flags.
+[ai]
+binding = "AI"
 
 [[durable_objects.bindings]]
 name = "DUDU_QUOTA"

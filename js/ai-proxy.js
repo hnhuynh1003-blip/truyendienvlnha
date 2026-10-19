@@ -8,14 +8,27 @@
   let sandbox = false;
   const DEFAULT_MODEL='gemini-3.5-flash-lite';
   const AUTO='auto'; // Browser-only routing option, never an API model ID.
-  // Auto routes only to Gemini 3.1+ models explicitly allowlisted by the Worker.
-  const MODELS=Object.freeze([
+  // Auto routes only to Gemini 3.1+ models; Workers AI requires server approval.
+  const BASE_MODELS=Object.freeze([
     ['auto','✦ Tự động · phù hợp câu hỏi'],
     ['gemini-3.5-flash-lite','3.5 Flash-Lite · nhanh'],
     ['gemini-3.1-flash-lite','3.1 Flash-Lite · nhẹ'],
     ['gemini-3.6-flash','3.6 Flash · nhập vai'],
     ['gemini-3.8-flash','3.8 Flash · mới']
   ].map(([id,label])=>Object.freeze({id,label})));
+  // V58 only exposes models explicitly advertised by the signed-in Worker.
+  // No paid OpenAI/Claude/DeepSeek endpoints are reachable from this client.
+  const WORKERS_OPTIONS=Object.freeze([
+    Object.freeze({id:'@cf/zai-org/glm-4.7-flash',label:'Workers AI · GLM-4.7 Flash'}),
+    Object.freeze({id:'@cf/google/gemma-4-26b-a4b-it',label:'Workers AI · Gemma 4 26B'})
+  ]);
+  let MODELS=BASE_MODELS;
+  function updateModelsFromStatus(status){
+    const available=new Set((Array.isArray(status?.models)?status.models:[])
+      .map(m=>m?.id).filter(id=>typeof id==='string'));
+    MODELS=Object.freeze([...BASE_MODELS,...WORKERS_OPTIONS.filter(x=>available.has(x.id))]);
+    return MODELS;
+  }
   function modelStorageKey(){
     const uid=firebase?.auth?.()?.currentUser?.uid;
     return uid&&!sandbox?'dudu-v2:'+encodeURIComponent(uid)+':global:npc-model':null;
@@ -26,9 +39,10 @@
     try{
       const saved=localStorage.getItem(key);
       if(MODELS.some(x=>x.id===saved))return saved;
-      // V57.2: per-UID legacy selections (2.5 / 3 Preview) migrate to Auto.
-      // Preserve all roleplay profiles, NPC chats, and story data.
-      if(saved)localStorage.setItem(key,AUTO);
+      // Retire only legacy Gemini IDs, preserving a Workers AI preference
+      // while its server-approved catalog loads asynchronously.
+      if(['gemini-2.5-flash','gemini-2.5-flash-lite','gemini-3-flash-preview'].includes(saved))
+        localStorage.setItem(key,AUTO);
       return AUTO;
     }catch(_){return AUTO;}
   }
@@ -56,6 +70,7 @@
     if(code==='unauthenticated'||status===401)return 'Hãy đăng nhập DUDU Studio trước khi trò chuyện.';
     if(code==='daily-user'||code==='daily-global'||code==='cooldown'||code==='in-flight')
       return error.message||'Vui lòng đợi trước khi tiếp tục trò chuyện.';
+    if(code==='provider-not-enabled')return error?.message||'Nhà cung cấp miễn phí này chưa được kích hoạt.';
     if(code==='ai-disabled'||status===503)return 'Tần số NPC AI chưa sẵn sàng.';
     if(code==='ai-busy'||status===429)return error?.message||'Tần số NPC đang bận.';
     if(code==='invalid-request'||code==='invalid-content')
@@ -98,8 +113,14 @@
     const chosen=model();
     // No additional request is made to select a model. Manual choices take
     // precedence; Auto only routes among the existing server allowlist.
+    // V58 Free: Auto chooses Cloudflare's independently hosted model first
+    // when /v1/status has confirmed this binding and the operator's Free gates.
+    // Both Firebase roles use the same rule; manual Gemini choices still win.
+    const preferredFree=purpose==='chat' &&
+      MODELS.some(x=>x.id==='@cf/zai-org/glm-4.7-flash')
+      ?'@cf/zai-org/glm-4.7-flash':null;
     const resolved=chosen===AUTO?
-      (window.DuduNpcAutoModelV5611?.route(currentQuestion
+      (preferredFree||window.DuduNpcAutoModelV5611?.route(currentQuestion
         ?[{role:'user',text:currentQuestion}]:messages)||DEFAULT_MODEL):chosen;
     return call('POST','/v1/generate',{
       purpose,instruction,messages,...(purpose==='chat'?{model:resolved}:{})
@@ -108,5 +129,6 @@
   function status(){
     return call('GET','/v1/status');
   }
-  window.DuduAI={init,isConfigured,generate,status,model,setModel,models:MODELS};
+  window.DuduAI={init,isConfigured,generate,status,model,setModel,
+    get models(){return MODELS;},updateModelsFromStatus};
 })();

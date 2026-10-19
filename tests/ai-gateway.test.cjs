@@ -66,7 +66,7 @@ test('Cloudflare gateway independently verifies Firebase JWT and limits cost',()
   for(const flag of ['COLLECTIBLES_ENABLED','COMMENTS_ENABLED','GIFTS_ENABLED','PILOT_ENABLED','GIFT_SETTLEMENT_ENABLED'])
     assert.match(aiConfig,new RegExp(flag+' = "false"'));
   assert.match(html,/const DUDU_NPC_AI_MODE = !IS_SANDBOX_MODE/);
-  assert.match(worker,/if\(!env\.GEMINI_API_KEY\)return error\(\x27ai-disabled\x27/);
+  assert.match(worker,/if\(!env\.GEMINI_API_KEY&&!isWorkersAiModel\(payload\.model\)\)return error\(\x27ai-disabled\x27/);
   assert.match(html,/firebase-functions-compat/,'V52 economy uses callable Functions independently of the AI gateway');
   assert.doesNotMatch(html,/firebase\.functions\(\)\.httpsCallable\(['"]duduAiGenerate/);
 });

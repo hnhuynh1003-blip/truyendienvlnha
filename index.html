@@ -78,7 +78,7 @@
   <script src="js/npc-dialogue-v56-13.js?v=56-13"></script>
   <script src="js/npc-profile-v56-15.js?v=56-15"></script>
   <script src="js/npc-auto-model-v56-11.js?v=56-11"></script>
-  <script src="js/ai-proxy.js?v=57-3"></script>
+  <script src="js/ai-proxy.js?v=58-free-au-reader"></script>
   <script src="js/npc-chat-lite.js?v=53-1"></script>
   <script src="js/player-reset-v54.js?v=54-1"></script>
   <script src="js/story-memory.js"></script>
@@ -1251,7 +1251,7 @@
                 <small>Model phản hồi NPC</small>
         <div id="dudu-v55-model-bar" style="display:flex;align-items:center;gap:5px;margin:2px 0 5px;font-size:10px" aria-label="Chọn model AI của NPC">
           <label for="dudu-v55-model-select" style="flex:none;color:#9fe5df">AI</label>
-          <select id="dudu-v55-model-select" onchange="chooseNpcModelV55()" aria-label="Model Gemini dùng cho NPC" style="flex:1;min-width:0;max-width:100%;border:1px solid #52627b;border-radius:7px;background:#172438;color:#e5f3ff;font-size:10px;padding:6px 3px"></select>
+          <select id="dudu-v55-model-select" onchange="chooseNpcModelV55()" aria-label="Model AI dùng cho NPC" style="flex:1;min-width:0;max-width:100%;border:1px solid #52627b;border-radius:7px;background:#172438;color:#e5f3ff;font-size:10px;padding:6px 3px"></select>
           <button type="button" class="btn" onclick="refreshNpcQuotaV55()" title="Kiểm tra số lượt AI còn lại" aria-label="Xem lượt AI còn lại" style="flex:none;padding:5px 6px;font-size:10px">Lượt</button>
           <span id="dudu-v55-quota" role="status" aria-live="polite" style="color:#9ae8cc;font-size:9px;flex:none;min-width:25px">—</span>
         </div>
@@ -2944,7 +2944,7 @@
       }
       const note=document.getElementById('dudu-v55-quota');
       if(note)note.title=selector.value==='auto'
-        ? 'Auto chọn model dựa vào câu hỏi mới nhất, không thêm lượt AI; vẫn có thể đổi thủ công.'
+        ? 'Tự động ưu tiên Workers AI miễn phí khi đã được bật; nếu chưa thì chọn Gemini theo câu hỏi.'
         : 'Model thủ công sẽ được dùng cho tin nhắn tiếp theo.';
       const menu=document.getElementById('dudu-v5612-ai-settings');
       if(menu)menu.open=false;
@@ -2958,6 +2958,12 @@
       }
       const info=await DuduAI.status();
       if(currentUsername!==account)return;
+      // V58: advertise secondary models ONLY after authenticated server status
+      // confirms the operator has explicitly enabled a free provider.
+      if(!info?.error && typeof DuduAI.updateModelsFromStatus==='function'){
+        DuduAI.updateModelsFromStatus(info);
+        syncNpcModelV55();
+      }
       label.textContent=info?.error?'Chưa bật':(String(info.remaining)+'/'+String(info.dailyLimit));
       label.title=info?.error?info.error:
         'Số lượt dùng AI còn lại trên máy chủ (UTC). Mỗi model chia sẻ cùng hạn mức.';
