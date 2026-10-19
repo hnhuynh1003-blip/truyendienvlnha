@@ -98,7 +98,11 @@
       if(!response.ok||body?.error)return {
         error:explain(body,response.status),
         // Diagnostic only: the exact allowlisted model attempted by this user.
-        model:method==='POST'&&MODELS.some(x=>x.id===data?.model)?data.model:undefined,
+        // If Gemini failed and a Workers AI fallback also failed, show the
+        // actual last attempted model, not a misleading Gemini-only label.
+        model:method==='POST'&&MODELS.some(x=>x.id===body?.error?.model)
+          ?body.error.model
+          :(method==='POST'&&MODELS.some(x=>x.id===data?.model)?data.model:undefined),
         code:typeof body?.error?.code==='string'?body.error.code:'http-'+response.status,
         reference:/^[a-f0-9]{8}$/.test(body?.error?.reference||'')?body.error.reference:undefined,
         field:['contents','systemInstruction','generationConfig','model'].includes(body?.error?.diagnostic?.field)?body.error.diagnostic.field:undefined
