@@ -203,6 +203,8 @@ test('V58.1 both AU and reader use visible-only output with reasoning disabled',
       assert.equal(calls.length,1);
       assert.equal(calls[0].options.chat_template_kwargs.enable_thinking,false,
         'disable reasoning to avoid consuming 640 output tokens on internal thinking');
+      assert.match(calls[0].options.messages[0].content,/Chỉ trả lời bằng tiếng Việt/);
+      assert.match(calls[0].options.messages[0].content,/không nhập vai người dùng/);
       assert.equal(calls[0].options.max_completion_tokens,640);
       assert.ok(calls[0].options.messages[0].content.includes(role));
       assert.equal(calls[0].options.messages[1].role,'user');
