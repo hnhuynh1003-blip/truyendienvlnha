@@ -113,8 +113,14 @@
     const chosen=model();
     // No additional request is made to select a model. Manual choices take
     // precedence; Auto only routes among the existing server allowlist.
+    // V58 Free: Auto chooses Cloudflare's independently hosted model first
+    // when /v1/status has confirmed this binding and the operator's Free gates.
+    // Both Firebase roles use the same rule; manual Gemini choices still win.
+    const preferredFree=purpose==='chat' &&
+      MODELS.some(x=>x.id==='@cf/zai-org/glm-4.7-flash')
+      ?'@cf/zai-org/glm-4.7-flash':null;
     const resolved=chosen===AUTO?
-      (window.DuduNpcAutoModelV5611?.route(currentQuestion
+      (preferredFree||window.DuduNpcAutoModelV5611?.route(currentQuestion
         ?[{role:'user',text:currentQuestion}]:messages)||DEFAULT_MODEL):chosen;
     return call('POST','/v1/generate',{
       purpose,instruction,messages,...(purpose==='chat'?{model:resolved}:{})
