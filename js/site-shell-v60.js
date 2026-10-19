@@ -128,6 +128,21 @@
    }
 
  }
+ function fillWorlds(){
+   const root=id('d60-worlds-list');if(!root)return;
+   root.replaceChildren();
+   // A published book is discoverable, but does not imply playable world gameplay.
+   const stories=recent(list());
+   const heading=section('Câu chuyện đang mở');
+   if(!stories.length){
+     heading.append(element('p','d60-empty','Chưa có tác phẩm công khai để khám phá. Khi tác phẩm được xuất bản, chúng sẽ xuất hiện tại đây.'));
+   }else{
+     const grid=element('div','d60-grid');
+     stories.forEach(n=>grid.append(card(n)));
+     heading.append(grid);
+   }
+   root.append(heading);
+ }
  function fillShelf(){
    const root=id('d60-shelf-list');if(!root)return;root.replaceChildren();
    const arr=shelfItems();
@@ -150,7 +165,7 @@
  function refresh(){
    if(refreshPending)return;refreshPending=true;
    queueMicrotask(()=>{refreshPending=false;
-     try{fillHome();fillShelf();fillAuthor();}catch(error){console.warn('DUDU site shell:',error);}
+     try{fillHome();fillWorlds();fillShelf();fillAuthor();}catch(error){console.warn('DUDU site shell:',error);}
    });
  }
  function hidePages(){
@@ -199,12 +214,11 @@
    worlds.append(element('p','d60-kicker','DUDU · KHÁM PHÁ'),
      element('h1','d60-page-title','Thế giới DUDU'),
      element('p','d60-intro','Các tiểu thế giới và hành trình xuyên sách đang được thiết kế. Hiện chưa có cổng xuyên giới công khai.'));
-   const wg=element('div','d60-two'),w1=element('article','d60-card'),w2=element('article','d60-card');
-   w1.append(element('span','d60-badge','ĐANG CHUẨN BỊ'),element('h3','','Tiểu thế giới nhiệm vụ'),
-     element('p','','Những câu chuyện ngắn độc lập: phá án, escape room, sinh tồn, cứu rỗi và nhiều hướng giải quyết.'));
-   w2.append(element('span','d60-badge','CHƯA PHÁT HÀNH'),element('h3','','Xuyên vào thế giới truyện'),
-     element('p','','Quyền chọn thế giới, cấp hệ thống và gameplay nhập vai sẽ được mở sau khi hoàn thiện và kiểm thử.'));
-   wg.append(w1,w2);worlds.append(wg);
+   const gateway=element('div','d60-card d62-gateway');
+   gateway.append(element('span','d60-badge','CỔNG XUYÊN GIỚI · ĐANG PHÁT TRIỂN'),
+     element('p','','Bạn có thể mở và đọc những truyện công khai bên dưới. Chức năng nhập vai hoặc nhiệm vụ xuyên giới chưa được mở tại đây.'));
+   worlds.append(gateway);
+   const worldList=element('div','');worldList.id='d60-worlds-list';worlds.append(worldList);
    const shelf=element('section','d60-page');shelf.id='d60-shelf';
    shelf.append(element('p','d60-kicker','DUDU · CÁ NHÂN'),element('h1','d60-page-title','Tủ sách của tôi'),
      element('p','d60-intro','Các tác phẩm có tiến độ đọc được lưu bằng cơ chế bookmark hiện tại.'));
