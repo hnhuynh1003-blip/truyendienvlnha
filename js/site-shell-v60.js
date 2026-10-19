@@ -46,8 +46,21 @@
    });
  }
  function shelfItems(){
-   return list().map(n=>({n,mark:bookmark(n)}))
+   // Only genuine readable bookmarks; keep progress from the existing reader API.
+   const saved=list().map(n=>({n,mark:bookmark(n)}))
      .filter(x=>x.mark&&Number.isInteger(x.mark.chIdx)&&x.n.chapters?.[x.mark.chIdx]);
+   // Prefer the most recently read book when the bookmark contains a timestamp.
+   // Older bookmarks without dates retain their original stable order.
+   const time=x=>{
+     const m=x.mark||{};
+     const raw=m.updatedAt??m.lastReadAt??m.savedAt??m.timestamp;
+     if(raw&&typeof raw.toMillis==='function')return raw.toMillis();
+     if(typeof raw==='number')return Number.isFinite(raw)?raw:0;
+     if(typeof raw==='string'){const parsed=Date.parse(raw);return Number.isFinite(parsed)?parsed:0;}
+     if(raw&&typeof raw.seconds==='number')return raw.seconds*1000;
+     return 0;
+   };
+   return saved.sort((a,b)=>time(b)-time(a));
  }
  function bookGrid(title,books){
    const s=section(title,'Xem tất cả →',()=>navigate('library'));
@@ -147,6 +160,7 @@
    document.querySelectorAll('[data-d60-route]').forEach(n=>{
      if(n.dataset.d60Route===current)n.setAttribute('aria-current','page');else n.removeAttribute('aria-current');
    });
+   document.title=(labels[current]||'DUDU')+' · DUDU Studio';
  }
  function enterLegacy(){
    hidePages();current='library';navState();
@@ -209,6 +223,7 @@
    window.addEventListener('hashchange',()=>{
      const next=Object.keys(routes).find(k=>location.hash===routes[k]);
      if(next&&next!==current)navigate(next,false);
+     // Unknown hashes may be used by legacy reader flows; do not overwrite them.
    });
  }
  window.DuduSiteV60={navigate,refresh,get page(){return current;}};
