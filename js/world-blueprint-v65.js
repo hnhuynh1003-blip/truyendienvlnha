@@ -48,12 +48,15 @@
    if(draft.schemaVersion!==1)errors.push('schema_version');
    if(world&&(draft.worldName!==world.name||draft.tier!==world.tier))errors.push('world_identity_mismatch');
    if(draft.state!=='draft')errors.push('draft_only');
+   if(draft.storyPromptId!==null||draft.scenarioId!==null||draft.storyId!==null)
+     errors.push('binding_requires_review');
    if(draft.access?.enabled!==false||draft.access?.serverValidated!==false)errors.push('access_must_remain_locked');
    if(draft.rewards?.enabled!==false||draft.rewards?.currency!==0||
       !Array.isArray(draft.rewards?.items)||draft.rewards.items.length)errors.push('rewards_must_remain_disabled');
    if(!Array.isArray(draft.entryModes)||draft.entryModes.length!==MODES.length||
       MODES.some(mode=>!draft.entryModes.includes(mode)))errors.push('entry_modes_mismatch');
    if(!Array.isArray(draft.npcIds))errors.push('npc_ids');
+   else if(draft.npcIds.length)errors.push('npc_binding_requires_review');
    if(!draft.narrative||typeof draft.narrative!=='object'||typeof draft.narrative.premise!=='string'||
       typeof draft.narrative.opening!=='string')errors.push('narrative');
    for(const key of ['objectives','scenes','branches','endings']){
