@@ -25,10 +25,10 @@ Unknown or unclassified future genres are reserved for an independently reviewed
 
 ## Mandatory order: pact, then progression
 1. User registers/authenticates and **signs a system pact**. Server stores immutable accepted pact version, UID, timestamp and consent audit, validates active status and any revocation. No participation without verified pact.
-2. Player enters at **system rank F**; F missions are the entry point. Rank E belongs to the next low-tier pool as determined by verified system progression. No invented numerical XP thresholds or level-up promises in V66.
-3. Only a **published, enabled, server-authorized mission** compatible with the verified player rank is assignable. The server must enforce replay restrictions and duplicate prevention, not rely on user-provided ranks/history.
+2. Both **F and E are introductory mission grades**. The player's **system rank** is a distinct variable, not automatically equal to the mission grade. The server determines which F/E grades are authorized after the pact and relevant progression; no numeric XP thresholds, promotion schedule or rank promises are invented in V66.
+3. Only a **published, enabled, server-authorized mission** within the server-approved mission-grade set is assignable. The server must enforce replay restrictions and duplicate prevention, not rely on browser-provided ranks/history.
 4. Mission success/failure, milestones, XP, rank promotions, rewards and NPC changes are validated and recorded atomically server-side. A rejected/abandoned mission must not yield repeated rewards.
-5. Genre is independent of rank. A genre gate can house F, E and later higher-tier worlds simultaneously. System rank gates the **mission**, not the genre.
+5. Genre is independent of progression. Each genre gate can house F, E and higher-tier missions simultaneously. Verified system progress influences the server-approved **mission grades**, never the existence of the genre.
 
 The V66 `entryCheck` always rejects access because the catalog is made of unpublished seeds; even forged `pactVerified:true` must not enable entry. The real sign-and-execute API is **not implemented** in this tranche. No UI claims pact signing, mission acceptance or rank upgrades occurred.
 
