@@ -123,7 +123,10 @@
   action.addEventListener('click',open);
   entry.append(copy,action);list.parentNode.insertBefore(entry,list);
  }
- mount();
+ // The site's initial Worlds render runs in a microtask; wait until that
+ // render finishes so we do not create a second pilot card before it appears.
+ if(typeof queueMicrotask==='function')queueMicrotask(mount);
+ else root.setTimeout?.(mount,0);
  root.DuduPilotUIV1=Object.freeze({open,mount,reset:()=>{
   if(!state)load();reset();return true;
  }});
