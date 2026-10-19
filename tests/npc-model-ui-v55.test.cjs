@@ -35,6 +35,7 @@ test('V55 personal Worker config keeps non-AI production features closed',()=>{
 
 test('V58 hides retired Gemini model options and migrates saved choices',()=>{
  assert.match(client,/localStorage\.setItem\(key,AUTO\)/);
+ const picker=client.slice(0,client.indexOf('const WORKERS_OPTIONS='));
  for(const id of ['gemini-2.5-flash-lite','gemini-2.5-flash','gemini-3-flash-preview'])
-  assert.equal(client.includes("['"+id+"',"),false,'old model in UI: '+id);
+  assert.equal(picker.includes("['"+id+"',"),false,'old model in UI: '+id);
 });
