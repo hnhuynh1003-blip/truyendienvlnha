@@ -132,7 +132,7 @@
  function openSafeView(id){
    // Invoked only by an explicit UI click. Never derived from LLM output.
    // These are NAVIGATION ONLY: no quest/reward/pact backend actions.
-   if(!Object.hasOwn(allowedViews,id))return false;
+   if(!Object.prototype.hasOwnProperty.call(allowedViews,id))return false;
    if(id==='worlds'){
      if(typeof root?.DuduSiteV60?.navigate!=='function')return false;
      root.DuduSiteV60.navigate('worlds');
