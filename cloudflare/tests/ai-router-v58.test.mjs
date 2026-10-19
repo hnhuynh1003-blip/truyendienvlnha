@@ -200,6 +200,19 @@ test('V58 no paid provider URL or direct chargeable AI gateway introduced',()=>{
   assert.match(worker,/verifyFirebaseIdToken\(req,env\.PROJECT_ID\)/);
   const cfg=fs.readFileSync(new URL('../wrangler.npc-ai-v54.toml',import.meta.url),'utf8');
   for(const flag of ['DUDU_WORKERS_AI_APPROVED','DUDU_WORKERS_ACCOUNT_FREE_VERIFIED',
-    'DUDU_AI_FALLBACK_ENABLED','DUDU_PAID_PROVIDERS_ENABLED'])
-    assert.match(cfg,new RegExp(flag+' = "false"'));
+    'DUDU_AI_FALLBACK_ENABLED','DUDU_AI_FREE_ONLY'])
+    assert.match(cfg,new RegExp(flag+' = "true"'));
+  assert.match(cfg,/DUDU_PAID_PROVIDERS_ENABLED = "false"/);
+  assert.match(cfg,/\[ai\]\s+binding = "AI"/);
+});
+
+test('V58 AU and reader have exactly the same approved Free catalog and model contract',()=>{
+  const env=freeEnv().env;
+  assert.deepEqual(availableWorkersModels(env).map(x=>x.id),WORKERS_AI_MODELS.map(x=>x.id));
+  for(const role of ['Tác giả','Độc giả']){
+    for(const model of WORKERS_AI_MODELS)
+      assert.equal(validRequest(base(role,model.id),role==='Tác giả')?.model,model.id);
+  }
+  assert.deepEqual(availableWorkersModels({...env,DUDU_AI_FREE_ONLY:'false'}),[]);
+  assert.deepEqual(availableWorkersModels({...env,DUDU_PAID_PROVIDERS_ENABLED:'true'}),[]);
 });
