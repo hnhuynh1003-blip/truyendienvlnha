@@ -99,7 +99,9 @@
         error:explain(body,response.status),
         // Diagnostic only: the exact allowlisted model attempted by this user.
         model:method==='POST'&&MODELS.some(x=>x.id===data?.model)?data.model:undefined,
-        code:typeof body?.error?.code==='string'?body.error.code:'http-'+response.status
+        code:typeof body?.error?.code==='string'?body.error.code:'http-'+response.status,
+        reference:/^[a-f0-9]{8}$/.test(body?.error?.reference||'')?body.error.reference:undefined,
+        field:['contents','systemInstruction','generationConfig','model'].includes(body?.error?.diagnostic?.field)?body.error.diagnostic.field:undefined
       };
       return body || {error:'Máy chủ không trả lời.'};
     }catch(e){
