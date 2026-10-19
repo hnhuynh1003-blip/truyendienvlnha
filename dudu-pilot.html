@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Đêm mưa ở Quan Đạo · Truyện thử DUDU</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="stylesheet" href="css/dudu-pilot-v1.css?v=2">
+<style>
+:root{color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#f7f2fc;background:radial-gradient(ellipse at 50% 0,#42405b 0,#191e30 55%,#101420 100%)}
+.wrap{width:min(760px,calc(100% - 26px));margin:0 auto;padding:20px 0 65px}
+.crumb{display:inline-flex;align-items:center;color:#d9c7f2;text-decoration:none;font-size:13px;padding:10px 0;margin-bottom:18px}
+.crumb:focus-visible,#dudu-pilot-standalone-start:focus-visible{outline:3px solid #b7d8ff;outline-offset:3px}
+main{overflow:hidden;border-radius:17px;border:1px solid #69647f;background:#1c2434;box-shadow:0 24px 90px rgba(0,0,0,.28)}
+.hero{width:100%;aspect-ratio:16/8.6;display:block;object-fit:cover}
+.content{padding:21px 23px 26px}
+.kicker{margin:0 0 8px;color:#d4c1ea;font-size:11px;font-weight:750;letter-spacing:.11em}
+h1{font-size:clamp(23px,4.5vw,33px);margin:0 0 10px;line-height:1.18}
+.summary{line-height:1.7;color:#c7d2e2;font-size:14px;margin:0 0 17px}
+.meta{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:18px}
+.meta span{border:1px solid #555b72;border-radius:20px;color:#e8e0f3;padding:6px 10px;font-size:11px;background:#293047}
+#dudu-pilot-standalone-start{border:0;background:#e6d8fc;color:#212237;padding:13px 21px;font-weight:800;font-size:15px;border-radius:10px;cursor:pointer;min-height:48px}
+#dudu-pilot-standalone-start:hover{background:#f2e9ff}
+.note{margin:15px 0 0;max-width:600px;color:#c0b2cb;font-size:12px;line-height:1.65}
+#dudu-pilot-standalone-status{font-size:13px;color:#ffd39e;min-height:1.4em}
+@media(max-width:520px){.wrap{padding-top:9px;width:calc(100% - 16px)}.content{padding:17px 16px 22px}.hero{aspect-ratio:16/10.5}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<a class="crumb" href="./#/worlds">← Quay lại Vạn Giới</a>
+<main>
+<img class="hero" src="assets/worlds/quan-dao-gate.svg?v=2" alt="Con đường dưới mưa dẫn đến quán trọ Quan Đạo, phía xa có núi và những ngọn đèn vàng">
+<div class="content">
+<p class="kicker">DUDU · CORE FOUNDATION / NHIỆM VỤ F MẪU</p>
+<h1>Đêm mưa ở Quan Đạo</h1>
+<p class="summary">Một túi thuốc biến mất giữa đêm mưa. Ba nhân vật kể những phần sự thật khác nhau. Thu thập manh mối, đưa ra lựa chọn và khám phá những kết thúc khác nhau.</p>
+<div class="meta"><span>Truyện ngắn tương tác</span><span>2 khung cảnh</span><span>4 kết thúc</span><span>Không cần đăng nhập</span></div>
+<button id="dudu-pilot-standalone-start" type="button">Bắt đầu chơi thử ↗</button>
+<p id="dudu-pilot-standalone-status" role="status" aria-live="polite"></p>
+<p class="note">Đây là bản thử nghiệm độc lập, không phải nhiệm vụ Chủ thần chính thức. Kết quả không tính vào khảo hạch ba F và không cấp EXP, Xu, vật phẩm hoặc khế ước. Tiến trình thử chỉ được giữ tạm trong phiên trình duyệt.</p>
+</div>
+</main>
+</div>
+<script src="js/dudu-story-engine-v1.js?v=2"></script>
+<script src="js/dudu-pilot-f-v1.js?v=2"></script>
+<script src="js/dudu-pilot-ui-v1.js?v=2"></script>
+<script>
+(function(){
+  'use strict';
+  const button=document.getElementById('dudu-pilot-standalone-start');
+  const status=document.getElementById('dudu-pilot-standalone-status');
+  button.addEventListener('click',function(){
+    try{
+      if(!window.DuduPilotUIV1||!window.DuduPilotUIV1.open){
+        status.textContent='Chưa tải được bộ máy truyện. Hãy tải lại trang.';
+        return;
+      }
+      status.textContent='';
+      window.DuduPilotUIV1.open();
+    }catch(err){
+      console.warn('DUDU pilot playtest:',err);
+      status.textContent='Không thể mở truyện thử. Hãy tải lại trang hoặc thử trình duyệt khác.';
+    }
+  });
+})();
+</script>
+</body>
+</html>
