@@ -73,10 +73,24 @@
   const previousScroll=list.scrollTop;
   const followBottom=list.scrollHeight-list.scrollTop-list.clientHeight<56;
   list.replaceChildren();
-  for(const msg of s.messages.slice(-40)){
+  const visibleMessages=s.messages.slice(-40);
+  visibleMessages.forEach((msg,index)=>{
    const b=create('div','dudu-v43-bubble '+(msg.role==='user'?'is-user':'is-dudu'),msg.text);
+   // Only the latest *system* answer offers a safe, explicit navigation button.
+   // The chat model never chooses which app/actions execute.
+   if(msg.role==='model'&&index===visibleMessages.length-1&&index>0&&
+      visibleMessages[index-1]?.role==='user'){
+     const action=root.DuduSystemStewardV673?.suggestedAction?.(visibleMessages[index-1].text);
+     if(action){
+       const go=create('button','dudu-v673-action',action.label+' ↗');
+       go.type='button';go.addEventListener('click',()=>{
+         root.DuduSystemStewardV673?.openSafeView?.(action.id);
+       });
+       b.append(go);
+     }
+   }
    list.append(b);
-  }
+  });
   // Re-renders after check-in or system updates must not yank the reader
   // away from earlier messages unless they were already near the bottom.
   list.scrollTop=followBottom?list.scrollHeight:previousScroll;
