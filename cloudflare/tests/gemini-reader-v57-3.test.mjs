@@ -73,7 +73,7 @@ test('V57.3 production UI receives correlation reference, not token or raw error
   assert.doesNotMatch(worker,/console\.(?:log|warn|error)\([^;\n]*upstream\?\.error\?\.message/);
   assert.match(browser,/reference:\/\^\[a-f0-9\]\{8\}\$\/\.test/);
   assert.match(html,/Mã kiểm tra: /);
-  assert.match(html,/src="js\/ai-proxy\.js\?v=58-1-npc-output"/);
+  assert.match(html,/src="js\/ai-proxy\.js\?v=58-2-mobile"/);
 });
 
 test('V57.4 Google FAILED_PRECONDITION location is not misreported as reader permissions',()=>{
