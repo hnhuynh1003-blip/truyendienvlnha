@@ -86,6 +86,7 @@ async function main() {
     assert.equal(mobileSite.overflow,false,'Homepage should not overflow viewport horizontally');
     // World Atlas V63: no duplicate novel cards and no playable links to missing plots.
     await page.evaluate(() => DuduSiteV60.navigate('worlds'));
+    await page.locator('#d60-worlds .d63-world-card').first().waitFor();
     const atlas=await page.evaluate(()=>{
       const reg=window.DuduWorldRegistryV63;
       const worlds=reg?.starterWorlds||[],unknown=reg?.unverifiedWorlds||[];
