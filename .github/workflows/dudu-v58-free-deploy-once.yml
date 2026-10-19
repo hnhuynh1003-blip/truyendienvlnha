@@ -1,4 +1,4 @@
-name: DUDU V58.1 Workers AI no-thinking fix deployment
+name: DUDU V58.2 Workers AI no-thinking fix deployment
 on:
   push:
     branches: [main]
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       confirmation:
-        description: 'Enter DEPLOY_V58_1 if manual rerun is needed'
+        description: 'Enter DEPLOY_V58_2 if manual rerun is needed'
         required: true
         type: string
 permissions:
@@ -26,20 +26,20 @@ jobs:
       WRANGLER_SEND_METRICS: 'false'
     steps:
       - uses: actions/checkout@v7
-      - name: Verify approved V58.1 no-thinking patch and credentials
+      - name: Verify approved V58.2 no-thinking patch and credentials
         env:
           CONFIRMATION: ${{ inputs.confirmation }}
         shell: bash
         run: |
           set -euo pipefail
           if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
-            test "$CONFIRMATION" = "DEPLOY_V58_1" || { echo "STOP: invalid approval"; exit 1; }
+            test "$CONFIRMATION" = "DEPLOY_V58_2" || { echo "STOP: invalid approval"; exit 1; }
           fi
           test -n "$CLOUDFLARE_API_TOKEN" && test -n "$CLOUDFLARE_ACCOUNT_ID" ||
             { echo "::error::Cloudflare credentials missing. Deployment cancelled."; exit 1; }
           test "$(git hash-object cloudflare/src/index.mjs)" = "dc219d656be4280053958152524f08dae66d263a" ||
             { echo "STOP: Worker differs from V58 review"; exit 1; }
-          test "$(git hash-object cloudflare/src/ai-router-v58.mjs)" = "fdebb09ad97fba62bb4d5c27632ef120c3e5af67" ||
+          test "$(git hash-object cloudflare/src/ai-router-v58.mjs)" = "8f2f4bff08662016b2787a869635610bce71374f" ||
             { echo "STOP: Multi-AI router differs from V58 review"; exit 1; }
           test "$(git hash-object cloudflare/src/npc-models.mjs)" = "c0290777f2cb81cf47ae47bacb2cb64b6e610d17" ||
             { echo "STOP: model allowlist differs from V58 review"; exit 1; }
@@ -111,7 +111,7 @@ jobs:
               raise SystemExit('STOP: Gemini secret missing')
           print('PASS: existing vars, secrets and Durable Objects audited; only approved Free switches and AI binding will change')
           PY
-      - name: Deploy V58.1 visible-only Workers AI patch for both AU and reader
+      - name: Deploy V58.2 visible-only Workers AI patch for both AU and reader
         working-directory: cloudflare
         shell: bash
         run: |
@@ -125,4 +125,4 @@ jobs:
           set -euo pipefail
           curl --silent --show-error --fail --max-time 20 \
             https://dudu-ai-staging.dudu-studio-ai.workers.dev/health \
-            | python3 -c 'import json,sys; d=json.load(sys.stdin); ids={m["id"] for m in d.get("models",[])}; required={"@cf/zai-org/glm-4.7-flash","@cf/google/gemma-4-26b-a4b-it"}; assert d.get("service")=="dudu-ai" and d.get("enabled") is True and d.get("freeOnly") is True and required<=ids, "Free model catalog missing"; print("PASS: DUDU V58.1 models remain enabled for AU and readers")'
+            | python3 -c 'import json,sys; d=json.load(sys.stdin); ids={m["id"] for m in d.get("models",[])}; required={"@cf/zai-org/glm-4.7-flash","@cf/google/gemma-4-26b-a4b-it"}; assert d.get("service")=="dudu-ai" and d.get("enabled") is True and d.get("freeOnly") is True and required<=ids, "Free model catalog missing"; print("PASS: DUDU V58.2 models remain enabled for AU and readers")'
