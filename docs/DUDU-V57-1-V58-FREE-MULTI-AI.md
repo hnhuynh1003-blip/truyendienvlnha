@@ -64,3 +64,16 @@ V57.1:
 - Cloudflare Free cho Workers AI có 10.000 Neurons miễn phí/ngày; tài khoản Workers Paid có thể tính phí sau ngưỡng này. Phần mềm **không thể tự xác minh tài khoản đang Free**. Vì vậy mọi cờ Workers AI/fallback ở cấu hình chính vẫn là `false`; chưa bật cho người đọc.
 - Đã đồng bộ nhánh V58 với commit `main` chứa PR #15; `main` không được merge V58 tự động.
 - Bài kiểm thử mock chỉ kiểm tra giao thức và cấu trúc; không xác nhận dịch vụ AI thật hoạt động, không xác nhận Cloudflare billing.
+
+
+## V58 R1.2 — 19/10/2026: Phương án Workers Free được người dùng xác nhận
+
+Người quản lý dự án xác nhận tài khoản Cloudflare đang ở **Workers Free** và không có ý định đăng ký gói trả phí trong giai đoạn này. Đây là xác nhận từ người dùng, **không phải xác thực tự động qua Cloudflare Billing API**.
+
+- Theo Cloudflare Workers AI pricing (cập nhật 01/10/2026), tài khoản Workers Free có 10.000 Neurons/ngày; quá hạn mức thì yêu cầu bị từ chối, không phát sinh trả phí. Ngày quota reset 00:00 UTC.
+- Chỉ dùng hai model Free hiện được Cloudflare liệt kê: `@cf/zai-org/glm-4.7-flash`, `@cf/google/gemma-4-26b-a4b-it`. KHÔNG gọi model đòi Paid hoặc AI Gateway credits.
+- Router V58 nhận diện mã lỗi `3036` (hết quota Free), `3040` (hết công suất), `5035` (bắt buộc Paid) và các lỗi 403/429; **không gọi model thứ hai để vượt giới hạn**. Không hiển thị raw upstream errors, token, UID hay prompt.
+- DUDU Quota tại Durable Object vẫn là 120 lượt/UID/ngày và 250 lượt toàn hệ thống; các lượt thử thất bại được tính để chống spam. 10.000 Neurons/ngày là ngân sách **toàn Cloudflare**, không phải 10.000 lượt chat.
+- Cờ `DUDU_WORKERS_AI_APPROVED`, `DUDU_WORKERS_ACCOUNT_FREE_VERIFIED`, `DUDU_AI_FALLBACK_ENABLED` vẫn **false trong cấu hình**. Người dùng xác nhận gói Free không đồng nghĩa với duyệt deploy / bật dự phòng trên website công khai.
+- Trình tự: kiểm tra model trong Cloudflare Playground nếu cần → chạy dry-run và kiểm thử Firebase AU/độc giả trên Worker **preview độc lập** → đối chiếu chi phí/quota thực → xin phê duyệt rõ ràng trước khi tích hợp với production.
+- Không phát hành `PR #14` lên main trong bước này.
