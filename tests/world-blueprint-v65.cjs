@@ -48,9 +48,10 @@ for (const world of registry.starterWorlds) {
   assert.ok(api.validateDraft(draft).includes('npc_binding_requires_review'));
 }
 const index=fs.readFileSync(path.join(root,'index.html'),'utf8');
+// V65 is archived as an offline format; V66 is the live asset chain.
 const assets=[
- 'js/world-registry-v63.js','js/world-blueprint-v65.js',
- 'js/site-shell-v60.js','js/world-experience-v65.js'
+ 'js/world-registry-v63.js','js/world-taxonomy-v66.js',
+ 'js/world-blueprint-v66.js','js/site-shell-v60.js','js/world-experience-v66.js'
 ];
 let prev=-1;
 for(const script of assets){
@@ -58,7 +59,7 @@ for(const script of assets){
   assert.ok(pos>prev,script+' must be loaded after previous scripts');
   prev=pos;
 }
-assert.ok(index.includes('css/world-experience-v65.css?'));
+assert.ok(index.includes('css/world-experience-v66.css?'));
 assert.ok(!/\b(fetch\s*\(|localStorage\.|\.firestore\s*\()/.test(blueprintSource),
   'Draft service must remain local and side-effect-free');
 console.log('DUDU V65 world blueprint contract OK');
