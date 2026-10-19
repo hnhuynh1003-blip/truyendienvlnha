@@ -117,8 +117,38 @@
    }
    return null;
  }
+ const allowedViews=Object.freeze({
+   worlds:Object.freeze({id:'worlds',label:'Xem Vạn Giới'}),
+   shop:Object.freeze({id:'shop',label:'Xem Cửa hàng'}),
+   profile:Object.freeze({id:'profile',label:'Mở Hồ sơ'})
+ });
+ function suggestedAction(question){
+   const topic=intent(question);
+   if(topic==='world'||topic==='mission')return allowedViews.worlds;
+   if(topic==='wallet')return allowedViews.shop;
+   if(topic==='account')return allowedViews.profile;
+   return null;
+ }
+ function openSafeView(id){
+   // Invoked only by an explicit UI click. Never derived from LLM output.
+   // These are NAVIGATION ONLY: no quest/reward/pact backend actions.
+   if(!Object.hasOwn(allowedViews,id))return false;
+   if(id==='worlds'){
+     if(typeof root?.DuduSiteV60?.navigate!=='function')return false;
+     root.DuduSiteV60.navigate('worlds');
+     if(root?.document?.getElementById('cyber-phone')?.style.display==='flex'){
+       root.DuduCompanionV43?.hide?.();
+       root.togglePhone?.();
+     }
+     return true;
+   }
+   const panelId=id==='shop'?'shop':'profile';
+   if(typeof root?.openPhoneApp!=='function')return false;
+   root.openPhoneApp(panelId);
+   return true;
+ }
  const api=Object.freeze({
-   version:3,intent,snapshot,reply:response,
+   version:3,intent,snapshot,reply:response,suggestedAction,openSafeView,
    capabilities:Object.freeze([
      'public_world_catalog','mission_previews','pact_explanation',
      'progression_explanation','account_readiness','wallet_guidance'
