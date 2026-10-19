@@ -29,7 +29,8 @@ DUDU remains the welcoming personality, never the sole source of truth.
 - Automated regression guards added: `tests/phone-app-contract-v67.cjs` and a Phone compatibility block in `tests/browser-smoke.cjs`.
 - Findings and specific retain/bridge/modernize decisions: `docs/DUDU-V67-APP-BASELINE-AUDIT.md`.
 - Static source checks do not demonstrate functioning chat, network, Android/iOS layout or server ownership. Do not move on to risky rewrites or claim full interoperability without browser/device checks.
-- Next functional work: **V67.1 shared lifecycle/navigation sync**, then **V67.2 DUDU messenger** and **V67.3 stewardship**. Existing NPC roleplay, item economy, author and story data stay untouched.
+- V67.1 shared Phone navigation/account lifecycle is **implemented at source level**, via `js/phone-lifecycle-v67-1.js`. It reuses all original Phone functions, tracks visible app state, emits one read-only lifecycle event, and hides volatile chat screens on UID change while preserving stored messages. See `docs/DUDU-V67-1-PHONE-LIFECYCLE.md`.
+- Next functional work: **run browser/device gates for V67.1**, then **V67.2 DUDU messenger** and **V67.3 stewardship**. Existing NPC roleplay, item economy, author and story data stay untouched.
 
 ## Proposed implementation batches
 
