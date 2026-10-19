@@ -55,44 +55,88 @@
    if(!books.length)s.append(element('p','d60-empty','Thư viện chưa có tác phẩm phù hợp.'));
    else s.append(g);return s;
  }
+ function openContact(){
+   if(typeof togglePhone!=='function'||typeof openPhoneApp!=='function')return;
+   const phone=id('cyber-phone');
+   if(phone&&phone.style.display!=='flex')togglePhone();
+   openPhoneApp('chat');
+ }
+ function quickLink(icon,label,detail,action){
+   const tile=button('',action,'d61-quick');
+   const mark=element('span','d61-quick-icon',icon);
+   mark.setAttribute('aria-hidden','true');
+   const words=element('span','d61-quick-words');
+   words.append(element('strong','',label),element('small','',detail));
+   tile.append(mark,words,element('span','d61-quick-arrow','↗'));
+   return tile;
+ }
  function fillHome(){
    const root=id('d60-home');if(!root)return;root.replaceChildren();
-   const hero=element('section','d60-hero');
-   hero.append(element('p','d60-kicker','✦ DUDU STUDIO · THƯ VIỆN VẠN GIỚI'),
-     element('h1','','Mỗi trang truyện, một thế giới chờ khám phá.'),
-     element('p','','Đọc câu chuyện bạn yêu thích, kết nối với những nhân vật đáng nhớ và khám phá hành trình riêng khi bạn sẵn sàng.'));
-   const acts=element('div','d60-actions');
-   acts.append(button('Khám phá thư viện →',()=>navigate('library')),
-     button('Về những thế giới',()=>navigate('worlds'),'d60-btn secondary'));
-   hero.append(acts);root.append(hero);
-   const saved=shelfItems();
-   if(saved.length){
-     const entry=saved[0],s=section('Đọc tiếp','Tủ sách của tôi →',()=>navigate('shelf'));
-     const item=element('div','d60-card d60-resume'),content=element('div');
-     content.append(element('div','d60-title',entry.n.title),
-       element('div','d60-meta','Chương '+(entry.mark.chIdx+1)+' · '+(entry.n.chapters[entry.mark.chIdx]?.title||'')),
-       button('Tiếp tục đọc',()=>smartReadAction(novels.indexOf(entry.n))));
-     item.append(artwork(entry.n),content);s.append(item);root.append(s);
+   const all=recent(list()),saved=shelfItems(),resume=saved[0]||null;
+   const hero=element('section','d60-hero d61-hero');
+   const copy=element('div','d61-hero-copy');
+   copy.append(element('p','d61-terminal','◈  DUDU / SYSTEM GATE'),
+     element('h1','','Đọc truyện. Mở vạn giới.'),
+     element('p','d61-tagline','Đọc · Kết nối · Khám phá'));
+   const actions=element('div','d60-actions d61-hero-actions');
+   actions.append(button('Khám phá truyện  ↗',()=>navigate('library')),
+     button('Thế giới  →',()=>navigate('worlds'),'d60-btn secondary'));
+   copy.append(actions);
+   const portal=element('div','d61-portal');
+   portal.setAttribute('aria-hidden','true');
+   portal.append(element('div','d61-orbit d61-orbit-outer'),
+     element('div','d61-orbit d61-orbit-mid'),
+     element('div','d61-orbit d61-orbit-inner'),
+     element('div','d61-orbit-core','D'));
+   const portalText=element('span','d61-portal-caption','DUDU // ∞');
+   portal.append(portalText);
+   hero.append(copy,portal);
+   root.append(hero);
+   const signal=element('div','d61-signal');
+   signal.append(element('span','d61-signal-led'),
+     element('span','d61-signal-label','THƯ VIỆN'),
+     element('strong','',all.length+' truyện'),
+     element('span','d61-signal-divider','/'),
+     element('span','d61-signal-label','XUYÊN GIỚI'),
+     element('span','d61-signal-off','Đang kiến tạo'));
+   root.append(signal);
+   const quick=element('nav','d61-quick-row');
+   quick.setAttribute('aria-label','Truy cập nhanh');
+   quick.append(
+     quickLink('↻',resume?'Đọc tiếp':'Bắt đầu đọc',resume?'Chương '+(resume.mark.chIdx+1):'Mở thư viện',
+       ()=>{if(resume)smartReadAction(novels.indexOf(resume.n));else navigate('library');}),
+     quickLink('▤','Thư viện','Tìm câu chuyện',()=>navigate('library')),
+     quickLink('⌁','Liên lạc','NPC & DUDU',openContact),
+     quickLink('◎','Vạn giới','Khám phá',()=>navigate('worlds'))
+   );
+   root.append(quick);
+   if(resume){
+     const s=section('Đọc dở','Tủ sách  →',()=>navigate('shelf'));
+     const row=element('div','d61-resume-card'),inner=element('div','d61-resume-copy');
+     inner.append(element('strong','',resume.n.title||'Truyện đang đọc'),
+       element('small','','Chương '+(resume.mark.chIdx+1)+' / '+resume.n.chapters.length));
+     row.append(artwork(resume.n),inner,
+       button('Đọc tiếp  →',()=>smartReadAction(novels.indexOf(resume.n)),'d61-resume-action'));
+     s.append(row);root.append(s);
    }
-   const books=recent(list());
-   if(books.length)root.append(bookGrid('Truyện vừa cập nhật',books.slice(0,8)));
+   if(all.length){
+     root.append(bookGrid('Mới cập nhật',all.slice(0,4)));
+   }
    const genres=new Set();
-   books.forEach(n=>String(n.genre||'').split(/[,/]+/).map(x=>x.trim()).filter(Boolean).forEach(x=>genres.add(x)));
+   all.forEach(n=>String(n.genre||'').split(/[,/]+/).map(x=>x.trim()).filter(Boolean).forEach(x=>genres.add(x)));
    if(genres.size){
-     const s=section('Khám phá thể loại'),r=element('div','d60-chips');
-     [...genres].slice(0,14).forEach(t=>r.append(button(t,()=>{
-       navigate('library');
-       selectedTag=t;
-       renderHome();
+     const s=section('Dấu hiệu thế giới'),r=element('div','d60-chips d61-chips');
+     [...genres].slice(0,7).forEach(t=>r.append(button(t,()=>{
+       navigate('library');selectedTag=t;renderHome();
      },'d60-chip')));
      s.append(r);root.append(s);
    }
-   const s=section('Một trải nghiệm vượt ngoài trang sách','Tìm hiểu →',()=>navigate('worlds'));
-   const two=element('div','d60-two');
-   const one=element('article','d60-card'),other=element('article','d60-card');
-   one.append(element('span','d60-badge','ĐỌC THOẢI MÁI'),element('h3','','Bạn luôn được chọn chỉ đọc truyện'),element('p','','Không điểm danh bắt buộc, không phải chạy nhiệm vụ hay kiếm Xu để tiếp tục đọc.'));
-   other.append(element('span','d60-badge','THẾ GIỚI TƯƠNG LAI'),element('h3','','Hành trình xuyên sách do bạn lựa chọn'),element('p','','Tiểu thế giới, suy luận, NPC và các kết cục riêng chỉ mở khi thực sự phát hành.'));
-   two.append(one,other);s.append(two);root.append(s);
+   const worlds=element('section','d61-world-strip');
+   const texts=element('div','d61-world-copy');
+   texts.append(element('small','','WORLD GATE // LOCKED'),element('strong','','Vạn giới đang kiến tạo'));
+   worlds.append(element('span','d61-world-symbol','⟡'),texts,
+     button('Khám phá  ↗',()=>navigate('worlds'),'d61-world-action'));
+   root.append(worlds);
  }
  function fillShelf(){
    const root=id('d60-shelf-list');if(!root)return;root.replaceChildren();

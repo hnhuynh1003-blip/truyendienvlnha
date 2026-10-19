@@ -51,6 +51,35 @@ async function main() {
       await route.fulfill({ status: 200, contentType: 'application/javascript', body: code });
     });
     await page.goto(`http://127.0.0.1:${port}/?sandbox=1`, { waitUntil: 'domcontentloaded' });
+
+    // DUDU System Portal: compact visual homepage without gameplay side effects.
+    await page.waitForFunction(() => !!window.DuduSiteV60 && !!document.querySelector('.d61-hero'));
+    const siteHome = await page.evaluate(() => {
+      const hero=document.querySelector('.d61-hero');
+      return {
+        heroHeight: Math.round(hero.getBoundingClientRect().height),
+        heroTitle: hero.querySelector('h1')?.textContent||'',
+        modules: document.querySelectorAll('#d60-home .d61-quick').length,
+        worlds: document.querySelector('.d61-signal-off')?.textContent||'',
+        path: window.DuduSiteV60.page
+      };
+    });
+    assert.ok(siteHome.heroHeight>100 && siteHome.heroHeight<300,'Desktop System Portal must be compact');
+    assert.match(siteHome.heroTitle,/Mở vạn giới/);
+    assert.equal(siteHome.modules,4,'Exactly four compact quick-entry modules');
+    assert.match(siteHome.worlds,/Đang kiến tạo/,'Worlds must not be presented as live gameplay');
+    assert.equal(siteHome.path,'home');
+    await page.setViewportSize({width:390,height:844});
+    const mobileSite = await page.evaluate(() => ({
+      heroHeight:Math.round(document.querySelector('.d61-hero').getBoundingClientRect().height),
+      navigationVisible:getComputedStyle(document.querySelector('.d60-bottomnav')).display!=='none',
+      overflow: document.documentElement.scrollWidth > window.innerWidth+2
+    }));
+    assert.ok(mobileSite.heroHeight<280,'Mobile hero should leave room for visible story content');
+    assert.equal(mobileSite.navigationVisible,true,'Mobile bottom navigation visible');
+    assert.equal(mobileSite.overflow,false,'Homepage should not overflow viewport horizontally');
+    await page.setViewportSize({width:1280,height:720});
+
     await page.waitForFunction(() => typeof window.handleAuthSubmit === 'function' && !!document.getElementById('auth-username'));
     await page.waitForTimeout(800);
     await page.locator('#auth-username').fill('tester-a');
