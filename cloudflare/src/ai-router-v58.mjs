@@ -31,7 +31,10 @@ export function failoverAllowed(code){
   // gemini upstream-unavailable may already mean a 25-second timeout.
   // A second provider request could outlive the browser's 32-second deadline
   // and consume quota without ever reaching the player.
-  return ['gemini-rate-limit','gemini-overloaded',
+  // A confirmed Google regional denial can use an independently hosted,
+  // operator-approved FREE Workers AI provider. Never retry other Google
+  // endpoints, spoof location, or route unknown/billing HTTP 400 errors.
+  return ['gemini-rate-limit','gemini-overloaded','gemini-location-restricted',
     'model-unavailable','upstream-error'].includes(code);
 }
 
