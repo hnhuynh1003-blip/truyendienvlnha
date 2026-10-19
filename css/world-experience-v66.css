@@ -61,3 +61,23 @@
  #d60-worlds .d64-atlas-seal{font-size:8px}
 }
 @media(prefers-reduced-motion:reduce){.d66-shuffle{transition:none}}
+
+/* V66: compact random F-tier signal preview, never a task assignment. */
+#d60-worlds .d66-random-entry{display:grid;place-items:center;flex:0 0 29px;
+ width:29px;height:29px;border-radius:8px;padding:0;cursor:pointer;
+ color:#e6d9ff;background:rgba(169,149,237,.12);
+ border:1px solid rgba(179,155,228,.3);font-size:19px;line-height:1}
+#d60-worlds .d66-random-entry:focus-visible{outline:2px solid #d8ccff;outline-offset:2px}
+#d60-worlds .d64-world-count{margin-left:auto}
+.d66-random-dossier{padding-top:19px}
+.d66-random-result{display:flex;flex-direction:column;align-items:center;
+ min-height:130px;text-align:center;gap:10px}
+.d66-random-name{font-size:18px;line-height:1.25;font-weight:790;color:#f4edff;margin:0}
+.d66-random-hook{font-size:12px;line-height:1.6;color:#b9c5da;margin:0;max-width:320px}
+.d66-random-tier{font:700 10px/1.5 ui-monospace,Consolas,monospace;
+ color:#c7afd9;letter-spacing:.08em}
+.d66-random-next{display:flex;margin:15px auto 0}
+@media(max-width:365px){
+ #d60-worlds .d64-world-count{font-size:8px}
+ #d60-worlds .d66-random-entry{width:26px;height:26px;flex-basis:26px}
+}
