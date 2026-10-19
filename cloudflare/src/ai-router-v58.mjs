@@ -87,13 +87,24 @@ export async function workersAiNpc(payload,env){
   if(!instruction||!question)
     return {error:{code:'invalid-content',message:'Ngữ cảnh NPC không hợp lệ; tin nhắn đã được giữ lại.'},status:400};
   try{
+    // GLM/Gemma default to reasoning; with a 640-token cap, inference can
+    // finish after thinking without producing visible assistant text.
+    // Cloudflare supports this input field on BOTH Free models.
     const result=await env.AI.run(payload.model,{
       messages:[{role:'system',content:instruction},{role:'user',content:question}],
+      chat_template_kwargs:{enable_thinking:false},
       max_completion_tokens:640
     },{rejectIfBusy:true});
     const answer=extractWorkersAiText(result);
-    if(!answer)
-      return {error:{code:'empty-response',message:'Workers AI chưa tạo được lời nhắn NPC.'},status:502};
+    if(!answer){
+      const reason=result?.choices?.[0]?.finish_reason;
+      // Only the public finish category is exposed, never reasoning tokens.
+      const truncated=reason==='length';
+      return {error:{code:truncated?'workers-ai-output-truncated':'empty-response',
+        message:truncated
+          ?'Workers AI hết giới hạn tạo phản hồi nhưng chưa có lời nhắn. Hãy thử lại sau; DUDU không tự gọi nhiều model.'
+          :'Workers AI chưa tạo được lời nhắn NPC. Tin nhắn vẫn được giữ để thử lại.'},status:502};
+    }
     const usage=result?.usage||result?.result?.usage||{};
     return {data:{text:answer,model:payload.model,provider:'workers-ai',
       usage:{
@@ -116,5 +127,10 @@ export async function routeNpcAi(payload,env,callGemini){
   // One fallback at most. Do not retry 400 errors, cascade models or
   // compromise the global DUDU quota and author/reader access checks.
   const alternate=await workersAiNpc({...payload,model:WORKERS_AI_MODELS[0].id},env);
-  return alternate?.data?{...alternate,data:{...alternate.data,fallbackFrom:payload.model}}:primary;
+  if(alternate?.data)return {...alternate,data:{...alternate.data,fallbackFrom:payload.model}};
+  // Never disguise a failed Workers AI fallback as only a Gemini regional
+  // failure: show which provider actually produced the final error.
+  if(alternate?.error)return {...alternate,error:{...alternate.error,
+    model:WORKERS_AI_MODELS[0].id,fallbackFrom:payload.model}};
+  return primary;
 }
