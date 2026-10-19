@@ -5,7 +5,7 @@ import {validRequest} from '../src/limits.mjs';
 import {classifyGemini400} from '../src/gemini-error-v56-10.mjs';
 import {textOnlyNpcContents} from '../src/npc-chat-format-v56-11.mjs';
 import {routeNpcAi,workersAiNpc,workersAiFreeApproved,
-  availableWorkersModels,WORKERS_AI_MODELS,isWorkersAiModel,failoverAllowed,extractWorkersAiText
+  availableWorkersModels,WORKERS_AI_MODELS,isWorkersAiModel,failoverAllowed,extractWorkersAiText,classifyWorkersAiFailure
 } from '../src/ai-router-v58.mjs';
 
 const base=(role='Khách mới',model='gemini-3.5-flash-lite')=>({
@@ -164,6 +164,31 @@ test('V58 Workers AI actual choices schema yields NPC text with token counters',
   assert.equal(result.data.text,'Xin chào, người quan sát.');
   assert.deepEqual(result.data.usage,{inputTokens:55,outputTokens:11,totalTokens:66});
   assert.equal(calls.length,1);
+});
+
+test('V58 Cloudflare free quota and paid model errors are fail-closed',async()=>{
+  const cases=[
+    [{code:3036,status:429},'workers-ai-free-limit'],
+    [{code:'5035',status:403},'workers-ai-paid-model-blocked'],
+    [{code:3040,status:429},'workers-ai-capacity'],
+    [{status:429},'workers-ai-rate-limit'],
+    [{status:403},'workers-ai-access-denied'],
+    [new Error('SENSITIVE INTERNAL ERROR'), 'workers-ai-unavailable']
+  ];
+  for(const [failure,expected] of cases){
+    const c=classifyWorkersAiFailure(failure);
+    assert.equal(c.code,expected);
+    assert.doesNotMatch(JSON.stringify(c),/SENSITIVE INTERNAL ERROR/);
+    assert.doesNotMatch(JSON.stringify(c),/api[_-]?key/i);
+    assert.doesNotMatch(JSON.stringify(c),/upgrade.+now/i);
+  }
+  const {env}=freeEnv();
+  env.AI.run=async()=>{const e=new Error('PRIVATE-ACCOUNT-DETAIL');e.code=3036;e.status=429;throw e;};
+  const payload=validRequest(base('Thử nghiệm',WORKERS_AI_MODELS[0].id));
+  const result=await workersAiNpc(payload,env);
+  assert.equal(result.error.code,'workers-ai-free-limit');
+  assert.equal(result.status,502);
+  assert.doesNotMatch(JSON.stringify(result),/PRIVATE-ACCOUNT-DETAIL/);
 });
 
 test('V58 no paid provider URL or direct chargeable AI gateway introduced',()=>{
