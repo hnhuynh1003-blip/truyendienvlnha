@@ -13,7 +13,7 @@ test('V55 shows compact model picker and server-only usage counter in Contacts',
  assert.match(html,/function refreshNpcQuotaV55\(\)/);
  assert.match(html,/DuduAI\.status\(\)/);
  assert.match(html,/if\(!IS_SANDBOX_MODE\)void refreshNpcQuotaV55\(\)/);
- assert.match(html,/src="js\/ai-proxy\.js\?v=57-2"/);
+ assert.match(html,/src="js\/ai-proxy\.js\?v=57-3"/);
 });
 
 test('V55 stores selected model per Firebase UID and labels each AI response',()=>{
