@@ -1,5 +1,6 @@
-/* V43.0–V43.2 companion: Sandbox-only UI and local, testable progress.
- * Production server rewards intentionally not granted by this code.
+/* V67.2 messenger shell with V43 compatible data + rules.
+ * Offline scripted replies, sandbox-only test rewards; production never grants real Xu.
+ * Preserve owner-scoped history and existing controls while modernizing mobile chat.
  */
 (function(root){
  'use strict';
@@ -69,12 +70,16 @@
   if(!canUse()||owner!==currentUsername){hide();return;}
   const s=state(),today=rules.localDay(),list=el('dudu-v43-messages');
   if(!list)return;
+  const previousScroll=list.scrollTop;
+  const followBottom=list.scrollHeight-list.scrollTop-list.clientHeight<56;
   list.replaceChildren();
   for(const msg of s.messages.slice(-40)){
    const b=create('div','dudu-v43-bubble '+(msg.role==='user'?'is-user':'is-dudu'),msg.text);
    list.append(b);
   }
-  list.scrollTop=list.scrollHeight;
+  // Re-renders after check-in or system updates must not yank the reader
+  // away from earlier messages unless they were already near the bottom.
+  list.scrollTop=followBottom?list.scrollHeight:previousScroll;
   const dayCount=el('dudu-v43-day-count');
   if(dayCount)dayCount.textContent='🔥 '+s.login.count+' ngày điểm danh';
   const chatCount=el('dudu-v43-chat-count');
@@ -109,12 +114,16 @@
   const app=el('phone-app-chat');if(!app||!el('dudu-v43-companion'))return;
   owner=currentUsername;shown=true;
   app.classList.add('dudu-v43-companion-open');
+  document.body.classList.add('dudu-v672-chatting');
   render();
+  root.DuduMessengerV672?.adjustViewport?.();
   el('dudu-v43-message-input')?.focus({preventScroll:true});
  }
  function hide(){
   shown=false;
   el('phone-app-chat')?.classList.remove('dudu-v43-companion-open');
+  document.body.classList.remove('dudu-v672-chatting');
+  const diary=el('dudu-v43-diary');if(diary)diary.open=false;
  }
  function back(){
   hide();
@@ -135,8 +144,17 @@
    s.milestones=result.state.milestones;
   }
   if(store(s)){
-   input.value='';render();
+   input.value='';
+   input.dispatchEvent(new Event('input',{bubbles:true}));
+   render();
+   const log=el('dudu-v43-messages');
+   if(log)log.scrollTop=log.scrollHeight;
    root.duduV33Render?.();
+   const status=el('dudu-v672-composer-status');
+   if(status){status.textContent='Đã lưu tin nhắn trên thiết bị.';status.dataset.state='ok';}
+  }else{
+   const status=el('dudu-v672-composer-status');
+   if(status){status.textContent='Chưa lưu được tin nhắn. Nội dung vẫn ở ô nhập.';status.dataset.state='error';}
   }
  }
  function checkin(){
@@ -186,23 +204,32 @@
   backBtn.title='Về danh bạ';backBtn.setAttribute('aria-label','Về danh bạ');backBtn.addEventListener('click',back);
   const avatar=create('span','dudu-v43-avatar','✦');
   const htxt=create('div','dudu-v43-identity');
-  htxt.append(create('strong','','DUDU · Người bạn đầu tiên'),
-   create('small','','Trợ lý đồng hành · Tin nhắn hướng dẫn'));
+  htxt.append(create('strong','','DUDU'),
+   create('small','','Bạn đồng hành · Hệ thống đang kiến tạo'));
   head.append(backBtn,avatar,htxt);
   const streak=create('div','dudu-v43-streak');
   const login=create('span','','');login.id='dudu-v43-day-count';
   const chat=create('span','','');chat.id='dudu-v43-chat-count';
   streak.append(login,chat);
   const diary=create('details','dudu-v43-diary');
-  const summary=create('summary','','🎁 Nhật ký điểm danh & kỷ niệm');
+  diary.id='dudu-v43-diary';
+  const summary=create('summary','','⋯');
+  summary.setAttribute('aria-label','Mở nhật ký, điểm danh và công cụ DUDU');
+  summary.title='Nhật ký & công cụ';
+  summary.setAttribute('aria-haspopup','true');
   const claim=create('button','dudu-v43-checkin','Nhận quà điểm danh');
   claim.id='dudu-v43-checkin';claim.type='button';claim.addEventListener('click',checkin);
   const note=create('small','dudu-v43-note',sandbox()?'Xu và mốc kỷ niệm chỉ lưu ở Sandbox; chưa phải kỷ vật Bảo Tàng được xác nhận.':'Nhật ký DUDU chỉ lưu trên thiết bị; không cấp Xu hay kỷ vật thật.');
   const reward=create('small','dudu-v43-reward-info','');reward.id='dudu-v43-reward-info';
   const badges=create('div','dudu-v43-milestones','');badges.id='dudu-v43-milestones';
-  diary.append(summary,claim,reward,note,badges);
+  const diaryContents=create('div','dudu-v672-diary-contents');
+  const diaryTitle=create('strong','dudu-v672-diary-title','Nhật ký đồng hành');
+  diaryContents.append(diaryTitle,streak,claim,reward,note,badges);
+  diary.append(summary,diaryContents);
+  head.append(diary);
   const messages=create('div','dudu-v43-messages');messages.id='dudu-v43-messages';
   messages.setAttribute('role','log');messages.setAttribute('aria-label','Lịch sử trò chuyện DUDU');
+  messages.setAttribute('aria-live','off');
   const shortcuts=create('div','dudu-v43-shortcuts');
   for(const label of ['Gợi ý truyện','Hướng dẫn nhặt đồ','Kết nối linh hồn']){
    const b=create('button','',label);b.type='button';
@@ -211,14 +238,36 @@
    });
    shortcuts.append(b);
   }
+  diaryContents.append(shortcuts);
   const form=create('form','dudu-v43-composer');
-  const text=create('input','','');text.id='dudu-v43-message-input';
-  text.type='text';text.maxLength=500;text.autocomplete='off';
-  text.placeholder='Nói chuyện với DUDU...';
+  const text=create('textarea','dudu-v672-textarea');text.id='dudu-v43-message-input';
+  text.rows=1;text.maxLength=500;text.autocomplete='off';
+  text.placeholder='Nhắn tin cho DUDU...';
   text.setAttribute('aria-label','Nhắn tin cho DUDU');
-  const submit=create('button','','Gửi');submit.type='submit';
-  form.append(text,submit);form.addEventListener('submit',event=>{event.preventDefault();send();});
-  panel.append(head,streak,diary,messages,shortcuts,form);
+  const submit=create('button','dudu-v672-send','↑');submit.type='submit';
+  submit.setAttribute('aria-label','Gửi tin nhắn cho DUDU');
+  submit.disabled=true;
+  const status=create('span','dudu-v672-composer-status');
+  status.id='dudu-v672-composer-status';status.setAttribute('role','status');
+  status.setAttribute('aria-live','polite');
+  const adjustInput=()=>{
+   const filled=text.value.trim().length>0;
+   submit.disabled=!filled;
+   text.style.height='auto';
+   text.style.height=Math.min(text.scrollHeight,104)+'px';
+   if(status.dataset.state==='error'){status.textContent='';delete status.dataset.state;}
+  };
+  text.addEventListener('input',adjustInput);
+  text.addEventListener('keydown',event=>{
+   if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing&&event.keyCode!==229){
+    event.preventDefault();
+    if(text.value.trim()&&typeof form.requestSubmit==='function')form.requestSubmit();
+   }
+  });
+  form.append(text,submit,status);
+  form.addEventListener('submit',event=>{event.preventDefault();send();});
+  panel.append(head,messages,form);
+  adjustInput();
   app.append(panel);
   if(canUse())accountReady();
  }
