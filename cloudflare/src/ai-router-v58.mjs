@@ -52,6 +52,30 @@ export function extractWorkersAiText(result){
   return '';
 }
 
+// Cloudflare AI errors use internal codes. Preserve only a small allowlist;
+// do not echo raw provider errors, account details or rate-limit messages.
+export function classifyWorkersAiFailure(e){
+  const numeric=[e?.code,e?.error?.code,e?.cause?.code]
+    .map(x=>Number(x)).find(n=>Number.isInteger(n)&&n>0);
+  if(numeric===3036)
+    return {code:'workers-ai-free-limit',
+      message:'Workers AI đã hết 10.000 Neurons miễn phí hôm nay. DUDU sẽ không tự nâng cấp hoặc tính phí.'};
+  if(numeric===5035)
+    return {code:'workers-ai-paid-model-blocked',
+      message:'Cloudflare yêu cầu gói trả phí cho model này. DUDU đã chặn yêu cầu và không kích hoạt thanh toán.'};
+  if(numeric===3040)
+    return {code:'workers-ai-capacity',
+      message:'Workers AI đang hết tài nguyên phục vụ. Tin nhắn vẫn được giữ để thử lại sau.'};
+  if(Number(e?.status)===429)
+    return {code:'workers-ai-rate-limit',
+      message:'Workers AI đã đạt giới hạn tạm thời hoặc hạn mức miễn phí. Không tự chuyển sang dịch vụ trả phí.'};
+  if(Number(e?.status)===403)
+    return {code:'workers-ai-access-denied',
+      message:'Cloudflare từ chối quyền gọi model. DUDU không tự mở quyền trả phí.'};
+  return {code:'workers-ai-unavailable',
+    message:'Workers AI tạm thời không thể trả lời. Tin nhắn vẫn được giữ.'};
+}
+
 export async function workersAiNpc(payload,env){
   if(!isWorkersAiModel(payload?.model))
     return {error:{code:'model-unavailable',message:'Model Workers AI không nằm trong danh sách DUDU.'},status:409};
@@ -79,10 +103,7 @@ export async function workersAiNpc(payload,env){
       }},status:200};
   }catch(e){
     // Never expose upstream error body, prompts or token-bearing stack traces.
-    const status=Number(e?.status)||0;
-    return {error:{code:status===429?'workers-ai-rate-limit':'workers-ai-unavailable',
-      message:status===429?'Workers AI đã tới giới hạn. Không chuyển sang dịch vụ trả phí.':
-        'Workers AI tạm thời không thể trả lời. Tin nhắn vẫn được giữ.'},status:502};
+    return {error:classifyWorkersAiFailure(e),status:502};
   }
 }
 
