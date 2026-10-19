@@ -136,7 +136,12 @@
   if(message.length<1||message.length>500)return;
   const s=state();
   addMessage(s,'user',message);
-  addMessage(s,'model',rules.reply(message,(novels||[]).map(n=>n.title)));
+  // V67.3: trusted read-only system topics go to DUDU Steward.
+  // NPC prompts/AI and all reward/account mutations remain separate.
+  const systemAnswer=root.DuduSystemStewardV673?.reply?.(message);
+  const answer=typeof systemAnswer==='string'&&systemAnswer.trim()?
+    systemAnswer:rules.reply(message,(novels||[]).map(n=>n.title));
+  addMessage(s,'model',answer);
   const result=rules.chat(s,message);
   if(result.ok){
    // In-memory mutation to same s: only milestone/run fields are updated.
@@ -231,7 +236,8 @@
   messages.setAttribute('role','log');messages.setAttribute('aria-label','Lịch sử trò chuyện DUDU');
   messages.setAttribute('aria-live','off');
   const shortcuts=create('div','dudu-v43-shortcuts');
-  for(const label of ['Gợi ý truyện','Hướng dẫn nhặt đồ','Kết nối linh hồn']){
+  for(const label of ['Kiểm tra hệ thống','Khế ước hệ thống','Nhiệm vụ F/E',
+    'Gợi ý truyện','Hướng dẫn nhặt đồ','Kết nối linh hồn']){
    const b=create('button','',label);b.type='button';
    b.addEventListener('click',()=>{
     el('dudu-v43-message-input').value=label;send();
