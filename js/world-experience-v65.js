@@ -17,6 +17,7 @@
    if(dialog)return dialog;
    dialog=node('dialog','d65-dialog');
    dialog.id='d65-world-dialog';
+   dialog.setAttribute('aria-labelledby','d65-world-dialog-title');
    dialog.addEventListener('click',e=>{
      // Clicking the native dialog backdrop closes it; interior clicks do not.
      if(e.target===dialog)closeDialog();
@@ -44,7 +45,9 @@
  function dialogTop(eyebrow,title){
    const head=node('div','d65-dialog-head');
    const titles=node('div','d65-dialog-titles');
-   titles.append(node('span','d65-kicker',eyebrow),node('h2','d65-dialog-title',title));
+   const titleNode=node('h2','d65-dialog-title',title);
+   titleNode.id='d65-world-dialog-title';
+   titles.append(node('span','d65-kicker',eyebrow),titleNode);
    const close=node('button','d65-close','×');
    close.type='button';close.setAttribute('aria-label','Đóng');
    close.addEventListener('click',closeDialog);
