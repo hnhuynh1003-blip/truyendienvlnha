@@ -61,3 +61,7 @@
  .dudu-pilot-action{min-height:44px;font-size:13px}
 }
 @media(prefers-reduced-motion:reduce){.dudu-pilot-dialog{scroll-behavior:auto}}
+
+/* Shared styles for explicit playtest links, including anchor element. */
+a.dudu-pilot-launch{display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+a.dudu-pilot-launch:hover{background:#f3e7ff;color:#1b223a}
