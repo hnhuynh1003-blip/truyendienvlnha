@@ -23,6 +23,14 @@ DUDU should feel like the soul/interface of the system, a persistent character t
 
 DUDU remains the welcoming personality, never the sole source of truth.
 
+## V67.0 baseline completed (source-only, prior to UI modernization)
+- Inventory: 12 canonical Phone app mounts in `index.html`, with 106 external JS and 53 external stylesheet references overall (including the Story site, not solely Phone).
+- Shared read-only inspection: `js/phone-app-contract-v67.js` lists apps and renderer dependencies, loaded after existing scripts; this does **not** take over current navigation or rewrite saves.
+- Automated regression guards added: `tests/phone-app-contract-v67.cjs` and a Phone compatibility block in `tests/browser-smoke.cjs`.
+- Findings and specific retain/bridge/modernize decisions: `docs/DUDU-V67-APP-BASELINE-AUDIT.md`.
+- Static source checks do not demonstrate functioning chat, network, Android/iOS layout or server ownership. Do not move on to risky rewrites or claim full interoperability without browser/device checks.
+- Next functional work: **V67.1 shared lifecycle/navigation sync**, then **V67.2 DUDU messenger** and **V67.3 stewardship**. Existing NPC roleplay, item economy, author and story data stay untouched.
+
 ## Proposed implementation batches
 
 ### V67.1 — DUDU identity, contract with existing app, migration inventory
