@@ -16,7 +16,7 @@ import {putQuarantinedPhoto,deleteQuarantinedPhoto} from './avatar-r2-quarantine
 import {normalizedPrivateDraft,normalizedDraftApproval,parseScopedIds,cleanId} from './collectible-rules.mjs';
 
 import {NPC_MODELS} from './npc-models.mjs';
-import {classifyGemini400} from './gemini-error-v56-10.mjs';
+import {summarizeGemini400} from './gemini-diagnostics-v57-3.mjs';
 import {textOnlyNpcContents} from './npc-chat-format-v56-11.mjs';
 import {routeNpcAi,isWorkersAiModel,availableWorkersModels} from './ai-router-v58.mjs';
 const MODEL='gemini-3.5-flash-lite'; // same ID as server model registry; kept literal for isolated route tests
@@ -527,9 +527,19 @@ async function gemini(payload,env){
     if(response.status===400){
       try{
         const upstream=await response.json();
-        upstream400=classifyGemini400(upstream?.error?.message);
-      }catch(_){upstream400=classifyGemini400('');}
+        upstream400=summarizeGemini400(upstream?.error,body);
+      }catch(_){upstream400=summarizeGemini400(null,body);}
+      const reference=crypto.randomUUID().slice(0,8);
+      upstream400.reference=reference;
       console.warn('Gemini HTTP 400 class:',upstream400.code);
+      console.warn('Gemini HTTP 400 diagnostic:',JSON.stringify({
+        reference,model,googleStatus:upstream400.diagnostic.upstreamStatus,
+        prerequisite:upstream400.diagnostic.prerequisite,
+        field:upstream400.diagnostic.field,
+        instructionSize:upstream400.diagnostic.instructionSize,
+        contentSize:upstream400.diagnostic.contentSize,
+        contentTurns:upstream400.diagnostic.contentTurns
+      }));
     }
     const errorKind=response.status===400?upstream400.code:
       response.status===401||response.status===403?'gemini-access-denied':
@@ -544,7 +554,9 @@ async function gemini(payload,env){
       'gemini-overloaded':'Máy chủ Gemini đang quá tải (HTTP 503).',
       'upstream-error':'Không thể nhận phản hồi từ Gemini (HTTP '+response.status+').'
     };
-    return {error:{code:errorKind,message:upstream400?.message||details[errorKind]},
+    return {error:{code:errorKind,message:upstream400?.message||details[errorKind],
+      ...(upstream400?.reference?{reference:upstream400.reference}:{}),
+      ...(upstream400?.diagnostic?{diagnostic:upstream400.diagnostic}:{})},
       status:response.status===429?429:response.status===503?502:response.status===404?409:502};
   }
   let data;
