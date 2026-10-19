@@ -165,8 +165,12 @@
    }
    const starter=element('section','d64-world-section');
    const heading=element('div','d64-sectionhead');
+   const randomBtn=button('↻',()=>window.DuduWorldUXV66?.openRandomSignal(),'d66-random-entry');
+   randomBtn.setAttribute('aria-label','Xem một tín hiệu nhiệm vụ F ngẫu nhiên');
+   randomBtn.title='Tín hiệu sơ cấp ngẫu nhiên';
    heading.append(element('h2','','Sáu thế giới lớn'),
-     element('span','d64-world-count',taxonomy.missions.length+' NHIỆM VỤ F–E'));
+     element('span','d64-world-count',taxonomy.missions.length+' PHÓ BẢN'),
+     randomBtn);
    const grid=element('div','d64-world-grid');
    taxonomy.genres.forEach((g,i)=>grid.append(worldCard(g,i)));
    starter.append(heading,grid);
