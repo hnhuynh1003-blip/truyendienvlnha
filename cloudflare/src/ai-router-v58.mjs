@@ -90,7 +90,7 @@ export async function workersAiNpc(payload,env){
     const result=await env.AI.run(payload.model,{
       messages:[{role:'system',content:instruction},{role:'user',content:question}],
       max_completion_tokens:640
-    });
+    },{rejectIfBusy:true});
     const answer=extractWorkersAiText(result);
     if(!answer)
       return {error:{code:'empty-response',message:'Workers AI chưa tạo được lời nhắn NPC.'},status:502};
