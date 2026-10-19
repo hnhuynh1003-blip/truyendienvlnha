@@ -1,0 +1,128 @@
+name: DUDU V58 Workers Free deployment (once)
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/dudu-v58-free-deploy-once.yml
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: 'Enter DEPLOY_V58_FREE if manual rerun is needed'
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: dudu-worker-production-deploy
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      - uses: actions/checkout@v7
+      - name: Verify approved V58 Free release and credentials
+        env:
+          CONFIRMATION: ${{ inputs.confirmation }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            test "$CONFIRMATION" = "DEPLOY_V58_FREE" || { echo "STOP: invalid approval"; exit 1; }
+          fi
+          test -n "$CLOUDFLARE_API_TOKEN" && test -n "$CLOUDFLARE_ACCOUNT_ID" ||
+            { echo "::error::Cloudflare credentials missing. Deployment cancelled."; exit 1; }
+          test "$(git hash-object cloudflare/src/index.mjs)" = "dc219d656be4280053958152524f08dae66d263a" ||
+            { echo "STOP: Worker differs from V58 review"; exit 1; }
+          test "$(git hash-object cloudflare/src/ai-router-v58.mjs)" = "640e293296a010472095997e4a7fe4b84127b3d7" ||
+            { echo "STOP: Multi-AI router differs from V58 review"; exit 1; }
+          test "$(git hash-object cloudflare/src/npc-models.mjs)" = "c0290777f2cb81cf47ae47bacb2cb64b6e610d17" ||
+            { echo "STOP: model allowlist differs from V58 review"; exit 1; }
+          test "$(git hash-object cloudflare/wrangler.npc-ai-v54.toml)" = "36d6e9b30d661f6248a6876715a438878e8a12f7" ||
+            { echo "STOP: Worker config differs from Free-only review"; exit 1; }
+          grep -q 'DUDU_PAID_PROVIDERS_ENABLED = "false"' cloudflare/wrangler.npc-ai-v54.toml
+          grep -q 'DUDU_AI_FREE_ONLY = "true"' cloudflare/wrangler.npc-ai-v54.toml
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Run Cloudflare AI tests
+        run: |
+          npm install --prefix cloudflare --no-audit --no-fund
+          npm test --prefix cloudflare
+          node --check cloudflare/src/index.mjs
+          node --check cloudflare/src/ai-router-v58.mjs
+          node --check js/ai-proxy.js
+      - name: Bundle dry-run (no deployment)
+        working-directory: cloudflare
+        run: npx wrangler deploy --config wrangler.npc-ai-v54.toml --dry-run
+      - name: Audit live Worker bindings and preserve all existing settings
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --silent --show-error --fail --max-time 30 \
+            --header "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/dudu-ai-staging/settings" > "$RUNNER_TEMP/dudu-v58-live.json"
+          python3 - <<'PY'
+          import json,os,tomllib
+          from pathlib import Path
+          doc=json.loads((Path(os.environ['RUNNER_TEMP'])/'dudu-v58-live.json').read_text())
+          result=doc.get('result') if doc.get('success') is True else None
+          if not isinstance(result,dict) or not isinstance(result.get('bindings'),list):
+              raise SystemExit('STOP: live Worker settings could not be audited; no deploy')
+          bindings=result['bindings']
+          with open('cloudflare/wrangler.npc-ai-v54.toml','rb') as f: cfg=tomllib.load(f)
+          if cfg.get('name')!='dudu-ai-staging' or cfg.get('vars',{}).get('AI_ENABLED')!='true':
+              raise SystemExit('STOP: unauthorized Worker or AI switch')
+          vars_new={k:str(v) for k,v in cfg['vars'].items()}
+          changed={'DUDU_WORKERS_AI_APPROVED','DUDU_WORKERS_ACCOUNT_FREE_VERIFIED',
+                   'DUDU_AI_FALLBACK_ENABLED','DUDU_AI_FREE_ONLY',
+                   'DUDU_PAID_PROVIDERS_ENABLED'}
+          for key in changed:
+              allowed='false' if key=='DUDU_PAID_PROVIDERS_ENABLED' else 'true'
+              if vars_new.get(key)!=allowed:
+                  raise SystemExit('STOP: invalid new Free-only switch: '+key)
+          vars_old={b['name']:str(b.get('text','')) for b in bindings if b.get('type')=='plain_text'}
+          for key,value in vars_new.items():
+              if key in changed:
+                  if key in vars_old and vars_old[key] not in ('false',value):
+                      raise SystemExit('STOP: previous Free switch unexpected: '+key)
+              elif vars_old.get(key)!=value:
+                  raise SystemExit('STOP: existing Worker variable differs: '+key)
+          if set(vars_old)-set(vars_new):
+              raise SystemExit('STOP: unknown remote variables. Preserve manually first.')
+          dos={(x['name'],x['class_name']) for x in cfg['durable_objects']['bindings']}
+          old_dos={(x.get('name'),x.get('class_name')) for x in bindings if x.get('type')=='durable_object_namespace'}
+          if old_dos!=dos:
+              raise SystemExit('STOP: Durable Object bindings mismatch')
+          other=[b.get('type') for b in bindings
+                 if b.get('type') not in ('plain_text','secret_text','durable_object_namespace','ai')]
+          if other:
+              raise SystemExit('STOP: unsupported current bindings')
+          ai=[b for b in bindings if b.get('type')=='ai']
+          if len(ai)>1 or (ai and ai[0].get('name')!='AI'):
+              raise SystemExit('STOP: unexpected existing AI binding')
+          secrets={x.get('name') for x in bindings if x.get('type')=='secret_text'}
+          if 'GEMINI_API_KEY' not in secrets:
+              raise SystemExit('STOP: Gemini secret missing')
+          print('PASS: existing vars, secrets and Durable Objects audited; only approved Free switches and AI binding will change')
+          PY
+      - name: Deploy V58 Free for both AU and reader
+        working-directory: cloudflare
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Existing variables audited above. --keep-vars would prevent these
+          # new Free feature flags from taking effect. Secrets stay preserved.
+          npx wrangler deploy --config wrangler.npc-ai-v54.toml
+      - name: Confirm Free model catalog from deployed Worker
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --silent --show-error --fail --max-time 20 \
+            https://dudu-ai-staging.dudu-studio-ai.workers.dev/health \
+            | python3 -c 'import json,sys; d=json.load(sys.stdin); ids={m["id"] for m in d.get("models",[])}; required={"@cf/zai-org/glm-4.7-flash","@cf/google/gemma-4-26b-a4b-it"}; assert d.get("service")=="dudu-ai" and d.get("enabled") is True and d.get("freeOnly") is True and required<=ids, "Free model catalog missing"; print("PASS: DUDU V58 Free models enabled for signed-in AU and readers")'
