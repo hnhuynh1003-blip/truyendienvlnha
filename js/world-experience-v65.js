@@ -111,10 +111,12 @@
      const draft=service.makeDraft(picker.value);
      if(draft)downloadDraft(draft);
    });
-   const uploadLabel=node('label','d65-studio-import','Kiểm tra tệp JSON');
-   uploadLabel.htmlFor='d65-world-file';
+   const uploadTrigger=node('button','d65-studio-import','Kiểm tra tệp JSON');
+   uploadTrigger.type='button';
    const upload=node('input','d65-studio-file');
    upload.type='file';upload.id='d65-world-file';upload.accept='.json,application/json';
+   upload.tabIndex=-1;
+   uploadTrigger.addEventListener('click',()=>upload.click());
    const result=node('p','d65-studio-result');
    result.setAttribute('role','status');result.setAttribute('aria-live','polite');
    upload.addEventListener('change',async()=>{
@@ -133,7 +135,7 @@
        result.textContent='Không đọc được tệp JSON.';
      }finally{upload.value='';}
    });
-   tools.append(download,uploadLabel,upload);
+   tools.append(download,uploadTrigger,upload);
    body.append(pickerLabel,picker,tools,result);
    showDialog([dialogTop('DUDU / AUTHOR','Khung kịch bản'),body]);
    return true;
