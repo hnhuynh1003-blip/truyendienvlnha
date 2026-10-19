@@ -84,6 +84,39 @@ async function main() {
     assert.ok(mobileSite.heroHeight<280,'Mobile hero should leave room for visible story content');
     assert.equal(mobileSite.navigationVisible,true,'Mobile bottom navigation visible');
     assert.equal(mobileSite.overflow,false,'Homepage should not overflow viewport horizontally');
+    // World Atlas V63: no duplicate novel cards and no playable links to missing plots.
+    await page.evaluate(() => DuduSiteV60.navigate('worlds'));
+    const atlas=await page.evaluate(()=>{
+      const reg=window.DuduWorldRegistryV63;
+      const worlds=reg?.starterWorlds||[],unknown=reg?.unverifiedWorlds||[];
+      return {
+        registered:!!reg,
+        basic:worlds.length,
+        unverified:unknown.length,
+        cards:document.querySelectorAll('#d60-worlds .d63-world-card').length,
+        signals:document.querySelectorAll('#d60-worlds .d63-signal-card').length,
+        duplicateBooks:document.querySelectorAll('#d60-worlds .d60-book').length,
+        playableLinks:document.querySelectorAll('#d60-worlds .d63-world-card button, #d60-worlds .d63-world-card a').length,
+        allLowTier:worlds.every(w=>['F','E'].includes(w.tier)&&w.status==='planned'),
+        unverifiedSealed:unknown.every(w=>w.status==='unverified'),
+        uniqueIds:new Set([...worlds,...unknown].map(w=>w.worldId)).size===worlds.length+unknown.length,
+        emptyBindings:[...worlds,...unknown].every(w=>w.storyId===null&&w.scenarioId===null&&w.storyPromptId===null&&w.npcIds.length===0),
+        noFirestoreWrites:window.__firestoreWrites.length===0,
+        route:window.DuduSiteV60.page
+      };
+    });
+    assert.deepEqual(atlas,{
+      registered:true,basic:6,unverified:3,cards:6,signals:3,
+      duplicateBooks:0,playableLinks:0,allLowTier:true,unverifiedSealed:true,
+      uniqueIds:true,emptyBindings:true,noFirestoreWrites:true,route:'worlds'
+    },'World Atlas must be an independent, safely locked registry');
+    const atlasMobile=await page.evaluate(()=>({
+      overflow:document.documentElement.scrollWidth>window.innerWidth+2,
+      worldColumns:getComputedStyle(document.querySelector('.d63-world-grid')).gridTemplateColumns.split(' ').length
+    }));
+    assert.equal(atlasMobile.overflow,false,'World Atlas must not scroll horizontally on mobile');
+    assert.equal(atlasMobile.worldColumns,1,'Small-screen Atlas cards must use one column');
+    await page.evaluate(()=>DuduSiteV60.navigate('home'));
     await page.setViewportSize({width:1280,height:720});
 
     await page.waitForFunction(() => typeof window.handleAuthSubmit === 'function' && !!document.getElementById('auth-username'));
