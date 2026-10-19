@@ -7,6 +7,10 @@
   const WORKER_URL = 'https://dudu-ai-staging.dudu-studio-ai.workers.dev'; // Public endpoint; GEMINI_API_KEY stays secret in Cloudflare.
   let sandbox = false;
   const DEFAULT_MODEL='gemini-3.5-flash-lite';
+  // Gemini may use 25s before a single Workers Free fallback starts.
+  // Avoid aborting a legitimate fallback at the original 32s browser cap.
+  const CHAT_TIMEOUT_MS=65000;
+  const STATUS_TIMEOUT_MS=15000;
   const AUTO='auto'; // Browser-only routing option, never an API model ID.
   // Auto routes only to Gemini 3.1+ models; Workers AI requires server approval.
   const BASE_MODELS=Object.freeze([
@@ -92,7 +96,7 @@
           ...(method==='POST'?{'Content-Type':'application/json'}:{})},
         ...(method==='POST'?{body:JSON.stringify(data)}:{}),
         cache:'no-store',
-        signal:AbortSignal.timeout(32000)
+        signal:AbortSignal.timeout(method==='POST'?CHAT_TIMEOUT_MS:STATUS_TIMEOUT_MS)
       });
       const body=await response.json().catch(()=>null);
       if(!response.ok||body?.error)return {
@@ -107,10 +111,22 @@
         reference:/^[a-f0-9]{8}$/.test(body?.error?.reference||'')?body.error.reference:undefined,
         field:['contents','systemInstruction','generationConfig','model'].includes(body?.error?.diagnostic?.field)?body.error.diagnostic.field:undefined
       };
-      return body || {error:'Máy chủ không trả lời.'};
+      if(!body)return {
+        error:'Máy chủ trả phản hồi không đọc được. Tin nhắn vẫn được lưu trên thiết bị.',
+        code:'client-invalid-json',
+        model:method==='POST'&&MODELS.some(x=>x.id===data?.model)?data.model:undefined
+      };
+      return body;
     }catch(e){
-      console.warn('DUDU AI gateway unavailable:',e?.name||'network');
-      return {error:'Tần số NPC tạm thời gián đoạn.'};
+      const timeout=e?.name==='TimeoutError'||e?.name==='AbortError';
+      console.warn('DUDU AI gateway unavailable:',timeout?'client-timeout':(e?.name||'network'));
+      return {
+        error:timeout
+          ?'Đợi AI quá 65 giây nên thiết bị ngừng chờ. NPC có thể vẫn đang xử lý; hãy kiểm tra kết nối trước khi thử lại.'
+          :'Không thể kết nối đến máy chủ AI từ thiết bị này. Hãy kiểm tra Wi-Fi, DNS riêng hoặc trình chặn kết nối và thử lại.',
+        code:timeout?'client-timeout':'client-network',
+        model:method==='POST'&&MODELS.some(x=>x.id===data?.model)?data.model:undefined
+      };
     }
   }
   function generate(purpose,instruction,messages,currentQuestion){
