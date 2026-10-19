@@ -122,4 +122,24 @@ assert.ok(css.includes('dudu-v672-chatting')&&css.includes('.dudu-v672-diary-con
 assert.ok(html.includes('js/companion-ui-v43.js?v=67-3'));
 assert.ok(html.includes('css/dudu-messenger-v67-2.css?v=67-2'));
 assert.ok(html.includes('js/dudu-messenger-v67-2.js?v=67-2'));
-console.log('DUDU V67.2: compact messenger, drafts, keyboard, history, scroll, hide OK');
+// V67.3 integrated chat: system facts render one explicit, harmless action.
+const stewardSource=fs.readFileSync(path.join(root,'js/dudu-system-steward-v67-3.js'),'utf8');
+window.DuduWorldTaxonomyV66={
+ genres:[{name:'Cổ đại'}],missions:[{tier:'F',status:'seed',available:false}]
+};
+vm.runInNewContext(stewardSource,context,{timeout:1500});
+const navCalls=[];
+window.DuduSiteV60={navigate:route=>navCalls.push(route)};
+api.open();
+input.value='Thế giới';
+input.dispatchEvent({type:'input'});
+form.requestSubmit();
+const latestBubble=log.children[log.children.length-1];
+const action=latestBubble?.children.find(e=>e.classList.contains('dudu-v673-action'));
+assert.ok(action,'Latest system answer should have one read-only navigation chip');
+assert.equal(action.textContent,'Xem Vạn Giới ↗');
+assert.equal(navCalls.length,0,'System advice must not auto-navigate');
+action.dispatchEvent({type:'click'});
+assert.equal(navCalls.join(','),'worlds','Button must navigate only after click');
+assert.equal(window.DuduSystemStewardV673.openSafeView('grant_reward'),false);
+console.log('DUDU V67.2/V67.3: messenger, history, keyboard and safe system action OK');
