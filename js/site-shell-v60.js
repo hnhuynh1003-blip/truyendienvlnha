@@ -205,7 +205,8 @@
    }
    root.append(button('✎ Tạo tác phẩm',()=>openStoryModal()),
      button('▤ Nhập EPUB',()=>openEpubImportV48(),'d60-btn secondary'),
-     button('📚 Quản lý trong Thư viện',()=>navigate('library'),'d60-btn secondary'));
+     button('📚 Quản lý trong Thư viện',()=>navigate('library'),'d60-btn secondary'),
+     button('◇ Khung kịch bản',()=>window.DuduWorldUXV65?.openAuthorStudio(),'d60-btn secondary'));
  }
  function refresh(){
    if(refreshPending)return;refreshPending=true;
