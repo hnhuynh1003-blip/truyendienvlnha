@@ -25,9 +25,9 @@ test('V56.4 render uses existing premium catalog and keeps V55 history keys',()=
  assert.equal(role.legacyChatKey('story','npc'),'story::npc');
  assert.equal(role.chatKey('story','one','npc'),'story::role56:one::npc');
 });
-test('V56.4 retains seven V55 allowlisted model IDs without billing shortcuts',()=>{
+test('V57.2 limits roleplay models to Gemini 3.1+ without billing shortcuts',()=>{
  const ids=[...catalog.matchAll(/Object\.freeze\(\{id:'([^']+)'/g)].map(x=>x[1]);
- assert.equal(ids.length,7);
- assert.equal(new Set(ids).size,7);
- for(const id of ids)assert.ok(id.startsWith('gemini-')&&!id.includes('pro'));
+ assert.equal(ids.length,4);
+ assert.equal(new Set(ids).size,4);
+ for(const id of ids)assert.ok(/^gemini-3\.(?:1|5|6|8)-/.test(id)&&!id.includes('pro'));
 });
