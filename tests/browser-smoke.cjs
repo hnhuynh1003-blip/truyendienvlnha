@@ -298,12 +298,19 @@ async function main() {
       const claimed=claim.disabled&&userProfile.duduCompanionV43.login.count===1;
       claim.click();
       const noDouble=Number(userProfile.currency)===currencyAfter;
+      input.value='Ký khế ước hệ thống';
+      input.dispatchEvent(new Event('input',{bubbles:true}));
+      document.querySelector('.dudu-v43-composer').requestSubmit();
+      const stewardResponse=(userProfile.duduCompanionV43?.messages||[]).slice(-1)[0]?.text||'';
+      const stewardSafe=/chưa được triển khai/i.test(stewardResponse)&&
+        /chưa thể xác nhận/i.test(stewardResponse)&&
+        window.DuduSystemStewardV673?.canSignPact()===false;
       window.DuduCompanionV43.back();
       const back=app.classList.contains('dudu-v33-inbox');
       userProfile=JSON.parse(backup);saveCurrentAccount();
       phoneHome();if(!prevOpen)togglePhone();
       return {pinned,name,visible,scriptedHelp,chatCount,claimed,noDouble,back,
-       messengerLayout,enabledBefore,disabledAfter,
+       stewardSafe,messengerLayout,enabledBefore,disabledAfter,
        increment:currencyAfter-currencyBefore,writes:window.__firestoreWrites.length};
     });
     assert.equal(companionSmoke.pinned,true,'DUDU must be the first conversation');
@@ -321,6 +328,8 @@ async function main() {
     assert.equal(companionSmoke.increment,3,'First Sandbox check-in awards three Xu');
     assert.equal(companionSmoke.back,true,'Return to contacts from DUDU');
     assert.equal(companionSmoke.writes,0,'DUDU Sandbox never calls production Firestore');
+    assert.equal(companionSmoke.stewardSafe,true,
+      'V67.3 DUDU must explain unsigned pact without pretending it can sign or unlock it');
 
     const museumSandbox=await page.evaluate(async()=>{
       openPhoneApp('museum');
