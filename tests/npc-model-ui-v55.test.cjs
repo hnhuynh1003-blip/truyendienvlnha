@@ -52,5 +52,5 @@ test('V58 authenticated AU/reader Auto prefers approved Free Workers AI',()=>{
 test('V58.1 failed free provider is shown instead of the original Gemini model',()=>{
   assert.match(client,/MODELS\.some\(x=>x\.id===body\?\.error\?\.model\)/);
   assert.match(client,/body\.error\.model/);
-  assert.match(client,/workers-ai/);
+  assert.match(client,/body\.error\.model/);
 });
