@@ -257,9 +257,10 @@
    const home=element('main','d60-page');home.id='d60-home';
    const worlds=element('section','d60-page');worlds.id='d60-worlds';
    const atlasHeading=element('div','d64-atlas-heading');
-   atlasHeading.append(element('div','d64-atlas-titleblock',
-       element('span','d64-atlas-kicker','DUDU · WORLDS')));
-   atlasHeading.firstChild.append(element('h1','d60-page-title','Vạn giới'));
+   const atlasTitles=element('div','d64-atlas-titleblock');
+   atlasTitles.append(element('span','d64-atlas-kicker','DUDU · WORLDS'),
+     element('h1','d60-page-title','Vạn giới'));
+   atlasHeading.append(atlasTitles);
    const seal=element('span','d64-atlas-seal','Đang kiến tạo');
    atlasHeading.append(seal);
    worlds.append(atlasHeading);
