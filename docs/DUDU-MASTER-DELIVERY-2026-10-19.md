@@ -23,14 +23,15 @@
 - Author entry: respect current permissions; do not manufacture roles or modify Firestore rules in a UI tranche.
 - Test widths 320/375/390/768/desktop; back/forward, refresh, auth guest/author, empty and populated catalog, EPUB chapters, reading progress.
 
-## Tranche B — World Atlas / Scenario Foundations (V63–V65 implemented; release testing pending)
-- V63: six F/E starter worlds with immutable IDs and three sealed unverified coordinates; **Worlds must never repeat the novel list** from Library.
-- V64: compact 2-column mobile atlas with brief labels and optional collapsed anomaly section.
-- V65: world dossiers open on demand with no gameplay, plus author-only offline JSON prompt blueprint creation/validation for six starter worlds.
-- Preserve three roleplay paths (`main`, `passerby`, `free`) as draft contract; do not claim per-story identity selection is activated by V65.
-- Scene, plot, NPC and story identifiers remain unbound until individually authored and tested; no client-side action grants world access or rewards.
-- Future stage: separate approved scenario publication, verified world-to-story/NPC bindings, account-isolated memory and server-authorized unlocks, with read-only previews before release.
-- Story recommendations remain exclusively in Library/Home; do not copy complete catalogs into World Atlas.
+## Tranche B — Genre Gates / Pact-First Missions (V66 architecture implemented; release testing pending)
+- **V66 corrects V63–V65:** six top-level gates are genres **Cổ đại, Hiện đại, Niên đại, Tương lai, Tu tiên, Mạt thế**, not six one-off low-tier worlds.
+- Each genre now has eight distinct F/E seed missions: 48 total (30 F, 18 E). More missions may be appended without changing existing immutable `missionId` values.
+- Mandatory order for actual play: authenticated, server-verified **system pact** → eligible beginner mission grades F/E → server-validated outcomes and eventual system-rank promotion. **System rank and mission grade are different**; do not invent thresholds or assume E automatically requires rank E.
+- Read-only genre preview offers rotating per-genre F/E seeds plus global non-repeating F-tier signal samples. Neither is task assignment, game progress nor an unlock.
+- Author JSON drafts now bind to **missionId plus genreId**, preserving the three A/B/C roleplay paths and locked access/progression/rewards.
+- V63 six example worlds and V65 blueprint are archival and must **not** be re-enabled as the canonical live genre/mission structure. Three older unverified coordinates remain hidden in the optional unknown signals drawer.
+- **Still pending:** server-signed pact, rank and mission-grade eligibility, durable personalized random dispatch, completed plot branches, world-NPC association, outcome/XP validation, reward idempotency and state migration.
+- Gameplay must stay closed until trusted server checks, auth isolation and production smoke are proven. Do not copy the novel catalog into the atlas.
 
 ## Tranche C — Identity, NPC and Cyber Phone (pending)
 - Maintain per-story A/B/C role selection: main character, passerby, or independent traveler; preserve existing profiles.
@@ -53,6 +54,7 @@
 6. If tests cannot run, say so explicitly and do not claim the tranche is production-verified.
 
 ## Continuation checkpoints
+- V66 genre/pact model: see `docs/DUDU-V66-SYSTEM-PACT-GENRES-MISSIONS.md`. Six categories and 48 F/E seeds are integrated as **read-only** previews; no pact signing/progression backend yet.
 - `e4b67b7`: prefer a genuinely last-read bookmark when the saved bookmark includes a date; otherwise leave stable order. Title tracks the active route. No database or AI changes.
 - V63 (`3c50460`): stable low-tier World Atlas replacing duplicate book lists.
 - V64 (`fc43ac5`): compact mobile-first coordinate UI with no unnecessary descriptions.
