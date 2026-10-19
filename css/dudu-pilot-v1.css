@@ -65,3 +65,6 @@
 /* Shared styles for explicit playtest links, including anchor element. */
 a.dudu-pilot-launch{display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
 a.dudu-pilot-launch:hover{background:#f3e7ff;color:#1b223a}
+
+/* Visual 2A: keep cinematic photos responsive while preserving SVG fallback. */
+.dudu-pilot-visual img[data-render-style="cinematic"]{image-rendering:auto;filter:saturate(.94) contrast(1.04)}

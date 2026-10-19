@@ -56,6 +56,19 @@
   const imageWrap=el('div','dudu-pilot-visual');
   const img=el('img');img.src=v.place.background;img.alt='Khung cảnh: '+v.place.label;
   img.loading='eager';
+  // Optional cinematic photo: load only when the WebP exists, and retain the SVG fallback.
+  // Pilot assets are not yet present on main. Do not block the story while probing.
+  const photoPath=v.place.photo;
+  if(photoPath&&typeof root.Image==='function'){
+   const preview=new root.Image();
+   preview.onload=()=>{
+    if(img.isConnected&&img.getAttribute('src')===v.place.background){
+     img.src=photoPath;img.setAttribute('data-render-style','cinematic');
+    }
+   };
+   preview.onerror=()=>{};
+   preview.src=photoPath;
+  }
   imageWrap.append(img,el('span','dudu-pilot-place','⌖  '+v.place.label));
   const notice=el('p','dudu-pilot-notice',
    'BẢN THỬ KHÉP KÍN · Không ký khế ước, không tính khảo hạch, không cấp EXP/Xu/vật phẩm');

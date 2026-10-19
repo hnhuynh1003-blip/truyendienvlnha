@@ -32,7 +32,7 @@ h1{font-size:clamp(23px,4.5vw,33px);margin:0 0 10px;line-height:1.18}
 <div class="wrap">
 <a class="crumb" href="./#/worlds">← Quay lại Vạn Giới</a>
 <main>
-<img class="hero" src="assets/worlds/quan-dao-gate.svg?v=2" alt="Con đường dưới mưa dẫn đến quán trọ Quan Đạo, phía xa có núi và những ngọn đèn vàng">
+<img class="hero" id="dudu-pilot-cover" src="assets/worlds/quan-dao-gate.svg?v=2" alt="Con đường dưới mưa dẫn đến quán trọ Quan Đạo, phía xa có núi và những ngọn đèn vàng">
 <div class="content">
 <p class="kicker">DUDU · CORE FOUNDATION / NHIỆM VỤ F MẪU</p>
 <h1>Đêm mưa ở Quan Đạo</h1>
@@ -50,6 +50,12 @@ h1{font-size:clamp(23px,4.5vw,33px);margin:0 0 10px;line-height:1.18}
 <script>
 (function(){
   'use strict';
+  const cover=document.getElementById('dudu-pilot-cover');
+  // Upgrade to local WebP only if the file has been uploaded; SVG remains safe fallback.
+  const photo=new Image();
+  photo.onload=()=>{if(cover)cover.src='assets/worlds/quan-dao-gate-cinematic.webp?v=2a';};
+  photo.onerror=()=>{};
+  photo.src='assets/worlds/quan-dao-gate-cinematic.webp?v=2a';
   const button=document.getElementById('dudu-pilot-standalone-start');
   const status=document.getElementById('dudu-pilot-standalone-status');
   button.addEventListener('click',function(){

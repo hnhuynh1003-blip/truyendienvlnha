@@ -14,8 +14,8 @@
   title:'Đêm mưa ở Quan Đạo',worldCover:'assets/worlds/quan-dao-gate.svg',
   startSceneId:'arrival',
   places:{
-   gate:{label:'Đường vào quán trọ Quan Đạo',background:'assets/worlds/quan-dao-gate.svg'},
-   hall:{label:'Đại sảnh quán trọ',background:'assets/worlds/quan-dao-hall.svg'}
+   gate:{label:'Đường vào quán trọ Quan Đạo',background:'assets/worlds/quan-dao-gate.svg',photo:'assets/worlds/quan-dao-gate-cinematic.webp'},
+   hall:{label:'Đại sảnh quán trọ',background:'assets/worlds/quan-dao-hall.svg',photo:'assets/worlds/quan-dao-hall-cinematic.webp'}
   },
   scenes:{
    arrival:{placeId:'gate',title:'Người lữ khách giữa cơn mưa',
