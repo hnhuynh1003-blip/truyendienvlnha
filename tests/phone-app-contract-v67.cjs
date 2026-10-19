@@ -21,6 +21,14 @@ assert.ok(api);
 assert.equal(api.version,1);
 assert.equal(api.specs.length,12);
 assert.equal(new Set(Array.from(api.specs,s=>s.id)).size,12);
+const routeTargets=[...html.matchAll(/openPhoneApp\\(['"]([^'"]+)['"]\\)/g)].map(m=>m[1]);
+assert.ok(routeTargets.length>=12);
+for(const target of routeTargets){
+ assert.ok(ids.includes(target),'Phone route references missing app mount: '+target);
+}
+for(const target of ids){
+ assert.ok(routeTargets.includes(target),'No UI launcher found for '+target);
+}
 assert.equal(api.get('nonexistent'),null);
 for(const app of api.specs){
  assert.ok(ids.includes(app.id),app.id+' has unsupported ID');
