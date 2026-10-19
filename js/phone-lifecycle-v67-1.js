@@ -94,9 +94,10 @@
      const beforeOwner=accountKey();
      if(owner!==beforeOwner)onAccountChanged();
      const result=original.apply(this,arguments);
-     // Opening any app (including the V33 inbox) exits the DUDU chat
-     // controller; history remains stored under its original owner.
-     if(name==='openPhoneApp')root.DuduCompanionV43?.hide?.();
+     // Navigating to another app, the inbox or Phone home exits DUDU
+     // without clearing its per-account persisted conversation.
+     if(name==='openPhoneApp'||name==='phoneHome')
+       root.DuduCompanionV43?.hide?.();
      enqueue(reason);
      return result;
    };
