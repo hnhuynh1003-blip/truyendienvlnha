@@ -13,7 +13,7 @@
 - V60.2/V60.3: compact System Portal, no duplicate home quick-link cards, one NPC contact shortcut, one resume block.
 - A successful commit is **not** proof of production deployment or full browser smoke success.
 
-## Tranche A — Discovery / Site Shell (active)
+## Tranche A — Discovery / Site Shell (implemented, regression testing pending)
 - Preserve a compact sci-fantasy system atmosphere; avoid dense explanatory text, redundant CTAs, oversized cards and fake content.
 - Homepage: published book discovery, real update ordering, one resume card, genre entry, compact system status.
 - Library: real search/filter, authentic works only, clear no-results and empty states, card cover/title/chapter count, no broken links.
@@ -23,11 +23,14 @@
 - Author entry: respect current permissions; do not manufacture roles or modify Firestore rules in a UI tranche.
 - Test widths 320/375/390/768/desktop; back/forward, refresh, auth guest/author, empty and populated catalog, EPUB chapters, reading progress.
 
-## Tranche B — Catalog / World Directory (pending)
-- Design read-only world directory from actual published story/world identifiers; no fabricated public data.
-- Define per-world landing pages: cover, overview, linked novel and eligible NPCs; use a clear locked status where features are incomplete.
-- Store only necessary cross-links; do not merge distinct stories' roleplay memory or identity.
-- Editorial featuring / recommendations must be grounded in real library records. Do not imply personal ranking without signals.
+## Tranche B — World Atlas / Scenario Foundations (V63–V65 implemented; release testing pending)
+- V63: six F/E starter worlds with immutable IDs and three sealed unverified coordinates; **Worlds must never repeat the novel list** from Library.
+- V64: compact 2-column mobile atlas with brief labels and optional collapsed anomaly section.
+- V65: world dossiers open on demand with no gameplay, plus author-only offline JSON prompt blueprint creation/validation for six starter worlds.
+- Preserve three roleplay paths (`main`, `passerby`, `free`) as draft contract; do not claim per-story identity selection is activated by V65.
+- Scene, plot, NPC and story identifiers remain unbound until individually authored and tested; no client-side action grants world access or rewards.
+- Future stage: separate approved scenario publication, verified world-to-story/NPC bindings, account-isolated memory and server-authorized unlocks, with read-only previews before release.
+- Story recommendations remain exclusively in Library/Home; do not copy complete catalogs into World Atlas.
 
 ## Tranche C — Identity, NPC and Cyber Phone (pending)
 - Maintain per-story A/B/C role selection: main character, passerby, or independent traveler; preserve existing profiles.
@@ -49,6 +52,9 @@
 5. Record commit links and rollback ref. Deploy verification is separate from GitHub commit.
 6. If tests cannot run, say so explicitly and do not claim the tranche is production-verified.
 
-## Continuation commit
+## Continuation checkpoints
 - `e4b67b7`: prefer a genuinely last-read bookmark when the saved bookmark includes a date; otherwise leave stable order. Title tracks the active route. No database or AI changes.
-- Browser regression tests have **not** been executed as part of this continuation. This is a source-level change only.
+- V63 (`3c50460`): stable low-tier World Atlas replacing duplicate book lists.
+- V64 (`fc43ac5`): compact mobile-first coordinate UI with no unnecessary descriptions.
+- V65: optional world dossier and offline author draft blueprint, built without backend writes or publication workflow. See `docs/DUDU-V65-WORLD-DOSSIER-BLUEPRINT.md`.
+- Static JS/registry contract checks have been performed in the connector runtime. Full browser/CI/live deployment verification is **not yet confirmed** for this continuation.
