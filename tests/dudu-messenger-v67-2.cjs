@@ -119,7 +119,7 @@ assert.equal(diary.open,false);
 assert.equal(body.classList.contains('dudu-v672-chatting'),false);
 assert.equal(app.classList.contains('dudu-v43-companion-open'),false);
 assert.ok(css.includes('dudu-v672-chatting')&&css.includes('.dudu-v672-diary-contents'));
-assert.ok(html.includes('js/companion-ui-v43.js?v=67-2'));
+assert.ok(html.includes('js/companion-ui-v43.js?v=67-3'));
 assert.ok(html.includes('css/dudu-messenger-v67-2.css?v=67-2'));
 assert.ok(html.includes('js/dudu-messenger-v67-2.js?v=67-2'));
 console.log('DUDU V67.2: compact messenger, drafts, keyboard, history, scroll, hide OK');
