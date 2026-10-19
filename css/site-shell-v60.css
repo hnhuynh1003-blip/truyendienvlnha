@@ -133,20 +133,6 @@ body.dudu-site-v60.theme-warm,body.dudu-site-v60.theme-oled {background:var(--bg
 .d61-signal strong {color:#e7e5fa;font-size:11px}
 .d61-signal-divider {color:#566580;margin:0 4px}
 .d61-signal-off {color:#ddbc85}
-.d61-quick-row {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:17px}
-.d61-quick {position:relative;display:flex;align-items:center;min-width:0;min-height:68px;gap:11px;
-  border:1px solid rgba(170,182,217,.2);border-radius:13px;padding:12px 13px;cursor:pointer;text-align:left;
-  background:linear-gradient(150deg,rgba(33,41,63,.95),rgba(22,28,46,.95));color:#f0edff;
-  transition:border-color .18s,transform .18s,background .18s}
-.d61-quick:hover {border-color:rgba(184,167,253,.57);transform:translateY(-2px);
-  background:linear-gradient(150deg,rgba(42,49,78,.95),rgba(29,31,56,.95))}
-.d61-quick-icon {flex:0 0 35px;width:35px;height:35px;border:1px solid rgba(185,165,245,.27);
-  border-radius:10px;display:grid;place-items:center;background:rgba(169,149,237,.1);
-  font-size:23px;line-height:1;color:#d5c4ff}
-.d61-quick-words {display:flex;flex-direction:column;gap:2px;min-width:0}
-.d61-quick-words strong {font-size:12px;line-height:1.25;white-space:nowrap}
-.d61-quick-words small {color:#9aaac3;font-size:10px;line-height:1.25}
-.d61-quick-arrow {position:absolute;right:8px;top:6px;color:#7084a2;font-size:11px}
 #d60-home .d60-section {margin-top:26px}
 #d60-home .d60-sectionhead {margin-bottom:12px}
 #d60-home .d60-sectionhead h2 {font-size:18px;letter-spacing:-.015em}
@@ -166,16 +152,6 @@ body.dudu-site-v60.theme-warm,body.dudu-site-v60.theme-oled {background:var(--bg
   border:1px solid rgba(169,149,237,.32);border-radius:8px;padding:8px 11px;cursor:pointer}
 .d61-chips .d60-chip {background:rgba(42,48,73,.72);border-color:rgba(175,169,217,.22);
   font-size:11px;padding:7px 11px}
-.d61-world-strip {display:flex;align-items:center;gap:13px;margin-top:25px;padding:12px 16px;
-  border:1px solid rgba(178,161,238,.23);border-radius:13px;
-  background:linear-gradient(100deg,rgba(31,37,63,.88),rgba(19,28,46,.9))}
-.d61-world-symbol {font-size:32px;color:#ddbb82;line-height:1}
-.d61-world-copy {display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
-.d61-world-copy small {font:700 9px/1.3 ui-monospace,Consolas,monospace;letter-spacing:.14em;color:#a69cc7}
-.d61-world-copy strong {font-size:13px;color:#ede9fa}
-.d61-world-action {font-size:11px;white-space:nowrap;border:0;background:transparent;color:#dbcafb;
-  font-weight:700;cursor:pointer}
-.d61-world-action:hover {text-decoration:underline}
 @media(max-width:760px) {
  body.dudu-site-v60 .container {padding-top:14px}
  .d61-hero {grid-template-columns:minmax(0,1fr);padding:19px 18px!important;min-height:183px}
@@ -190,21 +166,28 @@ body.dudu-site-v60.theme-warm,body.dudu-site-v60.theme-oled {background:var(--bg
  .d61-portal-caption {display:none}
  .d61-signal {padding:7px 10px;font-size:9px;gap:5px}
  .d61-signal-divider {margin:0 2px}
- .d61-quick-row {grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
- .d61-quick {padding:9px;min-height:56px;gap:8px}
- .d61-quick-icon {flex-basis:30px;width:30px;height:30px;font-size:20px}
- .d61-quick-words strong {font-size:11px}
- .d61-quick-words small {font-size:9px}
  .d61-resume-card {gap:9px;padding:9px}
  .d61-resume-action {padding:7px 8px}
  #d60-home .d60-section {margin-top:22px}
- .d61-world-strip {padding:11px 12px;gap:9px}
 }
 @media(max-width:370px) {
  .d61-hero h1 {font-size:24px!important;max-width:226px}
- .d61-quick-words small {display:none}
- .d61-quick-arrow {display:none}
  .d61-signal-label {letter-spacing:0}
  .d61-resume-action {font-size:10px}
 }
 @media(prefers-reduced-motion:reduce) {.d61-quick,#d60-home .d60-book {transition:none}}
+
+
+/* v60.3: one action per purpose. The hero is a compact portal, not a second navigation menu. */
+.d61-hero {min-height:194px;padding-block:20px!important}
+.d61-hero h1 {margin:8px 0 5px!important}
+.d61-hero-actions {margin-top:14px!important}
+.d61-hero-actions .d60-btn {background:rgba(169,149,237,.15);color:#eee6ff;
+  border:1px solid rgba(169,149,237,.48);box-shadow:none}
+.d61-hero-actions .d60-btn:hover {background:rgba(169,149,237,.28)}
+#d60-home .d60-section:first-of-type {margin-top:22px}
+@media(max-width:760px){
+ .d61-hero {min-height:168px;padding-block:16px!important}
+ .d61-hero-actions {margin-top:12px!important}
+ .d61-portal {opacity:.23}
+}

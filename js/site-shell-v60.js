@@ -61,15 +61,6 @@
    if(phone&&phone.style.display!=='flex')togglePhone();
    openPhoneApp('chat');
  }
- function quickLink(icon,label,detail,action){
-   const tile=button('',action,'d61-quick');
-   const mark=element('span','d61-quick-icon',icon);
-   mark.setAttribute('aria-hidden','true');
-   const words=element('span','d61-quick-words');
-   words.append(element('strong','',label),element('small','',detail));
-   tile.append(mark,words,element('span','d61-quick-arrow','↗'));
-   return tile;
- }
  function fillHome(){
    const root=id('d60-home');if(!root)return;root.replaceChildren();
    const all=recent(list()),saved=shelfItems(),resume=saved[0]||null;
@@ -77,10 +68,11 @@
    const copy=element('div','d61-hero-copy');
    copy.append(element('p','d61-terminal','◈  DUDU / SYSTEM GATE'),
      element('h1','','Đọc truyện. Mở vạn giới.'),
-     element('p','d61-tagline','Đọc · Kết nối · Khám phá'));
+     element('p','d61-tagline','Mỗi câu chuyện, một khả năng.'));
+   // Primary navigation owns the Library / Worlds / Shelf links.
+   // The one hero action opens Contacts, which is not in the primary navigation.
    const actions=element('div','d60-actions d61-hero-actions');
-   actions.append(button('Khám phá truyện  ↗',()=>navigate('library')),
-     button('Thế giới  →',()=>navigate('worlds'),'d60-btn secondary'));
+   actions.append(button('Liên lạc NPC  ↗',openContact));
    copy.append(actions);
    const portal=element('div','d61-portal');
    portal.setAttribute('aria-hidden','true');
@@ -100,18 +92,8 @@
      element('span','d61-signal-label','XUYÊN GIỚI'),
      element('span','d61-signal-off','Đang kiến tạo'));
    root.append(signal);
-   const quick=element('nav','d61-quick-row');
-   quick.setAttribute('aria-label','Truy cập nhanh');
-   quick.append(
-     quickLink('↻',resume?'Đọc tiếp':'Bắt đầu đọc',resume?'Chương '+(resume.mark.chIdx+1):'Mở thư viện',
-       ()=>{if(resume)smartReadAction(novels.indexOf(resume.n));else navigate('library');}),
-     quickLink('▤','Thư viện','Tìm câu chuyện',()=>navigate('library')),
-     quickLink('⌁','Liên lạc','NPC & DUDU',openContact),
-     quickLink('◎','Vạn giới','Khám phá',()=>navigate('worlds'))
-   );
-   root.append(quick);
    if(resume){
-     const s=section('Đọc dở','Tủ sách  →',()=>navigate('shelf'));
+     const s=section('Đang đọc');
      const row=element('div','d61-resume-card'),inner=element('div','d61-resume-copy');
      inner.append(element('strong','',resume.n.title||'Truyện đang đọc'),
        element('small','','Chương '+(resume.mark.chIdx+1)+' / '+resume.n.chapters.length));
@@ -131,12 +113,7 @@
      },'d60-chip')));
      s.append(r);root.append(s);
    }
-   const worlds=element('section','d61-world-strip');
-   const texts=element('div','d61-world-copy');
-   texts.append(element('small','','WORLD GATE // LOCKED'),element('strong','','Vạn giới đang kiến tạo'));
-   worlds.append(element('span','d61-world-symbol','⟡'),texts,
-     button('Khám phá  ↗',()=>navigate('worlds'),'d61-world-action'));
-   root.append(worlds);
+
  }
  function fillShelf(){
    const root=id('d60-shelf-list');if(!root)return;root.replaceChildren();

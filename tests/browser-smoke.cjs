@@ -60,13 +60,19 @@ async function main() {
         heroHeight: Math.round(hero.getBoundingClientRect().height),
         heroTitle: hero.querySelector('h1')?.textContent||'',
         modules: document.querySelectorAll('#d60-home .d61-quick').length,
+        heroActions: document.querySelectorAll('#d60-home .d61-hero-actions button').length,
+        readActions: document.querySelectorAll('#d60-home .d61-resume-action').length,
+        worldTeasers: document.querySelectorAll('#d60-home .d61-world-strip').length,
         worlds: document.querySelector('.d61-signal-off')?.textContent||'',
         path: window.DuduSiteV60.page
       };
     });
     assert.ok(siteHome.heroHeight>100 && siteHome.heroHeight<300,'Desktop System Portal must be compact');
     assert.match(siteHome.heroTitle,/Mở vạn giới/);
-    assert.equal(siteHome.modules,4,'Exactly four compact quick-entry modules');
+    assert.equal(siteHome.modules,0,'No duplicated quick-entry menu beneath hero');
+    assert.equal(siteHome.heroActions,1,'Hero keeps just the Contacts shortcut');
+    assert.ok(siteHome.readActions<=1,'At most one Resume chapter action on home');
+    assert.equal(siteHome.worldTeasers,0,'Do not repeat World status in a second large card');
     assert.match(siteHome.worlds,/Đang kiến tạo/,'Worlds must not be presented as live gameplay');
     assert.equal(siteHome.path,'home');
     await page.setViewportSize({width:390,height:844});
