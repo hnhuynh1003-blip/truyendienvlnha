@@ -128,55 +128,65 @@
    }
 
  }
- function worldCard(w){
-   const card=element('article','d63-world-card d63-tone-'+w.tone);
+ // V64 World Atlas: compact mobile-first coordinates; detailed lore stays in the registry.
+ function worldCard(w,index){
+   const card=element('article','d64-world-card d63-tone-'+w.tone);
    card.dataset.worldId=w.worldId;
-   const head=element('div','d63-world-top');
-   head.append(element('span','d63-world-code',w.worldId.toUpperCase().replace('DUDU-','')),
-     element('span','d63-world-level','CẤP '+w.tier));
-   const sigil=element('div','d63-world-sigil',w.symbol);sigil.setAttribute('aria-hidden','true');
-   const name=element('h3','d63-world-name',w.name);
-   const kind=element('p','d63-world-kind',w.kind);
-   const caption=element('p','d63-world-teaser',w.teaser);
-   const bottom=element('div','d63-world-bottom');
-   bottom.append(element('span','d63-status-dot'),element('span','', 'Chưa mở kịch bản'));
-   card.append(head,sigil,name,kind,caption,bottom);
+   card.setAttribute('aria-label',w.name+', cấp '+w.tier+', chưa phát hành');
+   const top=element('div','d64-card-top');
+   top.append(element('span','d64-card-number',String(index+1).padStart(2,'0')),
+     element('span','d64-card-tier','CẤP '+w.tier));
+   const crest=element('div','d64-world-crest',w.symbol);
+   crest.setAttribute('aria-hidden','true');
+   const title=element('h3','d64-card-title',w.name);
+   const category=element('p','d64-card-category',String(w.kind||'').split(' · ')[0]);
+   const label=element('div','d64-card-info');
+   label.append(title,category);
+   card.append(top,crest,label);
    return card;
  }
  function unverifiedCard(w){
-   const card=element('article','d63-signal-card');
+   const card=element('article','d64-unknown-card');
    card.dataset.worldId=w.worldId;
-   const info=element('div','d63-signal-text');
-   info.append(element('strong','',w.name),element('small','',w.signal));
-   const mark=element('span','d63-signal-question',w.symbol);mark.setAttribute('aria-hidden','true');
-   card.append(mark,info,element('span','d63-signal-seal','CHƯA KIỂM CHỨNG'));
+   card.setAttribute('aria-label',w.name+'. '+w.signal+'. Chưa kiểm chứng');
+   const sigil=element('span','d64-unknown-glyph','?');
+   sigil.setAttribute('aria-hidden','true');
+   card.append(sigil,element('span','d64-unknown-name',w.name));
    return card;
  }
  function fillWorlds(){
    const root=id('d60-worlds-list');if(!root)return;
+   // Every site refresh replaces content; preserve the user's disclosure choice.
+   const wasOpen=!!root.querySelector('details.d64-unknown')?.open;
    root.replaceChildren();
    const registry=window.DuduWorldRegistryV63;
    if(!registry||!Array.isArray(registry.starterWorlds)){
-     root.append(element('p','d60-empty','Danh mục tọa độ chưa tải được. Hãy làm mới trang.'));
+     root.append(element('p','d60-empty','Không thể tải bản đồ thế giới.'));
      return;
    }
-   const starter=element('section','d63-world-section');
-   const heading=element('div','d63-sectionhead');
-   heading.append(element('h2','','Tọa độ cơ bản'),
-     element('span','d63-section-count',registry.starterWorlds.length+' THẾ GIỚI · CẤP F–E'));
-   starter.append(heading);
-   const grid=element('div','d63-world-grid');
-   registry.starterWorlds.forEach(w=>grid.append(worldCard(w)));
-   starter.append(grid);
-   const unverified=element('section','d63-world-section');
-   const unknownHead=element('div','d63-sectionhead');
-   unknownHead.append(element('h2','','Tín hiệu chưa kiểm chứng'),
-     element('span','d63-section-count','KHÔNG THỂ TRUY CẬP'));
-   unverified.append(unknownHead);
-   const unknownGrid=element('div','d63-signal-grid');
+   const starter=element('section','d64-world-section');
+   const heading=element('div','d64-sectionhead');
+   heading.append(element('h2','','Tọa độ cấp thấp'),
+     element('span','d64-world-count',String(registry.starterWorlds.length).padStart(2,'0')+' TỌA ĐỘ'));
+   const grid=element('div','d64-world-grid');
+   registry.starterWorlds.forEach((w,i)=>grid.append(worldCard(w,i)));
+   starter.append(heading,grid);
+   const hidden=element('details','d64-unknown');
+   hidden.open=wasOpen;
+   const summary=element('summary','d64-unknown-summary');
+   const left=element('span','d64-unknown-heading');
+   const marker=element('span','d64-unknown-marker','◇');
+   marker.setAttribute('aria-hidden','true');
+   left.append(marker,element('span','','Chưa kiểm chứng'));
+   summary.append(left,element('span','d64-unknown-count',
+     String((registry.unverifiedWorlds||[]).length).padStart(2,'0')),
+     element('span','d64-unknown-arrow','⌄'));
+   summary.lastChild.setAttribute('aria-hidden','true');
+   hidden.append(summary);
+   const unknownGrid=element('div','d64-unknown-grid');
    (registry.unverifiedWorlds||[]).forEach(w=>unknownGrid.append(unverifiedCard(w)));
-   unverified.append(unknownGrid);
-   root.append(starter,unverified);
+   hidden.append(unknownGrid);
+   root.append(starter,hidden);
  }
  function fillShelf(){
    const root=id('d60-shelf-list');if(!root)return;root.replaceChildren();
@@ -246,15 +256,13 @@
    const container=document.querySelector('.container');
    const home=element('main','d60-page');home.id='d60-home';
    const worlds=element('section','d60-page');worlds.id='d60-worlds';
-   worlds.append(element('p','d60-kicker','DUDU / WORLD ATLAS'),
-     element('h1','d60-page-title','Bản đồ vạn giới'),
-     element('p','d60-intro d63-intro','6 tọa độ cấp thấp đang chờ cốt truyện. Các tín hiệu lạ vẫn được niêm phong.'));
-   const gateway=element('div','d63-atlas-status');
-   gateway.append(element('span','d63-atlas-pulse','◈'),
-     element('span','','HỆ THỐNG ĐỊNH VỊ'),
-     element('strong','','CHẾ ĐỘ XEM TRƯỚC'),
-     element('span','d63-atlas-muted','Chưa mở xuyên giới'));
-   worlds.append(gateway);
+   const atlasHeading=element('div','d64-atlas-heading');
+   atlasHeading.append(element('div','d64-atlas-titleblock',
+       element('span','d64-atlas-kicker','DUDU · WORLDS')));
+   atlasHeading.firstChild.append(element('h1','d60-page-title','Vạn giới'));
+   const seal=element('span','d64-atlas-seal','Đang kiến tạo');
+   atlasHeading.append(seal);
+   worlds.append(atlasHeading);
    const worldList=element('div','');worldList.id='d60-worlds-list';worlds.append(worldList);
    const shelf=element('section','d60-page');shelf.id='d60-shelf';
    shelf.append(element('p','d60-kicker','DUDU · CÁ NHÂN'),element('h1','d60-page-title','Tủ sách của tôi'),
