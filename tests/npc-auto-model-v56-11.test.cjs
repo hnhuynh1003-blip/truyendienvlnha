@@ -22,7 +22,7 @@ test('V56.11 client auto ID stays local and never becomes an invalid Gemini API 
  assert.match(client,/window\.DuduNpcAutoModelV5611\?\.route/);
  assert.match(client,/model:resolved/);
  assert.match(html,/src="js\/npc-auto-model-v56-11\.js\?v=56-11"/);
- assert.match(html,/src="js\/ai-proxy\.js\?v=58-r1"/);
+ assert.match(html,/src="js\/ai-proxy\.js\?v=58-r2"/);
  assert.match(html,/DuduAI\.generate\('chat',instruction,context,query\)/);
  assert.match(html,/Model đã gọi: /);
  assert.match(html,/Mã lỗi: /);
@@ -31,4 +31,9 @@ test('V56.11 manual selection preserved per UID with no hidden retries',()=>{
  assert.match(client,/MODELS\.some\(x=>x\.id===id\)/);
  assert.match(client,/encodeURIComponent\(uid\)\+':global:npc-model'/);
  assert.doesNotMatch(client,/retryFailedModel|Promise\.all\(MODELS|for\(const model of MODELS\)/);
+});
+
+test('V58 Gemini Auto only routes to supported 3.1+ models',()=>{
+ for(const q of ['Chào','Phân tích mâu thuẫn quá khứ và ký ức','Vì sao anh làm thế?'])
+  assert.match(pick(q),/^gemini-3\.(?:1|5|6|8)-/);
 });

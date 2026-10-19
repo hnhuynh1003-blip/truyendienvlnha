@@ -1,9 +1,9 @@
-name: DUDU V57.1 safe Worker deploy (manual)
+name: DUDU V57.2 Gemini 3.1+ safe Worker deploy (manual)
 on:
   workflow_dispatch:
     inputs:
       confirmation:
-        description: 'Type DEPLOY_V57_1 to deploy only the approved Gemini 400 fix'
+        description: 'Type DEPLOY_V57_2 to deploy approved Gemini 3.1+ catalog'
         required: true
         type: string
 permissions:
@@ -29,11 +29,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$CONFIRMATION" = "DEPLOY_V57_1" || { echo "STOP: confirmation mismatch"; exit 1; }
+          test "$CONFIRMATION" = "DEPLOY_V57_2" || { echo "STOP: confirmation mismatch"; exit 1; }
           if test -z "$CLOUDFLARE_API_TOKEN" || test -z "$CLOUDFLARE_ACCOUNT_ID"; then
             echo "::error title=Cloudflare credentials missing::Deployment blocked. Configure both repository secrets CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID."
             {
-              echo "### DUDU V57.1 — chưa triển khai (thiếu quyền Cloudflare)"
+              echo "### DUDU V57.2 — chưa triển khai (thiếu quyền Cloudflare)"
               echo "Tạo hai GitHub Actions Secrets: \`CLOUDFLARE_API_TOKEN\` và \`CLOUDFLARE_ACCOUNT_ID\`."
               echo "1. [GitHub Repository Secrets](https://github.com/hnhuynh1003-blip/truyendienvlnha/settings/secrets/actions)"
               echo "2. [Cloudflare Dashboard](https://dash.cloudflare.com/)"
@@ -44,7 +44,9 @@ jobs:
           test "$(git hash-object cloudflare/src/index.mjs)" = "90d0b3cff4181f6a4b4067d44bb4e4b998175b78" ||
             { echo "STOP: Worker changed after V57.1 audit. Re-review required."; exit 1; }
           test "$(git hash-object cloudflare/wrangler.npc-ai-v54.toml)" = "9e60aef327291c097d4e1eb8fa418537460ce0c5" ||
-            { echo "STOP: Worker config changed after V57.1 audit."; exit 1; }
+            { echo "STOP: Worker config changed after V57.2 audit."; exit 1; }
+          test "$(git hash-object cloudflare/src/npc-models.mjs)" = "fb2799384798cb48a8c98d0e513e00c9c8867667" ||
+            { echo "STOP: Gemini model catalog differs from approved 3.1+ allowlist."; exit 1; }
 
       - uses: actions/setup-node@v4
         with:

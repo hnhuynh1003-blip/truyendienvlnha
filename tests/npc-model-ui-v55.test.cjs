@@ -13,7 +13,7 @@ test('V55 shows compact model picker and server-only usage counter in Contacts',
  assert.match(html,/function refreshNpcQuotaV55\(\)/);
  assert.match(html,/DuduAI\.status\(\)/);
  assert.match(html,/if\(!IS_SANDBOX_MODE\)void refreshNpcQuotaV55\(\)/);
- assert.match(html,/src="js\/ai-proxy\.js\?v=58-r1"/);
+ assert.match(html,/src="js\/ai-proxy\.js\?v=58-r2"/);
 });
 
 test('V55 stores selected model per Firebase UID and labels each AI response',()=>{
@@ -31,4 +31,10 @@ test('V55 personal Worker config keeps non-AI production features closed',()=>{
  for(const key of ['COLLECTIBLES_ENABLED','GIFTS_ENABLED','PILOT_ENABLED','COMMENTS_ENABLED','GIFT_SETTLEMENT_ENABLED'])
    assert.match(config,new RegExp('^'+key+' = "false"$','m'));
  assert.match(config,/name = "dudu-ai-staging"/);
+});
+
+test('V58 hides retired Gemini model options and migrates saved choices',()=>{
+ assert.match(client,/localStorage\.setItem\(key,AUTO\)/);
+ for(const id of ['gemini-2.5-flash-lite','gemini-2.5-flash','gemini-3-flash-preview'])
+  assert.equal(client.includes("['"+id+"',"),false,'old model in UI: '+id);
 });

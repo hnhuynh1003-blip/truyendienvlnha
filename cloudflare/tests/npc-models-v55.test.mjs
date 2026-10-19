@@ -4,9 +4,9 @@ import fs from 'node:fs';
 import {NPC_MODELS,DEFAULT_MODEL,allowedModel,resolveModel} from '../src/npc-models.mjs';
 import {validRequest,USER_DAILY_LIMIT,GLOBAL_DAILY_LIMIT,MIN_INTERVAL_MS} from '../src/limits.mjs';
 
-test('V55 exposes seven approved text-only Gemini NPC models',()=>{
+test('V58 keeps only four Gemini 3.1+ models',()=>{
  assert.equal(DEFAULT_MODEL,'gemini-3.5-flash-lite');
- assert.equal(NPC_MODELS.length,7);
+ assert.equal(NPC_MODELS.length,4);
  assert.equal(new Set(NPC_MODELS.map(m=>m.id)).size,NPC_MODELS.length);
  for(const model of NPC_MODELS){
   assert.equal(allowedModel(model.id),true);
@@ -14,6 +14,10 @@ test('V55 exposes seven approved text-only Gemini NPC models',()=>{
   assert.ok(!model.id.includes('pro')&&!model.id.includes('image')&&!model.id.includes('live'));
  }
  assert.equal(resolveModel('gemini-3.1-pro-preview'),null);
+ for(const legacy of ['gemini-2.5-flash','gemini-2.5-flash-lite','gemini-3-flash-preview']){
+  assert.equal(allowedModel(legacy),false);
+  assert.equal(resolveModel(legacy),null);
+ }
  assert.equal(resolveModel('../foo'),null);
  assert.equal(resolveModel(undefined),DEFAULT_MODEL);
 });
@@ -24,6 +28,8 @@ test('V55 model routing remains server-controlled and separate from author-only 
   assert.equal(validRequest({...base,model:model.id})?.model,model.id);
  }
  assert.equal(validRequest({...base,model:'paid-secret-model'}),null);
+ for(const legacy of ['gemini-2.5-flash','gemini-2.5-flash-lite','gemini-3-flash-preview'])
+  assert.equal(validRequest({...base,model:legacy}),null);
  assert.equal(validRequest({...base,purpose:'assist',model:'gemini-3.8-flash'},true).model,DEFAULT_MODEL);
  assert.equal(validRequest({...base,purpose:'assist',model:'gemini-3.8-flash'},false),null);
  const worker=fs.readFileSync(new URL('../src/index.mjs',import.meta.url),'utf8');
