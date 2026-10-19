@@ -91,6 +91,9 @@ test('V58 HTTP 400 and DUDU budget restrictions never trigger fallback',async()=
   assert.equal(failoverAllowed('daily-global'),false);
   assert.equal(failoverAllowed('upstream-unavailable'),false,'timeout must not create a late second billable request');
   assert.equal(failoverAllowed('gemini-invalid-parameters'),false);
+  assert.equal(failoverAllowed('gemini-prerequisite'),false,'unknown Google prerequisite must not fan out');
+  assert.equal(failoverAllowed('gemini-billing-prerequisite'),false,'never bypass required paid access');
+  assert.equal(failoverAllowed('gemini-location-restricted'),true,'independent free provider can be used after explicit approval');
   const noApproval=await routeNpcAi(payload,{
     ...env,DUDU_WORKERS_AI_APPROVED:'false'
   },async()=>({error:{code:'gemini-rate-limit'},status:429}));
@@ -101,6 +104,27 @@ test('V58 HTTP 400 and DUDU budget restrictions never trigger fallback',async()=
   }));
   assert.equal(timedOut.error.code,'upstream-unavailable');
   assert.equal(calls.length,0,'do not invoke a second provider after client deadline risk');
+});
+
+test('V58 only region-classified Gemini error may fall back to a separate approved free provider',async()=>{
+  const {env,calls}=freeEnv();
+  const payload=validRequest(base('Khách tự do'));
+  const result=await routeNpcAi(payload,env,async()=>({
+    error:{code:'gemini-location-restricted',message:'Google location restricted'},status:502
+  }));
+  assert.equal(result.status,200);
+  assert.equal(result.data.provider,'workers-ai');
+  assert.equal(calls.length,1);
+  assert.equal(calls[0].model,WORKERS_AI_MODELS[0].id);
+  const blocked=await routeNpcAi(payload,{...env,DUDU_WORKERS_ACCOUNT_FREE_VERIFIED:'false'},
+    async()=>({error:{code:'gemini-location-restricted'},status:502}));
+  assert.equal(blocked.error.code,'gemini-location-restricted');
+  assert.equal(calls.length,1,'no second provider call without verified free plan');
+  const paid=await routeNpcAi(payload,env,async()=>({
+    error:{code:'gemini-billing-prerequisite'},status:502
+  }));
+  assert.equal(paid.error.code,'gemini-billing-prerequisite');
+  assert.equal(calls.length,1,'never bypass billing prerequisite');
 });
 
 test('V58 one configured-free Workers AI fallback on provider 429; preserve NPC identity and quota',async()=>{
