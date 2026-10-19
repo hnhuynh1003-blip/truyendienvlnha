@@ -135,6 +135,45 @@ async function main() {
     assert.equal(await page.locator('#d60-worlds .d64-unknown-card').count(),3);
     await page.locator('#d60-worlds .d64-unknown-summary').click();
     assert.equal(await page.locator('#d60-worlds .d64-unknown').evaluate(el=>el.open),false);
+    // V65: World tile opens a preview dossier, never a playable session.
+    await page.locator('#d60-worlds .d64-world-card').first().click();
+    const dossier=page.locator('#d65-world-dialog');
+    await dossier.waitFor({state:'visible'});
+    assert.match(await dossier.textContent(),/Thị trấn Sương Mai/);
+    assert.match(await dossier.textContent(),/Cổng thế giới chưa mở/);
+    assert.equal(await page.evaluate(()=>window.__firestoreWrites.length),0,
+      'Viewing a world dossier must never write to Firestore');
+    await page.keyboard.press('Escape');
+    await dossier.waitFor({state:'hidden'});
+    const firstWorld=page.locator('#d60-worlds .d64-world-card').first();
+    await page.waitForFunction(()=>document.querySelector('.d64-world-card')?.getAttribute('role')==='button');
+    await firstWorld.focus();
+    await page.keyboard.press('Enter');
+    await dossier.waitFor({state:'visible'});
+    await dossier.locator('.d65-close').click();
+    await dossier.waitFor({state:'hidden'});
+    const blueprintSafety=await page.evaluate(()=>{
+      const api=window.DuduWorldBlueprintV65;
+      const a=api?.makeDraft('dudu-w001'),bad=api?.makeDraft('dudu-u001');
+      const corrupted=a?{...a,access:{enabled:true,serverValidated:false}}:null;
+      const withNpc=a?{...a,npcIds:['unapproved-npc']}:null;
+      return {
+        valid:!!a&&api.validateDraft(a).length===0,
+        modes:a?.entryModes?.join(','),
+        isDraft:a?.state==='draft'&&a.access.enabled===false&&a.rewards.enabled===false,
+        unknownBlocked:bad===null,
+        publishBlocked:api?.canPublish(a)===false,
+        unauthorizedUI:window.DuduWorldUXV65?.openAuthorStudio()===false,
+        badAccessRejected:api?.validateDraft(corrupted).includes('access_must_remain_locked'),
+        npcRejected:api?.validateDraft(withNpc).includes('npc_binding_requires_review'),
+        noWrites:window.__firestoreWrites.length===0
+      };
+    });
+    assert.deepEqual(blueprintSafety,{
+      valid:true,modes:'main,passerby,free',isDraft:true,
+      unknownBlocked:true,publishBlocked:true,unauthorizedUI:true,
+      badAccessRejected:true,npcRejected:true,noWrites:true
+    },'V65 world blueprints must stay offline and locked for guests');
     await page.evaluate(()=>DuduSiteV60.navigate('home'));
     await page.setViewportSize({width:1280,height:720});
 
@@ -144,6 +183,18 @@ async function main() {
     await page.getByRole('button', { name: 'Đổi tài khoản thử' }).click();
     await page.waitForFunction(() => document.getElementById('account-status-btn').textContent.includes('tester-a'));
     await page.locator('#role-toggle-btn').click();
+    // V65 author entry is permission-gated even though templates never publish.
+    const worldStudioAuth=await page.evaluate(()=>({
+      authorized:canEditStories(),
+      hasEntry:[...document.querySelectorAll('#d60-author-actions button')].some(b=>b.textContent.includes('Khung kịch bản'))
+    }));
+    if(worldStudioAuth.authorized){
+      assert.equal(worldStudioAuth.hasEntry,true,'Author Studio should expose scenario template tool');
+      const opened=await page.evaluate(()=>DuduWorldUXV65.openAuthorStudio());
+      assert.equal(opened,true,'Authorized authors can open offline scenario tooling');
+      assert.match(await page.locator('#d65-world-dialog').textContent(),/Khung kịch bản/);
+      await page.locator('#d65-world-dialog .d65-close').click();
+    }
 
     const catalogSnapshot = await page.evaluate(() => ({
       count:window.DuduItemCatalog?.items.length,
