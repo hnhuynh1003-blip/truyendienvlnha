@@ -90,6 +90,40 @@
    body.append(crest,headerLine,excerpt,previewTitle,previews,list,lock);
    show([header('DUDU / GENRE GATE',genre.name),body]);return true;
  }
+ const globalSeen=[];
+ const recentGenres=[];
+ function openRandomSignal(){
+   const api=taxonomy();if(!api)return false;
+   const body=el('section','d65-dossier d66-random-dossier');
+   const content=el('div','d66-random-result');
+   const button=el('button','d65-studio-action d66-random-next','↻ Tín hiệu khác');
+   button.type='button';
+   function draw(){
+     const candidate=api.pickPreview({
+       tier:'F',seenMissionIds:globalSeen,recentGenreIds:recentGenres
+     });
+     if(!candidate)return;
+     // Preserve a full F-tier rotation before allowing repeats; favor genre diversity.
+     if(globalSeen.length>=api.missions.filter(m=>m.tier==='F').length)globalSeen.length=0;
+     globalSeen.push(candidate.missionId);
+     recentGenres.push(candidate.genreId);
+     if(recentGenres.length>2)recentGenres.shift();
+     const genre=genreFor(candidate.genreId);
+     content.replaceChildren(
+       el('span','d65-kicker',genre?.name||candidate.genreId),
+       el('h3','d66-random-name',candidate.name),
+       el('p','d66-random-hook',candidate.premise),
+       el('span','d66-random-tier','NHIỆM VỤ F · XEM TRƯỚC')
+     );
+     content.dataset.missionId=candidate.missionId;
+   }
+   button.addEventListener('click',draw);
+   draw();
+   const footer=el('div','d65-dossier-locked','Cần khế ước đã xác minh trước khi nhận nhiệm vụ');
+   body.append(content,button,footer);
+   show([header('DUDU / SIGNAL SCAN','Tín hiệu sơ cấp'),body]);
+   return true;
+ }
  function decorateTiles(){
    const root=id('d60-worlds-list');if(!root)return;
    root.querySelectorAll('.d64-world-card').forEach(card=>{
@@ -169,5 +203,5 @@
    new MutationObserver(decorateTiles).observe(root,{childList:true,subtree:true});
    decorateTiles();
  }
- window.DuduWorldUXV66=Object.freeze({openDossier,openAuthorStudio,decorateTiles});
+ window.DuduWorldUXV66=Object.freeze({openDossier,openRandomSignal,openAuthorStudio,decorateTiles});
 })();
