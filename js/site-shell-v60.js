@@ -128,20 +128,55 @@
    }
 
  }
+ function worldCard(w){
+   const card=element('article','d63-world-card d63-tone-'+w.tone);
+   card.dataset.worldId=w.worldId;
+   const head=element('div','d63-world-top');
+   head.append(element('span','d63-world-code',w.worldId.toUpperCase().replace('DUDU-','')),
+     element('span','d63-world-level','CẤP '+w.tier));
+   const sigil=element('div','d63-world-sigil',w.symbol);sigil.setAttribute('aria-hidden','true');
+   const name=element('h3','d63-world-name',w.name);
+   const kind=element('p','d63-world-kind',w.kind);
+   const caption=element('p','d63-world-teaser',w.teaser);
+   const bottom=element('div','d63-world-bottom');
+   bottom.append(element('span','d63-status-dot'),element('span','', 'Chưa mở kịch bản'));
+   card.append(head,sigil,name,kind,caption,bottom);
+   return card;
+ }
+ function unverifiedCard(w){
+   const card=element('article','d63-signal-card');
+   card.dataset.worldId=w.worldId;
+   const info=element('div','d63-signal-text');
+   info.append(element('strong','',w.name),element('small','',w.signal));
+   const mark=element('span','d63-signal-question',w.symbol);mark.setAttribute('aria-hidden','true');
+   card.append(mark,info,element('span','d63-signal-seal','CHƯA KIỂM CHỨNG'));
+   return card;
+ }
  function fillWorlds(){
    const root=id('d60-worlds-list');if(!root)return;
    root.replaceChildren();
-   // A published book is discoverable, but does not imply playable world gameplay.
-   const stories=recent(list());
-   const heading=section('Câu chuyện đang mở');
-   if(!stories.length){
-     heading.append(element('p','d60-empty','Chưa có tác phẩm công khai để khám phá. Khi tác phẩm được xuất bản, chúng sẽ xuất hiện tại đây.'));
-   }else{
-     const grid=element('div','d60-grid');
-     stories.forEach(n=>grid.append(card(n)));
-     heading.append(grid);
+   const registry=window.DuduWorldRegistryV63;
+   if(!registry||!Array.isArray(registry.starterWorlds)){
+     root.append(element('p','d60-empty','Danh mục tọa độ chưa tải được. Hãy làm mới trang.'));
+     return;
    }
-   root.append(heading);
+   const starter=element('section','d63-world-section');
+   const heading=element('div','d63-sectionhead');
+   heading.append(element('h2','','Tọa độ cơ bản'),
+     element('span','d63-section-count',registry.starterWorlds.length+' THẾ GIỚI · CẤP F–E'));
+   starter.append(heading);
+   const grid=element('div','d63-world-grid');
+   registry.starterWorlds.forEach(w=>grid.append(worldCard(w)));
+   starter.append(grid);
+   const unverified=element('section','d63-world-section');
+   const unknownHead=element('div','d63-sectionhead');
+   unknownHead.append(element('h2','','Tín hiệu chưa kiểm chứng'),
+     element('span','d63-section-count','KHÔNG THỂ TRUY CẬP'));
+   unverified.append(unknownHead);
+   const unknownGrid=element('div','d63-signal-grid');
+   (registry.unverifiedWorlds||[]).forEach(w=>unknownGrid.append(unverifiedCard(w)));
+   unverified.append(unknownGrid);
+   root.append(starter,unverified);
  }
  function fillShelf(){
    const root=id('d60-shelf-list');if(!root)return;root.replaceChildren();
@@ -211,12 +246,14 @@
    const container=document.querySelector('.container');
    const home=element('main','d60-page');home.id='d60-home';
    const worlds=element('section','d60-page');worlds.id='d60-worlds';
-   worlds.append(element('p','d60-kicker','DUDU · KHÁM PHÁ'),
-     element('h1','d60-page-title','Thế giới DUDU'),
-     element('p','d60-intro','Các tiểu thế giới và hành trình xuyên sách đang được thiết kế. Hiện chưa có cổng xuyên giới công khai.'));
-   const gateway=element('div','d60-card d62-gateway');
-   gateway.append(element('span','d60-badge','CỔNG XUYÊN GIỚI · ĐANG PHÁT TRIỂN'),
-     element('p','','Bạn có thể mở và đọc những truyện công khai bên dưới. Chức năng nhập vai hoặc nhiệm vụ xuyên giới chưa được mở tại đây.'));
+   worlds.append(element('p','d60-kicker','DUDU / WORLD ATLAS'),
+     element('h1','d60-page-title','Bản đồ vạn giới'),
+     element('p','d60-intro d63-intro','6 tọa độ cấp thấp đang chờ cốt truyện. Các tín hiệu lạ vẫn được niêm phong.'));
+   const gateway=element('div','d63-atlas-status');
+   gateway.append(element('span','d63-atlas-pulse','◈'),
+     element('span','','HỆ THỐNG ĐỊNH VỊ'),
+     element('strong','','CHẾ ĐỘ XEM TRƯỚC'),
+     element('span','d63-atlas-muted','Chưa mở xuyên giới'));
    worlds.append(gateway);
    const worldList=element('div','');worldList.id='d60-worlds-list';worlds.append(worldList);
    const shelf=element('section','d60-page');shelf.id='d60-shelf';
