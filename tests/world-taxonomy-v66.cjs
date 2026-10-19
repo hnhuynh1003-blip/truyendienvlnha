@@ -21,11 +21,12 @@ assert.ok(api.genres.every(g=>api.byGenre(g.genreId).length===8));
 assert.ok(api.missions.every(m=>m.status==='seed'&&!m.available&&!m.scenarioId));
 assert.equal(api.contractPolicy.required,true);
 assert.equal(api.contractPolicy.verifiedByServer,true);
+assert.equal(api.contractPolicy.starterMissionTiers.join(','),'F,E');
 assert.equal(api.entryCheck({missionId:api.missions[0].missionId}).reason,'pact_required');
-assert.equal(api.entryCheck({pactVerified:true,serverRank:'F',
+assert.equal(api.entryCheck({pactVerified:true,authorizedMissionTiers:['F'],
  missionId:'dudu-m-an-e01',scenarioPublished:true}).reason,'rank_locked');
-assert.equal(api.entryCheck({pactVerified:true,serverRank:'E',
- missionId:'dudu-m-an-e01',scenarioPublished:true}).allowed,false);
+assert.equal(api.entryCheck({pactVerified:true,authorizedMissionTiers:['F','E'],
+ missionId:'dudu-m-an-e01',scenarioPublished:true}).reason,'scenario_unpublished');
 const seen=[];
 for(let i=0;i<30;i++){
  const m=api.pickPreview({tier:'F',seenMissionIds:seen,random:()=>0});
