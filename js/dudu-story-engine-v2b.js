@@ -16,8 +16,18 @@
   for(const scene of Object.values(s.scenes||{}))for(const c of list(scene.choices)){
    if(c.requiresFlags&&!Array.isArray(c.requiresFlags))issues.push('invalid_flag_requirement:'+c.id);
    if(c.requiresNotFlags&&!Array.isArray(c.requiresNotFlags))issues.push('invalid_negative_flag_requirement:'+c.id);
+   for(const field of ['visibleIfEvidence','visibleIfFlags','hiddenIfFlags']){
+    if(c[field]!==undefined&&(!Array.isArray(c[field])||c[field].some(x=>typeof x!=='string')))
+     issues.push('invalid_visibility_rule:'+c.id+':'+field);
+   }
   }
   return [...new Set(issues)];
+ }
+ function visible(c,state){
+  if(!c)return false;
+  return list(c.visibleIfEvidence).every(e=>state.evidence.includes(e))&&
+   list(c.visibleIfFlags).every(f=>state.flags.includes(f))&&
+   list(c.hiddenIfFlags).every(f=>!state.flags.includes(f));
  }
  function blocked(c,state){
   return list(c.requiresFlags).some(f=>!state.flags.includes(f))||
@@ -27,10 +37,14 @@
  function view(s,state){
   if(validate(s).length)throw Error('invalid_v2b_scenario');
   const v=base.view(s,state),sc=s.scenes[v.sceneId];
-  const choices=v.choices.map(c=>{
+  const choices=v.choices.filter(c=>{
+   const raw=sc.choices.find(x=>x.id===c.id);
+   return visible(raw,state);
+  }).map(c=>{
    const raw=sc.choices.find(x=>x.id===c.id);
    const locked=c.locked||blocked(raw,state);
-   return {...c,locked,requirementHint:locked?(raw.requirementHint||'Cần hoàn thành bước tìm hiểu trước.') :c.requirementHint};
+   return {...c,kind:raw.kind||'action',locked,
+    requirementHint:locked?(raw.requirementHint||'Cần hoàn thành bước tìm hiểu trước.'):c.requirementHint};
   });
   const last=state.log[state.log.length-1];
   const previousChoice=last&&s.scenes[last.from]?.choices.find(c=>c.id===last.choiceId);
@@ -47,6 +61,7 @@
   try{v=base.view(s,state);}catch{return {accepted:false,reason:'invalid_state',state};}
   if(state.status!=='playing')return {accepted:false,reason:'already_finished',state};
   const raw=s.scenes[v.sceneId].choices.find(c=>c.id===id);
+  if(raw&&!visible(raw,state))return {accepted:false,reason:'undiscovered_action',state};
   if(raw&&blocked(raw,state))return {accepted:false,reason:'missing_story_precondition',state};
   return base.decide(s,state,id);
  }
