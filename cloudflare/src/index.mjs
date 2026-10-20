@@ -7,7 +7,7 @@ export {DuduPlayerAppearance} from './player-appearance.mjs';
 export {DuduDiscussion} from './comments-v44-2.mjs';
 export {DuduGiftLedger} from './gift-ledger-v44-3.mjs';
 export {DuduSystemRegistry} from './dudu-system-registry-v71.mjs';
-import {DUDU_SYSTEM_PATHS,routeSystem} from './dudu-system-api-v71.mjs';
+import {routeSystem} from './dudu-system-api-v71.mjs';
 import {requestGift,requestDecision} from './gift-requests-v44-3.mjs';
 import {scope,postBody,reportBody,moderatorBody,registerBody}
  from './comment-policy-v44-2.mjs';
@@ -598,7 +598,7 @@ export default {
         return error('method-not-allowed','Phương thức không được hỗ trợ.',405,origin,env);
       return handlePilotStatus(req,env,origin);
     }
-    if(path in DUDU_SYSTEM_PATHS){
+    if(path.startsWith('/v1/system/')){
       try{
         const answer=await routeSystem(req,env,path);
         return json(answer.body,answer.status,origin,env);
