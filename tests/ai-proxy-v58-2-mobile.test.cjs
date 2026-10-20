@@ -56,5 +56,5 @@ test('V58.2 mobile device network interruption is not mislabeled as Google regio
 test('V58.2 chat history keeps approved provider fallback attribution in NPC metadata',()=>{
  assert.match(html,/meta\.textContent=source\?'✦ '\+source\+' → '\+msg\.model\+' \(dự phòng\)'/);
  assert.match(html,/res\.fallbackFrom&&window\.DuduAI\?\.models/);
- assert.match(html,/src="js\/ai-proxy\.js\?v=58-2-mobile"/);
+ assert.match(html,/src="js\/ai-proxy\.js\?v=58-2-mobile-v70-1"/);
 });
