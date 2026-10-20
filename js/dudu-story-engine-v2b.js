@@ -16,7 +16,7 @@
   for(const scene of Object.values(s.scenes||{}))for(const c of list(scene.choices)){
    if(c.requiresFlags&&!Array.isArray(c.requiresFlags))issues.push('invalid_flag_requirement:'+c.id);
    if(c.requiresNotFlags&&!Array.isArray(c.requiresNotFlags))issues.push('invalid_negative_flag_requirement:'+c.id);
-   for(const field of ['visibleIfEvidence','visibleIfFlags','hiddenIfFlags']){
+   for(const field of ['visibleIfEvidence','visibleAnyEvidence','visibleIfFlags','hiddenIfFlags']){
     if(c[field]!==undefined&&(!Array.isArray(c[field])||c[field].some(x=>typeof x!=='string')))
      issues.push('invalid_visibility_rule:'+c.id+':'+field);
    }
@@ -26,6 +26,7 @@
  function visible(c,state){
   if(!c)return false;
   return list(c.visibleIfEvidence).every(e=>state.evidence.includes(e))&&
+   (!list(c.visibleAnyEvidence).length||list(c.visibleAnyEvidence).some(e=>state.evidence.includes(e)))&&
    list(c.visibleIfFlags).every(f=>state.flags.includes(f))&&
    list(c.hiddenIfFlags).every(f=>!state.flags.includes(f));
  }
