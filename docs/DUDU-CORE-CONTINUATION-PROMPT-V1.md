@@ -1,5 +1,7 @@
 # DUDU STUDIO — MASTER CONTINUATION PROMPT · CORE FOUNDATION V1 · 19/10/2026
 
+> **Nếu bắt đầu cuộc trò chuyện mới, đọc trước [DUDU-STUDIO-START-HERE-2026-10-20.md](./DUDU-STUDIO-START-HERE-2026-10-20.md).** Tệp đó là chỉ mục trạng thái gọn hơn; bản này giữ toàn bộ các mốc lịch sử V1–V8. Kiểm tra HEAD của `main` mỗi lần mở lại.
+
 > **Dán toàn bộ văn bản này vào cuộc trò chuyện mới khi cần tiếp tục DUDU Studio.**
 > Đây là hồ sơ bàn giao theo trạng thái mã nguồn ở thời điểm Đợt 1 CORE Foundation, không thay thế việc đọc commit `main` mới nhất. Không gọi những module chưa triển khai là đã phát hành.
 
