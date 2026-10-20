@@ -17,7 +17,7 @@ export function validateHostName(value){
 export function redactedSystemRow(row){
  if(!row)return null;
  return {
-  id:row.public_id,name:row.display_name||'Hệ thống DUDU '+String(row.system_num).padStart(2,'0'),
+  id:row.display_id,name:row.display_name||'Hệ thống '+row.display_id,
   rank:row.rank,level:row.level,exp:row.exp,
   // NEVER emit origin, hidden personality, internal id, memory epoch or issuer proof.
   verifiedByServer:true
@@ -28,7 +28,7 @@ export class DuduSystemRegistry extends DurableObject {
   super(ctx,env);this.sql=ctx.storage.sql;
   this.sql.exec(`CREATE TABLE IF NOT EXISTS v71_systems(
     system_num INTEGER PRIMARY KEY,public_id TEXT UNIQUE NOT NULL,
-    internal_id TEXT UNIQUE NOT NULL,origin TEXT NOT NULL,
+    display_id TEXT NOT NULL,internal_id TEXT UNIQUE NOT NULL,origin TEXT NOT NULL,
     private_temperament TEXT NOT NULL,memory_epoch INTEGER NOT NULL DEFAULT 0,
     private_memory TEXT NOT NULL DEFAULT '[]',occupant_uid TEXT UNIQUE,
     rank TEXT NOT NULL DEFAULT 'F',level INTEGER NOT NULL DEFAULT 1,
@@ -57,9 +57,13 @@ export class DuduSystemRegistry extends DurableObject {
      // Non-public distribution: no deterministic number-to-origin mapping.
      const irregular=pick(100)<18;
      const tone=['kín đáo','kiên nhẫn','nhiệt huyết','ham học','thận trọng','tự do'][pick(6)];
+     // A rogue MAY claim another valid-looking number; the signed registry
+     // always uses internal_id/system_num to establish true origin.
+     const claimed=irregular&&pick(100)<42?1+pick(COUNT):n;
+     const display='DUDU-'+String(claimed).padStart(2,'0');
      this.sql.exec(`INSERT OR IGNORE INTO v71_systems
-       (system_num,public_id,internal_id,origin,private_temperament)
-       VALUES (?,?,?,?,?)`,n,'DUDU-'+number,crypto.randomUUID(),
+       (system_num,public_id,display_id,internal_id,origin,private_temperament)
+       VALUES (?,?,?,?,?,?)`,n,'DUDU-'+number,display,crypto.randomUUID(),
        irregular?'irregular':'regular',tone);
     }
    });
@@ -71,7 +75,7 @@ export class DuduSystemRegistry extends DurableObject {
   return {total:Number(total),available:Number(free)};
  }
  view(uid){
-  const host=this.sql.exec(`SELECT h.*,s.system_num,s.public_id,s.rank,s.level,s.exp
+  const host=this.sql.exec(`SELECT h.*,s.system_num,s.public_id,s.display_id,s.rank,s.level,s.exp
     FROM v71_hosts h JOIN v71_systems s ON s.system_num=h.system_num
     WHERE h.uid=?`,uid).toArray()[0];
   if(host){
