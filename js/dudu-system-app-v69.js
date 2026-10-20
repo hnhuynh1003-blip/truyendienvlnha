@@ -1,256 +1,260 @@
-/* DUDU V69 — a separate player System app and AU-only Core console.
- * NOT the DUDU Messenger friend. Read-only, fail-closed until backend ticket
- * issuance, consent, signed pact, progression and audit APIs exist.
+/* DUDU V70 — single-purpose player System + prompt-first AU Core.
+ * System content is not mounted until a SERVER pass exists; meanwhile a
+ * sandbox-only display card offers a cosmetic preview (no grants or pact).
+ * The everyday DUDU friend remains in Messenger V43/V67, never mixed in.
  */
 (function(root){
  'use strict';
- const model=root.DuduTraversalV69;
- if(!root.document||!model)return;
- const document=root.document;
- const byId=id=>document.getElementById(id);
- const node=(tag,cls,text)=>{
-  const el=document.createElement(tag);
-  if(cls)el.className=cls;
-  if(text!==undefined)el.textContent=String(text);
-  return el;
+ const doc=root.document,model=root.DuduTraversalV69,gate=root.DuduSystemGateV70;
+ if(!doc||!model||!gate)return;
+ const get=id=>doc.getElementById(id);
+ const el=(tag,cls,value)=>{
+  const n=doc.createElement(tag);
+  if(cls)n.className=cls;
+  if(value!==undefined)n.textContent=String(value);
+  return n;
  };
- const isSandbox=()=>typeof IS_SANDBOX_MODE!=='undefined'&&IS_SANDBOX_MODE===true;
+ const sandbox=()=>typeof IS_SANDBOX_MODE!=='undefined'&&IS_SANDBOX_MODE===true;
+ let popupEscape=null;
  function identity(){
-  const current=typeof currentUsername==='string'?currentUsername:'';
-  if(!current)return null;
-  if(isSandbox())return {id:'sandbox:'+current,verified:false};
+  const uid=typeof currentUsername==='string'?currentUsername:'';
+  if(!uid)return null;
+  if(sandbox())return {id:'sandbox:'+uid,uid,verified:false};
   try{
-   if(root.DuduAuth?.isReady?.()===true&&root.DuduAuth.uid()===current)
-    return {id:'firebase:'+current,verified:true};
+   if(root.DuduAuth?.isReady?.()===true&&root.DuduAuth?.uid?.()===uid)
+    return {id:'firebase:'+uid,uid,verified:true};
   }catch(_){}
   return null;
  }
  function isAuthor(){
-  const user=identity();
-  if(!user)return false;
+  const user=identity();if(!user)return false;
   try{return typeof canEditStories==='function'&&canEditStories()===true&&
-    (isSandbox()||(root.DuduAuth?.isReady?.()===true&&root.DuduAuth?.isAdmin?.()===true));}
+    (sandbox()||(root.DuduAuth?.isReady?.()===true&&root.DuduAuth?.isAdmin?.()===true));}
   catch(_){return false;}
  }
- const unknown=value=>value==null?'—':String(value);
- function pair(label,value){
-  const row=node('div','dudu-v69-kv');
-  row.append(node('span','',label),node('strong','',unknown(value)));
-  return row;
+ function session(){try{return root.sessionStorage||null;}catch(_){return null;}}
+ function gateState(){
+  const id=identity();return id?gate.state({sandbox:sandbox(),accountId:id.id,session:session()}):'locked';
  }
- function field(label,text){
-  const article=node('article','dudu-v69-panel');
-  article.append(node('h3','',label),node('p','',text));
-  return article;
- }
- function currentLegacyLevel(){
-  // This is the EXISTING book/account profile, NOT a signed System level.
-  const user=identity();
-  if(!user||!user.verified)return 'Chưa có hồ sơ thật được xác thực';
+ function displayName(user){
+  if(!user)return 'Ký chủ';
   try{
-   const level=Number(userProfile?.level),exp=Number(userProfile?.exp);
-   if(Number.isSafeInteger(level)&&level>=1&&Number.isSafeInteger(exp)&&exp>=0)
-    return 'Lv '+level+' · '+exp+' EXP (hồ sơ đọc truyện, không phải hệ thống)';
+   if(userProfile&&userProfile.username===user.uid)
+    return String(userProfile.name||userProfile.username||'Ký chủ').trim().slice(0,50)||'Ký chủ';
   }catch(_){}
-  return 'Chưa tải được tiến độ đọc truyện';
+  return 'Ký chủ '+user.uid.slice(0,6);
+ }
+ function row(label,value){
+  const r=el('div','dudu-v69-kv');
+  r.append(el('span','',label),el('strong','',value==null?'—':value));
+  return r;
+ }
+ function panel(title,description,cls=''){
+  const p=el('section','dudu-v69-panel '+cls);
+  p.append(el('h3','',title));
+  if(description)p.append(el('p','',description));
+  return p;
+ }
+ function action(text,cls,fn){
+  const b=el('button',cls,text);b.type='button';b.addEventListener('click',fn);return b;
+ }
+ function closePopup(){
+  get('dudu-v69-status-popup')?.remove();
+  if(popupEscape){doc.removeEventListener('keydown',popupEscape);popupEscape=null;}
  }
  function statusPopup(){
-  const panel=byId('phone-app-system'),existing=byId('dudu-v69-status-popup');
-  existing?.remove();
-  if(!panel)return;
-  const cover=node('div','dudu-v69-popup');
-  cover.id='dudu-v69-status-popup';
-  cover.setAttribute('role','dialog');
-  cover.setAttribute('aria-modal','true');
-  cover.setAttribute('aria-label','Bảng chỉ số ký chủ');
-  const dialog=node('section','dudu-v69-popup-card');
-  const title=node('h2','','✦ Bảng trạng thái ký chủ');
-  const close=node('button','dudu-v69-close','×');
-  close.type='button';close.setAttribute('aria-label','Đóng bảng chỉ số');
-  const hide=()=>{cover.remove();document.removeEventListener('keydown',escape);};
-  const escape=e=>{if(e.key==='Escape')hide();};
-  close.addEventListener('click',hide);
-  cover.addEventListener('click',e=>{if(e.target===cover)hide();});
-  const head=node('div','dudu-v69-popup-head');head.append(title,close);
-  dialog.append(head,node('p','dudu-v69-muted',
-    'Chỉ số xuyên truyện chờ máy chủ xác minh. Dấu — không đại diện cho điểm 0.'));
-  const stats=node('div','dudu-v69-stat-grid');
-  const values=model.projection().stats;
-  for(const s of model.attributes){
-   const tile=node('article','dudu-v69-stat');
-   tile.append(node('span','',s.name),node('strong','',unknown(values[s.id])),
-     node('small','',s.impact));
-   stats.append(tile);
+  closePopup();
+  if(gateState()!=='demo')return false; // no stats before card
+  const parent=get('phone-app-system'),id=identity();if(!parent||!id)return false;
+  const data=gate.demoProjection({accountId:id.id,name:displayName(id)});
+  const cover=el('div','dudu-v69-popup');cover.id='dudu-v69-status-popup';
+  cover.setAttribute('role','dialog');cover.setAttribute('aria-modal','true');
+  cover.setAttribute('aria-label','Bảng trạng thái ký chủ');
+  const inner=el('section','dudu-v69-popup-card');
+  const head=el('div','dudu-v69-popup-head');
+  const quit=action('×','dudu-v69-close',closePopup);
+  quit.setAttribute('aria-label','Đóng bảng chỉ số');
+  head.append(el('h2','','THUỘC TÍNH KÝ CHỦ'),quit);
+  inner.append(head,el('p','dudu-v70-eyebrow','THÔNG SỐ MÔ PHỎNG · KHÔNG PHẢI ĐIỂM THẬT'));
+  const tiles=el('div','dudu-v69-stat-grid');
+  for(const s of data.stats){
+   const t=el('div','dudu-v69-stat');
+   t.append(el('span','',s.label),el('strong','',String(s.value)));
+   const meter=el('div','dudu-v70-meter');
+   const fill=el('i','');fill.style.width=s.value+'%';meter.append(fill);
+   t.append(meter);tiles.append(t);
   }
-  dialog.append(stats,node('p','dudu-v69-muted',
-    'Trong thế giới được mở chính thức, chỉ số sẽ tác động lựa chọn, nhiệm vụ ẩn và điều kiện vật phẩm. Quyết định phải do World Engine/Server kiểm chứng.'));
-  cover.append(dialog);panel.append(cover);
-  document.addEventListener('keydown',escape);
-  close.focus({preventScroll:true});
+  inner.append(tiles,el('p','dudu-v69-muted',
+   'Các điểm chỉ để thử bố cục. Nhiệm vụ ẩn, lựa chọn và vật phẩm phải được máy chủ quyết định theo chỉ số thật.'));
+  cover.append(inner);parent.append(cover);
+  cover.addEventListener('click',e=>{if(e.target===cover)closePopup();});
+  popupEscape=e=>{if(e.key==='Escape')closePopup();};
+  doc.addEventListener('keydown',popupEscape);
+  quit.focus({preventScroll:true});return true;
  }
- function systemView(){
-  const host=byId('dudu-v69-system-view');if(!host)return false;
-  host.replaceChildren();
-  const id=identity(),data=model.projection();
-  const header=field('✦ Hệ Thống Xuyên Truyện',
-   id?'Hồ sơ đang xem: '+(id.verified?'Firebase đã đăng nhập':'Sandbox · thử giao diện'):
-     'Hãy đăng nhập để chuẩn bị nhận Thẻ thông hành trong Nhiệm vụ.');
-  header.append(node('p','dudu-v69-muted','Trạng thái hệ thống: CHƯA KÍCH HOẠT · Không cấp tiến trình giả.'));
-  host.append(header);
-  const step=node('section','dudu-v69-panel');
-  step.append(node('h3','','Tuyến mở khóa chính thức'));
-  const list=node('ol','dudu-v69-steps');
-  for(const text of [
-   'Hoàn thành nhiệm vụ mở đầu ở ứng dụng Nhiệm vụ',
-   'Máy chủ nghiệm thu và cấp Thẻ thông hành cho đúng tài khoản',
-   'Người chơi xem điều khoản và tự nguyện ký khế ước với hệ thống con',
-   'Hệ thống được kích hoạt; sau đó mới phân phối thế giới, EXP và nâng cấp'
-  ])list.append(node('li','',text));
-  step.append(list);
-  step.append(pair('Thẻ thông hành',data.passport.status==='unavailable'?'Chưa có nguồn xác thực':data.passport.status));
-  step.append(pair('Khế ước',data.pact.status==='not_launched'?'Chưa mở':data.pact.status));
-  const action=node('button','dudu-v69-disabled','Ký khế ước · Chưa đủ điều kiện');
-  action.disabled=true;action.type='button';step.append(action);
-  const quest=node('button','dudu-v69-secondary','Đến Nhiệm vụ →');
-  quest.type='button';quest.addEventListener('click',()=>root.openPhoneApp?.('quests'));
-  step.append(quest);
-  host.append(step);
-  const inspect=node('section','dudu-v69-panel');
-  inspect.append(node('h3','','Hồ sơ & thành tựu'));
-  const open=node('button','dudu-v69-primary','Xem bảng chỉ số ↗');
-  open.type='button';open.addEventListener('click',statusPopup);
-  inspect.append(open,
-   pair('Cấp và EXP đọc truyện',currentLegacyLevel()),
-   pair('Cấp hệ thống',unknown(data.system.rank)),
-   pair('EXP hệ thống',unknown(data.system.exp)),
-   pair('Cấp ký chủ xuyên truyện',unknown(data.player.level)),
-   pair('Trạng thái ký chủ',data.player.state==='unknown'?'Chưa xác thực':data.player.state),
-   pair('Tiểu thế giới đã xuyên',unknown(data.progress.worldsCrossed)),
-   pair('Nhiệm vụ hoàn thành',unknown(data.progress.missionsCompleted)),
-   pair('Thành tựu đã xác minh',unknown(data.progress.achievements)),
-   pair('Phần thưởng đã nhận',unknown(data.rewards.claimedCount)),
-   pair('Vật phẩm xuyên giới',unknown(data.rewards.itemCount)));
-  host.append(inspect);
-  host.append(field('Hệ thống con đồng hành · Đang khóa',
-   'Chưa có Thẻ thông hành xác thực và khế ước thì chưa có hệ thống theo ký chủ, kỹ năng, trí nhớ hệ thống, điểm nâng cấp hay quyền xuyên truyện.'));
-  const mechanics=node('section','dudu-v69-panel');
-  mechanics.append(node('h3','','Các thuộc tính ảnh hưởng gameplay'));
-  for(const attr of model.attributes)mechanics.append(pair(attr.name,attr.impact));
-  mechanics.append(node('p','dudu-v69-muted',
-   'Nhánh ẩn, lựa chọn và vật phẩm chỉ được hiện sau khi đủ điều kiện được Engine kiểm tra. Bốn ví dụ điều kiện hiện đang nằm trong bộ thiết kế, không phải phần thưởng có thể nhận.'));
-  host.append(mechanics);
+ function lockedView(host){
+  const wrap=el('div','dudu-v70-gate');
+  wrap.append(el('div','dudu-v70-gate-symbol','◇'),
+   el('span','dudu-v70-eyebrow','DUDU · SYSTEM ACCESS'),
+   el('h2','','HỆ THỐNG CHƯA THỨC TỈNH'),
+   el('p','dudu-v70-description','Nhập mã Thẻ thông hành nhận được sau khi hoàn thành nhiệm vụ mở đầu.'));
+  const form=el('form','dudu-v70-entry');
+  const input=el('input','dudu-v69-input');
+  input.type='text';input.maxLength=48;input.autocomplete='off';
+  input.placeholder='Mã Thẻ thông hành';input.setAttribute('aria-label','Nhập mã Thẻ thông hành');
+  const submit=el('button','dudu-v69-primary','XÁC NHẬN MÃ');
+  submit.type='submit';
+  const result=el('p','dudu-v70-result','');
+  result.setAttribute('role','status');
+  form.append(input,submit,result);
+  form.addEventListener('submit',e=>{
+   e.preventDefault();
+   const id=identity(),receipt=gate.admit(input.value,{
+    sandbox:sandbox(),accountId:id?.id||'',session:session()
+   });
+   input.value='';
+   if(!receipt.ok){
+    result.textContent=!id?'Hãy đăng nhập trước để nhận Thẻ thông hành.':
+     sandbox()?'Mã không hợp lệ. Thẻ thử không mở quyền chơi thật.':
+     'Mã chưa thể xác thực: nhiệm vụ cấp thẻ và máy chủ chưa được kích hoạt.';
+    return;
+   }
+   renderSystem();
+  });
+  wrap.append(form);
+  wrap.append(el('p','dudu-v70-note',
+   sandbox()?'CHẾ ĐỘ THỬ · Mã mẫu chỉ mở giao diện, không ký khế ước hay nhận thưởng.':
+    'Không có thẻ? Hoàn thành nhiệm vụ mở đầu để nhận mã được máy chủ cấp.'));
+  wrap.append(action('Đến Nhiệm vụ ↗','dudu-v69-secondary',
+    ()=>root.openPhoneApp?.('quests')));
+  host.append(wrap);
+ }
+ function unlockedView(host,id){
+  const d=gate.demoProjection({accountId:id.id,name:displayName(id)});
+  const hero=el('div','dudu-v70-hero');
+  hero.append(el('span','dudu-v70-eyebrow','✦ SYSTEM LINK · BẢN XEM THỬ'),
+   el('div','dudu-v70-title',d.host.name));
+  const identifiers=el('div','dudu-v70-identifiers');
+  identifiers.append(el('span','','KÝ CHỦ  /  '+d.host.id),
+    el('span','','LV '+d.host.level+'  ·  '+d.host.exp+' EXP'));
+  hero.append(identifiers);
+  host.append(hero);
+  const system=el('section','dudu-v70-system');
+  const systemHead=el('div','dudu-v70-system-head');
+  const face=el('div','dudu-v70-orb','✧');
+  const copy=el('div','dudu-v70-system-copy');
+  copy.append(el('span','dudu-v70-eyebrow','HỆ THỐNG CON ĐỒNG HÀNH'),
+   el('h3','',d.system.label),el('span','dudu-v70-system-id',d.system.displayId));
+  systemHead.append(face,copy);
+  system.append(systemHead);
+  const strip=el('div','dudu-v70-status-line');
+  strip.append(el('span','',d.system.identity),
+   el('span','','CẤP '+d.system.rank+' · '+d.system.level),
+   el('span','','0 / 100 EXP'));
+  system.append(strip);
+  system.append(el('p','dudu-v70-system-note',
+   'Thiên hướng: '+d.system.temperament+'. Mã công khai có thể bị giả mạo: chỉ máy chủ mới phân biệt chính quy và phi chính quy.'));
+  host.append(system);
+  const shortcuts=el('div','dudu-v70-actions');
+  shortcuts.append(action('◈  Chỉ số','dudu-v69-primary',statusPopup));
+  const info=el('details','dudu-v70-details');
+  const summary=el('summary','','Thành tựu · vật phẩm · hành trình');
+  info.append(summary);
+  const stats=el('div','dudu-v70-summary');
+  for(const [name,value] of [
+   ['Đã xuyên',d.journey.worlds],['Thành tựu',d.journey.achievements],
+   ['Vật phẩm',d.journey.items],['Phần thưởng',d.journey.rewards]
+  ])stats.append(row(name,String(value)+' (thử)'));
+  info.append(stats);
+  shortcuts.append(action('♢  Nhật ký','dudu-v69-secondary',()=>{
+   info.open=!info.open;
+  }));
+  host.append(shortcuts,info);
+  const notice=el('div','dudu-v70-locked-note');
+  notice.append(el('strong','','KHẾ ƯỚC & XUYÊN GIỚI ĐANG KHÓA'),
+   el('small','','Thẻ thử chỉ mở bản xem. Chưa có hệ thống chính thức, ký kết, nâng cấp hoặc quyền nhận vật phẩm.'));
+  host.append(notice);
+  host.append(action('Trở lại màn nhập thẻ','dudu-v70-reset',()=>{
+   gate.revoke({accountId:id.id,session:session()});closePopup();renderSystem();
+  }));
+ }
+ function renderSystem(){
+  const host=get('dudu-v69-system-view');if(!host)return false;
+  closePopup();host.replaceChildren();
+  const id=identity();
+  if(!id||gateState()==='locked')lockedView(host);
+  else unlockedView(host,id);
   return true;
  }
- function draftKey(){
-  const id=identity();return isAuthor()&&id?'dudu:v69:core-rule-draft:'+id.id:null;
- }
- function loadDraft(){
-  const key=draftKey();if(!key)return null;
-  try{return model.validateAuthorDraft(JSON.parse(root.localStorage?.getItem(key)||'null'));}
-  catch(_){return null;}
+ function askCoreAI(input,output,button){
+  const instruction=String(input.value||'').trim();
+  if(instruction.length<5){output.textContent='Cần một chỉ thị đủ rõ để Chủ Thần phân tích.';return;}
+  if(!isAuthor())return;
+  if(!root.DuduCoreAIV70){
+   output.textContent='Chưa kết nối tuyến DeepSeek Chủ Thần trên Worker.';return;
+  }
+  button.disabled=true;output.textContent='Đang gửi chỉ thị đến DeepSeek (chỉ mô phỏng quyết định)...';
+  Promise.resolve(root.DuduCoreAIV70.ask(instruction))
+   .then(r=>{
+    if(!isAuthor())return;
+    output.textContent=r?.ok?
+     'Phân tích của Chủ Thần:\n'+r.text+'\n\nĐây chưa phải quyết định có hiệu lực máy chủ.':
+     r?.message||'DeepSeek chưa được bật; không có hành động được thực thi.';
+   }).catch(()=>{if(isAuthor())output.textContent='Không thể kết nối AI; chưa thực thi hành động.';})
+   .finally(()=>{button.disabled=false;});
  }
  function renderCore(){
-  const host=byId('dudu-v69-core-view');if(!host)return false;
+  const host=get('dudu-v69-core-view');if(!host)return false;
   host.replaceChildren();
-  if(!isAuthor()){
-   host.append(field('Quyền truy cập bị từ chối',
-    'Bộ điều khiển Chủ Thần chỉ dành cho AU có quyền tác giả đã được kiểm tra. Không được mở qua giao diện độc giả.'));
-   return false;
-  }
-  host.append(field('✦ Bảng điều khiển Chủ Thần · AU',
-   'Nơi thiết kế luật, xem cấu trúc bằng chứng và kiểm tra hậu quả. Luật đang soạn KHÔNG tự áp dụng cho người chơi, và không có quyền phạt hoặc trích xuất dữ liệu tài khoản người khác trên trình duyệt.'));
-  const view=node('section','dudu-v69-panel');
-  view.append(node('h3','','Luật hiện hành và điểm kiểm soát'));
-  for(const p of model.authorPolicyFields)view.append(pair(p.label,p.rule));
-  host.append(view);
-  const draft=node('section','dudu-v69-panel');
-  draft.append(node('h3','','Soạn luật nháp (riêng AU, chỉ trên thiết bị)'));
-  const selected=loadDraft();
-  const label=node('label','','Phạm vi luật');label.setAttribute('for','dudu-v69-policy-id');
-  const select=node('select','dudu-v69-input');select.id='dudu-v69-policy-id';
-  for(const rule of model.authorPolicyFields){
-   const opt=node('option','',rule.label);opt.value=rule.id;select.append(opt);
-  }
-  if(selected)select.value=selected.policyId;
-  const disposition=node('select','dudu-v69-input');
-  disposition.setAttribute('aria-label','Biện pháp xử lý');
-  for(const [id,name] of [['observe','Chỉ theo dõi'],['review','Chuyển điều tra có bằng chứng'],
-    ['hold','Đề nghị tạm giữ để xem xét']]){
-    const opt=node('option','',name);opt.value=id;disposition.append(opt);
-  }
-  if(selected)disposition.value=selected.disposition;
-  const note=node('textarea','dudu-v69-input');note.maxLength=220;
-  note.rows=3;note.placeholder='Điều kiện, bằng chứng cần có, phạm vi áp dụng...';
-  note.setAttribute('aria-label','Ghi chú quy tắc nháp');
-  note.value=selected?.note||'';
-  const save=node('button','dudu-v69-primary','Lưu bản nháp AU');
-  save.type='button';
-  const feedback=node('p','dudu-v69-muted','Chưa có dịch vụ phát hành luật hoặc hình phạt. Không đọc dữ liệu người chơi thật.');
-  feedback.setAttribute('role','status');
-  save.addEventListener('click',()=>{
-   const value=model.validateAuthorDraft({policyId:select.value,
-     disposition:disposition.value,note:note.value});
-   const key=draftKey();
-   if(!isAuthor()||!key||!value){
-    feedback.textContent='Không đủ quyền hoặc bản nháp không hợp lệ.';return;
-   }
-   try{
-    root.localStorage.setItem(key,JSON.stringify(value));
-    feedback.textContent='Đã lưu nháp cục bộ. Chưa áp dụng luật hoặc hình phạt.';
-   }catch(_){feedback.textContent='Không lưu được bản nháp trên thiết bị.';}
-  });
-  draft.append(label,select,disposition,note,save,feedback);
-  host.append(draft);
-  const audit=node('section','dudu-v69-panel');
-  audit.append(node('h3','','Bằng chứng & trích xuất thông tin'));
-  audit.append(node('p','',
-   'Bản thiết kế: xác thực quyền AU/Chủ Thần trên server → ghi nhận eventId, UID phạm vi, nhiệm vụ, receipt đã ký, nhật ký thay đổi và bằng chứng có thể kiểm tra → duyệt hình phạt, kháng nghị, ghi log idempotent.'));
-  audit.append(node('p','dudu-v69-muted',
-   'Không truy vấn hoặc công khai UID/người chơi khác; không thực hiện trích xuất, tạm giữ, trừ Xu/EXP hoặc khóa tài khoản khi backend chưa được triển khai.'));
-  host.append(audit);
-  const stat=node('section','dudu-v69-panel');
-  stat.append(node('h3','','Xây dựng điều kiện chỉ số (mô phỏng)'));
-  for(const sample of model.discoveryExamples){
-   const r=model.previewConditions(null,sample.conditions);
-   stat.append(pair(sample.title,sample.conditions.map(x=>x.attribute+' ≥ '+x.min).join(' + ')+
-     ' · '+r.state));
-  }
-  host.append(stat);
-  return true;
+  if(!isAuthor())return false; // never render privileged UI for a reader
+  const hero=el('section','dudu-v70-core-hero');
+  hero.append(el('span','dudu-v70-eyebrow','DUDU CORE · AU ONLY'),
+   el('h2','','CHỦ THẦN'),
+   el('p','','Đưa mệnh lệnh bằng ngôn ngữ tự nhiên. DeepSeek phân tích, lập quy tắc và kế hoạch điều phối trong phạm vi được cấp.'));
+  host.append(hero);
+  const main=panel('Chỉ thị cho Chủ Thần','Một prompt thay cho nhiều biểu mẫu.');
+  const prompt=el('textarea','dudu-v69-input');
+  prompt.rows=5;prompt.maxLength=1400;
+  prompt.placeholder='Ví dụ: Xây luật xử lý phá khế ước, bảo hộ ký chủ và điều kiện phát sinh nhiệm vụ ẩn; phân biệt hình phạt có bằng chứng...';
+  prompt.setAttribute('aria-label','Prompt chỉ thị Chủ Thần');
+  const output=el('pre','dudu-v70-core-output','DeepSeek chưa kết nối. Không có hình phạt hoặc trích xuất dữ liệu nào được thực thi.');
+  output.setAttribute('role','status');output.setAttribute('aria-live','polite');
+  const button=action('GỬI CHỈ THỊ ĐẾN DEEPSEEK','dudu-v69-primary',()=>askCoreAI(prompt,output,button));
+  main.append(prompt,button,output);
+  host.append(main);
+  const scope=el('details','dudu-v70-details');
+  scope.append(el('summary','','Phạm vi vận hành và truy vết'));
+  scope.append(el('p','',
+   'AI có thể tự lập kế hoạch và giám sát bằng event đã xác thực. Máy chủ phải kiểm tra quyền hạn, bằng chứng, giới hạn ảnh hưởng và lưu lịch sử trước khi thi hành. Hình phạt thật và trích xuất dữ liệu riêng tư chưa được triển khai; không bắt AU xử lý thủ công trong giao diện này.'));
+  host.append(scope);return true;
  }
  function syncAccess(){
-  const launch=byId('dudu-v69-core-launch');
-  if(launch){
-   const au=isAuthor();
-   launch.hidden=!au;
-   launch.style.display=au?'':'none';
-  }
-  const current=byId('phone-app-core-console');
-  if(!isAuthor()&&current?.style.display==='flex'){
-   root.phoneHome?.();
-   current.style.display='none';
-  }
-  return isAuthor();
+  const launch=get('dudu-v69-core-launch'),allowed=isAuthor();
+  if(launch){launch.hidden=!allowed;launch.style.display=allowed?'':'none';}
+  const screen=get('phone-app-core-console');
+  if(!allowed&&screen?.style.display==='flex'){root.phoneHome?.();screen.style.display='none';}
+  return allowed;
  }
  function passportQuest(){
-  const host=byId('dudu-v69-passport-quest');
-  if(!host)return false;
+  const host=get('dudu-v69-passport-quest');if(!host)return false;
   host.replaceChildren();
-  const panel=field('🎫 Thẻ thông hành xuyên truyện',
-   'Chỉ được cấp sau khi hoàn thành nhiệm vụ mở đầu trong ứng dụng Nhiệm vụ và máy chủ xác nhận kết quả. Các nhiệm vụ V43.7 hiện chưa thể phát thẻ này.');
-  panel.append(pair('Trạng thái','Chưa có nhiệm vụ cấp thẻ được công bố'));
-  const btn=node('button','dudu-v69-secondary','Xem điều kiện khế ước →');
-  btn.type='button';btn.addEventListener('click',()=>root.openPhoneApp?.('system'));
-  panel.append(btn);host.append(panel);return true;
+  const box=el('div','dudu-v70-passport-quest');
+  box.append(el('strong','','🎫 Thẻ thông hành'),
+   el('small','','Hoàn thành nhiệm vụ mở đầu và chờ máy chủ cấp mã. Tài khoản Sandbox có thể sử dụng mã thử để kiểm tra giao diện Hệ Thống.'));
+  box.append(action('Mở Hệ Thống →','dudu-v69-secondary',
+   ()=>root.openPhoneApp?.('system')));
+  host.append(box);return true;
  }
- const api=Object.freeze({version:1,identity,isAuthor,render:systemView,
-  renderSystem:systemView,renderCore,syncAccess,passportQuest,
-  statusPopup,canGrantReward:()=>false,canSignPact:()=>false});
+ const api=Object.freeze({
+  version:2,identity,isAuthor,render:renderSystem,renderSystem,renderCore,
+  syncAccess,passportQuest,statusPopup,gateState,canGrantReward:()=>false,canSignPact:()=>false
+ });
  root.DuduSystemAppsV69=api;
- if(document.readyState==='loading')
-  document.addEventListener('DOMContentLoaded',()=>{syncAccess();passportQuest();},{once:true});
- else {syncAccess();passportQuest();}
- document.addEventListener('dudu:phone:lifecycle',event=>{
+ const init=()=>{syncAccess();passportQuest();};
+ if(doc.readyState==='loading')doc.addEventListener('DOMContentLoaded',init,{once:true});
+ else init();
+ doc.addEventListener('dudu:phone:lifecycle',event=>{
+  closePopup();
   if(event?.detail?.accountChanged)syncAccess();
  });
 })(typeof window!=='undefined'?window:{});
