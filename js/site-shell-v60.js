@@ -193,9 +193,9 @@
    const pilotCopy=element('div','dudu-pilot-entry-copy');
    pilotCopy.append(element('span','dudu-pilot-entry-kicker','F · PHÓ BẢN THỬ NGHIỆM'),
      element('strong','','Đêm mưa ở Quan Đạo'),
-     element('span','dudu-pilot-entry-desc','Truyện ngắn tương tác · 3 địa điểm · nhiều kết cục · không cấp thưởng'));
+     element('span','dudu-pilot-entry-desc','Truyện ngắn đa nhánh · có mở đầu và hậu quả · không cấp thưởng'));
    const pilotLink=element('a','dudu-pilot-launch','Chơi thử ↗');
-   pilotLink.href='dudu-pilot.html?v=2b';
+   pilotLink.href='dudu-pilot.html?v=story-3';
    pilotLink.setAttribute('aria-label','Mở bản chơi thử Đêm mưa ở Quan Đạo');
    pilot.append(pilotCopy,pilotLink);
    root.append(pilot,starter,hidden);
