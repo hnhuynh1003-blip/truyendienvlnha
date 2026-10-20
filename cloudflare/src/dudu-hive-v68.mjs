@@ -41,6 +41,9 @@ export function validateDuduChat(body){
     messages.push({role:msg.role==='model'?'assistant':'user',content:text});
   }
   if(messages.at(-1).role!=='user')return null;
+  // The UI's one-time greeting is local narration, not a prior model turn.
+  while(messages[0]?.role==='assistant')messages.shift();
+  if(!messages.length)return null;
   return {agentId:body.agentId,messages:messages.slice(-8)};
 }
 export function duduHiveAllowed(env,uid){
