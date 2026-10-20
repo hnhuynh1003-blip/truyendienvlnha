@@ -67,9 +67,10 @@
    const facts=snapshot(),c=facts.catalog;
    const intro='Tớ là DUDU, người hướng dẫn của hệ thống. ';
    if(target==='pact'){
-     return intro+'Khế ước hệ thống là điều kiện bắt buộc trước khi tham gia nhiệm vụ xuyên giới. '
-       +'Nhưng chức năng ký và xác minh khế ước chưa được triển khai. '
-       +'Tớ chưa thể xác nhận cậu đã ký hoặc tự ký thay cậu.';
+     return intro+'Đầu tiên cậu cần hoàn thành nhiệm vụ mở đầu trong ứng dụng Nhiệm vụ. '
+       +'Chỉ khi máy chủ xác minh và cấp Thẻ thông hành, cậu mới có thể xin ký khế ước với hệ thống con. '
+       +'Sau khế ước mới mở xuyên truyện, kỹ năng và nâng cấp. '
+       +'Hiện chưa có dịch vụ phát thẻ và ký khế ước thật, tớ chưa thể ký thay cậu.';
    }
    if(target==='progress'){
      return 'Cấp hệ thống và cấp nhiệm vụ là hai thứ khác nhau. F/E là nhóm nhiệm vụ sơ cấp; '
@@ -119,12 +120,16 @@
  }
  const allowedViews=Object.freeze({
    worlds:Object.freeze({id:'worlds',label:'Xem Vạn Giới'}),
+   quests:Object.freeze({id:'quests',label:'Mở Nhiệm vụ'}),
+   system:Object.freeze({id:'system',label:'Xem Hệ Thống'}),
    shop:Object.freeze({id:'shop',label:'Xem Cửa hàng'}),
    profile:Object.freeze({id:'profile',label:'Mở Hồ sơ'})
  });
  function suggestedAction(question){
    const topic=intent(question);
-   if(topic==='world'||topic==='mission')return allowedViews.worlds;
+   if(topic==='world')return allowedViews.worlds;
+   if(topic==='mission')return allowedViews.quests;
+   if(topic==='pact'||topic==='progress')return allowedViews.system;
    if(topic==='wallet')return allowedViews.shop;
    if(topic==='account')return allowedViews.profile;
    return null;
@@ -142,7 +147,7 @@
      }
      return true;
    }
-   const panelId=id==='shop'?'shop':'profile';
+   const panelId=['shop','quests','system'].includes(id)?id:'profile';
    if(typeof root?.openPhoneApp!=='function')return false;
    root.openPhoneApp(panelId);
    return true;
