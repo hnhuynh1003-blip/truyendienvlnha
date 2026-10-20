@@ -66,3 +66,20 @@ Pilot lưu riêng `dudu:pilot-f-casefile-v8:`; không tự nhập save V7. Test 
 **Gợi ý prompt cho cuộc chat mới:**
 
 “Tiếp tục DUDU Studio từ GitHub `hnhuynh1003-blip/truyendienvlnha`, nhánh `main`. Hãy đọc `docs/DUDU-STUDIO-START-HERE-2026-10-20.md`, kiểm tra HEAD + source hiện tại, sau đó đọc tài liệu chuyên đề mới nhất. Quan Đạo V8 vẫn pilot; giữ EPUB, NPC, auth, dữ liệu và billing. Tóm tắt trạng thái thực và đề xuất đợt tiếp theo, không giả định test mock là đã triển khai sản xuất.”
+
+
+## V68 — DUDU sống trong Liên Lạc, Hive/DeepSeek chỉ là AI thử nghiệm (20/10/2026)
+
+**Đã ghi trực tiếp trên `main`, không tạo web/ứng dụng lab riêng.** V68 mở rộng **một** liên hệ DUDU trong Cyber Phone Messenger V67.2. Trong menu `⋯` của DUDU có bốn kênh **DUDU đồng hành / DUDU Chủ Thần / Hệ thống con chính quy F / Hệ thống con phi chính quy F**. Cùng một giao diện, bốn bộ nhân cách và lịch sử riêng (riêng Đồng hành giữ khóa chat V43 cũ). Không sửa NPC V56, vai A/B/C, thư viện, EPUB, Firestore hay vật phẩm.
+
+- Đồng hành: hướng dẫn ban đầu, giải đáp đọc truyện/ứng dụng, đối thoại thân thiện; mặc định vẫn dùng V43 + Steward V67.3, không gọi API.
+- Chủ Thần: diễn giải luật, bảo hộ/lưu trữ theo **thẩm quyền thiết kế**; hiện không có công cụ lưu hoặc bảo hộ production, không toàn tri; hỏi trạng thái xác minh vẫn trả lời theo bộ Steward khi AI tắt.
+- Hai hệ thống con: chỉ khác biệt bằng nhân cách/bộ nhớ/ranh giới thông tin và nguồn gốc `regular/irregular`; chính quy không mặc nhiên tốt, phi chính quy không mặc nhiên xấu. Không có khế ước/kỹ năng/phần thưởng thật.
+- `js/dudu-agent-v68.js` giữ lựa chọn trong phiên chat, các bộ nhớ phụ phân tách theo UID và agentId. Chỉ **người dùng chủ động bấm “Bật DeepSeek thử”** sau khi máy chủ xác nhận quyền mới dùng Hive. Key KHÔNG đưa vào trình duyệt hoặc GitHub.
+- `cloudflare/src/dudu-hive-v68.mjs` nhận `POST /v1/dudu-ai/chat` và `GET /v1/dudu-ai/status`, JWT Firebase, chỉ định vai/model tại server, đầu vào tối đa 10 tin và 3.500 ký tự, đầu ra 180 token, không tool call; DeepSeek Hive model `deepseek-ai/deepseek-v4.1-flash-1017`. NPC AI Router vẫn là luồng khác.
+- Hai cờ `DUDU_HIVE_ENABLED=false` và `DUDU_HIVE_TEST_APPROVED=false` trong **cả hai file wrangler**, không thừa hưởng cờ `AI_ENABLED`. Chỉ chấp nhận một `DUDU_HIVE_TEST_UID` đã xác thực, cấu hình dưới dạng **Cloudflare Secret**, cùng `HIVE_API_KEY` Secret. Không có tác vụ GitHub tự bật cờ Hive, không có triển khai Cloudflare được thực hiện bởi các commit này.
+- Durable Object quota `global-budget-v1` ghi **tối đa 20 lần yêu cầu Hive cho toàn bộ đợt V68**, lưu qua deploy (kể cả request lỗi), khoảng cách 5 giây, một lượt đang xử lý tại thời điểm. **Đây là hạn mức lượt gọi, không phải trần USD.** Giá và cách tính token do Hive quyết định; kiểm tra Billing trước/sau từng thử và tự đặt cap ở Hive nếu có. Với 0,95 USD, nên chạy 1–2 tin trước rồi xem mức trừ thực tế.
+- Tuyệt đối không bỏ qua cờ tắt để thử nhanh. Khi chủ tài khoản cho phép deploy **Worker staging** và chấp nhận khả năng phát sinh phí: cấu hình `HIVE_API_KEY`, `DUDU_HIVE_TEST_UID` bằng Cloudflare Secrets (tránh GitHub, ảnh chụp màn hình, file .env đã commit); kiểm tra rõ giá model Hive, kế hoạch 20 lượt, URL Worker, trạng thái biến môi trường **trong bản Worker chạy thật**, sau đó mới bật *cả hai* cờ Hive cho tài khoản thử. Có thể tắt bằng một trong hai cờ. Không làm điều này bằng website public hoặc các script deploy AI NPC cũ mà không xem lại cấu hình.
+- Khuyến nghị trước khi duyệt pilot live: chạy `node --test tests/dudu-agent-v68.cjs`, `node --test cloudflare/tests/dudu-hive-v68.test.mjs`, full smoke/Chromium; dùng UID thử thật kiểm tra account switch, 320–430px, đóng Phone, thiếu mạng, lỗi 429, history; xác minh usage và số dư Hive portal. Logic/server test ≠ AI API live test ≠ QA di động.
+
+**Mục tiêu tiếp:** khi AI thực tế trả lời ổn, mở rộng hồ sơ hệ thống con kế thừa sổ bản nâng cấp đã chốt và thiết kế sự kiện có bằng chứng/khế ước được backend xác thực. Không tự gắn hệ thống tiến trình V68 hoặc phát hành 48 seed.
