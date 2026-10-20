@@ -257,7 +257,11 @@ async function main() {
       hasEntry:[...document.querySelectorAll('#d60-author-actions button')].some(b=>b.textContent.includes('Khung kịch bản'))
     }));
     if(worldStudioAuth.authorized){
-      assert.equal(worldStudioAuth.hasEntry,true,'Author Studio should expose scenario template tool');
+      await page.waitForFunction(()=>[...document.querySelectorAll('#d60-author-actions button')]
+        .some(b=>b.textContent.includes('Khung kịch bản')));
+      assert.equal(worldStudioAuth.hasEntry||await page.evaluate(()=>[...document.querySelectorAll('#d60-author-actions button')]
+        .some(b=>b.textContent.includes('Khung kịch bản'))),true,
+        'Author Studio should expose scenario template tool');
       const opened=await page.evaluate(()=>DuduWorldUXV66.openAuthorStudio());
       assert.equal(opened,true,'Authorized authors can open offline scenario tooling');
       assert.match(await page.locator('#d65-world-dialog').textContent(),/Khung kịch bản/);
