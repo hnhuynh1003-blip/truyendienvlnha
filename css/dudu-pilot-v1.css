@@ -132,3 +132,16 @@ a.dudu-pilot-launch:hover{background:#f3e7ff;color:#1b223a}
 .dudu-pilot-npc-mark{display:grid;place-items:center;flex:0 0 36px;height:36px;border-radius:50%;border:1px solid rgba(224,204,245,.5);background:linear-gradient(135deg,#78648a,#3c4263);color:#ffeffc;font-family:Georgia,serif;font-size:20px;font-weight:700}
 .dudu-pilot-npc-dialogue{min-width:0;flex:1}
 .dudu-pilot-npc-dialogue .dudu-pilot-npc{margin:1px 0 6px;font-weight:750;color:#ead7f6}
+
+/* V6.2: contextual verification cues and failures that never vanish silently. */
+.dudu-pilot-verification{
+ margin:12px 0 2px;padding:10px 12px;border-left:3px solid #b0a3dd;
+ border-radius:0 8px 8px 0;background:rgba(137,128,182,.14);
+ color:#e5dcf5;font-size:12px;line-height:1.7;
+}
+.dudu-pilot-action-error{
+ margin:10px 0 0;padding:11px 12px;border:1px solid rgba(238,174,143,.5);
+ border-radius:8px;background:rgba(130,67,52,.16);color:#f6cbbc;
+ font-size:12px;line-height:1.6;
+}
+.dudu-pilot-action-error[hidden]{display:none}
