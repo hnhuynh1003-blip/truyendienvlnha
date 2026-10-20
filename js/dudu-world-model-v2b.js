@@ -46,7 +46,9 @@
    if(!has(w.places,scene.placeId))errs.push('unknown_place:'+id);
    if(scene.npcId&&!has(w.npcs,scene.npcId))errs.push('unknown_npc:'+id);
    for(const choice of list(scene.choices)){
-    if(list(choice.requires).some(e=>!has(w.clues,e))||list(choice.gainEvidence).some(e=>!has(w.clues,e)))errs.push('unknown_evidence:'+choice.id);
+    if([...list(choice.requires),...list(choice.gainEvidence),
+      ...list(choice.visibleIfEvidence),...list(choice.visibleAnyEvidence)]
+      .some(e=>!has(w.clues,e)))errs.push('unknown_evidence:'+choice.id);
     if(choice.to&&has(s.scenes,choice.to)){
      const from=scene.placeId,to=s.scenes[choice.to].placeId;
      if(from!==to&&!list(w.places[from]?.adjacent).includes(to))errs.push('illegal_scene_jump:'+choice.id);
