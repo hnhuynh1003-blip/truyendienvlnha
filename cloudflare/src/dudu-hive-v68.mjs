@@ -31,7 +31,9 @@ export function validateDuduChat(body){
         Object.keys(msg).sort().join(',')!=='role,text'||
         !['user','model'].includes(msg.role)||typeof msg.text!=='string')return null;
     const text=msg.text.trim();
-    if(!text||text.length>500)return null;
+    // Allow one longer AU instruction. Never accept oversized transcripts.
+    const max=body.agentId==='core'&&msg.role==='user'?1400:500;
+    if(!text||text.length>max)return null;
     total+=text.length;
     if(total>3500)return null;
     messages.push({role:msg.role==='model'?'assistant':'user',content:text});
@@ -63,7 +65,7 @@ export async function callDuduHive(payload,env,request=fetch){
       body:JSON.stringify({
         model:DUDU_HIVE_MODEL,
         messages:[{role:'system',content:agent.prompt+'\n'+BASE_RULES},...payload.messages],
-        stream:false,reasoning_effort:'none',max_completion_tokens:180,
+        stream:false,reasoning_effort:'none',max_completion_tokens:360,
         temperature:0.65
       }),
       signal:AbortSignal.timeout(25000)
@@ -79,7 +81,7 @@ export async function callDuduHive(payload,env,request=fetch){
     };
     const usage=data?.usage||{};
     return {data:{
-      text:text.trim().slice(0,650),agentId:payload.agentId,
+      text:text.trim().slice(0,1600),agentId:payload.agentId,
       model:DUDU_HIVE_MODEL,provider:'hive',
       usage:{
         inputTokens:Math.max(0,Number(usage.prompt_tokens)||0),
