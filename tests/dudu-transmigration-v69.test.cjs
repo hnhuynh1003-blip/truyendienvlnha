@@ -52,74 +52,112 @@ test('V69 AU draft is validated but is not an executable punishment or data read
  assert.equal(rules.authorPolicyFields.length,6);
 });
 
-test('V69 separate phone apps deny reader Core, show status popup, preserve DUDU companion',()=>{
- class El {
+test('V70 shows ONLY card gate until an eligible Sandbox test code is entered',()=>{
+ const gate=require('../js/dudu-system-gate-v70.js');
+ class El{
   constructor(tag='div',id=''){
-   this.tagName=tag.toUpperCase();this.id=id;this.children=[];
-   this.style={display:'none'};this.hidden=false;this.dataset={};
-   this.events={};this.value='';this.textContent='';
-   this.maxLength=0;this.disabled=false;
+   this.tagName=tag.toUpperCase();this.id=id;this.className='';
+   this.children=[];this.style={display:'none'};this.hidden=false;
+   this.events={};this.value='';this.textContent='';this.disabled=false;
   }
-  append(...children){this.children.push(...children);}
-  replaceChildren(...children){this.children=[...children];}
+  append(...kids){this.children.push(...kids);}
+  replaceChildren(...kids){this.children=[...kids];}
   remove(){this.removed=true;}
-  addEventListener(type,listener){(this.events[type]??=[]).push(listener);}
+  addEventListener(type,cb){(this.events[type]??=[]).push(cb);}
   setAttribute(k,v){this[k]=v;}
   focus(){}
  }
- const mounts=new Map(['phone-app-system','phone-app-core-console',
+ const ids=['phone-app-system','phone-app-core-console',
   'dudu-v69-system-view','dudu-v69-core-view','dudu-v69-passport-quest',
-  'dudu-v69-core-launch'].map(id=>[id,new El('div',id)]));
- const events=[],saved=new Map();
- const document={
-  readyState:'complete',
-  createElement:t=>new El(t),
+  'dudu-v69-core-launch'];
+ const mounts=new Map(ids.map(id=>[id,new El('div',id)]));
+ const saved=new Map(),domEvents=[];
+ const session={setItem:(k,v)=>saved.set(k,v),getItem:k=>saved.get(k)||null,
+  removeItem:k=>saved.delete(k)};
+ const doc={readyState:'complete',createElement:t=>new El(t),
   getElementById:id=>mounts.get(id)||null,
-  addEventListener:(k,fn)=>events.push({k,fn}),
-  removeEventListener(){}
- };
- let editor=false,authUid='reader',username='reader',calls=0;
+  addEventListener:(k,fn)=>domEvents.push([k,fn]),removeEventListener(){}};
+ let author=false,uid='reader';let calls=0;
  const win={
-  document,DuduTraversalV69:rules,
-  DuduAuth:{uid:()=>authUid,isReady:()=>true,isAdmin:()=>editor},
-  localStorage:{setItem:(k,v)=>saved.set(k,v),getItem:k=>saved.get(k)||null},
-  openPhoneApp:()=>{calls++;},phoneHome:()=>{calls++;}
+  document:doc,DuduTraversalV69:rules,DuduSystemGateV70:gate,
+  DuduAuth:{uid:()=>uid,isReady:()=>true,isAdmin:()=>author},
+  sessionStorage:session,openPhoneApp:()=>{calls++;},phoneHome:()=>{calls++;}
  };
- const ctx={window:win,document,IS_SANDBOX_MODE:false,
-  currentUsername:username,canEditStories:()=>editor,
-  userProfile:{level:18,exp:20},localStorage:win.localStorage};
- vm.runInNewContext(ui,ctx,{filename:'dudu-system-app-v69.js',timeout:2000});
- const api=win.DuduSystemAppsV69;
- assert.equal(api.isAuthor(),false);
+ const ctx={window:win,IS_SANDBOX_MODE:true,currentUsername:uid,
+  canEditStories:()=>author,userProfile:{username:'reader',name:'Mây',level:18,exp:50}};
+ vm.runInNewContext(ui,ctx,{filename:'dudu-system-app-v69.js',timeout:2500});
+ const app=win.DuduSystemAppsV69;
+ const host=mounts.get('dudu-v69-system-view');
+ assert.equal(app.isAuthor(),false);
+ assert.equal(app.gateState(),'locked');
+ assert.equal(app.renderSystem(),true);
+ assert.equal(host.children.length,1,'Before a pass, ONLY the gate may mount');
+ assert.equal(host.children[0].className,'dudu-v70-gate');
+ assert.equal(app.statusPopup(),false,'No stat popup before entering card');
  assert.equal(mounts.get('dudu-v69-core-launch').hidden,true);
- assert.equal(api.renderCore(),false);
- assert.equal(saved.size,0);
- assert.equal(api.renderSystem(),true);
- assert.ok(mounts.get('dudu-v69-system-view').children.length>=5);
- assert.equal(api.passportQuest(),true);
+ assert.equal(app.renderCore(),false);
+ assert.equal(mounts.get('dudu-v69-core-view').children.length,0);
+ assert.equal(app.passportQuest(),true);
  assert.equal(mounts.get('dudu-v69-passport-quest').children.length,1);
- api.statusPopup();
+ assert.equal(gate.admit('DUDU-THU-2026',{sandbox:true,accountId:'sandbox:reader',session}).ok,true);
+ assert.equal(app.gateState(),'demo');
+ app.renderSystem();
+ assert.ok(host.children.length>=4);
+ assert.equal(host.children[0].className,'dudu-v70-hero');
+ assert.equal(app.statusPopup(),true);
  const popup=mounts.get('phone-app-system').children.at(-1);
  assert.equal(popup.id,'dudu-v69-status-popup');
  assert.equal(popup['aria-modal'],'true');
- assert.equal(win.DuduSystemAppsV69.canSignPact(),false);
- editor=true;authUid='author';ctx.currentUsername='author';
- assert.equal(api.syncAccess(),true);
+ assert.equal(app.canSignPact(),false);
+ author=true;uid='au';ctx.currentUsername='au';
+ assert.equal(app.syncAccess(),true);
  assert.equal(mounts.get('dudu-v69-core-launch').hidden,false);
- assert.equal(api.renderCore(),true);
- assert.ok(mounts.get('dudu-v69-core-view').children.length>=5);
- editor=false;
- assert.equal(api.syncAccess(),false);
- assert.equal(api.renderCore(),false);
- assert.equal(saved.size,0);
- assert.equal(calls,0);
- assert.equal(html.includes('id="phone-app-system"'),true);
- assert.equal(html.includes('id="phone-app-core-console"'),true);
- assert.equal(html.includes("openPhoneApp('system')"),true);
- assert.equal(html.includes("openPhoneApp('core-console')"),true);
- assert.equal(html.includes('dudu-v69-passport-quest'),true);
- assert.equal(html.includes('js/dudu-agent-v68.js'),false,'Old role switch must not load in Messenger');
- assert.equal(/dudu-v68-agent-select|DuduAgentV68/.test(companion),false);
- assert.match(html,/appName==='core-console'.*DuduSystemAppsV69/s);
+ assert.equal(app.renderCore(),true);
+ assert.equal(mounts.get('dudu-v69-core-view').children.length,3);
+ author=false;
+ assert.equal(app.syncAccess(),false);
+ assert.equal(app.renderCore(),false);
+ assert.equal(mounts.get('dudu-v69-core-view').children.length,0);
+ assert.equal(app.gateState(),'locked','Another account cannot reuse reader demo pass');
+ assert.equal(calls,0,'Read-only rendering never navigates or changes rights');
+ assert.ok(html.includes('id="phone-app-system"'));
+ assert.ok(html.includes('id="phone-app-core-console"'));
+ assert.ok(html.includes("openPhoneApp('system')"));
+ assert.ok(html.includes("openPhoneApp('core-console')"));
+ assert.ok(html.includes('js/dudu-system-gate-v70.js?v=70-1'));
+ assert.ok(html.includes('js/dudu-core-ai-v70.js?v=70-1'));
+ assert.doesNotMatch(companion,/dudu-v68-agent-select|DuduAgentV68/);
  assert.doesNotMatch(ui,/db\.collection\(|\.firestore\(|fetch\(|DuduCollectiblesClient\.grant/);
+});
+
+test('V70 demo code cannot mint entitlements for a production reader or a different UID',()=>{
+ const gate=require('../js/dudu-system-gate-v70.js');
+ assert.equal(gate.DEMO_CODE,'DUDU-THU-2026');
+ const saved=new Map(),session={setItem:(k,v)=>saved.set(k,v),
+  getItem:k=>saved.get(k)||null,removeItem:k=>saved.delete(k)};
+ for(const [id,sandbox] of [
+  ['firebase:reader',false],['firebase:reader',true],
+  ['sandbox:',true],['sandbox:reader',false]
+ ]){
+  assert.equal(gate.admit(gate.DEMO_CODE,{sandbox,accountId:id,session}).ok,false);
+ }
+ assert.equal(gate.admit('DUDU-THU-2027',{sandbox:true,accountId:'sandbox:reader',session}).ok,false);
+ assert.equal(gate.admit(' dudu-thu-2026 ',{sandbox:true,accountId:'sandbox:reader',session}).ok,true);
+ assert.equal(gate.state({sandbox:true,accountId:'sandbox:reader',session}),'demo');
+ assert.equal(gate.state({sandbox:false,accountId:'sandbox:reader',session}),'locked');
+ assert.equal(gate.state({sandbox:true,accountId:'sandbox:other',session}),'locked');
+ assert.equal(gate.revoke({accountId:'sandbox:reader',session}),true);
+ assert.equal(gate.state({sandbox:true,accountId:'sandbox:reader',session}),'locked');
+ const demo=gate.demoProjection({accountId:'sandbox:reader',name:'Mây'});
+ assert.equal(demo.host.name,'Mây');
+ assert.match(demo.host.id,/^KC-[0-9A-F]{8}$/);
+ assert.match(demo.system.displayId,/^SYS-/);
+ assert.notEqual(demo.host.id,demo.system.displayId);
+ assert.equal(demo.system.isRegular,null,'Only backend can prove regular vs rogue');
+ assert.equal(demo.system.isCounterfeit,null);
+ assert.equal(demo.verified,false);
+ assert.equal(demo.capabilities.enterWorld,false);
+ assert.equal(demo.capabilities.signPact,false);
+ assert.equal(demo.capabilities.grantLoot,false);
+ assert.equal(demo.stats.length,8);
 });
