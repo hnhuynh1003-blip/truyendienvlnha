@@ -30,6 +30,11 @@ DUDU_WORKERS_AI_APPROVED = "false"
 DUDU_WORKERS_ACCOUNT_FREE_VERIFIED = "false"
 DUDU_AI_FALLBACK_ENABLED = "false"
 DUDU_PAID_PROVIDERS_ENABLED = "false"
+# V68 owner-only Hive pilot. Requires three separate Cloudflare Secrets:
+# HIVE_API_KEY, DUDU_HIVE_TEST_UID. Never put either value in git.
+# BOTH manual flags remain OFF even when a key is configured.
+DUDU_HIVE_ENABLED = "false"
+DUDU_HIVE_TEST_APPROVED = "false"
 
 # Binding itself does not call AI; all executions require the above gates.
 [ai]
