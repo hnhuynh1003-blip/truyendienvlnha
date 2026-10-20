@@ -1280,7 +1280,7 @@
     "placeId": "hall",
     "phase": "CHỌN ĐƯỜNG",
     "title": "Thuốc ở trạm gác, bình minh ở trước mắt",
-    "text": "Lục Tam biết nơi để số thuốc chưa dùng, nhưng sau lần giấu chuyện, không nên để anh tự đi một mình. Người khuân hàng của quán có thể đi cùng.\n\nCầu gỗ dưới thung đang ngập nước; đường trên sườn đá xa hơn. Bạn muốn hỏi người biết đường hay lập tức cử người?",
+    "text": "Lục Tam biết nơi để số thuốc chưa dùng, nhưng sau lần giấu chuyện, không nên để anh tự đi một mình. Người khuân hàng của quán có thể đi cùng.\n\nBên ngoài có hai ngả qua đèo: lối cầu gỗ dưới thung và con đường men sườn đá. Mưa che kín tầm nhìn, không ai trong quán dám chắc cả hai còn đi được. Bạn muốn hỏi người vừa đi đường về hay lập tức cử người?",
     "choices": [
       {
         "id": "route_seek_advice",
