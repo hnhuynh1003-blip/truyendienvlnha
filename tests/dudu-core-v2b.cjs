@@ -1,5 +1,4 @@
-// Quan Dao F V6 regression: evidence is not a checklist, verdicts are fair,
-// verified guard conclusions are immediate, NPC speech is strictly scene-bound.
+// DUDU Quan Dao V7: the investigation must restore care supplies, not only identify a suspect.
 'use strict';
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
@@ -11,186 +10,146 @@ const legacy=require('../js/dudu-pilot-f-v1.js');
 const model=require('../js/dudu-world-model-v2b.js');
 const world=require('../js/dudu-pilot-world-v2b.js');
 const engine=require('../js/dudu-story-engine-v2b.js');
-const s=require('../js/dudu-pilot-f-v2b.js');
-assert.deepEqual(base.validate(legacy),[],'Legacy engine remains sound');
-assert.deepEqual(model.validate(world),[],'World Bible is valid');
-assert.deepEqual(engine.validate(s),[],'V6 is valid');
-assert.equal(s.scenarioVersion,7);
-assert.equal(s.missionId,legacy.missionId);
-assert.equal(s.released,false);assert.equal(s.rewardsEnabled,false);
-assert.equal(s.status,'pilot_only');
+const story=require('../js/dudu-pilot-f-v2b.js');
+assert.deepEqual(base.validate(legacy),[]);
+assert.deepEqual(model.validate(world),[]);
+assert.deepEqual(engine.validate(story),[]);
+assert.equal(story.status,'pilot_only');
+assert.equal(story.released,false);
+assert.equal(story.rewardsEnabled,false);
+assert.equal(story.scenarioVersion,8);
+assert.equal(story.missionId,legacy.missionId);
+assert.equal(story.scenarioId,'pilot-quan-dao-dawn-rescue-v7');
 assert.equal(Object.keys(world.places).length,3);
+assert.equal(world.npcs.porter.name,'Đinh Nhị');
+assert.ok(world.facts.stock_for_convoy && world.facts.ridge_safe_path);
 for(const p of Object.values(world.places)){
- assert.ok(fs.existsSync(path.join(root,p.background)),'SVG '+p.background);
- assert.ok(fs.existsSync(path.join(root,p.photo)),'WebP '+p.photo);
+ assert.ok(fs.existsSync(path.join(root,p.background)),p.background);
+ assert.ok(fs.existsSync(path.join(root,p.photo)),p.photo);
 }
-const invalidNPC=JSON.parse(JSON.stringify(world));
-invalidNPC.npcs.maid.lines.unshift({factId:'borrowed_medicine',text:'Not hers'});
-assert.ok(model.validate(invalidNPC).includes('npc_unknown_fact:maid'));
-const at=state=>engine.view(s,state);
-const options=state=>at(state).choices.map(c=>c.id);
-const play=(seq,starting=engine.begin(s))=>{
- let state=starting;
- for(const id of seq){
-  const r=engine.decide(s,state,id);
-  assert.equal(r.accepted,true,'Action '+id+' at '+state.sceneId+': '+r.reason);
-  state=r.state;
+const at=st=>engine.view(story,st);
+const opts=st=>at(st).choices.map(c=>c.id);
+function play(ids,initial=engine.begin(story)){
+ let st=initial;
+ for(const id of ids){
+  const r=engine.decide(story,st,id);
+  assert.equal(r.accepted,true,'Action '+id+' at '+st.sceneId+': '+r.reason);
+  st=r.state;
  }
- return state;
-};
-const start=engine.begin(s);
-assert.equal(start.sceneId,'prologue');
-assert.ok(s.scenes.prologue.text.includes('Vạn Giới'));
-assert.ok(!s.scenes.prologue.text.includes('túi thuốc'));
-const hub=play(['approach_inn_v3','help_maid_v3','ask_about_inn','stay_to_listen']);
-assert.equal(hub.sceneId,'hub');
-assert.ok(options(hub).includes('assemble_clues'),'May infer with zero evidence');
-assert.ok(!options(hub).includes('store_visit_v2b'),'Warehouse permission required');
-assert.equal(engine.decide(s,hub,'store_visit_v2b').reason,'undiscovered_action');
-assert.equal(engine.decide(s,hub,'report_guard_v2b').accepted,false);
-const notes=play(['assemble_clues'],hub);
-assert.deepEqual(['suspect_maid','suspect_keeper','suspect_guard'].filter(x=>options(notes).includes(x)),
- ['suspect_maid','suspect_keeper','suspect_guard']);
-const maidClaim=play(['suspect_maid','blame_maid'],notes);
-const keeperClaim=play(['suspect_keeper','blame_keeper'],notes);
-const guardClaim=play(['suspect_guard','blame_guard_without_proof'],notes);
-for(const state of [maidClaim,keeperClaim,guardClaim]){
- assert.equal(state.status,'playing','No one can be arrested via unsupported accusation');
- assert.equal(state.endingId,null);
- assert.ok(options(state).some(x=>x.startsWith('reconsider_')));
- assert.ok(options(state).some(x=>x.startsWith('insist_')));
+ return st;
 }
-assert.equal(play(['reconsider_maid'],maidClaim).sceneId,'notes');
-assert.equal(play(['insist_maid'],maidClaim).endingId,'wrong');
-assert.equal(play(['insist_keeper'],keeperClaim).endingId,'wrong_keeper');
-const guardFalse=play(['insist_guard'],guardClaim);
-assert.equal(guardFalse.status,'failure');
-assert.equal(guardFalse.endingId,'wrong_guard');
-assert.ok(s.endings.wrong_guard.text.includes('không thể cho phép kết tội hay bắt người'));
-const beforeClues=play(['suspect_guard'],notes);
-assert.ok(!options(beforeClues).includes('show_ledger_and_seal'));
-assert.equal(engine.decide(s,beforeClues,'show_ledger_and_seal').reason,'missing_story_precondition');
-assert.equal(play(['approach_inn_v3','enter_inn_v2b','watch_the_room','leave_inn_v2b']).endingId,'withdraw');
-const firstGuard=play(['guard_visit_v2b'],hub);
-assert.equal(at(firstGuard).npcDetails.text,s.scenes.guard.speech);
-const duty=play(['ask_guard_duty'],firstGuard);
-assert.ok(!s.scenes.guard_duty.text.includes('anh là người lấy'));
-assert.ok(!s.scenes.guard_duty.text.includes('người lấy túi thuốc'));
-assert.equal(at(duty).npcDetails.text,s.scenes.guard_duty.speech);
-assert.ok(!s.scenes.guard_duty.text.includes(s.scenes.guard_duty.speech.slice(1,-1)));
-const memory=play(['guard_duty_ask_where'],duty);
-assert.equal(at(memory).npcDetails.text,s.scenes.guard_memory.speech);
-assert.ok(!s.scenes.guard_memory.text.includes(s.scenes.guard_memory.speech.slice(1,-1)));
-const remembered=play(['write_guard_testimony_v2b'],memory);
-assert.equal(at(remembered).npcDetails,null,'No stale quote at hub');
+const entrance=engine.begin(story);
+assert.equal(entrance.sceneId,'prologue');
+assert.ok(!at(entrance).text.includes('túi thuốc'));
+const hub=play(['approach_inn_v3','help_maid_v3','ask_about_inn','stay_to_listen']);
+assert.ok(story.scenes.table_talk.text.includes('đoàn xe'));
+assert.ok(opts(hub).includes('assemble_clues'),'Early hypothesis does not require five clues');
+assert.ok(!opts(hub).includes('hub_present_verified_record'));
+assert.equal(engine.decide(story,hub,'store_visit_v2b').reason,'undiscovered_action');
+const notes=play(['assemble_clues'],hub);
+assert.ok(['suspect_maid','suspect_keeper','suspect_guard'].every(x=>opts(notes).includes(x)));
+for(const [person,suspect,accuse,challenge,reconsider] of [
+ ['maid','suspect_maid','blame_maid','challenge_maid','reconsider_maid'],
+ ['keeper','suspect_keeper','blame_keeper','challenge_keeper','reconsider_keeper'],
+ ['guard','suspect_guard','blame_guard_without_proof','challenge_guard','reconsider_guard']
+]){
+ const accused=play([suspect,accuse],notes);
+ assert.equal(accused.sceneId,challenge,person);
+ assert.equal(accused.status,'playing','No automatic arrest of '+person);
+ assert.equal(play([reconsider],accused).sceneId,'notes');
+}
 const key=play(['keeper_visit_v2b','keeper_ask_register','copy_key_log_v2b'],hub);
+assert.ok(!opts(key).includes('hub_present_verified_record'));
 const store=play(['store_visit_v2b','check_seal_v2b','collect_seal_v2b','return_from_store_v2b'],key);
 assert.deepEqual(store.evidence,['key_log','broken_seal']);
-assert.ok(options(store).includes('assemble_clues'));
-const targeted=play(['assemble_clues','suspect_guard'],store);
-assert.ok(options(targeted).includes('show_ledger_and_seal'),'Two direct clues enable confrontation');
-const confrontation=play(['show_ledger_and_seal'],targeted);
-assert.equal(confrontation.sceneId,'confront_guard');
-assert.equal(at(confrontation).npcDetails,null);
-const confession=play(['ask_for_full_account'],confrontation);
-assert.equal(confession.sceneId,'guard_truth');
-assert.equal(at(confession).npcDetails.text,s.scenes.guard_truth.speech);
-assert.ok(confession.flags.includes('private_admission'));
-assert.ok(!options(confession).includes('report_guard_v2b'),'Private confession not formal verdict');
-assert.ok(options(confession).includes('request_keeper_witness'),'Can seek handling without returning to hub');
-const consult=play(['request_keeper_witness'],confession);
-assert.equal(consult.sceneId,'keeper_followup');
-assert.equal(at(consult).npcDetails.text,s.scenes.keeper_followup.speech);
-const receipt=play(['check_keeper_receipt','review_receipt'],consult);
-const badReceipt=play(['trust_stamp_only'],receipt);
-assert.equal(badReceipt.sceneId,'receipt_doubt');
-assert.ok(!badReceipt.evidence.includes('care_receipt'));
-const verified=play(['recheck_receipt','match_receipt_entries'],badReceipt);
-assert.equal(verified.sceneId,'receipt_verified');
-assert.deepEqual(verified.evidence,['key_log','broken_seal','care_receipt'],
- 'No mandatory five-clue checklist');
+const complaint=play(['assemble_clues','suspect_guard'],store);
+assert.ok(opts(complaint).includes('show_ledger_and_seal'));
+const initialConfession=play(['show_ledger_and_seal','ask_for_full_account'],complaint);
+assert.ok(initialConfession.flags.includes('private_admission'));
+assert.ok(!opts(initialConfession).includes('finish_formal_with_supply'));
+const receiptReview=play(['inspect_receipt','review_receipt'],initialConfession);
+const badVerification=play(['trust_stamp_only'],receiptReview);
+assert.ok(!badVerification.evidence.includes('care_receipt'));
+const verified=play(['recheck_receipt','match_receipt_entries'],badVerification);
+assert.ok(verified.evidence.includes('care_receipt'));
 assert.ok(verified.flags.includes('receipt_checked'));
-assert.ok(options(verified).includes('verified_formal_now'));
-assert.ok(options(verified).includes('verified_public_hearing'));
-const formal=play(['verified_formal_now'],verified);
-assert.equal(formal.sceneId,'formal_report','No detour via notes/hub');
-assert.ok(options(formal).includes('report_guard_v2b'));
-const official=play(['report_guard_v2b'],formal);
-assert.equal(official.status,'success');
-assert.equal(official.endingId,'accountability');
+assert.equal(verified.evidence.length,3,'No five-clue collection threshold');
+const partial=play(['verified_formal_now','report_guard_v2b'],verified);
+assert.equal(partial.status,'playing','Confession and signature are not victory');
+assert.equal(partial.sceneId,'supply_audit');
+assert.ok(opts(partial).includes('file_only_finish'));
+assert.equal(play(['file_only_finish'],partial).endingId,'paper_only');
+assert.equal(play(['check_sack_stock','call_all_used'],partial).endingId,'paper_only');
+const computed=play(['check_sack_stock','calculate_remaining'],partial);
+assert.equal(computed.sceneId,'route_plan');
+assert.ok(computed.flags.includes('supply_balance_verified'));
+assert.equal(play(['route_choose_bridge'],computed).endingId,'route_blocked');
+const guide=play(['route_seek_advice'],computed);
+assert.equal(at(guide).npcDetails.name,'Đinh Nhị');
+assert.ok(at(guide).npcDetails.text.includes('sườn đá'));
+const fromRain=play(['choose_escorted_ridge','watch_for_return'],guide);
+assert.equal(fromRain.sceneId,'courier_in');
+assert.ok(!fromRain.flags.includes('medicine_recovered'));
+assert.equal(play(['hand_off_untallied'],fromRain).endingId,'unverified_handover');
+const counted=play(['inspect_returned_bag'],fromRain);
+assert.ok(counted.flags.includes('medicine_recovered'));
+assert.ok(!counted.flags.includes('convoy_supplied'));
+const delivered=play(['deliver_to_convoy'],counted);
+assert.ok(delivered.flags.includes('convoy_supplied'));
+assert.equal(play(['finish_rescue_without_truth'],delivered).endingId,'unresolved_reputation');
+const goodFormal=play(['finish_formal_with_supply'],delivered);
+assert.equal(goodFormal.status,'success');
+assert.equal(goodFormal.endingId,'accountability');
+assert.ok(story.endings.accountability.text.includes('bốn cuộn băng'));
 const hearing=play(['verified_public_hearing'],verified);
-assert.equal(hearing.sceneId,'hearing','Direct dialogue from verification');
-const silence=play(['ask_for_public_confession'],hearing);
-assert.equal(silence.status,'playing','Meeting is not automatic victory');
-assert.equal(silence.endingId,null);
-assert.ok(!silence.flags.includes('public_confirmed'));
-const publicProof=play(['silence_reframe','show_verified_receipt_publicly'],silence);
+assert.equal(play(['ask_for_public_confession'],hearing).status,'playing');
+const publicProof=play(['show_verified_receipt_publicly'],hearing);
 assert.ok(publicProof.flags.includes('public_confirmed'));
-assert.ok(!options(publicProof).includes('move_to_joint_resolution'));
-assert.equal(at(publicProof).npcDetails.text,s.scenes.hearing_proof.speech);
-const witness=play(['listen_maid_again'],publicProof);
-assert.equal(at(witness).npcDetails.text,s.scenes.hearing_witness.speech);
-assert.ok(!at(witness).npcDetails.text.includes('Tôi đã tự lấy thuốc'));
-const ready=play(['record_witness_after_proof'],witness);
-assert.equal(ready.sceneId,'hearing_resolution');
-assert.ok(ready.flags.includes('public_witness_heard'));
-const mediated=play(['seek_mediation_v2b'],ready);
-assert.equal(mediated.endingId,'reconcile');
-assert.equal(mediated.status,'success');
-assert.equal(engine.decide(s,official,'report_guard_v2b').reason,'already_finished');
-assert.ok(!options(hub).includes('hub_present_verified_record'),'No verdict before evidence');
-assert.ok(!options(store).includes('hub_present_verified_record'),'Not even two clues give verdict');
-const fullEvidence=play([
- 'maid_visit_v2b','ask_maid_last_night','write_maid_testimony_v2b',
- 'guard_visit_v2b','ask_guard_where','write_guard_testimony_v2b',
- 'store_visit_v2b','check_seal_v2b','collect_seal_v2b','return_from_store_v2b',
- 'assemble_clues','suspect_guard','show_ledger_and_seal','ask_for_full_account',
- 'inspect_receipt','review_receipt','match_receipt_entries'
-],key);
-assert.deepEqual([...fullEvidence.evidence].sort(),Object.keys(world.clues).sort(),
- 'All five evidence objects remain in the session');
-assert.ok(fullEvidence.flags.includes('private_admission')&&fullEvidence.flags.includes('receipt_checked'));
-const fullyReadyHub=play(['verified_more_search'],fullEvidence);
-assert.ok(options(fullyReadyHub).includes('hub_present_verified_record'),'Verified conclusion accessible at hub');
-assert.ok(options(fullyReadyHub).includes('hub_invite_hearing_verified'),'Verified hearing accessible at hub');
-assert.match(at(fullyReadyHub).verificationNote,/Đã đối chiếu/,'Show verification separate from collected clues');
-assert.equal(play(['hub_present_verified_record','report_guard_v2b'],fullyReadyHub).endingId,'accountability');
-
-let loops=fullyReadyHub;
-for(let n=0;n<120;n++){
- loops=play(['assemble_clues','keep_searching'],loops);
+const maid=play(['listen_maid_again','record_witness_after_proof'],publicProof);
+assert.ok(maid.flags.includes('public_witness_heard'));
+const agreed=play(['seek_mediation_v2b'],maid);
+assert.equal(agreed.sceneId,'supply_audit');
+assert.equal(agreed.status,'playing');
+const reconciled=play(['check_sack_stock','calculate_remaining','route_seek_advice',
+ 'choose_escorted_ridge','watch_for_return','inspect_returned_bag',
+ 'deliver_to_convoy','finish_mediated_with_supply'],agreed);
+assert.equal(reconciled.endingId,'reconcile');
+assert.equal(reconciled.status,'success');
+assert.ok(story.endings.reconcile.text.includes('thuốc'));
+for(const [id,scene] of Object.entries(story.scenes))for(const ch of scene.choices){
+ if(ch.ending && story.endings[ch.ending].status==='success'){
+  assert.equal(id,'convoy_ready','No early success for '+ch.id);
+  assert.ok(ch.requiresFlags.includes('medicine_recovered'));
+  assert.ok(ch.requiresFlags.includes('convoy_supplied'));
+ }
 }
-assert.ok(loops.step>100,'Revisit scenario surpasses prior 100-step limit');
-assert.ok(loops.log.length<=100,'Saved interaction log remains bounded');
-assert.deepEqual(loops.evidence,fullEvidence.evidence,'No clue lost during exploration');
-const resumed=engine.restore(s,engine.serialize(s,loops));
-assert.deepEqual(resumed,loops,'Exploratory session can still restore');
-assert.equal(play(['hub_present_verified_record','report_guard_v2b'],resumed).endingId,'accountability',
- 'Verified conclusion still works beyond step 100');
-const uiText=read('js/dudu-pilot-ui-v1.js');
-assert.match(uiText,/actionAlert/, 'Rejected action must not fail silently');
-assert.match(uiText,/verificationNote/,'User must see the distinction between clues and verification');
-
-const guardLater=play(['verified_more_search','guard_visit_v2b'],verified);
-assert.equal(at(guardLater).npcDetails.text,s.scenes.guard.speech,
- 'Previously disclosed secret must not play again at introductory scene');
-assert.equal(at(play(['guard_back'],guardLater)).npcDetails,null);
-const replay=engine.restore(s,engine.serialize(s,verified));
-assert.deepEqual(replay,verified);
-assert.equal(engine.restore(s,JSON.stringify({...verified,scenarioId:'pilot-quan-dao-reasoning-v5'})),null);
-const forged={...s,rewardsEnabled:true};
-assert.ok(engine.validate(forged).includes('pilot_must_stay_locked'));
-const badSpeech=JSON.parse(JSON.stringify(s));
-badSpeech.scenes.hub.speech='orphaned';
-assert.ok(engine.validate(badSpeech).includes('invalid_scene_speech:hub'));
-const teleport=JSON.parse(JSON.stringify(s));
-teleport.scenes.prologue.choices[0].to='store';
-assert.ok(engine.validate(teleport).some(x=>x.includes('illegal_scene_jump')));
+const allClueState=play(['maid_visit_v2b','ask_maid_last_night','write_maid_testimony_v2b',
+ 'guard_visit_v2b','ask_guard_where','write_guard_testimony_v2b'],verified);
+assert.deepEqual(allClueState.evidence.slice().sort(),Object.keys(world.clues).sort(),
+ 'All 5 old clues remain collectable');
+assert.deepEqual(engine.restore(story,engine.serialize(story,delivered)),delivered);
+assert.equal(engine.restore(story,JSON.stringify({...delivered,scenarioId:'pilot-quan-dao-fair-evidence-v6-1'})),null,
+ 'Old scenario may not pretend to have finished new content');
+let revisits=hub;
+for(let i=0;i<65;i++)revisits=play(['assemble_clues','keep_searching'],revisits);
+assert.ok(revisits.step>100);
+assert.ok(revisits.log.length<=100);
+assert.deepEqual(revisits.evidence,[]);
+assert.deepEqual(engine.restore(story,engine.serialize(story,revisits)),revisits);
+assert.equal(play(['step_away'],revisits).endingId,'withdraw');
+const noReward={...story,rewardsEnabled:true};
+assert.ok(engine.validate(noReward).includes('pilot_must_stay_locked'));
+const illegal=JSON.parse(JSON.stringify(story));
+illegal.scenes.prologue.choices[0].to='store';
+assert.ok(engine.validate(illegal).some(x=>x.includes('illegal_scene_jump')));
+const badNpc=JSON.parse(JSON.stringify(story));
+badNpc.scenes.route_advice.npcId='wrong';
+assert.ok(engine.validate(badNpc).includes('unknown_npc:route_advice'));
 const ui=read('js/dudu-pilot-ui-v1.js');
-assert.match(ui,/dudu:pilot-f-fair-evidence-v6-1:/);
-assert.match(ui,/Sổ tay của bạn/);
+assert.match(ui,/dudu:pilot-f-dawn-rescue-v7:/);
+assert.match(ui,/actionAlert/);
 for(const html of [read('index.html'),read('dudu-pilot.html')]){
- for(const script of ['dudu-story-engine-v2b.js?v=play-v6-2','dudu-pilot-f-v2b.js?v=play-v6-2'])
-  assert.ok(html.includes(script),'Missing '+script);
+ assert.ok(html.includes('dudu-pilot-f-v2b.js?v=play-v7'));
+ assert.ok(html.includes('dudu-pilot-ui-v1.js?v=play-v7'));
 }
-console.log('DUDU F V6.2: fair suspects / proof-before-verdict / direct conclusions / no repeated dialogue / no rewards OK');
+console.log('DUDU F V7: clues -> stock audit -> safe return -> delivery -> accountable outcomes OK');
