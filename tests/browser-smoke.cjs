@@ -2522,7 +2522,7 @@ async function main() {
           renderPhoneWallpaperV27();
         }
       });
-      assert.equal(v30.apps,11,'Home includes an isolated Sandbox lab shortcut');
+      assert.equal(v30.apps,13,'V69 home retains the Sandbox shortcut and adds System plus AU Core');
       assert.equal(v30.dockCount,4,'Dock has only four primary apps');
       assert.equal(v30.visibleAppIds.some(s=>s.includes("openPhoneApp('profile')")),false);
       assert.equal(v30.visibleAppIds.some(s=>s.includes("openPhoneApp('codex')")),true);
