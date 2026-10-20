@@ -289,7 +289,8 @@ async function main() {
       const sample=window.DuduSystemAppsV69.statusPopup();
       const output={
        denied:client.ok===false,onlyGate:view.children.length===1&&
-         view.children[0].classList.contains('dudu-v71-lock'),
+         view.children[0].classList.contains('dudu-v71-unavailable')&&
+         !view.querySelector('form'),
        noStat:sample===false&&!view.querySelector('.dudu-v69-stat'),
        noWrites:window.__firestoreWrites.length===0
       };

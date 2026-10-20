@@ -90,8 +90,21 @@ const assert = require('node:assert/strict');
 
     await page.locator('#auth-password').fill('testing-secret');
     await page.locator('#auth-email-login-btn').click();
-    await page.waitForFunction(() => document.getElementById('account-status-btn').textContent.includes('reader@example.test') ||
-      document.getElementById('account-status-btn').textContent.includes('Reader'));
+    try {
+      await page.waitForFunction(() => document.getElementById('account-status-btn').textContent.includes('reader@example.test') ||
+        document.getElementById('account-status-btn').textContent.includes('Reader'), {timeout:12000});
+    } catch (error) {
+      const snapshot = await page.evaluate(() => ({
+        label: document.getElementById('account-status-btn')?.textContent,
+        feedback: document.getElementById('auth-status-message')?.textContent,
+        authUid: window.firebase?.auth?.()?.currentUser?.uid || null,
+        duduUid: window.DuduAuth?.uid?.() || null,
+        authReady: window.DuduAuth?.isReady?.() || false
+      }));
+      console.error('Firebase mock sign-in diagnostic (no private credentials):',
+        JSON.stringify(snapshot), 'pageErrors:', JSON.stringify(pageErrors));
+      throw error;
+    }
     const result = await page.evaluate(() => ({
       username:currentUsername, role:userProfile.role,
       canEdit:canEditStories(), loggedIn:DuduAuth.isReady(),
