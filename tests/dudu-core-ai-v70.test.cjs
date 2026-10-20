@@ -7,10 +7,11 @@ function setup({sandbox=false,admin=false,uid='uid-1',enabled=true}={}){
  const user={uid,getIdToken:async()=> 'signed-jwt-for-unit-test'};
  const win={
   DuduAuth:{isReady:()=>true,isAdmin:()=>admin,uid:()=>uid},
+  DuduAI:{workerBase:'https://dudu-ai-staging.example.workers.dev'},
   firebase:{auth:()=>({currentUser:user})}
  };
  const env={window:win,IS_SANDBOX_MODE:sandbox,
-  WORKER_URL:'https://dudu-ai-staging.example.workers.dev',
+
   AbortSignal,fetch:async(url,options)=>{
    requests.push({url,options});
    if(url.endsWith('/status'))return {
