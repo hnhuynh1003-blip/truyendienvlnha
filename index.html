@@ -2683,6 +2683,7 @@
       userProfile.role = (userProfile.role === 'admin') ? 'reader' : 'admin';
       applyUserRole();
       saveCurrentAccount();
+      window.DuduSiteV60?.refresh?.(); // Keep Author Studio entry in sync with Sandbox role.
     }
 
     function saveCurrentAccount() {
