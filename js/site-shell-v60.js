@@ -193,7 +193,7 @@
    const pilotCopy=element('div','dudu-pilot-entry-copy');
    pilotCopy.append(element('span','dudu-pilot-entry-kicker','F · PHÓ BẢN THỬ NGHIỆM'),
      element('strong','','Đêm mưa ở Quan Đạo'),
-     element('span','dudu-pilot-entry-desc','Tự đi lại, khám phá và suy luận · không cấp thưởng'));
+     element('span','dudu-pilot-entry-desc','Điều tra và đưa thuốc về trước bình minh · không cấp thưởng'));
    const pilotLink=element('a','dudu-pilot-launch','Chơi thử ↗');
    pilotLink.href='dudu-pilot.html?v=play-v7';
    pilotLink.setAttribute('aria-label','Mở bản chơi thử Đêm mưa ở Quan Đạo');
