@@ -15,7 +15,7 @@ const s=require('../js/dudu-pilot-f-v2b.js');
 assert.deepEqual(base.validate(legacy),[],'Legacy engine remains sound');
 assert.deepEqual(model.validate(world),[],'World Bible is valid');
 assert.deepEqual(engine.validate(s),[],'V6 is valid');
-assert.equal(s.scenarioVersion,6);
+assert.equal(s.scenarioVersion,7);
 assert.equal(s.missionId,legacy.missionId);
 assert.equal(s.released,false);assert.equal(s.rewardsEnabled,false);
 assert.equal(s.status,'pilot_only');
@@ -51,11 +51,19 @@ assert.equal(engine.decide(s,hub,'report_guard_v2b').accepted,false);
 const notes=play(['assemble_clues'],hub);
 assert.deepEqual(['suspect_maid','suspect_keeper','suspect_guard'].filter(x=>options(notes).includes(x)),
  ['suspect_maid','suspect_keeper','suspect_guard']);
-const maidFalse=play(['suspect_maid','blame_maid'],notes);
-const keeperFalse=play(['suspect_keeper','blame_keeper'],notes);
-const guardFalse=play(['suspect_guard','blame_guard_without_proof'],notes);
-assert.equal(maidFalse.status,'failure');
-assert.equal(keeperFalse.status,'failure');
+const maidClaim=play(['suspect_maid','blame_maid'],notes);
+const keeperClaim=play(['suspect_keeper','blame_keeper'],notes);
+const guardClaim=play(['suspect_guard','blame_guard_without_proof'],notes);
+for(const state of [maidClaim,keeperClaim,guardClaim]){
+ assert.equal(state.status,'playing','No one can be arrested via unsupported accusation');
+ assert.equal(state.endingId,null);
+ assert.ok(options(state).some(x=>x.startsWith('reconsider_')));
+ assert.ok(options(state).some(x=>x.startsWith('insist_')));
+}
+assert.equal(play(['reconsider_maid'],maidClaim).sceneId,'notes');
+assert.equal(play(['insist_maid'],maidClaim).endingId,'wrong');
+assert.equal(play(['insist_keeper'],keeperClaim).endingId,'wrong_keeper');
+const guardFalse=play(['insist_guard'],guardClaim);
 assert.equal(guardFalse.status,'failure');
 assert.equal(guardFalse.endingId,'wrong_guard');
 assert.ok(s.endings.wrong_guard.text.includes('không thể cho phép kết tội hay bắt người'));
@@ -146,10 +154,10 @@ const teleport=JSON.parse(JSON.stringify(s));
 teleport.scenes.prologue.choices[0].to='store';
 assert.ok(engine.validate(teleport).some(x=>x.includes('illegal_scene_jump')));
 const ui=read('js/dudu-pilot-ui-v1.js');
-assert.match(ui,/dudu:pilot-f-fair-evidence-v6:/);
+assert.match(ui,/dudu:pilot-f-fair-evidence-v6-1:/);
 assert.match(ui,/Sổ tay của bạn/);
 for(const html of [read('index.html'),read('dudu-pilot.html')]){
- for(const script of ['dudu-story-engine-v2b.js?v=play-v6','dudu-pilot-f-v2b.js?v=play-v6'])
+ for(const script of ['dudu-story-engine-v2b.js?v=play-v6-1','dudu-pilot-f-v2b.js?v=play-v6-1'])
   assert.ok(html.includes(script),'Missing '+script);
 }
 console.log('DUDU F V6: fair suspects / proof-before-verdict / direct conclusions / no repeated dialogue / no rewards OK');
