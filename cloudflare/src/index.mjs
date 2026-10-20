@@ -586,7 +586,7 @@ export default {
     if(!allowed)return error('origin-blocked','Nguồn yêu cầu không được phép.',403,origin,env);
     if(req.method==='OPTIONS'){
       if(!origin||!allowOrigin(origin,env))return error('origin-blocked','Nguồn yêu cầu không được phép.',403,origin,env);
-      if(!['/v1/generate','/v1/status','/v1/dudu-ai/status','/v1/dudu-ai/chat',...Object.keys(COLLECTIBLE_PATHS),...Object.keys(PLAYER_APPEARANCE_PATHS),...Object.keys(AVATAR_DRAFT_PATHS),...Object.keys(COMMENT_PATHS),...Object.keys(GIFT_PATHS),...Object.keys(DUDU_SYSTEM_PATHS),'/v1/pilot/status'].includes(path))
+      if(!['/v1/generate','/v1/status','/v1/dudu-ai/status','/v1/dudu-ai/chat',...Object.keys(COLLECTIBLE_PATHS),...Object.keys(PLAYER_APPEARANCE_PATHS),...Object.keys(AVATAR_DRAFT_PATHS),...Object.keys(COMMENT_PATHS),...Object.keys(GIFT_PATHS),'/v1/system/me','/v1/system/redeem','/v1/system/register-name','/v1/system/consent-pact','/v1/system/owner/issue-test-pass','/v1/pilot/status'].includes(path))
         return error('not-found','Không tìm thấy đường dẫn.',404,origin,env);
       return new Response(null,{status:204,headers:headers(origin,env)});
     }
