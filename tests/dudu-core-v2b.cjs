@@ -27,6 +27,8 @@ for(const place of Object.values(world.places)){
 const untrusted=model.npcView(world,'guard',{evidence:[],flags:[]});
 assert.ok(untrusted.text.includes('trạm gác'));
 assert.ok(!untrusted.text.includes('Dấu niêm phong ấy'));
+assert.ok(!model.npcView(world,'guard',{evidence:['broken_seal','guard_statement'],flags:[]}).text.includes('Dấu niêm phong ấy'),'Knowledge is not disclosed before explicit confrontation');
+assert.ok(model.npcView(world,'guard',{evidence:['broken_seal','guard_statement'],flags:['guard_confronted']}).text.includes('Dấu niêm phong ấy'),'Confrontation reveals authored statement');
 assert.ok(!Object.hasOwn(untrusted,'knows')&&!Object.hasOwn(untrusted,'facts'));
 assert.equal(model.npcView(world,'unknown',{evidence:[],flags:[]}),null);
 assert.deepEqual(model.knownClues(world,['key_log','fake_id']).map(x=>x.id),['key_log']);
