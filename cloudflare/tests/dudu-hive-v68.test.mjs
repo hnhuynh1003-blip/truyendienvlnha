@@ -18,7 +18,8 @@ test('V68 four separated personas and no client-provided system prompt',()=>{
   assert.equal(validateDuduChat({...base,agentId:'root-admin'}),null);
   assert.equal(validateDuduChat({...base,agentId:'companion'}),null);
   assert.equal(validateDuduChat({...base,messages:[{role:'model',text:'hi'}]}),null);
-  assert.equal(validateDuduChat({...base,messages:[{role:'user',text:'x'.repeat(501)}]}),null);
+  assert.ok(validateDuduChat({...base,messages:[{role:'user',text:'x'.repeat(1400)}]}));
+  assert.equal(validateDuduChat({...base,messages:[{role:'user',text:'x'.repeat(1401)}]}),null);
   assert.equal(validateDuduChat({...base,messages:Array(11).fill(base.messages[0])}),null);
 });
 test('V68 paid Hive unavailable unless explicitly gated to one UID',async()=>{
@@ -44,7 +45,7 @@ test('V68 Hive request keeps persona on server, text only, no tool grants',async
   assert.equal(outbound.init.headers.Authorization,'Bearer '+key);
   const json=JSON.parse(outbound.init.body);
   assert.equal(json.model,DUDU_HIVE_MODEL);
-  assert.equal(json.stream,false);assert.equal(json.max_completion_tokens,180);
+  assert.equal(json.stream,false);assert.equal(json.max_completion_tokens,360);
   assert.match(json.messages[0].content,/DUDU CORE/);
   assert.deepEqual(json.messages.map(m=>m.role),['system','user']);
   assert.equal(json.messages.at(-1).content,'Chào DUDU');
