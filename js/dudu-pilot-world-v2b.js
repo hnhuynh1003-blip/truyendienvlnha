@@ -45,7 +45,7 @@
     beliefs:['Cứu người là đúng, nhưng tự lấy thuốc là sai.'],
     lines:[
      {text:'“Nửa đêm tôi nghe tiếng người kêu cứu, nên có rời trạm gác.”'},
-     {requiresEvidence:['broken_seal','guard_statement'],text:'“Dấu niêm phong ấy... tôi đã làm vỡ. Có người đang chờ thuốc ở trạm canh.”'},
+     {requiresEvidence:['broken_seal','guard_statement'],requiresFlags:['guard_confronted'],text:'“Dấu niêm phong ấy... tôi đã làm vỡ. Có người đang chờ thuốc ở trạm canh.”'},
      {requiresEvidence:['care_receipt'],text:'“Tôi đã ghi rõ nơi dùng thuốc. Tôi sẽ nhận trách nhiệm trước chưởng quầy.”'}
     ]},
    maid:{npcId:'maid',name:'A Liên',role:'Người hầu quán',homePlaceId:'hall',
