@@ -6,6 +6,8 @@ export {DuduCollectibles} from './collectibles.mjs';
 export {DuduPlayerAppearance} from './player-appearance.mjs';
 export {DuduDiscussion} from './comments-v44-2.mjs';
 export {DuduGiftLedger} from './gift-ledger-v44-3.mjs';
+export {DuduSystemRegistry} from './dudu-system-registry-v71.mjs';
+import {DUDU_SYSTEM_PATHS,routeSystem} from './dudu-system-api-v71.mjs';
 import {requestGift,requestDecision} from './gift-requests-v44-3.mjs';
 import {scope,postBody,reportBody,moderatorBody,registerBody}
  from './comment-policy-v44-2.mjs';
@@ -584,7 +586,7 @@ export default {
     if(!allowed)return error('origin-blocked','Nguồn yêu cầu không được phép.',403,origin,env);
     if(req.method==='OPTIONS'){
       if(!origin||!allowOrigin(origin,env))return error('origin-blocked','Nguồn yêu cầu không được phép.',403,origin,env);
-      if(!['/v1/generate','/v1/status','/v1/dudu-ai/status','/v1/dudu-ai/chat',...Object.keys(COLLECTIBLE_PATHS),...Object.keys(PLAYER_APPEARANCE_PATHS),...Object.keys(AVATAR_DRAFT_PATHS),...Object.keys(COMMENT_PATHS),...Object.keys(GIFT_PATHS),'/v1/pilot/status'].includes(path))
+      if(!['/v1/generate','/v1/status','/v1/dudu-ai/status','/v1/dudu-ai/chat',...Object.keys(COLLECTIBLE_PATHS),...Object.keys(PLAYER_APPEARANCE_PATHS),...Object.keys(AVATAR_DRAFT_PATHS),...Object.keys(COMMENT_PATHS),...Object.keys(GIFT_PATHS),...Object.keys(DUDU_SYSTEM_PATHS),'/v1/pilot/status'].includes(path))
         return error('not-found','Không tìm thấy đường dẫn.',404,origin,env);
       return new Response(null,{status:204,headers:headers(origin,env)});
     }
@@ -595,6 +597,13 @@ export default {
       if(req.method!=='GET')
         return error('method-not-allowed','Phương thức không được hỗ trợ.',405,origin,env);
       return handlePilotStatus(req,env,origin);
+    }
+    if(path in DUDU_SYSTEM_PATHS){
+      try{
+        const answer=await routeSystem(req,env,path);
+        return json(answer.body,answer.status,origin,env);
+      }catch(_){return error('registry-unavailable',
+        'Chưa truy cập được sổ Hệ Thống. Không có Thẻ hoặc hồ sơ nào được ghi.',503,origin,env);}
     }
     if(path in GIFT_PATHS){
       if(req.method!==GIFT_PATHS[path])
