@@ -61,7 +61,7 @@
   if(!plain(state)||state.version!==1||state.missionId!==s.missionId||
      state.scenarioId!==s.scenarioId||!own(s.scenes,state.sceneId)||
      !['playing','success','failure'].includes(state.status)||
-     !Number.isSafeInteger(state.step)||state.step<0||state.step>100||
+     !Number.isSafeInteger(state.step)||state.step<0||state.step>10000||
      !Array.isArray(state.evidence)||!Array.isArray(state.flags)||
      !Array.isArray(state.usedChoices)||!Array.isArray(state.log)||
      !plain(state.relations)||state.log.length>100||
@@ -88,7 +88,7 @@
  function decide(s,state,choiceId){
   if(!verifyState(s,state))return {accepted:false,reason:'invalid_state',state};
   if(state.status!=='playing')return {accepted:false,reason:'already_finished',state};
-  if(state.step>=100)return {accepted:false,reason:'step_limit',state};
+  if(state.step>=10000)return {accepted:false,reason:'step_limit',state};
   const choice=s.scenes[state.sceneId].choices.find(c=>c.id===choiceId);
   if(!choice)return {accepted:false,reason:'unknown_choice',state};
   if(choice.once&&state.usedChoices.includes(choice.id))
