@@ -16,7 +16,7 @@
   let uid=null;
   try{const auth=root.DuduAuth;uid=auth?.isReady?.()?auth.uid():null;}catch{}
   if(!uid){try{uid=root.firebase?.auth?.()?.currentUser?.uid||null;}catch{}}
-  return (upgraded?'dudu:pilot-f-reasoning-v5:':'dudu:pilot-f-v1:')+encodeURIComponent(uid||'guest');
+  return (upgraded?'dudu:pilot-f-fair-evidence-v6:':'dudu:pilot-f-v1:')+encodeURIComponent(uid||'guest');
  }
  function load(){
   owner=key();
