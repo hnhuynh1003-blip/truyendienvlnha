@@ -121,3 +121,17 @@ Bạn đang phát triển web đọc truyện và thế giới tương tác DUDU
 - **Các tựa trên là bộ ba đề cử để thiết kế tiếp, chưa phải bộ ba đã phát hành hoặc đã nghiệm thu server.** Mỗi F phải có World Bible/Scene Identity riêng, >=1 background đạt chuẩn, nhân vật có giới hạn thông tin, 2+ lựa chọn ý nghĩa/nhánh kết thúc, hệ quả được engine xác định và kiểm thử mobile.
 - Không bắt buộc cùng số cảnh, cùng loại nhiệm vụ hoặc thời lượng. Dùng lời thoại ngắn gọn và kể bằng hành động, tránh văn bản quá dài trong UI; không ép người đọc truyện tham gia game.
 - Sau khi người chơi thử xong và nghiệm thu 3 F trong pilot, mới xây pipeline đánh giá trên server có chống giả mạo, rồi cân nhắc quyền/trợ lực AI CORE.
+
+## 8. NARRATIVE PASS — SỬA NHỊP TRUYỆN F NGÀY 20/10/2026
+
+> **Bản mới hơn mục 7**. V2B ban đầu có engine/World Bible nhưng Quan Đạo quá ngắn và gượng ép: vừa đến quán đã mất thuốc, không có động cơ can dự, NPC chỉ là nguồn chứng cứ. Chủ dự án yêu cầu truyện F có cốt truyện tự nhiên, mở đầu/diễn biến/kết cục thực sự, **không giới hạn ngắn gọn máy móc**. Đọc `docs/DUDU-F-STORY-CRAFT-QUALITY-V1.md` trước khi viết hoặc sửa F.
+
+- Đã sửa `js/dudu-pilot-f-v2b.js` (giữ tên file để không hỏng imports) sang `scenarioId=pilot-quan-dao-narrative-v3`, `scenarioVersion=3`, vẫn giữ `missionId=dudu-m-an-f01` và các cơ chế V2B.
+- Mở đầu mới: `prologue` (đường đèo/mưa/lý do trú quán) → `arrival` (gặp A Liên, giúp phên tre tùy chọn) → `resting` (bữa tối, giới thiệu chưởng quầy & Lục Tam, sự kiện mất thuốc xuất hiện dần) → `hall` (người chơi tự cân nhắc can dự). Sau đó mới hỏi nhân vật, khám kho, đối chất. Tổng hiện có **10 scenes** và **4 endings**, bản văn xuôi có nhiều đoạn, không phải bản tóm tắt checklist.
+- `js/dudu-story-engine-v2b.js` truyền `choice.reaction` và loại scene tới UI để phản ứng sau lựa chọn có ngữ cảnh; `js/dudu-pilot-ui-v1.js` trình bày văn xuôi theo đoạn xuống dòng kép, tăng khả năng đọc mobile, không đưa nút chọn vào giữa một câu đang kể. UI hiển thị kết truyện thay vì chỉ báo đạt/không đạt nhiệm vụ. `css/dudu-pilot-v1.css` được bổ sung style reader.
+- `js/dudu-pilot-world-v2b.js`: lời thoại NPC có điều kiện; A Liên có phản hồi khác nếu người chơi giúp cô lúc mở đầu, không bịa ký ức ở tuyến khác.
+- Trang `dudu-pilot.html`, thẻ Vạn Giới và assets tham chiếu phiên bản `story-3`; giới thiệu ngoài trang tránh tiết lộ ngay vụ mất thuốc. Namespace save mới `dudu:pilot-f-narrative-v3:` để không mạo nhận save V2B cũ đã trải qua prologue.
+- Cập nhật `tests/dudu-core-v2b.cjs` và `tests/dudu-pilot-visibility-v1.cjs`. Bốn bộ kiểm thử Foundation V1 / Visibility / Visual V2A / V2B đã PASS khi thực thi bằng V8 mock dựa trên source GitHub ở phiên sửa này; **chưa xác thực Node trực tiếp hoặc smoke browser Pages/mobile**.
+- Không sửa backend, Firestore Rules, EPUB, auth, Liên Lạc NPC, thưởng thật, kho, Xu, cấp bậc. `pilot_only`, `released:false`, `rewardsEnabled:false` vẫn khóa.
+
+**Kế tiếp:** trước khi tạo 3 truyện F khảo hạch, dùng quy chuẩn chất lượng kể chuyện vừa lưu để viết đề cương đầy đủ cho từng F, có riêng nhân vật, động cơ, nhịp đời sống, biến cố, nhiều hậu quả, visual identity và QA logic; không copy tuyến điều tra Quan Đạo sang mọi F. Không đồng nhất 48 seeds V66 với nhiệm vụ đã phát hành.
