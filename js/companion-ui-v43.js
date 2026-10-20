@@ -10,15 +10,12 @@
  const canUse=()=>!!rules&&typeof currentUsername==='string'&&!!currentUsername&&
   (sandbox()||!!(root.DuduAuth?.isReady?.()&&root.DuduAuth.uid()===currentUsername));
  const localKey=()=>!sandbox()&&canUse()?'dudu:companion:local:v51:'+currentUsername:null;
- let shown=false,owner='',awaitingAi=false;
- const activeAgent=()=>root.DuduAgentV68?.agentId?.()||'companion';
+ let shown=false,owner='';
  const create=(tag,cls,text)=>{
   const e=document.createElement(tag);if(cls)e.className=cls;
   if(text!==undefined)e.textContent=String(text);return e;
  };
  function state(){
-  if(activeAgent()!=='companion')
-   return root.DuduAgentV68?.readState?.(activeAgent())||rules.norm(null);
   if(sandbox())return rules.norm(userProfile?.duduCompanionV43);
   const key=localKey();if(!key)return rules.norm(null);
   try{return rules.norm(JSON.parse(localStorage.getItem(key)||'null'));}
@@ -26,8 +23,6 @@
  }
  function store(next){
   if(!canUse())return false;
-  if(activeAgent()!=='companion')
-   return root.DuduAgentV68?.saveState?.(next,activeAgent())===true;
   if(!sandbox()){
    try{localStorage.setItem(localKey(),JSON.stringify(rules.norm(next)));return true;}
    catch(_){return false;}
@@ -44,12 +39,6 @@
  }
  function accountReady(){
   if(!canUse())return;
-  if(activeAgent()!=='companion'){
-   owner=currentUsername;
-   if(shown)render();
-   root.duduV33Render?.();
-   return;
-  }
   const currentOwner=currentUsername;
   let s=state(),dirty=false;
   const today=rules.localDay();
@@ -80,18 +69,6 @@
   const panel=el('dudu-v43-companion');if(!panel||!shown)return;
   if(!canUse()||owner!==currentUsername){hide();return;}
   const s=state(),today=rules.localDay(),list=el('dudu-v43-messages');
-  const currentAgent=activeAgent();
-  const selector=el('dudu-v68-agent-select');
-  if(selector){selector.value=currentAgent;selector.disabled=awaitingAi;}
-  const label=el('dudu-v68-role-label');
-  if(label)label.textContent=currentAgent==='companion'?'Bạn đồng hành · Hướng dẫn':
-    currentAgent==='core'?'Chủ Thần · Luật & bảo hộ (thử)':
-    currentAgent==='child-regular'?'Hệ thống con chính quy · Thử nghiệm':
-      'Hệ thống con phi chính quy · Thử nghiệm';
-  const aiButton=el('dudu-v68-ai-toggle');
-  if(aiButton){aiButton.disabled=awaitingAi;
-   aiButton.textContent=root.DuduAgentV68?.enabled?.()?'Tắt DeepSeek (đang bật)':'Bật DeepSeek thử';
-  }
   if(!list)return;
   const previousScroll=list.scrollTop;
   const followBottom=list.scrollHeight-list.scrollTop-list.clientHeight<56;
@@ -101,7 +78,7 @@
    const b=create('div','dudu-v43-bubble '+(msg.role==='user'?'is-user':'is-dudu'),msg.text);
    // Only the latest *system* answer offers a safe, explicit navigation button.
    // The chat model never chooses which app/actions execute.
-   if(['companion','core'].includes(activeAgent())&&msg.role==='model'&&index===visibleMessages.length-1&&index>0&&
+   if(msg.role==='model'&&index===visibleMessages.length-1&&index>0&&
       visibleMessages[index-1]?.role==='user'){
      const action=root.DuduSystemStewardV673?.suggestedAction?.(visibleMessages[index-1].text);
      if(action){
@@ -124,7 +101,7 @@
   const button=el('dudu-v43-checkin'),info=el('dudu-v43-reward-info');
   if(button){
    const received=s.login.day===today;
-   button.disabled=received||currentAgent!=='companion';
+   button.disabled=received;
    button.textContent=sandbox()?(received?'✓ Đã nhận quà hôm nay':'Nhận quà điểm danh'):
     (received?'✓ Đã điểm danh':'Điểm danh');
   }
@@ -166,79 +143,41 @@
   hide();
   if(typeof root.duduV33ShowInbox==='function')root.duduV33ShowInbox();
  }
- function offlineReply(role,message){
-  const steward=root.DuduSystemStewardV673?.reply?.(message);
-  if(role==='companion')return typeof steward==='string'&&steward.trim()?steward:
-   rules.reply(message,(novels||[]).map(n=>n.title));
-  if(role==='core')return typeof steward==='string'&&steward.trim()?steward:
-   'Chủ Thần đã ghi nhận câu hỏi để giải thích. Trong bản thử, ta chưa có quyền xác thực khế ước, bảo hộ, lưu trữ hay cấp tiến trình thật. Cậu có thể hỏi về quy tắc Vạn Giới và nhiệm vụ.';
-  if(role==='child-regular')return 'Bổn hệ thống chính quy F đang chờ kích hoạt AI thử. Hiện chỉ có thể giải thích luật và đồng hành giả lập, không ký khế ước hoặc giao thưởng thật.';
-  return 'Bổn hệ thống phi chính quy F có những bí mật của riêng mình. Nhưng nơi đây vẫn là bản thử, chưa có hợp đồng hay tác động đến sổ cái.';
- }
- function updateSendStatus(text,isError=false){
-  const status=el('dudu-v672-composer-status');
-  if(status){status.textContent=text;status.dataset.state=isError?'error':'ok';}
- }
  function send(){
-  if(!canUse()||!shown||owner!==currentUsername||awaitingAi)return;
+  if(!canUse()||!shown||owner!==currentUsername)return;
   const input=el('dudu-v43-message-input');
   const message=String(input?.value||'').trim();
   if(message.length<1||message.length>500)return;
-  const role=activeAgent(),identity=currentUsername,s=state();
+  const s=state();
   addMessage(s,'user',message);
-  if(role==='companion'){
-   const result=rules.chat(s,message);
-   if(result.ok){
-    s.chat=result.state.chat;
-    s.milestones=result.state.milestones;
-   }
+  // V67.3: trusted read-only system topics go to DUDU Steward.
+  // NPC prompts/AI and all reward/account mutations remain separate.
+  const systemAnswer=root.DuduSystemStewardV673?.reply?.(message);
+  const answer=typeof systemAnswer==='string'&&systemAnswer.trim()?
+    systemAnswer:rules.reply(message,(novels||[]).map(n=>n.title));
+  addMessage(s,'model',answer);
+  const result=rules.chat(s,message);
+  if(result.ok){
+   // In-memory mutation to same s: only milestone/run fields are updated.
+   s.chat=result.state.chat;
+   s.milestones=result.state.milestones;
   }
-  const useAI=root.DuduAgentV68?.enabled?.()===true&&!sandbox();
-  if(!useAI)addMessage(s,'model',offlineReply(role,message));
-  if(!store(s)){
-   updateSendStatus('Chưa lưu được tin nhắn. Nội dung vẫn ở ô nhập.',true);
-   return;
-  }
-  input.value='';
-  input.dispatchEvent(new Event('input',{bubbles:true}));
-  render();
-  const log=el('dudu-v43-messages');
-  if(log)log.scrollTop=log.scrollHeight;
-  root.duduV33Render?.();
-  if(!useAI){
-   updateSendStatus('Đã lưu tin nhắn trên thiết bị.');
-   return;
-  }
-  awaitingAi=true;
-  render();
-  updateSendStatus('Đang chờ DeepSeek... Lượt thử có thể tiêu hao credit Hive.');
-  Promise.resolve(root.DuduAgentV68.ask(role,s.messages)).then(result=>{
-   // Never write a reply to a different Firebase account or agent history.
-   if(!canUse()||currentUsername!==identity||activeAgent()!==role)return;
-   const fresh=state();
-   addMessage(fresh,'model',result?.ok&&typeof result.text==='string'?
-     result.text:'Không nhận được câu trả lời AI. Lượt thử có thể đã được tính. '+offlineReply(role,message));
-   if(!store(fresh)){
-    updateSendStatus('Chưa lưu được phản hồi AI.',true);
-    return;
-   }
-   if(shown){render();const l=el('dudu-v43-messages');if(l)l.scrollTop=l.scrollHeight;}
+  if(store(s)){
+   input.value='';
+   input.dispatchEvent(new Event('input',{bubbles:true}));
+   render();
+   const log=el('dudu-v43-messages');
+   if(log)log.scrollTop=log.scrollHeight;
    root.duduV33Render?.();
-   updateSendStatus(result?.ok?'Đã nhận phản hồi DeepSeek.':'Kết nối AI lỗi; đã trả lời theo quy tắc.',!result?.ok);
-  }).catch(()=>{
-   if(!canUse()||currentUsername!==identity||activeAgent()!==role)return;
-   const fresh=state();
-   addMessage(fresh,'model','DeepSeek đang gián đoạn. Lượt gọi có thể đã được tính; hãy thử lại sau.');
-   if(store(fresh)&&shown)render();
-   updateSendStatus('Không thể kết nối DeepSeek.',true);
-  }).finally(()=>{
-   awaitingAi=false;
-   if(shown&&currentUsername===identity)render();
-  });
+   const status=el('dudu-v672-composer-status');
+   if(status){status.textContent='Đã lưu tin nhắn trên thiết bị.';status.dataset.state='ok';}
+  }else{
+   const status=el('dudu-v672-composer-status');
+   if(status){status.textContent='Chưa lưu được tin nhắn. Nội dung vẫn ở ô nhập.';status.dataset.state='error';}
+  }
  }
-
  function checkin(){
-  if(!canUse()||!shown||owner!==currentUsername||activeAgent()!=='companion')return;
+  if(!canUse()||!shown||owner!==currentUsername)return;
   const previous=state(),plan=rules.checkin(previous);
   if(!plan.ok)return;
   if(!sandbox()){
@@ -284,9 +223,8 @@
   backBtn.title='Về danh bạ';backBtn.setAttribute('aria-label','Về danh bạ');backBtn.addEventListener('click',back);
   const avatar=create('span','dudu-v43-avatar','✦');
   const htxt=create('div','dudu-v43-identity');
-  const roleLabel=create('small','','Bạn đồng hành · Hướng dẫn');
-  roleLabel.id='dudu-v68-role-label';
-  htxt.append(create('strong','','DUDU'),roleLabel);
+  htxt.append(create('strong','','DUDU'),
+   create('small','','Bạn đồng hành · Hệ thống đang kiến tạo'));
   head.append(backBtn,avatar,htxt);
   const streak=create('div','dudu-v43-streak');
   const login=create('span','','');login.id='dudu-v43-day-count';
@@ -305,35 +243,7 @@
   const badges=create('div','dudu-v43-milestones','');badges.id='dudu-v43-milestones';
   const diaryContents=create('div','dudu-v672-diary-contents');
   const diaryTitle=create('strong','dudu-v672-diary-title','Nhật ký đồng hành');
-  const controls=create('div','dudu-v68-controls');
-  const roleName=create('label','','Chọn vai trò DUDU');
-  roleName.setAttribute('for','dudu-v68-agent-select');
-  const selector=create('select','dudu-v68-agent-select');
-  selector.id='dudu-v68-agent-select';
-  for(const agent of root.DuduAgentV68?.agents||[]){
-   const option=create('option','',agent.label);
-   option.value=agent.id;selector.append(option);
-  }
-  selector.value=activeAgent();
-  selector.addEventListener('change',()=>{
-   if(awaitingAi||!root.DuduAgentV68?.selectAgent?.(selector.value)){
-    selector.value=activeAgent();return;
-   }
-   accountReady();render();diary.open=false;
-  });
-  const aiToggle=create('button','dudu-v68-ai-toggle','Bật DeepSeek thử');
-  aiToggle.id='dudu-v68-ai-toggle';aiToggle.type='button';
-  aiToggle.addEventListener('click',async()=>{
-   if(awaitingAi)return;
-   aiToggle.disabled=true;
-   const result=await root.DuduAgentV68?.toggleAI?.();
-   updateSendStatus(result?.text||'Không thể xác minh trạng thái AI.',!result?.ok);
-   if(shown)render();
-  });
-  const aiWarning=create('small','dudu-v68-ai-warning',
-   'AI thử nghiệm qua Hive có thể tốn credit; chỉ bật sau khi chủ dự án cấu hình Worker. Không dùng để nhận nhiệm vụ hoặc thưởng thật.');
-  controls.append(roleName,selector,aiToggle,aiWarning);
-  diaryContents.append(diaryTitle,controls,streak,claim,reward,note,badges);
+  diaryContents.append(diaryTitle,streak,claim,reward,note,badges);
   diary.append(summary,diaryContents);
   head.append(diary);
   const messages=create('div','dudu-v43-messages');messages.id='dudu-v43-messages';
@@ -362,7 +272,7 @@
   status.setAttribute('aria-live','polite');
   const adjustInput=()=>{
    const filled=text.value.trim().length>0;
-   submit.disabled=!filled||awaitingAi;
+   submit.disabled=!filled;
    text.style.height='auto';
    const measuredHeight=text.scrollHeight;
    // Hidden panels report zero height before first open; keep CSS minimum.
