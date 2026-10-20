@@ -30,7 +30,7 @@
   },
   npcs:{
    keeper:{npcId:'keeper',name:'Hà chưởng quầy',role:'Chủ quán',homePlaceId:'hall',
-    intro:'“Khách quan, sổ đêm còn ở đây. Xin đừng kết tội ai khi chưa xem kỹ.”',
+    intro:'“Chuyện gửi hàng không thể chỉ nghe qua lời đồn, khách quan ạ.”',
     motive:'Tìm lại thuốc và giữ sự an toàn của người trọ.',
     knows:['last_guard_key','sealed_box'],
     beliefs:['Nghi có người tự ý mở kho, chưa thể buộc tội.'],
@@ -39,22 +39,22 @@
      {requiresEvidence:['care_receipt'],text:'“Nếu có người bị thương, ta cứu trước rồi lập biên bản bàn giao.”'}
     ]},
    guard:{npcId:'guard',name:'Lục Tam',role:'Lính áp tải',homePlaceId:'hall',
-    intro:'“Tôi đã rời chốt gác, nhưng đừng bắt A Liên chịu oan.”',
+    intro:'“Tôi chỉ là lính áp tải. Chuyện tối qua... có vài điều khó nói.”',
     motive:'Giữ bí mật việc vi phạm quy trình để cứu người.',
     knows:['borrowed_medicine','last_guard_key'],
     beliefs:['Cứu người là đúng, nhưng tự lấy thuốc là sai.'],
     lines:[
-     {text:'“Tôi đã ra khỏi trạm gác giữa đêm. Điều đó là thật.”'},
-     {requiresEvidence:['broken_seal','guard_statement'],requiresFlags:['guard_confronted'],factId:'borrowed_medicine',text:'“Dấu niêm phong ấy... tôi đã làm vỡ. Có người đang chờ thuốc ở trạm canh.”'},
+     {requiresEvidence:['guard_statement'],text:'“Tôi có rời trạm gác. Chuyện ấy tôi sẽ chịu trách nhiệm.”'},
+     {requiresEvidence:['broken_seal','guard_statement'],requiresFlags:['guard_confronted'],factId:'borrowed_medicine',text:'“Đúng, tôi đã mở hòm. Tôi lấy thuốc cứu người bị thương ở trạm gác.”'},
      {requiresEvidence:['care_receipt'],text:'“Tôi đã ghi rõ nơi dùng thuốc. Tôi sẽ nhận trách nhiệm trước chưởng quầy.”'}
     ]},
    maid:{npcId:'maid',name:'A Liên',role:'Người hầu quán',homePlaceId:'hall',
-    intro:'“Tôi có đi ngang nhà kho, nhưng tôi chưa chạm vào túi thuốc.”',
+    intro:'“Khách quan cho em một chút thời gian. Em không muốn bị kết tội chỉ vì một lời đồn.”',
     motive:'Minh oan và bảo vệ người trọ.',
     knows:['maid_witness','sealed_box'],
     beliefs:['Một bóng áo lính đi qua hành lang, không xác định được ai.'],
     lines:[
-     {requiresFlags:['helped_maid'],text:'“Em nhớ khách quan đã giúp em ngoài hiên. Xin hãy nghe trọn lời em, được không?”'},
+     {requiresFlags:['helped_maid'],text:'“Em nhớ khách quan đã giúp em ngoài hiên. Cảm ơn vì lại đến hỏi em.”'},
      {requiresEvidence:['maid_statement'],factId:'maid_witness',text:'“Tôi thấy bóng áo lính dưới đèn. Không thể vì vậy nói chắc ai đã lấy thuốc.”'},
      {requiresEvidence:['broken_seal'],text:'“Vết sáp còn mới. Nhưng em chỉ nhìn thấy bóng người, không thấy ai tự tay mở hòm.”'}
     ]}
