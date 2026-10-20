@@ -156,7 +156,10 @@ function firebaseShim(){
     assert.equal(await page.evaluate(()=>DuduSystemAppsV69.isAuthor()),false);
     assert.equal(await page.evaluate(()=>DuduSystemAppsV69.renderCore()),false);
 
-    await page.evaluate(()=>DuduSystemAppsV69.renderSystem());
+    await page.evaluate(()=>{
+      if(document.getElementById('cyber-phone').style.display!=='flex')togglePhone();
+      openPhoneApp('system');
+    });
     await page.locator('#dudu-v69-system-view .dudu-v71-pass-form').waitFor();
     assert.equal(await page.locator('#dudu-v69-system-view .dudu-v71-hero').count(),0);
     assert.equal((await page.evaluate(()=>DuduSystemClientV71.issueOwnerTestPass())).ok,false,
