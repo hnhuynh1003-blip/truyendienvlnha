@@ -15,6 +15,45 @@ export class DuduQuota extends DurableObject {
     this.sql.exec(`CREATE TABLE IF NOT EXISTS global_usage (
       day TEXT PRIMARY KEY, calls INTEGER NOT NULL
     )`);
+    // One global lifetime budget for the paid Hive owner-only experiment.
+    // Attempts count even if upstream fails; deploys do not reset the limit.
+    this.sql.exec(`CREATE TABLE IF NOT EXISTS dudu_hive_test_v68 (
+      scope TEXT PRIMARY KEY, calls INTEGER NOT NULL,
+      last_at INTEGER NOT NULL, active_until INTEGER NOT NULL, active_id TEXT
+    )`);
+  }
+  hiveTestStatus(){
+    const row=this.sql.exec(
+      'SELECT calls FROM dudu_hive_test_v68 WHERE scope=?','v68-owner-pilot'
+    ).toArray()[0];
+    const used=Number(row?.calls||0);
+    return {limit:20,used,remaining:Math.max(0,20-used)};
+  }
+  reserveHiveTest(now){
+    const id=crypto.randomUUID();
+    return this.ctx.storage.transactionSync(()=>{
+      const row=this.sql.exec(
+        'SELECT calls,last_at,active_until FROM dudu_hive_test_v68 WHERE scope=?',
+        'v68-owner-pilot'
+      ).toArray()[0];
+      if(Number(row?.calls||0)>=20)return {ok:false,code:'dudu-test-limit'};
+      if(Number(row?.active_until||0)>now)return {ok:false,code:'dudu-test-busy'};
+      if(Number(row?.last_at||0)>0&&now-Number(row.last_at)<5000)
+        return {ok:false,code:'dudu-test-cooldown'};
+      this.sql.exec(`INSERT INTO dudu_hive_test_v68
+        (scope,calls,last_at,active_until,active_id) VALUES (?,1,?,?,?)
+        ON CONFLICT(scope) DO UPDATE SET calls=calls+1,
+          last_at=excluded.last_at,active_until=excluded.active_until,
+          active_id=excluded.active_id`,
+        'v68-owner-pilot',now,now+35000,id);
+      return {ok:true,id,remaining:Math.max(0,19-Number(row?.calls||0))};
+    });
+  }
+  releaseHiveTest(id){
+    this.sql.exec(`UPDATE dudu_hive_test_v68 SET
+      active_until=0,active_id=NULL WHERE scope=? AND active_id=?`,
+      'v68-owner-pilot',id);
+    return true;
   }
   reserve(uid,now){
     if(typeof uid!=='string'||uid.length<1||uid.length>128) return {ok:false,code:'invalid-user'};
