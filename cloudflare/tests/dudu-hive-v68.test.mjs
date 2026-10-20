@@ -20,7 +20,7 @@ test('V68 four separated personas and no client-provided system prompt',()=>{
   assert.equal(validateDuduChat({...base,messages:[{role:'user',text:'x'.repeat(501)}]}),null);
   assert.equal(validateDuduChat({...base,messages:Array(11).fill(base.messages[0])}),null);
 });
-test('V68 paid Hive unavailable unless explicitly gated to one UID',()=>{
+test('V68 paid Hive unavailable unless explicitly gated to one UID',async()=>{
   assert.equal(duduHiveAllowed(env,'owner'),true);
   assert.equal(duduHiveAllowed(env,'other'),false);
   assert.equal(duduHiveAllowed({...env,DUDU_HIVE_TEST_APPROVED:'false'},'owner'),false);
