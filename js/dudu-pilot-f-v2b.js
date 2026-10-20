@@ -10,7 +10,7 @@
  if(!world)throw Error('World Bible V2B missing');
  const story={
   schemaVersion:1,status:'pilot_only',released:false,rewardsEnabled:false,
-  scenarioId:'pilot-quan-dao-fair-evidence-v6',scenarioVersion:6,
+  scenarioId:'pilot-quan-dao-fair-evidence-v6-1',scenarioVersion:7,
   missionId:'dudu-m-an-f01',worldId:world.worldId,genreId:world.genreId,
   title:'Đêm mưa ở Quan Đạo',tier:'F',world,worldCover:world.places.gate.background,
   startSceneId:'prologue',
@@ -554,9 +554,12 @@
     "choices": [
       {
         "id": "blame_maid",
-        "label": "Công khai buộc tội A Liên khi chưa trình căn cứ",
-        "ending": "wrong",
-        "kind": "conclusion"
+        "label": "Nêu nghi ngờ trước mọi người, chưa đưa bằng chứng",
+        "kind": "dialogue",
+        "to": "challenge_maid",
+        "addFlags": [
+          "accused_maid_publicly"
+        ]
       },
       {
         "id": "undo_maid",
@@ -574,9 +577,12 @@
     "choices": [
       {
         "id": "blame_keeper",
-        "label": "Công khai buộc tội chưởng quầy khi chưa trình căn cứ",
-        "ending": "wrong_keeper",
-        "kind": "conclusion"
+        "label": "Nêu nghi ngờ trước mọi người, chưa đưa bằng chứng",
+        "kind": "dialogue",
+        "to": "challenge_keeper",
+        "addFlags": [
+          "accused_keeper_publicly"
+        ]
       },
       {
         "id": "undo_keeper",
@@ -594,9 +600,12 @@
     "choices": [
       {
         "id": "blame_guard_without_proof",
-        "label": "Công khai buộc tội Lục Tam khi chưa trình căn cứ",
-        "ending": "wrong_guard",
-        "kind": "conclusion"
+        "label": "Nêu nghi ngờ trước mọi người, chưa đưa bằng chứng",
+        "kind": "dialogue",
+        "to": "challenge_guard",
+        "addFlags": [
+          "accused_guard_publicly"
+        ]
       },
       {
         "id": "only_uniform",
@@ -1107,6 +1116,66 @@
     ],
     "npcId": "keeper",
     "speech": "“Nếu giấy này đúng, phải khớp giờ và số thuốc trong sổ. Chúng ta kiểm tra đã.”"
+  },
+  "challenge_maid": {
+    "placeId": "hall",
+    "phase": "BỊ CHẤT VẤN",
+    "title": "Chưởng quầy ngăn lời buộc tội",
+    "text": "Bạn chỉ về phía A Liên và nêu ra nghi ngờ. Cô lùi lại một bước. Hà chưởng quầy lập tức gạt tay người khách đang định giữ cô lại.\n\n“Chưa có chứng cứ thì không ai được giữ người của tôi.” Ông yêu cầu bạn trình bày thứ mình đã tận mắt xem, không phải những điều nghe đoán.",
+    "choices": [
+      {
+        "id": "reconsider_maid",
+        "label": "Rút lời buộc tội, tiếp tục tìm chứng cứ",
+        "to": "notes",
+        "kind": "deduction"
+      },
+      {
+        "id": "insist_maid",
+        "label": "Bất chấp lời can ngăn, tiếp tục vu buộc A Liên",
+        "ending": "wrong",
+        "kind": "conclusion"
+      }
+    ]
+  },
+  "challenge_keeper": {
+    "placeId": "hall",
+    "phase": "BỊ CHẤT VẤN",
+    "title": "Quán trọ chưa có người bị bắt",
+    "text": "Bạn nói lớn rằng chủ quán có khả năng tiếp cận kho. Hà chưởng quầy im lặng một lát, rồi yêu cầu bạn chỉ rõ một vật chứng cho thấy ông lấy thuốc.\n\nKhông ai trong quán có quyền giam giữ chủ quán chỉ vì ông quản lý chìa khóa. Những người khách bắt đầu hỏi bạn đang dựa vào đâu.",
+    "choices": [
+      {
+        "id": "reconsider_keeper",
+        "label": "Rút nhận định, kiểm tra tiếp",
+        "to": "notes",
+        "kind": "deduction"
+      },
+      {
+        "id": "insist_keeper",
+        "label": "Tiếp tục khẳng định chưởng quầy có tội dù chưa chứng minh",
+        "ending": "wrong_keeper",
+        "kind": "conclusion"
+      }
+    ]
+  },
+  "challenge_guard": {
+    "placeId": "hall",
+    "phase": "BỊ CHẤT VẤN",
+    "title": "Người lính yêu cầu một lời giải thích",
+    "text": "Bạn nêu nghi ngờ trước mọi người. Lục Tam nhìn bạn rồi đặt chiếc mũ xuống bàn. Anh đề nghị bạn nói rõ đã nhìn thấy điều gì và đã kiểm tra những gì.\n\nHà chưởng quầy không cho khách xúm lại giữ người lính. Ông nhắc rằng buộc tội và chứng minh là hai việc khác nhau.",
+    "choices": [
+      {
+        "id": "reconsider_guard",
+        "label": "Dừng buộc tội và tiếp tục xác minh",
+        "to": "notes",
+        "kind": "deduction"
+      },
+      {
+        "id": "insist_guard",
+        "label": "Tiếp tục buộc tội Lục Tam dù chưa trình được căn cứ",
+        "ending": "wrong_guard",
+        "kind": "conclusion"
+      }
+    ]
   }
 },
   endings:{
