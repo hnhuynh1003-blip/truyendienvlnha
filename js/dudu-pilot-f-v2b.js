@@ -20,7 +20,7 @@
     "placeId": "gate",
     "phase": "DẪN TRUYỆN",
     "title": "Mưa trên đường Quan Đạo",
-    "text": "Trời tối nhanh hơn bạn dự tính. Đường qua đèo ngập bùn; cách xa vài chục bước, ánh đèn lồng dưới mái ngói nhỏ đang chao nghiêng.\n\nBạn chỉ định tìm một chỗ nghỉ qua đêm rồi tiếp tục về Phủ Nam. Chẳng ai chờ bạn tới để giải quyết chuyện gì cả.",
+    "text": "Khoảnh khắc trước, bạn còn nhìn cánh cửa mang tên Quan Đạo trong Vạn Giới. Khi định thần, chân bạn đã giẫm xuống mặt đường đèo lầy bùn. Mưa lạnh tạt qua má, mùi đất ướt chân thật đến mức chẳng giống một trang sách.\n\nPhía trước có ánh đèn lồng chao dưới mái ngói. Bạn chưa biết mình là ai trong mắt những người ở đây; trước hết, bạn cần tìm chỗ trú mưa. Không có dòng chữ nào báo trước điều sắp xảy ra.",
     "choices": [
       {
         "id": "approach_inn_v3",
@@ -163,9 +163,8 @@
         "kind": "deduction",
         "visibleIfEvidence": [
           "key_log",
-          "broken_seal",
-          "maid_statement"
-        ]
+          "broken_seal"],
+        "visibleAnyEvidence": ["maid_statement","guard_statement"]
       },
       {
         "id": "step_away",
