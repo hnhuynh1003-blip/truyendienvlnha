@@ -16,7 +16,7 @@
   let uid=null;
   try{const auth=root.DuduAuth;uid=auth?.isReady?.()?auth.uid():null;}catch{}
   if(!uid){try{uid=root.firebase?.auth?.()?.currentUser?.uid||null;}catch{}}
-  return (upgraded?'dudu:pilot-f-fair-evidence-v6-1:':'dudu:pilot-f-v1:')+encodeURIComponent(uid||'guest');
+  return (upgraded?'dudu:pilot-f-dawn-rescue-v7:':'dudu:pilot-f-v1:')+encodeURIComponent(uid||'guest');
  }
  function load(){
   owner=key();
@@ -185,7 +185,7 @@
   const copy=el('div','dudu-pilot-entry-copy');
   copy.append(el('span','dudu-pilot-entry-kicker','KHẢO NGHIỆM CỐT TRUYỆN · KHÔNG GHI THƯỞNG'),
    el('strong','',story.title),
-   el('span','dudu-pilot-entry-desc','Một truyện F có biến cố, NPC, chứng cứ và nhiều kết thúc.'));
+   el('span','dudu-pilot-entry-desc','Một đêm mưa cần cả sự thật lẫn cách đưa thuốc về trước bình minh.'));
   const action=el('button','dudu-pilot-launch','Chơi thử ↗');action.type='button';
   action.addEventListener('click',open);
   entry.append(copy,action);list.parentNode.insertBefore(entry,list);
