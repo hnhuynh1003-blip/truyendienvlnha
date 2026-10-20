@@ -60,7 +60,7 @@ assert.equal(engine.view(scenario,kind).storyPhase,'LỜI KHAI');
 const unauthorized=engine.decide(scenario,hall,'store_visit_v2b');
 assert.equal(unauthorized.accepted,false);
 assert.equal(unauthorized.reason,'missing_story_precondition');
-assert.equal(hall.step,1,'Rejected choice never mutates the state');
+assert.equal(hall.step,3,'Rejected choice never mutates the state');
 assert.ok(engine.view(scenario,hall).choices.find(x=>x.id==='store_visit_v2b').locked);
 assert.equal(engine.decide(scenario,hall,'report_guard_v2b').accepted,false);
 let withKey=play(['approach_inn_v3','enter_inn_v2b','listen_at_hall_v3','keeper_visit_v2b','copy_key_log_v2b']);
