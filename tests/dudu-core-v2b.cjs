@@ -56,6 +56,8 @@ const hall=play(['approach_inn_v3','enter_inn_v2b','listen_at_hall_v3']);
 const kind=play(['approach_inn_v3','help_maid_v3','listen_at_hall_v3']);
 assert.ok(kind.flags.includes('helped_maid'),'Optional kindness has a remembered flag');
 assert.equal(kind.relations.maid,1,'Choices before conflict can establish relationships');
+assert.ok(model.npcView(world,'maid',kind).text.includes('giúp em ngoài hiên'),'A Lien remembers a helpful guest');
+assert.ok(!model.npcView(world,'maid',hall).text.includes('giúp em ngoài hiên'),'NPC must not invent shared history');
 assert.equal(engine.view(scenario,kind).storyPhase,'LỜI KHAI');
 const unauthorized=engine.decide(scenario,hall,'store_visit_v2b');
 assert.equal(unauthorized.accepted,false);
