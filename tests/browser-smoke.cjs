@@ -57,6 +57,10 @@ async function main() {
       if(await auth.isVisible())
         await auth.getByRole('button',{name:'Đóng'}).click();
     };
+    // Initial guest login opens after 600ms. Wait for that expected dialog
+    // before UI exploration, otherwise it can appear between two click steps.
+    await page.waitForTimeout(750);
+    await dismissSandboxLogin();
 
     // DUDU System Portal: compact visual homepage without gameplay side effects.
     await page.waitForFunction(() => !!window.DuduSiteV60 && !!document.querySelector('.d61-hero'));
