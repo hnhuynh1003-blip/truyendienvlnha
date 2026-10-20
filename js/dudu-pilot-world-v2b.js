@@ -78,7 +78,8 @@
    changed_ledger:{id:'changed_ledger',label:'Nét mực sửa trong sổ chủ quán',placeId:'hall',sourceNpcId:'keeper'},
    coal_trace:{id:'coal_trace',label:'Vệt than dẫn tới khu bếp',placeId:'store',sourceNpcId:'keeper'},
    medicine_bundle:{id:'medicine_bundle',label:'Túi thuốc tìm thấy trong thùng than',placeId:'hall',sourceNpcId:'keeper'},
-   military_knot:{id:'military_knot',label:'Dây buộc túi kiểu quân nhu',placeId:'hall',sourceNpcId:'guard'}
+   military_knot:{id:'military_knot',label:'Dây buộc túi kiểu quân nhu',placeId:'hall',sourceNpcId:'guard'},
+   guard_cord:{id:'guard_cord',label:'Nút dây lam trên tay áo Lục Tam',placeId:'hall',sourceNpcId:'guard'}
   }
  };
  function freezeDeep(v){if(v&&typeof v==='object'&&!Object.isFrozen(v)){Object.values(v).forEach(freezeDeep);Object.freeze(v);}return v;}
