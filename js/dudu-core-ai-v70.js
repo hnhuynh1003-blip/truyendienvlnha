@@ -6,8 +6,10 @@
  'use strict';
  const sandbox=()=>typeof IS_SANDBOX_MODE!=='undefined'&&IS_SANDBOX_MODE===true;
  function endpoint(){
-  try{return typeof WORKER_URL==='string'&&/^https:\/\/[a-z0-9.-]+(?::\d+)?$/i.test(WORKER_URL)?
-    WORKER_URL:'';}
+  try{
+    const base=root.DuduAI?.workerBase;
+    return typeof base==='string'&&/^https:\/\/[a-z0-9.-]+(?::\d+)?$/i.test(base)?base:'';
+  }
   catch(_){return '';}
  }
  async function ask(prompt){
