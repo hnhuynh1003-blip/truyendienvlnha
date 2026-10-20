@@ -50,6 +50,8 @@ assert.ok(hall.flags.includes('helped_maid'));
 assert.ok(model.npcView(world,'maid',hall).text.includes('giúp em ngoài hiên'));
 assert.equal(engine.decide(scenario,hall,'store_visit_v2b').reason,'undiscovered_action');
 assert.equal(engine.decide(scenario,hall,'assemble_clues').reason,'undiscovered_action');
+assert.ok(scenario.scenes.prologue.text.includes('Vạn Giới'),'Player must feel entering this world');
+
 assert.equal(hall.step,start.length);
 const before=engine.view(scenario,hall);
 assert.ok(before.choices.some(c=>c.id==='keeper_visit_v2b'));
@@ -65,6 +67,11 @@ const withMaid=play(['maid_visit_v2b','ask_maid_last_night','write_maid_testimon
 const withStore=play(['store_visit_v2b','check_seal_v2b','collect_seal_v2b','return_from_store_v2b'],withMaid);
 assert.ok(withStore.evidence.includes('broken_seal'));
 assert.ok(engine.view(scenario,withStore).choices.some(c=>c.id==='assemble_clues'));
+const altRoute=play(['store_visit_v2b','check_seal_v2b','collect_seal_v2b',
+ 'return_from_store_v2b','guard_visit_v2b','ask_guard_where','write_guard_testimony_v2b'],withKey);
+assert.ok(engine.view(scenario,altRoute).choices.some(c=>c.id==='assemble_clues'),'Guard route must work without interviewing A Lien');
+assert.ok(!altRoute.evidence.includes('maid_statement'));
+
 assert.ok(!engine.view(scenario,withStore).choices.some(c=>c.id==='report_guard_v2b'));
 const records=engine.view(scenario,withStore).clueDetails.map(x=>x.id);
 assert.deepEqual(records,['key_log','maid_statement','broken_seal']);
@@ -114,6 +121,9 @@ assert.ok(engine.validate(tampered).includes('pilot_must_stay_locked'));
 const illegal=JSON.parse(JSON.stringify(scenario));
 illegal.scenes.prologue.choices[0].to='store';
 assert.ok(engine.validate(illegal).some(x=>x.includes('illegal_scene_jump')));
+const invalidClue=JSON.parse(JSON.stringify(scenario));
+invalidClue.scenes.hub.choices.find(c=>c.id==='assemble_clues').visibleAnyEvidence=['made_up_clue'];
+assert.ok(engine.validate(invalidClue).some(x=>x.includes('unknown_evidence')));
 const invalidVisibility=JSON.parse(JSON.stringify(scenario));
 invalidVisibility.scenes.hub.choices[0].visibleIfEvidence='spoiler';
 assert.ok(engine.validate(invalidVisibility).some(x=>x.includes('invalid_visibility_rule')));
