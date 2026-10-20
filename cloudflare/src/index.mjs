@@ -19,6 +19,8 @@ import {NPC_MODELS} from './npc-models.mjs';
 import {summarizeGemini400} from './gemini-diagnostics-v57-3.mjs';
 import {textOnlyNpcContents} from './npc-chat-format-v56-11.mjs';
 import {routeNpcAi,isWorkersAiModel,availableWorkersModels} from './ai-router-v58.mjs';
+import {validateDuduChat,duduHiveAllowed,callDuduHive,
+  DUDU_HIVE_LIFETIME_CALLS} from './dudu-hive-v68.mjs';
 const MODEL='gemini-3.5-flash-lite'; // same ID as server model registry; kept literal for isolated route tests
 const MAX_BODY_BYTES=18000;
 
@@ -582,7 +584,7 @@ export default {
     if(!allowed)return error('origin-blocked','Nguồn yêu cầu không được phép.',403,origin,env);
     if(req.method==='OPTIONS'){
       if(!origin||!allowOrigin(origin,env))return error('origin-blocked','Nguồn yêu cầu không được phép.',403,origin,env);
-      if(!['/v1/generate','/v1/status',...Object.keys(COLLECTIBLE_PATHS),...Object.keys(PLAYER_APPEARANCE_PATHS),...Object.keys(AVATAR_DRAFT_PATHS),...Object.keys(COMMENT_PATHS),...Object.keys(GIFT_PATHS),'/v1/pilot/status'].includes(path))
+      if(!['/v1/generate','/v1/status','/v1/dudu-ai/status','/v1/dudu-ai/chat',...Object.keys(COLLECTIBLE_PATHS),...Object.keys(PLAYER_APPEARANCE_PATHS),...Object.keys(AVATAR_DRAFT_PATHS),...Object.keys(COMMENT_PATHS),...Object.keys(GIFT_PATHS),'/v1/pilot/status'].includes(path))
         return error('not-found','Không tìm thấy đường dẫn.',404,origin,env);
       return new Response(null,{status:204,headers:headers(origin,env)});
     }
@@ -618,6 +620,50 @@ export default {
       if(req.method!==COLLECTIBLE_PATHS[path])
         return error('method-not-allowed','Phương thức không được hỗ trợ.',405,origin,env);
       return handleCollectibles(req,env,path,origin);
+    }
+    // V68: DUDU's four owner-only AI personas, independent from NPC AI.
+    // Existing AI_ENABLED/NPC routes and their billing behavior are unchanged.
+    if(path==='/v1/dudu-ai/status'||path==='/v1/dudu-ai/chat'){
+      if((path==='/v1/dudu-ai/status'&&req.method!=='GET')||
+         (path==='/v1/dudu-ai/chat'&&req.method!=='POST'))
+        return error('method-not-allowed','Phương thức không hợp lệ.',405,origin,env);
+      const user=await verifyFirebaseIdToken(req,env.PROJECT_ID);
+      if(!user)return error('unauthenticated','Hãy đăng nhập Firebase để thử DUDU.',401,origin,env);
+      const enabled=duduHiveAllowed(env,user.uid);
+      if(path==='/v1/dudu-ai/status'){
+        if(!enabled)return json({enabled:false,mode:'scripted',
+          remaining:0,limit:DUDU_HIVE_LIFETIME_CALLS},200,origin,env);
+        if(!env.DUDU_QUOTA)
+          return error('quota-unavailable','Sổ giới hạn thử AI chưa có.',503,origin,env);
+        try{
+          const state=await env.DUDU_QUOTA.getByName('global-budget-v1').hiveTestStatus();
+          return json({enabled:state.remaining>0,mode:'owner-pilot',
+            ...state,model:'deepseek-ai/deepseek-v4.1-flash-1017'},200,origin,env);
+        }catch(_){return error('quota-unavailable','Không đọc được hạn mức.',503,origin,env);}
+      }
+      if(!enabled)return error('dudu-ai-disabled',
+        'DUDU AI chưa được chủ dự án mở cho tài khoản thử nghiệm.',503,origin,env);
+      if(!req.headers.get('Content-Type')?.toLowerCase().startsWith('application/json'))
+        return error('invalid-content','Yêu cầu phải là JSON.',415,origin,env);
+      const payload=validateDuduChat(await limitedJson(req));
+      if(!payload)return error('invalid-request','Tin nhắn hoặc vai DUDU không hợp lệ.',400,origin,env);
+      if(!env.DUDU_QUOTA)
+        return error('quota-unavailable','Sổ giới hạn thử AI chưa có.',503,origin,env);
+      const bucket=env.DUDU_QUOTA.getByName('global-budget-v1');
+      let lease;
+      try{lease=await bucket.reserveHiveTest(Date.now());}
+      catch(_){return error('quota-unavailable','Sổ giới hạn đang bận.',503,origin,env);}
+      if(!lease?.ok)return error(lease?.code||'dudu-test-limit',
+        'Đã chạm giới hạn thử nghiệm hoặc cần đợi 5 giây trước lượt mới.',
+        429,origin,env);
+      try{
+        const result=await callDuduHive(payload,env);
+        return result.error?json({error:result.error},result.status,origin,env):
+          json({...result.data,remaining:lease.remaining},200,origin,env);
+      }finally{
+        try{await bucket.releaseHiveTest(lease.id);}
+        catch(_){console.warn('DUDU Hive lease will expire.');}
+      }
     }
     if(!['/v1/generate','/v1/status'].includes(path))
       return error('not-found','Không tìm thấy đường dẫn.',404,origin,env);
