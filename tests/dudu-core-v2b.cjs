@@ -46,21 +46,32 @@ function play(choices){
 }
 const start=engine.begin(scenario);
 assert.equal(engine.view(scenario,start).placeId,'gate');
+assert.equal(start.sceneId,'prologue','F story must begin before its conflict');
+assert.ok(!scenario.scenes.prologue.text.includes('túi thuốc'),'Opening should not reveal the incident');
+assert.ok(scenario.scenes.prologue.text.includes('\\n\\n')||scenario.scenes.prologue.text.includes('\n\n'),'Multi-paragraph prose must be authored');
+assert.ok(scenario.scenes.resting.text.includes('Bữa')===false||scenario.scenes.resting.title.includes('Bữa'),'Have an ordinary-life beat');
+assert.equal(engine.view(scenario,start).choices.length,1,'Prologue uses a reading beat, not a fake decision');
 assert.equal(engine.decide(scenario,start,'no-such-action').accepted,false);
-const hall=play(['enter_inn_v2b']);
+const hall=play(['approach_inn_v3','enter_inn_v2b','listen_at_hall_v3']);
+const kind=play(['approach_inn_v3','help_maid_v3','listen_at_hall_v3']);
+assert.ok(kind.flags.includes('helped_maid'),'Optional kindness has a remembered flag');
+assert.equal(kind.relations.maid,1,'Choices before conflict can establish relationships');
+assert.equal(engine.view(scenario,kind).storyPhase,'LỜI KHAI');
 const unauthorized=engine.decide(scenario,hall,'store_visit_v2b');
 assert.equal(unauthorized.accepted,false);
 assert.equal(unauthorized.reason,'missing_story_precondition');
 assert.equal(hall.step,1,'Rejected choice never mutates the state');
 assert.ok(engine.view(scenario,hall).choices.find(x=>x.id==='store_visit_v2b').locked);
 assert.equal(engine.decide(scenario,hall,'report_guard_v2b').accepted,false);
-let withKey=play(['enter_inn_v2b','keeper_visit_v2b','copy_key_log_v2b']);
+let withKey=play(['approach_inn_v3','enter_inn_v2b','listen_at_hall_v3','keeper_visit_v2b','copy_key_log_v2b']);
 assert.equal(engine.decide(scenario,withKey,'store_visit_v2b').accepted,true);
-assert.equal(engine.view(scenario,play(['enter_inn_v2b','keeper_visit_v2b','copy_key_log_v2b','store_visit_v2b'])).placeId,'store');
+assert.equal(engine.view(scenario,play(['approach_inn_v3','enter_inn_v2b','listen_at_hall_v3','keeper_visit_v2b','copy_key_log_v2b','store_visit_v2b'])).placeId,'store');
 assert.deepEqual(engine.restore(scenario,engine.serialize(scenario,withKey)),withKey);
+assert.equal(engine.restore(scenario,JSON.stringify({...withKey,scenarioId:'pilot-quan-dao-v2b'})),null,'Old story sessions stay isolated');
+assert.ok(engine.view(scenario,play(['approach_inn_v3','help_maid_v3'])).passageReaction.includes('A Liên'),'Narrative reaction follows authored choice');
 assert.equal(engine.restore(scenario,JSON.stringify({...withKey,scenarioId:legacy.scenarioId})),null,'V1 session cannot silently become V2B state');
 const investigation=[
- 'enter_inn_v2b','keeper_visit_v2b','copy_key_log_v2b','store_visit_v2b',
+ 'approach_inn_v3','enter_inn_v2b','listen_at_hall_v3','keeper_visit_v2b','copy_key_log_v2b','store_visit_v2b',
  'check_seal_v2b','collect_seal_v2b','return_from_store_v2b',
  'guard_visit_v2b','write_guard_testimony_v2b','guard_visit_v2b',
  'confront_seal_v2b','record_care_receipt_v2b'
@@ -75,7 +86,7 @@ assert.equal(result.state.status,'success');
 assert.equal(result.state.endingId,'accountability');
 assert.equal(engine.decide(scenario,result.state,'report_guard_v2b').reason,'already_finished');
 const mediation=play([
- 'enter_inn_v2b','keeper_visit_v2b','copy_key_log_v2b',
+ 'approach_inn_v3','enter_inn_v2b','listen_at_hall_v3','keeper_visit_v2b','copy_key_log_v2b',
  'maid_visit_v2b','write_maid_testimony_v2b',
  'guard_visit_v2b','write_guard_testimony_v2b',
  'store_visit_v2b','check_seal_v2b','collect_seal_v2b',
@@ -84,15 +95,17 @@ const mediation=play([
 ]);
 assert.equal(mediation.endingId,'reconcile');
 assert.equal(mediation.status,'success');
-assert.equal(play(['enter_inn_v2b','accuse_without_proof_v2b']).status,'failure');
-assert.equal(play(['leave_inn_v2b']).status,'failure');
+assert.equal(play(['approach_inn_v3','enter_inn_v2b','listen_at_hall_v3','accuse_without_proof_v2b']).status,'failure');
+assert.equal(play(['approach_inn_v3','enter_inn_v2b','leave_inn_v2b']).status,'failure');
 const forged={...scenario,rewardsEnabled:true};
 assert.ok(engine.validate(forged).includes('pilot_must_stay_locked'));
 const illegal=JSON.parse(JSON.stringify(scenario));
 illegal.scenes.arrival.choices[0].to='store';
 assert.ok(engine.validate(illegal).some(x=>x.includes('illegal_scene_jump')),'Disallow teleporting to store');
 const ui=read('js/dudu-pilot-ui-v1.js');
-assert.match(ui,/dudu:pilot-f-v2b:/);
+assert.match(ui,/dudu-pilot-prose/,'Multi-paragraph reader must render prose');
+assert.match(ui,/passageReaction/,'Reader should show consequence of a choice');
+assert.match(ui,/dudu:pilot-f-narrative-v3:/);
 assert.match(ui,/dudu-pilot-persona/);
 assert.match(ui,/dudu-pilot-choice-hint/);
 for(const html of [read('index.html'),read('dudu-pilot.html')]){
