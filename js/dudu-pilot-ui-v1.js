@@ -113,9 +113,17 @@
    else v.evidence.forEach(k=>tags.append(el('span','',evNames[k]||k)));
    evidence.append(tags);content.append(evidence);
   }
+  if(v.verificationNote){
+   const progress=el('p','dudu-pilot-verification',v.verificationNote);
+   progress.setAttribute('role','status');
+   content.append(progress);
+  }
   const choiceSection=el('section','dudu-pilot-choice-section');
   if(!v.ending)choiceSection.append(el('p','dudu-pilot-choice-prompt',
    v.sceneType==='prologue'?'Tiếp theo':'Bạn muốn làm gì?'));
+  const actionAlert=el('p','dudu-pilot-action-error');
+  actionAlert.setAttribute('role','alert');
+  actionAlert.hidden=true;
   const actions=el('div','dudu-pilot-actions'+(v.choices.length===1?' dudu-pilot-single-action':''));
   if(v.ending){
    const again=el('button','dudu-pilot-action dudu-pilot-primary','↻ Thử tuyến khác');
@@ -134,7 +142,19 @@
     btn.addEventListener('click',()=>{
      if(key()!==owner){load();render();return;}
      const result=engine.decide(story,state,c.id);
-     if(!result.accepted)return;
+     if(!result.accepted){
+      const messages={
+       step_limit:'Phiên thử đã tới giới hạn thao tác. Hãy lưu lại ảnh màn hình và báo lỗi; chứng cứ không bị xóa.',
+       missing_story_precondition:'Bạn chưa hoàn thành bước kiểm tra hoặc xác minh cần thiết. Hãy xem sổ tay và đối chiếu các ghi chép.',
+       missing_evidence:'Chưa đủ căn cứ cho hành động này. Bạn vẫn có thể suy luận hoặc tiếp tục tìm hiểu.',
+       undiscovered_action:'Lựa chọn này chưa xuất hiện ở giai đoạn hiện tại.',
+       already_used:'Thông tin này đã được ghi nhận trong sổ tay.',
+       already_finished:'Câu chuyện đã kết thúc. Bạn có thể thử một tuyến khác.',
+       invalid_state:'Tiến trình có vấn đề. Hãy báo lỗi trước khi làm lại.'
+      };
+      actionAlert.textContent=messages[result.reason]||'Không thể thực hiện hành động này lúc này.';
+      actionAlert.hidden=false;return;
+     }
      state=result.state;save();render();if(dialog)dialog.scrollTop=0;
     });
     actions.append(btn);
@@ -144,7 +164,7 @@
   const resetButton=el('button','dudu-pilot-reset','Làm lại từ đầu');
   resetButton.type='button';resetButton.addEventListener('click',reset);
   foot.append(el('span','',upgraded?'Tiến trình đọc lưu tạm trong phiên':'Tiến độ phiên thử: '+state.step+' bước'),resetButton);
-  choiceSection.append(actions);
+  choiceSection.append(actions,actionAlert);
   container.append(bar,imageWrap,notice,content,choiceSection,foot);
   dialog.replaceChildren(container);
  }
