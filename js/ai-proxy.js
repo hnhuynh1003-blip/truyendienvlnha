@@ -150,5 +150,7 @@
     return call('GET','/v1/status');
   }
   window.DuduAI={init,isConfigured,generate,status,model,setModel,
+    // Public base URL only; secrets remain on Worker. Shared by AU Core V70.
+    get workerBase(){return base();},
     get models(){return MODELS;},updateModelsFromStatus};
 })();
