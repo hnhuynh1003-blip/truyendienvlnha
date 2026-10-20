@@ -629,6 +629,10 @@ export default {
         return error('method-not-allowed','Phương thức không hợp lệ.',405,origin,env);
       const user=await verifyFirebaseIdToken(req,env.PROJECT_ID);
       if(!user)return error('unauthenticated','Hãy đăng nhập Firebase để thử DUDU.',401,origin,env);
+      // Core/child pilots are restricted to an actual Firebase admin claim,
+      // never only a client-side author toggle or a secret-listed UID.
+      if(!user.admin)return error('author-only',
+        'Kênh thử nghiệm Chủ Thần chỉ dành cho AU đã được máy chủ xác nhận.',403,origin,env);
       const enabled=duduHiveAllowed(env,user.uid);
       if(path==='/v1/dudu-ai/status'){
         if(!enabled)return json({enabled:false,mode:'scripted',
