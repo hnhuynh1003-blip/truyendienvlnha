@@ -26,18 +26,18 @@ export function redactedSystemRow(row){
 export class DuduSystemRegistry extends DurableObject {
  constructor(ctx,env){
   super(ctx,env);this.sql=ctx.storage.sql;
-  this.sql.exec(\`CREATE TABLE IF NOT EXISTS v71_systems(
+  this.sql.exec(`CREATE TABLE IF NOT EXISTS v71_systems(
     system_num INTEGER PRIMARY KEY,public_id TEXT UNIQUE NOT NULL,
     internal_id TEXT UNIQUE NOT NULL,origin TEXT NOT NULL,
     private_temperament TEXT NOT NULL,memory_epoch INTEGER NOT NULL DEFAULT 0,
     private_memory TEXT NOT NULL DEFAULT '[]',occupant_uid TEXT UNIQUE,
     rank TEXT NOT NULL DEFAULT 'F',level INTEGER NOT NULL DEFAULT 1,
-    exp INTEGER NOT NULL DEFAULT 0)\`);
-  this.sql.exec(\`CREATE TABLE IF NOT EXISTS v71_passes(
+    exp INTEGER NOT NULL DEFAULT 0)`);
+  this.sql.exec(`CREATE TABLE IF NOT EXISTS v71_passes(
     uid TEXT PRIMARY KEY,code_hash TEXT UNIQUE NOT NULL,
     state TEXT NOT NULL,issued_at INTEGER NOT NULL,
-    expires_at INTEGER NOT NULL,redeemed_at INTEGER)\`);
-  this.sql.exec(\`CREATE TABLE IF NOT EXISTS v71_hosts(
+    expires_at INTEGER NOT NULL,redeemed_at INTEGER)`);
+  this.sql.exec(`CREATE TABLE IF NOT EXISTS v71_hosts(
     uid TEXT PRIMARY KEY,host_id TEXT UNIQUE NOT NULL,
     host_name TEXT,system_num INTEGER NOT NULL UNIQUE,
     pact TEXT NOT NULL DEFAULT 'pending',
@@ -45,10 +45,10 @@ export class DuduSystemRegistry extends DurableObject {
     stats_json TEXT NOT NULL,worlds INTEGER NOT NULL DEFAULT 0,
     missions INTEGER NOT NULL DEFAULT 0,achievements INTEGER NOT NULL DEFAULT 0,
     rewards INTEGER NOT NULL DEFAULT 0,items INTEGER NOT NULL DEFAULT 0,
-    failures INTEGER NOT NULL DEFAULT 0)\`);
-  this.sql.exec(\`CREATE TABLE IF NOT EXISTS v71_events(
+    failures INTEGER NOT NULL DEFAULT 0)`);
+  this.sql.exec(`CREATE TABLE IF NOT EXISTS v71_events(
     event_id TEXT PRIMARY KEY,uid TEXT NOT NULL,type TEXT NOT NULL,
-    happened_at INTEGER NOT NULL,details TEXT NOT NULL)\`);
+    happened_at INTEGER NOT NULL,details TEXT NOT NULL)`);
   const existing=this.sql.exec('SELECT COUNT(*) AS c FROM v71_systems').toArray()[0].c;
   if(existing===0){
    this.ctx.storage.transactionSync(()=>{
@@ -57,9 +57,9 @@ export class DuduSystemRegistry extends DurableObject {
      // Non-public distribution: no deterministic number-to-origin mapping.
      const irregular=pick(100)<18;
      const tone=['kín đáo','kiên nhẫn','nhiệt huyết','ham học','thận trọng','tự do'][pick(6)];
-     this.sql.exec(\`INSERT OR IGNORE INTO v71_systems
+     this.sql.exec(`INSERT OR IGNORE INTO v71_systems
        (system_num,public_id,internal_id,origin,private_temperament)
-       VALUES (?,?,?,?,?)\`,n,'DUDU-'+number,crypto.randomUUID(),
+       VALUES (?,?,?,?,?)`,n,'DUDU-'+number,crypto.randomUUID(),
        irregular?'irregular':'regular',tone);
     }
    });
@@ -71,9 +71,9 @@ export class DuduSystemRegistry extends DurableObject {
   return {total:Number(total),available:Number(free)};
  }
  view(uid){
-  const host=this.sql.exec(\`SELECT h.*,s.system_num,s.public_id,s.rank,s.level,s.exp
+  const host=this.sql.exec(`SELECT h.*,s.system_num,s.public_id,s.rank,s.level,s.exp
     FROM v71_hosts h JOIN v71_systems s ON s.system_num=h.system_num
-    WHERE h.uid=?\`,uid).toArray()[0];
+    WHERE h.uid=?`,uid).toArray()[0];
   if(host){
    return {stage:host.pact==='signed'?'linked':'awaiting-name-or-pact',
     host:{id:host.host_id,name:host.host_name,level:1,exp:0,
@@ -95,10 +95,10 @@ export class DuduSystemRegistry extends DurableObject {
    const existing=this.sql.exec('SELECT state,expires_at FROM v71_passes WHERE uid=?',uid).toArray()[0];
    if(existing?.state==='issued'&&existing.expires_at>now)
     return {ok:false,code:'pass-already-issued'};
-   this.sql.exec(\`INSERT INTO v71_passes(uid,code_hash,state,issued_at,expires_at)
+   this.sql.exec(`INSERT INTO v71_passes(uid,code_hash,state,issued_at,expires_at)
      VALUES (?,?,'issued',?,?) ON CONFLICT(uid) DO UPDATE SET
      code_hash=excluded.code_hash,state='issued',issued_at=excluded.issued_at,
-     expires_at=excluded.expires_at,redeemed_at=NULL\`,uid,hash,now,now+7*DAY);
+     expires_at=excluded.expires_at,redeemed_at=NULL`,uid,hash,now,now+7*DAY);
    return {ok:true,expiresAt:now+7*DAY};
   });
  }
@@ -106,8 +106,8 @@ export class DuduSystemRegistry extends DurableObject {
   return this.ctx.storage.transactionSync(()=>{
    if(this.sql.exec('SELECT uid FROM v71_hosts WHERE uid=?',uid).toArray()[0])
     return {ok:false,code:'already-bound'};
-   const pass=this.sql.exec(\`SELECT state,expires_at,code_hash FROM v71_passes
-     WHERE uid=?\`,uid).toArray()[0];
+   const pass=this.sql.exec(`SELECT state,expires_at,code_hash FROM v71_passes
+     WHERE uid=?`,uid).toArray()[0];
    if(!pass||pass.state!=='issued'||pass.expires_at<now||pass.code_hash!==hash)
     return {ok:false,code:'invalid-pass'};
    const vacant=this.sql.exec('SELECT system_num FROM v71_systems WHERE occupant_uid IS NULL').toArray();
@@ -118,11 +118,11 @@ export class DuduSystemRegistry extends DurableObject {
    for(const key of ['fortune','luck','agility','strength','appearance','intelligence','stamina','spirit'])
     stats[key]=35+pick(46);
    this.sql.exec('UPDATE v71_systems SET occupant_uid=? WHERE system_num=? AND occupant_uid IS NULL',uid,num);
-   this.sql.exec(\`INSERT INTO v71_hosts(uid,host_id,system_num,created_at,stats_json)
-      VALUES (?,?,?,?,?)\`,uid,hostId,num,now,JSON.stringify(stats));
-   this.sql.exec(\`UPDATE v71_passes SET state='redeemed',redeemed_at=? WHERE uid=?\`,now,uid);
-   this.sql.exec(\`INSERT INTO v71_events(event_id,uid,type,happened_at,details)
-     VALUES (?,?,?,?,?)\`,crypto.randomUUID(),uid,'passport_redeemed',now,JSON.stringify({system:num}));
+   this.sql.exec(`INSERT INTO v71_hosts(uid,host_id,system_num,created_at,stats_json)
+      VALUES (?,?,?,?,?)`,uid,hostId,num,now,JSON.stringify(stats));
+   this.sql.exec(`UPDATE v71_passes SET state='redeemed',redeemed_at=? WHERE uid=?`,now,uid);
+   this.sql.exec(`INSERT INTO v71_events(event_id,uid,type,happened_at,details)
+     VALUES (?,?,?,?,?)`,crypto.randomUUID(),uid,'passport_redeemed',now,JSON.stringify({system:num}));
    return {ok:true,profile:this.view(uid)};
   });
  }
@@ -146,8 +146,8 @@ export class DuduSystemRegistry extends DurableObject {
    const row=this.sql.exec('SELECT pact,host_name FROM v71_hosts WHERE uid=?',uid).toArray()[0];
    if(!row||!row.host_name)return {ok:false,code:'name-required'};
    if(row.pact==='signed')return {ok:false,code:'already-signed'};
-   this.sql.exec(\`UPDATE v71_hosts SET pact='signed',terms_version=?
-     WHERE uid=? AND pact='pending'\`,termsVersion,uid);
+   this.sql.exec(`UPDATE v71_hosts SET pact='signed',terms_version=?
+     WHERE uid=? AND pact='pending'`,termsVersion,uid);
    this.sql.exec('INSERT INTO v71_events VALUES(?,?,?,?,?)',
     crypto.randomUUID(),uid,'pact_signed',now,JSON.stringify({termsVersion}));
    return {ok:true,profile:this.view(uid)};
@@ -165,8 +165,8 @@ export class DuduSystemRegistry extends DurableObject {
    if(!host)return {ok:false,code:'not-bound'};
    if(this.sql.exec('SELECT event_id FROM v71_events WHERE event_id=?',eventId).toArray()[0])
     return {ok:false,code:'duplicate-event'};
-   this.sql.exec(\`UPDATE v71_systems SET occupant_uid=NULL,memory_epoch=memory_epoch+1,
-      private_memory='[]',rank='F',level=1,exp=0 WHERE system_num=? AND occupant_uid=?\`,
+   this.sql.exec(`UPDATE v71_systems SET occupant_uid=NULL,memory_epoch=memory_epoch+1,
+      private_memory='[]',rank='F',level=1,exp=0 WHERE system_num=? AND occupant_uid=?`,
     host.system_num,uid);
    this.sql.exec('DELETE FROM v71_hosts WHERE uid=?',uid);
    this.sql.exec('DELETE FROM v71_passes WHERE uid=?',uid);
