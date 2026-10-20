@@ -160,7 +160,14 @@ function firebaseShim(){
       if(document.getElementById('cyber-phone').style.display!=='flex')togglePhone();
       openPhoneApp('system');
     });
-    await page.locator('#dudu-v69-system-view .dudu-v71-pass-form').waitFor();
+    await page.waitForTimeout(350);
+    console.log('V71 MAIN gate diagnostic:', JSON.stringify(await page.evaluate(()=>({
+      ready:DuduAuth.isReady(),uid:DuduAuth.uid(),workerBase:DuduAI?.workerBase,
+      screen:document.getElementById('dudu-v69-system-view')?.textContent?.slice(0,280),
+      phone:document.getElementById('cyber-phone')?.style.display,
+      subapp:document.getElementById('phone-app-system')?.style.display
+    }))), 'calls:',JSON.stringify(calls));
+    await page.locator('#dudu-v69-system-view .dudu-v71-pass-form').waitFor({timeout:10000});
     assert.equal(await page.locator('#dudu-v69-system-view .dudu-v71-hero').count(),0);
     assert.equal((await page.evaluate(()=>DuduSystemClientV71.issueOwnerTestPass())).ok,false,
       'Reader cannot issue their own server pass');
