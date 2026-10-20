@@ -19,7 +19,7 @@
   "prologue": {
     "placeId": "gate",
     "title": "Hồ sơ F · Đêm mưa",
-    "text": "Mưa lạnh tạt vào mặt. Bạn vừa bước qua cánh cửa Quan Đạo của Vạn Giới thì đã đứng trước một quán trọ sáng đèn.\n\nDUDU // Khảo nghiệm F: **Tìm túi thuốc bị mất, xác định người lấy và nguyên nhân.** Không cần thu đủ mọi manh mối. Suy luận đúng là kết thúc cuộc truyện; bản thử không cấp thưởng.",
+    "text": "Mưa lạnh tạt vào mặt. Bạn vừa bước qua cánh cửa Quan Đạo của Vạn Giới thì đã đứng trước một quán trọ sáng đèn.\n\nDUDU // Khảo nghiệm F: Tìm túi thuốc bị mất, xác định người lấy và nguyên nhân. Không cần thu đủ mọi manh mối. Suy luận đúng là kết thúc cuộc truyện; bản thử không cấp thưởng.",
     "phase": "DẪN NHẬP",
     "choices": [
       {
@@ -335,7 +335,7 @@
         "to": "hub",
         "kind": "observation",
         "gainEvidence": [
-          "guard_statement"
+          "guard_cord"
         ],
         "once": true
       },
@@ -634,17 +634,26 @@
     "phase": "ĐỐI CHẤT",
     "choices": [
       {
-        "id": "present_guard_proof",
-        "label": "Đưa túi thuốc, phiếu cấp cứu và dấu liên quan để đối chất",
+        "id": "prove_by_ledger",
+        "label": "Đối chiếu sổ chìa, túi thuốc và phiếu cấp cứu",
         "to": "motive",
         "kind": "deduction",
         "requires": [
           "medicine_bundle",
-          "care_receipt"
-        ],
-        "visibleAnyEvidence": [
-          "key_log",
-          "military_knot"
+          "care_receipt",
+          "key_log"
+        ]
+      },
+      {
+        "id": "prove_by_cord",
+        "label": "Đối chiếu nút dây ở hai nơi và phiếu cấp cứu",
+        "to": "motive",
+        "kind": "deduction",
+        "requires": [
+          "medicine_bundle",
+          "care_receipt",
+          "military_knot",
+          "guard_cord"
         ]
       },
       {
