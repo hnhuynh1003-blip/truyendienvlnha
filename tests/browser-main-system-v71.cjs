@@ -193,7 +193,8 @@ function firebaseShim(){
       /irregular|regular|private_temperament|nguồn gốc/i);
 
     await page.evaluate(async()=>{await DuduAuth.signout();DuduSystemAppsV69.syncAccess();});
-    await page.locator('#dudu-v69-system-view > .dudu-v71-unavailable').waitFor();
+    await page.locator('#dudu-v69-system-view > .dudu-v71-unavailable').waitFor({state:'attached'});
+    // Signing out may close Cyber Phone; inspect the DOM even when the phone is hidden.
     assert.equal(await page.locator('#dudu-v69-system-view .dudu-v71-hero').count(),0,
       'former user System data must leave the DOM on sign-out');
     assert.equal(await page.locator('#dudu-v69-system-view form').count(),0);
