@@ -1255,7 +1255,7 @@
     "choices": [
       {
         "id": "calculate_remaining",
-        "label": "Còn bốn cuộn băng ép và một lọ thuốc",
+        "label": "Khấu trừ phần đã dùng khỏi lượng thuốc ban đầu",
         "to": "route_plan",
         "kind": "deduction",
         "addFlags": [
@@ -1318,7 +1318,7 @@
     "placeId": "hall",
     "phase": "ĐƯỜNG ĐI",
     "title": "Lời người vừa qua đèo",
-    "text": "Người đánh xe cho biết nước lũ đã tràn qua cầu thấp. Lối sườn đá xa hơn nhưng còn đi được; anh vừa từ đó trở về.\n\nChưởng quầy gọi người khuân hàng quen đường để đi cùng Lục Tam. Hai người có thể mang về số thuốc còn lại với giấy xác nhận rõ ràng.",
+    "text": "Một người đàn ông khoác áo mưa vải dầu bước ra từ cuối quán. Hà chưởng quầy giới thiệu ông là Đinh Nhị, người khuân hàng quen đường đèo.\n\nĐinh Nhị kéo ghế lại sát bàn, dùng đầu ngón tay vạch hai lối đi trên mặt gỗ. Bạn có thể nghe lời người vừa từ đèo về, hoặc đánh liều chọn đường ngắn hơn.",
     "choices": [
       {
         "id": "choose_escorted_ridge",
@@ -1345,13 +1345,15 @@
           "ridge_route_known"
         ]
       }
-    ]
+    ],
+    "npcId": "porter",
+    "speech": "“Cầu gỗ dưới thung ngập rồi. Tôi vừa qua lối sườn đá và biết đường đến trạm gác. Để tôi đi cùng Lục Tam.”"
   },
   "courier_out": {
     "placeId": "gate",
     "phase": "THU HỒI",
     "title": "Hai bóng đèn khuất trong mưa",
-    "text": "Lục Tam cùng người khuân hàng đi theo lối sườn đá, cầm tờ ghi rõ số thuốc phải lấy: bốn cuộn băng ép, một lọ cầm máu.\n\nBạn giữ đèn ngoài hiên để họ tìm được đường về. Trên đường, mưa chưa hề ngớt.",
+    "text": "Đinh Nhị cầm đèn, Lục Tam cầm bản kê có chữ ký của chưởng quầy. Cả hai men theo đường sườn đá đến trạm gác để mang phần thuốc chưa dùng về.\n\nBạn đứng dưới mái hiên, nhìn đèn của họ nhỏ dần trong mưa. Cứu được người ở trạm là việc đã xảy ra; cứu được chuyến xe sáng mai vẫn còn phụ thuộc vào cuộc đi này.",
     "choices": [
       {
         "id": "watch_for_return",
@@ -1368,7 +1370,7 @@
     "placeId": "gate",
     "phase": "BÌNH MINH",
     "title": "Chiếc túi thuốc trở lại",
-    "text": "Khi trời chuyển sáng, hai người xuất hiện, đặt chiếc túi sũng nước dưới mái hiên. Những gói còn lại chưa mở, nhưng dấu buộc đã sờn.\n\nBạn sẽ kiểm lại số lượng trước khi giao cho đoàn xe, hay lại tin một lời nói vội vàng?",
+    "text": "Khi trời chuyển sáng, Đinh Nhị cùng Lục Tam xuất hiện trên dốc. Họ đặt chiếc túi sũng nước dưới mái hiên; trong đó còn những gói thuốc chưa mở.\n\nHai người đã đưa thuốc về, nhưng bạn vẫn phải kiểm lượng hàng trước khi giao cho đoàn xe.",
     "choices": [
       {
         "id": "inspect_returned_bag",
