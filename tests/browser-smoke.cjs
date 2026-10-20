@@ -128,26 +128,24 @@ async function main() {
       'Core Phone renderer entrypoints must exist');
     assert.equal(phoneAudit.unknownId,true);
     assert.equal(phoneAudit.noFirestoreWrites,true);
-    // V70: before passport admission the reader must see ONLY the code entry.
-    // No hidden profile/status DOM may be mounted or accessible via method call.
-    const systemV70Locked=await page.evaluate(()=>{
+    // V71: unsigned reader sees the minimal gate and no staged profile.
+    const systemV71Locked=await page.evaluate(async()=>{
       const api=window.DuduSystemAppsV69;
-      const rendered=api?.renderSystem?.()===true;
+      await api.renderSystem();
       const surface=document.getElementById('dudu-v69-system-view');
-      const gateOnly=surface?.children.length===1&&
-        surface.children[0].classList.contains('dudu-v70-gate');
-      const popupBlocked=api?.statusPopup?.()===false;
-      const noStats=surface?.querySelectorAll('.dudu-v69-stat').length===0;
-      const authorBlocked=api?.renderCore?.()===false;
-      const launcherHidden=document.getElementById('dudu-v69-core-launch')?.hidden===true;
-      const questCard=!!document.getElementById('dudu-v69-passport-quest')?.querySelector('button');
-      return {rendered,gateOnly,popupBlocked,noStats,authorBlocked,launcherHidden,
-        questCard,writes:window.__firestoreWrites.length};
+      return {
+        locked:surface.children.length===1&&surface.children[0].classList.contains('dudu-v71-lock'),
+        popupDenied:api.statusPopup()===false,
+        hidden:!surface.querySelector('.dudu-v71-hero,.dudu-v69-stat'),
+        authorDenied:api.renderCore()===false,
+        authorButtonHidden:document.getElementById('dudu-v69-core-launch').hidden===true,
+        noWrites:window.__firestoreWrites.length===0
+      };
     });
-    assert.deepEqual(systemV70Locked,{
-      rendered:true,gateOnly:true,popupBlocked:true,noStats:true,
-      authorBlocked:true,launcherHidden:true,questCard:true,writes:0
-    },'V70 must hide all host/system data until passport check passes');
+    assert.deepEqual(systemV71Locked,{
+      locked:true,popupDenied:true,hidden:true,
+      authorDenied:true,authorButtonHidden:true,noWrites:true
+    },'V71 reader and Sandbox cannot invent a server-issued passport');
 
     // World Atlas V64: compact two-column mobile display, not a second novel library.
     await page.evaluate(() => DuduSiteV60.navigate('worlds'));
@@ -278,48 +276,26 @@ async function main() {
     await page.locator('#auth-username').fill('tester-a');
     await page.getByRole('button', { name: 'Đổi tài khoản thử' }).click();
     await page.waitForFunction(() => document.getElementById('account-status-btn').textContent.includes('tester-a'));
-    // V70 pass entry, profile exposure and dismissal on real Chromium DOM.
-    const systemDemo=await page.evaluate(()=>{
-      const api=window.DuduSystemAppsV69,system=document.getElementById('phone-app-system');
-      const wasOpen=document.getElementById('cyber-phone').style.display==='flex';
-      if(!wasOpen)togglePhone();
+    // V71: the old published Sandbox code must not unlock a real System.
+    const sandboxSystem=await page.evaluate(async()=>{
+      const old=document.getElementById('cyber-phone').style.display==='flex';
+      if(!old)togglePhone();
       openPhoneApp('system');
-      const gateOnly=system.querySelector('#dudu-v69-system-view').children.length===1;
-      const form=system.querySelector('.dudu-v70-entry');
-      const input=form?.querySelector('input');
-      if(input)input.value='DUDU-THU-2026';
-      form?.dispatchEvent(new Event('submit',{cancelable:true,bubbles:true}));
-      const profileVisible=!!system.querySelector('.dudu-v70-hero');
-      const hostName=system.querySelector('.dudu-v70-title')?.textContent||'';
-      const hostId=system.querySelector('.dudu-v70-identifiers')?.textContent||'';
-      const systemId=system.querySelector('.dudu-v70-system-id')?.textContent||'';
-      const modalOpened=api?.statusPopup?.()===true;
-      const stats=system.querySelectorAll('.dudu-v69-stat').length;
-      const falsePact=api?.canSignPact?.()===false;
-      const noWrites=window.__firestoreWrites.length===0;
-      system.querySelector('.dudu-v69-close')?.click();
-      window.DuduSystemGateV70.revoke({
-        accountId:'sandbox:'+currentUsername,session:sessionStorage
-      });
-      api.renderSystem();
-      const relocked=system.querySelector('.dudu-v70-gate')!==null&&
-       system.querySelector('.dudu-v70-hero')===null;
-      phoneHome();
-      if(!wasOpen&&document.getElementById('cyber-phone').style.display==='flex')
+      await window.DuduSystemAppsV69.renderSystem();
+      const view=document.getElementById('dudu-v69-system-view');
+      const client=await window.DuduSystemClientV71.me();
+      const sample=window.DuduSystemAppsV69.statusPopup();
+      const output={
+       denied:client.ok===false,onlyGate:view.children.length===1&&
+         view.children[0].classList.contains('dudu-v71-lock'),
+       noStat:sample===false&&!view.querySelector('.dudu-v69-stat'),
+       noWrites:window.__firestoreWrites.length===0
+      };
+      phoneHome();if(!old&&document.getElementById('cyber-phone').style.display==='flex')
        togglePhone();
-      return {gateOnly,profileVisible,hostName,hostId,systemId,
-       modalOpened,stats,falsePact,noWrites,relocked};
+      return output;
     });
-    assert.equal(systemDemo.gateOnly,true);
-    assert.equal(systemDemo.profileVisible,true);
-    assert.match(systemDemo.hostName,/tester-a/i);
-    assert.match(systemDemo.hostId,/KC-[0-9A-F]{8}/);
-    assert.match(systemDemo.systemId,/^SYS-F-/);
-    assert.equal(systemDemo.modalOpened,true);
-    assert.equal(systemDemo.stats,8);
-    assert.equal(systemDemo.falsePact,true);
-    assert.equal(systemDemo.noWrites,true);
-    assert.equal(systemDemo.relocked,true);
+    assert.deepEqual(sandboxSystem,{denied:true,onlyGate:true,noStat:true,noWrites:true});
     await page.locator('#role-toggle-btn').click();
     // V66 author entry is permission-gated even though templates never publish.
     const worldStudioAuth=await page.evaluate(()=>({
