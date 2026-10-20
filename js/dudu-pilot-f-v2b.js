@@ -831,7 +831,7 @@
     "placeId": "hall",
     "phase": "KIỂM CHỨNG",
     "title": "Những con số khớp nhau",
-    "text": "Bạn đã đối chiếu giờ nhận chìa, loại thuốc và số lượng với các ghi chép độc lập. Những con số khớp nhau. Lục Tam cũng đã nhận riêng việc tự mở hòm.\n\nBạn **có thể quyết định bước xử lý ngay tại đây**, hoặc tiếp tục tìm hiểu vì lo còn điều chưa sáng tỏ. Không ai bắt bạn trở về bàn suy luận rồi đi vòng lại.",
+    "text": "Bạn đã đối chiếu giờ nhận chìa, loại thuốc và số lượng với các ghi chép độc lập. Những con số khớp nhau. Lục Tam cũng đã nhận riêng việc tự mở hòm.\n\nBạn có thể quyết định bước xử lý ngay tại đây, hoặc tiếp tục tìm hiểu vì lo còn điều chưa sáng tỏ. Không ai bắt bạn trở về bàn suy luận rồi đi vòng lại.",
     "choices": [
       {
         "id": "verified_formal_now",
