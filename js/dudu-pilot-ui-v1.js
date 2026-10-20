@@ -16,7 +16,7 @@
   let uid=null;
   try{const auth=root.DuduAuth;uid=auth?.isReady?.()?auth.uid():null;}catch{}
   if(!uid){try{uid=root.firebase?.auth?.()?.currentUser?.uid||null;}catch{}}
-  return (upgraded?'dudu:pilot-f-investigation-v4:':'dudu:pilot-f-v1:')+encodeURIComponent(uid||'guest');
+  return (upgraded?'dudu:pilot-f-reasoning-v5:':'dudu:pilot-f-v1:')+encodeURIComponent(uid||'guest');
  }
  function load(){
   owner=key();
@@ -105,8 +105,8 @@
    guard_statement:'Lời khai Lục Tam'};
   if(v.evidence.length){
    const evidence=el('details','dudu-pilot-evidence');
-   evidence.append(el('summary','dudu-pilot-evidence-toggle','▤ Sổ tay · '+v.evidence.length+' manh mối đã thấy'));
-   const note=el('p','dudu-pilot-evidence-note','Chỉ gồm những điều bạn đã tự khám phá. Mở ra để đối chiếu khi suy luận.');
+   evidence.append(el('summary','dudu-pilot-evidence-toggle','▤ Sổ tay của bạn'));
+   const note=el('p','dudu-pilot-evidence-note','Những gì bạn đã quan sát hoặc nghe được. Không cần thu đủ mọi manh mối để bắt đầu suy nghĩ.');
    evidence.append(note);
    const tags=el('div','dudu-pilot-tags');
    if(v.clueDetails){v.clueDetails.forEach(clue=>tags.append(el('span','',clue.label)));}
