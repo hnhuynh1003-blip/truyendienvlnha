@@ -19,9 +19,9 @@ test('V49.8 phone visuals apply to live Firebase accounts while sandbox remains 
 });
 test('home shortcuts and floating phone are native keyboard accessible buttons',()=>{
   const shortcuts=[...html.matchAll(/<button type="button" class="app-icon" onclick="openPhoneApp\('([a-z]+)'\)" aria-label="Mở ([^"]+)"/g)];
-  assert.equal(shortcuts.length,8);
+  assert.equal(shortcuts.length,9);
   assert.deepEqual(shortcuts.map(x=>x[1]).sort(),
-    ['chat','codex','inventory','museum','quests','settings','shop','stories']);
+    ['chat','codex','inventory','museum','quests','settings','shop','stories','system']);
   assert.match(html,/<button type="button" id="phone-fab"[^>]*aria-controls="cyber-phone"[^>]*aria-expanded="false"/);
   assert.match(html,/class="phone-close-btn" onclick="togglePhone\(\)"/);
   assert.match(html,/class="phone-home-bar" onclick="phoneHome\(\)" aria-label=/);
