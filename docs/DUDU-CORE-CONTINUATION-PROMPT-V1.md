@@ -170,3 +170,7 @@ Người chơi gửi ảnh thực tế V4 và phát hiện: cần đủ tổ h�
 - Tất cả `pilot_only`, `released=false`, `rewardsEnabled=false`. Không thay Firebase/EPUB/auth/NPC chat/XP/Xu/khế ước/backend.
 
 **Tiếp theo:** thử thật trên trang `dudu-pilot.html?v=play-v5`; ưu tiên lỗi cảnh, thoại, các nhánh do độc giả thử. Sau QA mới dùng design này cho F02/F03; E và bậc cao hơn phải có World Truth backend, nguồn độc lập, tình huống NPC che giấu và quyền nghiệm thu server, không tự cho AI quyền phán xử.
+
+## 11. DUDU F V6.1 — FAIR VERDICT (20/10/2026)
+
+Điểm tiếp tục mới nhất: docs/DUDU-F-FAIR-VERDICT-V6-1.md. Quan Đạo V6.1 gồm 40 phân cảnh, 106 lựa chọn, 6 kết thúc, vẫn là bản pilot không phát thưởng. Thoại nhân vật gắn theo cảnh; phần kể không tiết lộ kết luận thay người chơi. Ba nhân vật bị nghi đều có quyền giải thích khi chưa có chứng cứ, không kết thúc ngay chỉ vì bị nêu nghi ngờ. Khi đối chiếu biên nhận thành công với Lục Tam, người chơi có thể trực tiếp chuyển sang lập biên bản hoặc đối thoại thay vì quay về bảng suy luận. Trang thử dùng dudu-pilot.html?v=play-v6-1, lưu riêng theo phiên bản. Bốn bộ test logic hồi quy PASS trong môi trường V8 mô phỏng; chưa kiểm tra thiết bị hoặc trình duyệt thực. Tiếp theo: QA trên Pages, rồi phát triển F02/F03 theo chuẩn suy luận công bằng. Giữ nguyên Firebase, EPUB, AI NPC và tất cả dữ liệu, phần thưởng chính thức.
