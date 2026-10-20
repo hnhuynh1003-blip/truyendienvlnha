@@ -55,3 +55,38 @@ Bạn đang phát triển web đọc truyện và thế giới tương tác DUDU
 - Không lén kích hoạt ghi xu, rewards, pact, assignment từ client/pilot; không tạo UI giả hoàn thành.
 - Kết hợp background và cảnh trước khi viết thêm nội dung.
 - Hoàn tất 1 đợt lớn có test, cập nhật handoff này cùng Canon, báo commit + giới hạn; không hỏi duyệt từng bước.
+
+## 6. CẬP NHẬT SAU VISUAL V2A — KIỂM KÊ 20/10/2026
+
+> **Mục đích:** điểm bàn giao mới sau khi cuộc trò chuyện triển khai bị xóa nhầm. Đây là kiểm kê mã nguồn thực trên `main` ở SHA `2f4fba687309c891cdb8e1d9d154d4306d391371`, không phải lệnh tự động phát hành tính năng. Nếu `main` đã thay đổi, đọc commit mới nhất trước khi triển khai.
+
+### Đã xác minh trên GitHub
+
+- Commit `b93a676` đã tạo hồ sơ bàn giao này; `6b6f7d3` đóng băng Canon Foundation V1; `648a30a` thêm kiểm tra hồi quy nút vào chơi.
+- Pilot **Đêm mưa ở Quan Đạo** có `missionId=dudu-m-an-f01`, 3 NPC (Hà chưởng quầy, Lục Tam, A Liên), 2 địa điểm được ánh xạ `gate/hall`, các scene truyện, 2 kết thúc thành công + 2 thất bại, chứng cứ, khôi phục session, khóa thưởng thật. Đây là **1 pilot F**, chưa phải 1 trong 3 F khảo hạch đã nghiệm thu server.
+- Có trang chơi thử riêng `dudu-pilot.html`, cùng lối vào ổn định trong Vạn Giới. Hai điểm vào được kiểm tra bằng test nguồn `tests/dudu-pilot-visibility-v1.cjs`; chưa thể kết luận smoke test trình duyệt thực đã qua.
+- Commit `b676782` bổ sung `docs/DUDU-CORE-BACKGROUND-STYLE-V2A.md`, `photo` vào `js/dudu-pilot-f-v1.js`, cơ chế tải WebP với SVG fallback trong UI. Commit **`2f4fba6`** đã tải lên **3 file WebP**: `quan-dao-gate-cinematic.webp`, `quan-dao-hall-cinematic.webp`, `quan-dao-store-cinematic.webp`.
+- Chỉ **gate/hall** đang được gắn WebP trong dữ liệu pilot. **store** là ảnh dự phòng, CHƯA có `placeId=store`; scene `store` hiện dùng `placeId=hall` (không được mô tả là đã có cảnh kho độc lập).
+- Kiểm tra qua connector: SHA mới nhất tại thời điểm kiểm kê là `2f4fba6`, không thấy combined status hoặc workflow run cho commit đó. **Không được đồng nhất đã push = đã deploy/QA browser thành công.**
+- Website đọc truyện, EPUB, auth, NPC chat, Cyber Phone, bookmark, quyền tác giả và dữ liệu cũ không bị module pilot thay thế. Kiểm kê này chưa kiểm chứng từng thao tác runtime trên Pages/Firebase.
+
+### Ranh giới Canon và bản đề xuất
+
+- `docs/DUDU-CORE-CANON-FOUNDATION-V1.md` là phạm vi Foundation đã chốt. Sáu genre không phải sáu thế giới playable; 48 seed V66 (30 F + 18 E) **không** phải nhiệm vụ đã phát hành.
+- Tệp riêng `DUDU_CORE_V1_2_PHU_LUC_BACKGROUND_SCENE_IDENTITY_CHO_DUYET.md` ngày 19/10/2026 thống nhất **định hướng**: mỗi tiểu thế giới chơi được có background địa điểm. Các chi tiết `genre → world → place → scene`, World Visual Bible/schema/ảnh F-E, và quy trình G0–G7 vẫn được dán nhãn **chờ duyệt khi khóa canon**; không tự tuyên bố mọi schema đã được phê chuẩn.
+- Luật bất biến: `F → E → D → C → B → A → S` là **bậc hệ thống**, không phải cấp nhiệm vụ; 3 F khác ID **được máy chủ xác minh** là điều kiện khảo hạch; CORE không toàn tri; người chơi tự nguyện nhập vai A/B/C; AI/NPC không quyết định thưởng hoặc World Truth.
+
+### Hướng tiếp tục, sắp xếp theo phụ thuộc
+
+1. **QA Visual V2A + hồi quy pilot (trước khi thay đổi gameplay)**: chạy `node tests/dudu-core-foundation-v1.cjs`, `node tests/dudu-pilot-visibility-v1.cjs`, `node tests/dudu-pilot-photo-v2a.cjs`; truy cập `dudu-pilot.html` và `#/worlds` trên bản đã deploy; xác nhận 2 WebP gate/hall hiển thị đúng, fallback hoạt động, nút mở truyện, đóng/mở, đổi nhánh, reload, không trùng CTA. Test responsive 320/375/390/430 px, desktop, Android/iOS. Không được ghi QA pass nếu chưa thực sự chạy.
+2. **Thiết kế/duyệt V2B World & NPC Bible**: `World Truth`, nơi chốn/scene, luật đổi địa điểm, NPC knowledge/beliefs/intent, quan hệ và chứng cứ. Chuyển nhà kho thành một `placeId` riêng **chỉ khi kịch bản có hành động chuyển địa điểm thật**; ảnh store không tự mở khóa vì file đã tồn tại.
+3. **Triển khai V2B theo đợt lớn sau chốt phạm vi**: nâng chiều sâu phó bản F Quan Đạo (không cho bấm mò để có kết luận thuyết phục), phân nhánh khác nhau có hậu quả, NPC không biết bí mật chưa học được; kiểm thử engine, UI mobile và migration session theo `scenarioVersion`. Không dùng AI sinh kết quả nhiệm vụ thật.
+4. **Pilot nội dung**: ba truyện F đa dạng độc lập rồi hai E khác cấu trúc (điều tra có chứng cứ và chiến lược/quan hệ). Mỗi tiểu thế giới có visual identity; 48 seed vẫn khóa.
+5. **Sau QA nội dung** mới phát triển AI DUDU CORE với purpose/quota backend độc lập, rồi xem xét hợp đồng/ledger/xác minh nhiệm vụ/EXP/kinh tế thật sau duyệt riêng.
+
+### Hạn chế và hướng quay lại
+
+- Không tự bật reward/contract/khảo hạch thật, không thay Firestore Rules, billing, hệ thống Liên Lạc hay thư viện truyện khi chỉ kiểm thử pilot.
+- Không coi test tĩnh hoặc WebP có trên GitHub là bằng chứng ảnh đang hiển thị đúng trên Pages; kiểm tra pipeline triển khai riêng.
+- Điểm so sánh trước Visual V2A: `648a30aad84fee6e89b58db329d50f0602a8700b`; ngay trước đợt upload ảnh: `b67678238e00ef6573d0bce808d994eae2b803bb`. Ưu tiên revert commit tương ứng thay vì reset cả repository.
+- Giữ nguyên lịch sử các mục 1–5 phía trên làm bối cảnh thời điểm Foundation V1; mục 6 này là tình trạng mới hơn.
