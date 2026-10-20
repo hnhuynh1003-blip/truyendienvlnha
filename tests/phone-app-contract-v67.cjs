@@ -8,7 +8,7 @@ const root=path.resolve(__dirname,'..');
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const code=fs.readFileSync(path.join(root,'js/phone-app-contract-v67.js'),'utf8');
 const ids=['profile','inventory','author-mail','lab-v445','museum','quests',
-  'stories','codex','chat','shop','fun','settings'];
+  'stories','codex','chat','shop','fun','settings','system','core-console'];
 const requested=[];
 const elements=new Map(ids.map(id=>['phone-app-'+id,{id:'phone-app-'+id,style:{display:'none'}}]));
 elements.set('cyber-phone',{style:{display:'none'}});
@@ -19,10 +19,10 @@ vm.runInNewContext(code,environment,{filename:'phone-app-contract-v67.js',timeou
 const api=win.DuduPhoneAppsV67;
 assert.ok(api);
 assert.equal(api.version,1);
-assert.equal(api.specs.length,12);
-assert.equal(new Set(Array.from(api.specs,s=>s.id)).size,12);
+assert.equal(api.specs.length,14);
+assert.equal(new Set(Array.from(api.specs,s=>s.id)).size,14);
 const routeTargets=[...html.matchAll(/openPhoneApp\\(['"]([^'"]+)['"]\\)/g)].map(m=>m[1]);
-assert.ok(routeTargets.length>=12);
+assert.ok(routeTargets.length>=14);
 for(const target of routeTargets){
  assert.ok(ids.includes(target),'Phone route references missing app mount: '+target);
 }
@@ -49,4 +49,4 @@ assert.equal(api.get('chat').state,'code_present');
 assert.ok(api.issues().some(row=>row.id==='quests'),'Absent renderer must be detectable');
 assert.ok(code.indexOf('localStorage.')<0 && code.indexOf('fetch(')<0);
 assert.ok(html.includes('src="js/phone-app-contract-v67.js?'),'Shared app inventory must load on the site');
-console.log('DUDU V67 phone app manifest: 12 mounts, status probes and safe sandbox distinction OK');
+console.log('DUDU V69 phone app manifest: 14 mounts, status probes and safe sandbox distinction OK');
