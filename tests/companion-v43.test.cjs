@@ -61,10 +61,10 @@ test('V43: UI is sandbox-only and does not claim server validated keepsakes',()=
  assert.match(inbox,/dudu-v43-system-contact/);
  assert.match(inbox,/window\.DuduCompanionV43\.open\(\)/);
  assert.match(ui,/IS_SANDBOX_MODE/);
- const agents=fs.readFileSync(path.join(__dirname,'../js/dudu-agent-v68.js'),'utf8');
- assert.match(agents,/DUDU đồng hành/);
- assert.match(agents,/DUDU Chủ Thần/);
- assert.match(ui,/dudu-v68-agent-select/);
+ assert.match(ui,/Bạn đồng hành/);
+ assert.doesNotMatch(ui,/dudu-v68-agent-select|DuduAgentV68/);
+ assert.match(html,/dudu-system-app-v69\.js/);
+ assert.match(html,/phone-app-core-console/);
  assert.match(ui,/Xu thử nghiệm/);
  assert.match(ui,/chưa phải kỷ vật Bảo Tàng/);
  assert.doesNotMatch(ui,/db\.collection\(|DuduCollectiblesClient\.grant|fetch\(/);
