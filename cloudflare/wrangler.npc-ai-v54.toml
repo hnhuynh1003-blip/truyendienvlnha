@@ -34,6 +34,10 @@ DUDU_PAID_PROVIDERS_ENABLED = "false"
 # V68 never inherits NPC AI enablement. Hive paid pilot is disabled.
 DUDU_HIVE_ENABLED = "false"
 DUDU_HIVE_TEST_APPROVED = "false"
+# V71 genuine server-side system identities. No browser/Sandbox fake state.
+DUDU_SYSTEM_LIVE_ENABLED = "true"
+# Test issuance still requires Firebase admin AND DUDU_SYSTEM_PILOT_UID Secret.
+DUDU_SYSTEM_PILOT_CARD_ENABLED = "true"
 
 # AI binding may run only after Firebase auth, DO quota, and Free flags.
 [ai]
@@ -78,3 +82,11 @@ class_name = "DuduGiftLedger"
 [[migrations]]
 tag = "v5-gift-ledger-sqlite"
 new_sqlite_classes = ["DuduGiftLedger"]
+
+[[durable_objects.bindings]]
+name = "DUDU_SYSTEM_REGISTRY"
+class_name = "DuduSystemRegistry"
+
+[[migrations]]
+tag = "v6-dudu-system-registry-sqlite"
+new_sqlite_classes = ["DuduSystemRegistry"]
