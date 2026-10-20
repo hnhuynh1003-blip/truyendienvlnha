@@ -86,8 +86,12 @@
   content.append(passage);
   if(!v.ending&&v.npcDetails){
    const npcBox=el('div','dudu-pilot-persona');
-   npcBox.append(el('p','dudu-pilot-npc',v.npcDetails.name+' · '+v.npcDetails.role),
+   const avatar=el('span','dudu-pilot-npc-mark',v.npcDetails.name.charAt(0));
+   avatar.setAttribute('aria-hidden','true');
+   const dialogue=el('div','dudu-pilot-npc-dialogue');
+   dialogue.append(el('p','dudu-pilot-npc',v.npcDetails.name+' · '+v.npcDetails.role),
     el('blockquote','dudu-pilot-voice',v.npcDetails.text));
+   npcBox.append(avatar,dialogue);
    content.append(npcBox);
   }else if(!v.ending&&v.npc){
    content.append(el('p','dudu-pilot-npc','Nhân vật: '+v.npc));
