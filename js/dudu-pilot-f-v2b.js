@@ -520,7 +520,7 @@
       },
       {
         "id": "suspect_guard",
-        "label": "Tôi nghi Lục Tam",
+        "label": "Tôi nghi người lính gần cửa",
         "to": "claim_guard",
         "kind": "deduction"
       },
@@ -589,13 +589,14 @@
     "placeId": "hall",
     "phase": "ĐỐI CHIẾU",
     "title": "Điều nào khiến bạn nghi Lục Tam?",
-    "text": "Bạn nghĩ tới người lính trẻ, nhưng không thể chỉ dựa vào một dáng vẻ bồn chồn để khẳng định điều gì.\n\nCó dữ kiện đủ độc lập để hỏi thẳng anh không, hay bạn mới chỉ suy đoán?",
+    "text": "Bạn nghĩ tới người lính đứng gần cửa. Vẻ bồn chồn có thể do nhiều nguyên nhân, không phải bằng chứng có tội.\n\nBạn đã đủ thông tin để đối chiếu trước mặt anh chưa, hay chỉ mới nghi ngờ?",
     "choices": [
       {
         "id": "only_uniform",
-        "label": "Vì A Liên nhìn thấy áo giống lính",
+        "label": "Vì lời chứng chỉ nói thấy một bóng áo lính",
         "to": "weak_reason",
-        "kind": "deduction"
+        "kind": "deduction",
+        "visibleIfEvidence": ["maid_statement"]
       },
       {
         "id": "show_ledger_and_seal",
