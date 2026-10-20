@@ -163,6 +163,22 @@
         "kind": "deduction"
       },
       {
+        "id": "hub_present_verified_record",
+        "label": "Trình bằng chứng đã xác minh với chưởng quầy",
+        "to": "formal_report",
+        "kind": "conclusion",
+        "visibleIfEvidence": ["care_receipt"],
+        "visibleIfFlags": ["private_admission", "receipt_checked"]
+      },
+      {
+        "id": "hub_invite_hearing_verified",
+        "label": "Mời những người liên quan đối thoại về sự việc",
+        "to": "hearing",
+        "kind": "dialogue",
+        "visibleIfEvidence": ["care_receipt"],
+        "visibleIfFlags": ["private_admission", "receipt_checked"]
+      },
+      {
         "id": "step_away",
         "label": "Rời đi, để mọi người tự giải quyết",
         "ending": "withdraw",
