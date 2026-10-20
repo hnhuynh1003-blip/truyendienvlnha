@@ -22,12 +22,14 @@
   {id:'stamina',label:'Thể lực',value:45},
   {id:'spirit',label:'Tinh thần',value:71}
  ].map(Object.freeze));
- function hostId(accountId){
-  // Visual pseudonym ONLY; not a unique server identity or a security hash.
+ function displayHash(value){
+  // Noncryptographic visual-only pseudonym, NEVER a security assertion.
   let h=2166136261;
-  for(const c of String(accountId||'unknown'))h=Math.imul(h^c.charCodeAt(0),16777619)>>>0;
-  return 'KC-'+h.toString(16).toUpperCase().padStart(8,'0');
+  for(const c of String(value||'unknown'))h=Math.imul(h^c.charCodeAt(0),16777619)>>>0;
+  return h.toString(16).toUpperCase().padStart(8,'0');
  }
+ function hostId(accountId){return 'KC-'+displayHash('host:'+accountId);}
+ function systemDisplayId(accountId){return 'SYS-F-'+displayHash('system:'+accountId);}
  function storageKey(accountId){return STORAGE_PREFIX+String(accountId||'');}
  function validDemoCode(code,opts={}){
   return opts.sandbox===true&&typeof opts.accountId==='string'&&
@@ -57,7 +59,7 @@
    mode:'sandbox-demo',verified:false,authoritative:false,
    host:Object.freeze({id:hostId(accountId),name:nickname,level:1,exp:0}),
    system:Object.freeze({
-    displayId:'SYS-F-7A41',rank:'F',level:1,exp:0,
+    displayId:systemDisplayId(accountId),rank:'F',level:1,exp:0,
     temperament:'Quan sát · Cẩn trọng',identity:'CHƯA XÁC THỰC',
     origin:'Không xác định',isRegular:null,isCounterfeit:null,
     label:'Hệ thống con chưa định danh'
@@ -71,7 +73,7 @@
   });
  }
  return Object.freeze({
-  version:1,DEMO_CODE,attributes,hostId,validDemoCode,
+  version:1,DEMO_CODE,attributes,hostId,systemDisplayId,validDemoCode,
   admit,state,revoke,demoProjection
  });
 });
