@@ -93,12 +93,18 @@ function firebaseShim(){
   }
   try{
     page.on('pageerror',error=>errors.push(error.message));
+    page.on('requestfailed',request=>{
+      if(request.url().includes('/v1/system/'))console.error('V71 request failed:',request.url(),request.failure()?.errorText);
+    });
+    page.on('request',request=>{
+      if(request.url().includes('/v1/system/'))console.log('V71 MAIN outbound System request:',request.method(),request.url());
+    });
     await page.route('https://www.gstatic.com/firebasejs/**',async route=>{
       const isApp=route.request().url().includes('firebase-app-compat');
       await route.fulfill({status:200,contentType:'application/javascript',
         body:isApp?'('+firebaseShim.toString()+')();':''});
     });
-    await page.route('**/v1/system/**',async route=>{
+    await page.route(/\/v1\/system\//,async route=>{
       const request=route.request(),url=new URL(request.url());
       const method=request.method();
       if(method==='OPTIONS'){
@@ -163,6 +169,8 @@ function firebaseShim(){
     await page.waitForTimeout(350);
     console.log('V71 MAIN gate diagnostic:', JSON.stringify(await page.evaluate(()=>({
       ready:DuduAuth.isReady(),uid:DuduAuth.uid(),workerBase:DuduAI?.workerBase,
+      firebaseUid:firebase.auth()?.currentUser?.uid,
+      jwtMethod:typeof firebase.auth()?.currentUser?.getIdToken,
       screen:document.getElementById('dudu-v69-system-view')?.textContent?.slice(0,280),
       phone:document.getElementById('cyber-phone')?.style.display,
       subapp:document.getElementById('phone-app-system')?.style.display
