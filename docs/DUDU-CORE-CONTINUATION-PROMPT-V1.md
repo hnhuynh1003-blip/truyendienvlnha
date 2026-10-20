@@ -194,3 +194,19 @@ Người chơi đã thử hết Quan Đạo và nhận ra kết thúc thiếu pa
 - Không chạm Firestore/auth/EPUB/Cyber Phone/Liên Lạc NPC/XP/Xu/khế ước; `pilot_only`, `released:false`, `rewardsEnabled:false`. Kiểm thử JS nguồn khác với QA Pages/mobile thật.
 
 **Tiếp theo:** kiểm thử Pages thực, độ dài nhịp đọc, chất lượng cảm xúc và hậu quả nhánh V7. Sau nghiệm thu mới phát triển F02/F03 với xung đột đặc thù từng thế giới, không bê cơ chế mất thuốc sang bối cảnh khác.
+
+## 14. F CASEFILE V8 — PHÁ ÁN NGẮN, VẬT CHỨNG TRƯỚC KẾT LUẬN
+
+> **Mốc hiện hành, thay hướng V7 ở mục 13.** Đọc `docs/DUDU-F-WHODUNIT-V8.md` khi tiếp tục phát triển F.
+
+Người chơi không chấp nhận V7 vì kéo dài chuỗi đi lấy, kiểm đếm, giao thuốc **sau khi đã tìm ra người lấy**. Đây là sai vị trí cao trào, không phải thiếu chữ. Truyện F phá án phải hấp dẫn: hệ thống DUDU giao 1 mục tiêu ngắn, 3 nghi phạm có bằng chứng đáng nghi, có vật chứng then chốt và bước ngoặt. **Túi thuốc phải được tìm ra trước khi công bố thủ phạm**, kết thúc ngay sau lý giải đúng người + động cơ; không thêm minigame vận chuyển để kéo dài bản thử không EXP.
+
+- Đã thay scenario trong `js/dudu-pilot-f-v2b.js` thành `pilot-quan-dao-casefile-v8` / `scenarioVersion=9`, giữ `missionId=dudu-m-an-f01`, chỉ pilot. **27 scene phi tuyến, 9 endings**, 2 tuyến giải án khoảng 16–18 lựa chọn mỗi lượt.
+- Nghi phạm: Hà chưởng quầy có nét mực sửa & chìa kho; A Liên dính sáp đỏ và đi qua bếp; Lục Tam có dây quân nhu & thời gian đáng ngờ. Dấu than/nhân chứng chỉ đường đến túi thuốc được giấu trong thùng than. Có phiếu cấp cứu và dây lam làm chứng cứ quan trọng, không hiện lời giải trước khi khám.
+- Kết luận Lục Tam có 2 đường đủ căn cứ: `medicine_bundle + care_receipt + key_log` hoặc `medicine_bundle + care_receipt + military_knot + guard_cord`; lựa chọn sai động cơ bị phản bác. Kết thúc đúng tại cảnh `reveal`, không lập chuỗi nhiệm vụ hậu điều tra.
+- World Bible thêm các dữ kiện và clues hợp lệ; các thoại NPC vẫn khóa theo scene.
+- UI `dudu:pilot-f-casefile-v8:`, website cache `play-v8`; save V7 tách biệt, không giả nhập tương thích. Trên UI có trạng thái **ĐÃ GIẢI ÁN (BẢN THỬ)** để tạo payoff, nhưng không tự thưởng EXP/Xu/vật phẩm/khế ước.
+- 4/4 bộ test logic hồi quy nguồn GitHub PASS trong V8 mock, **chưa** kiểm thử Pages/thiết bị thật. Không sửa backend/Firestore/auth/EPUB/truyện đã đăng.
+- **Các truyện F khác không sao chép công thức điều tra.** F hiện đại có thể thiên về quan hệ, F tu tiên thiên về cơ duyên và tài nguyên; nhiệm vụ và cơ chế cao trào phù hợp thế giới, không áp định mức scene/nhặt chứng cứ.
+
+Tiếp: người chơi thử trực tiếp `dudu-pilot.html?v=play-v8`; sửa các điểm lộ đáp án hoặc thao tác thiếu tự nhiên, sau đó mới xây lại F02/F03.
