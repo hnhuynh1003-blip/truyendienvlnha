@@ -32,10 +32,14 @@
    const locked=c.locked||blocked(raw,state);
    return {...c,locked,requirementHint:locked?(raw.requirementHint||'Cần hoàn thành bước tìm hiểu trước.') :c.requirementHint};
   });
+  const last=state.log[state.log.length-1];
+  const previousChoice=last&&s.scenes[last.from]?.choices.find(c=>c.id===last.choiceId);
   return {...v,choices,place:model.placeView(s.world,v.placeId),
    npcDetails:sc.npcId?model.npcView(s.world,sc.npcId,state):null,
    clueDetails:model.knownClues(s.world,v.evidence),
-   storyPhase:sc.phase||null};
+   storyPhase:sc.phase||null,
+   passageReaction:typeof previousChoice?.reaction==='string'?previousChoice.reaction:'',
+   sceneType:sc.phase==='DẪN TRUYỆN'?'prologue':'story'};
  }
  function decide(s,state,id){
   if(validate(s).length)return {accepted:false,reason:'invalid_scenario',state};
