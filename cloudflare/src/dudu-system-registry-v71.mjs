@@ -20,7 +20,7 @@ export function redactedSystemRow(row){
   id:row.display_id,name:row.display_name||'Hệ thống '+row.display_id,
   rank:row.rank,level:row.level,exp:row.exp,
   // NEVER emit origin, hidden personality, internal id, memory epoch or issuer proof.
-  verifiedByServer:true
+  ledgerBacked:true
  };
 }
 export class DuduSystemRegistry extends DurableObject {
