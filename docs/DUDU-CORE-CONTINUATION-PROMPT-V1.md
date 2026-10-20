@@ -178,3 +178,19 @@ Người chơi gửi ảnh thực tế V4 và phát hiện: cần đủ tổ h�
 ## 12. HOTFIX V6.2 — KHÓA 100 THAO TÁC VÀ NHẦM TRẠNG THÁI CHỨNG CỨ
 
 Điểm bàn giao mới nhất: đọc phụ lục V6.2 trong `docs/DUDU-F-FAIR-VERDICT-V6-1.md`. Người chơi đủ manh mối nhưng gặp chặn vì `state.step>=100`, UI không báo lỗi. Đã nới giới hạn 10.000 bước (log còn 100 bản ghi gần nhất), hiện thông báo lỗi, bổ sung chú thích phân biệt lời thú nhận riêng, biên nhận được xác minh với manh mối đã xem; sau khi xác minh đầy đủ có đường kết luận trực tiếp ở đại sảnh. Đã thử đủ cả 5 manh mối và hơn 240 bước di chuyển, vẫn giữ evidence và tiếp tục được. **Không đổi ID kịch bản V6.1/khóa phiên**, chỉ cập nhật query trang `play-v6-2` để bảo toàn save đang có. Bốn bộ test JavaScript PASS trong V8 với mô phỏng filesystem; chưa xác minh deploy GitHub Pages hoặc QA thiết bị thật. Tiếp tục F02/F03 sau khi người chơi thử thành công; pilot không cấp thưởng thật.
+
+## 13. F DAWN RESCUE V7 — ĐIỀU TRA PHẢI GIẢI QUYẾT HẬU QUẢ
+
+> Đây là mốc phát triển **mới hơn V6.2**, đọc `docs/DUDU-F-DAWN-RESCUE-V7.md` để thấy đầy đủ điều kiện, nhánh truyện và giới hạn.
+
+Người chơi đã thử hết Quan Đạo và nhận ra kết thúc thiếu payoff: mất thuốc được coi là nghiêm trọng, nhưng khi Lục Tam nhận tội thì chỉ cần ký giấy, A Liên được minh oan, mọi manh mối trở nên vô nghĩa. **Đã tái thiết hậu quả V7**, không chỉ sửa văn.
+
+- `js/dudu-pilot-f-v2b.js`: `scenarioId=pilot-quan-dao-dawn-rescue-v7`, `scenarioVersion=8`, giữ seed `missionId=dudu-m-an-f01`. **48 scene / 131 choice / 10 ending** đang ở dạng pilot, không phải 48 nhiệm vụ thật.
+- Mở đầu xác định túi thuốc ký gửi cho **đoàn xe chở người bị thương** đến nhận trước bình minh. Lục Tam từng mang cả túi sang trạm gác cứu người; biên nhận chỉ chứng minh **2 cuộn băng + 1 lọ thuốc đã dùng**, trong khi bảng kê gốc có **6 cuộn + 2 lọ**. Người chơi cần xác minh lượng còn, thu hồi từ trạm gác bằng đường còn đi được, đếm thuốc và giao cho đoàn xe, không dừng ở lời thú nhận.
+- Nhánh logic mới: `supply_audit → supply_count → route_plan → route_advice → courier_out → courier_in → handover → convoy_ready`. Không cho kết thúc success từ `formal_report`, `hearing_proof`, `hearing_resolution`. Chỉ `convoy_ready` có 2 lựa chọn kết thúc thành công, đòi `medicine_recovered`, `convoy_supplied` và điều kiện trách nhiệm/đối thoại.
+- Có các hậu quả riêng: chỉ lập giấy nhận lỗi, chọn đường bị ngập, đưa túi đi không kiểm đếm, giao thuốc nhưng không minh oan. Không đồng nhất *kết tội đúng* với *hoàn thành nhiệm vụ*.
+- World Bible thêm người dẫn đường Đinh Nhị và các sự thật về số thuốc, đường đi; câu thoại đúng scene, không tự cho người chơi biết lối an toàn trước khi hỏi.
+- UI/Pages chuyển cache `play-v7` và dùng khóa phiên `dudu:pilot-f-dawn-rescue-v7:`; **không tự nâng cấp save V6.1** vì đồ thị truyện thay đổi, nhưng save cũ vẫn còn riêng. Người chơi sẽ bắt đầu lại **chỉ phần pilot** khi thử V7.
+- Không chạm Firestore/auth/EPUB/Cyber Phone/Liên Lạc NPC/XP/Xu/khế ước; `pilot_only`, `released:false`, `rewardsEnabled:false`. Kiểm thử JS nguồn khác với QA Pages/mobile thật.
+
+**Tiếp theo:** kiểm thử Pages thực, độ dài nhịp đọc, chất lượng cảm xúc và hậu quả nhánh V7. Sau nghiệm thu mới phát triển F02/F03 với xung đột đặc thù từng thế giới, không bê cơ chế mất thuốc sang bối cảnh khác.
