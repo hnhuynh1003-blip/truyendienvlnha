@@ -35,7 +35,7 @@
     knows:['last_guard_key','sealed_box'],
     beliefs:['Nghi có người tự ý mở kho, chưa thể buộc tội.'],
     lines:[
-     {text:'“Sổ ghi Lục Tam mượn chìa lúc canh hai, nhưng tôi không biết vì sao.”'},
+     {factId:'last_guard_key',text:'“Sổ ghi Lục Tam mượn chìa lúc canh hai, nhưng tôi không biết vì sao.”'},
      {requiresEvidence:['care_receipt'],text:'“Nếu có người bị thương, ta cứu trước rồi lập biên bản bàn giao.”'}
     ]},
    guard:{npcId:'guard',name:'Lục Tam',role:'Lính áp tải',homePlaceId:'hall',
@@ -45,7 +45,7 @@
     beliefs:['Cứu người là đúng, nhưng tự lấy thuốc là sai.'],
     lines:[
      {text:'“Nửa đêm tôi nghe tiếng người kêu cứu, nên có rời trạm gác.”'},
-     {requiresEvidence:['broken_seal','guard_statement'],requiresFlags:['guard_confronted'],text:'“Dấu niêm phong ấy... tôi đã làm vỡ. Có người đang chờ thuốc ở trạm canh.”'},
+     {requiresEvidence:['broken_seal','guard_statement'],requiresFlags:['guard_confronted'],factId:'borrowed_medicine',text:'“Dấu niêm phong ấy... tôi đã làm vỡ. Có người đang chờ thuốc ở trạm canh.”'},
      {requiresEvidence:['care_receipt'],text:'“Tôi đã ghi rõ nơi dùng thuốc. Tôi sẽ nhận trách nhiệm trước chưởng quầy.”'}
     ]},
    maid:{npcId:'maid',name:'A Liên',role:'Người hầu quán',homePlaceId:'hall',
@@ -54,7 +54,7 @@
     knows:['maid_witness','sealed_box'],
     beliefs:['Một bóng áo lính đi qua hành lang, không xác định được ai.'],
     lines:[
-     {text:'“Tôi thấy bóng áo lính dưới đèn. Không thể vì vậy nói chắc ai đã lấy thuốc.”'},
+     {factId:'maid_witness',text:'“Tôi thấy bóng áo lính dưới đèn. Không thể vì vậy nói chắc ai đã lấy thuốc.”'},
      {requiresEvidence:['broken_seal'],text:'“Vết sáp còn mới. Tôi chỉ nghe tiếng cửa khép, không thấy tận mắt người mở.”'}
     ]}
   },
