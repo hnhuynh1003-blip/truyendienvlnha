@@ -38,3 +38,22 @@ Bộ test `tests/dudu-core-v2b.cjs` đã kiểm: nghi sớm cả 3 người khô
 Giữ nguyên `pilot_only`, `released:false`, `rewardsEnabled:false`. Không thay Firestore Rules, Firebase Auth, chương EPUB, Liên Lạc NPC, thế giới đã phát hành hay EXP/Xu thật.
 
 **Chạy thử khi Pages cập nhật:** `https://hnhuynh1003-blip.github.io/truyendienvlnha/dudu-pilot.html?v=play-v6-1`.
+
+## Phụ lục V6.2 — Bản vá kẹt chứng cứ, giữ nguyên tiến trình
+
+Ngày 20/10/2026. Người chơi phản ánh đi hết các địa điểm và lấy đủ chứng cứ nhưng không thể tiến tới kết luận.
+
+**Nguyên nhân đã tái hiện:** Foundation V1 ngắt xử lý khi `state.step>=100` và từ chối restore nếu `state.step>100`. Khi người chơi đi qua lại cảnh nhiều lần, engine trả `step_limit` nhưng UI không hiển thị thông báo. Đây là **giới hạn thao tác**, không phải mất một manh mối trong sổ tay. Cơ chế phân biệt: `evidence` gồm 5 mục `key_log`, `guard_statement`, `maid_statement`, `broken_seal`, `care_receipt`; phần `receipt_checked` và `private_admission` thuộc `flags`, không phải chứng cứ thứ 6/7. Chỉ đọc biên nhận chưa cấp `care_receipt`; phải đối chiếu giờ, loại thuốc, số lượng.
+
+**Bản vá trên main:**
+
+- `js/dudu-story-engine-v1.js` nới ngưỡng thao tác trong phiên thử từ 100 lên 10.000, vẫn giữ `log` tối đa 100 bản ghi gần nhất, không làm phình session.
+- `js/dudu-pilot-f-v2b.js` bổ sung lựa chọn ở `hub` cho trạng thái đã xác minh: trực tiếp gặp chưởng quầy lập biên bản hoặc mời đối thoại; cả hai đều chỉ hiển thị khi có `care_receipt`, `private_admission`, `receipt_checked`.
+- `js/dudu-story-engine-v2b.js` cung cấp `verificationNote` theo hiểu biết thực tế, tách trạng thái đã nghe, đã quan sát và đã xác minh.
+- `js/dudu-pilot-ui-v1.js` hiển thị lý do khi một thao tác bị từ chối, không im lặng nữa; bổ sung nhắc trạng thái trong hub/notes/claim_guard. CSS định dạng nhỏ gọn.
+- Trang `index.html`, `dudu-pilot.html`, shell dùng cache `play-v6-2`; **không đổi** `scenarioId=pilot-quan-dao-fair-evidence-v6-1`, `scenarioVersion=7` hoặc khóa phiên `dudu:pilot-f-fair-evidence-v6-1:`, vì các save V6.1 hợp lệ và chứng cứ đã tích lũy **phải được giữ nguyên**, không bắt chơi lại.
+- `tests/dudu-core-v2b.cjs` thêm tuyến lấy đủ 5 manh mối, giám sát evidence/flags và hơn 240 lần chuyển cảnh, phục hồi từ sessionStorage và kết thúc ngay sau khi quay hub.
+
+**QA:** Bốn bộ kiểm thử Foundation/visibility/Visual V2A/V6.2 đã PASS khi thực thi trong V8 với nguồn GitHub và mock Node filesystem. Không đồng nghĩa bản deploy Pages hoặc thiết bị thực đã được nghiệm thu.
+
+**Thao tác người chơi:** chờ Pages cập nhật `dudu-pilot.html?v=play-v6-2`, mở lại, không nhấn “Làm lại từ đầu” nếu muốn giữ chứng cứ. Khi đã có biên nhận **được xác minh**, vào đại sảnh để nhìn thấy “Trình bằng chứng đã xác minh với chưởng quầy” hoặc “Mời những người liên quan đối thoại về sự việc”. Khi chỉ mới có một tờ giấy chưa kiểm, đi đến bước đối chiếu trong tuyến Lục Tam. Không phát thưởng thật hoặc mở khảo hạch.
