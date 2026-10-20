@@ -35,6 +35,10 @@ DUDU_PAID_PROVIDERS_ENABLED = "false"
 # BOTH manual flags remain OFF even when a key is configured.
 DUDU_HIVE_ENABLED = "false"
 DUDU_HIVE_TEST_APPROVED = "false"
+# V71 genuine server-side system identities. No browser/Sandbox fake state.
+DUDU_SYSTEM_LIVE_ENABLED = "true"
+# Test issuance still requires Firebase admin AND DUDU_SYSTEM_PILOT_UID Secret.
+DUDU_SYSTEM_PILOT_CARD_ENABLED = "true"
 
 # Binding itself does not call AI; all executions require the above gates.
 [ai]
@@ -79,3 +83,11 @@ class_name = "DuduGiftLedger"
 [[migrations]]
 tag = "v5-gift-ledger-sqlite"
 new_sqlite_classes = ["DuduGiftLedger"]
+
+[[durable_objects.bindings]]
+name = "DUDU_SYSTEM_REGISTRY"
+class_name = "DuduSystemRegistry"
+
+[[migrations]]
+tag = "v6-dudu-system-registry-sqlite"
+new_sqlite_classes = ["DuduSystemRegistry"]
