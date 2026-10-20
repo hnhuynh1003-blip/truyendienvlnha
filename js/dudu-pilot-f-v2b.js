@@ -45,7 +45,7 @@
     text:'Lục Tam thừa nhận rời trạm gác khi nghe tiếng kêu cứu. Chỉ riêng điều này chưa đủ chứng minh anh lấy thuốc.',
     choices:[
      {id:'write_guard_testimony_v2b',label:'Ghi lời khai ban đầu',to:'hall',gainEvidence:['guard_statement'],once:true,relations:{guard:1}},
-     {id:'confront_seal_v2b',label:'Đưa niêm phong ra đối chất',to:'guard_confession',requires:['broken_seal','guard_statement'],requirementHint:'Cần lời khai và dấu niêm phong.'},
+     {id:'confront_seal_v2b',label:'Đưa niêm phong ra đối chất',to:'guard_confession',requires:['broken_seal','guard_statement'],addFlags:['guard_confronted'],requirementHint:'Cần lời khai và dấu niêm phong.'},
      {id:'back_from_guard_v2b',label:'Tạm dừng hỏi',to:'hall'}]},
    maid:{placeId:'hall',phase:'NHÂN CHỨNG',title:'Bóng người dưới ánh đèn',npcId:'maid',
     text:'A Liên thấy bóng áo lính đi qua hành lang, nhưng không nhìn rõ người vào kho. Cô lo suy đoán sẽ làm người khác bị oan.',
