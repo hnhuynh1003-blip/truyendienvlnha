@@ -90,3 +90,34 @@ Bạn đang phát triển web đọc truyện và thế giới tương tác DUDU
 - Không coi test tĩnh hoặc WebP có trên GitHub là bằng chứng ảnh đang hiển thị đúng trên Pages; kiểm tra pipeline triển khai riêng.
 - Điểm so sánh trước Visual V2A: `648a30aad84fee6e89b58db329d50f0602a8700b`; ngay trước đợt upload ảnh: `b67678238e00ef6573d0bce808d994eae2b803bb`. Ưu tiên revert commit tương ứng thay vì reset cả repository.
 - Giữ nguyên lịch sử các mục 1–5 phía trên làm bối cảnh thời điểm Foundation V1; mục 6 này là tình trạng mới hơn.
+
+## 7. ĐÃ TRIỂN KHAI V2B — WORLD BIBLE / NPC KNOWLEDGE / SCENE PILOT (20/10/2026)
+
+> Phần này mới hơn mục 6. Mục 6 là tình trạng **trước** V2B, không được tiếp tục coi `store` chưa có `placeId` sau khi V2B hoàn thành. Đọc thêm `docs/DUDU-CORE-WORLD-BIBLE-V2B.md` để biết phạm vi và hướng phát triển F.
+
+### Đã thêm mã nguồn và tích hợp bản chơi thử trên `main`
+
+- `js/dudu-world-model-v2b.js`: World Bible validation, kiểm đường nối địa điểm, giới hạn thông tin NPC theo `knows`/`factId` và điều kiện tiết lộ; chỉ xuất lời thoại người chơi được nghe.
+- `js/dudu-pilot-world-v2b.js`: World Bible Quan Đạo với ba nơi `gate/hall/store`; NPC Hà chưởng quầy, Lục Tam, A Liên có tri thức, động cơ và lời thoại theo trạng thái riêng. Dữ liệu cốt truyện gửi client **không phải bí mật bảo mật thật**.
+- `js/dudu-story-engine-v2b.js`: adapter deterministic kế thừa V1, kiểm bằng chứng, flag, adjacency và scene, không cho tự đi kho khi chưa xin phép, không cho kết luận khi chưa đủ điều kiện.
+- `js/dudu-pilot-f-v2b.js`: `scenarioId=pilot-quan-dao-v2b`, giữ `missionId=dudu-m-an-f01`; 8 scene, 3 địa điểm, 4 kết thúc (2 thành công/2 thất bại), đối chất riêng mới mở lời thú nhận, chuyển kho gắn logic điều hướng.
+- `assets/worlds/quan-dao-store.svg`: cảnh fallback độc lập cho kho; đã có 3 WebP cinematic tương ứng gate/hall/store trong GitHub. UI sử dụng cảnh WebP khi tải được, fallback SVG khi lỗi.
+- `js/dudu-pilot-ui-v1.js` và cả hai lối vào `index.html` / `dudu-pilot.html` sử dụng V2B nếu đủ module; UI có nhãn giai đoạn, NPC quote, tên manh mối, giải thích các choice bị khóa; fallback được giữ cho V1. Save V2B ở `dudu:pilot-f-v2b:<uid>`, không ghi đè phiên V1.
+- `tests/dudu-core-v2b.cjs`: bộ hồi quy mới; đã cập nhật `tests/dudu-pilot-visibility-v1.cjs` về `v=2b`.
+- Chỉ thay đổi static client pilot/docs/tests. **Không chạm Firebase, Cloudflare, quyền Firestore, Xu, EXP, khế ước, hồ sơ hay EPUB.**
+
+### Trạng thái QA và giới hạn công bố
+
+- Đã kiểm tra trực tiếp nguồn trên GitHub, xác minh ba tệp WebP có thật; đã thực thi V2B engine/state cùng các tuyến thành công/thất bại trong môi trường JavaScript độc lập (V8); test V2B/visibility và baseline kiểm tra theo mô phỏng nguồn.
+- **Chưa** xác nhận Node tests trên checkout máy người dùng hoặc smoke test thực tế trên Pages/Android/iOS, nên không báo `production QA PASS` hoặc cấp quyền dùng thật. Nếu GitHub Pages không hiển thị, cần kiểm tra deploy/cache và log network trước khi sửa gameplay.
+- `status=pilot_only`, `released=false`, `rewardsEnabled=false`. Trạng thái thử trong `sessionStorage` không có tính pháp lý đối với khảo hạch 3 F.
+
+### Tiếp tục phát triển lại truyện ngắn F
+
+- Ưu tiên viết lại **3 nhiệm vụ F khác ID** có phong cách khác nhau, dựa trên seed V66 nhưng **không tự công bố**:
+  1. `dudu-m-an-f01` Quán trọ Quan Đạo — nâng từ pilot thành truyện ngắn nhiều tuyến/hậu quả thật về mặt kể chuyện.
+  2. `dudu-m-mo-f02` Căn Hộ Tầng Mười — thể loại hiện đại, xung đột cộng đồng/quan hệ, không sao chép công thức điều tra.
+  3. `dudu-m-cu-f02` Linh Điền Sau Núi — tu tiên/cơ duyên, lựa chọn tài nguyên và nhân tình, không lấy phá án làm trung tâm.
+- **Các tựa trên là bộ ba đề cử để thiết kế tiếp, chưa phải bộ ba đã phát hành hoặc đã nghiệm thu server.** Mỗi F phải có World Bible/Scene Identity riêng, >=1 background đạt chuẩn, nhân vật có giới hạn thông tin, 2+ lựa chọn ý nghĩa/nhánh kết thúc, hệ quả được engine xác định và kiểm thử mobile.
+- Không bắt buộc cùng số cảnh, cùng loại nhiệm vụ hoặc thời lượng. Dùng lời thoại ngắn gọn và kể bằng hành động, tránh văn bản quá dài trong UI; không ép người đọc truyện tham gia game.
+- Sau khi người chơi thử xong và nghiệm thu 3 F trong pilot, mới xây pipeline đánh giá trên server có chống giả mạo, rồi cân nhắc quyền/trợ lực AI CORE.
