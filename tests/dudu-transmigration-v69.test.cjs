@@ -125,7 +125,7 @@ test('V70 shows ONLY card gate until an eligible Sandbox test code is entered',(
  assert.ok(html.includes("openPhoneApp('system')"));
  assert.ok(html.includes("openPhoneApp('core-console')"));
  assert.ok(html.includes('js/dudu-system-gate-v70.js?v=70-2'));
- assert.ok(html.includes('js/dudu-core-ai-v70.js?v=70-2'));
+ assert.ok(html.includes('js/dudu-core-ai-v70.js?v=70-3'));
  assert.doesNotMatch(companion,/dudu-v68-agent-select|DuduAgentV68/);
  assert.doesNotMatch(ui,/db\.collection\(|\.firestore\(|fetch\(|DuduCollectiblesClient\.grant/);
 });
