@@ -95,7 +95,7 @@ async function main() {
     assert.equal(mobileSite.navigationVisible,true,'Mobile bottom navigation visible');
     assert.equal(mobileSite.overflow,false,'Homepage should not overflow viewport horizontally');
     // V67.0: verify all existing Phone apps share one stable inventory and retain mounts.
-    await page.waitForFunction(()=>window.DuduPhoneAppsV67?.specs?.length===12);
+    await page.waitForFunction(()=>window.DuduPhoneAppsV67?.specs?.length===14);
     const phoneAudit=await page.evaluate(()=>{
       const app=window.DuduPhoneAppsV67;
       const entries=app.snapshot();
@@ -109,19 +109,22 @@ async function main() {
         questsRenderer:app.get('quests')?.entrypointDetected===true,
         inventoryRenderer:app.get('inventory')?.entrypointDetected===true,
         shopRenderer:app.get('shop')?.entrypointDetected===true,
+        systemRenderer:app.get('system')?.entrypointDetected===true,
+        coreRenderer:app.get('core-console')?.entrypointDetected===true,
         unknownId:app.get('unknown')===null,
         noFirestoreWrites:window.__firestoreWrites.length===0
       };
     });
-    assert.equal(phoneAudit.count,12,'Cyber Phone must keep all 12 original apps');
-    assert.equal(phoneAudit.mounted,12,'Every Phone app should retain its DOM mount');
+    assert.equal(phoneAudit.count,14,'Cyber Phone must keep original apps plus System and AU Core');
+    assert.equal(phoneAudit.mounted,14,'Every Phone app should have a stable DOM mount');
     assert.deepEqual(phoneAudit.missingModules,[],
       'Phone app entrypoints should remain loaded: '+phoneAudit.missingModules.join(', '));
     assert.equal(phoneAudit.decisions.chat,'modernize');
     assert.equal(phoneAudit.decisions.quests,'bridge');
     assert.equal(phoneAudit.decisions.inventory,'retain');
     assert.ok(phoneAudit.profileRenderer&&phoneAudit.messengerRenderer&&
-      phoneAudit.questsRenderer&&phoneAudit.inventoryRenderer&&phoneAudit.shopRenderer,
+      phoneAudit.questsRenderer&&phoneAudit.inventoryRenderer&&phoneAudit.shopRenderer&&
+       phoneAudit.systemRenderer&&phoneAudit.coreRenderer,
       'Core Phone renderer entrypoints must exist');
     assert.equal(phoneAudit.unknownId,true);
     assert.equal(phoneAudit.noFirestoreWrites,true);
