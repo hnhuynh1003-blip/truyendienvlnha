@@ -75,72 +75,64 @@ function firebaseShim(){
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
   const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
   const page=await browser.newPage();
-  const errors=[],calls=[];
+  const errors=[];
   const validPass='DT-11111111-22222222-33333333-44444444';
-  const serverState={stage:'locked',name:null,pact:'pending',rewards:0};
-  function profile(){
-    if(serverState.stage==='locked')
-      return {stage:'locked',authoritative:true,passport:{state:'issued',expiresAt:Date.now()+86400000}};
-    return {
-      stage:serverState.stage,authoritative:true,worldAccess:false,
-      host:{id:'KC-0123456789ABCDEFAB',name:serverState.name,level:1,exp:0,
-        stats:{fortune:65,luck:66,agility:67,strength:68,appearance:69,
-          intelligence:70,stamina:71,spirit:72},failures:0},
-      system:{id:'DUDU-07',name:'Hệ thống DUDU-07',rank:'F',level:1,exp:0},
-      pact:{status:serverState.pact,termsVersion:serverState.pact==='signed'?'v71-pilot-1':null},
-      progress:{worlds:0,missions:0,achievements:0,rewards:serverState.rewards,items:0}
-    };
-  }
   try{
     page.on('pageerror',error=>errors.push(error.message));
-    page.on('requestfailed',request=>{
-      if(request.url().includes('/v1/system/'))console.error('V71 request failed:',request.url(),request.failure()?.errorText);
-    });
-    page.on('request',request=>{
-      if(request.url().includes('/v1/system/'))console.log('V71 MAIN outbound System request:',request.method(),request.url());
-    });
     await page.route('https://www.gstatic.com/firebasejs/**',async route=>{
       const isApp=route.request().url().includes('firebase-app-compat');
       await route.fulfill({status:200,contentType:'application/javascript',
         body:isApp?'('+firebaseShim.toString()+')();':''});
     });
-    await page.route(/\/v1\/system\//,async route=>{
-      const request=route.request(),url=new URL(request.url());
-      const method=request.method();
-      if(method==='OPTIONS'){
-        await route.fulfill({status:204,headers:{
-          'Access-Control-Allow-Origin':'*',
-          'Access-Control-Allow-Headers':'Authorization, Content-Type',
-          'Access-Control-Allow-Methods':'GET, POST, OPTIONS'
-        }});return;
+    // Replace only V71 Worker HTTP in the real production-mode browser context.
+    // This avoids cross-origin preflight flakiness and ensures zero live writes.
+    await page.addInitScript(pass=>{
+      const originalFetch=window.fetch.bind(window);
+      const state={stage:'locked',name:null,pact:'pending',rewards:0};
+      const calls=[];
+      function profile(){
+        if(state.stage==='locked')return {
+          stage:'locked',authoritative:true,
+          passport:{state:'issued',expiresAt:Date.now()+86400000}
+        };
+        return {stage:state.stage,authoritative:true,worldAccess:false,
+          host:{id:'KC-0123456789ABCDEFAB',name:state.name,level:1,exp:0,
+            stats:{fortune:65,luck:66,agility:67,strength:68,appearance:69,
+              intelligence:70,stamina:71,spirit:72},failures:0},
+          system:{id:'DUDU-07',name:'Hệ thống DUDU-07',rank:'F',level:1,exp:0},
+          pact:{status:state.pact,termsVersion:state.pact==='signed'?'v71-pilot-1':null},
+          progress:{worlds:0,missions:0,achievements:0,rewards:state.rewards,items:0}};
       }
-      calls.push({path:url.pathname,method,authorization:request.headers().authorization||null});
-      let status=200,response;
-      const signed=request.headers().authorization==='Bearer FAKE-JWT-main-test-reader';
-      if(!signed){status=401;response={error:{code:'unauthenticated'}};}
-      else if(url.pathname==='/v1/system/me'&&method==='GET')response=profile();
-      else if(url.pathname==='/v1/system/owner/issue-test-pass'){
-        status=403;response={error:{code:'owner-only'}};
-      }else if(url.pathname==='/v1/system/redeem'&&method==='POST'){
-        const data=JSON.parse(request.postData()||'{}');
-        if(data.code!==validPass||serverState.stage!=='locked'){
-          status=409;response={error:{code:'invalid-pass'}};
-        }else{serverState.stage='awaiting-name-or-pact';response=profile();}
-      }else if(url.pathname==='/v1/system/register-name'&&method==='POST'){
-        const data=JSON.parse(request.postData()||'{}');
-        if(serverState.name){status=409;response={error:{code:'name-already-registered'}};}
-        else if(data.name!=='Thanh Vân'){status=400;response={error:{code:'invalid-name'}};}
-        else{serverState.name=data.name;response=profile();}
-      }else if(url.pathname==='/v1/system/consent-pact'&&method==='POST'){
-        const data=JSON.parse(request.postData()||'{}');
-        if(data.accept!==true||data.termsVersion!=='v71-pilot-1'){
-          status=400;response={error:{code:'consent-required'}};
-        }else{serverState.stage='linked';serverState.pact='signed';response=profile();}
-      }else{status=404;response={error:{code:'not-found'}};}
-      await route.fulfill({status,contentType:'application/json',
-        headers:{'Access-Control-Allow-Origin':'*'},
-        body:JSON.stringify(response)});
-    });
+      window.__v71MainMock={state,calls};
+      window.fetch=async(input,options={})=>{
+        const url=typeof input==='string'?input:input?.url;
+        if(typeof url!=='string'||!url.includes('/v1/system/'))return originalFetch(input,options);
+        const method=options.method||'GET',endpoint=new URL(url).pathname;
+        const authorization=options.headers?.Authorization||null;
+        calls.push({path:endpoint,method,authorization});
+        let status=200,reply;
+        const signed=authorization==='Bearer FAKE-JWT-main-test-reader';
+        const body=JSON.parse(options.body||'{}');
+        if(!signed){status=401;reply={error:{code:'unauthenticated'}};}
+        else if(endpoint==='/v1/system/me'&&method==='GET')reply=profile();
+        else if(endpoint==='/v1/system/owner/issue-test-pass'){
+          status=403;reply={error:{code:'owner-only'}};
+        }else if(endpoint==='/v1/system/redeem'&&method==='POST'){
+          if(body.code!==pass||state.stage!=='locked'){
+            status=409;reply={error:{code:'invalid-pass'}};
+          }else{state.stage='awaiting-name-or-pact';reply=profile();}
+        }else if(endpoint==='/v1/system/register-name'&&method==='POST'){
+          if(state.name){status=409;reply={error:{code:'name-already-registered'}};}
+          else if(body.name!=='Thanh Vân'){status=400;reply={error:{code:'invalid-name'}};}
+          else{state.name=body.name;reply=profile();}
+        }else if(endpoint==='/v1/system/consent-pact'&&method==='POST'){
+          if(body.accept!==true||body.termsVersion!=='v71-pilot-1'){
+            status=400;reply={error:{code:'consent-required'}};
+          }else{state.stage='linked';state.pact='signed';reply=profile();}
+        }else{status=404;reply={error:{code:'not-found'}};}
+        return new Response(JSON.stringify(reply),{status,headers:{'Content-Type':'application/json'}});
+      };
+    },validPass);
 
     const address='http://127.0.0.1:'+server.address().port+'/';
     await page.goto(address,{waitUntil:'domcontentloaded'});
@@ -150,7 +142,8 @@ function firebaseShim(){
     await page.evaluate(()=>DuduSystemAppsV69.renderSystem());
     assert.equal(await page.locator('#dudu-v69-system-view > .dudu-v71-unavailable').count(),1);
     assert.equal(await page.locator('#dudu-v69-system-view form').count(),0);
-    assert.equal(calls.length,0,'guest must not call System Worker');
+    assert.equal(await page.evaluate(()=>window.__v71MainMock.calls.length),0,
+      'guest must not call System Worker');
 
     await page.locator('#account-status-btn').click();
     await page.locator('#auth-email').fill('reader@example.test');
@@ -166,15 +159,6 @@ function firebaseShim(){
       if(document.getElementById('cyber-phone').style.display!=='flex')togglePhone();
       openPhoneApp('system');
     });
-    await page.waitForTimeout(350);
-    console.log('V71 MAIN gate diagnostic:', JSON.stringify(await page.evaluate(()=>({
-      ready:DuduAuth.isReady(),uid:DuduAuth.uid(),workerBase:DuduAI?.workerBase,
-      firebaseUid:firebase.auth()?.currentUser?.uid,
-      jwtMethod:typeof firebase.auth()?.currentUser?.getIdToken,
-      screen:document.getElementById('dudu-v69-system-view')?.textContent?.slice(0,280),
-      phone:document.getElementById('cyber-phone')?.style.display,
-      subapp:document.getElementById('phone-app-system')?.style.display
-    }))), 'calls:',JSON.stringify(calls));
     await page.locator('#dudu-v69-system-view .dudu-v71-pass-form').waitFor({timeout:10000});
     assert.equal(await page.locator('#dudu-v69-system-view .dudu-v71-hero').count(),0);
     assert.equal((await page.evaluate(()=>DuduSystemClientV71.issueOwnerTestPass())).ok,false,
@@ -199,8 +183,9 @@ function firebaseShim(){
     await page.locator('.dudu-v71-consent input[type=checkbox]').check();
     await page.getByRole('button',{name:'KÝ KHẾ ƯỚC'}).click();
     await page.locator('.dudu-v71-connected').waitFor();
-    assert.equal(serverState.stage,'linked');
-    assert.equal(serverState.rewards,0,'no game rewards in V71');
+    assert.equal(await page.evaluate(()=>window.__v71MainMock.state.stage),'linked');
+    assert.equal(await page.evaluate(()=>window.__v71MainMock.state.rewards),0,
+      'no game rewards in V71');
 
     await page.getByRole('button',{name:/Chỉ số/}).click();
     assert.equal(await page.locator('#dudu-v69-status-popup .dudu-v69-stat').count(),8);
@@ -214,7 +199,8 @@ function firebaseShim(){
     assert.equal(await page.locator('#dudu-v69-system-view form').count(),0);
     assert.equal(await page.locator('#dudu-v69-status-popup').count(),0);
     assert.equal(await page.evaluate(()=>window.__mainV71Writes.length),0);
-    assert.ok(calls.length>=6,'main UI must exercise actual production client API routes');
+    const calls=await page.evaluate(()=>window.__v71MainMock.calls);
+    assert.ok(calls.length>=6,'main UI must exercise real production client API routes');
     assert.ok(calls.every(call=>call.authorization==='Bearer FAKE-JWT-main-test-reader'));
     assert.deepEqual(errors,[]);
     console.log('V71 MAIN production-mode browser PASS: guest → reader → pass → name → pact → 8 stats → signout; external writes=0');
