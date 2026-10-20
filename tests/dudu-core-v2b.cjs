@@ -123,7 +123,7 @@ for(const [id,scene] of Object.entries(story.scenes))for(const ch of scene.choic
   assert.ok(ch.requiresFlags.includes('convoy_supplied'));
  }
 }
-const allClueState=play(['maid_visit_v2b','ask_maid_last_night','write_maid_testimony_v2b',
+const allClueState=play(['verified_more_search','maid_visit_v2b','ask_maid_last_night','write_maid_testimony_v2b',
  'guard_visit_v2b','ask_guard_where','write_guard_testimony_v2b'],verified);
 assert.deepEqual(allClueState.evidence.slice().sort(),Object.keys(world.clues).sort(),
  'All 5 old clues remain collectable');
