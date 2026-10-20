@@ -16,7 +16,7 @@
  const uid=()=>root.DuduAuth?.isReady?.()===true?root.DuduAuth?.uid?.():null;
  const isAuthor=()=>!!uid()&&root.DuduAuth?.isAdmin?.()===true&&
   (typeof canEditStories==='function'&&canEditStories()===true);
- let current=null,owner=null,pending=false,generation=0,escapeKey=null;
+ let current=null,owner=null,pending=false,generation=0,escapeKey=null,loadError='';
  function clearPopup(){
   get('dudu-v69-status-popup')?.remove();
   if(escapeKey){doc.removeEventListener('keydown',escapeKey);escapeKey=null;}
@@ -180,10 +180,22 @@
   const feedback=h('p','dudu-v71-message','');feedback.id='dudu-v71-message';
   feedback.setAttribute('role','status');host.append(feedback);
  }
+ function unavailable(host,message,retry=false){
+  const panel=screen(message);panel.className='dudu-v71-unavailable';
+  if(retry)panel.append(btn('THỬ KẾT NỐI LẠI','dudu-v71-alt',()=>renderSystem()));
+  host.append(panel);
+ }
  function renderState(){
   const host=get('dudu-v69-system-view');if(!host)return false;
   clearPopup();host.replaceChildren();
-  if(!uid()||!current){locked(host,current);return true;}
+  if(!uid()){
+   unavailable(host,'Đăng nhập Firebase để kiểm tra Thẻ thông hành trên máy chủ.');
+   return true;
+  }
+  if(!current){
+   unavailable(host,loadError||'Chưa kết nối được máy chủ Hệ Thống.',true);
+   return true;
+  }
   if(current.stage==='locked')locked(host,current);
   else if(!current.host?.name)nameStep(host,current);
   else dashboard(host,current);
@@ -191,16 +203,16 @@
  }
  async function renderSystem(){
   const next=uid();
-  if(next!==owner){current=null;owner=next;generation++;}
+  if(next!==owner){current=null;owner=next;generation++;loadError='';}
   loading();
   const runId=++generation;
-  if(!next){current={stage:'locked'};renderState();return true;}
+  if(!next){current=null;renderState();return false;}
   const result=await client.me();
   if(uid()!==next||runId!==generation)return false;
-  current=result.ok?result.data:{stage:'locked'};
+  current=result.ok&&result.data?result.data:null;
+  loadError=current?'':(result.error||'Không thể đọc registry hiện tại.');
   renderState();
-  if(!result.ok)status(result.error||'Không thể đọc registry hiện tại.');
-  return result.ok;
+  return !!current;
  }
  function renderCore(){
   const host=get('dudu-v69-core-view');if(!host)return false;

@@ -64,12 +64,12 @@ test('V71 read-only player page stays on pass gate until authenticated server sa
  'dudu-v69-core-launch'].map(id=>[id,new E('div',id)]));
  const document={readyState:'complete',createElement:tag=>new E(tag),
   getElementById:id=>mounts.get(id)||null,addEventListener(){},removeEventListener(){}};
- let payload={stage:'locked',authoritative:true},owner='reader',admin=false;
+ let payload={stage:'locked',authoritative:true},owner='reader',admin=false,online=true;
  const window={
   document,DuduTraversalV69:rules,
   DuduAuth:{uid:()=>owner,isReady:()=>true,isAdmin:()=>admin},
   DuduSystemClientV71:{
-   me:async()=>({ok:true,data:payload}),
+   me:async()=>online?{ok:true,data:payload}:{ok:false,error:'Registry unavailable'},
    redeem:async()=>({ok:false,error:'No valid card'}),
    registerName:async()=>({ok:false}),acceptPact:async()=>({ok:false}),
    issueOwnerTestPass:async()=>({ok:false})
@@ -85,6 +85,13 @@ test('V71 read-only player page stays on pass gate until authenticated server sa
  assert.equal(view.children.length,1);
  assert.equal(view.children[0].className,'dudu-v71-lock');
  assert.equal(api.statusPopup(),false);
+ online=false;
+ await api.renderSystem();
+ assert.equal(view.children[0].className,'dudu-v71-unavailable',
+  'unreachable server must not masquerade as an unissued pass');
+ assert.ok(!view.children[0].children.some(x=>x.tagName==='FORM'),
+  'offline screen must never ask for a code that cannot be verified');
+ online=true;
  payload={stage:'awaiting-name-or-pact',
   host:{id:'KC-ABAB',name:null,level:1,exp:0,stats:{}},
   system:{id:'DUDU-02',name:'DUDU 02',rank:'F',level:1,exp:0},
@@ -100,7 +107,12 @@ test('V71 read-only player page stays on pass gate until authenticated server sa
  assert.equal(api.canGrantReward(),false);
  admin=true;assert.equal(api.isAuthor(),true);
  assert.equal(api.renderCore(),true);
- owner='other';admin=false;api.syncAccess();
+ owner=null;admin=false;api.syncAccess();
+ await api.renderSystem();
+ assert.equal(view.children[0].className,'dudu-v71-unavailable');
+ assert.ok(!view.children[0].children.some(x=>x.tagName==='FORM'),
+  'unauthenticated users cannot redeem a real pass');
+ owner='other';api.syncAccess();
  assert.equal(api.isAuthor(),false);
  assert.equal(api.renderCore(),false);
  assert.ok(!/\.firestore\(|db\.collection|DuduCollectiblesClient\.grant/.test(ui));

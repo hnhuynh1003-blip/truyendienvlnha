@@ -110,3 +110,11 @@ Chủ Thần AU chuyển thành **một prompt → DeepSeek Core → phản hồ
 **Triển khai thực tế:** GitHub Pages chỉ triển khai frontend. Cloudflare Worker cần deploy mã V71 + Durable Object migration `v6-dudu-system-registry-sqlite` và secret `DUDU_SYSTEM_PILOT_UID` theo đúng tài khoản AU, không commit secret hoặc UID thật. Hai wrangler files đã cấu hình binding; **thay đổi git không chứng minh Worker đang chạy đã được deploy**. AI Hive vẫn OFF và không cần key để chạy registry. Tuyến Core AU vẫn chỉ tạo đề xuất bằng DeepSeek nếu owner bật AI; không có quyền cưỡng chế/thi hành hình phạt.
 
 Tiếp nối: kiểm tra CI UI + DO SQLite thật; triển khai Worker bằng quy trình được duyệt; chứng minh thẻ AU thật → bind đúng UID, cấp ngẫu nhiên, tên bất biến, provenance kín; rồi thiết kế nhiệm vụ cấp thẻ chính thức; sau đó bổ sung fail/reclaim event receipts server và AI personality riêng theo từng systemId.
+
+
+## V71.1 — Sửa phân biệt trạng thái registry và cổng thẻ (21/10/2026)
+
+- `js/dudu-system-app-v69.js`: chỉ hiện form nhập mã khi `GET /v1/system/me` trả về `stage:locked` từ registry đã xác thực. Nếu thiếu phiên Firebase, hiển thị yêu cầu đăng nhập. Nếu Worker/registry lỗi, hiển thị trạng thái không khả dụng và nút **Thử kết nối lại**; không đánh đồng lỗi dịch vụ với việc chưa cấp Thẻ thông hành.
+- `tests/dudu-transmigration-v69.test.cjs`: bổ sung kiểm tra màn offline/khách không có form đổi thẻ, trong khi màn `locked` do server xác nhận vẫn có. Không thay đổi UID, thẻ thật, phân phối hệ thống, khế ước hay luật Chủ Thần.
+- Trạng thái CI quan sát trước thay đổi: `smoke` trên `main` PASS, browser job FAIL do `tests/browser-auth-private.cjs` đợi trạng thái đăng nhập Firebase mock quá thời hạn; lỗi này cần được điều tra riêng, không được báo là browser QA PASS.
+- **Không** gọi migration/deploy Worker bởi commit frontend này; V71 thực tế vẫn cần chạy workflow `dudu-v71-system-safe-deploy.yml` thủ công sau khi phê duyệt, secrets và các ràng buộc triển khai được xác minh. Chưa coi khả năng cấp thẻ AU là đã nghiệm thu production.
