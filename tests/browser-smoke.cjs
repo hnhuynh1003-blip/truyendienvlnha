@@ -128,13 +128,15 @@ async function main() {
       'Core Phone renderer entrypoints must exist');
     assert.equal(phoneAudit.unknownId,true);
     assert.equal(phoneAudit.noFirestoreWrites,true);
-    // V71: unsigned reader sees the minimal gate and no staged profile.
+    // V71.1: unsigned reader sees an authentication gate, not a redeem form.
     const systemV71Locked=await page.evaluate(async()=>{
       const api=window.DuduSystemAppsV69;
       await api.renderSystem();
       const surface=document.getElementById('dudu-v69-system-view');
       return {
-        locked:surface.children.length===1&&surface.children[0].classList.contains('dudu-v71-lock'),
+        gated:surface.children.length===1&&
+          surface.children[0].classList.contains('dudu-v71-unavailable')&&
+          !surface.querySelector('form'),
         popupDenied:api.statusPopup()===false,
         hidden:!surface.querySelector('.dudu-v71-hero,.dudu-v69-stat'),
         authorDenied:api.renderCore()===false,
@@ -143,7 +145,7 @@ async function main() {
       };
     });
     assert.deepEqual(systemV71Locked,{
-      locked:true,popupDenied:true,hidden:true,
+      gated:true,popupDenied:true,hidden:true,
       authorDenied:true,authorButtonHidden:true,noWrites:true
     },'V71 reader and Sandbox cannot invent a server-issued passport');
 

@@ -118,3 +118,5 @@ Tiếp nối: kiểm tra CI UI + DO SQLite thật; triển khai Worker bằng qu
 - `tests/dudu-transmigration-v69.test.cjs`: bổ sung kiểm tra màn offline/khách không có form đổi thẻ, trong khi màn `locked` do server xác nhận vẫn có. Không thay đổi UID, thẻ thật, phân phối hệ thống, khế ước hay luật Chủ Thần.
 - Trạng thái CI quan sát trước thay đổi: `smoke` trên `main` PASS, browser job FAIL do `tests/browser-auth-private.cjs` đợi trạng thái đăng nhập Firebase mock quá thời hạn; lỗi này cần được điều tra riêng, không được báo là browser QA PASS.
 - **Không** gọi migration/deploy Worker bởi commit frontend này; V71 thực tế vẫn cần chạy workflow `dudu-v71-system-safe-deploy.yml` thủ công sau khi phê duyệt, secrets và các ràng buộc triển khai được xác minh. Chưa coi khả năng cấp thẻ AU là đã nghiệm thu production.
+
+V71.1 CI note: `tests/browser-smoke.cjs` now expects a *guest/authentication gate without a redemption form*, rather than the obsolete V71 `dudu-v71-lock` demo-like screen. The corrected assertion continues to verify no System stats, no AU entry, no user-data writes.
