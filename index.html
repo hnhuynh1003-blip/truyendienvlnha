@@ -767,8 +767,9 @@
   <link rel="stylesheet" href="css/world-experience-v65.css?v=65-1">
   <link rel="stylesheet" href="css/world-experience-v66.css?v=66-2">
   <link rel="stylesheet" href="css/dudu-pilot-v1.css?v=play-v8">
-  <link rel="stylesheet" href="css/dudu-messenger-v67-2.css?v=67-2-68-1">
+  <link rel="stylesheet" href="css/dudu-messenger-v67-2.css?v=69-restore-1">
   <link rel="stylesheet" href="css/dudu-steward-v67-3.css?v=67-3">
+  <link rel="stylesheet" href="css/dudu-system-app-v69.css?v=69-1">
 </head>
 <body>
 
@@ -966,6 +967,15 @@
           <button type="button" class="app-icon" onclick="openPhoneApp('quests')" aria-label="Mở Nhiệm Vụ">
             <div class="app-box" style="background:#f59e0b;">📜</div><div class="app-label">Nhiệm Vụ</div>
           </button>
+          <button type="button" class="app-icon" onclick="openPhoneApp('system')" aria-label="Mở Hệ Thống Xuyên Truyện">
+            <div class="app-box" style="background:linear-gradient(140deg,#7161ae,#375d9d);">✦</div><div class="app-label">Hệ Thống</div>
+          </button>
+          <!-- Core console is not a reader app; AU launcher remains absent for readers. -->
+          <button type="button" class="app-icon" id="dudu-v69-core-launch"
+            onclick="openPhoneApp('core-console')" aria-label="Mở Chủ Thần AU" hidden style="display:none">
+            <div class="app-box" style="background:linear-gradient(140deg,#a97941,#68509b);">⚖</div>
+            <div class="app-label">Chủ Thần AU</div>
+          </button>
           <button type="button" class="app-icon" onclick="openPhoneApp('shop')" aria-label="Mở Cửa Hàng">
             <div class="app-box" style="background:#10b981;">🛒</div><div class="app-label">Cửa Hàng</div>
           </button>
@@ -1148,7 +1158,26 @@
           <button class="filter-btn" onclick="filterQuestTab('MAIN', this)">Chính tuyến</button>
         </div>
 
+        <div id="dudu-v69-passport-quest"></div>
         <div id="quests-container" class="dudu-v27-quest-list"></div>
+      </div>
+
+      <!-- V69: dedicated player System app. It is distinct from DUDU contact/chat. -->
+      <div class="phone-sub-app" id="phone-app-system">
+        <div class="phone-app-header">
+          <button type="button" class="phone-back-btn" onclick="phoneHome()" aria-label="Về màn hình chính">‹</button>
+          <span>✦ Hệ Thống Xuyên Truyện</span><span></span>
+        </div>
+        <div id="dudu-v69-system-view" class="dudu-v69-screen" aria-live="polite"></div>
+      </div>
+
+      <!-- V69: AU-only rule-design console; protected again inside openPhoneApp. -->
+      <div class="phone-sub-app" id="phone-app-core-console">
+        <div class="phone-app-header">
+          <button type="button" class="phone-back-btn" onclick="phoneHome()" aria-label="Về màn hình chính">‹</button>
+          <span>⚖ Chủ Thần · AU</span><span></span>
+        </div>
+        <div id="dudu-v69-core-view" class="dudu-v69-screen" aria-live="polite"></div>
       </div>
 
       <!-- APP: THƯ VIỆN TRUYỆN – read-only story navigator -->
@@ -2683,6 +2712,7 @@
       userProfile.role = (userProfile.role === 'admin') ? 'reader' : 'admin';
       applyUserRole();
       saveCurrentAccount();
+      window.DuduSystemAppsV69?.syncAccess?.();
       window.DuduSiteV60?.refresh?.(); // Keep Author Studio entry in sync with Sandbox role.
     }
 
@@ -4730,6 +4760,7 @@
       if (opened) {
         renderPhoneWallpaperV27();
         updatePhoneUI();
+        window.DuduSystemAppsV69?.syncAccess?.();
         startCooldownTicker();
         updateActiveModelInfo();
       }
@@ -4755,6 +4786,10 @@ document.querySelectorAll('.phone-sub-app').forEach(el => el.style.display = 'no
 
     function openPhoneApp(appName) {
       if(appName==='lab-v445'&&!IS_SANDBOX_MODE)return;
+      // AU Core is an independent author app, not a secret option in reader chat.
+      // This UI check is not a backend permission; live enforcement stays server-side.
+      if(appName==='core-console'&&(!window.DuduSystemAppsV69?.isAuthor?.()||
+         !canEditStories()))return;
       if(appName!=='inventory'){inventoryDetailSelection=null;window.DuduInventoryViewV42?.close();}
             closeRedPacketV32();
 document.getElementById('phone-home-screen').style.display = 'none';
@@ -4769,6 +4804,10 @@ document.getElementById('phone-home-screen').style.display = 'none';
         moveNpcProgressV31();
         renderCodexDropdown();
         renderCodexList();
+      } else if (appName === 'system') {
+        window.DuduSystemAppsV69?.renderSystem();
+      } else if (appName === 'core-console') {
+        window.DuduSystemAppsV69?.renderCore();
       } else if (appName === 'chat') {
         if (!activeChatNovelId) activeChatNovelId = (novels[selectedNovelIndex] || {}).id;
         renderChatDropdown();
@@ -7447,8 +7486,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
   </script>
 <script src="js/npc-portrait-v39.js?v=2"></script>
 <script src="js/phone-inbox-v33.js?v=51-1"></script>
-<script src="js/dudu-agent-v68.js?v=68-1"></script>
-<script src="js/companion-ui-v43.js?v=67-3-68-1"></script>
+<script src="js/companion-ui-v43.js?v=69-restore-1"></script>
 <script src="js/market-ui-v43.js?v=52-1"></script>
 <script src="js/dudu-fun-ui-v43.js?v=51-1"></script>
 <script src="js/quest-ui-v43-7.js?v=51-1"></script>
@@ -7474,7 +7512,9 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/dudu-story-engine-v2b.js?v=play-v8"></script>
 <script src="js/dudu-pilot-f-v2b.js?v=play-v8"></script>
 <script src="js/dudu-pilot-ui-v1.js?v=play-v8"></script>
-<script src="js/phone-app-contract-v67.js?v=67-0-1"></script>
+<script src="js/dudu-transmigration-v69.js?v=69-1"></script>
+<script src="js/dudu-system-app-v69.js?v=69-1"></script>
+<script src="js/phone-app-contract-v67.js?v=69-1"></script>
 <script src="js/phone-lifecycle-v67-1.js?v=67-1-2"></script>
 <script src="js/dudu-messenger-v67-2.js?v=67-2"></script>
 </body>
