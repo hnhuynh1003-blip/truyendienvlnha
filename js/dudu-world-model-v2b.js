@@ -45,6 +45,10 @@
   for(const [id,scene] of Object.entries(s.scenes)){
    if(!has(w.places,scene.placeId))errs.push('unknown_place:'+id);
    if(scene.npcId&&!has(w.npcs,scene.npcId))errs.push('unknown_npc:'+id);
+   if(scene.speech!==undefined&&
+      (typeof scene.speech!=='string'||!scene.speech.trim()||
+       !scene.npcId||!has(w.npcs,scene.npcId)))
+    errs.push('invalid_scene_speech:'+id);
    for(const choice of list(scene.choices)){
     if([...list(choice.requires),...list(choice.gainEvidence),
       ...list(choice.visibleIfEvidence),...list(choice.visibleAnyEvidence)]
