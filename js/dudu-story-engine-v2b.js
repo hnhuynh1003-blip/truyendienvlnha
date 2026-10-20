@@ -36,14 +36,22 @@
     list(c.requiresNotFlags).some(f=>state.flags.includes(f));
  }
  function verificationNote(state){
-  const evidence=list(state.evidence),flags=list(state.flags);
-  if(evidence.includes('care_receipt')&&flags.includes('receipt_checked')&&flags.includes('private_admission'))
-   return 'Đã đối chiếu biên nhận và ghi nhận lời thừa nhận riêng. Bạn có thể đề nghị xử lý ngay tại đại sảnh hoặc quay lại suy luận.';
+  const ev=list(state.evidence),flags=list(state.flags);
+  if(flags.includes('convoy_supplied'))
+   return 'Đoàn xe đã nhận thuốc. Hãy hoàn tất việc công khai trách nhiệm và minh oan cho người bị nghi.';
+  if(flags.includes('medicine_recovered'))
+   return 'Phần thuốc chưa dùng đã trở về quán. Cần bàn giao thực tế cho đoàn xe chở người bị thương.';
+  if(flags.includes('escort_dispatched'))
+   return 'Đã cử người theo đường đã kiểm tra để thu hồi thuốc từ trạm gác.';
+  if(flags.includes('supply_balance_verified'))
+   return 'Đã tính được lượng thuốc chưa dùng. Chứng minh ai lấy chưa đủ: phải đưa thuốc về trước bình minh.';
+  if(ev.includes('care_receipt')&&flags.includes('receipt_checked')&&flags.includes('private_admission'))
+   return 'Đã kiểm chứng lời thú nhận và biên nhận. Phần thuốc còn lại vẫn chưa được thu hồi; hãy tìm cách xử lý.';
   if(flags.includes('private_admission')&&!flags.includes('receipt_checked'))
-   return 'Bạn đã nghe lời giải thích riêng, nhưng giấy tờ vẫn chưa được đối chiếu. Chỉ đọc tờ giấy chưa tính là xác minh.';
-  if(evidence.includes('key_log')&&evidence.includes('broken_seal'))
-   return 'Bạn đã ghi nhận sổ chìa và dấu niêm phong. Có thể tự chọn giả thuyết rồi thử đối chất bằng hai dữ kiện này.';
-  return 'Bạn có thể suy luận bất cứ lúc nào. Quan sát một manh mối không có nghĩa đã đủ căn cứ buộc tội người khác.';
+   return 'Đã nghe lời thú nhận riêng nhưng tờ biên nhận chưa được đối chiếu.';
+  if(ev.includes('key_log')&&ev.includes('broken_seal'))
+   return 'Có sổ chìa và dấu niêm phong; bạn đã có thể thử đối chiếu trực tiếp với lời người liên quan.';
+  return 'Có thể suy luận bất cứ lúc nào, nhưng nghi ngờ chưa phải bằng chứng và một lời nhận lỗi chưa đưa thuốc về.';
  }
  function begin(s){if(validate(s).length)throw Error('invalid_v2b_scenario');return base.begin(s);}
  function view(s,state){
