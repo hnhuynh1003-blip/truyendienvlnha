@@ -16,7 +16,7 @@
   let uid=null;
   try{const auth=root.DuduAuth;uid=auth?.isReady?.()?auth.uid():null;}catch{}
   if(!uid){try{uid=root.firebase?.auth?.()?.currentUser?.uid||null;}catch{}}
-  return (upgraded?'dudu:pilot-f-dawn-rescue-v7:':'dudu:pilot-f-v1:')+encodeURIComponent(uid||'guest');
+  return (upgraded?'dudu:pilot-f-casefile-v8:':'dudu:pilot-f-v1:')+encodeURIComponent(uid||'guest');
  }
  function load(){
   owner=key();
@@ -98,7 +98,7 @@
   }
   if(v.ending){
    content.append(el('p','dudu-pilot-result',
-    upgraded?'KHÉP LẠI MỘT ĐÊM MƯA · MỘT TRONG NHIỀU KẾT CỤC':
+    upgraded?(v.status==='success'?'DUDU · ĐÃ GIẢI ÁN (BẢN THỬ)':'DUDU · HỒ SƠ CHƯA HOÀN TẤT (BẢN THỬ)'):
     (v.status==='success'?'KẾT THÚC · MỤC TIÊU ĐẠT (CHỈ BẢN THỬ)':'KẾT THÚC · CHƯA ĐẠT MỤC TIÊU')));
   }
   const evNames={receipt:'Sổ trực đêm',broken_seal:'Dấu niêm phong vỡ',
@@ -185,7 +185,7 @@
   const copy=el('div','dudu-pilot-entry-copy');
   copy.append(el('span','dudu-pilot-entry-kicker','KHẢO NGHIỆM CỐT TRUYỆN · KHÔNG GHI THƯỞNG'),
    el('strong','',story.title),
-   el('span','dudu-pilot-entry-desc','Một đêm mưa cần cả sự thật lẫn cách đưa thuốc về trước bình minh.'));
+   el('span','dudu-pilot-entry-desc','Một vụ án F ngắn: tìm vật chứng, chọn người lấy và giải thích động cơ.'));
   const action=el('button','dudu-pilot-launch','Chơi thử ↗');action.type='button';
   action.addEventListener('click',open);
   entry.append(copy,action);list.parentNode.insertBefore(entry,list);
