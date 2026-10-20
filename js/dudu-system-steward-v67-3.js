@@ -70,7 +70,8 @@
      return intro+'Đầu tiên cậu cần hoàn thành nhiệm vụ mở đầu trong ứng dụng Nhiệm vụ. '
        +'Chỉ khi máy chủ xác minh và cấp Thẻ thông hành, cậu mới có thể xin ký khế ước với hệ thống con. '
        +'Sau khế ước mới mở xuyên truyện, kỹ năng và nâng cấp. '
-       +'Hiện chưa có dịch vụ phát thẻ và ký khế ước thật, tớ chưa thể ký thay cậu.';
+       +'Hiện dịch vụ phát thẻ và ký khế ước chưa được triển khai. '
+       +'Tớ chưa thể xác nhận cậu đủ điều kiện hay tự ký thay cậu.';
    }
    if(target==='progress'){
      return 'Cấp hệ thống và cấp nhiệm vụ là hai thứ khác nhau. F/E là nhóm nhiệm vụ sơ cấp; '
