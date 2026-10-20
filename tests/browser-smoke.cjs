@@ -278,6 +278,48 @@ async function main() {
     await page.locator('#auth-username').fill('tester-a');
     await page.getByRole('button', { name: 'Đổi tài khoản thử' }).click();
     await page.waitForFunction(() => document.getElementById('account-status-btn').textContent.includes('tester-a'));
+    // V70 pass entry, profile exposure and dismissal on real Chromium DOM.
+    const systemDemo=await page.evaluate(()=>{
+      const api=window.DuduSystemAppsV69,system=document.getElementById('phone-app-system');
+      const wasOpen=document.getElementById('cyber-phone').style.display==='flex';
+      if(!wasOpen)togglePhone();
+      openPhoneApp('system');
+      const gateOnly=system.querySelector('#dudu-v69-system-view').children.length===1;
+      const form=system.querySelector('.dudu-v70-entry');
+      const input=form?.querySelector('input');
+      if(input)input.value='DUDU-THU-2026';
+      form?.dispatchEvent(new Event('submit',{cancelable:true,bubbles:true}));
+      const profileVisible=!!system.querySelector('.dudu-v70-hero');
+      const hostName=system.querySelector('.dudu-v70-title')?.textContent||'';
+      const hostId=system.querySelector('.dudu-v70-identifiers')?.textContent||'';
+      const systemId=system.querySelector('.dudu-v70-system-id')?.textContent||'';
+      const modalOpened=api?.statusPopup?.()===true;
+      const stats=system.querySelectorAll('.dudu-v69-stat').length;
+      const falsePact=api?.canSignPact?.()===false;
+      const noWrites=window.__firestoreWrites.length===0;
+      system.querySelector('.dudu-v69-close')?.click();
+      window.DuduSystemGateV70.revoke({
+        accountId:'sandbox:'+currentUsername,session:sessionStorage
+      });
+      api.renderSystem();
+      const relocked=system.querySelector('.dudu-v70-gate')!==null&&
+       system.querySelector('.dudu-v70-hero')===null;
+      phoneHome();
+      if(!wasOpen&&document.getElementById('cyber-phone').style.display==='flex')
+       togglePhone();
+      return {gateOnly,profileVisible,hostName,hostId,systemId,
+       modalOpened,stats,falsePact,noWrites,relocked};
+    });
+    assert.equal(systemDemo.gateOnly,true);
+    assert.equal(systemDemo.profileVisible,true);
+    assert.match(systemDemo.hostName,/tester-a/i);
+    assert.match(systemDemo.hostId,/KC-[0-9A-F]{8}/);
+    assert.match(systemDemo.systemId,/^SYS-F-/);
+    assert.equal(systemDemo.modalOpened,true);
+    assert.equal(systemDemo.stats,8);
+    assert.equal(systemDemo.falsePact,true);
+    assert.equal(systemDemo.noWrites,true);
+    assert.equal(systemDemo.relocked,true);
     await page.locator('#role-toggle-btn').click();
     // V66 author entry is permission-gated even though templates never publish.
     const worldStudioAuth=await page.evaluate(()=>({
