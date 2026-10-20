@@ -30,6 +30,7 @@
    if(!Array.isArray(n.knows)||n.knows.some(f=>!has(w.facts||{},f)))errs.push('invalid_npc_knowledge:'+id);
    for(const line of list(n.lines)){
     if(!line.text||list(line.requiresEvidence).some(e=>!has(w.clues||{},e)))errs.push('invalid_npc_line:'+id);
+    if(line.factId&&(!has(w.facts||{},line.factId)||!n.knows.includes(line.factId)))errs.push('npc_unknown_fact:'+id);
    }
   }
   for(const [id,c] of Object.entries(w.clues||{})){
