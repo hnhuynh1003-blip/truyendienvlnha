@@ -10,7 +10,7 @@
  if(!world)throw Error('World Bible V2B missing');
  const story={
   schemaVersion:1,status:'pilot_only',released:false,rewardsEnabled:false,
-  scenarioId:'pilot-quan-dao-reasoning-v5',scenarioVersion:5,
+  scenarioId:'pilot-quan-dao-fair-evidence-v6',scenarioVersion:6,
   missionId:'dudu-m-an-f01',worldId:world.worldId,genreId:world.genreId,
   title:'Đêm mưa ở Quan Đạo',tier:'F',world,worldCover:world.places.gate.background,
   startSceneId:'prologue',
@@ -174,7 +174,7 @@
     "placeId": "hall",
     "phase": "TRÒ CHUYỆN",
     "title": "Chuyện chiếc chìa kho",
-    "text": "Hà chưởng quầy lau mắt kính. Ông giận vì đồ ký gửi biến mất nhưng nhất định không muốn ai bị lục soát vô cớ.\n\nÔng kéo quyển sổ trực đêm ra trước mặt bạn. Những trang giấy sờn mép cho thấy mỗi lần giao chìa đều được ghi lại.",
+    "text": "Hà chưởng quầy đặt sổ trực lên bàn, nhấc chiếc kính bị trượt xuống sống mũi. Mép các trang giấy đã sờn vì được mở ra rất nhiều lần.\n\nÔng ra hiệu cho bạn ngồi xuống, chờ nghe câu hỏi.",
     "choices": [
       {
         "id": "keeper_ask_register",
@@ -196,7 +196,7 @@
       }
     ],
     "npcId": "keeper",
-    "speech": "“Muốn biết ai ra vào kho, khách quan cứ xem sổ. Đừng vội kết tội ai.”"
+    "speech": "“Việc kho phải có ghi chép. Khách quan cứ xem, đừng vội kết tội người khác.”"
   },
   "keeper_people": {
     "placeId": "hall",
@@ -251,7 +251,7 @@
     "placeId": "hall",
     "phase": "TRÒ CHUYỆN",
     "title": "Cô gái bên bếp",
-    "text": "A Liên vặn chiếc khăn ẩm, không ngẩng đầu ngay. Cô bảo mình có đi qua hành lang trong đêm, nhưng không hiểu vì sao mọi người lại coi đó là bằng chứng chống lại mình.\n\nBạn có thể hỏi kỹ về điều cô nhìn thấy, hoặc để cô lấy lại bình tĩnh.",
+    "text": "A Liên vặn chiếc khăn ẩm, ánh mắt còn dè chừng sau những lời bàn tán.\n\nCô nhìn sang bạn khi nghe câu hỏi, chờ xem bạn có thực sự muốn nghe lời mình hay không.",
     "choices": [
       {
         "id": "ask_maid_last_night",
@@ -280,13 +280,13 @@
       }
     ],
     "npcId": "maid",
-    "speech": "“Em mong khách quan nghe em nói cho rõ, chứ đừng nghe họ đoán.”"
+    "speech": "“Khách quan muốn hỏi chuyện hành lang hay chỉ nghe họ nói em có tội?”"
   },
   "maid_memory": {
     "placeId": "hall",
     "phase": "LỜI CHỨNG",
     "title": "Dưới ánh đèn hành lang",
-    "text": "A Liên nhớ mình đi lấy nước vào canh hai. Trời tối, ngọn đèn bị mưa tạt nên cô chỉ nhìn thấy một bóng áo sẫm đi qua hành lang; khuôn mặt người đó bị bóng tối che khuất.\n\nCô không dám gọi tên một người mà mình chưa từng nhìn rõ.",
+    "text": "Bạn hỏi cụ thể về lối đi sau bếp. A Liên đặt khăn xuống bàn, cố nhớ lại ánh đèn đêm qua và khoảng tối ở cuối hành lang.\n\nCô ngập ngừng trước khi nói. Bạn có thể ghi nhận lời cô, nhưng không nên tự điền tên người vào những khoảng cô không nhìn thấy.",
     "choices": [
       {
         "id": "write_maid_testimony_v2b",
@@ -306,13 +306,13 @@
       }
     ],
     "npcId": "maid",
-    "speech": "“Em chỉ thấy bóng người thôi. Em không biết đó là ai.”"
+    "speech": "“Em thấy một bóng áo sẫm qua hành lang, trời mưa làm đèn tắt bớt. Em không nhìn được mặt.”"
   },
   "guard": {
     "placeId": "hall",
     "phase": "TRÒ CHUYỆN",
     "title": "Người lính bên cửa",
-    "text": "Người lính trẻ tự giới thiệu tên Lục Tam rồi nhìn về sân ướt mưa. Anh nói đội áp tải đang dừng chân gần đèo, nhưng không muốn kể thêm lúc này.\n\nBạn chọn một câu hỏi cụ thể thay vì ép anh khai toàn bộ ngay.",
+    "text": "Người lính trẻ đứng gần cửa, vai áo vẫn sẫm màu nước mưa. Anh giới thiệu mình là Lục Tam rồi gấp chiếc khăn đang cầm.\n\nBạn có thể hỏi về ca trực hoặc đoàn áp tải; anh chưa tự kể thêm điều gì.",
     "choices": [
       {
         "id": "ask_guard_where",
@@ -334,13 +334,13 @@
       }
     ],
     "npcId": "guard",
-    "speech": "“Có những việc tôi đang lo. Khách quan muốn hỏi điều gì?”"
+    "speech": "“Tôi là lính áp tải. Khách quan muốn biết chuyện nào?”"
   },
   "guard_duty": {
     "placeId": "hall",
     "phase": "TRÒ CHUYỆN",
-    "title": "Điều người lính tránh nói",
-    "text": "“Chúng tôi đưa hàng y dược về đồn. Nếu thiếu một thứ, người ký nhận phải giải trình.” Anh kéo kín cổ áo. Không có câu nào trong đó nói anh là người lấy túi thuốc.",
+    "title": "Chuyện của đoàn áp tải",
+    "text": "Lục Tam kéo kín cổ áo, nhìn về chỗ những hòm hàng còn xếp sát tường. Một ký hiệu bằng mực xanh được đóng trên kiện gỗ ngoài cùng.\n\nAnh ngập ngừng khi bạn hỏi thủ tục giao hàng. Qua cách anh trả lời, bạn chỉ hiểu được rằng đội áp tải phải ký nhận từng kiện ở trạm gác.",
     "choices": [
       {
         "id": "guard_duty_ask_where",
@@ -355,13 +355,14 @@
         "kind": "travel"
       }
     ],
-    "npcId": "guard"
+    "npcId": "guard",
+    "speech": "“Đến đồn, người nhận kiểm đủ từng kiện rồi mới ký. Thiếu thứ gì phải lập biên bản.”"
   },
   "guard_memory": {
     "placeId": "hall",
     "phase": "LỜI CHỨNG",
     "title": "Canh hai ở trạm gác",
-    "text": "Bạn hỏi anh về thời điểm canh hai. Lục Tam xác nhận đã rời chốt khi nghe tiếng kêu cứu, sau đó trở về. Anh không tự nhắc đến chiếc hòm thuốc.\n\nCần ghi nguyên lời anh nói, không được tự thêm điều mình nghi ngờ.",
+    "text": "Lục Tam nhìn qua cửa sổ trước khi trả lời về canh hai. Anh nắm quai mũ, ngập ngừng một lúc. Có vẻ anh không muốn tiếp tục chủ đề này.\n\nBạn có thể ghi lại lời khai nguyên văn, hoặc trở lại đại sảnh để so sánh với những gì người khác đã nói.",
     "choices": [
       {
         "id": "write_guard_testimony_v2b",
@@ -381,7 +382,7 @@
       }
     ],
     "npcId": "guard",
-    "speech": "“Tôi có rời vị trí một lúc. Chuyện ấy tôi nhận.”"
+    "speech": "“Tôi rời trạm một lát khi nghe tiếng kêu cứu. Rồi tôi quay lại. Chỉ vậy thôi.”"
   },
   "corridor": {
     "placeId": "hall",
@@ -504,7 +505,7 @@
     "placeId": "hall",
     "phase": "SUY LUẬN",
     "title": "Bạn nghĩ điều gì đã xảy ra?",
-    "text": "Bạn ngồi xuống chiếc bàn sát cửa sổ. Chuyện xảy ra quá nhanh, còn mỗi người chỉ nhìn thấy một phần. Có khi bạn chỉ mới nghe được một câu, hoặc nhặt được một dấu vết vụn.\n\nBạn có thể hình thành giả thuyết ngay bây giờ. Nhưng nghi ngờ là một chuyện, chứng minh trước mặt người khác lại là chuyện khác. Không ai bắt bạn phải thu đủ mọi manh mối mới được suy nghĩ.",
+    "text": "Bạn mở những ghi chép đã có. Có thể bạn mới biết một phần chuyện, cũng có thể đã kiểm tra được một số chi tiết.\n\nBạn có thể nghi ngờ bất kỳ người nào, nhưng lời khẳng định trước người khác cần căn cứ cụ thể. Bạn muốn hỏi ai thêm hay đưa ra giả thuyết?",
     "choices": [
       {
         "id": "suspect_maid",
@@ -553,7 +554,7 @@
     "choices": [
       {
         "id": "blame_maid",
-        "label": "Tôi vẫn công khai buộc tội cô ấy",
+        "label": "Công khai buộc tội A Liên khi chưa trình căn cứ",
         "ending": "wrong",
         "kind": "conclusion"
       },
@@ -573,7 +574,7 @@
     "choices": [
       {
         "id": "blame_keeper",
-        "label": "Tôi vẫn quy trách nhiệm cho chưởng quầy",
+        "label": "Công khai buộc tội chưởng quầy khi chưa trình căn cứ",
         "ending": "wrong_keeper",
         "kind": "conclusion"
       },
@@ -588,19 +589,27 @@
   "claim_guard": {
     "placeId": "hall",
     "phase": "ĐỐI CHIẾU",
-    "title": "Điều nào khiến bạn nghi Lục Tam?",
-    "text": "Bạn nghĩ tới người lính đứng gần cửa. Vẻ bồn chồn có thể do nhiều nguyên nhân, không phải bằng chứng có tội.\n\nBạn đã đủ thông tin để đối chiếu trước mặt anh chưa, hay chỉ mới nghi ngờ?",
+    "title": "Giả thuyết về người lính",
+    "text": "Lục Tam đứng gần cửa từ lúc chuyện mất thuốc bị phát hiện. Bạn có thể hỏi thêm, đối chiếu những vật chứng đã có hoặc nói ra nghi ngờ của mình.\n\nMột lời nghi ngờ chưa được chứng minh có thể gây hại cho người vô can, bất kể người đó là ai.",
     "choices": [
+      {
+        "id": "blame_guard_without_proof",
+        "label": "Công khai buộc tội Lục Tam khi chưa trình căn cứ",
+        "ending": "wrong_guard",
+        "kind": "conclusion"
+      },
       {
         "id": "only_uniform",
         "label": "Vì lời chứng chỉ nói thấy một bóng áo lính",
         "to": "weak_reason",
         "kind": "deduction",
-        "visibleIfEvidence": ["maid_statement"]
+        "visibleIfEvidence": [
+          "maid_statement"
+        ]
       },
       {
         "id": "show_ledger_and_seal",
-        "label": "Đưa sổ giao chìa và dấu niêm phong ra đối chiếu",
+        "label": "Đối chất với Lục Tam bằng sổ chìa và dấu sáp",
         "to": "confront_guard",
         "kind": "deduction",
         "requires": [
@@ -622,6 +631,19 @@
         "label": "Quay lại bàn ghi chép",
         "to": "notes",
         "kind": "travel"
+      },
+      {
+        "id": "guard_formal_after_verification",
+        "label": "Đề nghị chưởng quầy ghi nhận việc Lục Tam đã thừa nhận",
+        "to": "formal_report",
+        "kind": "conclusion",
+        "visibleIfEvidence": [
+          "care_receipt"
+        ],
+        "visibleIfFlags": [
+          "private_admission",
+          "receipt_checked"
+        ]
       }
     ]
   },
@@ -668,23 +690,29 @@
     "placeId": "hall",
     "phase": "TIẾT LỘ",
     "title": "Lời nói khi không thể im lặng",
-    "text": "Lục Tam nhìn hai tờ ghi chép và thừa nhận đã tự lấy thuốc khỏi hòm trong đêm. Anh kể có người bị thương ở trạm gác, nhưng sợ bị kỷ luật vì chưa xin phép nên định giấu sự việc.\n\nAnh rút trong áo một tờ biên nhận viết vội. Đây mới là lời kể và một tờ giấy chưa kiểm tra. Bạn cần xác minh trước khi nói thay bất kỳ ai.",
+    "text": "Khi bạn đối chiếu sổ chìa với niêm phong, Lục Tam nhìn hai trang ghi chép rất lâu. Bàn tay anh buông khỏi quai mũ; giọng nói không còn giữ vẻ điềm tĩnh trước đó.\n\nAnh lấy từ trong áo một tờ giấy đã nhàu và đẩy về phía bạn. Chưa ai khác trong quán được nghe cuộc nói chuyện này; tờ giấy cũng chưa được kiểm tra.",
     "choices": [
       {
         "id": "inspect_receipt",
-        "label": "Đọc kỹ biên nhận từ trạm gác",
+        "label": "Tự kiểm tra tờ giấy Lục Tam đưa ra",
         "to": "receipt",
         "kind": "observation"
       },
       {
+        "id": "request_keeper_witness",
+        "label": "Nhờ chưởng quầy nghe lời kể, trước khi kết luận",
+        "to": "keeper_followup",
+        "kind": "dialogue"
+      },
+      {
         "id": "truth_back",
-        "label": "Tạm dừng đối chất, quay lại đại sảnh",
+        "label": "Tạm dừng, đi hỏi thêm người khác",
         "to": "hub",
         "kind": "travel"
       }
     ],
     "npcId": "guard",
-    "speech": "“Tôi đã mở hòm. Tôi muốn cứu người, nhưng lẽ ra không được để A Liên mang tiếng oan.”"
+    "speech": "“Tôi tự mở hòm để mang thuốc cho người bị thương ở trạm gác. Tôi sợ bị phạt, nên đã giấu. Tôi không ngờ A Liên lại bị nghi.”"
   },
   "receipt": {
     "placeId": "hall",
@@ -803,17 +831,43 @@
     "placeId": "hall",
     "phase": "KIỂM CHỨNG",
     "title": "Những con số khớp nhau",
-    "text": "Bạn đối chiếu giờ cấp thuốc với giờ nhận chìa, kiểm tra tên và số lượng thuốc trên tờ giấy với danh sách ký gửi. Các chi tiết quan trọng phù hợp nhau.\n\nLời thú nhận của Lục Tam giờ có bằng chứng hỗ trợ. Điều đó giải thích một phần sự việc nhưng không thay thế lời xin lỗi, việc ghi nhận trách nhiệm và quyền được lên tiếng của A Liên.",
+    "text": "Bạn đã đối chiếu giờ nhận chìa, loại thuốc và số lượng với các ghi chép độc lập. Những con số khớp nhau. Lục Tam cũng đã nhận riêng việc tự mở hòm.\n\nBạn **có thể quyết định bước xử lý ngay tại đây**, hoặc tiếp tục tìm hiểu vì lo còn điều chưa sáng tỏ. Không ai bắt bạn trở về bàn suy luận rồi đi vòng lại.",
     "choices": [
       {
+        "id": "verified_formal_now",
+        "label": "Đề nghị xử lý trách nhiệm ngay với chưởng quầy",
+        "to": "formal_report",
+        "kind": "conclusion",
+        "requires": [
+          "care_receipt"
+        ],
+        "requiresFlags": [
+          "private_admission",
+          "receipt_checked"
+        ]
+      },
+      {
+        "id": "verified_public_hearing",
+        "label": "Mời A Liên và Lục Tam tới đối thoại tại chỗ",
+        "to": "hearing",
+        "kind": "dialogue",
+        "requires": [
+          "care_receipt"
+        ],
+        "requiresFlags": [
+          "private_admission",
+          "receipt_checked"
+        ]
+      },
+      {
         "id": "verified_back_to_notes",
-        "label": "Ghi lại cách kiểm chứng rồi suy nghĩ tiếp",
+        "label": "Ghi lại suy luận và cân nhắc các giả thuyết",
         "to": "notes",
         "kind": "deduction"
       },
       {
         "id": "verified_more_search",
-        "label": "Quay lại các địa điểm kiểm tra thêm",
+        "label": "Tiếp tục khám phá trước khi quyết định",
         "to": "hub",
         "kind": "travel"
       }
@@ -823,7 +877,7 @@
     "placeId": "hall",
     "phase": "LẬP BIÊN BẢN",
     "title": "Lời thú nhận cần được ghi nhận",
-    "text": "Hà chưởng quầy yêu cầu bạn trình bày riêng các điểm đã xác minh. Ông không chấp nhận việc Lục Tam cứu người là lý do để giấu việc tự ý lấy thuốc, cũng không cho phép tiếp tục đổ lỗi cho A Liên.\n\nBạn có thể đề nghị lập biên bản ngay, hoặc quay lại gặp các bên trước khi chốt.",
+    "text": "Hà chưởng quầy ngồi đối diện, lần lượt xem sổ giao chìa, dấu niêm phong và phần biên nhận được đối chiếu. Ông yêu cầu ghi việc Lục Tam đã thừa nhận và đồng ý tự chịu trách nhiệm.\n\nNếu bạn chọn lập biên bản, người trong quán sẽ được thông báo rõ rằng A Liên không liên quan. Còn nếu muốn hòa giải, bạn có thể mời mọi người tự nói phần của mình.",
     "choices": [
       {
         "id": "report_guard_v2b",
@@ -918,14 +972,16 @@
     "placeId": "hall",
     "phase": "LỜI CHỨNG",
     "title": "A Liên được nói trọn lời",
-    "text": "A Liên nhìn từng người quanh bàn. Cô xác nhận chỉ thấy bóng áo sẫm đi qua hành lang; cô không thể gọi tên người đó và chưa từng nhìn thấy ai lấy thuốc.\n\nChưởng quầy nhắc mọi người rằng việc nhìn thấy một bóng người không đủ buộc tội người khác. Cuộc họp còn cần hỏi người có liên quan tới hòm thuốc.",
+    "text": "A Liên ngồi thẳng lưng hơn lúc bị nghi ngờ. Hà chưởng quầy yêu cầu mọi người im lặng để cô được kể đúng những gì mình nhớ.\n\nKhi cô nói xong, chưởng quầy gật đầu rồi ghi lại lời kể, không tự thêm một tên người nào vào chỗ thiếu.",
     "choices": [
       {
         "id": "record_public_witness",
         "label": "Ghi lời cô và tiếp tục cuộc họp",
         "to": "hearing",
         "kind": "observation",
-        "hiddenIfFlags": ["public_confirmed"],
+        "hiddenIfFlags": [
+          "public_confirmed"
+        ],
         "addFlags": [
           "public_witness_heard"
         ]
@@ -935,8 +991,12 @@
         "label": "Ghi lời A Liên và bắt đầu bàn cách giải quyết",
         "to": "hearing_resolution",
         "kind": "dialogue",
-        "visibleIfFlags": ["public_confirmed"],
-        "addFlags": ["public_witness_heard"]
+        "visibleIfFlags": [
+          "public_confirmed"
+        ],
+        "addFlags": [
+          "public_witness_heard"
+        ]
       },
       {
         "id": "hear_guard_after_maid",
@@ -949,13 +1009,13 @@
       }
     ],
     "npcId": "maid",
-    "speech": "“Em chỉ muốn mọi người biết em không thấy tận mắt người lấy thuốc.”"
+    "speech": "“Đêm ấy em đi lấy nước và thấy một bóng áo sẫm, nhưng không nhìn thấy người lấy thuốc.”"
   },
   "hearing_proof": {
     "placeId": "hall",
     "phase": "ĐỐI CHỨNG",
     "title": "Lục Tam xác nhận trước mọi người",
-    "text": "Bạn đặt biên nhận đã đối chiếu và bản ghi về chiếc hòm lên bàn, chỉ rõ những điều đã được kiểm chứng. Lục Tam xác nhận mình tự ý lấy thuốc cho người bị thương, đồng thời đã che giấu khiến A Liên bị nghi oan.\n\nChưởng quầy đề nghị ghi nhận trách nhiệm. A Liên có thể được mời lên tiếng trước khi quyết định cách khép lại chuyện này.",
+    "text": "Bạn đặt bản đối chiếu giờ giao chìa, số thuốc và biên nhận lên bàn. Hà chưởng quầy nhìn từng mục rồi chuyển tờ giấy cho Lục Tam.\n\nNgười lính đứng dậy trước những người trong quán. Cả bàn chờ anh tự nói ra điều mà trước đây anh chỉ thừa nhận riêng với bạn.",
     "choices": [
       {
         "id": "confirm_public_report",
@@ -996,7 +1056,7 @@
       }
     ],
     "npcId": "guard",
-    "speech": "“Tôi tự lấy thuốc. Để A Liên chịu nghi ngờ thay mình là lỗi của tôi.”"
+    "speech": "“Tôi đã tự lấy thuốc. A Liên không liên quan. Tôi sẽ chịu trách nhiệm vì đã giấu việc này.”"
   },
   "hearing_resolution": {
     "placeId": "hall",
@@ -1025,6 +1085,28 @@
         "kind": "travel"
       }
     ]
+  },
+  "keeper_followup": {
+    "placeId": "hall",
+    "phase": "XÁC MINH",
+    "title": "Cần một người làm chứng",
+    "text": "Bạn mời Hà chưởng quầy đến cạnh bàn. Ông nghe Lục Tam nhắc đến số thuốc đã sử dụng, nhưng không vội xác nhận mọi điều là thật.\n\nChưởng quầy xem tờ giấy nhàu trong tay người lính, rồi đẩy lại cho bạn.",
+    "choices": [
+      {
+        "id": "check_keeper_receipt",
+        "label": "Đối chiếu biên nhận cùng chưởng quầy",
+        "to": "receipt",
+        "kind": "observation"
+      },
+      {
+        "id": "keeper_wait",
+        "label": "Chưa vội kết luận, tiếp tục quan sát",
+        "to": "hub",
+        "kind": "travel"
+      }
+    ],
+    "npcId": "keeper",
+    "speech": "“Nếu giấy này đúng, phải khớp giờ và số thuốc trong sổ. Chúng ta kiểm tra đã.”"
   }
 },
   endings:{
@@ -1052,6 +1134,11 @@
     "status": "success",
     "title": "Chén trà sau cơn mưa",
     "text": "Sau khi từng người được trình bày, Hà chưởng quầy viết rõ việc Lục Tam tự lấy thuốc, lý do cấp cứu, cách bồi hoàn và lời minh oan cho A Liên. Lục Tam nhận lỗi trước mọi người, không đổ phần trách nhiệm cho cô nữa.\n\nTrời sáng, A Liên mời bạn một chén trà. Bạn không buộc mọi người trở thành bạn bè chỉ sau một đêm; bạn đã giúp họ có cơ hội nói thật và tự chọn cách tiếp tục."
+  },
+  "wrong_guard": {
+    "status": "failure",
+    "title": "Lời buộc tội chưa thể thay chứng cứ",
+    "text": "Bạn đứng trước mọi người, khẳng định Lục Tam có tội nhưng không đưa ra được những gì mình đã kiểm tra. Hà chưởng quầy ngăn người khác giữ anh lại: ông không thể cho phép kết tội hay bắt người chỉ bằng suy đoán.\n\nLục Tam tiếp tục im lặng, còn sự căng thẳng trong quán tăng lên. Bạn có thể đã nghi đúng người, nhưng cách buộc tội vội vàng khiến sự thật càng khó được nghe một cách công bằng."
   }
 }
  };
