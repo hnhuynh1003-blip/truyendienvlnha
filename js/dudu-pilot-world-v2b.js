@@ -54,6 +54,7 @@
     knows:['maid_witness','sealed_box'],
     beliefs:['Một bóng áo lính đi qua hành lang, không xác định được ai.'],
     lines:[
+     {requiresFlags:['helped_maid'],text:'“Em nhớ khách quan đã giúp em ngoài hiên. Xin hãy nghe trọn lời em, được không?”'},
      {requiresEvidence:['maid_statement'],factId:'maid_witness',text:'“Tôi thấy bóng áo lính dưới đèn. Không thể vì vậy nói chắc ai đã lấy thuốc.”'},
      {requiresEvidence:['broken_seal'],text:'“Vết sáp còn mới. Nhưng em chỉ nhìn thấy bóng người, không thấy ai tự tay mở hòm.”'}
     ]}
