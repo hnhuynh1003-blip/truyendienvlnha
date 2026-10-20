@@ -128,6 +128,26 @@ async function main() {
       'Core Phone renderer entrypoints must exist');
     assert.equal(phoneAudit.unknownId,true);
     assert.equal(phoneAudit.noFirestoreWrites,true);
+    // V69: standalone System app is inspectable but unsigned; AU Core is
+    // inaccessible to an unsigned reader, even by calling its renderer.
+    const systemV69=await page.evaluate(()=>{
+      const api=window.DuduSystemAppsV69;
+      const r=api?.renderSystem?.()===true;
+      api?.statusPopup?.();
+      const popup=document.getElementById('dudu-v69-status-popup');
+      const stats=popup?.querySelectorAll('.dudu-v69-stat').length||0;
+      const locked=!!document.querySelector('#phone-app-system .dudu-v69-disabled[disabled]');
+      const authorBlocked=api?.renderCore?.()===false;
+      const launcherHidden=document.getElementById('dudu-v69-core-launch')?.hidden===true;
+      const questCard=!!document.getElementById('dudu-v69-passport-quest')?.querySelector('button');
+      popup?.querySelector('.dudu-v69-close')?.click();
+      return {r,stats,locked,authorBlocked,launcherHidden,questCard,
+        writes:window.__firestoreWrites.length};
+    });
+    assert.deepEqual(systemV69,{r:true,stats:8,locked:true,authorBlocked:true,
+      launcherHidden:true,questCard:true,writes:0},
+      'V69 must display 8 unverified stats, deny guest AU Core and never grant pass/rewards');
+
     // World Atlas V64: compact two-column mobile display, not a second novel library.
     await page.evaluate(() => DuduSiteV60.navigate('worlds'));
     await page.locator('#d60-worlds .d64-world-card').first().waitFor();
