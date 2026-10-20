@@ -76,3 +76,21 @@ a.dudu-pilot-launch:hover{background:#f3e7ff;color:#1b223a}
 .dudu-pilot-choice-hint{display:block;margin-top:5px;color:#e0c59d;font-size:10px;line-height:1.45}
 .dudu-pilot-action:disabled .dudu-pilot-choice-hint{color:#b2acb2}
 @media(max-width:520px){.dudu-pilot-phase{top:8px;left:9px}.dudu-pilot-place{left:9px;bottom:8px;max-width:calc(100% - 18px)}}
+
+/* Narrative pass: readable short fiction, clear beats, choices only at meaningful turns. */
+.dudu-pilot-prose{display:flex;flex-direction:column;gap:13px}
+.dudu-pilot-prose .dudu-pilot-description{line-height:1.9;font-size:15px;letter-spacing:.004em;color:#ece8ed}
+.dudu-pilot-reaction{margin:0 0 6px;padding:12px 14px;border-left:3px solid #cbaf80;background:rgba(190,150,105,.1);color:#f0dbbc;font-size:13px;line-height:1.7}
+.dudu-pilot-prologue h3{font-family:Georgia,"Times New Roman",serif;letter-spacing:.012em}
+.dudu-pilot-single-action{grid-template-columns:1fr}
+.dudu-pilot-next{max-width:none;text-align:center;font-weight:700;background:#514967}
+.dudu-pilot-content{gap:14px;padding-top:22px}
+.dudu-pilot-content h3{line-height:1.36}
+.dudu-pilot-persona{margin-top:4px}
+.dudu-pilot-foot{border-top:1px solid rgba(150,158,180,.16)}
+@media(max-width:520px){
+ .dudu-pilot-prose{gap:11px}
+ .dudu-pilot-prose .dudu-pilot-description{font-size:14px;line-height:1.86}
+ .dudu-pilot-content{padding-top:18px}
+ .dudu-pilot-reaction{font-size:12px}
+}
