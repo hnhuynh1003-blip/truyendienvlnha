@@ -61,7 +61,9 @@ test('V43: UI is sandbox-only and does not claim server validated keepsakes',()=
  assert.match(inbox,/dudu-v43-system-contact/);
  assert.match(inbox,/window\.DuduCompanionV43\.open\(\)/);
  assert.match(ui,/IS_SANDBOX_MODE/);
- assert.match(ui,/DUDU · Người bạn đầu tiên/);
+ assert.match(ui,/DUDU đồng hành/);
+ assert.match(ui,/DUDU Chủ Thần/);
+ assert.match(ui,/dudu-v68-agent-select/);
  assert.match(ui,/Xu thử nghiệm/);
  assert.match(ui,/chưa phải kỷ vật Bảo Tàng/);
  assert.doesNotMatch(ui,/db\.collection\(|DuduCollectiblesClient\.grant|fetch\(/);
