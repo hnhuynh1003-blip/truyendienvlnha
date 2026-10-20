@@ -152,3 +152,21 @@ Phản hồi kiểm thử UX: ở bản V3, lựa chọn buộc tội A Liên / 
 - Kiểm tra logic qua 4 bộ test JS trên môi trường V8 với nguồn fetch GitHub **PASS**, gồm đường người chơi chọn sai, chọn đúng, lời chứng thay thế và lựa chọn ẩn không gọi trực tiếp được. Chưa có trình duyệt thực, deployment log hoặc QA mobile xác nhận.
 
 **Ưu tiên kế tiếp:** QA trong trình duyệt trên GitHub Pages rồi mới viết lại từng truyện F mới với nhịp tương tác riêng. Không rập khuôn F02/F03 thành 'mất đồ → tìm chìa → hỏi lính'. Viết thêm nội dung khi có động cơ, không ép văn phải ngắn. Lưu mốc rollback V4 ở các commit GitHub gần ngày 20/10/2026; baseline trước đợt V4 là `74902544d0b2b580bdf90bc9452b5cacfe229940`.
+
+## 10. F REASONING V5 — SỬA LỖI SUY LUẬN, THÚ NHẬN VÀ LỜI THOẠI (20/10/2026)
+
+> Đây là **trạng thái mới nhất**, thay cho các chi tiết V4 bị sửa ở mục 9. Đọc `docs/DUDU-F-REASONING-V5.md` để có lý do thiết kế và trường hợp kiểm thử.
+
+Người chơi gửi ảnh thực tế V4 và phát hiện: cần đủ tổ hợp manh mối cố định mới được suy luận; mời mọi người ngồi lại khiến Lục Tam thú nhận tự động; NPC có câu đã kể xong nhưng khi sang cảnh sau vẫn tự xuất hiện lại hoặc chèn thêm thoại. Căn nguyên lời thoại: engine V2B gọi `model.npcView(npcId, globalState)` mỗi lần `view()`, dùng thông tin mới nhất thay vì câu phát ra ở đúng scene.
+
+**Đã sửa trên `main`:**
+- Quan Đạo chuyển `scenarioId=pilot-quan-dao-reasoning-v5`, `scenarioVersion=5`, giữ `missionId=dudu-m-an-f01`, file `js/dudu-pilot-f-v2b.js` và đường vào cũ để bảo toàn tích hợp. Có **36 scene** tương tác và **93 lựa chọn authored** nhưng không bắt người chơi qua hết.
+- Suy luận mở ngay sau biến cố, kể cả khi **chưa có chứng cứ**: được tự hình thành giả thuyết nhưng không thể đối chất/thắng bằng dữ liệu chưa tìm được. Tuyến điều tra chính không bắt đủ cả 5; có đường dùng **2 chứng cứ độc lập** để hỏi riêng Lục Tam, sau đó tự kiểm tra biên nhận thành **chứng cứ thứ 3** để mở giai đoạn xử lý.
+- Họp không phải nút thắng. Chỉ yêu cầu người có tội tự thú dẫn tới im lặng; người chơi phải công khai kiểm chứng, hỏi Lục Tam xác nhận và, nếu chọn hòa giải, cho A Liên tự trình bày. Có tuyến lập biên bản với chưởng quầy riêng.
+- NPC thoại gắn thẳng `scene.speech` với `npcId` đúng cảnh; engine chỉ trả `npcDetails` khi speech được author chốt. Không được tự lấy quote mới nhất theo global evidence hoặc ghép quote vào scene khác. World Model có validation.
+- Engine `view()` ẩn luôn lựa chọn chưa đạt chứng cứ/flag nếu không được cấu hình `showLocked`, giảm lộ đáp án qua nút khóa; `decide()` vẫn kiểm an toàn.
+- UI sổ tay không hiển thị số manh mối như một điều kiện thắng. Phiên lưu riêng `dudu:pilot-f-reasoning-v5:`, cache `play-v5`.
+- Bốn bộ test JS V1/visibility/Visual V2A/V5 qua môi trường V8 mock theo nguồn mới nhất. **Chưa có kiểm thử Node + GitHub Pages/mobile thật.**
+- Tất cả `pilot_only`, `released=false`, `rewardsEnabled=false`. Không thay Firebase/EPUB/auth/NPC chat/XP/Xu/khế ước/backend.
+
+**Tiếp theo:** thử thật trên trang `dudu-pilot.html?v=play-v5`; ưu tiên lỗi cảnh, thoại, các nhánh do độc giả thử. Sau QA mới dùng design này cho F02/F03; E và bậc cao hơn phải có World Truth backend, nguồn độc lập, tình huống NPC che giấu và quyền nghiệm thu server, không tự cho AI quyền phán xử.
