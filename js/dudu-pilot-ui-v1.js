@@ -57,7 +57,7 @@
   closeButton.addEventListener('click',close);
   bar.append(brand,closeButton);
   const imageWrap=el('div','dudu-pilot-visual');
-  const img=el('img');img.src=v.place.background;img.alt='Khung cảnh: '+v.place.label;
+  const img=el('img');img.src=v.place.background;img.alt='Khung cảnh: '+(v.place.publicName||v.place.label);
   img.loading='eager';
   // Optional cinematic photo: load only when the WebP exists, and retain the SVG fallback.
   // Pilot assets are not yet present on main. Do not block the story while probing.
