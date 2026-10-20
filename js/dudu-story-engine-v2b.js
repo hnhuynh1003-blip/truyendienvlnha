@@ -35,6 +35,16 @@
   return list(c.requiresFlags).some(f=>!state.flags.includes(f))||
     list(c.requiresNotFlags).some(f=>state.flags.includes(f));
  }
+ function verificationNote(state){
+  const evidence=list(state.evidence),flags=list(state.flags);
+  if(evidence.includes('care_receipt')&&flags.includes('receipt_checked')&&flags.includes('private_admission'))
+   return 'Đã đối chiếu biên nhận và ghi nhận lời thừa nhận riêng. Bạn có thể đề nghị xử lý ngay tại đại sảnh hoặc quay lại suy luận.';
+  if(flags.includes('private_admission')&&!flags.includes('receipt_checked'))
+   return 'Bạn đã nghe lời giải thích riêng, nhưng giấy tờ vẫn chưa được đối chiếu. Chỉ đọc tờ giấy chưa tính là xác minh.';
+  if(evidence.includes('key_log')&&evidence.includes('broken_seal'))
+   return 'Bạn đã ghi nhận sổ chìa và dấu niêm phong. Có thể tự chọn giả thuyết rồi thử đối chất bằng hai dữ kiện này.';
+  return 'Bạn có thể suy luận bất cứ lúc nào. Quan sát một manh mối không có nghĩa đã đủ căn cứ buộc tội người khác.';
+ }
  function begin(s){if(validate(s).length)throw Error('invalid_v2b_scenario');return base.begin(s);}
  function view(s,state){
   if(validate(s).length)throw Error('invalid_v2b_scenario');
@@ -58,6 +68,7 @@
    npcDetails:explicitSpeech,
    clueDetails:model.knownClues(s.world,v.evidence),
    storyPhase:sc.phase||null,
+   verificationNote:['hub','notes','claim_guard'].includes(v.sceneId)?verificationNote(state):'',
    passageReaction:typeof previousChoice?.reaction==='string'?previousChoice.reaction:'',
    sceneType:sc.phase==='DẪN TRUYỆN'?'prologue':'story'};
  }
