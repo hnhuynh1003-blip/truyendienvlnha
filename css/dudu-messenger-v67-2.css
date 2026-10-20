@@ -213,3 +213,34 @@ body.dudu-phone-v11 #cyber-phone .dudu-v672-send:focus-visible{
 @media(prefers-reduced-motion:reduce){
  body.dudu-phone-v11 #cyber-phone .dudu-v43-bubble{transition:none!important}
 }
+
+/* V68: agent selection stays inside the existing collapsed Messenger tools.
+ * No second phone app, duplicate contact, or fixed-width toolbar on phones. */
+body.dudu-phone-v11 #cyber-phone .dudu-v68-controls{
+  display:flex;flex-direction:column;gap:7px;padding:8px;
+  border:1px solid rgba(174,159,223,.24);border-radius:11px;
+  background:rgba(89,88,147,.12);
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v68-controls label{
+  color:#ece4ff;font-size:11px;font-weight:700;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v68-agent-select{
+  display:block;width:100%;max-width:100%;min-height:39px;
+  background:#253755;color:#f8f2ff;border:1px solid #8b81c5;
+  border-radius:8px;padding:7px 8px;font-size:12px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v68-ai-toggle{
+  min-height:37px;padding:7px 10px;border:1px solid #ada4df;
+  border-radius:9px;background:#4d467a;color:#fff;cursor:pointer;
+  font-size:12px;font-weight:700;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v68-ai-toggle:disabled{
+  opacity:.5;cursor:default;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v68-ai-warning{
+  color:#c0cce7;font-size:10px;line-height:1.5;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v68-agent-select:focus-visible,
+body.dudu-phone-v11 #cyber-phone .dudu-v68-ai-toggle:focus-visible{
+  outline:2px solid #e5cdff;outline-offset:2px;
+}
