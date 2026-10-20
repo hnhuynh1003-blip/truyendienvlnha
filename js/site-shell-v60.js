@@ -195,7 +195,7 @@
      element('strong','','Đêm mưa ở Quan Đạo'),
      element('span','dudu-pilot-entry-desc','Tự đi lại, khám phá và suy luận · không cấp thưởng'));
    const pilotLink=element('a','dudu-pilot-launch','Chơi thử ↗');
-   pilotLink.href='dudu-pilot.html?v=play-v6-2';
+   pilotLink.href='dudu-pilot.html?v=play-v7';
    pilotLink.setAttribute('aria-label','Mở bản chơi thử Đêm mưa ở Quan Đạo');
    pilot.append(pilotCopy,pilotLink);
    root.append(pilot,starter,hidden);
