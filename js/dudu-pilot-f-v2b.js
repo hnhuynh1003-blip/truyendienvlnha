@@ -62,7 +62,7 @@
     "placeId": "hall",
     "phase": "TRƯỚC BIẾN CỐ",
     "title": "Một chén trà nóng",
-    "text": "Hà chưởng quầy đặt lên bàn chén trà gừng bốc khói. Bên kia phòng, một người lính trẻ ăn cơm một mình, thi thoảng nhìn về cửa sau. Trong quán chỉ có tiếng mưa và những câu chuyện vụn vặt về đường sá.\n\nBạn không vội ngủ. Một bữa tối ở nơi xa lạ vẫn có thể mở đầu bằng một lời hỏi thăm.",
+    "text": "Hà chưởng quầy mang ra một chén trà gừng. Ông kể sáng mai có đoàn xe chở người bị thương phải qua đèo; quán được nhờ giữ một túi thuốc cầm máu cho họ. Mưa lớn khiến việc đi lại khó đoán.\n\nA Liên đang nhóm bếp. Người lính áo sẫm ở bàn gần cửa nhìn qua cửa sau rồi cúi đầu ăn tiếp. Bạn chỉ định nghỉ qua đêm; chẳng có ai giao nhiệm vụ gì cho bạn.",
     "choices": [
       {
         "id": "ask_about_inn",
@@ -90,7 +90,7 @@
     "placeId": "hall",
     "phase": "BIẾN CỐ",
     "title": "Tiếng động sau bếp",
-    "text": "Một tiếng gỗ va mạnh vang lên từ phía nhà kho. Hà chưởng quầy bỏ dở chén trà, vội chạy qua hành lang. Khi trở lại, ông tái mặt: chiếc hòm thuốc được đoàn áp tải gửi giữ đã mở, túi thuốc không còn.\n\nMột người khách nói nhỏ rằng A Liên thường giữ chìa bếp. Cô gái sững người. Người lính trẻ vừa đứng dậy lại ngồi xuống. Cả quán bắt đầu xôn xao.",
+    "text": "Một tiếng thùng gỗ đổ vang lên từ phía kho. Hà chưởng quầy chạy ra rồi quay lại, sắc mặt tái đi: hòm giữ túi thuốc cho đoàn xe sáng mai đã bị mở, túi thuốc biến mất.\n\nNếu không tìm lại được trước bình minh, đoàn xe chở người bị thương sẽ không có đủ vật tư cần thiết để tiếp tục qua đèo. Một vị khách lập tức nghi A Liên chỉ vì cô thường ra vào bếp. Cô đứng sững; Lục Tam cũng ngẩng đầu. Bạn chưa biết ai lấy thuốc, cũng chưa biết thuốc đang ở đâu.",
     "choices": [
       {
         "id": "stay_to_listen",
@@ -167,16 +167,26 @@
         "label": "Trình bằng chứng đã xác minh với chưởng quầy",
         "to": "formal_report",
         "kind": "conclusion",
-        "visibleIfEvidence": ["care_receipt"],
-        "visibleIfFlags": ["private_admission", "receipt_checked"]
+        "visibleIfEvidence": [
+          "care_receipt"
+        ],
+        "visibleIfFlags": [
+          "private_admission",
+          "receipt_checked"
+        ]
       },
       {
         "id": "hub_invite_hearing_verified",
         "label": "Mời những người liên quan đối thoại về sự việc",
         "to": "hearing",
         "kind": "dialogue",
-        "visibleIfEvidence": ["care_receipt"],
-        "visibleIfFlags": ["private_admission", "receipt_checked"]
+        "visibleIfEvidence": [
+          "care_receipt"
+        ],
+        "visibleIfFlags": [
+          "private_admission",
+          "receipt_checked"
+        ]
       },
       {
         "id": "step_away",
@@ -239,7 +249,7 @@
     "placeId": "hall",
     "phase": "TÌM MANH MỐI",
     "title": "Trang sổ canh hai",
-    "text": "Bạn lần theo giờ nhận chìa của từng người. Một hàng mực ghi Lục Tam nhận chìa kho lúc canh hai, chưa có giờ trả rõ ràng. Ông chưởng quầy xác nhận đây là nét chữ của mình.\n\nĐiều này cho thấy người lính có thể ra vào kho, chưa chứng minh anh đã lấy thuốc.",
+    "text": "Sổ ghi Lục Tam nhận chìa kho trong canh hai, chưa có dòng trả rõ ràng. Chưởng quầy nhận đây là chữ mình. Trang bên liệt kê túi thuốc được ký gửi cho đoàn xe sáng mai.\n\nViệc cầm chìa cho thấy một cơ hội ra vào kho, không tự chứng minh anh đã lấy thuốc hay chỉ ra túi thuốc hiện ở đâu.",
     "choices": [
       {
         "id": "copy_key_log_v2b",
@@ -474,7 +484,7 @@
     "placeId": "store",
     "phase": "QUAN SÁT",
     "title": "Các lọ thuốc",
-    "text": "Phần lớn lọ trên giá vẫn nguyên. Danh sách ký gửi dán ở mặt sau cửa ghi rõ một túi thuốc cầm máu riêng được cất trong hòm, không phải toàn bộ số thuốc của quán.\n\nCó thể ai đó cần riêng loại thuốc ấy, hoặc đó là sự trùng hợp. Bạn chưa có cách xác nhận.",
+    "text": "Trên mặt sau cửa là bảng kê hàng cứu thương ký gửi: sáu cuộn băng ép và hai lọ thuốc cầm máu, tất cả trong một túi. Hà chưởng quầy bảo đoàn xe chở người bị thương sẽ nhận túi trước bình minh.\n\nNếu một phần đã dùng ở nơi khác, bảng kê này có thể giúp tính phần còn lại. Bạn chưa biết số thuốc đã đi đâu.",
     "choices": [
       {
         "id": "note_shelves",
@@ -743,7 +753,7 @@
     "placeId": "hall",
     "phase": "KIỂM CHỨNG",
     "title": "Tờ biên nhận đã nhàu",
-    "text": "Lục Tam đưa ra một tờ giấy nhàu, có ghi tên thuốc và thời điểm dùng. Nét chữ khó đọc, dấu ký ở cuối tờ giấy nhòe vì mưa.\n\nMột tờ biên nhận có thể giúp giải thích số thuốc đã biến mất. Nhưng nếu chỉ nghe người đưa giấy tự giải thích, bạn vẫn chưa thật sự kiểm chứng.",
+    "text": "Tờ giấy Lục Tam đưa ra ghi hai cuộn băng ép và một lọ cầm máu đã được sử dụng tại trạm gác. Mực nhòe khiến giờ cấp thuốc khó đọc.\n\nBạn phải đối chiếu trước khi tin nó. Tờ giấy có thể chỉ ra lượng thuốc đã dùng, nhưng không thể tự đưa phần còn lại về cho đoàn xe đang chờ.",
     "choices": [
       {
         "id": "review_receipt",
@@ -763,7 +773,7 @@
     "placeId": "hall",
     "phase": "QUYẾT ĐỊNH",
     "title": "Đêm mưa phải khép lại thế nào?",
-    "text": "Bạn đã có lời thừa nhận riêng từ người lính và đã đối chiếu giấy tờ. Sự thật này không tự xuất hiện trước tất cả người trong quán.\n\nBạn muốn đề nghị cách xử lý nào? Nếu mời mọi người ngồi lại, từng người vẫn phải được hỏi và phải tự xác nhận điều họ nói.",
+    "text": "Bạn đã lần ra người mở hòm và xác thực số thuốc dùng tại trạm gác. Đây chưa phải kết thúc.\n\nPhần thuốc còn lại vẫn cần trở về cho đoàn xe chở người bị thương, trước khi đường đèo trở nên nguy hiểm hơn. Bạn sẽ làm gì để câu chuyện không dừng ở một chữ ký?",
     "choices": [
       {
         "id": "choose_formal_record",
@@ -803,7 +813,7 @@
     "placeId": "hall",
     "phase": "ĐỐI CHIẾU",
     "title": "Một tờ giấy, hai cách kiểm tra",
-    "text": "Tờ giấy ghi ngày giờ và lượng thuốc đã cấp. Bên cạnh bạn là sổ chìa có thời điểm Lục Tam vào kho.\n\nBạn sẽ coi con dấu đã đủ để tin, hay đối chiếu các mốc thời gian và lượng thuốc trước?",
+    "text": "Biên nhận ghi đã dùng hai cuộn băng ép và một lọ thuốc cầm máu. Bảng kê ban đầu ghi sáu cuộn và hai lọ. Số liệu có thể cho bạn biết phần còn lại, nhưng trước hết cần xác thực thời điểm, loại thuốc và số lượng trên giấy.\n\nBạn muốn tin con dấu nhòe hay tự đối chiếu với sổ?",
     "choices": [
       {
         "id": "trust_stamp_only",
@@ -856,7 +866,7 @@
     "placeId": "hall",
     "phase": "KIỂM CHỨNG",
     "title": "Những con số khớp nhau",
-    "text": "Bạn đã đối chiếu giờ nhận chìa, loại thuốc và số lượng với các ghi chép độc lập. Những con số khớp nhau. Lục Tam cũng đã nhận riêng việc tự mở hòm.\n\nBạn có thể quyết định bước xử lý ngay tại đây, hoặc tiếp tục tìm hiểu vì lo còn điều chưa sáng tỏ. Không ai bắt bạn trở về bàn suy luận rồi đi vòng lại.",
+    "text": "Giờ giao chìa, lượng thuốc và thời điểm cấp cứu đã được đối chiếu. Tờ giấy có cơ sở đáng tin: hai cuộn băng ép và một lọ cầm máu đã dùng ở trạm gác.\n\nNhưng ban đầu túi thuốc còn nhiều hơn thế. Phần chưa dùng có thể vẫn ở trạm, trong khi đoàn xe chở người bị thương đang chờ ngoài đèo. Giờ bạn phải quyết định xử lý cả trách nhiệm lẫn việc thu hồi.",
     "choices": [
       {
         "id": "verified_formal_now",
@@ -902,7 +912,7 @@
     "placeId": "hall",
     "phase": "LẬP BIÊN BẢN",
     "title": "Lời thú nhận cần được ghi nhận",
-    "text": "Hà chưởng quầy ngồi đối diện, lần lượt xem sổ giao chìa, dấu niêm phong và phần biên nhận được đối chiếu. Ông yêu cầu ghi việc Lục Tam đã thừa nhận và đồng ý tự chịu trách nhiệm.\n\nNếu bạn chọn lập biên bản, người trong quán sẽ được thông báo rõ rằng A Liên không liên quan. Còn nếu muốn hòa giải, bạn có thể mời mọi người tự nói phần của mình.",
+    "text": "Hà chưởng quầy ghi lời thú nhận của Lục Tam rồi nhìn ra sân. “Giấy tờ có thể lập được cả sáng,” ông nói, “còn thuốc mà không về kịp thì người ngoài đèo biết trông vào đâu?”\n\nBạn có thể cùng ông tính số thuốc còn lại và tìm đường mang về, hoặc dừng lại ở tờ biên bản.",
     "choices": [
       {
         "id": "report_guard_v2b",
@@ -1040,7 +1050,7 @@
     "placeId": "hall",
     "phase": "ĐỐI CHỨNG",
     "title": "Lục Tam xác nhận trước mọi người",
-    "text": "Bạn đặt bản đối chiếu giờ giao chìa, số thuốc và biên nhận lên bàn. Hà chưởng quầy nhìn từng mục rồi chuyển tờ giấy cho Lục Tam.\n\nNgười lính đứng dậy trước những người trong quán. Cả bàn chờ anh tự nói ra điều mà trước đây anh chỉ thừa nhận riêng với bạn.",
+    "text": "Bạn công khai sổ chìa và biên nhận đã đối chiếu. Lục Tam nhận đã tự lấy thuốc cấp cứu người ở trạm gác. Mọi người biết A Liên không phải người bị chứng minh đã mở hòm.\n\nHà chưởng quầy hỏi: “Vậy phần thuốc chưa dùng đâu?” Đoàn xe cứu thương sắp đến, và không ai có thể giải quyết câu hỏi ấy bằng lời xin lỗi.",
     "choices": [
       {
         "id": "confirm_public_report",
@@ -1087,7 +1097,7 @@
     "placeId": "hall",
     "phase": "HÒA GIẢI",
     "title": "Từng người tự nói điều cần nói",
-    "text": "A Liên nói việc bị nghi oan khiến cô sợ hãi, nhưng cô không muốn giấu đi chuyện có người được cứu sống. Lục Tam đồng ý nhận trách nhiệm bằng văn bản và xin lỗi cô.\n\nBạn có thể khép lại bằng thỏa thuận minh bạch, hoặc tạm dừng nếu còn thấy thiếu điều cần đối chiếu.",
+    "text": "A Liên được kể điều cô nhìn thấy, Lục Tam xin lỗi vì sự che giấu làm cô bị nghi oan. Chưởng quầy nhất trí ghi trách nhiệm thật rõ ràng.\n\nNgoài sân có tiếng bánh xe: đoàn chở người bị thương sắp tới. Mọi người vẫn phải đưa số thuốc chưa dùng từ trạm gác về, nếu không cuộc hòa giải chỉ nằm trên giấy.",
     "choices": [
       {
         "id": "seek_mediation_v2b",
@@ -1198,7 +1208,7 @@
   "withdraw": {
     "status": "failure",
     "title": "Bạn rời quán trước bình minh",
-    "text": "Bạn rời mái hiên khi mưa chưa tạnh. Trên đường về, ánh đèn của Quan Đạo khuất dần sau đèo.\n\nNhững người ở lại vẫn phải đối diện với chuyện mất thuốc. Đôi khi không can dự cũng là một lựa chọn có hậu quả."
+    "text": "Bạn rời quán giữa đêm. Đến sáng, đoàn xe chở người bị thương đến nhận túi cứu thương thì hòm hàng vẫn trống. Họ phải chờ trong lúc đường đèo mỗi lúc một khó đi.\n\nKhông ai buộc người khách lạ phải ở lại. Nhưng câu chuyện tại Quan Đạo vẫn tiếp tục với những người cần thuốc, cần một lời giải thích và cần ai đó chịu hành động."
   },
   "wrong": {
     "status": "failure",
@@ -1212,18 +1222,38 @@
   },
   "accountability": {
     "status": "success",
-    "title": "Sổ ghi chép dưới ánh đèn",
-    "text": "Lục Tam kể rõ việc lấy thuốc cứu người và chấp nhận để chưởng quầy lập biên bản về số thuốc đã dùng. Trạm gác gửi lời xác nhận; người bị thương đã qua nguy hiểm.\n\nA Liên được minh oan công khai. Việc cứu người không xóa lỗi che giấu, nhưng cũng không biến Lục Tam thành kẻ chỉ biết gây hại."
+    "title": "Hai chuyến cứu người",
+    "text": "Lục Tam và người khuân hàng đã đưa thuốc chưa dùng từ trạm gác về bằng lối sườn đá. Bạn đếm đủ bốn cuộn băng ép và một lọ cầm máu trước khi giao cho đoàn xe chở người bị thương. Họ kịp lên đường khi trời vừa sáng.\n\nBạn đặt sổ mượn chìa, dấu sáp, lời khai, biên nhận và phiếu bàn giao mới lên cùng một bàn. Mọi manh mối đã giúp lần ra cả người lấy, nơi thuốc đến và số thuốc còn lại. Lục Tam ký nhận trách nhiệm vì tự mở hòm và giấu sự việc; A Liên được minh oan công khai.\n\nBạn không chỉ tìm ra sự thật: bạn còn đưa phần thuốc chưa dùng về đúng người đang cần, trước khi quá muộn."
   },
   "reconcile": {
     "status": "success",
-    "title": "Chén trà sau cơn mưa",
-    "text": "Sau khi từng người được trình bày, Hà chưởng quầy viết rõ việc Lục Tam tự lấy thuốc, lý do cấp cứu, cách bồi hoàn và lời minh oan cho A Liên. Lục Tam nhận lỗi trước mọi người, không đổ phần trách nhiệm cho cô nữa.\n\nTrời sáng, A Liên mời bạn một chén trà. Bạn không buộc mọi người trở thành bạn bè chỉ sau một đêm; bạn đã giúp họ có cơ hội nói thật và tự chọn cách tiếp tục."
+    "title": "Chén trà sau chuyến xe bình minh",
+    "text": "Phần thuốc chưa dùng được mang từ trạm gác về theo đường sườn đá, kiểm đếm rồi trao tận tay người phụ trách đoàn xe chở người bị thương. Tiếng bánh xe lăn khỏi sân khi trời vừa sáng; số thuốc ấy không còn chỉ là một con số trong sổ.\n\nHà chưởng quầy đọc biên bản, Lục Tam nhận lỗi tự ý lấy và che giấu, rồi xin lỗi A Liên trước mọi người. Cô được kể đúng điều mình nhìn thấy, không ai thêm một cái tên vào chỗ bóng đêm che khuất. Người trong quán cùng ghi số thuốc đã dùng, đã trả lại và trách nhiệm bồi hoàn.\n\nKhông phải một lời xin lỗi khiến vụ việc hóa nhỏ. Cả hai nhóm người bị thương đều có thuốc cần thiết, còn người bị nghi oan được trả lại tiếng nói."
   },
   "wrong_guard": {
     "status": "failure",
     "title": "Lời buộc tội chưa thể thay chứng cứ",
     "text": "Bạn đứng trước mọi người, khẳng định Lục Tam có tội nhưng không đưa ra được những gì mình đã kiểm tra. Hà chưởng quầy ngăn người khác giữ anh lại: ông không thể cho phép kết tội hay bắt người chỉ bằng suy đoán.\n\nLục Tam tiếp tục im lặng, còn sự căng thẳng trong quán tăng lên. Bạn có thể đã nghi đúng người, nhưng cách buộc tội vội vàng khiến sự thật càng khó được nghe một cách công bằng."
+  },
+  "paper_only": {
+    "status": "failure",
+    "title": "Sự thật nằm trên giấy, thuốc vẫn ở trạm",
+    "text": "Bạn giúp chưởng quầy ghi rõ ai đã mở hòm. Lục Tam ký nhận lỗi; A Liên được đính chính trước vài người trong quán. Nhưng không ai được cử đi lấy phần thuốc còn lại ở trạm gác.\n\nTrời vừa sáng, đoàn xe chở người bị thương phải chờ dưới mái hiên. Bạn đã giải đáp ai lấy thuốc, nhưng chưa giải quyết được vì sao việc mất thuốc lại nguy hiểm đến thế."
+  },
+  "route_blocked": {
+    "status": "failure",
+    "title": "Đường tắt bị nước lũ khóa",
+    "text": "Người được cử đi đến cây cầu thấp thì thấy nước cuộn qua những tấm ván. Họ không thể vượt qua và buộc quay lại. Số thuốc chưa dùng vẫn ở trạm gác.\n\nĐoàn xe chở người bị thương không được nhận thuốc đúng lúc và phải hoãn lên đường. Việc tìm ra người lấy chưa đủ nếu bạn không đưa thuốc về kịp."
+  },
+  "unverified_handover": {
+    "status": "failure",
+    "title": "Một lần nữa bỏ qua việc kiểm chứng",
+    "text": "Túi thuốc đã được đưa về, nhưng bạn vội chuyển đi mà không kiểm số lượng. Người phụ trách đoàn xe phát hiện chứng từ không ghi rõ phần thuốc còn lại và yêu cầu kiểm lại.\n\nViệc thiếu đối chiếu lại làm mọi người chậm trễ giữa cơn mưa. Hôm nay, lời hứa suông không thể thay cho việc bàn giao có người chứng kiến."
+  },
+  "unresolved_reputation": {
+    "status": "failure",
+    "title": "Thuốc được trả, nỗi oan còn đó",
+    "text": "Đoàn xe đã có thuốc và kịp lên đường, nhưng không ai chịu công khai đính chính lời đồn về A Liên. Cô vẫn phải đối mặt với ánh mắt nghi ngờ của những người chưa nghe sự thật.\n\nBạn đã giúp những người bị thương, nhưng chưa giải quyết hết hậu quả của lần che giấu. Một câu chuyện không chỉ có người cần thuốc, mà còn có người cần được trả lại danh dự."
   }
 }
  };
