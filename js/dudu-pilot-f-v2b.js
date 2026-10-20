@@ -773,18 +773,18 @@
   },
   "wrong_maid": {
     "status": "failure",
-    "title": "Dấu sáp không đủ kết án",
-    "text": "Bạn chỉ vào A Liên, nhưng vết sáp trên tay cô đến từ chiếc đèn lồng. Túi thuốc vẫn chưa được giải thích thỏa đáng; lời buộc tội khiến cô bật khóc.\n\nDUDU // Giả thuyết thiếu chứng cứ quyết định. Đây là kết cục thử nghiệm."
+    "title": "Một dấu sáp chưa thể kết tội",
+    "text": "Bạn buộc tội A Liên dựa vào chuyện cô ở gần kho và vết sáp đỏ. Cô yêu cầu bạn chứng minh mình từng mang túi thuốc; bạn không có vật chứng trả lời câu hỏi ấy.\n\nDUDU // Hồ sơ thiếu chứng cứ quyết định. Sự thật của đêm mưa vẫn chưa được xác định."
   },
   "wrong_keeper": {
     "status": "failure",
-    "title": "Một nét mực, một lời kết tội",
-    "text": "Chưởng quầy đã sửa giờ trong sổ để tránh bị khiển trách vì giao chìa, nhưng không tự mang túi thuốc khỏi kho. Việc bạn kết luận từ vết sửa khiến người trong quán tranh cãi, còn sự thật chưa được làm rõ.\n\nDUDU // Giả thuyết chưa chứng minh người lấy thuốc."
+    "title": "Chủ quán cũng có quyền được chứng minh",
+    "text": "Bạn buộc tội Hà chưởng quầy vì ông có chìa và sửa một dòng sổ. Ông đặt cuốn sổ xuống bàn: “Khách quan có biết túi thuốc đang ở đâu không?” Bạn không thể trả lời.\n\nDUDU // Dấu hiệu khả nghi chưa đủ chứng minh người lấy. Hồ sơ vẫn bỏ ngỏ."
   },
   "wrong_guard": {
     "status": "failure",
-    "title": "Đoán đúng chưa phải phá án",
-    "text": "Bạn gọi tên Lục Tam nhưng không thể giải thích túi thuốc nằm đâu, chứng cứ nào nối anh với nó và anh lấy vì sao. Trước mặt mọi người, một lời đoán chưa thể thay thế kết luận.\n\nDUDU // Thiếu vật chứng và lời giải thích. Thử một tuyến khác."
+    "title": "Một lời chỉ tên chưa phải đáp án",
+    "text": "Bạn nêu tên Lục Tam, nhưng chưa đưa ra được túi thuốc, vật chứng liên quan hoặc lời giải thích có thể kiểm chứng. Anh từ chối một lời buộc tội chỉ dựa vào nghi ngờ; những người khác trong quán cũng chưa được nghe đủ sự thật.\n\nDUDU // Hồ sơ không đủ căn cứ. Kết quả này không xác nhận nghi phạm bạn chọn đúng hay sai."
   },
   "wrong_motive": {
     "status": "failure",
