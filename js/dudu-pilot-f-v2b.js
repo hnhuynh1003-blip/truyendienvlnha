@@ -10,7 +10,7 @@
  if(!world)throw Error('World Bible V2B missing');
  const story={
   schemaVersion:1,status:'pilot_only',released:false,rewardsEnabled:false,
-  scenarioId:'pilot-quan-dao-fair-evidence-v6-1',scenarioVersion:7,
+  scenarioId:'pilot-quan-dao-dawn-rescue-v7',scenarioVersion:8,
   missionId:'dudu-m-an-f01',worldId:world.worldId,genreId:world.genreId,
   title:'Đêm mưa ở Quan Đạo',tier:'F',world,worldCover:world.places.gate.background,
   startSceneId:'prologue',
@@ -186,6 +186,15 @@
         "visibleIfFlags": [
           "private_admission",
           "receipt_checked"
+        ]
+      },
+      {
+        "id": "hub_supply_return",
+        "label": "Trở lại việc bàn giao và hồi kết",
+        "to": "convoy_ready",
+        "kind": "travel",
+        "visibleIfFlags": [
+          "convoy_supplied"
         ]
       },
       {
@@ -916,8 +925,7 @@
     "choices": [
       {
         "id": "report_guard_v2b",
-        "label": "Trình bằng chứng và lập biên bản trách nhiệm",
-        "ending": "accountability",
+        "label": "Lập biên bản rồi tìm lại phần thuốc chưa dùng",
         "kind": "conclusion",
         "requires": [
           "care_receipt"
@@ -925,6 +933,10 @@
         "requiresFlags": [
           "private_admission",
           "receipt_checked"
+        ],
+        "to": "supply_audit",
+        "addFlags": [
+          "formal_agreed"
         ]
       },
       {
@@ -1054,8 +1066,7 @@
     "choices": [
       {
         "id": "confirm_public_report",
-        "label": "Lập biên bản, công bố việc minh oan",
-        "ending": "accountability",
+        "label": "Ghi lời khai và xử lý số thuốc chưa thu hồi",
         "kind": "conclusion",
         "requires": [
           "care_receipt"
@@ -1063,6 +1074,10 @@
         "requiresFlags": [
           "public_confirmed",
           "receipt_checked"
+        ],
+        "to": "supply_audit",
+        "addFlags": [
+          "formal_agreed"
         ]
       },
       {
@@ -1101,8 +1116,7 @@
     "choices": [
       {
         "id": "seek_mediation_v2b",
-        "label": "Ghi lời xin lỗi, trách nhiệm và phương án bồi hoàn",
-        "ending": "reconcile",
+        "label": "Ghi lời xin lỗi rồi giúp đưa thuốc về kịp",
         "kind": "conclusion",
         "requiresFlags": [
           "public_witness_heard",
@@ -1111,6 +1125,10 @@
         ],
         "requires": [
           "care_receipt"
+        ],
+        "to": "supply_audit",
+        "addFlags": [
+          "mediation_agreed"
         ]
       },
       {
@@ -1200,6 +1218,242 @@
         "label": "Tiếp tục buộc tội Lục Tam dù chưa trình được căn cứ",
         "ending": "wrong_guard",
         "kind": "conclusion"
+      }
+    ]
+  },
+  "supply_audit": {
+    "placeId": "hall",
+    "phase": "HẬU QUẢ",
+    "title": "Lời thú nhận chưa đưa thuốc về",
+    "text": "Đoàn xe chở người bị thương sắp đến nhận túi thuốc. Lục Tam đã nhận tự ý mang cả túi về trạm gác, nhưng không ai biết còn bao nhiêu thuốc và có thể kịp lấy về không.\n\nHà chưởng quầy đặt bảng kê trước bạn: “Giờ chúng ta phải làm gì cho những người đang chờ?”",
+    "choices": [
+      {
+        "id": "check_sack_stock",
+        "label": "Đối chiếu bảng kê và biên nhận",
+        "to": "supply_count",
+        "kind": "observation"
+      },
+      {
+        "id": "file_only_finish",
+        "label": "Chỉ ghi người lấy thuốc rồi dừng",
+        "ending": "paper_only",
+        "kind": "conclusion"
+      },
+      {
+        "id": "audit_return",
+        "label": "Trở lại đại sảnh hỏi thêm người khác",
+        "to": "hub",
+        "kind": "travel"
+      }
+    ]
+  },
+  "supply_count": {
+    "placeId": "hall",
+    "phase": "KIỂM KÊ",
+    "title": "Số thuốc chưa dùng",
+    "text": "Túi gốc có sáu cuộn băng ép và hai lọ thuốc cầm máu. Biên nhận trạm gác ghi đã dùng hai cuộn và một lọ.\n\nMuốn thu hồi, bạn phải xác định chính xác số lượng còn lại thay vì đoán rằng thuốc đã hết.",
+    "choices": [
+      {
+        "id": "calculate_remaining",
+        "label": "Còn bốn cuộn băng ép và một lọ thuốc",
+        "to": "route_plan",
+        "kind": "deduction",
+        "addFlags": [
+          "supply_balance_verified"
+        ]
+      },
+      {
+        "id": "call_all_used",
+        "label": "Cho rằng tất cả đã dùng, không thu hồi",
+        "ending": "paper_only",
+        "kind": "conclusion"
+      },
+      {
+        "id": "count_return",
+        "label": "Kiểm tra lại bảng kê",
+        "to": "supply_audit",
+        "kind": "observation"
+      }
+    ]
+  },
+  "route_plan": {
+    "placeId": "hall",
+    "phase": "CHỌN ĐƯỜNG",
+    "title": "Thuốc ở trạm gác, bình minh ở trước mắt",
+    "text": "Lục Tam biết nơi để số thuốc chưa dùng, nhưng sau lần giấu chuyện, không nên để anh tự đi một mình. Người khuân hàng của quán có thể đi cùng.\n\nCầu gỗ dưới thung đang ngập nước; đường trên sườn đá xa hơn. Bạn muốn hỏi người biết đường hay lập tức cử người?",
+    "choices": [
+      {
+        "id": "route_seek_advice",
+        "label": "Hỏi người đánh xe về lối còn an toàn",
+        "to": "route_advice",
+        "kind": "dialogue"
+      },
+      {
+        "id": "route_choose_bridge",
+        "label": "Cử người qua cầu thấp vì gần hơn",
+        "ending": "route_blocked",
+        "kind": "travel"
+      },
+      {
+        "id": "route_choose_ridge",
+        "label": "Cử Lục Tam và người dẫn đường men sườn đá",
+        "to": "courier_out",
+        "kind": "travel",
+        "visibleIfFlags": [
+          "ridge_route_known"
+        ],
+        "addFlags": [
+          "escort_dispatched"
+        ]
+      },
+      {
+        "id": "route_back_to_stock",
+        "label": "Kiểm lại số thuốc cần mang về",
+        "to": "supply_count",
+        "kind": "observation"
+      }
+    ]
+  },
+  "route_advice": {
+    "placeId": "hall",
+    "phase": "ĐƯỜNG ĐI",
+    "title": "Lời người vừa qua đèo",
+    "text": "Người đánh xe cho biết nước lũ đã tràn qua cầu thấp. Lối sườn đá xa hơn nhưng còn đi được; anh vừa từ đó trở về.\n\nChưởng quầy gọi người khuân hàng quen đường để đi cùng Lục Tam. Hai người có thể mang về số thuốc còn lại với giấy xác nhận rõ ràng.",
+    "choices": [
+      {
+        "id": "choose_escorted_ridge",
+        "label": "Theo lối sườn đá, cử hai người đi cùng",
+        "to": "courier_out",
+        "kind": "travel",
+        "addFlags": [
+          "ridge_route_known",
+          "escort_dispatched"
+        ]
+      },
+      {
+        "id": "ignore_flood_report",
+        "label": "Bỏ qua lời cảnh báo, đi cầu thấp",
+        "ending": "route_blocked",
+        "kind": "travel"
+      },
+      {
+        "id": "remember_safe_path",
+        "label": "Nhớ lối an toàn rồi quay lại bàn bạc",
+        "to": "route_plan",
+        "kind": "observation",
+        "addFlags": [
+          "ridge_route_known"
+        ]
+      }
+    ]
+  },
+  "courier_out": {
+    "placeId": "gate",
+    "phase": "THU HỒI",
+    "title": "Hai bóng đèn khuất trong mưa",
+    "text": "Lục Tam cùng người khuân hàng đi theo lối sườn đá, cầm tờ ghi rõ số thuốc phải lấy: bốn cuộn băng ép, một lọ cầm máu.\n\nBạn giữ đèn ngoài hiên để họ tìm được đường về. Trên đường, mưa chưa hề ngớt.",
+    "choices": [
+      {
+        "id": "watch_for_return",
+        "label": "Đợi tin và ánh đèn từ con dốc",
+        "to": "courier_in",
+        "kind": "interaction",
+        "requiresFlags": [
+          "escort_dispatched"
+        ]
+      }
+    ]
+  },
+  "courier_in": {
+    "placeId": "gate",
+    "phase": "BÌNH MINH",
+    "title": "Chiếc túi thuốc trở lại",
+    "text": "Khi trời chuyển sáng, hai người xuất hiện, đặt chiếc túi sũng nước dưới mái hiên. Những gói còn lại chưa mở, nhưng dấu buộc đã sờn.\n\nBạn sẽ kiểm lại số lượng trước khi giao cho đoàn xe, hay lại tin một lời nói vội vàng?",
+    "choices": [
+      {
+        "id": "inspect_returned_bag",
+        "label": "Kiểm đủ bốn cuộn băng và một lọ thuốc rồi ký nhận",
+        "to": "handover",
+        "kind": "observation",
+        "addFlags": [
+          "medicine_recovered"
+        ]
+      },
+      {
+        "id": "hand_off_untallied",
+        "label": "Đưa túi đi ngay, không kiểm số lượng",
+        "ending": "unverified_handover",
+        "kind": "conclusion"
+      }
+    ]
+  },
+  "handover": {
+    "placeId": "hall",
+    "phase": "BÀN GIAO",
+    "title": "Đoàn xe đang chờ trước quán",
+    "text": "Người phụ trách đoàn xe chở người bị thương dừng trước cửa, trên tay cầm danh sách vật tư. Túi thuốc vừa thu hồi nằm trên bàn với lượng còn lại đã được kiểm.\n\nThu hồi xong vẫn chưa có nghĩa người cần thuốc đã nhận được nó.",
+    "choices": [
+      {
+        "id": "deliver_to_convoy",
+        "label": "Trao thuốc cho đoàn xe và ký số lượng đã giao",
+        "to": "convoy_ready",
+        "kind": "interaction",
+        "requiresFlags": [
+          "medicine_recovered"
+        ],
+        "addFlags": [
+          "convoy_supplied"
+        ]
+      },
+      {
+        "id": "leave_bag_in_store",
+        "label": "Giữ thuốc trong kho, để sáng khác mới giao",
+        "ending": "paper_only",
+        "kind": "conclusion"
+      }
+    ]
+  },
+  "convoy_ready": {
+    "placeId": "hall",
+    "phase": "HỒI KẾT",
+    "title": "Số thuốc đã đến tay người cần",
+    "text": "Người phụ trách đoàn xe nhận đủ thuốc còn lại. Họ có thể chuẩn bị tiếp tục qua đèo khi trời vừa sáng. Những người ở trạm gác đã được cứu bằng phần thuốc dùng trước đó; phần chưa dùng nay có nơi cần nó.\n\nA Liên vẫn cần được minh oan, còn hành vi giấu thuốc của Lục Tam phải được ghi nhận rõ ràng.",
+    "choices": [
+      {
+        "id": "finish_formal_with_supply",
+        "label": "Công bố biên bản và minh oan A Liên",
+        "ending": "accountability",
+        "kind": "conclusion",
+        "requiresFlags": [
+          "formal_agreed",
+          "medicine_recovered",
+          "convoy_supplied"
+        ]
+      },
+      {
+        "id": "finish_mediated_with_supply",
+        "label": "Công khai lời xin lỗi và ghi thỏa thuận có người chứng kiến",
+        "ending": "reconcile",
+        "kind": "conclusion",
+        "requiresFlags": [
+          "mediation_agreed",
+          "public_confirmed",
+          "public_witness_heard",
+          "medicine_recovered",
+          "convoy_supplied"
+        ]
+      },
+      {
+        "id": "finish_rescue_without_truth",
+        "label": "Để đoàn xe đi nhưng không đính chính lời nghi oan",
+        "ending": "unresolved_reputation",
+        "kind": "conclusion"
+      },
+      {
+        "id": "return_to_reconciliation",
+        "label": "Quay lại để những người trong quán được lên tiếng",
+        "to": "hearing",
+        "kind": "dialogue"
       }
     ]
   }
