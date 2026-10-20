@@ -1738,7 +1738,7 @@ async function main() {
     assert.equal(phoneDesktop.ariaExpanded,'true');
     assert.equal(phoneDesktop.ariaHidden,'false');
     assert.match(phoneDesktop.clock,/^\d{2}:\d{2}$/);
-    assert.equal(phoneDesktop.appCount,11,'V44.5 adds an isolated Sandbox testing room');
+    assert.equal(phoneDesktop.appCount,13,'V69 adds player System and AU Core without removing Sandbox apps');
     assert.equal(phoneDesktop.nativeButtons,true);
     assert.ok(phoneDesktop.phoneWidth>=350&&phoneDesktop.phoneWidth<=390);
     assert.notEqual(phoneDesktop.cardRadius,'0px');
