@@ -26,13 +26,16 @@
    last_guard_key:{truth:'Lục Tam nhận chìa kho sau canh hai.'},
    sealed_box:{truth:'Hòm thuốc bị mở từ phía ngoài.'},
    borrowed_medicine:{truth:'Lục Tam chuyển thuốc cứu người ở trạm canh và sợ bị kỷ luật.'},
-   maid_witness:{truth:'A Liên trông thấy bóng lính canh, nhưng không thấy người lấy thuốc.'}
+   maid_witness:{truth:'A Liên trông thấy bóng áo sẫm, nhưng không thấy người lấy thuốc.'},
+   stock_for_convoy:{truth:'Túi thuốc gồm sáu cuộn băng ép và hai lọ cầm máu, được ký gửi cho đoàn xe chở người bị thương tới lúc bình minh.'},
+   stock_used_at_post:{truth:'Tại trạm gác đã dùng hai cuộn băng ép và một lọ cầm máu; phần còn lại có thể thu hồi.'},
+   ridge_safe_path:{truth:'Cầu thấp ngập nước, đường men sườn đá còn có thể qua được.'}
   },
   npcs:{
    keeper:{npcId:'keeper',name:'Hà chưởng quầy',role:'Chủ quán',homePlaceId:'hall',
     intro:'“Chuyện gửi hàng không thể chỉ nghe qua lời đồn, khách quan ạ.”',
     motive:'Tìm lại thuốc và giữ sự an toàn của người trọ.',
-    knows:['last_guard_key','sealed_box'],
+    knows:['last_guard_key','sealed_box','stock_for_convoy'],
     beliefs:['Nghi có người tự ý mở kho, chưa thể buộc tội.'],
     lines:[
      {requiresEvidence:['key_log'],factId:'last_guard_key',text:'“Sổ ghi Lục Tam mượn chìa lúc canh hai, nhưng tôi không biết vì sao.”'},
@@ -41,13 +44,18 @@
    guard:{npcId:'guard',name:'Lục Tam',role:'Lính áp tải',homePlaceId:'hall',
     intro:'“Tôi chỉ là lính áp tải. Chuyện tối qua... có vài điều khó nói.”',
     motive:'Giữ bí mật việc vi phạm quy trình để cứu người.',
-    knows:['borrowed_medicine','last_guard_key'],
+    knows:['borrowed_medicine','last_guard_key','stock_used_at_post'],
     beliefs:['Cứu người là đúng, nhưng tự lấy thuốc là sai.'],
     lines:[
      {requiresEvidence:['guard_statement'],text:'“Tôi có rời trạm gác. Chuyện ấy tôi sẽ chịu trách nhiệm.”'},
      {requiresEvidence:['broken_seal','guard_statement'],requiresFlags:['guard_confronted'],factId:'borrowed_medicine',text:'“Đúng, tôi đã mở hòm. Tôi lấy thuốc cứu người bị thương ở trạm gác.”'},
      {requiresEvidence:['care_receipt'],text:'“Tôi đã ghi rõ nơi dùng thuốc. Tôi sẽ nhận trách nhiệm trước chưởng quầy.”'}
     ]},
+   porter:{npcId:'porter',name:'Đinh Nhị',role:'Người khuân hàng kiêm dẫn đường',homePlaceId:'hall',
+    intro:'“Đường thấp ngập rồi. Muốn qua đèo phải biết lối sườn đá.”',
+    motive:'Đưa thuốc trở về an toàn trước khi đoàn xe lên đường.',
+    knows:['ridge_safe_path'],beliefs:['Cầu thấp đã ngập; đường sườn đá vẫn còn lối đi.'],
+    lines:[{factId:'ridge_safe_path',text:'“Cầu thấp ngập rồi, tôi dẫn người theo sườn đá.”'}]},
    maid:{npcId:'maid',name:'A Liên',role:'Người hầu quán',homePlaceId:'hall',
     intro:'“Khách quan cho em một chút thời gian. Em không muốn bị kết tội chỉ vì một lời đồn.”',
     motive:'Minh oan và bảo vệ người trọ.',
