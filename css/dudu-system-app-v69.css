@@ -117,3 +117,13 @@ body.dudu-phone-v11 #cyber-phone .dudu-v69-input:focus-visible{
 @media(prefers-reduced-motion:reduce){
  body.dudu-phone-v11 #cyber-phone .dudu-v69-popup{scroll-behavior:auto;}
 }
+
+body.dudu-phone-v11 #cyber-phone #phone-app-system,
+body.dudu-phone-v11 #cyber-phone #phone-app-core-console{
+ position:relative;min-height:0;overflow:hidden;
+ flex-direction:column;
+}
+body.dudu-phone-v11 #cyber-phone #dudu-v69-system-view,
+body.dudu-phone-v11 #cyber-phone #dudu-v69-core-view{
+ flex:1 1 0%;min-height:0;width:100%;box-sizing:border-box;
+}
