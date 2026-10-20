@@ -135,3 +135,20 @@ Bạn đang phát triển web đọc truyện và thế giới tương tác DUDU
 - Không sửa backend, Firestore Rules, EPUB, auth, Liên Lạc NPC, thưởng thật, kho, Xu, cấp bậc. `pilot_only`, `released:false`, `rewardsEnabled:false` vẫn khóa.
 
 **Kế tiếp:** trước khi tạo 3 truyện F khảo hạch, dùng quy chuẩn chất lượng kể chuyện vừa lưu để viết đề cương đầy đủ cho từng F, có riêng nhân vật, động cơ, nhịp đời sống, biến cố, nhiều hậu quả, visual identity và QA logic; không copy tuyến điều tra Quan Đạo sang mọi F. Không đồng nhất 48 seeds V66 với nhiệm vụ đã phát hành.
+
+## 9. F INTERACTIVE DISCOVERY V4 — NGƯỜI CHƠI TỰ ĐIỀU TRA (20/10/2026)
+
+> **Điểm bàn giao mới nhất** sau mốc Narrative V3 ở mục 8. Đọc `docs/DUDU-F-INTERACTIVE-DISCOVERY-V4.md` và `docs/DUDU-F-STORY-CRAFT-QUALITY-V1.md` trước khi tiếp tục làm F.
+
+Phản hồi kiểm thử UX: ở bản V3, lựa chọn buộc tội A Liên / yêu cầu Lục Tam chịu trách nhiệm / hòa giải đều lộ ngay lúc đến đại sảnh; NPC tiết lộ quá sớm; đọc nhiều đoạn văn nhưng ít được làm gì. Người chơi yêu cầu **xuyên vào thế giới**, tự đi từng nơi, hỏi người, kiểm tra vật, đưa ra giả thuyết và chọn chứng cứ để bảo vệ kết luận. Hai ảnh tham khảo từ trò chơi tương tác trên điện thoại cho thấy ưu tiên ảnh bối cảnh, lời thoại ngắn và nút hành động rõ, không sao chép UI của bên thứ ba.
+
+### Đã triển khai trên main
+
+- `js/dudu-pilot-f-v2b.js` hiện là **Quan Đạo Investigation V4** `scenarioId=pilot-quan-dao-investigation-v4`, `scenarioVersion=4`, giữ ID nhiệm vụ gốc `dudu-m-an-f01`. Có 27 scene phân nhánh (không phải 27 đoạn tuyến tính), 68 lựa chọn authored, 5 ending. Người chơi tự đi đại sảnh/hành lang/kho, trao đổi NPC, khám vật chứng và ghi nhận lời kể.
+- Hành động vào kho ẩn tới lúc xin phép; hành động suy luận ẩn đến khi có sổ chìa, niêm phong và **một trong hai** lời chứng của A Liên/Lục Tam; các nút kết luận chỉ xuất hiện sau suy luận và kiểm chứng. Người chơi tự chọn nghi ai và căn cứ nào; đoán theo bóng áo lính không đạt. Tự do chọn trình tự khảo sát. Không tiết lộ tên thủ phạm qua CTA trước khi người chơi biết.
+- `js/dudu-story-engine-v2b.js`: `visibleIfEvidence`, `visibleAnyEvidence`, `visibleIfFlags`, `hiddenIfFlags`, cùng kiểm tra tại `decide` chống gọi choice ẩn. `js/dudu-world-model-v2b.js` kiểm tra điều kiện dẫn chứng hợp lệ. `js/dudu-pilot-world-v2b.js` hãm thoại tiết lộ, chỉ nói theo biết/đã được đối chất.
+- `js/dudu-pilot-ui-v1.js` và CSS: câu ngắn theo cảnh, sổ tay chứng cứ mở/đóng, nhãn A/B/C, phân kiểu quan sát/trò chuyện/di chuyển/suy luận, focus đọc mobile. Trang `dudu-pilot.html` và shell trỏ phiên bản `play-v4`; lưu tạm bằng `dudu:pilot-f-investigation-v4:` tách biệt V1/V2B/V3.
+- **Không** mở bản đồ thế giới/48 seed thành nhiệm vụ thật. `pilot_only`, `released:false`, `rewardsEnabled:false`; không ghi XP/Xu/kho, hợp đồng, Firestore hay AI.
+- Kiểm tra logic qua 4 bộ test JS trên môi trường V8 với nguồn fetch GitHub **PASS**, gồm đường người chơi chọn sai, chọn đúng, lời chứng thay thế và lựa chọn ẩn không gọi trực tiếp được. Chưa có trình duyệt thực, deployment log hoặc QA mobile xác nhận.
+
+**Ưu tiên kế tiếp:** QA trong trình duyệt trên GitHub Pages rồi mới viết lại từng truyện F mới với nhịp tương tác riêng. Không rập khuôn F02/F03 thành 'mất đồ → tìm chìa → hỏi lính'. Viết thêm nội dung khi có động cơ, không ép văn phải ngắn. Lưu mốc rollback V4 ở các commit GitHub gần ngày 20/10/2026; baseline trước đợt V4 là `74902544d0b2b580bdf90bc9452b5cacfe229940`.
