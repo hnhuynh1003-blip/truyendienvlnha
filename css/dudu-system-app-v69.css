@@ -233,3 +233,24 @@ body.dudu-phone-v11 #cyber-phone .dudu-v71-quest small{
 @media(prefers-reduced-motion:reduce){
  body.dudu-phone-v11 #cyber-phone .dudu-v69-popup{scroll-behavior:auto;}
 }
+/* V71 character name editor is separate from immutable System identity. */
+body.dudu-phone-v11 #cyber-phone .dudu-v71-rename-profile{
+ padding:6px 9px;margin:4px auto 0;display:block;border:1px solid #8174b4;
+ border-radius:9px;background:#252d50;color:#f8e9ff;font-size:11px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v71-rename-form{
+ display:flex;flex-wrap:wrap;justify-content:center;gap:7px;
+ padding:9px;box-sizing:border-box;width:100%;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v71-rename-form[hidden]{display:none;}
+body.dudu-phone-v11 #cyber-phone .dudu-v71-rename-form input{
+ width:100%;min-width:0;min-height:35px;border:1px solid #7779a4;
+ border-radius:9px;background:#1b2542;color:#fff;padding:7px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v71-rename-form button{
+ border:1px solid #827ca6;border-radius:8px;background:#333b62;
+ color:#f9f2ff;padding:7px 10px;font-size:11px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v71-rename-form small{
+ flex:1 0 100%;color:#cfb9aa;text-align:center;font-size:10px;
+}
