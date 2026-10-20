@@ -51,6 +51,12 @@ async function main() {
       await route.fulfill({ status: 200, contentType: 'application/javascript', body: code });
     });
     await page.goto(`http://127.0.0.1:${port}/?sandbox=1`, { waitUntil: 'domcontentloaded' });
+    const dismissSandboxLogin=async()=>{
+      // Real user action; do not force clicks behind the expected login modal.
+      const auth=page.locator('#auth-modal');
+      if(await auth.isVisible())
+        await auth.getByRole('button',{name:'Đóng'}).click();
+    };
 
     // DUDU System Portal: compact visual homepage without gameplay side effects.
     await page.waitForFunction(() => !!window.DuduSiteV60 && !!document.querySelector('.d61-hero'));
@@ -161,15 +167,18 @@ async function main() {
       assert.ok(layout.height<=maxHeight,'World cards should be compact at '+width+'px: '+layout.height);
     }
     await page.setViewportSize({width:390,height:844});
+    await dismissSandboxLogin();
     await page.locator('#d60-worlds .d64-unknown-summary').click();
     assert.equal(await page.locator('#d60-worlds .d64-unknown').evaluate(el=>el.open),true,
       'Unverified coordinates reveal on demand');
     await page.evaluate(()=>DuduSiteV60.refresh());
     await page.waitForFunction(()=>document.querySelector('#d60-worlds .d64-unknown')?.open);
     assert.equal(await page.locator('#d60-worlds .d64-unknown-card').count(),3);
+    await dismissSandboxLogin();
     await page.locator('#d60-worlds .d64-unknown-summary').click();
     assert.equal(await page.locator('#d60-worlds .d64-unknown').evaluate(el=>el.open),false);
     // V66: Genre gate previews multiple F/E story seeds, not a playable session.
+    await dismissSandboxLogin();
     await page.locator('#d60-worlds .d64-world-card').first().click();
     const dossier=page.locator('#d65-world-dialog');
     await dossier.waitFor({state:'visible'});
@@ -196,6 +205,7 @@ async function main() {
     // through an obscuring modal or weaken production auth behavior.
     if(await page.locator('#auth-modal').isVisible())
       await page.locator('#auth-modal').getByRole('button',{name:'Đóng'}).click();
+    await dismissSandboxLogin();
     await page.locator('#d60-worlds .d66-random-entry').click();
     await dossier.waitFor({state:'visible'});
     assert.match(await dossier.textContent(),/Tín hiệu sơ cấp/);
