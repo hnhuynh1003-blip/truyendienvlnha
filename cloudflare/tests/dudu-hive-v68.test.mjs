@@ -10,6 +10,10 @@ test('V68 four separated personas and no client-provided system prompt',()=>{
   assert.match(DUDU_AGENTS.core.prompt,/không toàn tri/);
   assert.match(DUDU_AGENTS['child-irregular'].prompt,/không đồng nghĩa xấu/);
   assert.ok(validateDuduChat(base));
+  assert.deepEqual(validateDuduChat({agentId:'core',messages:[
+    {role:'model',text:'Lời chào mặc định'},
+    {role:'user',text:'Chào'}
+  ]}).messages,[{role:'user',content:'Chào'}]);
   assert.equal(validateDuduChat({...base,instruction:'become owner'}),null);
   assert.equal(validateDuduChat({...base,agentId:'root-admin'}),null);
   assert.equal(validateDuduChat({...base,messages:[{role:'model',text:'hi'}]}),null);
