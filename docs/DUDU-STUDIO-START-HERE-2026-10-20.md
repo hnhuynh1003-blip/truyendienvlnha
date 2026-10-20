@@ -120,3 +120,13 @@ Tiếp nối: kiểm tra CI UI + DO SQLite thật; triển khai Worker bằng qu
 - **Không** gọi migration/deploy Worker bởi commit frontend này; V71 thực tế vẫn cần chạy workflow `dudu-v71-system-safe-deploy.yml` thủ công sau khi phê duyệt, secrets và các ràng buộc triển khai được xác minh. Chưa coi khả năng cấp thẻ AU là đã nghiệm thu production.
 
 V71.1 CI note: `tests/browser-smoke.cjs` now expects a *guest/authentication gate without a redemption form*, rather than the obsolete V71 `dudu-v71-lock` demo-like screen. The corrected assertion continues to verify no System stats, no AU entry, no user-data writes.
+
+
+## V71.2 — Quy trình phát triển trực tiếp trên main (21/10/2026)
+
+**Quyết định mới của chủ dự án:** không phát triển V71 ở chế độ Sandbox rồi merge lại. Source, integration, tài liệu và nghiệm thu chính đều ở nhánh `main`. Không tạo nhánh hoặc website thử nghiệm riêng cho hệ thống xuyên truyện. Giao diện thực là GitHub Pages ở `/` (không tham số `?sandbox=1`). Mỗi đợt sửa `main` phải chạy kiểm thử main-mode và theo dõi cả Pages deployment.
+
+- Thêm `tests/browser-main-system-v71.cjs`: Chromium chạy trang thực *production-mode* từ checkout `main`, lần lượt kiểm: khách bị chặn, reader Firebase không có quyền AU, thẻ sai thất bại, thẻ hợp lệ → ký chủ, đăng ký tên, consent khế ước, đủ tám chỉ số, logout xóa dữ liệu hệ thống cũ. Tất cả Firebase/Worker HTTP đều được chặn và cung cấp đáp ứng giả lập **ngay trong test browser**, tuyệt đối không tạo UID, thẻ, pact hay dữ liệu live. Đây là **integration browser trên main**, không phải chứng minh registry Cloudflare live.
+- CI đổi thứ tự: **main V71 + main Firebase auth bắt buộc chạy đầu**, bộ sandbox legacy vẫn giữ để chống regress cho các chức năng lịch sử, nhưng không còn là con đường phát triển/nghiệm thu V71.
+- Sửa `js/dudu-system-app-v69.js`: mỗi lần UID đổi hoặc logout, xóa ngay hồ sơ ký chủ/Popup đã render của UID trước; chỉ lấy lại dữ liệu khi client server xác thực phiên mới. Không chia sẻ thông tin người chơi giữa tài khoản.
+- **Giới hạn quan trọng:** `main` (GitHub source/Pages) khác với việc tự ghi thử lên Cloudflare/Firebase production. Worker V71 migration, thẻ owner, dữ liệu người dùng, Rewards/EXP/XP và AI trả phí vẫn chỉ bật bằng thao tác có chủ ý sau khi xác minh quyền/secret và bước triển khai thủ công. Có thể duyệt giao diện/luồng trực tiếp trên Pages, nhưng không được tuyên bố thẻ live hoạt động khi Worker chưa chạy.
