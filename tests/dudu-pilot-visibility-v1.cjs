@@ -10,10 +10,10 @@ const shell=read('js/site-shell-v60.js');
 const ui=read('js/dudu-pilot-ui-v1.js');
 const standalone=read('dudu-pilot.html');
 assert.match(shell,/dudu-pilot-entry-inline/,'World Atlas must render persistent pilot card');
-assert.match(shell,/pilotLink\.href='dudu-pilot\.html\?v=story-3'/,'World Atlas needs direct fallback');
+assert.match(shell,/pilotLink\.href='dudu-pilot\.html\?v=play-v4'/,'World Atlas needs direct fallback');
 assert.match(shell,/root\.append\(pilot,starter,hidden\)/,'Pilot should appear before genre tiles');
 assert.match(html,/site-shell-v60\.js\?v=story-3/,'Refresh old HTML asset version');
-assert.match(html,/dudu-pilot-ui-v1\.js\?v=story-3/,'Refresh pilot UI bundle version');
+assert.match(html,/dudu-pilot-ui-v1\.js\?v=play-v4/,'Refresh pilot UI bundle version');
 assert.match(ui,/querySelector\('\.dudu-pilot-entry-inline'\)/,
  'Optional modal module must not create duplicate CTA');
 assert.match(ui,/queueMicrotask\(mount\)/,'Wait for world shell render');
