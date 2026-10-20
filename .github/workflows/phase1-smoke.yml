@@ -20,7 +20,7 @@ jobs:
       - name: Verify JavaScript, scope, Gemini gateway and quota guards
         run: |
           node --test tests/*.test.cjs
-          node --test tests/dudu-agent-v68.cjs
+          node --test tests/dudu-transmigration-v69.test.cjs
           node --test tests/dudu-messenger-v67-2.cjs
           node --test tests/dudu-steward-v67-3.cjs
           node --test functions/tests/*.test.cjs
