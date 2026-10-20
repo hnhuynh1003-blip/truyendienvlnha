@@ -31,6 +31,9 @@ DUDU_WORKERS_AI_APPROVED = "true"
 DUDU_WORKERS_ACCOUNT_FREE_VERIFIED = "true"
 DUDU_AI_FALLBACK_ENABLED = "true"
 DUDU_PAID_PROVIDERS_ENABLED = "false"
+# V68 never inherits NPC AI enablement. Hive paid pilot is disabled.
+DUDU_HIVE_ENABLED = "false"
+DUDU_HIVE_TEST_APPROVED = "false"
 
 # AI binding may run only after Firebase auth, DO quota, and Free flags.
 [ai]
