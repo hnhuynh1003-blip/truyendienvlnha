@@ -1,7 +1,10 @@
 /* DUDU Foundation: isolated F story playtest. Never unlocks real missions. */
 (function(root){
  'use strict';
- const doc=root.document,engine=root.DuduStoryEngineV1,story=root.DuduPilotFStoryV1;
+ const doc=root.document;
+ const upgraded=!!(root.DuduStoryEngineV2B&&root.DuduPilotFStoryV2B);
+ const engine=upgraded?root.DuduStoryEngineV2B:root.DuduStoryEngineV1;
+ const story=upgraded?root.DuduPilotFStoryV2B:root.DuduPilotFStoryV1;
  if(!doc||!engine||!story||engine.validate(story).length)return;
  const id=s=>doc.getElementById(s);
  const el=(tag,cls,txt)=>{
@@ -13,7 +16,7 @@
   let uid=null;
   try{const auth=root.DuduAuth;uid=auth?.isReady?.()?auth.uid():null;}catch{}
   if(!uid){try{uid=root.firebase?.auth?.()?.currentUser?.uid||null;}catch{}}
-  return 'dudu:pilot-f-v1:'+encodeURIComponent(uid||'guest');
+  return (upgraded?'dudu:pilot-f-v2b:':'dudu:pilot-f-v1:')+encodeURIComponent(uid||'guest');
  }
  function load(){
   owner=key();
@@ -69,13 +72,22 @@
    preview.onerror=()=>{};
    preview.src=photoPath;
   }
-  imageWrap.append(img,el('span','dudu-pilot-place','⌖  '+v.place.label));
+  imageWrap.append(img);
+  if(v.storyPhase)imageWrap.append(el('span','dudu-pilot-phase',v.storyPhase));
+  imageWrap.append(el('span','dudu-pilot-place','⌖  '+(v.place.publicName||v.place.label)));
   const notice=el('p','dudu-pilot-notice',
    'BẢN THỬ KHÉP KÍN · Không ký khế ước, không tính khảo hạch, không cấp EXP/Xu/vật phẩm');
   const content=el('section','dudu-pilot-content');
   content.append(el('h3','',v.ending?v.ending.title:v.title),
    el('p','dudu-pilot-description',v.ending?v.ending.text:v.text));
-  if(!v.ending&&v.npc)content.append(el('p','dudu-pilot-npc','Nhân vật: '+v.npc));
+  if(!v.ending&&v.npcDetails){
+   const npcBox=el('div','dudu-pilot-persona');
+   npcBox.append(el('p','dudu-pilot-npc',v.npcDetails.name+' · '+v.npcDetails.role),
+    el('blockquote','dudu-pilot-voice',v.npcDetails.text));
+   content.append(npcBox);
+  }else if(!v.ending&&v.npc){
+   content.append(el('p','dudu-pilot-npc','Nhân vật: '+v.npc));
+  }
   if(v.ending){
    content.append(el('p','dudu-pilot-result',v.status==='success'?
     'KẾT THÚC · MỤC TIÊU ĐẠT (CHỈ BẢN THỬ)':'KẾT THÚC · CHƯA ĐẠT MỤC TIÊU'));
@@ -86,7 +98,8 @@
    const evidence=el('div','dudu-pilot-evidence');
    evidence.append(el('strong','','Manh mối đã ghi nhận'));
    const tags=el('div','dudu-pilot-tags');
-   v.evidence.forEach(k=>tags.append(el('span','',evNames[k]||k)));
+   if(v.clueDetails){v.clueDetails.forEach(clue=>tags.append(el('span','',clue.label)));}
+   else v.evidence.forEach(k=>tags.append(el('span','',evNames[k]||k)));
    evidence.append(tags);content.append(evidence);
   }
   const actions=el('div','dudu-pilot-actions');
@@ -97,7 +110,9 @@
    v.choices.forEach(c=>{
     const btn=el('button','dudu-pilot-action',c.label);
     btn.type='button';btn.disabled=c.locked;
-    if(c.locked)btn.title=c.requirementHint;
+    if(c.locked){btn.title=c.requirementHint;
+     btn.append(el('small','dudu-pilot-choice-hint',c.requirementHint));
+    }
     btn.addEventListener('click',()=>{
      if(key()!==owner){load();render();return;}
      const result=engine.decide(story,state,c.id);
