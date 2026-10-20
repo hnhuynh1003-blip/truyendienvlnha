@@ -138,6 +138,39 @@ const mediated=play(['seek_mediation_v2b'],ready);
 assert.equal(mediated.endingId,'reconcile');
 assert.equal(mediated.status,'success');
 assert.equal(engine.decide(s,official,'report_guard_v2b').reason,'already_finished');
+assert.ok(!options(hub).includes('hub_present_verified_record'),'No verdict before evidence');
+assert.ok(!options(store).includes('hub_present_verified_record'),'Not even two clues give verdict');
+const fullEvidence=play([
+ 'maid_visit_v2b','ask_maid_last_night','write_maid_testimony_v2b',
+ 'guard_visit_v2b','ask_guard_where','write_guard_testimony_v2b',
+ 'store_visit_v2b','check_seal_v2b','collect_seal_v2b','return_from_store_v2b',
+ 'assemble_clues','suspect_guard','show_ledger_and_seal','ask_for_full_account',
+ 'inspect_receipt','review_receipt','match_receipt_entries'
+],key);
+assert.deepEqual([...fullEvidence.evidence].sort(),Object.keys(world.clues).sort(),
+ 'All five evidence objects remain in the session');
+assert.ok(fullEvidence.flags.includes('private_admission')&&fullEvidence.flags.includes('receipt_checked'));
+const fullyReadyHub=play(['verified_more_search'],fullEvidence);
+assert.ok(options(fullyReadyHub).includes('hub_present_verified_record'),'Verified conclusion accessible at hub');
+assert.ok(options(fullyReadyHub).includes('hub_invite_hearing_verified'),'Verified hearing accessible at hub');
+assert.match(at(fullyReadyHub).verificationNote,/Đã đối chiếu/,'Show verification separate from collected clues');
+assert.equal(play(['hub_present_verified_record','report_guard_v2b'],fullyReadyHub).endingId,'accountability');
+
+let loops=fullyReadyHub;
+for(let n=0;n<120;n++){
+ loops=play(['assemble_clues','keep_searching'],loops);
+}
+assert.ok(loops.step>100,'Revisit scenario surpasses prior 100-step limit');
+assert.ok(loops.log.length<=100,'Saved interaction log remains bounded');
+assert.deepEqual(loops.evidence,fullEvidence.evidence,'No clue lost during exploration');
+const resumed=engine.restore(s,engine.serialize(s,loops));
+assert.deepEqual(resumed,loops,'Exploratory session can still restore');
+assert.equal(play(['hub_present_verified_record','report_guard_v2b'],resumed).endingId,'accountability',
+ 'Verified conclusion still works beyond step 100');
+const uiText=read('js/dudu-pilot-ui-v1.js');
+assert.match(uiText,/actionAlert/, 'Rejected action must not fail silently');
+assert.match(uiText,/verificationNote/,'User must see the distinction between clues and verification');
+
 const guardLater=play(['verified_more_search','guard_visit_v2b'],verified);
 assert.equal(at(guardLater).npcDetails.text,s.scenes.guard.speech,
  'Previously disclosed secret must not play again at introductory scene');
@@ -157,7 +190,7 @@ const ui=read('js/dudu-pilot-ui-v1.js');
 assert.match(ui,/dudu:pilot-f-fair-evidence-v6-1:/);
 assert.match(ui,/Sổ tay của bạn/);
 for(const html of [read('index.html'),read('dudu-pilot.html')]){
- for(const script of ['dudu-story-engine-v2b.js?v=play-v6-1','dudu-pilot-f-v2b.js?v=play-v6-1'])
+ for(const script of ['dudu-story-engine-v2b.js?v=play-v6-2','dudu-pilot-f-v2b.js?v=play-v6-2'])
   assert.ok(html.includes(script),'Missing '+script);
 }
-console.log('DUDU F V6: fair suspects / proof-before-verdict / direct conclusions / no repeated dialogue / no rewards OK');
+console.log('DUDU F V6.2: fair suspects / proof-before-verdict / direct conclusions / no repeated dialogue / no rewards OK');
