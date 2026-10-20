@@ -256,7 +256,13 @@
   const launch=get('dudu-v69-core-launch');
   if(launch){launch.hidden=!isAuthor();launch.style.display=isAuthor()?'':'none';}
   if(!isAuthor()&&get('phone-app-core-console')?.style.display==='flex')root.phoneHome?.();
-  if(owner!==uid()){owner=null;current=null;generation++;clearPopup();}
+  const next=uid();
+  if(owner!==next){
+   // Clear the previous account's server-derived System DOM immediately.
+   // A cached panel must not remain visible while a new UID is loading.
+   owner=next;current=null;loadError='';generation++;clearPopup();
+   if(get('dudu-v69-system-view'))renderState();
+  }
   return isAuthor();
  }
  function passportQuest(){
