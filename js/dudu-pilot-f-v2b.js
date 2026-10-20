@@ -925,9 +925,18 @@
         "label": "Ghi lời cô và tiếp tục cuộc họp",
         "to": "hearing",
         "kind": "observation",
+        "hiddenIfFlags": ["public_confirmed"],
         "addFlags": [
           "public_witness_heard"
         ]
+      },
+      {
+        "id": "record_witness_after_proof",
+        "label": "Ghi lời A Liên và bắt đầu bàn cách giải quyết",
+        "to": "hearing_resolution",
+        "kind": "dialogue",
+        "visibleIfFlags": ["public_confirmed"],
+        "addFlags": ["public_witness_heard"]
       },
       {
         "id": "hear_guard_after_maid",
