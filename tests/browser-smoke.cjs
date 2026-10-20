@@ -191,6 +191,11 @@ async function main() {
     await dossier.waitFor({state:'visible'});
     await dossier.locator('.d65-close').click();
     await dossier.waitFor({state:'hidden'});
+    // The sandbox login dialog may appear asynchronously while inspecting
+    // guest world previews. Close it as a user would, never force a click
+    // through an obscuring modal or weaken production auth behavior.
+    if(await page.locator('#auth-modal').isVisible())
+      await page.locator('#auth-modal').getByRole('button',{name:'Đóng'}).click();
     await page.locator('#d60-worlds .d66-random-entry').click();
     await dossier.waitFor({state:'visible'});
     assert.match(await dossier.textContent(),/Tín hiệu sơ cấp/);
@@ -229,6 +234,9 @@ async function main() {
 
     await page.waitForFunction(() => typeof window.handleAuthSubmit === 'function' && !!document.getElementById('auth-username'));
     await page.waitForTimeout(800);
+    // Reopen through the real UI if we dismissed the optional sandbox login.
+    if(!(await page.locator('#auth-modal').isVisible()))
+      await page.locator('#account-status-btn').click();
     await page.locator('#auth-username').fill('tester-a');
     await page.getByRole('button', { name: 'Đổi tài khoản thử' }).click();
     await page.waitForFunction(() => document.getElementById('account-status-btn').textContent.includes('tester-a'));
