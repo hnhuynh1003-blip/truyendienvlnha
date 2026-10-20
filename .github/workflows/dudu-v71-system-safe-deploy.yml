@@ -1,0 +1,99 @@
+name: DUDU V71 System registry safe deploy (manual)
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: "Type DEPLOY_DUDU_V71 to authorize Worker migration and deployment"
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: dudu-worker-production-deploy
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      - uses: actions/checkout@v7
+      - name: Authorize production Durable Object migration
+        shell: bash
+        env:
+          CONFIRM: ${{ inputs.confirmation }}
+        run: |
+          set -euo pipefail
+          test "$CONFIRM" = "DEPLOY_DUDU_V71" || { echo "STOP: no V71 migration approval"; exit 1; }
+          test -n "$CLOUDFLARE_API_TOKEN" && test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo "STOP: Cloudflare secrets missing"; exit 1; }
+          grep -q 'DUDU_SYSTEM_LIVE_ENABLED = "true"' cloudflare/wrangler.npc-ai-v54.toml
+          grep -q 'DUDU_PAID_PROVIDERS_ENABLED = "false"' cloudflare/wrangler.npc-ai-v54.toml
+          grep -q 'DUDU_HIVE_ENABLED = "false"' cloudflare/wrangler.npc-ai-v54.toml
+          grep -q 'DUDU_HIVE_TEST_APPROVED = "false"' cloudflare/wrangler.npc-ai-v54.toml
+          grep -q 'v6-dudu-system-registry-sqlite' cloudflare/wrangler.npc-ai-v54.toml
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Validate application and full Worker tests
+        run: |
+          npm ci --prefix cloudflare --ignore-scripts --no-audit --no-fund || npm install --prefix cloudflare --ignore-scripts --no-audit --no-fund
+          node --check cloudflare/src/dudu-system-registry-v71.mjs
+          node --check cloudflare/src/dudu-system-api-v71.mjs
+          node --check cloudflare/src/index.mjs
+          node --test cloudflare/tests/dudu-system-v71.test.mjs
+          npm test --prefix cloudflare
+          node --test tests/dudu-transmigration-v69.test.cjs
+      - name: Dry-run V71 bundle (no cloud writes)
+        working-directory: cloudflare
+        run: npx wrangler deploy --config wrangler.npc-ai-v54.toml --dry-run
+      - name: Audit deployed Worker and protect legacy bindings
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --silent --show-error --fail --max-time 30 \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/dudu-ai-staging/settings" > "$RUNNER_TEMP/dudu-v71-settings.json"
+          python3 - <<'PY'
+          import json, os, tomllib
+          from pathlib import Path
+          d=json.loads((Path(os.environ['RUNNER_TEMP'])/'dudu-v71-settings.json').read_text())
+          if not d.get('success') or not isinstance(d.get('result',{}).get('bindings'),list):
+              raise SystemExit('STOP: existing Worker unavailable; migration not attempted')
+          live=d['result']['bindings']
+          with open('cloudflare/wrangler.npc-ai-v54.toml','rb') as f:
+              cfg=tomllib.load(f)
+          if cfg.get('name')!='dudu-ai-staging':
+              raise SystemExit('STOP: wrong Worker name')
+          old={(x.get('name'),x.get('class_name')) for x in live if x.get('type')=='durable_object_namespace'}
+          new={(x['name'],x['class_name']) for x in cfg['durable_objects']['bindings']}
+          if not old.issubset(new) or len(new-old)!=1 or ('DUDU_SYSTEM_REGISTRY','DuduSystemRegistry') not in new-old:
+              raise SystemExit('STOP: existing Durable Object binding would be lost')
+          secrets={x.get('name') for x in live if x.get('type')=='secret_text'}
+          if 'GEMINI_API_KEY' not in secrets or 'DUDU_SYSTEM_PILOT_UID' not in secrets:
+              raise SystemExit('STOP: existing Gemini secret or owner test UID secret missing')
+          current={x['name']:str(x.get('text','')) for x in live if x.get('type')=='plain_text'}
+          wanted={k:str(v) for k,v in cfg['vars'].items()}
+          introduced={'DUDU_SYSTEM_LIVE_ENABLED','DUDU_SYSTEM_PILOT_CARD_ENABLED'}
+          if any(k not in introduced and current.get(k)!=v for k,v in wanted.items()):
+              raise SystemExit('STOP: existing Worker vars differ from approved config')
+          if set(current)-set(wanted):
+              raise SystemExit('STOP: remote has unknown vars; preserve them explicitly')
+          if any(x.get('type') not in ('plain_text','secret_text','durable_object_namespace','ai') for x in live):
+              raise SystemExit('STOP: unknown legacy binding type')
+          print('PASS: secrets present; 1 additive registry binding; existing Worker vars preserved')
+          PY
+      - name: Deploy V71 System registry into existing Worker
+        working-directory: cloudflare
+        run: |
+          # This workflow has no automatic trigger. Never enable paid Hive.
+          npx wrangler deploy --config wrangler.npc-ai-v54.toml --keep-vars
+      - name: Health smoke (no user data, no paid AI)
+        shell: bash
+        run: |
+          curl --silent --show-error --fail --max-time 20 \
+            https://dudu-ai-staging.dudu-studio-ai.workers.dev/health \
+            | python3 -c "import json,sys; d=json.load(sys.stdin); assert d.get('service')=='dudu-ai'; print('PASS: Worker health OK')"
