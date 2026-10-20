@@ -16,7 +16,7 @@
   let uid=null;
   try{const auth=root.DuduAuth;uid=auth?.isReady?.()?auth.uid():null;}catch{}
   if(!uid){try{uid=root.firebase?.auth?.()?.currentUser?.uid||null;}catch{}}
-  return (upgraded?'dudu:pilot-f-narrative-v3:':'dudu:pilot-f-v1:')+encodeURIComponent(uid||'guest');
+  return (upgraded?'dudu:pilot-f-investigation-v4:':'dudu:pilot-f-v1:')+encodeURIComponent(uid||'guest');
  }
  function load(){
   owner=key();
@@ -100,20 +100,29 @@
   const evNames={receipt:'Sổ trực đêm',broken_seal:'Dấu niêm phong vỡ',
    guard_statement:'Lời khai Lục Tam'};
   if(v.evidence.length){
-   const evidence=el('div','dudu-pilot-evidence');
-   evidence.append(el('strong','','Manh mối đã ghi nhận'));
+   const evidence=el('details','dudu-pilot-evidence');
+   evidence.append(el('summary','dudu-pilot-evidence-toggle','▤ Sổ tay · '+v.evidence.length+' manh mối đã thấy'));
+   const note=el('p','dudu-pilot-evidence-note','Chỉ gồm những điều bạn đã tự khám phá. Mở ra để đối chiếu khi suy luận.');
+   evidence.append(note);
    const tags=el('div','dudu-pilot-tags');
    if(v.clueDetails){v.clueDetails.forEach(clue=>tags.append(el('span','',clue.label)));}
    else v.evidence.forEach(k=>tags.append(el('span','',evNames[k]||k)));
    evidence.append(tags);content.append(evidence);
   }
+  const choiceSection=el('section','dudu-pilot-choice-section');
+  if(!v.ending)choiceSection.append(el('p','dudu-pilot-choice-prompt',
+   v.sceneType==='prologue'?'Tiếp theo':'Bạn muốn làm gì?'));
   const actions=el('div','dudu-pilot-actions'+(v.choices.length===1?' dudu-pilot-single-action':''));
   if(v.ending){
    const again=el('button','dudu-pilot-action dudu-pilot-primary','↻ Thử tuyến khác');
-   again.type='button';again.addEventListener('click',reset);actions.append(again);
+   again.type='button';again.addEventListener('click',()=>{reset();if(dialog)dialog.scrollTop=0;});actions.append(again);
   }else{
    v.choices.forEach(c=>{
-    const btn=el('button','dudu-pilot-action'+(v.choices.length===1?' dudu-pilot-next':''),c.label);
+    const btn=el('button','dudu-pilot-action'+(v.choices.length===1?' dudu-pilot-next':'')); 
+    const badge=el('span','dudu-choice-key',String.fromCharCode(65+(actions.children.length%26)));
+    const item=el('span','dudu-choice-label',c.label);
+    btn.append(badge,item);
+    btn.dataset.choiceKind=c.kind||'action';
     btn.type='button';btn.disabled=c.locked;
     if(c.locked){btn.title=c.requirementHint;
      btn.append(el('small','dudu-pilot-choice-hint',c.requirementHint));
@@ -122,7 +131,7 @@
      if(key()!==owner){load();render();return;}
      const result=engine.decide(story,state,c.id);
      if(!result.accepted)return;
-     state=result.state;save();render();
+     state=result.state;save();render();if(dialog)dialog.scrollTop=0;
     });
     actions.append(btn);
    });
@@ -131,7 +140,8 @@
   const resetButton=el('button','dudu-pilot-reset','Làm lại từ đầu');
   resetButton.type='button';resetButton.addEventListener('click',reset);
   foot.append(el('span','',upgraded?'Tiến trình đọc lưu tạm trong phiên':'Tiến độ phiên thử: '+state.step+' bước'),resetButton);
-  container.append(bar,imageWrap,notice,content,actions,foot);
+  choiceSection.append(actions);
+  container.append(bar,imageWrap,notice,content,choiceSection,foot);
   dialog.replaceChildren(container);
  }
  function open(){
