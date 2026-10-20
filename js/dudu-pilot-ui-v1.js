@@ -16,7 +16,7 @@
   let uid=null;
   try{const auth=root.DuduAuth;uid=auth?.isReady?.()?auth.uid():null;}catch{}
   if(!uid){try{uid=root.firebase?.auth?.()?.currentUser?.uid||null;}catch{}}
-  return (upgraded?'dudu:pilot-f-v2b:':'dudu:pilot-f-v1:')+encodeURIComponent(uid||'guest');
+  return (upgraded?'dudu:pilot-f-narrative-v3:':'dudu:pilot-f-v1:')+encodeURIComponent(uid||'guest');
  }
  function load(){
   owner=key();
@@ -77,9 +77,13 @@
   imageWrap.append(el('span','dudu-pilot-place','⌖  '+(v.place.publicName||v.place.label)));
   const notice=el('p','dudu-pilot-notice',
    'BẢN THỬ KHÉP KÍN · Không ký khế ước, không tính khảo hạch, không cấp EXP/Xu/vật phẩm');
-  const content=el('section','dudu-pilot-content');
-  content.append(el('h3','',v.ending?v.ending.title:v.title),
-   el('p','dudu-pilot-description',v.ending?v.ending.text:v.text));
+  const content=el('section','dudu-pilot-content'+(v.sceneType==='prologue'?' dudu-pilot-prologue':''));
+  content.append(el('h3','',v.ending?v.ending.title:v.title));
+  if(v.passageReaction)content.append(el('p','dudu-pilot-reaction',v.passageReaction));
+  const passage=el('div','dudu-pilot-prose');
+  String(v.ending?v.ending.text:v.text).split(/\n\s*\n/).filter(Boolean)
+   .forEach(part=>passage.append(el('p','dudu-pilot-description',part.trim())));
+  content.append(passage);
   if(!v.ending&&v.npcDetails){
    const npcBox=el('div','dudu-pilot-persona');
    npcBox.append(el('p','dudu-pilot-npc',v.npcDetails.name+' · '+v.npcDetails.role),
@@ -89,8 +93,9 @@
    content.append(el('p','dudu-pilot-npc','Nhân vật: '+v.npc));
   }
   if(v.ending){
-   content.append(el('p','dudu-pilot-result',v.status==='success'?
-    'KẾT THÚC · MỤC TIÊU ĐẠT (CHỈ BẢN THỬ)':'KẾT THÚC · CHƯA ĐẠT MỤC TIÊU'));
+   content.append(el('p','dudu-pilot-result',
+    upgraded?'KHÉP LẠI MỘT ĐÊM MƯA · MỘT TRONG NHIỀU KẾT CỤC':
+    (v.status==='success'?'KẾT THÚC · MỤC TIÊU ĐẠT (CHỈ BẢN THỬ)':'KẾT THÚC · CHƯA ĐẠT MỤC TIÊU')));
   }
   const evNames={receipt:'Sổ trực đêm',broken_seal:'Dấu niêm phong vỡ',
    guard_statement:'Lời khai Lục Tam'};
@@ -102,13 +107,13 @@
    else v.evidence.forEach(k=>tags.append(el('span','',evNames[k]||k)));
    evidence.append(tags);content.append(evidence);
   }
-  const actions=el('div','dudu-pilot-actions');
+  const actions=el('div','dudu-pilot-actions'+(v.choices.length===1?' dudu-pilot-single-action':''));
   if(v.ending){
    const again=el('button','dudu-pilot-action dudu-pilot-primary','↻ Thử tuyến khác');
    again.type='button';again.addEventListener('click',reset);actions.append(again);
   }else{
    v.choices.forEach(c=>{
-    const btn=el('button','dudu-pilot-action',c.label);
+    const btn=el('button','dudu-pilot-action'+(v.choices.length===1?' dudu-pilot-next':''),c.label);
     btn.type='button';btn.disabled=c.locked;
     if(c.locked){btn.title=c.requirementHint;
      btn.append(el('small','dudu-pilot-choice-hint',c.requirementHint));
@@ -125,7 +130,7 @@
   const foot=el('footer','dudu-pilot-foot');
   const resetButton=el('button','dudu-pilot-reset','Làm lại từ đầu');
   resetButton.type='button';resetButton.addEventListener('click',reset);
-  foot.append(el('span','','Tiến độ phiên thử: '+state.step+' bước'),resetButton);
+  foot.append(el('span','',upgraded?'Tiến trình đọc lưu tạm trong phiên':'Tiến độ phiên thử: '+state.step+' bước'),resetButton);
   container.append(bar,imageWrap,notice,content,actions,foot);
   dialog.replaceChildren(container);
  }
