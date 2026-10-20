@@ -25,11 +25,12 @@
   facts:{
    last_guard_key:{truth:'Lục Tam nhận chìa kho sau canh hai.'},
    sealed_box:{truth:'Hòm thuốc bị mở từ phía ngoài.'},
-   borrowed_medicine:{truth:'Lục Tam chuyển thuốc cứu người ở trạm canh và sợ bị kỷ luật.'},
+   borrowed_medicine:{truth:'Lục Tam lấy thuốc cứu người trạm gác, mang túi còn lại về giấu ở thùng than sau bếp vì sợ bị phạt.'},
    maid_witness:{truth:'A Liên trông thấy bóng áo sẫm, nhưng không thấy người lấy thuốc.'},
    stock_for_convoy:{truth:'Túi thuốc gồm sáu cuộn băng ép và hai lọ cầm máu, được ký gửi cho đoàn xe chở người bị thương tới lúc bình minh.'},
    stock_used_at_post:{truth:'Tại trạm gác đã dùng hai cuộn băng ép và một lọ cầm máu; phần còn lại có thể thu hồi.'},
-   ridge_safe_path:{truth:'Cầu thấp ngập nước, đường men sườn đá còn có thể qua được.'}
+   ridge_safe_path:{truth:'Cầu thấp ngập nước, đường men sườn đá còn có thể qua được.'},
+   hidden_return:{truth:'Túi thuốc đã được mang về và giấu trong thùng than sau bếp; dây buộc thuộc đội áp tải.'}
   },
   npcs:{
    keeper:{npcId:'keeper',name:'Hà chưởng quầy',role:'Chủ quán',homePlaceId:'hall',
@@ -72,7 +73,12 @@
    guard_statement:{id:'guard_statement',label:'Lời khai về tiếng kêu cứu',placeId:'hall',sourceNpcId:'guard'},
    maid_statement:{id:'maid_statement',label:'Lời chứng hành lang',placeId:'hall',sourceNpcId:'maid'},
    broken_seal:{id:'broken_seal',label:'Mẩu niêm phong vỡ',placeId:'store',sourceNpcId:'maid'},
-   care_receipt:{id:'care_receipt',label:'Biên nhận cấp cứu trạm canh',placeId:'hall',sourceNpcId:'guard'}
+   care_receipt:{id:'care_receipt',label:'Phiếu cấp cứu giấu trong túi',placeId:'hall',sourceNpcId:'guard'},
+   wax_cuff:{id:'wax_cuff',label:'Sáp đỏ trên tay áo A Liên',placeId:'hall',sourceNpcId:'maid'},
+   changed_ledger:{id:'changed_ledger',label:'Nét mực sửa trong sổ chủ quán',placeId:'hall',sourceNpcId:'keeper'},
+   coal_trace:{id:'coal_trace',label:'Vệt than dẫn tới khu bếp',placeId:'store',sourceNpcId:'keeper'},
+   medicine_bundle:{id:'medicine_bundle',label:'Túi thuốc tìm thấy trong thùng than',placeId:'hall',sourceNpcId:'keeper'},
+   military_knot:{id:'military_knot',label:'Dây buộc túi kiểu quân nhu',placeId:'hall',sourceNpcId:'guard'}
   }
  };
  function freezeDeep(v){if(v&&typeof v==='object'&&!Object.isFrozen(v)){Object.values(v).forEach(freezeDeep);Object.freeze(v);}return v;}
