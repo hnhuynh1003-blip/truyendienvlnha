@@ -375,8 +375,11 @@ async function main() {
       const phoneWasOpen=phone?.style.display==='flex';
       const firestoreCount=window.__firestoreWrites.length;
       try{
-        if(!phoneWasOpen)togglePhone();
+        // V67.1 closes the Phone on any account change; exercise the
+        // real protected guest transition before opening the guest Museum.
         currentUsername='';
+        window.DuduPhoneLifecycleV671?.onAccountChanged?.();
+        if(phone?.style.display!=='flex')togglePhone();
         // Deliberately LEAVE prior user's profile object in memory:
         // a guest MUST NOT see that person's progress.
         openPhoneApp('museum');
@@ -395,7 +398,9 @@ async function main() {
           noWrites:window.__firestoreWrites.length===firestoreCount};
       }finally{
         currentUsername=savedUsername;userProfile=savedProfile;
+        window.DuduPhoneLifecycleV671?.onAccountChanged?.();
         phoneHome();
+        if(phoneWasOpen&&phone.style.display!=='flex')togglePhone();
         if(!phoneWasOpen&&phone.style.display==='flex')togglePhone();
       }
     });
