@@ -16,7 +16,7 @@
   for(const scene of Object.values(s.scenes||{}))for(const c of list(scene.choices)){
    if(c.requiresFlags&&!Array.isArray(c.requiresFlags))issues.push('invalid_flag_requirement:'+c.id);
    if(c.requiresNotFlags&&!Array.isArray(c.requiresNotFlags))issues.push('invalid_negative_flag_requirement:'+c.id);
-   for(const field of ['visibleIfEvidence','visibleAnyEvidence','visibleIfFlags','hiddenIfFlags']){
+   for(const field of ['visibleIfEvidence','visibleAnyEvidence','visibleIfFlags','visibleAnyFlags','hiddenIfFlags']){
     if(c[field]!==undefined&&(!Array.isArray(c[field])||c[field].some(x=>typeof x!=='string')))
      issues.push('invalid_visibility_rule:'+c.id+':'+field);
    }
@@ -28,6 +28,7 @@
   return list(c.visibleIfEvidence).every(e=>state.evidence.includes(e))&&
    (!list(c.visibleAnyEvidence).length||list(c.visibleAnyEvidence).some(e=>state.evidence.includes(e)))&&
    list(c.visibleIfFlags).every(f=>state.flags.includes(f))&&
+   (!list(c.visibleAnyFlags).length||list(c.visibleAnyFlags).some(f=>state.flags.includes(f)))&&
    list(c.hiddenIfFlags).every(f=>!state.flags.includes(f));
  }
  function blocked(c,state){
@@ -40,17 +41,21 @@
   const v=base.view(s,state),sc=s.scenes[v.sceneId];
   const choices=v.choices.filter(c=>{
    const raw=sc.choices.find(x=>x.id===c.id);
-   return visible(raw,state);
+   const requirementOk=list(raw.requires).every(e=>state.evidence.includes(e))&& !blocked(raw,state);
+   return visible(raw,state)&&(requirementOk||raw.showLocked===true);
   }).map(c=>{
    const raw=sc.choices.find(x=>x.id===c.id);
    const locked=c.locked||blocked(raw,state);
    return {...c,kind:raw.kind||'action',locked,
     requirementHint:locked?(raw.requirementHint||'Cần hoàn thành bước tìm hiểu trước.'):c.requirementHint};
   });
+  const explicitSpeech=typeof sc.speech==='string'&&sc.speech.trim()&&sc.npcId&&s.world.npcs[sc.npcId]
+    ?{npcId:sc.npcId,name:s.world.npcs[sc.npcId].name,role:s.world.npcs[sc.npcId].role,
+      text:sc.speech}:null;
   const last=state.log[state.log.length-1];
   const previousChoice=last&&s.scenes[last.from]?.choices.find(c=>c.id===last.choiceId);
   return {...v,choices,place:model.placeView(s.world,v.placeId),
-   npcDetails:sc.npcId?model.npcView(s.world,sc.npcId,state):null,
+   npcDetails:explicitSpeech,
    clueDetails:model.knownClues(s.world,v.evidence),
    storyPhase:sc.phase||null,
    passageReaction:typeof previousChoice?.reaction==='string'?previousChoice.reaction:'',
@@ -63,7 +68,9 @@
   if(state.status!=='playing')return {accepted:false,reason:'already_finished',state};
   const raw=s.scenes[v.sceneId].choices.find(c=>c.id===id);
   if(raw&&!visible(raw,state))return {accepted:false,reason:'undiscovered_action',state};
-  if(raw&&blocked(raw,state))return {accepted:false,reason:'missing_story_precondition',state};
+  if(raw&&(blocked(raw,state)||
+     list(raw.requires).some(e=>!state.evidence.includes(e))))
+    return {accepted:false,reason:'missing_story_precondition',state};
   return base.decide(s,state,id);
  }
  function restore(s,v){return validate(s).length?null:base.restore(s,v);}
