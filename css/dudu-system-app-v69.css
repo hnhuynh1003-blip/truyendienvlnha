@@ -655,3 +655,21 @@ body.dudu-phone-v11 #cyber-phone .dudu-v71-info-foot{
   transition:none;
  }
 }
+
+/* V71.8: scroll the phone screen, never flex-shrink the System panels.
+   Short phone heights previously squashed identity and notices into strips. */
+body.dudu-phone-v11 #cyber-phone #phone-app-system .dudu-v69-screen{
+ min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-system .dudu-v69-screen > .dudu-v71-system-identity,
+body.dudu-phone-v11 #cyber-phone #phone-app-system .dudu-v69-screen > .dudu-v71-hud,
+body.dudu-phone-v11 #cyber-phone #phone-app-system .dudu-v69-screen > .dudu-v71-notices,
+body.dudu-phone-v11 #cyber-phone #phone-app-system .dudu-v69-screen > .dudu-v71-game-menu,
+body.dudu-phone-v11 #cyber-phone #phone-app-system .dudu-v69-screen > .dudu-v71-world-gate,
+body.dudu-phone-v11 #cyber-phone #phone-app-system .dudu-v69-screen > .dudu-v71-message{
+ flex:0 0 auto;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-system .dudu-v71-system-identity,
+body.dudu-phone-v11 #cyber-phone #phone-app-system .dudu-v71-notices{
+ min-height:max-content;overflow:visible;
+}

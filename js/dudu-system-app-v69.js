@@ -201,12 +201,18 @@
  function infoPopup(kind){
   if(!current?.host?.name||!uid()||owner!==uid()||current.authoritative!==true)return false;
   const cfg={
-   quests:{title:'NHIỆM VỤ',subtitle:'Tiến trình nhiệm vụ từ registry',
-    rows:[['Nhiệm vụ đã ghi nhận',numberFromServer(current.progress?.missions)],
-     ['Thế giới đã ghi nhận',numberFromServer(current.progress?.worlds)]],
-    foot:current.worldAccess===true?
-     'Quyền truy cập thế giới đã được ghi nhận.':
-     'Nhiệm vụ xuyên truyện chưa được mở tại Thiên Mệnh.'},
+   quests:{title:'NHIỆM VỤ THẾ GIỚI',subtitle:'Nhiệm vụ riêng của từng tiểu thế giới',
+    rows:current.worldAccess===true&&current.worldContext?.activeMission?.missionId&&
+     current.worldContext?.activeWorld?.smallWorldId?
+     [['Tiểu thế giới',current.worldContext.activeWorld.name||current.worldContext.activeWorld.smallWorldId],
+      ['Mã thế giới',current.worldContext.activeWorld.smallWorldId],
+      ['Mã nhiệm vụ',current.worldContext.activeMission.missionId],
+      ['Trạng thái',current.worldContext.activeMission.status||'Chưa xác minh']]:
+     [['Tiểu thế giới hiện tại','Chưa được phân công'],
+      ['Nhiệm vụ đang hoạt động','Chưa có']],
+    foot:current.worldAccess===true&&current.worldContext?.activeMission?.missionId?
+     'Chỉ hiện phân công từ máy chủ; kết quả và phần thưởng cần Game Engine xác minh.':
+     'Mỗi tiểu thế giới có nhiệm vụ riêng. Nhiệm vụ chỉ xuất hiện khi máy chủ phân công kịch bản đã phát hành. Hiện chưa có nhiệm vụ thật để nhận.'},
    journal:{title:'NHẬT KÝ',subtitle:'Tổng quan tiến trình ký chủ',
     rows:[['Khế ước',current.pact?.status==='signed'?'Đã ký':'Chưa ký'],
      ['Thế giới',numberFromServer(current.progress?.worlds)],
@@ -320,10 +326,10 @@
   const feed=h('div','dudu-v71-notices-feed');
   feed.append(noticeItem('primary','Trạng thái',
    linked?'Khế ước đã được ghi trên máy chủ.':'Khế ước đang chờ xác nhận.'));
-  feed.append(noticeItem('info','Tiến trình',
-   numberFromServer(d.progress.missions)==='0'?
-   'Chưa có nhiệm vụ nào được ghi nhận.':
-   'Nhiệm vụ đã ghi nhận: '+numberFromServer(d.progress.missions)+'.'));
+  feed.append(noticeItem('info','Nhiệm vụ thế giới',
+   d.worldAccess===true&&d.worldContext?.activeMission?.missionId?
+   'Đang theo dõi phân công '+d.worldContext.activeMission.missionId+'.':
+   'Chưa có nhiệm vụ riêng của tiểu thế giới được phân công.'));
   feed.append(noticeItem('warning','Thế giới',
    d.worldAccess===true?'Quyền truy cập thế giới đã được xác nhận.':
    'Nhiệm vụ xuyên truyện chưa mở.'));
