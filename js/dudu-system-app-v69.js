@@ -22,12 +22,16 @@
   if(escapeKey){doc.removeEventListener('keydown',escapeKey);escapeKey=null;}
  }
  function status(text){const el=get('dudu-v71-message');if(el)el.textContent=text;}
- function screen(text){
-  const n=h('div','dudu-v71-lock');
-  n.append(h('div','dudu-v71-sigil','✧'),
-   h('div','dudu-v71-eyebrow','DUDU · GIAO THỨC LIÊN KẾT'),
-   h('h2','','HỆ THỐNG ĐANG KHÓA'),
-   h('p','',text));
+ function screen(text,{title='HỆ THỐNG ĐANG KHÓA',state='CHƯA LIÊN KẾT'}={}){
+  const n=h('section','dudu-v71-lock');
+  n.append(h('div','dudu-v71-inscription','✦  DUDU SYSTEM · VẠN GIỚI  ✦'));
+  const seal=h('div','dudu-v71-seal');
+  seal.append(h('span','dudu-v71-seal-outer',''),h('span','dudu-v71-sigil','✧'));
+  n.append(seal,h('div','dudu-v71-eyebrow','GIAO THỨC THÔNG HÀNH'),
+   h('h2','',title),h('p','dudu-v71-gate-description',text));
+  const signal=h('div','dudu-v71-signal');
+  signal.append(h('span','','◈ TRẠNG THÁI'),h('strong','',state));
+  n.append(signal);
   return n;
  }
  function loading(){
@@ -46,7 +50,10 @@
    .finally(()=>{pending=false;});
  }
  function locked(host,profile){
-  const box=screen('Nhập mã Thẻ thông hành nhận được sau nhiệm vụ mở đầu.');
+  const box=screen('Chỉ Thẻ thông hành được máy chủ cấp cho tài khoản này mới có thể thức tỉnh Hệ Thống.',
+   {state:'ĐANG CHỜ THÔNG HÀNH'});
+  const access=h('div','dudu-v71-access');
+  access.append(h('div','dudu-v71-access-heading','✦ XÁC THỰC THẺ THÔNG HÀNH'));
   const form=h('form','dudu-v71-pass-form');
   const input=h('input','dudu-v71-input');
   input.type='text';input.maxLength=48;input.autocomplete='off';
@@ -61,13 +68,15 @@
    input.value='';
    run(()=>client.redeem(code));
   });
-  box.append(form);
-  box.append(h('small','dudu-v71-whisper',
+  access.append(form);
+  access.append(h('small','dudu-v71-whisper',
    profile?.passport?.state==='issued'?'Máy chủ đã cấp thẻ cho tài khoản này.':
-   'Chưa có thẻ? Hoàn thành nhiệm vụ để nhận mã cá nhân.'));
-  box.append(btn('MỞ NHIỆM VỤ ↗','dudu-v71-textbtn',()=>root.openPhoneApp?.('quests')));
+   'Nhiệm vụ phát Thẻ thông hành chính thức chưa mở cho độc giả.'));
+  access.append(btn('XEM NHIỆM VỤ ↗','dudu-v71-textbtn',()=>root.openPhoneApp?.('quests')));
   const feedback=h('p','dudu-v71-message','');feedback.id='dudu-v71-message';feedback.setAttribute('role','status');
-  box.append(feedback);host.append(box);
+  access.append(feedback);box.append(access);
+  box.append(h('small','dudu-v71-seal-note','Danh tính và chỉ số đều do máy chủ xác nhận.'));
+  host.append(box);
  }
  function nameStep(host,d){
   const wrap=h('section','dudu-v71-name-step');
@@ -181,8 +190,23 @@
   feedback.setAttribute('role','status');host.append(feedback);
  }
  function unavailable(host,message,retry=false){
-  const panel=screen(message);panel.className='dudu-v71-unavailable';
-  if(retry)panel.append(btn('THỬ KẾT NỐI LẠI','dudu-v71-alt',()=>renderSystem()));
+  const panel=screen(message,{
+   title:retry?'KẾT NỐI GIÁN ĐOẠN':'CHỜ KÝ CHỦ',
+   state:retry?'CHƯA KẾT NỐI MÁY CHỦ':'CHƯA XÁC THỰC'
+  });
+  // Preserve dudu-v71-lock: removing it broke the System layout on phones.
+  panel.className+=' dudu-v71-unavailable';
+  const action=h('div','dudu-v71-access dudu-v71-offline-actions');
+  action.append(h('div','dudu-v71-access-heading',
+   retry?'◈ KÊNH ĐỊNH DANH TẠM GIÁN ĐOẠN':'◈ XÁC THỰC TÀI KHOẢN'));
+  action.append(h('p','dudu-v71-offline-note',retry?
+   'Hồ sơ ký chủ vẫn an toàn và đang bị khóa. Hãy thử lại sau khi máy chủ V71 sẵn sàng.':
+   'Đăng nhập Firebase để xác minh Thẻ thông hành.'));
+  if(retry)action.append(btn('↻ THỬ KẾT NỐI LẠI','dudu-v71-main',()=>renderSystem()));
+  else action.append(btn('ĐĂNG NHẬP ĐỂ TIẾP TỤC','dudu-v71-main',
+   ()=>root.openAuthModal?.()));
+  panel.append(action,h('small','dudu-v71-seal-note',
+   'Không tạo danh tính hoặc chỉ số mô phỏng khi mất kết nối.'));
   host.append(panel);
  }
  function renderState(){
@@ -197,8 +221,10 @@
    return true;
   }
   if(current.stage==='locked')locked(host,current);
-  else if(!current.host?.name)nameStep(host,current);
-  else dashboard(host,current);
+  else if(current.host&&current.system&&current.progress){
+   if(!current.host.name)nameStep(host,current);
+   else dashboard(host,current);
+  }else unavailable(host,'Dữ liệu hồ sơ máy chủ không đúng định dạng.',true);
   return true;
  }
  async function renderSystem(){
@@ -209,8 +235,8 @@
   if(!next){current=null;renderState();return false;}
   const result=await client.me();
   if(uid()!==next||runId!==generation)return false;
-  current=result.ok&&result.data?result.data:null;
-  loadError=current?'':(result.error||'Không thể đọc registry hiện tại.');
+  current=result.ok&&result.data?.authoritative===true?result.data:null;
+  loadError=current?'':(result.error||'Không thể xác minh hồ sơ từ registry Hệ Thống.');
   renderState();
   return !!current;
  }

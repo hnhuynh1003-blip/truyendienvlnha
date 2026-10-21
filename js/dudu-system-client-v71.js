@@ -24,11 +24,25 @@
     signal:AbortSignal.timeout(16000)});
    const data=await response.json().catch(()=>null);
    if(uid()!==original)return {ok:false,error:'Phiên đăng nhập đã thay đổi.'};
-   if(!response.ok||!data||data.error)
-    return {ok:false,code:data?.error?.code||'http-'+response.status,
-     error:data?.error?.message||'Máy chủ Hệ Thống chưa sẵn sàng ('+response.status+').'};
+   if(!response.ok||!data||data.error){
+    const code=data?.error?.code||'http-'+response.status;
+    let message=data?.error?.message||'Máy chủ từ chối yêu cầu ('+response.status+').';
+    if(response.status===404)
+     message='Worker đang chạy chưa có tuyến Hệ Thống V71 (HTTP 404). Cần cập nhật Worker Cloudflare.';
+    else if(code==='system-not-configured'||response.status===503)
+     message='Registry V71 chưa được kích hoạt hoặc chưa có Durable Object (HTTP 503).';
+    else if(response.status===401)
+     message='Phiên xác thực Firebase chưa hợp lệ. Hãy đăng nhập lại.';
+    return {ok:false,code,error:message};
+   }
    return {ok:true,data};
-  }catch(_){return {ok:false,error:'Không kết nối được registry Hệ Thống. Hãy thử lại sau.'};}
+  }catch(error){
+   if(error?.name==='TimeoutError'||error?.name==='AbortError')
+    return {ok:false,code:'system-timeout',
+     error:'Máy chủ Hệ Thống phản hồi quá lâu. Kiểm tra kết nối và thử lại.'};
+   return {ok:false,code:'system-network-unavailable',
+    error:'Chưa liên lạc được Worker Hệ Thống. Có thể do mạng, DNS, CORS hoặc Worker V71 chưa cập nhật.'};
+  }
  }
  root.DuduSystemClientV71=Object.freeze({
   me:()=>send('/v1/system/me'),
