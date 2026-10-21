@@ -15,6 +15,10 @@ test('V71 game has eight server-derived stats and no browser-generated passport'
  assert.ok(html.includes('js/dudu-system-client-v71.js?v=71-2'));
  assert.ok(!html.includes('js/dudu-system-gate-v70.js'));
  assert.ok(html.includes('id="phone-app-system"'));
+ assert.ok(html.includes('✧ Thiên Mệnh'));
+ assert.ok(html.includes('aria-label="Mở Thiên Mệnh"'));
+ assert.ok(html.includes('class="app-label">Thiên Mệnh</div>'));
+ assert.ok(!html.includes('Hệ Thống Xuyên Truyện'));
  assert.ok(html.includes('id="phone-app-core-console"'));
  assert.ok(html.includes('id="dudu-v71-rename-character"'));
  assert.ok(!/DuduAgentV68/.test(file('js/companion-ui-v43.js')));

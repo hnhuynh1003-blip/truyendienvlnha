@@ -91,9 +91,41 @@ jobs:
         run: |
           # This workflow has no automatic trigger. Never enable paid Hive.
           npx wrangler deploy --config wrangler.npc-ai-v54.toml --keep-vars
-      - name: Health smoke (no user data, no paid AI)
+      - name: Health and V71 registry route smoke (no user data, no paid AI)
         shell: bash
         run: |
+          set -euo pipefail
           curl --silent --show-error --fail --max-time 20 \
             https://dudu-ai-staging.dudu-studio-ai.workers.dev/health \
             | python3 -c "import json,sys; d=json.load(sys.stdin); assert d.get('service')=='dudu-ai'; print('PASS: Worker health OK')"
+          # GET only, without a Firebase token. A deployed V71 registry requires
+          # authorization, so HTTP 401 proves the route exists and is protected.
+          # 404 means the old Worker is still serving traffic; 503 means the
+          # registry flag/binding is missing. Never create data as a health check.
+          python3 - <<'PY'
+          import json
+          import urllib.error
+          import urllib.request
+          target='https://dudu-ai-staging.dudu-studio-ai.workers.dev/v1/system/me'
+          request=urllib.request.Request(target,method='GET',
+              headers={'Origin':'https://hnhuynh1003-blip.github.io'})
+          try:
+              with urllib.request.urlopen(request,timeout=20) as response:
+                  status=response.status
+                  body=response.read(1024)
+                  cors=response.headers.get('Access-Control-Allow-Origin')
+          except urllib.error.HTTPError as error:
+              status=error.code
+              body=error.read(1024)
+              cors=error.headers.get('Access-Control-Allow-Origin')
+          if status!=401:
+              raise SystemExit('STOP: V71 live System route must reject anonymous GET with HTTP 401; got HTTP '+str(status))
+          try: code=json.loads(body).get('error',{}).get('code')
+          except (ValueError,AttributeError): code=None
+          if code!='unauthenticated':
+              raise SystemExit('STOP: V71 anonymous authentication response missing or malformed')
+          if cors!='https://hnhuynh1003-blip.github.io':
+              raise SystemExit('STOP: main Pages origin not allowed by live Worker')
+          print('PASS: deployed V71 registry route requires Firebase auth and allows main Pages')
+          print('READ ONLY: no test card issued, no user records touched, no paid AI')
+          PY
