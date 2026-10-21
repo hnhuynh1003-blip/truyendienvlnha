@@ -12,7 +12,7 @@ test('V71 game has eight server-derived stats and no browser-generated passport'
  assert.equal(rules.canClaimReward(),false);
  assert.equal(rules.canIssuePenalty(),false);
  assert.equal(rules.canSignPact(),false);
- assert.ok(html.includes('js/dudu-system-client-v71.js?v=71-1'));
+ assert.ok(html.includes('js/dudu-system-client-v71.js?v=71-2'));
  assert.ok(!html.includes('js/dudu-system-gate-v70.js'));
  assert.ok(html.includes('id="phone-app-system"'));
  assert.ok(html.includes('id="phone-app-core-console"'));
@@ -87,8 +87,9 @@ test('V71 read-only player page stays on pass gate until authenticated server sa
  assert.equal(api.statusPopup(),false);
  online=false;
  await api.renderSystem();
- assert.equal(view.children[0].className,'dudu-v71-unavailable',
-  'unreachable server must not masquerade as an unissued pass');
+ assert.ok(view.children[0].className.includes('dudu-v71-lock')&&
+  view.children[0].className.includes('dudu-v71-unavailable'),
+  'unavailable gate must preserve its System layout and block redemption');
  assert.ok(!view.children[0].children.some(x=>x.tagName==='FORM'),
   'offline screen must never ask for a code that cannot be verified');
  online=true;
@@ -109,7 +110,7 @@ test('V71 read-only player page stays on pass gate until authenticated server sa
  assert.equal(api.renderCore(),true);
  owner=null;admin=false;api.syncAccess();
  await api.renderSystem();
- assert.equal(view.children[0].className,'dudu-v71-unavailable');
+ assert.ok(view.children[0].className.includes('dudu-v71-unavailable'));
  assert.ok(!view.children[0].children.some(x=>x.tagName==='FORM'),
   'unauthenticated users cannot redeem a real pass');
  owner='other';api.syncAccess();

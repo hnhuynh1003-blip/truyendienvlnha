@@ -130,3 +130,11 @@ V71.1 CI note: `tests/browser-smoke.cjs` now expects a *guest/authentication gat
 - CI đổi thứ tự: **main V71 + main Firebase auth bắt buộc chạy đầu**, bộ sandbox legacy vẫn giữ để chống regress cho các chức năng lịch sử, nhưng không còn là con đường phát triển/nghiệm thu V71.
 - Sửa `js/dudu-system-app-v69.js`: mỗi lần UID đổi hoặc logout, xóa ngay hồ sơ ký chủ/Popup đã render của UID trước; chỉ lấy lại dữ liệu khi client server xác thực phiên mới. Không chia sẻ thông tin người chơi giữa tài khoản.
 - **Giới hạn quan trọng:** `main` (GitHub source/Pages) khác với việc tự ghi thử lên Cloudflare/Firebase production. Worker V71 migration, thẻ owner, dữ liệu người dùng, Rewards/EXP/XP và AI trả phí vẫn chỉ bật bằng thao tác có chủ ý sau khi xác minh quyền/secret và bước triển khai thủ công. Có thể duyệt giao diện/luồng trực tiếp trên Pages, nhưng không được tuyên bố thẻ live hoạt động khi Worker chưa chạy.
+
+
+## V71.3 — Sửa màn khóa và giao diện Hệ Thống trên main (21/10/2026)
+
+- Màn không kết nối trước đây gán `panel.className='dudu-v71-unavailable'`, làm mất class `dudu-v71-lock`; vì vậy biểu tượng/nhãn/nút dồn góc trên và phần còn lại của Cyber Phone trống. Đã sửa giữ nguyên class cơ sở và gắn modifier để màn lỗi vẫn căn giữa, được bố trí thành một giao thức Hệ Thống có ấn ký, vệt trang trí, thanh trạng thái và bảng thao tác.
+- Sửa `js/dudu-system-app-v69.js`, `css/dudu-system-app-v69.css`: tái thiết kế cổng Thẻ thông hành và lỗi kết nối theo phong cách Vạn Giới, ưu tiên 320–430px; guest có đường đăng nhập, offline có thử kết nối lại. Không dựng hồ sơ ký chủ, chỉ số, nguồn chính quy/phi chính quy hoặc mã thẻ giả khi server không trả dữ liệu xác thực.
+- `js/dudu-system-client-v71.js` phân biệt HTTP 404 (Worker chưa có route), HTTP 503 (registry chưa cấu hình), 401 (xác thực), timeout và lỗi đường truyền/CORS/DNS. Thông báo chỉ mô tả **khả năng** khi chưa có bằng chứng từ live Worker; không tuyên bố nguyên nhân duy nhất.
+- Đổi cache query cho HTML/JS/CSS `main`, cập nhật unit test và workflow verify Published Pages. Chỉ frontend được thay; chưa chạy migration Cloudflare, chưa cấp thẻ, chưa tạo dữ liệu người chơi.
