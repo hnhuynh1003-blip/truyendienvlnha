@@ -73,8 +73,14 @@ jobs:
           if not old.issubset(new) or len(new-old)!=1 or ('DUDU_SYSTEM_REGISTRY','DuduSystemRegistry') not in new-old:
               raise SystemExit('STOP: existing Durable Object binding would be lost')
           secrets={x.get('name') for x in live if x.get('type')=='secret_text'}
-          if 'GEMINI_API_KEY' not in secrets or 'DUDU_SYSTEM_PILOT_UID' not in secrets:
-              raise SystemExit('STOP: existing Gemini secret or owner test UID secret missing')
+          missing=[name for name in ('GEMINI_API_KEY','DUDU_SYSTEM_PILOT_UID')
+                   if name not in secrets]
+          if missing:
+              for name in missing:
+                  print('STOP: missing Cloudflare Worker secret binding: '+name)
+              print('Configure the missing secret(s) in the existing Worker dudu-ai-staging.')
+              print('Do NOT add these values to GitHub files, workflow inputs or logs.')
+              raise SystemExit('STOP: V71 migration was not attempted; missing Worker secret binding(s)')
           current={x['name']:str(x.get('text','')) for x in live if x.get('type')=='plain_text'}
           wanted={k:str(v) for k,v in cfg['vars'].items()}
           introduced={'DUDU_SYSTEM_LIVE_ENABLED','DUDU_SYSTEM_PILOT_CARD_ENABLED'}
