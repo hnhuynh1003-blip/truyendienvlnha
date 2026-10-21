@@ -112,6 +112,8 @@ test('V71 read-only player page stays on pass gate until authenticated server sa
  assert.equal(api.canGrantReward(),false);
  admin=true;assert.equal(api.isAuthor(),true);
  assert.equal(api.renderCore(),true);
+ assert.ok(!ui.includes('TẠO THẺ THỬ MÁY CHỦ'),
+  'CORE does not issue pilot passports without explicit confirmation');
  owner=null;admin=false;api.syncAccess();
  await api.renderSystem();
  assert.ok(view.children[0].className.includes('dudu-v71-unavailable'));

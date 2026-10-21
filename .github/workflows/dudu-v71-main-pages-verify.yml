@@ -25,10 +25,10 @@ jobs:
 
           base='https://hnhuynh1003-blip.github.io/truyendienvlnha/'
           paths=(
-              ('', 'js/dudu-system-app-v69.js?v=71-main-3'),
-              ('js/dudu-system-app-v69.js?v=71-main-3', 'dudu-v71-unavailable'),
+              ('', 'js/dudu-system-app-v69.js?v=71-main-4'),
+              ('js/dudu-system-app-v69.js?v=71-main-4', 'dudu-v71-unavailable'),
               ('js/dudu-system-client-v71.js?v=71-2', 'DuduSystemClientV71'),
-              ('css/dudu-system-app-v69.css?v=71-visual-3', 'dudu-v71'),
+              ('css/dudu-system-app-v69.css?v=71-visual-4', 'dudu-v71'),
           )
           def read(url):
               request=urllib.request.Request(url,headers={

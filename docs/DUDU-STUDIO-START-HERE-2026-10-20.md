@@ -167,3 +167,11 @@ Bước xử lý có tác động production: rà soát secret `DUDU_SYSTEM_PILO
 - Chẩn đoán độc lập không ghi dữ liệu `39543054483` vài phút sau: `/v1/system/me` trả đúng `HTTP 401 error.code=unauthenticated` cả khi không có Origin lẫn khi dùng Origin của GitHub Pages, CORS đúng. Điều này chứng minh tuyến V71 đã lên và yêu cầu xác thực, **chưa** chứng minh được user Firebase thật và Durable Object/Thẻ thông hành sau đăng nhập.
 - Trong workflow manual đã sửa bước kiểm tra sau triển khai thành retry tối đa 12 lần, mỗi lần cách 5 giây, yêu cầu **đồng thời** HTTP 401 + error.code unauthenticated + CORS origin đúng; vẫn FAIL nếu không ổn định. Đây là sửa chất lượng kiểm thử sau triển khai, **không chạy migration lần nữa**. Không cần owner re-run deploy chỉ để chuyển một kết quả test cũ thành xanh.
 - Bước nghiệm thu tiếp: đăng nhập tài khoản AU trên Pages, kiểm tra `DuduAuth.isReady()` và Firebase custom claim admin, gọi GET `/v1/system/me` bằng JWT qua client, xác minh duy nhất UID chủ secret, sau đó mới xét cấp thẻ pilot; không gửi UID, JWT, secret hoặc mã thẻ lên log/chat. Hive/DeepSeek vẫn tắt.
+
+
+## V71.6 — Thiên Mệnh trực tiếp trên main (21/10/2026)
+
+- Ổn định scroll: hàm `resetSystemScroll()` đặt scrollTop=0 cho màn System khi mở, khi bắt đầu load, khi quay lại từ Worker hoặc khi chuyển trạng thái guest/locked/name/linked. Tránh ảnh chụp màn khóa bị mất ấn ký và tiêu đề vì vị trí cuộn cũ sau lần mở trước.
+- Thêm thẻ mục **Thẻ thử dành cho AU** bên trong cổng Thiên Mệnh chỉ khi Firebase auth đã ready và custom claim `admin:true` đã được frontend xác thực. Người dùng phải đánh dấu xác nhận trước khi nhấn nút, Worker tiếp tục yêu cầu **admin JWT + đúng `DUDU_SYSTEM_PILOT_UID` + body `ISSUE_MY_TEST_PASS`**. Mã chỉ hiển thị trong DOM của UID đúng; không lưu localStorage, không in log; copy cần người dùng chủ động bấm. Thẻ thử chỉ dùng một lần. Không cấp thẻ khi chạy test hoặc khi người dùng chưa bấm nút.
+- Bỏ luồng tạo thẻ trực tiếp từ console Chủ Thần để tránh hai nút phát hành không thống nhất; thay bằng đường dẫn về Thiên Mệnh. Không bật AI trả phí hoặc thưởng/EXP.
+- Cache buster `71-main-4` và `71-visual-4` để GitHub Pages không dùng giao diện cũ. Vẫn kiểm thử production-mode UI trên `main`, dùng mock network chỉ trong Chromium test; chưa thao tác cấp thẻ thật.

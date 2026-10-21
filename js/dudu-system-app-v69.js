@@ -22,6 +22,10 @@
   if(escapeKey){doc.removeEventListener('keydown',escapeKey);escapeKey=null;}
  }
  function status(text){const el=get('dudu-v71-message');if(el)el.textContent=text;}
+ function resetSystemScroll(){
+  const host=get('dudu-v69-system-view');
+  if(host)host.scrollTop=0;
+ }
  function screen(text,{title='HỆ THỐNG ĐANG KHÓA',state='CHƯA LIÊN KẾT'}={}){
   const n=h('section','dudu-v71-lock');
   n.append(h('div','dudu-v71-inscription','✦  DUDU SYSTEM · VẠN GIỚI  ✦'));
@@ -37,6 +41,7 @@
  function loading(){
   const host=get('dudu-v69-system-view');if(!host)return;
   host.replaceChildren(screen('Đang đối chiếu Thẻ thông hành và hồ sơ máy chủ…'));
+  resetSystemScroll();
  }
  function run(op,callback){
   if(pending)return;
@@ -48,6 +53,58 @@
    current=res.data;callback?.(res.data);renderState();
   }).catch(()=>{if(start===uid())status('Kết nối gián đoạn, dữ liệu không thay đổi.');})
    .finally(()=>{pending=false;});
+ }
+ function authorTestCard(){
+  const wrap=h('details','dudu-v71-au-pilot');
+  wrap.append(h('summary','','✦ THẺ THỬ DÀNH CHO AU'));
+  const inner=h('div','dudu-v71-au-pilot-inner');
+  const note=h('p','',
+   'Chỉ tài khoản AU có Firebase admin và UID được cho phép mới có thể yêu cầu thẻ thử. Mã chỉ được hiển thị trong phiên này.');
+  const consent=h('label','dudu-v71-au-consent');
+  const check=h('input','');check.type='checkbox';
+  consent.append(check,h('span','',
+   'Tôi xác nhận tạo thẻ thử gắn với chính tài khoản này. Thẻ có hiệu lực một lần.'));
+  const output=h('div','dudu-v71-au-output','');
+  output.setAttribute('role','status');
+  let complete=false;
+  const issue=btn('TẠO THẺ THỬ AU','dudu-v71-main',async()=>{
+   if(pending||complete||!isAuthor())return;
+   if(!check.checked){
+    output.textContent='Cần xác nhận trước khi yêu cầu cấp thẻ.';return;
+   }
+   const original=uid();pending=true;issue.disabled=true;
+   output.textContent='Đang xác minh quyền AU với registry…';
+   try{
+    const res=await client.issueOwnerTestPass();
+    if(uid()!==original||!isAuthor()||owner!==original||!wrap.isConnected)return;
+    if(!res?.ok){output.textContent=res?.error||'Máy chủ không cho phép cấp thẻ.';return;}
+    const code=res.data?.code;
+    if(typeof code!=='string'||!/^DT-(?:[A-F0-9]{8}-){3}[A-F0-9]{8}$/.test(code)){
+     output.textContent='Máy chủ trả về mã không hợp lệ. Không tự tạo thẻ ở trình duyệt.';
+     return;
+    }
+    complete=true;
+    // Never persist or log a pass; keep it in this authenticated DOM only.
+    const secret=h('code','dudu-v71-au-code',code);
+    const copy=btn('SAO CHÉP MÃ THẺ','dudu-v71-alt',async()=>{
+     if(!isAuthor()||uid()!==original)return;
+     try{
+      await root.navigator?.clipboard?.writeText(code);
+      copy.textContent='ĐÃ SAO CHÉP';
+     }catch(_){copy.textContent='Không sao chép được. Hãy chép mã phía trên.';}
+    });
+    output.replaceChildren(h('strong','','THẺ ĐÃ ĐƯỢC MÁY CHỦ CẤP'),
+     secret,h('small','','Giữ riêng mã này, sau đó nhập ở ô Thẻ thông hành.'),
+     copy);
+   }catch(_){
+    if(uid()===original)output.textContent='Không thể cấp thẻ. Chưa xác nhận giao dịch.';
+   }finally{
+    pending=false;issue.disabled=complete;
+   }
+  });
+  inner.append(note,consent,issue,output);
+  wrap.append(inner);
+  return wrap;
  }
  function locked(host,profile){
   const box=screen('Chỉ Thẻ thông hành được máy chủ cấp cho tài khoản này mới có thể thức tỉnh Hệ Thống.',
@@ -74,7 +131,9 @@
    'Nhiệm vụ phát Thẻ thông hành chính thức chưa mở cho độc giả.'));
   access.append(btn('XEM NHIỆM VỤ ↗','dudu-v71-textbtn',()=>root.openPhoneApp?.('quests')));
   const feedback=h('p','dudu-v71-message','');feedback.id='dudu-v71-message';feedback.setAttribute('role','status');
-  access.append(feedback);box.append(access);
+  access.append(feedback);
+  if(isAuthor())access.append(authorTestCard());
+  box.append(access);
   box.append(h('small','dudu-v71-seal-note','Danh tính và chỉ số đều do máy chủ xác nhận.'));
   host.append(box);
  }
@@ -214,18 +273,18 @@
   clearPopup();host.replaceChildren();
   if(!uid()){
    unavailable(host,'Đăng nhập Firebase để kiểm tra Thẻ thông hành trên máy chủ.');
-   return true;
+   resetSystemScroll();return true;
   }
   if(!current){
    unavailable(host,loadError||'Chưa kết nối được máy chủ Hệ Thống.',true);
-   return true;
+   resetSystemScroll();return true;
   }
   if(current.stage==='locked')locked(host,current);
   else if(current.host&&current.system&&current.progress){
    if(!current.host.name)nameStep(host,current);
    else dashboard(host,current);
   }else unavailable(host,'Dữ liệu hồ sơ máy chủ không đúng định dạng.',true);
-  return true;
+  resetSystemScroll();return true;
  }
  async function renderSystem(){
   const next=uid();
@@ -263,19 +322,10 @@
    }finally{send.disabled=false;}
   });
   section.append(input,send,output);
-  // Pilot issuance is a privileged *testing operation* not a DeepSeek order.
-  const tests=h('details','dudu-v71-details');
-  tests.append(h('summary','','Cấp thẻ kiểm tra cho AU (tài khoản này)'));
-  const issue=btn('TẠO THẺ THỬ MÁY CHỦ','dudu-v71-alt',()=>{
-   issue.disabled=true;issued.textContent='Đang xin thẻ từ registry…';
-   client.issueOwnerTestPass().then(res=>{
-    issued.textContent=res.ok?
-     'Mã thẻ của bạn: '+res.data.code+' · lưu lại trước khi đóng.':
-     (res.error||'Không được phép cấp thẻ.');
-   }).finally(()=>{issue.disabled=false;});
-  });
-  const issued=h('p','dudu-v71-issued','Chỉ UID AU có quyền admin và nằm trong bí mật triển khai mới được cấp.');
-  tests.append(issue,issued);section.append(tests);
+  // Keep passport creation inside the guarded locked System gate only.
+  const gate=h('p','', 'Thẻ thử AU được cấp tại Thiên Mệnh khi ký chủ chưa liên kết. Không dùng AI để cấp thẻ.');
+  section.append(gate,btn('MỞ THIÊN MỆNH','dudu-v71-alt',
+   ()=>root.openPhoneApp?.('system')));
   host.append(section);return true;
  }
  function syncAccess(){
