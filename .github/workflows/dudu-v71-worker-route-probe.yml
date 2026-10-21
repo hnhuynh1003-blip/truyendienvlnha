@@ -53,3 +53,38 @@ jobs:
           probe('/v1/system/me')
           print('READ ONLY: no JWT, no user data, no registry writes, no Cloudflare deployment')
           PY
+
+      - name: Check which Cloudflare Worker secret binding is missing (read-only)
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo 'PREFLIGHT: GitHub Cloudflare credentials unavailable; did not read remote bindings'
+            exit 0
+          fi
+          curl --silent --show-error --fail --max-time 30 \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/dudu-ai-staging/settings" \
+            > "$RUNNER_TEMP/dudu-v71-safe-settings.json"
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          filename=Path(os.environ['RUNNER_TEMP'])/'dudu-v71-safe-settings.json'
+          payload=json.loads(filename.read_text())
+          if not payload.get('success') or not isinstance(payload.get('result',{}).get('bindings'),list):
+              raise SystemExit('PREFLIGHT: cannot inspect current Worker bindings')
+          names={x.get('name') for x in payload['result']['bindings']
+                 if x.get('type')=='secret_text'}
+          missing=[key for key in ('GEMINI_API_KEY','DUDU_SYSTEM_PILOT_UID')
+                   if key not in names]
+          if missing:
+              for key in missing:
+                  print('PREFLIGHT_MISSING_CLOUDFLARE_SECRET: '+key)
+              print('Deployment must stay blocked until the missing secret binding(s) are configured.')
+          else:
+              print('PREFLIGHT_PASS: both required Cloudflare Worker secret binding names exist.')
+          print('Read-only audit complete; no secret values, UIDs or tokens printed.')
+          PY
