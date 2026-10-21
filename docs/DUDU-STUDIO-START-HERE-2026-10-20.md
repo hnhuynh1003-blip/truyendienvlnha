@@ -175,3 +175,5 @@ Bước xử lý có tác động production: rà soát secret `DUDU_SYSTEM_PILO
 - Thêm thẻ mục **Thẻ thử dành cho AU** bên trong cổng Thiên Mệnh chỉ khi Firebase auth đã ready và custom claim `admin:true` đã được frontend xác thực. Người dùng phải đánh dấu xác nhận trước khi nhấn nút, Worker tiếp tục yêu cầu **admin JWT + đúng `DUDU_SYSTEM_PILOT_UID` + body `ISSUE_MY_TEST_PASS`**. Mã chỉ hiển thị trong DOM của UID đúng; không lưu localStorage, không in log; copy cần người dùng chủ động bấm. Thẻ thử chỉ dùng một lần. Không cấp thẻ khi chạy test hoặc khi người dùng chưa bấm nút.
 - Bỏ luồng tạo thẻ trực tiếp từ console Chủ Thần để tránh hai nút phát hành không thống nhất; thay bằng đường dẫn về Thiên Mệnh. Không bật AI trả phí hoặc thưởng/EXP.
 - Cache buster `71-main-4` và `71-visual-4` để GitHub Pages không dùng giao diện cũ. Vẫn kiểm thử production-mode UI trên `main`, dùng mock network chỉ trong Chromium test; chưa thao tác cấp thẻ thật.
+
+- Thêm hồi quy Chromium main-mode: cuộn giao diện rồi mở lại Thiên Mệnh phải trở về đầu, tránh mất tiêu đề. Clipboard chỉ báo sao chép thành công khi API thực sự hiện hữu và hoàn tất. Không có yêu cầu cấp thẻ thật từ bài test.

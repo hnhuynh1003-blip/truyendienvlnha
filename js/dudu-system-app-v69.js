@@ -89,7 +89,9 @@
     const copy=btn('SAO CHÉP MÃ THẺ','dudu-v71-alt',async()=>{
      if(!isAuthor()||uid()!==original)return;
      try{
-      await root.navigator?.clipboard?.writeText(code);
+      if(typeof root.navigator?.clipboard?.writeText!=='function')
+       throw Error('Clipboard API unavailable');
+      await root.navigator.clipboard.writeText(code);
       copy.textContent='ĐÃ SAO CHÉP';
      }catch(_){copy.textContent='Không sao chép được. Hãy chép mã phía trên.';}
     });

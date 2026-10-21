@@ -173,6 +173,14 @@ function firebaseShim(){
       openPhoneApp('system');
     });
     await page.locator('#dudu-v69-system-view .dudu-v71-pass-form').waitFor({timeout:10000});
+    await page.evaluate(()=>{
+      const view=document.getElementById('dudu-v69-system-view');
+      view.scrollTop=200;
+      openPhoneApp('system'); // Same production-mode app, re-open after a scroll.
+    });
+    await page.locator('#dudu-v69-system-view .dudu-v71-pass-form').waitFor();
+    assert.equal(await page.evaluate(()=>document.getElementById('dudu-v69-system-view').scrollTop),0,
+      're-opening the main app must bring the sigil and heading back into view');
     assert.equal(await page.locator('#dudu-v69-system-view .dudu-v71-hero').count(),0);
     assert.equal((await page.evaluate(()=>DuduSystemClientV71.issueOwnerTestPass())).ok,false,
       'Reader cannot issue their own server pass');
