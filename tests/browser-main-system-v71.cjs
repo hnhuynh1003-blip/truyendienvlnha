@@ -220,6 +220,21 @@ function firebaseShim(){
     assert.ok(layout.notices.height>100,'System notices remain readable');
     assert.match(layout.identity.text,/DUDU-07/);
     assert.match(layout.notices.text,/Nhiệm vụ thế giới/);
+    // Match the user's narrow and short phone viewport; layout may scroll,
+    // but identity/notice cards must remain expanded, not squashed.
+    await page.setViewportSize({width:360,height:640});
+    const mobile=await page.evaluate(()=>{
+      const screen=document.querySelector('#dudu-v69-system-view');
+      const identity=screen.querySelector('.dudu-v71-system-identity');
+      const notices=screen.querySelector('.dudu-v71-notices');
+      return {identity:identity.getBoundingClientRect().height,
+        notices:notices.getBoundingClientRect().height,
+        scrollable:screen.scrollHeight>screen.clientHeight};
+    });
+    assert.ok(mobile.identity>105,'mobile: full System identity card must remain');
+    assert.ok(mobile.notices>100,'mobile: full System notice panel must remain');
+    assert.ok(mobile.scrollable,'mobile: full dashboard must scroll');
+    await page.setViewportSize({width:1280,height:720});
     assert.equal(await page.locator('#dudu-v69-system-view .dudu-v71-details').count(),0,
       'no duplicated Journal/Achievement dropdown');
     assert.match(await page.locator('#dudu-v69-system-view .dudu-v71-hud-sync').innerText(),/Chưa có dữ liệu/,
