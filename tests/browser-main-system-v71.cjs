@@ -142,6 +142,19 @@ function firebaseShim(){
     await page.evaluate(()=>DuduSystemAppsV69.renderSystem());
     assert.equal(await page.locator('#dudu-v69-system-view > .dudu-v71-unavailable').count(),1);
     assert.equal(await page.locator('#dudu-v69-system-view form').count(),0);
+    const seal=await page.evaluate(()=>{
+      const panel=document.querySelector('#dudu-v69-system-view > .dudu-v71-unavailable');
+      const css=getComputedStyle(panel);
+      return {
+        hasLock:panel.classList.contains('dudu-v71-lock'),
+        centered:css.display==='flex'&&css.alignItems==='center',
+        ornament:!!panel.querySelector('.dudu-v71-seal .dudu-v71-sigil'),
+        state:!!panel.querySelector('.dudu-v71-signal'),
+        hasRetry:!!panel.querySelector('.dudu-v71-access .dudu-v71-main')
+      };
+    });
+    assert.deepEqual(seal,{hasLock:true,centered:true,ornament:true,state:true,hasRetry:true},
+      'guest/offline System gate must retain an immersive centered layout');
     assert.equal(await page.evaluate(()=>window.__v71MainMock.calls.length),0,
       'guest must not call System Worker');
 

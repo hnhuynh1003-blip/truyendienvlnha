@@ -138,3 +138,10 @@ V71.1 CI note: `tests/browser-smoke.cjs` now expects a *guest/authentication gat
 - Sửa `js/dudu-system-app-v69.js`, `css/dudu-system-app-v69.css`: tái thiết kế cổng Thẻ thông hành và lỗi kết nối theo phong cách Vạn Giới, ưu tiên 320–430px; guest có đường đăng nhập, offline có thử kết nối lại. Không dựng hồ sơ ký chủ, chỉ số, nguồn chính quy/phi chính quy hoặc mã thẻ giả khi server không trả dữ liệu xác thực.
 - `js/dudu-system-client-v71.js` phân biệt HTTP 404 (Worker chưa có route), HTTP 503 (registry chưa cấu hình), 401 (xác thực), timeout và lỗi đường truyền/CORS/DNS. Thông báo chỉ mô tả **khả năng** khi chưa có bằng chứng từ live Worker; không tuyên bố nguyên nhân duy nhất.
 - Đổi cache query cho HTML/JS/CSS `main`, cập nhật unit test và workflow verify Published Pages. Chỉ frontend được thay; chưa chạy migration Cloudflare, chưa cấp thẻ, chưa tạo dữ liệu người chơi.
+
+
+### V71.3 — Chẩn đoán Worker công khai (21/10/2026)
+
+Đã chạy GitHub Actions `DUDU V71 Worker route diagnostic (read-only)`, run `39538816413` trực tiếp từ runner không có token/JWT và không ghi dữ liệu. Kết quả: `GET /health → HTTP 200`, `GET /v1/system/me → HTTP 404 error.code=not-found`, CORS allowed origin trả chính xác `https://hnhuynh1003-blip.github.io`. **Kết luận: Worker đang hoạt động nhưng bản được triển khai CHƯA chứa tuyến System V71.** Không gán lỗi này cho người dùng, mã thẻ hoặc Firebase, cũng không thể sửa chỉ bằng CSS/frontend/main Pages.
+
+Bước xử lý có tác động production: rà soát secret `DUDU_SYSTEM_PILOT_UID`, binding hiện có và điều kiện an toàn; sau đó khi chủ dự án cho phép rõ ràng, chạy workflow thủ công `dudu-v71-system-safe-deploy.yml` với xác nhận `DEPLOY_DUDU_V71`. Workflow có preflight bảo toàn các binding/secret hiện hữu và triển khai migration SQLite; không bật phí AI. Sau khi deploy, chạy lại probe công khai (mong đợi `GET /v1/system/me → HTTP 401` khi thiếu JWT), rồi thử account AU thật có quyền; không lưu token, UID, mã thẻ vào repo/log. Đừng dùng kết quả browser mock thay cho kiểm thử backend thật.
