@@ -93,7 +93,7 @@ test('V71 read-only player page stays on pass gate until authenticated server sa
  assert.ok(!view.children[0].children.some(x=>x.tagName==='FORM'),
   'offline screen must never ask for a code that cannot be verified');
  online=true;
- payload={stage:'awaiting-name-or-pact',
+ payload={stage:'awaiting-name-or-pact',authoritative:true,
   host:{id:'KC-ABAB',name:null,level:1,exp:0,stats:{}},
   system:{id:'DUDU-02',name:'DUDU 02',rank:'F',level:1,exp:0},
   pact:{status:'pending'},progress:{worlds:0,missions:0,achievements:0,items:0,rewards:0}};
