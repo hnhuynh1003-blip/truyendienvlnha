@@ -27,3 +27,12 @@ Giao diện được triển khai trong `js/dudu-system-app-v69.js`, CSS tại `
 - Nhiệm vụ không phải danh sách toàn cục: 6 genre V66 là *thể loại*, mỗi thể loại có nhiều tiểu thế giới riêng, mỗi kịch bản có `smallWorldId`, `missionId` và phiên bản kịch bản. 48 seed F/E vẫn chưa phát hành. Nhiệm vụ mở đầu để nhận Thẻ thông hành khác với 3 nhiệm vụ F khảo hạch sau khế ước.
 - Tab Nhiệm vụ đọc từ `worldContext.activeWorld.smallWorldId` và `worldContext.activeMission.missionId` **nếu Worker đã trả `worldAccess:true` và phân công xác thực**. Worker V71 hiện chưa trả context này, nên hiện "Chưa được phân công". Số lượng đã hoàn thành thuộc Nhật ký, không phải nhiệm vụ đang làm.
 - Đây mới là UI read-only và hợp đồng trường dự kiến, chưa có hệ thống phân công nhiệm vụ thật. Khi phát hành thế giới, backend phải kiểm khế ước, cấp/rank, availability, trạng thái published, replay/cooldown và ghi nhận nhiệm vụ theo UID + smallWorldId + missionId + version. Game Engine quyết định trạng thái/thành bại/thưởng, AI chỉ diễn giải. Không bật AI hoặc thưởng bằng việc đổi UI.
+
+
+## V71.9 — Gộp hệ thống và ký chủ vào một thẻ
+
+- Bỏ bốn HUD tĩnh (Ký chủ, Đồng bộ, Trạng thái, Thế giới): chúng không mở tính năng và trùng thông tin khế ước/cổng thế giới. Bỏ riêng số đồng bộ khi backend chưa có dữ liệu.
+- Trong thẻ Liên kết hệ thống, hiển thị tên hệ thống duy nhất một lần. Mã system.id chỉ xuất hiện khi thực sự khác với tên (đã chuẩn hóa dấu phân cách), chẳng hạn hệ thống dùng biệt danh riêng. Ví dụ không lặp Hệ thống DUDU-82 / DUDU-82 hay DUDU 02 / DUDU-02.
+- Thêm tên ký chủ và mã host.id KC-... ngay dưới tên hệ thống, dùng dữ liệu xác thực từ Worker; không hiển thị Firebase UID.
+- Giữ Cấp/LV/EXP và khế ước trong cùng thẻ; giữ bốn nút tương tác Chỉ số, Nhiệm vụ, Nhật ký, Kho. Rút gọn khối thông báo còn hai dòng thay vì lặp khế ước và cổng thế giới.
+- QA main-mode kiểm việc không lặp ID, hai danh tính nằm trong một thẻ, không còn HUD và hành vi bốn nút không thay đổi. Không thay đổi Cloudflare/registry hay kích hoạt AI/phần thưởng.

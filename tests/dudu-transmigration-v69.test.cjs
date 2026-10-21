@@ -108,7 +108,15 @@ test('V71 read-only player page stays on pass gate until authenticated server sa
  payload.host.name='Ký chủ Trúc';
  await api.renderSystem();
  assert.equal(view.children[0].className,'dudu-v71-system dudu-v71-system-identity');
- assert.ok(view.children.some(x=>x.className==='dudu-v71-hud'));
+ assert.ok(!view.children.some(x=>x.className==='dudu-v71-hud'),
+  'the inert four-tile HUD must be removed');
+ const identity=view.children[0];
+ const hostLine=identity.children.find(x=>x.className==='dudu-v71-hero dudu-v71-hostline');
+ assert.ok(hostLine,'player identity is inside the linked System card');
+ assert.ok(hostLine.children.some(x=>x.className==='dudu-v71-host-name'&&x.textContent==='Ký chủ Trúc'));
+ assert.ok(hostLine.children.some(x=>x.className==='dudu-v71-id'&&x.textContent.includes('KC-ABAB')));
+ assert.ok(!identity.children[0].children[1].children.some(x=>x.className==='dudu-v71-system-code'),
+  'DUDU 02 and DUDU-02 are the same identifier and must not repeat');
  assert.ok(view.children.some(x=>x.className==='dudu-v71-tools dudu-v71-game-menu'));
  assert.ok(!view.children.some(x=>x.tagName==='DETAILS'),
   'the old duplicate achievements dropdown must not remain');

@@ -200,9 +200,17 @@ function firebaseShim(){
     assert.match(await page.locator('.dudu-v71-hero').innerText(),/Thanh Vân/);
     assert.equal(await page.locator('.dudu-v71-pact-note').count(),1);
     assert.equal(await page.locator('.dudu-v71-connected').count(),0);
-    assert.equal(await page.locator('#dudu-v69-system-view .dudu-v71-hud-chip').count(),4);
+    assert.equal(await page.locator('#dudu-v69-system-view .dudu-v71-hud-chip').count(),0,
+      'remove four inert HUD status tiles');
+    const identity=page.locator('#dudu-v69-system-view .dudu-v71-system-identity');
+    assert.equal(await identity.locator('.dudu-v71-hostline').count(),1);
+    assert.equal(await identity.locator('.dudu-v71-host-name').innerText(),'Thanh Vân');
+    assert.match(await identity.locator('.dudu-v71-hostline .dudu-v71-id').innerText(),/KC-0123456789ABCDEFAB/);
+    assert.equal(await identity.locator('.dudu-v71-system-code').count(),0,
+      'a DUDU identifier included in the system name must not display twice');
+    assert.equal(await identity.locator('h3').innerText(),'Hệ thống DUDU-07');
     assert.equal(await page.locator('#dudu-v69-system-view .dudu-v71-game-tile').count(),4);
-    assert.equal(await page.locator('#dudu-v69-system-view .dudu-v71-notice-entry').count(),3);
+    assert.equal(await page.locator('#dudu-v69-system-view .dudu-v71-notice-entry').count(),2);
     // Real screenshot regression: short scrollable Cyber Phone may not squash cards.
     const layout=await page.evaluate(()=>{
       const host=document.getElementById('dudu-v69-system-view');
@@ -237,8 +245,8 @@ function firebaseShim(){
     await page.setViewportSize({width:1280,height:720});
     assert.equal(await page.locator('#dudu-v69-system-view .dudu-v71-details').count(),0,
       'no duplicated Journal/Achievement dropdown');
-    assert.match(await page.locator('#dudu-v69-system-view .dudu-v71-hud-sync').innerText(),/Chưa có dữ liệu/,
-      'no invented 12 percent synchronization rate');
+    assert.equal(await page.locator('#dudu-v69-system-view .dudu-v71-hud-sync').count(),0,
+      'an absent synchronization value must not occupy an empty HUD tile');
 
     await page.locator('.dudu-v71-consent input[type=checkbox]').check();
     await page.getByRole('button',{name:'KÝ KHẾ ƯỚC'}).click();
