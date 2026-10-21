@@ -130,28 +130,48 @@ jobs:
           # registry flag/binding is missing. Never create data as a health check.
           python3 - <<'PY'
           import json
+          import time
           import urllib.error
           import urllib.request
+
           target='https://dudu-ai-staging.dudu-studio-ai.workers.dev/v1/system/me'
-          request=urllib.request.Request(target,method='GET',
-              headers={'Origin':'https://hnhuynh1003-blip.github.io'})
-          try:
-              with urllib.request.urlopen(request,timeout=20) as response:
-                  status=response.status
-                  body=response.read(1024)
-                  cors=response.headers.get('Access-Control-Allow-Origin')
-          except urllib.error.HTTPError as error:
-              status=error.code
-              body=error.read(1024)
-              cors=error.headers.get('Access-Control-Allow-Origin')
-          if status!=401:
-              raise SystemExit('STOP: V71 live System route must reject anonymous GET with HTTP 401; got HTTP '+str(status))
-          try: code=json.loads(body).get('error',{}).get('code')
-          except (ValueError,AttributeError): code=None
-          if code!='unauthenticated':
-              raise SystemExit('STOP: V71 anonymous authentication response missing or malformed')
-          if cors!='https://hnhuynh1003-blip.github.io':
-              raise SystemExit('STOP: main Pages origin not allowed by live Worker')
-          print('PASS: deployed V71 registry route requires Firebase auth and allows main Pages')
-          print('READ ONLY: no test card issued, no user records touched, no paid AI')
+          origin='https://hnhuynh1003-blip.github.io'
+          # Check against the new deployment over multiple short intervals.
+          # The edge may briefly serve 403/404 before propagation completes.
+          # This does NOT waive auth/CORS requirements: fail after 12 attempts.
+          attempts=12
+          for attempt in range(1,attempts+1):
+              request=urllib.request.Request(target,method='GET',
+                  headers={'Origin':origin,'Cache-Control':'no-cache'})
+              status=None
+              body=b''
+              cors=''
+              try:
+                  with urllib.request.urlopen(request,timeout=12) as response:
+                      status=response.status
+                      body=response.read(1024)
+                      cors=response.headers.get('Access-Control-Allow-Origin','')
+              except urllib.error.HTTPError as error:
+                  status=error.code
+                  body=error.read(1024)
+                  cors=error.headers.get('Access-Control-Allow-Origin','')
+              except Exception as error:
+                  print('V71 route check',attempt,'network:',type(error).__name__)
+              code=None
+              try:
+                  payload=json.loads(body)
+                  if isinstance(payload,dict):
+                      code=(payload.get('error') or {}).get('code')
+              except (ValueError,TypeError,AttributeError):
+                  pass
+              if status==401 and code=='unauthenticated' and cors==origin:
+                  print('PASS: deployed V71 requires Firebase auth and allows main Pages')
+                  print('READ ONLY: no test card, user data, or paid AI involved')
+                  break
+              print('V71 route check',attempt,'of',attempts,
+                    'HTTP',status,'error_code',code or 'unknown',
+                    'CORS','ok' if cors==origin else 'missing-or-wrong')
+              if attempt==attempts:
+                  raise SystemExit('STOP: V71 anonymous route did not stabilize to HTTP 401; inspect Worker deployment')
+              time.sleep(5)
           PY
