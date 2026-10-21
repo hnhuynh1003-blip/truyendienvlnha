@@ -107,7 +107,11 @@ test('V71 read-only player page stays on pass gate until authenticated server sa
  assert.equal(api.statusPopup(),false);
  payload.host.name='Ký chủ Trúc';
  await api.renderSystem();
- assert.equal(view.children[0].className,'dudu-v71-hero');
+ assert.equal(view.children[0].className,'dudu-v71-system dudu-v71-system-identity');
+ assert.ok(view.children.some(x=>x.className==='dudu-v71-hud'));
+ assert.ok(view.children.some(x=>x.className==='dudu-v71-tools dudu-v71-game-menu'));
+ assert.ok(!view.children.some(x=>x.tagName==='DETAILS'),
+  'the old duplicate achievements dropdown must not remain');
  assert.equal(api.statusPopup(),true);
  assert.equal(api.canGrantReward(),false);
  admin=true;assert.equal(api.isAuthor(),true);

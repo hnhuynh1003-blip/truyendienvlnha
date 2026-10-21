@@ -200,6 +200,13 @@ function firebaseShim(){
     assert.match(await page.locator('.dudu-v71-hero').innerText(),/Thanh Vân/);
     assert.equal(await page.locator('.dudu-v71-pact-note').count(),1);
     assert.equal(await page.locator('.dudu-v71-connected').count(),0);
+    assert.equal(await page.locator('#dudu-v69-system-view .dudu-v71-hud-chip').count(),4);
+    assert.equal(await page.locator('#dudu-v69-system-view .dudu-v71-game-tile').count(),4);
+    assert.equal(await page.locator('#dudu-v69-system-view .dudu-v71-notice-entry').count(),3);
+    assert.equal(await page.locator('#dudu-v69-system-view .dudu-v71-details').count(),0,
+      'no duplicated Journal/Achievement dropdown');
+    assert.match(await page.locator('#dudu-v69-system-view .dudu-v71-hud-sync').innerText(),/Chưa có dữ liệu/,
+      'no invented 12 percent synchronization rate');
 
     await page.locator('.dudu-v71-consent input[type=checkbox]').check();
     await page.getByRole('button',{name:'KÝ KHẾ ƯỚC'}).click();
@@ -210,6 +217,16 @@ function firebaseShim(){
 
     await page.getByRole('button',{name:/Chỉ số/}).click();
     assert.equal(await page.locator('#dudu-v69-status-popup .dudu-v69-stat').count(),8);
+    await page.getByRole('button',{name:'Đóng chỉ số'}).click();
+    await page.getByRole('button',{name:/Nhật ký/}).click();
+    assert.match(await page.getByRole('dialog',{name:'NHẬT KÝ'}).innerText(),/chưa cung cấp lịch sử sự kiện/);
+    await page.getByRole('button',{name:'Đóng bảng'}).click();
+    await page.getByRole('button',{name:/Kho/}).click();
+    assert.match(await page.getByRole('dialog',{name:'KHO'}).innerText(),/Vật phẩm/);
+    await page.getByRole('button',{name:'Đóng bảng'}).click();
+    await page.getByRole('button',{name:/Nhiệm vụ/}).click();
+    assert.match(await page.getByRole('dialog',{name:'NHIỆM VỤ'}).innerText(),/chưa được mở/);
+    await page.getByRole('button',{name:'Đóng bảng'}).click();
     assert.doesNotMatch(await page.locator('#dudu-v69-system-view').innerText(),
       /irregular|regular|private_temperament|nguồn gốc/i);
 

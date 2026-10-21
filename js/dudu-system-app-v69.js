@@ -195,57 +195,155 @@
   doc.addEventListener('keydown',escapeKey);
   close.focus({preventScroll:true});return true;
  }
+ function numberFromServer(value){
+  return Number.isSafeInteger(value)&&value>=0?String(value):'—';
+ }
+ function infoPopup(kind){
+  if(!current?.host?.name||!uid()||owner!==uid()||current.authoritative!==true)return false;
+  const cfg={
+   quests:{title:'NHIỆM VỤ',subtitle:'Tiến trình nhiệm vụ từ registry',
+    rows:[['Nhiệm vụ đã ghi nhận',numberFromServer(current.progress?.missions)],
+     ['Thế giới đã ghi nhận',numberFromServer(current.progress?.worlds)]],
+    foot:current.worldAccess===true?
+     'Quyền truy cập thế giới đã được ghi nhận.':
+     'Nhiệm vụ xuyên truyện chưa được mở tại Thiên Mệnh.'},
+   journal:{title:'NHẬT KÝ',subtitle:'Tổng quan tiến trình ký chủ',
+    rows:[['Khế ước',current.pact?.status==='signed'?'Đã ký':'Chưa ký'],
+     ['Thế giới',numberFromServer(current.progress?.worlds)],
+     ['Nhiệm vụ',numberFromServer(current.progress?.missions)],
+     ['Thành tựu',numberFromServer(current.progress?.achievements)]],
+    foot:'Registry V71 chưa cung cấp lịch sử sự kiện cho giao diện. Không tạo nhật ký giả.'},
+   inventory:{title:'KHO',subtitle:'Thống kê được xác minh từ registry',
+    rows:[['Vật phẩm',numberFromServer(current.progress?.items)],
+     ['Thành tựu',numberFromServer(current.progress?.achievements)],
+     ['Quà đã nhận',numberFromServer(current.progress?.rewards)]],
+    foot:'Chỉ hiển thị tổng số. Danh sách vật phẩm Thiên Mệnh chưa được mở.'}
+  }[kind];
+  if(!cfg)return false;
+  clearPopup();
+  const parent=get('phone-app-system');if(!parent)return false;
+  const cover=h('div','dudu-v69-popup');cover.id='dudu-v69-status-popup';
+  cover.setAttribute('role','dialog');cover.setAttribute('aria-modal','true');
+  cover.setAttribute('aria-label',cfg.title);
+  const panel=h('section','dudu-v69-popup-card dudu-v71-info-card');
+  const head=h('div','dudu-v69-popup-head');
+  const close=btn('×','dudu-v69-close',clearPopup);
+  close.setAttribute('aria-label','Đóng bảng');
+  head.append(h('h2','',cfg.title),close);
+  panel.append(head,h('p','dudu-v71-info-subtitle',cfg.subtitle));
+  const rows=h('div','dudu-v71-info-rows');
+  for(const [label,value] of cfg.rows)rows.append(progressRow(label,value));
+  panel.append(rows,h('p','dudu-v71-info-foot',cfg.foot));
+  cover.append(panel);parent.append(cover);
+  cover.addEventListener('click',e=>{if(e.target===cover)clearPopup();});
+  escapeKey=e=>{if(e.key==='Escape')clearPopup();};
+  doc.addEventListener('keydown',escapeKey);
+  close.focus({preventScroll:true});return true;
+ }
+ function gameTile(icon,label,style,action,subtitle=''){
+  const tile=btn('','dudu-v71-game-tile dudu-v71-tile-'+style,action);
+  const symbol=h('span','dudu-v71-tile-symbol',icon);
+  symbol.setAttribute('aria-hidden','true');
+  const info=h('span','dudu-v71-tile-text');
+  info.append(h('strong','',label));
+  if(subtitle)info.append(h('small','',subtitle));
+  tile.append(symbol,info,h('span','dudu-v71-tile-arrow','›'));
+  return tile;
+ }
+ function hudChip(icon,label,value,modifier='',extra=''){
+  const item=h('div','dudu-v71-hud-chip'+(modifier?' dudu-v71-hud-'+modifier:''));
+  const symbol=h('span','dudu-v71-hud-icon',icon);symbol.setAttribute('aria-hidden','true');
+  const content=h('div','dudu-v71-hud-body');
+  content.append(h('span','dudu-v71-hud-label','[ '+label+' ]'),h('strong','',value));
+  if(extra)content.append(h('small','',extra));
+  item.append(symbol,content);return item;
+ }
+ function noticeItem(level,label,message){
+  const entry=h('div','dudu-v71-notice-entry dudu-v71-notice-'+level);
+  entry.append(h('span','dudu-v71-notice-marker','◆'),
+   h('span','dudu-v71-notice-text','【'+label+'】 '+message));
+  return entry;
+ }
  function dashboard(host,d){
-  const hero=h('section','dudu-v71-hero');
-  hero.append(h('div','dudu-v71-eyebrow','✦ KẾT NỐI HỆ THỐNG'),
-   h('h2','',d.host.name),
-   h('div','dudu-v71-id',d.host.id));
-  const bar=h('div','dudu-v71-ribbon');
-  bar.append(h('span','','KÝ CHỦ LV '+d.host.level),
-   h('span','',d.host.exp+' EXP'));
-  hero.append(bar);host.append(hero);
-  const system=h('section','dudu-v71-system');
+  const linked=d.pact?.status==='signed';
+  // Core identity: only the signed server response can supply an ID/rank/EXP.
+  const system=h('section','dudu-v71-system dudu-v71-system-identity');
   const sym=h('div','dudu-v71-system-sigil','✧');
-  const text=h('div','dudu-v71-system-title');
-  text.append(h('span','dudu-v71-eyebrow','LIÊN KẾT HỆ THỐNG'),
+  const title=h('div','dudu-v71-system-title');
+  title.append(h('span','dudu-v71-eyebrow','✦ LIÊN KẾT HỆ THỐNG'),
    h('h3','',d.system.name),h('small','',d.system.id));
-  const top=h('div','dudu-v71-system-top');top.append(sym,text);system.append(top);
+  const top=h('div','dudu-v71-system-top');top.append(sym,title);
+  system.append(top);
   const rank=h('div','dudu-v71-rank');
-  rank.append(h('span','','CẤP '+d.system.rank+' · LV '+d.system.level),
-   h('span','',d.system.exp+' EXP'));
-  system.append(rank);
-  if(d.pact?.status!=='signed'){
+  rank.append(h('span','','CẤP '+d.system.rank+' · LV '+numberFromServer(d.system.level)),
+   h('span','',numberFromServer(d.system.exp)+' EXP'));
+  system.append(rank,h('div','dudu-v71-exp-track'));
+  if(!linked){
    system.append(h('p','dudu-v71-pact-note',
     'Hệ thống đã được phân phối. Cần xác nhận khế ước trước khi liên kết.'));
    const consent=h('label','dudu-v71-consent');
    const check=h('input','');check.type='checkbox';
    consent.append(check,h('span','',
-     'Tôi đồng ý khế ước thử nghiệm V71. Chưa mở nhiệm vụ xuyên truyện hay phần thưởng thật.'));
+    'Tôi đồng ý khế ước thử nghiệm V71. Chưa mở nhiệm vụ xuyên truyện hay phần thưởng thật.'));
    const sign=btn('KÝ KHẾ ƯỚC','dudu-v71-main',()=>{
     if(check.checked)run(()=>client.acceptPact());
     else status('Bạn cần đồng ý điều khoản trước khi ký.');
    });
    system.append(consent,sign);
-  }else{
-   system.append(h('p','dudu-v71-connected','● Khế ước đã được ghi trên máy chủ'));
-  }
+  }else system.append(h('p','dudu-v71-connected','● Khế ước đã được ghi trên máy chủ'));
   host.append(system);
-  const actions=h('div','dudu-v71-tools');
-  actions.append(btn('◈  Chỉ số','dudu-v71-main',statusPopup));
-  const details=h('details','dudu-v71-details');
-  details.append(h('summary','','✧ Thành tựu và kho'));
-  const inner=h('div','dudu-v71-detail-grid');
-  for(const [label,val] of [
-   ['Thế giới',d.progress.worlds],['Nhiệm vụ',d.progress.missions],
-   ['Thành tựu',d.progress.achievements],['Vật phẩm',d.progress.items],
-   ['Quà đã nhận',d.progress.rewards]
-  ])inner.append(progressRow(label,String(val)));
-  details.append(inner);
-  actions.append(btn('▤  Nhật ký','dudu-v71-alt',()=>{details.open=!details.open;}));
-  host.append(actions,details);
-  const foot=h('div','dudu-v71-footer');
-  foot.append(h('span','','TRẠNG THÁI THẾ GIỚI'),
-   h('strong','','CHƯA MỞ NHIỆM VỤ XUYÊN TRUYỆN'));
+
+  const hud=h('section','dudu-v71-hud');
+  hud.setAttribute('aria-label','Trạng thái ký chủ');
+  const hero=h('div','dudu-v71-hero dudu-v71-hud-chip');
+  const playerIcon=h('span','dudu-v71-hud-icon','♙');
+  playerIcon.setAttribute('aria-hidden','true');
+  const player=h('div','dudu-v71-hud-body');
+  player.append(h('span','dudu-v71-hud-label','[ KÝ CHỦ ]'),
+   h('h2','',d.host.name),h('small','dudu-v71-id',d.host.id));
+  hero.append(playerIcon,player);
+  hud.append(hero);
+  // V71 registry does NOT return a sync percentage; never invent 12%.
+  const sync=Number.isFinite(d.system.syncPercent)&&
+   d.system.syncPercent>=0&&d.system.syncPercent<=100?
+   String(Math.round(d.system.syncPercent))+'%':'—';
+  hud.append(hudChip('↻','ĐỒNG BỘ',sync,'sync',
+   sync==='—'?'Chưa có dữ liệu':'Từ máy chủ'));
+  hud.append(hudChip('⌁','TRẠNG THÁI',linked?'Đã liên kết':'Chờ khế ước',
+   linked?'ready':'waiting'));
+  hud.append(hudChip('◎','THẾ GIỚI',d.worldAccess===true?'Đã mở':'Chưa mở',
+   d.worldAccess===true?'ready':'waiting'));
+  host.append(hud);
+
+  const notices=h('section','dudu-v71-notices');
+  notices.append(h('div','dudu-v71-notices-head','✧ THÔNG BÁO HỆ THỐNG'));
+  const feed=h('div','dudu-v71-notices-feed');
+  feed.append(noticeItem('primary','Trạng thái',
+   linked?'Khế ước đã được ghi trên máy chủ.':'Khế ước đang chờ xác nhận.'));
+  feed.append(noticeItem('info','Tiến trình',
+   numberFromServer(d.progress.missions)==='0'?
+   'Chưa có nhiệm vụ nào được ghi nhận.':
+   'Nhiệm vụ đã ghi nhận: '+numberFromServer(d.progress.missions)+'.'));
+  feed.append(noticeItem('warning','Thế giới',
+   d.worldAccess===true?'Quyền truy cập thế giới đã được xác nhận.':
+   'Nhiệm vụ xuyên truyện chưa mở.'));
+  notices.append(feed,h('small','dudu-v71-notices-source',
+   'Trạng thái từ registry · Chưa kích hoạt đối thoại AI'));
+  host.append(notices);
+
+  const actions=h('nav','dudu-v71-tools dudu-v71-game-menu');
+  actions.setAttribute('aria-label','Các mục Thiên Mệnh');
+  actions.append(
+   gameTile('▥','Chỉ số','stats',statusPopup),
+   gameTile('▤','Nhiệm vụ','quests',()=>infoPopup('quests')),
+   gameTile('≡','Nhật ký','journal',()=>infoPopup('journal')),
+   gameTile('▣','Kho','inventory',()=>infoPopup('inventory')));
+  host.append(actions);
+  const foot=h('section','dudu-v71-footer dudu-v71-world-gate');
+  foot.append(h('span','dudu-v71-world-icon','◇'),
+   h('span','','TRẠNG THÁI THẾ GIỚI'),
+   h('strong','',d.worldAccess===true?
+    'ĐÃ MỞ QUYỀN TRUY CẬP THẾ GIỚI':'CHƯA MỞ NHIỆM VỤ XUYÊN TRUYỆN'));
   host.append(foot);
   const feedback=h('p','dudu-v71-message','');feedback.id='dudu-v71-message';
   feedback.setAttribute('role','status');host.append(feedback);
