@@ -256,14 +256,6 @@
   tile.append(symbol,info,h('span','dudu-v71-tile-arrow','›'));
   return tile;
  }
- function hudChip(icon,label,value,modifier='',extra=''){
-  const item=h('div','dudu-v71-hud-chip'+(modifier?' dudu-v71-hud-'+modifier:''));
-  const symbol=h('span','dudu-v71-hud-icon',icon);symbol.setAttribute('aria-hidden','true');
-  const content=h('div','dudu-v71-hud-body');
-  content.append(h('span','dudu-v71-hud-label','[ '+label+' ]'),h('strong','',value));
-  if(extra)content.append(h('small','',extra));
-  item.append(symbol,content);return item;
- }
  function noticeItem(level,label,message){
   const entry=h('div','dudu-v71-notice-entry dudu-v71-notice-'+level);
   entry.append(h('span','dudu-v71-notice-marker','◆'),
@@ -276,10 +268,21 @@
   const system=h('section','dudu-v71-system dudu-v71-system-identity');
   const sym=h('div','dudu-v71-system-sigil','✧');
   const title=h('div','dudu-v71-system-title');
+  const systemName=String(d.system.name||d.system.id||'').trim();
+  const systemId=String(d.system.id||'').trim();
   title.append(h('span','dudu-v71-eyebrow','✦ LIÊN KẾT HỆ THỐNG'),
-   h('h3','',d.system.name),h('small','',d.system.id));
+   h('h3','',systemName));
+  // Do not repeat "DUDU-82" when it is already present in the display name.
+  const compactId=value=>value.toLowerCase().replace(/[^a-z0-9]/g,'');
+  if(systemId&&!compactId(systemName).includes(compactId(systemId)))
+   title.append(h('small','dudu-v71-system-code',systemId));
   const top=h('div','dudu-v71-system-top');top.append(sym,title);
   system.append(top);
+  const hostLine=h('div','dudu-v71-hero dudu-v71-hostline');
+  hostLine.append(h('span','dudu-v71-host-caption','✦ KÝ CHỦ'),
+   h('h2','dudu-v71-host-name',d.host.name),
+   h('small','dudu-v71-id','ID KÝ CHỦ · '+d.host.id));
+  system.append(hostLine);
   const rank=h('div','dudu-v71-rank');
   rank.append(h('span','','CẤP '+d.system.rank+' · LV '+numberFromServer(d.system.level)),
    h('span','',numberFromServer(d.system.exp)+' EXP'));
@@ -299,40 +302,15 @@
   }else system.append(h('p','dudu-v71-connected','● Khế ước đã được ghi trên máy chủ'));
   host.append(system);
 
-  const hud=h('section','dudu-v71-hud');
-  hud.setAttribute('aria-label','Trạng thái ký chủ');
-  const hero=h('div','dudu-v71-hero dudu-v71-hud-chip');
-  const playerIcon=h('span','dudu-v71-hud-icon','♙');
-  playerIcon.setAttribute('aria-hidden','true');
-  const player=h('div','dudu-v71-hud-body');
-  player.append(h('span','dudu-v71-hud-label','[ KÝ CHỦ ]'),
-   h('h2','',d.host.name),h('small','dudu-v71-id',d.host.id));
-  hero.append(playerIcon,player);
-  hud.append(hero);
-  // V71 registry does NOT return a sync percentage; never invent 12%.
-  const sync=Number.isFinite(d.system.syncPercent)&&
-   d.system.syncPercent>=0&&d.system.syncPercent<=100?
-   String(Math.round(d.system.syncPercent))+'%':'—';
-  hud.append(hudChip('↻','ĐỒNG BỘ',sync,'sync',
-   sync==='—'?'Chưa có dữ liệu':'Từ máy chủ'));
-  hud.append(hudChip('⌁','TRẠNG THÁI',linked?'Đã liên kết':'Chờ khế ước',
-   linked?'ready':'waiting'));
-  hud.append(hudChip('◎','THẾ GIỚI',d.worldAccess===true?'Đã mở':'Chưa mở',
-   d.worldAccess===true?'ready':'waiting'));
-  host.append(hud);
-
   const notices=h('section','dudu-v71-notices');
   notices.append(h('div','dudu-v71-notices-head','✧ THÔNG BÁO HỆ THỐNG'));
   const feed=h('div','dudu-v71-notices-feed');
-  feed.append(noticeItem('primary','Trạng thái',
-   linked?'Khế ước đã được ghi trên máy chủ.':'Khế ước đang chờ xác nhận.'));
+  feed.append(noticeItem('primary','Hồ sơ',
+   'Thông tin ký chủ được xác thực bởi registry.'));
   feed.append(noticeItem('info','Nhiệm vụ thế giới',
    d.worldAccess===true&&d.worldContext?.activeMission?.missionId?
    'Đang theo dõi phân công '+d.worldContext.activeMission.missionId+'.':
    'Chưa có nhiệm vụ riêng của tiểu thế giới được phân công.'));
-  feed.append(noticeItem('warning','Thế giới',
-   d.worldAccess===true?'Quyền truy cập thế giới đã được xác nhận.':
-   'Nhiệm vụ xuyên truyện chưa mở.'));
   notices.append(feed,h('small','dudu-v71-notices-source',
    'Trạng thái từ registry · Chưa kích hoạt đối thoại AI'));
   host.append(notices);

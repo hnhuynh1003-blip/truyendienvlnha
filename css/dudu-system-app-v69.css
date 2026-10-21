@@ -673,3 +673,51 @@ body.dudu-phone-v11 #cyber-phone #phone-app-system .dudu-v71-system-identity,
 body.dudu-phone-v11 #cyber-phone #phone-app-system .dudu-v71-notices{
  min-height:max-content;overflow:visible;
 }
+
+/* V71.9 — one System card with the owner's name and host ID. */
+body.dudu-phone-v11 #cyber-phone #phone-app-system .dudu-v71-system-identity{
+ gap:10px;padding:15px 12px 14px;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-system .dudu-v71-system-identity .dudu-v71-system-top{
+ padding:0 2px 2px;align-items:center;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v71-system-identity .dudu-v71-system-title{
+ flex:1 1 auto;min-width:0;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v71-system-identity .dudu-v71-system-title h3{
+ font-size:clamp(13px,4vw,16px);line-height:1.35;overflow-wrap:anywhere;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v71-system-code{
+ color:#b8c2e3;font:500 9px/1.4 ui-monospace,monospace;
+ letter-spacing:.03em;overflow-wrap:anywhere;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-system .dudu-v71-hero.dudu-v71-hostline{
+ display:flex;flex-direction:column;gap:4px;align-items:flex-start;
+ padding:11px 12px;margin:1px 0 0;min-height:0;
+ border:1px solid #7773aa78;border-radius:9px;
+ background:linear-gradient(105deg,#242e52b9,#181f3fc4);
+ box-shadow:inset 0 1px #c9b8ed12;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v71-hostline .dudu-v71-host-caption{
+ color:#c5b4ee;font-size:9px;font-weight:750;letter-spacing:.08em;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v71-hostline h2.dudu-v71-host-name{
+ color:#f7f0ff;font:750 15px/1.35 system-ui,sans-serif;
+ margin:0;max-width:100%;overflow-wrap:anywhere;text-shadow:none;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v71-hostline .dudu-v71-id{
+ display:block;width:100%;font:500 9px/1.5 ui-monospace,Consolas,monospace;
+ color:#b8c6e3;letter-spacing:.01em;overflow-wrap:anywhere;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v71-system-identity .dudu-v71-rank{
+ padding-top:9px;margin-top:2px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v71-system-identity .dudu-v71-connected{
+ margin-top:1px;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-system .dudu-v71-notices{padding:12px 11px;}
+body.dudu-phone-v11 #cyber-phone .dudu-v71-notices-feed{gap:8px;padding:10px;}
+@media(max-width:360px){
+ body.dudu-phone-v11 #cyber-phone .dudu-v71-hero.dudu-v71-hostline{padding:9px 10px;}
+ body.dudu-phone-v11 #cyber-phone .dudu-v71-hostline h2.dudu-v71-host-name{font-size:14px;}
+}
