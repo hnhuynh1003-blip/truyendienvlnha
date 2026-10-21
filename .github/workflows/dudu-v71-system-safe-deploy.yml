@@ -83,14 +83,34 @@ jobs:
               raise SystemExit('STOP: V71 migration was not attempted; missing Worker secret binding(s)')
           current={x['name']:str(x.get('text','')) for x in live if x.get('type')=='plain_text'}
           wanted={k:str(v) for k,v in cfg['vars'].items()}
-          introduced={'DUDU_SYSTEM_LIVE_ENABLED','DUDU_SYSTEM_PILOT_CARD_ENABLED'}
-          if any(k not in introduced and current.get(k)!=v for k,v in wanted.items()):
-              raise SystemExit('STOP: existing Worker vars differ from approved config')
-          if set(current)-set(wanted):
-              raise SystemExit('STOP: remote has unknown vars; preserve them explicitly')
+          # An old production Worker legitimately has none of these V68/V71 flags.
+          # Permit only these exact additions. Existing values must NEVER be
+          # silently changed, including existing flags of the same names.
+          additive={
+              'DUDU_HIVE_ENABLED':'false',
+              'DUDU_HIVE_TEST_APPROVED':'false',
+              'DUDU_SYSTEM_LIVE_ENABLED':'true',
+              'DUDU_SYSTEM_PILOT_CARD_ENABLED':'true',
+          }
+          changes=sorted(k for k in current.keys() & wanted.keys()
+                         if current[k]!=wanted[k])
+          missing=sorted(k for k in wanted.keys()-current.keys()
+                         if k not in additive or wanted[k]!=additive[k])
+          if changes:
+              for k in changes: print('STOP: existing Worker var would change: '+k)
+              raise SystemExit('STOP: existing values must be preserved; no migration attempted')
+          if missing:
+              for k in missing: print('STOP: unexpected new Worker var: '+k)
+              raise SystemExit('STOP: only four approved additive feature flags are permitted')
+          extra=sorted(current.keys()-wanted.keys())
+          if extra:
+              for k in extra: print('STOP: unexpected live Worker var: '+k)
+              raise SystemExit('STOP: preserve unknown Worker vars explicitly')
           if any(x.get('type') not in ('plain_text','secret_text','durable_object_namespace','ai') for x in live):
               raise SystemExit('STOP: unknown legacy binding type')
-          print('PASS: secrets present; 1 additive registry binding; existing Worker vars preserved')
+          additions=sorted(wanted.keys()-current.keys())
+          for k in additions: print('PASS: approved additive feature flag: '+k)
+          print('PASS: existing Worker vars unchanged; secrets present; one additive Durable Object binding')
           PY
       - name: Deploy V71 System registry into existing Worker
         working-directory: cloudflare
