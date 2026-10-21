@@ -1,0 +1,55 @@
+name: DUDU V71 Worker route diagnostic (read-only)
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'js/dudu-system-client-v71.js'
+      - 'cloudflare/src/dudu-system-api-v71.mjs'
+      - 'cloudflare/wrangler.npc-ai-v54.toml'
+      - '.github/workflows/dudu-v71-worker-route-probe.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 4
+    steps:
+      - name: Read public health and unauthenticated System route (NO writes or secrets)
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          import urllib.error
+          import urllib.request
+          endpoint='https://dudu-ai-staging.dudu-studio-ai.workers.dev'
+          def probe(path):
+              request=urllib.request.Request(endpoint+path,headers={
+                  'Origin':'https://hnhuynh1003-blip.github.io',
+                  'User-Agent':'DUDU-V71-ReadOnly-Route-Check/1.0'
+              },method='GET')
+              try:
+                  with urllib.request.urlopen(request,timeout=18) as r:
+                      status=r.status
+                      body=r.read(2048)
+                      cors=r.headers.get('Access-Control-Allow-Origin','')
+              except urllib.error.HTTPError as e:
+                  status=e.code
+                  body=e.read(2048)
+                  cors=e.headers.get('Access-Control-Allow-Origin','')
+              except Exception as e:
+                  print(path,'NETWORK_UNAVAILABLE',type(e).__name__)
+                  return
+              try: code=json.loads(body).get('error',{}).get('code','')
+              except (ValueError,AttributeError): code=''
+              print(path,'HTTP',status,'error_code',code,'cors_origin',
+                    'OK' if cors=='https://hnhuynh1003-blip.github.io' else 'MISSING_OR_WRONG')
+              if path=='/v1/system/me':
+                  if status==401:print('V71_ROUTE_PRESENT: authenticated UID still required')
+                  elif status==503:print('V71_ROUTE_PRESENT_BUT_REGISTRY_NOT_CONFIGURED')
+                  elif status==404:print('V71_ROUTE_ABSENT: deployed Worker has not been updated to V71')
+                  else:print('V71_ROUTE_REQUIRES_REVIEW')
+          probe('/health')
+          probe('/v1/system/me')
+          print('READ ONLY: no JWT, no user data, no registry writes, no Cloudflare deployment')
+          PY
