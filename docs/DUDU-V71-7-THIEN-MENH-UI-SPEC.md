@@ -19,3 +19,11 @@ Giao diện được triển khai trong `js/dudu-system-app-v69.js`, CSS tại `
 - Chưa kết nối AI. Hệ thống con có thể vận hành lời thoại sau khi xác định API riêng, ngân sách và quyền; khối thông báo hiện chỉ có dữ liệu/trạng thái quy tắc, không mạo nhận là AI.
 - CSS ưu tiên điện thoại Cyber Phone 260–430px; có hai cột nhỏ và điều chỉnh ở <=360px.
 - CI tự động trên nhánh main kiểm luồng browser authenticated và phân tách tác vụ, còn backend thật đã được deploy riêng trước đó; bản này chỉ thay frontend.
+
+
+## V71.8 — Điều chỉnh UI và mô hình nhiệm vụ
+
+- Sửa bug co chiều cao: trong Cyber Phone, `.dudu-v69-screen` là cột flex cuộn. Identity và Notifications từng kế thừa `flex-shrink:1` rồi cắt nội dung bằng `overflow:hidden`. Đặt `flex:0 0 auto` cho các module dashboard, để chiều cao tự nhiên và cuộn màn chính, không làm méo thẻ.
+- Nhiệm vụ không phải danh sách toàn cục: 6 genre V66 là *thể loại*, mỗi thể loại có nhiều tiểu thế giới riêng, mỗi kịch bản có `smallWorldId`, `missionId` và phiên bản kịch bản. 48 seed F/E vẫn chưa phát hành. Nhiệm vụ mở đầu để nhận Thẻ thông hành khác với 3 nhiệm vụ F khảo hạch sau khế ước.
+- Tab Nhiệm vụ đọc từ `worldContext.activeWorld.smallWorldId` và `worldContext.activeMission.missionId` **nếu Worker đã trả `worldAccess:true` và phân công xác thực**. Worker V71 hiện chưa trả context này, nên hiện "Chưa được phân công". Số lượng đã hoàn thành thuộc Nhật ký, không phải nhiệm vụ đang làm.
+- Đây mới là UI read-only và hợp đồng trường dự kiến, chưa có hệ thống phân công nhiệm vụ thật. Khi phát hành thế giới, backend phải kiểm khế ước, cấp/rank, availability, trạng thái published, replay/cooldown và ghi nhận nhiệm vụ theo UID + smallWorldId + missionId + version. Game Engine quyết định trạng thái/thành bại/thưởng, AI chỉ diễn giải. Không bật AI hoặc thưởng bằng việc đổi UI.

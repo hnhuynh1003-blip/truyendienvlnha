@@ -203,6 +203,23 @@ function firebaseShim(){
     assert.equal(await page.locator('#dudu-v69-system-view .dudu-v71-hud-chip').count(),4);
     assert.equal(await page.locator('#dudu-v69-system-view .dudu-v71-game-tile').count(),4);
     assert.equal(await page.locator('#dudu-v69-system-view .dudu-v71-notice-entry').count(),3);
+    // Real screenshot regression: short scrollable Cyber Phone may not squash cards.
+    const layout=await page.evaluate(()=>{
+      const host=document.getElementById('dudu-v69-system-view');
+      const card=selector=>{
+        const el=host.querySelector(selector);
+        return {height:el.getBoundingClientRect().height,
+          shrink:getComputedStyle(el).flexShrink,text:el.textContent};
+      };
+      return {identity:card('.dudu-v71-system-identity'),
+        notices:card('.dudu-v71-notices')};
+    });
+    assert.equal(layout.identity.shrink,'0','System identity must not shrink');
+    assert.equal(layout.notices.shrink,'0','System notices must not shrink');
+    assert.ok(layout.identity.height>105,'System identity remains readable');
+    assert.ok(layout.notices.height>100,'System notices remain readable');
+    assert.match(layout.identity.text,/DUDU-07/);
+    assert.match(layout.notices.text,/Nhiệm vụ thế giới/);
     assert.equal(await page.locator('#dudu-v69-system-view .dudu-v71-details').count(),0,
       'no duplicated Journal/Achievement dropdown');
     assert.match(await page.locator('#dudu-v69-system-view .dudu-v71-hud-sync').innerText(),/Chưa có dữ liệu/,
@@ -225,7 +242,10 @@ function firebaseShim(){
     assert.match(await page.getByRole('dialog',{name:'KHO'}).innerText(),/Vật phẩm/);
     await page.getByRole('button',{name:'Đóng bảng'}).click();
     await page.getByRole('button',{name:/Nhiệm vụ/}).click();
-    assert.match(await page.getByRole('dialog',{name:'NHIỆM VỤ'}).innerText(),/chưa được mở/);
+    const worldQuests=await page.getByRole('dialog',{name:'NHIỆM VỤ THẾ GIỚI'}).innerText();
+    assert.match(worldQuests,/Chưa được phân công/);
+    assert.match(worldQuests,/Mỗi tiểu thế giới có nhiệm vụ riêng/);
+    assert.doesNotMatch(worldQuests,/đã được giao nhiệm vụ|nhận phần thưởng/i);
     await page.getByRole('button',{name:'Đóng bảng'}).click();
     assert.doesNotMatch(await page.locator('#dudu-v69-system-view').innerText(),
       /irregular|regular|private_temperament|nguồn gốc/i);
