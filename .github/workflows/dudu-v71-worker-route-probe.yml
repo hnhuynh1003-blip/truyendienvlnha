@@ -88,3 +88,36 @@ jobs:
               print('PREFLIGHT_PASS: both required Cloudflare Worker secret binding names exist.')
           print('Read-only audit complete; no secret values, UIDs or tokens printed.')
           PY
+
+      - uses: actions/checkout@v7
+      - name: Diagnose named differences between deployed Worker and main (read-only)
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN" && test -n "$CLOUDFLARE_ACCOUNT_ID" || exit 0
+          curl --silent --show-error --fail --max-time 30 \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/dudu-ai-staging/settings" \
+            > "$RUNNER_TEMP/dudu-v71-compare.json"
+          python3 - <<'PY'
+          import json,os,tomllib
+          from pathlib import Path
+          response=json.loads((Path(os.environ['RUNNER_TEMP'])/'dudu-v71-compare.json').read_text())
+          assert response.get('success') and isinstance(response.get('result',{}).get('bindings'),list)
+          live={x['name']:str(x.get('text','')) for x in response['result']['bindings']
+                if x.get('type')=='plain_text'}
+          with open('cloudflare/wrangler.npc-ai-v54.toml','rb') as f:
+              cfg=tomllib.load(f)
+          intended={k:str(v) for k,v in cfg['vars'].items()}
+          for key in sorted(set(live)&set(intended)):
+              if live[key]!=intended[key]:
+                  print('V71_VAR_VALUE_MISMATCH_NAME: '+key)
+          for key in sorted(set(intended)-set(live)):
+              print('V71_VAR_ABSENT_FROM_LIVE_NAME: '+key)
+          for key in sorted(set(live)-set(intended)):
+              print('V71_VAR_ONLY_ON_LIVE_NAME: '+key)
+          print('Read-only variable diff complete: names only; no values, tokens or UIDs printed.')
+          PY
