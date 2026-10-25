@@ -3,6 +3,7 @@
 import {verifyFirebaseIdToken} from './auth.mjs';
 import {createAuthoringService,isAuthoringActionAllowed,copyAuthoringContent,
  copyAuthoringJson,hashAuthoringJson} from './vangioi-authoring.mjs';
+import {createContentValidator,validateDraftContent} from './vangioi-content.mjs';
 
 const id=v=>typeof v==='string'&&/^[a-z][a-z0-9-]{1,63}$/.test(v);
 const uid=v=>typeof v==='string'&&v.length>0&&v.length<=128&&!/[\p{C}]/u.test(v);
@@ -38,8 +39,23 @@ function schema(storage){
    request_id TEXT NOT NULL,action TEXT NOT NULL,from_revision INTEGER NOT NULL,
    to_revision INTEGER NOT NULL,snapshot_hash TEXT,happened_at INTEGER NOT NULL,
    UNIQUE(world_id,actor_uid,request_id))`);
+  storage.sql.exec(`CREATE TABLE IF NOT EXISTS vg_authoring_source_versions_v1(
+   kind TEXT NOT NULL,story_id TEXT NOT NULL,story_version TEXT NOT NULL,content_hash TEXT NOT NULL,
+   PRIMARY KEY(kind,story_id,story_version))`);
+  storage.sql.exec(`CREATE TABLE IF NOT EXISTS vg_authoring_source_grants_v1(
+   world_id TEXT NOT NULL,kind TEXT NOT NULL,story_id TEXT NOT NULL,story_version TEXT NOT NULL,
+   status TEXT NOT NULL,grant_revision INTEGER NOT NULL CHECK(grant_revision>=1),
+   PRIMARY KEY(world_id,kind,story_id,story_version))`);
+  storage.sql.exec(`CREATE TABLE IF NOT EXISTS vg_authoring_asset_versions_v1(
+   asset_id TEXT NOT NULL,asset_version TEXT NOT NULL,content_hash TEXT NOT NULL,kind TEXT NOT NULL,
+   PRIMARY KEY(asset_id,asset_version))`);
+  storage.sql.exec(`CREATE TABLE IF NOT EXISTS vg_authoring_asset_grants_v1(
+   world_id TEXT NOT NULL,asset_id TEXT NOT NULL,asset_version TEXT NOT NULL,
+   status TEXT NOT NULL,grant_revision INTEGER NOT NULL CHECK(grant_revision>=1),
+   review_status TEXT NOT NULL,license TEXT NOT NULL,source_note TEXT NOT NULL,proof_ref TEXT,
+   PRIMARY KEY(world_id,asset_id,asset_version))`);
   // Content revisions, submitted snapshots, receipts and audit rows are append-only.
-  for(const table of ['drafts','submissions','operations','audit']){
+  for(const table of ['drafts','submissions','operations','audit','source_versions','asset_versions']){
    for(const operation of ['UPDATE','DELETE'])storage.sql.exec(
     `CREATE TRIGGER IF NOT EXISTS vg_authoring_${table}_${operation.toLowerCase()}_v1
      BEFORE ${operation} ON vg_authoring_${table}_v1
@@ -76,9 +92,28 @@ export function createSqlAuthoringService({storage,projectId,verify=verifyFireba
   const row=one('SELECT snapshot_json FROM vg_authoring_submissions_v1 WHERE world_id=? AND snapshot_hash=?',worldId,snapshotHash);
   return row?JSON.parse(row.snapshot_json):null;
  }
+ function storySource(reference,{worldId}){
+  const row=one(`SELECT v.*,g.status,g.grant_revision FROM vg_authoring_source_versions_v1 v
+   JOIN vg_authoring_source_grants_v1 g ON v.kind=g.kind AND v.story_id=g.story_id AND v.story_version=g.story_version
+   WHERE g.world_id=? AND v.kind=? AND v.story_id=? AND v.story_version=?`,
+   worldId,reference.kind,reference.storyId,reference.storyVersion);
+  return row?{worldId,kind:row.kind,storyId:row.story_id,storyVersion:row.story_version,
+   contentHash:row.content_hash,grantStatus:row.status,grantRevision:row.grant_revision}:null;
+ }
+ function asset(reference,{worldId}){
+  const row=one(`SELECT v.*,g.status,g.grant_revision,g.review_status,g.license,g.source_note,g.proof_ref
+   FROM vg_authoring_asset_versions_v1 v JOIN vg_authoring_asset_grants_v1 g
+   ON v.asset_id=g.asset_id AND v.asset_version=g.asset_version
+   WHERE g.world_id=? AND v.asset_id=? AND v.asset_version=?`,worldId,reference.assetId,reference.assetVersion);
+  return row?{worldId,assetId:row.asset_id,assetVersion:row.asset_version,contentHash:row.content_hash,kind:row.kind,
+   grantStatus:row.status,grantRevision:row.grant_revision,reviewStatus:row.review_status,
+   license:row.license,sourceNote:row.source_note,proofRef:row.proof_ref}:null;
+ }
+ const contentValidator=validateContent===undefined?
+  createContentValidator({readStorySource:storySource,readAsset:asset}):validateContent;
  function boundService(who){
   return createAuthoringService({projectId,readWorld:world,readMembership:member,readDraft:draft,
-   readSubmission:submission,validateContent,now,verify:async()=>who});
+   readSubmission:submission,validateContent:contentValidator,now,verify:async()=>who});
  }
  async function identity(request){
   try{
@@ -117,11 +152,17 @@ export function createSqlAuthoringService({storage,projectId,verify=verifyFireba
    if(!p||p.worldId!==input.worldId||p.ownerUid!==w.ownerUid||p.draftRevision!==w.draftRevision||
     p.accessRevision!==w.accessRevision||p.draftState!==w.draftState||w.draftState!=='draft')
     return fail('revision-conflict');
+   for(const dep of p.dependencies||[]){
+    const resolver=dep.kind==='source'?storySource:dep.kind==='asset'?asset:null;
+    if(!resolver||JSON.stringify(copyAuthoringJson(resolver(dep.reference,{worldId:input.worldId})))!==
+     JSON.stringify(copyAuthoringJson(dep.record)))return fail('dependency-conflict');
+   }
    const timestamp=now();
    if(!Number.isSafeInteger(timestamp)||timestamp<0)throw Error('invalid-clock');
    let result;
    if(action==='edit_draft'){
     const next=plan.nextDraft;
+    if(!validateDraftContent(next.content).valid)return fail('invalid-content');
     storage.sql.exec('INSERT INTO vg_authoring_drafts_v1(world_id,revision,content_json) VALUES(?,?,?)',
      input.worldId,next.revision,JSON.stringify(copyAuthoringContent(next.content)));
     const contributors=[...new Set([...w.contributorUids,actorUid])].sort();
@@ -159,6 +200,7 @@ export function createSqlAuthoringService({storage,projectId,verify=verifyFireba
     return fail('invalid-request');
    if(action==='edit_draft'){
     data.patch=copyAuthoringContent(data.patch);sections=Object.keys(data.patch);
+    if(!validateDraftContent(data.patch).valid)return fail('invalid-content');
     if(!sections.length)return fail('invalid-request');
    }else sections=[];
   }catch{return fail('invalid-request');}

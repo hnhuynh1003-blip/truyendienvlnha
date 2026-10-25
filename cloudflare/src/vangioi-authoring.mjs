@@ -8,7 +8,7 @@ export const AUTHORING_FIELDS=Object.freeze([
  'dangerLevel','contentTags','estimatedMinutes','story','visualIdentity',
  'worldCoverAssetId','assets','maps','places','scenes','views','cast',
  'characterVisuals','characterAppearances','npcs','playerEntryProfiles',
- 'entryPolicy','items','shops','missions','events','endings','playRequirements','aiPolicy'
+ 'entryPolicy','entry','storySource','items','shops','missions','events','endings','playRequirements','aiPolicy'
 ]);
 const fields=new Set(AUTHORING_FIELDS);
 const roles=new Set(['collaborator','reviewer','publisher']);
@@ -183,7 +183,7 @@ export function createAuthoringService({projectId,readWorld,readMembership,readD
    const draft=await readDraft(worldId);
    if(!validDraft(draft,auth.w))return denied('revision-conflict');
    const content=contentCopy(draft.content);
-   const verdict=await validateContent(content);
+   const verdict=await validateContent(content,{worldId,actorUid:auth.who.uid});
    // The callback is trusted backend code; a field inside a JSON file cannot
    // substitute for this verdict. No optional schema/semantic validation.
    if(!plain(verdict)||verdict.readyForReview!==true||!Array.isArray(verdict.errors)||
@@ -205,7 +205,8 @@ export function createAuthoringService({projectId,readWorld,readMembership,readD
     return denied('revision-conflict');
    return freeze({ok:true,prepared:true,requiresAtomicCommit:true,snapshot,
     preconditions:{worldId,ownerUid:auth.who.uid,draftRevision:expectedRevision,
-     accessRevision:auth.w.accessRevision,draftState:'draft'},
+     accessRevision:auth.w.accessRevision,draftState:'draft',
+     ...(verdict.dependencies?{dependencies:cloneJson(verdict.dependencies)}:{})},
     nextDraftHeader:{worldId,revision:expectedRevision,state:'submitted',snapshotHash:snapshot.snapshotHash}});
   }catch{return denied('authoring-unavailable');}
  }

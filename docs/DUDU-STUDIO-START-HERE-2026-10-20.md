@@ -1,5 +1,13 @@
 # DUDU Studio — START HERE / Bàn giao sạch · 20/10/2026
 
+## VẠN GIỚI Giai đoạn 1D — 26/10/2026
+
+Nền `8783792` (1C, CI/Pages SUCCESS). Đọc `contracts/vangioi/CONTENT_VALIDATION_G1D.md`. Có hai schema world-content-1 cho draft dở và bản gửi duyệt, code validator Ajv 8.20.0 biên dịch ở build time; runtime không compile schema hoặc eval truyện. Adapter SQL mặc định dùng validator thật thay vì bắt buộc tiêm stub. Content giữ requestedWorldRank và entrySceneId; metadata/quyền/official rank ở server.
+
+storySource pin loại nguồn + storyId/version/hash; assets pin ID/version/hash/kind. Các bảng registry version bất biến và grant theo world tách khỏi JSON tác giả. Submit kiểm quyền registry rồi transaction đọc lại dependencies, chặn thu hồi quyền/đổi metadata ngay trước commit. Asset pending có thể đi cùng hồ sơ review, không có quyền publish; source/asset metadata không chứng minh bản quyền ngoài đời.
+
+33 test G1D bao gồm schema/semantic/ID/nhập vai, proposal V0.1, source/asset sai phiên bản và submit qua SQLite với validator mặc định thật. V0.1 gốc không đổi; chưa tự migrate world/mission/save, chưa tạo ảnh, API upload hoặc source reader Firestore. Module chưa nối Worker live/binding/route, không chạy migration hoặc đổi auth/Thiên Mệnh/NPC/EPUB/kho/EXP/pool/AI/Canon. Tiếp: provisioning/adapter nguồn và asset, sau đó Creator UI. CI/Pages cần đọc theo commit GitHub, không dùng PASS xét duyệt làm WORLD_PLAY.
+
 ## VẠN GIỚI Giai đoạn 1C — 26/10/2026
 
 Nền `6a99b52` (1B, CI/Pages SUCCESS). Đọc `contracts/vangioi/SQL_PERSISTENCE_G1C.md`. Adapter `cloudflare/src/vangioi-authoring-sql.mjs` dùng SQL + transactionSync, tái sử dụng policy/prepare G1B. Save/submit kiểm quyền và revision lại trong transaction; nội dung/header/contributor/snapshot/receipt/audit commit cùng lúc. UUID request theo world + UID chống ghi lặp, retry sau response mất vẫn nhận receipt; history và snapshot không UPDATE/DELETE.
