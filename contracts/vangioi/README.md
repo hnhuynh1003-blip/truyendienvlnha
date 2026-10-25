@@ -2,11 +2,13 @@
 
 Giai đoạn 1A, ngày 26/10/2026. Chỉ nhập và kiểm tra hồ sơ ở local; chưa có Creator UI, API lưu nháp, cấp quyền hoặc phát hành. Không được dùng báo cáo của công cụ làm chứng nhận server.
 
+**Cập nhật tiếp nối:** đợt 1A đã lên `main` tại `4ad5d73`, CI và Pages SUCCESS sau khi chủ dự án cho phép. Đợt 1B bổ sung lõi quyền/snapshot độc lập; xem [AUTHORING_BACKEND_G1B.md](AUTHORING_BACKEND_G1B.md). Chưa nối database hoặc route live.
+
 ## Nguồn và quy tắc làm việc
 
 - Mã nền được đối chiếu tại `1f2fdb14074d99cd1a1542f334175c946c412f49` trên `main`.
 - `docs/DUDU-STUDIO-START-HERE-2026-10-20.md`, mục 1/5 và V69/V71.2: làm trên main, không nhánh/ZIP riêng, kiểm thử theo đợt, giữ thông tin riêng tư ngoài repo công khai.
-- Master prompt VẠN GIỚI, mục 12–14: kiểm toán trước, triển khai lần lượt; không đổi Canon, dữ liệu thật hoặc phát hành production khi chưa được phép. Quy định này mới hơn chỉ dẫn tự triển khai web cũ. Các thay đổi đợt 1A chưa được push vì push main có thể kích hoạt Pages.
+- Master prompt VẠN GIỚI, mục 12–14: kiểm toán trước, triển khai lần lượt; không đổi Canon hoặc dữ liệu/backend thật khi chưa được phép. Chủ dự án đã cho phép cập nhật nguồn main và Pages cho đợt trước, tiếp tục đợt kế trong cùng phạm vi; điều này không cho phép migration hoặc phát hành gameplay thật.
 - `docs/DUDU-MASTER-DELIVERY-2026-10-19.md`, Deployment gates: ghi SHA/kiểm thử/giới hạn/rollback, phân biệt commit với deploy.
 
 `source-v0.1/` chứa nguyên byte **10 file** trong gói World Authoring do chủ dự án cung cấp, kèm SHA-256. Không chỉnh các file đó để che xung đột. Bản quy chuẩn và template rời trùng byte với bản trong ZIP. Chỉ copy tài liệu thiết kế và dữ liệu mẫu của dự án; không copy chat riêng hoặc thông tin tài khoản.

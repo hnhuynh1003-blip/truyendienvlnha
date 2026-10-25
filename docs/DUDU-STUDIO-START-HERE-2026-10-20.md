@@ -1,5 +1,13 @@
 # DUDU Studio — START HERE / Bàn giao sạch · 20/10/2026
 
+## VẠN GIỚI Giai đoạn 1B — 26/10/2026
+
+Điểm tiếp nối nền: `4ad5d73` (đợt 1A đã được cho phép cập nhật main; CI và Pages SUCCESS). Xem `contracts/vangioi/AUTHORING_BACKEND_G1B.md` trước khi nối World Creator.
+
+Đợt 1B thêm `cloudflare/src/vangioi-authoring.mjs` và 37 test: xác thực Firebase + membership theo world, collaborator chỉ đọc/sửa mục được giao, chặn tự duyệt và quyền tự khai từ JSON; kế hoạch sửa nháp đúng revision, snapshot gửi duyệt được clone/freeze/hash và kiểm quyền lại sau await. Mọi kế hoạch ghi có `requiresAtomicCommit:true`: chưa có writer, chưa lưu/khóa bản nháp thật. Validator submit phải là backend callback bắt buộc, không dùng PASS offline làm quyền gửi/publish.
+
+Module chưa import vào Worker live, chưa thêm route/DB/migration, không đổi auth/Thiên Mệnh/EPUB/NPC/kho/EXP/save/pool99-100/Canon/cờ AI. Tiếp theo là adapter lưu trữ và transaction/idempotency G1C; không mở 48 seed hoặc worldAccess chỉ vì policy tests PASS. CI và deploy cần kiểm theo commit GitHub tương ứng; source PASS khác live backend PASS.
+
 ## VẠN GIỚI Giai đoạn 1A — 26/10/2026
 
 Đã đọc master prompt và gói World Authoring V0.1 do chủ dự án cung cấp, đối chiếu code nền tại `1f2fdb14074d99cd1a1542f334175c946c412f49`. Quy tắc làm việc main/không nhánh hoặc ZIP riêng vẫn giữ. Master prompt mới yêu cầu không phát hành production chưa phép; đợt này chuẩn bị và kiểm thử tại checkout main, chưa push hoặc deploy trong phiên triển khai.
