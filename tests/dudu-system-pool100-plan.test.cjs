@@ -23,6 +23,6 @@ test('V72 blueprint refuses skewed ratio and invalid random index',async()=>{
  assert.throws(()=>src.buildPoolBlueprint(max=>max),/invalid random index/);
  const plan=src.buildPoolBlueprint(()=>0);
  const mutated=plan.map(x=>({...x}));
- mutated[0].origin='regular';
+ mutated[0].origin=mutated[0].origin==='regular'?'irregular':'regular';
  assert.equal(src.validatePoolBlueprint(mutated),false);
 });
