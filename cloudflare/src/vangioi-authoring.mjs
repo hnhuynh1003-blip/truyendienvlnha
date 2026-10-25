@@ -104,6 +104,16 @@ function permission(w,m,userId,action,sections){
  return false;
 }
 
+// Pure policy for a writer's synchronous transaction. Records and actorUid
+// MUST come from trusted storage / a verified request, never from JSON claims.
+export function isAuthoringActionAllowed({world,member,actorUid,action,sections=[]}={}){
+ return id(world?.worldId)&&uid(actorUid)&&validWorld(world,world.worldId)&&
+  actions.has(action)&&strings(sections,x=>fields.has(x))&&
+  permission(world,member,actorUid,action,sections);
+}
+
+export {contentCopy as copyAuthoringContent,cloneJson as copyAuthoringJson,hash as hashAuthoringJson};
+
 export async function verifySubmissionIntegrity(snapshot){
  // Integrity only, never authentication: recomputing a hash cannot grant a role.
  try{

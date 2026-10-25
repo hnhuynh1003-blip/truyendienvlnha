@@ -1,5 +1,13 @@
 # DUDU Studio — START HERE / Bàn giao sạch · 20/10/2026
 
+## VẠN GIỚI Giai đoạn 1C — 26/10/2026
+
+Nền `6a99b52` (1B, CI/Pages SUCCESS). Đọc `contracts/vangioi/SQL_PERSISTENCE_G1C.md`. Adapter `cloudflare/src/vangioi-authoring-sql.mjs` dùng SQL + transactionSync, tái sử dụng policy/prepare G1B. Save/submit kiểm quyền và revision lại trong transaction; nội dung/header/contributor/snapshot/receipt/audit commit cùng lúc. UUID request theo world + UID chống ghi lặp, retry sau response mất vẫn nhận receipt; history và snapshot không UPDATE/DELETE.
+
+26 test SQL cục bộ gồm ghi đồng thời, rollback giữa transaction, thu hồi quyền ngay trước commit, request ID sai/chéo UID và đóng/mở file database. Chưa có class/binding DO, chưa import vào Worker live hoặc thêm HTTP route/migration. Không có API tạo world/mời AU thật; world/membership test chỉ do fixture provision. Validator submit vẫn phải được backend cung cấp; chưa đủ căn cứ bật gameplay hoặc dùng report offline làm nghiệm thu.
+
+Tiếp: contract/validator submit, nguồn truyện có version và asset registry/provisioning; sau đó mới nối Creator. Giữ nguyên auth/Thiên Mệnh/NPC/EPUB/save/kho/EXP/Canon/pool/AI và không chạy migration backend thật. Kiểm CI/Pages theo commit GitHub của đợt này; SQL tests không chứng minh DO live.
+
 ## VẠN GIỚI Giai đoạn 1B — 26/10/2026
 
 Điểm tiếp nối nền: `4ad5d73` (đợt 1A đã được cho phép cập nhật main; CI và Pages SUCCESS). Xem `contracts/vangioi/AUTHORING_BACKEND_G1B.md` trước khi nối World Creator.

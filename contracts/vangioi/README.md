@@ -4,6 +4,8 @@ Giai đoạn 1A, ngày 26/10/2026. Chỉ nhập và kiểm tra hồ sơ ở loca
 
 **Cập nhật tiếp nối:** đợt 1A đã lên `main` tại `4ad5d73`, CI và Pages SUCCESS sau khi chủ dự án cho phép. Đợt 1B bổ sung lõi quyền/snapshot độc lập; xem [AUTHORING_BACKEND_G1B.md](AUTHORING_BACKEND_G1B.md). Chưa nối database hoặc route live.
 
+Đợt 1B đã lên main tại `6a99b52` với CI/Pages SUCCESS. Đợt 1C thêm adapter lưu SQLite và kiểm thử transaction cục bộ: [SQL_PERSISTENCE_G1C.md](SQL_PERSISTENCE_G1C.md). Chưa thêm binding, route hoặc migration production.
+
 ## Nguồn và quy tắc làm việc
 
 - Mã nền được đối chiếu tại `1f2fdb14074d99cd1a1542f334175c946c412f49` trên `main`.
