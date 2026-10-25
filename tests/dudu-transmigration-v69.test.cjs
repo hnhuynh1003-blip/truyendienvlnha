@@ -114,9 +114,11 @@ test('V71 read-only player page stays on pass gate until authenticated server sa
  const hostLine=identity.children.find(x=>x.className==='dudu-v71-hero dudu-v71-hostline');
  assert.ok(hostLine,'player identity is inside the linked System card');
  assert.ok(hostLine.children.some(x=>x.className==='dudu-v71-host-name'&&x.textContent==='Ký chủ Trúc'));
- assert.ok(hostLine.children.some(x=>x.className==='dudu-v71-id'&&x.textContent.includes('KC-ABAB')));
- assert.ok(!identity.children[0].children[1].children.some(x=>x.className==='dudu-v71-system-code'),
-  'DUDU 02 and DUDU-02 are the same identifier and must not repeat');
+ assert.ok(hostLine.children.some(x=>x.className==='dudu-v71-id'&&x.textContent==='KC-ABAB'));
+ assert.ok(!hostLine.children.some(x=>x.className==='dudu-v71-host-caption'));
+ assert.ok(identity.children[0].children[1].children.some(x=>
+  x.className==='dudu-v71-system-number'&&x.textContent==='2'),
+  'public dashboard shows 2 rather than registry identifier DUDU-02');
  assert.ok(view.children.some(x=>x.className==='dudu-v71-tools dudu-v71-game-menu'));
  const notice=view.children.find(x=>x.tagName==='DETAILS'&&
   x.className==='dudu-v71-notices dudu-v71-notices-compact');
