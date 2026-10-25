@@ -268,20 +268,18 @@
   const system=h('section','dudu-v71-system dudu-v71-system-identity');
   const sym=h('div','dudu-v71-system-sigil','✧');
   const title=h('div','dudu-v71-system-title');
-  const systemName=String(d.system.name||d.system.id||'').trim();
-  const systemId=String(d.system.id||'').trim();
-  title.append(h('span','dudu-v71-eyebrow','✦ LIÊN KẾT HỆ THỐNG'),
-   h('h3','',systemName));
-  // Do not repeat "DUDU-82" when it is already present in the display name.
-  const compactId=value=>value.toLowerCase().replace(/[^a-z0-9]/g,'');
-  if(systemId&&!compactId(systemName).includes(compactId(systemId)))
-   title.append(h('small','dudu-v71-system-code',systemId));
+  // Displayed serial is only a public alias, not an internal ledger key.
+  const publicId=String(d.system.id||'').trim();
+  const found=/^DUDU-(\d{1,3})$/i.exec(publicId);
+  const serial=found?String(Number(found[1])):String(d.system.name||publicId||'Hệ thống');
+  title.append(h('span','dudu-v71-eyebrow','✧ HỆ THỐNG ĐỒNG HÀNH'),
+   h('h3','dudu-v71-system-number',serial));
   const top=h('div','dudu-v71-system-top');top.append(sym,title);
   system.append(top);
+  // No repeated 'Ký chủ' label or 'ID ký chủ' prefix.
   const hostLine=h('div','dudu-v71-hero dudu-v71-hostline');
-  hostLine.append(h('span','dudu-v71-host-caption','✦ KÝ CHỦ'),
-   h('h2','dudu-v71-host-name',d.host.name),
-   h('small','dudu-v71-id','ID KÝ CHỦ · '+d.host.id));
+  hostLine.append(h('h2','dudu-v71-host-name',d.host.name),
+   h('small','dudu-v71-id',d.host.id));
   system.append(hostLine);
   const rank=h('div','dudu-v71-rank');
   rank.append(h('span','','CẤP '+d.system.rank+' · LV '+numberFromServer(d.system.level)),
@@ -299,7 +297,7 @@
     else status('Bạn cần đồng ý điều khoản trước khi ký.');
    });
    system.append(consent,sign);
-  }else system.append(h('p','dudu-v71-connected','● Khế ước đã được ghi trên máy chủ'));
+  } // Linked players do not need a redundant confirmation line.
   host.append(system);
 
   // A compact, native disclosure belongs AFTER the actionable game menu.
@@ -315,8 +313,6 @@
    h('span','dudu-v71-notices-chevron','⌄'));
   notices.append(summary);
   const feed=h('div','dudu-v71-notices-feed');
-  feed.append(noticeItem('primary','Hồ sơ',
-   'Thông tin ký chủ được xác thực bởi registry.'));
   feed.append(noticeItem('info','Nhiệm vụ thế giới',
    d.worldAccess===true&&d.worldContext?.activeMission?.missionId?
    'Đang theo dõi phân công '+d.worldContext.activeMission.missionId+'.':
