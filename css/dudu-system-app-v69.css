@@ -798,3 +798,22 @@ body.dudu-phone-v11 #cyber-phone .dudu-v71-world-icon{font-size:19px;}
 @media(prefers-reduced-motion:reduce){
  body.dudu-phone-v11 #cyber-phone .dudu-v71-notices-chevron{transition:none;}
 }
+
+/* V71.11 — one public serial, clean personal name + KC-ID. */
+body.dudu-phone-v11 #cyber-phone .dudu-v71-system-identity .dudu-v71-system-title h3.dudu-v71-system-number{
+ font:700 clamp(28px,8vw,37px)/1.08 Georgia,"Times New Roman",serif;
+ color:#f4ddb9;letter-spacing:.06em;margin:0;
+ text-shadow:0 0 15px #d4abed61;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v71-system-identity .dudu-v71-system-title .dudu-v71-eyebrow{
+ font-size:9px;letter-spacing:.11em;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-system .dudu-v71-system-identity{
+ padding:13px 11px 12px;gap:8px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v71-hero.dudu-v71-hostline{
+ padding:9px 11px;gap:3px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v71-hostline .dudu-v71-id{
+ font-size:9px;color:#afc0dc;
+}
