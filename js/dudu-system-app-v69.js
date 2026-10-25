@@ -302,8 +302,18 @@
   }else system.append(h('p','dudu-v71-connected','● Khế ước đã được ghi trên máy chủ'));
   host.append(system);
 
-  const notices=h('section','dudu-v71-notices');
-  notices.append(h('div','dudu-v71-notices-head','✧ THÔNG BÁO HỆ THỐNG'));
+  // A compact, native disclosure belongs AFTER the actionable game menu.
+  // The player should never have to scroll through notices to reach actions.
+  const notices=h('details','dudu-v71-notices dudu-v71-notices-compact');
+  const summary=h('summary','dudu-v71-notices-summary');
+  const noticePreview=d.worldAccess===true&&d.worldContext?.activeMission?.missionId?
+   'Có phân công nhiệm vụ thế giới':'Chưa có nhiệm vụ thế giới';
+  summary.append(
+   h('span','dudu-v71-notices-symbol','✧'),
+   h('span','dudu-v71-notices-summary-text','THÔNG BÁO HỆ THỐNG'),
+   h('span','dudu-v71-notices-summary-preview',noticePreview),
+   h('span','dudu-v71-notices-chevron','⌄'));
+  notices.append(summary);
   const feed=h('div','dudu-v71-notices-feed');
   feed.append(noticeItem('primary','Hồ sơ',
    'Thông tin ký chủ được xác thực bởi registry.'));
@@ -313,7 +323,6 @@
    'Chưa có nhiệm vụ riêng của tiểu thế giới được phân công.'));
   notices.append(feed,h('small','dudu-v71-notices-source',
    'Trạng thái từ registry · Chưa kích hoạt đối thoại AI'));
-  host.append(notices);
 
   const actions=h('nav','dudu-v71-tools dudu-v71-game-menu');
   actions.setAttribute('aria-label','Các mục Thiên Mệnh');
@@ -328,7 +337,7 @@
    h('span','','TRẠNG THÁI THẾ GIỚI'),
    h('strong','',d.worldAccess===true?
     'ĐÃ MỞ QUYỀN TRUY CẬP THẾ GIỚI':'CHƯA MỞ NHIỆM VỤ XUYÊN TRUYỆN'));
-  host.append(foot);
+  host.append(foot,notices);
   const feedback=h('p','dudu-v71-message','');feedback.id='dudu-v71-message';
   feedback.setAttribute('role','status');host.append(feedback);
  }

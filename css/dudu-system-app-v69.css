@@ -721,3 +721,80 @@ body.dudu-phone-v11 #cyber-phone .dudu-v71-notices-feed{gap:8px;padding:10px;}
  body.dudu-phone-v11 #cyber-phone .dudu-v71-hero.dudu-v71-hostline{padding:9px 10px;}
  body.dudu-phone-v11 #cyber-phone .dudu-v71-hostline h2.dudu-v71-host-name{font-size:14px;}
 }
+
+/* V71.10 — Actions first. The System notice is a collapsed native
+   disclosure below the World gate, never an obstacle above game controls. */
+body.dudu-phone-v11 #cyber-phone #phone-app-system .dudu-v69-screen{
+ gap:10px;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-system .dudu-v71-notices-compact{
+ flex:0 0 auto;min-height:0;
+ padding:0;overflow:visible;
+ border:1px solid #766a9b8a;border-radius:11px;
+ background:linear-gradient(125deg,#1a2341,#151b35);
+ box-shadow:inset 0 1px #c3a6e526;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-system .dudu-v71-notices-compact::before{
+ content:none;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v71-notices-compact .dudu-v71-notices-summary{
+ display:flex;align-items:center;gap:8px;box-sizing:border-box;
+ width:100%;min-height:44px;padding:10px 11px;
+ list-style:none;cursor:pointer;outline-offset:2px;
+ border-radius:10px;color:#e2d5fb;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v71-notices-compact .dudu-v71-notices-summary::-webkit-details-marker{
+ display:none;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v71-notices-summary .dudu-v71-notices-symbol{
+ color:#d6b5ff;flex:0 0 auto;font-size:18px;line-height:1;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v71-notices-summary .dudu-v71-notices-summary-text{
+ flex:0 0 auto;font-size:9px;font-weight:800;letter-spacing:.055em;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v71-notices-summary .dudu-v71-notices-summary-preview{
+ min-width:0;flex:1 1 auto;color:#adbad8;
+ font-size:9px;line-height:1.4;text-align:right;
+ overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v71-notices-summary .dudu-v71-notices-chevron{
+ flex:none;margin-left:2px;font-size:17px;line-height:1;
+ color:#c2ace9;transition:transform .15s ease;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v71-notices-compact[open] .dudu-v71-notices-chevron{
+ transform:rotate(180deg);
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v71-notices-compact[open] .dudu-v71-notices-summary{
+ border-bottom:1px solid #8b79b84f;border-radius:10px 10px 0 0;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v71-notices-compact .dudu-v71-notices-feed{
+ margin:10px 10px 0;padding:9px 10px;gap:8px;
+ border-radius:8px;background:#101a32;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v71-notices-compact .dudu-v71-notices-source{
+ padding:7px 12px 11px;font-size:8px;text-align:left;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v71-game-menu{
+ gap:7px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v71-game-menu .dudu-v71-game-tile{
+ min-height:58px;padding:8px 9px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v71-world-gate{
+ min-height:70px;padding:10px;gap:6px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v71-world-icon{font-size:19px;}
+@media(max-width:360px){
+ body.dudu-phone-v11 #cyber-phone .dudu-v71-notices-summary .dudu-v71-notices-summary-text{
+  font-size:8px;letter-spacing:0;
+ }
+ body.dudu-phone-v11 #cyber-phone .dudu-v71-notices-summary .dudu-v71-notices-summary-preview{
+  font-size:8px;
+ }
+ body.dudu-phone-v11 #cyber-phone .dudu-v71-game-menu .dudu-v71-game-tile{
+  min-height:56px;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ body.dudu-phone-v11 #cyber-phone .dudu-v71-notices-chevron{transition:none;}
+}
