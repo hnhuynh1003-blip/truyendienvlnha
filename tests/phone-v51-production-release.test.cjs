@@ -18,7 +18,7 @@ test('V51 phone modules are all loaded with new cache tags',()=>{
   assert.match(html,new RegExp('src="js/'+mod+'\\.js\\?v=(?:51-1|52-1)"'),mod);
  }
  assert.match(html,/src="js\/companion-ui-v43\.js\?v=69-restore-1"/);
- assert.match(html,/src="js\/dudu-system-app-v69\.js\?v=71-main-[2-9][0-9]*"/);
+ assert.match(html,/src="js\/dudu-system-app-v69\.js\?v=71-main-(?:[2-9]|[1-9][0-9]+)"/);
  assert.match(html,/src="js\/dudu-system-client-v71\.js\?v=71-2"/);
  assert.match(html,/src="js\/dudu-core-ai-v70\.js\?v=70-3"/);
  assert.match(html,/src="js\/dudu-character-name-v71\.js\?v=71-1"/);
