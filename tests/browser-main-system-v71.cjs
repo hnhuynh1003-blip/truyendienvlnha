@@ -225,7 +225,20 @@ function firebaseShim(){
     assert.equal(layout.identity.shrink,'0','System identity must not shrink');
     assert.equal(layout.notices.shrink,'0','System notices must not shrink');
     assert.ok(layout.identity.height>105,'System identity remains readable');
-    assert.ok(layout.notices.height>100,'System notices remain readable');
+    assert.ok(layout.notices.height>=40&&layout.notices.height<=85,
+      'notices should occupy only one collapsed row');
+    const hierarchy=await page.evaluate(()=>{
+      const host=document.getElementById('dudu-v69-system-view');
+      const menu=host.querySelector('.dudu-v71-game-menu');
+      const notices=host.querySelector('.dudu-v71-notices-compact');
+      const world=host.querySelector('.dudu-v71-world-gate');
+      return {collapsed:!notices.open,
+        menuBeforeNotices:menu.getBoundingClientRect().bottom<=notices.getBoundingClientRect().top,
+        worldBeforeNotices:world.getBoundingClientRect().bottom<=notices.getBoundingClientRect().top};
+    });
+    assert.equal(hierarchy.collapsed,true,'System log stays closed by default');
+    assert.ok(hierarchy.menuBeforeNotices,'functional game cards must precede optional notices');
+    assert.ok(hierarchy.worldBeforeNotices,'World status should appear before optional notices');
     assert.match(layout.identity.text,/DUDU-07/);
     assert.match(layout.notices.text,/Nhiệm vụ thế giới/);
     // Match the user's narrow and short phone viewport; layout may scroll,
@@ -240,8 +253,26 @@ function firebaseShim(){
         scrollable:screen.scrollHeight>screen.clientHeight};
     });
     assert.ok(mobile.identity>105,'mobile: full System identity card must remain');
-    assert.ok(mobile.notices>100,'mobile: full System notice panel must remain');
+    assert.ok(mobile.notices>=40&&mobile.notices<=85,
+      'mobile: notices stay a compact single-row disclosure');
     assert.ok(mobile.scrollable,'mobile: full dashboard must scroll');
+    const mobileOrder=await page.evaluate(()=>{
+      const host=document.getElementById('dudu-v69-system-view');
+      return {
+        menuBottom:host.querySelector('.dudu-v71-game-menu').getBoundingClientRect().bottom,
+        noticesTop:host.querySelector('.dudu-v71-notices').getBoundingClientRect().top
+      };
+    });
+    assert.ok(mobileOrder.menuBottom<=mobileOrder.noticesTop,
+      '360px mobile: game actions must precede notices');
+    const disclosure=page.locator('#dudu-v69-system-view .dudu-v71-notices-compact');
+    await disclosure.locator('summary').click();
+    assert.equal(await disclosure.evaluate(el=>el.open),true,
+      'System notices can be expanded intentionally');
+    assert.equal(await disclosure.locator('.dudu-v71-notice-entry:visible').count(),2);
+    await disclosure.locator('summary').click();
+    assert.equal(await disclosure.evaluate(el=>el.open),false,
+      'System notices can be collapsed again');
     await page.setViewportSize({width:1280,height:720});
     assert.equal(await page.locator('#dudu-v69-system-view .dudu-v71-details').count(),0,
       'no duplicated Journal/Achievement dropdown');
