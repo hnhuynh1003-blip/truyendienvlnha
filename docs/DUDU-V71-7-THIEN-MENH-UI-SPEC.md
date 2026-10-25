@@ -36,3 +36,10 @@ Giao diện được triển khai trong `js/dudu-system-app-v69.js`, CSS tại `
 - Thêm tên ký chủ và mã host.id KC-... ngay dưới tên hệ thống, dùng dữ liệu xác thực từ Worker; không hiển thị Firebase UID.
 - Giữ Cấp/LV/EXP và khế ước trong cùng thẻ; giữ bốn nút tương tác Chỉ số, Nhiệm vụ, Nhật ký, Kho. Rút gọn khối thông báo còn hai dòng thay vì lặp khế ước và cổng thế giới.
 - QA main-mode kiểm việc không lặp ID, hai danh tính nằm trong một thẻ, không còn HUD và hành vi bốn nút không thay đổi. Không thay đổi Cloudflare/registry hay kích hoạt AI/phần thưởng.
+
+
+## V71.10 — Ưu tiên nút chơi, thu gọn Thông báo hệ thống
+
+- Đổi thứ tự UI trên main: Liên kết hệ thống → bốn thao tác Chỉ số/Nhiệm vụ/Nhật ký/Kho → Trạng thái thế giới → Thông báo hệ thống. Không bắt người chơi cuộn qua thông báo để đến nút game.
+- Thông báo dùng phần tử details/summary có thể mở/đóng bằng bàn phím hoặc cảm ứng, mặc định thu gọn một dòng hiển thị trạng thái nhiệm vụ từ dữ liệu registry. Khi mở mới có hai dòng giải thích hiện hữu. Không bật AI hay tạo nội dung nhiệm vụ giả.
+- Tối ưu chiều cao menu và cổng thế giới; kiểm thử Chromium ở viewport 360×640 để đảm bảo nút đứng trước thông báo và có thể mở/đóng. Việc thay đổi chỉ ảnh hưởng frontend, không thay đổi dữ liệu và quyền của Worker.

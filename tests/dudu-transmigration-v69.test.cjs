@@ -118,8 +118,14 @@ test('V71 read-only player page stays on pass gate until authenticated server sa
  assert.ok(!identity.children[0].children[1].children.some(x=>x.className==='dudu-v71-system-code'),
   'DUDU 02 and DUDU-02 are the same identifier and must not repeat');
  assert.ok(view.children.some(x=>x.className==='dudu-v71-tools dudu-v71-game-menu'));
- assert.ok(!view.children.some(x=>x.tagName==='DETAILS'),
-  'the old duplicate achievements dropdown must not remain');
+ const notice=view.children.find(x=>x.tagName==='DETAILS'&&
+  x.className==='dudu-v71-notices dudu-v71-notices-compact');
+ assert.ok(notice,'optional System log must exist');
+ assert.ok(!view.children.some(x=>x.className==='dudu-v71-details'),
+  'old achievements dropdown remains removed');
+ const menuIndex=view.children.findIndex(x=>x.className==='dudu-v71-tools dudu-v71-game-menu');
+ assert.ok(menuIndex>=0&&view.children.indexOf(notice)>menuIndex,
+  'game actions must precede System notifications');
  assert.equal(api.statusPopup(),true);
  assert.equal(api.canGrantReward(),false);
  admin=true;assert.equal(api.isAuthor(),true);
