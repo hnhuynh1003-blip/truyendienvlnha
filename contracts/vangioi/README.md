@@ -8,6 +8,8 @@ Giai đoạn 1A, ngày 26/10/2026. Chỉ nhập và kiểm tra hồ sơ ở loca
 
 Đợt 1C đã lên main tại `8783792` với CI/Pages SUCCESS. Đợt 1D thêm schema nháp/gửi duyệt, validator mặc định thật và registry tham chiếu nguồn/asset có version: [CONTENT_VALIDATION_G1D.md](CONTENT_VALIDATION_G1D.md). Chưa nối thư viện Firestore/ảnh thật hoặc backend live.
 
+Đợt 1D đã lên main tại `29b3f9b` với CI/Pages SUCCESS. Đợt 1E thêm service khởi tạo world nháp và collaborator theo section: [PROVISIONING_G1E.md](PROVISIONING_G1E.md). Chưa có issuer entitlement, source/asset adapter hoặc backend live.
+
 ## Nguồn và quy tắc làm việc
 
 - Mã nền được đối chiếu tại `1f2fdb14074d99cd1a1542f334175c946c412f49` trên `main`.

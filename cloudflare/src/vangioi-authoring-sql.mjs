@@ -13,7 +13,7 @@ const fail=(code='forbidden')=>({ok:false,code});
 const equalKeys=(v,keys)=>v&&typeof v==='object'&&!Array.isArray(v)&&
  Object.keys(v).sort().join(',')===[...keys].sort().join(',');
 
-function schema(storage){
+export function initializeAuthoringSchema(storage){
  storage.transactionSync(()=>{
   storage.sql.exec(`CREATE TABLE IF NOT EXISTS vg_authoring_worlds_v1(
    world_id TEXT PRIMARY KEY,owner_uid TEXT NOT NULL,
@@ -69,7 +69,7 @@ export function createSqlAuthoringService({storage,projectId,verify=verifyFireba
  if(!storage?.sql||typeof storage.sql.exec!=='function'||typeof storage.transactionSync!=='function'||
   !/^[a-z0-9-]{1,64}$/.test(projectId||'')||typeof verify!=='function'||typeof now!=='function')
   throw new TypeError('SQL authoring requires trusted storage and identity adapters');
- schema(storage);
+ initializeAuthoringSchema(storage);
  const all=(q,...args)=>storage.sql.exec(q,...args).toArray();
  const one=(q,...args)=>all(q,...args)[0]||null;
  function world(worldId){

@@ -1,5 +1,13 @@
 # DUDU Studio — START HERE / Bàn giao sạch · 20/10/2026
 
+## VẠN GIỚI Giai đoạn 1E — 26/10/2026
+
+Nền `29b3f9b` (1D, CI/Pages SUCCESS). Đọc `contracts/vangioi/PROVISIONING_G1E.md`. Module độc lập thêm createWorld với entitlement backend + UID đã xác thực, world ID do server sinh, revision-1 private draft; owner đặt/thu hồi collaborator theo section. Không cho claim admin/canEditStories hoặc JSON cấp quyền AU/reviewer/publisher/owner.
+
+Cùng SQL/transactionSync: kiểm entitlement/owner/accessRevision ngay lúc commit, chống ghi lặp UUID/canonical hash, audit/receipt và access event append-only ghi cùng world/draft/membership. Thu hồi không xóa contributor history; retry chỉ xác nhận thao tác lịch sử, không đặt lại quyền hiện tại. 23 test mới; tổng 295 test Worker PASS cục bộ. Kiểm CI/Pages theo SHA GitHub của commit đợt này.
+
+Chưa có issuer entitlement, invitation/consent, adapter nguồn/asset thật, Creator UI hoặc live route/binding. Không chạy migration/deploy Worker hoặc ghi tài khoản thật. Giữ auth/Thiên Mệnh/NPC/EPUB/save/kho/EXP/pool/AI/Canon. Tiếp: trusted source/asset provisioning rồi Creator; yêu cầu hình nền thật và quyền sử dụng vẫn là cổng phát hành, không bật WORLD_PLAY/48 seed từ metadata.
+
 ## VẠN GIỚI Giai đoạn 1D — 26/10/2026
 
 Nền `8783792` (1C, CI/Pages SUCCESS). Đọc `contracts/vangioi/CONTENT_VALIDATION_G1D.md`. Có hai schema world-content-1 cho draft dở và bản gửi duyệt, code validator Ajv 8.20.0 biên dịch ở build time; runtime không compile schema hoặc eval truyện. Adapter SQL mặc định dùng validator thật thay vì bắt buộc tiêm stub. Content giữ requestedWorldRank và entrySceneId; metadata/quyền/official rank ở server.
