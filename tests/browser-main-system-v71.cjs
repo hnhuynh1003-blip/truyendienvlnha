@@ -205,12 +205,13 @@ function firebaseShim(){
     const identity=page.locator('#dudu-v69-system-view .dudu-v71-system-identity');
     assert.equal(await identity.locator('.dudu-v71-hostline').count(),1);
     assert.equal(await identity.locator('.dudu-v71-host-name').innerText(),'Thanh Vân');
-    assert.match(await identity.locator('.dudu-v71-hostline .dudu-v71-id').innerText(),/KC-0123456789ABCDEFAB/);
-    assert.equal(await identity.locator('.dudu-v71-system-code').count(),0,
-      'a DUDU identifier included in the system name must not display twice');
-    assert.equal(await identity.locator('h3').innerText(),'Hệ thống DUDU-07');
+    assert.equal(await identity.locator('.dudu-v71-hostline .dudu-v71-id').innerText(),'KC-0123456789ABCDEFAB');
+    assert.equal(await identity.locator('.dudu-v71-system-code').count(),0);
+    assert.equal(await identity.locator('.dudu-v71-host-caption').count(),0);
+    assert.equal(await identity.locator('h3').innerText(),'7');
+    assert.doesNotMatch(await identity.innerText(),/LIÊN KẾT HỆ THỐNG|Hệ thống DUDU-07|ID KÝ CHỦ|đã được ghi trên máy chủ/i);
     assert.equal(await page.locator('#dudu-v69-system-view .dudu-v71-game-tile').count(),4);
-    assert.equal(await page.locator('#dudu-v69-system-view .dudu-v71-notice-entry').count(),2);
+    assert.equal(await page.locator('#dudu-v69-system-view .dudu-v71-notice-entry').count(),1);
     // Real screenshot regression: short scrollable Cyber Phone may not squash cards.
     const layout=await page.evaluate(()=>{
       const host=document.getElementById('dudu-v69-system-view');
@@ -239,7 +240,8 @@ function firebaseShim(){
     assert.equal(hierarchy.collapsed,true,'System log stays closed by default');
     assert.ok(hierarchy.menuBeforeNotices,'functional game cards must precede optional notices');
     assert.ok(hierarchy.worldBeforeNotices,'World status should appear before optional notices');
-    assert.match(layout.identity.text,/DUDU-07/);
+    assert.match(layout.identity.text,/7/);
+    assert.doesNotMatch(layout.identity.text,/DUDU-07|LIÊN KẾT HỆ THỐNG/i);
     assert.match(layout.notices.text,/Nhiệm vụ thế giới/);
     // Match the user's narrow and short phone viewport; layout may scroll,
     // but identity/notice cards must remain expanded, not squashed.
@@ -269,7 +271,7 @@ function firebaseShim(){
     await disclosure.locator('summary').click();
     assert.equal(await disclosure.evaluate(el=>el.open),true,
       'System notices can be expanded intentionally');
-    assert.equal(await disclosure.locator('.dudu-v71-notice-entry:visible').count(),2);
+    assert.equal(await disclosure.locator('.dudu-v71-notice-entry:visible').count(),1);
     await disclosure.locator('summary').click();
     assert.equal(await disclosure.evaluate(el=>el.open),false,
       'System notices can be collapsed again');
@@ -281,7 +283,9 @@ function firebaseShim(){
 
     await page.locator('.dudu-v71-consent input[type=checkbox]').check();
     await page.getByRole('button',{name:'KÝ KHẾ ƯỚC'}).click();
-    await page.locator('.dudu-v71-connected').waitFor();
+    await page.waitForFunction(()=>!!document.querySelector('#dudu-v69-system-view .dudu-v71-system-identity')&&
+      !document.querySelector('#dudu-v69-system-view .dudu-v71-consent'));
+    assert.equal(await page.locator('#dudu-v69-system-view .dudu-v71-connected').count(),0);
     assert.equal(await page.evaluate(()=>window.__v71MainMock.state.stage),'linked');
     assert.equal(await page.evaluate(()=>window.__v71MainMock.state.rewards),0,
       'no game rewards in V71');
