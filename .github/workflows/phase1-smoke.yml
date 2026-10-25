@@ -32,6 +32,11 @@ jobs:
           node --check cloudflare/src/index.mjs
           node --check cloudflare/src/auth.mjs
           node --check cloudflare/src/quota.mjs
+      - name: Validate Van Gioi offline authoring contracts (no runtime writes)
+        run: |
+          python3 -m pip install -r tools/vangioi/requirements.txt
+          python3 -m unittest discover -s contracts/vangioi/source-v0.1 -p 'test_*.py' -v
+          python3 -m unittest discover -s tools/vangioi -p 'test_*.py' -v
       - name: Parse V52 manual Firebase deploy script (never execute)
         shell: pwsh
         run: |

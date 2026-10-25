@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "world-authoring-0.1",
+  "worldId": "the-gioi-mau-cua-ban",
+  "contentVersion": "0.1.0",
+  "title": "[TODO] Tên tiểu thế giới",
+  "genreId": "modern",
+  "worldRank": "F",
+  "dangerLevel": "low",
+  "status": "draft",
+  "contentTags": ["[TODO] chu-de"],
+  "estimatedMinutes": 20,
+  "author": {
+    "authorId": "author-pending",
+    "displayName": "[TODO] Tên tác giả",
+    "ownershipDeclaration": false,
+    "sourceNotes": "[TODO] Nguồn gốc truyện, quyền chuyển thể, hình ảnh",
+    "collaboratorIds": []
+  },
+  "story": {
+    "logline": "[TODO] Tóm tắt một câu",
+    "setting": "[TODO] Thời đại, luật của thế giới, xã hội",
+    "playerRole": "[TODO] Người chơi là ai",
+    "opening": "[TODO] Mở đầu",
+    "secretTruth": "[TODO] Sự thật dành cho tác giả, không hiện công khai",
+    "plotBeats": ["[TODO] Biến cố 1", "[TODO] Biến cố 2", "[TODO] Cao trào"],
+    "worldRules": ["[TODO] Một quy tắc có thể kiểm chứng"]
+  },
+  "visualIdentity": {"palette": ["[TODO]"], "landmarks": ["[TODO]"], "mood": "[TODO]", "artStyle": "[TODO]"},
+  "worldCoverAssetId": "asset-cover-mau",
+  "assets": [
+    {"assetId": "asset-cover-mau", "kind": "worldCover", "assetStatus": "pending", "license": "unknown", "sourceNote": "[TODO] Tự chọn ảnh và chứng minh quyền sử dụng", "altText": "[TODO] Bìa world"},
+    {"assetId": "asset-canh-mau", "kind": "sceneBackground", "assetStatus": "pending", "license": "unknown", "sourceNote": "[TODO] Ảnh cảnh", "altText": "[TODO] Bối cảnh chơi"},
+    {"assetId": "asset-chan-dung-mau", "kind": "characterPortrait", "assetStatus": "pending", "license": "unknown", "sourceNote": "[TODO] Ảnh nhân vật đúng tuổi/nghề, có quyền sử dụng", "altText": "[TODO] Chân dung nhân vật nói chuyện"}
+  ],
+  "maps": [{"mapId": "map-mau", "name": "[TODO] Bản đồ", "placeIds": ["dia-diem-mau"]}],
+  "places": [{"placeId": "dia-diem-mau", "mapId": "map-mau", "name": "[TODO] Địa điểm", "sceneIds": ["scene-mau"]}],
+  "scenes": [{"sceneId": "scene-mau", "placeId": "dia-diem-mau", "backgroundAssetId": "asset-canh-mau", "summary": "[TODO] Cảnh khởi đầu", "viewIds": ["view-mau"], "transitions": []}],
+  "views": [{"viewId": "view-mau", "sceneId": "scene-mau", "kind": "wide", "assetId": "asset-canh-mau", "summary": "[TODO] Góc nhìn chính", "hotspots": [{"hotspotId": "hotspot-nhat-mau", "presentation": "text", "label": "[TODO] Có đồ dưới bàn — Nhặt?", "action": "pickup", "targetId": "item-nhat-mau", "uniquePickupId": "pickup-mau"}]}],
+  "cast": [
+    {"characterId": "char-vai-co-san", "displayName": "[TODO] Nhân vật người chơi có thể nhập", "narrativeRole": "protagonist", "presence": "onstage", "playableAsCast": true},
+    {"characterId": "char-npc-mot", "displayName": "[TODO] Nhân vật có trong truyện", "narrativeRole": "supporting", "presence": "onstage", "playableAsCast": false},
+    {"characterId": "char-duoc-nhac", "displayName": "[TODO] Người chỉ được nhắc tới", "narrativeRole": "mentioned", "presence": "mention_only", "playableAsCast": false}
+  ],
+  "characterVisuals": [
+    {"characterId": "char-npc-mot", "visualPriority": "supporting", "identityNotes": "[TODO] Giữ nhất quán tuổi tác, nghề nghiệp, diện mạo và phong cách truyện", "fixedTraits": ["[TODO] Tuổi thể hiện", "[TODO] Dấu hiệu nghề, dáng người"], "variants": [{"variantId": "look-npc-mau", "assetId": "asset-chan-dung-mau", "format": "portrait", "expression": "[TODO] Biểu cảm", "outfitTag": "[TODO] Trang phục"}]}
+  ],
+  "characterAppearances": [
+    {"appearanceId": "appearance-npc-mau", "characterId": "char-npc-mot", "viewId": "view-mau", "variantId": "look-npc-mau", "displayMode": "portrait", "showOn": "dialogue_start", "triggerRef": "dlg-mau-mot", "hideOn": "dialogue_end", "fallbackText": "[TODO] Mô tả nhân vật nếu chưa tải được ảnh"}
+  ],
+  "npcs": [
+    {"npcId": "npc-mau-mot", "name": "[TODO] NPC có đối thoại", "characterId": "char-npc-mot", "mode": "scripted", "interactionLevels": ["scripted"], "dialoguePolicy": "choice_tree", "friendable": false, "introSceneId": "scene-mau", "role": "[TODO]", "knowledge": ["[TODO]"], "dialogueNodes": [{"nodeId": "dlg-mau-mot", "text": "[TODO] Lời thoại NPC 1"}]}
+  ],
+  "playerEntryProfiles": [
+    {"entryId": "entry-nhap-vai", "label": "[TODO] Nhập nhân vật có sẵn", "mode": "cast_possession", "castTargetId": "char-vai-co-san", "startSceneId": "scene-mau", "initialKnownFacts": [], "initialFlags": []},
+    {"entryId": "entry-than-phan-ao", "label": "[TODO] Thân phận người qua đường hệ thống cấp", "mode": "system_cover", "coverName": "[TODO] Tên trên giấy tờ", "identityAssurance": "unknown", "startSceneId": "scene-mau", "initialKnownFacts": [], "initialFlags": []},
+    {"entryId": "entry-nhan-vat-giap", "label": "[TODO] Cư dân nền tồn tại sẵn", "mode": "native_extra", "nativeSlotId": "slot-nhan-vat-giap", "socialAnchorNotes": "[TODO] Quan hệ và dấu vết cư trú", "startSceneId": "scene-mau", "initialKnownFacts": [], "initialFlags": []}
+  ],
+  "entryPolicy": {"mode": "fixed", "forcedEntryId": "entry-nhap-vai", "authorNote": "[TODO] Ví dụ tác giả bắt buộc người chơi nhập một vai; nếu muốn tự chọn hãy chuyển mode sang player_choice."},
+  "items": [
+    {"itemId": "item-nhat-mau", "name": "[TODO] Đồ nhặt", "category": "quest", "transferPolicy": "world_only", "stackLimit": 1, "acquisitionMethods": [{"type": "pickup", "placeId": "dia-diem-mau", "viewId": "view-mau", "hotspotId": "hotspot-nhat-mau", "uniquePickupId": "pickup-mau"}]},
+    {"itemId": "item-qua-mau", "name": "[TODO] Quà nhiệm vụ", "category": "souvenir", "transferPolicy": "review_required", "stackLimit": 1, "acquisitionMethods": [{"type": "questReward", "missionId": "mission-mau"}]}
+  ],
+  "shops": [],
+  "missions": [
+    {"missionId": "mission-mau", "name": "[TODO] Nhiệm vụ chính", "kind": "main", "requiredForCompletion": true, "startSceneId": "scene-mau", "summary": "[TODO] Mục tiêu", "objectives": [{"objectiveId": "obj-mau", "verb": "talk", "targetId": "npc-mau-mot", "requiredCount": 1}], "rewardRequest": {"exp": 0, "items": [{"itemId": "item-qua-mau", "quantity": 1}]}, "replayPolicy": "repeat_no_reward"}
+  ],
+  "events": [{"eventId": "event-ket-mau", "trigger": "[TODO] Dieu kien ket thuc", "setFlags": ["flag-thanh-cong"]}],
+  "endings": [{"endingId": "ending-mau", "title": "[TODO] Kết thúc", "result": "success", "requiredFlags": ["flag-thanh-cong"]}],
+  "playRequirements": {"requiredVisitPlaceIds": ["dia-diem-mau"], "requiredInteractNpcIds": ["npc-mau-mot"]},
+  "entry": {"trialInstance": true, "passportRequired": false, "entrySceneId": "scene-mau", "minimumPlayerRank": "F"},
+  "aiPolicy": {"aiNpcRequested": false, "allowAiRewards": false, "allowAiWorldMutation": false}
+}

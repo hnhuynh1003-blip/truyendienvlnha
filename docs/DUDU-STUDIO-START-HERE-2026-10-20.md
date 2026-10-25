@@ -1,5 +1,13 @@
 # DUDU Studio — START HERE / Bàn giao sạch · 20/10/2026
 
+## VẠN GIỚI Giai đoạn 1A — 26/10/2026
+
+Đã đọc master prompt và gói World Authoring V0.1 do chủ dự án cung cấp, đối chiếu code nền tại `1f2fdb14074d99cd1a1542f334175c946c412f49`. Quy tắc làm việc main/không nhánh hoặc ZIP riêng vẫn giữ. Master prompt mới yêu cầu không phát hành production chưa phép; đợt này chuẩn bị và kiểm thử tại checkout main, chưa push hoặc deploy trong phiên triển khai.
+
+Xem `contracts/vangioi/README.md`: lưu nguyên 10 file nguồn cùng hash; thêm `tools/vangioi/intake.py` chỉ đọc JSON và in báo cáo offline, schema bắt buộc, semantic checks, báo xung đột `period/era`, bậc tự khai và luồng trial. Không đổi Canon hoặc schema/runtime cũ. Normalized metadata chỉ là đề xuất, bậc chính thức=null, quyền vào world/publish/thưởng đều false. JSON status/assetStatus/ownershipDeclaration không xác thực backend.
+
+QA: 22 test nguồn + 16 test intake PASS. Workflow smoke bổ sung chạy hai nhóm Python; chưa xác nhận CI remote. Chưa tạo Creator UI, database/migration, quyền AU, asset upload hoặc World Engine production. Giữ nguyên auth, Thiên Mệnh, EPUB, NPC, save, kho/EXP, pool99/100 và các cờ AI. Tiếp theo: contract backend draft/version/membership sau khi đối chiếu các quyết định còn mở; không dùng PASS offline để mở 48 seed hoặc khảo hạch.
+
 > **Trang duy nhất nên đọc ĐẦU TIÊN trong cuộc trò chuyện ChatGPT mới.**
 > Dành cho việc tiếp tục dự án sau khi lưu trữ/xóa các chat dài. Đây là **bản chỉ mục + mốc trạng thái**, không phải bản sao mọi cuộc trò chuyện; mã nguồn `main` và các hồ sơ chuyên đề dưới đây mới là căn cứ kiểm tra.
 > Repository **PUBLIC**: tuyệt đối không đưa khóa API, token, UID người dùng, nội dung chat riêng tư hay dữ liệu tài khoản thực vào tài liệu/commit.
