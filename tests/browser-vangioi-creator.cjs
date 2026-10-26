@@ -155,6 +155,7 @@ const firebase=require('./fixtures/creator-firebase.cjs');
   assert.equal(await editor.getByLabel('Sự thật ẩn · chỉ dành cho tác giả',{exact:true}).inputValue(),secret);
   await require('./fixtures/creator-structured.cjs')({page,editor,secret});
   await require('./fixtures/creator-visual.cjs')({page,editor,secret});
+  await require('./fixtures/creator-shops.cjs')({page,editor,secret});
   // Save failure keeps content; no fake success and no external fallback writes.
   await editor.getByLabel('Tên tiểu thế giới',{exact:true}).fill('Chưa lưu do lỗi');
   await page.evaluate(()=>{IDBObjectStore.prototype.put=function(){throw Error('Synthetic quota failure');};});

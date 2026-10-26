@@ -1,4 +1,4 @@
-/* World Creator G1I — Vạn Giới authoring, independent from owner AI Core. Local draft editing only; server rights/submit stay closed. */
+/* World Creator G1J — Vạn Giới authoring, independent from owner AI Core. Local draft editing only; server rights/submit stay closed. */
 (function(root){
  'use strict';
  const doc=root.document,V=root.DuduWorldValidation;
@@ -480,13 +480,50 @@
      },{options:pickups}),h('p','vg-muted','Chọn tương tác Nhặt trỏ tới vật phẩm này tại Địa điểm & cảnh.'));
     }
     if(a.type==='questReward')row.append(bind('Nhiệm vụ trao vật phẩm',q+'.missionId',a.missionId,{omitEmpty:true,options:choices(arr('missions'),'missionId','name')}));
-    if(a.type==='shop')row.append(bind('Cửa hàng nguồn',q+'.shopId',a.shopId,{omitEmpty:true,options:choices(arr('shops'),'shopId','name')}));
+    if(a.type==='shop')row.append(bind('Cửa hàng nguồn',q+'.shopId',a.shopId,{omitEmpty:true,options:choices(arr('shops').filter(shop=>(shop.stock||[]).some(s=>s.itemId===item.itemId)),'shopId','name')}),h('p','vg-muted','Chọn cửa hàng đã có vật phẩm này trong bảng hàng; cấu hình tại mục Cửa hàng.'));
     row.append(button('Xóa cách nhận',()=>{item.acquisitionMethods.splice(j,1);mark();render();},'vg-quiet'));c.append(row);
    });
    c.append(button('+ Thêm cách nhận',()=>{(item.acquisitionMethods||=[]).push({type:'starting'});mark();render();}),
     button('Xóa vật phẩm',()=>removeEntity('items',i,'itemId'),'vg-quiet'));panel.append(c);
   });
  }
+ function shops(panel){
+  panel.append(h('p','vg-muted','Soạn cửa hàng trong kịch bản. Giá và số lượng chưa phải sổ giao dịch; không trừ tiền hoặc cấp vật phẩm thật.'),
+   button('+ Thêm cửa hàng',()=>{(model.shops||=[]).push({shopId:makeId('shop'),name:'',stock:[]});mark();render();}));
+  arr('shops').forEach((shop,i)=>{
+   const p='shops.'+i,c=card('shop',shop.shopId);
+   c.append(idLine(shop.shopId),bind('Tên cửa hàng',p+'.name',shop.name),
+    bind('Địa điểm cửa hàng',p+'.placeId',shop.placeId,{omitEmpty:true,options:choices(arr('places'),'placeId','name')}),
+    bind('NPC bán hàng',p+'.merchantNpcId',shop.merchantNpcId,{omitEmpty:true,options:choices(arr('npcs'),'npcId','name')}),
+    bind('Đơn vị tiền của cửa hàng',p+'.currencyItemId',shop.currencyItemId,{omitEmpty:true,options:choices(arr('items').filter(item=>item.category==='currency'),'itemId','name')}),
+    h('p','vg-muted','Thêm vật phẩm loại Tiền trong world tại mục Vật phẩm trước khi chọn đơn vị tiền. Số lượng 0 là hết hàng trong cấu hình, không phải vô hạn.'));
+   (shop.stock||[]).forEach((stock,j)=>{
+    const q=p+'.stock.'+j,row=card('stock');
+    row.append(field('Mặt hàng',stock.itemId,value=>{
+     if(stock.itemId!==value&&!(shop.stock||[]).some((x,k)=>k!==j&&x.itemId===stock.itemId)&&arr('items').find(item=>item.itemId===stock.itemId)?.acquisitionMethods?.some(m=>m.type==='shop'&&m.shopId===shop.shopId)){
+      render();notice('Vật phẩm đang khai cách nhận tại cửa hàng này. Đổi cách nhận trước khi thay mặt hàng.');return;
+     }
+     if(value)stock.itemId=value;else delete stock.itemId;mark();render();
+    },{options:choices(arr('items').filter(item=>!(shop.stock||[]).some((s,k)=>k!==j&&s.itemId===item.itemId)),'itemId','name')}),
+     integer('Giá trong kịch bản',q+'.price',stock.price,0),integer('Số lượng trong kịch bản',q+'.quantity',stock.quantity,0),
+     button('Khai cách nhận qua cửa hàng',()=>{
+      const item=arr('items').find(item=>item.itemId===stock.itemId);
+      if(!item||!shop.shopId){notice('Chọn mặt hàng và bổ sung mã cửa hàng trước.');return;}
+      item.acquisitionMethods||=[];
+      if(!item.acquisitionMethods.some(m=>m.type==='shop'&&m.shopId===shop.shopId))item.acquisitionMethods.push({type:'shop',shopId:shop.shopId});
+      mark();render();notice('Đã khai cách nhận cho vật phẩm; không phát sinh mua bán thật.');
+     }),button('Xóa mặt hàng',()=>{
+      if(!(shop.stock||[]).some((x,k)=>k!==j&&x.itemId===stock.itemId)&&arr('items').find(item=>item.itemId===stock.itemId)?.acquisitionMethods?.some(m=>m.type==='shop'&&m.shopId===shop.shopId)){
+       notice('Vật phẩm còn khai cách nhận tại đây. Xóa hoặc đổi cách nhận trước.');return;
+      }
+      shop.stock.splice(j,1);mark();render();
+     },'vg-quiet'));c.append(row);
+   });
+   c.append(button('+ Thêm mặt hàng',()=>{(shop.stock||=[]).push({price:0,quantity:0});mark();render();}),
+    button('Xóa cửa hàng',()=>removeEntity('shops',i,'shopId'),'vg-quiet'));panel.append(c);
+  });
+ }
+
  function outcomes(panel){
   panel.append(h('h3','','Sự kiện kịch bản'),h('p','vg-muted','Điều kiện và cờ là mô tả nháp; Creator không thực thi biểu thức hoặc thay trạng thái chơi.'),
    button('+ Thêm sự kiện',()=>{(model.events||=[]).push({eventId:makeId('event'),trigger:'',requiredFlags:[],setFlags:[]});mark();render();}));
@@ -592,13 +629,30 @@
    'ai-needs-scripted-fallback':'NPC AI cần hội thoại kịch bản dự phòng','ai-request-not-declared':'Đề nghị NPC AI chưa được khai báo',
    'optional-mission-required':'Nhiệm vụ phụ hoặc ẩn không được bắt buộc hoàn thành world','required-main-mission':'Cần ít nhất một nhiệm vụ chính bắt buộc',
    'pickup-source-mismatch':'Nguồn nhặt vật phẩm chưa khớp với tương tác','pickup-not-declared-on-item':'Vật phẩm chưa khai cách nhận từ tương tác Nhặt',
-   'duplicate-id':'Mã bị trùng','unfinished-todo':'Còn phần nội dung chưa viết xong','missing-background':'Cần tham chiếu nền cảnh','visual-asset-kind':'Dạng tạo hình chưa khớp loại ảnh','appearance-variant-mismatch':'Nhân vật hoặc dạng hiển thị chưa khớp biến thể','possessed-sprite-duplicate':'Cần ẩn sprite khi người chơi nhập vai nhân vật','contradictory-flags':'Một cờ đang vừa bắt buộc vừa bị cấm'};
+   'duplicate-id':'Mã bị trùng','unfinished-todo':'Còn phần nội dung chưa viết xong','missing-background':'Cần tham chiếu nền cảnh','visual-asset-kind':'Dạng tạo hình chưa khớp loại ảnh','appearance-variant-mismatch':'Nhân vật hoặc dạng hiển thị chưa khớp biến thể','possessed-sprite-duplicate':'Cần ẩn sprite khi người chơi nhập vai nhân vật','contradictory-flags':'Một cờ đang vừa bắt buộc vừa bị cấm','shop-currency-kind':'Đơn vị tiền phải là vật phẩm loại Tiền trong world','duplicate-shop-stock':'Mặt hàng bị lặp trong cùng cửa hàng','shop-acquisition-stock-mismatch':'Cửa hàng được khai chưa có vật phẩm này trong bảng hàng'};
   for(const e of errors.slice(0,35)){
    const section=names[e.path.split('/')[1]]||'Hồ sơ';
    const message=e.code==='schema:required'?'Thiếu trường bắt buộc':e.code.startsWith('schema:')?'Sai định dạng hoặc giá trị':messages[e.code]||'Cần kiểm tra liên kết nội dung';
    list.append(h('li','',section+' · '+message+' ('+e.path+')'));
   }
   box.append(list);if(errors.length>35)box.append(h('small','','Đang hiển thị 35 mục đầu.'));
+  const warnings=report.warnings||[];
+  if(warnings.length){
+   const labels={'shop-stock-no-acquisition':'Mặt hàng chưa khai cách nhận qua cửa hàng',
+    'shop-stock-empty':'Mặt hàng đang hết trong cấu hình; kiểm tra mở bán hoặc bổ sung hàng',
+    'shop-currency-source-review':'Đơn vị tiền chưa có cách nhận được khai báo',
+    'purchase-source-review':'Mục tiêu mua chưa có nguồn mua được khai báo đầy đủ',
+    'purchase-stock-review':'Số hàng được khai thấp hơn số cần mua; kiểm tra điều kiện bổ sung hàng',
+    'unreachable-scenes-check-events':'Có cảnh chưa nối được theo đồ thị tĩnh; kiểm tra sự kiện hoặc đường chuyển',
+    'engine-rule-review-required':'Điều kiện và sự kiện cần được kiểm bằng engine',
+    'rebind-possessed-actor':'NPC cần được xử lý khi người chơi nhập vào chính nhân vật đó'};
+   box.append(h('h3','','Cần xem xét kịch bản ('+warnings.length+')'));
+   const notes=h('ul','vg-warning-list');
+   for(const w of warnings.slice(0,20))notes.append(h('li','',(labels[w.code]||'Cần xem xét nội dung')+' ('+w.path+')'));
+   box.append(notes,h('p','vg-muted','Nhắc xem xét không kết luận kịch bản chơi được, số dư đủ hoặc giao dịch sẽ thành công.'));
+   if(warnings.length>20)box.append(h('small','','Đang hiển thị 20 nhắc xem xét đầu.'));
+  }
+
  }
  function render(){
   if(!host?.isConnected||!access())return;
@@ -619,10 +673,10 @@
   upload.addEventListener('change',()=>{if(access())importFile(upload.files?.[0]);upload.value='';});
   actions.append(button('Nhập JSON',()=>upload.click()));
   const listBox=h('div','vg-local-list');listBox.id='vg-local-list';menu.append(actions,upload,listBox);app.append(menu);
-  const tabs=[['overview','Thông tin'],['scenes','Địa điểm & cảnh'],['resources','Nguồn & ảnh'],['visualForms','Tạo hình & bố cục'],['roles','Vai nhập'],['characters','Nhân vật & NPC'],['items','Vật phẩm'],['missions','Nhiệm vụ'],['outcomes','Sự kiện & kết cục'],['advanced','Dữ liệu nâng cao'],['preview','Xem trước']];
+  const tabs=[['overview','Thông tin'],['scenes','Địa điểm & cảnh'],['resources','Nguồn & ảnh'],['visualForms','Tạo hình & bố cục'],['roles','Vai nhập'],['characters','Nhân vật & NPC'],['items','Vật phẩm'],['shops','Cửa hàng'],['missions','Nhiệm vụ'],['outcomes','Sự kiện & kết cục'],['advanced','Dữ liệu nâng cao'],['preview','Xem trước']];
   const nav=h('nav','vg-tabs');nav.setAttribute('aria-label','Các mục soạn world');
   for(const [key,label] of tabs){const b=button(label,()=>{tab=key;render();});b.setAttribute('aria-current',key===tab?'page':'false');nav.append(b);}app.append(nav);
-  const panel=h('div','vg-panel');({overview,scenes,resources,visualForms,roles,characters,items,missions,outcomes,advanced,preview}[tab]||overview)(panel);app.append(panel);
+  const panel=h('div','vg-panel');({overview,scenes,resources,visualForms,roles,characters,items,shops,missions,outcomes,advanced,preview}[tab]||overview)(panel);app.append(panel);
   const message=h('p','vg-message','');message.id='vg-message';message.setAttribute('role','status');app.append(message);
   const result=h('details','vg-checks');result.open=!!report;result.append(h('summary','','Kiểm tra nội dung'));
   const reportBox=h('div');reportBox.id='vg-report';result.append(reportBox);app.append(result);host.append(app);renderReport();
@@ -648,7 +702,7 @@
   else{dialog.setAttribute('open','');dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');}
   render();host?.querySelector('button')?.focus({preventScroll:true});return true;
  }
- root.DuduWorldCreator=Object.freeze({open,close,syncAccess,version:'G1I',backendConnected:false});
+ root.DuduWorldCreator=Object.freeze({open,close,syncAccess,version:'G1J',backendConnected:false});
  doc.addEventListener('visibilitychange',syncAccess);root.addEventListener('pageshow',syncAccess);
  root.addEventListener('hashchange',()=>{if(dialog&&root.location.hash!=='#/worlds')close();});
 })(window);

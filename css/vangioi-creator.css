@@ -56,3 +56,4 @@
 #dudu-world-creator .vg-character-layer{position:absolute;width:32%;height:70%;display:flex;align-items:flex-end;justify-content:center;transform-origin:bottom center;pointer-events:none}
 #dudu-world-creator .vg-character-image{width:100%;height:100%;object-fit:contain}
 #dudu-world-creator .vg-character-fallback{border:1px dashed #b7a0cd;border-radius:8px;padding:8px;background:#17213ae8;color:#f2e6ff;font-size:11px;text-align:center}
+#dudu-world-creator .vg-warning-list{color:#e8cf9f}

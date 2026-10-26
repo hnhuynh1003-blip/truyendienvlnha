@@ -20,6 +20,8 @@ Giai đoạn 1A, ngày 26/10/2026. Chỉ nhập và kiểm tra hồ sơ ở loca
 
 Đợt 1H đã lên main tại `4648173`, CI/Pages SUCCESS. Đợt 1I bổ sung tạo hình/bố cục và PNG xem thử riêng trong phiên, không upload/duyệt ảnh: [CREATOR_VISUAL_G1I.md](CREATOR_VISUAL_G1I.md).
 
+Đợt 1I đã lên main tại `4ab2a6b`, CI/Pages SUCCESS. Đợt 1J thêm form cửa hàng và validator semantic-2 cho liên kết hàng/nguồn mua, hiển thị cả nhắc review: [CREATOR_SHOPS_G1J.md](CREATOR_SHOPS_G1J.md). Chưa có mua bán hoặc backend live.
+
 ## Nguồn và quy tắc làm việc
 
 - Mã nền được đối chiếu tại `1f2fdb14074d99cd1a1542f334175c946c412f49` trên `main`.

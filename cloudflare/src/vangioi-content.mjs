@@ -2,7 +2,7 @@
 import validators from './generated/vangioi-content-validators.cjs';
 import {AUTHORING_FIELDS,copyAuthoringContent,copyAuthoringJson} from './vangioi-authoring.mjs';
 
-export const CONTENT_VALIDATOR_VERSION='world-content-1-semantic-1';
+export const CONTENT_VALIDATOR_VERSION='world-content-1-semantic-2';
 const issue=(code,path)=>({code,path});
 const schemaErrors=validator=>(validator.errors||[]).map(e=>issue('schema:'+e.keyword,
  e.keyword==='required'&&/^[A-Za-z][A-Za-z0-9]*$/.test(e.params?.missingProperty||'')?
@@ -147,7 +147,10 @@ export function inspectContent(value){
    if(h&&(h.action!=='pickup'||h.targetId!==item.itemId||h.uniquePickupId!==m.uniquePickupId||
     (m.viewId&&h.viewId!==m.viewId)||r.scenes.get(h.sceneId)?.placeId!==m.placeId))err('pickup-source-mismatch',path);
   }
-  if(m.type==='shop')ref(m.shopId,r.shops,path);
+  if(m.type==='shop'){
+   ref(m.shopId,r.shops,path);
+   if(r.shops.has(m.shopId)&&!r.shops.get(m.shopId).stock.some(s=>s.itemId===item.itemId))err('shop-acquisition-stock-mismatch',path);
+  }
   if(m.type==='questReward')ref(m.missionId,r.missions,path);
  }
  for(const h of hotspots.values())if(h.action==='pickup'&&r.items.has(h.targetId)&&
@@ -157,7 +160,16 @@ export function inspectContent(value){
   ref(s.placeId,r.places,`/shops/${i}`);ref(s.currencyItemId,r.items,`/shops/${i}`);
   if(r.items.has(s.currencyItemId)&&r.items.get(s.currencyItemId).category!=='currency')err('shop-currency-kind',`/shops/${i}`);
   if(s.merchantNpcId)ref(s.merchantNpcId,r.npcs,`/shops/${i}`);
-  for(const stock of s.stock)ref(stock.itemId,r.items,`/shops/${i}/stock`);
+  const stockIds=new Set();
+  for(const [j,stock] of s.stock.entries()){
+   const path=`/shops/${i}/stock/${j}`;ref(stock.itemId,r.items,path);
+   if(stockIds.has(stock.itemId))err('duplicate-shop-stock',path);stockIds.add(stock.itemId);
+   if(stock.quantity===0)warn('shop-stock-empty',path);
+   const item=r.items.get(stock.itemId);
+   if(item&&!item.acquisitionMethods.some(m=>m.type==='shop'&&m.shopId===s.shopId))warn('shop-stock-no-acquisition',path);
+  }
+  if(s.stock.some(x=>x.price>0)&&r.items.has(s.currencyItemId)&&!r.items.get(s.currencyItemId).acquisitionMethods.length)
+   warn('shop-currency-source-review',`/shops/${i}/currencyItemId`);
  }
  let main=0;const objectives=new Set();
  for(const [i,m] of c.missions.entries()){
@@ -168,6 +180,13 @@ export function inspectContent(value){
    if(objectives.has(o.objectiveId))err('duplicate-objective',path);objectives.add(o.objectiveId);
    const targets={talk:r.npcs,collect:r.items,inspect:r.items,purchase:r.items,reach:r.scenes,deliver:r.items,
     choose:hotspots,survive:r.events}[o.verb];ref(o.targetId,targets,path+'/objectives');
+   if(o.verb==='purchase'&&r.items.has(o.targetId)){
+    const item=r.items.get(o.targetId),shops=c.shops.filter(s=>item.acquisitionMethods.some(a=>a.type==='shop'&&a.shopId===s.shopId));
+    const offers=shops.flatMap(s=>s.stock.filter(x=>x.itemId===o.targetId));
+    if(!offers.length)warn('purchase-source-review',path+'/objectives');
+    else if(offers.reduce((total,x)=>Math.min(Number.MAX_SAFE_INTEGER,total+x.quantity),0)<o.requiredCount)
+     warn('purchase-stock-review',path+'/objectives');
+   }
   }
   for(const reward of m.rewardRequest.items)ref(reward.itemId,r.items,path+'/rewardRequest');
  }

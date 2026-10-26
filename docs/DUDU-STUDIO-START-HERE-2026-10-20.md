@@ -1,5 +1,13 @@
 # DUDU Studio — START HERE / Bàn giao sạch · 20/10/2026
 
+## VẠN GIỚI Giai đoạn 1J — 26/10/2026
+
+Nền `4ab2a6b` (1I, CI/Pages SUCCESS). Đọc `contracts/vangioi/CREATOR_SHOPS_G1J.md`. Vạn Giới có form Cửa hàng: nơi mở/NPC/tiền loại currency, stock giá/số lượng nguyên không âm; khai acquisition qua shop bằng thao tác rõ ràng, không tạo liên kết lặp. Xóa/đổi dòng hàng cuối hoặc shop còn được dùng bị chặn; duplicate import có thể sửa giữ đúng liên kết.
+
+Validator semantic-2 dùng chung browser/server: chặn stock item trùng và acquisition trỏ shop không bán món đó; các trường hợp hết/thiếu hàng, thiếu nguồn mua/nguồn tiền chỉ nhắc review, không giả lập đủ tiền hoặc tự bổ sung hàng. Report UI nay hiện warnings G1D lẫn kinh tế. Không đổi schema V0.1/content hoặc rewrite snapshot cũ. 481 test ứng dụng + 354 test Worker/helper PASS; browser có shop/purchase/link/numeric/duplicate/save/export và responsive. CI/Pages theo SHA GitHub đợt này.
+
+Vẫn lưu nháp thiết bị, PNG xem thử theo phiên, chưa cloud sync/review/backend route/binding/migration/deploy/giao dịch thật. Giữ Chủ Thần riêng cho chủ dự án và AI; không phát WORLD_PLAY/48 seed hoặc sửa auth/Thiên Mệnh/EPUB/NPC/save/kho/EXP/pool/AI/Canon. Tiếp: adapter backend + review có quyền thật, kiểm thử cục bộ trước kế hoạch triển khai được duyệt riêng.
+
 ## VẠN GIỚI Giai đoạn 1I — 26/10/2026
 
 Nền `4648173` (1H, CI/Pages SUCCESS). Đọc `contracts/vangioi/CREATOR_VISUAL_G1I.md`. Vẫn soạn tại Vạn Giới, không trong Chủ Thần. Form visualIdentity/characterVisuals/variants/appearances, đúng asset kind, vị trí/layer/flags/fallback và suppressWhenPossessed. Chọn PNG xem thử theo hash; preview khung ngang/dọc + focalPoint và bố cục nhân vật theo vai nhập, không chạy cờ/gameplay.
