@@ -111,3 +111,5 @@ G1X: [SOURCE_NOTICES_G1X.md](SOURCE_NOTICES_G1X.md) — notice operator-only và
 G1Y: [WORLD_RELEASE_GATE_G1Y.md](WORLD_RELEASE_GATE_G1Y.md) — tiền kiểm offline cho world đã approved, xét lại hold/revoke/permit/grant/snapshot/asset trước quyết định phát hành tương lai; không cấp session hoặc bật runtime/live.
 
 G1Z: [ADMISSION_REHEARSAL_G1Z.md](ADMISSION_REHEARSAL_G1Z.md) — diễn tập operator-only bằng ID phiên giả trong RAM, gọi lại cổng G1Y ở các bước release/start/resume/read; không kết nối gameplay hay phát hành thật.
+
+G2A: [STAGING_READINESS_G2A.md](STAGING_READINESS_G2A.md) — kiểm checkpoint G1U so với authority, baseline và quyền G1Y bằng fixture read-only; không xác nhận replica đã đồng bộ thật hoặc cấp quyền staging/production.

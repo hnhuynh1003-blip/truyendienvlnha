@@ -17,6 +17,7 @@ import {createSqlFrozenSourceService} from '../src/vangioi-source-freeze.mjs';
 import {createSqlSourceNoticeService} from '../src/vangioi-source-notices.mjs';
 import {createSqlWorldReleaseGate} from '../src/vangioi-world-release-gate.mjs';
 import {createAdmissionRehearsal} from '../src/vangioi-admission-rehearsal.mjs';
+import {createSqlStagingReadinessService} from '../src/vangioi-staging-readiness.mjs';
 import {createV49TransactionFixture} from './fixtures/vangioi-firestore-v49.mjs';
 import {content} from './fixtures/vangioi-content.mjs';
 
@@ -1417,4 +1418,112 @@ test('G1Z rejects malformed trusted-gate verdicts and never falls back to self-a
 test('G1Z admission rehearsal has no public Worker, authoring HTTP or production routing imports',()=>{
  for(const file of ['../src/index.mjs','../src/vangioi-authoring-http.mjs'])
   assert.equal(readFileSync(new URL(file,import.meta.url),'utf8').includes('vangioi-admission-rehearsal'),false);
+});
+
+const g2aProbe=(f,readCheckpoint,gate=createSqlWorldReleaseGate(f.options))=>
+ createSqlStagingReadinessService({...f.options,releaseGate:gate,readCheckpoint});
+const g2aCheckpoint=(checkpoint,projectId='truyendienvl')=>async()=>({projectId,environment:'fixture',checkpoint});
+
+test('G2A same-source permit outbox checkpoint and current approved world pass read-only staging readiness',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f),probe=g2aProbe(f,g2aCheckpoint(1));
+  const result=await probe.checkWorld(req(OP),{worldId:p.w.worldId});
+  assert.deepEqual(result,{ok:true,fixtureChecksPassed:true,worldId:p.w.worldId,snapshotHash:p.submitted.snapshotHash,
+   checkpoint:1,readinessVersion:'staging-readiness-1',environment:'fixture'});
+  assert.equal(JSON.stringify(result).includes('PRIVATE_SOURCE_TEXT'),false);
+  assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_permit_outbox_v1')[0].n,1);
+ }finally{f.close();}
+});
+
+test('G2A lagging or ahead-of-authority projection refuses to treat readiness as permission',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f),input={worldId:p.w.worldId};
+  assert.equal((await g2aProbe(f,g2aCheckpoint(0)).checkWorld(req(OP),input)).code,'checkpoint-lag');
+  assert.equal((await g2aProbe(f,g2aCheckpoint(2)).checkWorld(req(OP),input)).code,'checkpoint-ahead');
+  assert.equal((await g2aProbe(f,g2aCheckpoint(1)).checkWorld(req(OP),input)).ok,true);
+ }finally{f.close();}
+});
+
+test('G2A extra G1R revocation changes authority head and cannot be concealed by the old checkpoint',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f),ref=p.s.reference,input={worldId:p.w.worldId};
+  assert.equal((await f.registry.revokeAdaptationPermit(req(OP),{
+   requestId:crypto.randomUUID(),storyId:ref.storyId,contentHash:ref.contentHash,expectedRevision:1})).ok,true);
+  assert.equal((await g2aProbe(f,g2aCheckpoint(1)).checkWorld(req(OP),input)).code,'checkpoint-lag');
+  assert.equal((await g2aProbe(f,g2aCheckpoint(2)).checkWorld(req(OP),input)).ok,false);
+ }finally{f.close();}
+});
+
+test('G2A cannot ignore G1R legacy permit rows that have no G1U issue outbox baseline',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f);
+  f.sql.exec(`INSERT INTO vg_authoring_adaptation_permits_v1 VALUES(?,?,'{}','active',1)`,
+   'epub-untracked-g2a','d'.repeat(64));
+  const result=await g2aProbe(f,g2aCheckpoint(1)).checkWorld(req(OP),{worldId:p.w.worldId});
+  assert.equal(result.code,'baseline-required');
+ }finally{f.close();}
+});
+
+test('G2A verifies current G1X notice overlay, not merely a complete outbox cursor',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f),probe=g2aProbe(f,g2aCheckpoint(1)),ref=p.s.reference;
+  const notices=createSqlSourceNoticeService(f.options),n=await notices.openNotice(req(OP),noticeInput(ref.storyId,ref.contentHash));
+  assert.equal((await probe.checkWorld(req(OP),{worldId:p.w.worldId})).code,'source-held');
+  assert.equal((await notices.resolveNotice(req(OP),noticeDecision(n.noticeId))).ok,true);
+  assert.equal((await probe.checkWorld(req(OP),{worldId:p.w.worldId})).fixtureChecksPassed,true);
+ }finally{f.close();}
+});
+
+test('G2A revocation during asynchronous G1Y evaluation is rechecked before readiness passes',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f),gate=createSqlWorldReleaseGate(f.options),ref=p.s.reference;
+  const bridged={evaluateApprovedWorld:async(...args)=>{
+   const verdict=await gate.evaluateApprovedWorld(...args);
+   assert.equal((await f.registry.revokeAdaptationPermit(req(OP),{
+    requestId:crypto.randomUUID(),storyId:ref.storyId,contentHash:ref.contentHash,expectedRevision:1})).ok,true);
+   return verdict;
+  }};
+  assert.equal((await g2aProbe(f,g2aCheckpoint(1),bridged).checkWorld(req(OP),{worldId:p.w.worldId})).code,'checkpoint-lag');
+ }finally{f.close();}
+});
+
+test('G2A forged, cross-project or malformed sink checkpoints fail without releasing world',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f),input={worldId:p.w.worldId};
+  for(const callback of [g2aCheckpoint(1,'other-project'),g2aCheckpoint(-1),g2aCheckpoint(1.2),
+   async()=>({checkpoint:1,projectId:'truyendienvl',environment:'production'}),
+   async()=>({checkpoint:1,projectId:'truyendienvl',environment:'fixture',grantStatus:'active'})])
+   assert.equal((await g2aProbe(f,callback).checkWorld(req(OP),input)).code,'invalid-projection');
+  assert.equal((await g2aProbe(f,g2aCheckpoint(1)).checkWorld(req(OP),{...input,checkpoint:1})).code,'invalid-request');
+ }finally{f.close();}
+});
+
+test('G2A role check blocks authors/reviewers/admin claims before contacting fixture sink',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f);let reads=0;
+  const probe=g2aProbe(f,async()=>{reads++;return g2aCheckpoint(1)();});
+  for(const user of [OWNER,p.reviewer,'admin',OTHER])
+   assert.equal((await probe.checkWorld(req(user),{worldId:p.w.worldId})).code,'forbidden');
+  assert.equal((await probe.checkWorld(req('guest'),{worldId:p.w.worldId})).code,'unauthenticated');
+  assert.equal(reads,0);
+ }finally{f.close();}
+});
+
+test('G2A fails closed when sink reader fails or trusted G1Y response is forged',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f),input={worldId:p.w.worldId};
+  assert.equal((await g2aProbe(f,async()=>{throw Error('private-network-failure');}).checkWorld(req(OP),input)).code,
+   'staging-readiness-unavailable');
+  const forged={evaluateApprovedWorld:async()=>({ok:true,eligible:true,worldId:'wrong-world',
+   snapshotHash:'a'.repeat(64),gateVersion:'world-release-1'})};
+  assert.equal((await g2aProbe(f,g2aCheckpoint(1),forged).checkWorld(req(OP),input)).code,'invalid-gate-verdict');
+ }finally{f.close();}
+});
+
+test('G2A constructor rejects real environment and module remains outside public Worker and HTTP',()=>{
+ assert.throws(()=>createSqlStagingReadinessService({storage:{},projectId:'truyendienvl',
+  verify:async()=>null,releaseGate:{evaluateApprovedWorld:async()=>null},readCheckpoint:async()=>null,
+  environment:'production'}),/G2A/);
+ for(const file of ['../src/index.mjs','../src/vangioi-authoring-http.mjs'])
+  assert.equal(readFileSync(new URL(file,import.meta.url),'utf8').includes('vangioi-staging-readiness'),false);
 });
