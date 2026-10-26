@@ -16,7 +16,7 @@ module.exports=async function structuredCreator({page,editor,secret}){
  for(const [kind,id,label] of [['worldCover','art-cover-forms','Căn nhà nhận thư'],['sceneBackground','art-room-forms','Phòng phía Đông']]){
   await click(editor,'+ Thêm tham chiếu ảnh');const row=editor.locator('.vg-card').last();
   await fill(row,'Mã asset',id);await select(row,'Loại hình ảnh',kind);await fill(row,'Phiên bản asset','v1');
-  await fill(row,'Hash ảnh đã đăng ký','b'.repeat(64));await fill(row,'Mô tả ngắn, tránh lộ bí mật',label);
+  await fill(row,'Hash nội dung ảnh','b'.repeat(64));await fill(row,'Mô tả ngắn, tránh lộ bí mật',label);
  }
  await tab('Thông tin');await tab('Nguồn & ảnh');await select(editor,'Ảnh bìa world','art-cover-forms');
  await tab('Địa điểm & cảnh');await select(editor,'Ảnh nền tham chiếu','art-room-forms');

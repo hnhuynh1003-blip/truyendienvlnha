@@ -1,6 +1,8 @@
 // Browser-safe authoring validation only. No auth, SQL writer or network client.
 import {validateDraftContent,inspectContent} from '../cloudflare/src/vangioi-content.mjs';
 import {copyAuthoringContent} from '../cloudflare/src/vangioi-authoring.mjs';
+export {verifyLocalPngRaster} from './vangioi-local-png.mjs';
+export {inspectPngBytes} from '../cloudflare/src/vangioi-png.mjs';
 export {validateDraftContent,inspectContent,copyAuthoringContent};
 export function parseDraft(text){
  try{

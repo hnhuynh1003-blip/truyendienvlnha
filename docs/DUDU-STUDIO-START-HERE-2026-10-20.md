@@ -1,5 +1,13 @@
 # DUDU Studio — START HERE / Bàn giao sạch · 20/10/2026
 
+## VẠN GIỚI Giai đoạn 1I — 26/10/2026
+
+Nền `4648173` (1H, CI/Pages SUCCESS). Đọc `contracts/vangioi/CREATOR_VISUAL_G1I.md`. Vẫn soạn tại Vạn Giới, không trong Chủ Thần. Form visualIdentity/characterVisuals/variants/appearances, đúng asset kind, vị trí/layer/flags/fallback và suppressWhenPossessed. Chọn PNG xem thử theo hash; preview khung ngang/dọc + focalPoint và bố cục nhân vật theo vai nhập, không chạy cờ/gameplay.
+
+Ảnh chỉ trong cache phiên riêng của UID; save/export giữ metadata, không bytes/Blob URL. Đổi UID/mất quyền dọn URL/DOM; upload/hash/decode async đối chiếu lại pin/UID/epoch. Container PNG G1F được tách dùng chung, server policy không đổi; preview thêm kiểm zlib/scanline/Adam7 và native decode. PNG <=1 MiB, preview <=16M pixel/64 MiB scanline là giới hạn kỹ thuật, không quota rank. Không có ảnh production hoặc approval/publish tự động.
+
+481 test ứng dụng + 344 test Worker/helper PASS; browser kiểm file/hash/crop, visual graph, suppression, fallback không đổi scene, export và account cleanup. CI/Pages theo SHA GitHub đợt này. Chưa store/upload ảnh cloud, asset/source picker có quyền thật, decode/scan server, backend route/binding/migration/deploy hay WORLD_PLAY/48 seed. Giữ auth/Thiên Mệnh/NPC/EPUB/save/kho/EXP/pool/AI/Canon; tiếp: cửa hàng/kiểm kịch bản, rồi kế hoạch adapter backend.
+
 ## VẠN GIỚI Giai đoạn 1H — 26/10/2026
 
 Nền `08537c8` (G1G.1, CI/Pages SUCCESS). Đọc `contracts/vangioi/CREATOR_FORMS_G1H.md`. Creator vẫn ở **Vạn Giới → Tạo / nhập thế giới**, tách khỏi Chủ Thần riêng của chủ dự án. Thêm form vai nhập ba mode, cast/NPC/tri thức/hội thoại phân nhánh, vật phẩm/cách nhận, view/hotspot, objectives theo đúng loại đích, rewards đề nghị, events/endings. Rank và AI/reward đều chỉ khai báo nháp, không cấp quyền hoặc gọi AI.

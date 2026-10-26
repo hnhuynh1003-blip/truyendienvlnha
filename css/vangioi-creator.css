@@ -46,3 +46,13 @@
 #dudu-world-creator .vg-levels{border:1px solid #504865;border-radius:9px;margin:12px 0;padding:8px 12px}
 #dudu-world-creator .vg-levels legend{color:#c9bbdd;font-size:12px}
 #dudu-world-creator .vg-card>.vg-card{border-left:2px solid #9477b1;background:#10192c}
+#dudu-world-creator .vg-art-tools{margin-top:12px;border-top:1px solid #504865;padding-top:10px}
+#dudu-world-creator .vg-art-thumb{display:block;max-width:100%;max-height:190px;object-fit:contain;margin:10px auto;border-radius:8px}
+#dudu-world-creator .vg-scene-stage{position:relative;overflow:hidden;isolation:isolate;background:#10182a;border:1px solid #67577e;border-radius:10px;width:100%;margin:12px auto}
+#dudu-world-creator .vg-scene-wide{aspect-ratio:16/9}
+#dudu-world-creator .vg-scene-portrait{aspect-ratio:9/16;max-width:380px}
+#dudu-world-creator .vg-scene-stage>.vg-art-image,#dudu-world-creator .vg-scene-stage>.vg-art-empty{position:absolute;inset:0;width:100%;height:100%;margin:0;aspect-ratio:auto}
+#dudu-world-creator .vg-art-image{object-fit:cover}
+#dudu-world-creator .vg-character-layer{position:absolute;width:32%;height:70%;display:flex;align-items:flex-end;justify-content:center;transform-origin:bottom center;pointer-events:none}
+#dudu-world-creator .vg-character-image{width:100%;height:100%;object-fit:contain}
+#dudu-world-creator .vg-character-fallback{border:1px dashed #b7a0cd;border-radius:8px;padding:8px;background:#17213ae8;color:#f2e6ff;font-size:11px;text-align:center}

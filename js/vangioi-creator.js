@@ -1,4 +1,4 @@
-/* World Creator G1H — Vạn Giới authoring, independent from owner AI Core. Local draft editing only; server rights/submit stay closed. */
+/* World Creator G1I — Vạn Giới authoring, independent from owner AI Core. Local draft editing only; server rights/submit stay closed. */
 (function(root){
  'use strict';
  const doc=root.document,V=root.DuduWorldValidation;
@@ -21,7 +21,7 @@
  function syncAccess(){
   const next=currentUid();
   if(!permitted()||next!==owner){
-   close();
+   close();clearArt();
    host=null;owner=permitted()?next:null;model=null;localId=null;dirty=false;report=null;
    jsonPending=false;jsonText='';tab='overview';serial++;epoch++;saving=false;
   }
@@ -139,6 +139,116 @@
    if(confirmReplace()){replace(parsed.content);notice('Đã nhập nội dung nháp. Chưa xác minh nguồn, ảnh hoặc quyền sở hữu.');}
   }catch{if(owner===user&&epoch===ticket)notice('Không đọc được tệp; bản đang soạn vẫn được giữ.');}
  }
+ // Local PNG previews are session-only and never imply a registry grant.
+ const artImages=new Map();
+ function clearArt(){for(const a of artImages.values())URL.revokeObjectURL(a.url);artImages.clear();}
+ const formatKinds={portrait:['characterPortrait','npcPortrait'],sprite:['characterSprite'],illustration:['characterIllustration'],silhouette:['characterSilhouette'],avatar:['characterAvatar']};
+ const formats=[['portrait','Chân dung'],['sprite','Nhân vật trong cảnh'],['illustration','Minh họa'],['silhouette','Bóng nhân vật'],['avatar','Avatar']];
+ function decimal(label,path,value,min=0,max=1){
+  const wrap=field(label,value,v=>{if(v==='')set(path,'',true);else set(path,Number(v));});
+  const n=wrap.querySelector('input');n.type='number';n.min=String(min);n.max=String(max);n.step='0.01';return wrap;
+ }
+ async function pickArt(file,asset){
+  if(!file)return;
+  if(file.size>1024*1024){notice('Ảnh xem thử PNG tối đa 1 MiB.');return;}
+  notice('Đang kiểm tra ảnh PNG…');
+  const user=owner,ticket=epoch,pin=JSON.stringify([asset.assetId,asset.assetVersion,asset.kind,asset.contentHash]);
+  const same=()=>access()&&owner===user&&epoch===ticket&&arr('assets').includes(asset)&&pin===JSON.stringify([asset.assetId,asset.assetVersion,asset.kind,asset.contentHash]);
+  let url;
+  try{
+   const bytes=new Uint8Array(await file.arrayBuffer());if(!same())return;
+   const image=await V.verifyLocalPngRaster(bytes);
+   const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(b=>b.toString(16).padStart(2,'0')).join('');
+   if(!same())return;
+   if(asset.contentHash&&asset.contentHash!==hash){notice('Ảnh không trùng hash tham chiếu. Bản nháp và ảnh trước được giữ nguyên.');return;}
+   url=URL.createObjectURL(new Blob([bytes],{type:'image/png'}));
+   const decoded=new Image();decoded.src=url;await decoded.decode();
+   if(!same()){URL.revokeObjectURL(url);return;}
+   if(decoded.naturalWidth!==image.width||decoded.naturalHeight!==image.height)throw Error('decode-mismatch');
+   if(artImages.has(hash)){URL.revokeObjectURL(url);url=null;}
+   else{artImages.set(hash,{url,width:image.width,height:image.height});url=null;}
+   if(!asset.contentHash){asset.contentHash=hash;mark();}
+   render();notice('Đã mở ảnh xem thử trong phiên. Chưa tải lên hoặc duyệt ảnh.');
+  }catch(error){
+   if(url)URL.revokeObjectURL(url);
+   if(owner===user&&epoch===ticket)notice(error?.message==='preview-limit'?'Ảnh vượt giới hạn xem thử trên thiết bị. Chọn bản nhẹ hơn; nháp và ảnh trước vẫn được giữ.':
+    error?.message==='preview-unavailable'?'Trình duyệt chưa hỗ trợ kiểm tra PNG. Nháp và ảnh trước vẫn được giữ.':
+    'PNG không hợp lệ hoặc không giải mã được. Bản nháp và ảnh trước được giữ nguyên.');
+  }
+ }
+ function localArt(asset,cls='vg-art-image'){
+  const stored=asset&&artImages.get(asset.contentHash);if(!stored)return h('div','vg-art-empty','Chưa chọn ảnh xem thử trong phiên này');
+  const img=h('img',cls);img.src=stored.url;img.alt=asset.altText||'Ảnh xem thử của tác giả';img.loading='lazy';
+  const fp=asset.focalPoint||[0.5,0.5],point=v=>Number.isFinite(v)&&v>=0&&v<=1?v:0.5;
+  img.style.objectPosition=(point(fp[0])*100)+'% '+(point(fp[1])*100)+'%';
+  img.addEventListener('error',()=>{if(img.isConnected)img.replaceWith(h('div','vg-art-empty','Ảnh xem thử bị lỗi. Chọn lại tệp PNG; cảnh vẫn được giữ.'));});return img;
+ }
+ function assetPreview(asset,index){
+  const box=h('details','vg-art-tools');box.open=artImages.has(asset.contentHash);box.append(h('summary','','Ảnh xem thử & điểm lấy khung'));
+  box.append(h('p','vg-muted','PNG tối đa 1 MiB, 16 triệu điểm ảnh, chỉ trong phiên này; không tải lên máy chủ. Hash có sẵn phải khớp tệp; hash trống sẽ được tính từ tệp mới.'));
+  const upload=h('input');upload.type='file';upload.accept='.png,image/png';upload.setAttribute('aria-label','Chọn PNG xem thử');
+  upload.addEventListener('change',()=>{if(access())pickArt(upload.files?.[0],asset);upload.value='';});box.append(upload);
+  if(artImages.has(asset.contentHash))box.append(localArt(asset,'vg-art-thumb'),button('Bỏ ảnh xem thử',()=>{const a=artImages.get(asset.contentHash);if(a)URL.revokeObjectURL(a.url);artImages.delete(asset.contentHash);render();},'vg-quiet'));
+  const fp=asset.focalPoint||[0.5,0.5];
+  for(const [axis,label] of [[0,'Điểm lấy khung X (0–1)'],[1,'Điểm lấy khung Y (0–1)']]){
+   const f=field(label,fp[axis],v=>{asset.focalPoint||=[0.5,0.5];asset.focalPoint[axis]=v===''?null:Number(v);mark();});
+   const n=f.querySelector('input');n.type='number';n.min='0';n.max='1';n.step='0.01';box.append(f);
+  }
+  box.append(button('Dùng điểm giữa mặc định',()=>{delete asset.focalPoint;mark();render();},'vg-quiet'));
+  return box;
+ }
+ function visualForms(panel){
+  panel.append(h('h3','','Nhận diện thế giới'),lines('Bảng màu · mỗi dòng một ý','visualIdentity.palette',model.visualIdentity?.palette),
+   lines('Dấu mốc nhận diện · mỗi dòng một ý','visualIdentity.landmarks',model.visualIdentity?.landmarks),
+   bind('Bầu không khí','visualIdentity.mood',model.visualIdentity?.mood),bind('Phong cách hình ảnh','visualIdentity.artStyle',model.visualIdentity?.artStyle),
+   h('h3','','Hồ sơ tạo hình nhân vật'),button('+ Thêm hồ sơ tạo hình',()=>{(model.characterVisuals||=[]).push({visualPriority:'supporting',identityNotes:'',fixedTraits:[],variants:[]});mark();render();}));
+  arr('characterVisuals').forEach((v,i)=>{
+   const p='characterVisuals.'+i,c=card('visual',v.characterId);
+   c.append(field('Nhân vật tạo hình',v.characterId,x=>{
+    if(arr('characterVisuals').some((y,k)=>k!==i&&y.characterId===x)){render();notice('Nhân vật này đã có hồ sơ tạo hình.');return;}
+    if(v.variants?.some(look=>arr('characterAppearances').some(a=>a.variantId===look.variantId))){render();notice('Tạo hình đang được dùng trong cảnh. Đổi liên kết xuất hiện trước.');return;}
+    if(x)v.characterId=x;else delete v.characterId;mark();render();
+   },{options:choices(arr('cast'),'characterId','displayName')}),
+    bind('Mức ưu tiên tạo hình',p+'.visualPriority',v.visualPriority,{omitEmpty:true,options:[['signature','Dấu ấn chính'],['supporting','Đồng hành'],['cameo','Khách mời'],['ambient','Bối cảnh'],['offscreen','Không xuất hiện trên ảnh']]}),
+    bind('Ghi chú nhận diện nhân vật',p+'.identityNotes',v.identityNotes,{area:true}),lines('Đặc điểm cố định · mỗi dòng một ý',p+'.fixedTraits',v.fixedTraits));
+   (v.variants||[]).forEach((look,j)=>{
+    const q=p+'.variants.'+j,row=card('visual-variant',look.variantId);
+    row.append(idLine(look.variantId),field('Dạng tạo hình',look.format,x=>{
+     if(arr('characterAppearances').some(a=>a.variantId===look.variantId)){render();notice('Biến thể đang được dùng. Đổi liên kết xuất hiện trước khi đổi dạng.');return;}
+     if(x)look.format=x;else delete look.format;delete look.assetId;mark();render();
+    },{options:formats}),bind('Ảnh của tạo hình',q+'.assetId',look.assetId,{omitEmpty:true,options:choices(arr('assets').filter(a=>formatKinds[look.format]?.includes(a.kind)),'assetId','altText')}),
+     bind('Biểu cảm',q+'.expression',look.expression),bind('Tư thế',q+'.pose',look.pose),bind('Nhãn trang phục',q+'.outfitTag',look.outfitTag),
+     bind('Mốc thời gian tạo hình',q+'.timelineTag',look.timelineTag),bind('Ghi chú biến thể',q+'.artNote',look.artNote),
+     button('Xóa biến thể tạo hình',()=>{if(referenced(look.variantId,'/characterVisuals/'+i+'/variants/'+j)){notice('Biến thể còn được dùng trong cảnh.');return;}v.variants.splice(j,1);mark();render();},'vg-quiet'));c.append(row);
+   });
+   c.append(button('+ Thêm biến thể tạo hình',()=>{(v.variants||=[]).push({variantId:makeId('variant')});mark();render();}),
+    button('Xóa hồ sơ tạo hình',()=>{
+     if((v.variants||[]).some(look=>arr('characterAppearances').some(a=>a.variantId===look.variantId))){notice('Hồ sơ còn biến thể đang dùng trong cảnh.');return;}
+     model.characterVisuals.splice(i,1);mark();render();
+    },'vg-quiet'));panel.append(c);
+  });
+  panel.append(h('h3','','Xuất hiện trong cảnh'),h('p','vg-muted','Điều kiện xuất hiện là nội dung nháp. Xem bố cục không chạy cờ hoặc đối thoại thật.'),
+   button('+ Thêm lần xuất hiện',()=>{(model.characterAppearances||=[]).push({appearanceId:makeId('appearance'),requiredFlags:[],forbiddenFlags:[],suppressWhenPossessed:true,position:{anchor:'center',x:0.5,y:0.9,scale:1,layer:1}});mark();render();}));
+  arr('characterAppearances').forEach((a,i)=>{
+   const p='characterAppearances.'+i,c=card('appearance',a.appearanceId);
+   const eligible=arr('characterVisuals').filter(v=>v.characterId===a.characterId).flatMap(v=>v.variants||[]).filter(v=>v.format!=='avatar');
+   c.append(idLine(a.appearanceId),field('Nhân vật xuất hiện',a.characterId,x=>{if(x)a.characterId=x;else delete a.characterId;delete a.variantId;delete a.displayMode;mark();render();},{options:choices(arr('cast'),'characterId','displayName')}),
+    bind('Góc nhìn xuất hiện',p+'.viewId',a.viewId,{omitEmpty:true,options:choices(arr('views'),'viewId','summary')}),
+    field('Biến thể xuất hiện',a.variantId,x=>{const look=eligible.find(v=>v.variantId===x);if(look){a.variantId=x;a.displayMode=look.format;}else{delete a.variantId;delete a.displayMode;}mark();render();},
+     {options:eligible.map(v=>[v.variantId,[formats.find(([k])=>k===v.format)?.[1],v.expression||v.outfitTag||v.variantId].join(' · ')])}),
+    field('Lúc hiện nhân vật',a.showOn,x=>{if(x)a.showOn=x;else delete a.showOn;delete a.triggerRef;mark();render();},{options:[['scene_enter','Vào cảnh'],['dialogue_start','Bắt đầu hội thoại'],['event_flag','Theo cờ sự kiện']]}));
+   if(a.showOn==='dialogue_start')c.append(bind('Lời thoại kích hoạt',p+'.triggerRef',a.triggerRef,{omitEmpty:true,options:arr('npcs').flatMap(n=>choices(n.dialogueNodes||[],'nodeId','text'))}));
+   if(a.showOn==='event_flag')c.append(bind('Cờ kích hoạt xuất hiện',p+'.triggerRef',a.triggerRef));
+   c.append(bind('Lúc ẩn nhân vật',p+'.hideOn',a.hideOn,{omitEmpty:true,options:[['dialogue_end','Kết thúc hội thoại'],['view_exit','Rời góc nhìn'],['flag_change','Đổi cờ'],['event_end','Kết thúc sự kiện']]}),
+    lines('Cờ cần có khi xuất hiện',p+'.requiredFlags',a.requiredFlags),lines('Cờ cấm khi xuất hiện',p+'.forbiddenFlags',a.forbiddenFlags),
+    bool('Ẩn hình của nhân vật khi người chơi đang nhập vai họ',p+'.suppressWhenPossessed',a.suppressWhenPossessed),
+    bind('Neo bố cục',p+'.position.anchor',a.position?.anchor,{omitEmpty:true,options:[['left','Trái'],['center','Giữa'],['right','Phải'],['custom','Tự đặt']]}),
+    decimal('Vị trí nhân vật X (0–1)',p+'.position.x',a.position?.x),decimal('Vị trí nhân vật Y (0–1)',p+'.position.y',a.position?.y),
+    decimal('Tỷ lệ nhân vật (lớn hơn 0, tối đa 3)',p+'.position.scale',a.position?.scale,0.01,3),integer('Lớp hiển thị (0–20)',p+'.position.layer',a.position?.layer,0),
+    bind('Mô tả khi thiếu ảnh',p+'.fallbackText',a.fallbackText),button('Xóa lần xuất hiện',()=>removeEntity('characterAppearances',i,'appearanceId'),'vg-quiet'));panel.append(c);
+  });
+ }
+
  function overview(panel){
   const grid=h('div','vg-grid');grid.append(
    bind('Tên tiểu thế giới','title',model.title),
@@ -201,9 +311,9 @@
    const card=h('section','vg-card');card.append(bind('Mã asset','assets.'+i+'.assetId',a.assetId,{omitEmpty:true}),
     bind('Loại hình ảnh','assets.'+i+'.kind',a.kind,{omitEmpty:true,options:kinds}),
     bind('Phiên bản asset','assets.'+i+'.assetVersion',a.assetVersion,{omitEmpty:true}),
-    bind('Hash ảnh đã đăng ký','assets.'+i+'.contentHash',a.contentHash,{omitEmpty:true}),
+    bind('Hash nội dung ảnh','assets.'+i+'.contentHash',a.contentHash,{omitEmpty:true}),
     bind('Mô tả ngắn, tránh lộ bí mật','assets.'+i+'.altText',a.altText),
-    button('Xóa tham chiếu ảnh',()=>removeEntity('assets',i,'assetId'),'vg-quiet'));panel.append(card);
+    button('Xóa tham chiếu ảnh',()=>removeEntity('assets',i,'assetId'),'vg-quiet'),assetPreview(a,i));panel.append(card);
   });
  }
  // Structured content tools. All mutations are draft data, never engine actions.
@@ -432,17 +542,40 @@
   }),button('Hoàn tác phần JSON đang sửa',()=>{jsonPending=false;jsonText='';render();},'vg-quiet'));
  }
  function preview(panel){
-  const box=h('section','vg-preview');box.id='vg-scene-preview';
-  panel.append(h('p','vg-muted','Xem trước lời dẫn và địa điểm. Ảnh tham chiếu chưa được tải hoặc xác minh.'));
-  const show=value=>{
+  panel.append(h('p','vg-muted','Ảnh xem thử trong phiên, chưa duyệt phát hành. Xem bố cục nhân vật không xét điều kiện/cờ và không chạy gameplay.'));
+  const controls=h('div','vg-grid'),box=h('section','vg-preview');box.id='vg-scene-preview';panel.append(controls,box);
+  let sceneId='',viewId='',roleId='',ratio='wide',layout=false;
+  const bounded=(v,min,max,fallback)=>Number.isFinite(v)&&v>=min&&v<=max?v:fallback;
+  function draw(){
+   controls.replaceChildren(field('Cảnh xem trước',sceneId,v=>{sceneId=v;viewId=arr('views').find(x=>x.sceneId===v)?.viewId||'';draw();},{options:choices(arr('scenes'),'sceneId','summary')}),
+    field('Góc nhìn xem trước',viewId,v=>{viewId=v;draw();},{options:choices(arr('views').filter(v=>v.sceneId===sceneId),'viewId','summary')}),
+    field('Khung xem trước',ratio,v=>{ratio=v||'wide';draw();},{options:[['wide','Ngang 16:9'],['portrait','Dọc 9:16']]}),
+    field('Vai xem thử',roleId,v=>{roleId=v;draw();},{options:choices(arr('playerEntryProfiles'),'entryId','label')}),
+    toggle('Xem bố cục nhân vật',layout,v=>{layout=v;draw();}));
    box.replaceChildren();
-   const scene=arr('scenes').find(s=>s.sceneId===value),place=arr('places').find(p=>scene?.placeId&&p.placeId===scene.placeId);
-   box.append(h('div','vg-preview-seal','BẢN SOẠN THẢO · CHƯA PHÁT HÀNH'),h('h3','',place?.name||'Chưa đặt tên địa điểm'),
-    h('div','vg-art-empty','Chưa có hình nền để xem trước'),h('p','',scene?.summary||'Chọn một cảnh để xem lời dẫn.'));
-  };
-  panel.append(field('Cảnh xem trước','',show,{options:choices(arr('scenes'),'sceneId','summary')}));
-  panel.append(box);show('');
+   const scene=arr('scenes').find(s=>s.sceneId===sceneId),view=arr('views').find(v=>v.viewId===viewId&&v.sceneId===sceneId),
+    place=arr('places').find(p=>scene?.placeId&&p.placeId===scene.placeId),role=arr('playerEntryProfiles').find(p=>p.entryId===roleId),
+    asset=arr('assets').find(a=>a.assetId===(view?.assetId||scene?.backgroundAssetId));
+   box.append(h('div','vg-preview-seal','BẢN SOẠN THẢO · CHƯA PHÁT HÀNH'),h('h3','',place?.name||'Chưa đặt tên địa điểm'));
+   const stage=h('div','vg-scene-stage vg-scene-'+ratio);stage.dataset.sceneId=sceneId;stage.append(localArt(asset));
+   if(layout&&view)for(const a of arr('characterAppearances').filter(a=>a.viewId===view.viewId).sort((a,b)=>(a.position?.layer||0)-(b.position?.layer||0))){
+    if(a.displayMode==='sprite'&&a.suppressWhenPossessed===true&&role?.mode==='cast_possession'&&role.castTargetId===a.characterId)continue;
+    const look=arr('characterVisuals').filter(v=>v.characterId===a.characterId).flatMap(v=>v.variants||[]).find(v=>v.variantId===a.variantId);
+    if(!look||look.format!==a.displayMode)continue;
+    const art=arr('assets').find(x=>x.assetId===look.assetId),character=arr('cast').find(c=>c.characterId===a.characterId),
+     layer=h('div','vg-character-layer');layer.dataset.vgPreviewCharacter=a.characterId;layer.dataset.appearanceId=a.appearanceId;
+    const pos=a.position||{},x=bounded(pos.x,0,1,0.5),y=bounded(pos.y,0,1,0.9),scale=bounded(pos.scale,0.01,3,1),
+     anchor=pos.anchor==='left'?0:pos.anchor==='right'?-100:-50;
+    layer.style.left=x*100+'%';layer.style.top=y*100+'%';layer.style.zIndex=String(bounded(pos.layer,0,20,1));
+    layer.style.transform='translate('+anchor+'%,-100%) scale('+scale+')';
+    layer.append(artImages.has(art?.contentHash)?localArt(art,'vg-character-image'):h('span','vg-character-fallback',a.fallbackText||character?.displayName||'Nhân vật'));
+    stage.append(layer);
+   }
+   box.append(stage,h('p','',view?.summary||scene?.summary||'Chọn một cảnh để xem lời dẫn.'));
+  }
+  draw();
  }
+
  const names={title:'Tên world',genreId:'Thể loại',requestedWorldRank:'Bậc đề nghị',dangerLevel:'Mức nguy hiểm',story:'Cốt truyện',
  storySource:'Nguồn truyện',worldCoverAssetId:'Ảnh bìa',assets:'Hình ảnh',maps:'Bản đồ',places:'Địa điểm',scenes:'Cảnh',views:'Góc nhìn',
  cast:'Dàn nhân vật',npcs:'NPC',playerEntryProfiles:'Vai nhập',entryPolicy:'Chọn vai nhập',entry:'Cảnh vào',items:'Vật phẩm',shops:'Cửa hàng',
@@ -459,7 +592,7 @@
    'ai-needs-scripted-fallback':'NPC AI cần hội thoại kịch bản dự phòng','ai-request-not-declared':'Đề nghị NPC AI chưa được khai báo',
    'optional-mission-required':'Nhiệm vụ phụ hoặc ẩn không được bắt buộc hoàn thành world','required-main-mission':'Cần ít nhất một nhiệm vụ chính bắt buộc',
    'pickup-source-mismatch':'Nguồn nhặt vật phẩm chưa khớp với tương tác','pickup-not-declared-on-item':'Vật phẩm chưa khai cách nhận từ tương tác Nhặt',
-   'duplicate-id':'Mã bị trùng','unfinished-todo':'Còn phần nội dung chưa viết xong','missing-background':'Cần tham chiếu nền cảnh'};
+   'duplicate-id':'Mã bị trùng','unfinished-todo':'Còn phần nội dung chưa viết xong','missing-background':'Cần tham chiếu nền cảnh','visual-asset-kind':'Dạng tạo hình chưa khớp loại ảnh','appearance-variant-mismatch':'Nhân vật hoặc dạng hiển thị chưa khớp biến thể','possessed-sprite-duplicate':'Cần ẩn sprite khi người chơi nhập vai nhân vật','contradictory-flags':'Một cờ đang vừa bắt buộc vừa bị cấm'};
   for(const e of errors.slice(0,35)){
    const section=names[e.path.split('/')[1]]||'Hồ sơ';
    const message=e.code==='schema:required'?'Thiếu trường bắt buộc':e.code.startsWith('schema:')?'Sai định dạng hoặc giá trị':messages[e.code]||'Cần kiểm tra liên kết nội dung';
@@ -486,10 +619,10 @@
   upload.addEventListener('change',()=>{if(access())importFile(upload.files?.[0]);upload.value='';});
   actions.append(button('Nhập JSON',()=>upload.click()));
   const listBox=h('div','vg-local-list');listBox.id='vg-local-list';menu.append(actions,upload,listBox);app.append(menu);
-  const tabs=[['overview','Thông tin'],['scenes','Địa điểm & cảnh'],['resources','Nguồn & ảnh'],['roles','Vai nhập'],['characters','Nhân vật & NPC'],['items','Vật phẩm'],['missions','Nhiệm vụ'],['outcomes','Sự kiện & kết cục'],['advanced','Dữ liệu nâng cao'],['preview','Xem trước']];
+  const tabs=[['overview','Thông tin'],['scenes','Địa điểm & cảnh'],['resources','Nguồn & ảnh'],['visualForms','Tạo hình & bố cục'],['roles','Vai nhập'],['characters','Nhân vật & NPC'],['items','Vật phẩm'],['missions','Nhiệm vụ'],['outcomes','Sự kiện & kết cục'],['advanced','Dữ liệu nâng cao'],['preview','Xem trước']];
   const nav=h('nav','vg-tabs');nav.setAttribute('aria-label','Các mục soạn world');
   for(const [key,label] of tabs){const b=button(label,()=>{tab=key;render();});b.setAttribute('aria-current',key===tab?'page':'false');nav.append(b);}app.append(nav);
-  const panel=h('div','vg-panel');({overview,scenes,resources,roles,characters,items,missions,outcomes,advanced,preview}[tab]||overview)(panel);app.append(panel);
+  const panel=h('div','vg-panel');({overview,scenes,resources,visualForms,roles,characters,items,missions,outcomes,advanced,preview}[tab]||overview)(panel);app.append(panel);
   const message=h('p','vg-message','');message.id='vg-message';message.setAttribute('role','status');app.append(message);
   const result=h('details','vg-checks');result.open=!!report;result.append(h('summary','','Kiểm tra nội dung'));
   const reportBox=h('div');reportBox.id='vg-report';result.append(reportBox);app.append(result);host.append(app);renderReport();
@@ -515,7 +648,7 @@
   else{dialog.setAttribute('open','');dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');}
   render();host?.querySelector('button')?.focus({preventScroll:true});return true;
  }
- root.DuduWorldCreator=Object.freeze({open,close,syncAccess,version:'G1H',backendConnected:false});
+ root.DuduWorldCreator=Object.freeze({open,close,syncAccess,version:'G1I',backendConnected:false});
  doc.addEventListener('visibilitychange',syncAccess);root.addEventListener('pageshow',syncAccess);
  root.addEventListener('hashchange',()=>{if(dialog&&root.location.hash!=='#/worlds')close();});
 })(window);
