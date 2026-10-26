@@ -508,3 +508,20 @@ test('G1O strict inputs and stale pins fail without leaking source bytes',async(
   assert.equal((await f.registry.sourceRange(req(),{...x.input,startChapterId:'',endChapterId:'chapter-1'})).code,'invalid-request');
  }finally{f.close();}
 });
+
+test('G1Q prepared library payload is accepted unchanged by existing registry and manifest/range services',async()=>{
+ const {createLibrarySourcePreparer}=await import('../src/vangioi-library-source.mjs');
+ const f=setup();try{
+  f.operator();const w=await f.world(),payload=sourceInput().payload,hash=await hashAuthoringJson(payload);
+  const snapshot={book:{id:'epub-existing',title:payload.title,ownerUid:OWNER,status:'published',chapterCount:1,
+   chapterIndex:[{id:'ch-one',title:'Chapter one',order:0}]},chapters:[{id:'ch-one',title:'Chapter one',order:0,content:'PRIVATE_SOURCE_TEXT'}],
+   permit:{storyId:'epub-existing',authorizedUid:OWNER,contentHash:hash,status:'active',revision:1,license:'original',sourceNote:'Synthetic checked permission',proofRef:null}};
+  const prepare=createLibrarySourcePreparer({projectId:'truyendienvl',verify:f.options.verify,isOperator:async user=>user===OP,readSnapshot:async()=>snapshot});
+  const plan=await prepare(req(OP),{requestId:crypto.randomUUID(),storyId:'epub-existing',authorizedUid:OWNER});assert.equal(plan.ok,true);
+  const registered=await f.registry.registerSource(req(OP),plan.registryInput);assert.equal(registered.ok,true);assert.deepEqual(registered.reference,plan.reference);
+  assert.equal((await f.registry.setSourceGrant(req(),f.grant(w,registered.reference))).ok,true);
+  const input={worldId:w.worldId,reference:registered.reference};
+  assert.equal((await f.registry.sourceManifest(req(),input)).manifest.chapters[0].chapterId,'ch-one');
+  assert.equal((await f.registry.sourceRange(req(),{...input,startChapterId:'ch-one',endChapterId:'ch-one'})).chapters[0].text,'PRIVATE_SOURCE_TEXT');
+ }finally{f.close();}
+});

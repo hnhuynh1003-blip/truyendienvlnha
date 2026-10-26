@@ -1,5 +1,9 @@
 # DUDU Studio — START HERE / Bàn giao sạch · 20/10/2026
 
+## VẠN GIỚI Giai đoạn 1Q — 26/10/2026
+
+Nền 722a8cf. Đọc `contracts/vangioi/LIBRARY_SOURCE_G1Q.md`. Có preparer server cho snapshot Thư viện + permit gắn hash, giữ chapter IDs, canonical version và registryInput G1F. Chỉ callback trusted reader/operator, chưa Firebase SDK reader hoặc ghi registry tự động; hai lần đọc không tạo transaction Firestore–SQLite. 16 tests mới gồm luồng tích hợp SQLite, tổng 424 Worker/helper. Chưa UI/picker/live/Rules/migration. Tiếp protocol permit/version/consistent reader và đồng bộ thu hồi trước bật nguồn production.
+
 ## VẠN GIỚI Giai đoạn 1P — 26/10/2026
 
 Nền 5554912. Đọc `contracts/vangioi/SOURCE_HTTP_G1P.md`. Adapter HTTP độc lập G1K thêm ba POST query/manifest/range dưới world sources, Bearer/Origin/body giới hạn và quyền registry G1O. Chưa nối Worker live, Thư viện Firestore hoặc Creator picker; không mutation/grant route. 7 HTTP tests mới, 408 Worker/helper; CI theo commit G1P. Tiếp adapter Thư viện có quyền và manifest trước client/picker, giữ cổng deploy G1K.

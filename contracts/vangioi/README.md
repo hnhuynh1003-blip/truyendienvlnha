@@ -91,3 +91,5 @@ G1N: [ARC_PLANNING_G1N.md](ARC_PLANNING_G1N.md) — kế hoạch arc local và g
 G1O: [SOURCE_MANIFEST_G1O.md](SOURCE_MANIFEST_G1O.md) — danh sách nguồn có quyền, manifest và khoảng chương; service độc lập, chưa bật picker.
 
 G1P: [SOURCE_HTTP_G1P.md](SOURCE_HTTP_G1P.md) — ba tuyến đọc nguồn trong adapter HTTP độc lập; chưa bật live hoặc picker.
+
+G1Q: [LIBRARY_SOURCE_G1Q.md](LIBRARY_SOURCE_G1Q.md) — chuẩn bị nguồn từ trusted snapshot/permit; chưa reader Firebase hoặc ghi tự động.
