@@ -585,6 +585,115 @@ test('G1R denies nonoperators, stale revisions and permit adoption of existing l
  }finally{f.close();}
 });
 
+test('G1U outbox records issue and revoke in order, without leaking private permit fields or replay duplication',async()=>{
+ const f=setup();try{
+  const x=await permitFixture(f),first=await f.registry.listPermitEvents(req(OP),{after:0});
+  assert.equal(first.ok,true);assert.equal(first.events.length,1);
+  assert.equal(first.events[0].status,'active');assert.equal(first.events[0].revision,1);
+  assert.equal(first.events[0].storyId,x.permit.storyId);assert.equal(first.events[0].contentHash,x.hash);
+  assert.equal(first.checkpoint,first.events[0].seq);assert.equal(first.nextCursor,null);
+  assert.equal((await f.registry.issueAdaptationPermit(req(OP),x.permit)).replayed,true);
+  assert.equal((await f.registry.revokeAdaptationPermit(req(OP),x.revoke)).ok,true);
+  assert.equal((await f.registry.revokeAdaptationPermit(req(OP),x.revoke)).replayed,true);
+  const page=await f.registry.listPermitEvents(req(OP),{after:first.checkpoint});
+  assert.equal(page.events.length,1);assert.equal(page.events[0].status,'revoked');
+  assert.equal(page.events[0].revision,2);assert.ok(page.checkpoint>first.checkpoint);
+  assert.equal((await f.registry.listPermitEvents(req(OP),{after:page.checkpoint})).events.length,0);
+  assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_permit_outbox_v1')[0].n,2);
+  assert.equal(f.rows("SELECT count(*) n FROM vg_authoring_registry_events_v1 WHERE scope='permits'")[0].n,2);
+  const leak=JSON.stringify([first,page]);
+  for(const forbidden of ['PRIVATE_SOURCE_TEXT',x.permit.sourceNote,x.permit.authorizedUid,'proofRef','requestId','actorUid','license'])
+   assert.equal(leak.includes(forbidden),false);
+  assert.throws(()=>f.sql.exec('DELETE FROM vg_authoring_permit_outbox_v1'),/immutable/);
+  assert.throws(()=>f.sql.exec("UPDATE vg_authoring_permit_outbox_v1 SET status='active'"),/immutable/);
+ }finally{f.close();}
+});
+
+test('G1U outbox paginates fixed 50 records with monotonic checkpoint even at identical timestamps',async()=>{
+ const f=setup();try{
+  f.operator();for(let i=0;i<52;i++){
+   const r=await f.registry.issueAdaptationPermit(req(OP),{requestId:crypto.randomUUID(),storyId:`outbox-${i}`,
+    contentHash:i.toString(16).padStart(64,'0'),authorizedUid:OWNER,license:'original',sourceNote:'Verified in fixture',proofRef:null});
+   assert.equal(r.ok,true);
+  }
+  const a=await f.registry.listPermitEvents(req(OP),{after:0});
+  assert.equal(a.events.length,50);assert.equal(a.nextCursor,a.checkpoint);
+  const b=await f.registry.listPermitEvents(req(OP),{after:a.nextCursor});
+  assert.equal(b.events.length,2);assert.equal(b.nextCursor,null);
+  assert.equal(new Set([...a.events,...b.events].map(e=>e.seq)).size,52);
+  assert.ok(b.checkpoint>a.checkpoint);
+  assert.deepEqual((await f.registry.listPermitEvents(req(OP),{after:b.checkpoint})).events,[]);
+  assert.ok(a.events.every(e=>e.happenedAt===1000));
+ }finally{f.close();}
+});
+
+test('G1U outbox is operator-only and rejects invalid or self-asserted paging authority',async()=>{
+ const f=setup();try{
+  await permitFixture(f);
+  for(const user of [OWNER,OTHER,'guest']){
+   assert.equal((await f.registry.listPermitEvents(req(user),{after:0})).ok,false);
+  }
+  for(const d of [{after:-1},{after:1.2},{after:'0'},{after:null},{after:0,admin:true},{}])
+   assert.equal((await f.registry.listPermitEvents(req(OP),d)).code,'invalid-request');
+  f.sql.exec("UPDATE vg_authoring_registry_operators_v1 SET status='revoked'");
+  assert.equal((await f.registry.listPermitEvents(req(OP),{after:0})).code,'forbidden');
+ }finally{f.close();}
+});
+
+test('G1U outbox insertion failure rolls back permit issuance and cascading revocation',async()=>{
+ const f=setup();try{
+  f.operator();const d=sourceInput(),hash=await hashAuthoringJson(d.payload);
+  const permit={requestId:crypto.randomUUID(),storyId:d.storyId,contentHash:hash,authorizedUid:OWNER,
+   license:d.license,sourceNote:d.sourceNote,proofRef:d.proofRef};
+  f.hooks.fail='INSERT INTO vg_authoring_permit_outbox_v1';
+  assert.equal((await f.registry.issueAdaptationPermit(req(OP),permit)).code,'registry-unavailable');
+  assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_adaptation_permits_v1')[0].n,0);
+  assert.equal(f.rows("SELECT count(*) n FROM vg_authoring_registry_events_v1 WHERE scope='permits'")[0].n,0);
+  assert.equal((await f.registry.issueAdaptationPermit(req(OP),permit)).ok,true);
+  const w=await f.world();d.storyVersion='sha256-'+hash;
+  const source=await f.registry.registerSource(req(OP),d);assert.equal(source.ok,true);
+  assert.equal((await f.registry.setSourceGrant(req(),f.grant(w,source.reference))).ok,true);
+  f.hooks.fail='INSERT INTO vg_authoring_permit_outbox_v1';
+  const revoke={requestId:crypto.randomUUID(),storyId:d.storyId,contentHash:hash,expectedRevision:1};
+  assert.equal((await f.registry.revokeAdaptationPermit(req(OP),revoke)).code,'registry-unavailable');
+  assert.equal((await f.registry.readSource(req(),{worldId:w.worldId,reference:source.reference})).ok,true);
+  assert.equal(f.rows('SELECT status FROM vg_authoring_adaptation_permits_v1')[0].status,'active');
+  assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_permit_outbox_v1')[0].n,1);
+  assert.equal((await f.registry.revokeAdaptationPermit(req(OP),revoke)).ok,true);
+  assert.equal((await f.registry.readSource(req(),{worldId:w.worldId,reference:source.reference})).ok,false);
+ }finally{f.close();}
+});
+
+test('G1U outbox fails closed for a preexisting G1R permit lacking history',async()=>{
+ const f=setup();try{
+  f.operator();const hash='a'.repeat(64);
+  f.sql.exec("INSERT INTO vg_authoring_adaptation_permits_v1 VALUES(?,?,?,'active',1)",
+   'historical-story',hash,JSON.stringify({storyId:'historical-story',contentHash:hash,authorizedUid:OWNER,
+    license:'original',sourceNote:'Legacy fixture',proofRef:null}));
+  assert.equal((await f.registry.listPermitEvents(req(OP),{after:0})).code,'baseline-required');
+  assert.equal((await f.registry.readAdaptationPermit(req(OP),{storyId:'historical-story',contentHash:hash})).permit.status,'active');
+  assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_permit_outbox_v1')[0].n,0);
+ }finally{f.close();}
+});
+
+test('G1U outbox preserves event sequence and revocation across SQLite restart',async()=>{
+ const dir=mkdtempSync(join(tmpdir(),'vangioi-g1u-')),file=join(dir,'registry.sqlite');
+ try{
+  const before=setup(file);let checkpoint,permit;
+  try{
+   const x=await permitFixture(before);permit=x;
+   checkpoint=(await before.registry.listPermitEvents(req(OP),{after:0})).checkpoint;
+   assert.equal((await before.registry.revokeAdaptationPermit(req(OP),x.revoke)).ok,true);
+  }finally{before.close();}
+  const after=setup(file);try{
+   const history=await after.registry.listPermitEvents(req(OP),{after:checkpoint});
+   assert.equal(history.ok,true);assert.equal(history.events.length,1);
+   assert.equal(history.events[0].status,'revoked');assert.equal(history.events[0].revision,2);
+   assert.equal((await after.registry.readAdaptationPermit(req(OP),{storyId:permit.d.storyId,contentHash:permit.hash})).permit.status,'revoked');
+  }finally{after.close();}
+ }finally{rmSync(dir,{recursive:true,force:true});}
+});
+
 function v49ForG1S(storyId='epub-staging'){
  return {book:{id:storyId,title:'Staging V49 book',ownerUid:'verified-book-owner',status:'published',chapterCount:2,
   chapterIndex:[{id:'chapter-0010',order:0,title:'First',wordCount:1},

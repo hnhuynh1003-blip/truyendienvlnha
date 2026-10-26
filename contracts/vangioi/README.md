@@ -99,3 +99,5 @@ G1R: [ADAPTATION_PERMITS_G1R.md](ADAPTATION_PERMITS_G1R.md) — permit và thu h
 G1S: [SOURCE_STAGING_G1S.md](SOURCE_STAGING_G1S.md) — bộ project nguồn EPUB V49 và contract authority/staging, kiểm thử cô lập với G1Q/G1R/G1F; **chưa có Firestore reader, host staging hoặc transaction xuyên hệ thống**.
 
 G1T: [FIRESTORE_READER_G1T.md](FIRESTORE_READER_G1T.md) — adapter Firestore server-only đọc V49 bằng read-only transaction, fixture/emulator smoke cô lập và kiểm chứng G1Q/G1R; chưa nối Firebase instance thật, production/staging deploy hoặc source picker.
+
+G1U: [AUTHORITY_SYNC_G1U.md](AUTHORITY_SYNC_G1U.md) — outbox SQL append-only cho issue/revoke permit, cursor/checkpoint operator-only và chặn lịch sử G1R chưa baseline; chưa có consumer, Firestore sync, migration hay endpoint live.

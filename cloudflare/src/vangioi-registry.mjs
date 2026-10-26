@@ -53,6 +53,15 @@ export function createSqlRegistryService({storage,projectId,verify=verifyFirebas
    event_id TEXT PRIMARY KEY,scope TEXT NOT NULL,actor_uid TEXT NOT NULL,request_id TEXT NOT NULL,
    action TEXT NOT NULL,object_key TEXT NOT NULL,from_revision INTEGER NOT NULL,to_revision INTEGER NOT NULL,
    happened_at INTEGER NOT NULL,UNIQUE(scope,actor_uid,request_id))`);
+  storage.sql.exec(`CREATE TABLE IF NOT EXISTS vg_authoring_permit_outbox_v1(
+   seq INTEGER PRIMARY KEY AUTOINCREMENT,event_id TEXT NOT NULL UNIQUE,
+   story_id TEXT NOT NULL,content_hash TEXT NOT NULL,
+   permit_revision INTEGER NOT NULL CHECK(permit_revision>=1),
+   status TEXT NOT NULL CHECK(status IN ('active','revoked')),
+   happened_at INTEGER NOT NULL CHECK(happened_at>=0),
+   UNIQUE(story_id,content_hash,permit_revision))`);
+  for(const op of ['UPDATE','DELETE'])storage.sql.exec(`CREATE TRIGGER IF NOT EXISTS vg_authoring_permit_outbox_${op.toLowerCase()}_v1
+   BEFORE ${op} ON vg_authoring_permit_outbox_v1 BEGIN SELECT RAISE(ABORT,'immutable-permit-outbox'); END`);
   storage.sql.exec(`CREATE TRIGGER IF NOT EXISTS vg_authoring_registry_objects_delete_v1
    BEFORE DELETE ON vg_authoring_registry_objects_v1 BEGIN SELECT RAISE(ABORT,'immutable-authoring-record'); END`);
   storage.sql.exec(`CREATE TRIGGER IF NOT EXISTS vg_authoring_registry_objects_update_v1
@@ -76,7 +85,10 @@ export function createSqlRegistryService({storage,projectId,verify=verifyFirebas
  function record(scope,user,d,action,digest,key,from,to,result){
   const t=now();if(!Number.isSafeInteger(t)||t<0)throw Error('invalid-clock');
   storage.sql.exec('INSERT INTO vg_authoring_registry_operations_v1 VALUES(?,?,?,?,?,?)',scope,user,d.requestId,action,digest,JSON.stringify(result));
-  storage.sql.exec('INSERT INTO vg_authoring_registry_events_v1 VALUES(?,?,?,?,?,?,?,?,?)',crypto.randomUUID(),scope,user,d.requestId,action,key,from,to,t);
+  const eventId=crypto.randomUUID();
+  storage.sql.exec('INSERT INTO vg_authoring_registry_events_v1 VALUES(?,?,?,?,?,?,?,?,?)',eventId,scope,user,d.requestId,action,key,from,to,t);
+  if(scope==='permits')storage.sql.exec('INSERT INTO vg_authoring_permit_outbox_v1(event_id,story_id,content_hash,permit_revision,status,happened_at) VALUES(?,?,?,?,?,?)',
+   eventId,result.storyId,result.contentHash,result.revision,result.status,t);
   return {...result,replayed:false};
  }
  async function mutate(request,input,category,action){
@@ -324,10 +336,39 @@ export function createSqlRegistryService({storage,projectId,verify=verifyFirebas
   }catch{return fail('registry-unavailable');}
  }
 
+ async function listPermitEvents(request,input){
+  let d;
+  try{
+   d=copyAuthoringJson(input);
+   if(!keys(d,['after'])||!rev(d.after))return fail('invalid-request');
+  }catch{return fail('invalid-request');}
+  let user;try{const who=await verify(request,projectId);if(uid(who?.uid))user=who.uid;}catch{}
+  if(!user)return fail('unauthenticated');
+  try{
+   if(!isOperator(user))return fail();
+   return storage.transactionSync(()=>{
+    if(!isOperator(user))return fail();
+    // Existing G1R permits may predate the outbox. Never silently start mid-stream.
+    const gap=one(`SELECT 1 AS missing FROM vg_authoring_adaptation_permits_v1 p WHERE
+     NOT EXISTS(SELECT 1 FROM vg_authoring_permit_outbox_v1 o WHERE
+      o.story_id=p.story_id AND o.content_hash=p.content_hash AND o.permit_revision=1 AND o.status='active')
+     OR (p.status='revoked' AND NOT EXISTS(SELECT 1 FROM vg_authoring_permit_outbox_v1 o WHERE
+      o.story_id=p.story_id AND o.content_hash=p.content_hash AND o.permit_revision=p.revision AND o.status='revoked')) LIMIT 1`);
+    if(gap)return fail('baseline-required');
+    const rows=all('SELECT seq,event_id,story_id,content_hash,permit_revision,status,happened_at FROM vg_authoring_permit_outbox_v1 WHERE seq>? ORDER BY seq LIMIT 51',d.after);
+    const events=rows.slice(0,50).map(r=>({seq:r.seq,eventId:r.event_id,storyId:r.story_id,
+     contentHash:r.content_hash,revision:r.permit_revision,status:r.status,happenedAt:r.happened_at}));
+    const checkpoint=events.at(-1)?.seq??d.after;
+    return {ok:true,events,checkpoint,nextCursor:rows.length>50?checkpoint:null};
+   });
+  }catch{return fail('registry-unavailable');}
+ }
+
  return Object.freeze({
   issueAdaptationPermit:(r,d)=>permitAction(r,d,'issue'),
   revokeAdaptationPermit:(r,d)=>permitAction(r,d,'revoke'),
   readAdaptationPermit:(r,d)=>permitAction(r,d,'read'),
+  listPermitEvents,
   listSources,sourceManifest,sourceRange,
   readSource:(r,d)=>read(r,d,'source'),readAsset:(r,d)=>read(r,d,'asset'),
   registerSource:(r,d)=>mutate(r,d,'source','register'),registerAsset:(r,d)=>mutate(r,d,'asset','register'),
