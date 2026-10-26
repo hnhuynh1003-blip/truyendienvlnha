@@ -4,7 +4,9 @@ import {AUTHORING_FIELDS,copyAuthoringContent,copyAuthoringJson} from './vangioi
 
 export const CONTENT_VALIDATOR_VERSION='world-content-1-semantic-1';
 const issue=(code,path)=>({code,path});
-const schemaErrors=validator=>(validator.errors||[]).map(e=>issue('schema:'+e.keyword,e.instancePath||'/'));
+const schemaErrors=validator=>(validator.errors||[]).map(e=>issue('schema:'+e.keyword,
+ e.keyword==='required'&&/^[A-Za-z][A-Za-z0-9]*$/.test(e.params?.missingProperty||'')?
+ (e.instancePath||'')+'/'+e.params.missingProperty:e.instancePath||'/'));
 export function validateDraftContent(value){
  try{
   const content=copyAuthoringContent(value);

@@ -66,6 +66,7 @@ jobs:
         run: |
           node tests/browser-main-system-v71.cjs
           node tests/browser-auth-private.cjs
+          node tests/browser-vangioi-creator.cjs
       - name: Legacy Sandbox regression (advisory; cannot block main V71)
         continue-on-error: true
         run: |

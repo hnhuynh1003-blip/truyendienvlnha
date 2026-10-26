@@ -13,6 +13,7 @@
     "jose": "^6.1.0"
   },
   "devDependencies": {
-    "wrangler": "^4.0.0"
+    "wrangler": "^4.0.0",
+    "esbuild": "0.28.2"
   }
 }

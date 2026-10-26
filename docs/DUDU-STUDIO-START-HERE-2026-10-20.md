@@ -1,5 +1,13 @@
 # DUDU Studio — START HERE / Bàn giao sạch · 20/10/2026
 
+## VẠN GIỚI Giai đoạn 1G — 26/10/2026
+
+Nền `5e01681` (1F, CI/Pages SUCCESS). Đọc `contracts/vangioi/CREATOR_UI_G1G.md`. Creator mở từ Chủ Thần AU theo gate AU hiện có; soạn thông tin/Story Bible, địa điểm/cảnh, tham chiếu nguồn/ảnh, nhiệm vụ chính, JSON nâng cao và preview chữ. Lưu IndexedDB riêng theo UID, mở lại/nhập/xuất JSON; đổi UID/logout xóa model và DOM cũ, không xóa nháp đã lưu. Không ghi Firestore/Worker hoặc tự tạo owner/worldId server.
+
+Browser dùng bundle validator G1D biên dịch sẵn, tái tạo được (esbuild 0.28.2); required-field report có path trường thiếu. Rank chỉ đề nghị, art chỉ tham chiếu; Gửi duyệt khóa và ghi chưa kết nối. 481 test ứng dụng + 339 test Worker/helper PASS cục bộ; Creator browser acceptance có Firebase giả/IDB thật, save/reopen, JSON, account isolation, quota failure và layout 320–1280px. CI thêm Creator browser vào main acceptance; kiểm CI/Pages theo SHA GitHub đợt này.
+
+Chưa form cấu trúc đầy đủ cho NPC/items/entry/objectives/endings (còn JSON), chưa art preview thật, source picker/upload, cloud sync hoặc backend route/binding/migration/deploy. Không mở WORLD_PLAY/48 seed hay đổi auth/Thiên Mệnh/EPUB/NPC/save/kho/EXP/pool/AI/Canon. Tiếp: hoàn thiện các form nội dung và luồng tham chiếu; live adapter/deployment cần kế hoạch riêng.
+
 ## VẠN GIỚI Giai đoạn 1F — 26/10/2026
 
 Nền `4c63061` (1E, CI/Pages SUCCESS). Đọc `contracts/vangioi/REGISTRY_INTAKE_G1F.md`. Service registry độc lập nhập story-source-1/PNG thật và tính hash từ bytes, version/payload bất biến; operator assignment backend riêng, không tin admin/JSON. Owner đúng recipient mới gắn nguồn/asset vào world theo version/hash; grant mới ảnh pending, không phải duyệt art hoặc publish. Có đọc source/ảnh riêng tư cho owner, kiểm hash và kiểm lại quyền sau await.

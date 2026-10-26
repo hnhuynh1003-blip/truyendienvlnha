@@ -1,0 +1,37 @@
+/* Scoped to Creator within the existing AU phone app. */
+#dudu-world-creator{--vg-ink:#f2edf9;--vg-muted:#b7bed7;--vg-line:#73658d;box-sizing:border-box;min-width:0;width:100%;color:var(--vg-ink);font:13px/1.6 system-ui,sans-serif;padding:4px 0 20px;overflow-wrap:anywhere}
+#dudu-world-creator *{box-sizing:border-box;min-width:0}
+#dudu-world-creator h2{font:600 23px/1.3 Georgia,serif;margin:10px 0;color:#f5dfb7}
+#dudu-world-creator h3{font-size:15px;margin:18px 0 8px;color:#f3ddbc}
+#dudu-world-creator p{margin:8px 0;line-height:1.6}
+#dudu-world-creator .vg-kicker{font-size:10px;letter-spacing:.12em;color:#c8b7e8;margin-top:13px}
+#dudu-world-creator .vg-state{font-size:11px;color:#e6c990}
+#dudu-world-creator button,#dudu-world-creator input,#dudu-world-creator textarea,#dudu-world-creator select{font:inherit;color:var(--vg-ink);border:1px solid var(--vg-line);border-radius:8px;background:#17213a;max-width:100%}
+#dudu-world-creator button{min-height:44px;padding:8px 12px;cursor:pointer;line-height:1.4;white-space:normal}
+#dudu-world-creator button:disabled{opacity:.55;cursor:not-allowed}
+#dudu-world-creator .vg-primary{background:#58416e;border-color:#c6a5e6}
+#dudu-world-creator .vg-quiet{background:transparent;border-color:#665979;color:#c8c0da;font-size:11px}
+#dudu-world-creator :focus-visible{outline:2px solid #e8c87c;outline-offset:3px}
+#dudu-world-creator .vg-actions{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}
+#dudu-world-creator .vg-muted{font-size:11px;color:var(--vg-muted)}
+#dudu-world-creator .vg-files,#dudu-world-creator .vg-checks{margin:13px 0;padding:10px;border:1px solid #514968;border-radius:10px;background:#10192d}
+#dudu-world-creator summary{cursor:pointer;min-height:30px;font-size:12px;color:#d4c1ee}
+#dudu-world-creator .vg-files input{width:100%;padding:8px;font-size:11px}
+#dudu-world-creator .vg-tabs{display:flex;gap:5px;overflow-x:auto;overscroll-behavior:contain;max-width:100%;padding:4px 2px 10px;margin:10px 0;scrollbar-width:thin}
+#dudu-world-creator .vg-tabs button{flex:0 0 auto;font-size:11px;padding:8px 10px;min-height:40px}
+#dudu-world-creator .vg-tabs [aria-current=page]{color:#ffe6b1;border-color:#d8bc80;background:#3b314e}
+#dudu-world-creator .vg-field{display:flex;flex-direction:column;gap:5px;margin:10px 0;font-size:12px}
+#dudu-world-creator .vg-field>label{color:#d3c7e4}
+#dudu-world-creator input,#dudu-world-creator textarea,#dudu-world-creator select{width:100%;padding:10px;min-height:44px;border-color:#5b5473}
+#dudu-world-creator textarea{resize:vertical;line-height:1.6}
+#dudu-world-creator .vg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:0 12px}
+#dudu-world-creator .vg-card{padding:11px;border:1px solid #504865;border-radius:10px;margin:11px 0;background:#151c32}
+#dudu-world-creator .vg-id{font:10px/1.6 ui-monospace,monospace;color:#b0bad3;display:block;overflow-wrap:anywhere}
+#dudu-world-creator .vg-message{color:#ffe2a2;font-size:12px;min-height:20px}
+#dudu-world-creator .vg-checks ul{padding-left:18px;font-size:11px}
+#dudu-world-creator .vg-checks li{margin:8px 0}
+#dudu-world-creator .vg-local-list{display:grid;gap:6px;margin-top:8px}
+#dudu-world-creator .vg-preview{padding:16px;border:1px solid #8d779d;border-radius:12px;background:#151d34;margin-top:12px}
+#dudu-world-creator .vg-preview-seal{font-size:9px;letter-spacing:.08em;color:#d7b77c}
+#dudu-world-creator .vg-art-empty{display:grid;place-items:center;aspect-ratio:16/9;border:1px dashed #7a6b89;border-radius:9px;color:#bcb3ce;font-size:11px;text-align:center;padding:12px;background:#10182a}
+@media(max-width:360px){#dudu-world-creator h2{font-size:20px}#dudu-world-creator .vg-actions button{flex:1 1 95px;padding:8px}#dudu-world-creator .vg-card{padding:8px}}

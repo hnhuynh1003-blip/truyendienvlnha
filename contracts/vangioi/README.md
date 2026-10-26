@@ -12,6 +12,8 @@ Giai đoạn 1A, ngày 26/10/2026. Chỉ nhập và kiểm tra hồ sơ ở loca
 
 Đợt 1E đã lên main tại `4c63061` với CI/Pages SUCCESS. Đợt 1F thêm intake version/payload nguồn/PNG, quyền dùng theo world, thu hồi và đọc riêng tư: [REGISTRY_INTAKE_G1F.md](REGISTRY_INTAKE_G1F.md). Chưa nối Firestore/object storage hoặc backend live.
 
+Đợt 1F đã lên main tại `5e01681` với CI/Pages SUCCESS. Đợt 1G thêm World Creator trong Chủ Thần AU, lưu nháp thiết bị theo UID và kiểm nội dung chung: [CREATOR_UI_G1G.md](CREATOR_UI_G1G.md). Chưa nối backend hoặc gửi duyệt thật.
+
 ## Nguồn và quy tắc làm việc
 
 - Mã nền được đối chiếu tại `1f2fdb14074d99cd1a1542f334175c946c412f49` trên `main`.
