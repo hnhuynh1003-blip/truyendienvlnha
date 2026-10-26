@@ -75,3 +75,7 @@ python -m unittest discover -s contracts/vangioi/source-v0.1 -p 'test_*.py' -v
 - Bộ V0.1 nguyên gốc có thể có lỗ hổng ngoài các ca regression; wrapper kiểm schema trước khi gọi semantic. Reachability gốc chỉ là đồ thị cảnh bỏ qua điều kiện, chưa phải chứng minh mọi profile hoàn thành được. PASS không chứng minh bản quyền, lore, độ khó, ảnh đẹp, budget hoặc an toàn runtime.
 
 Rollback source: hoàn nguyên commit chỉ thêm contracts/tools và dòng bàn giao. Không có migration hoặc dữ liệu người dùng cần khôi phục.
+
+## Giai đoạn 1K — HTTP adapter cục bộ
+
+Xem [AUTHORING_HTTP_G1K.md](AUTHORING_HTTP_G1K.md): Request/Response → SQL service thật, entitlement/scope/revision/snapshot và đọc hồ sơ reviewer độc lập. 13 integration tests; chưa import Worker live hoặc kết nối Creator, chưa quyết định duyệt/phát hành.

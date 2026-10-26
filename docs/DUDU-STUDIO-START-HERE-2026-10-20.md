@@ -1,5 +1,13 @@
 # DUDU Studio — START HERE / Bàn giao sạch · 20/10/2026
 
+## VẠN GIỚI Giai đoạn 1K — 26/10/2026
+
+Nền `1177a55` (1J, CI/Pages SUCCESS). Đọc `contracts/vangioi/AUTHORING_HTTP_G1K.md`. Adapter HTTP độc lập ghép SQL authoring/provisioning: tạo world có entitlement, đọc/lưu theo scope/revision, đặt/thu hồi collaborator, submit snapshot và reviewer độc lập đọc đúng bản gửi. Origin HTTPS allowlist chính xác, Bearer Firebase trước đọc stream; byte cap 2 MiB trước parse/UTF-8 strict, metadata/path injection bị chặn, lỗi kín/no-store. Quyền và atomic receipt/audit tiếp tục do service kiểm ở commit.
+
+13 integration tests Request/Response + SQLite thật/validator semantic-2, dữ liệu tổng hợp, kiểm scope/revoke/replay/rollback/grant/reviewer/bytes/CORS. 481 test ứng dụng + 367 Worker/helper PASS cục bộ; CI/Pages theo SHA GitHub đợt này. Không đổi frontend/validator version; Creator vẫn ở Vạn Giới và local-only, Chủ Thần riêng chủ dự án/AI.
+
+Chưa quyết định approve/reject/reopen, chưa nối Worker live/DO/route/binding/migration, chưa kết nối nút gửi duyệt hoặc cấp tài khoản/quyền thật. Tiếp: review lifecycle có snapshot pin, quyền độc lập và receipt/audit; rồi host/client integration. Kế hoạch deployment phải xử lý topology registry/grants/revoke, issuer, rate limits, migration/rollback và duyệt production riêng; không bật gameplay/48 seed/thưởng/AI hoặc thay auth/Thiên Mệnh/EPUB/NPC/save/kho/EXP/Canon/pool.
+
 ## VẠN GIỚI Giai đoạn 1J — 26/10/2026
 
 Nền `4ab2a6b` (1I, CI/Pages SUCCESS). Đọc `contracts/vangioi/CREATOR_SHOPS_G1J.md`. Vạn Giới có form Cửa hàng: nơi mở/NPC/tiền loại currency, stock giá/số lượng nguyên không âm; khai acquisition qua shop bằng thao tác rõ ràng, không tạo liên kết lặp. Xóa/đổi dòng hàng cuối hoặc shop còn được dùng bị chặn; duplicate import có thể sửa giữ đúng liên kết.
