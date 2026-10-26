@@ -41,3 +41,8 @@
 #dudu-world-creator .vg-preview-seal{font-size:9px;letter-spacing:.08em;color:#d7b77c}
 #dudu-world-creator .vg-art-empty{display:grid;place-items:center;aspect-ratio:16/9;border:1px dashed #7a6b89;border-radius:9px;color:#bcb3ce;font-size:11px;text-align:center;padding:12px;background:#10182a}
 @media(max-width:360px){#dudu-world-creator h2{font-size:20px}#dudu-world-creator .vg-actions button{flex:1 1 95px;padding:8px}#dudu-world-creator .vg-card{padding:8px}}
+#dudu-world-creator .vg-toggle{display:flex;align-items:flex-start;gap:9px;line-height:1.5;margin:12px 0;cursor:pointer;font-size:12px;color:#d3c7e4}
+#dudu-world-creator .vg-toggle input{width:18px;height:18px;min-height:18px;margin:1px 0 0;flex:0 0 18px;accent-color:#bc98df}
+#dudu-world-creator .vg-levels{border:1px solid #504865;border-radius:9px;margin:12px 0;padding:8px 12px}
+#dudu-world-creator .vg-levels legend{color:#c9bbdd;font-size:12px}
+#dudu-world-creator .vg-card>.vg-card{border-left:2px solid #9477b1;background:#10192c}

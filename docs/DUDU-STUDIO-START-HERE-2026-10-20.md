@@ -1,5 +1,13 @@
 # DUDU Studio — START HERE / Bàn giao sạch · 20/10/2026
 
+## VẠN GIỚI Giai đoạn 1H — 26/10/2026
+
+Nền `08537c8` (G1G.1, CI/Pages SUCCESS). Đọc `contracts/vangioi/CREATOR_FORMS_G1H.md`. Creator vẫn ở **Vạn Giới → Tạo / nhập thế giới**, tách khỏi Chủ Thần riêng của chủ dự án. Thêm form vai nhập ba mode, cast/NPC/tri thức/hội thoại phân nhánh, vật phẩm/cách nhận, view/hotspot, objectives theo đúng loại đích, rewards đề nghị, events/endings. Rank và AI/reward đều chỉ khai báo nháp, không cấp quyền hoặc gọi AI.
+
+Liên kết scene-view/pickup giữ ID; xóa mục còn được tham chiếu bị chặn, không xóa dây chuyền. Nháp cũ được chuẩn bị collection trống trong bộ nhớ, giữ field/prose đã có và chỉ ghi khi người dùng lưu. Numeric schema vẫn chặn dữ liệu sai; lỗi chỉ ra vấn đề nhập vai/AI/nhiệm vụ/nhặt đồ. Luồng browser soạn bằng form đã PASS cấu trúc mà không chèn JSON model hoàn chỉnh, kiểm ba mode/tám verb/đối thoại/pickup/đóng mở và account isolation. 481 test ứng dụng + 339 test Worker/helper PASS cục bộ; CI/Pages cần xác minh theo SHA GitHub đợt này.
+
+Chưa visual/sprite/crop/shop form đầy đủ, art/source picker thật, upload hoặc cloud sync/review/backend route/binding/migration/deploy. Không bật WORLD_PLAY/48 seed, AI provider hoặc thưởng thật; giữ auth/Thiên Mệnh/NPC/EPUB/save/kho/EXP/pool/Canon. Tiếp: visual/nguồn và kiểm tra kịch bản sâu; deployment backend thật cần kế hoạch/duyệt riêng.
+
 ## VẠN GIỚI G1G.1 — Sửa vị trí Creator theo chủ dự án · 26/10/2026
 
 **Chỉ dẫn mới nhất:** Chủ Thần là khu riêng của chủ dự án, dành cho AI điều phối; tạo/nhập thế giới phải vào **Vạn Giới**. Bản G1G đặt Creator vào Chủ Thần là sai vị trí, không kế thừa cách gộp đó.

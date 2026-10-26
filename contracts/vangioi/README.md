@@ -16,6 +16,8 @@ Giai đoạn 1A, ngày 26/10/2026. Chỉ nhập và kiểm tra hồ sơ ở loca
 
 **Sửa G1G.1 theo chủ dự án:** Creator chuyển sang **Vạn Giới → Tạo / nhập thế giới**; Chủ Thần dành riêng cho chủ dự án và AI điều phối. Không đặt công cụ viết truyện trong Core. Xem phần G1G.1 của [CREATOR_UI_G1G.md](CREATOR_UI_G1G.md); nháp G1G cũ được giữ nguyên.
 
+Đợt G1G.1 đã lên main tại `08537c8`, CI/Pages SUCCESS. Đợt 1H bổ sung các form vai nhập/NPC/vật phẩm/objectives/events/endings và góc nhìn/tương tác: [CREATOR_FORMS_G1H.md](CREATOR_FORMS_G1H.md). Vẫn soạn tại Vạn Giới, lưu trên thiết bị, chưa gửi duyệt thật.
+
 ## Nguồn và quy tắc làm việc
 
 - Mã nền được đối chiếu tại `1f2fdb14074d99cd1a1542f334175c946c412f49` trên `main`.

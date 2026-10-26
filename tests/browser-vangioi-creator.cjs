@@ -153,6 +153,7 @@ const firebase=require('./fixtures/creator-firebase.cjs');
   await editor.getByRole('button',{name:'Thông tin',exact:true}).click();
   assert.equal(await editor.getByLabel('Tên tiểu thế giới',{exact:true}).inputValue(),'Một căn phòng');
   assert.equal(await editor.getByLabel('Sự thật ẩn · chỉ dành cho tác giả',{exact:true}).inputValue(),secret);
+  await require('./fixtures/creator-structured.cjs')({page,editor,secret});
   // Save failure keeps content; no fake success and no external fallback writes.
   await editor.getByLabel('Tên tiểu thế giới',{exact:true}).fill('Chưa lưu do lỗi');
   await page.evaluate(()=>{IDBObjectStore.prototype.put=function(){throw Error('Synthetic quota failure');};});
