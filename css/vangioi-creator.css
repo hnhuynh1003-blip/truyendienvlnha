@@ -1,4 +1,10 @@
-/* Scoped to Creator within the existing AU phone app. */
+/* Creator belongs to the Van Gioi page, never the owner AI phone console. */
+.vg-creator-dialog{box-sizing:border-box;width:min(1060px,calc(100vw - 24px));max-width:none;max-height:calc(100dvh - 28px);padding:22px;border:1px solid #8b759e;border-radius:16px;background:#111b31;color:#f2edf9;overflow-y:auto;overscroll-behavior:contain;box-shadow:0 20px 80px #0009}
+.vg-creator-dialog::backdrop{background:#060b18d9}
+.vg-dialog-content{width:100%;min-width:0}
+#d60-worlds .d60-world-creator-actions{margin:0 0 20px}
+#d60-worlds .d60-world-creator-actions [hidden]{display:none}
+@media(max-width:600px){.vg-creator-dialog{width:calc(100vw - 12px);max-height:calc(100dvh - 12px);padding:13px;border-radius:12px}}
 #dudu-world-creator{--vg-ink:#f2edf9;--vg-muted:#b7bed7;--vg-line:#73658d;box-sizing:border-box;min-width:0;width:100%;color:var(--vg-ink);font:13px/1.6 system-ui,sans-serif;padding:4px 0 20px;overflow-wrap:anywhere}
 #dudu-world-creator *{box-sizing:border-box;min-width:0}
 #dudu-world-creator h2{font:600 23px/1.3 Georgia,serif;margin:10px 0;color:#f5dfb7}

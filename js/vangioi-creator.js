@@ -1,15 +1,17 @@
-/* World Creator G1G. Local draft editing only; server rights/submit stay closed. */
+/* World Creator G1G.1 — Vạn Giới authoring, independent from owner AI Core. Local draft editing only; server rights/submit stay closed. */
 (function(root){
  'use strict';
  const doc=root.document,V=root.DuduWorldValidation;
  if(!doc||!V)return;
  let owner=null,model=null,localId=null,dirty=false,serial=0,epoch=0,host=null,tab='overview',dbPromise=null;
- let report=null,jsonPending=false,jsonText='',counter=0,saving=false;
+ let report=null,jsonPending=false,jsonText='',counter=0,saving=false,dialog=null,returnFocus=null;
  const $=id=>doc.getElementById(id);
  const h=(tag,cl,text)=>{const n=doc.createElement(tag);if(cl)n.className=cl;if(text!==undefined)n.textContent=String(text);return n;};
  const button=(label,fn,cl='')=>{const n=h('button',cl,label);n.type='button';n.addEventListener('click',()=>{if(access())fn();});return n;};
  const currentUid=()=>root.DuduAuth?.isReady?.()===true?root.DuduAuth.uid():null;
- const permitted=()=>!!currentUid()&&root.DuduSystemAppsV69?.isAuthor?.()===true;
+ // Existing verified author permission, independent from the owner's AI console.
+ const permitted=()=>!!currentUid()&&root.DuduAuth?.isAdmin?.()===true&&
+  typeof canEditStories==='function'&&canEditStories()===true;
  const makeId=prefix=>prefix+'-'+root.crypto.randomUUID();
  const fresh=()=>({schemaVersion:'world-content-1',contentVersion:'1.0.0',story:{},maps:[],places:[],scenes:[],assets:[],missions:[]});
  const arr=key=>model[key]||[];
@@ -17,7 +19,7 @@
  function syncAccess(){
   const next=currentUid();
   if(!permitted()||next!==owner){
-   if(host?.isConnected)host.replaceChildren();
+   close();
    host=null;owner=permitted()?next:null;model=null;localId=null;dirty=false;report=null;
    jsonPending=false;jsonText='';tab='overview';serial++;epoch++;saving=false;
   }
@@ -248,7 +250,7 @@
   if(!host?.isConnected||!access())return;
   counter=0;host.replaceChildren();
   const app=h('section','vg-editor');app.id='dudu-world-creator';app.setAttribute('aria-label','World Creator');
-  const header=h('div','vg-header');header.append(button('‹ Chủ Thần AU',()=>root.DuduSystemAppsV69.renderCore(),'vg-quiet'),
+  const header=h('div','vg-header');header.append(button('‹ Vạn Giới',close,'vg-quiet'),
    h('div','vg-kicker','DUDU STUDIO / WORLD CREATOR'),h('h2','','Xây một tiểu thế giới'));
   const state=h('p','vg-state',dirty?'Có thay đổi chưa lưu':localId?'Đã lưu trên thiết bị · Chưa đồng bộ':'Nháp mới trên thiết bị');state.id='vg-save-state';
   header.append(state);app.append(header);
@@ -271,11 +273,28 @@
   const result=h('details','vg-checks');result.open=!!report;result.append(h('summary','','Kiểm tra nội dung'));
   const reportBox=h('div');reportBox.id='vg-report';result.append(reportBox);app.append(result);host.append(app);renderReport();
  }
- function mount(target){
-  syncAccess();if(!permitted()||!target)return false;
-  owner=currentUid();host=target;if(!model){model=fresh();localId=null;dirty=false;}
-  render();return true;
+ function close(){
+  if(dialog){if(dialog.open&&typeof dialog.close==='function')dialog.close();dialog.remove();dialog=null;}
+  host=null;
+  if(returnFocus?.isConnected&&permitted())returnFocus.focus({preventScroll:true});
+  returnFocus=null;
  }
- root.DuduWorldCreator=Object.freeze({mount,syncAccess,version:'G1G',backendConnected:false});
+ function open(){
+  syncAccess();if(!permitted())return false;
+  root.DuduSiteV60?.navigate?.('worlds');
+  if(!dialog){
+   returnFocus=doc.activeElement;
+   dialog=h('dialog','vg-creator-dialog');dialog.id='vg-creator-dialog';
+   dialog.setAttribute('aria-label','Soạn thế giới tại Vạn Giới');
+   dialog.addEventListener('cancel',e=>{e.preventDefault();close();});
+   host=h('div','vg-dialog-content');dialog.append(host);doc.body.append(dialog);
+  }
+  owner=currentUid();if(!model){model=fresh();localId=null;dirty=false;}
+  if(typeof dialog.showModal==='function'){if(!dialog.open)dialog.showModal();}
+  else{dialog.setAttribute('open','');dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');}
+  render();host?.querySelector('button')?.focus({preventScroll:true});return true;
+ }
+ root.DuduWorldCreator=Object.freeze({open,close,syncAccess,version:'G1G.1',backendConnected:false});
  doc.addEventListener('visibilitychange',syncAccess);root.addEventListener('pageshow',syncAccess);
+ root.addEventListener('hashchange',()=>{if(dialog&&root.location.hash!=='#/worlds')close();});
 })(window);

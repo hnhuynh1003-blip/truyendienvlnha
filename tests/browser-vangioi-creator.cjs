@@ -33,19 +33,38 @@ const firebase=require('./fixtures/creator-firebase.cjs');
   await page.goto(base+'/',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>!!window.DuduWorldCreator&&!!window.DuduSystemAppsV69&&!!window.DuduAuth);
   assert.equal(await page.evaluate(()=>IS_SANDBOX_MODE),false);
-  assert.equal(await page.evaluate(()=>DuduWorldCreator.mount(document.getElementById('dudu-v69-core-view'))),false);
+  assert.equal(await page.evaluate(()=>DuduWorldCreator.open()),false);
   await page.evaluate(()=>__creatorLogin('creator-reader',false));
-  assert.equal(await page.evaluate(()=>DuduSystemAppsV69.isAuthor()),false);
+  assert.equal(await page.evaluate(()=>DuduWorldCreator.open()),false);
+  await page.evaluate(()=>DuduSiteV60.navigate('worlds'));
+  assert.equal(await page.locator('#d60-world-creator-launch').isVisible(),false);
   await page.evaluate(()=>__creatorLogin('creator-owner-a',true));
-  await page.waitForFunction(()=>DuduSystemAppsV69.isAuthor());
+  await page.waitForFunction(()=>DuduAuth.isReady()&&canEditStories());
+  await page.evaluate(()=>DuduSystemAppsV69.renderCore());
+  assert.equal(await page.locator('#dudu-v69-core-view').getByRole('button',{name:'MỞ BẢN SOẠN WORLD',exact:true}).count(),0);
+  // World authoring must work with no owner AI console API installed.
+  await page.evaluate(()=>{window.DuduSystemAppsV69=undefined;});
   const launch=async()=>{
-   await page.evaluate(()=>{if(document.getElementById('cyber-phone').style.display!=='flex')togglePhone();openPhoneApp('core-console');});
-   await page.getByRole('button',{name:'MỞ BẢN SOẠN WORLD',exact:true}).click();
+   await page.evaluate(()=>DuduSiteV60.navigate('worlds'));
+   await page.locator('#d60-world-creator-launch').click();
    await page.locator('#dudu-world-creator').waitFor();
   };
+  await page.evaluate(()=>new Promise((resolve,reject)=>{
+   const r=indexedDB.open('dudu-vangioi-creator-local-1',1);
+   r.onupgradeneeded=()=>{const s=r.result.createObjectStore('drafts',{keyPath:['uid','localId']});s.createIndex('owner','uid');};
+   r.onerror=()=>reject(r.error);r.onsuccess=()=>{const tx=r.result.transaction('drafts','readwrite');
+    tx.objectStore('drafts').put({format:'creator-local-1',uid:'creator-owner-a',localId:'draft-g1g-existing',updatedAt:1,
+     content:{schemaVersion:'world-content-1',title:'Nháp cũ G1G',story:{secretTruth:'PRIOR_LOCAL_DRAFT'}}});
+    tx.oncomplete=()=>{r.result.close();resolve();};tx.onerror=()=>reject(tx.error);};
+  }));
   await launch();
   const editor=page.locator('#dudu-world-creator');
   assert.equal(await editor.getByRole('button',{name:'Gửi duyệt',exact:true}).isDisabled(),true);
+  await editor.locator('.vg-files summary').click();
+  await editor.getByRole('button',{name:'Mở nháp đã lưu',exact:true}).click();
+  await editor.locator('#vg-local-list').getByRole('button',{name:'Nháp cũ G1G',exact:true}).click();
+  await page.waitForFunction(()=>document.getElementById('vg-message')?.textContent.includes('Đã mở bản nháp'));
+  assert.equal(await editor.getByLabel('Sự thật ẩn · chỉ dành cho tác giả',{exact:true}).inputValue(),'PRIOR_LOCAL_DRAFT');
   const secret='CREATOR_PRIVATE_A';
   await editor.getByLabel('Tên tiểu thế giới',{exact:true}).fill('Một căn phòng');
   await editor.getByLabel('Thể loại',{exact:true}).selectOption('era');
@@ -94,13 +113,18 @@ const firebase=require('./fixtures/creator-firebase.cjs');
    fs.mkdirSync(process.env.CREATOR_QA_DIR,{recursive:true});
    for(const width of [390,1280]){
     await page.setViewportSize({width,height:900});
-    await page.evaluate(()=>document.getElementById('dudu-v69-core-view').scrollTop=0);
-    await page.locator('#cyber-phone').screenshot({path:path.join(process.env.CREATOR_QA_DIR,'creator-'+width+'.png')});
+    await page.evaluate(()=>document.getElementById('vg-creator-dialog').scrollTop=0);
+    await page.locator('#vg-creator-dialog').screenshot({path:path.join(process.env.CREATOR_QA_DIR,'creator-'+width+'.png')});
    }
   }
-  // Returning through the AU shell keeps the in-session draft.
-  await editor.getByRole('button',{name:'‹ Chủ Thần AU',exact:true}).click();
-  await page.getByRole('button',{name:'MỞ BẢN SOẠN WORLD',exact:true}).click();
+  // Returning to Van Gioi keeps the in-session draft, without opening Core.
+  await editor.getByRole('button',{name:'‹ Vạn Giới',exact:true}).click();
+  await page.locator('#d60-world-creator-launch').click();
+  assert.equal(await editor.getByLabel('Sự thật ẩn · chỉ dành cho tác giả',{exact:true}).inputValue(),secret);
+  await page.keyboard.press('Escape');
+  assert.equal(await page.locator('#vg-creator-dialog').count(),0);
+  assert.equal(await page.evaluate(()=>document.activeElement.id),'d60-world-creator-launch');
+  await page.locator('#d60-world-creator-launch').click();
   assert.equal(await editor.getByLabel('Sự thật ẩn · chỉ dành cho tác giả',{exact:true}).inputValue(),secret);
   // UID swap clears old DOM, old memory and filters local IndexedDB ownership.
   await page.evaluate(()=>__creatorLogin('creator-owner-b',true));
@@ -137,9 +161,9 @@ const firebase=require('./fixtures/creator-firebase.cjs');
   assert.match(await editor.locator('#vg-save-state').innerText(),/chưa lưu/);
   await page.evaluate(()=>__creatorLogin(null));
   assert.equal(await page.locator('#dudu-world-creator').count(),0);
-  assert.equal(await page.evaluate(()=>DuduWorldCreator.mount(document.getElementById('dudu-v69-core-view'))),false);
+  assert.equal(await page.evaluate(()=>DuduWorldCreator.open()),false);
   assert.deepEqual(await page.evaluate(()=>__creatorWrites),[]);assert.deepEqual(networkWrites,[]);assert.deepEqual(errors,[]);
-  console.log('PASS Creator main UI: forms, local storage, import/export, private UID isolation, raw JSON, quota failure, 320–1280px; no live writes');
+  console.log('PASS Creator at Van Gioi (no Core API), pre-existing G1G draft preserved: forms, local storage, import/export, private UID isolation, raw JSON, quota failure, 320–1280px; no live writes');
  }catch(error){
   if(process.env.CREATOR_QA_DIR&&page){fs.mkdirSync(process.env.CREATOR_QA_DIR,{recursive:true});await page.screenshot({path:path.join(process.env.CREATOR_QA_DIR,'creator-failure.png'),fullPage:true});}
   throw error;

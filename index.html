@@ -770,7 +770,7 @@
   <link rel="stylesheet" href="css/dudu-messenger-v67-2.css?v=69-restore-1">
   <link rel="stylesheet" href="css/dudu-steward-v67-3.css?v=67-3">
   <link rel="stylesheet" href="css/dudu-system-app-v69.css?v=71-hud-11">
-  <link rel="stylesheet" href="css/vangioi-creator.css?v=1g-1">
+  <link rel="stylesheet" href="css/vangioi-creator.css?v=1g-2">
 </head>
 <body>
 
@@ -2698,6 +2698,7 @@
     }
 
     function applyUserRole() {
+      window.DuduWorldCreator?.syncAccess?.();
       const btn = document.getElementById('role-toggle-btn');
       if (canEditStories()) {
         document.body.classList.remove('is-reader');
@@ -2723,6 +2724,7 @@
       applyUserRole();
       saveCurrentAccount();
       window.DuduSystemAppsV69?.syncAccess?.();
+      window.DuduWorldCreator?.syncAccess?.();
       window.DuduSiteV60?.refresh?.(); // Keep Author Studio entry in sync with Sandbox role.
     }
 
@@ -7512,7 +7514,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/world-registry-v63.js?v=63-1"></script>
 <script src="js/world-taxonomy-v66.js?v=66-2"></script>
 <script src="js/world-blueprint-v66.js?v=66-1"></script>
-<script src="js/site-shell-v60.js?v=play-v8"></script>
+<script src="js/site-shell-v60.js?v=play-v8-creator"></script>
 <script src="js/world-experience-v66.js?v=66-2"></script>
 <script src="js/dudu-core-rules-v1.js?v=1"></script>
 <script src="js/dudu-story-engine-v1.js?v=play-v8"></script>
@@ -7526,8 +7528,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/dudu-system-client-v71.js?v=71-2"></script>
 <script src="js/dudu-core-ai-v70.js?v=70-3"></script>
 <script src="js/vangioi-creator-validation.js?v=1g-1"></script>
-<script src="js/vangioi-creator.js?v=1g-1"></script>
-<script src="js/dudu-system-app-v69.js?v=71-main-12"></script>
+<script src="js/vangioi-creator.js?v=1g-2"></script>
+<script src="js/dudu-system-app-v69.js?v=71-main-13"></script>
 <script src="js/dudu-character-name-v71.js?v=71-1"></script>
 <script src="js/phone-app-contract-v67.js?v=69-1"></script>
 <script src="js/phone-lifecycle-v67-1.js?v=67-1-2"></script>

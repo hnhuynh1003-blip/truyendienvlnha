@@ -14,6 +14,8 @@ Giai đoạn 1A, ngày 26/10/2026. Chỉ nhập và kiểm tra hồ sơ ở loca
 
 Đợt 1F đã lên main tại `5e01681` với CI/Pages SUCCESS. Đợt 1G thêm World Creator trong Chủ Thần AU, lưu nháp thiết bị theo UID và kiểm nội dung chung: [CREATOR_UI_G1G.md](CREATOR_UI_G1G.md). Chưa nối backend hoặc gửi duyệt thật.
 
+**Sửa G1G.1 theo chủ dự án:** Creator chuyển sang **Vạn Giới → Tạo / nhập thế giới**; Chủ Thần dành riêng cho chủ dự án và AI điều phối. Không đặt công cụ viết truyện trong Core. Xem phần G1G.1 của [CREATOR_UI_G1G.md](CREATOR_UI_G1G.md); nháp G1G cũ được giữ nguyên.
+
 ## Nguồn và quy tắc làm việc
 
 - Mã nền được đối chiếu tại `1f2fdb14074d99cd1a1542f334175c946c412f49` trên `main`.

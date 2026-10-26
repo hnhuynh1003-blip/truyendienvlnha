@@ -1,10 +1,22 @@
-# VẠN GIỚI G1G — World Creator soạn nháp trong Chủ Thần AU
+# VẠN GIỚI G1G — World Creator (đã sửa vị trí ở G1G.1)
 
 Ngày 26/10/2026. Nền `5e01681` (G1F, CI/Pages SUCCESS). Giữ ứng dụng HTML/JS hiện có, không tạo Site, nhánh hoặc ZIP riêng.
 
+## Sửa theo chỉ dẫn chủ dự án — G1G.1
+
+Chủ dự án xác nhận: **Chủ Thần là khu riêng của chủ dự án dành cho AI điều phối; tác giả tạo/nhập thế giới tại Vạn Giới.** G1G đã đặt Creator sai vào Chủ Thần AU. Bản G1G.1 bỏ launcher đó và chuyển sang **Vạn Giới → Tạo / nhập thế giới**, mở dialog riêng của trang, nút quay lại Vạn Giới. Không dùng phone/Core làm nơi chứa trình soạn world.
+
+Creator không còn tham chiếu DuduSystemAppsV69 hoặc quyền console Chủ Thần; dùng gate tác giả đã xác thực hiện hành. Đồng bộ đổi tài khoản gọi từ applyUserRole, không phụ thuộc module Core. Hiện role tác giả legacy vẫn là Firebase admin + canEditStories; đây không phải thiết kế cuối của AU entitlement, và không có cấp quyền AU/backend mới trong bản sửa.
+
+Console Chủ Thần giữ giao diện chỉ thị AI cũ, không tạo world hoặc viết truyện. API AI hiện có vẫn kiểm admin + UID allowlist ở server và cờ bật của chủ dự án; không bật DeepSeek, thêm tự thực thi hoặc coi mọi AU là chủ dự án. Shell UI legacy vẫn có gate admin; việc mở rộng role AU phải giữ khả năng riêng của owner ở server, không lấy quyền soạn world làm quyền AI quản trị. Không hardcode UID thật vào repo công khai.
+
+Tên IndexedDB, key [uid,localId], format wrapper và nội dung nháp G1G giữ nguyên: mở được nháp đã lưu trước khi chuyển vị trí, không migration/xóa/nhân bản. Đóng dialog/Escape giữ model trong phiên cùng UID; đổi UID/logout đóng và gỡ dialog, xóa model cũ ngay. Tạo/nhập/sửa/lưu/kiểm tra vẫn không kết nối server.
+
+Browser acceptance nay vào từ Vạn Giới, không mở phone/Core; thử loại bỏ hẳn DuduSystemAppsV69 khỏi runtime rồi vẫn soạn/save/đổi UID an toàn. Seed nháp G1G cũ được mở lại đúng bí mật/nội dung; responsive 320–1280px và regression main System/auth vẫn PASS. CI/Pages theo commit bản sửa. Nguyên tắc vị trí ở đoạn này thay thế mô tả triển khai ban đầu bên dưới.
+
 ## Trải nghiệm hiện có
 
-Đăng nhập tài khoản AU đủ điều kiện hiện hành → Chủ Thần AU → MỞ BẢN SOẠN WORLD. Launcher và mount dùng đúng gate `DuduSystemAppsV69.isAuthor()` (Firebase ready + admin + canEditStories); không biến profile role hoặc client claim thành quyền backend Vạn Giới. Chức năng AI/Core cũ vẫn ở màn Chủ Thần AU và không được Creator gọi.
+Đăng nhập tài khoản tác giả đủ điều kiện hiện hành → Vạn Giới → Tạo / nhập thế giới. Launcher và open dùng gate tác giả (Firebase ready + admin + canEditStories); không biến profile role hoặc client claim thành quyền backend Vạn Giới. Chức năng AI/Core cũ vẫn ở màn Chủ Thần AU và không được Creator gọi.
 
 | Mục | Đã triển khai |
 |---|---|
@@ -24,7 +36,7 @@ Bậc S đề nghị không thành bậc chính thức. Không thêm quota scene
 
 Dữ liệu local là nháp chưa tin cậy, không phải sở hữu world đã được server xác thực. UI gate và UID scope bảo vệ luồng sử dụng thông thường, không thay thế quyền backend hoặc mã hóa ổ đĩa; chưa có đồng bộ/backup cloud. Xóa dữ liệu trình duyệt có thể mất nháp, xuất JSON là thao tác giữ bản sao của tác giả. Tệp export có cả bí mật Story Bible và giao diện nhắc rõ tại lúc xuất.
 
-Đổi UID, mất ready/admin hoặc đăng xuất: `syncAccess` xóa ngay model/DOM/JSON tạm của tài khoản trước, không xóa các bản đã lưu của UID đó. Mở lại app cùng UID giữ nháp trong phiên. Đọc/mở/save async kiểm lại UID và epoch trước khi cập nhật UI. Save chụp model tại lúc bấm; thay đổi trong lúc lưu vẫn được báo chưa lưu. Mở nháp không thay model nếu đã sửa trong gap đọc. Nếu IDB lỗi/quota, vẫn giữ bản trong phiên và báo thất bại, không fallback ghi lên mạng. Dữ liệu đã lưu luôn được parse/schema lại trước khi mở; không tin wrapper từ file import.
+Đổi UID, mất ready/admin hoặc đăng xuất: `syncAccess` xóa ngay model/DOM/JSON tạm của tài khoản trước, không xóa các bản đã lưu của UID đó. Mở lại dialog cùng UID giữ nháp trong phiên. Đọc/mở/save async kiểm lại UID và epoch trước khi cập nhật UI. Save chụp model tại lúc bấm; thay đổi trong lúc lưu vẫn được báo chưa lưu. Mở nháp không thay model nếu đã sửa trong gap đọc. Nếu IDB lỗi/quota, vẫn giữ bản trong phiên và báo thất bại, không fallback ghi lên mạng. Dữ liệu đã lưu luôn được parse/schema lại trước khi mở; không tin wrapper từ file import.
 
 ## Validator dùng chung
 

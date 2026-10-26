@@ -1,5 +1,13 @@
 # DUDU Studio — START HERE / Bàn giao sạch · 20/10/2026
 
+## VẠN GIỚI G1G.1 — Sửa vị trí Creator theo chủ dự án · 26/10/2026
+
+**Chỉ dẫn mới nhất:** Chủ Thần là khu riêng của chủ dự án, dành cho AI điều phối; tạo/nhập thế giới phải vào **Vạn Giới**. Bản G1G đặt Creator vào Chủ Thần là sai vị trí, không kế thừa cách gộp đó.
+
+Nền `8db9d90` (G1G, CI/Pages SUCCESS). Đã bỏ launcher Creator khỏi renderCore, thêm **Vạn Giới → Tạo / nhập thế giới**, dialog riêng có quay lại/Escape. Creator không dùng DuduSystemAppsV69; gate tác giả hiện có và hook đổi UID tách khỏi Core. Không sửa AI, entitlement hoặc backend owner allowlist; không bật AI tự thực thi. Role AU legacy vẫn hạn chế theo gate hiện hành, không tự cấp role mới.
+
+Giữ nguyên DB/format/key nháp G1G, không migration. Browser test mở được nháp cũ, hoạt động khi không có API Core, đóng/mở và đổi hai UID an toàn, layout 320–1280px; 481 test ứng dụng + 339 test Worker/helper PASS. Giữ main System/auth browser regression; CI/Pages kiểm theo commit bản sửa. Đọc phần sửa G1G.1 trong `contracts/vangioi/CREATOR_UI_G1G.md`; giới hạn local-only/backend chưa kết nối vẫn giữ.
+
 ## VẠN GIỚI Giai đoạn 1G — 26/10/2026
 
 Nền `5e01681` (1F, CI/Pages SUCCESS). Đọc `contracts/vangioi/CREATOR_UI_G1G.md`. Creator mở từ Chủ Thần AU theo gate AU hiện có; soạn thông tin/Story Bible, địa điểm/cảnh, tham chiếu nguồn/ảnh, nhiệm vụ chính, JSON nâng cao và preview chữ. Lưu IndexedDB riêng theo UID, mở lại/nhập/xuất JSON; đổi UID/logout xóa model và DOM cũ, không xóa nháp đã lưu. Không ghi Firestore/Worker hoặc tự tạo owner/worldId server.

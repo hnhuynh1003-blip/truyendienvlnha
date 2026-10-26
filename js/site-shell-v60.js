@@ -277,6 +277,9 @@
    const seal=element('span','d64-atlas-seal','Khế ước · F/E');
    atlasHeading.append(seal);
    worlds.append(atlasHeading);
+   const createWorld=button('✎ Tạo / nhập thế giới',()=>window.DuduWorldCreator?.open?.());
+   createWorld.id='d60-world-creator-launch';createWorld.dataset.d60Author='1';createWorld.hidden=!isAuthor();
+   const creatorActions=element('div','d60-world-creator-actions');creatorActions.append(createWorld);worlds.append(creatorActions);
    const worldList=element('div','');worldList.id='d60-worlds-list';worlds.append(worldList);
    const shelf=element('section','d60-page');shelf.id='d60-shelf';
    shelf.append(element('p','d60-kicker','DUDU · CÁ NHÂN'),element('h1','d60-page-title','Tủ sách của tôi'),

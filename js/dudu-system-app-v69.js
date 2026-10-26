@@ -391,10 +391,6 @@
  function renderCore(){
   const host=get('dudu-v69-core-view');if(!host)return false;
   host.replaceChildren();if(!isAuthor())return false;
-  const creator=h('section','dudu-v71-core');
-  creator.append(h('h2','','WORLD CREATOR'),h('p','','Soạn tiểu thế giới, địa điểm và cảnh truyện.'),
-   btn('MỞ BẢN SOẠN WORLD','dudu-v71-main',()=>root.DuduWorldCreator?.mount?.(host)));
-  host.append(creator);
   const section=h('div','dudu-v71-core');
   section.append(h('div','dudu-v71-eyebrow','DUDU · QUẢN TRỊ CHỦ THẦN'),
    h('h2','','CHỦ THẦN'),h('p','',
@@ -422,7 +418,6 @@
   host.append(section);return true;
  }
  function syncAccess(){
-  root.DuduWorldCreator?.syncAccess?.();
   const launch=get('dudu-v69-core-launch');
   if(launch){launch.hidden=!isAuthor();launch.style.display=isAuthor()?'':'none';}
   if(!isAuthor()&&get('phone-app-core-console')?.style.display==='flex')root.phoneHome?.();
