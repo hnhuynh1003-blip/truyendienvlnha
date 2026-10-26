@@ -109,3 +109,5 @@ G1W: [SOURCE_FREEZE_G1W.md](SOURCE_FREEZE_G1W.md) — archive SQL cục bộ b�
 G1X: [SOURCE_NOTICES_G1X.md](SOURCE_NOTICES_G1X.md) — notice operator-only và lớp tạm giữ theo story/hash để chặn intake/read/discovery/submit/review trong SQLite; không tự revoke giấy phép, không có Firestore listener hay route live.
 
 G1Y: [WORLD_RELEASE_GATE_G1Y.md](WORLD_RELEASE_GATE_G1Y.md) — tiền kiểm offline cho world đã approved, xét lại hold/revoke/permit/grant/snapshot/asset trước quyết định phát hành tương lai; không cấp session hoặc bật runtime/live.
+
+G1Z: [ADMISSION_REHEARSAL_G1Z.md](ADMISSION_REHEARSAL_G1Z.md) — diễn tập operator-only bằng ID phiên giả trong RAM, gọi lại cổng G1Y ở các bước release/start/resume/read; không kết nối gameplay hay phát hành thật.

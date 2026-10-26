@@ -16,6 +16,7 @@ import {createV49PrecommitRecheck} from '../src/vangioi-library-precommit.mjs';
 import {createSqlFrozenSourceService} from '../src/vangioi-source-freeze.mjs';
 import {createSqlSourceNoticeService} from '../src/vangioi-source-notices.mjs';
 import {createSqlWorldReleaseGate} from '../src/vangioi-world-release-gate.mjs';
+import {createAdmissionRehearsal} from '../src/vangioi-admission-rehearsal.mjs';
 import {createV49TransactionFixture} from './fixtures/vangioi-firestore-v49.mjs';
 import {content} from './fixtures/vangioi-content.mjs';
 
@@ -1277,4 +1278,143 @@ test('G1Y hold appearing between hash verification and final SQL decision fails 
 test('G1Y world gate stays disconnected from Worker and authoring HTTP routes',()=>{
  for(const file of ['../src/index.mjs','../src/vangioi-authoring-http.mjs'])
   assert.equal(readFileSync(new URL(file,import.meta.url),'utf8').includes('vangioi-world-release-gate'),false);
+});
+
+test('G1Z release candidate, start, resume and source read each check current G1Y rights',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f),rehearsal=createAdmissionRehearsal({releaseGate:createSqlWorldReleaseGate(f.options)});
+  const release=await rehearsal.prepareRelease(req(OP),{worldId:p.w.worldId});
+  assert.equal(release.stage,'release-candidate');assert.equal(release.snapshotHash,p.submitted.snapshotHash);
+  const start=await rehearsal.simulateStart(req(OP),{candidateId:release.candidateId});
+  assert.equal(start.stage,'simulated-start');
+  const resume=await rehearsal.simulateResume(req(OP),{sessionId:start.sessionId});
+  const read=await rehearsal.simulateSourceRead(req(OP),{sessionId:start.sessionId});
+  assert.equal(resume.stage,'simulated-resume');assert.equal(read.stage,'simulated-source-read');
+  assert.equal(JSON.stringify([release,start,resume,read]).includes('PRIVATE_SOURCE_TEXT'),false);
+  assert.equal(JSON.stringify([release,start,resume,read]).includes('SECRET_TRUTH_SENTINEL'),false);
+  assert.equal(f.rows('SELECT draft_state state FROM vg_authoring_worlds_v1')[0].state,'approved');
+ }finally{f.close();}
+});
+
+test('G1Z notice between rehearsal release and start denies start; resolved hold requires a fresh check',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f),gate=createSqlWorldReleaseGate(f.options),rehearsal=createAdmissionRehearsal({releaseGate:gate});
+  const candidate=await rehearsal.prepareRelease(req(OP),{worldId:p.w.worldId});
+  const notices=createSqlSourceNoticeService(f.options),ref=p.s.reference;
+  const n=await notices.openNotice(req(OP),noticeInput(ref.storyId,ref.contentHash));
+  assert.equal((await rehearsal.simulateStart(req(OP),{candidateId:candidate.candidateId})).code,'source-held');
+  assert.equal((await notices.resolveNotice(req(OP),noticeDecision(n.noticeId))).ok,true);
+  assert.equal((await rehearsal.simulateStart(req(OP),{candidateId:candidate.candidateId})).stage,'simulated-start');
+ }finally{f.close();}
+});
+
+test('G1Z notice during a simulated session denies resume and source read, then release resumes',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f),rehearsal=createAdmissionRehearsal({releaseGate:createSqlWorldReleaseGate(f.options)});
+  const candidate=await rehearsal.prepareRelease(req(OP),{worldId:p.w.worldId});
+  const started=await rehearsal.simulateStart(req(OP),{candidateId:candidate.candidateId});
+  const notices=createSqlSourceNoticeService(f.options),ref=p.s.reference;
+  const n=await notices.openNotice(req(OP),noticeInput(ref.storyId,ref.contentHash));
+  assert.equal((await rehearsal.simulateResume(req(OP),{sessionId:started.sessionId})).code,'source-held');
+  assert.equal((await rehearsal.simulateSourceRead(req(OP),{sessionId:started.sessionId})).code,'source-held');
+  assert.equal((await notices.resolveNotice(req(OP),noticeDecision(n.noticeId))).status,'released');
+  assert.equal((await rehearsal.simulateSourceRead(req(OP),{sessionId:started.sessionId})).ok,true);
+ }finally{f.close();}
+});
+
+test('G1Z revoked permit after simulated start blocks every future step, including after notice resolution',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f),rehearsal=createAdmissionRehearsal({releaseGate:createSqlWorldReleaseGate(f.options)});
+  const candidate=await rehearsal.prepareRelease(req(OP),{worldId:p.w.worldId});
+  const started=await rehearsal.simulateStart(req(OP),{candidateId:candidate.candidateId});
+  const notices=createSqlSourceNoticeService(f.options),ref=p.s.reference;
+  const n=await notices.openNotice(req(OP),noticeInput(ref.storyId,ref.contentHash));
+  assert.equal((await f.registry.revokeAdaptationPermit(req(OP),{
+   requestId:crypto.randomUUID(),storyId:ref.storyId,contentHash:ref.contentHash,expectedRevision:1})).ok,true);
+  assert.equal((await notices.resolveNotice(req(OP),noticeDecision(n.noticeId,'confirm_revoke'))).ok,true);
+  assert.equal((await rehearsal.simulateResume(req(OP),{sessionId:started.sessionId})).ok,false);
+  assert.equal((await rehearsal.simulateSourceRead(req(OP),{sessionId:started.sessionId})).ok,false);
+  assert.equal((await rehearsal.simulateStart(req(OP),{candidateId:candidate.candidateId})).ok,false);
+ }finally{f.close();}
+});
+
+test('G1Z asset authority loss and world reopen invalidate existing simulated sessions',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f),rehearsal=createAdmissionRehearsal({releaseGate:createSqlWorldReleaseGate(f.options)});
+  const candidate=await rehearsal.prepareRelease(req(OP),{worldId:p.w.worldId});
+  const started=await rehearsal.simulateStart(req(OP),{candidateId:candidate.candidateId});
+  assert.equal((await f.registry.revokeAssetVersion(req(OP),{
+   requestId:crypto.randomUUID(),reference:p.room.reference,expectedAuthorityRevision:1})).ok,true);
+  assert.equal((await rehearsal.simulateResume(req(OP),{sessionId:started.sessionId})).code,'asset-not-authorized');
+  assert.equal((await f.authoring.reopenDraft(req(),{worldId:p.w.worldId,requestId:crypto.randomUUID(),
+   expectedRevision:2,expectedAccessRevision:1,snapshotHash:p.submitted.snapshotHash})).state,'draft');
+  assert.equal((await rehearsal.simulateResume(req(OP),{sessionId:started.sessionId})).code,'world-not-approved');
+ }finally{f.close();}
+});
+
+test('G1Z previously simulated sessions cannot silently move to a newly approved snapshot',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f),rehearsal=createAdmissionRehearsal({releaseGate:createSqlWorldReleaseGate(f.options)});
+  const candidate=await rehearsal.prepareRelease(req(OP),{worldId:p.w.worldId});
+  const started=await rehearsal.simulateStart(req(OP),{candidateId:candidate.candidateId});
+  assert.equal((await f.authoring.reopenDraft(req(),{worldId:p.w.worldId,requestId:crypto.randomUUID(),
+   expectedRevision:2,expectedAccessRevision:1,snapshotHash:p.submitted.snapshotHash})).state,'draft');
+  assert.equal((await f.authoring.saveDraft(req(),{worldId:p.w.worldId,requestId:crypto.randomUUID(),
+   expectedRevision:3,patch:{title:'New edition approved independently'}})).revision,4);
+  const submitted=await f.authoring.submitDraft(req(),{worldId:p.w.worldId,requestId:crypto.randomUUID(),expectedRevision:4});
+  assert.equal(submitted.ok,true);assert.notEqual(submitted.snapshotHash,p.submitted.snapshotHash);
+  assert.equal((await f.authoring.reviewSubmission(req(p.reviewer),{worldId:p.w.worldId,
+   requestId:crypto.randomUUID(),expectedRevision:4,expectedAccessRevision:1,
+   snapshotHash:submitted.snapshotHash,decision:'approve',note:'New edition approved'})).state,'approved');
+  assert.equal((await rehearsal.simulateResume(req(OP),{sessionId:started.sessionId})).code,'snapshot-conflict');
+  assert.equal((await rehearsal.simulateStart(req(OP),{candidateId:candidate.candidateId})).code,'snapshot-conflict');
+ }finally{f.close();}
+});
+
+test('G1Z never trusts client-provided session/world/rights and never promotes operator status',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f),rehearsal=createAdmissionRehearsal({releaseGate:createSqlWorldReleaseGate(f.options)});
+  assert.equal((await rehearsal.prepareRelease(req(),{worldId:p.w.worldId})).code,'forbidden');
+  assert.equal((await rehearsal.prepareRelease(req('guest'),{worldId:p.w.worldId})).code,'unauthenticated');
+  assert.equal((await rehearsal.prepareRelease(req(OP),{worldId:p.w.worldId,approved:true})).code,'invalid-request');
+  const candidate=await rehearsal.prepareRelease(req(OP),{worldId:p.w.worldId});
+  assert.equal((await rehearsal.simulateStart(req(),{candidateId:candidate.candidateId})).code,'forbidden');
+  assert.equal((await rehearsal.simulateStart(req(OP),{candidateId:candidate.candidateId,worldId:'wrong'})).code,'invalid-request');
+  const session=await rehearsal.simulateStart(req(OP),{candidateId:candidate.candidateId});
+  assert.equal((await rehearsal.simulateResume(req(),{sessionId:session.sessionId})).code,'forbidden');
+  assert.equal((await rehearsal.simulateSourceRead(req(OP),{sessionId:session.sessionId,grantStatus:'active'})).code,'invalid-request');
+  assert.equal((await rehearsal.simulateResume(req(OP),{sessionId:crypto.randomUUID()})).code,'forbidden');
+ }finally{f.close();}
+});
+
+test('G1Z non-permitted legacy source cannot even create a simulated release candidate',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f,{legacy:true}),rehearsal=createAdmissionRehearsal({releaseGate:createSqlWorldReleaseGate(f.options)});
+  assert.equal((await rehearsal.prepareRelease(req(OP),{worldId:p.w.worldId})).code,'permit-untracked');
+ }finally{f.close();}
+});
+
+test('G1Z bounded non-durable handles fail closed when capacity is reached',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f),rehearsal=createAdmissionRehearsal({releaseGate:createSqlWorldReleaseGate(f.options),capacity:1});
+  const c=await rehearsal.prepareRelease(req(OP),{worldId:p.w.worldId});
+  assert.equal(c.ok,true);
+  assert.equal((await rehearsal.prepareRelease(req(OP),{worldId:p.w.worldId})).code,'rehearsal-capacity');
+  const started=await rehearsal.simulateStart(req(OP),{candidateId:c.candidateId});
+  assert.equal(started.ok,true);
+  assert.equal((await rehearsal.simulateStart(req(OP),{candidateId:c.candidateId})).code,'rehearsal-capacity');
+  assert.equal((await rehearsal.simulateResume(req(OP),{sessionId:started.sessionId})).ok,true);
+ }finally{f.close();}
+});
+
+test('G1Z rejects malformed trusted-gate verdicts and never falls back to self-attested publish',async()=>{
+ const rehearsal=createAdmissionRehearsal({releaseGate:{evaluateApprovedWorld:async()=>({
+  ok:true,eligible:true,worldId:'forged',snapshotHash:'a'.repeat(64),gateVersion:'world-release-1'})}});
+ assert.equal((await rehearsal.prepareRelease(req(OP),{worldId:'real-world'})).code,'invalid-gate-verdict');
+ assert.throws(()=>createAdmissionRehearsal({releaseGate:null}),/G1Y gate/);
+});
+
+test('G1Z admission rehearsal has no public Worker, authoring HTTP or production routing imports',()=>{
+ for(const file of ['../src/index.mjs','../src/vangioi-authoring-http.mjs'])
+  assert.equal(readFileSync(new URL(file,import.meta.url),'utf8').includes('vangioi-admission-rehearsal'),false);
 });
