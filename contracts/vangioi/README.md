@@ -97,3 +97,5 @@ G1Q: [LIBRARY_SOURCE_G1Q.md](LIBRARY_SOURCE_G1Q.md) — chuẩn bị nguồn t�
 G1R: [ADAPTATION_PERMITS_G1R.md](ADAPTATION_PERMITS_G1R.md) — permit và thu hồi cùng SQLite; chưa đồng bộ Firestore.
 
 G1S: [SOURCE_STAGING_G1S.md](SOURCE_STAGING_G1S.md) — bộ project nguồn EPUB V49 và contract authority/staging, kiểm thử cô lập với G1Q/G1R/G1F; **chưa có Firestore reader, host staging hoặc transaction xuyên hệ thống**.
+
+G1T: [FIRESTORE_READER_G1T.md](FIRESTORE_READER_G1T.md) — adapter Firestore server-only đọc V49 bằng read-only transaction, fixture/emulator smoke cô lập và kiểm chứng G1Q/G1R; chưa nối Firebase instance thật, production/staging deploy hoặc source picker.

@@ -10,6 +10,8 @@ import {createSqlProvisioningService} from '../src/vangioi-provisioning.mjs';
 import {hashAuthoringJson} from '../src/vangioi-authoring.mjs';
 import {createV49StagingSnapshotReader} from '../src/vangioi-v49-staging-source.mjs';
 import {createLibrarySourcePreparer} from '../src/vangioi-library-source.mjs';
+import {createV49FirestoreTransactionReader} from '../src/vangioi-v49-firestore-reader.mjs';
+import {createV49TransactionFixture} from './fixtures/vangioi-firestore-v49.mjs';
 import {content} from './fixtures/vangioi-content.mjs';
 
 const OWNER='registry-owner',OP='registry-operator',OTHER='registry-other';
@@ -638,5 +640,53 @@ test('G1S source prepared before revocation cannot commit to registry after G1R 
   assert.equal(attempt.ok,false);
   assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_registry_objects_v1')[0].n,0);
   assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_source_versions_v1')[0].n,0);
+ }finally{f.close();}
+});
+
+async function g1tPrepared(f,fire){
+ f.operator();const payload={format:'story-source-1',title:'Staging V49',chapters:[
+  {chapterId:'chapter-0010',title:'First',text:'PRIVATE_FIRST'},
+  {chapterId:'chapter-0002',title:'Second',text:'PRIVATE_SECOND'}]};
+ const hash=await hashAuthoringJson(payload),permit={requestId:crypto.randomUUID(),storyId:fire.storyId,
+  contentHash:hash,authorizedUid:OWNER,license:'licensed',sourceNote:'Synthetic staging permit',proofRef:'private-proof'};
+ assert.equal((await f.registry.issueAdaptationPermit(req(OP),permit)).ok,true);
+ const readSnapshot=createV49StagingSnapshotReader({
+  readV49Snapshot:createV49FirestoreTransactionReader({firestore:fire.firestore}),
+  readAdaptationPermit:({storyId,contentHash})=>f.registry.readAdaptationPermit(req(OP),{storyId,contentHash})
+ });
+ const prepare=createLibrarySourcePreparer({projectId:'truyendienvl',verify:f.options.verify,
+  isOperator:async user=>user===OP,readSnapshot});
+ const plan=await prepare(req(OP),{requestId:crypto.randomUUID(),storyId:fire.storyId,authorizedUid:OWNER});
+ assert.equal(plan.ok,true);assert.deepEqual(plan.registryInput.payload,payload);
+ assert.equal(fire.stats.transactions,2);
+ return {plan,hash,permit};
+}
+
+test('G1T transactional V49 read integrates with real SQLite permit, registry and manifest without live Firestore',async()=>{
+ const f=setup(),fire=createV49TransactionFixture();try{
+  const world=await f.world(),x=await g1tPrepared(f,fire);
+  const registered=await f.registry.registerSource(req(OP),x.plan.registryInput);
+  assert.equal(registered.ok,true);
+  assert.equal((await f.registry.setSourceGrant(req(),f.grant(world,registered.reference))).ok,true);
+  const scope={worldId:world.worldId,reference:registered.reference};
+  const manifest=await f.registry.sourceManifest(req(),scope);
+  assert.deepEqual(manifest.manifest.chapters.map(c=>c.chapterId),['chapter-0010','chapter-0002']);
+  assert.equal(JSON.stringify(manifest).includes('PRIVATE_FIRST'),false);
+  const range=await f.registry.sourceRange(req(),{...scope,startChapterId:'chapter-0002',endChapterId:'chapter-0002'});
+  assert.equal(range.chapters[0].text,'PRIVATE_SECOND');
+  assert.equal((await f.registry.revokeAdaptationPermit(req(OP),{
+   requestId:crypto.randomUUID(),storyId:fire.storyId,contentHash:x.hash,expectedRevision:1})).status,'revoked');
+  assert.equal((await f.registry.sourceManifest(req(),scope)).code,'forbidden');
+ }finally{f.close();}
+});
+
+test('G1T prepared Firestore snapshot cannot register after SQLite permit revocation',async()=>{
+ const f=setup(),fire=createV49TransactionFixture('epub-revoke-between');try{
+  const x=await g1tPrepared(f,fire);
+  await f.registry.revokeAdaptationPermit(req(OP),{
+   requestId:crypto.randomUUID(),storyId:fire.storyId,contentHash:x.hash,expectedRevision:1});
+  assert.equal((await f.registry.registerSource(req(OP),x.plan.registryInput)).ok,false);
+  assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_source_versions_v1')[0].n,0);
+  assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_registry_objects_v1')[0].n,0);
  }finally{f.close();}
 });
