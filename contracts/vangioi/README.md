@@ -107,3 +107,5 @@ G1V: [REPLAY_AND_RECHECK_G1V.md](REPLAY_AND_RECHECK_G1V.md) — diễn tập rep
 G1W: [SOURCE_FREEZE_G1W.md](SOURCE_FREEZE_G1W.md) — archive SQL cục bộ bất biến theo hash, nhập nguồn từ bản pin dưới permit hiện hành và ma trận xử lý thu hồi/staging; chưa có Firebase thật, legal notice listener, migration, consumer hay UI.
 
 G1X: [SOURCE_NOTICES_G1X.md](SOURCE_NOTICES_G1X.md) — notice operator-only và lớp tạm giữ theo story/hash để chặn intake/read/discovery/submit/review trong SQLite; không tự revoke giấy phép, không có Firestore listener hay route live.
+
+G1Y: [WORLD_RELEASE_GATE_G1Y.md](WORLD_RELEASE_GATE_G1Y.md) — tiền kiểm offline cho world đã approved, xét lại hold/revoke/permit/grant/snapshot/asset trước quyết định phát hành tương lai; không cấp session hoặc bật runtime/live.

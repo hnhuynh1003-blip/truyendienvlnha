@@ -15,6 +15,7 @@ import {createPermitReplayRehearsal} from '../src/vangioi-permit-replay.mjs';
 import {createV49PrecommitRecheck} from '../src/vangioi-library-precommit.mjs';
 import {createSqlFrozenSourceService} from '../src/vangioi-source-freeze.mjs';
 import {createSqlSourceNoticeService} from '../src/vangioi-source-notices.mjs';
+import {createSqlWorldReleaseGate} from '../src/vangioi-world-release-gate.mjs';
 import {createV49TransactionFixture} from './fixtures/vangioi-firestore-v49.mjs';
 import {content} from './fixtures/vangioi-content.mjs';
 
@@ -1153,4 +1154,127 @@ test('G1X notice module is not connected to public Worker or author HTTP adapter
  for(const file of ['../src/index.mjs','../src/vangioi-authoring-http.mjs']){
   assert.equal(readFileSync(new URL(file,import.meta.url),'utf8').includes('vangioi-source-notices'),false);
  }
+});
+
+async function approvedForG1Y(f,{legacy=false}={}){
+ f.operator();const w=await f.world(),d=sourceInput(),hash=await hashAuthoringJson(d.payload);
+ if(!legacy)assert.equal((await f.registry.issueAdaptationPermit(req(OP),{
+  requestId:crypto.randomUUID(),storyId:d.storyId,contentHash:hash,authorizedUid:OWNER,
+  license:d.license,sourceNote:d.sourceNote,proofRef:d.proofRef})).ok,true);
+ const s=await f.registry.registerSource(req(OP),{...d,storyVersion:legacy?'v1':'sha256-'+hash});
+ assert.equal(s.ok,true);
+ const cover=await f.registry.registerAsset(req(OP),assetInput('worldCover','art-cover'));
+ const room=await f.registry.registerAsset(req(OP),assetInput());
+ for(const item of [s])assert.equal((await f.registry.setSourceGrant(req(),f.grant(w,item.reference))).ok,true);
+ for(const item of [cover,room])assert.equal((await f.registry.setAssetGrant(req(),f.grant(w,item.reference))).ok,true);
+ const c=content();c.storySource=s.reference;
+ c.assets=c.assets.map(a=>({...a,...(a.assetId==='art-cover'?cover:room).reference}));
+ assert.equal((await f.authoring.saveDraft(req(),{worldId:w.worldId,requestId:crypto.randomUUID(),expectedRevision:1,patch:c})).ok,true);
+ const submitted=await f.authoring.submitDraft(req(),{worldId:w.worldId,requestId:crypto.randomUUID(),expectedRevision:2});
+ assert.equal(submitted.ok,true);
+ const reviewer='reviewer-g1y';
+ f.sql.exec("INSERT INTO vg_authoring_members_v1 VALUES(?,?,'active',?,?)",w.worldId,reviewer,
+  JSON.stringify(['reviewer']),JSON.stringify([]));
+ const reviewed=await f.authoring.reviewSubmission(req(reviewer),{worldId:w.worldId,
+  requestId:crypto.randomUUID(),expectedRevision:submitted.revision,expectedAccessRevision:1,
+  snapshotHash:submitted.snapshotHash,decision:'approve',note:'Independent approval before release'});
+ assert.equal(reviewed.state,'approved');
+ return {w,s,cover,room,submitted,reviewer};
+}
+
+test('G1Y release preflight accepts only current independently approved snapshot with licensed source',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f),gate=createSqlWorldReleaseGate(f.options);
+  const checked=await gate.evaluateApprovedWorld(req(OP),{worldId:p.w.worldId});
+  assert.deepEqual(checked,{ok:true,eligible:true,worldId:p.w.worldId,
+   snapshotHash:p.submitted.snapshotHash,gateVersion:'world-release-1'});
+  assert.equal(JSON.stringify(checked).includes('PRIVATE_SOURCE_TEXT'),false);
+  assert.equal(JSON.stringify(checked).includes('content'),false);
+  assert.equal(f.rows('SELECT draft_state state FROM vg_authoring_worlds_v1')[0].state,'approved');
+ }finally{f.close();}
+});
+
+test('G1Y approved-before-hold world is blocked immediately; release only restores current rights',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f),gate=createSqlWorldReleaseGate(f.options),notices=createSqlSourceNoticeService(f.options);
+  const input={worldId:p.w.worldId},ref=p.s.reference;
+  assert.equal((await gate.evaluateApprovedWorld(req(OP),input)).eligible,true);
+  const a=await notices.openNotice(req(OP),noticeInput(ref.storyId,ref.contentHash));
+  const b=await notices.openNotice(req(OP),noticeInput(ref.storyId,ref.contentHash,'source_unpublished'));
+  assert.equal((await gate.evaluateApprovedWorld(req(OP),input)).code,'source-held');
+  assert.equal((await notices.resolveNotice(req(OP),noticeDecision(a.noticeId))).ok,true);
+  assert.equal((await gate.evaluateApprovedWorld(req(OP),input)).code,'source-held');
+  assert.equal((await notices.resolveNotice(req(OP),noticeDecision(b.noticeId))).ok,true);
+  assert.equal((await gate.evaluateApprovedWorld(req(OP),input)).eligible,true);
+  assert.equal(f.rows('SELECT draft_state state FROM vg_authoring_worlds_v1')[0].state,'approved');
+ }finally{f.close();}
+});
+
+test('G1Y G1R revocation cannot be cleared by resolving notice or replaying approval',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f),gate=createSqlWorldReleaseGate(f.options),notices=createSqlSourceNoticeService(f.options);
+  const ref=p.s.reference,n=await notices.openNotice(req(OP),noticeInput(ref.storyId,ref.contentHash,'owner_report'));
+  assert.equal((await f.registry.revokeAdaptationPermit(req(OP),{
+   requestId:crypto.randomUUID(),storyId:ref.storyId,contentHash:ref.contentHash,expectedRevision:1})).status,'revoked');
+  assert.equal((await notices.resolveNotice(req(OP),noticeDecision(n.noticeId,'confirm_revoke'))).status,'revoked');
+  assert.equal((await gate.evaluateApprovedWorld(req(OP),{worldId:p.w.worldId})).ok,false);
+  assert.equal(f.rows('SELECT draft_state state FROM vg_authoring_worlds_v1')[0].state,'approved');
+ }finally{f.close();}
+});
+
+test('G1Y legacy G1F world stays approved but is not automatically authorized for release',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f,{legacy:true}),gate=createSqlWorldReleaseGate(f.options);
+  assert.equal((await gate.evaluateApprovedWorld(req(OP),{worldId:p.w.worldId})).code,'permit-untracked');
+  assert.equal((await f.registry.readSource(req(),{worldId:p.w.worldId,reference:p.s.reference})).ok,true);
+ }finally{f.close();}
+});
+
+test('G1Y revoked image or reopened draft disables release without modifying review history',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f),gate=createSqlWorldReleaseGate(f.options);
+  assert.equal((await f.registry.revokeAssetVersion(req(OP),{
+   requestId:crypto.randomUUID(),reference:p.room.reference,expectedAuthorityRevision:1})).ok,true);
+  assert.equal((await gate.evaluateApprovedWorld(req(OP),{worldId:p.w.worldId})).code,'asset-not-authorized');
+  const reopened=await f.authoring.reopenDraft(req(),{worldId:p.w.worldId,requestId:crypto.randomUUID(),
+   expectedRevision:2,expectedAccessRevision:1,snapshotHash:p.submitted.snapshotHash});
+  assert.equal(reopened.state,'draft');
+  assert.equal((await gate.evaluateApprovedWorld(req(OP),{worldId:p.w.worldId})).code,'world-not-approved');
+  assert.equal(f.rows('SELECT decision FROM vg_authoring_reviews_v1')[0].decision,'approve');
+ }finally{f.close();}
+});
+
+test('G1Y cannot be called by owners, publishers, clients claiming admin, or unauthenticated users',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f),gate=createSqlWorldReleaseGate(f.options),input={worldId:p.w.worldId};
+  for(const user of [OWNER,p.reviewer,'admin',OTHER])
+   assert.equal((await gate.evaluateApprovedWorld(req(user),input)).code,'forbidden');
+  assert.equal((await gate.evaluateApprovedWorld(req('guest'),input)).code,'unauthenticated');
+  assert.equal((await gate.evaluateApprovedWorld(req(OP),{...input,eligible:true})).code,'invalid-request');
+  assert.equal((await gate.evaluateApprovedWorld(req(OP),{worldId:'missing-world'})).ok,false);
+ }finally{f.close();}
+});
+
+test('G1Y corrupted immutable snapshot is rejected even if header and reviewer status remain approved',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f),gate=createSqlWorldReleaseGate(f.options);
+  f.sql.exec('DROP TRIGGER vg_authoring_submissions_update_v1');
+  f.sql.exec("UPDATE vg_authoring_submissions_v1 SET snapshot_json='{}' WHERE world_id=?",p.w.worldId);
+  assert.equal((await gate.evaluateApprovedWorld(req(OP),{worldId:p.w.worldId})).code,'invalid-snapshot');
+ }finally{f.close();}
+});
+
+test('G1Y hold appearing between hash verification and final SQL decision fails closed',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f),gate=createSqlWorldReleaseGate(f.options),target=f.hooks.count+2;
+  f.hooks.before=n=>{if(n===target)f.sql.exec(`INSERT INTO vg_authoring_source_notices_v1
+   VALUES(?,?,?,?,?,?,?,'open',1,NULL)`,crypto.randomUUID(),p.s.reference.storyId,
+   p.s.reference.contentHash,'rights_dispute','PRIVATE_NOTICE_EVIDENCE',OP,1000);};
+  assert.equal((await gate.evaluateApprovedWorld(req(OP),{worldId:p.w.worldId})).code,'source-held');
+ }finally{f.close();}
+});
+
+test('G1Y world gate stays disconnected from Worker and authoring HTTP routes',()=>{
+ for(const file of ['../src/index.mjs','../src/vangioi-authoring-http.mjs'])
+  assert.equal(readFileSync(new URL(file,import.meta.url),'utf8').includes('vangioi-world-release-gate'),false);
 });
