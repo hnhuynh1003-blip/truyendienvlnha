@@ -1,5 +1,9 @@
 # DUDU Studio — START HERE / Bàn giao sạch · 20/10/2026
 
+## VẠN GIỚI Giai đoạn 1R — 26/10/2026
+
+Nền 5bdf11b, CI G1Q SUCCESS. Xem `contracts/vangioi/ADAPTATION_PERMITS_G1R.md`. Registry có sổ permit bất biến, operator issue/read/revoke, revoke permit/object/world grants cùng transaction và guard stale import. Legacy không có permit giữ G1F; chưa migration hoặc bắt buộc permit toàn hệ thống. Chưa Firestore sync/live/picker.
+
 ## VẠN GIỚI Giai đoạn 1Q — 26/10/2026
 
 Nền 722a8cf. Đọc `contracts/vangioi/LIBRARY_SOURCE_G1Q.md`. Có preparer server cho snapshot Thư viện + permit gắn hash, giữ chapter IDs, canonical version và registryInput G1F. Chỉ callback trusted reader/operator, chưa Firebase SDK reader hoặc ghi registry tự động; hai lần đọc không tạo transaction Firestore–SQLite. 16 tests mới gồm luồng tích hợp SQLite, tổng 424 Worker/helper. Chưa UI/picker/live/Rules/migration. Tiếp protocol permit/version/consistent reader và đồng bộ thu hồi trước bật nguồn production.

@@ -525,3 +525,58 @@ test('G1Q prepared library payload is accepted unchanged by existing registry an
   assert.equal((await f.registry.sourceRange(req(),{...input,startChapterId:'ch-one',endChapterId:'ch-one'})).chapters[0].text,'PRIVATE_SOURCE_TEXT');
  }finally{f.close();}
 });
+
+async function permitFixture(f){
+ f.operator();const w=await f.world(),d=sourceInput(),hash=await hashAuthoringJson(d.payload);
+ d.storyVersion='sha256-'+hash;
+ const permit={requestId:crypto.randomUUID(),storyId:d.storyId,contentHash:hash,authorizedUid:OWNER,license:d.license,sourceNote:d.sourceNote,proofRef:d.proofRef};
+ assert.equal((await f.registry.issueAdaptationPermit(req(OP),permit)).ok,true);
+ return {w,d,permit,hash,revoke:{requestId:crypto.randomUUID(),storyId:d.storyId,contentHash:hash,expectedRevision:1}};
+}
+test('G1R permit is persisted, read for preparer and issue retries do not duplicate audit',async()=>{
+ const f=setup();try{const x=await permitFixture(f);
+ assert.equal((await f.registry.issueAdaptationPermit(req(OP),x.permit)).replayed,true);
+ const r=await f.registry.readAdaptationPermit(req(OP),{storyId:x.d.storyId,contentHash:x.hash});
+ assert.equal(r.permit.status,'active');assert.equal(r.permit.revision,1);assert.equal(r.permit.authorizedUid,OWNER);
+ assert.equal((await f.registry.readAdaptationPermit(req(),{storyId:x.d.storyId,contentHash:x.hash})).ok,false);
+ assert.throws(()=>f.sql.exec('DELETE FROM vg_authoring_adaptation_permits_v1'),/immutable/);
+ assert.throws(()=>f.sql.exec("UPDATE vg_authoring_adaptation_permits_v1 SET permit_json='{}'"),/immutable/);
+ }finally{f.close();}
+});
+test('G1R revocation atomically disables imported source and world grants; old issue retry cannot restore',async()=>{
+ const f=setup();try{const x=await permitFixture(f),s=await f.registry.registerSource(req(OP),x.d);assert.equal(s.ok,true);
+ await f.registry.setSourceGrant(req(),f.grant(x.w,s.reference));
+ assert.equal((await f.registry.revokeAdaptationPermit(req(OP),x.revoke)).ok,true);
+ assert.equal((await f.registry.revokeAdaptationPermit(req(OP),x.revoke)).replayed,true);
+ assert.equal((await f.registry.readSource(req(),{worldId:x.w.worldId,reference:s.reference})).ok,false);
+ assert.equal((await f.registry.issueAdaptationPermit(req(OP),x.permit)).replayed,true);
+ assert.equal((await f.registry.registerSource(req(OP),x.d)).ok,false);
+ assert.equal(f.rows('SELECT status FROM vg_authoring_adaptation_permits_v1')[0].status,'revoked');
+ }finally{f.close();}
+});
+test('G1R stale prepared import cannot register after permit revocation or change recipient/license/version',async()=>{
+ const f=setup();try{const x=await permitFixture(f);
+ for(const patch of [{authorizedUid:OTHER},{license:'public_domain'},{storyVersion:'alias-v1'},{sourceNote:'Changed'}])
+ assert.equal((await f.registry.registerSource(req(OP),{...x.d,...patch})).ok,false);
+ await f.registry.revokeAdaptationPermit(req(OP),x.revoke);
+ assert.equal((await f.registry.registerSource(req(OP),x.d)).ok,false);
+ assert.equal(f.counts().source_versions,0);
+ }finally{f.close();}
+});
+test('G1R failed audit rolls back permit revocation, object and all grants',async()=>{
+ const f=setup();try{const x=await permitFixture(f),s=await f.registry.registerSource(req(OP),x.d);
+ await f.registry.setSourceGrant(req(),f.grant(x.w,s.reference));f.hooks.fail='INSERT INTO vg_authoring_registry_events_v1';
+ assert.equal((await f.registry.revokeAdaptationPermit(req(OP),x.revoke)).code,'registry-unavailable');
+ assert.equal(f.rows('SELECT status FROM vg_authoring_adaptation_permits_v1')[0].status,'active');
+ assert.equal((await f.registry.readSource(req(),{worldId:x.w.worldId,reference:s.reference})).ok,true);
+ }finally{f.close();}
+});
+test('G1R denies nonoperators, stale revisions and permit adoption of existing legacy source',async()=>{
+ const f=setup();try{const x=await permitFixture(f);
+ assert.equal((await f.registry.revokeAdaptationPermit(req(),x.revoke)).code,'forbidden');
+ assert.equal((await f.registry.revokeAdaptationPermit(req(OP),{...x.revoke,expectedRevision:2})).code,'revision-conflict');
+ assert.equal((await f.registry.issueAdaptationPermit(req(OP),{...x.permit,requestId:crypto.randomUUID()})).code,'version-conflict');
+ f.sql.exec("UPDATE vg_authoring_registry_operators_v1 SET status='revoked'");
+ assert.equal((await f.registry.issueAdaptationPermit(req(OP),x.permit)).code,'forbidden');
+ }finally{f.close();}
+});

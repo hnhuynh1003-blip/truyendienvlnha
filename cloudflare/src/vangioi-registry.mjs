@@ -28,6 +28,16 @@ export function createSqlRegistryService({storage,projectId,verify=verifyFirebas
   throw new TypeError('Registry requires trusted storage and identity adapters');
  initializeAuthoringSchema(storage);
  storage.transactionSync(()=>{
+  storage.sql.exec(`CREATE TABLE IF NOT EXISTS vg_authoring_adaptation_permits_v1(
+   story_id TEXT NOT NULL,content_hash TEXT NOT NULL,permit_json TEXT NOT NULL,
+   status TEXT NOT NULL CHECK(status IN ('active','revoked')),revision INTEGER NOT NULL,
+   PRIMARY KEY(story_id,content_hash))`);
+  storage.sql.exec(`CREATE TRIGGER IF NOT EXISTS vg_permit_delete_v1 BEFORE DELETE ON vg_authoring_adaptation_permits_v1
+   BEGIN SELECT RAISE(ABORT,'immutable-permit'); END`);
+  storage.sql.exec(`CREATE TRIGGER IF NOT EXISTS vg_permit_update_v1 BEFORE UPDATE ON vg_authoring_adaptation_permits_v1
+   WHEN NEW.story_id IS NOT OLD.story_id OR NEW.content_hash IS NOT OLD.content_hash OR NEW.permit_json IS NOT OLD.permit_json
+    OR OLD.status!='active' OR NEW.status!='revoked' OR NEW.revision!=OLD.revision+1
+   BEGIN SELECT RAISE(ABORT,'immutable-permit'); END`);
   storage.sql.exec(`CREATE TABLE IF NOT EXISTS vg_authoring_registry_operators_v1(
    uid TEXT PRIMARY KEY,status TEXT NOT NULL CHECK(status IN ('active','revoked')))`);
   storage.sql.exec(`CREATE TABLE IF NOT EXISTS vg_authoring_registry_objects_v1(
@@ -126,6 +136,13 @@ export function createSqlRegistryService({storage,projectId,verify=verifyFirebas
      if(d.status==='active'&&(!obj||obj.status!=='active'||obj.authorized_uid!==user))return fail();
     }else if(!isOperator(user))return fail();
     if(action==='register'&&obj?.status==='revoked')return fail();
+    if(category==='source'&&action==='register'&&kind==='library'){
+     const permit=one('SELECT * FROM vg_authoring_adaptation_permits_v1 WHERE story_id=? AND content_hash=?',reference.storyId,contentHash);
+     if(permit){const p=JSON.parse(permit.permit_json);
+      if(permit.status!=='active'||reference.storyVersion!=='sha256-'+contentHash||p.authorizedUid!==d.authorizedUid||
+       p.license!==d.license||p.sourceNote!==d.sourceNote||p.proofRef!==d.proofRef)return fail();
+     }
+    }
     const prior=receipt(scope,user,d,category+':'+action,digest);if(prior)return prior;
     if(action==='register'){
      if(obj)return fail('version-conflict');
@@ -267,7 +284,50 @@ export function createSqlRegistryService({storage,projectId,verify=verifyFirebas
    chapters:chapters.slice(start,end+1)};
  }
 
+ async function permitAction(request,input,action){
+  let d;
+  try{d=copyAuthoringJson(input);
+   const wanted=action==='issue'?['requestId','storyId','contentHash','authorizedUid','license','sourceNote','proofRef']:
+    action==='revoke'?['requestId','storyId','contentHash','expectedRevision']:['storyId','contentHash'];
+   if(!keys(d,wanted)||!short(d.storyId,160)||typeof d.contentHash!=='string'||!/^[a-f0-9]{64}$/.test(d.contentHash)||
+    (action!=='read'&&!uuid(d.requestId))||(action==='issue'&&!rights(d))||
+    (action==='revoke'&&(!rev(d.expectedRevision)||!d.expectedRevision)))return fail('invalid-request');
+  }catch{return fail('invalid-request');}
+  let user;try{const who=await verify(request,projectId);if(uid(who?.uid))user=who.uid;}catch{}
+  if(!user)return fail('unauthenticated');
+  try{
+   if(!isOperator(user))return fail();
+   const digest=action==='read'?null:await hashAuthoringJson({action,...d});
+   return storage.transactionSync(()=>{
+    if(!isOperator(user))return fail();
+    const row=one('SELECT * FROM vg_authoring_adaptation_permits_v1 WHERE story_id=? AND content_hash=?',d.storyId,d.contentHash);
+    if(action==='read')return row?{ok:true,permit:{...JSON.parse(row.permit_json),status:row.status,revision:row.revision}}:fail();
+    const prior=receipt('permits',user,d,'permit:'+action,digest);if(prior)return prior;
+    const version='sha256-'+d.contentHash;
+    if(action==='issue'){
+     if(row||one("SELECT story_id FROM vg_authoring_source_versions_v1 WHERE kind='library' AND story_id=? AND content_hash=?",d.storyId,d.contentHash))return fail('version-conflict');
+     const {requestId,...permit}=d;
+     storage.sql.exec("INSERT INTO vg_authoring_adaptation_permits_v1 VALUES(?,?,?,'active',1)",d.storyId,d.contentHash,JSON.stringify(permit));
+    }else{
+     if(!row||row.status!=='active'||row.revision!==d.expectedRevision||!rev(row.revision))return fail('revision-conflict');
+     const grants=all("SELECT grant_revision FROM vg_authoring_source_grants_v1 WHERE kind='library' AND story_id=? AND story_version=?",d.storyId,version);
+     if(grants.some(g=>!rev(g.grant_revision)))return fail('revision-conflict');
+     const objects=all("SELECT object_key,authority_revision FROM vg_authoring_registry_objects_v1 WHERE category='source' AND json_extract(reference_json,'$.kind')='library' AND json_extract(reference_json,'$.storyId')=? AND json_extract(reference_json,'$.contentHash')=? AND status='active'",d.storyId,d.contentHash);
+     if(objects.some(o=>!rev(o.authority_revision)))return fail('revision-conflict');
+     storage.sql.exec("UPDATE vg_authoring_adaptation_permits_v1 SET status='revoked',revision=revision+1 WHERE story_id=? AND content_hash=?",d.storyId,d.contentHash);
+     for(const o of objects)storage.sql.exec("UPDATE vg_authoring_registry_objects_v1 SET status='revoked',authority_revision=authority_revision+1 WHERE object_key=?",o.object_key);
+     storage.sql.exec("UPDATE vg_authoring_source_grants_v1 SET status='revoked',grant_revision=grant_revision+1 WHERE kind='library' AND story_id=? AND story_version=?",d.storyId,version);
+    }
+    const from=row?.revision||0,result={ok:true,storyId:d.storyId,contentHash:d.contentHash,revision:from+1,status:action==='issue'?'active':'revoked'};
+    return record('permits',user,d,'permit:'+action,digest,d.contentHash,from,from+1,result);
+   });
+  }catch{return fail('registry-unavailable');}
+ }
+
  return Object.freeze({
+  issueAdaptationPermit:(r,d)=>permitAction(r,d,'issue'),
+  revokeAdaptationPermit:(r,d)=>permitAction(r,d,'revoke'),
+  readAdaptationPermit:(r,d)=>permitAction(r,d,'read'),
   listSources,sourceManifest,sourceRange,
   readSource:(r,d)=>read(r,d,'source'),readAsset:(r,d)=>read(r,d,'asset'),
   registerSource:(r,d)=>mutate(r,d,'source','register'),registerAsset:(r,d)=>mutate(r,d,'asset','register'),

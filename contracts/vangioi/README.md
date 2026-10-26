@@ -93,3 +93,5 @@ G1O: [SOURCE_MANIFEST_G1O.md](SOURCE_MANIFEST_G1O.md) — danh sách nguồn có
 G1P: [SOURCE_HTTP_G1P.md](SOURCE_HTTP_G1P.md) — ba tuyến đọc nguồn trong adapter HTTP độc lập; chưa bật live hoặc picker.
 
 G1Q: [LIBRARY_SOURCE_G1Q.md](LIBRARY_SOURCE_G1Q.md) — chuẩn bị nguồn từ trusted snapshot/permit; chưa reader Firebase hoặc ghi tự động.
+
+G1R: [ADAPTATION_PERMITS_G1R.md](ADAPTATION_PERMITS_G1R.md) — permit và thu hồi cùng SQLite; chưa đồng bộ Firestore.
