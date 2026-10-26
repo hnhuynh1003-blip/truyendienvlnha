@@ -1,5 +1,9 @@
 # DUDU Studio — START HERE / Bàn giao sạch · 20/10/2026
 
+## VẠN GIỚI Giai đoạn 1M — 26/10/2026
+
+Nền a931b4d (G1L). Đọc `contracts/vangioi/ITEM_POLICY_G1M.md`. Schema sidecar và preflight Node offline cho vật phẩm standard/custom, pin world/content, sổ tay/world, acquisition group nhiều tuyến và ngoại lệ era/power. Chưa nối snapshot/review/UI/runtime, chưa có catalog thật hoặc quyền cấp/xuất Kho. World-content-1 và pilot giữ tương thích. Kiểm thử theo commit G1M; unit PASS không chứng minh production. Tiếp theo arc/source picker theo thiết kế G1L.
+
 ## VẠN GIỚI Giai đoạn 1L — 26/10/2026
 
 Nền `c575acb` (1K, CI/Pages SUCCESS). Đọc `contracts/vangioi/REVIEW_LIFECYCLE_G1L.md` và `EXPANSION_DESIGN_G1L.md`. Làm tuần tự theo yêu cầu mới: review backend → thiết kế vật phẩm/gameplay/arc → sửa lỗi túi thuốc Quan Đạo. Approve/request_changes gắn revision/accessRevision/snapshotHash, reviewer độc lập, kiểm lại source/asset và quyền trong transaction; immutable decision/receipt/audit. Owner reopen thành revision mới, không sửa snapshot hoặc kế thừa approval. Vẫn chưa publish/official rank/art approval/gameplay hoặc backend live/DO/binding/migration/client connection.
