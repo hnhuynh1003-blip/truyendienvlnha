@@ -87,3 +87,5 @@ Xem [AUTHORING_HTTP_G1K.md](AUTHORING_HTTP_G1K.md): Request/Response → SQL ser
 G1M: xem [ITEM_POLICY_G1M.md](ITEM_POLICY_G1M.md), schema và preflight sidecar offline; chưa tích hợp production.
 
 G1N: [ARC_PLANNING_G1N.md](ARC_PLANNING_G1N.md) — kế hoạch arc local và gói xuất/nhập; source picker có quyền còn chờ adapter.
+
+G1O: [SOURCE_MANIFEST_G1O.md](SOURCE_MANIFEST_G1O.md) — danh sách nguồn có quyền, manifest và khoảng chương; service độc lập, chưa bật picker.

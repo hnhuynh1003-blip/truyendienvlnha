@@ -416,3 +416,95 @@ test('G1F local intake size bound rejects oversized story bytes without persisti
   assert.equal((await f.registry.registerSource(req(OP),d)).code,'payload-limit');assert.equal(f.counts().source_versions,0);
  }finally{f.close();}
 });
+
+async function manifestFixture(f){
+ f.operator();const w=await f.world(),d=sourceInput();
+ d.payload.chapters=[{chapterId:'chapter-10',title:'First',text:'PRIVATE_FIRST'},
+  {chapterId:'chapter-2',title:'Second',text:'PRIVATE_SECOND'},
+  {chapterId:'chapter-1',title:'Third',text:'PRIVATE_THIRD'}];
+ const s=await f.registry.registerSource(req(OP),d);assert.equal(s.ok,true);
+ assert.equal((await f.registry.setSourceGrant(req(),f.grant(w,s.reference))).ok,true);
+ return {w,s,input:{worldId:w.worldId,reference:s.reference}};
+}
+test('G1O discovery lists only currently granted own sources without private text/license proof',async()=>{
+ const f=setup();try{
+  const x=await manifestFixture(f),before=f.counts();
+  const ungranted=await f.registry.registerSource(req(OP),{...sourceInput(),storyId:'not-granted'});assert.equal(ungranted.ok,true);
+  const r=await f.registry.listSources(req(),{worldId:x.w.worldId,after:''});
+  assert.equal(r.ok,true);assert.equal(r.sources.length,1);assert.deepEqual(r.sources[0].reference,x.s.reference);
+  assert.equal(r.nextCursor,null);assert.equal(r.accessRevision,1);
+  for(const secret of ['PRIVATE_FIRST','PRIVATE_SECOND','proofRef','license','authorizedUid'])assert.equal(JSON.stringify(r).includes(secret),false);
+  assert.equal(f.counts().registry_events,before.registry_events+1); // Only explicit registration wrote.
+ }finally{f.close();}
+});
+test('G1O manifest preserves stable IDs and order and strips chapter bodies',async()=>{
+ const f=setup();try{
+  const x=await manifestFixture(f),before=f.counts(),r=await f.registry.sourceManifest(req(),x.input);
+  assert.equal(r.ok,true);assert.equal(r.manifest.format,'source-manifest-1');
+  assert.deepEqual(r.manifest.chapters.map(c=>c.chapterId),['chapter-10','chapter-2','chapter-1']);
+  assert.deepEqual(r.manifest.chapters.map(c=>c.order),[0,1,2]);
+  assert.equal(JSON.stringify(r).includes('PRIVATE_'),false);assert.deepEqual(f.counts(),before);
+ }finally{f.close();}
+});
+test('G1O ranges use immutable source order, include both ends and allow a single chapter',async()=>{
+ const f=setup();try{
+  const x=await manifestFixture(f),range=(start,end)=>f.registry.sourceRange(req(),{...x.input,startChapterId:start,endChapterId:end});
+  const r=await range('chapter-10','chapter-2');assert.equal(r.ok,true);
+  assert.deepEqual(r.chapters.map(c=>c.text),['PRIVATE_FIRST','PRIVATE_SECOND']);
+  assert.equal((await range('chapter-2','chapter-2')).chapters.length,1);
+  for(const pair of [['chapter-1','chapter-10'],['missing','chapter-1'],['chapter-10','missing']])
+   assert.equal((await range(...pair)).code,'invalid-chapter-range');
+ }finally{f.close();}
+});
+test('G1O all source methods reject guest, foreign owner, operator and admin-only identities',async()=>{
+ const f=setup();try{
+  const x=await manifestFixture(f);
+  for(const user of ['guest',OTHER,OP,'admin']){
+   for(const r of [await f.registry.listSources(req(user),{worldId:x.w.worldId,after:''}),
+    await f.registry.sourceManifest(req(user),x.input),await f.registry.sourceRange(req(user),{...x.input,startChapterId:'chapter-10',endChapterId:'chapter-1'})])
+    assert.equal(r.code,user==='guest'?'unauthenticated':'forbidden');
+  }
+ }finally{f.close();}
+});
+test('G1O source grant/version revocation removes discovery and blocks manifest/range',async()=>{
+ for(const global of [false,true]){
+  const f=setup();try{
+   const x=await manifestFixture(f);
+   if(global)await f.registry.revokeSourceVersion(req(OP),{requestId:crypto.randomUUID(),expectedAuthorityRevision:1,reference:x.s.reference});
+   else await f.registry.setSourceGrant(req(),f.grant(x.w,x.s.reference,{expectedGrantRevision:1,status:'revoked'}));
+   assert.deepEqual((await f.registry.listSources(req(),{worldId:x.w.worldId,after:''})).sources,[]);
+   assert.equal((await f.registry.sourceManifest(req(),x.input)).code,'forbidden');
+   assert.equal((await f.registry.sourceRange(req(),{...x.input,startChapterId:'chapter-10',endChapterId:'chapter-1'})).code,'forbidden');
+  }finally{f.close();}
+ }
+});
+test('G1O manifest/range cannot return data if rights change during payload hashing',async()=>{
+ for(const method of ['sourceManifest','sourceRange']){
+  const f=setup();try{
+   const x=await manifestFixture(f);f.hooks.count=0;
+   f.hooks.before=count=>{if(count===2){f.hooks.before=null;f.sql.exec("UPDATE vg_authoring_source_grants_v1 SET status='revoked',grant_revision=2");}};
+   const input=method==='sourceManifest'?x.input:{...x.input,startChapterId:'chapter-10',endChapterId:'chapter-1'};
+   assert.equal((await f.registry[method](req(),input)).code,'forbidden');
+  }finally{f.close();}
+ }
+});
+test('G1O discovery has bounded deterministic pages without duplicates',async()=>{
+ const f=setup();try{
+  f.operator();const w=await f.world();
+  for(let i=0;i<52;i++){
+   const s=await f.registry.registerSource(req(OP),{...sourceInput(),storyId:'paged-'+i});
+   assert.equal((await f.registry.setSourceGrant(req(),f.grant(w,s.reference))).ok,true);
+  }
+  const page1=await f.registry.listSources(req(),{worldId:w.worldId,after:''});assert.equal(page1.sources.length,50);assert.match(page1.nextCursor,/^[a-f0-9]{64}$/);
+  const page2=await f.registry.listSources(req(),{worldId:w.worldId,after:page1.nextCursor});assert.equal(page2.sources.length,2);assert.equal(page2.nextCursor,null);
+  assert.equal(new Set([...page1.sources,...page2.sources].map(s=>s.reference.storyId)).size,52);
+ }finally{f.close();}
+});
+test('G1O strict inputs and stale pins fail without leaking source bytes',async()=>{
+ const f=setup();try{
+  const x=await manifestFixture(f);
+  for(const patch of [{after:42},{after:'invalid'},{uid:OWNER},{after:null}])assert.equal((await f.registry.listSources(req(),{worldId:x.w.worldId,after:'',...patch})).code,'invalid-request');
+  assert.equal((await f.registry.sourceManifest(req(),{...x.input,reference:{...x.s.reference,contentHash:'a'.repeat(64)}})).code,'forbidden');
+  assert.equal((await f.registry.sourceRange(req(),{...x.input,startChapterId:'',endChapterId:'chapter-1'})).code,'invalid-request');
+ }finally{f.close();}
+});

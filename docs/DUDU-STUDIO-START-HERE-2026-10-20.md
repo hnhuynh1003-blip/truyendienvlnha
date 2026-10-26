@@ -1,5 +1,9 @@
 # DUDU Studio — START HERE / Bàn giao sạch · 20/10/2026
 
+## VẠN GIỚI Giai đoạn 1O — 26/10/2026
+
+Nền 2fc45fd. Đọc `contracts/vangioi/SOURCE_MANIFEST_G1O.md`. Registry G1F thêm listSources phân trang theo world/recipient/grant, sourceManifest không text và sourceRange theo chapter ID/thứ tự payload. Read/hash/recheck quyền hiện hữu được tái sử dụng. Chỉ service SQLite độc lập; chưa HTTP/Firestore/live/Creator picker. Không đổi schema, arc/nháp/UI hoặc thưởng. Kiểm CI theo commit G1O; tiếp transport xác thực và adapter Thư viện trước nối UI.
+
 ## VẠN GIỚI Giai đoạn 1N — 26/10/2026
 
 Nền cb7c9fd. Đọc `contracts/vangioi/ARC_PLANNING_G1N.md`. Creator có kế hoạch arc thủ công lưu local theo UID, pin nguồn riêng từng arc, xuất/nhập gói kèm content; content/schema và nháp cũ tương thích. Source picker có quyền chưa mở: EPUB V49 thiếu manifest version/hash/quyền chuyển thể. Không suy metadata thành quyền hay tự tải lại truyện. Chưa AI, review/publish arc, continuity hoặc gameplay mới. QA/CI/Pages kiểm theo commit G1N.

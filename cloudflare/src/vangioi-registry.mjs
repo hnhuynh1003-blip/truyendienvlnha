@@ -214,7 +214,61 @@ export function createSqlRegistryService({storage,projectId,verify=verifyFirebas
   }catch{return fail('registry-unavailable');}
  }
 
+ // G1O: owner-only source discovery; references are hints, not transferable rights.
+ async function listSources(request,input){
+  let d;
+  try{d=copyAuthoringJson(input);
+   if(!keys(d,['worldId','after'])||!id(d.worldId)||typeof d.after!=='string'||
+    (d.after!==''&&!/^[a-f0-9]{64}$/.test(d.after)))return fail('invalid-request');
+  }catch{return fail('invalid-request');}
+  let user;
+  try{const who=await verify(request,projectId);if(who&&uid(who.uid))user=who.uid;}catch{}
+  if(!user)return fail('unauthenticated');
+  try{return storage.transactionSync(()=>{
+   const w=one('SELECT * FROM vg_authoring_worlds_v1 WHERE world_id=?',d.worldId);
+   if(!w||w.owner_uid!==user)return fail();
+   const rows=all(`SELECT o.object_key,o.reference_json,o.authority_revision,g.grant_revision
+    FROM vg_authoring_registry_objects_v1 o
+    JOIN vg_authoring_source_grants_v1 g ON
+     g.kind=json_extract(o.reference_json,'$.kind') AND
+     g.story_id=json_extract(o.reference_json,'$.storyId') AND
+     g.story_version=json_extract(o.reference_json,'$.storyVersion')
+    JOIN vg_authoring_source_versions_v1 v ON v.kind=g.kind AND v.story_id=g.story_id AND v.story_version=g.story_version
+    WHERE g.world_id=? AND g.status='active' AND o.category='source' AND o.status='active'
+     AND o.authorized_uid=? AND o.object_key>? AND v.content_hash=json_extract(o.reference_json,'$.contentHash')
+    ORDER BY o.object_key LIMIT 51`,d.worldId,user,d.after);
+   const sources=rows.slice(0,50).map(row=>{
+    const reference=copyAuthoringJson(JSON.parse(row.reference_json));
+    if(!sourceRef(reference))throw Error('invalid-reference');
+    return {reference,authorityRevision:row.authority_revision,grantRevision:row.grant_revision};
+   });
+   return {ok:true,worldId:d.worldId,accessRevision:w.access_revision,sources,
+    nextCursor:rows.length>50?rows[49].object_key:null};
+  });}catch{return fail('registry-unavailable');}
+ }
+ async function sourceManifest(request,input){
+  const r=await read(request,input,'source');if(!r.ok)return r;
+  // No await after the underlying read's hash and transaction permission recheck.
+  return {ok:true,reference:r.reference,manifest:{format:'source-manifest-1',title:r.payload.title,
+   chapters:r.payload.chapters.map((c,order)=>({chapterId:c.chapterId,title:c.title,order}))}};
+ }
+ async function sourceRange(request,input){
+  let d;
+  try{d=copyAuthoringJson(input);
+   if(!keys(d,['worldId','reference','startChapterId','endChapterId'])||
+    !short(d.startChapterId,160)||!short(d.endChapterId,160))return fail('invalid-request');
+  }catch{return fail('invalid-request');}
+  const r=await read(request,{worldId:d.worldId,reference:d.reference},'source');if(!r.ok)return r;
+  const chapters=r.payload.chapters,start=chapters.findIndex(c=>c.chapterId===d.startChapterId),
+   end=chapters.findIndex(c=>c.chapterId===d.endChapterId);
+  if(start<0||end<0||end<start)return fail('invalid-chapter-range');
+  // Inclusive range is ordered by the immutable payload, never lexicographic IDs.
+  return {ok:true,reference:r.reference,startChapterId:d.startChapterId,endChapterId:d.endChapterId,
+   chapters:chapters.slice(start,end+1)};
+ }
+
  return Object.freeze({
+  listSources,sourceManifest,sourceRange,
   readSource:(r,d)=>read(r,d,'source'),readAsset:(r,d)=>read(r,d,'asset'),
   registerSource:(r,d)=>mutate(r,d,'source','register'),registerAsset:(r,d)=>mutate(r,d,'asset','register'),
   setSourceGrant:(r,d)=>mutate(r,d,'source','grant'),setAssetGrant:(r,d)=>mutate(r,d,'asset','grant'),
