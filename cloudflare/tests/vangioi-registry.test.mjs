@@ -11,6 +11,8 @@ import {hashAuthoringJson} from '../src/vangioi-authoring.mjs';
 import {createV49StagingSnapshotReader} from '../src/vangioi-v49-staging-source.mjs';
 import {createLibrarySourcePreparer} from '../src/vangioi-library-source.mjs';
 import {createV49FirestoreTransactionReader} from '../src/vangioi-v49-firestore-reader.mjs';
+import {createPermitReplayRehearsal} from '../src/vangioi-permit-replay.mjs';
+import {createV49PrecommitRecheck} from '../src/vangioi-library-precommit.mjs';
 import {createV49TransactionFixture} from './fixtures/vangioi-firestore-v49.mjs';
 import {content} from './fixtures/vangioi-content.mjs';
 
@@ -768,7 +770,7 @@ async function g1tPrepared(f,fire){
  const plan=await prepare(req(OP),{requestId:crypto.randomUUID(),storyId:fire.storyId,authorizedUid:OWNER});
  assert.equal(plan.ok,true);assert.deepEqual(plan.registryInput.payload,payload);
  assert.equal(fire.stats.transactions,2);
- return {plan,hash,permit};
+ return {plan,hash,permit,prepare};
 }
 
 test('G1T transactional V49 read integrates with real SQLite permit, registry and manifest without live Firestore',async()=>{
@@ -796,6 +798,66 @@ test('G1T prepared Firestore snapshot cannot register after SQLite permit revoca
    requestId:crypto.randomUUID(),storyId:fire.storyId,contentHash:x.hash,expectedRevision:1});
   assert.equal((await f.registry.registerSource(req(OP),x.plan.registryInput)).ok,false);
   assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_source_versions_v1')[0].n,0);
+  assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_registry_objects_v1')[0].n,0);
+ }finally{f.close();}
+});
+
+test('G1V actual G1U SQLite outbox projects current revoked authority on delayed replay',async()=>{
+ const f=setup();try{
+  const x=await permitFixture(f);
+  assert.equal((await f.registry.revokeAdaptationPermit(req(OP),x.revoke)).ok,true);
+  let saved={checkpoint:0,rights:new Map()};
+  const replay=createPermitReplayRehearsal({
+   listPermitEvents:(r,d)=>f.registry.listPermitEvents(r,d),
+   readAdaptationPermit:(r,d)=>f.registry.readAdaptationPermit(r,d),
+   commitBatch:async({after,checkpoint,projections})=>{
+    assert.equal(saved.checkpoint,after);
+    const rights=new Map(saved.rights);
+    for(const p of projections)rights.set(JSON.stringify([p.storyId,p.contentHash]),{status:p.status,revision:p.revision});
+    saved={checkpoint,rights};
+   }
+  });
+  assert.equal((await replay(req(OP),{after:0})).processed,2);
+  assert.equal(saved.checkpoint,2);
+  assert.deepEqual(saved.rights.get(JSON.stringify([x.permit.storyId,x.hash])),{status:'revoked',revision:2});
+  assert.equal((await replay(req(),{after:saved.checkpoint})).code,'forbidden');
+ }finally{f.close();}
+});
+
+test('G1V unchanged V49 version passes recheck and reaches existing SQL registry',async()=>{
+ const f=setup(),fire=createV49TransactionFixture('epub-g1v-unchanged');try{
+  const x=await g1tPrepared(f,fire);
+  const guarded=createV49PrecommitRecheck({prepare:x.prepare,
+   registerSource:(r,d)=>f.registry.registerSource(r,d)});
+  const registered=await guarded(req(OP),x.plan);
+  assert.equal(registered.ok,true);assert.deepEqual(registered.reference,x.plan.reference);
+  assert.equal(fire.stats.transactions,4); // G1Q prepared twice, G1V checked twice again.
+  assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_registry_objects_v1')[0].n,1);
+ }finally{f.close();}
+});
+
+test('G1V observed Firestore content edit after prepare stops import before registry write',async()=>{
+ const f=setup(),fire=createV49TransactionFixture('epub-g1v-edited');try{
+  const x=await g1tPrepared(f,fire);
+  fire.patch(fire.paths[0],{content:'PRIVATE_CHANGED_AFTER_PREPARE'});
+  let writes=0;
+  const guarded=createV49PrecommitRecheck({prepare:x.prepare,
+   registerSource:async(r,d)=>{writes++;return f.registry.registerSource(r,d);}});
+  assert.equal((await guarded(req(OP),x.plan)).ok,false);
+  assert.equal(writes,0);
+  assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_registry_objects_v1')[0].n,0);
+  assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_source_versions_v1')[0].n,0);
+ }finally{f.close();}
+});
+
+test('G1V revocation after prepare stops rechecked commit without source grant',async()=>{
+ const f=setup(),fire=createV49TransactionFixture('epub-g1v-revoked');try{
+  const x=await g1tPrepared(f,fire);
+  assert.equal((await f.registry.revokeAdaptationPermit(req(OP),{
+   requestId:crypto.randomUUID(),storyId:fire.storyId,contentHash:x.hash,expectedRevision:1})).ok,true);
+  const guarded=createV49PrecommitRecheck({prepare:x.prepare,
+   registerSource:(r,d)=>f.registry.registerSource(r,d)});
+  assert.equal((await guarded(req(OP),x.plan)).ok,false);
   assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_registry_objects_v1')[0].n,0);
  }finally{f.close();}
 });

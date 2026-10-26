@@ -101,3 +101,5 @@ G1S: [SOURCE_STAGING_G1S.md](SOURCE_STAGING_G1S.md) — bộ project nguồn EPU
 G1T: [FIRESTORE_READER_G1T.md](FIRESTORE_READER_G1T.md) — adapter Firestore server-only đọc V49 bằng read-only transaction, fixture/emulator smoke cô lập và kiểm chứng G1Q/G1R; chưa nối Firebase instance thật, production/staging deploy hoặc source picker.
 
 G1U: [AUTHORITY_SYNC_G1U.md](AUTHORITY_SYNC_G1U.md) — outbox SQL append-only cho issue/revoke permit, cursor/checkpoint operator-only và chặn lịch sử G1R chưa baseline; chưa có consumer, Firestore sync, migration hay endpoint live.
+
+G1V: [REPLAY_AND_RECHECK_G1V.md](REPLAY_AND_RECHECK_G1V.md) — diễn tập replay/checkpoint + revoked-wins và kiểm lại source V49 trước registry; vẫn chưa có subscriber, source freeze hay kết nối staging/live.
