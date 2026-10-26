@@ -1,5 +1,9 @@
 # DUDU Studio — START HERE / Bàn giao sạch · 20/10/2026
 
+## VẠN GIỚI Giai đoạn 1N — 26/10/2026
+
+Nền cb7c9fd. Đọc `contracts/vangioi/ARC_PLANNING_G1N.md`. Creator có kế hoạch arc thủ công lưu local theo UID, pin nguồn riêng từng arc, xuất/nhập gói kèm content; content/schema và nháp cũ tương thích. Source picker có quyền chưa mở: EPUB V49 thiếu manifest version/hash/quyền chuyển thể. Không suy metadata thành quyền hay tự tải lại truyện. Chưa AI, review/publish arc, continuity hoặc gameplay mới. QA/CI/Pages kiểm theo commit G1N.
+
 ## VẠN GIỚI Giai đoạn 1M — 26/10/2026
 
 Nền a931b4d (G1L). Đọc `contracts/vangioi/ITEM_POLICY_G1M.md`. Schema sidecar và preflight Node offline cho vật phẩm standard/custom, pin world/content, sổ tay/world, acquisition group nhiều tuyến và ngoại lệ era/power. Chưa nối snapshot/review/UI/runtime, chưa có catalog thật hoặc quyền cấp/xuất Kho. World-content-1 và pilot giữ tương thích. Kiểm thử theo commit G1M; unit PASS không chứng minh production. Tiếp theo arc/source picker theo thiết kế G1L.

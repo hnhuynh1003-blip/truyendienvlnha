@@ -1,7 +1,8 @@
 /* World Creator G1J — Vạn Giới authoring, independent from owner AI Core. Local draft editing only; server rights/submit stay closed. */
 (function(root){
  'use strict';
- const doc=root.document,V=root.DuduWorldValidation;
+ const doc=root.document,V=root.DuduWorldValidation,A=root.DuduArcPlan;
+ let arcPlan=A.empty();
  if(!doc||!V)return;
  let owner=null,model=null,localId=null,dirty=false,serial=0,epoch=0,host=null,tab='overview',dbPromise=null;
  let report=null,jsonPending=false,jsonText='',counter=0,saving=false,dialog=null,returnFocus=null;
@@ -23,7 +24,7 @@
   if(!permitted()||next!==owner){
    close();clearArt();
    host=null;owner=permitted()?next:null;model=null;localId=null;dirty=false;report=null;
-   jsonPending=false;jsonText='';tab='overview';serial++;epoch++;saving=false;
+   arcPlan=A.empty();jsonPending=false;jsonText='';tab='overview';serial++;epoch++;saving=false;
   }
   return permitted();
  }
@@ -80,10 +81,10 @@
   if(!canUseJson()||saving)return;
   const valid=V.validateDraftContent(model);
   if(!valid.valid){report=valid;renderReport();notice('Có trường sai định dạng. Chỉnh lại trước khi lưu.');return;}
-  const user=owner,ticket=epoch,version=serial,id=localId||makeId('draft'),content=V.copyAuthoringContent(model);
+  const user=owner,ticket=epoch,version=serial,id=localId||makeId('draft'),content=V.copyAuthoringContent(model),savedArcs=A.copy(arcPlan);
   saving=true;const b=$('vg-save');if(b)b.disabled=true;notice('Đang lưu trên thiết bị…');
   try{
-   await storage('put',user,id,{format:'creator-local-1',uid:user,localId:id,updatedAt:Date.now(),content});
+   await storage('put',user,id,{format:'creator-local-1',uid:user,localId:id,updatedAt:Date.now(),content,arcPlan:savedArcs});
    if(!access()||owner!==user||epoch!==ticket)return;
    localId=id;if(serial===version)dirty=false;
    if($('vg-save-state'))$('vg-save-state').textContent=dirty?'Có thay đổi chưa lưu':'Đã lưu trên thiết bị · Chưa đồng bộ';
@@ -96,7 +97,7 @@
   const value=structuredClone(content);return {...blank,...value,
    aiPolicy:{...blank.aiPolicy,...value.aiPolicy},playRequirements:{...blank.playRequirements,...value.playRequirements}};
  }
- function replace(content,id=null){model=editable(content);localId=id;epoch++;serial++;dirty=id===null;report=null;jsonPending=false;jsonText='';saving=false;render();}
+ function replace(content,id=null,plan=A.empty()){arcPlan=A.copy(plan);model=editable(content);localId=id;epoch++;serial++;dirty=id===null;report=null;jsonPending=false;jsonText='';saving=false;render();}
  function confirmReplace(){return !(dirty||jsonPending)||root.confirm('Thay bản đang soạn? Thay đổi chưa lưu sẽ không được giữ.');}
  async function list(){
   const user=owner,ticket=epoch;
@@ -116,7 +117,8 @@
       if(serial!==version){notice('Nội dung vừa đổi. Mở lại nháp đã lưu khi bạn sẵn sàng thay bản đang soạn.');return;}
       if(stored?.uid!==u||stored.localId!==row.localId||stored.format!=='creator-local-1')throw Error('invalid');
       const parsed=V.parseDraft(JSON.stringify(stored.content));if(!parsed.ok)throw Error('invalid');
-      replace(parsed.content,row.localId);notice('Đã mở bản nháp trên thiết bị.');
+      const plan=stored.arcPlan===undefined?A.empty():A.copy(stored.arcPlan);
+      replace(parsed.content,row.localId,plan);notice('Đã mở bản nháp trên thiết bị.');
      }catch{if(owner===u&&epoch===e)notice('Bản nháp không đọc được. Bản đang soạn vẫn được giữ.');}
     }));
    }
@@ -133,10 +135,15 @@
   if(file.size>2*1024*1024){notice('Tệp vượt giới hạn nhập 2 MiB.');return;}
   const user=owner,ticket=epoch;
   try{
-   const parsed=V.parseDraft(await file.text());
+   const text=await file.text();let envelope=JSON.parse(text),plan=A.empty();
+   if(envelope?.format==='creator-arc-package-1'){
+    if(Object.keys(envelope).some(k=>!['format','content','arcPlan'].includes(k)))throw Error('invalid-package');
+    plan=A.copy(envelope.arcPlan);
+   }else envelope=null;
+   const parsed=V.parseDraft(envelope?JSON.stringify(envelope.content):text);
    if(!access()||owner!==user||epoch!==ticket)return;
    if(!parsed.ok){notice(parsed.code==='unsupported-version'?'Chỉ nhập hồ sơ world-content-1. Giữ nguyên tệp V0.1 để chuyển đổi riêng.':'Tệp sai định dạng; bản đang soạn vẫn được giữ.');return;}
-   if(confirmReplace()){replace(parsed.content);notice('Đã nhập nội dung nháp. Chưa xác minh nguồn, ảnh hoặc quyền sở hữu.');}
+   if(confirmReplace()){replace(parsed.content,null,plan);notice('Đã nhập nội dung nháp. Chưa xác minh nguồn, ảnh hoặc quyền sở hữu.');}
   }catch{if(owner===user&&epoch===ticket)notice('Không đọc được tệp; bản đang soạn vẫn được giữ.');}
  }
  // Local PNG previews are session-only and never imply a registry grant.
@@ -298,6 +305,36 @@
   });
   if(!arr('scenes').length)panel.append(h('p','vg-muted','Thêm nơi chốn và cảnh theo câu chuyện; không có quota cảnh theo bậc.'));
   views(panel);
+ }
+ function arcs(panel){
+  panel.append(h('h3','','Kế hoạch theo arc'),h('p','vg-muted','Soạn từng chặng truyện; chưa cần nhập toàn bộ nhân vật và cảnh. Kế hoạch lưu riêng cùng nháp, chưa gửi duyệt hoặc chạy gameplay.'));
+  panel.append(button('+ Thêm arc',()=>{
+   if(arcPlan.arcs.length>=200){notice('Mỗi kế hoạch tối đa 200 arc; tiếp tục bằng gói kế hoạch riêng.');return;}
+   arcPlan.arcs.push({arcId:makeId('arc'),title:'',mode:'manual',source:A.validSource(model.storySource)?structuredClone(model.storySource):null,
+    startChapterId:'',endChapterId:'',opening:'',goal:'',ending:''});mark();render();
+  }));
+  arcPlan.arcs.forEach((a,i)=>{
+   const card=h('section','vg-card');card.append(idLine(a.arcId));
+   for(const [key,label]of [['title','Tên arc'],['startChapterId','Mã chương đầu'],['endChapterId','Mã chương cuối'],['opening','Mở đầu arc'],['goal','Mục tiêu arc'],['ending','Kết thúc arc']])
+    {const f=field(label,a[key],value=>{a[key]=value;mark();},{area:['opening','goal','ending'].includes(key)});f.querySelector('input,textarea').maxLength=4000;card.append(f);}
+   card.append(h('p','vg-muted',a.source?'Nguồn đã ghim: '+a.source.storyId+' / '+a.source.storyVersion:'Chưa ghim nguồn. Điền tham chiếu tại Nguồn & ảnh.'));
+   const same=JSON.stringify(a.source)===JSON.stringify(model.storySource);
+   if(a.source&&!same)card.append(h('p','vg-muted','Nguồn nháp đã đổi. Arc vẫn giữ bản ghim cũ; hãy kiểm tra trước khi cập nhật.'));
+   card.append(button('Ghim nguồn hiện tại cho arc',()=>{
+    if(!A.validSource(model.storySource)){notice('Cần đủ ID truyện, phiên bản và hash tại Nguồn & ảnh.');return;}
+    if(a.source&&!root.confirm('Đổi nguồn ghim của arc? Kiểm tra lại phạm vi chương và nội dung chuyển thể.'))return;
+    a.source=structuredClone(model.storySource);mark();render();
+   }),button('Xóa arc',()=>{if(root.confirm('Xóa kế hoạch arc này?')){arcPlan.arcs.splice(i,1);mark();render();}},'vg-quiet'));
+   card.append(h('p','vg-muted','Mã chương cần giữ ổn định theo nguồn. Quyền chuyển thể, thứ tự và sự tồn tại của chương chưa được máy chủ xác minh.'));
+   panel.append(card);
+  });
+ }
+ function exportArcPackage(){
+  if(!canUseJson())return;
+  const value={format:'creator-arc-package-1',content:V.copyAuthoringContent(model),arcPlan:A.copy(arcPlan)};
+  const url=URL.createObjectURL(new Blob([JSON.stringify(value,null,2)+'\n'],{type:'application/json'})),a=h('a');
+  a.href=url;a.download='vangioi-arc-package.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  notice('Đã xuất nội dung và kế hoạch arc, gồm ghi chú bí mật của tác giả.');
  }
  function resources(panel){
   panel.append(h('h3','','Nguồn truyện'),h('p','vg-muted','Tham chiếu nguồn và ảnh cần được máy chủ xác minh trước khi gửi duyệt. Chưa có kết nối chọn nguồn hoặc tải ảnh.'));
@@ -668,15 +705,15 @@
   const offline=h('p','vg-muted','Gửi duyệt chưa kết nối máy chủ. Bạn vẫn có thể soạn, lưu trên thiết bị và xuất bản nháp.');offline.id='vg-backend-state';app.append(offline);
   const menu=h('details','vg-files');menu.append(h('summary','','Bản nháp & tệp JSON'));
   const actions=h('div','vg-actions');actions.append(button('Nháp mới',()=>{if(confirmReplace()){replace(fresh());notice('Đã mở nháp mới.');}}),
-   button('Mở nháp đã lưu',list),button('Xuất JSON',exportJson));
+   button('Mở nháp đã lưu',list),button('Xuất JSON',exportJson),button('Xuất kèm arc',exportArcPackage));
   const upload=h('input');upload.type='file';upload.accept='.json,application/json';upload.id='vg-import';upload.hidden=true;upload.setAttribute('aria-label','Nhập hồ sơ JSON');
   upload.addEventListener('change',()=>{if(access())importFile(upload.files?.[0]);upload.value='';});
   actions.append(button('Nhập JSON',()=>upload.click()));
   const listBox=h('div','vg-local-list');listBox.id='vg-local-list';menu.append(actions,upload,listBox);app.append(menu);
-  const tabs=[['overview','Thông tin'],['scenes','Địa điểm & cảnh'],['resources','Nguồn & ảnh'],['visualForms','Tạo hình & bố cục'],['roles','Vai nhập'],['characters','Nhân vật & NPC'],['items','Vật phẩm'],['shops','Cửa hàng'],['missions','Nhiệm vụ'],['outcomes','Sự kiện & kết cục'],['advanced','Dữ liệu nâng cao'],['preview','Xem trước']];
+  const tabs=[['overview','Thông tin'],['arcs','Kế hoạch arc'],['scenes','Địa điểm & cảnh'],['resources','Nguồn & ảnh'],['visualForms','Tạo hình & bố cục'],['roles','Vai nhập'],['characters','Nhân vật & NPC'],['items','Vật phẩm'],['shops','Cửa hàng'],['missions','Nhiệm vụ'],['outcomes','Sự kiện & kết cục'],['advanced','Dữ liệu nâng cao'],['preview','Xem trước']];
   const nav=h('nav','vg-tabs');nav.setAttribute('aria-label','Các mục soạn world');
   for(const [key,label] of tabs){const b=button(label,()=>{tab=key;render();});b.setAttribute('aria-current',key===tab?'page':'false');nav.append(b);}app.append(nav);
-  const panel=h('div','vg-panel');({overview,scenes,resources,visualForms,roles,characters,items,shops,missions,outcomes,advanced,preview}[tab]||overview)(panel);app.append(panel);
+  const panel=h('div','vg-panel');({overview,arcs,scenes,resources,visualForms,roles,characters,items,shops,missions,outcomes,advanced,preview}[tab]||overview)(panel);app.append(panel);
   const message=h('p','vg-message','');message.id='vg-message';message.setAttribute('role','status');app.append(message);
   const result=h('details','vg-checks');result.open=!!report;result.append(h('summary','','Kiểm tra nội dung'));
   const reportBox=h('div');reportBox.id='vg-report';result.append(reportBox);app.append(result);host.append(app);renderReport();
@@ -702,7 +739,7 @@
   else{dialog.setAttribute('open','');dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');}
   render();host?.querySelector('button')?.focus({preventScroll:true});return true;
  }
- root.DuduWorldCreator=Object.freeze({open,close,syncAccess,version:'G1J',backendConnected:false});
+ root.DuduWorldCreator=Object.freeze({open,close,syncAccess,version:'G1N',backendConnected:false});
  doc.addEventListener('visibilitychange',syncAccess);root.addEventListener('pageshow',syncAccess);
  root.addEventListener('hashchange',()=>{if(dialog&&root.location.hash!=='#/worlds')close();});
 })(window);

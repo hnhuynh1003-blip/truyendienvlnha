@@ -1,0 +1,38 @@
+const assert=require('node:assert/strict'),fs=require('node:fs');
+module.exports=async({page,editor})=>{
+ await editor.getByRole('button',{name:'Nguồn & ảnh',exact:true}).click();
+ await editor.getByLabel('Loại nguồn',{exact:true}).selectOption('library');
+ await editor.getByLabel('Mã truyện',{exact:true}).fill('epub-existing');
+ await editor.getByLabel('Phiên bản nguồn',{exact:true}).fill('version-one');
+ await editor.getByLabel('Hash nguồn đã đăng ký',{exact:true}).fill('a'.repeat(64));
+ await editor.getByRole('button',{name:'Kế hoạch arc',exact:true}).click();
+ await editor.getByRole('button',{name:'+ Thêm arc',exact:true}).click();
+ await editor.getByLabel('Tên arc',{exact:true}).fill('Arc đầu tiên');
+ await editor.getByLabel('Mã chương đầu',{exact:true}).fill('chapter-one');
+ await editor.getByLabel('Mã chương cuối',{exact:true}).fill('chapter-five');
+ await editor.getByRole('button',{name:'Lưu trên thiết bị',exact:true}).click();
+ await page.waitForFunction(()=>document.getElementById('vg-message').textContent.includes('Đã lưu riêng'));
+ await editor.locator('.vg-files').evaluate(n=>n.open=true);
+ const download=page.waitForEvent('download',{timeout:90000});download.catch(()=>{});await editor.getByRole('button',{name:'Xuất kèm arc',exact:true}).click({timeout:3000});
+ const file=JSON.parse(fs.readFileSync(await(await download).path(),'utf8'));
+ assert.equal(file.arcPlan.arcs[0].title,'Arc đầu tiên');assert.equal(file.arcPlan.arcs[0].source.storyVersion,'version-one');
+ assert.equal(Object.hasOwn(file.content,'arcPlan'),false);
+ // Explicit package import restores sidecar; ordinary content export stays compatible.
+ await editor.locator('#vg-import').setInputFiles({name:'arc-package.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(file))});
+ await page.waitForFunction(()=>document.getElementById('vg-message').textContent.includes('Đã nhập nội dung'));
+ assert.equal(await editor.getByLabel('Tên arc',{exact:true}).inputValue(),'Arc đầu tiên');
+ await editor.getByRole('button',{name:'Nguồn & ảnh',exact:true}).click();
+ await editor.getByLabel('Phiên bản nguồn',{exact:true}).fill('version-two');
+ await editor.getByRole('button',{name:'Kế hoạch arc',exact:true}).click();
+ assert.match(await editor.locator('.vg-panel').innerText(),/Arc vẫn giữ bản ghim cũ/);
+ assert.match(await editor.locator('.vg-panel').innerText(),/version-one/);
+ await editor.getByRole('button',{name:'Lưu trên thiết bị',exact:true}).click();
+ await page.waitForFunction(()=>document.getElementById('vg-message').textContent.includes('Đã lưu riêng'));
+ await editor.locator('.vg-files').evaluate(n=>n.open=true);
+ await editor.getByRole('button',{name:'Mở nháp đã lưu',exact:true}).click();
+ await editor.locator('#vg-local-list button').first().click();
+ await page.waitForFunction(()=>document.getElementById('vg-message').textContent.includes('Đã mở bản nháp'));
+ assert.equal(await editor.getByLabel('Tên arc',{exact:true}).inputValue(),'Arc đầu tiên');
+ await editor.getByRole('button',{name:'Thông tin',exact:true}).click();
+ console.log('PASS G1N arc planning, save/reopen, package export/import and source drift without repinning; no source reupload');
+};

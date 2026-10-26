@@ -85,3 +85,5 @@ Xem [AUTHORING_HTTP_G1K.md](AUTHORING_HTTP_G1K.md): Request/Response → SQL ser
 [REVIEW_LIFECYCLE_G1L.md](REVIEW_LIFECYCLE_G1L.md): quyết định review/reopen có quyền, snapshot, transaction/receipt/audit; sửa trạng thái túi thuốc Quan Đạo. [EXPANSION_DESIGN_G1L.md](EXPANSION_DESIGN_G1L.md): thiết kế vật phẩm, gameplay tùy chọn, truyện dài theo arc; chưa bật schema/kinh tế/AI mới. Backend vẫn độc lập, chưa production.
 
 G1M: xem [ITEM_POLICY_G1M.md](ITEM_POLICY_G1M.md), schema và preflight sidecar offline; chưa tích hợp production.
+
+G1N: [ARC_PLANNING_G1N.md](ARC_PLANNING_G1N.md) — kế hoạch arc local và gói xuất/nhập; source picker có quyền còn chờ adapter.
