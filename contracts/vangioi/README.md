@@ -103,3 +103,5 @@ G1T: [FIRESTORE_READER_G1T.md](FIRESTORE_READER_G1T.md) — adapter Firestore se
 G1U: [AUTHORITY_SYNC_G1U.md](AUTHORITY_SYNC_G1U.md) — outbox SQL append-only cho issue/revoke permit, cursor/checkpoint operator-only và chặn lịch sử G1R chưa baseline; chưa có consumer, Firestore sync, migration hay endpoint live.
 
 G1V: [REPLAY_AND_RECHECK_G1V.md](REPLAY_AND_RECHECK_G1V.md) — diễn tập replay/checkpoint + revoked-wins và kiểm lại source V49 trước registry; vẫn chưa có subscriber, source freeze hay kết nối staging/live.
+
+G1W: [SOURCE_FREEZE_G1W.md](SOURCE_FREEZE_G1W.md) — archive SQL cục bộ bất biến theo hash, nhập nguồn từ bản pin dưới permit hiện hành và ma trận xử lý thu hồi/staging; chưa có Firebase thật, legal notice listener, migration, consumer hay UI.

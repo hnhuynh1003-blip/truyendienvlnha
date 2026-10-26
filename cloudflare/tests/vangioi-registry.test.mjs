@@ -13,6 +13,7 @@ import {createLibrarySourcePreparer} from '../src/vangioi-library-source.mjs';
 import {createV49FirestoreTransactionReader} from '../src/vangioi-v49-firestore-reader.mjs';
 import {createPermitReplayRehearsal} from '../src/vangioi-permit-replay.mjs';
 import {createV49PrecommitRecheck} from '../src/vangioi-library-precommit.mjs';
+import {createSqlFrozenSourceService} from '../src/vangioi-source-freeze.mjs';
 import {createV49TransactionFixture} from './fixtures/vangioi-firestore-v49.mjs';
 import {content} from './fixtures/vangioi-content.mjs';
 
@@ -860,4 +861,156 @@ test('G1V revocation after prepare stops rechecked commit without source grant',
   assert.equal((await guarded(req(OP),x.plan)).ok,false);
   assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_registry_objects_v1')[0].n,0);
  }finally{f.close();}
+});
+
+function frozenService(f,registerSource=(r,d)=>f.registry.registerSource(r,d)){
+ return createSqlFrozenSourceService({...f.options,registerSource});
+}
+
+test('G1W frozen source persists exact pinned bytes and cannot be edited or replay-inserted',async()=>{
+ const f=setup(),fire=createV49TransactionFixture('epub-g1w-freeze');try{
+  const x=await g1tPrepared(f,fire),freeze=frozenService(f);
+  const result=await freeze.freezePrepared(req(OP),x.plan);
+  assert.equal(result.ok,true);assert.equal(result.contentHash,x.hash);
+  assert.equal((await freeze.freezePrepared(req(OP),x.plan)).replayed,true);
+  assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_source_freezes_v1')[0].n,1);
+  assert.equal(f.rows("SELECT count(*) n FROM vg_authoring_registry_events_v1 WHERE scope='source-freeze'")[0].n,1);
+  const stored=f.rows('SELECT * FROM vg_authoring_source_freezes_v1')[0];
+  assert.deepEqual(JSON.parse(stored.payload_json),x.plan.registryInput.payload);
+  assert.equal(stored.payload_json.includes('PRIVATE_PROOF'),false);
+  assert.throws(()=>f.sql.exec('DELETE FROM vg_authoring_source_freezes_v1'),/immutable/);
+  assert.throws(()=>f.sql.exec("UPDATE vg_authoring_source_freezes_v1 SET payload_json='{}'"),/immutable/);
+ }finally{f.close();}
+});
+
+test('G1W registered source remains the licensed frozen version after Firestore content edit',async()=>{
+ const f=setup(),fire=createV49TransactionFixture('epub-g1w-pinned');try{
+  const w=await f.world(),x=await g1tPrepared(f,fire),freeze=frozenService(f);
+  assert.equal((await freeze.freezePrepared(req(OP),x.plan)).ok,true);
+  fire.patch(fire.paths[0],{content:'NEW_LIBRARY_CHAPTER_AFTER_FREEZE'});
+  const result=await freeze.registerFrozen(req(OP),{requestId:crypto.randomUUID(),storyId:fire.storyId,contentHash:x.hash});
+  assert.equal(result.ok,true);assert.deepEqual(result.reference,x.plan.reference);
+  assert.equal((await f.registry.setSourceGrant(req(),f.grant(w,result.reference))).ok,true);
+  const range=await f.registry.sourceRange(req(),{worldId:w.worldId,reference:result.reference,
+   startChapterId:'chapter-0010',endChapterId:'chapter-0010'});
+  assert.equal(range.chapters[0].text,'PRIVATE_FIRST');
+  assert.equal(JSON.stringify(range).includes('NEW_LIBRARY_CHAPTER'),false);
+ }finally{f.close();}
+});
+
+test('G1W G1R revocation keeps immutable archive but blocks later frozen registration and emits outbox',async()=>{
+ const f=setup(),fire=createV49TransactionFixture('epub-g1w-revoke');try{
+  const x=await g1tPrepared(f,fire),freeze=frozenService(f);
+  assert.equal((await freeze.freezePrepared(req(OP),x.plan)).ok,true);
+  assert.equal((await f.registry.revokeAdaptationPermit(req(OP),{
+   requestId:crypto.randomUUID(),storyId:fire.storyId,contentHash:x.hash,expectedRevision:1})).status,'revoked');
+  assert.equal((await freeze.registerFrozen(req(OP),{
+   requestId:crypto.randomUUID(),storyId:fire.storyId,contentHash:x.hash})).code,'forbidden');
+  assert.equal((await freeze.freezePrepared(req(OP),x.plan)).code,'forbidden');
+  assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_source_freezes_v1')[0].n,1);
+  assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_registry_objects_v1')[0].n,0);
+  const outbox=await f.registry.listPermitEvents(req(OP),{after:0});
+  assert.deepEqual(outbox.events.map(e=>e.status),['active','revoked']);
+ }finally{f.close();}
+});
+
+test('G1W rejects self-declared snapshots, nonoperators and mismatched permit recipient',async()=>{
+ const f=setup(),fire=createV49TransactionFixture('epub-g1w-reject');try{
+  const x=await g1tPrepared(f,fire),freeze=frozenService(f);
+  assert.equal((await freeze.freezePrepared(req(),x.plan)).code,'forbidden');
+  assert.equal((await freeze.registerFrozen(req(),{
+   requestId:crypto.randomUUID(),storyId:fire.storyId,contentHash:x.hash})).code,'forbidden');
+  assert.equal((await freeze.freezePrepared(req(OP),{
+   ...x.plan,registryInput:{...x.plan.registryInput,payload:{...x.plan.registryInput.payload,title:'Forged'}}})).code,'invalid-plan');
+  assert.equal((await freeze.freezePrepared(req(OP),{
+   ...x.plan,registryInput:{...x.plan.registryInput,authorizedUid:OTHER}})).code,'forbidden');
+  assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_source_freezes_v1')[0].n,0);
+ }finally{f.close();}
+});
+
+test('G1W failed audit insert rolls back frozen bytes and idempotency receipt',async()=>{
+ const f=setup(),fire=createV49TransactionFixture('epub-g1w-rollback');try{
+  const x=await g1tPrepared(f,fire),freeze=frozenService(f);
+  f.hooks.fail='INSERT INTO vg_authoring_registry_events_v1';
+  assert.equal((await freeze.freezePrepared(req(OP),x.plan)).code,'freeze-unavailable');
+  assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_source_freezes_v1')[0].n,0);
+  assert.equal(f.rows("SELECT count(*) n FROM vg_authoring_registry_operations_v1 WHERE scope='source-freeze'")[0].n,0);
+  assert.equal((await freeze.freezePrepared(req(OP),x.plan)).ok,true);
+ }finally{f.close();}
+});
+
+test('G1W revocation during frozen handoff is still blocked by G1R register transaction',async()=>{
+ const f=setup(),fire=createV49TransactionFixture('epub-g1w-race');try{
+  const x=await g1tPrepared(f,fire);
+  const freeze=frozenService(f,async(r,d)=>{
+   await f.registry.revokeAdaptationPermit(req(OP),{
+    requestId:crypto.randomUUID(),storyId:fire.storyId,contentHash:x.hash,expectedRevision:1});
+   return f.registry.registerSource(r,d);
+  });
+  assert.equal((await freeze.freezePrepared(req(OP),x.plan)).ok,true);
+  assert.equal((await freeze.registerFrozen(req(OP),{
+   requestId:crypto.randomUUID(),storyId:fire.storyId,contentHash:x.hash})).ok,false);
+  assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_registry_objects_v1')[0].n,0);
+  assert.equal(f.rows('SELECT status FROM vg_authoring_adaptation_permits_v1')[0].status,'revoked');
+ }finally{f.close();}
+});
+
+test('G1W G1V recheck can guard freezing and refuses a changed Firestore chapter',async()=>{
+ const f=setup(),fire=createV49TransactionFixture('epub-g1w-recheck');try{
+  const x=await g1tPrepared(f,fire),freeze=frozenService(f);
+  const guarded=createV49PrecommitRecheck({prepare:x.prepare,
+   registerSource:(r)=>freeze.freezePrepared(r,x.plan)});
+  fire.patch(fire.paths[1],{content:'DIFFERENT_CONTENT_AFTER_G1Q'});
+  assert.equal((await guarded(req(OP),x.plan)).ok,false);
+  assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_source_freezes_v1')[0].n,0);
+ }finally{f.close();}
+});
+
+test('G1W rejects corrupted archive bytes before any registry intake',async()=>{
+ const f=setup(),fire=createV49TransactionFixture('epub-g1w-corrupt');try{
+  const x=await g1tPrepared(f,fire),freeze=frozenService(f);
+  assert.equal((await freeze.freezePrepared(req(OP),x.plan)).ok,true);
+  // Simulate privileged disk corruption; this is not an allowed application mutation.
+  f.sql.exec('DROP TRIGGER vg_authoring_source_freezes_update_v1');
+  f.sql.exec("UPDATE vg_authoring_source_freezes_v1 SET payload_json='{}'");
+  assert.equal((await freeze.registerFrozen(req(OP),{
+   requestId:crypto.randomUUID(),storyId:fire.storyId,contentHash:x.hash})).code,'snapshot-corrupt');
+  assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_registry_objects_v1')[0].n,0);
+ }finally{f.close();}
+});
+
+test('G1W pinned archive and permit survive SQLite restart without new privilege',async()=>{
+ const dir=mkdtempSync(join(tmpdir(),'vangioi-g1w-')),file=join(dir,'frozen.sqlite');
+ try{
+  const before=setup(file),fire=createV49TransactionFixture('epub-g1w-restart');let x;
+  try{
+   x=await g1tPrepared(before,fire);
+   assert.equal((await frozenService(before).freezePrepared(req(OP),x.plan)).ok,true);
+  }finally{before.close();}
+  const after=setup(file);try{
+   const frozen=frozenService(after);
+   assert.equal((await frozen.registerFrozen(req(),{
+    requestId:crypto.randomUUID(),storyId:fire.storyId,contentHash:x.hash})).code,'forbidden');
+   assert.equal((await frozen.registerFrozen(req(OP),{
+    requestId:crypto.randomUUID(),storyId:fire.storyId,contentHash:x.hash})).ok,true);
+   assert.equal(after.rows('SELECT count(*) n FROM vg_authoring_source_freezes_v1')[0].n,1);
+  }finally{after.close();}
+ }finally{rmSync(dir,{recursive:true,force:true});}
+});
+
+test('G1W conflicting use of a freeze request ID cannot create a second source archive',async()=>{
+ const f=setup(),first=createV49TransactionFixture('epub-g1w-first'),second=createV49TransactionFixture('epub-g1w-second');try{
+  const a=await g1tPrepared(f,first),b=await g1tPrepared(f,second),freeze=frozenService(f);
+  assert.equal((await freeze.freezePrepared(req(OP),a.plan)).ok,true);
+  const conflicting={...b.plan,registryInput:{...b.plan.registryInput,requestId:a.plan.registryInput.requestId}};
+  assert.equal((await freeze.freezePrepared(req(OP),conflicting)).code,'idempotency-conflict');
+  assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_source_freezes_v1')[0].n,1);
+ }finally{f.close();}
+});
+
+test('G1W cannot be invoked by the public Worker or authoring HTTP adapter',()=>{
+ for(const file of ['../src/index.mjs','../src/vangioi-authoring-http.mjs']){
+  const contents=readFileSync(new URL(file,import.meta.url),'utf8');
+  assert.equal(contents.includes('vangioi-source-freeze'),false);
+ }
 });
