@@ -8,6 +8,8 @@ import {createSqlRegistryService} from '../src/vangioi-registry.mjs';
 import {createSqlAuthoringService} from '../src/vangioi-authoring-sql.mjs';
 import {createSqlProvisioningService} from '../src/vangioi-provisioning.mjs';
 import {hashAuthoringJson} from '../src/vangioi-authoring.mjs';
+import {createV49StagingSnapshotReader} from '../src/vangioi-v49-staging-source.mjs';
+import {createLibrarySourcePreparer} from '../src/vangioi-library-source.mjs';
 import {content} from './fixtures/vangioi-content.mjs';
 
 const OWNER='registry-owner',OP='registry-operator',OTHER='registry-other';
@@ -578,5 +580,63 @@ test('G1R denies nonoperators, stale revisions and permit adoption of existing l
  assert.equal((await f.registry.issueAdaptationPermit(req(OP),{...x.permit,requestId:crypto.randomUUID()})).code,'version-conflict');
  f.sql.exec("UPDATE vg_authoring_registry_operators_v1 SET status='revoked'");
  assert.equal((await f.registry.issueAdaptationPermit(req(OP),x.permit)).code,'forbidden');
+ }finally{f.close();}
+});
+
+function v49ForG1S(storyId='epub-staging'){
+ return {book:{id:storyId,title:'Staging V49 book',ownerUid:'verified-book-owner',status:'published',chapterCount:2,
+  chapterIndex:[{id:'chapter-0010',order:0,title:'First',wordCount:1},
+   {id:'chapter-0002',order:1,title:'Second',wordCount:1}],coverImage:'PRIVATE_COVER'},
+  chapters:[{id:'chapter-0002',order:1,title:'Second',content:'PRIVATE_SECOND',wordCount:1},
+   {id:'chapter-0010',order:0,title:'First',content:'PRIVATE_FIRST',wordCount:1}]};
+}
+async function g1sPermitFixture(f,raw){
+ f.operator();
+ const payload={format:'story-source-1',title:raw.book.title,chapters:[
+  {chapterId:'chapter-0010',title:'First',text:'PRIVATE_FIRST'},
+  {chapterId:'chapter-0002',title:'Second',text:'PRIVATE_SECOND'}]};
+ const hash=await hashAuthoringJson(payload),storyId=raw.book.id;
+ const permit={requestId:crypto.randomUUID(),storyId,contentHash:hash,authorizedUid:OWNER,
+  license:'licensed',sourceNote:'Synthetic checked rights',proofRef:'private-evidence'};
+ assert.equal((await f.registry.issueAdaptationPermit(req(OP),permit)).ok,true);
+ const reader=createV49StagingSnapshotReader({
+  readV49Snapshot:async()=>structuredClone(raw),
+  readAdaptationPermit:({storyId,contentHash})=>f.registry.readAdaptationPermit(req(OP),{storyId,contentHash})
+ });
+ const prepare=createLibrarySourcePreparer({projectId:'truyendienvl',verify:f.options.verify,
+  isOperator:async uid=>uid===OP,readSnapshot:reader});
+ const plan=await prepare(req(OP),{requestId:crypto.randomUUID(),storyId,authorizedUid:OWNER});
+ assert.equal(plan.ok,true);
+ return {plan,payload,hash,storyId};
+}
+
+test('G1S staging V49 projection → G1Q preparer → G1R permit → G1F registry → G1O manifest/range',async()=>{
+ const f=setup();try{
+  const w=await f.world(),x=await g1sPermitFixture(f,v49ForG1S());
+  assert.deepEqual(x.plan.registryInput.payload,x.payload);
+  const registered=await f.registry.registerSource(req(OP),x.plan.registryInput);
+  assert.equal(registered.ok,true);assert.deepEqual(registered.reference,x.plan.reference);
+  assert.equal((await f.registry.setSourceGrant(req(),f.grant(w,registered.reference))).ok,true);
+  const scope={worldId:w.worldId,reference:registered.reference};
+  const manifest=await f.registry.sourceManifest(req(),scope);
+  assert.deepEqual(manifest.manifest.chapters.map(c=>c.chapterId),['chapter-0010','chapter-0002']);
+  assert.equal(JSON.stringify(manifest).includes('PRIVATE_'),false);
+  const range=await f.registry.sourceRange(req(),{...scope,startChapterId:'chapter-0010',endChapterId:'chapter-0002'});
+  assert.deepEqual(range.chapters.map(c=>c.text),['PRIVATE_FIRST','PRIVATE_SECOND']);
+  assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_adaptation_permits_v1')[0].n,1);
+  assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_registry_objects_v1')[0].n,1);
+ }finally{f.close();}
+});
+
+test('G1S source prepared before revocation cannot commit to registry after G1R revoke',async()=>{
+ const f=setup();try{
+  const x=await g1sPermitFixture(f,v49ForG1S('epub-before-revoke'));
+  const revocation=await f.registry.revokeAdaptationPermit(req(OP),{
+   requestId:crypto.randomUUID(),storyId:x.storyId,contentHash:x.hash,expectedRevision:1});
+  assert.equal(revocation.status,'revoked');
+  const attempt=await f.registry.registerSource(req(OP),x.plan.registryInput);
+  assert.equal(attempt.ok,false);
+  assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_registry_objects_v1')[0].n,0);
+  assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_source_versions_v1')[0].n,0);
  }finally{f.close();}
 });

@@ -95,3 +95,5 @@ G1P: [SOURCE_HTTP_G1P.md](SOURCE_HTTP_G1P.md) — ba tuyến đọc nguồn tron
 G1Q: [LIBRARY_SOURCE_G1Q.md](LIBRARY_SOURCE_G1Q.md) — chuẩn bị nguồn từ trusted snapshot/permit; chưa reader Firebase hoặc ghi tự động.
 
 G1R: [ADAPTATION_PERMITS_G1R.md](ADAPTATION_PERMITS_G1R.md) — permit và thu hồi cùng SQLite; chưa đồng bộ Firestore.
+
+G1S: [SOURCE_STAGING_G1S.md](SOURCE_STAGING_G1S.md) — bộ project nguồn EPUB V49 và contract authority/staging, kiểm thử cô lập với G1Q/G1R/G1F; **chưa có Firestore reader, host staging hoặc transaction xuyên hệ thống**.
