@@ -1,12 +1,17 @@
 // G1K: opt-in local transport. Not imported by the live Worker or exported as a DO.
 import {verifyFirebaseIdToken} from './auth.mjs';
 import {createSqlAuthoringService} from './vangioi-authoring-sql.mjs';
+import {createSqlRegistryService} from './vangioi-registry.mjs';
 import {createSqlProvisioningService} from './vangioi-provisioning.mjs';
 
 export const AUTHORING_HTTP_MAX_BYTES=2*1024*1024;
 const BASE='/api/vangioi/authoring/v1';
 const WORLD='([a-z][a-z0-9-]{1,63})',HASH='([a-f0-9]{64})';
+const sourceActions=new Set(['listSources','sourceManifest','sourceRange']);
 const routes=[
+ ['POST',new RegExp(`^${BASE}/worlds/${WORLD}/sources/query$`),'listSources'],
+ ['POST',new RegExp(`^${BASE}/worlds/${WORLD}/sources/manifest$`),'sourceManifest'],
+ ['POST',new RegExp(`^${BASE}/worlds/${WORLD}/sources/range$`),'sourceRange'],
  ['POST',new RegExp(`^${BASE}/worlds$`),'createWorld'],
  ['GET',new RegExp(`^${BASE}/worlds/${WORLD}/draft$`),'viewDraft'],
  ['PATCH',new RegExp(`^${BASE}/worlds/${WORLD}/draft$`),'saveDraft'],
@@ -18,7 +23,7 @@ const routes=[
  ['GET',new RegExp(`^${BASE}/worlds/${WORLD}/submissions/${HASH}/decisions$`),'viewReviewDecision'],
  ['POST',new RegExp(`^${BASE}/worlds/${WORLD}/submissions/${HASH}/reopen$`),'reopenDraft']
 ];
-const statuses={unauthenticated:401,forbidden:403,'invalid-request':400,'invalid-content':422,
+const statuses={'registry-unavailable':503,'payload-integrity-conflict':409,'invalid-chapter-range':422,unauthenticated:401,forbidden:403,'invalid-request':400,'invalid-content':422,
  'content-not-ready':422,'revision-conflict':409,'idempotency-conflict':409,'world-conflict':409,
  'member-conflict':409,'review-conflict':409,'dependency-conflict':409,'invalid-submission':409,'authoring-unavailable':503,'validator-unavailable':503};
 class TransportError extends Error{constructor(code,status){super(code);this.code=code;this.status=status;}}
@@ -61,6 +66,7 @@ export function createAuthoringHttpHandler({storage,projectId,allowedOrigins,
  const origins=new Set(allowedOrigins);
  const options={storage,projectId,verify,now};
  const authoring=createSqlAuthoringService(options),provisioning=createSqlProvisioningService(options);
+ let registry; // Initialize the isolated registry only for an explicit source request.
  return async function handle(request){
   let origin;
   function reply(body,status=200,extra={}){
@@ -106,7 +112,10 @@ export function createAuthoringHttpHandler({storage,projectId,allowedOrigins,
    if(route.match[1])input.worldId=route.match[1];
    if(route.match[2])input.snapshotHash=route.match[2];
    let result;
-   if(route.action==='reviewSubmission')result=await authoring.viewSubmission(request,{...input,forReview:true});
+   if(sourceActions.has(route.action)){
+    registry ||= createSqlRegistryService(options);
+    result=await registry[route.action](request,input);
+   }else if(route.action==='reviewSubmission')result=await authoring.viewSubmission(request,{...input,forReview:true});
    else if(route.action==='recordReview')result=await authoring.reviewSubmission(request,input);
    else if(['createWorld','setCollaborator'].includes(route.action))result=await provisioning[route.action](request,input);
    else result=await authoring[route.action](request,input);

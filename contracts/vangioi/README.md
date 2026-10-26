@@ -89,3 +89,5 @@ G1M: xem [ITEM_POLICY_G1M.md](ITEM_POLICY_G1M.md), schema và preflight sidecar 
 G1N: [ARC_PLANNING_G1N.md](ARC_PLANNING_G1N.md) — kế hoạch arc local và gói xuất/nhập; source picker có quyền còn chờ adapter.
 
 G1O: [SOURCE_MANIFEST_G1O.md](SOURCE_MANIFEST_G1O.md) — danh sách nguồn có quyền, manifest và khoảng chương; service độc lập, chưa bật picker.
+
+G1P: [SOURCE_HTTP_G1P.md](SOURCE_HTTP_G1P.md) — ba tuyến đọc nguồn trong adapter HTTP độc lập; chưa bật live hoặc picker.

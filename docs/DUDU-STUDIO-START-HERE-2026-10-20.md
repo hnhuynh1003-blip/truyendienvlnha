@@ -1,5 +1,9 @@
 # DUDU Studio — START HERE / Bàn giao sạch · 20/10/2026
 
+## VẠN GIỚI Giai đoạn 1P — 26/10/2026
+
+Nền 5554912. Đọc `contracts/vangioi/SOURCE_HTTP_G1P.md`. Adapter HTTP độc lập G1K thêm ba POST query/manifest/range dưới world sources, Bearer/Origin/body giới hạn và quyền registry G1O. Chưa nối Worker live, Thư viện Firestore hoặc Creator picker; không mutation/grant route. 7 HTTP tests mới, 408 Worker/helper; CI theo commit G1P. Tiếp adapter Thư viện có quyền và manifest trước client/picker, giữ cổng deploy G1K.
+
 ## VẠN GIỚI Giai đoạn 1O — 26/10/2026
 
 Nền 2fc45fd. Đọc `contracts/vangioi/SOURCE_MANIFEST_G1O.md`. Registry G1F thêm listSources phân trang theo world/recipient/grant, sourceManifest không text và sourceRange theo chapter ID/thứ tự payload. Read/hash/recheck quyền hiện hữu được tái sử dụng. Chỉ service SQLite độc lập; chưa HTTP/Firestore/live/Creator picker. Không đổi schema, arc/nháp/UI hoặc thưởng. Kiểm CI theo commit G1O; tiếp transport xác thực và adapter Thư viện trước nối UI.

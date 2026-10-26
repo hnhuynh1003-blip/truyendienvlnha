@@ -3,11 +3,13 @@ import assert from 'node:assert/strict';
 import {DatabaseSync} from 'node:sqlite';
 import {readFileSync} from 'node:fs';
 import {createAuthoringHttpHandler,AUTHORING_HTTP_MAX_BYTES} from '../src/vangioi-authoring-http.mjs';
+import {createSqlRegistryService} from '../src/vangioi-registry.mjs';
 import {content} from './fixtures/vangioi-content.mjs';
 const ORIGIN='https://author.test',BASE='/api/vangioi/authoring/v1',OWNER='http-owner',EDITOR='http-editor';
 function setup(){
  const db=new DatabaseSync(':memory:'),hooks={before:null,fail:null,verify:null};
  const sql={exec(q,...args){
+  args=args.map(v=>v instanceof ArrayBuffer?new Uint8Array(v):v);
   let rows=[];
   if(q.trim().startsWith('CREATE '))db.exec(q);
   else{const s=db.prepare(q);if((/^\s*SELECT\b/i.test(q)||/\bRETURNING\b/i.test(q)))rows=s.all(...args);else s.run(...args);}
@@ -342,5 +344,105 @@ test('G1L concurrent owner reopen requests create only one revision; receipt rep
   const next=await f.call(`/worlds/${x.w}/draft`,'PATCH',edit({expectedRevision:2}));assert.equal(next.data.revision,3);
   assert.equal((await f.call(x.path+'/reopen','POST',data)).data.revision,2);
   assert.equal(f.rows('SELECT draft_revision FROM vg_authoring_worlds_v1')[0].draft_revision,3);
+ }finally{f.close();}
+});
+
+async function sourceHttpFixture(f){
+ const w=await f.create(),service=createSqlRegistryService(f.options);
+ f.sql.exec("INSERT INTO vg_authoring_registry_operators_v1 VALUES('source-operator','active')");
+ const source=await service.registerSource(f.request('/unused','GET',undefined,'source-operator'),{
+  requestId:crypto.randomUUID(),kind:'library',storyId:'existing-story',storyVersion:'v1',authorizedUid:OWNER,
+  license:'original',sourceNote:'Synthetic operator attestation',proofRef:null,
+  payload:{format:'story-source-1',title:'Private title',chapters:[
+   {chapterId:'chapter-10',title:'First',text:'PRIVATE_CHAPTER_FIRST'},
+   {chapterId:'chapter-2',title:'Second',text:'PRIVATE_CHAPTER_SECOND'}]}});
+ assert.equal(source.ok,true);
+ assert.equal((await service.setSourceGrant(f.request('/unused'),{worldId:w,requestId:crypto.randomUUID(),expectedAccessRevision:1,
+  expectedGrantRevision:0,reference:source.reference,status:'active'})).ok,true);
+ return {w,service,reference:source.reference,path:`/worlds/${w}/sources`,
+  range:{reference:source.reference,startChapterId:'chapter-10',endChapterId:'chapter-2'}};
+}
+test('G1P authenticated HTTP discovers registry source, reads manifest and exact ordered range without writes',async()=>{
+ const f=setup();try{
+  const x=await sourceHttpFixture(f),before=f.rows('SELECT count(*) n FROM vg_authoring_registry_events_v1')[0].n;
+  const list=await f.call(x.path+'/query','POST',{after:''});assert.equal(list.status,200);assert.deepEqual(list.data.sources[0].reference,x.reference);
+  assert.equal(JSON.stringify(list.data).includes('PRIVATE_CHAPTER'),false);
+  const manifest=await f.call(x.path+'/manifest','POST',{reference:x.reference});assert.equal(manifest.status,200);
+  assert.deepEqual(manifest.data.manifest.chapters.map(c=>c.chapterId),['chapter-10','chapter-2']);
+  assert.equal(JSON.stringify(manifest.data).includes('PRIVATE_CHAPTER'),false);
+  const range=await f.call(x.path+'/range','POST',x.range);assert.equal(range.status,200);
+  assert.deepEqual(range.data.chapters.map(c=>c.text),['PRIVATE_CHAPTER_FIRST','PRIVATE_CHAPTER_SECOND']);
+  assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_registry_events_v1')[0].n,before);
+  for(const r of [list,manifest,range]){
+   assert.equal(r.headers.get('cache-control'),'private, no-store');assert.equal(r.headers.get('x-content-type-options'),'nosniff');
+   assert.equal(r.headers.get('access-control-allow-origin'),ORIGIN);
+  }
+ }finally{f.close();}
+});
+test('G1P HTTP denies guest, collaborator, reviewer, operator and forged admin access to source bodies',async()=>{
+ const f=setup();try{
+  const x=await sourceHttpFixture(f);f.membership(x.w,EDITOR,'collaborator',['storySource']);f.membership(x.w,'reviewer');
+  for(const user of ['guest',EDITOR,'reviewer','source-operator','stranger'])for(const [endpoint,data]of [
+   ['query',{after:''}],['manifest',{reference:x.reference}],['range',x.range]]){
+   const r=await f.call(x.path+'/'+endpoint,'POST',data,user,{'X-Admin':'true','X-Owner-Uid':OWNER});
+   assert.equal(r.status,user==='guest'?401:403);assert.equal(JSON.stringify(r.data).includes('PRIVATE_'),false);
+  }
+ }finally{f.close();}
+});
+test('G1P HTTP URL identity, exact envelopes, pins and methods cannot be smuggled through input',async()=>{
+ const f=setup();try{
+  const x=await sourceHttpFixture(f);
+  for(const [endpoint,data]of [['query',{after:''}],['manifest',{reference:x.reference}],['range',x.range]]){
+   assert.equal((await f.call(x.path+'/'+endpoint,'GET')).status,405);
+   for(const extra of [{worldId:x.w},{uid:OWNER},{approved:true},{forReview:true},{snapshotHash:'a'.repeat(64)}])
+    assert.equal((await f.call(x.path+'/'+endpoint,'POST',{...data,...extra})).status,400);
+   assert.equal((await f.call(x.path+'/'+endpoint+'?uid='+OWNER,'POST',data)).status,400);
+  }
+  assert.equal((await f.call(x.path+'/manifest','POST',{reference:{...x.reference,contentHash:'f'.repeat(64)}})).status,403);
+  assert.equal((await f.call(x.path+'/range','POST',{...x.range,startChapterId:'chapter-2',endChapterId:'chapter-10'})).status,422);
+  assert.equal((await f.call(x.path+'/range','POST',{...x.range,endChapterId:'missing'})).data.code,'invalid-chapter-range');
+ }finally{f.close();}
+});
+test('G1P HTTP source grant revocation blocks reads and removes discovery',async()=>{
+ const f=setup();try{
+  const x=await sourceHttpFixture(f);
+  await x.service.setSourceGrant(f.request('/unused'),{worldId:x.w,requestId:crypto.randomUUID(),expectedAccessRevision:1,
+   expectedGrantRevision:1,reference:x.reference,status:'revoked'});
+  assert.deepEqual((await f.call(x.path+'/query','POST',{after:''})).data.sources,[]);
+  assert.equal((await f.call(x.path+'/manifest','POST',{reference:x.reference})).status,403);
+  assert.equal((await f.call(x.path+'/range','POST',x.range)).status,403);
+ }finally{f.close();}
+});
+test('G1P HTTP rechecks source rights while hash yields, before returning private range',async()=>{
+ const f=setup();try{
+  const x=await sourceHttpFixture(f);await f.call(x.path+'/query','POST',{after:''});let count=0;
+  f.hooks.before=()=>{if(++count===2){f.hooks.before=null;f.sql.exec("UPDATE vg_authoring_source_grants_v1 SET status='revoked',grant_revision=2");}};
+  const r=await f.call(x.path+'/range','POST',x.range);assert.equal(r.status,403);assert.equal(JSON.stringify(r.data).includes('PRIVATE_'),false);
+ }finally{f.close();}
+});
+test('G1P HTTP source routes retain media, byte, Origin and preflight restrictions',async()=>{
+ const f=setup();try{
+  const x=await sourceHttpFixture(f);
+  assert.equal((await f.call(x.path+'/manifest','POST',{},OWNER,{Origin:'https://evil.test'})).status,403);
+  assert.equal((await f.call(x.path+'/manifest','POST','{}',OWNER,{'Content-Type':'text/plain'})).status,415);
+  assert.equal((await f.call(x.path+'/range','POST','{}',OWNER,{'Content-Length':String(AUTHORING_HTTP_MAX_BYTES+1)})).status,413);
+  const response=await f.handle(f.request(x.path+'/query','OPTIONS',undefined,OWNER,{'Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'authorization, content-type'}));
+  assert.equal(response.status,204);assert.equal(response.headers.get('access-control-allow-methods'),'POST');
+  assert.equal((await f.call(`/worlds/${x.w}/sources/register`,'POST',{})).status,404);
+  assert.equal((await f.call(`/worlds/${x.w}/sources/grant`,'POST',{})).status,404);
+ }finally{f.close();}
+});
+test('G1P HTTP hides registry/storage errors and reports payload integrity failure without bytes',async()=>{
+ const f=setup();try{
+  const x=await sourceHttpFixture(f);f.hooks.fail='FROM vg_authoring_registry_objects_v1 o';
+  const r=await f.call(x.path+'/query','POST',{after:''});assert.equal(r.status,503);
+  assert.equal(JSON.stringify(r.data).includes('SQL_PRIVATE'),false);
+  // Insert corrupt payload fixture with matching declared reference is impossible via service;
+  // exercise the existing byte integrity guard by replacing storage reads in this test only.
+  const original=f.options.storage.sql.exec;
+  f.options.storage.sql.exec=(q,...args)=>q.includes('SELECT * FROM vg_authoring_registry_payloads_v1')?
+   {toArray:()=>[{payload:new TextEncoder().encode('{}'),media_type:'application/json'}]}:original(q,...args);
+  const bad=await f.call(x.path+'/manifest','POST',{reference:x.reference});assert.equal(bad.status,409);
+  assert.deepEqual(bad.data,{ok:false,code:'payload-integrity-conflict'});
  }finally{f.close();}
 });
