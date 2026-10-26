@@ -81,6 +81,8 @@ export function createSqlFrozenSourceService({storage,projectId,verify=verifyFir
    const digest=await hashAuthoringJson({action:'source:freeze',plan:p});
    return storage.transactionSync(()=>{
     if(!isOperator(user))return fail();
+    if(one("SELECT notice_id FROM vg_authoring_source_notices_v1 WHERE story_id=? AND content_hash=? AND status='open' LIMIT 1",
+     p.reference.storyId,p.reference.contentHash))return fail('source-held');
     const current=permit(p.reference.storyId,p.reference.contentHash);
     if(!current||current.authorizedUid!==d.authorizedUid||current.license!==d.license||
      current.sourceNote!==d.sourceNote||current.proofRef!==d.proofRef)return fail();
@@ -115,6 +117,7 @@ export function createSqlFrozenSourceService({storage,projectId,verify=verifyFir
    if(!isOperator(user))return fail();
    state=storage.transactionSync(()=>{
     if(!isOperator(user))return null;
+    if(one("SELECT notice_id FROM vg_authoring_source_notices_v1 WHERE story_id=? AND content_hash=? AND status='open' LIMIT 1",d.storyId,d.contentHash))return null;
     const source=one('SELECT * FROM vg_authoring_source_freezes_v1 WHERE story_id=? AND content_hash=?',d.storyId,d.contentHash);
     const current=permit(d.storyId,d.contentHash);
     return source&&current&&source.authorized_uid===current.authorizedUid?{source,current}:null;

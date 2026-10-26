@@ -105,3 +105,5 @@ G1U: [AUTHORITY_SYNC_G1U.md](AUTHORITY_SYNC_G1U.md) — outbox SQL append-only c
 G1V: [REPLAY_AND_RECHECK_G1V.md](REPLAY_AND_RECHECK_G1V.md) — diễn tập replay/checkpoint + revoked-wins và kiểm lại source V49 trước registry; vẫn chưa có subscriber, source freeze hay kết nối staging/live.
 
 G1W: [SOURCE_FREEZE_G1W.md](SOURCE_FREEZE_G1W.md) — archive SQL cục bộ bất biến theo hash, nhập nguồn từ bản pin dưới permit hiện hành và ma trận xử lý thu hồi/staging; chưa có Firebase thật, legal notice listener, migration, consumer hay UI.
+
+G1X: [SOURCE_NOTICES_G1X.md](SOURCE_NOTICES_G1X.md) — notice operator-only và lớp tạm giữ theo story/hash để chặn intake/read/discovery/submit/review trong SQLite; không tự revoke giấy phép, không có Firestore listener hay route live.

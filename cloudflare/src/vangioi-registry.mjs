@@ -77,6 +77,8 @@ export function createSqlRegistryService({storage,projectId,verify=verifyFirebas
  });
  const all=(q,...args)=>storage.sql.exec(q,...args).toArray(),one=(q,...args)=>all(q,...args)[0]||null;
  const isOperator=user=>one("SELECT uid FROM vg_authoring_registry_operators_v1 WHERE uid=? AND status='active'",user)!==null;
+ const held=(story,contentHash)=>one(`SELECT notice_id FROM vg_authoring_source_notices_v1
+  WHERE story_id=? AND content_hash=? AND status='open' LIMIT 1`,story,contentHash)!==null;
  function receipt(scope,user,d,action,digest){
   const r=one('SELECT * FROM vg_authoring_registry_operations_v1 WHERE scope=? AND actor_uid=? AND request_id=?',scope,user,d.requestId);
   if(!r)return null;if(r.action!==action||r.request_hash!==digest)return fail('idempotency-conflict');
@@ -148,6 +150,8 @@ export function createSqlRegistryService({storage,projectId,verify=verifyFirebas
      if(d.status==='active'&&(!obj||obj.status!=='active'||obj.authorized_uid!==user))return fail();
     }else if(!isOperator(user))return fail();
     if(action==='register'&&obj?.status==='revoked')return fail();
+    if(category==='source'&&kind==='library'&&
+     ((action==='register')||(action==='grant'&&d.status==='active'))&&held(reference.storyId,contentHash))return fail('source-held');
     if(category==='source'&&action==='register'&&kind==='library'){
      const permit=one('SELECT * FROM vg_authoring_adaptation_permits_v1 WHERE story_id=? AND content_hash=?',reference.storyId,contentHash);
      if(permit){const p=JSON.parse(permit.permit_json);
@@ -214,6 +218,7 @@ export function createSqlRegistryService({storage,projectId,verify=verifyFirebas
    const {contentHash,kind,...refId}=d.reference;
    const objectKey=await hashAuthoringJson({category,...refId,...(category==='source'?{kind}:{})});
    function authorized(){
+    if(category==='source'&&kind==='library'&&held(d.reference.storyId,contentHash))return null;
     const w=one('SELECT * FROM vg_authoring_worlds_v1 WHERE world_id=?',d.worldId);
     const o=one('SELECT * FROM vg_authoring_registry_objects_v1 WHERE object_key=?',objectKey);
     if(!w||w.owner_uid!==user||!o||o.status!=='active'||o.authorized_uid!==user||
@@ -265,6 +270,8 @@ export function createSqlRegistryService({storage,projectId,verify=verifyFirebas
     JOIN vg_authoring_source_versions_v1 v ON v.kind=g.kind AND v.story_id=g.story_id AND v.story_version=g.story_version
     WHERE g.world_id=? AND g.status='active' AND o.category='source' AND o.status='active'
      AND o.authorized_uid=? AND o.object_key>? AND v.content_hash=json_extract(o.reference_json,'$.contentHash')
+     AND (g.kind!='library' OR NOT EXISTS(SELECT 1 FROM vg_authoring_source_notices_v1 n
+      WHERE n.story_id=g.story_id AND n.content_hash=v.content_hash AND n.status='open'))
     ORDER BY o.object_key LIMIT 51`,d.worldId,user,d.after);
    const sources=rows.slice(0,50).map(row=>{
     const reference=copyAuthoringJson(JSON.parse(row.reference_json));
@@ -314,6 +321,7 @@ export function createSqlRegistryService({storage,projectId,verify=verifyFirebas
     if(!isOperator(user))return fail();
     const row=one('SELECT * FROM vg_authoring_adaptation_permits_v1 WHERE story_id=? AND content_hash=?',d.storyId,d.contentHash);
     if(action==='read')return row?{ok:true,permit:{...JSON.parse(row.permit_json),status:row.status,revision:row.revision}}:fail();
+    if(action==='issue'&&held(d.storyId,d.contentHash))return fail('source-held');
     const prior=receipt('permits',user,d,'permit:'+action,digest);if(prior)return prior;
     const version='sha256-'+d.contentHash;
     if(action==='issue'){

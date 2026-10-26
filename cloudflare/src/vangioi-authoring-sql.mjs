@@ -46,6 +46,25 @@ export function initializeAuthoringSchema(storage){
    world_id TEXT NOT NULL,kind TEXT NOT NULL,story_id TEXT NOT NULL,story_version TEXT NOT NULL,
    status TEXT NOT NULL,grant_revision INTEGER NOT NULL CHECK(grant_revision>=1),
    PRIMARY KEY(world_id,kind,story_id,story_version))`);
+  storage.sql.exec(`CREATE TABLE IF NOT EXISTS vg_authoring_source_notices_v1(
+   notice_id TEXT PRIMARY KEY,story_id TEXT NOT NULL,content_hash TEXT NOT NULL,
+   reason TEXT NOT NULL CHECK(reason IN ('rights_dispute','source_unpublished','owner_report')),
+   evidence_ref TEXT,opened_by TEXT NOT NULL,opened_at INTEGER NOT NULL CHECK(opened_at>=0),
+   status TEXT NOT NULL CHECK(status IN ('open','released','revoked')),
+   revision INTEGER NOT NULL CHECK(revision>=1),resolution_note TEXT)`);
+  storage.sql.exec(`CREATE INDEX IF NOT EXISTS vg_source_notices_active_v1
+   ON vg_authoring_source_notices_v1(story_id,content_hash,status)`);
+  storage.sql.exec(`CREATE TRIGGER IF NOT EXISTS vg_source_notices_delete_v1
+   BEFORE DELETE ON vg_authoring_source_notices_v1 BEGIN SELECT RAISE(ABORT,'immutable-source-notice'); END`);
+  storage.sql.exec(`CREATE TRIGGER IF NOT EXISTS vg_source_notices_update_v1
+   BEFORE UPDATE ON vg_authoring_source_notices_v1 WHEN
+   NEW.notice_id IS NOT OLD.notice_id OR NEW.story_id IS NOT OLD.story_id OR
+   NEW.content_hash IS NOT OLD.content_hash OR NEW.reason IS NOT OLD.reason OR
+   NEW.evidence_ref IS NOT OLD.evidence_ref OR NEW.opened_by IS NOT OLD.opened_by OR
+   NEW.opened_at IS NOT OLD.opened_at OR OLD.status!='open' OR
+   NEW.status NOT IN ('released','revoked') OR NEW.revision!=OLD.revision+1 OR
+   OLD.resolution_note IS NOT NULL OR NEW.resolution_note IS NULL OR trim(NEW.resolution_note)=''
+   BEGIN SELECT RAISE(ABORT,'immutable-source-notice'); END`);
   storage.sql.exec(`CREATE TABLE IF NOT EXISTS vg_authoring_asset_versions_v1(
    asset_id TEXT NOT NULL,asset_version TEXT NOT NULL,content_hash TEXT NOT NULL,kind TEXT NOT NULL,
    PRIMARY KEY(asset_id,asset_version))`);
@@ -102,8 +121,10 @@ export function createSqlAuthoringService({storage,projectId,verify=verifyFireba
    JOIN vg_authoring_source_grants_v1 g ON v.kind=g.kind AND v.story_id=g.story_id AND v.story_version=g.story_version
    WHERE g.world_id=? AND v.kind=? AND v.story_id=? AND v.story_version=?`,
    worldId,reference.kind,reference.storyId,reference.storyVersion);
+  const held=row&&row.kind==='library'&&one(`SELECT notice_id FROM vg_authoring_source_notices_v1
+   WHERE story_id=? AND content_hash=? AND status='open' LIMIT 1`,row.story_id,row.content_hash);
   return row?{worldId,kind:row.kind,storyId:row.story_id,storyVersion:row.story_version,
-   contentHash:row.content_hash,grantStatus:row.status,grantRevision:row.grant_revision}:null;
+   contentHash:row.content_hash,grantStatus:held?'revoked':row.status,grantRevision:row.grant_revision}:null;
  }
  function asset(reference,{worldId}){
   const row=one(`SELECT v.*,g.status,g.grant_revision,g.review_status,g.license,g.source_note,g.proof_ref

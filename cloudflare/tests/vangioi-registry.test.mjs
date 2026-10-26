@@ -14,6 +14,7 @@ import {createV49FirestoreTransactionReader} from '../src/vangioi-v49-firestore-
 import {createPermitReplayRehearsal} from '../src/vangioi-permit-replay.mjs';
 import {createV49PrecommitRecheck} from '../src/vangioi-library-precommit.mjs';
 import {createSqlFrozenSourceService} from '../src/vangioi-source-freeze.mjs';
+import {createSqlSourceNoticeService} from '../src/vangioi-source-notices.mjs';
 import {createV49TransactionFixture} from './fixtures/vangioi-firestore-v49.mjs';
 import {content} from './fixtures/vangioi-content.mjs';
 
@@ -1012,5 +1013,144 @@ test('G1W cannot be invoked by the public Worker or authoring HTTP adapter',()=>
  for(const file of ['../src/index.mjs','../src/vangioi-authoring-http.mjs']){
   const contents=readFileSync(new URL(file,import.meta.url),'utf8');
   assert.equal(contents.includes('vangioi-source-freeze'),false);
+ }
+});
+
+const noticeInput=(storyId,contentHash,reason='rights_dispute')=>({requestId:crypto.randomUUID(),storyId,
+ contentHash,reason,evidenceRef:reason==='source_unpublished'?null:'PRIVATE_NOTICE_EVIDENCE'});
+const noticeDecision=(noticeId,decision='release')=>({requestId:crypto.randomUUID(),noticeId,
+ expectedRevision:1,decision,note:'Operator checked source custody and rights'});
+
+test('G1X open notice immediately blocks existing world read, discovery and draft submission; release restores them',async()=>{
+ const f=setup();try{
+  const p=await complete(f),notices=createSqlSourceNoticeService(f.options);
+  const scope={worldId:p.w.worldId,reference:p.s.reference};
+  assert.equal((await f.registry.readSource(req(),scope)).ok,true);
+  assert.equal((await f.registry.listSources(req(),{worldId:p.w.worldId,after:''})).sources.length,1);
+  const opened=await notices.openNotice(req(OP),noticeInput(p.s.reference.storyId,p.s.reference.contentHash));
+  assert.equal(opened.status,'open');
+  assert.equal((await f.registry.readSource(req(),scope)).code,'forbidden');
+  assert.equal((await f.registry.sourceManifest(req(),scope)).ok,false);
+  assert.equal((await f.registry.sourceRange(req(),{...scope,startChapterId:'ch-one',endChapterId:'ch-one'})).ok,false);
+  assert.equal((await f.registry.listSources(req(),{worldId:p.w.worldId,after:''})).sources.length,0);
+  assert.equal((await p.submit()).ok,false);
+  assert.equal((await f.registry.setSourceGrant(req(),f.grant(p.w,p.s.reference,{expectedGrantRevision:1}))).code,'source-held');
+  assert.equal((await notices.resolveNotice(req(OP),noticeDecision(opened.noticeId))).status,'released');
+  assert.equal((await f.registry.readSource(req(),scope)).ok,true);
+  assert.equal((await p.submit()).ok,true);
+ }finally{f.close();}
+});
+
+test('G1X two simultaneous notices keep source held until both have been resolved',async()=>{
+ const f=setup();try{
+  const p=await complete(f),notices=createSqlSourceNoticeService(f.options),ref=p.s.reference;
+  const a=await notices.openNotice(req(OP),noticeInput(ref.storyId,ref.contentHash));
+  const b=await notices.openNotice(req(OP),noticeInput(ref.storyId,ref.contentHash,'source_unpublished'));
+  assert.equal((await notices.resolveNotice(req(OP),noticeDecision(a.noticeId))).ok,true);
+  assert.equal((await f.registry.readSource(req(),{worldId:p.w.worldId,reference:ref})).ok,false);
+  assert.equal((await notices.resolveNotice(req(OP),noticeDecision(b.noticeId))).ok,true);
+  assert.equal((await f.registry.readSource(req(),{worldId:p.w.worldId,reference:ref})).ok,true);
+ }finally{f.close();}
+});
+
+test('G1X hold blocks review approval of a submitted world until rights review is released',async()=>{
+ const f=setup();try{
+  const p=await complete(f),submitted=await p.submit(),notices=createSqlSourceNoticeService(f.options);
+  assert.equal(submitted.ok,true);
+  const reviewer='reviewer-g1x';
+  f.sql.exec("INSERT INTO vg_authoring_members_v1 VALUES(?,?,'active',?,?)",p.w.worldId,reviewer,
+   JSON.stringify(['reviewer']),JSON.stringify([]));
+  const review={worldId:p.w.worldId,requestId:crypto.randomUUID(),expectedRevision:submitted.revision,
+   expectedAccessRevision:1,snapshotHash:submitted.snapshotHash,decision:'approve',note:'Reviewer verified sources'};
+  const n=await notices.openNotice(req(OP),noticeInput(p.s.reference.storyId,p.s.reference.contentHash));
+  assert.equal((await f.authoring.reviewSubmission(req(reviewer),review)).code,'content-not-ready');
+  assert.equal((await notices.resolveNotice(req(OP),noticeDecision(n.noticeId))).status,'released');
+  assert.equal((await f.authoring.reviewSubmission(req(reviewer),review)).state,'approved');
+ }finally{f.close();}
+});
+
+test('G1X new permit and registry import are blocked while notice is open, including legacy intake',async()=>{
+ const f=setup();try{
+  f.operator();const notices=createSqlSourceNoticeService(f.options),d=sourceInput(),hash=await hashAuthoringJson(d.payload);
+  const opened=await notices.openNotice(req(OP),noticeInput(d.storyId,hash));assert.equal(opened.ok,true);
+  const permit={requestId:crypto.randomUUID(),storyId:d.storyId,contentHash:hash,authorizedUid:OWNER,
+   license:d.license,sourceNote:d.sourceNote,proofRef:d.proofRef};
+  assert.equal((await f.registry.issueAdaptationPermit(req(OP),permit)).code,'source-held');
+  assert.equal((await f.registry.registerSource(req(OP),d)).code,'source-held');
+  assert.equal((await notices.resolveNotice(req(OP),noticeDecision(opened.noticeId))).status,'released');
+  assert.equal((await f.registry.issueAdaptationPermit(req(OP),permit)).ok,true);
+  assert.equal((await f.registry.registerSource(req(OP),{...d,storyVersion:'sha256-'+hash})).ok,true);
+ }finally{f.close();}
+});
+
+test('G1X confirmed legal withdrawal must revoke via G1R first and cannot resurrect grant on resolution',async()=>{
+ const f=setup(),fire=createV49TransactionFixture('epub-g1x-withdrawal');try{
+  const x=await g1tPrepared(f,fire),freeze=frozenService(f),notices=createSqlSourceNoticeService(f.options);
+  assert.equal((await freeze.freezePrepared(req(OP),x.plan)).ok,true);
+  const n=await notices.openNotice(req(OP),noticeInput(fire.storyId,x.hash,'owner_report'));
+  assert.equal((await freeze.registerFrozen(req(OP),{requestId:crypto.randomUUID(),storyId:fire.storyId,contentHash:x.hash})).ok,false);
+  assert.equal((await notices.resolveNotice(req(OP),noticeDecision(n.noticeId,'confirm_revoke'))).code,'revoke-required');
+  assert.equal((await f.registry.revokeAdaptationPermit(req(OP),{
+   requestId:crypto.randomUUID(),storyId:fire.storyId,contentHash:x.hash,expectedRevision:1})).status,'revoked');
+  assert.equal((await notices.resolveNotice(req(OP),noticeDecision(n.noticeId,'confirm_revoke'))).status,'revoked');
+  assert.equal((await freeze.registerFrozen(req(OP),{requestId:crypto.randomUUID(),storyId:fire.storyId,contentHash:x.hash})).ok,false);
+  const events=await f.registry.listPermitEvents(req(OP),{after:0});
+  assert.deepEqual(events.events.map(e=>e.status),['active','revoked']);
+ }finally{f.close();}
+});
+
+test('G1X held source cannot be frozen as a new private archive before intake',async()=>{
+ const f=setup(),fire=createV49TransactionFixture('epub-g1x-hold-before-freeze');try{
+  const x=await g1tPrepared(f,fire),freeze=frozenService(f),notices=createSqlSourceNoticeService(f.options);
+  const n=await notices.openNotice(req(OP),noticeInput(fire.storyId,x.hash));
+  assert.equal((await freeze.freezePrepared(req(OP),x.plan)).code,'source-held');
+  assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_source_freezes_v1')[0].n,0);
+  assert.equal((await notices.resolveNotice(req(OP),noticeDecision(n.noticeId))).ok,true);
+  assert.equal((await freeze.freezePrepared(req(OP),x.plan)).ok,true);
+ }finally{f.close();}
+});
+
+test('G1X unassigned identities cannot open or resolve notices; request replay is audited and immutable',async()=>{
+ const f=setup();try{
+  f.operator();const notices=createSqlSourceNoticeService(f.options),d=noticeInput('epub-g1x-admin','a'.repeat(64));
+  assert.equal((await notices.openNotice(req(),d)).code,'forbidden');
+  assert.equal((await notices.openNotice(req('guest'),d)).code,'unauthenticated');
+  const n=await notices.openNotice(req(OP),d);assert.equal(n.ok,true);
+  assert.equal((await notices.openNotice(req(OP),d)).replayed,true);
+  assert.equal((await notices.openNotice(req(OP),{...d,reason:'owner_report'})).code,'idempotency-conflict');
+  assert.equal((await notices.resolveNotice(req(),noticeDecision(n.noticeId))).code,'forbidden');
+  assert.equal((await notices.readNotice(req(),{noticeId:n.noticeId})).code,'forbidden');
+  const read=await notices.readNotice(req(OP),{noticeId:n.noticeId});
+  assert.equal(read.notice.status,'open');assert.equal(JSON.stringify(read).includes('PRIVATE_NOTICE_EVIDENCE'),false);
+  assert.throws(()=>f.sql.exec('DELETE FROM vg_authoring_source_notices_v1'),/immutable/);
+  assert.throws(()=>f.sql.exec("UPDATE vg_authoring_source_notices_v1 SET reason='owner_report'"),/immutable/);
+  assert.equal(f.rows("SELECT count(*) n FROM vg_authoring_registry_events_v1 WHERE scope='notices'")[0].n,1);
+ }finally{f.close();}
+});
+
+test('G1X failed notice audit rolls back hold, receipt and ability to register',async()=>{
+ const f=setup();try{
+  f.operator();const notices=createSqlSourceNoticeService(f.options),d=sourceInput(),hash=await hashAuthoringJson(d.payload);
+  f.hooks.fail='INSERT INTO vg_authoring_registry_events_v1';
+  assert.equal((await notices.openNotice(req(OP),noticeInput(d.storyId,hash))).code,'notices-unavailable');
+  assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_source_notices_v1')[0].n,0);
+  assert.equal(f.rows("SELECT count(*) n FROM vg_authoring_registry_operations_v1 WHERE scope='notices'")[0].n,0);
+  assert.equal((await f.registry.registerSource(req(OP),d)).ok,true);
+ }finally{f.close();}
+});
+
+test('G1X hold introduced during source hashing is rechecked before returning private text',async()=>{
+ const f=setup();try{
+  const p=await complete(f),target=f.hooks.count+2;
+  f.hooks.before=n=>{if(n===target)f.sql.exec(`INSERT INTO vg_authoring_source_notices_v1 VALUES(?,?,?,?,?,?,?,'open',1,NULL)`,
+   crypto.randomUUID(),p.s.reference.storyId,p.s.reference.contentHash,'rights_dispute','PRIVATE_NOTICE_EVIDENCE',OP,1000);};
+  const result=await f.registry.readSource(req(),{worldId:p.w.worldId,reference:p.s.reference});
+  assert.equal(result.ok,false);assert.equal(JSON.stringify(result).includes('PRIVATE_SOURCE_TEXT'),false);
+ }finally{f.close();}
+});
+
+test('G1X notice module is not connected to public Worker or author HTTP adapter',()=>{
+ for(const file of ['../src/index.mjs','../src/vangioi-authoring-http.mjs']){
+  assert.equal(readFileSync(new URL(file,import.meta.url),'utf8').includes('vangioi-source-notices'),false);
  }
 });
