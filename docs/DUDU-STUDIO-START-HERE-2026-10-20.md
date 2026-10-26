@@ -1,5 +1,13 @@
 # DUDU Studio — START HERE / Bàn giao sạch · 20/10/2026
 
+## VẠN GIỚI Giai đoạn 1F — 26/10/2026
+
+Nền `4c63061` (1E, CI/Pages SUCCESS). Đọc `contracts/vangioi/REGISTRY_INTAKE_G1F.md`. Service registry độc lập nhập story-source-1/PNG thật và tính hash từ bytes, version/payload bất biến; operator assignment backend riêng, không tin admin/JSON. Owner đúng recipient mới gắn nguồn/asset vào world theo version/hash; grant mới ảnh pending, không phải duyệt art hoặc publish. Có đọc source/ảnh riêng tư cho owner, kiểm hash và kiểm lại quyền sau await.
+
+Thu hồi grant theo world hoặc version trong cùng storage chặn cấp lại/gửi duyệt; metadata license/recipient không đổi dưới cùng version. Transaction/receipt/audit bao trọn các bước ghi; default submit G1D đã test full flow từ intake không dùng registry seed. 39 test mới, tổng 334 test Worker PASS cục bộ và browser-target bundle thành công; CI/Pages cần xác minh theo SHA GitHub đợt này.
+
+Giới hạn: chỉ intake PNG <=1 MiB có kiểm container/CRC, chưa decode pixel/scan/kiểm art; source <=1 MiB, chưa exporter Firestore hoặc nhập EPUB thật. Chưa issuer quyền, upload/public route/CDN, Creator UI hoặc binding/migration/deploy Worker live. Không phát WORLD_PLAY/48 seed hay đổi auth/Thiên Mệnh/NPC/EPUB/save/kho/EXP/AI/Canon. Tiếp: Creator draft theo contract thật với trạng thái backend rõ ràng; adapter Firestore/object storage và live backend cần kế hoạch riêng.
+
 ## VẠN GIỚI Giai đoạn 1E — 26/10/2026
 
 Nền `29b3f9b` (1D, CI/Pages SUCCESS). Đọc `contracts/vangioi/PROVISIONING_G1E.md`. Module độc lập thêm createWorld với entitlement backend + UID đã xác thực, world ID do server sinh, revision-1 private draft; owner đặt/thu hồi collaborator theo section. Không cho claim admin/canEditStories hoặc JSON cấp quyền AU/reviewer/publisher/owner.

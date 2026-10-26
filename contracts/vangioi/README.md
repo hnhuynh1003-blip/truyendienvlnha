@@ -10,6 +10,8 @@ Giai đoạn 1A, ngày 26/10/2026. Chỉ nhập và kiểm tra hồ sơ ở loca
 
 Đợt 1D đã lên main tại `29b3f9b` với CI/Pages SUCCESS. Đợt 1E thêm service khởi tạo world nháp và collaborator theo section: [PROVISIONING_G1E.md](PROVISIONING_G1E.md). Chưa có issuer entitlement, source/asset adapter hoặc backend live.
 
+Đợt 1E đã lên main tại `4c63061` với CI/Pages SUCCESS. Đợt 1F thêm intake version/payload nguồn/PNG, quyền dùng theo world, thu hồi và đọc riêng tư: [REGISTRY_INTAKE_G1F.md](REGISTRY_INTAKE_G1F.md). Chưa nối Firestore/object storage hoặc backend live.
+
 ## Nguồn và quy tắc làm việc
 
 - Mã nền được đối chiếu tại `1f2fdb14074d99cd1a1542f334175c946c412f49` trên `main`.
