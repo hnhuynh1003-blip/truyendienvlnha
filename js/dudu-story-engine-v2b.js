@@ -16,7 +16,7 @@
   for(const scene of Object.values(s.scenes||{}))for(const c of list(scene.choices)){
    if(c.requiresFlags&&!Array.isArray(c.requiresFlags))issues.push('invalid_flag_requirement:'+c.id);
    if(c.requiresNotFlags&&!Array.isArray(c.requiresNotFlags))issues.push('invalid_negative_flag_requirement:'+c.id);
-   for(const field of ['visibleIfEvidence','visibleAnyEvidence','visibleIfFlags','visibleAnyFlags','hiddenIfFlags']){
+   for(const field of ['visibleIfEvidence','visibleAnyEvidence','visibleIfFlags','visibleAnyFlags','hiddenIfFlags','hiddenIfEvidence']){
     if(c[field]!==undefined&&(!Array.isArray(c[field])||c[field].some(x=>typeof x!=='string')))
      issues.push('invalid_visibility_rule:'+c.id+':'+field);
    }
@@ -29,7 +29,8 @@
    (!list(c.visibleAnyEvidence).length||list(c.visibleAnyEvidence).some(e=>state.evidence.includes(e)))&&
    list(c.visibleIfFlags).every(f=>state.flags.includes(f))&&
    (!list(c.visibleAnyFlags).length||list(c.visibleAnyFlags).some(f=>state.flags.includes(f)))&&
-   list(c.hiddenIfFlags).every(f=>!state.flags.includes(f));
+   list(c.hiddenIfFlags).every(f=>!state.flags.includes(f))&&
+   list(c.hiddenIfEvidence).every(e=>!state.evidence.includes(e));
  }
  function blocked(c,state){
   return list(c.requiresFlags).some(f=>!state.flags.includes(f))||
@@ -37,6 +38,8 @@
  }
  function verificationNote(state){
   const ev=list(state.evidence),flags=list(state.flags);
+  if(ev.includes('medicine_bundle'))
+   return 'Túi thuốc đã được thu nhận. Bạn có thể kiểm tra lại vật chứng, phiếu cấp cứu và nút dây; không cần tìm thêm một túi khác.';
   if(flags.includes('convoy_supplied'))
    return 'Đoàn xe đã nhận thuốc. Hãy hoàn tất việc công khai trách nhiệm và minh oan cho người bị nghi.';
   if(flags.includes('medicine_recovered'))

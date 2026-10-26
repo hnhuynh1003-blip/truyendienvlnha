@@ -15,7 +15,7 @@ assert.deepEqual(originalEngine.validate(originalPilot),[]);
 assert.deepEqual(model.validate(world),[]);
 assert.deepEqual(engine.validate(story),[]);
 assert.equal(story.scenarioId,'pilot-quan-dao-casefile-v8');
-assert.equal(story.scenarioVersion,9);
+assert.equal(story.scenarioVersion,10);
 assert.equal(story.missionId,originalPilot.missionId);
 assert.equal(story.status,'pilot_only');
 assert.equal(story.released,false);

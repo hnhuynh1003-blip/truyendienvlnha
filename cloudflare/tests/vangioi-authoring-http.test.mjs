@@ -193,3 +193,154 @@ test('G1K transport stays isolated from live Worker, bindings and frontend submi
  const worker=readFileSync(new URL('../src/index.mjs',import.meta.url),'utf8');
  assert.equal(worker.includes('vangioi-authoring-http'),false);
 });
+
+async function reviewFixture(f){
+ const c=content(),w=await f.create(c);f.registry(w,c);
+ f.membership(w,'reviewer-one');f.membership(w,'reviewer-two');f.membership(w,EDITOR,'collaborator',['scenes']);
+ const r=await f.call(`/worlds/${w}/submissions`,'POST',{requestId:crypto.randomUUID(),expectedRevision:1});
+ assert.equal(r.status,200);
+ const hash=r.data.snapshotHash,path=`/worlds/${w}/submissions/${hash}`;
+ const decision=(overrides={})=>({requestId:crypto.randomUUID(),expectedRevision:1,expectedAccessRevision:1,
+  decision:'approve',note:'Synthetic content checked; no publication permission.',...overrides});
+ const reopen=(overrides={})=>({requestId:crypto.randomUUID(),expectedRevision:1,expectedAccessRevision:1,...overrides});
+ return {w,c,hash,path,decision,reopen};
+}
+test('G1L approval pins snapshot, stores immutable decision/audit and replay does not repeat writes',async()=>{
+ const f=setup();try{
+  const x=await reviewFixture(f),data=x.decision();
+  const r=await f.call(x.path+'/decisions','POST',data,'reviewer-one');
+  assert.equal(r.status,200);assert.equal(r.data.state,'approved');
+  assert.equal((await f.call(x.path+'/decisions','POST',data,'reviewer-one')).data.replayed,true);
+  const row=f.rows('SELECT * FROM vg_authoring_reviews_v1')[0];
+  assert.equal(row.snapshot_hash,x.hash);assert.equal(row.validator_version,'world-content-1-semantic-2');
+  assert.throws(()=>f.sql.exec("UPDATE vg_authoring_reviews_v1 SET note='tampered'"),/immutable/);
+  assert.throws(()=>f.sql.exec('DELETE FROM vg_authoring_reviews_v1'),/immutable/);
+  const view=await f.call(x.path+'/decisions');assert.equal(view.data.review.note,data.note);
+  assert.equal((await f.call(x.path+'/decisions','GET',undefined,EDITOR)).status,403);
+  assert.equal((await f.call(x.path+'/decisions','GET',undefined,'stranger')).status,403);
+  assert.equal(f.rows("SELECT count(*) n FROM vg_authoring_audit_v1 WHERE action='review_submission'")[0].n,1);
+  assert.equal((await f.call(x.path+'/decisions','POST',{...data,note:'Changed'},'reviewer-one')).status,409);
+ }finally{f.close();}
+});
+test('G1L request changes stays locked until owner reopens a new revision and resubmits',async()=>{
+ const f=setup();try{
+  const x=await reviewFixture(f),data=x.decision({decision:'request_changes',note:'Revise the ending.'});
+  assert.equal((await f.call(x.path+'/decisions','POST',data,'reviewer-one')).data.state,'inReview');
+  assert.equal((await f.call(`/worlds/${x.w}/draft`,'PATCH',edit())).status,403);
+  assert.equal((await f.call(x.path+'/decisions','POST',x.decision(),'reviewer-two')).data.code,'review-conflict');
+  const reopen=x.reopen();const opened=await f.call(x.path+'/reopen','POST',reopen);
+  assert.equal(opened.status,200);assert.equal(opened.data.revision,2);
+  assert.equal((await f.call(x.path+'/reopen','POST',reopen)).data.replayed,true);
+  assert.equal((await f.call(x.path+'/review','GET',undefined,'reviewer-one')).status,403);
+  assert.equal((await f.call(x.path+'/decisions')).data.review.decision,'request_changes');
+  assert.equal((await f.call(`/worlds/${x.w}/draft`)).data.content.story.secretTruth,x.c.story.secretTruth);
+  assert.equal((await f.call(`/worlds/${x.w}/draft`,'PATCH',edit({expectedRevision:2}))).status,200);
+  const next=await f.call(`/worlds/${x.w}/submissions`,'POST',{requestId:crypto.randomUUID(),expectedRevision:3});
+  assert.equal(next.status,200);assert.notEqual(next.data.snapshotHash,x.hash);
+  assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_submissions_v1')[0].n,2);
+  assert.equal((await f.call(x.path+'/decisions','POST',x.decision(),'reviewer-two')).status,409);
+ }finally{f.close();}
+});
+test('G1L reviewer must be independent of owner, collaborators and past contributors',async()=>{
+ const f=setup();try{
+  const x=await reviewFixture(f);f.membership(x.w,OWNER);
+  f.membership(x.w,'former-author');
+  f.sql.exec('UPDATE vg_authoring_worlds_v1 SET contributors_json=?',JSON.stringify([OWNER,'former-author']));
+  for(const user of [OWNER,EDITOR,'former-author','stranger','guest']){
+   const r=await f.call(x.path+'/decisions','POST',x.decision(),user);assert.equal(r.status,user==='guest'?401:403);
+  }
+  assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_reviews_v1')[0].n,0);
+ }finally{f.close();}
+});
+test('G1L only owner may reopen and all workflow pins and exact fields are required',async()=>{
+ const f=setup();try{
+  const x=await reviewFixture(f);
+  for(const user of [EDITOR,'reviewer-one','stranger'])assert.equal((await f.call(x.path+'/reopen','POST',x.reopen(),user)).status,403);
+  for(const extra of [{expectedRevision:2},{expectedAccessRevision:2}])
+   assert.equal((await f.call(x.path+'/reopen','POST',x.reopen(extra))).status,409);
+  for(const extra of [{decision:'publish'},{note:''},{officialWorldRank:'S'},{note:'x'.repeat(4001)},{expectedAccessRevision:0}])
+   assert.equal((await f.call(x.path+'/decisions','POST',x.decision(extra),'reviewer-one')).status,400);
+  assert.equal((await f.call(`/worlds/${x.w}/submissions/${'f'.repeat(64)}/reopen`,'POST',x.reopen())).status,409);
+ }finally{f.close();}
+});
+test('G1L concurrent decisions commit exactly one result and losing reviewer receives conflict',async()=>{
+ const f=setup();try{
+  const x=await reviewFixture(f);
+  const rs=await Promise.all(['reviewer-one','reviewer-two'].map(user=>f.call(x.path+'/decisions','POST',x.decision(),user)));
+  assert.equal(rs.filter(r=>r.status===200).length,1);assert.equal(rs.filter(r=>r.status===409||r.status===403).length,1);
+  assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_reviews_v1')[0].n,1);
+ }finally{f.close();}
+});
+test('G1L concurrent identical decision retries return the same receipt',async()=>{
+ const f=setup();try{
+  const x=await reviewFixture(f),data=x.decision();
+  const rs=await Promise.all([f.call(x.path+'/decisions','POST',data,'reviewer-one'),f.call(x.path+'/decisions','POST',data,'reviewer-one')]);
+  assert.equal(rs.every(r=>r.status===200),true);assert.equal(rs.filter(r=>r.data.replayed).length,1);
+ }finally{f.close();}
+});
+test('G1L reviewer revocation and access revision changes at commit block decisions',async()=>{
+ for(const change of ["UPDATE vg_authoring_members_v1 SET status='revoked' WHERE uid='reviewer-one'",
+  'UPDATE vg_authoring_worlds_v1 SET access_revision=2']){
+  const f=setup();try{
+   const x=await reviewFixture(f);let count=0;
+   f.hooks.before=()=>{if(++count===2){f.hooks.before=null;f.sql.exec(change);}};
+   const r=await f.call(x.path+'/decisions','POST',x.decision(),'reviewer-one');assert.ok([403,409].includes(r.status));
+   assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_reviews_v1')[0].n,0);
+  }finally{f.close();}
+ }
+});
+test('G1L approval revalidates registry rights and commit rechecks dependencies',async()=>{
+ for(const during of [false,true]){
+  const f=setup();try{
+   const x=await reviewFixture(f);
+   const revoke=()=>f.sql.exec("UPDATE vg_authoring_asset_grants_v1 SET status='revoked',grant_revision=2");
+   if(!during)revoke();else{let count=0;f.hooks.before=()=>{if(++count===2){f.hooks.before=null;revoke();}};}
+   const r=await f.call(x.path+'/decisions','POST',x.decision(),'reviewer-one');assert.equal(r.status,during?409:422);
+   assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_reviews_v1')[0].n,0);
+  }finally{f.close();}
+ }
+});
+test('G1L failed decision audit rolls back header, decision and receipt together',async()=>{
+ const f=setup();try{
+  const x=await reviewFixture(f);f.hooks.fail='INSERT INTO vg_authoring_audit';
+  assert.equal((await f.call(x.path+'/decisions','POST',x.decision(),'reviewer-one')).status,503);
+  assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_reviews_v1')[0].n,0);
+  assert.equal(f.rows('SELECT draft_state FROM vg_authoring_worlds_v1')[0].draft_state,'submitted');
+  assert.equal(f.rows("SELECT count(*) n FROM vg_authoring_operations_v1 WHERE action='review_submission'")[0].n,0);
+ }finally{f.close();}
+});
+test('G1L reopening approved content invalidates current approval but retains old immutable history',async()=>{
+ const f=setup();try{
+  const x=await reviewFixture(f),decision=x.decision();
+  assert.equal((await f.call(x.path+'/decisions','POST',decision,'reviewer-one')).status,200);
+  const opened=await f.call(x.path+'/reopen','POST',x.reopen());assert.equal(opened.data.state,'draft');
+  const replay=await f.call(x.path+'/decisions','POST',decision,'reviewer-one');assert.equal(replay.data.replayed,true);
+  assert.equal(f.rows('SELECT draft_state FROM vg_authoring_worlds_v1')[0].draft_state,'draft');
+  assert.equal(f.rows('SELECT draft_revision FROM vg_authoring_worlds_v1')[0].draft_revision,2);
+  f.sql.exec("UPDATE vg_authoring_members_v1 SET status='revoked' WHERE uid='reviewer-one'");
+  assert.equal((await f.call(x.path+'/decisions','POST',decision,'reviewer-one')).status,403);
+  assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_submissions_v1')[0].n,1);
+ }finally{f.close();}
+});
+test('G1L failed reopen rolls back new draft while preserving the approved snapshot',async()=>{
+ const f=setup();try{
+  const x=await reviewFixture(f);await f.call(x.path+'/decisions','POST',x.decision(),'reviewer-one');
+  f.hooks.fail='INSERT INTO vg_authoring_audit';
+  assert.equal((await f.call(x.path+'/reopen','POST',x.reopen())).status,503);
+  assert.equal(f.rows('SELECT draft_state FROM vg_authoring_worlds_v1')[0].draft_state,'approved');
+  assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_drafts_v1')[0].n,1);
+  assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_submissions_v1')[0].n,1);
+  assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_reviews_v1')[0].n,1);
+ }finally{f.close();}
+});
+test('G1L concurrent owner reopen requests create only one revision; receipt replay stays historical',async()=>{
+ const f=setup();try{
+  const x=await reviewFixture(f),data=x.reopen();
+  const rs=await Promise.all([f.call(x.path+'/reopen','POST',data),f.call(x.path+'/reopen','POST',data)]);
+  assert.equal(rs.every(r=>r.status===200),true);assert.equal(rs.filter(r=>r.data.replayed).length,1);
+  assert.equal(f.rows('SELECT count(*) n FROM vg_authoring_drafts_v1')[0].n,2);
+  const next=await f.call(`/worlds/${x.w}/draft`,'PATCH',edit({expectedRevision:2}));assert.equal(next.data.revision,3);
+  assert.equal((await f.call(x.path+'/reopen','POST',data)).data.revision,2);
+  assert.equal(f.rows('SELECT draft_revision FROM vg_authoring_worlds_v1')[0].draft_revision,3);
+ }finally{f.close();}
+});

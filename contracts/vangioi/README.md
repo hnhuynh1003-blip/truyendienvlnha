@@ -79,3 +79,7 @@ Rollback source: hoàn nguyên commit chỉ thêm contracts/tools và dòng bàn
 ## Giai đoạn 1K — HTTP adapter cục bộ
 
 Xem [AUTHORING_HTTP_G1K.md](AUTHORING_HTTP_G1K.md): Request/Response → SQL service thật, entitlement/scope/revision/snapshot và đọc hồ sơ reviewer độc lập. 13 integration tests; chưa import Worker live hoặc kết nối Creator, chưa quyết định duyệt/phát hành.
+
+## Giai đoạn 1L — Review và yêu cầu mở rộng
+
+[REVIEW_LIFECYCLE_G1L.md](REVIEW_LIFECYCLE_G1L.md): quyết định review/reopen có quyền, snapshot, transaction/receipt/audit; sửa trạng thái túi thuốc Quan Đạo. [EXPANSION_DESIGN_G1L.md](EXPANSION_DESIGN_G1L.md): thiết kế vật phẩm, gameplay tùy chọn, truyện dài theo arc; chưa bật schema/kinh tế/AI mới. Backend vẫn độc lập, chưa production.

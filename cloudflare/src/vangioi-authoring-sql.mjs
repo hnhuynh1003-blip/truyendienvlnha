@@ -2,7 +2,7 @@
 // No DurableObject export, Worker import, HTTP route or live binding is added.
 import {verifyFirebaseIdToken} from './auth.mjs';
 import {createAuthoringService,isAuthoringActionAllowed,copyAuthoringContent,
- copyAuthoringJson,hashAuthoringJson} from './vangioi-authoring.mjs';
+ copyAuthoringJson,hashAuthoringJson,verifySubmissionIntegrity} from './vangioi-authoring.mjs';
 import {createContentValidator,validateDraftContent} from './vangioi-content.mjs';
 
 const id=v=>typeof v==='string'&&/^[a-z][a-z0-9-]{1,63}$/.test(v);
@@ -54,8 +54,13 @@ export function initializeAuthoringSchema(storage){
    status TEXT NOT NULL,grant_revision INTEGER NOT NULL CHECK(grant_revision>=1),
    review_status TEXT NOT NULL,license TEXT NOT NULL,source_note TEXT NOT NULL,proof_ref TEXT,
    PRIMARY KEY(world_id,asset_id,asset_version))`);
+  storage.sql.exec(`CREATE TABLE IF NOT EXISTS vg_authoring_reviews_v1(
+   world_id TEXT NOT NULL,revision INTEGER NOT NULL,snapshot_hash TEXT NOT NULL,
+   reviewer_uid TEXT NOT NULL,decision TEXT NOT NULL CHECK(decision IN ('approve','request_changes')),
+   note TEXT NOT NULL,validator_version TEXT,happened_at INTEGER NOT NULL,
+   PRIMARY KEY(world_id,revision))`);
   // Content revisions, submitted snapshots, receipts and audit rows are append-only.
-  for(const table of ['drafts','submissions','operations','audit','source_versions','asset_versions']){
+  for(const table of ['drafts','submissions','operations','audit','source_versions','asset_versions','reviews']){
    for(const operation of ['UPDATE','DELETE'])storage.sql.exec(
     `CREATE TRIGGER IF NOT EXISTS vg_authoring_${table}_${operation.toLowerCase()}_v1
      BEFORE ${operation} ON vg_authoring_${table}_v1
@@ -222,11 +227,120 @@ export function createSqlAuthoringService({storage,projectId,verify=verifyFireba
    return commit(data,who.uid,action,digest,sections,plan);
   }catch{return fail('authoring-unavailable');}
  }
+ // G1L: decisions and reopening extend the existing header without rewriting snapshots.
+ function lifecycleAllowed(w,actorUid,action,replay=false){
+  if(action==='reopen_draft')return w?.ownerUid===actorUid;
+  return isAuthoringActionAllowed({world:replay&&w?{...w,draftState:'submitted'}:w,
+   member:member(w?.worldId,actorUid),actorUid,action:'review_submission'});
+ }
+ function lifecycleReceipt(data,actorUid,action,digest){
+  const w=world(data.worldId);
+  if(!w||!lifecycleAllowed(w,actorUid,action,true))return fail();
+  const prior=one(`SELECT * FROM vg_authoring_operations_v1
+   WHERE world_id=? AND actor_uid=? AND request_id=?`,data.worldId,actorUid,data.requestId);
+  if(!prior)return null;
+  if(prior.action!==action||prior.request_hash!==digest)return fail('idempotency-conflict');
+  const result=JSON.parse(prior.result_json);
+  if(result.ok!==true||result.worldId!==data.worldId||!rev(result.revision)||
+   result.snapshotHash!==data.snapshotHash||!['draft','inReview','approved'].includes(result.state))
+   return fail('invalid-receipt');
+  return {...result,replayed:true};
+ }
+ async function lifecycle(request,input,action){
+  let data;
+  try{
+   data=copyAuthoringJson(input);
+   const keys=['worldId','requestId','expectedRevision','expectedAccessRevision','snapshotHash'];
+   if(action==='review_submission')keys.push('decision','note');
+   if(!equalKeys(data,keys)||!id(data.worldId)||!requestId(data.requestId)||
+    !rev(data.expectedRevision)||!rev(data.expectedAccessRevision)||!RegExp('^[a-f0-9]{64}$').test(data.snapshotHash)||
+    (action==='review_submission'&&(!['approve','request_changes'].includes(data.decision)||
+     typeof data.note!=='string'||!data.note.trim()||data.note.length>4000)))return fail('invalid-request');
+  }catch{return fail('invalid-request');}
+  const who=await identity(request);if(!who)return fail('unauthenticated');
+  try{
+   const digest=await hashAuthoringJson({action,...data});
+   const prior=storage.transactionSync(()=>lifecycleReceipt(data,who.uid,action,digest));if(prior)return prior;
+   const before=world(data.worldId);
+   if(!before||!lifecycleAllowed(before,who.uid,action))return fail();
+   if(before.draftRevision!==data.expectedRevision||before.accessRevision!==data.expectedAccessRevision||
+    !['submitted','inReview','approved'].includes(before.draftState))return fail('revision-conflict');
+   const snapshot=submission(data.worldId,data.snapshotHash);
+   if(!await verifySubmissionIntegrity(snapshot)||snapshot.worldId!==data.worldId||
+    snapshot.draftRevision!==data.expectedRevision||snapshot.submittedBy===who.uid&&action==='review_submission')
+    return fail('invalid-submission');
+   const serialized=JSON.stringify(snapshot);
+   let verdict=null;
+   if(action==='review_submission'&&data.decision==='approve'){
+    if(typeof contentValidator!=='function')return fail('validator-unavailable');
+    verdict=await contentValidator(copyAuthoringContent(snapshot.content),{worldId:data.worldId,actorUid:who.uid});
+    if(verdict?.readyForReview!==true||!Array.isArray(verdict.errors)||verdict.errors.length||
+     typeof verdict.validatorVersion!=='string'||!verdict.validatorVersion.trim()||verdict.validatorVersion.length>100)
+     return fail('content-not-ready');
+   }
+   return storage.transactionSync(()=>{
+    const replay=lifecycleReceipt(data,who.uid,action,digest);if(replay)return replay;
+    const w=world(data.worldId);
+    if(!w||!lifecycleAllowed(w,who.uid,action))return fail();
+    if(w.draftRevision!==data.expectedRevision||w.accessRevision!==data.expectedAccessRevision||
+     w.ownerUid!==before.ownerUid||w.draftState!==before.draftState)return fail('revision-conflict');
+    if(JSON.stringify(submission(data.worldId,data.snapshotHash))!==serialized)return fail('invalid-submission');
+    for(const dep of verdict?.dependencies||[]){
+     const resolver=dep.kind==='source'?storySource:dep.kind==='asset'?asset:null;
+     if(!resolver||JSON.stringify(copyAuthoringJson(resolver(dep.reference,{worldId:data.worldId})))!==
+      JSON.stringify(copyAuthoringJson(dep.record)))return fail('dependency-conflict');
+    }
+    const timestamp=now();if(!Number.isSafeInteger(timestamp)||timestamp<0)throw Error('invalid-clock');
+    let state,revision=w.draftRevision;
+    if(action==='review_submission'){
+     if(one('SELECT revision FROM vg_authoring_reviews_v1 WHERE world_id=? AND revision=?',data.worldId,revision))
+      return fail('review-conflict');
+     state=data.decision==='approve'?'approved':'inReview';
+     storage.sql.exec(`INSERT INTO vg_authoring_reviews_v1 VALUES(?,?,?,?,?,?,?,?)`,
+      data.worldId,revision,data.snapshotHash,who.uid,data.decision,data.note,verdict?.validatorVersion||null,timestamp);
+    }else{
+     revision++;if(!rev(revision))return fail('revision-conflict');
+     state='draft';
+     // Copy the immutable submitted content, retaining all IDs and contributor history.
+     storage.sql.exec('INSERT INTO vg_authoring_drafts_v1 VALUES(?,?,?)',data.worldId,revision,
+      JSON.stringify(copyAuthoringContent(snapshot.content)));
+    }
+    const changed=all(`UPDATE vg_authoring_worlds_v1 SET draft_revision=?,draft_state=?
+     WHERE world_id=? AND owner_uid=? AND draft_revision=? AND access_revision=? AND draft_state=? RETURNING world_id`,
+     revision,state,data.worldId,w.ownerUid,w.draftRevision,w.accessRevision,w.draftState);
+    if(changed.length!==1)throw Error('write-conflict');
+    const result={ok:true,worldId:data.worldId,revision,state,snapshotHash:data.snapshotHash,
+     ...(action==='review_submission'?{decision:data.decision}:{})};
+    storage.sql.exec('INSERT INTO vg_authoring_operations_v1 VALUES(?,?,?,?,?,?)',
+     data.worldId,who.uid,data.requestId,action,digest,JSON.stringify(result));
+    storage.sql.exec('INSERT INTO vg_authoring_audit_v1 VALUES(?,?,?,?,?,?,?,?,?)',crypto.randomUUID(),
+     data.worldId,who.uid,data.requestId,action,w.draftRevision,revision,data.snapshotHash,timestamp);
+    return {...result,replayed:false};
+   });
+  }catch{return fail('authoring-unavailable');}
+ }
+ async function viewReviewDecision(request,input){
+  const who=await identity(request);if(!who)return fail('unauthenticated');
+  const result=await boundService(who).viewSubmission(request,input);if(!result.ok)return result;
+  // Editorial notes are not part of a collaborator's section projection.
+  const w=world(input.worldId),m=member(input.worldId,who.uid);
+  if(!w||!isAuthoringActionAllowed({world:w,member:m,actorUid:who.uid,action:'read_submission'})||
+   (w.ownerUid!==who.uid&&m?.roles.includes('collaborator')))return fail();
+  try{
+   const row=one('SELECT * FROM vg_authoring_reviews_v1 WHERE world_id=? AND snapshot_hash=?',input.worldId,input.snapshotHash);
+   return {ok:true,worldId:input.worldId,snapshotHash:input.snapshotHash,review:row?{
+    revision:row.revision,reviewerUid:row.reviewer_uid,decision:row.decision,note:row.note,
+    validatorVersion:row.validator_version,happenedAt:row.happened_at}:null};
+  }catch{return fail('authoring-unavailable');}
+ }
  async function view(request,input,method){
   const who=await identity(request);if(!who)return fail('unauthenticated');
   return boundService(who)[method](request,input);
  }
  return Object.freeze({
+  reviewSubmission:(request,input)=>lifecycle(request,input,'review_submission'),
+  reopenDraft:(request,input)=>lifecycle(request,input,'reopen_draft'),
+  viewReviewDecision,
   saveDraft:(request,input)=>mutate(request,input,'edit_draft'),
   submitDraft:(request,input)=>mutate(request,input,'submit_draft'),
   viewDraft:(request,input)=>view(request,input,'viewDraft'),

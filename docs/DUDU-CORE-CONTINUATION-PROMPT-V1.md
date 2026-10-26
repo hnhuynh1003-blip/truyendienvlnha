@@ -212,3 +212,11 @@ Người chơi không chấp nhận V7 vì kéo dài chuỗi đi lấy, kiểm �
 - **Các truyện F khác không sao chép công thức điều tra.** F hiện đại có thể thiên về quan hệ, F tu tiên thiên về cơ duyên và tài nguyên; nhiệm vụ và cơ chế cao trào phù hợp thế giới, không áp định mức scene/nhặt chứng cứ.
 
 Tiếp: người chơi thử trực tiếp `dudu-pilot.html?v=play-v8`; sửa các điểm lộ đáp án hoặc thao tác thiếu tự nhiên, sau đó mới xây lại F02/F03.
+
+## 15. G1L — REVIEW VẠN GIỚI VÀ QA QUAN ĐẠO (26/10/2026)
+
+Mốc mới sau G1K: đọc `contracts/vangioi/REVIEW_LIFECYCLE_G1L.md` và `contracts/vangioi/EXPANSION_DESIGN_G1L.md`. Backend độc lập đã có quyết định review, mở lại revision và lịch sử bất biến; chưa nối Worker production. Quan Đạo giữ scenarioId/save V8, tăng scenarioVersion lên 10: túi thuốc chỉ thu nhận một lần, quay lại vẫn kiểm tra được chứng cứ. Không phát thưởng thật.
+
+Quy chuẩn vật phẩm, năm mô-đun gameplay tùy chọn và chuyển thể truyện theo arc mới ở mức thiết kế; không tự thêm field vào schema cũ hoặc bật AI/Kho/kinh tế. Giữ Vạn Giới cho tác giả, Thiên Mệnh cho người chơi, Chủ Thần riêng chủ dự án và AI điều phối. Không mở phó bản mới trước QA pilot.
+
+Xác minh cục bộ: 486 test ứng dụng, 379 Worker/helper, 38 Python contract/intake, hồi quy Quan Đạo, bốn bài Chromium (pilot/Creator/main/auth) đạt; Worker dry-run build đạt. Kết quả CI/Pages phải kiểm theo commit G1L, không suy ra từ các kiểm thử cục bộ này.

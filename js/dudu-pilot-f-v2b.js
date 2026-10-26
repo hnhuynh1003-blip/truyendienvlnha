@@ -10,7 +10,7 @@
  if(!world)throw Error('World Bible V2B missing');
  const story={
   schemaVersion:1,status:'pilot_only',released:false,rewardsEnabled:false,
-  scenarioId:'pilot-quan-dao-casefile-v8',scenarioVersion:9,
+  scenarioId:'pilot-quan-dao-casefile-v8',scenarioVersion:10,
   missionId:'dudu-m-an-f01',worldId:world.worldId,genreId:world.genreId,
   title:'Đêm mưa ở Quan Đạo',tier:'F',world,worldCover:world.places.gate.background,
   startSceneId:'prologue',
@@ -431,12 +431,23 @@
     "choices": [
       {
         "id": "check_coal_bin",
+        "hiddenIfEvidence": ["medicine_bundle"],
+        "once": true,
+        "reaction": "Bạn mở thùng than, tìm thấy túi thuốc và đưa nó ra giữ làm vật chứng.",
         "label": "Mở thùng than nơi vệt bụi dừng lại",
         "to": "bundle",
         "kind": "observation",
         "gainEvidence": [
           "medicine_bundle"
         ]
+      },
+      {
+        "id": "review_recovered_bundle",
+        "label": "Kiểm tra lại túi thuốc đang giữ",
+        "to": "bundle",
+        "kind": "observation",
+        "visibleIfEvidence": ["medicine_bundle"],
+        "requires": ["medicine_bundle"]
       },
       {
         "id": "inspect_lantern",
@@ -478,7 +489,7 @@
   "bundle": {
     "placeId": "hall",
     "title": "Túi thuốc đã được tìm thấy",
-    "text": "Dưới lớp than là chiếc túi cứu thương còn nhiều gói nguyên niêm. Dây buộc màu lam, mép túi ẩm như vừa đi qua mưa. Một tờ giấy gấp nhỏ thò ra trong lớp vải.\n\nBạn đã tìm ra thứ bị mất. Giờ câu hỏi khó nhất là ai đặt nó ở đây và vì sao.",
+    "text": "Chiếc túi cứu thương bạn đã thu nhận còn nhiều gói nguyên niêm. Dây buộc màu lam, mép túi ẩm như vừa đi qua mưa. Một tờ giấy gấp nhỏ thò ra trong lớp vải.\n\nBạn đã tìm ra thứ bị mất. Bạn có thể kiểm tra lại các chi tiết trên túi để tìm hiểu ai đã giấu nó trong thùng than và vì sao.",
     "phase": "BƯỚC NGOẶT",
     "choices": [
       {

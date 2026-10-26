@@ -13,11 +13,14 @@ const routes=[
  ['PUT',new RegExp(`^${BASE}/worlds/${WORLD}/collaborators$`),'setCollaborator'],
  ['POST',new RegExp(`^${BASE}/worlds/${WORLD}/submissions$`),'submitDraft'],
  ['GET',new RegExp(`^${BASE}/worlds/${WORLD}/submissions/${HASH}$`),'viewSubmission'],
- ['GET',new RegExp(`^${BASE}/worlds/${WORLD}/submissions/${HASH}/review$`),'reviewSubmission']
+ ['GET',new RegExp(`^${BASE}/worlds/${WORLD}/submissions/${HASH}/review$`),'reviewSubmission'],
+ ['POST',new RegExp(`^${BASE}/worlds/${WORLD}/submissions/${HASH}/decisions$`),'recordReview'],
+ ['GET',new RegExp(`^${BASE}/worlds/${WORLD}/submissions/${HASH}/decisions$`),'viewReviewDecision'],
+ ['POST',new RegExp(`^${BASE}/worlds/${WORLD}/submissions/${HASH}/reopen$`),'reopenDraft']
 ];
 const statuses={unauthenticated:401,forbidden:403,'invalid-request':400,'invalid-content':422,
  'content-not-ready':422,'revision-conflict':409,'idempotency-conflict':409,'world-conflict':409,
- 'member-conflict':409,'dependency-conflict':409,'invalid-submission':409,'authoring-unavailable':503,'validator-unavailable':503};
+ 'member-conflict':409,'review-conflict':409,'dependency-conflict':409,'invalid-submission':409,'authoring-unavailable':503,'validator-unavailable':503};
 class TransportError extends Error{constructor(code,status){super(code);this.code=code;this.status=status;}}
 const reject=(code,status)=>{throw new TransportError(code,status);};
 async function readJson(request){
@@ -104,6 +107,7 @@ export function createAuthoringHttpHandler({storage,projectId,allowedOrigins,
    if(route.match[2])input.snapshotHash=route.match[2];
    let result;
    if(route.action==='reviewSubmission')result=await authoring.viewSubmission(request,{...input,forReview:true});
+   else if(route.action==='recordReview')result=await authoring.reviewSubmission(request,input);
    else if(['createWorld','setCollaborator'].includes(route.action))result=await provisioning[route.action](request,input);
    else result=await authoring[route.action](request,input);
    if(result?.ok===true)return reply(result);

@@ -1,5 +1,15 @@
 # DUDU Studio — START HERE / Bàn giao sạch · 20/10/2026
 
+## VẠN GIỚI Giai đoạn 1L — 26/10/2026
+
+Nền `c575acb` (1K, CI/Pages SUCCESS). Đọc `contracts/vangioi/REVIEW_LIFECYCLE_G1L.md` và `EXPANSION_DESIGN_G1L.md`. Làm tuần tự theo yêu cầu mới: review backend → thiết kế vật phẩm/gameplay/arc → sửa lỗi túi thuốc Quan Đạo. Approve/request_changes gắn revision/accessRevision/snapshotHash, reviewer độc lập, kiểm lại source/asset và quyền trong transaction; immutable decision/receipt/audit. Owner reopen thành revision mới, không sửa snapshot hoặc kế thừa approval. Vẫn chưa publish/official rank/art approval/gameplay hoặc backend live/DO/binding/migration/client connection.
+
+Thiết kế mới phân biệt sổ tay, vật phẩm world và Kho; nhiều tuyến chung entity/cơ hội, kiểm thời đại/nguồn/sức mạnh/giao dịch/xuyên giới có ngoại lệ được duyệt. Năm gameplay modules tùy truyện; chuyển thể truyện dài theo arc/source pin, thủ công hoặc hỗ trợ đề xuất. Chưa đổi schema/economy/AI, chưa buộc nhập toàn bộ cast/scene hoặc advanced fields. Vạn Giới dành tác giả, Thiên Mệnh dành người chơi, Chủ Thần riêng chủ dự án/AI.
+
+Quan Đạo V8 scenarioVersion 10: evidence guard + once ẩn nhặt túi khi đã thu nhận, thay bằng kiểm tra vật chứng đang giữ; phiếu/nút dây và đường phá án giữ mở. Không đổi session key/mission/scenario ID; save V8 cũ có evidence vẫn được bảo vệ. 486 test ứng dụng + 379 Worker/helper; 5 ca logic item mới, 12 ca review mới, browser thật qua NPC/kho/reload/revisit/giải án và responsive, không request ngoài. CI/Pages kiểm theo SHA đợt này; không đồng nghĩa account/Worker production hoặc Android/iOS thực đã kiểm.
+
+Tiếp: contract/policy vật phẩm chuẩn/đề xuất riêng, rồi arc/source picker/UI gọn theo từng đợt; gameplay module chỉ khi truyện cần. Không mở phó bản mới/48 seed/Kho/thưởng/AI hoặc các tuyến production chưa duyệt. Giữ cổng deployment/issuer/storage topology/migration/rollback của G1K.
+
 ## VẠN GIỚI Giai đoạn 1K — 26/10/2026
 
 Nền `1177a55` (1J, CI/Pages SUCCESS). Đọc `contracts/vangioi/AUTHORING_HTTP_G1K.md`. Adapter HTTP độc lập ghép SQL authoring/provisioning: tạo world có entitlement, đọc/lưu theo scope/revision, đặt/thu hồi collaborator, submit snapshot và reviewer độc lập đọc đúng bản gửi. Origin HTTPS allowlist chính xác, Bearer Firebase trước đọc stream; byte cap 2 MiB trước parse/UTF-8 strict, metadata/path injection bị chặn, lỗi kín/no-store. Quyền và atomic receipt/audit tiếp tục do service kiểm ở commit.

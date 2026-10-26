@@ -1,5 +1,7 @@
 # VẠN GIỚI — HTTP adapter G1K
 
+> Tiếp nối G1L: thêm review decision/reopen trong adapter độc lập, xem [REVIEW_LIFECYCLE_G1L.md](REVIEW_LIFECYCLE_G1L.md). Nội dung bên dưới mô tả mốc G1K, không phải danh sách endpoint mới nhất.
+
 Ngày 26/10/2026. Nền `1177a5542dadf8895947e0863ab869546f821b5b` (G1J).
 
 ## Kết quả
