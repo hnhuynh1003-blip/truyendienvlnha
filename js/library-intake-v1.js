@@ -1,5 +1,6 @@
 /* Library Intake V1 — one entry point for the TWO existing library authoring
- * paths and the Vangioi source-reference workflow. Presentation only:
+ * paths. Existing Library navigation and Vangioi authoring are elsewhere.
+ * Presentation only:
  * no Firebase writes, new MIME formats, authority grants or auto-publication.
  */
 (function(root){
@@ -37,11 +38,6 @@
    if(typeof root.openEpubImportV48!=='function')return false;
    root.openEpubImportV48();return true;
   }
-  if(kind==='library'){
-   if(typeof root.DuduSiteV60?.navigate!=='function')return false;
-   root.DuduSiteV60.navigate('library');return true;
-  }
-  if(kind==='vangioi')return root.DuduWorldCreator?.open?.()===true;
   return false;
  }
  function action(label,description,kind){
@@ -60,32 +56,24 @@
   returnFocus=doc.activeElement;
   dialog=el('dialog','dudu-library-intake-dialog');
   dialog.id='dudu-library-intake-v1';
-  dialog.setAttribute('aria-label','Đăng hoặc sử dụng nguồn truyện');
+  dialog.setAttribute('aria-label','Thêm truyện vào Thư viện');
   dialog.addEventListener('cancel',event=>{event.preventDefault();close();});
   const header=el('header','dudu-library-intake-header');
-  const title=el('h2','','Đưa truyện vào Thư viện');
+  const title=el('h2','','Thêm truyện vào Thư viện');
   const dismiss=el('button','dudu-library-intake-close','Đóng');
   dismiss.type='button';dismiss.addEventListener('click',close);
   header.append(title,dismiss);
   const intro=el('p','dudu-library-intake-intro',
-   'Chọn cách phù hợp với nguồn truyện. Viết theo chương và nhập EPUB là hai luồng đang có; không tự đăng công khai hay cấp quyền chuyển thể.');
+   'Chọn cách thêm tác phẩm. Viết theo chương và nhập EPUB là hai cách đang hỗ trợ.');
   const choices=el('div','dudu-library-intake-grid');
   choices.append(
    action('✍️ Viết truyện theo chương',
-    'Mở trình soạn tác phẩm hiện có. Chương, quyền lưu và đồng bộ giữ nguyên như trước.','manual'),
-   action('📘 Nhập tệp EPUB',
-    'Tách chương, xem trước, lưu bản thảo rồi xác nhận quyền trước khi xuất bản nếu hệ thống cho phép.','epub'));
-  const reuse=el('section','dudu-library-intake-reuse');
-  reuse.append(el('h3','','Dùng truyện có sẵn cho Vạn Giới'),
-   el('p','',
-    'Nếu tác phẩm đã có ở Thư viện, không cần đăng lại. Vạn Giới nhận tham chiếu mã truyện, phiên bản và hash nguồn; xác thực server và source picker hiện chưa hoạt động.'),
-   action('📚 Xem truyện trong Thư viện',
-    'Tìm tác phẩm đã đăng trước khi quyết định dùng làm nguồn.','library'),
-   action('🌌 Mở công cụ tác giả Vạn Giới',
-    'Chọn loại nguồn Sáng tác gốc / Thư viện / Bản thảo trong Nguồn & ảnh; đây là bản nháp offline.','vangioi'));
+    'Tạo tác phẩm bằng trình soạn hiện có.','manual'),
+   action('📘 Nhập EPUB',
+    'Đưa tệp EPUB vào trình nhập, tách chương và xem trước bản thảo.','epub'));
   const foot=el('p','dudu-library-intake-foot',
-   'Lưu ý: JSON của Vạn Giới là hồ sơ world, không phải tệp truyện. Chưa có bộ nhập TXT, DOCX hoặc PDF; có thể soạn/dán nội dung trong trình viết chương.');
-  dialog.append(header,intro,choices,reuse,foot);
+   'Chưa hỗ trợ nhập TXT, DOCX hoặc PDF. Truyện đã có trong Thư viện không cần tải lại để làm nguồn Vạn Giới; hãy mở Vạn Giới từ mục Thế giới.');
+  dialog.append(header,intro,choices,foot);
   doc.body.append(dialog);
   if(typeof dialog.showModal==='function')dialog.showModal();
   else{dialog.setAttribute('open','');dialog.setAttribute('role','dialog');

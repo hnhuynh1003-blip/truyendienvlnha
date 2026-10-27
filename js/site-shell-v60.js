@@ -219,7 +219,6 @@
       if(!isAuthor())return;
       if(!window.DuduLibraryIntakeV1?.open?.())openStoryModal();
      }),
-     button('📚 Quản lý trong Thư viện',()=>navigate('library'),'d60-btn secondary'),
      button('◇ Khung kịch bản',()=>window.DuduWorldUXV66?.openAuthorStudio(),'d60-btn secondary'));
  }
  function refresh(){

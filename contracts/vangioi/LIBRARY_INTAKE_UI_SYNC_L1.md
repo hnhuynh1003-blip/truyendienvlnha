@@ -42,3 +42,13 @@ node tools/vangioi/audit-v49-writers-g2x.mjs
 Rollback chỉ bỏ popup JS/CSS, bài test/doc và khôi phục các nút điều hướng Thư viện/Góc tác giả trong `index.html`/`js/site-shell-v60.js`. Không có dữ liệu thật, migration, hành vi publish hoặc quyền nào cần rollback.
 
 **Kết quả local:** app **104/104 test files**, Cloudflare **794/794**, Functions **2/2**; Wrangler `--dry-run` và G2X writer inventory **PASS**. Bài mock DOM `library-intake-v1.test.cjs` PASS. Browser smoke đã được viết nhưng **chưa chạy được**: môi trường không có Chromium, tải trình duyệt Playwright thất bại vì gói tải về không hợp lệ. Không tuyên bố đã QA giao diện trên thiết bị thật hoặc Firebase live; cần chạy lại browser smoke ở môi trường có Chromium trước staging.
+
+## LIB1-UI2 — Tinh gọn nút theo góp ý tác giả (27/10/2026)
+
+Sau LIB1, An Du xác nhận nút **Xem truyện trong Thư viện** không cần thiết trong hộp đăng truyện vì tab Thư viện đã có điều hướng riêng. Bản UI2 điều chỉnh:
+
+- Hộp **Thêm truyện vào Thư viện** chỉ còn **Viết truyện theo chương** và **Nhập EPUB** — đúng hai luồng tạo/nhập đang hoạt động. Bỏ lối mở Thư viện và lối mở World Creator lặp trong hộp này. Vạn Giới vẫn có nút **Tạo / nhập thế giới** ở tab Thế giới.
+- Góc tác giả bỏ nút **Quản lý trong Thư viện** vì trùng tab Thư viện; giữ nút đăng/nhập truyện và Khung kịch bản. Không đổi điều hướng chính, `canEditStories()`, trình EPUB hay trình viết chương.
+- Rút gọn lời giới thiệu, giảm chiều rộng hộp, thay version query tài nguyên JS/CSS để người xem nhận bản cập nhật; kiểm thử số lượng hành động đúng bằng 2 và quyền bị thu hồi trong lúc hộp mở.
+
+**Giới hạn không đổi:** Chưa đồng bộ hai backend lưu truyện; chưa có nguồn picker đã xác thực, nối giấy phép chuyển thể, uỷ quyền phát hành thật hoặc ghi Firebase staging/production. Không thể dùng thao tác GUI này để kết luận đã hoàn thành đồng bộ nguồn Vạn Giới.

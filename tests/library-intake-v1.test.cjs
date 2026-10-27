@@ -28,8 +28,7 @@ const setup=(authorized=true)=>{
  const window={document,canEditStories:()=>authorized,
   openStoryModal:()=>calls.push('manual'),
   openEpubImportV48:()=>calls.push('epub'),
-  DuduSiteV60:{navigate:page=>calls.push('nav:'+page)},
-  DuduWorldCreator:{open:()=>{calls.push('vangioi');return true;}}};
+  };
  vm.runInNewContext(intakeSource,{window});
  const buttons=()=>{
   const found=[];
@@ -53,20 +52,23 @@ test('Unauthorized readers cannot open Library author intake',()=>{
  assert.equal(a.window.DuduLibraryIntakeV1.open(),false);
  assert.equal(a.document.body.children.length,0);
 });
-test('Author sees exactly manual, EPUB, library and Vangioi routes',()=>{
+test('Author sees exactly the two supported upload routes, without redundant navigation',()=>{
  const a=setup();
  assert.equal(a.window.DuduLibraryIntakeV1.open(),true);
  assert.deepEqual(a.buttons().map(n=>n.dataset.intake),
-  ['manual','epub','library','vangioi']);
+  ['manual','epub']);
  assert.equal(a.document.body.children[0].open,true);
+ assert.ok(!intakeSource.includes('DuduSiteV60.navigate'));
+ assert.ok(!intakeSource.includes('DuduWorldCreator?.open'));
+ assert.ok(!siteShell.includes("button('📚 Quản lý trong Thư viện'"));
+ assert.ok(siteShell.includes("const createWorld=button('✎ Tạo / nhập thế giới'"));
 });
 test('Opening twice reuses one dialog rather than spawning duplicates',()=>{
  const a=setup();a.window.DuduLibraryIntakeV1.open();
  a.window.DuduLibraryIntakeV1.open();
  assert.equal(a.document.body.children.length,1);
 });
-for(const [route,expect] of [['manual','manual'],['epub','epub'],
- ['library','nav:library'],['vangioi','vangioi']]){
+for(const [route,expect] of [['manual','manual'],['epub','epub']]){
  test('Library hub '+route+' uses the existing, permission-gated route',()=>{
   const a=setup();a.window.DuduLibraryIntakeV1.open();
   const dialog=a.document.body.children[0];
@@ -94,12 +96,14 @@ test('Library hub assets load after creator and do not remove EPUB V57',()=>{
  const hub=index.indexOf('js/library-intake-v1.js');
  assert.ok(site>=0&&world>site&&hub>world);
  assert.ok(index.includes('css/library-intake-v1.css'));
+ assert.ok(index.includes('js/library-intake-v1.js?v=lib1-ui2'));
+ assert.ok(index.includes('js/site-shell-v60.js?v=lib1-ui2'));
  assert.ok(index.includes('js/epub-import-v48.js'));
  assert.ok(index.includes('js/epub-production-v49.js'));
 });
 test('Unsupported file types are described honestly, not made upload options',()=>{
  assert.ok(intakeSource.includes('TXT, DOCX hoặc PDF'));
  assert.ok(!intakeSource.includes("input.type='file'"));
- assert.ok(intakeSource.includes('không cần đăng lại'));
- assert.ok(intakeSource.includes('chưa hoạt động'));
+  assert.ok(intakeSource.includes('không cần tải lại'));
+  assert.ok(intakeSource.includes('Chưa hỗ trợ nhập TXT, DOCX hoặc PDF'));
 });
