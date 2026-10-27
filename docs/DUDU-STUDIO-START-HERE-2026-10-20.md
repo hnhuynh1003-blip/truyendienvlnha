@@ -1,5 +1,9 @@
 # DUDU Studio — START HERE / Bàn giao sạch · 20/10/2026
 
+## VẠN GIỚI G4G — 28/10/2026
+
+Nền `077dc60b` (G4F, smoke/browser/Pages SUCCESS). Đọc `contracts/vangioi/G4G_OFFLINE_RECOVERY_RECONCILIATION.md`: G4G thêm kiểm toán **chỉ đọc** Node SQLite đối soát G4C event/receipt/ledger và G4F dry-run receipt/ledger/policy, kiểm chứng lại G4B replay và objective `reach` lịch sử. Fingerprint snapshot ổn định khi đóng–mở lại SQLite, phát hiện thiếu/sửa record và phân biệt revoke/hold hợp lệ với corruption. **Không tự khôi phục/sửa data, không tạo checkpoint có chữ ký, không kết nối production.** Readiness production luôn `false` do thiếu issuer, proof đa verb/ending, approved reward, cross-store outbox, migration/rollback và QA live; không mở G5, thưởng hay UI mới. CI/Pages G4G phải kiểm theo SHA commit riêng.
+
 ## VẠN GIỚI G4F — 27/10/2026
 
 Nền `9e2fe1c` (G4E, smoke/browser/Pages SUCCESS). Đọc `contracts/vangioi/G4F_DRY_RUN_SETTLEMENT_FIXTURE.md`: Node-only G4F dựng mock adjudicator độc lập với G4E objective evidence và policy `dry-run-only` riêng; ghi receipt + ledger chỉ mang dấu vết mô phỏng trong **một SQLite transaction** có khóa idempotency `(worldInstanceId,missionId,completionVersion)`, CAS/recheck G4D/nguồn/policy fence và rollback lỗi. Chưa issuer reviewer/publisher, chứng cứ nhiệm vụ đa dạng hoặc quyền cấp thưởng thật. Không cấp EXP/Xu/vật phẩm/Kho, không sửa Creator/Worker/Thiên Mệnh/Chủ Thần/Canon/schema, không production. CI/Pages G4F phải kiểm SHA commit mới; G4E CI không thay thế.
