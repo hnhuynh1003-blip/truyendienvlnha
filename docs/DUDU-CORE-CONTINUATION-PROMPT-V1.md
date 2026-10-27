@@ -220,3 +220,7 @@ Mốc mới sau G1K: đọc `contracts/vangioi/REVIEW_LIFECYCLE_G1L.md` và `con
 Quy chuẩn vật phẩm, năm mô-đun gameplay tùy chọn và chuyển thể truyện theo arc mới ở mức thiết kế; không tự thêm field vào schema cũ hoặc bật AI/Kho/kinh tế. Giữ Vạn Giới cho tác giả, Thiên Mệnh cho người chơi, Chủ Thần riêng chủ dự án và AI điều phối. Không mở phó bản mới trước QA pilot.
 
 Xác minh cục bộ: 486 test ứng dụng, 379 Worker/helper, 38 Python contract/intake, hồi quy Quan Đạo, bốn bài Chromium (pilot/Creator/main/auth) đạt; Worker dry-run build đạt. Kết quả CI/Pages phải kiểm theo commit G1L, không suy ra từ các kiểm thử cục bộ này.
+
+## 16. G4C — ATOMIC SQLITE FIXTURE (27/10/2026)
+
+Đọc `contracts/vangioi/G4C_ATOMIC_SQLITE_FIXTURE.md`. Trên nền G4B `0f7dc18` đã có lớp Node-only fixture SQLite: G4B tạo ứng viên, G4C kiểm lại pin/rights/license/source synthetic trong transaction và CAS revision, ghi session/receipt/ledger kiểm toán cùng lúc; retry event trả đúng receipt cũ, rollback mọi ghi khi fault. Không có quyền server thật, proof hoàn thành nhiệm vụ hoặc reward authorization, không nối Worker/Firestore/production và không chuyển sang G5. Source/CI/Pages phải kiểm theo SHA G4C mới trước khi tuyên bố PASS đợt này.

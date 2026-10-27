@@ -173,3 +173,5 @@ G3C: [G3C_CREATOR_QA_INTEGRATION.md](G3C_CREATOR_QA_INTEGRATION.md) — nối va
 G4A: [G4A_OFFLINE_CONDITION_ACTION_ENGINE.md](G4A_OFFLINE_CONDITION_ACTION_ENGINE.md) — parser/interpreter điều kiện/hành động theo allowlist với manifest ghim phiên bản và hash nội dung; chạy trên dữ liệu giả, trả ứng viên state bất biến và chỉ cho đi qua cạnh scene đã khai. **Chưa nối Creator/Worker, chưa có save hoặc reward/EXP/Xu/kho, không nghiệm thu gameplay thật.**
 
 G4B: [G4B_OFFLINE_EVENT_REPLAY_AND_REVISION.md](G4B_OFFLINE_EVENT_REPLAY_AND_REVISION.md) — reducer sự kiện offline qua G4A, revision + eventId idempotency trong một phiên, replay và chuỗi hash kiểm sai lệch trạng thái. **Chưa có transaction/CAS server, chưa save/reward thật; không cho client tự tạo quyền cấp thưởng.**
+
+G4C: [G4C_ATOMIC_SQLITE_FIXTURE.md](G4C_ATOMIC_SQLITE_FIXTURE.md) — diễn tập SQLite Node-only: transaction/CAS nhiều kết nối, receipt idempotent sau mất phản hồi, rollback cùng state/receipt/audit và kiểm gate quyền/nguồn synthetic ngay tại commit. **Chưa có authority server, chứng cứ nhiệm vụ, reward ledger thật hoặc ghi production.**

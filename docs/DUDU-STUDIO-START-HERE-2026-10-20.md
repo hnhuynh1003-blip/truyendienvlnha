@@ -1,5 +1,9 @@
 # DUDU Studio — START HERE / Bàn giao sạch · 20/10/2026
 
+## VẠN GIỚI G4C — 27/10/2026
+
+Nền `0f7dc18` (G4B, smoke/browser/Pages CI SUCCESS). Đọc `contracts/vangioi/G4C_ATOMIC_SQLITE_FIXTURE.md`: adapter Node-only SQLite thử giao dịch nguyên tử, CAS nhiều kết nối, retry nhận receipt cũ, rollback toàn bộ state/receipt/audit và kiểm pin identity/content/source + quyền/giấy phép synthetic ngay trước commit. Ledger **chỉ kiểm toán chuyển cảnh**, không có grant, EXP, Xu, vật phẩm hoặc Kho. Không kết nối Worker/Firestore/Pages UI, không migration/Rules/production. CI G4C phải kiểm theo SHA commit mới, không dùng kết quả G4B làm bằng chứng.
+
 ## VẠN GIỚI Giai đoạn 1R — 26/10/2026
 
 Nền 5bdf11b, CI G1Q SUCCESS. Xem `contracts/vangioi/ADAPTATION_PERMITS_G1R.md`. Registry có sổ permit bất biến, operator issue/read/revoke, revoke permit/object/world grants cùng transaction và guard stale import. Legacy không có permit giữ G1F; chưa migration hoặc bắt buộc permit toàn hệ thống. Chưa Firestore sync/live/picker.
