@@ -1,5 +1,9 @@
 # DUDU Studio — START HERE / Bàn giao sạch · 20/10/2026
 
+## VẠN GIỚI G4E — 27/10/2026
+
+Nền `ff0b44e` (G4D, smoke/browser/Pages SUCCESS). Đọc `contracts/vangioi/G4E_OFFLINE_OBJECTIVE_EVIDENCE.md`: Node-only read-only fixture đối chiếu G4B replay với G4C receipt/ledger và fence G4D bằng cùng snapshot SQLite, chỉ tạo bằng chứng *ứng viên* cho `reach` đơn-lần khi một scene transition đã được commit. Không tính scene xuất phát; `talk/choose/collect/inspect/purchase/survive/deliver` và reach lặp **unsupported**, không kết luận hoàn thành mission, ending hay quyền nhận thưởng. Không kết nối World Creator/Worker/Thiên Mệnh/Chủ Thần/Firebase, không ghi production, không đổi Canon/schema. CI/Pages G4E phải kiểm SHA commit mới, không lấy G4D thay thế. TOCTOU liên storage và trusted issuer chưa giải quyết.
+
 ## VẠN GIỚI G4D — 27/10/2026
 
 Nền `055fc37` (G4C, CI/Pages SUCCESS). Xem `contracts/vangioi/G4D_AUTHORITY_ADMISSION_FENCE.md`. G4D tạo bridge test-only từ G1Z operator rehearsal tới G4C: bắt buộc host reader player/entitlement/content-source pin riêng, recheck admission/snapshot trước mỗi event và fence accessRevision/epoch trong cùng SQLite transaction G4C. Không biến G1Y/G1Z thành quyền chơi, không tin event tự khai, không đổi rule/manifest/Creator/UI. Vẫn tồn tại cửa sổ race **xuyên** authority SQL, G1Z Map và SQLite fixture vì chưa có topology/trusted issuer/consumer thật. Chưa production, thưởng, EXP/Xu/Kho; CI G4D phải kiểm SHA mới.

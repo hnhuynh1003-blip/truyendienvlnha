@@ -228,3 +228,7 @@ Xác minh cục bộ: 486 test ứng dụng, 379 Worker/helper, 38 Python contra
 ## 17. G4D — AUTHORITY/ADMISSION FENCE FIXTURE (27/10/2026)
 
 Đọc `contracts/vangioi/G4D_AUTHORITY_ADMISSION_FENCE.md`. G4D bọc G4C với cổng G1Z operator-only và các callback player/access/approved-content synthetic riêng, kiểm lại snapshot/content/source và access revision trước xử lý; cùng SQLite fence epoch chặn đổi quyền trước commit. G1Z không biến thành quyền player; không có JWT, source-license authority hoặc transaction xuyên Firestore/SQLite thật. Không bật Thư viện, Creator UI, gameplay, EXP/Xu/Kho, NPC AI hay production. Kế tiếp là G4E chứng cứ nhiệm vụ theo contract riêng, **chưa tự triển khai**.
+
+## 18. G4E — OFFLINE OBJECTIVE EVIDENCE FIXTURE (27/10/2026)
+
+Đọc `contracts/vangioi/G4E_OFFLINE_OBJECTIVE_EVIDENCE.md`. G4E chỉ đọc G4D fence + G4C session/receipt/ledger cùng snapshot SQLite, replay G4B và ghi nhận `reach` đơn-lần từ transition đã commit bằng `eventId/revision/chainHash/ruleId`; không tính cảnh xuất phát. Các objective verb còn lại và `reach` yêu cầu đếm lặp đều `unsupported`, mission chỉ có `reviewCandidate` (không phải hoàn thành), không có ending proof hoặc reward. Hash/fixture không phải issuer, G1Z/G1Y/entitlement ngoài SQLite chưa được recheck khi đọc. Chưa nối Worker/UI/Firestore, không phát hành, không đổi Canon/schema/kinh tế. Hướng sau chỉ là G4F dry-run policy, cần cổng quyết định riêng, không tự triển khai.
