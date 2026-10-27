@@ -171,3 +171,5 @@ G3B: [G3B_MOBILE_ASSET_QA.md](G3B_MOBILE_ASSET_QA.md) — lớp QA offline cho m
 G3C: [G3C_CREATOR_QA_INTEGRATION.md](G3C_CREATOR_QA_INTEGRATION.md) — nối validator G1D, reachability G3A và mobile asset QA G3B vào đúng nút `Kiểm tra hồ sơ` sẵn có của Vạn Giới; sử dụng PNG phiên G1I để giảm thao tác, không thêm nút thừa hay sửa backend. **Gửi duyệt vẫn khóa; không xác minh Engine, quyền ảnh hoặc thiết bị thật.**
 
 G4A: [G4A_OFFLINE_CONDITION_ACTION_ENGINE.md](G4A_OFFLINE_CONDITION_ACTION_ENGINE.md) — parser/interpreter điều kiện/hành động theo allowlist với manifest ghim phiên bản và hash nội dung; chạy trên dữ liệu giả, trả ứng viên state bất biến và chỉ cho đi qua cạnh scene đã khai. **Chưa nối Creator/Worker, chưa có save hoặc reward/EXP/Xu/kho, không nghiệm thu gameplay thật.**
+
+G4B: [G4B_OFFLINE_EVENT_REPLAY_AND_REVISION.md](G4B_OFFLINE_EVENT_REPLAY_AND_REVISION.md) — reducer sự kiện offline qua G4A, revision + eventId idempotency trong một phiên, replay và chuỗi hash kiểm sai lệch trạng thái. **Chưa có transaction/CAS server, chưa save/reward thật; không cho client tự tạo quyền cấp thưởng.**
