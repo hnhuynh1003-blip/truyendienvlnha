@@ -1,5 +1,9 @@
 # DUDU Studio — START HERE / Bàn giao sạch · 20/10/2026
 
+## VẠN GIỚI G4H — 28/10/2026
+
+Nền `33e31b9` (G4G, smoke/browser/Pages SUCCESS). Đọc `contracts/vangioi/G4H_ISOLATED_FIXTURE_BACKUP_RESTORE.md`: G4H là diễn tập test-host Node SQLite **chỉ** backup/restore G4C–G4F sau audit G4G, checksum và kiểm replay riêng trong SQLite RAM; ghi khôi phục theo transaction vào **fixture đã khởi tạo nhưng hoàn toàn trống**, rollback khi lỗi, từ chối restore nhầm bản đang có dữ liệu. G1Z admission là RAM và **không được tự tái cấp quyền** khi reload DB. Fingerprint/hash không phải chữ ký hay entitlement, không có antirollback/issuer/restore production. Không thêm UI, reward, world chơi thật, Firestore/Worker live, Canon/G5/AI. CI/Pages G4H phải xác minh bằng SHA mới.
+
 ## VẠN GIỚI G4G — 28/10/2026
 
 Nền `077dc60b` (G4F, smoke/browser/Pages SUCCESS). Đọc `contracts/vangioi/G4G_OFFLINE_RECOVERY_RECONCILIATION.md`: G4G thêm kiểm toán **chỉ đọc** Node SQLite đối soát G4C event/receipt/ledger và G4F dry-run receipt/ledger/policy, kiểm chứng lại G4B replay và objective `reach` lịch sử. Fingerprint snapshot ổn định khi đóng–mở lại SQLite, phát hiện thiếu/sửa record và phân biệt revoke/hold hợp lệ với corruption. **Không tự khôi phục/sửa data, không tạo checkpoint có chữ ký, không kết nối production.** Readiness production luôn `false` do thiếu issuer, proof đa verb/ending, approved reward, cross-store outbox, migration/rollback và QA live; không mở G5, thưởng hay UI mới. CI/Pages G4G phải kiểm theo SHA commit riêng.
