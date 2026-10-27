@@ -135,3 +135,5 @@ G2J: [STAGING_TOPOLOGY_AND_ACCESS_G2J.md](STAGING_TOPOLOGY_AND_ACCESS_G2J.md) �
 G2K: [EMULATOR_SECURITY_REHEARSAL_G2K.md](EMULATOR_SECURITY_REHEARSAL_G2K.md) — kiểm host source V49 trên Firestore Emulator project demo riêng: deny môi trường thật, phân biệt operator/permit với `admin` tự khai, bắt source hash đổi; không kiểm IAM/Rules production hay nối author picker.
 
 G2L: [V49_RULES_EMULATOR_AUDIT_G2L.md](V49_RULES_EMULATOR_AUDIT_G2L.md) — kiểm snippet V49 đang chờ duyệt bằng Rules Unit Testing trên Emulator local, xác nhận 3 điểm cần duyệt về draft cross-admin, schema update và metadata published; không sửa hay deploy Rules thật.
+
+G2M: [V49_OWNER_RULES_CANDIDATE_G2M.md](V49_OWNER_RULES_CANDIDATE_G2M.md) — soạn Rules candidate chỉ trong Emulator: chủ sách `admin:true` được đọc/viết bản thảo của mình, admin khác và reviewer tự khai không được đọc; siết schema khi chuyển trạng thái, bảo toàn đọc `published`. Chưa giải quyết public metadata/completeness hay deploy Rules thật.
