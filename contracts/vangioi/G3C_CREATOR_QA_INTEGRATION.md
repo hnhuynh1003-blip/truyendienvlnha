@@ -48,3 +48,7 @@ Các ca riêng kiểm: một world hợp lệ dùng 1 nút QA; world dở dừng
 **Giai đoạn tiếp theo G4** theo quy chuẩn là parser Engine cho condition/action allowlist, sau đó mới có mô phỏng state/save và idempotent reward. Những nội dung cần giấy phép/duyệt/staging thuộc G5; G3C không âm thầm kích hoạt.
 
 Rollback: hoàn nguyên các thay đổi giao diện/entry/bundle và tài liệu G3C. Không migration hoặc ghi dữ liệu thật, nháp `creator-local-1` và snapshots cũ vẫn đọc được.
+
+### Vá hồi quy browser ngày 27/10/2026
+
+Sau commit G3C, workflow browser phát hiện `TypeError` khi nhấp `Kiểm tra hồ sơ` trên một world hợp lệ **không có tạo hình nhân vật**. `characterVisuals` và `characterAppearances` là hai mảng tùy chọn của schema; G3B đã trực tiếp gọi `.flatMap`/`.forEach` trên giá trị vắng mặt. G3B hiện dùng mảng rỗng khi các phần tùy chọn chưa khai, vẫn kiểm đầy đủ cover, scene background, hotspot và các asset thật sự được dùng. Có test hồi quy Creator kiểm QA hợp lệ khi cả hai mảng không tồn tại; bundle trình duyệt được dựng lại và đổi khóa cache cho tệp validation. Đây là sửa lỗi, **không bắt mọi truyện tạo hình toàn bộ dàn nhân vật** và không mở quyền gửi duyệt.

@@ -141,9 +141,9 @@ export function analyzeG3BMobileAssets(value,{assetObservations=[]}={}){
   if(v.hotspots.some(h=>h.presentation==='hotspot_overlay'))
    warn('hotspot-overlay-mobile-placement-unverified',`/views/${i}/hotspots`);
  });
- const variants=new Map(c.characterVisuals.flatMap(v=>v.variants.map(
+ const variants=new Map((c.characterVisuals||[]).flatMap(v=>(v.variants||[]).map(
   look=>[look.variantId,look])));
- c.characterAppearances.forEach((a,i)=>{
+ (c.characterAppearances||[]).forEach((a,i)=>{
   const look=variants.get(a.variantId);
   if(look)use(look.assetId,`/characterAppearances/${i}/variantId`,
    {sprite:a.displayMode==='sprite'});

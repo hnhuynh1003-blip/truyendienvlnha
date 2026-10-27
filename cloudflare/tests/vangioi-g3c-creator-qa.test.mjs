@@ -27,6 +27,18 @@ test('G3C single existing check combines G1D, G3A and G3B without publish author
  assert.deepEqual(c,snapshot);
 });
 
+test('G3C complete Creator form without optional visual collections still runs mobile QA',()=>{
+ const c=content();
+ delete c.characterVisuals;
+ delete c.characterAppearances;
+ const result=inspectCreatorQa(c);
+ assert.equal(result.valid,true);
+ assert.equal(result.qaStatus,'needs-engine-and-device-review');
+ assert.equal(result.mobileAssets.status,'needs-device-review');
+ assert.equal(result.mobileAssets.unmeasuredAssetCount,2);
+ assert.equal(result.canPublish,false);
+});
+
 test('G3C partial, malformed or schema-invalid drafts short-circuit before QA',()=>{
  const partial={schemaVersion:'world-content-1',story:{secretTruth:'G3C_TOP_SECRET'}};
  assert.equal(parseDraft(JSON.stringify(partial)).ok,true);
