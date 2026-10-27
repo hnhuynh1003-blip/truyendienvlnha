@@ -141,3 +141,5 @@ G2M: [V49_OWNER_RULES_CANDIDATE_G2M.md](V49_OWNER_RULES_CANDIDATE_G2M.md) — so
 G2N: [V49_DRAFT_INTEGRITY_INSPECTION_G2N.md](V49_DRAFT_INTEGRITY_INSPECTION_G2N.md) — bộ tiền kiểm read-only toàn bộ chương EPUB V49 bằng SHA-256 với pin nguồn và assignment reviewer từ callback server giả lập; không cấp publish, không mở nội dung riêng hoặc nối Firebase/production.
 
 G2O: [V49_REVIEWER_PIN_LEDGER_G2O.md](V49_REVIEWER_PIN_LEDGER_G2O.md) — SQLite fixture operator-only ghi pin SHA-256 và phân công/thu hồi reviewer có revision, source-rotation và replay guard; nối thử callback G2N trong dữ liệu giả, chưa nối Firebase hoặc cấp quyền thật.
+
+G2P: [V49_REVIEW_RACE_REHEARSAL_G2P.md](V49_REVIEW_RACE_REHEARSAL_G2P.md) — diễn tập **chỉ đọc** hai lần kiểm toàn nguồn G2N, kẹp kiểm tra pin/quyền/revision/operation high-water trong một giao dịch SQLite G2O mỗi lần đọc; phát hiện một số xung đột cạnh tranh, chưa có atomic commit, production hoặc quyền publish.

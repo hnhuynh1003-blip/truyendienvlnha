@@ -210,6 +210,32 @@ export function createV49SqlFixtureReviewerLedger({storage,projectId,
     pinRevision:row.pin_revision,sourceHash:row.source_hash,expiresAt:row.expires_at};
   });
  }
+ // G2P: a single SQLite transaction reads the pin, current assignment and
+ // story-local append-only operation high-water mark. This is NOT a lock or
+ // a cross-store transaction with Firestore; callers must compare two reads.
+ function readAuthorityFence({storyId,reviewerUid=null}={}){
+  if(!story(storyId)||(reviewerUid!==null&&!uid(reviewerUid)))return null;
+  return storage.transactionSync(()=>{
+   const pin=readPinRow(storyId);
+   if(!pin)return null;
+   const assignment=reviewerUid===null?null:one(`SELECT status,revision,pin_revision,
+    source_hash,expires_at FROM vg_fixture_v49_assignments_g2o
+    WHERE project_id=? AND story_id=? AND reviewer_uid=? AND pin_revision=?`,
+    projectId,storyId,reviewerUid,pin.revision);
+   const cursor=one(`SELECT COALESCE(MAX(rowid),0) AS highwater
+    FROM vg_fixture_v49_operations_g2o WHERE project_id=? AND story_id=?`,
+    projectId,storyId)?.highwater;
+   if(!Number.isSafeInteger(cursor)||cursor<0)throw Error('fixture-fence-unavailable');
+   return Object.freeze({storyId,pinStatus:pin.status,pinRevision:pin.revision,
+    ownerUid:pin.owner_uid,sourceHash:pin.source_hash,
+    assignmentStatus:assignment?.status??null,
+    assignmentRevision:assignment?.revision??null,
+    assignmentPinRevision:assignment?.pin_revision??null,
+    assignmentSourceHash:assignment?.source_hash??null,
+    assignmentExpiresAt:assignment?.expires_at??null,
+    operationHighwater:cursor});
+  });
+ }
  return Object.freeze({pinDraft,revokePin,grantReview,revokeReview,
-  readSourcePin,readReviewerAssignment});
+  readSourcePin,readReviewerAssignment,readAuthorityFence});
 }
