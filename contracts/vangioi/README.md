@@ -145,3 +145,5 @@ G2O: [V49_REVIEWER_PIN_LEDGER_G2O.md](V49_REVIEWER_PIN_LEDGER_G2O.md) — SQLite
 G2P: [V49_REVIEW_RACE_REHEARSAL_G2P.md](V49_REVIEW_RACE_REHEARSAL_G2P.md) — diễn tập **chỉ đọc** hai lần kiểm toàn nguồn G2N, kẹp kiểm tra pin/quyền/revision/operation high-water trong một giao dịch SQLite G2O mỗi lần đọc; phát hiện một số xung đột cạnh tranh, chưa có atomic commit, production hoặc quyền publish.
 
 G2Q: [V49_SOURCE_EPOCH_FENCE_G2Q.md](V49_SOURCE_EPOCH_FENCE_G2Q.md) — sổ phiên bản nguồn `sourceEpoch` đơn điệu trong SQLite fixture và lớp fence bọc G2P, phát hiện **A→B→A đã được ghi nhận** và stale CAS/replay. Chưa có writer Firestore gắn epoch nguyên tử, không cấp quyền submit/publish hoặc kết nối route thật.
+
+G2R: [V49_EMULATOR_ATOMIC_EPOCH_G2R.md](V49_EMULATOR_ATOMIC_EPOCH_G2R.md) — diễn tập Firestore Emulator thật: giao dịch ghi nguồn EPUB V49 + sidecar `sourceEpoch` + operation, CAS chống ghi cạnh tranh và kiểm A→B→A qua G2Q; nạp lại Rules G2M để chứng minh quyền client và blocker **owner vẫn publish được mà không tăng epoch**. Không đụng Rules/EPUB/Firestore thật.
