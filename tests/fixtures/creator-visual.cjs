@@ -62,7 +62,16 @@ module.exports=async function visualCreator({page,editor,secret}){
  await fill(appearance,'Cờ cấm khi xuất hiện','heard-seal');await click(editor,'Kiểm tra hồ sơ');assert.match(await editor.locator('#vg-report').innerText(),/vừa bắt buộc vừa bị cấm/);
  await fill(appearance,'Cờ cấm khi xuất hiện','hidden-face');await fill(appearance,'Lớp hiển thị (0–20)','21');
  await click(editor,'Lưu trên thiết bị');assert.match(await editor.locator('#vg-message').innerText(),/sai định dạng/);
- await fill(appearance,'Lớp hiển thị (0–20)','2');await click(editor,'Kiểm tra hồ sơ');assert.match(await editor.locator('#vg-report').innerText(),/Cấu trúc đủ/);
+ await fill(appearance,'Lớp hiển thị (0–20)','2');await click(editor,'Kiểm tra hồ sơ');
+ const qaText=await editor.locator('#vg-report').innerText();
+ assert.match(qaText,/Cấu trúc đủ/);
+ assert.match(qaText,/Đường đi & nhiệm vụ · G3A/);
+ assert.match(qaText,/Hình ảnh mobile · G3B/);
+ assert.match(qaText,/320\/375\/390\/430 px/);
+ assert.match(qaText,/Engine chưa xác nhận/);
+ assert.equal(qaText.includes(secret),false);
+ assert.equal(await editor.getByRole('button',{name:'Kiểm tra hồ sơ',exact:true}).count(),1);
+ assert.equal(await editor.getByRole('button',{name:'Gửi duyệt',exact:true}).isDisabled(),true);
  await click(variant,'Xóa biến thể tạo hình');assert.equal(await rows('visual-variant').count(),1);
  await select(variant,'Dạng tạo hình','portrait');assert.equal(await rows('visual-variant').first().getByLabel('Dạng tạo hình',{exact:true}).inputValue(),'sprite');
  await click(visual,'Xóa hồ sơ tạo hình');assert.equal(await rows('visual').count(),1);

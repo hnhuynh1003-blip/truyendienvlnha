@@ -84,6 +84,8 @@ const firebase=require('./fixtures/creator-firebase.cjs');
   await page.waitForFunction(()=>document.getElementById('vg-save-state').textContent.includes('Đã lưu'));
   await editor.getByRole('button',{name:'Kiểm tra hồ sơ',exact:true}).click();
   assert.match(await editor.locator('#vg-report').innerText(),/Cần chỉnh/);
+  assert.equal((await editor.locator('#vg-report').innerText()).includes('Đường đi & nhiệm vụ · G3A'),false);
+  assert.equal(await editor.getByRole('button',{name:'Kiểm tra hồ sơ',exact:true}).count(),1);
   assert.equal((await editor.locator('#vg-report').innerText()).includes(secret),false);
   await editor.getByRole('button',{name:'Thông tin',exact:true}).click();
   await editor.getByLabel('Ý tưởng trong một câu',{exact:true}).fill('<img src=x onerror="window.__creatorXss=1">');

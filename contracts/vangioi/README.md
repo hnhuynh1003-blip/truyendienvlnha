@@ -167,3 +167,5 @@ G2Y: [G2Y_REPEAT_HOLD_AND_PHASE2_CLOSEOUT.md](G2Y_REPEAT_HOLD_AND_PHASE2_CLOSEOU
 G3A: [G3A_REACHABILITY_SIMULATION.md](G3A_REACHABILITY_SIMULATION.md) — lớp kiểm tra reachability độc lập, có giới hạn và phân tách theo từng profile nhập vai; truy dấu cảnh và nguồn flag *có thể* tồn tại mà không chạy trigger/Engine. **Kết quả không chứng minh chơi được, không chặn/nâng quyền gửi duyệt hoặc phát hành, không nối production.**
 
 G3B: [G3B_MOBILE_ASSET_QA.md](G3B_MOBILE_ASSET_QA.md) — lớp QA offline cho metadata PNG/ảnh có pin, crop trên 320/375/390/430 px, focalPoint và vùng ảnh quan trọng, cảnh báo background tái dùng/hotspot/sprite; không tự đánh giá ảnh đẹp, Canon hay giấy phép. **Không có kết quả thiết bị thật, không xác nhận quyền ảnh hoặc tự phát hành.**
+
+G3C: [G3C_CREATOR_QA_INTEGRATION.md](G3C_CREATOR_QA_INTEGRATION.md) — nối validator G1D, reachability G3A và mobile asset QA G3B vào đúng nút `Kiểm tra hồ sơ` sẵn có của Vạn Giới; sử dụng PNG phiên G1I để giảm thao tác, không thêm nút thừa hay sửa backend. **Gửi duyệt vẫn khóa; không xác minh Engine, quyền ảnh hoặc thiết bị thật.**

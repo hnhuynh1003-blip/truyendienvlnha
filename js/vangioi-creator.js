@@ -1,4 +1,4 @@
-/* World Creator G1J — Vạn Giới authoring, independent from owner AI Core. Local draft editing only; server rights/submit stay closed. */
+/* World Creator G3C — Vạn Giới authoring, independent from owner AI Core. Local draft QA only; server rights/submit stay closed. */
 (function(root){
  'use strict';
  const doc=root.document,V=root.DuduWorldValidation,A=root.DuduArcPlan;
@@ -175,6 +175,7 @@
    if(artImages.has(hash)){URL.revokeObjectURL(url);url=null;}
    else{artImages.set(hash,{url,width:image.width,height:image.height});url=null;}
    if(!asset.contentHash){asset.contentHash=hash;mark();}
+   else report=null;
    render();notice('Đã mở ảnh xem thử trong phiên. Chưa tải lên hoặc duyệt ảnh.');
   }catch(error){
    if(url)URL.revokeObjectURL(url);
@@ -195,7 +196,7 @@
   box.append(h('p','vg-muted','PNG tối đa 1 MiB, 16 triệu điểm ảnh, chỉ trong phiên này; không tải lên máy chủ. Hash có sẵn phải khớp tệp; hash trống sẽ được tính từ tệp mới.'));
   const upload=h('input');upload.type='file';upload.accept='.png,image/png';upload.setAttribute('aria-label','Chọn PNG xem thử');
   upload.addEventListener('change',()=>{if(access())pickArt(upload.files?.[0],asset);upload.value='';});box.append(upload);
-  if(artImages.has(asset.contentHash))box.append(localArt(asset,'vg-art-thumb'),button('Bỏ ảnh xem thử',()=>{const a=artImages.get(asset.contentHash);if(a)URL.revokeObjectURL(a.url);artImages.delete(asset.contentHash);render();},'vg-quiet'));
+  if(artImages.has(asset.contentHash))box.append(localArt(asset,'vg-art-thumb'),button('Bỏ ảnh xem thử',()=>{const a=artImages.get(asset.contentHash);if(a)URL.revokeObjectURL(a.url);artImages.delete(asset.contentHash);report=null;render();},'vg-quiet'));
   const fp=asset.focalPoint||[0.5,0.5];
   for(const [axis,label] of [[0,'Điểm lấy khung X (0–1)'],[1,'Điểm lấy khung Y (0–1)']]){
    const f=field(label,fp[axis],v=>{asset.focalPoint||=[0.5,0.5];asset.focalPoint[axis]=v===''?null:Number(v);mark();});
@@ -654,6 +655,29 @@
  storySource:'Nguồn truyện',worldCoverAssetId:'Ảnh bìa',assets:'Hình ảnh',maps:'Bản đồ',places:'Địa điểm',scenes:'Cảnh',views:'Góc nhìn',
  cast:'Dàn nhân vật',npcs:'NPC',playerEntryProfiles:'Vai nhập',entryPolicy:'Chọn vai nhập',entry:'Cảnh vào',items:'Vật phẩm',shops:'Cửa hàng',
  missions:'Nhiệm vụ',events:'Sự kiện',endings:'Kết cục',playRequirements:'Điều kiện chơi',aiPolicy:'Chính sách AI'};
+ function artObservations(){
+  return arr('assets').flatMap(asset=>{
+   const local=artImages.get(asset.contentHash);
+   return local&&asset.assetId&&asset.assetVersion&&asset.contentHash?
+    [{assetId:asset.assetId,assetVersion:asset.assetVersion,contentHash:asset.contentHash,
+     width:local.width,height:local.height,format:'png'}]:[];
+  });
+ }
+ function qaSection(box,title,summary,items,labels,limit=7){
+  const section=h('section','vg-qa-group');
+  section.append(h('h3','',title),h('p','vg-muted',summary));
+  if(items?.length){
+   const ul=h('ul','vg-warning-list');
+   for(const item of items.slice(0,limit)){
+    const name=labels[item.code]||'Cần kiểm tra thêm';
+    const vp=item.affectedViewports?.length?' · Khung: '+item.affectedViewports.join(', '):'';
+    ul.append(h('li','',name+' ('+item.path+')'+vp));
+   }
+   section.append(ul);
+   if(items.length>limit)section.append(h('small','','Còn '+(items.length-limit)+' điểm cần xem xét trong báo cáo.'));
+  }
+  box.append(section);
+ }
  function renderReport(){
   const box=$('vg-report');if(!box)return;box.replaceChildren();box.parentElement.open=!!report;
   if(!report){box.append(h('p','vg-muted','Kiểm tra để tìm trường còn thiếu hoặc tham chiếu sai.'));return;}
@@ -689,6 +713,53 @@
    box.append(notes,h('p','vg-muted','Nhắc xem xét không kết luận kịch bản chơi được, số dư đủ hoặc giao dịch sẽ thành công.'));
    if(warnings.length>20)box.append(h('small','','Đang hiển thị 20 nhắc xem xét đầu.'));
   }
+  if(!report.valid){
+   box.append(h('p','vg-muted','Chỉnh lỗi cấu trúc trước để mô phỏng đường đi và kiểm tra khung ảnh. Nháp vẫn có thể lưu theo quy tắc bản nháp.'));
+   return;
+  }
+  if(report.reachability){
+   const r=report.reachability;
+   const entryModes={cast_possession:'Nhập vai nhân vật có sẵn',system_cover:'Thân phận hệ thống',native_extra:'Nhân vật bản địa'};
+   const summary=r.status==='analysis-budget-exceeded'?
+    'Hồ sơ vượt ngân sách phân tích kỹ thuật; chưa thể kết luận đường đi.':
+    r.profiles.map((p,i)=>'Vai '+(i+1)+' ('+(entryModes[p.mode]||'Tác giả khai báo')+
+    '): có thể tới '+(p.possibleSceneCount??'chưa xác định')+' cảnh, '+
+    (p.unreachableSceneCount??'chưa xác định')+' cảnh chưa có đường khai báo.').join(' ');
+   const labels={'profile-scene-no-declared-route':'Cảnh chưa có đường đến theo dữ liệu khai báo',
+    'main-mission-start-no-route':'Không thấy đường tới cảnh mở nhiệm vụ chính',
+    'main-objective-no-declared-source':'Mục tiêu chính thiếu đường đi hoặc nguồn được khai báo',
+    'required-place-no-declared-route':'Địa điểm bắt buộc chưa có đường đến',
+    'required-npc-intro-no-declared-route':'NPC bắt buộc chưa có đường đến cảnh xuất hiện',
+    'transition-flag-not-producible':'Chưa thấy nguồn tạo cờ mở đường',
+    'ending-flags-no-declared-source':'Kết thúc cần cờ chưa có nguồn được khai báo',
+    'flag-closure-budget-exceeded':'Vượt ngân sách phân tích cờ',
+    'analysis-budget-exceeded':'Vượt ngân sách phân tích' };
+   qaSection(box,'Đường đi & nhiệm vụ · G3A',
+    (summary||'Chưa có hồ sơ nhập vai.')+' Các đường chỉ là khả năng; Engine chưa xác nhận.',
+    r.issues,labels);
+   if(r.truncated)box.append(h('p','vg-muted','Danh sách cảnh báo đường đi đã được giới hạn; cần kiểm theo từng arc.'));
+  }
+  if(report.mobileAssets){
+   const r=report.mobileAssets;
+   const labels={'rendered-asset-unmeasured':'Ảnh đang dùng chưa có PNG xem thử trong phiên',
+    'important-region-cropped':'Vùng quan trọng có thể bị cắt khỏi khung hình',
+    'image-small-for-mobile-preview':'Ảnh nhỏ cần kiểm độ rõ khi xem trên điện thoại',
+    'preview-image-upscaled':'Ảnh bị phóng lớn ở khung thử',
+    'shared-background-across-places-needs-review':'Hai địa điểm đang dùng cùng một nền; xác nhận có chủ đích',
+    'world-cover-reused-as-scene-needs-review':'Ảnh bìa đang dùng làm nền cảnh; kiểm tra bối cảnh',
+    'hotspot-overlay-mobile-placement-unverified':'Vùng tương tác cần xem vị trí và kích thước chạm thực tế',
+    'sprite-fallback-text-needs-review':'Hình nhân vật cần có mô tả khi ảnh không hiển thị',
+    'sprite-no-alpha-in-observation':'Sprite cần xem lại nền trong suốt',
+    'asset-observation-invalid':'Metadata ảnh không khớp pin hoặc bị trùng',
+    'asset-qa-budget-or-input-invalid':'Chưa thể kiểm metadata ảnh' };
+   qaSection(box,'Hình ảnh mobile · G3B',
+    (r.status==='invalid-evidence'?'Metadata ảnh không hợp lệ; cần chọn lại ảnh xem thử. ':'')+
+     'Đã đo '+r.observedAssetCount+'/'+r.renderedAssetCount+' ảnh đang dùng; '+
+     r.unmeasuredAssetCount+' ảnh chưa có dữ liệu xem thử. '+
+     'Khung 320/375/390/430 px chỉ là mô phỏng; vẫn cần xem ảnh, giấy phép và thiết bị thật.',
+    r.issues,labels);
+   if(r.truncated)box.append(h('p','vg-muted','Danh sách cảnh báo ảnh đã được giới hạn; cần kiểm theo từng arc.'));
+  }
 
  }
  function render(){
@@ -700,7 +771,10 @@
   const state=h('p','vg-state',dirty?'Có thay đổi chưa lưu':localId?'Đã lưu trên thiết bị · Chưa đồng bộ':'Nháp mới trên thiết bị');state.id='vg-save-state';
   header.append(state);app.append(header);
   const toolbar=h('div','vg-actions'),saveButton=button('Lưu trên thiết bị',save,'vg-primary');saveButton.id='vg-save';saveButton.disabled=saving;
-  toolbar.append(saveButton,button('Kiểm tra hồ sơ',()=>{if(canUseJson()){report=V.inspectContent(model);renderReport();notice('Đã kiểm tra nội dung hiện tại.');}}));
+  toolbar.append(saveButton,button('Kiểm tra hồ sơ',()=>{if(canUseJson()){
+   report=V.inspectCreatorQa(model,{assetObservations:artObservations()});
+   renderReport();notice('Đã kiểm tra hồ sơ trên thiết bị. Cần Engine và reviewer kiểm trước khi phát hành.');
+  }}));
   const submit=h('button','','Gửi duyệt');submit.type='button';submit.disabled=true;submit.setAttribute('aria-describedby','vg-backend-state');toolbar.append(submit);app.append(toolbar);
   const offline=h('p','vg-muted','Gửi duyệt chưa kết nối máy chủ. Bạn vẫn có thể soạn, lưu trên thiết bị và xuất bản nháp.');offline.id='vg-backend-state';app.append(offline);
   const menu=h('details','vg-files');menu.append(h('summary','','Bản nháp & tệp JSON'));
