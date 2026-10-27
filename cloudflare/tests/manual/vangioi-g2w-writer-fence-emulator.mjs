@@ -40,10 +40,17 @@ const verifyPublisher=async(req,{storyId,intent})=>
  req.headers.get('Authorization')==='Bearer server-publisher'?
  {uid:'trusted-publisher',publisher:true,storyId,intent}:null;
 const caseId=storyId=>'case-'+storyId;
-const verifyEmergency=async(req,{storyId})=>
- req.headers.get('Authorization')==='Bearer two-person-emergency'?
- {storyId,caseId:caseId(storyId),reason:'urgent-rights-hold',authorized:true,
-  operatorUid:'fixture-operator',rightsOfficerUid:'fixture-rights-officer'}:null;
+const verifyEmergency=async(req,{storyId})=>{
+ const bearer=req.headers.get('Authorization');
+ const suffix={'Bearer two-person-emergency':'',
+  'Bearer two-person-repeat':'-repeat',
+  'Bearer two-person-third':'-third',
+  'Bearer two-person-fourth':'-fourth',
+  'Bearer two-person-fifth':'-fifth'}[bearer];
+ return suffix===undefined?null:{storyId,caseId:caseId(storyId)+suffix,
+  reason:'urgent-rights-hold',authorized:true,
+  operatorUid:'fixture-operator',rightsOfficerUid:'fixture-rights-officer'};
+};
 const verifyRecovery=async(req,{storyId})=>
  req.headers.get('Authorization')==='Bearer three-person-recovery'?
  {storyId,caseId:caseId(storyId),authorized:true,
@@ -205,13 +212,69 @@ try{
  assert.equal((await holdRef(ordinary.id).get()).data().status,'review-ready');
  console.log('raw-admin-sdk-bypass-remains-open');
 
+ // G2Y: new independently authorized incident after review-ready. Re-hide a
+ // leaked book, supersede old clearance and keep immutable case generations.
+ await deny(emergency.reassertEmergencyHold(request('forged'),{
+  storyId:ordinary.id,expectedHoldRevision:2,operationId:crypto.randomUUID()}),
+ /dual-approval-required/);
+ const repeatCmd={storyId:ordinary.id,expectedHoldRevision:2,
+  operationId:crypto.randomUUID()};
+ const repeat=await emergency.reassertEmergencyHold(
+  request('two-person-repeat'),repeatCmd);
+ assert.equal(repeat.wasPublic,true);
+ assert.equal(repeat.holdRevision,3);
+ assert.equal(repeat.productionAuthorized,false);
+ assert.equal((await bookRef(ordinary.id).get()).data().status,'draft');
+ assert.equal((await epochRef(ordinary.id).get()).data().sourceEpoch,4);
+ assert.equal((await holdRef(ordinary.id).get()).data().status,'held');
+ assert.equal((await clearanceRef(ordinary.id).get()).data().status,'superseded');
+ const cases=holdRef(ordinary.id).collection('cases');
+ assert.equal((await cases.doc(caseId(ordinary.id)).get()).data()
+  .backfilledFromHold,true);
+ assert.equal((await cases.doc(caseId(ordinary.id)+'-repeat').get())
+  .data().holdRevision,3);
+ await assertFails(publicBook(ordinary.id).get());
+ await deny(writer.publishDraft(request('server-publisher'),cmd({...ordinary,epoch:4})),
+  /emergency-hold/);
+ await deny(emergency.reassertEmergencyHold(request('two-person-repeat'),{
+  ...repeatCmd,operationId:crypto.randomUUID(),expectedHoldRevision:3}),
+  /case-replay/);
+ await deny(emergency.reassertEmergencyHold(request('two-person-third'),{
+  storyId:ordinary.id,expectedHoldRevision:2,operationId:crypto.randomUUID()}),
+  /hold-conflict/);
+ const third=await emergency.reassertEmergencyHold(request('two-person-third'),{
+  storyId:ordinary.id,expectedHoldRevision:3,operationId:crypto.randomUUID()});
+ assert.equal(third.wasPublic,false);
+ assert.equal(third.holdRevision,4);
+ assert.equal((await epochRef(ordinary.id).get()).data().sourceEpoch,4);
+ assert.equal((await cases.doc(caseId(ordinary.id)+'-third').get())
+  .data().previousCaseId,caseId(ordinary.id)+'-repeat');
+ await deny(emergency.recoveryReview(request('three-person-recovery'),{
+  storyId:ordinary.id,expectedHoldRevision:4,
+  expectedAuthorityRevision:3,operationId:crypto.randomUUID()}),
+  /hold-conflict/);
+ const competingReholds=await Promise.allSettled([
+  emergency.reassertEmergencyHold(request('two-person-fourth'),{
+   storyId:ordinary.id,expectedHoldRevision:4,operationId:crypto.randomUUID()}),
+  emergency.reassertEmergencyHold(request('two-person-fifth'),{
+   storyId:ordinary.id,expectedHoldRevision:4,operationId:crypto.randomUUID()})
+ ]);
+ assert.equal(competingReholds.filter(x=>x.status==='fulfilled').length,1);
+ assert.equal(competingReholds.filter(x=>x.status==='rejected').length,1);
+ assert.equal((await holdRef(ordinary.id).get()).data().holdRevision,5);
+ await assertFails(publicBook(ordinary.id).get());
+ console.log('g2y-repeat-hold-rehides-admin-leak-and-blocks-stale-recovery');
+
  console.log(JSON.stringify({g2w:'guarded-publisher-and-restore-denial-emulator',
   publications,hidden,serverRejects:rejects,
   clientPublishDenied:true,emergencyHoldCheckedInTransaction:true,
   malformedHoldDenied:true,reviewReadyDenied:true,
   holdBeforeSnapshotDenied:true,revocationBeforeSnapshotDenied:true,
   concurrentPublishExactlyOne:true,restoreNotAuthorized:true,
-  rawAdminBypassStillOpen:true,productionAuthorized:false,productionChanged:false}));
+  rawAdminBypassStillOpen:true,g2yRepeatHoldRehidesPublicLeak:true,
+  g2ySecondHoldKeepsPrivate:true,g2yOldClearanceSuperseded:true,
+  g2yCaseHistoryRecorded:true,g2yConcurrentReholdExactlyOne:true,
+  productionAuthorized:false,productionChanged:false}));
 }finally{
  try{await environment.clearFirestore();}finally{
   await environment.cleanup();await db.terminate();

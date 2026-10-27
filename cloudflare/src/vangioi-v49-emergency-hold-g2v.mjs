@@ -174,5 +174,110 @@ export function createG2VEmergencyRehearsal({firestore,emulatorHost,
     emulatorOnly:true});
   },{maxAttempts:5});
  }
- return Object.freeze({emergencyHide,recoveryReview});
+
+ /**
+  * G2Y: re-assert an emergency hold with a NEW case after the previous hold
+  * was reviewed (or an independent incident occurs while it is still held).
+  * A stale clearance cannot authorize this new case. The book never becomes
+  * public; if a legacy privileged writer leaked it, hide it in this same tx.
+  * Historical cases are immutable local-emulator evidence, not legal records.
+  */
+ async function reassertEmergencyHold(request,{storyId,expectedHoldRevision,
+  operationId}={}){
+  if(!id(storyId)||!epoch(expectedHoldRevision)||!uuid(operationId))
+   throw Error('emulator-rehold-invalid-command');
+  let approval;
+  try{approval=await verifyEmergency(request,{storyId,reassert:true});}catch{
+   throw Error('emulator-rehold-dual-approval-required');
+  }
+  if(!validDual(approval)||approval.storyId!==storyId||
+   !id(approval.caseId)||!reasons.has(approval.reason))
+   throw Error('emulator-rehold-dual-approval-required');
+
+  return firestore.runTransaction(async tx=>{
+   const bookRef=books.doc(storyId),holdRef=holds.doc(storyId),
+    epochRef=epochs.doc(storyId),clearanceRef=clearances.doc(storyId),
+    opRef=ops.doc(operationId);
+   const [b,h,e,c,o]=await Promise.all([tx.get(bookRef),tx.get(holdRef),
+    tx.get(epochRef),tx.get(clearanceRef),tx.get(opRef)]);
+   if(o.exists)throw Error('emulator-rehold-operation-replay');
+   if(!b.exists||!h.exists)throw Error('emulator-rehold-evidence-unavailable');
+   const book=b.data(),hold=h.data();
+   if(book?.id!==storyId||!uid(book.ownerUid)||
+    !['draft','published'].includes(book.status)||
+    hold?.storyId!==storyId||hold.ownerUid!==book.ownerUid||
+    !['held','review-ready'].includes(hold.status)||
+    hold.holdRevision!==expectedHoldRevision||
+    !epoch(hold.holdRevision+1)||!id(hold.caseId))
+    throw Error('emulator-rehold-hold-conflict');
+   if(hold.caseId===approval.caseId)
+    throw Error('emulator-rehold-case-replay');
+
+   const previousCaseRef=holdRef.collection('cases').doc(hold.caseId),
+    newCaseRef=holdRef.collection('cases').doc(approval.caseId);
+   const [previousCase,newCase]=await Promise.all([
+    tx.get(previousCaseRef),tx.get(newCaseRef)]);
+   if(newCase.exists)throw Error('emulator-rehold-case-replay');
+   if(previousCase.exists){
+    const previous=previousCase.data();
+    const caseRevision=hold.status==='review-ready'?
+     expectedHoldRevision-1:expectedHoldRevision;
+    if(previous?.storyId!==storyId||previous.caseId!==hold.caseId||
+     previous.holdRevision!==caseRevision)
+     throw Error('emulator-rehold-history-conflict');
+   }else if(hold.previousCaseId!==undefined||
+    expectedHoldRevision!==(hold.status==='review-ready'?2:1)){
+    // Only the original G2V generation may lack case history.
+    throw Error('emulator-rehold-history-conflict');
+   }
+
+   const wasPublic=book.status==='published';
+   const record=e.exists?e.data():null;
+   const epochUsable=wasPublic&&!!record&&
+    record.storyId===storyId&&record.ownerUid===book.ownerUid&&
+    epoch(record.sourceEpoch)&&epoch(record.sourceEpoch+1)&&
+    hash(record.sourceHash);
+   const nextEpoch=epochUsable?record.sourceEpoch+1:null;
+   const nextRevision=expectedHoldRevision+1;
+   const stamp=new Date(now()).toISOString();
+   if(!previousCase.exists){
+    // A single G2V hold predates the G2Y case ledger; make this explicit.
+    tx.create(previousCaseRef,{storyId,caseId:hold.caseId,
+     holdRevision:expectedHoldRevision,kind:'g2y-legacy-baseline',
+     backfilledFromHold:true,sourceAttested:false});
+   }
+   tx.create(newCaseRef,{storyId,caseId:approval.caseId,
+    holdRevision:nextRevision,previousCaseId:hold.caseId,
+    kind:'g2y-repeat-emergency-hold',reason:approval.reason,
+    operatorUid:approval.operatorUid,rightsOfficerUid:approval.rightsOfficerUid,
+    wasPublic,sourceEpochRecordUsable:epochUsable,
+    sourceEpochAttested:false,sourceEpochAfter:nextEpoch,createdAt:stamp});
+   if(wasPublic){
+    const hidden={...book,status:'draft',updatedAt:stamp};
+    delete hidden.publishedAt;
+    tx.set(bookRef,hidden);
+    if(epochUsable)tx.update(epochRef,{sourceEpoch:nextEpoch});
+   }
+   if(c.exists)tx.update(clearanceRef,{status:'superseded',
+    invalidatedByHoldRevision:nextRevision});
+   tx.update(holdRef,{status:'held',holdRevision:nextRevision,
+    previousCaseId:hold.caseId,caseId:approval.caseId,
+    reason:approval.reason,operatorUid:approval.operatorUid,
+    rightsOfficerUid:approval.rightsOfficerUid,reheldAt:stamp,
+    sourceEpochRecordUsable:epochUsable,sourceEpochAttested:false,
+    sourceEpochAfter:nextEpoch,
+    sourceHashObserved:epochUsable?record.sourceHash:null});
+   tx.create(opRef,{storyId,kind:'g2y-repeat-emergency-hold',
+    previousCaseId:hold.caseId,caseId:approval.caseId,
+    holdRevision:nextRevision,wasPublic,
+    operatorUid:approval.operatorUid,rightsOfficerUid:approval.rightsOfficerUid,
+    sourceEpochRecordUsable:epochUsable,sourceEpochAttested:false,
+    sourceEpochAfter:nextEpoch});
+   return Object.freeze({ok:true,storyId,emulatorHidden:true,
+    holdRevision:nextRevision,caseId:approval.caseId,
+    wasPublic,sourceEpochAttested:false,sourceEpochAfter:nextEpoch,
+    canRepublish:false,productionAuthorized:false,emulatorOnly:true});
+  },{maxAttempts:5});
+ }
+ return Object.freeze({emergencyHide,recoveryReview,reassertEmergencyHold});
 }

@@ -30,8 +30,8 @@
     {
       "path": "cloudflare/src/vangioi-v49-emergency-hold-g2v.mjs",
       "kind": "emulator-emergency-hide",
-      "risk": "dual-host-decision-only-and-no-real-roles",
-      "sha256": "15d002edd205cabe1e20cc9dfea033b4924a3ed580828657f82623ebbe9c5246"
+      "risk": "g2y-repeat-hold-emulator-only-dual-host-decision-no-real-roles",
+      "sha256": "3afcb98fc0ad740087c5d93b0a15441a6be502e00d4d3bdea41dac0e8c908837"
     },
     {
       "path": "cloudflare/src/vangioi-v49-guarded-publisher-g2w.mjs",
