@@ -165,3 +165,5 @@ LIB1: [LIBRARY_INTAKE_UI_SYNC_L1.md](LIBRARY_INTAKE_UI_SYNC_L1.md) — gom lối
 G2Y: [G2Y_REPEAT_HOLD_AND_PHASE2_CLOSEOUT.md](G2Y_REPEAT_HOLD_AND_PHASE2_CLOSEOUT.md) — bổ sung reassert emergency hold nhiều generation trong Firestore Emulator, bảo toàn tính riêng tư sau writer Admin SDK bypass và chốt G2 ở mức nguyên mẫu/kiểm thử. **Chưa có staging/production authorization, source picker thật hoặc IAM/cutover; G3 chỉ được bắt đầu trên nhánh kỹ thuật offline/fixture.**
 
 G3A: [G3A_REACHABILITY_SIMULATION.md](G3A_REACHABILITY_SIMULATION.md) — lớp kiểm tra reachability độc lập, có giới hạn và phân tách theo từng profile nhập vai; truy dấu cảnh và nguồn flag *có thể* tồn tại mà không chạy trigger/Engine. **Kết quả không chứng minh chơi được, không chặn/nâng quyền gửi duyệt hoặc phát hành, không nối production.**
+
+G3B: [G3B_MOBILE_ASSET_QA.md](G3B_MOBILE_ASSET_QA.md) — lớp QA offline cho metadata PNG/ảnh có pin, crop trên 320/375/390/430 px, focalPoint và vùng ảnh quan trọng, cảnh báo background tái dùng/hotspot/sprite; không tự đánh giá ảnh đẹp, Canon hay giấy phép. **Không có kết quả thiết bị thật, không xác nhận quyền ảnh hoặc tự phát hành.**
