@@ -20,6 +20,7 @@ import {createAdmissionRehearsal} from '../src/vangioi-admission-rehearsal.mjs';
 import {createSqlStagingReadinessService} from '../src/vangioi-staging-readiness.mjs';
 import {createSqlPermitProjectionAudit} from '../src/vangioi-permit-projection-audit.mjs';
 import {createSqlPermitFixtureSink} from '../src/vangioi-permit-fixture-sink.mjs';
+import {createSqlPermitFixtureRecovery} from '../src/vangioi-permit-fixture-recovery.mjs';
 import {createV49TransactionFixture} from './fixtures/vangioi-firestore-v49.mjs';
 import {content} from './fixtures/vangioi-content.mjs';
 
@@ -1798,4 +1799,195 @@ test('G2C fixture tables protect event/checkpoint history and have no public Wor
   for(const file of ['../src/index.mjs','../src/vangioi-authoring-http.mjs'])
    assert.equal(readFileSync(new URL(file,import.meta.url),'utf8').includes('vangioi-permit-fixture-sink'),false);
  }finally{replica.close();}
+});
+
+const g2dRecovery=(f,options={})=>createSqlPermitFixtureRecovery({...f.options,...options});
+
+test('G2D exports consistent fixture snapshot and restores active permit for G2B audit',async()=>{
+ const authority=setup(),source=setup(),target=setup();try{
+  await permitFixture(authority);const sink=g2cSink(source),replay=g2cReplay(authority,sink);
+  assert.equal((await replay(req(OP),{after:0})).checkpoint,1);
+  const backup=await g2dRecovery(source).createBackup();
+  assert.deepEqual(Object.keys(backup),['format','projectId','environment','checkpoint','entries','events','digest']);
+  assert.equal(backup.checkpoint,1);assert.equal(backup.entries.length,1);assert.equal(backup.events.length,1);
+  assert.equal(JSON.stringify(backup).includes('PRIVATE_SOURCE_TEXT'),false);
+  assert.equal(JSON.stringify(backup).includes('proofRef'),false);
+  const restored=g2cSink(target);
+  assert.deepEqual(await g2dRecovery(target).restoreBackup(backup),{
+   ok:true,projectId:'truyendienvl',environment:'fixture',checkpoint:1,entryCount:1,eventCount:1});
+  assert.deepEqual(restored.readReplicaSnapshot(),sink.readReplicaSnapshot());
+  assert.equal((await g2bAudit(authority,restored.readReplicaSnapshot).auditProjection(req(OP))).fixtureAuditPassed,true);
+  assert.equal(target.rows('SELECT count(*) n FROM vg_fixture_permit_events_v1')[0].n,1);
+  assert.equal((await g2cReplay(authority,restored)(req(OP),{after:0})).checkpoint,1);
+  assert.equal(target.rows('SELECT count(*) n FROM vg_fixture_permit_events_v1')[0].n,1);
+ }finally{authority.close();source.close();target.close();}
+});
+
+test('G2D backup after revoke restores revoked status and immutable two-event history',async()=>{
+ const f=setup(),source=setup(),target=setup();try{
+  const x=await permitFixture(f),sink=g2cSink(source),replay=g2cReplay(f,sink);
+  assert.equal((await replay(req(OP),{after:0})).checkpoint,1);
+  assert.equal((await f.registry.revokeAdaptationPermit(req(OP),x.revoke)).status,'revoked');
+  assert.equal((await replay(req(OP),{after:1})).checkpoint,2);
+  const backup=await g2dRecovery(source).createBackup();g2cSink(target);
+  assert.equal((await g2dRecovery(target).restoreBackup(backup)).eventCount,2);
+  assert.deepEqual(g2cSink(target).readReplicaSnapshot().entries.map(e=>[e.status,e.revision]),[['revoked',2]]);
+  assert.equal((await g2bAudit(f,g2cSink(target).readReplicaSnapshot).auditProjection(req(OP))).fixtureAuditPassed,true);
+  assert.throws(()=>target.sql.exec('UPDATE vg_fixture_permit_events_v1 SET event_id=?',crypto.randomUUID()),/immutable/);
+ }finally{f.close();source.close();target.close();}
+});
+
+test('G2D restores a stale checkpoint, G2B blocks it, then G1V catches up; G1Y still blocks revoked source',async()=>{
+ const f=setup(),source=setup(),target=setup();try{
+  const p=await approvedForG1Y(f),sink=g2cSink(source);
+  assert.equal((await g2cReplay(f,sink)(req(OP),{after:0})).checkpoint,1);
+  const backup=await g2dRecovery(source).createBackup();
+  const ref=p.s.reference;
+  assert.equal((await f.registry.revokeAdaptationPermit(req(OP),{
+   requestId:crypto.randomUUID(),storyId:ref.storyId,contentHash:ref.contentHash,expectedRevision:1})).status,'revoked');
+  const restored=g2cSink(target);await g2dRecovery(target).restoreBackup(backup);
+  const audit=g2bAudit(f,restored.readReplicaSnapshot);
+  assert.equal((await audit.auditProjection(req(OP))).code,'checkpoint-lag');
+  assert.equal((await g2cReplay(f,restored)(req(OP),{after:1})).checkpoint,2);
+  assert.equal((await audit.auditProjection(req(OP))).fixtureAuditPassed,true);
+  assert.equal(restored.readReplicaSnapshot().entries[0].status,'revoked');
+  assert.equal((await createSqlWorldReleaseGate(f.options)
+   .evaluateApprovedWorld(req(OP),{worldId:p.w.worldId})).ok,false);
+ }finally{f.close();source.close();target.close();}
+});
+
+test('G2D round-trips an empty fixture without inventing events or rights',async()=>{
+ const source=setup(),target=setup();try{
+  g2cSink(source);g2cSink(target);
+  const backup=await g2dRecovery(source).createBackup();
+  assert.deepEqual([backup.checkpoint,backup.entries,backup.events],[0,[],[]]);
+  assert.deepEqual(await g2dRecovery(target).restoreBackup(backup),{
+   ok:true,projectId:'truyendienvl',environment:'fixture',checkpoint:0,entryCount:0,eventCount:0});
+  assert.equal(g2cSink(target).readCheckpoint().checkpoint,0);
+ }finally{source.close();target.close();}
+});
+
+test('G2D rejects modified digest, private fields, wrong environment, project and backup version',async()=>{
+ const f=setup(),source=setup(),target=setup();try{
+  await permitFixture(f);const sink=g2cSink(source);g2cSink(target);
+  await g2cReplay(f,sink)(req(OP),{after:0});const backup=await g2dRecovery(source).createBackup();
+  for(const change of [
+   b=>{b.entries[0].status='revoked';b.entries[0].revision=2;},
+   b=>{b.digest='0'.repeat(64);},
+   b=>{b.entries[0].proofRef='PRIVATE_EVIDENCE';},
+   b=>{b.events[0].recipient='PRIVATE_RECIPIENT';},
+   b=>{b.projectId='other-project';},
+   b=>{b.environment='production';},
+   b=>{b.format='permit-fixture-backup-2';},
+   b=>{b.privateSource='PRIVATE_SOURCE_TEXT';}
+  ]){
+   const invalid=structuredClone(backup);change(invalid);
+   await assert.rejects(g2dRecovery(target).restoreBackup(invalid),/fixture-backup/);
+  }
+  assert.equal(g2cSink(target).readCheckpoint().checkpoint,0);
+  assert.equal(target.rows('SELECT count(*) n FROM vg_fixture_permit_events_v1')[0].n,0);
+ }finally{f.close();source.close();target.close();}
+});
+
+test('G2D rejects internally inconsistent backup even if its checksum is recalculated',async()=>{
+ const f=setup(),source=setup(),target=setup();try{
+  await permitFixture(f);const sink=g2cSink(source);g2cSink(target);
+  await g2cReplay(f,sink)(req(OP),{after:0});const backup=await g2dRecovery(source).createBackup();
+  const cases=[
+   b=>{b.events=[];},
+   b=>{b.checkpoint=2;},
+   b=>{b.events.push({...b.events[0],seq:2});b.checkpoint=2;},
+   b=>{b.events[0].storyId='orphan';},
+   b=>{b.entries.push({...b.entries[0]});},
+   b=>{b.entries[0].status='active';b.entries[0].revision=2;}
+  ];
+  for(const change of cases){
+   const bad=structuredClone(backup);change(bad);
+   const {digest,...unsigned}=bad;bad.digest=await hashAuthoringJson(unsigned);
+   await assert.rejects(g2dRecovery(target).restoreBackup(bad),/invalid-fixture-backup/);
+  }
+  assert.equal(g2cSink(target).readCheckpoint().checkpoint,0);
+ }finally{f.close();source.close();target.close();}
+});
+
+test('G2D copies validated backup rows before async digest so in-flight caller edits cannot change restored rights',async()=>{
+ const f=setup(),source=setup(),target=setup();try{
+  await permitFixture(f);const sink=g2cSink(source);g2cSink(target);
+  await g2cReplay(f,sink)(req(OP),{after:0});const backup=await g2dRecovery(source).createBackup();
+  const restoring=g2dRecovery(target).restoreBackup(backup);
+  backup.entries[0].status='revoked';backup.entries[0].revision=2;
+  backup.events[0].eventId=crypto.randomUUID();
+  assert.equal((await restoring).checkpoint,1);
+  const restored=g2cSink(target);
+  assert.equal(restored.readReplicaSnapshot().entries[0].status,'active');
+  assert.equal(target.rows('SELECT event_id FROM vg_fixture_permit_events_v1')[0].event_id!==backup.events[0].eventId,true);
+ }finally{f.close();source.close();target.close();}
+});
+
+test('G2D refuses a nonempty target, including a separate project or an existing empty-backup restore',async()=>{
+ const f=setup(),source=setup(),target=setup();try{
+  await permitFixture(f);const sourceSink=g2cSink(source),targetSink=g2cSink(target);
+  await g2cReplay(f,sourceSink)(req(OP),{after:0});
+  const backup=await g2dRecovery(source).createBackup();
+  await g2cReplay(f,targetSink)(req(OP),{after:0});
+  const before=targetSink.readReplicaSnapshot();
+  await assert.rejects(g2dRecovery(target).restoreBackup(backup),/requires-empty-target/);
+  assert.deepEqual(targetSink.readReplicaSnapshot(),before);
+  // A zero-checkpoint row for another project also disqualifies the database.
+  target.sql.exec('INSERT INTO vg_fixture_permit_checkpoint_v1 VALUES(?,0)','other-project');
+  await assert.rejects(g2dRecovery(target).restoreBackup(backup),/requires-empty-target/);
+ }finally{f.close();source.close();target.close();}
+});
+
+test('G2D injected SQL failure rolls back full recovery and retry succeeds',async()=>{
+ const f=setup(),source=setup(),target=setup();try{
+  await permitFixture(f);const sink=g2cSink(source),targetSink=g2cSink(target);
+  await g2cReplay(f,sink)(req(OP),{after:0});const backup=await g2dRecovery(source).createBackup();
+  target.hooks.fail='INSERT INTO vg_fixture_permit_events_v1';
+  await assert.rejects(g2dRecovery(target).restoreBackup(backup),/PRIVATE_STORAGE_ERROR/);
+  assert.deepEqual(targetSink.readReplicaSnapshot(),{
+   projectId:'truyendienvl',environment:'fixture',checkpoint:0,entries:[]});
+  assert.equal(target.rows('SELECT count(*) n FROM vg_fixture_permit_events_v1')[0].n,0);
+  assert.equal((await g2dRecovery(target).restoreBackup(backup)).checkpoint,1);
+ }finally{f.close();source.close();target.close();}
+});
+
+test('G2D export fails on corrupt/out-of-scope source or bounded limits without returning partial backup',async()=>{
+ const f=setup(),source=setup();try{
+  const x=await permitFixture(f),sink=g2cSink(source);
+  await g2cReplay(f,sink)(req(OP),{after:0});
+  assert.equal((await g2dRecovery(source,{maxEvents:1,maxEntries:1}).createBackup()).events.length,1);
+  assert.equal((await f.registry.revokeAdaptationPermit(req(OP),x.revoke)).status,'revoked');
+  await g2cReplay(f,sink)(req(OP),{after:1});
+  await assert.rejects(g2dRecovery(source,{maxEvents:1}).createBackup(),/fixture-backup-limit/);
+  source.sql.exec('INSERT INTO vg_fixture_permit_checkpoint_v1 VALUES(?,0)','other-project');
+  await assert.rejects(g2dRecovery(source).createBackup(),/source-scope-conflict/);
+ }finally{f.close();source.close();}
+});
+
+test('G2D SQLite fixture persists recovered checkpoint and can continue G1V after restart',async()=>{
+ const dir=mkdtempSync(join(tmpdir(),'vangioi-g2d-')),path=join(dir,'restored.db');
+ const f=setup(),source=setup();try{
+  const x=await permitFixture(f),sink=g2cSink(source);
+  await g2cReplay(f,sink)(req(OP),{after:0});const backup=await g2dRecovery(source).createBackup();
+  const before=setup(path);g2cSink(before);
+  assert.equal((await g2dRecovery(before).restoreBackup(backup)).checkpoint,1);before.close();
+  const after=setup(path);try{
+   const recovered=g2cSink(after);assert.equal(recovered.readCheckpoint().checkpoint,1);
+   assert.equal((await f.registry.revokeAdaptationPermit(req(OP),x.revoke)).status,'revoked');
+   assert.equal((await g2cReplay(f,recovered)(req(OP),{after:1})).checkpoint,2);
+   assert.equal(recovered.readReplicaSnapshot().entries[0].status,'revoked');
+  }finally{after.close();}
+ }finally{f.close();source.close();rmSync(dir,{recursive:true,force:true});}
+});
+
+test('G2D constructor refuses live modes, invalid limits; module has no Worker or author HTTP route',()=>{
+ const f=setup();try{
+  g2cSink(f);
+  for(const options of [{environment:'staging'},{environment:'production'},{maxEvents:0},
+   {maxEvents:10001},{maxEntries:-1},{projectId:'../../bad'}])
+   assert.throws(()=>g2dRecovery(f,options),/G2D/);
+  for(const file of ['../src/index.mjs','../src/vangioi-authoring-http.mjs'])
+   assert.equal(readFileSync(new URL(file,import.meta.url),'utf8').includes('vangioi-permit-fixture-recovery'),false);
+ }finally{f.close();}
 });

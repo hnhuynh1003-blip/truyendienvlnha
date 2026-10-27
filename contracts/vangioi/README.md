@@ -117,3 +117,5 @@ G2A: [STAGING_READINESS_G2A.md](STAGING_READINESS_G2A.md) — kiểm checkpoint 
 G2B: [PERMIT_PROJECTION_AUDIT_G2B.md](PERMIT_PROJECTION_AUDIT_G2B.md) — đối soát mọi permit key/status/revision với bản sao fixture để phát hiện checkpoint khớp nhưng dữ liệu sai; không đồng nghĩa có quyền sử dụng world thật.
 
 G2C: [ATOMIC_FIXTURE_SINK_G2C.md](ATOMIC_FIXTURE_SINK_G2C.md) — sink SQLite fixture commit atomic projection/event/checkpoint cho replay G1V, chống sự kiện lặp và revoke-wins; không kết nối consumer/live production.
+
+G2D: [FIXTURE_RECOVERY_G2D.md](FIXTURE_RECOVERY_G2D.md) — sao lưu metadata permit và khôi phục giao dịch nguyên tử **chỉ vào fixture trống**, kiểm digest và diễn tập G1V/G2B/G1Y sau sự cố; không đụng dữ liệu staging/production.
