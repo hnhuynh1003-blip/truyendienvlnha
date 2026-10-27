@@ -149,3 +149,5 @@ G2Q: [V49_SOURCE_EPOCH_FENCE_G2Q.md](V49_SOURCE_EPOCH_FENCE_G2Q.md) — sổ phi
 G2R: [V49_EMULATOR_ATOMIC_EPOCH_G2R.md](V49_EMULATOR_ATOMIC_EPOCH_G2R.md) — diễn tập Firestore Emulator thật: giao dịch ghi nguồn EPUB V49 + sidecar `sourceEpoch` + operation, CAS chống ghi cạnh tranh và kiểm A→B→A qua G2Q; nạp lại Rules G2M để chứng minh quyền client và blocker **owner vẫn publish được mà không tăng epoch**. Không đụng Rules/EPUB/Firestore thật.
 
 G2S: [V49_PUBLISH_BYPASS_GATE_G2S.md](V49_PUBLISH_BYPASS_GATE_G2S.md) — ứng viên Rules **chỉ trên Emulator** chặn client V49 tự publish mà không kiểm epoch, bảo toàn import-to-draft và đọc sách published; server/Admin SDK vẫn bỏ qua Rules, chưa có trusted publisher hay rollout thật.
+
+G2T: [V49_EMULATOR_TRUSTED_PUBLISH_G2T.md](V49_EMULATOR_TRUSTED_PUBLISH_G2T.md) — diễn tập server-only publish trong Firestore Emulator bằng full chapter hash, epoch CAS, synthetic permit/reviewer/release projection và atomic receipt; kiểm race thu hồi/sửa nguồn. **Chưa đồng bộ authority SQLite, chưa có publisher hoặc Rules production.**
