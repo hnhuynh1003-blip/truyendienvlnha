@@ -147,3 +147,5 @@ G2P: [V49_REVIEW_RACE_REHEARSAL_G2P.md](V49_REVIEW_RACE_REHEARSAL_G2P.md) — di
 G2Q: [V49_SOURCE_EPOCH_FENCE_G2Q.md](V49_SOURCE_EPOCH_FENCE_G2Q.md) — sổ phiên bản nguồn `sourceEpoch` đơn điệu trong SQLite fixture và lớp fence bọc G2P, phát hiện **A→B→A đã được ghi nhận** và stale CAS/replay. Chưa có writer Firestore gắn epoch nguyên tử, không cấp quyền submit/publish hoặc kết nối route thật.
 
 G2R: [V49_EMULATOR_ATOMIC_EPOCH_G2R.md](V49_EMULATOR_ATOMIC_EPOCH_G2R.md) — diễn tập Firestore Emulator thật: giao dịch ghi nguồn EPUB V49 + sidecar `sourceEpoch` + operation, CAS chống ghi cạnh tranh và kiểm A→B→A qua G2Q; nạp lại Rules G2M để chứng minh quyền client và blocker **owner vẫn publish được mà không tăng epoch**. Không đụng Rules/EPUB/Firestore thật.
+
+G2S: [V49_PUBLISH_BYPASS_GATE_G2S.md](V49_PUBLISH_BYPASS_GATE_G2S.md) — ứng viên Rules **chỉ trên Emulator** chặn client V49 tự publish mà không kiểm epoch, bảo toàn import-to-draft và đọc sách published; server/Admin SDK vẫn bỏ qua Rules, chưa có trusted publisher hay rollout thật.
