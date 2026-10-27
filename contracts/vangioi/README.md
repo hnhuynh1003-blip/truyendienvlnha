@@ -113,3 +113,5 @@ G1Y: [WORLD_RELEASE_GATE_G1Y.md](WORLD_RELEASE_GATE_G1Y.md) — tiền kiểm of
 G1Z: [ADMISSION_REHEARSAL_G1Z.md](ADMISSION_REHEARSAL_G1Z.md) — diễn tập operator-only bằng ID phiên giả trong RAM, gọi lại cổng G1Y ở các bước release/start/resume/read; không kết nối gameplay hay phát hành thật.
 
 G2A: [STAGING_READINESS_G2A.md](STAGING_READINESS_G2A.md) — kiểm checkpoint G1U so với authority, baseline và quyền G1Y bằng fixture read-only; không xác nhận replica đã đồng bộ thật hoặc cấp quyền staging/production.
+
+G2B: [PERMIT_PROJECTION_AUDIT_G2B.md](PERMIT_PROJECTION_AUDIT_G2B.md) — đối soát mọi permit key/status/revision với bản sao fixture để phát hiện checkpoint khớp nhưng dữ liệu sai; không đồng nghĩa có quyền sử dụng world thật.

@@ -18,6 +18,7 @@ import {createSqlSourceNoticeService} from '../src/vangioi-source-notices.mjs';
 import {createSqlWorldReleaseGate} from '../src/vangioi-world-release-gate.mjs';
 import {createAdmissionRehearsal} from '../src/vangioi-admission-rehearsal.mjs';
 import {createSqlStagingReadinessService} from '../src/vangioi-staging-readiness.mjs';
+import {createSqlPermitProjectionAudit} from '../src/vangioi-permit-projection-audit.mjs';
 import {createV49TransactionFixture} from './fixtures/vangioi-firestore-v49.mjs';
 import {content} from './fixtures/vangioi-content.mjs';
 
@@ -1526,4 +1527,130 @@ test('G2A constructor rejects real environment and module remains outside public
   environment:'production'}),/G2A/);
  for(const file of ['../src/index.mjs','../src/vangioi-authoring-http.mjs'])
   assert.equal(readFileSync(new URL(file,import.meta.url),'utf8').includes('vangioi-staging-readiness'),false);
+});
+
+function g2bReplica(f,checkpoint){
+ const entries=f.rows('SELECT story_id,content_hash,status,revision FROM vg_authoring_adaptation_permits_v1 ORDER BY story_id,content_hash')
+  .map(r=>({storyId:r.story_id,contentHash:r.content_hash,status:r.status,revision:r.revision}));
+ return {projectId:'truyendienvl',environment:'fixture',checkpoint,entries};
+}
+const g2bAudit=(f,readReplicaSnapshot,options={})=>createSqlPermitProjectionAudit({...f.options,readReplicaSnapshot,...options});
+
+test('G2B current permits, revisions, statuses and exact keys match fixture projection without exposing evidence',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f),snapshot=g2bReplica(f,1),audit=g2bAudit(f,async()=>snapshot);
+  const result=await audit.auditProjection(req(OP));
+  assert.deepEqual(result,{ok:true,fixtureAuditPassed:true,projectId:'truyendienvl',environment:'fixture',
+   checkpoint:1,permitCount:1,auditVersion:'permit-projection-1'});
+  assert.equal(JSON.stringify(result).includes('PRIVATE_SOURCE_TEXT'),false);
+  assert.equal((await g2aProbe(f,g2aCheckpoint(1)).checkWorld(req(OP),{worldId:p.w.worldId})).fixtureChecksPassed,true);
+ }finally{f.close();}
+});
+
+test('G2B complete cursor cannot hide absent, extra or wrong-key replica permits',async()=>{
+ const f=setup();try{
+  await approvedForG1Y(f);const base=g2bReplica(f,1);
+  const missing={...base,entries:[]};
+  const extra={...base,entries:[...base.entries,{storyId:'story-extra',contentHash:'b'.repeat(64),status:'active',revision:1}]};
+  const wrong={...base,entries:[{...base.entries[0],storyId:'story-imposter'}]};
+  for(const payload of [missing,extra,wrong])
+   assert.equal((await g2bAudit(f,async()=>payload).auditProjection(req(OP))).code,'projection-mismatch');
+ }finally{f.close();}
+});
+
+test('G2B detects stale active or wrong revision even when replica falsely claims latest revoke checkpoint',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f),stale=g2bReplica(f,1),ref=p.s.reference;
+  assert.equal((await f.registry.revokeAdaptationPermit(req(OP),{
+   requestId:crypto.randomUUID(),storyId:ref.storyId,contentHash:ref.contentHash,expectedRevision:1})).status,'revoked');
+  stale.checkpoint=2;
+  assert.equal((await g2bAudit(f,async()=>stale).auditProjection(req(OP))).code,'projection-mismatch');
+  const wrongRevision=g2bReplica(f,2);wrongRevision.entries[0].revision=1;
+  assert.equal((await g2bAudit(f,async()=>wrongRevision).auditProjection(req(OP))).code,'projection-mismatch');
+  // After a fixture consumer catches up, projection matching is NOT a grant:
+  // G1Y still denies the revoked world even with a complete replica.
+  assert.equal((await g2bAudit(f,async()=>g2bReplica(f,2)).auditProjection(req(OP))).fixtureAuditPassed,true);
+  assert.equal((await g2aProbe(f,g2aCheckpoint(2)).checkWorld(req(OP),{worldId:p.w.worldId})).ok,false);
+ }finally{f.close();}
+});
+
+test('G2B handles late revocation during asynchronous replica read by failing authority-change check',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f),stale=g2bReplica(f,1),ref=p.s.reference;
+  const probe=g2bAudit(f,async()=>{
+   assert.equal((await f.registry.revokeAdaptationPermit(req(OP),{
+    requestId:crypto.randomUUID(),storyId:ref.storyId,contentHash:ref.contentHash,expectedRevision:1})).ok,true);
+   return stale;
+  });
+  assert.equal((await probe.auditProjection(req(OP))).code,'authority-changed');
+ }finally{f.close();}
+});
+
+test('G2B catches stale and future checkpoints regardless of otherwise correct permit content',async()=>{
+ const f=setup();try{
+  await approvedForG1Y(f);
+  for(const [checkpoint,code] of [[0,'checkpoint-lag'],[2,'checkpoint-ahead']])
+   assert.equal((await g2bAudit(f,async()=>g2bReplica(f,checkpoint)).auditProjection(req(OP))).code,code);
+ }finally{f.close();}
+});
+
+test('G2B missing outbox baseline denies audit before replica callback even if current rows match',async()=>{
+ const f=setup();try{
+  await approvedForG1Y(f);f.sql.exec("INSERT INTO vg_authoring_adaptation_permits_v1 VALUES(?,?,'{}','active',1)",
+   'epub-legacy-g2b','d'.repeat(64));let reads=0;
+  const probe=g2bAudit(f,async()=>{reads++;return g2bReplica(f,1);});
+  assert.equal((await probe.auditProjection(req(OP))).code,'baseline-required');
+  assert.equal(reads,0);
+ }finally{f.close();}
+});
+
+test('G2B rejects duplicate keys, unsanctioned proof fields, incorrect project and invalid rows',async()=>{
+ const f=setup();try{
+  await approvedForG1Y(f);const base=g2bReplica(f,1);
+  const cases=[
+   {...base,entries:[base.entries[0],base.entries[0]]},
+   {...base,entries:[{...base.entries[0],proofRef:'private'}]},
+   {...base,projectId:'other-project'},
+   {...base,environment:'production'},
+   {...base,entries:[{...base.entries[0],contentHash:'INVALID'}]},
+   {...base,entries:[{...base.entries[0],status:'issued'}]},
+   {...base,entries:[{...base.entries[0],revision:-1}]}
+  ];
+  for(const payload of cases)
+   assert.equal((await g2bAudit(f,async()=>payload).auditProjection(req(OP))).code,'invalid-projection');
+ }finally{f.close();}
+});
+
+test('G2B an unassigned actor never invokes the trusted replica reader',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f);let reads=0;
+  const probe=g2bAudit(f,async()=>{reads++;return g2bReplica(f,1);});
+  for(const user of [OWNER,p.reviewer,'admin',OTHER])
+   assert.equal((await probe.auditProjection(req(user))).code,'forbidden');
+  assert.equal((await probe.auditProjection(req('guest'))).code,'unauthenticated');
+  assert.equal(reads,0);
+ }finally{f.close();}
+});
+
+test('G2B fixture audit is explicitly bounded and cannot silently accept an unverified tail',async()=>{
+ const f=setup();try{
+  await approvedForG1Y(f);
+  assert.equal((await f.registry.issueAdaptationPermit(req(OP),{
+   requestId:crypto.randomUUID(),storyId:'epub-g2b-second',contentHash:'c'.repeat(64),
+   authorizedUid:OWNER,license:'original',sourceNote:'Synthetic permit',proofRef:null})).ok,true);
+  let reads=0;const probe=g2bAudit(f,async()=>{reads++;return g2bReplica(f,2);},{maxRows:1});
+  assert.equal((await probe.auditProjection(req(OP))).code,'audit-limit');
+  assert.equal(reads,0);
+ }finally{f.close();}
+});
+
+test('G2B fixture errors and attempts to enable staging/production fail closed, no public routes added',async()=>{
+ const f=setup();try{
+  await approvedForG1Y(f);
+  assert.equal((await g2bAudit(f,async()=>{throw Error('PRIVATE_REPLICA_ERROR');}).auditProjection(req(OP))).code,
+   'projection-audit-unavailable');
+  assert.throws(()=>g2bAudit(f,async()=>null,{environment:'production'}),/G2B/);
+  for(const file of ['../src/index.mjs','../src/vangioi-authoring-http.mjs'])
+   assert.equal(readFileSync(new URL(file,import.meta.url),'utf8').includes('vangioi-permit-projection-audit'),false);
+ }finally{f.close();}
 });
