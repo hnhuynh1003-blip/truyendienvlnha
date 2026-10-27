@@ -23,6 +23,7 @@ import {createSqlPermitFixtureSink} from '../src/vangioi-permit-fixture-sink.mjs
 import {createSqlPermitFixtureRecovery} from '../src/vangioi-permit-fixture-recovery.mjs';
 import {createFixturePermitBackupProvenance} from '../src/vangioi-permit-fixture-provenance.mjs';
 import {createSqlFixturePermitRestoreGuard} from '../src/vangioi-permit-fixture-restore-guard.mjs';
+import {createFixturePermitRestoreReconciliation} from '../src/vangioi-permit-fixture-reconciliation.mjs';
 import {createV49TransactionFixture} from './fixtures/vangioi-firestore-v49.mjs';
 import {content} from './fixtures/vangioi-content.mjs';
 
@@ -2340,4 +2341,159 @@ test('G2F guard is fixture-only, opt-in G2E, and disconnected from public Worker
   for(const file of ['../src/index.mjs','../src/vangioi-authoring-http.mjs'])
    assert.equal(readFileSync(new URL(file,import.meta.url),'utf8').includes('vangioi-permit-fixture-restore-guard'),false);
  }finally{fixture.close();}
+});
+
+const g2gProbe=(authority,guard,target,overrides={})=>createFixturePermitRestoreReconciliation({
+ guard,projectId:'truyendienvl',environment:'fixture',
+ readTargetBackup:()=>g2dRecovery(target).createBackup(),
+ authorizeOperator:async request=>{
+  const who=await authority.options.verify(request);
+  return who?.uid===OP&&authority.rows(`SELECT uid FROM vg_authoring_registry_operators_v1
+   WHERE uid=? AND status='active'`,who.uid).length===1;
+ },...overrides});
+
+test('G2G operator reconciles consumed receipt with exact nonempty restored G2D fixture',async()=>{
+ const f=setup(),source=setup(),target=setup(),ledger=setup();try{
+  await permitFixture(f);const sink=g2cSink(source),restored=g2cSink(target),guard=g2fGuard(ledger);
+  await g2cReplay(f,sink)(req(OP),{after:0});const seal=await g2eProvenance(source).createSealedBackup();
+  assert.equal((await g2fRestore(target,guard).restoreSealedBackup(seal)).checkpoint,1);
+  assert.deepEqual(await g2gProbe(f,guard,target).reconcile(req(OP),{nonce:seal.nonce}),{
+   ok:true,code:'target-matches-receipt',projectId:'truyendienvl',environment:'fixture',
+   nonce:seal.nonce,receiptCheckpoint:1,observedCheckpoint:1,requiresAuthorityAudit:true});
+  assert.equal((await g2bAudit(f,restored.readReplicaSnapshot).auditProjection(req(OP))).fixtureAuditPassed,true);
+  assert.equal(guard.readGuardSnapshot().attemptCount,1);
+  assert.equal(ledger.rows('SELECT count(*) n FROM vg_fixture_restore_attempt_v1')[0].n,1);
+ }finally{f.close();source.close();target.close();ledger.close();}
+});
+
+test('G2G reports target-behind after G2F consumes seal but target insert fails; never unburns it',async()=>{
+ const f=setup(),source=setup(),target=setup(),ledger=setup();try{
+  await permitFixture(f);const sink=g2cSink(source),restored=g2cSink(target),guard=g2fGuard(ledger);
+  await g2cReplay(f,sink)(req(OP),{after:0});const seal=await g2eProvenance(source).createSealedBackup();
+  target.hooks.fail='INSERT INTO vg_fixture_permit_events_v1';
+  await assert.rejects(g2fRestore(target,guard).restoreSealedBackup(seal),/PRIVATE_STORAGE_ERROR/);
+  const result=await g2gProbe(f,guard,target).reconcile(req(OP),{nonce:seal.nonce});
+  assert.equal(result.ok,false);assert.equal(result.code,'target-behind');
+  assert.deepEqual([result.receiptCheckpoint,result.observedCheckpoint],[1,0]);
+  assert.equal(guard.readGuardSnapshot().attemptCount,1);
+  assert.equal(restored.readCheckpoint().checkpoint,0);
+  await assert.rejects(g2fRestore(target,guard).restoreSealedBackup(seal),/seal-replay/);
+ }finally{f.close();source.close();target.close();ledger.close();}
+});
+
+test('G2G same checkpoint but unrelated target content is divergent, not a successful receipt',async()=>{
+ const f=setup(),another=setup(),source=setup(),a=setup(),b=setup(),ledger=setup();try{
+  await permitFixture(f);another.operator();
+  assert.equal((await another.registry.issueAdaptationPermit(req(OP),{
+   requestId:crypto.randomUUID(),storyId:'different',contentHash:'d'.repeat(64),
+   authorizedUid:OWNER,license:'original',sourceNote:'test',proofRef:null})).ok,true);
+  const s1=g2cSink(source),targetA=g2cSink(a),targetB=g2cSink(b),guard=g2fGuard(ledger);
+  await g2cReplay(f,s1)(req(OP),{after:0});await g2cReplay(another,targetB)(req(OP),{after:0});
+  const seal=await g2eProvenance(source).createSealedBackup();
+  await g2fRestore(a,guard).restoreSealedBackup(seal);
+  assert.equal((await g2gProbe(f,guard,b).reconcile(req(OP),{nonce:seal.nonce})).code,'target-diverged');
+  assert.equal((await g2gProbe(f,guard,a).reconcile(req(OP),{nonce:seal.nonce})).ok,true);
+  assert.equal(targetA.readCheckpoint().checkpoint,1);
+ }finally{f.close();another.close();source.close();a.close();b.close();ledger.close();}
+});
+
+test('G2G target advanced by later G1V events is flagged for authority audit, not overwritten',async()=>{
+ const f=setup(),source=setup(),target=setup(),ledger=setup();try{
+  const x=await permitFixture(f),sink=g2cSink(source),restored=g2cSink(target),guard=g2fGuard(ledger);
+  await g2cReplay(f,sink)(req(OP),{after:0});const seal=await g2eProvenance(source).createSealedBackup();
+  await g2fRestore(target,guard).restoreSealedBackup(seal);
+  assert.equal((await f.registry.revokeAdaptationPermit(req(OP),x.revoke)).status,'revoked');
+  await g2cReplay(f,restored)(req(OP),{after:1});
+  const result=await g2gProbe(f,guard,target).reconcile(req(OP),{nonce:seal.nonce});
+  assert.equal(result.code,'target-advanced-unverified');
+  assert.equal(result.requiresAuthorityAudit,true);
+  assert.equal((await g2bAudit(f,restored.readReplicaSnapshot).auditProjection(req(OP))).fixtureAuditPassed,true);
+  assert.equal(restored.readReplicaSnapshot().entries[0].status,'revoked');
+ }finally{f.close();source.close();target.close();ledger.close();}
+});
+
+test('G2G signed empty target at checkpoint zero cannot prove that restoration occurred',async()=>{
+ const f=setup(),source=setup(),target=setup(),ledger=setup();try{
+  f.operator();g2cSink(source);g2cSink(target);const guard=g2fGuard(ledger);
+  const seal=await g2eProvenance(source).createSealedBackup();
+  await g2fRestore(target,guard).restoreSealedBackup(seal);
+  const result=await g2gProbe(f,guard,target).reconcile(req(OP),{nonce:seal.nonce});
+  assert.equal(result.ok,false);assert.equal(result.code,'indeterminate-empty');
+  assert.equal(result.requiresAuthorityAudit,true);
+ }finally{f.close();source.close();target.close();ledger.close();}
+});
+
+test('G2G rejects unauthorized viewers before consulting a consumed receipt or target',async()=>{
+ const f=setup(),source=setup(),target=setup(),ledger=setup();try{
+  f.operator();g2cSink(source);g2cSink(target);const guard=g2fGuard(ledger);
+  const seal=await g2eProvenance(source).createSealedBackup();
+  await g2fRestore(target,guard).restoreSealedBackup(seal);
+  let reads=0;const reconcile=g2gProbe(f,guard,target,{
+   readTargetBackup:async()=>{reads++;throw Error('PRIVATE_TARGET_DATA');}});
+  for(const user of [OWNER,OTHER,'admin','guest'])
+   assert.equal((await reconcile.reconcile(req(user),{nonce:seal.nonce})).code,'forbidden');
+  assert.equal(reads,0);
+  assert.equal((await reconcile.reconcile(req(OP),{nonce:seal.nonce})).code,'reconciliation-unavailable');
+  assert.equal(reads,1);
+ }finally{f.close();source.close();target.close();ledger.close();}
+});
+
+test('G2G missing or malformed nonce returns safe failure, never fabricates a restore receipt',async()=>{
+ const f=setup(),target=setup(),ledger=setup();try{
+  f.operator();g2cSink(target);const guard=g2fGuard(ledger),audit=g2gProbe(f,guard,target);
+  assert.equal((await audit.reconcile(req(OP),{nonce:crypto.randomUUID()})).code,'receipt-not-found');
+  for(const input of [{nonce:'not-uuid'},{nonce:crypto.randomUUID(),admin:true},{},null])
+   assert.equal((await audit.reconcile(req(OP),input)).code,'invalid-request');
+  assert.equal(guard.readGuardSnapshot().attemptCount,0);
+ }finally{f.close();target.close();ledger.close();}
+});
+
+test('G2G detects target digest corruption and ledger changes while target callback is pending',async()=>{
+ const f=setup(),source=setup(),target=setup(),ledger=setup();try{
+  f.operator();g2cSink(source);g2cSink(target);const guard=g2fGuard(ledger);
+  const signer=g2eProvenance(source),seal=await signer.createSealedBackup();
+  await g2fRestore(target,guard).restoreSealedBackup(seal);
+  const bad=g2gProbe(f,guard,target,{readTargetBackup:async()=>({
+   ...await g2dRecovery(target).createBackup(),digest:'f'.repeat(64)})});
+  assert.equal((await bad.reconcile(req(OP),{nonce:seal.nonce})).code,'invalid-target');
+  const changing=g2gProbe(f,guard,target,{readTargetBackup:async()=>{
+   const newer=await signer.createSealedBackup();
+   const second=setup();try{g2cSink(second);
+    await g2fRestore(second,guard).restoreSealedBackup(newer);
+   }finally{second.close();}
+   return g2dRecovery(target).createBackup();
+  }});
+  assert.equal((await changing.reconcile(req(OP),{nonce:seal.nonce})).code,'ledger-changed');
+ }finally{f.close();source.close();target.close();ledger.close();}
+});
+
+test('G2G durable G2F receipt is readable after SQLite restart without exposing its signed MAC',async()=>{
+ const dir=mkdtempSync(join(tmpdir(),'vangioi-g2g-')),path=join(dir,'ledger.db');
+ const f=setup(),source=setup(),target=setup();try{
+  await permitFixture(f);const sink=g2cSink(source);g2cSink(target);
+  await g2cReplay(f,sink)(req(OP),{after:0});const seal=await g2eProvenance(source).createSealedBackup();
+  const before=setup(path);const guard=g2fGuard(before);
+  await g2fRestore(target,guard).restoreSealedBackup(seal);before.close();
+  const after=setup(path);try{
+   const restoredGuard=g2fGuard(after),receipt=restoredGuard.readAttempt(seal.nonce);
+   assert.equal(receipt.backupDigest,seal.backup.digest);
+   assert.equal(JSON.stringify(receipt).includes(seal.mac),false);
+   assert.equal((await g2gProbe(f,restoredGuard,target).reconcile(req(OP),{nonce:seal.nonce})).ok,true);
+   assert.equal(restoredGuard.readGuardSnapshot().attemptCount,1);
+  }finally{after.close();}
+ }finally{f.close();source.close();target.close();rmSync(dir,{recursive:true,force:true});}
+});
+
+test('G2G guard inspection and reconciler stay fixture-only with no Worker/HTTP wiring',()=>{
+ const f=setup();try{
+  const guard=g2fGuard(f);
+  assert.throws(()=>guard.readAttempt('invalid'),/nonce/);
+  for(const options of [{environment:'production'},{environment:'staging'},
+   {guard:null},{readTargetBackup:null},{authorizeOperator:null},{projectId:'Bad'}])
+   assert.throws(()=>createFixturePermitRestoreReconciliation({
+    guard,projectId:'truyendienvl',environment:'fixture',readTargetBackup:async()=>null,
+    authorizeOperator:async()=>true,...options}),/G2G/);
+  for(const file of ['../src/index.mjs','../src/vangioi-authoring-http.mjs'])
+   assert.equal(readFileSync(new URL(file,import.meta.url),'utf8').includes('vangioi-permit-fixture-reconciliation'),false);
+ }finally{f.close();}
 });

@@ -84,5 +84,20 @@ export function createSqlFixturePermitRestoreGuard({storage,projectId,environmen
   });
  }
 
- return Object.freeze({reserveVerifiedSeal,readGuardSnapshot});
+ function readAttempt(nonce){
+  // G2G internal single-receipt view. No MAC/key bytes and no unbounded list.
+  if(!uuid(nonce))throw Error('invalid-fixture-receipt-nonce');
+  return storage.transactionSync(()=>{
+   state();
+   const row=one(`SELECT issuer_id,key_id,backup_digest,checkpoint,created_at
+    FROM vg_fixture_restore_attempt_v1 WHERE project_id=? AND nonce=?`,projectId,nonce);
+   if(!row)return null;
+   if(!id(row.issuer_id)||!id(row.key_id)||!sha(row.backup_digest)||
+    !seq(row.checkpoint)||!seq(row.created_at))throw Error('invalid-fixture-receipt');
+   return {projectId,environment:'fixture',nonce,issuerId:row.issuer_id,keyId:row.key_id,
+    checkpoint:row.checkpoint,backupDigest:row.backup_digest,createdAt:row.created_at};
+  });
+ }
+
+ return Object.freeze({reserveVerifiedSeal,readGuardSnapshot,readAttempt});
 }
