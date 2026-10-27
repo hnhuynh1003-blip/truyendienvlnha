@@ -179,3 +179,5 @@ G4C: [G4C_ATOMIC_SQLITE_FIXTURE.md](G4C_ATOMIC_SQLITE_FIXTURE.md) — diễn t�
 G4D: [G4D_AUTHORITY_ADMISSION_FENCE.md](G4D_AUTHORITY_ADMISSION_FENCE.md) — bridge G1Z operator rehearsal với player/access/content reader giả lập, pin source/snapshot/revision và fence cùng SQLite transaction G4C. **Không có JWT/player entitlement thật hoặc atomicity xuyên authority; chưa gameplay/reward/production.**
 
 G4E: [G4E_OFFLINE_OBJECTIVE_EVIDENCE.md](G4E_OFFLINE_OBJECTIVE_EVIDENCE.md) — bộ đọc offline receipt/ledger G4C và fence G4D, replay G4B để lập chứng cứ ứng viên chỉ cho `reach` đơn-lần qua scene transition đã commit. **Các verb khác không được suy diễn, không chứng nhận mission/ending, không cấp reward hoặc ghi production.**
+
+G4F: [G4F_DRY_RUN_SETTLEMENT_FIXTURE.md](G4F_DRY_RUN_SETTLEMENT_FIXTURE.md) — mô phỏng xét duyệt bằng callback host độc lập + policy `dry-run-only` ghim phiên bản, ghi receipt/ledger SQLite nguyên tử, idempotent theo `(instance, mission, completionVersion)` và rollback khi lỗi. **Mọi cờ công nhận mission, thưởng, save và production vẫn false; không có EXP/Xu/vật phẩm/Kho hay issuer thật.**

@@ -1,5 +1,9 @@
 # DUDU Studio — START HERE / Bàn giao sạch · 20/10/2026
 
+## VẠN GIỚI G4F — 27/10/2026
+
+Nền `9e2fe1c` (G4E, smoke/browser/Pages SUCCESS). Đọc `contracts/vangioi/G4F_DRY_RUN_SETTLEMENT_FIXTURE.md`: Node-only G4F dựng mock adjudicator độc lập với G4E objective evidence và policy `dry-run-only` riêng; ghi receipt + ledger chỉ mang dấu vết mô phỏng trong **một SQLite transaction** có khóa idempotency `(worldInstanceId,missionId,completionVersion)`, CAS/recheck G4D/nguồn/policy fence và rollback lỗi. Chưa issuer reviewer/publisher, chứng cứ nhiệm vụ đa dạng hoặc quyền cấp thưởng thật. Không cấp EXP/Xu/vật phẩm/Kho, không sửa Creator/Worker/Thiên Mệnh/Chủ Thần/Canon/schema, không production. CI/Pages G4F phải kiểm SHA commit mới; G4E CI không thay thế.
+
 ## VẠN GIỚI G4E — 27/10/2026
 
 Nền `ff0b44e` (G4D, smoke/browser/Pages SUCCESS). Đọc `contracts/vangioi/G4E_OFFLINE_OBJECTIVE_EVIDENCE.md`: Node-only read-only fixture đối chiếu G4B replay với G4C receipt/ledger và fence G4D bằng cùng snapshot SQLite, chỉ tạo bằng chứng *ứng viên* cho `reach` đơn-lần khi một scene transition đã được commit. Không tính scene xuất phát; `talk/choose/collect/inspect/purchase/survive/deliver` và reach lặp **unsupported**, không kết luận hoàn thành mission, ending hay quyền nhận thưởng. Không kết nối World Creator/Worker/Thiên Mệnh/Chủ Thần/Firebase, không ghi production, không đổi Canon/schema. CI/Pages G4E phải kiểm SHA commit mới, không lấy G4D thay thế. TOCTOU liên storage và trusted issuer chưa giải quyết.
