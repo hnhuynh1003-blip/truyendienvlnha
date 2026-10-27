@@ -143,3 +143,5 @@ G2N: [V49_DRAFT_INTEGRITY_INSPECTION_G2N.md](V49_DRAFT_INTEGRITY_INSPECTION_G2N.
 G2O: [V49_REVIEWER_PIN_LEDGER_G2O.md](V49_REVIEWER_PIN_LEDGER_G2O.md) — SQLite fixture operator-only ghi pin SHA-256 và phân công/thu hồi reviewer có revision, source-rotation và replay guard; nối thử callback G2N trong dữ liệu giả, chưa nối Firebase hoặc cấp quyền thật.
 
 G2P: [V49_REVIEW_RACE_REHEARSAL_G2P.md](V49_REVIEW_RACE_REHEARSAL_G2P.md) — diễn tập **chỉ đọc** hai lần kiểm toàn nguồn G2N, kẹp kiểm tra pin/quyền/revision/operation high-water trong một giao dịch SQLite G2O mỗi lần đọc; phát hiện một số xung đột cạnh tranh, chưa có atomic commit, production hoặc quyền publish.
+
+G2Q: [V49_SOURCE_EPOCH_FENCE_G2Q.md](V49_SOURCE_EPOCH_FENCE_G2Q.md) — sổ phiên bản nguồn `sourceEpoch` đơn điệu trong SQLite fixture và lớp fence bọc G2P, phát hiện **A→B→A đã được ghi nhận** và stale CAS/replay. Chưa có writer Firestore gắn epoch nguyên tử, không cấp quyền submit/publish hoặc kết nối route thật.
