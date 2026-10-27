@@ -133,3 +133,5 @@ G2I: [STAGING_INTEGRATION_AUDIT_G2I.md](STAGING_INTEGRATION_AUDIT_G2I.md) — ki
 G2J: [STAGING_TOPOLOGY_AND_ACCESS_G2J.md](STAGING_TOPOLOGY_AND_ACCESS_G2J.md) — thiết kế topology Firebase staging cách ly, ma trận quyền service/author/reviewer và bộ kiểm bản khai chỉ offline; chưa chọn Firestore instance/edition hay thực hiện IAM/Rules/deploy.
 
 G2K: [EMULATOR_SECURITY_REHEARSAL_G2K.md](EMULATOR_SECURITY_REHEARSAL_G2K.md) — kiểm host source V49 trên Firestore Emulator project demo riêng: deny môi trường thật, phân biệt operator/permit với `admin` tự khai, bắt source hash đổi; không kiểm IAM/Rules production hay nối author picker.
+
+G2L: [V49_RULES_EMULATOR_AUDIT_G2L.md](V49_RULES_EMULATOR_AUDIT_G2L.md) — kiểm snippet V49 đang chờ duyệt bằng Rules Unit Testing trên Emulator local, xác nhận 3 điểm cần duyệt về draft cross-admin, schema update và metadata published; không sửa hay deploy Rules thật.
