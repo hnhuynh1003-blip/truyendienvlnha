@@ -153,3 +153,5 @@ G2S: [V49_PUBLISH_BYPASS_GATE_G2S.md](V49_PUBLISH_BYPASS_GATE_G2S.md) — ứng 
 G2T: [V49_EMULATOR_TRUSTED_PUBLISH_G2T.md](V49_EMULATOR_TRUSTED_PUBLISH_G2T.md) — diễn tập server-only publish trong Firestore Emulator bằng full chapter hash, epoch CAS, synthetic permit/reviewer/release projection và atomic receipt; kiểm race thu hồi/sửa nguồn. **Chưa đồng bộ authority SQLite, chưa có publisher hoặc Rules production.**
 
 G2U: [V49_AUTHORITY_FRESHNESS_AND_TAKEDOWN_G2U.md](V49_AUTHORITY_FRESHNESS_AND_TAKEDOWN_G2U.md) — audit read-only độ mới checkpoint/digest giữa authority SQL giả lập và projection; diễn tập server-only ẩn sách published sau revoke/hold trong Firestore Emulator, vẫn giữ source/epoch/receipt. **Không có SQLite–Firestore atomicity, emergency takedown hoặc migration production.**
+
+G2V: [V49_EMERGENCY_HOLD_AND_RECOVERY_G2V.md](V49_EMERGENCY_HOLD_AND_RECOVERY_G2V.md) — diễn tập Emulator-only gỡ sách khẩn cấp ngay cả khi epoch/authority hỏng, cần hai người xác minh server-side; xét recovery sau khi khôi phục authority và toàn bộ hash, **không tự tái xuất bản**. Vẫn còn đường Admin SDK ngoài writer có thể bypass hold, chưa dùng staging/production.
