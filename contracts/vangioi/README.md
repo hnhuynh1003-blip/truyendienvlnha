@@ -163,3 +163,5 @@ G2X: [V49_PRIVILEGED_WRITER_INVENTORY_G2X.md](V49_PRIVILEGED_WRITER_INVENTORY_G2
 LIB1: [LIBRARY_INTAKE_UI_SYNC_L1.md](LIBRARY_INTAKE_UI_SYNC_L1.md) — gom lối vào viết truyện thủ công/nhập EPUB ở Thư viện và chỉ dẫn tham chiếu truyện đã có sang Vạn Giới; phân biệt `storySource.kind` với định dạng file. **Không hợp nhất backend, thêm uploader TXT/PDF/DOCX hoặc nối publish thật.**
 
 G2Y: [G2Y_REPEAT_HOLD_AND_PHASE2_CLOSEOUT.md](G2Y_REPEAT_HOLD_AND_PHASE2_CLOSEOUT.md) — bổ sung reassert emergency hold nhiều generation trong Firestore Emulator, bảo toàn tính riêng tư sau writer Admin SDK bypass và chốt G2 ở mức nguyên mẫu/kiểm thử. **Chưa có staging/production authorization, source picker thật hoặc IAM/cutover; G3 chỉ được bắt đầu trên nhánh kỹ thuật offline/fixture.**
+
+G3A: [G3A_REACHABILITY_SIMULATION.md](G3A_REACHABILITY_SIMULATION.md) — lớp kiểm tra reachability độc lập, có giới hạn và phân tách theo từng profile nhập vai; truy dấu cảnh và nguồn flag *có thể* tồn tại mà không chạy trigger/Engine. **Kết quả không chứng minh chơi được, không chặn/nâng quyền gửi duyệt hoặc phát hành, không nối production.**
