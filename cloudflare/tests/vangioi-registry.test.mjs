@@ -21,6 +21,7 @@ import {createSqlStagingReadinessService} from '../src/vangioi-staging-readiness
 import {createSqlPermitProjectionAudit} from '../src/vangioi-permit-projection-audit.mjs';
 import {createSqlPermitFixtureSink} from '../src/vangioi-permit-fixture-sink.mjs';
 import {createSqlPermitFixtureRecovery} from '../src/vangioi-permit-fixture-recovery.mjs';
+import {createFixturePermitBackupProvenance} from '../src/vangioi-permit-fixture-provenance.mjs';
 import {createV49TransactionFixture} from './fixtures/vangioi-firestore-v49.mjs';
 import {content} from './fixtures/vangioi-content.mjs';
 
@@ -1990,4 +1991,181 @@ test('G2D constructor refuses live modes, invalid limits; module has no Worker o
   for(const file of ['../src/index.mjs','../src/vangioi-authoring-http.mjs'])
    assert.equal(readFileSync(new URL(file,import.meta.url),'utf8').includes('vangioi-permit-fixture-recovery'),false);
  }finally{f.close();}
+});
+
+const fixtureSigningKey=()=>Uint8Array.from({length:32},(_,i)=>i+1); // synthetic test-only key
+const g2eProvenance=(f,options={})=>createFixturePermitBackupProvenance({
+ recovery:g2dRecovery(f),projectId:'truyendienvl',environment:'fixture',
+ issuerId:'fixture-operator',keyId:'fixture-k1',secretKey:fixtureSigningKey(),now:()=>1000,...options});
+
+test('G2E signed fixture backup authenticates before empty-target restore; G2B audits active rights',async()=>{
+ const authority=setup(),source=setup(),target=setup();try{
+  await permitFixture(authority);const sourceSink=g2cSink(source),targetSink=g2cSink(target);
+  assert.equal((await g2cReplay(authority,sourceSink)(req(OP),{after:0})).checkpoint,1);
+  const sealed=await g2eProvenance(source).createSealedBackup();
+  assert.deepEqual(Object.keys(sealed),['format','projectId','environment','issuerId','keyId',
+   'createdAt','nonce','backup','mac']);
+  assert.equal(sealed.format,'permit-fixture-seal-1');assert.equal(sealed.mac.length,64);
+  assert.equal(JSON.stringify(sealed).includes('PRIVATE_SOURCE_TEXT'),false);
+  assert.equal(JSON.stringify(sealed).includes('proofRef'),false);
+  assert.equal(JSON.stringify(sealed).includes('secretKey'),false);
+  assert.equal((await g2eProvenance(target).restoreSealedBackup(sealed)).checkpoint,1);
+  assert.deepEqual(targetSink.readReplicaSnapshot(),sourceSink.readReplicaSnapshot());
+  assert.equal((await g2bAudit(authority,targetSink.readReplicaSnapshot).auditProjection(req(OP))).fixtureAuditPassed,true);
+ }finally{authority.close();source.close();target.close();}
+});
+
+test('G2E signed revoked backup preserves revocation and event identity across recovery',async()=>{
+ const f=setup(),source=setup(),target=setup();try{
+  const x=await permitFixture(f),sink=g2cSink(source),restored=g2cSink(target);
+  assert.equal((await f.registry.revokeAdaptationPermit(req(OP),x.revoke)).status,'revoked');
+  assert.equal((await g2cReplay(f,sink)(req(OP),{after:0})).checkpoint,2);
+  const sealed=await g2eProvenance(source).createSealedBackup();
+  assert.equal((await g2eProvenance(target).restoreSealedBackup(sealed)).eventCount,2);
+  assert.equal(restored.readReplicaSnapshot().entries[0].status,'revoked');
+  assert.equal((await g2bAudit(f,restored.readReplicaSnapshot).auditProjection(req(OP))).fixtureAuditPassed,true);
+  assert.equal(target.rows('SELECT COUNT(*) n FROM vg_fixture_permit_events_v1')[0].n,2);
+ }finally{f.close();source.close();target.close();}
+});
+
+test('G2E rejects altered HMAC, signed claims and backup digest before touching G2D',async()=>{
+ const source=setup();try{
+  g2cSink(source);const sealed=await g2eProvenance(source).createSealedBackup();
+  for(const change of [
+   b=>{b.mac='0'.repeat(64);},b=>{b.issuerId='other-fixture-operator';},
+   b=>{b.keyId='fixture-k2';},b=>{b.projectId='another-project';},
+   b=>{b.environment='production';},b=>{b.format='permit-fixture-seal-2';},
+   b=>{b.nonce=crypto.randomUUID();},b=>{b.createdAt=1001;},
+   b=>{b.backup.digest='f'.repeat(64);},
+   b=>{b.signingSecret='PRIVATE_KEY';}
+  ]){
+   const bad=structuredClone(sealed);change(bad);
+   let restored=0;const probe=g2eProvenance(source,{recovery:{createBackup:async()=>null,
+    restoreBackup:async()=>{restored++;throw Error('MUST_NOT_RESTORE');}}});
+   await assert.rejects(probe.restoreSealedBackup(bad),/fixture-seal|invalid-fixture/);
+   assert.equal(restored,0);
+  }
+ }finally{source.close();}
+});
+
+test('G2E checksum recalculation by attacker cannot forge a signed changed status or history',async()=>{
+ const authority=setup(),source=setup(),target=setup();try{
+  await permitFixture(authority);const sink=g2cSink(source),restored=g2cSink(target);
+  await g2cReplay(authority,sink)(req(OP),{after:0});
+  const sealed=await g2eProvenance(source).createSealedBackup();
+  sealed.backup.entries[0].status='revoked';sealed.backup.entries[0].revision=2;
+  const {digest,...unsigned}=sealed.backup;
+  sealed.backup.digest=await hashAuthoringJson(unsigned);
+  await assert.rejects(g2eProvenance(target).restoreSealedBackup(sealed),/authentication-failed/);
+  assert.deepEqual(restored.readReplicaSnapshot().entries,[]);
+ }finally{authority.close();source.close();target.close();}
+});
+
+test('G2E a changed backup with original signed digest fails G2D integrity validation',async()=>{
+ const authority=setup(),source=setup(),target=setup();try{
+  await permitFixture(authority);const sink=g2cSink(source),restored=g2cSink(target);
+  await g2cReplay(authority,sink)(req(OP),{after:0});
+  const sealed=await g2eProvenance(source).createSealedBackup();
+  sealed.backup.entries[0].status='revoked';sealed.backup.entries[0].revision=2;
+  await assert.rejects(g2eProvenance(target).restoreSealedBackup(sealed),/digest-mismatch/);
+  assert.equal(restored.readCheckpoint().checkpoint,0);
+ }finally{authority.close();source.close();target.close();}
+});
+
+test('G2E trusted key rotation and wrong issuer reject a formerly valid seal',async()=>{
+ const source=setup(),target=setup();try{
+  g2cSink(source);g2cSink(target);
+  const sealed=await g2eProvenance(source).createSealedBackup();
+  for(const options of [
+   {keyId:'fixture-k2'},
+   {issuerId:'other-issuer'},
+   {secretKey:Uint8Array.from({length:32},(_,i)=>i+90)}
+  ])await assert.rejects(g2eProvenance(target,options).restoreSealedBackup(sealed),
+   /invalid-fixture-seal|authentication-failed/);
+  assert.equal(g2cSink(target).readCheckpoint().checkpoint,0);
+ }finally{source.close();target.close();}
+});
+
+test('G2E trusted clock rejects expired and far-future seals but allows boundary skew',async()=>{
+ const source=setup(),target=setup();try{
+  g2cSink(source);g2cSink(target);
+  const sealed=await g2eProvenance(source).createSealedBackup();
+  await assert.rejects(g2eProvenance(target,{now:()=>1000+7*86400000+1})
+   .restoreSealedBackup(sealed),/seal-expired/);
+  await assert.rejects(g2eProvenance(target,{now:()=>1,maxFutureSkewMs:998})
+   .restoreSealedBackup(sealed),/seal-from-future/);
+  assert.equal((await g2eProvenance(target,{now:()=>1,maxFutureSkewMs:999})
+   .restoreSealedBackup(sealed)).checkpoint,0);
+ }finally{source.close();target.close();}
+});
+
+test('G2E signed stale backup remains authentic but G2B denies until replay; G1Y denies revoked world',async()=>{
+ const authority=setup(),source=setup(),target=setup();try{
+  const p=await approvedForG1Y(authority),sink=g2cSink(source),restored=g2cSink(target);
+  assert.equal((await g2cReplay(authority,sink)(req(OP),{after:0})).checkpoint,1);
+  const sealed=await g2eProvenance(source).createSealedBackup();
+  assert.equal((await authority.registry.revokeAdaptationPermit(req(OP),{
+   requestId:crypto.randomUUID(),storyId:p.s.reference.storyId,
+   contentHash:p.s.reference.contentHash,expectedRevision:1})).status,'revoked');
+  assert.equal((await g2eProvenance(target).restoreSealedBackup(sealed)).checkpoint,1);
+  const audit=g2bAudit(authority,restored.readReplicaSnapshot);
+  assert.equal((await audit.auditProjection(req(OP))).code,'checkpoint-lag');
+  assert.equal((await g2cReplay(authority,restored)(req(OP),{after:1})).checkpoint,2);
+  assert.equal((await audit.auditProjection(req(OP))).fixtureAuditPassed,true);
+  assert.equal((await createSqlWorldReleaseGate(authority.options)
+   .evaluateApprovedWorld(req(OP),{worldId:p.w.worldId})).ok,false);
+ }finally{authority.close();source.close();target.close();}
+});
+
+test('G2E signed restore still refuses occupied G2D target',async()=>{
+ const authority=setup(),source=setup(),target=setup();try{
+  await permitFixture(authority);const sink=g2cSink(source),restored=g2cSink(target);
+  await g2cReplay(authority,sink)(req(OP),{after:0});
+  await g2cReplay(authority,restored)(req(OP),{after:0});
+  const sealed=await g2eProvenance(source).createSealedBackup(),before=restored.readReplicaSnapshot();
+  await assert.rejects(g2eProvenance(target).restoreSealedBackup(sealed),/requires-empty-target/);
+  assert.deepEqual(restored.readReplicaSnapshot(),before);
+ }finally{authority.close();source.close();target.close();}
+});
+
+test('G2E verified restore SQL failure rolls back all rows, retry with same seal succeeds',async()=>{
+ const authority=setup(),source=setup(),target=setup();try{
+  await permitFixture(authority);const sink=g2cSink(source),restored=g2cSink(target);
+  await g2cReplay(authority,sink)(req(OP),{after:0});
+  const sealed=await g2eProvenance(source).createSealedBackup();
+  target.hooks.fail='INSERT INTO vg_fixture_permit_events_v1';
+  await assert.rejects(g2eProvenance(target).restoreSealedBackup(sealed),/PRIVATE_STORAGE_ERROR/);
+  assert.equal(restored.readCheckpoint().checkpoint,0);
+  assert.equal(target.rows('SELECT COUNT(*) n FROM vg_fixture_permit_projection_v1')[0].n,0);
+  assert.equal((await g2eProvenance(target).restoreSealedBackup(sealed)).checkpoint,1);
+ }finally{authority.close();source.close();target.close();}
+});
+
+test('G2E signed backup and nonce are snapshot-copied before asynchronous verification',async()=>{
+ const authority=setup(),source=setup(),target=setup();try{
+  await permitFixture(authority);const sink=g2cSink(source),restored=g2cSink(target);
+  await g2cReplay(authority,sink)(req(OP),{after:0});
+  const sealed=await g2eProvenance(source).createSealedBackup();
+  const restoring=g2eProvenance(target).restoreSealedBackup(sealed);
+  sealed.backup.entries[0].status='revoked';sealed.backup.entries[0].revision=2;
+  sealed.nonce=crypto.randomUUID();
+  assert.equal((await restoring).checkpoint,1);
+  assert.equal(restored.readReplicaSnapshot().entries[0].status,'active');
+ }finally{authority.close();source.close();target.close();}
+});
+
+test('G2E identical fixture snapshots yield distinct signed nonces; no external key or public route',async()=>{
+ const source=setup();try{
+  g2cSink(source);const signer=g2eProvenance(source);
+  const a=await signer.createSealedBackup(),b=await signer.createSealedBackup();
+  assert.equal(a.backup.digest,b.backup.digest);
+  assert.notEqual(a.nonce,b.nonce);assert.notEqual(a.mac,b.mac);
+  for(const file of ['../src/index.mjs','../src/vangioi-authoring-http.mjs'])
+   assert.equal(readFileSync(new URL(file,import.meta.url),'utf8').includes('vangioi-permit-fixture-provenance'),false);
+  for(const options of [
+   {environment:'staging'},{environment:'production'},{secretKey:new Uint8Array(16)},
+   {secretKey:'client-secret'},{keyId:''},{issuerId:'invalid issuer'},{maxAgeMs:0},
+   {maxFutureSkewMs:500000},{recovery:null}
+  ])assert.throws(()=>g2eProvenance(source,options),/G2E/);
+ }finally{source.close();}
 });
