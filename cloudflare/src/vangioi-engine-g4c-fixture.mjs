@@ -56,10 +56,13 @@ function initialize(database){
 
 // Caller must be a test operator. No method here can attest real access, IP
 // licenses, source freshness or Firebase identity. The gate is synthetic.
-export function createG4CFixtureStore({database,plan,onCommitStep,onBeforeCommit}={}){
+export function createG4CFixtureStore({database,plan,onCommitStep,onBeforeCommit,
+ onSeedCommit,commitFence}={}){
  if(!(database instanceof DatabaseSync)||!plain(plan)||typeof plan.contentVersion!=='string'||
   !digest(plan.contentHash)||(onCommitStep!==undefined&&typeof onCommitStep!=='function')||
-  (onBeforeCommit!==undefined&&typeof onBeforeCommit!=='function'))
+  (onBeforeCommit!==undefined&&typeof onBeforeCommit!=='function')||
+  (onSeedCommit!==undefined&&typeof onSeedCommit!=='function')||
+  (commitFence!==undefined&&typeof commitFence!=='function'))
   throw new TypeError('G4C requires a Node SQLite fixture and pinned G4A plan');
  initialize(database);
  const one=(sql,...args)=>database.prepare(sql).get(...args)||null;
@@ -89,6 +92,8 @@ export function createG4CFixtureStore({database,plan,onCommitStep,onBeforeCommit
     run(`INSERT INTO vg_g4c_gates_fixture_v1 VALUES(?,?,?,?,?,?,?,?,?)`,
      worldInstanceId,playerId,plan.contentVersion,plan.contentHash,sourceVersion,sourceHash,
      accessState,licenseState,sourceState);
+    // Optional synchronous host extension shares the *same* fixture commit.
+    onSeedCommit?.({playerId,worldInstanceId,entryId,sourceVersion,sourceHash});
    });
   }catch{return fail('fixture-exists-or-unavailable');}
   return {ok:true,fixtureInitialized:true,productionAuthorized:false};
@@ -119,6 +124,10 @@ export function createG4CFixtureStore({database,plan,onCommitStep,onBeforeCommit
    return transaction(database,()=>{
     const current=sessionRow(request.worldInstanceId),currentGate=gateRow(request.worldInstanceId);
     if(!allowed(current,currentGate,actorId))return fail('fixture-gate-denied');
+    // A stronger offline admission fence may deny both a new event and a
+    // duplicate receipt, under the exact same SQLite writer lock.
+    if(commitFence&&commitFence({actorId,event:request,currentSession:current})!==true)
+     return fail('authority-fence-denied');
     const prior=receiptRow(request.worldInstanceId,request.eventId);
     if(prior){
      if(prior.request_hash!==requestHash)return fail('event-id-conflict');

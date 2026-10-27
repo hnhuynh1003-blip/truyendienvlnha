@@ -224,3 +224,7 @@ Xác minh cục bộ: 486 test ứng dụng, 379 Worker/helper, 38 Python contra
 ## 16. G4C — ATOMIC SQLITE FIXTURE (27/10/2026)
 
 Đọc `contracts/vangioi/G4C_ATOMIC_SQLITE_FIXTURE.md`. Trên nền G4B `0f7dc18` đã có lớp Node-only fixture SQLite: G4B tạo ứng viên, G4C kiểm lại pin/rights/license/source synthetic trong transaction và CAS revision, ghi session/receipt/ledger kiểm toán cùng lúc; retry event trả đúng receipt cũ, rollback mọi ghi khi fault. Không có quyền server thật, proof hoàn thành nhiệm vụ hoặc reward authorization, không nối Worker/Firestore/production và không chuyển sang G5. Source/CI/Pages phải kiểm theo SHA G4C mới trước khi tuyên bố PASS đợt này.
+
+## 17. G4D — AUTHORITY/ADMISSION FENCE FIXTURE (27/10/2026)
+
+Đọc `contracts/vangioi/G4D_AUTHORITY_ADMISSION_FENCE.md`. G4D bọc G4C với cổng G1Z operator-only và các callback player/access/approved-content synthetic riêng, kiểm lại snapshot/content/source và access revision trước xử lý; cùng SQLite fence epoch chặn đổi quyền trước commit. G1Z không biến thành quyền player; không có JWT, source-license authority hoặc transaction xuyên Firestore/SQLite thật. Không bật Thư viện, Creator UI, gameplay, EXP/Xu/Kho, NPC AI hay production. Kế tiếp là G4E chứng cứ nhiệm vụ theo contract riêng, **chưa tự triển khai**.

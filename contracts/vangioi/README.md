@@ -175,3 +175,5 @@ G4A: [G4A_OFFLINE_CONDITION_ACTION_ENGINE.md](G4A_OFFLINE_CONDITION_ACTION_ENGIN
 G4B: [G4B_OFFLINE_EVENT_REPLAY_AND_REVISION.md](G4B_OFFLINE_EVENT_REPLAY_AND_REVISION.md) — reducer sự kiện offline qua G4A, revision + eventId idempotency trong một phiên, replay và chuỗi hash kiểm sai lệch trạng thái. **Chưa có transaction/CAS server, chưa save/reward thật; không cho client tự tạo quyền cấp thưởng.**
 
 G4C: [G4C_ATOMIC_SQLITE_FIXTURE.md](G4C_ATOMIC_SQLITE_FIXTURE.md) — diễn tập SQLite Node-only: transaction/CAS nhiều kết nối, receipt idempotent sau mất phản hồi, rollback cùng state/receipt/audit và kiểm gate quyền/nguồn synthetic ngay tại commit. **Chưa có authority server, chứng cứ nhiệm vụ, reward ledger thật hoặc ghi production.**
+
+G4D: [G4D_AUTHORITY_ADMISSION_FENCE.md](G4D_AUTHORITY_ADMISSION_FENCE.md) — bridge G1Z operator rehearsal với player/access/content reader giả lập, pin source/snapshot/revision và fence cùng SQLite transaction G4C. **Không có JWT/player entitlement thật hoặc atomicity xuyên authority; chưa gameplay/reward/production.**

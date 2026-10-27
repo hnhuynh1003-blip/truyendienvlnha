@@ -1,5 +1,9 @@
 # DUDU Studio — START HERE / Bàn giao sạch · 20/10/2026
 
+## VẠN GIỚI G4D — 27/10/2026
+
+Nền `055fc37` (G4C, CI/Pages SUCCESS). Xem `contracts/vangioi/G4D_AUTHORITY_ADMISSION_FENCE.md`. G4D tạo bridge test-only từ G1Z operator rehearsal tới G4C: bắt buộc host reader player/entitlement/content-source pin riêng, recheck admission/snapshot trước mỗi event và fence accessRevision/epoch trong cùng SQLite transaction G4C. Không biến G1Y/G1Z thành quyền chơi, không tin event tự khai, không đổi rule/manifest/Creator/UI. Vẫn tồn tại cửa sổ race **xuyên** authority SQL, G1Z Map và SQLite fixture vì chưa có topology/trusted issuer/consumer thật. Chưa production, thưởng, EXP/Xu/Kho; CI G4D phải kiểm SHA mới.
+
 ## VẠN GIỚI G4C — 27/10/2026
 
 Nền `0f7dc18` (G4B, smoke/browser/Pages CI SUCCESS). Đọc `contracts/vangioi/G4C_ATOMIC_SQLITE_FIXTURE.md`: adapter Node-only SQLite thử giao dịch nguyên tử, CAS nhiều kết nối, retry nhận receipt cũ, rollback toàn bộ state/receipt/audit và kiểm pin identity/content/source + quyền/giấy phép synthetic ngay trước commit. Ledger **chỉ kiểm toán chuyển cảnh**, không có grant, EXP, Xu, vật phẩm hoặc Kho. Không kết nối Worker/Firestore/Pages UI, không migration/Rules/production. CI G4C phải kiểm theo SHA commit mới, không dùng kết quả G4B làm bằng chứng.
