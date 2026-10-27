@@ -2,6 +2,10 @@
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 module.exports=async function structuredCreator({page,editor,secret}){
+ // Preserve the first browser-side exception if an offline QA click fails.
+ // Never dump draft JSON, Canon secrets or source text into public CI logs.
+ const qaErrors=[];
+ page.on('pageerror',e=>qaErrors.push(String(e.stack||e.message).slice(0,900)));
  const tab=async name=>editor.getByRole('button',{name,exact:true}).click();
  const fill=async(scope,name,value)=>scope.getByLabel(name,{exact:true}).fill(value);
  const select=async(scope,name,value)=>scope.getByLabel(name,{exact:true}).selectOption(value);
@@ -86,7 +90,9 @@ module.exports=async function structuredCreator({page,editor,secret}){
  await tab('Nhân vật & NPC');await select(records('npc').first(),'Chế độ NPC','ai_candidate');
  await click(editor,'Kiểm tra hồ sơ');assert.match(await editor.locator('#vg-report').innerText(),/Đề nghị NPC AI chưa được khai báo/);
  await editor.getByLabel('Đề nghị xét NPC AI',{exact:true}).check();await fill(records('npc').first(),'Lý do đề nghị AI','Cần biến thể câu trả lời trong phạm vi tri thức.');
- await click(editor,'Kiểm tra hồ sơ');assert.match(await editor.locator('#vg-report').innerText(),/Cấu trúc đủ/);
+ await click(editor,'Kiểm tra hồ sơ');
+ assert.match(await editor.locator('#vg-report').innerText(),/Cấu trúc đủ/,
+  'G3C valid Creator QA failed; browser exception: '+(qaErrors[0]||'none'));
  assert.equal((await editor.locator('#vg-report').innerText()).includes(secret),false);
  // References prevent accidental removal of a cast target or quest item.
  await click(records('character').first(),'Xóa nhân vật');assert.equal(await records('character').count(),1);

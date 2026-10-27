@@ -169,3 +169,5 @@ G3A: [G3A_REACHABILITY_SIMULATION.md](G3A_REACHABILITY_SIMULATION.md) — lớp 
 G3B: [G3B_MOBILE_ASSET_QA.md](G3B_MOBILE_ASSET_QA.md) — lớp QA offline cho metadata PNG/ảnh có pin, crop trên 320/375/390/430 px, focalPoint và vùng ảnh quan trọng, cảnh báo background tái dùng/hotspot/sprite; không tự đánh giá ảnh đẹp, Canon hay giấy phép. **Không có kết quả thiết bị thật, không xác nhận quyền ảnh hoặc tự phát hành.**
 
 G3C: [G3C_CREATOR_QA_INTEGRATION.md](G3C_CREATOR_QA_INTEGRATION.md) — nối validator G1D, reachability G3A và mobile asset QA G3B vào đúng nút `Kiểm tra hồ sơ` sẵn có của Vạn Giới; sử dụng PNG phiên G1I để giảm thao tác, không thêm nút thừa hay sửa backend. **Gửi duyệt vẫn khóa; không xác minh Engine, quyền ảnh hoặc thiết bị thật.**
+
+G4A: [G4A_OFFLINE_CONDITION_ACTION_ENGINE.md](G4A_OFFLINE_CONDITION_ACTION_ENGINE.md) — parser/interpreter điều kiện/hành động theo allowlist với manifest ghim phiên bản và hash nội dung; chạy trên dữ liệu giả, trả ứng viên state bất biến và chỉ cho đi qua cạnh scene đã khai. **Chưa nối Creator/Worker, chưa có save hoặc reward/EXP/Xu/kho, không nghiệm thu gameplay thật.**
