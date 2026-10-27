@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "baseline": "788ab8f3893591ac9a1e12f60490975b0bbbe2b6",
+  "targetCollection": "epub_stories_v49",
+  "writerFiles": [
+    {
+      "path": "js/epub-production-v49.js",
+      "kind": "browser-client-legacy-publish",
+      "risk": "client-publish-fails-under-g2s-candidate-not-live",
+      "sha256": "130f87186942f56090236d7bc4625626ca6362dd976eb8131272d05018634e1c"
+    },
+    {
+      "path": "cloudflare/src/vangioi-v49-emulator-epoch-g2r.mjs",
+      "kind": "emulator-source-write",
+      "risk": "changes-draft-source-only",
+      "sha256": "fb904be3019abd689e9b8a7d2e4e4b50bab26bbc1457c52bc4833974257c7a16"
+    },
+    {
+      "path": "cloudflare/src/vangioi-v49-emulator-publish-g2t.mjs",
+      "kind": "emulator-legacy-publish",
+      "risk": "no-g2v-hold-guard-but-isolated-demo-project",
+      "sha256": "e6ccc455138bc80151dadc92acce2cf87a3edf1adb69ab41e485b0b18d49eb0f"
+    },
+    {
+      "path": "cloudflare/src/vangioi-v49-authority-visibility-g2u.mjs",
+      "kind": "emulator-suspend",
+      "risk": "requires-valid-notice-and-epoch",
+      "sha256": "54a7d989e7a844a5d78d94ba1037df36d0a7a4531111953a6b756d9099ee6896"
+    },
+    {
+      "path": "cloudflare/src/vangioi-v49-emergency-hold-g2v.mjs",
+      "kind": "emulator-emergency-hide",
+      "risk": "dual-host-decision-only-and-no-real-roles",
+      "sha256": "15d002edd205cabe1e20cc9dfea033b4924a3ed580828657f82623ebbe9c5246"
+    },
+    {
+      "path": "cloudflare/src/vangioi-v49-guarded-publisher-g2w.mjs",
+      "kind": "emulator-hold-fenced-publish",
+      "risk": "guard-applies-only-inside-facade-not-raw-admin-sdk",
+      "sha256": "791bce10822931e27ca07ed962a372277a6cea0fcf3df56c2134ac3b281627d5"
+    }
+  ],
+  "watchFiles": [
+    {
+      "path": "js/epub-import-v48.js",
+      "reason": "browser-calls-legacy-publishDraft",
+      "sha256": "b4087ef8f916173a63a84d06807951e459355259a477b534664a58bb2fb8d7c6"
+    },
+    {
+      "path": "functions/index.js",
+      "reason": "privileged-admin-sdk-currently-ai-quota-and-economy-not-v49",
+      "sha256": "0218f4fb481ac66b51ebb291957e1a0321eec6514feb78f6e6c6df71ab83eb71"
+    }
+  ],
+  "adminSdkSourceAllowlist": ["functions/index.js"],
+  "sourceRoots": ["js", "cloudflare/src", "functions"]
+}

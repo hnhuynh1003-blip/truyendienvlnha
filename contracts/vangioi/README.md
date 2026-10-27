@@ -157,3 +157,5 @@ G2U: [V49_AUTHORITY_FRESHNESS_AND_TAKEDOWN_G2U.md](V49_AUTHORITY_FRESHNESS_AND_T
 G2V: [V49_EMERGENCY_HOLD_AND_RECOVERY_G2V.md](V49_EMERGENCY_HOLD_AND_RECOVERY_G2V.md) — diễn tập Emulator-only gỡ sách khẩn cấp ngay cả khi epoch/authority hỏng, cần hai người xác minh server-side; xét recovery sau khi khôi phục authority và toàn bộ hash, **không tự tái xuất bản**. Vẫn còn đường Admin SDK ngoài writer có thể bypass hold, chưa dùng staging/production.
 
 G2W: [V49_SHARED_SERVER_WRITER_FENCE_G2W.md](V49_SHARED_SERVER_WRITER_FENCE_G2W.md) — diễn tập cổng writer server dùng chung kiểm emergency hold + SHA-256 + epoch/authority trong cùng transaction; từ chối cả restore khi chưa có release workflow. **Chỉ các thao tác đi qua facade mới được chặn; Admin SDK legacy vẫn bypass, chưa triển khai IAM/cutover/staging/production.**
+
+G2X: [V49_PRIVILEGED_WRITER_INVENTORY_G2X.md](V49_PRIVILEGED_WRITER_INVENTORY_G2X.md) — kiểm kê các source ghi EPUB V49 và Admin SDK hiện có; manifest SHA-256 + static CI tripwire phát hiện writer/SDK mới hoặc source bị sửa. **Chưa có thay đổi IAM, Rules, deployed service; quét tĩnh không chứng minh hết đường Admin bypass.**
