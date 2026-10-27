@@ -13,10 +13,11 @@ const stable=(a,b)=>a&&b&&a.projectId===b.projectId&&a.environment===b.environme
  a.highwaterCheckpoint===b.highwaterCheckpoint&&a.highwaterDigest===b.highwaterDigest&&
  a.attemptCount===b.attemptCount;
 
-export function createFixturePermitRestoreReconciliation({guard,readTargetBackup,
+export function createFixturePermitRestoreReconciliation({guard,readTargetBackup,readTargetIdentity=null,
  authorizeOperator,projectId,environment='fixture'}={}){
  if(typeof guard?.readAttempt!=='function'||typeof guard?.readGuardSnapshot!=='function'||
   typeof readTargetBackup!=='function'||typeof authorizeOperator!=='function'||
+  (readTargetIdentity!==null&&typeof readTargetIdentity!=='function')||
   !id(projectId)||environment!=='fixture')
   throw new TypeError('G2G requires trusted operator gate and isolated fixture readers');
 
@@ -31,9 +32,23 @@ export function createFixturePermitRestoreReconciliation({guard,readTargetBackup
    const receipt=await guard.readAttempt(input.nonce);
    if(!receipt)return fail('receipt-not-found');
    if(!only(receipt,['projectId','environment','nonce','issuerId','keyId',
-    'checkpoint','backupDigest','createdAt'])||receipt.projectId!==projectId||
+    'checkpoint','backupDigest','createdAt','targetFixtureId'])||receipt.projectId!==projectId||
     receipt.environment!=='fixture'||receipt.nonce!==input.nonce||
-    !seq(receipt.checkpoint)||!sha(receipt.backupDigest))return fail('invalid-receipt');
+    !seq(receipt.checkpoint)||!sha(receipt.backupDigest)||
+    (receipt.targetFixtureId!==null&&!uuid(receipt.targetFixtureId)))return fail('invalid-receipt');
+
+   // G2H: legacy receipts remain unbound. A newly bound receipt must match
+   // its trusted target fixture identity BEFORE target backup bytes are read.
+   if(receipt.targetFixtureId!==null){
+    if(!readTargetIdentity)return fail('target-identity-unavailable');
+    let identity;
+    try{identity=await readTargetIdentity({projectId,environment:'fixture'});}
+    catch{return fail('target-identity-unavailable');}
+    if(!only(identity,['projectId','environment','targetFixtureId'])||
+     identity.projectId!==projectId||identity.environment!=='fixture'||
+     !uuid(identity.targetFixtureId))return fail('target-identity-unavailable');
+    if(identity.targetFixtureId!==receipt.targetFixtureId)return fail('target-identity-mismatch');
+   }
 
    // The trusted G2D source callback reads target rows and checkpoint together.
    // Copy result before hashing so a mutating callback cannot swap its fields.
@@ -47,9 +62,16 @@ export function createFixturePermitRestoreReconciliation({guard,readTargetBackup
 
    const after=await guard.readGuardSnapshot();
    if(!stable(before,after))return fail('ledger-changed');
+   if(receipt.targetFixtureId!==null){
+    let again;
+    try{again=await readTargetIdentity({projectId,environment:'fixture'});}
+    catch{return fail('target-identity-unavailable');}
+    if(again?.targetFixtureId!==receipt.targetFixtureId)return fail('target-identity-changed');
+   }
    const sameReceipt=await guard.readAttempt(input.nonce);
    if(!sameReceipt||sameReceipt.checkpoint!==receipt.checkpoint||
-    sameReceipt.backupDigest!==receipt.backupDigest)return fail('ledger-changed');
+    sameReceipt.backupDigest!==receipt.backupDigest||
+    sameReceipt.targetFixtureId!==receipt.targetFixtureId)return fail('ledger-changed');
 
    let code;
    if(target.checkpoint<receipt.checkpoint)code='target-behind';

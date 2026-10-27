@@ -24,6 +24,7 @@ import {createSqlPermitFixtureRecovery} from '../src/vangioi-permit-fixture-reco
 import {createFixturePermitBackupProvenance} from '../src/vangioi-permit-fixture-provenance.mjs';
 import {createSqlFixturePermitRestoreGuard} from '../src/vangioi-permit-fixture-restore-guard.mjs';
 import {createFixturePermitRestoreReconciliation} from '../src/vangioi-permit-fixture-reconciliation.mjs';
+import {createSqlFixtureTargetIdentity} from '../src/vangioi-permit-fixture-target-identity.mjs';
 import {createV49TransactionFixture} from './fixtures/vangioi-firestore-v49.mjs';
 import {content} from './fixtures/vangioi-content.mjs';
 
@@ -2495,5 +2496,164 @@ test('G2G guard inspection and reconciler stay fixture-only with no Worker/HTTP 
     authorizeOperator:async()=>true,...options}),/G2G/);
   for(const file of ['../src/index.mjs','../src/vangioi-authoring-http.mjs'])
    assert.equal(readFileSync(new URL(file,import.meta.url),'utf8').includes('vangioi-permit-fixture-reconciliation'),false);
+ }finally{f.close();}
+});
+
+const g2hIdentity=(f,provision=true)=>createSqlFixtureTargetIdentity({...f.options,provision});
+const g2hGuard=(ledger,target)=>g2fGuard(ledger,{targetIdentity:g2hIdentity(target)});
+const g2hProbe=(authority,guard,target,overrides={})=>g2gProbe(authority,guard,target,{
+ readTargetIdentity:()=>g2hIdentity(target,false).readIdentity(),...overrides});
+
+test('G2H binds consumed G2F receipt to explicitly provisioned target identity; G2G verifies both',async()=>{
+ const f=setup(),source=setup(),target=setup(),ledger=setup();try{
+  await permitFixture(f);const sink=g2cSink(source),restored=g2cSink(target);
+  await g2cReplay(f,sink)(req(OP),{after:0});
+  const targetId=g2hIdentity(target).readIdentity(),guard=g2hGuard(ledger,target);
+  const seal=await g2eProvenance(source).createSealedBackup();
+  assert.equal((await g2fRestore(target,guard).restoreSealedBackup(seal)).checkpoint,1);
+  const receipt=guard.readAttempt(seal.nonce);
+  assert.equal(receipt.targetFixtureId,targetId.targetFixtureId);
+  assert.equal(JSON.stringify(receipt).includes(seal.mac),false);
+  assert.equal((await g2hProbe(f,guard,target).reconcile(req(OP),{nonce:seal.nonce})).code,'target-matches-receipt');
+  assert.equal((await g2bAudit(f,restored.readReplicaSnapshot).auditProjection(req(OP))).fixtureAuditPassed,true);
+ }finally{f.close();source.close();target.close();ledger.close();}
+});
+
+test('G2H same metadata on a different fixture target is rejected by identity before reading backup',async()=>{
+ const f=setup(),source=setup(),a=setup(),b=setup(),ledger=setup();try{
+  await permitFixture(f);const sink=g2cSink(source);g2cSink(a);g2cSink(b);
+  await g2cReplay(f,sink)(req(OP),{after:0});
+  const ida=g2hIdentity(a).readIdentity(),idb=g2hIdentity(b).readIdentity();
+  assert.notEqual(ida.targetFixtureId,idb.targetFixtureId);
+  const guard=g2hGuard(ledger,a),seal=await g2eProvenance(source).createSealedBackup();
+  await g2fRestore(a,guard).restoreSealedBackup(seal);
+  // An unrelated target may contain identical G2D metadata after its own
+  // fixture recovery, but it must not stand in for target A's receipt.
+  await g2dRecovery(b).restoreBackup(seal.backup);
+  assert.equal((await g2dRecovery(a).createBackup()).digest,(await g2dRecovery(b).createBackup()).digest);
+  let reads=0;
+  const probe=g2hProbe(f,guard,b,{readTargetBackup:async()=>{
+   reads++;return g2dRecovery(b).createBackup();
+  }});
+  assert.equal((await probe.reconcile(req(OP),{nonce:seal.nonce})).code,'target-identity-mismatch');
+  assert.equal(reads,0);
+  assert.equal((await g2hProbe(f,guard,a).reconcile(req(OP),{nonce:seal.nonce})).ok,true);
+ }finally{f.close();source.close();a.close();b.close();ledger.close();}
+});
+
+test('G2H bound receipt rejects missing target identity reader and absent target identity',async()=>{
+ const f=setup(),source=setup(),a=setup(),b=setup(),ledger=setup();try{
+  f.operator();g2cSink(source);g2cSink(a);g2cSink(b);
+  g2hIdentity(a);const guard=g2hGuard(ledger,a),seal=await g2eProvenance(source).createSealedBackup();
+  await g2fRestore(a,guard).restoreSealedBackup(seal);
+  assert.equal((await g2gProbe(f,guard,a).reconcile(req(OP),{nonce:seal.nonce})).code,
+   'target-identity-unavailable');
+  let reads=0;
+  const missing=g2gProbe(f,guard,b,{
+   readTargetIdentity:()=>g2hIdentity(b,false).readIdentity(),
+   readTargetBackup:async()=>{reads++;return g2dRecovery(b).createBackup();}});
+  assert.equal((await missing.reconcile(req(OP),{nonce:seal.nonce})).code,'target-identity-unavailable');
+  assert.equal(reads,0);
+ }finally{f.close();source.close();a.close();b.close();ledger.close();}
+});
+
+test('G2H old G2F receipt without target binding retains G2G content-only behavior',async()=>{
+ const f=setup(),source=setup(),target=setup(),ledger=setup();try{
+  await permitFixture(f);const sink=g2cSink(source);g2cSink(target);
+  await g2cReplay(f,sink)(req(OP),{after:0});
+  const guard=g2fGuard(ledger),seal=await g2eProvenance(source).createSealedBackup();
+  await g2fRestore(target,guard).restoreSealedBackup(seal);
+  assert.equal(guard.readAttempt(seal.nonce).targetFixtureId,null);
+  assert.equal((await g2gProbe(f,guard,target).reconcile(req(OP),{nonce:seal.nonce})).code,
+   'target-matches-receipt');
+  assert.equal(ledger.rows('SELECT COUNT(*) n FROM vg_fixture_restore_target_binding_v1')[0].n,0);
+ }finally{f.close();source.close();target.close();ledger.close();}
+});
+
+test('G2H target identity survives SQLite restart and cannot be overwritten or deleted',()=>{
+ const dir=mkdtempSync(join(tmpdir(),'vangioi-g2h-')),path=join(dir,'target.db');
+ try{
+  const before=setup(path);g2cSink(before);
+  const first=g2hIdentity(before).readIdentity().targetFixtureId;
+  assert.equal(g2hIdentity(before).readIdentity().targetFixtureId,first);
+  assert.throws(()=>before.sql.exec('UPDATE vg_fixture_restore_target_identity_v1 SET target_id=?',
+   crypto.randomUUID()),/immutable/);
+  assert.throws(()=>before.sql.exec('DELETE FROM vg_fixture_restore_target_identity_v1'),/immutable/);
+  before.close();
+  const after=setup(path);try{
+   assert.equal(g2hIdentity(after,false).readIdentity().targetFixtureId,first);
+   assert.equal(g2hIdentity(after).readIdentity().targetFixtureId,first);
+  }finally{after.close();}
+ }finally{rmSync(dir,{recursive:true,force:true});}
+});
+
+test('G2H a fake target identity supplied inside signed envelope cannot become ledger authority',async()=>{
+ const f=setup(),source=setup(),target=setup(),ledger=setup();try{
+  await permitFixture(f);g2cSink(source);g2cSink(target);g2hIdentity(target);
+  const guard=g2hGuard(ledger,target),seal=await g2eProvenance(source).createSealedBackup();
+  const forged={...seal,targetFixtureId:crypto.randomUUID()};
+  await assert.rejects(g2fRestore(target,guard).restoreSealedBackup(forged),/invalid-fixture-seal/);
+  assert.equal(guard.readGuardSnapshot().attemptCount,0);
+  assert.equal((await g2fRestore(target,guard).restoreSealedBackup(seal)).checkpoint,0);
+  assert.equal(guard.readAttempt(seal.nonce).targetFixtureId,g2hIdentity(target,false).readIdentity().targetFixtureId);
+ }finally{f.close();source.close();target.close();ledger.close();}
+});
+
+test('G2H sidecar insertion failure rolls back receipt and highwater, then retry binds target',async()=>{
+ const source=setup(),target=setup(),ledger=setup();try{
+  g2cSink(source);g2cSink(target);g2hIdentity(target);
+  const guard=g2hGuard(ledger,target),seal=await g2eProvenance(source).createSealedBackup();
+  ledger.hooks.fail='INSERT INTO vg_fixture_restore_target_binding_v1';
+  await assert.rejects(g2fRestore(target,guard).restoreSealedBackup(seal),/PRIVATE_STORAGE_ERROR/);
+  assert.equal(guard.readGuardSnapshot().attemptCount,0);
+  assert.equal(ledger.rows('SELECT COUNT(*) n FROM vg_fixture_restore_target_binding_v1')[0].n,0);
+  assert.equal((await g2fRestore(target,guard).restoreSealedBackup(seal)).checkpoint,0);
+  assert.equal(guard.readGuardSnapshot().attemptCount,1);
+ }finally{source.close();target.close();ledger.close();}
+});
+
+test('G2H signed restore before target failure retains correct target binding for crash audit',async()=>{
+ const f=setup(),source=setup(),target=setup(),ledger=setup();try{
+  await permitFixture(f);const sink=g2cSink(source);g2cSink(target);g2hIdentity(target);
+  await g2cReplay(f,sink)(req(OP),{after:0});
+  const guard=g2hGuard(ledger,target),seal=await g2eProvenance(source).createSealedBackup();
+  target.hooks.fail='INSERT INTO vg_fixture_permit_events_v1';
+  await assert.rejects(g2fRestore(target,guard).restoreSealedBackup(seal),/PRIVATE_STORAGE_ERROR/);
+  assert.equal(guard.readAttempt(seal.nonce).targetFixtureId,g2hIdentity(target,false).readIdentity().targetFixtureId);
+  assert.equal((await g2hProbe(f,guard,target).reconcile(req(OP),{nonce:seal.nonce})).code,'target-behind');
+  await assert.rejects(g2fRestore(target,guard).restoreSealedBackup(seal),/seal-replay/);
+ }finally{f.close();source.close();target.close();ledger.close();}
+});
+
+test('G2H reader identity swap while target is inspected fails closed',async()=>{
+ const f=setup(),source=setup(),a=setup(),b=setup(),ledger=setup();try{
+  await permitFixture(f);const sink=g2cSink(source);g2cSink(a);g2cSink(b);
+  await g2cReplay(f,sink)(req(OP),{after:0});
+  g2hIdentity(a);g2hIdentity(b);
+  const guard=g2hGuard(ledger,a),seal=await g2eProvenance(source).createSealedBackup();
+  await g2fRestore(a,guard).restoreSealedBackup(seal);
+  let checks=0;
+  const switched=g2gProbe(f,guard,a,{readTargetIdentity:()=>{
+   checks++;return checks===1?g2hIdentity(a,false).readIdentity():g2hIdentity(b,false).readIdentity();
+  }});
+  assert.equal((await switched.reconcile(req(OP),{nonce:seal.nonce})).code,'target-identity-changed');
+ }finally{f.close();source.close();a.close();b.close();ledger.close();}
+});
+
+test('G2H fixture identity does not activate public routes, client target IDs or real environment',()=>{
+ const f=setup();try{
+  assert.throws(()=>g2hIdentity(f),/no such table|checkpoint-scope/);
+  g2cSink(f);
+  assert.throws(()=>g2hIdentity(f,false).readIdentity());
+  const target=g2hIdentity(f),identity=target.readIdentity();
+  assert.equal(identity.environment,'fixture');
+  for(const options of [{environment:'production'},{environment:'staging'},
+   {projectId:'BadProject'},{provision:'yes'}])
+   assert.throws(()=>createSqlFixtureTargetIdentity({...f.options,...options}),/G2H/);
+  assert.throws(()=>g2fGuard(f,{targetIdentity:{readIdentity:()=>({
+   projectId:'wrong',environment:'fixture',targetFixtureId:crypto.randomUUID()})}})
+   .reserveVerifiedSeal({}),/invalid-fixture-verified-seal/);
+  for(const file of ['../src/index.mjs','../src/vangioi-authoring-http.mjs'])
+   assert.equal(readFileSync(new URL(file,import.meta.url),'utf8').includes('vangioi-permit-fixture-target-identity'),false);
  }finally{f.close();}
 });
