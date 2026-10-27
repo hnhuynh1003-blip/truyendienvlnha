@@ -25,6 +25,7 @@ import {createFixturePermitBackupProvenance} from '../src/vangioi-permit-fixture
 import {createSqlFixturePermitRestoreGuard} from '../src/vangioi-permit-fixture-restore-guard.mjs';
 import {createFixturePermitRestoreReconciliation} from '../src/vangioi-permit-fixture-reconciliation.mjs';
 import {createSqlFixtureTargetIdentity} from '../src/vangioi-permit-fixture-target-identity.mjs';
+import {createFixtureStagingIntegrationAudit,FIXTURE_STAGING_BLOCKER_IDS} from '../src/vangioi-fixture-staging-integration-audit.mjs';
 import {createV49TransactionFixture} from './fixtures/vangioi-firestore-v49.mjs';
 import {content} from './fixtures/vangioi-content.mjs';
 
@@ -2655,5 +2656,134 @@ test('G2H fixture identity does not activate public routes, client target IDs or
    .reserveVerifiedSeal({}),/invalid-fixture-verified-seal/);
   for(const file of ['../src/index.mjs','../src/vangioi-authoring-http.mjs'])
    assert.equal(readFileSync(new URL(file,import.meta.url),'utf8').includes('vangioi-permit-fixture-target-identity'),false);
+ }finally{f.close();}
+});
+
+const g2iFixture=(f,overrides={})=>{
+ const gate=createSqlWorldReleaseGate(f.options);
+ const projectionAudit=g2bAudit(f,async()=>g2bReplica(f,
+  f.rows('SELECT COALESCE(MAX(seq),0) AS head FROM vg_authoring_permit_outbox_v1')[0].head));
+ const stagingReadiness=g2aProbe(f,async()=>g2aCheckpoint(
+  f.rows('SELECT COALESCE(MAX(seq),0) AS head FROM vg_authoring_permit_outbox_v1')[0].head)(),gate);
+ return createFixtureStagingIntegrationAudit({projectId:'truyendienvl',
+  authorizeOperator:async(request,projectId)=>{
+   const who=await f.options.verify(request,projectId);
+   return f.rows("SELECT uid FROM vg_authoring_registry_operators_v1 WHERE uid=? AND status='active'",who?.uid).length===1;
+  },projectionAudit,stagingReadiness,releaseGate:gate,...overrides});
+};
+
+test('G2I compares both G2B snapshots, G2A checkpoint and fresh G1Y decision without permitting staging',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f),previous=f.counts(),result=await g2iFixture(f).audit(req(OP),{worldId:p.w.worldId});
+  assert.equal(result.ok,true);assert.equal(result.code,'fixture-evidence-consistent');
+  assert.equal(result.fixtureEvidenceConsistent,true);assert.equal(result.environment,'fixture');
+  assert.equal(result.checkpoint,1);assert.equal(result.permitCount,1);
+  assert.equal(result.snapshotHash,p.submitted.snapshotHash);
+  assert.equal(result.stagingDeploymentAuthorized,false);assert.equal(result.releaseAuthorized,false);
+  assert.deepEqual(result.unresolvedPrerequisiteIds,[...FIXTURE_STAGING_BLOCKER_IDS]);
+  assert.deepEqual(f.counts(),previous);
+  assert.equal(JSON.stringify(result).includes('PRIVATE_SOURCE_TEXT'),false);
+ }finally{f.close();}
+});
+
+test('G2I independently checks operator BEFORE any fixture subprobe, rejects client-supplied metadata',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f);let calls=0;
+  const instrument={auditProjection:async()=>{calls++;throw Error('must-not-be-called');}};
+  const probe=g2iFixture(f,{projectionAudit:instrument});
+  for(const actor of [OWNER,p.reviewer,'admin',OTHER,'guest'])
+   assert.equal((await probe.audit(req(actor),{worldId:p.w.worldId})).code,'forbidden');
+  assert.equal(calls,0);
+  for(const input of [{worldId:p.w.worldId,checkpoint:1},{worldId:p.w.worldId,readyForStaging:true},
+   {worldId:'../world'},{worldId:p.w.worldId,sourceProjectId:'other'}])
+   assert.equal((await probe.audit(req(OP),input)).code,'invalid-request');
+  assert.equal(calls,0);
+ }finally{f.close();}
+});
+
+test('G2I stops when first G2B audit sees a forged complete checkpoint with stale permit status',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f),stale=g2bReplica(f,1);
+  assert.equal((await f.registry.revokeAdaptationPermit(req(OP),{
+   requestId:crypto.randomUUID(),storyId:p.s.reference.storyId,
+   contentHash:p.s.reference.contentHash,expectedRevision:1})).ok,true);
+  let g2aCalled=false;
+  const preflight=g2iFixture(f,{projectionAudit:g2bAudit(f,async()=>({...stale,checkpoint:2})),
+   stagingReadiness:{checkWorld:async()=>{g2aCalled=true;return null;}}});
+  assert.equal((await preflight.audit(req(OP),{worldId:p.w.worldId})).code,'projection-before-blocked');
+  assert.equal(g2aCalled,false);
+ }finally{f.close();}
+});
+
+test('G2I cannot pass if G2A rejects a source hold even when G2B projection agrees',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f),notices=createSqlSourceNoticeService(f.options);
+  assert.equal((await notices.openNotice(req(OP),noticeInput(p.s.reference.storyId,p.s.reference.contentHash))).ok,true);
+  assert.equal((await g2iFixture(f).audit(req(OP),{worldId:p.w.worldId})).code,'staging-readiness-blocked');
+ }finally{f.close();}
+});
+
+test('G2I re-audits projection after G2A to catch an intervening permit revocation',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f),gate=createSqlWorldReleaseGate(f.options);
+  const prior=await g2aProbe(f,g2aCheckpoint(1),gate).checkWorld(req(OP),{worldId:p.w.worldId});
+  let calls=0;
+  const preflight=g2iFixture(f,{stagingReadiness:{checkWorld:async()=>{
+   assert.equal((await f.registry.revokeAdaptationPermit(req(OP),{
+    requestId:crypto.randomUUID(),storyId:p.s.reference.storyId,
+    contentHash:p.s.reference.contentHash,expectedRevision:1})).ok,true);
+   return prior;
+  }},projectionAudit:{auditProjection:async request=>{
+   calls++;return g2bAudit(f,async()=>g2bReplica(f,1)).auditProjection(request);
+  }}});
+  assert.equal((await preflight.audit(req(OP),{worldId:p.w.worldId})).code,'projection-after-blocked');
+  assert.equal(calls,2);
+ }finally{f.close();}
+});
+
+test('G2I rechecks notice and approval at final G1Y boundary after projection passes',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f),notices=createSqlSourceNoticeService(f.options);
+  const audit=g2bAudit(f,async()=>g2bReplica(f,1));let reads=0;
+  const projectionAudit={auditProjection:async request=>{
+   const result=await audit.auditProjection(request);reads++;
+   if(reads===2)assert.equal((await notices.openNotice(req(OP),
+    noticeInput(p.s.reference.storyId,p.s.reference.contentHash))).ok,true);
+   return result;
+  }};
+  const result=await g2iFixture(f,{projectionAudit}).audit(req(OP),{worldId:p.w.worldId});
+  assert.equal(result.code,'world-gate-blocked');assert.equal(reads,2);
+ }finally{f.close();}
+});
+
+test('G2I rejects changing checkpoints, inconsistent snapshots and fabricated gate verdicts',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f),gate=createSqlWorldReleaseGate(f.options);
+  const good=await g2aProbe(f,g2aCheckpoint(1),gate).checkWorld(req(OP),{worldId:p.w.worldId});
+  let reads=0;
+  const replaced=g2iFixture(f,{projectionAudit:{auditProjection:async()=>{
+   reads++;return {ok:true,fixtureAuditPassed:true,projectId:'truyendienvl',environment:'fixture',
+    checkpoint:reads===1?1:2,permitCount:1,auditVersion:'permit-projection-1'};
+  }},stagingReadiness:{checkWorld:async()=>good}});
+  assert.equal((await replaced.audit(req(OP),{worldId:p.w.worldId})).code,'projection-changed');
+  const forged=g2iFixture(f,{releaseGate:{evaluateApprovedWorld:async()=>({...await gate.evaluateApprovedWorld(req(OP),
+   {worldId:p.w.worldId}),snapshotHash:'a'.repeat(64)})}});
+  assert.equal((await forged.audit(req(OP),{worldId:p.w.worldId})).code,'snapshot-changed');
+  const extra=g2iFixture(f,{stagingReadiness:{checkWorld:async()=>({...good,readyForStaging:true})}});
+  assert.equal((await extra.audit(req(OP),{worldId:p.w.worldId})).code,'staging-readiness-blocked');
+ }finally{f.close();}
+});
+
+test('G2I errors and staging/production constructors fail closed, no Worker/HTTP entrypoint imports',async()=>{
+ const f=setup();try{
+  const p=await approvedForG1Y(f);
+  assert.equal((await g2iFixture(f,{projectionAudit:{auditProjection:async()=>{
+   throw Error('PRIVATE_FIXTURE_ERROR');
+  }}}).audit(req(OP),{worldId:p.w.worldId})).code,'fixture-integration-unavailable');
+  for(const environment of ['production','staging'])
+   assert.throws(()=>g2iFixture(f,{environment}),/G2I/);
+  assert.throws(()=>g2iFixture(f,{authorizeOperator:null}),/G2I/);
+  for(const file of ['../src/index.mjs','../src/vangioi-authoring-http.mjs'])
+   assert.equal(readFileSync(new URL(file,import.meta.url),'utf8').includes('vangioi-fixture-staging-integration-audit'),false);
  }finally{f.close();}
 });
