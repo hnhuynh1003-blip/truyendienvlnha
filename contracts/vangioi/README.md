@@ -137,3 +137,5 @@ G2K: [EMULATOR_SECURITY_REHEARSAL_G2K.md](EMULATOR_SECURITY_REHEARSAL_G2K.md) �
 G2L: [V49_RULES_EMULATOR_AUDIT_G2L.md](V49_RULES_EMULATOR_AUDIT_G2L.md) — kiểm snippet V49 đang chờ duyệt bằng Rules Unit Testing trên Emulator local, xác nhận 3 điểm cần duyệt về draft cross-admin, schema update và metadata published; không sửa hay deploy Rules thật.
 
 G2M: [V49_OWNER_RULES_CANDIDATE_G2M.md](V49_OWNER_RULES_CANDIDATE_G2M.md) — soạn Rules candidate chỉ trong Emulator: chủ sách `admin:true` được đọc/viết bản thảo của mình, admin khác và reviewer tự khai không được đọc; siết schema khi chuyển trạng thái, bảo toàn đọc `published`. Chưa giải quyết public metadata/completeness hay deploy Rules thật.
+
+G2N: [V49_DRAFT_INTEGRITY_INSPECTION_G2N.md](V49_DRAFT_INTEGRITY_INSPECTION_G2N.md) — bộ tiền kiểm read-only toàn bộ chương EPUB V49 bằng SHA-256 với pin nguồn và assignment reviewer từ callback server giả lập; không cấp publish, không mở nội dung riêng hoặc nối Firebase/production.
