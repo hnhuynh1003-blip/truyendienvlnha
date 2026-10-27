@@ -19,6 +19,7 @@ import {createSqlWorldReleaseGate} from '../src/vangioi-world-release-gate.mjs';
 import {createAdmissionRehearsal} from '../src/vangioi-admission-rehearsal.mjs';
 import {createSqlStagingReadinessService} from '../src/vangioi-staging-readiness.mjs';
 import {createSqlPermitProjectionAudit} from '../src/vangioi-permit-projection-audit.mjs';
+import {createSqlPermitFixtureSink} from '../src/vangioi-permit-fixture-sink.mjs';
 import {createV49TransactionFixture} from './fixtures/vangioi-firestore-v49.mjs';
 import {content} from './fixtures/vangioi-content.mjs';
 
@@ -1653,4 +1654,148 @@ test('G2B fixture errors and attempts to enable staging/production fail closed, 
   for(const file of ['../src/index.mjs','../src/vangioi-authoring-http.mjs'])
    assert.equal(readFileSync(new URL(file,import.meta.url),'utf8').includes('vangioi-permit-projection-audit'),false);
  }finally{f.close();}
+});
+
+const g2cSink=f=>createSqlPermitFixtureSink(f.options);
+const g2cReplay=(authority,sink)=>createPermitReplayRehearsal({
+ listPermitEvents:(r,d)=>authority.registry.listPermitEvents(r,d),
+ readAdaptationPermit:(r,d)=>authority.registry.readAdaptationPermit(r,d),
+ commitBatch:sink.commitBatch
+});
+
+test('G2C G1V replay commits fixture projection, event identity and checkpoint together; G2B reads it',async()=>{
+ const f=setup(),replica=setup();try{
+  await permitFixture(f);const sink=g2cSink(replica),replay=g2cReplay(f,sink);
+  assert.deepEqual(await replay(req(OP),{after:0}),{ok:true,processed:1,checkpoint:1,nextCursor:null});
+  assert.deepEqual(sink.readReplicaSnapshot().entries.map(x=>[x.status,x.revision]),[['active',1]]);
+  assert.equal(sink.readReplicaSnapshot().checkpoint,1);
+  assert.deepEqual(sink.readCheckpoint(),{projectId:'truyendienvl',environment:'fixture',checkpoint:1});
+  assert.equal(replica.rows('SELECT count(*) n FROM vg_fixture_permit_events_v1')[0].n,1);
+  const audit=createSqlPermitProjectionAudit({...f.options,readReplicaSnapshot:sink.readReplicaSnapshot});
+  assert.equal((await audit.auditProjection(req(OP))).fixtureAuditPassed,true);
+  assert.equal(JSON.stringify(sink.readReplicaSnapshot()).includes('PRIVATE_SOURCE_TEXT'),false);
+ }finally{f.close();replica.close();}
+});
+
+test('G2C delayed first replay projects current revoked authority for both issue and revoke events',async()=>{
+ const f=setup(),replica=setup();try{
+  const x=await permitFixture(f),sink=g2cSink(replica),replay=g2cReplay(f,sink);
+  assert.equal((await f.registry.revokeAdaptationPermit(req(OP),x.revoke)).status,'revoked');
+  assert.equal((await replay(req(OP),{after:0})).processed,2);
+  const snapshot=sink.readReplicaSnapshot();
+  assert.equal(snapshot.checkpoint,2);assert.deepEqual(snapshot.entries.map(x=>[x.status,x.revision]),[['revoked',2]]);
+  assert.equal((await createSqlPermitProjectionAudit({...f.options,readReplicaSnapshot:sink.readReplicaSnapshot})
+   .auditProjection(req(OP))).fixtureAuditPassed,true);
+ }finally{f.close();replica.close();}
+});
+
+test('G2C sequential replay of issue then revoke is monotonic and never reactivates an old issue',async()=>{
+ const f=setup(),replica=setup();try{
+  const x=await permitFixture(f),sink=g2cSink(replica),replay=g2cReplay(f,sink);
+  assert.equal((await replay(req(OP),{after:0})).checkpoint,1);
+  assert.equal((await f.registry.revokeAdaptationPermit(req(OP),x.revoke)).ok,true);
+  assert.equal((await replay(req(OP),{after:1})).checkpoint,2);
+  assert.equal((await replay(req(OP),{after:0})).ok,true); // historical replay receipt only
+  assert.deepEqual(sink.readReplicaSnapshot().entries.map(x=>[x.status,x.revision]),[['revoked',2]]);
+  assert.equal(replica.rows('SELECT count(*) n FROM vg_fixture_permit_events_v1')[0].n,2);
+ }finally{f.close();replica.close();}
+});
+
+test('G2C mid-batch storage failure rolls back status, event record and checkpoint atomically',async()=>{
+ const f=setup(),replica=setup();try{
+  await permitFixture(f);const sink=g2cSink(replica),replay=g2cReplay(f,sink);
+  replica.hooks.fail='INSERT INTO vg_fixture_permit_events_v1';
+  assert.equal((await replay(req(OP),{after:0})).code,'sink-unavailable');
+  assert.deepEqual(sink.readReplicaSnapshot(),{projectId:'truyendienvl',environment:'fixture',checkpoint:0,entries:[]});
+  assert.equal(replica.rows('SELECT count(*) n FROM vg_fixture_permit_events_v1')[0].n,0);
+  assert.equal((await replay(req(OP),{after:0})).checkpoint,1);
+ }finally{f.close();replica.close();}
+});
+
+test('G2C exact same batch can be acknowledged after restart without duplicating events',async()=>{
+ const dir=mkdtempSync(join(tmpdir(),'vangioi-g2c-')),path=join(dir,'replica.db'),f=setup();
+ try{
+  await permitFixture(f);
+  const before=setup(path);const sink=g2cSink(before);
+  assert.equal((await g2cReplay(f,sink)(req(OP),{after:0})).checkpoint,1);
+  before.close();
+  const after=setup(path);try{
+   const restored=g2cSink(after),replay=g2cReplay(f,restored);
+   assert.equal((await replay(req(OP),{after:0})).ok,true);
+   assert.equal(after.rows('SELECT count(*) n FROM vg_fixture_permit_events_v1')[0].n,1);
+   assert.equal(restored.readReplicaSnapshot().checkpoint,1);
+  }finally{after.close();}
+ }finally{f.close();rmSync(dir,{recursive:true,force:true});}
+});
+
+test('G2C conflicting checkpoint or event identity is rejected and cannot replay or overwrite rights',async()=>{
+ const f=setup(),replica=setup();try{
+  await permitFixture(f);const sink=g2cSink(replica),replay=g2cReplay(f,sink);
+  assert.equal((await replay(req(OP),{after:0})).checkpoint,1);
+  const row=replica.rows('SELECT * FROM vg_fixture_permit_events_v1')[0];
+  assert.throws(()=>sink.commitBatch({after:0,checkpoint:1,projections:[{
+   eventId:crypto.randomUUID(),seq:1,storyId:row.story_id,contentHash:row.content_hash,status:'active',revision:1}]}),
+   /checkpoint-conflict/);
+  assert.throws(()=>sink.commitBatch({after:5,checkpoint:6,projections:[{
+   eventId:crypto.randomUUID(),seq:6,storyId:row.story_id,contentHash:row.content_hash,status:'active',revision:1}]}),
+   /checkpoint-conflict/);
+  assert.equal(sink.readReplicaSnapshot().checkpoint,1);
+ }finally{f.close();replica.close();}
+});
+
+test('G2C explicit stale active projection cannot undo revoked rights even with a later sequence',async()=>{
+ const f=setup(),replica=setup();try{
+  const x=await permitFixture(f),sink=g2cSink(replica),replay=g2cReplay(f,sink);
+  assert.equal((await f.registry.revokeAdaptationPermit(req(OP),x.revoke)).ok,true);
+  assert.equal((await replay(req(OP),{after:0})).checkpoint,2);
+  assert.throws(()=>sink.commitBatch({after:2,checkpoint:3,projections:[{
+   eventId:crypto.randomUUID(),seq:3,storyId:x.d.storyId,contentHash:x.hash,status:'active',revision:1}]}),
+   /revoke-wins/);
+  assert.equal(sink.readReplicaSnapshot().checkpoint,2);
+  assert.equal(sink.readReplicaSnapshot().entries[0].status,'revoked');
+  assert.throws(()=>replica.sql.exec("UPDATE vg_fixture_permit_projection_v1 SET status='active',revision=1"),
+   /fixture-revoke-wins/);
+ }finally{f.close();replica.close();}
+});
+
+test('G2C pagination over 50 permits advances atomically without treating a partial page as complete',async()=>{
+ const f=setup(),replica=setup();try{
+  f.operator();for(let i=0;i<52;i++)assert.equal((await f.registry.issueAdaptationPermit(req(OP),{
+   requestId:crypto.randomUUID(),storyId:'epub-g2c-'+String(i).padStart(3,'0'),contentHash:'a'.repeat(64),
+   authorizedUid:OWNER,license:'original',sourceNote:'Synthetic fixture permit',proofRef:null})).ok,true);
+  const sink=g2cSink(replica),replay=g2cReplay(f,sink);
+  const first=await replay(req(OP),{after:0});assert.equal(first.processed,50);
+  assert.equal(sink.readReplicaSnapshot().checkpoint,first.checkpoint);
+  const second=await replay(req(OP),{after:first.checkpoint});assert.equal(second.processed,2);
+  assert.equal(sink.readReplicaSnapshot().entries.length,52);
+  assert.equal(sink.readReplicaSnapshot().checkpoint,second.checkpoint);
+  assert.equal((await createSqlPermitProjectionAudit({...f.options,readReplicaSnapshot:sink.readReplicaSnapshot})
+   .auditProjection(req(OP))).fixtureAuditPassed,true);
+ }finally{f.close();replica.close();}
+});
+
+test('G2C rejects malformed/private fields, wrong project access and production mode without writing',async()=>{
+ const replica=setup();try{
+  const sink=g2cSink(replica),p={eventId:crypto.randomUUID(),seq:1,storyId:'epub-fixture',
+   contentHash:'c'.repeat(64),status:'active',revision:1};
+  for(const input of [
+   {after:0,checkpoint:1,projections:[{...p,proofRef:'SECRET_PROOF'}]},
+   {after:0,checkpoint:2,projections:[p]},
+   {after:0,checkpoint:1,projections:[{...p,revision:9}]},
+   {after:0,checkpoint:1,projections:[p,p]}
+  ])assert.throws(()=>sink.commitBatch(input));
+  assert.throws(()=>sink.readReplicaSnapshot({projectId:'wrong',environment:'fixture'}),/scope/);
+  assert.throws(()=>createSqlPermitFixtureSink({...replica.options,environment:'production'}),/G2C/);
+  assert.deepEqual(sink.readReplicaSnapshot().entries,[]);
+ }finally{replica.close();}
+});
+
+test('G2C fixture tables protect event/checkpoint history and have no public Worker or author HTTP import',()=>{
+ const replica=setup();try{
+  const sink=g2cSink(replica);
+  assert.throws(()=>replica.sql.exec('DELETE FROM vg_fixture_permit_checkpoint_v1'),/immutable/);
+  assert.equal(sink.readReplicaSnapshot().checkpoint,0);
+  for(const file of ['../src/index.mjs','../src/vangioi-authoring-http.mjs'])
+   assert.equal(readFileSync(new URL(file,import.meta.url),'utf8').includes('vangioi-permit-fixture-sink'),false);
+ }finally{replica.close();}
 });
