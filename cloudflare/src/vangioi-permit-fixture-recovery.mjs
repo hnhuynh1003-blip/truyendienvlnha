@@ -83,7 +83,7 @@ export function createSqlPermitFixtureRecovery({storage,projectId,environment='f
   return {...snapshot,digest:await hashAuthoringJson(snapshot)};
  }
 
- async function restoreBackup(input){
+ async function checkedBackup(input){
   if(!only(input,[...backupFields,'digest'])||!hash(input.digest))
    throw Error('invalid-fixture-backup');
   // Normalize order, type and fields before hashing. This checksum only detects
@@ -96,6 +96,16 @@ export function createSqlPermitFixtureRecovery({storage,projectId,environment='f
    events:Array.isArray(input.events)?input.events.map(r=>({...r})):input.events});
   if((await hashAuthoringJson(snapshot))!==input.digest)
    throw Error('fixture-backup-digest-mismatch');
+  return snapshot;
+ }
+
+ async function verifyBackup(input){
+  const snapshot=await checkedBackup(input);
+  return {projectId,environment:'fixture',checkpoint:snapshot.checkpoint,backupDigest:input.digest};
+ }
+
+ async function restoreBackup(input){
+  const snapshot=await checkedBackup(input);
   return storage.transactionSync(()=>{
    const checkpoints=all('SELECT project_id,seq FROM vg_fixture_permit_checkpoint_v1');
    const entries=one('SELECT COUNT(*) AS n FROM vg_fixture_permit_projection_v1')?.n;
@@ -117,5 +127,5 @@ export function createSqlPermitFixtureRecovery({storage,projectId,environment='f
   });
  }
 
- return Object.freeze({createBackup,restoreBackup});
+ return Object.freeze({createBackup,verifyBackup,restoreBackup});
 }

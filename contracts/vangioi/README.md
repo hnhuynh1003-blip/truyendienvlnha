@@ -121,3 +121,5 @@ G2C: [ATOMIC_FIXTURE_SINK_G2C.md](ATOMIC_FIXTURE_SINK_G2C.md) — sink SQLite fi
 G2D: [FIXTURE_RECOVERY_G2D.md](FIXTURE_RECOVERY_G2D.md) — sao lưu metadata permit và khôi phục giao dịch nguyên tử **chỉ vào fixture trống**, kiểm digest và diễn tập G1V/G2B/G1Y sau sự cố; không đụng dữ liệu staging/production.
 
 G2E: [FIXTURE_BACKUP_PROVENANCE_G2E.md](FIXTURE_BACKUP_PROVENANCE_G2E.md) — bao HMAC cho bản sao G2D từ host thử nghiệm tin cậy, ràng buộc issuer/key/project/timestamp/digest và từ chối backup giả mạo trước restore; chưa phải khóa/kho sao lưu production.
+
+G2F: [FIXTURE_RESTORE_REPLAY_G2F.md](FIXTURE_RESTORE_REPLAY_G2F.md) — sổ SQLite fixture độc lập ghi nonce đã sử dụng, high-water checkpoint và digest để chặn dùng lại seal/rollback/fork; diễn tập burn-on-attempt, chưa có distributed transaction hay consumer live.

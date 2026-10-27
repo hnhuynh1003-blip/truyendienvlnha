@@ -22,6 +22,7 @@ import {createSqlPermitProjectionAudit} from '../src/vangioi-permit-projection-a
 import {createSqlPermitFixtureSink} from '../src/vangioi-permit-fixture-sink.mjs';
 import {createSqlPermitFixtureRecovery} from '../src/vangioi-permit-fixture-recovery.mjs';
 import {createFixturePermitBackupProvenance} from '../src/vangioi-permit-fixture-provenance.mjs';
+import {createSqlFixturePermitRestoreGuard} from '../src/vangioi-permit-fixture-restore-guard.mjs';
 import {createV49TransactionFixture} from './fixtures/vangioi-firestore-v49.mjs';
 import {content} from './fixtures/vangioi-content.mjs';
 
@@ -2168,4 +2169,175 @@ test('G2E identical fixture snapshots yield distinct signed nonces; no external 
    {maxFutureSkewMs:500000},{recovery:null}
   ])assert.throws(()=>g2eProvenance(source,options),/G2E/);
  }finally{source.close();}
+});
+
+const g2fGuard=(f,options={})=>createSqlFixturePermitRestoreGuard({...f.options,...options});
+const g2fRestore=(target,guard)=>g2eProvenance(target,{onVerifiedSeal:guard.reserveVerifiedSeal});
+
+test('G2F verified signed backup reserves one-time nonce and advances separate fixture highwater',async()=>{
+ const f=setup(),source=setup(),target=setup(),ledger=setup();try{
+  await permitFixture(f);const sink=g2cSink(source),restored=g2cSink(target),guard=g2fGuard(ledger);
+  await g2cReplay(f,sink)(req(OP),{after:0});
+  const sealed=await g2eProvenance(source).createSealedBackup();
+  assert.equal((await g2fRestore(target,guard).restoreSealedBackup(sealed)).checkpoint,1);
+  assert.deepEqual(guard.readGuardSnapshot(),{projectId:'truyendienvl',environment:'fixture',
+   highwaterCheckpoint:1,highwaterDigest:sealed.backup.digest,attemptCount:1});
+  assert.equal((await g2bAudit(f,restored.readReplicaSnapshot).auditProjection(req(OP))).fixtureAuditPassed,true);
+  assert.equal(ledger.rows('SELECT COUNT(*) n FROM vg_fixture_restore_attempt_v1')[0].n,1);
+ }finally{f.close();source.close();target.close();ledger.close();}
+});
+
+test('G2F replayed signed nonce is denied on another fresh target before any restore write',async()=>{
+ const source=setup(),a=setup(),b=setup(),ledger=setup();try{
+  g2cSink(source);const first=g2cSink(a),second=g2cSink(b),guard=g2fGuard(ledger);
+  const sealed=await g2eProvenance(source).createSealedBackup();
+  assert.equal((await g2fRestore(a,guard).restoreSealedBackup(sealed)).checkpoint,0);
+  await assert.rejects(g2fRestore(b,guard).restoreSealedBackup(sealed),/seal-replay/);
+  assert.equal(first.readCheckpoint().checkpoint,0);
+  assert.equal(second.readCheckpoint().checkpoint,0);
+  assert.equal(guard.readGuardSnapshot().attemptCount,1);
+ }finally{source.close();a.close();b.close();ledger.close();}
+});
+
+test('G2F lower checkpoint seal is rejected even if authenticated and nonce has not been used',async()=>{
+ const f=setup(),source=setup(),a=setup(),b=setup(),ledger=setup();try{
+  const x=await permitFixture(f),sink=g2cSink(source),guard=g2fGuard(ledger);
+  g2cSink(a);const oldTarget=g2cSink(b);
+  await g2cReplay(f,sink)(req(OP),{after:0});
+  const stale=await g2eProvenance(source).createSealedBackup();
+  assert.equal((await f.registry.revokeAdaptationPermit(req(OP),x.revoke)).status,'revoked');
+  await g2cReplay(f,sink)(req(OP),{after:1});
+  const newer=await g2eProvenance(source).createSealedBackup();
+  assert.equal((await g2fRestore(a,guard).restoreSealedBackup(newer)).checkpoint,2);
+  await assert.rejects(g2fRestore(b,guard).restoreSealedBackup(stale),/checkpoint-rollback/);
+  assert.equal(oldTarget.readCheckpoint().checkpoint,0);
+  assert.equal(guard.readGuardSnapshot().highwaterCheckpoint,2);
+ }finally{f.close();source.close();a.close();b.close();ledger.close();}
+});
+
+test('G2F same checkpoint with different signed digest is a fork and refused',async()=>{
+ const authorityA=setup(),authorityB=setup(),sourceA=setup(),sourceB=setup(),a=setup(),b=setup(),ledger=setup();try{
+  await permitFixture(authorityA);authorityB.operator();
+  assert.equal((await authorityB.registry.issueAdaptationPermit(req(OP),{
+   requestId:crypto.randomUUID(),storyId:'a-different-book',contentHash:'d'.repeat(64),
+   authorizedUid:OWNER,license:'original',sourceNote:'fixture',proofRef:null})).ok,true);
+  const sinkA=g2cSink(sourceA),sinkB=g2cSink(sourceB),guard=g2fGuard(ledger);
+  g2cSink(a);g2cSink(b);
+  await g2cReplay(authorityA,sinkA)(req(OP),{after:0});
+  await g2cReplay(authorityB,sinkB)(req(OP),{after:0});
+  const sa=await g2eProvenance(sourceA).createSealedBackup(),sb=await g2eProvenance(sourceB).createSealedBackup();
+  assert.notEqual(sa.backup.digest,sb.backup.digest);
+  assert.equal((await g2fRestore(a,guard).restoreSealedBackup(sa)).checkpoint,1);
+  await assert.rejects(g2fRestore(b,guard).restoreSealedBackup(sb),/checkpoint-fork/);
+  assert.equal(guard.readGuardSnapshot().attemptCount,1);
+ }finally{authorityA.close();authorityB.close();sourceA.close();sourceB.close();a.close();b.close();ledger.close();}
+});
+
+test('G2F distinct signed nonce for identical checkpoint/digest may restore to a second empty fixture',async()=>{
+ const source=setup(),a=setup(),b=setup(),ledger=setup();try{
+  g2cSink(source);g2cSink(a);g2cSink(b);const guard=g2fGuard(ledger),signer=g2eProvenance(source);
+  const first=await signer.createSealedBackup(),second=await signer.createSealedBackup();
+  assert.notEqual(first.nonce,second.nonce);
+  assert.equal((await g2fRestore(a,guard).restoreSealedBackup(first)).checkpoint,0);
+  assert.equal((await g2fRestore(b,guard).restoreSealedBackup(second)).checkpoint,0);
+  assert.equal(guard.readGuardSnapshot().attemptCount,2);
+ }finally{source.close();a.close();b.close();ledger.close();}
+});
+
+test('G2F forged MAC and corrupted backup never burn nonce or highwater',async()=>{
+ const f=setup(),source=setup(),target=setup(),ledger=setup();try{
+  await permitFixture(f);const sink=g2cSink(source),restored=g2cSink(target),guard=g2fGuard(ledger);
+  await g2cReplay(f,sink)(req(OP),{after:0});
+  const signed=await g2eProvenance(source).createSealedBackup();
+  const forgery=structuredClone(signed);forgery.mac='a'.repeat(64);
+  await assert.rejects(g2fRestore(target,guard).restoreSealedBackup(forgery),/authentication-failed/);
+  const corrupted=structuredClone(signed);corrupted.backup.checkpoint=900;
+  await assert.rejects(g2fRestore(target,guard).restoreSealedBackup(corrupted),/invalid-fixture-backup|digest-mismatch/);
+  assert.deepEqual(guard.readGuardSnapshot(),{projectId:'truyendienvl',environment:'fixture',
+   highwaterCheckpoint:0,highwaterDigest:null,attemptCount:0});
+  assert.equal(restored.readCheckpoint().checkpoint,0);
+ }finally{f.close();source.close();target.close();ledger.close();}
+});
+
+test('G2F ledger insert failure rolls back reservation; a retry of same seal is safe',async()=>{
+ const source=setup(),target=setup(),ledger=setup();try{
+  g2cSink(source);g2cSink(target);const guard=g2fGuard(ledger);
+  const signed=await g2eProvenance(source).createSealedBackup();
+  ledger.hooks.fail='INSERT INTO vg_fixture_restore_attempt_v1';
+  await assert.rejects(g2fRestore(target,guard).restoreSealedBackup(signed),/PRIVATE_STORAGE_ERROR/);
+  assert.equal(guard.readGuardSnapshot().attemptCount,0);
+  assert.equal((await g2fRestore(target,guard).restoreSealedBackup(signed)).checkpoint,0);
+ }finally{source.close();target.close();ledger.close();}
+});
+
+test('G2F after target SQL failure the seal stays consumed; a freshly signed one can recover',async()=>{
+ const f=setup(),source=setup(),target=setup(),ledger=setup();try{
+  await permitFixture(f);const sink=g2cSink(source),restored=g2cSink(target),guard=g2fGuard(ledger);
+  await g2cReplay(f,sink)(req(OP),{after:0});const signer=g2eProvenance(source);
+  const seal=await signer.createSealedBackup();
+  target.hooks.fail='INSERT INTO vg_fixture_permit_events_v1';
+  await assert.rejects(g2fRestore(target,guard).restoreSealedBackup(seal),/PRIVATE_STORAGE_ERROR/);
+  assert.equal(restored.readCheckpoint().checkpoint,0);
+  assert.equal(guard.readGuardSnapshot().attemptCount,1);
+  await assert.rejects(g2fRestore(target,guard).restoreSealedBackup(seal),/seal-replay/);
+  const newSeal=await signer.createSealedBackup();
+  assert.equal((await g2fRestore(target,guard).restoreSealedBackup(newSeal)).checkpoint,1);
+  assert.equal(guard.readGuardSnapshot().attemptCount,2);
+ }finally{f.close();source.close();target.close();ledger.close();}
+});
+
+test('G2F persistent external guard refuses reuse even if fresh restore target DB is created after restart',async()=>{
+ const dir=mkdtempSync(join(tmpdir(),'vangioi-g2f-')),path=join(dir,'ledger.db');
+ const source=setup(),a=setup(),b=setup();try{
+  g2cSink(source);g2cSink(a);g2cSink(b);
+  const seal=await g2eProvenance(source).createSealedBackup();
+  const before=setup(path);const guard=g2fGuard(before);
+  assert.equal((await g2fRestore(a,guard).restoreSealedBackup(seal)).checkpoint,0);before.close();
+  const after=setup(path);try{
+   const rebooted=g2fGuard(after);
+   assert.equal(rebooted.readGuardSnapshot().attemptCount,1);
+   await assert.rejects(g2fRestore(b,rebooted).restoreSealedBackup(seal),/seal-replay/);
+  }finally{after.close();}
+ }finally{source.close();a.close();b.close();rmSync(dir,{recursive:true,force:true});}
+});
+
+test('G2F simultaneous verified restores with same nonce reserve once, only one target is populated',async()=>{
+ const f=setup(),source=setup(),a=setup(),b=setup(),ledger=setup();try{
+  await permitFixture(f);const sink=g2cSink(source),sa=g2cSink(a),sb=g2cSink(b),guard=g2fGuard(ledger);
+  await g2cReplay(f,sink)(req(OP),{after:0});
+  const seal=await g2eProvenance(source).createSealedBackup();
+  const outcomes=await Promise.allSettled([
+   g2fRestore(a,guard).restoreSealedBackup(seal),
+   g2fRestore(b,guard).restoreSealedBackup(seal)]);
+  assert.deepEqual(outcomes.map(r=>r.status).sort(),['fulfilled','rejected']);
+  assert.equal(sa.readCheckpoint().checkpoint+sb.readCheckpoint().checkpoint,1);
+  assert.equal(guard.readGuardSnapshot().attemptCount,1);
+ }finally{f.close();source.close();a.close();b.close();ledger.close();}
+});
+
+test('G2F quota, triggers and project boundary cannot silently erase nonce history',async()=>{
+ const source=setup(),a=setup(),b=setup(),ledger=setup();try{
+  g2cSink(source);g2cSink(a);g2cSink(b);
+  const guard=g2fGuard(ledger,{maxAttempts:1}),signer=g2eProvenance(source);
+  assert.equal((await g2fRestore(a,guard).restoreSealedBackup(await signer.createSealedBackup())).checkpoint,0);
+  await assert.rejects(g2fRestore(b,guard).restoreSealedBackup(await signer.createSealedBackup()),/attempt-limit/);
+  assert.throws(()=>ledger.sql.exec('DELETE FROM vg_fixture_restore_attempt_v1'),/immutable/);
+  assert.throws(()=>ledger.sql.exec('UPDATE vg_fixture_restore_floor_v1 SET checkpoint=-1'),/floor-regression/);
+  ledger.sql.exec('INSERT INTO vg_fixture_restore_floor_v1 VALUES(?,0,NULL)','another-project');
+  assert.throws(()=>guard.readGuardSnapshot(),/scope-conflict/);
+ }finally{source.close();a.close();b.close();ledger.close();}
+});
+
+test('G2F guard is fixture-only, opt-in G2E, and disconnected from public Worker/HTTP routes',()=>{
+ const fixture=setup();try{
+  const guard=g2fGuard(fixture);
+  assert.equal(guard.readGuardSnapshot().highwaterCheckpoint,0);
+  for(const options of [{environment:'production'},{environment:'staging'},
+   {projectId:'BAD'},{maxAttempts:0},{maxAttempts:10001}])
+   assert.throws(()=>g2fGuard(fixture,options),/G2F/);
+  assert.throws(()=>g2eProvenance(fixture,{onVerifiedSeal:guard.reserveVerifiedSeal,
+   recovery:{createBackup:async()=>null,restoreBackup:async()=>null}}),/G2E/);
+  for(const file of ['../src/index.mjs','../src/vangioi-authoring-http.mjs'])
+   assert.equal(readFileSync(new URL(file,import.meta.url),'utf8').includes('vangioi-permit-fixture-restore-guard'),false);
+ }finally{fixture.close();}
 });

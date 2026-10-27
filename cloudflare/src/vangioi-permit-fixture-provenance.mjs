@@ -15,8 +15,10 @@ const fromHex=s=>Uint8Array.from(s.match(/../g),part=>parseInt(part,16));
 const encoder=new TextEncoder();
 
 export function createFixturePermitBackupProvenance({recovery,projectId,environment='fixture',
- issuerId,keyId,secretKey,now=()=>Date.now(),maxAgeMs=7*DAY,maxFutureSkewMs=60000}={}){
+ issuerId,keyId,secretKey,now=()=>Date.now(),maxAgeMs=7*DAY,maxFutureSkewMs=60000,
+ onVerifiedSeal=null}={}){
  if(typeof recovery?.createBackup!=='function'||typeof recovery?.restoreBackup!=='function'||
+  (onVerifiedSeal!==null&&(typeof onVerifiedSeal!=='function'||typeof recovery?.verifyBackup!=='function'))||
   !id(projectId)||environment!=='fixture'||!id(issuerId)||!id(keyId)||
   !(secretKey instanceof Uint8Array)||secretKey.byteLength<32||secretKey.byteLength>128||
   typeof now!=='function'||!Number.isSafeInteger(maxAgeMs)||maxAgeMs<1||maxAgeMs>30*DAY||
@@ -68,6 +70,18 @@ export function createFixturePermitBackupProvenance({recovery,projectId,environm
   const valid=await crypto.subtle.verify('HMAC',await keyPromise,fromHex(sealed.mac),
    encoder.encode(JSON.stringify(claims(sealed))));
   if(!valid)throw Error('fixture-seal-authentication-failed');
+
+  if(onVerifiedSeal){
+   // G2F: authenticate + check G2D body BEFORE burning the nonce in a
+   // separate trusted fixture ledger; never reserve for corrupt client bytes.
+   const verified=await recovery.verifyBackup(sealed.backup);
+   if(verified.projectId!==projectId||verified.environment!=='fixture'||
+    verified.backupDigest!==sealed.backup.digest||!millis(verified.checkpoint))
+    throw Error('fixture-seal-unverified-backup');
+   await onVerifiedSeal(Object.freeze({projectId,environment:'fixture',issuerId,keyId,
+    nonce:sealed.nonce,mac:sealed.mac,createdAt:sealed.createdAt,
+    checkpoint:verified.checkpoint,backupDigest:verified.backupDigest}));
+  }
 
   // G2D independently recomputes backup.digest and atomically restores into a
   // fresh fixture only. G2B/G1V/G1Y must still recheck live authority rights.
