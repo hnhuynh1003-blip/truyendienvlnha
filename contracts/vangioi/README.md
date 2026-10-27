@@ -129,3 +129,5 @@ G2G: [FIXTURE_RECEIPT_RECONCILIATION_G2G.md](FIXTURE_RECEIPT_RECONCILIATION_G2G.
 G2H: [FIXTURE_TARGET_BINDING_G2H.md](FIXTURE_TARGET_BINDING_G2H.md) — host gắn receipt G2F với UUID bất biến của target SQLite fixture, G2G chặn nhầm target trước khi đối soát backup; không phải attestation chống nhân bản DB hay production identity.
 
 G2I: [STAGING_INTEGRATION_AUDIT_G2I.md](STAGING_INTEGRATION_AUDIT_G2I.md) — kiểm toán toàn tuyến G1R–G2H, ghép G2B/G2A/G1Y cho một phép đo nhất quán fixture operator-only, liệt kê 7 blocker trước staging thật; không cấp quyền kết nối/release/live.
+
+G2J: [STAGING_TOPOLOGY_AND_ACCESS_G2J.md](STAGING_TOPOLOGY_AND_ACCESS_G2J.md) — thiết kế topology Firebase staging cách ly, ma trận quyền service/author/reviewer và bộ kiểm bản khai chỉ offline; chưa chọn Firestore instance/edition hay thực hiện IAM/Rules/deploy.
