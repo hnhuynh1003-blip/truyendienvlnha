@@ -215,8 +215,10 @@
    if(!isAuthor()){
      root.append(element('div','d60-empty','Bạn chưa có quyền quản lý tác phẩm. Đăng nhập bằng tài khoản đã được cấp quyền tác giả.'));return;
    }
-   root.append(button('✎ Tạo tác phẩm',()=>openStoryModal()),
-     button('▤ Nhập EPUB',()=>openEpubImportV48(),'d60-btn secondary'),
+   root.append(button('＋ Đăng / nhập truyện',()=>{
+      if(!isAuthor())return;
+      if(!window.DuduLibraryIntakeV1?.open?.())openStoryModal();
+     }),
      button('📚 Quản lý trong Thư viện',()=>navigate('library'),'d60-btn secondary'),
      button('◇ Khung kịch bản',()=>window.DuduWorldUXV66?.openAuthorStudio(),'d60-btn secondary'));
  }

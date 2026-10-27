@@ -159,3 +159,5 @@ G2V: [V49_EMERGENCY_HOLD_AND_RECOVERY_G2V.md](V49_EMERGENCY_HOLD_AND_RECOVERY_G2
 G2W: [V49_SHARED_SERVER_WRITER_FENCE_G2W.md](V49_SHARED_SERVER_WRITER_FENCE_G2W.md) — diễn tập cổng writer server dùng chung kiểm emergency hold + SHA-256 + epoch/authority trong cùng transaction; từ chối cả restore khi chưa có release workflow. **Chỉ các thao tác đi qua facade mới được chặn; Admin SDK legacy vẫn bypass, chưa triển khai IAM/cutover/staging/production.**
 
 G2X: [V49_PRIVILEGED_WRITER_INVENTORY_G2X.md](V49_PRIVILEGED_WRITER_INVENTORY_G2X.md) — kiểm kê các source ghi EPUB V49 và Admin SDK hiện có; manifest SHA-256 + static CI tripwire phát hiện writer/SDK mới hoặc source bị sửa. **Chưa có thay đổi IAM, Rules, deployed service; quét tĩnh không chứng minh hết đường Admin bypass.**
+
+LIB1: [LIBRARY_INTAKE_UI_SYNC_L1.md](LIBRARY_INTAKE_UI_SYNC_L1.md) — gom lối vào viết truyện thủ công/nhập EPUB ở Thư viện và chỉ dẫn tham chiếu truyện đã có sang Vạn Giới; phân biệt `storySource.kind` với định dạng file. **Không hợp nhất backend, thêm uploader TXT/PDF/DOCX hoặc nối publish thật.**

@@ -54,6 +54,7 @@
   <link rel="stylesheet" href="css/story-comments-pilot-v45-2.css?v=45-2">
   <link rel="stylesheet" href="css/sandbox-discussion-v46.css?v=46-1">
   <link rel="stylesheet" href="css/epub-import-v48.css?v=48-1">
+  <link rel="stylesheet" href="css/library-intake-v1.css?v=1">
   <link rel="stylesheet" href="css/chat-messenger-v56-12.css?v=56-12">
   <link rel="stylesheet" href="css/chat-contact-v56-14.css?v=56-14">
   <meta name="mobile-web-app-capable" content="yes">
@@ -796,7 +797,7 @@
       <span class="user-info-badge" id="account-status-btn" onclick="openAuthModal()">👤 Khách</span>
       <button type="button" id="player-avatar-header-v16" class="dudu-player-avatar-v16" style="display:none" onclick="openPlayerAvatarEditorV16()" aria-label="Đổi ảnh và khung tài khoản"></button>
       <span class="role-badge reader" id="role-toggle-btn" onclick="toggleUserRole()">📖 Độc Giả</span>
-      <button class="btn btn-primary admin-only" onclick="openStoryModal()">+ Tạo</button>
+      <button class="btn btn-primary admin-only" onclick="canEditStories() && (window.DuduLibraryIntakeV1?.open?.() || openStoryModal())">+ Đăng / nhập truyện</button>
       
     </div>
   </header>
@@ -7514,7 +7515,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/world-registry-v63.js?v=63-1"></script>
 <script src="js/world-taxonomy-v66.js?v=66-2"></script>
 <script src="js/world-blueprint-v66.js?v=66-1"></script>
-<script src="js/site-shell-v60.js?v=play-v8-creator"></script>
+<script src="js/site-shell-v60.js?v=lib1-entry"></script>
 <script src="js/world-experience-v66.js?v=66-2"></script>
 <script src="js/dudu-core-rules-v1.js?v=1"></script>
 <script src="js/dudu-story-engine-v1.js?v=play-v8"></script>
@@ -7530,6 +7531,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/vangioi-creator-validation.js?v=1j-1"></script>
 <script src="js/vangioi-arc-plan.js?v=1n-1"></script>
 <script src="js/vangioi-creator.js?v=1n-1"></script>
+<script src="js/library-intake-v1.js?v=1"></script>
 <script src="js/dudu-system-app-v69.js?v=71-main-13"></script>
 <script src="js/dudu-character-name-v71.js?v=71-1"></script>
 <script src="js/phone-app-contract-v67.js?v=69-1"></script>
