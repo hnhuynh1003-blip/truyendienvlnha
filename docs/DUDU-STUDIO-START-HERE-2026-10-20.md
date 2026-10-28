@@ -1,5 +1,9 @@
 # DUDU Studio — START HERE / Bàn giao sạch · 20/10/2026
 
+## VẠN GIỚI G5C-P2 — LOCAL BROWSER ROLEPLAY (28/10/2026)
+
+Nền `99af328` (G5C-P, Smoke/Browser/Pages SUCCESS). Theo quyết định Du muốn tự bấm thử world, xem `contracts/vangioi/G5C_P2_LOCAL_BROWSER_ROLEPLAY.md`. Chạy `npm install --prefix cloudflare --no-audit --no-fund` một lần, sau đó `node tools/vangioi/author-roleplay-browser-server.mjs` và mở URL `http://127.0.0.1:<cổng>` do Node in ra. Demo text-first, hai vai và hai kết cục, G4A/G4B rule/revision trong RAM; localhost-only, chặn Host/Origin sai và thử Chromium mobile viewport. Không thêm đường chơi/nút trên Pages/Vạn Giới/Thiên Mệnh, không ảnh/source có quyền, save, reward, nhiệm vụ được xác nhận hay backend thật. G5D–F chưa thực hiện, CI/Pages G5C-P2 phải kiểm theo SHA mới.
+
 ## VẠN GIỚI G5C-P — AUTHOR-MADE ROLEPLAY DEMO (28/10/2026)
 
 Nền `5f49794` (G5C, Smoke/Browser/Pages SUCCESS). Theo quyết định thử nhập vai với một thế giới tác giả tự tạo, xem `contracts/vangioi/G5C_P_OFFLINE_AUTHOR_ROLEPLAY_DEMO.md`: demo Node CLI **Ngọn đèn cuối ở Bến Sương** có hai thân phận và lời phản ứng riêng, NPC kịch bản, bốn scene, hai nhánh/kết cục; G3C kiểm đường đi, G4A áp dụng rule allowlist, G4B replay/revision/eventId trong RAM. Chạy `node tools/vangioi/author-roleplay-cli.mjs` ở clone repo. Source/ảnh là **placeholder chưa xác minh bytes/quyền**; không có browser chơi trên Pages, save, completion proof, quyền phát thưởng hoặc production. G5D–F chưa triển khai; CI/Pages G5C-P cần kiểm theo commit SHA đợt mới.

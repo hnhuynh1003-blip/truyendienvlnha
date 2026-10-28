@@ -68,6 +68,10 @@ jobs:
           node tests/browser-auth-private.cjs
           node tests/browser-vangioi-creator.cjs
           node tests/browser-quan-dao-items.cjs
+      - name: G5C-P2 local-only author roleplay browser acceptance (no external writes)
+        run: |
+          npm install --prefix cloudflare --ignore-scripts --no-audit --no-fund
+          node tests/browser-vangioi-author-roleplay.cjs
       - name: Legacy Sandbox regression (advisory; cannot block main V71)
         continue-on-error: true
         run: |
