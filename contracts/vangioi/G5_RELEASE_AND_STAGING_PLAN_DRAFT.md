@@ -49,6 +49,8 @@ Không thêm các trường trên trực tiếp vào `world-content-1` hoặc mi
 
 Đối với hai loại tiếp diễn, **người chơi được chọn một nhánh hoàn thành hợp lệ** để tiếp tục; không tự động lấy nhánh đạt hạng cao nhất hoặc mới nhất. Nhánh được chọn phải được pin khi bắt đầu phần sau, không trộn sự kiện/quan hệ/ký ức từ các lượt xuyên khác.
 
+**Thời gian truyện khác thứ tự phát hành:** phần mang nhãn “phần 2” có thể là tiền truyện, diễn ra *trước* phần 1. Sidecar phải phân biệt **thứ tự phát hành**, **mốc thời gian trong thế giới** và **quan hệ mở khóa gameplay**; không suy phụ thuộc từ tên phần/chapter index. Tiền truyện ra sau không được âm thầm viết lại ký ức hoặc snapshot phần 1 mà người chơi đã hoàn thành; mọi hiệu ứng cánh bướm sang tương lai chỉ có hiệu lực trong lineage/nhánh được xác nhận. Trường hợp tác giả muốn tiền truyện chơi độc lập thì khai rõ, không tự chuyển mọi prequel thành direct continuation.
+
 ### B. Các liên kết/kiểm tra dành cho sidecar G5A, không sửa `world-content-1` ngay
 
 - **Định danh nội dung:** tái sử dụng `worldId`, `storyId`, `arcId`, `contentVersion/contentHash`, `arcVersion` và `endingId` bất biến theo snapshot; cho phép đề nghị `continuationMode`, `prerequisiteArcIds`, `acceptedEndingIds`, `carryForwardFactKeys`, `canonAnchors` và chính sách chọn nhánh dưới dạng **sidecar candidate**, chưa ấn định schema runtime.
