@@ -32,6 +32,19 @@ Tổng **19 cảnh**, gồm 1 trạm tiếp nhận meta bên ngoài dòng thời
 
 Sự kiện từ chương gốc được đối chiếu trong trình đọc công khai, nhưng các câu dẫn và lời thoại bản chơi là lời biên soạn mới. Không có quyền thay đổi lời từ chối tình cảm, mốc tuổi, thành tựu tài chính hay việc đã ký trong Canon. Khi thử tương tác, chỉ phản ứng sau các mốc cố định được mô phỏng.
 
+## P7.2 — Sửa bản thử thất bại: góc nhìn, giao diện và hệ quả lựa chọn
+
+Phản hồi thực tế của chủ dự án: bản P7.1 đưa thông báo kỹ thuật, dấu vết và mục tiêu vào giữa đoạn truyện; nhập vai khác nhân vật nhưng vẫn xem diễn biến từ góc của người kể biết tất cả; nhiều màn chỉ có một nút tiếp tục. Đây là lỗi thiết kế trải nghiệm, không phải lỗi do thiếu thêm một hộp thông báo hệ thống.
+
+Phạm vi bản P7.2:
+
+1. **Mở phiên:** người chơi chọn vai, đọc hồ sơ riêng, xác nhận **một lần**. Trạm meta `scene-entry` được G4A/G4B xử lý âm thầm đúng luật; không hiện thành cảnh truyện thứ nhất. Ký ức đã đồng bộ hiển thị trong popup tạm thời và tự mờ đi. Các nhãn kỹ thuật `revision`, `context`, `story source`, `evidence`, `goal` bị bỏ khỏi khu vực đọc/ra quyết định (vẫn giữ dữ liệu và khu tác giả để kiểm thử).
+2. **Góc nhìn nhân vật:** mỗi cảnh có lời dẫn **ngôi thứ nhất** riêng cho Tử Du, Lục Thiển, bạn học và thân phận ảo theo đúng đường đi cho phép. Bạn học chỉ biết các việc ở lớp và quan sát bên ngoài, không kể những lời tỏ tình bí mật; Lục Thiển thấy báo cáo và chăm sóc dưới phạm vi ủy quyền; nhân viên thư viện chưa xác minh không biết hồ sơ học sinh. Luồng nhân vật được kiểm với các lựa chọn thật trong unit test.
+3. **Quyết định có hậu quả:** tăng từ 19 lên **28 cảnh**, có lựa chọn chào/giữ yên ở 7B, hỏi bệnh mẹ Tinh Dao/hát & rubik, chăm bữa ăn/kiểm báo cáo, và thư viện/ga tàu công cộng. Những lựa chọn này tạo cảnh phản ứng **khác nhau**, sau đó có thể trở lại các mốc cố định theo Canon. Tử Du còn có nhánh `scene-whatif-tinhdao`: đáp lại lời mời của Tinh Dao và thấy ngay hệ quả của lời hứa phải bàn với mẹ, học hành, tiền tàu. **Đó là kết thúc sandbox giả định, không phải trang tiếp theo trong truyện gốc và không được ghi vào Canon.**
+4. **Giới hạn hiện tại:** đây vẫn là kịch bản offline do tác giả viết. Người dùng không thể tự tạo lựa chọn/nhân vật/NPC AI vượt G4A hay lưu trạng thái lên server. Một số cảnh nối bắt buộc chỉ có nút “Tiếp tục câu chuyện” vì là mốc thời gian cần đi qua; chưa phải một trò chơi thế giới mở với kết quả kéo dài nhiều chương. Tác giả có thể sửa câu chữ các vai trong RAM, nhưng chưa có trình chỉnh sửa nhánh và luật tự phục vụ toàn diện.
+
+Sáu kết thúc gồm ba phản ứng sau lời từ chối Lục Thiển, một bạn học, một thân phận ảo và một nhánh *what-if* Tinh Dao. Mọi sửa đổi và trạng thái phiên không vượt ra ngoài RAM; `rewardAuthorized`, `productionAuthorized`, `saveCommitted` đều giữ `false`.
+
 ## Các thân phận được kiểm
 
 1. `entry-tu-du` — `cast_possession`, vai chính. Có ký ức chương 3–5 và đặc điểm **không nhận biết gương mặt**, mô tả qua giọng/mùi/âm thanh; ở cổng trường.
@@ -49,9 +62,11 @@ Theo `LIBRARY_SOURCE_G1Q.md`, tham chiếu Library production chỉ hợp lệ s
 
 ## QA và tiêu chí kiểm thử
 
-- Hai ghi chú gắn chương 6–7, bốn mở đầu có ký ức và giới hạn riêng, **19 cảnh, năm điểm kết thúc theo thân phận**, trong đó ba kết thúc ở tuổi 17 chỉ mô phỏng phản ứng sau một lời từ chối có sẵn.
+- Hai ghi chú gắn chương 6–7, bốn mở đầu có ký ức và giới hạn riêng, **28 cảnh, sáu điểm kết thúc theo thân phận/nhánh giả định**, trong đó ba kết thúc ở tuổi 17 chỉ mô phỏng phản ứng sau một lời từ chối có sẵn.
 - G3C/Creator QA hợp lệ, G4A transition/rule pin và G4B revision/replay; sửa lời vai trong RAM được, giả vai/choice thưởng thất bại.
 - Thân phận ảo không được lách qua cửa trường hoặc vào hồ sơ tài chính bằng nhãn giả; bạn học không thấy ký ức Tử Du.
+- So sánh hai nhánh đầu ra của lớp 7B, giờ trưa, luật sư và thân phận ảo; xác nhận mỗi nhánh thật sự có cảnh, lời dẫn khác nhau ở ngôi thứ nhất, không thưởng.
+- Nhánh Tinh Dao *what-if* chỉ xuất hiện cho vai Tử Du; tác giả không thay văn bản nguồn; trình nhập vai không trình bày `SYSTEM` như lời thoại dài, popup tự ẩn, dữ liệu Canon vẫn nguyên.
 - Không có đường quay về cổng trường từ mốc năm 17; không lặp ngày nhập học, không gặp chính bản thân mình như NPC và không nhảy tuổi mà không có chuyển cảnh nêu rõ.
 - Không chứa Full Canon private, không EXP/Xu/items/reward, AI, save/release/publish/auth hay Firestore/Worker production.
 - Giao diện đọc tiếng Việt với font sans rõ, ảnh cảnh/ảnh vai gốc dùng riêng cho bản thử; mobile 320px và desktop cần kiểm.

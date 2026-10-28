@@ -7,10 +7,11 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self'; base-uri 'none'; object-src 'none'; form-action 'self'">
   <meta name="robots" content="noindex,nofollow">
   <title>Hệ Thống ERR...O · Thị trấn mỏ — VẠN GIỚI / Tác giả thử nghiệm</title>
-  <link rel="stylesheet" href="./style.css?v=g5c-p7-2">
-  <script type="module" src="./app.js?v=g5c-p7-2"></script>
+  <link rel="stylesheet" href="./style.css?v=g5c-p7-3">
+  <script type="module" src="./app.js?v=g5c-p7-3"></script>
 </head>
 <body>
+  <div id="system-toast" class="system-toast" role="status" aria-live="polite" hidden></div>
   <main class="shell">
     <header class="mast"><a href="../../index.html" class="brand">DUDU <span>STUDIO / VẠN GIỚI</span></a>
       <span class="status"><span class="live-dot" aria-hidden="true"></span> AUTHOR PLAYTEST · KHÔNG PHÁT HÀNH</span>
@@ -23,7 +24,7 @@
     </section>
     <nav class="path" aria-label="Quy trình kiểm thử tác giả">
       <div><span>01</span> THAM CHIẾU TRUYỆN <small>Chương 3–12 · Thư viện</small></div>
-      <div><span>02</span> VIẾT CẢNH CHƠI <small>19 cảnh · 2 ghi chú chuyển thể</small></div>
+      <div><span>02</span> VIẾT CẢNH CHƠI <small>28 cảnh · 2 ghi chú chuyển thể</small></div>
       <div><span>03</span> NHẬP VAI <small>4 vai · 3 chế độ</small></div>
     </nav>
     <section id="author-pane" class="author-pane" aria-labelledby="author-title">
@@ -74,18 +75,16 @@
       <section id="story-stage" class="game-card" hidden><div class="scene-hero"><img id="scene-image" src="./assets/thi-tran-mo.webp" alt="Cảnh thị trấn mỏ" width="1280" height="720">
           <div class="scene-data"><strong id="scene-place"></strong><span id="scene-progress"></span></div></div>
         <div class="game-content"><div class="role-identity"><img id="current-portrait" src="./assets/tu-du.webp" alt="Nhân vật nhập vai" width="480" height="480">
-          <div><span class="system-code" id="current-mode"></span><h3 id="current-role"></h3><p id="current-description"></p></div></div>
-          <p id="chapter-origin" class="chapter-origin"></p><div class="continuity"><span class="system-code">DIỄN BIẾN TRƯỚC CẢNH NÀY</span><p id="scene-context-display"></p><p class="story-goal" id="current-goal"></p></div>
+          <div><span class="system-code" id="current-mode"></span><h3 id="current-role"></h3></div></div>
+          <p id="chapter-origin" class="chapter-origin"></p>
           <p id="narration" class="narration"></p>
           <div id="npc-card" class="npc-card" hidden><img src="./assets/ban-hoc.webp" width="480" height="480" alt="Nhân vật kịch bản"><div><strong>NPC kịch bản</strong><p id="npc-dialogue"></p></div></div>
           <p id="ambient-dialogue" class="ambient-dialogue"></p><p id="role-reaction" class="role-reaction" hidden></p>
-          <div class="evidence-panel"><span class="system-code">DẤU VẾT ĐÃ GHI NHẬN TRONG PHIÊN THỬ</span><p id="evidence-list"></p></div>
-          <details class="story-source"><summary>Xem ghi chú chuyển thể liên quan (không phải nguyên văn)</summary><p id="source-echo" class="source-echo"></p></details>
-          <section id="decision-stage" class="decision-stage"><span class="system-code">ALLOWED ACTIONS / G4A RULESET</span><h3 id="decision-title">Tiếp tục diễn biến</h3>
+          <section id="decision-stage" class="decision-stage"><h3 id="decision-title">Bạn muốn làm gì?</h3>
             <div id="choices" class="choices"></div>
-            <form id="intent-form" class="intent-form" autocomplete="off"><label for="intent-input">Nhập ý định thử</label>
+            <details class="intent-expander"><summary>Thử diễn đạt hành động khác (chưa có NPC AI)</summary><form id="intent-form" class="intent-form" autocomplete="off"><label for="intent-input">Ý định của nhân vật</label>
               <div class="intent-row"><input id="intent-input" maxlength="120" placeholder="Ví dụ: nộp hồ sơ, nghe cô Tần, tiếp tục học…"><button id="intent-submit" type="submit">Gửi lệnh</button></div>
-              <small>Lệnh chỉ ánh xạ tới hành động đang được kịch bản cho phép. Không có NPC AI hay tự cấp thưởng.</small></form>
+              <small>Chỉ chọn một hành động đã được tác giả khai báo. Không có hội thoại AI hay tự cấp thưởng.</small></form></details>
           </section>
           <div id="ending-stage" class="ending-stage" hidden><span class="system-code">WHAT-IF OUTCOME / KHÔNG THAY CANON</span><h3 id="ending-title"></h3>
             <p>Kết cục chỉ mô phỏng phản ứng tại một lát cắt. Những sự kiện trong chương 6–12 của truyện gốc vẫn giữ nguyên; không chứng nhận nhiệm vụ hay cấp EXP/Xu/vật phẩm.</p>

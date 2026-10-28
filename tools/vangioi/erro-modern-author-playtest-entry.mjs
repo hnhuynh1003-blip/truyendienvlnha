@@ -6,12 +6,24 @@ import {hashAuthoringJson} from '../../cloudflare/src/vangioi-authoring.mjs';
 import {prepareAuthorRoleplayOffline} from '../../cloudflare/src/vangioi-author-roleplay-offline.mjs';
 
 const el=id=>document.getElementById(id);
+let toastTimer=null;
+function systemToast(message){
+ const root=el('system-toast');
+ clearTimeout(toastTimer);root.textContent='◈ HỆ THỐNG · '+message;
+ root.hidden=false;root.classList.remove('closing');
+ toastTimer=setTimeout(()=>{root.classList.add('closing');
+  toastTimer=setTimeout(()=>{root.hidden=true;root.classList.remove('closing');},400);},2600);
+}
 const art={
  'scene-entry':['thi-tran-mo.webp','Trạm tiếp nhận · ngoài Canon'],
  'scene-gate':['thi-tran-mo.webp','Cổng trường số 3'],
  'scene-admission':['thi-tran-mo.webp','Văn phòng hiệu phó · 12 tuổi'],
  'scene-classroom':['thi-tran-mo.webp','Lớp học 7B'],
+ 'scene-class-talk':['thi-tran-mo.webp','Lớp 7B · lời chào đầu tiên'],
+ 'scene-class-quiet':['thi-tran-mo.webp','Lớp 7B · một khoảng yên'],
  'scene-meal':['thi-tran-mo.webp','Nửa củ khoai bên bàn học'],
+ 'scene-meal-care':['thi-tran-mo.webp','Bàn học · chuyện gia đình'],
+ 'scene-meal-music':['thi-tran-mo.webp','Bàn học · khối rubik và tiếng hát'],
  'scene-teacher':['thi-tran-mo.webp','Cô Tần Tuệ · chiều mùa hạ'],
  'scene-walk':['thi-tran-mo.webp','Triền đê · năm 15 tuổi'],
  'scene-farewell':['thi-tran-mo.webp','Rặng bạch đàn · năm 15 tuổi'],
@@ -23,6 +35,11 @@ const art={
  'scene-ceremony':['thi-tran-mo.webp','Điểm trường thứ 100 · cuối thu'],
  'scene-river':['thi-tran-mo.webp','Xe dừng ven sông · tuổi 17'],
  'scene-rehearsal':['thi-tran-mo.webp','Đêm văn nghệ · tuổi 15'],
+ 'scene-whatif-tinhdao':['thi-tran-mo.webp','Nhánh giả định · lời hẹn tuổi 15'],
+ 'scene-cover-library':['thi-tran-mo.webp','Thư viện công cộng · tuổi 12'],
+ 'scene-cover-station':['thi-tran-mo.webp','Ga tàu quặng · tuổi 12'],
+ 'scene-lawyer-care':['thi-tran-mo.webp','VIP01 · bát canh nóng'],
+ 'scene-lawyer-report':['thi-tran-mo.webp','VIP01 · bản báo cáo quý'],
  'scene-quiet':['thi-tran-mo.webp','Rặng bạch đàn · khoảng lặng'],
  'scene-listen':['thi-tran-mo.webp','Rặng bạch đàn · lắng nghe'],
  'scene-distance':['thi-tran-mo.webp','Lối về · đoàn tàu quặng']};
@@ -37,7 +54,8 @@ const people={
   description:'Hồ sơ người phụ việc chưa được địa phương xác thực; chỉ có thể hỏi và quan sát.'}};
 const endingLabels={'ending-quiet':'Một khoảng lặng được giữ lại',
  'ending-listen':'Một lời được nghe trọn','ending-distance':'Lối về qua hàng bạch đàn',
- 'ending-school':'Câu chuyện người bạn cùng lớp','ending-observer':'Góc nhìn người quan sát'};
+ 'ending-school':'Câu chuyện người bạn cùng lớp','ending-observer':'Góc nhìn người quan sát',
+ 'ending-whatif-tinhdao':'Nếu cùng Tinh Dao bước lên chuyến tàu'};
 const normalize=s=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
  .replace(/đ/g,'d').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
 const notice=(id,message,error=false)=>{el(id).textContent=message||'';el(id).classList.toggle('error',error);};
@@ -47,12 +65,6 @@ const clone=v=>structuredClone(v);
 const chapterIndex=()=>el('chapter-select').selectedIndex;
 const sceneIndex=()=>el('scene-select').selectedIndex;
 const briefingIndex=()=>el('briefing-select').selectedIndex;
-const sceneChapter=id=>mapping.get(id)?.chapterId;
-const sourceSnippet=id=>{
- const chapter=chapters.find(c=>c.chapterId===sceneChapter(id));
- const paragraph=chapter?.text.split(/\n\s*\n/).map(x=>x.trim()).find(Boolean);
- return paragraph?paragraph.slice(0,240)+(paragraph.length>240?'…':''):'';
-};
 function chapterRender(){
  const chapter=chapters[chapterIndex()];if(!chapter)return;
  el('chapter-text').value=chapter.text;
@@ -263,25 +275,11 @@ async function render(nextSession){
  const position=art[view.sceneId],person=people[role.entryId];if(!position||!person)throw Error('Unmapped author scene');
  el('role-stage').hidden=true;el('story-stage').hidden=false;
  el('scene-image').src='./assets/'+position[0];el('scene-image').alt=position[1];
- el('scene-place').textContent=position[1];el('scene-progress').textContent=
-  'REV '+String(view.revision).padStart(3,'0')+(view.visitCount>1?' · TRỞ LẠI LẦN '+view.visitCount:'');
+ el('scene-place').textContent=position[1];el('scene-progress').textContent='';
  el('current-portrait').src='./assets/'+person.image;
  el('current-portrait').alt='Chân dung '+role.label;
- el('current-mode').textContent=person.kind;el('current-role').textContent=role.label;
- el('current-description').textContent=person.description;
- const ch=chapters.find(c=>c.chapterId===sceneChapter(view.sceneId));
- el('chapter-origin').textContent=(mapping.get(view.sceneId)?.timeLabel||'Mốc thời gian chưa rõ')+' · CHUYỂN THỂ TỪ '+(ch?.title||'CẢNH NGOÀI CHƯƠNG');
- el('source-echo').textContent=sourceSnippet(view.sceneId);
- el('scene-context-display').textContent=view.context||'Không có mạch truyện cho cảnh này.';
- const briefing=play.entryBriefings.find(b=>b.entryId===role.entryId);
- el('current-goal').textContent='Mục tiêu của bạn: '+(briefing?.objective||'Khám phá tình huống.');
- const known={'identity-tu-du':'Nhớ việc rời hai gia tộc.','lawyer-knowledge':'Biết phạm vi ủy quyền pháp lý.',
-  'classmate-knowledge':'Biết các hoạt động của lớp 7B.','unverified-cover':'Hồ sơ thân phận ảo chưa xác minh.',
-  'saw-school-years':'Đã trải qua những năm ở lớp 7B.','kept-public-boundary':'Đã tôn trọng ranh giới công cộng.',
-  'chose-quiet':'Đã chọn ranh giới rõ ràng.','chose-listen':'Đã chọn lắng nghe.',
-  'chose-distance':'Đã chọn rút lui sớm.'};
- const evidence=view.flags.filter(f=>known[f]).map(f=>known[f]);
- el('evidence-list').textContent=evidence.length?evidence.join(' · '):'Chưa ghi nhận manh mối trong phiên thử.';
+ el('current-mode').textContent='ĐANG NHẬP VAI';el('current-role').textContent=role.label;
+ el('chapter-origin').textContent=mapping.get(view.sceneId)?.timeLabel||'';
  el('narration').textContent=view.narration;
  el('npc-card').hidden=true;el('ambient-dialogue').hidden=false;
  el('npc-dialogue').textContent='';
@@ -289,10 +287,15 @@ async function render(nextSession){
  el('role-reaction').textContent=view.roleReaction||'';
  el('role-reaction').hidden=!view.roleReaction;
  const ending=!!view.narrativeEndingId;
+ // End-of-scene system codes belong to the transient HUD, not the prose.
+ el('ambient-dialogue').hidden=ending||/^\s*SYSTEM:/i.test(view.dialogue);
  el('decision-stage').hidden=ending;el('ending-stage').hidden=!ending;
  const buttons=el('choices');buttons.replaceChildren();
- if(ending)el('ending-title').textContent=endingLabels[view.narrativeEndingId]||'Kết thúc giả lập';
- else {el('decision-title').textContent=view.choices.length>1?'Lựa chọn trong phạm vi nhân vật':'Tiếp tục diễn biến';
+ if(ending){
+  el('ending-title').textContent=endingLabels[view.narrativeEndingId]||'Kết thúc giả lập';
+  systemToast('Đã khép nhánh giả lập. Tác phẩm gốc không thay đổi.');
+ }
+ else {el('decision-title').textContent=view.choices.length>1?'Bạn muốn làm gì?':'Tiếp tục câu chuyện';
   view.choices.forEach(c=>buttons.append(choiceButton(c)));el('intent-input').value='';}
  notice('play-feedback','');
 }
@@ -303,7 +306,13 @@ async function begin(entry){
   const started=await play.start(entry.entryId,'anonymous-canon-test-'+crypto.randomUUID(),
    'author-sim-'+crypto.randomUUID());
   if(!started.ok)throw Error(started.code);
-  role=entry;pendingEvent=null;await render(started.session);
+  const openingChoice={'entry-tu-du':'enter-school-entry','entry-cover':'enter-school-entry',
+   'entry-classmate':'enter-classmate-entry','entry-luc-thien':'enter-lawyer-entry'}[entry.entryId];
+  const init=await play.choose(started.session,{choiceId:openingChoice,eventId:crypto.randomUUID(),
+   expectedRevision:started.session.revision});
+  if(!init.ok)throw Error('Không khởi tạo đúng thời điểm: '+init.code);
+  role=entry;pendingEvent=null;await render(init.session);
+  systemToast('Đã đồng bộ ký ức của '+entry.label+'.');
   el('briefing-stage').hidden=true;
   el('story-stage').scrollIntoView({behavior:'auto',block:'start'});
  }catch(e){notice('play-feedback','Không bắt đầu được nhân vật: '+(e.code||e.message),true);}
@@ -330,14 +339,19 @@ el('restart').addEventListener('click',()=>{
 // No GPT/AI action execution. Synonyms only select an already eligible
 // author-authored choice in the current G4A state.
 const synonyms=[
- [/lop|truong|hoc/,['enter-class','return-school','share-lunch']],
- [/khoai|tinh dao|noi chuyen/,['share-lunch','join-rehearsal','follow-rehearsal']],
- [/quan net|phong vip|may tinh/,['go-net','walk-net','leave-office']],
- [/luat su|luc thien|ho so/,['ask-lawyer','leave-office']],
- [/van nghe|hat|san khau/,['follow-rehearsal','join-rehearsal','attend-show']],
+ [/ho so|nhap hoc|hieu pho/,['begin-enrolment']],
+ [/ban moi|chao|lam quen/,['class-engage']],
+ [/im lang|yên tinh|yen tinh|khong noi/,['class-observe','protect-quiet']],
+ [/me tinh dao|suc khoe|khoai/,['share-care']],
+ [/rubik|ca hat|tieng hat/,['share-music']],
+ [/thu vien/,['ask-public-way','visit-public-library']],
+ [/ga tau|lich tau|duong ray/,['ask-public-station']],
+ [/an canh|an truoc|cham soc/,['prioritize-meal']],
+ [/bao cao|ho so quy/,['review-file-first']],
+ [/thu di cung|dong y tinh dao/,['imagine-with-tinhdao']],
  [/lang nghe|noi het/,['stay-and-listen']],
- [/ranh gioi|yen tinh/,['protect-quiet']],
- [/roi di|quay lai|tro lai/,['leave-early','return-school','leave-office']]];
+ [/ranh gioi/,['protect-quiet']],
+ [/ve lai|quay ve/,['leave-early']]];
 el('intent-form').addEventListener('submit',event=>{
  event.preventDefault();if(working||!view)return;
  const typed=normalize(el('intent-input').value);
