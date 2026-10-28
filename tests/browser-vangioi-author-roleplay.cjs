@@ -41,6 +41,10 @@ const assert=require('node:assert/strict');
   }
   await page.getByRole('button',{name:'Thử thân phận khác'}).click();
   await page.getByRole('button',{name:/Thanh tra tín hiệu/}).click();
+  // The local G4B start request is async. Wait for the new scene projection;
+  // immediately reading the still-hidden old node yields empty innerText.
+  await page.locator('#reaction').filter({hasText:/Thanh tra mới đến/})
+   .waitFor({state:'visible'});
   assert.match(await page.locator('#reaction').innerText(),/Thanh tra mới đến/);
   await page.getByRole('button',{name:/Chạy lên giữ đèn báo hiệu/}).click();
   await page.getByRole('button',{name:/Nhìn ra cửa biển/}).click();
