@@ -37,6 +37,42 @@ Không dùng kết quả G4F `dryRunCommitted`, G4E `reviewCandidate` hoặc G4G
 
 Không thêm các trường trên trực tiếp vào `world-content-1` hoặc migration chỉ vì tài liệu kế hoạch nêu tên; phải thử sidecar và đối chiếu schema hiện hành trước khi quyết định.
 
+## 3A. Bổ sung G5A: hợp đồng tiếp diễn nhiều phần và nhánh người chơi (đề xuất chờ duyệt)
+
+**Lý do bổ sung trước khi khóa Release Candidate Contract:** G1N đã có `arcId` và source pin nhưng ghi rõ *chưa có phụ thuộc/continuity giữa arc*. G5A hiện chỉ pin arc/version. Nếu phát hành phần 2 trước khi định nghĩa quan hệ với kết quả phần 1, có nguy cơ phá save, ký ức NPC và hiệu ứng cánh bướm. Phần này chỉ bổ sung **điều kiện kiểm định ứng viên phát hành ở mức offline**, không bật gameplay, Phán Tử hay Tái Xuyên.
+
+### A. Ba loại liên kết tác giả được khai theo từng phần/arc
+
+- **`direct_continuation` — Tiếp diễn trực tiếp:** phần sau chỉ mở từ **một nhánh phần trước đã hoàn thành hợp lệ** với `endingId` được tác giả cho phép; thất bại nhiệm vụ chính ở phần trước **không mở được phần sau của nhánh đó**. Khi phần mới được công bố, nhánh đã hoàn thành trước đó không phải chơi lại hay mua vật phẩm chỉ để nối tiếp.
+- **`canon_bounded_continuation` — Tiếp diễn có mốc nguyên tác:** vẫn yêu cầu phần trước đã hoàn thành hợp lệ; tác giả xác định những mốc không thể tự ý đổi và tập biến số được phép kế thừa (quan hệ, NPC, vật chứng, sự kiện). AI không được hồi sinh NPC hoặc xóa hậu quả chỉ để ép truyện về nguyên tác.
+- **`standalone_same_universe` — Ngoại truyện độc lập:** nếu tác giả xác nhận độc lập, có thể khởi đầu theo lịch sử mặc định đã khai, không giả vờ NPC từng gặp người chơi. Không tự đánh dấu một phần tiếp nối bắt buộc là độc lập để né prerequisite.
+
+Đối với hai loại tiếp diễn, **người chơi được chọn một nhánh hoàn thành hợp lệ** để tiếp tục; không tự động lấy nhánh đạt hạng cao nhất hoặc mới nhất. Nhánh được chọn phải được pin khi bắt đầu phần sau, không trộn sự kiện/quan hệ/ký ức từ các lượt xuyên khác.
+
+### B. Các liên kết/kiểm tra dành cho sidecar G5A, không sửa `world-content-1` ngay
+
+- **Định danh nội dung:** tái sử dụng `worldId`, `storyId`, `arcId`, `contentVersion/contentHash`, `arcVersion` và `endingId` bất biến theo snapshot; cho phép đề nghị `continuationMode`, `prerequisiteArcIds`, `acceptedEndingIds`, `carryForwardFactKeys`, `canonAnchors` và chính sách chọn nhánh dưới dạng **sidecar candidate**, chưa ấn định schema runtime.
+- **Định danh lượt chơi:** sau này cần tham chiếu riêng `playerUid/KC-ID`, `worldInstanceId`, `playthroughId` và `lineageId` để không lẫn cùng một NPC qua nhiều thế giới, lượt xuyên hoặc dòng thời gian. Tên NPC/nhân vật không phải khóa; danh tính nhân vật ổn định xuyên arc chỉ khi tác giả liên kết rõ.
+- **Trạng thái tiếp diễn:** kiểm `endingId` hợp lệ, tiền đề nhiệm vụ chính và những fact quan trọng thực sự đã được engine xác nhận; không suy ra hoàn thành từ văn bản/AI, rating cao hoặc client-provided `completed=true`.
+- **Ký ức NPC:** chỉ chuyển sự kiện NPC có thể biết từ **nhánh đã chọn**. NPC chết/biến mất/không thể tham gia không được tự xuất hiện ở phần sau; nếu tiếp diễn yêu cầu NPC đó, tác giả phải cung cấp nhánh xử lý hoặc từ chối eligibility minh bạch.
+- **Tính khả thi:** author khai rõ nhánh nào tiếp tục được và nhánh nào kết thúc vĩnh viễn; không bắt một tác giả viết vô hạn nhánh. Với một `acceptedEndingId` đã công bố là chơi tiếp được, thiếu đường tiến hợp lệ là **lỗi chặn release**; ending không hỗ trợ phải thể hiện quyền truy cập bị khóa, không âm thầm thay lịch sử.
+- **Truyện phát hành sau:** snapshot phần trước không bị thay khi tác giả ra phần 2, tiền truyện hoặc sửa nguồn; kiểm migration/diff, version pins và quyền nguồn trước khi nối nhánh.
+
+### C. Phân chia công việc và test cần bổ sung đúng giai đoạn
+
+| Đợt | Bổ sung kiểm thử/đầu ra | Giới hạn |
+| --- | --- | --- |
+| **G5A** | Đặc tả + validator offline cho quan hệ arc/ending, `continuationMode`, parent pin và nhánh được chọn; case fail phần 1 không mở phần 2, B/S đều được chọn nếu eligible; từ chối dangling prerequisites, ID trùng/không ghim | Không chạy story engine hoặc công nhận save |
+| **G5C** | Mô phỏng 3 loại liên kết; kiểm đường đi của từng `acceptedEndingId`, NPC vắng mặt/đã chết, không rò ký ức giữa nhánh, nguồn/asset thiếu và thay thế có phép | Synthetic staging, không nối NPC AI thật |
+| **G5D** | Ma trận save/version và lineage khi phần mới phát hành muộn; pin lựa chọn của player, không trộn replay, không ghi đè lịch sử khi tác giả thêm tiền truyện hoặc đổi canon | Không migration production |
+| **G5E–F** | Publish gate chặn ứng viên tuyên bố nối tiếp nhưng thiếu đường hợp lệ; kiểm QA và quyền phát hành/sửa/retire theo từng phiên bản | Không dùng PASS fixture làm quyền publish |
+
+### D. Quyết định gameplay phải xử lý ở đề án runtime riêng, không lẫn G5 release
+
+Yêu cầu hiện hành từ chủ dự án cần được ghi vào **Decision Log/đề án gameplay riêng** trước khi xây gameplay thật: thất bại chính thức tích lũy dẫn tới **Phán Tử/thu hồi Thiên Mệnh** khi vượt ngưỡng; sau thất bại thế giới kế tiếp do Thiên Mệnh điều phối, không mua vật phẩm để trở lại ngay; Tái Xuyên là đặc quyền hữu hạn để khám phá/cải thiện kết quả, không xóa mã thất bại; tác giả không tự cấp vật phẩm, Xu/EXP hoặc quyền đảo ngược thế giới; kết cục và các phát thưởng phải idempotent. **Chưa khóa** đơn giá Xu, giới hạn tái xuyên 3/9 tính thế nào, quyền tái nhập từng loại kết cục, ngoại lệ cổng tân thủ và issuer/server của các hành động đó. Không implement những trường/flag đó trong G5A hoặc coi lời kể là reward proof.
+
+**Điểm cần đối chiếu Canon:** quy chuẩn V0.1 mục “Cổng tân thủ” hiện *đề xuất* ba F đầu thử lại hợp lý, chưa mất tài khoản vĩnh viễn. Luật Phán Tử mới của An Du cần được xác nhận cách áp dụng riêng cho ba F trước khi runtime ra mắt; không âm thầm xóa đoạn cũ hay suy ra đã có miễn trừ.
+
 ## 4. Quyết định An Du cần chốt theo đúng thời điểm
 
 | Thời điểm | Quyết định | Mặc định khi chưa chốt |
