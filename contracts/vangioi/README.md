@@ -187,3 +187,7 @@ G4G: [G4G_OFFLINE_RECOVERY_RECONCILIATION.md](G4G_OFFLINE_RECOVERY_RECONCILIATIO
 G4H: [G4H_ISOLATED_FIXTURE_BACKUP_RESTORE.md](G4H_ISOLATED_FIXTURE_BACKUP_RESTORE.md) — diễn tập backup/restore **Node SQLite fixture**, xuất chỉ sau audit G4G sạch, xác minh checksum + preflight replay trong DB RAM và transaction rollback khi nhập vào target đã chuẩn bị **trống hoàn toàn**. **Không có chữ ký/chống rollback, không tái cấp admission G1Z sau restart, không khôi phục save thật, không mở gameplay/production/thưởng.**
 
 G4I: [G4I_OFFLINE_RE_ADMISSION_REBIND.md](G4I_OFFLINE_RE_ADMISSION_REBIND.md) — diễn tập **test-host re-admission**: G4G lịch sử nhất quán, G1Z session cũ hết hiệu lực, G1Z mới + player/entitlement/content-source reader độc lập; CAS fence G4D, immutable rebind receipt/ledger, idempotency/rollback. **Không cấp quyền thật hoặc tự resume production.** G4H v1 từ chối backup thiếu nhật ký G4I; chưa có backup v2/issuer/cross-store atomicity.
+
+**Chốt G4 offline (28/10/2026):** [G4_OFFLINE_CLOSEOUT_2026-10-28.md](G4_OFFLINE_CLOSEOUT_2026-10-28.md) — kiểm kê G4A–I, 111 ca test G4, hồi quy toàn dự án, sáu nhóm blocker và nhãn **offline test harness complete / production not ready**. Không phải phê duyệt phát hành.
+
+**Kế hoạch G5 (chưa thực thi):** [G5_RELEASE_AND_STAGING_PLAN_DRAFT.md](G5_RELEASE_AND_STAGING_PLAN_DRAFT.md) — đề xuất G5A–F: release candidate contract → moderation/review → staging cách ly → version/recovery → publish/retire dry-run → go/no-go. Mỗi mốc có quyền kiểm soát riêng, chưa bật route/staging thật hoặc production.

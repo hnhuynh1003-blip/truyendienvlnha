@@ -1,5 +1,9 @@
 # DUDU Studio — START HERE / Bàn giao sạch · 20/10/2026
 
+## VẠN GIỚI — CHỐT G4 OFFLINE / LẬP KẾ HOẠCH G5 (28/10/2026)
+
+Nền kiểm toán `56dcb9ea` (G4I; Smoke/Browser và Pages SUCCESS). Đọc `contracts/vangioi/G4_OFFLINE_CLOSEOUT_2026-10-28.md` và `contracts/vangioi/G5_RELEASE_AND_STAGING_PLAN_DRAFT.md`. G4A–G4I có **111 ca test riêng**, toàn bộ Cloudflare 949/949, app 104/104, Functions 2/2, Python 38/38 và Wrangler dry-run PASS trên checkout sạch. **Chỉ chốt hoàn thành G4 dưới dạng test harness offline**; G4F không phát thưởng thật, G4E chỉ xác minh `reach` một lần trong fixture, G4I không có issuer, G4H v1 chưa backup nhật ký rebind, chưa có authority xuyên Firestore/SQLite hoặc world playable. G5A–F mới là **đề xuất kế hoạch**, ưu tiên G5A contract release candidate offline trước; staging thật, role/publisher, migration, Rules, reward, NPC AI, gameplay và G5 code chưa được bật trong đợt này. CI/Pages của commit đóng hồ sơ phải kiểm lại theo SHA mới.
+
 ## VẠN GIỚI G4I — 28/10/2026
 
 Nền `4c0bfe0` (G4H, Smoke/Browser/Pages SUCCESS). Xem `contracts/vangioi/G4I_OFFLINE_RE_ADMISSION_REBIND.md`. G4I chỉ trong Node SQLite fixture: khi G4H phục hồi dữ liệu nhưng mất G1Z session RAM, host bắt buộc xác minh lại player, G1Z session mới, entitlement và pin approved/source/content bằng callback tách biệt. G4G phải xác nhận log sạch; gate/license/source không bị hold, CAS cập nhật fence G4D trong cùng transaction với immutable receipt/ledger, retry idempotent và rollback lỗi. G4H v1 bị chặn xuất backup sau khi có G4I receipts vì chưa lưu được nhật ký rebind; v2 chưa triển khai. Không tạo quyền thật, gameplay, reward, save, UI hay Firestore/Worker production, không G5/AI/Canon.
