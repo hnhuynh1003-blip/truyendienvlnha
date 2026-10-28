@@ -1,5 +1,9 @@
 # DUDU Studio — START HERE / Bàn giao sạch · 20/10/2026
 
+## VẠN GIỚI G4I — 28/10/2026
+
+Nền `4c0bfe0` (G4H, Smoke/Browser/Pages SUCCESS). Xem `contracts/vangioi/G4I_OFFLINE_RE_ADMISSION_REBIND.md`. G4I chỉ trong Node SQLite fixture: khi G4H phục hồi dữ liệu nhưng mất G1Z session RAM, host bắt buộc xác minh lại player, G1Z session mới, entitlement và pin approved/source/content bằng callback tách biệt. G4G phải xác nhận log sạch; gate/license/source không bị hold, CAS cập nhật fence G4D trong cùng transaction với immutable receipt/ledger, retry idempotent và rollback lỗi. G4H v1 bị chặn xuất backup sau khi có G4I receipts vì chưa lưu được nhật ký rebind; v2 chưa triển khai. Không tạo quyền thật, gameplay, reward, save, UI hay Firestore/Worker production, không G5/AI/Canon.
+
 ## VẠN GIỚI G4H — 28/10/2026
 
 Nền `33e31b9` (G4G, smoke/browser/Pages SUCCESS). Đọc `contracts/vangioi/G4H_ISOLATED_FIXTURE_BACKUP_RESTORE.md`: G4H là diễn tập test-host Node SQLite **chỉ** backup/restore G4C–G4F sau audit G4G, checksum và kiểm replay riêng trong SQLite RAM; ghi khôi phục theo transaction vào **fixture đã khởi tạo nhưng hoàn toàn trống**, rollback khi lỗi, từ chối restore nhầm bản đang có dữ liệu. G1Z admission là RAM và **không được tự tái cấp quyền** khi reload DB. Fingerprint/hash không phải chữ ký hay entitlement, không có antirollback/issuer/restore production. Không thêm UI, reward, world chơi thật, Firestore/Worker live, Canon/G5/AI. CI/Pages G4H phải xác minh bằng SHA mới.

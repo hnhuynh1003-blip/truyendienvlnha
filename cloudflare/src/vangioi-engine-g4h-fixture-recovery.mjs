@@ -69,7 +69,26 @@ function rows(db,worldInstanceId){
 }
 function snapshotRead(db,instance){
  db.exec('BEGIN');
- try{const result=rows(db,instance);db.exec('COMMIT');return result;}
+ try{
+  const result=rows(db,instance);
+  // The v1 image knows only eight G4C–G4F tables. A subsequent G4I
+  // rebind journal cannot silently disappear from a purported full backup.
+  const rebindTables=['vg_g4i_rebind_receipts_fixture_v1','vg_g4i_rebind_ledger_fixture_v1'];
+  let rebindCount=0,hasRebindJournal=false;
+  for(const name of rebindTables){
+   const exists=db.prepare(`SELECT 1 AS present FROM sqlite_master
+    WHERE type='table' AND name=?`).get(name);
+   if(exists){
+    hasRebindJournal=true;
+    rebindCount+=db.prepare(`SELECT COUNT(*) AS n FROM ${name}
+     WHERE world_instance_id=?`).get(instance).n;
+   }
+  }
+  // Both journal rows could have been lost in a corrupted fixture; the
+  // advanced epoch is another sign a v1 image would omit rebind history.
+  if(hasRebindJournal&&result.fence?.fence_epoch>1)rebindCount++;
+  db.exec('COMMIT');return {snapshot:result,rebindCount};
+ }
  catch(e){db.exec('ROLLBACK');throw e;}
 }
 function wellFormedSnapshot(snapshot,instance,player){
@@ -150,7 +169,10 @@ export async function createG4HFixtureBackup({database,plan,world}={}){
   const report=await g4g.auditor.inspect({worldInstanceId:instance});
   if(!report.ok||report.integrity!=='consistent')return fail('source-not-consistent');
   let snapshot;
-  try{snapshot=snapshotRead(database,instance);
+  try{
+   const exportSnapshot=snapshotRead(database,instance);
+   if(exportSnapshot.rebindCount>0)return fail('rebind-history-not-backup-compatible');
+   snapshot=exportSnapshot.snapshot;
    if(!wellFormedSnapshot(snapshot,instance,snapshot.session?.player_id)||
     digest(snapshot)!==report.checkpointFingerprint)return fail('source-changed-during-export');
   }catch{return fail('source-export-unavailable');}
