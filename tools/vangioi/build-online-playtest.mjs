@@ -4,18 +4,18 @@
 import {writeFile,mkdir} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {createRequire} from 'node:module';
-import {lighthouseWorld,lighthouseEngineManifest,lighthousePlaytestScript}
- from '../../cloudflare/tests/fixtures/vangioi-author-playtest-world.mjs';
+import {richOnlineWorld,richOnlineManifest,richOnlineScript}
+ from '../../cloudflare/tests/fixtures/vangioi-rich-online-world.mjs';
 
 const require=createRequire(import.meta.url);
 const {build}=require('../../cloudflare/node_modules/esbuild');
 const dir=fileURLToPath(new URL('../../playtests/ben-suong/',import.meta.url));
-const world=lighthouseWorld();
+const world=richOnlineWorld();
 // Do not ship source fixture secretTruth, even if the prototype repository is
 // public. Re-pin G4A/script to this *public* world, not the author-only copy.
 world.story.secretTruth='Nội dung riêng tư không được phân phối trong bản thử online.';
-const manifest=await lighthouseEngineManifest(world);
-const script=await lighthousePlaytestScript(world);
+const manifest=await richOnlineManifest(world);
+const script=await richOnlineScript(world);
 await mkdir(dir,{recursive:true});
 await writeFile(fileURLToPath(new URL('../../playtests/ben-suong/demo-content.json',import.meta.url)),
  JSON.stringify({world,manifest,script})+'\n','utf8');
@@ -38,4 +38,4 @@ await build({
   }));
  }}]
 });
-process.stdout.write('G5C-P3 public redacted static demo built; no Worker deployment.\n');
+process.stdout.write('G5C-P4 illustrated, redacted static demo built; no Worker deployment.\n');

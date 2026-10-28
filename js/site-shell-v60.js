@@ -198,7 +198,18 @@
    pilotLink.href='dudu-pilot.html?v=play-v8';
    pilotLink.setAttribute('aria-label','Mở bản chơi thử Đêm mưa ở Quan Đạo');
    pilot.append(pilotCopy,pilotLink);
-   root.append(pilot,starter,hidden);
+   // A separate author-authored browser playtest: three entry mechanisms,
+   // four roles, offline G4A/G4B effects. No production world or rewards.
+   const roleplay=element('aside','dudu-pilot-entry dudu-pilot-entry-inline');
+   const roleplayCopy=element('div','dudu-pilot-entry-copy');
+   roleplayCopy.append(element('span','dudu-pilot-entry-kicker','VẠN GIỚI · THỬ NHẬP VAI G5C'),
+     element('strong','','Ngọn đèn cuối ở Bến Sương'),
+     element('span','dudu-pilot-entry-desc','4 thân phận · cảnh minh họa · đối thoại kịch bản · không lưu, không thưởng'));
+   const roleplayLink=element('a','dudu-pilot-launch','Thử nhập vai ↗');
+   roleplayLink.href='playtests/ben-suong/';
+   roleplayLink.setAttribute('aria-label','Mở bản nhập vai thử Bến Sương trên DUDU Studio');
+   roleplay.append(roleplayCopy,roleplayLink);
+   root.append(pilot,roleplay,starter,hidden);
  }
  function fillShelf(){
    const root=id('d60-shelf-list');if(!root)return;root.replaceChildren();

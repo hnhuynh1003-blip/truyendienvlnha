@@ -4,43 +4,62 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="color-scheme" content="dark">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
   <meta name="robots" content="noindex,nofollow">
-  <title>Ngọn đèn cuối ở Bến Sương — DUDU Studio · Demo online</title>
+  <title>Ngọn đèn cuối ở Bến Sương — DUDU Studio · Nhập vai online</title>
   <link rel="stylesheet" href="./style.css">
   <script src="./app.js" type="module"></script>
 </head>
 <body>
   <main class="shell">
     <header class="mast">
-      <span class="brand">DUDU STUDIO · VẠN GIỚI</span>
-      <span class="mode">DEMO ONLINE · KHÔNG LƯU</span>
+      <a class="brand" href="../../index.html">✦ DUDU STUDIO <span> / VẠN GIỚI</span></a>
+      <span class="mode">PLAYTEST G5C-P4 · KHÔNG LƯU</span>
     </header>
-    <p class="eyebrow">Bản thử nhập vai · G5C-P3</p>
-    <h1>Ngọn đèn cuối<br>ở Bến Sương</h1>
-    <p class="lede">Bão đã phủ kín cầu cảng. Khi ngọn đèn yếu dần, lựa chọn của bạn sẽ quyết định điều gì còn lại sau đêm nay.</p>
-    <section id="start" class="card" aria-labelledby="start-title">
-      <div class="intro">
-        <span class="lantern" aria-hidden="true">✦</span>
-        <div><h2 id="start-title">Bạn là ai tại Bến Sương?</h2><p class="muted">Chọn một thân phận để bắt đầu kịch bản ngắn.</p></div>
+    <section class="hero">
+      <img class="cover" src="./assets/cau-cang.webp" alt="Cầu cảng và ngọn hải đăng Bến Sương trong cơn giông" width="1200" height="675">
+      <div class="hero-copy"><span class="eyebrow">Truyện nhập vai · bản thử trực tuyến</span>
+        <h1>Ngọn đèn cuối<br>ở Bến Sương</h1>
+        <p>Đêm nay, bạn là ai? Người gác đèn, thủy thủ, người bốc vác hay một thanh tra không ai nhận ra? Mỗi thân phận có đường đi, quyền hạn và trách nhiệm riêng.</p>
       </div>
-      <div id="roles" class="roles" aria-live="polite"><p class="muted">Đang chuẩn bị thế giới thử…</p></div>
     </section>
-    <section id="story" class="card" aria-live="polite" aria-label="Cảnh nhập vai" hidden>
-      <div class="scene-meta"><span class="tag" id="role-name"></span><span id="scene-number"></span></div>
-      <p id="narration" class="narration"></p>
-      <p id="dialogue" class="speech"></p>
-      <p id="reaction" class="reaction" hidden></p>
-      <div id="choice-block"><div class="divider"></div><span class="choice-title">Bạn sẽ làm gì?</span><div id="choices" class="choices"></div></div>
-      <div id="ending" class="ending" hidden>
-        <p class="eyebrow">Kết thúc kịch bản</p>
-        <p class="ending-title">Một đêm, hai điều không thể giữ</p>
-        <p class="muted">Đây chỉ là kết thúc câu chuyện: chưa xác nhận nhiệm vụ, không cấp EXP, Xu hay vật phẩm.</p>
-        <button class="reset" type="button" id="restart">Thử thân phận khác</button>
+    <section id="start" class="card" aria-labelledby="start-title">
+      <div class="section-head"><div><p class="eyebrow">Chọn nhân vật</p><h2 id="start-title">Ba cơ chế nhập vai · bốn thân phận</h2></div>
+        <p class="muted">Hãy thử lại bằng vai khác để thấy đường đi và cách bà Lan đối xử thay đổi.</p></div>
+      <div id="roles" class="roles" aria-live="polite"><p class="muted">Đang nạp thế giới thử…</p></div>
+    </section>
+    <section id="story" class="game" aria-live="polite" aria-label="Cảnh nhập vai" hidden>
+      <div class="scene-visual">
+        <img id="scene-image" src="./assets/cau-cang.webp" alt="Cảnh Bến Sương" width="1200" height="675">
+        <div class="scene-overlay"><span class="scene-place" id="scene-place">Cầu cảng</span>
+          <span class="scene-progress" id="scene-number">Lượt 1</span></div>
+      </div>
+      <div class="game-body">
+        <div class="role-band"><img id="role-portrait" src="./assets/vai-0.webp" alt="Chân dung người chơi" width="475" height="475">
+          <div><span class="eyebrow">Thân phận hiện tại</span><h2 id="role-name"></h2>
+          <p class="muted" id="role-description"></p></div>
+        </div>
+        <p id="narration" class="narration"></p>
+        <div id="npc-block" class="npc-block" hidden><img src="./assets/ba-lan.webp" alt="Chân dung bà Lan" width="533" height="640">
+          <div><strong>Bà Lan · NPC kịch bản</strong><p id="dialogue" class="speech"></p></div></div>
+        <p id="ambient-dialogue" class="ambient"></p>
+        <p id="reaction" class="reaction" hidden></p>
+        <div id="choice-block" class="action-section"><div class="divider"></div>
+          <div class="action-heading"><span class="choice-title">Bạn sẽ làm gì?</span><span class="muted">Các hành động có hệ quả</span></div>
+          <div id="choices" class="choices"></div>
+          <form id="action-form" class="action-form" autocomplete="off"><label for="action-input">Hoặc nhập ý định của bạn</label>
+            <div class="action-row"><input id="action-input" type="text" maxlength="150" placeholder="Ví dụ: hỏi bà Lan, kiểm tra dây, xem sổ…" aria-describedby="action-help"><button type="submit" id="action-submit">Thử hành động</button></div>
+            <small id="action-help">Bản thử hiểu một số ý định đã được tác giả viết; lệnh khác không làm thay đổi thế giới. Không có NPC AI.</small>
+          </form>
+        </div>
+        <div id="ending" class="ending" hidden><p class="eyebrow">Một kết cục của đêm bão</p>
+          <h2 id="ending-title"></h2><p class="muted">Đây là kết thúc truyện thử: chưa hoàn thành nhiệm vụ thật, không cấp EXP, Xu hay vật phẩm.</p>
+          <button class="reset" type="button" id="restart">Thử thân phận khác</button>
+        </div>
       </div>
     </section>
     <p id="notice" class="notice" role="status" aria-live="polite"></p>
-    <p class="note">Thế giới này là dữ liệu thử do DUDU Studio tạo. Trạng thái chỉ nằm trong bộ nhớ trình duyệt và mất khi tải lại trang. Không đăng nhập, không NPC AI, không Kho, không cấp thưởng hoặc phát hành world thật.</p>
+    <footer class="note">Ảnh minh họa gốc, tình tiết và nhân vật dành riêng cho bản thử DUDU Studio. Mọi lựa chọn xử lý bằng engine G4A/G4B và dữ liệu kịch bản công khai ngay trong trình duyệt; không có đăng nhập, lưu máy chủ, quyền duyệt Canon, NPC AI, giao dịch hoặc thưởng thật. Tải lại trang sẽ mất tiến trình.</footer>
   </main>
 </body>
 </html>
