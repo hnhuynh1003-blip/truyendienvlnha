@@ -190,4 +190,6 @@ G4I: [G4I_OFFLINE_RE_ADMISSION_REBIND.md](G4I_OFFLINE_RE_ADMISSION_REBIND.md) �
 
 **Chốt G4 offline (28/10/2026):** [G4_OFFLINE_CLOSEOUT_2026-10-28.md](G4_OFFLINE_CLOSEOUT_2026-10-28.md) — kiểm kê G4A–I, 111 ca test G4, hồi quy toàn dự án, sáu nhóm blocker và nhãn **offline test harness complete / production not ready**. Không phải phê duyệt phát hành.
 
-**Kế hoạch G5 (chưa thực thi):** [G5_RELEASE_AND_STAGING_PLAN_DRAFT.md](G5_RELEASE_AND_STAGING_PLAN_DRAFT.md) — đề xuất G5A–F: release candidate contract → moderation/review → staging cách ly → version/recovery → publish/retire dry-run → go/no-go. Mỗi mốc có quyền kiểm soát riêng, chưa bật route/staging thật hoặc production.
+**Kế hoạch G5:** [G5_RELEASE_AND_STAGING_PLAN_DRAFT.md](G5_RELEASE_AND_STAGING_PLAN_DRAFT.md) — đề xuất G5A–F: release candidate contract → moderation/review → staging cách ly → version/recovery → publish/retire dry-run → go/no-go. Các đợt sau G5A chưa được triển khai hoặc cấp quyền staging/production.
+
+**G5A — offline release candidate:** [G5A_OFFLINE_RELEASE_CANDIDATE.md](G5A_OFFLINE_RELEASE_CANDIDATE.md) — sidecar pin snapshot G1L, source/assets/entry, G1N arc và ba mode continuity đề xuất từ PR #22; tái dùng G3C/G4A và G1Y callback test-host để **chặn** stale/hold/revoke/QA thiếu. Mọi quyền publication/save/mission/reward/lineage thật luôn false. Chưa import vào Worker/Creator/Thiên Mệnh, không migration hoặc sửa Canon. Phần kế tiếp là G5B review fixture, không phải gameplay live.
