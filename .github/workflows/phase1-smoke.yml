@@ -51,6 +51,8 @@ jobs:
           git diff --exit-code -- playtests/ben-suong/app.js playtests/ben-suong/demo-content.json
           node tools/vangioi/build-tang-may-author-playtest.mjs
           git diff --exit-code -- playtests/tang-may-9/app.js playtests/tang-may-9/author-content.json
+          node tools/vangioi/build-erro-modern-author-playtest.mjs
+          git diff --exit-code -- playtests/he-thong-erro/app.js playtests/he-thong-erro/author-content.json
           npm test --prefix cloudflare
           npm run build --prefix cloudflare
   browser:
@@ -78,6 +80,7 @@ jobs:
           node tests/browser-vangioi-author-roleplay.cjs
           node tests/browser-vangioi-online-playtest.cjs
           node tests/browser-vangioi-tang-may-author.cjs
+          node tests/browser-vangioi-erro-author.cjs
       - name: Legacy Sandbox regression (advisory; cannot block main V71)
         continue-on-error: true
         run: |

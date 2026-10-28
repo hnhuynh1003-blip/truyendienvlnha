@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self'; base-uri 'none'; object-src 'none'; form-action 'self'">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Hệ Thống ERR...O · Thị trấn mỏ — VẠN GIỚI / Tác giả thử nghiệm</title>
+  <link rel="stylesheet" href="./style.css?v=g5c-p7-1">
+  <script type="module" src="./app.js?v=g5c-p7-1"></script>
+</head>
+<body>
+  <main class="shell">
+    <header class="mast"><a href="../../index.html" class="brand">DUDU <span>STUDIO / VẠN GIỚI</span></a>
+      <span class="status"><span class="live-dot" aria-hidden="true"></span> AUTHOR PLAYTEST · KHÔNG PHÁT HÀNH</span>
+    </header>
+    <section class="hero"><img src="./assets/thi-tran-mo.webp" width="1280" height="720" alt="Thị trấn mỏ, trường học và tàu chở quặng trong ánh chiều">
+      <div class="hero-content"><span class="system-code">VẠN GIỚI // HỆ THỐNG ERR...O // HIỆN ĐẠI</span>
+        <h1>THỊ TRẤN <em>MỎ</em><span>GIÓ QUA RẶNG BẠCH ĐÀN</span></h1>
+        <p>Chuyển thể thử từ chương 6–7 của <strong>Hệ Thống ERR...O</strong> (Kẻ Lang Bạt). Ký ức nền chương 3–5; mọi phân nhánh chỉ mô phỏng, không thay đổi Canon của truyện gốc.</p>
+      </div>
+    </section>
+    <nav class="path" aria-label="Quy trình kiểm thử tác giả">
+      <div><span>01</span> THAM CHIẾU TRUYỆN <small>Chương 3–12 · Thư viện</small></div>
+      <div><span>02</span> VIẾT CẢNH CHƠI <small>9 cảnh · 2 ghi chú chuyển thể</small></div>
+      <div><span>03</span> NHẬP VAI <small>4 vai · 3 chế độ</small></div>
+    </nav>
+    <section id="author-pane" class="author-pane" aria-labelledby="author-title">
+      <div class="section-title"><div><span class="system-code">AUTHOR CONSOLE / SANDBOX ONLY</span>
+        <h2 id="author-title">Bàn viết của tác giả</h2></div>
+        <p>Truyện gốc vẫn nằm trong <a href="../../index.html#/library" target="_blank" rel="noopener noreferrer">Thư viện DUDU</a>. Ở đây Du chỉnh <strong>ghi chú chuyển thể, lời cảnh và lời thoại</strong> trong RAM để kiểm tra cơ chế viết thế giới.</p>
+      </div>
+      <div class="editor-grid">
+        <section class="editor-panel"><div class="panel-head"><span class="step">01</span><div><h3>Ghi chú chuyển thể</h3><p>Không sao chép nguyên văn truyện trong Thư viện; chỉ tóm tắt dữ kiện dùng để dựng cảnh.</p></div></div>
+          <label for="chapter-select">Ghi chú theo chương</label><select id="chapter-select" aria-label="Chọn ghi chú chuyển thể"></select>
+          <label for="chapter-text">Ghi chú cốt truyện (chỉ trong RAM)</label><textarea id="chapter-text" rows="14" spellcheck="true" maxlength="16000" aria-describedby="source-hint"></textarea>
+          <p id="source-hint" class="hint">Sửa ghi chú để thử quy trình tác giả. Không thay đổi bản gốc của Kẻ Lang Bạt; nguồn Library chưa được xác nhận permit/version ở server.</p>
+        </section>
+        <section class="editor-panel"><div class="panel-head"><span class="step">02</span><div><h3>Chuyển thể thành cảnh chơi</h3><p>Mỗi cảnh có nguyên nhân, diễn biến và lựa chọn do tác giả định.</p></div></div>
+          <label for="scene-select">Cảnh nhập vai</label><select id="scene-select" aria-label="Chọn cảnh chuyển thể"></select>
+          <p class="source-link" id="scene-source"></p>
+          <label for="context-edit">Vì sao cảnh xảy ra vào lúc này?</label><textarea id="context-edit" rows="4" maxlength="950" spellcheck="true"></textarea>
+          <label for="scene-role-select">Góc nhìn đang viết</label><select id="scene-role-select" aria-label="Chọn góc nhìn nhân vật khi viết cảnh"></select>
+          <p class="hint">Lời dẫn chung có thể được thay bằng lời dẫn riêng cho từng thân phận. Chọn đúng vai để chỉnh nội dung mà người chơi vai đó thực sự thấy.</p>
+          <label for="narration-edit">Lời dẫn cảnh</label><textarea id="narration-edit" rows="7" maxlength="3800" spellcheck="true"></textarea>
+          <label for="dialogue-edit">Lời thoại kịch bản</label><textarea id="dialogue-edit" rows="3" maxlength="3800" spellcheck="true"></textarea>
+          <label for="return-narration-edit">Lời dẫn khi quay lại cảnh (nếu có)</label><textarea id="return-narration-edit" rows="3" maxlength="3800" spellcheck="true" placeholder="Để trống để dùng lời dẫn thông thường; không phát lại sự kiện mở đầu nếu câu chuyện đã tiến triển."></textarea>
+          <div class="choice-editor"><strong>Lời lựa chọn của người chơi</strong><p class="hint">Chỉ sửa cách diễn đạt; điều kiện, đích đến và quyền hành động vẫn do luật khai báo kiểm soát.</p><div id="choice-editor"></div></div>
+          <div class="rules-preview"><strong>Điều kiện / hành động G4A</strong><p id="scene-rules">Đang nạp quy tắc…</p></div>
+        </section>
+      </div>
+      <section class="briefing-editor"><div class="panel-head"><span class="step">03</span><div><h3>Hồ sơ tiếp nhận thân phận</h3><p>Tác giả viết những gì mỗi vai đã biết, biến cố mở đầu và mục đích của riêng họ.</p></div></div>
+        <div class="briefing-editor-grid"><div><label for="briefing-select">Thân phận đang viết</label><select id="briefing-select" aria-label="Chọn thân phận để viết phần mở đầu"></select></div>
+          <div><label for="briefing-memory">Ký ức và quan hệ sẵn có</label><textarea id="briefing-memory" rows="3" maxlength="1100"></textarea></div>
+          <div><label for="briefing-incident">Biến cố mở đầu của vai</label><textarea id="briefing-incident" rows="3" maxlength="1100"></textarea></div>
+          <div><label for="briefing-objective">Mục tiêu ban đầu</label><textarea id="briefing-objective" rows="3" maxlength="1100"></textarea></div></div>
+      </section>
+      <div class="author-actions"><button type="button" id="validate-button" class="primary-action"><span aria-hidden="true">◈</span> Kiểm tra bản thảo &amp; chạy thử</button>
+        <button type="button" id="reset-original" class="secondary-action">Khôi phục truyện mẫu</button></div>
+      <p class="feedback" id="author-feedback" role="status" aria-live="polite"></p>
+      <p class="scope-note">Các sửa đổi chỉ tồn tại trong RAM của tab. G4A/G4B kiểm chuyển cảnh offline; không lưu về Thư viện, không cấp tài khoản tác giả, không xác thực giấy phép/truyện ở server và không phát hành thế giới.</p>
+    </section>
+    <section id="game-pane" aria-labelledby="play-title" hidden>
+      <div class="game-heading"><div><span class="system-code">SYSTEM ENTRY / ROLE SCANNER</span><h2 id="play-title">Mở phiên nhập vai từ bản thảo</h2></div>
+        <button type="button" id="back-editor" class="secondary-action">← Quay lại bản thảo</button></div>
+      <section id="role-stage" class="game-card"><p class="intro-line">Chọn một thân phận để bước vào đúng thời điểm trong chương 6–7. Người nhập vai Tử Du nhận diện người quen bằng giọng và mùi hương; vai khác không được đọc ký ức của Tử Du.</p>
+        <div class="roles" id="roles" aria-live="polite"></div></section>
+      <section id="briefing-stage" class="game-card" hidden><div class="initialization"><span class="system-code">THIÊN MỆNH / WORLD INITIALIZATION</span><span class="initialization-state">STORY IDENTITY · LOCAL DEMO</span></div>
+        <div class="identity-prelude"><img id="briefing-portrait" src="./assets/tu-du.webp" width="480" height="480" alt="Chân dung thân phận đã chọn"><div><span class="system-code" id="briefing-mode"></span><h3 id="briefing-name"></h3><p id="briefing-world"></p></div></div>
+        <div class="briefing-sections"><div><span>01 / KÝ ỨC ĐÃ CÓ</span><p id="briefing-memory-display"></p></div><div><span>02 / BIẾN CỐ ĐẦU TIÊN</span><p id="briefing-incident-display"></p></div><div><span>03 / MỤC TIÊU TRONG TRUYỆN</span><p id="briefing-goal-display"></p></div><div><span>04 / GIỚI HẠN THÂN PHẬN</span><p id="briefing-boundary-display"></p></div></div>
+        <p class="scope-note">Đây là phần mở đầu do tác giả soạn cho vai nhập, không phải xác minh danh tính hay cấp quyền server từ dữ liệu client.</p>
+        <div class="author-actions"><button id="accept-identity" class="primary-action" type="button">Tiếp nhận thân phận · Bắt đầu câu chuyện</button><button id="return-roles" class="secondary-action" type="button">Chọn lại thân phận</button></div></section>
+      <section id="story-stage" class="game-card" hidden><div class="scene-hero"><img id="scene-image" src="./assets/thi-tran-mo.webp" alt="Cảnh thị trấn mỏ" width="1280" height="720">
+          <div class="scene-data"><strong id="scene-place"></strong><span id="scene-progress"></span></div></div>
+        <div class="game-content"><div class="role-identity"><img id="current-portrait" src="./assets/tu-du.webp" alt="Nhân vật nhập vai" width="480" height="480">
+          <div><span class="system-code" id="current-mode"></span><h3 id="current-role"></h3><p id="current-description"></p></div></div>
+          <p id="chapter-origin" class="chapter-origin"></p><div class="continuity"><span class="system-code">DIỄN BIẾN TRƯỚC CẢNH NÀY</span><p id="scene-context-display"></p><p class="story-goal" id="current-goal"></p></div>
+          <p id="narration" class="narration"></p>
+          <div id="npc-card" class="npc-card" hidden><img src="./assets/ban-hoc.webp" width="480" height="480" alt="Nhân vật kịch bản"><div><strong>NPC kịch bản</strong><p id="npc-dialogue"></p></div></div>
+          <p id="ambient-dialogue" class="ambient-dialogue"></p><p id="role-reaction" class="role-reaction" hidden></p>
+          <div class="evidence-panel"><span class="system-code">DẤU VẾT ĐÃ GHI NHẬN TRONG PHIÊN THỬ</span><p id="evidence-list"></p></div>
+          <details class="story-source"><summary>Xem ghi chú chuyển thể liên quan (không phải nguyên văn)</summary><p id="source-echo" class="source-echo"></p></details>
+          <section id="decision-stage" class="decision-stage"><span class="system-code">ALLOWED ACTIONS / G4A RULESET</span><h3>Quyết định của bạn</h3>
+            <div id="choices" class="choices"></div>
+            <form id="intent-form" class="intent-form" autocomplete="off"><label for="intent-input">Nhập ý định thử</label>
+              <div class="intent-row"><input id="intent-input" maxlength="120" placeholder="Ví dụ: vào lớp, hỏi Tinh Dao, tới quán net…"><button id="intent-submit" type="submit">Gửi lệnh</button></div>
+              <small>Lệnh chỉ ánh xạ tới hành động đang được kịch bản cho phép. Không có NPC AI hay tự cấp thưởng.</small></form>
+          </section>
+          <div id="ending-stage" class="ending-stage" hidden><span class="system-code">WHAT-IF OUTCOME / KHÔNG THAY CANON</span><h3 id="ending-title"></h3>
+            <p>Kết cục chỉ mô phỏng phản ứng tại một lát cắt. Những sự kiện trong chương 6–12 của truyện gốc vẫn giữ nguyên; không chứng nhận nhiệm vụ hay cấp EXP/Xu/vật phẩm.</p>
+            <button id="restart" type="button" class="primary-action">Thử một thân phận khác</button></div>
+        </div>
+      </section>
+      <p id="play-feedback" class="feedback" role="status" aria-live="polite"></p>
+    </section>
+    <footer>HỆ THỐNG ERR...O · Kẻ Lang Bạt · <a href="../../index.html#/library">Đọc truyện gốc trong Thư viện DUDU</a> · Bản thử chuyển thể bằng ghi chú mới, không sao chép chương truyện, không lưu/duyệt/phát hành hay cấp thưởng production.</footer>
+  </main>
+</body>
+</html>

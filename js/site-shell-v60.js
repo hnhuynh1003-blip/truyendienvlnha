@@ -213,7 +213,18 @@
    priorDemo.href='playtests/ben-suong/';
    roleplayCopy.append(priorDemo);
    roleplay.append(roleplayCopy,roleplayLink);
-   root.append(pilot,roleplay,starter,hidden);
+   // P7 is a distinct, read-only Library-referenced author rehearsal: the
+   // novel stays in the Library, only NEW scene notes enter G4A/G4B offline.
+   const erro=element('aside','dudu-pilot-entry dudu-pilot-entry-inline');
+   const erroCopy=element('div','dudu-pilot-entry-copy');
+   erroCopy.append(element('span','dudu-pilot-entry-kicker','G5C · CHUYỂN THỂ THỬ / CHƯA PHÁT HÀNH'),
+     element('strong','','Hệ Thống ERR...O — Thị trấn mỏ'),
+     element('span','dudu-pilot-entry-desc','Truyện có sẵn trong Thư viện · chương 6–7 · 4 thân phận · không sửa Canon'));
+   const erroLink=element('a','dudu-pilot-launch','Mở bàn viết ↗');
+   erroLink.href='playtests/he-thong-erro/';
+   erroLink.setAttribute('aria-label','Mở bản chuyển thể thử nghiệm Hệ Thống ERR...O trên Vạn Giới');
+   erro.append(erroCopy,erroLink);
+   root.append(pilot,erro,roleplay,starter,hidden);
  }
  function fillShelf(){
    const root=id('d60-shelf-list');if(!root)return;root.replaceChildren();
