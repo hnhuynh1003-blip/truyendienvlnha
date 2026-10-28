@@ -44,70 +44,101 @@ test('P7 world/scene/role metadata passes real G3C + G4A + G4B offline preparati
 });
 
 test('P7 Tử Du identity memory and first-person sensory limitations stay distinct',async()=>{
- const {p,view}=await advance('entry-tu-du');
+ const {p,view}=await advance('entry-tu-du','enter-school-entry');
  const b=p.entryBriefings.find(x=>x.entryId==='entry-tu-du');
  assert.match(b.roleMemory,/không thể nhận biết mặt người/i);
  assert.match(view.narration,/không phân biệt được khuôn mặt/);
  assert.match(view.narration,/giọng khàn/);
  assert.equal(view.sceneId,'scene-gate');
- assert.ok(view.choices.some(x=>x.choiceId==='enter-class'));
+ assert.ok(view.choices.some(x=>x.choiceId==='begin-enrolment'));
+ assert.equal(view.choices.some(x=>x.choiceId==='go-net'),false);
+ assert.equal(view.choices.some(x=>x.choiceId==='visit-public-show'),false);
+ assert.match(view.context,/12 TUỔI/);
 });
 
-test('P7 unverified system-cover cannot cross the school gate or open a private lawyer file',async()=>{
- const first=await advance('entry-cover');
+test('P7 unverified cover stays in the same afternoon, never accesses school, VIP01 or future years',async()=>{
+ const first=await advance('entry-cover','enter-school-entry');
  assert.match(first.view.narration,/không có xác minh/);
- assert.equal(first.view.choices.some(x=>x.choiceId==='enter-class'),false);
- assert.ok(first.view.choices.some(x=>x.choiceId==='visit-public-show'));
- const publicNet=await advance('entry-cover','go-net');
- assert.equal(publicNet.view.sceneId,'scene-netroom');
- assert.equal(publicNet.view.choices.some(x=>x.choiceId==='ask-lawyer'),false);
- assert.ok(publicNet.view.choices.some(x=>x.choiceId==='return-school'));
- const show=await advance('entry-cover','visit-public-show');
- assert.match(show.view.narration,/khu vực khách xem chương trình/);
+ assert.deepEqual(first.view.choices.map(x=>x.choiceId),['ask-public-way']);
+ const road=await advance('entry-cover','enter-school-entry','ask-public-way');
+ assert.equal(road.view.sceneId,'scene-town-walk');
+ assert.match(road.view.context,/12 TUỔI/);
+ const stopped=await advance('entry-cover','enter-school-entry','ask-public-way','record-public-only');
+ assert.equal(stopped.view.narrativeEndingId,'ending-observer');
+ assert.equal(stopped.view.flags.includes('kept-public-boundary'),true);
 });
 
 test('P7 classmate has local school knowledge but never inherits Tử Du private history',async()=>{
- const {p,view}=await advance('entry-classmate');
+ const {p,view}=await advance('entry-classmate','enter-classmate-entry');
  assert.equal(view.sceneId,'scene-classroom');
  assert.match(view.narration,/không biết chuyện xét nghiệm huyết thống/);
  assert.doesNotMatch(view.narration,/bạn là Khương Tử Du/i);
- assert.ok(view.choices.some(x=>x.choiceId==='share-lunch'));
+ assert.ok(view.choices.some(x=>x.choiceId==='meet-classmate'));
  assert.equal(p.entryBriefings.find(x=>x.entryId==='entry-classmate').roleMemory.includes('Khối rubik'),false);
 });
 
 test('P7 lawyer begins at the legal desk without being teleported into 7B',async()=>{
- const {view}=await advance('entry-luc-thien');
+ const {view}=await advance('entry-luc-thien','enter-lawyer-entry');
  assert.equal(view.sceneId,'scene-contract');
- assert.match(view.narration,/Lục Thiển đang kiểm/);
- assert.match(view.dialogue,/Thư ký báo/);
- assert.equal(view.choices.some(x=>x.choiceId==='enter-class'),false);
+ assert.match(view.narration,/hai mươi lăm tuổi/);
+ assert.match(view.dialogue,/Em chưa đói/);
+ assert.equal(view.choices.some(x=>x.choiceId==='follow-teacher'),false);
+ assert.match(view.context,/17 TUỔI/);
 });
 
-test('P7 Tử Du follows a coherent 6→7 chain and ending is never Canon/reward',async()=>{
- const {view,session}=await advance('entry-tu-du','enter-class','share-lunch','walk-net','ask-lawyer','attend-show','protect-quiet');
+test('P7 Tử Du must traverse school enrollment, friendships and years before VIP01 or legal case',async()=>{
+ const {view,session}=await advance('entry-tu-du',
+  'enter-school-entry','begin-enrolment','follow-teacher','meet-classmate','continue-term','grow-years',
+  'prepare-show','listen-invitation','years-to-seventeen','hear-knock',
+  'advance-to-ceremony','drive-through-rain','protect-quiet');
  assert.equal(view.sceneId,'scene-quiet');
  assert.equal(view.narrativeEndingId,'ending-quiet');
  assert.equal(view.rewardAuthorized,false);assert.equal(view.worldPublished,false);
  assert.equal(view.productionAuthorized,false);assert.equal(view.missionCompleted,false);
- assert.equal(view.saveCommitted,false);assert.equal(session.revision,6);
+ assert.equal(view.saveCommitted,false);assert.equal(session.revision,13);
 });
 
 test('P7 G4B event replay and CAS reject stale attempts while preserving receipt',async()=>{
  const p=await prepared();const started=await p.start('entry-tu-du');assert.equal(started.ok,true);
- const event={choiceId:'enter-class',eventId:randomUUID(),expectedRevision:started.session.revision};
+ const event={choiceId:'enter-school-entry',eventId:randomUUID(),expectedRevision:started.session.revision};
  const once=await p.choose(started.session,event);assert.equal(once.ok,true);
  const twice=await p.choose(once.session,event);
  assert.equal(twice.ok,true);assert.equal(twice.duplicate,true);
  assert.deepEqual(twice.receipt,once.receipt);
- const stale=await p.choose(once.session,{choiceId:'follow-rehearsal',eventId:randomUUID(),expectedRevision:0});
+ const stale=await p.choose(once.session,{choiceId:'begin-enrolment',eventId:randomUUID(),expectedRevision:0});
  assert.equal(stale.ok,false);assert.equal(stale.rewardAuthorized,false);
 });
 
-test('P7 return narrative changes after revisiting school or private room',async()=>{
- const {view}=await advance('entry-tu-du','go-net','return-school');
- assert.equal(view.sceneId,'scene-gate');assert.equal(view.visitCount,2);
- assert.match(view.narration,/quay lại cổng trường/);
- assert.doesNotMatch(view.narration,/vừa bước xuống xe/);
+test('P7 canonical graph strictly increases in sequence with no accidental time-travel backedges',()=>{
+ const data=source(),scenes=new Map(data.world.scenes.map(s=>[s.sceneId,s])),board=new Map(data.authoring.storyboard.map(s=>[s.sceneId,s]));
+ assert.equal(scenes.size,19);
+ for(const scene of scenes.values()){
+  assert.equal(board.has(scene.sceneId),true);
+  for(const transition of scene.transitions){
+   assert.ok(board.get(transition.toSceneId).sequence>board.get(scene.sceneId).sequence,
+    'Backward or equal-time edge: '+scene.sceneId+' -> '+transition.toSceneId);
+  }
+ }
+ assert.deepEqual(scenes.get('scene-gate').transitions.map(t=>t.toSceneId),['scene-admission','scene-town-walk']);
+ assert.deepEqual(scenes.get('scene-entry').transitions.map(t=>t.toSceneId),['scene-gate','scene-classroom','scene-contract']);
+ assert.deepEqual(scenes.get('scene-farewell').transitions.map(t=>t.toSceneId),['scene-netroom','scene-school-end']);
+ assert.deepEqual(scenes.get('scene-netroom').transitions.map(t=>t.toSceneId),['scene-contract']);
+});
+
+test('P7 school friend sees 15-year-old farewell but cannot jump to 17-year-old legal events',async()=>{
+ const {view}=await advance('entry-classmate','enter-classmate-entry','meet-classmate','continue-term','grow-years',
+  'prepare-show','listen-invitation','leave-as-classmate');
+ assert.equal(view.sceneId,'scene-school-end');
+ assert.equal(view.narrativeEndingId,'ending-school');
+ assert.equal(view.flags.includes('saw-school-years'),true);
+});
+
+test('P7 lawyer has an independent age-17 legal timeline and cannot undo Canon refusal',async()=>{
+ const {view}=await advance('entry-luc-thien','enter-lawyer-entry','advance-to-ceremony','drive-through-rain');
+ assert.equal(view.sceneId,'scene-river');
+ assert.match(view.narration,/đã bày tỏ tình cảm/);
+ assert.match(view.narration,/từ chối/);
+ assert.ok(view.choices.every(c=>!/đồng ý|đáp lại tình yêu/.test(c.label)));
 });
 
 test('P7 prose edits are permitted locally but forged roles/actions are rejected',async()=>{

@@ -7,12 +7,22 @@ import {prepareAuthorRoleplayOffline} from '../../cloudflare/src/vangioi-author-
 
 const el=id=>document.getElementById(id);
 const art={
+ 'scene-entry':['thi-tran-mo.webp','Trạm tiếp nhận · ngoài Canon'],
  'scene-gate':['thi-tran-mo.webp','Cổng trường số 3'],
+ 'scene-admission':['thi-tran-mo.webp','Văn phòng hiệu phó · 12 tuổi'],
  'scene-classroom':['thi-tran-mo.webp','Lớp học 7B'],
  'scene-meal':['thi-tran-mo.webp','Nửa củ khoai bên bàn học'],
+ 'scene-teacher':['thi-tran-mo.webp','Cô Tần Tuệ · chiều mùa hạ'],
+ 'scene-walk':['thi-tran-mo.webp','Triền đê · năm 15 tuổi'],
+ 'scene-farewell':['thi-tran-mo.webp','Rặng bạch đàn · năm 15 tuổi'],
+ 'scene-school-end':['thi-tran-mo.webp','Đêm hội khép lại · bạn học'],
+ 'scene-town-walk':['thi-tran-mo.webp','Đường công cộng quanh trường'],
+ 'scene-town-end':['thi-tran-mo.webp','Kết nhánh quan sát'],
  'scene-netroom':['thi-tran-mo.webp','Quán net · VIP số 01'],
- 'scene-contract':['thi-tran-mo.webp','Bàn hồ sơ Lục Thiển'],
- 'scene-rehearsal':['thi-tran-mo.webp','Đêm văn nghệ'],
+ 'scene-contract':['thi-tran-mo.webp','VIP01 · Lục Thiển mang canh'],
+ 'scene-ceremony':['thi-tran-mo.webp','Điểm trường thứ 100 · cuối thu'],
+ 'scene-river':['thi-tran-mo.webp','Xe dừng ven sông · tuổi 17'],
+ 'scene-rehearsal':['thi-tran-mo.webp','Đêm văn nghệ · tuổi 15'],
  'scene-quiet':['thi-tran-mo.webp','Rặng bạch đàn · khoảng lặng'],
  'scene-listen':['thi-tran-mo.webp','Rặng bạch đàn · lắng nghe'],
  'scene-distance':['thi-tran-mo.webp','Lối về · đoàn tàu quặng']};
@@ -26,7 +36,8 @@ const people={
  'entry-cover':{image:'than-phan.webp',kind:'03 · SYSTEM COVER / THÂN PHẬN ẢO',
   description:'Hồ sơ người phụ việc chưa được địa phương xác thực; chỉ có thể hỏi và quan sát.'}};
 const endingLabels={'ending-quiet':'Một khoảng lặng được giữ lại',
- 'ending-listen':'Một lời được nghe trọn','ending-distance':'Lối về qua hàng bạch đàn'};
+ 'ending-listen':'Một lời được nghe trọn','ending-distance':'Lối về qua hàng bạch đàn',
+ 'ending-school':'Câu chuyện người bạn cùng lớp','ending-observer':'Góc nhìn người quan sát'};
 const normalize=s=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
  .replace(/đ/g,'d').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
 const notice=(id,message,error=false)=>{el(id).textContent=message||'';el(id).classList.toggle('error',error);};
@@ -115,7 +126,7 @@ function setupEditor(){
  for(const chapter of chapters){const option=document.createElement('option');option.value=chapter.chapterId;
   option.textContent=chapter.title;chaptersSelect.append(option);}
  for(const page of scenes){const option=document.createElement('option');option.value=page.sceneId;
-  option.textContent=art[page.sceneId]?.[1]||page.sceneId;scenesSelect.append(option);}
+  option.textContent=(mapping.get(page.sceneId)?.timeLabel||'Mốc chưa rõ')+' · '+(art[page.sceneId]?.[1]||page.sceneId);scenesSelect.append(option);}
  for(const briefing of briefings){const option=document.createElement('option');option.value=briefing.entryId;
   option.textContent=original.world.playerEntryProfiles.find(x=>x.entryId===briefing.entryId)?.label||briefing.entryId;
   briefingSelect.append(option);}
@@ -123,7 +134,7 @@ function setupEditor(){
  chapterRender();sceneRender();briefingRender();
  play=null;session=null;view=null;role=null;selectedEntry=null;pendingEvent=null;
  el('game-pane').hidden=true;el('author-pane').hidden=false;
- notice('author-feedback','Đã nạp 2 ghi chú chuyển thể từ chương 6–7, 9 cảnh và 4 hồ sơ mở đầu. Không chứa nguyên văn từ Thư viện. Sửa lời dẫn rồi bấm kiểm tra.');
+ notice('author-feedback','Đã nạp 2 ghi chú chuyển thể từ chương 6–7, '+scenes.length+' cảnh theo thứ tự 12→15→17 tuổi và 4 hồ sơ mở đầu. Không chứa nguyên văn từ Thư viện. Sửa lời dẫn rồi bấm kiểm tra.');
 }
 el('chapter-select').addEventListener('change',chapterRender);
 el('scene-select').addEventListener('change',sceneRender);
@@ -259,13 +270,14 @@ async function render(nextSession){
  el('current-mode').textContent=person.kind;el('current-role').textContent=role.label;
  el('current-description').textContent=person.description;
  const ch=chapters.find(c=>c.chapterId===sceneChapter(view.sceneId));
- el('chapter-origin').textContent='CHUYỂN THỂ TỪ '+(ch?.title||'CẢNH NGOÀI CHƯƠNG');
+ el('chapter-origin').textContent=(mapping.get(view.sceneId)?.timeLabel||'Mốc thời gian chưa rõ')+' · CHUYỂN THỂ TỪ '+(ch?.title||'CẢNH NGOÀI CHƯƠNG');
  el('source-echo').textContent=sourceSnippet(view.sceneId);
  el('scene-context-display').textContent=view.context||'Không có mạch truyện cho cảnh này.';
  const briefing=play.entryBriefings.find(b=>b.entryId===role.entryId);
  el('current-goal').textContent='Mục tiêu của bạn: '+(briefing?.objective||'Khám phá tình huống.');
  const known={'identity-tu-du':'Nhớ việc rời hai gia tộc.','lawyer-knowledge':'Biết phạm vi ủy quyền pháp lý.',
   'classmate-knowledge':'Biết các hoạt động của lớp 7B.','unverified-cover':'Hồ sơ thân phận ảo chưa xác minh.',
+  'saw-school-years':'Đã trải qua những năm ở lớp 7B.','kept-public-boundary':'Đã tôn trọng ranh giới công cộng.',
   'chose-quiet':'Đã chọn ranh giới rõ ràng.','chose-listen':'Đã chọn lắng nghe.',
   'chose-distance':'Đã chọn rút lui sớm.'};
  const evidence=view.flags.filter(f=>known[f]).map(f=>known[f]);
@@ -280,7 +292,8 @@ async function render(nextSession){
  el('decision-stage').hidden=ending;el('ending-stage').hidden=!ending;
  const buttons=el('choices');buttons.replaceChildren();
  if(ending)el('ending-title').textContent=endingLabels[view.narrativeEndingId]||'Kết thúc giả lập';
- else {view.choices.forEach(c=>buttons.append(choiceButton(c)));el('intent-input').value='';}
+ else {el('decision-title').textContent=view.choices.length>1?'Lựa chọn trong phạm vi nhân vật':'Tiếp tục diễn biến';
+  view.choices.forEach(c=>buttons.append(choiceButton(c)));el('intent-input').value='';}
  notice('play-feedback','');
 }
 async function begin(entry){
