@@ -1,5 +1,9 @@
 # DUDU Studio — START HERE / Bàn giao sạch · 20/10/2026
 
+## VẠN GIỚI G5B — OFFLINE MODERATION REVIEW REHEARSAL (28/10/2026)
+
+Nền `eb09fc90` (G5A, Smoke/Browser và Pages SUCCESS). Đọc `contracts/vangioi/G5B_OFFLINE_MODERATION_REHEARSAL.md`: module G5B chỉ dùng host Node SQLite fixture và các service G1L/G1Y đã có, không cấp role/endpoint. G1L review thật trong fixture ghi decision + receipt/audit bất biến; G5B kiểm lại SQL theo reviewer độc lập, rồi G1Y đánh giá quyền nguồn/ảnh/notice **sau** approval. Không biến kết quả duyệt lịch sử thành quyền staging khi G1X hold/G1R revoke hoặc source/asset stale. Nhãn và quyền pháp lý bên ngoài vẫn phải được duyệt, `readyForStaging=false` kể cả preflight fixture PASS. G5C tiếp theo chỉ được lắp staging **synthetic cách ly**, không nối Firebase/Worker hay dựng gameplay thật chỉ nhờ G5B. CI/Pages kiểm SHA commit G5B riêng.
+
 ## VẠN GIỚI G5A — OFFLINE RELEASE CANDIDATE (28/10/2026)
 
 Từ nền `916cf084` (chốt G4; CI/Pages SUCCESS), xem `contracts/vangioi/G5A_OFFLINE_RELEASE_CANDIDATE.md`: G5A thêm sidecar kiểm G1L snapshot/phiên bản/hash/nguồn/asset/vai nhập/G1N arc, ba mode continuity **dưới dạng khai báo**, G3C reachability/ảnh, G4A manifest và G1Y callback synthetic. Không biến candidate PASS thành role reviewer/publisher, proof ending/lineage, publish, save, reward hay gameplay thật. PR #22 continuity vẫn Draft khi bắt đầu; không âm thầm chốt Phán Tử/Tái Xuyên hoặc thay Canon. G5B tiếp theo chỉ diễn tập moderation/review độc lập, chưa nối production. Kết quả hồi quy/CI/Pages phải kiểm theo **SHA commit G5A**, không dùng kết quả G4.
