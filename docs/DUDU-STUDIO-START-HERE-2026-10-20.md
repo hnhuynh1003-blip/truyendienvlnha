@@ -1,5 +1,9 @@
 # DUDU Studio — START HERE / Bàn giao sạch · 20/10/2026
 
+## VẠN GIỚI G5C-P — AUTHOR-MADE ROLEPLAY DEMO (28/10/2026)
+
+Nền `5f49794` (G5C, Smoke/Browser/Pages SUCCESS). Theo quyết định thử nhập vai với một thế giới tác giả tự tạo, xem `contracts/vangioi/G5C_P_OFFLINE_AUTHOR_ROLEPLAY_DEMO.md`: demo Node CLI **Ngọn đèn cuối ở Bến Sương** có hai thân phận và lời phản ứng riêng, NPC kịch bản, bốn scene, hai nhánh/kết cục; G3C kiểm đường đi, G4A áp dụng rule allowlist, G4B replay/revision/eventId trong RAM. Chạy `node tools/vangioi/author-roleplay-cli.mjs` ở clone repo. Source/ảnh là **placeholder chưa xác minh bytes/quyền**; không có browser chơi trên Pages, save, completion proof, quyền phát thưởng hoặc production. G5D–F chưa triển khai; CI/Pages G5C-P cần kiểm theo commit SHA đợt mới.
+
 ## VẠN GIỚI G5C — SYNTHETIC STAGING ASSEMBLY (28/10/2026)
 
 Nền `8cc63e3` (G5B, Smoke/Browser/Pages SUCCESS). Đọc `contracts/vangioi/G5C_SYNTHETIC_STAGING_ASSEMBLY.md`: G5C chỉ ghép **index ID/pin** của world/arc từ G5A, dùng G1Y fixture gate kiểm lại, G3C/G4A, observation ảnh đủ và fallback text, G1N plan và snapshot parent phiên bản lịch sử; kiểm ending tồn tại ở parent và đồ thị không vòng. Không giữ truth text/asset bytes trong output, không chứng minh lineage hoặc bản quyền parent hiện tại, không mở world chơi hay quyền staging/publish. G5D kế tiếp cần version/save/recovery theo fixture và policy riêng; nếu muốn demo world tác giả thực sự chơi được phải thiết kế đợt gameplay offline riêng, không đánh đồng `packageIndex` với runtime. CI/Pages G5C phải kiểm theo SHA mới.
