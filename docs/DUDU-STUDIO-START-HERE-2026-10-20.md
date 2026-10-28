@@ -1,5 +1,9 @@
 # DUDU Studio — START HERE / Bàn giao sạch · 20/10/2026
 
+## VẠN GIỚI G5C-P6 — PHỤC HỒI MẠCH TRUYỆN & MỞ ĐẦU NHẬP VAI (28/10/2026)
+
+Nền `478124c` (G5C-P5) có truyện 3 chương nhưng Du thử vai Nhi thấy tùy chọn **“Gặp Nhi”**, đoạn trích + cảnh đứt mạch và không có phần hệ thống tiếp nhận thân phận. Đây là lỗi author adaptation, không phải chỉ thiếu giao diện. Đọc `contracts/vangioi/G5C_P6_ROLE_IDENTITY_AND_STORY_CONTINUITY.md`: engine offline tương thích ngược nhận `entryBriefings`, `page.context`, `page.roleScenes` (POV narration/dialogue/choiceLabels theo `entryId`), validate fail-closed; Tầng Mây 9 có phần mở đầu Lam/Khải/Nhi/K-07, sự kiện kích hoạt, mục tiêu, câu chuyện liền mạch, không NPC trùng chính mình. Bàn viết online cho sửa briefing, context và lời cảnh đúng góc nhìn, sau đó QA RAM, người chơi nhận vai trước khi vào cảnh. Vẫn không là Thien Menh backend/Creator chính thức, không lưu thật, không cấp nhiệm vụ/quyền/Canon/EXP, không NPC AI. CI Browser/Smoke/Pages phải xác nhận theo SHA P6 trước khi mời Du thử lại.
+
 ## VẠN GIỚI G5C-P5 — TÁC GIẢ VIẾT TRUYỆN → DỰNG WORLD → CHƠI THỬ (28/10/2026)
 
 Nền G5C-P4 `2a5a930` đã có chơi thử Bến Sương online. Du muốn kiểm **cơ chế tác giả sáng tác**, chứ không thêm một nhiệm vụ chọn lời thoại như Quan Đạo. Đọc `contracts/vangioi/G5C_P5_AUTHOR_STORY_TO_ROLEPLAY.md`: truyện nguyên gốc *Tầng Mây 9 — Bản Ghi Số 0* có 3 chương/Arc 1 và Story Bible; build biến source thành world `future` theo `world-content-1`, 11 cảnh liên kết chương, vai Lam/Khải/Nhi/K-07, NPC Tuyên scripted, tranh cyberpunk mới, 3 kết cục what-if. Bàn viết thử trực tiếp trong VẠN GIỚI và URL `/playtests/tang-may-9/` có sửa chương/scene/lời thoại rồi rehash+G3C/G4A/G4B trong RAM và chơi lại; chữ dễ đọc, không yêu cầu tải Node/ZIP. Không phải lưu nháp hay quyền phát hành Creator thực, không NPC AI, Canon rewrite, thưởng, kho, Firestore/Worker production hoặc G5D–F. Trước khi báo Du phải kiểm SHA CI browser/Pages mới nhất.

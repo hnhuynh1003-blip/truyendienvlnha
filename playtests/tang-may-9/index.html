@@ -37,14 +37,25 @@
           <label for="chapter-text">Nội dung chương</label><textarea id="chapter-text" rows="14" spellcheck="true" maxlength="16000" aria-describedby="source-hint"></textarea>
           <p id="source-hint" class="hint">Thử thay một câu trong chương. Nội dung được kiểm lại và dẫn nguồn ở cảnh tương ứng; không tự sửa Canon của thế giới đã phát hành.</p>
         </section>
-        <section class="editor-panel"><div class="panel-head"><span class="step">02</span><div><h3>Chuyển thể thành cảnh chơi</h3><p>Biến chi tiết truyện thành môi trường và lựa chọn.</p></div></div>
+        <section class="editor-panel"><div class="panel-head"><span class="step">02</span><div><h3>Chuyển thể thành cảnh chơi</h3><p>Mỗi cảnh có nguyên nhân, diễn biến và lựa chọn do tác giả định.</p></div></div>
           <label for="scene-select">Cảnh nhập vai</label><select id="scene-select" aria-label="Chọn cảnh chuyển thể"></select>
           <p class="source-link" id="scene-source"></p>
+          <label for="context-edit">Mạch truyện dẫn đến cảnh này</label><textarea id="context-edit" rows="4" maxlength="950" spellcheck="true"></textarea>
+          <label for="scene-role-select">Góc nhìn đang viết</label><select id="scene-role-select" aria-label="Chọn góc nhìn nhân vật khi viết cảnh"></select>
+          <p class="hint">Lời dẫn chung có thể được thay bằng lời dẫn riêng cho từng thân phận. Chọn đúng vai để chỉnh nội dung mà người chơi vai đó thực sự thấy.</p>
           <label for="narration-edit">Lời dẫn cảnh</label><textarea id="narration-edit" rows="7" maxlength="3800" spellcheck="true"></textarea>
           <label for="dialogue-edit">Lời thoại kịch bản</label><textarea id="dialogue-edit" rows="3" maxlength="3800" spellcheck="true"></textarea>
+          <label for="return-narration-edit">Lời dẫn khi quay lại cảnh (nếu có)</label><textarea id="return-narration-edit" rows="3" maxlength="3800" spellcheck="true" placeholder="Để trống để dùng lời dẫn thông thường; không phát lại sự kiện mở đầu nếu câu chuyện đã tiến triển."></textarea>
+          <div class="choice-editor"><strong>Lời lựa chọn của người chơi</strong><p class="hint">Chỉ sửa cách diễn đạt; điều kiện, đích đến và quyền hành động vẫn do luật khai báo kiểm soát.</p><div id="choice-editor"></div></div>
           <div class="rules-preview"><strong>Điều kiện / hành động G4A</strong><p id="scene-rules">Đang nạp quy tắc…</p></div>
         </section>
       </div>
+      <section class="briefing-editor"><div class="panel-head"><span class="step">03</span><div><h3>Hồ sơ tiếp nhận thân phận</h3><p>Tác giả viết những gì mỗi vai đã biết, biến cố mở đầu và mục đích của riêng họ.</p></div></div>
+        <div class="briefing-editor-grid"><div><label for="briefing-select">Thân phận đang viết</label><select id="briefing-select" aria-label="Chọn thân phận để viết phần mở đầu"></select></div>
+          <div><label for="briefing-memory">Ký ức và quan hệ sẵn có</label><textarea id="briefing-memory" rows="3" maxlength="1100"></textarea></div>
+          <div><label for="briefing-incident">Biến cố mở đầu của vai</label><textarea id="briefing-incident" rows="3" maxlength="1100"></textarea></div>
+          <div><label for="briefing-objective">Mục tiêu ban đầu</label><textarea id="briefing-objective" rows="3" maxlength="1100"></textarea></div></div>
+      </section>
       <div class="author-actions"><button type="button" id="validate-button" class="primary-action"><span aria-hidden="true">◈</span> Kiểm tra bản thảo &amp; chạy thử</button>
         <button type="button" id="reset-original" class="secondary-action">Khôi phục truyện mẫu</button></div>
       <p class="feedback" id="author-feedback" role="status" aria-live="polite"></p>
@@ -55,14 +66,21 @@
         <button type="button" id="back-editor" class="secondary-action">← Quay lại bản thảo</button></div>
       <section id="role-stage" class="game-card"><p class="intro-line">Hệ thống đã nhận bốn hồ sơ do tác giả khai báo. Chọn thân phận; quyền truy cập không được cấp chỉ bằng tên vai.</p>
         <div class="roles" id="roles" aria-live="polite"></div></section>
+      <section id="briefing-stage" class="game-card" hidden><div class="initialization"><span class="system-code">THIÊN MỆNH / WORLD INITIALIZATION</span><span class="initialization-state">STORY IDENTITY · LOCAL DEMO</span></div>
+        <div class="identity-prelude"><img id="briefing-portrait" src="./assets/vai-0.webp" width="500" height="500" alt="Chân dung thân phận đã chọn"><div><span class="system-code" id="briefing-mode"></span><h3 id="briefing-name"></h3><p id="briefing-world"></p></div></div>
+        <div class="briefing-sections"><div><span>01 / KÝ ỨC ĐÃ CÓ</span><p id="briefing-memory-display"></p></div><div><span>02 / BIẾN CỐ ĐẦU TIÊN</span><p id="briefing-incident-display"></p></div><div><span>03 / MỤC TIÊU TRONG TRUYỆN</span><p id="briefing-goal-display"></p></div><div><span>04 / GIỚI HẠN THÂN PHẬN</span><p id="briefing-boundary-display"></p></div></div>
+        <p class="scope-note">Đây là phần mở đầu do tác giả soạn cho vai nhập, không phải xác minh danh tính hay cấp quyền server từ dữ liệu client.</p>
+        <div class="author-actions"><button id="accept-identity" class="primary-action" type="button">Tiếp nhận thân phận · Bắt đầu câu chuyện</button><button id="return-roles" class="secondary-action" type="button">Chọn lại thân phận</button></div></section>
       <section id="story-stage" class="game-card" hidden><div class="scene-hero"><img id="scene-image" src="./assets/thanh-pho.webp" alt="Cảnh Thiên Khâu" width="1200" height="676">
           <div class="scene-data"><strong id="scene-place"></strong><span id="scene-progress"></span></div></div>
         <div class="game-content"><div class="role-identity"><img id="current-portrait" src="./assets/vai-0.webp" alt="Nhân vật nhập vai" width="500" height="500">
           <div><span class="system-code" id="current-mode"></span><h3 id="current-role"></h3><p id="current-description"></p></div></div>
-          <p id="chapter-origin" class="chapter-origin"></p><p id="source-echo" class="source-echo"></p>
+          <p id="chapter-origin" class="chapter-origin"></p><div class="continuity"><span class="system-code">DIỄN BIẾN TRƯỚC CẢNH NÀY</span><p id="scene-context-display"></p><p class="story-goal" id="current-goal"></p></div>
           <p id="narration" class="narration"></p>
           <div id="npc-card" class="npc-card" hidden><img src="./assets/ong-tuyen.webp" width="560" height="840" alt="Ông Tuyên, quản thủ lưu trữ"><div><strong>Ông Tuyên · NPC kịch bản</strong><p id="npc-dialogue"></p></div></div>
           <p id="ambient-dialogue" class="ambient-dialogue"></p><p id="role-reaction" class="role-reaction" hidden></p>
+          <div class="evidence-panel"><span class="system-code">DẤU VẾT ĐÃ GHI NHẬN TRONG PHIÊN THỬ</span><p id="evidence-list"></p></div>
+          <details class="story-source"><summary>Đọc trích đoạn truyện gốc của chương này</summary><p id="source-echo" class="source-echo"></p></details>
           <section id="decision-stage" class="decision-stage"><span class="system-code">ALLOWED ACTIONS / G4A RULESET</span><h3>Quyết định của bạn</h3>
             <div id="choices" class="choices"></div>
             <form id="intent-form" class="intent-form" autocomplete="off"><label for="intent-input">Nhập ý định thử</label>

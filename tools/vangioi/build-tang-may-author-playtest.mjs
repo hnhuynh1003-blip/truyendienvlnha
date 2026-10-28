@@ -60,4 +60,4 @@ await build({
    loader:'js'}));
  }}]
 });
-process.stdout.write('G5C-P5 original 3-chapter author draft and visual test bundle built; no server publishing.\n');
+process.stdout.write('G5C-P6 three-chapter author draft, character briefings and role POV visual bundle built; no server publishing.\n');

@@ -128,14 +128,15 @@ test('G5C-P5 local author edit really re-pins source, world and engine before pr
  const draft=structuredClone(world),engine=structuredClone(manifest),pages=structuredClone(script);
  draft.storySource.contentHash=await hashAuthoringJson(changed);
  draft.story.opening=changed[0].text.slice(0,250);
- pages.pages[0].narration='CẢNH THỬ DO TÁC GIẢ ĐÃ SỬA.';
+ pages.pages[0].roleScenes['entry-nhi'].narration='CẢNH THỬ RIÊNG CHO NHI DO TÁC GIẢ ĐÃ SỬA.';
  assert.equal((await prepareAuthorRoleplayOffline(draft,engine,pages)).ok,false);
  engine.contentHash=await hashAuthoringJson(draft);
  pages.contentHash=engine.contentHash;
  const p=await prepareAuthorRoleplayOffline(draft,engine,pages);
  assert.equal(p.ok,true,p.code);
  const s=await p.start('entry-nhi');const v=await p.view(s.session);
- assert.equal(v.narration,'CẢNH THỬ DO TÁC GIẢ ĐÃ SỬA.');
+ assert.equal(v.narration,'CẢNH THỬ RIÊNG CHO NHI DO TÁC GIẢ ĐÃ SỬA.');
+ const k=await p.start('entry-k07');assert.notEqual((await p.view(k.session)).narration,v.narration);
  assert.equal(v.saveCommitted,false);
 });
 

@@ -173,13 +173,13 @@ export async function tangMayManifest(world){return {version:G4A_ENGINE_VERSION,
   r('bridge-engineer','scene-breaker',3,flag('engineer_access'),'scene-archive')
  ]};}
 
-export async function tangMayScript(world){return {version:'g5c-author-demo-script-1',contentHash:await hashAuthoringJson(world),pages:[
+export async function tangMayScript(world){const pages=[
  page('arrival',
   '1:17. Những toa tàu treo đứng im đúng một nhịp tim. Bảng tin phủ màu xanh an toàn, nhưng dưới chân cầu tầng chín, một giọng thiếu nữ phát qua loa không có người gửi: “Ai còn giữ tên tôi?”',
   'Một người giao hàng gọi vọng: “Các anh có nghe không? Mười bảy phút vừa rồi biến đi đâu?”',[
    ['ask-tuyen','talk-to-tuyen','Tìm ông Tuyên, hỏi về mã hồ sơ 0.'],
    ['scan-public','scan-public','Đọc báo cáo phát thanh của chu kỳ 408.'],
-   ['find-witness','visit-witness','Gặp Nhi và người giữ băng ghi âm.'],
+   ['find-witness','visit-witness','Tới quầy cháo hỏi người giữ cuộn băng từ.'],
    ['enter-archive','enter-archive','Yêu cầu mở cửa kho ký ức 09.'],
    ['go-relay','enter-relay','Xuống trạm chuyển tiếp kiểm tra nguồn tín hiệu.']],{
    'entry-lam':'Lam nhìn thấy tên mình trong danh sách nhân viên trực và một khoảng thời gian chưa ký.',
@@ -198,7 +198,7 @@ export async function tangMayScript(world){return {version:'g5c-author-demo-scri
   'Mùi cháo nóng len qua mưa điện. Người bán cháo đặt một cuộn băng từ cũ vào tay bạn. Trên băng, giữa tiếng kim loại, có một người trẻ nói: “Tên em là My. Em vẫn ở đây.”',
   'Người bán cháo: “Tôi tin băng này được thu đêm ấy. Nhưng đừng gọi nó là bằng chứng duy nhất về người phát tiếng hôm nay.”',[
    ['record-testimony','record-witness','Ghi nhận lời nhân chứng, không tự xác nhận người phát.'],
-   ['send-tape','leak-tape','Nhi giao bản sao cho những gia đình còn chờ tin.'],
+   ['send-tape','leak-tape','Giao bản sao cho những gia đình còn chờ tin.'],
    ['leave-witness','leave-witness','Cất lời khai, quay lại quảng trường.']],{
    'entry-nhi':'Người bán cháo gọi đúng tên Nhi; giao cuộn băng là trách nhiệm, không phải quyền quyết định sự thật.',
    'entry-lam':'Lam nghe nhắc tên My — cô bạn từng biến mất khỏi danh sách cư trú.',
@@ -261,4 +261,87 @@ export async function tangMayScript(world){return {version:'g5c-author-demo-scri
  page('leak',
   'Nhi đặt băng từ lên bàn của những gia đình còn chờ tin. Không có màn hình phát lệnh, không có người hùng vô danh. Chỉ có những người quyết định cùng nghe và tự mang câu hỏi tới hội đồng. Tin đồn có thể đi xa hơn sự kiểm chứng.',
   'Người bán cháo: “Ta trao băng cho người cần biết. Không có nghĩa ta đã chứng minh mọi lời trong đó.”',[],null,'ending-leak')
-]};}
+ ];
+ const sceneContexts={
+  'scene-arrival':'Chu kỳ 408 vừa bị mất đúng mười bảy phút. Bảng tin khẳng định mọi người an toàn, nhưng có người nghe tiếng gọi tên My từ loa công cộng. Chưa ai biết âm thanh đến từ người thật hay một bản phát lại.',
+  'scene-broadcast':'Bạn đến màn hình công cộng để đối chiếu mốc giờ với khoảng trống vừa xuất hiện. Tín hiệu cho thấy một phần dữ liệu đã bị ghép lại; đây là dấu vết, chưa phải bằng chứng đầy đủ.',
+  'scene-witness':'Manh mối dẫn tới người bán cháo ở cầu tàu. Bà giữ cuộn băng từ của vụ cứu hộ mười bốn năm trước, không muốn giao nó cho màn hình vô danh.',
+  'scene-archive':'Kho 09 chứa bản hiện trường và bản dự báo cùng được gắn nhãn số 0. Quyền đọc hồ sơ không đồng nghĩa với quyền công bố; cần tìm người có lời chứng độc lập.',
+  'scene-record':'Bạn đang kiểm tra nguồn gốc hai bản ghi. Dòng chữ DỰ BÁO bị xóa khỏi nhãn; không thể coi một kết quả dự đoán là điều đã xảy ra.',
+  'scene-tuyen':'Đây là quầy tiếp nhận bên ngoài cửa lưu trữ 09, không phải khu hồ sơ mật. Ông Tuyên chỉ mở phần dữ liệu cần thiết nếu người hỏi đưa được dấu vết hoặc có thẩm quyền chuyên môn đã có sẵn.',
+  'scene-relay':'Các số liệu thời gian từ thành phố dẫn xuống trạm phát. Ở đây, cầu dao cơ khí vẫn có thể can thiệp vào một mạng được quảng cáo là hoàn toàn tự động.',
+  'scene-breaker':'Lệnh cứu hộ từng phát lặp, có nguy cơ đóng cổng sơ tán. Cần đối chiếu cả dấu báo động lẫn mạch điện trước khi quyết định cách ly.',
+  'scene-publish':'Đây là tương lai giả định nếu người nhập vai công bố sau khi có cả hồ sơ và lời chứng, không phải chương kết chính thức của tác giả.',
+  'scene-seal':'Đây là tương lai giả định nếu người nhập vai cách ly tín hiệu sau khi kiểm chứng nguy cơ vòng lặp, không phải chương kết chính thức.',
+  'scene-leak':'Đây là tương lai giả định nếu Nhi trao bản sao cho gia đình đang chờ tin. Cuộn băng là chứng cứ cần kiểm chứng, không phải lệnh xác nhận danh tính My.'
+ };
+ const roleScenes={
+  'scene-arrival':{
+   'entry-lam':{
+    narration:'Lam vừa rời kho lưu trữ số 09 để tìm giọng nói trên cuộn băng. Cầu tàu tầng chín đông người; bảng tin vẫn trưng dòng “an toàn”, dù cô đã nhìn thấy bản ghi dự báo bị gắn sai nhãn. Bà bán cháo ở cuối cầu có thể biết ai giữ cuộn băng suốt mười bốn năm.',
+    dialogue:'Một người bán vé nói: “Cô từ kho 09 xuống sao? Có người giao bưu kiện đang tìm người giữ hồ sơ đấy.”'},
+   'entry-khai':{
+    narration:'Khải rời trạm chuyển tiếp, mang theo vết mực ghi giờ mất điện trên găng tay. Phía trên, bảng tin vẫn tuyên bố sơ tán hoàn tất. Anh muốn so thông báo ấy với tín hiệu cầu dao dưới trạm trước khi chạm thêm vào mạch.',
+    dialogue:'Loa trạm dặn: “Mọi can thiệp thiết bị cần đối chiếu chu kỳ báo động và đường thoát hiểm.”'},
+   'entry-nhi':{
+    narration:'Một giờ mười bảy phút. Nhi vừa cúi xuống kiểm tra kiện hàng thì đoàn tàu treo im bặt. Khi ngẩng lên, cô thấy đồng hồ quảng trường nhảy qua mười bảy phút mà không ai giải thích. Bà bán cháo phía đối diện vẫy tay gọi đúng tên Nhi. Trong túi áo cô còn tờ địa chỉ giao hàng: KHO LƯU TRỮ 09.',
+    dialogue:'Bà bán cháo gọi: “Nhi! Sang đây. Có thứ cô phải giao tận tay, tuyệt đối đừng chuyển qua hệ thống.”',
+    choiceLabels:{'find-witness':'Tới quầy cháo nơi bà đang gọi mình.','ask-tuyen':'Tìm người nhận ở quầy tiếp tân kho 09.','scan-public':'Đọc bảng tin, xem vì sao đồng hồ vừa nhảy giờ.'},
+    returnNarration:'Nhi trở lại cầu tàu với cuộn băng được giữ trong túi áo. Đồng hồ vẫn chạy tiếp; mười bảy phút mất tích không hề xuất hiện trở lại. Bây giờ cô phải quyết định ai sẽ được nghe lời kể, sau những gì vừa biết từ người bán cháo.',
+    returnDialogue:'Bà bán cháo gọi theo: “Con nhớ mang tận tay, đừng trao cho một màn hình không biết chịu trách nhiệm.”'},
+   'entry-k07':{
+    narration:'Một giờ mười bảy phút. K-07 hiện diện ở cầu tàu với thẻ thanh tra mới kích hoạt. Màn hình hệ thống báo quyền đọc dữ liệu công cộng, không có quyền khám xét hay sửa hồ sơ. Ngay khi một giọng nữ gọi tên My vang lên từ loa, bảng tin thành phố nhảy mất mười bảy phút.',
+    dialogue:'Thông báo thẻ K-07: “Chỉ được ghi nhận mâu thuẫn và trình bằng chứng cho người giữ hồ sơ. Không có quyền mở kho trực tiếp.”',
+    choiceLabels:{'find-witness':'Hỏi người giao hàng và bà bán cháo về cuộn băng.','ask-tuyen':'Tới quầy tiếp nhận 09 hỏi về thủ tục xác minh.'},
+    returnNarration:'K-07 trở lại cầu tàu với dấu vết đã lưu từ bảng tin. Thẻ thanh tra vẫn trắng; một chuỗi dữ liệu công khai không biến thành giấy phép mở kho. Người mang thẻ phải trình từng mảnh bằng chứng cho ông Tuyên.',
+    returnDialogue:'Thông báo thẻ: “Có dữ liệu phát thanh để đối chiếu. Chưa cấp quyền truy cập kho lưu trữ.”'}
+  },
+  'scene-witness':{
+   'entry-nhi':{
+    narration:'Nhi lách qua mái bạt của quán cháo. Bà chủ nhét vào tay cô một cuộn băng từ bọc dầu, góc bìa ghi địa chỉ kho số 09 bằng nét chữ run. Nhi nhận ra nhãn “My” và hồi tưởng những đơn hàng vô danh đã giao suốt nhiều năm. Cô chưa hề nghe bản này, nên không thể biết người trong băng còn sống đến hôm nay hay không.',
+    dialogue:'Bà bán cháo: “Đây là lời người ta ghi lại từ đêm cửa số bốn đóng. Giao tận tay người giữ hồ sơ, Nhi. Con không cần tự đoán ai đang nói trên loa.”',
+    returnNarration:'Nhi quay lại quán cháo, lần này đã ghi nguyên lời người giữ băng. Cô hiểu băng ghi âm là dấu vết quá khứ chứ chưa chứng minh được giọng vừa phát trên loa. Bà chủ đặt lên bàn tên các gia đình còn chờ tin; quyết định trao bản sao giờ có trọng lượng khác.',
+    choiceLabels:{'record-testimony':'Hỏi bà về nguồn gốc băng rồi ghi lại nguyên lời.','send-tape':'Tự mang bản sao tới các gia đình chờ tin.','leave-witness':'Giữ cuộn băng, quay lại cầu tàu.'}},
+   'entry-lam':{
+    narration:'Lam tìm tới quầy cháo vì trong bản ghi cô vừa mở có giọng nói quen thuộc từ hành lang số bốn. Nhi, người giao bưu kiện, đặt chiếc băng từ lên bàn và nhìn Lam chờ xác nhận danh tính người nhận. Lam nhận ra tên My trên vỏ băng nhưng chưa biết người phát tín hiệu mới là ai.',
+    dialogue:'Nhi nói: “Tôi chỉ được nhờ đưa tới kho 09. Nếu chị là người lưu trữ, hãy giữ nguyên tiếng nói trong băng, đừng sửa theo bảng tin.”'},
+   'entry-k07':{
+    narration:'K-07 đứng ngoài mái che, quan sát người giao hàng Nhi nhận cuộn băng từ từ bà bán cháo. Thẻ hệ thống không có quyền tịch thu chứng cứ. Người thanh tra ảo chỉ có thể hỏi, ghi nhận lời kể và đối chiếu với dữ liệu công khai.',
+    dialogue:'Nhi giữ chặt cuộn băng: “Một thẻ trắng không nói được anh làm việc cho ai. Anh cần ghi lại lời bà trước.”'}
+  },
+  'scene-archive':{
+   'entry-lam':{
+    narration:'Lam mở kho lưu trữ bằng chìa khóa đã được ông Tuyên giao. Cô đang trực ca phục hồi dữ liệu khi hai bản ghi cùng mã 0 xuất hiện, một dòng đánh dấu HIỆN TRƯỜNG, dòng kia mất nhãn. Từ loa hành lang, cô nghe cái tên My — người bạn biến mất khỏi danh sách cư trú mười bốn năm trước. Cô phải xác minh bản gốc trước khi nói với bất kỳ ai.',
+    dialogue:'Ông Tuyên đứng bên bàn hồ sơ: “Lam, trước khi tin vào màu xanh an toàn, hãy đọc xem dòng nào ghi điều đã xảy ra.”'},
+   'entry-k07':{
+    narration:'Sau khi trình dấu vết phát sóng ở quầy tiếp nhận, K-07 được ông Tuyên dẫn tới phần hồ sơ cần đối chiếu. Thẻ trắng vẫn không mở bất cứ quyền công bố hoặc điều khiển nào; nhiệm vụ chỉ là ghi lại sai lệch giữa hai bản số 0.'}
+  },
+  'scene-relay':{
+   'entry-khai':{
+    narration:'Khải đang trực kỹ thuật ở trạm chuyển tiếp dưới mực nước biển. Đồng hồ đo điện vừa bỏ qua mười bảy phút; không có nhân viên nào ký nhận mất tín hiệu. Anh đánh một vạch mực lên găng tay, rồi nhìn thấy niêm phong cầu dao cơ khí đã bong. Nếu mạng cứu hộ lại phát lặp lúc tàu đông, cổng sơ tán có thể đóng.',
+    dialogue:'Máy đo hiện cảnh báo: “Chu kỳ 408 không có nhật ký điều khiển tương ứng.” Khải nhớ một dòng chú giải của người kỹ sư đời trước: “Cắt kênh trước khi cổng đóng.”'},
+   'entry-k07':{
+    narration:'K-07 theo dấu vết phát sóng xuống trạm chuyển tiếp, nhưng không được sờ vào thiết bị. Cầu dao cơ khí trước mắt có thể giải thích mười bảy phút trống; cần một kỹ thuật viên xác minh trước khi bất kỳ ai thao tác.'}
+  },
+  'scene-tuyen':{
+   'entry-k07':{
+    narration:'K-07 dừng trước quầy tiếp nhận kho 09. Cánh cửa lưu trữ phía sau ông Tuyên vẫn khóa. Thẻ thanh tra trắng chỉ đủ mở cuộc hội thoại, không phải khóa cửa. Nếu muốn xem bản ghi, K-07 phải chỉ ra sai lệch trên bảng tin.',
+    dialogue:'Ông Tuyên gõ lên mép bàn: “Tôi không tin quyền do một chiếc thẻ tự khai. Cho tôi thấy dấu mốc mà người khác cũng kiểm chứng được.”'}
+  }
+ };
+ for(const page of pages){
+  page.context=sceneContexts[page.sceneId];
+  if(roleScenes[page.sceneId])page.roleScenes=roleScenes[page.sceneId];
+ }
+ const arrival=pages.find(page=>page.sceneId==='scene-arrival');
+ arrival.returnNarration='Bạn trở lại cầu tàu tầng chín. Đồng hồ đã chạy tiếp, nhưng khoảng trống mười bảy phút vẫn nằm nguyên trên bảng tin. Các dấu vết vừa thu thập giúp bạn đọc tình huống khác với lần đầu.';
+ arrival.returnDialogue='Loa công cộng lặp lại thông báo an toàn. Chưa có bản điều tra chính thức nào được công bố.';
+ const witness=pages.find(page=>page.sceneId==='scene-witness');
+ witness.returnNarration='Bạn quay lại quầy cháo với thông tin đã ghi nhận. Cuộn băng vẫn nằm nguyên trong bọc dầu; giờ là lúc phân biệt lời người làm chứng với dữ liệu hệ thống và quyết định có nên giao bản sao.';
+ const entryBriefings=[
+  {entryId:'entry-lam',worldContext:'Thiên Khâu năm 2187: tất cả bảng tin vừa bỏ qua mười bảy phút chu kỳ 408. Một tín hiệu lạ gọi tên My, người từng mất khỏi sổ cư trú mười bốn năm trước.',roleMemory:'Bạn là Lam, chuyên viên phục hồi hồ sơ kho 09. Bạn nhớ My là bạn thuở nhỏ; ông Tuyên là người quản thủ đã giao chìa khóa kho cho bạn.',incitingIncident:'Trong ca trực, hai bản ghi số 0 cùng xuất hiện với dữ liệu trái nhau. Giọng My vang lên từ hệ thống phát thanh, nhưng chưa ai xác minh được người phát.',objective:'So hai bản gốc, tìm người làm chứng và quyết định có đủ căn cứ công bố hay không.',boundaries:'Bạn đọc được hồ sơ kho 09; không có quyền tự sửa Canon, xác nhận My hiện tại hay cấp thưởng.'},
+  {entryId:'entry-khai',worldContext:'Thiên Khâu năm 2187: thành phố bị mất mười bảy phút phát thanh. Mạng sơ tán tự động có nguy cơ lặp lệnh khi tàu đông.',roleMemory:'Bạn là Khải, kỹ thuật viên đang trực dưới trạm chuyển tiếp. Bạn hiểu cầu dao cơ khí cũ và có quyền thao tác thiết bị trong phạm vi nghề nghiệp.',incitingIncident:'Đồng hồ kỹ thuật bỏ qua đúng mười bảy phút, còn niêm phong của một cầu dao cứu hộ đã bong.',objective:'Điều tra mạch, so tín hiệu thành phố và chỉ cách ly khi hiểu nguyên nhân vòng lặp.',boundaries:'Bạn không có quyền giả mạo số liệu kho hoặc quyết định nội dung hồ sơ công cộng.'},
+  {entryId:'entry-nhi',worldContext:'Thiên Khâu năm 2187: một thành phố tầng trên biển đã bỏ qua mười bảy phút trong nhật ký công cộng. Người dân chỉ thấy màu xanh thông báo an toàn.',roleMemory:'Bạn là Nhi, người giao bưu kiện sống tại cầu tàu tầng chín. Bà bán cháo quen mặt bạn; những món hàng quan trọng thường được nhờ giao tận tay để tránh màn hình giám sát.',incitingIncident:'Khi tàu dừng, bà bán cháo gọi đúng tên bạn và muốn trao một cuộn băng gửi tới kho lưu trữ 09.',objective:'Nhận cuộn băng, tìm đúng người giữ hồ sơ, quyết định trách nhiệm với lời kể của người trong băng.',boundaries:'Bạn không biết nội dung hai bản ghi số 0 và không có quyền tự xác định ai đang phát tín hiệu My.'},
+  {entryId:'entry-k07',worldContext:'Thiên Khâu năm 2187: bản tin chu kỳ 408 mất mười bảy phút. Một giọng nói vô chủ xuất hiện đồng thời với khoảng trống ấy.',roleMemory:'Bạn mang danh tính K-07 do cơ chế nhập vai cấp trong bản thử. Thẻ trắng chỉ cho quyền đọc nguồn công khai và đặt câu hỏi, không tạo ra quá khứ hoặc quyền công vụ thật.',incitingIncident:'Ngay lúc kích hoạt hồ sơ ở cầu tàu tầng chín, bạn nhìn thấy bảng tin nhảy giờ và nghe giọng nữ gọi tên My.',objective:'Tìm dấu vết công khai, ghi nhận mâu thuẫn rồi xin ông Tuyên cho đối chiếu hồ sơ.',boundaries:'Không có quyền tự mở kho, thay danh tính người khác, can thiệp trạm điện hoặc công bố thay người có thẩm quyền.'}
+ ];
+ return {version:'g5c-author-demo-script-1',contentHash:await hashAuthoringJson(world),pages,entryBriefings};}

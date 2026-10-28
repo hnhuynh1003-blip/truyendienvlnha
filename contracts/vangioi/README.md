@@ -1,5 +1,7 @@
 # VẠN GIỚI — Nguồn V0.1 và cổng nhập offline
 
+**G5C-P6 — sửa continuity sau phản hồi chơi thật:** Đọc [G5C_P6_ROLE_IDENTITY_AND_STORY_CONTINUITY.md](G5C_P6_ROLE_IDENTITY_AND_STORY_CONTINUITY.md). Bản Tầng Mây 9 P5 bị thiếu mở đầu thân phận, có lựa chọn Nhi gặp chính Nhi; P6 thêm briefing, lời cảnh/thoại/nhãn hành động theo từng vai, nguyên nhân trước cảnh, tác giả biên tập góc nhìn trong RAM và kiểm lại browser. Không nối quyền hay lưu production.
+
 Giai đoạn 1A, ngày 26/10/2026. Chỉ nhập và kiểm tra hồ sơ ở local; chưa có Creator UI, API lưu nháp, cấp quyền hoặc phát hành. Không được dùng báo cáo của công cụ làm chứng nhận server.
 
 **Cập nhật tiếp nối:** đợt 1A đã lên `main` tại `4ad5d73`, CI và Pages SUCCESS sau khi chủ dự án cho phép. Đợt 1B bổ sung lõi quyền/snapshot độc lập; xem [AUTHORING_BACKEND_G1B.md](AUTHORING_BACKEND_G1B.md). Chưa nối database hoặc route live.
