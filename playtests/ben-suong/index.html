@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Ngọn đèn cuối ở Bến Sương — DUDU Studio · Demo online</title>
+  <link rel="stylesheet" href="./style.css">
+  <script src="./app.js" type="module"></script>
+</head>
+<body>
+  <main class="shell">
+    <header class="mast">
+      <span class="brand">DUDU STUDIO · VẠN GIỚI</span>
+      <span class="mode">DEMO ONLINE · KHÔNG LƯU</span>
+    </header>
+    <p class="eyebrow">Bản thử nhập vai · G5C-P3</p>
+    <h1>Ngọn đèn cuối<br>ở Bến Sương</h1>
+    <p class="lede">Bão đã phủ kín cầu cảng. Khi ngọn đèn yếu dần, lựa chọn của bạn sẽ quyết định điều gì còn lại sau đêm nay.</p>
+    <section id="start" class="card" aria-labelledby="start-title">
+      <div class="intro">
+        <span class="lantern" aria-hidden="true">✦</span>
+        <div><h2 id="start-title">Bạn là ai tại Bến Sương?</h2><p class="muted">Chọn một thân phận để bắt đầu kịch bản ngắn.</p></div>
+      </div>
+      <div id="roles" class="roles" aria-live="polite"><p class="muted">Đang chuẩn bị thế giới thử…</p></div>
+    </section>
+    <section id="story" class="card" aria-live="polite" aria-label="Cảnh nhập vai" hidden>
+      <div class="scene-meta"><span class="tag" id="role-name"></span><span id="scene-number"></span></div>
+      <p id="narration" class="narration"></p>
+      <p id="dialogue" class="speech"></p>
+      <p id="reaction" class="reaction" hidden></p>
+      <div id="choice-block"><div class="divider"></div><span class="choice-title">Bạn sẽ làm gì?</span><div id="choices" class="choices"></div></div>
+      <div id="ending" class="ending" hidden>
+        <p class="eyebrow">Kết thúc kịch bản</p>
+        <p class="ending-title">Một đêm, hai điều không thể giữ</p>
+        <p class="muted">Đây chỉ là kết thúc câu chuyện: chưa xác nhận nhiệm vụ, không cấp EXP, Xu hay vật phẩm.</p>
+        <button class="reset" type="button" id="restart">Thử thân phận khác</button>
+      </div>
+    </section>
+    <p id="notice" class="notice" role="status" aria-live="polite"></p>
+    <p class="note">Thế giới này là dữ liệu thử do DUDU Studio tạo. Trạng thái chỉ nằm trong bộ nhớ trình duyệt và mất khi tải lại trang. Không đăng nhập, không NPC AI, không Kho, không cấp thưởng hoặc phát hành world thật.</p>
+  </main>
+</body>
+</html>

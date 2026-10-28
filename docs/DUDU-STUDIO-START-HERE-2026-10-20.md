@@ -1,5 +1,9 @@
 # DUDU Studio — START HERE / Bàn giao sạch · 20/10/2026
 
+## VẠN GIỚI G5C-P3 — ONLINE STATIC ROLEPLAY DEMO (28/10/2026)
+
+Nền `56495bd` (G5C-P2, Smoke/Browser/Pages SUCCESS). Du muốn **mở link chơi ngay**, nên xem `contracts/vangioi/G5C_P3_ONLINE_STATIC_ROLEPLAY_DEMO.md`: gói demo tĩnh Bến Sương dưới `playtests/ben-suong/` để GitHub Pages phục vụ ở `/truyendienvlnha/playtests/ben-suong/`; không cần Node của người chơi. Browser bundle engine G4A/G4B local, G3C QA, bản world/script đã redacted secretTruth và rehash, không ship auth/JWKS, không backend/tài khoản/save/EXP/Xu/Kho/Canon thật. Hai vai, hai kết cục, CI Playwright kiểm đường site có prefix/màn hình nhỏ. Link công khai này **chỉ là thế giới thử, không là published world của Vạn Giới**; cần xác minh Pages và CI đúng SHA trước khi đưa Du. G5D–F vẫn chưa làm.
+
 ## VẠN GIỚI G5C-P2 — LOCAL BROWSER ROLEPLAY (28/10/2026)
 
 Nền `99af328` (G5C-P, Smoke/Browser/Pages SUCCESS). Theo quyết định Du muốn tự bấm thử world, xem `contracts/vangioi/G5C_P2_LOCAL_BROWSER_ROLEPLAY.md`. Chạy `npm install --prefix cloudflare --no-audit --no-fund` một lần, sau đó `node tools/vangioi/author-roleplay-browser-server.mjs` và mở URL `http://127.0.0.1:<cổng>` do Node in ra. Demo text-first, hai vai và hai kết cục, G4A/G4B rule/revision trong RAM; localhost-only, chặn Host/Origin sai và thử Chromium mobile viewport. Không thêm đường chơi/nút trên Pages/Vạn Giới/Thiên Mệnh, không ảnh/source có quyền, save, reward, nhiệm vụ được xác nhận hay backend thật. G5D–F chưa thực hiện, CI/Pages G5C-P2 phải kiểm theo SHA mới.
