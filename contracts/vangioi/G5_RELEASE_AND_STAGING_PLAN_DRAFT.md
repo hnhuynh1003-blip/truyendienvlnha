@@ -1,6 +1,6 @@
 # DUDU Studio — KẾ HOẠCH G5 VẠN GIỚI: review, staging, publish và rollback
 
-**Ngày lập:** 28/10/2026. **Trạng thái:** **LỘ TRÌNH ĐỀ XUẤT — G5A/G5B ĐÃ CÓ FIXTURE OFFLINE, G5C–G5F CHƯA TRIỂN KHAI; CHƯA PHÊ DUYỆT KẾT NỐI HỆ THỐNG THẬT.** Xem [G5A](G5A_OFFLINE_RELEASE_CANDIDATE.md) và [G5B](G5B_OFFLINE_MODERATION_REHEARSAL.md). Căn cứ [G4_OFFLINE_CLOSEOUT_2026-10-28.md](G4_OFFLINE_CLOSEOUT_2026-10-28.md), quy chuẩn V0.1 (mục IV, VII, IX), G1L/G1Y, G2J/G2X, G3C và G4A–I. Đây không phải mệnh lệnh đổi production hay chính thức hóa mọi đề xuất Canon của V0.1.
+**Ngày lập:** 28/10/2026. **Trạng thái:** **LỘ TRÌNH ĐỀ XUẤT — G5A/G5B/G5C ĐÃ CÓ FIXTURE OFFLINE, G5D–G5F CHƯA TRIỂN KHAI; CHƯA PHÊ DUYỆT KẾT NỐI HỆ THỐNG THẬT.** Xem [G5A](G5A_OFFLINE_RELEASE_CANDIDATE.md), [G5B](G5B_OFFLINE_MODERATION_REHEARSAL.md) và [G5C](G5C_SYNTHETIC_STAGING_ASSEMBLY.md). Căn cứ [G4_OFFLINE_CLOSEOUT_2026-10-28.md](G4_OFFLINE_CLOSEOUT_2026-10-28.md), quy chuẩn V0.1 (mục IV, VII, IX), G1L/G1Y, G2J/G2X, G3C và G4A–I. Đây không phải mệnh lệnh đổi production hay chính thức hóa mọi đề xuất Canon của V0.1.
 
 ## 1. Đích đến đúng phạm vi
 
@@ -58,4 +58,4 @@ Không cần quyết định ngân sách thưởng/Firestore instance để **th
 
 Mỗi đợt phải kiểm HEAD, chạy unit/regression, dry-run và CI theo SHA, có rollback an toàn; phân biệt **đã viết code / CI đạt / Pages deploy / có backend staging thật / đã publish production**. Không thay đổi Firestore Security Rules, tài khoản, EPUB/Thư viện, Chủ Thần, Thiên Mệnh, NPC AI, 48 seed, Canon hay economy ngoài phạm vi đã duyệt.
 
-**Tiến độ:** G5A `eb09fc90` hoàn thành sidecar candidate offline. G5B bổ sung `vangioi-g5b-moderation-rehearsal.mjs` + 14 test dùng G1L/G1X/G1Y fixture, nhưng **không** phê duyệt nguồn/nhãn pháp lý thật, staging hay publish. Tiếp theo G5C — chỉ lắp gói staging synthetic khi có phạm vi riêng; **G5 chưa có quyền release**.
+**Tiến độ:** G5A `eb09fc90` hoàn thành candidate offline; G5B `8cc63e3` diễn tập moderation bằng G1L/G1X/G1Y fixture (14 test); G5C dựng **chỉ mục staging synthetic** từ candidate G5A, image/path G3C, G4A và parent arc/ending pin (15 test), **không playable, không staging thật**. Tiếp theo G5D version/save/recovery/lineage fixture; **G5 chưa có quyền release**.

@@ -1,5 +1,9 @@
 # DUDU Studio — START HERE / Bàn giao sạch · 20/10/2026
 
+## VẠN GIỚI G5C — SYNTHETIC STAGING ASSEMBLY (28/10/2026)
+
+Nền `8cc63e3` (G5B, Smoke/Browser/Pages SUCCESS). Đọc `contracts/vangioi/G5C_SYNTHETIC_STAGING_ASSEMBLY.md`: G5C chỉ ghép **index ID/pin** của world/arc từ G5A, dùng G1Y fixture gate kiểm lại, G3C/G4A, observation ảnh đủ và fallback text, G1N plan và snapshot parent phiên bản lịch sử; kiểm ending tồn tại ở parent và đồ thị không vòng. Không giữ truth text/asset bytes trong output, không chứng minh lineage hoặc bản quyền parent hiện tại, không mở world chơi hay quyền staging/publish. G5D kế tiếp cần version/save/recovery theo fixture và policy riêng; nếu muốn demo world tác giả thực sự chơi được phải thiết kế đợt gameplay offline riêng, không đánh đồng `packageIndex` với runtime. CI/Pages G5C phải kiểm theo SHA mới.
+
 ## VẠN GIỚI G5B — OFFLINE MODERATION REVIEW REHEARSAL (28/10/2026)
 
 Nền `eb09fc90` (G5A, Smoke/Browser và Pages SUCCESS). Đọc `contracts/vangioi/G5B_OFFLINE_MODERATION_REHEARSAL.md`: module G5B chỉ dùng host Node SQLite fixture và các service G1L/G1Y đã có, không cấp role/endpoint. G1L review thật trong fixture ghi decision + receipt/audit bất biến; G5B kiểm lại SQL theo reviewer độc lập, rồi G1Y đánh giá quyền nguồn/ảnh/notice **sau** approval. Không biến kết quả duyệt lịch sử thành quyền staging khi G1X hold/G1R revoke hoặc source/asset stale. Nhãn và quyền pháp lý bên ngoài vẫn phải được duyệt, `readyForStaging=false` kể cả preflight fixture PASS. G5C tiếp theo chỉ được lắp staging **synthetic cách ly**, không nối Firebase/Worker hay dựng gameplay thật chỉ nhờ G5B. CI/Pages kiểm SHA commit G5B riêng.
