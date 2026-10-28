@@ -1,5 +1,9 @@
 # DUDU Studio — START HERE / Bàn giao sạch · 20/10/2026
 
+## VẠN GIỚI G5C-P5 — TÁC GIẢ VIẾT TRUYỆN → DỰNG WORLD → CHƠI THỬ (28/10/2026)
+
+Nền G5C-P4 `2a5a930` đã có chơi thử Bến Sương online. Du muốn kiểm **cơ chế tác giả sáng tác**, chứ không thêm một nhiệm vụ chọn lời thoại như Quan Đạo. Đọc `contracts/vangioi/G5C_P5_AUTHOR_STORY_TO_ROLEPLAY.md`: truyện nguyên gốc *Tầng Mây 9 — Bản Ghi Số 0* có 3 chương/Arc 1 và Story Bible; build biến source thành world `future` theo `world-content-1`, 11 cảnh liên kết chương, vai Lam/Khải/Nhi/K-07, NPC Tuyên scripted, tranh cyberpunk mới, 3 kết cục what-if. Bàn viết thử trực tiếp trong VẠN GIỚI và URL `/playtests/tang-may-9/` có sửa chương/scene/lời thoại rồi rehash+G3C/G4A/G4B trong RAM và chơi lại; chữ dễ đọc, không yêu cầu tải Node/ZIP. Không phải lưu nháp hay quyền phát hành Creator thực, không NPC AI, Canon rewrite, thưởng, kho, Firestore/Worker production hoặc G5D–F. Trước khi báo Du phải kiểm SHA CI browser/Pages mới nhất.
+
 ## VẠN GIỚI G5C-P3 — ONLINE STATIC ROLEPLAY DEMO (28/10/2026)
 
 Nền `56495bd` (G5C-P2, Smoke/Browser/Pages SUCCESS). Du muốn **mở link chơi ngay**, nên xem `contracts/vangioi/G5C_P3_ONLINE_STATIC_ROLEPLAY_DEMO.md`: gói demo tĩnh Bến Sương dưới `playtests/ben-suong/` để GitHub Pages phục vụ ở `/truyendienvlnha/playtests/ben-suong/`; không cần Node của người chơi. Browser bundle engine G4A/G4B local, G3C QA, bản world/script đã redacted secretTruth và rehash, không ship auth/JWKS, không backend/tài khoản/save/EXP/Xu/Kho/Canon thật. Hai vai, hai kết cục, CI Playwright kiểm đường site có prefix/màn hình nhỏ. Link công khai này **chỉ là thế giới thử, không là published world của Vạn Giới**; cần xác minh Pages và CI đúng SHA trước khi đưa Du. G5D–F vẫn chưa làm.

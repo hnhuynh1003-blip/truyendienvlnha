@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self'; base-uri 'none'; object-src 'none'; form-action 'self'">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Tầng Mây 9 · DUDU Studio VẠN GIỚI — Tác giả thử nghiệm</title>
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <main class="shell">
+    <header class="mast"><a href="../../index.html" class="brand">DUDU <span>STUDIO / VẠN GIỚI</span></a>
+      <span class="status"><span class="live-dot" aria-hidden="true"></span> AUTHOR TEST · OFFLINE RULES</span>
+    </header>
+    <section class="hero"><img src="./assets/thanh-pho.webp" width="1200" height="676" alt="Thành phố Thiên Khâu tương lai với đường tàu treo và ánh quét trong đêm mưa">
+      <div class="hero-content"><span class="system-code">VG // AUTHOR SIMULATION // 2187</span>
+        <h1>TẦNG MÂY <em>09</em><span>BẢN GHI SỐ 0</span></h1>
+        <p>Thành phố Thiên Khâu đã bỏ quên 17 phút. Người viết truyện phải quyết định điều gì là Canon; người nhập vai chỉ được hành động bên trong giới hạn ấy.</p>
+      </div>
+    </section>
+    <nav class="path" aria-label="Quy trình kiểm thử tác giả">
+      <div><span>01</span> VIẾT TRUYỆN <small>3 chương gốc</small></div>
+      <div><span>02</span> DỰNG THẾ GIỚI <small>Scene + NPC + điều kiện</small></div>
+      <div><span>03</span> NHẬP VAI <small>4 vai · 3 chế độ</small></div>
+    </nav>
+    <section id="author-pane" class="author-pane" aria-labelledby="author-title">
+      <div class="section-title"><div><span class="system-code">AUTHOR CONSOLE / SANDBOX ONLY</span>
+        <h2 id="author-title">Bàn viết của tác giả</h2></div>
+        <p>Đây là tác phẩm gốc nhiều chương, không phải nhiệm vụ tạo ngẫu nhiên. Du có thể sửa chương và cảnh rồi kiểm tra ngay trong trình duyệt.</p>
+      </div>
+      <div class="editor-grid">
+        <section class="editor-panel"><div class="panel-head"><span class="step">01</span><div><h3>Nguồn truyện · Canon thử</h3><p>Văn bản gốc quyết định sự kiện và nhân vật.</p></div></div>
+          <label for="chapter-select">Chương đang biên tập</label><select id="chapter-select" aria-label="Chọn chương gốc"></select>
+          <label for="chapter-text">Nội dung chương</label><textarea id="chapter-text" rows="14" spellcheck="true" maxlength="16000" aria-describedby="source-hint"></textarea>
+          <p id="source-hint" class="hint">Thử thay một câu trong chương. Nội dung được kiểm lại và dẫn nguồn ở cảnh tương ứng; không tự sửa Canon của thế giới đã phát hành.</p>
+        </section>
+        <section class="editor-panel"><div class="panel-head"><span class="step">02</span><div><h3>Chuyển thể thành cảnh chơi</h3><p>Biến chi tiết truyện thành môi trường và lựa chọn.</p></div></div>
+          <label for="scene-select">Cảnh nhập vai</label><select id="scene-select" aria-label="Chọn cảnh chuyển thể"></select>
+          <p class="source-link" id="scene-source"></p>
+          <label for="narration-edit">Lời dẫn cảnh</label><textarea id="narration-edit" rows="7" maxlength="3800" spellcheck="true"></textarea>
+          <label for="dialogue-edit">Lời thoại kịch bản</label><textarea id="dialogue-edit" rows="3" maxlength="3800" spellcheck="true"></textarea>
+          <div class="rules-preview"><strong>Điều kiện / hành động G4A</strong><p id="scene-rules">Đang nạp quy tắc…</p></div>
+        </section>
+      </div>
+      <div class="author-actions"><button type="button" id="validate-button" class="primary-action"><span aria-hidden="true">◈</span> Kiểm tra bản thảo &amp; chạy thử</button>
+        <button type="button" id="reset-original" class="secondary-action">Khôi phục truyện mẫu</button></div>
+      <p class="feedback" id="author-feedback" role="status" aria-live="polite"></p>
+      <p class="scope-note">Các sửa đổi tồn tại trong RAM của tab này. Đường thử không cấp tài khoản tác giả, không nhập dữ liệu vào kho sản xuất, không xác thực giấy phép truyện và không phát hành thế giới.</p>
+    </section>
+    <section id="game-pane" aria-labelledby="play-title" hidden>
+      <div class="game-heading"><div><span class="system-code">SYSTEM ENTRY / ROLE SCANNER</span><h2 id="play-title">Mở phiên nhập vai từ bản thảo</h2></div>
+        <button type="button" id="back-editor" class="secondary-action">← Quay lại bản thảo</button></div>
+      <section id="role-stage" class="game-card"><p class="intro-line">Hệ thống đã nhận bốn hồ sơ do tác giả khai báo. Chọn thân phận; quyền truy cập không được cấp chỉ bằng tên vai.</p>
+        <div class="roles" id="roles" aria-live="polite"></div></section>
+      <section id="story-stage" class="game-card" hidden><div class="scene-hero"><img id="scene-image" src="./assets/thanh-pho.webp" alt="Cảnh Thiên Khâu" width="1200" height="676">
+          <div class="scene-data"><strong id="scene-place"></strong><span id="scene-progress"></span></div></div>
+        <div class="game-content"><div class="role-identity"><img id="current-portrait" src="./assets/vai-0.webp" alt="Nhân vật nhập vai" width="500" height="500">
+          <div><span class="system-code" id="current-mode"></span><h3 id="current-role"></h3><p id="current-description"></p></div></div>
+          <p id="chapter-origin" class="chapter-origin"></p><p id="source-echo" class="source-echo"></p>
+          <p id="narration" class="narration"></p>
+          <div id="npc-card" class="npc-card" hidden><img src="./assets/ong-tuyen.webp" width="560" height="840" alt="Ông Tuyên, quản thủ lưu trữ"><div><strong>Ông Tuyên · NPC kịch bản</strong><p id="npc-dialogue"></p></div></div>
+          <p id="ambient-dialogue" class="ambient-dialogue"></p><p id="role-reaction" class="role-reaction" hidden></p>
+          <section id="decision-stage" class="decision-stage"><span class="system-code">ALLOWED ACTIONS / G4A RULESET</span><h3>Quyết định của bạn</h3>
+            <div id="choices" class="choices"></div>
+            <form id="intent-form" class="intent-form" autocomplete="off"><label for="intent-input">Nhập ý định thử</label>
+              <div class="intent-row"><input id="intent-input" maxlength="120" placeholder="Ví dụ: xem bản tin, hỏi ông Tuyên…"><button id="intent-submit" type="submit">Gửi lệnh</button></div>
+              <small>Lệnh chỉ ánh xạ tới hành động đang được kịch bản cho phép. Không có NPC AI hay tự cấp thưởng.</small></form>
+          </section>
+          <div id="ending-stage" class="ending-stage" hidden><span class="system-code">WHAT-IF OUTCOME / KHÔNG THAY CANON</span><h3 id="ending-title"></h3>
+            <p>Kết cục này chỉ là mô phỏng. Tác phẩm gốc vẫn dừng trước quyết định chính thức; không chứng nhận nhiệm vụ hay cấp EXP/Xu/vật phẩm.</p>
+            <button id="restart" type="button" class="primary-action">Thử một thân phận khác</button></div>
+        </div>
+      </section>
+      <p id="play-feedback" class="feedback" role="status" aria-live="polite"></p>
+    </section>
+    <footer>TẦNG MÂY 9 · Truyện hư cấu nguyên gốc DUDU Studio · Ảnh nguyên gốc · Chỉ thử tạo nội dung/roleplay offline trên GitHub Pages. Không dùng làm thẩm quyền Canon hay xác thực server.</footer>
+  </main>
+</body>
+</html>

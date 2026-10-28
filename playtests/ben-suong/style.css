@@ -1,6 +1,6 @@
 *{box-sizing:border-box}
 html{min-height:100%;background:#07131b;scroll-behavior:smooth}
-body{margin:0;min-height:100vh;color:#f7f1e6;background:radial-gradient(ellipse at 75% -10%,#244e5b 0%,transparent 47%),linear-gradient(#0a1b27,#102c34 65%,#07131b);font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif}
+body{margin:0;min-height:100vh;color:#fcf9f1;background:radial-gradient(ellipse at 75% -10%,#244e5b 0%,transparent 47%),linear-gradient(#0a1b27,#102c34 65%,#07131b);font:17px/1.75 system-ui,-apple-system,"Segoe UI",sans-serif}
 button,input{font:inherit}button{cursor:pointer}button:disabled,input:disabled{cursor:wait;opacity:.62}
 button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #ffdb8b;outline-offset:3px}
 [hidden]{display:none!important}
@@ -43,8 +43,8 @@ h1{font-size:clamp(2.5rem,7vw,4.4rem);line-height:1.08;letter-spacing:-.035em;ma
 .role-band h2{font-size:1.34rem;margin:0;line-height:1.2}
 .role-band .muted{margin:4px 0 0;font-size:.82rem}
 .role-band .eyebrow{font-size:.65rem}
-.narration{font:1.16rem/1.85 Georgia,"Times New Roman",serif;color:#f7f2e5;margin:0 0 18px;white-space:pre-line}
-.ambient,.speech{border-left:3px solid #dbb578;margin:12px 0;padding:8px 0 8px 17px;color:#cce2db;white-space:pre-line}
+.narration{font:1.09rem/1.85 system-ui,-apple-system,"Segoe UI",sans-serif;color:#fffdf6;margin:0 0 18px;white-space:pre-line}
+.ambient,.speech{border-left:3px solid #dbb578;margin:12px 0;padding:8px 0 8px 17px;color:#e1f2ec;white-space:pre-line}
 .npc-block{display:flex;gap:16px;background:#1e3e49;border:1px solid #b6a07366;border-radius:13px;padding:14px;margin:19px 0;align-items:center}
 .npc-block img{width:86px;height:110px;object-fit:cover;flex:none;border-radius:9px}
 .npc-block strong{font-size:.89rem;color:#f3d595}

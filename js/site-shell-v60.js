@@ -198,16 +198,20 @@
    pilotLink.href='dudu-pilot.html?v=play-v8';
    pilotLink.setAttribute('aria-label','Mở bản chơi thử Đêm mưa ở Quan Đạo');
    pilot.append(pilotCopy,pilotLink);
-   // A separate author-authored browser playtest: three entry mechanisms,
-   // four roles, offline G4A/G4B effects. No production world or rewards.
+   // The author-first P5 pilot takes the foreground. Preserve discoverability
+   // of the prior P4 rehearsal in the SAME card, without a redundant CTA.
+   // Same offline G4A/G4B rights guard; never a published production world.
    const roleplay=element('aside','dudu-pilot-entry dudu-pilot-entry-inline');
    const roleplayCopy=element('div','dudu-pilot-entry-copy');
-   roleplayCopy.append(element('span','dudu-pilot-entry-kicker','VẠN GIỚI · THỬ NHẬP VAI G5C'),
-     element('strong','','Ngọn đèn cuối ở Bến Sương'),
-     element('span','dudu-pilot-entry-desc','4 thân phận · cảnh minh họa · đối thoại kịch bản · không lưu, không thưởng'));
-   const roleplayLink=element('a','dudu-pilot-launch','Thử nhập vai ↗');
-   roleplayLink.href='playtests/ben-suong/';
-   roleplayLink.setAttribute('aria-label','Mở bản nhập vai thử Bến Sương trên DUDU Studio');
+   roleplayCopy.append(element('span','dudu-pilot-entry-kicker','VẠN GIỚI · TÁC GIẢ THỬ NGHIỆM G5C'),
+     element('strong','','Tầng Mây 9 — Bản Ghi Số 0'),
+     element('span','dudu-pilot-entry-desc','3 chương truyện gốc · sửa bản thảo và cảnh · chơi thử 4 thân phận'));
+   const roleplayLink=element('a','dudu-pilot-launch','Mở bàn viết ↗');
+   roleplayLink.href='playtests/tang-may-9/';
+   roleplayLink.setAttribute('aria-label','Mở bàn viết tác giả thử nghiệm Tầng Mây 9 trên Vạn Giới');
+   const priorDemo=element('a','dudu-pilot-entry-desc','Bản thử trước: Ngọn đèn cuối ở Bến Sương');
+   priorDemo.href='playtests/ben-suong/';
+   roleplayCopy.append(priorDemo);
    roleplay.append(roleplayCopy,roleplayLink);
    root.append(pilot,roleplay,starter,hidden);
  }
