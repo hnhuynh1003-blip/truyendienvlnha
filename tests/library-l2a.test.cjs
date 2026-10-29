@@ -4,6 +4,7 @@ const assert=require('node:assert/strict');
 const {readFileSync}=require('node:fs');
 const {join}=require('node:path');
 const vm=require('node:vm');
+const synopsisSearch=require('../js/library-synopsis-search-l2d.js');
 
 const root=join(__dirname,'..');
 const html=readFileSync(join(root,'index.html'),'utf8');
@@ -52,7 +53,10 @@ function render(books,bookmarks=()=>null){
   getNovelLatestDate:()=>0,getNovelTotalWords:()=>0,
   openCover:idx=>calls.push(['cover',idx]),
   smartReadAction:idx=>calls.push(['read',idx]),
-  applyUserRole:()=>{},updatePhoneUI:()=>{}
+  applyUserRole:()=>{},updatePhoneUI:()=>{},
+  DuduLibrarySynopsisSearchL2D:synopsisSearch,
+  librarySynopsisIndexL2D:{getSynopsis:()=>'',isFailed:()=>false},
+  missingSearchSynopsesL2D:()=>[]
  };
  vm.runInNewContext(renderer+'\nrenderHome();',context);
  return {grid,count,calls};

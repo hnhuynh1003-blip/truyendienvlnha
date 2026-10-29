@@ -4,6 +4,7 @@ const assert=require('node:assert/strict');
 const {readFileSync}=require('node:fs');
 const {join}=require('node:path');
 const vm=require('node:vm');
+const synopsisSearch=require('../js/library-synopsis-search-l2d.js');
 const root=join(__dirname,'..');
 const html=readFileSync(join(root,'index.html'),'utf8');
 const shell=readFileSync(join(root,'js/site-shell-v60.js'),'utf8');
@@ -35,7 +36,10 @@ function runRender(books,opts={}){
   DuduStoryDates:{ordering:()=>1,display:()=> '29/10/2026'},
   v568ReadBookmarkForNovel:n=>opts.bookmarks?.[n.id]||null,
   openCover:i=>calls.push(['cover',i]),smartReadAction:i=>calls.push(['read',i]),
-  resetAllFilters:()=>calls.push(['reset']),applyUserRole:()=>{},updatePhoneUI:()=>{}
+  resetAllFilters:()=>calls.push(['reset']),applyUserRole:()=>{},updatePhoneUI:()=>{},
+  DuduLibrarySynopsisSearchL2D:synopsisSearch,
+  librarySynopsisIndexL2D:{getSynopsis:()=>'',isFailed:()=>false},
+  missingSearchSynopsesL2D:()=>[]
  };
  vm.runInNewContext(renderSource+'\nrenderHome();',context);
  return {grid,count,label,calls};
@@ -163,7 +167,7 @@ test('L2B.3 home uses accessible short headline and code artwork rather than lon
 });
 
 test('L2C book dossier uses one synopsis panel without changing metadata',()=>{
- assert.match(html,/const introText = String\(intro\.text \|\| novel\.intro \|\| novel\.desc \|\| ''\)\.trim\(\)/);
+ assert.match(html,/const introText = String\(intro\.text \|\| novel\.intro \|\| novel\.desc \|\|\s*librarySynopsisIndexL2D\.getSynopsis\(novel\) \|\| ''\)\.trim\(\)/);
  assert.match(html,/introBox\.hidden=!full/);
  assert.match(html,/bookDesc\.hidden=true/);
  assert.match(html,/book-chapter-count'\)\.textContent = String\(novel\.chapters\.length\)/);

@@ -44,7 +44,8 @@ test('L2C cover tags and published EPUB preview never mutate cloud stories',()=>
   assert.match(index,/id="book-genre-tags"/);
   assert.match(index,/genreHost\.appendChild\(tag\)/);
   assert.match(index,/novel\._cloudV49&&!introText/);
-  assert.match(index,/DuduEpubProductionV49\.readChapter\(db,bookId,synopsisChapter\.id\)/);
+  assert.match(index,/DuduLibrarySynopsisSearchL2D\.synopsisChapter\(novel\)/);
+  assert.match(index,/librarySynopsisIndexL2D\.ensure\(novel\)/);
   assert.match(index,/style="display:\$\{novel\._cloudV49\?'none':'flex'\}/);
   assert.match(index,/readerEdit\.hidden=!!novel\._cloudV49/);
   assert.doesNotMatch(index,/DuduEpubProductionV49\.updatePublished|DuduEpubProductionV49\.updateChapter/);

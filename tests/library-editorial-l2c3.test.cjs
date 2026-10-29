@@ -16,10 +16,11 @@ test('L2C.3 homepage entries are compact book-and-copy compositions on all scree
 
 test('L2C.3 cover renders one bounded expandable synopsis regardless of import source',()=>{
   assert.match(index,/bookDesc\.hidden=true/);
-  assert.match(index,/const introText = String\(intro\.text \|\| novel\.intro \|\| novel\.desc \|\| ''\)\.trim\(\)/);
+  assert.match(index,/const introText = String\(intro\.text \|\| novel\.intro \|\| novel\.desc \|\|\s*librarySynopsisIndexL2D\.getSynopsis\(novel\) \|\| ''\)\.trim\(\)/);
   assert.match(index,/const maxLength=340/);
   assert.match(index,/introExpand\.setAttribute\('aria-expanded',String\(!expanded\)\)/);
-  assert.match(index,/DuduEpubProductionV49\.readChapter\(db,bookId,synopsisChapter\.id\)/);
+  assert.match(index,/DuduLibrarySynopsisSearchL2D\.synopsisChapter\(novel\)/);
+  assert.match(index,/librarySynopsisIndexL2D\.ensure\(novel\)/);
   assert.match(design,/\.intro-text \{[\s\S]*?overflow-wrap:anywhere;word-break:break-word/);
   assert.doesNotMatch(index,/DuduEpubProductionV49\.updatePublished|\.updateMetadata\(/);
 });

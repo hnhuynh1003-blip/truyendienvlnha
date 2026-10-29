@@ -118,6 +118,7 @@
   <script src="js/epub-text-v57.js?v=57-1"></script>
   <script src="js/epub-import-v48.js?v=l2b-4"></script>
   <script src="js/epub-production-v49.js?v=l2b-4"></script>
+  <script src="js/library-synopsis-search-l2d.js?v=l2d-1"></script>
   <script src="js/npc-portrait-library-v1.js?v=40-1"></script>
   <script src="js/npc-anime-candidates-v14.js"></script>
   <script src="js/player-avatar-v16.js"></script>
@@ -765,7 +766,7 @@
   <link rel="stylesheet" href="css/economy-live-v52.css?v=52-1">
   <style>body.dudu-spark-personal-mode #dudu-spark-chat-tip{display:block !important;}</style>
   <link rel="stylesheet" href="css/site-shell-v60.css?v=lib-l2c-2">
-  <link rel="stylesheet" href="css/library-discovery-l2b.css?v=l2c-3">
+  <link rel="stylesheet" href="css/library-discovery-l2b.css?v=l2d-1">
   <link rel="stylesheet" href="css/library-cards-l2b4.css?v=l2c-2">
   <link rel="stylesheet" href="css/library-reader-l2c.css?v=l2c-2">
   <link rel="stylesheet" href="css/library-editorial-l2c3.css?v=l2c-3">
@@ -815,7 +816,7 @@
         <div class="search-row">
           <label class="archive-search-field" for="search-novel-input">
             <span aria-hidden="true">⌕</span>
-            <input type="search" class="search-input" id="search-novel-input" autocomplete="off" placeholder="Tìm một câu chuyện, nhân vật…" oninput="onSearchChange()">
+            <input type="search" class="search-input" id="search-novel-input" autocomplete="off" placeholder="Tìm truyện, tác giả, văn án…" oninput="onSearchChange()">
           </label>
           <select class="sort-select" id="sort-select-ctrl" aria-label="Sắp xếp tác phẩm" onchange="onSortChange()">
             <option value="NEWEST_UPDATE">Mới cập nhật</option>
@@ -2184,12 +2185,15 @@
     let novels = JSON.parse(localStorage.getItem(IS_SANDBOX_MODE ? 'dudu-sandbox-library' : 'my_novels_library_db')) || initialNovels;
     // V49 production EPUBs live in separate Firestore story/chapter documents.
     let epubPublishedBooksV49 = [];
+    const librarySynopsisIndexL2D=DuduLibrarySynopsisSearchL2D.createIndex((bookId,chapterId)=>
+      DuduEpubProductionV49.readChapter(db,bookId,chapterId));
     async function refreshEpubCloudBooksV49(){
       if(IS_SANDBOX_MODE||!window.DuduEpubProductionV49)return;
       try{
         epubPublishedBooksV49=await DuduEpubProductionV49.publicBooks(db);
         mergeEpubCloudBooksV49();
         renderHome();
+        scheduleSynopsisSearchL2D();
       }catch(err){console.warn('V49: không tải được truyện EPUB',err?.code||err?.message)}
     }
     function mergeEpubCloudBooksV49(){
@@ -2244,6 +2248,8 @@
     let currentFilterStatus = "ALL";
     let selectedTag = "ALL";
     let searchQuery = "";
+    let synopsisSearchTimerL2D=null;
+    let synopsisSearchTaskL2D=null;
     let sortMode = "NEWEST_UPDATE";
     let inventoryTab = "ALL";
     let inventoryDetailSelection = null;
@@ -6159,8 +6165,35 @@ document.getElementById('phone-home-screen').style.display = 'none';
     }
 
     function onSearchChange() {
-      searchQuery = document.getElementById('search-novel-input').value.trim().toLowerCase();
+      searchQuery = document.getElementById('search-novel-input').value.trim();
       renderHome();
+      scheduleSynopsisSearchL2D();
+    }
+
+    // The historical EPUB synopsis may exist only as a published "Văn án"
+    // chapter. Read that chapter on demand, with a per-session cache. Search
+    // never creates or updates Firestore records or modifies chapter IDs.
+    function missingSearchSynopsesL2D(){
+      if(!searchQuery)return [];
+      return novels.filter(n=>librarySynopsisIndexL2D.isUnresolved(n)&&
+        !DuduLibrarySynopsisSearchL2D.matches(n,searchQuery));
+    }
+    function scheduleSynopsisSearchL2D(){
+      if(synopsisSearchTimerL2D!==null)clearTimeout(synopsisSearchTimerL2D);
+      synopsisSearchTimerL2D=null;
+      if(!searchQuery||IS_SANDBOX_MODE||synopsisSearchTaskL2D||
+        !missingSearchSynopsesL2D().length)return;
+      synopsisSearchTimerL2D=setTimeout(()=>{
+        synopsisSearchTimerL2D=null;
+        const missing=missingSearchSynopsesL2D();
+        if(!missing.length||synopsisSearchTaskL2D)return;
+        synopsisSearchTaskL2D=librarySynopsisIndexL2D.loadMissing(missing,()=>{
+          if(searchQuery)renderHome();
+        }).finally(()=>{
+          synopsisSearchTaskL2D=null;
+          if(searchQuery){renderHome();scheduleSynopsisSearchL2D();}
+        });
+      },260);
     }
 
     function onSortChange() {
@@ -6254,14 +6287,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
       }
 
       if (searchQuery) {
-        filtered = filtered.filter(n => {
-          const matchTitle = (n.title || "").toLowerCase().includes(searchQuery);
-          const matchDesc = (n.desc || "").toLowerCase().includes(searchQuery);
-          const matchGenre = (n.genre || "").toLowerCase().includes(searchQuery);
-          const matchAuthor = (n.author || "").toLowerCase().includes(searchQuery);
-          const matchChar = (n.characters || []).some(c => (c.name || "").toLowerCase().includes(searchQuery));
-          return matchTitle || matchDesc || matchGenre || matchAuthor || matchChar;
-        });
+        filtered = filtered.filter(n=>DuduLibrarySynopsisSearchL2D.matches(n,
+          searchQuery,librarySynopsisIndexL2D.getSynopsis(n)));
       }
 
       filtered.sort((a, b) => {
@@ -6275,8 +6302,13 @@ document.getElementById('phone-home-screen').style.display = 'none';
         return 0;
       });
 
+      const pendingSynopses=missingSearchSynopsesL2D().length;
+      const failedSynopses=searchQuery?novels.filter(n=>librarySynopsisIndexL2D.isFailed(n)&&
+        !DuduLibrarySynopsisSearchL2D.matches(n,searchQuery)).length:0;
       document.getElementById('search-result-count').textContent =
-        `${filtered.length} / ${novels.length} tác phẩm`;
+        `${filtered.length} / ${novels.length} tác phẩm`+
+        (pendingSynopses?' · Đang tra văn án…':'')+
+        (!pendingSynopses&&failedSynopses?' · Có văn án chưa tải được':'');
       const filterLabel = document.getElementById('archive-filter-label');
       if (filterLabel) {
         const active = [selectedTag !== 'ALL' ? selectedTag : '',
@@ -6288,10 +6320,13 @@ document.getElementById('phone-home-screen').style.display = 'none';
         const empty = document.createElement('div');
         empty.className = 'archive-empty-state';
         const heading = document.createElement('strong');
-        heading.textContent = novels.length ? 'Chưa tìm thấy câu chuyện phù hợp' : 'Kệ sách đang chờ tác phẩm đầu tiên';
+        heading.textContent = pendingSynopses?'Đang tìm trong văn án EPUB…':
+          (novels.length?'Chưa tìm thấy câu chuyện phù hợp':'Kệ sách đang chờ tác phẩm đầu tiên');
         const detail = document.createElement('p');
-        detail.textContent = novels.length ? 'Thử tên khác hoặc bỏ bớt bộ lọc để khám phá thêm.' :
-          'Những tác phẩm được phát hành sẽ xuất hiện tại đây.';
+        detail.textContent = pendingSynopses?'Đang tra cứu những truyện cũ chưa có văn án trong dữ liệu tìm kiếm.':
+          (failedSynopses?'Không tải được một số văn án EPUB. Hãy thử tải lại trang nếu cần tìm trong những tác phẩm này.':
+          (novels.length?'Thử tên khác hoặc bỏ bớt bộ lọc để khám phá thêm.':
+          'Những tác phẩm được phát hành sẽ xuất hiện tại đây.'));
         empty.append(heading, detail);
         if (novels.length) {
           const clear = document.createElement('button');
@@ -6401,6 +6436,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
 
     function resetAllFilters() {
       searchQuery = "";
+      if(synopsisSearchTimerL2D!==null)clearTimeout(synopsisSearchTimerL2D);
+      synopsisSearchTimerL2D=null;
       selectedTag = "ALL";
       currentFilterStatus = "ALL";
       sortMode = "NEWEST_UPDATE";
@@ -6594,7 +6631,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
       }
 
       const intro = novel.introData || {};
-      const introText = String(intro.text || novel.intro || novel.desc || '').trim();
+      const introText = String(intro.text || novel.intro || novel.desc ||
+        librarySynopsisIndexL2D.getSynopsis(novel) || '').trim();
       const introBox = document.querySelector('#cover-view .intro-terminal-box');
       const introExpand=document.getElementById('book-intro-expand');
       const introBody=document.getElementById('book-intro');
@@ -6624,7 +6662,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       // Older published EPUBs may have a real "Văn án" chapter but no synopsis
       // metadata. Display a read-only preview without rewriting the book/IDs.
       if(novel._cloudV49&&!introText){
-        const synopsisChapter=novel.chapters.find(ch=>/^văn án(?:\b|\s|:|$)/iu.test(String(ch.title||'').trim()));
+        const synopsisChapter=DuduLibrarySynopsisSearchL2D.synopsisChapter(novel);
         if(synopsisChapter){
           displaySynopsis('Đang tải văn án…');
           const bookId=novel.id;
@@ -6632,9 +6670,11 @@ document.getElementById('phone-home-screen').style.display = 'none';
             if(novels[selectedNovelIndex]?.id!==bookId)return;
             displaySynopsis(String(content||'').trim()||'Văn án có trong mục lục.');
           };
-          if(typeof synopsisChapter.content==='string')displayFetchedSynopsis(synopsisChapter.content);
-          else DuduEpubProductionV49.readChapter(db,bookId,synopsisChapter.id)
-            .then(ch=>displayFetchedSynopsis(ch.content))
+          librarySynopsisIndexL2D.ensure(novel)
+            .then(content=>{
+              displayFetchedSynopsis(content);
+              if(searchQuery)renderHome();
+            })
             .catch(()=>displayFetchedSynopsis('Văn án có trong mục lục; hãy mở chương để đọc.'));
         }
       }

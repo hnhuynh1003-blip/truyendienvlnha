@@ -69,7 +69,7 @@ body.dudu-site-v60 #home-view .sort-select {
   color:var(--archive-gold);font:700 10px/1.45 ui-monospace,Consolas,monospace;
   letter-spacing:.13em;
 }
-#home-view #search-result-count {color:var(--archive-muted);font-size:11px;letter-spacing:0;font-weight:500;white-space:nowrap}
+#home-view #search-result-count {color:var(--archive-muted);font-size:11px;letter-spacing:0;font-weight:500;white-space:normal;text-align:right;min-width:0}
 
 /* One opening folio followed by a compact catalog — no cloned card wall. */
 body.dudu-site-v60 #home-view .novel-grid {
