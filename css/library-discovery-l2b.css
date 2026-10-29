@@ -154,10 +154,7 @@ body.dudu-site-v60 #home-view .archive-shelf-item .novel-meta .btn:hover {backgr
 #home-view .archive-empty-state p {margin:9px auto 16px;color:var(--archive-muted);font-size:13px}
 #home-view .archive-empty-reset {background:none;color:var(--archive-gold);border:1px solid var(--archive-gold);border-radius:7px;padding:10px 14px;cursor:pointer}
 
-/* Cyber Phone remains accessible while browsing; only the focused reader hides it. */
-body.dudu-phone-v11.dudu-library-browsing #phone-fab {
-  border-radius:15px;box-shadow:0 4px 16px rgba(3,8,20,.42),0 0 0 1px rgba(220,198,156,.2);
-}
+/* Phone placement is shared between routes in library-editorial-l2c3.css. */
 body.dudu-site-v60 .header-create-short {display:none}
 
 /* The book dossier and chapter folio continue the same archive language. */
@@ -240,14 +237,6 @@ body.dudu-site-v60 #cover-view .btn:hover:not(:disabled) {background:#dcc69c;col
  body.dudu-library-browsing .d60-bottomnav .d60-navitem {background:none;border-radius:6px;color:#94a5bb;min-height:47px;font-size:10px}
  body.dudu-library-browsing .d60-bottomnav .d60-navitem[aria-current=page] {color:#e6c894;background:rgba(220,198,156,.09)}
  body.dudu-library-browsing .d60-bottomnav .d60-icon {font-size:18px}
- body.dudu-phone-v11.dudu-library-browsing #phone-fab {
-   left:12px;right:auto;bottom:calc(79px + env(safe-area-inset-bottom));
-   width:47px;height:47px;font-size:20px;border-radius:14px;
- }
- body.dudu-phone-v11.dudu-library-browsing #cyber-phone {
-   left:12px;right:auto;bottom:calc(138px + env(safe-area-inset-bottom));
-   max-width:calc(100vw - 24px);height:min(620px,calc(100dvh - 166px));
- }
  body.dudu-library-browsing header .brand {font-size:12px}
  body.dudu-library-browsing header .user-info-badge {max-width:98px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
  body.dudu-library-browsing .header-create-long {display:none}

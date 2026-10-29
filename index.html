@@ -765,9 +765,10 @@
   <link rel="stylesheet" href="css/economy-live-v52.css?v=52-1">
   <style>body.dudu-spark-personal-mode #dudu-spark-chat-tip{display:block !important;}</style>
   <link rel="stylesheet" href="css/site-shell-v60.css?v=lib-l2c-2">
-  <link rel="stylesheet" href="css/library-discovery-l2b.css?v=l2b-4">
+  <link rel="stylesheet" href="css/library-discovery-l2b.css?v=l2c-3">
   <link rel="stylesheet" href="css/library-cards-l2b4.css?v=l2c-2">
   <link rel="stylesheet" href="css/library-reader-l2c.css?v=l2c-2">
+  <link rel="stylesheet" href="css/library-editorial-l2c3.css?v=l2c-3">
   <link rel="stylesheet" href="css/world-experience-v65.css?v=65-1">
   <link rel="stylesheet" href="css/world-experience-v66.css?v=66-2">
   <link rel="stylesheet" href="css/dudu-pilot-v1.css?v=play-v8">
@@ -873,10 +874,11 @@
 
       <div class="intro-terminal-box">
         <div class="intro-header">
-          <span id="intro-box-title">◆ VĂN ÁN // GLITCH RECORD</span>
+          <span id="intro-box-title">◆ VĂN ÁN</span>
           <span class="glitch-text" id="intro-box-code" style="font-family:monospace; cursor:pointer;" onclick="triggerEasterEgg()">SYS_ERR_0x000F89</span>
         </div>
         <div class="intro-text" id="book-intro">[ Chưa có văn án ]</div>
+        <button type="button" id="book-intro-expand" class="intro-expand" aria-expanded="false" hidden>Xem đầy đủ văn án ↓</button>
       </div>
 
       <div class="index-toolbar">
@@ -6582,7 +6584,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       genres.forEach(genre=>{const tag=document.createElement('span');tag.textContent=genre;genreHost.appendChild(tag);});
       genreHost.hidden=!genres.length;
       const bookDesc=document.getElementById('book-desc');
-      bookDesc.textContent = novel.desc || "Chưa có tóm tắt.";
+      bookDesc.hidden=true;
 
       const coverContainer = document.getElementById('book-cover-art-container');
       if (novel.coverImage) {
@@ -6592,31 +6594,48 @@ document.getElementById('phone-home-screen').style.display = 'none';
       }
 
       const intro = novel.introData || {};
-      const introText = String(intro.text || novel.intro || '').trim();
+      const introText = String(intro.text || novel.intro || novel.desc || '').trim();
       const introBox = document.querySelector('#cover-view .intro-terminal-box');
-      if (introBox) introBox.hidden = !introText;
-      // EPUB stores its synopsis for both discovery and the book dossier;
-      // only show the full text once when those fields are identical.
-      document.getElementById('book-desc').hidden = !!introText && introText === String(novel.desc || '').trim();
-      document.getElementById('intro-box-title').textContent = `◆ ${intro.title || "VĂN ÁN"}`;
-      document.getElementById('intro-box-code').textContent = intro.code || "SYS_INITIALIZED";
-      document.getElementById('book-intro').textContent = introText;
+      const introExpand=document.getElementById('book-intro-expand');
+      const introBody=document.getElementById('book-intro');
+      document.getElementById('intro-box-title').textContent='◆ VĂN ÁN';
+      document.getElementById('intro-box-code').hidden=true;
+      // A single dossier component serves both legacy stories and EPUB; the
+      // separate summary remains in metadata for discovery/search only.
+      const displaySynopsis=source=>{
+        const full=String(source||'').replace(/^\s*văn án\s*(?:\r?\n)+/iu,'').trim();
+        introBox.hidden=!full;
+        const maxLength=340;
+        const truncated=full.length>maxLength;
+        const preview=truncated?full.slice(0,maxLength).replace(/\s+\S*$/,'').trim()+'…':full;
+        introBody.textContent=preview;
+        introExpand.hidden=!truncated;
+        introExpand.setAttribute('aria-expanded','false');
+        introExpand.textContent='Xem đầy đủ văn án ↓';
+        introExpand.onclick=()=>{
+          const expanded=introExpand.getAttribute('aria-expanded')==='true';
+          introBody.textContent=expanded?preview:full;
+          introExpand.setAttribute('aria-expanded',String(!expanded));
+          introExpand.textContent=expanded?'Xem đầy đủ văn án ↓':'Thu gọn ↑';
+        };
+      };
+      displaySynopsis(introText);
 
       // Older published EPUBs may have a real "Văn án" chapter but no synopsis
       // metadata. Display a read-only preview without rewriting the book/IDs.
-      if(novel._cloudV49&&!novel.desc&&!introText){
+      if(novel._cloudV49&&!introText){
         const synopsisChapter=novel.chapters.find(ch=>/^văn án(?:\b|\s|:|$)/iu.test(String(ch.title||'').trim()));
         if(synopsisChapter){
-          bookDesc.textContent='Đang tải văn án…';
+          displaySynopsis('Đang tải văn án…');
           const bookId=novel.id;
-          const displaySynopsis=(content)=>{
+          const displayFetchedSynopsis=(content)=>{
             if(novels[selectedNovelIndex]?.id!==bookId)return;
-            bookDesc.textContent=String(content||'').trim().slice(0,1100)||'Văn án có trong mục lục.';
+            displaySynopsis(String(content||'').trim()||'Văn án có trong mục lục.');
           };
-          if(typeof synopsisChapter.content==='string')displaySynopsis(synopsisChapter.content);
+          if(typeof synopsisChapter.content==='string')displayFetchedSynopsis(synopsisChapter.content);
           else DuduEpubProductionV49.readChapter(db,bookId,synopsisChapter.id)
-            .then(ch=>displaySynopsis(ch.content))
-            .catch(()=>displaySynopsis('Văn án có trong mục lục; hãy mở chương để đọc.'));
+            .then(ch=>displayFetchedSynopsis(ch.content))
+            .catch(()=>displayFetchedSynopsis('Văn án có trong mục lục; hãy mở chương để đọc.'));
         }
       }
 

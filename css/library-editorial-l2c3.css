@@ -1,0 +1,98 @@
+/* L2C.3 — Editorial book entries rather than framed poster tiles. */
+#d60-home .d60-grid {
+  grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;
+}
+#d60-home .d62-book {
+  display:grid;grid-template-columns:91px minmax(0,1fr);align-items:stretch;gap:14px;
+  min-width:0;min-height:175px;padding:12px;
+  border:1px solid rgba(165,191,193,.24);border-radius:9px;
+  background:linear-gradient(115deg,#192938,#131e2b);overflow:hidden;
+  transition:border-color .16s,background-color .16s;
+}
+#d60-home .d62-book:hover,
+#d60-home .d62-book:focus-within {border-color:#87b8b5;background:#1a2b39}
+#d60-home .d62-cover-action {
+  display:block;align-self:start;width:91px;height:136px;min-height:0;padding:0;
+  border:0;border-radius:4px;background:transparent;
+}
+#d60-home .d62-cover-action:before {display:none}
+#d60-home .d62-cover-action .d60-cover {
+  width:91px;height:136px;max-height:none;aspect-ratio:2/3;border-radius:3px;
+  box-shadow:3px 4px 0 rgba(4,9,15,.35),0 6px 15px rgba(0,0,0,.23);
+}
+#d60-home .d62-book-info {
+  display:flex;flex-direction:column;gap:5px;min-height:0;min-width:0;
+  padding:0;margin:0;border:0;
+}
+#d60-home .d62-book-info:before {
+  content:"NO. "counter(edition,decimal-leading-zero);color:#96c5bf;
+  font:700 9px/1.1 ui-monospace,Consolas,monospace;letter-spacing:.09em;
+}
+#d60-home .d62-book-genre {font-size:10px;letter-spacing:0;line-height:1.3}
+#d60-home .d62-book .d60-title {
+  font:700 14px/1.37 system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+  letter-spacing:-.014em;-webkit-line-clamp:3;
+}
+#d60-home .d62-book .d60-meta {font-size:10px;line-height:1.45}
+#d60-home .d62-book .d60-bookaction {
+  font-size:11px;font-weight:700;margin-top:auto;padding:8px 0 0;min-height:29px;
+  color:#e2c998;
+}
+@media(min-width:761px) and (max-width:1010px) {
+  #d60-home .d60-grid {grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:760px) {
+  #d60-home .d60-grid {
+    grid-template-columns:minmax(0,1fr);grid-auto-flow:row;grid-auto-columns:auto;
+    overflow:visible;scroll-snap-type:none;overscroll-behavior-inline:auto;
+    padding:0;gap:10px;
+  }
+  #d60-home .d62-book {
+    grid-template-columns:82px minmax(0,1fr);gap:13px;
+    min-height:146px;padding:11px;border-radius:8px;
+  }
+  #d60-home .d62-cover-action {width:82px;height:123px;min-height:0;padding:0}
+  #d60-home .d62-cover-action .d60-cover {width:82px;height:123px;max-height:none}
+  #d60-home .d62-book .d60-title {font-size:14px;-webkit-line-clamp:3}
+  #d60-home .d62-book .d60-bookaction {padding-top:6px}
+}
+
+/* One Phone anchor across Home, Library, shelf and story details. */
+body.dudu-site-v60 #phone-fab {
+  left:auto;right:12px;width:44px;height:44px;border-radius:14px;
+  box-shadow:0 5px 17px rgba(3,8,20,.36);opacity:.94;
+}
+body.dudu-site-v60 #phone-fab:hover,
+body.dudu-site-v60 #phone-fab:focus-visible {opacity:1}
+@media(max-width:760px) {
+  body.dudu-site-v60 #phone-fab {left:auto;right:12px;bottom:calc(79px + env(safe-area-inset-bottom))}
+  body.dudu-site-v60 #cyber-phone {
+    left:auto;right:12px;bottom:calc(136px + env(safe-area-inset-bottom));
+    max-width:calc(100vw - 24px);height:min(620px,calc(100dvh - 166px));
+  }
+}
+
+/* Consistent, bounded synopsis presentation for legacy and imported EPUB. */
+body.dudu-site-v60 #cover-view,
+body.dudu-site-v60 #cover-view .book-cover-banner,
+body.dudu-site-v60 #cover-view .book-banner-meta {min-width:0;max-width:100%}
+body.dudu-site-v60 #cover-view #book-desc[hidden] {display:none!important}
+body.dudu-site-v60 #cover-view .intro-terminal-box {min-width:0;max-width:100%;overflow:hidden}
+body.dudu-site-v60 #cover-view .intro-header {font:700 11px/1.4 ui-monospace,Consolas,monospace;letter-spacing:.11em}
+body.dudu-site-v60 #cover-view #intro-box-code[hidden] {display:none!important}
+body.dudu-site-v60 #cover-view .intro-text {
+  font:400 14px/1.78 system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+  white-space:pre-line;overflow-wrap:anywhere;word-break:break-word;
+}
+body.dudu-site-v60 #cover-view .intro-expand {
+  margin-top:13px;padding:7px 0;border:0;border-bottom:1px solid rgba(220,198,156,.6);
+  border-radius:0;background:transparent;color:#e1c99b;cursor:pointer;
+  font:700 12px/1.4 system-ui,-apple-system,'Segoe UI',Arial,sans-serif;
+}
+body.dudu-site-v60 #cover-view .intro-expand[hidden] {display:none!important}
+body.dudu-site-v60 #cover-view .intro-expand:focus-visible {outline:2px solid #e1c99b;outline-offset:4px}
+@media(max-width:760px) {
+  body.dudu-site-v60 #cover-view .book-cover-banner {overflow:hidden}
+  body.dudu-site-v60 #cover-view .intro-terminal-box {padding:15px 17px}
+  body.dudu-site-v60 #cover-view .intro-text {font-size:13px;line-height:1.7}
+}
