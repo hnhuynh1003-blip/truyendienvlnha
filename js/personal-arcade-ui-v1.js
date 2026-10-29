@@ -59,6 +59,7 @@
   const cpuCost=core.upgradeCost(s,'cpu'),gpuCost=core.upgradeCost(s,'gpu'),
    stationCost=core.upgradeCost(s,'station');
   const activeRate=s.neon.running?core.rate(s):0;
+  const rateLabel=(activeRate/1000).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:3});
   const level=Math.min(6,Math.floor((s.neon.cpu+s.neon.gpu)/5)+1);
   const stations=Array.from({length:3},(_,i)=>`<div class="neon-computer neon-computer-${i+1} ${i>=s.neon.stations?'is-locked':''}">
     <div class="neon-monitor"><div class="neon-monitor-glass"><span>${i>=s.neon.stations?'LOCKED':'CRYO<span class="neon-blink">_</span>'}</span>
@@ -74,7 +75,7 @@
       <div class="neon-wall-logo">CRYO<span>TECH</span><small>NET · STATION</small></div>
       <div class="neon-server-stack"><span></span><span></span><span></span><span></span></div>
       <div class="neon-floor"></div><div class="neon-computer-rack">${stations}</div>
-      <div class="neon-stage-income"><span>THU NHẬP TRỰC TIẾP</span><b>+${fmt(activeRate)} <small>Xu / giây</small></b>
+      <div class="neon-stage-income"><span>THU NHẬP TRỰC TIẾP</span><b>+${rateLabel} <small>Xu / giây</small></b>
         <div class="neon-income-track"><i></i></div></div>
       <div class="neon-room-level">${s.neon.stations}/3 DÀN · CẤP ${level}</div>
     </div>
@@ -150,8 +151,6 @@
     <header class="arcade-world-heading"><div><span class="arcade-eyebrow">03 / CHILL FARM</span>
       <h3>Vườn Sương</h3><p>Chăm hai luống hoa. Ngắm hồ cá, thu những món quà nhỏ.</p></div>
       <span class="arcade-world-live">MIST / GARDEN</span></header>
-    <div class="garden-resources">${hud('NƯỚC HỨNG SƯƠNG','💧 '+g.water+'/3',g.water===3?'Bình đã đầy':'Hồi mỗi 15 phút')}
-      ${hud('HẠT GIỐNG','✿ '+g.seeds,'Có thể mua thêm')}</div>
     <div class="arcade-stage garden-stage">
       <div class="garden-mist garden-mist-a"></div><div class="garden-mist garden-mist-b"></div>
       <div class="garden-cloud garden-cloud-a"></div><div class="garden-cloud garden-cloud-b"></div>
@@ -162,9 +161,11 @@
         <span class="garden-bubble garden-bubble-a"></span><span class="garden-bubble garden-bubble-b"></span>
         <span class="garden-bubble garden-bubble-c"></span></div>
       <button type="button" class="garden-pond-collect ${g.bubbleReady?'is-ready':''}" data-arcade-action="catch-bubble" ${g.bubbleReady?'':'disabled'}>
-        ${g.bubbleReady?'✦ Thu bọt · +4 Xu':`Hồ cá · <span data-arcade-until="${g.bubbleAt}">${countdown(g.bubbleAt-time)}</span>`}</button>
+        ${g.bubbleReady?'✦ Thu bọt · +0,5 Xu':`Hồ cá · <span data-arcade-until="${g.bubbleAt}">${countdown(g.bubbleAt-time)}</span>`}</button>
     </div>
-    <div class="arcade-control-panel"><div class="arcade-panel-heading"><div><span class="arcade-eyebrow">NHÀ KÍNH</span>
+    <div class="arcade-control-panel"><div class="garden-resources">${hud('NƯỚC HỨNG SƯƠNG','💧 '+g.water+'/3',g.water===3?'Bình đã đầy':'Hồi mỗi 15 phút')}
+      ${hud('HẠT GIỐNG','✿ '+g.seeds,'Có thể mua thêm')}</div>
+      <div class="arcade-panel-heading"><div><span class="arcade-eyebrow">NHÀ KÍNH</span>
         <h4>Vật tư & thu hoạch</h4></div>${button('＋ 3 hạt · 10 Xu','buy-seeds','market',s.coins<100)}</div>
       <div class="garden-statline"><span>🌿 Đã thu hoạch <b>${g.harvests}</b></span><span>🐟 Mồi câu <b>${g.bait}</b></span></div>
       <p class="arcade-world-hint">Cây lớn sau 3 phút. Hứng sương tự hồi và hồ cá sinh bọt ngay cả khi bạn đi vắng.</p>
@@ -179,7 +180,7 @@
   const scrollPort=element.closest?.('.phone-sub-app')||element;
   const previousScroll=scrollPort.scrollTop;
   element.innerHTML=`<div class="arcade-shell arcade-active-${tab}">
-    <div class="arcade-topbar"><div><span class="arcade-eyebrow">DUDU / PLAYGROUND</span><h2>Khu trò chơi</h2></div>
+    <div class="arcade-topbar"><span class="arcade-topbar-caption">CHƠI TỰ DO · TÍCH XU</span>
       <div class="arcade-wallet"><span>VÍ TRÒ CHƠI</span><strong data-arcade-wallet>✦ ${fmt(s.coins)}</strong><small>Xu</small></div></div>
     <div class="arcade-tabs" role="tablist" aria-label="Ba minigame">
       ${Object.entries(modeLabels).map(([type,name])=>`<button type="button" class="arcade-tab ${tab===type?'is-active':''}" role="tab"

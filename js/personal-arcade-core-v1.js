@@ -11,7 +11,10 @@
  const WATER_INTERVAL=15*60*1000,REPAIR_INTERVAL=4*60*1000;
  const GROW_INTERVAL=3*60*1000,BUBBLE_INTERVAL=90*1000;
  const MAX_COIN=1000000000,MAX_IDLE_MS=12*60*60*1000;
- const ORE_VALUES=Object.freeze({stone:10,coal:20,iron:50,crystal:150});
+ // Values are tenths of game Xu. Manual clicks should matter without making
+ // a single ore run worth several hundred Xu.
+ const ORE_VALUES=Object.freeze({stone:2,coal:3,iron:6,crystal:20});
+ const ECONOMY_VERSION=2;
  const number=(value,min,max,fallback)=>Number.isSafeInteger(value)&&value>=min&&value<=max?value:fallback;
  const safeTime=t=>Number.isSafeInteger(t)&&t>=0?t:Date.now();
  const clamp=(n,max)=>Math.min(max,Math.max(0,n));
@@ -19,7 +22,7 @@
  const fresh=(now=Date.now())=>{
   const time=safeTime(now);
   return {version:1,lastAt:time,coins:0,earned:0,
-   neon:{cpu:1,gpu:1,stations:1,running:true,remainder:0},
+   neon:{cpu:1,gpu:1,stations:1,running:true,remainder:0,economyV:ECONOMY_VERSION},
    mine:{durability:100,repairUntil:0,dug:0,ores:{stone:0,coal:0,iron:0,crystal:0}},
    garden:{water:1,waterAt:time,seeds:3,beds:[{status:'empty',readyAt:0},{status:'empty',readyAt:0}],
     bubbleAt:time+BUBBLE_INTERVAL,bubbleReady:false,bait:0,harvests:0}};
@@ -33,8 +36,11 @@
   state.coins=number(source.coins,0,MAX_COIN,0);
   state.earned=number(source.earned,0,MAX_COIN,0);
   state.neon={cpu:number(neon.cpu,1,50,1),gpu:number(neon.gpu,1,20,1),
-   stations:number(neon.stations,1,3,1),
-   running:neon.running!==false,remainder:number(neon.remainder,0,999,0)};
+   stations:number(neon.stations,1,3,1),economyV:ECONOMY_VERSION,
+   running:neon.running!==false,
+   // Convert unfinished sub-Xu earnings from the earlier 0.1 Xu/s economy.
+   remainder:neon.economyV===ECONOMY_VERSION?
+    number(neon.remainder,0,99999,0):number(neon.remainder,0,999,0)*100};
   state.mine={durability:number(mine.durability,0,100,100),
    repairUntil:number(mine.repairUntil,0,time+REPAIR_INTERVAL*2,0),
    dug:number(mine.dug,0,10000000,0),ores:{}};
@@ -54,7 +60,9 @@
   state.garden.harvests=number(garden.harvests,0,1000000,0);
   return state;
  }
- const rate=state=>state.neon.cpu*state.neon.gpu*state.neon.stations; // tenths Xu / second
+ // Thousandths of game Xu per second: starts at 0.01 Xu/s (36 Xu/hour),
+ // with additive CPU/GPU gains rather than explosive multiplicative scaling.
+ const rate=state=>(10+3*(state.neon.cpu-1)+4*(state.neon.gpu-1))*state.neon.stations;
  const upgradeCost=(state,type)=>type==='cpu'?400*state.neon.cpu*state.neon.cpu:
   type==='gpu'?900*state.neon.gpu*state.neon.gpu:
   type==='station'&&state.neon.stations<3?800*state.neon.stations*state.neon.stations:null;
@@ -71,8 +79,8 @@
   const idle=Math.min(MAX_IDLE_MS,elapsed,Math.max(0,Number(idleElapsedMs)||0));
   if(state.neon.running&&idle>0){
    const milli=state.neon.remainder+idle*rate(state);
-   give(state,Math.floor(milli/1000));
-   state.neon.remainder=milli%1000;
+   give(state,Math.floor(milli/100000));
+   state.neon.remainder=milli%100000;
   }
   if(state.mine.repairUntil&&time>=state.mine.repairUntil){
    state.mine.durability=100;state.mine.repairUntil=0;
@@ -160,8 +168,8 @@
   if(action==='catch-bubble'){
    if(!garden.bubbleReady)return fail('Hồ chưa có bọt khí để thu');
    garden.bubbleReady=false;garden.bubbleAt=time+BUBBLE_INTERVAL;
-   garden.bait=Math.min(10000,garden.bait+1);give(state,40);
-   return succeed('Nhặt được mồi câu và 4 Xu');
+   garden.bait=Math.min(10000,garden.bait+1);give(state,5);
+   return succeed('Nhặt được mồi câu và 0,5 Xu');
   }
   const bedMatch=/^(plant|water|harvest)-([01])$/.exec(action||'');
   if(bedMatch){
@@ -179,7 +187,7 @@
    if(verb==='harvest'){
     if(bed.status!=='growing'||time<bed.readyAt)return fail('Cây chưa đến lúc thu hoạch');
     bed.status='empty';bed.readyAt=0;garden.harvests++;garden.seeds=Math.min(10000,garden.seeds+1);
-    give(state,300);return succeed('Thu hoạch +30 Xu và 1 hạt giống');
+    give(state,50);return succeed('Thu hoạch +5 Xu và 1 hạt giống');
    }
   }
   return fail('Thao tác chưa được hỗ trợ');

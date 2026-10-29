@@ -1,23 +1,25 @@
 /* DUDU Arcade — three distinct playable, CSS-drawn scenes, zero image requests. */
-#phone-app-arcade{min-width:0;gap:7px;background:#0b1220}
-#phone-app-arcade .phone-app-header{flex-shrink:0}
+#phone-app-arcade{min-width:0;gap:4px;padding:6px 7px 9px;background:#0b1220}
+#phone-app-arcade .phone-app-header{flex-shrink:0;margin-bottom:3px}
+body.dudu-phone-v11 #cyber-phone #phone-app-arcade{padding:6px 7px 9px}
+body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header{min-height:38px;margin-bottom:4px;padding-bottom:4px}
 #personal-arcade-v1{font:inherit;color:#f1f0e9;min-width:0}
 #personal-arcade-v1 *{box-sizing:border-box}
 #personal-arcade-v1 button{font:inherit;touch-action:manipulation}
-.arcade-shell{display:flex;flex-direction:column;gap:10px;min-width:0;padding-bottom:18px}
+.arcade-shell{display:flex;flex-direction:column;gap:6px;min-width:0;padding-bottom:14px}
 .arcade-eyebrow{display:block;font:700 9px/1.4 ui-monospace,Consolas,monospace;letter-spacing:.15em;color:#80e0d2}
-.arcade-topbar{display:flex;gap:8px;justify-content:space-between;align-items:center;padding:9px 2px 4px}
-.arcade-topbar h2{font-size:21px;line-height:1.15;margin:2px 0 0;letter-spacing:-.05em;color:#fff3df}
-.arcade-wallet{display:flex;flex-direction:column;align-items:flex-end;min-width:116px;gap:1px}
+.arcade-topbar{display:flex;gap:8px;justify-content:space-between;align-items:center;padding:1px 2px}
+.arcade-topbar-caption{font:800 9px ui-monospace,monospace;letter-spacing:.1em;color:#8dcfcd}
+.arcade-wallet{display:flex;flex-direction:row;align-items:center;min-width:0;gap:5px}
 .arcade-wallet span{color:#99a8bc;font:700 8px ui-monospace,monospace;letter-spacing:.1em}
-.arcade-wallet strong{font:800 20px/1.12 ui-monospace,Consolas,monospace;color:#f0d48f;letter-spacing:-.04em}
-.arcade-wallet small{font-size:9px;color:#d9bea0}
+.arcade-wallet strong{font:800 16px/1.12 ui-monospace,Consolas,monospace;color:#f0d48f;letter-spacing:-.04em}
+.arcade-wallet small{display:none}
 .arcade-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;background:#101a2c;
- padding:5px;border:1px solid #253449;border-radius:15px}
-.arcade-tab{min-height:51px;display:flex;gap:3px;flex-direction:column;align-items:center;justify-content:center;
+ padding:3px;border:1px solid #253449;border-radius:12px}
+.arcade-tab{min-height:40px;display:flex;gap:2px;flex-direction:column;align-items:center;justify-content:center;
  color:#a4b2c3;background:transparent;border:1px solid transparent;border-radius:10px;cursor:pointer;
- font-size:10px;line-height:1.2;font-weight:700;padding:3px 2px}
-.arcade-tab-icon{font:900 22px/1 ui-serif,Georgia,serif;transition:transform .2s}
+ font-size:9px;line-height:1.15;font-weight:700;padding:2px}
+.arcade-tab-icon{font:900 17px/1 ui-serif,Georgia,serif;transition:transform .2s}
 .arcade-tab[aria-selected=true]{color:#fff3dc;border-color:#42616d;background:linear-gradient(150deg,#23434c,#21304a);
  box-shadow:0 4px 13px #0003}
 .arcade-tab[aria-selected=true] .arcade-tab-icon{transform:translateY(-1px);color:#93eadf}
@@ -25,16 +27,18 @@
 .arcade-active-mine .arcade-tab[aria-selected=true] .arcade-tab-icon{color:#e8b17e}
 .arcade-active-garden .arcade-tab[aria-selected=true]{background:linear-gradient(150deg,#2c504b,#263b44);border-color:#5a997f}
 .arcade-active-garden .arcade-tab[aria-selected=true] .arcade-tab-icon{color:#ccf0b5}
-.arcade-world{min-width:0;overflow:hidden;border:1px solid #34475c;border-radius:17px;background:#111c2b}
-.arcade-world-heading{display:flex;justify-content:space-between;gap:6px;align-items:flex-start;padding:14px 13px 12px}
-.arcade-world-heading h3{margin:2px 0 3px;font-size:23px;letter-spacing:-.055em;line-height:1.15;color:#fff0df}
-.arcade-world-heading p{font-size:10px;color:#aebbc8;line-height:1.45;margin:0;max-width:270px}
+.arcade-world{min-width:0;overflow:hidden;border:1px solid #34475c;border-radius:14px;background:#111c2b;position:relative}
+.arcade-world-heading{display:flex;justify-content:space-between;gap:6px;align-items:flex-start;padding:11px 12px;
+ position:absolute;top:0;left:0;right:0;z-index:8;min-height:64px;pointer-events:none;
+ background:linear-gradient(to bottom,#0b1727ed,#0b1727b8 70%,transparent)}
+.arcade-world-heading h3{margin:2px 0 0;font-size:21px;letter-spacing:-.055em;line-height:1.15;color:#fff0df}
+.arcade-world-heading p{display:none}
 .arcade-world-live{font:800 8px/1.35 ui-monospace,monospace;letter-spacing:.04em;
  color:#b3eadc;border:1px solid #365d63;background:#173337;padding:5px 6px;border-radius:999px;
  white-space:nowrap;text-align:center}
 .arcade-world-mine .arcade-world-live{color:#f0c18f;border-color:#765449;background:#342827}
 .arcade-world-garden .arcade-world-live{color:#cfedbd;border-color:#496f58;background:#243f34}
-.arcade-stage{height:278px;position:relative;overflow:hidden;isolation:isolate}
+.arcade-stage{height:294px;position:relative;overflow:hidden;isolation:isolate}
 .arcade-stage button{z-index:5}
 .arcade-button{border:1px solid #69818a;border-radius:10px;background:#23424a;color:#eaffff;font-size:10px;
  font-weight:800;cursor:pointer;min-height:37px;padding:8px 10px;line-height:1.25;transition:transform .12s,filter .12s}
@@ -79,7 +83,7 @@
  background:repeating-linear-gradient(0deg,transparent 0 24px,#5fa8ce3a 25px 26px),
  repeating-linear-gradient(90deg,transparent 0 30px,#5fa8ce32 31px 32px),#0b1828;
  box-shadow:0 -20px 45px #0b1828}
-.neon-computer-rack{position:absolute;display:flex;justify-content:center;align-items:flex-end;gap:4px;left:0;right:0;top:78px;height:130px;
+.neon-computer-rack{position:absolute;display:flex;justify-content:center;align-items:flex-end;gap:4px;left:0;right:0;top:94px;height:130px;
  perspective:700px;z-index:2}
 .neon-computer{position:relative;width:29%;max-width:103px;height:126px;filter:drop-shadow(0 11px 8px #010514)}
 .neon-computer-1{transform:rotateY(14deg) scale(.88);transform-origin:bottom right}
@@ -133,7 +137,7 @@
 
 /* Địa Tầng 07: rock itself is the primary clicker button. */
 .arcade-world-mine{background:#1f1d2a;border-color:#765346}
-.mine-stage{background:radial-gradient(ellipse at 50% 45%,#795744 0%,#3b3139 52%,#211e2c 90%);height:294px}
+.mine-stage{background:radial-gradient(ellipse at 50% 45%,#795744 0%,#3b3139 52%,#211e2c 90%);height:314px}
 .mine-stage::after{content:'';position:absolute;inset:0;pointer-events:none;
  background:repeating-radial-gradient(ellipse at 50% 65%,transparent 0 20px,#0000000b 22px 28px);mix-blend-mode:multiply}
 .mine-stratum{position:absolute;width:160%;height:90px;left:-25%;background:#241f28;border:12px solid #4b3840;transform:rotate(-11deg)}
@@ -141,13 +145,13 @@
 .mine-cave-light{position:absolute;inset:0;background:conic-gradient(from 180deg at 50% 12%,transparent,#eab77722,transparent 35%)}
 .mine-tunnel-arch{position:absolute;inset:22px 30px 26px;border:14px solid #251e29;border-bottom:0;border-radius:48% 48% 0 0;
  box-shadow:inset 0 0 35px #0b0b14,0 0 30px #1211188c}
-.mine-scene-head{position:absolute;left:12px;right:12px;top:12px;display:flex;justify-content:space-between;gap:6px;z-index:4;
+.mine-scene-head{position:absolute;left:12px;right:12px;top:77px;display:flex;justify-content:space-between;gap:6px;z-index:4;
  font:800 8px ui-monospace,monospace;letter-spacing:.06em;color:#f1d5b8}
 .mine-crystal{position:absolute;width:35px;height:91px;bottom:37px;background:linear-gradient(120deg,#276b83,#82ddef 40%,#134663 56%,#5179a2);
  clip-path:polygon(42% 0,85% 25%,100% 100%,0 100%,14% 24%);filter:drop-shadow(0 0 12px #57c0ff9c);z-index:2}
 .mine-crystal-left{left:4%;transform:rotate(-24deg) scale(.72)}
 .mine-crystal-right{right:5%;transform:rotate(27deg) scale(.9);background:linear-gradient(120deg,#61428b,#deabf5 40%,#533076 60%,#7779be)}
-.mine-ore-button{position:absolute;top:45px;left:50%;transform:translateX(-50%);width:240px;height:205px;max-width:83%;background:transparent;
+.mine-ore-button{position:absolute;top:84px;left:50%;transform:translateX(-50%);width:240px;height:205px;max-width:83%;background:transparent;
  padding:0;border:0;cursor:pointer;transition:filter .15s;z-index:5}
 .mine-ore-button:active:not(:disabled){transform:translateX(-50%) scale(.92)}
 .mine-ore-button:disabled{cursor:not-allowed;filter:saturate(.55)}
@@ -197,7 +201,7 @@
 
 /* Vườn Sương: playable growing plots and a live swimming pond. */
 .arcade-world-garden{background:#172b30;border-color:#4b7868}
-.garden-resources{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:0 12px 10px}
+.garden-resources{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:0 0 12px}
 .arcade-stat{background:#1e3c3a;border:1px solid #426a62;border-radius:11px;padding:9px 10px}
 .arcade-stat>span{display:block;color:#a6d9c2;font:800 8px ui-monospace,monospace;letter-spacing:.08em}
 .arcade-stat strong{font:900 18px/1.4 ui-monospace,monospace;color:#f2e3ac}
@@ -213,7 +217,7 @@
 .garden-cloud-a{left:20px;top:20px}.garden-cloud-b{right:13px;top:45px;width:58px}
 .garden-grass{position:absolute;left:-18%;right:-18%;bottom:-30px;height:225px;background:radial-gradient(ellipse at center,#6eae6c,#2f7257 63%,#285e4e);
  border-radius:50% 50% 0 0;box-shadow:0 -10px 30px #75ac7d66}
-.garden-plot-area{position:absolute;left:6%;right:6%;top:78px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;z-index:3}
+.garden-plot-area{position:absolute;left:6%;right:6%;top:98px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;z-index:3}
 .garden-plot{height:125px;border:0;background:transparent;position:relative;padding:0;cursor:pointer;color:#fcf1d3;min-width:0;
  transition:transform .12s;filter:drop-shadow(0 10px 3px #173b3045)}
 .garden-plot:disabled{cursor:default;opacity:1}
@@ -284,9 +288,8 @@
 @keyframes pond-pulse{50%{box-shadow:0 0 12px #fff0a690}}
 @media(max-width:360px){
  .arcade-world-heading h3{font-size:20px}.arcade-world-live{font-size:7px}
- .arcade-world-heading p{max-width:205px}
- .arcade-stage{height:256px}.mine-stage{height:280px}.garden-stage{height:322px}
- .neon-computer-rack{top:72px}.neon-stage-income{width:160px}
+ .arcade-stage{height:283px}.mine-stage{height:308px}.garden-stage{height:322px}
+ .neon-computer-rack{top:88px}.neon-stage-income{width:160px}
  .neon-stage-income b{font-size:21px}.neon-room-level{font-size:7px}
  .arcade-button.upgrade{flex-basis:82px;font-size:9px}
 }

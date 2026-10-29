@@ -35,6 +35,7 @@ test('Arcade phone UI renders three named tabs and a disabled transfer control',
  assert.match(host.innerHTML,/LOCAL \/ FREE/);
  assert.match(host.innerHTML,/arcade-stage neon-stage/);
  assert.match(host.innerHTML,/neon-computer-rack/);
+ assert.match(host.innerHTML,/\+0,01 <small>Xu \/ giây<\/small>/);
  assert.match(host.innerHTML,/data-arcade-action="cpu"/);
  assert.match(host.innerHTML,/data-arcade-action="gpu"/);
  assert.match(host.innerHTML,/data-arcade-action="station"/);
