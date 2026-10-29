@@ -45,6 +45,17 @@ Phạm vi bản P7.2:
 
 Sáu kết thúc gồm ba phản ứng sau lời từ chối Lục Thiển, một bạn học, một thân phận ảo và một nhánh *what-if* Tinh Dao. Mọi sửa đổi và trạng thái phiên không vượt ra ngoài RAM; `rewardAuthorized`, `productionAuthorized`, `saveCommitted` đều giữ `false`.
 
+## P7.3 — Biên tập văn phong và bố cục đọc truyện (29/10/2026)
+
+Tác giả nhận xét bản P7.2 vẫn giống giao diện thử kỹ thuật: các thẻ và nút quá thô, phần nhập vai tuy ở ngôi thứ nhất nhưng câu văn máy móc, nhiều lần tự giải thích về quyền, Canon và sandbox. **P7.3 không đổi mô hình quyết định hoặc bổ sung quyền server**, chỉ xử lý hai vấn đề trình bày này:
+
+- Viết mới lời kể theo từng vai và từng cảnh với nhịp kể có mở cảnh, cảm giác, hành động, đối thoại và phản ứng; ngắt đoạn có chủ ý. Tử Du ghi nhớ người qua giọng nói/mùi; bạn học chỉ kể việc mình chứng kiến; Lục Thiển có mạch suy nghĩ pháp lý và tình cảm; thân phận ảo bắt đầu từ trải nghiệm một người mới đến thị trấn. Không bắt mọi câu bắt đầu bằng “Tôi”.
+- Bỏ thuật ngữ kiểm thử khỏi phần độc thoại nhân vật; nhánh giả định vẫn được gắn nhãn bên ngoài tác phẩm, thông báo hệ thống tiếp tục hiện popup ngắn, các câu thoại đã nằm trong đoạn kể không lặp thêm ở ô thoại thứ hai.
+- Đổi màn chơi thành một **cột đọc tiểu thuyết**: chữ serif dễ đọc, đoạn văn có khoảng nghỉ, nhãn vai và thời gian gọn, thoại phân biệt bằng đường dẫn mảnh. Ảnh bối cảnh giữ đúng vai trò chỉ vị trí ở đầu cảnh. Các lựa chọn thành một danh sách dọc đánh số với hiệu ứng phản hồi nhẹ; không thêm chức năng vô dụng hoặc thẻ thông tin thừa. Bảng viết của tác giả vẫn tách khỏi màn chơi.
+- Người chơi vẫn phải xác nhận nhân vật khi nhập vai; các cảnh Canon không có nhánh hợp lệ vẫn chỉ có hành động tiếp tục. **Đây chưa phải giải pháp cho tự do tương tác kéo dài nhiều chương**, không tạo NPC AI, không ghép quyền truyện thật hoặc phát hành world.
+
+Kiểm tra bổ sung: Chromium mobile/desktop bảo đảm không tràn ngang, font đọc truyện và nút quyết định một cột; unit test kiểm đoạn văn ngôi thứ nhất, loại thuật ngữ kỹ thuật, và không phát lại lời thoại đã có trong cảnh. Bản này được dùng làm cơ sở đánh giá cảm giác đọc/nhập vai tiếp theo, không coi UI đẹp hơn là bằng chứng gameplay đã hoàn chỉnh.
+
 ## Các thân phận được kiểm
 
 1. `entry-tu-du` — `cast_possession`, vai chính. Có ký ức chương 3–5 và đặc điểm **không nhận biết gương mặt**, mô tả qua giọng/mùi/âm thanh; ở cổng trường.

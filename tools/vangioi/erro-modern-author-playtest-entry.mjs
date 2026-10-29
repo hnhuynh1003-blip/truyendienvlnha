@@ -297,6 +297,10 @@ async function render(nextSession){
  }
  else {el('decision-title').textContent=view.choices.length>1?'Bạn muốn làm gì?':'Tiếp tục câu chuyện';
   view.choices.forEach(c=>buttons.append(choiceButton(c)));el('intent-input').value='';}
+ const stage=el('story-stage');
+ stage.classList.remove('scene-arriving');
+ void stage.offsetWidth;
+ stage.classList.add('scene-arriving');
  notice('play-feedback','');
 }
 async function begin(entry){

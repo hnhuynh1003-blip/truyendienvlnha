@@ -47,9 +47,9 @@ test('P7 Tử Du identity memory and first-person sensory limitations stay disti
  const {p,view}=await advance('entry-tu-du','enter-school-entry');
  const b=p.entryBriefings.find(x=>x.entryId==='entry-tu-du');
  assert.match(b.roleMemory,/không thể nhận biết mặt người/i);
- assert.match(view.narration,/^Tôi /);
- assert.match(view.narration,/không nhận ra mặt/);
- assert.match(view.narration,/giọng khàn/);
+ assert.match(view.narration,/\btôi\b/i);
+ assert.match(view.narration,/gương mặt.*nhòe/);
+ assert.match(view.narration,/giọng đàn ông khàn/);
  assert.equal(view.sceneId,'scene-gate');
  assert.ok(view.choices.some(x=>x.choiceId==='begin-enrolment'));
  assert.equal(view.choices.some(x=>x.choiceId==='go-net'),false);
@@ -60,7 +60,7 @@ test('P7 Tử Du identity memory and first-person sensory limitations stay disti
 test('P7 unverified cover stays in the same afternoon, never accesses school, VIP01 or future years',async()=>{
  const first=await advance('entry-cover','enter-school-entry');
  assert.match(first.view.narration,/^Tôi /);
- assert.match(first.view.narration,/không có/);
+ assert.match(first.view.narration,/giấy giới thiệu/);
  assert.deepEqual(first.view.choices.map(x=>x.choiceId),['ask-public-way']);
  const road=await advance('entry-cover','enter-school-entry','ask-public-way');
  assert.equal(road.view.sceneId,'scene-town-walk');
@@ -74,8 +74,9 @@ test('P7 unverified cover stays in the same afternoon, never accesses school, VI
 test('P7 classmate has local school knowledge but never inherits Tử Du private history',async()=>{
  const {p,view}=await advance('entry-classmate','enter-classmate-entry');
  assert.equal(view.sceneId,'scene-classroom');
- assert.match(view.narration,/^Tôi /);
- assert.match(view.narration,/không biết gia đình bạn/);
+ assert.match(view.narration,/\btôi\b/i);
+ assert.match(view.narration,/cô Tần vừa vào lớp/i);
+ assert.doesNotMatch(view.narration,/CryoTech|gia tộc|kết quả xét nghiệm/i);
  assert.doesNotMatch(view.narration,/tôi đã rời hai gia tộc/i);
  assert.deepEqual(view.choices.map(x=>x.choiceId),['class-engage','class-observe']);
  assert.equal(p.entryBriefings.find(x=>x.entryId==='entry-classmate').roleMemory.includes('Khối rubik'),false);
@@ -85,7 +86,8 @@ test('P7 lawyer begins at the legal desk without being teleported into 7B',async
  const {view}=await advance('entry-luc-thien','enter-lawyer-entry');
  assert.equal(view.sceneId,'scene-contract');
  assert.match(view.narration,/^Tôi /);
- assert.match(view.narration,/làm đại diện pháp lý cho em năm năm/);
+ assert.match(view.narration,/VIP01/);
+ assert.match(view.narration,/canh hạt sen/);
  assert.match(view.dialogue,/Em chưa đói/);
  assert.equal(view.choices.some(x=>x.choiceId==='follow-teacher'),false);
  assert.match(view.context,/17 TUỔI/);
@@ -144,9 +146,9 @@ test('P7 school friend sees 15-year-old farewell but cannot jump to 17-year-old 
 test('P7 lawyer has an independent age-17 legal timeline and cannot undo Canon refusal',async()=>{
  const {view}=await advance('entry-luc-thien','enter-lawyer-entry','review-file-first','finish-lawyer-report','drive-through-rain');
  assert.equal(view.sceneId,'scene-river');
- assert.match(view.narration,/^Tôi /);
- assert.match(view.narration,/nói ra điều giữ trong lòng/);
- assert.match(view.narration,/từ chối/);
+ assert.match(view.narration,/\btôi\b/i);
+ assert.match(view.narration,/rút tay khỏi tay tôi/);
+ assert.match(view.narration,/Câu trả lời rõ ràng/);
  assert.ok(view.choices.every(c=>!/đồng ý|đáp lại tình yêu/.test(c.label)));
 });
 
@@ -163,7 +165,7 @@ test('P7.2 classroom, lunch, lawyer and cover decisions produce distinct first-p
   const second=await advance(entry,...prefix,ids[1]);
   assert.notEqual(first.view.sceneId,second.view.sceneId,entry+': branch destinations');
   assert.notEqual(first.view.narration,second.view.narration,entry+': branch response');
-  assert.match(first.view.narration,/^Tôi /);assert.match(second.view.narration,/^Tôi /);
+  assert.match(first.view.narration,/\btôi\b/i);assert.match(second.view.narration,/\btôi\b/i);
   for(const x of [first,second]){
    assert.equal(x.view.rewardAuthorized,false);
    assert.equal(x.view.productionAuthorized,false);
@@ -181,7 +183,7 @@ test('P7.2 protagonist can explore separate what-if without rewriting canon or r
  assert.equal(canonical.view.sceneId,'scene-farewell');
  assert.equal(divergent.view.sceneId,'scene-whatif-tinhdao');
  assert.equal(divergent.view.narrativeEndingId,'ending-whatif-tinhdao');
- assert.match(divergent.view.narration,/^Tôi /);
+ assert.match(divergent.view.narration,/\btôi\b/i);
  assert.equal(divergent.view.flags.includes('chose-whatif-tinhdao'),true);
  assert.equal(divergent.view.rewardAuthorized,false);
  assert.equal(divergent.view.saveCommitted,false);
@@ -210,9 +212,27 @@ test('P7.2 every non-entry scene reachable by each role speaks only from first-p
    session=action.session;
    const view=await p.view(session);
    assert.match(view.narration,/\btôi\b/i,entry+'/'+view.sceneId);
+   assert.doesNotMatch(view.narration,/\b(?:CANON|G4A|G4B|SYSTEM|revision)\b|bản thử|không có quyền|nhánh giả định/i,
+    entry+'/'+view.sceneId+': authoring jargon must not interrupt literary POV');
    assert.equal(view.productionAuthorized,false);
   }
  }
+});
+
+test('P7.3 authored role scenes use paragraph beats, natural narration, and avoid repeated system dialogue',async()=>{
+ const data=source();
+ for(const page of data.script.pages){
+  if(page.sceneId==='scene-entry')continue;
+  for(const [role,variant] of Object.entries(page.roleScenes||{})){
+   assert.ok(variant.narration?.includes('\n\n'),page.sceneId+'/'+role+': lacks prose pacing');
+   assert.match(variant.narration,/\btôi\b/i,page.sceneId+'/'+role+': not role-first person');
+   assert.doesNotMatch(variant.narration,/\b(?:G4A|G4B|CANON|SYSTEM|revision)\b|bản thử|không có quyền/i,
+    page.sceneId+'/'+role+': leaked author-console text');
+  }
+ }
+ const byId=id=>data.script.pages.find(x=>x.sceneId==='scene-'+id);
+ assert.equal(byId('rehearsal').roleScenes['entry-tu-du'].dialogue,'');
+ assert.equal(byId('cover-library').roleScenes['entry-cover'].dialogue,'');
 });
 
 test('P7 prose edits are permitted locally but forged roles/actions are rejected',async()=>{
@@ -241,6 +261,7 @@ test('P7 source notes can be rehashed without ever granting source or server aut
 test('P7 public author pane shows source reference, editable actor POV and clear no-production notice',()=>{
  const html=readFileSync(new URL('../../playtests/he-thong-erro/index.html',import.meta.url),'utf8');
  const js=readFileSync(new URL('../../tools/vangioi/erro-modern-author-playtest-entry.mjs',import.meta.url),'utf8');
+ const css=readFileSync(new URL('../../playtests/he-thong-erro/style.css',import.meta.url),'utf8');
  for(const id of ['chapter-select','scene-role-select','context-edit','briefing-select','briefing-stage',
   'accept-identity','system-toast','return-narration-edit'])assert.ok(html.includes(`id="${id}"`));
  for(const removed of ['scene-context-display','source-echo','evidence-list','current-goal'])
@@ -248,5 +269,8 @@ test('P7 public author pane shows source reference, editable actor POV and clear
  assert.match(html,/Không sao chép nguyên văn truyện/);
  assert.match(html,/không phát hành thế giới/i);
  assert.match(js,/prepareAuthorRoleplayOffline/);
+ assert.match(css,/\.story-prose/);
+ assert.match(css,/Georgia,Cambria/);
+ assert.match(css,/\.choice::before/);
  assert.equal(html.includes('firebase'),false);
 });
