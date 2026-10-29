@@ -1,6 +1,6 @@
 {
   "score": 3,
-  "summary": "Prototype Standard/Spark Rules tested in an isolated Firestore Emulator: 55 permission/transaction probes passed. Safe for review, not yet a finished paid-chapter or multi-account economy release. Production Rules remain unchanged.",
+  "summary": "Prototype Standard/Spark Rules tested in an isolated Firestore Emulator: 62 permission/transaction probes passed, including one-shot 10:1 personal Arcade receipts. Safe for a private-account review, not a tamper-proof or paid-chapter release. Production Rules remain unchanged.",
   "findings": [
     {
       "check": "Business logic / paid-chapter confidentiality",
@@ -11,8 +11,8 @@
     {
       "check": "Authority source / user profile economy",
       "severity": "moderate",
-      "issue": "The legacy profiles_v2 currency and inventory remain owner-editable for backward-compatible solo progress. Their values cannot prove a real balance or item ownership.",
-      "recommendation": "Treat profiles_v2 as display/sandbox progress only. Keep economy_accounts_v52 client-write denied and use trusted, idempotent server operations before exchange/trades."
+      "issue": "The legacy profiles_v2 currency and inventory remain owner-editable. The new Spark Arcade exchange has immutable one-shot receipts but intentionally trusts the game balance self-reported by the same personal browser.",
+      "recommendation": "Accept this only for the owner's few private accounts. Keep economy_accounts_v52 client-write denied; replace self-reported rewards with trusted server evidence if the site opens to the public or adds account-to-account real-value trades."
     },
     {
       "check": "Published metadata / mixed content",

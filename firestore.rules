@@ -2,12 +2,16 @@
 // Database: (default). NOT DEPLOYED. Export current live Rules before replacing.
 // Owner-provided live Rules: 29/10/2026. This proposal maintains public reading
 // of the common library and published EPUB, while allowing audited EPUB edits.
-// No paid-entitlement or real-currency grant is authorized by these client Rules.
+// No paid-entitlement or VERIFIED server-currency grant is authorized here.
+// Arcade receipts only credit the owner's CLIENT-MUTABLE personal profile wallet.
 //
 // Assumed data model:
 //   studio_data/main_library: legacy shared novel blob; author-admin writes only.
 //   profiles_v2/{uid}: owner's PRIVATE, CLIENT-MUTABLE progress/preferences,
-//     including untrusted local Xu/items. NOT an authority for real purchases.
+//     including self-reported Xu/items. For private-account play only; NOT an
+//     authority for cross-account real-value trades or paid chapter access.
+//   .../arcade_receipts_v1/{receiptId}: one-use 10:1 PERSONAL Arcade exchange
+//     receipts, client game balance is self-reported (NOT anti-cheat proof).
 //   epub_stories_v49/{storyId}: {id,title,author,genre,desc,
 //     publicationState,status,ownerUid,chapterCount,chapterIndex,createdAt,
 //     updatedAt,sourceName,importSchema,importFingerprint,coverImage,
@@ -113,6 +117,9 @@ service cloud.firestore {
         && data.get('phoneAppearanceV568', {}).keys().size() <= 20
         && data.get('playerAvatar', {}) is map
         && data.get('playerAvatar', {}).keys().size() <= 20
+        && data.get('arcadeLastReceiptV1', '') is string
+        && (data.get('arcadeLastReceiptV1', '') == '' ||
+            data.get('arcadeLastReceiptV1', '').matches('^ex-[0-9a-f-]{36}$'))
         && data.get('role', 'reader') in ['reader', 'admin']
         && (data.get('role', 'reader') != 'admin' || admin());
     }
@@ -122,7 +129,7 @@ service cloud.firestore {
         'username','name','title','role','level','exp','currency',
         'inventory','quests','lootedChapters','readRewards','dailyReadLog',
         'collectedCharacters','storyStates','playerAvatar',
-        'readingBookmarksV568','phoneAppearanceV568'
+        'readingBookmarksV568','phoneAppearanceV568','arcadeLastReceiptV1'
       ];
     }
 
@@ -138,6 +145,41 @@ service cloud.firestore {
         && (admin() || request.resource.data.get('role', 'reader')
                         == resource.data.get('role', 'reader'));
       allow delete: if false;
+
+      function validPersonalArcadeReceipt(data, receiptId) {
+        return data is map
+          && data.keys().hasOnly([
+            'id','uid','gameXu','walletXu','rate','gameBalanceTenthsBefore','createdAt'
+          ])
+          && data.keys().hasAll([
+            'id','uid','gameXu','walletXu','rate','gameBalanceTenthsBefore','createdAt'
+          ])
+          && receiptId.matches('^ex-[0-9a-f-]{36}$')
+          && data.id == receiptId && data.uid == uid
+          && data.gameXu is int && data.gameXu >= 10
+          && data.gameXu <= 100000000
+          && data.gameXu % 10 == 0
+          && data.walletXu is int && data.walletXu == data.gameXu / 10
+          && data.rate == 10
+          && data.gameBalanceTenthsBefore is int
+          && data.gameBalanceTenthsBefore >= data.gameXu * 10
+          && data.gameBalanceTenthsBefore <= 1000000000
+          && data.createdAt is string && data.createdAt.size() > 0
+          && data.createdAt.size() <= 40
+          && getAfter(/databases/$(database)/documents/profiles_v2/$(uid))
+               .data.arcadeLastReceiptV1 == receiptId
+          && getAfter(/databases/$(database)/documents/profiles_v2/$(uid))
+               .data.currency == get(/databases/$(database)/documents/profiles_v2/$(uid))
+               .data.currency + data.walletXu;
+      }
+
+      match /arcade_receipts_v1/{receiptId} {
+        allow get: if self(uid);
+        allow list: if false;
+        allow create: if self(uid)
+          && validPersonalArcadeReceipt(request.resource.data, receiptId);
+        allow update, delete: if false;
+      }
     }
 
     match /user_profiles/{username} {

@@ -9,8 +9,11 @@ test('Arcade conversion is accessible at the wallet but still requires verified 
  const ui=src('js/personal-arcade-ui-v1.js');
  assert.match(ui,/data-arcade-exchange="open"/);
  assert.match(ui,/role="dialog"/);
- assert.match(ui,/button\('Chuyển Xu · Chưa mở','transfer','gold',true\)/);
- assert.doesNotMatch(ui,/userProfile\.currency\s*[+\-]?=/);
+ assert.match(ui,/DUDU_SPARK_EXCHANGE_V1_READY===true/);
+ assert.match(ui,/!exchangeEnabled\(\)\?'Chuyển Xu · Chờ Rules'/);
+ assert.match(ui,/!exchangeEnabled\(\)\|\|exchangeBusy\|\|!quoteForExchange\(\)\.ok/);
+ assert.match(ui,/userProfile\.currency=result\.balance/);
+ assert.doesNotMatch(ui,/userProfile\.currency\s*\+=/);
  assert.doesNotMatch(ui,/firebase\.firestore\(/);
 });
 test('Production DUDU FUN is explicitly local practice, not a minting endpoint',()=>{

@@ -5,8 +5,9 @@ const {readFileSync}=require('node:fs');
 const {join}=require('node:path');
 const vm=require('node:vm');
 const core=require('../js/personal-arcade-core-v1.js');
+const quotePolicy=require('../js/personal-arcade-exchange-v1.js');
 
-function harness(){
+function harness(options={}){
  const db=new Map(),listeners={};let uid='reader-one';
  const notice={textContent:''};
  const host={innerHTML:'',scrollTop:0,listeners:{},
@@ -16,12 +17,30 @@ function harness(){
   id==='phone-app-arcade'?app:null};
  const window={document,DuduPersonalArcadeCoreV1:core,
   DuduAuth:{uid:()=>uid,isReady:()=>!!uid},
-  localStorage:{getItem:k=>db.get(k)||null,setItem:(k,v)=>db.set(k,v)},
+  localStorage:{getItem:k=>db.get(k)||null,setItem:(k,v)=>db.set(k,v),removeItem:k=>db.delete(k)},
   setInterval:fn=>{listeners.tick=fn;return 1;},
   addEventListener:(name,fn)=>{listeners[name]=fn;}};
+ const profile={currency:30};let savedProfiles=0,walletRefreshes=0;
+ const context={window,document,userProfile:profile,
+  saveCurrentAccount(){savedProfiles++;}};
+ if(options.spark){
+  const currentUser={uid:'reader-one'};
+  const firestore={};
+  window.DUDU_SPARK_EXCHANGE_V1_READY=true;
+  window.DuduPersonalArcadeExchangeV1=quotePolicy;
+  window.DuduPersonalSparkExchangeV1={
+   requestId:()=> 'ex-12345678-1234-1234-1234-123456789abc',
+   transfer:async args=>{assert.equal(args.uid,'reader-one');return {
+    status:'credited',balance:31,walletXu:1,gameXu:10,id:args.id};}
+  };
+  window.firebase={auth:()=>({currentUser}),firestore:()=>firestore};
+  window.renderWallet=()=>{walletRefreshes++;};
+ }
  const source=readFileSync(join(__dirname,'../js/personal-arcade-ui-v1.js'),'utf8');
- vm.runInNewContext(source,{window,document});
- return {db,host,notice,window,listeners,setUid:next=>{uid=next;}};
+ vm.runInNewContext(source,context);
+ return {db,host,notice,window,listeners,profile,
+  getSavedProfiles:()=>savedProfiles,getWalletRefreshes:()=>walletRefreshes,
+  setUid:next=>{uid=next;}};
 }
 
 test('Arcade phone UI renders three named tabs and a disabled transfer control',()=>{
@@ -49,10 +68,30 @@ test('Exchange opens from wallet and remains disabled until trusted Rules exist'
   dataset:{arcadeExchange:choice}})}});
  click('open');
  assert.match(host.innerHTML,/role="dialog"/);
- assert.match(host.innerHTML,/Chuyển Xu · Chưa mở/);
+ assert.match(host.innerHTML,/Chuyển Xu · Chờ Rules/);
  assert.match(host.innerHTML,/data-arcade-action="transfer" disabled/);
  click('close');
  assert.doesNotMatch(host.innerHTML,/role="dialog"/);
+});
+test('Enabled personal exchange credits wallet once and deducts local Arcade coins',async()=>{
+ const {db,host,window,profile,getSavedProfiles,getWalletRefreshes}=harness({spark:true});
+ const key='dudu-personal-arcade:v1:reader-one';
+ db.set(key,JSON.stringify({...core.norm(null,Date.now()),coins:250}));
+ window.DuduPersonalArcadeUIV1.render();
+ window.DuduPersonalArcadeUIV1.openExchange();
+ assert.match(host.innerHTML,/✓ Chuyển vào Ví Xu/);
+ assert.doesNotMatch(host.innerHTML,/data-arcade-action="transfer" disabled/);
+ host.listeners.click({target:{closest:selector=>selector==='button'?{
+  disabled:false,dataset:{arcadeAction:'transfer'}}:null}});
+ await new Promise(resolve=>setImmediate(resolve));
+ const game=JSON.parse(db.get(key));
+ assert.equal(game.coins,150);
+ assert.equal(profile.currency,31);
+ assert.equal(getSavedProfiles(),1);
+ assert.equal(getWalletRefreshes(),1);
+ assert.equal(db.has('dudu-personal-arcade:exchange-pending-v1:reader-one'),false);
+ assert.equal(db.get('dudu-personal-arcade:exchange-settled-v1:reader-one'),
+  'ex-12345678-1234-1234-1234-123456789abc');
 });
 test('Arcade UI changes game tabs and stores a local UID-specific mining round',()=>{
  const {db,host,window,setUid}=harness();

@@ -4,7 +4,10 @@
 //   'node cloudflare/tests/manual/dudu-standard-spark-rules-emulator.mjs'
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+import {createRequire} from 'node:module';
 import {initializeTestEnvironment,assertFails,assertSucceeds} from '@firebase/rules-unit-testing';
+const require=createRequire(import.meta.url);
+const sparkBridge=require('../../../js/personal-spark-exchange-v1.js');
 
 const PROJECT='demo-dudu-standard';
 const HOST='127.0.0.1:18087';
@@ -132,5 +135,25 @@ try{
  await no('reader cannot write negative currency',user.update({currency:-10}));
  await no('reader cannot insert 1MB title',user.update({title:'X'.repeat(900000)}));
  await no('legacy profile cannot be deleted',user.delete());
+
+ const transferId='ex-12345678-1234-4123-8123-123456789012';
+ const transferData={id:transferId,uid:'reader-a',gameXu:50,walletXu:5,rate:10,
+  gameBalanceTenthsBefore:800,createdAt:'2026-10-30T02:00:00Z'};
+ const transferRef=user.collection('arcade_receipts_v1').doc(transferId);
+ await no('cannot create receipt without matching wallet update',transferRef.set(transferData));
+ const auth={currentUser:{uid:'reader-a'}};
+ const input={db:reader,auth,uid:'reader-a',id:transferId,gameXu:50,availableTenths:800};
+ const credited=await assertSucceeds(sparkBridge.transfer(input));
+ assert.equal(credited.balance,85);checks++;
+ process.stdout.write('PASS Spark personal bridge credits wallet once\n');
+ const replay=await assertSucceeds(sparkBridge.transfer(input));
+ assert.equal(replay.status,'already-credited');checks++;
+ process.stdout.write('PASS replay returns existing receipt without new Xu\n');
+ assert.equal((await user.get()).data().currency,85);
+ await yes('owner reads exchange receipt',transferRef.get());
+ await no('other account cannot read exchange receipt',owner.collection('profiles_v2')
+  .doc('reader-a').collection('arcade_receipts_v1').doc(transferId).get());
+ await no('receipt is immutable',transferRef.update({walletXu:100}));
+ await no('receipt cannot be deleted',transferRef.delete());
  console.log('DUDU STANDARD/SPARK EMULATOR PASS: '+checks+' checks');
 }finally{await env.cleanup();}

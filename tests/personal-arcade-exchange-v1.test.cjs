@@ -53,6 +53,8 @@ test('both the Arcade popup and the system wallet can open the exact quote UI',(
  assert.match(ui,/data-arcade-exchange-input/);
  assert.match(ui,/data-arcade-exchange-preset/);
  assert.match(ui,/data-arcade-exchange-result/);
- assert.match(ui,/button\('Chuyển Xu · Chưa mở','transfer','gold',true\)/);
- assert.doesNotMatch(ui,/userProfile\.currency\s*[+\-]?=/);
+ assert.match(html,/personal-spark-exchange-v1\.js\?v=spark-bridge-1/);
+ assert.match(ui,/DUDU_SPARK_EXCHANGE_V1_READY===true/);
+ assert.match(ui,/sparkBridge\.transfer/);
+ assert.match(ui,/Chuyển Xu · Chờ Rules/);
 });

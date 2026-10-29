@@ -18,15 +18,14 @@ test('Arcade V1 joins the phone as one app with three named games',()=>{
  for(const name of ['Trạm Neon','Địa Tầng 07','Vườn Sương'])
   assert.match(ui,new RegExp(name));
 });
-test('Arcade V1 is a local playground, not an unprotected server reward grant',()=>{
+test('Arcade V1 is local-playable and only wires its Spark transfer behind a disabled-by-default gate',()=>{
  const ui=src('js/personal-arcade-ui-v1.js');
  const core=src('js/personal-arcade-core-v1.js');
  assert.match(ui,/root\.localStorage\.setItem/);
- assert.match(ui,/button\('Chuyển Xu · Chưa mở','transfer','gold',true\)/);
- assert.match(ui,/Chuyển thật sẽ mở cùng đợt Rules/);
- for(const forbidden of ['.collection(','firebase.firestore','userProfile.currency',
-  'DuduEconomyLiveV52','grantCoins','setDoc(']){
-  assert.equal(ui.includes(forbidden),false);
-  assert.equal(core.includes(forbidden),false);
- }
+ assert.match(ui,/DUDU_SPARK_EXCHANGE_V1_READY===true/);
+ assert.match(ui,/sparkBridge\.transfer/);
+ assert.match(ui,/Chuyển Xu · Chờ Rules/);
+ assert.equal(ui.includes('.collection('),false,'Wallet mutations must go through the tested bridge');
+ assert.equal(core.includes('.collection('),false);
+ assert.equal(core.includes('userProfile.currency'),false);
 });

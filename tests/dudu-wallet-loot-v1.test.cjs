@@ -27,8 +27,10 @@ test('wallet navigation has working shopping and Arcade controls but cannot mint
  const arcade=src('js/personal-arcade-ui-v1.js');
  assert.match(arcade,/peekBalance/);
  assert.match(arcade,/data-arcade-exchange="wallet"/);
- assert.match(arcade,/Chuyển Xu · Chưa mở/);
- assert.doesNotMatch(arcade,/userProfile\.currency\s*[+\-]?=/);
+ assert.match(arcade,/Chuyển Xu · Chờ Rules/);
+ assert.match(arcade,/DUDU_SPARK_EXCHANGE_V1_READY===true/);
+ assert.match(arcade,/userProfile\.currency=result\.balance/);
+ assert.doesNotMatch(arcade,/userProfile\.currency\s*\+=/);
 });
 
 test('chapter find is one-shot with a chance of appearing and of yielding an item',()=>{

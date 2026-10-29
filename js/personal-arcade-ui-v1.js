@@ -1,19 +1,23 @@
 /* Personal Arcade — playable scenes for Trạm Neon / Địa Tầng 07 / Vườn Sương.
- * Local saves only. No Firestore, real wallet or entitlement writes.
+ * Game simulation remains local. Spark personal transfer is opt-in and gated;
+ * the matching Firestore Rules must be installed before enabling it.
  */
 (function(root){
  'use strict';
  const core=root.DuduPersonalArcadeCoreV1;
  if(!core||!root.document)return;
  const exchangePolicy=root.DuduPersonalArcadeExchangeV1;
+ const sparkBridge=root.DuduPersonalSparkExchangeV1;
  const KEY='dudu-personal-arcade:v1:';
+ const PENDING='dudu-personal-arcade:exchange-pending-v1:';
+ const SETTLED='dudu-personal-arcade:exchange-settled-v1:';
  const host=()=>root.document.getElementById('personal-arcade-v1');
  const modeLabels={neon:'Trạm Neon',mine:'Địa Tầng 07',garden:'Vườn Sương'};
  const oreLabels={stone:'Đá',coal:'Than',iron:'Sắt',crystal:'Tinh thạch'};
  const oreGlyphs={stone:'◆',coal:'⬟',iron:'⬢',crystal:'✦'};
  let tab='neon',activeKey=null,state=null,lastTick=Date.now(),lastSave=0,
   lastPaint=0,lastRenderedKey=null,notice='',noticeUntil=0,error=false,feedback=null,
-  exchangeOpen=false,exchangeAmount=10;
+  exchangeOpen=false,exchangeAmount=10,exchangeBusy=false;
  const now=()=>Date.now();
  const isSandbox=()=>typeof IS_SANDBOX_MODE!=='undefined'&&IS_SANDBOX_MODE;
  function identity(){
@@ -23,6 +27,17 @@
   return root.DuduAuth?.isReady?.()&&typeof uid==='string'&&uid?uid:null;
  }
  const keyFor=id=>id?KEY+encodeURIComponent(id):null;
+ const exchangeEnabled=()=>!isSandbox()&&root.DUDU_SPARK_EXCHANGE_V1_READY===true&&!!sparkBridge;
+ const exchangeKey=prefix=>identity()?prefix+encodeURIComponent(identity()):null;
+ function readPending(){
+  const key=exchangeKey(PENDING);if(!key)return null;
+  try{
+   const item=JSON.parse(root.localStorage.getItem(key)||'null');
+   if(item?.uid!==identity()||!/^ex-[0-9a-f-]{36}$/.test(item.id)||
+      !Number.isSafeInteger(item.gameXu)||!Number.isSafeInteger(item.availableTenths))return null;
+   return item;
+  }catch(_){return null;}
+ }
  function save(candidate=state){
   if(!activeKey||!candidate)return false;
   try{
@@ -49,8 +64,9 @@
  }
  const visible=()=>root.document.getElementById('phone-app-arcade')?.style.display==='flex';
  const fmt=amount=>core.formatXu(amount);
- const quoteForExchange=()=>exchangePolicy?.quote({availableTenths:state?.coins??0,
-  requestedGameXu:exchangeAmount})||
+ const quoteForExchange=()=>exchangePolicy?.quote({
+  availableTenths:readPending()?.availableTenths??state?.coins??0,
+  requestedGameXu:readPending()?.gameXu??exchangeAmount})||
   {ok:false,reason:'not-ready',walletXu:0,maxGameXu:0};
  const exchangeHint=q=>q.ok?'Số Xu sẽ nhận khi giao dịch được mở.':
   q.reason==='minimum-10-game-xu'?'Tối thiểu 10 Xu Arcade mỗi lần.':
@@ -59,25 +75,27 @@
   'Chưa đủ Xu để đổi.';
  function updateExchangePreview(){
   if(!exchangeOpen)return;
-  const element=host(),q=quoteForExchange();
+  const element=host(),q=quoteForExchange(),pending=readPending();
   const amount=element?.querySelector('[data-arcade-exchange-result]');
   if(amount)amount.textContent=q.walletXu.toLocaleString('vi-VN')+' Xu hệ thống';
   const hint=element?.querySelector('[data-arcade-exchange-hint]');
-  if(hint)hint.textContent=exchangeHint(q);
+  if(hint)hint.textContent=pending?'Lệnh trước chưa xác nhận. Hãy thử lại cùng mã.':exchangeEnabled()&&q.ok?
+   'Số Xu này sẽ vào Ví Xu hệ thống.':exchangeHint(q);
   const input=element?.querySelector('[data-arcade-exchange-input]');
   if(input){input.max=String(Math.max(10,q.maxGameXu));
+   input.disabled=!!pending||exchangeBusy;
    input.setAttribute('aria-invalid',q.ok?'false':'true');}
   const available=element?.querySelector('[data-arcade-exchange-available]');
   if(available&&state)available.textContent=fmt(state.coins);
   element?.querySelectorAll?.('[data-arcade-exchange-preset]').forEach(button=>{
    const choice=button.dataset.arcadeExchangePreset;
    const value=choice==='max'?q.maxGameXu:Number(choice);
-   button.disabled=value<10||value>q.maxGameXu;
+   button.disabled=!!pending||exchangeBusy||value<10||value>q.maxGameXu;
    button.setAttribute('aria-pressed',exchangeAmount===value&&value>=10?'true':'false');
   });
  }
  function exchangeForm(s){
-  const q=quoteForExchange(),allowance=exchangePolicy?.remaining({availableTenths:s.coins});
+  const q=quoteForExchange(),pending=readPending(),allowance=exchangePolicy?.remaining({availableTenths:pending?.availableTenths??s.coins});
   const max=allowance?.maxGameXu??0;
   const choices=[10,50,100,'max'];
   return `<div class="arcade-exchange-rate"><b>10 Xu Arcade</b><span>→</span><b>1 Xu ví</b></div>
@@ -85,14 +103,14 @@
     <label class="arcade-exchange-label" for="arcade-exchange-input-v1">Muốn đổi bao nhiêu?</label>
     <input type="number" id="arcade-exchange-input-v1" data-arcade-exchange-input
       min="10" max="${Math.max(10,max)}" step="10" inputmode="numeric"
-      value="${Number.isFinite(exchangeAmount)?exchangeAmount:0}" aria-describedby="arcade-exchange-hint-v1" aria-invalid="${!q.ok}">
+      value="${pending?.gameXu??(Number.isFinite(exchangeAmount)?exchangeAmount:0)}" ${pending||exchangeBusy?'disabled':''} aria-describedby="arcade-exchange-hint-v1" aria-invalid="${!q.ok}">
     <div class="arcade-exchange-presets" role="group" aria-label="Mức đổi nhanh">
       ${choices.map(choice=>{const value=choice==='max'?max:choice;
        return `<button type="button" data-arcade-exchange-preset="${choice}"
-        ${value<10||value>max?'disabled':''} aria-pressed="${exchangeAmount===value&&value>=10}">${choice==='max'?'Tối đa':value+' Xu'}</button>`;}).join('')}
+        ${pending||exchangeBusy||value<10||value>max?'disabled':''} aria-pressed="${exchangeAmount===value&&value>=10}">${choice==='max'?'Tối đa':value+' Xu'}</button>`;}).join('')}
     </div>
     <div class="arcade-exchange-quote"><span>Dự kiến nhận</span><strong aria-live="polite" data-arcade-exchange-result>${q.walletXu.toLocaleString('vi-VN')} Xu hệ thống</strong></div>
-    <p class="arcade-exchange-hint" id="arcade-exchange-hint-v1" data-arcade-exchange-hint>${exchangeHint(q)}</p>`;
+    <p class="arcade-exchange-hint" id="arcade-exchange-hint-v1" data-arcade-exchange-hint>${pending?'Thử lại lệnh cũ để tránh nhận Xu hai lần.':exchangeEnabled()&&q.ok?'Nhận ngay vào Ví Xu hệ thống.':exchangeHint(q)}</p>`;
  }
  function countdown(ms){
   const seconds=Math.max(0,Math.ceil(ms/1000));
@@ -250,8 +268,10 @@
         <div class="arcade-exchange-heading"><strong>Đổi Xu</strong><button type="button" data-arcade-exchange="close" aria-label="Đóng">✕</button></div>
         ${exchangeForm(s)}
         <div class="arcade-exchange-target">Ví Xu hệ thống <button type="button" data-arcade-exchange="wallet">Xem ví ↗</button></div>
-        ${button('Chuyển Xu · Chưa mở','transfer','gold',true)}
-        <p>Chọn số Xu để xem trước. Chuyển thật sẽ mở cùng đợt Rules.</p>
+        ${button(!exchangeEnabled()?'Chuyển Xu · Chờ Rules':exchangeBusy?'Đang chuyển…':
+          readPending()?'↻ Xác nhận lệnh cũ':'✓ Chuyển vào Ví Xu',
+          'transfer','gold',!exchangeEnabled()||exchangeBusy||!quoteForExchange().ok)}
+        ${exchangeEnabled()?'':'<p>Đổi Xu sẽ mở sau khi Rules được cập nhật một lần.</p>'}
       </section></div>`:''}
   </div>`;
   if(showToast)element.querySelector('[data-arcade-notice]').textContent=notice;
@@ -287,7 +307,7 @@
   }
  }
  function interact(action){
-  tick();if(!state||!activeKey)return false;
+  tick();if(!state||!activeKey||exchangeBusy)return false;
   const result=core.act(state,action,now(),Math.random());
   if(!result.ok){notice=result.reason;noticeUntil=now()+3500;error=true;render();return false;}
   state=result.state;
@@ -295,6 +315,49 @@
   notice=result.label==='stone'?'Nhặt được Đá.':result.label==='coal'?'Nhặt được Than.':
    result.label==='iron'?'Nhặt được Sắt.':result.label==='crystal'?'✦ Nhặt được Tinh thạch!':result.label;
   noticeUntil=now()+2500;error=false;save();render();return true;
+ }
+ async function transferArcade(){
+  tick();
+  if(!exchangeEnabled()||exchangeBusy||!state||!activeKey)return false;
+  const uid=identity(),pendingKey=exchangeKey(PENDING),settledKey=exchangeKey(SETTLED);
+  const auth=root.firebase?.auth?.(),firestore=root.firebase?.firestore?.();
+  if(!uid||!pendingKey||!settledKey||auth?.currentUser?.uid!==uid||!firestore){
+   notice='Cần đăng nhập Firebase trước khi đổi Xu.';error=true;noticeUntil=now()+4500;render();return false;
+  }
+  let pending=readPending();
+  if(!pending){
+   const q=quoteForExchange();if(!q.ok)return false;
+   pending={uid,id:sparkBridge.requestId(),gameXu:q.gameXu,
+    availableTenths:state.coins};
+   try{root.localStorage.setItem(pendingKey,JSON.stringify(pending));}
+   catch(_){notice='Không lưu được lệnh đổi trên thiết bị.';error=true;noticeUntil=now()+4500;render();return false;}
+  }
+  exchangeBusy=true;render();
+  try{
+   const result=await sparkBridge.transfer({db:firestore,auth,uid,id:pending.id,
+    gameXu:pending.gameXu,availableTenths:pending.availableTenths});
+   if(identity()!==uid||activeKey!==keyFor(uid))return false;
+   const settled=root.localStorage.getItem(settledKey);
+   if(settled!==pending.id){
+    state=core.advance(state,now(),0);
+    state.coins=Math.max(0,state.coins-pending.gameXu*10);
+    if(!save())throw Error('Đã cộng vào ví nhưng chưa xác nhận trừ Xu game trên thiết bị');
+    root.localStorage.setItem(settledKey,pending.id);
+   }
+   root.localStorage.removeItem(pendingKey);
+   if(typeof userProfile!=='undefined'&&userProfile){
+    userProfile.currency=result.balance;
+    if(typeof saveCurrentAccount==='function')saveCurrentAccount();
+   }
+   root.renderWallet?.();
+   exchangeOpen=false;notice='✓ Đã chuyển '+result.walletXu+' Xu vào Ví hệ thống.';
+   error=false;noticeUntil=now()+4500;return true;
+  }catch(e){
+   notice='Chưa xác nhận lệnh đổi. Thử lại đúng lệnh đang chờ.';
+   error=true;noticeUntil=now()+5500;
+   console.warn('DUDU Spark personal exchange:',e?.code||e?.message||'unknown');
+   return false;
+  }finally{exchangeBusy=false;render();}
  }
  function init(){
   const element=host();if(!element)return false;
@@ -329,7 +392,8 @@
    const next=control.dataset.arcadeTab;
    if(next&&modeLabels[next]){tick();tab=next;notice='';error=false;render();return;}
    const action=control.dataset.arcadeAction;
-   if(action&&action!=='transfer')interact(action);
+   if(action==='transfer'){void transferArcade();return;}
+   if(action)interact(action);
   });
   root.setInterval(tick,1000);
   root.addEventListener('pagehide',()=>save());
