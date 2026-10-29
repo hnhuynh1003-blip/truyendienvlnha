@@ -1056,36 +1056,61 @@ async function main() {
       readChapter(0);
       const expSecond=userProfile.exp;
       const oldRandom=Math.random;
-      Math.random=()=>0.999999;
-      let base,scifi,freeOk,freeAgain,freeCountBefore,freeCountAfter,yesterdayRefresh,stillDailyLocked;
+      let base,scifi,freeOk,freeAgain,freeCountBefore,freeCountAfter,
+        stableReload,stillLocked,findVisible,failConsumed,failNoReward;
+      const findId=prefix=>{
+        for(let i=0;i<1000;i++){
+          const id=prefix+'-'+i;
+          if(DuduChapterLootEncounterV1.encounter({accountId:currentUsername,
+            storyId:novel.id,chapterId:id,paragraphCount:3}).visible)return id;
+        }
+        throw Error('Chapter find fixture not found');
+      };
+      const testChapter=(id,realmTag)=>({id,title:'Chương thử bảo vật',
+        content:'Đoạn mở đầu.\nĐoạn giữa.\nĐoạn kết.',realmTag});
+      const winningRoll=()=>{
+        let n=0;
+        Math.random=()=>n++===0?0:0.999999;
+      };
       try {
+        const baseChapter=testChapter(findId('phase2-common'),null);
+        novel.chapters.push(baseChapter);
+        readChapter(novel.chapters.length-1);
+        findVisible=!!document.querySelector('#reader-content .reader-loot-discovery');
+        winningRoll();
         freeCountBefore=userProfile.inventory.length;
         claimChapterLootDrop();
-        freeOk=userProfile.lootedChapters[readKey]===DuduLootCadenceV42.dayKey();
+        const baseKey=DuduChapterLootEncounterV1.lootKey(novel.id,baseChapter.id);
+        freeOk=DuduChapterLootEncounterV1.attempted(userProfile.lootedChapters[baseKey]);
         const drop=userProfile.inventory[0];
         base={id:drop.id,rank:drop.rank,scope:drop.scope,source:drop.obtainedFrom,
           namedChapter:drop.obtainedFrom?.storyId===novel.id};
         const countOnce=userProfile.inventory.length;
         claimChapterLootDrop();
         freeAgain=userProfile.inventory.length===countOnce;
-        // An old, undated boolean from pre-V42 does not lock a chapter forever.
-        // A prior-day claim becomes eligible again, then locks for today.
-        const recordedToday=userProfile.lootedChapters[readKey];
-        userProfile.lootedChapters[readKey]=DuduLootCadenceV42.dayKey(Date.now()-86400000);
+        readChapter(novel.chapters.length-1);
+        stableReload=!document.querySelector('#reader-content .reader-loot-discovery');
+        userProfile.lootedChapters[baseKey]=DuduLootCadenceV42.dayKey(Date.now()-86400000);
         claimChapterLootDrop();
-        yesterdayRefresh=userProfile.inventory.length===countOnce+1 &&
-          userProfile.lootedChapters[readKey]===recordedToday;
-        const countAfterRefresh=userProfile.inventory.length;
-        claimChapterLootDrop();
-        stillDailyLocked=userProfile.inventory.length===countAfterRefresh;
-        const second={id:'phase2-realm-chapter',title:'Chương thử vị diện',
-          content:'Nội dung dành cho kiểm thử thế giới.',realmTag:'SCIFI'};
+        stillLocked=userProfile.inventory.length===countOnce;
+        const second=testChapter(findId('phase2-realm'),'SCIFI');
         novel.chapters.push(second);
         readChapter(novel.chapters.length-1);
+        winningRoll();
         claimChapterLootDrop();
         const item=userProfile.inventory[0];
         scifi={rank:item.rank,scope:item.scope,realmTag:item.realmTag,source:item.obtainedFrom,
-          chapterClaim:userProfile.lootedChapters[novel.id+'_'+second.id]===DuduLootCadenceV42.dayKey()};
+          chapterClaim:DuduChapterLootEncounterV1.attempted(userProfile.lootedChapters[novel.id+'_'+second.id])};
+        const missed=testChapter(findId('phase2-miss'),null);
+        novel.chapters.push(missed);
+        readChapter(novel.chapters.length-1);
+        const beforeMiss=userProfile.inventory.length;
+        Math.random=()=>0.99;
+        claimChapterLootDrop();
+        failConsumed=!document.querySelector('#reader-content .reader-loot-discovery')&&
+          String(userProfile.lootedChapters[novel.id+'_'+missed.id]).startsWith('miss:');
+        failNoReward=userProfile.inventory.length===beforeMiss;
+        Math.random=()=>0.999999;
         const cooldownBefore=userProfile.inventory.length;
         const rollOne=rollLootDrop(false);
         const cooldownAfterOne=userProfile.inventory.length;
@@ -1100,7 +1125,7 @@ async function main() {
       }
       return {
         expBefore,expFirst,expSecond,alreadyCounted,freeOk,freeAgain,
-        yesterdayRefresh,stillDailyLocked,
+        stableReload,stillLocked,findVisible,failConsumed,failNoReward,
         freeCountBefore,freeCountAfter,base,scifi,
         firestoreWrites:window.__firestoreWrites.length
       };
@@ -1108,10 +1133,13 @@ async function main() {
     assert.equal(lootPhase2.alreadyCounted,true);
     assert.equal(lootPhase2.expFirst-lootPhase2.expBefore,5,'First chapter open gets a one-time reward');
     assert.equal(lootPhase2.expSecond,lootPhase2.expFirst,'Re-opening chapter must never repeat EXP');
+    assert.equal(lootPhase2.findVisible,true,'Eligible chapter shows a collectible inline');
     assert.equal(lootPhase2.freeOk,true);
-    assert.equal(lootPhase2.freeAgain,true,'Same chapter cannot grant a second drop today');
-    assert.equal(lootPhase2.yesterdayRefresh,true,'A previous-day chapter loot claim can be collected again');
-    assert.equal(lootPhase2.stillDailyLocked,true,'The next repeated claim remains blocked on the same day');
+    assert.equal(lootPhase2.freeAgain,true,'Same chapter cannot grant a second drop');
+    assert.equal(lootPhase2.stableReload,true,'Reloading the chapter cannot reroll the find');
+    assert.equal(lootPhase2.stillLocked,true,'Prior-day claims stay consumed instead of refreshing');
+    assert.equal(lootPhase2.failConsumed,true,'Failed loot attempt consumes the inline find');
+    assert.equal(lootPhase2.failNoReward,true,'Failure cannot grant an item');
     assert.equal(lootPhase2.base.scope,'COMMON','Untagged chapter must use global item pool');
     assert.equal(lootPhase2.base.rank,'B','Empty higher ranks must not silently become F');
     assert.equal(lootPhase2.base.namedChapter,true);

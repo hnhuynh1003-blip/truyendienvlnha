@@ -29,8 +29,8 @@
  const TOOL=Object.freeze({
    id:TOOL_ID,itemId:TOOL_ID,
    name:'Bộ Nạp Tần Số',icon:'🔋',rank:'D',type:'ITEM',
-   desc:'Xóa hồi chiêu nhặt đồ của Điện thoại (15 phút). Không hồi lượt nhặt chương.',
-   description:'Xóa hồi chiêu nhặt đồ của Điện thoại (15 phút). Không hồi lượt nhặt chương.',
+   desc:'Xóa hồi chiêu nhặt đồ của Điện thoại (15 phút). Không tạo dấu vết Nhặt bảo trong chương.',
+   description:'Xóa hồi chiêu nhặt đồ của Điện thoại (15 phút). Không tạo dấu vết Nhặt bảo trong chương.',
    scope:'FUNCTIONAL',acquisition:Object.freeze({method:'SHOP'}),
    price:30,storeCategory:'TOOL',unique:false,maxOwned:null,
    giftable:false,tradeable:false,discardable:true,published:true,
@@ -50,8 +50,8 @@
   }),
   Object.freeze({
    id:PULSE_ID,itemId:PULSE_ID,name:'Xung Thời Gian',icon:'⏳',rank:'D',type:'ITEM',
-   desc:'Giảm 60 giây hồi chiêu nhặt đồ Điện thoại, không thay lượt chương.',
-   description:'Giảm 60 giây hồi chiêu nhặt đồ Điện thoại, không thay lượt chương.',
+   desc:'Giảm 60 giây hồi chiêu nhặt đồ Điện thoại, không tạo thêm Nhặt bảo trong chương.',
+   description:'Giảm 60 giây hồi chiêu nhặt đồ Điện thoại, không tạo thêm Nhặt bảo trong chương.',
    scope:'FUNCTIONAL',acquisition:Object.freeze({method:'SHOP'}),price:16,
    storeCategory:'TOOL',unique:false,maxOwned:null,giftable:false,
    tradeable:false,discardable:true,published:true,schemaVersion:2

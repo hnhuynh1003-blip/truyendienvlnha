@@ -31,11 +31,15 @@ test('wallet navigation has working shopping and Arcade controls but cannot mint
  assert.doesNotMatch(arcade,/userProfile\.currency\s*[+\-]?=/);
 });
 
-test('loot cadence gates both chapter button and direct function',()=>{
+test('chapter find is one-shot with a chance of appearing and of yielding an item',()=>{
  const cadence=require('../js/loot-cadence-v42.js');
+ const find=require('../js/chapter-loot-encounter-v1.js');
  assert.equal(cadence.PHONE_COOLDOWN_MS,15*60*1000);
- assert.equal(cadence.CHAPTER_DAILY_LIMIT,3);
- assert.match(html,/DuduLootCadenceV42\.chapterDailyRemaining\(userProfile\.lootedChapters\)<=0/);
- assert.match(html,/DuduLootCadenceV42\.chapterDailyRemaining\(userProfile\.lootedChapters,now\)<=0/);
- assert.match(html,/Hết lượt hôm nay/);
+ assert.equal(find.APPEAR_PERCENT,25);
+ assert.equal(find.SUCCESS_PERCENT,45);
+ assert.match(html,/updateChapterLootButtonState\(\)/);
+ assert.match(html,/className='reader-loot-discovery'/);
+ assert.match(html,/chapterLootGrantReadyKey!==lootKey/);
+ assert.match(html,/DuduChapterLootEncounterV1\.missMarker\(now\)/);
+ assert.doesNotMatch(html,/Hết lượt hôm nay|Nhặt tối đa 3 lượt/);
 });

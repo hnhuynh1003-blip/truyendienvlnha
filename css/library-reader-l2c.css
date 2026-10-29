@@ -77,6 +77,25 @@ body.dudu-reading-active #reader-view .reader-body {
   color:var(--reader-ink);font-family:var(--reader-font,system-ui,-apple-system,'Segoe UI',Arial,sans-serif);
   font-size:var(--reader-size,18px);line-height:1.9;
 }
+/* An occasional find inside the prose, not a guaranteed reward at the end. */
+body.dudu-reading-active #reader-view .reader-loot-encounter {
+  display:flex;justify-content:flex-start;margin:20px 0 25px;padding:0 0 0 1.1em;
+  text-align:left;text-indent:0;
+}
+body.dudu-reading-active #reader-view .reader-loot-discovery {
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  min-height:40px;padding:8px 16px;border:1px solid #bda779;border-radius:8px;
+  background:linear-gradient(120deg,#e8d9b9,#d5bc85);color:#202739;
+  box-shadow:0 4px 14px rgba(0,0,0,.14);cursor:pointer;
+  font:700 13px/1.4 system-ui,-apple-system,'Segoe UI',Arial,sans-serif;
+  letter-spacing:.02em;transition:transform .15s,box-shadow .15s;
+}
+body.dudu-reading-active #reader-view .reader-loot-discovery:hover {
+  transform:translateY(-1px);box-shadow:0 6px 18px rgba(0,0,0,.2);
+}
+body.dudu-reading-active #reader-view .reader-loot-discovery:focus-visible {
+  outline:3px solid #75dbd2;outline-offset:3px;
+}
 /* The Phone is optional during reading, but it must remain reachable. */
 body.dudu-site-v60.dudu-reading-active #phone-fab {
   display:flex;left:auto;right:12px;bottom:calc(14px + env(safe-area-inset-bottom));

@@ -3,9 +3,9 @@
 **Trạng thái:** tài liệu kiểm tra và kế hoạch triển khai; **chưa bật quyền và chưa sửa/deploy Firestore Rules**.
 **Định hướng:** một chủ tài khoản và vài tài khoản riêng trên điện thoại, Firebase Spark/miễn phí, không Cloud Functions, không nạp tiền.
 
-**Bổ sung 29/10:** Cyber Phone đã có ứng dụng **Ví Xu** riêng hiển thị lại `userProfile.currency` để mua sắm, đối chiếu Xu Arcade ở local; không thêm ví hệ thống thứ hai và chưa chuyển Xu thật. Nhịp nhặt thử tại client đã chuyển sang 15 phút ở Kho, tối đa 3 lượt từ chương/ngày. Bảng công dụng vật phẩm/giới hạn trước Rules xem `DUDU-WALLET-LOOT-ITEM-ROADMAP-2026-10-29.md`.
+**Bổ sung 29/10:** Cyber Phone đã có ứng dụng **Ví Xu** riêng hiển thị lại `userProfile.currency` để mua sắm, đối chiếu Xu Arcade ở local; không thêm ví hệ thống thứ hai và chưa chuyển Xu thật. Nhịp nhặt thử tại client vẫn là 15 phút ở Kho; chương có xác suất hiện **✦ Nhặt bảo** 25%, khi bấm có xác suất thành công 45%, đã thử là biến mất vĩnh viễn ở chương đó. Bảng công dụng vật phẩm/giới hạn trước Rules xem `DUDU-WALLET-LOOT-ITEM-ROADMAP-2026-10-29.md`.
 
-**Quy đổi đã chuẩn bị trên giao diện:** `10 Xu Arcade = 1 Xu hệ thống`, tối thiểu 10 Xu Arcade/lần, mỗi lệnh là bội số 10 Xu Arcade, **dự kiến tối đa 30 Xu hệ thống/ngày**. Người chơi tự nhập số lượng hoặc chọn mức nhanh 10/50/100/Tối đa. Module `js/personal-arcade-exchange-v1.js` chỉ trả báo giá và hạn mức dự kiến; chưa có ledger ngày, **không phát/trừ tiền**. Hạn mức cần được xác nhận bởi nguồn đáng tin trong lần Rules chung.
+**Quy đổi đã chuẩn bị trên giao diện:** `10 Xu Arcade = 1 Xu hệ thống`, tối thiểu 10 Xu Arcade/lần, mỗi lệnh là bội số 10 Xu Arcade, **không có trần 30 Xu/ngày**; chỉ phụ thuộc số dư. Người chơi tự nhập số lượng hoặc chọn mức nhanh 10/50/100/Tối đa. Module `js/personal-arcade-exchange-v1.js` chỉ trả báo giá dự kiến; chưa có ledger, **không phát/trừ tiền**. Nguồn Xu cần được xác nhận bởi cơ chế đáng tin trong lần Rules chung.
 
 ## 1. Các luồng đã có trong mã nguồn
 
@@ -30,14 +30,14 @@
 
 - Các luồng thưởng và chuyển Xu phải có một định danh sự kiện ổn định và không được tính hai lần: `ARCADE_TRANSFER`, `QUEST_CLAIM`, `FUN_CLAIM`, `LOOT_CLAIM`.
 - Một lần chuyển/mở khóa/mua vật phẩm phải kiểm tra số dư trước, thay đổi số dư và tạo dấu vết nhận/mua cùng một giao dịch; refresh hoặc gửi lại cùng lệnh không được thưởng/trừ lần nữa.
-- Với Nhiệm vụ, mã gồm nguồn + ID nhiệm vụ + kỳ ngày/tuần + UID từ Auth (không lấy UID do client nhập). Với DUDU FUN, mã gồm trò + ngày. Với nhặt đồ, mã gồm nguồn/lượt hợp lệ; riêng chương cần storyId/chapterId/ngày.
+- Với Nhiệm vụ, mã gồm nguồn + ID nhiệm vụ + kỳ ngày/tuần + UID từ Auth (không lấy UID do client nhập). Với DUDU FUN, mã gồm trò + ngày. Với nhặt đồ, mã gồm nguồn/lượt hợp lệ; riêng chương cần UID + storyId + chapterId và chỉ ghi nhận **một lần đã thử**, kể cả hụt. Không dùng ngày để làm mới cơ hội.
 - Đồ nhặt phải lưu loại và nguồn gốc (toàn cục hay chương, nguồn, thời điểm, instance ID), giới hạn Kho, phân biệt vật phẩm thật với vật phẩm chỉ hiển thị trong thế giới hoặc quà thử nghiệm.
 - Phải giữ tiến trình cũ, nhưng **không tự động chuyển** Xu/EXP/đồ nhặt địa phương từ bản cũ thành tài sản máy chủ.
 - Nút **⇄ Đổi** ở ví Arcade chỉ mở popup chuẩn bị; lệnh thực vẫn vô hiệu hóa cho tới khi một mô hình xác thực/hạn mức được nghiệm thu.
 
 ## 4. Những quyết định cần chốt trước lượt Rules cuối
 
-1. Xác nhận tỷ lệ đã dự kiến **10:1**, tối thiểu **10 Xu Arcade/lần**, tối đa **30 Xu hệ thống/ngày**, chỉ một chiều và không có đổi ra tiền thật. Quyết định cách tính ngày/hạn mức trên hai thiết bị khi phát hành thật.
+1. Xác nhận tỷ lệ đã dự kiến **10:1**, tối thiểu **10 Xu Arcade/lần**, **không đặt trần/ngày**, chỉ một chiều và không có đổi ra tiền thật. Xác nhận giao dịch đúng một lần trên hai thiết bị khi phát hành thật.
 2. Truyện hay chương nào cần khóa; giá cố định cho toàn truyện hay từng chương; có phần đọc thử hay không.
 3. Nhiệm vụ nào có thưởng thật (đọc chương, điểm danh, DUDU FUN, nhặt đồ). Với trò may rủi trên trình duyệt, có chấp nhận thưởng vật phẩm thật trong mô hình cá nhân ít tài khoản không?
 4. Bản lưu local có được nhập một lần vào ví/Kho mới không, hay bắt đầu ví thật từ 0 để không biến dữ liệu dễ sửa thành quyền mở truyện?

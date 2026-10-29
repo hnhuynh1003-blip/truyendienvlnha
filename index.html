@@ -93,7 +93,7 @@
   <script src="js/quest-engine-v43-7.js?v=44-9"></script>
   <script src="js/dudu-fun-rules-v43.js?v=44-9"></script>
   <script src="js/personal-arcade-core-v1.js?v=arcade-upgrade-4"></script>
-  <script src="js/personal-arcade-exchange-v1.js?v=xu-quote-1"></script>
+  <script src="js/personal-arcade-exchange-v1.js?v=xu-quote-2"></script>
   <script src="js/story-market-v43.js?v=1"></script>
   <script src="js/inventory-model-v42.js?v=44-1"></script>
   <script src="js/inventory-trade-v43-9.js?v=44-9"></script>
@@ -151,6 +151,7 @@
   <script src="js/player-avatar-sync-ui-v22.js"></script>
   <script src="js/loot-rules-v2.js?v=44-1"></script>
   <script src="js/loot-cadence-v42.js?v=wallet-loot-1"></script>
+  <script src="js/chapter-loot-encounter-v1.js?v=chapter-surprise-1"></script>
   <script src="js/item-actions-v43.js?v=1"></script>
   <script src="js/functional-items-v43-8.js?v=44-9"></script>
   <script src="js/companion-rules-v43.js?v=1"></script>
@@ -592,15 +593,6 @@
     }
     .author-note-title { font-weight: bold; color: var(--neon); margin-bottom: 4px; }
 
-    .reader-loot-box {
-      margin-top: 24px;
-      padding: 14px;
-      border: 1px dashed var(--gold);
-      border-radius: 8px;
-      background: rgba(245, 158, 11, 0.05);
-      text-align: center;
-    }
-
     /* KHUNG MỞ KHÓA LINH HỒN Ở CUỐI TRANG ĐỌC */
     .reader-soul-unlock-box {
       margin-top: 20px;
@@ -778,7 +770,7 @@
   <link rel="stylesheet" href="css/site-shell-v60.css?v=lib-l2c-2">
   <link rel="stylesheet" href="css/library-discovery-l2b.css?v=l2d-1">
   <link rel="stylesheet" href="css/library-cards-l2b4.css?v=l2c-2">
-  <link rel="stylesheet" href="css/library-reader-l2c.css?v=l2c-2">
+  <link rel="stylesheet" href="css/library-reader-l2c.css?v=l2c-3">
   <link rel="stylesheet" href="css/library-editorial-l2c3.css?v=l2c-3">
   <link rel="stylesheet" href="css/library-epub-manage-l2d2.css?v=l2d2-1">
   <link rel="stylesheet" href="css/library-epub-edit-l2d5.css?v=l2d5b-1">
@@ -951,12 +943,6 @@
         </div>
         <p style="font-size:11px; color:#94a3b8; margin-bottom:8px;">Trong chương này có dấu vết của nhân vật. Kết nối để mở khóa tính năng trò chuyện trong Cyber Phone.</p>
         <div class="soul-npc-grid" id="reader-soul-npc-list"></div>
-      </div>
-
-      <div class="reader-loot-box">
-        <div style="font-size: 12px; font-weight: bold; color: var(--gold); margin-bottom: 4px;">🎁 TÀN TÍCH DỮ LIỆU CUỐI CHƯƠNG</div>
-        <p style="font-size: 10px; color: var(--text-dim); margin-bottom: 8px;" id="reader-loot-desc">Nhặt tối đa 3 lượt từ chương mỗi ngày.</p>
-        <button class="btn btn-primary" id="btn-chapter-loot-claim" onclick="claimChapterLootDrop()">🎲 Lục Lọi Bảo Vật Ngay</button>
       </div>
 
       <div class="author-note-box" id="reader-author-note-box" style="display:none;">
@@ -1464,7 +1450,7 @@
             <span class="dudu-wallet-source-badge">Riêng trên thiết bị</span>
           </section>
           <button type="button" class="dudu-wallet-exchange-launch" onclick="window.DuduPersonalArcadeUIV1?.openExchange?.()">⇄ Chọn số Xu muốn đổi</button>
-          <div class="dudu-wallet-lock"><span aria-hidden="true">⌁</span><span>10 Xu Arcade = 1 Xu ví · Đổi tối đa 30 Xu ví/ngày khi mở kết nối.</span></div>
+          <div class="dudu-wallet-lock"><span aria-hidden="true">⌁</span><span>10 Xu Arcade = 1 Xu ví · Chọn số Xu muốn đổi khi mở kết nối.</span></div>
         </div>
       </div>
 
@@ -5347,7 +5333,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       showSystemAlert('🔋 NẠP NĂNG LƯỢNG THÀNH CÔNG',
         'Đã xóa hồi chiêu nhặt đồ Điện thoại. Còn '+
         (DuduItemActionsV43.MAX_USE_PER_DAY-plan.state.used)+
-        ' lần dùng hôm nay. Không thay đổi lượt nhặt theo chương.');
+        ' lần dùng hôm nay. Không tạo thêm Nhặt bảo trong chương.');
       return true;
     }
 
@@ -5424,7 +5410,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
         plan.itemId===DuduEconomyCoreV43.SUPPLY_ID?
         'Đã nhận 1 Nước Uống Đóng Chai và 1 Bánh Quy Khô vào Kho.':
         plan.itemId===DuduEconomyCoreV43.PULSE_ID?
-        'Hồi chiêu nhặt đồ Điện thoại giảm 60 giây. Không đổi lượt nhặt chương.':
+        'Hồi chiêu nhặt đồ Điện thoại giảm 60 giây. Không tạo thêm Nhặt bảo trong chương.':
         'Phiếu giảm 25% (tối đa 12 Xu) đã sẵn sàng cho lần mua hàng phổ thông hôm nay.');
       return true;
     }
@@ -6229,45 +6215,71 @@ document.getElementById('phone-home-screen').style.display = 'none';
         cooldownTimerInterval = setInterval(updateBtnState, 1000);
     }
 
+    // Chapter finds are stable for an account and consumed on the first tap,
+    // regardless of outcome. No limit per day; the chapter itself is the key.
+    let chapterLootGrantReadyKey=null;
+    function chapterLootOpportunity(novel,chapter,index,paragraphCount){
+      const key=DuduChapterLootEncounterV1.lootKey(novel.id,chapter.id || index);
+      const accountId=(!IS_SANDBOX_MODE&&DuduAuth?.isReady?.())?
+        DuduAuth.uid():currentUsername;
+      const found=DuduChapterLootEncounterV1.encounter({
+        accountId,storyId:novel.id,chapterId:chapter.id || index,
+        paragraphCount,claim:userProfile.lootedChapters?.[key]
+      });
+      return {key,...found};
+    }
     function updateChapterLootButtonState() {
       const novel = novels[selectedNovelIndex];
       const ch = novel && novel.chapters ? novel.chapters[selectedChapterIndex] : null;
-      const lootBtn = document.getElementById('btn-chapter-loot-claim');
-      const lootDesc = document.getElementById('reader-loot-desc');
-
-      if (!ch || !lootBtn) return;
-
-      const lootKey = `${novel.id}_${ch.id || selectedChapterIndex}`;
-      const remaining=DuduLootCadenceV42.chapterDailyRemaining(userProfile.lootedChapters);
-      if (DuduLootCadenceV42.claimedToday(userProfile.lootedChapters?.[lootKey])) {
-        lootBtn.disabled = true;
-        lootBtn.textContent = "✔ Hôm nay đã thu thập";
-        lootDesc.textContent = `Còn ${remaining}/${DuduLootCadenceV42.CHAPTER_DAILY_LIMIT} lượt nhặt chương hôm nay.`;
-      } else if(remaining<=0){
-        lootBtn.disabled=true;
-        lootBtn.textContent='⏳ Hết lượt hôm nay';
-        lootDesc.textContent='Lượt nhặt chương sẽ mở lại vào ngày mai.';
-      } else {
-        lootBtn.disabled = false;
-        lootBtn.textContent = "🎲 Lục Lọi Bảo Vật Ngay";
-        lootDesc.textContent = `Còn ${remaining}/${DuduLootCadenceV42.CHAPTER_DAILY_LIMIT} lượt nhặt chương hôm nay; mỗi chương 1 lần/ngày.`;
-      }
+      const content=document.getElementById('reader-content');
+      if(!ch||!content)return;
+      content.querySelectorAll('.reader-loot-encounter').forEach(node=>node.remove());
+      const paragraphs=content.querySelectorAll('p');
+      const opportunity=chapterLootOpportunity(novel,ch,selectedChapterIndex,paragraphs.length);
+      if(!opportunity.visible)return;
+      const slot=document.createElement('div');
+      slot.className='reader-loot-encounter';
+      const button=document.createElement('button');
+      button.type='button';
+      button.className='reader-loot-discovery';
+      button.setAttribute('aria-label','Thử nhặt bảo vật xuất hiện trong chương');
+      button.textContent='✦ Nhặt bảo';
+      button.addEventListener('click',claimChapterLootDrop);
+      slot.appendChild(button);
+      paragraphs[opportunity.afterParagraph]?.after(slot);
     }
 
     function claimChapterLootDrop() {
       const novel = novels[selectedNovelIndex];
       const chapter = novel?.chapters?.[selectedChapterIndex];
-      if (!novel || !chapter) return;
-      const lootKey = `${novel.id}_${chapter.id || selectedChapterIndex}`;
-      if (DuduLootCadenceV42.claimedToday(userProfile.lootedChapters?.[lootKey])) {
-        showSystemAlert("ĐÃ THU THẬP HÔM NAY", "Chương này hôm nay đã được nhặt. Hãy quay lại vào ngày mai!");
-        return;
+      if (!novel || !chapter) return false;
+      const opportunity=chapterLootOpportunity(novel,chapter,selectedChapterIndex,
+        document.querySelectorAll('#reader-content > p').length);
+      if(!opportunity.visible ||
+        !document.querySelector('#reader-content .reader-loot-encounter'))return false;
+      if(!Array.isArray(userProfile.inventory))userProfile.inventory=[];
+      if(userProfile.inventory.length>=500){
+        showSystemAlert('KHO ĐỒ ĐÃ ĐẦY','Hãy dọn một ô trước khi thử nhặt. Cơ hội vẫn còn.');
+        return false;
       }
-      if(DuduLootCadenceV42.chapterDailyRemaining(userProfile.lootedChapters)<=0){
-        showSystemAlert('HẾT LƯỢT NHẶT CHƯƠNG','Bạn đã dùng hết 3 lượt hôm nay. Ngày mai quay lại nhé!');
-        return;
+      // Mark the one-shot attempt BEFORE rolling; a double tap cannot claim twice.
+      document.querySelector('#reader-content .reader-loot-encounter')?.remove();
+      userProfile.lootedChapters ||= {};
+      const now=Date.now();
+      userProfile.lootedChapters[opportunity.key]=DuduChapterLootEncounterV1.missMarker(now);
+      if(!DuduChapterLootEncounterV1.rollSuccess(Math.random())){
+        saveCurrentAccount();
+        showSystemAlert('✦ DẤU VẾT TAN BIẾN','Bạn đã thử nhặt nhưng không giữ được bảo vật lần này.');
+        return false;
       }
-      if (rollLootDrop(true,novel,chapter)) updateChapterLootButtonState();
+      chapterLootGrantReadyKey=opportunity.key;
+      let awarded=false;
+      try {awarded=rollLootDrop(true,novel,chapter);}
+      finally {
+        chapterLootGrantReadyKey=null;
+        if(!awarded)saveCurrentAccount();
+      }
+      return awarded;
     }
 
     function rollLootDrop(isFreeFromChapter = false, sourceNovel = null, sourceChapter = null) {
@@ -6281,9 +6293,9 @@ document.getElementById('phone-home-screen').style.display = 'none';
       if (isFreeFromChapter) {
         const idx = sourceNovel?.chapters?.indexOf(sourceChapter);
         if (!sourceNovel || !sourceChapter || idx < 0) return false;
-        lootKey = `${sourceNovel.id}_${sourceChapter.id || idx}`;
-        if (DuduLootCadenceV42.claimedToday(userProfile.lootedChapters?.[lootKey],now)) return false;
-        if(DuduLootCadenceV42.chapterDailyRemaining(userProfile.lootedChapters,now)<=0)return false;
+        lootKey = DuduChapterLootEncounterV1.lootKey(sourceNovel.id,sourceChapter.id || idx);
+        if(chapterLootGrantReadyKey!==lootKey ||
+          !DuduChapterLootEncounterV1.attempted(userProfile.lootedChapters?.[lootKey]))return false;
       }
 
       // Only explicit author-tagged realms can add a realm's items.
@@ -6338,6 +6350,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
         showSystemAlert("TÀN TÍCH DỮ LIỆU", `Nhặt được: [${result.rank}] ${result.item.name} (+${reward.coins} Xu)`);
       }
       saveCurrentAccount();
+      return true;
       renderInventory();
       return true;
     }
@@ -7971,7 +7984,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/companion-ui-v43.js?v=69-restore-1"></script>
 <script src="js/market-ui-v43.js?v=52-1"></script>
 <script src="js/dudu-fun-ui-v43.js?v=51-1"></script>
-<script src="js/personal-arcade-ui-v1.js?v=xu-quote-1"></script>
+<script src="js/personal-arcade-ui-v1.js?v=xu-quote-2"></script>
 <script src="js/quest-ui-v43-7.js?v=51-1"></script>
 <script src="js/economy-runtime-v43.js?v=51-1"></script>
 <script src="js/economy-live-v52.js?v=52-1"></script>

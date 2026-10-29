@@ -10,17 +10,17 @@ Phục vụ một chủ tài khoản và vài tài khoản cá nhân; không n�
 | **Ví Xu hệ thống** | Cửa hàng, và mở truyện/chương trả Xu về sau | `userProfile.currency` (profile đang có) | Có màn hình Ví Xu riêng trong Cyber Phone. **Không tạo số dư profile thứ hai.** Trạng thái profile hiện tại chưa thể xác nhận chống gian lận bằng Rules hiện tại. |
 | **Xu Arcade** | Nâng cấp Trạm Neon, Địa Tầng 07, Vườn Sương | LocalStorage theo UID và thiết bị | Dùng trong 3 game. Nút **⇄ Đổi** và màn hình Ví liên thông về giao diện, **chưa thể chuyển Xu thật**. |
 
-**Bản thiết kế quy đổi:** `10 Xu Arcade → 1 Xu hệ thống`. Mỗi giao dịch tối thiểu 10 Xu Arcade, nhận số Xu hệ thống nguyên; chọn lượng đổi theo **bội số của 10**, giới hạn **30 Xu hệ thống/ngày** (tương đương 300 Xu Arcade/ngày). Không có phí và không chuyển ngược. Người dùng chọn số lượng bằng cách nhập số hoặc nút nhanh 10/50/100/Tối đa ở cả đường dẫn Arcade và Ví Xu.
+**Bản thiết kế quy đổi:** `10 Xu Arcade → 1 Xu hệ thống`. Mỗi giao dịch tối thiểu 10 Xu Arcade, nhận số Xu hệ thống nguyên; chọn lượng đổi theo **bội số của 10**, **không khóa 30 Xu hệ thống/ngày**. Lượng đổi tối đa phụ thuộc số dư Arcade sẵn có. Không có phí và không chuyển ngược. Người dùng chọn số lượng bằng cách nhập số hoặc nút nhanh 10/50/100/Tối đa ở cả đường dẫn Arcade và Ví Xu.
 
-`js/personal-arcade-exchange-v1.js` hiện chỉ tạo báo giá thuần, không trừ Xu hay gộp tiền. **Hạn mức trong popup đang là dự kiến**; chưa có sổ giao dịch ngày và không được xem localStorage là chứng cứ bảo mật. Phải có mã giao dịch không trùng, xác nhận nguồn số dư và lịch sử trừ/cộng cùng một giao dịch trước khi mở nút chuyển thật.
+`js/personal-arcade-exchange-v1.js` hiện chỉ tạo báo giá thuần, không trừ Xu hay gộp tiền. **Không có giới hạn giao dịch theo ngày**; chưa có sổ giao dịch và không được xem localStorage là chứng cứ bảo mật. Phải có mã giao dịch không trùng, xác nhận nguồn số dư và lịch sử trừ/cộng cùng một giao dịch trước khi mở nút chuyển thật.
 
 ## 2. Nhịp nhặt đồ đã áp dụng tại giao diện/client
 
 - **Kho Đồ / Nhặt đồ:** một lần mỗi **15 phút** (trước đây 2 phút). Nút đếm ngược thể hiện thời gian còn lại; giữ nguyên dấu thời gian theo tài khoản hiện hành, không xóa kho.
-- **Trong chương:** tối đa **3 lượt thành công/ngày trên toàn thư viện**, mỗi chương không quá **1 lần/ngày**. Không phụ thuộc hồi chiêu Kho Đồ.
-- Ngày được tính theo lịch địa phương thiết bị, như hệ thống V42 hiện hành. Dữ liệu chương cũ vẫn là `lootedChapters[storyId_chapterId]=YYYY-MM-DD`; đếm số key của hôm nay, **không thêm trường cấu trúc mới**.
-- Hết lượt: nút khóa kèm giải thích ngắn, đồng thời hàm thực thi kiểm tra lại để chặn gọi trực tiếp. Khi kho đạt 500 vật phẩm, không tiêu lượt.
-- **Bộ Nạp Tần Số** (mua từ shop): hiện có thể xóa hồi chiêu Kho tối đa 2 lần/ngày; **Xung Thời Gian** giảm 60 giây, tối đa 2 lần/ngày. Không hồi lượt chương. Cần đánh giá lại giá thành của hai công cụ khi giao dịch Xu được xác thực.
+- **Trong chương:** không khóa theo số lượt/ngày, cũng không đặt nút nhặt cố định cuối chương. Chỉ khoảng **25% tổ hợp tài khoản–chương** có nút **✦ Nhặt bảo** nhỏ nằm giữa nội dung. Vị trí cố định theo tài khoản và chương, không đổi khi tải lại.
+- **Một cú nhặt là một cơ hội:** bấm thì nút biến mất ngay; **45% xác suất nhận vật phẩm**, **55% hụt**. Cả hai kết quả đều ghi dấu một lần ở `lootedChapters[storyId_chapterId]`, không được nhặt lại ở chương đó vào hôm sau hay khi refresh. Giá trị chương cũ `true`/`YYYY-MM-DD` cũng coi là đã thử, tránh tự nhân đồ; thất bại mới ghi `miss:<timestamp>`.
+- Khi kho đạt 500 vật phẩm, chưa tiêu cơ hội nhặt. Điện thoại/Kho vẫn dùng hồi chiêu riêng 15 phút. Không thêm collection hoặc sửa Rules cho cơ chế này.
+- **Bộ Nạp Tần Số** (mua từ shop): hiện có thể xóa hồi chiêu Kho tối đa 2 lần/ngày; **Xung Thời Gian** giảm 60 giây, tối đa 2 lần/ngày. Không tạo lượt nhặt chương. Cần đánh giá lại giá thành của hai công cụ khi giao dịch Xu được xác thực.
 - Các giới hạn trên mới là **nhịp chơi ở client**, không thay thế kiểm soát thời gian máy chủ. Cần test đổi giờ máy, đăng nhập hai thiết bị, spam hai tab và trùng event trước khi mở vật phẩm có giá trị thật.
 
 ## 3. Nhóm vật phẩm có chức năng — đề xuất, CHƯA mở quyền dùng thật
@@ -48,8 +48,8 @@ Phục vụ một chủ tài khoản và vài tài khoản cá nhân; không n�
 
 ## 4. Thứ tự triển khai trước lần Rules chung
 
-1. **Ví Xu**: chỉ đọc từ `userProfile.currency`; dùng tỷ lệ 10:1 và trần 30 Xu/ngày làm cấu hình đề xuất để kiểm thử adapter/ledger, không tự tạo ví song song.
-2. **Nhặt đồ**: thống nhất giới hạn điện thoại/chương, kết quả nhận duy nhất, trùng lượt, thời gian phía máy chủ ở lần mở quyền.
+1. **Ví Xu**: chỉ đọc từ `userProfile.currency`; dùng tỷ lệ 10:1, không có trần theo ngày và không tự tạo ví song song. Khi mở thật phải chứng minh nguồn số dư chứ không chỉ tin localStorage.
+2. **Nhặt đồ**: thống nhất hồi chiêu điện thoại và cơ hội xuất hiện/thành công riêng cho chương; kết quả nhận duy nhất, trùng lượt, thời gian phía máy chủ ở lần mở quyền.
 3. **Sử dụng vật phẩm**: ưu tiên đồ phổ thông + 4 công cụ cửa hàng có sẵn, kiểm tra không nhân bản, không dùng trái ngữ cảnh.
 4. **Quyền đọc trả Xu**: thống nhất khóa nội dung thật và đơn mua truyện/chương, không chỉ ẩn nút.
 5. **Quest/FUN/Arcade**: hợp nhất event idempotent, kiểm thử ít nhất hai UID và hai thiết bị.

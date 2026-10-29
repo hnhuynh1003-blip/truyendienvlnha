@@ -93,7 +93,7 @@
      }else if(tab==='STORY'){
        hint.textContent='Danh mục tác giả (chỉ xem) · không phải đồ sở hữu hoặc phần thưởng được cấp.';
      }else{
-       hint.textContent='Công cụ Sandbox: nạp hồi chiêu, gia tốc 60 giây, gói tiếp tế và phiếu giảm giá. Không thay lượt nhặt theo chương.';
+       hint.textContent='Công cụ Sandbox: nạp hồi chiêu, gia tốc 60 giây, gói tiếp tế và phiếu giảm giá. Không tạo thêm Nhặt bảo trong chương.';
      }
      collection.replaceChildren();
      const storyIndex=tab==='STORY'?storyCatalog?.index({stories,storyId,readRewards}):null;

@@ -50,12 +50,12 @@
  const visible=()=>root.document.getElementById('phone-app-arcade')?.style.display==='flex';
  const fmt=amount=>core.formatXu(amount);
  const quoteForExchange=()=>exchangePolicy?.quote({availableTenths:state?.coins??0,
-  requestedGameXu:exchangeAmount,transferredToday:0})||
+  requestedGameXu:exchangeAmount})||
   {ok:false,reason:'not-ready',walletXu:0,maxGameXu:0};
  const exchangeHint=q=>q.ok?'Số Xu sẽ nhận khi giao dịch được mở.':
   q.reason==='minimum-10-game-xu'?'Tối thiểu 10 Xu Arcade mỗi lần.':
   q.reason==='must-be-multiple-of-10'?'Chọn bội số của 10 Xu Arcade.':
-  q.reason==='insufficient-or-daily-cap'?'Vượt số dư hoặc hạn mức đổi trong ngày.':
+  q.reason==='insufficient-balance'?'Số dư Arcade chưa đủ để đổi mức này.':
   'Chưa đủ Xu để đổi.';
  function updateExchangePreview(){
   if(!exchangeOpen)return;
@@ -92,8 +92,7 @@
         ${value<10||value>max?'disabled':''} aria-pressed="${exchangeAmount===value&&value>=10}">${choice==='max'?'Tối đa':value+' Xu'}</button>`;}).join('')}
     </div>
     <div class="arcade-exchange-quote"><span>Dự kiến nhận</span><strong aria-live="polite" data-arcade-exchange-result>${q.walletXu.toLocaleString('vi-VN')} Xu hệ thống</strong></div>
-    <p class="arcade-exchange-hint" id="arcade-exchange-hint-v1" data-arcade-exchange-hint>${exchangeHint(q)}</p>
-    <div class="arcade-exchange-cap">Hạn mức dự kiến · 30 Xu ví/ngày</div>`;
+    <p class="arcade-exchange-hint" id="arcade-exchange-hint-v1" data-arcade-exchange-hint>${exchangeHint(q)}</p>`;
  }
  function countdown(ms){
   const seconds=Math.max(0,Math.ceil(ms/1000));
