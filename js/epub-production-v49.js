@@ -173,6 +173,7 @@
     author:String(d.author||'Tác giả').slice(0,140),
     status:d.publicationState==='Hoàn thành'?'Hoàn thành':'Đang ra',
     genre:safeGenres(d.genre),desc:description,
+    _ownerUidV49:String(d.ownerUid||''),
     coverImage:validCover(d.coverImage)?d.coverImage:'',
     updatedAt:(d.updatedAt||'').slice(0,10),createdAt:(d.createdAt||'').slice(0,10),
     introData:{title:'VĂN ÁN',code:'ARCHIVE',text:description},
@@ -193,6 +194,86 @@
   if(!doc.exists||!doc.data()?.content)throw Error('Không tìm thấy nội dung chương');
   return {content:String(doc.data().content),title:String(doc.data().title)};
  }
+
+ // L2D.2 — author-owned metadata only. All writes use a transaction and keep
+ // chapter IDs, chapterIndex, ownerUid and the published/archived state intact.
+ // Server Rules MUST be reviewed and deployed separately before enabling UI.
+ async function updatePublishedMetadata(bookId,{db,auth,metadata}={}){
+  if(!identifier(bookId)||!db?.collection||!db?.runTransaction||!metadata||
+     typeof metadata!=='object'||Array.isArray(metadata))throw Error('Dữ liệu chỉnh sửa EPUB không hợp lệ');
+  const uid=await requireAdmin(auth);
+  const permitted=['title','author','genre','desc','publicationState','coverImage'];
+  const fields=Object.keys(metadata);
+  if(!fields.length||fields.some(key=>!permitted.includes(key)))
+   throw Error('Chỉ được sửa thông tin giới thiệu của tác phẩm');
+  const patch={};
+  for(const field of fields){
+   const raw=metadata[field];
+   if(typeof raw!=='string')throw Error('Thông tin '+field+' phải là văn bản');
+   if(field==='title'||field==='author'){
+    const value=raw.trim();
+    if(!value||value.length>140)throw Error('Tên truyện/tác giả phải dài từ 1 đến 140 ký tự');
+    patch[field]=value;
+   }else if(field==='publicationState'){
+    if(!['Đang ra','Hoàn thành'].includes(raw))throw Error('Trạng thái truyện không hợp lệ');
+    patch[field]=raw;
+   }else if(field==='genre'){
+    if(raw.length>220)throw Error('Thể loại vượt giới hạn 220 ký tự');
+    patch[field]=safeGenres(raw);
+   }else if(field==='desc'){
+    if(raw.length>3000)throw Error('Văn án vượt giới hạn 3000 ký tự');
+    patch[field]=safeSynopsis(raw);
+   }else if(field==='coverImage'){
+    if(raw&&!validCover(raw))throw Error('Ảnh bìa phải là JPEG thu nhỏ hợp lệ');
+    patch[field]=raw;
+   }
+  }
+  const ref=db.collection(COLLECTION).doc(bookId);
+  return db.runTransaction(async transaction=>{
+   const snapshot=await transaction.get(ref);
+   if(!snapshot.exists)throw Error('Tác phẩm không còn tồn tại');
+   const existing=snapshot.data();
+   if(existing.ownerUid!==uid||!['published','archived'].includes(existing.status))
+    throw Error('Chỉ tác giả sở hữu mới được sửa truyện đã xuất bản');
+   if(auth.currentUser?.uid!==uid)throw Error('Phiên tác giả đã thay đổi');
+   const changed=Object.fromEntries(Object.entries(patch).filter(([k,v])=>existing[k]!==v));
+   if(!Object.keys(changed).length)return {id:bookId,changed:false};
+   transaction.update(ref,{...changed,updatedAt:now()});
+   return {id:bookId,changed:true};
+  });
+ }
+
+ // Reversible public unlisting. A book's chapters and identity survive.
+ async function setArchived(bookId,archived,{db,auth}={}){
+  if(!identifier(bookId)||typeof archived!=='boolean'||!db?.runTransaction)
+   throw Error('Yêu cầu gỡ/khôi phục EPUB không hợp lệ');
+  const uid=await requireAdmin(auth);
+  const ref=db.collection(COLLECTION).doc(bookId);
+  const from=archived?'published':'archived',to=archived?'archived':'published';
+  return db.runTransaction(async transaction=>{
+   const snapshot=await transaction.get(ref);
+   if(!snapshot.exists)throw Error('Không tìm thấy EPUB');
+   const data=snapshot.data();
+   if(data.ownerUid!==uid||data.status!==from||auth.currentUser?.uid!==uid)
+    throw Error('Trạng thái hoặc quyền sở hữu đã thay đổi; vui lòng tải lại');
+   transaction.update(ref,{status:to,updatedAt:now()});
+   return {id:bookId,status:to};
+  });
+ }
+
+ async function archivedBooks(db,auth){
+  if(!db?.collection)throw Error('Firestore chưa sẵn sàng');
+  const uid=await requireAdmin(auth);
+  const result=await db.collection(COLLECTION).where('ownerUid','==',uid).limit(MAX_BOOKS).get();
+  if(auth.currentUser?.uid!==uid)throw Error('Phiên tác giả đã thay đổi');
+  return result.docs.filter(s=>identifier(s.id)&&s.data()?.ownerUid===uid&&
+   s.data()?.status==='archived').map(s=>({id:s.id,
+    title:String(s.data().title||'Truyện EPUB').slice(0,140),
+    author:String(s.data().author||'Tác giả').slice(0,140),
+    chapterCount:Number(s.data().chapterCount)||0,
+    publicationState:s.data().publicationState==='Hoàn thành'?'Hoàn thành':'Đang ra'}));
+ }
  return Object.freeze({COLLECTION,MAX_CHAPTER_BYTES,manifest,fingerprint,validCover,requireAdmin,
-  importDraft,publishDraft,publicBooks,readChapter});
+  importDraft,publishDraft,publicBooks,readChapter,
+  updatePublishedMetadata,setArchived,archivedBooks});
 });

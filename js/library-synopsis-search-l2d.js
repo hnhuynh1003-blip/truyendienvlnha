@@ -38,7 +38,8 @@
    return chapter?String(book.id)+'|'+String(book.updatedAt||'')+'|'+String(chapter.id):'';
   };
   const eligible=book=>!!(book?._cloudV49&&!inlineSynopsis(book)&&synopsisChapter(book)?.id);
-  const getSynopsis=book=>resolved.get(keyFor(book))||'';
+  // Published metadata takes precedence if an author later edits an old EPUB.
+  const getSynopsis=book=>inlineSynopsis(book)?'':(resolved.get(keyFor(book))||'');
   const isUnresolved=book=>{
    const key=keyFor(book);
    return !!(eligible(book)&&!resolved.has(key)&&!failed.has(key));

@@ -263,6 +263,12 @@
       if(!window.DuduLibraryIntakeV1?.open?.())openStoryModal();
      }),
      button('◇ Khung kịch bản',()=>window.DuduWorldUXV66?.openAuthorStudio(),'d60-btn secondary'));
+   if(window.duduEpubManagementL2D2?.enabled){
+     root.append(button('Tác phẩm EPUB đã gỡ',()=>{
+       if(!isAuthor())return;
+       window.duduEpubManagementL2D2.showArchive();
+     },'d60-btn secondary'));
+   }
  }
  function refresh(){
    if(refreshPending)return;refreshPending=true;

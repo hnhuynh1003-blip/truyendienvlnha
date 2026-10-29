@@ -1,0 +1,67 @@
+// DUDU L2D.2 — REVIEW CANDIDATE ONLY. NOT DEPLOYED.
+// This is a DELTA for the current production Firestore rules, not a complete
+// replacement. The owner must back up ACTUAL deployed Rules, merge this
+// narrowly, test in the Firestore Emulator, then approve deployment separately.
+//
+// Add functions alongside existing epub functions inside /databases/{database}/documents:
+function epubManagerL2D2() {
+  return request.auth != null && request.auth.token.admin == true;
+}
+function epubMetadataValidL2D2() {
+  return request.resource.data.title is string
+    && request.resource.data.title.size() > 0
+    && request.resource.data.title.size() <= 140
+    && request.resource.data.author is string
+    && request.resource.data.author.size() > 0
+    && request.resource.data.author.size() <= 140
+    && request.resource.data.get('genre','') is string
+    && request.resource.data.get('genre','').size() <= 220
+    && request.resource.data.get('desc','') is string
+    && request.resource.data.get('desc','').size() <= 3000
+    && request.resource.data.get('publicationState','Đang ra') in ['Đang ra','Hoàn thành']
+    && request.resource.data.get('coverImage','') is string
+    && request.resource.data.get('coverImage','').size() < 32000
+    && (request.resource.data.get('coverImage','') == '' ||
+      request.resource.data.get('coverImage','').matches('^data:image/jpeg;base64,[A-Za-z0-9+/]+={0,2}$'))
+    && request.resource.data.updatedAt is string
+    && request.resource.data.updatedAt.size() <= 40;
+}
+
+// Add the following TWO allow clauses to the EXISTING
+// match /epub_stories_v49/{bookId} (do NOT replace the import/publish clauses):
+//
+// Author-only query: ownerUid == request.auth.uid, with limit <= 60.
+allow list: if epubManagerL2D2()
+  && request.query.limit != null && request.query.limit <= 60
+  && resource.data.ownerUid == request.auth.uid;
+
+allow update: if epubManagerL2D2()
+  && resource.data.ownerUid == request.auth.uid
+  && request.resource.data.ownerUid == resource.data.ownerUid
+  && request.resource.data.chapterIndex == resource.data.chapterIndex
+  && request.resource.data.chapterCount == resource.data.chapterCount
+  && epubMetadataValidL2D2()
+  && (
+    // Edit only descriptive metadata; publication visibility is untouched.
+    (resource.data.status in ['published','archived']
+      && request.resource.data.status == resource.data.status
+      && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+        'title','author','genre','desc','publicationState','coverImage','updatedAt'
+      ]))
+    ||
+    // Reversible public unlisting. Chapters are never changed or deleted.
+    (((resource.data.status == 'published' && request.resource.data.status == 'archived')
+      || (resource.data.status == 'archived' && request.resource.data.status == 'published'))
+      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt']))
+  );
+
+// Do NOT add "allow delete". Existing chapter update/delete must remain false.
+// The public list must continue querying status == 'published' with limit <= 60.
+// Before activation, verify:
+// 1. guest reads published, never reads archived/draft;
+// 2. reader/foreign owner cannot edit, unlist or restore;
+// 3. owner may edit allowed metadata on published/archived books;
+// 4. owner may published -> archived -> published, preserving same chapter IDs;
+// 5. title/desc/cover limits and all protected fields cannot be bypassed;
+// 6. admin owner can list only their own books with ownerUid equality filter;
+// 7. previous importing -> draft -> published flow still works.

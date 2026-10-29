@@ -119,6 +119,7 @@
   <script src="js/epub-import-v48.js?v=l2b-4"></script>
   <script src="js/epub-production-v49.js?v=l2b-4"></script>
   <script src="js/library-synopsis-search-l2d.js?v=l2d-1"></script>
+  <script src="js/library-epub-manage-l2d2.js?v=l2d2-1"></script>
   <script src="js/npc-portrait-library-v1.js?v=40-1"></script>
   <script src="js/npc-anime-candidates-v14.js"></script>
   <script src="js/player-avatar-v16.js"></script>
@@ -770,6 +771,7 @@
   <link rel="stylesheet" href="css/library-cards-l2b4.css?v=l2c-2">
   <link rel="stylesheet" href="css/library-reader-l2c.css?v=l2c-2">
   <link rel="stylesheet" href="css/library-editorial-l2c3.css?v=l2c-3">
+  <link rel="stylesheet" href="css/library-epub-manage-l2d2.css?v=l2d2-1">
   <link rel="stylesheet" href="css/world-experience-v65.css?v=65-1">
   <link rel="stylesheet" href="css/world-experience-v66.css?v=66-2">
   <link rel="stylesheet" href="css/dudu-pilot-v1.css?v=play-v8">
@@ -1797,6 +1799,43 @@
     </div>
   </div>
 
+  <!-- L2D.2: author-only published EPUB metadata, activated after Rules QA. -->
+  <div class="modal-overlay epub-manage-overlay" id="epub-manage-modal">
+    <div class="modal-card epub-manage-dialog" role="dialog" aria-modal="true" aria-labelledby="epub-manage-heading">
+      <h2 id="epub-manage-heading">Chỉnh sửa thông tin EPUB</h2>
+      <p class="epub-manage-note">Nội dung và thứ tự chương không thay đổi. Quyền tác giả được kiểm tra trên Firebase.</p>
+      <form id="epub-manage-form" onsubmit="event.preventDefault();epubManagementL2D2.save()">
+        <div class="modal-field"><label for="epub-manage-title">Tên tác phẩm</label>
+          <input id="epub-manage-title" type="text" maxlength="140" required></div>
+        <div class="modal-field"><label for="epub-manage-author">Tác giả hiển thị</label>
+          <input id="epub-manage-author" type="text" maxlength="140" required></div>
+        <div class="modal-field"><label for="epub-manage-status">Trạng thái</label>
+          <select id="epub-manage-status"><option value="Đang ra">Đang ra</option>
+            <option value="Hoàn thành">Hoàn thành</option></select></div>
+        <div class="modal-field"><label for="epub-manage-genre">Thể loại, ngăn cách bằng dấu phẩy</label>
+          <input id="epub-manage-genre" type="text" maxlength="220" placeholder="Hệ thống, Bách Hợp, Hiện đại…"></div>
+        <div class="modal-field"><label for="epub-manage-desc">Văn án / giới thiệu</label>
+          <textarea id="epub-manage-desc" maxlength="3000" rows="5" placeholder="Văn án để độc giả đọc và tìm kiếm…"></textarea></div>
+        <div class="modal-field"><label for="epub-manage-cover-file">Đổi ảnh bìa (không bắt buộc)</label>
+          <input id="epub-manage-cover-file" type="file" accept="image/png,image/jpeg,image/webp">
+          <label class="epub-manage-remove"><input id="epub-manage-remove-cover" type="checkbox"> Bỏ ảnh bìa hiện tại</label></div>
+        <p id="epub-manage-feedback" role="status" aria-live="polite"></p>
+        <div class="epub-manage-actions"><button type="button" class="btn" onclick="epubManagementL2D2.closeEditor()">Hủy</button>
+          <button id="epub-manage-save" type="submit" class="btn btn-primary">Lưu thay đổi</button></div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-overlay epub-manage-overlay" id="epub-archive-modal">
+    <div class="modal-card epub-manage-dialog" role="dialog" aria-modal="true" aria-labelledby="epub-archive-heading">
+      <h2 id="epub-archive-heading">Tác phẩm EPUB đã gỡ</h2>
+      <p class="epub-manage-note">Các chương và ID truyện vẫn được bảo lưu, có thể đưa trở lại Thư viện.</p>
+      <div id="epub-archive-list"></div>
+      <p id="epub-archive-feedback" role="status" aria-live="polite"></p>
+      <div class="epub-manage-actions"><button class="btn" onclick="epubManagementL2D2.closeArchive()">Đóng</button></div>
+    </div>
+  </div>
+
   <!-- MODAL: TẠO / SỬA TRUYỆN -->
   <div class="modal-overlay" id="story-modal">
     <div class="modal-card">
@@ -2185,6 +2224,21 @@
     let novels = JSON.parse(localStorage.getItem(IS_SANDBOX_MODE ? 'dudu-sandbox-library' : 'my_novels_library_db')) || initialNovels;
     // V49 production EPUBs live in separate Firestore story/chapter documents.
     let epubPublishedBooksV49 = [];
+    // L2D.2 activation gate: leave OFF until the separately reviewed Firebase
+    // Rules are deployed and verified. Never present a nonfunctional button.
+    const EPUB_MANAGEMENT_L2D2_ENABLED=false;
+    const epubManagementL2D2=window.DuduLibraryEpubManageL2D2?.create?.({
+      enabled:EPUB_MANAGEMENT_L2D2_ENABLED,
+      cloudApi:DuduEpubProductionV49,
+      db:()=>db,auth:()=>firebase.auth(),
+      canEdit:()=>canEditStories()&&!IS_SANDBOX_MODE,
+      uid:()=>DuduAuth.uid(),
+      refresh:()=>refreshEpubCloudBooksV49(),
+      onUnlisted:()=>window.DuduSiteV60?.navigate('library')
+    })||Object.freeze({enabled:false,owns:()=>false,openEditor:()=>false,
+      unlist:()=>false,save:()=>false,closeEditor:()=>false,
+      showArchive:()=>false,closeArchive:()=>false});
+    window.duduEpubManagementL2D2=epubManagementL2D2;
     const librarySynopsisIndexL2D=DuduLibrarySynopsisSearchL2D.createIndex((bookId,chapterId)=>
       DuduEpubProductionV49.readChapter(db,bookId,chapterId));
     async function refreshEpubCloudBooksV49(){
@@ -6602,7 +6656,12 @@ document.getElementById('phone-home-screen').style.display = 'none';
       const novel = novels[idx];
       for(const action of ['openEditStoryModal()','deleteCurrentNovel()']){
         const button=document.querySelector('#cover-view [onclick="'+action+'"]');
-        if(button)button.style.display=novel._cloudV49?'none':'';
+        if(button){
+          button.style.display=novel._cloudV49&&!epubManagementL2D2.owns(novel)?'none':'';
+          button.textContent=novel._cloudV49?
+            (action==='openEditStoryModal()'?'✎ Sửa thông tin':'Gỡ khỏi thư viện'):
+            (action==='openEditStoryModal()'?'✎ Sửa':'Xóa');
+        }
       }
       const chapterAdd=document.querySelector('#cover-view [onclick="openCreateChapterModal()"]');
       if(chapterAdd)chapterAdd.style.display=novel._cloudV49?'none':'';
@@ -6737,8 +6796,12 @@ document.getElementById('phone-home-screen').style.display = 'none';
     }
 
     function deleteCurrentNovel() {
-      if (!canEditStories()||novels[selectedNovelIndex]?._cloudV49){
-        if(novels[selectedNovelIndex]?._cloudV49)alert('Không xóa truyện Firebase mới bằng nút xóa thư viện cũ.');
+      if(novels[selectedNovelIndex]?._cloudV49){
+        if(epubManagementL2D2.owns(novels[selectedNovelIndex]))
+          epubManagementL2D2.unlist(novels[selectedNovelIndex]);
+        return;
+      }
+      if(!canEditStories()){
         return;
       }
       if (confirm(`Bạn có chắc muốn xóa tác phẩm "${novels[selectedNovelIndex].title}" không?`)) {
@@ -7446,7 +7509,11 @@ document.getElementById('phone-home-screen').style.display = 'none';
     }
 
     function openEditStoryModal() {
-      if(novels[selectedNovelIndex]?._cloudV49){alert('Truyện EPUB dùng bộ lưu Firebase riêng; chưa hỗ trợ sửa bằng trình biên tập cũ.');return;}
+      if(novels[selectedNovelIndex]?._cloudV49){
+        if(epubManagementL2D2.owns(novels[selectedNovelIndex]))
+          epubManagementL2D2.openEditor(novels[selectedNovelIndex]);
+        return;
+      }
       isEditingStory = true;
       const current = novels[selectedNovelIndex];
       document.getElementById('story-modal-heading').textContent = "CHỈNH SỬA TÁC PHẨM";
@@ -7755,7 +7822,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/world-blueprint-v66.js?v=66-1"></script>
 <script src="js/library-reader-status-l2a.js?v=l2a-1"></script>
 <script src="js/library-reader-preferences-l2c.js?v=l2c-1"></script>
-<script src="js/site-shell-v60.js?v=lib-l2c-2"></script>
+  <script src="js/site-shell-v60.js?v=l2d2-1"></script>
 <script src="js/world-experience-v66.js?v=66-2"></script>
 <script src="js/dudu-core-rules-v1.js?v=1"></script>
 <script src="js/dudu-story-engine-v1.js?v=play-v8"></script>

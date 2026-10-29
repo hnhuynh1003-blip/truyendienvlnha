@@ -46,6 +46,8 @@ test('Old published EPUBs get only their explicit synopsis chapter, cached by id
  assert.equal(index.getSynopsis(book),'Kỳ An gặp Tiêu Ngân Phong ở thư viện.');
  assert.equal(search.matches(book,'tieu ngan phong',index.getSynopsis(book)),true);
  assert.equal(index.isUnresolved(book),false);
+ assert.equal(index.getSynopsis({...book,desc:'Văn án đã sửa'}),'',
+  'Edited metadata must replace the old chapter fallback in search');
  await index.ensure(book);
  assert.equal(calls.length,1);
 });
