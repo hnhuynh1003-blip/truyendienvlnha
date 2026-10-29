@@ -41,7 +41,7 @@ function runRender(books,opts={}){
  return {grid,count,label,calls};
 }
 
-test('L2B builds one opening folio and compact catalog rows without fake books',()=>{
+test('L2B.5 keeps all catalog cards equal regardless of source or sort position',()=>{
  const books=[
   {id:'a',title:'Tác phẩm A',author:'A',chapters:[{id:'a1'}]},
   {id:'b',title:'Tác phẩm B',author:'B',chapters:[{id:'b1'}]},
@@ -50,8 +50,7 @@ test('L2B builds one opening folio and compact catalog rows without fake books',
  const {grid,count,calls}=runRender(books,{bookmarks:{b:{chIdx:0}}});
  assert.equal(count.textContent,'3 / 3 tác phẩm');
  assert.equal(grid.children.length,3);
- assert.match(grid.children[0].className,/archive-featured/);
- assert.ok(grid.children.slice(1).every(c=>c.className.includes('archive-shelf-item')));
+ assert.ok(grid.children.every(c=>c.className==='novel-card archive-shelf-item'));
  const nodes=allNodes(grid);
  assert.ok(nodes.some(n=>n.className==='archive-card-index'&&n.textContent==='ARCHIVE  /  01'));
  assert.ok(nodes.some(n=>n.className==='archive-card-index'&&n.textContent==='ARCHIVE  /  03'));
@@ -94,12 +93,13 @@ test('L2B.4 book jackets remain edition-neutral across homepage, library and she
  assert.match(shell,/d62-cover-action/);
  assert.match(shell,/d62-in-shelf/);
  assert.match(bookCss,/#d60-home \.d60-grid/);
- assert.match(bookCss,/height:284px;aspect-ratio:auto/);
- assert.match(bookCss,/-webkit-line-clamp:3/);
+ assert.match(bookCss,/grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
+ assert.match(bookCss,/counter-reset:edition/);
+ assert.match(bookCss,/height:214px;min-height:214px;max-height:214px/);
+ assert.doesNotMatch(bookCss,/d62-book:first-child|\.archive-featured/);
  assert.match(bookCss,/#d60-shelf \.d60-grid/);
- assert.match(bookCss,/\.archive-featured/);
  assert.match(bookCss,/@media\(max-width:760px\)/);
- assert.match(html,/css\/library-cards-l2b4\.css\?v=l2b-4r2/);
+ assert.match(html,/css\/library-cards-l2b4\.css\?v=l2b-5/);
 });
 
 test('L2B removes permanent filter walls while preserving real search/sort/status controls',()=>{
@@ -143,11 +143,11 @@ test('L2B route headings use one compact contextual rail without repeating navig
  assert.doesNotMatch(shell,/element\('p','d60-context-note'/);
  assert.match(html,/css\/site-shell-v60\.css\?v=lib-l2b-4/);
  assert.match(html,/css\/library-discovery-l2b\.css\?v=l2b-4/);
- assert.match(html,/js\/site-shell-v60\.js\?v=lib-l2b-5/);
+ assert.match(html,/js\/site-shell-v60\.js\?v=lib-l2b-6/);
 });
 
 test('L2B.3 home uses accessible short headline and code artwork rather than long copy or fake buttons',()=>{
- assert.match(shell,/Mở trang đầu/);
+ assert.match(shell,/Từ chữ thành thế giới\./);
  assert.match(shell,/SYS \/\/ STORY ARCHIVE/);
  assert.match(shell,/const codeArt=element\('div','d61-code-art'\)/);
  assert.match(shell,/codeArt\.setAttribute\('aria-hidden','true'\)/);

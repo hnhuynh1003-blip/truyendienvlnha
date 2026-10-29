@@ -91,7 +91,7 @@
    const hero=element('section','d60-hero d61-hero');
    const copy=element('div','d61-hero-copy');
    copy.append(element('p','d61-terminal','SYS // STORY ARCHIVE'),
-     element('h1','','Mở trang đầu.'));
+     element('h1','','Từ chữ thành thế giới.'));
    // Code-inspired artwork only: no fake terminal, command execution or live system status.
    const codeArt=element('div','d61-code-art');codeArt.setAttribute('aria-hidden','true');
    const codeTop=element('div','d61-code-top');

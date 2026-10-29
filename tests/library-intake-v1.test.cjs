@@ -97,7 +97,7 @@ test('Library hub assets load after creator and do not remove EPUB V57',()=>{
  assert.ok(site>=0&&world>site&&hub>world);
  assert.ok(index.includes('css/library-intake-v1.css'));
  assert.ok(index.includes('js/library-intake-v1.js?v=lib1-ui2'));
- assert.ok(index.includes('js/site-shell-v60.js?v=lib-l2b-5'));
+ assert.ok(index.includes('js/site-shell-v60.js?v=lib-l2b-6'));
  assert.ok(index.includes('js/epub-import-v48.js'));
  assert.ok(index.includes('js/epub-production-v49.js'));
 });
