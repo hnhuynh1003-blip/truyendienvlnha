@@ -11,7 +11,7 @@
  const oreLabels={stone:'Đá',coal:'Than',iron:'Sắt',crystal:'Tinh thạch'};
  const oreGlyphs={stone:'◆',coal:'⬟',iron:'⬢',crystal:'✦'};
  let tab='neon',activeKey=null,state=null,lastTick=Date.now(),lastSave=0,
-  lastPaint=0,notice='Chọn một thế giới và bắt đầu chơi.',error=false,feedback=null;
+  lastPaint=0,lastRenderedKey=null,notice='Chọn một thế giới và bắt đầu chơi.',error=false,feedback=null;
  const now=()=>Date.now();
  const isSandbox=()=>typeof IS_SANDBOX_MODE!=='undefined'&&IS_SANDBOX_MODE;
  function identity(){
@@ -115,7 +115,7 @@
         <span class="mine-tap-prompt">${repairing?'ĐANG SỬA CUỐC':m.durability?'⛏ CHẠM ĐỂ ĐÀO':'CUỐC ĐÃ HẾT ĐỘ BỀN'}</span></button>
       ${hit?`<div class="mine-drop" aria-live="polite">+1 ${oreGlyphs[hit.ore]} ${oreLabels[hit.ore]}</div>`:''}
       <div class="mine-bottom-hud"><div class="mine-durability-circle" style="--mine-durability:${m.durability}%"><span>CUỐC</span><b>${m.durability}<small>/100</small></b></div>
-        <span>${repairing?'🔧 Tự sửa: '+countdown(m.repairUntil-time):'Mỗi cú đào trừ 1 độ bền'}</span></div>
+        <span>${repairing?`🔧 Tự sửa: <span data-arcade-until="${m.repairUntil}">${countdown(m.repairUntil-time)}</span>`:'Mỗi cú đào trừ 1 độ bền'}</span></div>
     </div>
     <div class="arcade-control-panel">
       <div class="arcade-panel-heading"><div><span class="arcade-eyebrow">KHO KHOÁNG SẢN</span><h4>Túi quặng · ${all} mẫu</h4></div>
@@ -124,7 +124,7 @@
         `<div class="mine-inventory-slot mine-slot-${ore}"><span>${oreGlyphs[ore]}</span><small>${oreLabels[ore]}</small><b>${count}</b></div>`).join('')}</div>
       <div class="arcade-panel-heading arcade-panel-heading-sub"><div><span class="arcade-eyebrow">XƯỞNG RÈN</span><h4>Bảo dưỡng dụng cụ</h4></div></div>
       <div class="mine-tool-actions">
-        ${button(repairing?'⏳ '+countdown(m.repairUntil-time):'🔧 Tự sửa · 4 phút','repair-wait','tool',repairing||m.durability===100)}
+        ${button(repairing?`⏳ <span data-arcade-until="${m.repairUntil}">${countdown(m.repairUntil-time)}</span>`:'🔧 Tự sửa · 4 phút','repair-wait','tool',repairing||m.durability===100)}
         ${button('⚒ Rèn · 5 than + 2 sắt','repair-forge','tool',repairing||m.durability===100||m.ores.coal<5||m.ores.iron<2)}
         ${button('Dầu +25 · 15 Xu','buy-oil','tool',repairing||m.durability===100||s.coins<150)}
         ${button('Cuốc mới · 80 Xu','buy-pick','tool',(m.durability===100&&!repairing)||s.coins<800)}
@@ -144,7 +144,7 @@
      aria-label="Luống ${index+1}: ${text}, ${caption}">
      <span class="garden-soil"></span><span class="garden-stem"><i></i><i></i><i></i></span>
      <span class="garden-flower"><i></i><i></i><i></i><i></i><i></i></span>
-     <span class="garden-plot-label"><b>LUỐNG ${String(index+1).padStart(2,'0')}</b><small>${caption}</small><em>${text}</em></span></button>`;
+     <span class="garden-plot-label"><b>LUỐNG ${String(index+1).padStart(2,'0')}</b><small ${b.status==='growing'&&!mature?`data-arcade-until="${b.readyAt}"`:''}>${caption}</small><em>${text}</em></span></button>`;
   };
   return `<section class="arcade-world arcade-world-garden" aria-label="Vườn Sương">
     <header class="arcade-world-heading"><div><span class="arcade-eyebrow">03 / CHILL FARM</span>
@@ -162,7 +162,7 @@
         <span class="garden-bubble garden-bubble-a"></span><span class="garden-bubble garden-bubble-b"></span>
         <span class="garden-bubble garden-bubble-c"></span></div>
       <button type="button" class="garden-pond-collect ${g.bubbleReady?'is-ready':''}" data-arcade-action="catch-bubble" ${g.bubbleReady?'':'disabled'}>
-        ${g.bubbleReady?'✦ Thu bọt · +4 Xu':`Hồ cá · ${countdown(g.bubbleAt-time)}`}</button>
+        ${g.bubbleReady?'✦ Thu bọt · +4 Xu':`Hồ cá · <span data-arcade-until="${g.bubbleAt}">${countdown(g.bubbleAt-time)}</span>`}</button>
     </div>
     <div class="arcade-control-panel"><div class="arcade-panel-heading"><div><span class="arcade-eyebrow">NHÀ KÍNH</span>
         <h4>Vật tư & thu hoạch</h4></div>${button('＋ 3 hạt · 10 Xu','buy-seeds','market',s.coins<100)}</div>
@@ -174,12 +174,13 @@
  function render(){
   const element=host();if(!element)return false;
   const s=ensure();
-  if(!s){element.innerHTML='<div class="arcade-empty">Đăng nhập tài khoản để lưu tiến trình minigame riêng trên thiết bị này.</div>';return true;}
+  if(!s){element.innerHTML='<div class="arcade-empty">Đăng nhập tài khoản để lưu tiến trình minigame riêng trên thiết bị này.</div>';lastRenderedKey=null;return true;}
   const time=now(),panel=tab==='neon'?neonPanel(s):tab==='mine'?minePanel(s,time):gardenPanel(s,time);
-  const previousScroll=element.scrollTop;
+  const scrollPort=element.closest?.('.phone-sub-app')||element;
+  const previousScroll=scrollPort.scrollTop;
   element.innerHTML=`<div class="arcade-shell arcade-active-${tab}">
     <div class="arcade-topbar"><div><span class="arcade-eyebrow">DUDU / PLAYGROUND</span><h2>Khu trò chơi</h2></div>
-      <div class="arcade-wallet"><span>VÍ TRÒ CHƠI</span><strong>✦ ${fmt(s.coins)}</strong><small>Xu</small></div></div>
+      <div class="arcade-wallet"><span>VÍ TRÒ CHƠI</span><strong data-arcade-wallet>✦ ${fmt(s.coins)}</strong><small>Xu</small></div></div>
     <div class="arcade-tabs" role="tablist" aria-label="Ba minigame">
       ${Object.entries(modeLabels).map(([type,name])=>`<button type="button" class="arcade-tab ${tab===type?'is-active':''}" role="tab"
         aria-selected="${tab===type}" data-arcade-tab="${type}"><span class="arcade-tab-icon">${type==='neon'?'▣':type==='mine'?'◈':'✿'}</span><span>${name}</span></button>`).join('')}
@@ -192,8 +193,18 @@
     </div>
   </div>`;
   element.querySelector('[data-arcade-notice]').textContent=notice;
-  element.scrollTop=previousScroll;
-  lastPaint=time;return true;
+  scrollPort.scrollTop=previousScroll;
+  lastPaint=time;lastRenderedKey=activeKey;return true;
+ }
+ function refreshLive(time){
+  const element=host();if(!element||!state)return;
+  const wallet=element.querySelector?.('[data-arcade-wallet]');
+  if(wallet)wallet.textContent='✦ '+fmt(state.coins);
+  element.querySelectorAll?.('[data-arcade-until]').forEach(node=>{
+   const until=Number(node.dataset.arcadeUntil);
+   if(Number.isFinite(until))node.textContent=countdown(until-time);
+  });
+  lastPaint=time;
  }
  function tick(){
   const time=now(),s=ensure();
@@ -201,7 +212,14 @@
   state=core.advance(s,time,Math.max(0,time-lastTick));
   lastTick=time;
   if(time-lastSave>=5000)save();
-  if(visible()&&time-lastPaint>=1000)render();
+  if(visible()){
+   const completedRepair=!!s.mine.repairUntil&&!state.mine.repairUntil;
+   const waterRefilled=s.garden.water!==state.garden.water;
+   const bubbleAppeared=s.garden.bubbleReady!==state.garden.bubbleReady;
+   const plantMatured=s.garden.beds.some(b=>b.status==='growing'&&b.readyAt>s.lastAt&&b.readyAt<=time);
+   if(lastRenderedKey!==activeKey||completedRepair||waterRefilled||bubbleAppeared||plantMatured)render();
+   else if(time-lastPaint>=900)refreshLive(time);
+  }
  }
  function interact(action){
   tick();if(!state||!activeKey)return false;
