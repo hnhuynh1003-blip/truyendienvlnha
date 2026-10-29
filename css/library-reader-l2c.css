@@ -77,6 +77,18 @@ body.dudu-reading-active #reader-view .reader-body {
   color:var(--reader-ink);font-family:var(--reader-font,system-ui,-apple-system,'Segoe UI',Arial,sans-serif);
   font-size:var(--reader-size,18px);line-height:1.9;
 }
+/* The Phone is optional during reading, but it must remain reachable. */
+body.dudu-site-v60.dudu-reading-active #phone-fab {
+  display:flex;left:auto;right:12px;bottom:calc(14px + env(safe-area-inset-bottom));
+  width:42px;height:42px;border-radius:13px;opacity:.87;
+  box-shadow:0 6px 20px rgba(0,0,0,.37);
+}
+body.dudu-site-v60.dudu-reading-active #phone-fab:hover,
+body.dudu-site-v60.dudu-reading-active #phone-fab:focus-visible {opacity:1}
+body.dudu-site-v60.dudu-reading-active #cyber-phone {
+  left:auto;right:12px;bottom:calc(68px + env(safe-area-inset-bottom));
+  max-height:calc(100dvh - 94px);
+}
 @media(max-width:600px){
   body.dudu-reading-active #reader-view .reader-top-nav {margin-bottom:21px;gap:9px}
   body.dudu-reading-active #reader-view .reader-top-nav .btn {padding:8px 10px;font-size:11px}

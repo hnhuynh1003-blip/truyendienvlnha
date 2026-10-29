@@ -99,7 +99,7 @@ test('L2B.4 book jackets remain edition-neutral across homepage, library and she
  assert.doesNotMatch(bookCss,/d62-book:first-child|\.archive-featured/);
  assert.match(bookCss,/#d60-shelf \.d60-grid/);
  assert.match(bookCss,/@media\(max-width:760px\)/);
- assert.match(html,/css\/library-cards-l2b4\.css\?v=l2b-5/);
+ assert.match(html,/css\/library-cards-l2b4\.css\?v=[^"']+/);
 });
 
 test('L2B removes permanent filter walls while preserving real search/sort/status controls',()=>{
@@ -124,7 +124,7 @@ test('L2B visual identity and mobile treatment stay inside the Library route',()
  assert.doesNotMatch(css,/body\.dudu-library-browsing #phone-fab \{display:none!important\}/);
  assert.match(css,/body\.dudu-phone-v11\.dudu-library-browsing #phone-fab/);
  assert.match(css,/left:12px;right:auto;bottom:calc\(79px \+ env\(safe-area-inset-bottom\)\)/);
- assert.match(shellCss,/body\.dudu-reading-active #phone-fab \{display:none!important\}/);
+ assert.doesNotMatch(shellCss,/body\.dudu-reading-active #phone-fab \{display:none!important\}/);
  assert.match(html,/class="header-create-short"/);
  assert.match(html,/canEditStories\(\) && \(window\.DuduLibraryIntakeV1\?\.open\?\.\(\) \|\| openStoryModal\(\)\)/);
  assert.ok(!/\.set\(|firebase\.firestore\(|fetch\(/.test(css));
@@ -141,9 +141,9 @@ test('L2B route headings use one compact contextual rail without repeating navig
  assert.doesNotMatch(shell,/element\('h1','d60-page-title','Góc tác giả'\)/);
  assert.doesNotMatch(shell,/archive-crest|archive-heading/);
  assert.doesNotMatch(shell,/element\('p','d60-context-note'/);
- assert.match(html,/css\/site-shell-v60\.css\?v=lib-l2b-4/);
+ assert.match(html,/css\/site-shell-v60\.css\?v=[^"']+/);
  assert.match(html,/css\/library-discovery-l2b\.css\?v=l2b-4/);
- assert.match(html,/js\/site-shell-v60\.js\?v=lib-l2b-6/);
+ assert.match(html,/js\/site-shell-v60\.js\?v=[^"']+/);
 });
 
 test('L2B.3 home uses accessible short headline and code artwork rather than long copy or fake buttons',()=>{

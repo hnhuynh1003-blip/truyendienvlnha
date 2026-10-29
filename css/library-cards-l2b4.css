@@ -93,9 +93,16 @@ body.dudu-site-v60 #home-view .novel-meta .btn{background:transparent;border-col
  #d60-shelf .d60-grid{grid-template-columns:minmax(0,1fr)}
 }
 @media(max-width:760px){
- #d60-home .d60-grid{gap:14px 12px}
- #d60-home .d62-cover-action{min-height:203px;padding:14px 9px 9px}
- #d60-home .d62-cover-action .d60-cover{width:min(100%,125px);max-height:185px}
+ /* A single swipeable editorial rail keeps categories visible below the books. */
+ #d60-home .d60-grid{
+   grid-template-columns:none;grid-auto-flow:column;
+   grid-auto-columns:clamp(190px,67vw,260px);gap:14px;overflow-x:auto;
+   overscroll-behavior-inline:contain;scroll-snap-type:x proximity;
+   scrollbar-width:thin;scrollbar-color:#627985 transparent;padding:0 12px 13px 1px;
+ }
+ #d60-home .d62-book{scroll-snap-align:start}
+ #d60-home .d62-cover-action{min-height:184px;padding:12px 9px 9px}
+ #d60-home .d62-cover-action .d60-cover{width:min(100%,120px);max-height:170px}
  #d60-home .d62-book .d60-title{font-size:14px}
  .d62-book-info{padding-top:9px;margin-top:10px;gap:5px}
  .d62-book-desc{-webkit-line-clamp:2;font-size:11px}
@@ -104,7 +111,8 @@ body.dudu-site-v60 #home-view .novel-meta .btn{background:transparent;border-col
  body.dudu-site-v60 #home-view .archive-shelf-item .novel-info{padding:12px}
 }
 @media(max-width:370px){
- #d60-home .d62-cover-action{min-height:183px}
- #d60-home .d62-cover-action .d60-cover{max-height:166px;width:min(100%,111px)}
+ #d60-home .d60-grid{grid-auto-columns:clamp(180px,73vw,225px)}
+ #d60-home .d62-cover-action{min-height:172px}
+ #d60-home .d62-cover-action .d60-cover{max-height:153px;width:min(100%,107px)}
  body.dudu-site-v60 #home-view .archive-shelf-item{grid-template-columns:76px minmax(0,1fr)}
 }

@@ -81,7 +81,10 @@
  }
  function bookGrid(title,books){
    const s=section(title,'Xem tất cả →',()=>navigate('library'));
-   const g=element('div','d60-grid');books.forEach(n=>g.append(card(n)));
+   const g=element('div','d60-grid');
+   g.tabIndex=0;
+   g.setAttribute('aria-label','Danh sách truyện mới cập nhật; vuốt ngang để xem thêm trên điện thoại');
+   books.forEach(n=>g.append(card(n)));
    if(!books.length)s.append(element('p','d60-empty','Thư viện chưa có tác phẩm phù hợp.'));
    else s.append(g);return s;
  }

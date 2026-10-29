@@ -8,6 +8,7 @@ const vm=require('node:vm');
 const root=join(__dirname,'..');
 const html=readFileSync(join(root,'index.html'),'utf8');
 const css=readFileSync(join(root,'css/site-shell-v60.css'),'utf8');
+const readerCss=readFileSync(join(root,'css/library-reader-l2c.css'),'utf8');
 const begin=html.indexOf('function renderHome() {');
 const end=html.indexOf('function resetAllFilters()',begin);
 assert.ok(begin>0&&end>begin,'L2A expects the legacy Library list renderer');
@@ -91,7 +92,7 @@ test('L2A reading focus is confined to the reader and leaves author permissions 
  assert.match(html,/function goHome\(\)\s*\{\s*window\.DuduLibraryReaderStatusL2A\?\.cancel\(\);\s*document\.body\.classList\.remove\('dudu-reading-active'\)/);
  assert.match(html,/document\.getElementById\('reader-view'\)\.style\.display = 'block';\s*document\.body\.classList\.add\('dudu-reading-active'\)/);
  assert.match(css,/body\.dudu-reading-active \.d60-bottomnav/);
- assert.match(css,/body\.dudu-reading-active #phone-fab/);
+ assert.match(readerCss,/body\.dudu-site-v60\.dudu-reading-active #phone-fab/);
  assert.match(html,/winScroll > 180 && winScroll < lastReaderScrollY - 3/);
  assert.match(html,/canEditStories\(\)/);
  assert.match(html,/DuduEpubProductionV49\.readChapter\(db,bookId,chapterId\)/);

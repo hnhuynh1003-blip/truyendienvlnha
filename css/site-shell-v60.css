@@ -352,8 +352,7 @@ body.dudu-site-v60 #cover-view .chapter-name-click:focus-visible {
 }
 
 body.dudu-reading-active > header,
-body.dudu-reading-active .d60-bottomnav,
-body.dudu-reading-active #phone-fab {display:none!important}
+body.dudu-reading-active .d60-bottomnav {display:none!important}
 body.dudu-reading-active .container {max-width:860px;padding-top:26px;padding-bottom:80px}
 body.dudu-reading-active #reader-view {max-width:760px}
 body.dudu-reading-active .reader-top-nav {gap:14px;padding-bottom:17px;margin-bottom:28px}

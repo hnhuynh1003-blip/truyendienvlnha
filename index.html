@@ -764,10 +764,10 @@
   <link rel="stylesheet" href="css/phone-compact-v50.css?v=50-1">
   <link rel="stylesheet" href="css/economy-live-v52.css?v=52-1">
   <style>body.dudu-spark-personal-mode #dudu-spark-chat-tip{display:block !important;}</style>
-  <link rel="stylesheet" href="css/site-shell-v60.css?v=lib-l2b-4">
+  <link rel="stylesheet" href="css/site-shell-v60.css?v=lib-l2c-2">
   <link rel="stylesheet" href="css/library-discovery-l2b.css?v=l2b-4">
-  <link rel="stylesheet" href="css/library-cards-l2b4.css?v=l2b-5">
-  <link rel="stylesheet" href="css/library-reader-l2c.css?v=l2c-1">
+  <link rel="stylesheet" href="css/library-cards-l2b4.css?v=l2c-2">
+  <link rel="stylesheet" href="css/library-reader-l2c.css?v=l2c-2">
   <link rel="stylesheet" href="css/world-experience-v65.css?v=65-1">
   <link rel="stylesheet" href="css/world-experience-v66.css?v=66-2">
   <link rel="stylesheet" href="css/dudu-pilot-v1.css?v=play-v8">
@@ -6737,6 +6737,13 @@ document.getElementById('phone-home-screen').style.display = 'none';
       document.getElementById('reader-ch-time').textContent = `⏱ ${estMinutes} phút đọc (${wCount} từ)`;
 
       const paragraphs = ch.content.split('\n').filter(p => p.trim() !== "");
+      // Older EPUB exports embed the chapter heading as their first text line.
+      // Its title is already shown above the page; omit that duplicate in the
+      // reading view only, without altering the imported chapter content.
+      if(novel._cloudV49 && paragraphs.length){
+        const displayHeading=value=>String(value||'').normalize('NFC').replace(/\s+/g,' ').trim().replace(/[:：]+$/,'');
+        if(displayHeading(paragraphs[0])===displayHeading(ch.title))paragraphs.shift();
+      }
       const contentEl = document.getElementById('reader-content');
       contentEl.innerHTML = "";
       paragraphs.forEach(p => {
@@ -7689,7 +7696,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/world-blueprint-v66.js?v=66-1"></script>
 <script src="js/library-reader-status-l2a.js?v=l2a-1"></script>
 <script src="js/library-reader-preferences-l2c.js?v=l2c-1"></script>
-<script src="js/site-shell-v60.js?v=lib-l2b-6"></script>
+<script src="js/site-shell-v60.js?v=lib-l2c-2"></script>
 <script src="js/world-experience-v66.js?v=66-2"></script>
 <script src="js/dudu-core-rules-v1.js?v=1"></script>
 <script src="js/dudu-story-engine-v1.js?v=play-v8"></script>
