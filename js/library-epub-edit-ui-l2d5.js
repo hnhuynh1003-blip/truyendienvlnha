@@ -1,4 +1,4 @@
-/* DUDU L2D.5C — gated owner EPUB chapter correction and crash recovery.
+/* DUDU L2D.5D — gated owner EPUB chapter correction and crash recovery.
  * Writes are completely OFF on production until ONE final Rules deployment.
  */
 (function(root,factory){
@@ -26,6 +26,22 @@
   const owns=candidate=>!!(available()&&candidate?._cloudV49&&
    candidate._ownerUidV49===uid());
   const current=token=>token===session&&owns(book);
+  // One browser profile can open many same-origin tabs. A durable recovery
+  // journal alone does not atomically reserve the book between those tabs.
+  // Fail closed on unsupported browsers instead of claiming a safe bulk write.
+  async function withBookWriteLock(bookId,operation){
+   if(!journal)return operation();
+   const manager=root?.navigator?.locks;
+   if(typeof manager?.request!=='function')
+    throw Error('Trình duyệt chưa hỗ trợ khóa an toàn giữa các tab. Hãy dùng Chrome mới nhất để lưu nhiều chương EPUB.');
+   const lockName='dudu-epub-bulk:'+encodeURIComponent(uid())+':'+bookId;
+   return manager.request(lockName,{mode:'exclusive',ifAvailable:true},async lock=>{
+    if(!lock)throw Error('EPUB này đang được lưu hoặc khôi phục ở tab khác. Hãy đợi tab đó hoàn tất.');
+    if(!owns(book)||book?.id!==bookId)
+     throw Error('Phiên chỉnh sửa EPUB đã thay đổi; chưa ghi dữ liệu nào');
+    return operation();
+   });
+  }
   const ensureAdmin=async()=>{
    if(!available())throw Error('Phiên tác giả không còn hợp lệ');
    const user=auth().currentUser,token=await user.getIdTokenResult(true);
@@ -407,19 +423,21 @@
    busy=true;writing=true;reviewedBulk=null;toggle('epub-edit-bulk-save',false);
    status('Bắt đầu lưu những chương đã chọn…');
    try{
-    await ensureAdmin();
-    if(journal)journal.begin(book.id,uid(),patches);
-    const result=await bulkSaver.apply(book.id,patches,{db:db(),auth:auth(),
-     chapterApi:chapterEditor,confirmed:true,onProgress:progress=>{
-      status('Đang xử lý '+progress.current+'/'+progress.total+' chương…');
-     }});
-    lastBatch=result;applySavedToCache(result.done);updateRecovery();
-    invalidatePlan();
-    if(result.phase==='complete')status('Đã lưu thành công '+result.done.length+' chương. Có thể hoàn tác lượt sửa.');
-    else if(result.phase==='partial')status('Đã lưu '+result.done.length+'/'+result.total+
-     ' chương. Chưa lưu các chương còn lại; hãy Tiếp tục hoặc Hoàn tác.',true);
-    else status('Có chương chưa rõ đã lưu hay chưa. Phải Kiểm tra lại trước khi tiếp tục.',true);
-    return result;
+    return await withBookWriteLock(book.id,async()=>{
+     await ensureAdmin();
+     if(journal)journal.begin(book.id,uid(),patches);
+     const result=await bulkSaver.apply(book.id,patches,{db:db(),auth:auth(),
+      chapterApi:chapterEditor,confirmed:true,onProgress:progress=>{
+       status('Đang xử lý '+progress.current+'/'+progress.total+' chương…');
+      }});
+     lastBatch=result;applySavedToCache(result.done);updateRecovery();
+     invalidatePlan();
+     if(result.phase==='complete')status('Đã lưu thành công '+result.done.length+' chương. Có thể hoàn tác lượt sửa.');
+     else if(result.phase==='partial')status('Đã lưu '+result.done.length+'/'+result.total+
+      ' chương. Chưa lưu các chương còn lại; hãy Tiếp tục hoặc Hoàn tác.',true);
+     else status('Có chương chưa rõ đã lưu hay chưa. Phải Kiểm tra lại trước khi tiếp tục.',true);
+     return result;
+    });
    }catch(error){
     try{toggle('epub-edit-bulk-reopen',!!job());}catch(_){}
     status('Chưa thực hiện hoặc chưa xác nhận lưu: '+String(error?.message||error)+
@@ -462,6 +480,7 @@
    busy=true;writing=!['reconcile','finish','discard'].includes(action);
    status('Đang đối chiếu lượt sửa trước…');
    try{
+    return await withBookWriteLock(book.id,async()=>{
     await ensureAdmin();
     const options={db:db(),auth:auth(),chapterApi:chapterEditor,
      onProgress:progress=>status('Đang xử lý '+progress.current+'/'+progress.total+' chương…')};
@@ -521,6 +540,7 @@
      lastBatch.phase==='restoring'?'Còn chương cần tiếp tục hoàn tác.':
      'Còn trạng thái chưa xác định; chưa được ghi tiếp.',lastBatch.phase==='uncertain');
     return lastBatch;
+    });
    }catch(error){status('Đã dừng: '+String(error?.message||error),true);return false;}
    finally{writing=false;busy=false;}
   }

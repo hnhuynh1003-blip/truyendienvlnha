@@ -7,7 +7,18 @@ const vm=require('node:vm');
 const bulk=require('../js/epub-bulk-replace-l2d4.js');
 const single=require('../js/epub-chapter-editor-l2d3.js');
 
-function mockDom(){
+function testLocks(){
+ const held=new Set();
+ return {request:async(name,options,callback)=>{
+  assert.equal(options.mode,'exclusive');
+  assert.equal(options.ifAvailable,true);
+  if(held.has(name))return callback(null);
+  held.add(name);
+  try{return await callback({name,mode:'exclusive'});}
+  finally{held.delete(name);}
+ }};
+}
+function mockDom(locks){
  const elements=new Map();
  class Element {
   constructor(tag='div'){
@@ -29,7 +40,7 @@ function mockDom(){
   if(!elements.has(id))elements.set(id,new Element(id.includes('filter')||id==='epub-edit-chapter'?'select':'div'));
   return elements.get(id);
  },createElement:tag=>new Element(tag),createTextNode:text=>({textContent:text})};
- const window={document,confirm:()=>true};
+ const window={document,confirm:()=>true,navigator:{locks}};
  const code=readFileSync(join(__dirname,'../js/library-epub-edit-ui-l2d5.js'),'utf8');
  vm.runInNewContext(code,{window});
  return {elements,document,window};
@@ -42,9 +53,9 @@ const content={
  'chapter-0001':'kỳ an ở thượng hải.\nKỳ An vẫn ở đó.',
  'chapter-0002':'thượng hải là nơi kỳ an trở về.'
 };
-function manager({enabled=true,authorized=author,loadChapter:custom,
+function manager({enabled=true,authorized=author,loadChapter:custom,locks=testLocks(),
  chapterEditor=single,bulkSaver,journal,onChapterSaved=()=>{}}={}){
- const ui=mockDom(),loaded=[];
+ const ui=mockDom(locks),loaded=[];
  const create=ui.window.DuduLibraryEpubEditL2D5.create;
  const instance=create({enabled,engine:bulk,chapterEditor,bulkSaver,journal,onChapterSaved,
   auth:()=>authorized,uid:()=>authorized.currentUser.uid,
@@ -206,6 +217,50 @@ test('L2D.5C preserves a recoverable job across a simulated browser reload',asyn
  assert.equal(await reopened.instance.recoverBulk('discard'),true);
  assert.equal(cleared,1);
  assert.equal(savedJob,null);
+});
+test('L2D.5D refuses journaled bulk writes when cross-tab locking is unavailable',async()=>{
+ let writes=0,journals=0;
+ const {instance,elements}=manager({locks:null,
+  journal:{read:()=>null,begin:()=>{journals++;}},
+  bulkSaver:{apply:async()=>{writes++;return {phase:'complete',done:[],pending:[],unknown:[]};}}});
+ instance.open(book);instance.switchMode('bulk');
+ const rule=elements.get('epub-edit-rule-list').children[0];
+ rule.children[0].value='kỳ an';rule.children[1].value='Kỳ An';
+ await instance.scan();instance.chooseAll(true);instance.previewBulk();
+ assert.equal(await instance.saveBulk(),false);
+ assert.equal(writes,0);assert.equal(journals,0);
+ assert.match(elements.get('epub-edit-status').textContent,/khóa an toàn giữa các tab/);
+});
+test('L2D.5D rejects a second tab operation while the first owns the book lock',async()=>{
+ let release;
+ const blocked=new Promise(resolve=>{release=resolve;});
+ let entered;
+ const started=new Promise(resolve=>{entered=resolve;});
+ const locks=testLocks();let job=null,writes=0,cleared=0;
+ const journal={read:()=>job,begin:(id,uid,patches)=>{
+  job={id,uid,patches};return job;
+ },hydrate:async()=>({bookId:book.id,phase:'partial',total:1,done:[],
+  pending:[{chapterId:'chapter-0001'}],unknown:[]}),
+ clear:()=>{cleared++;job=null;},markUndo:()=>true};
+ const saver={apply:async()=>{writes++;entered();await blocked;
+  return {bookId:book.id,phase:'partial',total:1,done:[],
+   pending:[{chapterId:'chapter-0001'}],unknown:[]};}};
+ const a=manager({locks,journal,bulkSaver:saver});
+ a.instance.open(book);a.instance.switchMode('bulk');
+ const rule=a.elements.get('epub-edit-rule-list').children[0];
+ rule.children[0].value='kỳ an';rule.children[1].value='Kỳ An';
+ await a.instance.scan();a.instance.chooseAll(true);a.instance.previewBulk();
+ const firstSave=a.instance.saveBulk();await started;
+ const b=manager({locks,journal,bulkSaver:saver});b.instance.open(book);
+ assert.equal((await b.instance.reopenSavedJob()).phase,'partial');
+ assert.equal(await b.instance.recoverBulk('discard'),false);
+ assert.equal(cleared,0,'Second tab must not clear the first tab journal');
+ assert.match(b.elements.get('epub-edit-status').textContent,/tab khác/);
+ release();assert.equal((await firstSave).phase,'partial');
+ assert.equal(writes,1);
+ assert.equal(await b.instance.recoverBulk('discard'),true,
+  'Lock is released after first tab completes');
+ assert.equal(cleared,1);
 });
 test('Batch scan displays raw-text context, supports explicit selection and per-chapter filter',async()=>{
  const {instance,elements}=manager();instance.open(book);
