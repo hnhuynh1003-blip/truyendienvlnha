@@ -126,6 +126,23 @@
    return {changed:true,version:nextVersion,backupId:backupRef.id};
   });
  }
+ async function listRevisions(bookId,chapterId,{db,auth,limit=20}={}){
+  const {book,chapter}=references(db,bookId,chapterId);
+  if(!Number.isSafeInteger(limit)||limit<1||limit>50)
+   throw Error('Giới hạn lịch sử chương không hợp lệ');
+  const uid=await requireOwner(auth);
+  const bookSnap=await book.get();
+  if(!bookSnap.exists)throw Error('Không tìm thấy tác phẩm');
+  checkBook(bookSnap.data(),uid,chapterId);
+  const query=chapter.collection('revisions').orderBy('version','desc').limit(limit);
+  const list=await query.get();
+  if(auth.currentUser?.uid!==uid)throw Error('Phiên tác giả đã thay đổi');
+  return list.docs.filter(doc=>doc.data()?.ownerUid===uid&&
+    doc.data()?.chapterId===chapterId).map(doc=>({
+    id:doc.id,version:doc.data().version,createdAt:doc.data().createdAt,
+    reason:doc.data().reason,wordCount:doc.data().wordCount
+  }));
+ }
  return Object.freeze({MAX_CHARS,MAX_BYTES,validateContent,previewContent,
-  saveChapter,restoreChapter});
+  saveChapter,restoreChapter,listRevisions});
 });

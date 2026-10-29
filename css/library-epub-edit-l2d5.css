@@ -1,4 +1,4 @@
-/* L2D.5A — compact owner-only EPUB correction desk; gate OFF until QA. */
+/* L2D.5B — compact owner-only EPUB correction desk; gate OFF until QA. */
 .epub-edit-overlay .epub-edit-dialog {
   width:min(900px,calc(100vw - 28px));max-width:900px;
   max-height:min(90dvh,920px);overflow-y:auto;box-sizing:border-box;
@@ -12,7 +12,8 @@
 .epub-edit-tabs button {border:0;border-radius:7px;padding:10px 15px;cursor:pointer;color:#bbccd0;background:transparent;font:600 13px/1.3 system-ui,sans-serif;white-space:nowrap}
 .epub-edit-tabs button[aria-selected=true] {color:#101a26;background:#d3c096}
 .epub-edit-panel {display:flex;flex-direction:column;gap:12px}
-.epub-edit-panel[hidden],.epub-edit-more[hidden] {display:none!important}
+.epub-edit-panel[hidden],.epub-edit-more[hidden],
+.epub-edit-dialog button[hidden] {display:none!important}
 .epub-edit-panel>label,.epub-edit-filter-row label {font:650 12px/1.4 system-ui,sans-serif;color:#d2d9d5}
 .epub-edit-panel>p {margin:0;color:#acbcbf;font:400 12px/1.6 system-ui,sans-serif}
 .epub-edit-panel :is(input[type=text],select,textarea) {
@@ -39,6 +40,13 @@
 .epub-edit-hit small {font:600 11px/1.45 system-ui,sans-serif;color:#a9c6c6}
 .epub-edit-context {font:400 13px/1.65 system-ui,sans-serif;color:#e8e7df;overflow-wrap:anywhere;white-space:pre-wrap}
 .epub-edit-context mark {padding:1px 2px;border-radius:3px;background:#decb99;color:#16222c;font-weight:700}
+.epub-edit-history {display:grid;gap:6px}
+.epub-edit-revision {display:flex;align-items:center;justify-content:space-between;gap:10px;
+ padding:9px 11px;background:#182a36;border:1px solid #415763;border-radius:8px;
+ font:500 12px/1.5 system-ui,sans-serif;color:#c6d5d4;overflow-wrap:anywhere}
+.epub-edit-revision span {min-width:0}
+.epub-edit-revision button {flex-shrink:0}
+.epub-edit-recovery {display:flex;flex-wrap:wrap;gap:8px}
 .epub-edit-preview {padding:11px 13px;background:#0f1a27;border-left:3px solid #d6bb86;font:500 12px/1.6 system-ui,sans-serif;color:#e8dac0;overflow-wrap:anywhere}
 .epub-edit-preview:empty {display:none}
 .epub-edit-status {margin:0;min-height:18px;font:500 12px/1.5 system-ui,sans-serif;color:#9bd8c7}
@@ -57,4 +65,5 @@
  .epub-edit-rule button {grid-column:2}
  .epub-edit-panel :is(input[type=text],select,textarea) {font-size:16px}
  .epub-edit-hit {padding:10px;gap:8px}
+ .epub-edit-revision {align-items:flex-start;flex-direction:column}
 }

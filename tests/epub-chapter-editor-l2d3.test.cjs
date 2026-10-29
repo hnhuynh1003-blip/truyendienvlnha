@@ -13,7 +13,14 @@ function makeDB(){
   collection:name=>collection(id+'/'+name),
   get:async()=>docs.has(id)?{exists:true,data:()=>structuredClone(docs.get(id))}:{exists:false},
   });
- const collection=prefix=>({doc:id=>path(prefix+'/'+id)});
+ const collection=prefix=>({doc:id=>path(prefix+'/'+id),
+  orderBy:(key,direction)=>{
+   assert.equal(key,'version');assert.equal(direction,'desc');
+   return {limit:n=>({get:async()=>({docs:[...docs.entries()]
+    .filter(([id])=>id.startsWith(prefix+'/'))
+    .sort((a,b)=>b[1].version-a[1].version).slice(0,n)
+    .map(([id,item])=>({id:id.split('/').at(-1),data:()=>structuredClone(item)}))})})};
+  }});
  const book={ownerUid:'dudu-owner',status:'published',chapterIndex:[{id:chapterId,title:'Chương 1'}]};
  const chapter={id:chapterId,title:'Chương 1',content:'kỳ an đến thượng hải.\nCâu kế tiếp.',wordCount:8,order:0};
  docs.set('epub_stories_v49/'+bookId,book);
@@ -95,6 +102,11 @@ test('Restoring an old revision first backs up the current text and keeps versio
  assert.equal(db.operations.length,4);
  await assert.rejects(editor.restoreChapter(bookId,chapterId,'rev-000001',{
   db,auth:owner,expectedVersion:1}),/phiên khác/);
+ const history=await editor.listRevisions(bookId,chapterId,{db,auth:owner});
+ assert.deepEqual(history.map(item=>item.id),['rev-000002','rev-000001']);
+ assert.equal(history[0].reason,'restore');
+ assert.equal('content' in history[0],false,'History listing should not expose full chapter copies');
+ await assert.rejects(editor.listRevisions(bookId,chapterId,{db,auth:other}),/quyền/);
 });
 test('Archived EPUB can be edited but importing, draft and foreign owners cannot',async()=>{
  const db=makeDB(),old=getChapter(db).content;

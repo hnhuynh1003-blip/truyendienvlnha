@@ -29,7 +29,7 @@ function mockDom(){
   if(!elements.has(id))elements.set(id,new Element(id.includes('filter')||id==='epub-edit-chapter'?'select':'div'));
   return elements.get(id);
  },createElement:tag=>new Element(tag),createTextNode:text=>({textContent:text})};
- const window={document};
+ const window={document,confirm:()=>true};
  const code=readFileSync(join(__dirname,'../js/library-epub-edit-ui-l2d5.js'),'utf8');
  vm.runInNewContext(code,{window});
  return {elements,document,window};
@@ -42,10 +42,11 @@ const content={
  'chapter-0001':'kỳ an ở thượng hải.\nKỳ An vẫn ở đó.',
  'chapter-0002':'thượng hải là nơi kỳ an trở về.'
 };
-function manager({enabled=true,authorized=author,loadChapter:custom}={}){
+function manager({enabled=true,authorized=author,loadChapter:custom,
+ chapterEditor=single,bulkSaver,onChapterSaved=()=>{}}={}){
  const ui=mockDom(),loaded=[];
  const create=ui.window.DuduLibraryEpubEditL2D5.create;
- const instance=create({enabled,engine:bulk,chapterEditor:single,
+ const instance=create({enabled,engine:bulk,chapterEditor,bulkSaver,onChapterSaved,
   auth:()=>authorized,uid:()=>authorized.currentUser.uid,
   canEdit:()=>true,db:()=>({}),
   loadChapter:custom||(async(id,chapterId)=>{
@@ -83,8 +84,93 @@ test('Single-chapter preview uses original text but never writes to Firestore',a
  const summary=instance.previewSingle();
  assert.equal(summary.changed,true);
  assert.match(elements.get('epub-edit-preview').textContent,/chưa được lưu/i);
+ assert.equal(elements.get('epub-edit-single-save').hidden,false);
  assert.equal(typeof instance.save,'undefined');
  assert.equal(typeof instance.restore,'undefined');
+});
+test('L2D.5B staged chapter save needs preview, confirmation and persists a revision through the chapter API',async()=>{
+ let writes=0,last=null;const changes=[];
+ const editor={...single,saveChapter:async(bookId,chapterId,options)=>{
+  writes++;last={bookId,chapterId,options};
+  return {changed:true,version:1,backupId:'rev-000001'};
+ },listRevisions:async()=>[{id:'rev-000001',reason:'edit',createdAt:'2026-10-29'}]};
+ const {instance,elements,window}=manager({chapterEditor:editor,
+  onChapterSaved:(bookId,id,chapter)=>changes.push({bookId,id,chapter})});
+ instance.open(book);await instance.loadSingle();
+ assert.equal(await instance.saveSingle(),false,'No saving without preview');
+ elements.get('epub-edit-chapter-content').value='Kỳ An ở Thượng Hải.';
+ instance.previewSingle();
+ window.confirm=()=>false;
+ assert.equal(await instance.saveSingle(),false,'User can cancel the write');
+ assert.equal(writes,0);
+ window.confirm=()=>true;
+ const saved=await instance.saveSingle();
+ assert.equal(saved.version,1);
+ assert.equal(writes,1);
+ assert.equal(last.options.expectedContent,content['chapter-0001']);
+ assert.equal(last.options.expectedVersion,0);
+ assert.equal(changes.length,1);
+ assert.equal(changes[0].chapter.content,'Kỳ An ở Thượng Hải.');
+ const history=await instance.showHistory();
+ assert.equal(history.length,1);
+ assert.equal(elements.get('epub-edit-history').children.length,1);
+ assert.equal(elements.get('epub-edit-history').children[0].children[1].textContent,'Khôi phục bản này');
+});
+test('L2D.5B refuses to save an edit changed after review and refreshes stale text from cloud',async()=>{
+ let body='Văn bản từ đám mây';let writes=0;
+ const {instance,elements}=manager({chapterEditor:{...single,
+  saveChapter:async()=>{writes++;return {changed:true,version:1,backupId:'rev-000001'};}},
+  loadChapter:async(id,chId)=>({id:chId,content:body,editVersion:0})});
+ instance.open(book);await instance.loadSingle();
+ elements.get('epub-edit-chapter-content').value='Dòng chỉnh sửa';
+ instance.previewSingle();
+ elements.get('epub-edit-chapter-content').value='Thay đổi sau khi duyệt';
+ assert.equal(await instance.saveSingle(),false);
+ assert.equal(writes,0);
+ body='Phiên bản mới từ Firebase';
+ assert.equal(await instance.loadSingle(),true);
+ assert.equal(elements.get('epub-edit-chapter-content').value,body);
+});
+test('L2D.5B bulk save and recovery controls are available only after explicit review',async()=>{
+ const calls=[];
+ const patchRow={patch:{chapterId:'chapter-0001',expectedVersion:0,
+  expectedContent:content['chapter-0001'],content:'Kỳ An ở thượng hải.\nKỳ An vẫn ở đó.'},
+  version:1,backupId:'rev-000001'};
+ const saver={apply:async(id,patches,opts)=>{
+  calls.push({type:'apply',id,patches,opts});
+  return {bookId:id,phase:'partial',total:2,done:[patchRow],
+   pending:[{...patches[1]}],unknown:[],message:'retry'};
+ },resume:async(prior)=>{
+  calls.push({type:'resume',prior});
+  return {...prior,phase:'complete',done:[...prior.done,
+   {patch:prior.pending[0],version:1,backupId:'rev-000001'}],pending:[]};
+ },undo:async(prior)=>{
+  calls.push({type:'undo',prior});
+  return {phase:'restored',restored:prior.done,remaining:[]};
+ }};
+ const saved=[];
+ const {instance,elements}=manager({bulkSaver:saver,
+  onChapterSaved:(...args)=>saved.push(args)});
+ instance.open(book);instance.switchMode('bulk');
+ const row=elements.get('epub-edit-rule-list').children[0];
+ row.children[0].value='kỳ an';row.children[1].value='Kỳ An';
+ await instance.scan();
+ assert.equal(await instance.saveBulk(),false);
+ instance.chooseAll(true);instance.previewBulk();
+ assert.equal(elements.get('epub-edit-bulk-save').hidden,false);
+ const first=await instance.saveBulk();
+ assert.equal(first.phase,'partial');
+ assert.equal(calls[0].opts.confirmed,true);
+ assert.equal(elements.get('epub-edit-bulk-resume').hidden,false);
+ assert.equal(instance.close(),false,'Do not discard a pending recovery session');
+ assert.equal(await instance.scan(),false,'Partial state blocks a second scan');
+ const complete=await instance.recoverBulk('resume');
+ assert.equal(complete.phase,'complete');
+ assert.equal(elements.get('epub-edit-bulk-undo').hidden,false);
+ const restored=await instance.recoverBulk('undo');
+ assert.equal(restored.phase,'restored');
+ assert.equal(elements.get('epub-edit-bulk-undo').hidden,true);
+ assert.equal(saved.length,4,'Save initial chapter, save resumed chapter, restore both');
 });
 test('Batch scan displays raw-text context, supports explicit selection and per-chapter filter',async()=>{
  const {instance,elements}=manager();instance.open(book);

@@ -120,9 +120,10 @@
   <script src="js/epub-production-v49.js?v=l2b-4"></script>
   <script src="js/library-synopsis-search-l2d.js?v=l2d-1"></script>
   <script src="js/library-epub-manage-l2d2.js?v=l2d2-1"></script>
-  <script src="js/epub-chapter-editor-l2d3.js?v=l2d5a-1"></script>
+  <script src="js/epub-chapter-editor-l2d3.js?v=l2d5b-1"></script>
   <script src="js/epub-bulk-replace-l2d4.js?v=l2d5a-1"></script>
-  <script src="js/library-epub-edit-ui-l2d5.js?v=l2d5a-1"></script>
+  <script src="js/epub-bulk-save-l2d5b.js?v=l2d5b-1"></script>
+  <script src="js/library-epub-edit-ui-l2d5.js?v=l2d5b-1"></script>
   <script src="js/npc-portrait-library-v1.js?v=40-1"></script>
   <script src="js/npc-anime-candidates-v14.js"></script>
   <script src="js/player-avatar-v16.js"></script>
@@ -775,7 +776,7 @@
   <link rel="stylesheet" href="css/library-reader-l2c.css?v=l2c-2">
   <link rel="stylesheet" href="css/library-editorial-l2c3.css?v=l2c-3">
   <link rel="stylesheet" href="css/library-epub-manage-l2d2.css?v=l2d2-1">
-  <link rel="stylesheet" href="css/library-epub-edit-l2d5.css?v=l2d5a-1">
+  <link rel="stylesheet" href="css/library-epub-edit-l2d5.css?v=l2d5b-1">
   <link rel="stylesheet" href="css/world-experience-v65.css?v=65-1">
   <link rel="stylesheet" href="css/world-experience-v66.css?v=66-2">
   <link rel="stylesheet" href="css/dudu-pilot-v1.css?v=play-v8">
@@ -1841,7 +1842,7 @@
     </div>
   </div>
 
-  <!-- L2D.5A: owner-only EPUB correction previews. Gate OFF until all tools,
+  <!-- L2D.5B: owner-only EPUB correction and recovery. Gate OFF until all tools,
        revision recovery, Firestore Rules Emulator and production QA pass. -->
   <div class="modal-overlay epub-edit-overlay" id="epub-edit-modal">
     <div class="modal-card epub-edit-dialog" role="dialog" aria-modal="true" aria-labelledby="epub-edit-heading">
@@ -1860,7 +1861,12 @@
           <button type="button" class="btn" onclick="epubEditorL2D5.loadSingle()">Tải chương</button></div>
         <label for="epub-edit-chapter-content">Nội dung chương</label>
         <textarea id="epub-edit-chapter-content" spellcheck="false" placeholder="Chọn chương và nhấn Tải chương…"></textarea>
-        <button type="button" class="btn" onclick="epubEditorL2D5.previewSingle()">Xem trước thay đổi</button>
+        <div class="epub-edit-inline">
+          <button type="button" class="btn" onclick="epubEditorL2D5.previewSingle()">Xem trước thay đổi</button>
+          <button type="button" class="btn btn-primary" id="epub-edit-single-save" hidden onclick="epubEditorL2D5.saveSingle()">Lưu chương đã duyệt</button>
+          <button type="button" class="btn" onclick="epubEditorL2D5.showHistory()">Lịch sử chương</button>
+        </div>
+        <div id="epub-edit-history" class="epub-edit-history" aria-label="Các bản lưu để phục hồi"></div>
       </section>
       <section id="epub-edit-panel-bulk" class="epub-edit-panel" aria-label="Tìm và thay thế toàn truyện" hidden>
         <p>Chuẩn hóa nhiều tên riêng trong một lượt. Tìm theo cụm từ, không tự đổi những chỗ chưa chọn.</p>
@@ -1878,11 +1884,19 @@
         </div>
         <div id="epub-edit-match-list" class="epub-edit-matches" aria-label="Các vị trí tìm được"></div>
         <button type="button" class="btn epub-edit-more" id="epub-edit-more" hidden onclick="epubEditorL2D5.more()">Xem thêm kết quả</button>
-        <button type="button" class="btn btn-primary" onclick="epubEditorL2D5.previewBulk()">Xem kế hoạch thay thế</button>
+        <div class="epub-edit-inline">
+          <button type="button" class="btn" onclick="epubEditorL2D5.previewBulk()">Xem kế hoạch thay thế</button>
+          <button type="button" class="btn btn-primary" id="epub-edit-bulk-save" hidden onclick="epubEditorL2D5.saveBulk()">Lưu các vị trí đã duyệt</button>
+        </div>
+        <div class="epub-edit-recovery" aria-label="Khôi phục lượt chỉnh sửa nhiều chương">
+          <button type="button" class="btn" id="epub-edit-bulk-resume" hidden onclick="epubEditorL2D5.recoverBulk('resume')">Tiếp tục chương còn lại</button>
+          <button type="button" class="btn" id="epub-edit-bulk-reconcile" hidden onclick="epubEditorL2D5.recoverBulk('reconcile')">Kiểm tra trạng thái lưu</button>
+          <button type="button" class="btn" id="epub-edit-bulk-undo" hidden onclick="epubEditorL2D5.recoverBulk('undo')">Hoàn tác lượt sửa</button>
+        </div>
       </section>
       <div id="epub-edit-preview" class="epub-edit-preview" aria-live="polite"></div>
       <p id="epub-edit-status" class="epub-edit-status" role="status" aria-live="polite"></p>
-      <p class="epub-edit-footnote">Chế độ xem trước — chưa lưu lên Firebase. Quyền lưu và phục hồi sẽ được bật sau khi kiểm thử Rules.</p>
+      <p class="epub-edit-footnote">Công cụ đang khóa trên website. Khi hoàn tất kiểm thử, mỗi lần lưu sẽ giữ bản cũ để có thể phục hồi; thay đổi nhiều chương được xác nhận riêng.</p>
     </div>
   </div>
 
@@ -2294,9 +2308,18 @@
       enabled:EPUB_CHAPTER_TOOLS_L2D5_ENABLED,
       engine:window.DuduEpubBulkReplaceL2D4,
       chapterEditor:window.DuduEpubChapterEditorL2D3,
+      bulkSaver:window.DuduEpubBulkSaveL2D5B,
       db:()=>db,auth:()=>firebase.auth(),
       canEdit:()=>canEditStories()&&!IS_SANDBOX_MODE,
-      uid:()=>DuduAuth.uid()
+      uid:()=>DuduAuth.uid(),
+      onChapterSaved:(bookId,chapterId,chapter)=>{
+        const novel=novels.find(n=>n._cloudV49&&n.id===bookId);
+        const item=novel?.chapters?.find(ch=>ch.id===chapterId);
+        if(item){
+          item.content=chapter.content;
+          item.wordCount=chapter.content.trim().split(/\s+/).filter(Boolean).length;
+        }
+      }
     })||Object.freeze({enabled:false,owns:()=>false,open:()=>false,close:()=>false});
     const librarySynopsisIndexL2D=DuduLibrarySynopsisSearchL2D.createIndex((bookId,chapterId)=>
       DuduEpubProductionV49.readChapter(db,bookId,chapterId));
