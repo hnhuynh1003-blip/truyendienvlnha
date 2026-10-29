@@ -3,6 +3,8 @@
 **Trạng thái:** tài liệu kiểm tra và kế hoạch triển khai; **chưa bật quyền và chưa sửa/deploy Firestore Rules**.
 **Định hướng:** một chủ tài khoản và vài tài khoản riêng trên điện thoại, Firebase Spark/miễn phí, không Cloud Functions, không nạp tiền.
 
+**Cập nhật 30/10:** Chủ dự án đã xác nhận màn hình Firestore `(default)` là **Standard**, không phải Enterprise. Standard (phiên bản database) dùng được cùng **Spark** (gói miễn phí); không cần chuyển Blaze để chỉnh Rules. Bản thử hợp nhất `firestore.rules` đã được tạo để kiểm tra cú pháp và mô phỏng quyền EPUB, profile, ví; **chưa gắn vào `firebase.json`, chưa triển khai thật**. Đây là bản bảo vệ dữ liệu và sửa EPUB, KHÔNG phải bản kích hoạt đổi Xu/giá truyện/giao dịch thật vì các adapter và quyền mở nội dung chưa hoàn tất.
+
 **Bổ sung 29/10:** Cyber Phone đã có ứng dụng **Ví Xu** riêng hiển thị lại `userProfile.currency` để mua sắm, đối chiếu Xu Arcade ở local; không thêm ví hệ thống thứ hai và chưa chuyển Xu thật. Nhịp nhặt thử tại client vẫn là 15 phút ở Kho; chương có xác suất hiện **✦ Nhặt bảo** 25%, khi bấm có xác suất thành công 45%, đã thử là biến mất vĩnh viễn ở chương đó. Bảng công dụng vật phẩm/giới hạn trước Rules xem `DUDU-WALLET-LOOT-ITEM-ROADMAP-2026-10-29.md`.
 
 **Quy đổi đã chuẩn bị trên giao diện:** `10 Xu Arcade = 1 Xu hệ thống`, tối thiểu 10 Xu Arcade/lần, mỗi lệnh là bội số 10 Xu Arcade, **không có trần 30 Xu/ngày**; chỉ phụ thuộc số dư. Người chơi tự nhập số lượng hoặc chọn mức nhanh 10/50/100/Tối đa. Module `js/personal-arcade-exchange-v1.js` chỉ trả báo giá dự kiến; chưa có ledger, **không phát/trừ tiền**. Nguồn Xu cần được xác nhận bởi cơ chế đáng tin trong lần Rules chung.
@@ -24,7 +26,7 @@
 3. Arcade tính thời gian và lượt chơi tại client; Firestore Rules không thể tự kiểm chứng rằng người chơi thật sự treo máy/đào/vào vườn đúng thời gian. Nếu chủ dự án chấp nhận mô hình tin cậy cho **vài tài khoản cá nhân**, phải ghi rõ đó là cơ chế giới hạn rủi ro, **không phải chống gian lận tuyệt đối**.
 4. Bản V49 EPUB hiện cho người đọc lấy nội dung chương đã `published`. Một truyện được đặt giá không thể chỉ dùng điều kiện mua ở giao diện; bắt buộc phân biệt chương công khai và nội dung chỉ có quyền đọc.
 5. Các công cụ EPUB L2D chỉnh metadata, chương, thay thế hàng loạt và lưu nháp đang có feature gate. Phải chốt quyền sửa/xóa/khôi phục trước khi viết lần Rules hợp nhất.
-6. Chưa xác thực được **Firestore edition** bằng tài khoản CLI có quyền; cần xác minh instance `(default)` và edition trước khi viết mô hình/Rules chính thức. Ảnh màn hình Data không đủ để xác định edition.
+6. **Đã chốt edition** bằng ảnh danh sách database: `(default)` — **Standard**. CLI trong phiên này chưa đăng nhập Firebase nên không được coi là xác nhận đã triển khai Rules lên dự án thật.
 
 ## 3. Quy ước giao dịch cho đợt tích hợp (chưa kết nối Firestore)
 

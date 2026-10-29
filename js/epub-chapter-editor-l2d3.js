@@ -91,7 +91,10 @@
    if(existing.exists)throw Error('Phiên bản sao lưu đã tồn tại; ngừng để tránh ghi đè');
    if(auth.currentUser?.uid!==uid)throw Error('Phiên tác giả đã thay đổi');
    tx.set(rev,backup(chapterId,uid,previous,version,'edit'));
-   tx.update(chapter,{content:next,wordCount:words(next),editVersion:nextVersion,editedAt:now()});
+   // The reviewed Standard/Spark Rules require this exact same-transaction
+   // revision pointer. A chapter may never be edited without its backup.
+   tx.update(chapter,{content:next,wordCount:words(next),editVersion:nextVersion,
+    editedAt:now(),lastRevisionId:rev.id});
    return {changed:true,version:nextVersion,backupId:rev.id};
   });
  }
@@ -122,7 +125,8 @@
    if((await tx.get(backupRef)).exists)throw Error('Bản sao lưu mới đã tồn tại');
    if(auth.currentUser?.uid!==uid)throw Error('Phiên tác giả đã thay đổi');
    tx.set(backupRef,backup(chapterId,uid,current,version,'restore'));
-   tx.update(chapter,{content,wordCount:words(content),editVersion:nextVersion,editedAt:now()});
+   tx.update(chapter,{content,wordCount:words(content),editVersion:nextVersion,
+    editedAt:now(),lastRevisionId:backupRef.id});
    return {changed:true,version:nextVersion,backupId:backupRef.id};
   });
  }

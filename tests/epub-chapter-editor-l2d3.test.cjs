@@ -60,6 +60,7 @@ test('Editing one published EPUB chapter saves immutable previous text atomicall
  assert.equal(getRev(db,1).ownerUid,'dudu-owner');
  assert.equal(getChapter(db).content,'Kỳ An đến Thượng Hải.\nCâu kế tiếp.');
  assert.equal(getChapter(db).editVersion,1);
+ assert.equal(getChapter(db).lastRevisionId,'rev-000001');
  assert.equal(db.docs.get('epub_stories_v49/'+bookId).chapterIndex[0].id,chapterId);
  assert.deepEqual(db.operations.map(x=>x.split(':')[0]),['set','update']);
 });
@@ -99,6 +100,7 @@ test('Restoring an old revision first backs up the current text and keeps versio
  assert.equal(getRev(db,2).content,'Bản đã sửa');
  assert.equal(getRev(db,1).content,old);
  assert.equal(getRev(db,2).reason,'restore');
+ assert.equal(getChapter(db).lastRevisionId,'rev-000002');
  assert.equal(db.operations.length,4);
  await assert.rejects(editor.restoreChapter(bookId,chapterId,'rev-000001',{
   db,auth:owner,expectedVersion:1}),/phiên khác/);

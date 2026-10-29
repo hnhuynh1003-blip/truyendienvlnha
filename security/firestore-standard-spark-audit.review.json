@@ -1,0 +1,36 @@
+{
+  "score": 3,
+  "summary": "Prototype Standard/Spark Rules tested in an isolated Firestore Emulator: 55 permission/transaction probes passed. Safe for review, not yet a finished paid-chapter or multi-account economy release. Production Rules remain unchanged.",
+  "findings": [
+    {
+      "check": "Business logic / paid-chapter confidentiality",
+      "severity": "major",
+      "issue": "The existing EPUB document layout makes every chapter readable by anyone while the parent book is published. Hiding a paid chapter in the browser does not enforce a purchase.",
+      "recommendation": "Design a private paid-content path, verified entitlements, and a server-issued purchase operation before enabling paid EPUB reading. Retain the existing publication behavior until the migration is ready."
+    },
+    {
+      "check": "Authority source / user profile economy",
+      "severity": "moderate",
+      "issue": "The legacy profiles_v2 currency and inventory remain owner-editable for backward-compatible solo progress. Their values cannot prove a real balance or item ownership.",
+      "recommendation": "Treat profiles_v2 as display/sandbox progress only. Keep economy_accounts_v52 client-write denied and use trusted, idempotent server operations before exchange/trades."
+    },
+    {
+      "check": "Published metadata / mixed content",
+      "severity": "moderate",
+      "issue": "Each public EPUB metadata document includes ownerUid, importFingerprint, sourceName and other importer details. Firestore Rules cannot selectively redact fields from an allowed document read.",
+      "recommendation": "In a later content-schema migration, separate public catalog metadata from private author/import metadata. Avoid sensitive local filenames in sourceName."
+    },
+    {
+      "check": "Legacy profile schema / resource exhaustion",
+      "severity": "minor",
+      "issue": "Unknown fields already present in older owner-only profiles are tolerated to avoid breaking existing saves and resets; nested list/map elements are not fully validated.",
+      "recommendation": "After backing up and examining real profile field shapes, migrate to an exhaustive validated schema. No privileged decision may consume a profile field."
+    },
+    {
+      "check": "Live rollout status",
+      "severity": "minor",
+      "issue": "The CLI session has no authenticated access to the real Firebase project. Only the demo emulator was used; the candidate has not been deployed or checked against live documents.",
+      "recommendation": "Before a one-time console update, export production Rules/data, verify both EPUB document schemas and profile optional fields, review diff, then deploy only after trusted exchange and paid-chapter design is finalized."
+    }
+  ]
+}

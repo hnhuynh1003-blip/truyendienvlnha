@@ -1,0 +1,369 @@
+// DUDU Studio — FIRESTORE STANDARD / SPARK PERSONAL — REVIEW CANDIDATE.
+// Database: (default). NOT DEPLOYED. Export current live Rules before replacing.
+// Owner-provided live Rules: 29/10/2026. This proposal maintains public reading
+// of the common library and published EPUB, while allowing audited EPUB edits.
+// No paid-entitlement or real-currency grant is authorized by these client Rules.
+//
+// Assumed data model:
+//   studio_data/main_library: legacy shared novel blob; author-admin writes only.
+//   profiles_v2/{uid}: owner's PRIVATE, CLIENT-MUTABLE progress/preferences,
+//     including untrusted local Xu/items. NOT an authority for real purchases.
+//   epub_stories_v49/{storyId}: {id,title,author,genre,desc,
+//     publicationState,status,ownerUid,chapterCount,chapterIndex,createdAt,
+//     updatedAt,sourceName,importSchema,importFingerprint,coverImage,
+//     publishedAt?}; only owner with Firebase admin claim can write.
+//   .../chapters/{chapterId}: {id,order,title,content,wordCount,
+//     editVersion?,editedAt?,lastRevisionId?}; importing creates, guarded edits.
+//   .../chapters/{chapterId}/revisions/{revId}: immutable backup of previous
+//     chapter {id,chapterId,ownerUid,beforeVersion,version,createdAt,
+//     reason,title,content,wordCount} in SAME transaction as chapter change.
+//   economy_accounts_v52/{uid}/items|receipts and system_config/economy_v52:
+//     reserved for trusted server operations; direct client writes always DENY.
+//
+// Important: EPUB content at status=published is intentionally public. Paid
+// chapters require different protected storage/entitlement rules later.
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function self(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function admin() {
+      return signedIn() && request.auth.token.admin == true;
+    }
+
+    function bookPath(storyId) {
+      return /databases/$(database)/documents/epub_stories_v49/$(storyId);
+    }
+
+    function chapterPath(storyId, chapterId) {
+      return /databases/$(database)/documents/epub_stories_v49/$(storyId)/chapters/$(chapterId);
+    }
+
+    function revisionPath(storyId, chapterId, revId) {
+      return /databases/$(database)/documents/epub_stories_v49/$(storyId)/chapters/$(chapterId)/revisions/$(revId);
+    }
+
+    function ownerOfBook(storyId) {
+      return admin() && exists(bookPath(storyId))
+        && get(bookPath(storyId)).data.ownerUid == request.auth.uid;
+    }
+
+    function editableBook(storyId) {
+      return ownerOfBook(storyId)
+        && get(bookPath(storyId)).data.status in ['published', 'archived'];
+    }
+
+    // Author-controlled legacy library. Preserve existing public-reader UX.
+    function validLegacyLibrary(data) {
+      return data is map && data.keys().size() <= 50;
+    }
+
+    match /studio_data/main_library {
+      allow get, list: if true;
+      allow create, update: if admin() && validLegacyLibrary(request.resource.data);
+      allow delete: if admin();
+    }
+
+    // Legacy profile, deliberately NOT a verified wallet or role authority.
+    // Compatibility: existing profiles may contain optional older fields.
+    function validLegacyProfile(data) {
+      return data is map
+        && data.keys().size() <= 80
+        && data.get('name', '') is string
+        && data.get('name', '').size() <= 140
+        && data.get('username', '') is string
+        && data.get('username', '').size() <= 140
+        && data.get('title', '') is string
+        && data.get('title', '').size() <= 140
+        && data.get('level', 1) is int
+        && data.get('level', 1) >= 1
+        && data.get('level', 1) <= 1000000
+        && data.get('exp', 0) is int
+        && data.get('exp', 0) >= 0
+        && data.get('exp', 0) <= 1000000000
+        && data.get('currency', 0) is int
+        && data.get('currency', 0) >= 0
+        && data.get('currency', 0) <= 1000000000
+        && data.get('inventory', []) is list
+        && data.get('inventory', []).size() <= 1000
+        && data.get('quests', []) is list
+        && data.get('quests', []).size() <= 200
+        && data.get('lootedChapters', {}) is map
+        && data.get('lootedChapters', {}).keys().size() <= 2000
+        && data.get('readRewards', {}) is map
+        && data.get('readRewards', {}).keys().size() <= 2000
+        && data.get('collectedCharacters', {}) is map
+        && data.get('collectedCharacters', {}).keys().size() <= 2000
+        && data.get('storyStates', {}) is map
+        && data.get('storyStates', {}).keys().size() <= 500
+        && data.get('dailyReadLog', {}) is map
+        && data.get('dailyReadLog', {}).keys().size() <= 12
+        && data.get('readingBookmarksV568', {}) is map
+        && data.get('readingBookmarksV568', {}).keys().size() <= 2000
+        && data.get('phoneAppearanceV568', {}) is map
+        && data.get('phoneAppearanceV568', {}).keys().size() <= 20
+        && data.get('playerAvatar', {}) is map
+        && data.get('playerAvatar', {}).keys().size() <= 20
+        && data.get('role', 'reader') in ['reader', 'admin']
+        && (data.get('role', 'reader') != 'admin' || admin());
+    }
+
+    function allowedLegacyProfileFields() {
+      return [
+        'username','name','title','role','level','exp','currency',
+        'inventory','quests','lootedChapters','readRewards','dailyReadLog',
+        'collectedCharacters','storyStates','playerAvatar',
+        'readingBookmarksV568','phoneAppearanceV568'
+      ];
+    }
+
+    // Write only to one's own document; never use this role or Xu in Rules.
+    match /profiles_v2/{uid} {
+      allow get: if self(uid);
+      allow list: if false;
+      allow create: if self(uid) && validLegacyProfile(request.resource.data)
+        && request.resource.data.keys().hasOnly(allowedLegacyProfileFields());
+      allow update: if self(uid) && validLegacyProfile(request.resource.data)
+        && request.resource.data.diff(resource.data).addedKeys()
+           .hasOnly(allowedLegacyProfileFields())
+        && (admin() || request.resource.data.get('role', 'reader')
+                        == resource.data.get('role', 'reader'));
+      allow delete: if false;
+    }
+
+    match /user_profiles/{username} {
+      allow read, write: if false;
+    }
+
+    function validBook(data) {
+      return data is map
+        && data.keys().hasOnly([
+          'id','title','author','genre','desc','publicationState','status',
+          'ownerUid','chapterCount','chapterIndex','createdAt','updatedAt',
+          'sourceName','importSchema','importFingerprint','coverImage','publishedAt'
+        ])
+        && data.keys().hasAll([
+          'id','title','author','status','ownerUid','chapterCount',
+          'chapterIndex','createdAt','updatedAt'
+        ])
+        && data.id is string && data.id.size() >= 4 && data.id.size() <= 128
+        && data.title is string && data.title.size() > 0 && data.title.size() <= 140
+        && data.author is string && data.author.size() > 0 && data.author.size() <= 140
+        && data.get('genre', '') is string && data.get('genre', '').size() <= 220
+        && data.get('desc', '') is string && data.get('desc', '').size() <= 3000
+        && data.get('publicationState', 'Đang ra') in ['Đang ra','Hoàn thành']
+        && data.status in ['importing','draft','published','archived']
+        && data.ownerUid is string && data.ownerUid.size() > 0
+        && data.ownerUid.size() <= 128
+        && data.chapterCount is int && data.chapterCount >= 1
+        && data.chapterCount <= 160
+        && data.chapterIndex is list
+        && data.chapterIndex.size() == data.chapterCount
+        && data.createdAt is string && data.createdAt.size() <= 40
+        && data.updatedAt is string && data.updatedAt.size() <= 40
+        && data.get('sourceName', '') is string && data.get('sourceName', '').size() <= 180
+        && data.get('importSchema', 57) is int
+        && data.get('importFingerprint', '') is string
+        && data.get('importFingerprint', '').size() <= 70
+        && data.get('coverImage', '') is string
+        && data.get('coverImage', '').size() <= 32000
+        && (data.get('coverImage', '') == '' || data.get('coverImage', '')
+             .matches('^data:image/jpeg;base64,[A-Za-z0-9+/]+={0,2}$'))
+        && data.get('publishedAt', '') is string
+        && data.get('publishedAt', '').size() <= 40;
+    }
+
+    function validImportCreate(data, storyId) {
+      return validBook(data) && data.id == storyId
+        && data.status == 'importing'
+        && data.ownerUid == request.auth.uid;
+    }
+
+    function validBookUpdate(before, after) {
+      return validBook(after)
+        && after.id == before.id
+        && after.ownerUid == before.ownerUid
+        && after.chapterCount == before.chapterCount
+        && after.chapterIndex == before.chapterIndex
+        && after.createdAt == before.createdAt
+        && after.get('importSchema', 57) == before.get('importSchema', 57)
+        && after.get('importFingerprint', '') == before.get('importFingerprint', '')
+        && after.get('sourceName', '') == before.get('sourceName', '');
+    }
+
+    function validBookTransition(before, after) {
+      return (
+          before.status == 'importing' && after.status == 'draft'
+          && after.diff(before).affectedKeys().hasOnly(['status','updatedAt'])
+        ) || (
+          before.status == 'draft' && after.status == 'published'
+          && after.diff(before).affectedKeys().hasOnly(['status','updatedAt','publishedAt'])
+        ) || (
+          before.status in ['published','archived']
+          && after.status == before.status
+          && after.diff(before).affectedKeys().hasOnly([
+            'title','author','genre','desc','publicationState','coverImage','updatedAt'
+          ])
+        ) || (
+          (before.status == 'published' && after.status == 'archived'
+            || before.status == 'archived' && after.status == 'published')
+          && after.diff(before).affectedKeys().hasOnly(['status','updatedAt'])
+        );
+    }
+
+    match /epub_stories_v49/{storyId} {
+      // An unauthenticated reader can only see published book metadata.
+      // The author's own `.where(ownerUid == uid).limit(60)` includes drafts.
+      allow get: if resource.data.status == 'published'
+        || (admin() && resource.data.ownerUid == request.auth.uid);
+      allow list: if request.query.limit != null && request.query.limit <= 60
+        && (resource.data.status == 'published'
+          || (admin() && resource.data.ownerUid == request.auth.uid));
+
+      allow create: if admin()
+        && validImportCreate(request.resource.data, storyId);
+
+      allow update: if admin() && resource.data.ownerUid == request.auth.uid
+        && validBookUpdate(resource.data, request.resource.data)
+        && validBookTransition(resource.data, request.resource.data);
+      allow delete: if false;
+
+      function validChapter(data, chapterId) {
+        return data is map
+          && data.keys().hasOnly([
+            'id','order','title','content','wordCount',
+            'editVersion','editedAt','lastRevisionId'
+          ])
+          && data.keys().hasAll(['id','order','title','content','wordCount'])
+          && data.id == chapterId
+          && data.order is int && data.order >= 0 && data.order < 160
+          && data.title is string && data.title.size() > 0 && data.title.size() <= 140
+          && data.content is string && data.content.size() > 0
+          && data.content.size() <= 420000
+          && data.wordCount is int && data.wordCount > 0
+          && data.wordCount <= 220000
+          && data.get('editVersion', 0) is int
+          && data.get('editVersion', 0) >= 0
+          && data.get('editVersion', 0) <= 999999
+          && data.get('editedAt', '') is string && data.get('editedAt', '').size() <= 40
+          && data.get('lastRevisionId', '') is string
+          && (data.get('lastRevisionId', '') == '' ||
+              data.get('lastRevisionId', '').matches('^rev-[0-9]{6}$'));
+      }
+
+      function validChapterEdit(before, after, chapterId) {
+        return validChapter(after, chapterId)
+          && after.diff(before).affectedKeys().hasOnly([
+            'content','wordCount','editVersion','editedAt','lastRevisionId'
+          ])
+          && after.content != before.content
+          && after.get('editVersion', 0) == before.get('editVersion', 0) + 1
+          && after.get('lastRevisionId', '').matches('^rev-[0-9]{6}$')
+          && after.editedAt is string && after.editedAt.size() > 0
+          && !exists(revisionPath(storyId, chapterId, after.lastRevisionId))
+          && getAfter(revisionPath(storyId, chapterId, after.lastRevisionId))
+               .data.id == after.lastRevisionId
+          && getAfter(revisionPath(storyId, chapterId, after.lastRevisionId))
+               .data.ownerUid == request.auth.uid
+          && getAfter(revisionPath(storyId, chapterId, after.lastRevisionId))
+               .data.version == after.editVersion
+          && getAfter(revisionPath(storyId, chapterId, after.lastRevisionId))
+               .data.content == before.content;
+      }
+
+      function validRevision(data, revId, chapterId) {
+        return data is map
+          && data.keys().hasOnly([
+            'id','chapterId','ownerUid','beforeVersion','version','createdAt',
+            'reason','title','content','wordCount'
+          ])
+          && data.keys().hasAll([
+            'id','chapterId','ownerUid','beforeVersion','version','createdAt',
+            'reason','title','content','wordCount'
+          ])
+          && revId.matches('^rev-[0-9]{6}$') && data.id == revId
+          && data.chapterId == chapterId
+          && data.ownerUid == request.auth.uid
+          && data.beforeVersion is int && data.beforeVersion >= 0
+          && data.beforeVersion < 999999
+          && data.version is int && data.version == data.beforeVersion + 1
+          && data.createdAt is string && data.createdAt.size() > 0
+          && data.createdAt.size() <= 40
+          && data.reason in ['edit','restore']
+          && data.title is string && data.title.size() > 0
+          && data.title.size() <= 140
+          && data.content is string && data.content.size() > 0
+          && data.content.size() <= 420000
+          && data.wordCount is int && data.wordCount > 0
+          && data.wordCount <= 220000;
+      }
+
+      function validRevisionCreate(data, revId, chapterId) {
+        return validRevision(data, revId, chapterId)
+          && exists(chapterPath(storyId, chapterId))
+          && data.beforeVersion == get(chapterPath(storyId, chapterId))
+               .data.get('editVersion', 0)
+          && data.content == get(chapterPath(storyId, chapterId)).data.content
+          && data.title == get(chapterPath(storyId, chapterId)).data.title
+          && data.wordCount == get(chapterPath(storyId, chapterId)).data.wordCount
+          && getAfter(chapterPath(storyId, chapterId)).data.get('editVersion', 0)
+               == data.version
+          && getAfter(chapterPath(storyId, chapterId)).data.lastRevisionId == revId
+          && getAfter(chapterPath(storyId, chapterId)).data.content != data.content;
+      }
+
+      match /chapters/{chapterId} {
+        allow get, list: if ownerOfBook(storyId)
+          || (exists(bookPath(storyId))
+            && get(bookPath(storyId)).data.status == 'published');
+        allow create: if ownerOfBook(storyId)
+          && get(bookPath(storyId)).data.status == 'importing'
+          && validChapter(request.resource.data, chapterId);
+        allow update: if editableBook(storyId)
+          && validChapterEdit(resource.data, request.resource.data, chapterId);
+        allow delete: if false;
+
+        match /revisions/{revId} {
+          allow get: if ownerOfBook(storyId);
+          allow list: if ownerOfBook(storyId)
+            && request.query.limit != null && request.query.limit <= 50;
+          allow create: if editableBook(storyId)
+            && validRevisionCreate(request.resource.data, revId, chapterId);
+          allow update, delete: if false;
+        }
+      }
+    }
+
+    // Reserved verified ledger. Admin SDK on a trusted server bypasses
+    // client Rules; browser/phone clients CANNOT mint or transfer real Xu.
+    match /economy_accounts_v52/{uid} {
+      allow get: if self(uid);
+      allow list, create, update, delete: if false;
+      match /items/{itemId} {
+        allow get, list: if self(uid);
+        allow create, update, delete: if false;
+      }
+      match /receipts/{receiptId} {
+        allow get, list: if self(uid);
+        allow create, update, delete: if false;
+      }
+    }
+    match /system_config/economy_v52 {
+      allow read, write: if false;
+    }
+
+    // All other paths, including AI/NPC grants and cross-account trades.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
