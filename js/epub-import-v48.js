@@ -13,6 +13,9 @@
  const LIMIT_FILE=30*1024*1024,LIMIT_CHAPTERS=160,LIMIT_CHAPTER_CHARS=220000;
  const LIMIT_TOTAL_CHARS=4500000,MAX_ZIP_ENTRIES=3000,MAX_TOTAL_UNPACKED=80*1024*1024;
  const safeName=s=>String(s||'').trim().slice(0,140);
+ const safeSynopsis=s=>String(s||'').replace(/[\u0000-\u001f\u007f]/g,' ').replace(/\s+/g,' ').trim().slice(0,3000);
+ const safeGenres=s=>String(s||'').split(/[,;/|]+/).map(x=>x.replace(/\s+/g,' ').trim())
+  .filter(x=>x&&!/^(?:epub|nhập epub)$/i.test(x)).slice(0,8).join(', ').slice(0,220);
  const safePath=(href,base='')=>{
   if(typeof href!=='string'||!href||/^[a-z][a-z0-9+.-]*:/i.test(href)||
      href.startsWith('/')||href.includes('\\')||/[\u0000-\u001f]/.test(href))return null;
@@ -80,6 +83,8 @@
   const metadata=firstTag(opf,'metadata');
   const metadataTitle=metadata?firstTag(metadata,'title')?.textContent?.trim():null;
   const metadataAuthor=metadata?firstTag(metadata,'creator')?.textContent?.trim():null;
+  const metadataGenres=metadata?allTags(metadata,'subject').map(x=>x.textContent||'').join(', '):'';
+  const metadataSynopsis=metadata?firstTag(metadata,'description')?.textContent||'':'';
   const coverMeta=allTags(opf,'meta').find(x=>x.getAttribute('name')==='cover');
   const coverId=coverMeta?.getAttribute('content')||'';
   const items=new Map();
@@ -124,7 +129,8 @@
   }
   if(!chapters.length)throw Error('Không tìm thấy chương có nội dung');
   return {title:safeName(metadataTitle)||safeName(file.name.replace(/\.epub$/i,''))||'Truyện EPUB',
-   author:safeName(metadataAuthor)||'Chưa rõ',chapters,totalChars,sourceName:file.name,
+   author:safeName(metadataAuthor)||'Chưa rõ',genre:safeGenres(metadataGenres),
+   desc:safeSynopsis(metadataSynopsis),chapters,totalChars,sourceName:file.name,
    skippedMetadata,noticeCount:chapters.filter(ch=>ch.kind==='notice').length,
    coverImage,hasCover:!!coverEntry};
  }
@@ -146,8 +152,12 @@
    updated[index]={...target,chapters:[...(target.chapters||[]),...chapters],updatedAt:date};
   }else{
    updated.unshift({id:'novel-epub-'+prefix,title:parsed.title,author:parsed.author||author,
-    genre:'Nhập EPUB',status:'Đang ra',desc:'',coverImage:'',
-    createdAt:date,updatedAt:date,introData:{title:'VĂN ÁN',code:'EPUB',text:''},
+    genre:safeGenres(parsed.genre),
+    status:parsed.publicationState==='Hoàn thành'?'Hoàn thành':'Đang ra',desc:safeSynopsis(parsed.desc),
+    coverImage:typeof parsed.coverImage==='string'&&parsed.coverImage.length<32000&&
+      /^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/.test(parsed.coverImage)?parsed.coverImage:'',
+    createdAt:date,updatedAt:date,
+    introData:{title:'VĂN ÁN',code:'ARCHIVE',text:safeSynopsis(parsed.desc)},
     characters:[],chapters});
   }
   // localStorage is usually limited to ~5MB per origin; keep plenty of headroom.
@@ -198,6 +208,19 @@
   input.setAttribute('aria-label','Chọn tệp EPUB');
   const status=el('p','');status.setAttribute('role','status');status.className='dudu-epub-status';
   const title=el('input');title.type='text';title.maxLength=140;title.placeholder='Tên tác phẩm';
+  const authorInput=el('input');authorInput.type='text';authorInput.maxLength=140;
+  authorInput.placeholder='Tên tác giả';
+  const genreInput=el('input');genreInput.type='text';genreInput.maxLength=220;
+  genreInput.placeholder='Ví dụ: Hệ thống, Huyền huyễn, Bách Hợp';
+  const completionInput=el('select');completionInput.append(new Option('Đang ra','Đang ra'),
+   new Option('Hoàn thành','Hoàn thành'));
+  const descInput=el('textarea');descInput.maxLength=3000;descInput.rows=4;
+  descInput.placeholder='Văn án để độc giả tìm hiểu truyện và tìm kiếm theo nội dung…';
+  const fields=el('div');fields.className='dudu-epub-fields';
+  const field=(label,control)=>{const wrapper=el('label');wrapper.append(el('span',label),control);return wrapper};
+  fields.append(field('Tên truyện',title),field('Tác giả',authorInput),
+   field('Thể loại · cách nhau bằng dấu phẩy',genreInput),
+   field('Tình trạng tác phẩm',completionInput),field('Văn án',descInput));
   const target=el('select');target.setAttribute('aria-label','Đích nhập EPUB');
   target.append(new Option('Tạo truyện mới (Sandbox)',''));
   for(const book of options.novels||[])target.append(new Option(book.title||book.id,book.id));
@@ -246,6 +269,9 @@
   };
   const makeParsed=()=>state.parsed?{
     ...state.parsed,title:safeName(title.value)||state.parsed.title,
+    author:safeName(authorInput.value)||state.parsed.author,
+    genre:safeGenres(genreInput.value),desc:safeSynopsis(descInput.value),
+    publicationState:completionInput.value==='Hoàn thành'?'Hoàn thành':'Đang ra',
     chapters:state.parsed.chapters.filter(ch=>ch.kind!=='notice'||includeNotices.checked)
    }:null;
   includeNotices.onchange=()=>{
@@ -258,6 +284,8 @@
    list.replaceChildren();status.textContent='Đang phân tích EPUB trên thiết bị…';
    if(!validFile(file))throw Error('Tệp phải có đuôi .epub và dung lượng tối đa 30 MB');
    const parsed=await parse(file);state.parsed=parsed;title.value=parsed.title;
+   authorInput.value=parsed.author;genreInput.value=parsed.genre||'';descInput.value=parsed.desc||'';
+   completionInput.value='Đang ra';
    includeNotices.checked=false;noticeLabel.style.display=parsed.noticeCount?'block':'none';
    coverPreview.style.display=parsed.coverImage?'block':'none';
    if(parsed.coverImage)coverPreview.src=parsed.coverImage;
@@ -374,7 +402,7 @@
      control.disabled=true;
   }
   button('Đóng',()=>{modal.style.display='none'});
-  host.append(help,input,title,coverPreview,noticeLabel,info);
+  host.append(help,input,fields,coverPreview,noticeLabel,info);
   if(options.sandbox)host.append(el('p','Nhập vào truyện:'),target);
   host.append(status,list,buttons);
   modal.style.display='flex';

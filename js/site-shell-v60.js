@@ -22,7 +22,8 @@
  }
  function list(){return Array.isArray(novels)?novels.filter(n=>n&&n.id&&!n.isDraft):[];}
  function artwork(n){
-   const box=element('div','d60-cover','✦'),src=n?.coverImage;
+   const monogram=String(n?.title||'').replace(/^[^\p{L}\p{N}]+/u,'').slice(0,1).toLocaleUpperCase('vi')||'✦';
+   const box=element('div','d60-cover',monogram),src=n?.coverImage;
    if(typeof src==='string'&&/^(https?:\/\/|data:image\/(?:png|jpe?g|webp|gif);base64,|assets\/|\.\/assets\/)/i.test(src)){
      const img=document.createElement('img');img.loading='lazy';img.alt='';img.src=src;
      img.addEventListener('error',()=>img.remove());box.replaceChildren(img);
@@ -33,12 +34,22 @@
    try{return v568ReadBookmarkForNovel(n);}catch{return null;}
  }
  function card(n,resume=false){
-   const c=element('article','d60-book'),idx=novels.indexOf(n),mark=bookmark(n);
-   c.append(artwork(n),element('div','d60-title',n.title||'Chưa đặt tên'),
+   const c=element('article','d60-book d62-book'+(resume?' d62-in-shelf':''));
+   const idx=novels.indexOf(n),mark=bookmark(n);
+   const cover=button('',()=>openCover(idx),'d62-cover-action');
+   cover.setAttribute('aria-label','Xem tác phẩm '+(n.title||'Chưa đặt tên'));
+   cover.append(artwork(n));
+   const info=element('div','d62-book-info');
+   const genre=String(n.genre||'').split(/[,/]+/).map(x=>x.trim())
+     .find(x=>x&&!/^(?:epub|nhập epub)$/i.test(x));
+   if(genre)info.append(element('div','d62-book-genre',genre));
+   info.append(element('div','d60-title',n.title||'Chưa đặt tên'),
      element('div','d60-meta',(n.author||'Tác giả')+' · '+(n.chapters?.length||0)+' chương'));
+   if(n.desc)info.append(element('p','d62-book-desc',n.desc));
    const isResume=resume&&mark&&Number.isInteger(mark.chIdx)&&n.chapters?.[mark.chIdx];
-   c.append(button(isResume?'Đọc tiếp · Chương '+(mark.chIdx+1):'Xem tác phẩm →',
+   info.append(button(isResume?'Đọc tiếp · Chương '+(mark.chIdx+1)+' →':'Xem tác phẩm →',
      ()=>{if(isResume)smartReadAction(idx);else openCover(idx);},'d60-bookaction'));
+   c.append(cover,info);
    return c;
  }
  function section(title,more,action){
@@ -120,7 +131,8 @@
      root.append(bookGrid('Mới cập nhật',all.slice(0,4)));
    }
    const genres=new Set();
-   all.forEach(n=>String(n.genre||'').split(/[,/]+/).map(x=>x.trim()).filter(Boolean).forEach(x=>genres.add(x)));
+   all.forEach(n=>String(n.genre||'').split(/[,/]+/).map(x=>x.trim())
+     .filter(x=>x&&!/^(?:epub|nhập epub)$/i.test(x)).forEach(x=>genres.add(x)));
    if(genres.size){
      const s=section('Dấu hiệu thế giới'),r=element('div','d60-chips d61-chips');
      [...genres].slice(0,7).forEach(t=>r.append(button(t,()=>{

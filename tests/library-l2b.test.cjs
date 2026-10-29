@@ -9,6 +9,7 @@ const html=readFileSync(join(root,'index.html'),'utf8');
 const shell=readFileSync(join(root,'js/site-shell-v60.js'),'utf8');
 const css=readFileSync(join(root,'css/library-discovery-l2b.css'),'utf8');
 const shellCss=readFileSync(join(root,'css/site-shell-v60.css'),'utf8');
+const bookCss=readFileSync(join(root,'css/library-cards-l2b4.css'),'utf8');
 const begin=html.indexOf('function renderHome() {');
 const end=html.indexOf('function resetAllFilters()',begin);
 const renderSource=html.slice(begin,end);
@@ -52,8 +53,8 @@ test('L2B builds one opening folio and compact catalog rows without fake books',
  assert.match(grid.children[0].className,/archive-featured/);
  assert.ok(grid.children.slice(1).every(c=>c.className.includes('archive-shelf-item')));
  const nodes=allNodes(grid);
- assert.ok(nodes.some(n=>n.className==='archive-card-index'&&n.textContent==='01  /  03'));
- assert.ok(nodes.some(n=>n.className==='archive-card-index'&&n.textContent==='03  /  03'));
+ assert.ok(nodes.some(n=>n.className==='archive-card-index'&&n.textContent==='ARCHIVE  /  01'));
+ assert.ok(nodes.some(n=>n.className==='archive-card-index'&&n.textContent==='ARCHIVE  /  03'));
  assert.ok(!nodes.some(n=>typeof n.textContent==='string'&&n.textContent.includes('DUDU ARCHIVE')));
  const resume=nodes.find(n=>n.tagName==='button'&&n.textContent==='Đọc tiếp · Ch.1');
  assert.ok(resume);resume.listeners.click({stopPropagation:()=>{}});
@@ -71,6 +72,32 @@ test('L2B shows real empty and filter states with working reset action',()=>{
  assert.ok(nodes.some(n=>n.textContent==='Chưa tìm thấy câu chuyện phù hợp'));
  const reset=nodes.find(n=>n.tagName==='button'&&n.textContent==='Xem tất cả tác phẩm');
  assert.ok(reset);reset.listeners.click();assert.deepEqual(calls,[['reset']]);
+});
+
+test('L2B.4 searches by author and genre while concealing EPUB import taxonomy',()=>{
+ const titles=[{id:'e',title:'Vùng im lặng',author:'Kẻ lữ hành',genre:'Huyền bí, Điều tra',
+  desc:'Một cuốn sách bị quên',chapters:[{id:'1'}]}];
+ for(const term of ['điều tra','kẻ lữ hành']){
+  const {grid,count}=runRender(titles,{query:term});
+  assert.equal(count.textContent,'1 / 1 tác phẩm');
+  assert.equal(grid.children.length,1);
+ }
+ const old=runRender([{id:'old',title:'Tên truyện',genre:'Nhập EPUB',
+  chapters:[{id:'one'}]}]);
+ const badges=allNodes(old.grid).filter(n=>n.className==='tag');
+ assert.equal(badges.length,0);
+ assert.ok(!allNodes(old.grid).some(n=>n.textContent==='Nhập EPUB'));
+});
+
+test('L2B.4 book jackets remain edition-neutral across homepage, library and shelf',()=>{
+ assert.match(shell,/d60-book d62-book/);
+ assert.match(shell,/d62-cover-action/);
+ assert.match(shell,/d62-in-shelf/);
+ assert.match(bookCss,/#d60-home \.d60-grid/);
+ assert.match(bookCss,/#d60-shelf \.d60-grid/);
+ assert.match(bookCss,/\.archive-featured/);
+ assert.match(bookCss,/@media\(max-width:760px\)/);
+ assert.match(html,/css\/library-cards-l2b4\.css\?v=l2b-4/);
 });
 
 test('L2B removes permanent filter walls while preserving real search/sort/status controls',()=>{
@@ -114,7 +141,7 @@ test('L2B route headings use one compact contextual rail without repeating navig
  assert.doesNotMatch(shell,/element\('p','d60-context-note'/);
  assert.match(html,/css\/site-shell-v60\.css\?v=lib-l2b-4/);
  assert.match(html,/css\/library-discovery-l2b\.css\?v=l2b-4/);
- assert.match(html,/js\/site-shell-v60\.js\?v=lib-l2b-4/);
+ assert.match(html,/js\/site-shell-v60\.js\?v=lib-l2b-5/);
 });
 
 test('L2B.3 home uses accessible short headline and code artwork rather than long copy or fake buttons',()=>{

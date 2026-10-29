@@ -15,6 +15,9 @@
  const utf8len=s=>new TextEncoder().encode(s).length;
  const forbidden=/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/;
  const now=()=>new Date().toISOString();
+ const safeSynopsis=s=>String(s||'').replace(/[\u0000-\u001f\u007f]/g,' ').replace(/\s+/g,' ').trim().slice(0,3000);
+ const safeGenres=s=>String(s||'').split(/[,;/|]+/).map(x=>x.replace(/\s+/g,' ').trim())
+  .filter(x=>x&&!/^(?:epub|nhập epub)$/i.test(x)).slice(0,8).join(', ').slice(0,220);
  const validCover=s=>typeof s==='string'&&s.length<32000&&
   /^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/.test(s);
  // A deterministic import fingerprint prevents resuming with a different
@@ -87,7 +90,9 @@
      throw Error('Bản thảo không trùng EPUB/chương hoặc không thuộc tài khoản này; không thể tiếp tục');
   }else{
    const cover={id,title,author:String(parsed.author||'').slice(0,140)||'Tác giả',
-    genre:'Nhập EPUB',status:'importing',ownerUid:uid,chapterCount:chapters.length,
+    genre:safeGenres(parsed.genre),desc:safeSynopsis(parsed.desc),
+    publicationState:parsed.publicationState==='Hoàn thành'?'Hoàn thành':'Đang ra',
+    status:'importing',ownerUid:uid,chapterCount:chapters.length,
     chapterIndex,createdAt:stamp,updatedAt:stamp,sourceName:String(parsed.sourceName||'').slice(0,180),
     importSchema:57,importFingerprint:stampFingerprint,
     coverImage:validCover(parsed.coverImage)?parsed.coverImage:''};
@@ -163,12 +168,14 @@
    const d=s.data();
    const chapterIndex=Array.isArray(d.chapterIndex)?d.chapterIndex:[];
    if(!identifier(s.id)||chapterIndex.length>MAX_CHAPTERS||!chapterIndex.length)return null;
+   const description=safeSynopsis(d.desc);
    return {id:s.id,title:String(d.title||'Truyện EPUB').slice(0,140),
-    author:String(d.author||'Tác giả').slice(0,140),status:'Đang ra',
-    genre:'EPUB',desc:'Nhập từ sách điện tử',
+    author:String(d.author||'Tác giả').slice(0,140),
+    status:d.publicationState==='Hoàn thành'?'Hoàn thành':'Đang ra',
+    genre:safeGenres(d.genre),desc:description,
     coverImage:validCover(d.coverImage)?d.coverImage:'',
     updatedAt:(d.updatedAt||'').slice(0,10),createdAt:(d.createdAt||'').slice(0,10),
-    introData:{title:'SÁCH ĐIỆN TỬ',code:'EPUB',text:''},
+    introData:{title:'VĂN ÁN',code:'ARCHIVE',text:description},
     _cloudV49:true,characters:[],chapters:chapterIndex.map((ch,i)=>({
      id:ch.id,title:String(ch.title||'Chương '+(i+1)).slice(0,140),
      content:null,wordCount:Math.max(1,Number(ch.wordCount)||1),

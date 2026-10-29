@@ -30,6 +30,50 @@ test('V48 builds Sandbox chapters with IDs, preserves existing novels and reject
  assert.throws(()=>epub.prepareSandboxImport(parsed,{novels,targetId:'unknown'}),/Không tìm thấy/);
  assert.throws(()=>epub.prepareSandboxImport({...parsed,chapters:[{title:'Huge',content:'x'.repeat(3e6)}]},{novels,id:'a'}),/3 MB/);
 });
+test('L2B.4 Sandbox import carries real genre and synopsis without an EPUB category',()=>{
+ const added=epub.prepareSandboxImport({title:'Bí mật cửa số',author:'Một tác giả',
+  genre:'Kinh dị, Huyền bí',publicationState:'Hoàn thành',
+  desc:'Một văn án thật, có thể tìm qua từ khóa.',
+  chapters:[{title:'Một',content:'Nội dung'}]}, {novels:[],id:'epub-metadata'});
+ assert.equal(added[0].genre,'Kinh dị, Huyền bí');
+ assert.equal(added[0].desc,'Một văn án thật, có thể tìm qua từ khóa.');
+ assert.equal(added[0].status,'Hoàn thành');
+ assert.equal(added[0].introData.text,added[0].desc);
+ assert.equal(added[0].chapters[0].id,'ch-epub-epub-metadata-0');
+});
+test('L2B.4 reads OPF subject and description when the EPUB provides them',async()=>{
+ const makeNode=(localName,props={},children=[])=>({localName,
+  textContent:props.text||'',getAttribute:key=>props[key]||null,
+  getElementsByTagName:key=>key==='*'?children:children.filter(x=>x.localName===key)});
+ const title=makeNode('title',{text:'Đêm trong thư viện'});
+ const creator=makeNode('creator',{text:'Tác giả X'});
+ const subject=makeNode('subject',{text:'Kinh dị'});
+ const subject2=makeNode('subject',{text:'Bí ẩn'});
+ const description=makeNode('description',{text:'Mọi cánh cửa đều biết nói.'});
+ const metadata=makeNode('metadata',{},[title,creator,subject,subject2,description]);
+ const item=makeNode('item',{id:'ch1',href:'chapter.xhtml','media-type':'application/xhtml+xml'});
+ const itemref=makeNode('itemref',{idref:'ch1'});
+ const spine=makeNode('spine',{},[itemref]);
+ const rootfile=makeNode('rootfile',{'full-path':'OPS/package.opf'});
+ class Parser {parseFromString(raw){
+  if(raw==='container')return {getElementsByTagName:key=>key==='rootfile'?[rootfile]:[]};
+  if(raw==='opf')return {getElementsByTagName:key=>key==='metadata'?[metadata]:key==='spine'?[spine]:
+   key==='*'?[metadata,item,spine]:[]};
+  const chapterNode={textContent:'Một chương hợp lệ.',parentElement:null};
+  return {getElementsByTagName:()=>[],querySelector:()=>null,querySelectorAll:()=>[],
+   body:{querySelector:()=>null,querySelectorAll:key=>key==='h1,h2,h3,h4,p,li,blockquote,pre'?[chapterNode]:[],
+    textContent:'Một chương hợp lệ.'}};
+ }}
+ const texts={'META-INF/container.xml':'container','OPS/package.opf':'opf',
+  'OPS/chapter.xhtml':'<p>Một chương hợp lệ.</p>'};
+ const zipLib={loadAsync:async()=>({files:Object.fromEntries(Object.keys(texts).map(k=>[k,{_data:{uncompressedSize:60}}])),
+  file:key=>texts[key]===undefined?null:{async:async()=>texts[key]}})};
+ const parsed=await epub.parse({name:'book.epub',size:1234},{zipLib,Parser});
+ assert.equal(parsed.title,'Đêm trong thư viện');
+ assert.equal(parsed.genre,'Kinh dị, Bí ẩn');
+ assert.equal(parsed.desc,'Mọi cánh cửa đều biết nói.');
+ assert.equal(parsed.chapters.length,1);
+});
 test('V48 author-only modal and Firebase Storage upload never modify public Firestore',()=>{
  const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
  const js=fs.readFileSync(path.join(__dirname,'../js/epub-import-v48.js'),'utf8');
@@ -37,8 +81,8 @@ test('V48 author-only modal and Firebase Storage upload never modify public Fire
  assert.match(html,/openEpubImportV48\(\)/);
  assert.match(html,/canEdit:\(\)=>canEditStories\(\)/);
  assert.match(html,/firebase-storage-compat\.js/);
- assert.match(html,/js\/epub-import-v48\.js\?v=57-1/);
- assert.match(html,/js\/epub-production-v49\.js\?v=57-1/);
+ assert.match(html,/js\/epub-import-v48\.js\?v=l2b-4/);
+ assert.match(html,/js\/epub-production-v49\.js\?v=l2b-4/);
  assert.match(js,/getIdTokenResult\(true\)/);
  assert.match(js,/claims\?\.admin!==true/);
  assert.match(js,/author_epub_drafts\//);

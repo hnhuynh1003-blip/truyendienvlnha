@@ -1,0 +1,115 @@
+/* L2B.4 — A single visual language for books, independent of their upload path.
+ * Jackets and editorial type, not repeated dashboard tiles or source badges.
+ */
+#d60-home .d60-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:22px}
+#d60-home .d62-book,
+#d60-shelf .d62-book{
+  position:relative;min-width:0;display:flex;flex-direction:column;gap:0;padding:0;
+  border:0;border-radius:0;background:transparent;box-shadow:none;overflow:visible;
+}
+#d60-home .d62-book:hover,#d60-shelf .d62-book:hover{transform:none;border-color:transparent}
+.d62-cover-action{position:relative;display:block;width:100%;min-width:0;padding:0;border:0;
+  border-radius:7px;background:none;cursor:pointer;text-align:inherit}
+.d62-cover-action:focus-visible{outline:2px solid #9dd3cc;outline-offset:4px}
+#d60-home .d62-cover-action .d60-cover,
+#d60-shelf .d62-cover-action .d60-cover{
+  position:relative;display:flex;width:100%;height:auto;aspect-ratio:2/3;
+  align-items:center;justify-content:center;overflow:hidden;border:1px solid rgba(213,205,180,.26);
+  border-radius:5px;background:radial-gradient(circle at 70% 15%,#303c4d,#15212e 75%);
+  color:#dcc79a;font:italic 72px/1 Georgia,serif;
+  box-shadow:4px 6px 0 rgba(4,10,19,.38),0 13px 22px rgba(0,0,0,.15);
+}
+#d60-home .d62-cover-action .d60-cover:after,
+#d60-shelf .d62-cover-action .d60-cover:after{
+  content:"";position:absolute;inset:0 auto 0 0;width:9px;
+  background:linear-gradient(90deg,rgba(0,0,0,.43),rgba(255,255,255,.075),transparent);
+  pointer-events:none;
+}
+#d60-home .d62-cover-action:hover .d60-cover,
+#d60-shelf .d62-cover-action:hover .d60-cover{border-color:#97bbb5}
+.d62-book-info{display:flex;flex:1;flex-direction:column;align-items:stretch;min-width:0;
+  padding:13px 1px 0;gap:7px;border-top:1px solid rgba(220,198,156,.21);margin-top:13px}
+.d62-book-genre{color:#91c6c3;font:700 10px/1.4 ui-monospace,Consolas,monospace;
+  letter-spacing:.055em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#d60-home .d62-book .d60-title,#d60-shelf .d62-book .d60-title{
+  color:#f2ecdf;font:690 15px/1.42 system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+  letter-spacing:-.014em;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;
+  overflow:hidden;overflow-wrap:anywhere}
+.d62-book .d60-meta{color:#9caebd;font-size:11px;line-height:1.5}
+.d62-book-desc{margin:0;color:#aebdc9;font-size:12px;line-height:1.62;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+#d60-home .d62-book .d60-bookaction,#d60-shelf .d62-book .d60-bookaction{
+  align-self:flex-start;margin-top:auto;padding:11px 0 3px;border:0;border-radius:0;
+  background:transparent;color:#dec9a2;font-size:11px;font-weight:750;text-align:left;
+}
+#d60-home .d62-book .d60-bookaction:hover,#d60-shelf .d62-book .d60-bookaction:hover{
+  color:#fff;background:transparent;text-decoration:underline;text-underline-offset:3px;
+}
+/* The first new book is an editorial opening, not a cloned small card. */
+#d60-home .d60-grid>.d62-book:first-child{grid-column:span 2;display:grid;
+  grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);align-items:stretch;gap:20px;
+  padding:16px;border:1px solid rgba(140,199,193,.32);border-radius:9px;
+  background:linear-gradient(115deg,#152532,#17212e)}
+#d60-home .d60-grid>.d62-book:first-child .d62-cover-action .d60-cover{height:100%;min-height:255px;aspect-ratio:auto}
+#d60-home .d60-grid>.d62-book:first-child .d62-book-info{margin-top:0;padding:16px 0;
+  border-top:0;justify-content:center;gap:10px}
+#d60-home .d60-grid>.d62-book:first-child .d60-title{font-size:clamp(18px,1.8vw,23px)}
+#d60-home .d60-grid>.d62-book:first-child .d62-book-desc{-webkit-line-clamp:4}
+/* Bookmarks use a horizontal reading ledger with the same jacket treatment. */
+#d60-shelf .d60-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+#d60-shelf .d62-in-shelf{display:grid;grid-template-columns:112px minmax(0,1fr);gap:17px;
+  padding:15px;border:1px solid rgba(140,199,193,.28);border-radius:9px;background:#162330}
+#d60-shelf .d62-in-shelf .d62-book-info{margin:0;padding:8px 0;border:0}
+#d60-shelf .d62-in-shelf .d60-bookaction{margin-top:auto}
+#d60-shelf .d62-in-shelf .d60-title{font-size:16px}
+
+/* Library catalog: cover is an edition jacket, details are a quiet reading dossier. */
+body.dudu-site-v60 #home-view .novel-card{
+  background:#16212e;border:1px solid rgba(170,191,194,.22);border-radius:8px;
+  box-shadow:0 11px 25px rgba(0,0,0,.095)}
+body.dudu-site-v60 #home-view .novel-card:hover,
+body.dudu-site-v60 #home-view .novel-card:focus-within{
+  border-color:rgba(140,203,198,.62);background:#192735}
+body.dudu-site-v60 #home-view .archive-featured{
+  grid-template-columns:196px minmax(0,1fr);min-height:272px;
+  border-left:3px solid #8fc9c1}
+body.dudu-site-v60 #home-view .archive-featured .novel-info{padding:23px 30px}
+body.dudu-site-v60 #home-view .archive-featured .novel-title-button{font-size:clamp(22px,2.6vw,29px)}
+body.dudu-site-v60 #home-view .archive-shelf-item{grid-template-columns:109px minmax(0,1fr);min-height:178px}
+body.dudu-site-v60 #home-view .archive-shelf-item .novel-info{padding:15px 17px}
+body.dudu-site-v60 #home-view .archive-shelf-item .novel-title-button{font-size:17px}
+body.dudu-site-v60 #home-view .novel-cover{position:relative;background:radial-gradient(circle at 70% 15%,#303c4d,#15212e 75%);color:#dcc79a}
+body.dudu-site-v60 #home-view .novel-cover:after{
+  content:"";position:absolute;inset:0 auto 0 0;width:9px;
+  background:linear-gradient(90deg,rgba(0,0,0,.46),rgba(255,255,255,.08),transparent);pointer-events:none}
+body.dudu-site-v60 #home-view .archive-card-index{color:#87c8c4;letter-spacing:.095em;margin-bottom:8px}
+body.dudu-site-v60 #home-view .novel-badges{margin-bottom:8px}
+body.dudu-site-v60 #home-view .tag-status{border-color:rgba(148,196,190,.35);color:#b9d7ce}
+body.dudu-site-v60 #home-view .novel-meta .btn{background:transparent;border-color:rgba(220,198,156,.48)}
+
+@media(max-width:850px){
+ #d60-home .d60-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+ #d60-shelf .d60-grid{grid-template-columns:minmax(0,1fr)}
+}
+@media(max-width:760px){
+ #d60-home .d60-grid{gap:14px 12px}
+ #d60-home .d60-grid>.d62-book:first-child{gap:13px;padding:11px;grid-template-columns:minmax(0,39%) minmax(0,1fr)}
+ #d60-home .d60-grid>.d62-book:first-child .d62-cover-action .d60-cover{min-height:185px}
+ #d60-home .d60-grid>.d62-book:first-child .d62-book-info{padding:3px 0;gap:7px}
+ #d60-home .d60-grid>.d62-book:first-child .d60-title{font-size:17px}
+ #d60-home .d60-grid>.d62-book:first-child .d62-book-desc{-webkit-line-clamp:2}
+ #d60-home .d62-book .d60-title{font-size:14px}
+ .d62-book-info{padding-top:9px;margin-top:10px;gap:5px}
+ .d62-book-desc{-webkit-line-clamp:2;font-size:11px}
+ body.dudu-site-v60 #home-view .archive-featured{grid-template-columns:119px minmax(0,1fr);min-height:218px}
+ body.dudu-site-v60 #home-view .archive-featured .novel-info{padding:14px 13px}
+ body.dudu-site-v60 #home-view .archive-featured .novel-title-button{font-size:19px}
+ body.dudu-site-v60 #home-view .archive-shelf-item{grid-template-columns:85px minmax(0,1fr);min-height:144px}
+ body.dudu-site-v60 #home-view .archive-shelf-item .novel-info{padding:12px}
+}
+@media(max-width:370px){
+ #d60-home .d60-grid>.d62-book:first-child .d62-cover-action .d60-cover{min-height:166px}
+ #d60-home .d60-grid>.d62-book:first-child .d60-title{font-size:15px}
+ body.dudu-site-v60 #home-view .archive-featured{grid-template-columns:100px minmax(0,1fr)}
+ body.dudu-site-v60 #home-view .archive-featured .novel-info{padding:12px 10px}
+}

@@ -79,7 +79,7 @@ test('L2A shows one real read action for either legacy or EPUB with bookmarks',(
  const {grid,calls}=render(books,n=>n._cloudV49?{chIdx:1}:null);
  const nodes=walk(grid);
  assert.equal(nodes.filter(node=>node.tagName==='article').length,2);
- assert.ok(nodes.some(node=>node.textContent==='D'));
+ assert.ok(nodes.some(node=>node.textContent==='T'));
  const action=nodes.find(node=>node.tagName==='button'&&node.textContent==='Đọc tiếp · Ch.2');
  assert.ok(action);
  action.listeners.click({stopPropagation:()=>{}});

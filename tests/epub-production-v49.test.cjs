@@ -137,3 +137,33 @@ test('V57 bounded cover thumbnail is public only after explicit publish',async()
  assert.equal(store.stories.get(other.id).coverImage,'');
  assert.equal(api.validCover('https://example.com/unsafe.jpg'),false);
 });
+
+test('L2B.4 preserves editable EPUB synopsis and genres as book metadata, not format badges',async()=>{
+ const store=db();
+ const manuscript={...sample,genre:'Hệ thống, Kỳ ảo',publicationState:'Hoàn thành',
+  desc:'Một thế giới nơi mỗi trang sách có một cánh cửa.'};
+ const draft=await api.importDraft(manuscript,{db:store,auth,bookId:'epub-metadata-l2b4'});
+ assert.equal(store.stories.get(draft.id).genre,'Hệ thống, Kỳ ảo');
+ assert.equal(store.stories.get(draft.id).desc,manuscript.desc);
+ assert.equal((await api.publicBooks(store)).length,0);
+ await api.publishDraft(draft.id,{db:store,auth,confirmRights:true});
+ const [book]=await api.publicBooks(store);
+ assert.equal(book.genre,manuscript.genre);
+ assert.equal(book.desc,manuscript.desc);
+ assert.equal(book.status,'Hoàn thành');
+ assert.equal(book.introData.text,manuscript.desc);
+ assert.equal(book._cloudV49,true);
+ assert.equal(book.chapters[0].id,'chapter-0001');
+});
+
+test('L2B.4 safely hides old EPUB import labels without inventing missing genre data',async()=>{
+ const store=db();
+ const draft=await api.importDraft(sample,{db:store,auth,bookId:'epub-old-l2b4'});
+ await api.publishDraft(draft.id,{db:store,auth,confirmRights:true});
+ const [book]=await api.publicBooks(store);
+ assert.equal(book.genre,'');
+ assert.equal(book.desc,'');
+ assert.equal(book.introData.text,'');
+ store.stories.get(draft.id).genre='Nhập EPUB';
+ assert.equal((await api.publicBooks(store))[0].genre,'');
+});
