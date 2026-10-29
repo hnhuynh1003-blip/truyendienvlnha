@@ -266,6 +266,7 @@
    hidePages();current='library';navState();
  }
  function navigate(page,updateHash=true){
+   window.DuduLibraryReaderStatusL2A?.cancel();
    if(!routes[page])page='home';
    if(page==='author'&&!isAuthor())page='home';
    const cover=id('cover-view'),reader=id('reader-view');

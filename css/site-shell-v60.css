@@ -306,3 +306,96 @@ body.dudu-site-v60.theme-warm,body.dudu-site-v60.theme-oled {background:var(--bg
 @media(prefers-reduced-motion:reduce){
  #d60-worlds .d64-unknown-arrow{transition:none}
 }
+
+/* Library L2A: quiet reading surface and a legible, keyboard-accessible shelf.
+   These are presentation-only overrides; the two storage/authoring flows remain intact. */
+body.dudu-site-v60 #home-view .novel-grid {gap:14px}
+body.dudu-site-v60 #home-view .novel-card {
+  min-width:0;min-height:194px;border:1px solid rgba(185,196,216,.2);
+  background:#1a2434;box-shadow:0 7px 22px rgba(3,8,22,.14);
+  transition:border-color .15s,transform .15s;
+}
+body.dudu-site-v60 #home-view .novel-card:hover,
+body.dudu-site-v60 #home-view .novel-card:focus-within {
+  border-color:#c5aa7f;outline:2px solid transparent;transform:translateY(-1px);
+}
+body.dudu-site-v60 #home-view .novel-cover {
+  width:116px;min-width:116px;aspect-ratio:2/3;display:grid;place-items:center;
+  overflow:hidden;background:linear-gradient(150deg,#33405d,#171d30);
+  color:#d9c8a6;font:30px Georgia,serif;
+}
+body.dudu-site-v60 #home-view .novel-cover img {display:block;width:100%;height:100%;object-fit:cover}
+body.dudu-site-v60 #home-view .novel-info {min-width:0;padding:14px 14px 12px;gap:10px}
+body.dudu-site-v60 #home-view .novel-badges {max-height:none;gap:5px;margin-bottom:9px}
+body.dudu-site-v60 #home-view .tag {font-size:10px;padding:2px 6px}
+body.dudu-site-v60 #home-view .novel-title {font-size:16px;line-height:1.4;overflow-wrap:anywhere}
+body.dudu-site-v60 #home-view .novel-title-button {
+  display:block;padding:0;width:100%;border:0;background:none;color:#f8f6ff;
+  font-weight:750;text-align:left;cursor:pointer;
+}
+body.dudu-site-v60 #home-view .novel-title-button:hover {color:#f0d9a8}
+body.dudu-site-v60 #home-view .novel-title-button:focus-visible {outline:2px solid #d8b783;outline-offset:3px}
+body.dudu-site-v60 #home-view .novel-byline {font-size:11px;color:#c9b58c;margin:5px 0 7px;overflow-wrap:anywhere}
+body.dudu-site-v60 #home-view .novel-desc {font-size:12px;line-height:1.55;margin:0}
+body.dudu-site-v60 #home-view .novel-meta {gap:8px;padding-top:8px}
+body.dudu-site-v60 #home-view .novel-meta span {font-size:10px;color:#adbacb}
+body.dudu-site-v60 #home-view .novel-meta .btn {padding:7px 9px;font-size:11px;white-space:nowrap}
+.library-read-feedback[hidden] {display:none!important}
+.library-read-feedback {
+  max-width:680px;margin:32px auto;padding:26px 22px;
+  border:1px solid rgba(190,202,226,.3);border-radius:13px;
+  background:#1a2434;color:#f2ecdf;text-align:center;
+}
+.library-read-feedback p {margin-bottom:12px;font-size:14px;line-height:1.7}
+.library-read-feedback p:last-child {margin-bottom:0}
+body.dudu-site-v60 #cover-view .chapter-name-click {
+  display:block;width:100%;padding:0;border:0;background:none;
+  font:inherit;line-height:1.55;text-align:left;cursor:pointer;
+}
+body.dudu-site-v60 #cover-view .chapter-name-click:hover {color:#dfc59a}
+body.dudu-site-v60 #cover-view .chapter-name-click:focus-visible {
+  outline:2px solid #d8b783;outline-offset:4px;border-radius:3px;
+}
+
+body.dudu-reading-active > header,
+body.dudu-reading-active .d60-bottomnav,
+body.dudu-reading-active #phone-fab {display:none!important}
+body.dudu-reading-active .container {max-width:860px;padding-top:26px;padding-bottom:80px}
+body.dudu-reading-active #reader-view {max-width:760px}
+body.dudu-reading-active .reader-top-nav {gap:14px;padding-bottom:17px;margin-bottom:28px}
+body.dudu-reading-active .reader-chapter-title {
+  font:600 clamp(23px,3vw,30px)/1.35 Georgia,'Times New Roman',serif;
+  letter-spacing:-.01em;overflow-wrap:anywhere;
+}
+body.dudu-reading-active .reading-time-badge {font-size:12px;margin-bottom:30px}
+body.dudu-reading-active .reader-body {
+  max-width:68ch;margin-inline:auto;font-family:Georgia,'Times New Roman',serif;
+  font-size:var(--read-size);line-height:1.9;text-align:start;overflow-wrap:anywhere;
+}
+body.dudu-reading-active .reader-body p {margin-bottom:1.2em;text-indent:1.25em}
+body.dudu-reading-active .reader-body p:first-child {text-indent:0}
+body.dudu-reading-active .reader-bottom-nav {gap:8px;margin-top:42px}
+body.dudu-reading-active .reader-bottom-nav .btn {min-height:40px}
+body.dudu-reading-active .floating-reading-controls {
+  left:auto;right:16px;bottom:18px;gap:2px;padding:5px;
+  background:rgba(21,29,43,.94);border:1px solid #65748a;border-radius:12px;
+  box-shadow:0 7px 22px rgba(0,0,0,.28);backdrop-filter:none;
+}
+body.dudu-reading-active .floating-btn {font-size:12px;padding:7px 9px;color:#f0e3c8}
+body.dudu-reading-active .floating-btn:focus-visible {outline:2px solid #f0e3c8;outline-offset:1px}
+@media(max-width:760px){
+ body.dudu-site-v60 #home-view .novel-cover {width:105px;min-width:105px}
+ body.dudu-site-v60 #home-view .novel-info {padding:12px;gap:8px}
+ body.dudu-reading-active .container {padding:16px 19px 90px}
+ body.dudu-reading-active .reader-body {line-height:1.85}
+ body.dudu-reading-active .floating-reading-controls {bottom:calc(12px + env(safe-area-inset-bottom));right:12px}
+}
+@media(max-width:390px){
+ body.dudu-site-v60 #home-view .novel-cover {width:92px;min-width:92px}
+ body.dudu-site-v60 #home-view .novel-info {padding:10px}
+ body.dudu-site-v60 #home-view .novel-meta {flex-wrap:wrap}
+ body.dudu-reading-active .reader-top-nav .btn {padding:7px 8px}
+}
+@media(prefers-reduced-motion:reduce){
+ body.dudu-site-v60 #home-view .novel-card {transition:none}
+}

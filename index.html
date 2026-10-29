@@ -778,9 +778,8 @@
   <div class="reader-progress-bar" id="reading-bar"></div>
 
   <div class="floating-reading-controls" id="floating-reading-bar">
-    <button class="floating-btn" onclick="goHome()">🏠 Tủ Truyện</button>
-    <button class="floating-btn" onclick="goCover()">📑 Mục Lục</button>
-    <button class="floating-btn" onclick="scrollToTop()">▲ Đầu Trang</button>
+    <button class="floating-btn" onclick="goCover()">Mục lục</button>
+    <button class="floating-btn" onclick="scrollToTop()">↑ Đầu trang</button>
   </div>
 
   <div id="system-alert-banner">
@@ -803,6 +802,8 @@
   </header>
 
   <div class="container">
+
+    <div class="library-read-feedback" id="library-read-feedback" role="status" aria-live="polite" hidden></div>
 
     <!-- 1. TỦ TRUYỆN -->
     <div id="home-view">
@@ -6246,12 +6247,58 @@ document.getElementById('phone-home-screen').style.display = 'none';
       filtered.forEach((novel) => {
         const originalIndex = novels.indexOf(novel);
         const latestDate = getNovelLatestDate(novel);
-        const card = document.createElement('div');
+        const card = document.createElement('article');
         card.className = 'novel-card';
-        card.onclick = () => openCover(originalIndex);
+        card.addEventListener('click', event => {
+          if (!event.target.closest('button')) openCover(originalIndex);
+        });
 
-        const coverBg = novel.coverImage ? `background-image: url('${novel.coverImage}');` : '';
-        const tagBadgesHtml = (novel.genre || "Tiểu thuyết").split(/[,/]+/).slice(0, 3).map(t => `<span class="tag">${escapeHtml(t.trim())}</span>`).join(" ");
+        const cover = document.createElement('div');
+        cover.className = 'novel-cover';
+        const coverSrc = novel.coverImage;
+        if (typeof coverSrc === 'string' &&
+          /^(https?:\/\/|data:image\/(?:png|jpe?g|webp);base64,|assets\/|\.\/assets\/)/i.test(coverSrc)) {
+          const image = document.createElement('img');
+          image.src = coverSrc;
+          image.alt = '';
+          image.loading = 'lazy';
+          image.decoding = 'async';
+          image.addEventListener('error', () => {
+            image.remove();
+            cover.textContent = '✦';
+          });
+          cover.appendChild(image);
+        } else {
+          cover.textContent = '✦';
+          cover.setAttribute('aria-hidden', 'true');
+        }
+        const info = document.createElement('div');
+        info.className = 'novel-info';
+        const details = document.createElement('div');
+        const badges = document.createElement('div');
+        badges.className = 'novel-badges';
+        const badge = (value, cls) => {
+          const node = document.createElement('span');
+          node.className = cls;
+          node.textContent = value;
+          badges.appendChild(node);
+        };
+        badge(novel.status || 'Đang ra', 'tag tag-status');
+        (novel.genre || 'Tiểu thuyết').split(/[,/]+/).map(t => t.trim()).filter(Boolean)
+          .slice(0, 2).forEach(t => badge(t, 'tag'));
+        const title = document.createElement('button');
+        title.type = 'button';
+        title.className = 'novel-title novel-title-button';
+        title.textContent = novel.title || 'Chưa đặt tên';
+        title.addEventListener('click', () => openCover(originalIndex));
+        const description = document.createElement('div');
+        description.className = 'novel-desc';
+        description.textContent = novel.desc || novel.title || 'Chưa có giới thiệu.';
+        const byline = document.createElement('div');
+        byline.className = 'novel-byline';
+        byline.textContent = (novel.author || 'Chưa rõ tác giả') +
+          ' · ' + (novel.chapters?.length || 0) + ' chương';
+        details.append(badges, title, byline, description);
 
         const bookmark = v568ReadBookmarkForNovel(novel);
         let readButtonText = "▶ Đọc ngay";
@@ -6262,23 +6309,18 @@ document.getElementById('phone-home-screen').style.display = 'none';
           readButtonClass = "btn btn-gold";
         }
 
-        card.innerHTML = `
-          <div class="novel-cover" style="${coverBg}"></div>
-          <div class="novel-info">
-            <div>
-              <div class="novel-badges">
-                <span class="tag tag-status">${escapeHtml(novel.status || "Đang ra")}</span>
-                ${tagBadgesHtml}
-              </div>
-              <div class="novel-title">${escapeHtml(novel.title)}</div>
-              <div class="novel-desc">${escapeHtml(novel.desc || novel.title)}</div>
-            </div>
-            <div class="novel-meta">
-              <span style="color:var(--text-dim)">⏱ ${DuduStoryDates.display(latestDate)}</span>
-              <button class="${readButtonClass}" style="padding: 3px 8px; font-size: 10px;" onclick="smartReadAction(${originalIndex}, event)">${readButtonText}</button>
-            </div>
-          </div>
-        `;
+        const meta = document.createElement('div');
+        meta.className = 'novel-meta';
+        const date = document.createElement('span');
+        date.textContent = DuduStoryDates.display(latestDate);
+        const readButton = document.createElement('button');
+        readButton.type = 'button';
+        readButton.className = readButtonClass;
+        readButton.textContent = readButtonText;
+        readButton.addEventListener('click', event => smartReadAction(originalIndex, event));
+        meta.append(date, readButton);
+        info.append(details, meta);
+        card.append(cover, info);
         container.appendChild(card);
       });
 
@@ -6439,6 +6481,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
     }
 
     function openCover(idx) {
+      window.DuduLibraryReaderStatusL2A?.cancel();
+      document.body.classList.remove('dudu-reading-active');
       window.DuduGiftPickerV4431?.closeActive();
       selectedNovelIndex = idx;
       activeChatNovelId = novels[idx].id;
@@ -6505,10 +6549,10 @@ document.getElementById('phone-home-screen').style.display = 'none';
         const item = document.createElement('div');
         item.className = 'chapter-item';
         item.innerHTML = `
-          <div class="chapter-name-click" onclick="readChapter(${ch.originalIdx})">
+          <button type="button" class="chapter-name-click" onclick="readChapter(${ch.originalIdx})">
             <div>${escapeHtml(ch.title)}</div>
             <div style="font-size:10px; color:var(--text-dim);">${ch.wordCount || countWords(ch.content)} từ</div>
-          </div>
+          </button>
           <div style="display:flex; gap:6px;" class="admin-only">
             <button class="btn" style="padding: 2px 6px; font-size: 10px;" onclick="openEditChapterModal(${ch.originalIdx})">Sửa</button>
             <button class="btn btn-danger" style="padding: 2px 6px; font-size: 10px;" onclick="deleteChapter(${ch.originalIdx})">Xóa</button>
@@ -6548,15 +6592,22 @@ document.getElementById('phone-home-screen').style.display = 'none';
       const pendingChapter=pendingBook?.chapters?.[chIdx];
       if(pendingBook?._cloudV49 && pendingChapter && typeof pendingChapter.content!=='string'){
         const bookId=pendingBook.id,chapterId=pendingChapter.id;
+        const feedback=window.DuduLibraryReaderStatusL2A;
+        const ticket=feedback?.begin(pendingChapter.title);
         DuduEpubProductionV49.readChapter(db,bookId,chapterId)
          .then(result=>{
           if(novels[selectedNovelIndex]?.id!==bookId||
             novels[selectedNovelIndex]?.chapters?.[chIdx]?.id!==chapterId)return;
+          if(feedback&&!feedback.success(ticket))return;
           pendingChapter.content=result.content;
           readChapter(chIdx,scrollPos);
-         }).catch(err=>alert('Chưa thể tải chương EPUB: '+(err.message||'Firebase không phản hồi')));
+         }).catch(err=>{
+          if(feedback){feedback.fail(ticket,()=>readChapter(chIdx,scrollPos));return;}
+          alert('Chưa thể tải chương EPUB: '+(err.message||'Firebase không phản hồi'));
+         });
         return;
       }
+      window.DuduLibraryReaderStatusL2A?.cancel();
       window.DuduGiftPickerV4431?.closeActive();
       selectedChapterIndex = chIdx;
       activeChatNovelId = novels[selectedNovelIndex].id;
@@ -6565,6 +6616,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 
       document.getElementById('cover-view').style.display = 'none';
       document.getElementById('reader-view').style.display = 'block';
+      document.body.classList.add('dudu-reading-active');
 
       document.getElementById('reader-ch-title').textContent = ch.title;
 
@@ -6731,6 +6783,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       if (selectedChapterIndex < novel.chapters.length - 1) readChapter(selectedChapterIndex + 1);
     }
 
+    let lastReaderScrollY = 0;
     window.addEventListener('scroll', () => {
       const isReaderActive = document.getElementById('reader-view').style.display === 'block';
       const floatBar = document.getElementById('floating-reading-bar');
@@ -6741,11 +6794,13 @@ document.getElementById('phone-home-screen').style.display = 'none';
         const scrolled = (winScroll / height) * 100;
         document.getElementById('reading-bar').style.width = scrolled + '%';
 
-        if (winScroll > 180) {
+        // A slim shortcut appears on upward scroll; reading down stays clear.
+        if (winScroll > 180 && winScroll < lastReaderScrollY - 3) {
           floatBar.style.display = 'flex';
         } else {
           floatBar.style.display = 'none';
         }
+        lastReaderScrollY = winScroll;
 
         const novel = novels[selectedNovelIndex];
         if (novel && novel.chapters && novel.chapters.length > 0) {
@@ -6753,12 +6808,15 @@ document.getElementById('phone-home-screen').style.display = 'none';
           if(current)localStorage.setItem(scopedLocalKey('bookmark',novel.id),JSON.stringify(current));
         }
       } else {
+        lastReaderScrollY = 0;
         document.getElementById('reading-bar').style.width = '0%';
         floatBar.style.display = 'none';
       }
     });
 
     function goHome() {
+      window.DuduLibraryReaderStatusL2A?.cancel();
+      document.body.classList.remove('dudu-reading-active');
       if(!IS_SANDBOX_MODE&&DuduAuth.isReady()&&
         document.getElementById('reader-view')?.style.display==='block'){
         const story=novels[selectedNovelIndex];
@@ -7515,6 +7573,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/world-registry-v63.js?v=63-1"></script>
 <script src="js/world-taxonomy-v66.js?v=66-2"></script>
 <script src="js/world-blueprint-v66.js?v=66-1"></script>
+<script src="js/library-reader-status-l2a.js?v=l2a-1"></script>
 <script src="js/site-shell-v60.js?v=lib1-ui2"></script>
 <script src="js/world-experience-v66.js?v=66-2"></script>
 <script src="js/dudu-core-rules-v1.js?v=1"></script>
