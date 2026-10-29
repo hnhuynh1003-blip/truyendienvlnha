@@ -8,6 +8,7 @@ const root=join(__dirname,'..');
 const html=readFileSync(join(root,'index.html'),'utf8');
 const shell=readFileSync(join(root,'js/site-shell-v60.js'),'utf8');
 const css=readFileSync(join(root,'css/library-discovery-l2b.css'),'utf8');
+const shellCss=readFileSync(join(root,'css/site-shell-v60.css'),'utf8');
 const begin=html.indexOf('function renderHome() {');
 const end=html.indexOf('function resetAllFilters()',begin);
 const renderSource=html.slice(begin,end);
@@ -82,13 +83,16 @@ test('L2B removes permanent filter walls while preserving real search/sort/statu
 
 test('L2B visual identity and mobile treatment stay inside the Library route',()=>{
  assert.match(shell,/THE STORY ARCHIVE/);
- assert.match(shell,/contextHeading\('Thư viện','DUDU \/ THE STORY ARCHIVE'/);
+ assert.match(shell,/contextHeading\('Thư viện','THE STORY ARCHIVE'/);
  assert.match(shell,/classList\.toggle\('dudu-library-browsing',current==='library'\)/);
  assert.match(css,/\.archive-featured/);
  assert.match(css,/\.archive-shelf-item/);
  assert.match(css,/@media\(max-width:760px\)/);
  assert.match(css,/@media\(max-width:370px\)/);
- assert.match(css,/body\.dudu-library-browsing #phone-fab \{display:none!important\}/);
+ assert.doesNotMatch(css,/body\.dudu-library-browsing #phone-fab \{display:none!important\}/);
+ assert.match(css,/body\.dudu-phone-v11\.dudu-library-browsing #phone-fab/);
+ assert.match(css,/left:12px;right:auto;bottom:calc\(79px \+ env\(safe-area-inset-bottom\)\)/);
+ assert.match(shellCss,/body\.dudu-reading-active #phone-fab \{display:none!important\}/);
  assert.match(html,/class="header-create-short"/);
  assert.match(html,/canEditStories\(\) && \(window\.DuduLibraryIntakeV1\?\.open\?\.\(\) \|\| openStoryModal\(\)\)/);
  assert.ok(!/\.set\(|firebase\.firestore\(|fetch\(/.test(css));
@@ -97,16 +101,26 @@ test('L2B visual identity and mobile treatment stay inside the Library route',()
 test('L2B route headings use one compact contextual rail without repeating navigation titles',()=>{
  assert.match(shell,/function contextHeading\(pageTitle,kicker,description\)/);
  assert.match(shell,/element\('h1','d60-visually-hidden',pageTitle\)/);
- assert.match(shell,/contextHeading\('Thế giới','DUDU \/ WORLD ATLAS'/);
- assert.match(shell,/contextHeading\('Tủ sách','DUDU \/ DẤU TRANG'/);
- assert.match(shell,/contextHeading\('Góc tác giả','DUDU \/ AUTHOR DESK'/);
+ assert.match(shell,/contextHeading\('Thế giới','WORLD ATLAS'/);
+ assert.match(shell,/contextHeading\('Tủ sách','DẤU TRANG'/);
+ assert.match(shell,/contextHeading\('Góc tác giả','BÀN VIẾT'/);
  assert.doesNotMatch(shell,/element\('h1','d60-page-title','Vạn giới'\)/);
  assert.doesNotMatch(shell,/element\('h1','d60-page-title','Tủ sách của tôi'\)/);
  assert.doesNotMatch(shell,/element\('h1','d60-page-title','Góc tác giả'\)/);
  assert.doesNotMatch(shell,/archive-crest|archive-heading/);
- assert.match(html,/css\/site-shell-v60\.css\?v=lib-l2b-2/);
- assert.match(html,/css\/library-discovery-l2b\.css\?v=l2b-2/);
- assert.match(html,/js\/site-shell-v60\.js\?v=lib-l2b-2/);
+ assert.match(html,/css\/site-shell-v60\.css\?v=lib-l2b-3/);
+ assert.match(html,/css\/library-discovery-l2b\.css\?v=l2b-3/);
+ assert.match(html,/js\/site-shell-v60\.js\?v=lib-l2b-3/);
+});
+
+test('L2B.2 home is a literary opening without duplicate DUDU wordmarks or NPC-only shortcut',()=>{
+ assert.match(shell,/Có những thế giới bắt đầu từ một dòng chữ/);
+ assert.match(shell,/BÊN KIA TRANG SÁCH/);
+ assert.match(shell,/d61-folio-page d61-folio-left/);
+ assert.match(shell,/d61-folio-page d61-folio-right/);
+ assert.doesNotMatch(shell,/DUDU \/ SYSTEM GATE|DUDU \/ THE STORY ARCHIVE/);
+ assert.doesNotMatch(shell,/Liên lạc NPC  ↗/);
+ assert.match(shellCss,/\.d61-folio-page/);
 });
 
 test('L2B book dossier hides empty EPUB synopsis without changing metadata',()=>{

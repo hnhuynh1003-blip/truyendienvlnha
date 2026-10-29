@@ -62,7 +62,7 @@ async function main() {
     await page.waitForTimeout(750);
     await dismissSandboxLogin();
 
-    // DUDU System Portal: compact visual homepage without gameplay side effects.
+    // DUDU editorial homepage: compact opening without duplicate navigation.
     await page.waitForFunction(() => !!window.DuduSiteV60 && !!document.querySelector('.d61-hero'));
     const siteHome = await page.evaluate(() => {
       const hero=document.querySelector('.d61-hero');
@@ -77,10 +77,10 @@ async function main() {
         path: window.DuduSiteV60.page
       };
     });
-    assert.ok(siteHome.heroHeight>100 && siteHome.heroHeight<300,'Desktop System Portal must be compact');
-    assert.match(siteHome.heroTitle,/Mở vạn giới/);
+    assert.ok(siteHome.heroHeight>100 && siteHome.heroHeight<300,'Desktop editorial opening must be compact');
+    assert.match(siteHome.heroTitle,/Có những thế giới bắt đầu từ một dòng chữ/);
     assert.equal(siteHome.modules,0,'No duplicated quick-entry menu beneath hero');
-    assert.equal(siteHome.heroActions,1,'Hero keeps just the Contacts shortcut');
+    assert.equal(siteHome.heroActions,0,'Hero must not duplicate navigation or Cyber Phone controls');
     assert.ok(siteHome.readActions<=1,'At most one Resume chapter action on home');
     assert.equal(siteHome.worldTeasers,0,'Do not repeat World status in a second large card');
     assert.match(siteHome.worlds,/Đang kiến tạo/,'Worlds must not be presented as live gameplay');

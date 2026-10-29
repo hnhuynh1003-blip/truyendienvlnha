@@ -75,34 +75,21 @@
    if(!books.length)s.append(element('p','d60-empty','Thư viện chưa có tác phẩm phù hợp.'));
    else s.append(g);return s;
  }
- function openContact(){
-   if(typeof togglePhone!=='function'||typeof openPhoneApp!=='function')return;
-   const phone=id('cyber-phone');
-   if(phone&&phone.style.display!=='flex')togglePhone();
-   openPhoneApp('chat');
- }
  function fillHome(){
    const root=id('d60-home');if(!root)return;root.replaceChildren();
    const all=recent(list()),saved=shelfItems(),resume=saved[0]||null;
    const hero=element('section','d60-hero d61-hero');
    const copy=element('div','d61-hero-copy');
-   copy.append(element('p','d61-terminal','◈  DUDU / SYSTEM GATE'),
-     element('h1','','Đọc truyện. Mở vạn giới.'),
-     element('p','d61-tagline','Mỗi câu chuyện, một khả năng.'));
-   // Primary navigation owns the Library / Worlds / Shelf links.
-   // The one hero action opens Contacts, which is not in the primary navigation.
-   const actions=element('div','d60-actions d61-hero-actions');
-   actions.append(button('Liên lạc NPC  ↗',openContact));
-   copy.append(actions);
-   const portal=element('div','d61-portal');
-   portal.setAttribute('aria-hidden','true');
-   portal.append(element('div','d61-orbit d61-orbit-outer'),
-     element('div','d61-orbit d61-orbit-mid'),
-     element('div','d61-orbit d61-orbit-inner'),
-     element('div','d61-orbit-core','D'));
-   const portalText=element('span','d61-portal-caption','DUDU // ∞');
-   portal.append(portalText);
-   hero.append(copy,portal);
+   copy.append(element('p','d61-terminal','✦  BÊN KIA TRANG SÁCH'),
+     element('h1','','Có những thế giới bắt đầu từ một dòng chữ.'),
+     element('p','d61-tagline','Cứ chọn tựa truyện khiến bạn tò mò, rồi thong thả lật trang.'));
+   // A quiet open-book illustration. Navigation and Cyber Phone already provide real actions.
+   const folio=element('div','d61-portal d61-folio');
+   folio.setAttribute('aria-hidden','true');
+   folio.append(element('div','d61-folio-page d61-folio-left'),
+     element('div','d61-folio-page d61-folio-right'),
+     element('span','d61-folio-spine'),element('span','d61-folio-star','✦'));
+   hero.append(copy,folio);
    root.append(hero);
    const signal=element('div','d61-signal');
    signal.append(element('span','d61-signal-led'),
@@ -306,7 +293,7 @@
    const home=element('main','d60-page');home.id='d60-home';
    const worlds=element('section','d60-page');worlds.id='d60-worlds';
    const atlasHeading=element('div','d64-atlas-heading d60-context-rail');
-   const atlasTitles=contextHeading('Thế giới','DUDU / WORLD ATLAS',
+   const atlasTitles=contextHeading('Thế giới','WORLD ATLAS',
      'Bản đồ thể loại và các phó bản sơ cấp.');
    atlasTitles.classList.add('d64-atlas-titleblock');
    atlasHeading.append(atlasTitles);
@@ -319,20 +306,20 @@
    const worldList=element('div','');worldList.id='d60-worlds-list';worlds.append(worldList);
    const shelf=element('section','d60-page');shelf.id='d60-shelf';
    const shelfHeading=element('div','d60-context-rail');
-   shelfHeading.append(contextHeading('Tủ sách','DUDU / DẤU TRANG',
+   shelfHeading.append(contextHeading('Tủ sách','DẤU TRANG',
      'Trở lại câu chuyện tại chương bạn đã lưu.'));
    shelf.append(shelfHeading);
    const shelfList=element('div','');shelfList.id='d60-shelf-list';shelf.append(shelfList);
    const author=element('section','d60-page');author.id='d60-author';
    const authorHeading=element('div','d60-context-rail');
-   authorHeading.append(contextHeading('Góc tác giả','DUDU / AUTHOR DESK',
+   authorHeading.append(contextHeading('Góc tác giả','BÀN VIẾT',
      'Viết truyện theo chương hoặc nhập EPUB bằng công cụ hiện có.'));
    author.append(authorHeading);
    const authorBtns=element('div','d60-two');authorBtns.id='d60-author-actions';author.append(authorBtns);
    for(const node of [author,shelf,worlds,home])container.insertBefore(node,container.firstChild);
    const library=id('home-view'),intro=element('section','d60-library-intro archive-intro d60-context-rail');
-   intro.append(contextHeading('Thư viện','DUDU / THE STORY ARCHIVE',
-     'Khám phá một câu chuyện mới hoặc tiếp tục từ dấu trang.'));
+   intro.append(contextHeading('Thư viện','THE STORY ARCHIVE',
+     'Một cái tên lạ đôi khi mở ra cả một hành trình.'));
    library.insertBefore(intro,library.firstChild);
    document.body.classList.add('dudu-site-v60');
    const route=Object.keys(routes).find(k=>location.hash===routes[k])||'home';
