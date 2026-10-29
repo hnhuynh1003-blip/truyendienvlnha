@@ -94,6 +94,8 @@ test('L2B.4 book jackets remain edition-neutral across homepage, library and she
  assert.match(shell,/d62-cover-action/);
  assert.match(shell,/d62-in-shelf/);
  assert.match(bookCss,/#d60-home \.d60-grid/);
+ assert.match(bookCss,/height:284px;aspect-ratio:auto/);
+ assert.match(bookCss,/-webkit-line-clamp:3/);
  assert.match(bookCss,/#d60-shelf \.d60-grid/);
  assert.match(bookCss,/\.archive-featured/);
  assert.match(bookCss,/@media\(max-width:760px\)/);

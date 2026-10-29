@@ -53,8 +53,10 @@
 #d60-home .d60-grid>.d62-book:first-child .d62-cover-action .d60-cover{height:100%;min-height:255px;aspect-ratio:auto}
 #d60-home .d60-grid>.d62-book:first-child .d62-book-info{margin-top:0;padding:16px 0;
   border-top:0;justify-content:center;gap:10px}
-#d60-home .d60-grid>.d62-book:first-child .d60-title{font-size:clamp(18px,1.8vw,23px)}
+#d60-home .d60-grid>.d62-book:first-child .d60-title{font-size:clamp(18px,1.8vw,23px);-webkit-line-clamp:3}
 #d60-home .d60-grid>.d62-book:first-child .d62-book-desc{-webkit-line-clamp:4}
+#d60-home .d60-grid>.d62-book:not(:first-child) .d60-cover{height:284px;aspect-ratio:auto}
+#d60-home .d60-grid>.d62-book:not(:first-child) .d62-book-desc{display:none}
 /* Bookmarks use a horizontal reading ledger with the same jacket treatment. */
 #d60-shelf .d60-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
 #d60-shelf .d62-in-shelf{display:grid;grid-template-columns:112px minmax(0,1fr);gap:17px;
@@ -98,6 +100,7 @@ body.dudu-site-v60 #home-view .novel-meta .btn{background:transparent;border-col
  #d60-home .d60-grid>.d62-book:first-child .d62-book-info{padding:3px 0;gap:7px}
  #d60-home .d60-grid>.d62-book:first-child .d60-title{font-size:17px}
  #d60-home .d60-grid>.d62-book:first-child .d62-book-desc{-webkit-line-clamp:2}
+ #d60-home .d60-grid>.d62-book:not(:first-child) .d60-cover{height:auto;aspect-ratio:2/3}
  #d60-home .d62-book .d60-title{font-size:14px}
  .d62-book-info{padding-top:9px;margin-top:10px;gap:5px}
  .d62-book-desc{-webkit-line-clamp:2;font-size:11px}
