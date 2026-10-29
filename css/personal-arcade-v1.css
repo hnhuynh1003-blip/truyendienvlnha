@@ -1,0 +1,61 @@
+/* Personal Arcade V1 — compact cyberphone game cards, isolated from reader CSS. */
+#phone-app-arcade{min-width:0;gap:8px;background:linear-gradient(160deg,#101725 0%,#0b1321 100%)}
+#phone-app-arcade .phone-app-header{flex-shrink:0}
+#personal-arcade-v1{font:inherit;color:#e9e7df;min-width:0}
+#personal-arcade-v1 *{box-sizing:border-box}
+#personal-arcade-v1 button{font:inherit;touch-action:manipulation}
+.arcade-shell{display:flex;flex-direction:column;gap:9px;min-width:0;padding-bottom:12px}
+.arcade-kicker{font:700 9px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.16em;color:#76ddd5;text-transform:uppercase}
+.arcade-hero{padding:12px;border:1px solid #3d5261;border-radius:14px;
+  background:linear-gradient(115deg,#1a2940,#152335 52%,#1d1c38);position:relative;overflow:hidden}
+.arcade-hero::after{content:'</>';position:absolute;right:5px;top:4px;font:900 42px ui-monospace,monospace;color:#9adddb12;pointer-events:none}
+.arcade-hero-title{font-size:17px;font-weight:800;line-height:1.25;letter-spacing:-.03em}
+.arcade-hero-wallet{font:700 19px ui-monospace,SFMono-Regular,monospace;color:#f3d79a;margin-top:5px}
+.arcade-note{color:#aab7c8;font-size:10px;line-height:1.45;margin:5px 0 0}
+.arcade-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.arcade-tab{border:1px solid #44516b;background:#151d2c;border-radius:10px;padding:9px 4px;
+ color:#bec9d9;cursor:pointer;font-size:11px;line-height:1.25;min-height:46px}
+.arcade-tab[aria-selected=true]{border-color:#83d6cc;background:#1e3a48;color:#e4faff;
+ box-shadow:0 0 0 1px #83d6cc24 inset}
+.arcade-panel{border:1px solid #384453;background:#172332;border-radius:13px;padding:11px;min-width:0;
+ position:relative;overflow:hidden;box-shadow:inset 0 1px 0 #c7eff60a,0 8px 23px #02071326}
+.arcade-panel::before{content:'';position:absolute;top:0;left:12px;width:58px;height:2px;
+ background:linear-gradient(90deg,#78d7d0,#d6b77c);opacity:.8}
+.arcade-neon{background:radial-gradient(circle at 100% 0%,#1b4a55b8,transparent 52%),#172332}
+.arcade-mine{background:radial-gradient(circle at 93% 15%,#6d523b70,transparent 58%),#172332}
+.arcade-garden{background:radial-gradient(circle at 100% 3%,#32655480,transparent 53%),#172332}
+.arcade-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 8px}
+.arcade-heading strong{font-size:14px;font-weight:800;color:#f0e5d5}
+.arcade-heading code{font:600 9px ui-monospace,monospace;color:#7eddd4;white-space:nowrap}
+.arcade-metric{font-size:11px;color:#cad5df;line-height:1.5}
+.arcade-big{font:800 24px ui-monospace,SFMono-Regular,monospace;letter-spacing:-.04em;color:#f5d99c;margin:7px 0}
+.arcade-terminal{margin:6px 0 10px;padding:8px 9px;border-radius:8px;border:1px solid #335468;
+ background:#091a28c4;color:#b9d1de;font:10px/1.7 ui-monospace,SFMono-Regular,Consolas,monospace;
+ white-space:pre-line;box-shadow:inset 0 0 18px #08243a}
+.arcade-terminal>span{color:#66bcc4;margin-right:8px}
+.arcade-tile-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:8px 0}
+.arcade-tile{border:1px solid #35495b;border-radius:10px;padding:9px;background:#111d2d;min-width:0}
+.arcade-tile small{display:block;color:#96aabc;font-size:10px}
+.arcade-tile b{display:block;margin-top:3px;font-size:13px;color:#e5f5f8}
+.arcade-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.arcade-button{cursor:pointer;background:#203348;border:1px solid #516878;border-radius:9px;padding:9px 10px;
+ color:#eef3f7;font-size:11px;font-weight:700;flex:1 1 auto;min-height:38px}
+.arcade-button.primary{background:linear-gradient(125deg,#285e68,#29455c);border-color:#7ecfc8;color:#e8ffff}
+.arcade-button.gold{background:linear-gradient(125deg,#4a3c29,#45334a);border-color:#c8ab74;color:#ffe4ab}
+.arcade-button:disabled{opacity:.4;cursor:not-allowed}
+.arcade-progress{height:7px;border-radius:999px;background:#0b1520;border:1px solid #344257;overflow:hidden;margin:7px 0}
+.arcade-progress>span{display:block;height:100%;background:linear-gradient(90deg,#54bdba,#c7a975);transition:width .2s}
+.arcade-beds{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}
+.arcade-bed{padding:10px 8px;border:1px solid #435b54;border-radius:11px;background:#132a2c;text-align:center;min-width:0}
+.arcade-bed .symbol{font-size:28px;display:block;padding:3px}
+.arcade-bed strong{display:block;font-size:11px;color:#c7f6e1}
+.arcade-bed small{display:block;min-height:24px;color:#aabdc3;font-size:10px;margin:4px 0}
+.arcade-bed .arcade-button{width:100%;padding:8px 2px;font-size:10px}
+.arcade-status{border-left:2px solid #8ccdc4;padding:8px 10px;background:#10212d;
+ border-radius:4px;color:#bed7df;font-size:11px;line-height:1.45;min-height:32px}
+.arcade-status[data-error=true]{border-left-color:#d5a48a;color:#f0c4aa}
+.arcade-privacy{font-size:10px;color:#8fa1b5;line-height:1.5;padding:8px 0;border-top:1px dashed #394a5b}
+.arcade-empty{border:1px solid #4e5363;border-radius:12px;padding:20px 12px;text-align:center;
+ color:#d5ccdd;line-height:1.6}
+.arcade-pill{font:700 9px ui-monospace,monospace;color:#f4d89a;border:1px solid #77634b;border-radius:999px;padding:4px 7px;white-space:nowrap}
+@media (prefers-reduced-motion:reduce){#personal-arcade-v1 *{transition:none!important}}
