@@ -3567,7 +3567,7 @@ async function main() {
         localStorage.setItem(key,String(lastLootTimestamp));
         const pulseWorked=useFunctionItemV438(pulse);
         const remaining=DuduLootCadenceV42.phoneRemainingMs(lastLootTimestamp);
-        const shortened=remaining>0&&remaining<65000;
+        const shortened=remaining>0&&remaining<DuduLootCadenceV42.PHONE_COOLDOWN_MS-60000;
         const activated=useFunctionItemV438(coupon);
         const pending=!!userProfile.functionalV438.pending;
         const beforeBuy=userProfile.currency;

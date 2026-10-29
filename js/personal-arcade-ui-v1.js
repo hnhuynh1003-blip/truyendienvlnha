@@ -204,9 +204,9 @@
         <div class="arcade-exchange-heading"><strong>Đổi Xu</strong><button type="button" data-arcade-exchange="close" aria-label="Đóng">✕</button></div>
         <div class="arcade-exchange-amount">✦ ${fmt(s.coins)} <small>Xu trò chơi</small></div>
         <div class="arcade-exchange-arrow">↓</div>
-        <div class="arcade-exchange-target">Ví Xu đọc truyện <span>Chưa kết nối</span></div>
+        <div class="arcade-exchange-target">Ví Xu hệ thống <button type="button" data-arcade-exchange="wallet">Xem ví ↗</button></div>
         ${button('Chuyển Xu · Chưa mở','transfer','gold',true)}
-        <p>Chỉ mở đổi Xu khi ví và Rules xác nhận giao dịch. Xu trong trò chơi vẫn được giữ nguyên.</p>
+        <p>Chuyển Xu sẽ được mở khi tích hợp Rules.</p>
       </section></div>`:''}
   </div>`;
   if(showToast)element.querySelector('[data-arcade-notice]').textContent=notice;
@@ -256,6 +256,12 @@
    const exchange=event.target.closest('[data-arcade-exchange]');
    if(exchange){
     const choice=exchange.dataset.arcadeExchange;
+    if(choice==='wallet'){
+     exchangeOpen=false;
+     if(typeof root.openPhoneApp==='function')root.openPhoneApp('wallet');
+     else render();
+     return;
+    }
     if(choice==='open'||choice==='close'&&event.target===exchange||
      choice==='close'&&exchange.tagName==='BUTTON'){
      exchangeOpen=choice==='open';render();return;
@@ -282,6 +288,10 @@
   });
   return true;
  }
- root.DuduPersonalArcadeUIV1=Object.freeze({init,render,interact,tick});
+ function peekBalance(){
+  const current=ensure();
+  return current?fmt(current.coins):null;
+ }
+ root.DuduPersonalArcadeUIV1=Object.freeze({init,render,interact,tick,peekBalance});
  init();
 })(typeof window!=='undefined'?window:{});

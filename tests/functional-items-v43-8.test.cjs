@@ -59,8 +59,8 @@ test('V43.8 pulse shortens only phone cooldown by 60 seconds',()=>{
  assert.equal(a.lastLootTimestamp,now-61000);
  assert.equal(a.inventory.length,0);
  assert.equal(a.added.length,0);
- assert.equal(quote(p,{lastLootTimestamp:now-110000}).lastLootTimestamp,0);
- assert.equal(quote(p,{lastLootTimestamp:now-200000}).reason,'no-cooldown');
+ assert.equal(quote(p,{lastLootTimestamp:now-850000}).lastLootTimestamp,0);
+ assert.equal(quote(p,{lastLootTimestamp:now-920000}).reason,'no-cooldown');
  assert.equal(a.lootedChapters,undefined);
 });
 test('V43.8 coupon activates once, discounts common goods, never tools or future days',()=>{

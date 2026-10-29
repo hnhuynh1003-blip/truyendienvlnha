@@ -29,8 +29,8 @@
  const TOOL=Object.freeze({
    id:TOOL_ID,itemId:TOOL_ID,
    name:'Bộ Nạp Tần Số',icon:'🔋',rank:'D',type:'ITEM',
-   desc:'Xóa hồi chiêu nhặt đồ của Điện thoại (2 phút). Không hồi lượt nhặt chương.',
-   description:'Xóa hồi chiêu nhặt đồ của Điện thoại (2 phút). Không hồi lượt nhặt chương.',
+   desc:'Xóa hồi chiêu nhặt đồ của Điện thoại (15 phút). Không hồi lượt nhặt chương.',
+   description:'Xóa hồi chiêu nhặt đồ của Điện thoại (15 phút). Không hồi lượt nhặt chương.',
    scope:'FUNCTIONAL',acquisition:Object.freeze({method:'SHOP'}),
    price:30,storeCategory:'TOOL',unique:false,maxOwned:null,
    giftable:false,tradeable:false,discardable:true,published:true,

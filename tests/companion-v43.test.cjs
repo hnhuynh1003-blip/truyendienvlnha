@@ -50,7 +50,7 @@ test('V43: story recommendations use supplied library names only, no invented re
  assert.match(reply,/Một Giấc Mơ/);
  assert.match(reply,/Tàn Ảnh/);
  assert.doesNotMatch(reply,/vừa ra mắt|mới cập nhật/i);
- assert.match(rules.reply('Nhặt đồ kiểu gì'),/2 phút/);
+ assert.match(rules.reply('Nhặt đồ kiểu gì'),/15 phút/);
 });
 test('V43: UI is sandbox-only and does not claim server validated keepsakes',()=>{
  const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');

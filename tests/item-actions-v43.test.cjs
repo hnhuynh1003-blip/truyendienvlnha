@@ -37,7 +37,7 @@ test('V43.5.3: consume one exact instance and clear ONLY phone cooldown',()=>{
  const plan=actions.quote({inventory,itemInstanceId:instance.instanceId,
   lastLootTimestamp:now-1000,now});
  assert.equal(plan.ok,true);
- assert.equal(plan.remaining,119000);
+ assert.equal(plan.remaining,899000);
  assert.equal(plan.lastLootTimestamp,0);
  assert.deepEqual(plan.inventory,[keep]);
  assert.equal(inventory.length,2,'pure plan cannot mutate save');
@@ -58,7 +58,7 @@ test('V43.5.3: consume one exact instance and clear ONLY phone cooldown',()=>{
 test('V43.5.3: reject no active timer, fake tool, double use and daily cap',()=>{
  const {instance}=item();
  assert.equal(actions.quote({inventory:[instance],itemInstanceId:instance.instanceId,
-  lastLootTimestamp:now-200000,now}).reason,'no-cooldown');
+  lastLootTimestamp:now-920000,now}).reason,'no-cooldown');
  assert.equal(actions.quote({inventory:[instance],itemInstanceId:instance.instanceId,
   lastLootTimestamp:now-1000,now,state:{version:1,day:core.localDay(now),used:2,eventIds:[]}}).reason,'daily-limit');
  const fake={...instance,obtainedFrom:{kind:'CHAPTER'}};

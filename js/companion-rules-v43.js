@@ -79,7 +79,7 @@
    return available.length?'Nếu cậu muốn tìm truyện, thử xem: '+available.join(' hoặc ')+'. Cậu thích thể loại nào nhất?':
     'Cậu thích truyện tu tiên, hiện đại hay bí ẩn? Tớ có thể giúp cậu tìm trong thư viện DUDU.';
   }
-  if(/(nhat do|kho do|vat pham|bo suu tap)/.test(raw))return 'Cậu có thể nhặt đồ ở Kho mỗi 2 phút, hoặc tìm trong chương một lần mỗi ngày. Đồ phổ thông trùng nhau sẽ được xếp gọn ×N.';
+  if(/(nhat do|kho do|vat pham|bo suu tap)/.test(raw))return 'Cậu có thể nhặt đồ ở Kho mỗi 15 phút, hoặc nhặt tối đa 3 lượt từ các chương mỗi ngày (mỗi chương 1 lần). Đồ phổ thông trùng nhau sẽ được xếp gọn ×N.';
   if(/(linh hon|ket noi|mo khoa|npc)/.test(raw))return 'Nhân vật ở mỗi truyện có quá trình kết nối riêng. Hệ thống nhặt mảnh linh hồn và mở khóa bằng vật phẩm đang được phát triển, chưa kích hoạt đâu nhé.';
   if(/(diem danh|chuoi|phan thuong|qua tang)/.test(raw))return 'Mở Nhật ký điểm danh trong cuộc trò chuyện này để nhận Xu thử nghiệm mỗi ngày. Trò chuyện mỗi ngày sẽ ghi dấu những kỷ niệm tình bạn.';
   if(/(cam on|thank)/.test(raw))return 'Có gì đâu! Cậu muốn tìm hiểu Kho Đồ hay tìm một bộ truyện để đọc tiếp không?';

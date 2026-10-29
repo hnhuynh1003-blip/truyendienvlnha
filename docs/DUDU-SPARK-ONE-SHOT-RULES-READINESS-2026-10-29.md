@@ -3,6 +3,8 @@
 **Trạng thái:** tài liệu kiểm tra và kế hoạch triển khai; **chưa bật quyền và chưa sửa/deploy Firestore Rules**.
 **Định hướng:** một chủ tài khoản và vài tài khoản riêng trên điện thoại, Firebase Spark/miễn phí, không Cloud Functions, không nạp tiền.
 
+**Bổ sung 29/10:** Cyber Phone đã có ứng dụng **Ví Xu** riêng hiển thị lại `userProfile.currency` để mua sắm, đối chiếu Xu Arcade ở local; không thêm ví hệ thống thứ hai và chưa chuyển Xu thật. Nhịp nhặt thử tại client đã chuyển sang 15 phút ở Kho, tối đa 3 lượt từ chương/ngày. Bảng công dụng vật phẩm/giới hạn trước Rules xem `DUDU-WALLET-LOOT-ITEM-ROADMAP-2026-10-29.md`.
+
 ## 1. Các luồng đã có trong mã nguồn
 
 | Nguồn | Mã nguồn chính | Hiện tại | Điều kiện để mở quyền thật |

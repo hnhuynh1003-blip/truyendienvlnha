@@ -90,7 +90,7 @@ form.requestSubmit();
 assert.equal(input.value,'');
 assert.equal(form.children[1].disabled,true);
 assert.equal(context.userProfile.duduCompanionV43.messages.length,3);
-assert.ok(context.userProfile.duduCompanionV43.messages[2].text.includes('2 phút'));
+assert.ok(context.userProfile.duduCompanionV43.messages[2].text.includes('15 phút'));
 assert.ok(saved>=2&&updatedInbox>=1);
 const previousMessages=JSON.stringify(context.userProfile.duduCompanionV43.messages);
 log.scrollHeight=700;log.clientHeight=120;log.scrollTop=90;

@@ -166,6 +166,8 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header{min-height:
 .arcade-exchange-target{display:flex;justify-content:space-between;gap:6px;background:#253044;
  border-radius:9px;padding:11px;font-weight:700;font-size:11px;color:#eceddf;margin-bottom:13px}
 .arcade-exchange-target span{color:#daa992}
+.arcade-exchange-target button{border:1px solid #728c99;border-radius:8px;background:#34495a;
+ color:#f5dfb4;font-size:10px;font-weight:800;padding:4px 7px;cursor:pointer;white-space:nowrap}
 .arcade-exchange-dialog>.arcade-button{width:100%}
 .arcade-exchange-dialog>p{font-size:10px;color:#9bafbd;line-height:1.45;margin:10px 0 0}
 

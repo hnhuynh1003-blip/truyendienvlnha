@@ -36,7 +36,8 @@
   <link rel="stylesheet" href="css/npc-bond-v43.css?v=2">
   <link rel="stylesheet" href="css/market-v43.css?v=2">
   <link rel="stylesheet" href="css/dudu-fun-v43.css?v=1">
-  <link rel="stylesheet" href="css/personal-arcade-v1.css?v=arcade-upgrade-4">
+  <link rel="stylesheet" href="css/personal-arcade-v1.css?v=wallet-1">
+  <link rel="stylesheet" href="css/dudu-wallet-v1.css?v=wallet-1">
   <link rel="stylesheet" href="css/item-actions-v43.css?v=43-5-3b">
   <link rel="stylesheet" href="css/museum-memories-v43.css?v=1">
   <link rel="stylesheet" href="css/npc-diary-ui.css?v=1">
@@ -148,7 +149,7 @@
   <script src="js/player-avatar-staging-v22.js"></script>
   <script src="js/player-avatar-sync-ui-v22.js"></script>
   <script src="js/loot-rules-v2.js?v=44-1"></script>
-  <script src="js/loot-cadence-v42.js?v=1"></script>
+  <script src="js/loot-cadence-v42.js?v=wallet-loot-1"></script>
   <script src="js/item-actions-v43.js?v=1"></script>
   <script src="js/functional-items-v43-8.js?v=44-9"></script>
   <script src="js/companion-rules-v43.js?v=1"></script>
@@ -953,7 +954,7 @@
 
       <div class="reader-loot-box">
         <div style="font-size: 12px; font-weight: bold; color: var(--gold); margin-bottom: 4px;">🎁 TÀN TÍCH DỮ LIỆU CUỐI CHƯƠNG</div>
-        <p style="font-size: 10px; color: var(--text-dim); margin-bottom: 8px;" id="reader-loot-desc">Mỗi chương truyện chỉ chứa 1 mảnh tàn tích dữ liệu duy nhất.</p>
+        <p style="font-size: 10px; color: var(--text-dim); margin-bottom: 8px;" id="reader-loot-desc">Nhặt tối đa 3 lượt từ chương mỗi ngày.</p>
         <button class="btn btn-primary" id="btn-chapter-loot-claim" onclick="claimChapterLootDrop()">🎲 Lục Lọi Bảo Vật Ngay</button>
       </div>
 
@@ -1027,6 +1028,9 @@
           </button>
           <button type="button" class="app-icon" onclick="openPhoneApp('shop')" aria-label="Mở Cửa Hàng">
             <div class="app-box" style="background:#10b981;">🛒</div><div class="app-label">Cửa Hàng</div>
+          </button>
+          <button type="button" class="app-icon" onclick="openPhoneApp('wallet')" aria-label="Mở Ví Xu mua sắm">
+            <div class="app-box" style="background:linear-gradient(140deg,#b1843d,#695344);">🪙</div><div class="app-label">Ví Xu</div>
           </button>
           <button type="button" class="app-icon" id="dudu-fun-launch-v43"
             onclick="openPhoneApp('fun')" aria-label="Mở DUDU FUN" hidden>
@@ -1434,6 +1438,32 @@
           </div>
         </div>
 
+      </div>
+
+      <!-- Ví Xu hệ thống dùng chung số dư profile hiện tại; Arcade giữ Xu riêng. -->
+      <div class="phone-sub-app" id="phone-app-wallet">
+        <div class="phone-app-header">
+          <button type="button" class="phone-back-btn" onclick="phoneHome()" aria-label="Về màn hình chính">‹</button>
+          <span>Ví Xu</span>
+          <span class="dudu-wallet-mark">DUDU</span>
+        </div>
+        <div class="dudu-wallet-shell">
+          <section class="dudu-wallet-card" aria-label="Số dư Ví Xu mua sắm">
+            <div class="dudu-wallet-card-glow" aria-hidden="true">✦</div>
+            <span class="dudu-wallet-overline">VÍ XU HỆ THỐNG</span>
+            <strong id="dudu-wallet-system-balance" aria-live="polite"><span id="dudu-wallet-system-amount">0</span> <small>Xu</small></strong>
+            <span class="dudu-wallet-caption">Dùng cho cửa hàng và mở khóa truyện sau này</span>
+          </section>
+          <div class="dudu-wallet-actions">
+            <button type="button" onclick="openPhoneApp('shop')">🛒 <span>Cửa hàng</span></button>
+            <button type="button" onclick="openPhoneApp('arcade')">🎮 <span>Chơi kiếm Xu</span></button>
+          </div>
+          <section class="dudu-wallet-secondary" aria-label="Xu trong Arcade">
+            <div><span>✧ Xu trong Arcade</span><strong id="dudu-wallet-arcade-balance">—</strong></div>
+            <span class="dudu-wallet-source-badge">Riêng trên thiết bị</span>
+          </section>
+          <div class="dudu-wallet-lock"><span aria-hidden="true">⌁</span><span>Chuyển Xu Arcade vào ví sẽ mở cùng đợt Rules.</span></div>
+        </div>
       </div>
 
       <!-- APP: CỬA HÀNG -->
@@ -5053,6 +5083,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
         window.DuduFunUIV43?.render();
       } else if (appName === 'arcade') {
         window.DuduPersonalArcadeUIV1?.render();
+      } else if (appName === 'wallet') {
+        renderWallet();
       } else if (appName === 'quests') {
         renderQuests();
         if(!IS_SANDBOX_MODE&&!DUDU_SPARK_PERSONAL_MODE)window.DuduEconomyLiveV52?.openQuests();
@@ -5763,6 +5795,16 @@ document.getElementById('phone-home-screen').style.display = 'none';
       });
     }
 
+    function renderWallet() {
+      const main=document.getElementById('dudu-wallet-system-amount');
+      const arcade=document.getElementById('dudu-wallet-arcade-balance');
+      const balance=Number.isFinite(Number(userProfile?.currency))?
+        Math.max(0,Math.floor(Number(userProfile.currency))):0;
+      if(main)main.textContent=balance.toLocaleString('vi-VN');
+      const gameXu=window.DuduPersonalArcadeUIV1?.peekBalance?.();
+      if(arcade)arcade.textContent=gameXu===null||gameXu===undefined?'—':gameXu+' Xu';
+    }
+
     function buyShopItem(shopItemId) {
       const item = SHOP_CATALOG.find(i => i.id === shopItemId);
       if (!item) return;
@@ -6041,6 +6083,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 
       const shopCoinEl = document.getElementById('shop-currency-val');
       if (shopCoinEl) shopCoinEl.textContent = userProfile.currency;
+      if(document.getElementById('phone-app-wallet')?.style.display==='flex')renderWallet();
 
       const legacyAvatar=document.getElementById('player-avatar-legacy');
       if(legacyAvatar)legacyAvatar.style.display='none';
@@ -6193,14 +6236,19 @@ document.getElementById('phone-home-screen').style.display = 'none';
       if (!ch || !lootBtn) return;
 
       const lootKey = `${novel.id}_${ch.id || selectedChapterIndex}`;
+      const remaining=DuduLootCadenceV42.chapterDailyRemaining(userProfile.lootedChapters);
       if (DuduLootCadenceV42.claimedToday(userProfile.lootedChapters?.[lootKey])) {
         lootBtn.disabled = true;
         lootBtn.textContent = "✔ Hôm nay đã thu thập";
-        lootDesc.textContent = "Mỗi chương nhặt 1 lần/ngày. Ngày mới sẽ mở lại lượt.";
+        lootDesc.textContent = `Còn ${remaining}/${DuduLootCadenceV42.CHAPTER_DAILY_LIMIT} lượt nhặt chương hôm nay.`;
+      } else if(remaining<=0){
+        lootBtn.disabled=true;
+        lootBtn.textContent='⏳ Hết lượt hôm nay';
+        lootDesc.textContent='Lượt nhặt chương sẽ mở lại vào ngày mai.';
       } else {
         lootBtn.disabled = false;
         lootBtn.textContent = "🎲 Lục Lọi Bảo Vật Ngay";
-        lootDesc.textContent = "Mỗi chương được nhặt 1 lần/ngày; không phải chờ hồi Kho Đồ.";
+        lootDesc.textContent = `Còn ${remaining}/${DuduLootCadenceV42.CHAPTER_DAILY_LIMIT} lượt nhặt chương hôm nay; mỗi chương 1 lần/ngày.`;
       }
     }
 
@@ -6211,6 +6259,10 @@ document.getElementById('phone-home-screen').style.display = 'none';
       const lootKey = `${novel.id}_${chapter.id || selectedChapterIndex}`;
       if (DuduLootCadenceV42.claimedToday(userProfile.lootedChapters?.[lootKey])) {
         showSystemAlert("ĐÃ THU THẬP HÔM NAY", "Chương này hôm nay đã được nhặt. Hãy quay lại vào ngày mai!");
+        return;
+      }
+      if(DuduLootCadenceV42.chapterDailyRemaining(userProfile.lootedChapters)<=0){
+        showSystemAlert('HẾT LƯỢT NHẶT CHƯƠNG','Bạn đã dùng hết 3 lượt hôm nay. Ngày mai quay lại nhé!');
         return;
       }
       if (rollLootDrop(true,novel,chapter)) updateChapterLootButtonState();
@@ -6229,6 +6281,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
         if (!sourceNovel || !sourceChapter || idx < 0) return false;
         lootKey = `${sourceNovel.id}_${sourceChapter.id || idx}`;
         if (DuduLootCadenceV42.claimedToday(userProfile.lootedChapters?.[lootKey],now)) return false;
+        if(DuduLootCadenceV42.chapterDailyRemaining(userProfile.lootedChapters,now)<=0)return false;
       }
 
       // Only explicit author-tagged realms can add a realm's items.
@@ -7916,7 +7969,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/companion-ui-v43.js?v=69-restore-1"></script>
 <script src="js/market-ui-v43.js?v=52-1"></script>
 <script src="js/dudu-fun-ui-v43.js?v=51-1"></script>
-<script src="js/personal-arcade-ui-v1.js?v=arcade-upgrade-4"></script>
+<script src="js/personal-arcade-ui-v1.js?v=wallet-1"></script>
 <script src="js/quest-ui-v43-7.js?v=51-1"></script>
 <script src="js/economy-runtime-v43.js?v=51-1"></script>
 <script src="js/economy-live-v52.js?v=52-1"></script>
