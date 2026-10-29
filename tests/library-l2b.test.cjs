@@ -99,7 +99,7 @@ test('L2B.4 book jackets remain edition-neutral across homepage, library and she
  assert.match(bookCss,/#d60-shelf \.d60-grid/);
  assert.match(bookCss,/\.archive-featured/);
  assert.match(bookCss,/@media\(max-width:760px\)/);
- assert.match(html,/css\/library-cards-l2b4\.css\?v=l2b-4/);
+ assert.match(html,/css\/library-cards-l2b4\.css\?v=l2b-4r2/);
 });
 
 test('L2B removes permanent filter walls while preserving real search/sort/status controls',()=>{
