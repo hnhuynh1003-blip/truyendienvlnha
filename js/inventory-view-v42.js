@@ -1,6 +1,5 @@
-/* DUDU V42.2 — Sandbox-only inventory interface.
- * Read-only RPG classification and inspector: never mutates economy, NPC
- * relationships or server collectibles. Existing discard callback is reused.
+/* DUDU V42.2 — read-only inventory view for Sandbox and private Spark profiles.
+ * Game/economy mutations remain in the caller's verified callbacks.
  */
 (function(root,factory){
  'use strict';
@@ -178,20 +177,22 @@
      ACTIVATE_COUPON:'Kích hoạt -25% (tối đa 12 Xu) cho 1 món phổ thông hôm nay'
     };
     fact('Công dụng',descriptions[detail.usageStatus]||'Công cụ tiêu hao');
-    fact('Đã dùng hôm nay',(usage?.used||0)+'/'+(usage?.limit||2));
+    if(!args.personalMode)fact('Đã dùng hôm nay',(usage?.used||0)+'/'+(usage?.limit||2));
     if(['CLEAR_PHONE_COOLDOWN','SHORTEN_PHONE_COOLDOWN'].includes(detail.usageStatus))
      fact('Nhặt theo chương','Không thay đổi');
     if(detail.usageStatus==='ACTIVATE_COUPON')
      fact('Điều kiện','Một phiếu hiệu lực cùng ngày, không giảm vật phẩm chức năng');
   }else{
-    fact('Chức năng RPG','Chưa kích hoạt trong V42');
+    fact(args.personalMode?'Sử dụng':'Chức năng RPG',
+      args.personalMode?'Chưa có công dụng để kích hoạt trực tiếp':'Chưa kích hoạt trong V42');
   }
   const tradeStatus=typeof args.tradeStatus==='function'?args.tradeStatus(entry.item):null;
   if(tradeStatus){
    fact('Trạng thái',tradeStatus.label);
    if(tradeStatus.rare)fact('Thị trường hiếm',tradeStatus.auction?
     'Đủ điều kiện ký gửi thử nghiệm':'Khóa giao dịch / chưa xác nhận nguồn gốc');
-   if(tradeStatus.buyback)fact('Giá thu mua Sandbox',tradeStatus.buyback+' Xu / món');
+   if(tradeStatus.buyback)fact(args.personalMode?'Giá bán về ví':'Giá thu mua Sandbox',
+     tradeStatus.buyback+' Xu / món');
   }
   if(detail.protected)fact('Sở hữu','Đồ bảo vệ · Không được vứt');
   // User-owned browser items are not proof of a server-verified relic.
@@ -216,7 +217,8 @@
       usage?.reason==='daily-limit'?'Đã hết lượt dùng hôm nay.':
       usage?.reason==='coupon-active'?'Đang có một phiếu giảm giá chờ mua.':
       usage?.reason==='inventory-full'?'Kho cần ít nhất một ô trống.':
-      usage?.canUse?'Tiêu hao 1 vật phẩm chức năng trong Sandbox.':
+      usage?.canUse?args.personalMode?'Dùng vật phẩm đang sở hữu.':
+        'Tiêu hao 1 vật phẩm chức năng trong Sandbox.':
       'Vật phẩm không hợp lệ hoặc đã sử dụng.';
     button.addEventListener('click',()=>{
       if(!Array.isArray(args.inventory)||args.inventory[entry.index]!==entry.item)return;
@@ -226,6 +228,7 @@
     if(!usage?.canUse){
       footer.append(make('small','dudu-v43-use-hint',
         usage?.reason==='no-cooldown'?'Chỉ dùng khi đồng hồ nhặt đồ đang chạy.':
+        usage?.reason==='busy'?'Đang xử lý giao dịch trước đó.':
         usage?.reason==='daily-limit'?'Đã đạt giới hạn dùng hôm nay.':
         usage?.reason==='coupon-active'?'Đã có một phiếu đang chờ dùng.':
         usage?.reason==='inventory-full'?'Cần dọn kho để nhận 2 món tiếp tế.':
@@ -241,7 +244,8 @@
    const sell=make('button','btn dudu-v439-sell','🪙 Bán · +'+tradeStatus.buyback+' Xu');
    sell.type='button';sell.addEventListener('click',()=>{
     if(!Array.isArray(args.inventory)||args.inventory[entry.index]!==entry.item)return;
-    if(!confirm('Bán 1 '+detail.name+' để nhận '+tradeStatus.buyback+' Xu Sandbox?'))return;
+    if(!confirm('Bán 1 '+detail.name+' để nhận '+tradeStatus.buyback+
+      (args.personalMode?' Xu vào Ví hệ thống?':' Xu Sandbox?')))return;
     args.onSell(entry.item);
    });footer.append(sell);
   }
@@ -314,7 +318,7 @@
     gift.append(button);footer.append(gift);
    }
   }
-  if(!detail.protected){
+  if(!detail.protected&&typeof args.onDiscard==='function'){
    const discard=make('button','btn btn-danger dudu-v42-discard',entry.count>1?'Vứt 1 vật phẩm':'Vứt vật phẩm');
    discard.type='button';
    discard.addEventListener('click',()=>{

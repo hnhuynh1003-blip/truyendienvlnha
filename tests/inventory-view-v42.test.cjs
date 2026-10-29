@@ -6,16 +6,40 @@ const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
 const view=fs.readFileSync(path.join(__dirname,'../js/inventory-view-v42.js'),'utf8');
 const css=fs.readFileSync(path.join(__dirname,'../css/inventory-v42.css'),'utf8');
 const model=require('../js/inventory-model-v42.js');
+const core=require('../js/economy-core-v43.js');
+const personal=require('../js/personal-spark-items-v1.js');
 
-test('V42: new inventory implementation is wired only for Sandbox; reader keeps legacy',()=>{
+test('V42: category-aware inventory runs for Sandbox and authenticated personal accounts',()=>{
  assert.match(html,/src="js\/inventory-model-v42.js\?v=[\w-]+"/);
- assert.match(html,/src="js\/inventory-view-v42.js\?v=\d+"/);
+ assert.match(html,/src="js\/inventory-view-v42.js\?v=12"/);
  assert.ok(html.indexOf('src="js/inventory-model-v42.js')<
    html.indexOf('src="js/inventory-view-v42.js'));
  assert.match(html,/if\(IS_SANDBOX_MODE&&window\.DuduInventoryViewV42\)/);
+ assert.match(html,/if\(personalItemsReady\(\)&&window\.DuduInventoryViewV42\)/);
+ assert.match(html,/personalMode:true/);
+ assert.match(html,/onUse\(item\)\{[\s\S]*?personalInventoryAction\('use',item\)/);
+ assert.match(html,/onSell\(item\)\{[\s\S]*?personalInventoryAction\('sell',item\)/);
+ assert.match(html,/buyback:price/);
  assert.match(html,/if\(ready\)return;/);
  assert.match(html,/css\/inventory-v42.css\?v=\d+/);
  assert.match(css,/body\.dudu-phone-v11 #cyber-phone #inventory-container\.dudu-v42-grid/);
+});
+test('V42: purchased supply, food and tent land in expected tabs with valid live actions',()=>{
+ const product=id=>[...core.shopCatalog(),...core.FUNCTIONAL_TOOLS].find(x=>x.id===id);
+ const item=id=>core.instance(product(id),'shop-12345678-1234-1234-1234-123456789abc');
+ const supply=item(core.SUPPLY_ID),biscuit=item('common-biscuit'),tent=item('common-tent');
+ assert.equal(model.inspect(supply).category,'TOOL');
+ assert.equal(model.inspect(supply).usageStatus,'OPEN_SUPPLY');
+ assert.equal(personal.canUse(supply),true);
+ assert.equal(model.inspect(biscuit).category,'CONSUMABLE');
+ assert.ok(personal.sellPrice(biscuit)>0);
+ assert.equal(model.inspect(tent).category,'TOOL');
+ const inventory=[supply,biscuit,tent];
+ assert.equal(model.displayList(inventory,{category:'CONSUMABLE'}).total,1);
+ assert.equal(model.displayList(inventory,{category:'TOOL'}).total,2);
+ assert.equal(model.displayList(inventory,{category:'ACTIVATABLE'}).total,1);
+ assert.match(view,/args\.personalMode\?'Giá bán về ví'/);
+ assert.match(view,/typeof args\.onDiscard==='function'/);
 });
 test('V42: eight stable role controls, world, story and rank filters in compact layout',()=>{
  for(const category of Object.keys(model.CATEGORIES)){
@@ -31,9 +55,9 @@ test('V42: eight stable role controls, world, story and rank filters in compact 
  assert.match(view,/pageSize=24/);
  assert.match(view,/model\.displayList\(args\.inventory,\{\.\.\.options/);
 });
-test('V42: inspector stays read-only for RPG and has protected-item discard guard',()=>{
+test('V42: inspector stays read-only for RPG and avoids unhandled discards',()=>{
  assert.match(view,/NOT_IMPLEMENTED|Chưa kích hoạt trong V42/);
- assert.match(view,/if\(!detail\.protected\)/);
+ assert.match(view,/if\(!detail\.protected&&typeof args\.onDiscard==='function'\)/);
  assert.match(view,/args\.inventory\[entry\.index\]!==entry\.item/);
  assert.match(view,/if\(!confirm\(/);
  assert.match(view,/verifiedCollectible/);
