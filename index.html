@@ -31,7 +31,7 @@
   <link rel="stylesheet" href="css/phone-wallpaper-v37-gallery.css?v=3">
   <link rel="stylesheet" href="css/npc-portrait-v38.css?v=1">
   <link rel="stylesheet" href="css/npc-portrait-v39.css?v=2">
-  <link rel="stylesheet" href="css/inventory-v42.css?v=3">
+  <link rel="stylesheet" href="css/inventory-v42.css?v=4">
   <link rel="stylesheet" href="css/companion-v43.css?v=1">
   <link rel="stylesheet" href="css/npc-bond-v43.css?v=2">
   <link rel="stylesheet" href="css/market-v43.css?v=2">
@@ -100,7 +100,7 @@
   <script src="js/inventory-trade-v43-9.js?v=44-9"></script>
   <script src="js/gift-recipient-v44.js?v=1"></script>
   <script src="js/inventory-hub-v43-9.js?v=2"></script>
-  <script src="js/inventory-view-v42.js?v=12"></script>
+  <script src="js/inventory-view-v42.js?v=13"></script>
   <script src="js/item-visuals-v13.js?v=43-5-3b"></script>
   <script src="js/npc-relationship-v2-r1.js"></script>
   <script src="js/npc-gift-v2-r2.js"></script>
@@ -155,7 +155,7 @@
   <script src="js/chapter-loot-encounter-v1.js?v=chapter-surprise-1"></script>
   <script src="js/item-actions-v43.js?v=1"></script>
   <script src="js/functional-items-v43-8.js?v=44-9"></script>
-  <script src="js/personal-spark-items-v1.js?v=shop-1"></script>
+  <script src="js/personal-spark-items-v1.js?v=shop-2"></script>
   <script src="js/companion-rules-v43.js?v=1"></script>
   <script src="js/dudu-system-steward-v67-3.js?v=67-3-3"></script>
   <script src="js/npc-bond-v43.js?v=1"></script>
@@ -5619,7 +5619,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
             const engine=window.DuduPersonalSparkItemsV1;
             const price=engine.sellPrice(item);
             return {useable:engine.canUse(item),buyback:price,auction:false,
-              rare:false,giftTargets:0,
+              rare:false,giftTargets:0,busy:personalItemBusy,
               label:engine.canUse(item)?'Vật phẩm có công dụng':
                 price?'Có thể bán về Ví hệ thống':'Đang lưu trong Kho'};
           },

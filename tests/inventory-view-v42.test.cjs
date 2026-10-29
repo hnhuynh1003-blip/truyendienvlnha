@@ -11,7 +11,7 @@ const personal=require('../js/personal-spark-items-v1.js');
 
 test('V42: category-aware inventory runs for Sandbox and authenticated personal accounts',()=>{
  assert.match(html,/src="js\/inventory-model-v42.js\?v=[\w-]+"/);
- assert.match(html,/src="js\/inventory-view-v42.js\?v=12"/);
+ assert.match(html,/src="js\/inventory-view-v42.js\?v=13"/);
  assert.ok(html.indexOf('src="js/inventory-model-v42.js')<
    html.indexOf('src="js/inventory-view-v42.js'));
  assert.match(html,/if\(IS_SANDBOX_MODE&&window\.DuduInventoryViewV42\)/);
@@ -31,6 +31,7 @@ test('V42: purchased supply, food and tent land in expected tabs with valid live
  assert.equal(model.inspect(supply).category,'TOOL');
  assert.equal(model.inspect(supply).usageStatus,'OPEN_SUPPLY');
  assert.equal(personal.canUse(supply),true);
+ assert.ok(personal.sellPrice(supply)>0);
  assert.equal(model.inspect(biscuit).category,'CONSUMABLE');
  assert.ok(personal.sellPrice(biscuit)>0);
  assert.equal(model.inspect(tent).category,'TOOL');
@@ -39,6 +40,9 @@ test('V42: purchased supply, food and tent land in expected tabs with valid live
  assert.equal(model.displayList(inventory,{category:'TOOL'}).total,2);
  assert.equal(model.displayList(inventory,{category:'ACTIVATABLE'}).total,1);
  assert.match(view,/args\.personalMode\?'Giá bán về ví'/);
+ assert.match(view,/sell\.disabled=tradeStatus\.busy===true/);
+ assert.match(html,/giftTargets:0,busy:personalItemBusy/);
+ assert.match(css,/body\.dudu-spark-personal-mode #cyber-phone #phone-app-inventory \.dudu-v441-open/);
  assert.match(view,/typeof args\.onDiscard==='function'/);
 });
 test('V42: eight stable role controls, world, story and rank filters in compact layout',()=>{

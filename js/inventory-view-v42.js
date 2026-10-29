@@ -242,7 +242,10 @@
   }
   if(tradeStatus?.buyback&&typeof args.onSell==='function'){
    const sell=make('button','btn dudu-v439-sell','🪙 Bán · +'+tradeStatus.buyback+' Xu');
-   sell.type='button';sell.addEventListener('click',()=>{
+   sell.type='button';sell.disabled=tradeStatus.busy===true;
+   if(sell.disabled)sell.title='Đang xử lý giao dịch trước đó.';
+   sell.addEventListener('click',()=>{
+    if(sell.disabled)return;
     if(!Array.isArray(args.inventory)||args.inventory[entry.index]!==entry.item)return;
     if(!confirm('Bán 1 '+detail.name+' để nhận '+tradeStatus.buyback+
       (args.personalMode?' Xu vào Ví hệ thống?':' Xu Sandbox?')))return;

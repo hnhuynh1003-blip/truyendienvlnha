@@ -63,6 +63,25 @@ test('Personal sale returns only the canonical common item buyback and cannot re
   requestId:'sell-12345678-1234-1234-1234-123456789abf',
   itemId:'common-biscuit',instanceId:SHOP}),/không còn/);
 });
+test('Purchased functional tools can be resold once; forged ones cannot',async()=>{
+ const h=harness();
+ await h.run({kind:'purchase',requestId:SHOP,itemId:economy.SUPPLY_ID});
+ const kit=h.data.inventory[0];
+ const buyback=items.sellPrice(kit);
+ const listPrice=economy.FUNCTIONAL_TOOLS.find(x=>x.id===economy.SUPPLY_ID).price;
+ assert.equal(buyback,Math.floor(listPrice*.35));
+ assert.equal(items.sellPrice({...kit,name:'Món giả'}),0);
+ assert.equal(items.sellPrice({...kit,obtainedFrom:{kind:'CHAPTER',source:'DUDU_MARKET'}}),0);
+ assert.equal(items.sellPrice({...kit,instanceId:'fake'}),0);
+ const balance=h.data.currency;
+ const sold=await h.run({kind:'sell',requestId:SELL,itemId:economy.SUPPLY_ID,instanceId:SHOP});
+ assert.equal(sold.price,buyback);
+ assert.equal(h.data.currency,balance+buyback);
+ assert.equal(h.data.inventory.length,0);
+ const replay=await h.run({kind:'sell',requestId:SELL,itemId:economy.SUPPLY_ID,instanceId:SHOP});
+ assert.equal(replay.status,'already-applied');
+ assert.equal(h.data.currency,balance+buyback);
+});
 test('Cooldown tool is spent only during active cooldown',async()=>{
  const h=harness();
  await h.run({kind:'purchase',requestId:SHOP,itemId:economy.TOOL_ID});

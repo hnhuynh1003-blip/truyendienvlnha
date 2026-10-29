@@ -31,7 +31,18 @@
   return result;
  }
  function sellPrice(item){
-  return trade?.saleValue?.(item)||0;
+  const commonPrice=trade?.saleValue?.(item)||0;
+  if(commonPrice)return commonPrice;
+  // Personal accounts may resell a verified, unused SHOP functional tool.
+  // This deliberately does not expand Sandbox, chapter loot or collectibles.
+  const product=products.get(item?.id);
+  if(!product||product.scope!=='FUNCTIONAL'||product.discardable===false||
+     item.itemId!==product.id||item.name!==product.name||
+     item.rank!==product.rank||item.type!==product.type||
+     item.scope!==product.scope||item.obtainedFrom?.kind!=='SHOP'||
+     item.obtainedFrom?.source!=='DUDU_MARKET'||
+     !/^shop-[0-9a-f-]{36}$/.test(item.instanceId||''))return 0;
+  return Math.max(1,Math.floor(product.price*.35));
  }
  function canUse(item){
   return (!!item&&[economy.SUPPLY_ID,economy.PULSE_ID].includes(item.id)&&
