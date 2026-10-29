@@ -6310,8 +6310,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
         const details = document.createElement('div');
         const indexLabel = document.createElement('div');
         indexLabel.className = 'archive-card-index';
-        indexLabel.textContent = displayIndex === 0 ? '01  /  MỞ ĐẦU DANH MỤC' :
-          String(displayIndex + 1).padStart(2, '0') + '  /  DUDU ARCHIVE';
+        indexLabel.textContent = String(displayIndex + 1).padStart(2, '0') +
+          '  /  ' + String(filtered.length).padStart(2, '0');
         const badges = document.createElement('div');
         badges.className = 'novel-badges';
         const badge = (value, cls) => {

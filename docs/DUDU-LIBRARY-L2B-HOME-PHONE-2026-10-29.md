@@ -14,6 +14,7 @@ Ngày: 29/10/2026. Baseline `main`: `d31af7a8efbac061764b6c28d1dd3de491f47a75`.
 1. **Trang chủ:** Đổi lời dẫn thành “Có những thế giới bắt đầu từ một dòng chữ.” và bỏ shortcut `Liên lạc NPC` trong hero (điện thoại chung của hệ thống vẫn có chức năng liên lạc). Thay cổng tròn neon bằng hình quyển sách mở dựng bằng CSS; giảm gradient, ánh sáng và các hiệu ứng thừa. Giữ các thẻ truyện thật, `Đang đọc`, thể loại và trạng thái các thế giới.
 2. **Nhận diện:** Header chung vẫn là `DUDU STUDIO`; nhãn ngữ cảnh rút về `THE STORY ARCHIVE / WORLD ATLAS / DẤU TRANG / BÀN VIẾT`, không lặp thương hiệu trong mọi section.
 3. **Lời dẫn Thư viện:** Đổi thành “Một cái tên lạ đôi khi mở ra cả một hành trình.”
+   Chỉ số từng tác phẩm rút về dạng `01 / 03`, không lặp `DUDU ARCHIVE` trên mọi thẻ.
 4. **Cyber Phone:** Bỏ CSS ẩn FAB trên Library; trên mobile đặt nút gọn ở góc dưới trái, cao hơn bottom-nav, và neo popup phù hợp. Reader vẫn áp dụng chế độ tập trung nên điện thoại ẩn khi đọc chương. Không thay đổi `togglePhone()`, ứng dụng trong điện thoại hoặc trạng thái người chơi.
 5. Bump query version của CSS/JS trong `index.html` để trình duyệt nhận thay đổi từ GitHub Pages.
 

@@ -52,6 +52,9 @@ test('L2B builds one opening folio and compact catalog rows without fake books',
  assert.match(grid.children[0].className,/archive-featured/);
  assert.ok(grid.children.slice(1).every(c=>c.className.includes('archive-shelf-item')));
  const nodes=allNodes(grid);
+ assert.ok(nodes.some(n=>n.className==='archive-card-index'&&n.textContent==='01  /  03'));
+ assert.ok(nodes.some(n=>n.className==='archive-card-index'&&n.textContent==='03  /  03'));
+ assert.ok(!nodes.some(n=>typeof n.textContent==='string'&&n.textContent.includes('DUDU ARCHIVE')));
  const resume=nodes.find(n=>n.tagName==='button'&&n.textContent==='Đọc tiếp · Ch.1');
  assert.ok(resume);resume.listeners.click({stopPropagation:()=>{}});
  const emptyBook=nodes.find(n=>n.tagName==='button'&&n.textContent==='Xem tác phẩm');
