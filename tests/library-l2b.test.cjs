@@ -102,7 +102,7 @@ test('L2B visual identity and mobile treatment stay inside the Library route',()
 });
 
 test('L2B route headings use one compact contextual rail without repeating navigation titles',()=>{
- assert.match(shell,/function contextHeading\(pageTitle,kicker,description\)/);
+ assert.match(shell,/function contextHeading\(pageTitle,kicker\)/);
  assert.match(shell,/element\('h1','d60-visually-hidden',pageTitle\)/);
  assert.match(shell,/contextHeading\('Thế giới','WORLD ATLAS'/);
  assert.match(shell,/contextHeading\('Tủ sách','DẤU TRANG'/);
@@ -111,19 +111,24 @@ test('L2B route headings use one compact contextual rail without repeating navig
  assert.doesNotMatch(shell,/element\('h1','d60-page-title','Tủ sách của tôi'\)/);
  assert.doesNotMatch(shell,/element\('h1','d60-page-title','Góc tác giả'\)/);
  assert.doesNotMatch(shell,/archive-crest|archive-heading/);
- assert.match(html,/css\/site-shell-v60\.css\?v=lib-l2b-3/);
- assert.match(html,/css\/library-discovery-l2b\.css\?v=l2b-3/);
- assert.match(html,/js\/site-shell-v60\.js\?v=lib-l2b-3/);
+ assert.doesNotMatch(shell,/element\('p','d60-context-note'/);
+ assert.match(html,/css\/site-shell-v60\.css\?v=lib-l2b-4/);
+ assert.match(html,/css\/library-discovery-l2b\.css\?v=l2b-4/);
+ assert.match(html,/js\/site-shell-v60\.js\?v=lib-l2b-4/);
 });
 
-test('L2B.2 home is a literary opening without duplicate DUDU wordmarks or NPC-only shortcut',()=>{
- assert.match(shell,/Có những thế giới bắt đầu từ một dòng chữ/);
- assert.match(shell,/BÊN KIA TRANG SÁCH/);
- assert.match(shell,/d61-folio-page d61-folio-left/);
- assert.match(shell,/d61-folio-page d61-folio-right/);
+test('L2B.3 home uses accessible short headline and code artwork rather than long copy or fake buttons',()=>{
+ assert.match(shell,/Mở trang đầu/);
+ assert.match(shell,/SYS \/\/ STORY ARCHIVE/);
+ assert.match(shell,/const codeArt=element\('div','d61-code-art'\)/);
+ assert.match(shell,/codeArt\.setAttribute\('aria-hidden','true'\)/);
+ assert.match(shell,/story\.open\(\)/);
  assert.doesNotMatch(shell,/DUDU \/ SYSTEM GATE|DUDU \/ THE STORY ARCHIVE/);
  assert.doesNotMatch(shell,/Liên lạc NPC  ↗/);
- assert.match(shellCss,/\.d61-folio-page/);
+ assert.doesNotMatch(shell,/element\('p','d61-tagline'/);
+ assert.match(shellCss,/\.d61-code-art/);
+ assert.match(shellCss,/\.d61-hero h1[\s\S]*?system-ui/);
+ assert.match(shellCss,/#d60-home \.d60-sectionhead h2[^\n]*system-ui/);
 });
 
 test('L2B book dossier hides empty EPUB synopsis without changing metadata',()=>{

@@ -13,10 +13,9 @@ body.dudu-site-v60 .container {max-width:1100px;padding:28px 20px 110px}
 /* L2B: the nav names the destination; its content begins with a useful, compact context line. */
 .d60-visually-hidden {position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .d60-context-rail {display:flex;align-items:center;justify-content:space-between;gap:18px;
-  min-height:56px;padding:4px 0 15px;margin:0 0 18px;border-bottom:1px solid rgba(220,198,156,.22)}
+  min-height:35px;padding:2px 0 10px;margin:0 0 14px;border-bottom:1px solid rgba(220,198,156,.22)}
 .d60-context-heading {min-width:0}
 .d60-context-kicker {display:block;color:#d5c199;font:700 10px/1.4 ui-monospace,Consolas,monospace;letter-spacing:.13em}
-.d60-context-note {margin:6px 0 0!important;color:#afbdcd!important;font-size:13px!important;line-height:1.55!important}
 .d60-kicker {font-size:11px;color:#ddbb82!important;letter-spacing:.15em;font-weight:800}
 .d60-hero {position:relative;overflow:hidden;border:1px solid rgba(169,149,237,.32);border-radius:24px;background:radial-gradient(circle at 80% 10%,rgba(169,149,237,.2),transparent 45%),linear-gradient(115deg,#29324a,#141d30);padding:42px 39px}
 .d60-hero:before {content:"✦";position:absolute;right:4%;top:-70px;font-size:260px;line-height:1;color:rgba(221,187,130,.075);pointer-events:none}
@@ -75,9 +74,8 @@ body.dudu-site-v60.theme-warm,body.dudu-site-v60.theme-oled {background:var(--bg
  .d60-hero {padding:31px 22px}
  .d60-hero:before {font-size:150px;right:-12px;top:-7px}
  .d60-hero h1 {font-size:28px}
- .d60-context-rail {min-height:47px;padding:1px 0 12px;margin-bottom:15px}
+ .d60-context-rail {min-height:31px;padding:1px 0 9px;margin-bottom:12px}
  .d60-context-kicker {font-size:9px}
- .d60-context-note {font-size:12px!important;margin-top:5px!important}
  .d60-grid {grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
  .d60-two {grid-template-columns:1fr}
  .d60-sectionhead h2 {font-size:18px}
@@ -92,37 +90,40 @@ body.dudu-site-v60.theme-warm,body.dudu-site-v60.theme-oled {background:var(--bg
 
 /* DUDU 2.0 — System Portal: compact, ornamental, low-copy homepage. */
 .d61-hero {
-  min-height:210px;display:grid;grid-template-columns:minmax(0,1fr) 240px;
-  align-items:center;gap:12px;isolation:isolate;
-  padding:25px 31px!important;overflow:hidden;border-radius:14px;
-  border:1px solid rgba(220,198,156,.31);background:#192433;
-  box-shadow:none;
+  min-height:186px;display:grid;grid-template-columns:minmax(0,1fr) 354px;
+  align-items:stretch;gap:0;isolation:isolate;
+  padding:0!important;overflow:hidden;border-radius:12px;
+  border:1px solid rgba(125,194,196,.35);background:#14212f;box-shadow:none;
 }
-.d61-hero:before {content:"";position:absolute;inset:12px;border:1px solid rgba(220,198,156,.12);
-  clip-path:polygon(0 0,30px 0,30px 1px,1px 1px,1px 30px,0 30px,0 0,100% 0,100% 100%,0 100%);
-  pointer-events:none}
-.d61-hero:after {content:"";position:absolute;left:30px;top:0;width:78px;height:2px;
-  background:#dcc69c;opacity:.7}
-.d61-hero-copy {position:relative;z-index:2;min-width:0}
-.d61-terminal {color:#dcc69c!important;letter-spacing:.14em;font:700 10px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace!important}
-.d61-hero h1 {max-width:610px;margin:12px 0 10px!important;color:#f3ecdd!important;
-  font:500 clamp(27px,3.5vw,43px)/1.16 Georgia,'Times New Roman',serif!important;
-  letter-spacing:-.027em!important;text-wrap:balance}
-.d61-tagline {max-width:510px;color:#bac7d1!important;font-size:13px!important;line-height:1.65!important}
-/* An open volume drawn in CSS: a restrained editorial accent, not a game portal. */
-.d61-folio {position:relative;width:226px;height:166px;justify-self:center;display:grid;place-items:center;perspective:600px}
-.d61-folio-page {position:absolute;top:16px;width:91px;height:132px;
-  border:1px solid rgba(220,198,156,.6);background:#263343;
-  box-shadow:0 13px 22px rgba(4,8,16,.2)}
-.d61-folio-left {right:50%;border-radius:4px 1px 3px 12px;transform:skewY(-6deg) rotate(-4deg);transform-origin:right bottom}
-.d61-folio-right {left:50%;border-radius:1px 4px 12px 3px;transform:skewY(6deg) rotate(4deg);transform-origin:left bottom}
-.d61-folio-page:before {content:"";position:absolute;inset:15px 13px;
-  background:repeating-linear-gradient(to bottom,rgba(220,198,156,.29) 0 1px,transparent 1px 15px);
-  opacity:.65}
-.d61-folio-spine {position:absolute;left:50%;top:14px;width:1px;height:143px;background:#e5d5b6;opacity:.6}
-.d61-folio-star {position:absolute;top:62px;left:calc(50% - 13px);width:26px;height:26px;
-  display:grid;place-items:center;border-radius:50%;color:#e8d0a2;background:#192433;
-  border:1px solid rgba(220,198,156,.55);font-size:13px}
+.d61-hero:before {content:"";position:absolute;inset:8px;border-left:1px solid rgba(129,189,190,.14);
+  border-top:1px solid rgba(129,189,190,.14);pointer-events:none}
+.d61-hero:after {content:"";position:absolute;left:26px;top:0;width:85px;height:2px;
+  background:#82d4ce;opacity:.75}
+.d61-hero-copy {position:relative;z-index:2;min-width:0;display:flex;flex-direction:column;
+  justify-content:center;padding:26px 29px}
+.d61-terminal {margin:0;color:#83ccc8!important;letter-spacing:.15em;
+  font:700 10px/1.6 ui-monospace,Consolas,'Courier New',monospace!important}
+.d61-hero h1 {max-width:600px;margin:13px 0 0!important;color:#f2f5f4!important;
+  font:720 clamp(30px,3.75vw,45px)/1.16 system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif!important;
+  letter-spacing:-.035em!important;text-wrap:balance}
+/* Decorative script illustration, clearly not a live terminal or a functional control. */
+.d61-code-art {position:relative;align-self:stretch;min-width:0;margin:13px 14px 13px 0;padding:13px 17px;
+  border:1px solid rgba(125,194,196,.24);border-radius:6px;background:#0e1926;
+  display:flex;flex-direction:column;justify-content:center}
+.d61-code-art:after {content:"</>";position:absolute;right:14px;bottom:-10px;
+  color:rgba(125,194,196,.06);font:800 76px/1 ui-monospace,Consolas,monospace;pointer-events:none}
+.d61-code-art > * {position:relative;z-index:1}
+.d61-code-top {display:flex;justify-content:space-between;align-items:center;gap:10px;
+  margin-bottom:9px;padding-bottom:8px;border-bottom:1px solid rgba(143,180,185,.17)}
+.d61-code-dots {color:#93a6b3;font:700 9px/1 ui-monospace,Consolas,monospace;letter-spacing:.18em}
+.d61-code-filename {color:#91b4bb;font:600 10px/1.2 ui-monospace,Consolas,monospace;white-space:nowrap}
+.d61-code-row {display:grid;grid-template-columns:24px minmax(0,1fr);gap:10px;align-items:baseline;
+  min-width:0;margin:2px 0;font:500 11px/1.8 ui-monospace,Consolas,'Courier New',monospace}
+.d61-code-line-no {color:#536a79}
+.d61-code-row code {min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:inherit;color:inherit}
+.d61-code-comment {color:#6e9c9e}
+.d61-code-plain {color:#c9d5df}
+.d61-code-active {color:#e2ca94}
 .d61-signal {display:flex;align-items:center;flex-wrap:wrap;column-gap:10px;row-gap:5px;
   border:1px solid rgba(179,186,222,.14);border-top:0;border-radius:0 0 13px 13px;
   padding:7px 15px;color:#d3dbea;background:rgba(15,21,35,.6);
@@ -134,7 +135,8 @@ body.dudu-site-v60.theme-warm,body.dudu-site-v60.theme-oled {background:var(--bg
 .d61-signal-off {color:#ddbc85}
 #d60-home .d60-section {margin-top:26px}
 #d60-home .d60-sectionhead {margin-bottom:12px}
-#d60-home .d60-sectionhead h2 {font:500 23px/1.35 Georgia,'Times New Roman',serif;color:#f3ecdd;letter-spacing:-.015em}
+#d60-home .d60-sectionhead h2 {font:650 21px/1.35 system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+  color:#f3ecdd;letter-spacing:-.025em}
 #d60-home .d60-book {padding:8px;gap:5px;border:1px solid rgba(220,198,156,.22);border-radius:10px;
   background:#17212e;box-shadow:none;
   transition:border-color .18s,transform .18s}
@@ -156,14 +158,13 @@ body.dudu-site-v60.theme-warm,body.dudu-site-v60.theme-oled {background:var(--bg
   font-size:11px;padding:7px 11px}
 @media(max-width:760px) {
  body.dudu-site-v60 .container {padding-top:14px}
- .d61-hero {grid-template-columns:minmax(0,1fr);padding:19px 18px!important;min-height:171px}
- .d61-hero h1 {font-size:27px!important;max-width:310px;line-height:1.17!important}
+ .d61-hero {grid-template-columns:minmax(0,1fr);padding:0!important;min-height:0}
+ .d61-hero-copy {padding:22px 18px 14px}
+ .d61-hero h1 {font-size:30px!important;max-width:none;line-height:1.16!important}
  .d61-terminal {font-size:9px!important}
- .d61-tagline {font-size:12px!important;max-width:280px}
- .d61-folio {position:absolute;right:-38px;top:3px;width:170px;height:145px;opacity:.16;z-index:0;pointer-events:none}
- .d61-folio-page {width:69px;height:108px}
- .d61-folio-spine {height:118px}
- .d61-folio-star {top:51px}
+ .d61-code-art {margin:0 18px 15px;padding:8px 11px;background:rgba(10,21,32,.65)}
+ .d61-code-top,.d61-code-comment {display:none}
+ .d61-code-row {font-size:10px;line-height:1.55;margin:0}
  .d61-signal {padding:7px 10px;font-size:9px;gap:5px}
  .d61-signal-divider {margin:0 2px}
  .d61-resume-card {gap:9px;padding:9px}
@@ -171,7 +172,7 @@ body.dudu-site-v60.theme-warm,body.dudu-site-v60.theme-oled {background:var(--bg
  #d60-home .d60-section {margin-top:22px}
 }
 @media(max-width:370px) {
- .d61-hero h1 {font-size:25px!important;max-width:257px}
+ .d61-hero h1 {font-size:27px!important}
  .d61-signal-label {letter-spacing:0}
  .d61-resume-action {font-size:10px}
 }
@@ -179,11 +180,10 @@ body.dudu-site-v60.theme-warm,body.dudu-site-v60.theme-oled {background:var(--bg
 
 
 /* Home remains a distinct editorial opening, with no second navigation menu. */
-.d61-hero {min-height:198px;padding-block:20px!important}
+.d61-hero {min-height:186px;padding-block:0!important}
 #d60-home .d60-section:first-of-type {margin-top:22px}
 @media(max-width:760px){
- .d61-hero {min-height:168px;padding-block:16px!important}
- .d61-folio {opacity:.15}
+ .d61-hero {min-height:0;padding-block:0!important}
 }
 
 /* DUDU World Atlas V64 — mobile-first compact portal. No explanatory cards. */
@@ -358,7 +358,7 @@ body.dudu-reading-active .container {max-width:860px;padding-top:26px;padding-bo
 body.dudu-reading-active #reader-view {max-width:760px}
 body.dudu-reading-active .reader-top-nav {gap:14px;padding-bottom:17px;margin-bottom:28px}
 body.dudu-reading-active .reader-chapter-title {
-  font:600 clamp(23px,3vw,30px)/1.35 Georgia,'Times New Roman',serif;
+  font:650 clamp(23px,3vw,30px)/1.35 system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
   letter-spacing:-.01em;overflow-wrap:anywhere;
 }
 body.dudu-reading-active .reading-time-badge {font-size:12px;margin-bottom:30px}

@@ -11,7 +11,7 @@ body.dudu-site-v60 #home-view {
   color:var(--archive-paper);
 }
 body.dudu-site-v60 #home-view .archive-intro {
-  margin:0 0 17px;padding:3px 0 14px;
+  margin:0 0 12px;padding:2px 0 10px;
   border-bottom:1px solid var(--archive-rule);
 }
 
@@ -92,7 +92,7 @@ body.dudu-site-v60 #home-view .tag {
 }
 body.dudu-site-v60 #home-view .tag-status {border-color:rgba(220,198,156,.55);color:var(--archive-gold)}
 body.dudu-site-v60 #home-view .novel-title-button {
-  font:500 22px/1.3 Georgia,'Times New Roman',serif;letter-spacing:-.012em;
+  font:680 21px/1.34 system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;letter-spacing:-.022em;
   color:var(--archive-paper);text-align:left;
 }
 body.dudu-site-v60 #home-view .novel-title-button:hover {color:var(--archive-gold)}
@@ -150,7 +150,7 @@ body.dudu-site-v60 #home-view .archive-shelf-item .novel-meta .btn:hover {backgr
   grid-column:1/-1;padding:46px 20px;border:1px dashed var(--archive-rule);
   border-radius:10px;text-align:center;background:rgba(22,31,44,.6);
 }
-#home-view .archive-empty-state strong {display:block;color:var(--archive-paper);font:500 23px/1.4 Georgia,serif}
+#home-view .archive-empty-state strong {display:block;color:var(--archive-paper);font:650 21px/1.4 system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif}
 #home-view .archive-empty-state p {margin:9px auto 16px;color:var(--archive-muted);font-size:13px}
 #home-view .archive-empty-reset {background:none;color:var(--archive-gold);border:1px solid var(--archive-gold);border-radius:7px;padding:10px 14px;cursor:pointer}
 
@@ -172,7 +172,7 @@ body.dudu-site-v60 #cover-view .book-cover-art {
 }
 body.dudu-site-v60 #cover-view .book-banner-meta {min-width:0}
 body.dudu-site-v60 #cover-view .book-banner-meta h1 {
-  margin:5px 0 14px;color:#f4ecda;font:500 clamp(23px,3.5vw,32px)/1.3 Georgia,'Times New Roman',serif;
+  margin:5px 0 14px;color:#f4ecda;font:660 clamp(22px,3.5vw,31px)/1.3 system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
   letter-spacing:-.015em;overflow-wrap:anywhere;
 }
 body.dudu-site-v60 #cover-view .book-stats {
@@ -187,13 +187,13 @@ body.dudu-site-v60 #cover-view .intro-terminal-box {
 body.dudu-site-v60 #cover-view .intro-terminal-box[hidden] {display:none!important}
 body.dudu-site-v60 #cover-view .intro-header {color:#dcc69c;font-size:11px;letter-spacing:.1em}
 body.dudu-site-v60 #cover-view .intro-text {
-  color:#c4cbd5;font:400 14px/1.85 Georgia,'Times New Roman',serif;white-space:pre-line;
+  color:#c4cbd5;font:400 14px/1.85 system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;white-space:pre-line;
 }
 body.dudu-site-v60 #cover-view .index-toolbar {
   padding:15px 0;margin:20px 0 0;border-bottom:1px solid rgba(220,198,156,.36);
 }
 body.dudu-site-v60 #cover-view .index-toolbar > div:first-child {
-  color:#f4ecda!important;font:500 25px/1.3 Georgia,serif!important;
+  color:#f4ecda!important;font:650 23px/1.3 system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif!important;
 }
 body.dudu-site-v60 #cover-view .chapter-items {
   display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 25px;
@@ -216,7 +216,7 @@ body.dudu-site-v60 #cover-view .btn-gold {background:#dcc69c;border-color:#dcc69
 body.dudu-site-v60 #cover-view .btn:hover:not(:disabled) {background:#dcc69c;color:#17212e}
 
 @media(max-width:760px){
- body.dudu-site-v60 #home-view .archive-intro {padding:1px 0 12px;margin-bottom:14px}
+ body.dudu-site-v60 #home-view .archive-intro {padding:1px 0 9px;margin-bottom:10px}
  #home-view .search-row {grid-template-columns:minmax(0,1fr) 133px;gap:7px}
  #home-view .archive-search-field {min-height:43px;padding:0 9px}
  body.dudu-site-v60 #home-view .search-input {font-size:12px}

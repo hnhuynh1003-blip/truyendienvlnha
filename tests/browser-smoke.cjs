@@ -78,7 +78,7 @@ async function main() {
       };
     });
     assert.ok(siteHome.heroHeight>100 && siteHome.heroHeight<300,'Desktop editorial opening must be compact');
-    assert.match(siteHome.heroTitle,/Có những thế giới bắt đầu từ một dòng chữ/);
+    assert.match(siteHome.heroTitle,/Mở trang đầu/);
     assert.equal(siteHome.modules,0,'No duplicated quick-entry menu beneath hero');
     assert.equal(siteHome.heroActions,0,'Hero must not duplicate navigation or Cyber Phone controls');
     assert.ok(siteHome.readActions<=1,'At most one Resume chapter action on home');
