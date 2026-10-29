@@ -26,6 +26,9 @@ test('Applying ONLY explicitly selected hits preserves punctuation, line breaks 
  assert.equal(patch.occurrencesChanged,2);
  assert.equal(patch.patches[0].expectedContent,one.content);
  assert.equal(patch.patches[0].expectedVersion,2);
+ assert.equal(patch.patches[0].edits.length,2);
+ assert.ok(patch.patches[0].edits.every(edit=>
+  one.content.slice(edit.start,edit.end)===edit.matched));
  assert.match(patch.patches[0].content,/Kỳ An đến thượng hải\.\nKỳ An gặp Kỳ An\./);
  assert.equal(one.content.startsWith('kỳ an'),true,'Source remains untouched');
 });

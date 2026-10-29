@@ -136,6 +136,12 @@
     chapterId:chapter.id,expectedContent:chapter.content,
     expectedVersion:chapter.editVersion,content,
     changedOccurrences:hits.length,
+    // Compact, original-offset operations for crash-safe recovery. They
+    // reconstruct both versions from Firestore without saving full chapters
+    // in the browser's recovery manifest.
+    edits:Object.freeze(hits.map(h=>Object.freeze({
+     start:h.start,end:h.end,matched:h.matched,replacement:h.replacement
+    }))),
    }));
   }
   return Object.freeze({patches:Object.freeze(patches),chaptersChanged:patches.length,

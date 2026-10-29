@@ -1,4 +1,4 @@
-/* DUDU L2D.5B — gated owner EPUB chapter correction and revision recovery.
+/* DUDU L2D.5C — gated owner EPUB chapter correction and crash recovery.
  * Writes are completely OFF on production until ONE final Rules deployment.
  */
 (function(root,factory){
@@ -8,7 +8,7 @@
 })(typeof window!=='undefined'?window:null,function(root){
  'use strict';
  const MAX_VISIBLE=80;
- function create({enabled=false,engine,chapterEditor,bulkSaver,db,auth,uid,canEdit,
+ function create({enabled=false,engine,chapterEditor,bulkSaver,journal,db,auth,uid,canEdit,
    loadChapter,onChapterSaved=()=>{}}={}){
   let book=null,session=0,mode='single',plan=null,selected=new Set(),
    chapters=new Map(),page=0,busy=false,writing=false;
@@ -16,6 +16,7 @@
   const el=id=>root?.document?.getElementById(id);
   const text=(id,value)=>{const target=el(id);if(target)target.textContent=value;};
   const toggle=(id,show)=>{if(el(id))el(id).hidden=!show;};
+  const job=()=>book&&journal?.read(uid(),book.id);
   const status=(message,error=false)=>{
    text('epub-edit-status',message);
    if(el('epub-edit-status'))el('epub-edit-status').dataset.error=String(error);
@@ -59,13 +60,17 @@
   };
   function resetWriteActions(){
    for(const id of ['epub-edit-single-save','epub-edit-bulk-save',
-     'epub-edit-bulk-resume','epub-edit-bulk-undo','epub-edit-bulk-reconcile'])
+     'epub-edit-bulk-resume','epub-edit-bulk-undo','epub-edit-bulk-reconcile',
+     'epub-edit-bulk-reopen','epub-edit-bulk-finish','epub-edit-bulk-discard'])
     toggle(id,false);
   }
   function updateRecovery(){
    toggle('epub-edit-bulk-resume',!!(lastBatch?.phase==='partial'&&lastBatch.pending.length));
    toggle('epub-edit-bulk-undo',!!(lastBatch?.done?.length&&!lastBatch.unknown.length));
    toggle('epub-edit-bulk-reconcile',!!lastBatch?.unknown?.length);
+   toggle('epub-edit-bulk-finish',lastBatch?.phase==='complete'||lastBatch?.phase==='restored');
+   toggle('epub-edit-bulk-discard',!!(lastBatch?.phase==='partial'&&
+    !lastBatch.done.length&&!lastBatch.unknown.length));
   }
   const buildOption=(id,label)=>{
    const option=root.document.createElement('option');option.value=id;option.textContent=label;
@@ -90,8 +95,7 @@
    return true;
   }
   function open(candidate){
-   if(!owns(candidate)||busy||lastBatch?.phase==='partial'||
-      lastBatch?.phase==='uncertain')return false;
+   if(!owns(candidate)||busy)return false;
    session++;book=candidate;plan=null;selected=new Set();chapters.clear();page=0;
    loadedSingleId=null;reviewedSingle=null;reviewedBulk=null;lastBatch=null;
    resetWriteActions();
@@ -107,11 +111,21 @@
    el('epub-edit-history').replaceChildren();
    el('epub-edit-modal').style.display='flex';
    switchMode('single');
+   try{
+    if(job()){
+     toggle('epub-edit-bulk-reopen',true);
+     switchMode('bulk');
+     status('Có lượt sửa được lưu trên thiết bị. Hãy bấm Kiểm tra lượt cũ để đối chiếu Firebase trước khi làm việc tiếp.');
+    }
+   }catch(error){
+    switchMode('bulk');
+    status('Không đọc được nhật ký phục hồi: '+String(error?.message||error),true);
+   }
    return true;
   }
   function close(){
    if(writing){status('Đang lưu hoặc phục hồi chương. Vui lòng đợi kết quả.',true);return false;}
-   if(lastBatch?.phase==='partial'||lastBatch?.phase==='uncertain'){
+   if((lastBatch?.phase==='partial'||lastBatch?.phase==='uncertain')&&!journal){
     status('Lượt lưu chưa hoàn tất. Hãy tiếp tục, kiểm tra hoặc hoàn tác trước khi đóng.',true);
     return false;
    }
@@ -183,6 +197,10 @@
   }
   async function scan(){
    if(!owns(book)||busy)return false;
+   try{if(job()){
+    status('Thiết bị còn nhật ký sửa trước. Hãy kiểm tra hoặc kết thúc lượt cũ trước khi quét mới.',true);
+    return false;
+   }}catch(error){status(String(error?.message||error),true);return false;}
    if(lastBatch?.phase==='uncertain'||lastBatch?.phase==='partial'){
     status('Còn lượt lưu chưa hoàn tất; hãy xác minh, tiếp tục hoặc khôi phục trước.',true);
     return false;
@@ -368,6 +386,14 @@
     chapters.set(patch.chapterId,updated);notifySaved(patch.chapterId,updated);
    }
   }
+  function applyRecoveredRestores(records){
+   for(const patch of records||[]){
+    const prior=chapters.get(patch.chapterId)||{id:patch.chapterId};
+    const updated={...prior,content:patch.expectedContent,
+     editVersion:patch.expectedVersion+2};
+    chapters.set(patch.chapterId,updated);notifySaved(patch.chapterId,updated);
+   }
+  }
   async function saveBulk(){
    if(!owns(book)||busy||!reviewedBulk||!bulkSaver?.apply)return false;
    if([...selected].sort().join('\n')!==reviewedBulk.selection){
@@ -382,6 +408,7 @@
    status('Bắt đầu lưu những chương đã chọn…');
    try{
     await ensureAdmin();
+    if(journal)journal.begin(book.id,uid(),patches);
     const result=await bulkSaver.apply(book.id,patches,{db:db(),auth:auth(),
      chapterApi:chapterEditor,confirmed:true,onProgress:progress=>{
       status('Đang xử lý '+progress.current+'/'+progress.total+' chương…');
@@ -393,41 +420,105 @@
      ' chương. Chưa lưu các chương còn lại; hãy Tiếp tục hoặc Hoàn tác.',true);
     else status('Có chương chưa rõ đã lưu hay chưa. Phải Kiểm tra lại trước khi tiếp tục.',true);
     return result;
-   }catch(error){status('Chưa thực hiện hoặc chưa xác nhận lưu: '+String(error?.message||error),true);return false;}
+   }catch(error){
+    try{toggle('epub-edit-bulk-reopen',!!job());}catch(_){}
+    status('Chưa thực hiện hoặc chưa xác nhận lưu: '+String(error?.message||error)+
+     '. Nếu đã có nhật ký, hãy Kiểm tra lượt cũ trước khi thử lại.',true);
+    return false;
+   }
    finally{writing=false;busy=false;}
+  }
+  async function reopenSavedJob(){
+   if(!owns(book)||busy||!journal)return false;
+   busy=true;status('Đang đối chiếu nhật ký thiết bị với Firebase…');
+   try{
+    await ensureAdmin();
+    const result=await journal.hydrate(uid(),book.id,{db:db(),auth:auth()});
+    if(!result){status('Không còn nhật ký sửa trước.');toggle('epub-edit-bulk-reopen',false);return false;}
+    lastBatch=result;applySavedToCache(result.done);
+    applyRecoveredRestores(result.restored);
+    updateRecovery();
+    status(result.phase==='complete'?'Tất cả chương trong lượt cũ đã lưu. Có thể hoàn tác hoặc kết thúc lượt.':
+     result.phase==='restored'?'Các chương đã được khôi phục. Có thể kết thúc lượt.':
+     result.phase==='partial'?'Đã đối chiếu: có chương chưa lưu. Có thể tiếp tục hoặc hoàn tác.':
+     result.phase==='restoring'?'Lượt hoàn tác bị gián đoạn. Hãy hoàn tất khôi phục các chương còn lại.':
+     'Có chương không thể xác minh; chưa được phép ghi tiếp.',
+     result.phase==='uncertain');
+    toggle('epub-edit-bulk-reopen',true);
+    return result;
+   }catch(error){status('Không thể đối chiếu nhật ký: '+String(error?.message||error),true);return false;}
+   finally{busy=false;}
   }
   async function recoverBulk(action){
    if(!owns(book)||busy||!lastBatch||!bulkSaver)return false;
-   if(!['resume','reconcile','undo'].includes(action))return false;
-   if(action!=='reconcile'&&(
+   if(!['resume','reconcile','undo','finish','discard'].includes(action))return false;
+   if(!['reconcile'].includes(action)&&(
        typeof root.confirm!=='function'||!root.confirm(action==='resume'?
         'Tiếp tục lưu những chương còn lại trong lượt chỉnh sửa?':
-        'Hoàn tác các chương đã lưu trong lượt chỉnh sửa? Mỗi lần phục hồi sẽ có bản lưu mới.')))
+        action==='undo'?'Hoàn tác các chương đã lưu trong lượt chỉnh sửa? Mỗi lần phục hồi sẽ có bản lưu mới.':
+        action==='finish'?'Kết thúc lượt này? Chỉ xóa nhật ký trên thiết bị, không xóa các bản sao lưu trên Firebase.':
+        'Hủy lượt sửa chưa ghi chương nào? Chỉ dọn nhật ký trên thiết bị.')))
     return false;
-   busy=true;writing=action!=='reconcile';status('Đang xử lý lượt sửa trước…');
+   busy=true;writing=!['reconcile','finish','discard'].includes(action);
+   status('Đang đối chiếu lượt sửa trước…');
    try{
     await ensureAdmin();
     const options={db:db(),auth:auth(),chapterApi:chapterEditor,
      onProgress:progress=>status('Đang xử lý '+progress.current+'/'+progress.total+' chương…')};
-    if(action==='reconcile')lastBatch=await bulkSaver.reconcile(lastBatch,options);
+    if(journal&&job()){
+     lastBatch=await journal.hydrate(uid(),book.id,options);
+     applyRecoveredRestores(lastBatch.restored);
+    }
+    if(action==='finish'||action==='discard'){
+     if(action==='finish'&&!['complete','restored'].includes(lastBatch?.phase))
+      throw Error('Chưa xử lý xong tất cả chương; không được xóa nhật ký');
+     if(action==='discard'&&(lastBatch?.done?.length||lastBatch?.unknown?.length||
+        !lastBatch?.pending?.length))
+      throw Error('Đã có chương lưu hoặc chưa rõ trạng thái; không được hủy lượt');
+     if(journal)journal.clear(uid(),book.id);
+     lastBatch=null;updateRecovery();toggle('epub-edit-bulk-reopen',false);
+     status('Đã đóng lượt sửa trên thiết bị. Các bản lưu trên Firebase không bị xóa.');
+     return true;
+    }
+    if(action==='reconcile'){
+     if(!journal)lastBatch=await bulkSaver.reconcile(lastBatch,options);
+    }
     else if(action==='resume'){
+     if(lastBatch.phase!=='partial')throw Error('Lượt này chưa thể tiếp tục ghi chương');
      const prior=lastBatch;
      lastBatch=await bulkSaver.resume(prior,options);
      applySavedToCache(lastBatch.done.filter(r=>!prior.done.includes(r)));
     }else{
+     if(lastBatch.phase==='uncertain')
+      throw Error('Có chương chưa rõ trạng thái; không được hoàn tác hàng loạt');
+     if(journal&&job())journal.markUndo(uid(),book.id);
+     if(!lastBatch.done?.length){
+      const updated=journal?await journal.hydrate(uid(),book.id,options):lastBatch;
+      if(updated.phase==='restored'){
+       if(journal)journal.clear(uid(),book.id);
+       lastBatch=null;updateRecovery();toggle('epub-edit-bulk-reopen',false);
+       status('Các chương đã được khôi phục; đã dọn nhật ký thiết bị.');return updated;
+      }
+      throw Error('Không có chương đã ghi để hoàn tác');
+     }
      const restored=await bulkSaver.undo(lastBatch,options);
      applySavedToCache(restored.restored,true);
      if(restored.phase==='restored'){
+      if(journal)journal.clear(uid(),book.id);
       lastBatch=null;status('Đã khôi phục các chương. Bản sao vẫn được giữ trong lịch sử.');
-      updateRecovery();return restored;
+      updateRecovery();toggle('epub-edit-bulk-reopen',false);return restored;
      }
-     lastBatch=null;updateRecovery();
-     status('Khôi phục dở dang. Hãy dùng Lịch sử từng chương để xử lý phần còn lại.',true);
+     if(journal)lastBatch=await journal.hydrate(uid(),book.id,options);
+     else lastBatch=null;
+     updateRecovery();
+     status('Khôi phục dở dang. Nhật ký còn trên thiết bị; hãy kiểm tra và tiếp tục hoàn tác.',true);
      return restored;
     }
     updateRecovery();
     status(lastBatch.phase==='complete'?'Đã xử lý xong tất cả chương.':
      lastBatch.phase==='partial'?'Còn chương chưa lưu; có thể tiếp tục hoặc hoàn tác.':
+     lastBatch.phase==='restored'?'Đã khôi phục các chương, có thể kết thúc lượt.':
+     lastBatch.phase==='restoring'?'Còn chương cần tiếp tục hoàn tác.':
      'Còn trạng thái chưa xác định; chưa được ghi tiếp.',lastBatch.phase==='uncertain');
     return lastBatch;
    }catch(error){status('Đã dừng: '+String(error?.message||error),true);return false;}
@@ -435,7 +526,7 @@
   }
   return Object.freeze({enabled,owns,open,close,switchMode,loadSingle,previewSingle,
    saveSingle,showHistory,restoreRevision,addRule,scan,filterChapter,more,
-   chooseAll,previewBulk,saveBulk,recoverBulk});
+   chooseAll,previewBulk,saveBulk,reopenSavedJob,recoverBulk});
  }
  return Object.freeze({create});
 });

@@ -121,9 +121,10 @@
   <script src="js/library-synopsis-search-l2d.js?v=l2d-1"></script>
   <script src="js/library-epub-manage-l2d2.js?v=l2d2-1"></script>
   <script src="js/epub-chapter-editor-l2d3.js?v=l2d5b-1"></script>
-  <script src="js/epub-bulk-replace-l2d4.js?v=l2d5a-1"></script>
+  <script src="js/epub-bulk-replace-l2d4.js?v=l2d5c-1"></script>
   <script src="js/epub-bulk-save-l2d5b.js?v=l2d5b-1"></script>
-  <script src="js/library-epub-edit-ui-l2d5.js?v=l2d5b-1"></script>
+  <script src="js/epub-recovery-journal-l2d5c.js?v=l2d5c-1"></script>
+  <script src="js/library-epub-edit-ui-l2d5.js?v=l2d5c-1"></script>
   <script src="js/npc-portrait-library-v1.js?v=40-1"></script>
   <script src="js/npc-anime-candidates-v14.js"></script>
   <script src="js/player-avatar-v16.js"></script>
@@ -1842,7 +1843,7 @@
     </div>
   </div>
 
-  <!-- L2D.5B: owner-only EPUB correction and recovery. Gate OFF until all tools,
+  <!-- L2D.5C: owner-only EPUB correction and durable recovery. Gate OFF until all tools,
        revision recovery, Firestore Rules Emulator and production QA pass. -->
   <div class="modal-overlay epub-edit-overlay" id="epub-edit-modal">
     <div class="modal-card epub-edit-dialog" role="dialog" aria-modal="true" aria-labelledby="epub-edit-heading">
@@ -1889,14 +1890,17 @@
           <button type="button" class="btn btn-primary" id="epub-edit-bulk-save" hidden onclick="epubEditorL2D5.saveBulk()">Lưu các vị trí đã duyệt</button>
         </div>
         <div class="epub-edit-recovery" aria-label="Khôi phục lượt chỉnh sửa nhiều chương">
+          <button type="button" class="btn" id="epub-edit-bulk-reopen" hidden onclick="epubEditorL2D5.reopenSavedJob()">Kiểm tra lượt cũ trên thiết bị</button>
           <button type="button" class="btn" id="epub-edit-bulk-resume" hidden onclick="epubEditorL2D5.recoverBulk('resume')">Tiếp tục chương còn lại</button>
           <button type="button" class="btn" id="epub-edit-bulk-reconcile" hidden onclick="epubEditorL2D5.recoverBulk('reconcile')">Kiểm tra trạng thái lưu</button>
           <button type="button" class="btn" id="epub-edit-bulk-undo" hidden onclick="epubEditorL2D5.recoverBulk('undo')">Hoàn tác lượt sửa</button>
+          <button type="button" class="btn" id="epub-edit-bulk-discard" hidden onclick="epubEditorL2D5.recoverBulk('discard')">Hủy lượt chưa ghi</button>
+          <button type="button" class="btn" id="epub-edit-bulk-finish" hidden onclick="epubEditorL2D5.recoverBulk('finish')">Kết thúc lượt sửa</button>
         </div>
       </section>
       <div id="epub-edit-preview" class="epub-edit-preview" aria-live="polite"></div>
       <p id="epub-edit-status" class="epub-edit-status" role="status" aria-live="polite"></p>
-      <p class="epub-edit-footnote">Công cụ đang khóa trên website. Khi hoàn tất kiểm thử, mỗi lần lưu sẽ giữ bản cũ để có thể phục hồi; thay đổi nhiều chương được xác nhận riêng.</p>
+      <p class="epub-edit-footnote">Công cụ đang khóa trên website. Khi được nghiệm thu, nhật ký phục hồi lưu trên trình duyệt này (không đồng bộ giữa các thiết bị). Mỗi lần sửa đều giữ bản gốc trên Firebase.</p>
     </div>
   </div>
 
@@ -2309,6 +2313,7 @@
       engine:window.DuduEpubBulkReplaceL2D4,
       chapterEditor:window.DuduEpubChapterEditorL2D3,
       bulkSaver:window.DuduEpubBulkSaveL2D5B,
+      journal:window.DuduEpubRecoveryJournalL2D5C?.create?.({storage:()=>window.localStorage}),
       db:()=>db,auth:()=>firebase.auth(),
       canEdit:()=>canEditStories()&&!IS_SANDBOX_MODE,
       uid:()=>DuduAuth.uid(),

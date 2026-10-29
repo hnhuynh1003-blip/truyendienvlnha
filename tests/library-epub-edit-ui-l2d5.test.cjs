@@ -43,10 +43,10 @@ const content={
  'chapter-0002':'thượng hải là nơi kỳ an trở về.'
 };
 function manager({enabled=true,authorized=author,loadChapter:custom,
- chapterEditor=single,bulkSaver,onChapterSaved=()=>{}}={}){
+ chapterEditor=single,bulkSaver,journal,onChapterSaved=()=>{}}={}){
  const ui=mockDom(),loaded=[];
  const create=ui.window.DuduLibraryEpubEditL2D5.create;
- const instance=create({enabled,engine:bulk,chapterEditor,bulkSaver,onChapterSaved,
+ const instance=create({enabled,engine:bulk,chapterEditor,bulkSaver,journal,onChapterSaved,
   auth:()=>authorized,uid:()=>authorized.currentUser.uid,
   canEdit:()=>true,db:()=>({}),
   loadChapter:custom||(async(id,chapterId)=>{
@@ -171,6 +171,41 @@ test('L2D.5B bulk save and recovery controls are available only after explicit r
  assert.equal(restored.phase,'restored');
  assert.equal(elements.get('epub-edit-bulk-undo').hidden,true);
  assert.equal(saved.length,4,'Save initial chapter, save resumed chapter, restore both');
+});
+test('L2D.5C preserves a recoverable job across a simulated browser reload',async()=>{
+ let savedJob=null,cleared=0,hydrations=0;
+ const pendingPatch={chapterId:'chapter-0002',expectedVersion:0,
+  expectedContent:content['chapter-0002'],content:'thượng hải là nơi Kỳ An trở về.'};
+ const state={bookId:book.id,phase:'partial',total:2,done:[],
+  pending:[pendingPatch],unknown:[]};
+ const journal={
+  read:()=>savedJob,
+  begin:(id,uid,patches)=>{savedJob={id,uid,patches};return savedJob;},
+  hydrate:async()=>{hydrations++;return state;},
+  clear:()=>{cleared++;savedJob=null;},markUndo:()=>true
+ };
+ const saver={apply:async()=>state,resume:async()=>({
+  ...state,phase:'complete',pending:[],done:[{patch:pendingPatch,
+   version:1,backupId:'rev-000001'}]})};
+ const first=manager({journal,bulkSaver:saver});first.instance.open(book);
+ first.instance.switchMode('bulk');
+ const row=first.elements.get('epub-edit-rule-list').children[0];
+ row.children[0].value='kỳ an';row.children[1].value='Kỳ An';
+ await first.instance.scan();first.instance.chooseAll(true);first.instance.previewBulk();
+ assert.equal((await first.instance.saveBulk()).phase,'partial');
+ assert.equal(savedJob.id,book.id);
+ assert.equal(first.instance.close(),true,'Durable job can be left for later');
+
+ const reopened=manager({journal,bulkSaver:saver});
+ assert.equal(reopened.instance.open(book),true);
+ assert.equal(reopened.elements.get('epub-edit-bulk-reopen').hidden,false);
+ assert.equal(await reopened.instance.scan(),false,'Existing job blocks new batches');
+ assert.equal((await reopened.instance.reopenSavedJob()).phase,'partial');
+ assert.equal(hydrations,1);
+ assert.equal(reopened.elements.get('epub-edit-bulk-discard').hidden,false);
+ assert.equal(await reopened.instance.recoverBulk('discard'),true);
+ assert.equal(cleared,1);
+ assert.equal(savedJob,null);
 });
 test('Batch scan displays raw-text context, supports explicit selection and per-chapter filter',async()=>{
  const {instance,elements}=manager();instance.open(book);
