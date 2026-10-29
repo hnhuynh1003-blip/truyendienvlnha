@@ -1,5 +1,5 @@
-/* Personal Arcade V1 — Trạm Neon / Địa Tầng 07 / Vườn Sương.
- * Per-UID local game saves only. No Firestore, real wallet, shop or entitlement writes.
+/* Personal Arcade — playable scenes for Trạm Neon / Địa Tầng 07 / Vườn Sương.
+ * Local saves only. No Firestore, real wallet or entitlement writes.
  */
 (function(root){
  'use strict';
@@ -9,8 +9,9 @@
  const host=()=>root.document.getElementById('personal-arcade-v1');
  const modeLabels={neon:'Trạm Neon',mine:'Địa Tầng 07',garden:'Vườn Sương'};
  const oreLabels={stone:'Đá',coal:'Than',iron:'Sắt',crystal:'Tinh thạch'};
+ const oreGlyphs={stone:'◆',coal:'⬟',iron:'⬢',crystal:'✦'};
  let tab='neon',activeKey=null,state=null,lastTick=Date.now(),lastSave=0,
-  lastPaint=0,notice='Ba trò chơi độc lập. Chọn một trạm để bắt đầu.',error=false;
+  lastPaint=0,notice='Chọn một thế giới và bắt đầu chơi.',error=false,feedback=null;
  const now=()=>Date.now();
  const isSandbox=()=>typeof IS_SANDBOX_MODE!=='undefined'&&IS_SANDBOX_MODE;
  function identity(){
@@ -32,7 +33,7 @@
   const nextKey=keyFor(identity());
   if(nextKey!==activeKey){
    if(activeKey&&state)save();
-   activeKey=nextKey;state=null;
+   activeKey=nextKey;state=null;feedback=null;
    const time=now();lastTick=time;lastSave=time;
    if(activeKey){
     let saved=null;
@@ -52,46 +53,83 @@
  }
  const button=(label,action,kind='primary',disabled=false)=>
   `<button type="button" class="arcade-button ${kind}" data-arcade-action="${action}" ${disabled?'disabled':''}>${label}</button>`;
+ const activeFeedback=(type,time)=>feedback?.type===type&&time-feedback.at<1700?feedback:null;
+ const hud=(name,value,small='')=>`<div class="arcade-stat"><span>${name}</span><strong>${value}</strong>${small?`<small>${small}</small>`:''}</div>`;
  function neonPanel(s){
-  const cpuCost=core.upgradeCost(s,'cpu'),gpuCost=core.upgradeCost(s,'gpu');
+  const cpuCost=core.upgradeCost(s,'cpu'),gpuCost=core.upgradeCost(s,'gpu'),
+   stationCost=core.upgradeCost(s,'station');
   const activeRate=s.neon.running?core.rate(s):0;
-  return `<section class="arcade-panel arcade-neon" aria-label="Trạm Neon">
-    <div class="arcade-heading"><strong>Trạm Neon</strong><code>NODE / ACTIVE</code></div>
-    <div class="arcade-kicker">${s.neon.running?'● SYSTEM ONLINE':'○ SYSTEM PAUSED'}</div>
-    <div class="arcade-big">+${fmt(activeRate)} Xu/s</div>
-    <div class="arcade-terminal"><span>01</span> const income = ${activeRate/10};
-    <span>02</span> ${s.neon.running?'// auto mining cycles':'// system paused'}</div>
-    <div class="arcade-metric">Chạy nhàn rỗi trong tab đang mở. Không tốn thể lực.</div>
-    <div class="arcade-tile-grid">
-      <div class="arcade-tile"><small>CPU / Xung</small><b>Lv.${s.neon.cpu}</b></div>
-      <div class="arcade-tile"><small>VGA / Nhân</small><b>Lv.${s.neon.gpu}</b></div>
+  const level=Math.min(6,Math.floor((s.neon.cpu+s.neon.gpu)/5)+1);
+  const stations=Array.from({length:3},(_,i)=>`<div class="neon-computer neon-computer-${i+1} ${i>=s.neon.stations?'is-locked':''}">
+    <div class="neon-monitor"><div class="neon-monitor-glass"><span>${i>=s.neon.stations?'LOCKED':'CRYO<span class="neon-blink">_</span>'}</span>
+      <i></i><i></i><i></i><div class="neon-monitor-graph"></div></div></div>
+    <div class="neon-stand"></div><div class="neon-keyboard"></div>
+    <div class="neon-tower"><b></b><b></b><b></b></div></div>`).join('');
+  return `<section class="arcade-world arcade-world-neon ${s.neon.running?'is-running':'is-paused'}" aria-label="Trạm Neon">
+    <header class="arcade-world-heading"><div><span class="arcade-eyebrow">01 / IDLE TYCOON</span>
+      <h3>Trạm Neon</h3><p>Xây dàn máy. Chạy tự động. Nâng cấp doanh thu.</p></div>
+      <span class="arcade-world-live">${s.neon.running?'● ĐANG CHẠY':'Ⅱ TẠM DỪNG'}</span></header>
+    <div class="arcade-stage neon-stage" role="img" aria-label="Dàn máy tính đang vận hành với những màn hình phát sáng">
+      <div class="neon-light neon-light-one"></div><div class="neon-light neon-light-two"></div>
+      <div class="neon-wall-logo">CRYO<span>TECH</span><small>NET · STATION</small></div>
+      <div class="neon-server-stack"><span></span><span></span><span></span><span></span></div>
+      <div class="neon-floor"></div><div class="neon-computer-rack">${stations}</div>
+      <div class="neon-stage-income"><span>THU NHẬP TRỰC TIẾP</span><b>+${fmt(activeRate)} <small>Xu / giây</small></b>
+        <div class="neon-income-track"><i></i></div></div>
+      <div class="neon-room-level">${s.neon.stations}/3 DÀN · CẤP ${level}</div>
     </div>
-    <div class="arcade-actions">
-      ${button(s.neon.running?'Ⅱ Tạm dừng':'▶ Bật máy','toggle-neon','primary')}
-      ${button('CPU · '+fmt(cpuCost)+' Xu','cpu','gold',s.coins<cpuCost||s.neon.cpu>=50)}
-      ${button('VGA · '+fmt(gpuCost)+' Xu','gpu','gold',s.coins<gpuCost||s.neon.gpu>=20)}
+    <div class="arcade-control-panel">
+      <div class="arcade-panel-heading"><div><span class="arcade-eyebrow">QUẢN LÝ PHÒNG MÁY</span><h4>Trung tâm vận hành</h4></div>
+        ${button(s.neon.running?'Ⅱ Tạm dừng':'▶ Bật máy','toggle-neon','switch')}</div>
+      <div class="neon-upgrade-list">
+        <div class="neon-upgrade"><div class="neon-part-icon neon-part-cpu">▦</div><div class="neon-upgrade-info"><strong>Bộ xử lý CPU</strong><span>Tăng xung nhịp · Cấp ${s.neon.cpu}/50</span>
+          <div class="arcade-level-track"><i style="width:${s.neon.cpu*2}%"></i></div></div>
+          ${button('↑ '+fmt(cpuCost)+' Xu','cpu','upgrade',s.coins<cpuCost||s.neon.cpu>=50)}</div>
+        <div class="neon-upgrade"><div class="neon-part-icon neon-part-gpu">◈</div><div class="neon-upgrade-info"><strong>Card đồ họa VGA</strong><span>Tăng công suất · Cấp ${s.neon.gpu}/20</span>
+          <div class="arcade-level-track"><i style="width:${s.neon.gpu*5}%"></i></div></div>
+          ${button('↑ '+fmt(gpuCost)+' Xu','gpu','upgrade',s.coins<gpuCost||s.neon.gpu>=20)}</div>
+        <div class="neon-upgrade"><div class="neon-part-icon neon-part-station">▣</div><div class="neon-upgrade-info"><strong>Lắp thêm dàn máy</strong><span>Nhân sản lượng · ${s.neon.stations}/3 dàn</span>
+          <div class="arcade-level-track"><i style="width:${s.neon.stations/3*100}%"></i></div></div>
+          ${button(stationCost===null?'Đã đủ 3 dàn':'＋ '+fmt(stationCost)+' Xu','station','upgrade',stationCost===null||s.coins<stationCost)}</div>
+      </div><p class="arcade-world-hint">Máy tạo Xu khi tab web còn mở. Đóng tab sẽ ngừng thu nhập; không tiêu hao lượt chơi.</p>
     </div>
   </section>`;
  }
  function minePanel(s,time){
   const m=s.mine,repairing=!!m.repairUntil;
-  const all=Object.values(m.ores).reduce((sum,n)=>sum+n,0);
-  return `<section class="arcade-panel arcade-mine" aria-label="Địa Tầng 07">
-    <div class="arcade-heading"><strong>Địa Tầng 07</strong><code>CORE / 07</code></div>
-    <div class="arcade-metric">Độ bền cuốc <b>${m.durability}/100</b>
-      ${repairing?'· Đang sửa '+countdown(m.repairUntil-time):''}</div>
-    <div class="arcade-progress" role="progressbar" aria-label="Độ bền cuốc" aria-valuenow="${m.durability}" aria-valuemin="0" aria-valuemax="100"><span style="width:${m.durability}%"></span></div>
-    <div class="arcade-actions">
-      ${button('⛏ Đào quặng','mine','primary',repairing||!m.durability)}
-      ${button(repairing?'🔧 '+countdown(m.repairUntil-time):'🔧 Tự sửa · 4 phút','repair-wait','',repairing||m.durability===100)}
-      ${button('⚒ Rèn ngay · 5 than + 2 sắt','repair-forge','gold',repairing||m.durability===100||m.ores.coal<5||m.ores.iron<2)}
-      ${button('Dầu bôi trơn · 15 Xu','buy-oil','',repairing||m.durability===100||s.coins<150)}
-      ${button('Cuốc mới · 80 Xu','buy-pick','gold',(m.durability===100&&!repairing)||s.coins<800)}
+  const all=Object.values(m.ores).reduce((sum,n)=>sum+n,0),hit=activeFeedback('mine',time);
+  return `<section class="arcade-world arcade-world-mine" aria-label="Địa Tầng 07">
+    <header class="arcade-world-heading"><div><span class="arcade-eyebrow">02 / CLICKER</span>
+      <h3>Địa Tầng 07</h3><p>Chạm vỉa quặng để khai thác. Mang khoáng sản đi bán.</p></div>
+      <span class="arcade-world-live">CORE / 07</span></header>
+    <div class="arcade-stage mine-stage ${hit?'mine-hit-active':''}">
+      <div class="mine-stratum mine-stratum-1"></div><div class="mine-stratum mine-stratum-2"></div>
+      <div class="mine-cave-light"></div><div class="mine-tunnel-arch"></div>
+      <div class="mine-crystal mine-crystal-left"></div><div class="mine-crystal mine-crystal-right"></div>
+      <div class="mine-scene-head"><span>HẦM KHAI THÁC · -${Math.floor(m.dug/20)+7}M</span>
+        <span>${m.dug.toLocaleString('vi-VN')} LƯỢT ĐÀO</span></div>
+      <button class="mine-ore-button" type="button" data-arcade-action="mine" ${repairing||!m.durability?'disabled':''}
+        aria-label="Gõ vào vỉa quặng để đào" title="Chạm hoặc bấm để đào quặng">
+        <span class="mine-rock-shadow"></span><span class="mine-rock"><i></i><i></i><i></i><i></i><i></i></span>
+        <span class="mine-ore-glow"></span><span class="mine-hit-spark">✦</span>
+        <span class="mine-tap-prompt">${repairing?'ĐANG SỬA CUỐC':m.durability?'⛏ CHẠM ĐỂ ĐÀO':'CUỐC ĐÃ HẾT ĐỘ BỀN'}</span></button>
+      ${hit?`<div class="mine-drop" aria-live="polite">+1 ${oreGlyphs[hit.ore]} ${oreLabels[hit.ore]}</div>`:''}
+      <div class="mine-bottom-hud"><div class="mine-durability-circle" style="--mine-durability:${m.durability}%"><span>CUỐC</span><b>${m.durability}<small>/100</small></b></div>
+        <span>${repairing?'🔧 Tự sửa: '+countdown(m.repairUntil-time):'Mỗi cú đào trừ 1 độ bền'}</span></div>
     </div>
-    <div class="arcade-tile-grid">${Object.entries(m.ores).map(([ore,count])=>
-     `<div class="arcade-tile"><small>${oreLabels[ore]}</small><b>${count}</b></div>`).join('')}</div>
-    <div class="arcade-actions">${button('Bán '+all+' quặng','sell-ores','gold',!all)}</div>
-    <p class="arcade-note">Đào quặng không tiêu hao năng lượng đọc truyện. Có thể chờ cuốc tự hồi hoặc dùng vật liệu trong mỏ.</p>
+    <div class="arcade-control-panel">
+      <div class="arcade-panel-heading"><div><span class="arcade-eyebrow">KHO KHOÁNG SẢN</span><h4>Túi quặng · ${all} mẫu</h4></div>
+        ${button('Bán tất cả ↗','sell-ores','market',!all)}</div>
+      <div class="mine-inventory">${Object.entries(m.ores).map(([ore,count])=>
+        `<div class="mine-inventory-slot mine-slot-${ore}"><span>${oreGlyphs[ore]}</span><small>${oreLabels[ore]}</small><b>${count}</b></div>`).join('')}</div>
+      <div class="arcade-panel-heading arcade-panel-heading-sub"><div><span class="arcade-eyebrow">XƯỞNG RÈN</span><h4>Bảo dưỡng dụng cụ</h4></div></div>
+      <div class="mine-tool-actions">
+        ${button(repairing?'⏳ '+countdown(m.repairUntil-time):'🔧 Tự sửa · 4 phút','repair-wait','tool',repairing||m.durability===100)}
+        ${button('⚒ Rèn · 5 than + 2 sắt','repair-forge','tool',repairing||m.durability===100||m.ores.coal<5||m.ores.iron<2)}
+        ${button('Dầu +25 · 15 Xu','buy-oil','tool',repairing||m.durability===100||s.coins<150)}
+        ${button('Cuốc mới · 80 Xu','buy-pick','tool',(m.durability===100&&!repairing)||s.coins<800)}
+      </div>
+    </div>
   </section>`;
  }
  function gardenPanel(s,time){
@@ -99,25 +137,37 @@
   const bed=(b,index)=>{
    const mature=b.status==='growing'&&time>=b.readyAt;
    const action=b.status==='empty'?'plant-'+index:b.status==='dry'?'water-'+index:'harvest-'+index;
-   const text=b.status==='empty'?'Gieo hạt':b.status==='dry'?'Tưới nước':mature?'Thu hoạch':'Đang lớn';
-   const caption=b.status==='empty'?'Ô trống':b.status==='dry'?'Chờ tưới':mature?'Đã chín':countdown(b.readyAt-time);
+   const text=b.status==='empty'?'＋ Gieo':b.status==='dry'?'💧 Tưới':mature?'✦ Thu':'Đang lớn';
+   const caption=b.status==='empty'?'Đất trống':b.status==='dry'?'Thiếu nước':mature?'Đã chín':countdown(b.readyAt-time);
    const disabled=b.status==='empty'?!g.seeds:b.status==='dry'?!g.water:!mature;
-   return `<div class="arcade-bed"><span class="symbol">${b.status==='empty'?'▫':b.status==='dry'?'🌱':mature?'🌼':'🪴'}</span>
-     <strong>Luống ${index+1}</strong><small>${caption}</small>${button(text,action,'primary',disabled)}</div>`;
+   return `<button class="garden-plot ${b.status} ${mature?'mature':''}" type="button" data-arcade-action="${action}" ${disabled?'disabled':''}
+     aria-label="Luống ${index+1}: ${text}, ${caption}">
+     <span class="garden-soil"></span><span class="garden-stem"><i></i><i></i><i></i></span>
+     <span class="garden-flower"><i></i><i></i><i></i><i></i><i></i></span>
+     <span class="garden-plot-label"><b>LUỐNG ${String(index+1).padStart(2,'0')}</b><small>${caption}</small><em>${text}</em></span></button>`;
   };
-  return `<section class="arcade-panel arcade-garden" aria-label="Vườn Sương">
-    <div class="arcade-heading"><strong>Vườn Sương</strong><code>MIST / GARDEN</code></div>
-    <div class="arcade-tile-grid">
-      <div class="arcade-tile"><small>Nước hứng sương</small><b>💧 ${g.water}/3</b></div>
-      <div class="arcade-tile"><small>Hạt giống</small><b>🌿 ${g.seeds}</b></div>
+  return `<section class="arcade-world arcade-world-garden" aria-label="Vườn Sương">
+    <header class="arcade-world-heading"><div><span class="arcade-eyebrow">03 / CHILL FARM</span>
+      <h3>Vườn Sương</h3><p>Chăm hai luống hoa. Ngắm hồ cá, thu những món quà nhỏ.</p></div>
+      <span class="arcade-world-live">MIST / GARDEN</span></header>
+    <div class="garden-resources">${hud('NƯỚC HỨNG SƯƠNG','💧 '+g.water+'/3',g.water===3?'Bình đã đầy':'Hồi mỗi 15 phút')}
+      ${hud('HẠT GIỐNG','✿ '+g.seeds,'Có thể mua thêm')}</div>
+    <div class="arcade-stage garden-stage">
+      <div class="garden-mist garden-mist-a"></div><div class="garden-mist garden-mist-b"></div>
+      <div class="garden-cloud garden-cloud-a"></div><div class="garden-cloud garden-cloud-b"></div>
+      <div class="garden-mountains"></div><div class="garden-grass"></div>
+      <div class="garden-plot-area">${g.beds.map(bed).join('')}</div>
+      <div class="garden-pond"><div class="garden-pond-shine"></div>
+        <span class="garden-fish garden-fish-a"></span><span class="garden-fish garden-fish-b"></span>
+        <span class="garden-bubble garden-bubble-a"></span><span class="garden-bubble garden-bubble-b"></span>
+        <span class="garden-bubble garden-bubble-c"></span></div>
+      <button type="button" class="garden-pond-collect ${g.bubbleReady?'is-ready':''}" data-arcade-action="catch-bubble" ${g.bubbleReady?'':'disabled'}>
+        ${g.bubbleReady?'✦ Thu bọt · +4 Xu':`Hồ cá · ${countdown(g.bubbleAt-time)}`}</button>
     </div>
-    <div class="arcade-metric">Mỗi 15 phút hứng thêm một bình nước, kể cả khi không chơi.</div>
-    <div class="arcade-beds">${g.beds.map(bed).join('')}</div>
-    <div class="arcade-actions">${button('Mua 3 hạt · 10 Xu','buy-seeds','gold',s.coins<100)}</div>
-    <div class="arcade-tile" style="margin-top:9px"><small>Hồ cá · Nhặt bọt nước</small>
-      <div class="arcade-big" style="font-size:23px">🐠 ${g.bubbleReady?'✦ Có quà':'◌ '+countdown(g.bubbleAt-time)}</div>
-      <div class="arcade-metric">Mồi câu đã nhặt: ${g.bait}</div>
-      <div class="arcade-actions">${button('Thu bọt · +4 Xu & mồi','catch-bubble','primary',!g.bubbleReady)}</div>
+    <div class="arcade-control-panel"><div class="arcade-panel-heading"><div><span class="arcade-eyebrow">NHÀ KÍNH</span>
+        <h4>Vật tư & thu hoạch</h4></div>${button('＋ 3 hạt · 10 Xu','buy-seeds','market',s.coins<100)}</div>
+      <div class="garden-statline"><span>🌿 Đã thu hoạch <b>${g.harvests}</b></span><span>🐟 Mồi câu <b>${g.bait}</b></span></div>
+      <p class="arcade-world-hint">Cây lớn sau 3 phút. Hứng sương tự hồi và hồ cá sinh bọt ngay cả khi bạn đi vắng.</p>
     </div>
   </section>`;
  }
@@ -127,15 +177,12 @@
   if(!s){element.innerHTML='<div class="arcade-empty">Đăng nhập tài khoản để lưu tiến trình minigame riêng trên thiết bị này.</div>';return true;}
   const time=now(),panel=tab==='neon'?neonPanel(s):tab==='mine'?minePanel(s,time):gardenPanel(s,time);
   const previousScroll=element.scrollTop;
-  element.innerHTML=`<div class="arcade-shell">
-    <div class="arcade-hero"><div class="arcade-kicker">PERSONAL / ARCADE / V1</div>
-      <div class="arcade-hero-title">Chơi một chút, tích một chút.</div>
-      <div class="arcade-hero-wallet">${fmt(s.coins)} <small>Xu trò chơi</small></div>
-      <p class="arcade-note">Ba trò độc lập · Chơi tùy thích · Không cần đọc truyện để nhận lượt.</p>
-    </div>
+  element.innerHTML=`<div class="arcade-shell arcade-active-${tab}">
+    <div class="arcade-topbar"><div><span class="arcade-eyebrow">DUDU / PLAYGROUND</span><h2>Khu trò chơi</h2></div>
+      <div class="arcade-wallet"><span>VÍ TRÒ CHƠI</span><strong>✦ ${fmt(s.coins)}</strong><small>Xu</small></div></div>
     <div class="arcade-tabs" role="tablist" aria-label="Ba minigame">
-      ${Object.entries(modeLabels).map(([type,name])=>`<button type="button" class="arcade-tab" role="tab"
-        aria-selected="${tab===type}" data-arcade-tab="${type}">${type==='neon'?'🖥️':type==='mine'?'⛏️':'🪴'} ${name}</button>`).join('')}
+      ${Object.entries(modeLabels).map(([type,name])=>`<button type="button" class="arcade-tab ${tab===type?'is-active':''}" role="tab"
+        aria-selected="${tab===type}" data-arcade-tab="${type}"><span class="arcade-tab-icon">${type==='neon'?'▣':type==='mine'?'◈':'✿'}</span><span>${name}</span></button>`).join('')}
     </div>
     ${panel}
     <div class="arcade-status" data-error="${error}" aria-live="polite" data-arcade-notice></div>
@@ -154,13 +201,14 @@
   state=core.advance(s,time,Math.max(0,time-lastTick));
   lastTick=time;
   if(time-lastSave>=5000)save();
-  if(visible()&&time-lastPaint>=2000)render();
+  if(visible()&&time-lastPaint>=1000)render();
  }
  function interact(action){
   tick();if(!state||!activeKey)return false;
   const result=core.act(state,action,now(),Math.random());
   if(!result.ok){notice=result.reason;error=true;render();return false;}
   state=result.state;
+  feedback=action==='mine'?{type:'mine',ore:result.label,at:now()}:null;
   notice=result.label==='stone'?'Nhặt được Đá.':result.label==='coal'?'Nhặt được Than.':
    result.label==='iron'?'Nhặt được Sắt.':result.label==='crystal'?'✦ Nhặt được Tinh thạch!':result.label;
   error=false;save();render();return true;

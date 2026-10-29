@@ -33,20 +33,39 @@ test('Arcade phone UI renders three named tabs and a disabled transfer control',
  assert.match(host.innerHTML,/Chuyển vào ví Xu hệ thống · chờ Rules/);
  assert.match(host.innerHTML,/data-arcade-action="transfer" disabled/);
  assert.match(host.innerHTML,/LOCAL \/ FREE/);
+ assert.match(host.innerHTML,/arcade-stage neon-stage/);
+ assert.match(host.innerHTML,/neon-computer-rack/);
+ assert.match(host.innerHTML,/data-arcade-action="cpu"/);
+ assert.match(host.innerHTML,/data-arcade-action="gpu"/);
+ assert.match(host.innerHTML,/data-arcade-action="station"/);
+ assert.match(host.innerHTML,/neon-computer-2 is-locked/);
 });
 test('Arcade UI changes game tabs and stores a local UID-specific mining round',()=>{
  const {db,host,window,setUid}=harness();
  window.DuduPersonalArcadeUIV1.render();
  host.listeners.click({target:{closest:()=>({disabled:false,dataset:{arcadeTab:'mine'}})}});
  assert.match(host.innerHTML,/CORE \/ 07/);
+ assert.match(host.innerHTML,/mine-ore-button/);
  assert.equal(window.DuduPersonalArcadeUIV1.interact('mine'),true);
  const key='dudu-personal-arcade:v1:reader-one',saved=JSON.parse(db.get(key));
  assert.equal(saved.mine.durability,99);
  assert.equal(saved.mine.dug,1);
+ assert.match(host.innerHTML,/mine-drop/);
  setUid('reader-two');window.DuduPersonalArcadeUIV1.render();
- assert.match(host.innerHTML,/100\/100/);
+ assert.match(host.innerHTML,/<b>100<small>\/100<\/small><\/b>/);
  assert.equal(db.has('dudu-personal-arcade:v1:reader-two'),false,
   'A new reader must not inherit or accidentally overwrite the prior user game');
+});
+test('Garden is a playable scene with plots and animated pond, not generic data tiles',()=>{
+ const {host,window}=harness();
+ window.DuduPersonalArcadeUIV1.render();
+ host.listeners.click({target:{closest:()=>({disabled:false,dataset:{arcadeTab:'garden'}})}});
+ assert.match(host.innerHTML,/garden-stage/);
+ assert.match(host.innerHTML,/garden-plot-area/);
+ assert.match(host.innerHTML,/garden-fish garden-fish-a/);
+ assert.match(host.innerHTML,/data-arcade-action="plant-0"/);
+ assert.equal(window.DuduPersonalArcadeUIV1.interact('plant-0'),true);
+ assert.match(host.innerHTML,/data-arcade-action="water-0"/);
 });
 test('Arcade UI requires login before any game save',()=>{
  const {db,host,window,setUid}=harness();setUid(null);

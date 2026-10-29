@@ -19,7 +19,7 @@
  const fresh=(now=Date.now())=>{
   const time=safeTime(now);
   return {version:1,lastAt:time,coins:0,earned:0,
-   neon:{cpu:1,gpu:1,running:true,remainder:0},
+   neon:{cpu:1,gpu:1,stations:1,running:true,remainder:0},
    mine:{durability:100,repairUntil:0,dug:0,ores:{stone:0,coal:0,iron:0,crystal:0}},
    garden:{water:1,waterAt:time,seeds:3,beds:[{status:'empty',readyAt:0},{status:'empty',readyAt:0}],
     bubbleAt:time+BUBBLE_INTERVAL,bubbleReady:false,bait:0,harvests:0}};
@@ -33,6 +33,7 @@
   state.coins=number(source.coins,0,MAX_COIN,0);
   state.earned=number(source.earned,0,MAX_COIN,0);
   state.neon={cpu:number(neon.cpu,1,50,1),gpu:number(neon.gpu,1,20,1),
+   stations:number(neon.stations,1,3,1),
    running:neon.running!==false,remainder:number(neon.remainder,0,999,0)};
   state.mine={durability:number(mine.durability,0,100,100),
    repairUntil:number(mine.repairUntil,0,time+REPAIR_INTERVAL*2,0),
@@ -53,9 +54,10 @@
   state.garden.harvests=number(garden.harvests,0,1000000,0);
   return state;
  }
- const rate=state=>state.neon.cpu*state.neon.gpu; // tenths Xu / second
+ const rate=state=>state.neon.cpu*state.neon.gpu*state.neon.stations; // tenths Xu / second
  const upgradeCost=(state,type)=>type==='cpu'?400*state.neon.cpu*state.neon.cpu:
-  type==='gpu'?900*state.neon.gpu*state.neon.gpu:null;
+  type==='gpu'?900*state.neon.gpu*state.neon.gpu:
+  type==='station'&&state.neon.stations<3?800*state.neon.stations*state.neon.stations:null;
  const give=(state,amount)=>{
   if(amount<=0)return;
   state.coins=clamp(state.coins+amount,MAX_COIN);
@@ -102,6 +104,13 @@
    if(state.coins<cost)return fail('Chưa đủ Xu trong trò chơi');
    state.coins-=cost;state.neon[action]++;
    return succeed('Đã nâng cấp '+action.toUpperCase());
+  }
+  if(action==='station'){
+   if(state.neon.stations>=3)return fail('Phòng máy đã mở đủ ba dàn');
+   const cost=upgradeCost(state,'station');
+   if(state.coins<cost)return fail('Chưa đủ Xu để lắp thêm dàn máy');
+   state.coins-=cost;state.neon.stations++;
+   return succeed('Đã lắp dàn máy số '+state.neon.stations);
   }
   if(action==='mine'){
    if(mine.repairUntil)return fail('Cuốc đang tự sửa chữa');

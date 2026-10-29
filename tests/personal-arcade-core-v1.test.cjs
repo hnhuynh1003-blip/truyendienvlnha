@@ -36,6 +36,20 @@ test('Neon can pause, upgrade using only game money and increase its rate',()=>{
  assert.equal(idle.coins,20);
  assert.equal(apply(idle,'cpu',START+20000).ok,false);
 });
+test('Neon Tycoon unlocks real stations, triples output and preserves old local saves',()=>{
+ let state=arcade.fresh(START);state.coins=6000;
+ assert.equal(state.neon.stations,1);
+ const second=apply(state,'station');
+ assert.equal(second.ok,true);assert.equal(second.state.neon.stations,2);
+ assert.equal(arcade.rate(second.state),2);
+ assert.equal(second.state.coins,5200);
+ const third=apply(second.state,'station');
+ assert.equal(third.ok,true);assert.equal(third.state.neon.stations,3);
+ assert.equal(arcade.rate(third.state),3);
+ assert.equal(apply(third.state,'station').ok,false);
+ const old=arcade.fresh(START);delete old.neon.stations;
+ assert.equal(arcade.norm(old,START).neon.stations,1,'Existing saves start with one working station');
+});
 test('Mining consumes one durability per click; ore sale credits only local game Xu',()=>{
  let state=arcade.fresh(START);
  const expected={stone:0.2,coal:0.6,iron:0.8,crystal:0.98};
@@ -99,12 +113,13 @@ test('Garden refills dew offline, grows only watered plants and fish offers bubb
 });
 test('Invalid/corrupt saved state cannot introduce non-finite counters or unlimited upgrades',()=>{
  const bad={...arcade.fresh(START),coins:Infinity,earned:-1,
-  neon:{cpu:999,gpu:0,running:true,remainder:999999},
+  neon:{cpu:999,gpu:0,stations:999,running:true,remainder:999999},
   mine:{durability:-100,repairUntil:Infinity,ores:{stone:NaN}},
   garden:{water:1e6,waterAt:-12,seeds:-1,beds:[{status:'evil'}]}};
  const state=arcade.norm(bad,START);
  assert.equal(state.coins,0);assert.equal(state.earned,0);
  assert.equal(state.neon.cpu,1);assert.equal(state.neon.gpu,1);
+ assert.equal(state.neon.stations,1);
  assert.equal(state.mine.durability,100);assert.equal(state.garden.water,1);
  assert.equal(apply(state,'unknown').ok,false);
 });

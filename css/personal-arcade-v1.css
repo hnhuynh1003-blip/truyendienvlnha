@@ -1,61 +1,296 @@
-/* Personal Arcade V1 — compact cyberphone game cards, isolated from reader CSS. */
-#phone-app-arcade{min-width:0;gap:8px;background:linear-gradient(160deg,#101725 0%,#0b1321 100%)}
+/* DUDU Arcade — three distinct playable, CSS-drawn scenes, zero image requests. */
+#phone-app-arcade{min-width:0;gap:7px;background:#0b1220}
 #phone-app-arcade .phone-app-header{flex-shrink:0}
-#personal-arcade-v1{font:inherit;color:#e9e7df;min-width:0}
+#personal-arcade-v1{font:inherit;color:#f1f0e9;min-width:0}
 #personal-arcade-v1 *{box-sizing:border-box}
 #personal-arcade-v1 button{font:inherit;touch-action:manipulation}
-.arcade-shell{display:flex;flex-direction:column;gap:9px;min-width:0;padding-bottom:12px}
-.arcade-kicker{font:700 9px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.16em;color:#76ddd5;text-transform:uppercase}
-.arcade-hero{padding:12px;border:1px solid #3d5261;border-radius:14px;
-  background:linear-gradient(115deg,#1a2940,#152335 52%,#1d1c38);position:relative;overflow:hidden}
-.arcade-hero::after{content:'</>';position:absolute;right:5px;top:4px;font:900 42px ui-monospace,monospace;color:#9adddb12;pointer-events:none}
-.arcade-hero-title{font-size:17px;font-weight:800;line-height:1.25;letter-spacing:-.03em}
-.arcade-hero-wallet{font:700 19px ui-monospace,SFMono-Regular,monospace;color:#f3d79a;margin-top:5px}
-.arcade-note{color:#aab7c8;font-size:10px;line-height:1.45;margin:5px 0 0}
-.arcade-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
-.arcade-tab{border:1px solid #44516b;background:#151d2c;border-radius:10px;padding:9px 4px;
- color:#bec9d9;cursor:pointer;font-size:11px;line-height:1.25;min-height:46px}
-.arcade-tab[aria-selected=true]{border-color:#83d6cc;background:#1e3a48;color:#e4faff;
- box-shadow:0 0 0 1px #83d6cc24 inset}
-.arcade-panel{border:1px solid #384453;background:#172332;border-radius:13px;padding:11px;min-width:0;
- position:relative;overflow:hidden;box-shadow:inset 0 1px 0 #c7eff60a,0 8px 23px #02071326}
-.arcade-panel::before{content:'';position:absolute;top:0;left:12px;width:58px;height:2px;
- background:linear-gradient(90deg,#78d7d0,#d6b77c);opacity:.8}
-.arcade-neon{background:radial-gradient(circle at 100% 0%,#1b4a55b8,transparent 52%),#172332}
-.arcade-mine{background:radial-gradient(circle at 93% 15%,#6d523b70,transparent 58%),#172332}
-.arcade-garden{background:radial-gradient(circle at 100% 3%,#32655480,transparent 53%),#172332}
-.arcade-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 8px}
-.arcade-heading strong{font-size:14px;font-weight:800;color:#f0e5d5}
-.arcade-heading code{font:600 9px ui-monospace,monospace;color:#7eddd4;white-space:nowrap}
-.arcade-metric{font-size:11px;color:#cad5df;line-height:1.5}
-.arcade-big{font:800 24px ui-monospace,SFMono-Regular,monospace;letter-spacing:-.04em;color:#f5d99c;margin:7px 0}
-.arcade-terminal{margin:6px 0 10px;padding:8px 9px;border-radius:8px;border:1px solid #335468;
- background:#091a28c4;color:#b9d1de;font:10px/1.7 ui-monospace,SFMono-Regular,Consolas,monospace;
- white-space:pre-line;box-shadow:inset 0 0 18px #08243a}
-.arcade-terminal>span{color:#66bcc4;margin-right:8px}
-.arcade-tile-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:8px 0}
-.arcade-tile{border:1px solid #35495b;border-radius:10px;padding:9px;background:#111d2d;min-width:0}
-.arcade-tile small{display:block;color:#96aabc;font-size:10px}
-.arcade-tile b{display:block;margin-top:3px;font-size:13px;color:#e5f5f8}
-.arcade-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-.arcade-button{cursor:pointer;background:#203348;border:1px solid #516878;border-radius:9px;padding:9px 10px;
- color:#eef3f7;font-size:11px;font-weight:700;flex:1 1 auto;min-height:38px}
-.arcade-button.primary{background:linear-gradient(125deg,#285e68,#29455c);border-color:#7ecfc8;color:#e8ffff}
-.arcade-button.gold{background:linear-gradient(125deg,#4a3c29,#45334a);border-color:#c8ab74;color:#ffe4ab}
-.arcade-button:disabled{opacity:.4;cursor:not-allowed}
-.arcade-progress{height:7px;border-radius:999px;background:#0b1520;border:1px solid #344257;overflow:hidden;margin:7px 0}
-.arcade-progress>span{display:block;height:100%;background:linear-gradient(90deg,#54bdba,#c7a975);transition:width .2s}
-.arcade-beds{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}
-.arcade-bed{padding:10px 8px;border:1px solid #435b54;border-radius:11px;background:#132a2c;text-align:center;min-width:0}
-.arcade-bed .symbol{font-size:28px;display:block;padding:3px}
-.arcade-bed strong{display:block;font-size:11px;color:#c7f6e1}
-.arcade-bed small{display:block;min-height:24px;color:#aabdc3;font-size:10px;margin:4px 0}
-.arcade-bed .arcade-button{width:100%;padding:8px 2px;font-size:10px}
-.arcade-status{border-left:2px solid #8ccdc4;padding:8px 10px;background:#10212d;
- border-radius:4px;color:#bed7df;font-size:11px;line-height:1.45;min-height:32px}
-.arcade-status[data-error=true]{border-left-color:#d5a48a;color:#f0c4aa}
-.arcade-privacy{font-size:10px;color:#8fa1b5;line-height:1.5;padding:8px 0;border-top:1px dashed #394a5b}
-.arcade-empty{border:1px solid #4e5363;border-radius:12px;padding:20px 12px;text-align:center;
- color:#d5ccdd;line-height:1.6}
-.arcade-pill{font:700 9px ui-monospace,monospace;color:#f4d89a;border:1px solid #77634b;border-radius:999px;padding:4px 7px;white-space:nowrap}
-@media (prefers-reduced-motion:reduce){#personal-arcade-v1 *{transition:none!important}}
+.arcade-shell{display:flex;flex-direction:column;gap:10px;min-width:0;padding-bottom:18px}
+.arcade-eyebrow{display:block;font:700 9px/1.4 ui-monospace,Consolas,monospace;letter-spacing:.15em;color:#80e0d2}
+.arcade-topbar{display:flex;gap:8px;justify-content:space-between;align-items:center;padding:9px 2px 4px}
+.arcade-topbar h2{font-size:21px;line-height:1.15;margin:2px 0 0;letter-spacing:-.05em;color:#fff3df}
+.arcade-wallet{display:flex;flex-direction:column;align-items:flex-end;min-width:116px;gap:1px}
+.arcade-wallet span{color:#99a8bc;font:700 8px ui-monospace,monospace;letter-spacing:.1em}
+.arcade-wallet strong{font:800 20px/1.12 ui-monospace,Consolas,monospace;color:#f0d48f;letter-spacing:-.04em}
+.arcade-wallet small{font-size:9px;color:#d9bea0}
+.arcade-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;background:#101a2c;
+ padding:5px;border:1px solid #253449;border-radius:15px}
+.arcade-tab{min-height:51px;display:flex;gap:3px;flex-direction:column;align-items:center;justify-content:center;
+ color:#a4b2c3;background:transparent;border:1px solid transparent;border-radius:10px;cursor:pointer;
+ font-size:10px;line-height:1.2;font-weight:700;padding:3px 2px}
+.arcade-tab-icon{font:900 22px/1 ui-serif,Georgia,serif;transition:transform .2s}
+.arcade-tab[aria-selected=true]{color:#fff3dc;border-color:#42616d;background:linear-gradient(150deg,#23434c,#21304a);
+ box-shadow:0 4px 13px #0003}
+.arcade-tab[aria-selected=true] .arcade-tab-icon{transform:translateY(-1px);color:#93eadf}
+.arcade-active-mine .arcade-tab[aria-selected=true]{background:linear-gradient(150deg,#503b3b,#302d42);border-color:#8e5a50}
+.arcade-active-mine .arcade-tab[aria-selected=true] .arcade-tab-icon{color:#e8b17e}
+.arcade-active-garden .arcade-tab[aria-selected=true]{background:linear-gradient(150deg,#2c504b,#263b44);border-color:#5a997f}
+.arcade-active-garden .arcade-tab[aria-selected=true] .arcade-tab-icon{color:#ccf0b5}
+.arcade-world{min-width:0;overflow:hidden;border:1px solid #34475c;border-radius:17px;background:#111c2b}
+.arcade-world-heading{display:flex;justify-content:space-between;gap:6px;align-items:flex-start;padding:14px 13px 12px}
+.arcade-world-heading h3{margin:2px 0 3px;font-size:23px;letter-spacing:-.055em;line-height:1.15;color:#fff0df}
+.arcade-world-heading p{font-size:10px;color:#aebbc8;line-height:1.45;margin:0;max-width:270px}
+.arcade-world-live{font:800 8px/1.35 ui-monospace,monospace;letter-spacing:.04em;
+ color:#b3eadc;border:1px solid #365d63;background:#173337;padding:5px 6px;border-radius:999px;
+ white-space:nowrap;text-align:center}
+.arcade-world-mine .arcade-world-live{color:#f0c18f;border-color:#765449;background:#342827}
+.arcade-world-garden .arcade-world-live{color:#cfedbd;border-color:#496f58;background:#243f34}
+.arcade-stage{height:278px;position:relative;overflow:hidden;isolation:isolate}
+.arcade-stage button{z-index:5}
+.arcade-button{border:1px solid #69818a;border-radius:10px;background:#23424a;color:#eaffff;font-size:10px;
+ font-weight:800;cursor:pointer;min-height:37px;padding:8px 10px;line-height:1.25;transition:transform .12s,filter .12s}
+.arcade-button:active:not(:disabled),.mine-ore-button:active:not(:disabled),
+.garden-plot:active:not(:disabled){transform:scale(.96)}
+.arcade-button:disabled{opacity:.37;filter:grayscale(.45);cursor:not-allowed}
+.arcade-button:focus-visible,.arcade-tab:focus-visible,.mine-ore-button:focus-visible,
+.garden-plot:focus-visible,.garden-pond-collect:focus-visible{outline:2px solid #f6deb0;outline-offset:2px}
+.arcade-control-panel{padding:13px;background:#142232;border-top:1px solid #405064}
+.arcade-panel-heading{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:11px}
+.arcade-panel-heading h4{font-size:14px;line-height:1.2;margin:3px 0 0;color:#fff0df}
+.arcade-panel-heading-sub{margin-top:16px}
+.arcade-world-hint{margin:10px 0 0;color:#8da3b5;font-size:10px;line-height:1.55}
+.arcade-status{background:#162a30;border:1px solid #2f5e5a;border-left:3px solid #93dcca;
+ border-radius:8px;padding:9px 11px;font-size:11px;line-height:1.45;color:#d1e9e9;min-height:34px}
+.arcade-status[data-error=true]{background:#302525;border-color:#70473d;border-left-color:#ec9d75;color:#f8d2b6}
+.arcade-privacy{padding:11px 4px 0;border-top:1px dashed #35475a;line-height:1.5}
+.arcade-note{margin:6px 0 10px;font-size:10px;color:#8395a9}
+.arcade-pill{font:800 9px ui-monospace,monospace;color:#e3c98d;border:1px solid #6b604b;
+ border-radius:20px;padding:4px 7px}
+.arcade-privacy .arcade-button{width:100%;background:#2a2f40;color:#aeafbc}
+.arcade-empty{padding:30px 18px;border-radius:15px;background:#142333;text-align:center;color:#cedce9;line-height:1.5}
+
+/* Trạm Neon: illuminated room with a rack of 3 working terminals. */
+.arcade-world-neon{border-color:#346577;background:#101d30}
+.neon-stage{background:radial-gradient(ellipse at 50% 10%,#254d6f 0%,#101f36 47%,#091629 88%)}
+.neon-stage::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 34px,#b6f5ff04 35px 36px);
+ mask-image:linear-gradient(to bottom,#000,transparent 68%)}
+.neon-light{position:absolute;top:-80px;width:130px;height:260px;filter:blur(18px);opacity:.5;transform:rotate(18deg);
+ background:linear-gradient(90deg,transparent,#23e2e723,transparent)}
+.neon-light-one{left:15%}.neon-light-two{left:72%;transform:rotate(-17deg);background:linear-gradient(90deg,transparent,#ab76ff25,transparent)}
+.neon-wall-logo{position:absolute;top:18px;left:15px;font:900 26px/1 ui-monospace,monospace;letter-spacing:-.08em;
+ color:#bce6ff60;text-shadow:0 0 20px #40baff38}
+.neon-wall-logo>span{color:#e6a7f359}.neon-wall-logo small{display:block;font:700 7px ui-monospace,monospace;letter-spacing:.36em;margin-top:5px}
+.neon-server-stack{position:absolute;right:6px;top:35px;width:37px;height:103px;padding:5px;background:linear-gradient(90deg,#0a1429,#24344b,#07101e);
+ border:1px solid #435970;border-radius:4px;box-shadow:0 0 21px #53baff24}
+.neon-server-stack span{display:block;height:18px;margin-bottom:5px;border-radius:2px;border:1px solid #465870;
+ background:linear-gradient(90deg,#111b2d,#304059);position:relative}
+.neon-server-stack span::after{content:'';position:absolute;right:5px;top:7px;width:4px;height:4px;background:#57eed6;
+ border-radius:50%;box-shadow:0 0 8px #57eed6}
+.neon-floor{position:absolute;inset:auto -45% -80px;height:180px;transform:perspective(180px) rotateX(52deg);
+ background:repeating-linear-gradient(0deg,transparent 0 24px,#5fa8ce3a 25px 26px),
+ repeating-linear-gradient(90deg,transparent 0 30px,#5fa8ce32 31px 32px),#0b1828;
+ box-shadow:0 -20px 45px #0b1828}
+.neon-computer-rack{position:absolute;display:flex;justify-content:center;align-items:flex-end;gap:4px;left:0;right:0;top:78px;height:130px;
+ perspective:700px;z-index:2}
+.neon-computer{position:relative;width:29%;max-width:103px;height:126px;filter:drop-shadow(0 11px 8px #010514)}
+.neon-computer-1{transform:rotateY(14deg) scale(.88);transform-origin:bottom right}
+.neon-computer-3{transform:rotateY(-14deg) scale(.88);transform-origin:bottom left}
+.neon-monitor{width:100%;height:91px;padding:5px;background:linear-gradient(130deg,#3e586d,#0b1427 42%,#20334a);
+ border:2px solid #5d8294;border-radius:7px;box-shadow:0 0 0 2px #060d1e,0 0 27px #38aedd32}
+.neon-monitor-glass{height:100%;overflow:hidden;border-radius:3px;padding:7px 5px;
+ background:radial-gradient(circle at 55% 30%,#166281,#0b203f 68%);box-shadow:inset 0 0 14px #2db8ea6e;
+ color:#9af0e4;font:900 10px ui-monospace,monospace}
+.neon-monitor-glass>i{height:2px;width:66%;display:block;margin-top:7px;background:#71cfef88}
+.neon-monitor-glass>i:nth-of-type(2){width:83%;background:#b18be58c}
+.neon-monitor-glass>i:nth-of-type(3){width:46%;background:#7cf8c7ac}
+.neon-monitor-graph{width:90%;height:13px;margin-top:3px;background:repeating-linear-gradient(90deg,#6de5e4 0 3px,transparent 4px 8px);
+ mask-image:linear-gradient(to top,#000,transparent)}
+.neon-stand{position:absolute;width:6px;height:16px;background:linear-gradient(90deg,#7994a4,#26384b);bottom:20px;left:calc(50% - 3px)}
+.neon-stand::after{content:'';position:absolute;bottom:0;left:-14px;width:34px;height:4px;border-radius:7px;background:#3f5c76}
+.neon-keyboard{position:absolute;width:76%;height:10px;bottom:6px;left:12%;transform:skew(-23deg);
+ border:1px solid #6786a0;border-radius:3px;background:repeating-linear-gradient(90deg,#4e7fa4 0 2px,#14283d 3px 6px);
+ box-shadow:0 3px 6px #020811}
+.neon-tower{position:absolute;right:-4px;bottom:6px;width:12px;height:28px;background:#15273c;border:1px solid #58728c;border-radius:2px;padding-top:3px}
+.neon-tower b{display:block;width:3px;height:3px;margin:3px auto;background:#7bfcde;border-radius:50%}
+.neon-computer.is-locked .neon-monitor{border-color:#435063;background:linear-gradient(130deg,#374052,#131a29)}
+.neon-computer.is-locked .neon-monitor-glass{background:#152032;box-shadow:inset 0 0 22px #0007;color:#687c92;font-size:9px}
+.neon-computer.is-locked .neon-monitor-glass>i,.neon-computer.is-locked .neon-monitor-graph{opacity:.12}
+.neon-computer.is-locked .neon-tower b{background:#647185}
+.neon-stage-income{position:absolute;bottom:14px;left:14px;z-index:3;background:#081526e8;padding:9px 12px;width:185px;
+ border:1px solid #4e8392;border-radius:10px;box-shadow:0 0 17px #1bf2e41a}
+.neon-stage-income>span{display:block;font:800 8px ui-monospace,monospace;letter-spacing:.08em;color:#8bdacf}
+.neon-stage-income b{display:block;font:900 24px/1.3 ui-monospace,monospace;color:#f6e0a8}
+.neon-stage-income b small{font:700 9px ui-monospace,monospace;color:#98cdd5}
+.neon-income-track{height:3px;background:#2d475b;margin-top:4px;overflow:hidden}
+.neon-income-track i{display:block;background:#79ead8;width:40%;height:100%;box-shadow:0 0 9px #7fffee}
+.neon-room-level{position:absolute;bottom:21px;right:10px;color:#8fcbce;font:800 8px ui-monospace,monospace;letter-spacing:.07em}
+.is-running .neon-computer:not(.is-locked) .neon-monitor-glass{animation:neon-flicker 3.5s infinite alternate}
+.is-running .neon-income-track i{animation:neon-income 2.5s linear infinite}
+.is-running .neon-blink{animation:neon-blink 1s step-end infinite}
+.is-paused .neon-monitor-glass{filter:brightness(.28)}.is-paused .neon-server-stack span::after{background:#697988;box-shadow:none}
+.arcade-button.switch{background:#153e46;color:#a3f3e3;border-color:#4a8889;flex-shrink:0;font-size:10px;min-height:33px}
+.neon-upgrade-list{display:flex;flex-direction:column;gap:9px}
+.neon-upgrade{display:flex;align-items:center;gap:9px;padding:10px 8px;background:#101c2b;border:1px solid #334a5d;border-radius:11px}
+.neon-part-icon{flex:0 0 34px;height:34px;display:grid;place-items:center;border:1px solid #488293;border-radius:9px;
+ background:#173e51;color:#83f9f2;font-size:24px}
+.neon-part-gpu{background:#392f55;color:#d8a8fc;border-color:#6d629d}
+.neon-part-station{background:#4b3f2d;color:#f3cc8b;border-color:#846e4f}
+.neon-upgrade-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.neon-upgrade-info strong{font-size:11px;color:#d7edf3}
+.neon-upgrade-info span{font-size:9px;color:#92a5bb}
+.arcade-level-track{height:3px;background:#334352;border-radius:5px;overflow:hidden;margin-top:3px}
+.arcade-level-track i{display:block;height:100%;background:linear-gradient(90deg,#6a98c5,#88ffdc)}
+.arcade-button.upgrade{flex:0 0 93px;font-size:10px;padding:6px 3px;min-height:34px;background:#3a3644;border-color:#ab8b72;color:#f2d8a5}
+
+/* Địa Tầng 07: rock itself is the primary clicker button. */
+.arcade-world-mine{background:#1f1d2a;border-color:#765346}
+.mine-stage{background:radial-gradient(ellipse at 50% 45%,#795744 0%,#3b3139 52%,#211e2c 90%);height:294px}
+.mine-stage::after{content:'';position:absolute;inset:0;pointer-events:none;
+ background:repeating-radial-gradient(ellipse at 50% 65%,transparent 0 20px,#0000000b 22px 28px);mix-blend-mode:multiply}
+.mine-stratum{position:absolute;width:160%;height:90px;left:-25%;background:#241f28;border:12px solid #4b3840;transform:rotate(-11deg)}
+.mine-stratum-1{top:-63px}.mine-stratum-2{bottom:-73px;transform:rotate(10deg);border-color:#523b39}
+.mine-cave-light{position:absolute;inset:0;background:conic-gradient(from 180deg at 50% 12%,transparent,#eab77722,transparent 35%)}
+.mine-tunnel-arch{position:absolute;inset:22px 30px 26px;border:14px solid #251e29;border-bottom:0;border-radius:48% 48% 0 0;
+ box-shadow:inset 0 0 35px #0b0b14,0 0 30px #1211188c}
+.mine-scene-head{position:absolute;left:12px;right:12px;top:12px;display:flex;justify-content:space-between;gap:6px;z-index:4;
+ font:800 8px ui-monospace,monospace;letter-spacing:.06em;color:#f1d5b8}
+.mine-crystal{position:absolute;width:35px;height:91px;bottom:37px;background:linear-gradient(120deg,#276b83,#82ddef 40%,#134663 56%,#5179a2);
+ clip-path:polygon(42% 0,85% 25%,100% 100%,0 100%,14% 24%);filter:drop-shadow(0 0 12px #57c0ff9c);z-index:2}
+.mine-crystal-left{left:4%;transform:rotate(-24deg) scale(.72)}
+.mine-crystal-right{right:5%;transform:rotate(27deg) scale(.9);background:linear-gradient(120deg,#61428b,#deabf5 40%,#533076 60%,#7779be)}
+.mine-ore-button{position:absolute;top:45px;left:50%;transform:translateX(-50%);width:240px;height:205px;max-width:83%;background:transparent;
+ padding:0;border:0;cursor:pointer;transition:filter .15s;z-index:5}
+.mine-ore-button:active:not(:disabled){transform:translateX(-50%) scale(.92)}
+.mine-ore-button:disabled{cursor:not-allowed;filter:saturate(.55)}
+.mine-rock-shadow{position:absolute;inset:20% 9% 16%;border-radius:45%;background:#070e16;filter:blur(17px)}
+.mine-rock{position:absolute;inset:6% 9% 19%;clip-path:polygon(21% 4%,58% 0,85% 17%,100% 51%,79% 92%,35% 100%,5% 77%,0 37%);
+ background:linear-gradient(139deg,#edb07f 0%,#846255 26%,#493e42 54%,#282a38 81%,#756052 100%);
+ box-shadow:inset -15px -12px 22px #090c19;filter:drop-shadow(0 4px 1px #06080a)}
+.mine-rock::before{content:'';position:absolute;inset:0;background:
+ linear-gradient(142deg,transparent 0 38%,#281f2d 39% 40%,transparent 41%),
+ linear-gradient(28deg,transparent 0 62%,#e5b88c77 63% 64%,transparent 65%),
+ linear-gradient(98deg,transparent 0 49%,#130e1c 50% 51%,transparent 52%)}
+.mine-rock i{position:absolute;width:24px;height:52px;clip-path:polygon(50% 0,100% 34%,75% 100%,12% 80%,0 26%);
+ background:linear-gradient(110deg,#95e8ed,#32788e 48%,#294e83 58%,#72b2ca);filter:drop-shadow(0 0 5px #7bdeff);z-index:2}
+.mine-rock i:nth-child(1){left:19%;top:25%;transform:rotate(15deg)}
+.mine-rock i:nth-child(2){left:61%;top:13%;transform:rotate(-32deg) scale(.8);background:linear-gradient(110deg,#e9b0f9,#7850b5,#623c88)}
+.mine-rock i:nth-child(3){left:67%;top:52%;transform:rotate(33deg) scale(1.2)}
+.mine-rock i:nth-child(4){left:37%;top:61%;transform:rotate(-16deg) scale(.63);background:linear-gradient(110deg,#ffeeaa,#c08c52,#6b4c3a)}
+.mine-rock i:nth-child(5){left:42%;top:13%;transform:rotate(17deg) scale(.56)}
+.mine-ore-glow{position:absolute;inset:10% 13%;border-radius:40%;box-shadow:0 0 36px #83ccfa45;pointer-events:none}
+.mine-tap-prompt{position:absolute;bottom:0;left:0;right:0;text-align:center;font:900 11px ui-monospace,monospace;
+ color:#ffe3b2;letter-spacing:.09em;text-shadow:0 2px 4px #0c0c15}
+.mine-hit-spark{position:absolute;top:34%;left:51%;color:#f4ffe4;font-size:75px;opacity:0;transform:scale(.4);
+ text-shadow:0 0 18px #f9d79a;pointer-events:none}
+.mine-hit-active .mine-rock{animation:mine-shake .3s ease-out}
+.mine-hit-active .mine-hit-spark{animation:mine-spark .55s ease-out forwards}
+.mine-drop{position:absolute;z-index:9;top:28px;left:50%;transform:translateX(-50%);color:#fff6d7;font-size:15px;font-weight:900;
+ white-space:nowrap;text-shadow:0 0 10px #ffd580,0 3px 4px #090810;animation:mine-drop 1.6s ease-out forwards}
+.mine-bottom-hud{position:absolute;bottom:10px;left:14px;right:13px;display:flex;justify-content:space-between;
+ align-items:flex-end;color:#debf9f;font-size:9px;z-index:3;gap:8px}
+.mine-durability-circle{border-radius:12px;background:linear-gradient(#2b2b35,#2b2b35) padding-box,
+ conic-gradient(#e7b378 var(--mine-durability),#665247 0) border-box;border:3px solid transparent;
+ min-width:89px;height:47px;padding:5px 8px}
+.mine-durability-circle span{display:block;font:800 8px ui-monospace,monospace;color:#d9aa82}
+.mine-durability-circle b{font:900 20px/1 ui-monospace,monospace;color:#fff1d9}
+.mine-durability-circle small{font-size:10px;color:#af9b8f}
+.mine-inventory{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+.mine-inventory-slot{min-width:0;border:1px solid #584b4e;border-radius:9px;background:#242533;
+ display:flex;flex-direction:column;align-items:center;padding:8px 2px 6px;gap:3px}
+.mine-inventory-slot>span{font-size:26px;line-height:1.1;color:#aaa3a6}
+.mine-slot-coal>span{color:#666e82}.mine-slot-iron>span{color:#86aabe}.mine-slot-crystal>span{color:#b29bff}
+.mine-inventory-slot small{font-size:9px;color:#c9b8b3}.mine-inventory-slot b{font:900 16px ui-monospace,monospace;color:#f0d6bc}
+.arcade-world-mine .arcade-control-panel{background:#251f2b;border-color:#63473f}
+.arcade-world-mine .arcade-eyebrow{color:#e4ab79}
+.arcade-button.market{background:#624733;border-color:#b58866;color:#ffe4bf;min-height:34px}
+.mine-tool-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.arcade-button.tool{background:#3a3139;border:1px solid #806558;color:#f1d9c8;min-height:43px;font-size:10px;padding:6px 5px}
+
+/* Vườn Sương: playable growing plots and a live swimming pond. */
+.arcade-world-garden{background:#172b30;border-color:#4b7868}
+.garden-resources{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:0 12px 10px}
+.arcade-stat{background:#1e3c3a;border:1px solid #426a62;border-radius:11px;padding:9px 10px}
+.arcade-stat>span{display:block;color:#a6d9c2;font:800 8px ui-monospace,monospace;letter-spacing:.08em}
+.arcade-stat strong{font:900 18px/1.4 ui-monospace,monospace;color:#f2e3ac}
+.arcade-stat small{display:block;color:#87bba8;font-size:9px}
+.garden-stage{height:332px;background:linear-gradient(#91b0a7 0%,#5a9d92 43%,#386b58 44%,#24443f 100%)}
+.garden-mountains{position:absolute;inset:19px 0 auto;height:150px;
+ background:linear-gradient(155deg,transparent 42%,#568d7d 43% 70%,transparent 71%),
+ linear-gradient(21deg,transparent 42%,#6da497 43% 70%,transparent 71%);opacity:.6}
+.garden-mist{position:absolute;width:220px;height:88px;border-radius:50%;background:#e0fff17d;filter:blur(27px);
+ animation:garden-mist 14s ease-in-out infinite alternate}
+.garden-mist-a{left:-80px;top:48px}.garden-mist-b{right:-80px;top:110px;animation-delay:-6s}
+.garden-cloud{position:absolute;width:82px;height:20px;background:#f0fff1a8;border-radius:999px;filter:blur(7px)}
+.garden-cloud-a{left:20px;top:20px}.garden-cloud-b{right:13px;top:45px;width:58px}
+.garden-grass{position:absolute;left:-18%;right:-18%;bottom:-30px;height:225px;background:radial-gradient(ellipse at center,#6eae6c,#2f7257 63%,#285e4e);
+ border-radius:50% 50% 0 0;box-shadow:0 -10px 30px #75ac7d66}
+.garden-plot-area{position:absolute;left:6%;right:6%;top:78px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;z-index:3}
+.garden-plot{height:125px;border:0;background:transparent;position:relative;padding:0;cursor:pointer;color:#fcf1d3;min-width:0;
+ transition:transform .12s;filter:drop-shadow(0 10px 3px #173b3045)}
+.garden-plot:disabled{cursor:default;opacity:1}
+.garden-soil{position:absolute;bottom:17px;left:8%;width:84%;height:50px;border:7px solid #876146;border-radius:50%;
+ background:repeating-radial-gradient(ellipse at center,#3d2f2b 0 7px,#51392d 8px 17px);
+ transform:rotate(-3deg);box-shadow:0 7px 0 #4d4031}
+.garden-stem{position:absolute;left:calc(50% - 3px);bottom:49px;width:6px;height:49px;background:#376d42;
+ border-radius:6px;transform-origin:bottom;filter:drop-shadow(0 2px 1px #375c37)}
+.garden-stem i{position:absolute;width:23px;height:13px;border-radius:100% 0 100% 0;background:#80cb7e;top:9px;left:-20px;
+ transform:rotate(21deg)}
+.garden-stem i:nth-child(2){top:25px;left:3px;transform:rotate(210deg)}
+.garden-stem i:nth-child(3){top:3px;left:-11px;transform:rotate(-21deg) scale(.55)}
+.garden-flower{position:absolute;left:calc(50% - 13px);bottom:86px;width:26px;height:26px;transform-origin:50% 50%;
+ animation:garden-sway 5s ease-in-out infinite alternate}
+.garden-flower::after{content:'';position:absolute;inset:8px;border-radius:50%;background:#edaa53;z-index:2}
+.garden-flower i{position:absolute;top:0;left:7px;width:12px;height:17px;background:#f4d9b2;border-radius:50% 50% 35% 35%;
+ transform-origin:6px 13px}
+.garden-flower i:nth-child(2){transform:rotate(72deg)}
+.garden-flower i:nth-child(3){transform:rotate(144deg)}
+.garden-flower i:nth-child(4){transform:rotate(216deg)}
+.garden-flower i:nth-child(5){transform:rotate(288deg)}
+.garden-plot.empty .garden-stem,.garden-plot.empty .garden-flower{display:none}
+.garden-plot.dry .garden-stem{height:20px;bottom:50px}
+.garden-plot.dry .garden-flower,.garden-plot.growing:not(.mature) .garden-flower{display:none}
+.garden-plot.growing:not(.mature) .garden-stem{height:36px}
+.garden-plot-label{position:absolute;bottom:-16px;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:3px;
+ flex-wrap:wrap;text-shadow:0 2px 4px #1b372d}
+.garden-plot-label b{font:900 8px ui-monospace,monospace;letter-spacing:.05em;color:#f8f4db}
+.garden-plot-label small{font-size:9px;color:#eff8d1}
+.garden-plot-label em{font:900 9px ui-monospace,monospace;color:#ffecaa;background:#284c3fd9;border-radius:10px;
+ padding:3px 6px;border:1px solid #719d7e}
+.garden-plot:disabled .garden-plot-label em{color:#c8d4bd;background:#31594e}
+.garden-pond{position:absolute;left:18%;right:18%;bottom:8px;height:98px;border:11px solid #689c79;border-radius:52% 48% 48% 52%;
+ background:radial-gradient(ellipse at 45% 37%,#90e3cb 0,#3ca2a9 45%,#155871 100%);
+ box-shadow:0 7px 1px #2b6352,inset 0 0 20px #164f66;overflow:hidden}
+.garden-pond-shine{position:absolute;inset:10px 12px;border-radius:50%;
+ background:repeating-linear-gradient(163deg,transparent 0 12px,#d9fff129 13px 15px,transparent 16px 26px)}
+.garden-fish{position:absolute;width:28px;height:11px;background:#f6c786;top:27px;left:23%;border-radius:65% 50% 50% 65%;
+ animation:fish-swim 7s ease-in-out infinite alternate}
+.garden-fish::after{content:'';position:absolute;right:-8px;top:-5px;border-left:11px solid #f6c786;border-top:10px solid transparent;border-bottom:10px solid transparent}
+.garden-fish-b{top:48px;left:65%;background:#f0ecde;transform:scale(.75);animation-delay:-3s;animation-duration:9s}
+.garden-fish-b::after{border-left-color:#f0ecde}
+.garden-bubble{position:absolute;bottom:10px;width:8px;height:8px;border-radius:50%;border:2px solid #edfff5a6;
+ animation:bubble-rise 3.8s ease-in infinite}
+.garden-bubble-a{left:26%}.garden-bubble-b{left:56%;animation-delay:-1.5s;width:5px;height:5px}
+.garden-bubble-c{left:76%;animation-delay:-3s}
+.garden-pond-collect{position:absolute;left:50%;bottom:7px;transform:translateX(-50%);z-index:5;white-space:nowrap;
+ font-size:10px;font-weight:900;color:#f0fff2;background:#245c62d9;border:1px solid #91dcc4;
+ border-radius:999px;padding:5px 12px;cursor:pointer}
+.garden-pond-collect:disabled{opacity:.7;cursor:default}
+.garden-pond-collect.is-ready{animation:pond-pulse 2s ease-in-out infinite;color:#fff0a6}
+.arcade-world-garden .arcade-control-panel{background:#203a36;border-color:#527a68}
+.arcade-world-garden .arcade-eyebrow{color:#a4e5b2}
+.arcade-world-garden .arcade-button.market{background:#456547;border-color:#a3c98f;color:#f5eac0}
+.garden-statline{display:flex;justify-content:space-between;gap:10px;font-size:10px;color:#b7d9bd}
+.garden-statline b{color:#faedb7;font:900 13px ui-monospace,monospace}
+
+@keyframes neon-flicker{from{box-shadow:inset 0 0 10px #2db8ea44}to{box-shadow:inset 0 0 20px #2db8eabb}}
+@keyframes neon-blink{50%{opacity:0}}
+@keyframes neon-income{from{transform:translateX(-100%)}to{transform:translateX(250%)}}
+@keyframes mine-shake{0%,100%{transform:translate(0)}25%{transform:translate(-5px,2px)}50%{transform:translate(5px,-2px)}75%{transform:translate(-2px,1px)}}
+@keyframes mine-spark{0%{opacity:1;transform:scale(.4) rotate(-20deg)}100%{opacity:0;transform:scale(1.6) rotate(45deg)}}
+@keyframes mine-drop{0%{opacity:0;transform:translate(-50%,15px)}20%{opacity:1}100%{opacity:0;transform:translate(-50%,-34px)}}
+@keyframes garden-mist{to{transform:translate(70px,-12px)}}
+@keyframes garden-sway{to{transform:rotate(9deg)}}
+@keyframes fish-swim{50%{transform:translateX(28px)}to{transform:translateX(-30px) scaleX(-1)}}
+@keyframes bubble-rise{from{transform:translateY(0);opacity:.15}50%{opacity:.9}to{transform:translateY(-70px);opacity:0}}
+@keyframes pond-pulse{50%{box-shadow:0 0 12px #fff0a690}}
+@media(max-width:360px){
+ .arcade-world-heading h3{font-size:20px}.arcade-world-live{font-size:7px}
+ .arcade-world-heading p{max-width:205px}
+ .arcade-stage{height:256px}.mine-stage{height:280px}.garden-stage{height:322px}
+ .neon-computer-rack{top:72px}.neon-stage-income{width:160px}
+ .neon-stage-income b{font-size:21px}.neon-room-level{font-size:7px}
+ .arcade-button.upgrade{flex-basis:82px;font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){
+ #personal-arcade-v1 *,#personal-arcade-v1 *::before,#personal-arcade-v1 *::after{
+  animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}

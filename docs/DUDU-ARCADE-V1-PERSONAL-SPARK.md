@@ -4,7 +4,7 @@
 
 Một điện thoại cá nhân có ba trò độc lập, không gắn lượt chơi với số chương đã đọc:
 
-1. **Trạm Neon** — giàn máy tự tăng **0,1 Xu trò chơi/giây** khi trang còn mở. Dùng Xu trò chơi để nâng CPU/VGA, tăng tốc độ máy.
+1. **Trạm Neon** — bắt đầu với 1 máy, tự tăng **0,1 Xu trò chơi/giây** khi trang còn mở. Dùng Xu trò chơi để nâng CPU/VGA và mở khóa tối đa 3 dàn máy thực sự; mỗi dàn nhân công suất hiện có. Máy thứ hai giá 80 Xu, máy thứ ba giá 320 Xu.
 2. **Địa Tầng 07** — đào quặng bằng một cuốc 100/100 độ bền, mỗi lần đào tốn một điểm. Bán đá/than/sắt/tinh thạch lấy Xu; sửa trong 4 phút hoặc dùng 5 than + 2 sắt để sửa ngay. Có thể mua dầu bôi trơn (+25 độ bền / 15 Xu) hoặc cuốc mới (80 Xu) hoàn toàn bằng Xu trò chơi.
 3. **Vườn Sương** — trồng/tưới/thu hoạch cây, hồ cá xuất hiện bọt mỗi 90 giây. Bình nước tự hồi một đơn vị mỗi 15 phút (tối đa 3), kể cả khi người chơi đóng trang; cây lớn sau 3 phút.
 
@@ -14,6 +14,7 @@ Các tên được chọn ngắn, có cảm giác giao diện hệ thống, trá
 
 - Mã tính toán `js/personal-arcade-core-v1.js` thuần JavaScript, nhận mốc thời gian và lượt đào để kiểm thử xác định.
 - Giao diện `js/personal-arcade-ui-v1.js` mở trong điện thoại qua một biểu tượng **Arcade**; ba tab nằm trong cùng ứng dụng để không chiếm ba vị trí ở màn hình chính.
+- Các màn chơi dùng CSS vẽ trực tiếp, không dùng hình tải ngoài: Trạm Neon là phòng máy có monitor phát sáng và máy khóa/chạy theo tiến trình; Địa Tầng 07 cho chạm vào khối đá với hiệu ứng trúng quặng, kho quặng và xưởng rèn; Vườn Sương có cây lớn theo trạng thái, hồ cá bơi và bong bóng. Đây là lớp hiển thị thay thế cho các thẻ bảng số ở bản đầu; giữ nguyên khóa lưu `dudu-personal-arcade:v1:` để không mất tiến trình cũ.
 - Tiến trình lưu trong `localStorage` theo UID của tài khoản Firebase hiện đang đăng nhập; không tạo collection mới và **không gọi Firestore**.
 - Xu trò chơi nằm trong biến `state.coins` riêng; tuyệt đối không ghi `userProfile.currency`, ví Xu hệ thống, Shop, nhiệm vụ, vật phẩm thật hoặc quyền mở khóa chương.
 - Nút **Chuyển vào ví Xu hệ thống** hiển thị nhưng bị vô hiệu hóa, cho đến khi Rules và luồng chuyển Xu được nghiệm thu. Xu V1 **không được coi là số dư có giá trị trên máy chủ**.
