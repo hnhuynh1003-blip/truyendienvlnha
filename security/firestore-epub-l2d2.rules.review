@@ -27,13 +27,10 @@ function epubMetadataValidL2D2() {
     && request.resource.data.updatedAt.size() <= 40;
 }
 
-// Add the following TWO allow clauses to the EXISTING
+// Add the following ONE allow update clause to the EXISTING
 // match /epub_stories_v49/{bookId} (do NOT replace the import/publish clauses):
-//
-// Author-only query: ownerUid == request.auth.uid, with limit <= 60.
-allow list: if epubManagerL2D2()
-  && request.query.limit != null && request.query.limit <= 60
-  && resource.data.ownerUid == request.auth.uid;
+// The actual Rules provided 29/10 already allow admin list. Do not add an
+// unnecessary list grant or accidentally broaden the existing read access.
 
 allow update: if epubManagerL2D2()
   && resource.data.ownerUid == request.auth.uid
@@ -63,5 +60,6 @@ allow update: if epubManagerL2D2()
 // 3. owner may edit allowed metadata on published/archived books;
 // 4. owner may published -> archived -> published, preserving same chapter IDs;
 // 5. title/desc/cover limits and all protected fields cannot be bypassed;
-// 6. admin owner can list only their own books with ownerUid equality filter;
+// 6. the client filters archived books by ownerUid; existing admin list is
+//    broader and remains unchanged until a separate multi-author rights audit;
 // 7. previous importing -> draft -> published flow still works.

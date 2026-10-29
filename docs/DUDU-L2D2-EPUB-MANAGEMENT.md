@@ -21,8 +21,8 @@ Truyện EPUB cũ có thể lưu văn án ở một **chương** tên “Văn á
 
 ## Điều kiện trước khi bật nút
 
-1. Chủ dự án sao lưu **bản Rules đang chạy thực tế**, đối chiếu với `security/firestore-spark-personal-v53.rules.review`. Không thay thế Rules toàn dự án bằng bản review cũ.
-2. Hợp nhất có chọn lọc `security/firestore-epub-l2d2.rules.review` vào đúng `match /epub_stories_v49/{bookId}`. Đây là **đoạn bổ sung**, không phải tệp rules có thể dán nguyên xi.
+1. Chủ dự án sao lưu **bản Rules đang chạy thực tế** trong Firebase Console. Bản được An Du gửi ngày 29/10/2026 đã được ghép tại `security/firestore-epub-l2d2-merged.rules.review` để tiện đối chiếu; **đây không thay thế bản backup chính thức trong Firebase**.
+2. Kiểm tra toàn bộ `security/firestore-epub-l2d2-merged.rules.review` với Rules production lần cuối. `security/firestore-epub-l2d2.rules.review` là đoạn bổ sung tham khảo; không dán đoạn rời đó thành một bộ Rules hoàn chỉnh.
 3. Chạy Firebase Rules Emulator và kiểm thử quyền: guest/reader/foreign UID, EPUB lịch sử thiếu metadata, chỉnh thông tin hợp lệ/vượt giới hạn, `published ↔ archived`, danh sách theo `ownerUid`, cấm đổi ID/chapterIndex/ownerUid, import → draft → publish vẫn hoạt động.
 4. Kiểm thử truy vấn `where('ownerUid','==',uid).limit(60)` theo Rules; xem xét phân trang nếu sau này tác giả có hơn 60 bản nhập.
 5. Sau khi backup và chủ dự án phê duyệt, **triển khai Rules production trong thao tác riêng**. Xác minh với tài khoản tác giả thử nghiệm và tài khoản độc giả; không làm các phép ghi thử trên truyện thật.
@@ -41,3 +41,5 @@ Truyện EPUB cũ có thể lưu văn án ở một **chương** tên “Văn á
 - Sau khi bật: tắt gate `EPUB_MANAGEMENT_L2D2_ENABLED=false` để vô hiệu hóa thao tác mới; xem xét rollback riêng đoạn Rules bổ sung **theo bản sao lưu đã đối chiếu**. Không xóa các tài liệu trạng thái `archived` hoặc rewrite bookmark khi rollback.
 
 Tài liệu tham chiếu Firebase: [Rules về trường dữ liệu](https://firebase.google.com/docs/firestore/security/rules-fields), [quyền với truy vấn](https://firebase.google.com/docs/firestore/security/rules-query).
+
+**Lưu ý quyền đọc hiện tại:** Rules An Du gửi cho phép mọi tài khoản có `admin=true` xem danh sách và chương EPUB chưa công khai của các chủ khác. L2D.2 **không mở rộng quyền này**; UI chỉ truy vấn bản đã gỡ của `ownerUid` hiện tại, còn cập nhật metadata phải qua kiểm tra chủ sở hữu ở Rules. Nếu tương lai có nhiều tác giả khác nhau, việc thu hẹp quyền đọc của admin cần một đợt xét quyền riêng.
