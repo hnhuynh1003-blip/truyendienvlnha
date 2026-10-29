@@ -82,7 +82,7 @@ test('L2B removes permanent filter walls while preserving real search/sort/statu
 
 test('L2B visual identity and mobile treatment stay inside the Library route',()=>{
  assert.match(shell,/THE STORY ARCHIVE/);
- assert.match(shell,/Thư viện /);
+ assert.match(shell,/contextHeading\('Thư viện','DUDU \/ THE STORY ARCHIVE'/);
  assert.match(shell,/classList\.toggle\('dudu-library-browsing',current==='library'\)/);
  assert.match(css,/\.archive-featured/);
  assert.match(css,/\.archive-shelf-item/);
@@ -92,6 +92,21 @@ test('L2B visual identity and mobile treatment stay inside the Library route',()
  assert.match(html,/class="header-create-short"/);
  assert.match(html,/canEditStories\(\) && \(window\.DuduLibraryIntakeV1\?\.open\?\.\(\) \|\| openStoryModal\(\)\)/);
  assert.ok(!/\.set\(|firebase\.firestore\(|fetch\(/.test(css));
+});
+
+test('L2B route headings use one compact contextual rail without repeating navigation titles',()=>{
+ assert.match(shell,/function contextHeading\(pageTitle,kicker,description\)/);
+ assert.match(shell,/element\('h1','d60-visually-hidden',pageTitle\)/);
+ assert.match(shell,/contextHeading\('Thế giới','DUDU \/ WORLD ATLAS'/);
+ assert.match(shell,/contextHeading\('Tủ sách','DUDU \/ DẤU TRANG'/);
+ assert.match(shell,/contextHeading\('Góc tác giả','DUDU \/ AUTHOR DESK'/);
+ assert.doesNotMatch(shell,/element\('h1','d60-page-title','Vạn giới'\)/);
+ assert.doesNotMatch(shell,/element\('h1','d60-page-title','Tủ sách của tôi'\)/);
+ assert.doesNotMatch(shell,/element\('h1','d60-page-title','Góc tác giả'\)/);
+ assert.doesNotMatch(shell,/archive-crest|archive-heading/);
+ assert.match(html,/css\/site-shell-v60\.css\?v=lib-l2b-2/);
+ assert.match(html,/css\/library-discovery-l2b\.css\?v=l2b-2/);
+ assert.match(html,/js\/site-shell-v60\.js\?v=lib-l2b-2/);
 });
 
 test('L2B book dossier hides empty EPUB synopsis without changing metadata',()=>{

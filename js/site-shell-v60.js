@@ -14,6 +14,13 @@
  function button(text,callback,cls='d60-btn'){
    const n=element('button',cls,text);n.type='button';n.addEventListener('click',callback);return n;
  }
+ function contextHeading(pageTitle,kicker,description){
+   const heading=element('div','d60-context-heading');
+   heading.append(element('h1','d60-visually-hidden',pageTitle),
+     element('span','d60-context-kicker',kicker),
+     element('p','d60-context-note',description));
+   return heading;
+ }
  function list(){return Array.isArray(novels)?novels.filter(n=>n&&n.id&&!n.isDraft):[];}
  function artwork(n){
    const box=element('div','d60-cover','✦'),src=n?.coverImage;
@@ -298,10 +305,10 @@
    const container=document.querySelector('.container');
    const home=element('main','d60-page');home.id='d60-home';
    const worlds=element('section','d60-page');worlds.id='d60-worlds';
-   const atlasHeading=element('div','d64-atlas-heading');
-   const atlasTitles=element('div','d64-atlas-titleblock');
-   atlasTitles.append(element('span','d64-atlas-kicker','DUDU · WORLDS'),
-     element('h1','d60-page-title','Vạn giới'));
+   const atlasHeading=element('div','d64-atlas-heading d60-context-rail');
+   const atlasTitles=contextHeading('Thế giới','DUDU / WORLD ATLAS',
+     'Bản đồ thể loại và các phó bản sơ cấp.');
+   atlasTitles.classList.add('d64-atlas-titleblock');
    atlasHeading.append(atlasTitles);
    const seal=element('span','d64-atlas-seal','Khế ước · F/E');
    atlasHeading.append(seal);
@@ -311,27 +318,21 @@
    const creatorActions=element('div','d60-world-creator-actions');creatorActions.append(createWorld);worlds.append(creatorActions);
    const worldList=element('div','');worldList.id='d60-worlds-list';worlds.append(worldList);
    const shelf=element('section','d60-page');shelf.id='d60-shelf';
-   shelf.append(element('p','d60-kicker','DUDU · CÁ NHÂN'),element('h1','d60-page-title','Tủ sách của tôi'),
-     element('p','d60-intro','Các tác phẩm có tiến độ đọc được lưu bằng cơ chế bookmark hiện tại.'));
+   const shelfHeading=element('div','d60-context-rail');
+   shelfHeading.append(contextHeading('Tủ sách','DUDU / DẤU TRANG',
+     'Trở lại câu chuyện tại chương bạn đã lưu.'));
+   shelf.append(shelfHeading);
    const shelfList=element('div','');shelfList.id='d60-shelf-list';shelf.append(shelfList);
    const author=element('section','d60-page');author.id='d60-author';
-   author.append(element('p','d60-kicker','DUDU · AUTHOR STUDIO'),element('h1','d60-page-title','Góc tác giả'),
-     element('p','d60-intro','Các công cụ sáng tác hiện có được giữ nguyên. Quyền xuất bản vẫn do hệ thống xác thực quyết định.'));
+   const authorHeading=element('div','d60-context-rail');
+   authorHeading.append(contextHeading('Góc tác giả','DUDU / AUTHOR DESK',
+     'Viết truyện theo chương hoặc nhập EPUB bằng công cụ hiện có.'));
+   author.append(authorHeading);
    const authorBtns=element('div','d60-two');authorBtns.id='d60-author-actions';author.append(authorBtns);
    for(const node of [author,shelf,worlds,home])container.insertBefore(node,container.firstChild);
-   const library=id('home-view'),intro=element('section','d60-library-intro archive-intro');
-   const eyebrow=element('div','archive-eyebrow');
-   eyebrow.append(element('span','','DUDU STUDIO'),element('span','archive-eyebrow-line'),
-     element('span','','THE STORY ARCHIVE'));
-   const heading=element('div','archive-heading');
-   const titleBlock=element('div','archive-title-copy');
-   const title=element('h1','','Thư viện ');
-   title.append(element('em','','DUDU'));
-   titleBlock.append(title,element('p','','Mỗi câu chuyện là một thế giới được lưu giữ. Hãy mở trang đầu tiên.'));
-   const crest=element('div','archive-crest');crest.setAttribute('aria-hidden','true');
-   crest.append(element('span','archive-crest-glyph','D'),element('small','','ARCHIVE / 01'));
-   heading.append(titleBlock,crest);
-   intro.append(eyebrow,heading);
+   const library=id('home-view'),intro=element('section','d60-library-intro archive-intro d60-context-rail');
+   intro.append(contextHeading('Thư viện','DUDU / THE STORY ARCHIVE',
+     'Khám phá một câu chuyện mới hoặc tiếp tục từ dấu trang.'));
    library.insertBefore(intro,library.firstChild);
    document.body.classList.add('dudu-site-v60');
    const route=Object.keys(routes).find(k=>location.hash===routes[k])||'home';

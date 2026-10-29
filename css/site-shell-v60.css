@@ -10,6 +10,13 @@ body.dudu-site-v60 .container {max-width:1100px;padding:28px 20px 110px}
 .d60-page {display:none;color:#f0f0f7}
 .d60-page h1,.d60-page h2,.d60-page h3 {line-height:1.35;color:#faf8ff}
 .d60-page p {color:#bcc7d8}
+/* L2B: the nav names the destination; its content begins with a useful, compact context line. */
+.d60-visually-hidden {position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.d60-context-rail {display:flex;align-items:center;justify-content:space-between;gap:18px;
+  min-height:56px;padding:4px 0 15px;margin:0 0 18px;border-bottom:1px solid rgba(220,198,156,.22)}
+.d60-context-heading {min-width:0}
+.d60-context-kicker {display:block;color:#d5c199;font:700 10px/1.4 ui-monospace,Consolas,monospace;letter-spacing:.13em}
+.d60-context-note {margin:6px 0 0!important;color:#afbdcd!important;font-size:13px!important;line-height:1.55!important}
 .d60-kicker {font-size:11px;color:#ddbb82!important;letter-spacing:.15em;font-weight:800}
 .d60-hero {position:relative;overflow:hidden;border:1px solid rgba(169,149,237,.32);border-radius:24px;background:radial-gradient(circle at 80% 10%,rgba(169,149,237,.2),transparent 45%),linear-gradient(115deg,#29324a,#141d30);padding:42px 39px}
 .d60-hero:before {content:"✦";position:absolute;right:4%;top:-70px;font-size:260px;line-height:1;color:rgba(221,187,130,.075);pointer-events:none}
@@ -68,6 +75,9 @@ body.dudu-site-v60.theme-warm,body.dudu-site-v60.theme-oled {background:var(--bg
  .d60-hero {padding:31px 22px}
  .d60-hero:before {font-size:150px;right:-12px;top:-7px}
  .d60-hero h1 {font-size:28px}
+ .d60-context-rail {min-height:47px;padding:1px 0 12px;margin-bottom:15px}
+ .d60-context-kicker {font-size:9px}
+ .d60-context-note {font-size:12px!important;margin-top:5px!important}
  .d60-grid {grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
  .d60-two {grid-template-columns:1fr}
  .d60-sectionhead h2 {font-size:18px}
