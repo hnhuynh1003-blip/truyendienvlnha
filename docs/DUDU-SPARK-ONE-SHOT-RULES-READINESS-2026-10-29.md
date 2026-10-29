@@ -5,6 +5,8 @@
 
 **Bổ sung 29/10:** Cyber Phone đã có ứng dụng **Ví Xu** riêng hiển thị lại `userProfile.currency` để mua sắm, đối chiếu Xu Arcade ở local; không thêm ví hệ thống thứ hai và chưa chuyển Xu thật. Nhịp nhặt thử tại client đã chuyển sang 15 phút ở Kho, tối đa 3 lượt từ chương/ngày. Bảng công dụng vật phẩm/giới hạn trước Rules xem `DUDU-WALLET-LOOT-ITEM-ROADMAP-2026-10-29.md`.
 
+**Quy đổi đã chuẩn bị trên giao diện:** `10 Xu Arcade = 1 Xu hệ thống`, tối thiểu 10 Xu Arcade/lần, mỗi lệnh là bội số 10 Xu Arcade, **dự kiến tối đa 30 Xu hệ thống/ngày**. Người chơi tự nhập số lượng hoặc chọn mức nhanh 10/50/100/Tối đa. Module `js/personal-arcade-exchange-v1.js` chỉ trả báo giá và hạn mức dự kiến; chưa có ledger ngày, **không phát/trừ tiền**. Hạn mức cần được xác nhận bởi nguồn đáng tin trong lần Rules chung.
+
 ## 1. Các luồng đã có trong mã nguồn
 
 | Nguồn | Mã nguồn chính | Hiện tại | Điều kiện để mở quyền thật |
@@ -35,7 +37,7 @@
 
 ## 4. Những quyết định cần chốt trước lượt Rules cuối
 
-1. Tỷ lệ chuyển **Xu Arcade → Xu đọc truyện**, số Xu tối thiểu/lần, hạn mức/ngày; có chuyển ngược không? Khuyến nghị chỉ một chiều và không có đổi ra tiền thật.
+1. Xác nhận tỷ lệ đã dự kiến **10:1**, tối thiểu **10 Xu Arcade/lần**, tối đa **30 Xu hệ thống/ngày**, chỉ một chiều và không có đổi ra tiền thật. Quyết định cách tính ngày/hạn mức trên hai thiết bị khi phát hành thật.
 2. Truyện hay chương nào cần khóa; giá cố định cho toàn truyện hay từng chương; có phần đọc thử hay không.
 3. Nhiệm vụ nào có thưởng thật (đọc chương, điểm danh, DUDU FUN, nhặt đồ). Với trò may rủi trên trình duyệt, có chấp nhận thưởng vật phẩm thật trong mô hình cá nhân ít tài khoản không?
 4. Bản lưu local có được nhập một lần vào ví/Kho mới không, hay bắt đầu ví thật từ 0 để không biến dữ liệu dễ sửa thành quyền mở truyện?

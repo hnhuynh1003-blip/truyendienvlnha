@@ -12,7 +12,7 @@ test('Arcade V1 joins the phone as one app with three named games',()=>{
  assert.match(html,/id="phone-app-arcade"/);
  assert.match(html,/DuduPersonalArcadeUIV1\?\.render\(\)/);
  assert.match(html,/personal-arcade-core-v1\.js\?v=arcade-upgrade-4/);
- assert.match(html,/personal-arcade-ui-v1\.js\?v=wallet-1/);
+ assert.match(html,/personal-arcade-ui-v1\.js\?v=xu-quote-1/);
  assert.match(html,/personal-arcade-v1\.css\?v=wallet-1/);
  const ui=src('js/personal-arcade-ui-v1.js');
  for(const name of ['Trạm Neon','Địa Tầng 07','Vườn Sương'])
@@ -23,7 +23,7 @@ test('Arcade V1 is a local playground, not an unprotected server reward grant',(
  const core=src('js/personal-arcade-core-v1.js');
  assert.match(ui,/root\.localStorage\.setItem/);
  assert.match(ui,/button\('Chuyển Xu · Chưa mở','transfer','gold',true\)/);
- assert.match(ui,/Chuyển Xu sẽ được mở khi tích hợp Rules/);
+ assert.match(ui,/Chuyển thật sẽ mở cùng đợt Rules/);
  for(const forbidden of ['.collection(','firebase.firestore','userProfile.currency',
   'DuduEconomyLiveV52','grantCoins','setDoc(']){
   assert.equal(ui.includes(forbidden),false);

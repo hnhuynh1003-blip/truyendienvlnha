@@ -22,6 +22,7 @@ test('wallet navigation has working shopping and Arcade controls but cannot mint
  const wallet=html.slice(html.indexOf('id="phone-app-wallet"'),html.indexOf('<!-- APP: CỬA HÀNG -->'));
  assert.match(wallet,/onclick="openPhoneApp\('shop'\)"/);
  assert.match(wallet,/onclick="openPhoneApp\('arcade'\)"/);
+ assert.match(wallet,/DuduPersonalArcadeUIV1\?\.openExchange\?\.\(\)/);
  assert.doesNotMatch(wallet,/onclick="[^\"]*(transfer|claim|award|grant)/i);
  const arcade=src('js/personal-arcade-ui-v1.js');
  assert.match(arcade,/peekBalance/);

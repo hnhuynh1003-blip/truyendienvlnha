@@ -20,6 +20,7 @@ Các tên được chọn ngắn, có cảm giác giao diện hệ thống, trá
 - Tiến trình lưu trong `localStorage` theo UID của tài khoản Firebase hiện đang đăng nhập; không tạo collection mới và **không gọi Firestore**.
 - Xu trò chơi nằm trong biến `state.coins` riêng; tuyệt đối không ghi `userProfile.currency`, ví Xu hệ thống, Shop, nhiệm vụ, vật phẩm thật hoặc quyền mở khóa chương.
 - Nút **Chuyển vào ví Xu hệ thống** nằm trong popup Đổi Xu nhưng bị vô hiệu hóa, cho đến khi Rules và luồng chuyển Xu được nghiệm thu. Xu V1 **không được coi là số dư có giá trị trên máy chủ**.
+- Popup **⇄ Đổi** nay có báo giá chọn lượng: `10 Xu Arcade → 1 Xu hệ thống`; chọn nhanh 10/50/100/Tối đa hoặc nhập thủ công theo bước 10; ngưỡng tối thiểu 10 Xu Arcade và trần dự kiến 30 Xu hệ thống/ngày. Từ app **Ví Xu** có thể mở trực tiếp popup này. Bộ tính `js/personal-arcade-exchange-v1.js` là pure client quote, không trừ tiền, không lưu ledger, và không được phép tạo quyền đọc.
 - Trạm Neon được tính theo thời gian **tab thực sự chạy**; khi mở trang lại sau khi đã đóng, không tự cấp Xu cho khoảng thời gian đã tắt. Hồi nước, cuốc và tăng trưởng cây vẫn dựa trên đồng hồ thực.
 - Không sử dụng Cloud Functions, dịch vụ AI, thanh toán, cổng nạp tiền hoặc dịch vụ nào bắt buộc Blaze.
 

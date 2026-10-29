@@ -5,6 +5,7 @@
  'use strict';
  const core=root.DuduPersonalArcadeCoreV1;
  if(!core||!root.document)return;
+ const exchangePolicy=root.DuduPersonalArcadeExchangeV1;
  const KEY='dudu-personal-arcade:v1:';
  const host=()=>root.document.getElementById('personal-arcade-v1');
  const modeLabels={neon:'Trạm Neon',mine:'Địa Tầng 07',garden:'Vườn Sương'};
@@ -12,7 +13,7 @@
  const oreGlyphs={stone:'◆',coal:'⬟',iron:'⬢',crystal:'✦'};
  let tab='neon',activeKey=null,state=null,lastTick=Date.now(),lastSave=0,
   lastPaint=0,lastRenderedKey=null,notice='',noticeUntil=0,error=false,feedback=null,
-  exchangeOpen=false;
+  exchangeOpen=false,exchangeAmount=10;
  const now=()=>Date.now();
  const isSandbox=()=>typeof IS_SANDBOX_MODE!=='undefined'&&IS_SANDBOX_MODE;
  function identity(){
@@ -48,6 +49,52 @@
  }
  const visible=()=>root.document.getElementById('phone-app-arcade')?.style.display==='flex';
  const fmt=amount=>core.formatXu(amount);
+ const quoteForExchange=()=>exchangePolicy?.quote({availableTenths:state?.coins??0,
+  requestedGameXu:exchangeAmount,transferredToday:0})||
+  {ok:false,reason:'not-ready',walletXu:0,maxGameXu:0};
+ const exchangeHint=q=>q.ok?'Số Xu sẽ nhận khi giao dịch được mở.':
+  q.reason==='minimum-10-game-xu'?'Tối thiểu 10 Xu Arcade mỗi lần.':
+  q.reason==='must-be-multiple-of-10'?'Chọn bội số của 10 Xu Arcade.':
+  q.reason==='insufficient-or-daily-cap'?'Vượt số dư hoặc hạn mức đổi trong ngày.':
+  'Chưa đủ Xu để đổi.';
+ function updateExchangePreview(){
+  if(!exchangeOpen)return;
+  const element=host(),q=quoteForExchange();
+  const amount=element?.querySelector('[data-arcade-exchange-result]');
+  if(amount)amount.textContent=q.walletXu.toLocaleString('vi-VN')+' Xu hệ thống';
+  const hint=element?.querySelector('[data-arcade-exchange-hint]');
+  if(hint)hint.textContent=exchangeHint(q);
+  const input=element?.querySelector('[data-arcade-exchange-input]');
+  if(input){input.max=String(Math.max(10,q.maxGameXu));
+   input.setAttribute('aria-invalid',q.ok?'false':'true');}
+  const available=element?.querySelector('[data-arcade-exchange-available]');
+  if(available&&state)available.textContent=fmt(state.coins);
+  element?.querySelectorAll?.('[data-arcade-exchange-preset]').forEach(button=>{
+   const choice=button.dataset.arcadeExchangePreset;
+   const value=choice==='max'?q.maxGameXu:Number(choice);
+   button.disabled=value<10||value>q.maxGameXu;
+   button.setAttribute('aria-pressed',exchangeAmount===value&&value>=10?'true':'false');
+  });
+ }
+ function exchangeForm(s){
+  const q=quoteForExchange(),allowance=exchangePolicy?.remaining({availableTenths:s.coins});
+  const max=allowance?.maxGameXu??0;
+  const choices=[10,50,100,'max'];
+  return `<div class="arcade-exchange-rate"><b>10 Xu Arcade</b><span>→</span><b>1 Xu ví</b></div>
+    <div class="arcade-exchange-balance">Đang có <b data-arcade-exchange-available>${fmt(s.coins)}</b> Xu Arcade</div>
+    <label class="arcade-exchange-label" for="arcade-exchange-input-v1">Muốn đổi bao nhiêu?</label>
+    <input type="number" id="arcade-exchange-input-v1" data-arcade-exchange-input
+      min="10" max="${Math.max(10,max)}" step="10" inputmode="numeric"
+      value="${Number.isFinite(exchangeAmount)?exchangeAmount:0}" aria-describedby="arcade-exchange-hint-v1" aria-invalid="${!q.ok}">
+    <div class="arcade-exchange-presets" role="group" aria-label="Mức đổi nhanh">
+      ${choices.map(choice=>{const value=choice==='max'?max:choice;
+       return `<button type="button" data-arcade-exchange-preset="${choice}"
+        ${value<10||value>max?'disabled':''} aria-pressed="${exchangeAmount===value&&value>=10}">${choice==='max'?'Tối đa':value+' Xu'}</button>`;}).join('')}
+    </div>
+    <div class="arcade-exchange-quote"><span>Dự kiến nhận</span><strong aria-live="polite" data-arcade-exchange-result>${q.walletXu.toLocaleString('vi-VN')} Xu hệ thống</strong></div>
+    <p class="arcade-exchange-hint" id="arcade-exchange-hint-v1" data-arcade-exchange-hint>${exchangeHint(q)}</p>
+    <div class="arcade-exchange-cap">Hạn mức dự kiến · 30 Xu ví/ngày</div>`;
+ }
  function countdown(ms){
   const seconds=Math.max(0,Math.ceil(ms/1000));
   return String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');
@@ -202,11 +249,10 @@
     ${exchangeOpen?`<div class="arcade-exchange-overlay" data-arcade-exchange="close">
       <section class="arcade-exchange-dialog" role="dialog" aria-modal="true" aria-label="Đổi Xu">
         <div class="arcade-exchange-heading"><strong>Đổi Xu</strong><button type="button" data-arcade-exchange="close" aria-label="Đóng">✕</button></div>
-        <div class="arcade-exchange-amount">✦ ${fmt(s.coins)} <small>Xu trò chơi</small></div>
-        <div class="arcade-exchange-arrow">↓</div>
+        ${exchangeForm(s)}
         <div class="arcade-exchange-target">Ví Xu hệ thống <button type="button" data-arcade-exchange="wallet">Xem ví ↗</button></div>
         ${button('Chuyển Xu · Chưa mở','transfer','gold',true)}
-        <p>Chuyển Xu sẽ được mở khi tích hợp Rules.</p>
+        <p>Chọn số Xu để xem trước. Chuyển thật sẽ mở cùng đợt Rules.</p>
       </section></div>`:''}
   </div>`;
   if(showToast)element.querySelector('[data-arcade-notice]').textContent=notice;
@@ -217,6 +263,7 @@
   const element=host();if(!element||!state)return;
   const wallet=element.querySelector?.('[data-arcade-wallet]');
   if(wallet)wallet.textContent='✦ '+fmt(state.coins);
+  if(exchangeOpen)updateExchangePreview();
   const toast=element.querySelector?.('.arcade-status');
   if(toast&&time>=noticeUntil)toast.hidden=true;
   element.querySelectorAll?.('[data-arcade-until]').forEach(node=>{
@@ -252,7 +299,17 @@
  }
  function init(){
   const element=host();if(!element)return false;
+  element.addEventListener('input',event=>{
+   if(!event.target.matches?.('[data-arcade-exchange-input]'))return;
+   exchangeAmount=event.target.value.trim()===''?0:Number(event.target.value);
+   updateExchangePreview();
+  });
   element.addEventListener('click',event=>{
+   const preset=event.target.closest('[data-arcade-exchange-preset]');
+   if(preset?.dataset?.arcadeExchangePreset!=null&&!preset.disabled){
+    const choice=preset.dataset.arcadeExchangePreset;
+    exchangeAmount=choice==='max'?quoteForExchange().maxGameXu:Number(choice);
+    render();return;}
    const exchange=event.target.closest('[data-arcade-exchange]');
    if(exchange){
     const choice=exchange.dataset.arcadeExchange;
@@ -264,6 +321,7 @@
     }
     if(choice==='open'||choice==='close'&&event.target===exchange||
      choice==='close'&&exchange.tagName==='BUTTON'){
+     if(choice==='open')exchangeAmount=10;
      exchangeOpen=choice==='open';render();return;
     }
    }
@@ -292,6 +350,16 @@
   const current=ensure();
   return current?fmt(current.coins):null;
  }
- root.DuduPersonalArcadeUIV1=Object.freeze({init,render,interact,tick,peekBalance});
+ function openExchange(){
+  if(!ensure()){
+   if(typeof root.openPhoneApp==='function')root.openPhoneApp('arcade');
+   return false;
+  }
+  exchangeAmount=10;exchangeOpen=true;
+  if(!visible()&&typeof root.openPhoneApp==='function')root.openPhoneApp('arcade');
+  else render();
+  return true;
+ }
+ root.DuduPersonalArcadeUIV1=Object.freeze({init,render,interact,tick,peekBalance,openExchange});
  init();
 })(typeof window!=='undefined'?window:{});

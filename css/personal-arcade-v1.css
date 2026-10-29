@@ -154,15 +154,34 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header{min-height:
 .arcade-exchange-overlay{position:fixed;inset:0;z-index:6000;background:#080d18bd;
  display:grid;place-items:center;padding:15px;backdrop-filter:blur(4px)}
 .arcade-exchange-dialog{width:min(312px,calc(100vw - 30px));border:1px solid #678a90;border-radius:18px;
- padding:16px;background:linear-gradient(155deg,#1b3142,#121c30 75%);box-shadow:0 26px 65px #020612b3}
+ padding:16px;max-height:min(86dvh,610px);overflow-y:auto;overscroll-behavior:contain;
+ background:linear-gradient(155deg,#1b3142,#121c30 75%);box-shadow:0 26px 65px #020612b3}
 .arcade-exchange-heading{display:flex;align-items:center;justify-content:space-between}
 .arcade-exchange-heading strong{font-size:18px;color:#f5e4be}
 .arcade-exchange-heading button{border:0;background:#334459;color:#f1e8e6;font-size:18px;
  width:30px;height:30px;border-radius:8px;cursor:pointer}
-.arcade-exchange-amount{margin-top:18px;background:#17343e;border-radius:10px;padding:13px;
- font:900 23px ui-monospace,monospace;color:#f6d698;text-align:center}
-.arcade-exchange-amount small{display:block;color:#a5c6c9;font:700 10px ui-monospace,monospace;margin-top:4px}
-.arcade-exchange-arrow{text-align:center;color:#b7d0c6;font-size:22px;padding:5px}
+.arcade-exchange-rate{display:flex;justify-content:center;align-items:center;gap:9px;margin:14px 0 9px;
+ padding:12px 8px;border:1px solid #547583;border-radius:11px;background:#193743;
+ color:#f1dcaa;font:900 12px ui-monospace,monospace;white-space:nowrap}
+.arcade-exchange-rate span{color:#88ddd0;font-size:16px}
+.arcade-exchange-balance{color:#a8c8c9;font-size:10px;text-align:center;margin:0 0 14px}
+.arcade-exchange-balance b{color:#f6dcaa}
+.arcade-exchange-label{display:block;color:#e3ebdf;font-size:11px;font-weight:800;margin-bottom:7px}
+.arcade-exchange-dialog input[data-arcade-exchange-input]{width:100%;height:43px;border:1px solid #6f8d91;
+ border-radius:9px;padding:9px 12px;background:#111e2d;color:#ffe4ab;
+ font:800 19px/1 ui-monospace,monospace;outline-offset:2px}
+.arcade-exchange-dialog input[data-arcade-exchange-input]:focus-visible{outline:2px solid #95e1cf}
+.arcade-exchange-dialog input[data-arcade-exchange-input][aria-invalid=true]{border-color:#d69a75}
+.arcade-exchange-presets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin:9px 0 12px}
+.arcade-exchange-presets button{min-width:0;min-height:32px;border:1px solid #5d7d88;
+ border-radius:8px;background:#223748;color:#c5dfe0;font-size:9px;font-weight:800;cursor:pointer}
+.arcade-exchange-presets button[aria-pressed=true]{border-color:#efd19c;background:#54473a;color:#ffdda1}
+.arcade-exchange-presets button:disabled{opacity:.32;cursor:not-allowed}
+.arcade-exchange-quote{display:flex;justify-content:space-between;align-items:center;gap:8px;
+ border-radius:10px;padding:11px;background:#263945;color:#b9d7d4;font-size:10px}
+.arcade-exchange-quote strong{font:900 13px ui-monospace,monospace;color:#ffdda0;text-align:right}
+.arcade-exchange-hint{color:#afc3c6;font-size:10px;margin:7px 0 3px;line-height:1.4}
+.arcade-exchange-cap{color:#92aabb;font:700 9px ui-monospace,monospace;text-align:right;margin:5px 0 11px}
 .arcade-exchange-target{display:flex;justify-content:space-between;gap:6px;background:#253044;
  border-radius:9px;padding:11px;font-weight:700;font-size:11px;color:#eceddf;margin-bottom:13px}
 .arcade-exchange-target span{color:#daa992}

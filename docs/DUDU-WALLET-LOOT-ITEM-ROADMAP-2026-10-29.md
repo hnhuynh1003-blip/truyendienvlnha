@@ -10,7 +10,9 @@ Phục vụ một chủ tài khoản và vài tài khoản cá nhân; không n�
 | **Ví Xu hệ thống** | Cửa hàng, và mở truyện/chương trả Xu về sau | `userProfile.currency` (profile đang có) | Có màn hình Ví Xu riêng trong Cyber Phone. **Không tạo số dư profile thứ hai.** Trạng thái profile hiện tại chưa thể xác nhận chống gian lận bằng Rules hiện tại. |
 | **Xu Arcade** | Nâng cấp Trạm Neon, Địa Tầng 07, Vườn Sương | LocalStorage theo UID và thiết bị | Dùng trong 3 game. Nút **⇄ Đổi** và màn hình Ví liên thông về giao diện, **chưa thể chuyển Xu thật**. |
 
-Không đổi tỷ lệ Xu, không tự gộp tiền và không biến tiến trình game local thành quyền mở chương cho tới đợt nghiệm thu bảo mật. Người dùng vào **Ví Xu → Cửa hàng** để chi số dư hệ thống như trước.
+**Bản thiết kế quy đổi:** `10 Xu Arcade → 1 Xu hệ thống`. Mỗi giao dịch tối thiểu 10 Xu Arcade, nhận số Xu hệ thống nguyên; chọn lượng đổi theo **bội số của 10**, giới hạn **30 Xu hệ thống/ngày** (tương đương 300 Xu Arcade/ngày). Không có phí và không chuyển ngược. Người dùng chọn số lượng bằng cách nhập số hoặc nút nhanh 10/50/100/Tối đa ở cả đường dẫn Arcade và Ví Xu.
+
+`js/personal-arcade-exchange-v1.js` hiện chỉ tạo báo giá thuần, không trừ Xu hay gộp tiền. **Hạn mức trong popup đang là dự kiến**; chưa có sổ giao dịch ngày và không được xem localStorage là chứng cứ bảo mật. Phải có mã giao dịch không trùng, xác nhận nguồn số dư và lịch sử trừ/cộng cùng một giao dịch trước khi mở nút chuyển thật.
 
 ## 2. Nhịp nhặt đồ đã áp dụng tại giao diện/client
 
@@ -46,7 +48,7 @@ Không đổi tỷ lệ Xu, không tự gộp tiền và không biến tiến tr
 
 ## 4. Thứ tự triển khai trước lần Rules chung
 
-1. **Ví Xu**: chỉ đọc từ `userProfile.currency`; lập hợp đồng giao dịch Xu và lịch sử để tích hợp sau, không tự tạo ví song song.
+1. **Ví Xu**: chỉ đọc từ `userProfile.currency`; dùng tỷ lệ 10:1 và trần 30 Xu/ngày làm cấu hình đề xuất để kiểm thử adapter/ledger, không tự tạo ví song song.
 2. **Nhặt đồ**: thống nhất giới hạn điện thoại/chương, kết quả nhận duy nhất, trùng lượt, thời gian phía máy chủ ở lần mở quyền.
 3. **Sử dụng vật phẩm**: ưu tiên đồ phổ thông + 4 công cụ cửa hàng có sẵn, kiểm tra không nhân bản, không dùng trái ngữ cảnh.
 4. **Quyền đọc trả Xu**: thống nhất khóa nội dung thật và đơn mua truyện/chương, không chỉ ẩn nút.

@@ -31,5 +31,9 @@
 .dudu-wallet-secondary strong{font:900 18px ui-monospace,monospace;color:#bde5dc}
 .dudu-wallet-source-badge{font:700 9px ui-monospace,monospace;color:#a7b7c8;border-radius:99px;
  background:#2c3b4d;padding:5px 7px}
+.dudu-wallet-exchange-launch{width:100%;min-height:42px;border:1px solid #c5a36b;border-radius:10px;
+ background:linear-gradient(130deg,#53473f,#3a394a);color:#ffe2ac;
+ font:800 11px ui-monospace,monospace;cursor:pointer}
+.dudu-wallet-exchange-launch:focus-visible{outline:2px solid #ffdc9e;outline-offset:2px}
 .dudu-wallet-lock{display:flex;align-items:center;gap:8px;padding:5px 3px;font-size:10px;line-height:1.45;color:#879bb1}
 .dudu-wallet-lock>span:first-child{font-size:17px;color:#b49c75}
