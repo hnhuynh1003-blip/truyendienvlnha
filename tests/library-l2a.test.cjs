@@ -62,7 +62,7 @@ test('L2A cards render untrusted story fields as inert text, with accessible act
  const {grid,count,calls}=render([{id:'legacy',title,desc:description,
   author:'<b>Author</b>',genre:'<script>evil</script>',status:'Đang ra',
   coverImage:"https://example.test/cover');onerror='bad",chapters:[{title:'Một'}]}]);
- assert.equal(count.textContent,'Hiển thị 1 / 1 truyện');
+ assert.equal(count.textContent,'1 / 1 tác phẩm');
  const nodes=walk(grid);
  assert.equal(nodes.filter(node=>node.tagName==='img').length,1);
  assert.ok(nodes.some(node=>node.tagName==='button'&&node.textContent===title));
@@ -79,8 +79,8 @@ test('L2A shows one real read action for either legacy or EPUB with bookmarks',(
  const {grid,calls}=render(books,n=>n._cloudV49?{chIdx:1}:null);
  const nodes=walk(grid);
  assert.equal(nodes.filter(node=>node.tagName==='article').length,2);
- assert.ok(nodes.some(node=>node.textContent==='✦'));
- const action=nodes.find(node=>node.tagName==='button'&&node.textContent==='⚡ Đọc tiếp (Ch.2)');
+ assert.ok(nodes.some(node=>node.textContent==='D'));
+ const action=nodes.find(node=>node.tagName==='button'&&node.textContent==='Đọc tiếp · Ch.2');
  assert.ok(action);
  action.listeners.click({stopPropagation:()=>{}});
  assert.deepEqual(calls,[['read',1]]);
@@ -95,5 +95,5 @@ test('L2A reading focus is confined to the reader and leaves author permissions 
  assert.match(html,/winScroll > 180 && winScroll < lastReaderScrollY - 3/);
  assert.match(html,/canEditStories\(\)/);
  assert.match(html,/DuduEpubProductionV49\.readChapter\(db,bookId,chapterId\)/);
- assert.match(html,/<button type="button" class="chapter-name-click" onclick="readChapter/);
+ assert.match(html,/<button type="button" class="chapter-name-click" \$\{isCurrent \?/);
 });

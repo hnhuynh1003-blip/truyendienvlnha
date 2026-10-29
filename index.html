@@ -765,6 +765,7 @@
   <link rel="stylesheet" href="css/economy-live-v52.css?v=52-1">
   <style>body.dudu-spark-personal-mode #dudu-spark-chat-tip{display:block !important;}</style>
   <link rel="stylesheet" href="css/site-shell-v60.css?v=66-1">
+  <link rel="stylesheet" href="css/library-discovery-l2b.css?v=l2b-1">
   <link rel="stylesheet" href="css/world-experience-v65.css?v=65-1">
   <link rel="stylesheet" href="css/world-experience-v66.css?v=66-2">
   <link rel="stylesheet" href="css/dudu-pilot-v1.css?v=play-v8">
@@ -796,7 +797,7 @@
       <span class="user-info-badge" id="account-status-btn" onclick="openAuthModal()">👤 Khách</span>
       <button type="button" id="player-avatar-header-v16" class="dudu-player-avatar-v16" style="display:none" onclick="openPlayerAvatarEditorV16()" aria-label="Đổi ảnh và khung tài khoản"></button>
       <span class="role-badge reader" id="role-toggle-btn" onclick="toggleUserRole()">📖 Độc Giả</span>
-      <button class="btn btn-primary admin-only" onclick="canEditStories() && (window.DuduLibraryIntakeV1?.open?.() || openStoryModal())">+ Đăng / nhập truyện</button>
+      <button class="btn btn-primary admin-only" aria-label="Đăng hoặc nhập truyện" onclick="canEditStories() && (window.DuduLibraryIntakeV1?.open?.() || openStoryModal())"><span class="header-create-long">+ Đăng / nhập truyện</span><span class="header-create-short" aria-hidden="true">＋ Tạo</span></button>
       
     </div>
   </header>
@@ -809,29 +810,36 @@
     <div id="home-view">
       <div class="filter-panel">
         <div class="search-row">
-          <input type="text" class="search-input" id="search-novel-input" autocomplete="off" placeholder="🔍 Tìm tên truyện, nhân vật..." oninput="onSearchChange()">
-          <select class="sort-select" id="sort-select-ctrl" onchange="onSortChange()">
-            <option value="NEWEST_UPDATE">⏱ Mới cập nhật</option>
-            <option value="OLDEST_UPDATE">⏳ Cũ nhất</option>
-            <option value="MOST_CHAPTERS">📚 Nhiều chương</option>
-            <option value="MOST_WORDS">🔤 Nhiều chữ</option>
+          <label class="archive-search-field" for="search-novel-input">
+            <span aria-hidden="true">⌕</span>
+            <input type="search" class="search-input" id="search-novel-input" autocomplete="off" placeholder="Tìm một câu chuyện, nhân vật…" oninput="onSearchChange()">
+          </label>
+          <select class="sort-select" id="sort-select-ctrl" aria-label="Sắp xếp tác phẩm" onchange="onSortChange()">
+            <option value="NEWEST_UPDATE">Mới cập nhật</option>
+            <option value="OLDEST_UPDATE">Cũ nhất</option>
+            <option value="MOST_CHAPTERS">Nhiều chương</option>
+            <option value="MOST_WORDS">Nhiều chữ</option>
           </select>
         </div>
 
-        <div>
-          <div class="tags-container" id="tag-cloud-container"></div>
-        </div>
-
-        <div class="filter-status-row">
-          <div style="display: flex; gap: 4px; align-items: center;">
-            <button class="filter-btn active" onclick="filterStatus('ALL', this)">Tất cả</button>
-            <button class="filter-btn" onclick="filterStatus('Đang ra', this)">Đang ra</button>
-            <button class="filter-btn" onclick="filterStatus('Hoàn thành', this)">Hoàn thành</button>
+        <details class="archive-filter-details" id="archive-filter-details">
+          <summary><span aria-hidden="true">◇</span><span id="archive-filter-label">Thể loại & trạng thái</span><span class="archive-filter-caret" aria-hidden="true">⌄</span></summary>
+          <div class="archive-filter-content">
+            <p class="archive-filter-caption">THỂ LOẠI</p>
+            <div class="tags-container" id="tag-cloud-container"></div>
+            <div class="filter-status-row">
+              <div class="archive-status-buttons" role="group" aria-label="Trạng thái tác phẩm">
+                <button class="filter-btn active" aria-pressed="true" onclick="filterStatus('ALL', this)">Tất cả</button>
+                <button class="filter-btn" aria-pressed="false" onclick="filterStatus('Đang ra', this)">Đang ra</button>
+                <button class="filter-btn" aria-pressed="false" onclick="filterStatus('Hoàn thành', this)">Hoàn thành</button>
+              </div>
+              <button class="archive-reset-filter" type="button" onclick="resetAllFilters()">Xóa bộ lọc</button>
+            </div>
           </div>
-          <div style="font-size: 10px; color: var(--accent);" id="search-result-count">Hiển thị truyện</div>
-        </div>
+        </details>
       </div>
 
+      <div class="archive-catalog-bar"><span>✦ &nbsp; DANH MỤC TÁC PHẨM</span><span id="search-result-count" aria-live="polite">Đang tải danh mục</span></div>
       <div class="novel-grid" id="novel-grid-container"></div>
     </div>
 
@@ -6136,8 +6144,12 @@ document.getElementById('phone-home-screen').style.display = 'none';
 
     function filterStatus(status, btn) {
       currentFilterStatus = status;
-      document.querySelectorAll('.filter-status-row .filter-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.filter-status-row .filter-btn').forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-pressed', 'false');
+      });
       btn.classList.add('active');
+      btn.setAttribute('aria-pressed', 'true');
       renderHome();
     }
 
@@ -6164,9 +6176,11 @@ document.getElementById('phone-home-screen').style.display = 'none';
 
       container.innerHTML = "";
       allTags.forEach(tag => {
-        const span = document.createElement('span');
+        const span = document.createElement('button');
+        span.type = 'button';
         span.className = `tag-chip ${(selectedTag === tag || (selectedTag === 'ALL' && tag === 'Tất cả')) ? 'active' : ''}`;
         span.textContent = tag;
+        span.setAttribute('aria-pressed', String(selectedTag === tag || (selectedTag === 'ALL' && tag === 'Tất cả')));
         span.onclick = () => selectTagFilter(tag === 'Tất cả' ? 'ALL' : tag, span);
         container.appendChild(span);
       });
@@ -6233,22 +6247,41 @@ document.getElementById('phone-home-screen').style.display = 'none';
         return 0;
       });
 
-      document.getElementById('search-result-count').textContent = `Hiển thị ${filtered.length} / ${novels.length} truyện`;
+      document.getElementById('search-result-count').textContent =
+        `${filtered.length} / ${novels.length} tác phẩm`;
+      const filterLabel = document.getElementById('archive-filter-label');
+      if (filterLabel) {
+        const active = [selectedTag !== 'ALL' ? selectedTag : '',
+          currentFilterStatus !== 'ALL' ? currentFilterStatus : ''].filter(Boolean);
+        filterLabel.textContent = active.length ? active.join(' · ') : 'Thể loại & trạng thái';
+      }
 
       if (filtered.length === 0) {
-        container.innerHTML = `
-          <div style="grid-column: 1/-1; text-align: center; padding: 30px 10px; color: var(--text-dim); font-size: 13px;">
-            Không tìm thấy tác phẩm phù hợp.
-          </div>
-        `;
+        const empty = document.createElement('div');
+        empty.className = 'archive-empty-state';
+        const heading = document.createElement('strong');
+        heading.textContent = novels.length ? 'Chưa tìm thấy câu chuyện phù hợp' : 'Kệ sách đang chờ tác phẩm đầu tiên';
+        const detail = document.createElement('p');
+        detail.textContent = novels.length ? 'Thử tên khác hoặc bỏ bớt bộ lọc để khám phá thêm.' :
+          'Những tác phẩm được phát hành sẽ xuất hiện tại đây.';
+        empty.append(heading, detail);
+        if (novels.length) {
+          const clear = document.createElement('button');
+          clear.type = 'button';
+          clear.className = 'archive-empty-reset';
+          clear.textContent = 'Xem tất cả tác phẩm';
+          clear.addEventListener('click', resetAllFilters);
+          empty.appendChild(clear);
+        }
+        container.appendChild(empty);
         return;
       }
 
-      filtered.forEach((novel) => {
+      filtered.forEach((novel, displayIndex) => {
         const originalIndex = novels.indexOf(novel);
         const latestDate = getNovelLatestDate(novel);
         const card = document.createElement('article');
-        card.className = 'novel-card';
+        card.className = 'novel-card ' + (displayIndex === 0 ? 'archive-featured' : 'archive-shelf-item');
         card.addEventListener('click', event => {
           if (!event.target.closest('button')) openCover(originalIndex);
         });
@@ -6265,16 +6298,20 @@ document.getElementById('phone-home-screen').style.display = 'none';
           image.decoding = 'async';
           image.addEventListener('error', () => {
             image.remove();
-            cover.textContent = '✦';
+            cover.textContent = 'D';
           });
           cover.appendChild(image);
         } else {
-          cover.textContent = '✦';
+          cover.textContent = 'D';
           cover.setAttribute('aria-hidden', 'true');
         }
         const info = document.createElement('div');
         info.className = 'novel-info';
         const details = document.createElement('div');
+        const indexLabel = document.createElement('div');
+        indexLabel.className = 'archive-card-index';
+        indexLabel.textContent = displayIndex === 0 ? '01  /  MỞ ĐẦU DANH MỤC' :
+          String(displayIndex + 1).padStart(2, '0') + '  /  DUDU ARCHIVE';
         const badges = document.createElement('div');
         badges.className = 'novel-badges';
         const badge = (value, cls) => {
@@ -6285,7 +6322,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
         };
         badge(novel.status || 'Đang ra', 'tag tag-status');
         (novel.genre || 'Tiểu thuyết').split(/[,/]+/).map(t => t.trim()).filter(Boolean)
-          .slice(0, 2).forEach(t => badge(t, 'tag'));
+          .slice(0, 1).forEach(t => badge(t, 'tag'));
         const title = document.createElement('button');
         title.type = 'button';
         title.className = 'novel-title novel-title-button';
@@ -6298,14 +6335,14 @@ document.getElementById('phone-home-screen').style.display = 'none';
         byline.className = 'novel-byline';
         byline.textContent = (novel.author || 'Chưa rõ tác giả') +
           ' · ' + (novel.chapters?.length || 0) + ' chương';
-        details.append(badges, title, byline, description);
+        details.append(indexLabel, badges, title, byline, description);
 
         const bookmark = v568ReadBookmarkForNovel(novel);
-        let readButtonText = "▶ Đọc ngay";
+        let readButtonText = novel.chapters?.length ? 'Bắt đầu đọc' : 'Xem tác phẩm';
         let readButtonClass = "btn btn-primary";
 
         if (bookmark && typeof bookmark.chIdx === 'number' && novel.chapters && novel.chapters[bookmark.chIdx]) {
-          readButtonText = `⚡ Đọc tiếp (Ch.${bookmark.chIdx + 1})`;
+          readButtonText = `Đọc tiếp · Ch.${bookmark.chIdx + 1}`;
           readButtonClass = "btn btn-gold";
         }
 
@@ -6317,7 +6354,10 @@ document.getElementById('phone-home-screen').style.display = 'none';
         readButton.type = 'button';
         readButton.className = readButtonClass;
         readButton.textContent = readButtonText;
-        readButton.addEventListener('click', event => smartReadAction(originalIndex, event));
+        readButton.addEventListener('click', event => {
+          if (!novel.chapters?.length) { event.stopPropagation(); openCover(originalIndex); }
+          else smartReadAction(originalIndex, event);
+        });
         meta.append(date, readButton);
         info.append(details, meta);
         card.append(cover, info);
@@ -6335,6 +6375,11 @@ document.getElementById('phone-home-screen').style.display = 'none';
       sortMode = "NEWEST_UPDATE";
       document.getElementById('search-novel-input').value = "";
       document.getElementById('sort-select-ctrl').value = "NEWEST_UPDATE";
+      document.querySelectorAll('.filter-status-row .filter-btn').forEach(button => {
+        const active = button.textContent.trim() === 'Tất cả';
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', String(active));
+      });
       renderHome();
     }
 
@@ -6501,7 +6546,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       document.getElementById('book-title').textContent = novel.title;
       document.getElementById('book-author').textContent = novel.author || userProfile.name;
       document.getElementById('book-status').textContent = novel.status || "Đang ra";
-      document.getElementById('book-chapter-count').textContent = `${novel.chapters.length} chương`;
+      document.getElementById('book-chapter-count').textContent = String(novel.chapters.length);
       document.getElementById('book-desc').textContent = novel.desc || "Chưa có tóm tắt.";
 
       const coverContainer = document.getElementById('book-cover-art-container');
@@ -6512,20 +6557,25 @@ document.getElementById('phone-home-screen').style.display = 'none';
       }
 
       const intro = novel.introData || {};
-      document.getElementById('intro-box-title').textContent = `◆ ${intro.title || "VĂN ÁN // GLITCH RECORD"}`;
+      const introText = String(intro.text || novel.intro || '').trim();
+      const introBox = document.querySelector('#cover-view .intro-terminal-box');
+      if (introBox) introBox.hidden = !introText;
+      document.getElementById('intro-box-title').textContent = `◆ ${intro.title || "VĂN ÁN"}`;
       document.getElementById('intro-box-code').textContent = intro.code || "SYS_INITIALIZED";
-      document.getElementById('book-intro').textContent = intro.text || novel.intro || "[ Không có dữ liệu văn án ]";
+      document.getElementById('book-intro').textContent = introText;
 
       const bookmark = v568ReadBookmarkForNovel(novel);
       const mainReadBtn = document.getElementById('btn-main-reading-action');
 
       if (bookmark && typeof bookmark.chIdx === 'number' && novel.chapters && novel.chapters[bookmark.chIdx]) {
         mainReadBtn.className = "btn btn-gold";
-        mainReadBtn.textContent = `⚡ Đọc tiếp (${novel.chapters[bookmark.chIdx].title})`;
+        mainReadBtn.textContent = `Đọc tiếp · Ch.${bookmark.chIdx + 1}`;
       } else {
         mainReadBtn.className = "btn btn-primary";
-        mainReadBtn.textContent = "▶ Đọc ngay (Chương 1)";
+        mainReadBtn.textContent = novel.chapters.length ? 'Bắt đầu đọc' : 'Chưa có chương';
+        mainReadBtn.disabled = !novel.chapters.length;
       }
+      if (novel.chapters.length) mainReadBtn.disabled = false;
 
       renderChapterIndex();
       renderStoryCommentsV442('story');
@@ -6544,14 +6594,17 @@ document.getElementById('phone-home-screen').style.display = 'none';
 
       let list = novel.chapters.map((ch, idx) => ({ ...ch, originalIdx: idx }));
       if (isReversedOrder) list.reverse();
+      const bookmark = v568ReadBookmarkForNovel(novel);
 
       list.forEach((ch) => {
         const item = document.createElement('div');
-        item.className = 'chapter-item';
+        const isCurrent = bookmark?.chIdx === ch.originalIdx;
+        item.className = 'chapter-item' + (isCurrent ? ' is-bookmarked' : '');
         item.innerHTML = `
-          <button type="button" class="chapter-name-click" onclick="readChapter(${ch.originalIdx})">
+          <button type="button" class="chapter-name-click" ${isCurrent ? 'aria-current="location"' : ''} onclick="readChapter(${ch.originalIdx})">
             <div>${escapeHtml(ch.title)}</div>
             <div style="font-size:10px; color:var(--text-dim);">${ch.wordCount || countWords(ch.content)} từ</div>
+            ${isCurrent ? '<span class="archive-reading-marker">Đang đọc</span>' : ''}
           </button>
           <div style="display:flex; gap:6px;" class="admin-only">
             <button class="btn" style="padding: 2px 6px; font-size: 10px;" onclick="openEditChapterModal(${ch.originalIdx})">Sửa</button>

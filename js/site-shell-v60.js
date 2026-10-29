@@ -260,6 +260,7 @@
    document.querySelectorAll('[data-d60-route]').forEach(n=>{
      if(n.dataset.d60Route===current)n.setAttribute('aria-current','page');else n.removeAttribute('aria-current');
    });
+   document.body.classList.toggle('dudu-library-browsing',current==='library');
    document.title=(labels[current]||'DUDU')+' · DUDU Studio';
  }
  function enterLegacy(){
@@ -318,8 +319,19 @@
      element('p','d60-intro','Các công cụ sáng tác hiện có được giữ nguyên. Quyền xuất bản vẫn do hệ thống xác thực quyết định.'));
    const authorBtns=element('div','d60-two');authorBtns.id='d60-author-actions';author.append(authorBtns);
    for(const node of [author,shelf,worlds,home])container.insertBefore(node,container.firstChild);
-   const library=id('home-view'),intro=element('div','d60-library-intro');
-   intro.append(element('h1','','Thư viện truyện'),element('p','','Tìm kiếm theo tên, nhân vật, thể loại; lựa chọn truyện phù hợp với bạn.'));
+   const library=id('home-view'),intro=element('section','d60-library-intro archive-intro');
+   const eyebrow=element('div','archive-eyebrow');
+   eyebrow.append(element('span','','DUDU STUDIO'),element('span','archive-eyebrow-line'),
+     element('span','','THE STORY ARCHIVE'));
+   const heading=element('div','archive-heading');
+   const titleBlock=element('div','archive-title-copy');
+   const title=element('h1','','Thư viện ');
+   title.append(element('em','','DUDU'));
+   titleBlock.append(title,element('p','','Mỗi câu chuyện là một thế giới được lưu giữ. Hãy mở trang đầu tiên.'));
+   const crest=element('div','archive-crest');crest.setAttribute('aria-hidden','true');
+   crest.append(element('span','archive-crest-glyph','D'),element('small','','ARCHIVE / 01'));
+   heading.append(titleBlock,crest);
+   intro.append(eyebrow,heading);
    library.insertBefore(intro,library.firstChild);
    document.body.classList.add('dudu-site-v60');
    const route=Object.keys(routes).find(k=>location.hash===routes[k])||'home';
