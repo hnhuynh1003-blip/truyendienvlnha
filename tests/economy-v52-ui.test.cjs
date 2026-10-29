@@ -21,7 +21,7 @@ test('V52.3 Enterprise App Check uses a configured public key while retaining ba
  assert.doesNotMatch(keySource,/SECRET_KEY|PRIVATE_KEY|serviceAccount/);
  assert.match(backend,/enforceAppCheck:true/);
 });
-test('V52 buttons call only verified Firebase callable endpoints',()=>{
+test('V52 legacy backend remains gated; personal Spark shop uses returned transaction state',()=>{
  assert.match(html,/js\/economy-live-v52\.js\?v=52-1/);
  for(const app of ['shop','quests','inventory']){
   assert.match(html,new RegExp('window\\.DuduEconomyLiveV52\\?\\.open'+app[0].toUpperCase()+app.slice(1)+'\\(\\)'));
@@ -31,8 +31,10 @@ test('V52 buttons call only verified Firebase callable endpoints',()=>{
  assert.match(client,/duduEconomyStatus/);
  assert.match(client,/const account=uid\(\)/);
  assert.match(client,/functions\('asia-southeast1'\)\.httpsCallable/);
- assert.doesNotMatch(client,/userProfile\.currency\s*[+\-=]/);
- assert.doesNotMatch(client,/userProfile\.inventory\s*=/);
+ assert.match(client,/userProfile\.currency=result\.balance/);
+ assert.match(client,/userProfile\.inventory=result\.inventory/);
+ assert.match(client,/personalMode:true,readOnly:false/);
+ assert.doesNotMatch(client,/userProfile\.currency\s*\+=/);
  assert.doesNotMatch(client,/userProfile\.exp\s*=/);
  assert.doesNotMatch(client,/\.collection\('economy_accounts_v52'\)/);
 });

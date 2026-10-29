@@ -155,6 +155,7 @@
   <script src="js/chapter-loot-encounter-v1.js?v=chapter-surprise-1"></script>
   <script src="js/item-actions-v43.js?v=1"></script>
   <script src="js/functional-items-v43-8.js?v=44-9"></script>
+  <script src="js/personal-spark-items-v1.js?v=shop-1"></script>
   <script src="js/companion-rules-v43.js?v=1"></script>
   <script src="js/dudu-system-steward-v67-3.js?v=67-3-3"></script>
   <script src="js/npc-bond-v43.js?v=1"></script>
@@ -2241,6 +2242,7 @@
     // V53: single-reader Spark mode; no Firebase Functions or paid AI required.
     // Local NPC scripts never change wallet, items, quests or relationship rewards.
     const DUDU_SPARK_PERSONAL_MODE = !IS_SANDBOX_MODE;
+    window.DUDU_SPARK_ITEMS_V1_READY = true; // Personal Spark shop; no Rules deploy.
     const DUDU_NPC_AI_MODE = !IS_SANDBOX_MODE; // Cloudflare/Gemini; Firebase Spark remains free.
     // V47 requires both sandbox=1 and pilot=1; neither default mode can access Pilot.
     const IS_PILOT_STAGING_MODE = IS_SANDBOX_MODE && DUDU_QUERY.get('pilot') === '1';
@@ -5079,7 +5081,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
         if(!IS_SANDBOX_MODE&&!DUDU_SPARK_PERSONAL_MODE)window.DuduEconomyLiveV52?.openQuests();
       } else if (appName === 'shop') {
         renderShop();
-        if(!IS_SANDBOX_MODE&&!DUDU_SPARK_PERSONAL_MODE)window.DuduEconomyLiveV52?.openShop();
+        if(!IS_SANDBOX_MODE&&(!DUDU_SPARK_PERSONAL_MODE||window.DUDU_SPARK_ITEMS_V1_READY===true))
+          window.DuduEconomyLiveV52?.openShop();
       } else if (appName === 'settings') {
         updateActiveModelInfo();
         syncPhoneDisplayOptionsV27();
@@ -5206,6 +5209,57 @@ document.getElementById('phone-home-screen').style.display = 'none';
     }
 
     // Read-only inspector: never grants, consumes or changes an inventory item.
+    // Spark/free private-account actions. Existing profile fields are updated
+    // atomically in Firestore; no Firebase Functions or separate paid wallet.
+    let personalItemBusy=false;
+    const personalItemsReady=()=>!IS_SANDBOX_MODE&&
+      window.DUDU_SPARK_ITEMS_V1_READY===true&&!!window.DuduPersonalSparkItemsV1&&
+      DuduAuth.isReady()&&DuduAuth.uid()===currentUsername;
+    async function personalInventoryAction(kind,item){
+      if(!personalItemsReady()||personalItemBusy||!item?.instanceId)return false;
+      const engine=window.DuduPersonalSparkItemsV1,uid=DuduAuth.uid();
+      const key='dudu-personal-items:pending:'+uid+':'+kind+':'+item.instanceId;
+      let pending=null;
+      try{pending=JSON.parse(localStorage.getItem(key)||'null');}catch(_){}
+      if(!pending||pending.itemId!==item.id)
+        pending={itemId:item.id,requestId:engine.requestId(kind)};
+      try{localStorage.setItem(key,JSON.stringify(pending));}
+      catch(_){
+        showSystemAlert('CHƯA THAO TÁC ĐƯỢC','Thiết bị không lưu được mã giao dịch.');
+        return false;
+      }
+      personalItemBusy=true;
+      try{
+        const result=await engine.run({
+          db,auth:firebase.auth(),uid,kind,requestId:pending.requestId,
+          itemId:item.id,instanceId:item.instanceId,lastLootTimestamp,
+          cooldownRemainingMs:DuduLootCadenceV42.phoneRemainingMs(lastLootTimestamp,Date.now())
+        });
+        if(!personalItemsReady()||DuduAuth.uid()!==uid)return false;
+        userProfile.currency=result.balance;
+        userProfile.inventory=result.inventory;
+        userProfile.storyStates=result.storyStates;
+        if(result.cooldownAt!==null&&Number.isSafeInteger(result.cooldownAt)){
+          lastLootTimestamp=result.cooldownAt;
+          localStorage.setItem(scopedLocalKey('loot-cooldown'),String(lastLootTimestamp));
+          startCooldownTicker();
+        }
+        inventoryDetailSelection=null;
+        localStorage.setItem('profile_'+uid,JSON.stringify(userProfile));
+        localStorage.removeItem(key);
+        renderInventory();renderWallet();
+        showSystemAlert(kind==='sell'?'ĐÃ BÁN VẬT PHẨM':'ĐÃ DÙNG VẬT PHẨM',
+          kind==='sell'?'+'+result.price+' Xu vào Ví hệ thống.':
+          result.effect==='open-supply'?'Đã mở Gói Tiếp Tế: 1 nước uống và 1 bánh quy.':
+          'Đã điều chỉnh hồi chiêu nhặt đồ Điện thoại.');
+        return true;
+      }catch(error){
+        console.warn('DUDU personal items:',error?.message||'unavailable');
+        showSystemAlert('CHƯA XÁC NHẬN ĐƯỢC',
+          'Kiểm tra kết nối rồi thử lại cùng món. Hệ thống không nhân đôi vật phẩm.');
+        return false;
+      }finally{personalItemBusy=false;}
+    }
     function renderInventoryDetail(){
       const panel=document.getElementById('inventory-v12-detail');
       if(!panel)return;
@@ -5254,11 +5308,42 @@ document.getElementById('phone-home-screen').style.display = 'none';
       desc.textContent=(infoText||'Chưa có mô tả cho vật phẩm này.')+
         (protectedItem?'\n🔒 Vật phẩm được bảo vệ — không thể vứt.':'');
       panel.append(header,desc);
-      if(!IS_SANDBOX_MODE){
+      if(!IS_SANDBOX_MODE&&!personalItemsReady()){
         const note=document.createElement('p');
         note.className='dudu-inventory-v12-detail-desc';
         note.textContent='Thông tin vật phẩm từ hồ sơ hiện tại. Giao dịch, tiêu hao và chuyển quà cần xác thực máy chủ.';
         panel.append(note);
+      }
+      if(personalItemsReady()){
+        const engine=window.DuduPersonalSparkItemsV1;
+        const buyback=engine.sellPrice(item),usable=engine.canUse(item);
+        const remaining=DuduLootCadenceV42.phoneRemainingMs(lastLootTimestamp,Date.now());
+        if(buyback>0||usable){
+          const actions=document.createElement('div');
+          actions.className='dudu-v27-inventory-actions';
+          if(usable){
+            const use=document.createElement('button');
+            use.type='button';use.className='btn btn-primary';use.textContent='Dùng';
+            const cooling=item.id===DuduEconomyCoreV43.TOOL_ID||
+              item.id===DuduEconomyCoreV43.PULSE_ID;
+            use.disabled=personalItemBusy||(cooling&&remaining<=0);
+            if(cooling&&remaining<=0)use.title='Hồi chiêu đã xong, chưa cần dùng.';
+            use.addEventListener('click',()=>{void personalInventoryAction('use',item);});
+            actions.append(use);
+          }
+          if(buyback>0){
+            const sell=document.createElement('button');
+            sell.type='button';sell.className='btn';
+            sell.textContent='Bán · +'+buyback+' Xu';
+            sell.disabled=personalItemBusy;
+            sell.addEventListener('click',()=>{
+              if(!confirm('Bán '+item.name+' lấy '+buyback+' Xu?'))return;
+              void personalInventoryAction('sell',item);
+            });
+            actions.append(sell);
+          }
+          panel.append(actions);
+        }
       }
       // Destructive action lives only in the inspector, never on every slot.
       // The original instance reference is checked again after confirmation.

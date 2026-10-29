@@ -11,9 +11,11 @@ const rules=file('security/firestore-spark-personal-v53.rules.review');
 
 test('V53 Spark personal mode prevents Cloud Functions economy calls without touching sandbox',()=>{
  assert.match(html,/const DUDU_SPARK_PERSONAL_MODE = !IS_SANDBOX_MODE;/);
- for(const action of ['openInventory','openShop','openQuests']){
+ for(const action of ['openInventory','openQuests']){
   assert.match(html,new RegExp('!IS_SANDBOX_MODE&&!DUDU_SPARK_PERSONAL_MODE\\)window\\.DuduEconomyLiveV52\\?\\.'+action+'\\(\\)'));
  }
+ assert.match(html,/!IS_SANDBOX_MODE&&\(!DUDU_SPARK_PERSONAL_MODE\|\|window\.DUDU_SPARK_ITEMS_V1_READY===true\)/);
+ assert.match(file('js/economy-live-v52.js'),/if\(personal\(\)\)\{showPersonalMarket\(\);return;\}/);
  assert.match(html,/document\.body\.classList\.add\('dudu-spark-personal-mode'\)/);
 });
 test('V53 offline NPC replies are clearly scripted, scoped and never award currency',()=>{

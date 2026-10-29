@@ -1,7 +1,7 @@
-/* DUDU V52 — verified server economy presentation.
- * No direct writes to profiles_v2, Xu, EXP or inventory. All mutations use
- * Firebase callable functions with authentication and App Check.
- * When not deployed, gated or offline, UI remains read-only.
+/* DUDU V52 — legacy verified economy + personal Spark alternative.
+ * V52 server calls remain isolated and read-only when disabled. Private Spark
+ * accounts may opt into transactions on their own profile via the separate
+ * DuduPersonalSparkItemsV1 module; neither path deploys Cloud Functions.
  */
 (function(root){
  'use strict';
@@ -9,12 +9,15 @@
  const $=id=>document.getElementById(id);
  const sandbox=()=>typeof IS_SANDBOX_MODE!=='undefined'&&IS_SANDBOX_MODE;
  const uid=()=>!sandbox()&&root.DuduAuth?.isReady?.()?root.DuduAuth.uid():null;
+ const personal=()=>!!uid()&&root.DUDU_SPARK_ITEMS_V1_READY===true&&
+  !!root.DuduPersonalSparkItemsV1;
  const endpoint=name=>{
   if(!root.firebase?.functions)throw Error('Firebase Functions chưa được tải.');
   return root.firebase.functions('asia-southeast1').httpsCallable(name);
  };
  const call=async(name,data={})=>(await endpoint(name)(data)).data;
  let snapshot=null,owner='',loading=null,busy=false;
+ let personalBusy=false;
  const add=(tag,cls,text)=>{const node=document.createElement(tag);
   if(cls)node.className=cls;if(text!==undefined)node.textContent=String(text);return node;};
  function panel(id,before){
@@ -78,8 +81,68 @@
    onBuy:purchase
   });
  }
+ const personalPurchaseKey=account=>'dudu-personal-shop:pending:'+account;
+ function showPersonalMarket(){
+  if(!personal())return false;
+  const shop=$('shop-items-container');if(!shop)return false;
+  const status=panel('dudu-v52-shop-status',shop);
+  if(status){
+   status.replaceChildren();
+   status.append(add('strong','','✦ DUDU MARKET · Ví Xu cá nhân'),
+    add('small','','Mua bằng Xu hệ thống · Vật phẩm lưu trong Kho tài khoản.'));
+  }
+  const balance=$('shop-currency-val');
+  if(balance)balance.textContent=String(userProfile?.currency||0);
+  return root.DuduMarketUIV43?.render({
+   host:shop,coins:Number(userProfile?.currency)||0,state:null,
+   stories:typeof novels!=='undefined'?novels:[],
+   readRewards:userProfile?.readRewards||{},functionalState:null,
+   personalMode:true,readOnly:false,
+   saleIds:[...root.DuduEconomyCoreV43.SHOP_IDS,
+    root.DuduEconomyCoreV43.SUPPLY_ID,root.DuduEconomyCoreV43.TOOL_ID,
+    root.DuduEconomyCoreV43.PULSE_ID],
+   onBuy:personalPurchase
+  })||false;
+ }
+ async function personalPurchase(itemId){
+  const account=uid(),engine=root.DuduPersonalSparkItemsV1;
+  if(!personal()||personalBusy||!account||!engine)return false;
+  const key=personalPurchaseKey(account);
+  let pending=null;
+  try{pending=JSON.parse(localStorage.getItem(key)||'null');}catch(_){}
+  if(pending?.itemId!==itemId)pending=null;
+  if(!pending)pending={itemId,requestId:engine.requestId('shop')};
+  try{localStorage.setItem(key,JSON.stringify(pending));}
+  catch(_){
+   root.showSystemAlert?.('CHƯA MUA ĐƯỢC','Không lưu được mã giao dịch trên thiết bị.');
+   return false;
+  }
+  personalBusy=true;
+  try{
+   const result=await engine.run({db:root.firebase.firestore(),auth:root.firebase.auth(),
+    uid:account,kind:'purchase',requestId:pending.requestId,itemId});
+   if(uid()!==account)return false;
+   userProfile.currency=result.balance;
+   userProfile.inventory=result.inventory;
+   userProfile.storyStates=result.storyStates;
+   localStorage.setItem('profile_'+account,JSON.stringify(userProfile));
+   localStorage.removeItem(key);
+   showPersonalMarket();
+   root.renderWallet?.();
+   root.showSystemAlert?.('ĐÃ MUA VẬT PHẨM',
+    (result.status==='already-applied'?'Đã xác nhận lại đơn mua. ':'')+
+    'Đồ đã vào Kho · Số dư: '+result.balance+' Xu.');
+   return true;
+  }catch(e){
+   console.warn('DUDU Spark personal shop:',e?.message||'unavailable');
+   root.showSystemAlert?.('CHƯA XÁC NHẬN ĐƠN MUA',
+    'Kiểm tra kết nối rồi bấm mua lại đúng món này. Sẽ không trừ Xu hai lần.');
+   return false;
+  }finally{personalBusy=false;}
+ }
  async function openShop(){
   if(sandbox())return;
+  if(personal()){showPersonalMarket();return;}
   const shop=$('shop-items-container');if(!shop)return;
   const box=panel('dudu-v52-shop-status',shop);
   banner(box,disabled('Đang hỏi máy chủ Firebase…'),'🛡 DUDU MARKET');
@@ -161,6 +224,10 @@
  }
  async function openInventory(){
   if(sandbox())return;
+  if(personal()){
+   const old=$('dudu-v52-server-items');if(old)old.remove();
+   return;
+  }
   const container=$('inventory-container')||$('inventory-v12-detail')||
    $('phone-app-inventory')?.querySelector('.phone-app-header');
   if(!container)return;
