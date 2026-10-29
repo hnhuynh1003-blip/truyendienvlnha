@@ -120,6 +120,9 @@
   <script src="js/epub-production-v49.js?v=l2b-4"></script>
   <script src="js/library-synopsis-search-l2d.js?v=l2d-1"></script>
   <script src="js/library-epub-manage-l2d2.js?v=l2d2-1"></script>
+  <script src="js/epub-chapter-editor-l2d3.js?v=l2d5a-1"></script>
+  <script src="js/epub-bulk-replace-l2d4.js?v=l2d5a-1"></script>
+  <script src="js/library-epub-edit-ui-l2d5.js?v=l2d5a-1"></script>
   <script src="js/npc-portrait-library-v1.js?v=40-1"></script>
   <script src="js/npc-anime-candidates-v14.js"></script>
   <script src="js/player-avatar-v16.js"></script>
@@ -772,6 +775,7 @@
   <link rel="stylesheet" href="css/library-reader-l2c.css?v=l2c-2">
   <link rel="stylesheet" href="css/library-editorial-l2c3.css?v=l2c-3">
   <link rel="stylesheet" href="css/library-epub-manage-l2d2.css?v=l2d2-1">
+  <link rel="stylesheet" href="css/library-epub-edit-l2d5.css?v=l2d5a-1">
   <link rel="stylesheet" href="css/world-experience-v65.css?v=65-1">
   <link rel="stylesheet" href="css/world-experience-v66.css?v=66-2">
   <link rel="stylesheet" href="css/dudu-pilot-v1.css?v=play-v8">
@@ -855,6 +859,7 @@
         <button class="btn" onclick="window.DuduSiteV60 ? DuduSiteV60.navigate('library') : goHome()">‹ Thư viện</button>
         <div style="display: flex; gap: 6px;">
           <button class="btn btn-gold" id="btn-main-reading-action" onclick="smartReadActionCover()">▶ Đọc ngay</button>
+          <button type="button" class="btn admin-only" id="epub-edit-tools-open" style="display:none" onclick="epubEditorL2D5.open(novels[selectedNovelIndex])">Biên tập chương</button>
           <button class="btn admin-only" onclick="openEditStoryModal()">✎ Sửa</button>
           <button class="btn btn-danger admin-only" onclick="deleteCurrentNovel()">Xóa</button>
         </div>
@@ -1836,6 +1841,51 @@
     </div>
   </div>
 
+  <!-- L2D.5A: owner-only EPUB correction previews. Gate OFF until all tools,
+       revision recovery, Firestore Rules Emulator and production QA pass. -->
+  <div class="modal-overlay epub-edit-overlay" id="epub-edit-modal">
+    <div class="modal-card epub-edit-dialog" role="dialog" aria-modal="true" aria-labelledby="epub-edit-heading">
+      <div class="epub-edit-heading-row">
+        <div><span class="epub-edit-kicker">ARCHIVE // BIÊN TẬP</span>
+          <h2 id="epub-edit-heading">Biên tập EPUB</h2></div>
+        <button type="button" class="btn" aria-label="Đóng công cụ biên tập EPUB" onclick="epubEditorL2D5.close()">Đóng</button>
+      </div>
+      <div class="epub-edit-tabs" role="tablist" aria-label="Công cụ biên tập">
+        <button type="button" id="epub-edit-tab-single" role="tab" aria-selected="true" onclick="epubEditorL2D5.switchMode('single')">Một chương</button>
+        <button type="button" id="epub-edit-tab-bulk" role="tab" aria-selected="false" onclick="epubEditorL2D5.switchMode('bulk')">Tìm & thay thế</button>
+      </div>
+      <section id="epub-edit-panel-single" class="epub-edit-panel" aria-label="Xem trước chỉnh sửa một chương">
+        <label for="epub-edit-chapter">Chọn chương</label>
+        <div class="epub-edit-inline"><select id="epub-edit-chapter" onchange="epubEditorL2D5.loadSingle()"></select>
+          <button type="button" class="btn" onclick="epubEditorL2D5.loadSingle()">Tải chương</button></div>
+        <label for="epub-edit-chapter-content">Nội dung chương</label>
+        <textarea id="epub-edit-chapter-content" spellcheck="false" placeholder="Chọn chương và nhấn Tải chương…"></textarea>
+        <button type="button" class="btn" onclick="epubEditorL2D5.previewSingle()">Xem trước thay đổi</button>
+      </section>
+      <section id="epub-edit-panel-bulk" class="epub-edit-panel" aria-label="Tìm và thay thế toàn truyện" hidden>
+        <p>Chuẩn hóa nhiều tên riêng trong một lượt. Tìm theo cụm từ, không tự đổi những chỗ chưa chọn.</p>
+        <div id="epub-edit-rule-list" class="epub-edit-rules"></div>
+        <div class="epub-edit-inline">
+          <button type="button" class="btn" onclick="epubEditorL2D5.addRule()">+ Thêm tên / địa danh</button>
+          <button type="button" class="btn btn-primary" onclick="epubEditorL2D5.scan()">Quét các chương</button>
+        </div>
+        <div class="epub-edit-filter-row"><label for="epub-edit-chapter-filter">Kết quả trong</label>
+          <select id="epub-edit-chapter-filter" onchange="epubEditorL2D5.filterChapter()"></select></div>
+        <div class="epub-edit-inline epub-edit-selection">
+          <button type="button" class="btn" onclick="epubEditorL2D5.chooseAll(true)">Chọn tất cả</button>
+          <button type="button" class="btn" onclick="epubEditorL2D5.chooseAll(false)">Bỏ chọn</button>
+          <span id="epub-edit-count" aria-live="polite">Chưa có kết quả</span>
+        </div>
+        <div id="epub-edit-match-list" class="epub-edit-matches" aria-label="Các vị trí tìm được"></div>
+        <button type="button" class="btn epub-edit-more" id="epub-edit-more" hidden onclick="epubEditorL2D5.more()">Xem thêm kết quả</button>
+        <button type="button" class="btn btn-primary" onclick="epubEditorL2D5.previewBulk()">Xem kế hoạch thay thế</button>
+      </section>
+      <div id="epub-edit-preview" class="epub-edit-preview" aria-live="polite"></div>
+      <p id="epub-edit-status" class="epub-edit-status" role="status" aria-live="polite"></p>
+      <p class="epub-edit-footnote">Chế độ xem trước — chưa lưu lên Firebase. Quyền lưu và phục hồi sẽ được bật sau khi kiểm thử Rules.</p>
+    </div>
+  </div>
+
   <!-- MODAL: TẠO / SỬA TRUYỆN -->
   <div class="modal-overlay" id="story-modal">
     <div class="modal-card">
@@ -2227,6 +2277,7 @@
     // L2D.2 activation gate: leave OFF until the separately reviewed Firebase
     // Rules are deployed and verified. Never present a nonfunctional button.
     const EPUB_MANAGEMENT_L2D2_ENABLED=false;
+    const EPUB_CHAPTER_TOOLS_L2D5_ENABLED=false;
     const epubManagementL2D2=window.DuduLibraryEpubManageL2D2?.create?.({
       enabled:EPUB_MANAGEMENT_L2D2_ENABLED,
       cloudApi:DuduEpubProductionV49,
@@ -2239,6 +2290,14 @@
       unlist:()=>false,save:()=>false,closeEditor:()=>false,
       showArchive:()=>false,closeArchive:()=>false});
     window.duduEpubManagementL2D2=epubManagementL2D2;
+    const epubEditorL2D5=window.DuduLibraryEpubEditL2D5?.create?.({
+      enabled:EPUB_CHAPTER_TOOLS_L2D5_ENABLED,
+      engine:window.DuduEpubBulkReplaceL2D4,
+      chapterEditor:window.DuduEpubChapterEditorL2D3,
+      db:()=>db,auth:()=>firebase.auth(),
+      canEdit:()=>canEditStories()&&!IS_SANDBOX_MODE,
+      uid:()=>DuduAuth.uid()
+    })||Object.freeze({enabled:false,owns:()=>false,open:()=>false,close:()=>false});
     const librarySynopsisIndexL2D=DuduLibrarySynopsisSearchL2D.createIndex((bookId,chapterId)=>
       DuduEpubProductionV49.readChapter(db,bookId,chapterId));
     async function refreshEpubCloudBooksV49(){
@@ -2782,6 +2841,7 @@
     }
 
     function closeModals() {
+      epubEditorL2D5.close?.();
       ['story-modal', 'chapter-modal', 'char-modal', 'auth-modal', 'gift-modal', 'author-item-modal', 'author-release-modal', 'epub-import-modal'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.style.display = 'none';
@@ -6663,6 +6723,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
             (action==='openEditStoryModal()'?'✎ Sửa':'Xóa');
         }
       }
+      const epubTools=document.getElementById('epub-edit-tools-open');
+      if(epubTools)epubTools.style.display=epubEditorL2D5.owns(novel)?'':'none';
       const chapterAdd=document.querySelector('#cover-view [onclick="openCreateChapterModal()"]');
       if(chapterAdd)chapterAdd.style.display=novel._cloudV49?'none':'';
 

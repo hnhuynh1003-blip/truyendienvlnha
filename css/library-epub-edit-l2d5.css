@@ -1,0 +1,60 @@
+/* L2D.5A — compact owner-only EPUB correction desk; gate OFF until QA. */
+.epub-edit-overlay .epub-edit-dialog {
+  width:min(900px,calc(100vw - 28px));max-width:900px;
+  max-height:min(90dvh,920px);overflow-y:auto;box-sizing:border-box;
+  padding:clamp(16px,3vw,30px);gap:16px;color:#ebe6d8;
+  background:#131f2c;border:1px solid #65747e;border-radius:15px;
+}
+.epub-edit-heading-row {display:flex;align-items:start;justify-content:space-between;gap:12px}
+.epub-edit-heading-row h2 {margin:5px 0 0;font:700 clamp(20px,3vw,29px)/1.3 system-ui,sans-serif;color:#f5f0e5}
+.epub-edit-kicker {font:700 10px/1.4 ui-monospace,monospace;letter-spacing:.15em;color:#9bd8d4}
+.epub-edit-tabs {display:flex;gap:6px;overflow-x:auto;border-bottom:1px solid #405363;padding-bottom:10px}
+.epub-edit-tabs button {border:0;border-radius:7px;padding:10px 15px;cursor:pointer;color:#bbccd0;background:transparent;font:600 13px/1.3 system-ui,sans-serif;white-space:nowrap}
+.epub-edit-tabs button[aria-selected=true] {color:#101a26;background:#d3c096}
+.epub-edit-panel {display:flex;flex-direction:column;gap:12px}
+.epub-edit-panel[hidden],.epub-edit-more[hidden] {display:none!important}
+.epub-edit-panel>label,.epub-edit-filter-row label {font:650 12px/1.4 system-ui,sans-serif;color:#d2d9d5}
+.epub-edit-panel>p {margin:0;color:#acbcbf;font:400 12px/1.6 system-ui,sans-serif}
+.epub-edit-panel :is(input[type=text],select,textarea) {
+  min-width:0;box-sizing:border-box;padding:11px 12px;
+  border-radius:7px;border:1px solid #49606d;background:#0d1824;color:#f4efe6;
+  font:400 14px/1.55 system-ui,sans-serif;
+}
+.epub-edit-panel :is(input,select,textarea,button):focus-visible,
+.epub-edit-heading-row button:focus-visible {outline:2px solid #d5bf8a;outline-offset:2px}
+.epub-edit-inline {display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.epub-edit-inline select {flex:1;min-width:160px}
+#epub-edit-chapter-content {width:100%;height:clamp(220px,40dvh,460px);resize:vertical;white-space:pre-wrap;font-size:15px;line-height:1.75}
+.epub-edit-rules {display:grid;gap:9px}
+.epub-edit-rule {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto auto;align-items:center;gap:8px;padding:8px;border:1px solid #354a58;border-radius:9px;background:#172736}
+.epub-edit-rule label {display:flex;align-items:center;gap:4px;color:#b9c9ca;font-size:11px;white-space:nowrap}
+.epub-edit-rule input[type=checkbox],.epub-edit-hit input[type=checkbox] {accent-color:#7cc5bd;flex-shrink:0}
+.epub-edit-filter-row {display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.epub-edit-filter-row select {flex:1}
+.epub-edit-selection {border-top:1px solid #354858;padding-top:10px}
+#epub-edit-count {font:500 11px/1.4 ui-monospace,monospace;color:#a6cfc9}
+.epub-edit-matches {display:grid;gap:8px}
+.epub-edit-hit {display:flex;align-items:flex-start;gap:12px;padding:12px;border:1px solid #354858;border-radius:8px;background:#111c29;cursor:pointer}
+.epub-edit-hit>span {min-width:0;display:grid;gap:5px;overflow-wrap:anywhere}
+.epub-edit-hit small {font:600 11px/1.45 system-ui,sans-serif;color:#a9c6c6}
+.epub-edit-context {font:400 13px/1.65 system-ui,sans-serif;color:#e8e7df;overflow-wrap:anywhere;white-space:pre-wrap}
+.epub-edit-context mark {padding:1px 2px;border-radius:3px;background:#decb99;color:#16222c;font-weight:700}
+.epub-edit-preview {padding:11px 13px;background:#0f1a27;border-left:3px solid #d6bb86;font:500 12px/1.6 system-ui,sans-serif;color:#e8dac0;overflow-wrap:anywhere}
+.epub-edit-preview:empty {display:none}
+.epub-edit-status {margin:0;min-height:18px;font:500 12px/1.5 system-ui,sans-serif;color:#9bd8c7}
+.epub-edit-status[data-error=true] {color:#f6a99f}
+.epub-edit-footnote {margin:0;font:400 11px/1.55 system-ui,sans-serif;color:#a9b4c0}
+@media(max-width:740px){
+ .epub-edit-rule {grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+ .epub-edit-rule label {white-space:normal}
+}
+@media(max-width:520px){
+ .epub-edit-overlay {padding:8px;padding-bottom:max(8px,env(safe-area-inset-bottom))}
+ .epub-edit-overlay .epub-edit-dialog {width:100%;max-height:calc(100dvh - 18px);padding:15px;border-radius:12px}
+ .epub-edit-rule {grid-template-columns:minmax(0,1fr) auto}
+ .epub-edit-rule input[type=text] {grid-column:1/-1;width:100%}
+ .epub-edit-rule label {grid-column:1}
+ .epub-edit-rule button {grid-column:2}
+ .epub-edit-panel :is(input[type=text],select,textarea) {font-size:16px}
+ .epub-edit-hit {padding:10px;gap:8px}
+}
