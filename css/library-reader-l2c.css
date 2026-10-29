@@ -1,0 +1,89 @@
+/* L2C: Reading controls are independent from Cyber Phone appearance. */
+body.dudu-site-v60 #cover-view .book-genre-tags {
+  display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin:0 0 17px;
+}
+body.dudu-site-v60 #cover-view .book-genre-tags[hidden]{display:none!important}
+body.dudu-site-v60 #cover-view .book-genre-tags span {
+  display:inline-flex;align-items:center;min-height:26px;padding:4px 10px;
+  border:1px solid rgba(137,197,192,.35);border-radius:5px;
+  background:rgba(71,153,151,.09);color:#a4ddd7;
+  font:550 11px/1.3 system-ui,-apple-system,'Segoe UI',Arial,sans-serif;
+}
+
+body.dudu-reading-active #reader-view .reader-top-nav {position:relative;align-items:flex-start;flex-wrap:wrap;row-gap:12px}
+body.dudu-reading-active #reader-view .reader-nav-chapters,
+body.dudu-reading-active #reader-view .reader-top-actions {display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+body.dudu-reading-active #reader-view .reader-top-actions {margin-left:auto}
+body.dudu-reading-active #reader-view .reader-top-nav .btn {min-height:37px;white-space:nowrap}
+body.dudu-reading-active #reader-view .reader-top-nav [hidden] {display:none!important}
+body.dudu-reading-active #reader-view .reader-settings-anchor {position:relative}
+
+body.dudu-reading-active #reader-view .reader-settings-popover {
+  position:absolute;z-index:120;right:0;top:calc(100% + 12px);width:min(320px,calc(100vw - 38px));
+  padding:18px;border:1px solid #7b8fa0;border-top:2px solid #d8bf8a;border-radius:11px;
+  background:#172330;color:#e8edf0;box-shadow:0 18px 55px rgba(0,0,0,.48);
+  font:500 13px/1.5 system-ui,-apple-system,'Segoe UI',Arial,sans-serif;
+}
+body.dudu-reading-active #reader-view .reader-settings-popover[hidden]{display:none!important}
+body.dudu-reading-active #reader-view .reader-settings-heading {
+  display:flex;justify-content:space-between;align-items:center;gap:12px;
+  font:700 11px/1.4 ui-monospace,Consolas,monospace;letter-spacing:.12em;color:#e2c998;
+  border-bottom:1px solid #40505f;padding-bottom:12px;margin-bottom:15px;
+}
+body.dudu-reading-active #reader-view .reader-settings-close {
+  border:0;background:transparent;color:#ebedf0;font-size:23px;line-height:1;cursor:pointer;
+}
+body.dudu-reading-active #reader-view .reader-settings-popover label,
+body.dudu-reading-active #reader-view .reader-settings-label {display:block;margin:15px 0 7px;font-size:12px;color:#b9cad5}
+body.dudu-reading-active #reader-view .reader-settings-popover label output {float:right;color:#e2c998}
+body.dudu-reading-active #reader-view .reader-settings-popover select {
+  width:100%;min-height:40px;padding:8px 11px;color:#edf3f6;border:1px solid #506779;
+  background:#0f1b26;border-radius:6px;font:inherit;
+}
+body.dudu-reading-active #reader-view .reader-settings-popover input[type=range] {
+  width:100%;accent-color:#d8bf8a;cursor:pointer;
+}
+body.dudu-reading-active #reader-view .reader-theme-choices {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+body.dudu-reading-active #reader-view .reader-theme-choices button {
+  min-height:38px;border:1px solid #647688;border-radius:6px;background:#233243;
+  color:#d8e1e9;font:600 11px/1.3 system-ui,-apple-system,'Segoe UI',Arial,sans-serif;cursor:pointer;
+}
+body.dudu-reading-active #reader-view .reader-theme-choices button[aria-pressed=true] {
+  background:#d8bf8a;border-color:#d8bf8a;color:#192532;
+}
+body.dudu-reading-active #reader-view .reader-settings-footnote {margin:14px 0 0;color:#93a9b7;font-size:11px;line-height:1.5}
+body.dudu-reading-active #reader-view .reader-settings-popover :focus-visible,
+body.dudu-reading-active #reader-view .reader-settings-close:focus-visible {
+  outline:2px solid #e2c998;outline-offset:3px;
+}
+
+/* A reading page can change its paper independently of the rest of the site. */
+body.dudu-reading-active #reader-view .reader-paper {
+  --reader-ink:#e5e7ed;
+  background:#131e2c;color:var(--reader-ink);border-radius:10px;
+  padding:clamp(16px,4vw,34px);
+}
+body.dudu-reading-active #reader-view .reader-paper[data-reader-theme=sepia] {
+  --reader-ink:#382f28;background:#f4e9d4;padding:clamp(16px,4vw,34px);
+  box-shadow:0 10px 34px rgba(0,0,0,.18);
+}
+body.dudu-reading-active #reader-view .reader-paper[data-reader-theme=light] {
+  --reader-ink:#232b32;background:#f5f6f3;padding:clamp(16px,4vw,34px);
+  box-shadow:0 10px 34px rgba(0,0,0,.13);
+}
+body.dudu-reading-active #reader-view .reader-paper .reader-chapter-title {color:var(--reader-ink)}
+body.dudu-reading-active #reader-view .reader-paper .reading-time-badge {color:var(--reader-ink);opacity:.7}
+body.dudu-reading-active #reader-view .reader-body {
+  color:var(--reader-ink);font-family:var(--reader-font,system-ui,-apple-system,'Segoe UI',Arial,sans-serif);
+  font-size:var(--reader-size,18px);line-height:1.9;
+}
+@media(max-width:600px){
+  body.dudu-reading-active #reader-view .reader-top-nav {margin-bottom:21px;gap:9px}
+  body.dudu-reading-active #reader-view .reader-top-nav .btn {padding:8px 10px;font-size:11px}
+  body.dudu-reading-active #reader-view .reader-nav-chapters {gap:5px}
+  body.dudu-reading-active #reader-view .reader-top-actions {margin-left:0}
+  body.dudu-reading-active #reader-view .reader-body {line-height:1.8}
+}
+@media(prefers-reduced-motion:reduce){
+  body.dudu-reading-active #reader-view .reader-settings-popover {scroll-behavior:auto}
+}
