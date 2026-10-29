@@ -52,6 +52,32 @@ test('Neon Tycoon unlocks real stations, triples output and preserves old local 
  const old=arcade.fresh(START);delete old.neon.stations;
  assert.equal(arcade.norm(old,START).neon.stations,1,'Existing saves start with one working station');
 });
+test('New upgrades spend only local Xu, change gameplay and preserve old saves',()=>{
+ let state=arcade.fresh(START);state.coins=20000;
+ const initial=state.coins;
+ for(const action of ['router','skin','pick-level','drill-level','water-cap','pond-tier']){
+  const result=apply(state,action);
+  assert.equal(result.ok,true,action);
+  assert.ok(result.state.coins<state.coins,action+' must charge its price');
+  state=result.state;
+ }
+ assert.ok(state.coins<initial);
+ assert.equal(state.neon.router,2);
+ assert.equal(state.neon.skin,1);
+ assert.equal(arcade.rate(state),12);
+ assert.equal(arcade.maxDurability(state.mine),125);
+ assert.equal(state.mine.drillLevel,2);
+ assert.equal(state.garden.waterCap,4);
+ assert.equal(arcade.bubbleInterval(state.garden),80000);
+ state.mine.durability=0;
+ const repaired=arcade.advance(apply(state,'repair-wait').state,
+  START+arcade.REPAIR_INTERVAL,0);
+ assert.equal(repaired.mine.durability,125);
+ const legacy=arcade.fresh(START);delete legacy.mine.pickLevel;
+ delete legacy.mine.drillLevel;delete legacy.garden.waterCap;delete legacy.garden.pondTier;
+ assert.equal(arcade.norm(legacy,START).mine.pickLevel,1);
+ assert.equal(arcade.norm(legacy,START).garden.waterCap,3);
+});
 test('Economy migration preserves prior Xu and converts partial idle income safely',()=>{
  const old=arcade.fresh(START);old.coins=1029;old.earned=1200;
  old.neon.remainder=500;delete old.neon.economyV;

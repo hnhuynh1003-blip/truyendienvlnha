@@ -14,6 +14,8 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header{min-height:
 .arcade-wallet span{color:#99a8bc;font:700 8px ui-monospace,monospace;letter-spacing:.1em}
 .arcade-wallet strong{font:800 16px/1.12 ui-monospace,Consolas,monospace;color:#f0d48f;letter-spacing:-.04em}
 .arcade-wallet small{display:none}
+.arcade-exchange-trigger{min-height:28px;border:1px solid #bba476;border-radius:9px;padding:5px 7px;
+ color:#f8e2ad;background:#3d3441;font-size:10px;font-weight:800;cursor:pointer;white-space:nowrap}
 .arcade-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;background:#101a2c;
  padding:3px;border:1px solid #253449;border-radius:12px}
 .arcade-tab{min-height:40px;display:flex;gap:2px;flex-direction:column;align-items:center;justify-content:center;
@@ -134,6 +136,38 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header{min-height:
 .arcade-level-track{height:3px;background:#334352;border-radius:5px;overflow:hidden;margin-top:3px}
 .arcade-level-track i{display:block;height:100%;background:linear-gradient(90deg,#6a98c5,#88ffdc)}
 .arcade-button.upgrade{flex:0 0 93px;font-size:10px;padding:6px 3px;min-height:34px;background:#3a3644;border-color:#ab8b72;color:#f2d8a5}
+.arcade-upgrade-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.arcade-upgrade-card{min-width:0;min-height:105px;background:linear-gradient(155deg,#1b3040,#111e2e);
+ border:1px solid #3b5363;border-radius:10px;padding:9px;display:grid;grid-template-columns:24px minmax(0,1fr);
+ grid-template-rows:1fr auto;align-items:start;gap:7px}
+.arcade-upgrade-symbol{font:900 24px/1 ui-serif,Georgia,serif;color:#8ee4d9;text-align:center}
+.arcade-upgrade-card strong{display:block;font-size:11px;color:#f2ebdb;line-height:1.2}
+.arcade-upgrade-card small{display:block;font-size:9px;color:#97adbc;margin-top:4px}
+.arcade-upgrade-card .arcade-button{grid-column:1/-1;width:100%;min-height:30px}
+.arcade-tool-upgrades,.arcade-garden-upgrades{margin-top:10px}
+.arcade-world-mine .arcade-upgrade-card{background:linear-gradient(145deg,#382e38,#26242e);border-color:#675348}
+.arcade-world-mine .arcade-upgrade-symbol{color:#f1c291}
+.arcade-world-garden .arcade-upgrade-card{background:linear-gradient(145deg,#2b4d42,#203a37);border-color:#5d8672}
+.arcade-world-garden .arcade-upgrade-symbol{color:#c5ecc0}
+.neon-skin-1{filter:hue-rotate(48deg) saturate(1.15)}
+.neon-skin-2{filter:hue-rotate(170deg) saturate(1.18)}
+.arcade-exchange-overlay{position:fixed;inset:0;z-index:6000;background:#080d18bd;
+ display:grid;place-items:center;padding:15px;backdrop-filter:blur(4px)}
+.arcade-exchange-dialog{width:min(312px,calc(100vw - 30px));border:1px solid #678a90;border-radius:18px;
+ padding:16px;background:linear-gradient(155deg,#1b3142,#121c30 75%);box-shadow:0 26px 65px #020612b3}
+.arcade-exchange-heading{display:flex;align-items:center;justify-content:space-between}
+.arcade-exchange-heading strong{font-size:18px;color:#f5e4be}
+.arcade-exchange-heading button{border:0;background:#334459;color:#f1e8e6;font-size:18px;
+ width:30px;height:30px;border-radius:8px;cursor:pointer}
+.arcade-exchange-amount{margin-top:18px;background:#17343e;border-radius:10px;padding:13px;
+ font:900 23px ui-monospace,monospace;color:#f6d698;text-align:center}
+.arcade-exchange-amount small{display:block;color:#a5c6c9;font:700 10px ui-monospace,monospace;margin-top:4px}
+.arcade-exchange-arrow{text-align:center;color:#b7d0c6;font-size:22px;padding:5px}
+.arcade-exchange-target{display:flex;justify-content:space-between;gap:6px;background:#253044;
+ border-radius:9px;padding:11px;font-weight:700;font-size:11px;color:#eceddf;margin-bottom:13px}
+.arcade-exchange-target span{color:#daa992}
+.arcade-exchange-dialog>.arcade-button{width:100%}
+.arcade-exchange-dialog>p{font-size:10px;color:#9bafbd;line-height:1.45;margin:10px 0 0}
 
 /* Địa Tầng 07: rock itself is the primary clicker button. */
 .arcade-world-mine{background:#1f1d2a;border-color:#765346}

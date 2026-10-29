@@ -30,16 +30,29 @@ test('Arcade phone UI renders three named tabs and a disabled transfer control',
  assert.match(host.innerHTML,/Trạm Neon/);
  assert.match(host.innerHTML,/Địa Tầng 07/);
  assert.match(host.innerHTML,/Vườn Sương/);
- assert.match(host.innerHTML,/Chuyển vào ví Xu hệ thống · chờ Rules/);
- assert.match(host.innerHTML,/data-arcade-action="transfer" disabled/);
- assert.match(host.innerHTML,/LOCAL \/ FREE/);
+ assert.match(host.innerHTML,/data-arcade-exchange="open"/);
+ assert.doesNotMatch(host.innerHTML,/arcade-privacy|LOCAL \/ FREE/);
  assert.match(host.innerHTML,/arcade-stage neon-stage/);
  assert.match(host.innerHTML,/neon-computer-rack/);
  assert.match(host.innerHTML,/\+0,01 <small>Xu \/ giây<\/small>/);
  assert.match(host.innerHTML,/data-arcade-action="cpu"/);
  assert.match(host.innerHTML,/data-arcade-action="gpu"/);
  assert.match(host.innerHTML,/data-arcade-action="station"/);
+ assert.match(host.innerHTML,/data-arcade-action="router"/);
+ assert.match(host.innerHTML,/data-arcade-action="skin"/);
  assert.match(host.innerHTML,/neon-computer-2 is-locked/);
+});
+test('Exchange opens from wallet and remains disabled until trusted Rules exist',()=>{
+ const {host,window}=harness();
+ window.DuduPersonalArcadeUIV1.render();
+ const click=choice=>host.listeners.click({target:{closest:()=>({disabled:false,tagName:'BUTTON',
+  dataset:{arcadeExchange:choice}})}});
+ click('open');
+ assert.match(host.innerHTML,/role="dialog"/);
+ assert.match(host.innerHTML,/Chuyển Xu · Chưa mở/);
+ assert.match(host.innerHTML,/data-arcade-action="transfer" disabled/);
+ click('close');
+ assert.doesNotMatch(host.innerHTML,/role="dialog"/);
 });
 test('Arcade UI changes game tabs and stores a local UID-specific mining round',()=>{
  const {db,host,window,setUid}=harness();
@@ -65,6 +78,8 @@ test('Garden is a playable scene with plots and animated pond, not generic data 
  assert.match(host.innerHTML,/garden-plot-area/);
  assert.match(host.innerHTML,/garden-fish garden-fish-a/);
  assert.match(host.innerHTML,/data-arcade-action="plant-0"/);
+ assert.match(host.innerHTML,/data-arcade-action="water-cap"/);
+ assert.match(host.innerHTML,/data-arcade-action="pond-tier"/);
  assert.equal(window.DuduPersonalArcadeUIV1.interact('plant-0'),true);
  assert.match(host.innerHTML,/data-arcade-action="water-0"/);
 });

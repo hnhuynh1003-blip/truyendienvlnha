@@ -11,7 +11,8 @@
  const oreLabels={stone:'Đá',coal:'Than',iron:'Sắt',crystal:'Tinh thạch'};
  const oreGlyphs={stone:'◆',coal:'⬟',iron:'⬢',crystal:'✦'};
  let tab='neon',activeKey=null,state=null,lastTick=Date.now(),lastSave=0,
-  lastPaint=0,lastRenderedKey=null,notice='Chọn một thế giới và bắt đầu chơi.',error=false,feedback=null;
+  lastPaint=0,lastRenderedKey=null,notice='',noticeUntil=0,error=false,feedback=null,
+  exchangeOpen=false;
  const now=()=>Date.now();
  const isSandbox=()=>typeof IS_SANDBOX_MODE!=='undefined'&&IS_SANDBOX_MODE;
  function identity(){
@@ -27,19 +28,19 @@
    root.localStorage.setItem(activeKey,JSON.stringify(candidate));
    lastSave=now();return true;
   }catch(_){notice='Không lưu được game trên thiết bị. Kiểm tra dung lượng trình duyệt.';
-   error=true;return false;}
+   error=true;noticeUntil=now()+5000;return false;}
  }
  function ensure(){
   const nextKey=keyFor(identity());
   if(nextKey!==activeKey){
    if(activeKey&&state)save();
-   activeKey=nextKey;state=null;feedback=null;
+   activeKey=nextKey;state=null;feedback=null;exchangeOpen=false;
    const time=now();lastTick=time;lastSave=time;
    if(activeKey){
     let saved=null;
     try{saved=JSON.parse(root.localStorage.getItem(activeKey)||'null');}catch(_){/* start fresh */}
     state=core.advance(core.norm(saved,time),time,0);
-    notice='Đã mở khu giải trí cá nhân. Xu ở đây chưa liên kết ví hệ thống.';
+    notice='';noticeUntil=0;
     error=false;
    }
   }
@@ -53,11 +54,15 @@
  }
  const button=(label,action,kind='primary',disabled=false)=>
   `<button type="button" class="arcade-button ${kind}" data-arcade-action="${action}" ${disabled?'disabled':''}>${label}</button>`;
+ const upgrade=(glyph,name,level,type,cost)=>`<div class="arcade-upgrade-card">
+   <span class="arcade-upgrade-symbol">${glyph}</span><div><strong>${name}</strong><small>${level}</small></div>
+   ${button(cost===null?'Tối đa':'＋ '+fmt(cost)+' Xu',type,'upgrade',cost===null||state.coins<cost)}</div>`;
  const activeFeedback=(type,time)=>feedback?.type===type&&time-feedback.at<1700?feedback:null;
  const hud=(name,value,small='')=>`<div class="arcade-stat"><span>${name}</span><strong>${value}</strong>${small?`<small>${small}</small>`:''}</div>`;
  function neonPanel(s){
   const cpuCost=core.upgradeCost(s,'cpu'),gpuCost=core.upgradeCost(s,'gpu'),
-   stationCost=core.upgradeCost(s,'station');
+   stationCost=core.upgradeCost(s,'station'),routerCost=core.upgradeCost(s,'router'),
+   skinCost=core.upgradeCost(s,'skin');
   const activeRate=s.neon.running?core.rate(s):0;
   const rateLabel=(activeRate/1000).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:3});
   const level=Math.min(6,Math.floor((s.neon.cpu+s.neon.gpu)/5)+1);
@@ -70,7 +75,7 @@
     <header class="arcade-world-heading"><div><span class="arcade-eyebrow">01 / IDLE TYCOON</span>
       <h3>Trạm Neon</h3><p>Xây dàn máy. Chạy tự động. Nâng cấp doanh thu.</p></div>
       <span class="arcade-world-live">${s.neon.running?'● ĐANG CHẠY':'Ⅱ TẠM DỪNG'}</span></header>
-    <div class="arcade-stage neon-stage" role="img" aria-label="Dàn máy tính đang vận hành với những màn hình phát sáng">
+    <div class="arcade-stage neon-stage neon-skin-${s.neon.skin}" role="img" aria-label="Dàn máy tính đang vận hành với những màn hình phát sáng">
       <div class="neon-light neon-light-one"></div><div class="neon-light neon-light-two"></div>
       <div class="neon-wall-logo">CRYO<span>TECH</span><small>NET · STATION</small></div>
       <div class="neon-server-stack"><span></span><span></span><span></span><span></span></div>
@@ -80,24 +85,21 @@
       <div class="neon-room-level">${s.neon.stations}/3 DÀN · CẤP ${level}</div>
     </div>
     <div class="arcade-control-panel">
-      <div class="arcade-panel-heading"><div><span class="arcade-eyebrow">QUẢN LÝ PHÒNG MÁY</span><h4>Trung tâm vận hành</h4></div>
+      <div class="arcade-panel-heading"><div><h4>Nâng cấp phòng máy</h4></div>
         ${button(s.neon.running?'Ⅱ Tạm dừng':'▶ Bật máy','toggle-neon','switch')}</div>
-      <div class="neon-upgrade-list">
-        <div class="neon-upgrade"><div class="neon-part-icon neon-part-cpu">▦</div><div class="neon-upgrade-info"><strong>Bộ xử lý CPU</strong><span>Tăng xung nhịp · Cấp ${s.neon.cpu}/50</span>
-          <div class="arcade-level-track"><i style="width:${s.neon.cpu*2}%"></i></div></div>
-          ${button('↑ '+fmt(cpuCost)+' Xu','cpu','upgrade',s.coins<cpuCost||s.neon.cpu>=50)}</div>
-        <div class="neon-upgrade"><div class="neon-part-icon neon-part-gpu">◈</div><div class="neon-upgrade-info"><strong>Card đồ họa VGA</strong><span>Tăng công suất · Cấp ${s.neon.gpu}/20</span>
-          <div class="arcade-level-track"><i style="width:${s.neon.gpu*5}%"></i></div></div>
-          ${button('↑ '+fmt(gpuCost)+' Xu','gpu','upgrade',s.coins<gpuCost||s.neon.gpu>=20)}</div>
-        <div class="neon-upgrade"><div class="neon-part-icon neon-part-station">▣</div><div class="neon-upgrade-info"><strong>Lắp thêm dàn máy</strong><span>Nhân sản lượng · ${s.neon.stations}/3 dàn</span>
-          <div class="arcade-level-track"><i style="width:${s.neon.stations/3*100}%"></i></div></div>
-          ${button(stationCost===null?'Đã đủ 3 dàn':'＋ '+fmt(stationCost)+' Xu','station','upgrade',stationCost===null||s.coins<stationCost)}</div>
-      </div><p class="arcade-world-hint">Máy tạo Xu khi tab web còn mở. Đóng tab sẽ ngừng thu nhập; không tiêu hao lượt chơi.</p>
+      <div class="arcade-upgrade-grid">
+       ${upgrade('▦','CPU','Cấp '+s.neon.cpu+'/50','cpu',s.neon.cpu>=50?null:cpuCost)}
+       ${upgrade('◈','VGA','Cấp '+s.neon.gpu+'/20','gpu',s.neon.gpu>=20?null:gpuCost)}
+       ${upgrade('▣','Dàn máy',s.neon.stations+'/3 dàn','station',stationCost)}
+       ${upgrade('⌁','Mạng', 'Cấp '+s.neon.router+'/10','router',routerCost)}
+       ${upgrade('✧','LED phòng', ['Lam','Tím','Hổ phách'][s.neon.skin],'skin',skinCost)}
+      </div>
     </div>
   </section>`;
  }
  function minePanel(s,time){
   const m=s.mine,repairing=!!m.repairUntil;
+  const max=core.maxDurability(m);
   const all=Object.values(m.ores).reduce((sum,n)=>sum+n,0),hit=activeFeedback('mine',time);
   return `<section class="arcade-world arcade-world-mine" aria-label="Địa Tầng 07">
     <header class="arcade-world-heading"><div><span class="arcade-eyebrow">02 / CLICKER</span>
@@ -115,7 +117,7 @@
         <span class="mine-ore-glow"></span><span class="mine-hit-spark">✦</span>
         <span class="mine-tap-prompt">${repairing?'ĐANG SỬA CUỐC':m.durability?'⛏ CHẠM ĐỂ ĐÀO':'CUỐC ĐÃ HẾT ĐỘ BỀN'}</span></button>
       ${hit?`<div class="mine-drop" aria-live="polite">+1 ${oreGlyphs[hit.ore]} ${oreLabels[hit.ore]}</div>`:''}
-      <div class="mine-bottom-hud"><div class="mine-durability-circle" style="--mine-durability:${m.durability}%"><span>CUỐC</span><b>${m.durability}<small>/100</small></b></div>
+      <div class="mine-bottom-hud"><div class="mine-durability-circle" style="--mine-durability:${m.durability/max*100}%"><span>CUỐC</span><b>${m.durability}<small>/${max}</small></b></div>
         <span>${repairing?`🔧 Tự sửa: <span data-arcade-until="${m.repairUntil}">${countdown(m.repairUntil-time)}</span>`:'Mỗi cú đào trừ 1 độ bền'}</span></div>
     </div>
     <div class="arcade-control-panel">
@@ -125,10 +127,14 @@
         `<div class="mine-inventory-slot mine-slot-${ore}"><span>${oreGlyphs[ore]}</span><small>${oreLabels[ore]}</small><b>${count}</b></div>`).join('')}</div>
       <div class="arcade-panel-heading arcade-panel-heading-sub"><div><span class="arcade-eyebrow">XƯỞNG RÈN</span><h4>Bảo dưỡng dụng cụ</h4></div></div>
       <div class="mine-tool-actions">
-        ${button(repairing?`⏳ <span data-arcade-until="${m.repairUntil}">${countdown(m.repairUntil-time)}</span>`:'🔧 Tự sửa · 4 phút','repair-wait','tool',repairing||m.durability===100)}
-        ${button('⚒ Rèn · 5 than + 2 sắt','repair-forge','tool',repairing||m.durability===100||m.ores.coal<5||m.ores.iron<2)}
-        ${button('Dầu +25 · 15 Xu','buy-oil','tool',repairing||m.durability===100||s.coins<150)}
-        ${button('Cuốc mới · 80 Xu','buy-pick','tool',(m.durability===100&&!repairing)||s.coins<800)}
+        ${button(repairing?`⏳ <span data-arcade-until="${m.repairUntil}">${countdown(m.repairUntil-time)}</span>`:'🔧 Tự sửa · 4 phút','repair-wait','tool',repairing||m.durability===max)}
+        ${button('⚒ Rèn · 5 than + 2 sắt','repair-forge','tool',repairing||m.durability===max||m.ores.coal<5||m.ores.iron<2)}
+        ${button('Dầu +25 · 15 Xu','buy-oil','tool',repairing||m.durability===max||s.coins<150)}
+        ${button('Cuốc mới · 80 Xu','buy-pick','tool',(m.durability===max&&!repairing)||s.coins<800)}
+      </div>
+      <div class="arcade-upgrade-grid arcade-tool-upgrades">
+       ${upgrade('⛏','Cuốc thép','Cấp '+m.pickLevel+'/4','pick-level',core.upgradeCost(s,'pick-level'))}
+       ${upgrade('◈','Mũi khoan','Cấp '+m.drillLevel+'/5','drill-level',core.upgradeCost(s,'drill-level'))}
       </div>
     </div>
   </section>`;
@@ -163,12 +169,15 @@
       <button type="button" class="garden-pond-collect ${g.bubbleReady?'is-ready':''}" data-arcade-action="catch-bubble" ${g.bubbleReady?'':'disabled'}>
         ${g.bubbleReady?'✦ Thu bọt · +0,5 Xu':`Hồ cá · <span data-arcade-until="${g.bubbleAt}">${countdown(g.bubbleAt-time)}</span>`}</button>
     </div>
-    <div class="arcade-control-panel"><div class="garden-resources">${hud('NƯỚC HỨNG SƯƠNG','💧 '+g.water+'/3',g.water===3?'Bình đã đầy':'Hồi mỗi 15 phút')}
+    <div class="arcade-control-panel"><div class="garden-resources">${hud('NƯỚC HỨNG SƯƠNG','💧 '+g.water+'/'+g.waterCap,g.water===g.waterCap?'Bình đã đầy':'Hồi mỗi 15 phút')}
       ${hud('HẠT GIỐNG','✿ '+g.seeds,'Có thể mua thêm')}</div>
       <div class="arcade-panel-heading"><div><span class="arcade-eyebrow">NHÀ KÍNH</span>
         <h4>Vật tư & thu hoạch</h4></div>${button('＋ 3 hạt · 10 Xu','buy-seeds','market',s.coins<100)}</div>
       <div class="garden-statline"><span>🌿 Đã thu hoạch <b>${g.harvests}</b></span><span>🐟 Mồi câu <b>${g.bait}</b></span></div>
-      <p class="arcade-world-hint">Cây lớn sau 3 phút. Hứng sương tự hồi và hồ cá sinh bọt ngay cả khi bạn đi vắng.</p>
+      <div class="arcade-upgrade-grid arcade-garden-upgrades">
+       ${upgrade('💧','Bồn nước',g.waterCap+'/7 bình','water-cap',core.upgradeCost(s,'water-cap'))}
+       ${upgrade('🐟','Hồ cá','Cấp '+g.pondTier+'/5','pond-tier',core.upgradeCost(s,'pond-tier'))}
+      </div>
     </div>
   </section>`;
  }
@@ -179,21 +188,28 @@
   const time=now(),panel=tab==='neon'?neonPanel(s):tab==='mine'?minePanel(s,time):gardenPanel(s,time);
   const scrollPort=element.closest?.('.phone-sub-app')||element;
   const previousScroll=scrollPort.scrollTop;
+  const showToast=notice&&time<noticeUntil;
   element.innerHTML=`<div class="arcade-shell arcade-active-${tab}">
-    <div class="arcade-topbar"><span class="arcade-topbar-caption">CHƠI TỰ DO · TÍCH XU</span>
-      <div class="arcade-wallet"><span>VÍ TRÒ CHƠI</span><strong data-arcade-wallet>✦ ${fmt(s.coins)}</strong><small>Xu</small></div></div>
+    <div class="arcade-topbar"><span class="arcade-topbar-caption">CHƠI TỰ DO</span>
+      <div class="arcade-wallet"><strong data-arcade-wallet>✦ ${fmt(s.coins)}</strong><span>Xu</span>
+      <button class="arcade-exchange-trigger" type="button" data-arcade-exchange="open" aria-label="Đổi Xu trò chơi sang ví đọc truyện">⇄ Đổi</button></div></div>
     <div class="arcade-tabs" role="tablist" aria-label="Ba minigame">
       ${Object.entries(modeLabels).map(([type,name])=>`<button type="button" class="arcade-tab ${tab===type?'is-active':''}" role="tab"
         aria-selected="${tab===type}" data-arcade-tab="${type}"><span class="arcade-tab-icon">${type==='neon'?'▣':type==='mine'?'◈':'✿'}</span><span>${name}</span></button>`).join('')}
     </div>
     ${panel}
-    <div class="arcade-status" data-error="${error}" aria-live="polite" data-arcade-notice></div>
-    <div class="arcade-privacy"><span class="arcade-pill">LOCAL / FREE</span>
-      <p class="arcade-note">Xu trò chơi hiện chỉ lưu trên thiết bị này, theo tài khoản. Chưa chuyển vào ví Xu chính hoặc mở khóa truyện. Không sử dụng Firebase Functions, không phát sinh phí.</p>
-      ${button('Chuyển vào ví Xu hệ thống · chờ Rules','transfer','gold',true)}
-    </div>
+    ${showToast?`<div class="arcade-status" data-error="${error}" aria-live="polite" data-arcade-notice></div>`:''}
+    ${exchangeOpen?`<div class="arcade-exchange-overlay" data-arcade-exchange="close">
+      <section class="arcade-exchange-dialog" role="dialog" aria-modal="true" aria-label="Đổi Xu">
+        <div class="arcade-exchange-heading"><strong>Đổi Xu</strong><button type="button" data-arcade-exchange="close" aria-label="Đóng">✕</button></div>
+        <div class="arcade-exchange-amount">✦ ${fmt(s.coins)} <small>Xu trò chơi</small></div>
+        <div class="arcade-exchange-arrow">↓</div>
+        <div class="arcade-exchange-target">Ví Xu đọc truyện <span>Chưa kết nối</span></div>
+        ${button('Chuyển Xu · Chưa mở','transfer','gold',true)}
+        <p>Chỉ mở đổi Xu khi ví và Rules xác nhận giao dịch. Xu trong trò chơi vẫn được giữ nguyên.</p>
+      </section></div>`:''}
   </div>`;
-  element.querySelector('[data-arcade-notice]').textContent=notice;
+  if(showToast)element.querySelector('[data-arcade-notice]').textContent=notice;
   scrollPort.scrollTop=previousScroll;
   lastPaint=time;lastRenderedKey=activeKey;return true;
  }
@@ -201,6 +217,8 @@
   const element=host();if(!element||!state)return;
   const wallet=element.querySelector?.('[data-arcade-wallet]');
   if(wallet)wallet.textContent='✦ '+fmt(state.coins);
+  const toast=element.querySelector?.('.arcade-status');
+  if(toast&&time>=noticeUntil)toast.hidden=true;
   element.querySelectorAll?.('[data-arcade-until]').forEach(node=>{
    const until=Number(node.dataset.arcadeUntil);
    if(Number.isFinite(until))node.textContent=countdown(until-time);
@@ -225,25 +243,36 @@
  function interact(action){
   tick();if(!state||!activeKey)return false;
   const result=core.act(state,action,now(),Math.random());
-  if(!result.ok){notice=result.reason;error=true;render();return false;}
+  if(!result.ok){notice=result.reason;noticeUntil=now()+3500;error=true;render();return false;}
   state=result.state;
   feedback=action==='mine'?{type:'mine',ore:result.label,at:now()}:null;
   notice=result.label==='stone'?'Nhặt được Đá.':result.label==='coal'?'Nhặt được Than.':
    result.label==='iron'?'Nhặt được Sắt.':result.label==='crystal'?'✦ Nhặt được Tinh thạch!':result.label;
-  error=false;save();render();return true;
+  noticeUntil=now()+2500;error=false;save();render();return true;
  }
  function init(){
   const element=host();if(!element)return false;
   element.addEventListener('click',event=>{
+   const exchange=event.target.closest('[data-arcade-exchange]');
+   if(exchange){
+    const choice=exchange.dataset.arcadeExchange;
+    if(choice==='open'||choice==='close'&&event.target===exchange||
+     choice==='close'&&exchange.tagName==='BUTTON'){
+     exchangeOpen=choice==='open';render();return;
+    }
+   }
    const control=event.target.closest('button');
    if(!control||control.disabled)return;
    const next=control.dataset.arcadeTab;
-   if(next&&modeLabels[next]){tick();tab=next;notice='Đã chuyển sang '+modeLabels[next]+'.';error=false;render();return;}
+   if(next&&modeLabels[next]){tick();tab=next;notice='';error=false;render();return;}
    const action=control.dataset.arcadeAction;
    if(action&&action!=='transfer')interact(action);
   });
   root.setInterval(tick,1000);
   root.addEventListener('pagehide',()=>save());
+  root.document.addEventListener?.('keydown',event=>{
+   if(event.key==='Escape'&&exchangeOpen){exchangeOpen=false;render();}
+  });
   root.addEventListener('storage',event=>{
    if(!activeKey||event.key!==activeKey)return;
    // Another tab saved the same local arcade. Refresh the view instead of

@@ -22,11 +22,15 @@
  const fresh=(now=Date.now())=>{
   const time=safeTime(now);
   return {version:1,lastAt:time,coins:0,earned:0,
-   neon:{cpu:1,gpu:1,stations:1,running:true,remainder:0,economyV:ECONOMY_VERSION},
-   mine:{durability:100,repairUntil:0,dug:0,ores:{stone:0,coal:0,iron:0,crystal:0}},
-   garden:{water:1,waterAt:time,seeds:3,beds:[{status:'empty',readyAt:0},{status:'empty',readyAt:0}],
+   neon:{cpu:1,gpu:1,stations:1,router:1,skin:0,running:true,remainder:0,economyV:ECONOMY_VERSION},
+   mine:{durability:100,pickLevel:1,drillLevel:1,repairUntil:0,dug:0,
+    ores:{stone:0,coal:0,iron:0,crystal:0}},
+   garden:{water:1,waterCap:3,pondTier:1,waterAt:time,seeds:3,
+    beds:[{status:'empty',readyAt:0},{status:'empty',readyAt:0}],
     bubbleAt:time+BUBBLE_INTERVAL,bubbleReady:false,bait:0,harvests:0}};
  };
+ const maxDurability=mine=>100+25*(mine.pickLevel-1);
+ const bubbleInterval=garden=>BUBBLE_INTERVAL-10000*(garden.pondTier-1);
  function norm(raw,now=Date.now()){
   const time=safeTime(now),fallback=fresh(time);
   if(!raw||raw.version!==1||typeof raw!=='object')return fallback;
@@ -36,17 +40,22 @@
   state.coins=number(source.coins,0,MAX_COIN,0);
   state.earned=number(source.earned,0,MAX_COIN,0);
   state.neon={cpu:number(neon.cpu,1,50,1),gpu:number(neon.gpu,1,20,1),
-   stations:number(neon.stations,1,3,1),economyV:ECONOMY_VERSION,
+   stations:number(neon.stations,1,3,1),router:number(neon.router,1,10,1),
+   skin:number(neon.skin,0,2,0),economyV:ECONOMY_VERSION,
    running:neon.running!==false,
    // Convert unfinished sub-Xu earnings from the earlier 0.1 Xu/s economy.
    remainder:neon.economyV===ECONOMY_VERSION?
     number(neon.remainder,0,99999,0):number(neon.remainder,0,999,0)*100};
-  state.mine={durability:number(mine.durability,0,100,100),
+  const pickLevel=number(mine.pickLevel,1,4,1);
+  state.mine={pickLevel,drillLevel:number(mine.drillLevel,1,5,1),
+   durability:number(mine.durability,0,100+25*(pickLevel-1),100),
    repairUntil:number(mine.repairUntil,0,time+REPAIR_INTERVAL*2,0),
    dug:number(mine.dug,0,10000000,0),ores:{}};
   for(const ore of Object.keys(ORE_VALUES))
    state.mine.ores[ore]=number(mine.ores?.[ore],0,1000000,0);
-  state.garden.water=number(garden.water,0,3,1);
+  state.garden.waterCap=number(garden.waterCap,3,7,3);
+  state.garden.pondTier=number(garden.pondTier,1,5,1);
+  state.garden.water=number(garden.water,0,state.garden.waterCap,1);
   state.garden.waterAt=number(garden.waterAt,0,time,time);
   state.garden.seeds=number(garden.seeds,0,10000,3);
   state.garden.beds=Array.from({length:2},(_,i)=>{
@@ -62,10 +71,17 @@
  }
  // Thousandths of game Xu per second: starts at 0.01 Xu/s (36 Xu/hour),
  // with additive CPU/GPU gains rather than explosive multiplicative scaling.
- const rate=state=>(10+3*(state.neon.cpu-1)+4*(state.neon.gpu-1))*state.neon.stations;
+ const rate=state=>(10+3*(state.neon.cpu-1)+4*(state.neon.gpu-1)+
+  2*(state.neon.router-1))*state.neon.stations;
  const upgradeCost=(state,type)=>type==='cpu'?400*state.neon.cpu*state.neon.cpu:
   type==='gpu'?900*state.neon.gpu*state.neon.gpu:
-  type==='station'&&state.neon.stations<3?800*state.neon.stations*state.neon.stations:null;
+  type==='station'&&state.neon.stations<3?800*state.neon.stations*state.neon.stations:
+  type==='router'&&state.neon.router<10?300*state.neon.router*state.neon.router:
+  type==='skin'&&state.neon.skin<2?600*(state.neon.skin+1)*(state.neon.skin+1):
+  type==='pick-level'&&state.mine.pickLevel<4?500*state.mine.pickLevel*state.mine.pickLevel:
+  type==='drill-level'&&state.mine.drillLevel<5?400*state.mine.drillLevel*state.mine.drillLevel:
+  type==='water-cap'&&state.garden.waterCap<7?350*(state.garden.waterCap-2)*(state.garden.waterCap-2):
+  type==='pond-tier'&&state.garden.pondTier<5?600*state.garden.pondTier*state.garden.pondTier:null;
  const give=(state,amount)=>{
   if(amount<=0)return;
   state.coins=clamp(state.coins+amount,MAX_COIN);
@@ -83,14 +99,14 @@
    state.neon.remainder=milli%100000;
   }
   if(state.mine.repairUntil&&time>=state.mine.repairUntil){
-   state.mine.durability=100;state.mine.repairUntil=0;
+   state.mine.durability=maxDurability(state.mine);state.mine.repairUntil=0;
   }
   const garden=state.garden;
-  if(garden.water<3){
+  if(garden.water<garden.waterCap){
    const refill=Math.floor(Math.max(0,time-garden.waterAt)/WATER_INTERVAL);
    if(refill>0){
-    garden.water=Math.min(3,garden.water+refill);
-    garden.waterAt=garden.water===3?time:garden.waterAt+refill*WATER_INTERVAL;
+    garden.water=Math.min(garden.waterCap,garden.water+refill);
+    garden.waterAt=garden.water===garden.waterCap?time:garden.waterAt+refill*WATER_INTERVAL;
    }
   }else garden.waterAt=time;
   if(!garden.bubbleReady&&time>=garden.bubbleAt)garden.bubbleReady=true;
@@ -120,37 +136,56 @@
    state.coins-=cost;state.neon.stations++;
    return succeed('Đã lắp dàn máy số '+state.neon.stations);
   }
+  if(['router','skin','pick-level','drill-level','water-cap','pond-tier'].includes(action)){
+   const cost=upgradeCost(state,action);
+   if(cost===null)return fail('Nâng cấp này đã đạt giới hạn');
+   if(state.coins<cost)return fail('Chưa đủ Xu trò chơi để nâng cấp');
+   state.coins-=cost;
+   if(action==='router')state.neon.router++;
+   if(action==='skin')state.neon.skin++;
+   if(action==='pick-level')state.mine.pickLevel++;
+   if(action==='drill-level')state.mine.drillLevel++;
+   if(action==='water-cap')state.garden.waterCap++;
+   if(action==='pond-tier'){
+    state.garden.pondTier++;
+    if(!state.garden.bubbleReady)state.garden.bubbleAt=Math.min(
+     state.garden.bubbleAt,time+bubbleInterval(state.garden));
+   }
+   return succeed('Nâng cấp thành công');
+  }
   if(action==='mine'){
    if(mine.repairUntil)return fail('Cuốc đang tự sửa chữa');
    if(!mine.durability)return fail('Cuốc đã hết độ bền');
    if(typeof roll!=='number'||roll<0||roll>=1)return fail('Lượt đào không hợp lệ');
-   const ore=roll<0.45?'stone':roll<0.75?'coal':roll<0.95?'iron':'crystal';
+   const quality=mine.drillLevel-1;
+   const ore=roll<0.45-0.02*quality?'stone':
+    roll<0.75-0.01*quality?'coal':roll<0.95-0.01*quality?'iron':'crystal';
    mine.durability--;mine.dug++;
    mine.ores[ore]=Math.min(1000000,mine.ores[ore]+1);
    return succeed(ore);
   }
   if(action==='repair-wait'){
-   if(mine.repairUntil||mine.durability===100)return fail('Cuốc chưa cần sửa');
+   if(mine.repairUntil||mine.durability===maxDurability(mine))return fail('Cuốc chưa cần sửa');
    mine.repairUntil=time+REPAIR_INTERVAL;
    return succeed('Bắt đầu tự sửa chữa trong 4 phút');
   }
   if(action==='repair-forge'){
-   if(mine.durability===100||mine.repairUntil)return fail('Không thể rèn cuốc lúc này');
+   if(mine.durability===maxDurability(mine)||mine.repairUntil)return fail('Không thể rèn cuốc lúc này');
    if(mine.ores.coal<5||mine.ores.iron<2)return fail('Cần 5 than và 2 sắt để sửa ngay');
-   mine.ores.coal-=5;mine.ores.iron-=2;mine.durability=100;
+   mine.ores.coal-=5;mine.ores.iron-=2;mine.durability=maxDurability(mine);
    return succeed('Đã sửa cuốc bằng than và sắt');
   }
   if(action==='buy-oil'){
-   if(mine.repairUntil||mine.durability===100)return fail('Cuốc chưa cần bôi dầu');
+   if(mine.repairUntil||mine.durability===maxDurability(mine))return fail('Cuốc chưa cần bôi dầu');
    if(state.coins<150)return fail('Cần 15 Xu để mua dầu bôi trơn');
-   state.coins-=150;mine.durability=Math.min(100,mine.durability+25);
+   state.coins-=150;mine.durability=Math.min(maxDurability(mine),mine.durability+25);
    return succeed('Bôi dầu: phục hồi 25 độ bền cuốc');
   }
   if(action==='buy-pick'){
-   if(mine.durability===100&&!mine.repairUntil)return fail('Cuốc hiện tại vẫn còn nguyên');
+   if(mine.durability===maxDurability(mine)&&!mine.repairUntil)return fail('Cuốc hiện tại vẫn còn nguyên');
    if(state.coins<800)return fail('Cần 80 Xu để mua cuốc mới');
-   state.coins-=800;mine.durability=100;mine.repairUntil=0;
-   return succeed('Đã thay cuốc mới, độ bền 100/100');
+   state.coins-=800;mine.durability=maxDurability(mine);mine.repairUntil=0;
+   return succeed('Đã thay cuốc mới');
   }
   if(action==='sell-ores'){
    let total=0;
@@ -167,7 +202,7 @@
   }
   if(action==='catch-bubble'){
    if(!garden.bubbleReady)return fail('Hồ chưa có bọt khí để thu');
-   garden.bubbleReady=false;garden.bubbleAt=time+BUBBLE_INTERVAL;
+   garden.bubbleReady=false;garden.bubbleAt=time+bubbleInterval(garden);
    garden.bait=Math.min(10000,garden.bait+1);give(state,5);
    return succeed('Nhặt được mồi câu và 0,5 Xu');
   }
@@ -194,5 +229,6 @@
  }
  const formatXu=tenths=>(tenths/10).toLocaleString('vi-VN',{maximumFractionDigits:1});
  return Object.freeze({fresh,norm,advance,act,rate,upgradeCost,formatXu,
-  WATER_INTERVAL,REPAIR_INTERVAL,GROW_INTERVAL,BUBBLE_INTERVAL,ORE_VALUES});
+  WATER_INTERVAL,REPAIR_INTERVAL,GROW_INTERVAL,BUBBLE_INTERVAL,ORE_VALUES,
+  maxDurability,bubbleInterval});
 });

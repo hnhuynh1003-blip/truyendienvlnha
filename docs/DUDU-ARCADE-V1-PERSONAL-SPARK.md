@@ -13,12 +13,13 @@ Các tên được chọn ngắn, có cảm giác giao diện hệ thống, trá
 ## Phạm vi kỹ thuật V1
 
 - Mã tính toán `js/personal-arcade-core-v1.js` thuần JavaScript, nhận mốc thời gian và lượt đào để kiểm thử xác định.
-- Giao diện `js/personal-arcade-ui-v1.js` mở trong điện thoại qua một biểu tượng **Arcade**; ba tab nằm trong cùng ứng dụng để không chiếm ba vị trí ở màn hình chính.
+- Giao diện `js/personal-arcade-ui-v1.js` mở trong điện thoại qua một biểu tượng **Arcade**; ba tab nằm trong cùng ứng dụng để không chiếm ba vị trí ở màn hình chính. Nút **⇄ Đổi** nằm ngay cạnh ví Xu và mở popup; nút xác nhận vẫn khóa, không có thưởng máy chủ giả.
 - Các màn chơi dùng CSS vẽ trực tiếp, không dùng hình tải ngoài: Trạm Neon là phòng máy có monitor phát sáng và máy khóa/chạy theo tiến trình; Địa Tầng 07 cho chạm vào khối đá với hiệu ứng trúng quặng, kho quặng và xưởng rèn; Vườn Sương có cây lớn theo trạng thái, hồ cá bơi và bong bóng. Đây là lớp hiển thị thay thế cho các thẻ bảng số ở bản đầu; giữ nguyên khóa lưu `dudu-personal-arcade:v1:` để không mất tiến trình cũ.
 - Bản cân bằng thứ hai giảm thu nhập tương lai ở cả ba trò. Dữ liệu trước đó giữ nguyên `coins`, `earned`, lượt đào, kho quặng, cây và nâng cấp; chỉ đổi **mức thưởng các lượt tiếp theo**. `neon.economyV=2` đánh dấu chuyển thang phần Xu lẻ còn dở, tránh chuyển đổi hai lần.
+- Bản Arcade nâng cấp mở thêm: **Mạng** (tăng nhẹ tốc độ máy), **LED phòng** (đổi phối màu, không tăng tiền), **Cuốc thép** (+25 độ bền tối đa mỗi cấp), **Mũi khoan** (tăng chút xác suất quặng hiếm), **Bồn nước** (thêm dung tích), **Hồ cá** (rút ngắn thời gian hồi bong bóng). Tất cả đều trừ Xu trò chơi và lưu trong bản local hiện tại; các bản cũ mặc định ở cấp cơ bản.
 - Tiến trình lưu trong `localStorage` theo UID của tài khoản Firebase hiện đang đăng nhập; không tạo collection mới và **không gọi Firestore**.
 - Xu trò chơi nằm trong biến `state.coins` riêng; tuyệt đối không ghi `userProfile.currency`, ví Xu hệ thống, Shop, nhiệm vụ, vật phẩm thật hoặc quyền mở khóa chương.
-- Nút **Chuyển vào ví Xu hệ thống** hiển thị nhưng bị vô hiệu hóa, cho đến khi Rules và luồng chuyển Xu được nghiệm thu. Xu V1 **không được coi là số dư có giá trị trên máy chủ**.
+- Nút **Chuyển vào ví Xu hệ thống** nằm trong popup Đổi Xu nhưng bị vô hiệu hóa, cho đến khi Rules và luồng chuyển Xu được nghiệm thu. Xu V1 **không được coi là số dư có giá trị trên máy chủ**.
 - Trạm Neon được tính theo thời gian **tab thực sự chạy**; khi mở trang lại sau khi đã đóng, không tự cấp Xu cho khoảng thời gian đã tắt. Hồi nước, cuốc và tăng trưởng cây vẫn dựa trên đồng hồ thực.
 - Không sử dụng Cloud Functions, dịch vụ AI, thanh toán, cổng nạp tiền hoặc dịch vụ nào bắt buộc Blaze.
 

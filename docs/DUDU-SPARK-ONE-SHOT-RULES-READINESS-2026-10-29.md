@@ -1,0 +1,49 @@
+# DUDU Studio — chốt các điểm nghẽn trước lần hợp nhất Firestore Rules
+
+**Trạng thái:** tài liệu kiểm tra và kế hoạch triển khai; **chưa bật quyền và chưa sửa/deploy Firestore Rules**.
+**Định hướng:** một chủ tài khoản và vài tài khoản riêng trên điện thoại, Firebase Spark/miễn phí, không Cloud Functions, không nạp tiền.
+
+## 1. Các luồng đã có trong mã nguồn
+
+| Nguồn | Mã nguồn chính | Hiện tại | Điều kiện để mở quyền thật |
+|---|---|---|---|
+| Arcade (Trạm Neon / Mỏ / Vườn) | `js/personal-arcade-core-v1.js`, `js/personal-arcade-ui-v1.js` | Xu riêng trong `localStorage` theo UID, có nâng cấp và nút **⇄ Đổi** mở popup; xác nhận chuyển vẫn khóa | Không tin số dư do trình duyệt tự khai; xác định tỷ lệ chuyển, hạn mức, lệnh chuyển không trùng và kiểm thử hai tab/thiết bị |
+| Nhiệm vụ | `js/quest-engine-v43-7.js`, `index.html` (`advanceQuest`, `claimQuestReward`) | Engine thuần có chống claim trùng theo kỳ, nhưng luồng cũ `claimQuestReward` vẫn trực tiếp sửa `userProfile.currency`/EXP | Ghi nhận sự kiện hợp lệ một lần, kỳ ngày/tuần, không cho người chơi tự gán hoàn thành; thống nhất ví xác thực |
+| DUDU FUN | `js/dudu-fun-rules-v43.js`, `js/dudu-fun-ui-v43.js` | Sản phẩm thật chỉ là trò chơi trên thiết bị; Sandbox có thưởng thử nghiệm, chuẩn bị giải trước khi lật kết quả | Tránh công nhận kết quả ngẫu nhiên do client tự tạo. Chốt nguồn xác thực và mức nhận/giới hạn; vé không bán bằng tiền thật |
+| Nhặt đồ / Sưu tầm | `js/loot-rules-v2.js`, `index.html` (`rollLootDrop`), `js/inventory-model-v42.js`, `js/world-collection-v44-1.js` | Luồng cũ có thể tự đẩy vật phẩm và Xu vào profile. Không phải bằng chứng quyền sở hữu máy chủ | Đảm bảo một lượt nhặt có mã cố định, nguồn truyện/chương hoặc toàn cục, slot Kho tối đa, item instance duy nhất, không cho client tự chọn phần thưởng |
+| Đọc/giá truyện | `js/library-*.js`, nhập EPUB V49, các công cụ L2D | Chưa chốt giá truyện/chương; các chương EPUB `published` hiện có đường đọc công khai | Đặt chính sách miễn phí/trả Xu theo truyện/chương; **khóa đọc nội dung ở Rules**, không chỉ che nút UI. Không làm lộ nội dung trả Xu qua bản sao/đường đọc khác |
+
+## 2. Rào chắn quan trọng cần xử lý trước Rules
+
+1. Rules người dùng cung cấp cho `profiles_v2/{uid}` đang cho phép chủ UID `read, write` toàn bộ profile. Vì vậy `currency`, `inventory`, `quests`, EXP trong profile **không thể coi là tài sản đã được xác thực**. Không bật mua truyện từ số dư này.
+2. `economy-live-v52.js` đang dựa vào callable Firebase Functions (cần điều kiện triển khai khác kế hoạch Spark). Giữ nhánh V52 tắt, không âm thầm gọi các endpoint chưa triển khai.
+3. Arcade tính thời gian và lượt chơi tại client; Firestore Rules không thể tự kiểm chứng rằng người chơi thật sự treo máy/đào/vào vườn đúng thời gian. Nếu chủ dự án chấp nhận mô hình tin cậy cho **vài tài khoản cá nhân**, phải ghi rõ đó là cơ chế giới hạn rủi ro, **không phải chống gian lận tuyệt đối**.
+4. Bản V49 EPUB hiện cho người đọc lấy nội dung chương đã `published`. Một truyện được đặt giá không thể chỉ dùng điều kiện mua ở giao diện; bắt buộc phân biệt chương công khai và nội dung chỉ có quyền đọc.
+5. Các công cụ EPUB L2D chỉnh metadata, chương, thay thế hàng loạt và lưu nháp đang có feature gate. Phải chốt quyền sửa/xóa/khôi phục trước khi viết lần Rules hợp nhất.
+6. Chưa xác thực được **Firestore edition** bằng tài khoản CLI có quyền; cần xác minh instance `(default)` và edition trước khi viết mô hình/Rules chính thức. Ảnh màn hình Data không đủ để xác định edition.
+
+## 3. Quy ước giao dịch cho đợt tích hợp (chưa kết nối Firestore)
+
+- Các luồng thưởng và chuyển Xu phải có một định danh sự kiện ổn định và không được tính hai lần: `ARCADE_TRANSFER`, `QUEST_CLAIM`, `FUN_CLAIM`, `LOOT_CLAIM`.
+- Một lần chuyển/mở khóa/mua vật phẩm phải kiểm tra số dư trước, thay đổi số dư và tạo dấu vết nhận/mua cùng một giao dịch; refresh hoặc gửi lại cùng lệnh không được thưởng/trừ lần nữa.
+- Với Nhiệm vụ, mã gồm nguồn + ID nhiệm vụ + kỳ ngày/tuần + UID từ Auth (không lấy UID do client nhập). Với DUDU FUN, mã gồm trò + ngày. Với nhặt đồ, mã gồm nguồn/lượt hợp lệ; riêng chương cần storyId/chapterId/ngày.
+- Đồ nhặt phải lưu loại và nguồn gốc (toàn cục hay chương, nguồn, thời điểm, instance ID), giới hạn Kho, phân biệt vật phẩm thật với vật phẩm chỉ hiển thị trong thế giới hoặc quà thử nghiệm.
+- Phải giữ tiến trình cũ, nhưng **không tự động chuyển** Xu/EXP/đồ nhặt địa phương từ bản cũ thành tài sản máy chủ.
+- Nút **⇄ Đổi** ở ví Arcade chỉ mở popup chuẩn bị; lệnh thực vẫn vô hiệu hóa cho tới khi một mô hình xác thực/hạn mức được nghiệm thu.
+
+## 4. Những quyết định cần chốt trước lượt Rules cuối
+
+1. Tỷ lệ chuyển **Xu Arcade → Xu đọc truyện**, số Xu tối thiểu/lần, hạn mức/ngày; có chuyển ngược không? Khuyến nghị chỉ một chiều và không có đổi ra tiền thật.
+2. Truyện hay chương nào cần khóa; giá cố định cho toàn truyện hay từng chương; có phần đọc thử hay không.
+3. Nhiệm vụ nào có thưởng thật (đọc chương, điểm danh, DUDU FUN, nhặt đồ). Với trò may rủi trên trình duyệt, có chấp nhận thưởng vật phẩm thật trong mô hình cá nhân ít tài khoản không?
+4. Bản lưu local có được nhập một lần vào ví/Kho mới không, hay bắt đầu ví thật từ 0 để không biến dữ liệu dễ sửa thành quyền mở truyện?
+
+## 5. Trình tự kỹ thuật một lần Rules
+
+1. Đọc bản Rules **đang triển khai thực tế** và sao lưu; xác minh Firestore edition, Auth admin claim, phiên bản app và tình trạng EPUB gate.
+2. Hoàn thành adapter giao dịch và đường đọc trả Xu, ngăn các luồng legacy client tự cộng Xu/đồ khi đang sử dụng ví xác thực. Trình duyệt chỉ gửi yêu cầu; nơi kiểm chứng phải kiểm tra đầy đủ điều kiện.
+3. Kiểm thử giả lập: chủ tài khoản/khách, hai UID, hai tab và hai thiết bị, thiếu Xu, hủy, gửi lặp, lỗi mạng giữa chừng, gian lận timestamp, đổi UID giữa phiên, kho đầy, xóa sửa quyền, query EPUB draft/published/paid.
+4. Tạo **một bản Rules tổng hợp** gồm Thư viện legacy + EPUB L2D + profile + quyền sở hữu/đổi Xu + Quest/FUN/loot + mở khóa nội dung; từ chối mặc định cho những đường chưa cấp.
+5. Chạy Firebase Emulator Rules tests, dry-run cấu hình trong môi trường phù hợp; người chủ xác nhận trước khi deploy. Đổi Rules **một lần** và thử bằng dữ liệu nhỏ, có phương án phục hồi.
+
+**Điểm dừng hiện tại:** chưa mở thưởng thật, chưa thêm collection hoặc chỉnh Rules, chưa kích hoạt các nút EPUB/collectible cũ đang bị khóa. Các nâng cấp trong Arcade vẫn tiêu **Xu trò chơi trên thiết bị**, không đụng tới ví/Kho sản xuất.
