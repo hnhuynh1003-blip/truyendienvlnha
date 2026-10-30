@@ -247,9 +247,12 @@ test('C4.6 phone shows equipped title, collectible tabs and preserves compact Ar
   replaceChildren(...xs){this.children=xs;}
   setAttribute(k,v){this[k]=v;}
   addEventListener(k,fn){this.listeners[k]=fn;}
+  closest(selector){return selector==='.dudu-honor-identity-frame'?
+   nodes.get('dudu-honor-identity-frame'):null;}
  }
  const nodes=new Map(['dudu-honor-home-title','dudu-honor-home-title-label',
-  'dudu-honor-home-emblem','dudu-honor-profile-count',
+  'dudu-honor-home-emblem','dudu-honor-home-rarity','dudu-honor-identity-frame',
+  'dudu-honor-profile-count',
   'dudu-honor-profile-summary','profile-title','dudu-honor-content-c46'].map(id=>[id,new Node('div')]));
  const window={document:{getElementById:id=>nodes.get(id),createElement:tag=>new Node(tag)},
   DuduPersonalHonorC46:honor,DuduPersonalArcadeCoreV1:arcade,
@@ -259,13 +262,51 @@ test('C4.6 phone shows equipped title, collectible tabs and preserves compact Ar
   userProfile:{title:'Thực Thể Ký Tự',honorV1:{version:1,earned:['neon-25'],equipped:'neon-owner',pinned:['neon-25']}}};
  vm.runInNewContext(readFileSync(join(__dirname,'../js/personal-honor-ui-c46.js'),'utf8'),ctx);
  assert.match(nodes.get('dudu-honor-home-title-label').textContent,/Chủ Tiệm Neon/);
+ assert.equal(nodes.get('dudu-honor-home-title').dataset.rarity,'rare');
+ assert.equal(nodes.get('dudu-honor-identity-frame').dataset.rarity,'rare');
+ assert.equal(nodes.get('dudu-honor-home-rarity').textContent,'VINH DANH · HIẾM');
+ assert.equal(nodes.get('dudu-honor-profile-summary').children[0].dataset.rarity,'rare');
  assert.equal(nodes.get('dudu-honor-profile-summary').children.length,1);
  assert.equal(window.DuduHonorUIV46.render(),true);
  const root=nodes.get('dudu-honor-content-c46');
  assert.ok(root.children.length>=3);
+ assert.equal(root.children[0].dataset.rarity,'rare');
  const flatten=n=>[n,...n.children.flatMap(flatten)];
  const titleTab=flatten(root).find(n=>n.className==='dudu-honor-action'&&n.textContent==='Sử dụng');
  assert.ok(titleTab);titleTab.listeners.click();
  assert.equal(ctx.userProfile.honorV1.equipped,'entity');
  assert.equal(ctx.userProfile.title,'Thực Thể Ký Tự');
+ assert.equal(nodes.get('dudu-honor-home-rarity').textContent,'VINH DANH · THƯỜNG');
+ // C4.7: title rarity derives solely from the canonical Honor catalog.
+ ctx.userProfile.honorV1={version:1,earned:['neon-100'],equipped:'neon-tycoon',pinned:['neon-100']};
+ window.DuduHonorUIV46.render();
+ assert.equal(nodes.get('dudu-honor-home-title').dataset.rarity,'epic');
+ assert.equal(nodes.get('dudu-honor-identity-frame').dataset.rarity,'epic');
+ assert.equal(nodes.get('dudu-honor-home-rarity').textContent,'VINH DANH · SỬ THI');
+ assert.equal(nodes.get('dudu-honor-profile-summary').children[0].dataset.rarity,'epic');
+ assert.equal(root.children[0].dataset.rarity,'epic');
+ ctx.userProfile.honorV1={version:1,earned:['garden-dragon'],equipped:'garden-legend',pinned:['garden-dragon']};
+ window.DuduHonorUIV46.render();
+ assert.equal(nodes.get('dudu-honor-home-title').dataset.rarity,'mythic');
+ assert.equal(nodes.get('dudu-honor-home-rarity').textContent,'VINH DANH · HUYỀN THOẠI');
+ assert.equal(nodes.get('dudu-honor-profile-summary').children[0].dataset.rarity,'mythic');
+ assert.equal(root.children[0].dataset.rarity,'mythic');
+});
+
+test('C4.7 rarity finish is compact, collectible, accessible and motion-safe',()=>{
+ const html=readFileSync(join(__dirname,'../index.html'),'utf8');
+ const css=readFileSync(join(__dirname,'../css/personal-honor-c46.css'),'utf8');
+ assert.match(html,/id="dudu-honor-home-rarity"/);
+ assert.match(html,/personal-honor-c46\.css\?v=c47-1/);
+ assert.match(html,/personal-honor-ui-c46\.js\?v=c47-1/);
+ for(const tier of ['common','rare','epic','mythic']){
+  assert.match(css,new RegExp('dudu-honor-home-chip\\[data-rarity="'+tier+'"\\]'));
+  assert.match(css,new RegExp('dudu-honor-hero\\[data-rarity="'+tier+'"\\]'));
+ }
+ assert.match(css,/\.dudu-honor-card\.is-equipped\[data-rarity="mythic"\]/);
+ assert.match(css,/duduHonorSweep/);
+ assert.match(css,/duduHonorPulse/);
+ assert.match(css,/@media \(prefers-reduced-motion:reduce\)/);
+ assert.match(css,/animation:none!important/);
+ assert.match(css,/overflow:hidden;border:1px solid transparent/);
 });

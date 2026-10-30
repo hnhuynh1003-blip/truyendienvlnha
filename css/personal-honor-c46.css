@@ -171,3 +171,216 @@ body.dudu-phone-v11 .dudu-honor-profile-empty{font-size:10px;color:#9eabc1}
  #dudu-honor-content-c46 .dudu-honor-action{padding:7px 5px}
 }
 @media (prefers-reduced-motion:reduce){body.dudu-phone-v11 .dudu-honor-home-chip{transition:none}}
+
+/* C4.7 — collectible title finishes. The entire effect stays within the
+ * existing compact nameplate; wallpaper, app tiles and viewport are untouched.
+ * Common: engraved steel; rare: jade glass; epic: amethyst prism;
+ * mythic: gilded starlight. Cosmetic only, no change to unlock rules. */
+body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-identity-frame{
+ transition:border-color .35s ease,box-shadow .35s ease;
+}
+body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-identity-frame[data-rarity="common"]{
+ border-color:rgba(149,170,192,.45);
+}
+body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-identity-frame[data-rarity="rare"]{
+ border-color:rgba(93,214,207,.55);
+ box-shadow:0 10px 24px rgba(3,10,21,.36),inset 0 0 14px rgba(46,206,200,.1);
+}
+body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-identity-frame[data-rarity="epic"]{
+ border-color:rgba(189,143,255,.59);
+ box-shadow:0 10px 24px rgba(3,10,21,.36),0 0 15px rgba(150,105,247,.15),inset 0 0 16px rgba(147,104,218,.12);
+}
+body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-identity-frame[data-rarity="mythic"]{
+ border-color:rgba(255,210,125,.74);
+ box-shadow:0 11px 25px rgba(3,10,21,.38),0 0 19px rgba(252,194,89,.18),inset 0 0 18px rgba(255,196,96,.14);
+}
+body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-home-chip{
+ --honor-edge-first:rgba(169,190,211,.62);
+ --honor-edge-middle:rgba(218,229,242,.82);
+ --honor-edge-last:rgba(99,125,158,.58);
+ --honor-face-first:rgba(47,57,74,.91);
+ --honor-face-last:rgba(27,40,60,.93);
+ --honor-light:#d9e6f7;
+ --honor-subtext:#b7c9e0;
+ --honor-halo:rgba(161,189,220,.24);
+ position:relative;isolation:isolate;overflow:hidden;border:1px solid transparent;
+ border-radius:7px 7px 12px 12px;
+ background:linear-gradient(110deg,var(--honor-face-first),var(--honor-face-last)) padding-box,
+  linear-gradient(115deg,var(--honor-edge-first),var(--honor-edge-middle) 48%,var(--honor-edge-last)) border-box;
+ color:var(--honor-light);
+ box-shadow:inset 0 1px rgba(255,255,255,.16),0 0 11px var(--honor-halo);
+ transition:box-shadow .28s ease,border-color .28s ease;
+}
+body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-home-chip[data-rarity="common"]{
+ --honor-edge-first:#6e88a1;--honor-edge-middle:#d3e2f1;--honor-edge-last:#58718b;
+ --honor-face-first:rgba(41,53,72,.94);--honor-face-last:rgba(25,37,55,.94);
+}
+body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-home-chip[data-rarity="rare"]{
+ --honor-edge-first:#2b9c9c;--honor-edge-middle:#b1fff0;--honor-edge-last:#2d859e;
+ --honor-face-first:rgba(16,65,66,.94);--honor-face-last:rgba(18,45,64,.94);
+ --honor-light:#d1fff8;--honor-subtext:#92eadb;--honor-halo:rgba(66,234,217,.3);
+}
+body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-home-chip[data-rarity="epic"]{
+ --honor-edge-first:#825aca;--honor-edge-middle:#ebd0ff;--honor-edge-last:#8368df;
+ --honor-face-first:rgba(63,35,92,.94);--honor-face-last:rgba(28,42,74,.94);
+ --honor-light:#f4e5ff;--honor-subtext:#d5aeff;--honor-halo:rgba(171,113,255,.39);
+ box-shadow:inset 0 1px rgba(239,211,255,.22),0 0 13px var(--honor-halo);
+}
+body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-home-chip[data-rarity="mythic"]{
+ --honor-edge-first:#d79740;--honor-edge-middle:#fff1bd;--honor-edge-last:#d6a253;
+ --honor-face-first:rgba(100,59,33,.95);--honor-face-last:rgba(37,51,60,.95);
+ --honor-light:#fff1c3;--honor-subtext:#ffdc8f;--honor-halo:rgba(255,190,82,.51);
+ box-shadow:inset 0 1px rgba(255,242,191,.4),0 0 16px var(--honor-halo),0 2px 12px rgba(12,8,7,.24);
+}
+body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-home-chip::before{
+ content:'';position:absolute;inset:3px;z-index:0;pointer-events:none;
+ border:1px solid var(--honor-edge-first);border-radius:4px 4px 9px 9px;
+ opacity:.28;
+}
+body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-home-chip::after{
+ content:'';position:absolute;z-index:0;pointer-events:none;
+ left:0;top:-65%;width:34%;height:230%;opacity:0;
+ background:linear-gradient(90deg,transparent,rgba(255,255,255,.31),transparent);
+ transform:translate3d(-190%,0,0) skewX(-19deg);
+}
+body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-home-chip[data-rarity="epic"]::after{
+ animation:duduHonorSweep 8s ease-in-out infinite;
+}
+body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-home-chip[data-rarity="mythic"]::after{
+ background:linear-gradient(90deg,transparent,rgba(255,226,157,.54),transparent);
+ animation:duduHonorSweep 6.8s ease-in-out infinite;
+}
+body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-home-chip >*{
+ position:relative;z-index:1;
+}
+body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-home-emblem{
+ border-color:var(--honor-edge-first);color:var(--honor-light);
+ background:radial-gradient(circle at 30% 20%,var(--honor-halo),transparent 68%),rgba(13,22,39,.6);
+ text-shadow:0 0 7px var(--honor-halo);
+ box-shadow:inset 0 0 9px var(--honor-halo),0 0 8px var(--honor-halo);
+}
+body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-home-chip[data-rarity="rare"] .dudu-honor-home-emblem{
+ box-shadow:inset 0 0 9px rgba(116,249,230,.18),0 0 10px rgba(93,239,219,.31);
+}
+body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-home-chip[data-rarity="epic"] .dudu-honor-home-emblem,
+body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-home-chip[data-rarity="mythic"] .dudu-honor-home-emblem{
+ animation:duduHonorPulse 4.8s ease-in-out infinite;
+}
+body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-home-copy small{
+ color:var(--honor-subtext);letter-spacing:.16em;
+}
+body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-home-copy strong{
+ color:var(--honor-light);text-shadow:0 1px 8px var(--honor-halo);
+}
+body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-home-chevron{
+ color:var(--honor-subtext);
+}
+body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-home-chip:focus-visible{
+ outline:2px solid var(--honor-edge-middle);outline-offset:3px;
+}
+body.dudu-phone-v11 .dudu-v27-profile-title[data-rarity="rare"]{color:#9ceee3}
+body.dudu-phone-v11 .dudu-v27-profile-title[data-rarity="epic"]{
+ color:#ebd5ff;text-shadow:0 0 10px rgba(175,119,249,.44);
+}
+body.dudu-phone-v11 .dudu-v27-profile-title[data-rarity="mythic"]{
+ color:#ffe5a5;text-shadow:0 0 14px rgba(255,203,111,.55);
+}
+/* Keep miniature pinned rewards gem-like without adding another panel. */
+body.dudu-phone-v11 .dudu-honor-profile-medal[data-rarity="rare"]{
+ border-color:#6fe4da;color:#b3fff1;background:radial-gradient(circle at 35% 25%,#4d9f99,#244651 75%);
+ box-shadow:0 0 10px rgba(69,225,209,.23);
+}
+body.dudu-phone-v11 .dudu-honor-profile-medal[data-rarity="epic"]{
+ border-color:#bb9dff;color:#f0daff;background:radial-gradient(circle at 35% 25%,#8159aa,#342b5c 75%);
+ box-shadow:0 0 12px rgba(178,124,251,.36);
+}
+body.dudu-phone-v11 .dudu-honor-profile-medal[data-rarity="mythic"]{
+ border-color:#ffe1a0;color:#fff0ba;background:radial-gradient(circle at 35% 25%,#b88c47,#49372f 75%);
+ box-shadow:0 0 13px rgba(255,194,87,.48),inset 0 0 6px rgba(255,220,145,.35);
+ animation:duduHonorPulse 5.4s ease-in-out infinite;
+}
+/* The collection hero and unlocked cards mirror the title's finish. Locked
+ * cards keep their mystery silhouette and never advertise a fake rare glow. */
+#dudu-honor-content-c46 .dudu-honor-hero[data-rarity="common"]{
+ border-color:rgba(155,174,198,.51);
+ background:linear-gradient(122deg,#293445,#203246 76%,#30354e);
+}
+#dudu-honor-content-c46 .dudu-honor-hero[data-rarity="rare"]{
+ border-color:#64bfb8;
+ background:radial-gradient(circle at 88% 10%,rgba(87,234,213,.24),transparent 51%),
+  linear-gradient(122deg,#1b4b4e,#1b3547 74%,#21495d);
+ box-shadow:0 12px 28px rgba(6,9,24,.25),inset 0 0 24px rgba(94,228,205,.11);
+}
+#dudu-honor-content-c46 .dudu-honor-hero[data-rarity="epic"]{
+ border-color:#b08be9;
+ background:radial-gradient(circle at 87% 10%,rgba(204,154,255,.24),transparent 53%),
+  linear-gradient(122deg,#402954,#222f4d 74%,#3a345e);
+ box-shadow:0 12px 28px rgba(6,9,24,.28),0 0 14px rgba(162,111,234,.16);
+}
+#dudu-honor-content-c46 .dudu-honor-hero[data-rarity="mythic"]{
+ border-color:#f4c779;
+ background:radial-gradient(circle at 88% 10%,rgba(255,220,137,.27),transparent 51%),
+  linear-gradient(122deg,#573929,#203c43 74%,#534039);
+ box-shadow:0 12px 28px rgba(6,9,24,.3),0 0 18px rgba(253,204,109,.23),inset 0 0 23px rgba(255,216,151,.13);
+}
+#dudu-honor-content-c46 .dudu-honor-hero[data-rarity="epic"]:after{content:'✧';color:#e0c4ff;opacity:.25}
+#dudu-honor-content-c46 .dudu-honor-hero[data-rarity="mythic"]:after{content:'❖';color:#ffe1a5;opacity:.24}
+#dudu-honor-content-c46 .dudu-honor-hero[data-rarity="rare"] .dudu-honor-main-symbol{
+ border-color:#87e7dc;color:#c5fff2;background:radial-gradient(circle,#286a68,#1a3b51);
+ box-shadow:0 0 11px rgba(76,216,202,.29);
+}
+#dudu-honor-content-c46 .dudu-honor-hero[data-rarity="epic"] .dudu-honor-main-symbol{
+ border-color:#c7a2ff;color:#f1ddff;background:radial-gradient(circle,#73529b,#2b304f);
+ box-shadow:0 0 13px rgba(188,138,250,.32);
+}
+#dudu-honor-content-c46 .dudu-honor-hero[data-rarity="mythic"] .dudu-honor-main-symbol{
+ border-color:#ffe0a1;color:#fff1bb;background:radial-gradient(circle,#a27842,#423942);
+ box-shadow:0 0 15px rgba(255,205,118,.41);animation:duduHonorPulse 5.2s ease-in-out infinite;
+}
+#dudu-honor-content-c46 :is(.dudu-honor-card,.dudu-honor-achievement):not(.is-locked)[data-rarity="rare"]{
+ border-color:rgba(92,208,193,.65);
+ background:linear-gradient(116deg,#19404a,#1b2d41);
+ box-shadow:inset 2px 0 rgba(108,237,219,.38);
+}
+#dudu-honor-content-c46 :is(.dudu-honor-card,.dudu-honor-achievement):not(.is-locked)[data-rarity="epic"]{
+ border-color:rgba(176,132,239,.77);
+ background:linear-gradient(116deg,#34294e,#202c45);
+ box-shadow:inset 2px 0 rgba(210,170,255,.5),0 0 10px rgba(157,112,238,.14);
+}
+#dudu-honor-content-c46 :is(.dudu-honor-card,.dudu-honor-achievement):not(.is-locked)[data-rarity="mythic"]{
+ border-color:rgba(245,190,97,.86);
+ background:linear-gradient(116deg,#4b362e,#21383e);
+ box-shadow:inset 2px 0 rgba(255,221,150,.65),0 0 12px rgba(242,186,91,.22);
+}
+#dudu-honor-content-c46 .dudu-honor-card.is-equipped[data-rarity="epic"]{
+ box-shadow:inset 0 0 0 1px rgba(215,183,255,.55),0 0 12px rgba(160,113,235,.23);
+}
+#dudu-honor-content-c46 .dudu-honor-card.is-equipped[data-rarity="mythic"]{
+ box-shadow:inset 0 0 0 1px rgba(255,235,173,.65),0 0 16px rgba(249,190,89,.29);
+}
+#dudu-honor-content-c46 .dudu-honor-rarity.dudu-honor-rare{
+ background:rgba(35,123,117,.18);box-shadow:inset 0 0 8px rgba(102,227,212,.13);
+}
+#dudu-honor-content-c46 .dudu-honor-rarity.dudu-honor-epic{
+ background:rgba(126,76,181,.2);box-shadow:0 0 8px rgba(189,145,250,.16);
+}
+#dudu-honor-content-c46 .dudu-honor-rarity.dudu-honor-mythic{
+ background:rgba(177,118,49,.24);box-shadow:0 0 10px rgba(255,198,100,.24);
+}
+@keyframes duduHonorSweep{
+ 0%,52%,100%{transform:translate3d(-190%,0,0) skewX(-19deg);opacity:0}
+ 61%{opacity:.52}
+ 76%{transform:translate3d(610%,0,0) skewX(-19deg);opacity:0}
+}
+@keyframes duduHonorPulse{
+ 0%,100%{filter:brightness(1);}
+ 50%{filter:brightness(1.22);}
+}
+@media (prefers-reduced-motion:reduce){
+ body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-home-chip::after,
+ body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-home-emblem,
+ body.dudu-phone-v11 .dudu-honor-profile-medal,
+ #dudu-honor-content-c46 .dudu-honor-hero .dudu-honor-main-symbol{animation:none!important}
+ body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-home-chip,
+ body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-identity-frame{transition:none!important}
+}

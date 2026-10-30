@@ -62,12 +62,18 @@
  function refresh(){
   if(!profile())return;
   const v=current(),selected=activeTitle(v);
+  const rarity=rarityName[selected.rarity]||rarityName.common;
+  const frame=$('dudu-honor-home-title')?.closest?.('.dudu-honor-identity-frame');
+  if(frame)frame.dataset.rarity=selected.rarity;
   const chip=$('dudu-honor-home-title');
   if(chip){
-   const label=$('dudu-honor-home-title-label'),emblem=$('dudu-honor-home-emblem');
+   const label=$('dudu-honor-home-title-label'),emblem=$('dudu-honor-home-emblem'),
+    caption=$('dudu-honor-home-rarity');
    if(label)label.textContent=selected.name;
    if(emblem)emblem.textContent=selected.icon;
+   if(caption)caption.textContent='VINH DANH · '+rarity.toLocaleUpperCase('vi-VN');
    chip.dataset.rarity=selected.rarity;chip.disabled=!account();
+   chip.setAttribute('aria-label','Danh hiệu '+selected.name+' · bậc '+rarity+'. Mở Sổ Vinh Danh');
   }
   const title=$('profile-title');
   if(title){title.textContent=selected.icon+' '+selected.name;title.dataset.rarity=selected.rarity;}
@@ -78,7 +84,8 @@
     for(const id of pinned){const a=honor.CATALOG.find(row=>row.id===id);
      if(!a)continue;
      const badge=create('span','dudu-honor-profile-medal',a.icon);
-     badge.title=a.name;summary.append(badge);}
+     badge.dataset.rarity=a.rarity;
+     badge.title=a.name+' · '+(rarityName[a.rarity]||'Thường');summary.append(badge);}
    }else summary.append(create('span','dudu-honor-profile-empty',
     'Chưa ghim huy hiệu · Chọn trong Sổ Vinh Danh'));
   }
@@ -91,6 +98,7 @@
   const hero=create('section','dudu-honor-hero');
   hero.append(create('small','','✦ NHẬT KÝ CHINH PHỤC'));
   const selected=activeTitle(v),row=create('div','dudu-honor-hero-row');
+  hero.dataset.rarity=selected.rarity;
   row.append(create('span','dudu-honor-main-symbol',selected.icon));
   const copy=create('div','dudu-honor-main-copy');
   copy.append(create('small','','DANH HIỆU ĐANG TRANG BỊ'),
