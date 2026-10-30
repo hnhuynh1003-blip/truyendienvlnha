@@ -241,7 +241,7 @@
   const succeed=(label,extras={})=>({ok:true,label,state,...extras});
   const garden=state.garden,mine=state.mine;
   if(/^jade-/.test(action||''))return jadeGame?
-   jadeGame.act(state,action,roll):fail('Ngọc Phường chưa sẵn sàng');
+   jadeGame.act(state,action,roll,time):fail('Ngọc Phường chưa sẵn sàng');
   if(action==='toggle-neon'){
    state.neon.running=!state.neon.running;
    return succeed(state.neon.running?'Máy đã chạy':'Đã tạm dừng máy');

@@ -33,10 +33,18 @@
   </div>`;
  }
  function activePanel(s){
-  const j=s.jade,stone=j.active;if(!stone)return `<div class="jade-welcome">
+  const j=s.jade,stone=j.active;
+  const rescueLeft=Math.max(0,j.rescueReadyAt-(s.lastAt||Date.now()));
+  const rescueTime=Math.ceil(rescueLeft/60000);
+  const canRescue=j.bought>0&&s.coins<jade.MARKETS[0].price;
+  if(!stone)return `<div class="jade-welcome">
     <span>✧ PHƯỜNG NGỌC ĐÃ MỞ CỬA</span><strong>Mỗi viên đá ẩn một câu chuyện.</strong>
     <p>Chọn đá thô, soi ba điểm, thử tài khai song hoặc xẻ đá. Ngọc đẹp có thể bán, chế tác hay trưng bày.</p>
-    ${btn(j.bought===0?'✦ Nhận đá thử miễn phí':'✦ Chọn lô đá mới',j.bought===0?'jade-buy-0':'jade-open-market','gold')}</div>`;
+    ${btn(j.bought===0?'✦ Nhận đá thử miễn phí':'✦ Chọn lô đá mới',j.bought===0?'jade-buy-0':'jade-open-market','gold')}
+    ${canRescue?`<div class="jade-recovery">
+      <small>Xu Arcade dưới 5 · Xưởng ngọc có đá tập cứu vốn, soi và xẻ không tốn phí.</small>
+      ${btn(rescueLeft?'◷ Đá cứu vốn · '+rescueTime+' phút':'✦ Nhận đá cứu vốn · Miễn phí',
+       'jade-rescue','upgrade',rescueLeft>0)}</div>`:''}</div>`;
   if(['raw','window'].includes(stone.phase)){
    return `<div class="jade-readout"><div class="jade-readout-head"><b>◈ Bàn giám ngọc</b><span>${stone.scans.filter(Boolean).length}/3 DẤU HIỆU</span></div>
      <div class="jade-clue-list">${[0,1,2].map((i)=>`<div class="jade-clue ${stone.scans[i]?'is-read':''}">
@@ -49,7 +57,11 @@
       `<div class="jade-main-actions">${btn(jade.actionFee(stone,'window')?'◈ Khai song · '+fmt(jade.actionFee(stone,'window'))+' Xu':'◈ Khai song · Miễn phí','jade-window','gold',s.coins<jade.actionFee(stone,'window'))}
       ${btn(jade.actionFee(stone,'cut')?'⚔ Xẻ đôi · '+fmt(jade.actionFee(stone,'cut'))+' Xu':'⚔ Xẻ đôi · Miễn phí','jade-cut','power',s.coins<jade.actionFee(stone,'cut'))}</div>`}
      <p class="jade-decision-note">${stone.phase==='window'?'Giá chào mua không đảm bảo phản ánh toàn bộ ruột đá.':
-      'Khai song giúp nhận báo giá; xẻ đôi lộ toàn bộ phẩm chất nhưng không thể quay lại.'}</p>`;
+      'Khai song giúp nhận báo giá; xẻ đôi lộ toàn bộ phẩm chất nhưng không thể quay lại.'}</p>
+     ${stone.phase==='raw'&&jade.rawSalvageValue(stone)?`<div class="jade-recovery jade-recovery-compact">
+      <small>Thiếu tiền cắt? Trả lại đá nguyên vỏ, thu hồi 25% giá mua; không tính lượt giao dịch.</small>
+      ${btn('↩ Thanh lý đá thô · +'+fmt(jade.rawSalvageValue(stone))+' Xu','jade-sell-raw','upgrade')}
+     </div>`:''}`;
   }
   const good=stone.grade>0&&stone.flaw!=='skin',value=stone.phase==='crafted'?stone.craftValue:stone.cutValue;
   return `<div class="jade-reveal"><span>${stone.phase==='crafted'?'✦ TÁC PHẨM HOÀN THÀNH':'✦ KẾT QUẢ XẺ ĐÁ'}</span>

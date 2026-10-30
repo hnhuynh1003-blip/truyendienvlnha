@@ -24,6 +24,10 @@
  const CRAFTS=Object.freeze({bangle:{name:'Vòng tay',mult:1.75,min:5},pendant:{name:'Mặt dây chuyền',mult:1.45,min:2},ring:{name:'Mặt nhẫn',mult:1.25,min:1},beads:{name:'Chuỗi hạt',mult:1.12,min:1}});
  const gradeMult=[0,.85,1.25,1.8,2.7,4.2,6.5,11];
  const colorMult=[1,1.25,1.65,1.7,2.1,1.9,4.6,3.8];
+ // C4.9: high-tier stones retain their rare jackpots without making every
+ // average purchase fund the whole workshop. Legacy stones keep old pricing.
+ const payoutScale=[1,.8,.34,.30,.15];
+ const RESCUE_INTERVAL=10*60*1000;
  const gradeOdds=[
   [70,15,9,5,1,0,0,0],
   [20,12,28,23,11,5,1,0],
@@ -49,7 +53,7 @@
    site===4&&j.sold>=40&&j.permit;
  }
  const fresh=()=>({bought:0,cut:0,sold:0,invested:0,received:0,lamp:1,saw:1,
-  carver:1,permit:false,active:null,album:{},exhibits:[],last:null});
+  carver:1,permit:false,rescueReadyAt:0,active:null,album:{},exhibits:[],last:null});
  function validStone(v){
   if(!v||typeof v!=='object'||!['raw','window','cut','crafted'].includes(v.phase)||
    !Number.isSafeInteger(v.id)||v.id<1||v.id>1000000||
@@ -62,6 +66,7 @@
   if(v.phase==='crafted'&&!CRAFTS[v.craft])return null;
   return {id:v.id,site:v.site,grade:v.grade,color:v.color,size:v.size,
    flaw:v.flaw,seed:v.seed,phase:v.phase,scans:[...v.scans],
+   payoutV:integer(v.payoutV,1,2,1),practice:v.practice===true,
    savedFracture:v.savedFracture===true,offer:integer(v.offer,0,MAX,0),
    cutValue:integer(v.cutValue,0,MAX,0),craft:CRAFTS[v.craft]?v.craft:null,
    craftValue:integer(v.craftValue,0,MAX,0)};
@@ -70,6 +75,7 @@
   const j=fresh();if(!source||typeof source!=='object')return j;
   for(const field of ['bought','cut','sold','invested','received'])j[field]=integer(source[field],0,MAX,0);
   for(const field of ['lamp','saw','carver'])j[field]=integer(source[field],1,4,1);
+  j.rescueReadyAt=integer(source.rescueReadyAt,0,Number.MAX_SAFE_INTEGER,0);
   j.permit=source.permit===true;
   j.active=validStone(source.active);
   if(source.album&&typeof source.album==='object')for(let g=1;g<=7;g++)for(let c=0;c<8;c++){
@@ -91,7 +97,7 @@
   if(color===6&&site<3)color=1; // The Imperial-green deposit belongs to Hắc Ô Sa / Tàn Tích.
   const flaw=FLAWS[pick([15,35,25,8,17],rng())];
   return {id,site,grade,color,size:2+Math.floor(rng()*7)+(site>=2?1:0),
-   flaw,seed,phase:'raw',scans:[false,false,false],savedFracture:false,
+   flaw,seed,phase:'raw',scans:[false,false,false],payoutV:2,practice:false,savedFracture:false,
    offer:0,cutValue:0,craft:null,craftValue:0};
  }
  function scanHint(stone,spot,lamp){
@@ -114,7 +120,8 @@
   return 'Một góc đá rọi ánh khác thường; chưa rõ là cơ hội hay bẫy.';
  }
  const baseValue=stone=>stone.grade===0?Math.max(1,Math.round(MARKETS[stone.site].price*.055)):
-  Math.round(MARKETS[stone.site].price*1.45*gradeMult[stone.grade]*colorMult[stone.color]*(stone.size/5));
+  Math.round(MARKETS[stone.site].price*1.45*gradeMult[stone.grade]*colorMult[stone.color]*
+   (stone.size/5)*(stone.payoutV===2?payoutScale[stone.site]:1));
  function cutValue(stone,saw){
   if(stone.grade===0||stone.flaw==='skin')return Math.max(1,Math.round(MARKETS[stone.site].price*.05));
   let value=baseValue(stone);
@@ -127,14 +134,16 @@
  }
  const cuttingFee=site=>[5,14,35,100,300][site];
  const windowFee=site=>[8,20,60,200,600][site];
- const actionFee=(stone,kind)=>stone.id===1&&stone.site===0?0:
+ const actionFee=(stone,kind)=>stone.practice||stone.id===1&&stone.site===0?0:
   kind==='cut'?cuttingFee(stone.site):windowFee(stone.site);
+ const rawSalvageValue=stone=>stone.phase==='raw'&&!stone.practice&&!(stone.id===1&&stone.site===0)?
+  Math.floor(MARKETS[stone.site].price*.25):0;
  const upgradeCost=(j,type)=>type==='lamp'&&j.lamp<4?120*j.lamp*j.lamp:
   type==='saw'&&j.saw<4?180*j.saw*j.saw:
   type==='carver'&&j.carver<4?240*j.carver*j.carver:
   type==='permit'&&!j.permit?3000:null;
  const craftFee=(stone,type)=>Math.max(4,Math.round(MARKETS[stone.site].price*({bangle:.16,pendant:.1,ring:.08,beads:.055}[type])));
- function act(state,action,roll=.5){
+ function act(state,action,roll=.5,now=Date.now()){
   const j=state.jade;if(!j)return {ok:false,reason:'Chưa khởi tạo Ngọc Phường',state};
   const fail=reason=>({ok:false,reason,state});
   const succeed=label=>({ok:true,label,state});
@@ -150,6 +159,15 @@
    j.bought++;j.active=generate(site,j.bought,roll);
    return succeed(cost?'Đã mang đá thô lên bàn. Hãy soi ba điểm.':'Tặng viên đá thử đầu tiên! Hãy soi ba điểm.');
   }
+  if(action==='jade-rescue'){
+   if(j.active)return fail('Hãy xử lý viên đá đang có trước.');
+   if(!j.bought)return fail('Bạn vẫn còn viên đá thử đầu tiên miễn phí.');
+   if(state.coins>=MARKETS[0].price)return fail('Hãy dùng Xu Arcade hiện có để chọn đá.');
+   if(!Number.isSafeInteger(now)||now<0||now<j.rescueReadyAt)return fail('Đá cứu vốn đang chờ hồi lại.');
+   j.bought++;j.rescueReadyAt=now+RESCUE_INTERVAL;
+   j.active=generate(0,j.bought,roll);j.active.practice=true;
+   return succeed('✦ Nhận đá cứu vốn! Soi và xẻ miễn phí, chỉ có thể nhận lại một viên mỗi 10 phút.');
+  }
   const tool=/^jade-upgrade-(lamp|saw|carver|permit)$/.exec(action||'');
   if(tool){
    const type=tool[1],cost=upgradeCost(j,type);if(cost===null)return fail('Đã đạt cấp cao nhất.');
@@ -159,6 +177,13 @@
    return succeed(type==='permit'?'Đã có giấy phép Tàn Tích.':'Đã nâng cấp thiết bị xưởng ngọc.');
   }
   const stone=j.active;if(!stone)return fail('Hãy chọn một viên đá thô ở chợ.');
+  if(action==='jade-sell-raw'){
+   if(stone.phase!=='raw')return fail('Chỉ trả lại được đá chưa khai song.');
+   const value=rawSalvageValue(stone);
+   if(!value)return fail('Đá tặng không có giá thu mua thô. Hãy khai song hoặc xẻ miễn phí.');
+   credit(value);j.last={label:'Thanh lý đá thô',value};j.active=null;
+   return succeed('Đã bán đá thô thu hồi · +'+(value/10).toLocaleString('vi-VN',{maximumFractionDigits:1})+' Xu');
+  }
   const scan=/^jade-scan-([012])$/.exec(action||'');
   if(scan){
    if(!['raw','window'].includes(stone.phase))return fail('Viên đá đã được xẻ.');
@@ -224,5 +249,6 @@
   return fail('Thao tác Ngọc Phường chưa hỗ trợ.');
  }
  return Object.freeze({fresh,norm,act,MARKETS,GRADES,COLORS,COLOR_HEX,FLAWS,FLAW_NAMES,
-  CRAFTS,unlocked,scanHint,baseValue,cutValue,cuttingFee,windowFee,actionFee,upgradeCost,craftFee,generate});
+  CRAFTS,RESCUE_INTERVAL,unlocked,scanHint,baseValue,cutValue,cuttingFee,windowFee,
+  actionFee,rawSalvageValue,upgradeCost,craftFee,generate});
 });
