@@ -10,11 +10,13 @@ const quotePolicy=require('../js/personal-arcade-exchange-v1.js');
 function harness(options={}){
  const db=new Map(),listeners={};let uid='reader-one';
  const notice={textContent:''};
+ const headerWallet={textContent:'',disabled:false,listeners:{},
+  addEventListener(name,fn){this.listeners[name]=fn;}};
  const host={innerHTML:'',scrollTop:0,listeners:{},
   querySelector:()=>notice,addEventListener(name,fn){this.listeners[name]=fn;}};
  const app={style:{display:'flex'}};
  const document={getElementById:id=>id==='personal-arcade-v1'?host:
-  id==='phone-app-arcade'?app:null};
+  id==='phone-app-arcade'?app:id==='arcade-header-wallet-v1'?headerWallet:null};
  const window={document,DuduPersonalArcadeCoreV1:core,
   DuduAuth:{uid:()=>uid,isReady:()=>!!uid},
   localStorage:{getItem:k=>db.get(k)||null,setItem:(k,v)=>db.set(k,v),removeItem:k=>db.delete(k)},
@@ -38,18 +40,24 @@ function harness(options={}){
  }
  const source=readFileSync(join(__dirname,'../js/personal-arcade-ui-v1.js'),'utf8');
  vm.runInNewContext(source,context);
- return {db,host,notice,window,listeners,profile,
+ return {db,host,notice,headerWallet,window,listeners,profile,
   getSavedProfiles:()=>savedProfiles,getWalletRefreshes:()=>walletRefreshes,
   setUid:next=>{uid=next;}};
 }
 
 test('Arcade phone UI renders three named tabs and a disabled transfer control',()=>{
- const {host,window}=harness();
+ const {host,window,headerWallet}=harness();
  assert.equal(window.DuduPersonalArcadeUIV1.render(),true);
  assert.match(host.innerHTML,/Trạm Neon/);
  assert.match(host.innerHTML,/Địa Tầng 07/);
  assert.match(host.innerHTML,/Vườn Sương/);
- assert.match(host.innerHTML,/data-arcade-exchange="open"/);
+ assert.equal(headerWallet.textContent,'🪙 0 Xu');
+ assert.equal(headerWallet.disabled,false);
+ assert.doesNotMatch(host.innerHTML,/CHƠI TỰ DO|arcade-topbar/);
+ assert.match(host.innerHTML,/class="arcade-scroll"/);
+ assert.match(host.innerHTML,/<nav class="arcade-tabs"/);
+ assert.ok(host.innerHTML.indexOf('<nav class="arcade-tabs"')>
+  host.innerHTML.indexOf('aria-label="Trạm Neon"'));
  assert.doesNotMatch(host.innerHTML,/arcade-privacy|LOCAL \/ FREE/);
  assert.match(host.innerHTML,/arcade-stage neon-stage/);
  assert.match(host.innerHTML,/neon-computer-rack/);
@@ -66,6 +74,16 @@ test('Arcade phone UI renders three named tabs and a disabled transfer control',
  assert.match(host.innerHTML,/data-arcade-action="ambiance"/);
  assert.match(host.innerHTML,/data-arcade-action="snack"/);
  assert.match(host.innerHTML,/data-arcade-action="neon-milestone-0"/);
+ assert.match(host.innerHTML,/data-arcade-drawer="neon-upgrades"/);
+ assert.match(host.innerHTML,/data-arcade-drawer="neon-awards"/);
+ assert.match(host.innerHTML,/data-arcade-panel="neon-awards"/);
+});
+test('C4.3 clicking the header Arcade Xu opens the guarded exchange dialog',()=>{
+ const {host,window,headerWallet}=harness();
+ window.DuduPersonalArcadeUIV1.render();
+ headerWallet.listeners.click();
+ assert.match(host.innerHTML,/role="dialog"/);
+ assert.match(host.innerHTML,/Chuyển Xu · Sắp mở/);
 });
 test('C4.2 expanded Neon room renders more machines and visitors without changing wallet',()=>{
  const {db,host,window}=harness();
@@ -138,8 +156,29 @@ test('Garden is a playable scene with plots and animated pond, not generic data 
  assert.match(host.innerHTML,/data-arcade-action="plant-0"/);
  assert.match(host.innerHTML,/data-arcade-action="water-cap"/);
  assert.match(host.innerHTML,/data-arcade-action="pond-tier"/);
+ assert.match(host.innerHTML,/garden-shore-lantern/);
+ assert.match(host.innerHTML,/garden-bank-reeds/);
+ assert.match(host.innerHTML,/garden-fishing-controls/);
+ assert.match(host.innerHTML,/data-arcade-drawer="garden-album"/);
+ assert.match(host.innerHTML,/data-arcade-panel="garden-album"/);
  assert.equal(window.DuduPersonalArcadeUIV1.interact('plant-0'),true);
  assert.match(host.innerHTML,/data-arcade-action="water-0"/);
+});
+test('C4.3 Arcade game helpers remain accessible in concise modal toolbars',()=>{
+ const ui=readFileSync(join(__dirname,'../js/personal-arcade-ui-v1.js'),'utf8');
+ const css=readFileSync(join(__dirname,'../css/personal-arcade-v1.css'),'utf8');
+ assert.match(ui,/data-arcade-panel="mine-tools"/);
+ assert.match(ui,/data-arcade-panel="mine-bag"/);
+ assert.match(ui,/data-arcade-panel="garden-seeds"/);
+ assert.match(ui,/data-arcade-panel="garden-upgrades"/);
+ assert.match(ui,/sections\.map\(node=>node\.outerHTML\)/);
+ assert.match(ui,/aria-modal="true" aria-label="\$\{drawerTitles\[drawerOpen\]\}"/);
+ assert.match(css,/\.arcade-world \[data-arcade-panel\]\{display:none!important\}/);
+ assert.match(css,/\.arcade-sheet-overlay/);
+ assert.match(css,/\.arcade-fishing-controls|\.garden-fishing-controls/);
+ const garden=ui.slice(ui.indexOf('function gardenPanel('),ui.indexOf('function render(){'));
+ assert.ok(garden.indexOf('class="arcade-control-panel"')<garden.indexOf('garden-cast-button'),
+  'Cast button must be below the pond scene, never overlaid on it');
 });
 test('C4.1 fishing presents a two-step reel control and an eight-species album',()=>{
  const {db,host,window}=harness();

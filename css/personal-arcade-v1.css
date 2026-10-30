@@ -1,12 +1,23 @@
 /* DUDU Arcade — three distinct playable, CSS-drawn scenes, zero image requests. */
 #phone-app-arcade{min-width:0;gap:4px;padding:6px 7px 9px;background:#0b1220}
 #phone-app-arcade .phone-app-header{flex-shrink:0;margin-bottom:3px}
-body.dudu-phone-v11 #cyber-phone #phone-app-arcade{padding:6px 7px 9px}
-body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header{min-height:38px;margin-bottom:4px;padding-bottom:4px}
-#personal-arcade-v1{font:inherit;color:#f1f0e9;min-width:0}
+body.dudu-phone-v11 #cyber-phone #phone-app-arcade{padding:6px 7px 9px;overflow:hidden!important;position:relative}
+body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header{
+ display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:5px;align-items:center;
+ min-height:38px;margin-bottom:4px;padding-bottom:4px}
+body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header>span:nth-child(2){
+ min-width:0;text-align:center;white-space:nowrap;font-size:12px}
+#phone-app-arcade .arcade-header-wallet{display:inline-flex;align-items:center;justify-content:center;
+ min-height:27px;border:1px solid #d4b87e8c;border-radius:20px;background:linear-gradient(130deg,#324158,#26374a);
+ padding:5px 7px;font:800 10px/1 ui-sans-serif,system-ui;color:#ffe3a2;white-space:nowrap;cursor:pointer}
+#phone-app-arcade .arcade-header-wallet:disabled{opacity:.75;cursor:default}
+#personal-arcade-v1{font:inherit;color:#f1f0e9;min-width:0;min-height:0;flex:1;display:flex;overflow:hidden}
 #personal-arcade-v1 *{box-sizing:border-box}
 #personal-arcade-v1 button{font:inherit;touch-action:manipulation}
-.arcade-shell{display:flex;flex-direction:column;gap:6px;min-width:0;padding-bottom:14px}
+.arcade-shell{position:relative;display:flex;flex-direction:column;gap:0;flex:1;
+ min-width:0;min-height:0;overflow:hidden}
+.arcade-scroll{flex:1;min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;
+ scrollbar-width:thin;scrollbar-color:#637b91 #10192a;padding-bottom:7px}
 .arcade-eyebrow{display:block;font:700 9px/1.4 ui-monospace,Consolas,monospace;letter-spacing:.15em;color:#80e0d2}
 .arcade-topbar{display:flex;gap:8px;justify-content:space-between;align-items:center;padding:1px 2px}
 .arcade-topbar-caption{font:800 9px ui-monospace,monospace;letter-spacing:.1em;color:#8dcfcd}
@@ -16,8 +27,9 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header{min-height:
 .arcade-wallet small{display:none}
 .arcade-exchange-trigger{min-height:28px;border:1px solid #bba476;border-radius:9px;padding:5px 7px;
  color:#f8e2ad;background:#3d3441;font-size:10px;font-weight:800;cursor:pointer;white-space:nowrap}
-.arcade-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;background:#101a2c;
- padding:3px;border:1px solid #253449;border-radius:12px}
+.arcade-tabs{flex:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;
+ background:linear-gradient(150deg,#172940,#101a2c);padding:4px;margin-top:4px;
+ border:1px solid #3f5e76;border-radius:12px;box-shadow:0 -8px 18px #07101f73;z-index:4}
 .arcade-tab{min-height:40px;display:flex;gap:2px;flex-direction:column;align-items:center;justify-content:center;
  color:#a4b2c3;background:transparent;border:1px solid transparent;border-radius:10px;cursor:pointer;
  font-size:9px;line-height:1.15;font-weight:700;padding:2px}
@@ -30,6 +42,33 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header{min-height:
 .arcade-active-garden .arcade-tab[aria-selected=true]{background:linear-gradient(150deg,#2c504b,#263b44);border-color:#5a997f}
 .arcade-active-garden .arcade-tab[aria-selected=true] .arcade-tab-icon{color:#ccf0b5}
 .arcade-world{min-width:0;overflow:hidden;border:1px solid #34475c;border-radius:14px;background:#111c2b;position:relative}
+.arcade-world [data-arcade-panel]{display:none!important}
+.arcade-quick-drawers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:10px}
+.arcade-quick-drawers-triple{grid-template-columns:repeat(3,minmax(0,1fr))}
+.arcade-drawer-trigger{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+ border:1px solid #5d8191;border-radius:11px;min-height:47px;padding:6px 3px;cursor:pointer;
+ background:linear-gradient(155deg,#294357,#1e3044);color:#e5f4f5;font-size:10px;font-weight:800}
+.arcade-drawer-trigger>span{font-size:17px;line-height:1;color:#f2daa2}
+.arcade-drawer-trigger:active{transform:scale(.97)}
+.arcade-drawer-trigger:focus-visible{outline:2px solid #ffedb4;outline-offset:2px}
+.arcade-sheet-overlay{position:absolute;inset:0;z-index:45;background:#060e20d6;
+ display:flex;justify-content:center;align-items:center;padding:9px 5px 5px;backdrop-filter:blur(4px)}
+.arcade-sheet{width:100%;max-height:100%;min-height:0;display:flex;flex-direction:column;
+ border:1px solid #688b95;border-radius:16px;background:linear-gradient(150deg,#213348,#111e31 75%);
+ box-shadow:0 18px 46px #020914b5;overflow:hidden}
+.arcade-sheet-heading{display:flex;justify-content:space-between;align-items:center;gap:10px;
+ padding:12px 13px;border-bottom:1px solid #557385;background:#1d3243}
+.arcade-sheet-heading small{display:block;color:#96e1d7;font:800 9px ui-monospace,monospace;letter-spacing:.08em}
+.arcade-sheet-heading h3{margin:3px 0 0;font-size:16px;color:#fff0d1;line-height:1.2}
+.arcade-sheet-close{flex:none;width:34px;height:34px;border-radius:10px;border:1px solid #75889a;
+ background:#30465c;color:#f9e8eb;font-size:15px;font-weight:900;cursor:pointer}
+.arcade-sheet-body{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:12px;
+ display:flex;flex-direction:column;gap:10px;scrollbar-width:thin;scrollbar-color:#5c8793 #182638}
+.arcade-sheet-body .arcade-upgrade-grid{flex:none}
+.arcade-sheet-body .arcade-panel-heading,.arcade-sheet-body .neon-expansion,
+.arcade-sheet-body .garden-fish-album{margin:0}
+.arcade-sheet-body .arcade-contracts,.arcade-sheet-body .neon-milestones{margin:0}
+.arcade-sheet-body .arcade-panel-heading-sub{margin-top:6px}
 .arcade-world-heading{display:flex;justify-content:space-between;gap:6px;align-items:flex-start;padding:11px 12px;
  position:absolute;top:0;left:0;right:0;z-index:8;min-height:64px;pointer-events:none;
  background:linear-gradient(to bottom,#0b1727ed,#0b1727b8 70%,transparent)}
@@ -49,13 +88,15 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header{min-height:
 .arcade-button:disabled{opacity:.37;filter:grayscale(.45);cursor:not-allowed}
 .arcade-button:focus-visible,.arcade-tab:focus-visible,.mine-ore-button:focus-visible,
 .garden-plot:focus-visible,.garden-pond-collect:focus-visible{outline:2px solid #f6deb0;outline-offset:2px}
-.arcade-control-panel{padding:13px;background:#142232;border-top:1px solid #405064}
+.arcade-control-panel{padding:10px 11px 12px;background:#142232;border-top:1px solid #405064}
 .arcade-panel-heading{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:11px}
 .arcade-panel-heading h4{font-size:14px;line-height:1.2;margin:3px 0 0;color:#fff0df}
 .arcade-panel-heading-sub{margin-top:16px}
 .arcade-world-hint{margin:10px 0 0;color:#8da3b5;font-size:10px;line-height:1.55}
 .arcade-status{background:#162a30;border:1px solid #2f5e5a;border-left:3px solid #93dcca;
  border-radius:8px;padding:9px 11px;font-size:11px;line-height:1.45;color:#d1e9e9;min-height:34px}
+.arcade-status-toast{position:absolute;bottom:62px;left:5px;right:5px;z-index:60;
+ box-shadow:0 9px 25px #0009;pointer-events:none}
 .arcade-status[data-error=true]{background:#302525;border-color:#70473d;border-left-color:#ec9d75;color:#f8d2b6}
 .arcade-privacy{padding:11px 4px 0;border-top:1px dashed #35475a;line-height:1.5}
 .arcade-note{margin:6px 0 10px;font-size:10px;color:#8395a9}
@@ -149,6 +190,9 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header{min-height:
 .is-running .neon-blink{animation:neon-blink 1s step-end infinite}
 .is-paused .neon-monitor-glass{filter:brightness(.28)}.is-paused .neon-server-stack span::after{background:#697988;box-shadow:none}
 .arcade-button.switch{background:#153e46;color:#a3f3e3;border-color:#4a8889;flex-shrink:0;font-size:10px;min-height:33px}
+.neon-stage-actions{pointer-events:auto;display:flex;align-items:flex-start}
+.neon-stage-actions .arcade-button.switch{background:#214b4c;border-color:#69b5a8;
+ box-shadow:0 0 14px #19edda30;min-width:88px;padding:6px 7px;font-size:10px}
 .neon-service-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-bottom:10px}
 .neon-service-stats>div{min-width:0;padding:8px 7px;background:#101c2b;border:1px solid #355b6a;border-radius:9px}
 .neon-service-stats span{display:block;min-height:20px;color:#95c3cf;font:800 8px/1.3 ui-monospace,monospace;letter-spacing:.025em}
@@ -340,6 +384,25 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header{min-height:
 .garden-cloud-a{left:20px;top:20px}.garden-cloud-b{right:13px;top:45px;width:58px}
 .garden-grass{position:absolute;left:-18%;right:-18%;bottom:-30px;height:225px;background:radial-gradient(ellipse at center,#6eae6c,#2f7257 63%,#285e4e);
  border-radius:50% 50% 0 0;box-shadow:0 -10px 30px #75ac7d66}
+.garden-shore-lantern{position:absolute;bottom:23px;width:22px;height:32px;z-index:2;pointer-events:none;
+ border:3px solid #5b4433;border-top:6px solid #544235;border-radius:6px 6px 9px 9px;
+ background:radial-gradient(ellipse,#ffeb97,#db9f51 65%,#96633c);box-shadow:0 0 23px #f9e4a6b0,0 4px 8px #163d32;
+ animation:garden-lantern-glow 3.5s ease-in-out infinite alternate}
+.garden-shore-lantern::before{content:'';position:absolute;top:-13px;left:-7px;width:30px;height:9px;
+ border-radius:55% 55% 10% 10%;background:linear-gradient(#725642,#423a35);box-shadow:0 2px 3px #203a2e}
+.garden-shore-lantern::after{content:'';position:absolute;width:4px;height:30px;left:7px;bottom:-30px;
+ background:linear-gradient(#6a573f,#263e36);border-radius:0 0 3px 3px}
+.garden-lantern-left{left:6%;transform:rotate(-5deg)}
+.garden-lantern-right{right:7%;transform:rotate(5deg);animation-delay:-1.4s}
+.garden-bank-reeds{position:absolute;bottom:14px;width:29px;height:42px;z-index:2;pointer-events:none;
+ background:linear-gradient(75deg,transparent 39%,#9bbb79 42% 47%,transparent 49%),
+ linear-gradient(101deg,transparent 43%,#82ae6f 46% 51%,transparent 53%),
+ linear-gradient(84deg,transparent 44%,#c7c582 48% 52%,transparent 54%);
+ filter:drop-shadow(0 2px 3px #244934)}
+.garden-reeds-left{left:16%}.garden-reeds-right{right:16%;transform:scaleX(-1)}
+.garden-firefly{position:absolute;z-index:3;width:5px;height:5px;border-radius:50%;background:#f9f3bc;
+ box-shadow:0 0 9px 4px #e2eea287;pointer-events:none;animation:garden-firefly-drift 4.2s ease-in-out infinite alternate}
+.garden-firefly-left{left:12%;top:55%}.garden-firefly-right{right:10%;top:64%;animation-delay:-2s}
 .garden-plot-area{position:absolute;left:6%;right:6%;top:98px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;z-index:3}
 .garden-plot{height:125px;border:0;background:transparent;position:relative;padding:0;cursor:pointer;color:#fcf1d3;min-width:0;
  transition:transform .12s;filter:drop-shadow(0 10px 3px #173b3045)}
@@ -392,20 +455,22 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header{min-height:
  border-radius:999px;padding:5px 12px;cursor:pointer}
 .garden-pond-collect:disabled{opacity:.7;cursor:default}
 .garden-pond-collect.is-ready{animation:pond-pulse 2s ease-in-out infinite;color:#fff0a6}
-.garden-stage .garden-cast-button{position:absolute;left:50%;bottom:49px;transform:translateX(-50%);
- z-index:8;white-space:nowrap;min-height:33px;padding:6px 12px;font-size:10px;letter-spacing:.03em;
+.garden-fishing-controls{display:grid;grid-template-columns:minmax(0,1fr) 97px;gap:7px;align-items:stretch;margin:2px 0 10px}
+.garden-fishing-controls .garden-cast-button{min-height:42px;padding:7px 5px;font-size:10px;
  background:linear-gradient(110deg,#f1b75b,#fff1bb 50%,#e19b48);border-color:#fff5d3;color:#46301f;
- box-shadow:0 3px 16px #16281eb0,0 0 15px #f7df9e60}
-.garden-stage .garden-cast-button:active:not(:disabled){transform:translateX(-50%) scale(.94)}
-.garden-stage .garden-cast-button:disabled{opacity:.7;background:#31534f;color:#b1cfc1;border-color:#729883}
+ box-shadow:0 3px 13px #13291d73}
+.garden-fishing-controls .garden-cast-button:disabled{opacity:.72;background:#31534f;color:#d5ebd8;border-color:#729883}
+.garden-fishing-controls .garden-pond-collect{position:static;transform:none;min-width:0;white-space:normal;
+ min-height:42px;line-height:1.15;padding:6px 5px;border-radius:10px;font-size:9px}
+.garden-fishing-controls .garden-cast-button:active:not(:disabled),
+.garden-fishing-controls .garden-pond-collect:active:not(:disabled){transform:scale(.97)}
 .garden-catch-pop{position:absolute;z-index:10;left:5%;right:5%;bottom:93px;text-align:center;pointer-events:none;
  font-weight:900;font-size:13px;line-height:1.35;color:#fff8d8;text-shadow:0 0 10px #453510,0 2px 5px #142219;
  animation:garden-fish-pop 1.6s ease-out forwards}
-.garden-fishing-status{position:absolute;z-index:7;left:8px;right:8px;bottom:92px;text-align:center;
- font-size:10px;font-weight:800;line-height:1.4;color:#f1f8db;text-shadow:0 2px 6px #133b3d;
- pointer-events:none}
-.garden-stage.is-biting .garden-fishing-status{color:#fff2aa;font-size:12px;
- text-shadow:0 0 10px #f8e99a,0 2px 5px #173c35;animation:pond-pulse .9s ease-in-out infinite}
+.garden-fishing-status{position:static;text-align:center;margin:0;color:#ccebd9;
+ font-size:10px;font-weight:800;line-height:1.45}
+.arcade-world-garden.is-biting .garden-fishing-status{
+ color:#ffec9f;animation:pond-pulse .9s ease-in-out infinite}
 .garden-fishing-line{position:absolute;left:53%;top:-22px;width:2px;height:67px;
  background:linear-gradient(#ffffff00,#e9fffbd9);transform:rotate(16deg);transform-origin:top;z-index:2}
 .garden-float{position:absolute;left:58%;top:37px;width:10px;height:15px;
@@ -413,11 +478,8 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header{min-height:
  box-shadow:0 0 0 7px #ffffff20,0 0 14px #fff9c2;z-index:3;animation:float-drift 2.6s ease-in-out infinite}
 .garden-stage.is-biting .garden-float{animation:fish-bite .32s ease-in-out infinite;
  box-shadow:0 0 0 13px #fff1a949,0 0 18px #ffdc90}
-.garden-stage .garden-cast-button{min-width:164px;min-height:43px;font-size:11px;
- bottom:41px;box-shadow:0 6px 18px #10271d99,0 0 16px #f7df9e55}
-.garden-stage.is-biting .garden-cast-button{background:linear-gradient(115deg,#fcebb0,#eec268 70%,#f0a04c);
+.arcade-world-garden.is-biting .garden-cast-button{background:linear-gradient(115deg,#fcebb0,#eec268 70%,#f0a04c);
  animation:pond-pulse 1s ease-in-out infinite}
-.garden-stage .garden-pond-collect{bottom:8px;min-height:27px}
 .garden-fish-album{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:0 0 13px}
 .garden-fish-entry{min-width:0;display:grid;grid-template-columns:32px minmax(0,1fr) auto;
  align-items:center;gap:5px;padding:8px 6px;border:1px solid #607f74;
@@ -435,6 +497,8 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header{min-height:
 .fish-dragon.is-discovered{border-color:#ffe7a0;background:linear-gradient(125deg,#644851,#403a68)}
 .garden-fish-entry.is-discovered .garden-fish-art{filter:drop-shadow(0 0 5px #b9efc46b)}
 .arcade-world-garden .arcade-control-panel{background:#203a36;border-color:#527a68}
+.arcade-world-garden .arcade-drawer-trigger{background:linear-gradient(150deg,#345e52,#254439);
+ border-color:#80aa91}
 .arcade-world-garden .arcade-eyebrow{color:#a4e5b2}
 .arcade-world-garden .arcade-button.market{background:#456547;border-color:#a3c98f;color:#f5eac0}
 .garden-statline{display:flex;justify-content:space-between;gap:10px;font-size:10px;color:#b7d9bd}
@@ -462,6 +526,10 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header{min-height:
 .mine-zone-scene-1{background:radial-gradient(ellipse at 52% 45%,#776250,#41372e 55%,#23222a 90%)}
 .mine-zone-scene-2{background:radial-gradient(ellipse at 50% 45%,#695e9b,#36314d 56%,#191c32 93%)}
 .mine-zone-scene-2 .mine-crystal{filter:drop-shadow(0 0 15px #bea8ff)}
+.arcade-mine-sell{margin:4px 0 2px}
+.arcade-mine-sell .arcade-button{width:100%;min-height:38px;background:#594a3e;border-color:#ac8361;color:#ffe7bd}
+.arcade-world-mine .arcade-drawer-trigger{background:linear-gradient(145deg,#483944,#2a2c3c);
+ border-color:#8b6c66}
 .mine-zone-list,.garden-seed-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin:0 0 12px}
 .mine-zone,.garden-seed{border:1px solid #65595b;border-radius:10px;min-width:0;min-height:54px;cursor:pointer;
  color:#edd5c0;background:linear-gradient(#463a3d,#302d36);padding:7px 3px;text-align:center;transition:transform .12s,background .18s,box-shadow .18s}
@@ -507,6 +575,8 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header{min-height:
 @keyframes garden-mist{to{transform:translate(70px,-12px)}}
 @keyframes garden-fish-pop{0%{opacity:0;transform:translateY(20px) scale(.8)}25%{opacity:1;transform:translateY(0) scale(1.05)}100%{opacity:0;transform:translateY(-45px) scale(1)}}
 @keyframes garden-sway{to{transform:rotate(9deg)}}
+@keyframes garden-lantern-glow{to{box-shadow:0 0 14px #ffe8a38e,0 4px 8px #163d32}}
+@keyframes garden-firefly-drift{to{opacity:.45;transform:translate(8px,-16px)}}
 @keyframes fish-swim{50%{transform:translateX(28px)}to{transform:translateX(-30px) scaleX(-1)}}
 @keyframes bubble-rise{from{transform:translateY(0);opacity:.15}50%{opacity:.9}to{transform:translateY(-70px);opacity:0}}
 @keyframes pond-pulse{50%{box-shadow:0 0 12px #fff0a690}}

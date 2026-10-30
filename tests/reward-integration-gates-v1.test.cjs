@@ -7,7 +7,9 @@ const src=p=>fs.readFileSync(path.join(__dirname,'..',p),'utf8');
 
 test('Arcade conversion is accessible at the wallet but still requires verified release gate',()=>{
  const ui=src('js/personal-arcade-ui-v1.js');
- assert.match(ui,/data-arcade-exchange="open"/);
+ const html=src('index.html');
+ assert.match(html,/id="arcade-header-wallet-v1"[^>]+data-arcade-exchange="open"/);
+ assert.match(ui,/headerWallet\?\.addEventListener\('click'/);
  assert.match(ui,/role="dialog"/);
  assert.match(ui,/DUDU_SPARK_EXCHANGE_V1_READY===true/);
  assert.match(ui,/!exchangeEnabled\(\)\?'Chuyển Xu · Sắp mở'/);
