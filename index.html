@@ -154,9 +154,10 @@
   <script src="js/loot-rules-v2.js?v=44-1"></script>
   <script src="js/loot-cadence-v42.js?v=wallet-loot-1"></script>
   <script src="js/chapter-loot-encounter-v1.js?v=chapter-surprise-1"></script>
+  <script src="js/personal-progress-c23.js?v=c23c-1"></script>
   <script src="js/item-actions-v43.js?v=1"></script>
   <script src="js/functional-items-v43-8.js?v=44-9"></script>
-  <script src="js/personal-spark-items-v1.js?v=shop-2"></script>
+  <script src="js/personal-spark-items-v1.js?v=c23c-1"></script>
   <script src="js/companion-rules-v43.js?v=1"></script>
   <script src="js/dudu-system-steward-v67-3.js?v=67-3-3"></script>
   <script src="js/npc-bond-v43.js?v=1"></script>
@@ -2812,7 +2813,11 @@
     function loadScopedInteractionState() {
       try { chatHistories = JSON.parse(localStorage.getItem(scopedLocalKey('chats')) || '{}'); }
       catch (_) { chatHistories = {}; }
-      lastLootTimestamp = parseInt(localStorage.getItem(scopedLocalKey('loot-cooldown')), 10) || 0;
+      const deviceCooldown=parseInt(localStorage.getItem(scopedLocalKey('loot-cooldown')),10)||0;
+      const savedCooldown=!IS_SANDBOX_MODE?
+        userProfile.storyStates?.__duduPersonalProgressC23?.lastGlobalLootAt:undefined;
+      lastLootTimestamp=Number.isSafeInteger(savedCooldown)&&savedCooldown>=0?
+        savedCooldown:deviceCooldown;
       activeChatNovelId = null;
     }
     function getStoryProgress(storyId) {
@@ -6454,6 +6459,102 @@ document.getElementById('phone-home-screen').style.display = 'none';
       if (guestTip) guestTip.style.display = (!IS_SANDBOX_MODE && !DuduAuth.uid()) ? 'block' : 'none';
     }
 
+    // Main rewards are applied ONLY after an owner-scoped transaction. Sandbox
+    // continues to use its original local gameplay engine unchanged.
+    let personalProgressQueue=Promise.resolve(),personalLootBusy=false;
+    const personalProgressReady=()=>!IS_SANDBOX_MODE&&DuduAuth.isReady()&&
+      DuduAuth.uid()===currentUsername&&!!window.DuduPersonalProgressC23;
+    function applyPersonalProgressC23(result,uid,kind){
+      if(!personalProgressReady()||uid!==currentUsername)return false;
+      const fields=kind==='read'?['currency','exp','level','quests',
+        'questV437','questsDayV43','readRewards','dailyReadLog']:
+        kind==='quest'?['currency','exp','level','inventory','quests',
+          'questV437','questsDayV43']:
+        ['currency','exp','level','inventory','quests','questV437',
+          'questsDayV43','lootedChapters','storyStates'];
+      for(const field of fields){
+        if(result[field]!==undefined)userProfile[field]=result[field];
+      }
+      if(Number.isSafeInteger(result.lastGlobalLootAt)){
+        lastLootTimestamp=result.lastGlobalLootAt;
+        localStorage.setItem(scopedLocalKey('loot-cooldown'),String(lastLootTimestamp));
+        startCooldownTicker();
+      }
+      try{localStorage.setItem('profile_'+uid,JSON.stringify(userProfile));}
+      catch(error){console.warn('DUDU progress device backup:',error);}
+      updatePhoneUI();renderQuests();renderInventory();updateChapterLootButtonState();
+      return true;
+    }
+    function personalProgressActionC23(kind,opts={}){
+      if(!personalProgressReady())return Promise.resolve(false);
+      const uid=currentUsername;
+      const perform=async()=>{
+        if(!personalProgressReady()||currentUsername!==uid)return false;
+        try{
+          // Existing narrow NPC/item operations and broad saves cannot become
+          // authority for a new reward: always use the remote profile state.
+          await Promise.allSettled([...pendingLiveProfileWrites]);
+          const result=await DuduPersonalProgressC23.run({
+            db,auth:firebase.auth(),uid,kind,...opts
+          });
+          if(!applyPersonalProgressC23(result,uid,kind))return false;
+          if(kind==='quest'&&result.status==='applied'){
+            showSystemAlert('ĐÃ NHẬN THƯỞNG',
+              '+'+result.award.coins+' Xu · +'+result.award.exp+' EXP'+
+              (result.award.itemId?' · 1 vật phẩm vào Kho':''));
+          }else if(kind==='global-loot'||kind==='chapter-loot'){
+            if(result.status==='miss')showSystemAlert('DẤU VẾT TAN BIẾN',
+              'Bảo vật đã biến mất. Bạn có thể tiếp tục hành trình.');
+            else if(result.status==='applied')showSystemAlert('NHẶT ĐƯỢC BẢO VẬT',
+              result.item.name+' · +'+result.award.coins+' Xu · +'+
+              result.award.exp+' EXP');
+          }else if(kind==='read'&&result.levelUps){
+            showSystemAlert('THĂNG CẤP',
+              'Đã đạt cấp '+result.level+' · Thưởng '+result.levelUps*30+' Xu');
+          }
+          return true;
+        }catch(error){
+          console.warn('DUDU personal progress:',error?.reason||error?.message);
+          if(personalProgressReady()&&currentUsername===uid){
+            const reasons={
+              cooldown:'Bảo vật vẫn đang hồi chiêu. Hãy thử lại sau.',
+              'inventory-full':'Kho đã đầy 500 món. Hãy dọn chỗ trước nhé.',
+              'not-ready':'Nhiệm vụ chưa đủ tiến độ hoặc đã nhận thưởng.',
+              'duplicate-reward':'Phần thưởng này đã có trong hành trình.',
+              'clock-backwards':'Ngày chơi chưa khớp. Hãy kiểm tra đồng hồ thiết bị.',
+              'no-encounter':'Dấu vết bảo vật không còn ở chương này.'
+            };
+            showSystemAlert('CHƯA THỰC HIỆN ĐƯỢC',reasons[error?.reason]||
+              'Hãy kiểm tra kết nối rồi thử lại thao tác này.');
+          }
+          updateChapterLootButtonState();
+          return false;
+        }
+      };
+      const task=personalProgressQueue.catch(()=>{}).then(perform);
+      personalProgressQueue=task;
+      return task;
+    }
+    function personalClaimQuestC23(id){
+      return personalProgressActionC23('quest',{questId:id});
+    }
+    function personalGlobalLootC23(){
+      if(!personalProgressReady()||personalLootBusy)return false;
+      if(DuduLootCadenceV42.phoneRemainingMs(lastLootTimestamp,Date.now())>0){
+        startCooldownTicker();return false;
+      }
+      const uid=currentUsername,key='dudu-personal-loot:pending:'+uid;
+      let requestId=localStorage.getItem(key);
+      if(!/^global-[0-9a-f-]{36}$/.test(requestId||''))
+        requestId='global-'+crypto.randomUUID();
+      localStorage.setItem(key,requestId);
+      personalLootBusy=true;
+      void personalProgressActionC23('global-loot',{requestId}).then(ok=>{
+        if(ok&&currentUsername===uid)localStorage.removeItem(key);
+      }).finally(()=>{personalLootBusy=false;});
+      return true;
+    }
+
     function addExp(amount) {
       amount = parseInt(amount) || 0;
       userProfile.exp = (parseInt(userProfile.exp) || 0) + amount;
@@ -6591,6 +6692,16 @@ document.getElementById('phone-home-screen').style.display = 'none';
         document.querySelectorAll('#reader-content > p').length);
       if(!opportunity.visible ||
         !document.querySelector('#reader-content .reader-loot-encounter'))return false;
+      if(!IS_SANDBOX_MODE){
+        if(!personalProgressReady())return false;
+        document.querySelector('#reader-content .reader-loot-encounter')?.remove();
+        void personalProgressActionC23('chapter-loot',{
+          storyId:novel.id,chapterId:String(chapter.id||selectedChapterIndex),
+          paragraphCount:document.querySelectorAll('#reader-content > p').length,
+          realmTag:DuduLootRules.realmTagFor(chapter,novel)
+        });
+        return true;
+      }
       if(!Array.isArray(userProfile.inventory))userProfile.inventory=[];
       if(userProfile.inventory.length>=500){
         showSystemAlert('KHO ĐỒ ĐÃ ĐẦY','Hãy dọn một ô trước khi thử nhặt. Cơ hội vẫn còn.');
@@ -6617,6 +6728,10 @@ document.getElementById('phone-home-screen').style.display = 'none';
     }
 
     function rollLootDrop(isFreeFromChapter = false, sourceNovel = null, sourceChapter = null) {
+      if(!IS_SANDBOX_MODE){
+        if(isFreeFromChapter)return false;
+        return personalGlobalLootC23();
+      }
       const now = Date.now();
       if (!isFreeFromChapter && DuduLootCadenceV42.phoneRemainingMs(lastLootTimestamp,now)>0) {
         const remainSec = Math.ceil(DuduLootCadenceV42.phoneRemainingMs(lastLootTimestamp,now)/1000);
@@ -7417,33 +7532,28 @@ document.getElementById('phone-home-screen').style.display = 'none';
 
       // EXP reward: once ever per UID/story/chapter. Opening the chapter is
       // NOT proof of finishing the reading (server verification is future work).
-      userProfile.readRewards ||= {};
-      const readKey = `${novel.id}_${ch.id || chIdx}`;
-      if (!userProfile.readRewards[readKey]) {
-        userProfile.readRewards[readKey] = true;
-        addExp(5);
-        if (chIdx === 0) advanceQuest('q_main_intro',1);
-      }
-      // Daily reading quest is separate: distinct chapters once per UTC day,
-      // so long-running readers are not locked out after finishing this story.
-      const today = DuduEconomyCoreV43.localDay();
-      if (!userProfile.dailyReadLog || userProfile.dailyReadLog.day !== today ||
-          !Array.isArray(userProfile.dailyReadLog.chapters)) {
-        userProfile.dailyReadLog = {day:today,chapters:[]};
-      }
-      if (!userProfile.dailyReadLog.chapters.includes(readKey)) {
-        userProfile.dailyReadLog.chapters.push(readKey);
-        // Sandbox quest progression is tied to one unique chapter-open event.
-        // This is NOT server proof of reading or eligibility for rare items.
-        if(IS_SANDBOX_MODE)window.DuduEconomyRuntimeV43?.questEvent('READ_CHAPTER',readKey);
-        else advanceQuest('q_daily_read',1);
-        // Preserve V55 Sandbox's local save after first daily chapter.
-        if(IS_SANDBOX_MODE)saveCurrentAccount();
-      }
-      // Save independent of daily rewards. The personal-only REST PATCH
-      // avoids a hung Firestore SDK write dropping cross-device bookmarks.
-      if(!IS_SANDBOX_MODE&&DuduAuth.isReady()){
-        saveCurrentAccount();
+      if(IS_SANDBOX_MODE){
+        userProfile.readRewards ||= {};
+        const readKey = `${novel.id}_${ch.id || chIdx}`;
+        if(!userProfile.readRewards[readKey]){
+          userProfile.readRewards[readKey]=true;addExp(5);
+          if(chIdx===0)advanceQuest('q_main_intro',1);
+        }
+        const today=DuduEconomyCoreV43.localDay();
+        if(!userProfile.dailyReadLog||userProfile.dailyReadLog.day!==today||
+          !Array.isArray(userProfile.dailyReadLog.chapters))
+          userProfile.dailyReadLog={day:today,chapters:[]};
+        if(!userProfile.dailyReadLog.chapters.includes(readKey)){
+          userProfile.dailyReadLog.chapters.push(readKey);
+          window.DuduEconomyRuntimeV43?.questEvent('READ_CHAPTER',readKey);
+          saveCurrentAccount();
+        }
+      }else if(personalProgressReady()){
+        // Opening is currently the eligibility event, as in Sandbox; it is
+        // not server proof that someone finished reading the chapter.
+        void personalProgressActionC23('read',{
+          storyId:novel.id,chapterId:String(ch.id||chIdx)
+        });
         v569SyncBookmark(novel.id);
       }
 
@@ -8096,7 +8206,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
           characters: [],
           chapters: []
         });
-        addExp(25);
+        // Authoring is not a verified player reward on main.
+        if(IS_SANDBOX_MODE)addExp(25);
         advanceQuest('q_main_write', 1);
         saveDB();
         closeModals();
@@ -8290,7 +8401,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
           characterIds: selectedNpcIds,
           storyItemIds: [...pendingChapterStoryItemIds]
         });
-        addExp(35);
+        if(IS_SANDBOX_MODE)addExp(35);
         advanceQuest('q_main_write', 1);
         localStorage.removeItem(scopedLocalKey('draft', novels[selectedNovelIndex].id));
         saveDB();
@@ -8319,8 +8430,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/market-ui-v43.js?v=copy-2"></script>
 <script src="js/dudu-fun-ui-v43.js?v=51-1"></script>
 <script src="js/personal-arcade-ui-v1.js?v=copy-1"></script>
-<script src="js/quest-ui-v43-7.js?v=copy-1"></script>
-<script src="js/economy-runtime-v43.js?v=51-1"></script>
+<script src="js/quest-ui-v43-7.js?v=c23c-1"></script>
+<script src="js/economy-runtime-v43.js?v=c23c-1"></script>
 <script src="js/economy-live-v52.js?v=52-2"></script>
 <script src="js/museum-memories-ui-v43.js?v=2"></script>
 <script src="js/npc-diary-ui.js?v=1"></script>

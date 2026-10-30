@@ -11,7 +11,8 @@
  if(root)root.DuduPersonalSparkItemsV1=api;
 })(typeof window!=='undefined'?window:null,function(economy,trade,functional){
  'use strict';
- const META='__duduPersonalItemsV1',MAX_RECEIPTS=80,MAX_WALLET=1000000000,MAX_ITEMS=500;
+ const META='__duduPersonalItemsV1',PROGRESS_META='__duduPersonalProgressC23',
+  MAX_RECEIPTS=80,MAX_WALLET=1000000000,MAX_ITEMS=500;
  const products=new Map([...economy.shopCatalog(),...economy.FUNCTIONAL_TOOLS].map(x=>[x.id,x]));
  const validId=s=>typeof s==='string'&&/^(shop|use|sell)-[0-9a-f-]{36}$/.test(s);
  const validUid=s=>typeof s==='string'&&s.length>0&&s.length<=128;
@@ -75,6 +76,8 @@
    if(!safeWallet(balance)||!safeItems(inventory))throw Error('Số dư hoặc Kho không hợp lệ');
    const storyStates=data.storyStates&&typeof data.storyStates==='object'&&
     !Array.isArray(data.storyStates)?data.storyStates:{};
+   const progressState=storyStates[PROGRESS_META]&&
+    typeof storyStates[PROGRESS_META]==='object'?storyStates[PROGRESS_META]:{};
    const ledger=storyStates[META]&&typeof storyStates[META]==='object'?
     storyStates[META]:{};
    const receipts=normReceipts(ledger.receipts),prior=receipts[rid];
@@ -118,7 +121,9 @@
       if(cooldownRemainingMs<=0)throw Error('Nhặt đồ đã hồi chiêu, chưa cần dùng công cụ');
       nextInventory=inventory.filter(x=>x!==target);
       effect=target.id===economy.TOOL_ID?'reset-cooldown':'reduce-cooldown-60s';
-      cooldownAt=target.id===economy.TOOL_ID?0:Math.max(0,lastLootTimestamp-60000);
+      const recordedAt=Number.isSafeInteger(progressState.lastGlobalLootAt)?
+       progressState.lastGlobalLootAt:lastLootTimestamp;
+      cooldownAt=target.id===economy.TOOL_ID?0:Math.max(0,recordedAt-60000);
      }
     }
    }
@@ -127,7 +132,9 @@
    const nextReceipts={...receipts,[rid]:receipt};
    const keys=Object.keys(nextReceipts);
    for(const old of keys.slice(0,Math.max(0,keys.length-MAX_RECEIPTS)))delete nextReceipts[old];
-   const nextStates={...storyStates,[META]:{version:1,receipts:nextReceipts}};
+   const nextStates={...storyStates,[META]:{version:1,receipts:nextReceipts},
+    ...(cooldownAt!==null?{[PROGRESS_META]:{
+      ...progressState,lastGlobalLootAt:cooldownAt}}:{})};
    tx.update(profile,{currency:nextBalance,inventory:nextInventory,storyStates:nextStates});
    return {status:'applied',balance:nextBalance,inventory:nextInventory,
     storyStates:nextStates,...receipt,result:receipt};

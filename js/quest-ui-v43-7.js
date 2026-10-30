@@ -15,7 +15,8 @@
   if(copy!==undefined)el.textContent=String(copy);
   return el;
  };
- function render({host,quests=[],questState=null,signed=false,onClaim,readOnly=false}={}){
+ function render({host,quests=[],questState=null,signed=false,onClaim,readOnly=false,
+   personalMode=false}={}){
   if(!host)return false;
   host.replaceChildren();
   host.classList.add('dudu-v437-quest-root');
@@ -54,7 +55,7 @@
    const btn=$('button','dudu-v437-tab'+(tab===id?' is-active':''),name);
    btn.type='button';btn.setAttribute('aria-pressed',String(tab===id));
    btn.title=name+' · '+count+' nhiệm vụ';
-   btn.addEventListener('click',()=>{tab=id;render({host,quests,questState,signed,onClaim,readOnly});});
+   btn.addEventListener('click',()=>{tab=id;render({host,quests,questState,signed,onClaim,readOnly,personalMode});});
    nav.append(btn);
   }
   host.append(nav);
@@ -63,7 +64,8 @@
    tab==='WEEKLY'?'Nhiệm vụ tuần làm mới vào Thứ Hai':
    tab==='EVENT'?'Sự kiện Hộp Mù/Vé Số miễn phí mỗi ngày':
    tab==='STORY'?'Mốc mở chương và hành trình chính tuyến':
-   tab==='NPC'?'Kỷ niệm chỉ là tiến độ Sandbox; chưa phải kỷ vật máy chủ':
+   tab==='NPC'?(personalMode?'Gắn kết cùng những nhân vật đã gặp':
+    'Kỷ niệm chỉ là tiến độ Sandbox; chưa phải kỷ vật máy chủ'):
    'Lượt ngày tự làm mới lúc sang ngày mới');
   host.append(caption);
   const list=$('div','dudu-v437-cards');
@@ -129,7 +131,8 @@
    history.append(h);
   }
   host.append(history,$('p','dudu-v437-disclaimer',readOnly?
-   'Phần thưởng của mục này chưa mở.':
+   'Phần thưởng của mục này chưa mở.':personalMode?
+   'Tiến độ và phần thưởng thuộc hành trình của bạn.':
    'Trong phòng thử, phần thưởng chưa chuyển sang hành trình chính.'));
   return true;
  }

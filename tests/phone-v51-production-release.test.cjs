@@ -15,7 +15,7 @@ const inbox=file('js/phone-inbox-v33.js');
 test('V51 phone modules are all loaded with new cache tags',()=>{
  for(const mod of ['market-ui-v43','economy-runtime-v43','dudu-fun-ui-v43',
  'quest-ui-v43-7','phone-inbox-v33']){
-  assert.match(html,new RegExp('src="js/'+mod+'\\.js\\?v=(?:51-1|52-1|copy-[12])"'),mod);
+  assert.match(html,new RegExp('src="js/'+mod+'\\.js\\?v=(?:51-1|52-1|copy-[12]|c23c-1)"'),mod);
  }
  assert.match(html,/src="js\/companion-ui-v43\.js\?v=69-restore-1"/);
  assert.match(html,/src="js\/dudu-system-app-v69\.js\?v=71-main-(?:[2-9]|[1-9][0-9]+)"/);
@@ -38,10 +38,10 @@ test('V51 live market uses latest catalog but cannot buy client-side',()=>{
  assert.doesNotMatch(economy,/if\(!sandbox\(\)\)return old\.buy/);
 });
 
-test('V51 live quests include newer definitions while remote reward claims are blocked',()=>{
+test('V51 quest definitions remain available and main claims use personal transactions',()=>{
  assert.match(economy,/questsV437\?\.ensure\(core\.ensureQuests/);
  assert.match(economy,/onClaim:readOnly\?null:root\.claimQuestReward,readOnly/);
- assert.match(economy,/CHƯA MỞ NHẬN THƯỞNG/);
+ assert.match(economy,/personalClaimQuestC23/);
  assert.match(economy,/Bản chính không cho đặt lại thủ công/);
  assert.match(quests,/if\(ready&&!readOnly&&typeof onClaim==='function'\)/);
  assert.match(quests,/Chờ xác thực/);

@@ -146,8 +146,35 @@ Việc còn phải làm:
 2. Kiểm thử 2 UID thật: quà nhận, quà từ chối, phong bao, reload,
    đảm bảo tài khoản A không thể ghi vào tài khoản B; xác minh Rules đã
    triển khai và chính sách đọc/ghi.
-3. Rà soát các chức năng Sandbox còn lại (bán/ký gửi, quà tác giả,
-   Arcade, nhặt đồ, quest, liên lạc) và chốt phạm vi Rules trước reset.
+3. Rà soát các chức năng Sandbox còn lại (ký gửi, quà tác giả, Arcade,
+   phần thưởng FUN, liên lạc) và chốt phạm vi Rules trước reset.
+
+### C2.3c — phần thưởng đọc, nhiệm vụ, nhặt đồ (đã nối mã nguồn)
+
+- Tài khoản main đọc/mở chương qua giao dịch UID, dùng `readRewards` cũ
+  để chỉ cộng **5 EXP lần đầu** mỗi chương. Theo ngày UTC, mỗi chương góp
+  một lượt nhiệm vụ đọc; vào lại cùng ngày không cộng lặp. Mốc chính tuyến
+  chương 1 chỉ tính cho truyện gốc `truyen-dien-vl`/`ch-1`.
+- Nhiệm vụ main chuyển từ chế độ xem sang **Nhận thưởng** bằng giao dịch,
+  đối chiếu định nghĩa thưởng có sẵn, tiến độ và lịch sử đã nhận trong cùng
+  tài khoản. Không nhận trùng khi bấm hai lần hoặc mở tab khác.
+- Nhặt đồ Điện thoại có biên nhận theo lần, hồi chiêu **15 phút** lưu trên
+  hồ sơ. Nhặt bảo trong chương dùng vị trí xuất hiện theo tài khoản/chương,
+  chỉ thử một lần dù thành công hay thất bại; vật phẩm/EXP/Xu và đánh dấu
+  lượt nhặt được xử lý trong cùng giao dịch. Dùng công cụ nạp hồi chiêu hoặc
+  gia tốc đã mua cập nhật cả mốc hồi chiêu của tài khoản chính.
+- Các mốc nhận thưởng được tính từ catalog và quy tắc đã có; **không chấp
+  nhận số Xu/EXP hoặc tên vật phẩm do giao diện gửi vào**. Việc viết truyện
+  trên main chưa phải hoạt động đủ điều kiện nhận EXP của người chơi, nên
+  ngừng cộng EXP theo nhánh tác giả cũ; Sandbox giữ nguyên.
+- Trường dữ liệu mới gồm `questV437`, `questsDayV43` và
+  `storyStates.__duduPersonalProgressC23`; vẫn nằm trong hồ sơ UID hiện có,
+  không mở collection cấp phát quà riêng và không deploy Rules.
+- **Hạn chế còn lại:** mở chương chưa xác thực thời lượng/đọc xong; random
+  và ngày trên client chưa có xác thực máy chủ độc lập. Đây là biên nhận
+  chống cộng lặp cho người chơi thông thường, **không phải chống gian lận**.
+  Cần kiểm tra thực tế ít nhất hai UID, nhiều tab, thiết bị Android và Rules
+  hiện hành trước khi reset mùa hay phát thưởng công khai quy mô lớn.
 
 Rollback C2.1: revert commit mã nguồn; bản ghi yêu thích/hỏi thăm đã thực
 sự được người dùng thực hiện sẽ được giữ lại trong hồ sơ, không xóa tự động.

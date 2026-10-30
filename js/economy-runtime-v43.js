@@ -166,7 +166,9 @@
  };
  root.buyShopItem=buy;
  root.renderQuests=function(){
-  const readOnly=!sandbox();
+  const signedMain=!sandbox()&&!!(root.DuduAuth?.isReady?.()&&
+   root.DuduAuth.uid()===currentUsername&&root.DuduPersonalProgressC23);
+  const readOnly=!sandbox()&&!signedMain;
   if(!readOnly)rotate();
   const reset=document.querySelector('#phone-app-quests .dudu-v27-quest-tools button');
   if(reset){
@@ -177,21 +179,22 @@
   if(questsV437&&root.DuduQuestUIV437)
    return root.DuduQuestUIV437.render({
     host:document.getElementById('quests-container'),
-    quests:readOnly?(questsV437?.ensure(core.ensureQuests(Array.isArray(userProfile.quests)?userProfile.quests:[]))||[]):owner()?userProfile.quests:[],
-    questState:readOnly?userProfile.questV437:owner()?userProfile.questV437:null,
-    signed:readOnly?!!(root.DuduAuth?.isReady?.()&&root.DuduAuth.uid()===currentUsername):owner(),
-    onClaim:readOnly?null:root.claimQuestReward,readOnly
+    quests:signedMain?(questsV437?.ensure(core.ensureQuests(Array.isArray(userProfile.quests)?userProfile.quests:[]))||[]):
+      readOnly?(questsV437?.ensure(core.ensureQuests(Array.isArray(userProfile.quests)?userProfile.quests:[]))||[]):owner()?userProfile.quests:[],
+    questState:signedMain?userProfile.questV437:readOnly?userProfile.questV437:owner()?userProfile.questV437:null,
+    signed:signedMain||(!readOnly?owner():!!(root.DuduAuth?.isReady?.()&&root.DuduAuth.uid()===currentUsername)),
+    onClaim:readOnly?null:root.claimQuestReward,readOnly,personalMode:signedMain
    });
   return old.renderQuests.apply(this,arguments);
  };
  root.advanceQuest=function(){
-  if(sandbox())rotate();
+  if(!sandbox())return false;
+  rotate();
   return old.advanceQuest.apply(this,arguments);
  };
  root.claimQuestReward=function(id){
   if(!sandbox()){
-   alertMessage('CHƯA MỞ NHẬN THƯỞNG','Nhiệm vụ trên tài khoản thật hiện chỉ để theo dõi; phần thưởng yêu cầu máy chủ.');
-   return false;
+   return root.personalClaimQuestC23?.(id)||false;
   }
   if(!owner()||!questsV437)return false;
   rotate();
