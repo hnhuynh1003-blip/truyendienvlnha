@@ -705,6 +705,73 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header>span:nth-ch
 .jade-market-card .arcade-button{flex:0 0 78px;padding:5px 4px;font-size:9px;min-height:32px;background:#526746;color:#fff4c3}
 .jade-market-0{border-color:#9c8065}.jade-market-1{border-color:#b8a36c}.jade-market-2{border-color:#8a7e92}
 .jade-market-3{border-color:#876577}.jade-market-4{border-color:#bc9ed0;background:linear-gradient(130deg,#3d3652,#263f47)}
+/* C4.13 — choose individual rough stones or bring home an affordable batch.
+ * The market stays inside a sheet, while the stored stones form a slim rail
+ * beneath the workbench instead of another long section of buttons. */
+.jade-welcome-stock{display:grid;gap:6px;text-align:left}
+.jade-welcome-stock>span,.jade-welcome-stock>strong,.jade-welcome-stock>p{margin:0}
+.jade-welcome-stock .arcade-button{min-height:34px}
+.jade-welcome-stock .arcade-button.upgrade{background:#334f48;border-color:#719385}
+.jade-stock-panel{margin-top:7px;padding:9px 9px 8px;border:1px solid #7c9d83;border-radius:12px;
+ background:linear-gradient(115deg,#26453d,#1b3739)}
+.jade-stock-heading{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:8px}
+.jade-stock-heading b{font-size:11px;color:#ffe7b4}
+.jade-stock-heading span{font:700 9px ui-monospace,monospace;color:#b3d4c6}
+.jade-stock-rail{display:flex;gap:7px;overflow-x:auto;padding:1px 1px 7px;scrollbar-width:thin;
+ scrollbar-color:#7b9d87 transparent;scroll-snap-type:x proximity}
+.jade-stock-item{flex:0 0 94px;min-width:0;scroll-snap-align:start;display:flex;flex-direction:column;
+ align-items:center;gap:2px;padding:6px;border:1px solid #6c8a77;border-radius:10px;
+ background:linear-gradient(135deg,#304c43,#253b42);color:#f6ead2;cursor:pointer}
+.jade-stock-item:disabled{opacity:.58;cursor:default}
+.jade-stock-pebble,.jade-sample-pebble{display:grid;place-items:center;
+ color:#f2d1a2;text-shadow:0 2px 5px #30241f;
+ background:radial-gradient(circle at 30% 26%,#b69b76,#594b3a 58%,#30362f 92%);
+ border:1px solid #c1a37d;box-shadow:inset -5px -5px 7px rgba(20,30,28,.3)}
+.jade-stock-pebble{width:38px;height:30px;border-radius:44% 55% 48% 38%;font-size:15px}
+.jade-stock-item b{font-size:10px;color:#fff1c5}
+.jade-stock-item small,.jade-stock-item em{font-size:8px;color:#c6d7cc;font-style:normal;max-width:100%;
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.jade-stock-item em{color:#e1c997}
+.jade-shell-1{background:radial-gradient(circle at 29% 25%,#e0c491,#a48c5b 58%,#5f6857 92%)}
+.jade-shell-2{background:radial-gradient(circle at 29% 25%,#c28e76,#76594e 62%,#444646 92%)}
+.jade-shell-3{background:radial-gradient(circle at 29% 25%,#655d60,#292c31 58%,#151d25 92%)}
+.jade-shell-4{background:radial-gradient(circle at 28% 25%,#b1a1c7,#595378 58%,#2d4253 92%)}
+.jade-stock-help,.jade-stock-empty{font-size:9px;line-height:1.4;color:#bad9c8;display:block;margin-top:4px}
+.jade-market-card{display:block;padding:10px 9px}
+.jade-market-top{display:flex;align-items:center;gap:8px}
+.jade-market-intro{display:grid;gap:4px;border:1px solid #9d8965;border-radius:12px;
+ background:linear-gradient(115deg,#504435,#253f40);padding:10px}
+.jade-market-intro strong{font-size:13px;color:#ffe9be}
+.jade-market-intro small{font-size:10px;color:#d7e1d2;line-height:1.5}
+.jade-market-bundles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:8px}
+.jade-market-card .jade-market-bundles .arcade-button{width:100%;min-height:35px;min-width:0;
+ flex:none;padding:5px 3px;font-size:9px;white-space:normal;line-height:1.25}
+.jade-market-tray{border-top:1px solid #8c9e8666;margin-top:9px;padding-top:7px}
+.jade-market-tray summary{cursor:pointer;list-style:none;color:#f6d89f;font-size:10px;
+ font-weight:800;padding:3px 2px;user-select:none}
+.jade-market-tray summary::before{content:'▸';display:inline-block;margin-right:5px}
+.jade-market-tray[open] summary::before{content:'▾'}
+.jade-market-samples{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:8px}
+.jade-market-sample{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0;
+ padding:8px 5px;border:1px solid #647d72;border-radius:10px;
+ background:linear-gradient(140deg,#253d39,#1b3139);text-align:center}
+.jade-sample-pebble{width:46px;height:40px;border-radius:43% 55% 37% 46%;font-size:20px}
+.jade-market-sample:nth-child(2) .jade-sample-pebble{
+ transform:rotate(-12deg);border-radius:54% 34% 46% 51%;filter:brightness(.89)
+}
+.jade-market-sample:nth-child(3) .jade-sample-pebble{
+ transform:rotate(14deg);border-radius:39% 50% 56% 42%;filter:saturate(.77) brightness(1.09)
+}
+.jade-market-sample>b{color:#f6e0b8;font-size:10px}
+.jade-market-sample>small{min-height:28px;color:#bcd5c9;font-size:9px;line-height:1.4}
+.jade-market-card .jade-market-sample .arcade-button{width:100%;flex:none;min-height:32px;
+ padding:4px 2px;font-size:9px;line-height:1.3;white-space:normal}
+.jade-market-unavailable{display:block;color:#9daaa5;font-size:9px;line-height:1.4;margin-top:6px}
+@media(max-width:350px){
+ .jade-market-card .jade-market-bundles .arcade-button{font-size:8px}
+ .jade-market-sample{padding:7px 3px}
+ .jade-sample-pebble{width:37px;height:35px}
+}
 .jade-sheet-hint{font-size:10px;color:#afc5bc;line-height:1.5;margin:4px 0}
 .jade-sheet-heading{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:7px;padding-bottom:4px;border-bottom:1px solid #66847399}
 .jade-sheet-heading b{font-size:13px;color:#f4dca9}.jade-sheet-heading small{font-size:9px;color:#accdbd}

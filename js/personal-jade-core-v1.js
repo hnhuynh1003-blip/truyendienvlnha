@@ -9,6 +9,7 @@
 })(typeof window!=='undefined'?window:null,function(){
  'use strict';
  const MAX=1000000000;
+ const MAX_STONES=12;
  const MARKETS=Object.freeze([
   {name:'Chợ Đêm Vỉa Hè',short:'Chợ Đêm',price:50,skin:'Vỏ cuội xám',detail:'Hàng rẻ, phế thạch nhiều. Cơ hội đổi đời từ một viên nhỏ.',unlock:'Luôn mở'},
   {name:'Mỏ Sông Mộc Khảm',short:'Mộc Khảm',price:140,skin:'Cát vàng nhẵn',detail:'Thủy đầu dịu, ngọc đều màu, phù hợp người thận trọng.',unlock:'Bán 3 viên · Đèn cấp 2'},
@@ -53,7 +54,7 @@
    site===4&&j.sold>=40&&j.permit;
  }
  const fresh=()=>({bought:0,cut:0,sold:0,invested:0,received:0,lamp:1,saw:1,
-  carver:1,permit:false,rescueReadyAt:0,active:null,album:{},exhibits:[],last:null});
+  carver:1,permit:false,rescueReadyAt:0,active:null,stash:[],album:{},exhibits:[],last:null});
  function validStone(v){
   if(!v||typeof v!=='object'||!['raw','window','cut','crafted'].includes(v.phase)||
    !Number.isSafeInteger(v.id)||v.id<1||v.id>1000000||
@@ -78,6 +79,14 @@
   j.rescueReadyAt=integer(source.rescueReadyAt,0,Number.MAX_SAFE_INTEGER,0);
   j.permit=source.permit===true;
   j.active=validStone(source.active);
+  // C4.13: only unfinished stones enter the waiting basket. Old saves with
+  // an active stone continue unchanged; corrupt/duplicate stock is discarded.
+  const seen=new Set(j.active?[j.active.id]:[]);
+  if(Array.isArray(source.stash))for(const value of source.stash.slice(0,MAX_STONES)){
+   const stone=validStone(value);
+   if(stone&&['raw','window'].includes(stone.phase)&&!seen.has(stone.id)&&
+     j.stash.length+(j.active?1:0)<MAX_STONES){j.stash.push(stone);seen.add(stone.id);}
+  }
   if(source.album&&typeof source.album==='object')for(let g=1;g<=7;g++)for(let c=0;c<8;c++){
    const key=g+'-'+c,n=integer(source.album[key],0,1000000,0);if(n)j.album[key]=n;
   }
@@ -99,6 +108,22 @@
   return {id,site,grade,color,size:2+Math.floor(rng()*7)+(site>=2?1:0),
    flaw,seed,phase:'raw',scans:[false,false,false],payoutV:2,practice:false,savedFracture:false,
    offer:0,cutValue:0,craft:null,craftValue:0};
+ }
+ // A stall sample is fixed by the next stone ID, market and tray position.
+ // Visible surface signs are only imperfect clues, never a guaranteed grade.
+ function surface(stone){
+  const size=stone.size>=8?'Cỡ lớn':stone.size>=5?'Cỡ vừa':'Cỡ nhỏ';
+  const marks=stone.flaw==='fracture'?'Có nét rạn mờ':stone.flaw==='skin'?
+   'Rêu bì đậm':stone.grade>=4&&stone.seed%3!==0?'Mãng đới nhạt':
+   stone.seed%2?'Bì lốm đốm':'Vỏ ít dấu hiệu';
+  return {size,marks,skin:MARKETS[stone.site].skin};
+ }
+ function marketOffer(j,site,slot){
+  const id=j.bought+1;
+  const seed=(Math.imul(id+17,1597334677)^Math.imul(site+7,2246822519)^
+   Math.imul(slot+31,3266489917))>>>0;
+  const stone=generate(site,id,seed/4294967296);
+  return {stone,...surface(stone)};
  }
  function scanHint(stone,spot,lamp){
   const thick=stone.site===3,noise=randomFrom((stone.seed^Math.imul(spot+11,1357911))>>>0)();
@@ -150,17 +175,50 @@
   const charge=amount=>{if(state.coins<amount)return false;state.coins-=amount;j.invested=clamp(j.invested+amount,0,MAX);return true;};
   const credit=amount=>{state.coins=clamp(state.coins+amount,0,MAX);
    state.earned=clamp(state.earned+amount,0,MAX);j.received=clamp(j.received+amount,0,MAX);};
+  const held=()=>j.stash.length+(j.active?1:0);
+  const pick=/^jade-pick-([0-4])-([0-2])$/.exec(action||'');
+  const pack=/^jade-buy-pack-([0-4])-(1|3|5)$/.exec(action||'');
+  if(pick||pack){
+   const site=Number((pick||pack)[1]),count=pick?1:Number(pack[2]);
+   if(!unlocked(j,site))return fail('Bãi đá này chưa được mở khóa.');
+   if(held()+count>MAX_STONES)return fail('Túi đá chỉ chứa tối đa '+MAX_STONES+' viên, kể cả viên trên bàn.');
+   if(j.bought+count>1000000)return fail('Đã đạt giới hạn mẫu đá của xưởng.');
+   const free=j.bought===0&&site===0?1:0;
+   const cost=(count-free)*MARKETS[site].price;
+   if(!charge(cost))return fail('Chưa đủ Xu Arcade để lấy '+count+' viên đá.');
+   for(let i=0;i<count;i++){
+    const id=j.bought+1,stone=pick?marketOffer(j,site,Number(pick[2])).stone:
+     generate(site,id,(clamp(Number.isFinite(roll)?roll:.5,0,.999999)+i*.6180339887)%1);
+    j.stash.push(stone);j.bought++;
+   }
+   return succeed('Đã mua '+count+' viên từ '+MARKETS[site].short+' · Túi đá '+held()+'/'+MAX_STONES+
+    (free?' · Tặng viên đầu tiên':''));
+  }
+  const select=/^jade-select-(\d{1,2})$/.exec(action||'');
+  if(select){
+   if(j.active)return fail('Cất hoặc xử lý viên trên bàn trước khi chọn viên khác.');
+   const index=Number(select[1]);if(index>=j.stash.length)return fail('Không tìm thấy viên đá trong túi.');
+   j.active=j.stash.splice(index,1)[0];
+   return succeed('Đã đưa mẫu #'+j.active.id+' lên bàn. Hãy soi ba điểm.');
+  }
+  if(action==='jade-store'){
+   if(!j.active||!['raw','window'].includes(j.active.phase))
+    return fail('Chỉ có thể cất đá chưa xẻ.');
+   j.stash.unshift(j.active);j.active=null;
+   return succeed('Đã cất viên đang soi vào túi. Có thể chọn viên khác.');
+  }
   const buy=/^jade-buy-([0-4])$/.exec(action||'');
   if(buy){
    const site=Number(buy[1]);if(j.active)return fail('Hãy xử lý viên đá trên bàn trước.');
    if(!unlocked(j,site))return fail('Bãi đá này chưa được mở khóa.');
+   if(held()>=MAX_STONES||j.bought>=1000000)return fail('Túi đá đã đầy hoặc hết chỗ cho mẫu mới.');
    const cost=j.bought===0&&site===0?0:MARKETS[site].price;
    if(!charge(cost))return fail('Chưa đủ Xu Arcade để mua lô đá.');
    j.bought++;j.active=generate(site,j.bought,roll);
    return succeed(cost?'Đã mang đá thô lên bàn. Hãy soi ba điểm.':'Tặng viên đá thử đầu tiên! Hãy soi ba điểm.');
   }
   if(action==='jade-rescue'){
-   if(j.active)return fail('Hãy xử lý viên đá đang có trước.');
+   if(held())return fail('Hãy xử lý những viên đá đang có trước.');
    if(!j.bought)return fail('Bạn vẫn còn viên đá thử đầu tiên miễn phí.');
    if(state.coins>=MARKETS[0].price)return fail('Hãy dùng Xu Arcade hiện có để chọn đá.');
    if(!Number.isSafeInteger(now)||now<0||now<j.rescueReadyAt)return fail('Đá cứu vốn đang chờ hồi lại.');
@@ -250,5 +308,5 @@
  }
  return Object.freeze({fresh,norm,act,MARKETS,GRADES,COLORS,COLOR_HEX,FLAWS,FLAW_NAMES,
   CRAFTS,RESCUE_INTERVAL,unlocked,scanHint,baseValue,cutValue,cuttingFee,windowFee,
-  actionFee,rawSalvageValue,upgradeCost,craftFee,generate});
+  actionFee,rawSalvageValue,upgradeCost,craftFee,generate,marketOffer,surface,MAX_STONES});
 });

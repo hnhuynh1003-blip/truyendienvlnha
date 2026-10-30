@@ -74,9 +74,20 @@ async function main(){
   await page.evaluate(()=>document.querySelector('.arcade-scroll').scrollTop=220);
   await tab('jade').click();
   assert.equal(await page.locator('.arcade-scroll').evaluate(el=>el.scrollTop),0);
-  // The free-stone action is deliberately also shown in the market sheet.
-  // Choose the visible welcome CTA rather than an ambiguous action ID.
-  await action('jade-buy-0').first().click();
+  // C4.13: enter the market, handpick one free sample into the waiting bag,
+  // then bring that exact stone home for inspection. Existing direct free CTA
+  // is still exercised in unit tests for old-player compatibility.
+  await action('jade-open-market').click();
+  const market=page.locator('.arcade-sheet-overlay');
+  await market.locator('.jade-market-tray').first().locator('summary').click();
+  await market.locator('button[data-arcade-action="jade-pick-0-1"]').click();
+  const basket=await page.evaluate(()=>JSON.parse(localStorage.getItem(
+   'dudu-personal-arcade:v1:sandbox%3Ac410-mobile-tester'))?.jade);
+  assert.equal(basket.stash.length,1);
+  assert.equal(basket.active,null);
+  assert.equal(basket.bought,1);
+  await page.locator('.arcade-sheet-close').click();
+  await action('jade-select-0').first().click();
   for(let i=0;i<3;i++)await action('jade-scan-'+i).click();
   const scans=await page.evaluate(()=>{
    const raw=localStorage.getItem('dudu-personal-arcade:v1:sandbox%3Ac410-mobile-tester');
