@@ -4,7 +4,10 @@
 //   'node cloudflare/tests/manual/dudu-standard-spark-rules-emulator.mjs'
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+import {createRequire} from 'node:module';
 import {initializeTestEnvironment,assertFails,assertSucceeds} from '@firebase/rules-unit-testing';
+const require=createRequire(import.meta.url);
+const epubApi=require('../../../js/epub-production-v49.js');
 
 const PROJECT='demo-dudu-standard';
 const HOST='127.0.0.1:18087';
@@ -68,6 +71,14 @@ try{
  await no('large public query denied',root(guest).where('status','==','published').limit(100).get());
  await yes('author owns book query',root(owner).where('ownerUid','==','author-a').limit(60).get());
  await no('foreign admin cannot see draft',root(foreign).doc(DRAFT).get());
+ // importDraft() must check that the random new ID is unused before set().
+ // C3.0 accidentally denied this exact read even to custom-claim admins.
+ await yes('owner admin can probe a nonexistent EPUB ID before import',
+  root(owner).doc('epub-new-upload-preflight').get());
+ await no('unauthenticated guest cannot probe nonexistent EPUB IDs',
+  root(guest).doc('epub-new-upload-preflight').get());
+ await no('non-admin reader cannot probe nonexistent EPUB IDs',
+  root(reader).doc('epub-new-upload-preflight').get());
  await no('reader cannot create book',root(reader).doc('epub-hacker').set(book('epub-hacker')));
  await no('foreign admin cannot create for author',root(foreign).doc('epub-hacker').set(book('epub-hacker')));
  await no('owner cannot create foreign book',root(owner).doc('epub-hacker').set(book('epub-hacker','importing','reader-a')));
@@ -80,6 +91,19 @@ try{
  const fresh='epub-reviewed-new';
  await yes('author imports EPUB',root(owner).doc(fresh).set(book(fresh)));
  await yes('author creates importing chapter',chapterRef(owner,fresh).set(chapter()));
+ const realAuth={currentUser:{uid:'author-a',getIdTokenResult:async()=>({claims:{admin:true}})}};
+ const liveImport={title:'[Edit] Nghiệt Duyên - Tăng Minh',author:'xxMeenx2',
+  genre:'FanFiction, Completed',publicationState:'Hoàn thành',desc:'Văn án thử',
+  coverImage:'data:image/jpeg;base64,/9j/2Q==',sourceName:'nghiet-duyen.epub',
+  chapters:[{title:'Chương một',content:'Nội dung chương một được nhập bằng công cụ EPUB thật.'},
+   {title:'Chương hai',content:'Nội dung chương hai còn nguyên vẹn.'}]};
+ await yes('actual web importDraft passes preflight and imports metadata plus chapters',
+  epubApi.importDraft(liveImport,{db:owner,auth:realAuth,bookId:'epub-real-import-repro'}));
+ await yes('actual web publishDraft publishes fully imported EPUB',
+  epubApi.publishDraft('epub-real-import-repro',{db:owner,auth:realAuth,confirmRights:true}));
+ await yes('actual web metadata editor commits published book change',
+  epubApi.updatePublishedMetadata('epub-real-import-repro',{db:owner,auth:realAuth,
+   metadata:{publicationState:'Đang ra',title:'Nghiệt Duyên - Bản hiệu đính'}}));
  await no('reader cannot insert imported chapter',chapterRef(reader,fresh).set(chapter()));
  await yes('author moves to draft',root(owner).doc(fresh).update({status:'draft',updatedAt:'2026-10-30T01:00:00Z'}));
  await no('author cannot create chapter in draft',root(owner).doc(fresh).collection('chapters').doc('chapter-0002').set({...chapter(),id:'chapter-0002'}));

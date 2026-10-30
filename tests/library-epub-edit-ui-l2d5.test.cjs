@@ -67,10 +67,10 @@ function manager({enabled=true,authorized=author,loadChapter:custom,locks=testLo
  return {...ui,loaded,instance};
 }
 
-test('L2D.5 UI is strictly dormant while Firebase Rules are pending',async()=>{
+test('C3.1 UI activates owner-scoped EPUB tools; local disabled mode still refuses edits',async()=>{
  const source=readFileSync(join(__dirname,'../index.html'),'utf8');
- assert.match(source,/const EPUB_MANAGEMENT_L2D2_ENABLED=false/);
- assert.match(source,/const EPUB_CHAPTER_TOOLS_L2D5_ENABLED=false/);
+ assert.match(source,/const EPUB_MANAGEMENT_L2D2_ENABLED=true/);
+ assert.match(source,/const EPUB_CHAPTER_TOOLS_L2D5_ENABLED=true/);
  assert.match(source,/id="epub-edit-tools-open" style="display:none"/);
  assert.match(source,/epubEditorL2D5\.owns\(novel\)\?'':'none'/);
  const {instance}=manager({enabled:false});

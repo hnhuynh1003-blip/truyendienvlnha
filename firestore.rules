@@ -236,8 +236,11 @@ service cloud.firestore {
     match /epub_stories_v49/{storyId} {
       // An unauthenticated reader can only see published book metadata.
       // The author's own `.where(ownerUid == uid).limit(60)` includes drafts.
-      allow get: if resource.data.status == 'published'
-        || (admin() && resource.data.ownerUid == request.auth.uid);
+      // importDraft() first GETs a random, nonexistent ID before creating it.
+      // Do not dereference resource.data when the document does not exist.
+      allow get: if resource != null && resource.data.status == 'published'
+        || (admin() && (!exists(bookPath(storyId))
+          || resource.data.ownerUid == request.auth.uid));
       allow list: if request.query.limit != null && request.query.limit <= 60
         && (resource.data.status == 'published'
           || (admin() && resource.data.ownerUid == request.auth.uid));

@@ -2341,10 +2341,11 @@
     let novels = JSON.parse(localStorage.getItem(IS_SANDBOX_MODE ? 'dudu-sandbox-library' : 'my_novels_library_db')) || initialNovels;
     // V49 production EPUBs live in separate Firestore story/chapter documents.
     let epubPublishedBooksV49 = [];
-    // L2D.2 activation gate: leave OFF until the separately reviewed Firebase
-    // Rules are deployed and verified. Never present a nonfunctional button.
-    const EPUB_MANAGEMENT_L2D2_ENABLED=false;
-    const EPUB_CHAPTER_TOOLS_L2D5_ENABLED=false;
+    // C3.1: C3.0 Firestore owner-edit and atomic-revision Rules were published
+    // by the owner on 30/10. Display EPUB tools only for the authenticated
+    // author who owns that book. Server Rules remain the write authority.
+    const EPUB_MANAGEMENT_L2D2_ENABLED=true;
+    const EPUB_CHAPTER_TOOLS_L2D5_ENABLED=true;
     const epubManagementL2D2=window.DuduLibraryEpubManageL2D2?.create?.({
       enabled:EPUB_MANAGEMENT_L2D2_ENABLED,
       cloudApi:DuduEpubProductionV49,

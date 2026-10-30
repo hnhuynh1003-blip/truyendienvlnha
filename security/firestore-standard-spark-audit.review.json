@@ -1,6 +1,6 @@
 {
   "score": 3,
-  "summary": "Review-only Standard/Spark Rules tested in an isolated Firestore Emulator: 67 permission/transaction probes passed, including actual-shaped C2.9 personal game progress, reset compatibility, EPUB revision transactions, and explicit denial of experimental Arcade exchange receipts. The 145 local Node tests also passed. No paid-chapter entitlement or verified server-currency release is authorized. Production Rules remain unchanged.",
+  "summary": "C3.1 hotfix: 73 isolated Firestore Emulator probes passed, including a reproduced and corrected denial of the new-EPUB-ID read used by the real importDraft() flow, successful import/publish/edit transactions, and denial of guest/reader preflight, while preserving owner-scoped drafts and revisions. The 145 local Node tests also passed. The owner published C3.0 but must still publish C3.1 in Console; no database data was modified by these tests.",
   "findings": [
     {
       "check": "Business logic / paid-chapter confidentiality",

@@ -44,8 +44,8 @@ test('New rule only permits owner metadata edits or reversible published-archive
  assert.match(source,/request\.resource\.data\.get\('coverImage',''\)/);
 });
 
-test('Frontend management stays gated and no Firebase deployment config is modified',()=>{
- assert.match(read('index.html'),/const EPUB_MANAGEMENT_L2D2_ENABLED=false/);
+test('Frontend owner-management gate is enabled after C3.0 rules, no CLI deployment is configured',()=>{
+ assert.match(read('index.html'),/const EPUB_MANAGEMENT_L2D2_ENABLED=true/);
  assert.doesNotMatch(read('firebase.json'),/"firestore"\s*:/);
  assert.match(source,/NOT DEPLOYED/);
 });

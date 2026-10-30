@@ -111,11 +111,11 @@ test('Published EPUB cannot be archived twice or restored without being archived
  await assert.rejects(api.archivedBooks(db,reader),/admin claim/);
 });
 
-test('L2D.2 remains dormant in production until security review is deployed',()=>{
+test('C3.1 enables owner-scoped EPUB editor once Rules are published',()=>{
  const html=readFileSync(join(__dirname,'../index.html'),'utf8');
  const source=readFileSync(join(__dirname,'../js/library-epub-manage-l2d2.js'),'utf8');
  const rules=readFileSync(join(__dirname,'../security/firestore-epub-l2d2.rules.review'),'utf8');
- assert.match(html,/const EPUB_MANAGEMENT_L2D2_ENABLED=false/);
+ assert.match(html,/const EPUB_MANAGEMENT_L2D2_ENABLED=true/);
  assert.match(html,/epubManagementL2D2\.owns\(novel\)/);
  assert.match(html,/epubManagementL2D2\.openEditor\(novels\[selectedNovelIndex\]\)/);
  assert.match(html,/epubManagementL2D2\.unlist\(novels\[selectedNovelIndex\]\)/);
