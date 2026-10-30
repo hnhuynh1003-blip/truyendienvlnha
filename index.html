@@ -75,7 +75,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-check-compat.js"></script>
   <script src="js/appcheck-sitekey-v52.js?v=52-3"></script>
   <script src="js/firestore-profile-fallback-v56-7.js?v=56-7"></script>
-  <script src="js/auth-v2.js?v=56-9"></script>
+  <script src="js/profile-save-c23.js?v=c23-1"></script>
+  <script src="js/auth-v2.js?v=c23-1"></script>
   <script src="js/npc-context-v56-10.js?v=56-10"></script>
   <script src="js/npc-reply-style-v56-12.js?v=56-12"></script>
   <script src="js/npc-dialogue-v56-13.js?v=56-13"></script>
@@ -2952,9 +2953,10 @@
       window.DuduSiteV60?.refresh?.(); // Keep Author Studio entry in sync with Sandbox role.
     }
 
-    // Track legacy broad writes so a later narrow NPC exchange can wait until
-    // its own tab has finished sending an older profile snapshot.
+    // Track queued field-aware saves so an NPC exchange can wait for any
+    // earlier work in the same tab before starting its own transaction.
     const pendingLiveProfileWrites=new Set();
+    let lastLiveProfileSaveWarningAt=0;
     function saveCurrentAccount() {
       if (window.DUDU_RESET_IN_PROGRESS) return;
       if (!currentUsername || (!IS_SANDBOX_MODE && (!DuduAuth.isReady() || DuduAuth.uid() !== currentUsername))) return;
@@ -2999,17 +3001,32 @@
         return;
       }
       if(window.DUDU_PERSONAL_NPC_EXCHANGE_BUSY){
-        // A stale full-profile write must not follow a committed wallet/item
-        // transaction. The calling feature must retry its own save afterwards.
-        console.warn('Đang giao dịch NPC: tạm hoãn ghi hồ sơ cũ để bảo vệ Kho/Xu.');
+        // Never submit a legacy profile snapshot during an NPC transaction.
+        console.warn('Đang giao dịch NPC: tạm hoãn lưu hồ sơ.');
       }else{
         try {
-          const write=db.collection("profiles_v2").doc(DuduAuth.uid())
-            .set(cloudData,{merge:true});
+          // C2.3: changed fields only, merged against the latest profile in a
+          // Firestore transaction. Newer wallet/item/NPC receipts win conflicts.
+          // Never fall back to a broad .set() if this safety layer is absent.
+          const write=window.DuduProfileSaveC23?.enqueue?.({
+            uid:DuduAuth.uid(),db,auth:firebase.auth(),data:cloudData,
+            isCurrent:uid=>!IS_SANDBOX_MODE&&!window.DUDU_RESET_IN_PROGRESS&&
+              DuduAuth.isReady()&&DuduAuth.uid()===uid&&currentUsername===uid,
+            onConflict:()=>showSystemAlert('CẦN TẢI LẠI',
+              'Tiến độ vừa thay đổi ở nơi khác. Hãy tải lại trước khi tiếp tục.')
+          });
+          if(!write)throw Error('Safe profile saver not loaded');
           pendingLiveProfileWrites.add(write);
-          write.catch(err=>console.warn('Lỗi đồng bộ Firebase (vẫn chạy offline):',err))
+          write.catch(err=>{
+            console.warn('Không lưu được hồ sơ:',err);
+            if(Date.now()-lastLiveProfileSaveWarningAt>20000){
+              lastLiveProfileSaveWarningAt=Date.now();
+              showSystemAlert('CHƯA LƯU ĐƯỢC',
+                'Tiến độ đang được giữ trên thiết bị. Kiểm tra kết nối rồi thử lại.');
+            }
+          })
             .finally(()=>pendingLiveProfileWrites.delete(write));
-        }catch(e){console.warn('Không gửi được lên Firebase:',e);}
+        }catch(e){console.warn('Không gửi được hồ sơ:',e);}
       }
 
       try { updatePhoneUI(); }

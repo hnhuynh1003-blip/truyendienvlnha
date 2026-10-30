@@ -62,6 +62,7 @@
     document.getElementById('auth-secure-controls').style.display = IS_SANDBOX_MODE ? 'none' : 'block';
   }
   function resetSession() {
+    window.DuduProfileSaveC23?.reset?.();
     ready = false;
     admin = false;
     currentUsername = '';
@@ -255,6 +256,9 @@
       const migratedPersonal = typeof window.hydratePersonalSyncV568==='function'
         ? window.hydratePersonalSyncV568() : false;
       ready = true;
+      // The server document is the comparison baseline. Local defaults or
+      // device backups are never authority to overwrite a newer profile.
+      window.DuduProfileSaveC23?.begin?.(account.uid, cloudData || {});
       profileError = '';
       if (btn) btn.textContent = '👤 ' + label;
       if (prof) prof.textContent = 'Firebase UID: ' + account.uid.slice(0, 8) + '…';

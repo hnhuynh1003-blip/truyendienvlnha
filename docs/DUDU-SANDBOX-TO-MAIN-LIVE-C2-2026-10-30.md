@@ -121,10 +121,28 @@ Vẫn giữ các thẻ Mua sắm, Vị diện, Kỷ vật, Theo truyện, Chức
 tìm kiếm. Các nhắc nhở có ích ở thẻ không bán được vẫn xuất hiện. Đây chỉ
 là đổi trình bày; không sửa giao dịch mua, UID, số Xu, Kho, hoặc Rules.
 
-Các bước C2.3 còn cần hoàn thành trước khi reset mùa:
+### C2.3b — chống ghi đè hồ sơ giữa các tab (đã triển khai mã nguồn)
 
-1. Rà soát và tách `saveCurrentAccount()` thành các cập nhật theo trường
-   để tránh ghi đè Kho/Xu/quan hệ đã giao dịch, kể cả khi chạy nhiều tab.
+- `saveCurrentAccount()` trên tài khoản main dùng `DuduProfileSaveC23` thay
+  cho `.set(cloudData,{merge:true})` mang cả Xu, Kho, nhiệm vụ và `storyStates`
+  cũ lên máy chủ. Sandbox vẫn giữ cơ chế lưu trước đây.
+- Khi đăng nhập, hồ sơ đã đọc từ máy chủ trở thành mốc đối chiếu; mỗi lần
+  lưu chỉ ghi các nhánh thực sự thay đổi. Giao dịch đọc hồ sơ mới nhất và
+  hợp nhất phần không xung đột, giữ nguyên biên nhận phong bao, quà và Kho
+  vừa ghi bởi tab hoặc thiết bị khác. Các lần lưu cùng tab được xếp hàng.
+- Nếu cả hai thiết bị thay đổi cùng một trường, không tự suy đoán bên nào
+  đúng: giữ bản máy chủ, chặn ghi đè tiếp trên trường đó và nhắc người chơi
+  tải lại. Đổi tài khoản/hồ sơ sẽ hủy hàng đợi chưa bắt đầu của phiên cũ.
+- Có kiểm thử mô phỏng giao dịch, hai phiên dùng chung hồ sơ, thay đổi NPC
+  khác nhánh, xung đột Xu, đăng nhập mới và đổi UID. **Chưa kiểm thử với hai
+  UID thật hay Rules production; chưa có biên nhận chống cấp trùng phần
+  thưởng đọc/nhiệm vụ từ client cũ.** Đây là bước bảo vệ trung gian, không
+  coi là hoàn tất di trú kinh tế. Không deploy Rules, không reset người chơi.
+
+Việc còn phải làm:
+
+1. Đối chiếu C2.3b trên nhiều tab/thiết bị thật; bổ sung biên nhận có xác
+   nhận cho thưởng đọc, nhặt đồ, EXP và nhiệm vụ trước khi coi Xu/Kho là an toàn.
 2. Kiểm thử 2 UID thật: quà nhận, quà từ chối, phong bao, reload,
    đảm bảo tài khoản A không thể ghi vào tài khoản B; xác minh Rules đã
    triển khai và chính sách đọc/ghi.
