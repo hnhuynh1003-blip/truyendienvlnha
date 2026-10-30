@@ -22,7 +22,7 @@ test('V55 stores selected model per Firebase UID and labels each AI response',()
  assert.match(client,/purpose==='chat'\?\{model:resolved\}:\{\}/);
  assert.match(html,/chatHistories\[requestChatKey\]\.push\(\{role:'model',text:res\.text,/);
  assert.match(html,/meta\.textContent=source\?/);
- assert.match(html,/res\.error\+' · Tin nhắn đã lưu trên thiết bị\.'/);
+ assert.match(html,/showNpcConnectionStatus\('Tạm thời chưa thể nhận hồi âm/);
  assert.doesNotMatch(client,/GEMINI_API_KEY\s*=/);
 });
 

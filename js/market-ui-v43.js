@@ -71,9 +71,9 @@
    const hint=make('p','dudu-v43-market-hint');
    const collection=make('div','dudu-v43-market-grid');
    const footer=make('small','dudu-v43-market-footer',
-     readOnly?'Chế độ tham khảo · Không trừ Xu, không cấp vật phẩm. Giao dịch thật cần máy chủ xác nhận.':
-     personalMode?'Kho và Ví Xu cá nhân · Đồ hiếm không mở bán.':
-     'Vật phẩm có nguồn gốc và ID cố định. Kỷ vật thật chỉ do máy chủ xác nhận.');
+     readOnly?'Chỉ xem trước · Chưa thể mua các món này.':
+     personalMode?'Kho và Ví Xu của bạn · Đồ hiếm chưa mở bán.':
+     'Khám phá vật phẩm và kỷ vật của DUDU.');
    toolbar.append(tabs,filters,hint);
    host.append(toolbar,collection,footer);
    function draw(){
@@ -91,9 +91,9 @@
      }else if(tab==='REALM'){
        hint.textContent='Vật phẩm vị diện chỉ rơi ở chương được tác giả gắn đúng thế giới. Chưa bán bằng Xu.';
      }else if(tab==='DUDU'){
-       hint.textContent='Kỷ vật hệ thống: xem nguồn gốc, không mở bán. Quyền sở hữu phải được máy chủ xác nhận.';
+       hint.textContent='Kỷ vật hiếm · Chưa mở bán.';
      }else if(tab==='STORY'){
-       hint.textContent='Danh mục tác giả (chỉ xem) · không phải đồ sở hữu hoặc phần thưởng được cấp.';
+       hint.textContent='Vật phẩm trong truyện · Xem trước.';
      }else{
        hint.textContent=(personalMode?'Công cụ cá nhân: ':'Công cụ Sandbox: ')+
         'nạp hồi chiêu, gia tốc 60 giây, gói tiếp tế và phiếu giảm giá. Không tạo thêm Nhặt bảo trong chương.';

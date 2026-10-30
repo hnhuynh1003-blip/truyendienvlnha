@@ -56,5 +56,5 @@ test('both the Arcade popup and the system wallet can open the exact quote UI',(
  assert.match(html,/personal-spark-exchange-v1\.js\?v=spark-bridge-1/);
  assert.match(ui,/DUDU_SPARK_EXCHANGE_V1_READY===true/);
  assert.match(ui,/sparkBridge\.transfer/);
- assert.match(ui,/Chuyển Xu · Chờ Rules/);
+ assert.match(ui,/Chuyển Xu · Sắp mở/);
 });

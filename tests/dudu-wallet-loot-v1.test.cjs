@@ -27,7 +27,7 @@ test('wallet navigation has working shopping and Arcade controls but cannot mint
  const arcade=src('js/personal-arcade-ui-v1.js');
  assert.match(arcade,/peekBalance/);
  assert.match(arcade,/data-arcade-exchange="wallet"/);
- assert.match(arcade,/Chuyển Xu · Chờ Rules/);
+ assert.match(arcade,/Chuyển Xu · Sắp mở/);
  assert.match(arcade,/DUDU_SPARK_EXCHANGE_V1_READY===true/);
  assert.match(arcade,/userProfile\.currency=result\.balance/);
  assert.doesNotMatch(arcade,/userProfile\.currency\s*\+=/);

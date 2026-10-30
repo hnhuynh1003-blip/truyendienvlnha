@@ -137,7 +137,7 @@ test('rendered envelope carries stable event id, timestamp and honest sent statu
  assert.equal(card.dataset.packetId,'rp-one');
  const status=card.children.find(x=>x.className==='dudu-v32-packet-status');
  assert.match(status.textContent,/Đã gửi/);
- assert.match(status.textContent,/Chưa có xác nhận/);
+ assert.match(status.textContent,/Chưa có hồi âm/);
  const date=card.children.find(x=>x.className==='dudu-v32-packet-time');
  assert.ok(date.textContent.length>=5);
 });

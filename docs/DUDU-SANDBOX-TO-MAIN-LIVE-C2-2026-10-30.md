@@ -91,6 +91,15 @@ quy tắc không cấp trùng. Chỉ khi đó mới coi là đã chuyển sang m
   phản hồi độc lập hay ví NPC; `RECEIVED` dành cho một lần xác nhận thật
   trong tương lai. Mốc giờ hiển thị trên thẻ. Không chuyển tiền hoặc
   phát thưởng chỉ vì render thẻ.
+- C2.2c: Tinh gọn chữ trong Điện thoại dành cho người chơi. Liên lạc,
+  Sổ Tay, phong bao, Kho, Ví Xu, Nhiệm vụ, Cửa hàng, Bảo tàng và hình nền
+  dùng thông báo ngắn theo ngôn ngữ gameplay, không lặp lại các từ Firebase,
+  Firestore, Rules hay tên nơi lưu dữ liệu trong thao tác thông thường.
+  Cảnh báo ràng buộc vẫn có (phong bao 3 lần/ngày, hồi 5 phút; tính năng
+  chưa mở vẫn khóa). Thông tin model AI trong bóng chat chỉ hiện khi bật
+  bảng tùy chọn AI; chi tiết lỗi còn ở console và khu vực chẩn đoán.
+  Đợt này chỉ đổi câu chữ/cách trình bày, không thay giao dịch, tỷ lệ
+  thưởng, UID, quyền sở hữu, Rules hay dữ liệu tài khoản.
 - Những lần gọi lưu *toàn hồ sơ* đã bắt đầu trong cùng tab được chờ hoàn
   thành trước giao dịch mới; không gửi `saveCurrentAccount()` từ kết quả
   C2.2. Tuy vậy, **lưu hồ sơ cũ ở các chức năng khác và nhiều tab/thiết bị

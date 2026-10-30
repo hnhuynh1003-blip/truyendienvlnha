@@ -24,7 +24,7 @@
   if(!signed){
    const blank=$('div','dudu-v437-empty');
    blank.append($('strong','','🔒 Nhiệm vụ cá nhân'),
-    $('p','',readOnly?'Đăng nhập Firebase để xem tiến độ hiện tại.':'Đăng nhập tài khoản thử nghiệm để lưu tiến độ và nhận thưởng trong Sandbox.'));
+    $('p','',readOnly?'Đăng nhập để xem hành trình của bạn.':'Đăng nhập tài khoản thử để bắt đầu.'));
    host.append(blank);return true;
   }
   const rows=Array.isArray(quests)?quests:[];
@@ -121,7 +121,7 @@
   const s=engine.state(questState);
   const history=$('details','dudu-v437-history');
   history.append($('summary','', '🕘 Lịch sử nhận thưởng · '+s.history.length+' lần'));
-  if(!s.history.length)history.append($('p','','Chưa có lần nhận thưởng nào được ghi ở bản V43.7.'));
+  if(!s.history.length)history.append($('p','','Chưa có lần nhận thưởng nào.'));
   else for(const line of s.history.slice(-15).reverse()){
    const h=$('div','dudu-v437-history-line');
    h.append($('span','',line.day+' · '+line.title),
@@ -129,8 +129,8 @@
    history.append(h);
   }
   host.append(history,$('p','dudu-v437-disclaimer',readOnly?
-   'Tiến độ tham khảo từ hồ sơ hiện tại. Nhận Xu, EXP hoặc vật phẩm phải được máy chủ xác thực.':
-   'Chỉ là tiến độ và phần thưởng trên thiết bị Sandbox; không cấp kỷ vật thật hoặc quyền máy chủ.'));
+   'Phần thưởng của mục này chưa mở.':
+   'Trong phòng thử, phần thưởng chưa chuyển sang hành trình chính.'));
   return true;
  }
  root.DuduQuestUIV437=Object.freeze({render});

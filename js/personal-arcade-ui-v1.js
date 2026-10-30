@@ -268,10 +268,10 @@
         <div class="arcade-exchange-heading"><strong>Đổi Xu</strong><button type="button" data-arcade-exchange="close" aria-label="Đóng">✕</button></div>
         ${exchangeForm(s)}
         <div class="arcade-exchange-target">Ví Xu hệ thống <button type="button" data-arcade-exchange="wallet">Xem ví ↗</button></div>
-        ${button(!exchangeEnabled()?'Chuyển Xu · Chờ Rules':exchangeBusy?'Đang chuyển…':
+        ${button(!exchangeEnabled()?'Chuyển Xu · Sắp mở':exchangeBusy?'Đang chuyển…':
           readPending()?'↻ Xác nhận lệnh cũ':'✓ Chuyển vào Ví Xu',
           'transfer','gold',!exchangeEnabled()||exchangeBusy||!quoteForExchange().ok)}
-        ${exchangeEnabled()?'':'<p>Đổi Xu sẽ mở sau khi Rules được cập nhật một lần.</p>'}
+        ${exchangeEnabled()?'':'<p>Chức năng đổi Xu chưa mở.</p>'}
       </section></div>`:''}
   </div>`;
   if(showToast)element.querySelector('[data-arcade-notice]').textContent=notice;
@@ -322,7 +322,7 @@
   const uid=identity(),pendingKey=exchangeKey(PENDING),settledKey=exchangeKey(SETTLED);
   const auth=root.firebase?.auth?.(),firestore=root.firebase?.firestore?.();
   if(!uid||!pendingKey||!settledKey||auth?.currentUser?.uid!==uid||!firestore){
-   notice='Cần đăng nhập Firebase trước khi đổi Xu.';error=true;noticeUntil=now()+4500;render();return false;
+   notice='Hãy đăng nhập trước khi đổi Xu.';error=true;noticeUntil=now()+4500;render();return false;
   }
   let pending=readPending();
   if(!pending){

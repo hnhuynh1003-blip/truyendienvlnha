@@ -23,7 +23,7 @@
   <link rel="stylesheet" href="css/dudu-multiverse-art-v28-r5.css">
   <link rel="stylesheet" href="css/phone-floating-v30.css?v=49-8">
   <link rel="stylesheet" href="css/phone-refinement-v31.css?v=1">
-  <link rel="stylesheet" href="css/phone-social-v32.css?v=timeline-1">
+  <link rel="stylesheet" href="css/phone-social-v32.css?v=copy-1">
   <link rel="stylesheet" href="css/phone-inbox-v33.css?v=4">
   <link rel="stylesheet" href="css/phone-wallpaper-v34.css?v=2">
   <link rel="stylesheet" href="css/phone-settings-v35.css?v=1">
@@ -142,7 +142,7 @@
   <script src="js/dudu-multiverse-art-v28-r5.js"></script>
   <script src="js/phone-typography-v31.js"></script>
   <script src="js/red-packet-v32.js?v=timeline-1"></script>
-  <script src="js/chat-social-v32.js?v=timeline-1"></script>
+  <script src="js/chat-social-v32.js?v=copy-1"></script>
   <script src="js/dudu-multiverse-ui-v28-r5.js"></script>
   <script src="js/player-avatar-ui-v16.js?v=49-7"></script>
   <script src="js/player-avatar-sync-plan-v20.js"></script>
@@ -1370,7 +1370,7 @@
         <nav class="dudu-v32-contact-actions" aria-label="Tương tác với NPC">
           <span class="dudu-v32-relation-chip" id="dudu-v32-mini-affinity" aria-live="polite">❤️ Chưa kết nối</span>
           <button type="button" id="dudu-v32-gift-button" class="dudu-v32-action is-gift" onclick="openGiftModalFromChat()" aria-label="Tặng quà cho NPC">🎁 Quà</button>
-          <button type="button" id="dudu-v32-envelope-button" class="dudu-v32-action is-envelope" onclick="openRedPacketV32()" aria-label="Gửi phong bao bằng xu trò chơi">🧧 Phong bao</button>
+          <button type="button" id="dudu-v32-envelope-button" class="dudu-v32-action is-envelope" onclick="openRedPacketV32()" aria-label="Gửi phong bao cho NPC">🧧 Phong bao</button>
         </nav>
         <div class="dudu-v32-contact-feedback" role="status" aria-live="polite" id="dudu-v32-contact-feedback"></div>
         <div id="npc-relationship-r3-preview" class="dudu-v27-relation" role="group" aria-label="Quan hệ nhân vật" style="display:none;">
@@ -1379,7 +1379,7 @@
               <summary id="npc-v27-relation-summary">🛡 Tin tưởng · Quen biết</summary>
               <div id="npc-relationship-r4-values" class="dudu-v27-relation-values"></div>
             </details>
-            <button type="button" id="npc-daily-checkin-btn" onclick="npcDailyCheckin()" title="Hỏi thăm NPC mỗi ngày theo tài khoản">🤝 Hỏi thăm</button>
+            <button type="button" id="npc-daily-checkin-btn" onclick="npcDailyCheckin()" title="Gửi lời hỏi thăm">🤝 Hỏi thăm</button>
             <button type="button" id="npc-relationship-r4-help" aria-label="Giải thích quan hệ NPC" title="Giải thích quan hệ NPC" onclick="showNpcRelationshipHelp()">?</button>
           </div>
         </div>
@@ -1391,7 +1391,7 @@
           </div>
         </div>
         <div id="chat-messages-container" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 8px; background: rgba(10, 14, 20, 0.6); border-radius: 8px; border: 1px solid #1f2937; margin-bottom: 6px;"></div>
-        <div id="dudu-spark-chat-tip" style="display:none;font-size:9px;color:#d2dee9;text-align:center;margin:0 0 4px" aria-label="Chế độ trò chuyện kịch bản">✦ Hội thoại NPC dùng Gemini qua Cloudflare khi máy chủ được kích hoạt · Có hạn mức · Lưu trên thiết bị</div>
+        <div id="dudu-spark-chat-tip" style="display:none;font-size:9px;color:#d2dee9;text-align:center;margin:0 0 4px" aria-label="Lượt trò chuyện">✦ Mỗi ngày có giới hạn lượt trò chuyện</div>
         <div id="chat-connection-status" role="status" aria-live="polite" style="display:none; font-size:10px; color:var(--gold); padding:3px 5px; line-height:1.35;">
           <span id="chat-connection-message"></span>
           <button id="chat-retry-btn" class="btn" style="display:none; font-size:10px; padding:2px 6px; margin-left:4px;" onclick="retryLastNpcReply()">Thử lại</button>
@@ -1420,7 +1420,7 @@
             </div>
             <label class="dudu-v32-envelope-note-label" for="dudu-v32-envelope-note">Lời nhắn tùy chọn</label>
             <input type="text" id="dudu-v32-envelope-note" maxlength="60" placeholder="Chút tấm lòng gửi bạn..." autocomplete="off">
-            <small>Xu ảo trong Sandbox. Không chuyển tiền thật, không tự tăng thiện cảm. Tối đa 3 phong bao/NPC/ngày, cách nhau 5 phút.</small>
+            <small>Mỗi người tối đa 3 phong bao/ngày, cách nhau 5 phút. Phong bao không tăng thiện cảm.</small>
             <div class="dudu-v32-envelope-result" role="status" aria-live="polite" id="dudu-v32-envelope-result"></div>
             <div class="dudu-v32-envelope-buttons">
               <button type="button" onclick="closeRedPacketV32()">Để sau</button>
@@ -1451,10 +1451,10 @@
           </div>
           <section class="dudu-wallet-secondary" aria-label="Xu trong Arcade">
             <div><span>✧ Xu trong Arcade</span><strong id="dudu-wallet-arcade-balance">—</strong></div>
-            <span class="dudu-wallet-source-badge">Riêng trên thiết bị</span>
+            <span class="dudu-wallet-source-badge">Chơi để tích lũy</span>
           </section>
-          <button type="button" class="dudu-wallet-exchange-launch" onclick="window.DuduPersonalArcadeUIV1?.openExchange?.()">⇄ Xem trước mức đổi Xu</button>
-          <div class="dudu-wallet-lock"><span aria-hidden="true">⌁</span><span>10 Xu Arcade = 1 Xu hệ thống · Hiện chỉ xem trước, chưa chuyển Xu thật (chờ Rules).</span></div>
+          <button type="button" class="dudu-wallet-exchange-launch" onclick="window.DuduPersonalArcadeUIV1?.openExchange?.()">⇄ Xem tỷ lệ đổi Xu</button>
+          <div class="dudu-wallet-lock"><span aria-hidden="true">⌁</span><span>10 Xu Arcade = 1 Xu · Tính năng đổi Xu sắp mở.</span></div>
         </div>
       </div>
 
@@ -1497,7 +1497,7 @@
         </div>
         <p id="dudu-v569-sync-status" role="status" aria-live="polite"
           style="font-size:10px;line-height:1.5;margin:8px 10px;color:#b8c9db">
-          Đồng bộ tiến độ đọc và bộ nền có sẵn theo tài khoản Firebase. Ảnh tự tải vẫn chỉ nằm trên thiết bị.
+          Tiến độ đọc và lựa chọn nền đi theo tài khoản. Ảnh tự tải chỉ có trên thiết bị này.
         </p>
         <section class="dudu-v54-reset-settings" aria-labelledby="dudu-v54-reset-title" style="padding:10px;margin:8px 0;border-radius:12px;border:1px solid #975b6a;background:rgba(45,25,40,.78)">
           <h3 id="dudu-v54-reset-title" style="font-size:12px;margin:0 0 5px;color:#fbcfe8">Khởi tạo lại người chơi</h3>
@@ -2464,7 +2464,7 @@
       const uid=account.uid;
       const projectId=firebase.app().options.projectId;
       v569Pending++;
-      v569Status('☁️ Đang đồng bộ tùy chỉnh cá nhân…');
+      v569Status('☁️ Đang lưu thay đổi…');
       try{
         const opts={account,projectId,fetchFn:fetch,
           isCurrent:owner=>DuduAuth.isReady()&&
@@ -2474,14 +2474,13 @@
         else return false;
         const result=await DuduPersonalCloudV569.patch(opts);
         if(result.saved){
-          v569Status('☁️ Tiến độ và tùy chỉnh đã lưu lên Firebase.');
+          v569Status('☁️ Đã lưu thay đổi.');
           return true;
         }
         return false;
       }catch(error){
         console.warn('DUDU personal sync:',error?.code||error?.name||'failed');
-        v569Status('⚠️ Chưa đồng bộ Firebase ('+
-          (error?.httpStatus||error?.code||'mạng')+'). Dữ liệu vẫn còn trên thiết bị này.');
+        v569Status('⚠️ Chưa lưu được. Thay đổi vẫn còn trên thiết bị này.');
         return false;
       }finally{v569Pending=Math.max(0,v569Pending-1);}
     }
@@ -3428,7 +3427,7 @@
     }
 
     function showNpcRelationshipHelp() {
-      showSystemAlert('QUAN HỆ NPC V2', 'Thiện cảm thể hiện sự quý mến; Tin tưởng mở trần Thiện cảm: 0–19 → 40, 20–49 → 70, 50+ → 100. Quà phù hợp có thể tăng Tin tưởng, quà không nhận không mất. Mỗi NPC có tiến độ riêng. Mốc Tin cậy/Gắn bó cần sự kiện truyện xác minh.');
+      showSystemAlert('GẮN KẾT', 'Hỏi thăm và tặng quà hợp ý giúp xây dựng Tin tưởng. Càng tin tưởng, tình cảm càng có thể sâu sắc. Quà bị từ chối sẽ trở về Kho.');
     }
 
     function moveNpcProgressV31(){
@@ -3531,22 +3530,21 @@
           switchChatCharacter();
         if(action==='favorite'){
           showSystemAlert('NPC YÊU THÍCH',result.favoriteNpcV43?
-            'Đã chọn '+npc.name+' làm NPC yêu thích trong tài khoản Firebase.':
-            'Đã bỏ đánh dấu NPC yêu thích.');
+            'Đã chọn '+npc.name+' làm NPC yêu thích.':
+            'Đã bỏ đánh dấu yêu thích.');
         }else{
           const scenario=DuduNpcPersonaR6.dailyConversation(npc);
           const response=choiceId==='thoughtful'?scenario.replyThoughtful:scenario.replyCasual;
-          showSystemAlert(npc.name,response+' · +'+result.trustGain+
-            ' Tin tưởng. Tiến độ đã lưu vào tài khoản Firebase.');
+          showSystemAlert(npc.name,response+' · +'+result.trustGain+' Tin tưởng.');
         }
         return true;
       }catch(error){
         const reason=error?.code||error?.message||'unknown';
         showSystemAlert('CHƯA LƯU ĐƯỢC',reason==='already-checked-in'?
-          'Hôm nay đã hỏi thăm NPC này rồi. Không cộng lặp Tin tưởng.':
+          'Hôm nay bạn đã hỏi thăm người này rồi.':
           reason==='npc-not-unlocked'?
-            'NPC chưa có liên kết trên hồ sơ Firebase. Hãy kiểm tra đồng bộ tài khoản.':
-            'Không thể lưu tương tác NPC lên Firebase. Không thay đổi tiến độ tại máy.');
+            'Bạn chưa kết nối với NPC này.':
+            'Lời hỏi thăm chưa được gửi. Hãy thử lại.');
         console.warn('DUDU personal NPC social:',reason);
         return false;
       }finally{personalNpcActionsInFlight.delete(key);}
@@ -3878,15 +3876,15 @@
             v56State(storyId),activeRole.id,charId):null;
           affinityEl.textContent=activeRole&&char?
             '❤️ '+roleRelation.affinity+'%':'❤️ —';
-          affinityEl.title='Thiện cảm của vai nhập vai; bảng 🛡 là gắn kết tài khoản với NPC';
+          affinityEl.title='Thiện cảm dành cho thân phận đang nhập vai';
         }
         const relationSummary=document.getElementById('npc-v27-relation-summary');
         if(relationSummary)relationSummary.textContent=
           '🛡 ' + trust + '/100 · ' + (labels[stage]||'Chưa kết nối');
         document.getElementById('npc-relationship-r4-values').textContent = '❤️ Thiện cảm: '+affection+'/100  •  🛡️ Tin tưởng: '+
           trust+'/100  •  '+(labels[stage]||'Chưa kết nối')+
-          '  •  Trần thiện cảm mới: '+ceiling+'/100';
-        panel.title = 'Gắn kết theo tài khoản; mốc Tin cậy/Gắn bó cần sự kiện truyện được xác minh.';
+          '  •  Mức thân thiết có thể đạt: '+ceiling+'/100';
+        panel.title = 'Những ngày bạn đồng hành cùng NPC';
       } else {
         if(panel)panel.style.display='none';
         const activeRole=v56CurrentRole(storyId);
@@ -3915,7 +3913,7 @@
       if (!v56CurrentRole()) {
         const notice=document.createElement('div');
         notice.style.cssText='color:#a5f3fc;font-size:11px;text-align:center;margin:auto;line-height:1.6';
-        notice.textContent='Tạo nhân vật nhập vai ở phía trên để NPC biết bạn là ai. Lịch sử V55 vẫn được giữ nguyên, chưa gán vai.';
+        notice.textContent='Hãy chọn thân phận của bạn để bắt đầu trò chuyện. Những lời nhắn cũ vẫn được giữ lại.';
         container.append(notice);
         // Red envelopes belong to the account/NPC, not a roleplay identity.
         renderRedPacketEventsV32(container,activeChatNovelId||
@@ -3928,7 +3926,7 @@
 
       if (history.length === 0) {
         const name = char ? char.name : 'nhân vật';
-        container.innerHTML = `<div class="dudu-v31-chat-empty" style="text-align: center; color: #64748b; font-size: 10px; margin-top: 20px;">[Đã mở tần số kết nối với ${escapeHtml(name)}]<br>Hãy gửi tin nhắn để trò chuyện...</div>`;
+        container.innerHTML = `<div class="dudu-v31-chat-empty" style="text-align: center; color: #64748b; font-size: 10px; margin-top: 20px;">Chào ${escapeHtml(name)} một tiếng nhé...</div>`;
         renderRedPacketEventsV32(container,activeChatNovelId||(novels[selectedNovelIndex]||{}).id,charId);
         return;
       }
@@ -3955,7 +3953,10 @@
               : 'align-self: flex-start; background: #1e293b; border: 1px solid #334155; color: var(--neon);'
           }`;
           div.textContent = msg.text;
-          if(!isUser&&msg.model&&window.DuduAI?.models?.some(m=>m.id===msg.model)){
+          // Technical model labels belong in the optional AI settings panel,
+          // not under every NPC message during normal roleplay.
+          if(!isUser&&document.getElementById('dudu-v5612-ai-settings')?.open&&
+             msg.model&&window.DuduAI?.models?.some(m=>m.id===msg.model)){
             const meta=document.createElement('small');
             const source=typeof msg.fallbackFrom==='string'&&window.DuduAI?.models?.some(m=>m.id===msg.fallbackFrom)
               ?msg.fallbackFrom:null;
@@ -4052,17 +4053,11 @@
       }
 
       if (res?.error) {
-        console.warn('NPC reply unavailable:', res.error);
+        console.warn('NPC reply unavailable:',res.error,res.code||'',res.reference||'',res.field||'');
         pendingNpcRetry = {user:requestUser,storyId,charId:char.id,key:requestChatKey,roleId:requestRole.id};
         if (sameNpc) {
-          showNpcConnectionStatus(
-            res.error+' · Tin nhắn đã lưu trên thiết bị.'+
-              (res.model?' · Model đã gọi: '+res.model:'')+
-              (res.code?' · Mã lỗi: '+res.code:'')+
-              (res.reference?' · Mã kiểm tra: '+res.reference:'')+
-              (res.field?' · Nhóm dữ liệu: '+res.field:''),
-            DuduAI.isConfigured()
-          );
+          showNpcConnectionStatus('Tạm thời chưa thể nhận hồi âm. Hãy thử lại sau một chút.',
+            DuduAI.isConfigured());
         }
         return;
       }
@@ -4234,13 +4229,12 @@
         const badge=document.createElement('span');
         badge.className='dudu-v43-bond-milestone'+(earned?' is-earned':'');
         badge.textContent=(earned?'✦ ':'◇ ')+day+' ngày';
-        badge.title=earned?(IS_SANDBOX_MODE?'Đã ghi nhận trong Sandbox':'Nhật ký cá nhân; chưa xác thực máy chủ'):'Chưa đạt';
+        badge.title=earned?'Kỷ niệm đã ghi dấu':'Chưa đạt';
         badges.append(badge);
       }
       const note=document.createElement('small');
       note.className='dudu-v43-bond-overview-note';
-      note.textContent=IS_SANDBOX_MODE?'Mốc thử nghiệm · chưa cấp kỷ vật Bảo Tàng':
-        'Lịch sử gắn kết tham khảo · không cấp kỷ vật máy chủ';
+      note.textContent='Những ngày đồng hành cùng nhau.';
       section.append(heading,context,badges,note);
       host.append(section);
     }
@@ -4459,7 +4453,7 @@
       if (!char) { showSystemAlert("CHƯA LIÊN KẾT", "Cần mở khóa NPC trước khi tặng quà."); return; }
       document.getElementById('gift-modal-heading').textContent = `🎁 TẶNG QUÀ: ${char.name}`;
       document.getElementById('gift-modal-desc').textContent =
-        '🎁 NPC nhận quà theo sở thích. Quà bị từ chối hoặc đang hồi không mất. 3 lượt/NPC/ngày, cách 5 phút; Tin tưởng mở trần Thiện cảm.';
+        '🎁 Mỗi người nhận tối đa 3 món/ngày, cách nhau 5 phút. Quà không hợp ý sẽ được trả lại.';
 
       const listContainer = document.getElementById('gift-inventory-list');
       listContainer.innerHTML = "";
@@ -4479,7 +4473,7 @@
                 <span style="font-size:11px; font-weight:bold; color:var(--text-white);">${escapeHtml(item.name)}</span>
               </div>
             </div>
-            <button class="btn btn-gold" data-dudu-gift-submit="1" style="padding:3px 8px; font-size:9px;" ${!IS_SANDBOX_MODE&&!DuduInventoryTradeV439.known(item)?'disabled title="Món này chưa xác thực được nguồn gốc"':''}>Tặng</button>
+            <button class="btn btn-gold" data-dudu-gift-submit="1" style="padding:3px 8px; font-size:9px;" ${!IS_SANDBOX_MODE&&!DuduInventoryTradeV439.known(item)?'disabled title="Món này chưa thể tặng"':''}>Tặng</button>
           `;
           div.querySelector('[data-dudu-gift-submit]')?.addEventListener('click',
             ()=>executeGiftItem(char.id,idx,storyId));
@@ -4518,7 +4512,7 @@
         eventId=saved&&/^(gift|rp)-[0-9a-f-]{36}$/.test(saved)?saved:engine.requestId(kind);
         localStorage.setItem(key,eventId);
       }catch(_){
-        showSystemAlert('CHƯA GỬI ĐƯỢC','Không tạo/lưu được mã giao dịch trên thiết bị.');return null;
+        showSystemAlert('CHƯA GỬI ĐƯỢC','Phong bao hoặc quà chưa sẵn sàng. Hãy thử lại.');return null;
       }
       personalNpcExchangeBusy=true;
       window.DUDU_PERSONAL_NPC_EXCHANGE_BUSY=true;
@@ -4545,17 +4539,17 @@
       }catch(error){
         console.warn('NPC Firestore exchange:',error?.code||error?.message);
         const reason=error?.code||'';
-        const message=reason==='npc-not-unlocked'?'NPC chưa mở khóa trên hồ sơ Firebase.':
-          reason==='item-not-owned'?'Món đồ không còn trong Kho trên máy chủ.':
-          reason==='item-not-giftable'?'Vật phẩm chưa xác thực hoặc không được phép tặng.':
+        const message=reason==='npc-not-unlocked'?'Bạn chưa kết nối với NPC này.':
+          reason==='item-not-owned'?'Món đồ này không còn trong Kho.':
+          reason==='item-not-giftable'?'Món này không thể tặng.':
           reason.startsWith('gift-daily-limit')?'Đã tặng đủ 3 quà cho NPC hôm nay.':
           reason.startsWith('gift-five-minute-limit')?'Hãy chờ 5 phút giữa hai món quà.':
           reason==='gift-affinity-locked-by-trust'?'Hãy tăng Tin tưởng để mở trần Thiện cảm.':
           reason.startsWith('gift-')?'NPC không muốn nhận món quà này. Vật phẩm vẫn còn.':
-          reason==='envelope-insufficient'?'Số Xu trên máy chủ không đủ.':
+          reason==='envelope-insufficient'?'Bạn không đủ Xu để gửi phong bao này.':
           reason==='envelope-daily-limit'?'Đã gửi đủ 3 phong bao cho NPC hôm nay.':
           reason==='envelope-cooldown'?'Cần chờ 5 phút giữa hai phong bao.':
-          'Không xác nhận được giao dịch Firebase. Kho/Xu chưa đổi tại máy; hãy thử lại.';
+          'Chưa hoàn tất. Hãy thử lại sau ít phút.';
         showSystemAlert('CHƯA GỬI THÀNH CÔNG',message);
         return null;
       }finally{
@@ -5355,14 +5349,14 @@ document.getElementById('phone-home-screen').style.display = 'none';
       container.replaceChildren();
       if(!response.ok){
         container.textContent=response.reason==='sandbox'
-          ? '🧪 Sandbox không kết nối sổ sở hữu máy chủ và không phát kỷ vật thật.'
+          ? 'Kỷ vật trong phòng thử không xuất hiện ở đây.'
           : response.reason==='unauthenticated'
-            ? 'Vui lòng đăng nhập để xem kỷ vật đã được xác nhận.'
-            : 'Bảo tàng đang ở chế độ chuẩn bị. Chưa mở nhận kỷ vật cho người chơi.';
+            ? 'Hãy đăng nhập để xem bộ sưu tập của bạn.'
+            : 'Bảo tàng đang chuẩn bị đón những kỷ vật đầu tiên.';
         return;
       }
       if(!response.items.length){
-        container.textContent='Chưa có kỷ vật máy chủ nào được xác nhận cho tài khoản này.';
+        container.textContent='Bộ sưu tập còn trống. Hãy tiếp tục hành trình nhé!';
         return;
       }
       for(const item of response.items){
@@ -5422,7 +5416,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
         pending={itemId:item.id,requestId:engine.requestId(kind)};
       try{localStorage.setItem(key,JSON.stringify(pending));}
       catch(_){
-        showSystemAlert('CHƯA THAO TÁC ĐƯỢC','Thiết bị không lưu được mã giao dịch.');
+        showSystemAlert('CHƯA THAO TÁC ĐƯỢC','Chưa thể thực hiện. Hãy thử lại.');
         return false;
       }
       personalItemBusy=true;
@@ -5452,8 +5446,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
         return true;
       }catch(error){
         console.warn('DUDU personal items:',error?.message||'unavailable');
-        showSystemAlert('CHƯA XÁC NHẬN ĐƯỢC',
-          'Kiểm tra kết nối rồi thử lại cùng món. Hệ thống không nhân đôi vật phẩm.');
+        showSystemAlert('CHƯA HOÀN TẤT','Hãy thử lại với món đồ này.');
         return false;
       }finally{personalItemBusy=false;}
     }
@@ -5508,7 +5501,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       if(!IS_SANDBOX_MODE&&!personalItemsReady()){
         const note=document.createElement('p');
         note.className='dudu-inventory-v12-detail-desc';
-        note.textContent='Thông tin vật phẩm từ hồ sơ hiện tại. Giao dịch, tiêu hao và chuyển quà cần xác thực máy chủ.';
+        note.textContent='Món đồ này tạm thời chưa thể sử dụng hoặc trao đổi.';
         panel.append(note);
       }
       if(personalItemsReady()){
@@ -8306,16 +8299,16 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/npc-portrait-v39.js?v=2"></script>
 <script src="js/phone-inbox-v33.js?v=51-1"></script>
 <script src="js/companion-ui-v43.js?v=69-restore-1"></script>
-<script src="js/market-ui-v43.js?v=52-1"></script>
+<script src="js/market-ui-v43.js?v=copy-1"></script>
 <script src="js/dudu-fun-ui-v43.js?v=51-1"></script>
-<script src="js/personal-arcade-ui-v1.js?v=xu-quote-2"></script>
-<script src="js/quest-ui-v43-7.js?v=51-1"></script>
+<script src="js/personal-arcade-ui-v1.js?v=copy-1"></script>
+<script src="js/quest-ui-v43-7.js?v=copy-1"></script>
 <script src="js/economy-runtime-v43.js?v=51-1"></script>
 <script src="js/economy-live-v52.js?v=52-1"></script>
 <script src="js/museum-memories-ui-v43.js?v=2"></script>
 <script src="js/npc-diary-ui.js?v=1"></script>
 <script src="js/soul-link-ui-v43.js?v=2"></script>
-<script src="js/phone-wallpaper-v34.js?v=2"></script>
+<script src="js/phone-wallpaper-v34.js?v=copy-1"></script>
 <script src="js/phone-settings-v35.js?v=1"></script>
 <script src="js/phone-wallpaper-v36-custom.js?v=1"></script>
 <script src="js/phone-wallpaper-v37-gallery.js?v=2"></script>

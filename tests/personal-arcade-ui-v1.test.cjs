@@ -68,7 +68,7 @@ test('Exchange opens from wallet and remains disabled until trusted Rules exist'
   dataset:{arcadeExchange:choice}})}});
  click('open');
  assert.match(host.innerHTML,/role="dialog"/);
- assert.match(host.innerHTML,/Chuyển Xu · Chờ Rules/);
+ assert.match(host.innerHTML,/Chuyển Xu · Sắp mở/);
  assert.match(host.innerHTML,/data-arcade-action="transfer" disabled/);
  click('close');
  assert.doesNotMatch(host.innerHTML,/role="dialog"/);

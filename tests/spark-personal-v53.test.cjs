@@ -35,7 +35,7 @@ test('V53 offline NPC replies are clearly scripted, scoped and never award curre
  assert.match(local,/saveChatHistories\(\)/);
  assert.match(local,/return;/);
  assert.doesNotMatch(local.slice(0,local.indexOf('return;')),/DuduAI\.generate|userProfile\.currency\s*=|v43RecordNpcBond/);
- assert.match(html,/NPC AI \(cần Worker bật\)|NPC AI .*Cloudflare|Hội thoại NPC dùng Gemini qua Cloudflare/);
+ assert.match(html,/Mỗi ngày có giới hạn lượt trò chuyện/);
 });
 test('V53 EPUB supports Firestore Spark without Cloud Storage backup UI',()=>{
  assert.match(html,/sparkPersonal:DUDU_SPARK_PERSONAL_MODE/);

@@ -29,7 +29,7 @@ test('three existing NPCs retain separate progress by UID, story, and ID',()=>{
 test('R4 relationship help is available in live and controls remain accessible',()=>{
  assert.match(html,/id="npc-relationship-r4-help"/);
  assert.match(html,/aria-label="Giải thích quan hệ NPC"/);
- assert.match(html,/function showNpcRelationshipHelp\(\) \{\s*showSystemAlert\('QUAN HỆ NPC V2'/);
+ assert.match(html,/function showNpcRelationshipHelp\(\) \{\s*showSystemAlert\('GẮN KẾT'/);
  assert.match(html,/npc-relationship-r4-values/);
- assert.match(html,/NPC nhận quà theo sở thích/);
+ assert.match(html,/Mỗi người nhận tối đa 3 món\/ngày/);
 });
