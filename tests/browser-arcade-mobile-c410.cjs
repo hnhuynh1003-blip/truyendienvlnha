@@ -74,7 +74,9 @@ async function main(){
   await page.evaluate(()=>document.querySelector('.arcade-scroll').scrollTop=220);
   await tab('jade').click();
   assert.equal(await page.locator('.arcade-scroll').evaluate(el=>el.scrollTop),0);
-  await action('jade-buy-0').click();
+  // The free-stone action is deliberately also shown in the market sheet.
+  // Choose the visible welcome CTA rather than an ambiguous action ID.
+  await action('jade-buy-0').first().click();
   for(let i=0;i<3;i++)await action('jade-scan-'+i).click();
   const scans=await page.evaluate(()=>{
    const raw=localStorage.getItem('dudu-personal-arcade:v1:sandbox%3Ac410-mobile-tester');
