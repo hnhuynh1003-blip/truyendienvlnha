@@ -31,5 +31,5 @@ test('R4 relationship help is available in live and controls remain accessible',
  assert.match(html,/aria-label="Giải thích quan hệ NPC"/);
  assert.match(html,/function showNpcRelationshipHelp\(\) \{\s*showSystemAlert\('QUAN HỆ NPC V2'/);
  assert.match(html,/npc-relationship-r4-values/);
- assert.match(html,/IS_SANDBOX_MODE\s*\? '🎁 Tặng quà theo sở thích/);
+ assert.match(html,/NPC nhận quà theo sở thích/);
 });

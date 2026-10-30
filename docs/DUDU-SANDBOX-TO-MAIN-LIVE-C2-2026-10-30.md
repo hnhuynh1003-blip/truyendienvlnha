@@ -38,8 +38,8 @@ quy tắc không cấp trùng. Chỉ khi đó mới coi là đã chuyển sang m
 | Chọn NPC yêu thích | Đã nối giao dịch Firebase | Test hai tài khoản và tải lại |
 | Hỏi thăm, Tin tưởng, gắn kết | Đã nối giao dịch Firebase | Test ngày UTC, online/offline |
 | Chân dung, trang quan hệ NPC | Mở trong main có quyền | Test ảnh trên di động |
-| Tặng quà từ Kho cho NPC | Main vẫn có nhánh cũ | Thay bằng transaction trừ đúng instance + tăng quan hệ R2 |
-| Phong bao NPC bằng Xu | Chỉ Sandbox; main khóa | Transaction ghi Xu và nhật ký, cùng hạn mức V32 |
+| Tặng quà từ Kho cho NPC | C2.2 đã nối giao dịch Firebase; chờ thử UID thật | Kiểm tra quà thích/ghét, reload, vật phẩm và trần Thiện cảm trên thiết bị thực |
+| Phong bao NPC bằng Xu | C2.2 đã nối giao dịch Firebase; chờ thử UID thật | Kiểm tra Xu trước/sau, 3 lượt/ngày, cooldown và lịch sử khi đăng nhập lại |
 | Kho: lịch sử quà, sổ sưu tập | Chủ yếu Sandbox | Chốt mô hình ownership và lịch sử có thể đọc lại |
 | Kho: bán/ký gửi/đấu giá | Main có mua/dùng/bán phổ thông; Sandbox có bản ký gửi nháp | Phân biệt đấu giá thật và nháp, không giả tạo người mua |
 | Quà tặng tác giả, hộp thư | Sandbox bản nháp, main placeholder | Thiết kế hai UID, người nhận và biên nhận |
@@ -61,12 +61,44 @@ quy tắc không cấp trùng. Chỉ khi đó mới coi là đã chuyển sang m
   NPC, tải lại, bảo đảm số dư và Kho không đổi; nếu giao dịch bị từ chối,
   dừng và đối chiếu Rules đã triển khai, không tự nới Rules.
 
-## C2.2 theo sau
+## C2.2 — chuyển Tặng quà và Phong bao sang main (mã nguồn)
 
-Chuyển **tặng quà NPC thật** theo engine R2 (thích/không thích, cooldown,
-trần Thiện cảm) và **Phong bao Xu** V32, nhưng trước đó phải tách những
-đường lưu hồ sơ cũ đang ghi trọn currency+inventory+storyStates để không
-ghi đè transaction. Sau đó mới chuẩn hóa Rules và tính chuyện reset mùa.
+- `js/personal-npc-exchange-v1.js` dùng một giao dịch `profiles_v2/{uid}`
+  với `runTransaction` trên Firebase Spark hiện tại; kiểm tra `auth.uid`,
+  NPC đã mở khóa trong hồ sơ trên máy chủ, vật phẩm có `instanceId` duy nhất,
+  metadata vật phẩm hợp lệ theo catalog và quyền tặng. Kết quả nhận/từ chối
+  theo engine R2; chỉ nhận quà mới trừ **đúng instance**, cập nhật Thiện cảm,
+  Tin tưởng và chuỗi gắn kết. Không cộng thưởng Xu, EXP, Quest khi tặng.
+- Phong bao V32 chấp nhận 10/50/100/520/1314 Xu *trò chơi*, 3 lần/NPC/ngày
+  UTC, cách 5 phút; một giao dịch cùng lúc trừ Xu và ghi lịch sử cho đúng
+  NPC. Không có ví NPC, chuyển tiền thật hay thưởng Thiện cảm.
+- Mã giao dịch tạo bằng UUID và giữ ở localStorage khi chưa xác nhận. Nếu
+  mạng lỗi sau khi Firebase đã ghi xong, bấm lại dùng mã cũ; NPC nhận quà và
+  sổ phong bao nhận biết yêu cầu đã xử lý, không trừ lần thứ hai. Sandbox
+  vẫn chạy nhánh cũ, không đổi cơ chế mô phỏng.
+- Nút phong bao và quà đã được mở ở tài khoản Firebase xác thực và NPC
+  đã mở khóa, thay cho nhánh main chỉ trừ quà cũ và nút phong bao khóa.
+- Những lần gọi lưu *toàn hồ sơ* đã bắt đầu trong cùng tab được chờ hoàn
+  thành trước giao dịch mới; không gửi `saveCurrentAccount()` từ kết quả
+  C2.2. Tuy vậy, **lưu hồ sơ cũ ở các chức năng khác và nhiều tab/thiết bị
+  vẫn có thể ghi đè trạng thái mới**. Đây là nợ đồng bộ cần xử lý ở C2.3
+  trước khi đặt trạng thái live-production hay làm reset mùa.
+
+Kiểm thử máy: 131/131 tập Node đạt sau khi thêm giao dịch quà/phong bao,
+bao gồm retry cùng ID, từ chối không trừ đồ, Xu thiếu, cooldown và quyền UID;
+2 kiểm tra Phone manifest/lifecycle đạt. Chưa có kiểm thử thực bằng đăng
+nhập và Firestore Rules production. Không cập nhật hay deploy Rules, không
+reset tài khoản, không thay Worker trong đợt này.
+
+## C2.3 kế tiếp (chưa thực hiện)
+
+1. Rà soát và tách `saveCurrentAccount()` thành các cập nhật theo trường
+   để tránh ghi đè Kho/Xu/quan hệ đã giao dịch, kể cả khi chạy nhiều tab.
+2. Kiểm thử 2 UID thật: quà nhận, quà từ chối, phong bao, reload,
+   đảm bảo tài khoản A không thể ghi vào tài khoản B; xác minh Rules đã
+   triển khai và chính sách đọc/ghi.
+3. Rà soát các chức năng Sandbox còn lại (bán/ký gửi, quà tác giả,
+   Arcade, nhặt đồ, quest, liên lạc) và chốt phạm vi Rules trước reset.
 
 Rollback C2.1: revert commit mã nguồn; bản ghi yêu thích/hỏi thăm đã thực
 sự được người dùng thực hiện sẽ được giữ lại trong hồ sơ, không xóa tự động.

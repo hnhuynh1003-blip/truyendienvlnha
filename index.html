@@ -160,6 +160,7 @@
   <script src="js/dudu-system-steward-v67-3.js?v=67-3-3"></script>
   <script src="js/npc-bond-v43.js?v=1"></script>
   <script src="js/personal-npc-social-v1.js?v=personal-social-1"></script>
+  <script src="js/personal-npc-exchange-v1.js?v=personal-exchange-1"></script>
   <script src="js/museum-memories-v43.js?v=1"></script>
   <script src="js/soul-link-v43.js?v=1"></script>
   <script src="js/author-items-v1.js"></script>
@@ -2951,6 +2952,9 @@
       window.DuduSiteV60?.refresh?.(); // Keep Author Studio entry in sync with Sandbox role.
     }
 
+    // Track legacy broad writes so a later narrow NPC exchange can wait until
+    // its own tab has finished sending an older profile snapshot.
+    const pendingLiveProfileWrites=new Set();
     function saveCurrentAccount() {
       if (window.DUDU_RESET_IN_PROGRESS) return;
       if (!currentUsername || (!IS_SANDBOX_MODE && (!DuduAuth.isReady() || DuduAuth.uid() !== currentUsername))) return;
@@ -2994,11 +2998,18 @@
         catch(e) { console.warn('V44.9: cập nhật Phone sau lưu gặp lỗi:',e); }
         return;
       }
-      try {
-        db.collection("profiles_v2").doc(DuduAuth.uid()).set(cloudData, { merge: true })
-          .catch(err => console.warn("Lỗi đồng bộ Firebase (vẫn chạy offline):", err));
-      } catch (e) {
-        console.warn("Không gửi được lên Firebase:", e);
+      if(window.DUDU_PERSONAL_NPC_EXCHANGE_BUSY){
+        // A stale full-profile write must not follow a committed wallet/item
+        // transaction. The calling feature must retry its own save afterwards.
+        console.warn('Đang giao dịch NPC: tạm hoãn ghi hồ sơ cũ để bảo vệ Kho/Xu.');
+      }else{
+        try {
+          const write=db.collection("profiles_v2").doc(DuduAuth.uid())
+            .set(cloudData,{merge:true});
+          pendingLiveProfileWrites.add(write);
+          write.catch(err=>console.warn('Lỗi đồng bộ Firebase (vẫn chạy offline):',err))
+            .finally(()=>pendingLiveProfileWrites.delete(write));
+        }catch(e){console.warn('Không gửi được lên Firebase:',e);}
       }
 
       try { updatePhoneUI(); }
@@ -3905,6 +3916,9 @@
         notice.style.cssText='color:#a5f3fc;font-size:11px;text-align:center;margin:auto;line-height:1.6';
         notice.textContent='Tạo nhân vật nhập vai ở phía trên để NPC biết bạn là ai. Lịch sử V55 vẫn được giữ nguyên, chưa gán vai.';
         container.append(notice);
+        // Red envelopes belong to the account/NPC, not a roleplay identity.
+        renderRedPacketEventsV32(container,activeChatNovelId||
+          (novels[selectedNovelIndex]||{}).id,charId);
         return;
       }
       const history = chatHistories[chatKey(charId)] || [];
@@ -4432,9 +4446,8 @@
       const char = chars.find(c => c.id === charId);
       if (!char) { showSystemAlert("CHƯA LIÊN KẾT", "Cần mở khóa NPC trước khi tặng quà."); return; }
       document.getElementById('gift-modal-heading').textContent = `🎁 TẶNG QUÀ: ${char.name}`;
-      document.getElementById('gift-modal-desc').textContent = IS_SANDBOX_MODE
-        ? '🎁 Tặng quà theo sở thích. Quà bị từ chối hoặc đang hồi không mất. 3 lượt/NPC/ngày, cách 5 phút; Tin tưởng mở trần Thiện cảm.'
-        : `Tặng vật phẩm để tăng mức độ gắn kết linh hồn với [${char.name}].`;
+      document.getElementById('gift-modal-desc').textContent =
+        '🎁 NPC nhận quà theo sở thích. Quà bị từ chối hoặc đang hồi không mất. 3 lượt/NPC/ngày, cách 5 phút; Tin tưởng mở trần Thiện cảm.';
 
       const listContainer = document.getElementById('gift-inventory-list');
       listContainer.innerHTML = "";
@@ -4454,7 +4467,7 @@
                 <span style="font-size:11px; font-weight:bold; color:var(--text-white);">${escapeHtml(item.name)}</span>
               </div>
             </div>
-            <button class="btn btn-gold" style="padding:3px 8px; font-size:9px;" onclick="executeGiftItem('${char.id}', ${idx})">Tặng</button>
+            <button class="btn btn-gold" style="padding:3px 8px; font-size:9px;" onclick="executeGiftItem('${char.id}', ${idx})" ${!IS_SANDBOX_MODE&&!DuduInventoryTradeV439.known(item)?'disabled title="Món này chưa xác thực được nguồn gốc"':''}>Tặng</button>
           `;
           listContainer.appendChild(div);
         });
@@ -4472,6 +4485,72 @@
       openGiftModalForChar(charId);
     }
 
+    // Shared real-account journal for NPC gifts and virtual-Xu envelopes.
+    // Legacy broad writes in this tab settle before the read/commit. On
+    // success, only server-confirmed fields are copied to the local profile.
+    let personalNpcExchangeBusy=false;
+    async function commitPersonalNpcExchangeV1(kind,storyId,npcId,details={}){
+      if(IS_SANDBOX_MODE||!DuduAuth.isReady()||DuduAuth.uid()!==currentUsername||
+         !window.DuduPersonalNpcExchangeV1||personalNpcExchangeBusy)return null;
+      const novel=novels.find(n=>n.id===storyId);
+      const npc=novel?.characters?.find(c=>c.id===npcId&&!c.archived);
+      if(!npc||!isNpcUnlocked(storyId,npcId))return null;
+      const uid=currentUsername,engine=DuduPersonalNpcExchangeV1;
+      const key='dudu:npc-exchange:pending:'+uid+':'+kind+':'+storyId+':'+npcId+':'+
+        (kind==='gift'?details.instanceId:details.amount);
+      let eventId;
+      try{
+        const saved=localStorage.getItem(key);
+        eventId=saved&&/^(gift|rp)-[0-9a-f-]{36}$/.test(saved)?saved:engine.requestId(kind);
+        localStorage.setItem(key,eventId);
+      }catch(_){
+        showSystemAlert('CHƯA GỬI ĐƯỢC','Không tạo/lưu được mã giao dịch trên thiết bị.');return null;
+      }
+      personalNpcExchangeBusy=true;
+      window.DUDU_PERSONAL_NPC_EXCHANGE_BUSY=true;
+      try{
+        await Promise.allSettled([...pendingLiveProfileWrites]);
+        if(DuduAuth.uid()!==uid||currentUsername!==uid)return null;
+        const result=await engine.run({db,auth:firebase.auth(),uid,storyId,npcId,
+          npc,kind,eventId,...details});
+        if(DuduAuth.uid()!==uid||currentUsername!==uid)return null;
+        const progress=getStoryProgress(storyId);
+        if(kind==='gift'){
+          userProfile.inventory=result.inventory;
+          progress.collectedCharacters[npcId]=result.progress;
+        }else{
+          userProfile.currency=result.balance;
+          progress.redPacketsV32={...(progress.redPacketsV32||{}),[npcId]:result.redPacket};
+        }
+        try{
+          localStorage.setItem('profile_'+uid,JSON.stringify(userProfile));
+          localStorage.removeItem(key);
+        }catch(error){console.warn('NPC local cache unavailable:',error);}
+        updatePhoneUI();
+        return result;
+      }catch(error){
+        console.warn('NPC Firestore exchange:',error?.code||error?.message);
+        const reason=error?.code||'';
+        const message=reason==='npc-not-unlocked'?'NPC chưa mở khóa trên hồ sơ Firebase.':
+          reason==='item-not-owned'?'Món đồ không còn trong Kho trên máy chủ.':
+          reason==='item-not-giftable'?'Vật phẩm chưa xác thực hoặc không được phép tặng.':
+          reason.startsWith('gift-daily-limit')?'Đã tặng đủ 3 quà cho NPC hôm nay.':
+          reason.startsWith('gift-five-minute-limit')?'Hãy chờ 5 phút giữa hai món quà.':
+          reason==='gift-affinity-locked-by-trust'?'Hãy tăng Tin tưởng để mở trần Thiện cảm.':
+          reason.startsWith('gift-')?'NPC không muốn nhận món quà này. Vật phẩm vẫn còn.':
+          reason==='envelope-insufficient'?'Số Xu trên máy chủ không đủ.':
+          reason==='envelope-daily-limit'?'Đã gửi đủ 3 phong bao cho NPC hôm nay.':
+          reason==='envelope-cooldown'?'Cần chờ 5 phút giữa hai phong bao.':
+          'Không xác nhận được giao dịch Firebase. Kho/Xu chưa đổi tại máy; hãy thử lại.';
+        showSystemAlert('CHƯA GỬI THÀNH CÔNG',message);
+        return null;
+      }finally{
+        window.DUDU_PERSONAL_NPC_EXCHANGE_BUSY=false;
+        personalNpcExchangeBusy=false;
+      }
+    }
+    window.commitPersonalNpcExchangeV1=commitPersonalNpcExchangeV1;
+
     async function executeGiftItem(charId, itemIdx) {
       const item = userProfile.inventory[itemIdx];
       if (!item) return;
@@ -4483,7 +4562,7 @@
       const giftStory = activeChatNovelId || (novels[selectedNovelIndex] || {}).id;
       const giftUser = currentUsername;
       if (!isNpcUnlocked(giftStory, char.id)) return;
-      // R2 sandbox only. Existing live gift behavior is unchanged.
+      // Sandbox retains the original local R2 interaction and quest hooks.
       if (IS_SANDBOX_MODE) {
         const progress = getStoryProgress(giftStory).collectedCharacters[char.id];
         const canonical = DuduItemCatalog.byId(item.id || item.itemId);
@@ -4559,20 +4638,20 @@
         renderCodexList();
         return;
       }
-      userProfile.inventory.splice(itemIdx, 1);
-
-      const rankBonus = { "F": 5, "E": 10, "D": 15, "C": 25, "B": 35, "A": 50, "S": 75, "SS": 100, "SSS": 100 };
-      const gain = rankBonus[item.rank] || 10;
-
-      const npcProgress = getStoryProgress(giftStory).collectedCharacters[char.id];
-      npcProgress.affinity = Math.min(100, (npcProgress.affinity || 10) + gain); // legacy Sandbox shared inventory only
-      saveCurrentAccount();
+      const result=await commitPersonalNpcExchangeV1('gift',giftStory,char.id,
+        {instanceId:item.instanceId});
+      if(!result)return;
+      closeModals();
+      if(result.status==='already-applied'){
+        showSystemAlert('QUÀ ĐÃ GỬI','Món quà này đã được ghi nhận trước đó.');
+        renderCodexList();return;
+      }
+      const gain=result.affinityGain;
       // This is a local interaction record, NOT a verified game-economy fact.
       const giftRef = 'gift-' + Date.now() + '-' + Math.random().toString(36).slice(2,9);
       npcMemoryStore(giftStory,char.id,giftUser)?.addGift(item.name,item.rank,giftRef);
-      closeModals();
-
-      showSystemAlert("TẶNG QUÀ THÀNH CÔNG", `Đã tặng [${item.name}] cho ${char.name} (+${gain}% Thân Mật) ❤️`);
+      showSystemAlert('TẶNG QUÀ THÀNH CÔNG',
+        `NPC đã nhận ${item.name} (+${gain} Thiện cảm, +${result.trustGain} Tin tưởng).`);
       renderCodexList();
 
       if (document.getElementById('phone-app-chat').style.display === 'flex') {

@@ -38,7 +38,7 @@ test('V32 note sanitizer limits text and ledger is scope-preserving pure data',(
  assert.deepEqual(rules.normalizeRecord(raw).events,[]);
  assert.equal(raw.count,6);
 });
-test('V32 messenger has direct gift and red-envelope actions; existing gift logic kept',()=>{
+test('V32 messenger has direct gift and red-envelope actions with local Sandbox path kept',()=>{
  const chat=html.slice(html.indexOf('<!-- APP: TRÒ CHUYỆN'),html.indexOf('<!-- APP: CỬA HÀNG -->'));
  for(const name of ['dudu-v32-gift-button','dudu-v32-envelope-button','dudu-v32-mini-affinity',
  'dudu-v32-envelope-overlay','dudu-v32-envelope-note','dudu-v32-envelope-confirm']){
@@ -50,10 +50,10 @@ test('V32 messenger has direct gift and red-envelope actions; existing gift logi
  assert.match(social,/userProfile\.currency=plan\.balanceAfter/);
  assert.match(social,/saveCurrentAccount\(\)/);
  assert.doesNotMatch(social,/\.affinity\s*=|\.trust\s*=|addExp\(|fetch\(|firestore|callGeminiAIChat/);
- assert.match(social,/if\(!IS_SANDBOX_MODE\|\|!currentUsername\)return null/);
+ assert.match(social,/commitPersonalNpcExchangeV1\('rp'/);
  assert.match(css,/dudu-v32-envelope-sheet/);
 });
-test('V32 live contact disables only the unavailable red packet, never gifts or Xu',()=>{
+test('V32 live contact enables both actions only after Firebase and NPC unlock',()=>{
  const elements=new Map([
   ['dudu-v32-envelope-button',{disabled:false,textContent:'🧧 Phong bao',
     title:'',setAttribute(name,value){this[name]=value;}}],
@@ -63,14 +63,24 @@ test('V32 live contact disables only the unavailable red packet, never gifts or 
  const document={readyState:'complete',getElementById:id=>elements.get(id)||null,
   addEventListener(){}};
  const win={document,DuduRedPacketV32:rules};
- vm.runInNewContext(social,{window:win,document,IS_SANDBOX_MODE:false},{timeout:1500});
+ const auth={isReady:()=>false,uid:()=> 'u1'};
+ const state={currentUsername:'u1',activeChatNovelId:'story-1'};
+ const sandbox={window:win,document,IS_SANDBOX_MODE:false,DuduAuth:auth,
+  currentUsername:state.currentUsername,activeChatNovelId:state.activeChatNovelId,
+  novels:[{id:'story-1',characters:[{id:'npc-1',name:'NPC'}]}],
+  selectedNovelIndex:0,isNpcUnlocked:()=>true,
+  getStoryProgress:()=>({collectedCharacters:{'npc-1':{affinity:25}}})};
+ win.DuduPersonalNpcExchangeV1={run:()=>{}};
+ elements.set('chat-character-selector',{value:'npc-1'});
+ vm.runInNewContext(social,sandbox,{timeout:1500});
  const packet=elements.get('dudu-v32-envelope-button');
  const gift=elements.get('dudu-v32-gift-button');
  assert.equal(packet.disabled,true);
- assert.match(packet.textContent,/🔒/);
- assert.equal(gift.disabled,false,'Existing live gift action must not be changed');
+ assert.equal(gift.disabled,true);
+ auth.isReady=()=>true;
+ win.syncRedPacketButtonsV32();
+ assert.equal(packet.disabled,false);
+ assert.equal(gift.disabled,false);
  assert.equal(gift.textContent,'🎁 Quà');
- assert.doesNotThrow(()=>win.openRedPacketV32());
- assert.match(elements.get('dudu-v32-contact-feedback').textContent,/chờ Rules/);
- assert.equal(packet.disabled,true);
+ assert.equal(packet.textContent,'🧧 Phong bao');
 });

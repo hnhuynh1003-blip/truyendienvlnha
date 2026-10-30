@@ -1,5 +1,5 @@
 /* DUDU V32 Chinese-inspired character messenger interactions.
- * Sandbox-only, virtual Xu red envelopes: no cash, no NPC balances or auto-affinity.
+ * Sandbox local / real-account Firestore virtual Xu: no cash, NPC balance or affinity.
  * Depends on existing inline app bindings (userProfile / selected NPC / story).
  */
 (function(root){
@@ -8,7 +8,9 @@
   let draft=null,busy=false,focusReturn=null;
   const el=id=>document.getElementById(id);
   function context(){
-    if(!IS_SANDBOX_MODE||!currentUsername)return null;
+    if(!currentUsername||(!IS_SANDBOX_MODE&&
+       (!DuduAuth?.isReady?.()||DuduAuth.uid()!==currentUsername||
+        !root.DuduPersonalNpcExchangeV1)))return null;
     const id=el('chat-character-selector')?.value;
     const storyId=activeChatNovelId||(novels[selectedNovelIndex]||{}).id;
     const npc=novels.find(n=>n?.id===storyId)?.characters?.find(c=>c?.id===id&&!c.archived);
@@ -20,22 +22,10 @@
   }
   function feedback(message){if(el('dudu-v32-contact-feedback'))el('dudu-v32-contact-feedback').textContent=message||'';}
   function sync(){
-    // Live accounts have no trusted red-packet transfer yet. Preserve the
-    // existing gift action and role-scoped relationship UI as they are.
-    if(!IS_SANDBOX_MODE){
-      const envelope=el('dudu-v32-envelope-button');
-      if(envelope){
-        envelope.disabled=true;
-        envelope.textContent='🧧 Phong bao 🔒';
-        envelope.title='Đang chờ kiểm thử Firestore Rules; chưa thể gửi Xu.';
-        envelope.setAttribute('aria-label','Phong bao đang chờ Rules, chưa thể gửi Xu');
-      }
-      return;
-    }
     const ctx=context();
     for(const id of ['dudu-v32-gift-button','dudu-v32-envelope-button']){
       const b=el(id);if(b){
-        b.disabled=!ctx;b.title=ctx?'':'Cần đăng nhập Sandbox và mở khóa NPC';
+        b.disabled=!ctx;b.title=ctx?'':'Cần đăng nhập và mở khóa NPC';
         if(id==='dudu-v32-envelope-button'){
           b.textContent='🧧 Phong bao';
           b.setAttribute('aria-label','Gửi phong bao bằng xu trò chơi');
@@ -70,7 +60,6 @@
     el('dudu-v32-envelope-result').textContent=plan.ok?'':plan.message;
   }
   function open(){
-    if(!IS_SANDBOX_MODE){feedback('Phong bao tài khoản cá nhân đang chờ Rules; Xu chưa bị trừ.');return;}
     const ctx=context();
     if(!ctx){feedback('Hãy mở khóa NPC trước khi tặng phong bao.');return;}
     focusReturn=document.activeElement;draft={...ctx,amount:10};
@@ -81,10 +70,34 @@
     modal.style.display='flex';modal.setAttribute('aria-hidden','false');
     choose(10);el('dudu-v32-envelope-note').focus();
   }
-  function send(){
-    if(busy||!draft||!IS_SANDBOX_MODE)return;
+  async function send(){
+    if(busy||!draft)return;
     const ctx=context();
     if(!ctx||ctx.owner!==draft.owner||ctx.storyId!==draft.storyId||ctx.npcId!==draft.npcId){close();return;}
+    if(!IS_SANDBOX_MODE){
+      if(typeof root.commitPersonalNpcExchangeV1!=='function'){
+        feedback('Đang chờ kết nối giao dịch Firebase. Xu chưa bị trừ.');return;
+      }
+      busy=true;
+      el('dudu-v32-envelope-confirm').disabled=true;
+      el('dudu-v32-envelope-result').textContent='Đang xác nhận Xu trên Firebase...';
+      try{
+        const result=await root.commitPersonalNpcExchangeV1('rp',ctx.storyId,ctx.npcId,{
+          amount:draft.amount,note:rules.sanitizeNote(el('dudu-v32-envelope-note').value)});
+        if(!result){
+          el('dudu-v32-envelope-result').textContent='Chưa gửi được. Kiểm tra thông báo rồi thử lại.';
+          return;
+        }
+        close();
+        feedback(result.status==='already-applied'? '🧧 Phong bao đã được ghi nhận trước đó.':
+          '🧧 Đã gửi '+result.amount+' Xu ảo và lưu trong tài khoản Firebase.');
+        renderChatMessages(ctx.npcId);
+      }finally{
+        busy=false;
+        if(draft)choose(draft.amount);
+      }
+      return;
+    }
     const now=Date.now(),balance=Number(userProfile.currency);
     const state=getStoryProgress(ctx.storyId);
     const current=state.redPacketsV32&&typeof state.redPacketsV32==='object'?state.redPacketsV32:{};
@@ -110,14 +123,16 @@
     renderChatMessages(ctx.npcId);
   }
   function render(container,storyId,id){
-    if(!IS_SANDBOX_MODE||!storyId||!id)return;
+    if(!storyId||!id||(!IS_SANDBOX_MODE&&!context()))return;
     const events=rules.normalizeRecord(record(storyId,id)).events.slice(-5);
     for(const item of events){
       const card=document.createElement('div');card.className='dudu-v32-red-packet-card';
       const emoji=document.createElement('span');emoji.textContent='🧧';emoji.className='dudu-v32-packet-emoji';
       const value=document.createElement('strong');value.textContent='Phong bao '+item.amount+' Xu';
       const note=document.createElement('small');note.textContent=item.note||'Tấm lòng gửi bạn';
-      const info=document.createElement('small');info.className='dudu-v32-packet-info';info.textContent='Xu ảo · Chỉ lưu tại Sandbox';
+      const info=document.createElement('small');info.className='dudu-v32-packet-info';
+      info.textContent=IS_SANDBOX_MODE?'Xu ảo · Chỉ lưu tại Sandbox':
+        'Xu trò chơi · Lưu trên tài khoản Firebase';
       card.append(emoji,value,note,info);container.append(card);
     }
   }
