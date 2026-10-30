@@ -14,7 +14,8 @@
  const deviceKey=()=>uid()?'dudu-honor-device-v1:'+encodeURIComponent(uid()):null;
  const create=(tag,cls,content)=>{const e=root.document.createElement(tag);
   if(cls)e.className=cls;if(content!==undefined)e.textContent=String(content);return e;};
- let page='titles',category='Tất cả',busy=false,observedAt=0,observedOwner='',lastToast='';
+ let page='titles',category='Tất cả',visibleLimit=8,busy=false,
+  observedAt=0,observedOwner='',lastToast='';
  const rarityName={common:'Thường',rare:'Hiếm',epic:'Sử thi',mythic:'Huyền thoại'};
  function readArcade(){
   const key=localKey();if(!key||!arcadeCore)return null;
@@ -150,6 +151,53 @@
   }
   return card;
  }
+ function journeyCard(j){
+  const complete=j.done===j.total;
+  const card=create('article','dudu-honor-journey'+(complete?' is-complete':''));
+  card.dataset.game=j.id;
+  const top=create('div','dudu-honor-journey-heading');
+  top.append(create('span','dudu-honor-journey-icon',j.icon));
+  const heading=create('div','dudu-honor-journey-name');
+  heading.append(create('small','',j.source),create('strong','',j.name));
+  top.append(heading,create('span','dudu-honor-journey-count',j.done+'/'+j.total));
+  card.append(top);
+  const meter=create('div','dudu-honor-journey-meter');
+  meter.setAttribute('role','progressbar');
+  meter.setAttribute('aria-label','Tiến độ '+j.name);
+  meter.setAttribute('aria-valuemin','0');meter.setAttribute('aria-valuemax',String(j.total));
+  meter.setAttribute('aria-valuenow',String(j.done));
+  const fill=create('i','');fill.style.width=(j.done/j.total*100)+'%';meter.append(fill);
+  card.append(meter);
+  card.append(create('p','dudu-honor-journey-next',complete?
+   '✦ Đã hoàn tất bộ thử thách!':
+   'Mốc tiếp theo: '+j.next.name+' · '+j.next.current+'/'+j.next.target));
+  const bottom=create('div','dudu-honor-journey-foot');
+  bottom.append(create('small','',j.title?.icon+' Danh hiệu: '+(j.title?.name||'')));
+  const action=create('button','dudu-honor-journey-open','Xem mốc ›');
+  action.type='button';action.setAttribute('aria-label','Xem thử thách '+j.source);
+  action.addEventListener('click',()=>{page='achievements';category=j.source;visibleLimit=8;render();});
+  bottom.append(action);card.append(bottom);
+  return card;
+ }
+ const categories=['Tất cả','Trạm Neon','Địa Tầng 07','Vườn Sương','Ngọc Phường','Khác'];
+ function filterRow(){
+  const filters=create('div','dudu-honor-filters');
+  for(const label of categories){
+   const btn=create('button',category===label?'is-active':'',label);btn.type='button';
+   btn.setAttribute('aria-pressed',String(category===label));
+   btn.addEventListener('click',()=>{category=label;visibleLimit=8;render();});filters.append(btn);
+  }
+  return filters;
+ }
+ function matchesCategory(row){return category==='Tất cả'||row.source===category||
+  category==='Khác'&&!categories.slice(1,-1).includes(row.source);}
+ function appendPaged(body,items,renderItem,v){
+  for(const item of items.slice(0,visibleLimit))body.append(renderItem(item,v));
+  if(items.length>visibleLimit){
+   const more=create('button','dudu-honor-more','Xem thêm '+Math.min(8,items.length-visibleLimit)+' mục ↓');
+   more.type='button';more.addEventListener('click',()=>{visibleLimit+=8;render();});body.append(more);
+  }
+ }
  function render(){
   const host=$('dudu-honor-content-c46');if(!host)return false;
   refresh();host.replaceChildren();
@@ -170,32 +218,33 @@
    host.append(note);
   }
   const nav=create('nav','dudu-honor-tabs');nav.setAttribute('aria-label','Loại vinh danh');
-  for(const [id,label] of [['titles','Danh hiệu'],['achievements','Thành tựu'],['secrets','Bí ẩn']]){
+  for(const [id,label] of [['titles','Danh hiệu'],['journeys','Thử thách'],
+   ['achievements','Thành tựu'],['secrets','Bí ẩn']]){
    const btn=create('button',page===id?'is-active':'',label);btn.type='button';
    btn.setAttribute('aria-pressed',String(page===id));
-   btn.addEventListener('click',()=>{page=id;render();});nav.append(btn);
+   btn.addEventListener('click',()=>{page=id;category='Tất cả';visibleLimit=8;render();});nav.append(btn);
   }
   host.append(nav);
   const body=create('div','dudu-honor-collection');
   if(page==='titles'){
    body.append(create('p','dudu-honor-tip',
     'Chọn một danh hiệu để hiển thị dưới tên nhân vật. Có thể thay đổi bất cứ lúc nào.'));
-   for(const t of v.titles)body.append(titleCard(t,v));
+   body.append(filterRow());appendPaged(body,v.titles.filter(matchesCategory),titleCard,v);
+  }else if(page==='journeys'){
+   body.append(create('p','dudu-honor-tip',
+    'Bốn hành trình, bốn đích đến. Mỗi mốc dựa trên kết quả chơi thật và chỉ trao huy hiệu/danh hiệu trang trí.'));
+   if(category!=='Tất cả'){
+    const all=create('button','dudu-honor-more','← Xem cả 4 hành trình');
+    all.type='button';all.addEventListener('click',()=>{category='Tất cả';render();});
+    body.append(all);
+   }
+   for(const journey of v.journeys.filter(j=>category==='Tất cả'||j.source===category))
+    body.append(journeyCard(journey));
   }else{
    const secret=page==='secrets';
-   if(!secret){
-    const filters=create('div','dudu-honor-filters');
-    for(const label of ['Tất cả','Trạm Neon','Địa Tầng 07','Vườn Sương','Ngọc Phường','Khác']){
-     const btn=create('button',category===label?'is-active':'',label);btn.type='button';
-     btn.setAttribute('aria-pressed',String(category===label));
-     btn.addEventListener('click',()=>{category=label;render();});filters.append(btn);
-    }
-    body.append(filters);
-   }
-   const list=v.achievements.filter(a=>secret?a.secret:!a.secret&&
-    (category==='Tất cả'||a.source===category||category==='Khác'&&
-     !['Trạm Neon','Địa Tầng 07','Vườn Sương','Ngọc Phường'].includes(a.source)));
-   for(const a of list)body.append(achievementCard(a,v));
+   if(!secret)body.append(filterRow());
+   const list=v.achievements.filter(a=>secret?a.secret:!a.secret&&matchesCategory(a));
+   appendPaged(body,list,achievementCard,v);
   }
   host.append(body);
   const footer=create('p','dudu-honor-footnote',sandbox()? 
@@ -224,9 +273,13 @@
   }else if(kind==='pin')root.showSystemAlert?.('HUY HIỆU ĐÃ CẬP NHẬT',
    'Có thể trưng bày tối đa 3 huy hiệu trên Hồ sơ.');
   else if(result.newIds?.length){
-   const first=honor.CATALOG.find(x=>x.id===result.newIds[0]);
-   if(first&&lastToast!==first.id){lastToast=first.id;
-    root.showSystemAlert?.('✦ THÀNH TỰU MỚI',first.name);}
+   const unlocked=honor.CATALOG.filter(x=>result.newIds.includes(x.id));
+   const ranking={common:0,rare:1,epic:2,mythic:3};
+   const featured=unlocked.sort((a,b)=>ranking[b.rarity]-ranking[a.rarity])[0];
+   if(featured&&lastToast!==featured.id){lastToast=featured.id;
+    root.showSystemAlert?.(unlocked.length>1?'✦ '+unlocked.length+' THÀNH TỰU MỚI':'✦ THÀNH TỰU MỚI',
+     featured.icon+' '+featured.name+' · '+rarityName[featured.rarity]+
+     (unlocked.length>1?' · Xem đầy đủ trong Sổ Vinh Danh.':''));}
   }
  }
  function sandboxTransact(kind,options,arcade){
@@ -324,6 +377,10 @@
   }finally{busy=false;if($('phone-app-honors')?.style.display==='flex')render();}
  }
  function open(){render();if(!sandbox())void transact('sync');}
+ function openGame(source){
+  if(!honor.JOURNEYS.some(j=>j.source===source))return false;
+  page='journeys';category=source;visibleLimit=8;render();return true;
+ }
  function observeArcade(state){
   if(!state||sandbox()||!uid()||!profile())return;
   const owner=uid(),time=Date.now();
@@ -333,6 +390,6 @@
   if(!honor.discovered(profile(),state).some(id=>!old.has(id)))return;
   observedAt=time;void transact('sync',{},state);
  }
- root.DuduHonorUIV46=Object.freeze({render,refresh,open,observeArcade,readArcade});
+ root.DuduHonorUIV46=Object.freeze({render,refresh,open,openGame,observeArcade,readArcade});
  refresh();
 })(typeof window!=='undefined'?window:null);

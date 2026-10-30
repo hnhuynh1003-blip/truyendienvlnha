@@ -88,6 +88,19 @@ test('C4.3 clicking the header Arcade Xu opens the guarded exchange dialog',()=>
  assert.match(host.innerHTML,/role="dialog"/);
  assert.match(host.innerHTML,/Chuyển Xu · Sắp mở/);
 });
+test('C4.8 Arcade drawer Honor shortcut opens the correct game journey',()=>{
+ const {host,window}=harness();
+ const focused=[],opened=[];
+ window.DuduHonorUIV46={openGame:source=>focused.push(source)};
+ window.openPhoneApp=app=>opened.push(app);
+ assert.equal(window.DuduPersonalArcadeUIV1.init(),true);
+ host.listeners.click({target:{closest(selector){return selector==='button[data-arcade-honor]'?
+  {dataset:{arcadeHonor:'mine'}}:null;}}});
+ assert.deepEqual(focused,['Địa Tầng 07']);
+ assert.deepEqual(opened,['honors']);
+ const js=readFileSync(join(__dirname,'../js/personal-arcade-ui-v1.js'),'utf8');
+ assert.match(js,/data-arcade-honor="\$\{tab\}"/);
+});
 test('C4.2 expanded Neon room renders more machines and visitors without changing wallet',()=>{
  const {db,host,window}=harness();
  const game=core.fresh(Date.now());game.neon.roomTier=2;game.neon.stations=5;

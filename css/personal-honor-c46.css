@@ -384,3 +384,73 @@ body.dudu-phone-v11 .dudu-honor-profile-medal[data-rarity="mythic"]{
  body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-home-chip,
  body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-identity-frame{transition:none!important}
 }
+
+/* C4.8 — four collectible Arcade journeys; scannable in one phone view.
+ * Filtering and "show more" prevent the expanding Hall from becoming a
+ * long, overlapping list of tiny buttons on 320–390px devices. */
+#dudu-honor-content-c46 .dudu-honor-tabs{grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;padding:3px}
+#dudu-honor-content-c46 .dudu-honor-tabs button{min-width:0;min-height:33px;font-size:9.5px;padding:5px 2px}
+#dudu-honor-content-c46 .dudu-honor-journey{
+ --journey-accent:#c1a0ea;--journey-shadow:rgba(167,123,235,.16);
+ display:flex;flex-direction:column;gap:9px;padding:12px 11px;min-width:0;
+ border:1px solid rgba(159,139,211,.49);border-radius:14px;
+ background:linear-gradient(116deg,rgba(42,37,69,.93),rgba(25,39,58,.96));
+ box-shadow:inset 3px 0 var(--journey-accent),0 5px 16px rgba(6,9,22,.19);
+}
+#dudu-honor-content-c46 .dudu-honor-journey[data-game="neon"]{
+ --journey-accent:#64d8ed;--journey-shadow:rgba(90,221,236,.2);
+ border-color:rgba(82,178,208,.49);
+ background:linear-gradient(116deg,#1b3f55,#1b293d);
+}
+#dudu-honor-content-c46 .dudu-honor-journey[data-game="mine"]{
+ --journey-accent:#d8a4ff;--journey-shadow:rgba(175,125,238,.2);
+ border-color:rgba(163,119,209,.53);
+ background:linear-gradient(116deg,#392f52,#212c42);
+}
+#dudu-honor-content-c46 .dudu-honor-journey[data-game="garden"]{
+ --journey-accent:#96e5ad;--journey-shadow:rgba(110,216,150,.18);
+ border-color:rgba(110,195,156,.46);
+ background:linear-gradient(116deg,#20473f,#223746);
+}
+#dudu-honor-content-c46 .dudu-honor-journey[data-game="jade"]{
+ --journey-accent:#f0c77d;--journey-shadow:rgba(232,182,111,.18);
+ border-color:rgba(220,176,116,.5);
+ background:linear-gradient(116deg,#403b36,#203a3c);
+}
+#dudu-honor-content-c46 .dudu-honor-journey.is-complete{
+ box-shadow:inset 3px 0 var(--journey-accent),0 0 15px var(--journey-shadow);
+}
+#dudu-honor-content-c46 .dudu-honor-journey-heading,
+#dudu-honor-content-c46 .dudu-honor-journey-foot{
+ display:flex;align-items:center;gap:9px;min-width:0;
+}
+#dudu-honor-content-c46 .dudu-honor-journey-icon{
+ display:grid;place-items:center;flex:0 0 35px;width:35px;height:35px;
+ color:var(--journey-accent);font-size:21px;border:1px solid currentColor;
+ border-radius:10px;background:rgba(12,19,34,.35);
+}
+#dudu-honor-content-c46 .dudu-honor-journey-name{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
+#dudu-honor-content-c46 .dudu-honor-journey-name small{color:var(--journey-accent);font-size:9px;letter-spacing:.06em}
+#dudu-honor-content-c46 .dudu-honor-journey-name strong{color:#f2f5ff;font-size:12px;line-height:1.3}
+#dudu-honor-content-c46 .dudu-honor-journey-count{color:var(--journey-accent);font-size:13px;font-weight:800;white-space:nowrap}
+#dudu-honor-content-c46 .dudu-honor-journey-meter{
+ height:5px;width:100%;overflow:hidden;border-radius:20px;background:rgba(12,21,35,.75);
+}
+#dudu-honor-content-c46 .dudu-honor-journey-meter i{
+ display:block;height:100%;border-radius:20px;background:var(--journey-accent);
+ box-shadow:0 0 9px var(--journey-accent);
+}
+#dudu-honor-content-c46 .dudu-honor-journey-next{
+ margin:0;color:#dce8ee;font-size:10px;line-height:1.5;
+}
+#dudu-honor-content-c46 .dudu-honor-journey-foot{justify-content:space-between;gap:6px}
+#dudu-honor-content-c46 .dudu-honor-journey-foot small{min-width:0;color:#c6d4db;font-size:9px;line-height:1.4}
+#dudu-honor-content-c46 .dudu-honor-journey-open,
+#dudu-honor-content-c46 .dudu-honor-more{
+ flex-shrink:0;border:1px solid var(--journey-accent,#a89cc3);border-radius:9px;
+ background:rgba(25,35,52,.78);color:#f5e8ff;padding:7px 9px;
+ font-size:10px;font-weight:750;cursor:pointer;
+}
+#dudu-honor-content-c46 .dudu-honor-more{align-self:stretch;min-height:35px;border-color:#7d85a6;background:#273449;color:#e2e9ff}
+#dudu-honor-content-c46 .dudu-honor-journey-open:focus-visible,
+#dudu-honor-content-c46 .dudu-honor-more:focus-visible{outline:2px solid #e8d3ff;outline-offset:2px}

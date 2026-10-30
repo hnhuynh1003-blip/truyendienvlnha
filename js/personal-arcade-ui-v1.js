@@ -405,7 +405,9 @@
     overlay.className='arcade-sheet-overlay';overlay.dataset.sheet=drawerOpen;
     overlay.innerHTML=`<section class="arcade-sheet" role="dialog" aria-modal="true" aria-label="${drawerTitles[drawerOpen]}">
       <header class="arcade-sheet-heading"><div><small>✦ ARCADE</small><h3>${drawerTitles[drawerOpen]}</h3></div>
-       <button type="button" class="arcade-sheet-close" data-arcade-drawer="close" aria-label="Đóng cửa sổ">✕</button></header>
+       <div class="arcade-sheet-controls"><button type="button" class="arcade-sheet-honor" data-arcade-honor="${tab}"
+        aria-label="Xem thử thách ${modeLabels[tab]}" title="Thử thách & danh hiệu">✦</button>
+        <button type="button" class="arcade-sheet-close" data-arcade-drawer="close" aria-label="Đóng cửa sổ">✕</button></div></header>
       <div class="arcade-sheet-body">${sections.map(node=>node.outerHTML).join('')}</div></section>`;
     element.querySelector('.arcade-shell')?.appendChild(overlay);
     const content=overlay.querySelector('.arcade-sheet-body');if(content)content.scrollTop=previousSheetScroll;
@@ -523,6 +525,14 @@
    updateExchangePreview();
   });
   element.addEventListener('click',event=>{
+   const honorLink=event.target.closest?.('button[data-arcade-honor]');
+   if(honorLink?.dataset?.arcadeHonor){
+    const source=modeLabels[honorLink.dataset.arcadeHonor];
+    if(source)root.DuduHonorUIV46?.openGame?.(source);
+    drawerOpen=null;
+    if(source)root.openPhoneApp?.('honors');
+    return;
+   }
    const drawer=event.target.closest?.('button[data-arcade-drawer]');
    if(drawer?.dataset?.arcadeDrawer){
     drawerOpen=drawer.dataset.arcadeDrawer==='close'?null:drawer.dataset.arcadeDrawer;

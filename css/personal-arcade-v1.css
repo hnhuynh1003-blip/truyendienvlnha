@@ -63,6 +63,13 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header>span:nth-ch
  padding:12px 13px;border-bottom:1px solid #557385;background:#1d3243}
 .arcade-sheet-heading small{display:block;color:#96e1d7;font:800 9px ui-monospace,monospace;letter-spacing:.08em}
 .arcade-sheet-heading h3{margin:3px 0 0;font-size:16px;color:#fff0d1;line-height:1.2}
+.arcade-sheet-heading>div:first-child{min-width:0}
+.arcade-sheet-heading h3{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.arcade-sheet-controls{display:flex;flex:none;align-items:center;gap:6px}
+.arcade-sheet-honor{flex:none;width:34px;height:34px;border-radius:10px;
+ border:1px solid #d9ba80;background:radial-gradient(circle at 28% 18%,#6e5860,#2c3b50 75%);
+ color:#ffe3a4;font-size:19px;text-shadow:0 0 7px rgba(254,209,135,.6);cursor:pointer}
+.arcade-sheet-honor:focus-visible{outline:2px solid #ffe9ae;outline-offset:2px}
 .arcade-sheet-close{flex:none;width:34px;height:34px;border-radius:10px;border:1px solid #75889a;
  background:#30465c;color:#f9e8eb;font-size:15px;font-weight:900;cursor:pointer}
 .arcade-sheet-body{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:12px;
