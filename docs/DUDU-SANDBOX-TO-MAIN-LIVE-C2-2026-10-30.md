@@ -178,3 +178,22 @@ Việc còn phải làm:
 
 Rollback C2.1: revert commit mã nguồn; bản ghi yêu thích/hỏi thăm đã thực
 sự được người dùng thực hiện sẽ được giữ lại trong hồ sơ, không xóa tự động.
+
+### C2.4a — đồng bộ hình vật phẩm Cửa hàng và Kho (giao diện)
+
+- Cửa hàng main sử dụng **cùng trình dựng ảnh SVG theo phẩm cấp** với Kho,
+  không còn trộn emoji ở quầy bán với ảnh riêng ở hành trang. Ký gửi thử
+  trong Sandbox cũng dùng khung ảnh này; giữ tên, ID, nguồn sở hữu và giá.
+- Mỗi món trong 12 hàng phổ thông đang bán và 4 công cụ tiêu hao có hình
+  biểu trưng đúng công dụng. Các vật phẩm vị diện cũ chuyển sang biểu tượng
+  theo loại (pin, bản đồ, khóa, sổ, băng cassette, gương…) thay vì chung
+  hình kiện hàng. Hình kiện hàng chỉ còn dành cho hai vật phẩm thực sự là hộp.
+- `archived` và `published:false` không xuất hiện trên quầy hàng; riêng món
+  lưu trữ cũ `e1` trước đó đã không thuộc danh sách được mua. **Không xóa**
+  hồ sơ, vật phẩm đã sở hữu, bản ghi vật phẩm, item ID hoặc thay bảng rơi
+  quà của các thế giới; không tự bỏ vật phẩm có vai trò trong truyện chỉ vì
+  trước đó chưa có tranh minh họa riêng.
+- Đồng bộ cache các script/CSS để điện thoại tải minh họa mới; giữ nguyên
+  giao dịch mua/dùng/bán, UID, Xu, EXP, Firestore Rules và trạng thái mùa.
+- 137/137 bộ Node đạt, kiểm thử nội dung ảnh và việc không thay dữ liệu sở hữu.
+  Chưa xác minh hiển thị trực tiếp trên Android và hai UID thật.

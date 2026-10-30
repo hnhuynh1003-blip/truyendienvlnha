@@ -98,13 +98,17 @@
      const card=$('article','dudu-v439-lot');
      const info=$('div','dudu-v439-lot-info');
      const story=stories.find(x=>x?.id===lot.storyId);
-     info.append($('strong','',(lot.item.icon||'🎁')+' '+lot.item.name),
+     const artwork=$('span','dudu-v439-lot-art',lot.item.icon||'🎁');
+     artwork.setAttribute('aria-hidden','true');
+     root.DuduItemArtV13?.mount(artwork,
+      root.DuduItemCatalog?.byId(lot.item.id)||lot.item);
+     info.append($('strong','',lot.item.name),
       $('small','',lot.item.rank+' · '+(story?.title||lot.storyId)+
        ' · '+fmt(lot.ask)+' Xu đề xuất'));
      const cancel=$('button','','Rút lô');
      cancel.type='button';
      cancel.addEventListener('click',()=>onCancel?.(lot.id));
-     card.append(info,cancel);content.append(card);
+     card.append(artwork,info,cancel);content.append(card);
     }
     host.append(content);
    }

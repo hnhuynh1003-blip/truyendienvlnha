@@ -83,6 +83,11 @@ body.dudu-phone-v11 #cyber-phone .dudu-v439-lot-info{
 }
 body.dudu-phone-v11 #cyber-phone .dudu-v439-lot-info strong{font-size:11px;color:#ffeefb;}
 body.dudu-phone-v11 #cyber-phone .dudu-v439-lot-info small{font-size:9px;color:#b9cae4;}
+body.dudu-phone-v11 #cyber-phone .dudu-v439-lot-art{
+ flex:none;display:grid;place-items:center;box-sizing:border-box;
+ width:42px;height:42px;border-radius:10px;border:1px solid #819cc2;
+ background:#243251;font-size:22px;
+}
 body.dudu-phone-v11 #cyber-phone .dudu-v439-history{
  border:1px solid #6b829c70;border-radius:9px;padding:8px;background:#1320399e;
 }

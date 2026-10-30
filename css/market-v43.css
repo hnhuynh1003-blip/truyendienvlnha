@@ -47,8 +47,15 @@ body.dudu-phone-v11 #cyber-phone .dudu-v43-market-item{
  padding:8px;background:linear-gradient(125deg,#1f2e47,#292743);
 }
 body.dudu-phone-v11 #cyber-phone .dudu-v43-market-icon{
- width:40px;height:40px;flex:none;border-radius:9px;
- background:#343853;display:grid;place-items:center;font-size:22px;
+ width:46px;height:46px;flex:none;border-radius:12px;
+ border:1px solid #798db4a8;box-sizing:border-box;
+ background:#202f4d;display:grid;place-items:center;font-size:22px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-icon .dudu-item-v13-art{
+ width:100%;height:100%;object-fit:contain;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-item:has(.dudu-item-v13-frame){
+ border-left:2px solid var(--rarity-glow,#7186ad);
 }
 body.dudu-phone-v11 #cyber-phone .dudu-v43-market-copy{
  flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;
@@ -91,7 +98,7 @@ body.dudu-phone-v11 #cyber-phone .dudu-v43-market-footer{
  display:block;margin-top:8px;color:#a8b3ce;font-size:9px;line-height:1.4;
 }
 @media(max-width:355px){
- body.dudu-phone-v11 #cyber-phone .dudu-v43-market-icon{width:33px;height:35px;font-size:19px}
+ body.dudu-phone-v11 #cyber-phone .dudu-v43-market-icon{width:40px;height:40px;font-size:19px}
  body.dudu-phone-v11 #cyber-phone .dudu-v43-market-item{gap:5px;padding:6px}
  body.dudu-phone-v11 #cyber-phone .dudu-v43-market-buy{min-width:55px}
 }

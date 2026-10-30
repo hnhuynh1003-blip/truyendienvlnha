@@ -110,8 +110,11 @@
      const items=tab==='STORY'?(storyIndex?.items||[]):
        core.preview({tab,realmTag:realm,query});
      const searchText=query.trim().toLocaleLowerCase('vi');
+     // Archived drafts must never return to a sale/preview shelf. They can
+     // still be inspected in the owner's warehouse using their permanent ID.
+     const activeItems=items.filter(x=>!x.archived&&x.published!==false);
      const visible=tab==='STORY'&&searchText?
-       items.filter(x=>(x.name+' '+x.desc+' '+x.rank).toLocaleLowerCase('vi').includes(searchText)):items;
+       activeItems.filter(x=>(x.name+' '+x.desc+' '+x.rank).toLocaleLowerCase('vi').includes(searchText)):activeItems;
      if(!visible.length){
        collection.append(make('p','dudu-v43-market-empty',
          tab==='STORY'?'Chưa có vật phẩm công khai cho truyện này hoặc bạn chưa mở chương liên quan.':
@@ -124,6 +127,10 @@
        card.dataset.scope=item.scope;
        const artwork=make('span','dudu-v43-market-icon',item.icon||'🎁');
        artwork.setAttribute('aria-hidden','true');
+       const canonical=root.DuduItemCatalog?.byId(item.id);
+       const rarity=root.DuduItemArtV13?.visual(canonical||item);
+       if(rarity)card.style.setProperty('--rarity-glow',rarity.light);
+       root.DuduItemArtV13?.mount(artwork,canonical||item);
        const info=make('div','dudu-v43-market-copy');
        info.append(make('strong','',item.name));
        const meta=make('span','',item.rank+' · '+

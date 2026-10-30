@@ -53,13 +53,17 @@
  function artwork(item,art){
   const container=make('span','dudu-inventory-v12-icon dudu-v27-slot-art dudu-v42-art');
   container.textContent=item.icon||'🎒';
-  const data=art?.visual?.(catalog?.byId(item.id)||item);
+  const approved=catalog?.byId(item.id)||item;
+  const data=art?.visual?.(approved);
   if(data?.src){
-   const img=make('img','dudu-item-v13-art');img.src=data.src;img.alt='';
-   img.width=76;img.height=76;img.decoding='async';img.loading='lazy';
-   container.replaceChildren(img);
-   container.classList.add('dudu-item-v13-frame');
-   container.style.setProperty('--rarity-glow',data.light);
+   if(typeof art.mount==='function')art.mount(container,approved);
+   else{
+    const img=make('img','dudu-item-v13-art');img.src=data.src;img.alt='';
+    img.width=76;img.height=76;img.decoding='async';img.loading='lazy';
+    container.replaceChildren(img);
+    container.classList.add('dudu-item-v13-frame');
+    container.style.setProperty('--rarity-glow',data.light);
+   }
   }
   return {container,color:data?.light||'#988fb8'};
  }
