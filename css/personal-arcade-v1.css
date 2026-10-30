@@ -515,6 +515,7 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header{min-height:
 @media(max-width:360px){
  .arcade-world-heading h3{font-size:20px}.arcade-world-live{font-size:7px}
  .arcade-stage{height:283px}.mine-stage{height:308px}.garden-stage{height:322px}
+ .neon-stage.neon-room-tier-2,.neon-stage.neon-room-tier-3{height:364px}
  .garden-stage.garden-expanded{height:485px}
  .neon-computer-rack{top:88px}.neon-stage-income{width:160px}
  .neon-stage-income b{font-size:21px}.neon-room-level{font-size:7px}
