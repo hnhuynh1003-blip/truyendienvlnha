@@ -169,7 +169,7 @@ test('Main UI offers priced numbered scratch tickets without a collection shelf'
  const flatten=root=>[root,...root.children.flatMap(flatten)];
  window.DuduFunUIV43.render();
  await new Promise(done=>setImmediate(done));
- const tab=flatten(host).find(n=>n.className.includes('dudu-fun-tab')&&n.textContent.includes('Vé Số'));
+ const tab=flatten(host).find(n=>n.className.includes('dudu-fun-tab')&&n.textContent.includes('Vé Cào'));
  assert.ok(tab);tab.listeners.click();
  await new Promise(done=>setImmediate(done));
  const nodes=flatten(host);

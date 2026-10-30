@@ -122,6 +122,21 @@ test('Garden is a playable scene with plots and animated pond, not generic data 
  assert.equal(window.DuduPersonalArcadeUIV1.interact('plant-0'),true);
  assert.match(host.innerHTML,/data-arcade-action="water-0"/);
 });
+test('C4.1 fishing presents a two-step reel control and an eight-species album',()=>{
+ const {db,host,window}=harness();
+ const key='dudu-personal-arcade:v1:reader-one';
+ const state=core.fresh(Date.now());state.garden.bait=1;
+ db.set(key,JSON.stringify(state));
+ window.DuduPersonalArcadeUIV1.render();
+ host.listeners.click({target:{closest:()=>({disabled:false,dataset:{arcadeTab:'garden'}})}});
+ assert.match(host.innerHTML,/Sổ sưu tầm cá/);
+ assert.match(host.innerHTML,/data-arcade-action="cast-line"/);
+ assert.equal(window.DuduPersonalArcadeUIV1.interact('cast-line'),true);
+ assert.match(host.innerHTML,/data-arcade-action="reel-line" disabled/);
+ assert.match(host.innerHTML,/garden-fishing-line/);
+ assert.match(host.innerHTML,/Phao đang chờ/);
+ assert.equal(JSON.parse(db.get(key)).garden.fish,0);
+});
 test('Arcade UI requires login before any game save',()=>{
  const {db,host,window,setUid}=harness();setUid(null);
  window.DuduPersonalArcadeUIV1.render();

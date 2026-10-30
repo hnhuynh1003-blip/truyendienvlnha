@@ -232,6 +232,8 @@
  }
  function gardenPanel(s,time){
   const g=s.garden,fishHit=activeFeedback('fish',time);
+  const line=g.line,waiting=!!line&&time<line.biteAt,biting=!!line&&!waiting;
+  const discovered=Object.values(g.fishAlbum).filter(count=>count>0).length;
   const bed=(b,index)=>{
    const mature=b.status==='growing'&&time>=b.readyAt;
    const action=b.status==='empty'?'plant-'+index:b.status==='dry'?'water-'+index:'harvest-'+index;
@@ -248,7 +250,7 @@
     <header class="arcade-world-heading"><div><span class="arcade-eyebrow">03 / CHILL FARM</span>
       <h3>Vườn Sương</h3><p>Gieo giống, mở rộng vườn và câu cá dưới trăng.</p></div>
       <span class="arcade-world-live">MIST / GARDEN</span></header>
-    <div class="arcade-stage garden-stage ${g.plots>2?'garden-expanded':''}">
+    <div class="arcade-stage garden-stage ${g.plots>2?'garden-expanded':''} ${line?'is-fishing':''} ${biting?'is-biting':''}">
       <div class="garden-mist garden-mist-a"></div><div class="garden-mist garden-mist-b"></div>
       <div class="garden-cloud garden-cloud-a"></div><div class="garden-cloud garden-cloud-b"></div>
       <div class="garden-mountains"></div><div class="garden-grass"></div>
@@ -256,8 +258,14 @@
       <div class="garden-pond"><div class="garden-pond-shine"></div>
         <span class="garden-fish garden-fish-a"></span><span class="garden-fish garden-fish-b"></span>
         <span class="garden-bubble garden-bubble-a"></span><span class="garden-bubble garden-bubble-b"></span>
-        <span class="garden-bubble garden-bubble-c"></span></div>
-      ${button(g.bait?'🎣 THẢ CÂU · '+g.bait+' MỒI':'🎣 THIẾU MỒI','cast-line','power garden-cast-button',!g.bait)}
+        <span class="garden-bubble garden-bubble-c"></span>
+        ${line?'<span class="garden-fishing-line"></span><span class="garden-float" aria-hidden="true"></span>':''}</div>
+      <div class="garden-fishing-status" role="status" aria-live="polite">${biting?'✦ Cá cắn câu! Thu ngay trước khi cá tuột':waiting?
+       `Phao đang chờ… <span data-arcade-until="${line.biteAt}">${countdown(line.biteAt-time)}</span>`:
+       'Hồ lặng gió · Hãy thả câu để khám phá'}</div>
+      ${button(biting?`🎣 THU CÂU · <span data-arcade-until="${line.escapeAt}">${countdown(line.escapeAt-time)}</span>`:
+       waiting?'🎣 ĐANG CHỜ CÁ CẮN':g.bait?'🎣 THẢ CÂU · '+g.bait+' MỒI':'🎣 CHƯA CÓ MỒI',
+       line?'reel-line':'cast-line','power garden-cast-button',waiting||!line&&!g.bait)}
       ${fishHit?`<div class="garden-catch-pop" role="status">${fishHit.label}</div>`:''}
       <button type="button" class="garden-pond-collect ${g.bubbleReady?'is-ready':''}" data-arcade-action="catch-bubble" ${g.bubbleReady?'':'disabled'}>
         ${g.bubbleReady?'✦ Thu bọt · +0,5 Xu':`Hồ cá · <span data-arcade-until="${g.bubbleAt}">${countdown(g.bubbleAt-time)}</span>`}</button>
@@ -272,7 +280,13 @@
       <div class="garden-quick-actions">${button('💧 Tưới các luống khô','water-all','tool',!g.sprinkler||!g.water||!g.beds.some(b=>b.status==='dry'))}
        ${button('✿ Thu hoạch tất cả','harvest-all','tool',!g.beds.some(b=>b.status==='growing'&&time>=b.readyAt))}</div>
       <div class="garden-statline"><span>🌿 Đã thu hoạch <b>${g.harvests}</b></span><span>🐟 Mồi câu <b>${g.bait}</b></span></div>
-      <div class="garden-fishing"><div><b>🎣 Góc câu cá</b><small>${g.fish} cá đã câu · ${g.rareFish} cá ánh trăng · Bấm Thả câu ngay trên hồ để xem cá xuất hiện</small></div></div>
+      <div class="garden-fishing"><div><b>🎣 Nhật ký hồ sương</b><small>${g.fish} cá đã câu · ${g.rareFish} cá hiếm · ${discovered}/${Object.keys(core.FISH_SPECIES).length} loài từng tìm thấy</small></div></div>
+      <div class="garden-fish-album" aria-label="Sổ sưu tầm cá">${Object.entries(core.FISH_SPECIES).map(([id,fish])=>{
+       const count=g.fishAlbum[id],known=count>0;
+       return `<div class="garden-fish-entry fish-${id} ${known?'is-discovered':'is-unknown'}">
+        <span class="garden-fish-art" aria-hidden="true">${known?fish.icon:'?'}</span>
+        <div><strong>${known?fish.name:'Chưa khám phá'}</strong><small>${known?fish.rarity+' · Kỷ lục '+g.fishBest[id]+' cm':fish.rarity}</small></div>
+        <b>${known?'×'+count:'◈'}</b></div>`;}).join('')}</div>
       <div class="arcade-upgrade-grid arcade-garden-upgrades">
        ${upgrade('💧','Bồn nước',g.waterCap+'/7 bình','water-cap',core.upgradeCost(s,'water-cap'))}
        ${upgrade('🐟','Hồ cá','Cấp '+g.pondTier+'/5','pond-tier',core.upgradeCost(s,'pond-tier'))}
@@ -340,7 +354,11 @@
    const waterRefilled=s.garden.water!==state.garden.water;
    const bubbleAppeared=s.garden.bubbleReady!==state.garden.bubbleReady;
    const plantMatured=s.garden.beds.some(b=>b.status==='growing'&&b.readyAt>s.lastAt&&b.readyAt<=time);
-   if(lastRenderedKey!==activeKey||completedRepair||waterRefilled||bubbleAppeared||plantMatured)render();
+   const fishBit=!!s.garden.line&&s.lastAt<s.garden.line.biteAt&&time>=s.garden.line.biteAt;
+   const fishEscaped=!!s.garden.line&&!state.garden.line;
+   if(fishEscaped){notice='Cá đã tuột khỏi lưỡi câu. Hãy thử lượt khác nhé.';
+    noticeUntil=time+3500;error=false;}
+   if(lastRenderedKey!==activeKey||completedRepair||waterRefilled||bubbleAppeared||plantMatured||fishBit||fishEscaped)render();
    else if(time-lastPaint>=900)refreshLive(time);
   }
  }
@@ -350,7 +368,7 @@
   if(!result.ok){notice=result.reason;noticeUntil=now()+3500;error=true;render();return false;}
   state=result.state;
   feedback=action==='mine'||action==='mine-burst'?{type:'mine',ore:action==='mine-burst'?'burst':result.label,
-   quantity:result.quantity||1,at:now()}:action==='cast-line'?{type:'fish',label:result.label,at:now()}:null;
+   quantity:result.quantity||1,at:now()}:action==='reel-line'?{type:'fish',label:result.label,at:now()}:null;
   notice=result.label==='stone'?'Nhặt được Đá.':result.label==='coal'?'Nhặt được Than.':
    result.label==='iron'?'Nhặt được Sắt.':result.label==='crystal'?'✦ Nhặt được Tinh thạch!':result.label;
   noticeUntil=now()+2500;error=false;save();render();return true;

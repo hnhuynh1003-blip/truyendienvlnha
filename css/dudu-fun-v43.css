@@ -1,19 +1,22 @@
 /* V43.5.4 DUDU FUN — compact, premium, touch-first; no generated art assets. */
 body.dudu-phone-v11 #cyber-phone #dudu-fun-launch-v43[hidden]{display:none!important}
 body.dudu-phone-v11 #cyber-phone #phone-app-fun{gap:0}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun{padding:7px 9px 11px}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .phone-app-header{
+ min-height:36px;padding-bottom:4px;margin-bottom:8px}
 body.dudu-phone-v11 #cyber-phone #dudu-fun-content-v43{
- display:flex;flex-direction:column;gap:10px;min-width:0;padding-bottom:12px;
+ display:flex;flex-direction:column;gap:8px;min-width:0;padding-bottom:12px;
 }
 body.dudu-phone-v11 #cyber-phone .dudu-fun-top{
  display:flex;justify-content:space-between;align-items:center;gap:6px;
  background:linear-gradient(115deg,#43345d,#1e4153);
- border:1px solid #bda0df9a;border-radius:13px;padding:11px;
+ border:1px solid #bda0df9a;border-radius:12px;padding:8px 10px;
 }
 body.dudu-phone-v11 #cyber-phone .dudu-fun-title{
  display:flex;flex-direction:column;gap:3px;min-width:0;
 }
 body.dudu-phone-v11 #cyber-phone .dudu-fun-title strong{
- color:#ffe8f7;font-size:13px;letter-spacing:.04em;
+ color:#ffe8f7;font-size:12px;letter-spacing:.02em;
 }
 body.dudu-phone-v11 #cyber-phone .dudu-fun-title span,
 body.dudu-phone-v11 #cyber-phone .dudu-fun-disclaimer{
@@ -38,8 +41,8 @@ body.dudu-phone-v11 #cyber-phone .dudu-fun-tabs{
  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;
 }
 body.dudu-phone-v11 #cyber-phone .dudu-fun-tab{
- padding:9px 7px;border:1px solid #7885ad8c;border-radius:10px;
- background:#22354e;color:#d9def1;font-size:11px;cursor:pointer;
+ padding:10px 7px;border:1px solid #7885ad8c;border-radius:10px;min-height:42px;
+ background:#22354e;color:#d9def1;font-size:12px;font-weight:750;cursor:pointer;
 }
 body.dudu-phone-v11 #cyber-phone .dudu-fun-tab.is-active{
  background:linear-gradient(130deg,#724e79,#57426f);

@@ -302,27 +302,17 @@
  function heading(container){
   const top=el('div','dudu-fun-top');
   const name=el('div','dudu-fun-title');
-  name.append(el('strong','','✦ DUDU FUN'),
-    el('span','','Giải trí sau mỗi chương truyện'));
+  const state=view(),status=rules.progress(state);
+  const finished=sandbox()?status.done:blindState?.lastFreeDay===day()?1:0,
+   target=sandbox()?2:1;
+  name.append(el('strong','','✦ Vạn Bảo & Vé Cào'),
+    el('span','',sandbox()?`Hôm nay: ${finished}/${target} lượt miễn phí đã nhận`:
+     `Hộp miễn phí hôm nay: ${finished}/${target}`));
   const money=el('span','dudu-fun-balance',
     signed()?'🪙 '+(!sandbox()?(open==='ticket'?luckyCurrency:blindCurrency)??
       userProfile.currency:userProfile.currency)+' Xu':'Khách');
   top.append(name,money);
   container.append(top);
-  const state=view(),status=rules.progress(state);
-  const finished=sandbox()?status.done:blindState?.lastFreeDay===day()?1:0,
-   target=sandbox()?2:1;
-  const meter=el('div','dudu-fun-daily-meter');
-  meter.append(el('strong','',sandbox()?'Hoạt động hôm nay':'Lượt mở Hộp Mù miễn phí'),
-    el('span','',finished+'/'+target+' đã hoàn thành'));
-  const rail=el('div','dudu-fun-bar'),fill=el('span','dudu-fun-bar-fill');
-  fill.style.width=(finished/target*100)+'%';
-  rail.append(fill);
-  container.append(meter,rail);
-  const caption=el('small','dudu-fun-disclaimer',
-   sandbox()?'2 trò miễn phí/ngày · Xu và vật phẩm chỉ thuộc Sandbox · Không bán lượt chơi':
-   'Hộp Mù: miễn phí 1 lượt/ngày, thêm 20 Xu/hộp · Vé Cào 10 Xu/vé');
-  container.append(caption);
  }
  function blindBoxes(rootNode){
   if(!blind()||!blindLoaded){
@@ -763,7 +753,7 @@
    return true;
   }
   const tabs=el('div','dudu-fun-tabs');
-  for(const [type,label] of [['box','🎁 Hộp Mù'],['ticket','🎟️ Vé Số']]){
+  for(const [type,label] of [['box','🎁 Vạn Bảo'],['ticket','🎟️ Vé Cào']]){
    const button=el('button','dudu-fun-tab'+(open===type?' is-active':''),label);
    button.type='button';button.setAttribute('aria-pressed',String(open===type));
    button.addEventListener('click',()=>{open=type;hint=true;render();});

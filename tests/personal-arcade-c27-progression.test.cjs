@@ -101,7 +101,7 @@ test('Garden seed selection, extra beds, irrigation and two-stage crop timers af
  assert.equal(harvest.state.garden.beds[2].status,'empty');
 });
 
-test('Garden fishing consumes actual bait, rod upgrades change yield and rare-fish stats',()=>{
+test('Garden fishing now waits for a bite, then awards one catch and records the species',()=>{
  let state=arcade.fresh(START);state.coins=8000;
  assert.equal(act(state,'cast-line').ok,false);
  state=arcade.advance(state,START+arcade.BUBBLE_INTERVAL,0);
@@ -112,10 +112,39 @@ test('Garden fishing consumes actual bait, rod upgrades change yield and rare-fi
  const catchFish=act(state,'cast-line',.99,START+arcade.BUBBLE_INTERVAL);
  assert.equal(catchFish.ok,true);
  assert.equal(catchFish.state.garden.bait,0);
- assert.equal(catchFish.state.garden.fish,1);
- assert.equal(catchFish.state.garden.rareFish,1);
- assert.equal(catchFish.state.coins-coins,120);
+ assert.equal(catchFish.state.garden.fish,0,'casting never gives instant money or fish');
+ assert.equal(catchFish.state.coins,coins);
+ assert.equal(act(catchFish.state,'reel-line',.5,START+arcade.BUBBLE_INTERVAL+1000).ok,false);
+ const biteAt=catchFish.state.garden.line.biteAt;
+ const reeled=act(catchFish.state,'reel-line',.5,biteAt);
+ assert.equal(reeled.ok,true);
+ assert.equal(reeled.state.garden.fish,1);
+ assert.equal(reeled.state.garden.rareFish,1);
+ assert.equal(reeled.state.coins-coins,120);
+ assert.equal(reeled.state.garden.fishAlbum.crystal,1);
+ assert.ok(reeled.state.garden.fishBest.crystal>0);
+ assert.equal(act(reeled.state,'reel-line',.5,biteAt).ok,false,'cannot claim the fish twice');
  assert.equal(act(catchFish.state,'cast-line').ok,false,'cannot double-spend bait');
+});
+
+test('C4.1 fishing survives reload, lets fish escape without rewards and never fabricates legacy discoveries',()=>{
+ const legacy=arcade.fresh(START);legacy.garden.fish=23;legacy.garden.rareFish=4;
+ delete legacy.garden.fishAlbum;delete legacy.garden.fishBest;delete legacy.garden.line;
+ const migrated=arcade.norm(legacy,START);
+ assert.equal(migrated.garden.fish,23);
+ assert.equal(migrated.garden.rareFish,4);
+ assert.equal(Object.values(migrated.garden.fishAlbum).reduce((a,b)=>a+b,0),0);
+ let state=arcade.fresh(START);state.garden.bait=1;
+ const started=act(state,'cast-line',.5,START).state;
+ assert.deepEqual(arcade.norm(started,START),started);
+ const resumed=arcade.advance(started,started.garden.line.biteAt,0);
+ assert.equal(resumed.garden.line.fishId,started.garden.line.fishId);
+ const escaped=arcade.advance(started,started.garden.line.escapeAt+1,0);
+ assert.equal(escaped.garden.line,null);
+ assert.equal(escaped.garden.fish,0);
+ assert.equal(escaped.coins,0);
+ assert.equal(act(escaped,'reel-line',.5,escaped.lastAt).ok,false);
+ assert.equal('currency' in escaped,false);
 });
 
 test('Neon turbo counts measured active playtime only, cooldown and contracts are one-time',()=>{
