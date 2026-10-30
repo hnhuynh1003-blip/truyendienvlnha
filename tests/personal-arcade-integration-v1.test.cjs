@@ -17,6 +17,7 @@ test('C4.4 joins the phone as one Arcade app with four named games',()=>{
  assert.match(html,/personal-arcade-ui-v1\.js\?v=c44-jade-1/);
  assert.match(html,/personal-arcade-v1\.css\?v=c44-jade-1/);
  assert.match(html,/id="arcade-header-wallet-v1"/);
+ assert.match(html,/ARCADE \/\/ 04/);
  const ui=src('js/personal-arcade-ui-v1.js');
  for(const name of ['Trạm Neon','Địa Tầng 07','Vườn Sương','Ngọc Phường'])
   assert.match(ui,new RegExp(name));
