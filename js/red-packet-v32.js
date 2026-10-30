@@ -1,5 +1,5 @@
-/* V32 private Sandbox red packets: local virtual-game currency only.
- * No real transfers, no NPC balance, no EXP, trust, affection or reward grants.
+/* V32 virtual-Xu red packets: local Sandbox or owner-scoped Firestore profile.
+ * No cash, NPC wallet, verified NPC receipt, EXP or relationship rewards.
  */
 (function(root,factory){
   const api=factory();
@@ -11,6 +11,7 @@
   const MAX_PER_DAY=3;
   const COOLDOWN_MS=300000;
   const MAX_NOTE_LENGTH=60;
+  const STATES=Object.freeze({SENT:'SENT',RECEIVED:'RECEIVED'});
   const REASONS=Object.freeze({
     'locked':'NPC chưa được mở khóa.',
     'insufficient':'Số xu trong tài khoản không đủ.',
@@ -28,6 +29,8 @@
         typeof e.id==='string'&&e.id.length<=90&&
         Number.isSafeInteger(e.at)&&e.at>0).slice(-20).map(e=>({
           id:e.id,at:e.at,amount:e.amount,
+          // Only a separate, confirmed NPC receipt may set RECEIVED.
+          status:e.status===STATES.RECEIVED?STATES.RECEIVED:STATES.SENT,
           note:typeof e.note==='string'?e.note.slice(0,MAX_NOTE_LENGTH):''
         })):[]
     };
@@ -55,9 +58,23 @@
     if(rec.events.some(x=>x.id===id))return null;
     return {
       day:plan.day,count:plan.count,lastAt:at,
-      events:[...rec.events,{id,at,amount:plan.amount,note:sanitizeNote(note)}].slice(-20)
+      events:[...rec.events,{id,at,amount:plan.amount,
+        status:STATES.SENT,note:sanitizeNote(note)}].slice(-20)
     };
   }
+  // Chronological, role-local chat plus account/NPC envelope history. Pre-V32
+  // messages have no timestamps: keep them together before dated events rather
+  // than falsely claiming which side of a historic packet they were sent on.
+  function timeline(messages,record){
+    const chat=(Array.isArray(messages)?messages:[]).map((message,index)=>({
+      kind:'message',message,at:Number.isSafeInteger(message?.at)&&message.at>0?
+        message.at:-1,order:index
+    }));
+    const packets=normalizeRecord(record).events.map((packet,index)=>({
+      kind:'packet',packet,at:packet.at,order:chat.length+index
+    }));
+    return [...chat,...packets].sort((a,b)=>a.at-b.at||a.order-b.order);
+  }
   return Object.freeze({DENOMINATIONS,MAX_PER_DAY,COOLDOWN_MS,MAX_NOTE_LENGTH,
-    REASONS,normalizeRecord,evaluate,nextRecord,sanitizeNote});
+    STATES,REASONS,normalizeRecord,evaluate,nextRecord,sanitizeNote,timeline});
 });

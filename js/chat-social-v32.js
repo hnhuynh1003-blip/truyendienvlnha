@@ -122,18 +122,25 @@
     feedback('🧧 Đã lưu phong bao '+plan.amount+' Xu trong Sandbox.');
     renderChatMessages(ctx.npcId);
   }
-  function render(container,storyId,id){
+  function render(container,storyId,id,onlyEvent=null){
     if(!storyId||!id||(!IS_SANDBOX_MODE&&!context()))return;
-    const events=rules.normalizeRecord(record(storyId,id)).events.slice(-5);
+    const events=onlyEvent?[onlyEvent]:rules.normalizeRecord(record(storyId,id)).events.slice(-5);
     for(const item of events){
       const card=document.createElement('div');card.className='dudu-v32-red-packet-card';
+      card.dataset.packetId=item.id;
       const emoji=document.createElement('span');emoji.textContent='🧧';emoji.className='dudu-v32-packet-emoji';
       const value=document.createElement('strong');value.textContent='Phong bao '+item.amount+' Xu';
       const note=document.createElement('small');note.textContent=item.note||'Tấm lòng gửi bạn';
       const info=document.createElement('small');info.className='dudu-v32-packet-info';
       info.textContent=IS_SANDBOX_MODE?'Xu ảo · Chỉ lưu tại Sandbox':
         'Xu trò chơi · Lưu trên tài khoản Firebase';
-      card.append(emoji,value,note,info);container.append(card);
+      const status=document.createElement('small');status.className='dudu-v32-packet-status';
+      status.textContent=item.status===rules.STATES.RECEIVED?
+        '✓ NPC đã xác nhận nhận':'✓ Đã gửi · Chưa có xác nhận NPC đã nhận';
+      const when=document.createElement('small');when.className='dudu-v32-packet-time';
+      when.textContent=new Date(item.at).toLocaleString('vi-VN',{
+        day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+      card.append(emoji,value,note,status,info,when);container.append(card);
     }
   }
   document.addEventListener('keydown',e=>{

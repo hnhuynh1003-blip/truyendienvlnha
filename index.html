@@ -23,7 +23,7 @@
   <link rel="stylesheet" href="css/dudu-multiverse-art-v28-r5.css">
   <link rel="stylesheet" href="css/phone-floating-v30.css?v=49-8">
   <link rel="stylesheet" href="css/phone-refinement-v31.css?v=1">
-  <link rel="stylesheet" href="css/phone-social-v32.css?v=1">
+  <link rel="stylesheet" href="css/phone-social-v32.css?v=timeline-1">
   <link rel="stylesheet" href="css/phone-inbox-v33.css?v=4">
   <link rel="stylesheet" href="css/phone-wallpaper-v34.css?v=2">
   <link rel="stylesheet" href="css/phone-settings-v35.css?v=1">
@@ -141,8 +141,8 @@
   <script src="js/phone-wallpaper-v27-r4.js?v=37-1"></script>
   <script src="js/dudu-multiverse-art-v28-r5.js"></script>
   <script src="js/phone-typography-v31.js"></script>
-  <script src="js/red-packet-v32.js"></script>
-  <script src="js/chat-social-v32.js?v=live-gate-1"></script>
+  <script src="js/red-packet-v32.js?v=timeline-1"></script>
+  <script src="js/chat-social-v32.js?v=timeline-1"></script>
   <script src="js/dudu-multiverse-ui-v28-r5.js"></script>
   <script src="js/player-avatar-ui-v16.js?v=49-7"></script>
   <script src="js/player-avatar-sync-plan-v20.js"></script>
@@ -2730,7 +2730,8 @@
       // Allow only well-formed text exchanges; never treat arbitrary saved data as commands.
       chatHistories[target]=source.filter(x=>x&&['user','model','system'].includes(x.role)&&
         typeof x.text==='string').slice(-100).map(x=>({role:x.role,text:x.text.slice(0,5000),
-          ...(typeof x.model==='string'?{model:x.model}:{})}));
+          ...(typeof x.model==='string'?{model:x.model}:{}),
+          ...(Number.isSafeInteger(x.at)&&x.at>0?{at:x.at}:{})}));
       saveChatHistories();
       renderChatMessages(npcId);
       renderRoleplayV56();
@@ -3932,7 +3933,15 @@
         return;
       }
 
-      history.forEach(msg => {
+      const storyId=activeChatNovelId||(novels[selectedNovelIndex]||{}).id;
+      const packetRecord=getStoryProgress(storyId).redPacketsV32?.[charId];
+      const timeline=DuduRedPacketV32.timeline(history,packetRecord);
+      timeline.forEach(entry => {
+        if(entry.kind==='packet'){
+          renderRedPacketEventsV32(container,storyId,charId,entry.packet);
+          return;
+        }
+        const msg=entry.message;
         const div = document.createElement('div');
         if (msg.role === 'system') {
           div.style.cssText = "align-self: center; background: rgba(239, 68, 68, 0.15); border: 1px dashed var(--red); color: #fca5a5; font-size: 10px; max-width: 90%; border-radius: 8px; padding: 6px 10px; text-align: center; line-height: 1.4;";
@@ -3966,7 +3975,6 @@
         const avatarBadge=div.querySelector('.dudu-player-chat-badge-v16');
         if(avatarBadge)renderPlayerAvatarV16(avatarBadge);
       });
-      renderRedPacketEventsV32(container,activeChatNovelId||(novels[selectedNovelIndex]||{}).id,charId);
       container.scrollTop=container.scrollHeight;
     }
 
@@ -4071,7 +4079,7 @@
           return;
         }
         res.text=window.DuduNpcReplyStyleV5612?.format(spoken,lastUser?.text)||spoken;
-        chatHistories[requestChatKey].push({role:'model',text:res.text,
+        chatHistories[requestChatKey].push({role:'model',text:res.text,at:Date.now(),
           ...(window.DuduAI?.models?.some(m=>m.id===res.model)?{model:res.model}:{}),
           ...(res.fallbackFrom&&window.DuduAI?.models?.some(m=>m.id===res.fallbackFrom)
             ?{fallbackFrom:res.fallbackFrom}:{})
@@ -4141,14 +4149,15 @@
       const dialogueNpc=preview&&(preview.previewPersonaSource==='author'||preview.previewPortraitKey)?preview:char;
       const scripted=DuduNpcLite.script(text,dialogueNpc,previousMessages);
 
-      chatHistories[requestChatKey].push({role:'user',text});
+      chatHistories[requestChatKey].push({role:'user',text,at:Date.now()});
       input.value='';
       pendingNpcRetry=null;
       hideNpcConnectionStatus();
 
       if (scripted && !DUDU_NPC_AI_MODE) {
         // Sandbox scripts remain free; production NPC messages always go to AI.
-        chatHistories[requestChatKey].push({role:'model',text:scripted.text,source:'script'});
+        chatHistories[requestChatKey].push({role:'model',text:scripted.text,
+          source:'script',at:Date.now()});
         saveChatHistories();
         renderChatMessages(charId);
         return;
@@ -4158,7 +4167,7 @@
         // no reward mutation, but per-UID + story + NPC chat history is preserved.
         const local = DuduNpcLite.offlineReply(text,dialogueNpc,previousMessages);
         if(local?.text)chatHistories[requestChatKey].push({
-          role:'model',text:local.text,source:'offline-script'
+          role:'model',text:local.text,source:'offline-script',at:Date.now()
         });
         saveChatHistories();
         renderChatMessages(charId);
@@ -4668,7 +4677,7 @@
         switchChatCharacter();
         const sentText=`[Tôi vừa gửi tặng bạn món quà: ${item.name} (${item.rank})]`;
         if(!Array.isArray(chatHistories[giftChatKey]))chatHistories[giftChatKey]=[];
-        chatHistories[giftChatKey].push({role:'user',text:sentText});
+        chatHistories[giftChatKey].push({role:'user',text:sentText,at:Date.now()});
         saveChatHistories();
         renderChatMessages(char.id);
         const res=await callGeminiAIChat(char,chatHistories[giftChatKey],giftRole);
@@ -4679,7 +4688,7 @@
           const spoken=window.DuduNpcDialogueV5613?.clean(res.text,sentText,char)??res.text;
           if(!spoken)return; // Keep the user gift message, never store stage prose.
           res.text=window.DuduNpcReplyStyleV5612?.format(spoken,sentText)||spoken;
-          chatHistories[giftChatKey].push({role:'model',text:res.text,
+          chatHistories[giftChatKey].push({role:'model',text:res.text,at:Date.now(),
             ...(window.DuduAI?.models?.some(m=>m.id===res.model)?{model:res.model}:{})});
           saveChatHistories();
           if(document.getElementById('chat-character-selector')?.value===char.id)

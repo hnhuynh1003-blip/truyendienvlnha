@@ -81,6 +81,16 @@ quy tắc không cấp trùng. Chỉ khi đó mới coi là đã chuyển sang m
 - C2.2a: Sổ Tay chuyển rõ `storyId` vào hộp quà và giao dịch để tránh
   nhầm truyện nếu Liên lạc đang chọn truyện khác; NPC chưa mở khóa bị
   khóa nút. Sự kiện quà chỉ gửi vào hội thoại khi đúng truyện và NPC.
+- C2.2b: Phong bao không còn bị vẽ lại cố định ở cuối hội thoại. Chat mới
+  lưu `at` và sắp xen kẽ với sự kiện phong bao theo `at`, giữ mã sự kiện
+  riêng khi render. Hội thoại V55/V56 cũ không có thời gian được giữ
+  nguyên và gom trước các sự kiện có mốc thời gian, vì không đủ bằng
+  chứng để suy ra thứ tự chính xác. Quà cũ không bị trừ/cộng lại.
+- C2.2b: Trạng thái phong bao `SENT` hiển thị **Đã gửi — chưa có xác nhận
+  NPC đã nhận**. Không giả định NPC đã đọc/nhận vì hiện chưa có endpoint
+  phản hồi độc lập hay ví NPC; `RECEIVED` dành cho một lần xác nhận thật
+  trong tương lai. Mốc giờ hiển thị trên thẻ. Không chuyển tiền hoặc
+  phát thưởng chỉ vì render thẻ.
 - Những lần gọi lưu *toàn hồ sơ* đã bắt đầu trong cùng tab được chờ hoàn
   thành trước giao dịch mới; không gửi `saveCurrentAccount()` từ kết quả
   C2.2. Tuy vậy, **lưu hồ sơ cũ ở các chức năng khác và nhiều tab/thiết bị
