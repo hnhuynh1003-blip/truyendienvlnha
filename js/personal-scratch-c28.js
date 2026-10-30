@@ -4,10 +4,12 @@
  * client-supplied random draws are NOT server-attested or tamper-proof.
  */
 (function(root,factory){
- const api=factory();
+ const node=typeof module==='object'&&module.exports;
+ const api=factory(node?require('./personal-quest-events-c45.js'):
+  root?.DuduPersonalQuestEventsC45);
  if(typeof module==='object'&&module.exports)module.exports=api;
  if(root)root.DuduPersonalScratchC28=api;
-})(typeof window!=='undefined'?window:null,function(){
+})(typeof window!=='undefined'?window:null,function(questEvents){
  'use strict';
  const META='__duduScratchC28',PRICE=10,MAX_WALLET=1000000000;
  const THEMES=Object.freeze([
@@ -127,7 +129,7 @@
     state=norm(states[META]);
    if(!Number.isSafeInteger(data.currency)||data.currency<0||data.currency>MAX_WALLET)
     throw fail('invalid-wallet');
-   let coins=data.currency,changed=false,status='applied',reward=null;
+   let coins=data.currency,changed=false,status='applied',reward=null,questFields={};
    if(kind==='buy'){
     if(state.buyIds.includes(id))status='already-applied';
     else if(state.active&&state.active.status!=='claimed')throw fail('unfinished-ticket');
@@ -167,8 +169,15 @@
      state.active.status='claimed';changed=true;
     }
    }
-   if(changed)tx.update(ref,{currency:coins,storyStates:{...states,[META]:state}});
-   return {status,kind,currency:coins,state,storyStates:{...states,[META]:state},reward};
+   let nextStates={...states,[META]:state};
+   if(kind==='claim'&&status==='applied'&&changed){
+    const quest=questEvents.record({...data,storyStates:nextStates},
+     {type:'FUN_CLAIM',eventId:id,day,source:'ticket'});
+    const {storyStates:questStates,...fields}=quest.patch;
+    questFields=fields;nextStates=questStates||nextStates;
+   }
+   if(changed)tx.update(ref,{currency:coins,storyStates:nextStates,...questFields});
+   return {status,kind,currency:coins,state,storyStates:nextStates,reward,...questFields};
   });
   if(auth.currentUser!==user||auth.currentUser?.uid!==uid)throw fail('account-changed');
   return outcome;

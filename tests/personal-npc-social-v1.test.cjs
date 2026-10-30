@@ -72,6 +72,7 @@ test('daily check-in persists trust and bond once without gifts, Xu or EXP',asyn
  assert.equal(env.profile.currency,125);
  assert.equal(env.profile.exp,40);
  assert.equal(env.profile.inventory[0].instanceId,'owned-1');
+ assert.equal(env.profile.quests.find(q=>q.id==='q_npc_visits').current,1);
  await assert.rejects(social.run({...base,eventId:'checkin-0002'}),/already-checked-in/);
  assert.equal(env.writes.length,1);
 });

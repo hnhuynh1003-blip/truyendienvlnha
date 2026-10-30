@@ -9,10 +9,11 @@
   node?require('./dudu-fun-rules-v43.js'):root?.DuduFunRulesV43,
   node?require('./economy-core-v43.js'):root?.DuduEconomyCoreV43,
   node?require('./quest-engine-v43-7.js'):root?.DuduQuestEngineV437,
-  node?require('./personal-collection-c24.js'):root?.DuduPersonalCollectionC24);
+  node?require('./personal-collection-c24.js'):root?.DuduPersonalCollectionC24,
+  node?require('./personal-quest-events-c45.js'):root?.DuduPersonalQuestEventsC45);
  if(node)module.exports=api;
  if(root)root.DuduPersonalFunC25=api;
-})(typeof window!=='undefined'?window:null,function(fun,core,questsEngine,collection){
+})(typeof window!=='undefined'?window:null,function(fun,core,questsEngine,collection,questEvents){
  'use strict';
  const META='__duduFunLiveC25',MAX_WALLET=1000000000,MAX_ITEMS=500;
  const validUid=s=>typeof s==='string'&&s.length>0&&s.length<=128;
@@ -28,19 +29,12 @@
   const states=isObject(data?.storyStates)?data.storyStates:{};
   return fun.norm(states[META],day);
  }
- function questAward(data,day,type){
-  const rows=questsEngine.ensure(core.ensureQuests(data.quests||[]));
-  const daily=core.rolloverQuests(rows,data.questsDayV43,day);
-  if(!daily.ok||data.questsDayV43&&data.questsDayV43>day)
-   throw fail('clock-backwards');
-  const weekly=questsEngine.rotate(daily.quests,data.questV437,
-   {day,previousDay:data.questsDayV43});
-  if(!weekly.ok)throw fail('invalid-quests');
-  const advanced=questsEngine.progress(
-   core.applyQuestProgress(weekly.quests,'q_daily_fun'),weekly.state,
-   {type:'FUN_CLAIM',eventId:'fun-'+type+'-'+day,day});
-  if(!advanced)throw fail('invalid-quests');
-  return {quests:advanced.quests,questV437:advanced.state,questsDayV43:daily.day};
+ function questAward(data,day,type,states){
+  const recorded=questEvents.record({...data,storyStates:states},
+   {type:'FUN_CLAIM',eventId:'fun-'+type+'-'+day,day,source:type});
+  return recorded.applied?recorded.patch:{quests:data.quests,
+   questV437:data.questV437,questsDayV43:data.questsDayV43,
+   storyStates:states};
  }
  async function load({db,auth,uid,now=()=>Date.now()}={}){
   if(!validUid(uid)||!db?.collection||auth?.currentUser?.uid!==uid)
@@ -93,7 +87,7 @@
    let result={status:'applied',kind,day,state:next,
     ...(kind==='advance'?{correct:plan.correct}:{})};
    if(kind==='claim'){
-    const quest=questAward(data,day,type);
+    const quest=questAward(data,day,type,patch.storyStates);
     Object.assign(patch,quest,{currency:plan.coins,inventory:plan.inventory});
     if(plan.reward.kind==='ITEM'){
      const gained=plan.inventory.find(x=>x?.instanceId==='fun-'+type+'-'+day);

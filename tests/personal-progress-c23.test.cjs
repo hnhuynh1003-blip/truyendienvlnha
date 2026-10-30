@@ -80,6 +80,18 @@ test('C2.3c quest reward is atomic, idempotent, and cannot trust inflated client
   e=>e.reason==='unknown-quest');
 });
 
+test('C4.5 unverified authoring quest cannot issue personal Xu or EXP',async()=>{
+ const p=profile();p.quests.push({id:'q_main_write',type:'MAIN',title:'Sáng tác',current:1,
+  target:1,claimed:false,rewardCoin:60,rewardExp:60});
+ const h=env(p);
+ await assert.rejects(h.call('quest',{questId:'q_main_write'}),
+  e=>e.reason==='quest-not-open');
+ assert.equal(h.updates,0);
+ assert.equal(h.data.currency,100);
+ assert.equal(h.data.exp,0);
+ assert.equal(h.data.quests.find(q=>q.id==='q_main_write').current,1);
+});
+
 test('C2.3c global loot has one receipt per request and remote cooldown',async()=>{
  const h=env(),rid='global-'+uuid;
  const first=await h.call('global-loot',{requestId:rid});

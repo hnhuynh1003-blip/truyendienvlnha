@@ -93,6 +93,8 @@
   <script src="js/economy-core-v43.js?v=6"></script>
   <script src="js/personal-collection-c24.js?v=c25-1"></script>
   <script src="js/quest-engine-v43-7.js?v=44-9"></script>
+  <script src="js/personal-quest-events-c45.js?v=c45-1"></script>
+  <script src="js/personal-companion-checkin-c45.js?v=c45-1"></script>
   <script src="js/dudu-fun-rules-v43.js?v=44-9"></script>
   <script src="js/personal-scratch-c28.js?v=c29-numbers-1"></script>
   <script src="js/personal-fun-c25.js?v=c25-1"></script>
@@ -3596,10 +3598,16 @@
           if(!record)return false;
           record.relationshipV2=result.relationshipV2;
           if(result.npcBondV43)record.npcBondV43=result.npcBondV43;
+          if(result.quests){
+            userProfile.quests=result.quests;
+            userProfile.questV437=result.questV437;
+            userProfile.questsDayV43=result.questsDayV43;
+          }
         }
         try{localStorage.setItem('profile_'+uid,JSON.stringify(userProfile));}
         catch(error){console.warn('NPC personal local backup unavailable:',error);}
         renderCodexList();
+        if(action==='checkin')renderQuests();
         if(document.getElementById('phone-app-chat')?.style.display==='flex'&&
            activeChatNovelId===storyId&&
            document.getElementById('chat-character-selector')?.value===npcId)
@@ -4602,6 +4610,11 @@
         if(kind==='gift'){
           userProfile.inventory=result.inventory;
           progress.collectedCharacters[npcId]=result.progress;
+          if(result.quests){
+            userProfile.quests=result.quests;
+            userProfile.questV437=result.questV437;
+            userProfile.questsDayV43=result.questsDayV43;
+          }
           if(result.collectionState&&window.DuduPersonalCollectionC24){
             userProfile.storyStates[DuduPersonalCollectionC24.META]=result.collectionState;
           }
@@ -4614,6 +4627,7 @@
           localStorage.removeItem(key);
         }catch(error){console.warn('NPC local cache unavailable:',error);}
         updatePhoneUI();
+        if(kind==='gift')renderQuests();
         return result;
       }catch(error){
         console.warn('NPC Firestore exchange:',error?.code||error?.message);
@@ -5509,6 +5523,11 @@ document.getElementById('phone-home-screen').style.display = 'none';
         userProfile.currency=result.balance;
         userProfile.inventory=result.inventory;
         userProfile.storyStates=result.storyStates;
+        if(result.quests){
+          userProfile.quests=result.quests;
+          userProfile.questV437=result.questV437;
+          userProfile.questsDayV43=result.questsDayV43;
+        }
         if(result.cooldownAt!==null&&Number.isSafeInteger(result.cooldownAt)){
           lastLootTimestamp=result.cooldownAt;
           localStorage.setItem(scopedLocalKey('loot-cooldown'),String(lastLootTimestamp));
@@ -5517,7 +5536,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
         inventoryDetailSelection=null;
         localStorage.setItem('profile_'+uid,JSON.stringify(userProfile));
         localStorage.removeItem(key);
-        renderInventory();renderWallet();
+        renderInventory();renderWallet();renderQuests();
         showSystemAlert(kind==='sell'?'ĐÃ BÁN VẬT PHẨM':'ĐÃ DÙNG VẬT PHẨM',
           kind==='sell'?'+'+result.price+' Xu vào Ví hệ thống.':
           result.effect==='open-supply'?'Đã mở Gói Tiếp Tế: 1 nước uống và 1 bánh quy.':
@@ -6599,9 +6618,14 @@ document.getElementById('phone-home-screen').style.display = 'none';
         if(!scratchReadyC28()||currentUsername!==uid)throw Error('Tài khoản đã thay đổi');
         userProfile.currency=result.currency;
         userProfile.storyStates=result.storyStates;
+        if(result.quests){
+          userProfile.quests=result.quests;
+          userProfile.questV437=result.questV437;
+          userProfile.questsDayV43=result.questsDayV43;
+        }
         try{localStorage.setItem('profile_'+uid,JSON.stringify(userProfile));}
         catch(error){console.warn('Lucky card device backup:',error);}
-        updatePhoneUI();renderWallet();
+        updatePhoneUI();renderWallet();renderQuests();
         return result;
       }
     });
@@ -6630,9 +6654,14 @@ document.getElementById('phone-home-screen').style.display = 'none';
         userProfile.currency=result.currency;
         userProfile.inventory=result.inventory;
         userProfile.storyStates=result.storyStates;
+        if(result.quests){
+          userProfile.quests=result.quests;
+          userProfile.questV437=result.questV437;
+          userProfile.questsDayV43=result.questsDayV43;
+        }
         try{localStorage.setItem('profile_'+uid,JSON.stringify(userProfile));}
         catch(error){console.warn('Blind box device backup:',error);}
-        updatePhoneUI();renderWallet();renderInventory();
+        updatePhoneUI();renderWallet();renderInventory();renderQuests();
         return result;
       }
     });

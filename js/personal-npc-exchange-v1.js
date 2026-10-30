@@ -11,10 +11,11 @@
   root?.DuduInventoryTradeV439||(typeof require==='function'?require('./inventory-trade-v43-9.js'):null),
   root?.DuduNpcBondV43||(typeof require==='function'?require('./npc-bond-v43.js'):null),
   root?.DuduRedPacketV32||(typeof require==='function'?require('./red-packet-v32.js'):null),
-  root?.DuduPersonalCollectionC24||(typeof require==='function'?require('./personal-collection-c24.js'):null));
+  root?.DuduPersonalCollectionC24||(typeof require==='function'?require('./personal-collection-c24.js'):null),
+  root?.DuduPersonalQuestEventsC45||(typeof require==='function'?require('./personal-quest-events-c45.js'):null));
  if(typeof module==='object'&&module.exports)module.exports=api;
  if(root)root.DuduPersonalNpcExchangeV1=api;
-})(typeof window!=='undefined'?window:null,function(relation,gifts,personas,trade,bonds,packets,collection){
+})(typeof window!=='undefined'?window:null,function(relation,gifts,personas,trade,bonds,packets,collection,questEvents){
  'use strict';
  const isRecord=x=>!!x&&typeof x==='object'&&!Array.isArray(x);
  const idPattern=/^[a-zA-Z0-9][a-zA-Z0-9_-]{0,159}$/;
@@ -76,15 +77,19 @@
      eventId,kind:'NPC_GIFT',item,at:now,
      instanceId,inventory});
     if(!journal.ok)throw fail('collection-write-failed');
+    const quest=questEvents.record(data,{type:'NPC_GIFT',eventId,
+     day:new Date(now).toISOString().slice(0,10)});
+    const {storyStates:questStates,...questFields}=quest.patch;
     // Merge only the target NPC and inventory. Never overwrite other story
     // branches, balances, quests or the authored catalog.
-    tx.set(ref,{inventory:nextInventory,storyStates:{[storyId]:{
+    tx.set(ref,{inventory:nextInventory,...questFields,storyStates:{[storyId]:{
      collectedCharacters:{[npcId]:updated}},
-     [collection.META]:journal.state}},{merge:true});
+     [collection.META]:journal.state,
+     [questEvents.META]:questStates[questEvents.META]}},{merge:true});
     return {status:'applied',kind,storyId,npcId,inventory:nextInventory,
      progress:{...progress,...updated},itemName:canonical.name,itemRank:canonical.rank,
      affinityGain:plan.delta.affinity,trustGain:plan.delta.trust,
-     collectionState:journal.state};
+     collectionState:journal.state,...questFields};
    }
    const balance=data.currency,record=story.redPacketsV32?.[npcId];
    if(!Number.isSafeInteger(balance)||balance<0||balance>1000000000)

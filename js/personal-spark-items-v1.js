@@ -7,10 +7,11 @@
   root?.DuduEconomyCoreV43||(typeof require==='function'?require('./economy-core-v43.js'):null),
   root?.DuduInventoryTradeV439||(typeof require==='function'?require('./inventory-trade-v43-9.js'):null),
   root?.DuduFunctionalItemsV438||(typeof require==='function'?require('./functional-items-v43-8.js'):null),
-  root?.DuduPersonalCollectionC24||(typeof require==='function'?require('./personal-collection-c24.js'):null));
+  root?.DuduPersonalCollectionC24||(typeof require==='function'?require('./personal-collection-c24.js'):null),
+  root?.DuduPersonalQuestEventsC45||(typeof require==='function'?require('./personal-quest-events-c45.js'):null));
  if(typeof module==='object'&&module.exports)module.exports=api;
  if(root)root.DuduPersonalSparkItemsV1=api;
-})(typeof window!=='undefined'?window:null,function(economy,trade,functional,collection){
+})(typeof window!=='undefined'?window:null,function(economy,trade,functional,collection,questEvents){
  'use strict';
  const META='__duduPersonalItemsV1',PROGRESS_META='__duduPersonalProgressC23',
   MAX_RECEIPTS=80,MAX_WALLET=1000000000,MAX_ITEMS=500;
@@ -156,9 +157,15 @@
     [collection.META]:collectionState,
     ...(cooldownAt!==null?{[PROGRESS_META]:{
       ...progressState,lastGlobalLootAt:cooldownAt}}:{})};
-   tx.update(profile,{currency:nextBalance,inventory:nextInventory,storyStates:nextStates});
+   const questType=kind==='purchase'?'MARKET_PURCHASE':kind==='use'?'ITEM_USE':null;
+   const quest=questType?questEvents.record({...data,storyStates:nextStates},
+    {type:questType,eventId:rid,day:receipt.at.slice(0,10)}):null;
+   const questPatch=quest?.patch||{};
+   tx.update(profile,{currency:nextBalance,inventory:nextInventory,
+    ...questPatch,storyStates:questPatch.storyStates||nextStates});
    return {status:'applied',balance:nextBalance,inventory:nextInventory,
-    storyStates:nextStates,...receipt,result:receipt};
+    storyStates:questPatch.storyStates||nextStates,...questPatch,
+    ...receipt,result:receipt};
   });
   if(auth.currentUser!==user||auth.currentUser?.uid!==uid)
    throw Error('Tài khoản đã đổi, hãy tải lại Kho');

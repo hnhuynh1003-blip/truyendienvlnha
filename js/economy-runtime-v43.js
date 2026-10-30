@@ -165,11 +165,25 @@
   })||false;
  };
  root.buyShopItem=buy;
+ function personalQuestPreview(){
+  const rows=questsV437?.ensure(core.ensureQuests(userProfile.quests||[]))||[];
+  const day=new Date().toISOString().slice(0,10);
+  if(userProfile.questsDayV43&&userProfile.questsDayV43>day)
+   return {quests:rows,state:userProfile.questV437};
+  const daily=core.rolloverQuests(rows,userProfile.questsDayV43,day);
+  if(!daily.ok)return {quests:rows,state:userProfile.questV437};
+  const weekly=questsV437?.rotate(daily.quests,userProfile.questV437,
+   {day,previousDay:userProfile.questsDayV43});
+  if(!weekly?.ok)return {quests:daily.quests,state:userProfile.questV437};
+  // UI-only preview: an actual profile write/claim must still transact.
+  return {quests:weekly.quests,state:weekly.state};
+ }
  root.renderQuests=function(){
   const signedMain=!sandbox()&&!!(root.DuduAuth?.isReady?.()&&
    root.DuduAuth.uid()===currentUsername&&root.DuduPersonalProgressC23);
   const readOnly=!sandbox()&&!signedMain;
   if(!readOnly)rotate();
+  const personalPreview=signedMain?personalQuestPreview():null;
   const reset=document.querySelector('#phone-app-quests .dudu-v27-quest-tools button');
   if(reset){
    reset.disabled=true;reset.classList.remove('btn-danger');
@@ -179,9 +193,9 @@
   if(questsV437&&root.DuduQuestUIV437)
    return root.DuduQuestUIV437.render({
     host:document.getElementById('quests-container'),
-    quests:signedMain?(questsV437?.ensure(core.ensureQuests(Array.isArray(userProfile.quests)?userProfile.quests:[]))||[]):
+    quests:signedMain?personalPreview.quests:
       readOnly?(questsV437?.ensure(core.ensureQuests(Array.isArray(userProfile.quests)?userProfile.quests:[]))||[]):owner()?userProfile.quests:[],
-    questState:signedMain?userProfile.questV437:readOnly?userProfile.questV437:owner()?userProfile.questV437:null,
+    questState:signedMain?personalPreview.state:readOnly?userProfile.questV437:owner()?userProfile.questV437:null,
     signed:signedMain||(!readOnly?owner():!!(root.DuduAuth?.isReady?.()&&root.DuduAuth.uid()===currentUsername)),
     onClaim:readOnly?null:root.claimQuestReward,readOnly,personalMode:signedMain
    });

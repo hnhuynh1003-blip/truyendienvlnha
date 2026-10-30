@@ -5,10 +5,11 @@
 (function(root,factory){
  const node=typeof module==='object'&&module.exports;
  const api=factory(node?require('./item-catalog-v2.js'):root?.DuduItemCatalog,
-  node?require('./personal-collection-c24.js'):root?.DuduPersonalCollectionC24);
+  node?require('./personal-collection-c24.js'):root?.DuduPersonalCollectionC24,
+  node?require('./personal-quest-events-c45.js'):root?.DuduPersonalQuestEventsC45);
  if(node)module.exports=api;
  if(root)root.DuduPersonalBlindBoxC29=api;
-})(typeof window!=='undefined'?window:null,function(catalog,collection){
+})(typeof window!=='undefined'?window:null,function(catalog,collection,questEvents){
  'use strict';
  const META='__duduBlindBoxC29',PRICE=20,MAX_WALLET=1000000000,MAX_ITEMS=500,
   MAX_HISTORY=60,MAX_IDS=96,DUPLICATE_RETURN=4;
@@ -80,7 +81,7 @@
    if(!Array.isArray(data.inventory)||data.inventory.length>MAX_ITEMS)
     throw fail('invalid-inventory');
    let currency=data.currency,inventory=data.inventory,status='applied',reward=null;
-   let nextStates=states;
+   let nextStates=states,questFields={};
    if(kind==='start'){
     if(s.ids.includes(id))status='already-applied';
     else if(s.active?.status==='sealed')throw fail('unfinished-box');
@@ -131,10 +132,15 @@
       mode:s.active.mode,duplicate:reward.duplicate}].slice(-MAX_HISTORY);
      s.active={...s.active,status:'claimed',duplicate:reward.duplicate};
      nextStates={...nextStates,[META]:s};
-     tx.update(ref,{currency,inventory,storyStates:nextStates});
+     const quest=questEvents.record({...data,storyStates:nextStates},
+      {type:'FUN_CLAIM',eventId:id,day,source:'box'});
+     const {storyStates:questStates,...fields}=quest.patch;
+     questFields=fields;
+     nextStates=questStates||nextStates;
+     tx.update(ref,{currency,inventory,storyStates:nextStates,...questFields});
     }
    }
-   return {kind,status,state:s,currency,inventory,storyStates:nextStates,reward};
+   return {kind,status,state:s,currency,inventory,storyStates:nextStates,reward,...questFields};
   });
   if(auth.currentUser!==user||auth.currentUser?.uid!==uid)throw fail('account-changed');
   return result;

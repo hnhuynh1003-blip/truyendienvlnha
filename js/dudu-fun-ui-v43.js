@@ -615,28 +615,27 @@
   const rule=lucky();
   if(!rule||!luckyLoaded){
    rootNode.append(el('p','dudu-fun-caption',luckyError?
-    'Chưa tải được Sổ vé của bạn. Hãy thử lại.':'Đang mở quầy vé may mắn…'));
+    'Chưa tải được quầy vé của bạn. Hãy thử lại.':'Đang mở quầy vé may mắn…'));
    if(luckyError){const retry=el('button','dudu-fun-start','Thử lại');
     retry.addEventListener('click',()=>{luckyError=false;render();});rootNode.append(retry);}
    return;
   }
   const s=luckyState,active=s.active,
-   theme=rule.THEMES.find(t=>t.id===(active?.theme||luckyTheme))||rule.THEMES[0],
-   unlocked=Object.values(s.album).filter(Boolean).length;
+   theme=rule.THEMES.find(t=>t.id===(active?.theme||luckyTheme))||rule.THEMES[0];
   const intro=el('div','lucky-kiosk-head');
   intro.append(el('span','','🏮 LỘC ĐẾN NHÀ · 刮刮乐'),
    el('strong','','Vé Cào Vạn Phúc'),
    el('small','','10 Xu/thẻ · Mua không giới hạn · Giải cao nhất 10.000 Xu'));
   rootNode.append(intro);
   if(!active||active.status==='claimed'){
-   rootNode.append(el('p','dudu-fun-caption','Chọn mẫu vé bạn muốn sưu tầm. Mỗi mẫu có cùng tỷ lệ trúng giải.'));
+   rootNode.append(el('p','dudu-fun-caption','Chọn phong cách tấm vé. Mọi mẫu có cùng tỷ lệ trúng giải.'));
    const shelf=el('div','lucky-theme-grid');
    for(const design of rule.THEMES){
     const count=s.album[design.id]||0;
     const tile=el('button','lucky-theme lucky-theme-'+design.id+(luckyTheme===design.id?' selected':''));
     tile.type='button';tile.disabled=luckyBusy;tile.setAttribute('aria-pressed',String(luckyTheme===design.id));
     tile.append(el('span','lucky-theme-icon',design.symbol),
-     el('b','',design.name),el('small','',count?'Đã có · '+count:'Chưa có'));
+     el('b','',design.name),el('small','',count?'Đã chọn '+count+' lượt':'Chọn mẫu vé'));
     tile.addEventListener('click',()=>{luckyTheme=design.id;render();});shelf.append(tile);
    }
    rootNode.append(shelf);
@@ -670,19 +669,16 @@
    rootNode.append(card);
    if(active.status==='ready'){
     const claim=el('button','dudu-fun-claim lucky-claim',active.amount?
-     '🧧 Nhận '+active.amount+' Xu vào Ví':'🧧 Lưu vé vào Sổ sưu tầm');
+     '🧧 Nhận '+active.amount+' Xu vào Ví':'✓ Hoàn tất lượt cào');
     claim.disabled=luckyBusy;claim.addEventListener('click',()=>{void luckyAction('claim');});
     rootNode.append(claim);
    }
    if(active.status==='claimed')rootNode.append(el('p','lucky-last-win',
     active.amount?'✦ Đã nhận '+active.amount+' Xu · Chọn mẫu và mua vé tiếp!':
-    'Đã lưu mẫu vé vào bộ sưu tập. Thử một vận may khác nhé!'));
+    'Vé này không trúng giải. Thử một vận may khác nhé!'));
   }
-  const album=el('div','lucky-album');
-  album.append(el('strong','','📚 Sổ Vé · '+unlocked+'/'+rule.THEMES.length+' mẫu'),
-   el('small','','Đã mua '+s.total+' vé · Trúng '+s.prizes.length+'/'+rule.PRIZES.length+' hạng giải'));
-  const bar=el('div','lucky-album-track'),fill=el('i','');fill.style.width=(unlocked/rule.THEMES.length*100)+'%';
-  bar.append(fill);album.append(bar);rootNode.append(album);
+  // Historical theme counters remain in saved data, but tickets are never a
+  // collectible album. Only the purchase/result history is displayed below.
   const odds=el('details','lucky-odds');
   odds.append(el('summary','','✧ Xem 13 hạng giải & tỷ lệ trúng'));
   const list=el('div','lucky-odds-list');

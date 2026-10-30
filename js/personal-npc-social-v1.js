@@ -1,6 +1,7 @@
 /* DUDU Cyber Phone — real per-UID NPC favorites and daily check-ins.
  * Uses the existing owner-writable profiles_v2 document on Firestore Spark.
- * Never writes Xu, inventory, EXP, quests, authored NPCs or AI transcripts.
+ * Never grants Xu, inventory or EXP and never edits authored NPCs or AI transcripts.
+ * Valid check-ins can advance personal quests in the same owner transaction.
  * These personal progress fields are NOT proof of server-authorized milestones.
  */
 (function(root,factory){
@@ -8,14 +9,22 @@
  const api=factory(
   root?.DuduNpcRelationshipV2||(typeof require==='function'?require('./npc-relationship-v2-r1.js'):null),
   root?.DuduNpcTrustR5||(typeof require==='function'?require('./npc-trust-v2-r5.js'):null),
-  root?.DuduNpcBondV43||(typeof require==='function'?require('./npc-bond-v43.js'):null));
+  root?.DuduNpcBondV43||(typeof require==='function'?require('./npc-bond-v43.js'):null),
+  root?.DuduPersonalQuestEventsC45||(typeof require==='function'?require('./personal-quest-events-c45.js'):null));
  if(typeof module==='object'&&module.exports)module.exports=api;
  if(root)root.DuduPersonalNpcSocialV1=api;
-})(typeof window!=='undefined'?window:null,function(relationRules,trustRules,bondRules){
+})(typeof window!=='undefined'?window:null,function(relationRules,trustRules,bondRules,questEvents){
  'use strict';
  const fail=reason=>Object.assign(new Error(reason),{code:reason});
  const actions=Object.freeze(['favorite','checkin']);
  const isRecord=x=>!!x&&typeof x==='object'&&!Array.isArray(x);
+ const shortEvent=(storyId,npcId,day)=>{
+  const full=storyId+':'+npcId+':'+day;
+  if(full.length<=96)return full;
+  let hash=2166136261;
+  for(const character of full){hash^=character.charCodeAt(0);hash=Math.imul(hash,16777619);}
+  return 'checkin-'+(hash>>>0).toString(16)+'-'+day;
+ };
  async function run({db,auth,uid,storyId,npcId,action,choiceId='thoughtful',
   now=Date.now(),eventId}={}){
   if(!actions.includes(action)||!relationRules?.validScope(uid,storyId,npcId)||
@@ -60,9 +69,15 @@
     day:new Date(now).toISOString().slice(0,10)});
    const updated={relationshipV2:relationship};
    if(bond.ok)updated.npcBondV43=bond.state;
-   tx.set(ref,{storyStates:{[storyId]:{collectedCharacters:{[npcId]:updated}}}},{merge:true});
+   const day=new Date(now).toISOString().slice(0,10);
+   const quest=questEvents.record(data,{type:'NPC_CHECKIN',
+    eventId:shortEvent(storyId,npcId,day),day});
+   const {storyStates:questStates,...questFields}=quest.patch;
+   tx.set(ref,{...questFields,storyStates:{[storyId]:{
+    collectedCharacters:{[npcId]:updated}},
+    [questEvents.META]:questStates[questEvents.META]}},{merge:true});
    return {action,storyId,npcId,relationshipV2:relationship,
-    npcBondV43:bond.ok?bond.state:undefined,trustGain};
+    npcBondV43:bond.ok?bond.state:undefined,trustGain,...questFields};
   });
   if(auth.currentUser!==session||auth.currentUser?.uid!==uid)
    throw fail('account-changed');

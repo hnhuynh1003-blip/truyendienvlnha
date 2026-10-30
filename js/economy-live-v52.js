@@ -122,10 +122,16 @@
    userProfile.currency=result.balance;
    userProfile.inventory=result.inventory;
    userProfile.storyStates=result.storyStates;
+   if(result.quests){
+    userProfile.quests=result.quests;
+    userProfile.questV437=result.questV437;
+    userProfile.questsDayV43=result.questsDayV43;
+   }
    localStorage.setItem('profile_'+account,JSON.stringify(userProfile));
    localStorage.removeItem(key);
    showPersonalMarket();
    root.renderWallet?.();
+   root.renderQuests?.();
    root.showSystemAlert?.('ĐÃ MUA VẬT PHẨM',
     (result.status==='already-applied'?'Đã xác nhận lại đơn mua. ':'')+
     'Đồ đã vào Kho · Số dư: '+result.balance+' Xu.');

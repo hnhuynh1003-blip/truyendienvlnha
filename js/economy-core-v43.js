@@ -77,7 +77,7 @@
  });
  const EXTRA_DAILY_QUESTS=Object.freeze([
   Object.freeze({id:'q_daily_fun',type:'DAILY',title:'Giải Trí DUDU',
-   desc:'Hoàn thành và nhận thưởng 1 trò trong DUDU FUN.',
+   desc:'Mở Vạn Bảo hoặc nhận kết quả Vé Cào Vạn Phúc một lần trong ngày.',
    current:0,target:1,rewardExp:10,rewardCoin:10,claimed:false}),
   Object.freeze({id:'q_daily_npc',type:'DAILY',title:'Gửi Một Món Quà',
    desc:'Tặng thành công 1 món quà cho NPC đã mở khóa.',

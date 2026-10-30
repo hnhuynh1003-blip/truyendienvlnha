@@ -15,12 +15,12 @@
   {id:'q_daily_tool',type:'DAILY',title:'Kích Hoạt Công Cụ',desc:'Dùng thành công 1 vật phẩm chức năng mới trong Kho.',icon:'🧰',target:1,rewardExp:8,rewardCoin:6},
   {id:'q_week_read',type:'WEEKLY',title:'Hành Trình Trang Sách',desc:'Mở 5 chương trong tuần (mỗi chương một lần/ngày).',icon:'📚',target:5,rewardExp:35,rewardCoin:35},
   {id:'q_week_loot',type:'WEEKLY',title:'Tay Săn Tàn Tích',desc:'Nhặt thành công 5 vật phẩm trong tuần.',icon:'🎒',target:5,rewardExp:30,rewardCoin:25},
-  {id:'q_week_fun',type:'WEEKLY',title:'Người Bạn Giải Trí',desc:'Nhận thưởng DUDU FUN 3 lần trong tuần.',icon:'🎲',target:3,rewardExp:25,rewardCoin:20},
+  {id:'q_week_fun',type:'WEEKLY',title:'Người Bạn Giải Trí',desc:'Nhận thưởng từ Vạn Bảo hoặc Vé Cào 3 lượt trong tuần (mỗi loại tối đa 1 lần/ngày).',icon:'🎲',target:3,rewardExp:25,rewardCoin:20},
   {id:'q_week_shop',type:'WEEKLY',title:'Khách Hàng Thân Thiết',desc:'Mua 2 món hợp lệ ở DUDU MARKET trong tuần.',icon:'🛍️',target:2,rewardExp:15,rewardCoin:12},
   {id:'q_story_reader',type:'STORY',title:'Đi Qua Những Thế Giới',desc:'Mở 6 chương khác nhau (tính xuyên ngày và xuyên truyện).',icon:'📜',target:6,rewardExp:45,rewardCoin:30,rewardItem:'common-bottled-water'},
   {id:'q_npc_gifts',type:'NPC',title:'Người Trao Kỷ Niệm',desc:'Tặng thành công 4 món quà cho NPC đã mở khóa.',icon:'💝',target:4,rewardExp:30,rewardCoin:25,rewardItem:'common-biscuit'},
-  {id:'q_npc_visits',type:'NPC',title:'Những Cuộc Gặp Gỡ',desc:'Hoàn thành 3 lượt gặp NPC hợp lệ theo ngày.',icon:'🤝',target:3,rewardExp:25,rewardCoin:20},
-  {id:'q_event_fun',type:'EVENT',title:'Ngày Hội Hộp Mù',desc:'Nhận thưởng cả Hộp Mù và Vé Số trong cùng ngày.',icon:'✨',target:2,rewardExp:12,rewardCoin:10}
+  {id:'q_npc_visits',type:'NPC',title:'Những Cuộc Gặp Gỡ',desc:'Hỏi thăm NPC 3 lần hợp lệ (mỗi NPC tối đa một lần/ngày).',icon:'🤝',target:3,rewardExp:25,rewardCoin:20},
+  {id:'q_event_fun',type:'EVENT',title:'Ngày Hội Vạn Bảo',desc:'Mở một Hộp Mù Vạn Bảo và nhận giải một Vé Cào Vạn Phúc trong cùng ngày.',icon:'✨',target:2,rewardExp:12,rewardCoin:10}
  ].map(x=>Object.freeze(x)));
  const DEFINITION_MAP=new Map(DEFINITIONS.map(x=>[x.id,x]));
  const EVENTS=Object.freeze({

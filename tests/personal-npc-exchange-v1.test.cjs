@@ -58,8 +58,11 @@ test('gift consumes one verified item, updates only owned NPC and bond',async()=
  assert.equal(env.profile.storyStates['other-story'].favoriteNpcV43,'other');
  assert.equal(env.profile.storyStates[storyId].unrelated,'keep');
  assert.equal(env.profile.currency,200);assert.equal(env.profile.exp,100);
- assert.deepEqual(env.profile.quests,[{id:'keep'}]);
- assert.deepEqual(Object.keys(env.writes[0]).sort(),['inventory','storyStates']);
+ assert.equal(env.profile.quests.find(q=>q.id==='q_daily_npc').current,1);
+ assert.equal(env.profile.quests.find(q=>q.id==='q_npc_gifts').current,1);
+ assert.equal(env.profile.quests[0].id,'keep');
+ assert.deepEqual(Object.keys(env.writes[0]).sort(),
+  ['inventory','questV437','quests','questsDayV43','storyStates']);
  const journal=collection.snapshot({inventory:env.profile.inventory,
   storyStates:env.profile.storyStates});
  assert.equal(journal.events.filter(x=>x.kind==='NPC_GIFT').length,1);

@@ -3,6 +3,7 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const items=require('../js/personal-spark-items-v1.js');
 const economy=require('../js/economy-core-v43.js');
+const questEvents=require('../js/personal-quest-events-c45.js');
 
 const SHOP='shop-12345678-1234-1234-1234-123456789abc';
 const USE='use-12345678-1234-1234-1234-123456789abd';
@@ -29,10 +30,13 @@ test('Personal purchase debits existing wallet once and persists canonical item'
  assert.equal(h.data.inventory[0].instanceId,SHOP);
  assert.equal(h.data.inventory[0].obtainedFrom.source,'DUDU_MARKET');
  assert.deepEqual(h.data.storyStates.novel,{chapter:2});
+ assert.equal(h.data.quests.find(q=>q.id==='q_week_shop').current,1);
+ assert.equal(h.data.storyStates[questEvents.META].events.length,1);
  const retry=await h.run({kind:'purchase',requestId:SHOP,itemId:economy.SUPPLY_ID});
  assert.equal(retry.status,'already-applied');
  assert.equal(h.data.currency,80);
  assert.equal(h.data.inventory.length,1);
+ assert.equal(h.data.quests.find(q=>q.id==='q_week_shop').current,1);
  await assert.rejects(h.run({kind:'purchase',requestId:SHOP,itemId:economy.PULSE_ID}),/khác/);
 });
 test('Supply kit consumes one and grants exactly two common items, not rare items',async()=>{
@@ -43,9 +47,11 @@ test('Supply kit consumes one and grants exactly two common items, not rare item
  assert.equal(h.data.currency,80);
  assert.equal(h.data.inventory.length,2);
  assert.deepEqual(h.data.inventory.map(x=>x.id).sort(),['common-biscuit','common-bottled-water']);
+ assert.equal(h.data.quests.find(q=>q.id==='q_daily_tool').current,1);
  const retry=await h.run({kind:'use',requestId:USE,itemId:economy.SUPPLY_ID,instanceId:SHOP});
  assert.equal(retry.status,'already-applied');
  assert.equal(h.data.inventory.length,2);
+ assert.equal(h.data.quests.find(q=>q.id==='q_daily_tool').current,1);
 });
 test('Personal sale returns only the canonical common item buyback and cannot repeat',async()=>{
  const h=harness();
@@ -56,6 +62,7 @@ test('Personal sale returns only the canonical common item buyback and cannot re
  await h.run({kind:'sell',requestId:SELL,itemId:'common-biscuit',instanceId:SHOP});
  assert.equal(h.data.inventory.length,0);
  assert.equal(h.data.currency,before+price);
+ assert.equal(h.data.quests.find(q=>q.id==='q_week_shop').current,1);
  const replay=await h.run({kind:'sell',requestId:SELL,itemId:'common-biscuit',instanceId:SHOP});
  assert.equal(replay.status,'already-applied');
  assert.equal(h.data.currency,before+price);

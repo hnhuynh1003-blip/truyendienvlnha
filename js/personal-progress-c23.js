@@ -105,6 +105,9 @@
    levelUps:earned.levelUps});
  }
  function questClaim({data,questId,day,at=Date.now()}){
+  // Personal publishing does not yet emit an owner-verified authoring receipt.
+  // Retain old progress but never distribute its main-account reward by guesswork.
+  if(questId==='q_main_write')throw fail('quest-not-open');
   const definition=KNOWN.get(questId);
   if(!definition)throw fail('unknown-quest');
   const q=questBase(data,day),row=q.quests.find(item=>item?.id===questId);

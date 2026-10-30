@@ -62,7 +62,7 @@
   const caption=$('p','dudu-v437-subtitle',
    tab==='ALL'?'Hoàn thành hoạt động để mở phần thưởng':
    tab==='WEEKLY'?'Nhiệm vụ tuần làm mới vào Thứ Hai':
-   tab==='EVENT'?'Sự kiện Hộp Mù/Vé Số miễn phí mỗi ngày':
+   tab==='EVENT'?'Sự kiện Vạn Bảo và Vé Cào Vạn Phúc':
    tab==='STORY'?'Mốc mở chương và hành trình chính tuyến':
    tab==='NPC'?(personalMode?'Gắn kết cùng những nhân vật đã gặp':
     'Kỷ niệm chỉ là tiến độ Sandbox; chưa phải kỷ vật máy chủ'):
@@ -77,7 +77,10 @@
   });
   for(const q of visible){
    if(!q||!q.id)continue;
-   const ready=!q.claimed&&Number(q.current)>=Number(q.target);
+   const canonical=engine.DEFINITIONS.find(x=>x.id===q.id)||
+    root.DuduEconomyCoreV43?.EXTRA_DAILY_QUESTS.find(x=>x.id===q.id)||q;
+   const locked=personalMode&&q.id==='q_main_write';
+   const ready=!locked&&!q.claimed&&Number(q.current)>=Number(q.target);
    const target=Math.max(1,Number(q.target)||1),current=Math.min(target,Math.max(0,Number(q.current)||0));
    const card=$('article','dudu-v437-card'+(ready?' is-ready':'')+(q.claimed?' is-claimed':''));
    card.dataset.questId=q.id;
@@ -85,14 +88,16 @@
    const header=$('div','dudu-v437-row');
    const icon=$('span','dudu-v437-icon',q.icon||icons[q.type]||'✦');
    const text=$('div','dudu-v437-copy');
-   const title=$('strong','',q.title||'Nhiệm vụ');
+   const title=$('strong','',canonical.title||'Nhiệm vụ');
    const type=$('small','',labels[q.type]||q.type||'Nhiệm vụ');
    text.append(type,title);
    header.append(icon,text);
    const status=$('span','dudu-v437-status',
-    q.claimed?'✓ Đã nhận':ready?'Sẵn sàng':current+'/'+target);
+    q.claimed?'✓ Đã nhận':locked?'Chưa mở':ready?'Sẵn sàng':current+'/'+target);
    header.append(status);
-   card.append(header,$('p','dudu-v437-desc',q.desc||'Thực hiện hoạt động để nhận thưởng.'));
+   card.append(header,$('p','dudu-v437-desc',locked?
+    'Nhiệm vụ sáng tác chưa được xác thực trên tài khoản chính; tiến độ cũ vẫn được giữ.':
+    canonical.desc||'Thực hiện hoạt động để nhận thưởng.'));
    const meter=$('div','dudu-v437-meter'),bar=$('span','');
    bar.style.width=(current/target*100)+'%';meter.append(bar);
    meter.setAttribute('role','progressbar');

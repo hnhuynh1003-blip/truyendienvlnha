@@ -10,7 +10,7 @@
  const canUse=()=>!!rules&&typeof currentUsername==='string'&&!!currentUsername&&
   (sandbox()||!!(root.DuduAuth?.isReady?.()&&root.DuduAuth.uid()===currentUsername));
  const localKey=()=>!sandbox()&&canUse()?'dudu:companion:local:v51:'+currentUsername:null;
- let shown=false,owner='';
+ let shown=false,owner='',mainCheckinBusy=false;
  const create=(tag,cls,text)=>{
   const e=document.createElement(tag);if(cls)e.className=cls;
   if(text!==undefined)e.textContent=String(text);return e;
@@ -68,7 +68,8 @@
  function render(){
   const panel=el('dudu-v43-companion');if(!panel||!shown)return;
   if(!canUse()||owner!==currentUsername){hide();return;}
-  const s=state(),today=rules.localDay(),list=el('dudu-v43-messages');
+  const s=state(),today=sandbox()?rules.localDay():new Date().toISOString().slice(0,10),
+   list=el('dudu-v43-messages');
   if(!list)return;
   const previousScroll=list.scrollTop;
   const followBottom=list.scrollHeight-list.scrollTop-list.clientHeight<56;
@@ -100,15 +101,18 @@
   if(chatCount)chatCount.textContent='💬 '+s.chat.count+' ngày trò chuyện';
   const button=el('dudu-v43-checkin'),info=el('dudu-v43-reward-info');
   if(button){
-   const received=s.login.day===today;
-   button.disabled=received;
+   const received=sandbox()?s.login.day===today:
+    userProfile?.storyStates?.__duduCompanionCheckinC45?.day===today;
+   button.disabled=received||mainCheckinBusy;
    button.textContent=sandbox()?(received?'✓ Đã nhận quà hôm nay':'Nhận quà điểm danh'):
     (received?'✓ Đã điểm danh':'Điểm danh');
   }
   const nextDay=s.login.day===today?s.login.count:s.login.count+1;
-  if(info)info.textContent=s.login.day===today?
+  if(info)info.textContent=(sandbox()?s.login.day===today:
+    userProfile?.storyStates?.__duduCompanionCheckinC45?.day===today)?
    'Đã điểm danh hôm nay · quay lại ngày mai':
-   sandbox()?'Quà dự kiến: '+rules.COIN_DAYS[(Math.max(1,nextDay)-1)%7]+' Xu thử nghiệm':'Ghi nhận kỷ niệm trên thiết bị · không phát Xu';
+   sandbox()?'Quà dự kiến: '+rules.COIN_DAYS[(Math.max(1,nextDay)-1)%7]+' Xu thử nghiệm':
+   'Điểm danh để hoàn thành nhiệm vụ ngày · làm mới lúc 07:00';
   const badge=el('dudu-v43-milestones');
   if(badge){
    badge.replaceChildren();
@@ -176,14 +180,40 @@
    if(status){status.textContent='Chưa lưu được tin nhắn. Nội dung vẫn ở ô nhập.';status.dataset.state='error';}
   }
  }
+ async function mainCheckin(next){
+  if(mainCheckinBusy||!root.DuduPersonalCompanionCheckinC45)return;
+  const uid=currentUsername;
+  mainCheckinBusy=true;render();
+  try{
+   const result=await root.DuduPersonalCompanionCheckinC45.run({
+    db:root.firebase.firestore(),auth:root.firebase.auth(),uid});
+   if(currentUsername!==uid||root.DuduAuth.uid()!==uid)return;
+   if(result.status==='applied'){
+    userProfile.quests=result.quests;
+    userProfile.questV437=result.questV437;
+    userProfile.questsDayV43=result.questsDayV43;
+    userProfile.storyStates=result.storyStates;
+   }else{
+    userProfile.storyStates={...(userProfile.storyStates||{}),
+     __duduCompanionCheckinC45:{day:result.day}};
+   }
+   addMessage(next,'model','Đã ghi nhận điểm danh hôm nay! Nhiệm vụ ngày đang đợi cậu trong điện thoại.');
+   store(next);
+   root.renderQuests?.();root.duduV33Render?.();
+  }catch(error){
+   root.showSystemAlert?.('CHƯA ĐIỂM DANH ĐƯỢC',
+    'Kết nối chưa xác nhận lượt điểm danh. Hãy thử lại nhé.');
+   console.warn('DUDU companion checkin:',error?.reason||error?.message);
+  }finally{mainCheckinBusy=false;render();}
+ }
  function checkin(){
   if(!canUse()||!shown||owner!==currentUsername)return;
-  const previous=state(),plan=rules.checkin(previous);
+  const previous=state(),today=sandbox()?rules.localDay():new Date().toISOString().slice(0,10);
+  const alreadyLocal=!sandbox()&&previous.login.day===today;
+  const plan=alreadyLocal?{ok:true,state:previous}:rules.checkin(previous,today);
   if(!plan.ok)return;
   if(!sandbox()){
-   const next=plan.state;
-   addMessage(next,'model','Điểm danh đã lưu trên thiết bị. Chúc cậu có một ngày đọc truyện vui vẻ!');
-   if(store(next)){render();root.duduV33Render?.();}
+   void mainCheckin(plan.state);
    return;
   }
   const oldBalance=Number(userProfile.currency);
@@ -238,7 +268,7 @@
   summary.setAttribute('aria-haspopup','true');
   const claim=create('button','dudu-v43-checkin','Nhận quà điểm danh');
   claim.id='dudu-v43-checkin';claim.type='button';claim.addEventListener('click',checkin);
-  const note=create('small','dudu-v43-note',sandbox()?'Xu và mốc kỷ niệm chỉ lưu ở Sandbox; chưa phải kỷ vật Bảo Tàng được xác nhận.':'Nhật ký DUDU chỉ lưu trên thiết bị; không cấp Xu hay kỷ vật thật.');
+  const note=create('small','dudu-v43-note',sandbox()?'Xu và mốc kỷ niệm chỉ lưu ở Sandbox; chưa phải kỷ vật Bảo Tàng được xác nhận.':'Nhật ký trò chuyện lưu trên thiết bị; điểm danh nhiệm vụ được ghi vào tài khoản.');
   const reward=create('small','dudu-v43-reward-info','');reward.id='dudu-v43-reward-info';
   const badges=create('div','dudu-v43-milestones','');badges.id='dudu-v43-milestones';
   const diaryContents=create('div','dudu-v672-diary-contents');
