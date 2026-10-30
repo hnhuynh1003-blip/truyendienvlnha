@@ -18,7 +18,9 @@
   ['codex','Nhân vật','retain','renderCodexList','npc'],
   ['chat','Liên lạc','modernize','renderChatDropdown','messaging'],
   ['shop','Cửa hàng','retain','renderShop','economy'],
+  ['wallet','Ví Xu','retain','renderWallet','economy'],
   ['fun','DUDU FUN','retain','DuduFunUIV43','minigames'],
+  ['arcade','Arcade','retain','DuduPersonalArcadeUIV1','local-minigames'],
   ['settings','Cài đặt','retain','renderPhoneWallpaperV27','personalization']
  ];
  const specs=Object.freeze(descriptors.map(([id,label,decision,entrypoint,domain])=>Object.freeze({

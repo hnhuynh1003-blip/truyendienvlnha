@@ -2,6 +2,7 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
+const vm=require('node:vm');
 const rules=require('../js/red-packet-v32.js');
 const html=fs.readFileSync(path.resolve(__dirname,'../index.html'),'utf8');
 const social=fs.readFileSync(path.resolve(__dirname,'../js/chat-social-v32.js'),'utf8');
@@ -51,4 +52,25 @@ test('V32 messenger has direct gift and red-envelope actions; existing gift logi
  assert.doesNotMatch(social,/\.affinity\s*=|\.trust\s*=|addExp\(|fetch\(|firestore|callGeminiAIChat/);
  assert.match(social,/if\(!IS_SANDBOX_MODE\|\|!currentUsername\)return null/);
  assert.match(css,/dudu-v32-envelope-sheet/);
+});
+test('V32 live contact disables only the unavailable red packet, never gifts or Xu',()=>{
+ const elements=new Map([
+  ['dudu-v32-envelope-button',{disabled:false,textContent:'🧧 Phong bao',
+    title:'',setAttribute(name,value){this[name]=value;}}],
+  ['dudu-v32-gift-button',{disabled:false,title:'',textContent:'🎁 Quà'}],
+  ['dudu-v32-contact-feedback',{textContent:''}]
+ ]);
+ const document={readyState:'complete',getElementById:id=>elements.get(id)||null,
+  addEventListener(){}};
+ const win={document,DuduRedPacketV32:rules};
+ vm.runInNewContext(social,{window:win,document,IS_SANDBOX_MODE:false},{timeout:1500});
+ const packet=elements.get('dudu-v32-envelope-button');
+ const gift=elements.get('dudu-v32-gift-button');
+ assert.equal(packet.disabled,true);
+ assert.match(packet.textContent,/🔒/);
+ assert.equal(gift.disabled,false,'Existing live gift action must not be changed');
+ assert.equal(gift.textContent,'🎁 Quà');
+ assert.doesNotThrow(()=>win.openRedPacketV32());
+ assert.match(elements.get('dudu-v32-contact-feedback').textContent,/chờ Rules/);
+ assert.equal(packet.disabled,true);
 });

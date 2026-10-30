@@ -142,7 +142,7 @@
   <script src="js/dudu-multiverse-art-v28-r5.js"></script>
   <script src="js/phone-typography-v31.js"></script>
   <script src="js/red-packet-v32.js"></script>
-  <script src="js/chat-social-v32.js"></script>
+  <script src="js/chat-social-v32.js?v=live-gate-1"></script>
   <script src="js/dudu-multiverse-ui-v28-r5.js"></script>
   <script src="js/player-avatar-ui-v16.js?v=49-7"></script>
   <script src="js/player-avatar-sync-plan-v20.js"></script>
@@ -1445,14 +1445,14 @@
           </section>
           <div class="dudu-wallet-actions">
             <button type="button" onclick="openPhoneApp('shop')">🛒 <span>Cửa hàng</span></button>
-            <button type="button" onclick="openPhoneApp('arcade')">🎮 <span>Chơi kiếm Xu</span></button>
+            <button type="button" onclick="openPhoneApp('arcade')">🎮 <span>Chơi Arcade</span></button>
           </div>
           <section class="dudu-wallet-secondary" aria-label="Xu trong Arcade">
             <div><span>✧ Xu trong Arcade</span><strong id="dudu-wallet-arcade-balance">—</strong></div>
             <span class="dudu-wallet-source-badge">Riêng trên thiết bị</span>
           </section>
-          <button type="button" class="dudu-wallet-exchange-launch" onclick="window.DuduPersonalArcadeUIV1?.openExchange?.()">⇄ Chọn số Xu muốn đổi</button>
-          <div class="dudu-wallet-lock"><span aria-hidden="true">⌁</span><span>10 Xu Arcade = 1 Xu ví · Chọn số Xu muốn đổi khi mở kết nối.</span></div>
+          <button type="button" class="dudu-wallet-exchange-launch" onclick="window.DuduPersonalArcadeUIV1?.openExchange?.()">⇄ Xem trước mức đổi Xu</button>
+          <div class="dudu-wallet-lock"><span aria-hidden="true">⌁</span><span>10 Xu Arcade = 1 Xu hệ thống · Hiện chỉ xem trước, chưa chuyển Xu thật (chờ Rules).</span></div>
         </div>
       </div>
 
@@ -3791,7 +3791,7 @@
       }
       renderChatMessages(charId);
       renderRoleplayV56();
-      if(IS_SANDBOX_MODE)syncRedPacketButtonsV32();
+      syncRedPacketButtonsV32();
     }
 
     function renderChatMessages(charId) {
@@ -5046,6 +5046,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
         if (!activeChatNovelId) activeChatNovelId = (novels[selectedNovelIndex] || {}).id;
         renderChatDropdown();
         syncNpcModelV55();
+        syncRedPacketButtonsV32();
         if(!IS_SANDBOX_MODE)void refreshNpcQuotaV55();
       } else if (appName === 'inventory') {
         window.DuduInventoryHubV439?.reset();
@@ -8146,8 +8147,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/library-intake-v1.js?v=lib1-ui2"></script>
 <script src="js/dudu-system-app-v69.js?v=71-main-13"></script>
 <script src="js/dudu-character-name-v71.js?v=71-1"></script>
-<script src="js/phone-app-contract-v67.js?v=69-1"></script>
-<script src="js/phone-lifecycle-v67-1.js?v=67-1-2"></script>
+<script src="js/phone-app-contract-v67.js?v=67-arcade-wallet-1"></script>
+<script src="js/phone-lifecycle-v67-1.js?v=67-arcade-wallet-1"></script>
 <script src="js/dudu-messenger-v67-2.js?v=67-2"></script>
 </body>
 </html>

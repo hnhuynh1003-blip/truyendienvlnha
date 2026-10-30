@@ -20,9 +20,27 @@
   }
   function feedback(message){if(el('dudu-v32-contact-feedback'))el('dudu-v32-contact-feedback').textContent=message||'';}
   function sync(){
+    // Live accounts have no trusted red-packet transfer yet. Preserve the
+    // existing gift action and role-scoped relationship UI as they are.
+    if(!IS_SANDBOX_MODE){
+      const envelope=el('dudu-v32-envelope-button');
+      if(envelope){
+        envelope.disabled=true;
+        envelope.textContent='🧧 Phong bao 🔒';
+        envelope.title='Đang chờ kiểm thử Firestore Rules; chưa thể gửi Xu.';
+        envelope.setAttribute('aria-label','Phong bao đang chờ Rules, chưa thể gửi Xu');
+      }
+      return;
+    }
     const ctx=context();
     for(const id of ['dudu-v32-gift-button','dudu-v32-envelope-button']){
-      const b=el(id);if(b){b.disabled=!ctx;b.title=ctx?'':'Cần đăng nhập Sandbox và mở khóa NPC';}
+      const b=el(id);if(b){
+        b.disabled=!ctx;b.title=ctx?'':'Cần đăng nhập Sandbox và mở khóa NPC';
+        if(id==='dudu-v32-envelope-button'){
+          b.textContent='🧧 Phong bao';
+          b.setAttribute('aria-label','Gửi phong bao bằng xu trò chơi');
+        }
+      }
     }
     const chip=el('dudu-v32-mini-affinity');
     if(chip){
@@ -52,6 +70,7 @@
     el('dudu-v32-envelope-result').textContent=plan.ok?'':plan.message;
   }
   function open(){
+    if(!IS_SANDBOX_MODE){feedback('Phong bao tài khoản cá nhân đang chờ Rules; Xu chưa bị trừ.');return;}
     const ctx=context();
     if(!ctx){feedback('Hãy mở khóa NPC trước khi tặng phong bao.');return;}
     focusReturn=document.activeElement;draft={...ctx,amount:10};
@@ -120,4 +139,6 @@
   root.confirmRedPacketV32=send;
   root.syncRedPacketButtonsV32=sync;
   root.renderRedPacketEventsV32=render;
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',sync,{once:true});
+  else sync();
 })(typeof window!=='undefined'?window:{});

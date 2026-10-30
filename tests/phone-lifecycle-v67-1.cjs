@@ -6,6 +6,7 @@ const root=path.resolve(__dirname,'..');
 const code=fs.readFileSync(path.join(root,'js/phone-lifecycle-v67-1.js'),'utf8');
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const ids=['cyber-phone','phone-home-screen','phone-app-chat','phone-app-shop',
+ 'phone-app-wallet','phone-app-arcade',
  'chat-user-input','dudu-v43-message-input','chat-messages-container',
  'dudu-v43-messages','dudu-v56-role-editor'];
 const nodes=new Map(ids.map(id=>[id,makeNode(id)]));
@@ -28,15 +29,18 @@ const chat=nodes.get('phone-app-chat'),shop=nodes.get('phone-app-shop');
 let owner='user-A',currentUid='uid-A',onAuth=null,hideCalls=0;
 const window={
  document:doc,CustomEvent:class{constructor(name,{detail}){this.type=name;this.detail=detail;}},
- DuduPhoneAppsV67:{specs:[{id:'chat',elementId:'phone-app-chat'},{id:'shop',elementId:'phone-app-shop'}]},
+ DuduPhoneAppsV67:{specs:['chat','shop','wallet','arcade'].map(id=>({id,elementId:'phone-app-'+id}))},
  DuduCompanionV43:{hide(){hideCalls++;chat.classList.remove('dudu-v43-companion-open');}},
  DuduAuth:{uid(){return currentUid;}},
  firebase:{auth(){return {currentUser:currentUid?{uid:currentUid}:null,
     onAuthStateChanged(cb){onAuth=cb;return()=>{};}}}},
- phoneHome(){chat.style.display='none';shop.style.display='none';home.style.display='flex';},
+ phoneHome(){for(const id of ['chat','shop','wallet','arcade'])nodes.get('phone-app-'+id).style.display='none';home.style.display='flex';},
  togglePhone(){a.style.display=a.style.display==='flex'?'none':'flex';},
- openPhoneApp(name){home.style.display='none';chat.style.display='none';shop.style.display='none';
-   if(name==='chat')chat.style.display='flex';if(name==='shop')shop.style.display='flex';}
+ openPhoneApp(name){
+   home.style.display='none';
+   for(const id of ['chat','shop','wallet','arcade'])nodes.get('phone-app-'+id).style.display='none';
+   if(['chat','shop','wallet','arcade'].includes(name))nodes.get('phone-app-'+name).style.display='flex';
+ }
 };
 const context={window,document:doc,IS_SANDBOX_MODE:true,currentUsername:owner,
  queueMicrotask:fn=>microtasks.push(fn),console};
@@ -63,6 +67,13 @@ window.openPhoneApp('shop');flush();
 assert.equal(api.state.appId,'shop');
 assert.equal(chat.classList.contains('dudu-v43-companion-open'),false);
 assert.ok(hideCalls>0);
+window.openPhoneApp('wallet');flush();
+assert.equal(api.state.appId,'wallet','Wallet must be reported as an actual foreground app');
+window.openPhoneApp('arcade');flush();
+assert.equal(api.state.appId,'arcade','Arcade must be reported as an actual foreground app');
+window.phoneHome();flush();
+assert.equal(api.state.appId,null);
+assert.equal(api.state.home,true,'Back from Arcade should return to phone home');
 window.openPhoneApp('chat');flush();
 assert.equal(api.state.conversation,'inbox');
 // Simulate a sandbox login changing accounts while Phone and old messages are visible.
