@@ -15,8 +15,54 @@
  const create=(tag,cls,content)=>{const e=root.document.createElement(tag);
   if(cls)e.className=cls;if(content!==undefined)e.textContent=String(content);return e;};
  let page='titles',category='Tất cả',visibleLimit=8,busy=false,
-  observedAt=0,observedOwner='',lastToast='';
+  observedAt=0,observedOwner='',observedIds=null,
+  announcedIds=new Set(),momentNode=null,momentTimer=null;
  const rarityName={common:'Thường',rare:'Hiếm',epic:'Sử thi',mythic:'Huyền thoại'};
+ const arcadeSources=honor.JOURNEYS.map(j=>j.source);
+ const ownerKey=()=>account()?(sandbox()?'sandbox:':'uid:')+account():null;
+ function clearMoment(){
+  if(momentTimer!==null)root.clearTimeout?.(momentTimer);
+  momentTimer=null;momentNode?.remove?.();momentNode=null;
+  $('cyber-phone')?.classList?.remove('dudu-c411-celebrating');
+ }
+ function matchOwner(){
+  const owner=ownerKey();
+  if(owner!==observedOwner){clearMoment();observedOwner=owner||'';
+   observedAt=0;observedIds=null;announcedIds=new Set();}
+  return owner;
+ }
+ function showUnlockMoment(moment){
+  const phone=$('cyber-phone');
+  if(!phone||phone.style.display!=='flex'){clearMoment();return false;}
+  clearMoment();
+  const toast=create('div','dudu-c411-unlock-toast');
+  toast.dataset.rarity=moment.rarity;
+  toast.setAttribute('role','status');
+  toast.setAttribute('aria-live','polite');
+  toast.setAttribute('aria-atomic','true');
+  toast.append(create('span','dudu-c411-unlock-symbol',moment.icon));
+  const detail=create('div','dudu-c411-unlock-detail');
+  detail.append(create('small','',
+   (moment.title?'✦ DANH HIỆU MỚI':'✧ THÀNH TỰU MỚI')+' · '+rarityName[moment.rarity].toUpperCase()),
+   create('strong','',moment.name),
+   create('span','',moment.source+(moment.count>1?' · '+moment.count+' mốc vừa hoàn tất':'')));
+  toast.append(detail);
+  toast.append(create('span','dudu-c411-unlock-stars','✦'));
+  phone.append(toast);phone.classList?.add('dudu-c411-celebrating');momentNode=toast;
+  const duration=moment.rarity==='mythic'?6200:moment.rarity==='epic'?5000:4000;
+  if(typeof root.setTimeout==='function')momentTimer=root.setTimeout(()=>{
+   if(momentNode===toast)clearMoment();
+  },duration);
+  return true;
+ }
+ function announce(ids,sources){
+  if(!matchOwner())return false;
+  const fresh=(Array.isArray(ids)?ids:[]).filter(id=>!announcedIds.has(id));
+  const moment=honor.unlockMoment([],fresh,sources);
+  if(!moment)return false;
+  for(const id of moment.ids)announcedIds.add(id);
+  return showUnlockMoment(moment);
+ }
  function readArcade(){
   const key=localKey();if(!key||!arcadeCore)return null;
   try{return arcadeCore.norm(JSON.parse(root.localStorage.getItem(key)||'null'),Date.now());}
@@ -272,15 +318,7 @@
     'Danh hiệu và huy hiệu đã lưu lên hồ sơ tài khoản.');
   }else if(kind==='pin')root.showSystemAlert?.('HUY HIỆU ĐÃ CẬP NHẬT',
    'Có thể trưng bày tối đa 3 huy hiệu trên Hồ sơ.');
-  else if(result.newIds?.length){
-   const unlocked=honor.CATALOG.filter(x=>result.newIds.includes(x.id));
-   const ranking={common:0,rare:1,epic:2,mythic:3};
-   const featured=unlocked.sort((a,b)=>ranking[b.rarity]-ranking[a.rarity])[0];
-   if(featured&&lastToast!==featured.id){lastToast=featured.id;
-    root.showSystemAlert?.(unlocked.length>1?'✦ '+unlocked.length+' THÀNH TỰU MỚI':'✦ THÀNH TỰU MỚI',
-     featured.icon+' '+featured.name+' · '+rarityName[featured.rarity]+
-     (unlocked.length>1?' · Xem đầy đủ trong Sổ Vinh Danh.':''));}
-  }
+  else if(result.newIds?.length)announce(result.newIds);
  }
  function sandboxTransact(kind,options,arcade){
   const p=profile();if(!p||!account())return false;
@@ -381,10 +419,18 @@
   if(!honor.JOURNEYS.some(j=>j.source===source))return false;
   page='journeys';category=source;visibleLimit=8;render();return true;
  }
- function observeArcade(state){
-  if(!state||sandbox()||!uid()||!profile())return;
-  const owner=uid(),time=Date.now();
-  if(observedOwner!==owner){observedOwner=owner;observedAt=0;lastToast='';}
+ function observeArcade(state,previousState=null){
+  if(!state||!profile()||!matchOwner())return;
+  // Only celebrate transitions occurring *while playing*. Existing saved
+  // progress becomes the initial baseline, so reopening is never a new win.
+  const currentIds=honor.discovered(profile(),state);
+  const beforeIds=previousState?honor.discovered(profile(),previousState):observedIds||currentIds;
+  observedIds=currentIds;
+  const moment=honor.unlockMoment(beforeIds,currentIds,arcadeSources);
+  const alreadyOwned=new Set(honor.norm(profile().honorV1).earned);
+  if(moment)announce(moment.ids.filter(id=>!alreadyOwned.has(id)),arcadeSources);
+  if(sandbox()||!uid()||typeof currentUsername!=='undefined'&&currentUsername!==uid())return;
+  const time=Date.now();
   if(busy||time-observedAt<15000)return;
   const old=new Set(honor.norm(profile().honorV1).earned);
   if(!honor.discovered(profile(),state).some(id=>!old.has(id)))return;

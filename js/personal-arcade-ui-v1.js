@@ -40,11 +40,14 @@
    return item;
   }catch(_){return null;}
  }
- function save(candidate=state){
+ function save(candidate=state,previousState=null){
   if(!activeKey||!candidate)return false;
   try{
    root.localStorage.setItem(activeKey,JSON.stringify(candidate));
-   root.DuduHonorUIV46?.observeArcade?.(candidate);
+   // A session switch may be persisting the *previous* owner's game. Never
+   // attribute its achievements to the newly selected account.
+   if(activeKey===keyFor(identity()))
+    root.DuduHonorUIV46?.observeArcade?.(candidate,previousState);
    lastSave=now();return true;
   }catch(_){notice='Không lưu được game trên thiết bị. Kiểm tra dung lượng trình duyệt.';
    error=true;noticeUntil=now()+5000;return false;}
@@ -445,7 +448,10 @@
   if(!s){lastTick=time;if(visible())render();return;}
   state=core.advance(s,time,Math.max(0,time-lastTick));
   lastTick=time;
-  if(time-lastSave>=5000)save();
+  const customerServed=s.neon.guestsServed!==state.neon.guestsServed;
+  // Save when a real service milestone lands, including while the Arcade is
+  // running in the background, rather than missing the exact unlock edge.
+  if(customerServed||time-lastSave>=5000)save(state,s);
   if(visible()){
    const completedRepair=!!s.mine.repairUntil&&!state.mine.repairUntil;
    const waterRefilled=s.garden.water!==state.garden.water;
@@ -453,7 +459,6 @@
    const plantMatured=s.garden.beds.some(b=>b.status==='growing'&&b.readyAt>s.lastAt&&b.readyAt<=time);
    const fishBit=!!s.garden.line&&s.lastAt<s.garden.line.biteAt&&time>=s.garden.line.biteAt;
    const fishEscaped=!!s.garden.line&&!state.garden.line;
-   const customerServed=s.neon.guestsServed!==state.neon.guestsServed;
    const boostExpired=!!s.neon.turboUntil&&s.lastAt<s.neon.turboUntil&&time>=s.neon.turboUntil;
    const turboReady=!!s.neon.turboReadyAt&&s.lastAt<s.neon.turboReadyAt&&time>=s.neon.turboReadyAt;
    if(fishEscaped){notice='Cá đã tuột khỏi lưỡi câu. Hãy thử lượt khác nhé.';
@@ -464,6 +469,7 @@
  }
  function interact(action){
   tick();if(!state||!activeKey||exchangeBusy)return false;
+  const previousState=state;
   const result=core.act(state,action,now(),Math.random());
   if(!result.ok){notice=result.reason;noticeUntil=now()+3500;error=true;render();return false;}
   state=result.state;
@@ -471,7 +477,7 @@
    quantity:result.quantity||1,at:now()}:action==='reel-line'?{type:'fish',label:result.label,at:now()}:null;
   notice=result.label==='stone'?'Nhặt được Đá.':result.label==='coal'?'Nhặt được Than.':
    result.label==='iron'?'Nhặt được Sắt.':result.label==='crystal'?'✦ Nhặt được Tinh thạch!':result.label;
-  noticeUntil=now()+2500;error=false;save();render();return true;
+  noticeUntil=now()+2500;error=false;save(state,previousState);render();return true;
  }
  async function transferArcade(){
   tick();

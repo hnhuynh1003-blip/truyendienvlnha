@@ -87,6 +87,13 @@ async function main(){
   assert.equal(scans.coins,0,'First Jade sample is free');
   await action('jade-cut').click();
   await action('jade-sell').click();
+  const honorMoment=page.locator('#cyber-phone .dudu-c411-unlock-toast');
+  await honorMoment.waitFor({state:'visible',timeout:2500});
+  assert.equal(await honorMoment.getAttribute('data-rarity'),'rare',
+   'The first Jade sale unlocks a rare collectible title');
+  assert.match(await honorMoment.innerText(),/Tập Sự Thẩm Ngọc/);
+  assert.equal(await honorMoment.evaluate(el=>getComputedStyle(el).pointerEvents),'none',
+   'The new title must never block game actions');
   const jadeAfter=await page.evaluate(()=>JSON.parse(localStorage.getItem(
    'dudu-personal-arcade:v1:sandbox%3Ac410-mobile-tester')));
   assert.equal(jadeAfter.jade.sold,1);

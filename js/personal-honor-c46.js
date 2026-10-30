@@ -115,6 +115,29 @@
  function discovered(profile,arcade){
   return CATALOG.filter(a=>num(a.progress(profile,arcade))>=a.target).map(a=>a.id);
  }
+ // C4.11: describe an *actual transition*, never a previously earned or
+ // unrecognized badge. A title can outrank the achievement that unlocks it.
+ // This is presentation-only: no inventory, Xu, EXP or grant operation.
+ function unlockMoment(beforeIds,afterIds,sources){
+  const before=new Set(unique(beforeIds,MAX_EARNED));
+  const after=new Set(unique(afterIds,MAX_EARNED));
+  const allowed=Array.isArray(sources)?new Set(sources):null;
+  const unlocked=CATALOG.filter(a=>after.has(a.id)&&!before.has(a.id)&&
+   (!allowed||allowed.has(a.source)));
+  if(!unlocked.length)return null;
+  const rank={common:0,rare:1,epic:2,mythic:3};
+  const ranked=unlocked.map(a=>{
+   const title=TITLES_BY_ID.get(a.titleId);
+   const rarity=title&&rank[title.rarity]>rank[a.rarity]?title.rarity:a.rarity;
+   return {achievement:a,title,rarity};
+  }).sort((a,b)=>rank[b.rarity]-rank[a.rarity]);
+  const featured=ranked[0];
+  return {ids:unlocked.map(a=>a.id),count:unlocked.length,
+   id:featured.achievement.id,source:featured.achievement.source,
+   name:featured.title?.name||featured.achievement.name,
+   icon:featured.title?.icon||featured.achievement.icon,
+   title:featured.title?.name||null,rarity:featured.rarity};
+ }
  function titleUnlocked(titleId,earned){
   return titleId==='entity'||CATALOG.some(a=>a.titleId===titleId&&earned.includes(a.id));
  }
@@ -179,5 +202,6 @@
   if(auth.currentUser!==user||auth.currentUser?.uid!==uid)throw fail('account-changed');
   return result;
  }
- return Object.freeze({VERSION,CATALOG,TITLES,JOURNEYS,norm,discovered,titleUnlocked,view,run});
+ return Object.freeze({VERSION,CATALOG,TITLES,JOURNEYS,norm,discovered,unlockMoment,
+  titleUnlocked,view,run});
 });

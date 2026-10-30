@@ -180,6 +180,20 @@ test('C4.10 switching games starts at the stage, while ordinary refresh preserve
   {disabled:false,dataset:{arcadeTab:'mine'}}:null}});
  assert.equal(scroll.scrollTop,0,'Every game switch resets the prior game scroll offset');
 });
+test('C4.11 Arcade forwards owner-safe before/after progress only after a successful save',()=>{
+ const {window,setUid}=harness();
+ const seen=[];
+ window.DuduHonorUIV46={observeArcade:(after,before)=>seen.push({after,before})};
+ window.DuduPersonalArcadeUIV1.render();
+ assert.equal(window.DuduPersonalArcadeUIV1.interact('mine'),true);
+ assert.equal(seen.length,1);
+ assert.equal(seen[0].before.mine.dug,0);
+ assert.equal(seen[0].after.mine.dug,1);
+ const recorded=seen.length;
+ setUid('reader-two');window.DuduPersonalArcadeUIV1.render();
+ assert.equal(seen.length,recorded,
+  'Saving the old account during a login switch must not announce it as the new owner');
+});
 test('Garden is a playable scene with plots and animated pond, not generic data tiles',()=>{
  const {host,window}=harness();
  window.DuduPersonalArcadeUIV1.render();

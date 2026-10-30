@@ -454,3 +454,106 @@ body.dudu-phone-v11 .dudu-honor-profile-medal[data-rarity="mythic"]{
 #dudu-honor-content-c46 .dudu-honor-more{align-self:stretch;min-height:35px;border-color:#7d85a6;background:#273449;color:#e2e9ff}
 #dudu-honor-content-c46 .dudu-honor-journey-open:focus-visible,
 #dudu-honor-content-c46 .dudu-honor-more:focus-visible{outline:2px solid #e8d3ff;outline-offset:2px}
+
+/* C4.11 — transient collectible reveal, not a blocking modal. The whole
+ * plaque is click-through, stays inside the phone and never moves game UI. */
+body.dudu-phone-v11 #cyber-phone .dudu-c411-unlock-toast{
+ --unlock-edge:#9baec8;--unlock-glow:rgba(165,186,213,.29);
+ --unlock-ink:#edf5ff;--unlock-face:#26344b;
+ box-sizing:border-box;position:absolute;z-index:110;pointer-events:none;
+ bottom:64px;left:12px;right:12px;max-width:340px;margin:0 auto;
+ display:flex;align-items:center;gap:10px;min-width:0;min-height:66px;
+ padding:10px 28px 10px 10px;border:1px solid var(--unlock-edge);border-radius:15px;
+ color:var(--unlock-ink);
+ background:radial-gradient(ellipse at 8% 0%,var(--unlock-glow),transparent 64%),
+  linear-gradient(112deg,var(--unlock-face),#142338 84%);
+ box-shadow:0 13px 35px rgba(4,7,19,.72),0 0 22px var(--unlock-glow),
+  inset 0 1px rgba(255,255,255,.18);
+ overflow:hidden;isolation:isolate;animation:duduC411Reveal .4s cubic-bezier(.15,.8,.24,1) both;
+}
+/* An ordinary game toast is shorter-lived. Avoid stacking two overlapping
+ * notifications over the scene while a collectible reveal is present. */
+body.dudu-phone-v11 #cyber-phone.dudu-c411-celebrating .arcade-status-toast{
+ opacity:0;visibility:hidden;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-c411-unlock-toast[data-rarity="rare"]{
+ --unlock-edge:#6ae8d1;--unlock-glow:rgba(76,233,204,.32);
+ --unlock-ink:#cefff1;--unlock-face:#14504e;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-c411-unlock-toast[data-rarity="epic"]{
+ --unlock-edge:#cfa7ff;--unlock-glow:rgba(185,128,255,.38);
+ --unlock-ink:#f2dfff;--unlock-face:#4c2e70;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-c411-unlock-toast[data-rarity="mythic"]{
+ --unlock-edge:#ffe5a4;--unlock-glow:rgba(255,201,93,.52);
+ --unlock-ink:#fff0c7;--unlock-face:#674431;
+ box-shadow:0 13px 37px rgba(5,7,18,.76),0 0 25px var(--unlock-glow),
+  inset 0 0 12px rgba(255,224,154,.18);
+}
+body.dudu-phone-v11 #cyber-phone .dudu-c411-unlock-toast:after{
+ content:'';position:absolute;z-index:0;pointer-events:none;inset:-20% auto -20% 0;width:28%;
+ background:linear-gradient(90deg,transparent,rgba(255,255,255,.27),transparent);
+ transform:translateX(-150%) skewX(-15deg);
+ animation:duduC411Glint 2.5s .2s ease-out both;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-c411-unlock-toast[data-rarity="common"]:after{
+ opacity:.35;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-c411-unlock-symbol{
+ position:relative;z-index:1;
+ flex:0 0 43px;width:43px;height:43px;display:grid;place-items:center;
+ border:1px solid var(--unlock-edge);border-radius:12px;
+ background:radial-gradient(circle at 30% 22%,var(--unlock-glow),rgba(9,21,37,.7));
+ color:var(--unlock-ink);font-size:25px;line-height:1;
+ text-shadow:0 0 9px var(--unlock-glow);box-shadow:0 0 11px var(--unlock-glow);
+}
+body.dudu-phone-v11 #cyber-phone .dudu-c411-unlock-detail{
+ position:relative;z-index:1;
+ flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-c411-unlock-detail small{
+ font:800 8px/1.3 ui-sans-serif,system-ui;letter-spacing:.1em;color:var(--unlock-edge);
+}
+body.dudu-phone-v11 #cyber-phone .dudu-c411-unlock-detail strong{
+ display:block;color:var(--unlock-ink);font:850 12px/1.35 ui-sans-serif,system-ui;
+ white-space:normal;overflow-wrap:anywhere;text-shadow:0 0 7px var(--unlock-glow);
+}
+body.dudu-phone-v11 #cyber-phone .dudu-c411-unlock-detail span{
+ color:#d2dbe4;font:700 9px/1.35 ui-sans-serif,system-ui;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-c411-unlock-stars{
+ z-index:1;
+ position:absolute;right:9px;top:7px;font-size:15px;opacity:.8;
+ color:var(--unlock-edge);text-shadow:0 0 11px var(--unlock-glow);
+}
+body.dudu-phone-v11 #cyber-phone .dudu-c411-unlock-toast[data-rarity="mythic"] .dudu-c411-unlock-stars{
+ animation:duduC411Starlight 1.6s ease-in-out infinite alternate;
+}
+@keyframes duduC411Reveal{
+ from{opacity:0;transform:translateY(15px) scale(.94)}
+ to{opacity:1;transform:translateY(0) scale(1)}
+}
+@keyframes duduC411Glint{
+ from{transform:translateX(-150%) skewX(-15deg);opacity:0}
+ 35%{opacity:.8}
+ to{transform:translateX(450%) skewX(-15deg);opacity:0}
+}
+@keyframes duduC411Starlight{
+ from{opacity:.54;transform:scale(.85)}
+ to{opacity:1;transform:scale(1.2)}
+}
+@media (max-width:390px){
+ body.dudu-phone-v11 #cyber-phone .dudu-c411-unlock-toast{
+  left:9px;right:9px;bottom:60px;padding:9px 23px 9px 9px;gap:8px;
+ }
+ body.dudu-phone-v11 #cyber-phone .dudu-c411-unlock-symbol{
+  flex-basis:37px;width:37px;height:38px;font-size:22px;
+ }
+}
+@media (prefers-reduced-motion:reduce){
+ body.dudu-phone-v11 #cyber-phone .dudu-c411-unlock-toast,
+ body.dudu-phone-v11 #cyber-phone .dudu-c411-unlock-toast:after,
+ body.dudu-phone-v11 #cyber-phone .dudu-c411-unlock-stars{
+  animation:none!important;transition:none!important;
+ }
+}

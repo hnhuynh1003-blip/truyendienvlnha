@@ -237,7 +237,7 @@ test('C4.6 phone shows equipped title, collectible tabs and preserves compact Ar
   'dudu-honor-content-c46'])assert.match(html,new RegExp('id="'+id+'"'));
  assert.match(html,/DuduHonorUIV46\?\.open\(\)/);
  assert.match(html,/DuduHonorUIV46\?\.refresh\?\.\(\)/);
- assert.match(arcadeUi,/DuduHonorUIV46\?\.observeArcade\?\.\(candidate\)/);
+ assert.match(arcadeUi,/DuduHonorUIV46\?\.observeArcade\?\.\(candidate,previousState\)/);
  assert.match(css,/\.dudu-honor-identity-frame/);
  assert.match(css,/\.dudu-honor-home-chip/);
  class Node{
@@ -297,8 +297,8 @@ test('C4.7 rarity finish is compact, collectible, accessible and motion-safe',()
  const html=readFileSync(join(__dirname,'../index.html'),'utf8');
  const css=readFileSync(join(__dirname,'../css/personal-honor-c46.css'),'utf8');
  assert.match(html,/id="dudu-honor-home-rarity"/);
- assert.match(html,/personal-honor-c46\.css\?v=c48-1/);
- assert.match(html,/personal-honor-ui-c46\.js\?v=c48-1/);
+ assert.match(html,/personal-honor-c46\.css\?v=c411-1/);
+ assert.match(html,/personal-honor-ui-c46\.js\?v=c411-1/);
  for(const tier of ['common','rare','epic','mythic']){
   assert.match(css,new RegExp('dudu-honor-home-chip\\[data-rarity="'+tier+'"\\]'));
   assert.match(css,new RegExp('dudu-honor-hero\\[data-rarity="'+tier+'"\\]'));
