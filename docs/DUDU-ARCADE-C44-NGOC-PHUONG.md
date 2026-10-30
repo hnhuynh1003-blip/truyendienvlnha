@@ -40,3 +40,10 @@ Ngày triển khai: 30/10/2026. Phát triển trên `main`, kế thừa C4.3.
 ## Giới hạn cố ý
 
 Đây là minigame mô phỏng tưởng tượng, không phải phương pháp định giá phỉ thúy thực tế. Các biến cố và công thức là luật cân bằng *Arcade*, chưa phải odds tiền thật. Khi mở mùa công khai, cần thiết kế lại xác thực giao dịch phía máy chủ trước khi cho phép bất kỳ khoản Xu Arcade nào nhập vào ví hệ thống.
+
+### C4.4.2 — Tối ưu chiều cao giao diện
+
+- Thanh chuyển bốn game dưới điện thoại còn 34px mỗi tab, icon và tên một dòng, không tự xuống hàng.
+- Ẩn tiêu đề game phủ lên cảnh vì tên đã có tại thanh chuyển game; mỗi scene vẫn giữ nhãn truy cập trên vùng trò chơi.
+- Thu gọn header ứng dụng và cảnh Ngọc Phường để các thao tác soi/khai song/xẻ sớm xuất hiện trên màn nhỏ.
+- Chỉ thay CSS + tham số cache tài nguyên. Không đụng vào Xu, cấu trúc save hoặc gameplay.

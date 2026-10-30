@@ -4,7 +4,7 @@
 body.dudu-phone-v11 #cyber-phone #phone-app-arcade{padding:6px 7px 9px;overflow:hidden!important;position:relative}
 body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header{
  display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:5px;align-items:center;
- min-height:38px;margin-bottom:4px;padding-bottom:4px}
+ min-height:34px;margin-bottom:2px;padding-bottom:2px}
 body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header>span:nth-child(2){
  min-width:0;text-align:center;white-space:nowrap;font-size:12px}
 #phone-app-arcade .arcade-header-wallet{display:inline-flex;align-items:center;justify-content:center;
@@ -27,13 +27,14 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header>span:nth-ch
 .arcade-wallet small{display:none}
 .arcade-exchange-trigger{min-height:28px;border:1px solid #bba476;border-radius:9px;padding:5px 7px;
  color:#f8e2ad;background:#3d3441;font-size:10px;font-weight:800;cursor:pointer;white-space:nowrap}
-.arcade-tabs{flex:none;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;
- background:linear-gradient(150deg,#172940,#101a2c);padding:4px;margin-top:4px;
- border:1px solid #3f5e76;border-radius:12px;box-shadow:0 -8px 18px #07101f73;z-index:4}
-.arcade-tab{min-height:40px;display:flex;gap:2px;flex-direction:column;align-items:center;justify-content:center;
- color:#a4b2c3;background:transparent;border:1px solid transparent;border-radius:10px;cursor:pointer;
- font-size:9px;line-height:1.15;font-weight:700;padding:2px}
-.arcade-tab-icon{font:900 17px/1 ui-serif,Georgia,serif;transition:transform .2s}
+.arcade-tabs{flex:none;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:2px;
+ background:linear-gradient(150deg,#172940,#101a2c);padding:2px;margin-top:2px;
+ border:1px solid #3f5e76;border-radius:10px;box-shadow:0 -5px 12px #07101f56;z-index:4}
+.arcade-tab{min-width:0;min-height:34px;display:flex;gap:1px;flex-direction:column;align-items:center;justify-content:center;
+ color:#a4b2c3;background:transparent;border:1px solid transparent;border-radius:8px;cursor:pointer;
+ font-size:8px;line-height:1.1;font-weight:700;padding:1px;white-space:nowrap}
+.arcade-tab span:last-child{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.arcade-tab-icon{font:900 13px/1 ui-serif,Georgia,serif;transition:transform .2s}
 .arcade-tab[aria-selected=true]{color:#fff3dc;border-color:#42616d;background:linear-gradient(150deg,#23434c,#21304a);
  box-shadow:0 4px 13px #0003}
 .arcade-tab[aria-selected=true] .arcade-tab-icon{transform:translateY(-1px);color:#93eadf}
@@ -71,9 +72,7 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header>span:nth-ch
 .arcade-sheet-body .garden-fish-album{margin:0}
 .arcade-sheet-body .arcade-contracts,.arcade-sheet-body .neon-milestones{margin:0}
 .arcade-sheet-body .arcade-panel-heading-sub{margin-top:6px}
-.arcade-world-heading{display:flex;justify-content:space-between;gap:6px;align-items:flex-start;padding:11px 12px;
- position:absolute;top:0;left:0;right:0;z-index:8;min-height:64px;pointer-events:none;
- background:linear-gradient(to bottom,#0b1727ed,#0b1727b8 70%,transparent)}
+.arcade-world-heading{display:none!important}
 .arcade-world-heading h3{margin:2px 0 0;font-size:21px;letter-spacing:-.055em;line-height:1.15;color:#fff0df}
 .arcade-world-heading p{display:none}
 .arcade-world-live{font:800 8px/1.35 ui-monospace,monospace;letter-spacing:.04em;
@@ -97,7 +96,7 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header>span:nth-ch
 .arcade-world-hint{margin:10px 0 0;color:#8da3b5;font-size:10px;line-height:1.55}
 .arcade-status{background:#162a30;border:1px solid #2f5e5a;border-left:3px solid #93dcca;
  border-radius:8px;padding:9px 11px;font-size:11px;line-height:1.45;color:#d1e9e9;min-height:34px}
-.arcade-status-toast{position:absolute;bottom:62px;left:5px;right:5px;z-index:60;
+.arcade-status-toast{position:absolute;bottom:49px;left:5px;right:5px;z-index:60;
  box-shadow:0 9px 25px #0009;pointer-events:none}
 .arcade-status[data-error=true]{background:#302525;border-color:#70473d;border-left-color:#ec9d75;color:#f8d2b6}
 .arcade-privacy{padding:11px 4px 0;border-top:1px dashed #35475a;line-height:1.5}
@@ -593,7 +592,7 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header>span:nth-ch
 .arcade-world-jade .arcade-button.gold{background:linear-gradient(135deg,#b47c39,#e4b76b,#866037);color:#261c1c;border-color:#f3d89a}
 .arcade-world-jade .arcade-button.power{background:linear-gradient(125deg,#2d6b5a,#447c66,#2d5d59);border-color:#9fd5bb;color:#f6ffe7}
 .arcade-world-jade .arcade-drawer-trigger{background:linear-gradient(155deg,#534334,#2d534d);border-color:#aa9167;color:#ffead1}
-.jade-stage{height:285px;background:radial-gradient(ellipse at 50% 35%,#6b6352 0,#244743 42%,#12262d 93%);overflow:hidden}
+.jade-stage{height:260px;background:radial-gradient(ellipse at 50% 35%,#6b6352 0,#244743 42%,#12262d 93%);overflow:hidden}
 .jade-stage::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,#d5b87d13 0 3px,transparent 3px 29px);opacity:.55}
 .jade-hall-lattice{position:absolute;top:45px;bottom:52px;width:68px;border:5px double #775837;
  background:repeating-linear-gradient(45deg,transparent 0 16px,#c99a5640 17px 19px,transparent 20px 35px),
@@ -716,8 +715,8 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header>span:nth-ch
  .neon-stage-income b{font-size:21px}.neon-room-level{font-size:7px}
  .arcade-button.upgrade{flex-basis:82px;font-size:9px}
  .garden-fish-album{grid-template-columns:1fr}
- .arcade-tab{font-size:8px}.arcade-tabs{gap:2px;padding:3px}
- .jade-stage{height:285px}.jade-market-card .arcade-button{flex-basis:65px}
+ .arcade-tab{font-size:8px}.arcade-tabs{gap:2px;padding:2px}
+ .jade-stage{height:260px}.jade-market-card .arcade-button{flex-basis:65px}
  .jade-readout{padding:7px}.jade-clue{padding:4px}
 }
 @media(prefers-reduced-motion:reduce){
