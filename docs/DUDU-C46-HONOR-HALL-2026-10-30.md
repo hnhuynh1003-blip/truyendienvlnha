@@ -2,6 +2,15 @@
 
 Triển khai 30/10/2026. **Không sửa Firebase Rules, không phát Xu/EXP/vật phẩm, không mở reset mùa, không kích hoạt chuyển Xu Arcade.**
 
+## C4.6.2 — Huy hiệu ghép vào hồ sơ & phương án khi Rules từ chối (30/10/2026)
+
+- Ảnh chủ dự án cho thấy mã lỗi thực tế `permission-denied` dù đã có xác thực. Mã nguồn chỉ có thể xác nhận bản Rules trong repo cho phép chủ sở hữu cập nhật `/profiles_v2/{uid}`; không thể khẳng định bản Rules production đã xuất bản đúng như vậy. **Không tự sửa hoặc triển khai Rules production** trong đợt này.
+- Khi giao dịch trang bị hoặc ghim huy hiệu bị từ chối quyền / gián đoạn kết nối, chỉ lưu **lựa chọn thẩm mỹ** vào `localStorage` theo Firebase UID (`dudu-honor-device-v1:{uid}`). Người dùng nhìn thấy thay đổi ngay và lựa chọn được khôi phục sau khi tải lại trên đúng thiết bị; trong Sổ Vinh Danh có dòng cảnh báo "Chưa đồng bộ lên tài khoản" và nút thử lại khi đang giữ một danh hiệu cục bộ. Tuyệt đối không báo lựa chọn đã được lưu lên đám mây.
+- Giao dịch thành công trên Firestore sẽ gỡ bỏ phần lựa chọn cục bộ tương ứng. Không thay thế, sửa hoặc tự khôi phục dữ liệu tiến trình chính trong Firestore. Khi đổi sang trình duyệt khác, lựa chọn chưa đồng bộ sẽ không đi theo.
+- Khi đã có huy hiệu ghim riêng trên thiết bị, các thao tác ghim/bỏ ghim tiếp theo tiếp tục dùng trạng thái cục bộ để tránh lệnh đảo trạng thái sai với danh sách cũ trên Firestore. Chưa có đồng bộ tự động cho các huy hiệu đang chờ; phần này cần đối chiếu Rules và xử lý riêng trước khi mở nhiều tài khoản.
+- Giao diện trang chính: ghép avatar, LV/EXP/Xu và danh hiệu thành một khối có **bảng tên kim loại** ở đáy, thay cho chip lơ lửng trên hình nền. Phân biệt độ hiếm bằng viền/ánh sáng, tên dài tự thu gọn. Nút Sổ Vinh Danh vẫn mở từ bảng tên.
+- Cần kiểm tra Firestore Rules đang **Published** trong dự án `truyendienvl` trước khi xác nhận đồng bộ danh hiệu giữa các thiết bị, không thay nguyên bộ Rules dựa trên suy đoán.
+
 ## C4.6.1 — Sửa thao tác trang bị danh hiệu (30/10/2026)
 
 - Khắc phục một nguyên nhân có thể khiến giao diện báo danh hiệu đã mở nhưng giao dịch trang bị thất bại: dữ liệu tiến trình đọc truyện, nhiệm vụ hoặc Hộp Mù trên điện thoại chưa được đồng bộ kịp vào hồ sơ Firestore.

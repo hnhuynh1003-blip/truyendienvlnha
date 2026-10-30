@@ -11,6 +11,7 @@
  const account=()=>sandbox()?typeof currentUsername!=='undefined'?currentUsername:null:uid();
  const localKey=()=>account()?'dudu-personal-arcade:v1:'+encodeURIComponent(
   sandbox()?'sandbox:'+account():account()):null;
+ const deviceKey=()=>uid()?'dudu-honor-device-v1:'+encodeURIComponent(uid()):null;
  const create=(tag,cls,content)=>{const e=root.document.createElement(tag);
   if(cls)e.className=cls;if(content!==undefined)e.textContent=String(content);return e;};
  let page='titles',category='Tất cả',busy=false,observedAt=0,observedOwner='',lastToast='';
@@ -28,14 +29,46 @@
   return {readRewards:p.readRewards||{},quests:p.quests||[],questV437:p.questV437||{},
    storyStates:{__duduBlindBoxC29:p.storyStates?.__duduBlindBoxC29||{}}};
  }
- function current(){return honor.view(profile()||{},readArcade());}
+ function devicePreferences(){
+  const key=deviceKey();if(!key)return null;
+  try{
+   const s=JSON.parse(root.localStorage.getItem(key)||'null');
+   if(!s||s.version!==1||s.uid!==uid())return null;
+   return {version:1,uid:s.uid,
+    equipped:honor.TITLES.some(t=>t.id===s.equipped)?s.equipped:null,
+    pinned:Array.isArray(s.pinned)?s.pinned.filter(id=>honor.CATALOG.some(a=>a.id===id)).slice(0,3):null};
+  }catch(_){return null;}
+ }
+ function writeDevicePreferences(prefs){
+  const key=deviceKey();if(!key||!prefs)return false;
+  try{
+   if(!prefs.equipped&&prefs.pinned===null)root.localStorage.removeItem(key);
+   else root.localStorage.setItem(key,JSON.stringify(prefs));
+   return true;
+  }catch(_){return false;}
+ }
+ function current(){
+  const p=profile()||{},a=readArcade(),device=devicePreferences();
+  if(!device)return honor.view(p,a);
+  const saved=honor.norm(p.honorV1);
+  const earned=[...new Set([...saved.earned,...honor.discovered(p,a)])];
+  const overlay={...saved,earned,
+   equipped:device.equipped&&honor.titleUnlocked(device.equipped,earned)?
+    device.equipped:saved.equipped,
+   pinned:device.pinned===null?saved.pinned:device.pinned};
+  return honor.view({...p,honorV1:overlay},a);
+ }
  function activeTitle(v){return v.titles.find(t=>t.id===v.equipped)||v.titles[0];}
  function refresh(){
   if(!profile())return;
   const v=current(),selected=activeTitle(v);
   const chip=$('dudu-honor-home-title');
-  if(chip){chip.textContent=selected.icon+' '+selected.name;
-   chip.dataset.rarity=selected.rarity;chip.disabled=!account();}
+  if(chip){
+   const label=$('dudu-honor-home-title-label'),emblem=$('dudu-honor-home-emblem');
+   if(label)label.textContent=selected.name;
+   if(emblem)emblem.textContent=selected.icon;
+   chip.dataset.rarity=selected.rarity;chip.disabled=!account();
+  }
   const title=$('profile-title');
   if(title){title.textContent=selected.icon+' '+selected.name;title.dataset.rarity=selected.rarity;}
   const summary=$('dudu-honor-profile-summary');
@@ -117,6 +150,19 @@
    return true;
   }
   const v=current();host.append(metric(v));
+  const device=devicePreferences();
+  if(device&&(device.equipped||device.pinned!==null)){
+   const note=create('div','dudu-honor-device-note');
+   note.append(create('span','',
+    '✧ Đang dùng trên thiết bị này · Chưa đồng bộ lên tài khoản'));
+   if(device.equipped){
+    const retry=create('button','','Thử đồng bộ');retry.type='button';
+    retry.disabled=busy;
+    retry.addEventListener('click',()=>{void transact('equip',{titleId:device.equipped});});
+    note.append(retry);
+   }
+   host.append(note);
+  }
   const nav=create('nav','dudu-honor-tabs');nav.setAttribute('aria-label','Loại vinh danh');
   for(const [id,label] of [['titles','Danh hiệu'],['achievements','Thành tựu'],['secrets','Bí ẩn']]){
    const btn=create('button',page===id?'is-active':'',label);btn.type='button';
@@ -155,6 +201,12 @@
   if(!profile())return;
   profile().honorV1=result.honorV1;
   if(kind==='equip')profile().title=result.title;
+  const local=devicePreferences();
+  if(local&&(kind==='equip'||kind==='pin')){
+   if(kind==='equip')local.equipped=null;
+   else local.pinned=null;
+   writeDevicePreferences(local);
+  }
   try{root.localStorage.setItem('profile_'+account(),JSON.stringify(profile()));}catch(_){}
   refresh();
   if($('phone-app-honors')?.style.display==='flex')render();
@@ -186,6 +238,28 @@
   if(typeof saveCurrentAccount==='function')saveCurrentAccount();
   refresh();render();return true;
  }
+ function deviceTransact(kind,options){
+  if(kind!=='equip'&&kind!=='pin')return false;
+  const owner=uid();
+  if(!owner||typeof currentUsername==='undefined'||currentUsername!==owner||!profile())return false;
+  const v=current();
+  const local=devicePreferences()||{version:1,uid:owner,equipped:null,pinned:null};
+  if(kind==='equip'){
+   const t=v.titles.find(x=>x.id===options.titleId&&x.unlocked);
+   if(!t)return false;
+   local.equipped=t.id;
+  }else{
+   if(!v.earned.includes(options.achievementId))return false;
+   local.pinned=v.pinned.includes(options.achievementId)?
+    v.pinned.filter(id=>id!==options.achievementId):
+    [...v.pinned,options.achievementId].slice(-3);
+  }
+  if(!writeDevicePreferences(local))return false;
+  root.updatePhoneUI?.();refresh();
+  root.showSystemAlert?.('ĐÃ LƯU TRÊN THIẾT BỊ',
+   'Danh hiệu đã hiển thị ở máy này. Việc lưu lên tài khoản đang bị từ chối.');
+  return true;
+ }
  function saveFailureMessage(error){
   const reason=error?.reason||error?.code||'';
   if(reason==='title-locked')return 'Danh hiệu chưa đủ điều kiện trên tài khoản. Hãy mở Sổ Vinh Danh để cập nhật tiến độ.';
@@ -204,6 +278,11 @@
    return false;
   }
   if(sandbox())return sandboxTransact(kind,options,arcade);
+  // A device-only pin is already ahead of Firestore. Continue toggling that
+  // local selection until an explicit reconciliation is available; sending a
+  // remote toggle now could accidentally reverse the user's intended state.
+  if(kind==='pin'&&devicePreferences()?.pinned!==null)
+   return deviceTransact(kind,options);
   const owner=uid();
   if(!owner||typeof currentUsername==='undefined'||currentUsername!==owner||
    !root.firebase?.firestore||!root.firebase?.auth){
@@ -221,6 +300,9 @@
    remember(result,kind);return true;
   }catch(error){
    console.warn('Honor Hall:',error?.reason||error?.code||error?.message);
+   if(owner===uid()&&currentUsername===owner&&
+    (error?.code==='permission-denied'||error?.code==='unavailable')&&
+    deviceTransact(kind,options))return true;
    if(kind!=='sync')root.showSystemAlert?.('CHƯA LƯU ĐƯỢC',
     saveFailureMessage(error));
    return false;

@@ -131,19 +131,22 @@ test('C4.6.1 live Honor Hall equips a title unlocked on the phone before profile
   setAttribute(k,v){this[k]=v;}
   addEventListener(k,fn){this.listeners[k]=fn;}
  }
- const h=fixture(),nodes=new Map(['dudu-honor-home-title','profile-title',
+ const h=fixture(),nodes=new Map(['dudu-honor-home-title','dudu-honor-home-title-label',
+  'dudu-honor-home-emblem','profile-title',
   'dudu-honor-content-c46'].map(id=>[id,new Node('div')]));
  const localProfile={title:'Thực Thể Ký Tự',readRewards:{'new-chapter':true},
   currency:123456,inventory:[{id:'local-only'}]};
- const alerts=[],window={document:{getElementById:id=>nodes.get(id),
+ const store=new Map(),alerts=[],window={document:{getElementById:id=>nodes.get(id),
   createElement:tag=>new Node(tag)},DuduPersonalHonorC46:honor,
-  DuduPersonalArcadeCoreV1:arcade,localStorage:{getItem:()=>null,setItem:()=>{}},
+  DuduPersonalArcadeCoreV1:arcade,localStorage:{getItem:k=>store.get(k)||null,
+   setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)},
   DuduAuth:{isReady:()=>true,uid:()=> 'du'},
   firebase:{firestore:()=>h.db,auth:()=>h.auth},
   showSystemAlert:(head,body)=>alerts.push({head,body}),updatePhoneUI:()=>{}};
- vm.runInNewContext(readFileSync(join(__dirname,'../js/personal-honor-ui-c46.js'),'utf8'),
-  {window,document:window.document,currentUsername:'du',IS_SANDBOX_MODE:false,
-   userProfile:localProfile});
+ const code=readFileSync(join(__dirname,'../js/personal-honor-ui-c46.js'),'utf8');
+ const context={window,document:window.document,currentUsername:'du',
+  IS_SANDBOX_MODE:false,userProfile:localProfile};
+ vm.runInNewContext(code,context);
  assert.equal(window.DuduHonorUIV46.render(),true);
  const flatten=n=>[n,...n.children.flatMap(flatten)];
  const actions=flatten(nodes.get('dudu-honor-content-c46'));
@@ -156,27 +159,57 @@ test('C4.6.1 live Honor Hall equips a title unlocked on the phone before profile
  assert.deepEqual(h.profile.readRewards,{});
  assert.equal(localProfile.honorV1.equipped,'reader');
  assert.ok(alerts.some(x=>x.head==='ĐÃ TRANG BỊ DANH HIỆU'));
- h.db.runTransaction=async()=>{throw Object.assign(new Error('permission-denied'),
+ let deniedCount=0;
+ h.db.runTransaction=async()=>{deniedCount++;throw Object.assign(new Error('permission-denied'),
   {code:'permission-denied'});};
  window.DuduHonorUIV46.render();
  const retry=flatten(nodes.get('dudu-honor-content-c46'))
   .find(n=>n.className==='dudu-honor-action'&&n.textContent==='Sử dụng');
  assert.ok(retry);retry.listeners.click();
  await new Promise(resolve=>setImmediate(resolve));
- assert.ok(alerts.some(x=>x.head==='CHƯA LƯU ĐƯỢC'&&
-  x.body.includes('chưa được phép lưu')));
+ assert.ok(alerts.some(x=>x.head==='ĐÃ LƯU TRÊN THIẾT BỊ'&&
+  x.body.includes('bị từ chối')));
  assert.equal(h.profile.title,'Lữ Khách Trang Sách');
+ assert.equal(JSON.parse(store.get('dudu-honor-device-v1:du')).equipped,'entity');
+ assert.equal(localProfile.title,'Lữ Khách Trang Sách');
+ assert.equal(nodes.get('dudu-honor-home-title-label')?.textContent,'Thực Thể Ký Tự');
+ // A fresh page reads the cloud title, then reapplies the UID-bound local
+ // cosmetic nameplate without mutating the cloud profile.
+ context.userProfile=copy(h.profile);
+ vm.runInNewContext(code,context);
+ assert.equal(nodes.get('dudu-honor-home-title-label').textContent,'Thực Thể Ký Tự');
+ assert.equal(h.profile.title,'Lữ Khách Trang Sách');
+ window.DuduHonorUIV46.render();
+ const achievementsTab=flatten(nodes.get('dudu-honor-content-c46'))
+  .find(n=>n.tag==='button'&&n.textContent==='Thành tựu');
+ assert.ok(achievementsTab);achievementsTab.listeners.click();
+ const pin=flatten(nodes.get('dudu-honor-content-c46'))
+  .find(n=>n.className==='dudu-honor-pin'&&n.textContent==='☆');
+ assert.ok(pin);pin.listeners.click();
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.ok(JSON.parse(store.get('dudu-honor-device-v1:du')).pinned.includes('read-one'));
+ assert.equal(h.profile.honorV1.pinned.length,0);
+ const before=deniedCount;
+ window.DuduHonorUIV46.render();
+ const unpin=flatten(nodes.get('dudu-honor-content-c46'))
+  .find(n=>n.className.includes('dudu-honor-pin')&&n.textContent==='★');
+ assert.ok(unpin);unpin.listeners.click();
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.deepEqual(JSON.parse(store.get('dudu-honor-device-v1:du')).pinned,[]);
+ assert.equal(deniedCount,before);
 });
 
 test('C4.6 phone shows equipped title, collectible tabs and preserves compact Arcade layout',()=>{
  const html=readFileSync(join(__dirname,'../index.html'),'utf8');
  const arcadeUi=readFileSync(join(__dirname,'../js/personal-arcade-ui-v1.js'),'utf8');
  const css=readFileSync(join(__dirname,'../css/personal-honor-c46.css'),'utf8');
- for(const id of ['phone-app-honors','dudu-honor-home-title','dudu-honor-profile-summary',
+ for(const id of ['phone-app-honors','dudu-honor-home-title','dudu-honor-home-title-label',
+  'dudu-honor-home-emblem','dudu-honor-profile-summary',
   'dudu-honor-content-c46'])assert.match(html,new RegExp('id="'+id+'"'));
  assert.match(html,/DuduHonorUIV46\?\.open\(\)/);
  assert.match(html,/DuduHonorUIV46\?\.refresh\?\.\(\)/);
  assert.match(arcadeUi,/DuduHonorUIV46\?\.observeArcade\?\.\(candidate\)/);
+ assert.match(css,/\.dudu-honor-identity-frame/);
  assert.match(css,/\.dudu-honor-home-chip/);
  class Node{
   constructor(tag){this.tag=tag;this.children=[];this.dataset={};this.style={};this.listeners={};
@@ -186,7 +219,8 @@ test('C4.6 phone shows equipped title, collectible tabs and preserves compact Ar
   setAttribute(k,v){this[k]=v;}
   addEventListener(k,fn){this.listeners[k]=fn;}
  }
- const nodes=new Map(['dudu-honor-home-title','dudu-honor-profile-count',
+ const nodes=new Map(['dudu-honor-home-title','dudu-honor-home-title-label',
+  'dudu-honor-home-emblem','dudu-honor-profile-count',
   'dudu-honor-profile-summary','profile-title','dudu-honor-content-c46'].map(id=>[id,new Node('div')]));
  const window={document:{getElementById:id=>nodes.get(id),createElement:tag=>new Node(tag)},
   DuduPersonalHonorC46:honor,DuduPersonalArcadeCoreV1:arcade,
@@ -195,7 +229,7 @@ test('C4.6 phone shows equipped title, collectible tabs and preserves compact Ar
   saveCurrentAccount:()=>{},
   userProfile:{title:'Thực Thể Ký Tự',honorV1:{version:1,earned:['neon-25'],equipped:'neon-owner',pinned:['neon-25']}}};
  vm.runInNewContext(readFileSync(join(__dirname,'../js/personal-honor-ui-c46.js'),'utf8'),ctx);
- assert.match(nodes.get('dudu-honor-home-title').textContent,/Chủ Tiệm Neon/);
+ assert.match(nodes.get('dudu-honor-home-title-label').textContent,/Chủ Tiệm Neon/);
  assert.equal(nodes.get('dudu-honor-profile-summary').children.length,1);
  assert.equal(window.DuduHonorUIV46.render(),true);
  const root=nodes.get('dudu-honor-content-c46');
