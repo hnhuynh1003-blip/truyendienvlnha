@@ -240,3 +240,15 @@ sự được người dùng thực hiện sẽ được giữ lại trong hồ 
 - **Chưa reset Xu, quà, Kho, liên lạc hay dữ liệu tài khoản.** Không deploy
   Rules/Functions. Cần kiểm tra với hai UID thật, nhiều tab và Android trước
   khi chốt mùa mới hoặc mở phần thưởng ngoài môi trường thử nghiệm.
+
+### C2.4d — Bán vật phẩm một chạm từ Kho
+
+- Bỏ hộp xác nhận mặc định của trình duyệt mỗi lần người chơi nhấn **Bán**
+  trong chi tiết vật phẩm, cả Kho main và Sandbox. Giá thu mua vẫn hiển thị
+  trực tiếp trên nút trước khi nhấn; sau giao dịch vẫn có thông báo kết quả.
+- Giữ nguyên kiểm tra món đang sở hữu, giá, điều kiện bán, cờ đang xử lý và
+  mã giao dịch không bán trùng. Hộp xác nhận **Vứt vật phẩm** vẫn được giữ
+  vì đây là hành động xóa vật phẩm không thu về Xu.
+- Sửa luôn đường hiển thị Kho cũ để không còn hộp thoại bán lặp trong trường
+  hợp giao diện mới không khả dụng. Chỉ đổi trải nghiệm thao tác, không đụng
+  Xu, vật phẩm, Rules hay dữ liệu hiện tại.

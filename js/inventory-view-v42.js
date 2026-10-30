@@ -251,8 +251,6 @@
    sell.addEventListener('click',()=>{
     if(sell.disabled)return;
     if(!Array.isArray(args.inventory)||args.inventory[entry.index]!==entry.item)return;
-    if(!confirm('Bán 1 '+detail.name+' để nhận '+tradeStatus.buyback+
-      (args.personalMode?' Xu vào Ví hệ thống?':' Xu Sandbox?')))return;
     args.onSell(entry.item);
    });footer.append(sell);
   }
