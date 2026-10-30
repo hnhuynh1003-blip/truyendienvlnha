@@ -122,6 +122,23 @@ test('C4.6.1 local cosmetic unlock survives lagging cloud profile without publis
   'already-applied');
 });
 
+test('C4.6.3 owner can reconcile device-only title and pinned medals atomically',async()=>{
+ const h=fixture();
+ const localProfile={readRewards:{chapter1:true},currency:999999};
+ const result=await h.run('preferences',{titleId:'reader',pinnedIds:['read-one'],localProfile});
+ assert.equal(result.title,'Lữ Khách Trang Sách');
+ assert.equal(h.profile.honorV1.equipped,'reader');
+ assert.deepEqual(h.profile.honorV1.pinned,['read-one']);
+ assert.equal(h.profile.currency,215);
+ assert.equal((await h.run('preferences',{titleId:'reader',pinnedIds:['read-one']})).status,
+  'already-applied');
+ await assert.rejects(h.run('preferences',{titleId:'reader',pinnedIds:['read-six'],
+  localProfile}),e=>e.reason==='achievement-locked');
+ await assert.rejects(h.run('preferences',{titleId:'reader',pinnedIds:Array(4).fill('read-one')}),
+  e=>e.reason==='achievement-locked');
+ assert.deepEqual(h.profile.honorV1.pinned,['read-one']);
+});
+
 test('C4.6.1 live Honor Hall equips a title unlocked on the phone before profile sync',async()=>{
  class Node{
   constructor(tag){this.tag=tag;this.children=[];this.dataset={};this.style={};this.listeners={};
@@ -159,6 +176,7 @@ test('C4.6.1 live Honor Hall equips a title unlocked on the phone before profile
  assert.deepEqual(h.profile.readRewards,{});
  assert.equal(localProfile.honorV1.equipped,'reader');
  assert.ok(alerts.some(x=>x.head==='ĐÃ TRANG BỊ DANH HIỆU'));
+ const normalRunTransaction=h.db.runTransaction;
  let deniedCount=0;
  h.db.runTransaction=async()=>{deniedCount++;throw Object.assign(new Error('permission-denied'),
   {code:'permission-denied'});};
@@ -197,6 +215,17 @@ test('C4.6.1 live Honor Hall equips a title unlocked on the phone before profile
  await new Promise(resolve=>setImmediate(resolve));
  assert.deepEqual(JSON.parse(store.get('dudu-honor-device-v1:du')).pinned,[]);
  assert.equal(deniedCount,before);
+ // The operator can explicitly retry after publishing the restricted Rules.
+ h.db.runTransaction=normalRunTransaction;
+ window.DuduHonorUIV46.render();
+ const syncButton=flatten(nodes.get('dudu-honor-content-c46'))
+  .find(n=>n.tag==='button'&&n.textContent==='Thử đồng bộ');
+ assert.ok(syncButton);syncButton.listeners.click();
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(store.has('dudu-honor-device-v1:du'),false);
+ assert.equal(h.profile.honorV1.equipped,'entity');
+ assert.deepEqual(h.profile.honorV1.pinned,[]);
+ assert.ok(alerts.some(x=>x.head==='ĐÃ ĐỒNG BỘ VINH DANH'));
 });
 
 test('C4.6 phone shows equipped title, collectible tabs and preserves compact Arcade layout',()=>{

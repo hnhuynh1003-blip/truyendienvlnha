@@ -1,0 +1,30 @@
+{
+  "score": 3,
+  "summary": "C4.6.3 narrow cosmetic profile repair: 83/83 Firestore Emulator probes passed. Unknown top-level additions remain blocked, owner-only profile paths are preserved, and honorV1 is bounded and ID-validated. This is a review candidate not deployed to production; inherited legacy client-mutable economy and public published EPUB content remain important separate risks.",
+  "findings": [
+    {
+      "check": "Business logic vs. Rules",
+      "severity": "minor",
+      "issue": "Before C4.6.3, the profile update addedKeys allowlist omitted honorV1. The first owner transaction to equip a title therefore returned permission-denied.",
+      "recommendation": "Allow only the honorV1 cosmetic map under profiles_v2/{uid}, validate its schema and catalog IDs on create and update, and publish after owner review."
+    },
+    {
+      "check": "Type, size and field restrictions",
+      "severity": "minor",
+      "issue": "A future title or achievement must be added to the Rules ID lists as well as the JS catalog. Unknown IDs, unearned pins, extra fields and oversized pin lists are rejected under C4.6.3.",
+      "recommendation": "Update catalog and Rules in the same release, and rerun the demo Emulator before manually publishing Rules."
+    },
+    {
+      "check": "Authority source / verified currency",
+      "severity": "moderate",
+      "issue": "Existing legacy profiles_v2 virtual Xu, level, EXP and inventory remain owner-editable under the personal Spark architecture. Cosmetic achievements depend partly on device-local gameplay and cannot serve as a verified grant authority.",
+      "recommendation": "Keep Arcade-to-main-Xu conversion disabled and economy_accounts_v52 browser writes denied until server-verified reward infrastructure exists."
+    },
+    {
+      "check": "Production deployment verification",
+      "severity": "minor",
+      "issue": "The repository Rules file is explicitly marked review-only. No authenticated Firebase production Rules read or deployment was performed.",
+      "recommendation": "Back up and verify Rules in Firebase Console, manually Publish only after comparing the current production version, then test the signed-in owner flow."
+    }
+  ]
+}

@@ -5,9 +5,10 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createRequire} from 'node:module';
-import {initializeTestEnvironment,assertFails,assertSucceeds} from '@firebase/rules-unit-testing';
 const require=createRequire(import.meta.url);
+const {initializeTestEnvironment,assertFails,assertSucceeds}=require('@firebase/rules-unit-testing');
 const epubApi=require('../../../js/epub-production-v49.js');
+const honorApi=require('../../../js/personal-honor-c46.js');
 
 const PROJECT='demo-dudu-standard';
 const HOST='127.0.0.1:18087';
@@ -166,6 +167,36 @@ try{
   dailyReadLog:{day:'',chapters:[]},collectedCharacters:{},storyStates:{}
  }));
  await yes('restore pre-reset virtual wallet for replay probes',user.update({currency:80}));
+ const honorAuth={currentUser:{uid:'reader-a'}};
+ await yes('C4.6.3 owner equips a locally unlocked cosmetic title',honorApi.run({
+  db:reader,auth:honorAuth,uid:'reader-a',kind:'equip',titleId:'reader',
+  localProfile:{readRewards:{chapter1:true}}
+ }));
+ await yes('C4.6.3 owner pins one earned medal',honorApi.run({
+  db:reader,auth:honorAuth,uid:'reader-a',kind:'pin',achievementId:'read-one'
+ }));
+ await yes('C4.6.3 owner reconciles device-only cosmetic preferences',honorApi.run({
+  db:reader,auth:honorAuth,uid:'reader-a',kind:'preferences',titleId:'entity',
+  pinnedIds:[]
+ }));
+ const validHonor=(await user.get()).data().honorV1;
+ assert.equal(validHonor.version,1);
+ assert.equal(validHonor.equipped,'entity');
+ assert.deepEqual(validHonor.pinned,[]);
+ await no('C4.6.3 honor cannot be written to a different user',
+  owner.collection('profiles_v2').doc('reader-a').update({honorV1:validHonor}));
+ await no('C4.6.3 honor rejects extra nested fields',
+  user.update({honorV1:{...validHonor,administrator:true}}));
+ await no('C4.6.3 honor rejects unknown title IDs',
+  user.update({honorV1:{...validHonor,equipped:'admin'}}));
+ await no('C4.6.3 honor rejects forged achievement IDs',
+  user.update({honorV1:{...validHonor,earned:['forged-achievement']}}));
+ await no('C4.6.3 honor rejects unearned pinned medals',
+  user.update({honorV1:{...validHonor,pinned:['jade-longstone']}}));
+ await no('C4.6.3 honor rejects oversized pinned lists',
+  user.update({honorV1:{...validHonor,pinned:Array(4).fill('read-one')}}));
+ await no('C4.6.3 honor rejects malformed record type',
+  user.update({honorV1:'not-an-honor-map'}));
  await no('different user cannot read private profile',owner.collection('profiles_v2').doc('reader-a').get());
  await no('different user cannot modify profile',owner.collection('profiles_v2').doc('reader-a').update({currency:10}));
  await no('reader cannot self-promote role',user.update({role:'admin'}));

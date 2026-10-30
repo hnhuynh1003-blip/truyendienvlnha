@@ -10,6 +10,8 @@
 //   profiles_v2/{uid}: owner's PRIVATE, CLIENT-MUTABLE progress/preferences,
 //     including self-reported Xu/items. For private-account play only; NOT an
 //     authority for cross-account real-value trades or paid chapter access.
+//     Optional honorV1: {version:1, earned:[achievement ID],
+//       equipped:title ID, pinned:[up to 3 earned achievement IDs]}.
 //   .../arcade_receipts_v1/{receiptId}: experimental Arcade exchange, blocked
 //     until server-verifiable awards and an explicit enablement decision.
 //   epub_stories_v49/{storyId}: {id,title,author,genre,desc,
@@ -79,6 +81,43 @@ service cloud.firestore {
 
     // Legacy profile, deliberately NOT a verified wallet or role authority.
     // Compatibility: existing profiles may contain optional older fields.
+    function honorAchievementIdsC463() {
+      return [
+        'read-one','read-six','neon-first-contract','neon-all-contracts',
+        'neon-25','neon-100','neon-second-room','neon-third-room',
+        'neon-milestones','mine-40','mine-160','mine-relic','mine-burst',
+        'mine-collection','garden-one','garden-ten','garden-rare',
+        'garden-album','garden-dragon','jade-first','jade-twelve',
+        'jade-exhibits','jade-imperial','jade-longstone','npc-gift',
+        'quest-five','fun-first'
+      ];
+    }
+
+    function honorTitleIdsC463() {
+      return [
+        'entity','reader','reader-master','neon-owner',
+        'neon-contractor','neon-tycoon','mine-explorer','mine-collector',
+        'garden-angler','garden-legend','jade-appraiser','jade-curator',
+        'jade-king','npc-friend','quest-hunter','fun-visitor'
+      ];
+    }
+
+    function validHonorV1C463(honor) {
+      return honor is map
+        && honor.keys().hasOnly(['version','earned','equipped','pinned'])
+        && honor.keys().hasAll(['version','earned','equipped','pinned'])
+        && honor.version == 1
+        && honor.earned is list
+        && honor.earned.size() <= 100
+        && honor.earned.hasOnly(honorAchievementIdsC463())
+        && honor.equipped is string
+        && honor.equipped in honorTitleIdsC463()
+        && honor.pinned is list
+        && honor.pinned.size() <= 3
+        && honor.pinned.hasOnly(honorAchievementIdsC463())
+        && honor.earned.hasAll(honor.pinned);
+    }
+
     function validLegacyProfile(data) {
       return data is map
         && data.keys().size() <= 80
@@ -117,6 +156,7 @@ service cloud.firestore {
         && data.get('phoneAppearanceV568', {}).keys().size() <= 20
         && data.get('playerAvatar', {}) is map
         && data.get('playerAvatar', {}).keys().size() <= 20
+        && (!('honorV1' in data) || validHonorV1C463(data.honorV1))
         && data.get('arcadeLastReceiptV1', '') is string
         && (data.get('arcadeLastReceiptV1', '') == '' ||
             data.get('arcadeLastReceiptV1', '').matches('^ex-[0-9a-f-]{36}$'))
@@ -129,7 +169,8 @@ service cloud.firestore {
         'username','name','title','role','level','exp','currency',
         'inventory','quests','lootedChapters','readRewards','dailyReadLog',
         'collectedCharacters','storyStates','playerAvatar',
-        'readingBookmarksV568','phoneAppearanceV568','arcadeLastReceiptV1'
+        'readingBookmarksV568','phoneAppearanceV568','arcadeLastReceiptV1',
+        'honorV1'
       ];
     }
 

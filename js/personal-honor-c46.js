@@ -93,9 +93,9 @@
   return {...saved,earned,titles,achievements,unlockedCount:achievements.filter(a=>a.unlocked).length};
  }
  async function run({db,auth,uid,kind='sync',arcade=null,localProfile=null,
-  titleId,achievementId}={}){
+  titleId,achievementId,pinnedIds}={}){
   if(!db?.collection||!db?.runTransaction||!uid||auth?.currentUser?.uid!==uid||
-   !['sync','equip','pin'].includes(kind))throw fail('invalid-account');
+   !['sync','equip','pin','preferences'].includes(kind))throw fail('invalid-account');
   const user=auth.currentUser,ref=db.collection('profiles_v2').doc(uid);
   const result=await db.runTransaction(async tx=>{
    const snap=await tx.get(ref);
@@ -112,10 +112,17 @@
    const updated={...old,earned,pinned:old.pinned.filter(id=>earned.includes(id))};
    const newIds=earned.filter(id=>!old.earned.includes(id));
    let title=null;
-   if(kind==='equip'){
+   if(kind==='equip'||kind==='preferences'){
     title=TITLES_BY_ID.get(titleId);
     if(!title||!titleUnlocked(title.id,earned))throw fail('title-locked');
     updated.equipped=title.id;
+   }
+   if(kind==='preferences'){
+    if(!Array.isArray(pinnedIds)||pinnedIds.length>MAX_PINNED||
+      new Set(pinnedIds).size!==pinnedIds.length||
+      pinnedIds.some(id=>!ACH_BY_ID.has(id)||!earned.includes(id)))
+     throw fail('achievement-locked');
+    updated.pinned=[...pinnedIds];
    }else if(kind==='pin'){
     if(!ACH_BY_ID.has(achievementId)||!earned.includes(achievementId))
      throw fail('achievement-locked');

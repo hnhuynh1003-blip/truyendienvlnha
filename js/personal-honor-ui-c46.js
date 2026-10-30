@@ -155,12 +155,10 @@
    const note=create('div','dudu-honor-device-note');
    note.append(create('span','',
     '✧ Đang dùng trên thiết bị này · Chưa đồng bộ lên tài khoản'));
-   if(device.equipped){
-    const retry=create('button','','Thử đồng bộ');retry.type='button';
-    retry.disabled=busy;
-    retry.addEventListener('click',()=>{void transact('equip',{titleId:device.equipped});});
-    note.append(retry);
-   }
+   const retry=create('button','','Thử đồng bộ');retry.type='button';
+   retry.disabled=busy;
+   retry.addEventListener('click',()=>{void syncDevicePreferences();});
+   note.append(retry);
    host.append(note);
   }
   const nav=create('nav','dudu-honor-tabs');nav.setAttribute('aria-label','Loại vinh danh');
@@ -200,11 +198,11 @@
  function remember(result,kind){
   if(!profile())return;
   profile().honorV1=result.honorV1;
-  if(kind==='equip')profile().title=result.title;
+  if(kind==='equip'||kind==='preferences')profile().title=result.title;
   const local=devicePreferences();
-  if(local&&(kind==='equip'||kind==='pin')){
-   if(kind==='equip')local.equipped=null;
-   else local.pinned=null;
+  if(local&&(kind==='equip'||kind==='pin'||kind==='preferences')){
+   if(kind==='equip'||kind==='preferences')local.equipped=null;
+   if(kind==='pin'||kind==='preferences')local.pinned=null;
    writeDevicePreferences(local);
   }
   try{root.localStorage.setItem('profile_'+account(),JSON.stringify(profile()));}catch(_){}
@@ -212,6 +210,9 @@
   if($('phone-app-honors')?.style.display==='flex')render();
   if(kind==='equip'){
    root.updatePhoneUI?.();root.showSystemAlert?.('ĐÃ TRANG BỊ DANH HIỆU',result.title);
+  }else if(kind==='preferences'){
+   root.updatePhoneUI?.();root.showSystemAlert?.('ĐÃ ĐỒNG BỘ VINH DANH',
+    'Danh hiệu và huy hiệu đã lưu lên hồ sơ tài khoản.');
   }else if(kind==='pin')root.showSystemAlert?.('HUY HIỆU ĐÃ CẬP NHẬT',
    'Có thể trưng bày tối đa 3 huy hiệu trên Hồ sơ.');
   else if(result.newIds?.length){
@@ -270,6 +271,12 @@
   if(reason==='unavailable'||reason==='deadline-exceeded'||reason==='failed-precondition')
    return 'Chưa kết nối được để lưu danh hiệu. Tiến độ hiện có vẫn được giữ nguyên.';
   return 'Danh hiệu chưa được cập nhật. Hãy kiểm tra kết nối rồi thử lại.';
+ }
+ function syncDevicePreferences(){
+  const pending=devicePreferences();if(!pending)return false;
+  const v=current();
+  return transact('preferences',{titleId:pending.equipped||v.equipped,
+   pinnedIds:pending.pinned===null?v.pinned:pending.pinned});
  }
  async function transact(kind,options={},arcade=readArcade()){
   if(busy){
