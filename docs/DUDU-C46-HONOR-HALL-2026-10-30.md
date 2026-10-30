@@ -2,6 +2,15 @@
 
 Triển khai 30/10/2026. **Không sửa Firebase Rules, không phát Xu/EXP/vật phẩm, không mở reset mùa, không kích hoạt chuyển Xu Arcade.**
 
+## C4.6.1 — Sửa thao tác trang bị danh hiệu (30/10/2026)
+
+- Khắc phục một nguyên nhân có thể khiến giao diện báo danh hiệu đã mở nhưng giao dịch trang bị thất bại: dữ liệu tiến trình đọc truyện, nhiệm vụ hoặc Hộp Mù trên điện thoại chưa được đồng bộ kịp vào hồ sơ Firestore.
+- Giao dịch xác minh điều kiện bằng tiến trình máy chủ **và** bằng các tín hiệu tiến trình chỉ dùng để mở khóa thành tựu thẩm mỹ trên thiết bị của đúng UID. Chỉ ghi danh sách ID thành tựu, danh hiệu, huy hiệu ghim; không sao chép Xu, EXP, Kho, số nhiệm vụ hay bất kỳ phần thưởng thật nào từ trạng thái cục bộ.
+- Phân biệt thông báo khi chưa đủ điều kiện, hồ sơ thiếu, tài khoản thay đổi, bị từ chối quyền ghi hoặc chưa có kết nối. Không báo đã trang bị khi chưa có kết quả giao dịch thành công.
+- Kiểm tra lại UID hồ sơ đang mở trước khi ghi; tránh thao tác khi tài khoản đang chuyển. Khi hệ thống đang xử lý, nút sẽ nhắc chờ thay vì im lặng.
+- Đổi phiên bản tải hai script liên quan để điện thoại không dùng lại bản JavaScript C4.6 đã lưu trong bộ nhớ đệm.
+- Chưa truy cập được Firebase production của chủ dự án; cần xác nhận thao tác trực tiếp trên điện thoại sau khi bản mới được tải.
+
 ## Kết quả
 
 - Trang chính Điện thoại: một chip danh hiệu bên dưới thẻ avatar; rút tên danh hiệu khỏi dòng LV để tránh trùng nội dung.

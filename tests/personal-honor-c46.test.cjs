@@ -104,6 +104,70 @@ test('C4.6 only unlocked titles can be equipped; pinned medals cap at three',asy
   e=>e.reason==='invalid-account');
 });
 
+test('C4.6.1 local cosmetic unlock survives lagging cloud profile without publishing progress or Xu',async()=>{
+ const h=fixture(),arcadeState=arcade.fresh();
+ await assert.rejects(h.run('equip',{titleId:'reader',arcade:arcadeState}),
+  e=>e.reason==='title-locked');
+ const result=await h.run('equip',{titleId:'reader',arcade:arcadeState,
+  localProfile:{readRewards:{'chapter-read-locally':true},currency:999999,
+   inventory:[{id:'forged-item'}],exp:999999}});
+ assert.equal(result.title,'Lữ Khách Trang Sách');
+ assert.ok(h.profile.honorV1.earned.includes('read-one'));
+ assert.equal(h.profile.title,'Lữ Khách Trang Sách');
+ assert.deepEqual(h.profile.readRewards,{});
+ assert.deepEqual(h.profile.inventory,[{id:'item-old'}]);
+ assert.equal(h.profile.currency,215);
+ assert.equal(h.profile.exp,40);
+ assert.equal((await h.run('sync',{localProfile:{readRewards:{'chapter-read-locally':true}}})).status,
+  'already-applied');
+});
+
+test('C4.6.1 live Honor Hall equips a title unlocked on the phone before profile sync',async()=>{
+ class Node{
+  constructor(tag){this.tag=tag;this.children=[];this.dataset={};this.style={};this.listeners={};
+   this.textContent='';this.className='';this.disabled=false;}
+  append(...xs){this.children.push(...xs);}
+  replaceChildren(...xs){this.children=xs;}
+  setAttribute(k,v){this[k]=v;}
+  addEventListener(k,fn){this.listeners[k]=fn;}
+ }
+ const h=fixture(),nodes=new Map(['dudu-honor-home-title','profile-title',
+  'dudu-honor-content-c46'].map(id=>[id,new Node('div')]));
+ const localProfile={title:'Thực Thể Ký Tự',readRewards:{'new-chapter':true},
+  currency:123456,inventory:[{id:'local-only'}]};
+ const alerts=[],window={document:{getElementById:id=>nodes.get(id),
+  createElement:tag=>new Node(tag)},DuduPersonalHonorC46:honor,
+  DuduPersonalArcadeCoreV1:arcade,localStorage:{getItem:()=>null,setItem:()=>{}},
+  DuduAuth:{isReady:()=>true,uid:()=> 'du'},
+  firebase:{firestore:()=>h.db,auth:()=>h.auth},
+  showSystemAlert:(head,body)=>alerts.push({head,body}),updatePhoneUI:()=>{}};
+ vm.runInNewContext(readFileSync(join(__dirname,'../js/personal-honor-ui-c46.js'),'utf8'),
+  {window,document:window.document,currentUsername:'du',IS_SANDBOX_MODE:false,
+   userProfile:localProfile});
+ assert.equal(window.DuduHonorUIV46.render(),true);
+ const flatten=n=>[n,...n.children.flatMap(flatten)];
+ const actions=flatten(nodes.get('dudu-honor-content-c46'));
+ const equip=actions.find(n=>n.className==='dudu-honor-action'&&n.textContent==='Sử dụng');
+ assert.ok(equip);
+ equip.listeners.click();
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(h.profile.title,'Lữ Khách Trang Sách');
+ assert.equal(h.profile.currency,215);
+ assert.deepEqual(h.profile.readRewards,{});
+ assert.equal(localProfile.honorV1.equipped,'reader');
+ assert.ok(alerts.some(x=>x.head==='ĐÃ TRANG BỊ DANH HIỆU'));
+ h.db.runTransaction=async()=>{throw Object.assign(new Error('permission-denied'),
+  {code:'permission-denied'});};
+ window.DuduHonorUIV46.render();
+ const retry=flatten(nodes.get('dudu-honor-content-c46'))
+  .find(n=>n.className==='dudu-honor-action'&&n.textContent==='Sử dụng');
+ assert.ok(retry);retry.listeners.click();
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.ok(alerts.some(x=>x.head==='CHƯA LƯU ĐƯỢC'&&
+  x.body.includes('chưa được phép lưu')));
+ assert.equal(h.profile.title,'Lữ Khách Trang Sách');
+});
+
 test('C4.6 phone shows equipped title, collectible tabs and preserves compact Arcade layout',()=>{
  const html=readFileSync(join(__dirname,'../index.html'),'utf8');
  const arcadeUi=readFileSync(join(__dirname,'../js/personal-arcade-ui-v1.js'),'utf8');

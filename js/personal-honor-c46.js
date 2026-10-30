@@ -92,7 +92,8 @@
    unlocked:earned.includes(a.id)}));
   return {...saved,earned,titles,achievements,unlockedCount:achievements.filter(a=>a.unlocked).length};
  }
- async function run({db,auth,uid,kind='sync',arcade=null,titleId,achievementId}={}){
+ async function run({db,auth,uid,kind='sync',arcade=null,localProfile=null,
+  titleId,achievementId}={}){
   if(!db?.collection||!db?.runTransaction||!uid||auth?.currentUser?.uid!==uid||
    !['sync','equip','pin'].includes(kind))throw fail('invalid-account');
   const user=auth.currentUser,ref=db.collection('profiles_v2').doc(uid);
@@ -101,7 +102,13 @@
    if(!snap.exists)throw fail('profile-missing');
    if(auth.currentUser!==user||auth.currentUser?.uid!==uid)throw fail('account-changed');
    const data=snap.data(),old=norm(data.honorV1),
-    earned=unique([...old.earned,...discovered(data,arcade)],MAX_EARNED);
+    // C4.6.1: the phone displays cosmetic discoveries from the current
+    // UID-scoped local profile as well as Arcade progress. Its owner may have
+    // unsent reading/quest progress when a field-aware profile save conflicts.
+    // Preserve only cosmetic achievement IDs here; NEVER copy local currency,
+    // items, EXP, quest counters or arbitrary profile fields into Firestore.
+    earned=unique([...old.earned,...discovered(data,arcade),
+     ...(localProfile?discovered(localProfile,arcade):[])],MAX_EARNED);
    const updated={...old,earned,pinned:old.pinned.filter(id=>earned.includes(id))};
    const newIds=earned.filter(id=>!old.earned.includes(id));
    let title=null;

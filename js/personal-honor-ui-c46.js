@@ -21,6 +21,13 @@
   catch(_){return null;}
  }
  const profile=()=>typeof userProfile!=='undefined'&&userProfile?userProfile:null;
+ // Only pass the few local progress signals used for cosmetic achievements;
+ // the transaction never publishes these counters as account rewards.
+ function localEvidence(){
+  const p=profile()||{};
+  return {readRewards:p.readRewards||{},quests:p.quests||[],questV437:p.questV437||{},
+   storyStates:{__duduBlindBoxC29:p.storyStates?.__duduBlindBoxC29||{}}};
+ }
  function current(){return honor.view(profile()||{},readArcade());}
  function activeTitle(v){return v.titles.find(t=>t.id===v.equipped)||v.titles[0];}
  function refresh(){
@@ -179,11 +186,27 @@
   if(typeof saveCurrentAccount==='function')saveCurrentAccount();
   refresh();render();return true;
  }
+ function saveFailureMessage(error){
+  const reason=error?.reason||error?.code||'';
+  if(reason==='title-locked')return 'Danh hiệu chưa đủ điều kiện trên tài khoản. Hãy mở Sổ Vinh Danh để cập nhật tiến độ.';
+  if(reason==='achievement-locked')return 'Huy hiệu chưa được mở khóa trên tài khoản này.';
+  if(reason==='profile-missing')return 'Chưa tìm thấy hồ sơ đã đồng bộ. Hãy tải lại trang sau khi đăng nhập.';
+  if(reason==='invalid-account'||reason==='account-changed')return 'Tài khoản vừa thay đổi. Hãy mở lại Điện thoại rồi thử lại.';
+  if(reason==='permission-denied')return 'Tài khoản chưa được phép lưu thay đổi này. Hãy kiểm tra quyền hồ sơ.';
+  if(reason==='unavailable'||reason==='deadline-exceeded'||reason==='failed-precondition')
+   return 'Chưa kết nối được để lưu danh hiệu. Tiến độ hiện có vẫn được giữ nguyên.';
+  return 'Danh hiệu chưa được cập nhật. Hãy kiểm tra kết nối rồi thử lại.';
+ }
  async function transact(kind,options={},arcade=readArcade()){
-  if(busy)return false;
+  if(busy){
+   if(kind!=='sync')root.showSystemAlert?.('ĐANG CẬP NHẬT',
+    'Sổ Vinh Danh đang ghi nhận tiến độ. Hãy thử lại sau ít giây.');
+   return false;
+  }
   if(sandbox())return sandboxTransact(kind,options,arcade);
   const owner=uid();
-  if(!owner||!root.firebase?.firestore||!root.firebase?.auth){
+  if(!owner||typeof currentUsername==='undefined'||currentUsername!==owner||
+   !root.firebase?.firestore||!root.firebase?.auth){
    if(kind!=='sync')root.showSystemAlert?.('CHƯA SẴN SÀNG','Hãy đăng nhập để lưu danh hiệu.');
    return false;
   }
@@ -193,13 +216,13 @@
     await Promise.allSettled([...pendingLiveProfileWrites]);
    if(owner!==uid())return false;
    const result=await honor.run({db:root.firebase.firestore(),auth:root.firebase.auth(),
-    uid:owner,kind,arcade,...options});
+    uid:owner,kind,arcade,localProfile:localEvidence(),...options});
    if(owner!==uid())return false;
    remember(result,kind);return true;
   }catch(error){
    console.warn('Honor Hall:',error?.reason||error?.code||error?.message);
    if(kind!=='sync')root.showSystemAlert?.('CHƯA LƯU ĐƯỢC',
-    'Danh hiệu chưa được cập nhật. Hãy kiểm tra kết nối rồi thử lại.');
+    saveFailureMessage(error));
    return false;
   }finally{busy=false;if($('phone-app-honors')?.style.display==='flex')render();}
  }
