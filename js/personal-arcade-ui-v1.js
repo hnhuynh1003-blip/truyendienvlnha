@@ -1,4 +1,4 @@
-/* Personal Arcade — playable scenes for Trạm Neon / Địa Tầng 07 / Vườn Sương.
+/* Personal Arcade — playable scenes for Trạm Neon / Địa Tầng 07 / Vườn Sương / Ngọc Phường.
  * Game simulation remains local. Spark personal transfer is opt-in and gated;
  * the matching Firestore Rules must be installed before enabling it.
  */
@@ -12,7 +12,7 @@
  const PENDING='dudu-personal-arcade:exchange-pending-v1:';
  const SETTLED='dudu-personal-arcade:exchange-settled-v1:';
  const host=()=>root.document.getElementById('personal-arcade-v1');
- const modeLabels={neon:'Trạm Neon',mine:'Địa Tầng 07',garden:'Vườn Sương'};
+ const modeLabels={neon:'Trạm Neon',mine:'Địa Tầng 07',garden:'Vườn Sương',jade:'Ngọc Phường'};
  const oreLabels={stone:'Đá',coal:'Than',iron:'Sắt',copper:'Đồng',silver:'Bạc',
   gold:'Vàng',crystal:'Tinh thạch',jade:'Ngọc bích',meteor:'Thiên thạch',relic:'Cổ vật'};
  const oreGlyphs={stone:'◆',coal:'⬟',iron:'⬢',copper:'⬡',silver:'◈',
@@ -130,7 +130,8 @@
   'neon-upgrades':'Nâng cấp Trạm Neon','neon-awards':'Thành tựu & hợp đồng',
   'mine-map':'Bản đồ địa tầng','mine-bag':'Túi quặng & sổ khoáng',
   'mine-tools':'Xưởng rèn & trang bị','garden-seeds':'Vườn cây & hạt giống',
-  'garden-album':'Nhật ký cá','garden-upgrades':'Nâng cấp Vườn Sương'};
+  'garden-album':'Nhật ký cá','garden-upgrades':'Nâng cấp Vườn Sương',
+  'jade-market':'Chợ đá thô','jade-workshop':'Xưởng ngọc','jade-gallery':'Sổ sưu tầm phỉ thúy'};
  const upgrade=(glyph,name,level,type,cost)=>`<div class="arcade-upgrade-card">
    <span class="arcade-upgrade-symbol">${glyph}</span><div><strong>${name}</strong><small>${level}</small></div>
    ${button(cost===null?'Tối đa':'＋ '+fmt(cost)+' Xu',type,'upgrade',cost===null||state.coins<cost)}</div>`;
@@ -365,7 +366,8 @@
   const s=ensure();
   updateWalletHeader(s);
   if(!s){element.innerHTML='<div class="arcade-empty">Đăng nhập tài khoản để lưu tiến trình minigame riêng trên thiết bị này.</div>';lastRenderedKey=null;return true;}
-  const time=now(),panel=tab==='neon'?neonPanel(s):tab==='mine'?minePanel(s,time):gardenPanel(s,time);
+  const time=now(),panel=tab==='neon'?neonPanel(s):tab==='mine'?minePanel(s,time):
+   tab==='jade'?root.DuduPersonalJadeUIV1?.panel(s)||'<div>Ngọc Phường đang mở cửa…</div>':gardenPanel(s,time);
   const previousScroll=element.querySelector?.('.arcade-scroll')?.scrollTop??element.scrollTop??0;
   const oldSheet=element.querySelector?.('.arcade-sheet-overlay');
   const previousSheetScroll=oldSheet?.dataset?.sheet===drawerOpen?
@@ -375,9 +377,9 @@
     <div class="arcade-scroll" aria-label="Nội dung trò chơi">
       ${panel}
     </div>
-    <nav class="arcade-tabs" role="tablist" aria-label="Ba minigame">
+    <nav class="arcade-tabs" role="tablist" aria-label="Bốn minigame">
       ${Object.entries(modeLabels).map(([type,name])=>`<button type="button" class="arcade-tab ${tab===type?'is-active':''}" role="tab"
-        aria-selected="${tab===type}" data-arcade-tab="${type}"><span class="arcade-tab-icon">${type==='neon'?'▣':type==='mine'?'◈':'✿'}</span><span>${name}</span></button>`).join('')}
+        aria-selected="${tab===type}" data-arcade-tab="${type}"><span class="arcade-tab-icon">${type==='neon'?'▣':type==='mine'?'◈':type==='garden'?'✿':'◆'}</span><span>${name}</span></button>`).join('')}
     </nav>
     ${showToast?`<div class="arcade-status arcade-status-toast" data-error="${error}" aria-live="polite" data-arcade-notice></div>`:''}
     ${exchangeOpen?`<div class="arcade-exchange-overlay" data-arcade-exchange="close">
@@ -551,6 +553,9 @@
    if(next&&modeLabels[next]){tick();tab=next;drawerOpen=null;notice='';error=false;render();return;}
    const action=control.dataset.arcadeAction;
    if(action==='transfer'){void transferArcade();return;}
+   if(action==='jade-open-market'||action==='jade-open-workshop'){
+    drawerOpen=action==='jade-open-market'?'jade-market':'jade-workshop';render();return;
+   }
    if(action)interact(action);
   });
   root.setInterval(tick,1000);

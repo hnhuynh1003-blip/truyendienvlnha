@@ -1,0 +1,228 @@
+/* DUDU Arcade · Ngọc Phường — local-only stone appraisal and craft simulation.
+ * Shared currency is fictional Arcade Xu (stored in tenths), NEVER main-wallet Xu.
+ * Every stone's internal composition is fixed at purchase, including on reload.
+ */
+(function(root,factory){
+ const api=factory();
+ if(typeof module==='object'&&module.exports)module.exports=api;
+ if(root)root.DuduPersonalJadeCoreV1=api;
+})(typeof window!=='undefined'?window:null,function(){
+ 'use strict';
+ const MAX=1000000000;
+ const MARKETS=Object.freeze([
+  {name:'Chợ Đêm Vỉa Hè',short:'Chợ Đêm',price:50,skin:'Vỏ cuội xám',detail:'Hàng rẻ, phế thạch nhiều. Cơ hội đổi đời từ một viên nhỏ.',unlock:'Luôn mở'},
+  {name:'Mỏ Sông Mộc Khảm',short:'Mộc Khảm',price:140,skin:'Cát vàng nhẵn',detail:'Thủy đầu dịu, ngọc đều màu, phù hợp người thận trọng.',unlock:'Bán 3 viên · Đèn cấp 2'},
+  {name:'Hầm Quặng Mạc Tây Cát',short:'Mạc Tây Cát',price:420,skin:'Vỏ rỉ sét',detail:'Lô băng chủng cao giá, cần kỹ năng đoán thớ.',unlock:'Bán 12 viên · Cưa cấp 2'},
+  {name:'Tử Địa Hắc Ô Sa',short:'Hắc Ô Sa',price:1350,skin:'Hắc sa dày',detail:'Đèn khó xuyên vỏ. Có cơ hội gặp Đế Vương Lục.',unlock:'Bán 25 viên · Đèn cấp 3 · Thợ cấp 2'},
+  {name:'Rãnh Nứt Tàn Tích',short:'Tàn Tích',price:4000,skin:'Thiên thạch dị tinh',detail:'Khoáng thạch mang vân tinh tú, chỉ mở cho chủ xưởng lão luyện.',unlock:'Bán 40 viên · Giấy phép'}
+ ]);
+ const GRADES=Object.freeze(['Phế thạch','Đậu Chủng','Nhu Chủng','Phù Dung Chủng','Kim Ti Chủng','Băng Chủng','Kính Chủng','Long Thạch Chủng']);
+ const COLORS=Object.freeze(['Bạch Ngọc','Thúy Lục','Dương Lục','Tử La Lan','Hồng Phỉ','Mặc Thúy','Đế Vương Lục','Tam Thải']);
+ const COLOR_HEX=Object.freeze(['#e7f3e7','#41bc8f','#b2d76c','#b98de6','#e98679','#193a3d','#05ac68','#e9bb8b']);
+ const FLAWS=Object.freeze(['perfect','fracture','inclusion','mutation','skin']);
+ const FLAW_NAMES=Object.freeze({perfect:'Hoàn hảo',fracture:'Nứt ăn sâu',inclusion:'Hắc điểm',mutation:'Hóa băng',skin:'Kháo bì'});
+ const CRAFTS=Object.freeze({bangle:{name:'Vòng tay',mult:1.75,min:5},pendant:{name:'Mặt dây chuyền',mult:1.45,min:2},ring:{name:'Mặt nhẫn',mult:1.25,min:1},beads:{name:'Chuỗi hạt',mult:1.12,min:1}});
+ const gradeMult=[0,.85,1.25,1.8,2.7,4.2,6.5,11];
+ const colorMult=[1,1.25,1.65,1.7,2.1,1.9,4.6,3.8];
+ const gradeOdds=[
+  [70,15,9,5,1,0,0,0],
+  [20,12,28,23,11,5,1,0],
+  [14,3,9,20,22,24,7,1],
+  [38,1,3,9,16,20,10,3],
+  [12,0,0,0,5,28,40,15]
+ ];
+ const colorOdds=[
+  [28,32,17,12,6,5,0,0],
+  [22,28,18,13,9,8,1,1],
+  [19,27,15,15,10,10,2,2],
+  [12,17,13,13,10,16,13,6],
+  [10,15,12,15,13,12,11,12]
+ ];
+ const clamp=(n,min,max)=>Math.min(max,Math.max(min,n));
+ const integer=(n,min,max,fallback)=>Number.isSafeInteger(n)&&n>=min&&n<=max?n:fallback;
+ const pick=(weights,r)=>{let x=r*weights.reduce((a,b)=>a+b,0);for(let i=0;i<weights.length;i++){x-=weights[i];if(x<0)return i;}return weights.length-1;};
+ const randomFrom=seed=>{let x=seed>>>0;return ()=>{x^=x<<13;x^=x>>>17;x^=x<<5;return (x>>>0)/4294967296;};};
+ function unlocked(j,site){
+  return site===0||site===1&&j.sold>=3&&j.lamp>=2||
+   site===2&&j.sold>=12&&j.saw>=2||
+   site===3&&j.sold>=25&&j.lamp>=3&&j.carver>=2||
+   site===4&&j.sold>=40&&j.permit;
+ }
+ const fresh=()=>({bought:0,cut:0,sold:0,invested:0,received:0,lamp:1,saw:1,
+  carver:1,permit:false,active:null,album:{},exhibits:[],last:null});
+ function validStone(v){
+  if(!v||typeof v!=='object'||!['raw','window','cut','crafted'].includes(v.phase)||
+   !Number.isSafeInteger(v.id)||v.id<1||v.id>1000000||
+   !Number.isSafeInteger(v.site)||v.site<0||v.site>4||
+   !Number.isSafeInteger(v.grade)||v.grade<0||v.grade>7||
+   !Number.isSafeInteger(v.color)||v.color<0||v.color>7||
+   !Number.isSafeInteger(v.size)||v.size<1||v.size>12||
+   !FLAWS.includes(v.flaw)||!Number.isSafeInteger(v.seed)||v.seed<0||v.seed>4294967295||
+   !Array.isArray(v.scans)||v.scans.length!==3||!v.scans.every(x=>typeof x==='boolean'))return null;
+  if(v.phase==='crafted'&&!CRAFTS[v.craft])return null;
+  return {id:v.id,site:v.site,grade:v.grade,color:v.color,size:v.size,
+   flaw:v.flaw,seed:v.seed,phase:v.phase,scans:[...v.scans],
+   savedFracture:v.savedFracture===true,offer:integer(v.offer,0,MAX,0),
+   cutValue:integer(v.cutValue,0,MAX,0),craft:CRAFTS[v.craft]?v.craft:null,
+   craftValue:integer(v.craftValue,0,MAX,0)};
+ }
+ function norm(source){
+  const j=fresh();if(!source||typeof source!=='object')return j;
+  for(const field of ['bought','cut','sold','invested','received'])j[field]=integer(source[field],0,MAX,0);
+  for(const field of ['lamp','saw','carver'])j[field]=integer(source[field],1,4,1);
+  j.permit=source.permit===true;
+  j.active=validStone(source.active);
+  if(source.album&&typeof source.album==='object')for(let g=1;g<=7;g++)for(let c=0;c<8;c++){
+   const key=g+'-'+c,n=integer(source.album[key],0,1000000,0);if(n)j.album[key]=n;
+  }
+  if(Array.isArray(source.exhibits))j.exhibits=source.exhibits.slice(0,40).filter(x=>
+   x&&integer(x.grade,1,7,0)&&integer(x.color,0,7,-1)>=0&&integer(x.size,1,12,0)&&
+   typeof x.craft==='string'&&CRAFTS[x.craft]).map(x=>({grade:x.grade,color:x.color,
+    size:x.size,craft:x.craft,site:integer(x.site,0,4,0)}));
+  if(source.last&&typeof source.last==='object'&&typeof source.last.label==='string')
+   j.last={label:source.last.label.slice(0,110),value:integer(source.last.value,0,MAX,0)};
+  return j;
+ }
+ function generate(site,id,roll){
+  const seed=(Math.floor(clamp(Number.isFinite(roll)?roll:.5,0,.999999999)*4294967295) ^
+   Math.imul(id,2654435761) ^ Math.imul(site+1,2246822519))>>>0;
+  const rng=randomFrom(seed||1),grade=pick(gradeOdds[site],rng());
+  let color=pick(colorOdds[site],rng());
+  if(color===6&&site<3)color=1; // The Imperial-green deposit belongs to Hắc Ô Sa / Tàn Tích.
+  const flaw=FLAWS[pick([15,35,25,8,17],rng())];
+  return {id,site,grade,color,size:2+Math.floor(rng()*7)+(site>=2?1:0),
+   flaw,seed,phase:'raw',scans:[false,false,false],savedFracture:false,
+   offer:0,cutValue:0,craft:null,craftValue:0};
+ }
+ function scanHint(stone,spot,lamp){
+  const thick=stone.site===3,noise=randomFrom((stone.seed^Math.imul(spot+11,1357911))>>>0)();
+  if(spot===0){
+   if(thick&&lamp<4)return 'Vỏ hắc sa nuốt ánh đèn; khó đoán độ trong.';
+   if(stone.grade===0)return noise>.25?'Ánh sáng bật ngược, bên trong khá đục.':'Có vệt sáng yếu, chưa kết luận được.';
+   if(stone.grade>=5)return lamp>=2?'Thủy đầu sâu; ánh ngọc mát, có triển vọng băng/kính.':'Ánh sáng đi sâu qua vỏ, tín hiệu khả quan.';
+   return stone.grade>=3?'Thấu sáng mức vừa; thớ có vẻ mịn.':'Ánh sáng mờ và tản, thớ khá thô.';
+  }
+  if(spot===1){
+   if(stone.flaw==='skin')return 'Tùng hoa ngoài vỏ rất đẹp, nhưng dải xanh chỉ bám sát bì.';
+   if(stone.grade>0&&stone.color>0&&stone.color!==5)return lamp>=3?
+    'Mãng đới liền mạch, thấy ánh màu chạy sâu.':'Vân rêu xanh chạy theo thớ, có dấu hiệu ăn màu.';
+   return noise>.45?'Vân ngoài vỏ loang lổ, khó nhận biết màu.':'Một vệt mãng đới nhạt, chưa rõ là thật.';
+  }
+  if(stone.flaw==='fracture')return lamp>=2?'Liệt văn giao nhau gần tâm. Lưỡi cưa tốt có thể cứu đá.':'Có đường rạn lờ mờ trên bì.';
+  if(stone.flaw==='inclusion')return 'Vệt hắc điểm lẫn trong ánh rọi; có thể làm giảm giá.';
+  if(stone.flaw==='perfect')return 'Bề mặt khá sạch, chưa thấy đường nứt đáng ngại.';
+  return 'Một góc đá rọi ánh khác thường; chưa rõ là cơ hội hay bẫy.';
+ }
+ const baseValue=stone=>stone.grade===0?Math.max(1,Math.round(MARKETS[stone.site].price*.055)):
+  Math.round(MARKETS[stone.site].price*1.45*gradeMult[stone.grade]*colorMult[stone.color]*(stone.size/5));
+ function cutValue(stone,saw){
+  if(stone.grade===0||stone.flaw==='skin')return Math.max(1,Math.round(MARKETS[stone.site].price*.05));
+  let value=baseValue(stone);
+  if(stone.flaw==='perfect')value*=1.5;
+  if(stone.flaw==='inclusion')value*=.7;
+  if(stone.flaw==='mutation')value*=1.45;
+  // A better saw avoids most *cutting* fractures; intrinsic flaws still exist.
+  if(stone.flaw==='fracture')value*=stone.savedFracture?.9:.4;
+  return clamp(Math.round(value),1,MAX);
+ }
+ const cuttingFee=site=>[5,14,35,100,300][site];
+ const windowFee=site=>[8,20,60,200,600][site];
+ const actionFee=(stone,kind)=>stone.id===1&&stone.site===0?0:
+  kind==='cut'?cuttingFee(stone.site):windowFee(stone.site);
+ const upgradeCost=(j,type)=>type==='lamp'&&j.lamp<4?120*j.lamp*j.lamp:
+  type==='saw'&&j.saw<4?180*j.saw*j.saw:
+  type==='carver'&&j.carver<4?240*j.carver*j.carver:
+  type==='permit'&&!j.permit?3000:null;
+ const craftFee=(stone,type)=>Math.max(4,Math.round(MARKETS[stone.site].price*({bangle:.16,pendant:.1,ring:.08,beads:.055}[type])));
+ function act(state,action,roll=.5){
+  const j=state.jade;if(!j)return {ok:false,reason:'Chưa khởi tạo Ngọc Phường',state};
+  const fail=reason=>({ok:false,reason,state});
+  const succeed=label=>({ok:true,label,state});
+  const charge=amount=>{if(state.coins<amount)return false;state.coins-=amount;j.invested=clamp(j.invested+amount,0,MAX);return true;};
+  const credit=amount=>{state.coins=clamp(state.coins+amount,0,MAX);
+   state.earned=clamp(state.earned+amount,0,MAX);j.received=clamp(j.received+amount,0,MAX);};
+  const buy=/^jade-buy-([0-4])$/.exec(action||'');
+  if(buy){
+   const site=Number(buy[1]);if(j.active)return fail('Hãy xử lý viên đá trên bàn trước.');
+   if(!unlocked(j,site))return fail('Bãi đá này chưa được mở khóa.');
+   const cost=j.bought===0&&site===0?0:MARKETS[site].price;
+   if(!charge(cost))return fail('Chưa đủ Xu Arcade để mua lô đá.');
+   j.bought++;j.active=generate(site,j.bought,roll);
+   return succeed(cost?'Đã mang đá thô lên bàn. Hãy soi ba điểm.':'Tặng viên đá thử đầu tiên! Hãy soi ba điểm.');
+  }
+  const tool=/^jade-upgrade-(lamp|saw|carver|permit)$/.exec(action||'');
+  if(tool){
+   const type=tool[1],cost=upgradeCost(j,type);if(cost===null)return fail('Đã đạt cấp cao nhất.');
+   if(type==='permit'&&j.sold<25)return fail('Cần giao dịch ít nhất 25 viên để xin giấy phép.');
+   if(!charge(cost))return fail('Chưa đủ Xu Arcade để nâng cấp.');
+   if(type==='permit')j.permit=true;else j[type]++;
+   return succeed(type==='permit'?'Đã có giấy phép Tàn Tích.':'Đã nâng cấp thiết bị xưởng ngọc.');
+  }
+  const stone=j.active;if(!stone)return fail('Hãy chọn một viên đá thô ở chợ.');
+  const scan=/^jade-scan-([012])$/.exec(action||'');
+  if(scan){
+   if(!['raw','window'].includes(stone.phase))return fail('Viên đá đã được xẻ.');
+   const index=Number(scan[1]);if(stone.scans[index])return fail('Điểm này đã được soi rồi.');
+   stone.scans[index]=true;
+   return succeed(['Đã đọc thủy đầu.','Đã đọc vân ngọc.','Đã kiểm tra liệt văn.'][index]);
+  }
+  if(action==='jade-window'){
+   if(stone.phase!=='raw')return fail('Viên đá đã được khai song.');
+   if(!charge(actionFee(stone,'window')))return fail('Chưa đủ phí khai song.');
+   stone.phase='window';
+   const rawValue=stone.grade===0?MARKETS[stone.site].price*.12:
+    stone.flaw==='skin'?MARKETS[stone.site].price*1.7:
+    baseValue(stone)*(.58+(stone.seed%26)/100);
+   stone.offer=clamp(Math.round(rawValue),1,MAX);
+   return succeed('Đã mở cửa sổ. Thương nhân đưa ra giá chào mua!');
+  }
+  if(action==='jade-sell-window'){
+   if(stone.phase!=='window')return fail('Cần khai song trước khi bán sang tay.');
+   credit(stone.offer);j.sold++;j.last={label:'Sang tay đá đã khai song',value:stone.offer};j.active=null;
+   return succeed('Đã chốt giá NPC · +'+(stone.offer/10).toLocaleString('vi-VN',{maximumFractionDigits:1})+' Xu');
+  }
+  if(action==='jade-cut'){
+   if(!['raw','window'].includes(stone.phase))return fail('Đá đã được xẻ.');
+   if(!charge(actionFee(stone,'cut')))return fail('Chưa đủ phí vận hành máy cưa.');
+   // Predetermined damage roll; better saw changes the threshold, not the stone.
+   stone.savedFracture=stone.flaw==='fracture'&&
+    (stone.seed%1000)/1000<(.25/.35)*(j.saw-1)/3;
+   if(stone.flaw==='mutation'&&stone.grade>0)stone.grade=Math.min(7,stone.grade+1);
+   stone.cutValue=cutValue(stone,j.saw);stone.phase='cut';j.cut++;
+   if(stone.grade>0&&stone.flaw!=='skin'){
+    const key=stone.grade+'-'+stone.color;
+    j.album[key]=clamp((j.album[key]||0)+1,0,1000000);
+   }
+   return succeed(stone.flaw==='skin'?'Kháo bì! Màu xanh chỉ nằm ngoài lớp vỏ.':
+    stone.grade===0?'Đá phế! Chỉ có thể bán thu hồi.':
+    'Đã lộ '+GRADES[stone.grade]+' · '+COLORS[stone.color]+'!');
+  }
+  const craft=/^jade-craft-(bangle|pendant|ring|beads)$/.exec(action||'');
+  if(craft){
+   if(stone.phase!=='cut'||stone.grade===0||stone.flaw==='skin')return fail('Chỉ chế tác được phôi ngọc đã cắt.');
+   const type=craft[1],spec=CRAFTS[type];
+   if(stone.size<spec.min)return fail('Phôi ngọc quá nhỏ cho thành phẩm này.');
+   if(type==='bangle'&&stone.flaw==='fracture'&&!stone.savedFracture)return fail('Đá nứt tâm, không tiện được vòng nguyên khối.');
+   const fee=craftFee(stone,type);if(!charge(fee))return fail('Chưa đủ phí chế tác.');
+   stone.phase='crafted';stone.craft=type;
+   stone.craftValue=clamp(Math.round(stone.cutValue*spec.mult*(1+.17*(j.carver-1))),1,MAX);
+   return succeed('Thợ hoàn thành '+spec.name+'! Đem bán hoặc trưng bày.');
+  }
+  if(action==='jade-sell'){
+   if(!['cut','crafted'].includes(stone.phase))return fail('Hãy cắt đá hoặc khai song trước.');
+   const value=stone.phase==='crafted'?stone.craftValue:stone.cutValue;
+   credit(value);j.sold++;j.last={label:stone.phase==='crafted'?CRAFTS[stone.craft].name:'Phôi ngọc',value};j.active=null;
+   return succeed('Chốt giao dịch · +'+(value/10).toLocaleString('vi-VN',{maximumFractionDigits:1})+' Xu');
+  }
+  if(action==='jade-exhibit'){
+   if(stone.phase!=='crafted'||stone.grade===0||stone.flaw==='skin')return fail('Cần chế tác tác phẩm trước.');
+   if(j.exhibits.length>=40)return fail('Tủ triển lãm đã đầy (40 tác phẩm).');
+   j.exhibits.unshift({grade:stone.grade,color:stone.color,size:stone.size,craft:stone.craft,site:stone.site});
+   j.last={label:'Đã cất '+CRAFTS[stone.craft].name+' vào tủ',value:0};j.active=null;
+   return succeed('✦ Đã bổ sung tác phẩm vào Tủ Triển Lãm!');
+  }
+  return fail('Thao tác Ngọc Phường chưa hỗ trợ.');
+ }
+ return Object.freeze({fresh,norm,act,MARKETS,GRADES,COLORS,COLOR_HEX,FLAWS,FLAW_NAMES,
+  CRAFTS,unlocked,scanHint,baseValue,cutValue,cuttingFee,windowFee,actionFee,upgradeCost,craftFee,generate});
+});

@@ -38,6 +38,8 @@ function harness(options={}){
   window.firebase={auth:()=>({currentUser}),firestore:()=>firestore};
   window.renderWallet=()=>{walletRefreshes++;};
  }
+ const jadeSource=readFileSync(join(__dirname,'../js/personal-jade-ui-v1.js'),'utf8');
+ vm.runInNewContext(jadeSource,context);
  const source=readFileSync(join(__dirname,'../js/personal-arcade-ui-v1.js'),'utf8');
  vm.runInNewContext(source,context);
  return {db,host,notice,headerWallet,window,listeners,profile,
@@ -45,12 +47,13 @@ function harness(options={}){
   setUid:next=>{uid=next;}};
 }
 
-test('Arcade phone UI renders three named tabs and a disabled transfer control',()=>{
+test('Arcade phone UI renders four named tabs and a disabled transfer control',()=>{
  const {host,window,headerWallet}=harness();
  assert.equal(window.DuduPersonalArcadeUIV1.render(),true);
  assert.match(host.innerHTML,/Trạm Neon/);
  assert.match(host.innerHTML,/Địa Tầng 07/);
  assert.match(host.innerHTML,/Vườn Sương/);
+ assert.match(host.innerHTML,/Ngọc Phường/);
  assert.equal(headerWallet.textContent,'🪙 0 Xu');
  assert.equal(headerWallet.disabled,false);
  assert.doesNotMatch(host.innerHTML,/CHƠI TỰ DO|arcade-topbar/);

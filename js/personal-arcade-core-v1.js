@@ -1,4 +1,4 @@
-/* DUDU personal arcade V1 — three local-only games. Never writes the real wallet.
+/* DUDU personal arcade V1 — four local-only games. Never writes the real wallet.
  * State is deterministic given the time and a caller-supplied mining roll.
  * All coins in this module are *tenths* of a fictional game Xu.
  */
@@ -8,6 +8,9 @@
  if(root)root.DuduPersonalArcadeCoreV1=api;
 })(typeof window!=='undefined'?window:null,function(){
  'use strict';
+ const jadeGame=typeof module==='object'&&module.exports?
+  require('./personal-jade-core-v1.js'):
+  typeof window!=='undefined'?window.DuduPersonalJadeCoreV1:null;
  const WATER_INTERVAL=15*60*1000,REPAIR_INTERVAL=4*60*1000;
  const GROW_INTERVAL=3*60*1000,BUBBLE_INTERVAL=90*1000;
  const MAX_COIN=1000000000,MAX_IDLE_MS=12*60*60*1000;
@@ -78,7 +81,8 @@
     beds:[{status:'empty',readyAt:0,crop:'bloom'},{status:'empty',readyAt:0,crop:'bloom'}],
     bubbleAt:time+BUBBLE_INTERVAL,bubbleReady:false,bait:0,harvests:0,
     line:null,fishAlbum:Object.fromEntries(Object.keys(FISH_SPECIES).map(id=>[id,0])),
-    fishBest:Object.fromEntries(Object.keys(FISH_SPECIES).map(id=>[id,0]))}};
+    fishBest:Object.fromEntries(Object.keys(FISH_SPECIES).map(id=>[id,0]))},
+   jade:jadeGame?jadeGame.fresh():null};
  };
  const maxDurability=mine=>100+25*(mine.pickLevel-1);
  const bubbleInterval=garden=>BUBBLE_INTERVAL-10000*(garden.pondTier-1);
@@ -87,6 +91,7 @@
   if(!raw||raw.version!==1||typeof raw!=='object')return fallback;
   const source=raw,neon=source.neon||{},mine=source.mine||{},garden=source.garden||{};
   const state=copy(fallback);
+  if(jadeGame)state.jade=jadeGame.norm(source.jade);
   state.lastAt=number(source.lastAt,0,time,time);
   state.coins=number(source.coins,0,MAX_COIN,0);
   state.earned=number(source.earned,0,MAX_COIN,0);
@@ -235,6 +240,8 @@
   const fail=reason=>({ok:false,reason,state});
   const succeed=(label,extras={})=>({ok:true,label,state,...extras});
   const garden=state.garden,mine=state.mine;
+  if(/^jade-/.test(action||''))return jadeGame?
+   jadeGame.act(state,action,roll):fail('Ngọc Phường chưa sẵn sàng');
   if(action==='toggle-neon'){
    state.neon.running=!state.neon.running;
    return succeed(state.neon.running?'Máy đã chạy':'Đã tạm dừng máy');
@@ -484,5 +491,6 @@
  return Object.freeze({fresh,norm,advance,act,rate,upgradeCost,formatXu,
   neonCapacity,neonService,NEON_SERVICE_INTERVAL,
   WATER_INTERVAL,REPAIR_INTERVAL,GROW_INTERVAL,BUBBLE_INTERVAL,ORE_VALUES,ORE_NAMES,
-  CROPS,FISH_SPECIES,FISH_REEL_WINDOW,maxCharge,zoneUnlocked,cropUnlocked,maxDurability,bubbleInterval});
+  CROPS,FISH_SPECIES,FISH_REEL_WINDOW,maxCharge,zoneUnlocked,cropUnlocked,maxDurability,bubbleInterval,
+  JADE:jadeGame});
 });
