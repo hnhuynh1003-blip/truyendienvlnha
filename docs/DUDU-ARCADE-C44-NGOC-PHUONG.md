@@ -47,3 +47,11 @@ Ngày triển khai: 30/10/2026. Phát triển trên `main`, kế thừa C4.3.
 - Ẩn tiêu đề game phủ lên cảnh vì tên đã có tại thanh chuyển game; mỗi scene vẫn giữ nhãn truy cập trên vùng trò chơi.
 - Thu gọn header ứng dụng và cảnh Ngọc Phường để các thao tác soi/khai song/xẻ sớm xuất hiện trên màn nhỏ.
 - Chỉ thay CSS + tham số cache tài nguyên. Không đụng vào Xu, cấu trúc save hoặc gameplay.
+
+### C4.4.3 — Phục hồi điều khiển và dàn cảnh 4 game
+
+- Phục hồi nút bật/tạm dừng Trạm Neon: chuyển hẳn ra khỏi lớp header bị ẩn, đưa lên góc phải của sân khấu cùng nút ép xung; bỏ hàng ép xung lặp dưới thống kê.
+- Địa Tầng 07: thống kê địa tầng ở mép trên, nhãn chạm đào ở đầu nút đá; cuốc/độ bền giữ bên dưới, không đè chữ lên nhau.
+- Vườn Sương: rút chiều cao cảnh, kéo hai luống lên gần đỉnh, thêm vầng trăng và giữ hồ/đèn/điều khiển tách biệt.
+- Ngọc Phường: rút chiều cao cảnh và khoảng cách danh sách gợi ý soi đá, để nút khai song/xẻ xuất hiện sớm hơn.
+- Các thao tác vẫn ở cùng Arcade state; không thay đổi tiền, Kho, Firestore Rules hay logic nhiệm vụ.

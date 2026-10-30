@@ -191,9 +191,12 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header>span:nth-ch
 .is-running .neon-blink{animation:neon-blink 1s step-end infinite}
 .is-paused .neon-monitor-glass{filter:brightness(.28)}.is-paused .neon-server-stack span::after{background:#697988;box-shadow:none}
 .arcade-button.switch{background:#153e46;color:#a3f3e3;border-color:#4a8889;flex-shrink:0;font-size:10px;min-height:33px}
-.neon-stage-actions{pointer-events:auto;display:flex;align-items:flex-start}
+.neon-stage-actions{position:absolute;top:7px;right:7px;z-index:9;pointer-events:auto;
+ display:flex;align-items:center;gap:5px}
 .neon-stage-actions .arcade-button.switch{background:#214b4c;border-color:#69b5a8;
- box-shadow:0 0 14px #19edda30;min-width:88px;padding:6px 7px;font-size:10px}
+ box-shadow:0 0 14px #19edda30;min-width:75px;min-height:30px;padding:5px 6px;font-size:9px}
+.neon-stage-actions .arcade-button.neon-boost-button{min-width:76px;min-height:30px;
+ padding:5px 6px;font-size:9px;box-shadow:0 0 13px #ffcf7840}
 .neon-service-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-bottom:10px}
 .neon-service-stats>div{min-width:0;padding:8px 7px;background:#101c2b;border:1px solid #355b6a;border-radius:9px}
 .neon-service-stats span{display:block;min-height:20px;color:#95c3cf;font:800 8px/1.3 ui-monospace,monospace;letter-spacing:.025em}
@@ -296,7 +299,7 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header>span:nth-ch
 
 /* Địa Tầng 07: rock itself is the primary clicker button. */
 .arcade-world-mine{background:#1f1d2a;border-color:#765346}
-.mine-stage{background:radial-gradient(ellipse at 50% 45%,#795744 0%,#3b3139 52%,#211e2c 90%);height:314px}
+.mine-stage{background:radial-gradient(ellipse at 50% 45%,#795744 0%,#3b3139 52%,#211e2c 90%);height:292px}
 .mine-stage::after{content:'';position:absolute;inset:0;pointer-events:none;
  background:repeating-radial-gradient(ellipse at 50% 65%,transparent 0 20px,#0000000b 22px 28px);mix-blend-mode:multiply}
 .mine-stratum{position:absolute;width:160%;height:90px;left:-25%;background:#241f28;border:12px solid #4b3840;transform:rotate(-11deg)}
@@ -304,13 +307,13 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header>span:nth-ch
 .mine-cave-light{position:absolute;inset:0;background:conic-gradient(from 180deg at 50% 12%,transparent,#eab77722,transparent 35%)}
 .mine-tunnel-arch{position:absolute;inset:22px 30px 26px;border:14px solid #251e29;border-bottom:0;border-radius:48% 48% 0 0;
  box-shadow:inset 0 0 35px #0b0b14,0 0 30px #1211188c}
-.mine-scene-head{position:absolute;left:12px;right:12px;top:77px;display:flex;justify-content:space-between;gap:6px;z-index:4;
+.mine-scene-head{position:absolute;left:12px;right:12px;top:13px;display:flex;justify-content:space-between;gap:6px;z-index:4;
  font:800 8px ui-monospace,monospace;letter-spacing:.06em;color:#f1d5b8}
 .mine-crystal{position:absolute;width:35px;height:91px;bottom:37px;background:linear-gradient(120deg,#276b83,#82ddef 40%,#134663 56%,#5179a2);
  clip-path:polygon(42% 0,85% 25%,100% 100%,0 100%,14% 24%);filter:drop-shadow(0 0 12px #57c0ff9c);z-index:2}
 .mine-crystal-left{left:4%;transform:rotate(-24deg) scale(.72)}
 .mine-crystal-right{right:5%;transform:rotate(27deg) scale(.9);background:linear-gradient(120deg,#61428b,#deabf5 40%,#533076 60%,#7779be)}
-.mine-ore-button{position:absolute;top:84px;left:50%;transform:translateX(-50%);width:240px;height:205px;max-width:83%;background:transparent;
+.mine-ore-button{position:absolute;top:48px;left:50%;transform:translateX(-50%);width:240px;height:205px;max-width:83%;background:transparent;
  padding:0;border:0;cursor:pointer;transition:filter .15s;z-index:5}
 .mine-ore-button:active:not(:disabled){transform:translateX(-50%) scale(.92)}
 .mine-ore-button:disabled{cursor:not-allowed;filter:saturate(.55)}
@@ -330,8 +333,10 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header>span:nth-ch
 .mine-rock i:nth-child(4){left:37%;top:61%;transform:rotate(-16deg) scale(.63);background:linear-gradient(110deg,#ffeeaa,#c08c52,#6b4c3a)}
 .mine-rock i:nth-child(5){left:42%;top:13%;transform:rotate(17deg) scale(.56)}
 .mine-ore-glow{position:absolute;inset:10% 13%;border-radius:40%;box-shadow:0 0 36px #83ccfa45;pointer-events:none}
-.mine-tap-prompt{position:absolute;bottom:0;left:0;right:0;text-align:center;font:900 11px ui-monospace,monospace;
- color:#ffe3b2;letter-spacing:.09em;text-shadow:0 2px 4px #0c0c15}
+.mine-tap-prompt{position:absolute;top:0;left:12%;right:12%;bottom:auto;text-align:center;
+ font:900 10px ui-monospace,monospace;color:#ffe3b2;letter-spacing:.07em;
+ text-shadow:0 2px 4px #0c0c15;background:#211c2aca;border:1px solid #9f77568c;
+ border-radius:20px;padding:5px 4px}
 .mine-hit-spark{position:absolute;top:34%;left:51%;color:#f4ffe4;font-size:75px;opacity:0;transform:scale(.4);
  text-shadow:0 0 18px #f9d79a;pointer-events:none}
 .mine-hit-active .mine-rock{animation:mine-shake .3s ease-out}
@@ -374,7 +379,7 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header>span:nth-ch
 .arcade-stat>span{display:block;color:#a6d9c2;font:800 8px ui-monospace,monospace;letter-spacing:.08em}
 .arcade-stat strong{font:900 18px/1.4 ui-monospace,monospace;color:#f2e3ac}
 .arcade-stat small{display:block;color:#87bba8;font-size:9px}
-.garden-stage{height:332px;background:linear-gradient(#91b0a7 0%,#5a9d92 43%,#386b58 44%,#24443f 100%)}
+.garden-stage{height:282px;background:linear-gradient(#91b0a7 0%,#5a9d92 43%,#386b58 44%,#24443f 100%)}
 .garden-mountains{position:absolute;inset:19px 0 auto;height:150px;
  background:linear-gradient(155deg,transparent 42%,#568d7d 43% 70%,transparent 71%),
  linear-gradient(21deg,transparent 42%,#6da497 43% 70%,transparent 71%);opacity:.6}
@@ -383,6 +388,9 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header>span:nth-ch
 .garden-mist-a{left:-80px;top:48px}.garden-mist-b{right:-80px;top:110px;animation-delay:-6s}
 .garden-cloud{position:absolute;width:82px;height:20px;background:#f0fff1a8;border-radius:999px;filter:blur(7px)}
 .garden-cloud-a{left:20px;top:20px}.garden-cloud-b{right:13px;top:45px;width:58px}
+.garden-moon{position:absolute;right:19%;top:19px;width:31px;height:31px;border-radius:50%;
+ background:radial-gradient(circle at 35% 35%,#fffbea,#f3e9ba 68%,#bfcfb7);opacity:.8;
+ box-shadow:0 0 20px 6px #ffffd947;pointer-events:none}
 .garden-grass{position:absolute;left:-18%;right:-18%;bottom:-30px;height:225px;background:radial-gradient(ellipse at center,#6eae6c,#2f7257 63%,#285e4e);
  border-radius:50% 50% 0 0;box-shadow:0 -10px 30px #75ac7d66}
 .garden-shore-lantern{position:absolute;bottom:23px;width:22px;height:32px;z-index:2;pointer-events:none;
@@ -404,7 +412,7 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header>span:nth-ch
 .garden-firefly{position:absolute;z-index:3;width:5px;height:5px;border-radius:50%;background:#f9f3bc;
  box-shadow:0 0 9px 4px #e2eea287;pointer-events:none;animation:garden-firefly-drift 4.2s ease-in-out infinite alternate}
 .garden-firefly-left{left:12%;top:55%}.garden-firefly-right{right:10%;top:64%;animation-delay:-2s}
-.garden-plot-area{position:absolute;left:6%;right:6%;top:98px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;z-index:3}
+.garden-plot-area{position:absolute;left:6%;right:6%;top:45px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;z-index:3}
 .garden-plot{height:125px;border:0;background:transparent;position:relative;padding:0;cursor:pointer;color:#fcf1d3;min-width:0;
  transition:transform .12s;filter:drop-shadow(0 10px 3px #173b3045)}
 .garden-plot:disabled{cursor:default;opacity:1}
@@ -559,7 +567,7 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header>span:nth-ch
 .garden-fishing{background:linear-gradient(120deg,#224a51,#345652);border-color:#72b9a3;margin:12px 0}
 .garden-fishing small{color:#b9e5d5}
 .garden-expanded{height:485px}
-.garden-expanded .garden-plot-area{top:88px;gap:17px 9px}
+.garden-expanded .garden-plot-area{top:55px;gap:17px 9px}
 .garden-expanded .garden-plot{height:130px}
 .garden-plot.crop-mint .garden-stem i{background:#a3e0a6}
 .garden-plot.crop-mint .garden-flower i{background:#80d1ab}
@@ -592,7 +600,7 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header>span:nth-ch
 .arcade-world-jade .arcade-button.gold{background:linear-gradient(135deg,#b47c39,#e4b76b,#866037);color:#261c1c;border-color:#f3d89a}
 .arcade-world-jade .arcade-button.power{background:linear-gradient(125deg,#2d6b5a,#447c66,#2d5d59);border-color:#9fd5bb;color:#f6ffe7}
 .arcade-world-jade .arcade-drawer-trigger{background:linear-gradient(155deg,#534334,#2d534d);border-color:#aa9167;color:#ffead1}
-.jade-stage{height:260px;background:radial-gradient(ellipse at 50% 35%,#6b6352 0,#244743 42%,#12262d 93%);overflow:hidden}
+.jade-stage{height:240px;background:radial-gradient(ellipse at 50% 35%,#6b6352 0,#244743 42%,#12262d 93%);overflow:hidden}
 .jade-stage::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,#d5b87d13 0 3px,transparent 3px 29px);opacity:.55}
 .jade-hall-lattice{position:absolute;top:45px;bottom:52px;width:68px;border:5px double #775837;
  background:repeating-linear-gradient(45deg,transparent 0 16px,#c99a5640 17px 19px,transparent 20px 35px),
@@ -609,7 +617,7 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header>span:nth-ch
 .jade-table-top{position:absolute;left:2%;right:2%;bottom:42px;height:20px;background:linear-gradient(#ad8457,#664532);border:2px solid #d3ac6a;border-radius:50%;z-index:2}
 .jade-table-front{position:absolute;left:6%;right:6%;bottom:17px;height:35px;background:linear-gradient(#69432e,#392527);border:2px solid #9f7746;border-radius:5px 5px 13px 13px;z-index:1}
 .jade-table-front::after{content:'✦ 玉 石 ✦';position:absolute;left:0;right:0;top:12px;text-align:center;font:700 10px serif;letter-spacing:.3em;color:#d8a968}
-.jade-specimen{position:absolute;width:178px;height:145px;left:calc(50% - 89px);top:100px;z-index:4;
+.jade-specimen{position:absolute;width:178px;height:145px;left:calc(50% - 89px);top:82px;z-index:4;
  filter:drop-shadow(0 12px 8px #050e12ab);animation:jade-enter .28s ease-out}
 .jade-rock-face{position:absolute;inset:8px 2px 8px;display:block;clip-path:polygon(9% 34%,22% 8%,50% 1%,79% 13%,95% 39%,89% 76%,59% 96%,26% 91%,3% 64%);
  background:radial-gradient(ellipse at 30% 29%,#dfd3b7,#86745a 44%,#444a43 85%);border-radius:37% 50% 40% 32%}
@@ -641,7 +649,7 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header>span:nth-ch
 .jade-craft-beads .jade-gem-inner{clip-path:none;inset:23px 24px;border-radius:48%;background:radial-gradient(circle at 20% 22%,#f9fff5,var(--jade-color) 12px,transparent 17px),
  radial-gradient(circle at 54% 35%,#effff6,var(--jade-color) 17px,transparent 25px),radial-gradient(circle at 35% 80%,#f9fff5,var(--jade-color) 15px,transparent 22px),
  radial-gradient(circle at 85% 66%,#f9fff5,var(--jade-color) 17px,transparent 24px)}
-.jade-showcase-rough{position:absolute;left:calc(50% - 98px);top:138px;width:196px;height:91px;z-index:3;filter:drop-shadow(0 12px 7px #0008)}
+.jade-showcase-rough{position:absolute;left:calc(50% - 98px);top:112px;width:196px;height:91px;z-index:3;filter:drop-shadow(0 12px 7px #0008)}
 .jade-showcase-rough i{position:absolute;display:block;width:83px;height:77px;border-radius:40% 52% 30% 60%;background:radial-gradient(circle at 32% 20%,#e6cfa9,#776753 72%,#3c413d)}
 .jade-showcase-rough i:nth-child(1){left:0;transform:rotate(-18deg)}.jade-showcase-rough i:nth-child(2){left:53px;top:-10px;background:radial-gradient(circle at 20% 18%,#d1a68f,#3e4d47 72%)}
 .jade-showcase-rough i:nth-child(3){right:0;top:8px;transform:rotate(21deg);background:radial-gradient(circle at 28% 24%,#79847d,#24292a 74%)}
@@ -654,10 +662,10 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header>span:nth-ch
 .jade-welcome strong,.jade-reveal strong{display:block;font:700 17px Georgia,ui-serif,serif;color:#fff0d5;margin:6px 0}
 .jade-welcome p{font-size:10px;color:#d8dfd5;line-height:1.5;margin:5px 0 12px}
 .jade-welcome .arcade-button{width:100%}
-.jade-readout{background:#203936;border:1px solid #4b7b6b;border-radius:12px;padding:8px 9px}
+.jade-readout{background:#203936;border:1px solid #4b7b6b;border-radius:12px;padding:7px 8px}
 .jade-readout-head{display:flex;justify-content:space-between;gap:5px;align-items:center;border-bottom:1px solid #71917a66;padding-bottom:5px}
 .jade-readout-head b{font-size:11px;color:#fce4b6}.jade-readout-head span{font:800 8px ui-monospace,monospace;color:#c7dece}
-.jade-clue-list{display:grid;gap:5px;margin-top:7px}.jade-clue{display:flex;gap:8px;align-items:center;border-radius:6px;padding:5px;background:#112c2c8a;min-height:40px}
+.jade-clue-list{display:grid;gap:3px;margin-top:5px}.jade-clue{display:flex;gap:7px;align-items:center;border-radius:6px;padding:4px;background:#112c2c8a;min-height:34px}
 .jade-clue>span{font:900 19px serif;color:#7ab3a7;min-width:22px;text-align:center}
 .jade-clue.is-read>span{color:#f1d496}.jade-clue b{display:block;font-size:9px;color:#e6e9ce}
 .jade-clue small{display:block;font-size:9px;line-height:1.35;color:#acc9c2;margin-top:2px}
@@ -708,7 +716,7 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header>span:nth-ch
 @keyframes jade-lantern{to{box-shadow:0 0 30px #ffd68ab0;transform:translateY(2px)}}
 @media(max-width:360px){
  .arcade-world-heading h3{font-size:20px}.arcade-world-live{font-size:7px}
- .arcade-stage{height:283px}.mine-stage{height:308px}.garden-stage{height:322px}
+ .arcade-stage{height:283px}.mine-stage{height:292px}.garden-stage{height:282px}
  .neon-stage.neon-room-tier-2,.neon-stage.neon-room-tier-3{height:364px}
  .garden-stage.garden-expanded{height:485px}
  .neon-computer-rack{top:88px}.neon-stage-income{width:160px}
@@ -716,7 +724,7 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header>span:nth-ch
  .arcade-button.upgrade{flex-basis:82px;font-size:9px}
  .garden-fish-album{grid-template-columns:1fr}
  .arcade-tab{font-size:8px}.arcade-tabs{gap:2px;padding:2px}
- .jade-stage{height:260px}.jade-market-card .arcade-button{flex-basis:65px}
+ .jade-stage{height:240px}.jade-market-card .arcade-button{flex-basis:65px}
  .jade-readout{padding:7px}.jade-clue{padding:4px}
 }
 @media(prefers-reduced-motion:reduce){

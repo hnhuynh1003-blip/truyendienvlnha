@@ -158,10 +158,13 @@
     ${i<service.guests&&n.running?'<div class="neon-guest" aria-hidden="true"></div>':''}</div>`).join('');
   return `<section class="arcade-world arcade-world-neon ${s.neon.running?'is-running':'is-paused'}" aria-label="Trạm Neon">
     <header class="arcade-world-heading"><div><span class="arcade-eyebrow">01 / IDLE TYCOON</span>
-      <h3>Trạm Neon</h3><p>Đón khách, nâng máy, mở rộng phòng net.</p></div>
-      <div class="neon-stage-actions">${button(s.neon.running?'Ⅱ Tạm dừng':'▶ Bật máy','toggle-neon','switch')}</div></header>
-    <div class="arcade-stage neon-stage neon-room-tier-${n.roomTier} neon-skin-${n.skin} ${boost?'neon-overclocking':''}" role="img" aria-label="Trạm Neon cấp ${n.roomTier}, ${n.stations} dàn máy, ${n.running?service.guests:0} khách đang dùng">
+      <h3>Trạm Neon</h3><p>Đón khách, nâng máy, mở rộng phòng net.</p></div></header>
+    <div class="arcade-stage neon-stage neon-room-tier-${n.roomTier} neon-skin-${n.skin} ${boost?'neon-overclocking':''}" role="group" aria-label="Trạm Neon cấp ${n.roomTier}, ${n.stations} dàn máy, ${n.running?service.guests:0} khách đang dùng">
       <div class="neon-light neon-light-one"></div><div class="neon-light neon-light-two"></div>
+      <div class="neon-stage-actions" role="group" aria-label="Điều khiển phòng net">
+       ${button(n.running?'Ⅱ Dừng máy':'▶ Bật máy','toggle-neon','switch')}
+       ${button(boost?'⚡ Đang x2':ready?'⚡ Ép xung':`⏳ <span data-arcade-until="${s.neon.turboReadyAt}">${countdown(s.neon.turboReadyAt-time)}</span>`,
+        'neon-turbo','power neon-boost-button',boost||!ready||!n.running)}</div>
       <div class="neon-wall-logo">CRYO<span>TECH</span><small>NET · STATION</small></div>
       <div class="neon-server-stack"><span></span><span></span><span></span><span></span></div>
       <div class="neon-floor"></div><div class="neon-computer-rack ${capacity>3?'neon-rack-wide':''}">${stations}</div>
@@ -188,8 +191,6 @@
          '🔒 Mở rộng · '+fmt(roomCost)+' Xu','room-tier','market',!canExpand||s.coins<roomCost):
          '<span class="neon-expansion-complete">✓ Đã khai phá đủ ba cấp phòng</span>'}
       </div>
-      <div class="arcade-power-row"><div><b>⚡ Tăng tốc phòng máy</b><small>${boost?`Còn <span data-arcade-until="${s.neon.turboUntil}">${countdown(s.neon.turboUntil-time)}</span> · x2 thu nhập`:ready?'Tăng gấp đôi thu nhập trong 3–5 phút':`Máy làm mát: <span data-arcade-until="${s.neon.turboReadyAt}">${countdown(s.neon.turboReadyAt-time)}</span>`}</small></div>
-       ${button(boost?'⚡ Đang chạy':ready?'⚡ Ép xung':'⏳ Đang nguội','neon-turbo','power',boost||!ready||!s.neon.running)}</div>
       <div class="arcade-quick-drawers">
        ${drawerButton('Nâng cấp','⬡','neon-upgrades')}
        ${drawerButton('Thành tựu','✦','neon-awards')}</div>
@@ -305,6 +306,7 @@
     <div class="arcade-stage garden-stage ${g.plots>2?'garden-expanded':''} ${line?'is-fishing':''} ${biting?'is-biting':''}">
       <div class="garden-mist garden-mist-a"></div><div class="garden-mist garden-mist-b"></div>
       <div class="garden-cloud garden-cloud-a"></div><div class="garden-cloud garden-cloud-b"></div>
+      <span class="garden-moon" aria-hidden="true"></span>
       <div class="garden-mountains"></div><div class="garden-grass"></div>
       <span class="garden-shore-lantern garden-lantern-left" aria-hidden="true"></span>
       <span class="garden-shore-lantern garden-lantern-right" aria-hidden="true"></span>
@@ -445,9 +447,11 @@
    const fishBit=!!s.garden.line&&s.lastAt<s.garden.line.biteAt&&time>=s.garden.line.biteAt;
    const fishEscaped=!!s.garden.line&&!state.garden.line;
    const customerServed=s.neon.guestsServed!==state.neon.guestsServed;
+   const boostExpired=!!s.neon.turboUntil&&s.lastAt<s.neon.turboUntil&&time>=s.neon.turboUntil;
+   const turboReady=!!s.neon.turboReadyAt&&s.lastAt<s.neon.turboReadyAt&&time>=s.neon.turboReadyAt;
    if(fishEscaped){notice='Cá đã tuột khỏi lưỡi câu. Hãy thử lượt khác nhé.';
     noticeUntil=time+3500;error=false;}
-   if(lastRenderedKey!==activeKey||completedRepair||waterRefilled||bubbleAppeared||plantMatured||fishBit||fishEscaped||customerServed)render();
+   if(lastRenderedKey!==activeKey||completedRepair||waterRefilled||bubbleAppeared||plantMatured||fishBit||fishEscaped||customerServed||boostExpired||turboReady)render();
    else if(time-lastPaint>=900)refreshLive(time);
   }
  }

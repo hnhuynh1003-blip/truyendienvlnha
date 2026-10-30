@@ -14,8 +14,8 @@ test('C4.4 joins the phone as one Arcade app with four named games',()=>{
  assert.match(html,/personal-jade-core-v1\.js\?v=c44-jade-1/);
  assert.match(html,/personal-jade-ui-v1\.js\?v=c44-jade-1/);
  assert.match(html,/personal-arcade-core-v1\.js\?v=c44-jade-1/);
- assert.match(html,/personal-arcade-ui-v1\.js\?v=c44-jade-1/);
- assert.match(html,/personal-arcade-v1\.css\?v=c44-compact-2/);
+ assert.match(html,/personal-arcade-ui-v1\.js\?v=c44-ux-3/);
+ assert.match(html,/personal-arcade-v1\.css\?v=c44-ux-3/);
  assert.match(html,/id="arcade-header-wallet-v1"/);
  assert.match(html,/ARCADE \/\/ 04/);
  const ui=src('js/personal-arcade-ui-v1.js');
@@ -26,6 +26,12 @@ test('C4.4 joins the phone as one Arcade app with four named games',()=>{
   'Only the bottom dock names each game; scene titles must not cover the art');
  assert.match(styles,/\.arcade-tab\{min-width:0;min-height:34px/,
   'Four game tabs must keep a compact mobile height');
+ assert.ok(ui.indexOf('class="neon-stage-actions"')>ui.indexOf('class="arcade-stage neon-stage'),
+  'Neon power controls must be in the visible scene, not the hidden duplicate title');
+ assert.match(styles,/\.mine-tap-prompt\{position:absolute;top:0/,
+  'Mine tap prompt must not collide with durability at the bottom');
+ assert.match(styles,/\.garden-plot-area\{position:absolute;left:6%;right:6%;top:45px/,
+  'Garden plots should use the upper scene instead of leaving a large blank sky');
 });
 test('Arcade V1 is local-playable and only wires its Spark transfer behind a disabled-by-default gate',()=>{
  const ui=src('js/personal-arcade-ui-v1.js');
