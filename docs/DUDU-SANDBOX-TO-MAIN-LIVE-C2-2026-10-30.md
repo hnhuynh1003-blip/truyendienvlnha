@@ -302,3 +302,15 @@ sự được người dùng thực hiện sẽ được giữ lại trong hồ 
   và Sổ vật phẩm; Sandbox giữ nguyên lô nháp để tham khảo thiết kế.
 - Không thay Firestore Rules, Functions, số dư, Kho, vật phẩm hay liên lạc
   của bất kỳ tài khoản nào trong đợt này.
+
+### C2.7 — Arcade Workshop và sổ chốt tính năng main
+
+- Cả ba trò Arcade đã có vòng chơi mở rộng, trang bị có tác dụng thật,
+  điều kiện nâng cấp và nút thao tác mới; giữ nguyên dữ liệu Arcade V1 cũ.
+- Trạm Neon có ép xung, tản nhiệt và hợp đồng; Địa Tầng 07 có ba địa tầng,
+  phá mạch, xe quặng, đèn và chế máy dò; Vườn Sương có ba giống, bốn luống,
+  tưới/thu hoạch hàng loạt, câu cá và nâng cần câu.
+- Đã đối chiếu nhóm ứng dụng, kết nối Sandbox → main và giới hạn chưa mở
+  trong `docs/DUDU-MAIN-FEATURE-CLOSURE-C27-2026-10-30.md`. Arcade vẫn chỉ
+  cấp Xu Arcade trên thiết bị; đổi Xu 10:1 và đấu giá thật chưa mở; nút reset
+  mùa tiếp tục khóa. Không sửa Rules hoặc hồ sơ người dùng ở C2.7.
