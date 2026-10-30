@@ -598,6 +598,30 @@
   ]
 ];
 
+  // Vạn Bảo collection: decorative, unique DUDU FUN blind-box keepsakes.
+  // These are not sellable tools, combat power, or the legacy random loot pool.
+  const FUN_SOURCE = [
+    ['fun-firefly-lamp','Đèn Đom Đóm','E','🏮','Chiếc đèn thủy tinh giữ ánh sáng của đêm hạ.'],
+    ['fun-starglass','Lọ Sao Rơi','E','🌟','Những mảnh sao ngân hà lấp lánh trong lọ pha lê.'],
+    ['fun-cloud-bell','Chuông Mây','E','🔔','Lắc khẽ, tiếng chuông như gió đầu mùa.'],
+    ['fun-peach-tea','Bình Trà Đào','E','🍑','Bình trà men hồng, thơm hương vườn xuân.'],
+    ['fun-moon-fan','Quạt Nguyệt','E','🌙','Chiếc quạt giấy thêu ánh trăng dịu.'],
+    ['fun-koi-charm','Bùa Cá Chép','E','🐟','Móc ngọc khắc đôi cá chép bơi trong sóng.'],
+    ['fun-golden-origami','Hạc Giấy Kim Sa','D','🕊️','Hạc giấy gấp từ tờ vàng ánh kim.'],
+    ['fun-dew-flower','Hoa Sương Lam','D','🪷','Đóa hoa bất tận đọng giọt sương xanh.'],
+    ['fun-fox-mask','Mặt Nạ Hồ Ly','D','🎭','Mặt nạ sơn mài khảm ánh bạc.'],
+    ['fun-sun-compass','La Bàn Nhật Quang','D','🧭','La bàn nhỏ luôn hướng về bình minh.'],
+    ['fun-moon-hourglass','Đồng Hồ Cát Nguyệt','C','⌛','Cát bạc chảy ngược vào đêm trăng tròn.'],
+    ['fun-koi-crown','Vương Miện Cá Chép','C','👑','Vương miện khảm vảy vàng và đá lam.'],
+    ['fun-butterfly-vial','Lọ Bướm Pha Lê','C','🦋','Cánh bướm trong suốt đậu trên nắp bình ngọc.'],
+    ['fun-phoenix-feather','Lông Vũ Phượng Hỏa','B','🔥','Sợi lông đỏ rực vẫn tỏa ánh lửa ấm.'],
+    ['fun-dragon-pearl','Long Châu Biển Mây','B','🔮','Viên châu khiến mây biếc xoáy quanh.'],
+    ['fun-dream-lantern','Thiên Đăng Mộng','A','🏮','Ngọn thiên đăng mang theo điều ước chưa nói.'],
+    ['fun-celestial-harp','Dao Cầm Tinh Tú','S','🎼','Dây đàn ngân lên tiếng vọng của các vì sao.'],
+    ['fun-eternal-crown','Vương Miện Vĩnh Nguyệt','SS','👑','Báu vật khắc chu kỳ nghìn mùa trăng.'],
+    ['fun-universe-egg','Trứng Vũ Trụ Sơ Khai','SSS','🌌','Một dải ngân hà còn đang ngủ trong lòng trứng.']
+  ];
+
   function item(id,name,rank,type,icon,desc,scope,realmTag,method,extras={}) {
     const isMemorial = scope === 'DUDU';
     return Object.freeze({
@@ -634,7 +658,10 @@
         loreReviewRequired:true
       } : {});
   });
-  const items = Object.freeze([...common,...realms,...souvenirs]);
+  const funCollectibles=FUN_SOURCE.map(([id,name,rank,icon,desc])=>
+    item(id,name,rank,'ITEM',icon,desc,'DUDU',null,'FUN_BOX',{
+      collectionSet:'VAN_BAO',tradeable:false}));
+  const items = Object.freeze([...common,...realms,...souvenirs,...funCollectibles]);
   const index = new Map(items.map(record=>[record.id,record]));
 
   // Archived legacy item in the old random pool but not part of the approved
@@ -676,8 +703,8 @@
       if(x.scope!=='REALM'&&x.realmTag!==null)errors.push('Unexpected realm tag: '+x.id);
       if(x.scope==='DUDU'&&(x.acquisition.method==='RANDOM'||x.giftable||x.discardable||!x.unique))errors.push('Invalid collector guard: '+x.id);
     }
-    if(scopes.COMMON!==25||scopes.REALM!==120||scopes.DUDU!==15)errors.push('Unexpected catalog counts: '+JSON.stringify(scopes));
-    if(items.length!==160)errors.push('Expected exactly 160 records');
+    if(scopes.COMMON!==25||scopes.REALM!==120||scopes.DUDU!==34)errors.push('Unexpected catalog counts: '+JSON.stringify(scopes));
+    if(items.length!==179)errors.push('Expected exactly 179 records');
     for(const tag of REALM_TAGS){
       const inRealm=realms.filter(x=>x.realmTag===tag);
       if(inRealm.length!==20)errors.push('Unexpected realm size: '+tag);
@@ -688,6 +715,7 @@
   }
   return Object.freeze({VERSION,RANKS,REALM_TAGS,items,common:Object.freeze(common),
     realms:Object.freeze(realms),souvenirs:Object.freeze(souvenirs),
+    funCollectibles:Object.freeze(funCollectibles),
     legacyItemCount:70,worldExpansionCount:additions.length,
     byId,list,previewDropPool,validate});
 });

@@ -267,7 +267,7 @@
   function validateCatalog(){
     const errors=[];
     const all=catalog?.items||[];
-    if(all.length!==160)errors.push('Expected 160 catalog records (70 legacy + 90 world)');
+    if(all.length!==179)errors.push('Expected 179 catalog records (160 base + 19 Vạn Bảo)');
     const seen=new Set();
     for(const row of all){
       const category=categoryFor(row);

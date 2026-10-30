@@ -63,7 +63,13 @@
     mirror:'<ellipse cx="38" cy="32" rx="19" ry="23" fill="#709cbb" stroke="#f6d7a0" stroke-width="5"/><path d="M27 24q6-8 13-8" stroke="#e2f9ff" stroke-width="3" fill="none"/><path d="M38 56v13M28 69h20" stroke="#e9c58d" stroke-width="6" stroke-linecap="round"/>',
     // Functional items must not masquerade as mystery loot parcels.
     // A self-contained power cartridge with a prominent lightning symbol.
-    frequencyCell:'<path d="M16 25l-5 7v12l5 7M60 25l5 7v12l-5 7" stroke="#79ebef" stroke-width="2.2" fill="none" stroke-linecap="round" opacity=".85"/><rect x="23" y="10" width="30" height="6" rx="3" fill="#d0eeff" stroke="#5ca9d6" stroke-width="1.8"/><rect x="19" y="15" width="38" height="48" rx="10" fill="#193b62" stroke="#a5efff" stroke-width="2.6"/><rect x="23" y="21" width="30" height="35" rx="7" fill="#247aa2" stroke="#6feadf" stroke-width="1.5"/><path d="M40 25L29 41h9l-3 13 14-20H39Z" fill="#ffe58c" stroke="#fff8dc" stroke-width="1.8" stroke-linejoin="round"/><circle cx="27" cy="59" r="2" fill="#80fbea"/><circle cx="49" cy="59" r="2" fill="#80fbea"/>'
+    frequencyCell:'<path d="M16 25l-5 7v12l5 7M60 25l5 7v12l-5 7" stroke="#79ebef" stroke-width="2.2" fill="none" stroke-linecap="round" opacity=".85"/><rect x="23" y="10" width="30" height="6" rx="3" fill="#d0eeff" stroke="#5ca9d6" stroke-width="1.8"/><rect x="19" y="15" width="38" height="48" rx="10" fill="#193b62" stroke="#a5efff" stroke-width="2.6"/><rect x="23" y="21" width="30" height="35" rx="7" fill="#247aa2" stroke="#6feadf" stroke-width="1.5"/><path d="M40 25L29 41h9l-3 13 14-20H39Z" fill="#ffe58c" stroke="#fff8dc" stroke-width="1.8" stroke-linejoin="round"/><circle cx="27" cy="59" r="2" fill="#80fbea"/><circle cx="49" cy="59" r="2" fill="#80fbea"/>',
+    starJar:'<path d="M26 18h24v7l6 7v26Q39 67 20 58V32l6-7Z" fill="#4a8fbb" fill-opacity=".6" stroke="#ddfaff" stroke-width="2.7"/><path d="M27 18v-6h22v6" stroke="#ffe1a4" stroke-width="4"/><path d="M38 29l4 9 10 1-8 6 2 10-8-5-8 5 2-10-8-6 10-1Z" fill="#ffe59a" stroke="#fff8e6" stroke-width="1.5"/><circle cx="28" cy="33" r="2" fill="#fff"/><circle cx="50" cy="53" r="2" fill="#fff"/>',
+    blossom:'<path d="M38 29q-9-21-19-10-7 14 9 19-19-6-18 9 8 13 22 1-12 15 1 22 13 2 14-17 6 18 18 6 5-13-13-21 20 0 13-16-10-13-22 7Z" fill="#e5a3d9" stroke="#ffe0f6" stroke-width="2.3"/><circle cx="38" cy="38" r="10" fill="#ffedb3"/><path d="M38 22v32M22 38h32" stroke="#fff2df" stroke-width="1.5" opacity=".75"/>',
+    koi:'<path d="M18 43Q34 19 57 28Q46 36 59 51Q36 60 18 43Z" fill="#ecac68" stroke="#fff0b9" stroke-width="2.5"/><path d="M17 43L9 30v26Z" fill="#e89066" stroke="#fff0b9" stroke-width="2"/><path d="M34 29q7 12 2 25" stroke="#ffe2af" stroke-width="3" fill="none"/><circle cx="51" cy="35" r="2.5" fill="#292841"/><path d="M23 58q16 7 32-2" fill="none" stroke="#8de1f4" stroke-width="2"/>',
+    crown:'<path d="M14 32l8 13 15-22 15 22 10-13-5 29H19Z" fill="#f2bf69" stroke="#fff1bd" stroke-width="2.5"/><path d="M22 48h34M20 55h37" stroke="#a96b43" stroke-width="2.4"/><circle cx="38" cy="45" r="6" fill="#88dafa" stroke="#fff" stroke-width="1.6"/><circle cx="20" cy="28" r="4" fill="#ffe5a1"/><circle cx="58" cy="28" r="4" fill="#ffe5a1"/>',
+    lanternBloom:'<path d="M27 26q10-14 21 0l7 14-7 18H28l-7-18Z" fill="#f5b36a" stroke="#ffe4ad" stroke-width="3"/><path d="M38 18v48M22 39h32M28 57l-4 9M48 57l4 9" stroke="#ffedbd" stroke-width="2.5"/><circle cx="38" cy="40" r="8" fill="#fff1bf" fill-opacity=".7"/><path d="M33 14h10M32 67h12" stroke="#ffd08a" stroke-width="4"/>',
+    cosmos:'<ellipse cx="38" cy="38" rx="19" ry="26" fill="#55399b" stroke="#ffdfaa" stroke-width="3"/><ellipse cx="38" cy="39" rx="30" ry="12" fill="none" stroke="#a8ccff" stroke-width="3" transform="rotate(-26 38 39)"/><path d="M38 23l5 10 11 2-9 7 3 11-10-6-10 6 3-11-9-7 11-2Z" fill="#e9ddff"/><circle cx="18" cy="19" r="3" fill="#ffdf9d"/><circle cx="59" cy="58" r="4" fill="#affff4"/>'
   });
   const OVERRIDES=Object.freeze({
     f1:'bread',f2:'water',e2:'coffee',d1:'bread',c1:'blade',e3:'blade',
@@ -82,7 +88,16 @@
     'dudu-tool-supply-kit-v438':'supplyKit',
     'dudu-tool-time-pulse-v438':'timePulse',
     'dudu-tool-discount-v438':'coupon',
-    'urban-coffee':'coffee','urban-keycard':'device'
+    'urban-coffee':'coffee','urban-keycard':'device',
+    'fun-firefly-lamp':'lanternBloom','fun-starglass':'starJar',
+    'fun-cloud-bell':'bell','fun-peach-tea':'flask','fun-moon-fan':'scroll',
+    'fun-koi-charm':'koi','fun-golden-origami':'blossom',
+    'fun-dew-flower':'blossom','fun-fox-mask':'relic','fun-sun-compass':'compass',
+    'fun-moon-hourglass':'flask','fun-koi-crown':'crown',
+    'fun-butterfly-vial':'starJar','fun-phoenix-feather':'blossom',
+    'fun-dragon-pearl':'gem','fun-dream-lantern':'lanternBloom',
+    'fun-celestial-harp':'relic','fun-eternal-crown':'crown',
+    'fun-universe-egg':'cosmos'
   });
   // Recognizable category art for older world packs. A raw parcel is reserved
   // for an actual box, not used as the picture for every unidentified prop.

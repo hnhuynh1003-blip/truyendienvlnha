@@ -136,7 +136,8 @@
    if(tab==='COMMON')items=stock;
    else if(tab==='REALM'&&catalog.REALM_TAGS.includes(realmTag))
      items=catalog.list({scope:'REALM',realmTag});
-   else if(tab==='DUDU')items=catalog.list({scope:'DUDU'});
+   else if(tab==='DUDU')items=catalog.list({scope:'DUDU'})
+     .filter(item=>item.collectionSet!=='VAN_BAO');
    else if(tab==='TOOLS')items=FUNCTIONAL_TOOLS;
    return items.filter(item=>
      !text||[item.name,item.desc,item.rank].some(v=>

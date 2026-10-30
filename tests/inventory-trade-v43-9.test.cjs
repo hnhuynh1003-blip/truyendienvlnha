@@ -23,7 +23,7 @@ test('V43.9: inventory stays canonical, useable filter excludes cosmetic tools',
  assert.equal(engine.actionStatus(flashlight,stories).useable,false);
  assert.match(engine.actionStatus(flashlight,stories).label,/chưa có hiệu ứng/);
  assert.equal(engine.actionStatus(rare,stories).auction,true);
- assert.equal(catalog.items.length,160);
+ assert.equal(catalog.items.length,179);
 });
 test('V43.9: only truly canonical common stock may be sold, low stable buyback',()=>{
  const a=create('common-biscuit','shop-a',{kind:'SHOP',source:'DUDU_MARKET'});

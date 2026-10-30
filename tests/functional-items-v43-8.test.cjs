@@ -18,7 +18,7 @@ const coupon=()=>mk(core.COUPON_ID,'coupon');
 const quote=(item,params={})=>rules.quoteUse({inventory:[item],itemInstanceId:item.instanceId,
  day,now,lastLootTimestamp:now-1000,...params});
 test('V44.1 retains 70 legacy plus 90 realm items, shop limits and 4 function tools',()=>{
- assert.equal(catalog.items.length,160);
+ assert.equal(catalog.items.length,179);
  assert.equal(catalog.validate().length,0);
  assert.deepEqual(core.preview({tab:'TOOLS'}).map(x=>x.id),
   [core.TOOL_ID,core.SUPPLY_ID,core.PULSE_ID,core.COUPON_ID]);

@@ -4,11 +4,15 @@ const fs=require('node:fs');
 const path=require('node:path');
 const catalog=require('../js/item-catalog-v2.js');
 
-test('V44.1 catalog has 25 common, 120 realm and 15 DUDU items',()=>{
-  assert.equal(catalog.items.length,160);
+test('V44.1 base catalog stays intact and C2.9 adds 19 unique FUN collectibles',()=>{
+  assert.equal(catalog.items.length,179);
   assert.equal(catalog.common.length,25);
   assert.equal(catalog.realms.length,120);
   assert.equal(catalog.souvenirs.length,15);
+  assert.equal(catalog.funCollectibles.length,19);
+  assert.ok(catalog.funCollectibles.every(x=>x.collectionSet==='VAN_BAO'&&
+    x.scope==='DUDU'&&x.acquisition.method==='FUN_BOX'&&x.unique&&
+    !x.tradeable&&!x.giftable&&!x.discardable));
   assert.equal(catalog.validate().length,0,catalog.validate().join('; '));
   for(const realmTag of catalog.REALM_TAGS) assert.equal(catalog.list({scope:'REALM',realmTag}).length,20);
 });
@@ -22,7 +26,7 @@ test('permanent IDs and legacy objects are preserved without editing inventories
   assert.equal(catalog.byId('e1').name,'Mì Tôm Cay Dung Thành');
   assert.equal(catalog.byId('e1').archived,true);
   assert.equal(catalog.byId('missing-item'),null);
-  assert.equal(new Set(catalog.items.map(x=>x.id)).size,160);
+  assert.equal(new Set(catalog.items.map(x=>x.id)).size,179);
   assert.ok(catalog.items.every(x=>x.id===x.itemId));
 });
 test('DUDU memorabilia are collectible by milestone/event, not random loot or gifts',()=>{

@@ -6,7 +6,7 @@ const catalog=require('../js/item-catalog-v2.js');
 test('V44.1: legacy 70 canonical IDs retain their ranks, scopes and explicit roles',()=>{
  assert.equal(model.validateCatalog().length,0);
  const groups={};
- for(const item of catalog.items.filter(x=>!x.worldPack)){
+ for(const item of catalog.items.filter(x=>!x.worldPack&&!x.collectionSet)){
   const card=model.inspect(item);
   assert.equal(card.id,item.id);
   assert.equal(card.rank,item.rank);

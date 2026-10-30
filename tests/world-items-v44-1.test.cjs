@@ -10,7 +10,7 @@ const collection=require('../js/world-collection-v44-1.js');
 test('V44.1: precisely 90 new item IDs, 15 per realm, with unique lore and metadata',()=>{
  assert.equal(pack.items.length,90);
  assert.equal(new Set(pack.items.map(x=>x.id)).size,90);
- assert.equal(new Set(catalog.items.map(x=>x.id)).size,160);
+ assert.equal(new Set(catalog.items.map(x=>x.id)).size,179);
  assert.equal(catalog.legacyItemCount,70);
  assert.equal(catalog.worldExpansionCount,90);
  assert.equal(catalog.validate().length,0);

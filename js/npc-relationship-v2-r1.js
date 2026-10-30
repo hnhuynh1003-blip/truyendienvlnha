@@ -87,6 +87,15 @@
     'dudu-first-season': Object.freeze(['COLLECTIBLE']),
     'dudu-founders-badge': Object.freeze(['COLLECTIBLE']),
     'sss1': Object.freeze(['COLLECTIBLE']),
+    // C2.9 Vạn Bảo keepsakes: never classified as gifts or NPC preference boosts.
+    ...Object.fromEntries([
+      'fun-firefly-lamp','fun-starglass','fun-cloud-bell','fun-peach-tea',
+      'fun-moon-fan','fun-koi-charm','fun-golden-origami','fun-dew-flower',
+      'fun-fox-mask','fun-sun-compass','fun-moon-hourglass','fun-koi-crown',
+      'fun-butterfly-vial','fun-phoenix-feather','fun-dragon-pearl',
+      'fun-dream-lantern','fun-celestial-harp','fun-eternal-crown',
+      'fun-universe-egg'
+    ].map(id=>[id,Object.freeze(['COLLECTIBLE'])])),
     // V44.1 additions have neutral, editorial-approved realm identity.
     // Do not derive dangerous/favorite tags from an item's name.
     ...Object.fromEntries((worldPack?.items||[]).map(x=>[

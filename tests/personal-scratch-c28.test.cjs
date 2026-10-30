@@ -31,7 +31,7 @@ function env(initial=100000){
  return{accounts,auth,db,run,get writes(){return writes;}};
 }
 async function finish(run,n){
- for(let cell=0;cell<3;cell++)await run('scratch',n,{cell});
+ await run('reveal',n);
  return run('claim',n);
 }
 
@@ -48,7 +48,7 @@ test('C2.8 scratch card pool has 13 tiers, 10-Xu cost, exact fair odds and 10,00
  assert.equal(lucky.draw(-1),null);assert.equal(lucky.draw(1000000),null);
 });
 
-test('Ticket purchase, scratch and jackpot claim update real virtual account wallet exactly once',async()=>{
+test('Ticket purchase, reveal and jackpot claim update real virtual account wallet exactly once',async()=>{
  const e=env(150);
  const purchased=await e.run('buy',1,{theme:'dragon',roll:999999,seed:12});
  assert.equal(purchased.status,'applied');
@@ -56,13 +56,16 @@ test('Ticket purchase, scratch and jackpot claim update real virtual account wal
  assert.equal(purchased.state.active.amount,10000);
  assert.equal(purchased.state.total,1);
  assert.equal(purchased.state.album.dragon,1);
- assert.equal((await e.run('scratch',1,{cell:0})).state.active.status,'playing');
- const replay=await e.run('scratch',1,{cell:0});
- assert.equal(replay.status,'already-applied');
- assert.equal((await e.run('scratch',1,{cell:1})).state.active.cells.length,2);
- const ready=await e.run('scratch',1,{cell:2});assert.equal(ready.state.active.status,'ready');
+ assert.equal(purchased.state.active.layout,'numbers');
+ const layout=lucky.cardNumbers(12,10000);
+ assert.equal(layout.tiles.length,10);
+ assert.equal(layout.tiles.filter(x=>x.match).length,1);
+ assert.equal(layout.tiles.find(x=>x.match).prize,10000);
+ await assert.rejects(e.run('scratch',1,{cell:0}),x=>x.reason==='invalid-layout');
+ const ready=await e.run('reveal',1);assert.equal(ready.state.active.status,'ready');
+ assert.equal(ready.state.active.cells.length,10);
  const before=e.writes;
- assert.equal((await e.run('scratch',1,{cell:3})).status,'already-applied');
+ assert.equal((await e.run('reveal',1)).status,'already-applied');
  assert.equal(e.writes,before);
  const won=await e.run('claim',1);
  assert.equal(won.reward.amount,10000);assert.equal(won.currency,10140);
@@ -76,7 +79,7 @@ test('Ticket purchase, scratch and jackpot claim update real virtual account wal
  assert.equal('realMoney' in won,false);
 });
 
-test('Unlimited sequential tickets preserve a bounded ledger and an accumulating collection album',async()=>{
+test('Unlimited sequential tickets preserve a bounded receipt ledger (legacy design counts remain inert)',async()=>{
  const e=env(50000);
  for(let n=1;n<=110;n++){
   const theme=lucky.THEMES[(n-1)%lucky.THEMES.length].id;
@@ -115,7 +118,7 @@ test('Purchase refuses insufficient Xu, a second active ticket, invalid roll and
 test('At full wallet, unpaid jackpot stays redeemable; no award or loss on a failed claim',async()=>{
  const e=env(1000000000);
  await e.run('buy',1,{theme:'gold',roll:999999,seed:25});
- for(let cell=0;cell<3;cell++)await e.run('scratch',1,{cell});
+ await e.run('reveal',1);
  const before=e.writes;
  await assert.rejects(e.run('claim',1),x=>x.reason==='wallet-cap');
  assert.equal(e.writes,before);
@@ -125,24 +128,24 @@ test('At full wallet, unpaid jackpot stays redeemable; no award or loss on a fai
  assert.equal(reward.currency,1000000000-10000);
 });
 
-test('C2.8 UI/main integration uses dedicated UID transaction bridge and collectible card surface',()=>{
+test('C2.9 UI/main integration uses dedicated UID transaction bridge and numbered scratch surface',()=>{
  const html=readFileSync(join(__dirname,'../index.html'),'utf8');
  const ui=readFileSync(join(__dirname,'../js/dudu-fun-ui-v43.js'),'utf8');
  const css=readFileSync(join(__dirname,'../css/dudu-fun-v43.css'),'utf8');
- assert.match(html,/personal-scratch-c28\.js\?v=c28-lucky-1/);
+ assert.match(html,/personal-scratch-c28\.js\?v=c29-numbers-1/);
  assert.match(html,/DuduScratchLiveBridgeC28=Object\.freeze/);
  assert.match(html,/DuduPersonalScratchC28\.run/);
  assert.match(html,/Promise\.allSettled\(\[\.\.\.pendingLiveProfileWrites\]\)/);
- assert.match(ui,/if\(!sandbox\(\)\)\{luckyLottery\(rootNode\);return;\}/);
+ assert.match(ui,/if\(!sandbox\(\)\)\{numberLottery\(rootNode\);return;\}/);
  assert.match(ui,/luckyAction\('buy'\)/);
- assert.match(ui,/luckyAction\('scratch',i\)/);
+ assert.match(ui,/luckyAction\('reveal'\)/);
  assert.match(ui,/luckyAction\('claim'\)/);
- assert.match(css,/lucky-theme-grid/);
- assert.match(css,/lucky-scratch-cell\.opened/);
+ assert.match(css,/lucky-number-grid/);
+ assert.match(css,/lucky-number-cell\.matched/);
  assert.doesNotMatch(ui,/Không bán vé hoặc đổi tiền thật\./);
 });
 
-test('Main UI actually renders eight collectible designs, a paid purchase button and odds',async()=>{
+test('Main UI offers priced numbered scratch tickets without a collection shelf',async()=>{
  class Node{
   constructor(tag){this.tag=tag;this.className='';this.textContent='';this.style={};this.dataset={};
    this.children=[];this.listeners={};this.hidden=false;this.disabled=false;}
@@ -171,8 +174,21 @@ test('Main UI actually renders eight collectible designs, a paid purchase button
  await new Promise(done=>setImmediate(done));
  const nodes=flatten(host);
  const shelf=nodes.find(n=>n.className==='lucky-theme-grid');
- assert.ok(shelf);assert.equal(shelf.children.length,8);
+ assert.equal(shelf,undefined);
  assert.ok(nodes.some(n=>n.className.includes('lucky-buy')&&n.disabled===false));
  assert.ok(nodes.some(n=>n.className==='lucky-odds'));
  assert.ok(nodes.some(n=>n.textContent.includes('10.000 Xu')));
+});
+
+test('Number cards cannot present a false matching number after an unlucky roll',()=>{
+ for(const amount of [0,2,5,20,10000])for(const seed of [0,1,7,100,999999]){
+  const card=lucky.cardNumbers(seed,amount);
+  assert.equal(card.tiles.length,10);
+  assert.equal(card.gifts.length,5);
+  assert.equal(card.tiles.filter(x=>x.match).length+
+   card.gifts.filter(x=>x>0).length,amount?1:0);
+  assert.equal(new Set(card.tiles.map(x=>x.number)).size,10);
+  if(amount)assert.equal((card.tiles.find(x=>x.match)?.prize||0)+
+   card.gifts.reduce((sum,n)=>sum+n,0),amount);
+ }
 });

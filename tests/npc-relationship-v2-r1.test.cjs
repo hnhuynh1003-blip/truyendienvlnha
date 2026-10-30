@@ -2,8 +2,8 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const rules=require('../js/npc-relationship-v2-r1.js');
 const catalog=require('../js/item-catalog-v2.js');
-test('V44.1 preserves old NPC gift tags and maps all 160 canonical IDs',()=>{
-  assert.equal(catalog.items.length,160);
+test('V44.1 preserves old NPC gift tags and maps all 179 canonical IDs',()=>{
+  assert.equal(catalog.items.length,179);
   assert.deepEqual(Object.keys(rules.CATALOG_TAGS).sort(),catalog.items.map(x=>x.id).sort());
   for(const x of catalog.items)assert.ok(rules.itemTags(x)?.length>0,x.id);
   assert.equal(catalog.validate().length,0);

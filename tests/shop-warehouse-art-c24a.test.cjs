@@ -109,6 +109,6 @@ test('warehouse and auction art use the same dedicated sprite mount, without cha
   assert.ok(html.includes(name+'?v='+
    (name==='inventory-view-v42.js'?'c24d-1':
     ['inventory-hub-v43-9.js','inventory-v43-9.css'].includes(name)
-     ?'c24b-1':'c24a-1')),name+' new cache version');
+     ?'c24b-1':name==='item-visuals-v13.js'?'c29-collectibles-1':'c24a-1')),name+' new cache version');
  }
 });

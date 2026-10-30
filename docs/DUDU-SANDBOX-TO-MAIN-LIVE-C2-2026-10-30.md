@@ -328,3 +328,16 @@ sự được người dùng thực hiện sẽ được giữ lại trong hồ 
   `docs/DUDU-C28-ARCADE-ORES-LUCKY-SCRATCH-2026-10-30.md`.
 - Không thay Rules, không reset hoặc cấp bù tiến độ. Đổi Xu Arcade → Ví,
   đấu giá và phát hành giải lớn chống gian lận vẫn cần duyệt riêng.
+
+### C2.9 — Vé dò số và Hộp Mù Vạn Bảo (thay thiết kế sổ vé C2.8)
+
+- Theo phản hồi chủ dự án, **không sưu tầm vé**. Vé Vạn Phúc hiện có số may
+  mắn, 10 ô dò số và 5 hộp quà có thể chứa thưởng, vẫn 10 Xu/vé, 13 hạng
+  giải, tối đa 10.000 Xu. Vé C2.8 đã mua vẫn nhận hết quà trước khi mua
+  kiểu mới. Sổ vé từ C2.8 được giữ nguyên dữ liệu cũ nhưng không còn hiện.
+- **Chỉ Hộp Mù mới dùng Sổ Vạn Bảo**: 19 vật phẩm mỹ thuật kỷ niệm từ E đến
+  SSS, cập nhật thành vật phẩm ID chuẩn trong Kho khi nhận. Một lượt miễn phí
+  mỗi ngày + mua thêm hộp **20 Xu**, trùng món được hoàn 4 Xu, không nhân bản.
+- Giữ luồng hoàn tất Hộp Mù C2.5 cũ còn dang dở, không reset tài khoản.
+- Tham chiếu bảng tỷ lệ và giới hạn an toàn:
+  `docs/DUDU-C29-NUMBER-SCRATCH-VAN-BAO-2026-10-30.md`.

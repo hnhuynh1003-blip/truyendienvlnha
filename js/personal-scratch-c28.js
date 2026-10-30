@@ -72,14 +72,39 @@
   if(a&&validId(a.id)&&themeSet.has(a.theme)&&validPrize(a.amount)&&
    validDate(a.day)&&['playing','ready','claimed'].includes(a.status)&&
    Number.isSafeInteger(a.seed)&&a.seed>=0&&a.seed<=1000000){
-   const cells=Array.isArray(a.cells)?[...new Set(a.cells.filter(v=>Number.isSafeInteger(v)&&v>=0&&v<9))].slice(0,3):[];
-   if((a.status==='playing'&&cells.length<3)||(a.status!=='playing'&&cells.length===3))
+   const numbered=a.layout==='numbers',count=numbered?10:3;
+   const cells=Array.isArray(a.cells)?[...new Set(a.cells.filter(v=>Number.isSafeInteger(v)&&v>=0&&v<(numbered?10:9)))].slice(0,count):[];
+   if((a.status==='playing'&&cells.length<count)||(a.status!=='playing'&&cells.length===count))
     state.active={id:a.id,theme:a.theme,amount:a.amount,day:a.day,status:a.status,
-     seed:a.seed,cells};
+     seed:a.seed,cells,...(numbered?{layout:'numbers'}:{})};
   }
   return state;
  }
  const symbols=seed=>Array.from({length:9},(_,i)=>['福','喜','財','祿','壽','龍','鳳','玉','金'][(seed+i*7)%9]);
+ // New layout matches the reference: ten scratchable number/prize pairs and
+ // five bonus gifts. Every award occupies exactly one of the fifteen spots.
+ // Prize amounts are precommitted on purchase, not calculated from scratches.
+ function cardNumbers(seed,amount){
+  if(!Number.isSafeInteger(seed)||seed<0||seed>1000000||!validPrize(amount))return null;
+  const winning=10+(seed%80),giftWin=amount>0&&seed%5===0,
+   matchIndex=(Math.floor(seed/7)%10),bonusIndex=Math.floor(seed/5)%5;
+  let x=(seed+0x9e3779b9)>>>0;
+  const next=()=>{x^=x<<13;x^=x>>>17;x^=x<<5;return x>>>0;};
+  const used=new Set([winning]),tiles=[];
+  for(let i=0;i<10;i++){
+   let n;
+   if(amount>0&&!giftWin&&i===matchIndex)n=winning;
+   else{
+    do{n=1+next()%99;}while(used.has(n));
+    used.add(n);
+   }
+   const decoy=[2,5,10,15,20,30,50,100,200,500][next()%10];
+   tiles.push({number:n,prize:amount>0&&!giftWin&&i===matchIndex?amount:decoy,
+    match:n===winning});
+  }
+  const gifts=Array.from({length:5},(_,i)=>giftWin&&i===bonusIndex?amount:0);
+  return {winning,tiles,gifts};
+ }
  async function load({db,auth,uid}={}){
   if(!validUid(uid)||auth?.currentUser?.uid!==uid||!db?.collection)throw fail('invalid-account');
   const user=auth.currentUser,snap=await db.collection('profiles_v2').doc(uid).get();
@@ -89,7 +114,7 @@
  }
  async function run({db,auth,uid,kind,id,theme='dragon',roll,seed,cell,now=()=>Date.now()}={}){
   if(!validUid(uid)||auth?.currentUser?.uid!==uid||!db?.collection||!db?.runTransaction||
-   !validId(id)||!['buy','scratch','claim'].includes(kind))throw fail('invalid-account');
+   !validId(id)||!['buy','scratch','reveal','claim'].includes(kind))throw fail('invalid-account');
   const at=now();
   if(!Number.isSafeInteger(at)||at<1||at>8640000000000000)throw fail('invalid-time');
   const day=new Date(at).toISOString().slice(0,10),user=auth.currentUser;
@@ -114,12 +139,18 @@
      coins-=PRICE;state.total=Math.min(100000000,state.total+1);
      state.spent=Math.min(MAX_WALLET,state.spent+PRICE);
      state.album[theme]=Math.min(100000000,(state.album[theme]||0)+1);
-     state.active={id,theme,amount:drawn.amount,seed,day,status:'playing',cells:[]};
+     state.active={id,theme,amount:drawn.amount,seed,day,status:'playing',cells:[],layout:'numbers'};
      state.buyIds=[...state.buyIds,id].slice(-MAX_RECEIPTS);changed=true;
     }
    }else{
     if(!state.active||state.active.id!==id)throw fail('ticket-not-found');
-    if(kind==='scratch'){
+    if(kind==='reveal'){
+     if(state.active.layout!=='numbers')throw fail('invalid-layout');
+     if(state.active.status!=='playing')status='already-applied';
+     else{state.active.cells=[0,1,2,3,4,5,6,7,8,9];
+      state.active.status='ready';changed=true;}
+    }else if(kind==='scratch'){
+     if(state.active.layout==='numbers')throw fail('invalid-layout');
      if(!Number.isInteger(cell)||cell<0||cell>8)throw fail('invalid-cell');
      if(state.active.cells.includes(cell)||state.active.status!=='playing')status='already-applied';
      else{state.active.cells.push(cell);if(state.active.cells.length===3)state.active.status='ready';changed=true;}
@@ -142,5 +173,5 @@
   if(auth.currentUser!==user||auth.currentUser?.uid!==uid)throw fail('account-changed');
   return outcome;
  }
- return Object.freeze({META,PRICE,THEMES,PRIZES,draw,norm,symbols,load,run});
+ return Object.freeze({META,PRICE,THEMES,PRIZES,draw,norm,symbols,cardNumbers,load,run});
 });
