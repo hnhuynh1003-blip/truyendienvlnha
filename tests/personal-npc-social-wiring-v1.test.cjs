@@ -34,3 +34,11 @@ test('NPC portrait viewer remains read-only and requires unlock or author permis
  assert.match(viewer,/DuduAuth\.uid\(\)!==currentUsername/);
  assert.match(html,/function openChatNpcPortraitViewer\(\)/);
 });
+test('shared check-in panel returns to Liên lạc after being used from Codex',()=>{
+ assert.match(html,/function restoreNpcProgressToChatV31\(\)/);
+ assert.match(html,/if\(chat\?\.style\.display!=='flex'\)return/);
+ assert.match(html,/anchor\.after\(relation,choice\)/);
+ const switcher=html.slice(html.indexOf('function switchChatCharacter()'),
+  html.indexOf('function renderChatMessages('));
+ assert.match(switcher,/restoreNpcProgressToChatV31\(\)/);
+});

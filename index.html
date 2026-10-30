@@ -3432,6 +3432,19 @@
         choice.style.display='none';
       }
     }
+    function restoreNpcProgressToChatV31(){
+      const chat=document.getElementById('phone-app-chat');
+      if(chat?.style.display!=='flex')return;
+      const anchor=document.getElementById('dudu-v32-contact-feedback');
+      const relation=document.getElementById('npc-relationship-r3-preview');
+      const choice=document.getElementById('npc-daily-choice-card');
+      if(anchor&&relation&&choice&&relation.parentElement!==chat){
+        // Codex check-in temporarily borrows the same controls. Returning to
+        // Liên lạc must restore BOTH cards without cloning their state.
+        anchor.after(relation,choice);
+        choice.style.display='none';
+      }
+    }
     function npcCheckInFromCodexV31(storyId,npcId){
       if(!currentUsername||(!IS_SANDBOX_MODE&&
          (!DuduAuth.isReady()||DuduAuth.uid()!==currentUsername))||
@@ -3775,6 +3788,7 @@
 
     function switchChatCharacter() {
       hideNpcConnectionStatus();
+      restoreNpcProgressToChatV31();
       const choicePanel=document.getElementById('npc-daily-choice-card');
       if(choicePanel)choicePanel.style.display='none';
       const chatMore=document.getElementById('chat-v27-more');
