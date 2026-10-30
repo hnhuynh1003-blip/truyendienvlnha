@@ -12,7 +12,7 @@ test('V44 compact: warehouse tab bar precedes search and item grid with no redun
  const toolbar=html.indexOf('id="inventory-v2-toolbar"');
  const grid=html.indexOf('id="inventory-container"');
  assert.ok(hub>0&&hub<toolbar&&toolbar<grid);
- assert.match(html,/inventory-compact-v44\.css\?v=\d+/);
+ assert.match(html,/inventory-compact-v44\.css\?v=c24b-1/);
  assert.match(html,/DuduInventoryHubV439\?\.reset\(\)/);
  assert.match(html,/DuduInventoryViewV42\.toggleAdvanced\(\)/);
  assert.equal(html.split('id="inventory-v439-hub"').length-1,1);
@@ -53,7 +53,7 @@ test('V44 compact: every inventory tab filters actual physical entries without r
  });
  assert.deepEqual(follow.entries.map(x=>x.index),[2]);
 });
-test('V44 compact: tools, shop, auction, gifting remain discoverable without always-on explanations',()=>{
+test('C2.4b compact: tools, shop and auction remain, retired author gifting is hidden',()=>{
  const source=read('js/inventory-hub-v43-9.js');
  const view=read('js/inventory-view-v42.js');
  const css=read('css/inventory-compact-v44.css');
@@ -62,6 +62,8 @@ test('V44 compact: tools, shop, auction, gifting remain discoverable without alw
  assert.match(source,/dudu-v440-history/);
  assert.match(source,/s\.listings/);
  assert.match(source,/onCancel\?\./);
+ assert.doesNotMatch(source,/\['gifts','💌','Tặng'\]/);
+ assert.doesNotMatch(view,/Tặng cho truyện|onStoryGift/);
  assert.match(view,/args\.itemFilter/);
  assert.match(view,/toggleAdvanced/);
  assert.match(view,/\/500/);

@@ -10,7 +10,7 @@ body.dudu-phone-v11 #cyber-phone #inventory-v439-hub.dudu-v440-compact{
  border-radius:0!important;min-width:0;
 }
 body.dudu-phone-v11 #cyber-phone #inventory-v439-hub .dudu-v439-nav{
- display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
  gap:5px;min-width:0;
 }
 body.dudu-phone-v11 #cyber-phone #inventory-v439-hub .dudu-v439-tab{

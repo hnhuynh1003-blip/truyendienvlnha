@@ -42,7 +42,7 @@ body.dudu-phone-v11 #cyber-phone .dudu-v439-metric strong{
  font-size:12px;color:#f6e1f5;font-variant-numeric:tabular-nums;
 }
 body.dudu-phone-v11 #cyber-phone .dudu-v439-nav{
- display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;
 }
 body.dudu-phone-v11 #cyber-phone .dudu-v439-tab{
  min-width:0;min-height:36px;padding:5px 2px;border-radius:9px;

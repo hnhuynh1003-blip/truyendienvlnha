@@ -5,7 +5,7 @@ Release: 2026-10-17 · target: main · Sandbox-only. This is a **warehouse-first
 ## UX
 
 - Warehouse hero: exact physical slots used /500, working consumables, saleable items, current escrow lots and virtual Xu balance.
-- Four modes embedded in Kho: **Kho đồ**, **Bán thường**, **Đấu giá**, **Quà truyện**. Existing search, rarity/world/story controls and stack view preserved.
+- Archive note (C2.4b, 30/10/2026): **Quà truyện** is no longer offered in the Kho UI. The active modes are **Kho đồ**, **Bán thường** and **Đấu giá**. Legacy journal entries remain readable; this older document records the Sandbox prototype, not a feature planned for `main`.
 - Inventory item tiles show actionable labels: **Dùng**, **Bán**, **Ký gửi**, **Tặng**, **Lưu trữ**, **Khóa**. An explicit **Dùng được** filter separates the four genuine V43.x functional devices from older tools/props that are incorrectly perceived as usable.
 - Inspector gives bounded context-dependent actions and source details. Invalid/unimplemented tools show "chưa có hiệu ứng tiêu hao", not a dead use button.
 

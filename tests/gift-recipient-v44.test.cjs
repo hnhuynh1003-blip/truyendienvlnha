@@ -34,14 +34,13 @@ test('V44: new sandbox gift receipts preserve legacy journal and explicit local-
  assert.match(client.label({...plan.state.history[0],recipientKind:undefined}),/Sandbox/);
  assert.equal(plan.serverReceipt,undefined);
 });
-test('V44: wiring explicitly communicates no author transfer or public comment yet',()=>{
+test('C2.4b: legacy recipient contracts remain, but player-facing author gifts are retired',()=>{
  const read=p=>fs.readFileSync(path.join(__dirname,'..',p),'utf8');
  const html=read('index.html'),view=read('js/inventory-view-v42.js');
  const css=read('css/gift-recipient-v44.css');
  assert.match(html,/src="js\/gift-recipient-v44\.js\?v=\d+"/);
- assert.match(html,/DuduGiftRecipientV44\.preview/);
- assert.match(view,/dudu-v44-recipient-locked/);
- assert.match(view,/Gửi trực tiếp tác giả: chưa mở/);
- assert.match(view,/không gửi sang tài khoản khác/);
+ assert.doesNotMatch(html,/DuduGiftRecipientV44\.preview\(novels\.find/);
+ assert.doesNotMatch(view,/dudu-v44-recipient-locked|Tặng cho truyện|onStoryGift/);
+ assert.match(html,/onclick="openPhoneApp\('author-mail'\)"[^>]*hidden/);
  assert.match(css,/body\.dudu-phone-v11/);
 });

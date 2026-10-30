@@ -271,60 +271,6 @@
    });
    listing.append(lbl,notice,button);footer.append(listing);
   }
-  if(tradeStatus?.giftTargets&&typeof args.onStoryGift==='function'&&
-    typeof args.storyGiftTargets==='function'){
-   const targets=args.storyGiftTargets(entry.item);
-   if(targets.length){
-    const gift=make('details','dudu-v439-action-card');
-    gift.append(make('summary','','💌 Tặng cho truyện · Ghi lời nhắn'));
-    const storyLabel=make('label','','Chọn truyện');
-    const story=make('select','dudu-v439-story-pick');
-    for(const target of targets){
-     const option=make('option','',target.title);option.value=target.id;story.append(option);
-    }
-    storyLabel.append(story);
-    const chapterLabel=make('label','','Chương (không bắt buộc)');
-    const chapter=make('select','dudu-v439-chapter-pick');
-    const refreshChapters=()=>{
-     chapter.replaceChildren();
-     const rootOption=make('option','','Cả truyện');rootOption.value='';chapter.append(rootOption);
-     const target=targets.find(x=>x.id===story.value);
-     for(const ch of target?.chapters||[]){
-      const option=make('option','',ch.title);option.value=ch.id;chapter.append(option);
-     }
-    };
-    story.addEventListener('change',refreshChapters);refreshChapters();
-    chapterLabel.append(chapter);
-    // A public story object never proves its author's Firebase UID.
-    // In V44.0 only the local STORY_SANDBOX destination is enabled.
-    const recipient=make('div','dudu-v44-recipient');
-    const recipientTitle=make('strong','','📚 Ủng hộ truyện');
-    const recipientDesc=make('small','','');
-    const authorLocked=make('div','dudu-v44-recipient-locked',
-      '🔒 Gửi trực tiếp tác giả: chưa mở · cần xác minh UID chủ truyện và quyền sở hữu trên máy chủ.');
-    const refreshRecipient=()=>{
-      const result=typeof args.recipientFor==='function'?
-       args.recipientFor(story.value):null;
-      recipientDesc.textContent=result?.description||
-        'Chỉ lưu thiệp vào nhật ký Sandbox cá nhân, không chuyển cho tác giả.';
-    };
-    story.addEventListener('change',refreshRecipient);refreshRecipient();
-    recipient.append(recipientTitle,recipientDesc,authorLocked);
-    const noteLabel=make('label','','Lời nhắn riêng · tối đa 160 ký tự');
-    const note=make('textarea','dudu-v439-note');note.maxLength=160;note.rows=2;
-    note.placeholder='Viết lời nhắn khi tặng quà cho truyện...';
-    noteLabel.append(note);
-    gift.append(storyLabel,chapterLabel,recipient,noteLabel,
-     make('small','','V44.0 · Chỉ lưu ở Sandbox. Đồ sẽ bị trừ khỏi Kho Sandbox và ghi nhật ký, nhưng không gửi sang tài khoản khác.'));
-    const button=make('button','btn dudu-v439-gift','Lưu thiệp ủng hộ Sandbox');
-    button.type='button';button.addEventListener('click',()=>{
-     if(!Array.isArray(args.inventory)||args.inventory[entry.index]!==entry.item)return;
-     if(!confirm('Dùng 1 '+detail.name+' để ghi thiệp ủng hộ trong Sandbox? Quà KHÔNG được gửi tới tài khoản tác giả.'))return;
-     args.onStoryGift(entry.item,story.value,chapter.value||null,note.value);
-    });
-    gift.append(button);footer.append(gift);
-   }
-  }
   if(!detail.protected&&typeof args.onDiscard==='function'){
    const discard=make('button','btn btn-danger dudu-v42-discard',entry.count>1?'Vứt 1 vật phẩm':'Vứt vật phẩm');
    discard.type='button';
@@ -376,7 +322,6 @@
    container.append(make('p','dudu-v27-inventory-empty',
      args.viewMode==='market'?'Không có vật phẩm phổ thông đủ điều kiện bán.':
      args.viewMode==='auction'?'Không có vật phẩm phù hợp để ký gửi thử.':
-     args.viewMode==='gifts'?'Chưa có vật phẩm phù hợp để tặng truyện.':
      all?'Không có vật phẩm phù hợp bộ lọc.':'Hành trang còn trống. Đồ nhặt được sẽ xuất hiện ở đây.'));
   }
   const current=result.entries.find(row=>row.items.includes(args.selected))||null;
@@ -399,7 +344,7 @@
    slot.append(art.container,badge,label);
    const action=typeof args.tradeStatus==='function'?args.tradeStatus(entry.item):null;
    const hint=action?.useable?'⚡ Dùng':action?.auction?'⚖️ Ký gửi':
-     action?.buyback?'🪙 Bán':action?.giftTargets?'💌 Tặng':
+     action?.buyback?'🪙 Bán':
      detail.protected?'🔒 Khóa':'📦 Lưu trữ';
    const ribbon=make('span','dudu-v439-slot-hint',hint);
    slot.append(ribbon);

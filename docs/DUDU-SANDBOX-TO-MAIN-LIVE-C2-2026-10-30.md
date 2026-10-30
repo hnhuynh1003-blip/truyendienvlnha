@@ -42,7 +42,7 @@ quy tắc không cấp trùng. Chỉ khi đó mới coi là đã chuyển sang m
 | Phong bao NPC bằng Xu | C2.2 đã nối giao dịch Firebase; chờ thử UID thật | Kiểm tra Xu trước/sau, 3 lượt/ngày, cooldown và lịch sử khi đăng nhập lại |
 | Kho: lịch sử quà, sổ sưu tập | Chủ yếu Sandbox | Chốt mô hình ownership và lịch sử có thể đọc lại |
 | Kho: bán/ký gửi/đấu giá | Main có mua/dùng/bán phổ thông; Sandbox có bản ký gửi nháp | Phân biệt đấu giá thật và nháp, không giả tạo người mua |
-| Quà tặng tác giả, hộp thư | Sandbox bản nháp, main placeholder | Thiết kế hai UID, người nhận và biên nhận |
+| Quà tặng tác giả, hộp thư | **Đã loại khỏi phạm vi triển khai** theo quyết định chủ dự án | Không phát triển chuyển quà tác giả; giữ nhật ký cũ ở chế độ lưu trữ |
 | DUDU FUN phần thưởng | Main luyện tập không thưởng | Tích hợp event và quyền nhận thưởng thật |
 | Nhiệm vụ, nhặt đồ, EXP | Có cả mã client cũ và module mới | Thống nhất nguồn ghi, chống cộng lặp |
 | Arcade → Ví Xu 10:1 | Main có game/quote; chuyển thật khóa | Chốt Rules receipt và kiểm tra reset |
@@ -146,7 +146,7 @@ Việc còn phải làm:
 2. Kiểm thử 2 UID thật: quà nhận, quà từ chối, phong bao, reload,
    đảm bảo tài khoản A không thể ghi vào tài khoản B; xác minh Rules đã
    triển khai và chính sách đọc/ghi.
-3. Rà soát các chức năng Sandbox còn lại (ký gửi, quà tác giả, Arcade,
+3. Rà soát các chức năng Sandbox còn lại (ký gửi, Arcade,
    phần thưởng FUN, liên lạc) và chốt phạm vi Rules trước reset.
 
 ### C2.3c — phần thưởng đọc, nhiệm vụ, nhặt đồ (đã nối mã nguồn)
@@ -197,3 +197,17 @@ sự được người dùng thực hiện sẽ được giữ lại trong hồ 
   giao dịch mua/dùng/bán, UID, Xu, EXP, Firestore Rules và trạng thái mùa.
 - 137/137 bộ Node đạt, kiểm thử nội dung ảnh và việc không thay dữ liệu sở hữu.
   Chưa xác minh hiển thị trực tiếp trên Android và hai UID thật.
+
+### C2.4b — chủ dự án bỏ tính năng tặng quà cho tác giả
+
+- Không chuyển nhánh tặng quà/thiệp tác giả từ Sandbox sang `main` và không
+  mở hộp thư nhận quà tác giả. Giữ tặng quà NPC, phong bao và các cơ chế quan
+  hệ nhân vật độc lập với tính năng đã hủy.
+- Kho Sandbox bỏ thẻ **Tặng** và bỏ hộp tặng truyện trong chi tiết vật phẩm;
+  bình luận cá nhân bỏ nút **Đính kèm quà**. Giữ bình luận văn bản bình thường.
+- Ẩn lối mở Hộp thư tác giả trên Điện thoại. Các mã và nhật ký Sandbox cũ
+  được bảo lưu để tránh mất lịch sử, nhưng không còn đường thao tác tạo quà
+  mới từ giao diện người chơi. Chưa xóa hồ sơ hoặc vật phẩm cũ.
+- Ưu tiên chuyển **sổ sưu tập/lịch sử Kho**, kiểm tra bán hàng và tiếp tục
+  hoàn thiện các tính năng gameplay độc lập; không đưa quà tác giả trở lại
+  lộ trình nếu chủ dự án chưa thay đổi quyết định.

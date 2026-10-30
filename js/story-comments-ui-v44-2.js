@@ -15,7 +15,7 @@
   catch(_){return ''}};
  let inReply=null;
  function render({host,storyId,chapterId=null,storyTitle='',chapterTitle='',
-  uid,name,state=null,onSave,isSandbox=false,giftChoices=[]}={}){
+  uid,name,state=null,onSave,isSandbox=false}={}){
   if(!host||!R())return false;
   const rule=R(), old=host.querySelector('.dudu-v442-shell');
   const expanded=!!old?.open;
@@ -56,7 +56,7 @@
    }
    content.append(inbox);
   }
-  function send(parentId,textarea,button,attach=null){
+  function send(parentId,textarea,button){
    if(!uid){status.textContent='Đăng nhập Sandbox trước khi viết.';return}
    const id='comment-'+(root.crypto?.randomUUID?.()||
     Date.now()+'-'+Math.random().toString(36).slice(2));
@@ -69,11 +69,9 @@
      'Nội dung không hợp lệ (2–600 ký tự) hoặc bình luận đã đầy.';
     return;
    }
-   const ok=onSave?.(result.state,attach?{
-    commentId:result.comment.id,itemInstanceId:attach
-   }:null);
+  const ok=onSave?.(result.state);
    if(ok===false){
-    status.textContent='Không thể ghi thiệp quà; bình luận chưa được lưu.';
+    status.textContent='Chưa thể lưu bình luận. Hãy thử lại.';
     return;
    }
    textarea.value='';inReply=null;button.disabled=true;
@@ -86,50 +84,13 @@
    'Đăng nhập Sandbox để viết bình luận';
   field.disabled=!uid;
   const actions=el('div','dudu-v442-actions');
-  // V44.3.1: one compact picker outside the reading layout. Never dump
-  // hundreds of owned item names inside a native <select> or a full-height panel.
-  let selectedGiftId=null;
-  const gift=el('button','dudu-v442-gift','🎁 Đính kèm');
-  gift.type='button';gift.disabled=!uid||!giftChoices.length;
-  gift.title=giftChoices.length?
-   'Mở cửa sổ tìm và chọn quà trong Kho Sandbox':
-   'Không có vật phẩm phù hợp hoặc bạn chưa đăng nhập';
-  const selectedCard=el('div','dudu-v4431-attached-chip');
-  selectedCard.hidden=true;
-  const selectedText=el('span','dudu-v4431-attached-name');
-  const changeGift=el('button','dudu-v4431-chip-edit','Đổi');
-  changeGift.type='button';
-  const removeGift=el('button','dudu-v4431-chip-remove','×');
-  removeGift.type='button';removeGift.setAttribute('aria-label','Bỏ vật phẩm đính kèm');
-  const selectGift=()=>{
-   if(!root.DuduGiftPickerV4431||!giftChoices.length)return;
-   gift.setAttribute('aria-expanded','true');
-   root.DuduGiftPickerV4431.open({choices:giftChoices,
-    selectedInstanceId:selectedGiftId,
-    onChoose(instanceId,row){
-     selectedGiftId=instanceId;
-     selectedText.textContent=row.icon+' '+row.name+' ×1 · Thiệp Sandbox';
-     selectedCard.hidden=false;
-     gift.textContent='🎁 Đã chọn quà';
-     gift.setAttribute('aria-expanded','false');
-    },
-    onClose(){gift.setAttribute('aria-expanded','false')}
-   });
-  };
-  gift.addEventListener('click',selectGift);
-  changeGift.addEventListener('click',selectGift);
-  removeGift.addEventListener('click',()=>{
-   selectedGiftId=null;selectedCard.hidden=true;gift.textContent='🎁 Đính kèm';
-  });
-  selectedCard.append(selectedText,changeGift,removeGift);
-  gift.setAttribute('aria-expanded','false');
   const publish=el('button','dudu-v442-publish','Lưu bình luận riêng');
   publish.type='submit';publish.disabled=!uid;
-  actions.append(gift,publish);
-  composer.append(field,actions,selectedCard,status);
+  actions.append(publish);
+  composer.append(field,actions,status);
   composer.addEventListener('submit',e=>{
    e.preventDefault();
-   send(null,field,publish,selectedGiftId);
+   send(null,field,publish);
   });
   content.append(composer);
   const list=el('div','dudu-v442-list');
@@ -154,7 +115,7 @@
     reply.type='button';reply.addEventListener('click',()=>{
      inReply=inReply===comment.id?null:comment.id;
      render({host,storyId,chapterId,storyTitle,chapterTitle,uid,name,state,
-      onSave,isSandbox,giftChoices});
+      onSave,isSandbox});
     });bar.append(reply);
    }
    if(comment.uid===uid){
@@ -209,7 +170,7 @@
   }
   content.append(list);
   content.append(el('small','dudu-v442-footer',
-   'Tối đa 20 bình luận/ngày · cách nhau 45 giây. Thiệp quà chỉ ở Sandbox, không phải quà gửi tác giả thật. Báo cáo chưa gửi quản trị viên.'));
+   'Tối đa 20 bình luận/ngày · cách nhau 45 giây. Báo cáo chưa gửi quản trị viên.'));
   shell.append(content);
   host.append(shell);
   return true;

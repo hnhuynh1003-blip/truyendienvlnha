@@ -66,15 +66,13 @@ test('V44.3.1: malformed or duplicated instance IDs do not inflate counts',()=>{
  assert.equal(groups[0].count,2);
  assert.equal(Object.isFrozen(groups[0].instances),true);
 });
-test('V44.3.1: modal replaces huge native select and stays compact in Sandbox',()=>{
+test('C2.4b: legacy picker remains for old history but is no longer offered in comments',()=>{
  const get=p=>fs.readFileSync(path.join(__dirname,'..',p),'utf8');
  const ui=get('js/story-comments-ui-v44-2.js');
  const modal=get('js/gift-picker-v44-3-1.js');
  const css=get('css/gift-picker-v44-3-1.css');
  const html=get('index.html');
- assert.match(ui,/DuduGiftPickerV4431\.open/);
- assert.match(ui,/selectedGiftId/);
- assert.match(ui,/dudu-v4431-attached-chip/);
+ assert.doesNotMatch(ui,/DuduGiftPickerV4431\.open|selectedGiftId|dudu-v4431-attached-chip/);
  assert.doesNotMatch(ui,/el\('select','dudu-v443-gift-select'/);
  assert.match(modal,/setAttribute\('aria-modal','true'\)/);
  assert.match(modal,/keydown/);
