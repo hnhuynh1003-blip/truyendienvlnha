@@ -22,7 +22,7 @@ test('V52.3 Enterprise App Check uses a configured public key while retaining ba
  assert.match(backend,/enforceAppCheck:true/);
 });
 test('V52 legacy backend remains gated; personal Spark shop uses returned transaction state',()=>{
- assert.match(html,/js\/economy-live-v52\.js\?v=52-1/);
+ assert.match(html,/js\/economy-live-v52\.js\?v=52-2/);
  for(const app of ['shop','quests','inventory']){
   assert.match(html,new RegExp('window\\.DuduEconomyLiveV52\\?\\.open'+app[0].toUpperCase()+app.slice(1)+'\\(\\)'));
  }

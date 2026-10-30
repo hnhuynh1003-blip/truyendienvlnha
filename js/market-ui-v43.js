@@ -1,5 +1,5 @@
-/* V43.5.1 — compact, data-driven shop UI. Sandbox only.
- * No privileged actions; purchases delegated to original page after validation.
+/* V43.5.2 — compact, data-driven shop UI for Sandbox and personal accounts.
+ * Purchases are delegated to the caller; this renderer never grants items.
  */
 (function(root){
  'use strict';
@@ -23,7 +23,8 @@
    const intro=make('div','dudu-v43-market-intro');
    intro.append(make('strong','','✦ DUDU MARKET'),
      make('small','','Chung kho đồ · riêng nguồn nhận'));
-   toolbar.append(intro);
+   // On main the phone already says "Cửa Hàng Xu" and shows the balance.
+   if(!personalMode)toolbar.append(intro);
    const tabs=make('div','dudu-v43-market-tabs');
    for(const [id,label] of [['COMMON','Mua sắm'],['REALM','Vị diện'],
      ['DUDU','Kỷ vật'],['STORY','Theo truyện'],['TOOLS','Chức năng']]){
@@ -72,7 +73,7 @@
    const collection=make('div','dudu-v43-market-grid');
    const footer=make('small','dudu-v43-market-footer',
      readOnly?'Chỉ xem trước · Chưa thể mua các món này.':
-     personalMode?'Kho và Ví Xu của bạn · Đồ hiếm chưa mở bán.':
+     personalMode?'Đồ hiếm đang chờ ngày mở bán.':
      'Khám phá vật phẩm và kỷ vật của DUDU.');
    toolbar.append(tabs,filters,hint);
    host.append(toolbar,collection,footer);
@@ -80,11 +81,12 @@
      realmSelector.hidden=tab!=='REALM';
      storySelector.hidden=tab!=='STORY'||!storyOptions.length;
      input.hidden=false;
+     hint.hidden=personalMode&&tab==='COMMON';
      const ledger=core.norm(state);
      const utility=root.DuduFunctionalItemsV438;
      const pending=utility?.norm(functionalState).pending;
      if(tab==='COMMON'){
-       hint.textContent=personalMode?'🪙 '+coins+' Xu · Mua đồ cho Kho của bạn':
+       hint.textContent=personalMode?'':
         '🪙 '+coins+' Xu · '+ledger.total+'/'+core.PURCHASE_TOTAL_PER_DAY+
          ' lượt mua hôm nay · Mua hàng không cộng EXP'+
          (pending?' · 🎟️ Phiếu -25% đang chờ áp dụng':'');
@@ -95,7 +97,7 @@
      }else if(tab==='STORY'){
        hint.textContent='Vật phẩm trong truyện · Xem trước.';
      }else{
-       hint.textContent=(personalMode?'Công cụ cá nhân: ':'Công cụ Sandbox: ')+
+       hint.textContent=(personalMode?'Công cụ hỗ trợ: ':'Công cụ Sandbox: ')+
         'nạp hồi chiêu, gia tốc 60 giây, gói tiếp tế và phiếu giảm giá. Không tạo thêm Nhặt bảo trong chương.';
      }
      collection.replaceChildren();

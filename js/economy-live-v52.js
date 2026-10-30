@@ -85,12 +85,9 @@
  function showPersonalMarket(){
   if(!personal())return false;
   const shop=$('shop-items-container');if(!shop)return false;
-  const status=panel('dudu-v52-shop-status',shop);
-  if(status){
-   status.replaceChildren();
-   status.append(add('strong','','✦ DUDU MARKET · Ví Xu cá nhân'),
-    add('small','','Mua bằng Xu hệ thống · Vật phẩm lưu trong Kho tài khoản.'));
-  }
+  // The phone already has a shop title and wallet balance. Remove a stale
+  // legacy status card, if present; personal purchases need no extra banner.
+  $('dudu-v52-shop-status')?.remove?.();
   const balance=$('shop-currency-val');
   if(balance)balance.textContent=String(userProfile?.currency||0);
   return root.DuduMarketUIV43?.render({

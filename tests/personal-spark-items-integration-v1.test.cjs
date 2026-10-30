@@ -25,7 +25,8 @@ test('Live inventory has functional use and common-item sale controls only for o
  assert.match(html,/localStorage\.setItem\('profile_'\+uid,JSON\.stringify\(userProfile\)\)/);
 });
 test('Spark shop UI uses returned wallet and inventory with no Cloud Functions call',async()=>{
- const storage=new Map(),shop={},status={replaceChildren(){},append(){}},balance={textContent:''};
+ let removedStatus=false;
+ const storage=new Map(),shop={},status={remove(){removedStatus=true;}},balance={textContent:''};
  const dom={ 'shop-items-container':shop,'dudu-v52-shop-status':status,'shop-currency-val':balance };
  const document={getElementById:id=>dom[id]||null,createElement:tag=>({
   tagName:tag,textContent:'',append(){},replaceChildren(){},setAttribute(){}})};
@@ -47,6 +48,7 @@ test('Spark shop UI uses returned wallet and inventory with no Cloud Functions c
  vm.runInNewContext(source('js/economy-live-v52.js'),
   {window,document,userProfile,localStorage,IS_SANDBOX_MODE:false});
  await window.DuduEconomyLiveV52.openShop();
+ assert.equal(removedStatus,true,'legacy personal-wallet banner should be removed');
  assert.equal(marketConfig.personalMode,true);
  assert.equal(marketConfig.readOnly,false);
  assert.equal(marketConfig.coins,15);

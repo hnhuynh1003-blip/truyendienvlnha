@@ -112,7 +112,16 @@ bao gồm retry cùng ID, từ chối không trừ đồ, Xu thiếu, cooldown v
 nhập và Firestore Rules production. Không cập nhật hay deploy Rules, không
 reset tài khoản, không thay Worker trong đợt này.
 
-## C2.3 kế tiếp (chưa thực hiện)
+## C2.3 — tiến độ và phần việc tiếp theo
+
+Đợt giao diện C2.3a: Cửa hàng trên main chỉ còn tiêu đề `Cửa Hàng Xu`
+và số dư ở đầu trang. Bỏ hẳn thẻ `DUDU MARKET · Ví Xu cá nhân`, không
+hiện tiêu đề DUDU MARKET lần hai hoặc số dư trùng trong danh mục mua sắm.
+Vẫn giữ các thẻ Mua sắm, Vị diện, Kỷ vật, Theo truyện, Chức năng và thanh
+tìm kiếm. Các nhắc nhở có ích ở thẻ không bán được vẫn xuất hiện. Đây chỉ
+là đổi trình bày; không sửa giao dịch mua, UID, số Xu, Kho, hoặc Rules.
+
+Các bước C2.3 còn cần hoàn thành trước khi reset mùa:
 
 1. Rà soát và tách `saveCurrentAccount()` thành các cập nhật theo trường
    để tránh ghi đè Kho/Xu/quan hệ đã giao dịch, kể cả khi chạy nhiều tab.

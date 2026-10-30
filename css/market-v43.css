@@ -37,6 +37,7 @@ body.dudu-phone-v11 #cyber-phone .dudu-v43-market-search[hidden]{display:none!im
 body.dudu-phone-v11 #cyber-phone .dudu-v43-market-hint{
  margin:0;line-height:1.45;color:#cfcee5;font-size:10px;
 }
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-hint[hidden]{display:none!important;}
 body.dudu-phone-v11 #cyber-phone .dudu-v43-market-grid{
  display:flex;flex-direction:column;gap:6px;
 }
