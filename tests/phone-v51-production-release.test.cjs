@@ -15,7 +15,7 @@ const inbox=file('js/phone-inbox-v33.js');
 test('V51 phone modules are all loaded with new cache tags',()=>{
  for(const mod of ['market-ui-v43','economy-runtime-v43','dudu-fun-ui-v43',
  'quest-ui-v43-7','phone-inbox-v33']){
-  assert.match(html,new RegExp('src="js/'+mod+'\\.js\\?v=(?:51-1|52-1|copy-[12]|c23c-1|c24a-1)"'),mod);
+  assert.match(html,new RegExp('src="js/'+mod+'\\.js\\?v=(?:51-1|52-1|copy-[12]|c23c-1|c24a-1|c25-1)"'),mod);
  }
  assert.match(html,/src="js\/companion-ui-v43\.js\?v=69-restore-1"/);
  assert.match(html,/src="js\/dudu-system-app-v69\.js\?v=71-main-(?:[2-9]|[1-9][0-9]+)"/);
@@ -47,14 +47,11 @@ test('V51 quest definitions remain available and main claims use personal transa
  assert.match(quests,/Chờ xác thực/);
 });
 
-test('V51 live FUN stores independent local rounds, not real Xu/inventory',()=>{
- assert.match(fun,/const localKey=\(\)=>signed\(\)&&!sandbox\(\)/);
- assert.match(fun,/dudu-fun:practice:v51:/);
- assert.match(fun,/localStorage\.setItem\(key,JSON\.stringify\(rules\.norm\(next\)\)\)/);
- const claim=fun.slice(fun.indexOf('function claim(){'),fun.indexOf('function view(){'));
- const early=claim.indexOf('if(!sandbox()){'),reward=claim.indexOf('userProfile.currency=plan.coins');
- assert.ok(early>=0&&reward>early);
- assert.match(claim.slice(early,reward),/return true/);
+test('C2.5 live FUN now uses an owned round and does not use device practice as entitlement',()=>{
+ assert.match(fun,/const bridge=\(\)=>root\.DuduFunLiveBridgeC25/);
+ assert.match(fun,/bridge\(\)\.run\(opts\)/);
+ assert.doesNotMatch(fun,/dudu-fun:practice:v51:|localStorage\.setItem\(key,JSON\.stringify\(rules\.norm\(next\)\)\)/);
+ assert.match(fun,/if\(!sandbox\(\)\)return liveAction\('claim'\)/);
  assert.match(fun,/if\(launch\)launch\.hidden=false/);
 });
 

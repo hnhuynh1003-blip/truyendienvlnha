@@ -175,7 +175,7 @@ test('C2.4c a real story-quest item records its journal entry on the same claim'
 });
 
 test('C2.4c inventory notebook is available on main and stays a read-only view',()=>{
- assert.match(html,/src="js\/personal-collection-c24\.js\?v=c24c-1"/);
+ assert.match(html,/src="js\/personal-collection-c24\.js\?v=c25-1"/);
  assert.ok(html.indexOf('personal-collection-c24.js')<
   html.indexOf('personal-spark-items-v1.js'));
  assert.match(html,/collectionToggle\.hidden=!IS_SANDBOX_MODE&&!personalItemsReady\(\)/);

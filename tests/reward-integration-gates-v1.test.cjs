@@ -16,11 +16,14 @@ test('Arcade conversion is accessible at the wallet but still requires verified 
  assert.doesNotMatch(ui,/userProfile\.currency\s*\+=/);
  assert.doesNotMatch(ui,/firebase\.firestore\(/);
 });
-test('Production DUDU FUN is explicitly local practice, not a minting endpoint',()=>{
+test('Production DUDU FUN claims run through owner-scoped transactions only',()=>{
  const fun=src('js/dudu-fun-ui-v43.js');
- assert.match(fun,/dudu-fun:practice:v51:/);
- assert.match(fun,/if\(!sandbox\(\)\)\s*\{/);
- assert.match(fun,/không cộng Xu hay vật phẩm/);
+ const service=src('js/personal-fun-c25.js');
+ assert.match(fun,/if\(!sandbox\(\)\)return liveAction\('claim'\)/);
+ assert.match(fun,/bridge\(\)\.run\(opts\)/);
+ assert.match(service,/await db\.runTransaction/);
+ assert.match(service,/fun\.claim\(raw,\{type,day,coins:data\.currency,inventory:data\.inventory\}\)/);
+ assert.doesNotMatch(fun,/dudu-fun:practice:v51:/);
 });
 test('One-shot Rules readiness tracks legacy quest and loot profile mutations',()=>{
  const main=src('index.html'),readiness=src('docs/DUDU-SPARK-ONE-SHOT-RULES-READINESS-2026-10-29.md');

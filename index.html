@@ -89,11 +89,12 @@
   <script src="js/npc-memory-v2.js"></script>
   <script src="js/world-items-v44-1.js?v=1"></script>
   <script src="js/item-catalog-v2.js?v=44-1"></script>
-  <script src="js/world-collection-v44-1.js?v=c24c-1"></script>
+  <script src="js/world-collection-v44-1.js?v=c25-1"></script>
   <script src="js/economy-core-v43.js?v=6"></script>
-  <script src="js/personal-collection-c24.js?v=c24c-1"></script>
+  <script src="js/personal-collection-c24.js?v=c25-1"></script>
   <script src="js/quest-engine-v43-7.js?v=44-9"></script>
   <script src="js/dudu-fun-rules-v43.js?v=44-9"></script>
+  <script src="js/personal-fun-c25.js?v=c25-1"></script>
   <script src="js/personal-arcade-core-v1.js?v=arcade-upgrade-4"></script>
   <script src="js/personal-arcade-exchange-v1.js?v=xu-quote-2"></script>
   <script src="js/personal-spark-exchange-v1.js?v=spark-bridge-1"></script>
@@ -1473,7 +1474,7 @@
         <div id="shop-items-container" class="dudu-v27-shop-grid"></div>
       </div>
 
-      <!-- APP: DUDU FUN — local practice on live accounts, sandbox rewards unchanged -->
+      <!-- APP: DUDU FUN — owner-scoped main rewards, Sandbox unchanged -->
       <div class="phone-sub-app" id="phone-app-fun">
         <div class="phone-app-header">
           <button type="button" class="phone-back-btn" onclick="phoneHome()" aria-label="Trở về">‹</button>
@@ -6488,6 +6489,39 @@ document.getElementById('phone-home-screen').style.display = 'none';
       updatePhoneUI();renderQuests();renderInventory();updateChapterLootButtonState();
       return true;
     }
+
+    // DUDU FUN main uses the account's committed game round and wallet.
+    // The old device-only practice rounds are never promoted into entitlements.
+    const personalFunReadyC25=()=>!IS_SANDBOX_MODE&&DuduAuth.isReady()&&
+      DuduAuth.uid()===currentUsername&&!!window.DuduPersonalFunC25;
+    window.DuduFunLiveBridgeC25=Object.freeze({
+      ready:personalFunReadyC25,
+      uid:()=>personalFunReadyC25()?currentUsername:null,
+      async load(){
+        if(!personalFunReadyC25())throw Error('Chưa sẵn sàng');
+        const uid=currentUsername;
+        await Promise.allSettled([...pendingLiveProfileWrites]);
+        if(!personalFunReadyC25()||currentUsername!==uid)throw Error('Tài khoản đã thay đổi');
+        return DuduPersonalFunC25.load({db,auth:firebase.auth(),uid});
+      },
+      async run(options){
+        if(!personalFunReadyC25())throw Error('Chưa sẵn sàng');
+        const uid=currentUsername;
+        await Promise.allSettled([...pendingLiveProfileWrites]);
+        if(!personalFunReadyC25()||currentUsername!==uid)throw Error('Tài khoản đã thay đổi');
+        const result=await DuduPersonalFunC25.run({
+          db,auth:firebase.auth(),uid,...options});
+        if(!personalFunReadyC25()||currentUsername!==uid)throw Error('Tài khoản đã thay đổi');
+        if(options.kind==='claim'&&result.status==='applied'){
+          for(const field of ['currency','inventory','quests','questV437',
+            'questsDayV43','storyStates'])userProfile[field]=result[field];
+          try{localStorage.setItem('profile_'+uid,JSON.stringify(userProfile));}
+          catch(error){console.warn('DUDU FUN device backup:',error);}
+          updatePhoneUI();renderWallet();renderInventory();renderQuests();
+        }
+        return result;
+      }
+    });
     function personalProgressActionC23(kind,opts={}){
       if(!personalProgressReady())return Promise.resolve(false);
       const uid=currentUsername;
@@ -8388,7 +8422,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/phone-inbox-v33.js?v=51-1"></script>
 <script src="js/companion-ui-v43.js?v=69-restore-1"></script>
 <script src="js/market-ui-v43.js?v=c24a-1"></script>
-<script src="js/dudu-fun-ui-v43.js?v=51-1"></script>
+<script src="js/dudu-fun-ui-v43.js?v=c25-1"></script>
 <script src="js/personal-arcade-ui-v1.js?v=copy-1"></script>
 <script src="js/quest-ui-v43-7.js?v=c23c-1"></script>
 <script src="js/economy-runtime-v43.js?v=c23c-1"></script>

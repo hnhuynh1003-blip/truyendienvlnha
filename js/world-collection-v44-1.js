@@ -102,7 +102,8 @@
    const body=elem('div','dudu-v441-events');
    const labels={SHOP:'Đã mua',USE:'Đã dùng',SELL:'Đã bán',
     GLOBAL:'Nhặt trên Điện thoại',CHAPTER:'Nhặt trong chương',
-    QUEST:'Quà nhiệm vụ',NPC_GIFT:'Tặng NPC',SUPPLY:'Mở tiếp tế'};
+    QUEST:'Quà nhiệm vụ',NPC_GIFT:'Tặng NPC',SUPPLY:'Mở tiếp tế',
+    FUN:'DUDU FUN'};
    for(const entry of events.slice(0,30)){
     if(!entry||!labels[entry.kind])continue;
     const row=elem('div','dudu-v441-event');

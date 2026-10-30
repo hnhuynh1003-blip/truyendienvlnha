@@ -43,7 +43,7 @@ quy tắc không cấp trùng. Chỉ khi đó mới coi là đã chuyển sang m
 | Kho: sổ sưu tập/lịch sử món | C2.4c đã nối main theo UID; chờ thử thực tế | Kiểm tra hai tài khoản và giữ mốc sau khi dùng/bán/tặng NPC |
 | Kho: bán/ký gửi/đấu giá | Main có mua/dùng/bán phổ thông; Sandbox có bản ký gửi nháp | Phân biệt đấu giá thật và nháp, không giả tạo người mua |
 | Quà tặng tác giả, hộp thư | **Đã loại khỏi phạm vi triển khai** theo quyết định chủ dự án | Không phát triển chuyển quà tác giả; giữ nhật ký cũ ở chế độ lưu trữ |
-| DUDU FUN phần thưởng | Main luyện tập không thưởng | Tích hợp event và quyền nhận thưởng thật |
+| DUDU FUN phần thưởng | C2.5 đã nối main: 2 trò miễn phí, nhận Xu/vật phẩm theo UID | Thử hai UID/Android và kiểm tra khôi phục khi mất mạng |
 | Nhiệm vụ, nhặt đồ, EXP | Có cả mã client cũ và module mới | Thống nhất nguồn ghi, chống cộng lặp |
 | Arcade → Ví Xu 10:1 | Main có game/quote; chuyển thật khóa | Chốt Rules receipt và kiểm tra reset |
 | Reset mùa mới | Chưa chạy | Sao lưu, quyết định trường, thử 1 UID trước |
@@ -252,3 +252,30 @@ sự được người dùng thực hiện sẽ được giữ lại trong hồ 
 - Sửa luôn đường hiển thị Kho cũ để không còn hộp thoại bán lặp trong trường
   hợp giao diện mới không khả dụng. Chỉ đổi trải nghiệm thao tác, không đụng
   Xu, vật phẩm, Rules hay dữ liệu hiện tại.
+
+### C2.5 — DUDU FUN: nhận Xu và vật phẩm thật trong tài khoản main (mã nguồn)
+
+- Hộp Mù và Vé Số **miễn phí**, mỗi loại tối đa một lượt mỗi ngày UTC.
+  Hộp Mù: 50% 5 Xu, 25% 9 Xu, 15% bánh quy, 10% cà phê. Vé Số:
+  50% 3 Xu, 30% 6 Xu, 15% 10 Xu, 4% 20 Xu, 1% 40 Xu. Đây là **Xu ảo
+  trong trò chơi**, không bán vé và không đổi thành tiền thật.
+- Lượt chơi main được lưu dưới `storyStates.__duduFunLiveC25` của UID.
+  Bắt đầu, chọn biểu tượng/cào ô và nhận thưởng đều đọc trạng thái mới nhất
+  trong một giao dịch theo UID. Phần thưởng được xác định trước khi chơi,
+  không được đổi kết quả sau khi mở. Mỗi lần bấm có mã chống xử lý lặp;
+  lượt đã nhận không cộng lần thứ hai kể cả hai tab gửi cùng lúc.
+- Nhận thưởng cộng Xu vào `currency` hoặc thêm **một bản ghi vật phẩm ID chuẩn**
+  vào `inventory` ngay trong giao dịch đánh dấu lượt đã nhận. Quà vật phẩm
+  cũng có dấu mốc `FUN` trong `__duduCollectionC24`; đồng thời tăng nhiệm vụ
+  DUDU FUN hằng ngày và tiến độ sự kiện/tuần (chưa tự nhận phần thưởng
+  nhiệm vụ, người chơi vẫn phải nhấn Nhận riêng).
+- Kho đầy/đạt trần Xu sẽ **không tiêu mất quyền nhận**; người chơi dọn Kho
+  hoặc xử lý trần trước rồi thử lại. Sandbox giữ nguyên phần thưởng cục bộ.
+- Dữ liệu `dudu-fun:practice:v51` của các lượt *minh họa* trên main trước
+  C2.5 không tự biến thành quà hay được cộng bù. Lượt thật mới được bắt đầu
+  trong hồ sơ tài khoản; nạp lại trang sẽ lấy tiến độ đã lưu theo UID.
+- Cơ chế dùng RNG và đồng hồ trên client dưới Firestore Standard/Spark;
+  có biên nhận chống nhận trùng trong trải nghiệm thông thường, **chưa phải
+  RNG chống can thiệp/anti-cheat phía máy chủ**. Không deploy Rules/Functions,
+  không reset Xu/Kho/tài khoản. Phải kiểm tra hai UID và Android thật trước
+  khi coi là phát thưởng công khai cho nhiều người.

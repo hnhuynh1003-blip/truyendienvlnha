@@ -1,6 +1,5 @@
-/* DUDU FUN V43.5.4 — Sandbox games, UI only.
- * No real currency, gambling payment, redeemable rewards, Firestore or AI calls.
- * Persist each round BEFORE playing and claim Xu/items in a single profile save.
+/* DUDU FUN C2.5 — free daily rounds in Sandbox and personal main.
+ * Main receipts are committed by the UID-scoped bridge. No cash prizes.
  */
 (function(root){
  'use strict';
@@ -16,28 +15,44 @@
  const sandbox=()=>typeof IS_SANDBOX_MODE!=='undefined'&&IS_SANDBOX_MODE;
  const signed=()=>!!currentUsername&&(sandbox()||
   (!!root.DuduAuth?.isReady?.()&&root.DuduAuth.uid()===currentUsername));
- // Production game rounds live only on this device under a verified UID;
- // no Firestore wallet, inventory or server entitlements are modified.
- const localKey=()=>signed()&&!sandbox()?'dudu-fun:practice:v51:'+currentUsername:null;
+ const bridge=()=>root.DuduFunLiveBridgeC25;
+ let liveUid=null,liveState=null,liveLoaded=false,liveLoading=false,liveError=false;
+ let noticeText='';
  function stored(){
   if(sandbox())return userProfile.duduFunV43;
-  const key=localKey();
-  if(!key)return null;
-  try{return JSON.parse(localStorage.getItem(key)||'null');}
-  catch(_){return null;}
+  return liveLoaded?liveState:null;
  }
  let open='box',hint=true,processing=false;
+ const day=()=>!sandbox()&&root.DuduPersonalFunC25?
+  root.DuduPersonalFunC25.utcDay():root.DuduEconomyCoreV43.localDay();
+ function ensureLive(){
+  if(sandbox())return;
+  const uid=signed()?bridge()?.uid?.():null;
+  if(uid!==liveUid){
+   liveUid=uid;liveState=null;liveLoaded=false;liveLoading=false;
+   liveError=false;noticeText='';
+  }
+  if(!uid||liveLoaded||liveLoading||liveError)return;
+  liveLoading=true;
+  void bridge().load().then(result=>{
+   if(liveUid!==uid)return;
+   liveState=result.state;liveLoaded=true;liveError=false;
+  }).catch(error=>{
+   if(liveUid!==uid)return;
+   console.warn('DUDU FUN main read:',error?.reason||error?.message);
+   liveError=true;
+  }).finally(()=>{
+   if(liveUid!==uid)return;
+   liveLoading=false;render();
+  });
+ }
  function rng(){
   const a=new Uint32Array(2);
   crypto.getRandomValues(a);
   return {roll:a[0]/4294967296,seed:a[1]%1000001};
  }
  function saveNewState(next){
-  if(!signed())return false;
-  if(!sandbox()){
-   const key=localKey();if(!key)return false;
-   try{localStorage.setItem(key,JSON.stringify(rules.norm(next)));return true;}catch(_){return false;}
-  }
+  if(!signed()||!sandbox())return false;
   const old=userProfile.duduFunV43;
   try{
    userProfile.duduFunV43=next;
@@ -49,10 +64,45 @@
   }
  }
  function message(msg){
+  noticeText=msg;
   const notice=$('dudu-v43-fun-notice');
   if(notice)notice.textContent=msg;
  }
+ async function liveAction(kind,options={}){
+  if(!signed()||!liveLoaded||processing||!bridge()?.ready?.())return false;
+  const uid=liveUid,type=open;
+  processing=true;message('');
+  try{
+   const opts={kind,type,...options};
+   if(kind==='begin')Object.assign(opts,rng());
+   if(kind==='advance')opts.actionId=crypto.randomUUID();
+   const result=await bridge().run(opts);
+   if(liveUid!==uid||!signed())return false;
+   liveState=result.state;liveLoaded=true;
+   if(kind==='begin')hint=true;
+   if(kind==='advance'&&type==='box')hint=!result.correct;
+   if(kind==='claim'&&result.status==='applied'){
+    if(typeof showSystemAlert==='function')showSystemAlert('DUDU FUN · ĐÃ NHẬN',
+     result.reward.kind==='COIN'?'+'+result.reward.amount+' Xu vào Ví.':
+      result.reward.label+' đã vào Kho.');
+   }
+   return true;
+  }catch(error){
+   console.warn('DUDU FUN main action:',error?.reason||error?.message);
+   const reasons={'already-started':'Lượt chơi hôm nay đã bắt đầu.',
+    'already-claimed':'Bạn đã nhận phần thưởng này rồi.',
+    'not-ready-or-claimed':'Hoàn thành trò chơi trước khi nhận thưởng nhé.',
+    'inventory-full':'Kho đã đầy. Hãy để trống một ô rồi nhận lại.',
+    'wallet-cap':'Ví đã đạt giới hạn Xu.',
+    'clock-backwards':'Ngày chơi chưa khớp. Hãy kiểm tra đồng hồ.'};
+   message(reasons[error?.reason]||'Chưa thực hiện được. Hãy thử lại khi kết nối ổn định.');
+   // A second device may have changed the round; reread before retrying.
+   liveState=null;liveLoaded=false;liveError=false;
+   return false;
+  }finally{processing=false;render();}
+ }
  function begin(theme){
+  if(!sandbox()){void liveAction('begin',{theme});return;}
   if(!signed()||processing)return;
   processing=true;
   try{
@@ -67,6 +117,7 @@
   }finally{processing=false;}
  }
  function play(choice){
+  if(!sandbox()){void liveAction('advance',{choice});return;}
   if(!signed()||processing)return;
   processing=true;
   try{
@@ -81,6 +132,7 @@
   }finally{processing=false;}
  }
  function claim(){
+  if(!sandbox())return liveAction('claim');
   if(!signed()||processing)return false;
   processing=true;
   try{
@@ -138,7 +190,7 @@
   }finally{processing=false;}
  }
  function view(){
-  return rules.norm(signed()?stored():null);
+  return rules.norm(signed()?stored():null,day());
  }
  function heading(container){
   const top=el('div','dudu-fun-top');
@@ -146,7 +198,7 @@
   name.append(el('strong','','✦ DUDU FUN'),
     el('span','','Giải trí sau mỗi chương truyện'));
   const money=el('span','dudu-fun-balance',
-    signed()?(sandbox()?'🪙 '+userProfile.currency+' Xu':'🎮 Giải trí'):'Khách');
+    signed()?'🪙 '+userProfile.currency+' Xu':'Khách');
   top.append(name,money);
   container.append(top);
   const state=view(),status=rules.progress(state);
@@ -158,7 +210,8 @@
   rail.append(fill);
   container.append(meter,rail);
   const caption=el('small','dudu-fun-disclaimer',
-   sandbox()?'2 trò miễn phí/ngày · Xu và vật phẩm chỉ thuộc Sandbox · Không bán lượt chơi':'2 trò giải trí/ngày trên thiết bị · Không cộng Xu hoặc vật phẩm');
+   sandbox()?'2 trò miễn phí/ngày · Xu và vật phẩm chỉ thuộc Sandbox · Không bán lượt chơi':
+   '2 trò miễn phí/ngày · Nhận Xu và vật phẩm vào tài khoản của bạn');
   container.append(caption);
  }
  function boxes(rootNode,round){
@@ -203,14 +256,15 @@
  }
  function claimButton(target){
   const button=el('button','dudu-fun-claim','🎁 Nhận phần thưởng');
-  button.type='button';if(!sandbox())button.textContent='✓ Hoàn tất lượt';button.addEventListener('click',claim);
+  button.type='button';button.addEventListener('click',claim);
   target.append(button);
  }
  function rewardPanel(target,reward){
   const r=el('div','dudu-fun-win');
   r.append(el('span','',reward.kind==='COIN'?'🪙':'🎁'),
    el('strong','',reward.kind==='COIN'?'+'+reward.amount+' Xu':reward.label),
-   el('small','',sandbox()?'Đã nhận trong Sandbox · quay lại ngày mai':'Kết quả minh họa · không cộng tài sản'));
+   el('small','',sandbox()?'Đã nhận trong Sandbox · quay lại ngày mai':
+    'Đã nhận vào tài khoản · quay lại ngày mai'));
   target.append(r);
  }
  function lottery(rootNode,round){
@@ -258,11 +312,24 @@
  }
  function render(){
   const host=$('dudu-fun-content-v43');if(!host)return false;
+  ensureLive();
   host.replaceChildren();
+  if(!sandbox()&&signed()&&!liveLoaded){
+   host.append(el('p','dudu-fun-guest',liveError?
+    'Chưa tải được lượt chơi của bạn.':'Đang mở lượt chơi của bạn…'));
+   if(liveError){
+    const retry=el('button','dudu-fun-start','Thử lại');
+    retry.type='button';retry.addEventListener('click',()=>{
+     liveError=false;render();
+    });host.append(retry);
+   }
+   return true;
+  }
   heading(host);
   if(!signed()){
    host.append(el('p','dudu-fun-guest',
-    sandbox()?'Đăng nhập Sandbox để nhận lượt chơi riêng của tài khoản. Chưa có phần thưởng nào được tạo.':'Đăng nhập tài khoản Firebase để lưu lượt chơi giải trí trên thiết bị.'));
+    sandbox()?'Đăng nhập Sandbox để nhận lượt chơi riêng của tài khoản. Chưa có phần thưởng nào được tạo.':
+    'Đăng nhập để khám phá hai trò chơi và nhận thưởng.'));
    return true;
   }
   const tabs=el('div','dudu-fun-tabs');
@@ -278,10 +345,10 @@
   if(open==='box')boxes(content,round);
   else lottery(content,round);
   host.append(content);
-  host.append(el('p','dudu-fun-notice',''));
+  host.append(el('p','dudu-fun-notice',noticeText));
   history(host,state);
   host.append(el('small','dudu-fun-disclaimer',
-   sandbox()?'Tỷ lệ Hộp Mù: 50% 5 Xu · 25% 9 Xu · 15% bánh quy · 10% đồ uống. Vé Số: 50% 3 Xu · 30% 6 Xu · 15% 10 Xu · 4% 20 Xu · 1% 40 Xu. Không có tiền thật hoặc giải đổi tiền.':'DUDU FUN trên bản chính là trò chơi miễn phí, kết quả minh họa. Không thay đổi Xu, EXP, Kho hoặc quyền sở hữu.'));
+   'Tỷ lệ Hộp Mù: 50% 5 Xu · 25% 9 Xu · 15% bánh quy · 10% đồ uống. Vé Số: 50% 3 Xu · 30% 6 Xu · 15% 10 Xu · 4% 20 Xu · 1% 40 Xu. Không bán vé hoặc đổi tiền thật.'));
   return true;
  }
  function init(){

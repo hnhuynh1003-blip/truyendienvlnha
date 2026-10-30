@@ -14,7 +14,7 @@
  'use strict';
  const META='__duduCollectionC24',VERSION=1,MAX_EVENTS=90;
  const KINDS=Object.freeze(['SHOP','USE','SELL','GLOBAL','CHAPTER','QUEST',
-  'NPC_GIFT','SUPPLY']);
+  'NPC_GIFT','SUPPLY','FUN']);
  const realms=catalog.REALM_TAGS;
  const products=new Map((economy.FUNCTIONAL_TOOLS||[]).map(x=>[x.id,x]));
  const validId=s=>typeof s==='string'&&s.length>0&&s.length<=220&&
