@@ -279,3 +279,26 @@ sự được người dùng thực hiện sẽ được giữ lại trong hồ 
   RNG chống can thiệp/anti-cheat phía máy chủ**. Không deploy Rules/Functions,
   không reset Xu/Kho/tài khoản. Phải kiểm tra hai UID và Android thật trước
   khi coi là phát thưởng công khai cho nhiều người.
+
+### C2.6 — bảo vệ mùa chơi hiện tại và chốt phạm vi Ký gửi
+
+- Kiểm tra lại nút **Sao lưu và đặt lại tiến độ** có sẵn ở Cài đặt V54: nếu
+  người dùng xác nhận đầy đủ, hàm này có thể thực sự ghi đè hồ sơ UID về
+  cấp 1, 0 EXP, 50 Xu, Kho rỗng, nhiệm vụ/NPC/quan hệ/hội thoại ban đầu.
+  Đây là chức năng **xóa tiến độ tài khoản**, không phải chỉ reset nhân vật.
+- Trước khi duyệt Rules và chốt mùa mới, tắt nút reset trên giao diện và
+  chặn ngay trong hàm xử lý bằng cờ phát hành cố định `false`. Không có dữ
+  liệu hiện tại nào bị xóa. Việc mở lại phải là một đợt phát hành có kiểm
+  thử, sao lưu và xác nhận cụ thể của chủ dự án.
+- Bổ sung nút **Tải bản sao tiến độ** độc lập trong Cài đặt. Đọc bản hồ sơ
+  mới nhất từ chính UID và các dữ liệu cục bộ thuộc tài khoản, xuất JSON
+  về thiết bị; không gọi lệnh ghi/xóa, không đưa người dùng vào luồng reset.
+  Người chơi cần tự kiểm tra tệp tải về và bảo quản riêng vì có thể chứa
+  hội thoại/dữ liệu cá nhân.
+- Đấu giá/Ký gửi V43.9 hiện chỉ có lô `AWAITING_SERVER` của Sandbox, không
+  có người mua, đấu giá, thanh toán hay đối soát liên tài khoản thật. **Chưa
+  mở lên `main`** để không làm giả giao dịch khi chưa có hệ thống ghép người
+  chơi và quyền sở hữu phía máy chủ. Main vẫn có mua/dùng/bán về Ví thật
+  và Sổ vật phẩm; Sandbox giữ nguyên lô nháp để tham khảo thiết kế.
+- Không thay Firestore Rules, Functions, số dư, Kho, vật phẩm hay liên lạc
+  của bất kỳ tài khoản nào trong đợt này.

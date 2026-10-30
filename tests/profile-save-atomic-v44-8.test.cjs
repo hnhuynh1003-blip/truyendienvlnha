@@ -9,7 +9,7 @@ const vm=require('node:vm');
 const path=require('node:path');
 const html=fs.readFileSync(path.join(__dirname,'..','index.html'),'utf8');
 const start=html.indexOf('function saveCurrentAccount() {');
-const end=html.indexOf('// V54: owner-confirmed one-time reset.',start);
+const end=html.indexOf('// C2.6: until the owner signs off',start);
 assert.ok(start>=0&&end>start,'inline save function exists on main');
 const source=html.slice(start,end).trim();
 function setup(throws=false,withCollection=true,renderThrows=false){

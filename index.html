@@ -1504,10 +1504,12 @@
           style="font-size:10px;line-height:1.5;margin:8px 10px;color:#b8c9db">
           Tiến độ đọc và lựa chọn nền đi theo tài khoản. Ảnh tự tải chỉ có trên thiết bị này.
         </p>
-        <section class="dudu-v54-reset-settings" aria-labelledby="dudu-v54-reset-title" style="padding:10px;margin:8px 0;border-radius:12px;border:1px solid #975b6a;background:rgba(45,25,40,.78)">
-          <h3 id="dudu-v54-reset-title" style="font-size:12px;margin:0 0 5px;color:#fbcfe8">Khởi tạo lại người chơi</h3>
-          <p style="font-size:10px;line-height:1.5;margin:0 0 9px;color:#f1d9e0">Giữ nguyên truyện và NPC tác giả. Sao lưu rồi xóa tiến độ, Xu, Kho đồ, thiện cảm, tin tưởng và hội thoại cũ của tài khoản hiện tại.</p>
-          <button type="button" class="btn btn-danger" id="dudu-v54-reset-action" onclick="duduResetPlayerV54()" style="width:100%">Sao lưu và đặt lại tiến độ</button>
+        <section class="dudu-v54-reset-settings" aria-labelledby="dudu-v54-reset-title" style="padding:10px;margin:8px 0;border-radius:12px;border:1px solid #4b7d92;background:rgba(20,39,57,.78)">
+          <h3 id="dudu-v54-reset-title" style="font-size:12px;margin:0 0 5px;color:#d3efff">✦ Tiến độ &amp; mùa chơi</h3>
+          <p style="font-size:10px;line-height:1.5;margin:0 0 9px;color:#c8ddea">Lưu lại hành trình của bạn trước khi bắt đầu mùa mới. Tệp sao lưu có tiến độ và hội thoại cá nhân, hãy giữ riêng.</p>
+          <button type="button" class="btn btn-primary" id="dudu-v26-backup-action" onclick="duduBackupPlayerV26()" style="width:100%">⬇ Tải bản sao tiến độ</button>
+          <button type="button" class="btn btn-danger" id="dudu-v54-reset-action" disabled title="Chỉ mở khi chốt mùa mới và có bản sao lưu" style="width:100%;margin-top:7px;opacity:.52">Khởi tạo mùa mới · Chưa mở</button>
+          <small style="display:block;margin-top:7px;color:#b6c9d9;font-size:9px">Xu, Kho, nhiệm vụ và liên lạc đang được giữ nguyên.</small>
         </section>
         <section class="dudu-v27-settings-card" aria-labelledby="dudu-v27-reading-title">
           <h3 id="dudu-v27-reading-title">✦ Trải nghiệm đọc</h3>
@@ -3041,9 +3043,54 @@
       catch(e) { console.warn('V44.9: cập nhật Phone sau lưu gặp lỗi:',e); }
     }
 
+    // C2.6: until the owner signs off the new season and its Rules, do not
+    // expose a destructive reset while real rewards and inventories are live.
+    const DUDU_SEASON_RESET_READY_C26=false;
+    let duduBackupBusyV26=false;
+    async function duduBackupPlayerV26(){
+      if(IS_SANDBOX_MODE){
+        showSystemAlert('BẢN THỬ SANDBOX','Bản sao tài khoản chính chỉ có khi đăng nhập ở chế độ chơi.');
+        return;
+      }
+      if(duduBackupBusyV26||window.DUDU_RESET_IN_PROGRESS)return;
+      if(!DuduAuth.isReady()||DuduAuth.uid()!==currentUsername){
+        showSystemAlert('CHƯA SẴN SÀNG','Hãy đăng nhập để lưu hành trình của bạn.');return;
+      }
+      const uid=currentUsername,auth=firebase.auth(),user=auth.currentUser;
+      if(!window.DuduPersonalResetV54)return;
+      const button=document.getElementById('dudu-v26-backup-action');
+      duduBackupBusyV26=true;if(button)button.disabled=true;
+      try{
+        await Promise.allSettled([...pendingLiveProfileWrites]);
+        DuduPersonalResetV54.safetyCheck(uid,auth);
+        if(auth.currentUser!==user)throw Error('Tài khoản đã thay đổi');
+        const snap=await db.collection('profiles_v2').doc(uid).get({source:'server'});
+        DuduPersonalResetV54.safetyCheck(uid,auth);
+        if(auth.currentUser!==user||!snap.exists)
+          throw Error('Chưa tải được tiến độ của tài khoản này');
+        const backup=DuduPersonalResetV54.backup(uid,snap.data(),localStorage);
+        const url=URL.createObjectURL(new Blob([JSON.stringify(backup,null,2)],
+          {type:'application/json'}));
+        const a=document.createElement('a');a.href=url;
+        a.download='DUDU-progress-backup-'+new Date().toISOString().slice(0,10)+'.json';
+        document.body.append(a);a.click();a.remove();
+        setTimeout(()=>URL.revokeObjectURL(url),60000);
+        showSystemAlert('ĐÃ CHUẨN BỊ BẢN SAO',
+          'Hãy kiểm tra tệp trong thư mục Tải xuống và giữ riêng cho mình.');
+      }catch(error){
+        console.warn('DUDU progress backup:',error?.message||'failed');
+        showSystemAlert('CHƯA TẢI ĐƯỢC','Hãy kiểm tra kết nối rồi thử lại.');
+      }finally{duduBackupBusyV26=false;if(button)button.disabled=false;}
+    }
+
     // V54: owner-confirmed one-time reset. Preserves all authored stories,
     // chapters, EPUB content, NPC catalog, custom Auth claims and Google login.
     async function duduResetPlayerV54(){
+      if(!DUDU_SEASON_RESET_READY_C26){
+        showSystemAlert('MÙA MỚI CHƯA MỞ',
+          'Tiến độ của bạn đang được giữ nguyên. Hãy tải bản sao nếu cần.');
+        return;
+      }
       if(IS_SANDBOX_MODE || window.DUDU_RESET_IN_PROGRESS) return;
       if(!DuduAuth.isReady() || DuduAuth.uid()!==currentUsername){
         showSystemAlert('CHƯA ĐỒNG BỘ','Hãy đăng nhập và chờ Firebase tải hồ sơ xong.');return;
