@@ -39,10 +39,11 @@ export function inspectG2XInventory(manifest,sources){
  if(!manifest||manifest.schemaVersion!==1||
   manifest.targetCollection!=='epub_stories_v49'||
   !Array.isArray(manifest.writerFiles)||!Array.isArray(manifest.watchFiles)||
+  !Array.isArray(manifest.reviewedNonWriterFiles)||
   !Array.isArray(manifest.adminSdkSourceAllowlist)||
   !Array.isArray(manifest.sourceRoots))
   throw TypeError('g2x-inventory-invalid-manifest');
- const pinned=[...manifest.writerFiles,...manifest.watchFiles];
+ const pinned=[...manifest.writerFiles,...manifest.watchFiles,...manifest.reviewedNonWriterFiles];
  const listed=pinned.map(x=>x.path);
  if(!unique(listed)||!listed.every(validPath)||
   !manifest.adminSdkSourceAllowlist.every(validPath)||
@@ -50,7 +51,13 @@ export function inspectG2XInventory(manifest,sources){
   !manifest.sourceRoots.every(validPath))
   throw TypeError('g2x-inventory-invalid-path');
  const entries=Object.entries(sources);
- const seenWriters=sort(entries.filter(([,s])=>targets.test(s)&&writes.test(s))
+ // A reviewed UI file uses Map.set after reading V49; it is not a remote
+ // writer. Exempt ONLY its exact reviewed bytes. Any change immediately
+ // re-enters the unknown-writer check and fails the pinned hash tripwire.
+ const reviewedMapOnly=(p,s)=>manifest.reviewedNonWriterFiles.some(x=>
+  x.path===p&&x.sha256===sha256(s));
+ const seenWriters=sort(entries.filter(([p,s])=>targets.test(s)&&writes.test(s)&&
+  !reviewedMapOnly(p,s))
   .map(([p])=>p));
  const expectedWriters=sort(manifest.writerFiles.map(x=>x.path));
  const seenAdmin=sort(entries.filter(([,s])=>adminSdk.test(s)).map(([p])=>p));

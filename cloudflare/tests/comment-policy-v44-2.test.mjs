@@ -70,6 +70,9 @@ test('V44.2 server: DO enforces serialized SQL idempotency, scope and moderation
 test('V44.2 server: browser comments explicitly sandbox, no API auto-enabled on GitHub Pages',()=>{
  const page=file('../index.html');
  assert.match(page,/IS_SANDBOX_MODE\|\|!novel/);
- assert.match(page,/userProfile\.commentsV442=commentState/);
+ assert.match(page,/state:userProfile\.commentsV442,isSandbox:IS_SANDBOX_MODE/);
+ assert.match(page,/if\(!IS_SANDBOX_MODE\|\|!currentUsername\|\|/);
+ assert.match(page,/userProfile\.commentsV442=next;\s*saveCurrentAccount\(\)/);
+ assert.match(page,/userProfile\.commentsV442=before/);
  assert.doesNotMatch(page,/COMMENT_ENABLED = true|DuduDiscussion\.post/);
 });

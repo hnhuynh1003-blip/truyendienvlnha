@@ -1,13 +1,19 @@
 {
   "schemaVersion": 1,
-  "baseline": "788ab8f3893591ac9a1e12f60490975b0bbbe2b6",
+  "baseline": "354da13fe9f2204768a27b803029c89dd5a10176",
   "targetCollection": "epub_stories_v49",
   "writerFiles": [
     {
       "path": "js/epub-production-v49.js",
       "kind": "browser-client-legacy-publish",
       "risk": "client-publish-fails-under-g2s-candidate-not-live",
-      "sha256": "130f87186942f56090236d7bc4625626ca6362dd976eb8131272d05018634e1c"
+      "sha256": "6021a04108ef29f868ff11a4834b13c5a6ab5537adfd5e4dc75c789adad389c1"
+    },
+    {
+      "path": "js/epub-chapter-editor-l2d3.js",
+      "kind": "browser-owner-chapter-revision-transaction",
+      "risk": "owner-authentication-and-rules-guarded-chapter-plus-immutable-backup",
+      "sha256": "20694022e3c5dd658dee70304035816dcc1702689e66963a5a30a0a88497f6d0"
     },
     {
       "path": "cloudflare/src/vangioi-v49-emulator-epoch-g2r.mjs",
@@ -44,12 +50,19 @@
     {
       "path": "js/epub-import-v48.js",
       "reason": "browser-calls-legacy-publishDraft",
-      "sha256": "b4087ef8f916173a63a84d06807951e459355259a477b534664a58bb2fb8d7c6"
+      "sha256": "aa5998d4cb28e1d1a7d5020ae2f67e4d1acacb54a914bbc14cb34118bd7dd1c1"
     },
     {
       "path": "functions/index.js",
       "reason": "privileged-admin-sdk-currently-ai-quota-and-economy-not-v49",
       "sha256": "0218f4fb481ac66b51ebb291957e1a0321eec6514feb78f6e6c6df71ab83eb71"
+    }
+  ],
+  "reviewedNonWriterFiles": [
+    {
+      "path": "js/library-epub-edit-ui-l2d5.js",
+      "reason": "reads V49 chapters; Set and Map mutations are UI-only, not Firestore writes",
+      "sha256": "e32aa900e1b446c62522ce4be4707f417fd74dd1cd042e24707f6ce1ba8966c4"
     }
   ],
   "adminSdkSourceAllowlist": ["functions/index.js"],

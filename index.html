@@ -4167,7 +4167,11 @@
         console.warn('NPC reply unavailable:',res.error,res.code||'',res.reference||'',res.field||'');
         pendingNpcRetry = {user:requestUser,storyId,charId:char.id,key:requestChatKey,roleId:requestRole.id};
         if (sameNpc) {
-          showNpcConnectionStatus('Tạm thời chưa thể nhận hồi âm. Hãy thử lại sau một chút.',
+          // Only the short, allowlisted correlation ID reaches the reader.
+          // Never expose upstream payloads, prompts or provider diagnostics.
+          const reference=/^[a-f0-9]{8}$/.test(res.reference||'')?
+            ' Mã kiểm tra: '+res.reference:'';
+          showNpcConnectionStatus('Tạm thời chưa thể nhận hồi âm. Hãy thử lại sau một chút.'+reference,
             DuduAI.isConfigured());
         }
         return;

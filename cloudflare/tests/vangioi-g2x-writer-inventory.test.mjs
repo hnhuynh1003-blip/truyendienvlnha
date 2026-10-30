@@ -9,15 +9,25 @@ const inventory=JSON.parse(readFileSync(new URL(
 const sources=loadG2XSource(ROOT,inventory);
 const check=(manifest=inventory,source=sources)=>inspectG2XInventory(manifest,source);
 
-test('G2X clean baseline reports exactly six V49 writers and one Admin SDK source',()=>{
+test('G2X clean baseline reports seven V49 writers and one Admin SDK source',()=>{
  const result=runG2XAudit();
  assert.equal(result.ok,true);
- assert.equal(result.writerCount,6);
+ assert.equal(result.writerCount,7);
  assert.equal(result.adminSdkCount,1);
- assert.equal(result.pinnedCount,8);
+ assert.equal(result.pinnedCount,10);
  assert.deepEqual(result.problems,[]);
  assert.equal(result.productionEnforced,false);
  assert.equal(result.iamChanged,false);
+});
+test('G2X pins the owner chapter revision writer and reviews Map-only EPUB UI separately',()=>{
+ assert.ok(inventory.writerFiles.some(x=>x.path==='js/epub-chapter-editor-l2d3.js'));
+ assert.deepEqual(inventory.reviewedNonWriterFiles.map(x=>x.path),
+  ['js/library-epub-edit-ui-l2d5.js']);
+ const path='js/library-epub-edit-ui-l2d5.js';
+ assert.match(sources[path],/chapters\.set\(/);
+ const changed={...sources,[path]:sources[path]+'\n// changed Map-only UI\n'};
+ assert.ok(check(inventory,changed).problems.includes('pinned-source-drift:'+path));
+ assert.ok(check(inventory,changed).problems.includes('unknown-v49-writer:'+path));
 });
 test('G2X pins the legacy browser publication path and caller, separately',()=>{
  assert.ok(inventory.writerFiles.some(x=>x.path==='js/epub-production-v49.js'));
