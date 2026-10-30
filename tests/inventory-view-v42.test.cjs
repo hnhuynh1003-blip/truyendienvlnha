@@ -21,7 +21,7 @@ test('V42: category-aware inventory runs for Sandbox and authenticated personal 
  assert.match(html,/onSell\(item\)\{[\s\S]*?personalInventoryAction\('sell',item\)/);
  assert.match(html,/buyback:price/);
  assert.match(html,/if\(ready\)return;/);
- assert.match(html,/css\/inventory-v42.css\?v=\d+/);
+ assert.match(html,/css\/inventory-v42.css\?v=c24c-1/);
  assert.match(css,/body\.dudu-phone-v11 #cyber-phone #inventory-container\.dudu-v42-grid/);
 });
 test('V42: purchased supply, food and tent land in expected tabs with valid live actions',()=>{
@@ -42,7 +42,8 @@ test('V42: purchased supply, food and tent land in expected tabs with valid live
  assert.match(view,/args\.personalMode\?'Giá bán về ví'/);
  assert.match(view,/sell\.disabled=tradeStatus\.busy===true/);
  assert.match(html,/giftTargets:0,busy:personalItemBusy/);
- assert.match(css,/body\.dudu-spark-personal-mode #cyber-phone #phone-app-inventory \.dudu-v441-open/);
+ assert.doesNotMatch(css,/body\.dudu-spark-personal-mode #cyber-phone #phone-app-inventory \.dudu-v441-open/);
+ assert.match(html,/DuduPersonalCollectionC24\.snapshot/);
  assert.match(view,/typeof args\.onDiscard==='function'/);
 });
 test('V42: eight stable role controls, world, story and rank filters in compact layout',()=>{

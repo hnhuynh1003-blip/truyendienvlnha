@@ -2,6 +2,7 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const exchange=require('../js/personal-npc-exchange-v1.js');
 const catalog=require('../js/item-catalog-v2.js');
+const collection=require('../js/personal-collection-c24.js');
 
 const uid='reader-uid-1',storyId='novel-1',npcId='npc-1';
 const time=Date.UTC(2026,9,30,7,0);
@@ -59,12 +60,17 @@ test('gift consumes one verified item, updates only owned NPC and bond',async()=
  assert.equal(env.profile.currency,200);assert.equal(env.profile.exp,100);
  assert.deepEqual(env.profile.quests,[{id:'keep'}]);
  assert.deepEqual(Object.keys(env.writes[0]).sort(),['inventory','storyStates']);
+ const journal=collection.snapshot({inventory:env.profile.inventory,
+  storyStates:env.profile.storyStates});
+ assert.equal(journal.events.filter(x=>x.kind==='NPC_GIFT').length,1);
+ assert.equal(journal.events[0].name,'Băng Gạc Cũ');
 });
 test('retry same gift receipt is a no-op and distinct receipt cannot spend removed item',async()=>{
  const env=fixture(),request=args(env);
  await exchange.run(request);
  const again=await exchange.run(request);
  assert.equal(again.status,'already-applied');assert.equal(env.writes.length,1);
+ assert.equal(collection.snapshot({storyStates:env.profile.storyStates}).events.length,1);
  await assert.rejects(exchange.run({...request,eventId:'gift-123e4567-e89b-42d3-a456-426614174001'}),
   /item-not-owned/);
  assert.equal(env.writes.length,1);

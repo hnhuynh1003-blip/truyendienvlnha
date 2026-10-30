@@ -10,10 +10,11 @@
   commonjs?require('./quest-engine-v43-7.js'):root?.DuduQuestEngineV437,
   commonjs?require('./loot-rules-v2.js'):root?.DuduLootRules,
   commonjs?require('./loot-cadence-v42.js'):root?.DuduLootCadenceV42,
-  commonjs?require('./chapter-loot-encounter-v1.js'):root?.DuduChapterLootEncounterV1);
+  commonjs?require('./chapter-loot-encounter-v1.js'):root?.DuduChapterLootEncounterV1,
+  commonjs?require('./personal-collection-c24.js'):root?.DuduPersonalCollectionC24);
  if(commonjs)module.exports=api;
  if(root)root.DuduPersonalProgressC23=api;
-})(typeof window!=='undefined'?window:null,function(core,questsEngine,lootRules,cadence,encounter){
+})(typeof window!=='undefined'?window:null,function(core,questsEngine,lootRules,cadence,encounter,collection){
  'use strict';
  const META='__duduPersonalProgressC23',MAX_ITEMS=500,MAX_WALLET=1e9,
   MAX_RECEIPTS=64;
@@ -103,7 +104,7 @@
   return resultFrom(next,'applied',{firstEver,firstToday,awardExp:firstEver?5:0,
    levelUps:earned.levelUps});
  }
- function questClaim({data,questId,day}){
+ function questClaim({data,questId,day,at=Date.now()}){
   const definition=KNOWN.get(questId);
   if(!definition)throw fail('unknown-quest');
   const q=questBase(data,day),row=q.quests.find(item=>item?.id===questId);
@@ -117,6 +118,15 @@
   if(!plan.ok)throw fail(plan.reason);
   const next={...data,...q,quests:plan.quests,questV437:plan.state,
    currency:plan.coins,exp:plan.exp,level:plan.level,inventory:plan.inventory};
+  if(plan.award.itemId){
+   const gained=plan.inventory.find(x=>x?.obtainedFrom?.source==='DUDU_QUEST'&&
+    x?.obtainedFrom?.eventId?.startsWith('quest-'+questId+'-'));
+   const event=collection.append(data.storyStates?.[collection.META],{
+    eventId:gained?.instanceId,kind:'QUEST',item:gained,at,
+    instanceId:gained?.instanceId,inventory:data.inventory});
+   if(!event.ok)throw fail('collection-write-failed');
+   next.storyStates={...(data.storyStates||{}),[collection.META]:event.state};
+  }
   return resultFrom(next,'applied',{award:plan.award,levelUps:plan.levelUps});
  }
  function lootEvent({data,uid,kind,requestId,storyId,chapterId,
@@ -168,8 +178,14 @@
   const keys=[...Object.keys(receipts),requestId];
   const trimmed={...receipts,[requestId]:record};
   for(const old of keys.slice(0,Math.max(0,keys.length-MAX_RECEIPTS)))delete trimmed[old];
-  const nextStates=chapter?states:{...states,[META]:{
+  const nextStates=chapter?{...states}:{...states,[META]:{
    ...meta,lastGlobalLootAt:at,globalReceipts:trimmed}};
+  const entry=collection.append(states[collection.META],{
+   eventId:chapter?'chapter-'+instanceId:requestId,
+   kind:chapter?'CHAPTER':'GLOBAL',item,at,
+   instanceId,inventory:data.inventory});
+  if(!entry.ok)throw fail('collection-write-failed');
+  nextStates[collection.META]=entry.state;
   const next={...data,...earned,...q,inventory:[item,...data.inventory],
    lootedChapters:newClaims,storyStates:nextStates};
   return resultFrom(next,'applied',{receipt:record,item,award:{...reward},
@@ -200,7 +216,7 @@
     throw fail('invalid-progress');
    let result;
    if(kind==='read')result=bookEvent({data,storyId,chapterId,day});
-   else if(kind==='quest')result=questClaim({data,questId,day});
+   else if(kind==='quest')result=questClaim({data,questId,day,at});
    else result=lootEvent({data,uid,kind,storyId,chapterId,
     paragraphCount,realmTag,requestId,day,at});
    if(result.status==='already-read'||result.status==='already-looted')return result;
@@ -208,10 +224,11 @@
    const relevant=kind==='read'?['currency','exp','level','readRewards',
     'dailyReadLog','quests','questV437','questsDayV43']:
     kind==='quest'?['currency','exp','level','inventory','quests',
-     'questV437','questsDayV43']:
+     'questV437','questsDayV43','storyStates']:
     ['currency','exp','level','inventory','lootedChapters','storyStates',
      'quests','questV437','questsDayV43'];
-   for(const field of relevant)if(result[field]!==undefined)patch[field]=result[field];
+   for(const field of relevant)if(result[field]!==undefined&&
+     (field!=='storyStates'||result[field]!==data.storyStates))patch[field]=result[field];
    tx.update(doc,patch);
    return result;
   });

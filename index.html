@@ -31,7 +31,7 @@
   <link rel="stylesheet" href="css/phone-wallpaper-v37-gallery.css?v=3">
   <link rel="stylesheet" href="css/npc-portrait-v38.css?v=1">
   <link rel="stylesheet" href="css/npc-portrait-v39.css?v=2">
-  <link rel="stylesheet" href="css/inventory-v42.css?v=4">
+  <link rel="stylesheet" href="css/inventory-v42.css?v=c24c-1">
   <link rel="stylesheet" href="css/companion-v43.css?v=1">
   <link rel="stylesheet" href="css/npc-bond-v43.css?v=2">
   <link rel="stylesheet" href="css/market-v43.css?v=c24a-1">
@@ -47,7 +47,7 @@
   <link rel="stylesheet" href="css/inventory-v43-9.css?v=c24b-1">
   <link rel="stylesheet" href="css/gift-recipient-v44.css?v=1">
   <link rel="stylesheet" href="css/inventory-compact-v44.css?v=c24b-1">
-  <link rel="stylesheet" href="css/world-collection-v44-1.css?v=1">
+  <link rel="stylesheet" href="css/world-collection-v44-1.css?v=c24c-1">
   <link rel="stylesheet" href="css/story-comments-v44-2.css?v=1">
   <link rel="stylesheet" href="css/gifts-v44-3.css?v=1">
   <link rel="stylesheet" href="css/gift-picker-v44-3-1.css?v=1">
@@ -89,8 +89,9 @@
   <script src="js/npc-memory-v2.js"></script>
   <script src="js/world-items-v44-1.js?v=1"></script>
   <script src="js/item-catalog-v2.js?v=44-1"></script>
-  <script src="js/world-collection-v44-1.js?v=1"></script>
+  <script src="js/world-collection-v44-1.js?v=c24c-1"></script>
   <script src="js/economy-core-v43.js?v=6"></script>
+  <script src="js/personal-collection-c24.js?v=c24c-1"></script>
   <script src="js/quest-engine-v43-7.js?v=44-9"></script>
   <script src="js/dudu-fun-rules-v43.js?v=44-9"></script>
   <script src="js/personal-arcade-core-v1.js?v=arcade-upgrade-4"></script>
@@ -154,15 +155,15 @@
   <script src="js/loot-rules-v2.js?v=44-1"></script>
   <script src="js/loot-cadence-v42.js?v=wallet-loot-1"></script>
   <script src="js/chapter-loot-encounter-v1.js?v=chapter-surprise-1"></script>
-  <script src="js/personal-progress-c23.js?v=c23c-1"></script>
+  <script src="js/personal-progress-c23.js?v=c24c-1"></script>
   <script src="js/item-actions-v43.js?v=1"></script>
   <script src="js/functional-items-v43-8.js?v=44-9"></script>
-  <script src="js/personal-spark-items-v1.js?v=c23c-1"></script>
+  <script src="js/personal-spark-items-v1.js?v=c24c-1"></script>
   <script src="js/companion-rules-v43.js?v=1"></script>
   <script src="js/dudu-system-steward-v67-3.js?v=67-3-3"></script>
   <script src="js/npc-bond-v43.js?v=1"></script>
   <script src="js/personal-npc-social-v1.js?v=personal-social-1"></script>
-  <script src="js/personal-npc-exchange-v1.js?v=personal-exchange-1"></script>
+  <script src="js/personal-npc-exchange-v1.js?v=c24c-1"></script>
   <script src="js/museum-memories-v43.js?v=1"></script>
   <script src="js/soul-link-v43.js?v=1"></script>
   <script src="js/author-items-v1.js"></script>
@@ -4549,6 +4550,9 @@
         if(kind==='gift'){
           userProfile.inventory=result.inventory;
           progress.collectedCharacters[npcId]=result.progress;
+          if(result.collectionState&&window.DuduPersonalCollectionC24){
+            userProfile.storyStates[DuduPersonalCollectionC24.META]=result.collectionState;
+          }
         }else{
           userProfile.currency=result.balance;
           progress.redPacketsV32={...(progress.redPacketsV32||{}),[npcId]:result.redPacket};
@@ -5805,10 +5809,20 @@ document.getElementById('phone-home-screen').style.display = 'none';
       // Authenticated Spark inventory uses the same category-aware grid and
       // phone-root inspector as Sandbox. The legacy inspector is hidden by
       // inventory-v42.css; rendering it for real accounts hid Use/Sell.
+      const collectionToggle=document.querySelector('#phone-app-inventory .dudu-v441-open');
+      if(collectionToggle)collectionToggle.hidden=!IS_SANDBOX_MODE&&!personalItemsReady();
       if(personalItemsReady()&&window.DuduInventoryViewV42){
         const current=Array.isArray(userProfile.inventory)?userProfile.inventory:[];
         if(inventoryDetailSelection&&!current.includes(inventoryDetailSelection))
           inventoryDetailSelection=null;
+        if(window.DuduPersonalCollectionC24&&window.DuduWorldCollectionV441){
+          const journal=DuduPersonalCollectionC24.snapshot({
+            inventory:current,storyStates:userProfile.storyStates});
+          DuduWorldCollectionV441.render({
+            host:document.getElementById('inventory-v441-collection'),
+            inventory:current,history:journal,events:journal.events,personalMode:true
+          });
+        }
         const ready=DuduInventoryViewV42.render({
           inventory:current,selected:inventoryDetailSelection,stories:novels,
           art:DuduItemArtV13,coins:userProfile.currency,personalMode:true,
@@ -6459,7 +6473,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       const fields=kind==='read'?['currency','exp','level','quests',
         'questV437','questsDayV43','readRewards','dailyReadLog']:
         kind==='quest'?['currency','exp','level','inventory','quests',
-          'questV437','questsDayV43']:
+          'questV437','questsDayV43','storyStates']:
         ['currency','exp','level','inventory','quests','questV437',
           'questsDayV43','lootedChapters','storyStates'];
       for(const field of fields){

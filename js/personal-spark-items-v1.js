@@ -6,10 +6,11 @@
  const api=factory(
   root?.DuduEconomyCoreV43||(typeof require==='function'?require('./economy-core-v43.js'):null),
   root?.DuduInventoryTradeV439||(typeof require==='function'?require('./inventory-trade-v43-9.js'):null),
-  root?.DuduFunctionalItemsV438||(typeof require==='function'?require('./functional-items-v43-8.js'):null));
+  root?.DuduFunctionalItemsV438||(typeof require==='function'?require('./functional-items-v43-8.js'):null),
+  root?.DuduPersonalCollectionC24||(typeof require==='function'?require('./personal-collection-c24.js'):null));
  if(typeof module==='object'&&module.exports)module.exports=api;
  if(root)root.DuduPersonalSparkItemsV1=api;
-})(typeof window!=='undefined'?window:null,function(economy,trade,functional){
+})(typeof window!=='undefined'?window:null,function(economy,trade,functional,collection){
  'use strict';
  const META='__duduPersonalItemsV1',PROGRESS_META='__duduPersonalProgressC23',
   MAX_RECEIPTS=80,MAX_WALLET=1000000000,MAX_ITEMS=500;
@@ -132,7 +133,27 @@
    const nextReceipts={...receipts,[rid]:receipt};
    const keys=Object.keys(nextReceipts);
    for(const old of keys.slice(0,Math.max(0,keys.length-MAX_RECEIPTS)))delete nextReceipts[old];
+   // The journal follows the same committed ownership change. A receipt is
+   // never written separately and cannot mint, refund or transfer an item.
+   const sourceItem=kind==='purchase'?nextInventory.find(x=>x.instanceId===rid):target;
+   const at=Date.parse(receipt.at);
+   const journal=collection.append(storyStates[collection.META],{
+    eventId:rid,kind:kind==='purchase'?'SHOP':kind.toUpperCase(),
+    item:sourceItem,at,price,instanceId:sourceItem.instanceId,inventory});
+   if(!journal.ok)throw Error('Chưa ghi được dấu mốc vật phẩm');
+   let collectionState=journal.state;
+   if(effect==='open-supply'){
+    const issued=nextInventory.filter(x=>x?.obtainedFrom?.eventId===instanceId&&
+      x?.obtainedFrom?.source==='DUDU_SUPPLY_V438');
+    for(const newItem of issued){
+     const made=collection.append(collectionState,{eventId:rid+':'+newItem.id,
+      kind:'SUPPLY',item:newItem,at,instanceId:newItem.instanceId});
+     if(!made.ok)throw Error('Chưa ghi đủ dấu mốc gói tiếp tế');
+     collectionState=made.state;
+    }
+   }
    const nextStates={...storyStates,[META]:{version:1,receipts:nextReceipts},
+    [collection.META]:collectionState,
     ...(cooldownAt!==null?{[PROGRESS_META]:{
       ...progressState,lastGlobalLootAt:cooldownAt}}:{})};
    tx.update(profile,{currency:nextBalance,inventory:nextInventory,storyStates:nextStates});

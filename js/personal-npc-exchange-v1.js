@@ -10,10 +10,11 @@
   root?.DuduNpcPersonaR6||(typeof require==='function'?require('./npc-persona-v2-r6.js'):null),
   root?.DuduInventoryTradeV439||(typeof require==='function'?require('./inventory-trade-v43-9.js'):null),
   root?.DuduNpcBondV43||(typeof require==='function'?require('./npc-bond-v43.js'):null),
-  root?.DuduRedPacketV32||(typeof require==='function'?require('./red-packet-v32.js'):null));
+  root?.DuduRedPacketV32||(typeof require==='function'?require('./red-packet-v32.js'):null),
+  root?.DuduPersonalCollectionC24||(typeof require==='function'?require('./personal-collection-c24.js'):null));
  if(typeof module==='object'&&module.exports)module.exports=api;
  if(root)root.DuduPersonalNpcExchangeV1=api;
-})(typeof window!=='undefined'?window:null,function(relation,gifts,personas,trade,bonds,packets){
+})(typeof window!=='undefined'?window:null,function(relation,gifts,personas,trade,bonds,packets,collection){
  'use strict';
  const isRecord=x=>!!x&&typeof x==='object'&&!Array.isArray(x);
  const idPattern=/^[a-zA-Z0-9][a-zA-Z0-9_-]{0,159}$/;
@@ -51,7 +52,8 @@
     const previous=relation.previewRelationship(progress,uid,storyId,npcId);
     if(!previous)throw fail('relationship-invalid');
     if(previous.relationshipV2.acceptedGiftEventIds.includes(eventId))
-     return {status:'already-applied',kind,storyId,npcId,inventory,progress};
+     return {status:'already-applied',kind,storyId,npcId,inventory,progress,
+      collectionState:states[collection.META]};
     const owned=inventory.filter(x=>x?.instanceId===instanceId);
     if(owned.length!==1)throw fail('item-not-owned');
     const item=owned[0],canonical=trade.known(item);
@@ -70,13 +72,19 @@
     const bond=bonds?.record(progress.npcBondV43,{type:'gift',day:plan.day});
     if(bond?.ok)updated.npcBondV43=bond.state;
     const nextInventory=inventory.filter(x=>x!==item);
+    const journal=collection.append(states[collection.META],{
+     eventId,kind:'NPC_GIFT',item,at:now,
+     instanceId,inventory});
+    if(!journal.ok)throw fail('collection-write-failed');
     // Merge only the target NPC and inventory. Never overwrite other story
     // branches, balances, quests or the authored catalog.
     tx.set(ref,{inventory:nextInventory,storyStates:{[storyId]:{
-     collectedCharacters:{[npcId]:updated}}}},{merge:true});
+     collectedCharacters:{[npcId]:updated}},
+     [collection.META]:journal.state}},{merge:true});
     return {status:'applied',kind,storyId,npcId,inventory:nextInventory,
      progress:{...progress,...updated},itemName:canonical.name,itemRank:canonical.rank,
-     affinityGain:plan.delta.affinity,trustGain:plan.delta.trust};
+     affinityGain:plan.delta.affinity,trustGain:plan.delta.trust,
+     collectionState:journal.state};
    }
    const balance=data.currency,record=story.redPacketsV32?.[npcId];
    if(!Number.isSafeInteger(balance)||balance<0||balance>1000000000)

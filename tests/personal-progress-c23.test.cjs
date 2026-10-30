@@ -148,7 +148,7 @@ test('C2.3c refuses cross-UID actions and incomplete accounts',async()=>{
 });
 
 test('C2.3c main uses transactional rewards and sandbox stays on old path',()=>{
- assert.match(html,/js\/personal-progress-c23\.js\?v=c23c-1/);
+ assert.match(html,/js\/personal-progress-c23\.js\?v=c24c-1/);
  assert.match(html,/personalProgressActionC23\('read'/);
  assert.match(html,/personalProgressActionC23\('chapter-loot'/);
  assert.match(html,/personalProgressActionC23\('global-loot'/);

@@ -52,13 +52,13 @@
   if(txt!==undefined)n.textContent=String(txt);
   return n;
  };
- function render({host,inventory=[],history=null}={}){
+ function render({host,inventory=[],history=null,events=[],personalMode=false}={}){
   if(!host||typeof document==='undefined')return false;
-  last={host,inventory,history};
+  last={host,inventory,history,events,personalMode};
   host.hidden=!opened;
   host.replaceChildren();
   if(!opened)return true;
-  const summary=stats(history,inventory);
+  const summary=stats(history,personalMode?[]:inventory);
   const title=elem('div','dudu-v441-head');
   title.append(elem('strong','','🌐 Sổ Sưu Tập · '+summary.seen+'/'+summary.total));
   const close=elem('button','dudu-v441-close','×');
@@ -80,6 +80,8 @@
    const button=elem('button','dudu-v441-collectible'+(available?' found':''),
      available?item.icon:'？');
    button.type='button';
+   if(available&&typeof window!=='undefined')
+    window.DuduItemArtV13?.mount(button,item);
    const name=available?item.name:'Chưa phát hiện';
    button.title=name;
    button.setAttribute('aria-label',name+(available?' · '+item.rank:''));
@@ -94,7 +96,34 @@
   }
   host.append(grid);
   host.append(elem('div','dudu-v441-focus','Chạm biểu tượng để xem món đã khám phá.'));
+  if(personalMode){
+   const diary=elem('details','dudu-v441-timeline');
+   diary.append(elem('summary','','✦ Nhật ký vật phẩm · '+events.length+' mốc gần đây'));
+   const body=elem('div','dudu-v441-events');
+   const labels={SHOP:'Đã mua',USE:'Đã dùng',SELL:'Đã bán',
+    GLOBAL:'Nhặt trên Điện thoại',CHAPTER:'Nhặt trong chương',
+    QUEST:'Quà nhiệm vụ',NPC_GIFT:'Tặng NPC',SUPPLY:'Mở tiếp tế'};
+   for(const entry of events.slice(0,30)){
+    if(!entry||!labels[entry.kind])continue;
+    const row=elem('div','dudu-v441-event');
+    const eventAt=new Date(entry.at);
+    const date=Number.isFinite(eventAt.getTime())?
+     eventAt.toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'}):'';
+    row.append(elem('span','',entry.icon||'🎒'));
+    const info=elem('div','dudu-v441-event-info');
+    info.append(elem('strong','',entry.name||'Vật phẩm'),
+     elem('small','',(labels[entry.kind]||'Dấu mốc')+(date?' · '+date:'')));
+    row.append(info);
+    if(entry.kind==='SHOP'||entry.kind==='SELL')
+     row.append(elem('b','',((entry.kind==='SHOP'?'-':'+')+entry.price)+' Xu'));
+    body.append(row);
+   }
+   if(!body.children.length)body.append(elem('p','',
+    'Chưa có mốc giao dịch. Các món đang sở hữu vẫn được ghi nhận trong Sổ.'));
+   diary.append(body);host.append(diary);
+  }
   host.append(elem('small','dudu-v441-note',
+   personalMode?'Dấu mốc được lưu theo hành trình của bạn. Những món cũ thiếu biên nhận chỉ hiện khi còn trong Kho.':
    'Sổ theo dõi trên thiết bị, không phải chứng nhận sở hữu máy chủ. Đồ sự kiện chương không rơi ngẫu nhiên.'));
   return true;
  }
@@ -103,6 +132,10 @@
   if(last)render(last);
   return opened;
  }
- function reset(){opened=false;selected='URBAN';if(last)render(last)}
+ function reset(){
+  opened=false;selected='URBAN';
+  if(last){last.host.hidden=true;last.host.replaceChildren();}
+  last=null;
+ }
  return Object.freeze({VERSION,REALMS,normalize,record,stats,render,toggle,reset});
 });

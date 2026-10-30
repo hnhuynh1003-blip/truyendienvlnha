@@ -8,11 +8,6 @@ body.dudu-phone-v11 #cyber-phone #phone-app-inventory{
 body.dudu-phone-v11 #cyber-phone #phone-app-inventory>.dudu-v27-inventory-filters{
  display:none!important;
 }
-/* The collection notebook has content only in Sandbox; avoid a blank action
-   on personal accounts until its authenticated reader is implemented. */
-body.dudu-spark-personal-mode #cyber-phone #phone-app-inventory .dudu-v441-open{
- display:none!important;
-}
 body.dudu-phone-v11 #cyber-phone #inventory-v2-toolbar.dudu-v42-toolbar{
  display:flex;flex-direction:column;align-items:stretch!important;
  gap:8px!important;padding:4px 0 9px;margin:0 0 5px!important;

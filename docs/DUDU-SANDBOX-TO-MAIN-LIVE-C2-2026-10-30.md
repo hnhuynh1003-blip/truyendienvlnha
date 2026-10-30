@@ -40,7 +40,7 @@ quy tắc không cấp trùng. Chỉ khi đó mới coi là đã chuyển sang m
 | Chân dung, trang quan hệ NPC | Mở trong main có quyền | Test ảnh trên di động |
 | Tặng quà từ Kho cho NPC | C2.2 đã nối giao dịch Firebase; chờ thử UID thật | Kiểm tra quà thích/ghét, reload, vật phẩm và trần Thiện cảm trên thiết bị thực |
 | Phong bao NPC bằng Xu | C2.2 đã nối giao dịch Firebase; chờ thử UID thật | Kiểm tra Xu trước/sau, 3 lượt/ngày, cooldown và lịch sử khi đăng nhập lại |
-| Kho: lịch sử quà, sổ sưu tập | Chủ yếu Sandbox | Chốt mô hình ownership và lịch sử có thể đọc lại |
+| Kho: sổ sưu tập/lịch sử món | C2.4c đã nối main theo UID; chờ thử thực tế | Kiểm tra hai tài khoản và giữ mốc sau khi dùng/bán/tặng NPC |
 | Kho: bán/ký gửi/đấu giá | Main có mua/dùng/bán phổ thông; Sandbox có bản ký gửi nháp | Phân biệt đấu giá thật và nháp, không giả tạo người mua |
 | Quà tặng tác giả, hộp thư | **Đã loại khỏi phạm vi triển khai** theo quyết định chủ dự án | Không phát triển chuyển quà tác giả; giữ nhật ký cũ ở chế độ lưu trữ |
 | DUDU FUN phần thưởng | Main luyện tập không thưởng | Tích hợp event và quyền nhận thưởng thật |
@@ -211,3 +211,32 @@ sự được người dùng thực hiện sẽ được giữ lại trong hồ 
 - Ưu tiên chuyển **sổ sưu tập/lịch sử Kho**, kiểm tra bán hàng và tiếp tục
   hoàn thiện các tính năng gameplay độc lập; không đưa quà tác giả trở lại
   lộ trình nếu chủ dự án chưa thay đổi quyết định.
+
+### C2.4c — Sổ Sưu Tập và nhật ký vật phẩm trên `main` (mã nguồn)
+
+- Nút **📚 Sổ Sưu Tập** trong Kho được mở cho tài khoản đã đăng nhập. Sổ có
+  sáu vị diện, 120 ô khám phá, dùng cùng minh họa món với Cửa hàng/Kho.
+  Món chưa từng thấy vẫn là ô bí ẩn; món đã gặp giữ mốc ngay cả khi bán hoặc
+  dùng hết. Bên dưới có Nhật ký vật phẩm gần đây: mua, dùng, bán, nhặt trên
+  Điện thoại, nhặt trong chương, quà nhiệm vụ, tặng NPC và mở gói tiếp tế.
+- Lưu `storyStates.__duduCollectionC24` theo đúng UID trong hồ sơ hiện có.
+  Mốc được thêm **trong cùng giao dịch** với thay đổi Kho/Xu/quan hệ hoặc
+  thưởng, không có lệnh cấp phát vật phẩm riêng. Mỗi mã sự kiện chỉ xuất hiện
+  một lần; vật phẩm phải khớp danh mục hiện hành. Tối đa 90 sự kiện mới nhất;
+  những mốc cũ bị đẩy khỏi nhật ký theo giới hạn lưu trữ.
+- Tự hiển thị biên nhận mua/dùng/bán đã có ở C2.3c và biên nhận nhặt đồ Điện
+  thoại từ trước C2.4c, **không sửa lại hồ sơ cũ**. Nếu vật phẩm từ trước
+  chưa có biên nhận, Sổ chỉ đánh dấu món hiện còn sở hữu và **không tự bịa ngày
+  nhận**. Món vật phẩm cũ đã bán/hết trước khi có nhật ký mà thiếu biên nhận
+  không thể khôi phục mốc một cách đáng tin cậy.
+- Sandbox giữ Sổ cục bộ như trước; tài khoản main chỉ hiển thị sổ của UID
+  hiện tại và xóa nội dung đang xem khi chuyển ứng dụng/tài khoản. Giao diện
+  người chơi không nhắc tên nơi lưu hay thuật ngữ lập trình.
+- Node: 139/139 bộ kiểm thử đạt sau khi thêm các kịch bản nhận hàng nhiệm vụ,
+  dùng tiếp tế, bán, giao dịch lặp, tặng NPC, cách ly hai UID và hồi chiếu
+  biên nhận cũ. Hai kiểm tra manifest/vòng đời Điện thoại cũng cần chạy trước
+  khi xuất bản. Đây vẫn là giao dịch dựa trên hồ sơ của người chơi và clock
+  phía client, **không phải xác thực chống gian lận trên máy chủ**.
+- **Chưa reset Xu, quà, Kho, liên lạc hay dữ liệu tài khoản.** Không deploy
+  Rules/Functions. Cần kiểm tra với hai UID thật, nhiều tab và Android trước
+  khi chốt mùa mới hoặc mở phần thưởng ngoài môi trường thử nghiệm.
