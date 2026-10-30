@@ -1,6 +1,6 @@
 {
   "score": 3,
-  "summary": "Prototype Standard/Spark Rules tested in an isolated Firestore Emulator: 62 permission/transaction probes passed, including one-shot 10:1 personal Arcade receipts. Safe for a private-account review, not a tamper-proof or paid-chapter release. Production Rules remain unchanged.",
+  "summary": "Review-only Standard/Spark Rules tested in an isolated Firestore Emulator: 67 permission/transaction probes passed, including actual-shaped C2.9 personal game progress, reset compatibility, EPUB revision transactions, and explicit denial of experimental Arcade exchange receipts. The 145 local Node tests also passed. No paid-chapter entitlement or verified server-currency release is authorized. Production Rules remain unchanged.",
   "findings": [
     {
       "check": "Business logic / paid-chapter confidentiality",
@@ -11,8 +11,8 @@
     {
       "check": "Authority source / user profile economy",
       "severity": "moderate",
-      "issue": "The legacy profiles_v2 currency and inventory remain owner-editable. The new Spark Arcade exchange has immutable one-shot receipts but intentionally trusts the game balance self-reported by the same personal browser.",
-      "recommendation": "Accept this only for the owner's few private accounts. Keep economy_accounts_v52 client-write denied; replace self-reported rewards with trusted server evidence if the site opens to the public or adds account-to-account real-value trades."
+      "issue": "The legacy profiles_v2 currency and inventory remain owner-editable. Arcade scores are client-calculated and cannot safely constitute verified proof for direct currency conversion.",
+      "recommendation": "Keep the experimental arcade_receipts_v1 path entirely denied and the 10:1 conversion feature disabled. Accept existing owner-editable virtual wallet only for the owner's few private accounts. Keep economy_accounts_v52 client-write denied; introduce server-attested rewards before public competition or real-value trades."
     },
     {
       "check": "Published metadata / mixed content",

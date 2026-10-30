@@ -1,0 +1,109 @@
+// Bản sao đúng nội dung Rules đang chạy do An Du gửi ngày 30/10/2026.
+// DÙNG ĐỂ PHỤC HỒI nếu đổi Rules gặp lỗi; đây KHÔNG phải bản mới.
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 1. Thư viện truyện dùng chung
+    match /studio_data/main_library {
+      allow read: if true;
+
+      allow write: if request.auth != null
+        && request.auth.token.admin == true;
+    }
+
+    // 2. Hồ sơ tài khoản Firebase
+    match /profiles_v2/{uid} {
+      allow read, write: if request.auth != null
+        && request.auth.uid == uid;
+    }
+
+    // 3. Khóa hồ sơ cũ
+    match /user_profiles/{username} {
+      allow read, write: if false;
+    }
+
+    // 4. Quyền quản lý EPUB
+    function epubIsAdminV49() {
+      return request.auth != null
+        && request.auth.token.admin == true;
+    }
+
+    function epubOwnerV49(storyId) {
+      return epubIsAdminV49()
+        && get(
+          /databases/$(database)/documents/epub_stories_v49/$(storyId)
+        ).data.ownerUid == request.auth.uid;
+    }
+
+    // 5. Truyện EPUB V57
+    match /epub_stories_v49/{storyId} {
+
+      // Bản thảo: chỉ Admin được xem.
+      // Độc giả: chỉ xem truyện đã xuất bản.
+      allow get, list: if epubIsAdminV49()
+        || resource.data.status == 'published';
+
+      // Tạo bản nhập EPUB riêng tư
+      allow create: if epubIsAdminV49()
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.status == 'importing'
+        && request.resource.data.chapterCount is int
+        && request.resource.data.chapterCount >= 1
+        && request.resource.data.chapterCount <= 160
+        && request.resource.data.chapterIndex is list
+        && request.resource.data.chapterIndex.size()
+           == request.resource.data.chapterCount;
+
+      // Chuyển trạng thái:
+      // importing -> draft -> published
+      allow update: if epubIsAdminV49()
+        && resource.data.ownerUid == request.auth.uid
+        && request.resource.data.ownerUid == resource.data.ownerUid
+        && request.resource.data.chapterCount == resource.data.chapterCount
+        && request.resource.data.chapterIndex == resource.data.chapterIndex
+        && (
+          (
+            resource.data.status == 'importing'
+            && request.resource.data.status == 'draft'
+          )
+          ||
+          (
+            resource.data.status == 'draft'
+            && request.resource.data.status == 'published'
+          )
+        );
+
+      // Không xóa truyện qua ứng dụng
+      allow delete: if false;
+
+      // 6. Nội dung từng chương EPUB
+      match /chapters/{chapterId} {
+
+        allow get, list: if epubIsAdminV49()
+          || get(
+            /databases/$(database)/documents/epub_stories_v49/$(storyId)
+          ).data.status == 'published';
+
+        // Chỉ Admin sở hữu sách được thêm chương
+        allow create: if epubOwnerV49(storyId)
+          && get(
+            /databases/$(database)/documents/epub_stories_v49/$(storyId)
+          ).data.status == 'importing'
+          && request.resource.data.id == chapterId
+          && request.resource.data.title is string
+          && request.resource.data.content is string
+          && request.resource.data.content.size() <= 420000;
+
+        // Không cho sửa hoặc xóa chương đã lưu
+        allow update, delete: if false;
+      }
+    }
+
+    // 7. Từ chối truy cập ngoài phạm vi cho phép
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
