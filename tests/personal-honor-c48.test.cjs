@@ -129,5 +129,5 @@ test('C4.8 phone journeys filter by game and paginate the growing Hall',()=>{
  assert.match(html,/personal-honor-c46\.js\?v=c48-1/);
  assert.match(html,/personal-honor-ui-c46\.js\?v=c48-1/);
  assert.match(html,/personal-honor-c46\.css\?v=c48-1/);
- assert.match(html,/personal-arcade-ui-v1\.js\?v=c48-1/);
+ assert.match(html,/personal-arcade-ui-v1\.js\?v=c410-1/);
 });

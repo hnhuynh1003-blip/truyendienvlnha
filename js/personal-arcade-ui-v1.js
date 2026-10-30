@@ -19,7 +19,7 @@
   gold:'✹',crystal:'✦',jade:'❖',meteor:'☄',relic:'♜'};
  let tab='neon',drawerOpen=null,activeKey=null,state=null,lastTick=Date.now(),lastSave=0,
   lastPaint=0,lastRenderedKey=null,notice='',noticeUntil=0,error=false,feedback=null,
-  exchangeOpen=false,exchangeAmount=10,exchangeBusy=false;
+  exchangeOpen=false,exchangeAmount=10,exchangeBusy=false,resetScrollOnPaint=false;
  const now=()=>Date.now();
  const isSandbox=()=>typeof IS_SANDBOX_MODE!=='undefined'&&IS_SANDBOX_MODE;
  function identity(){
@@ -371,7 +371,10 @@
   if(!s){element.innerHTML='<div class="arcade-empty">Đăng nhập tài khoản để lưu tiến trình minigame riêng trên thiết bị này.</div>';lastRenderedKey=null;return true;}
   const time=now(),panel=tab==='neon'?neonPanel(s):tab==='mine'?minePanel(s,time):
    tab==='jade'?root.DuduPersonalJadeUIV1?.panel(s)||'<div>Ngọc Phường đang mở cửa…</div>':gardenPanel(s,time);
-  const previousScroll=element.querySelector?.('.arcade-scroll')?.scrollTop??element.scrollTop??0;
+  // Different games are separate pages: never land halfway down the new one
+  // just because the previous game was scrolled near its workshop controls.
+  const previousScroll=resetScrollOnPaint?0:
+   element.querySelector?.('.arcade-scroll')?.scrollTop??element.scrollTop??0;
   const oldSheet=element.querySelector?.('.arcade-sheet-overlay');
   const previousSheetScroll=oldSheet?.dataset?.sheet===drawerOpen?
    oldSheet.querySelector?.('.arcade-sheet-body')?.scrollTop??0:0;
@@ -398,6 +401,7 @@
   </div>`;
   if(showToast)element.querySelector('[data-arcade-notice]').textContent=notice;
   const scrollPort=element.querySelector?.('.arcade-scroll');if(scrollPort)scrollPort.scrollTop=previousScroll;
+  resetScrollOnPaint=false;
   if(drawerOpen&&drawerTitles[drawerOpen]&&root.document.createElement){
    const sections=Array.from(element.querySelectorAll?.('.arcade-world [data-arcade-panel="'+drawerOpen+'"]')||[]);
    if(sections.length){
@@ -565,7 +569,9 @@
    const control=event.target.closest('button');
    if(!control||control.disabled)return;
    const next=control.dataset.arcadeTab;
-   if(next&&modeLabels[next]){tick();tab=next;drawerOpen=null;notice='';error=false;render();return;}
+   if(next&&modeLabels[next]){
+    tick();if(next!==tab)resetScrollOnPaint=true;
+    tab=next;drawerOpen=null;notice='';error=false;render();return;}
    const action=control.dataset.arcadeAction;
    if(action==='transfer'){void transferArcade();return;}
    if(action==='jade-open-market'||action==='jade-open-workshop'){

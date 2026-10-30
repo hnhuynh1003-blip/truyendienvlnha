@@ -10,10 +10,12 @@ const quotePolicy=require('../js/personal-arcade-exchange-v1.js');
 function harness(options={}){
  const db=new Map(),listeners={};let uid='reader-one';
  const notice={textContent:''};
+ const scroll={scrollTop:0};
  const headerWallet={textContent:'',disabled:false,listeners:{},
   addEventListener(name,fn){this.listeners[name]=fn;}};
  const host={innerHTML:'',scrollTop:0,listeners:{},
-  querySelector:()=>notice,addEventListener(name,fn){this.listeners[name]=fn;}};
+  querySelector:selector=>selector==='.arcade-scroll'?scroll:notice,
+  addEventListener(name,fn){this.listeners[name]=fn;}};
  const app={style:{display:'flex'}};
  const document={getElementById:id=>id==='personal-arcade-v1'?host:
   id==='phone-app-arcade'?app:id==='arcade-header-wallet-v1'?headerWallet:null};
@@ -42,7 +44,7 @@ function harness(options={}){
  vm.runInNewContext(jadeSource,context);
  const source=readFileSync(join(__dirname,'../js/personal-arcade-ui-v1.js'),'utf8');
  vm.runInNewContext(source,context);
- return {db,host,notice,headerWallet,window,listeners,profile,
+ return {db,host,notice,scroll,headerWallet,window,listeners,profile,
   getSavedProfiles:()=>savedProfiles,getWalletRefreshes:()=>walletRefreshes,
   setUid:next=>{uid=next;}};
 }
@@ -161,6 +163,22 @@ test('Arcade UI changes game tabs and stores a local UID-specific mining round',
  assert.match(host.innerHTML,/<b>100<small>\/100<\/small><\/b>/);
  assert.equal(db.has('dudu-personal-arcade:v1:reader-two'),false,
   'A new reader must not inherit or accidentally overwrite the prior user game');
+});
+test('C4.10 switching games starts at the stage, while ordinary refresh preserves scroll',()=>{
+ const {host,scroll,window}=harness();
+ window.DuduPersonalArcadeUIV1.render();
+ scroll.scrollTop=245;
+ window.DuduPersonalArcadeUIV1.render();
+ assert.equal(scroll.scrollTop,245,'A state refresh must not kick the player to the top');
+ host.listeners.click({target:{closest:selector=>selector==='button'?
+  {disabled:false,dataset:{arcadeTab:'jade'}}:null}});
+ assert.equal(scroll.scrollTop,0,'Opening a different game starts with its stage visible');
+ scroll.scrollTop=132;
+ window.DuduPersonalArcadeUIV1.interact('jade-buy-0');
+ assert.equal(scroll.scrollTop,132,'Inspecting a rock must not lose the current position');
+ host.listeners.click({target:{closest:selector=>selector==='button'?
+  {disabled:false,dataset:{arcadeTab:'mine'}}:null}});
+ assert.equal(scroll.scrollTop,0,'Every game switch resets the prior game scroll offset');
 });
 test('Garden is a playable scene with plots and animated pond, not generic data tiles',()=>{
  const {host,window}=harness();

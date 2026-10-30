@@ -81,6 +81,8 @@ jobs:
           node tests/browser-vangioi-online-playtest.cjs
           node tests/browser-vangioi-tang-may-author.cjs
           node tests/browser-vangioi-erro-author.cjs
+      - name: C4.10 mobile Arcade journey (isolated Sandbox, no external writes)
+        run: node tests/browser-arcade-mobile-c410.cjs
       - name: Legacy Sandbox regression (advisory; cannot block main V71)
         continue-on-error: true
         run: |
