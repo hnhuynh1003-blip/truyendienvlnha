@@ -1,0 +1,133 @@
+/* C4.6 — Honor Hall: jeweled holographic collection, compact mobile-first. */
+body.dudu-phone-v11 .dudu-honor-home-chip{
+ align-self:flex-start;max-width:92%;border:1px solid rgba(211,170,98,.45);
+ background:linear-gradient(108deg,rgba(53,48,79,.86),rgba(28,57,67,.94));
+ color:#ffe8b3;border-radius:999px;padding:5px 13px;margin:0 0 6px 5px;
+ font-size:11px;font-weight:800;letter-spacing:.035em;overflow:hidden;
+ white-space:nowrap;text-overflow:ellipsis;box-shadow:0 4px 16px rgba(7,9,25,.35);
+ cursor:pointer;transition:transform .18s,border-color .18s;
+}
+body.dudu-phone-v11 .dudu-honor-home-chip:active{transform:scale(.97)}
+body.dudu-phone-v11 .dudu-honor-home-chip[data-rarity="mythic"]{
+ border-color:#d8b970;background:linear-gradient(100deg,#52402b,#354b4c 65%,#5f3d50);
+ box-shadow:0 0 16px rgba(231,181,99,.25),inset 0 0 13px rgba(255,204,103,.1);
+}
+body.dudu-phone-v11 .dudu-honor-home-chip[data-rarity="epic"]{
+ border-color:#ab8bf3;background:linear-gradient(110deg,#43345d,#263a59);
+}
+body.dudu-phone-v11 .dudu-honor-home-chip:disabled{opacity:.55;cursor:default}
+body.dudu-phone-v11 .dudu-v27-profile-title[data-rarity="mythic"]{color:#ffda89;text-shadow:0 0 14px rgba(232,190,97,.5)}
+body.dudu-phone-v11 .dudu-v27-profile-title[data-rarity="epic"]{color:#d8bdff}
+body.dudu-phone-v11 .dudu-honor-profile-link{
+ display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;
+ border-radius:14px;border:1px solid rgba(150,140,212,.32);
+ background:linear-gradient(115deg,rgba(66,54,100,.75),rgba(28,55,71,.68));
+ color:#eee6ff;padding:10px 12px;margin:9px 0 4px;text-align:left;
+ cursor:pointer;
+}
+body.dudu-phone-v11 .dudu-honor-profile-link strong{font-size:12px;letter-spacing:.02em}
+body.dudu-phone-v11 .dudu-honor-profile-link small{display:block;color:#b9cad7;font-size:10px;margin-top:1px}
+body.dudu-phone-v11 .dudu-honor-profile-link >span:last-child{color:#edcb87;font-size:20px}
+body.dudu-phone-v11 .dudu-honor-profile-strip{display:flex;align-items:center;gap:6px;min-height:32px}
+body.dudu-phone-v11 .dudu-honor-profile-medal{display:inline-grid;place-items:center;
+ border:1px solid #a98c6b;background:rgba(82,66,87,.5);border-radius:50%;
+ height:30px;width:30px;font-size:16px;box-shadow:0 0 10px rgba(210,174,112,.12)}
+body.dudu-phone-v11 .dudu-honor-profile-empty{font-size:10px;color:#9eabc1}
+#phone-app-honors{min-height:0;overflow:hidden}
+#dudu-honor-content-c46{min-height:0;flex:1;overflow:auto;overscroll-behavior:contain;
+ padding:10px 11px 24px;scrollbar-width:thin;scrollbar-color:#71649a transparent;
+ background:radial-gradient(ellipse at top right,rgba(86,80,135,.16),transparent 62%),
+  linear-gradient(#121b2d,#101828)}
+#dudu-honor-content-c46 .dudu-honor-hero{
+ padding:17px 14px 13px;border-radius:18px;position:relative;overflow:hidden;
+ border:1px solid rgba(214,184,119,.46);color:#f4e9d9;
+ background:radial-gradient(circle at 84% 10%,rgba(231,166,92,.22),transparent 45%),
+  linear-gradient(126deg,#24253f,#183b42 76%,#3c3848);
+ box-shadow:0 12px 28px rgba(6,9,24,.25),inset 0 0 26px rgba(232,192,119,.07);
+}
+#dudu-honor-content-c46 .dudu-honor-hero:after{
+ content:'✦';position:absolute;right:12px;top:2px;font-size:60px;opacity:.12;color:#f6d18c;
+}
+#dudu-honor-content-c46 .dudu-honor-hero >small{
+ color:#eac989;font-size:9px;letter-spacing:.16em;font-weight:800;
+}
+#dudu-honor-content-c46 .dudu-honor-hero-row{display:flex;gap:11px;align-items:center;margin:11px 0 13px}
+#dudu-honor-content-c46 .dudu-honor-main-symbol{
+ height:65px;width:65px;flex-shrink:0;display:grid;place-items:center;
+ border:1px solid rgba(243,205,134,.55);border-radius:15px;
+ background:radial-gradient(circle,rgba(234,185,105,.24),rgba(32,38,61,.75));
+ font-size:30px;color:#f9deab;box-shadow:inset 0 0 22px rgba(232,165,101,.13);
+}
+#dudu-honor-content-c46 .dudu-honor-main-copy{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0}
+#dudu-honor-content-c46 .dudu-honor-main-copy small{font-size:9px;color:#b7c8d7;letter-spacing:.06em}
+#dudu-honor-content-c46 .dudu-honor-main-copy strong{font-size:17px;line-height:1.25;color:#fff1d3}
+#dudu-honor-content-c46 .dudu-honor-stats{display:flex;justify-content:space-between;gap:5px;
+ padding-top:10px;border-top:1px solid rgba(240,220,179,.22);font-size:9px;color:#c9d4db;text-align:center}
+#dudu-honor-content-c46 .dudu-honor-stats span{flex:1}
+#dudu-honor-content-c46 .dudu-honor-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+ gap:5px;margin:12px 0 9px;padding:4px;border:1px solid #3e4560;
+ border-radius:13px;background:#1a2539}
+#dudu-honor-content-c46 .dudu-honor-tabs button{
+ border:0;border-radius:10px;color:#a7b6cc;background:transparent;min-height:35px;
+ font-size:11px;font-weight:750;cursor:pointer}
+#dudu-honor-content-c46 .dudu-honor-tabs button.is-active{
+ background:linear-gradient(108deg,#62527b,#355c67);color:#fff1d7;
+ box-shadow:0 2px 10px rgba(0,0,0,.28)}
+#dudu-honor-content-c46 .dudu-honor-collection{display:flex;flex-direction:column;gap:9px}
+#dudu-honor-content-c46 .dudu-honor-tip,#dudu-honor-content-c46 .dudu-honor-footnote{
+ font-size:10px;color:#a9b9c9;line-height:1.55;margin:3px 2px 6px}
+#dudu-honor-content-c46 .dudu-honor-footnote{text-align:center;margin-top:14px}
+#dudu-honor-content-c46 .dudu-honor-rarity{
+ align-self:flex-start;border-radius:999px;padding:2px 8px;font-size:9px;
+ border:1px solid #777c8e;background:rgba(105,113,143,.15);color:#b8c5d9}
+#dudu-honor-content-c46 .dudu-honor-rare{border-color:#5aa9ae;color:#89dbd0}
+#dudu-honor-content-c46 .dudu-honor-epic{border-color:#ad89dd;color:#dbc3ff}
+#dudu-honor-content-c46 .dudu-honor-mythic{border-color:#d9b26d;color:#f4d38c;background:rgba(171,111,55,.17)}
+#dudu-honor-content-c46 .dudu-honor-card,#dudu-honor-content-c46 .dudu-honor-achievement{
+ display:flex;align-items:center;gap:10px;border:1px solid #35475d;
+ border-radius:14px;padding:11px 10px;background:linear-gradient(120deg,#202d42,#1a2837);
+ min-width:0}
+#dudu-honor-content-c46 .dudu-honor-card[data-rarity="epic"],
+#dudu-honor-content-c46 .dudu-honor-achievement[data-rarity="epic"]{border-color:#79629d}
+#dudu-honor-content-c46 .dudu-honor-card[data-rarity="mythic"],
+#dudu-honor-content-c46 .dudu-honor-achievement[data-rarity="mythic"]{
+ border-color:#b9965e;background:linear-gradient(118deg,#3b303b,#213c3e)}
+#dudu-honor-content-c46 .is-locked{filter:saturate(.52);opacity:.71}
+#dudu-honor-content-c46 .is-equipped{box-shadow:inset 0 0 0 1px rgba(232,191,106,.35)}
+#dudu-honor-content-c46 .dudu-honor-symbol,#dudu-honor-content-c46 .dudu-honor-ach-icon{
+ flex-shrink:0;height:44px;width:44px;display:grid;place-items:center;border-radius:12px;
+ background:linear-gradient(145deg,rgba(135,112,153,.26),rgba(64,130,137,.13));
+ border:1px solid rgba(179,178,208,.28);font-size:23px;color:#f4dba9;
+}
+#dudu-honor-content-c46 .dudu-honor-card-copy,#dudu-honor-content-c46 .dudu-honor-ach-copy{
+ display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0;flex:1}
+#dudu-honor-content-c46 .dudu-honor-card-copy strong,#dudu-honor-content-c46 .dudu-honor-ach-copy strong{
+ font-size:11px;color:#f0ecff;line-height:1.4}
+#dudu-honor-content-c46 .dudu-honor-card-copy small,#dudu-honor-content-c46 .dudu-honor-ach-copy small{
+ font-size:9px;color:#a8bbcb;line-height:1.4}
+#dudu-honor-content-c46 .dudu-honor-ach-copy p{font-size:10px;color:#c1d0d6;line-height:1.45}
+#dudu-honor-content-c46 .dudu-honor-action,#dudu-honor-content-c46 .dudu-honor-pin{
+ flex-shrink:0;border:1px solid #ad9165;background:#3b3548;color:#f0d39c;
+ border-radius:9px;font-size:10px;font-weight:750;padding:8px;cursor:pointer;
+}
+#dudu-honor-content-c46 .dudu-honor-action:disabled{opacity:.65;cursor:default}
+#dudu-honor-content-c46 .dudu-honor-pin{font-size:20px;width:37px;height:37px;padding:2px}
+#dudu-honor-content-c46 .dudu-honor-pin.is-pinned{color:#ffdf8b;background:#5b4536}
+#dudu-honor-content-c46 .dudu-honor-ach-meter{height:4px;border-radius:99px;width:100%;
+ background:#374860;overflow:hidden;margin:4px 0 1px}
+#dudu-honor-content-c46 .dudu-honor-ach-meter i{display:block;height:100%;border-radius:99px;
+ background:linear-gradient(90deg,#846cbe,#6dd0c4,#e7c37e)}
+#dudu-honor-content-c46 .dudu-honor-filters{display:flex;gap:5px;overflow:auto;
+ padding-bottom:4px;scrollbar-width:none}
+#dudu-honor-content-c46 .dudu-honor-filters button{flex-shrink:0;border:1px solid #455572;
+ border-radius:99px;background:#1b293c;color:#b9c8d8;padding:5px 10px;font-size:10px;cursor:pointer}
+#dudu-honor-content-c46 .dudu-honor-filters button.is-active{background:#3d536a;
+ color:#fbe4b3;border-color:#bea177}
+#dudu-honor-content-c46 .dudu-honor-empty{text-align:center;font-size:12px;color:#aebed0;padding:30px 12px}
+@media (max-width:390px){
+ #dudu-honor-content-c46{padding:8px 8px 20px}
+ #dudu-honor-content-c46 .dudu-honor-card,#dudu-honor-content-c46 .dudu-honor-achievement{gap:7px;padding:10px 8px}
+ #dudu-honor-content-c46 .dudu-honor-symbol,#dudu-honor-content-c46 .dudu-honor-ach-icon{width:37px;height:39px;font-size:20px}
+ #dudu-honor-content-c46 .dudu-honor-action{padding:7px 5px}
+}
+@media (prefers-reduced-motion:reduce){body.dudu-phone-v11 .dudu-honor-home-chip{transition:none}}

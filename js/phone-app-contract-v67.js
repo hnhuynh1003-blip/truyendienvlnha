@@ -7,6 +7,7 @@
  if(!root||!root.document)return;
  const descriptors=[
   ['profile','Hồ sơ','retain','updatePhoneUI','account'],
+  ['honors','Sổ Vinh Danh','retain','DuduHonorUIV46','achievements'],
   ['inventory','Kho đồ','retain','renderInventory','items'],
   ['author-mail','Thư tác giả','retain','renderAuthorMailV443','author'],
   ['lab-v445','Phòng thử nghiệm','sandbox','DuduMultiActorLabUIV445','lab'],

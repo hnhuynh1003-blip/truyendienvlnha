@@ -94,8 +94,8 @@ async function main() {
     assert.ok(mobileSite.heroHeight<280,'Mobile hero should leave room for visible story content');
     assert.equal(mobileSite.navigationVisible,true,'Mobile bottom navigation visible');
     assert.equal(mobileSite.overflow,false,'Homepage should not overflow viewport horizontally');
-    // V67.0: verify all existing Phone apps share one stable inventory and retain mounts.
-    await page.waitForFunction(()=>window.DuduPhoneAppsV67?.specs?.length===16);
+    // C4.6: Honor Hall joins the stable Cyber Phone app inventory.
+    await page.waitForFunction(()=>window.DuduPhoneAppsV67?.specs?.length===17);
     const phoneAudit=await page.evaluate(()=>{
       const app=window.DuduPhoneAppsV67;
       const entries=app.snapshot();
@@ -113,12 +113,14 @@ async function main() {
         coreRenderer:app.get('core-console')?.entrypointDetected===true,
         walletRenderer:app.get('wallet')?.entrypointDetected===true,
         arcadeRenderer:app.get('arcade')?.entrypointDetected===true,
+        honorsRenderer:app.get('honors')?.entrypointDetected===true,
         unknownId:app.get('unknown')===null,
         noFirestoreWrites:window.__firestoreWrites.length===0
       };
     });
-    assert.equal(phoneAudit.count,16,'Cyber Phone must also register Wallet and Arcade');
-    assert.equal(phoneAudit.mounted,16,'Every Phone app should have a stable DOM mount');
+    assert.equal(phoneAudit.count,17,'Cyber Phone must register the Honor Hall');
+    assert.equal(phoneAudit.mounted,17,'Every Phone app should have a stable DOM mount');
+    assert.equal(phoneAudit.honorsRenderer,true,'Honor Hall renderer must be loaded');
     assert.deepEqual(phoneAudit.missingModules,[],
       'Phone app entrypoints should remain loaded: '+phoneAudit.missingModules.join(', '));
     assert.equal(phoneAudit.decisions.chat,'modernize');

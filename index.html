@@ -37,6 +37,7 @@
   <link rel="stylesheet" href="css/market-v43.css?v=c24a-1">
   <link rel="stylesheet" href="css/dudu-fun-v43.css?v=c42-fun-1">
   <link rel="stylesheet" href="css/personal-arcade-v1.css?v=c44-ux-3">
+  <link rel="stylesheet" href="css/personal-honor-c46.css?v=c46-1">
   <link rel="stylesheet" href="css/dudu-wallet-v1.css?v=wallet-1">
   <link rel="stylesheet" href="css/item-actions-v43.css?v=43-5-3b">
   <link rel="stylesheet" href="css/museum-memories-v43.css?v=1">
@@ -101,6 +102,7 @@
   <script src="js/personal-blind-box-c29.js?v=c29-box-1"></script>
   <script src="js/personal-jade-core-v1.js?v=c44-jade-1"></script>
   <script src="js/personal-arcade-core-v1.js?v=c44-jade-1"></script>
+  <script src="js/personal-honor-c46.js?v=c46-1"></script>
   <script src="js/personal-arcade-exchange-v1.js?v=xu-quote-2"></script>
   <script src="js/personal-spark-exchange-v1.js?v=spark-bridge-1"></script>
   <script src="js/story-market-v43.js?v=1"></script>
@@ -1010,6 +1012,8 @@
             <small id="dudu-v30-account-meta">Lv.1 · 🪙 50 Xu</small>
           </span>
         </button>
+        <button type="button" id="dudu-honor-home-title" class="dudu-honor-home-chip"
+          onclick="openPhoneApp('honors')" aria-label="Mở Sổ Vinh Danh và đổi danh hiệu">✦ Thực Thể Ký Tự</button>
         <div class="phone-app-grid" aria-label="Ứng dụng thường dùng">
           <button type="button" class="app-icon" onclick="openPhoneApp('inventory')" aria-label="Mở Kho Đồ">
             <div class="app-box" style="background:#8b5cf6;">🎒</div><div class="app-label">Kho Đồ</div>
@@ -1095,6 +1099,13 @@
           <div id="profile-title" class="dudu-v27-profile-title">Người Thao Túng Mã Nguồn</div>
           <div id="profile-account-id" class="dudu-v27-profile-id">ID: Khách</div>
         </div>
+        <button type="button" class="dudu-honor-profile-link" onclick="openPhoneApp('honors')"
+          aria-label="Xem bộ sưu tập danh hiệu và thành tựu">
+          <span><strong>✦ Sổ Vinh Danh</strong><small id="dudu-honor-profile-count">1 danh hiệu · 0 thành tựu</small></span>
+          <span aria-hidden="true">›</span>
+        </button>
+        <div id="dudu-honor-profile-summary" class="dudu-honor-profile-strip"
+          aria-label="Ba huy hiệu thành tựu đang trưng bày"></div>
         <div class="dudu-v27-section-heading">✦ Tiến trình của tôi</div>
         <div class="dudu-v27-stats" role="group" aria-label="Tiến trình tài khoản">
           <div class="dudu-v27-stat"><span>Truyện đã đọc</span><b id="stat-personal-reading">0</b></div>
@@ -1112,6 +1123,15 @@
           </div>
         </details>
         <button type="button" class="btn dudu-v27-account-btn" onclick="openAuthModal()">Tài khoản &amp; đăng xuất</button>
+      </div>
+
+      <!-- C4.6: Honor Hall shares the existing owner profile and Arcade progress. -->
+      <div class="phone-sub-app" id="phone-app-honors">
+        <div class="phone-app-header">
+          <button class="phone-back-btn" onclick="phoneHome()" aria-label="Quay về màn hình chính">‹</button>
+          <span>✦ Sổ Vinh Danh</span><span></span>
+        </div>
+        <div id="dudu-honor-content-c46" aria-live="polite"></div>
       </div>
 
       <!-- APP: KHO ĐỒ -->
@@ -5358,6 +5378,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
         window.DuduFunUIV43?.render();
       } else if (appName === 'arcade') {
         window.DuduPersonalArcadeUIV1?.render();
+      } else if (appName === 'honors') {
+        window.DuduHonorUIV46?.open();
       } else if (appName === 'wallet') {
         renderWallet();
       } else if (appName === 'quests') {
@@ -6462,7 +6484,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       const percent = Math.min(100, Math.round((userProfile.exp / expNeeded) * 100));
 
       const levelEl = document.getElementById('phone-level-display');
-      if (levelEl) levelEl.textContent = `LV.${userProfile.level} - ${userProfile.title || 'Kẻ Lang Bạt'}`;
+      if (levelEl) levelEl.textContent = `LV.${userProfile.level}`;
 
       const fillEl = document.getElementById('phone-exp-fill');
       if (fillEl) fillEl.style.width = `${percent}%`;
@@ -6531,6 +6553,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       // Firebase identity is separate from the profile load. A verified Google UID
       // should never be described as "Khách" solely due to a slow Firestore read.
       if (guestTip) guestTip.style.display = (!IS_SANDBOX_MODE && !DuduAuth.uid()) ? 'block' : 'none';
+      window.DuduHonorUIV46?.refresh?.();
     }
 
     // Main rewards are applied ONLY after an owner-scoped transaction. Sandbox
@@ -8567,6 +8590,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/market-ui-v43.js?v=c24a-1"></script>
 <script src="js/dudu-fun-ui-v43.js?v=c42-fun-1"></script>
 <script src="js/personal-jade-ui-v1.js?v=c44-jade-1"></script>
+<script src="js/personal-honor-ui-c46.js?v=c46-1"></script>
 <script src="js/personal-arcade-ui-v1.js?v=c44-ux-3"></script>
 <script src="js/quest-ui-v43-7.js?v=c23c-1"></script>
 <script src="js/economy-runtime-v43.js?v=c23c-1"></script>

@@ -44,6 +44,7 @@
   if(!activeKey||!candidate)return false;
   try{
    root.localStorage.setItem(activeKey,JSON.stringify(candidate));
+   root.DuduHonorUIV46?.observeArcade?.(candidate);
    lastSave=now();return true;
   }catch(_){notice='Không lưu được game trên thiết bị. Kiểm tra dung lượng trình duyệt.';
    error=true;noticeUntil=now()+5000;return false;}

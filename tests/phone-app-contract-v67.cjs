@@ -7,7 +7,7 @@ const vm=require('node:vm');
 const root=path.resolve(__dirname,'..');
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const code=fs.readFileSync(path.join(root,'js/phone-app-contract-v67.js'),'utf8');
-const ids=['profile','inventory','author-mail','lab-v445','museum','quests',
+const ids=['profile','honors','inventory','author-mail','lab-v445','museum','quests',
   'stories','codex','chat','shop','wallet','fun','arcade','settings','system','core-console'];
 const requested=[];
 const elements=new Map(ids.map(id=>['phone-app-'+id,{id:'phone-app-'+id,style:{display:'none'}}]));
@@ -19,8 +19,8 @@ vm.runInNewContext(code,environment,{filename:'phone-app-contract-v67.js',timeou
 const api=win.DuduPhoneAppsV67;
 assert.ok(api);
 assert.equal(api.version,1);
-assert.equal(api.specs.length,16);
-assert.equal(new Set(Array.from(api.specs,s=>s.id)).size,16);
+assert.equal(api.specs.length,17);
+assert.equal(new Set(Array.from(api.specs,s=>s.id)).size,17);
 const routeTargets=[...html.matchAll(/openPhoneApp\(['"]([^'"]+)['"]\)/g)].map(m=>m[1]);
 assert.ok(routeTargets.length>=16);
 for(const target of routeTargets){
@@ -43,6 +43,7 @@ assert.equal(api.get('quests').decision,'bridge');
 assert.equal(api.get('inventory').decision,'retain');
 assert.equal(api.get('wallet').domain,'economy');
 assert.equal(api.get('arcade').domain,'local-minigames');
+assert.equal(api.get('honors').domain,'achievements');
 win.renderWallet=()=>{};
 win.DuduPersonalArcadeUIV1={render(){}};
 assert.equal(api.get('wallet').state,'code_present');
@@ -55,4 +56,4 @@ assert.equal(api.get('chat').state,'code_present');
 assert.ok(api.issues().some(row=>row.id==='quests'),'Absent renderer must be detectable');
 assert.ok(code.indexOf('localStorage.')<0 && code.indexOf('fetch(')<0);
 assert.ok(html.includes('src="js/phone-app-contract-v67.js?'),'Shared app inventory must load on the site');
-console.log('DUDU V67 phone app manifest: 16 mounts including Wallet/Arcade, status probes OK');
+console.log('DUDU C4.6 phone app manifest: 17 mounts including Sổ Vinh Danh, status probes OK');
