@@ -144,16 +144,33 @@
  function view(profile,arcade){
   const saved=norm(profile?.honorV1),earned=unique([
    ...saved.earned,...discovered(profile,arcade)],MAX_EARNED);
-  const titles=TITLES.map(t=>({...t,unlocked:titleUnlocked(t.id,earned)}));
   const achievements=CATALOG.map(a=>({...a,current:Math.min(a.target,num(a.progress(profile,arcade))),
    unlocked:earned.includes(a.id)}));
+  // C4.12: every collectible title points to its real, immutable unlock
+  // condition. A hidden achievement never exposes its clue while locked.
+  const titles=TITLES.map(t=>{
+   const unlocked=titleUnlocked(t.id,earned),goal=achievements.find(a=>a.titleId===t.id);
+   return {...t,unlocked,goal:goal?{
+    id:goal.id,current:goal.current,target:goal.target,unlocked:goal.unlocked,
+    secret:!!goal.secret&&!goal.unlocked,
+    description:goal.secret&&!goal.unlocked?'Điều kiện đang được che giấu.':goal.description
+   }:null};
+  });
   const achievementById=new Map(achievements.map(a=>[a.id,a]));
   const journeys=JOURNEYS.map(j=>{const steps=j.steps.map(id=>achievementById.get(id));
    return {...j,done:steps.filter(a=>a.unlocked).length,total:steps.length,
     next:steps.find(a=>!a.unlocked)||null,
     title:titles.find(t=>t.id===j.titleId)};});
+  const hunts=titles.filter(t=>!t.unlocked&&t.goal&&!t.goal.secret&&t.rarity!=='common');
+  hunts.sort((a,b)=>{
+   const aRatio=a.goal.current/a.goal.target,bRatio=b.goal.current/b.goal.target;
+   if(aRatio!==bRatio)return bRatio-aRatio;
+   if(a.goal.target!==b.goal.target)return a.goal.target-b.goal.target;
+   return ({mythic:3,epic:2,rare:1,common:0})[b.rarity]-
+    ({mythic:3,epic:2,rare:1,common:0})[a.rarity];
+  });
   return {...saved,earned,titles,achievements,journeys,
-   unlockedCount:achievements.filter(a=>a.unlocked).length};
+   nextHunt:hunts[0]||null,unlockedCount:achievements.filter(a=>a.unlocked).length};
  }
  async function run({db,auth,uid,kind='sync',arcade=null,localProfile=null,
   titleId,achievementId,pinnedIds}={}){

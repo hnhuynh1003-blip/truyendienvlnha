@@ -126,8 +126,8 @@ test('C4.8 phone journeys filter by game and paginate the growing Hall',()=>{
  assert.equal(flatten(host).filter(n=>n.className.split(' ').includes('dudu-honor-journey')).length,4);
  assert.equal(root.DuduHonorUIV46.openGame('Không tồn tại'),false);
  const html=readFileSync(join(__dirname,'../index.html'),'utf8');
- assert.match(html,/personal-honor-c46\.js\?v=c411-1/);
- assert.match(html,/personal-honor-ui-c46\.js\?v=c411-1/);
- assert.match(html,/personal-honor-c46\.css\?v=c411-1/);
+ assert.match(html,/personal-honor-c46\.js\?v=c412-1/);
+ assert.match(html,/personal-honor-ui-c46\.js\?v=c412-1/);
+ assert.match(html,/personal-honor-c46\.css\?v=c412-1/);
  assert.match(html,/personal-arcade-ui-v1\.js\?v=c411-1/);
 });

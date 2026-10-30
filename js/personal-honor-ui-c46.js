@@ -14,7 +14,8 @@
  const deviceKey=()=>uid()?'dudu-honor-device-v1:'+encodeURIComponent(uid()):null;
  const create=(tag,cls,content)=>{const e=root.document.createElement(tag);
   if(cls)e.className=cls;if(content!==undefined)e.textContent=String(content);return e;};
- let page='titles',category='Tất cả',visibleLimit=8,busy=false,
+ let page='titles',category='Tất cả',titleScope='all',focusAchievementId=null,
+  visibleLimit=8,busy=false,
   observedAt=0,observedOwner='',observedIds=null,
   announcedIds=new Set(),momentNode=null,momentTimer=null;
  const rarityName={common:'Thường',rare:'Hiếm',epic:'Sử thi',mythic:'Huyền thoại'};
@@ -157,24 +158,59 @@
    create('span','',v.pinned.length+'/3 huy hiệu ghim'));
   hero.append(stats);return hero;
  }
+ function goToGoal(t){
+  if(!t?.goal)return;
+  page=t.goal.secret?'secrets':'achievements';
+  category=categories.includes(t.source)?t.source:'Khác';
+  focusAchievementId=t.goal.id;visibleLimit=8;render();
+  const host=$('dudu-honor-content-c46');if(host)host.scrollTop=0;
+ }
+ function huntSpotlight(t){
+  const section=create('section','dudu-honor-hunt-spotlight');section.dataset.rarity=t.rarity;
+  section.append(create('span','dudu-honor-hunt-sigil',t.icon));
+  const copy=create('div','dudu-honor-hunt-info');
+  copy.append(create('small','','✦ MỤC TIÊU ĐÁNG SĂN · '+rarityName[t.rarity]),
+   create('strong','',t.name),
+   create('span','',t.goal.description+' · '+t.goal.current+'/'+t.goal.target));
+  section.append(copy);
+  const action=create('button','dudu-honor-hunt-open','›');action.type='button';
+  action.title='Xem điều kiện '+t.name;
+  action.setAttribute('aria-label',action.title);
+  action.addEventListener('click',()=>goToGoal(t));section.append(action);
+  return section;
+ }
  function titleCard(t,v){
   const locked=!t.unlocked,selected=t.id===v.equipped;
+  const secret=locked&&t.goal?.secret;
   const card=create('article','dudu-honor-card dudu-honor-title-card'+
    (locked?' is-locked':'')+(selected?' is-equipped':''));
   card.dataset.rarity=t.rarity;
-  card.append(create('span','dudu-honor-symbol',locked?'◇':t.icon));
+  card.append(create('span','dudu-honor-symbol',secret?'◇':t.icon));
   const copy=create('div','dudu-honor-card-copy');
-  copy.append(create('strong','',locked?'Danh hiệu chưa mở':t.name),
-   create('small','',locked?'Hoàn thành thành tựu liên quan để mở khóa.':t.source));
+  copy.append(create('strong','',secret?'Danh hiệu bí ẩn':t.name),
+   create('small','',locked?(secret?'Nguồn: '+t.source+' · Điều kiện ẩn':t.goal?.description||'Chưa mở khóa'):
+    t.source));
+  if(locked&&t.goal&&!secret){
+   const progress=create('div','dudu-honor-title-progress');
+   const track=create('span','dudu-honor-title-track');
+   const fill=create('i','');fill.style.width=Math.floor(t.goal.current/t.goal.target*100)+'%';
+   track.append(fill);progress.append(track,
+    create('span','',t.goal.current+'/'+t.goal.target));
+   copy.append(progress);
+  }
   copy.append(rarityTag(t.rarity));card.append(copy);
-  const action=create('button','dudu-honor-action',selected?'Đang dùng':locked?'🔒':'Sử dụng');
-  action.type='button';action.disabled=locked||selected||busy;
-  if(!action.disabled)action.addEventListener('click',()=>{void transact('equip',{titleId:t.id});});
+  const action=create('button','dudu-honor-action',selected?'Đang dùng':locked?'Xem mốc ›':'Sử dụng');
+  action.type='button';action.disabled=selected||busy;
+  if(locked)action.setAttribute('aria-label','Xem điều kiện mở khóa '+(secret?'danh hiệu bí ẩn':t.name));
+  if(!action.disabled)action.addEventListener('click',()=>{
+   if(locked)goToGoal(t);else void transact('equip',{titleId:t.id});
+  });
   card.append(action);return card;
  }
  function achievementCard(a,v){
   const hidden=a.secret&&!a.unlocked;
-  const card=create('article','dudu-honor-achievement'+(a.unlocked?' is-earned':' is-locked'));
+  const card=create('article','dudu-honor-achievement'+(a.unlocked?' is-earned':' is-locked')+
+   (a.id===focusAchievementId?' is-target':''));
   card.dataset.rarity=a.rarity;
   const emblem=create('span','dudu-honor-ach-icon',hidden?'✧':a.icon);
   const content=create('div','dudu-honor-ach-copy');
@@ -182,7 +218,7 @@
    create('strong','',hidden?'Bí mật chưa khám phá':a.name),
    create('p','',hidden?'Hãy tiếp tục khám phá, dấu mốc này sẽ tự hé lộ.':a.description));
   const meter=create('div','dudu-honor-ach-meter'),fill=create('i','');
-  fill.style.width=(a.unlocked?100:a.current/a.target*100)+'%';meter.append(fill);
+  fill.style.width=(hidden?0:a.unlocked?100:a.current/a.target*100)+'%';meter.append(fill);
   content.append(meter,create('small','',a.unlocked?'✓ Đã hoàn thành':hidden?'???':
    a.current+'/'+a.target));
   card.append(emblem,content);
@@ -221,7 +257,8 @@
   bottom.append(create('small','',j.title?.icon+' Danh hiệu: '+(j.title?.name||'')));
   const action=create('button','dudu-honor-journey-open','Xem mốc ›');
   action.type='button';action.setAttribute('aria-label','Xem thử thách '+j.source);
-  action.addEventListener('click',()=>{page='achievements';category=j.source;visibleLimit=8;render();});
+  action.addEventListener('click',()=>{page='achievements';category=j.source;
+   focusAchievementId=j.next?.id||null;visibleLimit=8;render();});
   bottom.append(action);card.append(bottom);
   return card;
  }
@@ -235,6 +272,21 @@
   }
   return filters;
  }
+ const titleScopes=[['all','Tất cả'],['locked','Chưa có'],['owned','Đã sở hữu'],
+  ['rare','Hiếm trở lên'],['mythic','Huyền thoại']];
+ function titleScopeRow(){
+  const row=create('div','dudu-honor-title-scopes');
+  row.setAttribute('aria-label','Lọc danh hiệu theo tình trạng và độ hiếm');
+  for(const [id,label] of titleScopes){
+   const btn=create('button',titleScope===id?'is-active':'',label);
+   btn.type='button';btn.setAttribute('aria-pressed',String(titleScope===id));
+   btn.addEventListener('click',()=>{titleScope=id;visibleLimit=8;render();});row.append(btn);
+  }
+  return row;
+ }
+ function matchesScope(t){return titleScope==='all'||
+  titleScope==='locked'&&!t.unlocked||titleScope==='owned'&&t.unlocked||
+  titleScope==='rare'&&t.rarity!=='common'||titleScope==='mythic'&&t.rarity==='mythic';}
  function matchesCategory(row){return category==='Tất cả'||row.source===category||
   category==='Khác'&&!categories.slice(1,-1).includes(row.source);}
  function appendPaged(body,items,renderItem,v){
@@ -268,14 +320,19 @@
    ['achievements','Thành tựu'],['secrets','Bí ẩn']]){
    const btn=create('button',page===id?'is-active':'',label);btn.type='button';
    btn.setAttribute('aria-pressed',String(page===id));
-   btn.addEventListener('click',()=>{page=id;category='Tất cả';visibleLimit=8;render();});nav.append(btn);
+   btn.addEventListener('click',()=>{page=id;category='Tất cả';focusAchievementId=null;
+    visibleLimit=8;render();});nav.append(btn);
   }
   host.append(nav);
   const body=create('div','dudu-honor-collection');
   if(page==='titles'){
    body.append(create('p','dudu-honor-tip',
-    'Chọn một danh hiệu để hiển thị dưới tên nhân vật. Có thể thay đổi bất cứ lúc nào.'));
-   body.append(filterRow());appendPaged(body,v.titles.filter(matchesCategory),titleCard,v);
+    'Mỗi danh hiệu có bậc hiếm riêng. Mở khóa rồi chọn Sử dụng để trưng bày trên điện thoại.'));
+   if(v.nextHunt&&category==='Tất cả'&&titleScope==='all')body.append(huntSpotlight(v.nextHunt));
+   body.append(titleScopeRow(),filterRow());
+   const list=v.titles.filter(t=>matchesCategory(t)&&matchesScope(t));
+   if(!list.length)body.append(create('p','dudu-honor-empty','Chưa có danh hiệu trong nhóm này.'));
+   appendPaged(body,list,titleCard,v);
   }else if(page==='journeys'){
    body.append(create('p','dudu-honor-tip',
     'Bốn hành trình, bốn đích đến. Mỗi mốc dựa trên kết quả chơi thật và chỉ trao huy hiệu/danh hiệu trang trí.'));
@@ -290,6 +347,7 @@
    const secret=page==='secrets';
    if(!secret)body.append(filterRow());
    const list=v.achievements.filter(a=>secret?a.secret:!a.secret&&matchesCategory(a));
+   if(focusAchievementId)list.sort((a,b)=>(b.id===focusAchievementId)-(a.id===focusAchievementId));
    appendPaged(body,list,achievementCard,v);
   }
   host.append(body);

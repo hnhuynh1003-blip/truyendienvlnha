@@ -557,3 +557,110 @@ body.dudu-phone-v11 #cyber-phone .dudu-c411-unlock-toast[data-rarity="mythic"] .
   animation:none!important;transition:none!important;
  }
 }
+
+/* C4.12 — collector's trail. A locked rarity is recognizable but never
+ * borrows the animated shine earned by an unlocked collectible. */
+#dudu-honor-content-c46 .dudu-honor-hunt-spotlight{
+ --hunt-color:#78e7d7;--hunt-glow:rgba(89,224,205,.17);
+ display:flex;align-items:center;gap:9px;min-width:0;position:relative;overflow:hidden;
+ border:1px solid var(--hunt-color);border-radius:14px;padding:10px 10px;
+ background:radial-gradient(circle at 3% 25%,var(--hunt-glow),transparent 52%),
+  linear-gradient(105deg,rgba(29,66,71,.94),rgba(21,35,58,.96));
+ box-shadow:inset 3px 0 var(--hunt-color),0 5px 17px rgba(3,10,24,.3);
+}
+#dudu-honor-content-c46 .dudu-honor-hunt-spotlight[data-rarity="epic"]{
+ --hunt-color:#c6a1ff;--hunt-glow:rgba(177,124,249,.21);
+ background:radial-gradient(circle at 4% 30%,var(--hunt-glow),transparent 56%),
+  linear-gradient(105deg,#392b55,#202d48);
+}
+#dudu-honor-content-c46 .dudu-honor-hunt-spotlight[data-rarity="mythic"]{
+ --hunt-color:#f9d18a;--hunt-glow:rgba(255,207,121,.23);
+ background:radial-gradient(circle at 4% 30%,var(--hunt-glow),transparent 56%),
+  linear-gradient(105deg,#4b3933,#213a40);
+}
+#dudu-honor-content-c46 .dudu-honor-hunt-sigil{
+ flex:0 0 40px;width:40px;height:43px;display:grid;place-items:center;
+ border:1px solid var(--hunt-color);border-radius:12px;
+ color:var(--hunt-color);background:rgba(12,25,39,.63);
+ font-size:23px;box-shadow:inset 0 0 12px var(--hunt-glow);
+}
+#dudu-honor-content-c46 .dudu-honor-hunt-info{
+ flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;
+}
+#dudu-honor-content-c46 .dudu-honor-hunt-info small{
+ color:var(--hunt-color);font-size:8px;font-weight:850;letter-spacing:.08em;
+}
+#dudu-honor-content-c46 .dudu-honor-hunt-info strong{
+ color:#fff2dc;font-size:12px;line-height:1.3;
+}
+#dudu-honor-content-c46 .dudu-honor-hunt-info span{
+ font-size:9px;color:#dae1e9;line-height:1.4;
+ display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;
+}
+#dudu-honor-content-c46 .dudu-honor-hunt-open{
+ flex:0 0 31px;width:31px;height:35px;cursor:pointer;
+ border-radius:10px;border:1px solid var(--hunt-color);
+ background:rgba(17,29,48,.65);color:var(--hunt-color);font-size:22px;
+}
+#dudu-honor-content-c46 .dudu-honor-title-scopes{
+ display:flex;overflow-x:auto;gap:5px;scrollbar-width:none;padding:1px 0 4px;
+}
+#dudu-honor-content-c46 .dudu-honor-title-scopes button{
+ white-space:nowrap;flex-shrink:0;cursor:pointer;
+ background:#172a38;border:1px solid #435975;border-radius:999px;
+ padding:6px 10px;color:#b7cada;font-size:10px;font-weight:750;
+}
+#dudu-honor-content-c46 .dudu-honor-title-scopes button.is-active{
+ color:#eafff7;background:#235750;border-color:#70dacc;
+ box-shadow:inset 0 0 9px rgba(94,238,206,.15);
+}
+#dudu-honor-content-c46 .dudu-honor-title-card.is-locked{
+ opacity:1;filter:none;border-style:dashed;
+ background:linear-gradient(120deg,rgba(30,39,56,.96),rgba(22,36,52,.96));
+}
+#dudu-honor-content-c46 .dudu-honor-title-card.is-locked[data-rarity="rare"]{
+ border-color:rgba(91,189,174,.6);
+}
+#dudu-honor-content-c46 .dudu-honor-title-card.is-locked[data-rarity="epic"]{
+ border-color:rgba(172,132,229,.68);
+}
+#dudu-honor-content-c46 .dudu-honor-title-card.is-locked[data-rarity="mythic"]{
+ border-color:rgba(239,191,107,.72);
+}
+#dudu-honor-content-c46 .dudu-honor-title-card.is-locked .dudu-honor-symbol{
+ opacity:.72;filter:grayscale(.32);
+}
+#dudu-honor-content-c46 .dudu-honor-title-card .dudu-honor-card-copy >small{
+ display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;
+}
+#dudu-honor-content-c46 .dudu-honor-title-card .dudu-honor-action{
+ max-width:67px;white-space:normal;line-height:1.35;
+}
+#dudu-honor-content-c46 .dudu-honor-title-card.is-locked .dudu-honor-action{
+ color:#e9dff8;border-color:#6d7295;background:#35354e;
+}
+#dudu-honor-content-c46 .dudu-honor-title-progress{
+ display:flex;align-items:center;gap:6px;width:100%;margin:2px 0 1px;
+}
+#dudu-honor-content-c46 .dudu-honor-title-track{
+ flex:1;min-width:0;height:4px;overflow:hidden;border-radius:100px;
+ background:#3a4359;
+}
+#dudu-honor-content-c46 .dudu-honor-title-track i{
+ display:block;height:100%;border-radius:100px;
+ background:linear-gradient(90deg,#6cbaa9,#dbcb93);
+}
+#dudu-honor-content-c46 .dudu-honor-title-progress >span:last-child{
+ color:#c8d1df;font-size:9px;min-width:28px;text-align:right;font-variant-numeric:tabular-nums;
+}
+#dudu-honor-content-c46 .dudu-honor-achievement.is-target{
+ outline:1px solid #e6c78a;outline-offset:2px;
+ box-shadow:inset 3px 0 #e8c886,0 0 14px rgba(232,200,134,.18);
+}
+#dudu-honor-content-c46 :is(.dudu-honor-hunt-open,.dudu-honor-title-scopes button,.dudu-honor-action):focus-visible{
+ outline:2px solid #ffe2a8;outline-offset:2px;
+}
+@media (max-width:350px){
+ #dudu-honor-content-c46 .dudu-honor-title-card .dudu-honor-action{max-width:58px;font-size:9px}
+ #dudu-honor-content-c46 .dudu-honor-hunt-sigil{flex-basis:35px;width:35px}
+}

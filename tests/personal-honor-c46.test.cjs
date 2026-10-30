@@ -297,8 +297,8 @@ test('C4.7 rarity finish is compact, collectible, accessible and motion-safe',()
  const html=readFileSync(join(__dirname,'../index.html'),'utf8');
  const css=readFileSync(join(__dirname,'../css/personal-honor-c46.css'),'utf8');
  assert.match(html,/id="dudu-honor-home-rarity"/);
- assert.match(html,/personal-honor-c46\.css\?v=c411-1/);
- assert.match(html,/personal-honor-ui-c46\.js\?v=c411-1/);
+ assert.match(html,/personal-honor-c46\.css\?v=c412-1/);
+ assert.match(html,/personal-honor-ui-c46\.js\?v=c412-1/);
  for(const tier of ['common','rare','epic','mythic']){
   assert.match(css,new RegExp('dudu-honor-home-chip\\[data-rarity="'+tier+'"\\]'));
   assert.match(css,new RegExp('dudu-honor-hero\\[data-rarity="'+tier+'"\\]'));

@@ -123,7 +123,31 @@ async function main(){
   assert.equal(saved.jade.sold,1);
   assert.equal(saved.neon.running,true);
   assert.equal(await page.evaluate(()=>window.__arcadeExternalWrites?.length||0),0);
-  console.log('C4.10 mobile Arcade: four games, touch actions, scroll and local saves OK');
+  // C4.12: the phone collection must make real targets discoverable without
+  // leaking hidden title criteria or scrolling through unrelated game panels.
+  await page.evaluate(()=>openPhoneApp('honors'));
+  const hall=page.locator('#dudu-honor-content-c46');
+  await hall.locator('.dudu-honor-title-scopes').waitFor();
+  assert.ok(await hall.locator('.dudu-honor-hunt-spotlight').isVisible());
+  await hall.locator('.dudu-honor-filters').getByRole('button',{name:'Ngọc Phường'}).click();
+  const jadeTitle=hall.locator('.dudu-honor-title-card').filter({hasText:'Tập Sự Thẩm Ngọc'});
+  assert.ok(await jadeTitle.isVisible(),'The already earned Jade title is in the collection');
+  assert.equal(await jadeTitle.locator('.dudu-honor-action').innerText(),'Sử dụng');
+  await hall.locator('.dudu-honor-title-scopes').getByRole('button',{name:'Huyền thoại'}).click();
+  const hidden=hall.locator('.dudu-honor-title-card.is-locked');
+  assert.equal(await hidden.count(),1);
+  assert.match(await hidden.innerText(),/Danh hiệu bí ẩn/);
+  assert.doesNotMatch(await hidden.innerText(),/Long Thạch Chủng/);
+  await hidden.locator('.dudu-honor-action').click();
+  assert.ok(await hall.locator('.dudu-honor-tabs button.is-active').getByText('Bí ẩn').isVisible());
+  assert.ok(await hall.locator('.dudu-honor-achievement.is-target').isVisible());
+  assert.doesNotMatch(await hall.locator('.dudu-honor-achievement.is-target').innerText(),/Long Thạch Chủng/);
+  for(const width of [320,390,430]){
+   await page.setViewportSize({width,height:844});
+   const overflow=await hall.evaluate(el=>el.scrollWidth-el.clientWidth);
+   assert.ok(overflow<=2,'Honor Hall must not overflow horizontally at '+width+'px');
+  }
+  console.log('C4.12 mobile Honor: rarity filters, honest clues, locked secrets, no overflow OK');
  }finally{
   if(browser)await browser.close();
   await new Promise(resolve=>server.close(resolve));
