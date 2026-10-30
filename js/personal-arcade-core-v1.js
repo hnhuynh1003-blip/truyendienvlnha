@@ -13,8 +13,16 @@
  const MAX_COIN=1000000000,MAX_IDLE_MS=12*60*60*1000;
  // Values are tenths of game Xu. Manual clicks should matter without making
  // a single ore run worth several hundred Xu.
- const ORE_VALUES=Object.freeze({stone:2,coal:3,iron:6,crystal:20});
- const ORE_NAMES=Object.freeze({stone:'Đá',coal:'Than',iron:'Sắt',crystal:'Tinh thạch'});
+ const ORE_VALUES=Object.freeze({stone:2,coal:3,iron:6,copper:9,silver:16,
+  gold:28,crystal:38,jade:60,meteor:120,relic:500});
+ const ORE_NAMES=Object.freeze({stone:'Đá',coal:'Than',iron:'Sắt',copper:'Đồng',
+  silver:'Bạc',gold:'Vàng',crystal:'Tinh thạch',jade:'Ngọc bích',
+  meteor:'Thiên thạch',relic:'Cổ vật'});
+ const ORE_WEIGHTS=Object.freeze([
+  Object.freeze([35,27,20,6,5,3,3,.6,.3,.1]),
+  Object.freeze([25,22,21,9,8,6,5,2,1,1]),
+  Object.freeze([12,13,18,14,12,10,9,5,4,3])
+ ]);
  const CROPS=Object.freeze({bloom:{name:'Hoa sương',grow:GROW_INTERVAL,value:50},
   mint:{name:'Lá bạc hà',grow:GROW_INTERVAL*2,value:100},
   moon:{name:'Hoa nguyệt',grow:GROW_INTERVAL*3,value:200}});
@@ -30,7 +38,8 @@
     contracts:[],running:true,remainder:0,economyV:ECONOMY_VERSION},
    mine:{durability:100,pickLevel:1,drillLevel:1,lantern:1,cart:1,scanner:0,
     zone:0,charge:0,bursts:0,repairUntil:0,dug:0,
-    ores:{stone:0,coal:0,iron:0,crystal:0}},
+    ores:Object.fromEntries(Object.keys(ORE_VALUES).map(ore=>[ore,0])),
+    found:Object.fromEntries(Object.keys(ORE_VALUES).map(ore=>[ore,0]))},
    garden:{water:1,waterCap:3,pondTier:1,waterAt:time,seeds:3,plots:2,
     crop:'bloom',sprinkler:0,rod:1,fish:0,rareFish:0,
     beds:[{status:'empty',readyAt:0,crop:'bloom'},{status:'empty',readyAt:0,crop:'bloom'}],
@@ -64,9 +73,11 @@
    charge:number(mine.charge,0,24,0),bursts:number(mine.bursts,0,10000000,0),
    durability:number(mine.durability,0,100+25*(pickLevel-1),100),
    repairUntil:number(mine.repairUntil,0,time+REPAIR_INTERVAL*2,0),
-   dug:number(mine.dug,0,10000000,0),ores:{}};
-  for(const ore of Object.keys(ORE_VALUES))
+   dug:number(mine.dug,0,10000000,0),ores:{},found:{}};
+  for(const ore of Object.keys(ORE_VALUES)){
    state.mine.ores[ore]=number(mine.ores?.[ore],0,1000000,0);
+   state.mine.found[ore]=number(mine.found?.[ore],0,10000000,state.mine.ores[ore]);
+  }
   if(!zoneUnlocked(state.mine,state.mine.zone))state.mine.zone=0;
   state.mine.charge=Math.min(state.mine.charge,maxCharge(state.mine));
   state.garden.waterCap=number(garden.waterCap,3,7,3);
@@ -151,7 +162,7 @@
  function act(raw,action,now=Date.now(),roll=0.5){
   const time=safeTime(now),state=advance(raw,time,0);
   const fail=reason=>({ok:false,reason,state});
-  const succeed=(label)=>({ok:true,label,state});
+  const succeed=(label,extras={})=>({ok:true,label,state,...extras});
   const garden=state.garden,mine=state.mine;
   if(action==='toggle-neon'){
    state.neon.running=!state.neon.running;
@@ -223,22 +234,33 @@
    return succeed('✦ Máy dò tinh thể đã mạnh hơn');
   }
   const dig=(value,charge=true)=>{
-   const quality=mine.drillLevel-1,depth=mine.zone,scan=mine.scanner;
-   const crystalThreshold=.95-.01*quality-.035*depth-.02*scan;
-   const ironThreshold=.75-.01*quality-.07*depth-.015*scan;
-   const coalThreshold=.45-.02*quality-.065*depth-.01*scan;
-   const ore=value<coalThreshold?'stone':value<ironThreshold?'coal':
-    value<crystalThreshold?'iron':'crystal';
+   const quality=mine.drillLevel-1,scan=mine.scanner;
+   const weights=[...ORE_WEIGHTS[mine.zone]];
+   weights[0]-=quality+scan*1.5;
+   weights[1]-=quality*.5;
+   weights[5]+=quality*.75;
+   weights[6]+=quality*.75;
+   weights[7]+=scan*.7;
+   weights[8]+=scan*.5;
+   weights[9]+=scan*.3;
+   let cumulative=0,ore='relic';
+   for(const [index,key] of Object.keys(ORE_VALUES).entries()){
+    cumulative+=weights[index]/100;
+    if(value<cumulative){ore=key;break;}
+   }
+   const quantity=1+(mine.zone>0?1:0)+(mine.pickLevel>=3?1:0);
    mine.durability--;mine.dug++;
-   mine.ores[ore]=Math.min(1000000,mine.ores[ore]+1);
+   mine.ores[ore]=Math.min(1000000,mine.ores[ore]+quantity);
+   mine.found[ore]=Math.min(10000000,mine.found[ore]+quantity);
    if(charge)mine.charge=Math.min(maxCharge(mine),mine.charge+1);
-   return ore;
+   return {ore,quantity};
   };
   if(action==='mine'){
    if(mine.repairUntil)return fail('Cuốc đang tự sửa chữa');
    if(!mine.durability)return fail('Cuốc đã hết độ bền');
    if(typeof roll!=='number'||roll<0||roll>=1)return fail('Lượt đào không hợp lệ');
-   return succeed(dig(roll));
+   const mined=dig(roll);
+   return succeed(mined.ore,{quantity:mined.quantity});
   }
   if(action==='mine-burst'){
    if(mine.repairUntil||mine.durability<3)return fail('Cuốc cần ít nhất 3 độ bền');
@@ -246,7 +268,8 @@
    if(typeof roll!=='number'||roll<0||roll>=1)return fail('Lượt đào không hợp lệ');
    mine.charge-=5;mine.bursts++;
    const ores=[roll,(roll+.37)%1,(roll+.71)%1].map(v=>dig(v,false));
-   return succeed('⚡ Phá mạch: '+ores.map(ore=>ORE_NAMES[ore]).join(' · '));
+   return succeed('⚡ Phá mạch: '+ores.map(hit=>hit.quantity+' '+ORE_NAMES[hit.ore]).join(' · '),
+    {quantity:ores.reduce((sum,hit)=>sum+hit.quantity,0)});
   }
   if(action==='repair-wait'){
    if(mine.repairUntil||mine.durability===maxDurability(mine))return fail('Cuốc chưa cần sửa');
@@ -349,6 +372,6 @@
  }
  const formatXu=tenths=>(tenths/10).toLocaleString('vi-VN',{maximumFractionDigits:1});
  return Object.freeze({fresh,norm,advance,act,rate,upgradeCost,formatXu,
-  WATER_INTERVAL,REPAIR_INTERVAL,GROW_INTERVAL,BUBBLE_INTERVAL,ORE_VALUES,
+  WATER_INTERVAL,REPAIR_INTERVAL,GROW_INTERVAL,BUBBLE_INTERVAL,ORE_VALUES,ORE_NAMES,
   CROPS,maxCharge,zoneUnlocked,cropUnlocked,maxDurability,bubbleInterval});
 });

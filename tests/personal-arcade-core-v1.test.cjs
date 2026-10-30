@@ -99,7 +99,7 @@ test('Mining consumes one durability per click; ore sale credits only local game
  assert.equal(state.mine.durability,96);
  assert.equal(state.coins,0);
  const sold=apply(state,'sell-ores');assert.equal(sold.ok,true);
- assert.equal(sold.state.coins,31);
+ assert.equal(sold.state.coins,49);
  for(const count of Object.values(sold.state.mine.ores))assert.equal(count,0);
  assert.equal(apply(sold.state,'sell-ores').ok,false);
 });

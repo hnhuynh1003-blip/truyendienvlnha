@@ -314,3 +314,17 @@ sự được người dùng thực hiện sẽ được giữ lại trong hồ 
   trong `docs/DUDU-MAIN-FEATURE-CLOSURE-C27-2026-10-30.md`. Arcade vẫn chỉ
   cấp Xu Arcade trên thiết bị; đổi Xu 10:1 và đấu giá thật chưa mở; nút reset
   mùa tiếp tục khóa. Không sửa Rules hoặc hồ sơ người dùng ở C2.7.
+
+### C2.8 — Sổ địa tầng và Vé Cào Vạn Phúc
+
+- Chuyển nút Thả câu vào ngay hồ Vườn Sương và thêm hiệu ứng cá/trúng thưởng;
+  nâng mỏ thành 10 loại quặng, tỷ lệ theo tầng và sổ phát hiện giữ mốc sau bán.
+- Main DUDU FUN thay **Vé Số miễn phí** bằng **Vé Cào Vạn Phúc** 10 Xu ảo
+  hệ thống/thẻ, không giới hạn mua tuần tự, 13 hạng giải tới 10.000 Xu,
+  8 mẫu thẻ và sổ bộ sưu tập; Hộp Mù vẫn là quà miễn phí hằng ngày.
+- Vé mua, cào, nhận đều dùng giao dịch UID độc lập có chống nhận lặp;
+  **RNG client chưa được máy chủ xác thực**, chỉ phù hợp giai đoạn chủ dự án
+  chơi thử. Chi tiết tỷ lệ, kỳ vọng thưởng và cảnh báo tại
+  `docs/DUDU-C28-ARCADE-ORES-LUCKY-SCRATCH-2026-10-30.md`.
+- Không thay Rules, không reset hoặc cấp bù tiến độ. Đổi Xu Arcade → Ví,
+  đấu giá và phát hành giải lớn chống gian lận vẫn cần duyệt riêng.

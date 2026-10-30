@@ -35,8 +35,8 @@
   <link rel="stylesheet" href="css/companion-v43.css?v=1">
   <link rel="stylesheet" href="css/npc-bond-v43.css?v=2">
   <link rel="stylesheet" href="css/market-v43.css?v=c24a-1">
-  <link rel="stylesheet" href="css/dudu-fun-v43.css?v=1">
-  <link rel="stylesheet" href="css/personal-arcade-v1.css?v=c27-workshop-1">
+  <link rel="stylesheet" href="css/dudu-fun-v43.css?v=c28-lucky-1">
+  <link rel="stylesheet" href="css/personal-arcade-v1.css?v=c28-ores-1">
   <link rel="stylesheet" href="css/dudu-wallet-v1.css?v=wallet-1">
   <link rel="stylesheet" href="css/item-actions-v43.css?v=43-5-3b">
   <link rel="stylesheet" href="css/museum-memories-v43.css?v=1">
@@ -94,8 +94,9 @@
   <script src="js/personal-collection-c24.js?v=c25-1"></script>
   <script src="js/quest-engine-v43-7.js?v=44-9"></script>
   <script src="js/dudu-fun-rules-v43.js?v=44-9"></script>
+  <script src="js/personal-scratch-c28.js?v=c28-lucky-1"></script>
   <script src="js/personal-fun-c25.js?v=c25-1"></script>
-  <script src="js/personal-arcade-core-v1.js?v=c27-workshop-1"></script>
+  <script src="js/personal-arcade-core-v1.js?v=c28-ores-1"></script>
   <script src="js/personal-arcade-exchange-v1.js?v=xu-quote-2"></script>
   <script src="js/personal-spark-exchange-v1.js?v=spark-bridge-1"></script>
   <script src="js/story-market-v43.js?v=1"></script>
@@ -6553,6 +6554,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
       },
       async run(options){
         if(!personalFunReadyC25())throw Error('Chưa sẵn sàng');
+        if(options?.type==='ticket'&&options?.kind==='begin')
+          throw Error('Vé số miễn phí đã chuyển thành Vé Cào Vạn Phúc');
         const uid=currentUsername;
         await Promise.allSettled([...pendingLiveProfileWrites]);
         if(!personalFunReadyC25()||currentUsername!==uid)throw Error('Tài khoản đã thay đổi');
@@ -6566,6 +6569,36 @@ document.getElementById('phone-home-screen').style.display = 'none';
           catch(error){console.warn('DUDU FUN device backup:',error);}
           updatePhoneUI();renderWallet();renderInventory();renderQuests();
         }
+        return result;
+      }
+    });
+    // C2.8: paid virtual-Xu cards use their own bounded receipt/collection.
+    // Main wallet changes only after the owner's profile transaction commits.
+    const scratchReadyC28=()=>!IS_SANDBOX_MODE&&DuduAuth.isReady()&&
+      DuduAuth.uid()===currentUsername&&!!window.DuduPersonalScratchC28;
+    window.DuduScratchLiveBridgeC28=Object.freeze({
+      ready:scratchReadyC28,
+      uid:()=>scratchReadyC28()?currentUsername:null,
+      async load(){
+        if(!scratchReadyC28())throw Error('Chưa sẵn sàng');
+        const uid=currentUsername;
+        await Promise.allSettled([...pendingLiveProfileWrites]);
+        if(!scratchReadyC28()||currentUsername!==uid)throw Error('Tài khoản đã thay đổi');
+        return DuduPersonalScratchC28.load({db,auth:firebase.auth(),uid});
+      },
+      async run(options){
+        if(!scratchReadyC28())throw Error('Chưa sẵn sàng');
+        const uid=currentUsername;
+        await Promise.allSettled([...pendingLiveProfileWrites]);
+        if(!scratchReadyC28()||currentUsername!==uid)throw Error('Tài khoản đã thay đổi');
+        const result=await DuduPersonalScratchC28.run({
+          db,auth:firebase.auth(),uid,...options});
+        if(!scratchReadyC28()||currentUsername!==uid)throw Error('Tài khoản đã thay đổi');
+        userProfile.currency=result.currency;
+        userProfile.storyStates=result.storyStates;
+        try{localStorage.setItem('profile_'+uid,JSON.stringify(userProfile));}
+        catch(error){console.warn('Lucky card device backup:',error);}
+        updatePhoneUI();renderWallet();
         return result;
       }
     });
@@ -8469,8 +8502,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/phone-inbox-v33.js?v=51-1"></script>
 <script src="js/companion-ui-v43.js?v=69-restore-1"></script>
 <script src="js/market-ui-v43.js?v=c24a-1"></script>
-<script src="js/dudu-fun-ui-v43.js?v=c25-1"></script>
-<script src="js/personal-arcade-ui-v1.js?v=c27-workshop-1"></script>
+<script src="js/dudu-fun-ui-v43.js?v=c28-lucky-1"></script>
+<script src="js/personal-arcade-ui-v1.js?v=c28-ores-1"></script>
 <script src="js/quest-ui-v43-7.js?v=c23c-1"></script>
 <script src="js/economy-runtime-v43.js?v=c23c-1"></script>
 <script src="js/economy-live-v52.js?v=52-2"></script>

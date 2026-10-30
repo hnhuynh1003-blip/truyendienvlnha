@@ -16,7 +16,11 @@
  const signed=()=>!!currentUsername&&(sandbox()||
   (!!root.DuduAuth?.isReady?.()&&root.DuduAuth.uid()===currentUsername));
  const bridge=()=>root.DuduFunLiveBridgeC25;
+ const lucky=()=>root.DuduPersonalScratchC28;
+ const luckyBridge=()=>root.DuduScratchLiveBridgeC28;
  let liveUid=null,liveState=null,liveLoaded=false,liveLoading=false,liveError=false;
+ let luckyUid=null,luckyState=null,luckyLoaded=false,luckyLoading=false,luckyError=false,
+  luckyBusy=false,luckyCurrency=null,luckyTheme='dragon';
  let noticeText='';
  function stored(){
   if(sandbox())return userProfile.duduFunV43;
@@ -45,6 +49,51 @@
    if(liveUid!==uid)return;
    liveLoading=false;render();
   });
+ }
+ function ensureLucky(){
+  if(sandbox()||!lucky()||!luckyBridge())return;
+  const uid=signed()?luckyBridge().uid?.():null;
+  if(uid!==luckyUid){luckyUid=uid;luckyState=null;luckyLoaded=false;
+   luckyLoading=false;luckyError=false;luckyCurrency=null;}
+  if(!uid||luckyLoaded||luckyLoading||luckyError)return;
+  luckyLoading=true;
+  void luckyBridge().load().then(result=>{
+   if(luckyUid!==uid)return;
+   luckyState=result.state;luckyCurrency=result.currency;luckyLoaded=true;luckyError=false;
+  }).catch(error=>{if(luckyUid!==uid)return;luckyError=true;
+   console.warn('DUDU Lucky card load:',error?.reason||error?.message);
+  }).finally(()=>{if(luckyUid!==uid)return;luckyLoading=false;render();});
+ }
+ async function luckyAction(kind,cell){
+  if(!signed()||!luckyLoaded||luckyBusy||!luckyBridge()?.ready?.())return false;
+  const uid=luckyUid,ticket=luckyState?.active;
+  luckyBusy=true;message('');
+  try{
+   const opts={kind,id:kind==='buy'?crypto.randomUUID():ticket?.id};
+   if(kind==='buy'){
+    const a=new Uint32Array(2);crypto.getRandomValues(a);
+    opts.roll=Math.floor(a[0]/4294967296*1000000);
+    opts.seed=a[1]%1000001;opts.theme=luckyTheme;
+   }
+   if(kind==='scratch')opts.cell=cell;
+   const response=await luckyBridge().run(opts);
+   if(uid!==luckyUid||!signed())return false;
+   luckyState=response.state;luckyCurrency=response.currency;
+   if(kind==='buy')message('Vé đã vào tay bạn. Cào ba ô để mở lộc!');
+   if(kind==='claim'&&response.status==='applied')message(response.reward.amount?
+    '✦ '+response.reward.tier+' · +'+response.reward.amount+' Xu vào Ví!':
+    'Chưa trúng giải lần này. Bạn đã giữ được mẫu vé trong Sổ sưu tầm.');
+   return true;
+  }catch(error){
+   const errors={'not-enough-xu':'Bạn cần ít nhất 10 Xu trong Ví để mua vé.',
+    'unfinished-ticket':'Hãy cào và nhận giải của vé hiện tại trước nhé.',
+    'wallet-cap':'Ví đã đầy, hãy dùng bớt Xu trước khi nhận.',
+    'ticket-not-found':'Vé này đã được thay thế. Hãy tải lại trò chơi.',
+    'not-ready':'Bạn cần cào đủ ba ô để nhận giải.'};
+   message(errors[error?.reason]||'Chưa thực hiện được. Hãy kiểm tra kết nối rồi thử lại.');
+   luckyLoaded=false;luckyError=false;
+   return false;
+  }finally{luckyBusy=false;render();}
  }
  function rng(){
   const a=new Uint32Array(2);
@@ -198,20 +247,23 @@
   name.append(el('strong','','✦ DUDU FUN'),
     el('span','','Giải trí sau mỗi chương truyện'));
   const money=el('span','dudu-fun-balance',
-    signed()?'🪙 '+userProfile.currency+' Xu':'Khách');
+    signed()?'🪙 '+(open==='ticket'&&!sandbox()&&luckyCurrency!==null?
+     luckyCurrency:userProfile.currency)+' Xu':'Khách');
   top.append(name,money);
   container.append(top);
   const state=view(),status=rules.progress(state);
+  const finished=sandbox()?status.done:status.box==='claimed'?1:0,
+   target=sandbox()?2:1;
   const meter=el('div','dudu-fun-daily-meter');
-  meter.append(el('strong','','Hoạt động hôm nay'),
-    el('span','',status.done+'/2 đã hoàn thành'));
+  meter.append(el('strong','',sandbox()?'Hoạt động hôm nay':'Hộp Mù miễn phí hôm nay'),
+    el('span','',finished+'/'+target+' đã hoàn thành'));
   const rail=el('div','dudu-fun-bar'),fill=el('span','dudu-fun-bar-fill');
-  fill.style.width=(status.done/2*100)+'%';
+  fill.style.width=(finished/target*100)+'%';
   rail.append(fill);
   container.append(meter,rail);
   const caption=el('small','dudu-fun-disclaimer',
    sandbox()?'2 trò miễn phí/ngày · Xu và vật phẩm chỉ thuộc Sandbox · Không bán lượt chơi':
-   '2 trò miễn phí/ngày · Nhận Xu và vật phẩm vào tài khoản của bạn');
+   'Hộp Mù miễn phí hằng ngày · Vé Cào 10 Xu/thẻ, mua bao nhiêu tùy thích');
   container.append(caption);
  }
  function boxes(rootNode,round){
@@ -268,6 +320,7 @@
   target.append(r);
  }
  function lottery(rootNode,round){
+  if(!sandbox()){luckyLottery(rootNode);return;}
   if(!round){
    rootNode.append(el('p','dudu-fun-caption',
     'Một vé miễn phí hôm nay. Cào ba ô bất kỳ để mở giải.'));
@@ -297,6 +350,101 @@
   if(round.status==='ready')claimButton(rootNode);
   if(round.status==='claimed')rewardPanel(rootNode,round.reward);
  }
+ function luckyLottery(rootNode){
+  const rule=lucky();
+  if(!rule||!luckyLoaded){
+   rootNode.append(el('p','dudu-fun-caption',luckyError?
+    'Chưa tải được Sổ vé của bạn. Hãy thử lại.':'Đang mở quầy vé may mắn…'));
+   if(luckyError){const retry=el('button','dudu-fun-start','Thử lại');
+    retry.addEventListener('click',()=>{luckyError=false;render();});rootNode.append(retry);}
+   return;
+  }
+  const s=luckyState,active=s.active,
+   theme=rule.THEMES.find(t=>t.id===(active?.theme||luckyTheme))||rule.THEMES[0],
+   unlocked=Object.values(s.album).filter(Boolean).length;
+  const intro=el('div','lucky-kiosk-head');
+  intro.append(el('span','','🏮 LỘC ĐẾN NHÀ · 刮刮乐'),
+   el('strong','','Vé Cào Vạn Phúc'),
+   el('small','','10 Xu/thẻ · Mua không giới hạn · Giải cao nhất 10.000 Xu'));
+  rootNode.append(intro);
+  if(!active||active.status==='claimed'){
+   rootNode.append(el('p','dudu-fun-caption','Chọn mẫu vé bạn muốn sưu tầm. Mỗi mẫu có cùng tỷ lệ trúng giải.'));
+   const shelf=el('div','lucky-theme-grid');
+   for(const design of rule.THEMES){
+    const count=s.album[design.id]||0;
+    const tile=el('button','lucky-theme lucky-theme-'+design.id+(luckyTheme===design.id?' selected':''));
+    tile.type='button';tile.disabled=luckyBusy;tile.setAttribute('aria-pressed',String(luckyTheme===design.id));
+    tile.append(el('span','lucky-theme-icon',design.symbol),
+     el('b','',design.name),el('small','',count?'Đã có · '+count:'Chưa có'));
+    tile.addEventListener('click',()=>{luckyTheme=design.id;render();});shelf.append(tile);
+   }
+   rootNode.append(shelf);
+   const buy=el('button','dudu-fun-start lucky-buy','🧧 MUA VÉ · 10 XU');
+   buy.disabled=luckyBusy||luckyCurrency<rule.PRICE;
+   buy.type='button';buy.addEventListener('click',()=>{void luckyAction('buy');});
+   rootNode.append(buy);
+  }
+  if(active){
+   const design=rule.THEMES.find(t=>t.id===active.theme)||theme;
+   const card=el('div','lucky-card lucky-theme-'+design.id);
+   const heading=el('div','lucky-card-top');
+   heading.append(el('b','','DUDU · 萬福'),el('small','','THẺ LỘC #'+active.id.slice(-6).toUpperCase()));
+   card.append(heading);
+   const emblem=el('div','lucky-card-emblem',design.symbol);
+   emblem.append(el('small','',design.name));card.append(emblem);
+   const grid=el('div','lucky-scratch-grid'),symbols=rule.symbols(active.seed);
+   for(let i=0;i<9;i++){
+    const opened=active.cells.includes(i);
+    const tile=el('button','lucky-scratch-cell'+(opened?' opened':''),opened?symbols[i]:'✦');
+    tile.type='button';tile.disabled=opened||active.status!=='playing'||luckyBusy;
+    tile.setAttribute('aria-label',opened?'Ô '+(i+1)+' đã cào':'Cào ô '+(i+1));
+    tile.addEventListener('click',()=>{void luckyAction('scratch',i);});
+    grid.append(tile);
+   }
+   card.append(grid);
+   card.append(el('small','lucky-card-foot',active.status==='playing'?
+    'CÀO '+active.cells.length+'/3 Ô ĐỂ MỞ LỘC':
+    active.amount===0?'LẦN NÀY CHƯA TRÚNG GIẢI':
+    '✦ '+rule.PRIZES.find(p=>p.amount===active.amount).tier.toUpperCase()+' · '+active.amount+' XU ✦'));
+   rootNode.append(card);
+   if(active.status==='ready'){
+    const claim=el('button','dudu-fun-claim lucky-claim',active.amount?
+     '🧧 Nhận '+active.amount+' Xu vào Ví':'🧧 Lưu vé vào Sổ sưu tầm');
+    claim.disabled=luckyBusy;claim.addEventListener('click',()=>{void luckyAction('claim');});
+    rootNode.append(claim);
+   }
+   if(active.status==='claimed')rootNode.append(el('p','lucky-last-win',
+    active.amount?'✦ Đã nhận '+active.amount+' Xu · Chọn mẫu và mua vé tiếp!':
+    'Đã lưu mẫu vé vào bộ sưu tập. Thử một vận may khác nhé!'));
+  }
+  const album=el('div','lucky-album');
+  album.append(el('strong','','📚 Sổ Vé · '+unlocked+'/'+rule.THEMES.length+' mẫu'),
+   el('small','','Đã mua '+s.total+' vé · Trúng '+s.prizes.length+'/'+rule.PRIZES.length+' hạng giải'));
+  const bar=el('div','lucky-album-track'),fill=el('i','');fill.style.width=(unlocked/rule.THEMES.length*100)+'%';
+  bar.append(fill);album.append(bar);rootNode.append(album);
+  const odds=el('details','lucky-odds');
+  odds.append(el('summary','','✧ Xem 13 hạng giải & tỷ lệ trúng'));
+  const list=el('div','lucky-odds-list');
+  for(const prize of [...rule.PRIZES].reverse()){
+   const row=el('div','lucky-odds-row');
+   row.append(el('span','',prize.tier+' · '+prize.amount.toLocaleString('vi-VN')+' Xu'),
+    el('b','',Number((prize.weight/10000).toFixed(4)).toLocaleString('vi-VN',{maximumFractionDigits:4})+'%'));
+   list.append(row);
+  }
+  odds.append(list,el('small','','Tỷ lệ là xác suất trên mỗi vé, không bảo đảm thắng. Giá 10 Xu, giá trị thưởng trung bình 8,43 Xu/vé.'));
+  rootNode.append(odds);
+  if(s.history.length){
+   const book=el('details','dudu-fun-history');
+   book.append(el('summary','','Vé cào đã nhận giải ('+s.total+' lượt mua)'));
+   for(const h of s.history.slice(-8).reverse()){
+    const title=rule.THEMES.find(t=>t.id===h.theme)?.name||'Vạn Phúc';
+    const line=el('div','dudu-fun-history-line');
+    line.append(el('span','',h.day+' · '+title),el('strong','',h.amount+' Xu'));
+    book.append(line);
+   }
+   rootNode.append(book);
+  }
+ }
  function history(target,state){
   if(!state.history.length)return;
   const details=el('details','dudu-fun-history');
@@ -313,6 +461,7 @@
  function render(){
   const host=$('dudu-fun-content-v43');if(!host)return false;
   ensureLive();
+  if(open==='ticket'&&!sandbox())ensureLucky();
   host.replaceChildren();
   if(!sandbox()&&signed()&&!liveLoaded){
    host.append(el('p','dudu-fun-guest',liveError?
@@ -347,8 +496,9 @@
   host.append(content);
   host.append(el('p','dudu-fun-notice',noticeText));
   history(host,state);
-  host.append(el('small','dudu-fun-disclaimer',
-   'Tỷ lệ Hộp Mù: 50% 5 Xu · 25% 9 Xu · 15% bánh quy · 10% đồ uống. Vé Số: 50% 3 Xu · 30% 6 Xu · 15% 10 Xu · 4% 20 Xu · 1% 40 Xu. Không bán vé hoặc đổi tiền thật.'));
+  host.append(el('small','dudu-fun-disclaimer',sandbox()?
+   'Bản thử: Vé Số miễn phí mỗi ngày. Xu và vật phẩm chỉ thuộc Sandbox.':
+   'Hộp Mù: 50% 5 Xu · 25% 9 Xu · 15% bánh quy · 10% đồ uống. Vé cào dùng Xu ảo, không đổi thành tiền thật.'));
   return true;
  }
  function init(){

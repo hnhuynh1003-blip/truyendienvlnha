@@ -13,8 +13,10 @@
  const SETTLED='dudu-personal-arcade:exchange-settled-v1:';
  const host=()=>root.document.getElementById('personal-arcade-v1');
  const modeLabels={neon:'Trạm Neon',mine:'Địa Tầng 07',garden:'Vườn Sương'};
- const oreLabels={stone:'Đá',coal:'Than',iron:'Sắt',crystal:'Tinh thạch'};
- const oreGlyphs={stone:'◆',coal:'⬟',iron:'⬢',crystal:'✦'};
+ const oreLabels={stone:'Đá',coal:'Than',iron:'Sắt',copper:'Đồng',silver:'Bạc',
+  gold:'Vàng',crystal:'Tinh thạch',jade:'Ngọc bích',meteor:'Thiên thạch',relic:'Cổ vật'};
+ const oreGlyphs={stone:'◆',coal:'⬟',iron:'⬢',copper:'⬡',silver:'◈',
+  gold:'✹',crystal:'✦',jade:'❖',meteor:'☄',relic:'♜'};
  let tab='neon',activeKey=null,state=null,lastTick=Date.now(),lastSave=0,
   lastPaint=0,lastRenderedKey=null,notice='',noticeUntil=0,error=false,feedback=null,
   exchangeOpen=false,exchangeAmount=10,exchangeBusy=false;
@@ -174,7 +176,7 @@
   const m=s.mine,repairing=!!m.repairUntil;
   const max=core.maxDurability(m);
   const all=Object.values(m.ores).reduce((sum,n)=>sum+n,0),hit=activeFeedback('mine',time),
-   maxEnergy=core.maxCharge(m);
+   maxEnergy=core.maxCharge(m),found=Object.values(m.found).filter(Boolean).length;
   return `<section class="arcade-world arcade-world-mine" aria-label="Địa Tầng 07">
     <header class="arcade-world-heading"><div><span class="arcade-eyebrow">02 / CLICKER</span>
       <h3>Địa Tầng 07</h3><p>Chạm vỉa quặng để khai thác. Mang khoáng sản đi bán.</p></div>
@@ -190,14 +192,14 @@
         <span class="mine-rock-shadow"></span><span class="mine-rock"><i></i><i></i><i></i><i></i><i></i></span>
         <span class="mine-ore-glow"></span><span class="mine-hit-spark">✦</span>
         <span class="mine-tap-prompt">${repairing?'ĐANG SỬA CUỐC':m.durability?'⛏ CHẠM ĐỂ ĐÀO':'CUỐC ĐÃ HẾT ĐỘ BỀN'}</span></button>
-      ${hit?`<div class="mine-drop" aria-live="polite">${hit.ore==='burst'?'✦ PHÁ MẠCH!':`+1 ${oreGlyphs[hit.ore]} ${oreLabels[hit.ore]}`}</div>`:''}
+      ${hit?`<div class="mine-drop" aria-live="polite">${hit.ore==='burst'?`✦ +${hit.quantity} QUẶNG!`:`+${hit.quantity} ${oreGlyphs[hit.ore]} ${oreLabels[hit.ore]}`}</div>`:''}
       <div class="mine-bottom-hud"><div class="mine-durability-circle" style="--mine-durability:${m.durability/max*100}%"><span>CUỐC</span><b>${m.durability}<small>/${max}</small></b></div>
         <span>${repairing?`🔧 Tự sửa: <span data-arcade-until="${m.repairUntil}">${countdown(m.repairUntil-time)}</span>`:'Mỗi cú đào trừ 1 độ bền'}</span></div>
     </div>
     <div class="arcade-control-panel">
       <div class="arcade-panel-heading"><div><span class="arcade-eyebrow">BẢN ĐỒ KHAI THÁC</span><h4>Chọn địa tầng</h4></div><span class="mine-gear-label">Đèn cấp ${m.lantern}/3</span></div>
       <div class="mine-zone-list">${[
-       ['Tầng đất','Đá · Than',0,1],['Mạch sắt','Nhiều sắt hơn',40,2],['Hang tinh thể','Tăng tinh thạch',160,3]
+       ['Tầng đất','10 loại khoáng sản',0,1],['Mạch sắt','2 quặng/lượt',40,2],['Hang tinh thể','Quặng hiếm thường hơn',160,3]
       ].map(([name,sub,dug,lamp],i)=>{const unlocked=core.zoneUnlocked(m,i);
        return `<button type="button" class="mine-zone ${m.zone===i?'selected':''}" data-arcade-action="mine-zone-${i}" ${unlocked?'':'disabled'}>
        <b>${i===0?'Ⅰ':i===1?'Ⅱ':'Ⅲ'} ${name}</b><small>${unlocked?sub:`${Math.max(0,dug-m.dug)} lượt · đèn ${lamp}`}</small></button>`;}).join('')}</div>
@@ -208,7 +210,8 @@
         ${button('Bán tất cả ↗','sell-ores','market',!all)}</div>
       <p class="arcade-world-hint">Xe quặng cấp ${m.cart} tăng giá bán ${10*(m.cart-1)}%. Máy dò cấp ${m.scanner} cải thiện cơ hội gặp tinh thạch.</p>
       <div class="mine-inventory">${Object.entries(m.ores).map(([ore,count])=>
-        `<div class="mine-inventory-slot mine-slot-${ore}"><span>${oreGlyphs[ore]}</span><small>${oreLabels[ore]}</small><b>${count}</b></div>`).join('')}</div>
+        `<div class="mine-inventory-slot mine-slot-${ore} ${m.found[ore]?'is-found':'is-mystery'}"><span>${m.found[ore]?oreGlyphs[ore]:'?'}</span><small>${m.found[ore]?oreLabels[ore]:'Chưa thấy'}</small><b>${count}</b></div>`).join('')}</div>
+      <div class="mine-codex"><b>📜 Sổ địa tầng · ${found}/10 phát hiện</b><small>Món đã từng đào vẫn được ghi nhận sau khi bán. Xuống hầm sâu để gặp khoáng sản hiếm.</small></div>
       <div class="arcade-panel-heading arcade-panel-heading-sub"><div><span class="arcade-eyebrow">XƯỞNG RÈN</span><h4>Bảo dưỡng dụng cụ</h4></div></div>
       <div class="mine-tool-actions">
         ${button(repairing?`⏳ <span data-arcade-until="${m.repairUntil}">${countdown(m.repairUntil-time)}</span>`:'🔧 Tự sửa · 4 phút','repair-wait','tool',repairing||m.durability===max)}
@@ -228,7 +231,7 @@
   </section>`;
  }
  function gardenPanel(s,time){
-  const g=s.garden;
+  const g=s.garden,fishHit=activeFeedback('fish',time);
   const bed=(b,index)=>{
    const mature=b.status==='growing'&&time>=b.readyAt;
    const action=b.status==='empty'?'plant-'+index:b.status==='dry'?'water-'+index:'harvest-'+index;
@@ -254,6 +257,8 @@
         <span class="garden-fish garden-fish-a"></span><span class="garden-fish garden-fish-b"></span>
         <span class="garden-bubble garden-bubble-a"></span><span class="garden-bubble garden-bubble-b"></span>
         <span class="garden-bubble garden-bubble-c"></span></div>
+      ${button(g.bait?'🎣 THẢ CÂU · '+g.bait+' MỒI':'🎣 THIẾU MỒI','cast-line','power garden-cast-button',!g.bait)}
+      ${fishHit?`<div class="garden-catch-pop" role="status">${fishHit.label}</div>`:''}
       <button type="button" class="garden-pond-collect ${g.bubbleReady?'is-ready':''}" data-arcade-action="catch-bubble" ${g.bubbleReady?'':'disabled'}>
         ${g.bubbleReady?'✦ Thu bọt · +0,5 Xu':`Hồ cá · <span data-arcade-until="${g.bubbleAt}">${countdown(g.bubbleAt-time)}</span>`}</button>
     </div>
@@ -267,8 +272,7 @@
       <div class="garden-quick-actions">${button('💧 Tưới các luống khô','water-all','tool',!g.sprinkler||!g.water||!g.beds.some(b=>b.status==='dry'))}
        ${button('✿ Thu hoạch tất cả','harvest-all','tool',!g.beds.some(b=>b.status==='growing'&&time>=b.readyAt))}</div>
       <div class="garden-statline"><span>🌿 Đã thu hoạch <b>${g.harvests}</b></span><span>🐟 Mồi câu <b>${g.bait}</b></span></div>
-      <div class="garden-fishing"><div><b>🎣 Góc câu cá</b><small>${g.fish} cá đã câu · ${g.rareFish} cá ánh trăng · Cần 1 mồi/lượt</small></div>
-       ${button('🎣 Thả câu','cast-line','power',!g.bait)}</div>
+      <div class="garden-fishing"><div><b>🎣 Góc câu cá</b><small>${g.fish} cá đã câu · ${g.rareFish} cá ánh trăng · Bấm Thả câu ngay trên hồ để xem cá xuất hiện</small></div></div>
       <div class="arcade-upgrade-grid arcade-garden-upgrades">
        ${upgrade('💧','Bồn nước',g.waterCap+'/7 bình','water-cap',core.upgradeCost(s,'water-cap'))}
        ${upgrade('🐟','Hồ cá','Cấp '+g.pondTier+'/5','pond-tier',core.upgradeCost(s,'pond-tier'))}
@@ -345,7 +349,8 @@
   const result=core.act(state,action,now(),Math.random());
   if(!result.ok){notice=result.reason;noticeUntil=now()+3500;error=true;render();return false;}
   state=result.state;
-  feedback=action==='mine'||action==='mine-burst'?{type:'mine',ore:action==='mine-burst'?'burst':result.label,at:now()}:null;
+  feedback=action==='mine'||action==='mine-burst'?{type:'mine',ore:action==='mine-burst'?'burst':result.label,
+   quantity:result.quantity||1,at:now()}:action==='cast-line'?{type:'fish',label:result.label,at:now()}:null;
   notice=result.label==='stone'?'Nhặt được Đá.':result.label==='coal'?'Nhặt được Than.':
    result.label==='iron'?'Nhặt được Sắt.':result.label==='crystal'?'✦ Nhặt được Tinh thạch!':result.label;
   noticeUntil=now()+2500;error=false;save();render();return true;

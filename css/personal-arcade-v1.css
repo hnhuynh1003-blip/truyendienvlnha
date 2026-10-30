@@ -248,6 +248,15 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header{min-height:
 .mine-inventory-slot>span{font-size:26px;line-height:1.1;color:#aaa3a6}
 .mine-slot-coal>span{color:#666e82}.mine-slot-iron>span{color:#86aabe}.mine-slot-crystal>span{color:#b29bff}
 .mine-inventory-slot small{font-size:9px;color:#c9b8b3}.mine-inventory-slot b{font:900 16px ui-monospace,monospace;color:#f0d6bc}
+.mine-slot-copper>span{color:#e6a06f}.mine-slot-silver>span{color:#cadbf3}
+.mine-slot-gold>span{color:#ffd878}.mine-slot-jade>span{color:#78ebc9}
+.mine-slot-meteor>span{color:#ff9fa4}.mine-slot-relic>span{color:#f6c0ff}
+.mine-inventory-slot.is-mystery{opacity:.48;border-style:dashed}
+.mine-inventory-slot.is-mystery>span{color:#ad9b9b}
+.mine-codex{padding:9px 10px;margin:8px 0 12px;border:1px solid #6b5549;
+ border-radius:10px;background:linear-gradient(120deg,#372d2c,#252430)}
+.mine-codex b{display:block;color:#f0d6a8;font-size:11px}
+.mine-codex small{display:block;color:#bfa99a;font-size:9px;line-height:1.4;margin-top:3px}
 .arcade-world-mine .arcade-control-panel{background:#251f2b;border-color:#63473f}
 .arcade-world-mine .arcade-eyebrow{color:#e4ab79}
 .arcade-button.market{background:#624733;border-color:#b58866;color:#ffe4bf;min-height:34px}
@@ -324,6 +333,15 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header{min-height:
  border-radius:999px;padding:5px 12px;cursor:pointer}
 .garden-pond-collect:disabled{opacity:.7;cursor:default}
 .garden-pond-collect.is-ready{animation:pond-pulse 2s ease-in-out infinite;color:#fff0a6}
+.garden-stage .garden-cast-button{position:absolute;left:50%;bottom:49px;transform:translateX(-50%);
+ z-index:8;white-space:nowrap;min-height:33px;padding:6px 12px;font-size:10px;letter-spacing:.03em;
+ background:linear-gradient(110deg,#f1b75b,#fff1bb 50%,#e19b48);border-color:#fff5d3;color:#46301f;
+ box-shadow:0 3px 16px #16281eb0,0 0 15px #f7df9e60}
+.garden-stage .garden-cast-button:active:not(:disabled){transform:translateX(-50%) scale(.94)}
+.garden-stage .garden-cast-button:disabled{opacity:.7;background:#31534f;color:#b1cfc1;border-color:#729883}
+.garden-catch-pop{position:absolute;z-index:10;left:5%;right:5%;bottom:93px;text-align:center;pointer-events:none;
+ font-weight:900;font-size:13px;line-height:1.35;color:#fff8d8;text-shadow:0 0 10px #453510,0 2px 5px #142219;
+ animation:garden-fish-pop 1.6s ease-out forwards}
 .arcade-world-garden .arcade-control-panel{background:#203a36;border-color:#527a68}
 .arcade-world-garden .arcade-eyebrow{color:#a4e5b2}
 .arcade-world-garden .arcade-button.market{background:#456547;border-color:#a3c98f;color:#f5eac0}
@@ -395,6 +413,7 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header{min-height:
 @keyframes mine-spark{0%{opacity:1;transform:scale(.4) rotate(-20deg)}100%{opacity:0;transform:scale(1.6) rotate(45deg)}}
 @keyframes mine-drop{0%{opacity:0;transform:translate(-50%,15px)}20%{opacity:1}100%{opacity:0;transform:translate(-50%,-34px)}}
 @keyframes garden-mist{to{transform:translate(70px,-12px)}}
+@keyframes garden-fish-pop{0%{opacity:0;transform:translateY(20px) scale(.8)}25%{opacity:1;transform:translateY(0) scale(1.05)}100%{opacity:0;transform:translateY(-45px) scale(1)}}
 @keyframes garden-sway{to{transform:rotate(9deg)}}
 @keyframes fish-swim{50%{transform:translateX(28px)}to{transform:translateX(-30px) scaleX(-1)}}
 @keyframes bubble-rise{from{transform:translateY(0);opacity:.15}50%{opacity:.9}to{transform:translateY(-70px);opacity:0}}

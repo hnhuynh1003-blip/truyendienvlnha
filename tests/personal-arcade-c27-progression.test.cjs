@@ -40,7 +40,8 @@ test('Mine progression unlocks real depths, rewards 3 ores on charged burst and 
  assert.equal(burst.ok,true);state=burst.state;
  assert.equal(state.mine.charge,7);
  assert.equal(state.mine.durability,57);
- assert.equal(Object.values(state.mine.ores).reduce((a,b)=>a+b,0),oresBefore+3);
+ assert.equal(Object.values(state.mine.ores).reduce((a,b)=>a+b,0),oresBefore+6,
+  'deeper zones yield two minerals per strike, including bursts');
  state.mine.ores.iron=9;state.mine.ores.crystal=3;
  const scanner=act(state,'mine-scanner');
  assert.equal(scanner.ok,true);assert.equal(scanner.state.mine.scanner,1);
@@ -53,12 +54,13 @@ test('Mine progression unlocks real depths, rewards 3 ores on charged burst and 
 test('Mine layer odds are improved by lantern-enabled depth and scanner, not just cosmetic',()=>{
  const state=arcade.fresh(START);state.mine.dug=160;state.mine.lantern=3;
  const upper=act(state,'mine',.92);
- assert.equal(upper.label,'iron');
+ assert.equal(upper.label,'silver');
  const deep=act(act(state,'mine-zone-2').state,'mine',.92);
- assert.equal(deep.label,'crystal');
+ assert.equal(deep.label,'jade');
  const bought=arcade.fresh(START);bought.mine.ores.iron=9;bought.mine.ores.crystal=3;
  const scanner=act(bought,'mine-scanner').state;
- assert.equal(act(scanner,'mine',.94).label,'crystal');
+ assert.equal(act(bought,'mine',.995).label,'jade');
+ assert.equal(act(scanner,'mine',.995).label,'meteor');
 });
 
 test('Cart boosts mineral sale only in Arcade, spending cannot mint real-wallet coins',()=>{
@@ -67,7 +69,7 @@ test('Cart boosts mineral sale only in Arcade, spending cannot mint real-wallet 
  const afterUpgrade=state.coins;
  state.mine.ores.crystal=10;
  const sale=act(state,'sell-ores');
- assert.equal(sale.state.coins-afterUpgrade,220,'10% cart bonus is floor-rounded');
+ assert.equal(sale.state.coins-afterUpgrade,418,'10% cart bonus is floor-rounded');
  assert.equal(sale.state.mine.ores.crystal,0);
  assert.equal('currency' in sale.state,false);
  assert.equal('walletXu' in sale.state,false);

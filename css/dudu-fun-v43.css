@@ -129,6 +129,85 @@ body.dudu-phone-v11 #cyber-phone .dudu-fun-history-line{
 }
 body.dudu-phone-v11 #cyber-phone .dudu-fun-history-line strong{color:#ffe0a8}
 body.dudu-phone-v11 #cyber-phone .dudu-fun-disclaimer{display:block}
+
+/* Vạn Phúc — collectible red-and-gold Chinese-style lucky scratch cards. */
+body.dudu-phone-v11 #cyber-phone .lucky-kiosk-head{display:flex;flex-direction:column;gap:5px;padding:4px 5px 8px;text-align:center}
+body.dudu-phone-v11 #cyber-phone .lucky-kiosk-head span{font-size:10px;letter-spacing:.08em;color:#e8b575}
+body.dudu-phone-v11 #cyber-phone .lucky-kiosk-head strong{font:900 22px/1.15 ui-serif,Georgia,serif;color:#ffe4a0;text-shadow:0 2px 9px #df91404a}
+body.dudu-phone-v11 #cyber-phone .lucky-kiosk-head small{font-size:10px;color:#f3d8c0;line-height:1.4}
+body.dudu-phone-v11 #cyber-phone .lucky-theme-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+body.dudu-phone-v11 #cyber-phone .lucky-theme{display:flex;flex-direction:column;justify-content:center;align-items:center;
+ min-width:0;min-height:83px;padding:7px 3px;border-radius:10px;border:1px solid #a86c4b;
+ background:linear-gradient(135deg,#832b36,#401d32);color:#ffe8b8;cursor:pointer;gap:3px}
+body.dudu-phone-v11 #cyber-phone .lucky-theme.selected{border-color:#ffe2a0;
+ box-shadow:0 0 0 1px #e9ca8c88,inset 0 0 18px #e79b4170}
+body.dudu-phone-v11 #cyber-phone .lucky-theme-phoenix{background:linear-gradient(145deg,#bc5b2d,#64293c)}
+body.dudu-phone-v11 #cyber-phone .lucky-theme-lantern{background:linear-gradient(145deg,#ba262f,#6d2127)}
+body.dudu-phone-v11 #cyber-phone .lucky-theme-jade{background:linear-gradient(145deg,#3d7c68,#214e4b)}
+body.dudu-phone-v11 #cyber-phone .lucky-theme-lotus{background:linear-gradient(145deg,#ae4f77,#63345f)}
+body.dudu-phone-v11 #cyber-phone .lucky-theme-lion{background:linear-gradient(145deg,#98642d,#57331e)}
+body.dudu-phone-v11 #cyber-phone .lucky-theme-cloud{background:linear-gradient(145deg,#577b9f,#333e70)}
+body.dudu-phone-v11 #cyber-phone .lucky-theme-gold{background:linear-gradient(145deg,#9c8036,#3f312b)}
+body.dudu-phone-v11 #cyber-phone .lucky-theme-icon{display:grid;place-items:center;
+ border:1px solid #e4a464ad;border-radius:50%;width:30px;height:30px;color:#ffe5a8;
+ font:900 20px ui-serif,Georgia,serif;background:#30151e55}
+body.dudu-phone-v11 #cyber-phone .lucky-theme b{font-size:9px;line-height:1.1}
+body.dudu-phone-v11 #cyber-phone .lucky-theme small{font-size:8px;color:#efbea7}
+body.dudu-phone-v11 #cyber-phone .dudu-fun-start.lucky-buy{border:2px solid #ffe0a1;
+ background:linear-gradient(120deg,#e8aa49,#fff1bb,#d88d3c);color:#5e281c;
+ min-height:45px;box-shadow:0 4px 18px #f0b44f4a;letter-spacing:.06em}
+body.dudu-phone-v11 #cyber-phone .lucky-card{border:3px double #f9df9b;border-radius:15px;padding:11px;
+ background:radial-gradient(ellipse at 50% 15%,#bd4237,#6a1928 65%,#350f20);
+ position:relative;overflow:hidden;box-shadow:inset 0 0 0 3px #8b3442,0 5px 20px #090e1e7d}
+body.dudu-phone-v11 #cyber-phone .lucky-card.lucky-theme-jade{background:radial-gradient(circle at 50% 15%,#4baf7c,#1c5a53 65%,#143633)}
+body.dudu-phone-v11 #cyber-phone .lucky-card.lucky-theme-lotus{background:radial-gradient(circle at 50% 15%,#cc779b,#79365f 65%,#3f1e4b)}
+body.dudu-phone-v11 #cyber-phone .lucky-card.lucky-theme-cloud{background:radial-gradient(circle at 50% 15%,#649bc5,#344e83 65%,#1e2950)}
+body.dudu-phone-v11 #cyber-phone .lucky-card.lucky-theme-phoenix{background:radial-gradient(circle at 50% 15%,#ed9350,#9a362b 65%,#471c2b)}
+body.dudu-phone-v11 #cyber-phone .lucky-card.lucky-theme-lantern{background:radial-gradient(circle at 50% 15%,#e7484c,#9c2334 65%,#4c1929)}
+body.dudu-phone-v11 #cyber-phone .lucky-card.lucky-theme-lion{background:radial-gradient(circle at 50% 15%,#cb9850,#815324 65%,#3c2a22)}
+body.dudu-phone-v11 #cyber-phone .lucky-card.lucky-theme-gold{background:radial-gradient(circle at 50% 15%,#d9ad58,#71572a 65%,#2c2925)}
+body.dudu-phone-v11 #cyber-phone .lucky-card::before{content:'✧　福　✧　福　✧';position:absolute;top:32%;left:-22px;
+ color:#f6d37d10;transform:rotate(-23deg);font-size:38px;pointer-events:none}
+body.dudu-phone-v11 #cyber-phone .lucky-card-top{display:flex;justify-content:space-between;gap:4px;
+ align-items:center;color:#fff3cb;font-size:10px;position:relative;z-index:1}
+body.dudu-phone-v11 #cyber-phone .lucky-card-top small{font-size:8px;color:#fbd09e}
+body.dudu-phone-v11 #cyber-phone .lucky-card-emblem{width:94px;height:94px;border:5px double #edb86d;
+ border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+ margin:10px auto;color:#fdf1c8;font:900 47px/1 ui-serif,Georgia,serif;
+ background:radial-gradient(circle,#a84b34,#6b1b2c);box-shadow:0 0 20px #e9a75e6e}
+body.dudu-phone-v11 #cyber-phone .lucky-card-emblem small{margin-top:5px;font:700 10px sans-serif;color:#ffe7aa}
+body.dudu-phone-v11 #cyber-phone .lucky-scratch-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;position:relative;z-index:1}
+body.dudu-phone-v11 #cyber-phone .lucky-scratch-cell{min-height:53px;border:2px solid #ffe1a2;
+ border-radius:8px;cursor:pointer;color:#fff0c4;font-size:23px;font-weight:900;
+ background:repeating-linear-gradient(135deg,#d4a85e,#d4a85e 7px,#b98545 7px,#b98545 14px);
+ box-shadow:inset 0 1px 1px #fff5dcaa;touch-action:manipulation;transition:transform .1s,filter .12s}
+body.dudu-phone-v11 #cyber-phone .lucky-scratch-cell:active:not(:disabled){transform:scale(.93);filter:brightness(1.2)}
+body.dudu-phone-v11 #cyber-phone .lucky-scratch-cell.opened{color:#f9d88b;border-color:#ecb05c;
+ background:linear-gradient(145deg,#702b35,#401b2d);box-shadow:inset 0 0 14px #2b0c19}
+body.dudu-phone-v11 #cyber-phone .lucky-scratch-cell:disabled{opacity:1;cursor:default}
+body.dudu-phone-v11 #cyber-phone .lucky-card-foot{display:block;text-align:center;color:#ffe4a2;
+ font:900 10px ui-monospace,monospace;letter-spacing:.12em;margin-top:12px;line-height:1.5}
+body.dudu-phone-v11 #cyber-phone .lucky-claim{background:linear-gradient(100deg,#e1b45c,#aa472d);
+ color:#fff8d4;border-color:#ffe2a0;min-height:44px}
+body.dudu-phone-v11 #cyber-phone .lucky-last-win{padding:9px;border-radius:9px;text-align:center;
+ color:#ffe5b4;background:#4d2c3b;font-size:10px;line-height:1.5;margin:0}
+body.dudu-phone-v11 #cyber-phone .lucky-album{background:linear-gradient(140deg,#30243f,#4e313f);
+ border:1px solid #b1786e;border-radius:11px;padding:11px;display:flex;flex-direction:column;gap:5px}
+body.dudu-phone-v11 #cyber-phone .lucky-album strong{font-size:12px;color:#ffe5ad}
+body.dudu-phone-v11 #cyber-phone .lucky-album small{font-size:9px;color:#ebc8c3}
+body.dudu-phone-v11 #cyber-phone .lucky-album-track{height:7px;border-radius:9px;background:#211522;overflow:hidden}
+body.dudu-phone-v11 #cyber-phone .lucky-album-track i{display:block;height:100%;background:linear-gradient(90deg,#ce693b,#ffe195);border-radius:9px}
+body.dudu-phone-v11 #cyber-phone .lucky-odds{border:1px solid #916451;border-radius:10px;padding:10px;
+ background:#2d2636;color:#e7d5d6}
+body.dudu-phone-v11 #cyber-phone .lucky-odds summary{font-size:10px;font-weight:850;cursor:pointer;color:#f8d6ac}
+body.dudu-phone-v11 #cyber-phone .lucky-odds-list{margin-top:9px}
+body.dudu-phone-v11 #cyber-phone .lucky-odds-row{display:flex;justify-content:space-between;gap:7px;
+ border-bottom:1px solid #b3856a28;padding:5px 0;font-size:9px}
+body.dudu-phone-v11 #cyber-phone .lucky-odds-row b{color:#ffe0a8;white-space:nowrap}
+body.dudu-phone-v11 #cyber-phone .lucky-odds>small{display:block;margin-top:9px;font-size:9px;line-height:1.4;color:#c7b9c1}
+body.dudu-phone-v11 #cyber-phone .lucky-theme:focus-visible,
+body.dudu-phone-v11 #cyber-phone .lucky-scratch-cell:focus-visible{
+ outline:2px solid #fff0b1;outline-offset:2px}
 body.dudu-phone-v11 #cyber-phone .dudu-fun-tab:focus-visible,
 body.dudu-phone-v11 #cyber-phone .dudu-fun-symbol:focus-visible,
 body.dudu-phone-v11 #cyber-phone .dudu-fun-scratch:focus-visible,
