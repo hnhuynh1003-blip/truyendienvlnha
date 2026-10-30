@@ -4296,7 +4296,7 @@
           <div style="font-size: 10px; color: var(--red);">Trạng thái: ${escapeHtml(c.status || 'Bình thường')}</div>
 
           <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:2px;">
-            <button class="btn btn-gold" style="padding: 2px 7px; font-size: 9px;" onclick="openGiftModalForChar('${c.id}')">🎁 Tặng Quà</button>
+            <button class="btn btn-gold" data-dudu-gift-open="1" style="padding: 2px 7px; font-size: 9px;" ${!isNpcUnlocked(novel.id,c.id)?'disabled title="Chưa liên kết NPC"':''}>🎁 Tặng Quà</button>
             ${isNpcUnlocked(novel.id, c.id)
               ? `<button class="btn btn-primary" style="padding: 2px 7px; font-size: 9px;" onclick="connectSoulAndChat('${c.id}', '${novel.id}')">💬 Trò chuyện</button>`
               : '<span style="font-size:10px; color:var(--text-dim);">🔒 Chưa mở khóa</span>'}
@@ -4398,6 +4398,8 @@
           button.addEventListener('click',()=>v43ChooseFavoriteNpc(novel.id,c.id));
           line.append(label,button);div.append(line);
         }
+        div.querySelector('[data-dudu-gift-open]')?.addEventListener('click',
+          ()=>openGiftModalForChar(c.id,novel.id));
         container.appendChild(div);
       });
     }
@@ -4441,9 +4443,10 @@
       }
     }
 
-    function openGiftModalForChar(charId) {
-      const chars = getCombinedCharactersList();
-      const char = chars.find(c => c.id === charId);
+    function openGiftModalForChar(charId,storyId=activeChatNovelId||(novels[selectedNovelIndex]||{}).id) {
+      const novel=novels.find(n=>n.id===storyId);
+      const char=novel?.characters?.find(c=>c.id===charId&&!c.archived&&
+        isNpcUnlocked(storyId,c.id));
       if (!char) { showSystemAlert("CHƯA LIÊN KẾT", "Cần mở khóa NPC trước khi tặng quà."); return; }
       document.getElementById('gift-modal-heading').textContent = `🎁 TẶNG QUÀ: ${char.name}`;
       document.getElementById('gift-modal-desc').textContent =
@@ -4467,8 +4470,10 @@
                 <span style="font-size:11px; font-weight:bold; color:var(--text-white);">${escapeHtml(item.name)}</span>
               </div>
             </div>
-            <button class="btn btn-gold" style="padding:3px 8px; font-size:9px;" onclick="executeGiftItem('${char.id}', ${idx})" ${!IS_SANDBOX_MODE&&!DuduInventoryTradeV439.known(item)?'disabled title="Món này chưa xác thực được nguồn gốc"':''}>Tặng</button>
+            <button class="btn btn-gold" data-dudu-gift-submit="1" style="padding:3px 8px; font-size:9px;" ${!IS_SANDBOX_MODE&&!DuduInventoryTradeV439.known(item)?'disabled title="Món này chưa xác thực được nguồn gốc"':''}>Tặng</button>
           `;
+          div.querySelector('[data-dudu-gift-submit]')?.addEventListener('click',
+            ()=>executeGiftItem(char.id,idx,storyId));
           listContainer.appendChild(div);
         });
       }
@@ -4482,7 +4487,7 @@
       if(!charId||!storyId||!isNpcUnlocked(storyId,charId)){
         showSystemAlert('CHƯA THỂ TẶNG','Cần mở khóa NPC trong truyện trước khi gửi quà.');return;
       }
-      openGiftModalForChar(charId);
+      openGiftModalForChar(charId,storyId);
     }
 
     // Shared real-account journal for NPC gifts and virtual-Xu envelopes.
@@ -4551,15 +4556,14 @@
     }
     window.commitPersonalNpcExchangeV1=commitPersonalNpcExchangeV1;
 
-    async function executeGiftItem(charId, itemIdx) {
+    async function executeGiftItem(charId, itemIdx, giftStoryId=null) {
       const item = userProfile.inventory[itemIdx];
       if (!item) return;
 
-      const chars = getCombinedCharactersList();
-      const char = chars.find(c => c.id === charId);
+      const giftStory = giftStoryId||activeChatNovelId||(novels[selectedNovelIndex]||{}).id;
+      const char=novels.find(n=>n.id===giftStory)?.characters?.find(c=>
+        c.id===charId&&!c.archived);
       if (!char) return;
-
-      const giftStory = activeChatNovelId || (novels[selectedNovelIndex] || {}).id;
       const giftUser = currentUsername;
       if (!isNpcUnlocked(giftStory, char.id)) return;
       // Sandbox retains the original local R2 interaction and quest hooks.
@@ -4654,7 +4658,9 @@
         `NPC đã nhận ${item.name} (+${gain} Thiện cảm, +${result.trustGain} Tin tưởng).`);
       renderCodexList();
 
-      if (document.getElementById('phone-app-chat').style.display === 'flex') {
+      if (document.getElementById('phone-app-chat').style.display === 'flex'&&
+          activeChatNovelId===giftStory&&
+          document.getElementById('chat-character-selector')?.value===char.id) {
         const giftRole=v56CurrentRole(giftStory);
         const giftChatKey=giftRole?chatKey(char.id,giftStory,giftRole.id):null;
         // Never create a "null" chat transcript or attach gifts to a different role.

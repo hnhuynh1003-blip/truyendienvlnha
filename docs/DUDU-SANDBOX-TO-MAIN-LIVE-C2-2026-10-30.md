@@ -78,13 +78,16 @@ quy tắc không cấp trùng. Chỉ khi đó mới coi là đã chuyển sang m
   vẫn chạy nhánh cũ, không đổi cơ chế mô phỏng.
 - Nút phong bao và quà đã được mở ở tài khoản Firebase xác thực và NPC
   đã mở khóa, thay cho nhánh main chỉ trừ quà cũ và nút phong bao khóa.
+- C2.2a: Sổ Tay chuyển rõ `storyId` vào hộp quà và giao dịch để tránh
+  nhầm truyện nếu Liên lạc đang chọn truyện khác; NPC chưa mở khóa bị
+  khóa nút. Sự kiện quà chỉ gửi vào hội thoại khi đúng truyện và NPC.
 - Những lần gọi lưu *toàn hồ sơ* đã bắt đầu trong cùng tab được chờ hoàn
   thành trước giao dịch mới; không gửi `saveCurrentAccount()` từ kết quả
   C2.2. Tuy vậy, **lưu hồ sơ cũ ở các chức năng khác và nhiều tab/thiết bị
   vẫn có thể ghi đè trạng thái mới**. Đây là nợ đồng bộ cần xử lý ở C2.3
   trước khi đặt trạng thái live-production hay làm reset mùa.
 
-Kiểm thử máy: 131/131 tập Node đạt sau khi thêm giao dịch quà/phong bao,
+Kiểm thử máy: 132/132 tập Node đạt sau khi thêm giao dịch quà/phong bao,
 bao gồm retry cùng ID, từ chối không trừ đồ, Xu thiếu, cooldown và quyền UID;
 2 kiểm tra Phone manifest/lifecycle đạt. Chưa có kiểm thử thực bằng đăng
 nhập và Firestore Rules production. Không cập nhật hay deploy Rules, không

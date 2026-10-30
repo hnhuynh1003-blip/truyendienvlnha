@@ -45,7 +45,7 @@ test('V32 messenger has direct gift and red-envelope actions with local Sandbox 
    assert.match(chat,new RegExp('id="'+name+'"'));
  }
  assert.match(html,/function openGiftModalFromChat\(\)/);
- assert.match(html,/function executeGiftItem\(charId, itemIdx\)/);
+ assert.match(html,/function executeGiftItem\(charId, itemIdx, giftStoryId=null\)/);
  assert.match(html,/renderRedPacketEventsV32\(/);
  assert.match(social,/userProfile\.currency=plan\.balanceAfter/);
  assert.match(social,/saveCurrentAccount\(\)/);
