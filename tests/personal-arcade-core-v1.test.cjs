@@ -19,12 +19,13 @@ test('Neon earns only measured open-tab time, not closed-app downtime',()=>{
  const reopened=arcade.advance(initial,START+60*60*1000,0);
  assert.equal(reopened.coins,0);
  const afterMinute=arcade.advance(reopened,START+61*60*1000,60*1000);
- assert.equal(afterMinute.coins,6,'One hundredth per second = 0.6 Xu per minute');
- assert.equal(arcade.formatXu(afterMinute.coins),'0,6');
+ assert.equal(afterMinute.coins,9,'0,6 Xu from terminals plus 0,3 Xu from one served guest');
+ assert.equal(arcade.formatXu(afterMinute.coins),'0,9');
  const twice=arcade.advance(afterMinute,START+61*60*1000,60*1000);
- assert.equal(twice.coins,6,'Same timestamp never pays twice');
+ assert.equal(twice.coins,9,'Same timestamp never pays twice');
  const afterHour=arcade.advance(initial,START+60*60*1000,60*60*1000);
- assert.equal(afterHour.coins,360,'Base idle yield is 36 Xu per active hour');
+ assert.equal(afterHour.coins,600,'Base 36 Xu plus 24 Xu in net visitor receipts per active hour');
+ assert.equal(afterHour.neon.guestsServed,80);
 });
 test('Neon can pause, upgrade using only game money and increase its rate',()=>{
  let state=arcade.fresh(START);state.coins=400;
@@ -51,6 +52,81 @@ test('Neon Tycoon unlocks real stations, triples output and preserves old local 
  assert.equal(apply(third.state,'station').ok,false);
  const old=arcade.fresh(START);delete old.neon.stations;
  assert.equal(arcade.norm(old,START).neon.stations,1,'Existing saves start with one working station');
+});
+test('C4.2 serves customers only in the foreground, subtracts expenses and avoids duplicate sessions',()=>{
+ const initial=arcade.fresh(START),service=arcade.neonService(initial.neon);
+ assert.deepEqual(service,{guests:1,revenue:6,expense:3,profit:3});
+ const offline=arcade.advance(initial,START+90000,0);
+ assert.equal(offline.neon.guestsServed,0);
+ const active=arcade.advance(offline,START+180000,90000);
+ assert.equal(active.neon.guestsServed,2);
+ assert.equal(active.neon.serviceRevenue,12);
+ assert.equal(active.neon.operatingExpense,6);
+ assert.equal(active.coins,15,'0,9 Xu terminal time and 0,6 Xu net receipts');
+ const duplicate=arcade.advance(active,START+180000,90000);
+ assert.equal(duplicate.coins,15);
+ assert.equal(duplicate.neon.guestsServed,2);
+ const paused=apply(active,'toggle-neon',START+180000).state;
+ const stopped=arcade.advance(paused,START+270000,90000);
+ assert.equal(stopped.neon.guestsServed,2);
+ assert.equal(stopped.coins,15);
+});
+test('C4.2 unlocks new floors only after real service and an affordable expansion',()=>{
+ let state=arcade.fresh(START);state.coins=500000;
+ assert.equal(apply(state,'room-tier').ok,false);
+ for(let i=0;i<2;i++)state=apply(state,'station').state;
+ assert.equal(state.neon.stations,3);
+ assert.equal(apply(state,'station').ok,false,'Three stations fit the starter floor');
+ assert.equal(apply(state,'room-tier').ok,false,'Guest requirement cannot be bypassed');
+ state=arcade.advance(state,START+arcade.NEON_SERVICE_INTERVAL*20,
+  arcade.NEON_SERVICE_INTERVAL*20);
+ assert.equal(state.neon.guestsServed,20);
+ const next=apply(state,'room-tier',state.lastAt);
+ assert.equal(next.ok,true);
+ assert.equal(next.state.neon.roomTier,2);
+ assert.equal(arcade.neonCapacity(next.state.neon),5);
+ assert.equal(next.state.coins,state.coins-2400);
+ state=apply(next.state,'station',next.state.lastAt).state;
+ assert.equal(state.neon.stations,4);
+ state=apply(state,'station',state.lastAt).state;
+ assert.equal(state.neon.stations,5);
+ assert.equal(apply(state,'station',state.lastAt).ok,false);
+ assert.equal(apply(state,'room-tier',state.lastAt).ok,false,'Tier three requires one hundred guests');
+ state.neon.guestsServed=100;
+ const final=apply(state,'room-tier',state.lastAt);
+ assert.equal(final.ok,true);assert.equal(final.state.neon.roomTier,3);
+ assert.equal(arcade.neonCapacity(final.state.neon),7);
+});
+test('C4.2 facility choices improve occupancy and are saved with old arcade records',()=>{
+ const old=arcade.fresh(START);old.coins=9000;
+ delete old.neon.roomTier;delete old.neon.seating;delete old.neon.ambiance;
+ delete old.neon.snack;delete old.neon.guestsServed;delete old.neon.sessionMs;
+ const migrated=arcade.norm(old,START);
+ assert.equal(migrated.neon.roomTier,1);
+ assert.equal(migrated.neon.seating,1);
+ assert.equal(migrated.coins,9000);
+ const second=apply(migrated,'station').state;
+ const seats=apply(second,'seating');assert.equal(seats.ok,true);
+ assert.equal(arcade.neonService(seats.state.neon).guests,2);
+ const better=apply(seats.state,'ambiance');assert.equal(better.ok,true);
+ assert.ok(arcade.neonService(better.state.neon).revenue>
+  arcade.neonService(seats.state.neon).revenue);
+ const snacks=apply(better.state,'snack');assert.equal(snacks.ok,true);
+ assert.ok(arcade.neonService(snacks.state.neon).profit>
+  arcade.neonService(better.state.neon).profit);
+ const restored=arcade.norm(snacks.state,START);
+ assert.equal(restored.neon.seating,2);
+ assert.equal(restored.neon.ambiance,2);
+ assert.equal(restored.neon.snack,1);
+ assert.equal(restored.coins,snacks.state.coins);
+});
+test('C4.2 milestone rewards are local Arcade Xu and can be claimed once',()=>{
+ const state=arcade.fresh(START);state.neon.guestsServed=25;
+ const reward=apply(state,'neon-milestone-0');assert.equal(reward.ok,true);
+ assert.equal(reward.state.coins,200);
+ assert.equal(apply(reward.state,'neon-milestone-0').ok,false);
+ assert.equal(apply(reward.state,'neon-milestone-1').ok,false);
+ assert.deepEqual(reward.state.neon.milestones,[0]);
 });
 test('New upgrades spend only local Xu, change gameplay and preserve old saves',()=>{
  let state=arcade.fresh(START);state.coins=20000;

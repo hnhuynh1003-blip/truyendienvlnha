@@ -41,6 +41,17 @@
  const FISH_BITE_MIN=3000,FISH_BITE_SPAN=3000,FISH_REEL_WINDOW=25000;
  const FISH_COMMON=['reed','carp','silver','koi','blue'];
  const FISH_RARE=['moonfish','crystal','dragon'];
+ const NEON_SERVICE_INTERVAL=45000;
+ const NEON_ROOM_CAPACITY=[3,5,7];
+ const neonCapacity=neon=>NEON_ROOM_CAPACITY[neon.roomTier-1]||3;
+ const neonService=neon=>{
+  const guests=Math.min(neon.stations,1+(neon.seating-1)+
+   Math.floor((neon.ambiance-1)/2)+(neon.roomTier-1));
+  // Arcade tenths, per occupied service session; expenses are never negative.
+  const revenue=guests*(6+2*neon.snack+(neon.ambiance-1));
+  const expense=1+neon.roomTier+guests+neon.snack;
+  return {guests,revenue,expense,profit:Math.max(0,revenue-expense)};
+ };
  function chooseFish(roll,threshold){
   const rare=roll>=threshold,scaled=rare?(roll-threshold)/(1-threshold):roll/threshold;
   const limits=rare?[.68,.94,1]:[.27,.52,.75,.91,1];
@@ -55,7 +66,9 @@
   const time=safeTime(now);
   return {version:1,lastAt:time,coins:0,earned:0,
    neon:{cpu:1,gpu:1,stations:1,router:1,skin:0,cooling:1,turboUntil:0,turboReadyAt:0,
-    contracts:[],running:true,remainder:0,economyV:ECONOMY_VERSION},
+    contracts:[],running:true,remainder:0,economyV:ECONOMY_VERSION,
+    roomTier:1,seating:1,ambiance:1,snack:0,guestsServed:0,serviceRevenue:0,
+    operatingExpense:0,sessionMs:0,milestones:[]},
    mine:{durability:100,pickLevel:1,drillLevel:1,lantern:1,cart:1,scanner:0,
     zone:0,charge:0,bursts:0,repairUntil:0,dug:0,
     ores:Object.fromEntries(Object.keys(ORE_VALUES).map(ore=>[ore,0])),
@@ -77,9 +90,18 @@
   state.lastAt=number(source.lastAt,0,time,time);
   state.coins=number(source.coins,0,MAX_COIN,0);
   state.earned=number(source.earned,0,MAX_COIN,0);
+  const roomTier=number(neon.roomTier,1,3,1);
   state.neon={cpu:number(neon.cpu,1,50,1),gpu:number(neon.gpu,1,20,1),
-   stations:number(neon.stations,1,3,1),router:number(neon.router,1,10,1),
+   roomTier,stations:number(neon.stations,1,neonCapacity({roomTier}),1),
+   router:number(neon.router,1,10,1),
    skin:number(neon.skin,0,2,0),cooling:number(neon.cooling,1,5,1),
+   seating:number(neon.seating,1,5,1),ambiance:number(neon.ambiance,1,5,1),
+   snack:number(neon.snack,0,3,0),
+   guestsServed:number(neon.guestsServed,0,MAX_COIN,0),
+   serviceRevenue:number(neon.serviceRevenue,0,MAX_COIN,0),
+   operatingExpense:number(neon.operatingExpense,0,MAX_COIN,0),
+   sessionMs:number(neon.sessionMs,0,NEON_SERVICE_INTERVAL-1,0),
+   milestones:Array.isArray(neon.milestones)?[0,1,2,3].filter(i=>neon.milestones.includes(i)):[],
    turboUntil:number(neon.turboUntil,0,time+15*60*1000,0),
    turboReadyAt:number(neon.turboReadyAt,0,time+30*60*1000,0),
    contracts:Array.isArray(neon.contracts)?[0,1,2].filter(i=>neon.contracts.includes(i)):[],
@@ -148,7 +170,11 @@
   crop==='moon'&&garden.harvests>=30;
  const upgradeCost=(state,type)=>type==='cpu'?400*state.neon.cpu*state.neon.cpu:
   type==='gpu'?900*state.neon.gpu*state.neon.gpu:
-  type==='station'&&state.neon.stations<3?800*state.neon.stations*state.neon.stations:
+  type==='station'&&state.neon.stations<neonCapacity(state.neon)?800*state.neon.stations*state.neon.stations:
+  type==='room-tier'&&state.neon.roomTier<3?[0,2400,8000][state.neon.roomTier]:
+  type==='seating'&&state.neon.seating<5?300*state.neon.seating**2:
+  type==='ambiance'&&state.neon.ambiance<5?220*state.neon.ambiance**2:
+  type==='snack'&&state.neon.snack<3?500*(state.neon.snack+1)**2:
   type==='router'&&state.neon.router<10?300*state.neon.router*state.neon.router:
   type==='skin'&&state.neon.skin<2?600*(state.neon.skin+1)*(state.neon.skin+1):
   type==='cooling'&&state.neon.cooling<5?450*state.neon.cooling*state.neon.cooling:
@@ -177,6 +203,16 @@
    const milli=state.neon.remainder+(idle+turboMs)*rate(state);
    give(state,Math.floor(milli/100000));
    state.neon.remainder=milli%100000;
+   const total=state.neon.sessionMs+idle;
+   const sessions=Math.floor(total/NEON_SERVICE_INTERVAL);
+   state.neon.sessionMs=total%NEON_SERVICE_INTERVAL;
+   if(sessions){
+    const service=neonService(state.neon);
+    state.neon.guestsServed=clamp(state.neon.guestsServed+sessions*service.guests,MAX_COIN);
+    state.neon.serviceRevenue=clamp(state.neon.serviceRevenue+sessions*service.revenue,MAX_COIN);
+    state.neon.operatingExpense=clamp(state.neon.operatingExpense+sessions*service.expense,MAX_COIN);
+    give(state,sessions*service.profit);
+   }
   }
   if(state.mine.repairUntil&&time>=state.mine.repairUntil){
    state.mine.durability=maxDurability(state.mine);state.mine.repairUntil=0;
@@ -218,6 +254,15 @@
    state.neon.contracts.push(i);give(state,[50,120,180][i]);
    return succeed('✦ Hoàn tất hợp đồng, nhận '+formatXu([50,120,180][i])+' Xu Arcade');
   }
+  const milestone=/^neon-milestone-([0123])$/.exec(action||'');
+  if(milestone){
+   const i=Number(milestone[1]),ready=[state.neon.guestsServed>=25,
+    state.neon.guestsServed>=100,state.neon.roomTier>=2,
+    state.neon.roomTier>=3][i];
+   if(!ready||state.neon.milestones.includes(i))return fail('Mốc chưa đạt hoặc đã nhận thưởng');
+   state.neon.milestones.push(i);give(state,[200,500,300,900][i]);
+   return succeed('✦ Thành tựu phòng net · +'+formatXu([200,500,300,900][i])+' Xu Arcade');
+  }
   if(action==='cpu'||action==='gpu'){
    const cost=upgradeCost(state,action),level=state.neon[action];
    if(level>=(action==='cpu'?50:20))return fail('Đã nâng cấp tối đa');
@@ -226,14 +271,24 @@
    return succeed('Đã nâng cấp '+action.toUpperCase());
   }
   if(action==='station'){
-   if(state.neon.stations>=3)return fail('Phòng máy đã mở đủ ba dàn');
+   if(state.neon.stations>=neonCapacity(state.neon))return fail('Hãy mở rộng mặt bằng trước khi lắp thêm dàn máy');
    const cost=upgradeCost(state,'station');
    if(state.coins<cost)return fail('Chưa đủ Xu để lắp thêm dàn máy');
    state.coins-=cost;state.neon.stations++;
    return succeed('Đã lắp dàn máy số '+state.neon.stations);
   }
+  if(action==='room-tier'){
+   if(state.neon.roomTier>=3)return fail('Đã mở rộng đến tầng cao nhất');
+   if(state.neon.stations<neonCapacity(state.neon)||
+    state.neon.guestsServed<(state.neon.roomTier===1?20:100))
+    return fail('Cần đủ dàn máy và lượt khách để mở phòng mới');
+   const cost=upgradeCost(state,action);
+   if(state.coins<cost)return fail('Chưa đủ Xu Arcade để mở rộng');
+   state.coins-=cost;state.neon.roomTier++;
+   return succeed('✦ Mở rộng Trạm Neon lên phòng cấp '+state.neon.roomTier);
+  }
   if(['router','skin','cooling','pick-level','drill-level','lantern','cart',
-   'water-cap','pond-tier','plots','sprinkler','rod'].includes(action)){
+   'water-cap','pond-tier','plots','sprinkler','rod','seating','ambiance','snack'].includes(action)){
    const cost=upgradeCost(state,action);
    if(cost===null)return fail('Nâng cấp này đã đạt giới hạn');
    if(state.coins<cost)return fail('Chưa đủ Xu trò chơi để nâng cấp');
@@ -241,6 +296,9 @@
    if(action==='router')state.neon.router++;
    if(action==='skin')state.neon.skin++;
    if(action==='cooling')state.neon.cooling++;
+   if(action==='seating')state.neon.seating++;
+   if(action==='ambiance')state.neon.ambiance++;
+   if(action==='snack')state.neon.snack++;
    if(action==='pick-level')state.mine.pickLevel++;
    if(action==='drill-level')state.mine.drillLevel++;
    if(action==='lantern')state.mine.lantern++;
@@ -424,6 +482,7 @@
  }
  const formatXu=tenths=>(tenths/10).toLocaleString('vi-VN',{maximumFractionDigits:1});
  return Object.freeze({fresh,norm,advance,act,rate,upgradeCost,formatXu,
+  neonCapacity,neonService,NEON_SERVICE_INTERVAL,
   WATER_INTERVAL,REPAIR_INTERVAL,GROW_INTERVAL,BUBBLE_INTERVAL,ORE_VALUES,ORE_NAMES,
   CROPS,FISH_SPECIES,FISH_REEL_WINDOW,maxCharge,zoneUnlocked,cropUnlocked,maxDurability,bubbleInterval});
 });

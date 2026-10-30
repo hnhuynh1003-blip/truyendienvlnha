@@ -60,6 +60,25 @@ test('Arcade phone UI renders three named tabs and a disabled transfer control',
  assert.match(host.innerHTML,/data-arcade-action="router"/);
  assert.match(host.innerHTML,/data-arcade-action="skin"/);
  assert.match(host.innerHTML,/neon-computer-2 is-locked/);
+ assert.match(host.innerHTML,/data-neon-service-track/);
+ assert.match(host.innerHTML,/data-arcade-action="room-tier" disabled/);
+ assert.match(host.innerHTML,/data-arcade-action="seating"/);
+ assert.match(host.innerHTML,/data-arcade-action="ambiance"/);
+ assert.match(host.innerHTML,/data-arcade-action="snack"/);
+ assert.match(host.innerHTML,/data-arcade-action="neon-milestone-0"/);
+});
+test('C4.2 expanded Neon room renders more machines and visitors without changing wallet',()=>{
+ const {db,host,window}=harness();
+ const game=core.fresh(Date.now());game.neon.roomTier=2;game.neon.stations=5;
+ game.neon.seating=5;game.neon.guestsServed=54;
+ db.set('dudu-personal-arcade:v1:reader-one',JSON.stringify(game));
+ window.DuduPersonalArcadeUIV1.render();
+ assert.match(host.innerHTML,/neon-room-tier-2/);
+ assert.match(host.innerHTML,/neon-rack-wide/);
+ assert.match(host.innerHTML,/neon-computer-5/);
+ assert.match(host.innerHTML,/neon-guest/);
+ assert.match(host.innerHTML,/54<\/b> khách/);
+ assert.match(host.innerHTML,/data-arcade-action="station" disabled/);
 });
 test('Exchange opens from wallet and remains disabled until trusted Rules exist',()=>{
  const {host,window}=harness();

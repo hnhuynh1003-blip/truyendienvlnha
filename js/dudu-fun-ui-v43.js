@@ -299,20 +299,11 @@
  function view(){
   return rules.norm(signed()?stored():null,day());
  }
- function heading(container){
-  const top=el('div','dudu-fun-top');
-  const name=el('div','dudu-fun-title');
-  const state=view(),status=rules.progress(state);
-  const finished=sandbox()?status.done:blindState?.lastFreeDay===day()?1:0,
-   target=sandbox()?2:1;
-  name.append(el('strong','','✦ Vạn Bảo & Vé Cào'),
-    el('span','',sandbox()?`Hôm nay: ${finished}/${target} lượt miễn phí đã nhận`:
-     `Hộp miễn phí hôm nay: ${finished}/${target}`));
-  const money=el('span','dudu-fun-balance',
-    signed()?'🪙 '+(!sandbox()?(open==='ticket'?luckyCurrency:blindCurrency)??
-      userProfile.currency:userProfile.currency)+' Xu':'Khách');
-  top.append(name,money);
-  container.append(top);
+ function updateHeaderBalance(){
+  const chip=$('dudu-fun-header-balance');if(!chip)return;
+  const currency=!sandbox()?(open==='ticket'?luckyCurrency:blindCurrency)??
+   userProfile.currency:userProfile.currency;
+  chip.textContent=signed()?'🪙 '+currency+' Xu':'Khách';
  }
  function blindBoxes(rootNode){
   if(!blind()||!blindLoaded){
@@ -730,6 +721,7 @@
  }
  function render(){
   const host=$('dudu-fun-content-v43');if(!host)return false;
+  updateHeaderBalance();
   ensureLive();
   if(!sandbox())ensureBlind();
   if(open==='ticket'&&!sandbox())ensureLucky();
@@ -745,7 +737,6 @@
    }
    return true;
   }
-  heading(host);
   if(!signed()){
    host.append(el('p','dudu-fun-guest',
     sandbox()?'Đăng nhập Sandbox để nhận lượt chơi riêng của tài khoản. Chưa có phần thưởng nào được tạo.':

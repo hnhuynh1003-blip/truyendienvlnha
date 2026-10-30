@@ -3,29 +3,19 @@ body.dudu-phone-v11 #cyber-phone #dudu-fun-launch-v43[hidden]{display:none!impor
 body.dudu-phone-v11 #cyber-phone #phone-app-fun{gap:0}
 body.dudu-phone-v11 #cyber-phone #phone-app-fun{padding:7px 9px 11px}
 body.dudu-phone-v11 #cyber-phone #phone-app-fun .phone-app-header{
- min-height:36px;padding-bottom:4px;margin-bottom:8px}
+ min-height:39px;padding-bottom:5px;margin-bottom:8px;
+ display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:5px;align-items:center}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .phone-app-header>span:nth-child(2){
+ min-width:0;white-space:nowrap;text-align:center;font-size:12px;letter-spacing:.015em}
+body.dudu-phone-v11 #cyber-phone #dudu-fun-header-balance{
+ display:inline-flex;align-items:center;justify-content:center;min-height:27px;
+ padding:5px 7px;border:1px solid #ddbd808c;border-radius:20px;
+ background:linear-gradient(135deg,#304054,#25374c);color:#ffe4a2;
+ font-size:10px;font-weight:800;white-space:nowrap;letter-spacing:-.025em}
 body.dudu-phone-v11 #cyber-phone #dudu-fun-content-v43{
  display:flex;flex-direction:column;gap:8px;min-width:0;padding-bottom:12px;
 }
-body.dudu-phone-v11 #cyber-phone .dudu-fun-top{
- display:flex;justify-content:space-between;align-items:center;gap:6px;
- background:linear-gradient(115deg,#43345d,#1e4153);
- border:1px solid #bda0df9a;border-radius:12px;padding:8px 10px;
-}
-body.dudu-phone-v11 #cyber-phone .dudu-fun-title{
- display:flex;flex-direction:column;gap:3px;min-width:0;
-}
-body.dudu-phone-v11 #cyber-phone .dudu-fun-title strong{
- color:#ffe8f7;font-size:12px;letter-spacing:.02em;
-}
-body.dudu-phone-v11 #cyber-phone .dudu-fun-title span,
-body.dudu-phone-v11 #cyber-phone .dudu-fun-disclaimer{
- font-size:9px;line-height:1.45;color:#cbd1e4;
-}
-body.dudu-phone-v11 #cyber-phone .dudu-fun-balance{
- flex:none;border:1px solid #e9d8a868;background:#2d3d4ecb;
- padding:6px 8px;border-radius:20px;font-size:10px;font-weight:750;color:#ffe6a8;
-}
+body.dudu-phone-v11 #cyber-phone .dudu-fun-disclaimer{font-size:9px;line-height:1.45;color:#cbd1e4}
 body.dudu-phone-v11 #cyber-phone .dudu-fun-daily-meter{
  display:flex;justify-content:space-between;gap:6px;
  font-size:10px;color:#e7dcf4;

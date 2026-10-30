@@ -64,9 +64,13 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header{min-height:
 .arcade-privacy .arcade-button{width:100%;background:#2a2f40;color:#aeafbc}
 .arcade-empty{padding:30px 18px;border-radius:15px;background:#142333;text-align:center;color:#cedce9;line-height:1.5}
 
-/* Trạm Neon: illuminated room with a rack of 3 working terminals. */
+/* Trạm Neon C4.2: occupancy, service economics, and three visual room tiers. */
 .arcade-world-neon{border-color:#346577;background:#101d30}
 .neon-stage{background:radial-gradient(ellipse at 50% 10%,#254d6f 0%,#101f36 47%,#091629 88%)}
+.neon-room-tier-2{height:364px;background:radial-gradient(ellipse at 52% 12%,#325e80 0%,#17283f 46%,#111427 90%)}
+.neon-room-tier-3{height:364px;background:radial-gradient(ellipse at 50% 8%,#4e577b 0%,#202344 47%,#101a2c 90%)}
+.neon-room-tier-3 .neon-wall-logo{color:#f4e0a18c;text-shadow:0 0 25px #ffcf7955}
+.neon-room-tier-3 .neon-server-stack{box-shadow:0 0 30px #db9ffb50}
 .neon-stage::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 34px,#b6f5ff04 35px 36px);
  mask-image:linear-gradient(to bottom,#000,transparent 68%)}
 .neon-light{position:absolute;top:-80px;width:130px;height:260px;filter:blur(18px);opacity:.5;transform:rotate(18deg);
@@ -90,6 +94,26 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header{min-height:
 .neon-computer{position:relative;width:29%;max-width:103px;height:126px;filter:drop-shadow(0 11px 8px #010514)}
 .neon-computer-1{transform:rotateY(14deg) scale(.88);transform-origin:bottom right}
 .neon-computer-3{transform:rotateY(-14deg) scale(.88);transform-origin:bottom left}
+.neon-rack-wide{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:91px;
+ align-items:end;justify-items:center;gap:5px 6px;top:95px;height:auto;padding:0 13px}
+.neon-rack-wide .neon-computer{width:100%;height:90px;max-width:75px;transform:none}
+.neon-rack-wide .neon-monitor{height:59px;padding:4px;border-radius:5px}
+.neon-rack-wide .neon-monitor-glass{padding:4px 3px;font-size:8px}
+.neon-rack-wide .neon-monitor-glass>i{margin-top:3px;height:2px}
+.neon-rack-wide .neon-monitor-graph{margin-top:2px;height:8px}
+.neon-rack-wide .neon-stand{bottom:17px;height:12px}
+.neon-rack-wide .neon-keyboard{bottom:5px;height:8px}
+.neon-rack-wide .neon-tower{height:23px;bottom:3px}
+.neon-computer.is-occupied .neon-monitor{border-color:#8cedd8;box-shadow:0 0 0 2px #0b1d30,0 0 20px #6beccc70}
+.neon-guest{position:absolute;right:8%;bottom:0;width:25px;height:23px;border-radius:10px 10px 4px 4px;
+ background:linear-gradient(155deg,#927fe2,#394c76);border:2px solid #b8a5e6;z-index:2;
+ box-shadow:0 5px 13px #060b19}
+.neon-guest::before{content:'';position:absolute;left:5px;top:-13px;width:12px;height:12px;
+ border-radius:50%;background:#f4c4a1;border:2px solid #57395c}
+.neon-guest::after{content:'';position:absolute;left:-6px;right:-6px;bottom:-6px;
+ height:5px;background:#4e6079;border-radius:5px}
+.neon-rack-wide .neon-guest{width:18px;height:15px;right:0}
+.neon-rack-wide .neon-guest::before{width:9px;height:9px;left:2px;top:-11px}
 .neon-monitor{width:100%;height:91px;padding:5px;background:linear-gradient(130deg,#3e586d,#0b1427 42%,#20334a);
  border:2px solid #5d8294;border-radius:7px;box-shadow:0 0 0 2px #060d1e,0 0 27px #38aedd32}
 .neon-monitor-glass{height:100%;overflow:hidden;border-radius:3px;padding:7px 5px;
@@ -118,12 +142,47 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header{min-height:
 .neon-stage-income b small{font:700 9px ui-monospace,monospace;color:#98cdd5}
 .neon-income-track{height:3px;background:#2d475b;margin-top:4px;overflow:hidden}
 .neon-income-track i{display:block;background:#79ead8;width:40%;height:100%;box-shadow:0 0 9px #7fffee}
-.neon-room-level{position:absolute;bottom:21px;right:10px;color:#8fcbce;font:800 8px ui-monospace,monospace;letter-spacing:.07em}
+.neon-room-level{position:absolute;bottom:17px;right:10px;max-width:115px;text-align:right;
+ color:#b3deda;font:800 8px/1.4 ui-monospace,monospace;letter-spacing:.04em}
 .is-running .neon-computer:not(.is-locked) .neon-monitor-glass{animation:neon-flicker 3.5s infinite alternate}
 .is-running .neon-income-track i{animation:neon-income 2.5s linear infinite}
 .is-running .neon-blink{animation:neon-blink 1s step-end infinite}
 .is-paused .neon-monitor-glass{filter:brightness(.28)}.is-paused .neon-server-stack span::after{background:#697988;box-shadow:none}
 .arcade-button.switch{background:#153e46;color:#a3f3e3;border-color:#4a8889;flex-shrink:0;font-size:10px;min-height:33px}
+.neon-service-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-bottom:10px}
+.neon-service-stats>div{min-width:0;padding:8px 7px;background:#101c2b;border:1px solid #355b6a;border-radius:9px}
+.neon-service-stats span{display:block;min-height:20px;color:#95c3cf;font:800 8px/1.3 ui-monospace,monospace;letter-spacing:.025em}
+.neon-service-stats strong{display:block;color:#f5ddaa;font:900 15px/1.3 ui-monospace,monospace;white-space:nowrap}
+.neon-service-stats strong small{font-size:9px;color:#90bfc8;font-weight:700}
+.neon-service-timing{display:flex;align-items:center;justify-content:space-between;gap:7px;margin-bottom:5px}
+.neon-service-timing b{display:block;color:#c4efdf;font-size:10px}
+.neon-service-timing small{display:block;color:#93b7c0;font-size:9px;line-height:1.5;margin-top:3px}
+.neon-service-timing small b{display:inline;color:#f3dbac;font-size:9px}
+.neon-service-timing>span{flex:none;font:900 11px ui-monospace,monospace;color:#f0d3a4}
+.neon-service-track{height:6px;border-radius:10px;overflow:hidden;background:#253a49;margin-bottom:12px;border:1px solid #51717c}
+.neon-service-track i{display:block;height:100%;background:linear-gradient(90deg,#64bba8,#a2f7db);transition:width .3s}
+.neon-expansion{background:linear-gradient(145deg,#27334b,#17283d);border:1px solid #72819b;
+ border-radius:12px;padding:11px;margin-bottom:15px;box-shadow:inset 0 1px #ffffff12}
+.neon-expansion-title{display:flex;justify-content:space-between;gap:4px;margin-bottom:6px;
+ font:800 8px ui-monospace,monospace;letter-spacing:.06em;color:#b0cfe1}
+.neon-expansion-title b{color:#f5d89c}
+.neon-expansion>strong{display:block;font-size:13px;color:#ffe6bc}
+.neon-expansion>p{font-size:10px;color:#b0c3d3;margin:6px 0 9px;line-height:1.5}
+.neon-expansion-progress{display:flex;justify-content:space-between;font:800 9px ui-monospace,monospace;color:#d4dee7}
+.neon-expansion-track{height:4px;background:#344355;margin:5px 0 9px;border-radius:6px;overflow:hidden}
+.neon-expansion-track i{display:block;height:100%;background:linear-gradient(90deg,#79ddd3,#ecd199)}
+.neon-expansion .arcade-button{min-height:35px;width:100%;border-color:#a18f74;background:#48435a;color:#f8e4ba}
+.neon-expansion-complete{display:block;color:#a9e8d8;font-size:10px;font-weight:800;text-align:center;padding:5px}
+.neon-facility{margin-top:6px}
+.neon-facility-row{display:flex;align-items:center;gap:8px;padding:9px 7px;background:#102332;
+ border:1px solid #33546b;border-radius:9px;margin-bottom:6px}
+.neon-facility-icon{flex:none;width:26px;text-align:center;font:900 21px ui-serif,Georgia,serif;color:#8de5dc}
+.neon-facility-row>div{min-width:0;flex:1}
+.neon-facility-row strong{display:block;font-size:11px;color:#f5ecdd}
+.neon-facility-row small{display:block;font-size:9px;color:#a8bfd0;margin-top:3px;line-height:1.4}
+.neon-facility-row .arcade-button{flex:0 0 89px;min-height:35px;padding:5px 4px}
+.neon-milestones{margin-top:14px}
+.neon-milestones>h4{margin:5px 0 9px;font-size:13px;color:#f5d99d}
 .neon-upgrade-list{display:flex;flex-direction:column;gap:9px}
 .neon-upgrade{display:flex;align-items:center;gap:9px;padding:10px 8px;background:#101c2b;border:1px solid #334a5d;border-radius:11px}
 .neon-part-icon{flex:0 0 34px;height:34px;display:grid;place-items:center;border:1px solid #488293;border-radius:9px;

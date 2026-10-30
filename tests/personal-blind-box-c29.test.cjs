@@ -126,3 +126,17 @@ test('Main wiring keeps the shop, catalog, inventory and blind-box receipts conn
  assert.match(css,/blind-album-grid/);
  assert.match(css,/lucky-number-grid/);
 });
+test('C4.2 places the wallet in the DUDU FUN header and removes only the redundant promo card',()=>{
+ const html=readFileSync(join(__dirname,'../index.html'),'utf8');
+ const ui=readFileSync(join(__dirname,'../js/dudu-fun-ui-v43.js'),'utf8');
+ const css=readFileSync(join(__dirname,'../css/dudu-fun-v43.css'),'utf8');
+ assert.match(html,/id="dudu-fun-header-balance"/);
+ assert.match(html,/dudu-fun-v43\.css\?v=c42-fun-1/);
+ assert.match(ui,/function updateHeaderBalance\(\)/);
+ assert.match(ui,/chip\.textContent=signed\(\)/);
+ assert.doesNotMatch(ui,/function heading\(container\)|✦ Vạn Bảo & Vé Cào|Hộp miễn phí hôm nay:/);
+ assert.match(ui,/\['box','🎁 Vạn Bảo'\]/);
+ assert.match(ui,/function blindBoxes\(rootNode\)/);
+ assert.match(css,/#dudu-fun-header-balance/);
+ assert.doesNotMatch(css,/\.dudu-fun-top\{/);
+});

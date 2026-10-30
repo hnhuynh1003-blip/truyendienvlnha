@@ -11,9 +11,9 @@ test('Arcade V1 joins the phone as one app with three named games',()=>{
  assert.match(html,/onclick="openPhoneApp\('arcade'\)"/);
  assert.match(html,/id="phone-app-arcade"/);
  assert.match(html,/DuduPersonalArcadeUIV1\?\.render\(\)/);
- assert.match(html,/personal-arcade-core-v1\.js\?v=c41-fishing-1/);
- assert.match(html,/personal-arcade-ui-v1\.js\?v=c41-fishing-1/);
- assert.match(html,/personal-arcade-v1\.css\?v=c41-fishing-1/);
+ assert.match(html,/personal-arcade-core-v1\.js\?v=c42-tycoon-1/);
+ assert.match(html,/personal-arcade-ui-v1\.js\?v=c42-tycoon-1/);
+ assert.match(html,/personal-arcade-v1\.css\?v=c42-tycoon-1/);
  const ui=src('js/personal-arcade-ui-v1.js');
  for(const name of ['Trạm Neon','Địa Tầng 07','Vườn Sương'])
   assert.match(ui,new RegExp(name));

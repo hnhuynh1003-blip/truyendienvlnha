@@ -157,7 +157,7 @@ test('Neon turbo counts measured active playtime only, cooldown and contracts ar
  const reopened=arcade.advance(state,START+120000,0);
  assert.equal(reopened.coins,state.coins,'no payout for time while browser was closed');
  const played=arcade.advance(state,START+120000,120000);
- assert.equal(played.coins-state.coins,31,'CPU 2 rate 0.013 Xu/s doubled for 120 seconds');
+ assert.equal(played.coins-state.coins,37,'CPU turbo pays 3.1 Xu and two active customer services net 0.6 Xu');
  const ended=arcade.advance(state,START+900000,900000);
  assert.ok(ended.coins-state.coins<235,'boost ends and cannot be extended by offline time');
  const next=act(ended,'neon-turbo',.5,START+900000);

@@ -123,34 +123,59 @@
  const upgrade=(glyph,name,level,type,cost)=>`<div class="arcade-upgrade-card">
    <span class="arcade-upgrade-symbol">${glyph}</span><div><strong>${name}</strong><small>${level}</small></div>
    ${button(cost===null?'Tối đa':'＋ '+fmt(cost)+' Xu',type,'upgrade',cost===null||state.coins<cost)}</div>`;
+ const neonFacility=(symbol,name,detail,type,level,max,cost)=>`<div class="neon-facility-row">
+   <span class="neon-facility-icon">${symbol}</span><div><strong>${name}</strong><small>${detail} · ${level}/${max}</small></div>
+   ${button(cost===null?'Tối đa':'＋ '+fmt(cost)+' Xu',type,'upgrade',cost===null||state.coins<cost)}</div>`;
  const activeFeedback=(type,time)=>feedback?.type===type&&time-feedback.at<1700?feedback:null;
  const hud=(name,value,small='')=>`<div class="arcade-stat"><span>${name}</span><strong>${value}</strong>${small?`<small>${small}</small>`:''}</div>`;
  function neonPanel(s){
+  const n=s.neon,capacity=core.neonCapacity(n),service=core.neonService(n),
+   roomCost=core.upgradeCost(s,'room-tier'),requiredGuests=n.roomTier===1?20:100,
+   canExpand=n.roomTier<3&&n.stations===capacity&&n.guestsServed>=requiredGuests;
   const cpuCost=core.upgradeCost(s,'cpu'),gpuCost=core.upgradeCost(s,'gpu'),
    stationCost=core.upgradeCost(s,'station'),routerCost=core.upgradeCost(s,'router'),
    skinCost=core.upgradeCost(s,'skin'),coolingCost=core.upgradeCost(s,'cooling'),
    time=now(),boost=s.neon.turboUntil>time,ready=time>=s.neon.turboReadyAt;
   const activeRate=s.neon.running?core.rate(s):0;
   const level=Math.min(6,Math.floor((s.neon.cpu+s.neon.gpu)/5)+1);
-  const stations=Array.from({length:3},(_,i)=>`<div class="neon-computer neon-computer-${i+1} ${i>=s.neon.stations?'is-locked':''}">
-    <div class="neon-monitor"><div class="neon-monitor-glass"><span>${i>=s.neon.stations?'LOCKED':'CRYO<span class="neon-blink">_</span>'}</span>
+  const stations=Array.from({length:capacity},(_,i)=>`<div class="neon-computer neon-computer-${i+1} ${i>=n.stations?'is-locked':i<service.guests&&n.running?'is-occupied':''}">
+    <div class="neon-monitor"><div class="neon-monitor-glass"><span>${i>=n.stations?'KHOÁ':i<service.guests&&n.running?'KHÁCH':'CRYO<span class="neon-blink">_</span>'}</span>
       <i></i><i></i><i></i><div class="neon-monitor-graph"></div></div></div>
     <div class="neon-stand"></div><div class="neon-keyboard"></div>
-    <div class="neon-tower"><b></b><b></b><b></b></div></div>`).join('');
+    <div class="neon-tower"><b></b><b></b><b></b></div>
+    ${i<service.guests&&n.running?'<div class="neon-guest" aria-hidden="true"></div>':''}</div>`).join('');
   return `<section class="arcade-world arcade-world-neon ${s.neon.running?'is-running':'is-paused'}" aria-label="Trạm Neon">
     <header class="arcade-world-heading"><div><span class="arcade-eyebrow">01 / IDLE TYCOON</span>
-      <h3>Trạm Neon</h3><p>Xây dàn máy. Chạy tự động. Nâng cấp doanh thu.</p></div>
+      <h3>Trạm Neon</h3><p>Đón khách, nâng máy, mở rộng phòng net.</p></div>
       <span class="arcade-world-live">${s.neon.running?'● ĐANG CHẠY':'Ⅱ TẠM DỪNG'}</span></header>
-    <div class="arcade-stage neon-stage neon-skin-${s.neon.skin} ${boost?'neon-overclocking':''}" role="img" aria-label="Dàn máy tính đang vận hành với những màn hình phát sáng">
+    <div class="arcade-stage neon-stage neon-room-tier-${n.roomTier} neon-skin-${n.skin} ${boost?'neon-overclocking':''}" role="img" aria-label="Trạm Neon cấp ${n.roomTier}, ${n.stations} dàn máy, ${n.running?service.guests:0} khách đang dùng">
       <div class="neon-light neon-light-one"></div><div class="neon-light neon-light-two"></div>
       <div class="neon-wall-logo">CRYO<span>TECH</span><small>NET · STATION</small></div>
       <div class="neon-server-stack"><span></span><span></span><span></span><span></span></div>
-      <div class="neon-floor"></div><div class="neon-computer-rack">${stations}</div>
+      <div class="neon-floor"></div><div class="neon-computer-rack ${capacity>3?'neon-rack-wide':''}">${stations}</div>
       <div class="neon-stage-income"><span>${boost?'⚡ ĐANG ÉP XUNG ×2':'THU NHẬP TRỰC TIẾP'}</span><b>+${(boost?activeRate*2/1000:activeRate/1000).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:3})} <small>Xu / giây</small></b>
         <div class="neon-income-track"><i></i></div></div>
-      <div class="neon-room-level">${s.neon.stations}/3 DÀN · CẤP ${level}</div>
+      <div class="neon-room-level">PHÒNG ${n.roomTier}/3 · ${n.stations}/${capacity} DÀN · MÁY CẤP ${level}</div>
     </div>
     <div class="arcade-control-panel">
+      <div class="neon-service-stats" aria-label="Hoạt động kinh doanh phòng net">
+        <div><span>KHÁCH ĐANG CHƠI</span><strong>${n.running?service.guests:0}<small>/${n.stations}</small></strong></div>
+        <div><span>DOANH THU / LƯỢT</span><strong>+${fmt(service.revenue)}<small> Xu</small></strong></div>
+        <div><span>CHI PHÍ / LƯỢT</span><strong>−${fmt(service.expense)}<small> Xu</small></strong></div></div>
+      <div class="neon-service-timing"><div><b>◉ Phục vụ khách</b><small>45 giây/lượt · lãi ${fmt(service.profit)} Xu · đã phục vụ <b data-neon-served>${n.guestsServed}</b> khách</small></div>
+        <span data-neon-session-time>${n.running?Math.ceil((core.NEON_SERVICE_INTERVAL-n.sessionMs)/1000)+'s':'Tạm dừng'}</span></div>
+      <div class="neon-service-track" role="progressbar" aria-label="Tiến độ lượt phục vụ" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(n.sessionMs/core.NEON_SERVICE_INTERVAL*100)}" data-neon-service-track><i style="width:${n.sessionMs/core.NEON_SERVICE_INTERVAL*100}%"></i></div>
+      <div class="neon-expansion">
+        <div class="neon-expansion-title"><span>✦ HÀNH TRÌNH MỞ PHÒNG NET</span><b>CẤP ${n.roomTier} / 3</b></div>
+        <strong>${['','Góc net khởi nghiệp','Phòng máy phố đêm','Trung tâm Neon'][n.roomTier]}</strong>
+        <p>${n.roomTier===3?'Đã mở toàn bộ mặt bằng. Hãy phục vụ khách và hoàn thiện bộ máy!':
+         `Muốn mở cấp ${n.roomTier+1}: lắp ${capacity}/${capacity} dàn và phục vụ ${requiredGuests} khách.`}</p>
+        <div class="neon-expansion-progress"><span>${n.stations}/${capacity} dàn</span><span>${Math.min(n.guestsServed,requiredGuests)}/${requiredGuests} khách</span></div>
+        <div class="neon-expansion-track"><i style="width:${n.roomTier===3?100:Math.min(100,n.guestsServed/requiredGuests*100)}%"></i></div>
+        ${n.roomTier<3?button(canExpand?'✦ Mở cấp '+(n.roomTier+1)+' · '+fmt(roomCost)+' Xu':
+         '🔒 Mở rộng · '+fmt(roomCost)+' Xu','room-tier','market',!canExpand||s.coins<roomCost):
+         '<span class="neon-expansion-complete">✓ Đã khai phá đủ ba cấp phòng</span>'}
+      </div>
       <div class="arcade-panel-heading"><div><h4>Nâng cấp phòng máy</h4></div>
         ${button(s.neon.running?'Ⅱ Tạm dừng':'▶ Bật máy','toggle-neon','switch')}</div>
       <div class="arcade-power-row"><div><b>⚡ Tăng tốc phòng máy</b><small>${boost?`Còn <span data-arcade-until="${s.neon.turboUntil}">${countdown(s.neon.turboUntil-time)}</span> · x2 thu nhập`:ready?'Tăng gấp đôi thu nhập trong 3–5 phút':`Máy làm mát: <span data-arcade-until="${s.neon.turboReadyAt}">${countdown(s.neon.turboReadyAt-time)}</span>`}</small></div>
@@ -158,11 +183,21 @@
       <div class="arcade-upgrade-grid">
        ${upgrade('▦','CPU','Cấp '+s.neon.cpu+'/50','cpu',s.neon.cpu>=50?null:cpuCost)}
        ${upgrade('◈','VGA','Cấp '+s.neon.gpu+'/20','gpu',s.neon.gpu>=20?null:gpuCost)}
-       ${upgrade('▣','Dàn máy',s.neon.stations+'/3 dàn','station',stationCost)}
+       ${upgrade('▣','Dàn máy',n.stations+'/'+capacity+' dàn'+(stationCost===null&&n.roomTier<3?' · cần mở phòng':''),'station',stationCost)}
        ${upgrade('⌁','Mạng', 'Cấp '+s.neon.router+'/10','router',routerCost)}
        ${upgrade('✧','LED phòng', ['Lam','Tím','Hổ phách'][s.neon.skin],'skin',skinCost)}
        ${upgrade('❄','Tản nhiệt','Cấp '+s.neon.cooling+'/5 · kéo dài ép xung','cooling',coolingCost)}
       </div>
+      <div class="neon-facility"><div class="arcade-panel-heading arcade-panel-heading-sub"><div><span class="arcade-eyebrow">THU HÚT KHÁCH</span><h4>Tiện ích & dịch vụ</h4></div></div>
+       ${neonFacility('▥','Ghế & bàn','Tăng số khách sử dụng máy','seating',n.seating,5,core.upgradeCost(s,'seating'))}
+       ${neonFacility('✧','Không gian','Tăng độ hấp dẫn và giá lượt','ambiance',n.ambiance,5,core.upgradeCost(s,'ambiance'))}
+       ${neonFacility('☕','Quầy nước','Tăng doanh thu trên mỗi khách','snack',n.snack,3,core.upgradeCost(s,'snack'))}</div>
+      <div class="neon-milestones"><h4>✦ Thành tựu nhà điều hành</h4>${[
+       ['Đón 25 khách',n.guestsServed>=25,200],['Đón 100 khách',n.guestsServed>=100,500],
+       ['Mở phòng cấp 2',n.roomTier>=2,300],['Mở phòng cấp 3',n.roomTier>=3,900]
+      ].map(([name,met,reward],i)=>`<div class="arcade-contract"><span>${n.milestones.includes(i)?'✓':met?'✦':'○'} ${name}</span>
+       ${button(n.milestones.includes(i)?'Đã nhận':met?'Nhận '+fmt(reward)+' Xu':'+'+fmt(reward)+' Xu',
+        'neon-milestone-'+i,'contract',!met||n.milestones.includes(i))}</div>`).join('')}</div>
       <div class="arcade-contracts"><h4>▤ Hợp đồng phòng máy</h4>${[
        ['Lắp CPU cấp 2',s.neon.cpu>=2,50],['Mở hai dàn máy',s.neon.stations>=2,120],
        ['Nâng mạng cấp 3',s.neon.router>=3,180]
@@ -341,6 +376,15 @@
    const until=Number(node.dataset.arcadeUntil);
    if(Number.isFinite(until))node.textContent=countdown(until-time);
   });
+  const session=element.querySelector?.('[data-neon-service-track]');
+  if(session){
+   const progress=Math.round(state.neon.sessionMs/core.NEON_SERVICE_INTERVAL*100);
+   session.setAttribute('aria-valuenow',String(progress));
+   const fill=session.querySelector('i');if(fill)fill.style.width=progress+'%';
+   const timer=element.querySelector('[data-neon-session-time]');
+   if(timer)timer.textContent=state.neon.running?
+    Math.ceil((core.NEON_SERVICE_INTERVAL-state.neon.sessionMs)/1000)+'s':'Tạm dừng';
+  }
   lastPaint=time;
  }
  function tick(){
@@ -356,9 +400,10 @@
    const plantMatured=s.garden.beds.some(b=>b.status==='growing'&&b.readyAt>s.lastAt&&b.readyAt<=time);
    const fishBit=!!s.garden.line&&s.lastAt<s.garden.line.biteAt&&time>=s.garden.line.biteAt;
    const fishEscaped=!!s.garden.line&&!state.garden.line;
+   const customerServed=s.neon.guestsServed!==state.neon.guestsServed;
    if(fishEscaped){notice='Cá đã tuột khỏi lưỡi câu. Hãy thử lượt khác nhé.';
     noticeUntil=time+3500;error=false;}
-   if(lastRenderedKey!==activeKey||completedRepair||waterRefilled||bubbleAppeared||plantMatured||fishBit||fishEscaped)render();
+   if(lastRenderedKey!==activeKey||completedRepair||waterRefilled||bubbleAppeared||plantMatured||fishBit||fishEscaped||customerServed)render();
    else if(time-lastPaint>=900)refreshLive(time);
   }
  }
