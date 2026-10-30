@@ -5,9 +5,9 @@ const path=require('node:path');
 const html=fs.readFileSync(path.resolve(__dirname,'../index.html'),'utf8');
 const css=fs.readFileSync(path.resolve(__dirname,'../css/phone-ui-v12-dossiers.css'),'utf8');
 
-test('NPC V12 profile is also read-only for verified live users; gift grants remain gated',()=>{
+test('NPC V12 profile offers authenticated check-in while read-only rendering stays pure',()=>{
   assert.match(html,/if \(IS_SANDBOX_MODE \|\| \(window\.DuduAuth\?\.isReady/);
-  assert.match(html,/if\(actionBar&&unlocked&&!c\.archived&&IS_SANDBOX_MODE\)/);
+  assert.match(html,/if\(actionBar&&unlocked&&!c\.archived&&\s*\(IS_SANDBOX_MODE\|\|\(DuduAuth\.isReady/);
   assert.match(html,/DuduNpcRelationshipV2\.previewRelationship/);
   assert.match(html,/approvedMilestones:\[\],completedMilestones:\[\]/);
   assert.match(html,/class="dudu-npc-v12-portrait" data-npc-portrait="1"/);

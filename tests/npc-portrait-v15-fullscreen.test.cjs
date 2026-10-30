@@ -28,11 +28,11 @@ test('V15 high-res style maps four candidates to bundled same-origin sprite',()=
  }
  assert.equal(art.hiResStyleFor('unknown'),null);
 });
-test('V15 viewer has keyboard, close, no mutation and is sandbox-gated',()=>{
+test('V15 viewer has keyboard, close, no mutation and authenticated live unlock gate',()=>{
  for(const fragment of [
   'id="npc-v15-viewer"', 'aria-modal="true"','id="npc-v15-close"',
   'function openNpcPortraitViewer(npc,storyId,opener=null)',
-  "if(!IS_SANDBOX_MODE||!npc||!storyId)return false;",
+  "(!DuduAuth.isReady()||DuduAuth.uid()!==currentUsername)",
   "(!canEditStories()&&!isNpcUnlocked(storyId,npc.id))",
   'function closeNpcPortraitViewer()', "event.key==='Escape'",
   'function openChatNpcPortraitViewer()',

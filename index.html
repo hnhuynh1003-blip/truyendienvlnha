@@ -159,6 +159,7 @@
   <script src="js/companion-rules-v43.js?v=1"></script>
   <script src="js/dudu-system-steward-v67-3.js?v=67-3-3"></script>
   <script src="js/npc-bond-v43.js?v=1"></script>
+  <script src="js/personal-npc-social-v1.js?v=personal-social-1"></script>
   <script src="js/museum-memories-v43.js?v=1"></script>
   <script src="js/soul-link-v43.js?v=1"></script>
   <script src="js/author-items-v1.js"></script>
@@ -1377,7 +1378,7 @@
               <summary id="npc-v27-relation-summary">🛡 Tin tưởng · Quen biết</summary>
               <div id="npc-relationship-r4-values" class="dudu-v27-relation-values"></div>
             </details>
-            <button type="button" id="npc-daily-checkin-btn" onclick="npcDailyCheckin()" title="Hỏi thăm một lần mỗi ngày trong Sandbox">🤝 Hỏi thăm</button>
+            <button type="button" id="npc-daily-checkin-btn" onclick="npcDailyCheckin()" title="Hỏi thăm NPC mỗi ngày theo tài khoản">🤝 Hỏi thăm</button>
             <button type="button" id="npc-relationship-r4-help" aria-label="Giải thích quan hệ NPC" title="Giải thích quan hệ NPC" onclick="showNpcRelationshipHelp()">?</button>
           </div>
         </div>
@@ -3415,12 +3416,10 @@
     }
 
     function showNpcRelationshipHelp() {
-      if (!IS_SANDBOX_MODE) return;
       showSystemAlert('QUAN HỆ NPC V2', 'Thiện cảm thể hiện sự quý mến; Tin tưởng mở trần Thiện cảm: 0–19 → 40, 20–49 → 70, 50+ → 100. Quà phù hợp có thể tăng Tin tưởng, quà không nhận không mất. Mỗi NPC có tiến độ riêng. Mốc Tin cậy/Gắn bó cần sự kiện truyện xác minh.');
     }
 
     function moveNpcProgressV31(){
-      if(!IS_SANDBOX_MODE)return;
       const host=document.getElementById('npc-v31-relation-host');
       const relation=document.getElementById('npc-relationship-r3-preview');
       const choice=document.getElementById('npc-daily-choice-card');
@@ -3434,7 +3433,9 @@
       }
     }
     function npcCheckInFromCodexV31(storyId,npcId){
-      if(!IS_SANDBOX_MODE||!currentUsername||!isNpcUnlocked(storyId,npcId))return;
+      if(!currentUsername||(!IS_SANDBOX_MODE&&
+         (!DuduAuth.isReady()||DuduAuth.uid()!==currentUsername))||
+         !isNpcUnlocked(storyId,npcId))return;
       const novel=novels.find(n=>n?.id===storyId);
       if(!novel||!novel.characters?.some(c=>c.id===npcId&&!c.archived))return;
       activeChatNovelId=storyId;
@@ -3449,7 +3450,8 @@
     }
 
     function npcDailyCheckin() {
-      if(!IS_SANDBOX_MODE||!currentUsername)return;
+      if(!currentUsername||(!IS_SANDBOX_MODE&&
+         (!DuduAuth.isReady()||DuduAuth.uid()!==currentUsername)))return;
       const npcId=document.getElementById('chat-character-selector')?.value;
       const storyId=activeChatNovelId||(novels[selectedNovelIndex]||{}).id;
       const npc=getCombinedCharactersList().find(c=>c.id===npcId);
@@ -3463,6 +3465,66 @@
       document.getElementById('npc-daily-choice-thoughtful').textContent=scenario.thoughtful;
       document.getElementById('npc-daily-choice-casual').textContent=scenario.casual;
       panel.style.display='block';
+    }
+
+    // Real personal-profile NPC interactions. Only the server-confirmed nested
+    // story/NPC fields are applied locally; no broad saveCurrentAccount()
+    // write may overwrite Xu/inventory after this Firestore transaction.
+    const personalNpcActionsInFlight=new Set();
+    async function personalNpcActionV1(action,storyId,npcId,choiceId='thoughtful'){
+      if(IS_SANDBOX_MODE||!DuduAuth.isReady()||
+         DuduAuth.uid()!==currentUsername||!window.DuduPersonalNpcSocialV1)
+        return false;
+      const novel=novels.find(n=>n?.id===storyId);
+      const npc=novel?.characters?.find(c=>c.id===npcId&&!c.archived);
+      if(!npc||!isNpcUnlocked(storyId,npcId))return false;
+      const uid=currentUsername,key=uid+':'+storyId+':'+npcId+':'+action;
+      if(personalNpcActionsInFlight.has(key))return false;
+      personalNpcActionsInFlight.add(key);
+      try{
+        const time=Date.now();
+        const result=await DuduPersonalNpcSocialV1.run({
+          db,auth:firebase.auth(),uid,storyId,npcId,action,choiceId,now:time,
+          eventId:'checkin-'+time+'-'+Math.random().toString(36).slice(2,10)
+        });
+        if(DuduAuth.uid()!==uid||currentUsername!==uid)return false;
+        const state=getStoryProgress(storyId);
+        if(action==='favorite'){
+          state.favoriteNpcV43=result.favoriteNpcV43;
+        }else{
+          const record=state.collectedCharacters[npcId];
+          if(!record)return false;
+          record.relationshipV2=result.relationshipV2;
+          if(result.npcBondV43)record.npcBondV43=result.npcBondV43;
+        }
+        try{localStorage.setItem('profile_'+uid,JSON.stringify(userProfile));}
+        catch(error){console.warn('NPC personal local backup unavailable:',error);}
+        renderCodexList();
+        if(document.getElementById('phone-app-chat')?.style.display==='flex'&&
+           activeChatNovelId===storyId&&
+           document.getElementById('chat-character-selector')?.value===npcId)
+          switchChatCharacter();
+        if(action==='favorite'){
+          showSystemAlert('NPC YÊU THÍCH',result.favoriteNpcV43?
+            'Đã chọn '+npc.name+' làm NPC yêu thích trong tài khoản Firebase.':
+            'Đã bỏ đánh dấu NPC yêu thích.');
+        }else{
+          const scenario=DuduNpcPersonaR6.dailyConversation(npc);
+          const response=choiceId==='thoughtful'?scenario.replyThoughtful:scenario.replyCasual;
+          showSystemAlert(npc.name,response+' · +'+result.trustGain+
+            ' Tin tưởng. Tiến độ đã lưu vào tài khoản Firebase.');
+        }
+        return true;
+      }catch(error){
+        const reason=error?.code||error?.message||'unknown';
+        showSystemAlert('CHƯA LƯU ĐƯỢC',reason==='already-checked-in'?
+          'Hôm nay đã hỏi thăm NPC này rồi. Không cộng lặp Tin tưởng.':
+          reason==='npc-not-unlocked'?
+            'NPC chưa có liên kết trên hồ sơ Firebase. Hãy kiểm tra đồng bộ tài khoản.':
+            'Không thể lưu tương tác NPC lên Firebase. Không thay đổi tiến độ tại máy.');
+        console.warn('DUDU personal NPC social:',reason);
+        return false;
+      }finally{personalNpcActionsInFlight.delete(key);}
     }
 
 
@@ -3503,6 +3565,10 @@
       return result;
     }
     function v43ChooseFavoriteNpc(storyId,npcId){
+      if(!IS_SANDBOX_MODE){
+        void personalNpcActionV1('favorite',storyId,npcId);
+        return true;
+      }
       if(!IS_SANDBOX_MODE||!currentUsername)return false;
       const novel=novels.find(n=>n.id===storyId);
       if(!novel?.characters?.some(n=>n.id===npcId&&!n.archived))return false;
@@ -3518,7 +3584,18 @@
     }
 
     function npcSubmitDailyChoice(choiceId) {
-      if(!IS_SANDBOX_MODE||!currentUsername)return;
+      if(!IS_SANDBOX_MODE){
+        const panel=document.getElementById('npc-daily-choice-card');
+        const npcId=document.getElementById('chat-character-selector')?.value;
+        const storyId=activeChatNovelId||(novels[selectedNovelIndex]||{}).id;
+        if(!panel||panel.style.display!=='block'||panel.dataset.npcId!==npcId||
+           panel.dataset.storyId!==storyId||!['thoughtful','casual'].includes(choiceId)||
+           !isNpcUnlocked(storyId,npcId))return;
+        panel.style.display='none';
+        void personalNpcActionV1('checkin',storyId,npcId,choiceId);
+        return;
+      }
+      if(!currentUsername)return;
       const panel=document.getElementById('npc-daily-choice-card');
       const npcId=document.getElementById('chat-character-selector')?.value;
       const storyId=activeChatNovelId||(novels[selectedNovelIndex]||{}).id;
@@ -3637,7 +3714,8 @@
 
     let npcPortraitViewerReturnFocus=null;
     function openNpcPortraitViewer(npc,storyId,opener=null){
-      if(!IS_SANDBOX_MODE||!npc||!storyId)return false;
+      if(!npc||!storyId||(!IS_SANDBOX_MODE&&
+         (!DuduAuth.isReady()||DuduAuth.uid()!==currentUsername)))return false;
       const story=novels.find(n=>n.id===storyId);
       const canonical=story?.characters?.find(c=>c.id===npc.id&&!c.archived);
       if(!canonical||(!canEditStories()&&!isNpcUnlocked(storyId,npc.id)))return false;
@@ -3674,7 +3752,6 @@
         target.focus({preventScroll:true});
     }
     function openChatNpcPortraitViewer(){
-      if(!IS_SANDBOX_MODE)return false;
       const storyId=activeChatNovelId||(novels[selectedNovelIndex]||{}).id;
       const npcId=document.getElementById('chat-character-selector')?.value;
       const story=novels.find(n=>n.id===storyId);
@@ -3683,7 +3760,7 @@
     }
     document.addEventListener('keydown',event=>{
       const modal=document.getElementById('npc-v15-viewer');
-      if(!IS_SANDBOX_MODE||modal?.style.display!=='flex')return;
+      if(modal?.style.display!=='flex')return;
       if(event.key==='Escape'){
         event.preventDefault();event.stopImmediatePropagation();
         closeNpcPortraitViewer();
@@ -3717,11 +3794,12 @@
         // V56.14: unlocked NPC portraits belong on the live messenger header.
         portrait.style.display=char?'flex':'none';
         // The thumbnail is the only viewer control. Never reveal locked NPC details.
-        const canViewPortrait=!!(IS_SANDBOX_MODE&&char&&
+        const canViewPortrait=!!(char&&(IS_SANDBOX_MODE||
+          (DuduAuth.isReady()&&DuduAuth.uid()===currentUsername))&&
           (canEditStories()||isNpcUnlocked(storyId,charId)));
         portrait.disabled=!canViewPortrait;
         portrait.classList.toggle('is-locked',!canViewPortrait);
-        // The Sandbox portrait viewer remains Sandbox-only.
+        // Production portrait is read-only; only unlocked NPCs are visible.
         portrait.tabIndex=canViewPortrait?0:-1;
         portrait.setAttribute('aria-label',char?
           (canViewPortrait?'Xem chân dung ':'Chân dung chưa mở khóa: ')+char.name:
@@ -3739,13 +3817,15 @@
         }
       }
       const panel = document.getElementById('npc-relationship-r3-preview');
-      if (IS_SANDBOX_MODE && panel) {
+      const liveOwner=!IS_SANDBOX_MODE&&DuduAuth.isReady()&&
+        DuduAuth.uid()===currentUsername;
+      if ((IS_SANDBOX_MODE||liveOwner) && panel) {
         // The Sổ Tay already renders relation meters inside each NPC card.
         // Never show a stale global relationship box above another character.
         panel.style.display = panel.closest('#npc-v31-relation-host')?'none':'block';
         const saved = char && unlocked[char.id];
         const relation = saved && DuduNpcRelationshipV2.previewRelationship(
-          saved, 'sandbox-user', storyId, char.id);
+          saved, IS_SANDBOX_MODE?'sandbox-user':currentUsername, storyId, char.id);
         const affection = relation ? relation.affinity : 0;
         const trust = relation ? relation.relationshipV2.trust : 0;
         const ceiling = DuduNpcRelationshipV2.affinityCeiling(trust);
@@ -3765,14 +3845,22 @@
         });
         const labels={LOCKED:'Chưa kết nối',ACQUAINTED:'Quen biết',
           FRIENDLY:'Thân thiện',TRUSTED:'Tin cậy',BONDED:'Gắn bó'};
-        affinityEl.textContent = '❤️ ' + affection + '%';
+        if(IS_SANDBOX_MODE)affinityEl.textContent = '❤️ ' + affection + '%';
+        else {
+          const activeRole=v56CurrentRole(storyId);
+          const roleRelation=activeRole?DuduRoleplayV56.relationship(
+            v56State(storyId),activeRole.id,charId):null;
+          affinityEl.textContent=activeRole&&char?
+            '❤️ '+roleRelation.affinity+'%':'❤️ —';
+          affinityEl.title='Thiện cảm của vai nhập vai; bảng 🛡 là gắn kết tài khoản với NPC';
+        }
         const relationSummary=document.getElementById('npc-v27-relation-summary');
         if(relationSummary)relationSummary.textContent=
           '🛡 ' + trust + '/100 · ' + (labels[stage]||'Chưa kết nối');
         document.getElementById('npc-relationship-r4-values').textContent = '❤️ Thiện cảm: '+affection+'/100  •  🛡️ Tin tưởng: '+
           trust+'/100  •  '+(labels[stage]||'Chưa kết nối')+
           '  •  Trần thiện cảm mới: '+ceiling+'/100';
-        panel.title = 'Thử nghiệm R3: các giai đoạn cao cần mốc truyện đã được xác minh.';
+        panel.title = 'Gắn kết theo tài khoản; mốc Tin cậy/Gắn bó cần sự kiện truyện được xác minh.';
       } else {
         if(panel)panel.style.display='none';
         const activeRole=v56CurrentRole(storyId);
@@ -4234,7 +4322,8 @@
           if(second)second.style.display='none';
           const actionBar=div.children[2];
           if(actionBar)actionBar.classList.add('dudu-npc-v12-actions');
-          if(actionBar&&unlocked&&!c.archived&&IS_SANDBOX_MODE){
+          if(actionBar&&unlocked&&!c.archived&&
+             (IS_SANDBOX_MODE||(DuduAuth.isReady()&&DuduAuth.uid()===currentUsername))){
             const checkin=document.createElement('button');
             checkin.type='button';checkin.className='btn dudu-v31-progress-checkin';
             const done=view?.relationshipV2?.lastCheckinUtc===new Date().toISOString().slice(0,10);
@@ -4278,8 +4367,7 @@
           button.textContent=favorite?'♥ Yêu thích':'☆ Yêu thích';
           button.setAttribute('aria-pressed',String(favorite));
           button.setAttribute('aria-label',(favorite?'Bỏ đánh dấu ':'Đánh dấu ')+c.name+' là NPC yêu thích');
-          if(IS_SANDBOX_MODE)button.addEventListener('click',()=>v43ChooseFavoriteNpc(novel.id,c.id));
-          else {button.disabled=true;button.title='Lưu NPC yêu thích yêu cầu cơ chế server xác thực';}
+          button.addEventListener('click',()=>v43ChooseFavoriteNpc(novel.id,c.id));
           line.append(label,button);div.append(line);
         }
         container.appendChild(div);

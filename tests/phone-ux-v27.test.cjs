@@ -23,7 +23,8 @@ test('V27 Codex card portrait has single action, preserves unlock and author-onl
   assert.match(html,/preview.disabled=!canViewPortrait/);
   assert.match(html,/const canViewPortrait=canEditStories\(\)\|\|unlocked/);
   assert.match(html,/openNpcPortraitViewer\(c,novel.id,preview\)/);
-  assert.match(html,/if\(!IS_SANDBOX_MODE\|\|!npc\|\|!storyId\)return false/);
+  assert.match(html,/if\(!npc\|\|!storyId\|\|\(!IS_SANDBOX_MODE&&/);
+  assert.match(html,/DuduAuth\.uid\(\)!==currentUsername/);
   assert.match(html,/\(!canEditStories\(\)&&!isNpcUnlocked\(storyId,npc.id\)\)/);
 });
 test('V27 disabled portraits and keyboard focus are visible and accessible',()=>{

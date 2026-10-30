@@ -26,10 +26,10 @@ test('three existing NPCs retain separate progress by UID, story, and ID',()=>{
  assert.equal(stages.stage({unlocked:true,affinity:99,trust:60}), 'FRIENDLY',
  'High relationship without verified lore cannot reveal private milestones');
 });
-test('R4 help is sandbox-only and controls have accessible labels',()=>{
+test('R4 relationship help is available in live and controls remain accessible',()=>{
  assert.match(html,/id="npc-relationship-r4-help"/);
  assert.match(html,/aria-label="Giải thích quan hệ NPC"/);
- assert.match(html,/function showNpcRelationshipHelp\(\) \{\s*if \(!IS_SANDBOX_MODE\) return;/);
+ assert.match(html,/function showNpcRelationshipHelp\(\) \{\s*showSystemAlert\('QUAN HỆ NPC V2'/);
  assert.match(html,/npc-relationship-r4-values/);
  assert.match(html,/IS_SANDBOX_MODE\s*\? '🎁 Tặng quà theo sở thích/);
 });
