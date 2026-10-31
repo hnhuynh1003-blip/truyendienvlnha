@@ -285,7 +285,7 @@
        <div class="neon-order-scene">
         <div class="neon-order-customer" aria-hidden="true"><i></i><span>♪</span></div>
         <div class="neon-order-ticket"><small>${!n.running?'ĐÃ ĐÓNG QUẦY':orderReady?(seasonTicket?'✧ ĐƠN SƯƠNG #':'ĐƠN #')+String(n.orderRound+1).padStart(3,'0'):'KHÁCH MỚI SAU'}</small>
-         <div class="neon-order-recipe">${orderReady?order.map((item,i)=>`<span class="${i<n.orderStep?'is-done':''}">${i<n.orderStep?'✓':neonOrderIcon(item)}</span>${i===0?'<i>›</i>':''}`).join(''):
+         <div class="neon-order-recipe">${orderReady?order.map((item,i)=>`<span class="${i<n.orderStep?'is-done':''}" aria-label="${i<n.orderStep?'Đã chuẩn bị':orderNames[item]}">${i<n.orderStep?'✓':neonOrderIcon(item)}</span>${i===0?'<i>›</i>':''}`).join(''):
           `<span class="neon-order-timer" data-arcade-until="${n.orderReadyAt}">${countdown(n.orderReadyAt-time)}</span>`}</div>
          <em>${orderReady?`MÓN ${n.orderStep+1}/2 · CHỌN THEO THỨ TỰ`:'CHUẨN BỊ LƯỢT MỚI'}</em></div>
        </div>
