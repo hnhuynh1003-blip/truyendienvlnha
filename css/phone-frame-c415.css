@@ -1,0 +1,81 @@
+/* C4.15 — a slimmer, taller phone frame on Home and while reading.
+ * Presentation only: all existing app callbacks, saves and navigation remain.
+ * Load last so reader/editorial placement does not make the device squat.
+ */
+body.dudu-phone-v11 #cyber-phone {
+  width:344px;
+  max-width:calc(100vw - 28px);
+  height:min(710px,calc(100dvh - 104px - env(safe-area-inset-bottom,0px)));
+  right:14px;
+  bottom:calc(82px + env(safe-area-inset-bottom,0px));
+  border-radius:28px;
+  border-color:#bba8e1a8;
+  box-shadow:0 22px 58px #020512d9,0 0 0 3px #0d1428,0 0 26px #9974d02c,inset 0 1px #ffffff63;
+}
+body.dudu-phone-v11 #cyber-phone .phone-speaker {
+  width:44px;
+  height:3px;
+  margin:6px auto 2px;
+  opacity:.75;
+}
+body.dudu-phone-v11 #cyber-phone .phone-screen {
+  margin:2px 5px 5px;
+  border-radius:23px;
+}
+/* Keep the global close X in its own slim top rail; don't spend a second
+ * large header on it when an app already has a working Back button. */
+body.dudu-phone-v11 #cyber-phone .phone-status-bar {
+  position:relative;
+  z-index:2;
+  min-height:36px;
+  padding:2px 8px;
+  gap:5px;
+}
+body.dudu-phone-v11 #cyber-phone .phone-close-btn {
+  flex:none;
+  width:32px;
+  height:32px;
+  border-radius:50%;
+  font-size:19px;
+  background:#0f1a35bc;
+  border-color:#dcd3ff67;
+}
+body.dudu-phone-v11 #cyber-phone .phone-sub-app {padding:8px 9px 10px;}
+body.dudu-phone-v11 #cyber-phone .phone-app-header {
+  min-height:39px;
+  padding-bottom:5px;
+  margin-bottom:8px;
+}
+/* The legacy swipe-looking Home line is a duplicate of app Back navigation.
+ * Retain its old DOM/callback for compatibility but remove it from layout. */
+body.dudu-phone-v11 #cyber-phone .phone-home-bar {display:none!important;}
+
+/* Reading is the only context where the phone leaves room for reader controls.
+ * Its width now follows the actual available height on short screens. */
+body.dudu-phone-v11.dudu-site-v60.dudu-reading-active #cyber-phone {
+  right:12px;
+  bottom:calc(68px + env(safe-area-inset-bottom,0px));
+  height:min(710px,calc(100dvh - 94px - env(safe-area-inset-bottom,0px)));
+  max-height:calc(100dvh - 94px - env(safe-area-inset-bottom,0px));
+}
+@media(max-width:760px){
+  body.dudu-phone-v11 #cyber-phone,
+  body.dudu-phone-v11.dudu-site-v60:not(.dudu-reading-active) #cyber-phone {
+    right:12px;
+    bottom:calc(10px + env(safe-area-inset-bottom,0px));
+    width:min(338px,calc(100vw - 24px));
+    max-width:calc(100vw - 24px);
+    height:min(760px,calc(100dvh - 22px - env(safe-area-inset-bottom,0px)));
+    border-radius:27px;
+  }
+  body.dudu-phone-v11.dudu-site-v60.dudu-reading-active #cyber-phone {
+    right:12px;
+    bottom:calc(68px + env(safe-area-inset-bottom,0px));
+    width:min(338px,calc(100vw - 24px),calc(63dvh - 56px));
+    max-width:calc(100vw - 24px);
+    height:min(710px,calc(100dvh - 94px - env(safe-area-inset-bottom,0px)));
+  }
+  body.dudu-phone-v11 #cyber-phone .phone-screen {margin:2px 4px 4px;border-radius:22px;}
+}
+/* Messenger's existing immersive keyboard layout deliberately remains full
+ * screen, and takes precedence through its own !important positioning. */
