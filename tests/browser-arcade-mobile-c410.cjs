@@ -67,6 +67,13 @@ async function main(){
    catch(_){return false;}
   });
   assert.ok(dockArt,'Four Arcade tabs use a loaded AI sprite, not blank gradients');
+  const dockPositions=await page.evaluate(()=>Object.fromEntries(
+   [...document.querySelectorAll('#personal-arcade-v1 .arcade-tab[data-arcade-tab]')]
+    .map(tab=>[tab.dataset.arcadeTab,
+     getComputedStyle(tab.querySelector('.arcade-tab-icon')).backgroundPosition])));
+  assert.deepEqual(dockPositions,{
+   neon:'0% 0%',mine:'100% 0%',garden:'0% 100%',jade:'100% 100%'
+  },'Each game dock icon uses its own quadrant of the AI sprite');
 
   // C4.23: a compact header button opens the interactive Season passport.
   await page.locator('#arcade-season-portal-c423').click();

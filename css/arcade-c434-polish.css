@@ -46,10 +46,12 @@
  filter:drop-shadow(0 4px 5px #000a);
  transition:transform .18s,filter .18s;
 }
-#personal-arcade-v1 .arcade-tab-icon-neon{background-position:0% 0%}
-#personal-arcade-v1 .arcade-tab-icon-mine{background-position:100% 0%}
-#personal-arcade-v1 .arcade-tab-icon-garden{background-position:0% 100%}
-#personal-arcade-v1 .arcade-tab-icon-jade{background-position:100% 100%}
+/* Each quadrant must also match C4.17's selector specificity: a simple
+   .arcade-tab-icon-mine rule is ignored after legacy background shorthands. */
+#personal-arcade-v1 .arcade-tab[data-arcade-tab=neon] .arcade-tab-icon{background-position:0% 0%}
+#personal-arcade-v1 .arcade-tab[data-arcade-tab=mine] .arcade-tab-icon{background-position:100% 0%}
+#personal-arcade-v1 .arcade-tab[data-arcade-tab=garden] .arcade-tab-icon{background-position:0% 100%}
+#personal-arcade-v1 .arcade-tab[data-arcade-tab=jade] .arcade-tab-icon{background-position:100% 100%}
 #personal-arcade-v1 .arcade-tab span:last-child{
  max-width:100%;font-size:8px;text-shadow:0 1px 3px #000c;
 }
