@@ -1,0 +1,118 @@
+/* C4.25C — Garden plants rooted in the painted world; real jade opening phases.
+   Art-only. The existing plant/water/harvest and window/cut actions are untouched. */
+
+/* Garden: replace the long single-stem glowing lollipops with nine painted,
+   rooted botanical growth states. Each sprite is one 3x3 atlas cell. */
+#personal-arcade-v1 .garden-plot .garden-stem,
+#personal-arcade-v1 .garden-plot .garden-flower{display:none!important}
+#personal-arcade-v1 .garden-plot{
+ filter:drop-shadow(0 4px 5px #092d2999);overflow:visible;
+ --garden-crop-x:0%;--garden-crop-y:0%;
+}
+#personal-arcade-v1 .garden-plot.crop-mint{--garden-crop-x:50%}
+#personal-arcade-v1 .garden-plot.crop-moon{--garden-crop-x:100%}
+#personal-arcade-v1 .garden-plot.growth-stage-1{--garden-crop-y:50%}
+#personal-arcade-v1 .garden-plot.growth-stage-2,
+#personal-arcade-v1 .garden-plot.mature{--garden-crop-y:100%}
+#personal-arcade-v1 .garden-crop-sprite{
+ position:absolute;display:block;pointer-events:none;
+ left:50%;bottom:17px;width:117%;max-width:180px;aspect-ratio:1.5;
+ transform:translateX(-50%);transform-origin:center bottom;
+ background:url('../assets/arcade-c425b/garden-growth-atlas.webp') var(--garden-crop-x) var(--garden-crop-y) / 300% 300% no-repeat;
+ filter:drop-shadow(0 3px 4px #102c2891);
+ animation:garden-botanical-breathe 4.2s ease-in-out infinite alternate;
+}
+#personal-arcade-v1 .garden-plot.empty .garden-crop-sprite{display:none}
+#personal-arcade-v1 .garden-plot.dry .garden-crop-sprite{filter:saturate(.55) brightness(.72) drop-shadow(0 3px 4px #142b29)}
+#personal-arcade-v1 .garden-plot.mature .garden-crop-sprite{
+ filter:drop-shadow(0 6px 5px #153c2e);
+ animation-duration:3.1s;
+}
+/* The bare bed is an irregular patch of earth, not a round mechanical disc. */
+#personal-arcade-v1 .garden-plot .garden-soil{display:none}
+#personal-arcade-v1 .garden-plot.empty .garden-soil{
+ display:block;left:5%;width:90%;bottom:24px;height:40px;border:0;border-radius:0;
+ background:radial-gradient(ellipse at 45% 69%,#3c312c 0 39%,transparent 72%),
+ repeating-radial-gradient(ellipse at 49% 50%,#74674c 0 2px,#473c36 3px 11px,#5c5143 12px 13px);
+ clip-path:polygon(3% 65%,12% 41%,27% 30%,43% 21%,63% 30%,78% 34%,97% 66%,90% 83%,70% 92%,40% 84%,15% 91%);
+ transform:rotate(-2deg);box-shadow:none;opacity:.9;
+}
+#personal-arcade-v1 .garden-plot.mature .garden-plant-aura{
+ background:radial-gradient(ellipse at 49% 42%,#fffbd31d,transparent 62%);
+}
+#personal-arcade-v1 .garden-plot-label{
+ bottom:-3px;z-index:8;
+}
+#personal-arcade-v1 .garden-plot-label b{
+ font:800 9px/1.25 system-ui,sans-serif;letter-spacing:0;
+ text-shadow:0 1px 7px #071f25,0 2px 2px #0a2025;
+}
+#personal-arcade-v1 .garden-plot-label em{
+ min-height:26px;border-radius:8px 8px 13px 13px;
+ background:#224c42e8;border-color:#a6d0ae;
+}
+
+/* Jade: four unmistakable forms: original whole rock, sawn inspection window,
+   cracked-apart halves, then a finished carved gem. Cut failures stay split. */
+#personal-arcade-v1 .jade-item-art.jade-item-window,
+#personal-arcade-v1 .jade-item-art.jade-item-split{
+ position:absolute;inset:auto;left:50%;top:-23px;width:168px;height:168px;
+ transform:translateX(-50%);
+ background-image:url('../assets/arcade-c425b/jade-reveal-atlas.webp');
+ background-size:500% 200%;background-repeat:no-repeat;
+ filter:hue-rotate(var(--jade-hue,0deg)) drop-shadow(0 9px 7px #030d0ad9);
+ animation:jade-opened-arrive .35s ease-out both;
+}
+#personal-arcade-v1 .jade-item-art.jade-item-window{
+ background-position:var(--jade-item-x) 0;
+}
+#personal-arcade-v1 .jade-item-art.jade-item-split{
+ background-position:var(--jade-item-x) 100%;
+ width:192px;height:192px;top:-46px;
+}
+#personal-arcade-v1 .jade-item-art.jade-item-split.is-waste{
+ filter:saturate(.15) brightness(.7) contrast(1.08) drop-shadow(0 8px 7px #050b0ae0);
+}
+#personal-arcade-v1 .jade-phase-window .jade-specimen{
+ filter:drop-shadow(0 9px 9px #090e0dc5);
+}
+#personal-arcade-v1 .jade-phase-cut .jade-specimen{
+ filter:drop-shadow(0 10px 12px #050d0acd);
+}
+#personal-arcade-v1 .jade-phase-window .jade-stage-base b{
+ color:#f6e0a9;text-shadow:0 0 9px #dbbb7d;
+}
+#personal-arcade-v1 .jade-phase-cut .jade-stage-base b{
+ color:#c4f0d2;
+}
+#personal-arcade-v1 .jade-window-flash{
+ position:absolute;z-index:10;pointer-events:none;left:calc(50% - 62px);top:135px;
+ width:125px;height:104px;
+ border-radius:50%;border:2px solid #fff1c7;
+ background:radial-gradient(ellipse at 50% 50%,#f0ffedb3,transparent 68%);
+ box-shadow:0 0 23px #fff6bfaf,inset 0 0 12px #ccfff3;
+ animation:jade-window-gleam .9s ease-out both;
+}
+@keyframes garden-botanical-breathe{
+ to{transform:translateX(-50%) rotate(1.3deg);filter:drop-shadow(0 5px 5px #11362c9a)}
+}
+@keyframes jade-opened-arrive{
+ from{opacity:0;transform:translateX(-50%) scale(.82) rotate(-5deg)}
+ to{opacity:1;transform:translateX(-50%) scale(1) rotate(0)}
+}
+@keyframes jade-window-gleam{
+ 0%{transform:scale(.24);opacity:0}
+ 28%{transform:scale(.85);opacity:1}
+ 100%{transform:scale(1.45);opacity:0}
+}
+@media(max-width:360px){
+ #personal-arcade-v1 .garden-crop-sprite{width:113%;bottom:16px}
+ #personal-arcade-v1 .garden-plot-label{bottom:-2px}
+ #personal-arcade-v1 .jade-item-art.jade-item-split{width:175px;height:175px;top:-31px}
+}
+@media(prefers-reduced-motion:reduce){
+ #personal-arcade-v1 .garden-crop-sprite,
+ #personal-arcade-v1 .jade-item-art.jade-item-window,
+ #personal-arcade-v1 .jade-item-art.jade-item-split,
+ #personal-arcade-v1 .jade-window-flash{animation:none!important}
+}

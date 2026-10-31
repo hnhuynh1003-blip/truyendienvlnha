@@ -30,12 +30,14 @@
   else return;
   openStall=index;
  }
- function stoneScene(stone,j,cutPulse){
+ function stoneScene(stone,j,phasePulse){
   const phase=stone?.phase||'none',color=stone?jade.COLOR_HEX[stone.color]:'#8bc4a7',
    scanned=stone?stone.scans.filter(Boolean).length:0,
    carved=phase==='crafted',cut=phase==='cut'||carved,
-   revealed=cut&&stone?.grade>0&&stone.flaw!=='skin';
-  return `<div class="arcade-stage jade-stage jade-site-${stone?.site??0} jade-phase-${phase} ${cutPulse?'is-cut-reveal':''}"
+   revealed=cut&&stone?.grade>0&&stone.flaw!=='skin',
+   visual=carved&&revealed?'gem':phase==='cut'?'split':phase==='window'?'window':'rough',
+   artworkIndex=visual==='gem'?(Math.max(1,stone.grade)-1)%5:(stone?.site??0);
+  return `<div class="arcade-stage jade-stage jade-site-${stone?.site??0} jade-phase-${phase} ${phasePulse?'is-'+phasePulse.type+'-reveal':''}"
     style="--jade-color:${color}" aria-label="Bàn soi đá Ngọc Phường">
     <div class="jade-hall-lattice jade-lattice-left"></div><div class="jade-hall-lattice jade-lattice-right"></div>
     <div class="jade-lantern jade-lantern-left"><i></i></div><div class="jade-lantern jade-lantern-right"><i></i></div>
@@ -44,7 +46,7 @@
     ${stone?`<div class="jade-specimen ${cut?'jade-revealed':''} ${carved?'jade-crafted':''} jade-craft-${stone.craft||'raw'}"
         aria-label="${cut?stoneName(stone):'Đá thô chưa cắt'}">
        <span class="jade-rock-face"></span><span class="jade-rock-grain"></span><span class="jade-rock-vein"></span>
-       <span class="jade-item-art jade-item-${revealed?'gem':'rough'} jade-item-shade-${stone.color} jade-item-grade-${stone.grade||0}" style="--jade-item-x:${(revealed?(Math.max(1,stone.grade)-1)%5:stone.site)*25}%" aria-hidden="true"></span>
+       <span class="jade-item-art jade-item-${visual} ${cut&&!revealed?'is-waste':''} jade-item-shade-${stone.color} jade-item-grade-${stone.grade||0}" style="--jade-item-x:${artworkIndex*25}%" aria-hidden="true"></span>
        ${phase==='window'?'<span class="jade-polished-window"></span>':''}
        ${cut?`<span class="jade-gem-inner"></span><span class="jade-gem-shine"></span>`:''}
        ${!cut?[0,1,2].map(i=>`<button type="button" class="jade-scan-target jade-scan-${i} ${stone.scans[i]?'is-scanned':''}"
@@ -52,10 +54,10 @@
            aria-label="Soi điểm ${i+1}: ${['Độ xuyên sáng','Mãng đới và tùng hoa','Liệt văn và tạp chất'][i]}">
            ${stone.scans[i]?'✓':i+1}</button>`).join(''):''}
       </div>`:`<div class="jade-showcase-rough" aria-hidden="true"><i></i><i></i><i></i></div>`}
-    ${cutPulse?'<span class="jade-cut-flash" aria-hidden="true"></span>':''}
+    ${phasePulse?`<span class="${phasePulse.type==='jade-window'?'jade-window-flash':'jade-cut-flash'}" aria-hidden="true"></span>`:''}
     <div class="jade-stage-base">${stone?'MẪU #'+String(stone.id).padStart(3,'0')+' · '+jade.MARKETS[stone.site].short.toUpperCase():
      'CHỜ CHỦ NHÂN CHỌN ĐÁ THÔ'}
-      ${stone&&!cut?`<b>${scanned}/3 ĐIỂM ĐÃ SOI</b>`:stone&&cut?`<b>${revealed?'✦ ĐÃ LỘ NGỌC':'✦ ĐÁ ĐÃ XẺ'}</b>`:''}</div>
+      ${stone&&phase==='window'?'<b>◈ ĐÃ KHAI SONG</b>':stone&&!cut?`<b>${scanned}/3 ĐIỂM ĐÃ SOI</b>`:stone&&cut?`<b>${revealed?'✦ ĐÃ LỘ NGỌC':'✦ ĐÁ ĐÃ XẺ'}</b>`:''}</div>
   </div>`;
  }
  function activePanel(s){

@@ -397,6 +397,7 @@
      aria-label="Luống ${index+1}: ${text}, ${caption}">
      <span class="garden-soil"></span><span class="garden-stem"><i></i><i></i><i></i></span>
      <span class="garden-flower"><i></i><i></i><i></i><i></i><i></i></span>
+     <span class="garden-crop-sprite" aria-hidden="true"></span>
      <span class="garden-plant-aura" aria-hidden="true"></span>
      <span class="garden-plot-label"><b>LUỐNG ${String(index+1).padStart(2,'0')} · ${b.status==='empty'?'✿':core.CROPS[b.crop].name}</b><small ${b.status==='growing'&&!mature?`data-arcade-until="${b.readyAt}"`:''}>${caption}</small><em>${text}</em></span></button>`;
   };
@@ -478,7 +479,7 @@
   updateWalletHeader(s);
   if(!s){element.innerHTML='<div class="arcade-empty">Đăng nhập tài khoản để lưu tiến trình minigame riêng trên thiết bị này.</div>';lastRenderedKey=null;return true;}
   const time=now(),panel=tab==='neon'?neonPanel(s):tab==='mine'?minePanel(s,time):
-   tab==='jade'?root.DuduPersonalJadeUIV1?.panel(s,activeFeedback('jade-cut',time))||'<div>Ngọc Phường đang mở cửa…</div>':gardenPanel(s,time);
+   tab==='jade'?root.DuduPersonalJadeUIV1?.panel(s,activeFeedback('jade-cut',time)||activeFeedback('jade-window',time))||'<div>Ngọc Phường đang mở cửa…</div>':gardenPanel(s,time);
   // Different games are separate pages: never land halfway down the new one
   // just because the previous game was scrolled near its workshop controls.
   const previousScroll=resetScrollOnPaint?0:
@@ -605,7 +606,7 @@
     {type:'neon-order',success:!result.label.includes('Nhầm'),at:now()}:
     action==='reel-line'?{type:'fish',fishId:hookedFish,label:result.label,at:now()}:
     /^(plant|water|harvest)-[0-3]$/.test(action)?{type:'garden-plot',action:action.split('-')[0],index:Number(action.slice(-1)),at:now()}:
-    action==='jade-cut'?{type:'jade-cut',at:now()}:null;
+    action==='jade-cut'||action==='jade-window'?{type:action,at:now()}:null;
   notice=result.label==='stone'?'Nhặt được Đá.':result.label==='coal'?'Nhặt được Than.':
    result.label==='iron'?'Nhặt được Sắt.':result.label==='crystal'?'✦ Nhặt được Tinh thạch!':result.label;
   noticeUntil=now()+2500;error=false;save(state,previousState);render();return true;
