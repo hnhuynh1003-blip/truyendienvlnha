@@ -349,6 +349,35 @@ async function main(){
    assert.ok(overflow<=2,'Honor Hall must not overflow horizontally at '+width+'px');
   }
   console.log('C4.12 mobile Honor: rarity filters, honest clues, locked secrets, no overflow OK');
+  // C4.38: the new folio reads existing local Arcade discoveries. Even a
+  // season save must never masquerade as a verified, owned Season 01 reward.
+  await page.evaluate(()=>openPhoneApp('arcade'));
+  await page.locator('#arcade-treasure-launch-c438').click();
+  const treasures=page.locator('#dudu-treasure-content-c438');
+  await treasures.locator('.dudu-c438-hero').waitFor();
+  assert.match(await treasures.locator('.dudu-c438-hero').innerText(),/Sổ Báu Vật/);
+  await treasures.getByRole('group',{name:'Lọc theo game'})
+   .getByRole('button',{name:'Địa Tầng 07'}).click();
+  const relic=treasures.locator('[data-treasure-id="ore-relic"]');
+  assert.ok(await relic.isVisible(),'The full mineral catalogue includes archaeology');
+  assert.match(await relic.locator('.dudu-c438-art').evaluate(
+   el=>getComputedStyle(el).backgroundImage),/ore-atlas\.webp/);
+  await treasures.getByRole('group',{name:'Lọc theo game'})
+   .getByRole('button',{name:'Bốn game'}).click();
+  await treasures.getByRole('group',{name:'Lọc theo mùa'})
+   .getByRole('button',{name:'Mùa 01'}).click();
+  await treasures.getByRole('group',{name:'Lọc theo tình trạng'})
+   .getByRole('button',{name:'Xem trước'}).click();
+  assert.equal(await treasures.locator('.dudu-c438-card[data-status="preview"]').count(),5);
+  assert.equal(await treasures.locator('.dudu-c438-card[data-status="owned"]').count(),0);
+  for(const width of [320,390,430]){
+   await page.setViewportSize({width,height:844});
+   const overflow=await treasures.evaluate(el=>el.scrollWidth-el.clientWidth);
+   assert.ok(overflow<=2,'Treasure Folio must not overflow at '+width+'px');
+  }
+  await page.locator('#dudu-treasure-back-c438').click();
+  assert.equal(await page.locator('#phone-app-arcade').evaluate(el=>el.style.display),'flex');
+  console.log('C4.38 Sổ Báu Vật: existing discoveries, honest season previews, mobile fit OK');
  }finally{
   if(browser)await browser.close();
   await new Promise(resolve=>server.close(resolve));

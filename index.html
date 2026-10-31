@@ -53,6 +53,7 @@
   <link rel="stylesheet" href="css/personal-honor-c46.css?v=c412-1">
   <link rel="stylesheet" href="css/arcade-journey-c437.css?v=c437-1">
   <link rel="stylesheet" href="css/honor-presentation-c437p.css?v=c437p-1">
+  <link rel="stylesheet" href="css/arcade-treasure-c438.css?v=c438-1">
   <link rel="stylesheet" href="css/dudu-wallet-v1.css?v=wallet-1">
   <link rel="stylesheet" href="css/item-actions-v43.css?v=43-5-3b">
   <link rel="stylesheet" href="css/museum-memories-v43.css?v=1">
@@ -120,6 +121,7 @@
   <script src="js/personal-jade-core-v1.js?v=c414-1"></script>
   <script src="js/personal-arcade-season-c423.js?v=c423-1"></script>
   <script src="js/personal-arcade-core-v1.js?v=c423-1&amp;fishing=c425f-1&amp;tackle=c427-1&amp;weather=c428-1"></script>
+  <script src="js/arcade-treasure-c438.js?v=c438-1"></script>
   <script src="js/personal-arcade-fishing-c425f.js?v=c425f-1"></script>
   <script src="js/personal-honor-c46.js?v=c412-1"></script>
   <script src="js/personal-arcade-journey-c437.js?v=c437-1"></script>
@@ -1163,9 +1165,22 @@
       <div class="phone-sub-app" id="phone-app-honors">
         <div class="phone-app-header">
           <button class="phone-back-btn" onclick="phoneHome()" aria-label="Quay về màn hình chính">‹</button>
-          <span>✦ Sổ Vinh Danh</span><span></span>
+          <span>✦ Sổ Vinh Danh</span>
+          <button type="button" id="dudu-honor-treasure-launch-c438" class="dudu-honor-treasure-launch"
+            aria-label="Mở Sổ Báu Vật" title="Sổ Báu Vật">◈</button>
         </div>
         <div id="dudu-honor-content-c46" aria-live="polite"></div>
+      </div>
+
+      <!-- C4.38: a read-only catalogue of Arcade discoveries, separate from inventory. -->
+      <div class="phone-sub-app" id="phone-app-treasures">
+        <div class="phone-app-header">
+          <button type="button" id="dudu-treasure-back-c438" class="phone-back-btn"
+            aria-label="Quay lại ứng dụng trước">‹</button>
+          <span class="dudu-c438-header-title"><span aria-hidden="true">◈</span> Sổ Báu Vật</span>
+          <span class="dudu-c438-header-mark">DUDU ARCADE</span>
+        </div>
+        <div id="dudu-treasure-content-c438" aria-label="Danh mục báu vật bốn game"></div>
       </div>
 
       <!-- APP: KHO ĐỒ -->
@@ -1548,6 +1563,8 @@
         <div class="phone-app-header">
           <button type="button" class="phone-back-btn" onclick="phoneHome()" aria-label="Về màn hình điện thoại">‹</button>
           <button type="button" id="arcade-season-portal-c423" class="arcade-season-portal" aria-label="Mở Hộ Chiếu Mùa 1">✦ MÙA 01</button>
+          <button type="button" id="arcade-treasure-launch-c438" class="arcade-treasure-launch"
+            aria-label="Mở Sổ Báu Vật" title="Sổ Báu Vật">◈</button>
           <button type="button" id="arcade-header-wallet-v1" class="arcade-header-wallet" data-arcade-exchange="open" aria-label="Số dư Xu Arcade, chạm để xem đổi thưởng">🪙 — Xu</button>
         </div>
         <div id="personal-arcade-v1" aria-label="Bốn trò chơi cá nhân"></div>
@@ -8673,6 +8690,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/personal-jade-ui-v1.js?v=c432-1&amp;art=c432-1&amp;materials=c425c-1&amp;compact=c425d-2"></script>
 <script src="js/personal-honor-ui-c46.js?v=c412-1&amp;journey=c437-1&amp;progression=c425g-1&amp;art=c437p-1"></script>
 <script src="js/personal-arcade-ui-v1.js?v=c434-1&amp;art=c425a-2&amp;worlds=c425b-2&amp;materials=c425c-1&amp;pods=c425d-1&amp;interaction=c425e-1&amp;fishing=c425f-1&amp;progression=c425g-1&amp;tackle=c427-1&amp;weather=c428-1&amp;museum=c429-1"></script>
+<script src="js/arcade-treasure-ui-c438.js?v=c438-1"></script>
 <script src="js/quest-ui-v43-7.js?v=c23c-1&amp;progression=c425g-1"></script>
 <script src="js/economy-runtime-v43.js?v=c23c-1"></script>
 <script src="js/economy-live-v52.js?v=c416-1"></script>

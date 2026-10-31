@@ -1,0 +1,284 @@
+/* C4.38 — Sổ Báu Vật. Museum-like folio, built for a 320px phone. */
+body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header{
+ grid-template-columns:34px minmax(0,1fr) 30px auto;gap:4px;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-honors .phone-app-header>span{
+ flex:1;text-align:center;
+}
+#phone-app-arcade .arcade-treasure-launch,
+#phone-app-honors .dudu-honor-treasure-launch{
+ flex:0 0 auto;display:inline-grid;place-items:center;width:30px;height:30px;
+ padding:0;cursor:pointer;border:1px solid #d5bd8b9c;border-radius:10px;
+ color:#ffe2ae;font:900 20px/1 Georgia,serif;
+ background:radial-gradient(circle at 35% 25%,#81664d,#292842 72%);
+ box-shadow:inset 0 1px #fff0d63d,0 0 10px #dab27736;
+}
+#phone-app-honors .dudu-honor-treasure-launch{font-size:18px}
+#phone-app-arcade .arcade-treasure-launch:focus-visible,
+#phone-app-honors .dudu-honor-treasure-launch:focus-visible,
+#phone-app-treasures button:focus-visible,
+#phone-app-treasures summary:focus-visible{outline:2px solid #f7daab;outline-offset:2px}
+#phone-app-treasures{min-height:0;overflow:hidden}
+#phone-app-treasures .phone-app-header{justify-content:space-between;gap:8px}
+#phone-app-treasures .dudu-c438-header-title{
+ display:flex;align-items:center;gap:7px;min-width:0;color:#f6e5c8;
+ font:850 12px/1.3 ui-serif,Georgia,serif;letter-spacing:.035em;
+}
+#phone-app-treasures .dudu-c438-header-title span{color:#e9c57c;font-size:18px}
+#phone-app-treasures .dudu-c438-header-mark{color:#b8a5bc;font:800 8px ui-monospace,monospace;letter-spacing:.1em}
+#dudu-treasure-content-c438{
+ flex:1;min-width:0;min-height:0;overflow-y:auto;overscroll-behavior:contain;
+ padding:10px 10px 22px;scrollbar-width:thin;scrollbar-color:#817395 transparent;
+ background:radial-gradient(ellipse at 100% 0,rgba(133,107,151,.18),transparent 56%),
+  linear-gradient(180deg,#111b2d,#11192a 64%,#0d1525);
+}
+#dudu-treasure-content-c438 *{box-sizing:border-box}
+#dudu-treasure-content-c438 .dudu-c438-hero{
+ position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;
+ justify-content:flex-end;min-height:132px;padding:18px 14px 12px;margin-bottom:10px;
+ border:1px solid #bd9d72a3;border-radius:7px 20px 7px 20px;
+ background:linear-gradient(90deg,#142137ef 0%,#18253fd6 57%,#14223648),
+  linear-gradient(0deg,#0b1b2ad5,transparent 69%),
+  url('../assets/museum-c426/hall-night.webp') center 46%/cover;
+ box-shadow:inset 0 0 0 3px #d0b9951b,0 10px 20px #04091670;
+}
+#dudu-treasure-content-c438 .dudu-c438-hero::after{
+ content:'✦';position:absolute;z-index:-1;right:12px;top:6px;
+ color:#f1d69b;opacity:.47;font-size:34px;text-shadow:0 0 18px #ffdca4;
+}
+#dudu-treasure-content-c438 .dudu-c438-hero >small{
+ color:#e4c48a;font:800 8px/1.35 ui-monospace,monospace;letter-spacing:.19em;
+}
+#dudu-treasure-content-c438 .dudu-c438-hero >strong{
+ margin:3px 0 0;color:#fff2d5;font:900 26px/1.08 ui-serif,Georgia,serif;
+ letter-spacing:-.02em;text-shadow:0 2px 9px #000c;
+}
+#dudu-treasure-content-c438 .dudu-c438-hero >p{
+ margin:6px 0 8px;color:#d5d8e6;font-size:10px;line-height:1.4;
+}
+#dudu-treasure-content-c438 .dudu-c438-totals{
+ display:flex;flex-wrap:wrap;gap:6px;
+}
+#dudu-treasure-content-c438 .dudu-c438-totals span{
+ padding:3px 7px;border:1px solid #f3d8a863;border-radius:99px;
+ color:#f6dfb1;background:#161d34ab;font-size:9px;font-weight:750;
+}
+#dudu-treasure-content-c438 .dudu-c438-filter-row{
+ display:flex;align-items:center;gap:6px;overflow-x:auto;scrollbar-width:none;
+ padding:2px 1px 5px;margin-bottom:1px;min-width:0;
+}
+#dudu-treasure-content-c438 .dudu-c438-filter-row::-webkit-scrollbar{display:none}
+#dudu-treasure-content-c438 .dudu-c438-filter{
+ flex:0 0 auto;cursor:pointer;min-height:27px;padding:6px 10px;
+ border:1px solid #495974;border-radius:99px;white-space:nowrap;
+ color:#bfcbd9;background:#1c2a3d;font:750 10px/1.2 ui-sans-serif,system-ui;
+}
+#dudu-treasure-content-c438 .dudu-c438-filter.is-active{
+ color:#fff0c6;border-color:#e0bb81;
+ background:linear-gradient(114deg,#70563b,#344e5b);
+ box-shadow:inset 0 0 9px #ffdc9425;
+}
+#dudu-treasure-content-c438 .dudu-c438-result-count{
+ display:flex;justify-content:flex-end;color:#a9bacd;
+ font:750 9px/1.5 ui-sans-serif,system-ui;margin:4px 1px 7px;
+}
+#dudu-treasure-content-c438 .dudu-c438-grid{
+ display:flex;flex-direction:column;gap:9px;
+}
+#dudu-treasure-content-c438 .dudu-c438-card{
+ --treasure-line:#8096ad;--treasure-glow:#a4b7d018;
+ display:grid;grid-template-columns:76px minmax(0,1fr);align-items:center;
+ gap:10px;position:relative;isolation:isolate;overflow:hidden;
+ min-height:99px;padding:9px 10px 9px 8px;
+ border:1px solid var(--treasure-line);border-left-width:3px;
+ border-radius:6px 18px 7px 17px;
+ background:radial-gradient(ellipse at 4% 48%,var(--treasure-glow),transparent 63%),
+  linear-gradient(114deg,#253348,#182b3e 76%,#1d283a);
+ box-shadow:inset 0 1px #eff3fa20,0 7px 17px #03081665;
+}
+#dudu-treasure-content-c438 .dudu-c438-card::before{
+ content:'';position:absolute;inset:4px;z-index:-1;pointer-events:none;
+ border:1px solid color-mix(in srgb,var(--treasure-line) 35%,transparent);
+ border-radius:3px 13px 4px 12px;
+ background:repeating-linear-gradient(130deg,transparent 0 34px,#ffffff05 35px 36px);
+}
+#dudu-treasure-content-c438 .dudu-c438-card[data-rarity="rare"]{
+ --treasure-line:#78c9bd;--treasure-glow:#77e8d72b;
+}
+#dudu-treasure-content-c438 .dudu-c438-card[data-rarity="epic"]{
+ --treasure-line:#ba92e4;--treasure-glow:#ad7fe331;
+}
+#dudu-treasure-content-c438 .dudu-c438-card[data-rarity="mythic"]{
+ --treasure-line:#f0c479;--treasure-glow:#f4cc7d37;
+ background:radial-gradient(ellipse at 5% 40%,#edbe7040,transparent 62%),
+  linear-gradient(115deg,#46372f,#23343d 78%,#3d3638);
+}
+#dudu-treasure-content-c438 .dudu-c438-card[data-rarity="legacy"]{
+ --treasure-line:#ffe0a0;--treasure-glow:#fbdba343;
+ border-radius:20px 6px 20px 6px;
+}
+#dudu-treasure-content-c438 .dudu-c438-card[data-status="missing"],
+#dudu-treasure-content-c438 .dudu-c438-card[data-status="preview"]{
+ border-color:#59677d;background:linear-gradient(116deg,#263243,#1a2839);
+ box-shadow:0 5px 12px #03081555;
+}
+#dudu-treasure-content-c438 .dudu-c438-card[data-status="preview"]{border-style:dashed}
+#dudu-treasure-content-c438 .dudu-c438-art-frame{
+ display:block;position:relative;width:76px;height:77px;overflow:hidden;
+ border:1px solid var(--treasure-line);border-radius:8px 17px 8px 17px;
+ background:radial-gradient(circle at 50% 44%,var(--treasure-glow),transparent 72%),
+  linear-gradient(145deg,#17253b,#121f32);
+ box-shadow:inset 0 0 0 3px #101a2dd0,0 3px 11px #0008;
+}
+#dudu-treasure-content-c438 .dudu-c438-art-frame::before{
+ content:'';position:absolute;inset:4px;z-index:2;pointer-events:none;
+ border:1px solid #eee7cf26;border-radius:4px 12px 4px 12px;
+}
+#dudu-treasure-content-c438 .dudu-c438-art{
+ display:block;position:absolute;inset:1px;
+ background-repeat:no-repeat;background-position:var(--art-x,50%) var(--art-y,50%);
+ filter:drop-shadow(0 2px 5px #000a);
+}
+#dudu-treasure-content-c438 .dudu-c438-art-ore{
+ background-image:url('../assets/arcade-c425a/ore-atlas.webp');background-size:500% 200%;
+}
+#dudu-treasure-content-c438 .dudu-c438-art-fish{
+ background-image:url('../assets/arcade-c425b/fish-bestiary.webp');background-size:500% 200%;
+}
+#dudu-treasure-content-c438 .dudu-c438-art-fish[data-species="glassfin"]{
+ background:url('../assets/arcade-c427/fish-glassfin.webp') center/contain no-repeat;
+}
+#dudu-treasure-content-c438 .dudu-c438-art-fish[data-species="lantern"]{
+ background:url('../assets/arcade-c427/fish-lantern.webp') center/contain no-repeat;
+}
+#dudu-treasure-content-c438 .dudu-c438-art-fish[data-species="phoenix"]{
+ background:url('../assets/arcade-c427/fish-phoenix.webp') center/contain no-repeat;
+}
+#dudu-treasure-content-c438 .dudu-c438-art-fish[data-species="fogveil"]{
+ background:url('../assets/arcade-c428/fish-fogveil.webp') center/contain no-repeat;
+}
+#dudu-treasure-content-c438 .dudu-c438-art-fish[data-species="rainpetal"]{
+ background:url('../assets/arcade-c428/fish-rainpetal.webp') center/contain no-repeat;
+}
+#dudu-treasure-content-c438 .dudu-c438-art-fish[data-species="nightlamp"]{
+ background:url('../assets/arcade-c428/fish-nightlamp.webp') center/contain no-repeat;
+}
+#dudu-treasure-content-c438 .dudu-c438-art-jade{
+ background-image:url('../assets/arcade-c432-ai/finished-jade.webp');background-size:300% 200%;
+}
+#dudu-treasure-content-c438 .dudu-c438-art-jade[data-atlas="special"]{
+ background-image:url('../assets/arcade-c432-ai/special-jade.webp');
+}
+#dudu-treasure-content-c438 .dudu-c438-art-contract{
+ background-image:url('../assets/honor-c437p/honor-atlas-2.webp');background-size:200% 200%;
+}
+#dudu-treasure-content-c438 .dudu-c438-art-season{
+ background-image:url('../assets/arcade-season/s01-relic-atlas.webp');background-size:200% 200%;
+}
+#dudu-treasure-content-c438 .dudu-c438-art-season[data-founder="true"]{
+ background:url('../assets/arcade-season/s01-founder-crest.webp') center/contain no-repeat;
+}
+#dudu-treasure-content-c438 .dudu-c438-card[data-status="missing"] .dudu-c438-art,
+#dudu-treasure-content-c438 .dudu-c438-card[data-status="preview"] .dudu-c438-art{
+ filter:grayscale(1) brightness(.48);opacity:.61;
+}
+#dudu-treasure-content-c438 .dudu-c438-card[data-status="preview"] .dudu-c438-art{
+ filter:grayscale(1) brightness(.37);opacity:.5;
+}
+#dudu-treasure-content-c438 .dudu-c438-art-frame.is-secret{
+ display:grid;place-items:center;background:radial-gradient(circle,#363b55,#111c2e 78%);
+}
+#dudu-treasure-content-c438 .dudu-c438-secret-mark{
+ font:900 34px/1 ui-serif,Georgia,serif;color:#8f9aad;text-shadow:0 0 13px #9398c358;
+}
+#dudu-treasure-content-c438 .dudu-c438-card-body{
+ display:flex;flex-direction:column;align-items:stretch;gap:5px;min-width:0;
+}
+#dudu-treasure-content-c438 .dudu-c438-card-top{
+ display:flex;align-items:center;justify-content:space-between;gap:5px;min-width:0;
+}
+#dudu-treasure-content-c438 .dudu-c438-world{
+ color:#aebfd0;font-size:9px;line-height:1.35;min-width:0;white-space:nowrap;
+ overflow:hidden;text-overflow:ellipsis;
+}
+#dudu-treasure-content-c438 .dudu-c438-rarity{
+ flex:0 0 auto;color:var(--treasure-line);font-size:9px;font-weight:800;
+ border:1px solid currentColor;border-radius:99px;padding:2px 6px;
+}
+#dudu-treasure-content-c438 .dudu-c438-name{
+ color:#f1f1f6;font:820 13px/1.32 ui-sans-serif,system-ui;
+ overflow-wrap:anywhere;text-shadow:0 1px 4px #0006;
+}
+#dudu-treasure-content-c438 .dudu-c438-card[data-rarity="mythic"][data-status="owned"] .dudu-c438-name{
+ color:#ffe8b6;
+}
+#dudu-treasure-content-c438 .dudu-c438-status{
+ color:#a9bfca;font-size:9px;line-height:1.2;font-weight:700;
+}
+#dudu-treasure-content-c438 .dudu-c438-card[data-status="owned"] .dudu-c438-status{
+ color:#9befce;
+}
+#dudu-treasure-content-c438 .dudu-c438-card[data-status="preview"] .dudu-c438-status{
+ color:#dfbda0;
+}
+#dudu-treasure-content-c438 .dudu-c438-detail{
+ min-width:0;font-size:10px;color:#c5d1dd;
+}
+#dudu-treasure-content-c438 .dudu-c438-detail summary{
+ cursor:pointer;list-style:none;color:#d6c4a2;font-size:10px;font-weight:750;
+}
+#dudu-treasure-content-c438 .dudu-c438-detail summary::-webkit-details-marker{display:none}
+#dudu-treasure-content-c438 .dudu-c438-detail summary::after{content:' ⌄';color:#e5bd87}
+#dudu-treasure-content-c438 .dudu-c438-detail[open] summary::after{content:' ⌃'}
+#dudu-treasure-content-c438 .dudu-c438-detail-inside{
+ padding:8px 0 2px;display:flex;flex-direction:column;gap:6px;
+ border-top:1px solid #bfc3d22d;margin-top:7px;
+}
+#dudu-treasure-content-c438 .dudu-c438-detail-inside p{
+ margin:0;line-height:1.4;font-size:10px;color:#cbd8e6;
+}
+#dudu-treasure-content-c438 .dudu-c438-detail-inside .dudu-c438-story{
+ color:#efd4b3;font-style:italic;
+}
+#dudu-treasure-content-c438 .dudu-c438-detail-inside small{
+ color:#a8b7c7;font-size:9px;line-height:1.35;
+}
+#dudu-treasure-content-c438 .dudu-c438-go{
+ align-self:flex-start;padding:7px 10px;border:1px solid #bda27691;
+ border-radius:8px;background:#3a3747;color:#f6e0b5;font:750 10px system-ui;
+ cursor:pointer;
+}
+#dudu-treasure-content-c438 .dudu-c438-more{
+ display:block;width:100%;min-height:39px;margin-top:10px;
+ border:1px solid #657693;border-radius:12px;background:#29364d;
+ color:#ecdef2;font:800 11px system-ui;cursor:pointer;
+}
+#dudu-treasure-content-c438 .dudu-c438-empty{
+ padding:24px 12px;color:#bac7d8;line-height:1.5;font-size:11px;text-align:center;
+}
+#dudu-treasure-content-c438 .dudu-c438-footer{
+ margin:12px 2px 0;color:#90a0b2;text-align:center;font-size:9px;line-height:1.45;
+}
+@media(max-width:390px){
+ #dudu-treasure-content-c438{padding:9px 8px 22px}
+ #dudu-treasure-content-c438 .dudu-c438-card{
+  grid-template-columns:65px minmax(0,1fr);gap:8px;padding:8px 8px 8px 7px;
+ }
+ #dudu-treasure-content-c438 .dudu-c438-art-frame{width:65px;height:69px}
+ #dudu-treasure-content-c438 .dudu-c438-name{font-size:12px}
+ #dudu-treasure-content-c438 .dudu-c438-filter{font-size:9px;padding:6px 9px}
+}
+@media(max-width:340px){
+ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header{
+  grid-template-columns:34px minmax(0,1fr) 27px auto;gap:3px;
+ }
+ #dudu-treasure-content-c438 .dudu-c438-card{grid-template-columns:57px minmax(0,1fr);gap:7px}
+ #dudu-treasure-content-c438 .dudu-c438-art-frame{width:57px;height:62px}
+ #dudu-treasure-content-c438 .dudu-c438-world{font-size:8px}
+ #dudu-treasure-content-c438 .dudu-c438-rarity{font-size:8px;padding:2px 4px}
+ #dudu-treasure-content-c438 .dudu-c438-hero>strong{font-size:23px}
+ #phone-app-arcade .arcade-treasure-launch{width:27px;height:27px;font-size:17px}
+}
+@media(prefers-reduced-motion:reduce){
+ #dudu-treasure-content-c438 *,#phone-app-arcade .arcade-treasure-launch{animation:none!important;transition:none!important}
+}
