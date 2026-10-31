@@ -1,0 +1,79 @@
+/* C4.34 — stable jade window framing and AI-drawn game navigation. */
+
+/* C4.25C placed the old window sprite at left:50% and translated it back.
+   C4.32 instead stretches an AI sprite across the specimen via inset. Without
+   removing the old transform, the stone jumps half an image-width left. */
+#personal-arcade-v1 .jade-stage.jade-phase-window .jade-specimen{
+ left:calc(50% - 77px)!important;
+ transform:none!important;
+}
+#personal-arcade-v1 .jade-stage.jade-phase-window .jade-item-art.jade-item-window{
+ position:absolute!important;
+ inset:-18px -13px -6px!important;
+ width:auto!important;height:auto!important;
+ left:-13px!important;top:-18px!important;
+ transform:none!important;
+ animation:jade-window-centered .35s ease-out both!important;
+}
+@keyframes jade-window-centered{
+ from{opacity:.55;filter:brightness(1.15)}
+ to{opacity:1;filter:brightness(1)}
+}
+
+#personal-arcade-v1 .arcade-tabs{
+ gap:5px;padding:6px 5px calc(6px + env(safe-area-inset-bottom,0px));
+ background:linear-gradient(180deg,#20253c 0%,#10182c 56%,#0e1427 100%);
+ border:1px solid #9b89aa6b;border-top-color:#bfafcc9c;
+ border-radius:12px 12px 15px 15px;
+ box-shadow:inset 0 1px 0 #f2daf934,0 -7px 17px #070d1d66;
+}
+#personal-arcade-v1 .arcade-tab{
+ position:relative;min-width:0;min-height:63px;padding:5px 1px 4px;
+ gap:2px;border-radius:9px 9px 11px 11px;
+ border:1px solid transparent;
+ background:linear-gradient(165deg,#44516a20,#17203420);
+ color:#c6c4d5;font-size:8px;font-weight:750;line-height:1.15;
+ transition:background .2s,border-color .2s,box-shadow .2s;
+}
+#personal-arcade-v1 .arcade-tab-icon{
+ display:block;flex:none;width:39px;height:39px;
+ background-image:url('../assets/arcade-c434-ai/world-tabs.webp');
+ background-size:200% 200%;background-repeat:no-repeat;
+ filter:drop-shadow(0 4px 5px #000a);
+ transition:transform .18s,filter .18s;
+}
+#personal-arcade-v1 .arcade-tab-icon-neon{background-position:0% 0%}
+#personal-arcade-v1 .arcade-tab-icon-mine{background-position:100% 0%}
+#personal-arcade-v1 .arcade-tab-icon-garden{background-position:0% 100%}
+#personal-arcade-v1 .arcade-tab-icon-jade{background-position:100% 100%}
+#personal-arcade-v1 .arcade-tab span:last-child{
+ max-width:100%;font-size:8px;text-shadow:0 1px 3px #000c;
+}
+#personal-arcade-v1 .arcade-tab[aria-selected=true]{
+ background:radial-gradient(ellipse at 50% 18%,#d7b4ef38,transparent 75%),
+  linear-gradient(150deg,#41354f,#222a43);
+ border-color:#c9a98dba;
+ box-shadow:inset 0 1px 0 #f9e6c572,0 3px 12px #060b18a8,0 0 10px #cba7de3e;
+ color:#fff1d8;
+}
+#personal-arcade-v1 .arcade-tab[aria-selected=true] .arcade-tab-icon{
+ transform:translateY(-1px) scale(1.08);
+ filter:drop-shadow(0 0 6px #fff1c787) drop-shadow(0 4px 4px #000b);
+}
+#personal-arcade-v1 .arcade-tab[aria-selected=true]::after{
+ content:'';position:absolute;left:22%;right:22%;top:0;height:1px;
+ background:linear-gradient(90deg,transparent,#fbe4be,transparent);
+}
+#personal-arcade-v1 .arcade-tab:focus-visible{
+ outline:2px solid #ffe1a5;outline-offset:-2px;
+}
+@media(max-width:360px){
+ #personal-arcade-v1 .arcade-tabs{gap:2px;padding-inline:3px}
+ #personal-arcade-v1 .arcade-tab{min-height:59px}
+ #personal-arcade-v1 .arcade-tab-icon{width:35px;height:35px}
+ #personal-arcade-v1 .arcade-tab span:last-child{font-size:7.5px}
+}
+@media(prefers-reduced-motion:reduce){
+ #personal-arcade-v1 .jade-stage.jade-phase-window .jade-item-art.jade-item-window{animation:none!important}
+ #personal-arcade-v1 .arcade-tab,#personal-arcade-v1 .arcade-tab-icon{transition:none!important}
+}
