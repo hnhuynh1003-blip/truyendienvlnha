@@ -1,0 +1,63 @@
+/* C4.37 — the compact tracked-journey board inside Sổ Vinh Danh. */
+#dudu-honor-content-c46 .dudu-c437-board{
+ min-width:0;overflow:hidden;position:relative;isolation:isolate;
+ border:1px solid rgba(197,164,107,.55);border-radius:17px;padding:12px 11px;
+ background:radial-gradient(ellipse at 83% -10%,rgba(190,149,91,.24),transparent 53%),
+  linear-gradient(135deg,#273047,#162d3b 70%,#262b3c);
+ box-shadow:inset 0 0 25px rgba(221,182,105,.07),0 9px 23px rgba(0,0,0,.22);
+}
+#dudu-honor-content-c46 .dudu-c437-board:before{
+ content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.24;
+ background:repeating-linear-gradient(120deg,transparent 0 35px,rgba(255,238,206,.08) 36px,transparent 37px);
+}
+#dudu-honor-content-c46 .dudu-c437-board-head{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;margin-bottom:11px}
+#dudu-honor-content-c46 .dudu-c437-board-heading{display:flex;flex-direction:column;gap:3px;min-width:0}
+#dudu-honor-content-c46 .dudu-c437-board-heading small{color:#d8bc86;font:800 8px/1.4 ui-monospace,monospace;letter-spacing:.13em}
+#dudu-honor-content-c46 .dudu-c437-board-heading strong{color:#fff2d7;font-size:17px;line-height:1.2}
+#dudu-honor-content-c46 .dudu-c437-board-count{flex:0 0 auto;color:#ebd2a3;font:800 8px/1.4 ui-monospace,monospace;text-align:right;max-width:95px}
+#dudu-honor-content-c46 .dudu-c437-board-empty{display:flex;align-items:center;gap:11px;min-width:0;padding:13px 11px;border:1px dashed rgba(216,186,124,.36);border-radius:12px;background:rgba(9,18,32,.35)}
+#dudu-honor-content-c46 .dudu-c437-empty-sigil{display:grid;place-items:center;flex:0 0 43px;height:43px;border-radius:13px;color:#edd29a;background:radial-gradient(circle,rgba(216,187,118,.19),rgba(36,39,66,.25));font-size:26px}
+#dudu-honor-content-c46 .dudu-c437-board-empty strong{display:block;color:#fff0d5;font-size:12px;line-height:1.4}
+#dudu-honor-content-c46 .dudu-c437-board-empty p{margin:4px 0 0;color:#b6c4d2;font-size:10px;line-height:1.45}
+#dudu-honor-content-c46 .dudu-c437-board-list{display:flex;flex-direction:column;gap:9px}
+#dudu-honor-content-c46 .dudu-c437-focus{
+ --focus-edge:#9cc8ef;--focus-glow:rgba(128,198,244,.18);
+ min-width:0;padding:10px;border-radius:12px;border:1px solid var(--focus-glow);
+ background:linear-gradient(115deg,rgba(11,20,35,.91),rgba(29,37,55,.82));
+ box-shadow:inset 3px 0 var(--focus-edge);
+}
+#dudu-honor-content-c46 .dudu-c437-focus[data-game="mine"]{--focus-edge:#d8a4ff;--focus-glow:rgba(180,139,237,.28)}
+#dudu-honor-content-c46 .dudu-c437-focus[data-game="garden"]{--focus-edge:#91e3c3;--focus-glow:rgba(114,208,165,.28)}
+#dudu-honor-content-c46 .dudu-c437-focus[data-game="jade"]{--focus-edge:#efd09a;--focus-glow:rgba(229,184,105,.29)}
+#dudu-honor-content-c46 .dudu-c437-focus-top{display:flex;align-items:center;gap:8px;min-width:0}
+#dudu-honor-content-c46 .dudu-c437-focus-symbol{display:grid;place-items:center;flex:0 0 34px;height:34px;border:1px solid var(--focus-edge);border-radius:10px;color:var(--focus-edge);background:var(--focus-glow);font-size:20px}
+#dudu-honor-content-c46 .dudu-c437-focus-copy{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+#dudu-honor-content-c46 .dudu-c437-focus-copy small{color:var(--focus-edge);font-size:9px}
+#dudu-honor-content-c46 .dudu-c437-focus-copy strong{color:#f6f1e8;font-size:12px;line-height:1.3;overflow-wrap:anywhere}
+#dudu-honor-content-c46 .dudu-c437-focus-steps{color:var(--focus-edge);font-weight:850;font-size:12px;white-space:nowrap}
+#dudu-honor-content-c46 .dudu-c437-focus-track{height:5px;border-radius:99px;background:#0c1c2e;overflow:hidden;margin:9px 0 6px}
+#dudu-honor-content-c46 .dudu-c437-focus-track i{display:block;height:100%;border-radius:99px;background:var(--focus-edge);box-shadow:0 0 9px var(--focus-edge)}
+#dudu-honor-content-c46 .dudu-c437-focus-next{margin:0;color:#cbdce4;font-size:10px;line-height:1.45;overflow-wrap:anywhere}
+#dudu-honor-content-c46 .dudu-c437-focus-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-top:9px;flex-wrap:wrap}
+#dudu-honor-content-c46 .dudu-c437-focus-actions button,#dudu-honor-content-c46 .dudu-c437-follow{
+ border:1px solid rgba(196,210,226,.4);border-radius:8px;padding:7px 9px;min-height:31px;
+ color:#e1e9f5;background:#253448;font:750 10px/1.25 ui-sans-serif,system-ui;cursor:pointer;
+}
+#dudu-honor-content-c46 .dudu-c437-focus-actions .dudu-c437-focus-play{color:#1e2937;background:linear-gradient(115deg,#f0d9a7,#b7dcdb);border-color:#d4d4b7}
+#dudu-honor-content-c46 .dudu-c437-focus-actions button:disabled{opacity:.45;cursor:default}
+#dudu-honor-content-c46 .dudu-c437-message{margin:9px 0 0;color:#f2d5a3;font-size:10px;line-height:1.45}
+#dudu-honor-content-c46 .dudu-honor-journey-foot{flex-wrap:wrap}
+#dudu-honor-content-c46 .dudu-honor-journey-foot small{flex:1 1 100%}
+#dudu-honor-content-c46 .dudu-c437-follow{color:#e6cfa9;border-color:#a18a60;background:#2c3948}
+#dudu-honor-content-c46 .dudu-c437-follow.is-followed{color:#132d37;border-color:#a3d6c3;background:linear-gradient(115deg,#d4e4c8,#a9d3cf)}
+#dudu-honor-content-c46 .dudu-c437-focus-actions button:focus-visible,
+#dudu-honor-content-c46 .dudu-c437-follow:focus-visible{outline:2px solid #fff2c5;outline-offset:2px}
+@media (max-width:350px){
+ #dudu-honor-content-c46 .dudu-c437-board{padding:10px 8px}
+ #dudu-honor-content-c46 .dudu-c437-board-heading strong{font-size:15px}
+ #dudu-honor-content-c46 .dudu-c437-focus-actions{gap:4px}
+ #dudu-honor-content-c46 .dudu-c437-focus-actions button{padding:6px 7px;font-size:9px}
+}
+@media (prefers-reduced-motion:reduce){
+ #dudu-honor-content-c46 .dudu-c437-board *,#dudu-honor-content-c46 .dudu-c437-board:before{animation:none!important;transition:none!important}
+}

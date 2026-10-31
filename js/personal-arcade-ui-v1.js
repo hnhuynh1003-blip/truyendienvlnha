@@ -921,14 +921,15 @@
   if(!visible()&&typeof root.openPhoneApp==='function')root.openPhoneApp('arcade');
   render();return true;
  }
- function openGarden(){
-  if(!ensure())return false;
-  tab='garden';drawerOpen=null;seasonOpen=false;exchangeOpen=false;
+ function openGame(gameId){
+  if(!modeLabels[gameId]||!ensure())return false;
+  tab=gameId;drawerOpen=null;seasonOpen=false;exchangeOpen=false;
   resetScrollOnPaint=true;
   if(!visible()&&typeof root.openPhoneApp==='function')root.openPhoneApp('arcade');
   else render();
   return true;
  }
- root.DuduPersonalArcadeUIV1=Object.freeze({init,render,interact,tick,peekBalance,openExchange,openSeason,openGarden});
+ function openGarden(){return openGame('garden');}
+ root.DuduPersonalArcadeUIV1=Object.freeze({init,render,interact,tick,peekBalance,openExchange,openSeason,openGarden,openGame});
  init();
 })(typeof window!=='undefined'?window:{});

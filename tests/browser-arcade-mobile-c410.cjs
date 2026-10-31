@@ -129,6 +129,41 @@ async function main(){
    assert.ok(layout.closeLeft>=layout.walletRight-2,'C4.15 R2 close X clears the Arcade wallet action');
    assert.equal(layout.homeBar,'none','C4.15 duplicate bottom line is hidden');
   }
+  // C4.37: follow up to three long journeys without claiming anything.
+  await page.setViewportSize({width:320,height:844});
+  await page.evaluate(()=>{openPhoneApp('honors');window.DuduHonorUIV46.openGame('Trạm Neon');});
+  const journeyBoard=page.locator('#dudu-honor-content-c46 .dudu-c437-board');
+  await journeyBoard.waitFor();
+  assert.equal(await journeyBoard.locator('.dudu-c437-focus').count(),0);
+  await page.locator('.dudu-honor-more').filter({hasText:'Xem cả 4 hành trình'}).click();
+  for(let i=0;i<3;i++)await page.locator('.dudu-c437-follow:not(.is-followed)').first().click();
+  assert.equal(await journeyBoard.locator('.dudu-c437-focus').count(),3);
+  await page.locator('.dudu-c437-follow:not(.is-followed)').click();
+  assert.equal(await journeyBoard.locator('.dudu-c437-focus').count(),3,
+   'The fourth journey cannot replace a tracked one without an explicit unpin');
+  await journeyBoard.locator('.dudu-c437-focus-remove').first().click();
+  await page.locator('.dudu-c437-follow:not(.is-followed)').last().click();
+  assert.equal(await journeyBoard.locator('.dudu-c437-focus').count(),3);
+  for(const width of [320,360,390]){
+   await page.setViewportSize({width,height:844});
+   const fit=await journeyBoard.evaluate(el=>({overflow:el.scrollWidth-el.clientWidth,
+    width:el.getBoundingClientRect().width,
+    buttons:[...el.querySelectorAll('.dudu-c437-focus-actions button')].map(b=>{
+     const r=b.getBoundingClientRect(),p=el.getBoundingClientRect();
+     return r.left>=p.left-2&&r.right<=p.right+2;
+    })}));
+   assert.ok(fit.width>190&&fit.overflow<=2,'C4.37 board fits '+width+'px');
+   assert.ok(fit.buttons.every(Boolean),'C4.37 board buttons fit '+width+'px');
+  }
+  const firstTracked=await journeyBoard.locator('.dudu-c437-focus').first().getAttribute('data-game');
+  await journeyBoard.locator('.dudu-c437-focus-play').first().click();
+  assert.equal(await page.locator('#phone-app-arcade').evaluate(el=>el.style.display),'flex');
+  assert.equal(await tab(firstTracked).getAttribute('aria-selected'),'true',
+   'The tracked-journey play button opens its matching Arcade game');
+  await page.evaluate(()=>{openPhoneApp('honors');window.DuduHonorUIV46.openGame('Trạm Neon');});
+  assert.equal(await journeyBoard.locator('.dudu-c437-focus').count(),3,
+   'Following choices survive the app switch without writing a reward');
+  await page.evaluate(()=>openPhoneApp('arcade'));
   // C4.18: four different game worlds with no redundant heading above the stage.
   const stageLooks=new Set();
   for(const game of ['neon','mine','garden','jade']){
