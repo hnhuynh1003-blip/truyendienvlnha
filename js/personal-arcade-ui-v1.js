@@ -144,7 +144,7 @@
   'mine-map':'Bản đồ địa tầng','mine-bag':'Túi quặng & sổ khoáng',
   'mine-tools':'Xưởng rèn & trang bị','garden-seeds':'Vườn cây & hạt giống',
   'garden-album':'Nhật ký cá','garden-upgrades':'Nâng cấp Vườn Sương',
-  'jade-market':'Chợ cược thạch','jade-vault':'Kho ngọc & giá thị trường',
+  'jade-market':'Chợ cược thạch','jade-vault':'Kho ngọc & bảng giá',
   'jade-workshop':'Xưởng ngọc','jade-gallery':'Sổ sưu tầm phỉ thúy'};
  const upgrade=(glyph,name,level,type,cost)=>`<div class="arcade-upgrade-card">
    <span class="arcade-upgrade-symbol">${glyph}</span><div><strong>${name}</strong><small>${level}</small></div>

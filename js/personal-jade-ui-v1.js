@@ -55,7 +55,7 @@
     ${cutPulse?'<span class="jade-cut-flash" aria-hidden="true"></span>':''}
     <div class="jade-stage-base">${stone?'MẪU #'+String(stone.id).padStart(3,'0')+' · '+jade.MARKETS[stone.site].short.toUpperCase():
      'CHỜ CHỦ NHÂN CHỌN ĐÁ THÔ'}
-      ${stone&&!cut?`<b>${scanned}/3 ĐIỂM ĐÃ SOI</b>`:stone&&cut?'<b>✦ ĐÃ LỘ NGỌC</b>':''}</div>
+      ${stone&&!cut?`<b>${scanned}/3 ĐIỂM ĐÃ SOI</b>`:stone&&cut?`<b>${revealed?'✦ ĐÃ LỘ NGỌC':'✦ ĐÁ ĐÃ XẺ'}</b>`:''}</div>
   </div>`;
  }
  function activePanel(s){
@@ -209,7 +209,8 @@
    <div class="jade-sheet-heading"><b>▱ Hòm ngọc đã cắt</b><small>${j.vault.length} vật phẩm</small></div>
    ${j.vault.length?`<div class="jade-vault-list">${j.vault.map((stone,i)=>{
     const q=jade.marketQuote(stone,time);
-    return `<article class="jade-vault-card"><span class="jade-vault-gem jade-collectible-art jade-item-shade-${stone.color}" style="--jade-color:${jade.COLOR_HEX[stone.color]};--jade-item-x:${((Math.max(1,stone.grade)-1)%5)*25}%" aria-hidden="true"></span>
+    const valuable=stone.grade>0&&stone.flaw!=='skin';
+    return `<article class="jade-vault-card"><span class="jade-vault-gem jade-collectible-art ${valuable?'':'is-waste'} jade-item-shade-${stone.color}" style="--jade-color:${jade.COLOR_HEX[stone.color]};--jade-item-x:${(valuable?(Math.max(1,stone.grade)-1)%5:stone.site)*25}%" aria-hidden="true"></span>
      <div class="jade-vault-info"><b>#${String(stone.id).padStart(3,'0')} · ${stoneName(stone)}</b>
        <small>${stone.phase==='crafted'?jade.CRAFTS[stone.craft].name:'Phôi chưa chế tác'} · Cỡ ${stone.size}</small>
        <span class="${trendClass(q.rate)}">${trend(q.rate)} · <strong>${fmt(q.value)} Xu</strong></span></div>

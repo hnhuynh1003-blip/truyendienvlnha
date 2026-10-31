@@ -364,6 +364,10 @@
  filter:hue-rotate(var(--jade-hue,0deg)) drop-shadow(0 0 7px #9bdbc280) drop-shadow(0 4px 3px #061b15a8);
 }
 #personal-arcade-v1 .jade-vault-gem{width:60px;height:61px;align-self:center}
+#personal-arcade-v1 .jade-vault-gem.is-waste{
+ background-position:var(--jade-item-x) 0;
+ filter:grayscale(.48) drop-shadow(0 3px 5px #071b17);
+}
 #personal-arcade-v1 .jade-exhibit>span.jade-collectible-art{width:58px;height:58px;flex-shrink:0}
 #personal-arcade-v1 .jade-exhibit{
  border-color:#bda365;border-radius:2px 12px;background:#23382b;
