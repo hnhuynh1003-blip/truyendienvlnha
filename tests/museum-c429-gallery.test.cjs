@@ -52,11 +52,17 @@ test('C4.29.4 museum trophies require four hard in-game achievements, without re
  assert.equal(host.querySelector('.museum-c429-entrance'),null,
   'The phone title is the only museum heading');
  assert.equal(host.querySelector('.museum-c429-scene-trophies').dataset.trophy,'neon');
+ assert.equal(host.querySelector('.museum-c429-scene-trophies').dataset.earned,'yes');
  assert.ok(host.querySelector('.museum-c429-feature-art'),
   'The selected trophy is enlarged as the main visual');
  assert.equal(host.querySelectorAll('.museum-c429-pedestal').length,4);
  assert.equal(host.querySelectorAll('.is-earned').length,2);
+ const rail=host.querySelector('.museum-c429-pedestals');
+ rail.scrollLeft=71;
  click(host.querySelector('.museum-c429-pedestal-jade'));
+ assert.equal(host.querySelector('.museum-c429-pedestals').scrollLeft,71,
+  'Horizontal statue scroll position survives selection');
+ assert.equal(host.querySelector('.museum-c429-scene-trophies').dataset.earned,'no');
  assert.equal(host.querySelector('.museum-c429-scene-trophies').dataset.trophy,'jade',
   'Selecting a thumbnail changes the large exhibition statue');
  assert.equal(host.querySelector('.museum-c429-status-count').textContent,'0/4');
@@ -77,6 +83,7 @@ test('C4.29.4 aquarium displays only caught Quý+ fish, never common fish or loc
  ui.mount({container:host,ownerKey:'du',sandbox:true});
  const fishTab=host.querySelectorAll('.museum-c429-wing')[1];click(fishTab);
  assert.ok(host.querySelector('.museum-c429-scene-fish'));
+ assert.equal(host.querySelector('.museum-c429-scene-tag'),null);
  assert.equal(host.querySelectorAll('.museum-c429-specimen').length,2);
  assert.equal(host.querySelectorAll('.is-found').length,2);
  assert.equal(host.querySelectorAll('.is-hidden').length,0);
@@ -132,8 +139,8 @@ test('C4.29 keeps verified collectibles and Season1 preview separate, delivers c
  const html=repo('index.html').toString();
  const vault=repo('js/museum-vault-c426.js').toString();
  const gallery=repo('js/museum-c429-gallery.js').toString();
- assert.match(html,/museum-c429-gallery\.css\?v=c429-6/);
- assert.match(html,/museum-c429-gallery\.js\?v=c429-4/);
+ assert.match(html,/museum-c429-gallery\.css\?v=c429-7/);
+ assert.match(html,/museum-c429-gallery\.js\?v=c429-5/);
  assert.match(html,/museum-vault-c426\.js\?v=c426-3&amp;gallery=c429-2/);
  assert.match(vault,/\['preview','Quà mùa'\]/);
  assert.match(vault,/\['owned','Kỷ vật thật'\]/);
@@ -152,4 +159,9 @@ test('C4.29 keeps verified collectibles and Season1 preview separate, delivers c
   assert.ok(statSync(path.join(__dirname,'..',pathName)).size<95000,art);
   assert.match(repo('css/museum-c429-gallery.css').toString(),new RegExp(art));
  }
+ const style=repo('css/museum-c429-gallery.css').toString();
+ assert.match(style,/scroll-snap-type:x proximity/);
+ assert.match(style,/overflow-x:auto/);
+ assert.match(style,/filter:grayscale\(1\) brightness/);
+ assert.match(style,/height:clamp\(310px,88vw,405px\)/);
 });

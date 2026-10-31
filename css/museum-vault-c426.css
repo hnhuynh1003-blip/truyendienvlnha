@@ -238,15 +238,16 @@ body.dudu-phone-v11 #cyber-phone .museum-c426-tab{
  min-height:31px;padding:5px 2px;font-size:9px;
 }
 body.dudu-phone-v11 #cyber-phone .museum-c426-stage{
- height:clamp(243px,71vw,302px);border-color:#e3c28b9c;
+ height:clamp(315px,90vw,410px);border-color:#e3c28b9c;
  box-shadow:inset 0 0 24px #0308179c,0 6px 18px #0008;
 }
 body.dudu-phone-v11 #cyber-phone .museum-c426-art{
- height:clamp(204px,57vw,251px);max-width:82%;bottom:15px;
- filter:drop-shadow(0 8px 9px #000b) drop-shadow(0 0 17px #ead5a35c);
+ height:clamp(267px,75vw,355px);max-width:88%;bottom:18px;
+ filter:grayscale(1) brightness(.82) contrast(1.14) drop-shadow(0 8px 9px #000b);
 }
 body.dudu-phone-v11 #cyber-phone .museum-c426-art.is-frame{
- height:clamp(199px,53vw,237px);max-width:86%;
+ height:clamp(258px,69vw,329px);max-width:90%;
+ filter:grayscale(1) brightness(.82) contrast(1.14) drop-shadow(0 8px 9px #000b);
 }
 body.dudu-phone-v11 #cyber-phone .museum-c426-detail{
  min-height:55px;padding:8px 10px;background:#152b36dd;
@@ -266,8 +267,21 @@ body.dudu-phone-v11 #cyber-phone .museum-c426-owned .museum-c426-ledger{
  border:1px solid #c5a66e70;border-radius:13px;
  background:#243743;color:#f1d6a5;font-size:9px;
 }
+body.dudu-phone-v11 #cyber-phone .museum-c426-collection{
+ display:flex;gap:7px;min-width:0;overflow-x:auto;overflow-y:hidden;
+ scroll-snap-type:x proximity;scroll-padding-inline:3px;
+ overscroll-behavior-x:contain;touch-action:pan-x;-webkit-overflow-scrolling:touch;
+ scrollbar-width:thin;scrollbar-color:#bc9e6d5c transparent;
+ padding:2px 2px 7px;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-select{
+ flex:0 0 clamp(84px,25.5%,114px);scroll-snap-align:start;min-height:91px;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-select img{
+ filter:grayscale(1) brightness(.74) contrast(1.12) drop-shadow(0 3px 5px #000a);
+}
 @media(max-width:355px){
- body.dudu-phone-v11 #cyber-phone .museum-c426-stage{height:243px}
- body.dudu-phone-v11 #cyber-phone .museum-c426-art{height:205px}
- body.dudu-phone-v11 #cyber-phone .museum-c426-art.is-frame{height:199px}
+ body.dudu-phone-v11 #cyber-phone .museum-c426-stage{height:315px}
+ body.dudu-phone-v11 #cyber-phone .museum-c426-art{height:267px}
+ body.dudu-phone-v11 #cyber-phone .museum-c426-art.is-frame{height:258px}
 }

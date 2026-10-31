@@ -49,7 +49,7 @@
   if(value!==undefined)element.textContent=String(value);
   return element;
  };
- let host=null,owner='',isSandbox=false,wing='trophies',fishSelected='',trophySelected='neon',snapshot=null;
+ let host=null,owner='',isSandbox=false,wing='trophies',fishSelected='',trophySelected='neon',snapshot=null,pedestalScroll=0;
  const safeCount=n=>Number.isSafeInteger(n)&&n>=0?n:0;
  function gameIdentity(){
   if(isSandbox)return owner?'sandbox:'+owner:null;
@@ -113,6 +113,7 @@
    const completed=info.count(s)>=info.goal;
    const b=addButton(row,'','museum-c429-pedestal museum-c429-pedestal-'+info.id+
     (completed?' is-earned':' is-dormant')+(trophySelected===info.id?' is-chosen':''),()=>{
+     pedestalScroll=Number.isFinite(row.scrollLeft)?row.scrollLeft:0;
      trophySelected=info.id;paint();});
    b.setAttribute('aria-label',info.title+' · '+info.count(s)+'/'+info.goal+' thử thách');
    b.setAttribute('aria-pressed',String(trophySelected===info.id));
@@ -120,6 +121,7 @@
    b.append(object,$('small','',info.sub));
   }
   container.append(row);
+  row.scrollLeft=pedestalScroll;
   const card=$('div','museum-c429-status');
   const copy=$('div','');
   copy.append($('small','',done?'DẤU ẤN HOÀN THÀNH':'TIẾN ĐỘ CHINH PHỤC'),
@@ -142,7 +144,7 @@
  }
  function aquarium(s,container){
   const owned=foundShowcase(s),focus=selectedFish(s),fish=species[focus];
-  const scene=stage('fish');scene.append($('small','museum-c429-scene-tag','THỦY CUNG · CÁ QUÝ TRỞ LÊN'));
+  const scene=stage('fish');
   for(let i=0;i<owned.length;i++){
    const id=owned[i];scene.append(fishPortrait(id,'museum-c429-swimmer swimmer-'+i));
   }
@@ -177,8 +179,6 @@
     $('em','museum-c429-rarity',species[id].rarity),$('b','','×'+count));
   }
   container.append(album);
-  if(owned.length)container.append($('p','museum-c429-rare-note',
-   'Chỉ trưng cá Quý, Hiếm, Sử thi và Huyền thoại đã câu. Các loài thường ở Sổ cá Vườn Sương.'));
   const action=addButton(container,'Đến Vườn Sương ›','museum-c429-go-garden',()=>{
    if(!root.DuduPersonalArcadeUIV1?.openGarden?.())root.openPhoneApp?.('arcade');
   });action.setAttribute('aria-label','Mở Arcade để đến Vườn Sương');
@@ -206,7 +206,7 @@
   if(!container||!core)return false;
   const changed=host!==container||owner!==ownerKey||isSandbox!==!!sandbox;
   host=container;
-  if(changed){owner=ownerKey;isSandbox=!!sandbox;wing='trophies';fishSelected='';trophySelected='neon';shell();}
+  if(changed){owner=ownerKey;isSandbox=!!sandbox;wing='trophies';fishSelected='';trophySelected='neon';pedestalScroll=0;shell();}
   paint();return true;
  }
  root.DuduMuseumGalleryC429=Object.freeze({mount,milestones});

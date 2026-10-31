@@ -300,7 +300,7 @@ body.dudu-phone-v11 #cyber-phone .museum-c429-wing.is-active{
  color:#ffe8b7;box-shadow:inset 0 1px #fff3c54d,0 2px 7px #0006;
 }
 body.dudu-phone-v11 #cyber-phone .museum-c429-scene{
- height:clamp(219px,65vw,276px);border-radius:13px;
+ height:clamp(310px,88vw,405px);border-radius:14px;
  border-color:#e5c68d9e;box-shadow:inset 0 0 25px #050e1eb9,0 5px 19px #0008;
 }
 body.dudu-phone-v11 #cyber-phone .museum-c429-scene-trophies{
@@ -309,8 +309,7 @@ body.dudu-phone-v11 #cyber-phone .museum-c429-scene-trophies{
 body.dudu-phone-v11 #cyber-phone .museum-c429-feature-art{
  position:absolute;z-index:2;left:12%;right:12%;top:13px;bottom:22px;
  display:block;background-position:center;background-size:contain;background-repeat:no-repeat;
- filter:grayscale(.28) brightness(.87) drop-shadow(0 10px 7px #000c)
-  drop-shadow(0 0 16px #ffe5a34a);
+ filter:grayscale(1) brightness(.66) contrast(1.1) drop-shadow(0 11px 7px #000d);
  animation:museum-c429-feature-rise .4s ease-out both;
 }
 body.dudu-phone-v11 #cyber-phone .museum-c429-scene[data-trophy=neon] .museum-c429-feature-art{
@@ -343,12 +342,16 @@ body.dudu-phone-v11 #cyber-phone .museum-c429-feature-name{
  text-shadow:0 2px 8px #02080d,0 0 12px #04090d;
 }
 body.dudu-phone-v11 #cyber-phone .museum-c429-pedestals{
- position:static;inset:auto;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
- align-items:stretch;gap:5px;min-height:78px;
+ position:static;inset:auto;display:flex;align-items:stretch;gap:7px;
+ min-height:94px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x proximity;
+ scroll-padding-inline:3px;overscroll-behavior-x:contain;touch-action:pan-x;
+ -webkit-overflow-scrolling:touch;scrollbar-width:thin;
+ scrollbar-color:#bc9e6d5c transparent;padding:2px 2px 7px;
 }
 body.dudu-phone-v11 #cyber-phone .museum-c429-pedestal{
- min-height:78px;height:auto;padding:5px 2px 4px;gap:3px;
- border:1px solid #7b91a069;border-radius:9px;
+ flex:0 0 clamp(84px,25.5%,114px);scroll-snap-align:start;
+ min-height:88px;height:auto;padding:5px 3px 4px;gap:3px;
+ border:1px solid #7b91a069;border-radius:10px;
  background:linear-gradient(165deg,#29394c,#101d2c);
  box-shadow:inset 0 1px #f2e3c51c;
 }
@@ -363,14 +366,14 @@ body.dudu-phone-v11 #cyber-phone .museum-c429-trophy-object{
  width:54px;height:54px;max-width:96%;background-position:center;
 }
 body.dudu-phone-v11 #cyber-phone .museum-c429-pedestal.is-dormant .museum-c429-trophy-object{
- filter:grayscale(.45) brightness(.8) drop-shadow(0 2px 4px #0009);
+ filter:grayscale(1) brightness(.63) contrast(1.08) drop-shadow(0 2px 4px #000a);
 }
 body.dudu-phone-v11 #cyber-phone .museum-c429-status{
  padding:6px 9px;min-height:39px;background:#172935c9;
 }
 body.dudu-phone-v11 #cyber-phone .museum-c429-status>div:first-child{gap:1px}
 body.dudu-phone-v11 #cyber-phone .museum-c429-status strong{font-size:11px}
-body.dudu-phone-v11 #cyber-phone .museum-c429-scene-fish{height:clamp(202px,56vw,245px)}
+body.dudu-phone-v11 #cyber-phone .museum-c429-scene-fish{height:clamp(280px,76vw,346px)}
 body.dudu-phone-v11 #cyber-phone .museum-c429-swimmer.swimmer-0{
  width:81px;height:68px;left:34%;top:33%;
 }
@@ -379,8 +382,8 @@ body.dudu-phone-v11 #cyber-phone .museum-c429-swimmer.swimmer-0{
  to{opacity:1;transform:translateY(0) scale(1)}
 }
 @media(max-width:355px){
- body.dudu-phone-v11 #cyber-phone .museum-c429-scene{height:218px}
- body.dudu-phone-v11 #cyber-phone .museum-c429-scene-fish{height:205px}
+ body.dudu-phone-v11 #cyber-phone .museum-c429-scene{height:310px}
+ body.dudu-phone-v11 #cyber-phone .museum-c429-scene-fish{height:280px}
  body.dudu-phone-v11 #cyber-phone .museum-c429-feature-name{font-size:14px}
  body.dudu-phone-v11 #cyber-phone .museum-c429-pedestal small{font-size:7px}
 }
