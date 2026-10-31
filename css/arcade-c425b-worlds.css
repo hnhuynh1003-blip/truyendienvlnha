@@ -1,0 +1,403 @@
+/* C4.25B — Two painted worlds, with real play objects layered over the art.
+   This layer is strictly presentational. All interactions use existing actions. */
+
+/* VƯỜN SƯƠNG — a living moon garden, never a finance dashboard. */
+#personal-arcade-v1 .arcade-active-garden{
+ --game-ink:#101f2c;--game-panel:#1c3640;--game-line:#9ee7d552;
+ --game-accent:#adf8d9;--game-gold:#f9e8c1;
+}
+#personal-arcade-v1 .garden-stage{
+ height:337px!important;
+ background:linear-gradient(180deg,#121e4770,#184c4777 80%,#092c3870),
+ url('../assets/arcade-c425b/moon-garden.webp') 54% 46% / cover no-repeat;
+ box-shadow:inset 0 -28px 43px #102f3680;
+ isolation:isolate;
+}
+#personal-arcade-v1 .garden-stage.garden-expanded{height:454px!important}
+#personal-arcade-v1 .garden-stage::before{
+ z-index:0;opacity:.66;background:
+ radial-gradient(circle at 14% 16%,#e9ffe7 0 1px,transparent 3px),
+ radial-gradient(circle at 82% 35%,#ffbcdc 0 2px,transparent 4px),
+ radial-gradient(circle at 61% 20%,#d7fff6 0 1px,transparent 4px),
+ linear-gradient(180deg,#10172b44,transparent 54%,#032d3977);
+}
+/* The painted vegetation replaces the synthetic trees. Mist and fireflies remain live. */
+#personal-arcade-v1 .garden-scenery,
+#personal-arcade-v1 .garden-mountains,
+#personal-arcade-v1 .garden-grass,
+#personal-arcade-v1 .garden-cloud,
+#personal-arcade-v1 .garden-moon,
+#personal-arcade-v1 .garden-shore-lantern,
+#personal-arcade-v1 .garden-bank-reeds{display:none}
+#personal-arcade-v1 .garden-mist{z-index:1;opacity:.36;filter:blur(22px);background:#b7ffef9c}
+#personal-arcade-v1 .garden-firefly{z-index:7;display:block;box-shadow:0 0 10px 5px #c2f9db85}
+#personal-arcade-v1 .garden-firefly-left{top:24%;left:7%}
+#personal-arcade-v1 .garden-firefly-right{top:40%;right:10%}
+#personal-arcade-v1 .garden-plot-area{
+ top:39px;left:7%;right:7%;gap:13px;z-index:4;
+}
+#personal-arcade-v1 .garden-expanded .garden-plot-area{top:27px;gap:7px 11px}
+#personal-arcade-v1 .garden-plot{height:133px;filter:drop-shadow(0 6px 4px #042e2f94)}
+#personal-arcade-v1 .garden-expanded .garden-plot{height:144px}
+#personal-arcade-v1 .garden-soil{
+ bottom:17px;left:5%;width:90%;height:43px;border:5px solid #8d796b;
+ background:repeating-radial-gradient(ellipse,#352c32 0 9px,#5a403e 10px 17px);
+ box-shadow:0 8px 0 #33374a,0 11px 13px #081a2e99,inset 0 5px 11px #090e1d8c;
+}
+#personal-arcade-v1 .garden-plot.empty .garden-soil{border-style:dashed;filter:saturate(.6)}
+#personal-arcade-v1 .garden-plot.dry .garden-soil{border-color:#b18f78;box-shadow:inset 0 4px 13px #c69c4c8c,0 8px #4a3533}
+#personal-arcade-v1 .garden-stem{
+ height:64px;bottom:52px;width:7px;left:calc(50% - 3px);
+ background:linear-gradient(90deg,#1b5045,#8ce1a5 60%,#2e8156);
+ border-radius:70% 40% 8px 8px;
+}
+#personal-arcade-v1 .garden-stem i{
+ width:32px;height:18px;top:12px;left:-29px;
+ background:linear-gradient(125deg,#c5ffd4,#46a584 56%,#236f5b);
+ box-shadow:inset 2px 1px #e9ffeab9,0 4px 7px #1039387d;
+}
+#personal-arcade-v1 .garden-stem i:nth-child(2){top:31px;left:1px}
+#personal-arcade-v1 .garden-stem i:nth-child(3){top:0;left:-15px}
+#personal-arcade-v1 .garden-flower{width:36px;height:36px;left:calc(50% - 18px);bottom:97px}
+#personal-arcade-v1 .garden-flower i{
+ left:10px;width:16px;height:24px;
+ background:linear-gradient(155deg,#fffdf8,#eebfdd 62%,#b888dc);
+ box-shadow:inset 1px 2px #ffffffa0,0 0 9px #f4d6ffb2;
+}
+#personal-arcade-v1 .garden-flower::after{inset:11px;background:#ffe5a5;box-shadow:0 0 9px #ffb8e6}
+/* Each original crop has its own silhouette and lighting, not recolored icons. */
+#personal-arcade-v1 .garden-plot.crop-mint .garden-stem{height:58px;transform:rotate(-9deg)}
+#personal-arcade-v1 .garden-plot.crop-mint .garden-flower{
+ bottom:83px;width:48px;height:42px;left:calc(50% - 24px);
+ background:radial-gradient(ellipse at 20% 58%,#b4ffcb 0 18%,transparent 21%),
+ radial-gradient(ellipse at 75% 24%,#8aeec2 0 20%,transparent 23%),
+ radial-gradient(ellipse at 60% 68%,#46b6a8 0 30%,transparent 33%);
+ filter:drop-shadow(0 0 8px #bcffe5);animation:garden-sway 4s infinite alternate;
+}
+#personal-arcade-v1 .garden-plot.crop-mint .garden-flower i,
+#personal-arcade-v1 .garden-plot.crop-mint .garden-flower::after{display:none}
+#personal-arcade-v1 .garden-plot.crop-moon .garden-flower{transform:scale(1.12);filter:drop-shadow(0 0 12px #d9bcff)}
+#personal-arcade-v1 .garden-plot.crop-moon .garden-flower i{background:linear-gradient(#fdfaff,#d6cdfc,#847ad7)}
+#personal-arcade-v1 .garden-plot.crop-moon .garden-flower::after{background:#f4f4ff;box-shadow:0 0 15px 6px #e2cafa}
+#personal-arcade-v1 .garden-plot.growing:not(.mature) .garden-stem{height:43px;bottom:52px}
+#personal-arcade-v1 .garden-plot.growth-stage-0 .garden-stem{height:15px}
+#personal-arcade-v1 .garden-plot.growth-stage-0 .garden-stem i{transform:scale(.48)}
+#personal-arcade-v1 .garden-plot.growth-stage-1 .garden-stem{height:33px}
+#personal-arcade-v1 .garden-plot.growth-stage-2 .garden-stem{height:54px}
+#personal-arcade-v1 .garden-plant-aura{position:absolute;inset:0;pointer-events:none;opacity:0}
+#personal-arcade-v1 .garden-plot.mature .garden-plant-aura{
+ opacity:1;background:radial-gradient(ellipse at 52% 32%,#fff9ca52,transparent 46%);
+ animation:garden-ripe-halo 2.8s infinite alternate;
+}
+#personal-arcade-v1 .garden-plot.is-action-burst .garden-plant-aura{
+ opacity:1;z-index:6;
+ background:radial-gradient(circle at 43% 34%,#fff8e9 0 3px,transparent 5px),
+ radial-gradient(circle at 64% 45%,#c1f7c9 0 4px,transparent 6px),
+ radial-gradient(circle at 27% 55%,#fff1b7 0 3px,transparent 5px),
+ radial-gradient(circle at 74% 21%,#ffd3ef 0 3px,transparent 6px);
+ animation:garden-harvest-spark 1s ease-out both;
+}
+#personal-arcade-v1 .garden-plot.plot-burst-water .garden-plant-aura{filter:hue-rotate(125deg)}
+#personal-arcade-v1 .garden-plot-label{bottom:-5px;gap:2px}
+#personal-arcade-v1 .garden-plot-label b{
+ width:100%;font-size:9px;color:#fff6d8;line-height:1.2;text-align:center;
+ text-shadow:0 2px 5px #0a2538,0 0 7px #162b39;
+}
+#personal-arcade-v1 .garden-plot-label em{
+ min-height:24px;display:grid;place-items:center;font-size:10px;
+ background:#194c48ed;border:1px solid #9ce9c8;color:#f5fff1;
+ box-shadow:0 3px 8px #092a3db9;
+}
+#personal-arcade-v1 .garden-plot-label small{font-size:10px;color:#fffbe0;text-shadow:0 2px 4px #061927}
+#personal-arcade-v1 .garden-pond{
+ left:12%;right:12%;bottom:17px;height:122px;z-index:3;
+ border:5px solid #bdded7a8;border-radius:56% 44% 52% 48%;
+ background:radial-gradient(ellipse at 55% 24%,#d1fff5b8,#4ac8da9c 35%,#143e7fdc 93%);
+ box-shadow:inset 0 0 19px #47fbf89e,0 0 0 4px #264e538a,0 10px 22px #082b3bad,0 0 18px #b0fff7a3;
+}
+#personal-arcade-v1 .garden-pond-shine{inset:7px;border-radius:50%;animation:garden-water-breathe 4.5s ease-in-out infinite alternate}
+#personal-arcade-v1 .garden-stage.is-fishing .garden-pond{
+ box-shadow:inset 0 0 22px #47fbf89e,0 0 0 4px #264e538a,0 0 25px 7px #d1e9ff66;
+}
+#personal-arcade-v1 .garden-pond-tier-3 .garden-pond,
+#personal-arcade-v1 .garden-pond-tier-4 .garden-pond,
+#personal-arcade-v1 .garden-pond-tier-5 .garden-pond{border-color:#f3d6f0;box-shadow:inset 0 0 25px #bdefff,0 0 27px #eab4e8b7}
+#personal-arcade-v1 .garden-fish,
+#personal-arcade-v1 .garden-fish-portrait{
+ display:block;border:0;border-radius:0;background-color:transparent;
+ background-image:url('../assets/arcade-c425b/fish-bestiary.webp');
+ background-repeat:no-repeat;background-size:500% 200%;
+}
+#personal-arcade-v1 .garden-fish{width:54px;height:42px;filter:drop-shadow(0 2px 2px #103c6a9a);animation:arcade-koi-glide 7s ease-in-out infinite alternate}
+#personal-arcade-v1 .garden-fish::after{display:none!important}
+#personal-arcade-v1 .fish-reed,#personal-arcade-v1 .garden-fish-species-reed{background-position:0 0}
+#personal-arcade-v1 .fish-carp,#personal-arcade-v1 .garden-fish-species-carp{background-position:75% 0}
+#personal-arcade-v1 .fish-silver,#personal-arcade-v1 .garden-fish-species-silver{background-position:25% 0}
+#personal-arcade-v1 .fish-koi,#personal-arcade-v1 .garden-fish-species-koi{background-position:100% 0}
+#personal-arcade-v1 .fish-blue,#personal-arcade-v1 .garden-fish-species-blue{background-position:50% 0}
+#personal-arcade-v1 .fish-moonfish,#personal-arcade-v1 .garden-fish-species-moonfish{background-position:0 100%}
+#personal-arcade-v1 .fish-crystal{background-position:75% 100%}
+#personal-arcade-v1 .fish-dragon{background-position:100% 100%}
+#personal-arcade-v1 .garden-fish-a{left:4%;top:8px}
+#personal-arcade-v1 .garden-fish-b{left:49%;top:7px}
+#personal-arcade-v1 .garden-fish-c{left:31%;top:39px}
+#personal-arcade-v1 .garden-fish-d{left:70%;top:48px}
+#personal-arcade-v1 .garden-fish-e{left:4%;top:67px}
+#personal-arcade-v1 .garden-fish-f{left:52%;top:72px}
+#personal-arcade-v1 .garden-fishing-status{font:800 10px system-ui,sans-serif;color:#c9fff0;letter-spacing:.01em}
+#personal-arcade-v1 .garden-fishing-controls .garden-cast-button{min-height:43px;border-radius:30px 8px 8px 30px;font-size:11px}
+#personal-arcade-v1 .garden-fishing-controls .garden-pond-collect{min-height:43px;border-radius:8px 30px 30px 8px;font-size:10px}
+#personal-arcade-v1 .garden-resources .arcade-stat{padding:5px 8px;background:#20464a;border:1px solid #86c5b597}
+#personal-arcade-v1 .garden-catch-card{
+ left:14%;right:14%;top:24%;bottom:auto;display:grid;grid-template-columns:70px 1fr;
+ gap:2px 8px;align-items:center;padding:8px 10px;background:#173b47f2;
+ border:1px solid #f4e1c4;border-radius:13px;box-shadow:0 0 28px #daffec9e;
+ animation:garden-fish-found 1.5s ease-out both;
+}
+#personal-arcade-v1 .garden-catch-card .garden-fish-portrait{width:68px;height:66px;grid-row:span 2}
+#personal-arcade-v1 .garden-catch-card b{font-size:11px;line-height:1.35;color:#fff3d6}
+#personal-arcade-v1 .garden-catch-card small{font-size:8px;color:#bdf1d8;letter-spacing:.04em}
+#personal-arcade-v1 .garden-fish-album{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+#personal-arcade-v1 .garden-fish-entry{
+ grid-template-columns:49px minmax(0,1fr);position:relative;min-height:86px;
+ padding:8px 7px;border:1px solid #8fbeba80;border-radius:9px;
+ background:radial-gradient(ellipse at 15% 15%,#8ed4ce3f,transparent 70%),#18383a;
+}
+#personal-arcade-v1 .garden-fish-entry .garden-fish-art{width:48px;height:50px;grid-row:span 2;filter:drop-shadow(0 2px 7px #061d2e7d)}
+#personal-arcade-v1 .garden-fish-entry .fish-undiscovered{
+ background-image:none;background:#203e44;clip-path:ellipse(40% 46% at 50% 50%);filter:grayscale(1);
+}
+#personal-arcade-v1 .garden-fish-entry .fish-undiscovered::after{content:'?';display:grid;place-items:center;width:100%;height:100%;font:700 21px Georgia,serif;color:#779994}
+#personal-arcade-v1 .garden-fish-entry strong{font-size:10px;color:#fff0d4}
+#personal-arcade-v1 .garden-fish-entry small{font-size:9px;color:#c7dce0}
+#personal-arcade-v1 .garden-fish-entry>b{position:absolute;right:7px;top:6px;font-size:10px}
+#personal-arcade-v1 .garden-fish-entry.fish-dragon.is-discovered{border-color:#edc278;box-shadow:inset 0 0 17px #ffcd7752}
+#personal-arcade-v1 .garden-quick-actions{gap:6px}
+#personal-arcade-v1 .garden-seed{min-height:56px;border:1px solid #9ba8a394}
+#personal-arcade-v1 .garden-seed.selected{outline:2px solid #e4e8b9;outline-offset:-3px}
+
+/* NGỌC PHƯỜNG — lacquered market, physical inspection and jewel gallery. */
+#personal-arcade-v1 .arcade-active-jade{
+ --game-ink:#111b18;--game-panel:#203028;--game-line:#be9b5c66;
+ --game-accent:#9de2b6;--game-gold:#f7dca2;
+}
+#personal-arcade-v1 .jade-stage{
+ height:293px!important;
+ background:linear-gradient(180deg,#10191922,#0c20196e 76%,#080e0cc9),
+ url('../assets/arcade-c425b/jade-market.webp') 50% 55% / cover no-repeat;
+ isolation:isolate;
+}
+#personal-arcade-v1 .jade-stage::before{opacity:.25;background:repeating-linear-gradient(90deg,transparent 0 48px,#fff0bc0c 49px 50px)}
+#personal-arcade-v1 .jade-stage::after{opacity:.35}
+#personal-arcade-v1 .jade-hall-lattice,
+#personal-arcade-v1 .jade-hall-seal,
+#personal-arcade-v1 .jade-lantern,
+#personal-arcade-v1 .jade-table-back,
+#personal-arcade-v1 .jade-table-top,
+#personal-arcade-v1 .jade-table-front{display:none}
+#personal-arcade-v1 .jade-specimen{
+ top:130px;left:calc(50% - 77px);width:154px;height:121px;
+ filter:drop-shadow(0 11px 9px #060e0ed6);animation:jade-enter .28s ease-out;
+}
+#personal-arcade-v1 .jade-rock-face,
+#personal-arcade-v1 .jade-rock-grain,
+#personal-arcade-v1 .jade-rock-vein,
+#personal-arcade-v1 .jade-gem-inner,
+#personal-arcade-v1 .jade-gem-shine,
+#personal-arcade-v1 .jade-polished-window{display:none}
+#personal-arcade-v1 .jade-item-art{
+ position:absolute;inset:-14px -12px -8px;display:block;
+ background-image:url('../assets/arcade-c425b/jade-collection.webp');
+ background-repeat:no-repeat;background-size:500% 200%;
+ background-position:var(--jade-item-x) 0;pointer-events:none;
+ filter:drop-shadow(0 5px 6px #050e0c8c);
+}
+#personal-arcade-v1 .jade-item-art.jade-item-gem{
+ background-position:var(--jade-item-x) 100%;filter:hue-rotate(var(--jade-hue,0deg)) drop-shadow(0 0 11px #a1fbd8be) drop-shadow(0 8px 8px #080e0cc0);
+ animation:jade-jewel-breathe 2.6s ease-in-out infinite alternate;
+}
+#personal-arcade-v1 .jade-item-shade-1{--jade-hue:32deg}
+#personal-arcade-v1 .jade-item-shade-2{--jade-hue:-28deg}
+#personal-arcade-v1 .jade-item-shade-3{--jade-hue:105deg}
+#personal-arcade-v1 .jade-item-shade-4{--jade-hue:165deg}
+#personal-arcade-v1 .jade-item-shade-5{--jade-hue:225deg}
+#personal-arcade-v1 .jade-item-shade-6{--jade-hue:270deg}
+#personal-arcade-v1 .jade-item-shade-7{--jade-hue:0deg}
+#personal-arcade-v1 .jade-scan-target{
+ top:28px;width:34px;height:34px;font-size:13px;background:#163f37e8;
+ border:2px solid #f1d7aa;box-shadow:0 0 0 5px #e2c89147,0 0 16px #93f2d8aa;
+}
+#personal-arcade-v1 .jade-scan-0{left:16px;top:34px}
+#personal-arcade-v1 .jade-scan-1{left:94px;top:61px}
+#personal-arcade-v1 .jade-scan-2{left:37px;top:90px}
+#personal-arcade-v1 .jade-stage-base{
+ bottom:7px;padding:5px 8px;background:#111d19cf;border:1px solid #a48454bb;
+ border-radius:4px;color:#f2d19d;font-size:9px;
+}
+#personal-arcade-v1 .jade-showcase-rough{top:150px;left:calc(50% - 100px);width:200px;height:96px}
+#personal-arcade-v1 .jade-showcase-rough i{
+ width:81px;height:81px;border:0;border-radius:0;
+ background:url('../assets/arcade-c425b/jade-collection.webp') 0 0 / 500% 200% no-repeat;
+ filter:drop-shadow(0 5px 5px #000d);
+}
+#personal-arcade-v1 .jade-showcase-rough i:nth-child(2){background-position:25% 0;top:-4px}
+#personal-arcade-v1 .jade-showcase-rough i:nth-child(3){background-position:50% 0}
+#personal-arcade-v1 .jade-cut-flash{
+ position:absolute;inset:0;z-index:10;pointer-events:none;
+ background:radial-gradient(ellipse at 50% 65%,#fffcd9dd,#a3fadb92 17%,transparent 62%);
+ animation:jade-cut-reveal .95s ease-out both;
+}
+#personal-arcade-v1 .jade-cut-flash::after{
+ content:'';position:absolute;left:50%;top:43%;width:3px;height:125px;transform:rotate(37deg);
+ background:#fff9de;box-shadow:0 0 12px 6px #daf9b0;animation:jade-saw-strike .65s ease-in-out both;
+}
+#personal-arcade-v1 .jade-control-panel{background:linear-gradient(150deg,#223b2e,#101d1d)}
+#personal-arcade-v1 .jade-welcome{background:#22392e;border:1px solid #bd9d67;border-radius:5px;padding:12px}
+#personal-arcade-v1 .jade-welcome strong{font-family:Georgia,serif;font-size:17px}
+#personal-arcade-v1 .jade-readout{background:#243c32;border:1px solid #867d5f;border-radius:5px}
+#personal-arcade-v1 .jade-clue{background:#112922ac;border-radius:3px;min-height:36px}
+#personal-arcade-v1 .jade-main-actions .arcade-button.gold,
+#personal-arcade-v1 .jade-welcome .arcade-button.gold{
+ border-radius:4px 16px 4px 16px;background:linear-gradient(130deg,#f6deb0,#b88948);
+ border-color:#f4daa2;color:#3c291b;
+}
+#personal-arcade-v1 .jade-main-actions .arcade-button.power{
+ border-radius:16px 4px 16px 4px;background:linear-gradient(130deg,#4a9e75,#255d4a);
+ border-color:#ace5bf;
+}
+#personal-arcade-v1 .jade-reveal{
+ position:relative;overflow:hidden;border:2px solid #e4bf7c;border-radius:5px 17px;
+ background:radial-gradient(ellipse at 50% 0,#b7d5a93a,transparent 65%),#1d392c;
+ box-shadow:0 5px 24px #051d17a8,inset 0 0 25px #d6c48e22;
+}
+#personal-arcade-v1 .jade-reveal strong{font-size:21px;color:#fff0c1;text-shadow:0 0 10px #e0c88682}
+#personal-arcade-v1 .jade-accounting{gap:4px;margin-top:7px}
+#personal-arcade-v1 .jade-accounting>div{
+ padding:5px 2px;border:0;border-bottom:1px solid #a08b5f;background:transparent;border-radius:0;
+}
+#personal-arcade-v1 .jade-accounting small{font-size:7px;color:#9eb8a8}
+#personal-arcade-v1 .jade-accounting b{font-size:12px;margin-top:2px}
+#personal-arcade-v1 .jade-market-intro{
+ min-height:122px;background:linear-gradient(90deg,#091d18b5,#16312863),
+ url('../assets/arcade-c425b/jade-market.webp') 52% 37% / cover no-repeat;
+ border:1px solid #d3a95d;border-radius:4px;box-shadow:inset 0 0 16px #0b160dd1;
+}
+#personal-arcade-v1 .jade-market-intro::before,
+#personal-arcade-v1 .jade-market-intro::after{display:none}
+#personal-arcade-v1 .jade-market-intro>strong{color:#ffe6a7;font:700 21px Georgia,serif;text-shadow:0 2px 8px #000}
+#personal-arcade-v1 .jade-market-route{
+ border:1px solid #a98b54;background:#1b3127;border-radius:2px;padding:5px 4px;
+}
+#personal-arcade-v1 .jade-market-stop{
+ min-height:38px;border-radius:3px 11px 3px 11px;
+ border:1px solid #698979;background:#28483a;color:#f5eccf;
+}
+#personal-arcade-v1 .jade-market-stop.is-active{
+ background:linear-gradient(130deg,#b5965f,#4f7955);border-color:#f8dba5;
+ color:#fff8dd;box-shadow:0 0 11px #e8c27b5c;
+}
+#personal-arcade-v1 .jade-market-card{
+ border:1px solid #ae9064;border-radius:4px;background:#26382d;
+ box-shadow:0 6px 16px #06140dbd;
+}
+#personal-arcade-v1 .jade-stall-scene{
+ background:linear-gradient(180deg,#07161040,#1b201858),
+ url('../assets/arcade-c425b/jade-market.webp') 32% 38% / cover no-repeat;
+}
+#personal-arcade-v1 .jade-stall-awning,
+#personal-arcade-v1 .jade-stall-merchant,
+#personal-arcade-v1 .jade-stall-lamp{display:none}
+#personal-arcade-v1 .jade-stall-counter{background:#241c17bf;border-color:#b59460;height:23px;bottom:8px}
+#personal-arcade-v1 .jade-stall-stone{
+ width:72px;height:69px;bottom:25px;border:0;border-radius:0;
+ background-image:url('../assets/arcade-c425b/jade-collection.webp');
+ background-repeat:no-repeat;background-size:500% 200%;
+ background-position:var(--jade-item-x) 0;
+ box-shadow:none;text-shadow:0 2px 5px #070b0c;filter:drop-shadow(0 6px 3px #07170ca8);
+}
+#personal-arcade-v1 .jade-stall-stone span{
+ position:absolute;bottom:2px;left:calc(50% - 9px);display:grid;place-items:center;
+ width:18px;height:18px;border:1px solid #f2e0be;border-radius:50%;
+ background:#1a4539e8;color:#fff4c9;font-size:10px;
+}
+#personal-arcade-v1 .jade-stall-stone.is-selected{
+ filter:drop-shadow(0 0 10px #f7ebc1) brightness(1.16);
+}
+#personal-arcade-v1 .jade-stall-stone.is-selected::after{
+ content:'';position:absolute;inset:-4px;border:2px solid #ffe7ae;border-radius:48%;pointer-events:none;
+}
+#personal-arcade-v1 .jade-sample-pebble,
+#personal-arcade-v1 .jade-stock-pebble{
+ border:0;border-radius:0!important;box-shadow:none;
+ background-image:url('../assets/arcade-c425b/jade-collection.webp')!important;
+ background-repeat:no-repeat!important;background-size:500% 200%!important;
+ filter:drop-shadow(0 4px 5px #0916129e);
+}
+#personal-arcade-v1 .jade-shell-0{background-position:0 0!important}
+#personal-arcade-v1 .jade-shell-1{background-position:25% 0!important}
+#personal-arcade-v1 .jade-shell-2{background-position:50% 0!important}
+#personal-arcade-v1 .jade-shell-3{background-position:75% 0!important}
+#personal-arcade-v1 .jade-shell-4{background-position:100% 0!important}
+#personal-arcade-v1 .jade-sample-pebble i{display:none}
+#personal-arcade-v1 .jade-sample-pick{
+ border:1px solid #ab9166;border-radius:5px;background:linear-gradient(145deg,#4b5140,#263a30);
+}
+#personal-arcade-v1 .jade-market-tray summary{
+ min-height:43px;border-radius:3px;background:#1a3329;border:1px solid #b19e70;
+ font-size:11px;color:#f2ddaa;
+}
+#personal-arcade-v1 .jade-market-bundles{
+ border-top:1px solid #9d8d679e;padding-top:9px;
+}
+#personal-arcade-v1 .jade-market-bundles .arcade-button{
+ border-radius:4px!important;min-height:37px!important;font-size:10px!important;
+}
+#personal-arcade-v1 .jade-vault-card{
+ grid-template-columns:61px minmax(0,1fr);border:1px solid #a7935e;
+ border-radius:3px 13px;background:#25382d;padding:9px 8px;
+}
+#personal-arcade-v1 .jade-vault-gem,
+#personal-arcade-v1 .jade-collectible-art{
+ display:block;border:0;background-image:url('../assets/arcade-c425b/jade-collection.webp');
+ background-repeat:no-repeat;background-size:500% 200%;
+ background-position:var(--jade-item-x) 100%;
+ filter:hue-rotate(var(--jade-hue,0deg)) drop-shadow(0 0 7px #9bdbc280) drop-shadow(0 4px 3px #061b15a8);
+}
+#personal-arcade-v1 .jade-vault-gem{width:60px;height:61px;align-self:center}
+#personal-arcade-v1 .jade-exhibit>span.jade-collectible-art{width:58px;height:58px;flex-shrink:0}
+#personal-arcade-v1 .jade-exhibit{
+ border-color:#bda365;border-radius:2px 12px;background:#23382b;
+}
+#personal-arcade-v1 .jade-album-slot.is-found{padding:0;border:1px solid #c2a668;background:#1a3e31}
+#personal-arcade-v1 .jade-album-slot .jade-collectible-art{width:100%;height:100%}
+#personal-arcade-v1 .jade-stock-item{border-color:#92875e;background:#21382e}
+#personal-arcade-v1 .jade-stock-item .jade-stock-pebble{width:53px;height:46px}
+
+@keyframes garden-ripe-halo{to{opacity:.25;transform:scale(1.07)}}
+@keyframes garden-harvest-spark{from{opacity:1;transform:translateY(14px) scale(.65)}to{opacity:0;transform:translateY(-29px) scale(1.25)}}
+@keyframes garden-water-breathe{to{transform:translateX(5px) scale(.97);opacity:.65}}
+@keyframes garden-fish-found{0%{transform:translateY(19px) scale(.75);opacity:0}35%{transform:translateY(0) scale(1.05);opacity:1}80%{opacity:1}100%{opacity:0;transform:translateY(-8px)}}
+@keyframes jade-jewel-breathe{to{filter:hue-rotate(var(--jade-hue,0deg)) drop-shadow(0 0 19px #b3f8d5) drop-shadow(0 8px 10px #060e0d);transform:scale(1.025)}}
+@keyframes jade-cut-reveal{0%{opacity:0}15%{opacity:1}100%{opacity:0}}
+@keyframes jade-saw-strike{0%{opacity:0;transform:rotate(37deg) translateY(-80px)}35%{opacity:1}100%{opacity:0;transform:rotate(37deg) translateY(70px)}}
+
+@media(max-width:360px){
+ #personal-arcade-v1 .garden-stage{height:322px!important}
+ #personal-arcade-v1 .garden-stage.garden-expanded{height:443px!important}
+ #personal-arcade-v1 .garden-plot-area{left:5%;right:5%;gap:7px}
+ #personal-arcade-v1 .garden-plot{height:126px}
+ #personal-arcade-v1 .garden-pond{left:10%;right:10%;height:112px}
+ #personal-arcade-v1 .garden-fish{width:46px;height:36px}
+ #personal-arcade-v1 .garden-fish-album{grid-template-columns:1fr}
+ #personal-arcade-v1 .jade-stage{height:282px!important}
+ #personal-arcade-v1 .jade-stall-stone{width:61px;height:60px}
+ #personal-arcade-v1 .jade-stock-item .jade-stock-pebble{width:47px;height:42px}
+}
+@media(prefers-reduced-motion:reduce){
+ #personal-arcade-v1 .garden-plant-aura,
+ #personal-arcade-v1 .garden-pond-shine,
+ #personal-arcade-v1 .garden-catch-card,
+ #personal-arcade-v1 .jade-item-art,
+ #personal-arcade-v1 .jade-cut-flash,
+ #personal-arcade-v1 .jade-cut-flash::after{animation:none!important}
+}

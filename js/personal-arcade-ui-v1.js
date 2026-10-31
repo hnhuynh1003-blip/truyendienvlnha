@@ -382,26 +382,29 @@
   </section>`;
  }
  function gardenPanel(s,time){
-  const g=s.garden,fishHit=activeFeedback('fish',time);
+  const g=s.garden,fishHit=activeFeedback('fish',time),plotHit=activeFeedback('garden-plot',time);
   const line=g.line,waiting=!!line&&time<line.biteAt,biting=!!line&&!waiting;
   const discovered=Object.values(g.fishAlbum).filter(count=>count>0).length;
   const bed=(b,index)=>{
    const mature=b.status==='growing'&&time>=b.readyAt;
+   const growthStage=b.status==='growing'?Math.max(0,Math.min(3,
+    Math.floor((1-Math.max(0,b.readyAt-time)/core.CROPS[b.crop].grow)*3))):0;
    const action=b.status==='empty'?'plant-'+index:b.status==='dry'?'water-'+index:'harvest-'+index;
    const text=b.status==='empty'?'＋ Gieo':b.status==='dry'?'💧 Tưới':mature?'✦ Thu':'Đang lớn';
    const caption=b.status==='empty'?'Đất trống':b.status==='dry'?'Thiếu nước':mature?'Đã chín':countdown(b.readyAt-time);
    const disabled=b.status==='empty'?!g.seeds:b.status==='dry'?!g.water:!mature;
-   return `<button class="garden-plot ${b.status} crop-${b.crop} ${mature?'mature':''}" type="button" data-arcade-action="${action}" ${disabled?'disabled':''}
+   return `<button class="garden-plot ${b.status} crop-${b.crop} growth-stage-${growthStage} ${mature?'mature':''} ${plotHit?.index===index?'is-action-burst plot-burst-'+plotHit.action:''}" type="button" data-arcade-action="${action}" ${disabled?'disabled':''}
      aria-label="Luống ${index+1}: ${text}, ${caption}">
      <span class="garden-soil"></span><span class="garden-stem"><i></i><i></i><i></i></span>
      <span class="garden-flower"><i></i><i></i><i></i><i></i><i></i></span>
+     <span class="garden-plant-aura" aria-hidden="true"></span>
      <span class="garden-plot-label"><b>LUỐNG ${String(index+1).padStart(2,'0')} · ${b.status==='empty'?'✿':core.CROPS[b.crop].name}</b><small ${b.status==='growing'&&!mature?`data-arcade-until="${b.readyAt}"`:''}>${caption}</small><em>${text}</em></span></button>`;
   };
   return `<section class="arcade-world arcade-world-garden ${biting?'is-biting':''}" aria-label="Vườn Sương">
     <header class="arcade-world-heading"><div><span class="arcade-eyebrow">03 / CHILL FARM</span>
       <h3>Vườn Sương</h3><p>Gieo giống, mở rộng vườn và câu cá dưới trăng.</p></div>
       <span class="arcade-world-live">MIST / GARDEN</span></header>
-    <div class="arcade-stage garden-stage ${g.plots>2?'garden-expanded':''} ${line?'is-fishing':''} ${biting?'is-biting':''}">
+    <div class="arcade-stage garden-stage garden-pond-tier-${g.pondTier} garden-harvests-${Math.min(3,Math.floor(g.harvests/10))} ${g.plots>2?'garden-expanded':''} ${line?'is-fishing':''} ${biting?'is-biting':''}">
       <div class="garden-mist garden-mist-a"></div><div class="garden-mist garden-mist-b"></div>
       <div class="garden-cloud garden-cloud-a"></div><div class="garden-cloud garden-cloud-b"></div>
       <span class="garden-moon" aria-hidden="true"></span>
@@ -421,14 +424,12 @@
       <span class="garden-firefly garden-firefly-right" aria-hidden="true"></span>
       <div class="garden-plot-area">${g.beds.map(bed).join('')}</div>
       <div class="garden-pond"><div class="garden-pond-shine"></div>
-        <span class="garden-fish garden-fish-a"></span><span class="garden-fish garden-fish-b"></span>
-        <span class="garden-fish garden-fish-c"></span><span class="garden-fish garden-fish-d"></span>
-        <span class="garden-fish garden-fish-e"></span><span class="garden-fish garden-fish-f"></span>
+        ${['a','b','c','d','e','f'].map((id,i)=>`<span class="garden-fish garden-fish-${id} garden-fish-species-${['reed','carp','silver','koi','blue','moonfish'][i]}"></span>`).join('')}
         <span class="garden-lotus garden-lotus-a" aria-hidden="true"></span><span class="garden-lotus garden-lotus-b" aria-hidden="true"></span>
         <span class="garden-bubble garden-bubble-a"></span><span class="garden-bubble garden-bubble-b"></span>
         <span class="garden-bubble garden-bubble-c"></span>
         ${line?'<span class="garden-fishing-line"></span><span class="garden-float" aria-hidden="true"></span>':''}</div>
-      ${fishHit?`<div class="garden-catch-pop" role="status">${fishHit.label}</div>`:''}
+      ${fishHit?`<div class="garden-catch-pop garden-catch-card" role="status"><span class="garden-fish-portrait fish-${fishHit.fishId||'reed'}" aria-hidden="true"></span><b>${fishHit.label}</b><small>✦ THÊM VÀO NHẬT KÝ CÁ</small></div>`:''}
     </div>
     <div class="arcade-control-panel">
       <div class="garden-fishing-status" role="status" aria-live="polite">${biting?'✦ CÁ CẮN CÂU!':waiting?
@@ -458,7 +459,7 @@
       <div class="garden-fish-album" data-arcade-panel="garden-album" aria-label="Sổ sưu tầm cá">${Object.entries(core.FISH_SPECIES).map(([id,fish])=>{
        const count=g.fishAlbum[id],known=count>0;
        return `<div class="garden-fish-entry fish-${id} ${known?'is-discovered':'is-unknown'}">
-        <span class="garden-fish-art" aria-hidden="true">${known?fish.icon:'?'}</span>
+        <span class="garden-fish-art garden-fish-portrait ${known?'fish-'+id:'fish-undiscovered'}" aria-hidden="true"></span>
         <div><strong>${known?fish.name:'Chưa khám phá'}</strong><small>${known?fish.rarity+' · Kỷ lục '+g.fishBest[id]+' cm':fish.rarity}</small></div>
         <b>${known?'×'+count:'◈'}</b></div>`;}).join('')}</div>
       <div class="arcade-upgrade-grid arcade-garden-upgrades" data-arcade-panel="garden-upgrades">
@@ -477,7 +478,7 @@
   updateWalletHeader(s);
   if(!s){element.innerHTML='<div class="arcade-empty">Đăng nhập tài khoản để lưu tiến trình minigame riêng trên thiết bị này.</div>';lastRenderedKey=null;return true;}
   const time=now(),panel=tab==='neon'?neonPanel(s):tab==='mine'?minePanel(s,time):
-   tab==='jade'?root.DuduPersonalJadeUIV1?.panel(s)||'<div>Ngọc Phường đang mở cửa…</div>':gardenPanel(s,time);
+   tab==='jade'?root.DuduPersonalJadeUIV1?.panel(s,activeFeedback('jade-cut',time))||'<div>Ngọc Phường đang mở cửa…</div>':gardenPanel(s,time);
   // Different games are separate pages: never land halfway down the new one
   // just because the previous game was scrolled near its workshop controls.
   const previousScroll=resetScrollOnPaint?0:
@@ -588,6 +589,7 @@
  function interact(action){
   tick();if(!state||!activeKey||exchangeBusy)return false;
   const previousState=state;
+  const hookedFish=action==='reel-line'?state.garden.line?.fishId:null;
   const result=core.act(state,action,now(),Math.random());
   if(!result.ok){notice=result.reason;noticeUntil=now()+3500;error=true;render();return false;}
   state=result.state;
@@ -601,7 +603,9 @@
    action==='mine'||action==='mine-burst'?{type:'mine',ore:action==='mine-burst'?'burst':result.label,
    quantity:result.quantity||1,at:now()}:/^neon-order-[012]$/.test(action)?
     {type:'neon-order',success:!result.label.includes('Nhầm'),at:now()}:
-    action==='reel-line'?{type:'fish',label:result.label,at:now()}:null;
+    action==='reel-line'?{type:'fish',fishId:hookedFish,label:result.label,at:now()}:
+    /^(plant|water|harvest)-[0-3]$/.test(action)?{type:'garden-plot',action:action.split('-')[0],index:Number(action.slice(-1)),at:now()}:
+    action==='jade-cut'?{type:'jade-cut',at:now()}:null;
   notice=result.label==='stone'?'Nhặt được Đá.':result.label==='coal'?'Nhặt được Than.':
    result.label==='iron'?'Nhặt được Sắt.':result.label==='crystal'?'✦ Nhặt được Tinh thạch!':result.label;
   noticeUntil=now()+2500;error=false;save(state,previousState);render();return true;
