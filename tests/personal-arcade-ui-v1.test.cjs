@@ -240,7 +240,7 @@ test('C4.1 fishing presents a two-step reel control and an eight-species album',
  assert.equal(window.DuduPersonalArcadeUIV1.interact('cast-line'),true);
  assert.match(host.innerHTML,/data-arcade-action="reel-line" disabled/);
  assert.match(host.innerHTML,/garden-fishing-line/);
- assert.match(host.innerHTML,/Phao đang chờ/);
+ assert.match(host.innerHTML,/Đang chờ…/);
  assert.equal(JSON.parse(db.get(key)).garden.fish,0);
 });
 test('Arcade UI requires login before any game save',()=>{

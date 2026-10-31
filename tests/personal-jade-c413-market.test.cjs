@@ -116,7 +116,9 @@ test('C4.13 Ngọc Phường panel offers quick packs, handpicked stones and a c
  for(const action of ['jade-buy-0','jade-buy-pack-0-1','jade-buy-pack-0-3',
   'jade-buy-pack-0-5','jade-pick-0-0','jade-pick-0-1','jade-pick-0-2'])
   assert.ok(html.includes('data-arcade-action="'+action+'"'),action);
- assert.match(html,/Mở sạp · So bì đá và thử đèn/);
+ assert.match(html,/Tự lựa 3 viên/);
+ assert.match(html,/data-jade-preview-slot="1"/);
+ assert.match(html,/class="jade-sample-pick"/);
  s.coins=200;
  s=play(s,'jade-buy-pack-0-3',.32).state;
  html=window.DuduPersonalJadeUIV1.panel(s);

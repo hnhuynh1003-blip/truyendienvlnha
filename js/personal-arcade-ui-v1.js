@@ -182,7 +182,7 @@
         <div><span>KHÁCH ĐANG CHƠI</span><strong>${n.running?service.guests:0}<small>/${n.stations}</small></strong></div>
         <div><span>DOANH THU / LƯỢT</span><strong>+${fmt(service.revenue)}<small> Xu</small></strong></div>
         <div><span>CHI PHÍ / LƯỢT</span><strong>−${fmt(service.expense)}<small> Xu</small></strong></div></div>
-      <div class="neon-service-timing"><div><b>◉ Phục vụ khách</b><small>45 giây/lượt · lãi ${fmt(service.profit)} Xu · đã phục vụ <b data-neon-served>${n.guestsServed}</b> khách</small></div>
+      <div class="neon-service-timing"><div><b>◉ Phục vụ khách</b><small>+${fmt(service.profit)} Xu/lượt · <b data-neon-served>${n.guestsServed}</b> khách</small></div>
         <span data-neon-session-time>${n.running?Math.ceil((core.NEON_SERVICE_INTERVAL-n.sessionMs)/1000)+'s':'Tạm dừng'}</span></div>
       <div class="neon-service-track" role="progressbar" aria-label="Tiến độ lượt phục vụ" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(n.sessionMs/core.NEON_SERVICE_INTERVAL*100)}" data-neon-service-track><i style="width:${n.sessionMs/core.NEON_SERVICE_INTERVAL*100}%"></i></div>
       <div class="neon-expansion" data-arcade-panel="neon-upgrades">
@@ -248,7 +248,7 @@
         <span class="mine-tap-prompt">${repairing?'ĐANG SỬA CUỐC':m.durability?'⛏ CHẠM ĐỂ ĐÀO':'CUỐC ĐÃ HẾT ĐỘ BỀN'}</span></button>
       ${hit?`<div class="mine-drop" aria-live="polite">${hit.ore==='burst'?`✦ +${hit.quantity} QUẶNG!`:`+${hit.quantity} ${oreGlyphs[hit.ore]} ${oreLabels[hit.ore]}`}</div>`:''}
       <div class="mine-bottom-hud"><div class="mine-durability-circle" style="--mine-durability:${m.durability/max*100}%"><span>CUỐC</span><b>${m.durability}<small>/${max}</small></b></div>
-        <span>${repairing?`🔧 Tự sửa: <span data-arcade-until="${m.repairUntil}">${countdown(m.repairUntil-time)}</span>`:'Mỗi cú đào trừ 1 độ bền'}</span></div>
+        <span>${repairing?`🔧 <span data-arcade-until="${m.repairUntil}">${countdown(m.repairUntil-time)}</span>`:'⛏ Độ bền cuốc'}</span></div>
     </div>
     <div class="arcade-control-panel">
       <div class="arcade-panel-heading" data-arcade-panel="mine-map"><div><span class="arcade-eyebrow">BẢN ĐỒ KHAI THÁC</span><h4>Chọn địa tầng</h4></div><span class="mine-gear-label">Đèn cấp ${m.lantern}/3</span></div>
@@ -257,7 +257,7 @@
       ].map(([name,sub,dug,lamp],i)=>{const unlocked=core.zoneUnlocked(m,i);
        return `<button type="button" class="mine-zone ${m.zone===i?'selected':''}" data-arcade-action="mine-zone-${i}" ${unlocked?'':'disabled'}>
        <b>${i===0?'Ⅰ':i===1?'Ⅱ':'Ⅲ'} ${name}</b><small>${unlocked?sub:`${Math.max(0,dug-m.dug)} lượt · đèn ${lamp}`}</small></button>`;}).join('')}</div>
-      <div class="mine-energy"><div><b>⚡ Phá mạch quặng</b><small>Đào thường để nạp năng lượng. Phá mạch nhận 3 quặng/lần.</small></div><strong>${m.charge}/${maxEnergy}</strong></div>
+      <div class="mine-energy"><div><b>⚡ Phá mạch quặng</b><small>Đào để nạp năng lượng</small></div><strong>${m.charge}/${maxEnergy}</strong></div>
       <div class="mine-charge-track" role="progressbar" aria-label="Năng lượng phá mạch" aria-valuenow="${m.charge}" aria-valuemax="${maxEnergy}"><i style="width:${m.charge/maxEnergy*100}%"></i></div>
       ${button('⚡ PHÁ MẠCH · 5 NĂNG LƯỢNG','mine-burst','power mine-burst',repairing||m.durability<3||m.charge<5)}
       <div class="arcade-mine-sell">${button('Bán quặng · '+all+' mẫu','sell-ores','market',!all)}</div>
@@ -313,6 +313,13 @@
       <div class="garden-cloud garden-cloud-a"></div><div class="garden-cloud garden-cloud-b"></div>
       <span class="garden-moon" aria-hidden="true"></span>
       <div class="garden-mountains"></div><div class="garden-grass"></div>
+      <div class="garden-scenery" aria-hidden="true">
+       <span class="garden-sakura garden-sakura-left"></span><span class="garden-sakura garden-sakura-right"></span>
+       <span class="garden-wildflowers garden-bloom-1"></span><span class="garden-wildflowers garden-bloom-2"></span>
+       <span class="garden-wildflowers garden-bloom-3"></span><span class="garden-wildflowers garden-bloom-4"></span>
+       <span class="garden-wildflowers garden-bloom-5"></span><span class="garden-wildflowers garden-bloom-6"></span>
+       <span class="garden-rock garden-rock-1"></span><span class="garden-rock garden-rock-2"></span>
+      </div>
       <span class="garden-shore-lantern garden-lantern-left" aria-hidden="true"></span>
       <span class="garden-shore-lantern garden-lantern-right" aria-hidden="true"></span>
       <span class="garden-bank-reeds garden-reeds-left" aria-hidden="true"></span>
@@ -322,23 +329,26 @@
       <div class="garden-plot-area">${g.beds.map(bed).join('')}</div>
       <div class="garden-pond"><div class="garden-pond-shine"></div>
         <span class="garden-fish garden-fish-a"></span><span class="garden-fish garden-fish-b"></span>
+        <span class="garden-fish garden-fish-c"></span><span class="garden-fish garden-fish-d"></span>
+        <span class="garden-fish garden-fish-e"></span><span class="garden-fish garden-fish-f"></span>
+        <span class="garden-lotus garden-lotus-a" aria-hidden="true"></span><span class="garden-lotus garden-lotus-b" aria-hidden="true"></span>
         <span class="garden-bubble garden-bubble-a"></span><span class="garden-bubble garden-bubble-b"></span>
         <span class="garden-bubble garden-bubble-c"></span>
         ${line?'<span class="garden-fishing-line"></span><span class="garden-float" aria-hidden="true"></span>':''}</div>
       ${fishHit?`<div class="garden-catch-pop" role="status">${fishHit.label}</div>`:''}
     </div>
     <div class="arcade-control-panel">
-      <div class="garden-fishing-status" role="status" aria-live="polite">${biting?'✦ Cá cắn câu! Thu ngay trước khi cá tuột':waiting?
-       `Phao đang chờ… <span data-arcade-until="${line.biteAt}">${countdown(line.biteAt-time)}</span>`:
-       'Hồ lặng gió · Hãy thả câu để khám phá'}</div>
+      <div class="garden-fishing-status" role="status" aria-live="polite">${biting?'✦ CÁ CẮN CÂU!':waiting?
+       `Đang chờ… <span data-arcade-until="${line.biteAt}">${countdown(line.biteAt-time)}</span>`:
+       '✧ HỒ SƯƠNG YÊN Ả'}</div>
       <div class="garden-fishing-controls" role="group" aria-label="Điều khiển câu cá">
        ${button(biting?`🎣 THU CÂU · <span data-arcade-until="${line.escapeAt}">${countdown(line.escapeAt-time)}</span>`:
         waiting?'🎣 ĐANG CHỜ CÁ CẮN':g.bait?'🎣 THẢ CÂU · '+g.bait+' MỒI':'🎣 CHƯA CÓ MỒI',
         line?'reel-line':'cast-line','power garden-cast-button',waiting||!line&&!g.bait)}
        <button type="button" class="garden-pond-collect ${g.bubbleReady?'is-ready':''}" data-arcade-action="catch-bubble" ${g.bubbleReady?'':'disabled'}>
         ${g.bubbleReady?'✦ Thu bọt':`💧 <span data-arcade-until="${g.bubbleAt}">${countdown(g.bubbleAt-time)}</span>`}</button></div>
-      <div class="garden-resources">${hud('NƯỚC HỨNG SƯƠNG','💧 '+g.water+'/'+g.waterCap,g.water===g.waterCap?'Bình đã đầy':'Hồi mỗi 15 phút')}
-      ${hud('HẠT GIỐNG','✿ '+g.seeds,'Có thể mua thêm')}</div>
+      <div class="garden-resources">${hud('NƯỚC','💧 '+g.water+'/'+g.waterCap,'Hồi mỗi 15 phút')}
+      ${hud('HẠT GIỐNG','✿ '+g.seeds,'Trong túi hạt')}</div>
       <div class="arcade-panel-heading" data-arcade-panel="garden-seeds"><div><span class="arcade-eyebrow">TÚI HẠT GIỐNG</span><h4>Chọn giống trồng</h4></div></div>
       <div class="garden-seed-list" data-arcade-panel="garden-seeds">${Object.entries(core.CROPS).map(([id,crop])=>`<button type="button" class="garden-seed ${g.crop===id?'selected':''}" data-arcade-action="crop-${id}" ${core.cropUnlocked(g,id)?'':'disabled'}>
        <b>${id==='bloom'?'✿':id==='mint'?'❧':'☾'} ${crop.name}</b><small>${core.cropUnlocked(g,id)?`${crop.grow/60000} phút · +${fmt(crop.value)} Xu`:`Mở sau ${id==='mint'?10:30} lần thu`}</small></button>`).join('')}</div>
@@ -580,6 +590,17 @@
    }
    const control=event.target.closest('button');
    if(!control||control.disabled)return;
+   if(control.dataset.jadePreviewSlot!=null){
+    const tray=control.closest('.jade-market-card')?.querySelector('.jade-market-tray');
+    if(tray){
+     tray.open=true;
+     root.DuduPersonalJadeUIV1?.rememberTray?.(Number(tray.dataset.marketStall),true);
+     const slot=Number(control.dataset.jadePreviewSlot);
+     const specimen=tray.querySelectorAll('.jade-market-sample')[slot];
+     specimen?.scrollIntoView?.({block:'nearest',behavior:'smooth'});
+    }
+    return;
+   }
    const next=control.dataset.arcadeTab;
    if(next&&modeLabels[next]){
     tick();if(next!==tab)resetScrollOnPaint=true;

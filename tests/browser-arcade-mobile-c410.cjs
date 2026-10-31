@@ -92,7 +92,7 @@ async function main(){
    assert.ok(layout.closeLeft>=layout.walletRight-2,'C4.15 R2 close X clears the Arcade wallet action');
    assert.equal(layout.homeBar,'none','C4.15 duplicate bottom line is hidden');
   }
-  // C4.17: four different game worlds, visible scene titles and a tappable dock.
+  // C4.18: four different game worlds with no redundant heading above the stage.
   const stageLooks=new Set();
   for(const game of ['neon','mine','garden','jade']){
    await tab(game).click();
@@ -111,8 +111,8 @@ async function main(){
      overflow:document.querySelector('.arcade-scroll').scrollWidth-
       document.querySelector('.arcade-scroll').clientWidth};
    });
-   assert.equal(look.display,'flex',game+' title must be shown above the playing field');
-   assert.ok(look.headingHeight>=60,game+' has a legible game masthead');
+   assert.equal(look.display,'none',game+' removes its duplicate titleplate');
+   assert.equal(look.headingHeight,0,game+' dedicates screen space to gameplay');
    assert.ok(look.stageTop>=look.titleBottom-2,game+' stage must clear the masthead');
    assert.ok(look.iconWidth>=26&&look.iconHeight>=26,game+' dock icon is substantial');
    assert.ok(look.overflow<=2,game+' game world has no horizontal clipping');
@@ -146,7 +146,11 @@ async function main(){
   // is still exercised in unit tests for old-player compatibility.
   await action('jade-open-market').click();
   const market=page.locator('.arcade-sheet-overlay');
-  await market.locator('.jade-market-tray').first().locator('summary').click();
+  assert.equal(await market.locator('.jade-stall-stone').count(),3,
+   'C4.18 the market has three tangible rough stones on its playable stall');
+  await market.locator('.jade-stall-stone').nth(1).click();
+  assert.equal(await market.locator('.jade-market-tray').first().evaluate(el=>el.open),true,
+   'Touching a stone opens the matching hand-pick tray');
   await market.locator('button[data-arcade-action="jade-pick-0-1"]').click();
   const basket=await page.evaluate(()=>JSON.parse(localStorage.getItem(
    'dudu-personal-arcade:v1:sandbox%3Ac410-mobile-tester'))?.jade);

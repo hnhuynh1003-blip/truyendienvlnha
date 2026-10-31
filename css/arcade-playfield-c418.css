@@ -1,0 +1,404 @@
+/* C4.18 — Let the scene do the storytelling: compact HUD, living garden, playable jade stalls. */
+#personal-arcade-v1 .arcade-world-heading{display:none!important}
+#personal-arcade-v1 .arcade-scroll{padding-bottom:0}
+#personal-arcade-v1 .arcade-control-panel{padding:9px 11px 11px}
+#personal-arcade-v1 .arcade-quick-drawers{margin-top:9px;padding-top:8px}
+#personal-arcade-v1 .arcade-drawer-trigger{min-height:55px;gap:4px;padding:6px 3px}
+#personal-arcade-v1 .arcade-drawer-trigger>span{width:26px;height:26px;font-size:17px}
+#personal-arcade-v1 .arcade-quick-drawers-quad .arcade-drawer-trigger{min-height:52px}
+#personal-arcade-v1 .arcade-sheet-body{gap:8px;padding:8px}
+#personal-arcade-v1 .neon-service-stats{margin-bottom:6px;gap:4px}
+#personal-arcade-v1 .neon-service-stats>div{padding:7px 5px}
+#personal-arcade-v1 .neon-service-stats span{min-height:17px;font-size:7px}
+#personal-arcade-v1 .neon-service-stats strong{font-size:14px}
+#personal-arcade-v1 .neon-service-timing{margin-bottom:3px}
+#personal-arcade-v1 .neon-service-timing small{margin-top:1px}
+#personal-arcade-v1 .neon-service-track{margin-bottom:7px}
+#personal-arcade-v1 .arcade-world-mine .arcade-button.mine-burst{min-height:40px;margin-bottom:7px}
+#personal-arcade-v1 .mine-energy{margin:1px 0 4px}
+#personal-arcade-v1 .mine-energy small{font-size:8px;margin-top:1px}
+#personal-arcade-v1 .mine-charge-track{margin-bottom:5px}
+#personal-arcade-v1 .arcade-mine-sell .arcade-button{min-height:33px}
+
+/* The garden's two starter plots remain the ONLY playable plots.
+   The trees, wildflowers and koi are decoration; they cannot generate loot. */
+#personal-arcade-v1 .garden-stage{height:325px}
+#personal-arcade-v1 .garden-stage.garden-expanded{height:440px}
+#personal-arcade-v1 .garden-plot-area{top:35px;left:12%;right:12%;gap:14px}
+#personal-arcade-v1 .garden-plot{height:120px}
+#personal-arcade-v1 .garden-plot-label{bottom:-14px;gap:3px}
+#personal-arcade-v1 .garden-plot-label b{font-size:8px}
+#personal-arcade-v1 .garden-plot-label small{display:none}
+#personal-arcade-v1 .garden-plot.growing:not(.mature) .garden-plot-label small{
+ display:block;width:100%;font-size:8px;color:#fff0be;
+}
+#personal-arcade-v1 .garden-plot.growing:not(.mature) .garden-plot-label em{display:none}
+#personal-arcade-v1 .garden-plot-label em{font-size:8px;padding:3px 9px}
+#personal-arcade-v1 .garden-scenery{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden}
+#personal-arcade-v1 .garden-sakura{
+ position:absolute;top:5px;width:95px;height:218px;filter:drop-shadow(0 9px 12px #182a4e88);
+}
+#personal-arcade-v1 .garden-sakura::before{
+ content:'';position:absolute;left:40px;bottom:0;width:12px;height:156px;
+ border-radius:30% 60% 0 0;transform:rotate(-9deg);transform-origin:bottom;
+ background:linear-gradient(90deg,#4c325b,#8c6480 40%,#3a3658 80%);
+ box-shadow:9px -34px 0 -4px #5c3b61,-13px -56px 0 -5px #593958;
+}
+#personal-arcade-v1 .garden-sakura::after{
+ content:'';position:absolute;inset:0 0 62px;
+ background:radial-gradient(circle at 32% 36%,#fff3f8 0 10px,transparent 11px),
+ radial-gradient(circle at 65% 22%,#f5bbeb 0 21px,transparent 23px),
+ radial-gradient(circle at 29% 61%,#ce8ddd 0 26px,transparent 28px),
+ radial-gradient(circle at 72% 58%,#ffcfdf 0 25px,transparent 27px),
+ radial-gradient(circle at 50% 43%,#f5a2db 0 37px,transparent 39px);
+ filter:drop-shadow(0 0 11px #ffabf18c);opacity:.94;
+}
+#personal-arcade-v1 .garden-sakura-left{left:-28px;transform:rotate(-11deg)}
+#personal-arcade-v1 .garden-sakura-right{right:-28px;top:18px;transform:scaleX(-1) rotate(-7deg)}
+#personal-arcade-v1 .garden-wildflowers{
+ position:absolute;bottom:80px;width:38px;height:64px;
+ background:linear-gradient(81deg,transparent 48%,#70c7a5 49% 52%,transparent 53%),
+ linear-gradient(101deg,transparent 47%,#579e9a 48% 52%,transparent 53%);
+ transform-origin:bottom;
+ filter:drop-shadow(0 2px 5px #eaa4dd59);
+}
+#personal-arcade-v1 .garden-wildflowers::before{
+ content:'';position:absolute;left:10px;top:4px;width:10px;height:10px;
+ border-radius:50%;background:#ffd16f;
+ box-shadow:0 -9px 0 3px #f9bcdf,0 9px 0 3px #ebb1fb,
+  -9px 0 0 3px #f3c7fc,9px 0 0 3px #ffb5da,
+  12px 28px 0 2px #fff0b4,15px 19px 0 4px #afdaff;
+}
+#personal-arcade-v1 .garden-wildflowers::after{
+ content:'';position:absolute;left:5px;bottom:2px;width:26px;height:25px;
+ background:radial-gradient(ellipse at 30% 20%,#9fd5ba 0 11px,transparent 12px),
+ radial-gradient(ellipse at 70% 60%,#4d9f96 0 12px,transparent 13px);
+}
+#personal-arcade-v1 .garden-bloom-1{left:7%;transform:rotate(-13deg)}
+#personal-arcade-v1 .garden-bloom-2{left:25%;bottom:50px;transform:scale(.7) rotate(24deg)}
+#personal-arcade-v1 .garden-bloom-3{left:3%;bottom:120px;transform:scale(.8) rotate(18deg)}
+#personal-arcade-v1 .garden-bloom-4{right:6%;transform:rotate(18deg)}
+#personal-arcade-v1 .garden-bloom-5{right:25%;bottom:48px;transform:scale(.75) rotate(-17deg)}
+#personal-arcade-v1 .garden-bloom-6{right:2%;bottom:120px;transform:scale(.85) rotate(-9deg)}
+#personal-arcade-v1 .garden-rock{
+ position:absolute;bottom:60px;width:35px;height:23px;border-radius:60% 40% 18% 20%;
+ background:linear-gradient(135deg,#b4c1d8,#687d9f 56%,#3c526b);
+ box-shadow:inset 3px 3px #ffffff3a,0 4px 5px #24375299;
+}
+#personal-arcade-v1 .garden-rock-1{left:4%;transform:rotate(-16deg)}
+#personal-arcade-v1 .garden-rock-2{right:4%;bottom:52px;transform:scale(.75) rotate(18deg)}
+#personal-arcade-v1 .garden-pond{
+ bottom:12px;left:14%;right:14%;height:119px;border-width:8px;
+ background:radial-gradient(ellipse at 50% 21%,#cffff4,#52ccd8 44%,#2d6bba);
+ box-shadow:0 5px 0 #28556e,inset 0 0 19px #64fdff,0 0 28px #7ae8e394;
+}
+#personal-arcade-v1 .garden-fish{
+ display:block;position:absolute;width:49px;height:27px;border-radius:0;
+ background:url('../assets/arcade-koi.svg') center/contain no-repeat;
+ filter:drop-shadow(0 2px 2px #24648799);
+ animation:arcade-koi-glide 7s ease-in-out infinite alternate;
+}
+#personal-arcade-v1 .garden-fish::after{content:none;display:none}
+#personal-arcade-v1 .garden-fish-a{left:7%;top:13px;animation-delay:-1s}
+#personal-arcade-v1 .garden-fish-b{left:57%;top:8px;transform:scaleX(-1) scale(.85);filter:hue-rotate(75deg);animation-delay:-3s;animation-duration:8s}
+#personal-arcade-v1 .garden-fish-c{left:38%;top:35px;transform:scale(.75) rotate(-12deg);animation-delay:-5s;animation-duration:6s}
+#personal-arcade-v1 .garden-fish-d{left:76%;top:42px;transform:scaleX(-1) scale(.75);filter:hue-rotate(190deg);animation-delay:-2.1s;animation-duration:7.5s}
+#personal-arcade-v1 .garden-fish-e{left:10%;top:63px;transform:scale(.7) rotate(8deg);filter:hue-rotate(255deg);animation-delay:-4s}
+#personal-arcade-v1 .garden-fish-f{left:51%;top:66px;transform:scaleX(-1) scale(.72);filter:hue-rotate(320deg);animation-delay:-2.7s;animation-duration:9s}
+#personal-arcade-v1 .garden-lotus{
+ position:absolute;z-index:3;top:51px;width:28px;height:17px;border-radius:50%;
+ background:radial-gradient(ellipse at 40% 30%,#caffdc,#579e83 60%,#2a707c);
+ box-shadow:0 2px 5px #194f73a8;
+}
+#personal-arcade-v1 .garden-lotus::before{
+ content:'';position:absolute;top:-13px;left:9px;width:10px;height:18px;
+ border-radius:95% 95% 40% 40%;background:linear-gradient(#fff0f2,#ef91c4);
+ box-shadow:-8px 5px 0 -1px #f5b5e0,8px 5px 0 -1px #e8a2d6;
+}
+#personal-arcade-v1 .garden-lotus-a{left:7%}
+#personal-arcade-v1 .garden-lotus-b{right:9%;top:18px;transform:scale(.75)}
+#personal-arcade-v1 .garden-fishing-status{
+ min-height:15px;font-size:9px;letter-spacing:.06em;margin-bottom:5px;
+}
+#personal-arcade-v1 .garden-fishing-controls{margin-bottom:7px}
+#personal-arcade-v1 .garden-fishing-controls .garden-cast-button,
+#personal-arcade-v1 .garden-fishing-controls .garden-pond-collect{min-height:36px}
+#personal-arcade-v1 .garden-resources{padding-bottom:3px;gap:5px}
+#personal-arcade-v1 .arcade-stat{padding:5px 8px;border-radius:8px}
+#personal-arcade-v1 .arcade-stat>span{font-size:7px}
+#personal-arcade-v1 .arcade-stat strong{font-size:17px;line-height:1.25}
+#personal-arcade-v1 .arcade-stat small{display:none}
+#personal-arcade-v1 .garden-quick-actions{margin-bottom:6px}
+#personal-arcade-v1 .garden-statline{font-size:9px}
+#personal-arcade-v1 .garden-expanded .garden-plot-area{top:30px;row-gap:6px}
+#personal-arcade-v1 .garden-expanded .garden-plot{height:110px}
+@keyframes arcade-koi-glide{0%{margin-left:-9px;margin-top:-2px}50%{margin-left:10px;margin-top:4px}100%{margin-left:-2px;margin-top:-1px}}
+
+/* Jade market: a place with real stalls and selectable stones, not a text list. */
+#personal-arcade-v1 .jade-market-grid{gap:8px}
+#personal-arcade-v1 .jade-market-intro{
+ min-height:122px;isolation:isolate;overflow:hidden;padding:16px 11px 7px;
+ border:1px solid #d8b978;border-radius:10px;
+ background:radial-gradient(ellipse at 50% 80%,#bf925b7d,transparent 68%),
+ linear-gradient(170deg,#284a42,#17382f 57%,#5d423b);
+}
+#personal-arcade-v1 .jade-market-intro::before{
+ content:'';position:absolute;inset:0;pointer-events:none;z-index:-1;
+ background:linear-gradient(90deg,#0f342bd6 0 12%,transparent 27% 73%,#0f342bd6 88%),
+ repeating-linear-gradient(90deg,transparent 0 46px,#d1a36a22 48px 51px);
+}
+#personal-arcade-v1 .jade-market-intro::after{
+ content:'玉';right:10px;top:4px;font:900 63px/1 serif;color:#ffda9961;
+ text-shadow:0 0 18px #ffb86454;
+}
+#personal-arcade-v1 .jade-market-street{position:absolute;inset:0;z-index:-1;pointer-events:none}
+#personal-arcade-v1 .jade-market-street i{
+ position:absolute;bottom:0;width:62px;height:70px;background:linear-gradient(#235848,#0f2b29);
+ box-shadow:inset 0 0 0 2px #b18b576d;
+}
+#personal-arcade-v1 .jade-market-street i::before{
+ content:'';position:absolute;bottom:calc(100% - 1px);left:-10px;right:-10px;height:24px;
+ clip-path:polygon(12% 55%,48% 0,88% 55%,100% 100%,0 100%);
+ background:linear-gradient(#d1a35e,#713d37);box-shadow:0 -5px #d1a35e;
+}
+#personal-arcade-v1 .jade-market-street i:nth-child(1){left:-10%;height:70px}
+#personal-arcade-v1 .jade-market-street i:nth-child(2){left:18%;height:54px;opacity:.75}
+#personal-arcade-v1 .jade-market-street i:nth-child(3){left:44%;height:65px;opacity:.6}
+#personal-arcade-v1 .jade-market-street i:nth-child(4){right:16%;height:51px;opacity:.75}
+#personal-arcade-v1 .jade-market-street i:nth-child(5){right:-9%;height:72px}
+#personal-arcade-v1 .jade-market-intro>span{font-size:8px;color:#ffdea4;text-shadow:0 2px 3px #000}
+#personal-arcade-v1 .jade-market-intro>strong{
+ font:900 23px/1.1 Georgia,serif;color:#fff3c8;text-shadow:0 2px 12px #000,0 0 12px #ffc46c7d;
+ letter-spacing:.08em;margin-top:3px;
+}
+#personal-arcade-v1 .jade-market-intro>em{
+ position:absolute;right:8px;top:82px;font-size:9px;font-weight:800;
+ color:#fff0bf;background:#15372fcb;border:1px solid #d7bb7b80;
+ padding:4px 6px;border-radius:999px;
+}
+#personal-arcade-v1 .jade-market-pulse{display:flex;gap:5px;margin:6px 0 0}
+#personal-arcade-v1 .jade-market-pulse>span{
+ padding:4px 5px;font-size:8px;border-radius:4px;
+ background:#142c2ac4;border-color:#bfa67861;
+}
+#personal-arcade-v1 .jade-market-pulse b{display:inline;font-size:8px;margin:0}
+#personal-arcade-v1 .jade-market-card{
+ --stall-cloth:#bd7955;--stall-shadow:#632a3d;
+ padding:0;overflow:hidden;border:1px solid #d8b978b0;border-radius:12px;
+ background:linear-gradient(#1a4039,#132c2b);
+ box-shadow:0 5px 16px #040b10a1,inset 0 1px #fff2;
+}
+#personal-arcade-v1 .jade-market-card.jade-market-1{--stall-cloth:#9f8568;--stall-shadow:#56636c}
+#personal-arcade-v1 .jade-market-card.jade-market-2{--stall-cloth:#846da7;--stall-shadow:#3d4872}
+#personal-arcade-v1 .jade-market-card.jade-market-3{--stall-cloth:#9c5c7a;--stall-shadow:#38304e}
+#personal-arcade-v1 .jade-market-card.jade-market-4{--stall-cloth:#a17bca;--stall-shadow:#423f75}
+#personal-arcade-v1 .jade-stall-scene{
+ position:relative;height:173px;overflow:hidden;isolation:isolate;
+ background:radial-gradient(ellipse at 50% 65%,#bc9a676b,transparent 58%),
+ linear-gradient(180deg,#3a5542,#25463e 60%,#112f2d);
+}
+#personal-arcade-v1 .jade-stall-scene::before{
+ content:'';position:absolute;inset:0;pointer-events:none;z-index:-1;
+ background:repeating-linear-gradient(90deg,transparent 0 37px,#dcba8b20 38px 39px),
+ linear-gradient(0deg,#0b211cc4,transparent 62%);
+}
+#personal-arcade-v1 .jade-stall-awning{
+ position:absolute;top:1px;left:-8px;right:-8px;height:62px;z-index:4;
+ clip-path:polygon(8% 0,92% 0,100% 75%,94% 100%,84% 77%,73% 100%,62% 77%,50% 100%,38% 77%,26% 100%,15% 77%,6% 100%,0 75%);
+ background:repeating-linear-gradient(90deg,var(--stall-cloth) 0 32px,#ead1a1 33px 56px,var(--stall-shadow) 57px 73px);
+ border-bottom:3px solid #ffe2aa;filter:drop-shadow(0 7px 7px #0008);
+}
+#personal-arcade-v1 .jade-stall-awning::after{
+ content:'';position:absolute;left:0;right:0;top:1px;height:10px;
+ background:linear-gradient(#ffffff63,transparent);
+}
+#personal-arcade-v1 .jade-stall-lamp{
+ position:absolute;top:63px;width:16px;height:29px;border:2px solid #ffe4aa;
+ border-radius:6px 6px 8px 8px;z-index:5;
+ background:radial-gradient(#fff2bd,#ec9c56 68%,#9d5b4e);
+ box-shadow:0 0 21px 5px #ffb76e9c;
+}
+#personal-arcade-v1 .jade-stall-lamp::before{
+ content:'';position:absolute;bottom:100%;left:6px;width:2px;height:8px;background:#ffe5a3;
+}
+#personal-arcade-v1 .jade-stall-lamp-left{left:10%}
+#personal-arcade-v1 .jade-stall-lamp-right{right:10%}
+#personal-arcade-v1 .jade-stall-merchant{
+ position:absolute;right:14%;bottom:30px;width:52px;height:65px;z-index:2;
+ border-radius:24px 24px 5px 5px;
+ background:linear-gradient(130deg,#476a67,#223c46 65%,#1c2b38);
+ box-shadow:inset 0 3px #98a39a,0 7px 10px #0008;
+}
+#personal-arcade-v1 .jade-stall-merchant::before{
+ content:'';position:absolute;width:31px;height:32px;top:-22px;left:10px;border-radius:45% 45% 50% 50%;
+ background:radial-gradient(circle at 39% 41%,#ffe3b6,#d8a678 75%);
+ box-shadow:0 -7px 0 1px #292f38;
+}
+#personal-arcade-v1 .jade-stall-merchant::after{
+ content:'';position:absolute;top:-28px;left:2px;width:47px;height:11px;
+ border-radius:50%;background:#29343e;box-shadow:0 -5px 0 -2px #42545a;
+}
+#personal-arcade-v1 .jade-stall-counter{
+ position:absolute;bottom:14px;left:3%;right:3%;height:32px;z-index:3;
+ border:2px solid #e3bc7d;border-radius:3px 3px 9px 9px;
+ background:linear-gradient(#997044,#593f32 45%,#302922);
+ box-shadow:0 6px 0 #291f21,inset 0 5px 0 #b2864b;
+}
+#personal-arcade-v1 .jade-stall-stone{
+ position:absolute;bottom:39px;z-index:5;width:66px;height:55px;
+ border:2px solid #dcc6a0;border-radius:44% 57% 42% 42%;
+ background:radial-gradient(circle at 31% 26%,#eee1bf,#af9775 38%,#62665f 72%,#313b3d);
+ box-shadow:inset 7px 6px 9px #ffffff55,inset -8px -9px 10px #1927259e,0 7px 7px #0009;
+ color:#fef2d7;font:900 12px Georgia,serif;cursor:pointer;
+ text-shadow:0 1px 2px #000;transition:transform .16s,filter .16s;
+}
+#personal-arcade-v1 .jade-stall-stone:hover,
+#personal-arcade-v1 .jade-stall-stone:focus-visible{
+ transform:translateY(-9px) scale(1.09)!important;filter:brightness(1.18);
+ outline:2px solid #ffdd9a;outline-offset:3px;
+}
+#personal-arcade-v1 .jade-stall-stone:active{transform:translateY(-4px) scale(.96)}
+#personal-arcade-v1 .jade-stall-stone-a{left:10%;transform:rotate(-15deg)}
+#personal-arcade-v1 .jade-stall-stone-b{
+ left:34%;bottom:40px;transform:rotate(13deg);height:61px;
+ background:radial-gradient(circle at 32% 18%,#cfb9a0,#997767 45%,#4d6162 75%);
+}
+#personal-arcade-v1 .jade-stall-stone-c{
+ left:57%;transform:rotate(-12deg);width:60px;
+ background:radial-gradient(circle at 38% 18%,#c2b5c9,#818095 46%,#3c4f64 76%);
+}
+#personal-arcade-v1 .jade-stall-banner{
+ position:absolute;top:60px;left:50%;transform:translateX(-50%);z-index:5;
+ max-width:58%;white-space:nowrap;padding:4px 10px;
+ font:900 10px Georgia,serif;color:#fff4cc;letter-spacing:.08em;
+ border:1px solid #f1d29a;background:linear-gradient(#805638,#3e342e);
+ box-shadow:0 3px 9px #0008;
+}
+#personal-arcade-v1 .jade-market-top{
+ padding:8px 10px;justify-content:space-between;gap:7px;
+ background:linear-gradient(110deg,#30594a,#234139);
+}
+#personal-arcade-v1 .jade-market-copy b{font:700 13px Georgia,serif;color:#ffe8ac}
+#personal-arcade-v1 .jade-market-copy small{font-size:9px;margin-top:2px}
+#personal-arcade-v1 .jade-stall-price{
+ color:#ffdf99;font:900 10px ui-monospace,monospace;
+ white-space:nowrap;text-shadow:0 0 10px #ffcc6170;
+}
+#personal-arcade-v1 .jade-market-tray{margin:0;padding:0;border:0}
+#personal-arcade-v1 .jade-market-tray summary{
+ display:flex;align-items:center;justify-content:space-between;gap:4px;
+ margin:7px 8px;padding:9px 10px;border-radius:8px;
+ background:linear-gradient(120deg,#82623a,#3c6655);
+ border:1px solid #d6b77b;color:#fff6d4;
+ box-shadow:inset 0 1px #ffe5a341;
+}
+#personal-arcade-v1 .jade-market-tray summary::before{content:'';display:none}
+#personal-arcade-v1 .jade-market-tray summary span{font-size:8px;color:#e6dcc1;font-weight:700}
+#personal-arcade-v1 .jade-market-tray[open] summary{
+ color:#ffecba;border-color:#ffdf9b;background:linear-gradient(105deg,#856347,#255848);
+}
+#personal-arcade-v1 .jade-market-samples{gap:5px;margin:0;padding:5px 6px 9px}
+#personal-arcade-v1 .jade-market-sample{
+ gap:4px;padding:6px 4px;border-color:#c4a6768c;
+ background:radial-gradient(ellipse at 50% 12%,#a6bc9d40,transparent 65%),
+ linear-gradient(#274c42,#172f30);
+}
+#personal-arcade-v1 .jade-sample-top{display:flex;align-items:center;justify-content:space-between}
+#personal-arcade-v1 .jade-sample-top b{font-size:9px}
+#personal-arcade-v1 .jade-sample-top em{display:block;font-size:8px}
+#personal-arcade-v1 .jade-sample-pick{
+ display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+ width:100%;min-width:0;min-height:110px;padding:5px 1px;
+ cursor:pointer;color:#fff0cf;border:1px solid #f2d49987;border-radius:9px;
+ background:radial-gradient(ellipse at 50% 35%,#e0c7963d,transparent 75%),#122a2b;
+ box-shadow:inset 0 1px #ffffff18,0 4px 8px #0005;
+}
+#personal-arcade-v1 .jade-sample-pick:focus-visible{outline:2px solid #fff0af;outline-offset:2px}
+#personal-arcade-v1 .jade-sample-pick:active:not(:disabled){transform:scale(.95)}
+#personal-arcade-v1 .jade-sample-pick:disabled{opacity:.53;cursor:not-allowed}
+#personal-arcade-v1 .jade-sample-pick .jade-sample-pebble{
+ width:68px;height:55px;max-width:93%;flex:none;
+ filter:drop-shadow(0 5px 4px #0006);
+}
+#personal-arcade-v1 .jade-sample-pick strong{color:#ffe39a;font-size:11px;white-space:nowrap}
+#personal-arcade-v1 .jade-sample-pick>span:last-child{
+ color:#ecfff1;font:900 8px ui-monospace,monospace;letter-spacing:.06em;
+}
+#personal-arcade-v1 .jade-market-sample>small{
+ min-height:0;max-height:26px;overflow:hidden;
+ font-size:8px;line-height:1.3;color:#d6d7b9;
+}
+#personal-arcade-v1 .jade-market-sample .jade-sample-clue{
+ font-size:8px;line-height:1.2;min-height:18px;padding:4px 2px;
+ border-color:#b59b6770;background:#14392fc4;
+}
+#personal-arcade-v1 .jade-market-sample .arcade-button{
+ min-height:28px;width:100%;padding:3px 1px;font-size:8px;
+ white-space:normal;flex:none;
+}
+#personal-arcade-v1 .jade-market-bundles{
+ gap:5px;padding:8px;background:linear-gradient(110deg,#173a33,#203831);
+ border-top:1px solid #d9b97a55;margin:0;
+}
+#personal-arcade-v1 .jade-market-bundles>small{
+ grid-column:1/-1;color:#c9d7bb;font:800 8px ui-monospace,monospace;
+ letter-spacing:.13em;
+}
+#personal-arcade-v1 .jade-market-bundles .arcade-button{
+ min-height:31px!important;font-size:8px!important;
+ background:linear-gradient(115deg,#406b5c,#345043);border-color:#a7c39b;
+}
+#personal-arcade-v1 .jade-market-locked-route{padding:4px 0 0}
+#personal-arcade-v1 .jade-market-locked-route>b{font:800 9px ui-monospace,monospace;color:#d9bc84}
+#personal-arcade-v1 .jade-market-locked-rail{
+ display:flex;gap:7px;overflow-x:auto;padding:7px 2px 9px;
+ scroll-snap-type:x proximity;scrollbar-width:thin;scrollbar-color:#887556 transparent;
+}
+#personal-arcade-v1 .jade-market-locked{
+ flex:0 0 120px;display:flex;flex-direction:column;align-items:center;
+ scroll-snap-align:start;min-height:108px;padding:7px 5px;gap:4px;
+ background:radial-gradient(ellipse at 50% 5%,#816d683b,transparent),#1c302d;
+ border:1px solid #766d5f;border-radius:9px;filter:saturate(.68);
+}
+#personal-arcade-v1 .jade-market-locked-art{
+ display:grid;place-items:center;width:55px;height:48px;
+ font:900 27px Georgia,serif;color:#b7a28b;
+ background:linear-gradient(135deg,#53605b,#35423c 50%,#2a3435);
+ clip-path:polygon(14% 0,85% 0,100% 28%,85% 100%,14% 100%,0 28%);
+ border-bottom:4px solid #886e54;
+}
+#personal-arcade-v1 .jade-market-locked strong{font-size:9px;color:#e1cfb4}
+#personal-arcade-v1 .jade-market-locked small{font-size:8px;color:#c0b2a2;text-align:center;line-height:1.35}
+#personal-arcade-v1 .jade-market-fairness{
+ margin:0 1px 2px;padding:7px;font-size:9px;color:#cebda0;
+ background:#15342b;border-radius:7px;border-left:2px solid #d5bb7a;
+}
+#personal-arcade-v1 .jade-welcome{padding:9px 10px;border-radius:8px}
+#personal-arcade-v1 .jade-welcome strong{font-size:17px}
+#personal-arcade-v1 .jade-welcome p{margin:4px 0 8px;font-size:9px}
+#personal-arcade-v1 .jade-welcome .arcade-button{min-height:33px}
+#personal-arcade-v1 .jade-accounting{margin-top:7px}
+#personal-arcade-v1 .jade-accounting>div{padding:5px 2px}
+#personal-arcade-v1 .jade-clue{min-height:31px}
+#personal-arcade-v1 .jade-clue small{font-size:9px}
+#personal-arcade-v1 .jade-decision-note{margin-top:3px}
+@media(max-width:360px){
+ #personal-arcade-v1 .arcade-control-panel{padding:8px 9px}
+ #personal-arcade-v1 .garden-stage{height:317px}
+ #personal-arcade-v1 .garden-stage.garden-expanded{height:437px}
+ #personal-arcade-v1 .garden-plot-area{left:10%;right:10%}
+ #personal-arcade-v1 .garden-sakura{transform:scale(.85);transform-origin:bottom}
+ #personal-arcade-v1 .garden-sakura-right{transform:scaleX(-1) scale(.85)}
+ #personal-arcade-v1 .jade-stall-stone{width:57px;height:50px}
+ #personal-arcade-v1 .jade-stall-stone-c{width:55px}
+ #personal-arcade-v1 .jade-stall-scene{height:162px}
+ #personal-arcade-v1 .jade-market-tray summary span{display:none}
+ #personal-arcade-v1 .jade-market-samples{gap:4px;padding:4px 5px 7px}
+ #personal-arcade-v1 .jade-market-sample{padding:5px 2px}
+ #personal-arcade-v1 .jade-sample-pick{min-height:103px}
+ #personal-arcade-v1 .jade-sample-pick .jade-sample-pebble{width:60px;height:50px}
+}
+@media(prefers-reduced-motion:reduce){
+ #personal-arcade-v1 .garden-fish{animation:none!important}
+ #personal-arcade-v1 .jade-stall-stone{transition:none!important}
+}
