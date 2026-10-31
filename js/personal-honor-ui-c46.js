@@ -20,6 +20,18 @@
   observedAt=0,observedOwner='',observedIds=null,
   announcedIds=new Set(),momentNode=null,momentTimer=null;
  const rarityName={common:'Thường',rare:'Hiếm',epic:'Sử thi',mythic:'Huyền thoại'};
+ // C4.37P: illustration identifiers are presentation-only. The canonical
+ // Honor catalog remains the sole authority for ownership and unlocks.
+ const artIds=new Set(honor.TITLES.map(t=>t.id));
+ function illustrated(node,titleId){
+  if(titleId&&artIds.has(titleId))node.dataset.honorArt=titleId;
+  return node;
+ }
+ function world(source){
+  return ({'Trạm Neon':'neon','Địa Tầng 07':'mine','Vườn Sương':'garden',
+   'Ngọc Phường':'jade','Thư viện':'library','Liên lạc':'bond',
+   'Nhiệm vụ':'quest','DUDU FUN':'fun'})[source]||'dudu';
+ }
  const arcadeSources=honor.JOURNEYS.map(j=>j.source);
  const ownerKey=()=>account()?(sandbox()?'sandbox:':'uid:')+account():null;
  const trackedJourneys=()=>journeyTracker?.read(root.localStorage,ownerKey())||null;
@@ -55,7 +67,8 @@
   toast.setAttribute('role','status');
   toast.setAttribute('aria-live','polite');
   toast.setAttribute('aria-atomic','true');
-  toast.append(create('span','dudu-c411-unlock-symbol',moment.icon));
+  const newTitle=moment.title&&honor.TITLES.find(t=>t.name===moment.name);
+  toast.append(illustrated(create('span','dudu-c411-unlock-symbol',moment.icon),newTitle?.id));
   const detail=create('div','dudu-c411-unlock-detail');
   detail.append(create('small','',
    (moment.title?'✦ DANH HIỆU MỚI':'✧ THÀNH TỰU MỚI')+' · '+rarityName[moment.rarity].toUpperCase()),
@@ -132,7 +145,7 @@
    const label=$('dudu-honor-home-title-label'),emblem=$('dudu-honor-home-emblem'),
     caption=$('dudu-honor-home-rarity');
    if(label)label.textContent=selected.name;
-   if(emblem)emblem.textContent=selected.icon;
+   if(emblem){emblem.textContent=selected.icon;illustrated(emblem,selected.id);}
    if(caption)caption.textContent='VINH DANH · '+rarity.toLocaleUpperCase('vi-VN');
    chip.dataset.rarity=selected.rarity;chip.disabled=!account();
    chip.setAttribute('aria-label','Danh hiệu '+selected.name+' · bậc '+rarity+'. Mở Sổ Vinh Danh');
@@ -145,7 +158,7 @@
    if(pinned.length){
     for(const id of pinned){const a=honor.CATALOG.find(row=>row.id===id);
      if(!a)continue;
-     const badge=create('span','dudu-honor-profile-medal',a.icon);
+     const badge=illustrated(create('span','dudu-honor-profile-medal',a.icon),a.titleId);
      badge.dataset.rarity=a.rarity;
      badge.title=a.name+' · '+(rarityName[a.rarity]||'Thường');summary.append(badge);}
    }else summary.append(create('span','dudu-honor-profile-empty',
@@ -161,7 +174,7 @@
   hero.append(create('small','','✦ NHẬT KÝ CHINH PHỤC'));
   const selected=activeTitle(v),row=create('div','dudu-honor-hero-row');
   hero.dataset.rarity=selected.rarity;
-  row.append(create('span','dudu-honor-main-symbol',selected.icon));
+  row.append(illustrated(create('span','dudu-honor-main-symbol',selected.icon),selected.id));
   const copy=create('div','dudu-honor-main-copy');
   copy.append(create('small','','DANH HIỆU ĐANG TRANG BỊ'),
    create('strong','',selected.name),rarityTag(selected.rarity));
@@ -201,7 +214,7 @@
  }
  function huntSpotlight(t){
   const section=create('section','dudu-honor-hunt-spotlight');section.dataset.rarity=t.rarity;
-  section.append(create('span','dudu-honor-hunt-sigil',t.icon));
+  section.append(illustrated(create('span','dudu-honor-hunt-sigil',t.icon),t.id));
   const copy=create('div','dudu-honor-hunt-info');
   copy.append(create('small','','✦ MỤC TIÊU ĐÁNG SĂN · '+rarityName[t.rarity]),
    create('strong','',t.name),
@@ -218,8 +231,12 @@
   const secret=locked&&t.goal?.secret;
   const card=create('article','dudu-honor-card dudu-honor-title-card'+
    (locked?' is-locked':'')+(selected?' is-equipped':''));
-  card.dataset.rarity=t.rarity;
-  card.append(create('span','dudu-honor-symbol',secret?'◇':t.icon));
+  card.dataset.rarity=t.rarity;card.dataset.world=world(t.source);
+  // A truly secret title never receives even a hidden art identifier.
+  const symbol=create('span','dudu-honor-symbol',secret?'◇':t.icon);
+  symbol.setAttribute('aria-hidden','true');
+  if(!secret)illustrated(symbol,t.id);
+  card.append(symbol);
   const copy=create('div','dudu-honor-card-copy');
   copy.append(create('strong','',secret?'Danh hiệu bí ẩn':t.name),
    create('small','',locked?(secret?'Nguồn: '+t.source+' · Điều kiện ẩn':t.goal?.description||'Chưa mở khóa'):
@@ -245,8 +262,10 @@
   const hidden=a.secret&&!a.unlocked;
   const card=create('article','dudu-honor-achievement'+(a.unlocked?' is-earned':' is-locked')+
    (a.id===focusAchievementId?' is-target':''));
-  card.dataset.rarity=a.rarity;
-  const emblem=create('span','dudu-honor-ach-icon',hidden?'✧':a.icon);
+  card.dataset.rarity=a.rarity;card.dataset.world=world(a.source);
+  const emblem=illustrated(create('span','dudu-honor-ach-icon',hidden?'✧':a.icon),
+   hidden?null:a.titleId);
+  emblem.setAttribute('aria-hidden','true');
   const content=create('div','dudu-honor-ach-copy');
   content.append(create('small','',a.source+' · '+rarityName[a.rarity]),
    create('strong','',hidden?'Bí mật chưa khám phá':a.name));

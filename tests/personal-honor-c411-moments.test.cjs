@@ -69,6 +69,10 @@ test('C4.11 all four Arcade games reveal newly earned titles with one non-blocki
   const live=toast(x.phone);
   assert.ok(live,'A new achievement should reveal a plaque');
   assert.equal(live.dataset.rarity,rarity,name);
+  assert.equal(live.children[0].dataset.honorArt,
+   ({'Chủ Tiệm Neon':'neon-owner','Thợ Đào Mạch':'mine-explorer',
+    'Huyền Thoại Hồ Sương':'garden-legend','Tập Sự Thẩm Ngọc':'jade-appraiser'})[name],
+   'Unlocked title shows its own collectible artwork, not a generic glyph');
   assert.match(textOf(live),new RegExp(name));
   assert.equal(live.attributes.role,'status');
   assert.equal(live.attributes['aria-live'],'polite');

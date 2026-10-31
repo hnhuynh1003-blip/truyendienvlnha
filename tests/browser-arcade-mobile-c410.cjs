@@ -326,11 +326,18 @@ async function main(){
   await hall.locator('.dudu-honor-filters').getByRole('button',{name:'Ngọc Phường'}).click();
   const jadeTitle=hall.locator('.dudu-honor-title-card').filter({hasText:'Tập Sự Thẩm Ngọc'});
   assert.ok(await jadeTitle.isVisible(),'The already earned Jade title is in the collection');
+  assert.equal(await jadeTitle.locator('[data-honor-art="jade-appraiser"]').count(),1,
+   'Each owned title is presented with its own original illustrated emblem');
+  assert.match(await jadeTitle.locator('[data-honor-art]').evaluate(
+   el=>getComputedStyle(el,'::after').backgroundImage),/honor-atlas-4\.webp/,
+   'The illustrated emblem atlas must be actually painted, not a decorative class');
   assert.equal(await jadeTitle.locator('.dudu-honor-action').innerText(),'Sử dụng');
   await hall.locator('.dudu-honor-title-scopes').getByRole('button',{name:'Huyền thoại'}).click();
   const hidden=hall.locator('.dudu-honor-title-card.is-locked');
   assert.equal(await hidden.count(),1);
   assert.match(await hidden.innerText(),/Danh hiệu bí ẩn/);
+  assert.equal(await hidden.locator('[data-honor-art]').count(),0,
+   'Secret title art must not leak before the discovery');
   assert.doesNotMatch(await hidden.innerText(),/Long Thạch Chủng/);
   await hidden.locator('.dudu-honor-action').click();
   assert.ok(await hall.locator('.dudu-honor-tabs button.is-active').getByText('Bí ẩn').isVisible());
