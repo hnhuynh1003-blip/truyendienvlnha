@@ -37,8 +37,8 @@ test('C4.25A keeps actual Arcade actions under state-derived scenes',()=>{
  assert.match(ui,/mine-inventory-slot mine-slot-\$\{ore\}/);
  assert.match(ui,/mine-seam-tunnel-\$\{i\}/);
  assert.match(ui,/orePortrait\(probeHit\.ore\)/);
- assert.match(html,/arcade-c425a-worlds\.css\?v=c425a-1/);
- assert.match(html,/personal-arcade-ui-v1\.js\?v=c424-1&amp;art=c425a-1/);
+ assert.match(html,/arcade-c425a-worlds\.css\?v=c425a-2/);
+ assert.match(html,/personal-arcade-ui-v1\.js\?v=c424-1&amp;art=c425a-2/);
  assert.doesNotMatch(ui,/localStorage\.clear\(/);
  const core=require('../js/personal-arcade-core-v1.js');
  const time=1793440000000,starting=core.fresh(time);
