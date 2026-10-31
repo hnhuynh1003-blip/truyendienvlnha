@@ -81,20 +81,13 @@
  function updateWing(next){wing=next;paint();}
  function shell(){
   host.replaceChildren();
-  const head=$('div','museum-c429-entrance');
-  const text=$('div','');text.append($('small','','✦ KÝ ỨC ARCADE · LƯU TRÊN THIẾT BỊ'),
-   $('strong','','Điện trưng bày của bạn'));
-  head.append(text,$('span','museum-c429-total','0 / 4'));host.append(head);
   const nav=$('div','museum-c429-wings');nav.setAttribute('role','group');
   nav.setAttribute('aria-label','Chọn gian trưng bày Arcade');
-  for(const [id,label] of [['trophies','Điện chiến tích'],['fish','Thủy Cung Sương']]){
+  for(const [id,label] of [['trophies','Tượng'],['fish','Cá quý']]){
    const b=addButton(nav,label,'museum-c429-wing',()=>updateWing(id));b.dataset.wing=id;
   }
   host.append(nav);
   const content=$('div','museum-c429-content');content.setAttribute('aria-live','polite');host.append(content);
-  const foot=$('p','museum-c429-footnote',
-   'Tiến trình Arcade là kỷ niệm lưu trên máy này. Kỷ vật thưởng thật được đối chiếu riêng ở mục “Kỷ vật thật”.');
-  host.append(foot);
  }
  function stage(type){
   const scene=$('div','museum-c429-scene museum-c429-scene-'+type);
@@ -102,27 +95,37 @@
   scene.append(rays);return scene;
  }
  function trophyHall(s,container){
-  const scene=stage('trophies');
-  scene.append($('small','museum-c429-scene-tag','BỐN HÀNH TRÌNH · BỐN BỆ VINH DANH'));
+  const item=milestones.find(m=>m.id===trophySelected)||milestones[0];
+  const count=item.count(s),done=count>=item.goal;
+  const achieved=milestones.filter(m=>m.count(s)>=m.goal).length;
+  const scene=stage('trophies');scene.dataset.trophy=item.id;
+  scene.dataset.earned=done?'yes':'no';
+  scene.setAttribute('role','img');
+  scene.setAttribute('aria-label',item.title+(done?', đã đạt':', chưa mở khóa'));
+  const hero=$('span','museum-c429-feature-art');hero.setAttribute('aria-hidden','true');
+  scene.append(hero,$('span','museum-c429-feature-ribbon',done?'✦ ĐÃ ĐẠT':'◇ CHƯA MỞ KHÓA'),
+   $('strong','museum-c429-feature-name',item.title),
+   $('span','museum-c429-total',achieved+' / 4'));
+  container.append(scene);
   const row=$('div','museum-c429-pedestals');
+  row.setAttribute('role','group');row.setAttribute('aria-label','Chọn tượng chiến tích');
   for(const info of milestones){
-   const count=info.count(s),done=count>=info.goal;
+   const completed=info.count(s)>=info.goal;
    const b=addButton(row,'','museum-c429-pedestal museum-c429-pedestal-'+info.id+
-    (done?' is-earned':' is-dormant')+(trophySelected===info.id?' is-chosen':''),()=>{
+    (completed?' is-earned':' is-dormant')+(trophySelected===info.id?' is-chosen':''),()=>{
      trophySelected=info.id;paint();});
-   b.setAttribute('aria-label',info.title+' · '+count+'/'+info.goal+' thử thách');
+   b.setAttribute('aria-label',info.title+' · '+info.count(s)+'/'+info.goal+' thử thách');
    b.setAttribute('aria-pressed',String(trophySelected===info.id));
    const object=$('span','museum-c429-trophy-object');object.setAttribute('aria-hidden','true');
    b.append(object,$('small','',info.sub));
   }
-  scene.append(row);container.append(scene);
-  const item=milestones.find(m=>m.id===trophySelected)||milestones[0];
-  const count=item.count(s),done=count>=item.goal;
+  container.append(row);
   const card=$('div','museum-c429-status');
-  const copy=$('div','');copy.append($('small','',done?'✦ CỘT MỐC ĐÃ ĐẠT':'◌ ĐANG CHINH PHỤC'),
-   $('strong','',item.title),$('span','',done?'Đã khắc đủ bốn ấn chiến tích':'Hoàn thành cả bốn thử thách để lưu dấu trong Bảo Tàng'));
-  const number=$('div','museum-c429-status-count',Math.min(count,item.goal)+'/'+item.goal);
-  card.append(copy,number);container.append(card);
+  const copy=$('div','');
+  copy.append($('small','',done?'DẤU ẤN HOÀN THÀNH':'TIẾN ĐỘ CHINH PHỤC'),
+   $('strong','',done?'Tượng đã mở khóa':'Còn '+(item.goal-count)+' thử thách'));
+  card.append(copy,$('div','museum-c429-status-count',Math.min(count,item.goal)+'/'+item.goal));
+  container.append(card);
   const progress=$('div','museum-c429-meter');const bar=$('i','');
   bar.style.width=Math.min(100,Math.max(0,count/item.goal*100))+'%';progress.append(bar);
   container.append(progress);
@@ -136,9 +139,6 @@
    seal.append(copy);trials.append(seal);
   }
   container.append(trials);
-  const seal=$('div','museum-c429-journey-count',
-   milestones.filter(m=>m.count(s)>=m.goal).length+'/4 dấu ấn đã đạt · Chạm từng bệ để xem tiến trình');
-  container.append(seal);
  }
  function aquarium(s,container){
   const owned=foundShowcase(s),focus=selectedFish(s),fish=species[focus];

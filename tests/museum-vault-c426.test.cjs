@@ -42,6 +42,10 @@ test('C4.26 preview is a functional four-piece exhibit without collectible write
  assert.equal(api.init({container:host,ownerKey:'sandbox:du',sandbox:true}),true);
  const rail=host.querySelectorAll('.museum-c426-select');
  assert.equal(rail.length,4);
+ assert.equal(host.querySelector('.museum-c426-head'),null,
+  'No redundant museum headline below the phone title');
+ assert.ok(host.querySelector('.museum-c426-lore'),
+  'Object history stays available in a collapsed disclosure');
  assert.ok(host.querySelector('.museum-c426-stage').querySelector('.museum-c426-art').src
   .includes('s01-founder-crest.webp'));
  assert.equal(host.querySelector('.museum-c426-action').textContent,'Xem Hộ chiếu');
@@ -110,6 +114,6 @@ test('C4.26 artwork is WebP, light enough for a mobile museum',()=>{
   assert.ok(statSync(path.join(__dirname,'..',filename)).size<160000,name);
  }
  const html=file('index.html').toString('utf8');
- assert.match(html,/museum-vault-c426\.css\?v=c426-1/);
- assert.match(html,/museum-vault-c426\.js\?v=c426-2/);
+ assert.match(html,/museum-vault-c426\.css\?v=c426-2/);
+ assert.match(html,/museum-vault-c426\.js\?v=c426-3/);
 });

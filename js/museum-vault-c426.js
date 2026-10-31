@@ -77,10 +77,6 @@
  }
  function build(){
   host.replaceChildren();host.classList.add('museum-c426-root');
-  const head=el('div','museum-c426-head');
-  head.append(el('span','','✦ BẢO TÀNG CHIẾN LỢI PHẨM'),
-   el('strong','museum-c426-ledger','Sổ sở hữu chưa xác minh'));
-  host.append(head);
   const nav=el('nav','museum-c426-tabs');nav.setAttribute('role','tablist');
   nav.setAttribute('aria-label','Khu vực bảo tàng');
   for(const [id,label] of [['gallery','Chiến tích'],['preview','Quà mùa'],['owned','Kỷ vật thật'],['memories','Kỷ niệm']]){
@@ -105,7 +101,9 @@
   gallery.append(stage);
   const detail=el('div','museum-c426-detail');detail.setAttribute('aria-live','polite');
   const copy=el('div','museum-c426-copy');
-  copy.append(el('span','museum-c426-rarity'),el('strong',''),el('p',''));
+  const lore=el('details','museum-c426-lore');
+  lore.append(el('summary','','Chuyện món đồ'),el('p',''));
+  copy.append(el('span','museum-c426-rarity'),el('strong',''),lore);
   const action=el('button','museum-c426-action');action.type='button';
   detail.append(copy,action);gallery.append(detail);
   const collection=el('div','museum-c426-collection');
@@ -119,12 +117,11 @@
    button.addEventListener('click',()=>choose(exhibit.id));collection.append(button);
   }
   gallery.append(collection);
-  gallery.append(el('p','museum-c426-disclaimer',
-   'Bốn mẫu quà tương lai, bao gồm Mùa 1 đang PREVIEW. Chưa phát hành, chưa trao thưởng hay mở khóa.'));
   host.append(gallery);
   const owned=el('section','museum-c426-owned');owned.id='museum-c426-panel-owned';
   owned.dataset.museumPanel='owned';owned.setAttribute('role','tabpanel');
   owned.setAttribute('aria-labelledby','museum-c426-tab-owned');
+  owned.append(el('span','museum-c426-ledger','Sổ sở hữu chưa xác minh'));
   const verified=el('div','museum-c426-verified');
   verified.setAttribute('aria-live','polite');owned.append(verified);host.append(owned);
   const memories=el('section','museum-c426-memories');memories.id='museum-c426-panel-memories';

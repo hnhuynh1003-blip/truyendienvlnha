@@ -49,9 +49,16 @@ test('C4.29.4 museum trophies require four hard in-game achievements, without re
  assert.equal(ui.milestones.length,4);
  assert.equal(ui.mount({container:host,ownerKey:'du',sandbox:true}),true);
  assert.equal(host.querySelector('.museum-c429-total').textContent,'2 / 4');
+ assert.equal(host.querySelector('.museum-c429-entrance'),null,
+  'The phone title is the only museum heading');
+ assert.equal(host.querySelector('.museum-c429-scene-trophies').dataset.trophy,'neon');
+ assert.ok(host.querySelector('.museum-c429-feature-art'),
+  'The selected trophy is enlarged as the main visual');
  assert.equal(host.querySelectorAll('.museum-c429-pedestal').length,4);
  assert.equal(host.querySelectorAll('.is-earned').length,2);
  click(host.querySelector('.museum-c429-pedestal-jade'));
+ assert.equal(host.querySelector('.museum-c429-scene-trophies').dataset.trophy,'jade',
+  'Selecting a thumbnail changes the large exhibition statue');
  assert.equal(host.querySelector('.museum-c429-status-count').textContent,'0/4');
  assert.equal(host.querySelectorAll('.museum-c430-trial').length,4);
  assert.ok(host.querySelectorAll('.museum-c430-trial').some(e=>
@@ -125,9 +132,9 @@ test('C4.29 keeps verified collectibles and Season1 preview separate, delivers c
  const html=repo('index.html').toString();
  const vault=repo('js/museum-vault-c426.js').toString();
  const gallery=repo('js/museum-c429-gallery.js').toString();
- assert.match(html,/museum-c429-gallery\.css\?v=c429-5/);
- assert.match(html,/museum-c429-gallery\.js\?v=c429-3/);
- assert.match(html,/museum-vault-c426\.js\?v=c426-2&amp;gallery=c429-1/);
+ assert.match(html,/museum-c429-gallery\.css\?v=c429-6/);
+ assert.match(html,/museum-c429-gallery\.js\?v=c429-4/);
+ assert.match(html,/museum-vault-c426\.js\?v=c426-3&amp;gallery=c429-2/);
  assert.match(vault,/\['preview','Quà mùa'\]/);
  assert.match(vault,/\['owned','Kỷ vật thật'\]/);
  assert.match(html,/await DuduCollectiblesClient\.mine\(\)/);
