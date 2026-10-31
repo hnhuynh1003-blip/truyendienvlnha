@@ -201,6 +201,8 @@ test('Garden is a playable scene with plots and animated pond, not generic data 
  assert.match(host.innerHTML,/garden-stage/);
  assert.match(host.innerHTML,/garden-plot-area/);
  assert.match(host.innerHTML,/garden-fish garden-fish-a/);
+ assert.match(host.innerHTML,/garden-fish garden-fish-f/);
+ assert.match(host.innerHTML,/garden-wildflowers garden-bloom-6/);
  assert.match(host.innerHTML,/data-arcade-action="plant-0"/);
  assert.match(host.innerHTML,/data-arcade-action="water-cap"/);
  assert.match(host.innerHTML,/data-arcade-action="pond-tier"/);

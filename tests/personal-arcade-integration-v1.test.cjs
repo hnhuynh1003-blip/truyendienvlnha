@@ -14,10 +14,10 @@ test('C4.4 joins the phone as one Arcade app with four named games',()=>{
  assert.match(html,/personal-jade-core-v1\.js\?v=c414-1/);
  assert.match(html,/personal-jade-ui-v1\.js\?v=c418-1/);
  assert.match(html,/personal-arcade-core-v1\.js\?v=c49-1/);
- assert.match(html,/personal-arcade-ui-v1\.js\?v=c418-1/);
+ assert.match(html,/personal-arcade-ui-v1\.js\?v=c418-2/);
  assert.match(html,/personal-arcade-v1\.css\?v=c414-1/);
  assert.match(html,/arcade-immersive-c417\.css\?v=c417-1/);
- assert.match(html,/arcade-playfield-c418\.css\?v=c418-1/);
+ assert.match(html,/arcade-playfield-c418\.css\?v=c418-2/);
  assert.match(html,/id="arcade-header-wallet-v1"/);
  assert.match(html,/ARCADE \/\/ 04/);
  const ui=src('js/personal-arcade-ui-v1.js');

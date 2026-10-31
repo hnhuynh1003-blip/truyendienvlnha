@@ -320,6 +320,15 @@
  width:68px;height:55px;max-width:93%;flex:none;
  filter:drop-shadow(0 5px 4px #0006);
 }
+#personal-arcade-v1 .jade-sample-type-0{
+ background:radial-gradient(circle at 30% 19%,#e5d3a4,#9d8565 44%,#575e58 81%);
+}
+#personal-arcade-v1 .jade-sample-type-1{
+ background:radial-gradient(circle at 33% 20%,#bcd0ad,#748f7b 35%,#55565c 72%,#2c3844);
+}
+#personal-arcade-v1 .jade-sample-type-2{
+ background:radial-gradient(circle at 35% 15%,#dbc1cc,#9c7890 39%,#55506e 73%,#2c364d);
+}
 #personal-arcade-v1 .jade-sample-pick strong{color:#ffe39a;font-size:11px;white-space:nowrap}
 #personal-arcade-v1 .jade-sample-pick>span:last-child{
  color:#ecfff1;font:900 8px ui-monospace,monospace;letter-spacing:.06em;

@@ -597,7 +597,7 @@
      root.DuduPersonalJadeUIV1?.rememberTray?.(Number(tray.dataset.marketStall),true);
      const slot=Number(control.dataset.jadePreviewSlot);
      const specimen=tray.querySelectorAll('.jade-market-sample')[slot];
-     specimen?.scrollIntoView?.({block:'nearest',behavior:'smooth'});
+     specimen?.scrollIntoView?.({block:'center',inline:'nearest',behavior:'smooth'});
     }
     return;
    }
