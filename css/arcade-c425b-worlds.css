@@ -533,3 +533,84 @@
  #personal-arcade-v1 .jade-scan-options{gap:3px;padding:4px 5px 6px}
 }
 @media(prefers-reduced-motion:reduce){#personal-arcade-v1 .jade-stage-quote{animation:none!important}}
+
+/* C4.32 — AI photorealistic sprites: rough exterior, real saw-cut mineral and gemstone.
+   Artwork is selected only from visible state, never from hidden grade at the stall. */
+#personal-arcade-v1 .jade-stall-stone[class*="jade-raw-ai-"],
+#personal-arcade-v1 .jade-sample-pebble[class*="jade-raw-ai-"],
+#personal-arcade-v1 .jade-stock-pebble[class*="jade-raw-ai-"],
+#personal-arcade-v1 .jade-item-art.jade-item-rough,
+#personal-arcade-v1 .jade-item-art.jade-item-window{
+ background-image:url('../assets/arcade-c432-ai/rough-stones.webp')!important;
+ background-size:300% 200%!important;
+ background-position:var(--jade-ai-x,0%) var(--jade-ai-y,0%)!important;
+ background-repeat:no-repeat!important;clip-path:none!important;
+ border:0!important;border-radius:0!important;
+ box-shadow:none!important;
+ filter:drop-shadow(0 9px 7px #070b0bbc)!important;
+}
+#personal-arcade-v1 .jade-item-art.jade-item-rough,
+#personal-arcade-v1 .jade-item-art.jade-item-window{inset:-18px -13px -6px!important}
+#personal-arcade-v1 .jade-stall-stone[class*="jade-raw-ai-"]{filter:drop-shadow(0 8px 5px #07120ddd)!important}
+#personal-arcade-v1 .jade-stall-stone.is-selected[class*="jade-raw-ai-"]{filter:drop-shadow(0 0 13px #fff1b1) drop-shadow(0 5px 3px #000a)!important}
+#personal-arcade-v1 .jade-showcase-rough i{
+ background-image:url('../assets/arcade-c432-ai/rough-stones.webp')!important;
+ background-size:300% 200%!important;background-position:0 0!important;
+ filter:drop-shadow(0 7px 5px #000c)!important;
+}
+#personal-arcade-v1 .jade-showcase-rough i:nth-child(2){background-position:50% 0!important}
+#personal-arcade-v1 .jade-showcase-rough i:nth-child(3){background-position:100% 0!important}
+#personal-arcade-v1 .jade-item-art[class*="jade-ai-gem-"],
+#personal-arcade-v1 .jade-vault-gem[class*="jade-ai-gem-"],
+#personal-arcade-v1 .jade-exhibit .jade-collectible-art[class*="jade-ai-gem-"],
+#personal-arcade-v1 .jade-album-slot .jade-collectible-art[class*="jade-ai-gem-"]{
+ background-image:var(--jade-ai-source)!important;
+ background-size:300% 200%!important;
+ background-position:var(--jade-ai-x,0%) var(--jade-ai-y,0%)!important;
+ background-repeat:no-repeat!important;
+ clip-path:none!important;border:0!important;border-radius:0!important;
+ box-shadow:none!important;filter:drop-shadow(0 7px 8px #06180ed4)!important;
+}
+#personal-arcade-v1 .jade-item-art[class*="jade-ai-split-"],
+#personal-arcade-v1 .jade-vault-gem[class*="jade-ai-split-"]{
+ background-image:var(--jade-ai-source)!important;
+ background-size:300% 200%!important;
+ background-position:var(--jade-ai-x,0%) var(--jade-ai-y,0%)!important;
+ background-repeat:no-repeat!important;
+ clip-path:none!important;border:0!important;border-radius:0!important;
+ box-shadow:none!important;filter:drop-shadow(0 8px 8px #051a12c4)!important;
+}
+#personal-arcade-v1 .jade-item-art[class*="jade-ai-split-"]{inset:-15px -21px -7px!important}
+#personal-arcade-v1 .jade-item-art[class*="jade-ai-gem-"]{inset:-14px -14px -6px!important}
+#personal-arcade-v1 .jade-tier-legendary[class*="jade-ai-"]{filter:drop-shadow(0 0 10px #ffdd8b) drop-shadow(0 8px 8px #0c190dd2)!important}
+#personal-arcade-v1 .jade-tier-precious[class*="jade-ai-"]{filter:drop-shadow(0 0 7px #a1ffe7aa) drop-shadow(0 7px 6px #071610c4)!important}
+#personal-arcade-v1 .jade-ai-gem-0,#personal-arcade-v1 .jade-ai-gem-1,#personal-arcade-v1 .jade-ai-gem-2,
+#personal-arcade-v1 .jade-ai-gem-3,#personal-arcade-v1 .jade-ai-gem-4,#personal-arcade-v1 .jade-ai-gem-5{
+ --jade-ai-source:url('../assets/arcade-c432-ai/finished-jade.webp');
+}
+#personal-arcade-v1 .jade-ai-gem-6,#personal-arcade-v1 .jade-ai-gem-7,#personal-arcade-v1 .jade-ai-gem-8,
+#personal-arcade-v1 .jade-ai-gem-9,#personal-arcade-v1 .jade-ai-gem-10,#personal-arcade-v1 .jade-ai-gem-11{
+ --jade-ai-source:url('../assets/arcade-c432-ai/special-jade.webp');
+}
+#personal-arcade-v1 .jade-ai-split-0,#personal-arcade-v1 .jade-ai-split-1,#personal-arcade-v1 .jade-ai-split-2,
+#personal-arcade-v1 .jade-ai-split-3,#personal-arcade-v1 .jade-ai-split-4,#personal-arcade-v1 .jade-ai-split-5{
+ --jade-ai-source:url('../assets/arcade-c432-ai/split-stones.webp');
+}
+#personal-arcade-v1 .jade-ai-split-6,#personal-arcade-v1 .jade-ai-split-7,#personal-arcade-v1 .jade-ai-split-8,
+#personal-arcade-v1 .jade-ai-split-9,#personal-arcade-v1 .jade-ai-split-10,#personal-arcade-v1 .jade-ai-split-11{
+ --jade-ai-source:url('../assets/arcade-c432-ai/special-split.webp');
+}
+#personal-arcade-v1 .jade-raw-ai-0,#personal-arcade-v1 .jade-ai-gem-0,#personal-arcade-v1 .jade-ai-split-0{--jade-ai-x:0%;--jade-ai-y:0%}
+#personal-arcade-v1 .jade-raw-ai-1,#personal-arcade-v1 .jade-ai-gem-1,#personal-arcade-v1 .jade-ai-split-1{--jade-ai-x:50%;--jade-ai-y:0%}
+#personal-arcade-v1 .jade-raw-ai-2,#personal-arcade-v1 .jade-ai-gem-2,#personal-arcade-v1 .jade-ai-split-2{--jade-ai-x:100%;--jade-ai-y:0%}
+#personal-arcade-v1 .jade-raw-ai-3,#personal-arcade-v1 .jade-ai-gem-3,#personal-arcade-v1 .jade-ai-split-3{--jade-ai-x:0%;--jade-ai-y:100%}
+#personal-arcade-v1 .jade-raw-ai-4,#personal-arcade-v1 .jade-ai-gem-4,#personal-arcade-v1 .jade-ai-split-4{--jade-ai-x:50%;--jade-ai-y:100%}
+#personal-arcade-v1 .jade-raw-ai-5,#personal-arcade-v1 .jade-ai-gem-5,#personal-arcade-v1 .jade-ai-split-5{--jade-ai-x:100%;--jade-ai-y:100%}
+#personal-arcade-v1 .jade-raw-ai-6,#personal-arcade-v1 .jade-ai-gem-6,#personal-arcade-v1 .jade-ai-split-6{--jade-ai-x:0%;--jade-ai-y:0%}
+#personal-arcade-v1 .jade-raw-ai-7,#personal-arcade-v1 .jade-ai-gem-7,#personal-arcade-v1 .jade-ai-split-7{--jade-ai-x:50%;--jade-ai-y:0%}
+#personal-arcade-v1 .jade-raw-ai-8,#personal-arcade-v1 .jade-ai-gem-8,#personal-arcade-v1 .jade-ai-split-8{--jade-ai-x:100%;--jade-ai-y:0%}
+#personal-arcade-v1 .jade-raw-ai-9,#personal-arcade-v1 .jade-ai-gem-9,#personal-arcade-v1 .jade-ai-split-9{--jade-ai-x:0%;--jade-ai-y:100%}
+#personal-arcade-v1 .jade-raw-ai-10,#personal-arcade-v1 .jade-ai-gem-10,#personal-arcade-v1 .jade-ai-split-10{--jade-ai-x:50%;--jade-ai-y:100%}
+#personal-arcade-v1 .jade-raw-ai-11,#personal-arcade-v1 .jade-ai-gem-11,#personal-arcade-v1 .jade-ai-split-11{--jade-ai-x:100%;--jade-ai-y:100%}
+#personal-arcade-v1 .jade-vault-gem[class*="jade-ai-"]{width:80px;height:80px}
+#personal-arcade-v1 .jade-album-slot .jade-collectible-art[class*="jade-ai-"]{width:100%;height:100%}

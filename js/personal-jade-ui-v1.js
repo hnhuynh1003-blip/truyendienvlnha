@@ -9,8 +9,12 @@
  const stoneName=stone=>stone.grade?jade.GRADES[stone.grade]+' · '+jade.COLORS[stone.color]:'Phế thạch';
  const isGem=stone=>stone&&stone.grade>0&&stone.flaw!=='skin';
  const gemTier=stone=>!isGem(stone)?'waste':stone.grade>=7||stone.grade>=6&&stone.color===6?'legendary':stone.grade>=5||stone.color>=6?'precious':'common';
- const gemVisual=stone=>`jade-tier-${gemTier(stone)} jade-grade-${stone.grade||0} jade-item-shade-${stone.color}`;
- const shellVisual=(site,seed)=>`jade-raw-site-${site} jade-raw-var-${(seed>>>4)%3}`;
+ const gemArtIndex=stone=>!isGem(stone)?-1:stone.color===0?0:stone.color===1?(stone.grade>=5?4:stone.grade>=4?9:1):stone.color===2?2:stone.color===3?(stone.grade>=6?10:3):stone.color===4?(stone.grade<=2?11:6):stone.color===5?7:stone.color===6?5:8;
+ const splitArtIndex=stone=>!isGem(stone)?0:stone.color===0?1:stone.color===1?(stone.grade>=5?4:2):stone.color===2?11:stone.color===3?(stone.grade>=5?10:3):stone.color===4?6:stone.color===5?7:stone.color===6?5:8;
+ const gemVisual=stone=>`jade-tier-${gemTier(stone)} jade-grade-${stone.grade||0} jade-item-shade-${stone.color} ${isGem(stone)?'jade-ai-gem-'+gemArtIndex(stone):'jade-ai-split-0'}`;
+ const splitVisual=stone=>`jade-tier-${gemTier(stone)} jade-grade-${stone.grade||0} jade-item-shade-${stone.color} jade-ai-split-${splitArtIndex(stone)}`;
+ const rawArtIndex=(site,seed)=>site===0&&((seed>>>4)%3===2)?5:site===1&&((seed>>>4)%4===0)?0:site===2&&((seed>>>4)%4===0)?5:site===3&&((seed>>>4)%5===0)?4:site;
+ const shellVisual=(site,seed)=>`jade-raw-site-${site} jade-raw-var-${(seed>>>4)%3} jade-raw-ai-${rawArtIndex(site,seed)}`;
  const trend=rate=>rate>100?'↗ +'+(rate-100)+'%':rate<100?'↘ −'+(100-rate)+'%':'→ 0%';
  const trendClass=rate=>rate>100?'is-up':rate<100?'is-down':'is-flat';
  const dateText=time=>new Date(time||Date.now()).toLocaleDateString('vi-VN',{timeZone:'UTC',day:'2-digit',month:'2-digit'});
@@ -50,7 +54,7 @@
     ${stone?`<div class="jade-specimen ${cut?'jade-revealed':''} ${carved?'jade-crafted':''} jade-craft-${stone.craft||'raw'}"
         aria-label="${cut?stoneName(stone):'Đá thô chưa cắt'}">
        <span class="jade-rock-face"></span><span class="jade-rock-grain"></span><span class="jade-rock-vein"></span>
-       <span class="jade-item-art jade-item-${visual} ${cut?gemVisual(stone):shellVisual(stone.site,stone.seed)}" style="--jade-item-x:${artworkIndex*25}%;--jade-gem-tone:${color}" aria-hidden="true"></span>${cut&&revealed?'<span class="jade-reveal-rays" aria-hidden="true"></span>':''}
+       <span class="jade-item-art jade-item-${visual} ${cut?(carved?gemVisual(stone):splitVisual(stone)):shellVisual(stone.site,stone.seed)}" style="--jade-item-x:${artworkIndex*25}%;--jade-gem-tone:${color}" aria-hidden="true"></span>${cut&&revealed?'<span class="jade-reveal-rays" aria-hidden="true"></span>':''}
        ${phase==='window'?'<span class="jade-polished-window"></span>':''}
        ${cut?`<span class="jade-gem-inner"></span><span class="jade-gem-shine"></span>`:''}
       </div>`:`<div class="jade-showcase-rough" aria-hidden="true"><i></i><i></i><i></i></div>`}
@@ -163,7 +167,7 @@
        <span class="jade-stall-awning"></span><span class="jade-stall-lamp jade-stall-lamp-left"></span>
        <span class="jade-stall-lamp jade-stall-lamp-right"></span><span class="jade-stall-merchant"></span>
        <span class="jade-stall-counter"></span>
-       ${[0,1,2].map(slot=>`<button type="button" class="jade-stall-stone jade-stall-stone-${['a','b','c'][slot]} jade-raw-site-${i} jade-raw-var-${slot} ${chosen===slot?'is-selected':''}"
+       ${[0,1,2].map(slot=>`<button type="button" class="jade-stall-stone jade-stall-stone-${['a','b','c'][slot]} ${shellVisual(i,jade.marketOffer(j,i,slot).stone.seed)} ${chosen===slot?'is-selected':''}"
         data-jade-preview-slot="${slot}" aria-pressed="${chosen===slot}" style="--jade-item-x:${((i+slot)%5)*25}%" aria-label="Xem phôi ${['A','B','C'][slot]} tại sạp ${m.short}"><span>${['A','B','C'][slot]}</span></button>`).join('')}
        <span class="jade-stall-banner">${['◈','≋','◇','◆','✵'][i]} ${m.short}</span>
       </div>
@@ -180,7 +184,7 @@
          <button type="button" class="jade-sample-pick" data-arcade-action="jade-pick-${i}-${slot}"
           ${held>=jade.MAX_STONES||!free&&s.coins<offer.ask?'disabled':''}
           aria-label="Chọn phôi ${['A','B','C'][slot]} · ${free?'miễn phí':fmt(offer.ask)+' Xu'} · ${offer.marks}">
-          <span class="jade-sample-pebble jade-shell-${(i+slot)%5} jade-raw-site-${i} jade-raw-var-${slot} jade-sample-type-${slot}" aria-hidden="true"><i></i></span>
+          <span class="jade-sample-pebble jade-shell-${(i+slot)%5} ${shellVisual(i,offer.stone.seed)} jade-sample-type-${slot}" aria-hidden="true"><i></i></span>
           <strong>${free?'TẶNG':fmt(offer.ask)+' Xu'}</strong><span>✦ CHỌN</span></button>
          <small title="${offer.marks}">${offer.marks}</small>
          <div class="jade-sample-clue">${inspected?'◉ '+hint:'? Bí ẩn'}</div>
@@ -251,7 +255,7 @@
       <div class="jade-album-gems">${jade.COLORS.map((name,color)=>{
        const count=j.album[grade+'-'+color]||0;
        return `<div class="jade-album-slot ${count?'is-found':''} jade-tier-${grade>=7?'legendary':grade>=5||color>=6?'precious':'common'} jade-grade-${grade} jade-item-shade-${color}" title="${name}${count?' ×'+count:' · Chưa mở'}"
-        style="--jade-color:${jade.COLOR_HEX[color]};--jade-item-x:${((grade-1)%5)*25}%" aria-label="${jade.GRADES[grade]}, ${name}, ${count?'đã thấy '+count+' lần':'chưa thấy'}">${count?'<span class="jade-collectible-art" aria-hidden="true"></span>':'◇'}</div>`;}).join('')}</div></div>`).join('')}
+        style="--jade-color:${jade.COLOR_HEX[color]};--jade-item-x:${((grade-1)%5)*25}%" aria-label="${jade.GRADES[grade]}, ${name}, ${count?'đã thấy '+count+' lần':'chưa thấy'}">${count?`<span class="jade-collectible-art ${gemVisual({grade,color,flaw:'perfect'})}" aria-hidden="true"></span>`:'◇'}</div>`;}).join('')}</div></div>`).join('')}
     <div class="jade-sheet-heading"><b>✦ Tủ Triển Lãm Cá Nhân</b><small>${j.exhibits.length}/40 tác phẩm</small></div>
     ${exhibits||'<p class="jade-sheet-hint">Chế tác rồi chọn “Đưa vào tủ” để lưu tác phẩm hiếm. Trưng bày không nhận Xu bán.</p>'}</div>`;
  }
