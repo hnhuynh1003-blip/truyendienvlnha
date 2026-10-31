@@ -56,6 +56,18 @@ async function main(){
   const tab=id=>page.locator(rootSelector+' [data-arcade-tab="'+id+'"]');
   const action=id=>page.locator(rootSelector+' button[data-arcade-action="'+id+'"]');
 
+  // C4.34R1: the four AI dock portraits must beat legacy per-game gradients.
+  const dockArt=await page.evaluate(async()=>{
+   const icon=document.querySelector('#personal-arcade-v1 .arcade-tab-icon');
+   const rule=getComputedStyle(icon).backgroundImage;
+   const asset=rule.match(/url\(["']?([^"')]+)/)?.[1];
+   if(!asset)return false;
+   const image=new Image();image.src=asset;
+   try{await image.decode();return image.naturalWidth>=256&&image.naturalHeight>=256;}
+   catch(_){return false;}
+  });
+  assert.ok(dockArt,'Four Arcade tabs use a loaded AI sprite, not blank gradients');
+
   // C4.23: a compact header button opens the interactive Season passport.
   await page.locator('#arcade-season-portal-c423').click();
   const passport=page.locator('.arcade-season-book');
@@ -126,6 +138,7 @@ async function main(){
      headingHeight:titleRect.height,stageTop:stageRect.top,titleBottom:titleRect.bottom,
      stageBackground:getComputedStyle(stage).backgroundImage,
      iconWidth:iconRect.width,iconHeight:iconRect.height,
+     iconBackground:getComputedStyle(active.querySelector('.arcade-tab-icon')).backgroundImage,
      overflow:document.querySelector('.arcade-scroll').scrollWidth-
       document.querySelector('.arcade-scroll').clientWidth};
    });
@@ -133,6 +146,7 @@ async function main(){
    assert.equal(look.headingHeight,0,game+' dedicates screen space to gameplay');
    assert.ok(look.stageTop>=look.titleBottom-2,game+' stage must clear the masthead');
    assert.ok(look.iconWidth>=26&&look.iconHeight>=26,game+' dock icon is substantial');
+   assert.match(look.iconBackground,/world-tabs\.webp/,game+' dock displays its AI sprite');
    assert.ok(look.overflow<=2,game+' game world has no horizontal clipping');
    if(game==='neon'){
     assert.equal(await page.locator('.neon-order-actions button').count(),3,

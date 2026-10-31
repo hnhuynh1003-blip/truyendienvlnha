@@ -35,9 +35,13 @@
  color:#c6c4d5;font-size:8px;font-weight:750;line-height:1.15;
  transition:background .2s,border-color .2s,box-shadow .2s;
 }
-#personal-arcade-v1 .arcade-tab-icon{
+#personal-arcade-v1 .arcade-tab[data-arcade-tab] .arcade-tab-icon{
+ /* Match C4.17's per-game background shorthand specificity;
+    otherwise its colored gradient hides the generated artwork. */
  display:block;flex:none;width:39px;height:39px;
- background-image:url('../assets/arcade-c434-ai/world-tabs.webp');
+ border:0;border-radius:0;box-shadow:none;
+ background-color:transparent;
+ background-image:url('../assets/arcade-c434-ai/world-tabs.webp?v=c434-icons-2');
  background-size:200% 200%;background-repeat:no-repeat;
  filter:drop-shadow(0 4px 5px #000a);
  transition:transform .18s,filter .18s;
