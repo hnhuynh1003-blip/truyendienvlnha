@@ -151,6 +151,14 @@ async function main(){
   await market.locator('.jade-stall-stone').nth(1).click();
   assert.equal(await market.locator('.jade-market-tray').first().evaluate(el=>el.open),true,
    'Touching a stone opens the matching hand-pick tray');
+  assert.equal(await market.locator('.jade-market-tray').first().getAttribute('data-selected-slot'),'1',
+   'The upper B stone must select B in the actual offer view');
+  assert.equal(await market.locator('.jade-market-sample:visible').count(),1,
+   'Selecting B must hide A and C instead of showing duplicate cards');
+  await market.locator('[data-jade-preview-all]').click();
+  assert.equal(await market.locator('.jade-market-sample:visible').count(),3,
+   'Compare mode makes all three distinct offers visible');
+  await market.locator('.jade-stall-stone').nth(1).click();
   await market.locator('button[data-arcade-action="jade-pick-0-1"]').click();
   const basket=await page.evaluate(()=>JSON.parse(localStorage.getItem(
    'dudu-personal-arcade:v1:sandbox%3Ac410-mobile-tester'))?.jade);

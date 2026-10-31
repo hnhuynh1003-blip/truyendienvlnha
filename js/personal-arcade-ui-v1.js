@@ -484,6 +484,11 @@
   const result=core.act(state,action,now(),Math.random());
   if(!result.ok){notice=result.reason;noticeUntil=now()+3500;error=true;render();return false;}
   state=result.state;
+  if(/^jade-pick-\d+-[0-2]$/.test(action)){
+   // That physical specimen is now in the bag; show the refreshed tray rather
+   // than leaving the same letter highlighted for a different incoming stone.
+   root.DuduPersonalJadeUIV1?.chooseMarketSample?.(Number(action.split('-')[2]),null);
+  }
   feedback=action==='mine'||action==='mine-burst'?{type:'mine',ore:action==='mine-burst'?'burst':result.label,
    quantity:result.quantity||1,at:now()}:action==='reel-line'?{type:'fish',label:result.label,at:now()}:null;
   notice=result.label==='stone'?'Nhặt được Đá.':result.label==='coal'?'Nhặt được Than.':
@@ -593,18 +598,34 @@
    if(control.dataset.jadePreviewSlot!=null){
     const tray=control.closest('.jade-market-card')?.querySelector('.jade-market-tray');
     if(tray){
-     tray.open=true;
-     root.DuduPersonalJadeUIV1?.rememberTray?.(Number(tray.dataset.marketStall),true);
+     const stall=Number(tray.dataset.marketStall);
      const slot=Number(control.dataset.jadePreviewSlot);
-     const specimen=tray.querySelectorAll('.jade-market-sample')[slot];
-     const viewport=tray.closest('.arcade-sheet-body');
+     root.DuduPersonalJadeUIV1?.chooseMarketSample?.(stall,slot);
+     render();
+     const selectedTray=element.querySelector('.arcade-sheet-overlay .jade-market-tray[data-market-stall="'+stall+'"]');
+     const specimen=selectedTray?.querySelector('.jade-market-sample.is-selected');
+     const viewport=selectedTray?.closest('.arcade-sheet-body');
      if(specimen&&viewport){
-      // The sheet is rebuilt on each game tick: jump directly to the chosen
-      // sample so the user sees its stone and buy control on a small phone.
+      // Each stone in the scene opens only its own actionable offer, not three
+      // duplicate cards. Keep the chosen offer visible after the sheet redraw.
       const target=specimen.getBoundingClientRect(),frame=viewport.getBoundingClientRect();
       viewport.scrollTop+=Math.round((target.top+target.bottom-frame.top-frame.bottom)/2);
-      specimen.querySelector('.jade-sample-pick')?.focus?.({preventScroll:true});
+      const pick=specimen.querySelector('.jade-sample-pick');
+      if(pick?.disabled)specimen.focus?.({preventScroll:true});
+      else pick?.focus?.({preventScroll:true});
      }
+    }
+    return;
+   }
+   if(control.dataset.jadePreviewAll!=null){
+    const tray=control.closest('.jade-market-tray'),stall=Number(tray?.dataset.marketStall);
+    root.DuduPersonalJadeUIV1?.chooseMarketSample?.(stall,null);
+    render();
+    const comparison=element.querySelector('.arcade-sheet-overlay .jade-market-tray[data-market-stall="'+stall+'"]');
+    const viewport=comparison?.closest('.arcade-sheet-body');
+    if(comparison&&viewport){
+     viewport.scrollTop+=Math.round(comparison.getBoundingClientRect().top-viewport.getBoundingClientRect().top-10);
+     comparison.querySelector('summary')?.focus?.({preventScroll:true});
     }
     return;
    }

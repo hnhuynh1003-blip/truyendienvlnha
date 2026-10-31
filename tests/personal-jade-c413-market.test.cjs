@@ -135,3 +135,24 @@ test('C4.13 Ngọc Phường panel offers quick packs, handpicked stones and a c
  assert.match(css,/\.jade-stock-rail/);
  assert.match(css,/overflow-x:auto/);
 });
+
+test('C4.18.3 stall selection focuses one offer, and compare restores all three',()=>{
+ const window={DuduPersonalArcadeCoreV1:arcade};
+ vm.runInNewContext(readFileSync(join(__dirname,'../js/personal-jade-ui-v1.js'),'utf8'),{window});
+ const ui=window.DuduPersonalJadeUIV1,s=arcade.fresh(TIME);
+ let html=ui.panel(s);
+ assert.match(html,/data-selected-slot="all"/);
+ assert.doesNotMatch(html,/jade-market-tray is-focused/);
+ ui.chooseMarketSample(0,1);
+ html=ui.panel(s);
+ assert.match(html,/jade-market-tray is-focused" data-market-stall="0" open data-selected-slot="1"/);
+ assert.match(html,/jade-stall-stone-b is-selected"\s+data-jade-preview-slot="1" aria-pressed="true"/);
+ assert.match(html,/jade-market-sample [^"]*is-selected" data-jade-sample-slot="1"/);
+ assert.match(html,/data-jade-preview-all="1"/);
+ assert.match(html,/data-arcade-action="jade-pick-0-1"/,'Chosen sample preserves its true pick action');
+ ui.chooseMarketSample(0,null);
+ html=ui.panel(s);
+ assert.match(html,/data-market-stall="0" open data-selected-slot="all"/);
+ assert.doesNotMatch(html,/data-jade-preview-all/);
+ for(const slot of [0,1,2])assert.match(html,new RegExp('data-jade-sample-slot="'+slot+'"'));
+});

@@ -13,10 +13,18 @@
  const nowOf=s=>s.lastAt||Date.now();
  const marketRates=s=>jade.COLORS.map((name,i)=>({name,index:i,rate:jade.marketRate(i,nowOf(s))}));
  let openStall=null;
+ const chosenSamples=new Map();
  function rememberTray(index,opened){
   if(!Number.isSafeInteger(index)||index<0||index>=jade.MARKETS.length)return;
   if(opened)openStall=index;
   else if(openStall===index)openStall=null;
+ }
+ function chooseMarketSample(index,slot){
+  if(!Number.isSafeInteger(index)||index<0||index>=jade.MARKETS.length)return;
+  if(slot===null)chosenSamples.delete(index);
+  else if(Number.isSafeInteger(slot)&&slot>=0&&slot<3)chosenSamples.set(index,slot);
+  else return;
+  openStall=index;
  }
  function stoneScene(stone,j){
   const phase=stone?.phase||'none',color=stone?jade.COLOR_HEX[stone.color]:'#8bc4a7',
@@ -132,23 +140,25 @@
       <em>🎒 ${held}/${jade.MAX_STONES} đá trong túi</em></div>
     ${jade.MARKETS.map((m,i)=>{if(!jade.unlocked(j,i))return '';
      const free=!j.bought&&i===0;
+     const chosen=chosenSamples.has(i)?chosenSamples.get(i):null;
      return `<section class="jade-market-card jade-market-${i} is-open" aria-label="Sạp ${m.name}">
       <div class="jade-stall-scene" aria-label="Khay đá ${m.short}. Chạm viên để xem và lựa.">
        <span class="jade-stall-awning"></span><span class="jade-stall-lamp jade-stall-lamp-left"></span>
        <span class="jade-stall-lamp jade-stall-lamp-right"></span><span class="jade-stall-merchant"></span>
        <span class="jade-stall-counter"></span>
-       ${[0,1,2].map(slot=>`<button type="button" class="jade-stall-stone jade-stall-stone-${['a','b','c'][slot]}"
-        data-jade-preview-slot="${slot}" aria-label="Xem phôi ${['A','B','C'][slot]} tại sạp ${m.short}">${['A','B','C'][slot]}</button>`).join('')}
+       ${[0,1,2].map(slot=>`<button type="button" class="jade-stall-stone jade-stall-stone-${['a','b','c'][slot]} ${chosen===slot?'is-selected':''}"
+        data-jade-preview-slot="${slot}" aria-pressed="${chosen===slot}" aria-label="Xem phôi ${['A','B','C'][slot]} tại sạp ${m.short}">${['A','B','C'][slot]}</button>`).join('')}
        <span class="jade-stall-banner">${['◈','≋','◇','◆','✵'][i]} ${m.short}</span>
       </div>
       <div class="jade-market-top"><div class="jade-market-copy"><b>${m.name}</b>
        <small>${m.skin}</small></div><strong class="jade-stall-price">${fmt(m.price)} Xu/viên</strong></div>
-      <details class="jade-market-tray" data-market-stall="${i}" ${openStall===i?'open':''}>
-       <summary>◈ Tự lựa 3 viên <span>Quan sát · Soi · Mang về</span></summary>
+      <details class="jade-market-tray ${chosen!==null?'is-focused':''}" data-market-stall="${i}" ${openStall===i?'open':''} data-selected-slot="${chosen??'all'}">
+       <summary>${chosen===null?'◈ Tự lựa 3 viên':'◈ Đang xem phôi '+['A','B','C'][chosen]} <span>Quan sát · Soi · Mang về</span></summary>
+       ${chosen!==null?'<div class="jade-preview-compare"><button type="button" data-jade-preview-all="1">↔ So sánh cả 3 viên</button></div>':''}
        <div class="jade-market-samples">${[0,1,2].map(slot=>{const offer=jade.marketOffer(j,i,slot);
         const inspected=j.inspected?.includes(jade.inspectionKey(j,i,slot)),fee=jade.inspectFee(i),
          hint=inspected?jade.scanHint(offer.stone,(slot+1)%3,j.lamp):null;
-        return `<div class="jade-market-sample ${inspected?'is-inspected':''}">
+        return `<div class="jade-market-sample ${inspected?'is-inspected':''} ${chosen===slot?'is-selected':''}" data-jade-sample-slot="${slot}" ${chosen===slot?'tabindex="-1"':''}>
          <div class="jade-sample-top"><b>PHÔI ${['A','B','C'][slot]}</b><em>${offer.size}</em></div>
          <button type="button" class="jade-sample-pick" data-arcade-action="jade-pick-${i}-${slot}"
           ${held>=jade.MAX_STONES||!free&&s.coins<offer.ask?'disabled':''}
@@ -250,5 +260,5 @@
    </div>
   </section>`;
  }
- root.DuduPersonalJadeUIV1=Object.freeze({panel,rememberTray});
+ root.DuduPersonalJadeUIV1=Object.freeze({panel,rememberTray,chooseMarketSample});
 })(typeof window!=='undefined'?window:{});
