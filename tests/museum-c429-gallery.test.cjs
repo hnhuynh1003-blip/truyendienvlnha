@@ -97,6 +97,7 @@ test('C4.29 keeps verified collectibles and Season1 preview separate, delivers c
  const gallery=repo('js/museum-c429-gallery.js').toString();
  assert.match(html,/museum-c429-gallery\.css\?v=c429-1/);
  assert.match(html,/museum-c429-gallery\.js\?v=c429-1/);
+ assert.match(html,/museum-vault-c426\.js\?v=c426-2&amp;gallery=c429-1/);
  assert.match(vault,/\['preview','Quà mùa'\]/);
  assert.match(vault,/\['owned','Kỷ vật thật'\]/);
  assert.match(html,/await DuduCollectiblesClient\.mine\(\)/);
