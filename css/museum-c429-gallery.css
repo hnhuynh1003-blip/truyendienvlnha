@@ -85,7 +85,7 @@ body.dudu-phone-v11 #cyber-phone .museum-c429-pedestal.is-chosen .museum-c429-tr
  transform:translateY(-5px) scale(1.09);filter:drop-shadow(0 2px 7px #ffe1a4a9);
 }
 body.dudu-phone-v11 #cyber-phone .museum-c429-pedestal.is-dormant .museum-c429-trophy-object{
- filter:grayscale(1) brightness(.33) drop-shadow(0 2px 3px #000);
+ filter:grayscale(.8) brightness(.56) drop-shadow(0 2px 3px #000);
 }
 body.dudu-phone-v11 #cyber-phone .museum-c429-pedestal-neon .museum-c429-trophy-object{
  background-image:url('../assets/museum-c429/trophy-neon.webp');
