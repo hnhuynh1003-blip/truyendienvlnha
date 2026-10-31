@@ -405,3 +405,92 @@
  #personal-arcade-v1 .jade-cut-flash,
  #personal-arcade-v1 .jade-cut-flash::after{animation:none!important}
 }
+
+/* C4.30 — sealed stones and true-grade gem reveals. Never show the inner color in the market. */
+#personal-arcade-v1 .jade-stall-stone,
+#personal-arcade-v1 .jade-sample-pebble,
+#personal-arcade-v1 .jade-stock-pebble,
+#personal-arcade-v1 .jade-item-rough,
+#personal-arcade-v1 .jade-item-window{
+ background-image:
+  radial-gradient(ellipse at 30% 22%,#ffffff48 0 5%,transparent 32%),
+  repeating-linear-gradient(148deg,transparent 0 14px,#100d0b24 15px 17px,transparent 19px 32px),
+  radial-gradient(ellipse at 64% 72%,var(--rough-mid,#777466),var(--rough-dark,#252e2a) 70%)!important;
+ background-size:100% 100%!important;background-position:center!important;
+ clip-path:polygon(17% 5%,60% 0,90% 17%,100% 51%,82% 94%,39% 100%,5% 76%,0 32%);
+ border-radius:38% 49% 34% 45%!important;
+ box-shadow:inset -13px -10px 20px #070b09a8,inset 9px 8px 15px #fff9d31b!important;
+}
+#personal-arcade-v1 .jade-raw-site-0{--rough-mid:#8c8074;--rough-dark:#343c39}
+#personal-arcade-v1 .jade-raw-site-1{--rough-mid:#b69a69;--rough-dark:#61523b}
+#personal-arcade-v1 .jade-raw-site-2{--rough-mid:#8b6c5b;--rough-dark:#402d29}
+#personal-arcade-v1 .jade-raw-site-3{--rough-mid:#454d4c;--rough-dark:#151d20}
+#personal-arcade-v1 .jade-raw-site-4{--rough-mid:#686b8c;--rough-dark:#272a43}
+#personal-arcade-v1 .jade-raw-var-1{clip-path:polygon(9% 17%,44% 0,88% 7%,100% 38%,87% 85%,51% 100%,9% 89%,0 50%)}
+#personal-arcade-v1 .jade-raw-var-2{clip-path:polygon(28% 0,71% 3%,100% 29%,94% 76%,65% 100%,22% 89%,0 54%,5% 18%)}
+#personal-arcade-v1 .jade-specimen .jade-item-rough,
+#personal-arcade-v1 .jade-specimen .jade-item-window{inset:0!important}
+#personal-arcade-v1 .jade-item-window::after{
+ content:'';position:absolute;left:31%;top:27%;width:35%;height:28%;border-radius:44%;
+ background:radial-gradient(ellipse,#f0eed1b6,#6c9c8f9e 62%,#273f33 85%);
+ box-shadow:inset 0 0 7px #121b1d,0 0 3px #fff8c7;
+ /* An appraisal window is deliberately neutral, not the true color. */
+}
+#personal-arcade-v1 .jade-item-gem,
+#personal-arcade-v1 .jade-vault-gem:not(.is-waste),
+#personal-arcade-v1 .jade-exhibit .jade-collectible-art,
+#personal-arcade-v1 .jade-album-slot.is-found .jade-collectible-art{
+ background-image:
+  linear-gradient(125deg,transparent 0 24%,#ffffffa3 27%,transparent 30% 58%,#ffffff30 62%,transparent 66%),
+  radial-gradient(ellipse at 34% 24%,#ffffffc4 0 4%,#ffffff2b 18%,transparent 47%),
+  radial-gradient(ellipse at 60% 70%,var(--jade-gem-tone,var(--jade-color,#41bc8f)) 7%,#12372d 110%)!important;
+ background-size:100% 100%!important;background-position:center!important;
+ clip-path:polygon(49% 0,80% 9%,100% 37%,87% 78%,51% 100%,14% 82%,0 43%,19% 12%);
+ border:1px solid #e5ffd48a!important;border-radius:32% 38% 40% 34%;
+ filter:drop-shadow(0 0 9px var(--jade-gem-tone,var(--jade-color,#71eab3))) drop-shadow(0 8px 7px #020f0dc7)!important;
+}
+#personal-arcade-v1 .jade-item-gem.jade-grade-1,
+#personal-arcade-v1 .jade-vault-gem.jade-grade-1{filter:saturate(.65) drop-shadow(0 4px 4px #071914)!important;opacity:.9}
+#personal-arcade-v1 .jade-tier-precious{box-shadow:inset 0 0 13px #ffffff8c,0 0 20px #a7f9db70!important}
+#personal-arcade-v1 .jade-tier-legendary{
+ box-shadow:inset 0 0 17px #ffffffc0,0 0 24px #ffdc87a3,0 0 45px #a8fff37a!important;
+ animation:jade-mythic-breathe 2.8s ease-in-out infinite alternate!important;
+}
+#personal-arcade-v1 .jade-item-waste{background-position:var(--jade-item-x) 0!important;filter:grayscale(.7) brightness(.7)!important}
+#personal-arcade-v1 .jade-stage.jade-phase-cut .jade-specimen,
+#personal-arcade-v1 .jade-stage.jade-phase-crafted .jade-specimen{animation:jade-gem-arrive .65s cubic-bezier(.14,.85,.22,1.1) both}
+#personal-arcade-v1 .jade-stage.is-jade-cut-reveal.jade-result-precious .jade-specimen{animation:jade-gem-arrive 1.05s cubic-bezier(.12,.85,.2,1.08) both}
+#personal-arcade-v1 .jade-stage.is-jade-cut-reveal.jade-result-legendary .jade-specimen{animation:jade-gem-arrive 1.45s cubic-bezier(.08,.87,.22,1.08) both}
+#personal-arcade-v1 .jade-stage .jade-reveal-rays{display:none;position:absolute;inset:-72px;pointer-events:none;z-index:-1}
+#personal-arcade-v1 .jade-stage.jade-result-precious .jade-reveal-rays,
+#personal-arcade-v1 .jade-stage.jade-result-legendary .jade-reveal-rays{
+ display:block;background:conic-gradient(from 15deg,transparent 0 12deg,#f8ebbc70 16deg,transparent 25deg 64deg,#a9ffe78c 70deg,transparent 82deg 120deg,#fff4c463 125deg,transparent 140deg);
+ mask-image:radial-gradient(circle,transparent 20%,#000 35%,transparent 75%);animation:jade-aura-turn 5s linear infinite;
+}
+#personal-arcade-v1 .jade-stage.jade-result-legendary .jade-reveal-rays{filter:drop-shadow(0 0 17px #fff0ae);animation-duration:2.8s}
+#personal-arcade-v1 .jade-flash-precious{background:radial-gradient(ellipse at 50% 60%,#fff8c9,#9affd8b8 21%,transparent 70%)!important}
+#personal-arcade-v1 .jade-flash-legendary{background:radial-gradient(ellipse at 50% 60%,#ffffff,#f9d98dd4 24%,#6fffe46b 45%,transparent 80%)!important;animation-duration:1.5s!important}
+#personal-arcade-v1 .jade-rarity-stamp{font:800 10px ui-monospace,monospace;letter-spacing:.16em;color:#c3e7c9;margin:4px 0}
+#personal-arcade-v1 .jade-result-precious .jade-rarity-stamp{color:#a3fff0;text-shadow:0 0 11px #a2f8dc}
+#personal-arcade-v1 .jade-result-legendary .jade-rarity-stamp{color:#ffe3a0;text-shadow:0 0 15px #ffecae}
+#personal-arcade-v1 .jade-vault-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+#personal-arcade-v1 .jade-vault-card{
+ position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:7px;
+ padding:15px 7px 9px;border-radius:13px 13px 5px 5px;
+ background:radial-gradient(ellipse at 50% 12%,#b9da9938,transparent 64%),linear-gradient(150deg,#344639,#101f1d);
+ box-shadow:inset 0 1px #f9e8b48a,0 12px 20px #06140c65;
+}
+#personal-arcade-v1 .jade-vault-card::before{content:'✦';position:absolute;top:3px;right:8px;color:#d7bc77;font-size:12px}
+#personal-arcade-v1 .jade-vault-card.jade-result-legendary{border-color:#ffe3a4;box-shadow:0 0 17px #ffdc7754,inset 0 1px #fff2cd}
+#personal-arcade-v1 .jade-vault-gem{width:75px;height:76px;align-self:center;margin:3px auto 7px}
+#personal-arcade-v1 .jade-vault-info{width:100%}
+#personal-arcade-v1 .jade-vault-actions{display:grid;grid-template-columns:1fr 1fr;width:100%}
+#personal-arcade-v1 .jade-vault-actions .arcade-button{min-width:0;padding:5px 2px;font-size:9px}
+@keyframes jade-gem-arrive{0%{opacity:0;transform:translateY(32px) scale(.5) rotate(-14deg);filter:blur(8px)}55%{opacity:.8;transform:translateY(-8px) scale(1.14) rotate(3deg)}100%{opacity:1;transform:none;filter:none}}
+@keyframes jade-aura-turn{to{transform:rotate(360deg)}}
+@keyframes jade-mythic-breathe{from{filter:brightness(.95)}to{filter:brightness(1.2)}}
+@media(max-width:360px){#personal-arcade-v1 .jade-vault-gem{width:62px;height:65px}}
+@media(prefers-reduced-motion:reduce){
+ #personal-arcade-v1 .jade-tier-legendary,#personal-arcade-v1 .jade-reveal-rays,
+ #personal-arcade-v1 .jade-stage .jade-specimen{animation:none!important}
+}

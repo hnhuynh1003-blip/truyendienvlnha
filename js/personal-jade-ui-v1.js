@@ -7,6 +7,10 @@
  const btn=(label,action,kind='primary',disabled=false)=>`<button type="button" class="arcade-button ${kind}" data-arcade-action="${action}" ${disabled?'disabled':''}>${label}</button>`;
  const sheet=(label,icon,id)=>`<button type="button" class="arcade-drawer-trigger" data-arcade-drawer="${id}"><span aria-hidden="true">${icon}</span>${label}</button>`;
  const stoneName=stone=>stone.grade?jade.GRADES[stone.grade]+' · '+jade.COLORS[stone.color]:'Phế thạch';
+ const isGem=stone=>stone&&stone.grade>0&&stone.flaw!=='skin';
+ const gemTier=stone=>!isGem(stone)?'waste':stone.grade>=7||stone.grade>=6&&stone.color===6?'legendary':stone.grade>=5||stone.color>=6?'precious':'common';
+ const gemVisual=stone=>`jade-tier-${gemTier(stone)} jade-grade-${stone.grade||0} jade-item-shade-${stone.color}`;
+ const shellVisual=(site,seed)=>`jade-raw-site-${site} jade-raw-var-${(seed>>>4)%3}`;
  const trend=rate=>rate>100?'↗ +'+(rate-100)+'%':rate<100?'↘ −'+(100-rate)+'%':'→ 0%';
  const trendClass=rate=>rate>100?'is-up':rate<100?'is-down':'is-flat';
  const dateText=time=>new Date(time||Date.now()).toLocaleDateString('vi-VN',{timeZone:'UTC',day:'2-digit',month:'2-digit'});
@@ -35,9 +39,9 @@
    scanned=stone?stone.scans.filter(Boolean).length:0,
    carved=phase==='crafted',cut=phase==='cut'||carved,
    revealed=cut&&stone?.grade>0&&stone.flaw!=='skin',
-   visual=carved&&revealed?'gem':phase==='cut'?'split':phase==='window'?'window':'rough',
-   artworkIndex=visual==='gem'?(Math.max(1,stone.grade)-1)%5:(stone?.site??0);
-  return `<div class="arcade-stage jade-stage jade-site-${stone?.site??0} jade-phase-${phase} ${phasePulse?'is-'+phasePulse.type+'-reveal':''}"
+   visual=cut?(revealed?'gem':'waste'):phase==='window'?'window':'rough',
+   artworkIndex=stone?.site??0,tier=gemTier(stone);
+  return `<div class="arcade-stage jade-stage jade-site-${stone?.site??0} jade-phase-${phase} ${cut?'jade-result-'+tier:''} ${phasePulse?'is-'+phasePulse.type+'-reveal':''}"
     style="--jade-color:${color}" aria-label="Bàn soi đá Ngọc Phường">
     <div class="jade-hall-lattice jade-lattice-left"></div><div class="jade-hall-lattice jade-lattice-right"></div>
     <div class="jade-lantern jade-lantern-left"><i></i></div><div class="jade-lantern jade-lantern-right"><i></i></div>
@@ -46,7 +50,7 @@
     ${stone?`<div class="jade-specimen ${cut?'jade-revealed':''} ${carved?'jade-crafted':''} jade-craft-${stone.craft||'raw'}"
         aria-label="${cut?stoneName(stone):'Đá thô chưa cắt'}">
        <span class="jade-rock-face"></span><span class="jade-rock-grain"></span><span class="jade-rock-vein"></span>
-       <span class="jade-item-art jade-item-${visual} ${cut&&!revealed?'is-waste':''} jade-item-shade-${stone.color} jade-item-grade-${stone.grade||0}" style="--jade-item-x:${artworkIndex*25}%" aria-hidden="true"></span>
+       <span class="jade-item-art jade-item-${visual} ${cut?gemVisual(stone):shellVisual(stone.site,stone.seed)}" style="--jade-item-x:${artworkIndex*25}%;--jade-gem-tone:${color}" aria-hidden="true"></span>${cut&&revealed?'<span class="jade-reveal-rays" aria-hidden="true"></span>':''}
        ${phase==='window'?'<span class="jade-polished-window"></span>':''}
        ${cut?`<span class="jade-gem-inner"></span><span class="jade-gem-shine"></span>`:''}
        ${!cut?[0,1,2].map(i=>`<button type="button" class="jade-scan-target jade-scan-${i} ${stone.scans[i]?'is-scanned':''}"
@@ -54,7 +58,7 @@
            aria-label="Soi điểm ${i+1}: ${['Độ xuyên sáng','Mãng đới và tùng hoa','Liệt văn và tạp chất'][i]}">
            ${stone.scans[i]?'✓':i+1}</button>`).join(''):''}
       </div>`:`<div class="jade-showcase-rough" aria-hidden="true"><i></i><i></i><i></i></div>`}
-    ${phasePulse?`<span class="${phasePulse.type==='jade-window'?'jade-window-flash':'jade-cut-flash'}" aria-hidden="true"></span>`:''}
+    ${phasePulse?`<span class="${phasePulse.type==='jade-window'?'jade-window-flash':'jade-cut-flash'} jade-flash-${tier}" aria-hidden="true"></span>`:''}
     <div class="jade-stage-base">${stone?'MẪU #'+String(stone.id).padStart(3,'0')+' · '+jade.MARKETS[stone.site].short.toUpperCase():
      'CHỜ CHỦ NHÂN CHỌN ĐÁ THÔ'}
       ${stone&&phase==='window'?'<b>◈ ĐÃ KHAI SONG</b>':stone&&!cut?`<b>${scanned}/3 ĐIỂM ĐÃ SOI</b>`:stone&&cut?`<b>${revealed?'✦ ĐÃ LỘ NGỌC':'✦ ĐÁ ĐÃ XẺ'}</b>`:''}</div>
@@ -102,7 +106,8 @@
      </div>`:''}`;
   }
   const good=stone.grade>0&&stone.flaw!=='skin',quote=jade.marketQuote(stone,nowOf(s)),value=quote.value;
-  return `<div class="jade-reveal"><span>${stone.phase==='crafted'?'✦ TÁC PHẨM HOÀN THÀNH':'✦ KẾT QUẢ XẺ ĐÁ'}</span>
+  return `<div class="jade-reveal jade-result-${gemTier(stone)}"><span>${stone.phase==='crafted'?'✦ TÁC PHẨM HOÀN THÀNH':'✦ KẾT QUẢ XẺ ĐÁ'}</span>
+    <div class="jade-rarity-stamp">${gemTier(stone)==='legendary'?'✦ HUYỀN THOẠI':gemTier(stone)==='precious'?'◇ NGỌC QUÝ':gemTier(stone)==='common'?'◈ NGỌC THƯỜNG':'KHÔNG CÓ NGỌC'}</div>
     <strong>${good?stoneName(stone):stone.flaw==='skin'?'Kháo Bì · Vỏ giả':'Phế thạch'}</strong>
     <small>${good?'Kích cỡ '+stone.size+' · '+jade.FLAW_NAMES[stone.flaw]+
      (stone.savedFracture?' · Cưa đã giữ được phôi':''):'Chỉ còn giá trị thu hồi'}
@@ -127,7 +132,7 @@
      const clue=jade.surface(stone);
      return `<button type="button" class="jade-stock-item" data-arcade-action="jade-select-${i}"
       ${j.active?'disabled':''} aria-label="Chọn mẫu ${stone.id} từ ${jade.MARKETS[stone.site].short}">
-      <span class="jade-stock-pebble jade-shell-${stone.site}" aria-hidden="true"></span>
+      <span class="jade-stock-pebble jade-shell-${stone.site} ${shellVisual(stone.site,stone.seed)}" aria-hidden="true"></span>
       <b>#${String(stone.id).padStart(3,'0')}</b>
       <small>${jade.MARKETS[stone.site].short}</small>
       <em>${stone.phase==='window'?'Đã khai song':clue.size}</em></button>`;}).join('')}</div>`:
@@ -165,7 +170,7 @@
        <span class="jade-stall-awning"></span><span class="jade-stall-lamp jade-stall-lamp-left"></span>
        <span class="jade-stall-lamp jade-stall-lamp-right"></span><span class="jade-stall-merchant"></span>
        <span class="jade-stall-counter"></span>
-       ${[0,1,2].map(slot=>`<button type="button" class="jade-stall-stone jade-stall-stone-${['a','b','c'][slot]} ${chosen===slot?'is-selected':''}"
+       ${[0,1,2].map(slot=>`<button type="button" class="jade-stall-stone jade-stall-stone-${['a','b','c'][slot]} jade-raw-site-${i} jade-raw-var-${slot} ${chosen===slot?'is-selected':''}"
         data-jade-preview-slot="${slot}" aria-pressed="${chosen===slot}" style="--jade-item-x:${((i+slot)%5)*25}%" aria-label="Xem phôi ${['A','B','C'][slot]} tại sạp ${m.short}"><span>${['A','B','C'][slot]}</span></button>`).join('')}
        <span class="jade-stall-banner">${['◈','≋','◇','◆','✵'][i]} ${m.short}</span>
       </div>
@@ -182,7 +187,7 @@
          <button type="button" class="jade-sample-pick" data-arcade-action="jade-pick-${i}-${slot}"
           ${held>=jade.MAX_STONES||!free&&s.coins<offer.ask?'disabled':''}
           aria-label="Chọn phôi ${['A','B','C'][slot]} · ${free?'miễn phí':fmt(offer.ask)+' Xu'} · ${offer.marks}">
-          <span class="jade-sample-pebble jade-shell-${(i+slot)%5} jade-sample-type-${slot}" aria-hidden="true"><i></i></span>
+          <span class="jade-sample-pebble jade-shell-${(i+slot)%5} jade-raw-site-${i} jade-raw-var-${slot} jade-sample-type-${slot}" aria-hidden="true"><i></i></span>
           <strong>${free?'TẶNG':fmt(offer.ask)+' Xu'}</strong><span>✦ CHỌN</span></button>
          <small title="${offer.marks}">${offer.marks}</small>
          <div class="jade-sample-clue">${inspected?'◉ '+hint:'? Bí ẩn'}</div>
@@ -210,7 +215,7 @@
    ${j.vault.length?`<div class="jade-vault-list">${j.vault.map((stone,i)=>{
     const q=jade.marketQuote(stone,time);
     const valuable=stone.grade>0&&stone.flaw!=='skin';
-    return `<article class="jade-vault-card"><span class="jade-vault-gem jade-collectible-art ${valuable?'':'is-waste'} jade-item-shade-${stone.color}" style="--jade-color:${jade.COLOR_HEX[stone.color]};--jade-item-x:${(valuable?(Math.max(1,stone.grade)-1)%5:stone.site)*25}%" aria-hidden="true"></span>
+    return `<article class="jade-vault-card jade-result-${gemTier(stone)}"><span class="jade-vault-gem jade-collectible-art ${valuable?'':'is-waste'} ${gemVisual(stone)}" style="--jade-color:${jade.COLOR_HEX[stone.color]};--jade-item-x:${(valuable?(Math.max(1,stone.grade)-1)%5:stone.site)*25}%" aria-hidden="true"></span>
      <div class="jade-vault-info"><b>#${String(stone.id).padStart(3,'0')} · ${stoneName(stone)}</b>
        <small>${stone.phase==='crafted'?jade.CRAFTS[stone.craft].name:'Phôi chưa chế tác'} · Cỡ ${stone.size}</small>
        <span class="${trendClass(q.rate)}">${trend(q.rate)} · <strong>${fmt(q.value)} Xu</strong></span></div>
@@ -243,7 +248,7 @@
  }
  function galleryPanel(s){
   const j=s.jade,found=Object.keys(j.album).length;
-  const exhibits=j.exhibits.map((item,i)=>`<div class="jade-exhibit"><span class="jade-collectible-art jade-item-shade-${item.color}" style="--jade-color:${jade.COLOR_HEX[item.color]};--jade-item-x:${((Math.max(1,item.grade)-1)%5)*25}%" aria-hidden="true"></span>
+  const exhibits=j.exhibits.map((item,i)=>`<div class="jade-exhibit"><span class="jade-collectible-art ${gemVisual(item)}" style="--jade-color:${jade.COLOR_HEX[item.color]};--jade-item-x:${((Math.max(1,item.grade)-1)%5)*25}%" aria-hidden="true"></span>
    <div><b>${jade.GRADES[item.grade]} · ${jade.COLORS[item.color]}</b>
    <small>${jade.CRAFTS[item.craft].name} · Cỡ ${item.size} · #${i+1}</small></div></div>`).join('');
   return `<div class="jade-gallery-content" data-arcade-panel="jade-gallery">
@@ -252,7 +257,7 @@
     ${Array.from({length:7},(_,index)=>index+1).map(grade=>`<div class="jade-album-row"><b>${jade.GRADES[grade]}</b>
       <div class="jade-album-gems">${jade.COLORS.map((name,color)=>{
        const count=j.album[grade+'-'+color]||0;
-       return `<div class="jade-album-slot ${count?'is-found':''} jade-item-shade-${color}" title="${name}${count?' ×'+count:' · Chưa mở'}"
+       return `<div class="jade-album-slot ${count?'is-found':''} jade-tier-${grade>=7?'legendary':grade>=5||color>=6?'precious':'common'} jade-grade-${grade} jade-item-shade-${color}" title="${name}${count?' ×'+count:' · Chưa mở'}"
         style="--jade-color:${jade.COLOR_HEX[color]};--jade-item-x:${((grade-1)%5)*25}%" aria-label="${jade.GRADES[grade]}, ${name}, ${count?'đã thấy '+count+' lần':'chưa thấy'}">${count?'<span class="jade-collectible-art" aria-hidden="true"></span>':'◇'}</div>`;}).join('')}</div></div>`).join('')}
     <div class="jade-sheet-heading"><b>✦ Tủ Triển Lãm Cá Nhân</b><small>${j.exhibits.length}/40 tác phẩm</small></div>
     ${exhibits||'<p class="jade-sheet-hint">Chế tác rồi chọn “Đưa vào tủ” để lưu tác phẩm hiếm. Trưng bày không nhận Xu bán.</p>'}</div>`;
