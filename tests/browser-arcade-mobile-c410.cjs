@@ -63,10 +63,15 @@ async function main(){
     const box=port.getBoundingClientRect(),nav=tabs.getBoundingClientRect();
     const phone=document.getElementById('cyber-phone').getBoundingClientRect();
     const close=document.querySelector('#cyber-phone .phone-close-btn').getBoundingClientRect();
-    const app=document.getElementById('phone-app-arcade').getBoundingClientRect();
+    const arcade=document.getElementById('phone-app-arcade');
+    const app=arcade.getBoundingClientRect();
+    const wallet=document.getElementById('arcade-header-wallet-v1').getBoundingClientRect();
+    const appHeader=arcade.querySelector('.phone-app-header').getBoundingClientRect();
     return {overflow:port.scrollWidth-port.clientWidth,tabs:tabs.children.length,
      portWidth:box.width,navWidth:nav.width,phoneWidth:phone.width,phoneHeight:phone.height,
-     closeWidth:close.width,closeBottom:close.bottom,appTop:app.top,
+     phoneLeft:phone.left,phoneRight:phone.right,closeWidth:close.width,
+     closeLeft:close.left,closeTop:close.top,closeBottom:close.bottom,
+     walletRight:wallet.right,appTop:app.top,appHeaderBottom:appHeader.bottom,
      homeBar:getComputedStyle(document.querySelector('#cyber-phone .phone-home-bar')).display};
    });
    assert.ok(layout.portWidth>190,'Arcade should have a usable content width at '+width);
@@ -74,8 +79,11 @@ async function main(){
    assert.equal(layout.tabs,4,'Four game tabs stay available on a narrow viewport');
    assert.ok(layout.navWidth<=layout.phoneWidth,'Bottom game navigation fits the phone');
    assert.ok(layout.phoneWidth/layout.phoneHeight<.55,'C4.15 phone is tall and slim at '+width+'px');
+   assert.ok(Math.abs(layout.phoneLeft-(width-layout.phoneRight))<=2,'C4.15 R2 phone stays centered');
    assert.ok(layout.closeWidth>=30,'C4.15 global close X stays tappable');
-   assert.ok(layout.closeBottom<=layout.appTop+2,'C4.15 app content clears the global X');
+   assert.ok(layout.closeTop>=layout.appTop-4 && layout.closeBottom<=layout.appHeaderBottom+5,
+    'C4.15 R2 close X shares the app header instead of using a second row');
+   assert.ok(layout.closeLeft>=layout.walletRight-2,'C4.15 R2 close X clears the Arcade wallet action');
    assert.equal(layout.homeBar,'none','C4.15 duplicate bottom line is hidden');
   }
   // Reading still leaves a small reader-controls gap, without making the

@@ -1,4 +1,4 @@
-/* C4.15 — a slimmer, taller phone frame on Home and while reading.
+/* C4.15 R2 — a slimmer, centered phone frame on mobile.
  * Presentation only: all existing app callbacks, saves and navigation remain.
  * Load last so reader/editorial placement does not make the device squat.
  */
@@ -46,6 +46,33 @@ body.dudu-phone-v11 #cyber-phone .phone-app-header {
   padding-bottom:5px;
   margin-bottom:8px;
 }
+/* When an ordinary app is open, the app already has its own header.
+ * Float the global X in that header's right-hand space instead of consuming
+ * a second full-width 36px status row. Keep the status row on Home and in
+ * immersive Messenger, whose keyboard layout has its own requirements.
+ * Old engines without :has simply retain the existing, accessible rail. */
+@supports selector(:has(*)) {
+  body.dudu-phone-v11:not(.dudu-v672-chatting) #cyber-phone .phone-screen:has(> #phone-home-screen[style*="display: none"]):not(:has(> #phone-app-chat[style*="display: flex"])) > .phone-status-bar {
+    position:absolute;
+    top:5px;
+    right:6px;
+    width:32px;
+    height:32px;
+    min-height:32px;
+    padding:0;
+    border:0;
+    background:none;
+    z-index:20;
+  }
+  body.dudu-phone-v11:not(.dudu-v672-chatting) #cyber-phone .phone-screen:has(> #phone-home-screen[style*="display: none"]):not(:has(> #phone-app-chat[style*="display: flex"])) > .phone-status-bar #phone-clock,
+  body.dudu-phone-v11:not(.dudu-v672-chatting) #cyber-phone .phone-screen:has(> #phone-home-screen[style*="display: none"]):not(:has(> #phone-app-chat[style*="display: flex"])) > .phone-status-bar .phone-system-label {
+    display:none;
+  }
+  body.dudu-phone-v11:not(.dudu-v672-chatting) #cyber-phone .phone-screen:has(> #phone-home-screen[style*="display: none"]):not(:has(> #phone-app-chat[style*="display: flex"])) > .phone-sub-app[style*="display: flex"] > .phone-app-header {
+    padding-right:40px;
+    box-sizing:border-box;
+  }
+}
 /* The legacy swipe-looking Home line is a duplicate of app Back navigation.
  * Retain its old DOM/callback for compatibility but remove it from layout. */
 body.dudu-phone-v11 #cyber-phone .phone-home-bar {display:none!important;}
@@ -61,17 +88,21 @@ body.dudu-phone-v11.dudu-site-v60.dudu-reading-active #cyber-phone {
 @media(max-width:760px){
   body.dudu-phone-v11 #cyber-phone,
   body.dudu-phone-v11.dudu-site-v60:not(.dudu-reading-active) #cyber-phone {
-    right:12px;
+    left:0;
+    right:0;
+    margin-inline:auto;
     bottom:calc(10px + env(safe-area-inset-bottom,0px));
-    width:min(338px,calc(100vw - 24px));
+    width:min(318px,calc(100vw - 24px));
     max-width:calc(100vw - 24px);
     height:min(760px,calc(100dvh - 22px - env(safe-area-inset-bottom,0px)));
     border-radius:27px;
   }
   body.dudu-phone-v11.dudu-site-v60.dudu-reading-active #cyber-phone {
-    right:12px;
+    left:0;
+    right:0;
+    margin-inline:auto;
     bottom:calc(68px + env(safe-area-inset-bottom,0px));
-    width:min(338px,calc(100vw - 24px),calc(63dvh - 56px));
+    width:min(318px,calc(100vw - 24px),calc(63dvh - 56px));
     max-width:calc(100vw - 24px);
     height:min(710px,calc(100dvh - 94px - env(safe-area-inset-bottom,0px)));
   }
