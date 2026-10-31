@@ -199,6 +199,10 @@ async function main(){
   assert.equal(basket.bought,1);
   await page.locator('.arcade-sheet-close').click();
   await action('jade-select-0').first().click();
+  const scanDrawer=page.locator('#personal-arcade-v1 .jade-scan-drawer');
+  assert.equal(await scanDrawer.evaluate(el=>el.open),false,
+   'Soi dấu hiệu stays folded until requested');
+  await scanDrawer.locator('summary').click();
   for(let i=0;i<3;i++)await action('jade-scan-'+i).click();
   const scans=await page.evaluate(()=>{
    const raw=localStorage.getItem('dudu-personal-arcade:v1:sandbox%3Ac410-mobile-tester');
