@@ -139,7 +139,7 @@ test('C4.29 keeps verified collectibles and Season1 preview separate, delivers c
  const html=repo('index.html').toString();
  const vault=repo('js/museum-vault-c426.js').toString();
  const gallery=repo('js/museum-c429-gallery.js').toString();
- assert.match(html,/museum-c429-gallery\.css\?v=c429-7/);
+ assert.match(html,/museum-c429-gallery\.css\?v=c429-8/);
  assert.match(html,/museum-c429-gallery\.js\?v=c429-5/);
  assert.match(html,/museum-vault-c426\.js\?v=c426-3&amp;gallery=c429-2/);
  assert.match(vault,/\['preview','Quà mùa'\]/);
@@ -164,4 +164,6 @@ test('C4.29 keeps verified collectibles and Season1 preview separate, delivers c
  assert.match(style,/overflow-x:auto/);
  assert.match(style,/filter:grayscale\(1\) brightness/);
  assert.match(style,/height:clamp\(310px,88vw,405px\)/);
+ assert.match(style,/left:18%;right:18%;top:17%;bottom:17%/,
+  'Featured statue leaves the larger museum backdrop visible');
 });

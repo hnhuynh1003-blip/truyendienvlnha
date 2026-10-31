@@ -307,8 +307,10 @@ body.dudu-phone-v11 #cyber-phone .museum-c429-scene-trophies{
  background-position:center 48%;
 }
 body.dudu-phone-v11 #cyber-phone .museum-c429-feature-art{
- position:absolute;z-index:2;left:12%;right:12%;top:13px;bottom:22px;
- display:block;background-position:center;background-size:contain;background-repeat:no-repeat;
+ /* A tall gallery should reveal its architecture and pedestal, not become
+    a close-up of the statue. Keep the object within the central two-thirds. */
+ position:absolute;z-index:2;left:18%;right:18%;top:17%;bottom:17%;
+ display:block;background-position:center bottom;background-size:contain;background-repeat:no-repeat;
  filter:grayscale(1) brightness(.66) contrast(1.1) drop-shadow(0 11px 7px #000d);
  animation:museum-c429-feature-rise .4s ease-out both;
 }
