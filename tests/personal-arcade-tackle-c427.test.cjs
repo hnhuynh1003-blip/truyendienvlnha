@@ -10,7 +10,7 @@ const T=1793440000000;
 const act=(s,name,roll=.2,at=T)=>core.act(s,name,at,roll);
 
 test('C4.27 extends the album without resetting old progress or the existing rod',()=>{
- assert.equal(Object.keys(core.FISH_SPECIES).length,11);
+ assert.equal(Object.keys(core.FISH_SPECIES).length,14);
  const old=core.fresh(T);old.coins=913;old.garden.rod=4;
  old.garden.fish=15;old.garden.bait=7;old.garden.fishAlbum.reed=3;
  delete old.garden.moonBait;delete old.garden.fishAlbum.glassfin;

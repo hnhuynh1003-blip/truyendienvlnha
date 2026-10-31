@@ -400,10 +400,14 @@
   const reel=currentReelFight(line,time),reelRules=reel?fishing.rules(line,core.FISH_SPECIES[line.fishId],reel.hits):null;
   const reelFlash=reel?.last&&time-reel.lastAt<1100?reel.last:'';
   const discovered=Object.values(g.fishAlbum).filter(count=>count>0).length;
+  const weather=core.gardenWeather(time);
   const pondResidents=['reed','carp','silver','koi','blue','moonfish'];
   if(g.fishAlbum.glassfin)pondResidents[1]='glassfin';
   if(g.fishAlbum.lantern)pondResidents[4]='lantern';
   if(g.fishAlbum.phoenix)pondResidents[5]='phoenix';
+  if(g.fishAlbum.fogveil)pondResidents[0]='fogveil';
+  if(g.fishAlbum.rainpetal)pondResidents[3]='rainpetal';
+  if(g.fishAlbum.nightlamp)pondResidents[2]='nightlamp';
   const fishRareChance=Math.round((1-Math.max(.75,.94-.035*(g.rod-1)-.02*(g.pondTier-1)))*100);
   const bed=(b,index)=>{
    const mature=b.status==='growing'&&time>=b.readyAt;
@@ -425,8 +429,11 @@
     <header class="arcade-world-heading"><div><span class="arcade-eyebrow">03 / CHILL FARM</span>
       <h3>Vườn Sương</h3><p>Gieo giống, mở rộng vườn và câu cá dưới trăng.</p></div>
       <span class="arcade-world-live">MIST / GARDEN</span></header>
-    <div class="arcade-stage garden-stage garden-pond-tier-${g.pondTier} garden-harvests-${Math.min(3,Math.floor(g.harvests/10))} ${g.plots>2?'garden-expanded':''} ${line?'is-fishing':''} ${biting?'is-biting':''} ${reelFlash?'reel-'+reelFlash:''}">
+    <div class="arcade-stage garden-stage garden-pond-tier-${g.pondTier} garden-harvests-${Math.min(3,Math.floor(g.harvests/10))} garden-weather-${weather.id} ${weather.night?'garden-weather-night':''} ${g.plots>2?'garden-expanded':''} ${line?'is-fishing':''} ${biting?'is-biting':''} ${line&&core.FISH_SPECIES[line.fishId]?.habitat?'garden-special-bite':''} ${reelFlash?'reel-'+reelFlash:''}">
       <div class="garden-mist garden-mist-a"></div><div class="garden-mist garden-mist-b"></div>
+      <div class="garden-weather-effects" aria-hidden="true"></div>
+      <div class="garden-weather-badge" role="status" aria-label="Thời tiết hồ: ${weather.label}${weather.night?', trời đêm':''}">
+       <span>${weather.id==='mist'?'✧':weather.id==='rain'?'☂':'☼'}</span><b>${weather.label.toUpperCase()}</b><em data-arcade-until="${weather.until}">${countdown(weather.until-time)}</em></div>
       <div class="garden-cloud garden-cloud-a"></div><div class="garden-cloud garden-cloud-b"></div>
       <span class="garden-moon" aria-hidden="true"></span>
       <div class="garden-mountains"></div><div class="garden-grass"></div>
@@ -464,6 +471,7 @@
        reelFlash==='hit'?'✦ ĐÚNG NHỊP! KÉO TIẾP':reelFlash==='miss'?'⚠ TRƯỢT NHỊP · DÂY CĂNG!':'✦ CÁ CẮN! GIỮ NHỊP KÉO':biting?'✦ CÁ CẮN CÂU!':waiting?
        `Đang chờ… <span data-arcade-until="${line.biteAt}">${countdown(line.biteAt-time)}</span>`:
        '✧ HỒ SƯƠNG YÊN Ả'}</div>
+      ${!line?`<div class="garden-weather-whisper">◈ ${weather.hint}${weather.night?' · Cá đêm có thể xuất hiện':''}</div>`:''}
       ${reel?`<div class="garden-reel-challenge ${reelFlash?'reel-'+reelFlash:''}" role="group" aria-label="Canh nhịp kéo cá">
        <div class="garden-reel-heading"><span>✧ KÉO CÁ VÀO BỜ</span><span>${reel.hits}/${reelRules.required} NHỊP</span></div>
        <div class="garden-reel-track" role="img" aria-label="Phao chạy qua vùng sáng: chạm Kéo dây khi phao nằm trong vùng sáng">
@@ -498,7 +506,7 @@
        const count=g.fishAlbum[id],known=count>0;
        return `<div class="garden-fish-entry fish-${id} ${known?'is-discovered':'is-unknown'}">
         <span class="garden-fish-art garden-fish-portrait ${known?'fish-'+id:'fish-undiscovered'}" aria-hidden="true"></span>
-        <div><strong>${known?fish.name:'Chưa khám phá'}</strong><small>${known?fish.rarity+' · Kỷ lục '+g.fishBest[id]+' cm':fish.rarity}</small></div>
+        <div><strong>${known?fish.name:'Chưa khám phá'}</strong><small>${known?fish.rarity+' · Kỷ lục '+g.fishBest[id]+' cm':fish.rarity+(fish.habitat?' · '+fish.habitat:'')}</small></div>
         <b>${known?'×'+count:'◈'}</b></div>`;}).join('')}</div>
       <div class="garden-tackle-shop" data-arcade-panel="garden-upgrades">
        <div class="garden-tackle-sign"><span>✧ BẾN TRĂNG · CỬA TIỆM CÂU</span><b>Đồ câu Hồ Sương</b><small>Chọn mồi, nâng cần rồi ra hồ ngay.</small></div>
@@ -630,12 +638,16 @@
    const plantMatured=s.garden.beds.some(b=>b.status==='growing'&&b.readyAt>s.lastAt&&b.readyAt<=time);
    const fishBit=!!s.garden.line&&s.lastAt<s.garden.line.biteAt&&time>=s.garden.line.biteAt;
    const fishEscaped=!!s.garden.line&&!state.garden.line;
+   const weatherBefore=tab==='garden'?core.gardenWeather(s.lastAt):null;
+   const weatherAfter=tab==='garden'?core.gardenWeather(time):null;
+   const weatherShifted=weatherBefore&&
+    (weatherBefore.id!==weatherAfter.id||weatherBefore.night!==weatherAfter.night);
    const boostExpired=!!s.neon.turboUntil&&s.lastAt<s.neon.turboUntil&&time>=s.neon.turboUntil;
    const turboReady=!!s.neon.turboReadyAt&&s.lastAt<s.neon.turboReadyAt&&time>=s.neon.turboReadyAt;
    const nextOrder=!!s.neon.orderReadyAt&&s.lastAt<s.neon.orderReadyAt&&time>=s.neon.orderReadyAt;
    if(fishEscaped){notice='Cá đã tuột khỏi lưỡi câu. Hãy thử lượt khác nhé.';
     noticeUntil=time+3500;error=false;}
-   if(lastRenderedKey!==activeKey||completedRepair||waterRefilled||bubbleAppeared||plantMatured||fishBit||fishEscaped||customerServed||boostExpired||turboReady||nextOrder)render();
+   if(lastRenderedKey!==activeKey||completedRepair||waterRefilled||bubbleAppeared||plantMatured||fishBit||fishEscaped||customerServed||boostExpired||turboReady||nextOrder||weatherShifted)render();
    else if(time-lastPaint>=900)refreshLive(time);
   }
  }

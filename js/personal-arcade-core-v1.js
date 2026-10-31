@@ -45,11 +45,22 @@
   dragon:Object.freeze({name:'Long ngư tinh vân',rarity:'Huyền thoại',icon:'🐉',min:58,max:98,rare:true}),
   glassfin:Object.freeze({name:'Cá kính ngân hà',rarity:'Quý',icon:'✧',min:21,max:44,rare:false}),
   lantern:Object.freeze({name:'Cá đèn sương',rarity:'Hiếm',icon:'✦',min:30,max:62,rare:true}),
-  phoenix:Object.freeze({name:'Phượng ngư hỏa nguyệt',rarity:'Huyền thoại',icon:'✵',min:56,max:102,rare:true})
+  phoenix:Object.freeze({name:'Phượng ngư hỏa nguyệt',rarity:'Huyền thoại',icon:'✵',min:56,max:102,rare:true}),
+  fogveil:Object.freeze({name:'Cá Ẩn Sương',rarity:'Hiếm',icon:'✧',min:28,max:59,rare:true,habitat:'Sương dày'}),
+  rainpetal:Object.freeze({name:'Cá Cánh Mưa',rarity:'Quý',icon:'❧',min:21,max:46,rare:false,habitat:'Mưa ngọc'}),
+  nightlamp:Object.freeze({name:'Cá Thiên Đăng',rarity:'Sử thi',icon:'✦',min:33,max:68,rare:true,habitat:'Sau 19 giờ'})
  });
  const FISH_BITE_MIN=3000,FISH_BITE_SPAN=3000,FISH_REEL_WINDOW=25000;
  const FISH_COMMON=['reed','carp','silver','koi','blue','glassfin'];
  const FISH_RARE=['moonfish','lantern','crystal','phoenix','dragon'];
+ // A fictional 60-minute pond weather cycle (three 20-minute phases), not
+ // actual weather or server state. No extra saved fields, rewards or timers.
+ const GARDEN_WEATHER_INTERVAL=20*60*1000;
+ const GARDEN_WEATHER=Object.freeze([
+  Object.freeze({id:'mist',label:'Sương dày',hint:'Dấu cá lạ trong màn sương'}),
+  Object.freeze({id:'rain',label:'Mưa ngọc',hint:'Vây cá lóe sáng dưới mưa'}),
+  Object.freeze({id:'clear',label:'Trời quang',hint:'Mặt hồ trong vắt'})
+ ]);
  // Purchases use tenths of *Arcade* Xu; the real wallet is never touched.
  const BAIT_PACK_PRICE=70,MOON_BAIT_PRICE=60,MOON_BAIT_RARE_BONUS=.18;
  const NEON_SERVICE_INTERVAL=45000;
@@ -70,6 +81,24 @@
   const rare=roll>=threshold,scaled=rare?(roll-threshold)/(1-threshold):roll/threshold;
   const limits=rare?[.55,.72,.94,.985,1]:[.27,.5,.7,.85,.96,1];
   return (rare?FISH_RARE:FISH_COMMON)[limits.findIndex(limit=>scaled<limit)];
+ }
+ function gardenWeather(now=Date.now()){
+  const time=Number.isSafeInteger(now)&&now>=0?now:Date.now();
+  const slot=Math.floor(time/GARDEN_WEATHER_INTERVAL),phase=GARDEN_WEATHER[slot%GARDEN_WEATHER.length];
+  const hour=new Date(time).getHours();
+  return {...phase,until:(slot+1)*GARDEN_WEATHER_INTERVAL,
+   night:hour>=19||hour<6};
+ }
+ function choosePondFish(roll,threshold,time){
+  const fish=chooseFish(roll,threshold),rare=roll>=threshold;
+  const scaled=rare?(roll-threshold)/(1-threshold):roll/threshold;
+  const weather=gardenWeather(time);
+  // Event fish replace a slice of their *existing* rarity band. Neither the
+  // overall rare odds nor the normal/rare Xu payouts change with weather.
+  if(!rare&&weather.id==='rain'&&scaled>=.85&&scaled<.96)return 'rainpetal';
+  if(rare&&weather.id==='mist'&&scaled>=.55&&scaled<.72)return 'fogveil';
+  if(rare&&weather.night&&scaled>=.39&&scaled<.55)return 'nightlamp';
+  return fish;
  }
  const ECONOMY_VERSION=2;
  const number=(value,min,max,fallback)=>Number.isSafeInteger(value)&&value>=min&&value<=max?value:fallback;
@@ -488,7 +517,7 @@
    if(typeof roll!=='number'||roll<0||roll>=1)return fail('Lượt câu không hợp lệ');
    const baseline=Math.max(.75,.94-.035*(garden.rod-1)-.02*(garden.pondTier-1));
    const threshold=premium?Math.max(.57,baseline-MOON_BAIT_RARE_BONUS):baseline;
-   const fishId=chooseFish(roll,threshold),fish=FISH_SPECIES[fishId];
+   const fishId=choosePondFish(roll,threshold,time),fish=FISH_SPECIES[fishId];
    const biteAt=time+FISH_BITE_MIN+Math.floor(roll*FISH_BITE_SPAN);
    const size=fish.min+Math.floor((fish.max-fish.min+1)*((roll*997)%1));
    garden[field]--;
@@ -584,6 +613,7 @@
  return Object.freeze({fresh,norm,advance,act,rate,upgradeCost,formatXu,
   neonCapacity,neonService,NEON_SERVICE_INTERVAL,NEON_ORDER_COOLDOWN,neonOrderPattern,mineProbeTarget,seasonGame,
   WATER_INTERVAL,REPAIR_INTERVAL,GROW_INTERVAL,BUBBLE_INTERVAL,ORE_VALUES,ORE_NAMES,
-  CROPS,FISH_SPECIES,FISH_REEL_WINDOW,maxCharge,zoneUnlocked,cropUnlocked,maxDurability,bubbleInterval,
+  CROPS,FISH_SPECIES,FISH_REEL_WINDOW,GARDEN_WEATHER_INTERVAL,gardenWeather,choosePondFish,
+  maxCharge,zoneUnlocked,cropUnlocked,maxDurability,bubbleInterval,
   JADE:jadeGame});
 });
