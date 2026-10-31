@@ -35,7 +35,8 @@ test('C4.26 preview is a functional four-piece exhibit without collectible write
  const root={document:{createElement:tag=>new Element(tag),getElementById:()=>null},
   DuduPersonalArcadeUIV1:{openSeason(){passportOpens++;return true;}},
   openPhoneApp:app=>appOpens.push(app)};
- vm.runInNewContext(file('js/museum-vault-c426.js').toString('utf8'),{window:root});
+ const context={window:root,currentUsername:'du'};
+ vm.runInNewContext(file('js/museum-vault-c426.js').toString('utf8'),context);
  const api=root.DuduMuseumVaultC426;
  assert.equal(api.exhibits.length,4);
  assert.equal(api.init({container:host,ownerKey:'sandbox:du',sandbox:true}),true);
@@ -43,13 +44,19 @@ test('C4.26 preview is a functional four-piece exhibit without collectible write
  assert.equal(rail.length,4);
  assert.ok(host.querySelector('.museum-c426-stage').querySelector('.museum-c426-art').src
   .includes('s01-founder-crest.webp'));
+ assert.equal(host.querySelector('.museum-c426-action').textContent,'Xem Hộ chiếu');
  host.querySelector('.museum-c426-action').onclick();
  assert.equal(passportOpens,1);
+ context.currentUsername='';root.DuduPersonalArcadeUIV1.openSeason=()=>false;
+ rail[0].listeners.click();
+ assert.equal(host.querySelector('.museum-c426-action').textContent,'Đến Arcade');
+ host.querySelector('.museum-c426-action').onclick();
+ assert.deepEqual(appOpens,['arcade']);
  rail[1].listeners.click();
  assert.match(host.querySelector('.museum-c426-art').src,/statue-starkeeper\.webp/);
  assert.equal(rail[1].attributes['aria-pressed'],'true');
  host.querySelector('.museum-c426-action').onclick();
- assert.deepEqual(appOpens,['quests']);
+ assert.deepEqual(appOpens,['arcade','quests']);
  rail[3].listeners.click();
  assert.equal(host.querySelector('.museum-c426-action').hidden,true,
   'The unreleased avatar frame has no inert equip button');
@@ -104,5 +111,5 @@ test('C4.26 artwork is WebP, light enough for a mobile museum',()=>{
  }
  const html=file('index.html').toString('utf8');
  assert.match(html,/museum-vault-c426\.css\?v=c426-1/);
- assert.match(html,/museum-vault-c426\.js\?v=c426-1/);
+ assert.match(html,/museum-vault-c426\.js\?v=c426-2/);
 });

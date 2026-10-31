@@ -54,7 +54,9 @@
   detail.querySelector('strong').textContent=item.name;
   detail.querySelector('p').textContent=item.story;
   const action=detail.querySelector('.museum-c426-action');
-  if(item.action){action.hidden=false;action.textContent=item.label;
+  if(item.action){action.hidden=false;
+   const hasAccount=typeof currentUsername==='string'&&!!currentUsername;
+   action.textContent=item.action==='season'&&!hasAccount?'Đến Arcade':item.label;
    action.onclick=()=>openSource(item);
   }else{action.hidden=true;action.onclick=null;}
   for(const button of host.querySelectorAll('.museum-c426-select')){
@@ -76,7 +78,7 @@
  function build(){
   host.replaceChildren();host.classList.add('museum-c426-root');
   const head=el('div','museum-c426-head');
-  head.append(el('span','','✦ BẢO TÀNG LƯU QUANG'),
+  head.append(el('span','','✦ SẢNH KỶ VẬT'),
    el('strong','museum-c426-ledger','Sổ sở hữu chưa xác minh'));
   host.append(head);
   const nav=el('nav','museum-c426-tabs');nav.setAttribute('role','tablist');
