@@ -325,6 +325,7 @@
       <button class="mine-ore-button" type="button" data-arcade-action="mine" ${repairing||!m.durability?'disabled':''}
         aria-label="Gõ vào vỉa quặng để đào" title="Chạm hoặc bấm để đào quặng">
         <span class="mine-rock-shadow"></span><span class="mine-rock"><i></i><i></i><i></i><i></i><i></i></span>
+        <span class="mine-damage-sprite" aria-hidden="true"></span>
         <span class="mine-fracture-lines" aria-hidden="true"></span>
         <span class="mine-vein-core ${['ore-portrait-copper','ore-portrait-iron','ore-portrait-crystal'][m.zone]}" aria-hidden="true"></span>
         <span class="mine-ore-glow"></span><span class="mine-hit-spark">✦</span>
@@ -387,7 +388,7 @@
   </section>`;
  }
  function gardenPanel(s,time){
-  const g=s.garden,fishHit=activeFeedback('fish',time),plotHit=activeFeedback('garden-plot',time);
+  const g=s.garden,fishHit=activeFeedback('fish',time),plotHit=activeFeedback('garden-plot',time),bubbleHit=activeFeedback('garden-bubble',time);
   const line=g.line,waiting=!!line&&time<line.biteAt,biting=!!line&&!waiting;
   const discovered=Object.values(g.fishAlbum).filter(count=>count>0).length;
   const bed=(b,index)=>{
@@ -434,6 +435,12 @@
         <span class="garden-lotus garden-lotus-a" aria-hidden="true"></span><span class="garden-lotus garden-lotus-b" aria-hidden="true"></span>
         <span class="garden-bubble garden-bubble-a"></span><span class="garden-bubble garden-bubble-b"></span>
         <span class="garden-bubble garden-bubble-c"></span>
+        <button type="button" class="garden-bubble-harvest ${g.bubbleReady?'is-ready':'is-waiting'}" data-arcade-action="catch-bubble"
+         ${g.bubbleReady?'':'disabled'} aria-label="${g.bubbleReady?'Thu bọt sương trên hồ để nhận một mồi câu':'Bọt sương đang hồi'}">
+         <span class="garden-bubble-pearl" aria-hidden="true"></span>
+         <span class="garden-bubble-label" ${g.bubbleReady?'':`data-arcade-until="${g.bubbleAt}"`}>${g.bubbleReady?'✦ MỒI':countdown(g.bubbleAt-time)}</span>
+        </button>
+        ${bubbleHit?'<span class="garden-bubble-splash" aria-live="polite">+1 MỒI</span>':''}
         ${line?'<span class="garden-fishing-line"></span><span class="garden-float" aria-hidden="true"></span>':''}</div>
       ${fishHit?`<div class="garden-catch-pop garden-catch-card" role="status"><span class="garden-fish-portrait fish-${fishHit.fishId||'reed'}" aria-hidden="true"></span><b>${fishHit.label}</b><small>✦ THÊM VÀO NHẬT KÝ CÁ</small></div>`:''}
     </div>
@@ -444,9 +451,7 @@
       <div class="garden-fishing-controls" role="group" aria-label="Điều khiển câu cá">
        ${button(biting?`🎣 THU CÂU · <span data-arcade-until="${line.escapeAt}">${countdown(line.escapeAt-time)}</span>`:
         waiting?'🎣 ĐANG CHỜ CÁ CẮN':g.bait?'🎣 THẢ CÂU · '+g.bait+' MỒI':'🎣 CHƯA CÓ MỒI',
-        line?'reel-line':'cast-line','power garden-cast-button',waiting||!line&&!g.bait)}
-       <button type="button" class="garden-pond-collect ${g.bubbleReady?'is-ready':''}" data-arcade-action="catch-bubble" ${g.bubbleReady?'':'disabled'}>
-        ${g.bubbleReady?'✦ Thu bọt':`💧 <span data-arcade-until="${g.bubbleAt}">${countdown(g.bubbleAt-time)}</span>`}</button></div>
+        line?'reel-line':'cast-line','power garden-cast-button',waiting||!line&&!g.bait)}</div>
       <div class="garden-resources">${hud('NƯỚC','💧 '+g.water+'/'+g.waterCap,'Hồi mỗi 15 phút')}
       ${hud('HẠT GIỐNG','✿ '+g.seeds,'Trong túi hạt')}</div>
       <div class="arcade-panel-heading" data-arcade-panel="garden-seeds"><div><span class="arcade-eyebrow">TÚI HẠT GIỐNG</span><h4>Chọn giống trồng</h4></div></div>
@@ -610,6 +615,7 @@
    quantity:result.quantity||1,at:now()}:/^neon-order-[012]$/.test(action)?
     {type:'neon-order',success:!result.label.includes('Nhầm'),at:now()}:
     action==='reel-line'?{type:'fish',fishId:hookedFish,label:result.label,at:now()}:
+    action==='catch-bubble'?{type:'garden-bubble',at:now()}:
     /^(plant|water|harvest)-[0-3]$/.test(action)?{type:'garden-plot',action:action.split('-')[0],index:Number(action.slice(-1)),at:now()}:
     action==='jade-cut'||action==='jade-window'?{type:action,at:now()}:null;
   notice=result.label==='stone'?'Nhặt được Đá.':result.label==='coal'?'Nhặt được Than.':

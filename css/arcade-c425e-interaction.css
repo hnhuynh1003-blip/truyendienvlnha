@@ -1,0 +1,82 @@
+/* C4.25E — tactile mining face and fish bait collected from the pond.
+   Uses the existing persistent digging and bait actions without new currency. */
+
+/* A painted, destructible vein is registered to the same large hit target.
+   Columns = four successive dig phases; rows = three original mine zones. */
+#personal-arcade-v1 .mine-stage{--mine-face-x:0%;--mine-face-y:0%}
+#personal-arcade-v1 .mine-dig-phase-1{--mine-face-x:33.3333%}
+#personal-arcade-v1 .mine-dig-phase-2{--mine-face-x:66.6667%}
+#personal-arcade-v1 .mine-dig-phase-3{--mine-face-x:100%}
+#personal-arcade-v1 .mine-zone-scene-1{--mine-face-y:50%}
+#personal-arcade-v1 .mine-zone-scene-2{--mine-face-y:100%}
+#personal-arcade-v1 .mine-damage-sprite{
+ position:absolute;inset:0;z-index:4;display:block;pointer-events:none;
+ background:url('../assets/arcade-c425e/mine-break-atlas.webp')
+  var(--mine-face-x) var(--mine-face-y)/400% 300% no-repeat;
+ filter:drop-shadow(0 5px 7px #090709b8);
+}
+/* The new mineral has its own fractures and exposed core. Avoid overlaying
+   the old decorative pseudo-cracks and sample icon on top of real geology. */
+#personal-arcade-v1 .mine-ore-button .mine-vein-core,
+#personal-arcade-v1 .mine-ore-button .mine-fracture-lines{display:none}
+#personal-arcade-v1 .mine-ore-button .mine-ore-glow{
+ inset:15%;z-index:0;border-radius:46%;box-shadow:0 0 26px #eebc744f;
+}
+#personal-arcade-v1 .mine-zone-scene-2 .mine-ore-button .mine-ore-glow{box-shadow:0 0 32px #56d9f9ba}
+#personal-arcade-v1 .mine-hit-active .mine-damage-sprite{
+ animation:c425e-rock-shudder .43s ease-out both;
+}
+#personal-arcade-v1 .mine-hit-active .mine-ore-button::after{z-index:7}
+@keyframes c425e-rock-shudder{
+ 0%{transform:translate(2px,-4px) scale(1.015);filter:brightness(1.45) drop-shadow(0 0 13px #ffd69d)}
+ 45%{transform:translate(-3px,2px) scale(.985)}
+ 100%{transform:none;filter:drop-shadow(0 5px 7px #090709b8)}
+}
+
+/* A real game action lives on the water. The former duplicate action below
+   the pond is removed, leaving the cast/reel action easy to reach. */
+#personal-arcade-v1 .garden-pond .garden-bubble-harvest{
+ position:absolute;z-index:12;top:18%;right:9%;width:49px;height:49px;
+ display:grid;place-items:center;padding:0;border-radius:50%;
+ border:2px solid #dbf9f6;background:radial-gradient(circle at 35% 26%,#f7ffffe0,#68dcdd91 35%,#1d7ca6bc 78%);
+ color:#f7fffb;box-shadow:inset 0 0 8px #f9ffffb9,0 0 14px #7afcf7ab,0 4px 7px #122f50;
+ cursor:pointer;touch-action:manipulation;
+}
+#personal-arcade-v1 .garden-bubble-harvest .garden-bubble-pearl{
+ position:absolute;inset:7px;border-radius:50%;
+ background:radial-gradient(circle at 29% 29%,#fffefd,transparent 35%),
+  radial-gradient(circle at 60% 65%,#d4fff9a6,#4d87d069 75%,transparent);
+ box-shadow:inset -2px -3px 5px #17487c66;
+}
+#personal-arcade-v1 .garden-bubble-harvest .garden-bubble-label{
+ position:absolute;z-index:1;left:50%;bottom:-8px;transform:translateX(-50%);
+ display:block;min-width:37px;padding:2px 3px;border:1px solid #d0e7e3;
+ border-radius:8px;background:#214a61e8;color:#fffde2;
+ font:800 8px/1.15 system-ui,sans-serif;white-space:nowrap;text-align:center;
+ text-shadow:0 1px 2px #08223b;
+}
+#personal-arcade-v1 .garden-bubble-harvest.is-ready{
+ border-color:#fff2c2;box-shadow:0 0 19px 5px #b8ffebd1,inset 0 0 9px #fff8cd;
+ animation:c425e-pearl-float 2.2s ease-in-out infinite alternate;
+}
+#personal-arcade-v1 .garden-bubble-harvest.is-ready .garden-bubble-label{background:#306d61;color:#fffbd5}
+#personal-arcade-v1 .garden-bubble-harvest.is-waiting{opacity:.61;filter:saturate(.65);cursor:default}
+#personal-arcade-v1 .garden-bubble-harvest:focus-visible{outline:3px solid #fff3bb;outline-offset:2px}
+#personal-arcade-v1 .garden-bubble-harvest:active:not(:disabled){transform:scale(.9)}
+#personal-arcade-v1 .garden-bubble-splash{
+ position:absolute;z-index:14;right:4%;top:9%;padding:5px 8px;
+ border:1px solid #fff7cf;border-radius:14px;background:#185f61ef;
+ color:#fff9c5;font:900 12px system-ui,sans-serif;
+ pointer-events:none;animation:c425e-bait-rise 1.5s ease-out both;
+}
+#personal-arcade-v1 .garden-fishing-controls{display:block}
+#personal-arcade-v1 .garden-fishing-controls .garden-cast-button{
+ width:100%;min-height:42px;border-radius:9px 18px 9px 18px;
+}
+@keyframes c425e-pearl-float{to{transform:translateY(-3px);filter:brightness(1.12)}}
+@keyframes c425e-bait-rise{from{opacity:0;transform:translateY(12px) scale(.8)}30%{opacity:1}to{opacity:0;transform:translateY(-24px) scale(1.04)}}
+@media(prefers-reduced-motion:reduce){
+ #personal-arcade-v1 .mine-hit-active .mine-damage-sprite,
+ #personal-arcade-v1 .garden-bubble-harvest.is-ready,
+ #personal-arcade-v1 .garden-bubble-splash{animation:none}
+}
