@@ -22,6 +22,7 @@ test('Library Intake author routes, revoke guard, mobile layout and Escape',asyn
    window.canEditStories=()=>window.allowed;
    window.openStoryModal=()=>window.actions.push('manual');
    window.openEpubImportV48=()=>window.actions.push('epub');
+   window.openEpubBatchC421=()=>window.actions.push('batch');
   });
   await page.addScriptTag({path:resolve(base,'js/library-intake-v1.js')});
   await page.evaluate(()=>{
@@ -32,19 +33,22 @@ test('Library Intake author routes, revoke guard, mobile layout and Escape',asyn
   await page.evaluate(()=>{window.allowed=true;});
   await page.getByRole('button',{name:'Đăng truyện'}).click();
   await page.getByRole('heading',{name:'Thêm truyện vào Thư viện'}).waitFor();
-  assert.equal(await page.locator('.dudu-library-intake-choice').count(),2);
+  assert.equal(await page.locator('.dudu-library-intake-choice').count(),3);
   const bounds=await page.locator('.dudu-library-intake-dialog').boundingBox();
   assert.ok(bounds.x>=0&&bounds.x+bounds.width<=391);
   assert.ok(bounds.y>=0&&bounds.y+bounds.height<=781);
   const columns=await page.locator('.dudu-library-intake-grid').evaluate(x=>
    getComputedStyle(x).gridTemplateColumns.split(' ').length);
   assert.equal(columns,1);
-  await page.getByRole('button',{name:/Nhập EPUB/}).click();
+  await page.getByRole('button',{name:/Nhập một EPUB/}).click();
   assert.deepEqual(await page.evaluate(()=>window.actions),['epub']);
+  await page.getByRole('button',{name:'Đăng truyện'}).click();
+  await page.getByRole('button',{name:/Nhập EPUB hàng loạt/}).click();
+  assert.deepEqual(await page.evaluate(()=>window.actions),['epub','batch']);
   await page.getByRole('button',{name:'Đăng truyện'}).click();
   await page.evaluate(()=>{window.allowed=false;});
   await page.getByRole('button',{name:/Viết truyện theo chương/}).click();
-  assert.deepEqual(await page.evaluate(()=>window.actions),['epub']);
+  assert.deepEqual(await page.evaluate(()=>window.actions),['epub','batch']);
   await page.evaluate(()=>{window.allowed=true;});
   await page.getByRole('button',{name:'Đăng truyện'}).click();
   await page.keyboard.press('Escape');

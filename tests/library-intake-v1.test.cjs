@@ -28,6 +28,7 @@ const setup=(authorized=true)=>{
  const window={document,canEditStories:()=>authorized,
   openStoryModal:()=>calls.push('manual'),
   openEpubImportV48:()=>calls.push('epub'),
+  openEpubBatchC421:()=>calls.push('batch'),
   };
  vm.runInNewContext(intakeSource,{window});
  const buttons=()=>{
@@ -52,11 +53,12 @@ test('Unauthorized readers cannot open Library author intake',()=>{
  assert.equal(a.window.DuduLibraryIntakeV1.open(),false);
  assert.equal(a.document.body.children.length,0);
 });
-test('Author sees exactly the two supported upload routes, without redundant navigation',()=>{
+test('Author sees manual, single EPUB and bulk EPUB routes, without redundant navigation',()=>{
  const a=setup();
  assert.equal(a.window.DuduLibraryIntakeV1.open(),true);
  assert.deepEqual(a.buttons().map(n=>n.dataset.intake),
-  ['manual','epub']);
+  ['manual','epub','batch']);
+ assert.ok(a.buttons().find(n=>n.dataset.intake==='batch').children[1].textContent.includes('thư mục cha'));
  assert.equal(a.document.body.children[0].open,true);
  assert.ok(!intakeSource.includes('DuduSiteV60.navigate'));
  assert.ok(!intakeSource.includes('DuduWorldCreator?.open'));
@@ -68,7 +70,7 @@ test('Opening twice reuses one dialog rather than spawning duplicates',()=>{
  a.window.DuduLibraryIntakeV1.open();
  assert.equal(a.document.body.children.length,1);
 });
-for(const [route,expect] of [['manual','manual'],['epub','epub']]){
+for(const [route,expect] of [['manual','manual'],['epub','epub'],['batch','batch']]){
  test('Library hub '+route+' uses the existing, permission-gated route',()=>{
   const a=setup();a.window.DuduLibraryIntakeV1.open();
   const dialog=a.document.body.children[0];
@@ -79,10 +81,12 @@ for(const [route,expect] of [['manual','manual'],['epub','epub']]){
  });
 }
 test('Permission revoked while dialog is open prevents every upload action',()=>{
- const a=setup();a.window.DuduLibraryIntakeV1.open();
- a.setAuthorized(false);
- a.buttons().find(n=>n.dataset.intake==='epub').listeners.click();
- assert.deepEqual(a.calls,[]);
+ for(const route of ['manual','epub','batch']){
+  const a=setup();a.window.DuduLibraryIntakeV1.open();
+  a.setAuthorized(false);
+  a.buttons().find(n=>n.dataset.intake===route).listeners.click();
+  assert.deepEqual(a.calls,[]);
+ }
 });
 test('Library author buttons use the hub and keep legacy fallback',()=>{
  assert.ok(siteShell.includes('window.DuduLibraryIntakeV1?.open?.()'));
@@ -96,7 +100,9 @@ test('Library hub assets load after creator and do not remove EPUB V57',()=>{
  const hub=index.indexOf('js/library-intake-v1.js');
  assert.ok(site>=0&&world>site&&hub>world);
  assert.ok(index.includes('css/library-intake-v1.css'));
- assert.ok(index.includes('js/library-intake-v1.js?v=lib1-ui2'));
+ assert.ok(index.includes('js/library-intake-v1.js?v=lib1-ui3'));
+ assert.ok(index.includes('css/library-intake-v1.css?v=lib1-ui3'));
+ assert.ok(index.includes('js/epub-batch-import-c421.js'));
  assert.match(index,/js\/site-shell-v60\.js\?v=[^"']+/);
  assert.ok(index.includes('js/epub-import-v48.js'));
  assert.ok(index.includes('js/epub-production-v49.js'));

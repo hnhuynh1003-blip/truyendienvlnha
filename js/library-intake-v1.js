@@ -1,5 +1,5 @@
-/* Library Intake V1 — one entry point for the TWO existing library authoring
- * paths. Existing Library navigation and Vangioi authoring are elsewhere.
+/* Library Intake V1 — one entry point for manual, single EPUB and bulk EPUB
+ * authoring. Existing Library navigation and Vangioi authoring are elsewhere.
  * Presentation only:
  * no Firebase writes, new MIME formats, authority grants or auto-publication.
  */
@@ -38,6 +38,10 @@
    if(typeof root.openEpubImportV48!=='function')return false;
    root.openEpubImportV48();return true;
   }
+  if(kind==='batch'){
+   if(typeof root.openEpubBatchC421!=='function')return false;
+   root.openEpubBatchC421();return true;
+  }
   return false;
  }
  function action(label,description,kind){
@@ -64,13 +68,15 @@
   dismiss.type='button';dismiss.addEventListener('click',close);
   header.append(title,dismiss);
   const intro=el('p','dudu-library-intake-intro',
-   'Chọn cách thêm tác phẩm. Viết theo chương và nhập EPUB là hai cách đang hỗ trợ.');
+   'Chọn cách thêm tác phẩm: tự viết, nhập một EPUB hoặc nhập nhiều EPUB cùng lúc.');
   const choices=el('div','dudu-library-intake-grid');
   choices.append(
    action('✍️ Viết truyện theo chương',
     'Tạo tác phẩm bằng trình soạn hiện có.','manual'),
-   action('📘 Nhập EPUB',
-    'Đưa tệp EPUB vào trình nhập, tách chương và xem trước bản thảo.','epub'));
+   action('📘 Nhập một EPUB',
+    'Đưa một tệp EPUB vào trình nhập, tách chương và xem trước bản thảo.','epub'),
+   action('📚 Nhập EPUB hàng loạt',
+    'Chọn thư mục cha hoặc nhiều tệp EPUB; có hàng đợi và kiểm tra trùng.','batch'));
   const foot=el('p','dudu-library-intake-foot',
    'Chưa hỗ trợ nhập TXT, DOCX hoặc PDF. Truyện đã có trong Thư viện không cần tải lại để làm nguồn Vạn Giới; hãy mở Vạn Giới từ mục Thế giới.');
   dialog.append(header,intro,choices,foot);

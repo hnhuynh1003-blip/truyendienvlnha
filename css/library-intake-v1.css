@@ -16,6 +16,9 @@
 .dudu-library-intake-choice strong{font-size:1rem;color:#f8dfa4}
 .dudu-library-intake-choice span{font-size:.82rem;color:#cbd5e1}
 .dudu-library-intake-choice:hover{border-color:#f8dfa4;background:#233550}
+.dudu-library-intake-choice[data-intake="batch"]{grid-column:1/-1;border-color:#4baaa8;background:#16313c}
+.dudu-library-intake-choice[data-intake="batch"]:hover{border-color:#7ee8d7;background:#204550}
+.dudu-library-intake-choice[data-intake="batch"] strong{color:#8ee8d8}
 .dudu-library-intake-choice:focus-visible,.dudu-library-intake-close:focus-visible{outline:3px solid #7dd3fc;outline-offset:2px}
 .dudu-library-intake-foot{font-size:.81rem;line-height:1.55;color:#fbbf88;margin:15px 0 0}
 @media(max-width:540px){
