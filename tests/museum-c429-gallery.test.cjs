@@ -36,10 +36,13 @@ function context(){
 }
 function click(el){assert.ok(el?.listeners.click);el.listeners.click();}
 
-test('C4.29 four Arcade milestones derive from actual account save and never grant rewards',()=>{
+test('C4.29.4 museum trophies require four hard in-game achievements, without reward writes',()=>{
  const ctx=context(),host=new Element('section'),account='sandbox:du';
  const state=core.fresh(1700000000000);
- state.neon.guestsServed=26;state.mine.dug=40;state.garden.harvests=100;
+ state.neon.guestsServed=250;state.neon.roomTier=3;
+ state.neon.contracts=[0,1,2];state.neon.milestones=[0,1,2,3];
+ state.mine.dug=160;state.mine.bursts=25;state.mine.scanner=3;
+ for(const ore of Object.keys(core.ORE_VALUES))state.mine.found[ore]=1;
  state.jade.sold=11;
  ctx.saved.set('dudu-personal-arcade:v1:'+encodeURIComponent(account),JSON.stringify(state));
  const ui=ctx.root.DuduMuseumGalleryC429;
@@ -49,27 +52,33 @@ test('C4.29 four Arcade milestones derive from actual account save and never gra
  assert.equal(host.querySelectorAll('.museum-c429-pedestal').length,4);
  assert.equal(host.querySelectorAll('.is-earned').length,2);
  click(host.querySelector('.museum-c429-pedestal-jade'));
- assert.equal(host.querySelector('.museum-c429-status-count').textContent,'11/12');
+ assert.equal(host.querySelector('.museum-c429-status-count').textContent,'0/4');
+ assert.equal(host.querySelectorAll('.museum-c430-trial').length,4);
+ assert.ok(host.querySelectorAll('.museum-c430-trial').some(e=>
+  e.children.some(c=>c.textContent==='◇')));
+ assert.ok(ui.milestones.every(m=>m.goal===4&&m.steps.length===4));
  assert.equal(ctx.writes,0,'museum is fully read-only');
 });
 
-test('C4.29 aquarium shows discovered species only and navigates back to Vườn Sương',()=>{
+test('C4.29.4 aquarium displays only caught Quý+ fish, never common fish or locked tiles',()=>{
  const ctx=context(),host=new Element('section');
  const state=core.fresh(1700000000000);
  state.garden.fishAlbum.phoenix=2;state.garden.fishBest.phoenix=87;
- state.garden.fishAlbum.reed=1;
+ state.garden.fishAlbum.koi=3;state.garden.fishAlbum.reed=9;
  ctx.saved.set('dudu-personal-arcade:v1:sandbox%3Adu',JSON.stringify(state));
  const ui=ctx.root.DuduMuseumGalleryC429;
  ui.mount({container:host,ownerKey:'du',sandbox:true});
  const fishTab=host.querySelectorAll('.museum-c429-wing')[1];click(fishTab);
  assert.ok(host.querySelector('.museum-c429-scene-fish'));
- assert.equal(host.querySelectorAll('.museum-c429-specimen').length,14);
+ assert.equal(host.querySelectorAll('.museum-c429-specimen').length,2);
  assert.equal(host.querySelectorAll('.is-found').length,2);
- assert.equal(host.querySelectorAll('.is-hidden').length,12);
+ assert.equal(host.querySelectorAll('.is-hidden').length,0);
+ assert.equal(host.querySelectorAll('.museum-c429-swimmer').length,2);
+ assert.equal(host.querySelectorAll('.fish-reed').length,0);
  const known=host.querySelectorAll('.is-found');
- click(known[1]);
+ click(known[0]);
  assert.ok(host.querySelector('.museum-c429-fish-focus').querySelector('.fish-phoenix'));
- assert.equal(host.querySelector('.museum-c429-pond-progress').textContent,'2/14 LOÀI');
+ assert.equal(host.querySelector('.museum-c429-pond-progress').textContent,'2/11 CÁ QUÝ');
  click(host.querySelector('.museum-c429-go-garden'));
  assert.equal(ctx.opened,1);
  assert.equal(ctx.writes,0);
@@ -78,7 +87,9 @@ test('C4.29 aquarium shows discovered species only and navigates back to Vườn
 test('C4.29 account change clears species and metrics, does not leak other account data',()=>{
  const ctx=context(),host=new Element('section');
  const state=core.fresh(1700000000000);
- state.neon.guestsServed=500;state.garden.fishAlbum.dragon=1;
+ state.neon.guestsServed=500;state.neon.roomTier=3;
+ state.neon.contracts=[0,1,2];state.neon.milestones=[0,1,2,3];
+ state.garden.fishAlbum.dragon=1;
  ctx.saved.set('dudu-personal-arcade:v1:sandbox%3Aold',JSON.stringify(state));
  const ui=ctx.root.DuduMuseumGalleryC429;
  ui.mount({container:host,ownerKey:'old',sandbox:true});
@@ -87,7 +98,26 @@ test('C4.29 account change clears species and metrics, does not leak other accou
  assert.equal(host.querySelector('.museum-c429-total').textContent,'0 / 4');
  click(host.querySelectorAll('.museum-c429-wing')[1]);
  assert.equal(host.querySelectorAll('.is-found').length,0);
- assert.equal(host.querySelectorAll('.is-hidden').length,14);
+ assert.equal(host.querySelectorAll('.is-hidden').length,0);
+ assert.equal(host.querySelectorAll('.museum-c429-swimmer').length,0);
+ assert.equal(host.querySelector('.museum-c429-pond-progress').textContent,'0/11 CÁ QUÝ');
+ assert.equal(ctx.writes,0);
+});
+
+test('C4.29.4 a full rare collection can swim together, beyond the former 3-fish cap',()=>{
+ const ctx=context(),host=new Element('section');
+ const state=core.fresh(1700000000000);
+ const premium=Object.entries(core.FISH_SPECIES).filter(([,fish])=>fish.rarity!=='Thường');
+ assert.equal(premium.length,11);
+ for(const [id] of premium)state.garden.fishAlbum[id]=1;
+ state.garden.fishAlbum.reed=100;
+ ctx.saved.set('dudu-personal-arcade:v1:sandbox%3Adu',JSON.stringify(state));
+ ctx.root.DuduMuseumGalleryC429.mount({container:host,ownerKey:'du',sandbox:true});
+ click(host.querySelectorAll('.museum-c429-wing')[1]);
+ assert.equal(host.querySelectorAll('.museum-c429-swimmer').length,11);
+ assert.equal(host.querySelectorAll('.museum-c429-specimen').length,11);
+ assert.equal(host.querySelector('.museum-c429-pond-progress').textContent,'11/11 CÁ QUÝ');
+ assert.equal(host.querySelectorAll('.fish-reed').length,0);
  assert.equal(ctx.writes,0);
 });
 
@@ -95,8 +125,8 @@ test('C4.29 keeps verified collectibles and Season1 preview separate, delivers c
  const html=repo('index.html').toString();
  const vault=repo('js/museum-vault-c426.js').toString();
  const gallery=repo('js/museum-c429-gallery.js').toString();
- assert.match(html,/museum-c429-gallery\.css\?v=c429-3/);
- assert.match(html,/museum-c429-gallery\.js\?v=c429-1/);
+ assert.match(html,/museum-c429-gallery\.css\?v=c429-4/);
+ assert.match(html,/museum-c429-gallery\.js\?v=c429-2/);
  assert.match(html,/museum-vault-c426\.js\?v=c426-2&amp;gallery=c429-1/);
  assert.match(vault,/\['preview','Quà mùa'\]/);
  assert.match(vault,/\['owned','Kỷ vật thật'\]/);
