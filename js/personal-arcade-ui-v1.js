@@ -153,7 +153,9 @@
    stationCost=core.upgradeCost(s,'station'),routerCost=core.upgradeCost(s,'router'),
    skinCost=core.upgradeCost(s,'skin'),coolingCost=core.upgradeCost(s,'cooling'),
    time=now(),boost=s.neon.turboUntil>time,ready=time>=s.neon.turboReadyAt;
-  const activeRate=s.neon.running?core.rate(s):0;
+  const activeRate=s.neon.running?core.rate(s):0,
+   order=core.neonOrderPattern(n),orderIcons=['☕','🎮','🔧'],
+   orderNames=['Nước','Tay cầm','Sửa máy'],orderReady=time>=n.orderReadyAt;
   const level=Math.min(6,Math.floor((s.neon.cpu+s.neon.gpu)/5)+1);
   const stations=Array.from({length:capacity},(_,i)=>`<div class="neon-computer neon-computer-${i+1} ${i>=n.stations?'is-locked':i<service.guests&&n.running?'is-occupied':''}">
     <div class="neon-monitor"><div class="neon-monitor-glass"><span>${i>=n.stations?'KHOÁ':i<service.guests&&n.running?'KHÁCH':'CRYO<span class="neon-blink">_</span>'}</span>
@@ -223,17 +225,20 @@
       ].map(([name,met,reward],i)=>`<div class="arcade-contract"><span>${s.neon.contracts.includes(i)?'✓':met?'✦':'○'} ${name}</span>
        ${button(s.neon.contracts.includes(i)?'Đã nhận':met?'Nhận '+fmt(reward)+' Xu':'+'+fmt(reward)+' Xu',
         'neon-contract-'+i,'contract',!met||s.neon.contracts.includes(i))}</div>`).join('')}</div>
-      <div class="neon-network-deck" aria-label="Sơ đồ hoạt động ${n.stations} máy, ${n.running?service.guests:0} khách đang chơi">
-       <div class="arcade-deck-heading"><span><i class="arcade-deck-light"></i> LIVE / MACHINE GRID</span>
-        <b>${n.running?'● ĐANG VẬN HÀNH':'Ⅱ TẠM DỪNG'}</b></div>
-       <div class="neon-network-scene" aria-hidden="true"><div class="neon-network-backplane"></div>
-        <div class="neon-network-core"><span>◈</span><small>SERVER</small></div>
-        <div class="neon-network-nodes">${Array.from({length:capacity},(_,i)=>{
-         const occupied=n.running&&i<service.guests,online=i<n.stations;
-         return `<span class="neon-network-node ${!online?'is-locked':occupied?'is-busy':'is-idle'}"><i></i><b>${online?i+1:'×'}</b></span>`;
-        }).join('')}</div></div>
-       <div class="arcade-deck-footer"><span>${n.running?service.guests:0}/${n.stations} máy có khách · ${n.guestsServed} lượt</span>
-        <button type="button" data-arcade-drawer="neon-upgrades">NÂNG MÁY ↗</button></div>
+      <div class="neon-order-game ${orderReady?'is-ready':'is-waiting'}" aria-label="Quầy dịch vụ khách: hoàn thành ${n.orderWon} đơn, liên tiếp ${n.orderStreak}">
+       <div class="neon-order-heading"><b>✦ QUẦY KHÁCH GỌI</b><span>COMBO ×${n.orderStreak}</span></div>
+       <div class="neon-order-scene">
+        <div class="neon-order-customer" aria-hidden="true"><i></i><span>♪</span></div>
+        <div class="neon-order-ticket"><small>${!n.running?'ĐÃ ĐÓNG QUẦY':orderReady?'ĐƠN #'+String(n.orderRound+1).padStart(3,'0'):'KHÁCH MỚI SAU'}</small>
+         <div class="neon-order-recipe">${orderReady?order.map((item,i)=>`<span class="${i<n.orderStep?'is-done':''}">${i<n.orderStep?'✓':orderIcons[item]}</span>${i===0?'<i>›</i>':''}`).join(''):
+          `<span class="neon-order-timer" data-arcade-until="${n.orderReadyAt}">${countdown(n.orderReadyAt-time)}</span>`}</div>
+         <em>${orderReady?`MÓN ${n.orderStep+1}/2 · CHỌN THEO THỨ TỰ`:'CHUẨN BỊ LƯỢT MỚI'}</em></div>
+       </div>
+       <div class="neon-order-actions" role="group" aria-label="Chuẩn bị món khách yêu cầu">
+        ${orderIcons.map((icon,i)=>`<button type="button" data-arcade-action="neon-order-${i}" aria-label="Phục vụ ${orderNames[i]}"
+         ${!orderReady||!n.running?'disabled':''}><strong>${icon}</strong><span>${orderNames[i]}</span></button>`).join('')}
+       </div>
+       <div class="neon-order-footer"><span>✓ ${n.orderWon} ĐƠN HOÀN THÀNH</span><span>THƯỞNG NHỎ · 90S/LƯỢT</span></div>
       </div>
     </div>
   </section>`;
@@ -243,8 +248,8 @@
   const max=core.maxDurability(m);
   const all=Object.values(m.ores).reduce((sum,n)=>sum+n,0),hit=activeFeedback('mine',time),
    maxEnergy=core.maxCharge(m),found=Object.values(m.found).filter(Boolean).length;
-  const haul=Object.entries(m.ores).map(([ore,count])=>({ore,count,known:m.found[ore]>0}))
-   .sort((a,b)=>b.count-a.count||Number(b.known)-Number(a.known)).slice(0,5);
+  const probeTarget=core.mineProbeTarget(m),probeHit=activeFeedback('probe',time),
+   canProbe=!repairing&&m.durability>0&&m.charge>=3;
   return `<section class="arcade-world arcade-world-mine" aria-label="Địa Tầng 07">
     <header class="arcade-world-heading"><div><span class="arcade-eyebrow">02 / CLICKER</span>
       <h3>Địa Tầng 07</h3><p>Chạm vỉa quặng để khai thác. Mang khoáng sản đi bán.</p></div>
@@ -299,15 +304,19 @@
       </div>
       <div class="arcade-craft-row" data-arcade-panel="mine-tools"><div><b>✦ Chế máy dò · cấp ${m.scanner}/3</b><small>8 sắt + 3 tinh thạch · tăng cơ hội quặng hiếm</small></div>
        ${button(m.scanner>=3?'Đã tối đa':'⚒ Chế tạo','mine-scanner','tool',m.scanner>=3||m.ores.iron<8||m.ores.crystal<3)}</div>
-      <div class="mine-haul-deck ${hit?'is-harvesting':''}" aria-label="Băng chuyền khoáng sản, ${all} mẫu trong túi và ${found} loại đã phát hiện">
-       <div class="arcade-deck-heading"><span><i class="arcade-deck-light"></i> ORE / CONVEYOR</span><b>${all} MẪU TRONG TÚI</b></div>
-       <div class="mine-haul-scene" aria-label="Khoáng sản thu được">
-        <div class="mine-haul-belt" aria-hidden="true"></div>
-        ${haul.map(({ore,count,known})=>`<div class="mine-haul-gem ${known?'is-found':'is-unknown'}" title="${known?oreLabels[ore]:'Khoáng sản chưa tìm thấy'} · ${count}">
-         <span>${known?oreGlyphs[ore]:'?'}</span><b>${known?count:'—'}</b></div>`).join('')}
+      <div class="mine-seam-game ${probeHit?'is-revealing':''}" aria-label="Thăm dò ba ngách, đã dò ${m.probes} lần và tìm đúng ${m.probeHits} lần">
+       <div class="mine-seam-heading"><b>⌁ THĂM DÒ MẠCH NGẦM</b><span>⚡ 3 / LƯỢT</span></div>
+       <div class="mine-seam-scene" role="group" aria-label="Chọn ngách có tín hiệu mạnh nhất">
+        ${[0,1,2].map(i=>{const signal=i===probeTarget?3:i===(probeTarget+1)%3?2:1;
+         return `<button type="button" class="mine-seam-tunnel mine-seam-tunnel-${i}" data-arcade-action="mine-probe-${i}"
+          aria-label="Thăm dò ngách ${i+1}, tín hiệu ${signal}/3" ${canProbe?'':'disabled'}>
+          <span class="mine-seam-arch"><i></i><em>✧</em></span>
+          <span class="mine-seam-signal">${[1,2,3].map(level=>`<i class="${level<=signal?'is-lit':''}"></i>`).join('')}</span>
+          <strong>NGÁCH ${['Ⅰ','Ⅱ','Ⅲ'][i]}</strong></button>`;}).join('')}
+        ${probeHit?`<div class="mine-seam-result ${probeHit.hit?'is-hit':'is-miss'}" aria-live="polite">${probeHit.hit?'✦ ĐÚNG MẠCH!':'◌ MẠCH YẾU'}</div>`:''}
        </div>
-       <div class="arcade-deck-footer"><span>✦ ${found}/10 KHOÁNG ĐÃ THẤY</span>
-        <button type="button" data-arcade-drawer="mine-bag">MỞ TÚI QUẶNG ↗</button></div>
+       <div class="mine-seam-footer"><span>✦ ${m.probeHits}/${m.probes} DÒ TRÚNG</span>
+        <b>${canProbe?'CHỌN TÍN HIỆU SÁNG NHẤT':'ĐÀO ĐỂ NẠP ⚡'}</b></div>
       </div>
     </div>
   </section>`;
@@ -503,9 +512,10 @@
    const fishEscaped=!!s.garden.line&&!state.garden.line;
    const boostExpired=!!s.neon.turboUntil&&s.lastAt<s.neon.turboUntil&&time>=s.neon.turboUntil;
    const turboReady=!!s.neon.turboReadyAt&&s.lastAt<s.neon.turboReadyAt&&time>=s.neon.turboReadyAt;
+   const nextOrder=!!s.neon.orderReadyAt&&s.lastAt<s.neon.orderReadyAt&&time>=s.neon.orderReadyAt;
    if(fishEscaped){notice='Cá đã tuột khỏi lưỡi câu. Hãy thử lượt khác nhé.';
     noticeUntil=time+3500;error=false;}
-   if(lastRenderedKey!==activeKey||completedRepair||waterRefilled||bubbleAppeared||plantMatured||fishBit||fishEscaped||customerServed||boostExpired||turboReady)render();
+   if(lastRenderedKey!==activeKey||completedRepair||waterRefilled||bubbleAppeared||plantMatured||fishBit||fishEscaped||customerServed||boostExpired||turboReady||nextOrder)render();
    else if(time-lastPaint>=900)refreshLive(time);
   }
  }
@@ -520,7 +530,8 @@
    // than leaving the same letter highlighted for a different incoming stone.
    root.DuduPersonalJadeUIV1?.chooseMarketSample?.(Number(action.split('-')[2]),null);
   }
-  feedback=action==='mine'||action==='mine-burst'?{type:'mine',ore:action==='mine-burst'?'burst':result.label,
+  feedback=/^mine-probe-[012]$/.test(action)?{type:'probe',hit:result.hit,ore:result.ore,at:now()}:
+   action==='mine'||action==='mine-burst'?{type:'mine',ore:action==='mine-burst'?'burst':result.label,
    quantity:result.quantity||1,at:now()}:action==='reel-line'?{type:'fish',label:result.label,at:now()}:null;
   notice=result.label==='stone'?'Nhặt được Đá.':result.label==='coal'?'Nhặt được Than.':
    result.label==='iron'?'Nhặt được Sắt.':result.label==='crystal'?'✦ Nhặt được Tinh thạch!':result.label;
@@ -626,6 +637,11 @@
    }
    const control=event.target.closest('button');
    if(!control||control.disabled)return;
+   if(control.dataset.jadeMarketLock!=null){
+    const market=core.JADE?.MARKETS?.[Number(control.dataset.jadeMarketLock)];
+    if(market){notice='🔒 '+market.short+': '+market.unlock;noticeUntil=now()+4500;error=false;render();}
+    return;
+   }
    if(control.dataset.jadeMarketSwitch!=null){
     const market=Number(control.dataset.jadeMarketSwitch);
     if(root.DuduPersonalJadeUIV1?.chooseMarket?.(market,state?.jade)){

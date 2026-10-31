@@ -163,7 +163,7 @@ test('C4.19 unlocked jade districts switch in place without stacking every stall
  const ui=window.DuduPersonalJadeUIV1,s=arcade.fresh(TIME);
  let html=ui.panel(s);
  assert.match(html,/jade-market-stop-list/);
- assert.match(html,/data-jade-market-switch="4"/);
+ assert.match(html,/data-jade-market-lock="4"/);
  assert.equal((html.match(/class="jade-market-card /g)||[]).length,1);
  assert.equal(ui.chooseMarket(1,s.jade),false,'Locked district cannot be opened early');
  s.jade.sold=40;s.jade.lamp=3;s.jade.saw=2;s.jade.carver=2;s.jade.permit=true;

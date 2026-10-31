@@ -45,6 +45,9 @@
  const FISH_COMMON=['reed','carp','silver','koi','blue'];
  const FISH_RARE=['moonfish','crystal','dragon'];
  const NEON_SERVICE_INTERVAL=45000;
+ const NEON_ORDER_COOLDOWN=90000,NEON_ORDER_MISS=30000;
+ const NEON_ORDERS=Object.freeze([[0,1],[2,0],[1,2],[0,2],[2,1],[1,0]].map(x=>Object.freeze(x)));
+ const neonOrderPattern=neon=>NEON_ORDERS[(neon.orderRound+neon.roomTier-1)%NEON_ORDERS.length];
  const NEON_ROOM_CAPACITY=[3,5,7];
  const neonCapacity=neon=>NEON_ROOM_CAPACITY[neon.roomTier-1]||3;
  const neonService=neon=>{
@@ -71,9 +74,10 @@
    neon:{cpu:1,gpu:1,stations:1,router:1,skin:0,cooling:1,turboUntil:0,turboReadyAt:0,
     contracts:[],running:true,remainder:0,economyV:ECONOMY_VERSION,
     roomTier:1,seating:1,ambiance:1,snack:0,guestsServed:0,serviceRevenue:0,
-    operatingExpense:0,sessionMs:0,milestones:[]},
+    operatingExpense:0,sessionMs:0,milestones:[],orderRound:0,orderStep:0,
+    orderWon:0,orderStreak:0,orderReadyAt:0},
    mine:{durability:100,pickLevel:1,drillLevel:1,lantern:1,cart:1,scanner:0,
-    zone:0,charge:0,bursts:0,repairUntil:0,dug:0,
+    zone:0,charge:0,bursts:0,repairUntil:0,dug:0,probes:0,probeHits:0,
     ores:Object.fromEntries(Object.keys(ORE_VALUES).map(ore=>[ore,0])),
     found:Object.fromEntries(Object.keys(ORE_VALUES).map(ore=>[ore,0]))},
    garden:{water:1,waterCap:3,pondTier:1,waterAt:time,seeds:3,plots:2,
@@ -85,6 +89,7 @@
    jade:jadeGame?jadeGame.fresh():null};
  };
  const maxDurability=mine=>100+25*(mine.pickLevel-1);
+ const mineProbeTarget=mine=>(mine.probes*2+mine.zone+1)%3;
  const bubbleInterval=garden=>BUBBLE_INTERVAL-10000*(garden.pondTier-1);
  function norm(raw,now=Date.now()){
   const time=safeTime(now),fallback=fresh(time);
@@ -106,6 +111,11 @@
    serviceRevenue:number(neon.serviceRevenue,0,MAX_COIN,0),
    operatingExpense:number(neon.operatingExpense,0,MAX_COIN,0),
    sessionMs:number(neon.sessionMs,0,NEON_SERVICE_INTERVAL-1,0),
+   orderRound:number(neon.orderRound,0,1000000,0),
+   orderStep:number(neon.orderStep,0,1,0),
+   orderWon:number(neon.orderWon,0,1000000,0),
+   orderStreak:number(neon.orderStreak,0,1000,0),
+   orderReadyAt:number(neon.orderReadyAt,0,time+NEON_ORDER_COOLDOWN,0),
    milestones:Array.isArray(neon.milestones)?[0,1,2,3].filter(i=>neon.milestones.includes(i)):[],
    turboUntil:number(neon.turboUntil,0,time+15*60*1000,0),
    turboReadyAt:number(neon.turboReadyAt,0,time+30*60*1000,0),
@@ -122,7 +132,8 @@
    charge:number(mine.charge,0,24,0),bursts:number(mine.bursts,0,10000000,0),
    durability:number(mine.durability,0,100+25*(pickLevel-1),100),
    repairUntil:number(mine.repairUntil,0,time+REPAIR_INTERVAL*2,0),
-   dug:number(mine.dug,0,10000000,0),ores:{},found:{}};
+   dug:number(mine.dug,0,10000000,0),probes:number(mine.probes,0,1000000,0),
+   probeHits:number(mine.probeHits,0,1000000,0),ores:{},found:{}};
   for(const ore of Object.keys(ORE_VALUES)){
    state.mine.ores[ore]=number(mine.ores?.[ore],0,1000000,0);
    state.mine.found[ore]=number(mine.found?.[ore],0,10000000,state.mine.ores[ore]);
@@ -253,6 +264,23 @@
    state.neon.turboReadyAt=time+600000;
    return succeed('⚡ Ép xung! Thu nhập tăng gấp đôi trong ít phút');
   }
+  const orderAction=/^neon-order-([012])$/.exec(action||'');
+  if(orderAction){
+   const n=state.neon,choice=Number(orderAction[1]);
+   if(!n.running)return fail('Hãy mở cửa Trạm Neon trước');
+   if(time<n.orderReadyAt)return fail('Khách mới chưa tới quầy');
+   const expected=neonOrderPattern(n)[n.orderStep];
+   if(choice!==expected){
+    n.orderRound++;n.orderStep=0;n.orderStreak=0;n.orderReadyAt=time+NEON_ORDER_MISS;
+    return succeed('✕ Nhầm món! Khách sẽ quay lại sau');
+   }
+   if(n.orderStep===0){n.orderStep=1;return succeed('✓ Đã chuẩn bị món đầu tiên');}
+   n.orderRound++;n.orderStep=0;n.orderWon++;n.orderStreak=Math.min(1000,n.orderStreak+1);
+   n.orderReadyAt=time+NEON_ORDER_COOLDOWN;
+   const bonus=3+Math.min(2,Math.floor(n.orderStreak/3));
+   give(state,bonus);
+   return succeed('✦ Phục vụ trọn đơn · +'+formatXu(bonus)+' Xu Arcade');
+  }
   const contract=/^neon-contract-([012])$/.exec(action||'');
   if(contract){
    const i=Number(contract[1]),ready=[state.neon.cpu>=2,state.neon.stations>=2,
@@ -355,6 +383,26 @@
    if(charge)mine.charge=Math.min(maxCharge(mine),mine.charge+1);
    return {ore,quantity};
   };
+  const probeAction=/^mine-probe-([012])$/.exec(action||'');
+  if(probeAction){
+   if(mine.repairUntil||mine.durability<1)return fail('Cần một cuốc còn dùng được');
+   if(mine.charge<3)return fail('Cần 3 năng lượng để dò một ngách');
+   if(typeof roll!=='number'||roll<0||roll>=1)return fail('Lượt dò không hợp lệ');
+   const chosen=Number(probeAction[1]),target=mineProbeTarget(mine);
+   mine.charge-=3;mine.probes++;
+   if(chosen===target){
+    mine.probeHits++;
+    const mined=dig(Math.min(.999999,roll+.12),false);
+    mine.ores[mined.ore]=Math.min(1000000,mine.ores[mined.ore]+1);
+    mine.found[mined.ore]=Math.min(10000000,mine.found[mined.ore]+1);
+    return succeed('✦ Đúng mạch! +'+(mined.quantity+1)+' '+ORE_NAMES[mined.ore],
+     {ore:mined.ore,quantity:mined.quantity+1,hit:true});
+   }
+   mine.durability--;mine.dug++;
+   mine.ores.stone=Math.min(1000000,mine.ores.stone+1);
+   mine.found.stone=Math.min(10000000,mine.found.stone+1);
+   return succeed('Mạch yếu · thu được 1 Đá',{ore:'stone',quantity:1,hit:false});
+  }
   if(action==='mine'){
    if(mine.repairUntil)return fail('Cuốc đang tự sửa chữa');
    if(!mine.durability)return fail('Cuốc đã hết độ bền');
@@ -489,7 +537,7 @@
  }
  const formatXu=tenths=>(tenths/10).toLocaleString('vi-VN',{maximumFractionDigits:1});
  return Object.freeze({fresh,norm,advance,act,rate,upgradeCost,formatXu,
-  neonCapacity,neonService,NEON_SERVICE_INTERVAL,
+  neonCapacity,neonService,NEON_SERVICE_INTERVAL,NEON_ORDER_COOLDOWN,neonOrderPattern,mineProbeTarget,
   WATER_INTERVAL,REPAIR_INTERVAL,GROW_INTERVAL,BUBBLE_INTERVAL,ORE_VALUES,ORE_NAMES,
   CROPS,FISH_SPECIES,FISH_REEL_WINDOW,maxCharge,zoneUnlocked,cropUnlocked,maxDurability,bubbleInterval,
   JADE:jadeGame});

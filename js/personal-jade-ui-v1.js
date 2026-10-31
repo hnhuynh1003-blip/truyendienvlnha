@@ -145,13 +145,13 @@
        <span>▼ <b>${movers[movers.length-1].name} ${trend(movers[movers.length-1].rate)}</b></span></div>
       <em>🎒 ${held}/${jade.MAX_STONES} đá trong túi</em></div>
     <nav class="jade-market-route" aria-label="Chọn khu chợ đá">
-     <div class="jade-market-route-heading"><b>⌁ BẢN ĐỒ CHỢ</b><span>${opened}/${jade.MARKETS.length} KHU ĐÃ MỞ</span></div>
-     <div class="jade-market-stop-list" aria-label="Vuốt ngang để chọn khu">
+     <div class="jade-market-stop-list" aria-label="${opened}/${jade.MARKETS.length} khu đã mở. Vuốt ngang để chọn khu">
       ${jade.MARKETS.map((m,i)=>{const unlocked=jade.unlocked(j,i);
        return `<button type="button" class="jade-market-stop jade-stop-${i} ${active===i?'is-active':''} ${unlocked?'':'is-locked'}"
-        data-jade-market-switch="${i}" aria-pressed="${active===i}" aria-label="${m.short}${unlocked?' · '+fmt(m.price)+' Xu/viên':' · chưa mở: '+m.unlock}" ${unlocked?'':'disabled'}>
-        <span class="jade-market-stop-icon" aria-hidden="true">${['◈','≋','◇','◆','✵'][i]}</span>
-        <strong>${m.short}</strong><small>${unlocked?fmt(m.price)+' Xu':'🔒 '+m.unlock}</small></button>`;}).join('')}
+        ${unlocked?'data-jade-market-switch':'data-jade-market-lock'}="${i}" aria-pressed="${active===i}"
+        aria-label="${m.short}${unlocked?' · '+fmt(m.price)+' Xu/viên':' · chưa mở, chạm để xem điều kiện'}" title="${unlocked?m.name:m.unlock}">
+        <span class="jade-market-stop-icon" aria-hidden="true">${unlocked?['◈','≋','◇','◆','✵'][i]:'🔒'}</span>
+        <strong>${m.short}</strong></button>`;}).join('')}
      </div>
     </nav>
     ${jade.MARKETS.map((m,i)=>{if(i!==active)return '';

@@ -117,12 +117,12 @@ async function main(){
    assert.ok(look.iconWidth>=26&&look.iconHeight>=26,game+' dock icon is substantial');
    assert.ok(look.overflow<=2,game+' game world has no horizontal clipping');
    if(game==='neon'){
-    assert.ok(await page.locator('.neon-network-node').count()>=3,
-     'C4.19 a live network of real game machines fills the lower play area');
+    assert.equal(await page.locator('.neon-order-actions button').count(),3,
+     'C4.20 Neon has a separate two-step playable customer service counter');
    }
    if(game==='mine'){
-    assert.equal(await page.locator('.mine-haul-gem').count(),5,
-     'C4.19 the mining conveyor displays five actual inventory slots');
+    assert.equal(await page.locator('.mine-seam-tunnel').count(),3,
+     'C4.20 mining uses three genuinely selectable underground seams');
    }
    stageLooks.add(look.stageBackground);
    if(process.env.ARCADE_C417_SHOTS){
@@ -156,6 +156,8 @@ async function main(){
   const market=page.locator('.arcade-sheet-overlay');
   assert.equal(await market.locator('.jade-market-stop').count(),5,
    'All five districts appear in one swipeable navigation rail');
+  assert.ok(await market.locator('.jade-market-route').evaluate(el=>el.getBoundingClientRect().height)<55,
+   'C4.20 district navigation must be a compact chip rail, not giant cards');
   assert.equal(await market.locator('.jade-market-card').count(),1,
    'Only the chosen stall is rendered, never a long stacked market');
   assert.equal(await market.locator('.jade-stall-stone').count(),3,
