@@ -1,0 +1,112 @@
+/* C4.25D — compact Jade tray and three-PC physical Neon pods.
+   This is visual/layout only; no action cost, save key or room capacity changes. */
+
+/* The stone queue is a small tool dock, not another framed information card.
+   Every visible button keeps its original action. */
+#personal-arcade-v1 .jade-stock-dock{
+ display:block;padding:8px 9px 9px;margin:3px 0 7px;
+ border:1px solid #907e57;border-left:3px solid #d2b475;border-radius:4px 10px 4px 9px;
+ background:linear-gradient(95deg,#152923ef,#233b30ed);
+ box-shadow:inset 0 1px 0 #e2c18c24,0 3px 8px #06170c6b;
+}
+#personal-arcade-v1 .jade-stock-dock-summary{
+ display:flex;align-items:center;gap:5px;margin-bottom:7px;
+ color:#f4dab0;font:700 11px/1.2 system-ui,sans-serif;
+}
+#personal-arcade-v1 .jade-stock-dock-summary>span{font-size:14px;color:#dbb670}
+#personal-arcade-v1 .jade-stock-dock-summary b{font-weight:700}
+#personal-arcade-v1 .jade-stock-dock-actions{
+ display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:6px;
+}
+#personal-arcade-v1 .jade-stock-dock-actions .arcade-button,
+#personal-arcade-v1 .jade-welcome.jade-stock-dock .arcade-button{
+ width:100%;min-width:0;min-height:31px;height:31px;margin:0;
+ padding:4px 6px;border-radius:5px 10px 5px 9px;
+ font:800 10px/1.1 system-ui,sans-serif;white-space:nowrap;
+}
+#personal-arcade-v1 .jade-stock-dock-actions .arcade-button.upgrade{
+ background:#314b43;border-color:#79978c;color:#e6fbf0;
+}
+#personal-arcade-v1 .jade-stock-dock-actions .arcade-button:active{transform:translateY(1px)}
+
+/* The café panorama already contains long rows of players. The original
+   giant dashboard monitors masked those rows; physical three-PC pods now sit
+   on the *empty foreground floor* with an unobstructed view to the café. */
+#personal-arcade-v1 .neon-stage{
+ isolation:isolate;
+ background-position:center,center 42%;
+ background-size:cover,auto 111%;
+}
+#personal-arcade-v1 .neon-aisle-glow{
+ position:absolute;inset:49% 0 48px;z-index:2;pointer-events:none;
+ background:radial-gradient(ellipse at 50% 100%,#1b86e238,transparent 65%),
+  linear-gradient(0deg,#05112672,transparent 72%);
+}
+#personal-arcade-v1 .neon-gaming-floor{
+ position:absolute;left:4px;right:4px;top:181px;bottom:61px;z-index:4;
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+ align-items:end;justify-items:center;column-gap:0;row-gap:0;
+ pointer-events:none;
+}
+#personal-arcade-v1 .neon-gaming-bay{
+ position:relative;width:100%;max-width:107px;aspect-ratio:1;
+ min-width:0;min-height:0;align-self:end;
+ filter:drop-shadow(0 5px 4px #03081ac9);
+}
+#personal-arcade-v1 .neon-bay-art{
+ display:block;position:absolute;inset:0;
+ background:url('../assets/arcade-c425d/neon-pod-states.webp') left center/200% 100% no-repeat;
+ filter:drop-shadow(0 3px 3px #050b1ab8);
+}
+#personal-arcade-v1 .neon-gaming-bay.is-occupied .neon-bay-art{
+ animation:c425d-cafe-pulse 3.1s ease-in-out infinite alternate;
+}
+#personal-arcade-v1 .neon-gaming-bay.is-idle .neon-bay-art{
+ filter:brightness(.64) saturate(.66) drop-shadow(0 3px 3px #050b1ab8);
+}
+#personal-arcade-v1 .neon-gaming-bay.is-locked .neon-bay-art{
+ background-position:right center;
+ filter:grayscale(.6) brightness(.72) drop-shadow(0 4px 4px #050913b6);
+}
+#personal-arcade-v1 .neon-bay-id{
+ position:absolute;z-index:2;left:50%;bottom:-2px;transform:translateX(-50%);
+ display:flex;align-items:center;gap:4px;padding:2px 6px;
+ color:#a9faff;background:#061b30ed;border:1px solid #3997b9bc;
+ border-radius:3px 7px 3px 7px;
+ font:800 9px/1.15 ui-monospace,monospace;
+ box-shadow:0 2px 6px #0009;
+}
+#personal-arcade-v1 .neon-bay-id i{
+ display:block;width:5px;height:5px;flex:0 0 5px;border-radius:50%;
+ background:#3effed;box-shadow:0 0 5px #3effed;
+}
+#personal-arcade-v1 .neon-gaming-bay.is-idle .neon-bay-id i{background:#c4b6e4;box-shadow:none}
+#personal-arcade-v1 .neon-gaming-bay.is-locked .neon-bay-id{
+ color:#8593aa;background:#09111fe0;border-color:#4f6076a6;
+}
+#personal-arcade-v1 .neon-gaming-bay.is-locked .neon-bay-id i{background:#7b8191;box-shadow:none}
+#personal-arcade-v1 .neon-stage.neon-room-tier-2 .neon-gaming-floor{
+ top:152px;bottom:61px;
+}
+#personal-arcade-v1 .neon-stage.neon-room-tier-3 .neon-gaming-floor{
+ top:145px;bottom:62px;
+}
+#personal-arcade-v1 .neon-floor-capacity-5{grid-template-rows:repeat(2,minmax(0,1fr))}
+#personal-arcade-v1 .neon-floor-capacity-5 .neon-gaming-bay:nth-child(4){transform:translateX(48%)}
+#personal-arcade-v1 .neon-floor-capacity-5 .neon-gaming-bay:nth-child(5){transform:translateX(48%)}
+#personal-arcade-v1 .neon-floor-capacity-7{grid-template-rows:repeat(3,minmax(0,1fr))}
+#personal-arcade-v1 .neon-floor-capacity-7 .neon-gaming-bay:last-child{grid-column:2}
+#personal-arcade-v1 .neon-floor-capacity-5 .neon-gaming-bay,
+#personal-arcade-v1 .neon-floor-capacity-7 .neon-gaming-bay{
+ width:auto;height:min(100%,95px);aspect-ratio:1;
+}
+#personal-arcade-v1 .neon-room-level{max-width:107px;letter-spacing:0}
+#personal-arcade-v1 .neon-stage-income{z-index:5}
+
+@keyframes c425d-cafe-pulse{
+ from{filter:brightness(.93) drop-shadow(0 0 3px #13bce865)}
+ to{filter:brightness(1.13) drop-shadow(0 0 7px #29e8e69c)}
+}
+@media(prefers-reduced-motion:reduce){
+ #personal-arcade-v1 .neon-gaming-bay.is-occupied .neon-bay-art{animation:none}
+}

@@ -209,13 +209,17 @@
    servicePulse=activeFeedback('neon-service',time),
    orderPulse=activeFeedback('neon-order',time);
   const level=Math.min(6,Math.floor((s.neon.cpu+s.neon.gpu)/5)+1);
-  const stations=Array.from({length:capacity},(_,i)=>`<div class="neon-computer neon-computer-${i+1} ${i>=n.stations?'is-locked':i<service.guests&&n.running?'is-occupied':''}">
-    <div class="neon-monitor"><div class="neon-monitor-glass"><span>${i>=n.stations?'KHOÁ':i<service.guests&&n.running?'KHÁCH':'CRYO<span class="neon-blink">_</span>'}</span>
-      <i></i><i></i><i></i><div class="neon-monitor-graph"></div></div></div>
-    <div class="neon-stand"></div><div class="neon-keyboard"></div>
-    <div class="neon-tower"><b></b><b></b><b></b></div>
-    ${i<service.guests&&n.running?'<div class="neon-guest" aria-hidden="true"></div>':''}
-    <div class="neon-station-number">${String(i+1).padStart(2,'0')}</div></div>`).join('');
+  // Each owned station is represented by a *physical three-PC gaming pod*.
+  // Core capacity and guest/service economics stay unchanged; the lit/locked
+  // artwork and bay labels reflect the original persisted station ownership.
+  const stations=Array.from({length:capacity},(_,i)=>{
+   const locked=i>=n.stations,occupied=!locked&&i<service.guests&&n.running;
+   return `<div class="neon-gaming-bay ${locked?'is-locked':occupied?'is-occupied':'is-idle'}"
+      role="img" aria-label="Cụm máy ${i+1}: ${locked?'Chưa mở khóa':occupied?'Đang phục vụ khách':'Sẵn sàng đón khách'}">
+      <span class="neon-bay-art" aria-hidden="true"></span>
+      <span class="neon-bay-id"><i></i>${String(i+1).padStart(2,'0')}</span>
+    </div>`;
+  }).join('');
   return `<section class="arcade-world arcade-world-neon ${s.neon.running?'is-running':'is-paused'}" aria-label="Trạm Neon">
     <header class="arcade-world-heading"><div><span class="arcade-eyebrow">01 / IDLE TYCOON</span>
       <h3>Trạm Neon</h3><p>Đón khách, nâng máy, mở rộng phòng net.</p></div></header>
@@ -229,11 +233,12 @@
         'neon-turbo','power neon-boost-button',boost||!ready||!n.running)}</div>
       <div class="neon-wall-logo" aria-hidden="true">CRYO<span>TECH</span><small>NET · STATION</small></div>
       <div class="neon-server-stack"><span></span><span></span><span></span><span></span></div>
-      <div class="neon-floor"></div><div class="neon-computer-rack ${capacity>3?'neon-rack-wide':''}">${stations}</div>
+      <div class="neon-aisle-glow" aria-hidden="true"></div>
+      <div class="neon-gaming-floor neon-floor-capacity-${capacity}">${stations}</div>
       ${servicePulse?`<div class="neon-coin-fountain" aria-live="polite">✦ +${fmt(servicePulse.quantity)} Xu <small>ĐÃ PHỤC VỤ</small></div>`:''}
       <div class="neon-stage-income"><span>${boost?'⚡ ĐANG ÉP XUNG ×2':'THU NHẬP TRỰC TIẾP'}</span><b>+${(boost?activeRate*2/1000:activeRate/1000).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:3})} <small>Xu / giây</small></b>
         <div class="neon-income-track"><i></i></div></div>
-      <div class="neon-room-level">PHÒNG ${n.roomTier}/3 · ${n.stations}/${capacity} DÀN · MÁY CẤP ${level}</div>
+      <div class="neon-room-level">PHÒNG ${n.roomTier}/3 · ${n.stations}/${capacity} CỤM · CẤP ${level}</div>
     </div>
     <div class="arcade-control-panel">
       <div class="neon-operations-strip" aria-label="Hoạt động phòng máy">

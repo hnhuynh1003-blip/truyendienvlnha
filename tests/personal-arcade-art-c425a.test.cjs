@@ -32,7 +32,7 @@ test('C4.25A keeps actual Arcade actions under state-derived scenes',()=>{
   'repair-forge','mine-scanner','mine-probe-${i}','neon-order-${i}'])
   assert.ok(ui.includes(control),`${control} remains interactive`);
  assert.match(ui,/mine-dig-phase-\$\{m\.dug%4\}/);
- assert.match(ui,/neon-computer-\$\{i\+1\}/);
+ assert.match(ui,/neon-gaming-bay/);
  assert.match(ui,/neon-coin-fountain/);
  assert.match(ui,/mine-inventory-slot mine-slot-\$\{ore\}/);
  assert.match(ui,/mine-seam-tunnel-\$\{i\}/);

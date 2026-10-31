@@ -65,12 +65,12 @@
   const rescueLeft=Math.max(0,j.rescueReadyAt-(s.lastAt||Date.now()));
   const rescueTime=Math.ceil(rescueLeft/60000);
   const canRescue=j.bought>0&&s.coins<jade.MARKETS[0].price;
-  if(!stone&&j.stash.length)return `<div class="jade-welcome jade-welcome-stock">
-    <span>✦ ĐÃ VỀ XƯỞNG</span><strong>${j.stash.length} viên đá đang chờ.</strong>
-    <p>Chạm mẫu trong túi để đưa lên bàn soi.</p>
-    ${btn('◈ Đưa mẫu #'+j.stash[0].id+' lên bàn','jade-select-0','gold')}
-    ${btn('＋ Mua thêm đá ở chợ','jade-open-market','upgrade',j.stash.length>=jade.MAX_STONES)}
-    ${j.vault.length?btn('▱ Xem '+j.vault.length+' món ngọc đã cất','jade-open-vault','upgrade'):''}</div>`;
+  if(!stone&&j.stash.length)return `<div class="jade-welcome jade-welcome-stock jade-stock-dock">
+    <div class="jade-stock-dock-summary"><span aria-hidden="true">◈</span><b>${j.stash.length} viên đá chờ soi</b></div>
+    <div class="jade-stock-dock-actions" role="group" aria-label="Chọn mẫu đá hoặc đến chợ">
+      ${btn('Đưa mẫu #'+j.stash[0].id,'jade-select-0','gold')}
+      ${btn('＋ Đi chợ','jade-open-market','upgrade',j.stash.length>=jade.MAX_STONES)}
+    </div></div>`;
   if(!stone)return `<div class="jade-welcome">
     <span>✧ PHƯỜNG NGỌC ĐÃ MỞ CỬA</span><strong>Mỗi viên đá ẩn một câu chuyện.</strong>
     <p>Chọn đá · Soi ngọc · Xẻ phôi · Chế tác.</p>
@@ -132,8 +132,6 @@
       <small>${jade.MARKETS[stone.site].short}</small>
       <em>${stone.phase==='window'?'Đã khai song':clue.size}</em></button>`;}).join('')}</div>`:
      '<small class="jade-stock-empty">Chợ đang có các khay đá; mua trước rồi soi sau.</small>'}
-    ${j.active?'<small class="jade-stock-help">Cất viên đang soi nếu muốn đổi mẫu. Không mất phí.</small>':
-     '<small class="jade-stock-help">Chạm một viên bất kỳ để đưa lên bàn soi.</small>'}
    </div>`;
  }
  function marketPanel(s){
