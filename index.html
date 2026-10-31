@@ -2336,7 +2336,7 @@
       banner.textContent = IS_PILOT_STAGING_MODE ?
         '🧪 V47 PILOT STAGING — Bình luận Firebase riêng; không dùng Xu, Kho hay quà thật' :
         '🧪 SANDBOX — Dữ liệu thử nghiệm cục bộ, không đồng bộ máy chủ';
-      banner.style.cssText = 'position:sticky;top:0;z-index:9999;text-align:center;background:#78350f;color:#fff;padding:5px;font-size:12px;';
+      banner.style.cssText = 'position:sticky;top:0;z-index:9999;pointer-events:none;text-align:center;background:#78350f;color:#fff;padding:5px;font-size:12px;';
       document.body.prepend(banner);
     }
     const docRef = db.collection("studio_data").doc("main_library");

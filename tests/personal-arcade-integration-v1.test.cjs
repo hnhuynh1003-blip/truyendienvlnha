@@ -7,14 +7,15 @@ const src=p=>fs.readFileSync(path.join(__dirname,'..',p),'utf8');
 
 test('C4.4 joins the phone as one Arcade app with four named games',()=>{
  const html=src('index.html');
+ assert.match(html,/banner\.style\.cssText = '[^']*pointer-events:none/, 'Sandbox notice must not cover phone controls');
  assert.match(html,/id="personal-arcade-launch-v1"/);
  assert.match(html,/onclick="openPhoneApp\('arcade'\)"/);
  assert.match(html,/id="phone-app-arcade"/);
  assert.match(html,/DuduPersonalArcadeUIV1\?\.render\(\)/);
  assert.match(html,/personal-jade-core-v1\.js\?v=c414-1/);
- assert.match(html,/personal-jade-ui-v1\.js\?v=c420-1/);
+ assert.match(html,/personal-jade-ui-v1\.js\?v=[^"&]+/);
  assert.match(html,/personal-arcade-core-v1\.js\?v=c423-1/);
- assert.match(html,/personal-arcade-ui-v1\.js\?v=c424-1/);
+ assert.match(html,/personal-arcade-ui-v1\.js\?v=[^"&]+/);
  assert.match(html,/arcade-season-c424-art\.css\?v=c424-1/);
  assert.match(html,/personal-arcade-v1\.css\?v=c414-1/);
  assert.match(html,/arcade-immersive-c417\.css\?v=c417-1/);

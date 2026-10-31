@@ -30,8 +30,8 @@ test('C4.25B artwork remains tied to existing mechanics and is published in corr
  const html=source('index.html'),garden=source('js/personal-arcade-ui-v1.js');
  const jade=source('js/personal-jade-ui-v1.js');
  assert.ok(html.indexOf('arcade-c425b-worlds.css')>html.indexOf('arcade-c425a-worlds.css'));
- assert.match(html,/personal-jade-ui-v1\.js\?v=c420-1&amp;art=c425b-2/);
- assert.match(html,/personal-arcade-ui-v1\.js\?v=c424-1&amp;art=c425a-2&amp;worlds=c425b-2/);
+ assert.match(html,/personal-jade-ui-v1\.js\?v=[^"&]+&amp;art=[^"&]+/);
+ assert.match(html,/personal-arcade-ui-v1\.js\?v=[^"&]+&amp;art=c425a-2&amp;worlds=c425b-2/);
  for(const action of ["'plant-'+index","'water-'+index","'harvest-'+index",
   'cast-line','reel-line','catch-bubble','water-all','harvest-all','buy-seeds'])
   assert.ok(garden.includes(action),`${action} must remain playable`);

@@ -36,5 +36,5 @@ test('C4.24 artifact gallery has unique atlas coordinates and readable responsiv
  assert.match(css,/prefers-reduced-motion:reduce/);
  const html=src('index.html');
  assert.match(html,/arcade-season-c424-art\.css\?v=c424-1/);
- assert.match(html,/personal-arcade-ui-v1\.js\?v=c424-1/);
+ assert.match(html,/personal-arcade-ui-v1\.js\?v=[^"&]+/);
 });

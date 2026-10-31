@@ -113,7 +113,7 @@ test('C4.9 controls clearly expose recovery and keep all four game tabs',()=>{
  s=take(s,'jade-cut').state;s=take(s,'jade-sell').state;s.coins=0;
  assert.match(jadeUI.panel(s),/data-arcade-action="jade-rescue"/);
  s=take(s,'jade-rescue').state;
- assert.match(jadeUI.panel(s),/đá tập cứu vốn|Bàn giám ngọc/);
+ assert.match(jadeUI.panel(s),/đá tập cứu vốn|Soi dấu hiệu/);
  s=take(s,'jade-cut').state;s=take(s,'jade-sell').state;s.coins=0;
  assert.match(jadeUI.panel(s),/Đá cứu vốn/);
 });

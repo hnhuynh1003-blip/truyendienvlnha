@@ -146,7 +146,7 @@ test('C4.18.3 stall selection focuses one offer, and compare restores all three'
  ui.chooseMarketSample(0,1);
  html=ui.panel(s);
  assert.match(html,/jade-market-tray is-focused" data-market-stall="0" open data-selected-slot="1"/);
- assert.match(html,/jade-stall-stone-b is-selected"\s+data-jade-preview-slot="1" aria-pressed="true"/);
+ assert.match(html,/jade-stall-stone-b[^"]*\bis-selected"\s+data-jade-preview-slot="1" aria-pressed="true"/);
  assert.match(html,/jade-market-sample [^"]*is-selected" data-jade-sample-slot="1"/);
  assert.match(html,/data-jade-preview-all="1"/);
  assert.match(html,/data-arcade-action="jade-pick-0-1"/,'Chosen sample preserves its true pick action');

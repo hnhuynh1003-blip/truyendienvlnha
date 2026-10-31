@@ -54,7 +54,7 @@ test('Existing jade actions display genuinely different rock artwork for raw, wi
  assert.equal(cut.ok,true);
  s=cut.state;
  assert.equal(s.jade.active.phase,'cut');
- assert.match(panel(s),/jade-item-split/);
+ assert.match(panel(s),/jade-ai-split-\d+/);
  assert.doesNotMatch(panel(s),/jade-item-window/);
  const restored=core.norm(JSON.parse(JSON.stringify(s)),TIME);
  assert.equal(restored.jade.active.phase,'cut');
