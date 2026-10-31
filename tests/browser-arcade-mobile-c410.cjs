@@ -61,14 +61,36 @@ async function main(){
    const layout=await page.evaluate(()=>{
     const port=document.querySelector('.arcade-scroll'),tabs=document.querySelector('.arcade-tabs');
     const box=port.getBoundingClientRect(),nav=tabs.getBoundingClientRect();
+    const phone=document.getElementById('cyber-phone').getBoundingClientRect();
+    const close=document.querySelector('#cyber-phone .phone-close-btn').getBoundingClientRect();
+    const app=document.getElementById('phone-app-arcade').getBoundingClientRect();
     return {overflow:port.scrollWidth-port.clientWidth,tabs:tabs.children.length,
-     portWidth:box.width,navWidth:nav.width,phoneWidth:document.getElementById('cyber-phone').getBoundingClientRect().width};
+     portWidth:box.width,navWidth:nav.width,phoneWidth:phone.width,phoneHeight:phone.height,
+     closeWidth:close.width,closeBottom:close.bottom,appTop:app.top,
+     homeBar:getComputedStyle(document.querySelector('#cyber-phone .phone-home-bar')).display};
    });
    assert.ok(layout.portWidth>190,'Arcade should have a usable content width at '+width);
    assert.ok(layout.overflow<=2,'No horizontal Arcade overflow at '+width+'px');
    assert.equal(layout.tabs,4,'Four game tabs stay available on a narrow viewport');
    assert.ok(layout.navWidth<=layout.phoneWidth,'Bottom game navigation fits the phone');
+   assert.ok(layout.phoneWidth/layout.phoneHeight<.55,'C4.15 phone is tall and slim at '+width+'px');
+   assert.ok(layout.closeWidth>=30,'C4.15 global close X stays tappable');
+   assert.ok(layout.closeBottom<=layout.appTop+2,'C4.15 app content clears the global X');
+   assert.equal(layout.homeBar,'none','C4.15 duplicate bottom line is hidden');
   }
+  // Reading still leaves a small reader-controls gap, without making the
+  // shortened phone unnaturally wide on a short physical screen.
+  await page.setViewportSize({width:320,height:568});
+  await page.evaluate(()=>document.body.classList.add('dudu-site-v60','dudu-reading-active'));
+  const readingFrame=await page.locator('#cyber-phone').evaluate(el=>{
+   const rect=el.getBoundingClientRect();
+   return {ratio:rect.width/rect.height,bottom:innerHeight-rect.bottom,right:innerWidth-rect.right};
+  });
+  assert.ok(readingFrame.ratio<.68,'C4.15 reader phone retains portrait ratio');
+  assert.ok(readingFrame.bottom>=60,'C4.15 reader controls still have their own space');
+  assert.ok(readingFrame.right>=0,'C4.15 reader phone remains inside the viewport');
+  await page.evaluate(()=>document.body.classList.remove('dudu-reading-active'));
+  await page.setViewportSize({width:390,height:844});
 
   // A player leaving the Neon workshop must see the Jade stage, not Neon scroll offset.
   await page.evaluate(()=>document.querySelector('.arcade-scroll').scrollTop=220);
