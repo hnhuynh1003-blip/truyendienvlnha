@@ -53,11 +53,11 @@
        <span class="jade-item-art jade-item-${visual} ${cut?gemVisual(stone):shellVisual(stone.site,stone.seed)}" style="--jade-item-x:${artworkIndex*25}%;--jade-gem-tone:${color}" aria-hidden="true"></span>${cut&&revealed?'<span class="jade-reveal-rays" aria-hidden="true"></span>':''}
        ${phase==='window'?'<span class="jade-polished-window"></span>':''}
        ${cut?`<span class="jade-gem-inner"></span><span class="jade-gem-shine"></span>`:''}
-       ${!cut?[0,1,2].map(i=>`<button type="button" class="jade-scan-target jade-scan-${i} ${stone.scans[i]?'is-scanned':''}"
-           data-arcade-action="jade-scan-${i}" ${stone.scans[i]?'disabled':''}
-           aria-label="Soi điểm ${i+1}: ${['Độ xuyên sáng','Mãng đới và tùng hoa','Liệt văn và tạp chất'][i]}">
-           ${stone.scans[i]?'✓':i+1}</button>`).join(''):''}
       </div>`:`<div class="jade-showcase-rough" aria-hidden="true"><i></i><i></i><i></i></div>`}
+    ${cut?`<div class="jade-stage-quote jade-quote-${tier}" role="status">
+      <small>${tier==='legendary'?'✦ HUYỀN THOẠI':tier==='precious'?'◇ NGỌC QUÝ':tier==='common'?'◈ NGỌC THƯỜNG':'PHẾ THẠCH'}</small>
+      <strong>${revealed?stoneName(stone):'Không có ngọc'}</strong>
+      <b>${fmt(jade.marketQuote(stone).value)} Xu</b></div>`:''}
     ${phasePulse?`<span class="${phasePulse.type==='jade-window'?'jade-window-flash':'jade-cut-flash'} jade-flash-${tier}" aria-hidden="true"></span>`:''}
     <div class="jade-stage-base">${stone?'MẪU #'+String(stone.id).padStart(3,'0')+' · '+jade.MARKETS[stone.site].short.toUpperCase():
      'CHỜ CHỦ NHÂN CHỌN ĐÁ THÔ'}
@@ -87,18 +87,19 @@
        'jade-rescue','upgrade',rescueLeft>0)}</div>`:''}</div>`;
   if(['raw','window'].includes(stone.phase)){
    const windowQuote=jade.marketQuote(stone,nowOf(s));
-   return `<div class="jade-readout"><div class="jade-readout-head"><b>◈ Bàn giám ngọc</b><span>${stone.scans.filter(Boolean).length}/3 DẤU HIỆU</span></div>
-     <div class="jade-clue-list">${[0,1,2].map((i)=>`<div class="jade-clue ${stone.scans[i]?'is-read':''}">
-       <span>${['◉','❧','⌁'][i]}</span><div><b>${['Thủy đầu','Mãng đới / Tùng hoa','Liệt văn'][i]}</b>
-       <small>${stone.scans[i]?jade.scanHint(stone,i,j.lamp):'Chưa soi'}</small></div></div>`).join('')}</div></div>
+   return `<details class="jade-scan-drawer" ${stone.scans.some(Boolean)&&stone.scans.some(v=>!v)?'open':''}>
+       <summary>◉ Soi dấu hiệu <small>${stone.scans.filter(Boolean).length}/3 · Tùy chọn</small></summary>
+       <div class="jade-scan-options">${[0,1,2].map(i=>`<button type="button" class="jade-scan-choice" data-arcade-action="jade-scan-${i}" ${stone.scans[i]?'disabled':''}>
+         <span>${['Thủy đầu','Mãng đới','Liệt văn'][i]}</span>
+         <small>${stone.scans[i]?jade.scanHint(stone,i,j.lamp):'Chạm để soi'}</small></button>`).join('')}</div>
+      </details>
      ${stone.phase==='window'?`<div class="jade-trader-offer"><span>GIÁ THU MUA HÔM NAY</span><strong>${fmt(windowQuote.value)} <small>Xu</small></strong>
       <small class="${trendClass(windowQuote.rate)}">${trend(windowQuote.rate)} · Giá thay đổi theo thị trường sắc ngọc. Có thể cất chờ.</small></div>
       <div class="jade-main-actions">${btn('✓ Bán sang tay','jade-sell-window','gold')}
       ${btn(jade.actionFee(stone,'cut')?'⚔ Xẻ đôi · '+fmt(jade.actionFee(stone,'cut'))+' Xu':'⚔ Xẻ đôi · Miễn phí','jade-cut','power',s.coins<jade.actionFee(stone,'cut'))}</div>`:
       `<div class="jade-main-actions">${btn(jade.actionFee(stone,'window')?'◈ Khai song · '+fmt(jade.actionFee(stone,'window'))+' Xu':'◈ Khai song · Miễn phí','jade-window','gold',s.coins<jade.actionFee(stone,'window'))}
       ${btn(jade.actionFee(stone,'cut')?'⚔ Xẻ đôi · '+fmt(jade.actionFee(stone,'cut'))+' Xu':'⚔ Xẻ đôi · Miễn phí','jade-cut','power',s.coins<jade.actionFee(stone,'cut'))}</div>`}
-     <p class="jade-decision-note">${stone.phase==='window'?'Giá chào có thể khác giá trị thực.':
-      'Soi để đoán; xẻ để biết thật.'}</p>
+
      ${btn('↩ Cất đá · Đổi viên khác','jade-store','upgrade')}
      ${stone.phase==='raw'&&jade.rawSalvageValue(stone)?`<div class="jade-recovery jade-recovery-compact">
       <small>Thiếu tiền cắt? Trả lại đá nguyên vỏ, thu hồi 25% giá mua; không tính lượt giao dịch.</small>
@@ -106,22 +107,14 @@
      </div>`:''}`;
   }
   const good=stone.grade>0&&stone.flaw!=='skin',quote=jade.marketQuote(stone,nowOf(s)),value=quote.value;
-  return `<div class="jade-reveal jade-result-${gemTier(stone)}"><span>${stone.phase==='crafted'?'✦ TÁC PHẨM HOÀN THÀNH':'✦ KẾT QUẢ XẺ ĐÁ'}</span>
-    <div class="jade-rarity-stamp">${gemTier(stone)==='legendary'?'✦ HUYỀN THOẠI':gemTier(stone)==='precious'?'◇ NGỌC QUÝ':gemTier(stone)==='common'?'◈ NGỌC THƯỜNG':'KHÔNG CÓ NGỌC'}</div>
-    <strong>${good?stoneName(stone):stone.flaw==='skin'?'Kháo Bì · Vỏ giả':'Phế thạch'}</strong>
-    <small>${good?'Kích cỡ '+stone.size+' · '+jade.FLAW_NAMES[stone.flaw]+
-     (stone.savedFracture?' · Cưa đã giữ được phôi':''):'Chỉ còn giá trị thu hồi'}
-     ${stone.phase==='crafted'?' · '+jade.CRAFTS[stone.craft].name:''}</small>
-    <div class="jade-reveal-price">GIÁ THU MUA ${dateText(nowOf(s))} <b>${fmt(value)} Xu</b></div>
-    <div class="jade-quote-trend ${trendClass(quote.rate)}">${trend(quote.rate)} so với giá gốc ${fmt(quote.base)} Xu · ${jade.COLORS[stone.color]}</div></div>
+  return `<div class="jade-cut-summary"><span>${stone.phase==='crafted'?'✦ Đã chế tác · '+jade.CRAFTS[stone.craft].name:'✦ Đã xẻ đá'}</span><small>${good?'Cỡ '+stone.size+' · '+jade.FLAW_NAMES[stone.flaw]:'Phế thạch · Có thể thu hồi'} · Giá ${fmt(value)} Xu</small></div>
     <div class="jade-main-actions">
      ${btn('✓ Bán · +'+fmt(value)+' Xu','jade-sell','gold')}
      ${stone.phase==='crafted'?btn('✦ Đưa vào tủ','jade-exhibit','power',j.exhibits.length>=40):
       btn(good?'◈ Chế tác ngọc':'Phế thạch không thể chế tác','jade-open-workshop','power',!good)}</div>
     <div class="jade-hold-action">${btn('▱ Cất vào Kho Ngọc · Chờ giá tốt','jade-vault-store','upgrade',j.vault.length>=jade.MAX_VAULT)}
     <small>${j.vault.length}/${jade.MAX_VAULT} chỗ · Cất không mất phí, bán sau theo giá thị trường.</small></div>
-    <p class="jade-decision-note">${stone.phase==='crafted'?'Có thể giữ nguyên tác phẩm trong kho, trưng bày hoặc bán khi giá lên.':
-     'Có thể cất phôi, chờ giá tăng hoặc mang ra chế tác sau. Không bắt buộc bán ngay.'}</p>`;
+`;
  }
  function stockPanel(s){
   const j=s.jade,held=j.stash.length+(j.active?1:0);
