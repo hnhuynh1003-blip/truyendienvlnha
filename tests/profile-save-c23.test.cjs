@@ -108,13 +108,13 @@ test('C2.3 initializes a new owner-scoped profile but never another UID',async()
 });
 
 test('C2.3 live wiring has no broad profile .set and installs the save guard before Auth',()=>{
- assert.match(html,/js\/profile-save-c23\.js\?v=c23-1/);
+ assert.match(html,/js\/profile-save-c23\.js\?v=c416-1/);
  assert.ok(html.indexOf('js/profile-save-c23.js')<html.indexOf('js/auth-v2.js'));
  const begin=html.indexOf('function saveCurrentAccount() {');
  const end=html.indexOf('// V54: owner-confirmed one-time reset.',begin);
  const code=html.slice(begin,end);
  assert.match(code,/DuduProfileSaveC23\?\.enqueue/);
  assert.doesNotMatch(code,/\.set\(cloudData,\{merge:true\}\)/);
- assert.match(authCode,/DuduProfileSaveC23\?\.begin\?\.\(account\.uid, cloudData \|\| \{\}\)/);
+ assert.match(authCode,/DuduProfileSaveC23\?\.begin\?\.\(account\.uid, cloudData\)/);
  assert.match(authCode,/DuduProfileSaveC23\?\.reset\?\.\(\)/);
 });

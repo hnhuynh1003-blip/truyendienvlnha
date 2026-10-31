@@ -127,6 +127,8 @@
   }
   function readableProfileError(error) {
     if (error?.code === 'permission-denied') {
+      if(error?.stage==='Firestore profile create')
+        return 'Firestore từ chối tạo hồ sơ riêng cho tài khoản này. Cần kiểm tra Rules profiles_v2/{UID} đang Published.';
       return 'Firestore từ chối đọc profiles_v2 của tài khoản. Cần kiểm tra Rules đang triển khai; không sửa quyền hay xóa dữ liệu.';
     }
     if (error?.code === 'profile/timeout') {
@@ -182,6 +184,25 @@
       }
     }
   }
+  function newProfileData(account,profile){
+    const obj=value=>value&&typeof value==='object'&&!Array.isArray(value)?value:{};
+    const wallet=Number(profile.currency);
+    return {
+      username:account.uid,
+      name:String(profile.name||account.displayName||account.email||'Độc giả').slice(0,140),
+      title:String(profile.title||'Thực Thể Ký Tự').slice(0,140),
+      level:Math.max(1,Math.floor(Number(profile.level)||1)),
+      exp:Math.max(0,Math.floor(Number(profile.exp)||0)),
+      currency:Number.isSafeInteger(wallet)&&wallet>=0?wallet:50,
+      inventory:Array.isArray(profile.inventory)?profile.inventory:[],
+      quests:Array.isArray(profile.quests)?profile.quests:[],
+      lootedChapters:obj(profile.lootedChapters),
+      readRewards:obj(profile.readRewards),
+      dailyReadLog:obj(profile.dailyReadLog),
+      collectedCharacters:obj(profile.collectedCharacters),
+      storyStates:obj(profile.storyStates)
+    };
+  }
   function refreshSessionUI() {
     // A phone/widget render error must never invalidate Firebase authentication.
     for (const fn of [applyUserRole, renderHome, updatePhoneUI, updateActiveModelInfo]) {
@@ -225,7 +246,7 @@
       ]);
       if (ticket !== generation || client.currentUser?.uid !== account.uid) return;
 
-      const cloudData = snapshot.exists ? snapshot.data() : null;
+      let cloudData = snapshot.exists ? snapshot.data() : null;
       if (cloudData) userProfile = { ...JSON.parse(defaultProfile), ...cloudData };
       else {
         // V56.5: saveCurrentAccount() has always written profile_<UID>.
@@ -249,6 +270,36 @@
       userProfile.role = admin ? 'admin' : 'reader'; // Never trust a cached profile for permissions.
       userProfile.storyStates ||= {};
       userProfile.collectedCharacters ||= {};
+      if (!cloudData) {
+        // Authentication alone is not a usable economy account: personal
+        // transactions require profiles_v2/{UID} to exist on the server.
+        // The transaction only creates when still absent; another tab's
+        // existing wallet/inventory always wins over a device backup.
+        const saver=window.DuduProfileSaveC23;
+        if(typeof saver?.ensureNewProfile!=='function')
+          throw Error('Chưa tải được bộ khởi tạo hồ sơ Firebase');
+        let initialized;
+        try {
+          initialized=await withTimeout(saver.ensureNewProfile({
+            uid:account.uid,db:firebase.firestore(),auth:client,
+            data:newProfileData(account,userProfile),
+            isCurrent:uid=>ticket===generation&&client.currentUser?.uid===uid
+          }), 'Firestore profile create');
+        } catch(error) {
+          error.stage='Firestore profile create';
+          throw error;
+        }
+        if (ticket !== generation || client.currentUser?.uid !== account.uid) return;
+        cloudData=initialized.data;
+        if (!initialized.created) {
+          userProfile={...JSON.parse(defaultProfile),...cloudData};
+          userProfile.username=account.uid;
+          userProfile.name=cloudData.name||account.displayName||account.email||'Độc giả';
+          userProfile.role=admin?'admin':'reader';
+          userProfile.storyStates ||= {};
+          userProfile.collectedCharacters ||= {};
+        }
+      }
       loadScopedInteractionState();
       // V56.8: restore per-UID reader position and built-in phone appearance
       // only after the authenticated profile is loaded. Legacy local bookmarks
@@ -258,7 +309,7 @@
       ready = true;
       // The server document is the comparison baseline. Local defaults or
       // device backups are never authority to overwrite a newer profile.
-      window.DuduProfileSaveC23?.begin?.(account.uid, cloudData || {});
+      window.DuduProfileSaveC23?.begin?.(account.uid, cloudData);
       profileError = '';
       if (btn) btn.textContent = '👤 ' + label;
       if (prof) prof.textContent = 'Firebase UID: ' + account.uid.slice(0, 8) + '…';

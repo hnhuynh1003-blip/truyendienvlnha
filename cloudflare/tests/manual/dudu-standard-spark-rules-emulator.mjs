@@ -9,6 +9,8 @@ const require=createRequire(import.meta.url);
 const {initializeTestEnvironment,assertFails,assertSucceeds}=require('@firebase/rules-unit-testing');
 const epubApi=require('../../../js/epub-production-v49.js');
 const honorApi=require('../../../js/personal-honor-c46.js');
+const shopApi=require('../../../js/personal-spark-items-v1.js');
+const blindApi=require('../../../js/personal-blind-box-c29.js');
 
 const PROJECT='demo-dudu-standard';
 const HOST='127.0.0.1:18087';
@@ -167,6 +169,46 @@ try{
   dailyReadLog:{day:'',chapters:[]},collectedCharacters:{},storyStates:{}
  }));
  await yes('restore pre-reset virtual wallet for replay probes',user.update({currency:80}));
+ // C4.16: reproduce the real 403 from a *fresh reader* whose profile does
+ // not yet contain questV437 or questsDayV43. Test the actual web engines,
+ // not only simplified patches that omit their quest-event fields.
+ const freshShop=env.authenticatedContext('reader-shop-new').firestore();
+ const freshShopRef=freshShop.collection('profiles_v2').doc('reader-shop-new');
+ await yes('C4.16 first-time reader creates own profile without quest fields',
+  freshShopRef.set({username:'reader-shop-new',name:'Reader',currency:50,
+   inventory:[],quests:[],storyStates:{}}));
+ await yes('C4.16 first-time reader purchases a Shop item with quest progress',
+  shopApi.run({db:freshShop,auth:{currentUser:{uid:'reader-shop-new'}},
+   uid:'reader-shop-new',kind:'purchase',itemId:'common-biscuit',
+   requestId:'shop-00000000-0000-4000-8000-000000000001',
+   now:()=>new Date('2026-10-31T12:00:00.000Z')}));
+ const shopProfile=(await freshShopRef.get()).data();
+ assert.equal(shopProfile.currency,42);
+ assert.equal(shopProfile.inventory.length,1);
+ assert.equal(shopProfile.questsDayV43,'2026-10-31');
+ assert.equal(typeof shopProfile.questV437,'object');
+ await no('C4.16 still reject malformed quest progress',
+  freshShopRef.update({questV437:'forged'}));
+ await no('C4.16 still reject malformed quest day',
+  freshShopRef.update({questsDayV43:{fake:true}}));
+
+ const freshBox=env.authenticatedContext('reader-box-new').firestore();
+ const freshBoxRef=freshBox.collection('profiles_v2').doc('reader-box-new');
+ const boxAuth={currentUser:{uid:'reader-box-new'}};
+ const boxId='00000000-0000-4000-8000-000000000002';
+ const boxTime=()=>Date.parse('2026-10-31T12:00:00.000Z');
+ await yes('C4.16 first-time blind-box reader creates own profile',
+  freshBoxRef.set({username:'reader-box-new',name:'Reader',currency:50,
+   inventory:[],quests:[],storyStates:{}}));
+ await yes('C4.16 reader starts a free DUDU FUN blind box',
+  blindApi.run({db:freshBox,auth:boxAuth,uid:'reader-box-new',
+   kind:'start',id:boxId,mode:'free',roll:0,now:boxTime}));
+ await yes('C4.16 reader claims its box with quest progress and inventory',
+  blindApi.run({db:freshBox,auth:boxAuth,uid:'reader-box-new',
+   kind:'claim',id:boxId,now:boxTime}));
+ const boxProfile=(await freshBoxRef.get()).data();
+ assert.equal(boxProfile.questsDayV43,'2026-10-31');
+ assert.equal(boxProfile.inventory.length,1);
  const honorAuth={currentUser:{uid:'reader-a'}};
  await yes('C4.6.3 owner equips a locally unlocked cosmetic title',honorApi.run({
   db:reader,auth:honorAuth,uid:'reader-a',kind:'equip',titleId:'reader',
@@ -243,13 +285,15 @@ try{
  const transferData={id:transferId,uid:'reader-a',gameXu:50,walletXu:5,rate:10,
   gameBalanceTenthsBefore:800,createdAt:'2026-10-30T02:00:00Z'};
  const transferRef=user.collection('arcade_receipts_v1').doc(transferId);
+ const walletBeforeDeniedReceipt=(await user.get()).data().currency;
  await no('cannot create receipt without matching wallet update',transferRef.set(transferData));
  await no('Arcade exchange receipt denied until trusted enablement',reader.runTransaction(async tx=>{
-  const snap=await tx.get(user);assert.equal(snap.data().currency,80);
-  tx.update(user,{currency:85,arcadeLastReceiptV1:transferId});
+  const snap=await tx.get(user);
+  assert.equal(snap.data().currency,walletBeforeDeniedReceipt);
+  tx.update(user,{currency:walletBeforeDeniedReceipt+5,arcadeLastReceiptV1:transferId});
   tx.set(transferRef,transferData);
  }));
- assert.equal((await user.get()).data().currency,80);
+ assert.equal((await user.get()).data().currency,walletBeforeDeniedReceipt);
  await no('owner cannot read disabled exchange receipt',transferRef.get());
  await no('other account cannot read exchange receipt',owner.collection('profiles_v2')
   .doc('reader-a').collection('arcade_receipts_v1').doc(transferId).get());

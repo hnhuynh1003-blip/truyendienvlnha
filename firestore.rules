@@ -148,6 +148,12 @@ service cloud.firestore {
         && data.get('inventory', []).size() <= 1000
         && data.get('quests', []) is list
         && data.get('quests', []).size() <= 200
+        // C4.16: reader quest rewards can create these fields for the first
+        // time. Shop, FUN and Kho commit the same quest progress atomically.
+        && data.get('questV437', {}) is map
+        && data.get('questV437', {}).keys().size() <= 40
+        && data.get('questsDayV43', '') is string
+        && data.get('questsDayV43', '').size() <= 10
         && data.get('lootedChapters', {}) is map
         && data.get('lootedChapters', {}).keys().size() <= 2000
         && data.get('readRewards', {}) is map
@@ -175,7 +181,8 @@ service cloud.firestore {
     function allowedLegacyProfileFields() {
       return [
         'username','name','title','role','level','exp','currency',
-        'inventory','quests','lootedChapters','readRewards','dailyReadLog',
+        'inventory','quests','questV437','questsDayV43',
+        'lootedChapters','readRewards','dailyReadLog',
         'collectedCharacters','storyStates','playerAvatar',
         'readingBookmarksV568','phoneAppearanceV568','arcadeLastReceiptV1',
         'honorV1'

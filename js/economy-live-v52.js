@@ -137,9 +137,11 @@
     'Đồ đã vào Kho · Số dư: '+result.balance+' Xu.');
    return true;
   }catch(e){
-   console.warn('DUDU Spark personal shop:',e?.message||'unavailable');
+   console.warn('DUDU Spark personal shop:',e?.code||e?.message||'unavailable');
    root.showSystemAlert?.('CHƯA XÁC NHẬN ĐƠN MUA',
-    'Kiểm tra kết nối rồi bấm mua lại đúng món này. Sẽ không trừ Xu hai lần.');
+    root.DuduPersonalErrorC416?.message(e,
+     'Chưa nhận được xác nhận. Kiểm tra kết nối rồi mua lại đúng món này; mã đơn cũ được giữ để tránh trừ hai lần.')||
+    'Kiểm tra kết nối rồi mua lại đúng món này.');
    return false;
   }finally{personalBusy=false;}
  }

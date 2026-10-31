@@ -91,6 +91,25 @@
    queue:Promise.resolve(),warned:false};
   return true;
  }
+ // A first-time reader must have an owner-scoped server document before
+ // Shop/FUN/Kho can use tx.update(). Never overwrite a profile created by
+ // another tab or device while this initialization is in flight.
+ async function ensureNewProfile({uid,db,auth,data,isCurrent}={}){
+  if(typeof uid!=='string'||!uid||!db?.collection||!db?.runTransaction||
+   typeof isCurrent!=='function'||auth?.currentUser?.uid!==uid)
+   throw Error('Không thể khởi tạo hồ sơ Firebase');
+  const user=auth.currentUser,initial=fieldSnapshot({...data,username:uid});
+  const active=()=>auth.currentUser===user&&isCurrent(uid);
+  const ref=db.collection('profiles_v2').doc(uid);
+  return db.runTransaction(async tx=>{
+   if(!active())throw Error('Tài khoản đã thay đổi khi khởi tạo hồ sơ');
+   const snap=await tx.get(ref);
+   if(!active())throw Error('Tài khoản đã thay đổi khi khởi tạo hồ sơ');
+   if(snap.exists)return {created:false,data:snap.data()};
+   tx.set(ref,initial);
+   return {created:true,data:initial};
+  });
+ }
  function enqueue({uid,db,auth,data,isCurrent,onConflict}={}){
   const state=session;
   if(!state||state.uid!==uid||typeof isCurrent!=='function'||
@@ -129,5 +148,6 @@
   state.queue=scheduled;
   return scheduled;
  }
- return Object.freeze({FIELDS,fieldSnapshot,changes,merge,begin,reset,enqueue});
+ return Object.freeze({FIELDS,fieldSnapshot,changes,merge,begin,reset,enqueue,
+  ensureNewProfile});
 });

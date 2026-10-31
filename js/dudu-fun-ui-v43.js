@@ -111,7 +111,8 @@
     'free-used':'Hôm nay đã nhận lượt miễn phí rồi.',
     'wallet-cap':'Ví đã đầy, hãy dùng bớt Xu trước.',
     'box-not-found':'Hộp này không còn ở đây. Hãy mở lại DUDU FUN.'};
-   message(reasons[error?.reason]||'Chưa mở được hộp. Hãy thử lại.');
+   message(reasons[error?.reason]||root.DuduPersonalErrorC416?.message(error,
+    'Chưa mở được hộp. Hãy thử lại.')||'Chưa mở được hộp. Hãy thử lại.');
    blindLoaded=false;blindError=false;
   }finally{blindBusy=false;render();}
  }
@@ -145,7 +146,9 @@
     'wallet-cap':'Ví đã đầy, hãy dùng bớt Xu trước khi nhận.',
     'ticket-not-found':'Vé này đã được thay thế. Hãy tải lại trò chơi.',
     'not-ready':'Bạn cần cào đủ ba ô để nhận giải.'};
-   message(errors[error?.reason]||'Chưa thực hiện được. Hãy kiểm tra kết nối rồi thử lại.');
+   message(errors[error?.reason]||root.DuduPersonalErrorC416?.message(error,
+    'Chưa thực hiện được. Hãy kiểm tra kết nối rồi thử lại.')||
+    'Chưa thực hiện được. Hãy kiểm tra kết nối rồi thử lại.');
    luckyLoaded=false;luckyError=false;
    return false;
   }finally{luckyBusy=false;render();}
@@ -195,14 +198,16 @@
    }
    return true;
   }catch(error){
-   console.warn('DUDU FUN main action:',error?.reason||error?.message);
+   console.warn('DUDU FUN main action:',error?.code||error?.reason||error?.message);
    const reasons={'already-started':'Lượt chơi hôm nay đã bắt đầu.',
     'already-claimed':'Bạn đã nhận phần thưởng này rồi.',
     'not-ready-or-claimed':'Hoàn thành trò chơi trước khi nhận thưởng nhé.',
     'inventory-full':'Kho đã đầy. Hãy để trống một ô rồi nhận lại.',
     'wallet-cap':'Ví đã đạt giới hạn Xu.',
     'clock-backwards':'Ngày chơi chưa khớp. Hãy kiểm tra đồng hồ.'};
-   message(reasons[error?.reason]||'Chưa thực hiện được. Hãy thử lại khi kết nối ổn định.');
+   message(reasons[error?.reason]||root.DuduPersonalErrorC416?.message(error,
+    'Chưa thực hiện được. Hãy thử lại khi kết nối ổn định.')||
+    'Chưa thực hiện được. Hãy thử lại khi kết nối ổn định.');
    // A second device may have changed the round; reread before retrying.
    liveState=null;liveLoaded=false;liveError=false;
    return false;

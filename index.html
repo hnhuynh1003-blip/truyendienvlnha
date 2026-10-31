@@ -76,8 +76,9 @@
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-check-compat.js"></script>
   <script src="js/appcheck-sitekey-v52.js?v=52-3"></script>
   <script src="js/firestore-profile-fallback-v56-7.js?v=56-7"></script>
-  <script src="js/profile-save-c23.js?v=c23-1"></script>
-  <script src="js/auth-v2.js?v=c23-1"></script>
+  <script src="js/profile-save-c23.js?v=c416-1"></script>
+  <script src="js/auth-v2.js?v=c416-1"></script>
+  <script src="js/personal-transaction-error-c416.js?v=c416-1"></script>
   <script src="js/npc-context-v56-10.js?v=56-10"></script>
   <script src="js/npc-reply-style-v56-12.js?v=56-12"></script>
   <script src="js/npc-dialogue-v56-13.js?v=56-13"></script>
@@ -5577,8 +5578,10 @@ document.getElementById('phone-home-screen').style.display = 'none';
           'Đã điều chỉnh hồi chiêu nhặt đồ Điện thoại.');
         return true;
       }catch(error){
-        console.warn('DUDU personal items:',error?.message||'unavailable');
-        showSystemAlert('CHƯA HOÀN TẤT','Hãy thử lại với món đồ này.');
+        console.warn('DUDU personal items:',error?.code||error?.reason||error?.message||'unavailable');
+        showSystemAlert('CHƯA HOÀN TẤT',
+          window.DuduPersonalErrorC416?.message(error,'Hãy thử lại với món đồ này.')||
+          'Hãy thử lại với món đồ này.');
         return false;
       }finally{personalItemBusy=false;}
     }
@@ -6729,7 +6732,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
           }
           return true;
         }catch(error){
-          console.warn('DUDU personal progress:',error?.reason||error?.message);
+          console.warn('DUDU personal progress:',error?.code||error?.reason||error?.message);
           if(personalProgressReady()&&currentUsername===uid){
             const reasons={
               cooldown:'Bảo vật vẫn đang hồi chiêu. Hãy thử lại sau.',
@@ -6740,6 +6743,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
               'no-encounter':'Dấu vết bảo vật không còn ở chương này.'
             };
             showSystemAlert('CHƯA THỰC HIỆN ĐƯỢC',reasons[error?.reason]||
+              window.DuduPersonalErrorC416?.message(error,
+                'Hãy kiểm tra kết nối rồi thử lại thao tác này.')||
               'Hãy kiểm tra kết nối rồi thử lại thao tác này.');
           }
           updateChapterLootButtonState();
@@ -8600,13 +8605,13 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/phone-inbox-v33.js?v=51-1"></script>
 <script src="js/companion-ui-v43.js?v=69-restore-1"></script>
 <script src="js/market-ui-v43.js?v=c24a-1"></script>
-<script src="js/dudu-fun-ui-v43.js?v=c42-fun-1"></script>
+<script src="js/dudu-fun-ui-v43.js?v=c416-1"></script>
 <script src="js/personal-jade-ui-v1.js?v=c414-1"></script>
 <script src="js/personal-honor-ui-c46.js?v=c412-1"></script>
 <script src="js/personal-arcade-ui-v1.js?v=c414-1"></script>
 <script src="js/quest-ui-v43-7.js?v=c23c-1"></script>
 <script src="js/economy-runtime-v43.js?v=c23c-1"></script>
-<script src="js/economy-live-v52.js?v=52-2"></script>
+<script src="js/economy-live-v52.js?v=c416-1"></script>
 <script src="js/museum-memories-ui-v43.js?v=2"></script>
 <script src="js/npc-diary-ui.js?v=1"></script>
 <script src="js/soul-link-ui-v43.js?v=2"></script>
