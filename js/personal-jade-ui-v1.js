@@ -7,6 +7,17 @@
  const btn=(label,action,kind='primary',disabled=false)=>`<button type="button" class="arcade-button ${kind}" data-arcade-action="${action}" ${disabled?'disabled':''}>${label}</button>`;
  const sheet=(label,icon,id)=>`<button type="button" class="arcade-drawer-trigger" data-arcade-drawer="${id}"><span aria-hidden="true">${icon}</span>${label}</button>`;
  const stoneName=stone=>stone.grade?jade.GRADES[stone.grade]+' · '+jade.COLORS[stone.color]:'Phế thạch';
+ const trend=rate=>rate>100?'↗ +'+(rate-100)+'%':rate<100?'↘ −'+(100-rate)+'%':'→ 0%';
+ const trendClass=rate=>rate>100?'is-up':rate<100?'is-down':'is-flat';
+ const dateText=time=>new Date(time||Date.now()).toLocaleDateString('vi-VN',{timeZone:'UTC',day:'2-digit',month:'2-digit'});
+ const nowOf=s=>s.lastAt||Date.now();
+ const marketRates=s=>jade.COLORS.map((name,i)=>({name,index:i,rate:jade.marketRate(i,nowOf(s))}));
+ let openStall=null;
+ function rememberTray(index,opened){
+  if(!Number.isSafeInteger(index)||index<0||index>=jade.MARKETS.length)return;
+  if(opened)openStall=index;
+  else if(openStall===index)openStall=null;
+ }
  function stoneScene(stone,j){
   const phase=stone?.phase||'none',color=stone?jade.COLOR_HEX[stone.color]:'#8bc4a7',
    scanned=stone?stone.scans.filter(Boolean).length:0,
@@ -41,23 +52,26 @@
     <span>✦ ĐÃ VỀ XƯỞNG</span><strong>${j.stash.length} viên đá đang chờ.</strong>
     <p>Chọn bất kỳ mẫu nào trong túi dưới đây để soi, khai song hoặc xẻ. Không cần quay lại chợ sau mỗi lần bán.</p>
     ${btn('◈ Đưa mẫu #'+j.stash[0].id+' lên bàn','jade-select-0','gold')}
-    ${btn('＋ Mua thêm đá ở chợ','jade-open-market','upgrade',j.stash.length>=jade.MAX_STONES)}</div>`;
+    ${btn('＋ Mua thêm đá ở chợ','jade-open-market','upgrade',j.stash.length>=jade.MAX_STONES)}
+    ${j.vault.length?btn('▱ Xem '+j.vault.length+' món ngọc đã cất','jade-open-vault','upgrade'):''}</div>`;
   if(!stone)return `<div class="jade-welcome">
     <span>✧ PHƯỜNG NGỌC ĐÃ MỞ CỬA</span><strong>Mỗi viên đá ẩn một câu chuyện.</strong>
     <p>Đi chợ lựa đá hoặc lấy mẫu thử, mang về túi rồi chọn viên để soi, khai song hay xẻ. Ngọc đẹp có thể bán, chế tác hoặc trưng bày.</p>
     ${btn(j.bought===0?'✦ Nhận đá thử miễn phí':'✦ Chọn lô đá mới',j.bought===0?'jade-buy-0':'jade-open-market','gold')}
     ${j.bought===0?btn('◈ Đi chợ chọn đá','jade-open-market','upgrade'):''}
+    ${j.vault.length?btn('▱ Kho đang giữ '+j.vault.length+' món ngọc','jade-open-vault','upgrade'):''}
     ${canRescue?`<div class="jade-recovery">
       <small>Xu Arcade dưới 5 · Xưởng ngọc có đá tập cứu vốn, soi và xẻ không tốn phí.</small>
       ${btn(rescueLeft?'◷ Đá cứu vốn · '+rescueTime+' phút':'✦ Nhận đá cứu vốn · Miễn phí',
        'jade-rescue','upgrade',rescueLeft>0)}</div>`:''}</div>`;
   if(['raw','window'].includes(stone.phase)){
+   const windowQuote=jade.marketQuote(stone,nowOf(s));
    return `<div class="jade-readout"><div class="jade-readout-head"><b>◈ Bàn giám ngọc</b><span>${stone.scans.filter(Boolean).length}/3 DẤU HIỆU</span></div>
      <div class="jade-clue-list">${[0,1,2].map((i)=>`<div class="jade-clue ${stone.scans[i]?'is-read':''}">
        <span>${['◉','❧','⌁'][i]}</span><div><b>${['Thủy đầu','Mãng đới / Tùng hoa','Liệt văn'][i]}</b>
        <small>${stone.scans[i]?jade.scanHint(stone,i,j.lamp):'Chạm điểm '+(i+1)+' trên thân đá để soi'}</small></div></div>`).join('')}</div></div>
-     ${stone.phase==='window'?`<div class="jade-trader-offer"><span>THƯƠNG NHÂN ĐỊNH GIÁ</span><strong>${fmt(stone.offer)} <small>Xu</small></strong>
-      <small>Chốt lời ngay hoặc cược vào ruột đá.</small></div>
+     ${stone.phase==='window'?`<div class="jade-trader-offer"><span>GIÁ THU MUA HÔM NAY</span><strong>${fmt(windowQuote.value)} <small>Xu</small></strong>
+      <small class="${trendClass(windowQuote.rate)}">${trend(windowQuote.rate)} · Giá thay đổi theo thị trường sắc ngọc. Có thể cất chờ.</small></div>
       <div class="jade-main-actions">${btn('✓ Bán sang tay','jade-sell-window','gold')}
       ${btn(jade.actionFee(stone,'cut')?'⚔ Xẻ đôi · '+fmt(jade.actionFee(stone,'cut'))+' Xu':'⚔ Xẻ đôi · Miễn phí','jade-cut','power',s.coins<jade.actionFee(stone,'cut'))}</div>`:
       `<div class="jade-main-actions">${btn(jade.actionFee(stone,'window')?'◈ Khai song · '+fmt(jade.actionFee(stone,'window'))+' Xu':'◈ Khai song · Miễn phí','jade-window','gold',s.coins<jade.actionFee(stone,'window'))}
@@ -70,19 +84,22 @@
       ${btn('↩ Thanh lý đá thô · +'+fmt(jade.rawSalvageValue(stone))+' Xu','jade-sell-raw','upgrade')}
      </div>`:''}`;
   }
-  const good=stone.grade>0&&stone.flaw!=='skin',value=stone.phase==='crafted'?stone.craftValue:stone.cutValue;
+  const good=stone.grade>0&&stone.flaw!=='skin',quote=jade.marketQuote(stone,nowOf(s)),value=quote.value;
   return `<div class="jade-reveal"><span>${stone.phase==='crafted'?'✦ TÁC PHẨM HOÀN THÀNH':'✦ KẾT QUẢ XẺ ĐÁ'}</span>
     <strong>${good?stoneName(stone):stone.flaw==='skin'?'Kháo Bì · Vỏ giả':'Phế thạch'}</strong>
     <small>${good?'Kích cỡ '+stone.size+' · '+jade.FLAW_NAMES[stone.flaw]+
      (stone.savedFracture?' · Cưa đã giữ được phôi':''):'Chỉ còn giá trị thu hồi'}
      ${stone.phase==='crafted'?' · '+jade.CRAFTS[stone.craft].name:''}</small>
-    <div class="jade-reveal-price">ĐỊNH GIÁ <b>${fmt(value)} Xu</b></div></div>
+    <div class="jade-reveal-price">GIÁ THU MUA ${dateText(nowOf(s))} <b>${fmt(value)} Xu</b></div>
+    <div class="jade-quote-trend ${trendClass(quote.rate)}">${trend(quote.rate)} so với giá gốc ${fmt(quote.base)} Xu · ${jade.COLORS[stone.color]}</div></div>
     <div class="jade-main-actions">
      ${btn('✓ Bán · +'+fmt(value)+' Xu','jade-sell','gold')}
      ${stone.phase==='crafted'?btn('✦ Đưa vào tủ','jade-exhibit','power',j.exhibits.length>=40):
       btn(good?'◈ Chế tác ngọc':'Phế thạch không thể chế tác','jade-open-workshop','power',!good)}</div>
-    <p class="jade-decision-note">${stone.phase==='crafted'?'Trưng bày giữ lại tác phẩm nhưng không nhận tiền bán.':
-     'Bán phôi ngay hoặc trả phí chế tác để nâng giá trị và sưu tầm.'}</p>`;
+    <div class="jade-hold-action">${btn('▱ Cất vào Kho Ngọc · Chờ giá tốt','jade-vault-store','upgrade',j.vault.length>=jade.MAX_VAULT)}
+    <small>${j.vault.length}/${jade.MAX_VAULT} chỗ · Cất không mất phí, bán sau theo giá thị trường.</small></div>
+    <p class="jade-decision-note">${stone.phase==='crafted'?'Có thể giữ nguyên tác phẩm trong kho, trưng bày hoặc bán khi giá lên.':
+     'Có thể cất phôi, chờ giá tăng hoặc mang ra chế tác sau. Không bắt buộc bán ngay.'}</p>`;
  }
  function stockPanel(s){
   const j=s.jade,held=j.stash.length+(j.active?1:0);
@@ -104,9 +121,13 @@
  }
  function marketPanel(s){
   const j=s.jade,held=j.stash.length+(j.active?1:0);
+  const movers=marketRates(s).sort((a,b)=>b.rate-a.rate);
   return `<div class="jade-market-grid" data-arcade-panel="jade-market">
-    <div class="jade-market-intro"><strong>✦ Chợ đá thô</strong>
-      <small>Túi hiện có ${held}/${jade.MAX_STONES} viên. Mua nhanh cả lô hoặc mở khay để tự tay chọn từng viên theo dấu hiệu vỏ.</small></div>
+    <div class="jade-market-intro"><span>PHƯỜNG PHỈ THÚY · ${dateText(nowOf(s))}</span><strong>✦ Chợ cược thạch</strong>
+      <small>Quan sát lớp bì, so giá chào, thử đèn để lấy manh mối rồi chọn hàng. Kết quả trong ruột đá luôn là bí mật.</small>
+      <div class="jade-market-pulse"><span>▲ Sắc đang lên <b>${movers[0].name} +${movers[0].rate-100}%</b></span>
+      <span>▼ Sắc đang xuống <b>${movers[movers.length-1].name} ${trend(movers[movers.length-1].rate)}</b></span></div>
+      <em>Túi đá thô ${held}/${jade.MAX_STONES} · Mua nhanh 1/3/5 hoặc tự lựa.</em></div>
     ${jade.MARKETS.map((m,i)=>{const open=jade.unlocked(j,i),free=!j.bought&&i===0;
      return `<div class="jade-market-card jade-market-${i} ${open?'is-open':'is-locked'}">
       <div class="jade-market-top"><div class="jade-market-crest">${['◈','≋','◇','◆','✵'][i]}</div>
@@ -116,15 +137,45 @@
        ${[1,3,5].map(q=>{const cost=(q-(free?1:0))*m.price;
         return btn(q+' viên · '+(cost?fmt(cost)+' Xu':'Tặng'),'jade-buy-pack-'+i+'-'+q,
          'market',held+q>jade.MAX_STONES||s.coins<cost);}).join('')}</div>
-       <details class="jade-market-tray"><summary>◇ Tự lựa từng viên theo bì đá</summary>
+       <details class="jade-market-tray" data-market-stall="${i}" ${openStall===i?'open':''}><summary>◇ Mở sạp · So bì đá và thử đèn</summary>
         <div class="jade-market-samples">${[0,1,2].map(slot=>{const offer=jade.marketOffer(j,i,slot);
-         return `<div class="jade-market-sample"><span class="jade-sample-pebble jade-shell-${i}" aria-hidden="true">◆</span>
-          <b>Mẫu ${['A','B','C'][slot]}</b><small>${offer.size} · ${offer.marks}</small>
-          ${btn(free?'Lấy miễn phí':'Chọn · '+fmt(m.price)+' Xu','jade-pick-'+i+'-'+slot,
-           'upgrade',held>=jade.MAX_STONES||!free&&s.coins<m.price)}</div>`;}).join('')}</div>
+         const inspected=j.inspected?.includes(jade.inspectionKey(j,i,slot)),fee=jade.inspectFee(i),
+          hint=inspected?jade.scanHint(offer.stone,(slot+1)%3,j.lamp):null;
+         return `<div class="jade-market-sample ${inspected?'is-inspected':''}">
+          <div class="jade-sample-top"><b>PHÔI ${['A','B','C'][slot]}</b><em>${offer.size}</em></div>
+          <span class="jade-sample-pebble jade-shell-${i} jade-sample-type-${slot}" aria-hidden="true"><i></i></span>
+          <small>${offer.marks}</small><div class="jade-sample-seller">Giá chào
+           <strong>${free?'✦ Tặng':fmt(offer.ask)+' Xu'}</strong></div>
+          <div class="jade-sample-clue">${inspected?'◉ '+hint:'? Ruột chưa biết · Tin dấu ngoài vỏ?'}</div>
+          ${btn(inspected?'✓ Đã rọi đèn':'◉ Thử đèn · '+fmt(fee)+' Xu','jade-inspect-'+i+'-'+slot,
+           'upgrade',inspected||s.coins<fee)}
+          ${btn(free?'Mang về · Miễn phí':'◇ Lựa viên này','jade-pick-'+i+'-'+slot,
+           'market',held>=jade.MAX_STONES||!free&&s.coins<offer.ask)}</div>`;}).join('')}</div>
        </details>`:'<small class="jade-market-unavailable">Hoàn thành điều kiện mở bãi để xem các khay đá.</small>'}
       </div>`;}).join('')}
-    <p class="jade-sheet-hint">Dấu hiệu bên ngoài chỉ là gợi ý, không đảm bảo chất ngọc. Thành phần của mỗi viên cố định từ lúc mua; đá trong túi không tự đổi khi tải lại.</p></div>`;
+    <p class="jade-sheet-hint">Đá mua theo lô không được lựa bì. Mẫu A/B/C có giá chào riêng; rọi đèn mất phí nhưng không bảo đảm thắng. Thành phần đã cố định trước khi mua và được giữ khi tải lại.</p></div>`;
+ }
+ function vaultPanel(s){
+  const j=s.jade,time=nowOf(s),rates=marketRates(s);
+  return `<div class="jade-vault-content" data-arcade-panel="jade-vault">
+   <div class="jade-vault-lead"><span>▱ KHO PHỈ THÚY CÁ NHÂN</span><strong>Giữ ngọc, đợi đúng thời</strong>
+    <small>${j.vault.length}/${jade.MAX_VAULT} món · Giá niêm yết đổi mỗi ngày (UTC). Không tính phí lưu kho và không tự bán.</small></div>
+   <div class="jade-sheet-heading"><b>◈ Bảng giá sắc ngọc</b><small>${dateText(time)} · so với giá gốc</small></div>
+   <div class="jade-trend-grid">${rates.map(item=>`<div class="jade-trend-chip ${trendClass(item.rate)}">
+     <span style="--jade-color:${jade.COLOR_HEX[item.index]}">◆</span>
+     <small>${item.name}</small><b>${trend(item.rate)}</b></div>`).join('')}</div>
+   <div class="jade-sheet-heading"><b>▱ Hòm ngọc đã cắt</b><small>${j.vault.length} vật phẩm</small></div>
+   ${j.vault.length?`<div class="jade-vault-list">${j.vault.map((stone,i)=>{
+    const q=jade.marketQuote(stone,time);
+    return `<article class="jade-vault-card"><span class="jade-vault-gem" style="--jade-color:${jade.COLOR_HEX[stone.color]}">◆</span>
+     <div class="jade-vault-info"><b>#${String(stone.id).padStart(3,'0')} · ${stoneName(stone)}</b>
+       <small>${stone.phase==='crafted'?jade.CRAFTS[stone.craft].name:'Phôi chưa chế tác'} · Cỡ ${stone.size}</small>
+       <span class="${trendClass(q.rate)}">${trend(q.rate)} · <strong>${fmt(q.value)} Xu</strong></span></div>
+     <div class="jade-vault-actions">${btn('Bán ngay','jade-vault-sell-'+i,'gold')}
+      ${btn('Đưa ra bàn','jade-vault-select-'+i,'upgrade',!!j.active)}</div></article>`;}).join('')}</div>`:
+    '<p class="jade-vault-empty">Chưa có ngọc lưu kho. Cắt viên đầu tiên rồi chọn “Cất vào Kho Ngọc” để giữ giá trị cho tương lai.</p>'}
+   <p class="jade-sheet-hint">Giá cao hôm nay không chắc tiếp tục tăng ngày mai. Đây là thị trường giả lập chỉ dùng Xu Arcade, không liên kết giá ngọc thật.</p>
+  </div>`;
  }
  function workshopPanel(s){
   const j=s.jade,stone=j.active,canCraft=stone?.phase==='cut'&&stone.grade>0&&stone.flaw!=='skin';
@@ -175,11 +226,12 @@
     <div class="jade-accounting"><div><small>ĐÃ GIAO DỊCH</small><b>${j.sold}</b></div>
       <div><small>ĐÃ KHÁM PHÁ</small><b>${found}<em>/56</em></b></div>
       <div><small>LỢI NHUẬN RÒNG</small><b>${fmt(j.received-j.invested)}<em> Xu</em></b></div></div>
-    <div class="arcade-quick-drawers arcade-quick-drawers-triple jade-quick-drawers">
-     ${sheet('Chợ đá','◈','jade-market')}${sheet('Xưởng ngọc','⚒','jade-workshop')}${sheet('Sổ ngọc','✧','jade-gallery')}</div>
-    ${marketPanel(s)}${workshopPanel(s)}${galleryPanel(s)}
+    <div class="arcade-quick-drawers arcade-quick-drawers-quad jade-quick-drawers">
+     ${sheet('Chợ đá','◈','jade-market')}${sheet('Kho ngọc','▱','jade-vault')}
+     ${sheet('Xưởng','⚒','jade-workshop')}${sheet('Sổ ngọc','✧','jade-gallery')}</div>
+    ${marketPanel(s)}${vaultPanel(s)}${workshopPanel(s)}${galleryPanel(s)}
    </div>
   </section>`;
  }
- root.DuduPersonalJadeUIV1=Object.freeze({panel});
+ root.DuduPersonalJadeUIV1=Object.freeze({panel,rememberTray});
 })(typeof window!=='undefined'?window:{});

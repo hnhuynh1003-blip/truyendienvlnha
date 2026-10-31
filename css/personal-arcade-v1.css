@@ -48,6 +48,8 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header>span:nth-ch
 .arcade-world [data-arcade-panel]{display:none!important}
 .arcade-quick-drawers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:10px}
 .arcade-quick-drawers-triple{grid-template-columns:repeat(3,minmax(0,1fr))}
+.arcade-quick-drawers-quad{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+.arcade-quick-drawers-quad .arcade-drawer-trigger{font-size:9px;min-height:48px;padding:5px 1px;gap:3px}
 .arcade-drawer-trigger{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
  border:1px solid #5d8191;border-radius:11px;min-height:47px;padding:6px 3px;cursor:pointer;
  background:linear-gradient(155deg,#294357,#1e3044);color:#e5f4f5;font-size:10px;font-weight:800}
@@ -789,6 +791,92 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header>span:nth-ch
 .jade-exhibit{display:flex;gap:9px;align-items:center;padding:8px;border:1px solid #668c7a;border-radius:8px;background:#284138}
 .jade-exhibit>span{font-size:25px;color:var(--jade-color);text-shadow:0 0 12px var(--jade-color)}
 .jade-exhibit b{font-size:11px;color:#f5e5be}.jade-exhibit small{display:block;font-size:9px;color:#bcd6c4;margin-top:2px}
+/* C4.14 — market stalls, speculative color board and finished-jade vault. */
+.jade-market-intro{position:relative;overflow:hidden;gap:6px;padding:13px 12px 11px;
+ background:radial-gradient(ellipse at 86% 3%,#9f6d343d,transparent 52%),
+ linear-gradient(130deg,#47352f,#183c39 85%);box-shadow:inset 0 0 25px #f9d39012}
+.jade-market-intro::after{content:'玉';position:absolute;right:5px;top:0;font:900 88px/1 serif;
+ color:#dfb16d0a;pointer-events:none}
+.jade-market-intro>span{font:800 8px ui-monospace,monospace;letter-spacing:.13em;color:#d6b783}
+.jade-market-intro>strong{font:700 20px Georgia,serif;color:#ffe3a6;text-shadow:0 1px 12px #e9a25850}
+.jade-market-intro>em{color:#f6e0bb;font-size:9px;font-style:normal}
+.jade-market-pulse{display:grid;gap:4px;grid-template-columns:repeat(2,minmax(0,1fr));margin:4px 0}
+.jade-market-pulse>span{padding:6px 5px;border:1px solid #b3a17b63;border-radius:8px;
+ background:#112e2fc7;color:#a9d0c2;font:700 8px/1.4 ui-monospace,monospace}
+.jade-market-pulse b{display:block;color:#ffdd9c;font-size:10px;margin-top:3px}
+.jade-market-card{background:linear-gradient(140deg,#3b3e37,#1c3436);border-color:#b69c715f;
+ box-shadow:inset 0 1px 0 #f8d9a21a,0 5px 12px #030e102f}
+.jade-market-crest{width:39px;min-width:39px;border:1px solid #ba986b7a;border-radius:10px;
+ background:radial-gradient(circle at 40% 28%,#b5935940,#263e3b);text-shadow:0 0 9px #ffc47783;padding:5px 0}
+.jade-market-copy b{font-size:12px}
+.jade-market-tray summary{background:#183734;border:1px solid #9b8f656e;border-radius:8px;
+ padding:10px 9px;font-size:11px;min-height:36px}
+.jade-market-tray[open] summary{color:#ffdf9d;border-color:#e9c17ca1;
+ background:linear-gradient(95deg,#4e3b2b,#24483b)}
+.jade-market-samples{gap:7px;grid-template-columns:repeat(3,minmax(0,1fr))}
+.jade-market-sample{padding:8px 5px;gap:6px;border-color:#a8937070;
+ background:radial-gradient(ellipse at 50% 6%,#97734827,transparent 60%),
+ linear-gradient(160deg,#3b4038,#173035);box-shadow:inset 0 1px #ffdea31c}
+.jade-market-sample.is-inspected{border-color:#a3d1a4;box-shadow:0 0 0 1px #75b99043,inset 0 1px #ffdea34a}
+.jade-sample-top{display:flex;align-items:center;justify-content:space-between;gap:3px;width:100%}
+.jade-sample-top b{font:800 9px ui-monospace,monospace;color:#f6d79c}
+.jade-sample-top em{font:700 8px ui-monospace,monospace;font-style:normal;color:#aad0c0}
+.jade-market-sample .jade-sample-pebble{width:56px;max-width:92%;height:48px;flex:none;
+ display:block;position:relative;transform:rotate(-7deg);border:2px solid #c5a27896;
+ box-shadow:inset 8px 6px 8px #f5d4ab4d,inset -8px -7px 10px #17211e8c,0 9px 10px #081c1b9c}
+.jade-sample-pebble i{position:absolute;inset:8px;border-radius:45% 26% 50% 37%;transform:rotate(-20deg);
+ background:linear-gradient(115deg,transparent 34%,#78b69a60 40%,transparent 47%);
+ box-shadow:inset 0 0 12px #eee4c42d}
+.jade-market-sample:nth-child(2) .jade-sample-pebble{transform:rotate(11deg);border-radius:60% 30% 38% 55%}
+.jade-market-sample:nth-child(3) .jade-sample-pebble{transform:rotate(-15deg);border-radius:37% 57% 44% 31%}
+.jade-market-sample>small{font-size:9px;min-height:39px;max-width:100%;line-height:1.35}
+.jade-sample-seller{width:100%;border-top:1px solid #b1a47c50;padding-top:5px;
+ color:#aacbbf;font-size:8px}
+.jade-sample-seller strong{display:block;color:#ffe2a0;font-size:12px;margin-top:2px}
+.jade-sample-clue{font-size:8px;line-height:1.4;min-height:34px;color:#f5d7a2;
+ padding:5px;border:1px dashed #caa66e6a;border-radius:6px;background:#112d2c9c;width:100%}
+.jade-market-card .jade-market-sample .arcade-button{font-size:9px;padding:6px 2px;min-height:35px}
+.jade-market-card .jade-market-sample .arcade-button.upgrade{background:#254a48;border-color:#7aa89c;color:#e8f9ed}
+.jade-quote-trend{font-size:10px;line-height:1.35;margin-top:8px;font-weight:700}
+.jade-quote-trend.is-up,.jade-vault-info .is-up,.jade-trend-chip.is-up b,.jade-trader-offer .is-up{color:#92f0bc}
+.jade-quote-trend.is-down,.jade-vault-info .is-down,.jade-trend-chip.is-down b,.jade-trader-offer .is-down{color:#ffb7a4}
+.jade-quote-trend.is-flat,.jade-vault-info .is-flat,.jade-trend-chip.is-flat b{color:#e7d6a5}
+.jade-hold-action{display:grid;gap:4px;margin-top:7px}
+.jade-hold-action>.arcade-button{width:100%;min-height:37px;font-weight:900;
+ background:linear-gradient(135deg,#345d51,#2b4b46);color:#dcffe9;border-color:#80bda3}
+.jade-hold-action small{font-size:9px;color:#b5d4c8}
+.jade-vault-content{display:flex;flex-direction:column;gap:8px}
+.jade-vault-lead{position:relative;padding:14px 12px;border:1px solid #a69767;border-radius:13px;
+ background:radial-gradient(ellipse at 80% 15%,#6abc9e48,transparent 60%),
+ linear-gradient(130deg,#3f4035,#1c3e3b)}
+.jade-vault-lead>span{font:800 8px ui-monospace,monospace;letter-spacing:.12em;color:#c9ecc7}
+.jade-vault-lead strong{display:block;font:700 19px Georgia,serif;color:#ffe6a9;margin:6px 0}
+.jade-vault-lead small{font-size:10px;color:#c6dfd4;line-height:1.5}
+.jade-trend-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.jade-trend-chip{min-width:0;display:grid;grid-template-columns:20px 1fr auto;gap:4px;align-items:center;
+ background:#203d39;border:1px solid #698a77;border-radius:9px;padding:7px 5px}
+.jade-trend-chip>span{font-size:16px;color:var(--jade-color);text-shadow:0 0 9px var(--jade-color)}
+.jade-trend-chip small{font-size:9px;color:#e1e7cb;line-height:1.2}
+.jade-trend-chip b{font-size:9px;white-space:nowrap}
+.jade-vault-list{display:grid;gap:7px}
+.jade-vault-card{display:grid;grid-template-columns:33px minmax(0,1fr);gap:8px;
+ border:1px solid #688a7d;background:linear-gradient(100deg,#28443a,#1a353c);
+ border-radius:11px;padding:9px;box-shadow:inset 0 1px #fff2}
+.jade-vault-gem{align-self:start;display:grid;place-items:center;width:32px;height:33px;
+ color:var(--jade-color);border:1px solid var(--jade-color);background:#e6ffef12;
+ border-radius:9px;font-size:21px;text-shadow:0 0 11px var(--jade-color)}
+.jade-vault-info{min-width:0}.jade-vault-info b{display:block;font-size:10px;color:#f6e4b4}
+.jade-vault-info small{display:block;font-size:9px;margin:4px 0;color:#abcbbd}
+.jade-vault-info>span{font-size:10px;font-weight:800}
+.jade-vault-info strong{font-size:12px;color:#ffeca8}
+.jade-vault-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;grid-column:1/-1}
+.jade-vault-actions .arcade-button{min-height:33px;padding:5px;font-size:10px}
+.jade-vault-empty{padding:13px;border:1px dashed #698e7c;border-radius:10px;font-size:10px;
+ color:#cfe7d8;line-height:1.6;background:#244238}
+@media(max-width:350px){.jade-trend-grid{grid-template-columns:1fr 1fr}
+ .jade-market-samples{gap:4px}.jade-market-sample{padding:7px 3px}
+ .jade-market-sample .jade-sample-pebble{width:42px;height:39px}
+ .jade-sample-top{display:block}.jade-sample-top em{display:block}}
 @keyframes jade-enter{from{opacity:0;transform:scale(.88) translateY(9px)}to{opacity:1;transform:scale(1) translateY(0)}}
 @keyframes jade-gleam{to{filter:brightness(1.2) drop-shadow(0 0 15px var(--jade-color))}}
 @keyframes jade-lantern{to{box-shadow:0 0 30px #ffd68ab0;transform:translateY(2px)}}

@@ -183,6 +183,35 @@ try{
  assert.equal(validHonor.version,1);
  assert.equal(validHonor.equipped,'entity');
  assert.deepEqual(validHonor.pinned,[]);
+ // C4.14 regression: C4.8 added 17 more achievements and 4 more titles.
+ // An existing owner with such a cosmetic ledger must still be able to
+ // commit ordinary inventory/Shop/FUN transactions to the same profile.
+ const journeyEarned=['read-one',
+  'neon-250','neon-revenue-500','neon-pro-setup','neon-crown',
+  'mine-deep-ready','mine-burst-25','mine-scanner-3','mine-guardian',
+  'garden-harvest-10','garden-harvest-30','garden-five-species',
+  'garden-sanctuary','jade-cut-20','jade-album-12',
+  'jade-exhibit-10','jade-ruins-access','jade-masterwork'];
+ await yes('C4.14 owner stores all newly added C4.8 achievement IDs and title',
+  user.update({honorV1:{version:1,earned:journeyEarned,
+   equipped:'neon-emperor',pinned:['neon-crown','jade-cut-20']},
+   title:'Vương Giả Phố Đêm'}));
+ await yes('C4.14 Shop purchase remains allowed after journey title sync',
+  reader.runTransaction(async tx=>{
+   const snap=await tx.get(user);
+   tx.update(user,{currency:snap.data().currency-5,
+    inventory:[{id:'jade-test-tool',instanceId:'shop-test-after-honor'}],
+    storyStates:{...snap.data().storyStates,
+     __duduPersonalItemsV1:{version:1,receipts:{'shop-test-after-honor':{kind:'purchase'}}}}});
+  }));
+ await yes('C4.14 FUN claim still writes item and currency after journey title sync',
+  reader.runTransaction(async tx=>{
+   const snap=await tx.get(user);
+   tx.update(user,{currency:snap.data().currency+3,
+    inventory:[...snap.data().inventory,{id:'fun-copper',instanceId:'fun-test-after-honor'}],
+    storyStates:{...snap.data().storyStates,
+     __duduFunLiveC25:{version:1,day:'2026-10-31',rounds:{box:{status:'claimed'}}}}});
+  }));
  await no('C4.6.3 honor cannot be written to a different user',
   owner.collection('profiles_v2').doc('reader-a').update({honorV1:validHonor}));
  await no('C4.6.3 honor rejects extra nested fields',

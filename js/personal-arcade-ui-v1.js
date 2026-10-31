@@ -135,7 +135,8 @@
   'mine-map':'Bản đồ địa tầng','mine-bag':'Túi quặng & sổ khoáng',
   'mine-tools':'Xưởng rèn & trang bị','garden-seeds':'Vườn cây & hạt giống',
   'garden-album':'Nhật ký cá','garden-upgrades':'Nâng cấp Vườn Sương',
-  'jade-market':'Chợ đá thô','jade-workshop':'Xưởng ngọc','jade-gallery':'Sổ sưu tầm phỉ thúy'};
+  'jade-market':'Chợ cược thạch','jade-vault':'Kho ngọc & giá thị trường',
+  'jade-workshop':'Xưởng ngọc','jade-gallery':'Sổ sưu tầm phỉ thúy'};
  const upgrade=(glyph,name,level,type,cost)=>`<div class="arcade-upgrade-card">
    <span class="arcade-upgrade-symbol">${glyph}</span><div><strong>${name}</strong><small>${level}</small></div>
    ${button(cost===null?'Tối đa':'＋ '+fmt(cost)+' Xu',type,'upgrade',cost===null||state.coins<cost)}</div>`;
@@ -535,6 +536,11 @@
    updateExchangePreview();
   });
   element.addEventListener('click',event=>{
+   const marketSummary=event.target.closest?.('.jade-market-tray summary');
+   if(marketSummary?.tagName==='SUMMARY'){
+    const tray=marketSummary.parentElement;
+    root.DuduPersonalJadeUIV1?.rememberTray?.(Number(tray.dataset.marketStall),!tray.open);
+   }
    const honorLink=event.target.closest?.('button[data-arcade-honor]');
    if(honorLink?.dataset?.arcadeHonor){
     const source=modeLabels[honorLink.dataset.arcadeHonor];
@@ -580,8 +586,9 @@
     tab=next;drawerOpen=null;notice='';error=false;render();return;}
    const action=control.dataset.arcadeAction;
    if(action==='transfer'){void transferArcade();return;}
-   if(action==='jade-open-market'||action==='jade-open-workshop'){
-    drawerOpen=action==='jade-open-market'?'jade-market':'jade-workshop';render();return;
+   if(['jade-open-market','jade-open-workshop','jade-open-vault'].includes(action)){
+    drawerOpen=action==='jade-open-market'?'jade-market':
+     action==='jade-open-vault'?'jade-vault':'jade-workshop';render();return;
    }
    if(action)interact(action);
   });

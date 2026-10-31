@@ -89,7 +89,14 @@ service cloud.firestore {
         'mine-collection','garden-one','garden-ten','garden-rare',
         'garden-album','garden-dragon','jade-first','jade-twelve',
         'jade-exhibits','jade-imperial','jade-longstone','npc-gift',
-        'quest-five','fun-first'
+        'quest-five','fun-first',
+        // C4.8 journeys: every earned ID must be permitted here, otherwise
+        // valid Shop/FUN/Kho writes also fail once honorV1 includes it.
+        'neon-250','neon-revenue-500','neon-pro-setup','neon-crown',
+        'mine-deep-ready','mine-burst-25','mine-scanner-3','mine-guardian',
+        'garden-harvest-10','garden-harvest-30','garden-five-species',
+        'garden-sanctuary','jade-cut-20','jade-album-12',
+        'jade-exhibit-10','jade-ruins-access','jade-masterwork'
       ];
     }
 
@@ -98,7 +105,8 @@ service cloud.firestore {
         'entity','reader','reader-master','neon-owner',
         'neon-contractor','neon-tycoon','mine-explorer','mine-collector',
         'garden-angler','garden-legend','jade-appraiser','jade-curator',
-        'jade-king','npc-friend','quest-hunter','fun-visitor'
+        'jade-king','npc-friend','quest-hunter','fun-visitor',
+        'neon-emperor','mine-lord','garden-keeper','jade-artisan'
       ];
     }
 

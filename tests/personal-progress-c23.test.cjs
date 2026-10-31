@@ -140,10 +140,12 @@ test('C2.3c a purchased cooldown tool resets the stored global cooldown',async()
  const shopId='shop-12345678-1234-1234-1234-123456789abc';
  const useId='use-12345678-1234-1234-1234-123456789abd';
  await items.run({db:h.db,auth:h.auth,uid:'reader-a',kind:'purchase',
-  requestId:shopId,itemId:economyCore.TOOL_ID});
+  requestId:shopId,itemId:economyCore.TOOL_ID,
+  now:()=>new Date('2026-10-30T09:01:00Z')});
  const reset=await items.run({db:h.db,auth:h.auth,uid:'reader-a',kind:'use',
   requestId:useId,itemId:economyCore.TOOL_ID,instanceId:shopId,
-  cooldownRemainingMs:300000,lastLootTimestamp:dateAt('2026-10-30T09:00:00Z')});
+  cooldownRemainingMs:300000,lastLootTimestamp:dateAt('2026-10-30T09:00:00Z'),
+  now:()=>new Date('2026-10-30T09:01:30Z')});
  assert.equal(reset.cooldownAt,0);
  assert.equal(h.data.storyStates[progress.META].lastGlobalLootAt,0);
  const next=await h.call('global-loot',{

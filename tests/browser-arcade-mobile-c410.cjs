@@ -97,7 +97,14 @@ async function main(){
   assert.deepEqual(scans.scans,[true,true,true]);
   assert.equal(scans.coins,0,'First Jade sample is free');
   await action('jade-cut').click();
-  await action('jade-sell').click();
+  await action('jade-vault-store').click();
+  const heldJade=await page.evaluate(()=>JSON.parse(localStorage.getItem(
+   'dudu-personal-arcade:v1:sandbox%3Ac410-mobile-tester'))?.jade);
+  assert.equal(heldJade.active,null,'Cut stone no longer blocks the cutting table');
+  assert.equal(heldJade.vault.length,1,'Cut stone waits for a favorable quote in the vault');
+  await action('jade-open-vault').click();
+  assert.match(await page.locator('.arcade-sheet-overlay').innerText(),/Bảng giá sắc ngọc/);
+  await action('jade-vault-sell-0').click();
   const honorMoment=page.locator('#cyber-phone .dudu-c411-unlock-toast');
   await honorMoment.waitFor({state:'visible',timeout:2500});
   assert.equal(await honorMoment.getAttribute('data-rarity'),'rare',
@@ -108,6 +115,7 @@ async function main(){
   const jadeAfter=await page.evaluate(()=>JSON.parse(localStorage.getItem(
    'dudu-personal-arcade:v1:sandbox%3Ac410-mobile-tester')));
   assert.equal(jadeAfter.jade.sold,1);
+  assert.equal(jadeAfter.jade.vault.length,0);
 
   await page.evaluate(()=>document.querySelector('.arcade-scroll').scrollTop=180);
   await tab('mine').click();

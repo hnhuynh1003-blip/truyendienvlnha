@@ -1,0 +1,131 @@
+'use strict';
+const {test}=require('node:test');
+const assert=require('node:assert/strict');
+const {readFileSync}=require('node:fs');
+const {join}=require('node:path');
+const vm=require('node:vm');
+const arcade=require('../js/personal-arcade-core-v1.js');
+const jade=require('../js/personal-jade-core-v1.js');
+const TIME=1793360000000,DAY=86400000;
+const play=(s,action,at=TIME,roll=.52)=>arcade.act(s,action,at,roll);
+const restore=s=>arcade.norm(JSON.parse(JSON.stringify(s)),TIME);
+function luckyRoll(){
+ for(let i=0;i<100000;i++){
+  const roll=i/100000,stone=jade.generate(0,1,roll);
+  if(stone.grade>=2&&stone.flaw==='perfect'&&stone.size>=5)return roll;
+ }
+ throw Error('No playable seeded stone');
+}
+test('C4.14 buyer can inspect a fixed sample once and pay its shown individual asking price',()=>{
+ let s=arcade.fresh(TIME);s.coins=1000;
+ const offer=jade.marketOffer(s.jade,0,1);
+ const fee=jade.inspectFee(0),key=jade.inspectionKey(s.jade,0,1);
+ const firstPeek=play(s,'jade-inspect-0-1');assert.equal(firstPeek.ok,true);s=firstPeek.state;
+ assert.deepEqual(s.jade.inspected,[key]);
+ assert.equal(s.coins,1000-fee);
+ assert.equal(play(s,'jade-inspect-0-1').ok,false);
+ assert.equal(s.coins,1000-fee,'No duplicate hint charge');
+ s=restore(s);
+ assert.deepEqual(s.jade.inspected,[key],'Inspection remains visible after reload');
+ s=play(s,'jade-pick-0-1').state;
+ assert.deepEqual(s.jade.stash[0],offer.stone,'No re-roll after inspection');
+ assert.equal(s.coins,1000-fee,'First sample remains free');
+ assert.deepEqual(s.jade.inspected,[],'The next market batch has new samples');
+ const second=jade.marketOffer(s.jade,0,2);
+ s=play(s,'jade-pick-0-2').state;
+ assert.equal(s.coins,1000-fee-second.ask);
+ assert.deepEqual(s.jade.stash[1],second.stone);
+});
+test('C4.14 cut and crafted stones can be stored, resumed and held without blocking another cut',()=>{
+ let s=arcade.fresh(TIME);s.coins=9000;
+ s=play(s,'jade-buy-0',TIME,luckyRoll()).state;
+ s=play(s,'jade-cut').state;
+ const first=structuredClone(s.jade.active);
+ assert.equal(first.phase,'cut');
+ const hold=play(s,'jade-vault-store');assert.equal(hold.ok,true);s=hold.state;
+ assert.equal(s.jade.active,null);
+ assert.equal(s.jade.vault.length,1);
+ s=restore(s);
+ assert.deepEqual(s.jade.vault[0],first);
+ s=play(s,'jade-buy-pack-0-3').state;
+ s=play(s,'jade-select-0').state;
+ assert.equal(play(s,'jade-vault-select-0').ok,false,'Active stone is not silently lost');
+ s=play(s,'jade-store').state;
+ s=play(s,'jade-vault-select-0').state;
+ assert.equal(s.jade.active.id,first.id);
+ assert.equal(s.jade.vault.length,0);
+ s=play(s,'jade-craft-pendant').state;
+ assert.equal(s.jade.active.phase,'crafted');
+ s=play(s,'jade-vault-store').state;
+ assert.equal(s.jade.vault[0].craft,'pendant');
+ assert.equal(s.jade.stash.length,3,'Raw purchases stay separate from the finished vault');
+});
+test('C4.14 different color markets fluctuate daily, quotes do not change during the same day',()=>{
+ const sample=jade.generate(0,1,luckyRoll());
+ sample.phase='cut';sample.cutValue=700;
+ const first=jade.marketQuote(sample,TIME),same=jade.marketQuote(sample,TIME+60000),
+  later=jade.marketQuote(sample,TIME+DAY*5);
+ assert.deepEqual(first,same);
+ assert.notEqual(first.rate,later.rate);
+ assert.equal(first.value,Math.round(first.base*first.rate/100));
+ assert.ok(first.rate>=67&&first.rate<=135);
+ assert.equal(jade.marketQuote({...sample,phase:'raw'},TIME),null);
+ assert.equal(jade.rawSalvageValue({...sample,phase:'raw'}),0,
+  'First free sample cannot be sold raw simply by waiting');
+ const dead={...sample,grade:0};
+ assert.equal(jade.marketQuote(dead,TIME).rate,100,'Waste is not a speculative commodity');
+});
+test('C4.14 direct vault sale uses the quote on the chosen day exactly once',()=>{
+ let s=arcade.fresh(TIME);s.coins=1000;
+ s=play(s,'jade-buy-0',TIME,luckyRoll()).state;
+ s=play(s,'jade-cut').state;
+ s=play(s,'jade-vault-store').state;
+ const saleAt=TIME+DAY*5,quote=jade.marketQuote(s.jade.vault[0],saleAt);
+ const before=s.coins;
+ s=restore(s);
+ const sold=play(s,'jade-vault-sell-0',saleAt);assert.equal(sold.ok,true);s=sold.state;
+ assert.equal(s.coins,before+quote.value);
+ assert.equal(s.jade.sold,1);
+ assert.equal(s.jade.vault.length,0);
+ assert.equal(play(s,'jade-vault-sell-0',saleAt).ok,false);
+ assert.equal(s.jade.sold,1);
+});
+test('C4.14 vault rejects duplicate, malformed and excess stones on reload and storage',()=>{
+ let s=arcade.fresh(TIME);s.coins=200;
+ s=play(s,'jade-buy-0',TIME,luckyRoll()).state;
+ s=play(s,'jade-cut').state;
+ const first=structuredClone(s.jade.active);
+ s.jade.vault=Array.from({length:jade.MAX_VAULT},(_,i)=>({...first,id:100+i}));
+ assert.equal(play(s,'jade-vault-store').ok,false);
+ assert.equal(s.jade.active.id,first.id);
+ s.jade.vault.push({...first,id:100},{...first,id:1000,grade:99});
+ s=restore(s);
+ assert.equal(s.jade.vault.length,jade.MAX_VAULT);
+ assert.equal(new Set(s.jade.vault.map(x=>x.id)).size,jade.MAX_VAULT);
+ assert.equal(s.jade.active.id,first.id);
+});
+test('C4.14 UI shows a separate finished-vault drawer, inspect hints and hold control',()=>{
+ const window={DuduPersonalArcadeCoreV1:arcade};
+ vm.runInNewContext(readFileSync(join(__dirname,'../js/personal-jade-ui-v1.js'),'utf8'),{window});
+ const ui=window.DuduPersonalJadeUIV1;
+ let s=arcade.fresh(TIME);s.coins=3000;
+ let html=ui.panel(s);
+ assert.match(html,/data-arcade-drawer="jade-vault"/);
+ assert.match(html,/data-arcade-action="jade-inspect-0-1"/);
+ assert.match(html,/data-market-stall="0"/);
+ ui.rememberTray(0,true);
+ assert.match(ui.panel(s),/data-market-stall="0" open/);
+ s=play(s,'jade-buy-0',TIME,luckyRoll()).state;
+ s=play(s,'jade-cut').state;
+ html=ui.panel(s);
+ assert.match(html,/data-arcade-action="jade-vault-store"/);
+ s=play(s,'jade-vault-store').state;
+ html=ui.panel(s);
+ assert.match(html,/data-arcade-action="jade-vault-sell-0"/);
+ assert.match(html,/data-arcade-action="jade-vault-select-0"/);
+ assert.match(html,/Bảng giá sắc ngọc/);
+ const css=readFileSync(join(__dirname,'../css/personal-arcade-v1.css'),'utf8');
+ assert.match(css,/\.jade-trend-grid/);
+ assert.match(css,/\.jade-vault-card/);
+ assert.match(css,/\.jade-market-pulse/);
+});

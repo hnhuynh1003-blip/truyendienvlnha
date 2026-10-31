@@ -55,8 +55,10 @@ test('C4.4 NPC quote is fixed, two choices are exclusive, and selling twice neve
  const offer=s.jade.active.offer,coinBefore=s.coins;
  s=arcade.norm(JSON.parse(JSON.stringify(s)),TIME);
  assert.equal(s.jade.active.offer,offer);
+ const today=jade.marketQuote(s.jade.active,TIME);
  const sale=take(s,'jade-sell-window');assert.equal(sale.ok,true);
- assert.equal(sale.state.coins,coinBefore+offer);
+ assert.equal(today.base,offer,'The original NPC offer remains fixed on the stone');
+ assert.equal(sale.state.coins,coinBefore+today.value,'Sale follows the current-day market');
  assert.equal(sale.state.jade.sold,1);
  assert.equal(take(sale.state,'jade-sell-window').ok,false);
  assert.equal(take(sale.state,'jade-cut').ok,false);
