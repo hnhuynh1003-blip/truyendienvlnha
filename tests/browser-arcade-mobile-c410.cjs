@@ -104,7 +104,7 @@ async function main(){
   assert.equal(heldJade.vault.length,1,'Cut stone waits for a favorable quote in the vault');
   await action('jade-open-vault').click();
   assert.match(await page.locator('.arcade-sheet-overlay').innerText(),/Bảng giá sắc ngọc/);
-  await action('jade-vault-sell-0').click();
+  await page.locator('.arcade-sheet-overlay button[data-arcade-action="jade-vault-sell-0"]').click();
   const honorMoment=page.locator('#cyber-phone .dudu-c411-unlock-toast');
   await honorMoment.waitFor({state:'visible',timeout:2500});
   assert.equal(await honorMoment.getAttribute('data-rarity'),'rare',
