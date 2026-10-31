@@ -882,6 +882,12 @@
   else render();
   return true;
  }
- root.DuduPersonalArcadeUIV1=Object.freeze({init,render,interact,tick,peekBalance,openExchange});
+ function openSeason(){
+  if(!ensure())return false;
+  seasonOpen=true;drawerOpen=null;exchangeOpen=false;
+  if(!visible()&&typeof root.openPhoneApp==='function')root.openPhoneApp('arcade');
+  render();return true;
+ }
+ root.DuduPersonalArcadeUIV1=Object.freeze({init,render,interact,tick,peekBalance,openExchange,openSeason});
  init();
 })(typeof window!=='undefined'?window:{});

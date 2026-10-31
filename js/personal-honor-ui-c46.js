@@ -3,7 +3,8 @@
  */
 (function(root){
  'use strict';
- const honor=root.DuduPersonalHonorC46,arcadeCore=root.DuduPersonalArcadeCoreV1;
+ const honor=root.DuduPersonalHonorC46,arcadeCore=root.DuduPersonalArcadeCoreV1,
+  seasonGame=arcadeCore?.seasonGame;
  if(!honor||!root.document)return;
  const $=id=>root.document.getElementById(id);
  const sandbox=()=>typeof IS_SANDBOX_MODE!=='undefined'&&IS_SANDBOX_MODE;
@@ -158,6 +159,26 @@
    create('span','',v.pinned.length+'/3 huy hiệu ghim'));
   hero.append(stats);return hero;
  }
+ function seasonBridge(){
+  if(!seasonGame)return null;
+  const saved=readArcade()?.season?.records?.s01;
+  const have=Array.isArray(saved?.relics)?saved.relics.length:0;
+  const preview=seasonGame.PHASE!=='live';
+  const bridge=create('section','dudu-honor-season-bridge');
+  bridge.setAttribute('aria-label','Bộ sưu tập Mùa 1 · Sương Tinh Thạch');
+  bridge.append(create('span','dudu-honor-season-crest'));
+  const copy=create('div','dudu-honor-season-copy');
+  copy.append(create('small','',preview?'◌ MÙA 01 · CHƯA MỞ':`✦ MÙA 01 · ${have}/4 KỶ VẬT`),
+   create('strong','','Sương Tinh Thạch'),
+   create('span','', 'Người Khai Mùa · Ấn Khai Nguyên S01'));
+  bridge.append(copy);
+  const open=create('button','dudu-honor-season-open','Hộ chiếu ›');
+  open.type='button';open.setAttribute('aria-label','Mở Hộ chiếu Mùa 1 trong Arcade');
+  open.addEventListener('click',()=>{
+   if(!root.DuduPersonalArcadeUIV1?.openSeason?.())root.openPhoneApp?.('arcade');
+  });
+  bridge.append(open);return bridge;
+ }
  function goToGoal(t){
   if(!t?.goal)return;
   page=t.goal.secret?'secrets':'achievements';
@@ -215,8 +236,11 @@
   const emblem=create('span','dudu-honor-ach-icon',hidden?'✧':a.icon);
   const content=create('div','dudu-honor-ach-copy');
   content.append(create('small','',a.source+' · '+rarityName[a.rarity]),
-   create('strong','',hidden?'Bí mật chưa khám phá':a.name),
+   create('strong','',hidden?'Bí mật chưa khám phá':a.name));
+  const details=create('details','dudu-honor-ach-detail');
+  details.append(create('summary','','Xem điều kiện'),
    create('p','',hidden?'Hãy tiếp tục khám phá, dấu mốc này sẽ tự hé lộ.':a.description));
+  content.append(details);
   const meter=create('div','dudu-honor-ach-meter'),fill=create('i','');
   fill.style.width=(hidden?0:a.unlocked?100:a.current/a.target*100)+'%';meter.append(fill);
   content.append(meter,create('small','',a.unlocked?'✓ Đã hoàn thành':hidden?'???':
@@ -266,13 +290,13 @@
  function filterRow(){
   const filters=create('div','dudu-honor-filters');
   for(const label of categories){
-   const btn=create('button',category===label?'is-active':'',label);btn.type='button';
+   const btn=create('button',category===label?'is-active':'',label==='Tất cả'?'Mọi game':label);btn.type='button';
    btn.setAttribute('aria-pressed',String(category===label));
    btn.addEventListener('click',()=>{category=label;visibleLimit=8;render();});filters.append(btn);
   }
   return filters;
  }
- const titleScopes=[['all','Tất cả'],['locked','Chưa có'],['owned','Đã sở hữu'],
+ const titleScopes=[['all','Mọi bậc'],['locked','Chưa có'],['owned','Đã sở hữu'],
   ['rare','Hiếm trở lên'],['mythic','Huyền thoại']];
  function titleScopeRow(){
   const row=create('div','dudu-honor-title-scopes');
@@ -304,6 +328,7 @@
    return true;
   }
   const v=current();host.append(metric(v));
+  const passport=seasonBridge();if(passport)host.append(passport);
   const device=devicePreferences();
   if(device&&(device.equipped||device.pinned!==null)){
    const note=create('div','dudu-honor-device-note');
@@ -326,11 +351,11 @@
   host.append(nav);
   const body=create('div','dudu-honor-collection');
   if(page==='titles'){
-   body.append(create('p','dudu-honor-tip',
-    'Mỗi danh hiệu có bậc hiếm riêng. Mở khóa rồi chọn Sử dụng để trưng bày trên điện thoại.'));
    if(v.nextHunt&&category==='Tất cả'&&titleScope==='all')body.append(huntSpotlight(v.nextHunt));
    body.append(titleScopeRow(),filterRow());
    const list=v.titles.filter(t=>matchesCategory(t)&&matchesScope(t));
+   list.sort((a,b)=>Number(b.unlocked)-Number(a.unlocked)||
+    (b.goal?.current||0)/(b.goal?.target||1)-(a.goal?.current||0)/(a.goal?.target||1));
    if(!list.length)body.append(create('p','dudu-honor-empty','Chưa có danh hiệu trong nhóm này.'));
    appendPaged(body,list,titleCard,v);
   }else if(page==='journeys'){
@@ -347,7 +372,8 @@
    const secret=page==='secrets';
    if(!secret)body.append(filterRow());
    const list=v.achievements.filter(a=>secret?a.secret:!a.secret&&matchesCategory(a));
-   if(focusAchievementId)list.sort((a,b)=>(b.id===focusAchievementId)-(a.id===focusAchievementId));
+   list.sort((a,b)=>Number(b.id===focusAchievementId)-Number(a.id===focusAchievementId)||
+    Number(b.unlocked)-Number(a.unlocked)||b.current/b.target-a.current/a.target);
    appendPaged(body,list,achievementCard,v);
   }
   host.append(body);

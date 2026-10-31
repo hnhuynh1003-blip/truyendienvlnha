@@ -3,7 +3,7 @@
  'use strict';
  const engine=root.DuduQuestEngineV437;
  if(!engine)return;
- let tab='ALL';
+ let tab='DAILY';
  const tabs=[['ALL','Tất cả'],['DAILY','Ngày'],['WEEKLY','Tuần'],
   ['STORY','Truyện'],['NPC','NPC'],['EVENT','Sự kiện']];
  const icons={DAILY:'☀️',WEEKLY:'🗓️',STORY:'📖',MAIN:'📖',NPC:'💝',EVENT:'🎊'};
@@ -35,8 +35,8 @@
   const summary=$('section','dudu-v437-summary');
   const top=$('div','dudu-v437-summary-top');
   const words=$('div','dudu-v437-summary-copy');
-  words.append($('small','','DUDU · NHIỆM VỤ 2.0'),
-   $('strong','','Một chút tiến bộ mỗi ngày'));
+  words.append($('small','','✦ NHẬT TRÌNH HÔM NAY'),
+   $('strong','','Nhiệm vụ ngày'));
   const completed=$('span','dudu-v437-counter',dailyDone+'/'+daily.length);
   completed.title='Nhiệm vụ ngày đã nhận thưởng';
   top.append(words,completed);
@@ -44,7 +44,7 @@
   fill.style.width=(daily.length?dailyDone/daily.length*100:0)+'%';
   track.append(fill);
   const note=$('p','dudu-v43-quest-status',
-   '✦ '+stats.ready+' nhiệm vụ có thể nhận · Tự làm mới theo ngày/tuần');
+   stats.ready+' phần thưởng chờ nhận · Nhiệm vụ cho Xu/EXP, thành tựu lưu ở Sổ Vinh Danh');
   summary.append(top,track,note);
   host.append(summary);
   const nav=$('nav','dudu-v437-tabs');
@@ -60,14 +60,11 @@
   }
   host.append(nav);
   const caption=$('p','dudu-v437-subtitle',
-   tab==='ALL'?'Hoàn thành hoạt động để mở phần thưởng':
-   tab==='WEEKLY'?'Nhiệm vụ tuần làm mới vào Thứ Hai':
-   tab==='EVENT'?'Sự kiện Vạn Bảo và Vé Cào Vạn Phúc':
-   tab==='STORY'?'Mốc mở chương và hành trình chính tuyến':
-   tab==='NPC'?(personalMode?'Gắn kết cùng những nhân vật đã gặp':
-    'Kỷ niệm chỉ là tiến độ Sandbox; chưa phải kỷ vật máy chủ'):
-   'Lượt ngày tự làm mới lúc sang ngày mới');
-  host.append(caption);
+   tab==='DAILY'?'Làm mới mỗi ngày':tab==='WEEKLY'?'Làm mới vào Thứ Hai':
+   tab==='ALL'?'Tất cả nhiệm vụ · Ưu tiên phần thưởng chờ nhận':
+   tab==='EVENT'?'Sự kiện thường kỳ · Không bao gồm kỷ vật Mùa 1':
+   tab==='STORY'?'Mốc đọc và sáng tác':tab==='NPC'?'Kết nối nhân vật':'');
+  if(caption.textContent)host.append(caption);
   const list=$('div','dudu-v437-cards');
   const visible=rows.filter(q=>tab==='ALL'||(tab==='STORY'?
    q?.type==='STORY'||q?.type==='MAIN':q?.type===tab));
@@ -95,9 +92,12 @@
    const status=$('span','dudu-v437-status',
     q.claimed?'✓ Đã nhận':locked?'Chưa mở':ready?'Sẵn sàng':current+'/'+target);
    header.append(status);
-   card.append(header,$('p','dudu-v437-desc',locked?
+   const details=$('details','dudu-v437-details'),summaryRow=$('summary','dudu-v437-quest-summary');
+   summaryRow.title='Chạm để xem cách hoàn thành '+(canonical.title||'nhiệm vụ');
+   summaryRow.append(header);details.append(summaryRow,$('p','dudu-v437-desc',locked?
     'Nhiệm vụ sáng tác chưa được xác thực trên tài khoản chính; tiến độ cũ vẫn được giữ.':
     canonical.desc||'Thực hiện hoạt động để nhận thưởng.'));
+   card.append(details);
    const meter=$('div','dudu-v437-meter'),bar=$('span','');
    bar.style.width=(current/target*100)+'%';meter.append(bar);
    meter.setAttribute('role','progressbar');
