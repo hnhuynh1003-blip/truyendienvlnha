@@ -66,7 +66,7 @@
   }
  }
  function switchTab(id){
-  if(!['gallery','owned','memories'].includes(id))return;
+  if(!['gallery','preview','owned','memories'].includes(id))return;
   active=id;
   for(const tab of host?.querySelectorAll('.museum-c426-tab')||[]){
    const on=tab.dataset.tab===id;
@@ -78,21 +78,25 @@
  function build(){
   host.replaceChildren();host.classList.add('museum-c426-root');
   const head=el('div','museum-c426-head');
-  head.append(el('span','','✦ SẢNH KỶ VẬT'),
+  head.append(el('span','','✦ BẢO TÀNG CHIẾN LỢI PHẨM'),
    el('strong','museum-c426-ledger','Sổ sở hữu chưa xác minh'));
   host.append(head);
   const nav=el('nav','museum-c426-tabs');nav.setAttribute('role','tablist');
   nav.setAttribute('aria-label','Khu vực bảo tàng');
-  for(const [id,label] of [['gallery','Đại sảnh'],['owned','Kho của tôi'],['memories','Kỷ niệm']]){
+  for(const [id,label] of [['gallery','Chiến tích'],['preview','Quà mùa'],['owned','Kỷ vật thật'],['memories','Kỷ niệm']]){
    const tab=el('button','museum-c426-tab',label);tab.type='button';
    tab.dataset.tab=id;tab.setAttribute('role','tab');tab.id='museum-c426-tab-'+id;
    tab.setAttribute('aria-controls','museum-c426-panel-'+id);
    tab.addEventListener('click',()=>switchTab(id));nav.append(tab);
   }
   host.append(nav);
-  const gallery=el('section','museum-c426-gallery');gallery.id='museum-c426-panel-gallery';
-  gallery.dataset.museumPanel='gallery';gallery.setAttribute('role','tabpanel');
-  gallery.setAttribute('aria-labelledby','museum-c426-tab-gallery');
+  const local=el('section','museum-c429-local');local.id='museum-c426-panel-gallery';
+  local.dataset.museumPanel='gallery';local.setAttribute('role','tabpanel');
+  local.setAttribute('aria-labelledby','museum-c426-tab-gallery');
+  host.append(local);
+  const gallery=el('section','museum-c426-gallery');gallery.id='museum-c426-panel-preview';
+  gallery.dataset.museumPanel='preview';gallery.setAttribute('role','tabpanel');
+  gallery.setAttribute('aria-labelledby','museum-c426-tab-preview');
   const stage=el('div','museum-c426-stage');
   stage.append(el('div','museum-c426-glow'),el('span','museum-c426-eyebrow','◌ BẢN PHÁC THẢO · CHƯA PHÁT HÀNH'));
   const illustration=el('img','museum-c426-art');
@@ -116,7 +120,7 @@
   }
   gallery.append(collection);
   gallery.append(el('p','museum-c426-disclaimer',
-   '4 mẫu mỹ thuật để định hình quà tương lai. Chưa tạo vật phẩm, chưa phát thưởng hay mở khóa.'));
+   'Bốn mẫu quà tương lai, bao gồm Mùa 1 đang PREVIEW. Chưa phát hành, chưa trao thưởng hay mở khóa.'));
   host.append(gallery);
   const owned=el('section','museum-c426-owned');owned.id='museum-c426-panel-owned';
   owned.dataset.museumPanel='owned';owned.setAttribute('role','tabpanel');
@@ -140,6 +144,7 @@
   host=container;
   if(changed){owner=ownerKey;sandboxMode=!!sandbox;active='gallery';selected='s01';
    build();host.classList.add('museum-c426-root-ready');}
+  root.DuduMuseumGalleryC429?.mount?.({container:getPanel('gallery'),ownerKey:owner,sandbox:sandboxMode});
   return true;
  }
  function updateVerified(result){

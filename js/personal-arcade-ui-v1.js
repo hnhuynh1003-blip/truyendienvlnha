@@ -921,6 +921,14 @@
   if(!visible()&&typeof root.openPhoneApp==='function')root.openPhoneApp('arcade');
   render();return true;
  }
- root.DuduPersonalArcadeUIV1=Object.freeze({init,render,interact,tick,peekBalance,openExchange,openSeason});
+ function openGarden(){
+  if(!ensure())return false;
+  tab='garden';drawerOpen=null;seasonOpen=false;exchangeOpen=false;
+  resetScrollOnPaint=true;
+  if(!visible()&&typeof root.openPhoneApp==='function')root.openPhoneApp('arcade');
+  else render();
+  return true;
+ }
+ root.DuduPersonalArcadeUIV1=Object.freeze({init,render,interact,tick,peekBalance,openExchange,openSeason,openGarden});
  init();
 })(typeof window!=='undefined'?window:{});
