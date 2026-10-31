@@ -157,25 +157,27 @@
     <header class="arcade-season-book-header"><div><span>✦ DUDU // SEASON ARCHIVE</span><b>HỘ CHIẾU MÙA 01</b></div>
      <button type="button" data-arcade-season="close" aria-label="Đóng Hộ Chiếu Mùa">✕</button></header>
     <div class="arcade-season-book-scroll">
-     <div class="arcade-season-hero"><div class="arcade-season-moon" aria-hidden="true"></div>
-      <div class="arcade-season-crystals" aria-hidden="true"><i></i><i></i><i></i></div>
-      <div class="arcade-season-hero-type">S01 · KHỞI NGUYÊN</div>
+     <div class="arcade-season-hero">
+      <div class="arcade-season-hero-type">DUDU ARCHIVE — S01</div>
       <h3>SƯƠNG<br><em>TINH THẠCH</em></h3>
       <div class="arcade-season-phase">${preview?'◌ CHƯA MỞ · XEM TRƯỚC':complete?'✦ ĐÃ HOÀN THÀNH':'✧ ĐANG SƯU TẦM'}</div>
      </div>
-     <div class="arcade-season-progress"><strong>✦ BỐN KỶ VẬT KHAI MÙA</strong><span>${have.length}/4</span></div>
+     <div class="arcade-season-progress"><strong><span class="arcade-season-progress-mark" aria-hidden="true">✣</span> BỘ DI VẬT KHAI MÙA</strong><span>${have.length}/4</span></div>
      <div class="arcade-season-track" role="progressbar" aria-label="Kỷ vật Mùa 1" aria-valuemin="0" aria-valuemax="4" aria-valuenow="${have.length}"><i style="width:${have.length*25}%"></i></div>
-     <div class="arcade-season-relic-grid">${seasonGame.RELICS.map(item=>{
+     <div class="arcade-season-relic-grid">${seasonGame.RELICS.map((item,index)=>{
        const earned=have.includes(item.id);
-       return `<button type="button" class="arcade-season-relic season-theme-${item.theme} ${earned?'is-owned':''}"
+       return `<button type="button" class="arcade-season-relic arcade-season-exhibit season-theme-${item.theme} ${earned?'is-owned':''}"
         data-arcade-season-go="${item.id}" aria-label="${item.name} · ${earned?'Đã sở hữu':'Chưa nhận'} · Đến ${item.world}">
-        <span class="arcade-season-relic-mark">${earned?'✦':'◇'}</span>
-        <span class="arcade-season-relic-art" aria-hidden="true">${item.icon}</span>
-        <strong>${item.name}</strong><small>${earned?'ĐÃ KHẮC ẤN':item.hint}</small>
-        <span class="arcade-season-relic-world">${item.world} ↗</span></button>`;
+        <span class="arcade-season-exhibit-art" aria-hidden="true"></span>
+        <span class="arcade-season-exhibit-copy">
+         <span class="arcade-season-exhibit-id">KỶ VẬT 0${index+1} / 04 <span aria-hidden="true">${earned?'✦':'◇'}</span></span>
+         <strong>${item.name}</strong>
+         <small>${earned?'ĐÃ KHẮC ẤN VĨNH VIỄN':item.hint}</small>
+         <span class="arcade-season-relic-world">${item.world} <b aria-hidden="true">↗</b></span>
+        </span></button>`;
       }).join('')}</div>
      <div class="arcade-season-final ${complete?'is-unlocked':''}">
-      <span class="arcade-season-final-crest" aria-hidden="true">✥</span>
+      <span class="arcade-season-final-crest" aria-hidden="true"></span>
       <div><small>${complete?'✦ ĐÃ NHẬN DANH HIỆU':'PHẦN THƯỞNG HOÀN BỘ'}</small>
        <strong>Ấn Khai Nguyên · S01</strong><span>Danh hiệu: Người Khai Mùa</span></div>
      </div>

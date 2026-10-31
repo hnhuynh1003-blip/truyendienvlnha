@@ -1,0 +1,172 @@
+/* C4.24 — illustrated Season 01 relic folio.  AI-painted art is artwork,
+   while all text, progress and navigation remain real accessible UI. */
+#personal-arcade-v1 .arcade-season-overlay{
+ padding:4px;background:radial-gradient(circle at 50% 5%,#3b3151a8,#050a18ec 55%);
+}
+#personal-arcade-v1 .arcade-season-book{
+ border:1px solid #b79bcbad;border-radius:14px;
+ background:linear-gradient(160deg,#16243b,#11182b 47%,#18172b);
+ box-shadow:0 16px 35px #000b,inset 0 0 0 2px #dbc6a91c;
+}
+#personal-arcade-v1 .arcade-season-book-header{
+ min-height:49px;padding:8px 12px;
+ background:linear-gradient(105deg,#172839,#292842 70%,#3b3048);
+ border-bottom:1px solid #e0bd8e85;
+}
+#personal-arcade-v1 .arcade-season-book-header span{color:#ccba9b;letter-spacing:.13em}
+#personal-arcade-v1 .arcade-season-book-header b{color:#f5e7c9;font:850 14px/1.1 ui-serif,Georgia,serif;letter-spacing:.08em}
+#personal-arcade-v1 .arcade-season-book-header button{
+ width:30px;height:30px;border-radius:50%;color:#f3e0c8;
+ background:#202638;border:1px solid #d0b7a3a6;
+}
+#personal-arcade-v1 .arcade-season-book-scroll{padding:7px 7px 10px}
+
+/* A real illustrated world, not a CSS-gradient imitation of a game cover. */
+#personal-arcade-v1 .arcade-season-hero{
+ min-height:192px;justify-content:flex-end;padding:16px 12px 11px;
+ border:1px solid #d9c3b48a;border-radius:6px 18px 6px 18px;
+ background-image:linear-gradient(90deg,#101c39c9 0%,#14233e99 30%,#151f3f17 75%),
+  linear-gradient(0deg,#121b3199,transparent 55%),
+  url('../assets/arcade-season/s01-moon-sanctuary.webp');
+ background-size:cover;background-position:60% center;
+ box-shadow:inset 0 0 26px #d5daff2a,0 8px 17px #020716b5;
+}
+#personal-arcade-v1 .arcade-season-hero::before{content:none}
+#personal-arcade-v1 .arcade-season-hero::after{
+ content:'';position:absolute;inset:6px;pointer-events:none;border:1px solid #f3d9b250;
+ border-radius:3px 13px 3px 13px;
+}
+#personal-arcade-v1 .arcade-season-hero-type{
+ color:#ffe5b5;font:800 9px ui-monospace,monospace;letter-spacing:.13em;
+ text-shadow:0 2px 7px #080f28;
+}
+#personal-arcade-v1 .arcade-season-hero h3{
+ margin:5px 0 9px;color:#fff4e3;
+ font:900 clamp(24px,8vw,34px)/.99 ui-serif,Georgia,serif;
+ letter-spacing:-.015em;text-shadow:0 2px 6px #060e29,0 4px 17px #090d27;
+}
+#personal-arcade-v1 .arcade-season-hero h3 em{color:#cbebfd}
+#personal-arcade-v1 .arcade-season-phase{
+ padding:4px 7px;border:1px solid #e7c99f98;border-radius:2px;
+ background:#101c33df;color:#ffe5be;font-size:8px;letter-spacing:.075em;
+}
+#personal-arcade-v1 .arcade-season-progress{
+ margin:13px 2px 6px;color:#e9d9bc;font:800 10px ui-monospace,monospace;
+}
+#personal-arcade-v1 .arcade-season-progress strong{font-weight:900}
+#personal-arcade-v1 .arcade-season-progress .arcade-season-progress-mark{
+ color:#e2c397;font-size:16px;vertical-align:-1px;
+}
+#personal-arcade-v1 .arcade-season-progress>span{color:#e0d4fa}
+#personal-arcade-v1 .arcade-season-track{
+ height:4px;border:0;border-radius:0;background:repeating-linear-gradient(90deg,#26314d 0 calc(25% - 3px),#c09c7366 calc(25% - 3px) 25%);
+}
+#personal-arcade-v1 .arcade-season-track i{
+ background:linear-gradient(90deg,#7bcef3,#c5a8fb,#f4cf94);border-radius:0;
+}
+
+/* Four artifact exhibits, with differing silhouettes, lighting and material. */
+#personal-arcade-v1 .arcade-season-relic-grid{
+ display:flex;flex-direction:column;gap:7px;margin-top:11px;
+}
+#personal-arcade-v1 .arcade-season-relic.arcade-season-exhibit{
+ min-height:132px;padding:0;gap:0;flex-direction:row;align-items:stretch;
+ border:1px solid color-mix(in srgb,var(--relic-line) 60%,#514b61);
+ border-left:3px solid var(--relic-line);border-radius:2px 16px 2px 12px;
+ background:radial-gradient(ellipse at 20% 53%,var(--relic-glow),transparent 62%),
+  linear-gradient(115deg,#253148 0%,#151b30 64%,#1f1d31);
+ box-shadow:inset 0 0 26px #a7b3e510,0 5px 8px #05091788;
+ overflow:hidden;isolation:isolate;
+ text-align:left;
+}
+#personal-arcade-v1 .arcade-season-relic.arcade-season-exhibit:nth-child(even){
+ flex-direction:row-reverse;border-left:1px solid color-mix(in srgb,var(--relic-line) 60%,#514b61);
+ border-right:3px solid var(--relic-line);border-radius:16px 2px 12px 2px;
+ background:radial-gradient(ellipse at 80% 53%,var(--relic-glow),transparent 62%),
+  linear-gradient(245deg,#253148 0%,#151b30 64%,#1f1d31);
+}
+#personal-arcade-v1 .arcade-season-exhibit::after{
+ content:'';position:absolute;inset:5px;z-index:-1;opacity:.55;pointer-events:none;
+ border:1px solid color-mix(in srgb,var(--relic-line) 30%,transparent);
+ border-radius:1px 10px 1px 8px;
+}
+#personal-arcade-v1 .arcade-season-exhibit-art{
+ flex:none;align-self:center;width:min(44%,127px);height:130px;margin:-5px 0;
+ background-image:url('../assets/arcade-season/s01-relic-atlas.webp');
+ background-repeat:no-repeat;background-size:200% 200%;background-position:0 0;
+ filter:drop-shadow(0 3px 6px #04091b9c);
+ transition:transform .2s ease,filter .2s ease;
+}
+#personal-arcade-v1 .season-theme-cyan .arcade-season-exhibit-art{background-position:left top}
+#personal-arcade-v1 .season-theme-violet .arcade-season-exhibit-art{background-position:right top}
+#personal-arcade-v1 .season-theme-rose .arcade-season-exhibit-art{background-position:left bottom}
+#personal-arcade-v1 .season-theme-gold .arcade-season-exhibit-art{background-position:right bottom}
+#personal-arcade-v1 .arcade-season-exhibit-copy{
+ flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;
+ justify-content:center;gap:5px;padding:12px 9px 10px 3px;
+}
+#personal-arcade-v1 .arcade-season-exhibit:nth-child(even) .arcade-season-exhibit-copy{
+ align-items:flex-end;text-align:right;padding:12px 3px 10px 9px;
+}
+#personal-arcade-v1 .arcade-season-exhibit-id{
+ color:var(--relic-line);font:800 8px/1.1 ui-monospace,monospace;letter-spacing:.08em;
+ display:flex;gap:7px;align-items:center;
+}
+#personal-arcade-v1 .arcade-season-exhibit-id>span{font-size:12px}
+#personal-arcade-v1 .arcade-season-relic.arcade-season-exhibit strong{
+ color:#fff2e0;font:900 13px/1.14 ui-serif,Georgia,serif;
+ max-width:100%;text-align:inherit;letter-spacing:-.005em;
+}
+#personal-arcade-v1 .arcade-season-relic.arcade-season-exhibit small{
+ color:#d4d9e7;font:650 9px/1.25 ui-sans-serif,system-ui;
+ max-width:100%;text-align:inherit;
+}
+#personal-arcade-v1 .arcade-season-relic.arcade-season-exhibit .arcade-season-relic-world{
+ margin-top:5px;color:#f6daac;font:800 9px ui-sans-serif,system-ui;
+ border-bottom:1px solid #edd3ae88;padding-bottom:2px;
+}
+#personal-arcade-v1 .arcade-season-relic-world b{margin-left:2px;font-size:13px}
+#personal-arcade-v1 .arcade-season-exhibit:hover .arcade-season-exhibit-art,
+#personal-arcade-v1 .arcade-season-exhibit:focus-visible .arcade-season-exhibit-art{
+ transform:scale(1.07);filter:drop-shadow(0 4px 10px var(--relic-glow));
+}
+#personal-arcade-v1 .arcade-season-exhibit:focus-visible{outline:2px solid #fff4be;outline-offset:1px}
+#personal-arcade-v1 .arcade-season-relic.arcade-season-exhibit.is-owned{
+ box-shadow:inset 0 0 26px var(--relic-glow),0 0 12px var(--relic-glow);
+}
+
+/* Legendary set reward has its own illustrated physical insignia. */
+#personal-arcade-v1 .arcade-season-final{
+ margin-top:14px;min-height:115px;gap:3px;padding:8px 10px 8px 0;
+ background:radial-gradient(circle at 18% 48%,#b2825e66,transparent 53%),
+  linear-gradient(110deg,#302c3d,#1d2337 72%,#2e2738);
+ border:1px solid #d9b9829e;border-radius:4px 13px 4px 13px;opacity:1;
+}
+#personal-arcade-v1 .arcade-season-final-crest{
+ display:block;flex:none;width:105px;height:116px;border:0;border-radius:0;
+ background:url('../assets/arcade-season/s01-founder-crest.webp') center/contain no-repeat;
+ box-shadow:none;filter:drop-shadow(0 0 9px #f7c87969);
+}
+#personal-arcade-v1 .arcade-season-final small{
+ color:#e4bf89;font-size:8px;letter-spacing:.045em;
+}
+#personal-arcade-v1 .arcade-season-final strong{
+ color:#fff0cd;font:900 15px/1.1 ui-serif,Georgia,serif;
+}
+#personal-arcade-v1 .arcade-season-final>div>span{color:#e2d5dc;line-height:1.25}
+#personal-arcade-v1 .arcade-season-archive-note{
+ color:#b8c8d8;text-align:center;font:600 9px/1.4 ui-sans-serif,system-ui;
+}
+@media(max-width:360px){
+ #personal-arcade-v1 .arcade-season-book-scroll{padding:6px}
+ #personal-arcade-v1 .arcade-season-hero{min-height:175px;padding:13px 10px 9px}
+ #personal-arcade-v1 .arcade-season-hero h3{font-size:26px}
+ #personal-arcade-v1 .arcade-season-relic.arcade-season-exhibit{min-height:117px}
+ #personal-arcade-v1 .arcade-season-exhibit-art{height:115px;width:min(43%,115px)}
+ #personal-arcade-v1 .arcade-season-relic.arcade-season-exhibit strong{font-size:12px}
+ #personal-arcade-v1 .arcade-season-exhibit-copy{padding-right:6px;gap:4px}
+ #personal-arcade-v1 .arcade-season-final-crest{width:94px;height:102px}
+}
+@media(prefers-reduced-motion:reduce){
+ #personal-arcade-v1 .arcade-season-exhibit-art{transition:none}
+}

@@ -71,7 +71,7 @@ test('C4.23 passport fits existing Arcade without changing EPUB/Rules or main wa
  const css=fs.readFileSync(path.join(dir,'css/arcade-season-c423.css'),'utf8');
  assert.match(html,/personal-arcade-season-c423\.js\?v=c423-1/);
  assert.match(html,/personal-arcade-core-v1\.js\?v=c423-1/);
- assert.match(html,/personal-arcade-ui-v1\.js\?v=c423-1/);
+ assert.match(html,/personal-arcade-ui-v1\.js\?v=c424-1/);
  assert.match(html,/arcade-season-c423\.css\?v=c423-1/);
  assert.match(html,/id="arcade-season-portal-c423"/);
  assert.match(ui,/data-arcade-season-go/);
