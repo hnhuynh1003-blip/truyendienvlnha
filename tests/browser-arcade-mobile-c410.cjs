@@ -116,6 +116,7 @@ async function main(){
    'dudu-personal-arcade:v1:sandbox%3Ac410-mobile-tester')));
   assert.equal(jadeAfter.jade.sold,1);
   assert.equal(jadeAfter.jade.vault.length,0);
+  await page.locator('.arcade-sheet-close').click();
 
   await page.evaluate(()=>document.querySelector('.arcade-scroll').scrollTop=180);
   await tab('mine').click();
