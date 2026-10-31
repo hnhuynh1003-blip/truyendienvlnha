@@ -42,11 +42,16 @@
   blue:Object.freeze({name:'Cá lam ngọc',rarity:'Quý',icon:'🐟',min:22,max:41,rare:false}),
   moonfish:Object.freeze({name:'Cá nguyệt quang',rarity:'Hiếm',icon:'🌙',min:34,max:60,rare:true}),
   crystal:Object.freeze({name:'Cá pha lê',rarity:'Sử thi',icon:'💠',min:28,max:57,rare:true}),
-  dragon:Object.freeze({name:'Long ngư tinh vân',rarity:'Huyền thoại',icon:'🐉',min:58,max:98,rare:true})
+  dragon:Object.freeze({name:'Long ngư tinh vân',rarity:'Huyền thoại',icon:'🐉',min:58,max:98,rare:true}),
+  glassfin:Object.freeze({name:'Cá kính ngân hà',rarity:'Quý',icon:'✧',min:21,max:44,rare:false}),
+  lantern:Object.freeze({name:'Cá đèn sương',rarity:'Hiếm',icon:'✦',min:30,max:62,rare:true}),
+  phoenix:Object.freeze({name:'Phượng ngư hỏa nguyệt',rarity:'Huyền thoại',icon:'✵',min:56,max:102,rare:true})
  });
  const FISH_BITE_MIN=3000,FISH_BITE_SPAN=3000,FISH_REEL_WINDOW=25000;
- const FISH_COMMON=['reed','carp','silver','koi','blue'];
- const FISH_RARE=['moonfish','crystal','dragon'];
+ const FISH_COMMON=['reed','carp','silver','koi','blue','glassfin'];
+ const FISH_RARE=['moonfish','lantern','crystal','phoenix','dragon'];
+ // Purchases use tenths of *Arcade* Xu; the real wallet is never touched.
+ const BAIT_PACK_PRICE=70,MOON_BAIT_PRICE=60,MOON_BAIT_RARE_BONUS=.18;
  const NEON_SERVICE_INTERVAL=45000;
  const NEON_ORDER_COOLDOWN=90000,NEON_ORDER_MISS=30000;
  const NEON_ORDERS=Object.freeze([[0,1],[2,0],[1,2],[0,2],[2,1],[1,0]].map(x=>Object.freeze(x)));
@@ -63,7 +68,7 @@
  };
  function chooseFish(roll,threshold){
   const rare=roll>=threshold,scaled=rare?(roll-threshold)/(1-threshold):roll/threshold;
-  const limits=rare?[.68,.94,1]:[.27,.52,.75,.91,1];
+  const limits=rare?[.55,.72,.94,.985,1]:[.27,.5,.7,.85,.96,1];
   return (rare?FISH_RARE:FISH_COMMON)[limits.findIndex(limit=>scaled<limit)];
  }
  const ECONOMY_VERSION=2;
@@ -86,7 +91,7 @@
    garden:{water:1,waterCap:3,pondTier:1,waterAt:time,seeds:3,plots:2,
     crop:'bloom',sprinkler:0,rod:1,fish:0,rareFish:0,
     beds:[{status:'empty',readyAt:0,crop:'bloom'},{status:'empty',readyAt:0,crop:'bloom'}],
-    bubbleAt:time+BUBBLE_INTERVAL,bubbleReady:false,bait:0,harvests:0,
+    bubbleAt:time+BUBBLE_INTERVAL,bubbleReady:false,bait:0,moonBait:0,harvests:0,
     line:null,fishAlbum:Object.fromEntries(Object.keys(FISH_SPECIES).map(id=>[id,0])),
     fishBest:Object.fromEntries(Object.keys(FISH_SPECIES).map(id=>[id,0]))},
    jade:jadeGame?jadeGame.fresh():null,
@@ -165,6 +170,7 @@
   state.garden.bubbleAt=number(garden.bubbleAt,0,time+BUBBLE_INTERVAL*2,time+BUBBLE_INTERVAL);
   state.garden.bubbleReady=garden.bubbleReady===true;
   state.garden.bait=number(garden.bait,0,10000,0);
+  state.garden.moonBait=number(garden.moonBait,0,10000,0);
   state.garden.harvests=number(garden.harvests,0,1000000,0);
   for(const id of Object.keys(FISH_SPECIES)){
    state.garden.fishAlbum[id]=number(garden.fishAlbum?.[id],0,10000000,0);
@@ -176,7 +182,8 @@
     escapeAt=number(line.escapeAt,0,time+60000,0);
    const rod=number(line.rod,1,5,1),size=number(line.size,1,200,0);
    if(biteAt&&escapeAt===biteAt+FISH_REEL_WINDOW&&size)
-    state.garden.line={fishId:line.fishId,biteAt,escapeAt,rod,size};
+    state.garden.line={fishId:line.fishId,biteAt,escapeAt,rod,size,
+     lure:line.lure==='moon'?'moon':'regular'};
   }
   return state;
  }
@@ -466,17 +473,28 @@
    garden.bait=Math.min(10000,garden.bait+1);give(state,5);
    return succeed('Nhặt được mồi câu và 0,5 Xu');
   }
-  if(action==='cast-line'){
+  if(action==='buy-bait-pack'||action==='buy-moon-bait'){
+   const premium=action==='buy-moon-bait',price=premium?MOON_BAIT_PRICE:BAIT_PACK_PRICE;
+   const quantity=premium?2:5,field=premium?'moonBait':'bait';
+   if(state.coins<price)return fail('Chưa đủ Xu Arcade để mua mồi');
+   if(garden[field]>10000-quantity)return fail('Túi mồi đã đầy');
+   state.coins-=price;garden[field]+=quantity;
+   return succeed(premium?'Đã mua 2 mồi Tinh Nguyệt':'Đã mua 5 mồi hồ sương');
+  }
+  if(action==='cast-line'||action==='cast-premium-line'){
    if(garden.line)return fail('Đã thả câu. Hãy chờ phao động');
-   if(!garden.bait)return fail('Chưa có mồi câu. Hãy thu bọt trên hồ');
+   const premium=action==='cast-premium-line',field=premium?'moonBait':'bait';
+   if(!garden[field])return fail(premium?'Chưa có mồi Tinh Nguyệt. Hãy ghé Tiệm câu':'Chưa có mồi câu. Hãy thu bọt trên hồ');
    if(typeof roll!=='number'||roll<0||roll>=1)return fail('Lượt câu không hợp lệ');
-   const threshold=Math.max(.75,.94-.035*(garden.rod-1)-.02*(garden.pondTier-1));
+   const baseline=Math.max(.75,.94-.035*(garden.rod-1)-.02*(garden.pondTier-1));
+   const threshold=premium?Math.max(.57,baseline-MOON_BAIT_RARE_BONUS):baseline;
    const fishId=chooseFish(roll,threshold),fish=FISH_SPECIES[fishId];
    const biteAt=time+FISH_BITE_MIN+Math.floor(roll*FISH_BITE_SPAN);
    const size=fish.min+Math.floor((fish.max-fish.min+1)*((roll*997)%1));
-   garden.bait--;
-   garden.line={fishId,biteAt,escapeAt:biteAt+FISH_REEL_WINDOW,rod:garden.rod,size};
-   return succeed('🎣 Đã thả câu. Hãy nhìn phao và chờ cá cắn');
+   garden[field]--;
+   garden.line={fishId,biteAt,escapeAt:biteAt+FISH_REEL_WINDOW,rod:garden.rod,size,
+    lure:premium?'moon':'regular'};
+   return succeed(premium?'✦ Mồi Tinh Nguyệt đã xuống hồ. Hãy nhìn phao!':'🎣 Đã thả câu. Hãy nhìn phao và chờ cá cắn');
   }
   if(action==='reel-line'){
    const line=garden.line;

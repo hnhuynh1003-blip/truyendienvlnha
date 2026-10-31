@@ -1,0 +1,171 @@
+/* C4.27 — Vườn Sương: moonlit tackle stall, collectible fish portraits and
+   optional premium casting. Only visual layers; mechanics live in Arcade core. */
+#personal-arcade-v1 .fish-glassfin,
+#personal-arcade-v1 .garden-fish-species-glassfin{
+ background-image:url('../assets/arcade-c427/fish-glassfin.webp');
+ background-size:contain;background-position:center;
+}
+#personal-arcade-v1 .fish-lantern,
+#personal-arcade-v1 .garden-fish-species-lantern{
+ background-image:url('../assets/arcade-c427/fish-lantern.webp');
+ background-size:contain;background-position:center;
+}
+#personal-arcade-v1 .fish-phoenix,
+#personal-arcade-v1 .garden-fish-species-phoenix{
+ background-image:url('../assets/arcade-c427/fish-phoenix.webp');
+ background-size:contain;background-position:center;
+}
+#personal-arcade-v1 .garden-fish-entry.fish-lantern.is-discovered{
+ border-color:#a4d9ee;box-shadow:inset 0 0 16px #6cc8e842;
+}
+#personal-arcade-v1 .garden-fish-entry.fish-phoenix.is-discovered{
+ border-color:#f5b891;background:radial-gradient(ellipse at 16% 30%,#ce7d6d72,transparent 70%),#40333f;
+ box-shadow:inset 0 0 16px #ffb67d40;
+}
+#personal-arcade-v1 .garden-fish-entry.fish-glassfin.is-discovered{
+ border-color:#a3d9e7;
+}
+#personal-arcade-v1 .garden-stage .garden-fish-species-phoenix{
+ width:65px;height:51px;filter:drop-shadow(0 0 5px #f8a28288);
+ animation-duration:11s;
+}
+#personal-arcade-v1 .garden-stage .garden-fish-species-lantern{
+ width:58px;height:49px;filter:drop-shadow(0 0 5px #a5ecfff0);
+ animation-duration:9s;
+}
+#personal-arcade-v1 .garden-catch-card .fish-lantern{
+ filter:drop-shadow(0 0 10px #7be9ed9e);
+}
+#personal-arcade-v1 .garden-catch-card .fish-phoenix{
+ filter:drop-shadow(0 0 12px #ffb16aa6);
+}
+
+/* The optional moon-bait cast appears only when a premium lure is owned. */
+#personal-arcade-v1 .garden-fishing-controls.garden-has-premium{
+ display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px;
+}
+#personal-arcade-v1 .garden-fishing-controls.garden-has-premium .garden-cast-button{
+ width:100%;min-width:0;min-height:43px;border-radius:10px 5px 5px 10px;
+ font-size:10px;padding:7px 5px;
+}
+#personal-arcade-v1 .garden-fishing-controls .garden-premium-cast{
+ min-width:0;min-height:43px;padding:7px 4px;
+ border:1px solid #f0d59d;border-radius:5px 10px 10px 5px;
+ background:linear-gradient(115deg,#5d5177,#584a80 58%,#8d708e);
+ color:#fff3cc;box-shadow:inset 0 0 11px #efc8e24d,0 0 10px #a486e65a;
+ font-size:10px;font-weight:900;letter-spacing:.005em;
+}
+#personal-arcade-v1 .garden-premium-cast:active:not(:disabled){transform:scale(.97)}
+#personal-arcade-v1 .garden-premium-cast:focus-visible{outline:2px solid #fce7a3;outline-offset:2px}
+
+/* The drawer feels like a compact, physical moonlit fishing stall. */
+#personal-arcade-v1 .garden-tackle-shop{
+ display:flex;flex-direction:column;gap:8px;flex:none;
+ color:#e9f4e6;
+}
+#personal-arcade-v1 .garden-tackle-sign{
+ position:relative;isolation:isolate;display:flex;flex-direction:column;gap:3px;
+ min-height:85px;padding:13px 14px 11px;overflow:hidden;
+ border:1px solid #c9b6869c;border-radius:12px;
+ background:radial-gradient(circle at 86% 24%,#e7e7bf8c 0 4px,transparent 7px),
+  linear-gradient(112deg,#213e41,#335455 56%,#31465b);
+ box-shadow:inset 0 2px 0 #d5e0c42b,0 5px 15px #081c2599;
+}
+#personal-arcade-v1 .garden-tackle-sign::after{
+ content:'';position:absolute;right:12px;bottom:-6px;width:62px;height:70px;
+ border-right:3px solid #e5ce99;border-top:3px solid #e5ce99;
+ transform:rotate(-31deg);border-radius:80% 0 0 0;
+ filter:drop-shadow(0 0 7px #e9dfa65e);z-index:-1;
+}
+#personal-arcade-v1 .garden-tackle-sign span{
+ font:800 9px/1.2 ui-monospace,monospace;letter-spacing:.08em;color:#c6e2d4;
+}
+#personal-arcade-v1 .garden-tackle-sign b{
+ font:700 22px/1.06 ui-serif,Georgia,serif;color:#f9e9bc;
+ text-shadow:0 2px 4px #142528;
+}
+#personal-arcade-v1 .garden-tackle-sign small{font:600 10px/1.35 system-ui,sans-serif;color:#c7ece6}
+#personal-arcade-v1 .garden-tackle-offers{display:grid;gap:7px}
+#personal-arcade-v1 .garden-tackle-offer{
+ display:grid;grid-template-columns:53px minmax(0,1fr) 66px;align-items:center;
+ gap:6px;padding:7px;border:1px solid #7caa9897;border-radius:12px;
+ background:linear-gradient(100deg,#294948,#1f383a 80%);
+ box-shadow:inset 0 1px 0 #e1f8d622,0 3px 9px #071e2694;
+}
+#personal-arcade-v1 .garden-tackle-moon{
+ border-color:#cbacd39c;background:linear-gradient(100deg,#3c445b,#333950 78%);
+}
+#personal-arcade-v1 .garden-tackle-item{
+ width:52px;height:53px;position:relative;display:block;overflow:hidden;
+ background:radial-gradient(circle at 50% 45%,#7db2a76e,transparent 72%);
+}
+#personal-arcade-v1 .garden-tackle-worm::before,
+#personal-arcade-v1 .garden-tackle-worm::after{
+ content:'';position:absolute;top:16px;left:9px;width:30px;height:23px;
+ border:6px solid #d6b285;border-left-color:transparent;border-top-color:#f1d9a2;
+ border-radius:45%;transform:rotate(-27deg);
+ box-shadow:0 2px 4px #0d272f99,inset 1px 1px 3px #694a4a;
+}
+#personal-arcade-v1 .garden-tackle-worm::after{
+ top:23px;left:27px;width:9px;height:10px;border-width:4px;transform:rotate(32deg);
+}
+#personal-arcade-v1 .garden-tackle-pearl::before{
+ content:'';position:absolute;inset:7px;border:2px solid #d9c7f6;
+ border-radius:50% 48% 55% 48%;
+ background:radial-gradient(circle at 32% 25%,#fffdf5 0 7%,#d2f8ff 13%,#76c0d4 41%,#735ab1 81%);
+ box-shadow:inset -3px -3px 9px #373b73,0 0 12px #bfa9faad;
+ animation:c427-moon-pulse 3.4s ease-in-out infinite alternate;
+}
+#personal-arcade-v1 .garden-tackle-offer>div{min-width:0;display:flex;flex-direction:column;gap:3px}
+#personal-arcade-v1 .garden-tackle-offer b{font:800 11px/1.22 system-ui,sans-serif;color:#fff2d5}
+#personal-arcade-v1 .garden-tackle-offer small{font:600 9px/1.35 system-ui,sans-serif;color:#c7e3d6}
+#personal-arcade-v1 .garden-tackle-offer em{font:700 9px/1.1 system-ui,sans-serif;color:#ead7aa;font-style:normal}
+#personal-arcade-v1 .garden-tackle-offer .arcade-button{
+ min-width:0;min-height:36px;padding:5px 3px;border:1px solid #dcc58e;
+ border-radius:7px;background:#d3a868;color:#282d2d;
+ font-size:10px;font-weight:900;white-space:nowrap;
+}
+#personal-arcade-v1 .garden-tackle-offer .arcade-button:disabled{opacity:.4}
+#personal-arcade-v1 .garden-tackle-rod{
+ display:grid;grid-template-columns:47px minmax(0,1fr) 74px;align-items:center;gap:7px;
+ padding:8px;border:1px solid #b0cbb391;border-radius:11px;
+ background:linear-gradient(105deg,#3c4c45,#283f3d);
+}
+#personal-arcade-v1 .garden-tackle-rod-art{width:46px;height:58px;position:relative}
+#personal-arcade-v1 .garden-tackle-rod-art::before{
+ content:'';position:absolute;width:3px;height:64px;top:-5px;left:23px;
+ transform:rotate(36deg);border-radius:8px;
+ background:linear-gradient(#f8dfa3 0 30%,#93ac8d 48%,#9f5d50 80%,#422a31);
+ box-shadow:1px 1px 4px #0a2526a3;
+}
+#personal-arcade-v1 .garden-tackle-rod-art::after{
+ content:'';position:absolute;width:17px;height:17px;left:9px;top:24px;
+ border:4px solid #eccf9c;border-radius:50%;
+ box-shadow:inset 0 0 0 3px #234852,0 2px 5px #152a35;
+}
+#personal-arcade-v1 .garden-tackle-rod b{display:block;color:#ffedc8;font:800 11px/1.2 system-ui,sans-serif}
+#personal-arcade-v1 .garden-tackle-rod small{display:block;margin-top:4px;color:#cde2d2;font:600 9px/1.4 system-ui,sans-serif}
+#personal-arcade-v1 .garden-tackle-rod .arcade-button{
+ padding:5px 3px;min-height:38px;font-size:9px;border-color:#a4d5c3;
+ background:#427568;color:#fff8e3;
+}
+#personal-arcade-v1 .garden-tackle-chance{
+ font:600 9px/1.4 system-ui,sans-serif;color:#d6ece8;text-align:center;
+ padding:5px 3px;border-bottom:1px solid #7f9f9e70;
+}
+#personal-arcade-v1 .garden-tackle-chance b{color:#ffe9a8;font-size:11px}
+#personal-arcade-v1 .garden-tackle-chance span{color:#e9aedf;padding:0 3px}
+#personal-arcade-v1 .garden-tackle-subheading{
+ margin-top:2px;font:800 9px/1.2 ui-monospace,monospace;letter-spacing:.07em;color:#bfd4c8;
+}
+#personal-arcade-v1 .arcade-sheet-body .garden-tackle-shop+.arcade-garden-upgrades{margin-top:0}
+@keyframes c427-moon-pulse{to{filter:brightness(1.2);box-shadow:inset -3px -3px 9px #373b73,0 0 20px #d9c0fd}}
+@media(max-width:355px){
+ #personal-arcade-v1 .garden-tackle-offer{grid-template-columns:45px minmax(0,1fr) 61px;gap:4px;padding:6px}
+ #personal-arcade-v1 .garden-tackle-item{width:43px;height:46px}
+ #personal-arcade-v1 .garden-tackle-rod{grid-template-columns:37px minmax(0,1fr) 68px;gap:5px}
+ #personal-arcade-v1 .garden-tackle-rod-art{width:36px}
+ #personal-arcade-v1 .garden-fishing-controls.garden-has-premium .garden-cast-button,
+ #personal-arcade-v1 .garden-fishing-controls .garden-premium-cast{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){#personal-arcade-v1 .garden-tackle-pearl::before{animation:none}}
