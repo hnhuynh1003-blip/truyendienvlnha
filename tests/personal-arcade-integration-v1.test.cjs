@@ -12,20 +12,30 @@ test('C4.4 joins the phone as one Arcade app with four named games',()=>{
  assert.match(html,/id="phone-app-arcade"/);
  assert.match(html,/DuduPersonalArcadeUIV1\?\.render\(\)/);
  assert.match(html,/personal-jade-core-v1\.js\?v=c414-1/);
- assert.match(html,/personal-jade-ui-v1\.js\?v=c418-4/);
+ assert.match(html,/personal-jade-ui-v1\.js\?v=c419-1/);
  assert.match(html,/personal-arcade-core-v1\.js\?v=c49-1/);
- assert.match(html,/personal-arcade-ui-v1\.js\?v=c418-4/);
+ assert.match(html,/personal-arcade-ui-v1\.js\?v=c419-1/);
  assert.match(html,/personal-arcade-v1\.css\?v=c414-1/);
  assert.match(html,/arcade-immersive-c417\.css\?v=c417-1/);
  assert.match(html,/arcade-playfield-c418\.css\?v=c418-4/);
+ assert.match(html,/arcade-live-c419\.css\?v=c419-1/);
  assert.match(html,/id="arcade-header-wallet-v1"/);
  assert.match(html,/ARCADE \/\/ 04/);
  const ui=src('js/personal-arcade-ui-v1.js');
+ assert.match(ui,/class="neon-network-deck"/);
+ assert.match(ui,/class="mine-haul-deck/);
+ assert.match(src('js/personal-jade-ui-v1.js'),/data-jade-market-switch/);
+ assert.match(ui,/dataset\.jadeMarketSwitch/);
  for(const name of ['Trạm Neon','Địa Tầng 07','Vườn Sương','Ngọc Phường'])
   assert.match(ui,new RegExp(name));
  const styles=src('css/personal-arcade-v1.css');
  const skin=src('css/arcade-immersive-c417.css');
  const compact=src('css/arcade-playfield-c418.css');
+ const gameplay=src('css/arcade-live-c419.css');
+ assert.match(gameplay,/\.neon-network-deck/);
+ assert.match(gameplay,/\.mine-haul-deck/);
+ assert.match(gameplay,/\.jade-market-route\{/);
+ assert.match(gameplay,/position:sticky/);
  assert.match(compact,/\.arcade-world-heading\{display:none!important\}/,
   'The bottom dock already names all games, so redundant titleplates are removed');
  assert.match(compact,/\.garden-fish\{/);

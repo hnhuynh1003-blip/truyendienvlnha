@@ -12,8 +12,12 @@
  const dateText=time=>new Date(time||Date.now()).toLocaleDateString('vi-VN',{timeZone:'UTC',day:'2-digit',month:'2-digit'});
  const nowOf=s=>s.lastAt||Date.now();
  const marketRates=s=>jade.COLORS.map((name,i)=>({name,index:i,rate:jade.marketRate(i,nowOf(s))}));
- let openStall=null;
+ let openStall=null,selectedMarket=0;
  const chosenSamples=new Map();
+ function chooseMarket(index,j){
+  if(!Number.isSafeInteger(index)||index<0||index>=jade.MARKETS.length||!j||!jade.unlocked(j,index))return false;
+  selectedMarket=index;openStall=null;return true;
+ }
  function rememberTray(index,opened){
   if(!Number.isSafeInteger(index)||index<0||index>=jade.MARKETS.length)return;
   if(opened)openStall=index;
@@ -130,6 +134,8 @@
  function marketPanel(s){
   const j=s.jade,held=j.stash.length+(j.active?1:0);
   const movers=marketRates(s).sort((a,b)=>b.rate-a.rate);
+  const active=jade.unlocked(j,selectedMarket)?selectedMarket:0;
+  const opened=jade.MARKETS.filter((_,i)=>jade.unlocked(j,i)).length;
   return `<div class="jade-market-grid" data-arcade-panel="jade-market">
     <div class="jade-market-intro" aria-label="Phố chợ Phỉ Thúy">
       <div class="jade-market-street" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
@@ -138,7 +144,17 @@
       <div class="jade-market-pulse"><span>▲ <b>${movers[0].name} +${movers[0].rate-100}%</b></span>
        <span>▼ <b>${movers[movers.length-1].name} ${trend(movers[movers.length-1].rate)}</b></span></div>
       <em>🎒 ${held}/${jade.MAX_STONES} đá trong túi</em></div>
-    ${jade.MARKETS.map((m,i)=>{if(!jade.unlocked(j,i))return '';
+    <nav class="jade-market-route" aria-label="Chọn khu chợ đá">
+     <div class="jade-market-route-heading"><b>⌁ BẢN ĐỒ CHỢ</b><span>${opened}/${jade.MARKETS.length} KHU ĐÃ MỞ</span></div>
+     <div class="jade-market-stop-list" aria-label="Vuốt ngang để chọn khu">
+      ${jade.MARKETS.map((m,i)=>{const unlocked=jade.unlocked(j,i);
+       return `<button type="button" class="jade-market-stop jade-stop-${i} ${active===i?'is-active':''} ${unlocked?'':'is-locked'}"
+        data-jade-market-switch="${i}" aria-pressed="${active===i}" aria-label="${m.short}${unlocked?' · '+fmt(m.price)+' Xu/viên':' · chưa mở: '+m.unlock}" ${unlocked?'':'disabled'}>
+        <span class="jade-market-stop-icon" aria-hidden="true">${['◈','≋','◇','◆','✵'][i]}</span>
+        <strong>${m.short}</strong><small>${unlocked?fmt(m.price)+' Xu':'🔒 '+m.unlock}</small></button>`;}).join('')}
+     </div>
+    </nav>
+    ${jade.MARKETS.map((m,i)=>{if(i!==active)return '';
      const free=!j.bought&&i===0;
      const chosen=chosenSamples.has(i)?chosenSamples.get(i):null;
      return `<section class="jade-market-card jade-market-${i} is-open" aria-label="Sạp ${m.name}">
@@ -176,10 +192,6 @@
         return btn(q+' viên · '+(cost?fmt(cost)+' Xu':'Tặng'),'jade-buy-pack-'+i+'-'+q,
          'market',held+q>jade.MAX_STONES||s.coins<cost);}).join('')}</div>
       </section>`;}).join('')}
-    <div class="jade-market-locked-route"><b>🔒 KHU CHỢ CHƯA MỞ</b><div class="jade-market-locked-rail">
-      ${jade.MARKETS.map((m,i)=>jade.unlocked(j,i)?'':`<div class="jade-market-locked jade-market-${i}" aria-label="${m.name}, chưa mở: ${m.unlock}">
-        <span class="jade-market-locked-art" aria-hidden="true">${['◈','≋','◇','◆','✵'][i]}</span>
-        <strong>${m.short}</strong><small>${m.unlock}</small></div>`).join('')}</div></div>
     <p class="jade-market-fairness">✧ Ruột đá chưa biết. Soi tốn phí, không đảm bảo trúng.</p></div>`;
  }
  function vaultPanel(s){
@@ -260,5 +272,5 @@
    </div>
   </section>`;
  }
- root.DuduPersonalJadeUIV1=Object.freeze({panel,rememberTray,chooseMarketSample});
+ root.DuduPersonalJadeUIV1=Object.freeze({panel,rememberTray,chooseMarketSample,chooseMarket});
 })(typeof window!=='undefined'?window:{});

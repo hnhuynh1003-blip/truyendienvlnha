@@ -156,3 +156,28 @@ test('C4.18.3 stall selection focuses one offer, and compare restores all three'
  assert.doesNotMatch(html,/data-jade-preview-all/);
  for(const slot of [0,1,2])assert.match(html,new RegExp('data-jade-sample-slot="'+slot+'"'));
 });
+
+test('C4.19 unlocked jade districts switch in place without stacking every stall vertically',()=>{
+ const window={DuduPersonalArcadeCoreV1:arcade};
+ vm.runInNewContext(readFileSync(join(__dirname,'../js/personal-jade-ui-v1.js'),'utf8'),{window});
+ const ui=window.DuduPersonalJadeUIV1,s=arcade.fresh(TIME);
+ let html=ui.panel(s);
+ assert.match(html,/jade-market-stop-list/);
+ assert.match(html,/data-jade-market-switch="4"/);
+ assert.equal((html.match(/class="jade-market-card /g)||[]).length,1);
+ assert.equal(ui.chooseMarket(1,s.jade),false,'Locked district cannot be opened early');
+ s.jade.sold=40;s.jade.lamp=3;s.jade.saw=2;s.jade.carver=2;s.jade.permit=true;
+ assert.equal(ui.chooseMarket(3,s.jade),true);
+ html=ui.panel(s);
+ assert.equal((html.match(/class="jade-market-card /g)||[]).length,1);
+ assert.match(html,/data-arcade-action="jade-buy-pack-3-5"/);
+ assert.doesNotMatch(html,/data-arcade-action="jade-buy-pack-0-5"/);
+ assert.match(html,/data-jade-market-switch="3" aria-pressed="true"/);
+ assert.equal(ui.chooseMarket(4,s.jade),true);
+ html=ui.panel(s);
+ assert.match(html,/data-arcade-action="jade-buy-pack-4-1"/);
+ s.jade.permit=false;
+ html=ui.panel(s);
+ assert.match(html,/data-arcade-action="jade-buy-pack-0-1"/,
+  'A now-locked selection falls back safely to the first market');
+});

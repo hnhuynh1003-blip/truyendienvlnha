@@ -116,6 +116,14 @@ async function main(){
    assert.ok(look.stageTop>=look.titleBottom-2,game+' stage must clear the masthead');
    assert.ok(look.iconWidth>=26&&look.iconHeight>=26,game+' dock icon is substantial');
    assert.ok(look.overflow<=2,game+' game world has no horizontal clipping');
+   if(game==='neon'){
+    assert.ok(await page.locator('.neon-network-node').count()>=3,
+     'C4.19 a live network of real game machines fills the lower play area');
+   }
+   if(game==='mine'){
+    assert.equal(await page.locator('.mine-haul-gem').count(),5,
+     'C4.19 the mining conveyor displays five actual inventory slots');
+   }
    stageLooks.add(look.stageBackground);
    if(process.env.ARCADE_C417_SHOTS){
     fs.mkdirSync(process.env.ARCADE_C417_SHOTS,{recursive:true});
@@ -146,6 +154,10 @@ async function main(){
   // is still exercised in unit tests for old-player compatibility.
   await action('jade-open-market').click();
   const market=page.locator('.arcade-sheet-overlay');
+  assert.equal(await market.locator('.jade-market-stop').count(),5,
+   'All five districts appear in one swipeable navigation rail');
+  assert.equal(await market.locator('.jade-market-card').count(),1,
+   'Only the chosen stall is rendered, never a long stacked market');
   assert.equal(await market.locator('.jade-stall-stone').count(),3,
    'C4.18 the market has three tangible rough stones on its playable stall');
   await market.locator('.jade-stall-stone').nth(1).click();

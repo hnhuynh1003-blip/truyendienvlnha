@@ -1,0 +1,201 @@
+/* C4.19 — Playable lower HUDs and a horizontally navigable jade bazaar. */
+#personal-arcade-v1 .arcade-world-neon,
+#personal-arcade-v1 .arcade-world-mine{display:flex;flex-direction:column;min-height:100%}
+#personal-arcade-v1 .arcade-world-neon>.arcade-stage,
+#personal-arcade-v1 .arcade-world-mine>.arcade-stage{flex:none}
+#personal-arcade-v1 .arcade-world-neon>.arcade-control-panel,
+#personal-arcade-v1 .arcade-world-mine>.arcade-control-panel{
+ flex:1;display:flex;flex-direction:column;
+}
+
+/* The spare space under the game controls becomes an animated systems deck.
+   Counts and online/offline nodes come from actual game state; no loot is faked. */
+#personal-arcade-v1 .neon-network-deck,
+#personal-arcade-v1 .mine-haul-deck{
+ flex:1 1 auto;min-height:128px;position:relative;isolation:isolate;
+ display:flex;flex-direction:column;justify-content:space-between;
+ margin-top:12px;padding:10px 6px 8px;overflow:hidden;
+ border-top:1px solid #98d8ef4c;
+}
+#personal-arcade-v1 .neon-network-deck{
+ background:radial-gradient(ellipse at 50% 68%,#24428b55,transparent 65%),
+  repeating-linear-gradient(90deg,transparent 0 47px,#518dff0c 48px 49px),
+  linear-gradient(180deg,#10193500,#0f1732bd);
+}
+#personal-arcade-v1 .mine-haul-deck{
+ border-top-color:#f3bb7652;
+ background:radial-gradient(ellipse at 50% 67%,#9c69414f,transparent 70%),
+  repeating-linear-gradient(90deg,transparent 0 46px,#f5bc790a 47px 48px),
+  linear-gradient(180deg,#20152100,#1b1528b5);
+}
+#personal-arcade-v1 .arcade-deck-heading,
+#personal-arcade-v1 .arcade-deck-footer{
+ display:flex;align-items:center;justify-content:space-between;gap:5px;
+ position:relative;z-index:2;font:800 8px/1.35 ui-monospace,monospace;
+ letter-spacing:.07em;
+}
+#personal-arcade-v1 .arcade-deck-heading{color:#a3c3f8}
+#personal-arcade-v1 .arcade-deck-heading>b{color:#8feadf;font-size:8px}
+#personal-arcade-v1 .mine-haul-deck .arcade-deck-heading{color:#ffb881}
+#personal-arcade-v1 .mine-haul-deck .arcade-deck-heading>b{color:#ffe0a7}
+#personal-arcade-v1 .arcade-deck-light{
+ display:inline-block;width:5px;height:5px;margin-right:5px;
+ background:#83ffec;border-radius:50%;box-shadow:0 0 9px #7cfff3;
+ animation:arcade-deck-blink 1.7s ease-in-out infinite;
+}
+#personal-arcade-v1 .mine-haul-deck .arcade-deck-light{background:#ffc17d;box-shadow:0 0 9px #ffbe78}
+#personal-arcade-v1 .arcade-deck-footer{color:#a0b3cd;letter-spacing:0}
+#personal-arcade-v1 .mine-haul-deck .arcade-deck-footer{color:#d1ac8e}
+#personal-arcade-v1 .arcade-deck-footer button{
+ min-height:27px;padding:5px 9px;white-space:nowrap;cursor:pointer;
+ background:linear-gradient(110deg,#234773,#30496c);color:#d1fff5;
+ border:1px solid #72c9df78;border-radius:5px;
+ font:800 8px ui-monospace,monospace;letter-spacing:.04em;
+}
+#personal-arcade-v1 .mine-haul-deck .arcade-deck-footer button{
+ background:linear-gradient(110deg,#774333,#56405a);color:#ffe3b5;border-color:#e6a87490;
+}
+#personal-arcade-v1 .arcade-deck-footer button:focus-visible{
+ outline:2px solid #fff0b3;outline-offset:2px;
+}
+
+/* Neon: live packet routes from the server to real owned/occupied machines. */
+#personal-arcade-v1 .neon-network-scene{
+ flex:1;min-height:73px;position:relative;display:flex;flex-direction:column;
+ align-items:center;justify-content:center;gap:10px;padding:8px 4px;
+}
+#personal-arcade-v1 .neon-network-backplane{
+ position:absolute;inset:8px 2%;opacity:.67;pointer-events:none;
+ background:linear-gradient(90deg,transparent 0 9%,#58bdfb66 9% 9.5%,transparent 9.5% 90%,#58bdfb66 90% 90.5%,transparent 90.5%),
+  linear-gradient(0deg,transparent 0 23%,#6688ed55 23% 24%,transparent 24% 62%,#6688ed55 62% 63%,transparent 63%);
+ -webkit-mask-image:linear-gradient(90deg,transparent,#000 18% 82%,transparent);
+ mask-image:linear-gradient(90deg,transparent,#000 18% 82%,transparent);
+}
+#personal-arcade-v1 .neon-network-core{
+ position:relative;z-index:1;display:flex;gap:5px;align-items:center;
+ min-width:72px;padding:4px 10px;border:1px solid #91ecffb5;border-radius:5px;
+ background:linear-gradient(140deg,#255586,#172c58);color:#a6fffc;
+ box-shadow:0 0 14px #69dafe6c,inset 0 0 12px #8be5ff38;
+}
+#personal-arcade-v1 .neon-network-core>span{font-size:15px;line-height:1}
+#personal-arcade-v1 .neon-network-core>small{font:800 8px ui-monospace,monospace;letter-spacing:.08em}
+#personal-arcade-v1 .neon-network-nodes{
+ width:100%;display:flex;gap:5px;justify-content:center;align-items:center;
+}
+#personal-arcade-v1 .neon-network-node{
+ position:relative;z-index:1;flex:0 1 37px;height:37px;min-width:0;
+ display:flex;align-items:center;justify-content:center;
+ border:1px solid #608cc0a8;border-radius:5px;
+ background:linear-gradient(155deg,#273f78,#172243);
+ box-shadow:inset 0 0 11px #588af535,0 4px 6px #030715b8;
+ color:#88a5cd;font:900 11px ui-monospace,monospace;
+}
+#personal-arcade-v1 .neon-network-node i{
+ position:absolute;top:4px;right:4px;width:4px;height:4px;border-radius:50%;
+ background:#9ab9c8;
+}
+#personal-arcade-v1 .neon-network-node.is-busy{
+ border-color:#92efff;background:linear-gradient(145deg,#3276bb,#273d8e);
+ color:#e5ffff;box-shadow:inset 0 0 14px #7ddafa64,0 0 10px #5bdfff72;
+}
+#personal-arcade-v1 .neon-network-node.is-busy i{
+ background:#7fffe3;box-shadow:0 0 9px #7fffe3;animation:arcade-deck-blink 1s infinite;
+}
+#personal-arcade-v1 .neon-network-node.is-locked{opacity:.3;filter:grayscale(1)}
+#personal-arcade-v1 .is-paused .neon-network-core{filter:grayscale(1);box-shadow:none}
+
+/* Mine: a moving conveyor whose ores/counts are the player's actual loot. */
+#personal-arcade-v1 .mine-haul-scene{
+ position:relative;flex:1;min-height:78px;display:flex;gap:8px;
+ align-items:center;justify-content:center;padding:10px 5px;
+}
+#personal-arcade-v1 .mine-haul-belt{
+ position:absolute;left:1%;right:1%;height:58px;top:50%;transform:translateY(-50%);
+ border:2px solid #ad784f;border-radius:12px;
+ background:repeating-linear-gradient(108deg,#583c38 0 13px,#6e504a 14px 19px,#34282f 20px 29px);
+ background-size:65px 100%;
+ box-shadow:inset 0 5px 12px #000a,0 8px 0 -3px #34232c,0 10px 12px #0503098c;
+ animation:arcade-conveyor-move 1.9s linear infinite;
+}
+#personal-arcade-v1 .mine-haul-gem{
+ position:relative;z-index:1;width:43px;height:45px;min-width:0;flex:0 1 43px;
+ display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+ color:#d9faff;background:linear-gradient(135deg,#5681a3,#47536f 60%,#272e45);
+ clip-path:polygon(24% 0,76% 0,100% 30%,89% 90%,55% 100%,10% 85%,0 39%);
+ filter:drop-shadow(0 4px 4px #000a);text-shadow:0 1px 3px #000;
+ animation:arcade-ore-bob 1.8s ease-in-out infinite alternate;
+}
+#personal-arcade-v1 .mine-haul-gem:nth-child(3n){background:linear-gradient(135deg,#d09d66,#8f6376 58%,#4b3a53)}
+#personal-arcade-v1 .mine-haul-gem:nth-child(4n){background:linear-gradient(135deg,#a692d9,#5960a8 58%,#33385d)}
+#personal-arcade-v1 .mine-haul-gem:nth-child(5n){background:linear-gradient(135deg,#82dadd,#4b839a 60%,#2a4264)}
+#personal-arcade-v1 .mine-haul-gem>span{font-size:18px;line-height:1}
+#personal-arcade-v1 .mine-haul-gem>b{font:900 9px ui-monospace,monospace}
+#personal-arcade-v1 .mine-haul-gem.is-unknown{filter:grayscale(1);opacity:.54;background:#4b4149}
+#personal-arcade-v1 .mine-haul-deck.is-harvesting .mine-haul-gem{animation-duration:.4s}
+
+/* One visible market at a time, switched by a sticky, swipeable district rail. */
+#personal-arcade-v1 .jade-market-route{
+ position:sticky;top:0;z-index:9;margin:0;padding:7px 6px 8px;
+ border:1px solid #d6b47886;border-radius:9px;
+ background:linear-gradient(130deg,#1b4d40f2,#1b342eec);
+ box-shadow:0 7px 12px #061f19a6;backdrop-filter:blur(12px);
+}
+#personal-arcade-v1 .jade-market-route-heading{
+ display:flex;align-items:center;justify-content:space-between;gap:6px;
+ padding:0 3px 5px;color:#ffdb9d;font:800 8px ui-monospace,monospace;
+ letter-spacing:.09em;
+}
+#personal-arcade-v1 .jade-market-route-heading>span{color:#afdfbf;font-size:7px}
+#personal-arcade-v1 .jade-market-stop-list{
+ display:flex;gap:5px;overflow-x:auto;overflow-y:hidden;
+ scroll-snap-type:x proximity;scrollbar-width:thin;scrollbar-color:#d6b4788c transparent;
+ padding:2px 2px 4px;touch-action:pan-x;
+}
+#personal-arcade-v1 .jade-market-stop{
+ flex:0 0 102px;min-width:0;min-height:59px;padding:5px 4px;
+ display:grid;grid-template-columns:23px 1fr;grid-template-rows:22px 18px;
+ align-items:center;gap:1px 4px;text-align:left;scroll-snap-align:center;
+ color:#e3dac1;border:1px solid #789a806e;border-radius:7px;
+ background:linear-gradient(135deg,#33584b,#24433e);cursor:pointer;
+}
+#personal-arcade-v1 .jade-market-stop-icon{
+ grid-row:1/3;display:grid;place-items:center;font-size:18px;
+ color:#f0c789;text-shadow:0 0 8px #ffd08a75;
+}
+#personal-arcade-v1 .jade-market-stop strong{
+ font:800 9px ui-monospace,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+#personal-arcade-v1 .jade-market-stop small{
+ color:#c6c4af;font:700 7px ui-monospace,monospace;line-height:1.2;
+ overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+#personal-arcade-v1 .jade-market-stop.is-active{
+ border-color:#ffe09b;background:linear-gradient(135deg,#806047,#3f6952);
+ color:#fff5cf;box-shadow:0 0 12px #f6cf8255,inset 0 1px #fff2bc76;
+}
+#personal-arcade-v1 .jade-market-stop.is-locked{opacity:.51;filter:saturate(.55);cursor:not-allowed}
+#personal-arcade-v1 .jade-market-stop:focus-visible{outline:2px solid #fff0b8;outline-offset:2px}
+
+@keyframes arcade-deck-blink{50%{opacity:.38}}
+@keyframes arcade-conveyor-move{to{background-position:65px 0}}
+@keyframes arcade-ore-bob{to{transform:translateY(-4px)}}
+@media(max-width:360px){
+ #personal-arcade-v1 .neon-network-deck,
+ #personal-arcade-v1 .mine-haul-deck{min-height:106px;padding:8px 4px 6px}
+ #personal-arcade-v1 .neon-network-nodes{gap:3px}
+ #personal-arcade-v1 .neon-network-node{height:33px}
+ #personal-arcade-v1 .mine-haul-gem{height:39px}
+ #personal-arcade-v1 .jade-market-stop{flex-basis:94px}
+}
+@media(max-height:760px){
+ #personal-arcade-v1 .neon-network-deck,
+ #personal-arcade-v1 .mine-haul-deck{min-height:88px}
+ #personal-arcade-v1 .neon-network-scene,
+ #personal-arcade-v1 .mine-haul-scene{min-height:55px}
+}
+@media(prefers-reduced-motion:reduce){
+ #personal-arcade-v1 .arcade-deck-light,
+ #personal-arcade-v1 .neon-network-node.is-busy i,
+ #personal-arcade-v1 .mine-haul-belt,
+ #personal-arcade-v1 .mine-haul-gem{animation:none!important}
+}

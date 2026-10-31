@@ -223,6 +223,18 @@
       ].map(([name,met,reward],i)=>`<div class="arcade-contract"><span>${s.neon.contracts.includes(i)?'✓':met?'✦':'○'} ${name}</span>
        ${button(s.neon.contracts.includes(i)?'Đã nhận':met?'Nhận '+fmt(reward)+' Xu':'+'+fmt(reward)+' Xu',
         'neon-contract-'+i,'contract',!met||s.neon.contracts.includes(i))}</div>`).join('')}</div>
+      <div class="neon-network-deck" aria-label="Sơ đồ hoạt động ${n.stations} máy, ${n.running?service.guests:0} khách đang chơi">
+       <div class="arcade-deck-heading"><span><i class="arcade-deck-light"></i> LIVE / MACHINE GRID</span>
+        <b>${n.running?'● ĐANG VẬN HÀNH':'Ⅱ TẠM DỪNG'}</b></div>
+       <div class="neon-network-scene" aria-hidden="true"><div class="neon-network-backplane"></div>
+        <div class="neon-network-core"><span>◈</span><small>SERVER</small></div>
+        <div class="neon-network-nodes">${Array.from({length:capacity},(_,i)=>{
+         const occupied=n.running&&i<service.guests,online=i<n.stations;
+         return `<span class="neon-network-node ${!online?'is-locked':occupied?'is-busy':'is-idle'}"><i></i><b>${online?i+1:'×'}</b></span>`;
+        }).join('')}</div></div>
+       <div class="arcade-deck-footer"><span>${n.running?service.guests:0}/${n.stations} máy có khách · ${n.guestsServed} lượt</span>
+        <button type="button" data-arcade-drawer="neon-upgrades">NÂNG MÁY ↗</button></div>
+      </div>
     </div>
   </section>`;
  }
@@ -231,6 +243,8 @@
   const max=core.maxDurability(m);
   const all=Object.values(m.ores).reduce((sum,n)=>sum+n,0),hit=activeFeedback('mine',time),
    maxEnergy=core.maxCharge(m),found=Object.values(m.found).filter(Boolean).length;
+  const haul=Object.entries(m.ores).map(([ore,count])=>({ore,count,known:m.found[ore]>0}))
+   .sort((a,b)=>b.count-a.count||Number(b.known)-Number(a.known)).slice(0,5);
   return `<section class="arcade-world arcade-world-mine" aria-label="Địa Tầng 07">
     <header class="arcade-world-heading"><div><span class="arcade-eyebrow">02 / CLICKER</span>
       <h3>Địa Tầng 07</h3><p>Chạm vỉa quặng để khai thác. Mang khoáng sản đi bán.</p></div>
@@ -285,6 +299,16 @@
       </div>
       <div class="arcade-craft-row" data-arcade-panel="mine-tools"><div><b>✦ Chế máy dò · cấp ${m.scanner}/3</b><small>8 sắt + 3 tinh thạch · tăng cơ hội quặng hiếm</small></div>
        ${button(m.scanner>=3?'Đã tối đa':'⚒ Chế tạo','mine-scanner','tool',m.scanner>=3||m.ores.iron<8||m.ores.crystal<3)}</div>
+      <div class="mine-haul-deck ${hit?'is-harvesting':''}" aria-label="Băng chuyền khoáng sản, ${all} mẫu trong túi và ${found} loại đã phát hiện">
+       <div class="arcade-deck-heading"><span><i class="arcade-deck-light"></i> ORE / CONVEYOR</span><b>${all} MẪU TRONG TÚI</b></div>
+       <div class="mine-haul-scene" aria-label="Khoáng sản thu được">
+        <div class="mine-haul-belt" aria-hidden="true"></div>
+        ${haul.map(({ore,count,known})=>`<div class="mine-haul-gem ${known?'is-found':'is-unknown'}" title="${known?oreLabels[ore]:'Khoáng sản chưa tìm thấy'} · ${count}">
+         <span>${known?oreGlyphs[ore]:'?'}</span><b>${known?count:'—'}</b></div>`).join('')}
+       </div>
+       <div class="arcade-deck-footer"><span>✦ ${found}/10 KHOÁNG ĐÃ THẤY</span>
+        <button type="button" data-arcade-drawer="mine-bag">MỞ TÚI QUẶNG ↗</button></div>
+      </div>
     </div>
   </section>`;
  }
@@ -392,6 +416,8 @@
   const oldSheet=element.querySelector?.('.arcade-sheet-overlay');
   const previousSheetScroll=oldSheet?.dataset?.sheet===drawerOpen?
    oldSheet.querySelector?.('.arcade-sheet-body')?.scrollTop??0:0;
+  const previousMarketRailScroll=oldSheet?.dataset?.sheet===drawerOpen?
+   oldSheet.querySelector?.('.jade-market-stop-list')?.scrollLeft??0:0;
   const showToast=notice&&time<noticeUntil;
   element.innerHTML=`<div class="arcade-shell arcade-active-${tab}">
     <div class="arcade-scroll" aria-label="Nội dung trò chơi">
@@ -428,7 +454,12 @@
         <button type="button" class="arcade-sheet-close" data-arcade-drawer="close" aria-label="Đóng cửa sổ">✕</button></div></header>
       <div class="arcade-sheet-body">${sections.map(node=>node.outerHTML).join('')}</div></section>`;
     element.querySelector('.arcade-shell')?.appendChild(overlay);
-    const content=overlay.querySelector('.arcade-sheet-body');if(content)content.scrollTop=previousSheetScroll;
+    const content=overlay.querySelector('.arcade-sheet-body');
+    if(content){
+     content.scrollTop=previousSheetScroll;
+     const rail=content.querySelector('.jade-market-stop-list');
+     if(rail)rail.scrollLeft=previousMarketRailScroll;
+    }
    }
   }
   lastPaint=time;lastRenderedKey=activeKey;return true;
@@ -595,6 +626,24 @@
    }
    const control=event.target.closest('button');
    if(!control||control.disabled)return;
+   if(control.dataset.jadeMarketSwitch!=null){
+    const market=Number(control.dataset.jadeMarketSwitch);
+    if(root.DuduPersonalJadeUIV1?.chooseMarket?.(market,state?.jade)){
+     render();
+     const viewport=element.querySelector('.arcade-sheet-overlay .arcade-sheet-body');
+     const route=viewport?.querySelector('.jade-market-stop-list');
+     const selected=route?.querySelector('.jade-market-stop.is-active');
+     if(route&&selected){
+      route.scrollLeft=selected.offsetLeft-(route.clientWidth-selected.offsetWidth)/2;
+      selected.focus?.({preventScroll:true});
+     }
+     if(viewport){
+      const intro=viewport.querySelector('.jade-market-intro');
+      viewport.scrollTop=(intro?.offsetHeight||0)+8;
+     }
+    }
+    return;
+   }
    if(control.dataset.jadePreviewSlot!=null){
     const tray=control.closest('.jade-market-card')?.querySelector('.jade-market-tray');
     if(tray){
