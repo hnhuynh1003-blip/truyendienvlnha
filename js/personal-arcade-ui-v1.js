@@ -597,7 +597,14 @@
      root.DuduPersonalJadeUIV1?.rememberTray?.(Number(tray.dataset.marketStall),true);
      const slot=Number(control.dataset.jadePreviewSlot);
      const specimen=tray.querySelectorAll('.jade-market-sample')[slot];
-     specimen?.scrollIntoView?.({block:'center',inline:'nearest',behavior:'smooth'});
+     const viewport=tray.closest('.arcade-sheet-body');
+     if(specimen&&viewport){
+      // The sheet is rebuilt on each game tick: jump directly to the chosen
+      // sample so the user sees its stone and buy control on a small phone.
+      const target=specimen.getBoundingClientRect(),frame=viewport.getBoundingClientRect();
+      viewport.scrollTop+=Math.round((target.top+target.bottom-frame.top-frame.bottom)/2);
+      specimen.querySelector('.jade-sample-pick')?.focus?.({preventScroll:true});
+     }
     }
     return;
    }
