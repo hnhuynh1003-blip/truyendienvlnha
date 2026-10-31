@@ -141,6 +141,38 @@ try{
  await no('revision cannot be overwritten',chapterRef(owner).collection('revisions').doc('rev-000001').update({content:'Hacker'}));
  await no('revision cannot be deleted',chapterRef(owner).collection('revisions').doc('rev-000001').delete());
 
+ // C4.22 prototype: only archived owner books can enter the irreversible
+ // deletion state. All nested deletes require that state and the same admin UID.
+ const TO_DELETE='epub-c422-delete';
+ await env.withSecurityRulesDisabled(async ctx=>{
+  const db=ctx.firestore(),ref=db.collection('epub_stories_v49').doc(TO_DELETE);
+  await ref.set(book(TO_DELETE,'archived'));
+  await ref.collection('chapters').doc(CH).set(chapter());
+  await ref.collection('chapters').doc(CH).collection('revisions').doc('rev-000001').set(revision());
+ });
+ const goneRef=db=>root(db).doc(TO_DELETE);
+ const goneChapter=db=>goneRef(db).collection('chapters').doc(CH);
+ const goneRevision=db=>goneChapter(db).collection('revisions').doc('rev-000001');
+ await no('C4.22 guest cannot read archived book',goneRef(guest).get());
+ await no('C4.22 owner cannot delete archived parent before lock',goneRef(owner).delete());
+ await no('C4.22 owner cannot delete archived chapter',goneChapter(owner).delete());
+ await no('C4.22 owner cannot delete archived revision',goneRevision(owner).delete());
+ await no('C4.22 reader cannot mark book deleting',goneRef(reader).update({status:'deleting'}));
+ await no('C4.22 foreign admin cannot mark book deleting',goneRef(foreign).update({status:'deleting'}));
+ await no('C4.22 owner cannot skip archive',root(owner).doc(STORY).update({status:'deleting'}));
+ await no('C4.22 owner cannot change identity while locking',goneRef(owner).update({
+  status:'deleting',title:'Bị thay đổi',updatedAt:'2026-10-30T02:00:00Z'}));
+ await yes('C4.22 owner marks archived book deleting',goneRef(owner).update({
+  status:'deleting',updatedAt:'2026-10-30T02:00:00Z'}));
+ await no('C4.22 reader cannot view deleting book',goneRef(reader).get());
+ await no('C4.22 owner cannot restore deleting book',goneRef(owner).update({status:'published'}));
+ await no('C4.22 foreign admin cannot delete revision',goneRevision(foreign).delete());
+ await no('C4.22 foreign admin cannot delete chapter',goneChapter(foreign).delete());
+ await no('C4.22 foreign admin cannot delete parent',goneRef(foreign).delete());
+ await yes('C4.22 owner deletes revision',goneRevision(owner).delete());
+ await yes('C4.22 owner deletes chapter',goneChapter(owner).delete());
+ await yes('C4.22 owner deletes parent last',goneRef(owner).delete());
+
  await yes('user reads own verified wallet',reader.collection('economy_accounts_v52').doc('reader-a').get());
  await yes('user reads own item',reader.collection('economy_accounts_v52').doc('reader-a').collection('items').doc('item-a').get());
  await no('other user cannot read wallet',owner.collection('economy_accounts_v52').doc('reader-a').get());

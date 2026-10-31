@@ -293,16 +293,78 @@
  async function archivedBooks(db,auth){
   if(!db?.collection)throw Error('Firestore chưa sẵn sàng');
   const uid=await requireAdmin(auth);
-  const result=await db.collection(COLLECTION).where('ownerUid','==',uid).limit(MAX_BOOKS).get();
+  const docs=await readPages(db.collection(COLLECTION).where('ownerUid','==',uid));
   if(auth.currentUser?.uid!==uid)throw Error('Phiên tác giả đã thay đổi');
-  return result.docs.filter(s=>identifier(s.id)&&s.data()?.ownerUid===uid&&
-   s.data()?.status==='archived').map(s=>({id:s.id,
+  return docs.filter(s=>identifier(s.id)&&s.data()?.ownerUid===uid&&
+   ['archived','deleting'].includes(s.data()?.status)).map(s=>({id:s.id,
     title:String(s.data().title||'Truyện EPUB').slice(0,140),
     author:String(s.data().author||'Tác giả').slice(0,140),
     chapterCount:Number(s.data().chapterCount)||0,
+    status:String(s.data().status),
     publicationState:s.data().publicationState==='Hoàn thành'?'Hoàn thành':'Đang ra'}));
+ }
+ // C4.22: irreversible owner-only cleanup of a previously archived EPUB.
+ // Firestore does not cascade deletes to subcollections. The `deleting` state
+ // keeps an interrupted purge private and resumable until the parent is last.
+ async function purgeArchived(bookId,{db,auth,confirmed=false,onProgress=()=>{}}={}){
+  if(!confirmed||!identifier(bookId)||!db?.collection||!db?.batch)
+   throw Error('Xóa vĩnh viễn cần xác nhận riêng và Firestore hợp lệ');
+  const uid=await requireAdmin(auth);
+  const ensureSession=()=>{
+   if(auth.currentUser?.uid!==uid)throw Error('Phiên tác giả đã thay đổi; dừng xóa');
+  };
+  const ref=db.collection(COLLECTION).doc(bookId);
+  const snapshot=await ref.get();
+  if(!snapshot.exists)throw Error('Không tìm thấy truyện; vui lòng tải lại');
+  const current=snapshot.data();
+  if(current.ownerUid!==uid||!['archived','deleting'].includes(current.status))
+   throw Error('Chỉ xóa vĩnh viễn EPUB đã gỡ của chính tác giả');
+  ensureSession();
+  if(current.status==='archived'){
+   await ref.update({status:'deleting',updatedAt:now()});
+   onProgress({phase:'locked',chapters:0,revisions:0});
+  }
+  const chapters=ref.collection('chapters');
+  let removedChapters=0,removedRevisions=0;
+  // Each list is explicitly bounded. Revision lists require limit <= 50.
+  while(true){
+   ensureSession();
+   const page=await chapters.limit(40).get();
+   if(!page.docs.length)break;
+   for(const chapter of page.docs){
+    const chapterRef=chapter.ref||chapters.doc(chapter.id);
+    const revisions=chapterRef.collection('revisions');
+    while(true){
+     ensureSession();
+     const history=await revisions.limit(40).get();
+     if(!history.docs.length)break;
+     const batch=db.batch();
+     for(const revision of history.docs)batch.delete(revision.ref||revisions.doc(revision.id));
+     ensureSession();
+     await batch.commit();
+     removedRevisions+=history.docs.length;
+     onProgress({phase:'revisions',chapters:removedChapters,revisions:removedRevisions});
+    }
+   }
+   const batch=db.batch();
+   for(const chapter of page.docs)batch.delete(chapter.ref||chapters.doc(chapter.id));
+   ensureSession();
+   await batch.commit();
+   removedChapters+=page.docs.length;
+   onProgress({phase:'chapters',chapters:removedChapters,revisions:removedRevisions});
+  }
+  ensureSession();
+  const leftover=await chapters.limit(1).get();
+  if(leftover.docs.length)throw Error('Còn chương chưa xóa; hãy tiếp tục dọn dở');
+  const last=await ref.get();
+  if(!last.exists||last.data().ownerUid!==uid||last.data().status!=='deleting')
+   throw Error('Trạng thái truyện đã thay đổi; không xóa thông tin gốc');
+  ensureSession();
+  await ref.delete();
+  onProgress({phase:'done',chapters:removedChapters,revisions:removedRevisions});
+  return {id:bookId,chapters:removedChapters,revisions:removedRevisions,deleted:true};
  }
  return Object.freeze({COLLECTION,MAX_CHAPTER_BYTES,manifest,fingerprint,validCover,requireAdmin,
   importDraft,publishDraft,publicBooks,ownedBooks,readChapter,
-  updatePublishedMetadata,setArchived,archivedBooks});
+  updatePublishedMetadata,setArchived,archivedBooks,purgeArchived});
 });

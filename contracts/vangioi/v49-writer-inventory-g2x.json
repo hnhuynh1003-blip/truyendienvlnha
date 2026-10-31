@@ -7,7 +7,7 @@
       "path": "js/epub-production-v49.js",
       "kind": "browser-client-legacy-publish",
       "risk": "client-publish-fails-under-g2s-candidate-not-live",
-      "sha256": "60086130b3d2e297f6fc06ce3312bc7263ad2868b2517693c5a95693ea6cfb29"
+      "sha256": "4dfc42ceb4b8a99c6f63920e6064e7c7e1ef52a19fa6a3fb3ac30ca9a26969a2"
     },
     {
       "path": "js/epub-chapter-editor-l2d3.js",

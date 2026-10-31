@@ -2,6 +2,8 @@
 // Database: (default). NOT DEPLOYED. Export current live Rules before replacing.
 // Owner-provided live Rules: 30/10/2026. This proposal maintains public reading
 // of the common library and published EPUB, while allowing audited EPUB edits.
+// C4.22 prototype: owner-only, archive-first permanent EPUB cleanup, with a
+// retryable `deleting` state. Review against the LIVE Rules before deploying.
 // No paid-entitlement or VERIFIED server-currency grant is authorized here.
 // The experimental Arcade -> real Xu bridge stays OFF and its receipts DENIED.
 //
@@ -18,6 +20,7 @@
 //     publicationState,status,ownerUid,chapterCount,chapterIndex,createdAt,
 //     updatedAt,sourceName,importSchema,importFingerprint,coverImage,
 //     publishedAt?}; only owner with Firebase admin claim can write.
+//     status `deleting`: irreversible, owner-only cleanup in progress.
 //   .../chapters/{chapterId}: {id,order,title,content,wordCount,
 //     editVersion?,editedAt?,lastRevisionId?}; importing creates, guarded edits.
 //   .../chapters/{chapterId}/revisions/{revId}: immutable backup of previous
@@ -66,6 +69,11 @@ service cloud.firestore {
     function editableBook(storyId) {
       return ownerOfBook(storyId)
         && get(bookPath(storyId)).data.status in ['published', 'archived'];
+    }
+
+    function deletingOwnedBook(storyId) {
+      return ownerOfBook(storyId)
+        && get(bookPath(storyId)).data.status == 'deleting';
     }
 
     // Author-controlled legacy library. Preserve existing public-reader UX.
@@ -230,7 +238,7 @@ service cloud.firestore {
         && data.get('genre', '') is string && data.get('genre', '').size() <= 220
         && data.get('desc', '') is string && data.get('desc', '').size() <= 3000
         && data.get('publicationState', 'Đang ra') in ['Đang ra','Hoàn thành']
-        && data.status in ['importing','draft','published','archived']
+        && data.status in ['importing','draft','published','archived','deleting']
         && data.ownerUid is string && data.ownerUid.size() > 0
         && data.ownerUid.size() <= 128
         && data.chapterCount is int && data.chapterCount >= 1
@@ -286,6 +294,10 @@ service cloud.firestore {
           (before.status == 'published' && after.status == 'archived'
             || before.status == 'archived' && after.status == 'published')
           && after.diff(before).affectedKeys().hasOnly(['status','updatedAt'])
+        ) || (
+          // C4.22: explicit, irreversible phase before deleting nested data.
+          before.status == 'archived' && after.status == 'deleting'
+          && after.diff(before).affectedKeys().hasOnly(['status','updatedAt'])
         );
     }
 
@@ -307,7 +319,10 @@ service cloud.firestore {
       allow update: if admin() && resource.data.ownerUid == request.auth.uid
         && validBookUpdate(resource.data, request.resource.data)
         && validBookTransition(resource.data, request.resource.data);
-      allow delete: if false;
+      // Deleting a parent does NOT implicitly delete child subcollections.
+      // The owner-only client removes revisions and chapters first.
+      allow delete: if admin() && resource.data.ownerUid == request.auth.uid
+        && resource.data.status == 'deleting';
 
       function validChapter(data, chapterId) {
         return data is map
@@ -402,7 +417,7 @@ service cloud.firestore {
           && validChapter(request.resource.data, chapterId);
         allow update: if editableBook(storyId)
           && validChapterEdit(resource.data, request.resource.data, chapterId);
-        allow delete: if false;
+        allow delete: if deletingOwnedBook(storyId);
 
         match /revisions/{revId} {
           allow get: if ownerOfBook(storyId);
@@ -410,7 +425,8 @@ service cloud.firestore {
             && request.query.limit != null && request.query.limit <= 50;
           allow create: if editableBook(storyId)
             && validRevisionCreate(request.resource.data, revId, chapterId);
-          allow update, delete: if false;
+          allow update: if false;
+          allow delete: if deletingOwnedBook(storyId);
         }
       }
     }

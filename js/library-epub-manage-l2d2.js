@@ -1,6 +1,6 @@
-/* L2D.2: bounded owner-only EPUB metadata editor and reversible unlisting.
- * Intentionally OFF until the reviewed Firestore Rules are deployed and
- * verified. No alternate local-only saves, chapter changes or hard deletes.
+/* L2D.2/C4.22: owner EPUB metadata, reversible unlisting and a separate,
+ * archive-first, confirmed permanent deletion with retry after interruption.
+ * Firestore Rules remain the authority; never delete on view/close/unlist.
  */
 (function(root,factory){
  const api=factory(root);
@@ -125,12 +125,16 @@
      const copy=root.document.createElement('div');
      const title=root.document.createElement('strong');title.textContent=book.title;
      const meta=root.document.createElement('small');
-     meta.textContent=book.chapterCount+' chương · '+book.publicationState;
+     meta.textContent=book.chapterCount+' chương · '+book.publicationState+
+      (book.status==='deleting'?' · Đang xóa dở':'');
      copy.append(title,meta);
+     const controls=root.document.createElement('div');
+     controls.className='epub-archive-controls';
      const restore=root.document.createElement('button');
      restore.type='button';restore.className='btn';restore.textContent='Khôi phục';
+     restore.hidden=book.status==='deleting';
      restore.addEventListener('click',async()=>{
-      if(!available()||busy)return;
+      if(!available()||busy||book.status!=='archived')return;
       busy=true;restore.disabled=true;
       notice('epub-archive-feedback','Đang khôi phục '+book.title+'…');
       try{
@@ -142,7 +146,50 @@
        notice('epub-archive-feedback',String(error?.message||'Không thể khôi phục'),true);
       }finally{busy=false;restore.disabled=false;}
      });
-     item.append(copy,restore);host.append(item);
+     const destroy=root.document.createElement('button');
+     destroy.type='button';destroy.className='btn epub-archive-delete';
+     destroy.textContent=book.status==='deleting'?'Tiếp tục xóa dở':'Xóa vĩnh viễn';
+     destroy.addEventListener('click',async()=>{
+      if(!available()||busy||!['archived','deleting'].includes(book.status))return;
+      const typed=root.prompt('XÓA VĨNH VIỄN sẽ xóa truyện cùng tất cả chương và lịch sử sửa, KHÔNG THỂ KHÔI PHỤC.\n'+
+       'Hãy nhập ĐÚNG tên tác phẩm để tiếp tục:\n'+book.title);
+      if(typed!==book.title){
+       if(typed!==null)notice('epub-archive-feedback','Tên xác nhận chưa đúng, chưa xóa gì.',true);
+       return;
+      }
+      if(!root.confirm('Xác nhận lần cuối: xóa vĩnh viễn "'+book.title+'" và '+
+       book.chapterCount+' chương khỏi Firebase?'))return;
+      busy=true;restore.disabled=true;destroy.disabled=true;
+      notice('epub-archive-feedback','Đang xóa an toàn "'+book.title+'"…');
+      try{
+       const outcome=await cloudApi.purgeArchived(book.id,{
+        ...options(),confirmed:true,
+        onProgress:progress=>notice('epub-archive-feedback',
+         'Đang dọn "'+book.title+'": '+progress.chapters+' chương, '+
+         progress.revisions+' bản sửa đã xóa. Đừng đóng trang.')
+       });
+       await refresh();
+       item.remove();
+       notice('epub-archive-feedback','Đã xóa vĩnh viễn "'+book.title+'" ('+
+        outcome.chapters+' chương, '+outcome.revisions+' bản sửa).');
+      }catch(error){
+       notice('epub-archive-feedback',error?.code==='permission-denied'?
+        'Firebase chưa cấp quyền xóa EPUB. Cần kiểm tra và triển khai Rules C4.22 đã được duyệt trước khi sử dụng.':
+        'Chưa xóa hoàn tất: '+String(error?.message||'Lỗi kết nối')+
+        '. Nếu đã bắt đầu, hãy dùng nút Tiếp tục xóa dở.',true);
+       try{
+        const latest=await cloudApi.archivedBooks(db(),auth());
+        const retained=latest.find(value=>value.id===book.id);
+        if(retained?.status==='deleting'){
+         book.status='deleting';restore.hidden=true;
+         destroy.textContent='Tiếp tục xóa dở';
+         meta.textContent=book.chapterCount+' chương · Đang xóa dở';
+        }
+       }catch(_){/* A failed status refresh must not hide the original error. */}
+      }finally{busy=false;restore.disabled=false;destroy.disabled=false;}
+     });
+     controls.append(restore,destroy);
+     item.append(copy,controls);host.append(item);
     }
     return true;
    }catch(error){

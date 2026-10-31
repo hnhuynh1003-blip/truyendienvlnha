@@ -153,7 +153,7 @@ test('L2D.2 editor and archive UI bind only to real owner-scoped API operations'
  const mockApi={
   updatePublishedMetadata:async(id,options)=>{calls.push(['edit',id,options.metadata]);return {changed:true};},
   setArchived:async(id,archived)=>{calls.push(['archive',id,archived]);return {status:archived?'archived':'published'};},
-  archivedBooks:async()=>[{id:'epub-owned',title:'Đã gỡ',chapterCount:90,publicationState:'Hoàn thành'}]
+  archivedBooks:async()=>[{id:'epub-owned',title:'Đã gỡ',chapterCount:90,publicationState:'Hoàn thành',status:'archived'}]
  };
  const manager=window.DuduLibraryEpubManageL2D2.create({enabled:true,cloudApi:mockApi,
   db:()=>({}),auth:()=>owner,canEdit:()=>true,uid:()=>owner.currentUser.uid,
@@ -175,7 +175,7 @@ test('L2D.2 editor and archive UI bind only to real owner-scoped API operations'
  assert.equal(await manager.showArchive(),true);
  const list=doc.getElementById('epub-archive-list');
  assert.equal(list.children.length,1);
- const restoreButton=list.children[0].children[1];
+ const restoreButton=list.children[0].children[1].children[0];
  await restoreButton.listeners.click();
  assert.deepEqual(calls[2],['archive','epub-owned',false]);
  assert.equal(list.children[0].removed,true);

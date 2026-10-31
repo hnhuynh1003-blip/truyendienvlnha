@@ -28,6 +28,10 @@
 .epub-archive-item strong,.epub-archive-item small {display:block}
 .epub-archive-item strong {font-size:13px;line-height:1.5}
 .epub-archive-item small {margin-top:3px;font-size:11px;color:#aab8c4}
+.epub-archive-controls {display:flex;gap:7px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end}
+.epub-archive-delete {border:1px solid #d97070!important;color:#ffd2d2!important;background:#4c242c!important}
+.epub-archive-delete:hover {background:#70303b!important}
+@media(max-width:460px){.epub-archive-item {align-items:stretch;flex-direction:column}.epub-archive-controls {justify-content:flex-start}}
 @media(max-width:600px) {
   .epub-manage-overlay .epub-manage-dialog {padding:17px;max-height:calc(100dvh - 100px)}
   .epub-manage-dialog h2 {font-size:19px}
