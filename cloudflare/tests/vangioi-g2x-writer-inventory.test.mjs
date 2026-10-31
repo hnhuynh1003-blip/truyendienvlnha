@@ -14,7 +14,7 @@ test('G2X clean baseline reports seven V49 writers and one Admin SDK source',()=
  assert.equal(result.ok,true);
  assert.equal(result.writerCount,7);
  assert.equal(result.adminSdkCount,1);
- assert.equal(result.pinnedCount,10);
+ assert.equal(result.pinnedCount,11);
  assert.deepEqual(result.problems,[]);
  assert.equal(result.productionEnforced,false);
  assert.equal(result.iamChanged,false);
@@ -33,6 +33,14 @@ test('G2X pins the legacy browser publication path and caller, separately',()=>{
  assert.ok(inventory.writerFiles.some(x=>x.path==='js/epub-production-v49.js'));
  assert.ok(inventory.watchFiles.some(x=>x.path==='js/epub-import-v48.js'));
  assert.ok(sources['js/epub-production-v49.js'].includes('async function publishDraft('));
+});
+test('G2X pins the C4.21 batch EPUB import and publication caller',()=>{
+ const path='js/epub-batch-import-c421.js';
+ assert.ok(inventory.watchFiles.some(x=>x.path===path));
+ assert.match(sources[path],/production\.importDraft\(/);
+ assert.match(sources[path],/production\.publishDraft\(/);
+ const changed={...sources,[path]:sources[path]+'\n// changed batch publisher\n'};
+ assert.ok(check(inventory,changed).problems.includes('pinned-source-drift:'+path));
 });
 test('G2X can distinguish the Firestore G1T reader from a write target',()=>{
  assert.ok(sources['cloudflare/src/vangioi-v49-firestore-reader.mjs']
