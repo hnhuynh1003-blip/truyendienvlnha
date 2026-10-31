@@ -14,16 +14,21 @@ test('C4.4 joins the phone as one Arcade app with four named games',()=>{
  assert.match(html,/personal-jade-core-v1\.js\?v=c414-1/);
  assert.match(html,/personal-jade-ui-v1\.js\?v=c414-1/);
  assert.match(html,/personal-arcade-core-v1\.js\?v=c49-1/);
- assert.match(html,/personal-arcade-ui-v1\.js\?v=c414-1/);
+ assert.match(html,/personal-arcade-ui-v1\.js\?v=c417-1/);
  assert.match(html,/personal-arcade-v1\.css\?v=c414-1/);
+ assert.match(html,/arcade-immersive-c417\.css\?v=c417-1/);
  assert.match(html,/id="arcade-header-wallet-v1"/);
  assert.match(html,/ARCADE \/\/ 04/);
  const ui=src('js/personal-arcade-ui-v1.js');
  for(const name of ['Trạm Neon','Địa Tầng 07','Vườn Sương','Ngọc Phường'])
   assert.match(ui,new RegExp(name));
  const styles=src('css/personal-arcade-v1.css');
- assert.match(styles,/\.arcade-world-heading\{display:none!important\}/,
-  'Only the bottom dock names each game; scene titles must not cover the art');
+ const skin=src('css/arcade-immersive-c417.css');
+ assert.match(skin,/\.arcade-world-heading\{\s*display:flex!important/,
+  'All four game titleplates must be visible above the playable scene');
+ for(const theme of ['neon','mine','garden','jade'])
+  assert.match(skin,new RegExp('\\.arcade-world-'+theme+' \\.arcade-world-heading'),
+   'Each game needs a distinctive titleplate');
  assert.match(styles,/\.arcade-tab\{min-width:0;min-height:34px/,
   'Four game tabs must keep a compact mobile height');
  assert.ok(ui.indexOf('class="neon-stage-actions"')>ui.indexOf('class="arcade-stage neon-stage'),

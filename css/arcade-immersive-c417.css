@@ -1,0 +1,519 @@
+/* C4.17 — Arcade game worlds. Presentation only: no currency or game rules. */
+#phone-app-arcade:has(.arcade-shell){background:#080d1d;color:#f9f7ff}
+#phone-app-arcade:has(.arcade-active-neon){background:#090b20}
+#phone-app-arcade:has(.arcade-active-mine){background:#130d1d}
+#phone-app-arcade:has(.arcade-active-garden){background:#101329}
+#phone-app-arcade:has(.arcade-active-jade){background:#091913}
+#personal-arcade-v1 .arcade-shell{
+ --game-accent:#67f9ef;--game-accent-soft:#73b8ff;--game-gold:#ffda87;
+ --game-ink:#090f27;--game-panel:#11172e;--game-line:#57d6ee45;
+ background:var(--game-ink);border-radius:13px 13px 0 0;
+}
+#personal-arcade-v1 .arcade-active-mine{
+ --game-accent:#ffc778;--game-accent-soft:#d79aff;--game-gold:#fff3ac;
+ --game-ink:#140e20;--game-panel:#24172b;--game-line:#e5ab784d;
+}
+#personal-arcade-v1 .arcade-active-garden{
+ --game-accent:#a5ffe5;--game-accent-soft:#eeb4ff;--game-gold:#ffe6a5;
+ --game-ink:#13152e;--game-panel:#182442;--game-line:#b0a9fa55;
+}
+#personal-arcade-v1 .arcade-active-jade{
+ --game-accent:#a0ffcb;--game-accent-soft:#edc47b;--game-gold:#ffe6a6;
+ --game-ink:#0b1d19;--game-panel:#142c27;--game-line:#9bc78663;
+}
+#personal-arcade-v1 .arcade-scroll{
+ padding:0 0 8px;scrollbar-color:var(--game-line) transparent;
+ background:var(--game-ink);
+}
+#personal-arcade-v1 .arcade-world{
+ border:0;border-radius:0;background:var(--game-ink);overflow:hidden;
+}
+/* A game titleplate, with the stage beginning immediately beneath it. */
+#personal-arcade-v1 .arcade-world-heading{
+ display:flex!important;position:relative;z-index:2;isolation:isolate;
+ align-items:center;justify-content:space-between;gap:6px;min-height:79px;
+ padding:11px 14px 10px 17px;overflow:hidden;
+ border-bottom:1px solid var(--game-line);
+ background:linear-gradient(105deg,#0e1631,#1d1740 58%,#0b2140);
+}
+#personal-arcade-v1 .arcade-world-heading::before{
+ content:'';position:absolute;left:0;top:12px;bottom:12px;width:3px;z-index:-1;
+ border-radius:0 5px 5px 0;background:var(--game-accent);
+ box-shadow:0 0 17px var(--game-accent);
+}
+#personal-arcade-v1 .arcade-world-heading::after{
+ content:'';position:absolute;right:-33px;top:-66px;width:183px;height:183px;
+ border:1px solid var(--game-line);border-radius:50%;pointer-events:none;z-index:-1;
+ box-shadow:0 0 0 22px #ffffff05,0 0 0 48px #ffffff03,
+ inset 0 0 60px #ffffff05;
+}
+#personal-arcade-v1 .arcade-world-heading>div{min-width:0;position:relative;z-index:1}
+#personal-arcade-v1 .arcade-world-heading .arcade-eyebrow{
+ display:inline-block;font:900 8px/1.5 ui-monospace,monospace;
+ letter-spacing:.22em;color:var(--game-accent);
+}
+#personal-arcade-v1 .arcade-world-heading h3{
+ font:900 clamp(20px,6.2vw,27px)/1.05 system-ui,sans-serif;
+ letter-spacing:-.045em;color:#fffefa;margin:2px 0 2px;
+ text-shadow:0 2px 18px #0009,0 0 22px var(--game-line);
+}
+#personal-arcade-v1 .arcade-world-heading p{
+ display:block;font:600 9px/1.45 system-ui,sans-serif;margin:4px 0 0;
+ color:#d1d8f0;max-width:228px;
+}
+#personal-arcade-v1 .arcade-world-live{
+ display:grid;place-items:center;flex-shrink:0;position:relative;
+ min-width:55px;max-width:91px;min-height:29px;padding:5px 7px;
+ border:1px solid var(--game-line);border-radius:6px;
+ background:linear-gradient(130deg,#ffffff18,#ffffff05);
+ color:var(--game-gold);box-shadow:inset 0 1px #ffffff2b,0 5px 13px #03071360;
+ white-space:normal;font:900 8px/1.35 ui-monospace,monospace;text-align:center;
+}
+#personal-arcade-v1 .arcade-stage{
+ position:relative;border-bottom:1px solid var(--game-line);
+ box-shadow:inset 0 7px 16px #05041359,inset 0 -6px 16px #0504138c;
+}
+#personal-arcade-v1 .arcade-stage::selection{background:var(--game-accent)}
+/* Theme-specific mastheads, like four separate game cartridges. */
+#personal-arcade-v1 .arcade-world-neon .arcade-world-heading{
+ background:radial-gradient(circle at 75% 0,#7134c76b,transparent 53%),
+ linear-gradient(105deg,#091c39,#14103a 70%,#261050);
+}
+#personal-arcade-v1 .arcade-world-neon .arcade-world-heading h3{
+ background:linear-gradient(#ffffff 12%,#94ffff 52%,#e1c0ff 94%);
+ color:transparent;background-clip:text;
+}
+#personal-arcade-v1 .arcade-world-mine .arcade-world-heading{
+ background:radial-gradient(circle at 90% 70%,#ffac5142,transparent 51%),
+ linear-gradient(105deg,#271327,#342039 60%,#21172f);
+}
+#personal-arcade-v1 .arcade-world-mine .arcade-world-heading h3{
+ color:#ffde9e;text-shadow:0 0 18px #fd9a3866,0 2px #60341d;
+}
+#personal-arcade-v1 .arcade-world-garden .arcade-world-heading{
+ background:radial-gradient(circle at 80% -35%,#f7b4ed5e,transparent 56%),
+ linear-gradient(100deg,#1a2651,#32305b 55%,#15545a);
+}
+#personal-arcade-v1 .arcade-world-garden .arcade-world-heading h3{
+ color:#fff3ff;text-shadow:0 0 22px #efb2f38a;
+}
+#personal-arcade-v1 .arcade-world-jade .arcade-world-heading{
+ background:radial-gradient(circle at 90% -15%,#efbf6657,transparent 55%),
+ linear-gradient(102deg,#0b3429,#20453b 60%,#233a2d);
+}
+#personal-arcade-v1 .arcade-world-jade .arcade-world-heading h3{
+ font-family:Georgia,serif;color:#ffe9b4;letter-spacing:-.04em;
+ text-shadow:0 0 24px #e2c27869;
+}
+/* The console grows out of the game scene; no nested generic grey cards. */
+#personal-arcade-v1 .arcade-control-panel{
+ position:relative;padding:13px 12px 13px;border:0;
+ background:radial-gradient(ellipse at 50% -30%,var(--game-line),transparent 68%),
+ linear-gradient(160deg,var(--game-panel),var(--game-ink));
+}
+#personal-arcade-v1 .arcade-control-panel::before{
+ content:'';position:absolute;top:0;left:10%;right:10%;height:1px;pointer-events:none;
+ background:linear-gradient(90deg,transparent,var(--game-accent),transparent);
+ box-shadow:0 0 11px var(--game-accent);
+}
+#personal-arcade-v1 .arcade-world-hint{color:#b7c3da}
+#personal-arcade-v1 .arcade-button{
+ border-radius:10px;letter-spacing:.01em;
+ transition:transform .13s ease,filter .13s ease,box-shadow .13s ease;
+ box-shadow:inset 0 1px 0 #ffffff2e,0 4px 0 #060a17a3,0 7px 14px #0004;
+}
+#personal-arcade-v1 .arcade-button:not(:disabled):active{
+ transform:translateY(3px) scale(.985);box-shadow:inset 0 2px 6px #0005,0 1px 0 #040713;
+}
+#personal-arcade-v1 .arcade-button.power:not(:disabled),
+#personal-arcade-v1 .arcade-button.gold:not(:disabled){
+ font-weight:900;letter-spacing:.035em;
+ box-shadow:inset 0 1px 0 #fff9,0 4px 0 #573322,0 8px 18px #0007;
+}
+#personal-arcade-v1 .arcade-button:disabled{box-shadow:inset 0 1px 0 #ffffff11;opacity:.51}
+#personal-arcade-v1 .arcade-quick-drawers{
+ gap:9px;margin-top:13px;padding:11px 0 0;
+ border-top:1px solid var(--game-line);
+}
+#personal-arcade-v1 .arcade-drawer-trigger{
+ position:relative;min-width:0;min-height:66px;gap:5px;padding:8px 3px;
+ color:#fbf8ff;border:1px solid var(--game-line);border-radius:12px;
+ background:radial-gradient(ellipse at 50% -5%,#ffffff16,transparent 70%),#ffffff07;
+ box-shadow:inset 0 1px #ffffff1a,0 6px 16px #0005;
+ font-size:10px;font-weight:800;
+}
+#personal-arcade-v1 .arcade-drawer-trigger>span{
+ display:grid;place-items:center;width:30px;height:30px;border-radius:50%;
+ font:900 20px/1 Georgia,serif;color:var(--game-accent);
+ border:1px solid var(--game-line);
+ background:radial-gradient(circle at 35% 25%,#ffffff25,#00000020 75%);
+ text-shadow:0 0 12px var(--game-accent);
+ box-shadow:0 0 15px var(--game-line),inset 0 1px #ffffff24;
+}
+#personal-arcade-v1 .arcade-drawer-trigger:active{transform:scale(.96)}
+#personal-arcade-v1 .arcade-quick-drawers-quad .arcade-drawer-trigger{
+ min-height:64px;padding:7px 1px;font-size:8px;
+}
+#personal-arcade-v1 .arcade-quick-drawers-quad .arcade-drawer-trigger>span{width:27px;height:27px;font-size:17px}
+/* A floating four-world game dock, rather than a row of web-app tabs. */
+#personal-arcade-v1 .arcade-tabs{
+ z-index:8;flex:none;gap:5px;margin:0;padding:8px 7px max(7px,env(safe-area-inset-bottom));
+ border:0;border-top:1px solid #d9e4ff28;border-radius:0;
+ background:linear-gradient(180deg,#14182f 0%,#0b1022 100%);
+ box-shadow:0 -5px 22px #03040d96;
+}
+#personal-arcade-v1 .arcade-tab{
+ position:relative;min-width:0;min-height:56px;padding:5px 1px 4px;
+ gap:4px;border:1px solid transparent;border-radius:11px;
+ color:#9da6bd;background:transparent;font-size:8px;
+ transition:background .16s,color .16s,transform .16s;
+}
+#personal-arcade-v1 .arcade-tab-icon{
+ display:grid;place-items:center;width:30px;height:30px;border-radius:10px;
+ border:1px solid #ffffff18;font:900 20px/1 Georgia,serif;
+ background:linear-gradient(150deg,#364257,#171a2c);
+ box-shadow:inset 0 1px #ffffff22,0 3px 5px #0004;
+}
+#personal-arcade-v1 .arcade-tab[data-arcade-tab=neon] .arcade-tab-icon{color:#77fafa;background:linear-gradient(140deg,#104c70,#2d174a)}
+#personal-arcade-v1 .arcade-tab[data-arcade-tab=mine] .arcade-tab-icon{color:#ffd78a;background:linear-gradient(140deg,#764336,#2e2248)}
+#personal-arcade-v1 .arcade-tab[data-arcade-tab=garden] .arcade-tab-icon{color:#e5baff;background:linear-gradient(140deg,#65417c,#16736b)}
+#personal-arcade-v1 .arcade-tab[data-arcade-tab=jade] .arcade-tab-icon{color:#b5ffb3;background:linear-gradient(140deg,#275c4a,#66512a)}
+#personal-arcade-v1 .arcade-tab[aria-selected=true]{
+ color:#fff;background:radial-gradient(ellipse at 50% 0,var(--game-line),#ffffff08 90%);
+ border-color:var(--game-line);box-shadow:inset 0 1px #ffffff1d;
+}
+#personal-arcade-v1 .arcade-tab[aria-selected=true]::before{
+ content:'';position:absolute;top:0;left:24%;right:24%;height:2px;
+ background:var(--game-accent);box-shadow:0 0 12px var(--game-accent);
+}
+#personal-arcade-v1 .arcade-tab[aria-selected=true] .arcade-tab-icon{
+ color:#fff;transform:translateY(-2px) scale(1.06);
+ box-shadow:0 0 13px var(--game-line),inset 0 1px #ffffff55;
+}
+/* All drawers are game-style inventory screens, still using the same source panels. */
+#personal-arcade-v1 .arcade-sheet-overlay{
+ background:#030714d9;padding:6px;backdrop-filter:blur(8px);
+}
+#personal-arcade-v1 .arcade-sheet{
+ border:1px solid var(--game-line);border-radius:16px;
+ background:radial-gradient(ellipse at 50% 0,var(--game-line),transparent 45%),
+ linear-gradient(160deg,var(--game-panel),var(--game-ink));
+ box-shadow:0 24px 60px #000c,0 0 18px var(--game-line);
+}
+#personal-arcade-v1 .arcade-sheet-heading{
+ padding:12px 13px;border-bottom:1px solid var(--game-line);
+ background:linear-gradient(125deg,#ffffff12,transparent 78%);
+}
+#personal-arcade-v1 .arcade-sheet-heading small{color:var(--game-accent);letter-spacing:.2em}
+#personal-arcade-v1 .arcade-sheet-heading h3{color:#fff1d4}
+#personal-arcade-v1 .arcade-sheet-close,#personal-arcade-v1 .arcade-sheet-honor{
+ border:1px solid var(--game-line);background:#ffffff12;color:var(--game-gold);
+}
+#personal-arcade-v1 .arcade-sheet-body{padding:11px;scrollbar-color:var(--game-line) transparent}
+#personal-arcade-v1 .arcade-upgrade-card{
+ background:radial-gradient(circle at 0 0,var(--game-line),transparent 80%),
+ linear-gradient(145deg,#ffffff16,#ffffff04);
+ border-color:var(--game-line);box-shadow:inset 0 1px #ffffff1a;
+}
+#personal-arcade-v1 .arcade-upgrade-symbol{color:var(--game-accent);text-shadow:0 0 12px var(--game-line)}
+/* NEON — a saturated cyber club with an illuminated city and 3D machine bank. */
+#personal-arcade-v1 .neon-stage,
+#personal-arcade-v1 .neon-room-tier-2,
+#personal-arcade-v1 .neon-room-tier-3{
+ background:radial-gradient(ellipse at 47% 48%,#285aa4aa,transparent 55%),
+ radial-gradient(ellipse at 84% 8%,#ed3aff65,transparent 59%),
+ linear-gradient(155deg,#102551 0%,#171239 57%,#080f30 100%);
+}
+#personal-arcade-v1 .neon-room-tier-2{background-color:#18284b}
+#personal-arcade-v1 .neon-room-tier-3{background-color:#3c185b}
+#personal-arcade-v1 .neon-stage::before{
+ background:repeating-linear-gradient(90deg,transparent 0 35px,#84f9ff18 36px 37px),
+ repeating-linear-gradient(0deg,transparent 0 34px,#e779ff0c 35px 36px);
+ opacity:.75;mask-image:linear-gradient(#000,transparent 86%);
+}
+#personal-arcade-v1 .neon-stage::after{
+ content:'';position:absolute;inset:0;pointer-events:none;z-index:1;
+ background:radial-gradient(circle at 14% 35%,#60faffd9 0 1px,transparent 3px),
+ radial-gradient(circle at 87% 57%,#ffbaffd9 0 2px,transparent 4px),
+ radial-gradient(circle at 65% 20%,#a5a4ffcd 0 1px,transparent 3px);
+ filter:drop-shadow(0 0 5px #81dcff);
+}
+#personal-arcade-v1 .neon-light{opacity:.94;filter:blur(14px)}
+#personal-arcade-v1 .neon-light-one{background:linear-gradient(90deg,transparent,#20f5ff72,transparent)}
+#personal-arcade-v1 .neon-light-two{background:linear-gradient(90deg,transparent,#f852ff7d,transparent)}
+#personal-arcade-v1 .neon-wall-logo{
+ color:#cffeff;text-shadow:0 0 6px #37ffff,0 0 21px #12e4ff;
+ font-size:24px;letter-spacing:-.07em;
+}
+#personal-arcade-v1 .neon-wall-logo>span{color:#ff81e9;text-shadow:0 0 17px #f852ff}
+#personal-arcade-v1 .neon-wall-logo small{color:#a8dfff;letter-spacing:.3em}
+#personal-arcade-v1 .neon-floor{
+ background:repeating-linear-gradient(0deg,transparent 0 24px,#55dfff73 25px 26px),
+ repeating-linear-gradient(90deg,transparent 0 30px,#cc66ff6e 31px 32px),#0e1232;
+ box-shadow:0 -22px 40px #481a7160,0 0 44px #36b7e42e;
+}
+#personal-arcade-v1 .neon-server-stack{border-color:#d162ff99;box-shadow:0 0 22px #b542ff60}
+#personal-arcade-v1 .neon-monitor{border-color:#82dbff;box-shadow:0 0 0 2px #111631,0 0 29px #4bceff71}
+#personal-arcade-v1 .neon-monitor-glass{
+ background:radial-gradient(circle at 55% 20%,#2678b4,#14286a 68%);
+ box-shadow:inset 0 0 18px #37e7ffa1;color:#b8fff4;
+}
+#personal-arcade-v1 .neon-computer.is-occupied .neon-monitor{box-shadow:0 0 23px #63ffe4a1,0 0 5px #fff9}
+#personal-arcade-v1 .neon-stage-income{
+ width:178px;bottom:13px;left:12px;border:1px solid #6ae9ffe8;
+ background:linear-gradient(140deg,#111c49f0,#1e1645e8);
+ box-shadow:0 0 19px #2cf5ff58,inset 0 1px #ffffff22;
+}
+#personal-arcade-v1 .neon-stage-income b{color:#ffffff;text-shadow:0 0 12px #51e6ff}
+#personal-arcade-v1 .neon-income-track{height:5px;border-radius:9px;background:#3b376f}
+#personal-arcade-v1 .neon-income-track i{background:linear-gradient(90deg,#37fff0,#c465ff,#ffcf85)}
+#personal-arcade-v1 .neon-stage-actions .arcade-button.switch{
+ background:linear-gradient(135deg,#1f626f,#273f86);border-color:#70edee;color:#e9ffff;
+}
+#personal-arcade-v1 .neon-stage-actions .arcade-button.neon-boost-button{
+ background:linear-gradient(130deg,#a957ea,#5430a4);border-color:#f8b9ff;
+ color:#fff7ff;box-shadow:0 0 13px #a351fb70;
+}
+#personal-arcade-v1 .neon-service-stats>div{
+ padding:10px 7px;background:linear-gradient(150deg,#192a55,#161731);
+ border:1px solid #5b74ba70;border-top:2px solid #55e9f1;
+ box-shadow:inset 0 1px #ffffff18;
+}
+#personal-arcade-v1 .neon-service-stats>div:nth-child(2){border-top-color:#f7b8fc}
+#personal-arcade-v1 .neon-service-stats>div:nth-child(3){border-top-color:#ffce8b}
+#personal-arcade-v1 .neon-service-stats strong{color:#fff1de}
+#personal-arcade-v1 .neon-service-track{background:#232a56;height:7px;border-color:#6769a0}
+#personal-arcade-v1 .neon-service-track i{background:linear-gradient(90deg,#34eaff,#ba74ff,#fda8df)}
+#personal-arcade-v1 .neon-expansion,
+#personal-arcade-v1 .neon-upgrade,
+#personal-arcade-v1 .neon-facility-row{
+ background:linear-gradient(145deg,#25305a,#161a36);border-color:#6865aa80;
+}
+/* MINE — a volcanic cave with blue/amethyst veins and gold rim lighting. */
+#personal-arcade-v1 .mine-stage{
+ background:radial-gradient(ellipse at 50% 45%,#b06c46 0,#6d3e46 29%,#292240 64%,#111628 100%);
+}
+#personal-arcade-v1 .mine-stage.mine-zone-scene-1{
+ background:radial-gradient(ellipse at 50% 42%,#b58e58,#765047 37%,#25253e 77%,#171021);
+}
+#personal-arcade-v1 .mine-stage.mine-zone-scene-2{
+ background:radial-gradient(ellipse at 51% 40%,#8369d4,#493974 43%,#1a193c 81%);
+}
+#personal-arcade-v1 .mine-stage::before{
+ content:'';position:absolute;inset:0;pointer-events:none;z-index:1;
+ background:radial-gradient(circle at 11% 18%,#ffca8e 0 2px,transparent 4px),
+ radial-gradient(circle at 77% 24%,#c7b5ff 0 2px,transparent 4px),
+ radial-gradient(circle at 19% 72%,#8aefff 0 2px,transparent 4px),
+ radial-gradient(circle at 85% 76%,#ffdf88 0 1px,transparent 3px);
+ filter:drop-shadow(0 0 8px #ffb569);animation:arcade-dust 4s ease-in-out infinite alternate;
+}
+#personal-arcade-v1 .mine-stratum{background:#1a172f;border-color:#503044}
+#personal-arcade-v1 .mine-tunnel-arch{
+ border-color:#27152c;border-width:17px;border-radius:48% 48% 0 0;
+ box-shadow:inset 0 0 42px #0009,0 0 0 2px #a35d5345,0 0 34px #ed875d6c;
+}
+#personal-arcade-v1 .mine-cave-light{
+ background:conic-gradient(from 170deg at 50% 3%,transparent 0 21%,#ffcb7c54 37%,transparent 49%);
+}
+#personal-arcade-v1 .mine-crystal{
+ background:linear-gradient(120deg,#0b6388,#b6ffff 34%,#30a7ee 49%,#253b8d 72%,#d2ffff);
+ filter:drop-shadow(0 0 12px #67ecff);height:105px;
+}
+#personal-arcade-v1 .mine-crystal-right{
+ background:linear-gradient(130deg,#5037ac,#f2bcff 34%,#ad73e9 48%,#5d2b9e 75%);
+ filter:drop-shadow(0 0 14px #cf91ff);
+}
+#personal-arcade-v1 .mine-rock{
+ background:linear-gradient(135deg,#ffdf9f 0%,#c08368 19%,#715269 43%,#35334f 70%,#a67962 100%);
+ filter:drop-shadow(0 7px 3px #100c27);
+}
+#personal-arcade-v1 .mine-rock-shadow{background:#05050e;filter:blur(22px)}
+#personal-arcade-v1 .mine-rock i{filter:drop-shadow(0 0 13px #92ecff)}
+#personal-arcade-v1 .mine-ore-glow{
+ box-shadow:0 0 35px #ffd58a91,0 0 60px #7cc6ff55;
+ animation:arcade-ore-pulse 2.8s ease-in-out infinite alternate;
+}
+#personal-arcade-v1 .mine-tap-prompt{
+ top:-1px;border:1px solid #ffe49f;color:#fff0d3;
+ background:linear-gradient(115deg,#9a5838,#563461);
+ box-shadow:0 0 15px #ffbe7780,inset 0 1px #fff6;
+ text-shadow:0 1px 2px #261023;letter-spacing:.11em;
+}
+#personal-arcade-v1 .mine-bottom-hud{color:#ffeac7;text-shadow:0 1px 4px #000}
+#personal-arcade-v1 .mine-durability-circle{
+ border-color:transparent;border-radius:9px;
+ background:linear-gradient(#2a1d37,#211c37) padding-box,
+ conic-gradient(#ffdb88 var(--mine-durability),#674c67 0) border-box;
+ box-shadow:0 0 17px #ffb36a46;
+}
+#personal-arcade-v1 .mine-durability-circle b{color:#fff1b9}
+#personal-arcade-v1 .mine-energy b{color:#ffe1a0}
+#personal-arcade-v1 .mine-charge-track{height:10px;background:#201830;border:1px solid #ab7a8a}
+#personal-arcade-v1 .mine-charge-track i{
+ background:linear-gradient(90deg,#ee8074,#ffbb68,#fff4ac);
+ box-shadow:0 0 15px #ffd079bb;
+}
+#personal-arcade-v1 .arcade-world-mine .arcade-button.mine-burst{
+ background:linear-gradient(125deg,#e9a347,#ef7258,#a43c73);
+ border-color:#fff0a8;color:#2f1226;text-shadow:0 1px #fff6;
+ min-height:48px;font-size:11px;box-shadow:inset 0 1px #fff8,0 4px #6e3050,0 8px 18px #0008;
+}
+#personal-arcade-v1 .arcade-mine-sell .arcade-button{
+ background:linear-gradient(125deg,#423762,#62517f);border-color:#cca6df;
+ color:#fff2db;
+}
+/* GARDEN — twilight fantasy: moon glow, lavender hills and magical water. */
+#personal-arcade-v1 .garden-stage{
+ background:radial-gradient(circle at 78% 16%,#f5d1fa9c 0%,transparent 15%),
+ linear-gradient(180deg,#2e3278 0%,#735a9c 32%,#4a79a3 56%,#365e68 100%);
+}
+#personal-arcade-v1 .garden-stage::before{
+ content:'';position:absolute;inset:0;pointer-events:none;z-index:1;
+ background:radial-gradient(circle at 10% 12%,#fff 0 1px,transparent 2px),
+ radial-gradient(circle at 29% 19%,#e9e0ff 0 1px,transparent 2px),
+ radial-gradient(circle at 69% 26%,#fff6fc 0 1px,transparent 2px),
+ radial-gradient(circle at 93% 33%,#fff 0 1px,transparent 2px),
+ radial-gradient(circle at 52% 8%,#fff 0 1px,transparent 2px),
+ radial-gradient(circle at 39% 31%,#cffff9 0 1px,transparent 2px);
+ opacity:.9;
+}
+#personal-arcade-v1 .garden-mountains{
+ background:linear-gradient(155deg,transparent 40%,#6b729d 42% 69%,transparent 70%),
+ linear-gradient(21deg,transparent 40%,#9d86b5 43% 73%,transparent 74%);
+ opacity:.7;
+}
+#personal-arcade-v1 .garden-mist{background:#d9ecff9c;filter:blur(24px);opacity:.78}
+#personal-arcade-v1 .garden-cloud{background:#fff3f5aa;filter:blur(6px)}
+#personal-arcade-v1 .garden-moon{
+ width:47px;height:47px;right:14%;top:13px;opacity:1;
+ background:radial-gradient(circle at 30% 30%,#fff,#fff0c5 50%,#e1caf3);
+ box-shadow:0 0 18px 8px #ffebc78a,0 0 52px 17px #f5bffd66;
+}
+#personal-arcade-v1 .garden-grass{
+ background:radial-gradient(ellipse at center,#79ae9a,#306e73 58%,#24435b);
+ box-shadow:0 -12px 35px #b9eeaf5e;
+}
+#personal-arcade-v1 .garden-soil{
+ border-color:#bc826e;background:repeating-radial-gradient(ellipse,#543b57 0 7px,#744b5b 8px 17px);
+ box-shadow:0 7px 0 #473653;
+}
+#personal-arcade-v1 .garden-stem{background:#3c935e}
+#personal-arcade-v1 .garden-stem i{background:#92dd8d}
+#personal-arcade-v1 .garden-flower i{background:#fff1d3;box-shadow:0 0 7px #ffd6edb7}
+#personal-arcade-v1 .garden-flower::after{background:#ffcb6a}
+#personal-arcade-v1 .garden-plot-label{
+ text-shadow:0 1px 6px #171447,0 1px 3px #151830;
+}
+#personal-arcade-v1 .garden-plot-label em{
+ background:linear-gradient(115deg,#604981e8,#317f77ef);
+ border-color:#e5c8ff;box-shadow:0 0 9px #edc3ff54;color:#fff2cf;
+}
+#personal-arcade-v1 .garden-pond{
+ border-color:#6bdcc9;background:radial-gradient(ellipse at 46% 31%,#c7fff4,#53c8d5 48%,#355eac);
+ box-shadow:0 7px 0 #28556e,inset 0 0 20px #6cf5ff,0 0 22px #7ae8e390;
+}
+#personal-arcade-v1 .garden-shore-lantern{box-shadow:0 0 29px #ffdb96d4,0 4px 8px #232447}
+#personal-arcade-v1 .garden-firefly{background:#fff1ac;box-shadow:0 0 11px 5px #fff1aaba}
+#personal-arcade-v1 .garden-fishing-status{color:#ebd7ff;margin-bottom:7px}
+#personal-arcade-v1 .garden-fishing-controls .garden-cast-button:not(:disabled){
+ background:linear-gradient(110deg,#ffd38a,#fff4bd 44%,#f4ad70);
+ box-shadow:inset 0 1px #fff,0 4px #956c53,0 8px 20px #0006;
+}
+#personal-arcade-v1 .garden-fishing-controls .garden-pond-collect{
+ border-color:#9befff;background:linear-gradient(135deg,#3568a2,#345c7c);
+ color:#f3ffff;
+}
+#personal-arcade-v1 .garden-resources{gap:8px;padding:2px 0 7px}
+#personal-arcade-v1 .arcade-stat{
+ border-color:#af9fe19e;border-top:2px solid #bde5fe;
+ background:linear-gradient(145deg,#353966,#234860);
+ box-shadow:inset 0 1px #ffffff21;
+}
+#personal-arcade-v1 .arcade-stat>span{color:#d4c8ff}
+#personal-arcade-v1 .arcade-stat strong{color:#fff3c3}
+#personal-arcade-v1 .arcade-stat small{color:#bbdae0}
+/* JADE — emerald palace, gold lattice, and a spotlighted specimen. */
+#personal-arcade-v1 .jade-stage{
+ height:269px;
+ background:radial-gradient(ellipse at 50% 32%,#b9cb84b3,transparent 31%),
+ radial-gradient(ellipse at 53% 38%,#388d6f,#145244 48%,#092c2a 94%);
+}
+#personal-arcade-v1 .jade-stage::before{
+ background:repeating-linear-gradient(90deg,#f5d6921a 0 3px,transparent 3px 29px);
+ opacity:.9;
+}
+#personal-arcade-v1 .jade-stage::after{
+ content:'';position:absolute;inset:0;z-index:0;pointer-events:none;
+ background:conic-gradient(from 180deg at 50% 0,transparent 0 20%,#f9df9c36 35%,transparent 50%);
+}
+#personal-arcade-v1 .jade-hall-lattice{
+ border-color:#cba15e;background:repeating-linear-gradient(45deg,transparent 0 16px,#f9d49378 17px 19px,transparent 20px 35px),
+ repeating-linear-gradient(-45deg,transparent 0 16px,#e8b16f75 17px 19px,transparent 20px 35px);
+ opacity:.8;
+}
+#personal-arcade-v1 .jade-hall-seal{color:#ffe6a9;border-color:#e6c681;background:#276454a8;box-shadow:0 0 18px #ffd68b55}
+#personal-arcade-v1 .jade-lantern{box-shadow:0 0 28px #ffc575b3,0 0 43px #fac46f7d}
+#personal-arcade-v1 .jade-table-back{bottom:50px;background:linear-gradient(#d1a46b,#493130);border-color:#ffe2a1}
+#personal-arcade-v1 .jade-table-top{bottom:53px;background:linear-gradient(#dfad6d,#785238);border-color:#ffdfa3;box-shadow:0 0 17px #ffdd9052}
+#personal-arcade-v1 .jade-table-front{bottom:27px;background:linear-gradient(#815439,#392b2a);border-color:#d9a46b}
+#personal-arcade-v1 .jade-specimen{top:101px;filter:drop-shadow(0 0 14px #ffe0a34d) drop-shadow(0 13px 9px #051b1a)}
+#personal-arcade-v1 .jade-showcase-rough{top:131px}
+#personal-arcade-v1 .jade-stage-base{bottom:9px;color:#ffe7b5}
+#personal-arcade-v1 .jade-scan-target{
+ border:2px solid #fff0a9;background:#107f69df;color:#fff;
+ box-shadow:0 0 0 5px #8afbd54a,0 0 18px #9affd9c2;
+ animation:arcade-scan-pulse 2.8s ease-in-out infinite;
+}
+#personal-arcade-v1 .jade-scan-target.is-scanned{animation:none;box-shadow:0 0 0 3px #8bb59b2a}
+#personal-arcade-v1 .jade-welcome{
+ border-color:#d0ad63;background:radial-gradient(ellipse at 50% 0,#60885d5b,transparent 72%),
+ linear-gradient(145deg,#254c3f,#21382e);
+ box-shadow:inset 0 1px #ffe6ab54,0 0 18px #bbaa5a20;
+}
+#personal-arcade-v1 .jade-welcome>span{color:#ffe3a1}
+#personal-arcade-v1 .jade-welcome strong{font-size:19px;color:#fff6d8}
+#personal-arcade-v1 .jade-readout{
+ border-color:#94b990;background:linear-gradient(135deg,#254e42,#192f2d);
+}
+#personal-arcade-v1 .jade-clue{background:#0a292594;border-bottom:1px solid #ffffff0d}
+#personal-arcade-v1 .jade-clue.is-read{background:#385849a8}
+#personal-arcade-v1 .jade-accounting>div{
+ border-color:#c5a97582;border-top:2px solid #edc780;
+ background:linear-gradient(140deg,#365241,#1d3635);
+}
+#personal-arcade-v1 .jade-accounting b{color:#ffeba9}
+#personal-arcade-v1 .jade-stock-panel{background:linear-gradient(125deg,#2d5c4c,#1c3d38);border-color:#a3bb86}
+#personal-arcade-v1 .jade-market-intro,
+#personal-arcade-v1 .jade-vault-lead{
+ background:radial-gradient(ellipse at 85% 0,#ecd48252,transparent 55%),
+ linear-gradient(145deg,#415f40,#153b37);
+ border-color:#d8b978;
+}
+#personal-arcade-v1 .jade-market-card,
+#personal-arcade-v1 .jade-vault-card,
+#personal-arcade-v1 .jade-craft-card,
+#personal-arcade-v1 .jade-tool-card{
+ background:linear-gradient(135deg,#315b49,#1b3836);border-color:#8cae897d;
+}
+#personal-arcade-v1 .jade-market-crest{color:#ffdc94;text-shadow:0 0 12px #ffd27b}
+@keyframes arcade-dust{to{opacity:.5;transform:translateY(-9px)}}
+@keyframes arcade-ore-pulse{to{opacity:.58;box-shadow:0 0 45px #ffce8b,0 0 72px #ba9aff8a}}
+@keyframes arcade-scan-pulse{50%{box-shadow:0 0 0 9px #8afbd526,0 0 20px #9affd9}}
+@media(max-width:360px){
+ #personal-arcade-v1 .arcade-world-heading{min-height:74px;padding:9px 8px 9px 13px}
+ #personal-arcade-v1 .arcade-world-heading h3{font-size:21px}
+ #personal-arcade-v1 .arcade-world-heading p{font-size:8px;max-width:205px}
+ #personal-arcade-v1 .arcade-world-live{min-width:49px;max-width:72px;font-size:7px}
+ #personal-arcade-v1 .arcade-control-panel{padding:11px 9px}
+ #personal-arcade-v1 .arcade-tabs{gap:3px;padding:6px 4px max(6px,env(safe-area-inset-bottom))}
+ #personal-arcade-v1 .arcade-tab{font-size:7px;min-height:51px}
+ #personal-arcade-v1 .arcade-tab-icon{width:27px;height:27px;font-size:18px}
+ #personal-arcade-v1 .neon-stage-income{width:153px;padding:8px}
+ #personal-arcade-v1 .neon-stage-income b{font-size:20px}
+ #personal-arcade-v1 .jade-stage{height:269px}
+}
+@media(prefers-reduced-motion:reduce){
+ #personal-arcade-v1 *,#personal-arcade-v1 *::before,#personal-arcade-v1 *::after{
+  animation:none!important;transition:none!important;scroll-behavior:auto!important;
+ }
+}

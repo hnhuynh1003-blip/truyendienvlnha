@@ -389,7 +389,7 @@
     </div>
     <nav class="arcade-tabs" role="tablist" aria-label="Bốn minigame">
       ${Object.entries(modeLabels).map(([type,name])=>`<button type="button" class="arcade-tab ${tab===type?'is-active':''}" role="tab"
-        aria-selected="${tab===type}" data-arcade-tab="${type}"><span class="arcade-tab-icon">${type==='neon'?'▣':type==='mine'?'◈':type==='garden'?'✿':'◆'}</span><span>${name}</span></button>`).join('')}
+        aria-selected="${tab===type}" data-arcade-tab="${type}"><span class="arcade-tab-icon" aria-hidden="true">${type==='neon'?'⌘':type==='mine'?'⛏':type==='garden'?'✿':'◆'}</span><span>${name}</span></button>`).join('')}
     </nav>
     ${showToast?`<div class="arcade-status arcade-status-toast" data-error="${error}" aria-live="polite" data-arcade-notice></div>`:''}
     ${exchangeOpen?`<div class="arcade-exchange-overlay" data-arcade-exchange="close">

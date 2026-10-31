@@ -129,5 +129,5 @@ test('C4.11 mobile reveal style is tiered, click-through and motion-safe',()=>{
  assert.match(html,/personal-honor-c46\.css\?v=c412-1/);
  assert.match(html,/personal-honor-c46\.js\?v=c412-1/);
  assert.match(html,/personal-honor-ui-c46\.js\?v=c412-1/);
- assert.match(html,/personal-arcade-ui-v1\.js\?v=c414-1/);
+ assert.match(html,/personal-arcade-ui-v1\.js\?v=c417-1/);
 });

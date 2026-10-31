@@ -92,6 +92,38 @@ async function main(){
    assert.ok(layout.closeLeft>=layout.walletRight-2,'C4.15 R2 close X clears the Arcade wallet action');
    assert.equal(layout.homeBar,'none','C4.15 duplicate bottom line is hidden');
   }
+  // C4.17: four different game worlds, visible scene titles and a tappable dock.
+  const stageLooks=new Set();
+  for(const game of ['neon','mine','garden','jade']){
+   await tab(game).click();
+   const look=await page.evaluate(()=>{
+    const world=document.querySelector('#personal-arcade-v1 .arcade-world');
+    const heading=world.querySelector('.arcade-world-heading');
+    const stage=world.querySelector('.arcade-stage');
+    const active=document.querySelector('.arcade-tab[aria-selected="true"]');
+    const titleRect=heading.getBoundingClientRect();
+    const stageRect=stage.getBoundingClientRect();
+    const iconRect=active.querySelector('.arcade-tab-icon').getBoundingClientRect();
+    return {display:getComputedStyle(heading).display,
+     headingHeight:titleRect.height,stageTop:stageRect.top,titleBottom:titleRect.bottom,
+     stageBackground:getComputedStyle(stage).backgroundImage,
+     iconWidth:iconRect.width,iconHeight:iconRect.height,
+     overflow:document.querySelector('.arcade-scroll').scrollWidth-
+      document.querySelector('.arcade-scroll').clientWidth};
+   });
+   assert.equal(look.display,'flex',game+' title must be shown above the playing field');
+   assert.ok(look.headingHeight>=60,game+' has a legible game masthead');
+   assert.ok(look.stageTop>=look.titleBottom-2,game+' stage must clear the masthead');
+   assert.ok(look.iconWidth>=26&&look.iconHeight>=26,game+' dock icon is substantial');
+   assert.ok(look.overflow<=2,game+' game world has no horizontal clipping');
+   stageLooks.add(look.stageBackground);
+   if(process.env.ARCADE_C417_SHOTS){
+    fs.mkdirSync(process.env.ARCADE_C417_SHOTS,{recursive:true});
+    await page.screenshot({path:path.join(process.env.ARCADE_C417_SHOTS,game+'.png')});
+   }
+  }
+  assert.equal(stageLooks.size,4,'Each game has a distinct scene palette');
+  await tab('neon').click();
   // Reading uses the same immersive phone; reader controls return on close.
   await page.setViewportSize({width:320,height:568});
   await page.evaluate(()=>document.body.classList.add('dudu-site-v60','dudu-reading-active'));
