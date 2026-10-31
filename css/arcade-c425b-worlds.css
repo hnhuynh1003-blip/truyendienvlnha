@@ -594,11 +594,11 @@
 }
 #personal-arcade-v1 .jade-ai-split-0,#personal-arcade-v1 .jade-ai-split-1,#personal-arcade-v1 .jade-ai-split-2,
 #personal-arcade-v1 .jade-ai-split-3,#personal-arcade-v1 .jade-ai-split-4,#personal-arcade-v1 .jade-ai-split-5{
- --jade-ai-source:url('../assets/arcade-c432-ai/split-stones.webp');
+ --jade-ai-source:url('../assets/arcade-c432-ai/split-stones-smooth.webp');
 }
 #personal-arcade-v1 .jade-ai-split-6,#personal-arcade-v1 .jade-ai-split-7,#personal-arcade-v1 .jade-ai-split-8,
 #personal-arcade-v1 .jade-ai-split-9,#personal-arcade-v1 .jade-ai-split-10,#personal-arcade-v1 .jade-ai-split-11{
- --jade-ai-source:url('../assets/arcade-c432-ai/special-split.webp');
+ --jade-ai-source:url('../assets/arcade-c432-ai/special-split-smooth.webp');
 }
 #personal-arcade-v1 .jade-raw-ai-0,#personal-arcade-v1 .jade-ai-gem-0,#personal-arcade-v1 .jade-ai-split-0{--jade-ai-x:0%;--jade-ai-y:0%}
 #personal-arcade-v1 .jade-raw-ai-1,#personal-arcade-v1 .jade-ai-gem-1,#personal-arcade-v1 .jade-ai-split-1{--jade-ai-x:50%;--jade-ai-y:0%}
