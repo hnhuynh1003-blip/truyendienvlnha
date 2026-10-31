@@ -1,0 +1,348 @@
+/* C4.25A — Real illustrated environments and reactive game surfaces.
+ * Presentation only. All actions, costs, rewards, saves and progression stay in core-v1.
+ */
+#personal-arcade-v1 .arcade-active-neon{--game-ink:#090f20;--game-panel:#0d1c2a}
+#personal-arcade-v1 .arcade-active-mine{--game-ink:#17131a;--game-panel:#251d20}
+
+/* Neon is a walk-in cyber café, not a dashboard. The active owned machines
+   remain real DOM nodes, lit and occupied from persisted game state. */
+#personal-arcade-v1 .neon-stage,
+#personal-arcade-v1 .neon-stage.neon-room-tier-2,
+#personal-arcade-v1 .neon-stage.neon-room-tier-3{
+  height:346px;background-image:linear-gradient(0deg,#050d26f5 0%,#07142736 32%,#04102930 74%),
+   url('../assets/arcade-c425a/neon-cafe.webp');
+  background-size:cover,auto 113%;background-position:center,center 39%;
+  background-repeat:no-repeat;border-bottom:2px solid #3ceef7;
+}
+#personal-arcade-v1 .neon-stage.neon-room-tier-2{height:415px;background-position:center,center 45%}
+#personal-arcade-v1 .neon-stage.neon-room-tier-3{height:468px;background-position:center,center 50%}
+#personal-arcade-v1 .neon-stage::before{
+ content:'';position:absolute;inset:0;pointer-events:none;z-index:1;
+ background:linear-gradient(105deg,#08eaff20,transparent 31% 69%,#fa44d822),
+  radial-gradient(ellipse at 50% 75%,#04dff32c,transparent 47%);
+ mask-image:none;opacity:.7;
+}
+#personal-arcade-v1 .neon-stage.neon-room-tier-2::before{opacity:.85}
+#personal-arcade-v1 .neon-stage.neon-room-tier-3::before{background:linear-gradient(105deg,#f19fff23,transparent 31% 69%,#f6b76d30)}
+#personal-arcade-v1 .neon-stage::after{opacity:.33}
+#personal-arcade-v1 .neon-wall-logo,#personal-arcade-v1 .neon-server-stack,
+#personal-arcade-v1 .neon-floor{display:none}
+#personal-arcade-v1 .neon-light{opacity:.35;z-index:1}
+#personal-arcade-v1 .neon-world-plaque{
+ position:absolute;top:9px;left:9px;z-index:4;max-width:125px;
+ padding:7px 6px;border:1px solid #7fe7f28a;border-radius:3px 11px 3px 3px;
+ background:#071c31e3;color:#a9faff;font:900 8px/1.2 ui-monospace,monospace;
+ letter-spacing:.04em;box-shadow:0 0 17px #25eafa40;
+}
+#personal-arcade-v1 .neon-live-dot{
+ display:inline-block;width:6px;height:6px;margin-right:3px;border-radius:50%;
+ background:#6bffee;box-shadow:0 0 9px #43ffed;animation:c425-neon-beacon 2s infinite;
+}
+#personal-arcade-v1 .is-paused .neon-live-dot{background:#fa8d9b;box-shadow:none;animation:none}
+#personal-arcade-v1 .neon-stage-actions{top:8px;right:7px;z-index:6;gap:4px}
+#personal-arcade-v1 .neon-stage-actions .arcade-button.switch,
+#personal-arcade-v1 .neon-stage-actions .arcade-button.neon-boost-button{
+ min-width:0;min-height:29px;padding:5px 7px;font-size:9px;border-radius:4px 4px 9px 4px;
+ backdrop-filter:blur(6px);
+}
+#personal-arcade-v1 .neon-atmosphere{position:absolute;inset:0;pointer-events:none;z-index:2}
+#personal-arcade-v1 .neon-atmosphere i{
+ position:absolute;top:30%;left:20%;width:3px;height:23px;border-radius:50%;
+ background:#b3ffffaa;box-shadow:0 0 16px #41faff;opacity:.5;
+ animation:c425-neon-mote 5s ease-in-out infinite;
+}
+#personal-arcade-v1 .neon-atmosphere i:nth-child(2){left:76%;top:47%;height:11px;animation-delay:-2s;box-shadow:0 0 15px #f253ff}
+#personal-arcade-v1 .neon-atmosphere i:nth-child(3){left:45%;top:21%;height:13px;animation-delay:-3.5s}
+#personal-arcade-v1 .neon-computer-rack{
+ top:135px;height:142px;gap:8px;z-index:3;padding:0 6px;
+ transform:perspective(600px) rotateX(3deg);
+}
+#personal-arcade-v1 .neon-computer{height:136px;max-width:100px;filter:drop-shadow(0 10px 8px #000e)}
+#personal-arcade-v1 .neon-computer .neon-monitor{
+ background:linear-gradient(135deg,#14293e,#050b19 46%,#1f324f);
+ border:2px solid #63b4e3;border-radius:6px;
+ box-shadow:0 0 0 3px #030d1b,0 0 25px #0ff0e752;
+}
+#personal-arcade-v1 .neon-computer .neon-monitor-glass{
+ background-image:linear-gradient(#b9e8fb0d 50%,transparent 50%),
+  radial-gradient(circle at 48% 26%,#30b5e86b,#0c245d 68%);
+ background-size:100% 5px,cover;
+}
+#personal-arcade-v1 .neon-computer.is-occupied .neon-monitor-glass{
+ background-color:#154e71;box-shadow:inset 0 0 22px #58ffda96;
+}
+#personal-arcade-v1 .neon-computer.is-locked{
+ filter:grayscale(.9) brightness(.68) drop-shadow(0 7px 7px #000);
+}
+#personal-arcade-v1 .neon-computer.is-locked::after{
+ content:'⌁';position:absolute;top:33px;left:calc(50% - 17px);z-index:4;
+ display:grid;place-items:center;width:34px;height:34px;border:1px solid #a7bfd18c;
+ border-radius:50%;background:#0c1428ae;color:#c8d8ea;font-size:22px;
+}
+#personal-arcade-v1 .neon-station-number{
+ position:absolute;bottom:-15px;left:50%;transform:translateX(-50%);padding:2px 5px;
+ font:800 9px ui-monospace,monospace;color:#a2f3f7;background:#071c35e8;
+ border:1px solid #63b9c39c;border-radius:3px;
+}
+#personal-arcade-v1 .neon-rack-wide{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+ grid-auto-rows:101px;top:83px;gap:17px 9px;justify-items:center;
+ padding:0 12px;height:auto;transform:none;
+}
+#personal-arcade-v1 .neon-rack-wide .neon-computer{height:96px;width:100%;max-width:89px}
+#personal-arcade-v1 .neon-rack-wide .neon-monitor{height:64px}
+#personal-arcade-v1 .neon-rack-wide .neon-station-number{bottom:-9px}
+#personal-arcade-v1 .neon-rack-wide .neon-guest{transform:scale(.86);transform-origin:bottom right}
+#personal-arcade-v1 .neon-stage-income{
+ bottom:9px;left:9px;width:auto;min-width:125px;padding:7px 9px;
+ border:1px solid #4df6eab0;border-radius:3px 10px 3px 3px;
+ background:#071c33e8;backdrop-filter:blur(6px);
+ box-shadow:0 2px 14px #001b33a8;
+}
+#personal-arcade-v1 .neon-stage-income>span{font-size:7px;color:#b7f6f1}
+#personal-arcade-v1 .neon-stage-income b{font-size:17px;line-height:1.2}
+#personal-arcade-v1 .neon-income-track{margin-top:4px;height:3px}
+#personal-arcade-v1 .neon-room-level{
+ bottom:13px;right:8px;max-width:112px;padding:3px 5px;border-radius:3px;
+ background:#061629d9;color:#b8e9fa;font-size:8px;
+}
+#personal-arcade-v1 .neon-coin-fountain{
+ position:absolute;z-index:8;top:45%;left:50%;transform:translateX(-50%);
+ white-space:nowrap;padding:9px 14px;border:1px solid #ffe6ac;
+ border-radius:50px;background:#092b33db;color:#c6fff4;
+ font:900 20px/1.1 ui-monospace,monospace;text-shadow:0 0 10px #8affe8;
+ box-shadow:0 0 28px #6fffe493;pointer-events:none;
+ animation:c425-coin-pop 1.65s ease-out both;
+}
+#personal-arcade-v1 .neon-coin-fountain small{display:block;color:#ffe6a4;font:800 8px ui-monospace,monospace;text-align:center}
+#personal-arcade-v1 .neon-operations-strip{
+ display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px;
+ color:#b4e7e8;font:700 9px ui-monospace,monospace;
+}
+#personal-arcade-v1 .neon-operations-strip>span{display:flex;align-items:center;gap:4px;white-space:nowrap}
+#personal-arcade-v1 .neon-operations-strip b{font-size:11px;color:#e1fcfa}
+#personal-arcade-v1 .neon-operations-strip i{width:5px;height:5px;background:#57f9d1;box-shadow:0 0 8px #33eeb7;border-radius:50%}
+#personal-arcade-v1 .neon-service-timing{margin:0 0 4px}
+#personal-arcade-v1 .neon-service-track{margin:0 0 5px;height:4px;border:0}
+
+/* A staffed holographic counter: physical illustrated tool silhouettes replace emoji. */
+#personal-arcade-v1 .neon-order-game{
+ margin-top:7px;min-height:202px;padding:10px 10px 9px;gap:7px;
+ border:1px solid #4dbfea7b;border-top:3px solid #8cfff4;border-radius:6px 6px 14px 14px;
+ background:radial-gradient(ellipse at 30% 20%,#2b6d9c55,transparent 64%),
+  repeating-linear-gradient(90deg,#5ae4fb06 0 2px,transparent 2px 19px),#0a1930;
+ box-shadow:inset 0 2px 16px #3dcbff1b,0 8px 22px #03091684;
+}
+#personal-arcade-v1 .neon-order-heading{letter-spacing:.025em;font-size:10px}
+#personal-arcade-v1 .neon-order-scene{
+ grid-template-columns:75px minmax(0,1fr);min-height:91px;
+ background:linear-gradient(90deg,#071c33b3,#23507946);
+ border-bottom:1px solid #75c4ea55;
+}
+#personal-arcade-v1 .neon-order-ticket{
+ border:1px solid #58d8f2b8;border-radius:3px 11px 3px 3px;
+ background:linear-gradient(145deg,#103d5ced,#161d48e9);
+ box-shadow:0 0 15px #31cbe95e,inset 0 0 12px #31caf933;
+ transform:none;color:#d8fdff;
+}
+#personal-arcade-v1 .neon-order-ticket small{color:#7cfaff}
+#personal-arcade-v1 .neon-order-ticket em{color:#b4e5f1}
+#personal-arcade-v1 .neon-order-recipe>span:not(.neon-order-timer){
+ background:#163658;color:#a7fdff;border:1px solid #50bedb73;
+ border-radius:7px;box-shadow:inset 0 0 11px #7efbfe33;
+}
+#personal-arcade-v1 .neon-order-recipe>span.is-done{color:#fff0bb}
+#personal-arcade-v1 .neon-order-recipe>i{color:#82bcd0}
+#personal-arcade-v1 .neon-order-timer{color:#d8faff}
+#personal-arcade-v1 .neon-service-icon{display:block;width:27px;height:27px;filter:drop-shadow(0 0 6px currentColor)}
+#personal-arcade-v1 .neon-order-actions button{
+ min-height:64px;border-radius:3px 12px 3px 10px;
+ border:1px solid #c36fd9;background:#241f52;color:#ffc7ff;
+ box-shadow:inset 0 1px #fff3,0 3px #081126;
+}
+#personal-arcade-v1 .neon-order-actions button:nth-child(2){background:#123f67;border-color:#6ce4ff;color:#90ebff}
+#personal-arcade-v1 .neon-order-actions button:nth-child(3){background:#164748;border-color:#72eecb;color:#a2ffe0}
+#personal-arcade-v1 .neon-order-actions button>strong{font-size:0}
+#personal-arcade-v1 .neon-order-actions button .neon-service-icon{width:28px;height:28px}
+#personal-arcade-v1 .neon-order-game.is-complete{animation:c425-counter-success .65s ease-out}
+#personal-arcade-v1 .neon-order-game.is-mistake{animation:c425-counter-miss .65s ease-out}
+
+/* Mine: the rock face is painted, but the hit target, fracture state, gems,
+   impact dust, survey branches, inventory and tool actions remain HTML. */
+#personal-arcade-v1 .mine-stage,
+#personal-arcade-v1 .mine-stage.mine-zone-scene-1,
+#personal-arcade-v1 .mine-stage.mine-zone-scene-2{
+ height:342px;background-image:linear-gradient(0deg,#0b1014e8 0%,#11141b19 35%,#0d172011 85%),
+  url('../assets/arcade-c425a/mine-cavern.webp');
+ background-repeat:no-repeat;background-size:cover,auto 113%;background-position:center,center 42%;
+ border-bottom:2px solid #cb915b;
+}
+#personal-arcade-v1 .mine-stage.mine-zone-scene-1{background-color:#361c0f;background-blend-mode:normal,luminosity}
+#personal-arcade-v1 .mine-stage.mine-zone-scene-2{background-color:#092e49;background-blend-mode:normal,luminosity}
+#personal-arcade-v1 .mine-stage::before{z-index:2;opacity:.7}
+#personal-arcade-v1 .mine-stage::after{background:linear-gradient(0deg,#0f1017d6,transparent 34%),linear-gradient(90deg,#0a0e1d55,transparent 32% 68%,#0a0e1d55)}
+#personal-arcade-v1 .mine-stratum,#personal-arcade-v1 .mine-tunnel-arch,
+#personal-arcade-v1 .mine-cave-light,#personal-arcade-v1 .mine-crystal{display:none}
+#personal-arcade-v1 .mine-scene-head{
+ top:9px;left:8px;right:8px;z-index:7;gap:5px;
+ color:#ffdfbb;text-shadow:0 2px 8px #04070f;
+}
+#personal-arcade-v1 .mine-scene-head span{
+ background:#100e12be;border:1px solid #d7a8788a;
+ padding:5px 6px;border-radius:3px;
+}
+#personal-arcade-v1 .mine-ore-button{
+ top:49px;width:272px;height:251px;max-width:92%;border:0;
+ filter:drop-shadow(0 0 7px #e7a3574a);
+}
+#personal-arcade-v1 .mine-rock{opacity:0;pointer-events:none}
+#personal-arcade-v1 .mine-rock-shadow{opacity:0}
+#personal-arcade-v1 .mine-fracture-lines{
+ position:absolute;inset:13% 12% 17%;pointer-events:none;z-index:2;
+ background:linear-gradient(129deg,transparent 0 40%,#f8d0a85c 40.2% 40.7%,#000b 40.9% 41.7%,transparent 42%),
+  linear-gradient(31deg,transparent 0 53%,#140f15ac 53.2% 54%,#dcaa7f88 54.2% 54.5%,transparent 55%),
+  linear-gradient(92deg,transparent 0 68%,#080b12c9 68.2% 69%,#f6c79787 69.1% 69.3%,transparent 69.5%);
+ mix-blend-mode:screen;clip-path:polygon(13% 15%,83% 5%,97% 61%,74% 97%,8% 85%,0 40%);
+ opacity:.09;transition:opacity .12s ease;
+}
+#personal-arcade-v1 .mine-dig-phase-1 .mine-fracture-lines{opacity:.32}
+#personal-arcade-v1 .mine-dig-phase-2 .mine-fracture-lines{opacity:.58}
+#personal-arcade-v1 .mine-dig-phase-3 .mine-fracture-lines{opacity:.85}
+#personal-arcade-v1 .mine-vein-core{
+ position:absolute;z-index:3;top:32%;left:35%;width:32%;height:35%;
+ background-image:url('../assets/arcade-c425a/ore-atlas.webp');
+ background-repeat:no-repeat;background-size:500% 200%;
+ filter:drop-shadow(0 0 12px #6cf7ffaa);pointer-events:none;
+ opacity:.65;transform:rotate(-9deg);transition:opacity .12s,transform .12s;
+}
+#personal-arcade-v1 .mine-zone-scene-1 .mine-vein-core{filter:drop-shadow(0 0 14px #ffa55c)}
+#personal-arcade-v1 .mine-zone-scene-2 .mine-vein-core{filter:drop-shadow(0 0 16px #77dbff);opacity:.88}
+#personal-arcade-v1 .mine-hit-active .mine-vein-core{animation:c425-vein-impact .43s ease-out}
+#personal-arcade-v1 .mine-hit-active .mine-fracture-lines{animation:c425-crack-flare .5s ease-out}
+#personal-arcade-v1 .mine-hit-active .mine-ore-button::after{
+ content:'';position:absolute;z-index:7;left:17%;top:13%;width:65%;height:69%;pointer-events:none;
+ background:radial-gradient(circle at 28% 29%,#fff8d7 0 2px,transparent 3px),
+  radial-gradient(circle at 70% 17%,#b8eaff 0 2px,transparent 3px),
+  radial-gradient(circle at 79% 72%,#ffe0ae 0 3px,transparent 4px),
+  radial-gradient(circle at 13% 73%,#ffc979 0 2px,transparent 3px);
+ filter:drop-shadow(0 0 8px #ffe0b4);animation:c425-impact-shards .58s ease-out both;
+}
+#personal-arcade-v1 .mine-hit-spark{z-index:6}
+#personal-arcade-v1 .mine-tap-prompt{
+ top:auto;bottom:6%;left:20%;right:20%;z-index:9;padding:7px 5px;
+ border:1px solid #e6be89;border-radius:3px 3px 12px 12px;
+ background:#261b1ae8;color:#fff0d4;font-size:10px;letter-spacing:.025em;
+}
+#personal-arcade-v1 .mine-bottom-hud{bottom:8px;align-items:flex-end}
+#personal-arcade-v1 .mine-durability-circle{background:#141821e6 padding-box,conic-gradient(#ffe2a7 var(--mine-durability),#6c483c 0) border-box;backdrop-filter:blur(4px)}
+#personal-arcade-v1 .mine-cave-motes{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden}
+#personal-arcade-v1 .mine-cave-motes i{
+ position:absolute;left:10%;top:35%;width:3px;height:3px;border-radius:50%;
+ background:#ffcb8d;box-shadow:0 0 11px #ffbc81;
+ animation:c425-dust 7s linear infinite;
+}
+#personal-arcade-v1 .mine-cave-motes i:nth-child(2){left:71%;top:29%;animation-delay:-2s}
+#personal-arcade-v1 .mine-cave-motes i:nth-child(3){left:36%;top:66%;animation-delay:-4s}
+#personal-arcade-v1 .mine-cave-motes i:nth-child(4){left:88%;top:67%;animation-delay:-1.7s}
+#personal-arcade-v1 .mine-cave-motes i:nth-child(5){left:58%;top:46%;animation-delay:-5s}
+#personal-arcade-v1 .mine-cave-motes i:nth-child(6){left:24%;top:19%;animation-delay:-3.1s}
+#personal-arcade-v1 .mine-drop{
+ top:52px;z-index:10;min-height:43px;display:flex;align-items:center;gap:5px;
+ padding:4px 12px 4px 3px;background:#16232bdc;border:1px solid #b3dbdb;
+ border-radius:5px 18px 5px 18px;box-shadow:0 0 23px #89f7ed8c;
+ color:#fff7d9;font:900 12px ui-monospace,monospace;
+}
+#personal-arcade-v1 .mine-drop .ore-portrait{width:43px;height:43px}
+#personal-arcade-v1 .mine-energy{margin:2px 0 5px}
+#personal-arcade-v1 .mine-energy b{font-size:12px}
+#personal-arcade-v1 .mine-energy small{font-size:10px}
+#personal-arcade-v1 .mine-charge-track{height:9px;margin-bottom:8px}
+#personal-arcade-v1 .arcade-world-mine .arcade-button.mine-burst{
+ border-radius:3px 12px 3px 12px;min-height:47px;font-size:12px;
+}
+#personal-arcade-v1 .arcade-mine-sell .arcade-button{border-radius:4px 4px 12px 4px;min-height:36px;font-size:11px}
+
+/* Illustrated material catalog, shared by floating drops, seam survey, and bag. */
+#personal-arcade-v1 .ore-portrait{
+ display:block;flex:none;width:60px;height:60px;
+ background-image:url('../assets/arcade-c425a/ore-atlas.webp');
+ background-size:500% 200%;background-repeat:no-repeat;background-position:0 0;
+ filter:drop-shadow(0 5px 5px #0008);
+}
+#personal-arcade-v1 .ore-portrait-stone{background-position:0% 0%}
+#personal-arcade-v1 .ore-portrait-coal{background-position:25% 0%}
+#personal-arcade-v1 .ore-portrait-iron{background-position:50% 0%}
+#personal-arcade-v1 .ore-portrait-copper{background-position:75% 0%}
+#personal-arcade-v1 .ore-portrait-silver{background-position:100% 0%}
+#personal-arcade-v1 .ore-portrait-gold{background-position:0% 100%}
+#personal-arcade-v1 .ore-portrait-crystal{background-position:25% 100%}
+#personal-arcade-v1 .ore-portrait-jade{background-position:50% 100%}
+#personal-arcade-v1 .ore-portrait-meteor{background-position:75% 100%}
+#personal-arcade-v1 .ore-portrait-relic{background-position:100% 100%}
+#personal-arcade-v1 .mine-inventory{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;
+}
+#personal-arcade-v1 .mine-inventory-slot{
+ min-width:0;gap:2px;padding:5px 2px 7px;border:1px solid #b48a5c70;
+ border-bottom:3px solid #a47346;border-radius:3px 11px 3px 11px;
+ background:radial-gradient(circle at 50% 27%,#d0aa6740,transparent 63%),
+  linear-gradient(150deg,#302928,#1d212b);
+ box-shadow:inset 0 1px #ffe6bc25,0 5px 12px #07070d88;
+}
+#personal-arcade-v1 .mine-inventory-slot .ore-portrait{width:min(100%,75px);height:75px}
+#personal-arcade-v1 .mine-inventory-slot small{color:#ffead2;font-size:10px;font-weight:800}
+#personal-arcade-v1 .mine-inventory-slot b{color:#f5dfbc;font-size:14px}
+#personal-arcade-v1 .mine-inventory-slot em{font:700 8px ui-monospace,monospace;font-style:normal;color:#bda88f}
+#personal-arcade-v1 .mine-slot-gold,#personal-arcade-v1 .mine-slot-silver{border-bottom-color:#f1be69}
+#personal-arcade-v1 .mine-slot-crystal,#personal-arcade-v1 .mine-slot-jade{border-bottom-color:#62cfe8}
+#personal-arcade-v1 .mine-slot-meteor,#personal-arcade-v1 .mine-slot-relic{border-bottom-color:#be8df2}
+#personal-arcade-v1 .mine-inventory-slot.is-mystery{opacity:.57;filter:none;border-style:solid}
+#personal-arcade-v1 .mine-inventory-slot.is-mystery .ore-portrait{filter:grayscale(1) brightness(.14)}
+#personal-arcade-v1 .mine-inventory-slot.is-mystery b{color:#aaa1a0}
+#personal-arcade-v1 .mine-seam-game{
+ border-top:3px solid #d5aa67;border-radius:3px 3px 14px 14px;
+ background:radial-gradient(ellipse at 50% 66%,#ae704436,transparent 68%),#1b1720;
+ margin-top:10px;min-height:193px;
+}
+#personal-arcade-v1 .mine-seam-heading{font-size:10px}
+#personal-arcade-v1 .mine-seam-tunnel{min-height:114px;border-radius:46% 46% 5px 5px}
+#personal-arcade-v1 .mine-seam-tunnel.is-probe-win{border-color:#8ffff5;box-shadow:inset 0 0 17px #55e8ff,0 0 20px #6feee9}
+#personal-arcade-v1 .mine-seam-tunnel.is-probe-miss{border-color:#f39b81;filter:saturate(.4)}
+#personal-arcade-v1 .mine-seam-result{
+ inset:22% 14% auto;display:flex;align-items:center;justify-content:center;gap:5px;
+ padding:3px 8px;background:#13352ded;border:1px solid #8dfce7;
+ border-radius:5px 17px 5px 17px;box-shadow:0 0 25px #5ee4ca8c;
+}
+#personal-arcade-v1 .mine-seam-result .ore-portrait{width:45px;height:45px}
+#personal-arcade-v1 .mine-seam-result b{font-size:11px}
+#personal-arcade-v1 .mine-seam-result small{font-size:9px;white-space:nowrap}
+#personal-arcade-v1 .mine-seam-result.is-miss{background:#463129ef}
+
+@keyframes c425-neon-beacon{50%{opacity:.35;box-shadow:0 0 3px #43ffed}}
+@keyframes c425-neon-mote{50%{transform:translate(10px,-22px);opacity:.14}}
+@keyframes c425-coin-pop{0%{opacity:0;transform:translate(-50%,24px) scale(.7)}20%{opacity:1;transform:translate(-50%,-4px) scale(1.08)}85%{opacity:1}100%{opacity:0;transform:translate(-50%,-45px) scale(.9)}}
+@keyframes c425-counter-success{35%{box-shadow:inset 0 0 30px #75ffce8c,0 0 24px #82ffff88}}
+@keyframes c425-counter-miss{35%{box-shadow:inset 0 0 30px #ff879c75,0 0 18px #ff6a8a66}}
+@keyframes c425-vein-impact{35%{opacity:1;transform:rotate(-13deg) scale(1.15)}}
+@keyframes c425-crack-flare{30%{opacity:1;filter:brightness(2.3)}}
+@keyframes c425-impact-shards{0%{opacity:1;transform:scale(.6)}100%{opacity:0;transform:scale(1.55) rotate(15deg)}}
+@keyframes c425-dust{50%{opacity:.2;transform:translate(-9px,-28px)}100%{opacity:0;transform:translate(4px,-53px)}}
+
+@media(max-width:360px){
+ #personal-arcade-v1 .neon-stage{background-size:cover,auto 109%}
+ #personal-arcade-v1 .neon-world-plaque{font-size:7px;max-width:109px;padding:6px 4px}
+ #personal-arcade-v1 .neon-stage-actions .arcade-button.switch,
+ #personal-arcade-v1 .neon-stage-actions .arcade-button.neon-boost-button{font-size:8px;padding:5px 4px}
+ #personal-arcade-v1 .neon-operations-strip{font-size:8px;gap:4px}
+ #personal-arcade-v1 .neon-operations-strip b{font-size:10px}
+ #personal-arcade-v1 .neon-order-game{min-height:192px;padding:8px 6px}
+ #personal-arcade-v1 .mine-inventory-slot .ore-portrait{width:min(100%,68px);height:68px}
+ #personal-arcade-v1 .mine-seam-result{inset:20% 7% auto;gap:3px}
+ #personal-arcade-v1 .mine-seam-result .ore-portrait{width:36px;height:36px}
+}
+@media(prefers-reduced-motion:reduce){
+ #personal-arcade-v1 .neon-live-dot,#personal-arcade-v1 .neon-atmosphere i,
+ #personal-arcade-v1 .neon-coin-fountain,#personal-arcade-v1 .mine-cave-motes i,
+ #personal-arcade-v1 .mine-hit-active .mine-vein-core,#personal-arcade-v1 .mine-hit-active .mine-fracture-lines,
+ #personal-arcade-v1 .mine-hit-active .mine-ore-button::after{animation:none!important}
+}
