@@ -1,0 +1,66 @@
+/* C4.21 — compact archive intake, deliberately not a stack of oversized cards. */
+#epub-batch-modal .epub-batch-dialog{
+  width:min(780px,95vw);max-width:95vw;max-height:min(90vh,860px);
+  overflow:auto;box-sizing:border-box;padding:19px;
+  background:linear-gradient(145deg,#111c2b,#10151d 65%);
+  border:1px solid rgba(133,181,197,.3);color:#eaf4f7;
+}
+#epub-batch-modal .epub-batch-heading,
+#epub-batch-modal .epub-batch-pickers,
+#epub-batch-modal .epub-batch-actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+#epub-batch-modal .epub-batch-heading{justify-content:space-between;align-items:end;margin-bottom:14px}
+#epub-batch-modal .epub-batch-heading h2{margin:2px 0 0;font-size:23px;line-height:1.2;color:#edfaff}
+#epub-batch-modal .epub-batch-kicker,
+#epub-batch-modal .epub-batch-step{font:700 10px/1.5 system-ui,sans-serif;letter-spacing:.12em;color:#7bd7cd}
+#epub-batch-modal .epub-batch-step{color:#91aabc;letter-spacing:.05em}
+#epub-batch-content{display:grid;gap:12px;font:400 13px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif}
+#epub-batch-content .epub-batch-intro,
+#epub-batch-content .epub-batch-hint{margin:0;color:#b9cbd7}
+#epub-batch-content .epub-batch-hint{font-size:11px}
+#epub-batch-content .epub-batch-pickers>.btn{flex:1 1 190px;min-height:42px;font-size:13px}
+#epub-batch-content input[type=file][hidden]{display:none!important}
+#epub-batch-content .epub-batch-publish{display:flex;gap:8px;align-items:center;padding:10px 12px;
+  border:1px solid #3b5363;border-radius:9px;background:rgba(116,163,190,.08);font-size:12px}
+#epub-batch-content .epub-batch-publish input{accent-color:#6bcec6;flex:none}
+#epub-batch-content .epub-batch-count{margin:0;font-size:12px;color:#b5e1df;font-weight:650}
+#epub-batch-content .epub-batch-feedback{margin:0;min-height:1.2em;color:#f0cd8b;font-size:12px;overflow-wrap:anywhere}
+#epub-batch-content .epub-batch-list{display:grid;align-content:start;gap:0;min-height:76px;max-height:40vh;
+  overflow:auto;background:#0e1721;border:1px solid #334c5a;border-radius:10px}
+#epub-batch-content .epub-batch-list:empty::before{content:'Danh sách EPUB sẽ xuất hiện ở đây.';padding:23px;text-align:center;color:#8095a5}
+#epub-batch-content .epub-batch-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(105px,180px) auto auto;
+  align-items:center;gap:9px;padding:9px 10px;border-bottom:1px solid rgba(172,215,222,.1)}
+#epub-batch-content .epub-batch-row:last-child{border-bottom:0}
+#epub-batch-content .epub-batch-row-detail{display:grid;min-width:0;gap:2px}
+#epub-batch-content .epub-batch-row-detail strong{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#epub-batch-content .epub-batch-row-detail small{font-size:11px;color:#839caf;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#epub-batch-content .epub-batch-row-state{display:grid;justify-items:start;gap:3px;min-width:0}
+#epub-batch-content .epub-batch-tag{padding:2px 7px;border-radius:5px;background:#253446;color:#d7e3ed;
+  font-size:11px;font-weight:700;white-space:nowrap}
+#epub-batch-content .epub-batch-tag[data-state=published],
+#epub-batch-content .epub-batch-tag[data-state=draft]{background:rgba(62,158,135,.18);color:#83e5bf}
+#epub-batch-content .epub-batch-tag[data-state=duplicate],
+#epub-batch-content .epub-batch-tag[data-state=review]{background:rgba(221,160,71,.15);color:#ebc487}
+#epub-batch-content .epub-batch-tag[data-state=error],
+#epub-batch-content .epub-batch-tag[data-state=invalid]{background:rgba(226,104,96,.15);color:#f3a7a1}
+#epub-batch-content .epub-batch-message{color:#93a9b8;font-size:11px;line-height:1.35;overflow-wrap:anywhere}
+#epub-batch-content .epub-batch-row .btn{padding:5px 8px;font-size:11px;min-height:30px}
+#epub-batch-content .epub-batch-row .btn[hidden],
+#epub-batch-content .epub-batch-actions .btn[hidden]{display:none!important}
+#epub-batch-content .epub-batch-remove{width:29px;min-width:29px}
+#epub-batch-content .epub-batch-actions{justify-content:flex-end}
+#epub-batch-content .epub-batch-actions .btn{min-height:39px;font-size:12px}
+.story-epub-actions{display:flex;flex-wrap:wrap;gap:6px}
+.story-epub-actions>.btn{font-size:12px;white-space:normal}
+@media(max-width:560px){
+ #epub-batch-modal .epub-batch-dialog{padding:13px;max-height:88vh}
+ #epub-batch-modal .epub-batch-heading h2{font-size:20px}
+ #epub-batch-modal .epub-batch-step{display:none}
+ #epub-batch-content .epub-batch-pickers>.btn{flex:1 1 100%}
+ #epub-batch-content .epub-batch-list{max-height:38vh}
+ #epub-batch-content .epub-batch-row{grid-template-columns:minmax(0,1fr) auto;gap:6px}
+ #epub-batch-content .epub-batch-row-state{grid-column:1;grid-row:2}
+ #epub-batch-content .epub-batch-row-detail{grid-column:1;grid-row:1}
+ #epub-batch-content .epub-batch-retry{grid-column:2;grid-row:2}
+ #epub-batch-content .epub-batch-remove{grid-column:2;grid-row:1}
+ #epub-batch-content .epub-batch-actions .btn{flex:1 1 130px}
+}

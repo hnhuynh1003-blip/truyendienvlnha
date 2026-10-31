@@ -10,6 +10,8 @@
 })(typeof window!=='undefined'?window:null,function(root){
  'use strict';
  const COLLECTION='epub_stories_v49';
+ // Firestore Rules allow at most 60 documents in each list request. A page
+ // size is not a library-wide limit: batch imports may exceed one page.
  const MAX_BOOKS=60,MAX_CHAPTERS=160,MAX_CHAPTER_BYTES=420000;
  const identifier=s=>typeof s==='string'&&/^[a-zA-Z0-9][a-zA-Z0-9_-]{3,120}$/.test(s);
  const utf8len=s=>new TextEncoder().encode(s).length;
@@ -160,11 +162,38 @@
   await ref.update({status:'published',publishedAt:now(),updatedAt:now()});
   return {id:bookId,status:'published',chapterCount:book.chapterCount};
  }
+ async function readPages(query){
+  const docs=[];
+  let cursor=null;
+  do{
+   let page=query.limit(MAX_BOOKS);
+   if(cursor)page=page.startAfter(cursor);
+   const result=await page.get();
+   if(!result.docs.length)break;
+   docs.push(...result.docs);
+   if(result.docs.length<MAX_BOOKS)break;
+   cursor=result.docs[result.docs.length-1];
+  }while(true);
+  return docs;
+ }
+ // Owner-only metadata index for bulk import de-duplication. Every request
+ // includes an ownerUid filter and a Rules-compatible per-page limit.
+ async function ownedBooks(db,auth){
+  if(!db?.collection)throw Error('Firestore chưa sẵn sàng');
+  const uid=await requireAdmin(auth);
+  const docs=await readPages(db.collection(COLLECTION).where('ownerUid','==',uid));
+  if(auth.currentUser?.uid!==uid)throw Error('Phiên tài khoản đã thay đổi');
+  return docs.filter(s=>identifier(s.id)&&s.data()?.ownerUid===uid).map(s=>{
+   const book=s.data();
+   return {id:s.id,title:String(book.title||''),author:String(book.author||''),
+    sourceName:String(book.sourceName||''),status:String(book.status||''),
+    importFingerprint:String(book.importFingerprint||'')};
+  });
+ }
  async function publicBooks(db){
   if(!db?.collection)throw Error('Firestore chưa sẵn sàng');
-  const result=await db.collection(COLLECTION).where('status','==','published')
-   .limit(MAX_BOOKS).get();
-  return result.docs.map(s=>{
+  const docs=await readPages(db.collection(COLLECTION).where('status','==','published'));
+  return docs.map(s=>{
    const d=s.data();
    const chapterIndex=Array.isArray(d.chapterIndex)?d.chapterIndex:[];
    if(!identifier(s.id)||chapterIndex.length>MAX_CHAPTERS||!chapterIndex.length)return null;
@@ -274,6 +303,6 @@
     publicationState:s.data().publicationState==='Hoàn thành'?'Hoàn thành':'Đang ra'}));
  }
  return Object.freeze({COLLECTION,MAX_CHAPTER_BYTES,manifest,fingerprint,validCover,requireAdmin,
-  importDraft,publishDraft,publicBooks,readChapter,
+  importDraft,publishDraft,publicBooks,ownedBooks,readChapter,
   updatePublishedMetadata,setArchived,archivedBooks});
 });

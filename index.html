@@ -61,6 +61,7 @@
   <link rel="stylesheet" href="css/story-comments-pilot-v45-2.css?v=45-2">
   <link rel="stylesheet" href="css/sandbox-discussion-v46.css?v=46-1">
   <link rel="stylesheet" href="css/epub-import-v48.css?v=l2b-4">
+  <link rel="stylesheet" href="css/epub-batch-import-c421.css?v=c421-1">
   <link rel="stylesheet" href="css/library-intake-v1.css?v=lib1-ui2">
   <link rel="stylesheet" href="css/chat-messenger-v56-12.css?v=56-12">
   <link rel="stylesheet" href="css/chat-contact-v56-14.css?v=56-14">
@@ -137,7 +138,8 @@
   <script src="js/sandbox-discussion-ui.js?v=46-1"></script>
   <script src="js/epub-text-v57.js?v=57-1"></script>
   <script src="js/epub-import-v48.js?v=l2b-4"></script>
-  <script src="js/epub-production-v49.js?v=l2b-4"></script>
+  <script src="js/epub-production-v49.js?v=c421-1"></script>
+  <script src="js/epub-batch-import-c421.js?v=c421-1"></script>
   <script src="js/library-synopsis-search-l2d.js?v=l2d-1"></script>
   <script src="js/library-epub-manage-l2d2.js?v=l2d2-1"></script>
   <script src="js/epub-chapter-editor-l2d3.js?v=l2d5b-1"></script>
@@ -1890,6 +1892,17 @@
     </div>
   </div>
 
+  <!-- C4.21: owner-only sequential EPUB import from one parent folder. -->
+  <div class="modal-overlay" id="epub-batch-modal">
+    <div class="modal-card epub-batch-dialog" role="dialog" aria-modal="true" aria-labelledby="epub-batch-heading">
+      <div class="epub-batch-heading"><div>
+        <span class="epub-batch-kicker">ARCHIVE // NHẬP HÀNG LOẠT</span>
+        <h2 id="epub-batch-heading">Kho EPUB</h2>
+      </div><span class="epub-batch-step">THƯ MỤC → HÀNG ĐỢI → THƯ VIỆN</span></div>
+      <div id="epub-batch-content"></div>
+    </div>
+  </div>
+
   <!-- L2D.2: author-only published EPUB metadata, activated after Rules QA. -->
   <div class="modal-overlay epub-manage-overlay" id="epub-manage-modal">
     <div class="modal-card epub-manage-dialog" role="dialog" aria-modal="true" aria-labelledby="epub-manage-heading">
@@ -1993,7 +2006,10 @@
     <div class="modal-card">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
         <h2 id="story-modal-heading">THÊM TÁC PHẨM MỚI</h2>
-        <button type="button" class="btn" onclick="openEpubImportV48()" title="Tự tách chương EPUB và xem trước">📘 Nhập EPUB</button>
+        <div class="story-epub-actions">
+          <button type="button" class="btn" onclick="openEpubImportV48()" title="Tự tách chương EPUB và xem trước">Nhập EPUB lẻ</button>
+          <button type="button" class="btn" onclick="openEpubBatchC421()" title="Chọn thư mục cha hoặc nhiều tệp EPUB">Nhập hàng loạt</button>
+        </div>
       </div>
       <div class="modal-field">
         <label>Tên tác phẩm:</label>
@@ -8292,6 +8308,18 @@ document.getElementById('phone-home-screen').style.display = 'none';
         uid:()=>DuduAuth.uid(),
         auth:()=>firebase.auth(),
         storage:()=>firebase.storage()
+      });
+    }
+
+    function openEpubBatchC421() {
+      if(!canEditStories())return;
+      closeModals();
+      window.DuduEpubBatchC421?.open({
+        canEdit:()=>canEditStories(),sandbox:IS_SANDBOX_MODE,
+        importer:window.DuduEpubImportV48,
+        production:window.DuduEpubProductionV49,
+        firestore:()=>db,auth:()=>firebase.auth(),
+        onPublished:()=>refreshEpubCloudBooksV49()
       });
     }
 
