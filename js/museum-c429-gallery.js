@@ -27,20 +27,20 @@
    trial('Hợp đồng',3,s=>s.neon.contracts.length),
    trial('Mốc điều hành',4,s=>s.neon.milestones.length)]},
   {id:'mine',title:'Chưởng Mạch Địa Tầng',sub:'Địa Tầng 07',steps:[
-   trial('Loại quặng phát hiện',10,s=>oreKinds.filter(id=>s.mine.found[id]>0).length),
-   trial('Mạch quặng phá',25,s=>s.mine.bursts),
-   trial('Máy dò tinh thể',3,s=>s.mine.scanner),
-   trial('Cổ vật tìm được',1,s=>s.mine.found.relic)]},
+   trial('Loại quặng',10,s=>oreKinds.filter(id=>s.mine.found[id]>0).length),
+   trial('Mạch đã phá',25,s=>s.mine.bursts),
+   trial('Cấp máy dò',3,s=>s.mine.scanner),
+   trial('Cổ vật',1,s=>s.mine.found.relic)]},
   {id:'garden',title:'Thủ Hộ Nguyệt Hồ',sub:'Vườn Sương',steps:[
-   trial('Luống đã thu hoạch',50,s=>s.garden.harvests),
-   trial('Cấp hồ sương',4,s=>s.garden.pondTier),
-   trial('Loài cá Quý trở lên',5,s=>foundShowcase(s).length),
-   trial('Loài Huyền thoại',1,s=>['dragon','phoenix'].filter(id=>s.garden.fishAlbum[id]>0).length)]},
+   trial('Luống thu hoạch',50,s=>s.garden.harvests),
+   trial('Cấp hồ',4,s=>s.garden.pondTier),
+   trial('Loài cá Quý+',5,s=>foundShowcase(s).length),
+   trial('Cá Huyền thoại',1,s=>['dragon','phoenix'].filter(id=>s.garden.fishAlbum[id]>0).length)]},
   {id:'jade',title:'Đại Sư Ngọc Phường',sub:'Ngọc Phường',steps:[
    trial('Ngọc đã bán',40,s=>s.jade?.sold||0),
    trial('Giấy phép Tàn Tích',1,s=>s.jade?.permit?1:0),
-   trial('Tác phẩm trưng bày',5,s=>s.jade?.exhibits?.length||0),
-   trial('Sắc × Chủng đã khám phá',12,distinctJade)]}
+   trial('Tác phẩm',5,s=>s.jade?.exhibits?.length||0),
+   trial('Bộ sắc ngọc',12,distinctJade)]}
  ].map(item=>Object.freeze({...item,steps:Object.freeze(item.steps),goal:item.steps.length,
   count:s=>item.steps.filter(step=>step.read(s)>=step.target).length})));
  const $=(tag,cls,value)=>{

@@ -125,8 +125,8 @@ test('C4.29 keeps verified collectibles and Season1 preview separate, delivers c
  const html=repo('index.html').toString();
  const vault=repo('js/museum-vault-c426.js').toString();
  const gallery=repo('js/museum-c429-gallery.js').toString();
- assert.match(html,/museum-c429-gallery\.css\?v=c429-4/);
- assert.match(html,/museum-c429-gallery\.js\?v=c429-2/);
+ assert.match(html,/museum-c429-gallery\.css\?v=c429-5/);
+ assert.match(html,/museum-c429-gallery\.js\?v=c429-3/);
  assert.match(html,/museum-vault-c426\.js\?v=c426-2&amp;gallery=c429-1/);
  assert.match(vault,/\['preview','Quà mùa'\]/);
  assert.match(vault,/\['owned','Kỷ vật thật'\]/);
