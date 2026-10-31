@@ -1,0 +1,94 @@
+/* C4.25F — reel-timing play surface, laid over the existing illustrated pond.
+   The bright band is the safe reel zone; the white/pink bobber actually moves. */
+#personal-arcade-v1 .garden-reel-challenge{
+ margin:1px 0 7px;padding:7px 10px 6px;position:relative;
+ background:linear-gradient(180deg,#123b44f3,#0b2735f7);
+ border-top:1px solid #b3eee5ad;border-bottom:1px solid #b3eee569;
+ box-shadow:inset 0 5px 13px #70ece715,0 7px 10px #09202b70;
+}
+#personal-arcade-v1 .garden-reel-heading,
+#personal-arcade-v1 .garden-reel-foot{
+ display:flex;justify-content:space-between;align-items:center;gap:5px;
+ font:800 9px/1.25 system-ui,sans-serif;letter-spacing:.035em;
+}
+#personal-arcade-v1 .garden-reel-heading{color:#fff3d1;margin-bottom:6px}
+#personal-arcade-v1 .garden-reel-heading span:last-child{color:#aff9df;font-size:11px}
+#personal-arcade-v1 .garden-reel-track{
+ position:relative;height:26px;margin:0 2px 6px;overflow:hidden;border-radius:18px;
+ border:1px solid #7eb8b9a8;
+ background:repeating-linear-gradient(90deg,transparent 0 19%,#a2d1d52d 19.3% 20%),
+  linear-gradient(180deg,#0b2432,#275469 45%,#0a2834);
+ box-shadow:inset 0 3px 7px #051b2acb,0 1px 0 #e1e1af44;
+}
+#personal-arcade-v1 .garden-reel-track::before{
+ content:'';position:absolute;left:0;right:0;top:50%;height:2px;
+ background:linear-gradient(90deg,#74bcc176,#dff9e7d1,#74bcc176);
+ transform:translateY(-50%);
+}
+#personal-arcade-v1 .garden-reel-safe{
+ position:absolute;top:2px;bottom:2px;z-index:1;border-radius:12px;
+ border:1px solid #d4ffe4;background:linear-gradient(180deg,#9cecc594,#67debb77 52%,#b7f7d972);
+ box-shadow:0 0 15px #a6ffdc96,inset 0 0 8px #d3ffdf9e;
+}
+#personal-arcade-v1 .garden-reel-safe::after{
+ content:'✦';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+ color:#fffde0;font:900 13px system-ui,sans-serif;text-shadow:0 0 7px #f5ffda;
+}
+#personal-arcade-v1 .garden-reel-marker{
+ position:absolute;z-index:3;top:2px;left:0;width:16px;height:20px;
+ transform:translateX(-50%);pointer-events:none;
+ animation:c425f-reel-travel var(--reel-speed,1.8s) linear infinite alternate;
+}
+#personal-arcade-v1 .garden-reel-marker::before{
+ content:'';position:absolute;left:7px;top:0;height:20px;width:2px;
+ background:#ffecce;box-shadow:0 0 7px #f7f0d4;
+}
+#personal-arcade-v1 .garden-reel-marker i{
+ position:absolute;left:2px;top:4px;width:12px;height:12px;border-radius:50% 50% 50% 5%;
+ background:radial-gradient(circle at 28% 28%,#fff 0 17%,#ffddbe 35%,#ef7e94 67%,#8a3c83);
+ transform:rotate(-45deg);border:1px solid #fff0d4;
+ box-shadow:0 0 7px 2px #f7aacbb3,0 1px 3px #092d35;
+}
+#personal-arcade-v1 .garden-reel-foot{font-size:8px;color:#a4d9d2}
+#personal-arcade-v1 .garden-reel-tension{flex-shrink:0;color:#f5d69a}
+#personal-arcade-v1 .garden-reel-challenge.reel-hit .garden-reel-heading span:last-child{color:#ffef9a}
+#personal-arcade-v1 .garden-reel-challenge.reel-miss .garden-reel-tension{color:#ff9fb9}
+#personal-arcade-v1 .garden-fishing-controls .garden-reel-pull{
+ min-height:47px;border:1px solid #f1d89a;border-radius:7px 17px 7px 17px;
+ background:linear-gradient(180deg,#e8d5a1,#c4aa71 53%,#9e7945);
+ color:#283b3d;text-shadow:0 1px 0 #fff8d68c;
+ font:900 12px/1.3 system-ui,sans-serif;letter-spacing:.04em;
+ box-shadow:inset 0 1px 0 #fff7d9d4,0 3px 0 #534c3ac4,0 5px 12px #071e2c;
+ touch-action:manipulation;
+}
+#personal-arcade-v1 .garden-fishing-controls .garden-reel-pull:active{
+ transform:translateY(2px);box-shadow:inset 0 2px 4px #725937,0 1px 0 #534c3a;
+}
+#personal-arcade-v1 .garden-fishing-controls .garden-reel-pull:focus-visible{
+ outline:3px solid #e9ffd1;outline-offset:2px;
+}
+#personal-arcade-v1 .garden-stage.is-biting .garden-fish-struggle{
+ position:absolute;z-index:4;left:48%;top:38%;width:34px;height:24px;
+ border:2px solid #ffeff2b0;border-radius:50%;pointer-events:none;
+ box-shadow:0 0 10px #e3eafa;
+ animation:c425f-water-struggle 1.1s ease-out infinite;
+}
+#personal-arcade-v1 .garden-stage.reel-hit .garden-fish-struggle{
+ border-color:#fff7af;box-shadow:0 0 24px #faffc8;
+}
+#personal-arcade-v1 .garden-stage.reel-miss .garden-fish-struggle{
+ border-color:#ffa4b9;box-shadow:0 0 20px #ffa4c9;
+}
+@keyframes c425f-reel-travel{from{left:0%}to{left:100%}}
+@keyframes c425f-water-struggle{
+ 0%{opacity:.9;transform:scale(.45)}100%{opacity:0;transform:scale(2.6)}
+}
+@media(max-width:360px){
+ #personal-arcade-v1 .garden-reel-challenge{padding-left:8px;padding-right:8px}
+ #personal-arcade-v1 .garden-reel-heading{font-size:8px}
+ #personal-arcade-v1 .garden-reel-foot{font-size:7px}
+}
+@media(prefers-reduced-motion:reduce){
+ #personal-arcade-v1 .garden-reel-marker{animation:none;left:var(--reel-rest,50%)}
+ #personal-arcade-v1 .garden-fish-struggle{animation:none!important;opacity:.5}
+}

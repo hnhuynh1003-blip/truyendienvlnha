@@ -7,6 +7,7 @@
  const core=root.DuduPersonalArcadeCoreV1;
  if(!core||!root.document)return;
  const seasonGame=core.seasonGame;
+ const fishing=root.DuduPersonalArcadeFishingC425F;
  const exchangePolicy=root.DuduPersonalArcadeExchangeV1;
  const sparkBridge=root.DuduPersonalSparkExchangeV1;
  const KEY='dudu-personal-arcade:v1:';
@@ -28,7 +29,7 @@
  let tab='neon',drawerOpen=null,activeKey=null,state=null,lastTick=Date.now(),lastSave=0,
   lastPaint=0,lastRenderedKey=null,notice='',noticeUntil=0,error=false,feedback=null,
   exchangeOpen=false,exchangeAmount=10,exchangeBusy=false,resetScrollOnPaint=false,
-  seasonOpen=false;
+  seasonOpen=false,reelFight=null;
  const now=()=>Date.now();
  const isSandbox=()=>typeof IS_SANDBOX_MODE!=='undefined'&&IS_SANDBOX_MODE;
  function identity(){
@@ -65,7 +66,7 @@
   const nextKey=keyFor(identity());
   if(nextKey!==activeKey){
    if(activeKey&&state)save();
-   activeKey=nextKey;state=null;feedback=null;exchangeOpen=false;drawerOpen=null;seasonOpen=false;
+   activeKey=nextKey;state=null;feedback=null;exchangeOpen=false;drawerOpen=null;seasonOpen=false;reelFight=null;
    const time=now();lastTick=time;lastSave=time;
    if(activeKey){
     let saved=null;
@@ -135,6 +136,12 @@
  function countdown(ms){
   const seconds=Math.max(0,Math.ceil(ms/1000));
   return String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');
+ }
+ function currentReelFight(line,time){
+  if(!line||time>line.escapeAt){reelFight=null;return null;}
+  if(time<line.biteAt||!fishing)return null;
+  if(!reelFight||reelFight.key!==fishing.key(line))reelFight=fishing.begin(line);
+  return reelFight;
  }
  const button=(label,action,kind='primary',disabled=false)=>
   `<button type="button" class="arcade-button ${kind}" data-arcade-action="${action}" ${disabled?'disabled':''}>${label}</button>`;
@@ -390,6 +397,8 @@
  function gardenPanel(s,time){
   const g=s.garden,fishHit=activeFeedback('fish',time),plotHit=activeFeedback('garden-plot',time),bubbleHit=activeFeedback('garden-bubble',time);
   const line=g.line,waiting=!!line&&time<line.biteAt,biting=!!line&&!waiting;
+  const reel=currentReelFight(line,time),reelRules=reel?fishing.rules(line,core.FISH_SPECIES[line.fishId],reel.hits):null;
+  const reelFlash=reel?.last&&time-reel.lastAt<1100?reel.last:'';
   const discovered=Object.values(g.fishAlbum).filter(count=>count>0).length;
   const bed=(b,index)=>{
    const mature=b.status==='growing'&&time>=b.readyAt;
@@ -411,7 +420,7 @@
     <header class="arcade-world-heading"><div><span class="arcade-eyebrow">03 / CHILL FARM</span>
       <h3>Vườn Sương</h3><p>Gieo giống, mở rộng vườn và câu cá dưới trăng.</p></div>
       <span class="arcade-world-live">MIST / GARDEN</span></header>
-    <div class="arcade-stage garden-stage garden-pond-tier-${g.pondTier} garden-harvests-${Math.min(3,Math.floor(g.harvests/10))} ${g.plots>2?'garden-expanded':''} ${line?'is-fishing':''} ${biting?'is-biting':''}">
+    <div class="arcade-stage garden-stage garden-pond-tier-${g.pondTier} garden-harvests-${Math.min(3,Math.floor(g.harvests/10))} ${g.plots>2?'garden-expanded':''} ${line?'is-fishing':''} ${biting?'is-biting':''} ${reelFlash?'reel-'+reelFlash:''}">
       <div class="garden-mist garden-mist-a"></div><div class="garden-mist garden-mist-b"></div>
       <div class="garden-cloud garden-cloud-a"></div><div class="garden-cloud garden-cloud-b"></div>
       <span class="garden-moon" aria-hidden="true"></span>
@@ -441,17 +450,29 @@
          <span class="garden-bubble-label" ${g.bubbleReady?'':`data-arcade-until="${g.bubbleAt}"`}>${g.bubbleReady?'✦ MỒI':countdown(g.bubbleAt-time)}</span>
         </button>
         ${bubbleHit?'<span class="garden-bubble-splash" aria-live="polite">+1 MỒI</span>':''}
-        ${line?'<span class="garden-fishing-line"></span><span class="garden-float" aria-hidden="true"></span>':''}</div>
+        ${line?'<span class="garden-fishing-line"></span><span class="garden-float" aria-hidden="true"></span>':''}
+        ${reel?'<span class="garden-fish-struggle" aria-hidden="true"></span>':''}</div>
       ${fishHit?`<div class="garden-catch-pop garden-catch-card" role="status"><span class="garden-fish-portrait fish-${fishHit.fishId||'reed'}" aria-hidden="true"></span><b>${fishHit.label}</b><small>✦ THÊM VÀO NHẬT KÝ CÁ</small></div>`:''}
     </div>
     <div class="arcade-control-panel">
-      <div class="garden-fishing-status" role="status" aria-live="polite">${biting?'✦ CÁ CẮN CÂU!':waiting?
+      <div class="garden-fishing-status" role="status" aria-live="polite">${reel?
+       reelFlash==='hit'?'✦ ĐÚNG NHỊP! KÉO TIẾP':reelFlash==='miss'?'⚠ TRƯỢT NHỊP · DÂY CĂNG!':'✦ CÁ CẮN! GIỮ NHỊP KÉO':biting?'✦ CÁ CẮN CÂU!':waiting?
        `Đang chờ… <span data-arcade-until="${line.biteAt}">${countdown(line.biteAt-time)}</span>`:
        '✧ HỒ SƯƠNG YÊN Ả'}</div>
+      ${reel?`<div class="garden-reel-challenge ${reelFlash?'reel-'+reelFlash:''}" role="group" aria-label="Canh nhịp kéo cá">
+       <div class="garden-reel-heading"><span>✧ KÉO CÁ VÀO BỜ</span><span>${reel.hits}/${reelRules.required} NHỊP</span></div>
+       <div class="garden-reel-track" role="img" aria-label="Phao chạy qua vùng sáng: chạm Kéo dây khi phao nằm trong vùng sáng">
+        <span class="garden-reel-safe" style="left:${reelRules.left}%;width:${reelRules.width}%"></span>
+        <span class="garden-reel-marker" style="--reel-speed:${reelRules.travelSeconds}s;--reel-rest:${reelRules.left+reelRules.width/2}%"><i></i></span>
+       </div>
+       <div class="garden-reel-foot"><span>${reelFlash==='hit'?'✦ ĐÃ GIỮ ĐƯỢC CÁ':reelFlash==='miss'?'✧ THẢ LỎNG, CANH LẠI':'CHẠM KHI PHAO VÀO VÙNG SÁNG'}</span>
+        <span class="garden-reel-tension">CĂNG DÂY ${reel.misses}/${reelRules.maxMisses}</span></div>
+      </div>`:''}
       <div class="garden-fishing-controls" role="group" aria-label="Điều khiển câu cá">
-       ${button(biting?`🎣 THU CÂU · <span data-arcade-until="${line.escapeAt}">${countdown(line.escapeAt-time)}</span>`:
+       ${button(reel?`🎣 KÉO DÂY · <span data-arcade-until="${line.escapeAt}">${countdown(line.escapeAt-time)}</span>`:
+        biting?`🎣 THU CÂU · <span data-arcade-until="${line.escapeAt}">${countdown(line.escapeAt-time)}</span>`:
         waiting?'🎣 ĐANG CHỜ CÁ CẮN':g.bait?'🎣 THẢ CÂU · '+g.bait+' MỒI':'🎣 CHƯA CÓ MỒI',
-        line?'reel-line':'cast-line','power garden-cast-button',waiting||!line&&!g.bait)}</div>
+        reel?'reel-pulse':line?'reel-line':'cast-line',`power garden-cast-button ${reel?'garden-reel-pull':''}`,waiting||!line&&!g.bait)}</div>
       <div class="garden-resources">${hud('NƯỚC','💧 '+g.water+'/'+g.waterCap,'Hồi mỗi 15 phút')}
       ${hud('HẠT GIỐNG','✿ '+g.seeds,'Trong túi hạt')}</div>
       <div class="arcade-panel-heading" data-arcade-panel="garden-seeds"><div><span class="arcade-eyebrow">TÚI HẠT GIỐNG</span><h4>Chọn giống trồng</h4></div></div>
@@ -621,6 +642,31 @@
   notice=result.label==='stone'?'Nhặt được Đá.':result.label==='coal'?'Nhặt được Than.':
    result.label==='iron'?'Nhặt được Sắt.':result.label==='crystal'?'✦ Nhặt được Tinh thạch!':result.label;
   noticeUntil=now()+2500;error=false;save(state,previousState);render();return true;
+ }
+ function pulseReel(){
+  tick();
+  const line=state?.garden?.line,time=now();
+  if(!fishing||!line||time<line.biteAt||time>line.escapeAt)return false;
+  const challenge=currentReelFight(line,time),meter=host()?.querySelector('.garden-reel-challenge');
+  const marker=meter?.querySelector('.garden-reel-marker');
+  const safe=meter?.querySelector('.garden-reel-safe');
+  if(!challenge||!marker||!safe)return false;
+  // Judge the *visible* moving float, not a separate timer that could drift
+  // from its animation on slower Android phones.
+  const m=marker.getBoundingClientRect(),target=safe.getBoundingClientRect();
+  const center=m.left+m.width/2,accurate=center>=target.left+2&&center<=target.right-2;
+  const result=fishing.pulse(challenge,accurate,line,core.FISH_SPECIES[line.fishId],time);
+  if(!result.ok)return false;
+  reelFight=result.fight;
+  if(result.result==='caught'){
+   reelFight=null;
+   return interact('reel-line');
+  }
+  if(result.result==='escaped'){
+   reelFight=null;
+   return interact('snap-line');
+  }
+  render();return accurate;
  }
  async function transferArcade(){
   tick();
@@ -798,6 +844,7 @@
     tab=next;drawerOpen=null;notice='';error=false;render();return;}
    const action=control.dataset.arcadeAction;
    if(action==='transfer'){void transferArcade();return;}
+   if(action==='reel-pulse'){pulseReel();return;}
    if(['jade-open-market','jade-open-workshop','jade-open-vault'].includes(action)){
     drawerOpen=action==='jade-open-market'?'jade-market':
      action==='jade-open-vault'?'jade-vault':'jade-workshop';render();return;

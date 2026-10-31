@@ -493,6 +493,14 @@
    return succeed(fish.icon+' '+fish.name+' · '+line.size+' cm · +'+formatXu(reward)+' Xu Arcade',
     {fishId:line.fishId,size:line.size});
   }
+  if(action==='snap-line'){
+   // A missed timing challenge can end an already-biting line. The spent bait
+   // stays spent, with no catch, coin reward, or change to the save schema.
+   if(!garden.line)return fail('Không có cá trên dây');
+   if(time<garden.line.biteAt)return fail('Cá chưa cắn câu');
+   garden.line=null;
+   return succeed('Dây chùng, cá vùng thoát! Hãy đợi mồi mới để thử lại.');
+  }
   const cropAction=/^crop-(bloom|mint|moon)$/.exec(action||'');
   if(cropAction){
    const crop=cropAction[1];if(!cropUnlocked(garden,crop))return fail('Hãy thu hoạch thêm để mở giống này');
