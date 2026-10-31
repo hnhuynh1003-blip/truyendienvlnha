@@ -436,6 +436,7 @@ async function main() {
         await renderMuseum();
         const album=document.getElementById('dudu-v43-memory-album');
         const museum=document.getElementById('phone-app-museum');
+        museum.querySelector('[data-tab="memories"]')?.click();
         const verified=museum.querySelector('.dudu-v27-museum-help');
         const options=album?.querySelectorAll('#dudu-v43-memory-source option').length;
         const cards=album?.querySelectorAll('.dudu-v43-memory-card').length;
@@ -477,6 +478,7 @@ async function main() {
           milestones:['dudu-letter-3','dudu-rose-7']};
         openPhoneApp('museum');
         await renderMuseum();
+        document.querySelector('#phone-app-museum [data-tab="memories"]')?.click();
         const album=document.getElementById('dudu-v43-memory-album');
         const select=document.getElementById('dudu-v43-memory-source');
         const duduCards=album?.querySelectorAll('.dudu-v43-memory-card').length;

@@ -1,0 +1,230 @@
+/* C4.26 — Museum of Luminous Keepsakes: one physical hall, real ownership only.
+   The artworks are mock rewards, not equipped items or claimable currencies. */
+body.dudu-phone-v11 #cyber-phone #phone-app-museum{
+ min-width:0;overflow-x:hidden;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-museum #museum-items{
+ box-sizing:border-box;min-width:0;width:100%;padding:0!important;margin:0;
+ border:0;max-height:none!important;overflow:visible!important;
+ background:transparent!important;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-root{
+ display:flex;flex-direction:column;gap:7px;color:#f6ecd3;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-head{
+ display:flex;align-items:center;justify-content:space-between;gap:7px;
+ padding:3px 1px 1px;color:#e6cca0;min-width:0;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-head span{
+ font-size:9px;font-weight:900;letter-spacing:.11em;white-space:nowrap;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-ledger{
+ display:block;max-width:124px;overflow:hidden;text-overflow:ellipsis;
+ font-size:9px;font-weight:700;white-space:nowrap;color:#bad3d4;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-tabs{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+ gap:3px;padding:3px;border:1px solid #806c527b;border-radius:9px;
+ background:#182334;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-tab{
+ min-width:0;min-height:35px;padding:5px 3px;
+ border:0;border-radius:6px;background:transparent;
+ color:#9db6bf;font-size:10px;font-weight:850;cursor:pointer;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-tab.is-active{
+ color:#ffe7b0;background:linear-gradient(145deg,#655039,#3c4d50);
+ box-shadow:inset 0 1px #fff1c43d,0 2px 6px #0006;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-root [data-museum-panel][hidden],
+body.dudu-phone-v11 #cyber-phone .museum-c426-action[hidden]{display:none!important}
+body.dudu-phone-v11 #cyber-phone .museum-c426-gallery{
+ min-width:0;display:flex;flex-direction:column;gap:7px;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-stage{
+ position:relative;isolation:isolate;height:225px;overflow:hidden;
+ border:1px solid #bc996b9c;border-radius:12px;
+ background:#17202b url('../assets/museum-c426/hall-night.webp') center 49%/cover no-repeat;
+ box-shadow:inset 0 0 27px #03081190,0 4px 16px #050b1870;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-stage::before{
+ content:'';position:absolute;z-index:0;inset:0;pointer-events:none;
+ background:linear-gradient(180deg,#0a111cbc 0%,#17233813 36%,#090f1a36 75%,#0b1322de 100%);
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-stage::after{
+ content:'';position:absolute;z-index:0;left:-15%;bottom:8%;width:130%;height:68%;
+ pointer-events:none;opacity:.55;
+ background:radial-gradient(ellipse at center,#9ed7e224 0%,transparent 57%);
+ animation:museum-c426-lantern 5.5s ease-in-out infinite alternate;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-glow{
+ position:absolute;left:50%;bottom:16px;transform:translateX(-50%);
+ width:124px;height:26px;border-radius:50%;z-index:1;
+ background:radial-gradient(ellipse,#c7e3dd9b,#c8ac7250 38%,transparent 72%);
+ filter:blur(5px);pointer-events:none;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-stage[data-exhibit="obelisk"] .museum-c426-glow{background:radial-gradient(ellipse,#6ae5f5d6,#0a86b953 47%,transparent 75%)}
+body.dudu-phone-v11 #cyber-phone .museum-c426-stage[data-exhibit="frame"] .museum-c426-glow{background:radial-gradient(ellipse,#f5d08bb3,#c7a25a38 48%,transparent 75%)}
+body.dudu-phone-v11 #cyber-phone .museum-c426-art{
+ position:absolute;z-index:2;display:block;left:50%;bottom:10px;
+ transform:translateX(-50%);max-width:73%;width:auto;height:178px;
+ object-fit:contain;object-position:center bottom;
+ filter:drop-shadow(0 7px 7px #000a) drop-shadow(0 0 12px #b6badd4b);
+ animation:museum-c426-hover 4.4s ease-in-out infinite alternate;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-art.is-frame{
+ height:169px;max-width:83%;bottom:17px;
+ filter:drop-shadow(0 5px 7px #0009) drop-shadow(0 0 10px #d2b26b6c);
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-eyebrow{
+ position:absolute;top:10px;left:9px;right:9px;z-index:3;
+ width:max-content;max-width:calc(100% - 18px);
+ background:#132131cc;border:1px solid #d6ba887c;border-radius:4px;
+ padding:4px 6px;color:#ffdfad;font-size:8px;font-weight:900;letter-spacing:.06em;
+ box-shadow:0 2px 5px #0005;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-kind{
+ position:absolute;z-index:3;right:9px;bottom:8px;
+ font-size:8px;letter-spacing:.06em;font-weight:900;color:#e5d0a1;
+ text-shadow:0 2px 7px #000;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-detail{
+ display:flex;align-items:center;justify-content:space-between;gap:7px;
+ min-width:0;min-height:71px;padding:7px 9px;border-radius:9px;
+ background:#1c2a38;border:1px solid #67778a62;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-copy{
+ display:flex;flex:1;flex-direction:column;gap:3px;min-width:0;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-rarity{
+ font-size:8px;letter-spacing:.05em;color:#c9b38c;font-weight:850;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-copy strong{
+ font-size:13px;line-height:1.25;color:#fff0cd;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-copy p{
+ margin:0!important;font-size:9px;line-height:1.35;color:#b9cbd3;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-action,
+body.dudu-phone-v11 #cyber-phone .museum-c426-back{
+ flex:0 0 auto;max-width:87px;min-height:37px;
+ padding:6px 8px;border:1px solid #d6b880;border-radius:8px;
+ background:linear-gradient(130deg,#735437,#554336);color:#fff0cb;
+ font-size:9px;line-height:1.25;font-weight:850;cursor:pointer;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-collection{
+ display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;min-width:0;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-select{
+ display:flex;flex-direction:column;align-items:center;justify-content:center;
+ min-width:0;min-height:81px;padding:4px 2px 5px;
+ border:1px solid #526274a3;border-radius:8px;
+ background:linear-gradient(180deg,#263647,#162433);
+ color:#aebdc5;cursor:pointer;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-select.is-active{
+ border-color:#f4d5a0;background:linear-gradient(180deg,#41505b,#303c43);
+ box-shadow:inset 0 0 0 1px #f8db9b34,0 0 9px #e8c99a26;
+ color:#ffe4b5;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-select img{
+ display:block;width:100%;height:57px;object-fit:contain;
+ filter:drop-shadow(0 3px 4px #0008);
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-select small{
+ font-size:8px;font-weight:800;line-height:1.3;white-space:nowrap;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-disclaimer{
+ margin:0 2px!important;font-size:9px;line-height:1.4;color:#acc0c8;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-owned,
+body.dudu-phone-v11 #cyber-phone .museum-c426-memories{
+ min-height:190px;border:1px solid #796a5b80;border-radius:11px;
+ background:radial-gradient(ellipse at 50% 0,#8b775327,transparent 63%),#162638;
+ padding:10px;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-state{
+ margin:14px 6px!important;font-size:11px;line-height:1.55;
+ color:#d7c8b4;text-align:center;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-empty{
+ display:flex;flex-direction:column;align-items:center;gap:8px;
+ text-align:center;padding:14px 9px;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-empty-seal{
+ display:grid;place-items:center;width:67px;height:67px;
+ border:1px solid #d9bd898c;border-radius:50%;
+ background:radial-gradient(circle,#a68d5542,#23364982 68%);
+ color:#e9d1a6;font-size:42px;font-family:Georgia,serif;
+ box-shadow:inset 0 0 19px #dcb97718,0 4px 12px #0004;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-empty strong{
+ max-width:23ch;color:#ffe7b3;font-size:13px;line-height:1.3;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-empty p{
+ margin:0!important;font-size:10px;line-height:1.45;color:#bac9cb;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-owned-list{
+ display:flex;flex-direction:column;gap:7px;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-owned-card{
+ display:flex;gap:9px;align-items:center;min-width:0;
+ padding:9px;border:1px solid #c7a8797c;border-radius:9px;
+ background:linear-gradient(120deg,#303742,#1b3740);
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-owned-emblem{
+ display:grid;place-items:center;flex:0 0 42px;height:46px;
+ border:1px solid #cdb37e;border-radius:9px;
+ color:#ffdc9d;background:radial-gradient(circle,#9c835c4b,#273743);
+ font-size:24px;box-shadow:inset 0 0 12px #cbae6632;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-owned-copy{
+ flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-owned-copy small{
+ color:#e8c58b;font-size:8px;letter-spacing:.04em;font-weight:800;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-owned-copy strong{
+ font-size:12px;color:#fff0cf;overflow-wrap:anywhere;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-owned-copy span{
+ font-size:9px;line-height:1.35;color:#bacdd0;overflow-wrap:anywhere;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-memories{
+ padding:6px;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-memory-empty{
+ color:#d9c8a8;font-size:10px;line-height:1.6;padding:13px 9px;
+}
+body.dudu-phone-v11 #cyber-phone #dudu-museum-memory-slot .dudu-v43-memory-album{
+ margin:0;padding:9px 7px 10px;border-radius:9px;border-color:#b79d768c;
+ background:linear-gradient(130deg,#323144,#1c3e47);
+}
+body.dudu-phone-v11 #cyber-phone #dudu-museum-memory-slot .dudu-v43-memory-card{
+ padding:7px 5px;border-radius:8px;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-museum .dudu-v27-museum-help{
+ margin:7px 1px 8px;border:1px solid #53616f80;border-radius:8px;
+ background:#182839;color:#b7cad1;font-size:9px;
+}
+body.dudu-phone-v11 #cyber-phone :is(.museum-c426-tab,.museum-c426-select,.museum-c426-action,.museum-c426-back):focus-visible{
+ outline:2px solid #fce2a9;outline-offset:2px;
+}
+@keyframes museum-c426-hover{
+ from{transform:translate(-50%,1px)}to{transform:translate(-50%,-3px)}
+}
+@keyframes museum-c426-lantern{
+ from{opacity:.31}to{opacity:.7}
+}
+@media(max-width:355px){
+ body.dudu-phone-v11 #cyber-phone .museum-c426-stage{height:209px}
+ body.dudu-phone-v11 #cyber-phone .museum-c426-art{height:162px}
+ body.dudu-phone-v11 #cyber-phone .museum-c426-art.is-frame{height:157px}
+ body.dudu-phone-v11 #cyber-phone .museum-c426-collection{gap:3px}
+ body.dudu-phone-v11 #cyber-phone .museum-c426-select small{font-size:7px}
+ body.dudu-phone-v11 #cyber-phone .museum-c426-detail{padding:7px}
+}
+@media(prefers-reduced-motion:reduce){
+ body.dudu-phone-v11 #cyber-phone .museum-c426-art,
+ body.dudu-phone-v11 #cyber-phone .museum-c426-stage::after{animation:none}
+}

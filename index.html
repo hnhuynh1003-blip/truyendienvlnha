@@ -815,6 +815,7 @@
   <link rel="stylesheet" href="css/vangioi-creator.css?v=3c-1">
   <link rel="stylesheet" href="css/phone-frame-c415.css?v=c415-3">
   <link rel="stylesheet" href="css/arcade-c425g-progression.css?v=c425g-1">
+  <link rel="stylesheet" href="css/museum-vault-c426.css?v=c426-1">
 </head>
 <body>
 
@@ -1243,14 +1244,14 @@
       <div class="phone-sub-app" id="phone-app-museum">
         <div class="phone-app-header">
           <button class="phone-back-btn" onclick="phoneHome()">‹</button>
-          <span>🏛️ Bảo Tàng Ký Ức</span>
+          <span>✦ Bảo Tàng Lưu Quang</span>
           <button type="button" class="btn dudu-v27-museum-refresh" title="Làm mới kỷ vật" aria-label="Làm mới bảo tàng" onclick="renderMuseum()">↻</button>
         </div>
+        <div id="museum-items" aria-label="Đại sảnh và kho phần thưởng Bảo Tàng" style="overflow-y:auto;max-height:300px;font-size:11px;">Chưa tải bộ sưu tập.</div>
         <details class="dudu-v27-details dudu-v27-museum-help">
-          <summary>ⓘ Kỷ vật được xác nhận <span class="dudu-v27-more-hint">Tìm hiểu</span></summary>
-          <p>Chỉ hiển thị kỷ vật có xác nhận từ máy chủ. Vật phẩm nhặt trong kho thông thường không phải kỷ vật hiếm và không tự mở khóa phần thưởng.</p>
+          <summary>ⓘ Quy tắc sở hữu <span class="dudu-v27-more-hint">Tìm hiểu</span></summary>
+          <p>Chỉ kỷ vật được máy chủ xác minh mới thuộc kho sở hữu. Các tượng, khung và quà dự kiến là bản thiết kế; chưa có chức năng nhận hoặc trang bị.</p>
         </details>
-        <div id="museum-items" aria-live="polite" style="overflow-y:auto;max-height:300px;font-size:11px;">Chưa tải bộ sưu tập.</div>
       </div>
 
       <!-- APP: NHIỆM VỤ -->
@@ -5482,6 +5483,19 @@ document.getElementById('phone-home-screen').style.display = 'none';
     async function renderMuseum() {
       const container=document.getElementById('museum-items');
       if(!container)return;
+      const vault=window.DuduMuseumVaultC426;
+      if(vault?.init&&vault?.updateVerified){
+        const identity=currentUsername;
+        vault.init({container,ownerKey:identity||'',sandbox:IS_SANDBOX_MODE});
+        vault.updateVerified({loading:true});
+        window.DuduMuseumMemoriesUIV43?.render?.();
+        const response=await DuduCollectiblesClient.mine();
+        // Keep confirmed objects separated on account switches and closed apps.
+        if(identity!==currentUsername ||
+           document.getElementById('phone-app-museum').style.display!=='flex')return;
+        vault.updateVerified(response);
+        return;
+      }
       // V43.5 local journal is READ ONLY, independent from verified collectibles.
       // Never silently hide the Sandbox album if its script failed to load.
       if(IS_SANDBOX_MODE){
@@ -8655,7 +8669,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/quest-ui-v43-7.js?v=c23c-1&amp;progression=c425g-1"></script>
 <script src="js/economy-runtime-v43.js?v=c23c-1"></script>
 <script src="js/economy-live-v52.js?v=c416-1"></script>
-<script src="js/museum-memories-ui-v43.js?v=2"></script>
+<script src="js/museum-memories-ui-v43.js?v=c426-1"></script>
+<script src="js/museum-vault-c426.js?v=c426-1"></script>
 <script src="js/npc-diary-ui.js?v=1"></script>
 <script src="js/soul-link-ui-v43.js?v=2"></script>
 <script src="js/phone-wallpaper-v34.js?v=copy-1"></script>
