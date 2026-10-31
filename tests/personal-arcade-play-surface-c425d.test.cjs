@@ -22,7 +22,7 @@ test('C4.25D provides a lightweight transparent illustrated three-PC pod atlas',
  assert.match(css,/\.neon-floor-capacity-5/);
  assert.match(css,/\.neon-floor-capacity-7/);
  assert.match(css,/prefers-reduced-motion:reduce/);
- assert.match(html,/arcade-c425d-play-surface\.css\?v=c425d-1/);
+ assert.match(html,/arcade-c425d-play-surface\.css\?v=c425d-2/);
  assert.ok(html.indexOf('arcade-c425d-play-surface.css')>html.indexOf('arcade-c425c-materiality.css'));
 });
 
@@ -38,7 +38,7 @@ test('Jade stock uses a one-line summary and two compact real actions',()=>{
  const panel=context.window.DuduPersonalJadeUIV1.panel(s);
  const dock=panel.match(/<div class="jade-welcome jade-welcome-stock jade-stock-dock">([\s\S]*?)<\/div><\/div>/);
  assert.ok(dock,'The queued stones have a compact action dock');
- assert.match(dock[0],/3 viên đá chờ soi/);
+ assert.match(dock[0],/3 chờ/);
  assert.match(dock[0],/data-arcade-action="jade-select-0"/);
  assert.match(dock[0],/data-arcade-action="jade-open-market"/);
  assert.doesNotMatch(dock[0],/<p>/);

@@ -66,7 +66,7 @@
   const rescueTime=Math.ceil(rescueLeft/60000);
   const canRescue=j.bought>0&&s.coins<jade.MARKETS[0].price;
   if(!stone&&j.stash.length)return `<div class="jade-welcome jade-welcome-stock jade-stock-dock">
-    <div class="jade-stock-dock-summary"><span aria-hidden="true">◈</span><b>${j.stash.length} viên đá chờ soi</b></div>
+    <div class="jade-stock-dock-summary"><span aria-hidden="true">◈</span><b>${j.stash.length} chờ</b></div>
     <div class="jade-stock-dock-actions" role="group" aria-label="Chọn mẫu đá hoặc đến chợ">
       ${btn('Đưa mẫu #'+j.stash[0].id,'jade-select-0','gold')}
       ${btn('＋ Đi chợ','jade-open-market','upgrade',j.stash.length>=jade.MAX_STONES)}
