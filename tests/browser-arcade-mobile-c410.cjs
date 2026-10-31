@@ -163,6 +163,9 @@ async function main(){
   await page.evaluate(()=>{openPhoneApp('honors');window.DuduHonorUIV46.openGame('Trạm Neon');});
   assert.equal(await journeyBoard.locator('.dudu-c437-focus').count(),3,
    'Following choices survive the app switch without writing a reward');
+  // Restore the Hall's original entry tab before legacy title-scoping checks.
+  await page.locator('#dudu-honor-content-c46 .dudu-honor-tabs')
+   .getByRole('button',{name:'Danh hiệu'}).click();
   await page.evaluate(()=>openPhoneApp('arcade'));
   // C4.18: four different game worlds with no redundant heading above the stage.
   const stageLooks=new Set();
