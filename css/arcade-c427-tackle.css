@@ -1,16 +1,16 @@
 /* C4.27 — Vườn Sương: moonlit tackle stall, collectible fish portraits and
    optional premium casting. Only visual layers; mechanics live in Arcade core. */
-#personal-arcade-v1 .fish-glassfin,
+#personal-arcade-v1 .garden-fish-portrait.fish-glassfin,
 #personal-arcade-v1 .garden-fish-species-glassfin{
  background-image:url('../assets/arcade-c427/fish-glassfin.webp');
  background-size:contain;background-position:center;
 }
-#personal-arcade-v1 .fish-lantern,
+#personal-arcade-v1 .garden-fish-portrait.fish-lantern,
 #personal-arcade-v1 .garden-fish-species-lantern{
  background-image:url('../assets/arcade-c427/fish-lantern.webp');
  background-size:contain;background-position:center;
 }
-#personal-arcade-v1 .fish-phoenix,
+#personal-arcade-v1 .garden-fish-portrait.fish-phoenix,
 #personal-arcade-v1 .garden-fish-species-phoenix{
  background-image:url('../assets/arcade-c427/fish-phoenix.webp');
  background-size:contain;background-position:center;

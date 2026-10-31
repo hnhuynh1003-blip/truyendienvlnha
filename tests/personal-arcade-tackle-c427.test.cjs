@@ -85,7 +85,7 @@ test('All three new fish can be encountered without a premium paywall',()=>{
 test('The mobile shop uses the existing rod upgrade and three optimized painted portraits',()=>{
  const html=source('index.html'),ui=source('js/personal-arcade-ui-v1.js');
  const css=source('css/arcade-c427-tackle.css');
- assert.match(html,/arcade-c427-tackle\.css\?v=c427-1/);
+ assert.match(html,/arcade-c427-tackle\.css\?v=c427-2/);
  assert.match(html,/personal-arcade-core-v1\.js\?v=c423-1&amp;fishing=c425f-1&amp;tackle=c427-1/);
  assert.match(html,/progression=c425g-1&amp;tackle=c427-1/);
  for(const action of ['buy-bait-pack','buy-moon-bait','cast-premium-line','rod'])
@@ -101,5 +101,7 @@ test('The mobile shop uses the existing rod upgrade and three optimized painted 
   assert.equal(b.toString('ascii',8,12),'WEBP');
   assert.ok(statSync(join(__dirname,'..',asset)).size<150000);
   assert.match(css,new RegExp(`fish-${fish}\\.webp`));
+  assert.match(css,new RegExp(`\\.garden-fish-portrait\\.fish-${fish}`),
+   'New fish art must stay inside actual discovered fish portraits');
  }
 });
