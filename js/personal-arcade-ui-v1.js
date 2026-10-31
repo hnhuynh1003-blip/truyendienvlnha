@@ -6,6 +6,7 @@
  'use strict';
  const core=root.DuduPersonalArcadeCoreV1;
  if(!core||!root.document)return;
+ const seasonGame=core.seasonGame;
  const exchangePolicy=root.DuduPersonalArcadeExchangeV1;
  const sparkBridge=root.DuduPersonalSparkExchangeV1;
  const KEY='dudu-personal-arcade:v1:';
@@ -19,7 +20,8 @@
   gold:'✹',crystal:'✦',jade:'❖',meteor:'☄',relic:'♜'};
  let tab='neon',drawerOpen=null,activeKey=null,state=null,lastTick=Date.now(),lastSave=0,
   lastPaint=0,lastRenderedKey=null,notice='',noticeUntil=0,error=false,feedback=null,
-  exchangeOpen=false,exchangeAmount=10,exchangeBusy=false,resetScrollOnPaint=false;
+  exchangeOpen=false,exchangeAmount=10,exchangeBusy=false,resetScrollOnPaint=false,
+  seasonOpen=false;
  const now=()=>Date.now();
  const isSandbox=()=>typeof IS_SANDBOX_MODE!=='undefined'&&IS_SANDBOX_MODE;
  function identity(){
@@ -56,7 +58,7 @@
   const nextKey=keyFor(identity());
   if(nextKey!==activeKey){
    if(activeKey&&state)save();
-   activeKey=nextKey;state=null;feedback=null;exchangeOpen=false;drawerOpen=null;
+   activeKey=nextKey;state=null;feedback=null;exchangeOpen=false;drawerOpen=null;seasonOpen=false;
    const time=now();lastTick=time;lastSave=time;
    if(activeKey){
     let saved=null;
@@ -144,6 +146,44 @@
    <span class="neon-facility-icon">${symbol}</span><div><strong>${name}</strong><small>${detail} · ${level}/${max}</small></div>
    ${button(cost===null?'Tối đa':'＋ '+fmt(cost)+' Xu',type,'upgrade',cost===null||state.coins<cost)}</div>`;
  const activeFeedback=(type,time)=>feedback?.type===type&&time-feedback.at<1700?feedback:null;
+ function seasonPanel(s){
+  if(!seasonGame)return '';
+  const record=s.season?.records?.s01||{relics:[],completedAt:0},
+   have=Array.isArray(record.relics)?record.relics:[],
+   complete=!!record.completedAt&&have.length===4,
+   preview=seasonGame.PHASE!=='live';
+  return `<div class="arcade-season-overlay" data-arcade-season-backdrop>
+   <section class="arcade-season-book" role="dialog" aria-modal="true" aria-label="Hộ Chiếu Mùa 1 · Sương Tinh Thạch">
+    <header class="arcade-season-book-header"><div><span>✦ DUDU // SEASON ARCHIVE</span><b>HỘ CHIẾU MÙA 01</b></div>
+     <button type="button" data-arcade-season="close" aria-label="Đóng Hộ Chiếu Mùa">✕</button></header>
+    <div class="arcade-season-book-scroll">
+     <div class="arcade-season-hero"><div class="arcade-season-moon" aria-hidden="true"></div>
+      <div class="arcade-season-crystals" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="arcade-season-hero-type">S01 · KHỞI NGUYÊN</div>
+      <h3>SƯƠNG<br><em>TINH THẠCH</em></h3>
+      <div class="arcade-season-phase">${preview?'◌ CHƯA MỞ · XEM TRƯỚC':complete?'✦ ĐÃ HOÀN THÀNH':'✧ ĐANG SƯU TẦM'}</div>
+     </div>
+     <div class="arcade-season-progress"><strong>✦ BỐN KỶ VẬT KHAI MÙA</strong><span>${have.length}/4</span></div>
+     <div class="arcade-season-track" role="progressbar" aria-label="Kỷ vật Mùa 1" aria-valuemin="0" aria-valuemax="4" aria-valuenow="${have.length}"><i style="width:${have.length*25}%"></i></div>
+     <div class="arcade-season-relic-grid">${seasonGame.RELICS.map(item=>{
+       const earned=have.includes(item.id);
+       return `<button type="button" class="arcade-season-relic season-theme-${item.theme} ${earned?'is-owned':''}"
+        data-arcade-season-go="${item.id}" aria-label="${item.name} · ${earned?'Đã sở hữu':'Chưa nhận'} · Đến ${item.world}">
+        <span class="arcade-season-relic-mark">${earned?'✦':'◇'}</span>
+        <span class="arcade-season-relic-art" aria-hidden="true">${item.icon}</span>
+        <strong>${item.name}</strong><small>${earned?'ĐÃ KHẮC ẤN':item.hint}</small>
+        <span class="arcade-season-relic-world">${item.world} ↗</span></button>`;
+      }).join('')}</div>
+     <div class="arcade-season-final ${complete?'is-unlocked':''}">
+      <span class="arcade-season-final-crest" aria-hidden="true">✥</span>
+      <div><small>${complete?'✦ ĐÃ NHẬN DANH HIỆU':'PHẦN THƯỞNG HOÀN BỘ'}</small>
+       <strong>Ấn Khai Nguyên · S01</strong><span>Danh hiệu: Người Khai Mùa</span></div>
+     </div>
+     <p class="arcade-season-archive-note">${preview?'Sự kiện sẽ kích hoạt sau khi reset thử nghiệm và chốt quyền lưu thưởng.':
+      'Kỷ vật đã nhận không bị tiêu hao, bán hoặc xóa khi chuyển sang mùa khác.'}</p>
+    </div>
+   </section></div>`;
+ }
  const hud=(name,value,small='')=>`<div class="arcade-stat"><span>${name}</span><strong>${value}</strong>${small?`<small>${small}</small>`:''}</div>`;
  function neonPanel(s){
   const n=s.neon,capacity=core.neonCapacity(n),service=core.neonService(n),
@@ -155,7 +195,8 @@
    time=now(),boost=s.neon.turboUntil>time,ready=time>=s.neon.turboReadyAt;
   const activeRate=s.neon.running?core.rate(s):0,
    order=core.neonOrderPattern(n),orderIcons=['☕','🎮','🔧'],
-   orderNames=['Nước','Tay cầm','Sửa máy'],orderReady=time>=n.orderReadyAt;
+   orderNames=['Nước','Tay cầm','Sửa máy'],orderReady=time>=n.orderReadyAt,
+   seasonTicket=!!seasonGame?.neonTicket?.(n);
   const level=Math.min(6,Math.floor((s.neon.cpu+s.neon.gpu)/5)+1);
   const stations=Array.from({length:capacity},(_,i)=>`<div class="neon-computer neon-computer-${i+1} ${i>=n.stations?'is-locked':i<service.guests&&n.running?'is-occupied':''}">
     <div class="neon-monitor"><div class="neon-monitor-glass"><span>${i>=n.stations?'KHOÁ':i<service.guests&&n.running?'KHÁCH':'CRYO<span class="neon-blink">_</span>'}</span>
@@ -225,11 +266,11 @@
       ].map(([name,met,reward],i)=>`<div class="arcade-contract"><span>${s.neon.contracts.includes(i)?'✓':met?'✦':'○'} ${name}</span>
        ${button(s.neon.contracts.includes(i)?'Đã nhận':met?'Nhận '+fmt(reward)+' Xu':'+'+fmt(reward)+' Xu',
         'neon-contract-'+i,'contract',!met||s.neon.contracts.includes(i))}</div>`).join('')}</div>
-      <div class="neon-order-game ${orderReady?'is-ready':'is-waiting'}" aria-label="Quầy dịch vụ khách: hoàn thành ${n.orderWon} đơn, liên tiếp ${n.orderStreak}">
+      <div class="neon-order-game ${orderReady?'is-ready':'is-waiting'} ${seasonTicket?'is-season-ticket':''}" aria-label="Quầy dịch vụ khách: hoàn thành ${n.orderWon} đơn, liên tiếp ${n.orderStreak}">
        <div class="neon-order-heading"><b>✦ QUẦY KHÁCH GỌI</b><span>COMBO ×${n.orderStreak}</span></div>
        <div class="neon-order-scene">
         <div class="neon-order-customer" aria-hidden="true"><i></i><span>♪</span></div>
-        <div class="neon-order-ticket"><small>${!n.running?'ĐÃ ĐÓNG QUẦY':orderReady?'ĐƠN #'+String(n.orderRound+1).padStart(3,'0'):'KHÁCH MỚI SAU'}</small>
+        <div class="neon-order-ticket"><small>${!n.running?'ĐÃ ĐÓNG QUẦY':orderReady?(seasonTicket?'✧ ĐƠN SƯƠNG #':'ĐƠN #')+String(n.orderRound+1).padStart(3,'0'):'KHÁCH MỚI SAU'}</small>
          <div class="neon-order-recipe">${orderReady?order.map((item,i)=>`<span class="${i<n.orderStep?'is-done':''}">${i<n.orderStep?'✓':orderIcons[item]}</span>${i===0?'<i>›</i>':''}`).join(''):
           `<span class="neon-order-timer" data-arcade-until="${n.orderReadyAt}">${countdown(n.orderReadyAt-time)}</span>`}</div>
          <em>${orderReady?`MÓN ${n.orderStep+1}/2 · CHỌN THEO THỨ TỰ`:'CHUẨN BỊ LƯỢT MỚI'}</em></div>
@@ -249,6 +290,7 @@
   const all=Object.values(m.ores).reduce((sum,n)=>sum+n,0),hit=activeFeedback('mine',time),
    maxEnergy=core.maxCharge(m),found=Object.values(m.found).filter(Boolean).length;
   const probeTarget=core.mineProbeTarget(m),probeHit=activeFeedback('probe',time),
+   seasonVein=!!seasonGame?.mineVein?.(m),
    canProbe=!repairing&&m.durability>0&&m.charge>=3;
   return `<section class="arcade-world arcade-world-mine" aria-label="Địa Tầng 07">
     <header class="arcade-world-heading"><div><span class="arcade-eyebrow">02 / CLICKER</span>
@@ -304,8 +346,8 @@
       </div>
       <div class="arcade-craft-row" data-arcade-panel="mine-tools"><div><b>✦ Chế máy dò · cấp ${m.scanner}/3</b><small>8 sắt + 3 tinh thạch · tăng cơ hội quặng hiếm</small></div>
        ${button(m.scanner>=3?'Đã tối đa':'⚒ Chế tạo','mine-scanner','tool',m.scanner>=3||m.ores.iron<8||m.ores.crystal<3)}</div>
-      <div class="mine-seam-game ${probeHit?'is-revealing':''}" aria-label="Thăm dò ba ngách, đã dò ${m.probes} lần và tìm đúng ${m.probeHits} lần">
-       <div class="mine-seam-heading"><b>⌁ THĂM DÒ MẠCH NGẦM</b><span>⚡ 3 / LƯỢT</span></div>
+      <div class="mine-seam-game ${probeHit?'is-revealing':''} ${seasonVein?'is-season-vein':''}" aria-label="Thăm dò ba ngách, đã dò ${m.probes} lần và tìm đúng ${m.probeHits} lần">
+       <div class="mine-seam-heading"><b>${seasonVein?'✧ MẠCH SƯƠNG LAM':'⌁ THĂM DÒ MẠCH NGẦM'}</b><span>⚡ 3 / LƯỢT</span></div>
        <div class="mine-seam-scene" role="group" aria-label="Chọn ngách có tín hiệu mạnh nhất">
         ${[0,1,2].map(i=>{const signal=i===probeTarget?3:i===(probeTarget+1)%3?2:1;
          return `<button type="button" class="mine-seam-tunnel mine-seam-tunnel-${i}" data-arcade-action="mine-probe-${i}"
@@ -447,6 +489,7 @@
           'transfer','gold',!exchangeEnabled()||exchangeBusy||!quoteForExchange().ok)}
         ${exchangeEnabled()?'':'<p>Chức năng đổi Xu chưa mở.</p>'}
       </section></div>`:''}
+    ${seasonOpen?seasonPanel(s):''}
   </div>`;
   if(showToast)element.querySelector('[data-arcade-notice]').textContent=notice;
   const scrollPort=element.querySelector?.('.arcade-scroll');if(scrollPort)scrollPort.scrollTop=previousScroll;
@@ -582,6 +625,10 @@
  }
  function init(){
   const element=host();if(!element)return false;
+  root.document.getElementById('arcade-season-portal-c423')?.addEventListener('click',()=>{
+   if(!ensure())return;
+   seasonOpen=true;drawerOpen=null;exchangeOpen=false;render();
+  });
   const headerWallet=root.document.getElementById('arcade-header-wallet-v1');
   headerWallet?.addEventListener('click',()=>{
    if(!ensure())return;
@@ -593,6 +640,15 @@
    updateExchangePreview();
   });
   element.addEventListener('click',event=>{
+   const seasonControl=event.target.closest?.('button[data-arcade-season]');
+   if(seasonControl?.dataset?.arcadeSeason!=null){seasonOpen=false;render();return;}
+   const seasonDestination=event.target.closest?.('button[data-arcade-season-go]');
+   if(seasonDestination?.dataset?.arcadeSeasonGo!=null){
+    const next=seasonDestination.dataset.arcadeSeasonGo;
+    if(modeLabels[next]){tab=next;seasonOpen=false;drawerOpen=null;
+     resetScrollOnPaint=true;render();}
+    return;
+   }
    const marketSummary=event.target.closest?.('.jade-market-tray summary');
    if(marketSummary?.tagName==='SUMMARY'){
     const tray=marketSummary.parentElement;
@@ -709,8 +765,8 @@
   root.setInterval(tick,1000);
   root.addEventListener('pagehide',()=>save());
   root.document.addEventListener?.('keydown',event=>{
-   if(event.key==='Escape'&&(exchangeOpen||drawerOpen)){
-    if(exchangeOpen)exchangeOpen=false;else drawerOpen=null;
+   if(event.key==='Escape'&&(exchangeOpen||drawerOpen||seasonOpen)){
+    if(seasonOpen)seasonOpen=false;else if(exchangeOpen)exchangeOpen=false;else drawerOpen=null;
     render();
    }
   });

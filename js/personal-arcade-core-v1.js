@@ -11,6 +11,9 @@
  const jadeGame=typeof module==='object'&&module.exports?
   require('./personal-jade-core-v1.js'):
   typeof window!=='undefined'?window.DuduPersonalJadeCoreV1:null;
+ const seasonGame=typeof module==='object'&&module.exports?
+  require('./personal-arcade-season-c423.js'):
+  typeof window!=='undefined'?window.DuduPersonalArcadeSeasonC423:null;
  const WATER_INTERVAL=15*60*1000,REPAIR_INTERVAL=4*60*1000;
  const GROW_INTERVAL=3*60*1000,BUBBLE_INTERVAL=90*1000;
  const MAX_COIN=1000000000,MAX_IDLE_MS=12*60*60*1000;
@@ -86,7 +89,8 @@
     bubbleAt:time+BUBBLE_INTERVAL,bubbleReady:false,bait:0,harvests:0,
     line:null,fishAlbum:Object.fromEntries(Object.keys(FISH_SPECIES).map(id=>[id,0])),
     fishBest:Object.fromEntries(Object.keys(FISH_SPECIES).map(id=>[id,0]))},
-   jade:jadeGame?jadeGame.fresh():null};
+   jade:jadeGame?jadeGame.fresh():null,
+   season:seasonGame?seasonGame.fresh():null};
  };
  const maxDurability=mine=>100+25*(mine.pickLevel-1);
  const mineProbeTarget=mine=>(mine.probes*2+mine.zone+1)%3;
@@ -97,6 +101,7 @@
   const source=raw,neon=source.neon||{},mine=source.mine||{},garden=source.garden||{};
   const state=copy(fallback);
   if(jadeGame)state.jade=jadeGame.norm(source.jade);
+  if(seasonGame)state.season=seasonGame.norm(source.season,time);
   state.lastAt=number(source.lastAt,0,time,time);
   state.coins=number(source.coins,0,MAX_COIN,0);
   state.earned=number(source.earned,0,MAX_COIN,0);
@@ -246,7 +251,7 @@
   state.lastAt=time;
   return state;
  }
- function act(raw,action,now=Date.now(),roll=0.5){
+ function actRaw(raw,action,now=Date.now(),roll=0.5){
   const time=safeTime(now),state=advance(raw,time,0);
   const fail=reason=>({ok:false,reason,state});
   const succeed=(label,extras={})=>({ok:true,label,state,...extras});
@@ -535,9 +540,23 @@
   }
   return fail('Thao tác chưa được hỗ trợ');
  }
+ function act(raw,action,now=Date.now(),roll=0.5){
+  const time=safeTime(now),before=norm(raw,time),outcome=actRaw(raw,action,time,roll);
+  if(!outcome.ok||!seasonGame||!outcome.state?.season)return outcome;
+  const proof=seasonGame.record(outcome.state.season,action,before,outcome.state,time,
+   seasonGame.PHASE==='live');
+  outcome.state.season=proof.state;
+  if(proof.award){
+   outcome.seasonProof=proof.award;
+   outcome.seasonComplete=proof.completed;
+   outcome.label+=proof.completed?' · ✦ Hoàn thành Ấn Khai Nguyên S01!':
+    ' · ✧ Nhận kỷ vật Mùa 1!';
+  }
+  return outcome;
+ }
  const formatXu=tenths=>(tenths/10).toLocaleString('vi-VN',{maximumFractionDigits:1});
  return Object.freeze({fresh,norm,advance,act,rate,upgradeCost,formatXu,
-  neonCapacity,neonService,NEON_SERVICE_INTERVAL,NEON_ORDER_COOLDOWN,neonOrderPattern,mineProbeTarget,
+  neonCapacity,neonService,NEON_SERVICE_INTERVAL,NEON_ORDER_COOLDOWN,neonOrderPattern,mineProbeTarget,seasonGame,
   WATER_INTERVAL,REPAIR_INTERVAL,GROW_INTERVAL,BUBBLE_INTERVAL,ORE_VALUES,ORE_NAMES,
   CROPS,FISH_SPECIES,FISH_REEL_WINDOW,maxCharge,zoneUnlocked,cropUnlocked,maxDurability,bubbleInterval,
   JADE:jadeGame});

@@ -13,15 +13,15 @@ test('C4.4 joins the phone as one Arcade app with four named games',()=>{
  assert.match(html,/DuduPersonalArcadeUIV1\?\.render\(\)/);
  assert.match(html,/personal-jade-core-v1\.js\?v=c414-1/);
  assert.match(html,/personal-jade-ui-v1\.js\?v=c420-1/);
- assert.match(html,/personal-arcade-core-v1\.js\?v=c420-1/);
- assert.match(html,/personal-arcade-ui-v1\.js\?v=c420-1/);
+ assert.match(html,/personal-arcade-core-v1\.js\?v=c423-1/);
+ assert.match(html,/personal-arcade-ui-v1\.js\?v=c423-1/);
  assert.match(html,/personal-arcade-v1\.css\?v=c414-1/);
  assert.match(html,/arcade-immersive-c417\.css\?v=c417-1/);
  assert.match(html,/arcade-playfield-c418\.css\?v=c418-4/);
  assert.match(html,/arcade-live-c419\.css\?v=c419-1/);
  assert.match(html,/arcade-playloops-c420\.css\?v=c420-1/);
  assert.match(html,/id="arcade-header-wallet-v1"/);
- assert.match(html,/ARCADE \/\/ 04/);
+ assert.match(html,/id="arcade-season-portal-c423"[^>]+>✦ MÙA 01<\/button>/);
  const ui=src('js/personal-arcade-ui-v1.js');
  assert.match(ui,/class="neon-order-game/);
  assert.match(ui,/class="mine-seam-game/);

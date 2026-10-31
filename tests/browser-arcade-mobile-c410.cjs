@@ -56,6 +56,24 @@ async function main(){
   const tab=id=>page.locator(rootSelector+' [data-arcade-tab="'+id+'"]');
   const action=id=>page.locator(rootSelector+' button[data-arcade-action="'+id+'"]');
 
+  // C4.23: a compact header button opens the interactive Season passport.
+  await page.locator('#arcade-season-portal-c423').click();
+  const passport=page.locator('.arcade-season-book');
+  assert.equal(await passport.locator('.arcade-season-relic').count(),4);
+  assert.match(await passport.innerText(),/CHƯA MỞ · XEM TRƯỚC/,
+   'Season 01 marks are reserved until the one-time account reset and Rules review');
+  const passportFit=await passport.evaluate(el=>({
+   width:el.getBoundingClientRect().width,
+   overflow:el.scrollWidth-el.clientWidth}));
+  assert.ok(passportFit.width>190 && passportFit.overflow<=2,
+   'Season passport must fit a narrow phone without horizontal overflow');
+  await passport.locator('[data-arcade-season-go="mine"]').click();
+  assert.equal(await tab('mine').getAttribute('aria-selected'),'true',
+   'A relic takes the player to the real game rather than a dead-end collectible card');
+  await page.locator('#arcade-season-portal-c423').click();
+  await passport.locator('[data-arcade-season="close"]').click();
+  await tab('neon').click();
+
   for(const width of [320,390,430]){
    await page.setViewportSize({width,height:844});
    const layout=await page.evaluate(()=>{
