@@ -42,7 +42,7 @@ body.dudu-site-v60 #home-view .library-catalog-page-jump-toggle{
 }
 body.dudu-site-v60 #home-view .library-catalog-page-jump{
   display:flex;flex-wrap:wrap;align-items:end;justify-content:center;
-  gap:8px;width:100%;max-width:360px;
+  gap:8px;width:100%;max-width:360px;box-sizing:border-box;
   padding:10px;border:1px solid #85687d66;border-radius:13px;background:#1e2733;
 }
 body.dudu-site-v60 #home-view .library-catalog-page-jump label{

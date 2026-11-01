@@ -52,6 +52,9 @@ async function main(){
    smartReadAction(0);
   });
   await page.locator('#reader-view').waitFor({state:'visible'});
+  // readChapter finishes its initial scroll reset after 50ms. Wait until that
+  // transition settles before simulating a reader's fast downward swipe.
+  await page.waitForTimeout(120);
   for(const width of [320,390]){
    await page.setViewportSize({width,height:844});
    const boxes=await page.evaluate(()=>{
