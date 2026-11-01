@@ -378,6 +378,66 @@ async function main(){
   await page.locator('#dudu-treasure-back-c438').click();
   assert.equal(await page.locator('#phone-app-arcade').evaluate(el=>el.style.display),'flex');
   console.log('C4.38 Sổ Báu Vật: existing discoveries, honest season previews, mobile fit OK');
+
+  // C4.39: fixture changes ONLY the disposable Sandbox test account save.
+  // Four choices are gallery preferences, not an item grant or main-wallet write.
+  await page.evaluate(()=>{
+   const key='dudu-personal-arcade:v1:sandbox%3Ac410-mobile-tester';
+   const data=JSON.parse(localStorage.getItem(key));
+   data.neon.contracts=[0];
+   data.mine.found.stone=1;data.mine.found.gold=1;data.mine.found.crystal=1;
+   data.garden.fishAlbum.koi=1;data.jade.album['5-1']=1;
+   localStorage.setItem(key,JSON.stringify(data));
+   window.DuduArcadeTreasureUIV438.open('arcade');
+  });
+  await treasures.getByRole('group',{name:'Lọc theo mùa'})
+   .getByRole('button',{name:'Mọi thời kỳ'}).click();
+  await treasures.getByRole('group',{name:'Lọc theo tình trạng'})
+   .getByRole('button',{name:'Đã tìm thấy'}).click();
+  for(const id of ['neon-contract-0','ore-stone','ore-gold','fish-koi']){
+   const pin=treasures.locator('[data-treasure-id="'+id+'"] .dudu-c439-treasure-action');
+   assert.equal(await pin.getAttribute('aria-pressed'),'false');
+   await pin.click();
+   assert.equal(await treasures.locator('[data-treasure-id="'+id+'"] .dudu-c439-treasure-action')
+    .getAttribute('aria-pressed'),'true');
+  }
+  const displayKey='dudu-arcade-showcase:v1:sandbox%3Ac410-mobile-tester';
+  assert.equal(await page.evaluate(key=>JSON.parse(localStorage.getItem(key)).selected.length,displayKey),4);
+  await treasures.locator('[data-treasure-id="jade-5-1"] .dudu-c439-treasure-action').click();
+  assert.match(await treasures.locator('.dudu-c439-notice').innerText(),/đủ 4 bệ/);
+  assert.equal(await page.evaluate(key=>JSON.parse(localStorage.getItem(key)).selected.length,displayKey),4);
+  await treasures.locator('[data-treasure-id="ore-stone"] .dudu-c439-treasure-action').click();
+  await treasures.locator('[data-treasure-id="jade-5-1"] .dudu-c439-treasure-action').click();
+  assert.deepEqual(await page.evaluate(key=>JSON.parse(localStorage.getItem(key)).selected,displayKey),
+   ['neon-contract-0','ore-gold','fish-koi','jade-5-1']);
+  await treasures.locator('.dudu-c439-visit-display').click();
+  const gallery=page.locator('#museum-c426-panel-display');
+  await gallery.locator('.dudu-c439-scene').waitFor();
+  assert.equal(await page.locator('.museum-c426-tab[data-tab="display"]')
+   .getAttribute('aria-selected'),'true');
+  assert.equal(await gallery.locator('.dudu-c439-slot.is-filled').count(),4);
+  assert.match(await gallery.locator('.dudu-c439-scene .dudu-c438-art').evaluate(
+   el=>getComputedStyle(el).backgroundImage),/honor-atlas-2\.webp/,
+   'The plinth uses the original illustrated item, not a generic emoji');
+  await gallery.locator('.dudu-c439-slot.is-filled').nth(2).click();
+  assert.match(await gallery.locator('.dudu-c439-plaque').innerText(),/Vườn Sương/);
+  for(const width of [320,390,430]){
+   await page.setViewportSize({width,height:844});
+   const fit=await gallery.evaluate(el=>({overflow:el.scrollWidth-el.clientWidth,
+    scene:el.querySelector('.dudu-c439-scene').getBoundingClientRect().width,
+    slots:el.querySelector('.dudu-c439-slots').getBoundingClientRect().width}));
+   assert.ok(fit.overflow<=2,'C4.39 display hall must not overflow at '+width+'px');
+   assert.ok(fit.scene>190&&fit.slots<=fit.scene+2,'Four pedestals remain usable at '+width+'px');
+  }
+  await gallery.locator('.dudu-c439-open-book').click();
+  assert.equal(await treasures.getByRole('group',{name:'Lọc theo tình trạng'})
+   .getByRole('button',{name:'Đã tìm thấy'}).getAttribute('aria-pressed'),'true');
+  await page.locator('#dudu-treasure-back-c438').click();
+  assert.equal(await page.locator('.museum-c426-tab[data-tab="display"]')
+   .getAttribute('aria-selected'),'true','Returning from Sổ preserves the personal display room');
+  assert.equal(await gallery.locator('.dudu-c439-slot.is-filled').count(),4);
+  assert.equal(await page.evaluate(()=>window.__arcadeExternalWrites?.length||0),0);
+  console.log('C4.39 Tủ Trưng Bày: four honest favorites, museum room, phone fit OK');
  }finally{
   if(browser)await browser.close();
   await new Promise(resolve=>server.close(resolve));

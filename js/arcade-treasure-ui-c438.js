@@ -117,6 +117,22 @@
   section.append(newButton(item.season==='s01'?'Xem hộ chiếu mùa ›':'Đến '+book.GAME_NAMES[item.game]+' ›',
    'dudu-c438-go',()=>enterGame(item)));
   detail.append(section);body.append(detail);
+  if(item.status==='owned'){
+   const displaying=root.DuduArcadeShowcaseUIV439?.isPinned?.(item.id)===true;
+   const label=displaying?'✦ Đang trưng bày':'◇ Đặt lên bệ';
+   const pin=newButton(label,'dudu-c439-treasure-action'+(displaying?' is-showing':''),()=>{
+    const result=root.DuduArcadeShowcaseUIV439?.toggle?.(item.id);
+    render();
+    if(result&&!result.ok){
+     const reason=result.reason==='full'?'Tủ đủ 4 bệ. Gỡ một món để trưng bày báu vật mới.':
+      'Chưa lưu được cách trưng bày. Bạn có thể thử lại.';
+     const note=make('p','dudu-c439-notice',reason);
+     note.setAttribute('role','status');host()?.prepend(note);
+     root.setTimeout?.(()=>note.remove(),3500);
+    }
+   });
+   pin.setAttribute('aria-pressed',String(displaying));body.append(pin);
+  }
   row.append(body);return row;
  }
  function render(){
@@ -138,6 +154,9 @@
     'Đăng nhập để mở lại nhật ký khám phá của riêng bạn.'));
    return true;
   }
+  panel.append(newButton('✦ Xem Tủ Trưng Bày ›','dudu-c439-visit-display',()=>{
+   root.DuduArcadeShowcaseUIV439?.open?.();
+  }));
   panel.append(toolbar('Lọc theo game','game',[
    ['all','Bốn game'],['neon','Trạm Neon'],['mine','Địa Tầng 07'],
    ['garden','Vườn Sương'],['jade','Ngọc Phường']]));
@@ -163,8 +182,11 @@
   return true;
  }
  function open(from='arcade'){
-  returnTo=from==='honors'?'honors':'arcade';
-  root.openPhoneApp?.('treasures');render();return true;
+  returnTo=from==='honors'?'honors':from==='museum'?'museum':'arcade';
+  root.openPhoneApp?.('treasures');
+  if(identity()!==lastIdentity){lastIdentity=identity()||'';filters=freshFilters();}
+  if(from==='museum'){filters.status='owned';visibleLimit=9;}
+  render();return true;
  }
  function back(){root.openPhoneApp?.(returnTo);}
  function bind(){
@@ -176,6 +198,7 @@
    if(event.key==='dudu-personal-arcade:v1:'+encodeURIComponent(identity()))render();
   });
  }
- root.DuduArcadeTreasureUIV438=Object.freeze({open,back,render});
+ root.DuduArcadeTreasureUIV438=Object.freeze({open,back,render,
+  getIdentity:identity,view:()=>book.snapshot(readSave(identity())),portrait});
  bind();
 })(typeof window!=='undefined'?window:{});

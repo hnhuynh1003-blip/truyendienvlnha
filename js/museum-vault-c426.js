@@ -1,6 +1,7 @@
-/* C4.26 — Museum of future rewards. This is a READ-ONLY exhibition.
- * A design preview is not ownership evidence; only /collectibles/mine
- * can populate the confirmed shelf. No reward granting, writes or claims.
+/* C4.26/C4.39 — Museum of future rewards and device-side display preferences.
+ * Design previews and personal Arcade discovery arrangements are not ownership
+ * evidence; only /collectibles/mine populates the confirmed shelf.
+ * No reward granting, server writes or claims.
  */
 (function(root){
  'use strict';
@@ -66,7 +67,7 @@
   }
  }
  function switchTab(id){
-  if(!['gallery','preview','owned','memories'].includes(id))return;
+  if(!['gallery','display','preview','owned','memories'].includes(id))return;
   active=id;
   for(const tab of host?.querySelectorAll('.museum-c426-tab')||[]){
    const on=tab.dataset.tab===id;
@@ -74,12 +75,14 @@
   }
   for(const panel of host?.querySelectorAll('[data-museum-panel]')||[])
    panel.hidden=panel.dataset.museumPanel!==id;
+  if(id==='display')root.DuduArcadeShowcaseUIV439?.render?.();
  }
  function build(){
   host.replaceChildren();host.classList.add('museum-c426-root');
   const nav=el('nav','museum-c426-tabs');nav.setAttribute('role','tablist');
   nav.setAttribute('aria-label','Khu vực bảo tàng');
-  for(const [id,label] of [['gallery','Chiến tích'],['preview','Quà mùa'],['owned','Kỷ vật thật'],['memories','Kỷ niệm']]){
+  for(const [id,label] of [['gallery','Chiến tích'],['display','Tủ riêng'],
+   ['preview','Quà mùa'],['owned','Kỷ vật thật'],['memories','Kỷ niệm']]){
    const tab=el('button','museum-c426-tab',label);tab.type='button';
    tab.dataset.tab=id;tab.setAttribute('role','tab');tab.id='museum-c426-tab-'+id;
    tab.setAttribute('aria-controls','museum-c426-panel-'+id);
@@ -90,6 +93,10 @@
   local.dataset.museumPanel='gallery';local.setAttribute('role','tabpanel');
   local.setAttribute('aria-labelledby','museum-c426-tab-gallery');
   host.append(local);
+  const display=el('section','dudu-c439-hall');display.id='museum-c426-panel-display';
+  display.dataset.museumPanel='display';display.setAttribute('role','tabpanel');
+  display.setAttribute('aria-labelledby','museum-c426-tab-display');
+  host.append(display);
   const gallery=el('section','museum-c426-gallery');gallery.id='museum-c426-panel-preview';
   gallery.dataset.museumPanel='preview';gallery.setAttribute('role','tabpanel');
   gallery.setAttribute('aria-labelledby','museum-c426-tab-preview');
@@ -142,6 +149,13 @@
   if(changed){owner=ownerKey;sandboxMode=!!sandbox;active='gallery';selected='s01';
    build();host.classList.add('museum-c426-root-ready');}
   root.DuduMuseumGalleryC429?.mount?.({container:getPanel('gallery'),ownerKey:owner,sandbox:sandboxMode});
+  root.DuduArcadeShowcaseUIV439?.mount?.({container:getPanel('display')});
+  return true;
+ }
+ function showDisplay(){
+  if(!host)return false;
+  switchTab('display');
+  root.DuduArcadeShowcaseUIV439?.render?.();
   return true;
  }
  function updateVerified(result){
@@ -188,5 +202,5 @@
   }
   container.append(list);return true;
  }
- root.DuduMuseumVaultC426=Object.freeze({init,updateVerified,exhibits});
+ root.DuduMuseumVaultC426=Object.freeze({init,updateVerified,showDisplay,exhibits});
 })(typeof window!=='undefined'?window:{});
