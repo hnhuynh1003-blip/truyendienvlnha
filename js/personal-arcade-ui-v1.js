@@ -473,8 +473,8 @@
        `Đang chờ… <span data-arcade-until="${line.biteAt}">${countdown(line.biteAt-time)}</span>`:
        '✧ HỒ SƯƠNG YÊN Ả'}</div>
       ${!line?`<div class="garden-weather-whisper">◈ ${weather.hint}${weather.night?' · Cá đêm có thể xuất hiện':''}</div>`:''}
-      ${reel?`<div class="garden-reel-challenge ${reelFlash?'reel-'+reelFlash:''}" role="group" aria-label="Canh nhịp kéo cá">
-       <div class="garden-reel-heading"><span>✧ KÉO CÁ VÀO BỜ</span><span>${reel.hits}/${reelRules.required} NHỊP</span></div>
+      ${reel?`<div class="garden-reel-challenge reel-tier-${reelRules.tier} ${reelFlash?'reel-'+reelFlash:''}" role="group" aria-label="Canh nhịp kéo ${reelRules.label.toLowerCase()}">
+       <div class="garden-reel-heading"><span>✧ ${reelRules.label.toUpperCase()}</span><span>${reel.hits}/${reelRules.required} NHỊP</span></div>
        <div class="garden-reel-track" role="img" aria-label="Phao chạy qua vùng sáng: chạm Kéo dây khi phao nằm trong vùng sáng">
         <span class="garden-reel-safe" style="left:${reelRules.left}%;width:${reelRules.width}%"></span>
         <span class="garden-reel-marker" style="--reel-speed:${reelRules.travelSeconds}s;--reel-rest:${reelRules.left+reelRules.width/2}%"><i></i></span>

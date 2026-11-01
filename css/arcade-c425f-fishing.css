@@ -13,6 +13,19 @@
 }
 #personal-arcade-v1 .garden-reel-heading{color:#fff3d1;margin-bottom:6px}
 #personal-arcade-v1 .garden-reel-heading span:last-child{color:#aff9df;font-size:11px}
+#personal-arcade-v1 .garden-reel-challenge.reel-tier-epic{
+ border-top-color:#c3b8ff;border-bottom-color:#b9b1f788;
+ background:linear-gradient(180deg,#29264cf3,#111d35f7);
+}
+#personal-arcade-v1 .garden-reel-challenge.reel-tier-mythic{
+ border-top-color:#ffe8a4;border-bottom-color:#e7c275a8;
+ background:linear-gradient(180deg,#55432cf3,#242039f7);
+ box-shadow:inset 0 5px 16px #ffe19d20,0 7px 13px #170d25a0;
+}
+#personal-arcade-v1 .garden-reel-challenge.reel-tier-mythic .garden-reel-safe{
+ background:linear-gradient(180deg,#f8e5a5aa,#d9b56f99 52%,#e7d0a4a8);
+ box-shadow:0 0 13px #fbe49db8,inset 0 0 8px #fff1c6ac;
+}
 #personal-arcade-v1 .garden-reel-track{
  position:relative;height:26px;margin:0 2px 6px;overflow:hidden;border-radius:18px;
  border:1px solid #7eb8b9a8;

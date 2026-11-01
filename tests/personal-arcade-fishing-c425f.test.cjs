@@ -14,11 +14,11 @@ function loadedBait(){
  return core.act(s,'catch-bubble',T+core.BUBBLE_INTERVAL,.2).state;
 }
 
-test('C4.25F timing rules grow with rod upgrades and challenge rarer fish',()=>{
- const line={fishId:'koi',biteAt:T+3000,escapeAt:T+28000,size:31,rod:1};
- const basic=fishing.rules(line,core.FISH_SPECIES.koi);
+test('C4.40A timing rules grow with rod upgrades and challenge rarer fish',()=>{
+ const line={fishId:'reed',biteAt:T+3000,escapeAt:T+28000,size:31,rod:1};
+ const basic=fishing.rules(line,core.FISH_SPECIES.reed);
  const rare=fishing.rules({...line,fishId:'moonfish'},core.FISH_SPECIES.moonfish);
- const upgraded=fishing.rules({...line,rod:5},core.FISH_SPECIES.koi);
+ const upgraded=fishing.rules({...line,rod:5},core.FISH_SPECIES.reed);
  assert.equal(basic.required,2);
  assert.equal(rare.required,3);
  assert.ok(rare.width<basic.width);
@@ -29,8 +29,46 @@ test('C4.25F timing rules grow with rod upgrades and challenge rarer fish',()=>{
  const started=fishing.begin(line);
  assert.equal(started.hits,0);
  assert.equal(started.misses,0);
- assert.equal(fishing.pulse(started,true,{...line,size:32},core.FISH_SPECIES.koi).ok,false,
+ assert.equal(fishing.pulse(started,true,{...line,size:32},core.FISH_SPECIES.reed).ok,false,
   'An older fish cannot reuse a timing challenge');
+});
+
+test('C4.40A five distinct skill tiers preserve the catch table and provide an attainable challenge',()=>{
+ const species=['reed','koi','moonfish','crystal','dragon'];
+ const expected=[2,3,3,4,5];
+ const widths=species.map(id=>fishing.rules({fishId:id,biteAt:T+3000,
+  escapeAt:T+28000,size:60,rod:1},core.FISH_SPECIES[id]));
+ assert.deepEqual(widths.map(x=>x.required),expected);
+ assert.deepEqual(widths.map(x=>x.tier),['common','rare','uncommon','epic','mythic']);
+ for(let i=1;i<widths.length;i++)assert.ok(widths[i].width<widths[i-1].width);
+ const legendary=widths[4];
+ assert.ok(legendary.width>=18,'On-screen target remains visible on narrow phones');
+ assert.ok(legendary.travelSeconds>=1.3,'The float should not move impossibly fast');
+ const upgraded=fishing.rules({fishId:'dragon',biteAt:T+3000,
+  escapeAt:T+28000,size:60,rod:5},core.FISH_SPECIES.dragon);
+ assert.equal(upgraded.required,5,'Upgrading a rod helps, but does not erase the challenge');
+ assert.ok(upgraded.width>legendary.width);
+ const s=core.fresh(T);
+ assert.equal(s.garden.fish,0);
+ assert.equal(s.coins,0);
+});
+
+test('C4.40A one quick double-tap cannot count as multiple successful reel beats',()=>{
+ const line={fishId:'dragon',biteAt:T+3000,escapeAt:T+28000,size:66,rod:1};
+ let challenge=fishing.begin(line);
+ const first=fishing.pulse(challenge,true,line,core.FISH_SPECIES.dragon,T+3100);
+ assert.equal(first.ok,true);challenge=first.fight;
+ const tooFast=fishing.pulse(challenge,true,line,core.FISH_SPECIES.dragon,T+3120);
+ assert.equal(tooFast.ok,false);
+ assert.equal(tooFast.reason,'cooldown');
+ assert.equal(challenge.hits,1);
+ for(let beat=1;beat<5;beat++){
+  const result=fishing.pulse(challenge,true,line,core.FISH_SPECIES.dragon,
+   T+3100+beat*fishing.PULSE_COOLDOWN_MS);
+  assert.equal(result.ok,true);challenge=result.fight;
+  assert.equal(result.result,beat===4?'caught':'hit');
+ }
+ assert.equal(challenge.hits,5);
 });
 
 test('Real success still requires core reel-line; the timing helper never awards Xu',()=>{
@@ -39,9 +77,9 @@ test('Real success still requires core reel-line; the timing helper never awards
  const line=cast.state.garden.line;
  const beforeCoins=cast.state.coins;
  let challenge=fishing.begin(line);
- const a=fishing.pulse(challenge,true,line,core.FISH_SPECIES[line.fishId]);
+ const a=fishing.pulse(challenge,true,line,core.FISH_SPECIES[line.fishId],T+3000);
  assert.equal(a.result,'hit');challenge=a.fight;
- const b=fishing.pulse(challenge,true,line,core.FISH_SPECIES[line.fishId]);
+ const b=fishing.pulse(challenge,true,line,core.FISH_SPECIES[line.fishId],T+3500);
  assert.equal(b.result,'caught');
  assert.equal(cast.state.garden.fish,0);
  assert.equal(cast.state.coins,beforeCoins);
@@ -62,7 +100,7 @@ test('Three missed timing pulls snap only the active line without fish or reward
  assert.equal(core.act(before,'snap-line',line.biteAt-1,.2).ok,false);
  let challenge=fishing.begin(line),out;
  for(let i=0;i<3;i++){
-  out=fishing.pulse(challenge,false,line,core.FISH_SPECIES[line.fishId]);
+  out=fishing.pulse(challenge,false,line,core.FISH_SPECIES[line.fishId],T+3000+i*500);
   challenge=out.fight;
  }
  assert.equal(out.result,'escaped');
@@ -81,10 +119,10 @@ test('Three missed timing pulls snap only the active line without fish or reward
 test('C4.25F is an actual animated and tappable game surface on top of the painted pond',()=>{
  const html=source('index.html'),ui=source('js/personal-arcade-ui-v1.js');
  const css=source('css/arcade-c425f-fishing.css');
- assert.match(html,/arcade-c425f-fishing\.css\?v=c425f-1/);
- assert.match(html,/personal-arcade-fishing-c425f\.js\?v=c425f-1/);
+ assert.match(html,/arcade-c425f-fishing\.css\?v=c440a-1/);
+ assert.match(html,/personal-arcade-fishing-c425f\.js\?v=c440a-1/);
  assert.match(html,/personal-arcade-core-v1\.js\?v=c423-1&amp;fishing=c425f-1/);
- assert.match(html,/fishing=c425f-1/);
+ assert.match(html,/fishing=c440a-1/);
  assert.match(ui,/data-arcade-action="reel-pulse"|reel\?'reel-pulse'/);
  assert.match(ui,/function pulseReel\(\)/);
  assert.match(ui,/getBoundingClientRect\(\)/);
@@ -92,6 +130,7 @@ test('C4.25F is an actual animated and tappable game surface on top of the paint
  assert.match(ui,/interact\('snap-line'\)/);
  assert.match(css,/garden-reel-safe/);
  assert.match(css,/garden-reel-marker/);
+ assert.match(css,/reel-tier-mythic/);
  assert.match(css,/@keyframes c425f-reel-travel/);
  assert.match(css,/prefers-reduced-motion:reduce/);
  assert.doesNotMatch(ui,/onpointerdown|onpointerup/,'Button taps must remain accessible to keyboard');
