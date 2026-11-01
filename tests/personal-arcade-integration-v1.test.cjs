@@ -12,7 +12,7 @@ test('C4.4 joins the phone as one Arcade app with four named games',()=>{
  assert.match(html,/onclick="openPhoneApp\('arcade'\)"/);
  assert.match(html,/id="phone-app-arcade"/);
  assert.match(html,/DuduPersonalArcadeUIV1\?\.render\(\)/);
- assert.match(html,/personal-jade-core-v1\.js\?v=c414-1/);
+ assert.match(html,/personal-jade-core-v1\.js\?v=c440b-1/);
  assert.match(html,/personal-jade-ui-v1\.js\?v=[^"&]+/);
  assert.match(html,/personal-arcade-core-v1\.js\?v=c423-1/);
  assert.match(html,/personal-arcade-ui-v1\.js\?v=[^"&]+/);

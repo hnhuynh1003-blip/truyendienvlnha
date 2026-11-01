@@ -16,6 +16,7 @@ test('C4.9 jade market expected payout remains risky without exponential guarant
   let total=0,winning=0,duds=0,top=0;
   for(let n=1;n<=trials;n++){
    const stone=jade.generate(site,n,(n*.61803398875)%1);
+   stone.payoutV=2; // historical C4.9 cohort; C4.40B prices only new purchases
    const value=jade.cutValue(stone,1);
    total+=value;top=Math.max(top,value);
    if(value>market.price+jade.cuttingFee(site))winning++;
@@ -36,12 +37,12 @@ test('C4.9 jade market expected payout remains risky without exponential guarant
 test('C4.9 legacy purchased stones preserve original valuations on reload',()=>{
  let s=arcade.fresh(TIME);s.coins=100000;s.jade.sold=12;s.jade.saw=2;
  let r=take(s,'jade-buy-2',.17);assert.equal(r.ok,true);s=r.state;
- const v2=jade.baseValue(s.jade.active);
+ const v3=jade.baseValue(s.jade.active);
  const old=JSON.parse(JSON.stringify(s));delete old.jade.active.payoutV;
  const migrated=clone(old);
  assert.equal(migrated.jade.active.payoutV,1);
- assert.ok(jade.baseValue(migrated.jade.active)>v2*2);
- assert.equal(clone(s).jade.active.payoutV,2);
+ assert.ok(jade.baseValue(migrated.jade.active)>v3*2);
+ assert.equal(clone(s).jade.active.payoutV,3);
  assert.equal(clone(s).coins,s.coins);
  assert.equal(clone(s).jade.sold,12);
 });

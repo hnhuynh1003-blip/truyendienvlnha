@@ -26,9 +26,11 @@
  const CRAFTS=Object.freeze({bangle:{name:'Vòng tay',mult:1.75,min:5},pendant:{name:'Mặt dây chuyền',mult:1.45,min:2},ring:{name:'Mặt nhẫn',mult:1.25,min:1},beads:{name:'Chuỗi hạt',mult:1.12,min:1}});
  const gradeMult=[0,.85,1.25,1.8,2.7,4.2,6.5,11];
  const colorMult=[1,1.25,1.65,1.7,2.1,1.9,4.6,3.8];
- // C4.9: high-tier stones retain their rare jackpots without making every
- // average purchase fund the whole workshop. Legacy stones keep old pricing.
- const payoutScale=[1,.8,.34,.30,.15];
+ // C4.40B: temper the expected returns of newly purchased high-tier stones.
+ // Existing raw/window stones retain their V1/V2 valuation; cut/crafted
+ // specimens already store their final price and are never repriced here.
+ const payoutScaleV2=[1,.8,.34,.30,.15];
+ const payoutScaleV3=[1,.72,.26,.22,.09];
  const RESCUE_INTERVAL=10*60*1000;
  const gradeOdds=[
   [70,15,9,5,1,0,0,0],
@@ -69,7 +71,7 @@
   if(v.phase==='crafted'&&!CRAFTS[v.craft])return null;
   return {id:v.id,site:v.site,grade:v.grade,color:v.color,size:v.size,
    flaw:v.flaw,seed:v.seed,phase:v.phase,scans:[...v.scans],
-   payoutV:integer(v.payoutV,1,2,1),practice:v.practice===true,
+   payoutV:integer(v.payoutV,1,3,1),practice:v.practice===true,
    savedFracture:v.savedFracture===true,offer:integer(v.offer,0,MAX,0),
    cutValue:integer(v.cutValue,0,MAX,0),craft:CRAFTS[v.craft]?v.craft:null,
    craftValue:integer(v.craftValue,0,MAX,0)};
@@ -116,7 +118,7 @@
   if(color===6&&site<3)color=1; // The Imperial-green deposit belongs to Hắc Ô Sa / Tàn Tích.
   const flaw=FLAWS[pick([15,35,25,8,17],rng())];
   return {id,site,grade,color,size:2+Math.floor(rng()*7)+(site>=2?1:0),
-   flaw,seed,phase:'raw',scans:[false,false,false],payoutV:2,practice:false,savedFracture:false,
+   flaw,seed,phase:'raw',scans:[false,false,false],payoutV:3,practice:false,savedFracture:false,
    offer:0,cutValue:0,craft:null,craftValue:0};
  }
  // A stall sample is fixed by the next stone ID, market and tray position.
@@ -175,7 +177,8 @@
  }
  const baseValue=stone=>stone.grade===0?Math.max(1,Math.round(MARKETS[stone.site].price*.055)):
   Math.round(MARKETS[stone.site].price*1.45*gradeMult[stone.grade]*colorMult[stone.color]*
-   (stone.size/5)*(stone.payoutV===2?payoutScale[stone.site]:1));
+   (stone.size/5)*(stone.payoutV===3?payoutScaleV3[stone.site]:
+    stone.payoutV===2?payoutScaleV2[stone.site]:1));
  function cutValue(stone,saw){
   if(stone.grade===0||stone.flaw==='skin')return Math.max(1,Math.round(MARKETS[stone.site].price*.05));
   let value=baseValue(stone);
