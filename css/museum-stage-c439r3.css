@@ -6,7 +6,8 @@ body.dudu-phone-v11 #cyber-phone .museum-c429-scene-trophies{
  background-position:center 50%;background-size:cover;
 }
 body.dudu-phone-v11 #cyber-phone .museum-c429-feature-art{
- top:7%;height:51%;bottom:auto;
+ /* Trophy PNGs include transparent breathing room beneath their bases. */
+ top:13%;height:51%;bottom:auto;
 }
 body.dudu-phone-v11 #cyber-phone .museum-c426-stage{
  background-image:url('../assets/museum-c439r3/solo-hall.webp');

@@ -19,8 +19,8 @@ test('C4.39R3 gallery backgrounds are original, lightweight single-stand WebP ar
  assert.match(css,/\.museum-c426-stage\{[\s\S]*?solo-hall\.webp/);
  assert.match(css,/\.dudu-c439-scene\{[\s\S]*?solo-hall\.webp/);
  assert.match(css,/background-position:center 50%;background-size:cover/);
- assert.match(css,/\.museum-c429-feature-art\{\s*top:7%;height:51%/);
- assert.match(index,/museum-stage-c439r2\.css\?v=c439r2-3[\s\S]*museum-stage-c439r3\.css\?v=c439r3-1/);
+ assert.match(css,/\.museum-c429-feature-art\{[\s\S]*?top:13%;height:51%/);
+ assert.match(index,/museum-stage-c439r2\.css\?v=c439r2-3[\s\S]*museum-stage-c439r3\.css\?v=c439r3-2/);
  assert.equal((css.match(/\.webp'\)/g)||[]).length,3,
   'one rotunda and one hall backdrop, with hall shared between two wings');
 });
