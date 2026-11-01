@@ -394,7 +394,9 @@ async function main(){
    .getByRole('button',{name:'Mọi thời kỳ'}).click();
   await treasures.getByRole('group',{name:'Lọc theo tình trạng'})
    .getByRole('button',{name:'Đã tìm thấy'}).click();
-  for(const id of ['neon-contract-0','ore-stone','ore-gold','fish-koi']){
+  const fishPin=treasures.locator('[data-treasure-id="fish-koi"] .dudu-c439-treasure-action');
+  assert.equal(await fishPin.count(),0,'Fish are recorded in the Fish Album and Aquarium, not the Showcase');
+  for(const id of ['neon-contract-0','ore-stone','ore-gold','jade-5-1']){
    const pin=treasures.locator('[data-treasure-id="'+id+'"] .dudu-c439-treasure-action');
    assert.equal(await pin.getAttribute('aria-pressed'),'false');
    await pin.click();
@@ -403,13 +405,13 @@ async function main(){
   }
   const displayKey='dudu-arcade-showcase:v1:sandbox%3Ac410-mobile-tester';
   assert.equal(await page.evaluate(key=>JSON.parse(localStorage.getItem(key)).selected.length,displayKey),4);
-  await treasures.locator('[data-treasure-id="jade-5-1"] .dudu-c439-treasure-action').click();
+  await treasures.locator('[data-treasure-id="ore-crystal"] .dudu-c439-treasure-action').click();
   assert.match(await treasures.locator('.dudu-c439-notice').innerText(),/đủ 4 bệ/);
   assert.equal(await page.evaluate(key=>JSON.parse(localStorage.getItem(key)).selected.length,displayKey),4);
   await treasures.locator('[data-treasure-id="ore-stone"] .dudu-c439-treasure-action').click();
-  await treasures.locator('[data-treasure-id="jade-5-1"] .dudu-c439-treasure-action').click();
+  await treasures.locator('[data-treasure-id="ore-crystal"] .dudu-c439-treasure-action').click();
   assert.deepEqual(await page.evaluate(key=>JSON.parse(localStorage.getItem(key)).selected,displayKey),
-   ['neon-contract-0','ore-gold','fish-koi','jade-5-1']);
+   ['neon-contract-0','ore-gold','jade-5-1','ore-crystal']);
   await treasures.locator('.dudu-c439-visit-display').click();
   const gallery=page.locator('#museum-c426-panel-display');
   await gallery.locator('.dudu-c439-scene').waitFor();
@@ -425,8 +427,10 @@ async function main(){
   assert.match(await gallery.locator('.dudu-c439-scene .dudu-c438-art').evaluate(
    el=>getComputedStyle(el).backgroundImage),/honor-atlas-2\.webp/,
    'The plinth uses the original illustrated item, not a generic emoji');
+  assert.equal(await gallery.locator('.dudu-c439-plinth, .dudu-c439-plinth-foot').count(),0,
+   'The hall already has a physical stone dais; do not overlay a second CSS stand');
   await gallery.locator('.dudu-c439-slot.is-filled').nth(2).click();
-  assert.match(await gallery.locator('.dudu-c439-plaque').innerText(),/Vườn Sương/);
+  assert.match(await gallery.locator('.dudu-c439-plaque').innerText(),/Ngọc Phường/);
   for(const width of [320,390,430]){
    await page.setViewportSize({width,height:844});
    const fit=await gallery.evaluate(el=>({overflow:el.scrollWidth-el.clientWidth,
@@ -442,6 +446,19 @@ async function main(){
   assert.equal(await page.locator('.museum-c426-tab[data-tab="display"]')
    .getAttribute('aria-selected'),'true','Returning from Sổ preserves the personal display room');
   assert.equal(await gallery.locator('.dudu-c439-slot.is-filled').count(),4);
+  await page.locator('.museum-c426-tab[data-tab="preview"]').click();
+  const seasonal=page.locator('#museum-c426-panel-preview');
+  assert.equal(await seasonal.locator('.museum-c426-select').count(),5);
+  assert.equal(await seasonal.locator('.museum-c426-art').getAttribute('data-relic'),'neon');
+  assert.match(await seasonal.locator('.museum-c426-art').evaluate(
+   el=>getComputedStyle(el).backgroundImage),/s01-relic-atlas\.webp/);
+  for(const relic of ['mine','garden','jade','founder']){
+   await seasonal.locator('.museum-c426-select[data-exhibit="s01-'+relic+'"]').click();
+   assert.equal(await seasonal.locator('.museum-c426-art').getAttribute('data-relic'),relic);
+  }
+  assert.match(await seasonal.locator('.museum-c426-art').evaluate(
+   el=>getComputedStyle(el).backgroundImage),/s01-founder-crest\.webp/);
+  await page.locator('.museum-c426-tab[data-tab="display"]').click();
   assert.equal(await page.evaluate(()=>window.__arcadeExternalWrites?.length||0),0);
   console.log('C4.39 Tủ Trưng Bày: four honest favorites, museum room, phone fit OK');
  }finally{

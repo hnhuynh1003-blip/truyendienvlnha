@@ -18,8 +18,11 @@
   const list=Array.isArray(source)?source:Array.isArray(source?.selected)?source.selected:[];
   return [...new Set(list.filter(validId))].slice(0,MAX_SLOTS);
  }
+ // Fish have their own Aquarium (Quý+). Keep old fish IDs parseable in
+ // historical preferences, but never show/accept them in this display room.
  const ownedIds=book=>new Set((book?.items||[]).filter(item=>
-  item.status==='owned'&&item.owned===true&&item.season==='evergreen').map(item=>item.id));
+  item.status==='owned'&&item.owned===true&&item.season==='evergreen'&&
+  item.kind!=='fish').map(item=>item.id));
  function visible(raw,book){
   const allowed=ownedIds(book);
   return normalize(raw).filter(id=>allowed.has(id));

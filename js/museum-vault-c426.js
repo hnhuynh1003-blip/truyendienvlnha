@@ -6,24 +6,24 @@
 (function(root){
  'use strict';
  if(!root.document)return;
- const ART='assets/museum-c426/';
+ // This wing mirrors the *same* four Season 01 artworks as its Passport.
+ // Long-term achievement statues belong to Chiến Tích, not Quà mùa.
+ const seasonRelics=root.DuduPersonalArcadeSeasonC423?.RELICS||[
+  {id:'neon',name:'Vi Mạch Bình Minh'},
+  {id:'mine',name:'Tinh Thạch Sương Lam'},
+  {id:'garden',name:'Giọt Sương Nguyệt'},
+  {id:'jade',name:'Ngọc Ấn Khai Mùa'}
+ ];
  const exhibits=Object.freeze([
-  Object.freeze({id:'s01',name:'Ấn Khai Nguyên',group:'Mùa 01',
-   kind:'KỶ VẬT MÙA',rarity:'Huyền thoại',
-   story:'Phần thưởng hoàn bộ Sương Tinh Thạch. Chỉ xem trước; chưa có quyền nhận.',
-   image:'assets/arcade-season/s01-founder-crest.webp',action:'season',label:'Xem Hộ chiếu'}),
-  Object.freeze({id:'keeper',name:'Người Gác Tinh Quang',group:'Nhiệm vụ',
-   kind:'TƯỢNG KỶ NIỆM',rarity:'Sử thi',
-   story:'Phác thảo tượng cho một chuỗi nhiệm vụ đặc biệt trong tương lai.',
-   image:ART+'statue-starkeeper.webp',action:'quests',label:'Xem Nhiệm vụ'}),
-  Object.freeze({id:'obelisk',name:'Trụ Tinh Vân',group:'Thành tựu',
-   kind:'TƯỢNG VINH DANH',rarity:'Huyền thoại',
-   story:'Mẫu bảo vật bằng hắc diện thạch, dành cho những cột mốc chinh phục.',
-   image:ART+'obelisk-nebula.webp',action:'honors',label:'Sổ Vinh Danh'}),
-  Object.freeze({id:'frame',name:'Khung Vệt Sao',group:'Khung quà',
-   kind:'KHUNG TRƯNG BÀY',rarity:'Sử thi',
-   story:'Mẫu khung kỷ niệm có lõi trong suốt, chưa gắn vào hệ trang bị.',
-   image:ART+'frame-astral.webp',action:null,label:null})
+  ...seasonRelics.map((r,i)=>Object.freeze({id:'s01-'+r.id,name:r.name,
+   artId:r.id,group:'Mùa 01',kind:'BÁU VẬT 0'+(i+1)+' / 04',rarity:'Sử thi',
+   story:'Báu vật khởi nguyên của '+(r.world||'bốn hành trình')+
+    '. Chưa phát hành; chưa thể nhận hoặc trưng bày như vật phẩm đã sở hữu.',
+   action:'season',label:'Xem Hộ chiếu'})),
+  Object.freeze({id:'s01-founder',name:'Ấn Khai Nguyên',artId:'founder',
+   group:'Di sản · Mùa 01',kind:'DI SẢN CUỐI MÙA',rarity:'Di sản',
+   story:'Di sản dành cho hành trình lớn qua bốn thế giới. Hiện chỉ là hình xem trước.',
+   action:'season',label:'Xem Hộ chiếu'})
  ]);
  const el=(tag,cls,label)=>{
   const node=root.document.createElement(tag);
@@ -31,7 +31,7 @@
   if(label!==undefined)node.textContent=String(label);
   return node;
  };
- let host=null,owner='',sandboxMode=false,active='gallery',selected='s01';
+ let host=null,owner='',sandboxMode=false,active='gallery',selected='s01-neon';
  const byId=id=>root.document.getElementById(id);
  const getPanel=id=>host?.querySelector('[data-museum-panel="'+id+'"]');
  function openSource(item){
@@ -47,8 +47,8 @@
   const stage=host?.querySelector('.museum-c426-stage');if(!stage)return;
   stage.dataset.exhibit=item.id;
   const img=stage.querySelector('.museum-c426-art');
-  img.src=item.image;img.alt='Minh họa '+item.name;
-  img.className='museum-c426-art'+(item.id==='frame'?' is-frame':'');
+  img.dataset.relic=item.artId;
+  img.setAttribute('aria-label','Hình xem trước '+item.name);
   stage.querySelector('.museum-c426-kind').textContent=item.kind;
   const detail=host.querySelector('.museum-c426-detail');
   detail.querySelector('.museum-c426-rarity').textContent=item.group+' · '+item.rarity;
@@ -101,9 +101,9 @@
   gallery.dataset.museumPanel='preview';gallery.setAttribute('role','tabpanel');
   gallery.setAttribute('aria-labelledby','museum-c426-tab-preview');
   const stage=el('div','museum-c426-stage');
-  stage.append(el('div','museum-c426-glow'),el('span','museum-c426-eyebrow','◌ BẢN PHÁC THẢO · CHƯA PHÁT HÀNH'));
-  const illustration=el('img','museum-c426-art');
-  illustration.decoding='async';illustration.loading='eager';
+  stage.append(el('div','museum-c426-glow'),el('span','museum-c426-eyebrow','◌ MÙA 01 · CHỈ XEM TRƯỚC'));
+  const illustration=el('span','museum-c426-art');
+  illustration.setAttribute('role','img');
   stage.append(illustration,el('span','museum-c426-kind'));
   gallery.append(stage);
   const detail=el('div','museum-c426-detail');detail.setAttribute('aria-live','polite');
@@ -114,12 +114,12 @@
   const action=el('button','museum-c426-action');action.type='button';
   detail.append(copy,action);gallery.append(detail);
   const collection=el('div','museum-c426-collection');
-  collection.setAttribute('role','group');collection.setAttribute('aria-label','Chọn vật phẩm trưng bày thử');
+  collection.setAttribute('role','group');collection.setAttribute('aria-label','Năm báu vật Mùa 1 xem trước');
   for(const exhibit of exhibits){
    const button=el('button','museum-c426-select');button.type='button';
-   button.dataset.exhibit=exhibit.id;button.setAttribute('aria-label','Xem mẫu '+exhibit.name);
-   const portrait=el('img','');portrait.src=exhibit.image;
-   portrait.alt='';portrait.loading='lazy';portrait.decoding='async';
+   button.dataset.exhibit=exhibit.id;button.setAttribute('aria-label','Xem trước '+exhibit.name);
+   const portrait=el('span','museum-c426-mini-art');
+   portrait.dataset.relic=exhibit.artId;portrait.setAttribute('aria-hidden','true');
    button.append(portrait,el('small','',exhibit.group));
    button.addEventListener('click',()=>choose(exhibit.id));collection.append(button);
   }
@@ -146,7 +146,7 @@
   const changed=host!==container||owner!==ownerKey||sandboxMode!==!!sandbox||
    !container.classList.contains('museum-c426-root-ready');
   host=container;
-  if(changed){owner=ownerKey;sandboxMode=!!sandbox;active='gallery';selected='s01';
+  if(changed){owner=ownerKey;sandboxMode=!!sandbox;active='gallery';selected='s01-neon';
    build();host.classList.add('museum-c426-root-ready');}
   root.DuduMuseumGalleryC429?.mount?.({container:getPanel('gallery'),ownerKey:owner,sandbox:sandboxMode});
   root.DuduArcadeShowcaseUIV439?.mount?.({container:getPanel('display')});

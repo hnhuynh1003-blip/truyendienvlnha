@@ -4,6 +4,7 @@ const assert=require('node:assert/strict');
 const {readFileSync,statSync}=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
+const season=require('../js/personal-arcade-season-c423.js');
 const file=source=>readFileSync(path.join(__dirname,'..',source));
 
 class Element{
@@ -30,25 +31,30 @@ class Element{
 }
 const nodes=host=>[host,...host.children.flatMap(nodes)];
 
-test('C4.26 preview is a functional four-piece exhibit without collectible writes',()=>{
+test('C4.39R2 preview mirrors the five exact Season 01 artworks without collectible writes',()=>{
  const host=new Element('div');let passportOpens=0,appOpens=[];
  const root={document:{createElement:tag=>new Element(tag),getElementById:()=>null},
+  DuduPersonalArcadeSeasonC423:season,
   DuduPersonalArcadeUIV1:{openSeason(){passportOpens++;return true;}},
   openPhoneApp:app=>appOpens.push(app)};
  const context={window:root,currentUsername:'du'};
  vm.runInNewContext(file('js/museum-vault-c426.js').toString('utf8'),context);
  const api=root.DuduMuseumVaultC426;
- assert.equal(api.exhibits.length,4);
+ assert.equal(api.exhibits.length,5);
+ assert.deepEqual(Array.from(api.exhibits.slice(0,4),x=>x.name),season.RELICS.map(x=>x.name));
+ assert.deepEqual(Array.from(api.exhibits,x=>x.artId),['neon','mine','garden','jade','founder']);
+ assert.ok(api.exhibits.every(x=>x.action==='season'));
  assert.equal(api.init({container:host,ownerKey:'sandbox:du',sandbox:true}),true);
  const rail=host.querySelectorAll('.museum-c426-select');
- assert.equal(rail.length,4);
+ assert.equal(rail.length,5);
  assert.equal(host.querySelector('.museum-c426-head'),null,
   'No redundant museum headline below the phone title');
  assert.ok(host.querySelector('.museum-c426-lore'),
   'Object history stays available in a collapsed disclosure');
- assert.equal(host.querySelectorAll('.museum-c426-select').length,4);
- assert.ok(host.querySelector('.museum-c426-stage').querySelector('.museum-c426-art').src
-  .includes('s01-founder-crest.webp'));
+ assert.equal(host.querySelectorAll('.museum-c426-select').length,5);
+ assert.equal(host.querySelector('.museum-c426-art').dataset.relic,'neon');
+ assert.equal(host.querySelector('.museum-c426-art').attributes.role,'img');
+ assert.equal(rail[0].attributes['aria-pressed'],'true');
  assert.equal(host.querySelector('.museum-c426-action').textContent,'Xem Hộ chiếu');
  host.querySelector('.museum-c426-action').onclick();
  assert.equal(passportOpens,1);
@@ -58,13 +64,14 @@ test('C4.26 preview is a functional four-piece exhibit without collectible write
  host.querySelector('.museum-c426-action').onclick();
  assert.deepEqual(appOpens,['arcade']);
  rail[1].listeners.click();
- assert.match(host.querySelector('.museum-c426-art').src,/statue-starkeeper\.webp/);
+ assert.equal(host.querySelector('.museum-c426-art').dataset.relic,'mine');
  assert.equal(rail[1].attributes['aria-pressed'],'true');
  host.querySelector('.museum-c426-action').onclick();
- assert.deepEqual(appOpens,['arcade','quests']);
- rail[3].listeners.click();
- assert.equal(host.querySelector('.museum-c426-action').hidden,true,
-  'The unreleased avatar frame has no inert equip button');
+ assert.deepEqual(appOpens,['arcade','arcade']);
+ rail[4].listeners.click();
+ assert.equal(host.querySelector('.museum-c426-art').dataset.relic,'founder');
+ assert.equal(host.querySelector('.museum-c426-action').hidden,false,
+  'Founder is also only a season passport preview');
  const ownedTab=nodes(host).find(n=>n.dataset.tab==='owned');ownedTab.listeners.click();
  assert.equal(host.querySelector('[data-museum-panel="gallery"]').hidden,true);
  assert.equal(host.querySelector('[data-museum-panel="owned"]').hidden,false);

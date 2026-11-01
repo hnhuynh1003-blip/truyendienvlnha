@@ -1,0 +1,88 @@
+/* C4.39R2 — the photographed halls already have physical stone pedestals.
+   Anchor exhibit cutouts to those surfaces instead of drawing a second stand. */
+body.dudu-phone-v11 #cyber-phone .museum-c429-local,
+body.dudu-phone-v11 #cyber-phone .museum-c426-gallery{
+ container-type:inline-size;
+}
+/* The rotunda's second pedestal is at ~39% of the original wide artwork.
+   Cropping at 26% centers that existing dais in a narrow phone viewport. */
+body.dudu-phone-v11 #cyber-phone .museum-c429-scene-trophies{
+ height:300px;height:clamp(260px,90cqw,325px);
+ background-size:auto 100%;background-position:26% 50%;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c429-feature-art{
+ left:28%;right:28%;top:13%;bottom:auto;height:52%;
+ background-size:contain;background-position:center bottom;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c429-feature-name{
+ bottom:9px;padding:3px 7px;border-radius:6px;
+ background:linear-gradient(90deg,transparent,#101c2bce 23% 77%,transparent);
+}
+body.dudu-phone-v11 #cyber-phone .dudu-c439-scene .dudu-c439-art-light{
+ top:8%;height:53%;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-c439-scene::after{
+ content:'';position:absolute;left:50%;top:57%;transform:translateX(-50%);
+ width:38%;height:13px;border-radius:50%;pointer-events:none;z-index:2;
+ background:radial-gradient(ellipse,color-mix(in srgb,var(--light) 45%,transparent),transparent 71%);
+ filter:blur(5px);
+}
+/* Season 01 is five exact previews: the four 2x2 atlas relics and its Founder
+   crest. All are muted until a real server-backed season can award them. */
+body.dudu-phone-v11 #cyber-phone .museum-c426-stage{
+ height:310px;height:clamp(260px,88cqw,325px);
+ background-size:cover;background-position:center 52%;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-stage .museum-c426-art{
+ display:block;position:absolute;z-index:2;
+ left:24%;right:24%;top:9%;bottom:auto;width:52%;height:52%;max-width:none;
+ transform:none;border:0;box-shadow:none;
+ background-image:url('../assets/arcade-season/s01-relic-atlas.webp');
+ background-size:200% 200%;background-repeat:no-repeat;
+ filter:grayscale(1) brightness(.79) contrast(1.09) drop-shadow(0 8px 8px #000b);
+ animation:none;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-stage .museum-c426-glow{
+ left:50%;bottom:37%;width:38%;height:14px;
+ background:radial-gradient(ellipse,#dae3de70,#e6c98a50 38%,transparent 72%);
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-relic-art[data-relic="neon"],
+body.dudu-phone-v11 #cyber-phone .museum-c426-art[data-relic="neon"],
+body.dudu-phone-v11 #cyber-phone .museum-c426-mini-art[data-relic="neon"]{background-position:0% 0%}
+body.dudu-phone-v11 #cyber-phone .museum-c426-art[data-relic="mine"],
+body.dudu-phone-v11 #cyber-phone .museum-c426-mini-art[data-relic="mine"]{background-position:100% 0%}
+body.dudu-phone-v11 #cyber-phone .museum-c426-art[data-relic="garden"],
+body.dudu-phone-v11 #cyber-phone .museum-c426-mini-art[data-relic="garden"]{background-position:0% 100%}
+body.dudu-phone-v11 #cyber-phone .museum-c426-art[data-relic="jade"],
+body.dudu-phone-v11 #cyber-phone .museum-c426-mini-art[data-relic="jade"]{background-position:100% 100%}
+body.dudu-phone-v11 #cyber-phone .museum-c426-art[data-relic="founder"],
+body.dudu-phone-v11 #cyber-phone .museum-c426-mini-art[data-relic="founder"]{
+ background-image:url('../assets/arcade-season/s01-founder-crest.webp');
+ background-size:contain;background-position:center;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-stage .museum-c426-art[data-relic="founder"]{
+ left:18%;right:18%;width:64%;top:6%;height:54%;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-select .museum-c426-mini-art{
+ display:block;flex:0 0 auto;width:65px;height:62px;max-width:96%;
+ background-image:url('../assets/arcade-season/s01-relic-atlas.webp');
+ background-size:200% 200%;background-repeat:no-repeat;
+ filter:grayscale(1) brightness(.74) contrast(1.07) drop-shadow(0 3px 5px #0009);
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-collection{
+ grid-template-columns:repeat(5,minmax(0,1fr));gap:3px;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-collection .museum-c426-select small{
+ font-size:7px;white-space:normal;text-align:center;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-select.is-active .museum-c426-mini-art{
+ filter:grayscale(.75) brightness(.9) drop-shadow(0 3px 5px #0009);
+}
+@media(max-width:355px){
+ body.dudu-phone-v11 #cyber-phone .museum-c429-scene-trophies{height:260px}
+ body.dudu-phone-v11 #cyber-phone .museum-c426-stage{height:260px}
+ body.dudu-phone-v11 #cyber-phone .museum-c426-select .museum-c426-mini-art{width:57px;height:54px}
+}
+@media(prefers-reduced-motion:reduce){
+ body.dudu-phone-v11 #cyber-phone .museum-c429-feature-art{animation:none}
+}

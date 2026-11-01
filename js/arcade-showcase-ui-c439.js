@@ -54,7 +54,9 @@
    item?'✦ BỆ DANH DỰ':'◇ CHỜ NGƯỜI KHÁM PHÁ'));
   const light=el('div','dudu-c439-art-light');
   light.append(item?frame(item):el('span','dudu-c439-empty-sigil','✧'));
-  scene.append(light,el('div','dudu-c439-plinth'),el('div','dudu-c439-plinth-foot'));
+  // The hall illustration already contains a physical central stone dais.
+  // The artwork rests on that existing surface; don't paint a second plinth.
+  scene.append(light);
   const plaque=el('div','dudu-c439-plaque');
   plaque.append(el('small','',item?book.GAME_NAMES[item.game]+' · '+book.RARITIES[item.rarity]:'BỐN HÀNH TRÌNH'),
    el('strong','',item?item.name:'Một bệ đang đợi báu vật'));
@@ -69,7 +71,7 @@
   const selected=view.items.find(item=>item.id===focus&&item.owned)||null;
   host.replaceChildren();
   const intro=el('header','dudu-c439-intro');
-  intro.append(el('span','dudu-c439-kicker','✧ ĐẠI SẢNH SƯU TẬP'),
+  intro.append(el('span','dudu-c439-kicker','✧ KỶ VẬT · KHOÁNG VẬT · NGỌC'),
    el('strong','','Tủ Trưng Bày'));
   const count=el('span','dudu-c439-counter',pins.length+' / '+model.MAX_SLOTS+' bệ');
   intro.append(count);
@@ -105,7 +107,7 @@
    'Chọn những khám phá đáng nhớ từ Sổ Báu Vật để thắp sáng bốn bệ.');
   host.append(info);
   host.append(el('p','dudu-c439-footnote',
-   'Tủ lưu cách trưng bày trên thiết bị. Kỷ vật Mùa 1 chỉ đang xem trước; kho sở hữu thật được xác minh riêng.'));
+   'Cá quý có Thủy Cung riêng. Báu vật Mùa 1 vẫn đang đợi ngày khai mở.'));
   return true;
  }
  function mount({container}={}){

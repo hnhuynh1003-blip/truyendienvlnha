@@ -164,8 +164,9 @@
   if(!seasonGame)return '';
   const record=s.season?.records?.s01||{relics:[],completedAt:0},
    have=Array.isArray(record.relics)?record.relics:[],
-   complete=!!record.completedAt&&have.length===4,
-   preview=seasonGame.PHASE!=='live';
+   preview=seasonGame.PHASE!=='live',
+   complete=!preview&&!!record.completedAt&&have.length===4,
+   shownCount=preview?0:have.length;
   return `<div class="arcade-season-overlay" data-arcade-season-backdrop>
    <section class="arcade-season-book" role="dialog" aria-modal="true" aria-label="Hộ Chiếu Mùa 1 · Sương Tinh Thạch">
     <header class="arcade-season-book-header"><div><span>✦ DUDU // SEASON ARCHIVE</span><b>HỘ CHIẾU MÙA 01</b></div>
@@ -176,17 +177,17 @@
       <h3>SƯƠNG<br><em>TINH THẠCH</em></h3>
       <div class="arcade-season-phase">${preview?'◌ CHƯA MỞ · XEM TRƯỚC':complete?'✦ ĐÃ HOÀN THÀNH':'✧ ĐANG SƯU TẦM'}</div>
      </div>
-     <div class="arcade-season-progress"><strong><span class="arcade-season-progress-mark" aria-hidden="true">✣</span> BỘ DI VẬT KHAI MÙA</strong><span>${have.length}/4</span></div>
-     <div class="arcade-season-track" role="progressbar" aria-label="Kỷ vật Mùa 1" aria-valuemin="0" aria-valuemax="4" aria-valuenow="${have.length}"><i style="width:${have.length*25}%"></i></div>
+     <div class="arcade-season-progress"><strong><span class="arcade-season-progress-mark" aria-hidden="true">✣</span> BỘ DI VẬT KHAI MÙA</strong><span>${shownCount}/4</span></div>
+     <div class="arcade-season-track" role="progressbar" aria-label="Kỷ vật Mùa 1" aria-valuemin="0" aria-valuemax="4" aria-valuenow="${shownCount}"><i style="width:${shownCount*25}%"></i></div>
      <div class="arcade-season-relic-grid">${seasonGame.RELICS.map((item,index)=>{
-       const earned=have.includes(item.id);
+       const earned=!preview&&have.includes(item.id);
        return `<button type="button" class="arcade-season-relic arcade-season-exhibit season-theme-${item.theme} ${earned?'is-owned':''}"
-        data-arcade-season-go="${item.id}" aria-label="${item.name} · ${earned?'Đã sở hữu':'Chưa nhận'} · Đến ${item.world}">
+        data-arcade-season-go="${item.id}" aria-label="${item.name} · ${preview?'Chỉ xem trước':earned?'Đã sở hữu':'Chưa nhận'} · Đến ${item.world}">
         <span class="arcade-season-exhibit-art" aria-hidden="true"></span>
         <span class="arcade-season-exhibit-copy">
          <span class="arcade-season-exhibit-id">KỶ VẬT 0${index+1} / 04 <span aria-hidden="true">${earned?'✦':'◇'}</span></span>
          <strong>${item.name}</strong>
-         <small>${earned?'ĐÃ KHẮC ẤN VĨNH VIỄN':item.hint}</small>
+         <small>${preview?'CHƯA MỞ · XEM TRƯỚC':earned?'ĐÃ KHẮC ẤN VĨNH VIỄN':item.hint}</small>
          <span class="arcade-season-relic-world">${item.world} <b aria-hidden="true">↗</b></span>
         </span></button>`;
       }).join('')}</div>
@@ -195,7 +196,7 @@
       <div><small>${complete?'✦ ĐÃ NHẬN DANH HIỆU':'PHẦN THƯỞNG HOÀN BỘ'}</small>
        <strong>Ấn Khai Nguyên · S01</strong><span>Danh hiệu: Người Khai Mùa</span></div>
      </div>
-     <p class="arcade-season-archive-note">${preview?'Sự kiện sẽ kích hoạt sau khi reset thử nghiệm và chốt quyền lưu thưởng.':
+     <p class="arcade-season-archive-note">${preview?'Mùa Sương Tinh Thạch chưa khai mở. Mọi báu vật vẫn là hình xem trước.':
       'Kỷ vật đã nhận không bị tiêu hao, bán hoặc xóa khi chuyển sang mùa khác.'}</p>
     </div>
    </section></div>`;

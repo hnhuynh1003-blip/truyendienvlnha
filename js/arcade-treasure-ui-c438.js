@@ -117,7 +117,7 @@
   section.append(newButton(item.season==='s01'?'Xem hộ chiếu mùa ›':'Đến '+book.GAME_NAMES[item.game]+' ›',
    'dudu-c438-go',()=>enterGame(item)));
   detail.append(section);body.append(detail);
-  if(item.status==='owned'){
+  if(item.status==='owned'&&item.kind!=='fish'){
    const displaying=root.DuduArcadeShowcaseUIV439?.isPinned?.(item.id)===true;
    const label=displaying?'✦ Đang trưng bày':'◇ Đặt lên bệ';
    const pin=newButton(label,'dudu-c439-treasure-action'+(displaying?' is-showing':''),()=>{
