@@ -66,6 +66,10 @@ async function main(){
   }
   await page.evaluate(()=>window.scrollTo(0,700));
   await page.waitForFunction(()=>window.scrollY>500);
+  await page.waitForFunction(()=>{
+   const saved=JSON.parse(sessionStorage.getItem(DuduReadingReturnC443.KEY)||'null');
+   return saved?.scrollTop>500;
+  });
   const before=await page.evaluate(()=>({
    y:window.scrollY,session:JSON.parse(sessionStorage.getItem(DuduReadingReturnC443.KEY)),
    exp:userProfile.exp}));

@@ -7714,13 +7714,18 @@ document.getElementById('phone-home-screen').style.display = 'none';
       return currentUsername?(IS_SANDBOX_MODE?'sandbox:':'live:')+currentUsername:null;
     }
     let c443LastSavedAt=0;
+    let c443LastSavedScrollTop=0;
     function c443Remember(scrollTop=window.scrollY,force=false){
       const now=Date.now();
-      if(!force&&now-c443LastSavedAt<200)return false;
+      // A fast swipe may travel hundreds of pixels inside the throttle window.
+      // Persist that meaningful change immediately so a quick refresh resumes
+      // where the reader stopped, not at the last short interval.
+      if(!force&&now-c443LastSavedAt<200&&
+        Math.abs(scrollTop-c443LastSavedScrollTop)<160)return false;
       const novel=novels[selectedNovelIndex];
       const saved=window.DuduReadingReturnC443?.remember(sessionStorage,
         c443ReaderOwner(),novel,selectedChapterIndex,scrollTop,now);
-      if(saved)c443LastSavedAt=now;
+      if(saved){c443LastSavedAt=now;c443LastSavedScrollTop=scrollTop;}
       return !!saved;
     }
     function c443RestoreOnReload(){
