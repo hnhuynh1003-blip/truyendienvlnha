@@ -416,6 +416,12 @@ async function main(){
   assert.equal(await page.locator('.museum-c426-tab[data-tab="display"]')
    .getAttribute('aria-selected'),'true');
   assert.equal(await gallery.locator('.dudu-c439-slot.is-filled').count(),4);
+  const museumFlow=await page.evaluate(()=>({
+   actionsBottom:document.querySelector('.dudu-c439-actions').getBoundingClientRect().bottom,
+   helpTop:document.querySelector('#phone-app-museum .dudu-v27-museum-help').getBoundingClientRect().top
+  }));
+  assert.ok(museumFlow.helpTop>=museumFlow.actionsBottom-2,
+   'Museum help must follow the full display room instead of covering its action buttons');
   assert.match(await gallery.locator('.dudu-c439-scene .dudu-c438-art').evaluate(
    el=>getComputedStyle(el).backgroundImage),/honor-atlas-2\.webp/,
    'The plinth uses the original illustrated item, not a generic emoji');

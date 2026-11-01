@@ -68,6 +68,7 @@ test('C4.39 gallery wiring shares real AI art, keeps verified museum separate an
   'arcade-showcase-c439.css'])assert.match(index,new RegExp(name.replace(/\./g,'\\.')+'\\?v=c439-1'));
  assert.match(index,/museum-vault-c426\.js\?v=c426-3&amp;gallery=c429-2&amp;display=c439-2/);
  assert.match(index,/arcade-treasure-ui-c438\.js\?v=c438-1&amp;display=c439-2/);
+ assert.match(index,/arcade-showcase-c439\.css\?v=c439-1&amp;layout=c439-3/);
  assert.match(vault,/museum-c426-panel-display/);
  assert.match(vault,/\['gallery','display','preview','owned','memories'\]/);
  assert.match(vault,/DuduArcadeShowcaseUIV439\?\.mount/);
@@ -79,6 +80,8 @@ test('C4.39 gallery wiring shares real AI art, keeps verified museum separate an
  assert.match(ui,/root\.localStorage\.setItem\(saveKey/);
  assert.doesNotMatch(ui,/runTransaction|firebase|collectibles-client|wallet|\.removeItem\(/i);
  assert.match(css,/@media\(max-width:350px\)/);
+ assert.match(css,/#phone-app-museum #museum-items\{\s*flex:0 0 auto!important/);
+ assert.match(css,/container-type:inline-size/);
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
  for(const name of ['assets/museum-c426/hall-night.webp',
   'assets/arcade-c425a/ore-atlas.webp','assets/arcade-c425b/fish-bestiary.webp',

@@ -5,10 +5,16 @@ body.dudu-phone-v11 #cyber-phone .museum-c426-tabs{
 body.dudu-phone-v11 #cyber-phone .museum-c426-tab{
  min-width:0;min-height:34px;font-size:8.5px;padding:4px 1px;line-height:1.25;
 }
+/* The legacy museum flex child kept a fixed remaining height while the
+   display panel extended beyond it. Let the phone app scroll the full hall. */
+body.dudu-phone-v11 #cyber-phone #phone-app-museum #museum-items{
+ flex:0 0 auto!important;height:auto!important;min-height:0!important;
+}
 body.dudu-phone-v11 #cyber-phone .dudu-c439-hall,
 #dudu-treasure-content-c438 .dudu-c439-treasure-action{box-sizing:border-box}
 body.dudu-phone-v11 #cyber-phone .dudu-c439-hall{
  display:flex;flex-direction:column;gap:8px;min-width:0;color:#e9edf4;
+ container-type:inline-size;
 }
 body.dudu-phone-v11 #cyber-phone .dudu-c439-intro{
  display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;
@@ -26,7 +32,7 @@ body.dudu-phone-v11 #cyber-phone .dudu-c439-counter{
 }
 body.dudu-phone-v11 #cyber-phone .dudu-c439-scene{
  --light:#c4e0dd;position:relative;isolation:isolate;overflow:hidden;
- height:clamp(252px,82vw,350px);min-width:0;
+ height:290px;height:clamp(250px,78cqw,300px);min-width:0;
  border:1px solid #cfb17c;border-radius:17px 17px 9px 9px;
  background:linear-gradient(180deg,#101e32b6 0%,#1021382a 49%,#10131ae0 100%),
   url('../assets/museum-c426/hall-night.webp') center 52%/cover;
