@@ -143,7 +143,7 @@ test('C4.29 keeps verified collectibles and Season1 preview separate, delivers c
  assert.match(html,/museum-c429-gallery\.js\?v=c429-5/);
  assert.match(html,/museum-vault-c426\.js\?v=c426-3&amp;gallery=c429-2/);
  assert.match(vault,/\['preview','Quà mùa'\]/);
- assert.match(vault,/\['owned','Kỷ vật thật'\]/);
+ assert.match(vault,/\['owned','Đã sở hữu'\]/);
  assert.match(html,/await DuduCollectiblesClient\.mine\(\)/);
  assert.match(repo('js/personal-arcade-season-c423.js').toString(),/PHASE='preview'/);
  assert.doesNotMatch(gallery,/\.setItem\s*\(|\.grant\s*\(|\.claim\s*\(/);

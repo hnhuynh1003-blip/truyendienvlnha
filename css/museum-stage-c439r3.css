@@ -24,5 +24,24 @@ body.dudu-phone-v11 #cyber-phone .museum-c426-stage .museum-c426-art{
  top:8%;height:53%;
 }
 body.dudu-phone-v11 #cyber-phone .museum-c426-stage .museum-c426-art[data-relic="founder"]{
- top:5%;height:56%;
+ top:10%;height:56%;
+}
+/* The five sprites have different amounts of transparent bottom padding.
+   Tune each base to actually meet the photographed top of the single dais. */
+body.dudu-phone-v11 #cyber-phone .museum-c426-stage .museum-c426-art[data-relic="garden"]{
+ top:12.5%;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-stage .museum-c426-art[data-relic="jade"]{
+ top:11.5%;
+}
+/* On the personal shelf a raw mineral, a jade carving and a Neon contract
+   have different silhouettes. Ground each without shifting empty placeholders. */
+body.dudu-phone-v11 #cyber-phone .dudu-c439-scene[data-kind="contract"] .dudu-c439-art-light{
+ top:13%;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-c439-scene[data-kind="ore"] .dudu-c439-art-light{
+ top:10.5%;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-c439-scene[data-kind="jade"] .dudu-c439-art-light{
+ top:11.5%;
 }

@@ -20,9 +20,14 @@ test('C4.39R3 gallery backgrounds are original, lightweight single-stand WebP ar
  assert.match(css,/\.dudu-c439-scene\{[\s\S]*?solo-hall\.webp/);
  assert.match(css,/background-position:center 50%;background-size:cover/);
  assert.match(css,/\.museum-c429-feature-art\{[\s\S]*?top:13%;height:51%/);
- assert.match(index,/museum-stage-c439r2\.css\?v=c439r2-3[\s\S]*museum-stage-c439r3\.css\?v=c439r3-2/);
+ assert.match(index,/museum-stage-c439r2\.css\?v=c439r2-3[\s\S]*museum-stage-c439r3\.css\?v=c439r4-1/);
  assert.equal((css.match(/\.webp'\)/g)||[]).length,3,
   'one rotunda and one hall backdrop, with hall shared between two wings');
+ assert.match(css,/\.museum-c426-art\[data-relic="garden"\]\{\s*top:12\.5%/);
+ assert.match(css,/\.museum-c426-art\[data-relic="jade"\]\{\s*top:11\.5%/);
+ assert.match(css,/\.museum-c426-art\[data-relic="founder"\]\{\s*top:10%;height:56%/);
+ for(const kind of ['contract','ore','jade'])
+  assert.match(css,new RegExp('\\.dudu-c439-scene\\[data-kind="'+kind+'"\\]'));
 });
 
 test('C4.39R3 only changes staging; ownership and Season 01 stay protected',()=>{
@@ -32,6 +37,9 @@ test('C4.39R3 only changes staging; ownership and Season 01 stay protected',()=>
  assert.match(season,/PHASE='preview'/);
  assert.match(vault,/Năm báu vật Mùa 1 xem trước/);
  assert.match(display,/Cá quý có Thủy Cung riêng/);
+ assert.match(display,/scene\.dataset\.kind=item\?\.kind\|\|'empty'/);
+ assert.match(vault,/\['owned','Đã sở hữu'\]/);
+ assert.doesNotMatch(vault,/Kỷ vật thật/);
  assert.doesNotMatch(display,/scene\.append\(light,el\('div','dudu-c439-plinth'/);
  const css=read('css/museum-stage-c439r3.css').toString('utf8');
  assert.doesNotMatch(css,/data-arcade|localStorage|firestore|claim|wallet/i);

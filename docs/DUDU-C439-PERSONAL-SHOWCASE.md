@@ -21,6 +21,12 @@
 - Ảnh được tạo mới theo phong cách DUDU, tối ưu WebP và không sửa/xóa asset gốc. Bốn lựa chọn bên dưới là nút điều khiển, không phải bốn bục thật trong bối cảnh.
 - Định vị chân của tượng, kỷ vật và ngọc lên mặt bệ thật (khoảng 60% chiều cao cảnh), căn giữa khi cắt nền trên màn hình hẹp. Không động tới logic sở hữu, mùa hay Xu.
 
+## C4.39R4 — Chân ảnh chạm bệ và nhãn gian tự nhiên
+
+- Chỉnh riêng vị trí các hình Mùa 1 nhiều khoảng trong suốt ở đáy: Giọt Sương Nguyệt, Ngọc Ấn Khai Mùa, Ấn Khai Nguyên. Tinh Thạch và Vi Mạch giữ tọa độ đã sát bệ.
+- Trong Tủ riêng, căn theo loại ảnh `contract`, `ore`, `jade`; không động vào lựa chọn bệ, bản lưu, tình trạng sở hữu hay hiệu ứng chờ khi chưa trưng bày.
+- Đổi tab từ **Kỷ vật thật** thành **Đã sở hữu**, vẫn chỉ hiển thị vật phẩm máy chủ xác minh (khác với hình xem trước); làm rõ câu chữ khi kho rỗng.
+
 ## Dữ liệu
 
 - Chỉ ghi khóa tùy chọn trình bày trên thiết bị: `dudu-arcade-showcase:v1:<encodeURIComponent(identity)>`.

@@ -417,7 +417,9 @@ async function main(){
   await gallery.locator('.dudu-c439-scene').waitFor();
   assert.equal(await page.locator('.museum-c426-tab[data-tab="display"]')
    .getAttribute('aria-selected'),'true');
+  assert.equal(await page.locator('.museum-c426-tab[data-tab="owned"]').innerText(),'Đã sở hữu');
   assert.equal(await gallery.locator('.dudu-c439-slot.is-filled').count(),4);
+  assert.equal(await gallery.locator('.dudu-c439-scene').getAttribute('data-kind'),'contract');
   const museumFlow=await page.evaluate(()=>({
    actionsBottom:document.querySelector('.dudu-c439-actions').getBoundingClientRect().bottom,
    helpTop:document.querySelector('#phone-app-museum .dudu-v27-museum-help').getBoundingClientRect().top
@@ -434,6 +436,7 @@ async function main(){
    'The personal display must show only one photographed central podium');
   await gallery.locator('.dudu-c439-slot.is-filled').nth(2).click();
   assert.match(await gallery.locator('.dudu-c439-plaque').innerText(),/Ngọc Phường/);
+  assert.equal(await gallery.locator('.dudu-c439-scene').getAttribute('data-kind'),'jade');
   for(const width of [320,390,430]){
    await page.setViewportSize({width,height:844});
    const fit=await gallery.evaluate(el=>({overflow:el.scrollWidth-el.clientWidth,
@@ -455,10 +458,18 @@ async function main(){
   assert.equal(await seasonal.locator('.museum-c426-art').getAttribute('data-relic'),'neon');
   assert.match(await seasonal.locator('.museum-c426-art').evaluate(
    el=>getComputedStyle(el).backgroundImage),/s01-relic-atlas\.webp/);
+  const previewTops={neon:await seasonal.locator('.museum-c426-art').evaluate(
+   el=>parseFloat(getComputedStyle(el).top))};
   for(const relic of ['mine','garden','jade','founder']){
    await seasonal.locator('.museum-c426-select[data-exhibit="s01-'+relic+'"]').click();
    assert.equal(await seasonal.locator('.museum-c426-art').getAttribute('data-relic'),relic);
+   previewTops[relic]=await seasonal.locator('.museum-c426-art').evaluate(
+    el=>parseFloat(getComputedStyle(el).top));
   }
+  assert.ok(previewTops.garden>previewTops.mine&&previewTops.jade>previewTops.mine,
+   'Garden and jade have more transparent base padding, so their art sits lower');
+  assert.ok(previewTops.founder>previewTops.mine,
+   'Founder crest needs its own physical contact offset');
   assert.match(await seasonal.locator('.museum-c426-art').evaluate(
    el=>getComputedStyle(el).backgroundImage),/s01-founder-crest\.webp/);
   assert.match(await seasonal.locator('.museum-c426-stage').evaluate(

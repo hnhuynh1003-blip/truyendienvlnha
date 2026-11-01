@@ -82,7 +82,7 @@
   const nav=el('nav','museum-c426-tabs');nav.setAttribute('role','tablist');
   nav.setAttribute('aria-label','Khu vực bảo tàng');
   for(const [id,label] of [['gallery','Chiến tích'],['display','Tủ riêng'],
-   ['preview','Quà mùa'],['owned','Kỷ vật thật'],['memories','Kỷ niệm']]){
+   ['preview','Quà mùa'],['owned','Đã sở hữu'],['memories','Kỷ niệm']]){
    const tab=el('button','museum-c426-tab',label);tab.type='button';
    tab.dataset.tab=id;tab.setAttribute('role','tab');tab.id='museum-c426-tab-'+id;
    tab.setAttribute('aria-controls','museum-c426-panel-'+id);
@@ -183,7 +183,7 @@
    const empty=el('div','museum-c426-empty');
    empty.append(el('span','museum-c426-empty-seal','◇'),
     el('strong','','Bệ trưng bày đang đợi hiện vật đầu tiên'),
-    el('p','','Kỷ vật thật sẽ xuất hiện khi được xác nhận ở máy chủ. Mẫu Đại sảnh không tính là đã sở hữu.'));
+    el('p','','Báu vật đã nhận sẽ xuất hiện khi hệ thống xác nhận sở hữu. Hình xem trước không tính là vật phẩm đã nhận.'));
    const back=el('button','museum-c426-back','Khám phá Đại sảnh ›');back.type='button';
    back.addEventListener('click',()=>switchTab('gallery'));
    empty.append(back);container.append(empty);return true;

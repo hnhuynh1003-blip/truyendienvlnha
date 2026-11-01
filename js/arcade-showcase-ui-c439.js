@@ -49,6 +49,7 @@
  function stage(item){
   const scene=el('section','dudu-c439-scene');
   scene.dataset.rarity=item?.rarity||'empty';
+  scene.dataset.kind=item?.kind||'empty';
   scene.setAttribute('aria-label',item?'Bệ chính: '+item.name:'Bệ chính chưa có vật phẩm');
   scene.append(el('div','dudu-c439-architecture'),el('span','dudu-c439-scene-caption',
    item?'✦ BỆ DANH DỰ':'◇ CHỜ NGƯỜI KHÁM PHÁ'));
