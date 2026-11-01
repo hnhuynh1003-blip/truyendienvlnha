@@ -33,6 +33,11 @@
 - Đo lại từng hình trên cảnh 312×275px và hạ Vi Mạch/Tinh Thạch, Giọt Sương, Ngọc Ấn, Ấn Khai Nguyên theo khoảng đệm trong suốt của mỗi sprite; chỉ thay tọa độ CSS và phiên bản tải stylesheet.
 - Giữ nhãn **Đã sở hữu**, nguồn xác minh, bản lưu, vật phẩm xem trước và mùa ở nguyên trạng.
 
+## C4.39R6 — Đặt chân Ngọc Ấn thật sự lên bục
+
+- Sau khi nhìn trên Pages R5, thân Ngọc Ấn vẫn cao hơn mặt bệ dù dải lụa đã chạm. Hạ riêng sprite Ngọc Ấn để phần chân vàng đặt lên bục, lụa phủ nhẹ mép bệ.
+- Đảm bảo điều kiện kiểm thử trình duyệt: vị trí hai báu vật Giọt Sương/Ngọc Ấn thấp hơn Tinh Thạch do có khoảng trong suốt dưới ảnh; tất cả vẫn là hình xem trước.
+
 ## Dữ liệu
 
 - Chỉ ghi khóa tùy chọn trình bày trên thiết bị: `dudu-arcade-showcase:v1:<encodeURIComponent(identity)>`.
