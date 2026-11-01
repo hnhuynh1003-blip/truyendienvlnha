@@ -21,18 +21,18 @@ body.dudu-phone-v11 #cyber-phone .dudu-c439-scene{
 /* The central plinth is physically painted into the new artwork: both the
    Season relic cutouts and the player's chosen keepsake land on its top. */
 body.dudu-phone-v11 #cyber-phone .museum-c426-stage .museum-c426-art{
- top:8%;height:53%;
+ top:12.5%;height:53%;
 }
 body.dudu-phone-v11 #cyber-phone .museum-c426-stage .museum-c426-art[data-relic="founder"]{
- top:10%;height:56%;
+ top:14.4%;height:56%;
 }
 /* The five sprites have different amounts of transparent bottom padding.
    Tune each base to actually meet the photographed top of the single dais. */
 body.dudu-phone-v11 #cyber-phone .museum-c426-stage .museum-c426-art[data-relic="garden"]{
- top:12.5%;
+ top:14.5%;
 }
 body.dudu-phone-v11 #cyber-phone .museum-c426-stage .museum-c426-art[data-relic="jade"]{
- top:11.5%;
+ top:12%;
 }
 /* On the personal shelf a raw mineral, a jade carving and a Neon contract
    have different silhouettes. Ground each without shifting empty placeholders. */

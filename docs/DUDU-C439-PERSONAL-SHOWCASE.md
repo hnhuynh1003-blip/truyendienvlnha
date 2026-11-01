@@ -2,7 +2,7 @@
 
 ## Phạm vi
 
-- Khu **Tủ riêng** được đặt trong Bảo Tàng Lưu Quang, cạnh các gian Chiến tích, Quà mùa, Kỷ vật thật và Kỷ niệm. Không viết lại Điện Chiến Tích, Thủy Cung hay sổ sở hữu máy chủ.
+- Khu **Tủ riêng** được đặt trong Bảo Tàng Lưu Quang, cạnh các gian Chiến tích, Quà mùa, Đã sở hữu và Kỷ niệm. Không viết lại Điện Chiến Tích, Thủy Cung hay sổ sở hữu máy chủ.
 - Có 4 bệ cá nhân. Chọn món từ **Sổ Báu Vật**; đổi món bằng cách gỡ rồi đặt món mới. Nhấn vào các bệ nhỏ để xem một hiện vật nổi bật trong đại sảnh có hình gốc và bảng tên.
 - Chỉ cho đặt những khám phá đang được **C4.38 xác nhận qua bản lưu Arcade hiện có** (`status === 'owned'`, `season === 'evergreen'`). Mùa 1 và Di sản ở trạng thái `preview` bị từ chối vô điều kiện.
 - Trình bày dưới dạng *kỷ niệm khám phá*: phát hiện một mẫu ngọc trong album không đồng nghĩa đang giữ viên ngọc vật lý trong Kho Ngọc. **Tất cả cá** thuộc Sổ Cá/Thủy Cung (bể chỉ dành cho cá Quý trở lên thực bắt được), không xuất hiện trên bệ Tủ riêng.
@@ -26,6 +26,12 @@
 - Chỉnh riêng vị trí các hình Mùa 1 nhiều khoảng trong suốt ở đáy: Giọt Sương Nguyệt, Ngọc Ấn Khai Mùa, Ấn Khai Nguyên. Tinh Thạch và Vi Mạch giữ tọa độ đã sát bệ.
 - Trong Tủ riêng, căn theo loại ảnh `contract`, `ore`, `jade`; không động vào lựa chọn bệ, bản lưu, tình trạng sở hữu hay hiệu ứng chờ khi chưa trưng bày.
 - Đổi tab từ **Kỷ vật thật** thành **Đã sở hữu**, vẫn chỉ hiển thị vật phẩm máy chủ xác minh (khác với hình xem trước); làm rõ câu chữ khi kho rỗng.
+
+## C4.39R5 — Khóa khe hở còn lại trên bệ thật
+
+- Kiểm tra trực tiếp trên GitHub Pages sau C4.39R4 phát hiện Vi Mạch, Tinh Thạch và Ấn Khai Nguyên vẫn có khoảng 5–12px giữa đáy hình và mặt bục.
+- Đo lại từng hình trên cảnh 312×275px và hạ Vi Mạch/Tinh Thạch, Giọt Sương, Ngọc Ấn, Ấn Khai Nguyên theo khoảng đệm trong suốt của mỗi sprite; chỉ thay tọa độ CSS và phiên bản tải stylesheet.
+- Giữ nhãn **Đã sở hữu**, nguồn xác minh, bản lưu, vật phẩm xem trước và mùa ở nguyên trạng.
 
 ## Dữ liệu
 

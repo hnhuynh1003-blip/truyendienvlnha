@@ -20,12 +20,13 @@ test('C4.39R3 gallery backgrounds are original, lightweight single-stand WebP ar
  assert.match(css,/\.dudu-c439-scene\{[\s\S]*?solo-hall\.webp/);
  assert.match(css,/background-position:center 50%;background-size:cover/);
  assert.match(css,/\.museum-c429-feature-art\{[\s\S]*?top:13%;height:51%/);
- assert.match(index,/museum-stage-c439r2\.css\?v=c439r2-3[\s\S]*museum-stage-c439r3\.css\?v=c439r4-1/);
+ assert.match(index,/museum-stage-c439r2\.css\?v=c439r2-3[\s\S]*museum-stage-c439r3\.css\?v=c439r5-1/);
  assert.equal((css.match(/\.webp'\)/g)||[]).length,3,
   'one rotunda and one hall backdrop, with hall shared between two wings');
- assert.match(css,/\.museum-c426-art\[data-relic="garden"\]\{\s*top:12\.5%/);
- assert.match(css,/\.museum-c426-art\[data-relic="jade"\]\{\s*top:11\.5%/);
- assert.match(css,/\.museum-c426-art\[data-relic="founder"\]\{\s*top:10%;height:56%/);
+ assert.match(css,/\.museum-c426-art\{\s*top:12\.5%;height:53%/);
+ assert.match(css,/\.museum-c426-art\[data-relic="garden"\]\{\s*top:14\.5%/);
+ assert.match(css,/\.museum-c426-art\[data-relic="jade"\]\{\s*top:12%/);
+ assert.match(css,/\.museum-c426-art\[data-relic="founder"\]\{\s*top:14\.4%;height:56%/);
  for(const kind of ['contract','ore','jade'])
   assert.match(css,new RegExp('\\.dudu-c439-scene\\[data-kind="'+kind+'"\\]'));
 });
