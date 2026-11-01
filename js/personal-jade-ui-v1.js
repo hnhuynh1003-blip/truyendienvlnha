@@ -223,19 +223,20 @@
  }
  function workshopPanel(s){
   const j=s.jade,stone=j.active,canCraft=stone?.phase==='cut'&&stone.grade>0&&stone.flaw!=='skin';
+  const exhausted=j.craftUsed>=jade.CRAFT_LIMIT&&Date.now()<j.craftWindowAt+jade.CRAFT_WINDOW;
   const upgrades=[['lamp','◉','Đèn giám ngọc','Soi rõ tín hiệu và bì dày'],
    ['saw','⚙','Cưa hợp kim','Tăng cơ hội giữ nguyên phôi nứt'],
    ['carver','✧','Thợ khắc bậc cao','Tăng giá thành phẩm 17%/cấp'],
    ['permit','✵','Giấy phép Tàn Tích','Mở lô thiên thạch khi đủ giao dịch']];
   return `<div class="jade-workshop-content" data-arcade-panel="jade-workshop">
-    <div class="jade-sheet-heading"><b>⌘ Xưởng chế tác</b><small>${canCraft?'Có phôi ngọc trên bàn':'Cắt được phôi mới có thể chế tác'}</small></div>
+    <div class="jade-sheet-heading"><b>⌘ Xưởng chế tác</b><small>${exhausted?`0 lượt · <span data-arcade-until="${j.craftWindowAt+jade.CRAFT_WINDOW}">${Math.ceil((j.craftWindowAt+jade.CRAFT_WINDOW-Date.now())/1000)}s</span>`:`${jade.CRAFT_LIMIT-(Date.now()>=j.craftWindowAt+jade.CRAFT_WINDOW?0:j.craftUsed)}/3 lượt/phút`}</small></div>
     <div class="jade-craft-list">${Object.entries(jade.CRAFTS).map(([id,item])=>{
      const fee=stone?jade.craftFee(stone,id):0;
      const allowed=canCraft&&stone.size>=item.min&&
       !(id==='bangle'&&stone.flaw==='fracture'&&!stone.savedFracture);
      return `<div class="jade-craft-card"><span>${{bangle:'◯',pendant:'◇',ring:'◈',beads:'❈'}[id]}</span>
       <div><b>${item.name}</b><small>Phôi cỡ ${item.min}+ · x${item.mult.toLocaleString('vi-VN')} giá trị</small></div>
-      ${btn('+'+fmt(fee)+' Xu','jade-craft-'+id,'upgrade',!allowed||s.coins<fee)}</div>`;}).join('')}</div>
+      ${btn('+'+fmt(fee)+' Xu','jade-craft-'+id,'upgrade',!allowed||s.coins<fee||exhausted)}</div>`;}).join('')}</div>
     <div class="jade-sheet-heading"><b>⚒ Nâng cấp xưởng</b><small>Đầu tư bằng Xu Arcade</small></div>
     ${upgrades.map(([id,icon,title,desc])=>{const cost=jade.upgradeCost(j,id);
      return `<div class="jade-tool-card"><span>${icon}</span><div><b>${title}</b><small>${desc} · ${id==='permit'?(j.permit?'Đã có':'Giấy phép'): 'Cấp '+j[id]+'/4'}</small></div>
@@ -244,17 +245,22 @@
  }
  function galleryPanel(s){
   const j=s.jade,found=Object.keys(j.album).length;
+  const held=new Set([j.active,...j.vault,...j.exhibits].filter(stone=>stone&&stone.grade>0&&stone.flaw!=='skin')
+   .map(stone=>stone.grade+'-'+stone.color));
+  const latest=j.lastDiscoveryKey?.split('-').map(Number),newest=latest?.length===2&&j.album[j.lastDiscoveryKey];
+  const recentNew=newest&&Date.now()-j.lastDiscoveryAt<10*60*1000;
   const exhibits=j.exhibits.map((item,i)=>`<div class="jade-exhibit"><span class="jade-collectible-art ${gemVisual(item)}" style="--jade-color:${jade.COLOR_HEX[item.color]};--jade-item-x:${((Math.max(1,item.grade)-1)%5)*25}%" aria-hidden="true"></span>
    <div><b>${jade.GRADES[item.grade]} · ${jade.COLORS[item.color]}</b>
    <small>${jade.CRAFTS[item.craft].name} · Cỡ ${item.size} · #${i+1}</small></div></div>`).join('');
   return `<div class="jade-gallery-content" data-arcade-panel="jade-gallery">
     <div class="jade-gallery-banner"><span>✦ SỔ PHỈ THÚY</span><strong>${found}/56</strong>
-      <small>Khám phá theo 7 Chủng × 8 Sắc · Chỉ ghi nhận ngọc đã cắt</small></div>
+      <small>Đã mở = từng tìm thấy · Đang giữ = còn trong kho/tủ</small></div>
+    ${newest?`<div class="jade-discovery-highlight"><b>${recentNew?'✦ MỚI MỞ':'✧ PHÁT HIỆN GẦN NHẤT'}</b><strong>${jade.GRADES[latest[0]]} · ${jade.COLORS[latest[1]]}</strong><small>${held.has(j.lastDiscoveryKey)?'✓ Đang giữ trong bộ sưu tập':'Đã ghi sổ · hiện không còn giữ viên này'}</small></div>`:''}
     ${Array.from({length:7},(_,index)=>index+1).map(grade=>`<div class="jade-album-row"><b>${jade.GRADES[grade]}</b>
       <div class="jade-album-gems">${jade.COLORS.map((name,color)=>{
-       const count=j.album[grade+'-'+color]||0;
-       return `<div class="jade-album-slot ${count?'is-found':''} jade-tier-${grade>=7?'legendary':grade>=5||color>=6?'precious':'common'} jade-grade-${grade} jade-item-shade-${color}" title="${name}${count?' ×'+count:' · Chưa mở'}"
-        style="--jade-color:${jade.COLOR_HEX[color]};--jade-item-x:${((grade-1)%5)*25}%" aria-label="${jade.GRADES[grade]}, ${name}, ${count?'đã thấy '+count+' lần':'chưa thấy'}">${count?`<span class="jade-collectible-art ${gemVisual({grade,color,flaw:'perfect'})}" aria-hidden="true"></span>`:'◇'}</div>`;}).join('')}</div></div>`).join('')}
+       const key=grade+'-'+color,count=j.album[key]||0,owned=held.has(key),isNew=recentNew&&key===j.lastDiscoveryKey;
+       return `<div class="jade-album-slot ${count?'is-found':''} ${owned?'is-owned':''} ${isNew?'is-new':''} jade-tier-${grade>=7?'legendary':grade>=5||color>=6?'precious':'common'} jade-grade-${grade} jade-item-shade-${color}" title="${name}${count?' · Đã mở ×'+count:' · Chưa mở'}${owned?' · Đang giữ':''}${isNew?' · Mới mở':''}"
+        style="--jade-color:${jade.COLOR_HEX[color]};--jade-item-x:${((grade-1)%5)*25}%" aria-label="${jade.GRADES[grade]}, ${name}, ${count?'đã mở '+count+' lần':'chưa mở'}${owned?', đang giữ':''}${isNew?', mới mở':''}">${count?`<span class="jade-collectible-art ${gemVisual({grade,color,flaw:'perfect'})}" aria-hidden="true"></span>`:'◇'}</div>`;}).join('')}</div></div>`).join('')}
     <div class="jade-sheet-heading"><b>✦ Tủ Triển Lãm Cá Nhân</b><small>${j.exhibits.length}/40 tác phẩm</small></div>
     ${exhibits||'<p class="jade-sheet-hint">Chế tác rồi chọn “Đưa vào tủ” để lưu tác phẩm hiếm. Trưng bày không nhận Xu bán.</p>'}</div>`;
  }

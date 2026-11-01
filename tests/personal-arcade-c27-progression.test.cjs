@@ -33,6 +33,10 @@ test('Mine progression unlocks real depths, rewards 3 ores on charged burst and 
   assert.equal(result.ok,true);state=result.state;
  }
  assert.equal(state.mine.charge,12,'charge does not overflow default capacitor');
+ assert.equal(act(state,'mine-zone-1').ok,false,'Dug count alone does not buy access');
+ state.mine.ores.coal=12;
+ state=act(state,'mine-permit-1',.5,START+40*arcade.MINE_DIG_INTERVAL).state;
+ assert.equal(state.mine.depthPermit,1);
  state=act(state,'mine-zone-1',.5,START+40*arcade.MINE_DIG_INTERVAL).state;
  assert.equal(state.mine.zone,1);
  const oresBefore=Object.values(state.mine.ores).reduce((a,b)=>a+b,0);
@@ -51,8 +55,8 @@ test('Mine progression unlocks real depths, rewards 3 ores on charged burst and 
  assert.equal(act(upgraded.state,'mine-zone-2').ok,false,'depth 2 still requires 160 digs and lantern 3');
 });
 
-test('Mine layer odds are improved by lantern-enabled depth and scanner, not just cosmetic',()=>{
- const state=arcade.fresh(START);state.mine.dug=160;state.mine.lantern=3;
+test('Mine layer odds are improved by invested depth and scanner, not just cosmetic',()=>{
+ const state=arcade.fresh(START);state.mine.dug=160;state.mine.lantern=3;state.mine.depthPermit=2;
  const upper=act(state,'mine',.92);
  assert.equal(upper.label,'iron');
  const deep=act(act(state,'mine-zone-2').state,'mine',.92);
@@ -101,8 +105,8 @@ test('Garden seed selection, extra beds, irrigation and two-stage crop timers af
  assert.equal(harvest.state.garden.beds[2].status,'empty');
 });
 
-test('Garden fishing now waits for a bite, then awards one catch and records the species',()=>{
- let state=arcade.fresh(START);state.coins=8000;
+test('Garden fishing waits for a bite and pond level gates standard fish',()=>{
+ let state=arcade.fresh(START);state.coins=8000;state.garden.pondTier=3;
  assert.equal(act(state,'cast-line').ok,false);
  state=arcade.advance(state,START+arcade.BUBBLE_INTERVAL,0);
  state=act(state,'catch-bubble',.5,START+arcade.BUBBLE_INTERVAL).state;

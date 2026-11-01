@@ -43,7 +43,7 @@ function jadeMarket(site,attempts=SAMPLE_SIZE){
 
 function mineSample(zone,attempts=1000){
  let state=arcade.fresh(START);
- state.mine.dug=160;state.mine.lantern=3;state.mine.zone=zone;
+ state.mine.dug=160;state.mine.lantern=3;state.mine.depthPermit=zone;state.mine.zone=zone;
  let repairCycles=0;
  for(let i=0;i<attempts;i++){
   // Pure yield ceiling: hypothetical free repair between blocks of 100 digs.

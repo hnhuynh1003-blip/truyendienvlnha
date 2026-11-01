@@ -318,9 +318,6 @@
          '🔒 Mở rộng · '+fmt(roomCost)+' Xu','room-tier','market',!canExpand||s.coins<roomCost):
          '<span class="neon-expansion-complete">✓ Đã khai phá đủ ba cấp phòng</span>'}
       </div>
-      <div class="neon-event-spotlight"><span>✦ KHÁCH ĐẶC BIỆT</span>
-       <b>${n.program?.active?'Sự kiện đang diễn ra':n.program?.done?.length===3?'Đã lưu trọn bộ kỷ vật':'Mở chuỗi hợp đồng riêng'}</b>
-       <small>${n.program?.done?.length||0}/3 kỷ vật · yêu cầu phục vụ tại quầy</small></div>
       <div class="arcade-quick-drawers arcade-quick-drawers-triple">
        ${drawerButton('Nâng cấp','⬡','neon-upgrades')}
        ${drawerButton('Thành tựu','✦','neon-awards')}
@@ -364,10 +361,10 @@
          <div class="neon-order-recipe neon-beat-sequence">${beatActive?beat.map((item,i)=>`<span class="${i<n.beatStep?'is-done':i===n.beatStep?'is-next':''}" aria-label="${beatNames[item]}">${i<n.beatStep?'✓':beatSymbols[item]}</span>`).join(''):
           orderReady?'<span class="neon-beat-prompt">BẮT ĐẦU ♫</span>':
           `<span class="neon-order-timer" data-arcade-until="${n.orderReadyAt}">${countdown(n.orderReadyAt-time)}</span>`}</div>
-         <em>${beatActive?`NHỊP ${n.beatStep+1}/${beat.length} · CÒN <span class="neon-beat-clock" data-arcade-until="${n.beatUntil}">${countdown(n.beatUntil-time)}</span>`:
-          orderReady?'BẤM BẮT ĐẦU ĐỂ HIỆN CHUỖI MŨI TÊN':'CHUẨN BỊ LƯỢT MỚI'}</em></div>
+         <em>${beatActive?`${n.beatStep+1}/${beat.length} · <span class="neon-beat-clock" data-arcade-until="${n.beatUntil}">${countdown(n.beatUntil-time)}</span>`:
+          orderReady?'Bấm bắt đầu':'Chờ lượt mới'}</em></div>
        </div>
-       ${!beatActive?button(orderReady?'▶ BẮT ĐẦU · '+core.neonBeatWindow(n)/1000+' GIÂY':'Đang chờ khách mới',
+       ${!beatActive?button(orderReady?'▶ CHƠI · '+core.neonBeatWindow(n)/1000+'s':'Chờ khách',
         'neon-beat-start','neon-beat-start',!n.running||!orderReady):''}
        <div class="neon-order-actions neon-beat-actions" role="group" aria-label="Nhấn mũi tên đúng thứ tự">
         ${beatSymbols.map((symbol,i)=>`<button type="button" data-arcade-action="neon-beat-${i}" aria-label="Nhịp ${beatNames[i]}"
@@ -381,7 +378,7 @@
  function minePanel(s,time){
   const m=s.mine,repairing=!!m.repairUntil;
   const max=core.maxDurability(m);
-  const canDig=!repairing&&m.durability>0&&time>=m.nextDigAt;
+  const canDig=!repairing&&m.durability>0;
   const all=Object.values(m.ores).reduce((sum,n)=>sum+n,0),hit=activeFeedback('mine',time),
    maxEnergy=core.maxCharge(m),found=Object.values(m.found).filter(Boolean).length;
   const probeTarget=core.mineProbeTarget(m),probeHit=activeFeedback('probe',time),
@@ -405,7 +402,7 @@
         <span class="mine-fracture-lines" aria-hidden="true"></span>
         <span class="mine-vein-core ${['ore-portrait-copper','ore-portrait-iron','ore-portrait-crystal'][m.zone]}" aria-hidden="true"></span>
         <span class="mine-ore-glow"></span><span class="mine-hit-spark">✦</span>
-        <span class="mine-tap-prompt">${repairing?'ĐANG SỬA CUỐC':!m.durability?'CUỐC ĐÃ HẾT ĐỘ BỀN':!canDig?'⏱ LẤY NHỊP CUỐC':'⛏ CHẠM ĐỂ ĐÀO'}</span></button>
+        <span class="mine-tap-prompt">${repairing?'ĐANG SỬA CUỐC':!m.durability?'CUỐC ĐÃ HẾT ĐỘ BỀN':'⛏ CHẠM ĐỂ ĐÀO'}</span></button>
       ${hit?`<div class="mine-drop" aria-live="polite">${hit.ore==='burst'?'✦':orePortrait(hit.ore)}<strong>+${hit.quantity} ${hit.ore==='burst'?'QUẶNG':oreLabels[hit.ore]}</strong></div>`:''}
       <div class="mine-bottom-hud"><div class="mine-durability-circle" style="--mine-durability:${m.durability/max*100}%"><span>CUỐC</span><b>${m.durability}<small>/${max}</small></b></div>
         <span>${repairing?`🔧 <span data-arcade-until="${m.repairUntil}">${countdown(m.repairUntil-time)}</span>`:'⛏ Độ bền cuốc'}</span></div>
@@ -414,9 +411,11 @@
       <div class="arcade-panel-heading" data-arcade-panel="mine-map"><div><span class="arcade-eyebrow">BẢN ĐỒ KHAI THÁC</span><h4>Chọn địa tầng</h4></div><span class="mine-gear-label">Đèn cấp ${m.lantern}/3</span></div>
       <div class="mine-zone-list" data-arcade-panel="mine-map">${[
        ['Tầng đất','10 loại khoáng sản',0,1],['Mạch sắt','2 quặng/lượt',40,2],['Hang tinh thể','Quặng hiếm thường hơn',160,3]
-      ].map(([name,sub,dug,lamp],i)=>{const unlocked=core.zoneUnlocked(m,i);
-       return `<button type="button" class="mine-zone ${m.zone===i?'selected':''}" data-arcade-action="mine-zone-${i}" ${unlocked?'':'disabled'}>
-       <b>${i===0?'Ⅰ':i===1?'Ⅱ':'Ⅲ'} ${name}</b><small>${unlocked?sub:`${Math.max(0,dug-m.dug)} lượt · đèn ${lamp}`}</small></button>`;}).join('')}</div>
+      ].map(([name,sub,dug,lamp],i)=>{const unlocked=core.zoneUnlocked(m,i),permit=core.MINE_PERMITS[i];
+       const eligible=i>0&&m.depthPermit===i-1&&m.dug>=dug&&m.lantern>=lamp;
+       return `<div class="mine-zone-card"><button type="button" class="mine-zone ${m.zone===i?'selected':''}" data-arcade-action="mine-zone-${i}" ${unlocked?'':'disabled'}>
+       <b>${i===0?'Ⅰ':i===1?'Ⅱ':'Ⅲ'} ${name}</b><small>${unlocked?sub:`${Math.max(0,dug-m.dug)} lượt · đèn ${lamp}`}</small></button>
+       ${i>0&&!unlocked?button('Mở · '+fmt(permit.xu)+' Xu · '+Object.entries(permit.ores).map(([ore,count])=>count+' '+oreLabels[ore]).join(', '),'mine-permit-'+i,'tool',!eligible||s.coins<permit.xu||Object.entries(permit.ores).some(([ore,count])=>m.ores[ore]<count)):''}</div>`;}).join('')}</div>
       <div class="mine-energy"><div><b>⚡ Phá mạch quặng</b><small>Đào để nạp năng lượng</small></div><strong>${m.charge}/${maxEnergy}</strong></div>
       <div class="mine-charge-track" role="progressbar" aria-label="Năng lượng phá mạch" aria-valuenow="${m.charge}" aria-valuemax="${maxEnergy}"><i style="width:${m.charge/maxEnergy*100}%"></i></div>
       ${button('⚡ PHÁ MẠCH · 5 NĂNG LƯỢNG','mine-burst','power mine-burst',!canDig||m.durability<3||m.charge<5)}
@@ -477,6 +476,8 @@
   if(g.fishAlbum.fogveil)pondResidents[0]='fogveil';
   if(g.fishAlbum.rainpetal)pondResidents[3]='rainpetal';
   if(g.fishAlbum.nightlamp)pondResidents[2]='nightlamp';
+  g.pondDisplay.forEach((id,i)=>{pondResidents[i]=id;});
+  const nextFish=Object.entries(core.FISH_POND_LEVEL).find(([,tier])=>tier===g.pondTier+1)?.[0];
   const fishRareChance=Math.round((1-Math.max(.75,.94-.035*(g.rod-1)-.02*(g.pondTier-1)))*100);
   const bed=(b,index)=>{
    const mature=b.status==='growing'&&time>=b.readyAt;
@@ -521,6 +522,9 @@
       <span class="garden-firefly garden-firefly-right" aria-hidden="true"></span>
       <div class="garden-plot-area">${g.beds.map(bed).join('')}</div>
       <div class="garden-pond"><div class="garden-pond-shine"></div>
+        <span class="garden-pond-upgrade garden-pond-lotus-bridge" aria-hidden="true"></span>
+        <span class="garden-pond-upgrade garden-pond-falls" aria-hidden="true"></span>
+        <span class="garden-pond-upgrade garden-pond-moon-gate" aria-hidden="true"></span>
         ${['a','b','c','d','e','f'].map((id,i)=>`<span class="garden-fish garden-fish-${id} garden-fish-species-${pondResidents[i]}"></span>`).join('')}
         <span class="garden-lotus garden-lotus-a" aria-hidden="true"></span><span class="garden-lotus garden-lotus-b" aria-hidden="true"></span>
         <span class="garden-bubble garden-bubble-a"></span><span class="garden-bubble garden-bubble-b"></span>
@@ -566,16 +570,23 @@
       <div class="garden-quick-actions">${button('💧 Tưới các luống khô','water-all','tool',!g.sprinkler||!g.water||!g.beds.some(b=>b.status==='dry'))}
        ${button('✿ Thu hoạch tất cả','harvest-all','tool',!g.beds.some(b=>b.status==='growing'&&time>=b.readyAt))}</div>
       <div class="garden-statline"><span>🌿 Đã thu hoạch <b>${g.harvests}</b></span><span>🎣 Mồi <b>${g.bait}</b> · ✦ <b>${g.moonBait}</b></span></div>
+      <div class="garden-crop-stock" data-arcade-panel="garden-seeds"><b>✿ Kho nông sản</b>
+       ${Object.entries(core.CROPS).map(([id,crop])=>`<span>${crop.name} <strong>×${g.cropStock[id]}</strong></span>`).join('')}</div>
+      <div class="garden-crop-orders" data-arcade-panel="garden-seeds"><b>◈ Đơn hàng phối giống · ${g.cropOrdersDone.length}/3</b>
+       ${core.GARDEN_ORDERS.map((order,i)=>`<div class="garden-crop-order"><span><strong>${order.name}</strong><small>${Object.entries(order.need).map(([id,count])=>core.CROPS[id].name+' '+Math.min(g.cropStock[id],count)+'/'+count).join(' · ')}</small></span>
+       ${button(g.cropOrdersDone.includes(i)?'✓ Đã giao':'Giao đơn','garden-order-'+i,'tool',g.cropOrdersDone.includes(i)||i>0&&!g.cropOrdersDone.includes(i-1)||Object.entries(order.need).some(([id,count])=>g.cropStock[id]<count))}</div>`).join('')}</div>
       <div class="arcade-quick-drawers arcade-quick-drawers-triple">
        ${drawerButton('Hạt giống','✿','garden-seeds')}
        ${drawerButton('Sổ cá','🐟','garden-album')}
        ${drawerButton('Tiệm câu','🎣','garden-upgrades')}</div>
       <div class="garden-fishing" data-arcade-panel="garden-album"><div><b>🎣 Nhật ký hồ sương</b><small>${g.fish} cá đã câu · ${g.rareFish} cá hiếm · ${discovered}/${Object.keys(core.FISH_SPECIES).length} loài từng tìm thấy</small></div></div>
+      <div class="garden-pond-progress" data-arcade-panel="garden-album"><b>Hồ cấp ${g.pondTier}/5</b><small>${nextFish?'Cấp sau mở '+core.FISH_SPECIES[nextFish].name:'Đã mở toàn bộ cá hồ thường'} · Chọn 3 cá đã câu để trưng bày</small></div>
       <div class="garden-fish-album" data-arcade-panel="garden-album" aria-label="Sổ sưu tầm cá">${Object.entries(core.FISH_SPECIES).map(([id,fish])=>{
        const count=g.fishAlbum[id],known=count>0;
-       return `<div class="garden-fish-entry fish-${id} ${known?'is-discovered':'is-unknown'}">
+       return `<div class="garden-fish-entry fish-${id} ${known?'is-discovered':'is-unknown'} ${g.pondDisplay.includes(id)?'is-displayed':''}">
         <span class="garden-fish-art garden-fish-portrait ${known?'fish-'+id:'fish-undiscovered'}" aria-hidden="true"></span>
-        <div><strong>${known?fish.name:'Chưa khám phá'}</strong><small>${known?fish.rarity+' · Kỷ lục '+g.fishBest[id]+' cm':fish.rarity+(fish.habitat?' · '+fish.habitat:'')}</small></div>
+        <div><strong>${known?fish.name:'Chưa khám phá'}</strong><small>${known?fish.rarity+' · Kỷ lục '+g.fishBest[id]+' cm':fish.rarity+(fish.habitat?' · '+fish.habitat:'')+(core.FISH_POND_LEVEL[id]?' · Hồ cấp '+core.FISH_POND_LEVEL[id]:'')}</small>
+        ${known?button(g.pondDisplay.includes(id)?'✓ Đang trưng':'Trưng bày','garden-display-'+id,'tool'):''}</div>
         <b>${known?'×'+count:'◈'}</b></div>`;}).join('')}</div>
       <div class="garden-tackle-shop" data-arcade-panel="garden-upgrades">
        <div class="garden-tackle-sign"><span>✧ BẾN TRĂNG · CỬA TIỆM CÂU</span><b>Đồ câu Hồ Sương</b><small>Chọn mồi, nâng cần rồi ra hồ ngay.</small></div>
@@ -595,7 +606,7 @@
       </div>
       <div class="arcade-upgrade-grid arcade-garden-upgrades" data-arcade-panel="garden-upgrades">
        ${upgrade('💧','Bồn nước',g.waterCap+'/7 bình','water-cap',core.upgradeCost(s,'water-cap'))}
-       ${upgrade('🐟','Hồ cá','Cấp '+g.pondTier+'/5','pond-tier',core.upgradeCost(s,'pond-tier'))}
+       ${upgrade('🐟','Hồ cá',g.pondTier===5?'Cấp 5/5 · Toàn bộ loài':'Cấp '+g.pondTier+'/5 · mở '+core.FISH_SPECIES[nextFish].name,'pond-tier',core.upgradeCost(s,'pond-tier'))}
        ${upgrade('▦','Mở thêm luống',g.plots+'/4 luống','plots',core.upgradeCost(s,'plots'))}
        ${upgrade('☂','Dàn tưới sương','Cấp '+g.sprinkler+'/2 · tưới nhanh','sprinkler',core.upgradeCost(s,'sprinkler'))}
       </div>
@@ -714,13 +725,13 @@
    const boostExpired=!!s.neon.turboUntil&&s.lastAt<s.neon.turboUntil&&time>=s.neon.turboUntil;
    const turboReady=!!s.neon.turboReadyAt&&s.lastAt<s.neon.turboReadyAt&&time>=s.neon.turboReadyAt;
    const nextOrder=!!s.neon.orderReadyAt&&s.lastAt<s.neon.orderReadyAt&&time>=s.neon.orderReadyAt;
-   const mineReady=!!s.mine.nextDigAt&&s.lastAt<s.mine.nextDigAt&&time>=s.mine.nextDigAt;
    const missedBeat=!!s.neon.beatUntil&&!state.neon.beatUntil;
    if(missedBeat){notice='⌛ Hết giờ! Khách sẽ quay lại, combo đã về 0.';
     noticeUntil=time+2200;error=false;}
    if(fishEscaped){notice='Cá đã tuột khỏi lưỡi câu. Hãy thử lượt khác nhé.';
     noticeUntil=time+3500;error=false;}
-   if(lastRenderedKey!==activeKey||completedRepair||waterRefilled||bubbleAppeared||plantMatured||fishBit||fishEscaped||customerServed||boostExpired||turboReady||nextOrder||missedBeat||mineReady||weatherShifted)render();
+   const craftReady=tab==='jade'&&s.jade?.craftUsed>=3&&s.jade?.craftWindowAt+60000> s.lastAt&&time>=s.jade.craftWindowAt+60000;
+   if(lastRenderedKey!==activeKey||completedRepair||waterRefilled||bubbleAppeared||plantMatured||fishBit||fishEscaped||customerServed||boostExpired||turboReady||nextOrder||missedBeat||craftReady||weatherShifted)render();
    else if(time-lastPaint>=900)refreshLive(time);
   }
  }

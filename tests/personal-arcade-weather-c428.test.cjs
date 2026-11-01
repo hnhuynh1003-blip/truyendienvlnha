@@ -37,7 +37,7 @@ test('Rain and mist fish appear only in their conditions with existing rarity od
  const rareRoll=.94+.6*.06,commonRoll=.94*.9;
  const mist=cast(slot(0),rareRoll),rain=cast(slot(1),rareRoll);
  assert.equal(mist.state.garden.line.fishId,'fogveil');
- assert.equal(rain.state.garden.line.fishId,'lantern');
+ assert.equal(rain.state.garden.line.fishId,'moonfish','Ordinary lantern fish waits for pond tier 2');
  assert.equal(core.FISH_SPECIES[mist.state.garden.line.fishId].rare,true);
  const rainFish=cast(slot(1),commonRoll),clear=cast(slot(2),commonRoll);
  assert.equal(rainFish.state.garden.line.fishId,'rainpetal');
@@ -63,7 +63,7 @@ test('Premium bait increases rarity as before; weather fish still need skill and
  assert.equal(premium.state.garden.moonBait,0);
  assert.equal(premium.state.garden.bait,1);
  const line=premium.state.garden.line;
- assert.equal(fishing.rules(line,core.FISH_SPECIES.fogveil).required,3);
+ assert.equal(fishing.rules(line,core.FISH_SPECIES.fogveil).required,4);
  assert.equal(premium.state.garden.fishAlbum.fogveil,0,'casting cannot reveal a fish');
  const caught=core.act(premium.state,'reel-line',line.biteAt+100,.2);
  assert.equal(caught.ok,true);

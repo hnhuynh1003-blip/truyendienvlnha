@@ -32,6 +32,7 @@
  const payoutScaleV2=[1,.8,.34,.30,.15];
  const payoutScaleV3=[1,.72,.26,.22,.09];
  const RESCUE_INTERVAL=10*60*1000;
+ const CRAFT_WINDOW=60*1000,CRAFT_LIMIT=3;
  const gradeOdds=[
   [70,15,9,5,1,0,0,0],
   [20,12,28,23,11,5,1,0],
@@ -58,7 +59,8 @@
  }
  const fresh=()=>({bought:0,cut:0,sold:0,invested:0,received:0,lamp:1,saw:1,
   carver:1,permit:false,rescueReadyAt:0,active:null,stash:[],vault:[],
-  inspected:[],album:{},exhibits:[],last:null});
+  inspected:[],album:{},exhibits:[],last:null,craftWindowAt:0,craftUsed:0,
+  lastDiscoveryKey:null,lastDiscoveryAt:0});
  function validStone(v){
   if(!v||typeof v!=='object'||!['raw','window','cut','crafted'].includes(v.phase)||
    !Number.isSafeInteger(v.id)||v.id<1||v.id>1000000||
@@ -81,6 +83,8 @@
   for(const field of ['bought','cut','sold','invested','received'])j[field]=integer(source[field],0,MAX,0);
   for(const field of ['lamp','saw','carver'])j[field]=integer(source[field],1,4,1);
   j.rescueReadyAt=integer(source.rescueReadyAt,0,Number.MAX_SAFE_INTEGER,0);
+  j.craftWindowAt=integer(source.craftWindowAt,0,Number.MAX_SAFE_INTEGER,0);
+  j.craftUsed=integer(source.craftUsed,0,CRAFT_LIMIT,0);
   j.permit=source.permit===true;
   j.active=validStone(source.active);
   // C4.13: only unfinished stones enter the waiting basket. Old saves with
@@ -101,6 +105,10 @@
    Number(x.split(':')[0])===j.bought+1))].slice(0,15);
   if(source.album&&typeof source.album==='object')for(let g=1;g<=7;g++)for(let c=0;c<8;c++){
    const key=g+'-'+c,n=integer(source.album[key],0,1000000,0);if(n)j.album[key]=n;
+  }
+  if(typeof source.lastDiscoveryKey==='string'&&j.album[source.lastDiscoveryKey]){
+   j.lastDiscoveryKey=source.lastDiscoveryKey;
+   j.lastDiscoveryAt=integer(source.lastDiscoveryAt,0,Number.MAX_SAFE_INTEGER,0);
   }
   if(Array.isArray(source.exhibits))j.exhibits=source.exhibits.slice(0,40).filter(x=>
    x&&integer(x.grade,1,7,0)&&integer(x.color,0,7,-1)>=0&&integer(x.size,1,12,0)&&
@@ -345,21 +353,27 @@
     (stone.seed%1000)/1000<(.25/.35)*(j.saw-1)/3;
    if(stone.flaw==='mutation'&&stone.grade>0)stone.grade=Math.min(7,stone.grade+1);
    stone.cutValue=cutValue(stone,j.saw);stone.phase='cut';j.cut++;
+   let newFind=false;
    if(stone.grade>0&&stone.flaw!=='skin'){
     const key=stone.grade+'-'+stone.color;
+    if(!j.album[key]){newFind=true;j.lastDiscoveryKey=key;j.lastDiscoveryAt=now;}
     j.album[key]=clamp((j.album[key]||0)+1,0,1000000);
    }
    return succeed(stone.flaw==='skin'?'Kháo bì! Màu xanh chỉ nằm ngoài lớp vỏ.':
     stone.grade===0?'Đá phế! Chỉ có thể bán thu hồi.':
-    'Đã lộ '+GRADES[stone.grade]+' · '+COLORS[stone.color]+'!');
+    (newFind?'✦ MỚI VÀO SỔ · ':'ĐÃ CÓ TRONG SỔ · ')+GRADES[stone.grade]+' · '+COLORS[stone.color]+'!');
   }
   const craft=/^jade-craft-(bangle|pendant|ring|beads)$/.exec(action||'');
   if(craft){
    if(stone.phase!=='cut'||stone.grade===0||stone.flaw==='skin')return fail('Chỉ chế tác được phôi ngọc đã cắt.');
+   if(now-j.craftWindowAt>=CRAFT_WINDOW){j.craftWindowAt=0;j.craftUsed=0;}
+   if(j.craftUsed>=CRAFT_LIMIT)return fail('Xưởng đã chế tác 3 món · chờ hết 1 phút');
    const type=craft[1],spec=CRAFTS[type];
    if(stone.size<spec.min)return fail('Phôi ngọc quá nhỏ cho thành phẩm này.');
    if(type==='bangle'&&stone.flaw==='fracture'&&!stone.savedFracture)return fail('Đá nứt tâm, không tiện được vòng nguyên khối.');
    const fee=craftFee(stone,type);if(!charge(fee))return fail('Chưa đủ phí chế tác.');
+   if(!j.craftWindowAt)j.craftWindowAt=now;
+   j.craftUsed++;
    stone.phase='crafted';stone.craft=type;
    stone.craftValue=clamp(Math.round(stone.cutValue*spec.mult*(1+.17*(j.carver-1))),1,MAX);
    return succeed('Thợ hoàn thành '+spec.name+'! Đem bán hoặc trưng bày.');
@@ -380,7 +394,7 @@
   return fail('Thao tác Ngọc Phường chưa hỗ trợ.');
  }
  return Object.freeze({fresh,norm,act,MARKETS,GRADES,COLORS,COLOR_HEX,FLAWS,FLAW_NAMES,
-  CRAFTS,RESCUE_INTERVAL,unlocked,scanHint,baseValue,cutValue,cuttingFee,windowFee,
+  CRAFTS,RESCUE_INTERVAL,CRAFT_WINDOW,CRAFT_LIMIT,unlocked,scanHint,baseValue,cutValue,cuttingFee,windowFee,
   actionFee,rawSalvageValue,upgradeCost,craftFee,generate,marketOffer,surface,
   MAX_STONES,MAX_VAULT,marketRate,marketQuote,inspectFee,inspectionKey});
 });

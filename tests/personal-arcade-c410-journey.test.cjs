@@ -54,12 +54,19 @@ test('C4.10 Mine journey: digs survive repairs and unlocking the deep zone is no
   }
   if(i===40){
    s=doAct(s,'lantern',time);
+   s.mine.ores.coal=Math.max(s.mine.ores.coal,12);
+   s.mine.ores.iron=Math.max(s.mine.ores.iron,5);
+   s=doAct(s,'mine-permit-1',time);
    s=doAct(s,'mine-zone-1',time);
   }
   s=doAct(s,'mine',time,i%3===0?.99:i%3===1?.5:.05);
   time+=arcade.MINE_DIG_INTERVAL;
  }
  s=doAct(s,'lantern',time);
+ s.mine.ores.iron=Math.max(s.mine.ores.iron,20);
+ s.mine.ores.copper=Math.max(s.mine.ores.copper,6);
+ s.mine.ores.silver=Math.max(s.mine.ores.silver,4);
+ s=doAct(s,'mine-permit-2',time);
  s=doAct(s,'mine-zone-2',time);
  assert.equal(s.mine.dug,160);
  assert.equal(s.mine.zone,2);
@@ -80,6 +87,7 @@ test('C4.10 Garden journey: plant, mature, fish, collect and unlock fish achieve
  assert.equal(s.coins,50);
  s=doAct(s,'catch-bubble',mature);
  assert.equal(s.garden.bait,1);
+ s.garden.pondTier=4;
  s=doAct(s,'cast-line',mature,.9999);
  const before=s.garden.fish;
  assert.equal(arcade.act(s,'reel-line',mature).ok,false,'Cannot reel before bite');

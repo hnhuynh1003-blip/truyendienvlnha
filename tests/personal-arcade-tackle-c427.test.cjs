@@ -61,7 +61,7 @@ test('Moon bait changes actual bite rarity, is consumed once, and remains a skil
  const restored=core.norm(JSON.parse(JSON.stringify(premium.state)),T);
  assert.equal(restored.garden.line.lure,'moon');
  const line=restored.garden.line;
- assert.equal(fishing.rules(line,core.FISH_SPECIES[line.fishId]).required,3);
+ assert.equal(fishing.rules(line,core.FISH_SPECIES[line.fishId]).required,4);
  assert.equal(restored.garden.fish,0);
  const caught=act(restored,'reel-line',.01,line.biteAt+1);
  assert.equal(caught.ok,true);
@@ -72,10 +72,10 @@ test('Moon bait changes actual bite rarity, is consumed once, and remains a skil
  assert.equal(act(caught.state,'reel-line',.2,line.biteAt+2).ok,false);
 });
 
-test('All three new fish can be encountered without a premium paywall',()=>{
- const samples=[['glassfin',.91],['lantern',.976],['phoenix',.998]];
- for(const [expected,roll] of samples){
-  const s=core.fresh(T);s.garden.bait=1;
+test('All three new fish can be encountered with ordinary bait once the pond is upgraded',()=>{
+ const samples=[['glassfin',.91,1],['lantern',.976,2],['phoenix',.994,5]];
+ for(const [expected,roll,pondTier] of samples){
+  const s=core.fresh(T);s.garden.bait=1;s.garden.pondTier=pondTier;
   const result=act(s,'cast-line',roll);
   assert.equal(result.state.garden.line.fishId,expected);
   assert.equal(result.state.garden.line.lure,'regular');
@@ -86,7 +86,7 @@ test('The mobile shop uses the existing rod upgrade and three optimized painted 
  const html=source('index.html'),ui=source('js/personal-arcade-ui-v1.js');
  const css=source('css/arcade-c427-tackle.css');
  assert.match(html,/arcade-c427-tackle\.css\?v=c427-2/);
- assert.match(html,/personal-arcade-core-v1\.js\?v=c423-1&amp;fishing=c425f-1&amp;tackle=c427-1/);
+ assert.match(html,/personal-arcade-core-v1\.js\?v=c442-1&amp;fishing=c425f-1&amp;tackle=c427-1/);
  assert.match(html,/progression=c425g-1&amp;tackle=c427-1/);
  for(const action of ['buy-bait-pack','buy-moon-bait','cast-premium-line','rod'])
   assert.match(ui,new RegExp(`'${action}'`));

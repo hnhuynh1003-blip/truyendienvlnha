@@ -18,6 +18,7 @@
   require('./personal-arcade-neon-c441.js'):
   typeof window!=='undefined'?window.DuduPersonalArcadeNeonC441:null;
  const WATER_INTERVAL=15*60*1000,REPAIR_INTERVAL=6*60*1000;
+ // Historical sampling interval only: mining no longer imposes a tap timer.
  const MINE_DIG_INTERVAL=1000;
  const GROW_INTERVAL=3*60*1000,BUBBLE_INTERVAL=90*1000;
  const MAX_COIN=1000000000,MAX_IDLE_MS=12*60*60*1000;
@@ -36,6 +37,11 @@
  const CROPS=Object.freeze({bloom:{name:'Hoa sương',grow:GROW_INTERVAL,value:50},
   mint:{name:'Lá bạc hà',grow:GROW_INTERVAL*2,value:100},
   moon:{name:'Hoa nguyệt',grow:GROW_INTERVAL*3,value:200}});
+ const GARDEN_ORDERS=Object.freeze([
+  Object.freeze({name:'Giỏ Sương',need:Object.freeze({bloom:4,mint:2}),bait:2,moonBait:0}),
+  Object.freeze({name:'Hương Trăng',need:Object.freeze({mint:4,moon:3}),bait:0,moonBait:1}),
+  Object.freeze({name:'Hội Vườn',need:Object.freeze({bloom:6,mint:5,moon:5}),bait:3,moonBait:1})
+ ]);
  // Fish are discoveries, not tradable main-wallet items. Preserve the old
  // fish/rareFish totals for pre-C4.1 players without fabricating past catches.
  const FISH_SPECIES=Object.freeze({
@@ -57,6 +63,7 @@
  const FISH_BITE_MIN=3000,FISH_BITE_SPAN=3000,FISH_REEL_WINDOW=25000;
  const FISH_COMMON=['reed','carp','silver','koi','blue','glassfin'];
  const FISH_RARE=['moonfish','lantern','crystal','phoenix','dragon'];
+ const FISH_POND_LEVEL=Object.freeze({moonfish:1,lantern:2,crystal:3,dragon:4,phoenix:5});
  // A fictional 60-minute pond weather cycle (three 20-minute phases), not
  // actual weather or server state. No extra saved fields, rewards or timers.
  const GARDEN_WEATHER_INTERVAL=20*60*1000;
@@ -102,7 +109,7 @@
   return {...phase,until:(slot+1)*GARDEN_WEATHER_INTERVAL,
    night:hour>=19||hour<6};
  }
- function choosePondFish(roll,threshold,time){
+ function choosePondFish(roll,threshold,time,pondTier=1){
   const fish=chooseFish(roll,threshold),rare=roll>=threshold;
   const scaled=rare?(roll-threshold)/(1-threshold):roll/threshold;
   const weather=gardenWeather(time);
@@ -111,8 +118,16 @@
   if(!rare&&weather.id==='rain'&&scaled>=.85&&scaled<.96)return 'rainpetal';
   if(rare&&weather.id==='mist'&&scaled>=.55&&scaled<.72)return 'fogveil';
   if(rare&&weather.night&&scaled>=.39&&scaled<.55)return 'nightlamp';
+  // Weather/event fish bypass pond-level gates. Standard rare fish do not.
+  if(FISH_POND_LEVEL[fish]>pondTier)return Object.keys(FISH_POND_LEVEL)
+   .filter(id=>FISH_POND_LEVEL[id]<=pondTier).at(-1)||'moonfish';
   return fish;
  }
+ const MINE_PERMITS=Object.freeze([
+  null,
+  Object.freeze({xu:1200,ores:Object.freeze({coal:12,iron:5}),dug:40,lantern:2}),
+  Object.freeze({xu:4800,ores:Object.freeze({iron:20,copper:6,silver:4}),dug:160,lantern:3})
+ ]);
  const ECONOMY_VERSION=2;
  const number=(value,min,max,fallback)=>Number.isSafeInteger(value)&&value>=min&&value<=max?value:fallback;
  const safeTime=t=>Number.isSafeInteger(t)&&t>=0?t:Date.now();
@@ -128,13 +143,14 @@
     orderWon:0,orderStreak:0,orderReadyAt:0,beatStep:0,beatUntil:0,ledColor:null,
     program:neonGame?neonGame.fresh():null},
    mine:{durability:100,pickLevel:1,drillLevel:1,lantern:1,cart:1,scanner:0,
-    zone:0,charge:0,bursts:0,repairUntil:0,nextDigAt:0,dug:0,probes:0,probeHits:0,
+    zone:0,depthPermit:0,charge:0,bursts:0,repairUntil:0,nextDigAt:0,dug:0,probes:0,probeHits:0,
     ores:Object.fromEntries(Object.keys(ORE_VALUES).map(ore=>[ore,0])),
     found:Object.fromEntries(Object.keys(ORE_VALUES).map(ore=>[ore,0]))},
    garden:{water:1,waterCap:3,pondTier:1,waterAt:time,seeds:3,plots:2,
     crop:'bloom',sprinkler:0,rod:1,fish:0,rareFish:0,
     beds:[{status:'empty',readyAt:0,crop:'bloom'},{status:'empty',readyAt:0,crop:'bloom'}],
     bubbleAt:time+BUBBLE_INTERVAL,bubbleReady:false,bait:0,moonBait:0,harvests:0,
+    cropStock:{bloom:0,mint:0,moon:0},cropOrdersDone:[],pondDisplay:[],
     line:null,fishAlbum:Object.fromEntries(Object.keys(FISH_SPECIES).map(id=>[id,0])),
     fishBest:Object.fromEntries(Object.keys(FISH_SPECIES).map(id=>[id,0]))},
    jade:jadeGame?jadeGame.fresh():null,
@@ -188,6 +204,10 @@
   state.mine={pickLevel,drillLevel:number(mine.drillLevel,1,5,1),
    lantern:number(mine.lantern,1,3,1),cart:number(mine.cart,1,4,1),
    scanner:number(mine.scanner,0,3,0),zone:number(mine.zone,0,2,0),
+   depthPermit:mine.depthPermit===undefined?
+    (number(mine.dug,0,10000000,0)>=160&&number(mine.lantern,1,3,1)>=3?2:
+     number(mine.dug,0,10000000,0)>=40&&number(mine.lantern,1,3,1)>=2?1:0):
+    number(mine.depthPermit,0,2,0),
    charge:number(mine.charge,0,24,0),bursts:number(mine.bursts,0,10000000,0),
    durability:number(mine.durability,0,100+25*(pickLevel-1),100),
    repairUntil:number(mine.repairUntil,0,time+REPAIR_INTERVAL*2,0),
@@ -222,10 +242,14 @@
   state.garden.bait=number(garden.bait,0,10000,0);
   state.garden.moonBait=number(garden.moonBait,0,10000,0);
   state.garden.harvests=number(garden.harvests,0,1000000,0);
+  for(const id of Object.keys(CROPS))state.garden.cropStock[id]=number(garden.cropStock?.[id],0,1000000,0);
+  state.garden.cropOrdersDone=Array.isArray(garden.cropOrdersDone)?[0,1,2].filter(i=>garden.cropOrdersDone.includes(i)):[];
   for(const id of Object.keys(FISH_SPECIES)){
    state.garden.fishAlbum[id]=number(garden.fishAlbum?.[id],0,10000000,0);
    state.garden.fishBest[id]=number(garden.fishBest?.[id],0,200,0);
   }
+  state.garden.pondDisplay=Array.isArray(garden.pondDisplay)?[...new Set(garden.pondDisplay
+   .filter(id=>FISH_SPECIES[id]&&state.garden.fishAlbum[id]>0))].slice(0,3):[];
   const line=garden.line;
   if(line&&FISH_SPECIES[line.fishId]){
    const biteAt=number(line.biteAt,0,time+60000,0),
@@ -242,8 +266,8 @@
  const rate=state=>(10+3*(state.neon.cpu-1)+4*(state.neon.gpu-1)+
   2*(state.neon.router-1)+2*(state.neon.cooling-1))*state.neon.stations;
  const maxCharge=mine=>12+4*(mine.cart-1);
- const zoneUnlocked=(mine,zone)=>zone===0||(zone===1&&mine.dug>=40&&mine.lantern>=2)||
-  (zone===2&&mine.dug>=160&&mine.lantern>=3);
+ const zoneUnlocked=(mine,zone)=>zone===0||(zone===1&&mine.depthPermit>=1&&mine.dug>=40&&mine.lantern>=2)||
+  (zone===2&&mine.depthPermit>=2&&mine.dug>=160&&mine.lantern>=3);
  const cropUnlocked=(garden,crop)=>crop==='bloom'||crop==='mint'&&garden.harvests>=10||
   crop==='moon'&&garden.harvests>=30;
  const upgradeCost=(state,type)=>type==='cpu'?400*state.neon.cpu*state.neon.cpu:
@@ -461,6 +485,19 @@
    return succeed('Nâng cấp thành công');
   }
   const zoneAction=/^mine-zone-([012])$/.exec(action||'');
+  const permitAction=/^mine-permit-([12])$/.exec(action||'');
+  if(permitAction){
+   const tier=Number(permitAction[1]),spec=MINE_PERMITS[tier];
+   if(mine.depthPermit>=tier)return fail('Đã mua giấy phép tầng này');
+   if(mine.depthPermit!==tier-1)return fail('Hãy mở tầng trước');
+   if(mine.dug<spec.dug||mine.lantern<spec.lantern)return fail('Chưa đủ lượt đào hoặc cấp đèn');
+   if(state.coins<spec.xu)return fail('Chưa đủ Xu Arcade để mở tầng');
+   if(Object.entries(spec.ores).some(([ore,count])=>mine.ores[ore]<count))return fail('Thiếu quặng để dựng lối xuống tầng');
+   state.coins-=spec.xu;
+   for(const [ore,count] of Object.entries(spec.ores))mine.ores[ore]-=count;
+   mine.depthPermit=tier;
+   return succeed('Đã đầu tư mở '+['','Mạch sắt','Hang tinh thạch'][tier]);
+  }
   if(zoneAction){
    const zone=Number(zoneAction[1]);
    if(!zoneUnlocked(mine,zone))return fail('Hầm này cần thêm lượt đào và đèn thám hiểm');
@@ -497,11 +534,10 @@
   const probeAction=/^mine-probe-([012])$/.exec(action||'');
   if(probeAction){
    if(mine.repairUntil||mine.durability<1)return fail('Cần một cuốc còn dùng được');
-   if(time<mine.nextDigAt)return fail('Cuốc đang lấy nhịp, chờ 1 giây');
    if(mine.charge<5)return fail('Cần 5 năng lượng để dò một ngách');
    if(typeof roll!=='number'||roll<0||roll>=1)return fail('Lượt dò không hợp lệ');
    const chosen=Number(probeAction[1]),target=mineProbeTarget(mine);
-   mine.charge-=5;mine.probes++;mine.nextDigAt=time+MINE_DIG_INTERVAL;
+   mine.charge-=5;mine.probes++;
    if(chosen===target){
     mine.probeHits++;
     const mined=dig(roll,false);
@@ -518,18 +554,15 @@
   if(action==='mine'){
    if(mine.repairUntil)return fail('Cuốc đang tự sửa chữa');
    if(!mine.durability)return fail('Cuốc đã hết độ bền');
-   if(time<mine.nextDigAt)return fail('Cuốc đang lấy nhịp, chờ 1 giây');
    if(typeof roll!=='number'||roll<0||roll>=1)return fail('Lượt đào không hợp lệ');
    const mined=dig(roll);
-   mine.nextDigAt=time+MINE_DIG_INTERVAL;
    return succeed(mined.ore,{quantity:mined.quantity});
   }
   if(action==='mine-burst'){
    if(mine.repairUntil||mine.durability<3)return fail('Cuốc cần ít nhất 3 độ bền');
-   if(time<mine.nextDigAt)return fail('Cuốc đang lấy nhịp, chờ 1 giây');
    if(mine.charge<5)return fail('Cần 5 năng lượng để phá mạch quặng');
    if(typeof roll!=='number'||roll<0||roll>=1)return fail('Lượt đào không hợp lệ');
-   mine.charge-=5;mine.bursts++;mine.nextDigAt=time+MINE_DIG_INTERVAL;
+   mine.charge-=5;mine.bursts++;
    const ores=[roll,(roll+.37)%1,(roll+.71)%1].map(v=>dig(v,false));
    return succeed('⚡ Phá mạch: '+ores.map(hit=>hit.quantity+' '+ORE_NAMES[hit.ore]).join(' · '),
     {quantity:ores.reduce((sum,hit)=>sum+hit.quantity,0)});
@@ -593,7 +626,7 @@
    if(typeof roll!=='number'||roll<0||roll>=1)return fail('Lượt câu không hợp lệ');
    const baseline=Math.max(.75,.94-.035*(garden.rod-1)-.02*(garden.pondTier-1));
    const threshold=premium?Math.max(.57,baseline-MOON_BAIT_RARE_BONUS):baseline;
-   const fishId=choosePondFish(roll,threshold,time),fish=FISH_SPECIES[fishId];
+   const fishId=choosePondFish(roll,threshold,time,garden.pondTier),fish=FISH_SPECIES[fishId];
    const biteAt=time+FISH_BITE_MIN+Math.floor(roll*FISH_BITE_SPAN);
    const size=fish.min+Math.floor((fish.max-fish.min+1)*((roll*997)%1));
    garden[field]--;
@@ -624,6 +657,26 @@
    garden.line=null;
    return succeed('Dây chùng, cá vùng thoát! Hãy đợi mồi mới để thử lại.');
   }
+  const displayAction=/^garden-display-([a-z]+)$/.exec(action||'');
+  if(displayAction){
+   const id=displayAction[1];
+   if(!FISH_SPECIES[id]||!garden.fishAlbum[id])return fail('Hãy câu được loài cá này trước');
+   if(garden.pondDisplay.includes(id))garden.pondDisplay=garden.pondDisplay.filter(x=>x!==id);
+   else garden.pondDisplay=[...garden.pondDisplay.slice(-2),id];
+   return succeed('Đã đổi cá trưng bày trong hồ');
+  }
+  const gardenOrderAction=/^garden-order-([012])$/.exec(action||'');
+  if(gardenOrderAction){
+   const index=Number(gardenOrderAction[1]),order=GARDEN_ORDERS[index];
+   if(garden.cropOrdersDone.includes(index))return fail('Đơn này đã giao');
+   if(index>0&&!garden.cropOrdersDone.includes(index-1))return fail('Hoàn thành giỏ trước để mở đơn này');
+   if(Object.entries(order.need).some(([crop,count])=>garden.cropStock[crop]<count))return fail('Chưa đủ nông sản trong kho');
+   for(const [crop,count] of Object.entries(order.need))garden.cropStock[crop]-=count;
+   garden.cropOrdersDone.push(index);
+   garden.bait=Math.min(10000,garden.bait+order.bait);
+   garden.moonBait=Math.min(10000,garden.moonBait+order.moonBait);
+   return succeed('Đã giao '+order.name+' · nhận mồi câu, giữ kỷ niệm trong sổ vườn');
+  }
   const cropAction=/^crop-(bloom|mint|moon)$/.exec(action||'');
   if(cropAction){
    const crop=cropAction[1];if(!cropUnlocked(garden,crop))return fail('Hãy thu hoạch thêm để mở giống này');
@@ -645,9 +698,11 @@
    const ready=garden.beds.filter(b=>b.status==='growing'&&time>=b.readyAt);
    if(!ready.length)return fail('Chưa có cây nào chín');
    let total=0;
-   for(const bed of ready){total+=CROPS[bed.crop].value;bed.status='empty';bed.readyAt=0;
+   for(const bed of ready){total+=CROPS[bed.crop].value;
+    garden.cropStock[bed.crop]=Math.min(1000000,garden.cropStock[bed.crop]+1);
+    bed.status='empty';bed.readyAt=0;
     garden.harvests++;garden.seeds=Math.min(10000,garden.seeds+1);}
-   give(state,total);return succeed('✦ Thu '+ready.length+' luống: +'+formatXu(total)+' Xu Arcade');
+   give(state,total);return succeed('✦ Nhập kho '+ready.length+' nông sản · +'+formatXu(total)+' Xu Arcade');
   }
   const bedMatch=/^(plant|water|harvest)-([0-3])$/.exec(action||'');
   if(bedMatch){
@@ -665,8 +720,9 @@
    }
    if(verb==='harvest'){
     if(bed.status!=='growing'||time<bed.readyAt)return fail('Cây chưa đến lúc thu hoạch');
+    garden.cropStock[bed.crop]=Math.min(1000000,garden.cropStock[bed.crop]+1);
     bed.status='empty';bed.readyAt=0;garden.harvests++;garden.seeds=Math.min(10000,garden.seeds+1);
-    give(state,CROPS[bed.crop].value);return succeed('Thu '+CROPS[bed.crop].name+' +'+formatXu(CROPS[bed.crop].value)+' Xu và 1 hạt');
+    give(state,CROPS[bed.crop].value);return succeed('Nhập kho 1 '+CROPS[bed.crop].name+' · +'+formatXu(CROPS[bed.crop].value)+' Xu, 1 hạt');
    }
   }
   return fail('Thao tác chưa được hỗ trợ');
@@ -690,7 +746,8 @@
   neonCapacity,neonService,NEON_SERVICE_INTERVAL,NEON_ORDER_COOLDOWN,neonOrderPattern,
   neonBeatPattern,neonBeatWindow,mineProbeTarget,seasonGame,
   WATER_INTERVAL,REPAIR_INTERVAL,MINE_DIG_INTERVAL,GROW_INTERVAL,BUBBLE_INTERVAL,ORE_VALUES,ORE_NAMES,
-  CROPS,FISH_SPECIES,FISH_REEL_WINDOW,GARDEN_WEATHER_INTERVAL,gardenWeather,choosePondFish,
+  CROPS,GARDEN_ORDERS,FISH_SPECIES,FISH_POND_LEVEL,FISH_REEL_WINDOW,GARDEN_WEATHER_INTERVAL,gardenWeather,choosePondFish,
+  MINE_PERMITS,
   maxCharge,zoneUnlocked,cropUnlocked,maxDurability,bubbleInterval,
   JADE:jadeGame,NEON_EVENTS:neonGame});
 });

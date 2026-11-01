@@ -9,20 +9,19 @@ const TIME=1793510000000;
 const act=(s,a,t=TIME,roll=.5)=>arcade.act(s,a,t,roll);
 const copy=s=>JSON.parse(JSON.stringify(s));
 
-test('C4.41B mining needs one real second between strikes; no double award from a fast tap',()=>{
+test('C4.42 mining rewards one ore roll per tap, even for two rapid intentional taps',()=>{
  let state=arcade.fresh(TIME);
  const first=act(state,'mine',TIME,.88);
  assert.equal(first.ok,true);
  state=first.state;
- const blocked=act(state,'mine',TIME+999,.99);
- assert.equal(blocked.ok,false);
- assert.deepEqual(blocked.state.mine.ores,state.mine.ores);
- assert.equal(blocked.state.mine.durability,state.mine.durability);
- assert.equal(blocked.state.mine.dug,1);
- assert.equal(act(state,'mine-burst',TIME+999,.99).ok,false);
+ const second=act(state,'mine',TIME,.99);
+ assert.equal(second.ok,true);
+ assert.equal(second.state.mine.durability,state.mine.durability-1);
+ assert.equal(second.state.mine.dug,2);
+ assert.equal(second.state.mine.charge,2);
  const saved=arcade.norm(copy(state),TIME+400);
- assert.equal(saved.mine.nextDigAt,TIME+1000,'Cooldown survives reload');
- const next=act(saved,'mine',TIME+1000,.88);
+ assert.equal(saved.mine.nextDigAt,0,'Old tap cooldown is no longer armed');
+ const next=act(saved,'mine',TIME+400,.88);
  assert.equal(next.ok,true);
  assert.equal(next.state.mine.dug,2);
  assert.equal(next.state.coins,0);
