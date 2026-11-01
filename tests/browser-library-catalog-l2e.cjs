@@ -88,7 +88,7 @@ async function main(){
   await page.waitForFunction(expected=>Math.abs(window.scrollY-expected)<80,before);
   assert.equal(await page.locator('#library-catalog-pager-top .library-catalog-page-number.is-current').innerText(),'2',
    'returning from synopsis keeps the exact catalog page');
-  await page.locator('#search-novel-input').fill('Truyện thử phân trang 43');
+  await page.locator('#search-novel-input').fill('Truyện thử phân trang 247');
   await page.waitForFunction(()=>document.querySelectorAll('#novel-grid-container .novel-card').length===1);
   assert.equal(await page.locator('#library-catalog-pager-top').isVisible(),false,
    'search recalculates pages and resets to page one');
