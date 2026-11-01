@@ -15,6 +15,12 @@
 - **Hộ Chiếu:** ở trạng thái mùa `preview`, dù bản lưu máy cũ có cờ mùa cũng không hiện là đã sở hữu; không sửa/xóa bản lưu.
 - Các tùy chọn bệ cá từng lưu vẫn nguyên trong localStorage, nhưng được lọc khỏi phần hiển thị; không ghi hay di chuyển dữ liệu người chơi khi đọc.
 
+## C4.39R3 — Nền đơn bệ cho một hiện vật
+
+- Sau phản hồi trên điện thoại, thay các nền chứa 3–4 bục rời bằng **hai ảnh đại sảnh mới, mỗi ảnh chỉ có một bệ chính ở giữa**: `assets/museum-c439r3/solo-rotunda.webp` cho Chiến Tích; `assets/museum-c439r3/solo-hall.webp` dùng chung cho Quà mùa và Tủ riêng.
+- Ảnh được tạo mới theo phong cách DUDU, tối ưu WebP và không sửa/xóa asset gốc. Bốn lựa chọn bên dưới là nút điều khiển, không phải bốn bục thật trong bối cảnh.
+- Định vị chân của tượng, kỷ vật và ngọc lên mặt bệ thật (khoảng 60% chiều cao cảnh), căn giữa khi cắt nền trên màn hình hẹp. Không động tới logic sở hữu, mùa hay Xu.
+
 ## Dữ liệu
 
 - Chỉ ghi khóa tùy chọn trình bày trên thiết bị: `dudu-arcade-showcase:v1:<encodeURIComponent(identity)>`.

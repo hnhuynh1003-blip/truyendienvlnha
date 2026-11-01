@@ -1,0 +1,27 @@
+/* C4.39R3 — one artwork, one photographed pedestal.
+   The old background had three or four unused podiums that made a solo
+   exhibit feel like a floating preview. Keep the art and pedestal aligned. */
+body.dudu-phone-v11 #cyber-phone .museum-c429-scene-trophies{
+ background-image:url('../assets/museum-c439r3/solo-rotunda.webp');
+ background-position:center 50%;background-size:cover;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c429-feature-art{
+ top:7%;height:51%;bottom:auto;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-stage{
+ background-image:url('../assets/museum-c439r3/solo-hall.webp');
+ background-position:center 50%;background-size:cover;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-c439-scene{
+ background-image:linear-gradient(180deg,#101e3273 0%,#10213812 49%,#10131ab4 100%),
+  url('../assets/museum-c439r3/solo-hall.webp');
+ background-position:center 50%;background-size:cover;
+}
+/* The central plinth is physically painted into the new artwork: both the
+   Season relic cutouts and the player's chosen keepsake land on its top. */
+body.dudu-phone-v11 #cyber-phone .museum-c426-stage .museum-c426-art{
+ top:8%;height:53%;
+}
+body.dudu-phone-v11 #cyber-phone .museum-c426-stage .museum-c426-art[data-relic="founder"]{
+ top:5%;height:56%;
+}

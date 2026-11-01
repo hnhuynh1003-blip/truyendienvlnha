@@ -429,6 +429,9 @@ async function main(){
    'The plinth uses the original illustrated item, not a generic emoji');
   assert.equal(await gallery.locator('.dudu-c439-plinth, .dudu-c439-plinth-foot').count(),0,
    'The hall already has a physical stone dais; do not overlay a second CSS stand');
+  assert.match(await gallery.locator('.dudu-c439-scene').evaluate(
+   el=>getComputedStyle(el).backgroundImage),/solo-hall\.webp/,
+   'The personal display must show only one photographed central podium');
   await gallery.locator('.dudu-c439-slot.is-filled').nth(2).click();
   assert.match(await gallery.locator('.dudu-c439-plaque').innerText(),/Ngọc Phường/);
   for(const width of [320,390,430]){
@@ -458,7 +461,13 @@ async function main(){
   }
   assert.match(await seasonal.locator('.museum-c426-art').evaluate(
    el=>getComputedStyle(el).backgroundImage),/s01-founder-crest\.webp/);
+  assert.match(await seasonal.locator('.museum-c426-stage').evaluate(
+   el=>getComputedStyle(el).backgroundImage),/solo-hall\.webp/,
+   'The seasonal gallery shares the single-plinth exhibit hall');
   await page.locator('.museum-c426-tab[data-tab="display"]').click();
+  assert.match(await page.locator('.museum-c429-scene-trophies').evaluate(
+   el=>getComputedStyle(el).backgroundImage),/solo-rotunda\.webp/,
+   'The four achievement statues take turns on just one physical podium');
   assert.equal(await page.evaluate(()=>window.__arcadeExternalWrites?.length||0),0);
   console.log('C4.39 Tủ Trưng Bày: four honest favorites, museum room, phone fit OK');
  }finally{
