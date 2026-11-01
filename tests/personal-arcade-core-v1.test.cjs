@@ -166,9 +166,9 @@ test('Economy migration preserves prior Xu and converts partial idle income safe
 });
 test('Mining consumes one durability per click; ore sale credits only local game Xu',()=>{
  let state=arcade.fresh(START);
- const expected={stone:0.2,coal:0.6,iron:0.8,crystal:0.98};
- for(const [ore,roll] of Object.entries(expected)){
-  const result=apply(state,'mine',START,roll);
+ const expected={stone:0.2,coal:0.6,iron:0.9,crystal:0.995};
+ for(const [i,[ore,roll]] of Object.entries(expected).entries()){
+  const result=apply(state,'mine',START+i*arcade.MINE_DIG_INTERVAL,roll);
   assert.equal(result.ok,true);assert.equal(result.label,ore);
   state=result.state;
  }
@@ -179,7 +179,7 @@ test('Mining consumes one durability per click; ore sale credits only local game
  for(const count of Object.values(sold.state.mine.ores))assert.equal(count,0);
  assert.equal(apply(sold.state,'sell-ores').ok,false);
 });
-test('Pick self-repairs in four minutes or immediately from coal and iron',()=>{
+test('Pick self-repairs in six minutes or consumes coal, iron and copper',()=>{
  let state=arcade.fresh(START);state.mine.durability=0;
  assert.equal(apply(state,'mine').ok,false);
  const started=apply(state,'repair-wait');assert.equal(started.ok,true);
@@ -189,11 +189,13 @@ test('Pick self-repairs in four minutes or immediately from coal and iron',()=>{
  const repaired=arcade.advance(premature,START+arcade.REPAIR_INTERVAL,0);
  assert.equal(repaired.mine.durability,100);
  assert.equal(repaired.mine.repairUntil,0);
- state=arcade.fresh(START);state.mine.durability=17;state.mine.ores.coal=5;state.mine.ores.iron=2;
+ state=arcade.fresh(START);state.mine.durability=17;
+ state.mine.ores.coal=12;state.mine.ores.iron=8;state.mine.ores.copper=2;
  const forged=apply(state,'repair-forge');assert.equal(forged.ok,true);
  assert.equal(forged.state.mine.durability,100);
  assert.equal(forged.state.mine.ores.coal,0);
  assert.equal(forged.state.mine.ores.iron,0);
+ assert.equal(forged.state.mine.ores.copper,0);
 });
 test('Mining tools can be bought with game earnings without waiting for reader missions',()=>{
  let state=arcade.fresh(START);state.coins=1000;state.mine.durability=40;

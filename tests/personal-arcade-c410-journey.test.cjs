@@ -57,6 +57,7 @@ test('C4.10 Mine journey: digs survive repairs and unlocking the deep zone is no
    s=doAct(s,'mine-zone-1',time);
   }
   s=doAct(s,'mine',time,i%3===0?.99:i%3===1?.5:.05);
+  time+=arcade.MINE_DIG_INTERVAL;
  }
  s=doAct(s,'lantern',time);
  s=doAct(s,'mine-zone-2',time);

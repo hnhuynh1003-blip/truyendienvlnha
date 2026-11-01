@@ -34,7 +34,7 @@
   return {version:1,records:{s01:{relics,firstAt,completedAt}}};
  }
  function earnedBy(action,before,after){
-  if(/^neon-order-[012]$/.test(action)&&neonTicket(before?.neon)&&
+  if(/^(?:neon-order-[012]|neon-beat-[0123])$/.test(action)&&neonTicket(before?.neon)&&
      after?.neon?.orderWon>before?.neon?.orderWon)return 'neon';
   if(/^mine-probe-[012]$/.test(action)&&mineVein(before?.mine)&&
      after?.mine?.probeHits>before?.mine?.probeHits)return 'mine';

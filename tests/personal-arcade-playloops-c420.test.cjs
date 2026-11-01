@@ -47,12 +47,12 @@ test('C4.20 Neon wrong service advances the ticket, resets combo and adds a miss
  assert.equal(arcade.act(state,'neon-order-0',TIME+30000).ok,false);
 });
 
-test('C4.20 mine probe uses three charge, actual durability and inventory; wrong seam is not free',()=>{
+test('C4.41B mine probe uses five charge, actual durability and inventory; wrong seam is not free',()=>{
  let state=arcade.fresh(TIME);
  const winning=arcade.mineProbeTarget(state.mine);
  assert.equal(arcade.act(state,'mine-probe-'+winning,TIME,.45).ok,false,
   'Cannot probe without charge earned by mining');
- state.mine.charge=3;
+ state.mine.charge=5;
  const hit=arcade.act(state,'mine-probe-'+winning,TIME,.45);
  assert.equal(hit.ok,true);
  assert.equal(hit.hit,true);
@@ -64,9 +64,9 @@ test('C4.20 mine probe uses three charge, actual durability and inventory; wrong
  assert.equal(state.mine.ores[hit.ore],hit.quantity);
  assert.ok(hit.quantity>=2,'Correct seam grants a modest extra sample');
  assert.equal(state.coins,0,'Minerals must still be sold to gain Xu');
- state.mine.charge=3;
+ state.mine.charge=5;
  const next=arcade.mineProbeTarget(state.mine);
- const miss=arcade.act(state,'mine-probe-'+((next+1)%3),TIME,.1);
+ const miss=arcade.act(state,'mine-probe-'+((next+1)%3),TIME+arcade.MINE_DIG_INTERVAL,.1);
  assert.equal(miss.ok,true);
  assert.equal(miss.hit,false);
  state=miss.state;
@@ -75,7 +75,7 @@ test('C4.20 mine probe uses three charge, actual durability and inventory; wrong
  assert.equal(state.mine.charge,0);
  assert.equal(state.mine.durability,98);
  assert.ok(state.mine.ores.stone>=1,'Wrong seam yields only common stone');
- const reloaded=arcade.norm(JSON.parse(JSON.stringify(state)),TIME);
+ const reloaded=arcade.norm(JSON.parse(JSON.stringify(state)),TIME+arcade.MINE_DIG_INTERVAL);
  assert.equal(reloaded.mine.probes,2);
  assert.equal(reloaded.mine.probeHits,1);
 });

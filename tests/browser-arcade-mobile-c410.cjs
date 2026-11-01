@@ -194,8 +194,8 @@ async function main(){
    assert.match(look.iconBackground,/world-tabs\.webp/,game+' dock displays its AI sprite');
    assert.ok(look.overflow<=2,game+' game world has no horizontal clipping');
    if(game==='neon'){
-    assert.equal(await page.locator('.neon-order-actions button').count(),3,
-     'C4.20 Neon has a separate two-step playable customer service counter');
+    assert.equal(await page.locator('.neon-order-actions button').count(),4,
+     'C4.41B Neon uses a four-direction timed rhythm counter');
    }
    if(game==='mine'){
     assert.equal(await page.locator('.mine-seam-tunnel').count(),3,

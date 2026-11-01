@@ -49,11 +49,11 @@ function mineSample(zone,attempts=1000){
   // Pure yield ceiling: hypothetical free repair between blocks of 100 digs.
   // No claim that the user can mine this quickly in real play.
   if(state.mine.durability===0){state.mine.durability=100;repairCycles++;}
-  const result=arcade.act(state,'mine',START,(i*ROLL_STEP)%1);
+  const result=arcade.act(state,'mine',START+i*arcade.MINE_DIG_INTERVAL,(i*ROLL_STEP)%1);
   if(!result.ok)throw new Error(result.reason);
   state=result.state;
  }
- const sold=arcade.act(state,'sell-ores',START);
+ const sold=arcade.act(state,'sell-ores',START+attempts*arcade.MINE_DIG_INTERVAL);
  if(!sold.ok)throw new Error(sold.reason);
  return {zone,digs:attempts,repairsIgnoredTime:repairCycles,
   grossXu:xu(sold.state.coins),per100DigsXu:+(sold.state.coins/attempts*10).toFixed(2),

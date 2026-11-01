@@ -261,8 +261,9 @@
    skinCost=core.upgradeCost(s,'skin'),coolingCost=core.upgradeCost(s,'cooling'),
    time=now(),boost=s.neon.turboUntil>time,ready=time>=s.neon.turboReadyAt;
   const activeRate=s.neon.running?core.rate(s):0,
-   order=core.neonOrderPattern(n),
-   orderNames=['Nước','Tay cầm','Sửa máy'],orderReady=time>=n.orderReadyAt,
+   beat=core.neonBeatPattern(n),beatSymbols=['←','↑','→','↓'],
+   beatNames=['Trái','Lên','Phải','Xuống'],beatActive=n.beatUntil>time,
+   orderReady=time>=n.orderReadyAt,
    seasonTicket=!!seasonGame?.neonTicket?.(n),
    servicePulse=activeFeedback('neon-service',time),
    orderPulse=activeFeedback('neon-order',time);
@@ -281,8 +282,9 @@
   return `<section class="arcade-world arcade-world-neon ${s.neon.running?'is-running':'is-paused'}" aria-label="Trạm Neon">
     <header class="arcade-world-heading"><div><span class="arcade-eyebrow">01 / IDLE TYCOON</span>
       <h3>Trạm Neon</h3><p>Đón khách, nâng máy, mở rộng phòng net.</p></div></header>
-    <div class="arcade-stage neon-stage neon-room-tier-${n.roomTier} neon-skin-${n.skin} ${boost?'neon-overclocking':''} ${servicePulse?'neon-service-pulse':''}" role="group" aria-label="Trạm Neon cấp ${n.roomTier}, ${n.stations} dàn máy, ${n.running?service.guests:0} khách đang dùng">
+    <div class="arcade-stage neon-stage neon-room-tier-${n.roomTier} neon-skin-${n.skin} ${n.ledColor?'has-custom-led':''} ${boost?'neon-overclocking':''} ${servicePulse?'neon-service-pulse':''}" ${n.ledColor?`style="--neon-led:${n.ledColor}"`:''} role="group" aria-label="Trạm Neon cấp ${n.roomTier}, ${n.stations} dàn máy, ${n.running?service.guests:0} khách đang dùng">
       <div class="neon-light neon-light-one"></div><div class="neon-light neon-light-two"></div>
+      ${n.ledColor?'<div class="neon-custom-led-strips" aria-hidden="true"></div>':''}
       <div class="neon-world-plaque"><span class="neon-live-dot"></span> QUẬN CYBER · PHÒNG ${n.roomTier}</div>
       <div class="neon-atmosphere" aria-hidden="true"><i></i><i></i><i></i></div>
       <div class="neon-stage-actions" role="group" aria-label="Điều khiển phòng net">
@@ -332,6 +334,12 @@
        ${upgrade('✧','LED phòng', ['Lam','Tím','Hổ phách'][s.neon.skin],'skin',skinCost)}
        ${upgrade('❄','Tản nhiệt','Cấp '+s.neon.cooling+'/5 · kéo dài ép xung','cooling',coolingCost)}
       </div>
+      <div class="neon-led-studio" data-arcade-panel="neon-upgrades" aria-label="Tùy chỉnh màu đèn LED phòng máy">
+       <div><b>✧ BẢNG MÀU PHÒNG MÁY</b><small>${n.skin?'Đã mua LED · đổi màu miễn phí bao nhiêu lần tùy thích':'Mua nâng cấp LED một lần để mở bộ màu riêng'}</small></div>
+       ${n.skin?`<div class="neon-led-palette">${['29d7ee','ad75ff','ffa74f','ff527b','f49de8','5c8fff','65e5a1'].map(hex=>`<button type="button" class="neon-led-swatch ${n.ledColor==='#'+hex?'is-selected':''}" style="--swatch:#${hex}" data-arcade-action="neon-led-${hex}" aria-label="Chọn màu LED #${hex}" aria-pressed="${n.ledColor==='#'+hex}"></button>`).join('')}</div>
+         <label class="neon-led-custom">MÀU TỰ CHỌN <input type="color" data-neon-led-picker value="${n.ledColor||'#ad75ff'}" aria-label="Chọn màu LED tùy ý"></label>`:
+        '<small class="neon-led-locked">🔒 Chưa mở màu LED</small>'}
+      </div>
       <div class="neon-facility" data-arcade-panel="neon-upgrades"><div class="arcade-panel-heading arcade-panel-heading-sub"><div><span class="arcade-eyebrow">THU HÚT KHÁCH</span><h4>Tiện ích & dịch vụ</h4></div></div>
        ${neonFacility('▥','Ghế & bàn','Tăng số khách sử dụng máy','seating',n.seating,5,core.upgradeCost(s,'seating'))}
        ${neonFacility('✧','Không gian','Tăng độ hấp dẫn và giá lượt','ambiance',n.ambiance,5,core.upgradeCost(s,'ambiance'))}
@@ -348,20 +356,24 @@
       ].map(([name,met,reward],i)=>`<div class="arcade-contract"><span>${s.neon.contracts.includes(i)?'✓':met?'✦':'○'} ${name}</span>
        ${button(s.neon.contracts.includes(i)?'Đã nhận':met?'Nhận '+fmt(reward)+' Xu':'+'+fmt(reward)+' Xu',
         'neon-contract-'+i,'contract',!met||s.neon.contracts.includes(i))}</div>`).join('')}</div>
-      <div class="neon-order-game ${orderReady?'is-ready':'is-waiting'} ${seasonTicket?'is-season-ticket':''} ${orderPulse?(orderPulse.success?'is-complete':'is-mistake'):''}" aria-label="Quầy dịch vụ khách: hoàn thành ${n.orderWon} đơn, liên tiếp ${n.orderStreak}">
-       <div class="neon-order-heading"><b>✦ QUẦY KHÁCH GỌI</b><span>COMBO ×${n.orderStreak}</span></div>
+      <div class="neon-order-game neon-beat-game ${orderReady?'is-ready':'is-waiting'} ${beatActive?'is-playing':''} ${seasonTicket?'is-season-ticket':''} ${orderPulse?(orderPulse.success?'is-complete':'is-mistake'):''}" aria-label="Quầy thử thách nhịp: hoàn thành ${n.orderWon} đơn, liên tiếp ${n.orderStreak}">
+       <div class="neon-order-heading"><b>♫ QUẦY NHỊP ĐIỆU</b><span>COMBO ×${n.orderStreak}</span></div>
        <div class="neon-order-scene">
         <div class="neon-order-customer" aria-hidden="true"><i></i><span>♪</span></div>
-        <div class="neon-order-ticket"><small>${!n.running?'ĐÃ ĐÓNG QUẦY':orderReady?(seasonTicket?'✧ ĐƠN SƯƠNG #':'ĐƠN #')+String(n.orderRound+1).padStart(3,'0'):'KHÁCH MỚI SAU'}</small>
-         <div class="neon-order-recipe">${orderReady?order.map((item,i)=>`<span class="${i<n.orderStep?'is-done':''}" aria-label="${i<n.orderStep?'Đã chuẩn bị':orderNames[item]}">${i<n.orderStep?'✓':neonOrderIcon(item)}</span>${i===0?'<i>›</i>':''}`).join(''):
+        <div class="neon-order-ticket"><small>${!n.running?'ĐÃ ĐÓNG QUẦY':beatActive?(seasonTicket?'✧ ĐƠN SƯƠNG #':'ĐƠN #')+String(n.orderRound+1).padStart(3,'0'):orderReady?'SẴN SÀNG VÀO NHỊP':'KHÁCH MỚI SAU'}</small>
+         <div class="neon-order-recipe neon-beat-sequence">${beatActive?beat.map((item,i)=>`<span class="${i<n.beatStep?'is-done':i===n.beatStep?'is-next':''}" aria-label="${beatNames[item]}">${i<n.beatStep?'✓':beatSymbols[item]}</span>`).join(''):
+          orderReady?'<span class="neon-beat-prompt">BẮT ĐẦU ♫</span>':
           `<span class="neon-order-timer" data-arcade-until="${n.orderReadyAt}">${countdown(n.orderReadyAt-time)}</span>`}</div>
-         <em>${orderReady?`MÓN ${n.orderStep+1}/2 · CHỌN THEO THỨ TỰ`:'CHUẨN BỊ LƯỢT MỚI'}</em></div>
+         <em>${beatActive?`NHỊP ${n.beatStep+1}/${beat.length} · CÒN <span class="neon-beat-clock" data-arcade-until="${n.beatUntil}">${countdown(n.beatUntil-time)}</span>`:
+          orderReady?'BẤM BẮT ĐẦU ĐỂ HIỆN CHUỖI MŨI TÊN':'CHUẨN BỊ LƯỢT MỚI'}</em></div>
        </div>
-       <div class="neon-order-actions" role="group" aria-label="Chuẩn bị món khách yêu cầu">
-        ${orderNames.map((name,i)=>`<button type="button" data-arcade-action="neon-order-${i}" aria-label="Phục vụ ${name}"
-         ${!orderReady||!n.running?'disabled':''}><strong>${neonOrderIcon(i)}</strong><span>${name}</span></button>`).join('')}
+       ${!beatActive?button(orderReady?'▶ BẮT ĐẦU · '+core.neonBeatWindow(n)/1000+' GIÂY':'Đang chờ khách mới',
+        'neon-beat-start','neon-beat-start',!n.running||!orderReady):''}
+       <div class="neon-order-actions neon-beat-actions" role="group" aria-label="Nhấn mũi tên đúng thứ tự">
+        ${beatSymbols.map((symbol,i)=>`<button type="button" data-arcade-action="neon-beat-${i}" aria-label="Nhịp ${beatNames[i]}"
+         ${!beatActive||!n.running?'disabled':''}><strong>${symbol}</strong><span>${beatNames[i]}</span></button>`).join('')}
        </div>
-       <div class="neon-order-footer"><span>✓ ${n.orderWon} ĐƠN HOÀN THÀNH</span><span>THƯỞNG NHỎ · 90S/LƯỢT</span></div>
+       <div class="neon-order-footer"><span>✓ ${n.orderWon} ĐƠN HOÀN THÀNH</span><span>SAI/HẾT GIỜ: MẤT COMBO</span></div>
       </div>
     </div>
   </section>`;
@@ -369,11 +381,12 @@
  function minePanel(s,time){
   const m=s.mine,repairing=!!m.repairUntil;
   const max=core.maxDurability(m);
+  const canDig=!repairing&&m.durability>0&&time>=m.nextDigAt;
   const all=Object.values(m.ores).reduce((sum,n)=>sum+n,0),hit=activeFeedback('mine',time),
    maxEnergy=core.maxCharge(m),found=Object.values(m.found).filter(Boolean).length;
   const probeTarget=core.mineProbeTarget(m),probeHit=activeFeedback('probe',time),
    seasonVein=!!seasonGame?.mineVein?.(m),
-   canProbe=!repairing&&m.durability>0&&m.charge>=3;
+   canProbe=canDig&&m.charge>=5;
   return `<section class="arcade-world arcade-world-mine" aria-label="Địa Tầng 07">
     <header class="arcade-world-heading"><div><span class="arcade-eyebrow">02 / CLICKER</span>
       <h3>Địa Tầng 07</h3><p>Chạm vỉa quặng để khai thác. Mang khoáng sản đi bán.</p></div>
@@ -385,14 +398,14 @@
       <div class="mine-cave-motes" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
       <div class="mine-scene-head"><span>${['TẦNG ĐẤT','MẠCH SẮT','HANG TINH THẠCH'][m.zone]} · -${Math.floor(m.dug/20)+7}M</span>
         <span>${m.dug.toLocaleString('vi-VN')} LƯỢT ĐÀO</span></div>
-      <button class="mine-ore-button" type="button" data-arcade-action="mine" ${repairing||!m.durability?'disabled':''}
+      <button class="mine-ore-button" type="button" data-arcade-action="mine" ${!canDig?'disabled':''}
         aria-label="Gõ vào vỉa quặng để đào" title="Chạm hoặc bấm để đào quặng">
         <span class="mine-rock-shadow"></span><span class="mine-rock"><i></i><i></i><i></i><i></i><i></i></span>
         <span class="mine-damage-sprite" aria-hidden="true"></span>
         <span class="mine-fracture-lines" aria-hidden="true"></span>
         <span class="mine-vein-core ${['ore-portrait-copper','ore-portrait-iron','ore-portrait-crystal'][m.zone]}" aria-hidden="true"></span>
         <span class="mine-ore-glow"></span><span class="mine-hit-spark">✦</span>
-        <span class="mine-tap-prompt">${repairing?'ĐANG SỬA CUỐC':m.durability?'⛏ CHẠM ĐỂ ĐÀO':'CUỐC ĐÃ HẾT ĐỘ BỀN'}</span></button>
+        <span class="mine-tap-prompt">${repairing?'ĐANG SỬA CUỐC':!m.durability?'CUỐC ĐÃ HẾT ĐỘ BỀN':!canDig?'⏱ LẤY NHỊP CUỐC':'⛏ CHẠM ĐỂ ĐÀO'}</span></button>
       ${hit?`<div class="mine-drop" aria-live="polite">${hit.ore==='burst'?'✦':orePortrait(hit.ore)}<strong>+${hit.quantity} ${hit.ore==='burst'?'QUẶNG':oreLabels[hit.ore]}</strong></div>`:''}
       <div class="mine-bottom-hud"><div class="mine-durability-circle" style="--mine-durability:${m.durability/max*100}%"><span>CUỐC</span><b>${m.durability}<small>/${max}</small></b></div>
         <span>${repairing?`🔧 <span data-arcade-until="${m.repairUntil}">${countdown(m.repairUntil-time)}</span>`:'⛏ Độ bền cuốc'}</span></div>
@@ -406,7 +419,7 @@
        <b>${i===0?'Ⅰ':i===1?'Ⅱ':'Ⅲ'} ${name}</b><small>${unlocked?sub:`${Math.max(0,dug-m.dug)} lượt · đèn ${lamp}`}</small></button>`;}).join('')}</div>
       <div class="mine-energy"><div><b>⚡ Phá mạch quặng</b><small>Đào để nạp năng lượng</small></div><strong>${m.charge}/${maxEnergy}</strong></div>
       <div class="mine-charge-track" role="progressbar" aria-label="Năng lượng phá mạch" aria-valuenow="${m.charge}" aria-valuemax="${maxEnergy}"><i style="width:${m.charge/maxEnergy*100}%"></i></div>
-      ${button('⚡ PHÁ MẠCH · 5 NĂNG LƯỢNG','mine-burst','power mine-burst',repairing||m.durability<3||m.charge<5)}
+      ${button('⚡ PHÁ MẠCH · 5 NĂNG LƯỢNG','mine-burst','power mine-burst',!canDig||m.durability<3||m.charge<5)}
       <div class="arcade-mine-sell">${button('Bán quặng · '+all+' mẫu','sell-ores','market',!all)}</div>
       <div class="arcade-quick-drawers arcade-quick-drawers-triple">
        ${drawerButton('Địa tầng','⌁','mine-map')}
@@ -420,8 +433,8 @@
       <div class="mine-codex" data-arcade-panel="mine-bag"><b>📜 Sổ địa tầng · ${found}/10 phát hiện</b><small>Món đã từng đào vẫn được ghi nhận sau khi bán. Xuống hầm sâu để gặp khoáng sản hiếm.</small></div>
       <div class="arcade-panel-heading arcade-panel-heading-sub" data-arcade-panel="mine-tools"><div><span class="arcade-eyebrow">XƯỞNG RÈN</span><h4>Bảo dưỡng dụng cụ</h4></div></div>
       <div class="mine-tool-actions" data-arcade-panel="mine-tools">
-        ${button(repairing?`⏳ <span data-arcade-until="${m.repairUntil}">${countdown(m.repairUntil-time)}</span>`:'🔧 Tự sửa · 4 phút','repair-wait','tool',repairing||m.durability===max)}
-        ${button('⚒ Rèn · 5 than + 2 sắt','repair-forge','tool',repairing||m.durability===max||m.ores.coal<5||m.ores.iron<2)}
+        ${button(repairing?`⏳ <span data-arcade-until="${m.repairUntil}">${countdown(m.repairUntil-time)}</span>`:'🔧 Tự sửa · 6 phút','repair-wait','tool',repairing||m.durability===max)}
+        ${button('⚒ Rèn · 12 than + 8 sắt + 2 đồng','repair-forge','tool',repairing||m.durability===max||m.ores.coal<12||m.ores.iron<8||m.ores.copper<2)}
         ${button('Dầu +25 · 15 Xu','buy-oil','tool',repairing||m.durability===max||s.coins<150)}
         ${button('Cuốc mới · 80 Xu','buy-pick','tool',(m.durability===max&&!repairing)||s.coins<800)}
       </div>
@@ -434,7 +447,7 @@
       <div class="arcade-craft-row" data-arcade-panel="mine-tools"><div><b>✦ Chế máy dò · cấp ${m.scanner}/3</b><small>8 sắt + 3 tinh thạch · tăng cơ hội quặng hiếm</small></div>
        ${button(m.scanner>=3?'Đã tối đa':'⚒ Chế tạo','mine-scanner','tool',m.scanner>=3||m.ores.iron<8||m.ores.crystal<3)}</div>
       <div class="mine-seam-game ${probeHit?'is-revealing':''} ${seasonVein?'is-season-vein':''}" aria-label="Thăm dò ba ngách, đã dò ${m.probes} lần và tìm đúng ${m.probeHits} lần">
-       <div class="mine-seam-heading"><b>${seasonVein?'✧ MẠCH SƯƠNG LAM':'⌁ THĂM DÒ MẠCH NGẦM'}</b><span>⚡ 3 / LƯỢT</span></div>
+       <div class="mine-seam-heading"><b>${seasonVein?'✧ MẠCH SƯƠNG LAM':'⌁ THĂM DÒ MẠCH NGẦM'}</b><span>⚡ 5 / LƯỢT</span></div>
        <div class="mine-seam-scene" role="group" aria-label="Chọn ngách có tín hiệu mạnh nhất">
         ${[0,1,2].map(i=>{const signal=i===probeTarget?3:i===(probeTarget+1)%3?2:1;
          return `<button type="button" class="mine-seam-tunnel mine-seam-tunnel-${i} ${probeHit?.branch===i?(probeHit.hit?'is-probe-win':'is-probe-miss'):''}" data-arcade-action="mine-probe-${i}"
@@ -442,8 +455,8 @@
           <span class="mine-seam-arch"><i></i><em>✧</em></span>
           <span class="mine-seam-signal">${[1,2,3].map(level=>`<i class="${level<=signal?'is-lit':''}"></i>`).join('')}</span>
           <strong>NGÁCH ${['Ⅰ','Ⅱ','Ⅲ'][i]}</strong></button>`;}).join('')}
-        ${probeHit?`<div class="mine-seam-result ${probeHit.hit?'is-hit':'is-miss'}" aria-live="polite">${orePortrait(probeHit.ore)}<b>${probeHit.hit?'ĐÚNG MẠCH':'MẠCH YẾU'}</b><small>+${probeHit.quantity} ${oreLabels[probeHit.ore]}</small></div>`:''}
        </div>
+       ${probeHit?`<div class="mine-seam-result ${probeHit.hit?'is-hit':'is-miss'}" aria-live="polite">${orePortrait(probeHit.ore)}<b>${probeHit.hit?'ĐÚNG MẠCH':'MẠCH YẾU'}</b><small>+${probeHit.quantity} ${oreLabels[probeHit.ore]}</small></div>`:''}
        <div class="mine-seam-footer"><span>✦ ${m.probeHits}/${m.probes} DÒ TRÚNG</span>
         <b>${canProbe?'CHỌN TÍN HIỆU SÁNG NHẤT':'ĐÀO ĐỂ NẠP ⚡'}</b></div>
       </div>
@@ -701,9 +714,13 @@
    const boostExpired=!!s.neon.turboUntil&&s.lastAt<s.neon.turboUntil&&time>=s.neon.turboUntil;
    const turboReady=!!s.neon.turboReadyAt&&s.lastAt<s.neon.turboReadyAt&&time>=s.neon.turboReadyAt;
    const nextOrder=!!s.neon.orderReadyAt&&s.lastAt<s.neon.orderReadyAt&&time>=s.neon.orderReadyAt;
+   const mineReady=!!s.mine.nextDigAt&&s.lastAt<s.mine.nextDigAt&&time>=s.mine.nextDigAt;
+   const missedBeat=!!s.neon.beatUntil&&!state.neon.beatUntil;
+   if(missedBeat){notice='⌛ Hết giờ! Khách sẽ quay lại, combo đã về 0.';
+    noticeUntil=time+2200;error=false;}
    if(fishEscaped){notice='Cá đã tuột khỏi lưỡi câu. Hãy thử lượt khác nhé.';
     noticeUntil=time+3500;error=false;}
-   if(lastRenderedKey!==activeKey||completedRepair||waterRefilled||bubbleAppeared||plantMatured||fishBit||fishEscaped||customerServed||boostExpired||turboReady||nextOrder||weatherShifted)render();
+   if(lastRenderedKey!==activeKey||completedRepair||waterRefilled||bubbleAppeared||plantMatured||fishBit||fishEscaped||customerServed||boostExpired||turboReady||nextOrder||missedBeat||mineReady||weatherShifted)render();
    else if(time-lastPaint>=900)refreshLive(time);
   }
  }
@@ -722,15 +739,17 @@
   feedback=/^mine-probe-[012]$/.test(action)?{type:'probe',hit:result.hit,ore:result.ore,
    quantity:result.quantity,branch:Number(action.slice(-1)),at:now()}:
    action==='mine'||action==='mine-burst'?{type:'mine',ore:action==='mine-burst'?'burst':result.label,
-   quantity:result.quantity||1,at:now()}:/^neon-order-[012]$/.test(action)?
-    {type:'neon-order',success:!result.label.includes('Nhầm'),at:now()}:
+   quantity:result.quantity||1,at:now()}:/^(neon-order-[012]|neon-beat-[0123])$/.test(action)?
+    {type:'neon-order',success:!/(Nhầm|Lệch)/.test(result.label),at:now()}:
     action==='reel-line'?{type:'fish',fishId:hookedFish,label:result.label,at:now()}:
     action==='catch-bubble'?{type:'garden-bubble',at:now()}:
     /^(plant|water|harvest)-[0-3]$/.test(action)?{type:'garden-plot',action:action.split('-')[0],index:Number(action.slice(-1)),at:now()}:
     action==='jade-cut'||action==='jade-window'?{type:action,at:now()}:null;
-  notice=result.label==='stone'?'Nhặt được Đá.':result.label==='coal'?'Nhặt được Than.':
+  notice=/^(mine|mine-burst|mine-probe-[012])$/.test(action)||
+   action==='neon-beat-start'||/^neon-beat-[0123]$/.test(action)&&result.label.startsWith('✓')?'':
+   result.label==='stone'?'Nhặt được Đá.':result.label==='coal'?'Nhặt được Than.':
    result.label==='iron'?'Nhặt được Sắt.':result.label==='crystal'?'✦ Nhặt được Tinh thạch!':result.label;
-  noticeUntil=now()+2500;error=false;save(state,previousState);render();return true;
+  noticeUntil=notice?now()+2500:0;error=false;save(state,previousState);render();return true;
  }
  function pulseReel(){
   tick();
@@ -815,6 +834,11 @@
    if(!event.target.matches?.('[data-arcade-exchange-input]'))return;
    exchangeAmount=event.target.value.trim()===''?0:Number(event.target.value);
    updateExchangePreview();
+  });
+  element.addEventListener('change',event=>{
+   const picker=event.target.closest?.('input[data-neon-led-picker]');
+   if(picker&&/^#[0-9a-fA-F]{6}$/.test(picker.value||''))
+    interact('neon-led-'+picker.value.slice(1));
   });
   element.addEventListener('click',event=>{
    const seasonControl=event.target.closest?.('button[data-arcade-season]');
@@ -943,6 +967,12 @@
   root.setInterval(tick,1000);
   root.addEventListener('pagehide',()=>save());
   root.document.addEventListener?.('keydown',event=>{
+   const keys={ArrowLeft:0,ArrowUp:1,ArrowRight:2,ArrowDown:3};
+   if(tab==='neon'&&!drawerOpen&&!exchangeOpen&&!seasonOpen&&
+      state?.neon?.beatUntil>now()&&Object.hasOwn(keys,event.key)&&
+      !['INPUT','TEXTAREA','SELECT'].includes(event.target?.tagName)){
+    event.preventDefault?.();interact('neon-beat-'+keys[event.key]);return;
+   }
    if(event.key==='Escape'&&(exchangeOpen||drawerOpen||seasonOpen)){
     if(seasonOpen)seasonOpen=false;else if(exchangeOpen)exchangeOpen=false;else drawerOpen=null;
     render();

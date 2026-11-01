@@ -32,13 +32,13 @@ test('Digging changes a painted face phase and leaves the persisted mine core un
  let s=core.fresh(TIME);
  const durability=s.mine.durability;
  for(let i=0;i<4;i++){
-  const result=core.act(s,'mine',TIME+i+1,.25);
+  const result=core.act(s,'mine',TIME+i*core.MINE_DIG_INTERVAL+1,.25);
   assert.equal(result.ok,true);
   s=result.state;
   assert.equal(s.mine.dug%4,(i+1)%4);
  }
  assert.equal(s.mine.durability,durability-4);
- const saved=core.norm(JSON.parse(JSON.stringify(s)),TIME+8);
+ const saved=core.norm(JSON.parse(JSON.stringify(s)),TIME+4*core.MINE_DIG_INTERVAL+8);
  assert.equal(saved.mine.dug,s.mine.dug);
  assert.equal(saved.mine.durability,s.mine.durability);
 });

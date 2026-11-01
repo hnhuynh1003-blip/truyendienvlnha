@@ -29,7 +29,7 @@ test('C4.25A keeps actual Arcade actions under state-derived scenes',()=>{
  const ui=source('js/personal-arcade-ui-v1.js');
  const html=source('index.html');
  for(const control of ['toggle-neon','neon-turbo','mine','mine-burst','sell-ores',
-  'repair-forge','mine-scanner','mine-probe-${i}','neon-order-${i}'])
+  'repair-forge','mine-scanner','mine-probe-${i}','neon-beat-${i}','neon-beat-start'])
   assert.ok(ui.includes(control),`${control} remains interactive`);
  assert.match(ui,/mine-dig-phase-\$\{m\.dug%4\}/);
  assert.match(ui,/neon-gaming-bay/);

@@ -17,7 +17,8 @@
  const neonGame=typeof module==='object'&&module.exports?
   require('./personal-arcade-neon-c441.js'):
   typeof window!=='undefined'?window.DuduPersonalArcadeNeonC441:null;
- const WATER_INTERVAL=15*60*1000,REPAIR_INTERVAL=4*60*1000;
+ const WATER_INTERVAL=15*60*1000,REPAIR_INTERVAL=6*60*1000;
+ const MINE_DIG_INTERVAL=1000;
  const GROW_INTERVAL=3*60*1000,BUBBLE_INTERVAL=90*1000;
  const MAX_COIN=1000000000,MAX_IDLE_MS=12*60*60*1000;
  // Values are tenths of game Xu. Manual clicks should matter without making
@@ -28,9 +29,9 @@
   silver:'Bạc',gold:'Vàng',crystal:'Tinh thạch',jade:'Ngọc bích',
   meteor:'Thiên thạch',relic:'Cổ vật'});
  const ORE_WEIGHTS=Object.freeze([
-  Object.freeze([35,27,20,6,5,3,3,.6,.3,.1]),
-  Object.freeze([25,22,21,9,8,6,5,2,1,1]),
-  Object.freeze([12,13,18,14,12,10,9,5,4,3])
+  Object.freeze([49,30,16,2,1.5,.7,.6,.12,.06,.02]),
+  Object.freeze([30,29,24,7,5,2.5,1.8,.4,.2,.1]),
+  Object.freeze([19,23,25,14,9,5,3,.9,.7,.4])
  ]);
  const CROPS=Object.freeze({bloom:{name:'Hoa sương',grow:GROW_INTERVAL,value:50},
   mint:{name:'Lá bạc hà',grow:GROW_INTERVAL*2,value:100},
@@ -70,6 +71,15 @@
  const NEON_ORDER_COOLDOWN=90000,NEON_ORDER_MISS=30000;
  const NEON_ORDERS=Object.freeze([[0,1],[2,0],[1,2],[0,2],[2,1],[1,0]].map(x=>Object.freeze(x)));
  const neonOrderPattern=neon=>NEON_ORDERS[(neon.orderRound+neon.roomTier-1)%NEON_ORDERS.length];
+ // C4.41B: a new timed four-direction counter, keeping old two-item tickets
+ // readable in existing saves. Directions: left, up, right, down.
+ const NEON_BEAT_PATTERNS=Object.freeze([
+  [0,2,1,3,0],[1,0,3,2,1],[2,3,0,1,2],[3,1,2,0,3],
+  [0,3,2,1,0],[2,0,1,3,2]
+ ].map(x=>Object.freeze(x)));
+ const neonBeatPattern=neon=>NEON_BEAT_PATTERNS[(neon.orderRound+neon.roomTier-1)%NEON_BEAT_PATTERNS.length]
+  .slice(0,neon.roomTier+2);
+ const neonBeatWindow=neon=>12000-2000*(neon.roomTier-1);
  const NEON_ROOM_CAPACITY=[3,5,7];
  const neonCapacity=neon=>NEON_ROOM_CAPACITY[neon.roomTier-1]||3;
  const neonService=neon=>{
@@ -115,10 +125,10 @@
     contracts:[],running:true,remainder:0,economyV:ECONOMY_VERSION,
     roomTier:1,seating:1,ambiance:1,snack:0,guestsServed:0,serviceRevenue:0,
     operatingExpense:0,sessionMs:0,milestones:[],orderRound:0,orderStep:0,
-    orderWon:0,orderStreak:0,orderReadyAt:0,
+    orderWon:0,orderStreak:0,orderReadyAt:0,beatStep:0,beatUntil:0,ledColor:null,
     program:neonGame?neonGame.fresh():null},
    mine:{durability:100,pickLevel:1,drillLevel:1,lantern:1,cart:1,scanner:0,
-    zone:0,charge:0,bursts:0,repairUntil:0,dug:0,probes:0,probeHits:0,
+    zone:0,charge:0,bursts:0,repairUntil:0,nextDigAt:0,dug:0,probes:0,probeHits:0,
     ores:Object.fromEntries(Object.keys(ORE_VALUES).map(ore=>[ore,0])),
     found:Object.fromEntries(Object.keys(ORE_VALUES).map(ore=>[ore,0]))},
    garden:{water:1,waterCap:3,pondTier:1,waterAt:time,seeds:3,plots:2,
@@ -159,6 +169,11 @@
    orderWon:number(neon.orderWon,0,1000000,0),
    orderStreak:number(neon.orderStreak,0,1000,0),
    orderReadyAt:number(neon.orderReadyAt,0,time+NEON_ORDER_COOLDOWN,0),
+   beatStep:number(neon.beatStep,0,4,0),
+   beatUntil:number(neon.beatUntil,0,time+12000,0),
+   ledColor:number(neon.skin,0,2,0)>0&&typeof neon.ledColor==='string'&&
+    /^#[0-9a-fA-F]{6}$/.test(neon.ledColor)?
+    neon.ledColor.toLowerCase():null,
    milestones:Array.isArray(neon.milestones)?[0,1,2,3].filter(i=>neon.milestones.includes(i)):[],
    turboUntil:number(neon.turboUntil,0,time+15*60*1000,0),
    turboReadyAt:number(neon.turboReadyAt,0,time+30*60*1000,0),
@@ -176,6 +191,7 @@
    charge:number(mine.charge,0,24,0),bursts:number(mine.bursts,0,10000000,0),
    durability:number(mine.durability,0,100+25*(pickLevel-1),100),
    repairUntil:number(mine.repairUntil,0,time+REPAIR_INTERVAL*2,0),
+   nextDigAt:number(mine.nextDigAt,0,time+MINE_DIG_INTERVAL,0),
    dug:number(mine.dug,0,10000000,0),probes:number(mine.probes,0,1000000,0),
    probeHits:number(mine.probeHits,0,1000000,0),ores:{},found:{}};
   for(const ore of Object.keys(ORE_VALUES)){
@@ -276,6 +292,12 @@
     give(state,sessions*service.profit);
    }
   }
+  if(state.neon.beatUntil&&time>=state.neon.beatUntil){
+   state.neon.beatUntil=0;state.neon.beatStep=0;
+   state.neon.orderRound++;state.neon.orderStreak=0;
+   state.neon.orderReadyAt=Math.max(state.neon.orderReadyAt,time+NEON_ORDER_MISS);
+   if(neonGame)neonGame.recordOrder(state.neon,false);
+  }
   if(state.mine.repairUntil&&time>=state.mine.repairUntil){
    state.mine.durability=maxDurability(state.mine);state.mine.repairUntil=0;
   }
@@ -301,6 +323,12 @@
    jadeGame.act(state,action,roll,time):fail('Ngọc Phường chưa sẵn sàng');
   if(/^neon-event-/.test(action||''))return neonGame?
    neonGame.act(state,action,time):fail('Chương trình Trạm Neon chưa sẵn sàng');
+  const led=/^neon-led-([a-fA-F0-9]{6})$/.exec(action||'');
+  if(led){
+   if(state.neon.skin<1)return fail('Hãy mua LED phòng trước khi tùy chọn màu.');
+   state.neon.ledColor='#'+led[1].toLowerCase();
+   return succeed('✦ Đã lưu màu LED phòng máy');
+  }
   if(action==='toggle-neon'){
    state.neon.running=!state.neon.running;
    return succeed(state.neon.running?'Máy đã chạy':'Đã tạm dừng máy');
@@ -312,9 +340,39 @@
    state.neon.turboReadyAt=time+600000;
    return succeed('⚡ Ép xung! Thu nhập tăng gấp đôi trong ít phút');
   }
+  if(action==='neon-beat-start'){
+   const n=state.neon;
+   if(!n.running)return fail('Hãy mở Trạm Neon trước');
+   if(time<n.orderReadyAt)return fail('Khách mới chưa tới quầy');
+   if(n.beatUntil)return fail('Nhịp phục vụ đang chạy');
+   n.beatStep=0;n.orderStep=0;n.beatUntil=time+neonBeatWindow(n);
+   return succeed('♫ Nhịp bắt đầu! Nhấn các hướng theo thứ tự trước khi hết giờ.');
+  }
+  const beat=/^neon-beat-([0123])$/.exec(action||'');
+  if(beat){
+   const n=state.neon;
+   if(!n.running||!n.beatUntil)return fail('Hãy bắt đầu lượt nhịp trước');
+   const sequence=neonBeatPattern(n),pressed=Number(beat[1]);
+   if(pressed!==sequence[n.beatStep]){
+    n.beatStep=0;n.beatUntil=0;n.orderRound++;n.orderStreak=0;
+    n.orderReadyAt=time+NEON_ORDER_MISS;
+    if(neonGame)neonGame.recordOrder(n,false);
+    return succeed('✕ Lệch nhịp! Khách quay lại sau 30 giây.');
+   }
+   n.beatStep++;
+   if(n.beatStep<sequence.length)return succeed('✓ Đúng nhịp '+n.beatStep+'/'+sequence.length);
+   n.beatStep=0;n.beatUntil=0;n.orderRound++;n.orderWon++;
+   n.orderStreak=Math.min(1000,n.orderStreak+1);
+   n.orderReadyAt=time+NEON_ORDER_COOLDOWN;
+   if(neonGame)neonGame.recordOrder(n,true);
+   const bonus=3+Math.min(2,Math.floor(n.orderStreak/3));
+   give(state,bonus);
+   return succeed('✦ PERFECT! Phục vụ đủ nhịp · +'+formatXu(bonus)+' Xu Arcade');
+  }
   const orderAction=/^neon-order-([012])$/.exec(action||'');
   if(orderAction){
    const n=state.neon,choice=Number(orderAction[1]);
+   if(n.beatUntil)return fail('Hoàn thành lượt nhịp hiện tại trước');
    if(!n.running)return fail('Hãy mở cửa Trạm Neon trước');
    if(time<n.orderReadyAt)return fail('Khách mới chưa tới quầy');
    const expected=neonOrderPattern(n)[n.orderStep];
@@ -379,7 +437,10 @@
    if(state.coins<cost)return fail('Chưa đủ Xu trò chơi để nâng cấp');
    state.coins-=cost;
    if(action==='router')state.neon.router++;
-   if(action==='skin')state.neon.skin++;
+   if(action==='skin'){
+    state.neon.skin++;
+    if(!state.neon.ledColor)state.neon.ledColor='#ad75ff';
+   }
    if(action==='cooling')state.neon.cooling++;
    if(action==='seating')state.neon.seating++;
    if(action==='ambiance')state.neon.ambiance++;
@@ -436,13 +497,14 @@
   const probeAction=/^mine-probe-([012])$/.exec(action||'');
   if(probeAction){
    if(mine.repairUntil||mine.durability<1)return fail('Cần một cuốc còn dùng được');
-   if(mine.charge<3)return fail('Cần 3 năng lượng để dò một ngách');
+   if(time<mine.nextDigAt)return fail('Cuốc đang lấy nhịp, chờ 1 giây');
+   if(mine.charge<5)return fail('Cần 5 năng lượng để dò một ngách');
    if(typeof roll!=='number'||roll<0||roll>=1)return fail('Lượt dò không hợp lệ');
    const chosen=Number(probeAction[1]),target=mineProbeTarget(mine);
-   mine.charge-=3;mine.probes++;
+   mine.charge-=5;mine.probes++;mine.nextDigAt=time+MINE_DIG_INTERVAL;
    if(chosen===target){
     mine.probeHits++;
-    const mined=dig(Math.min(.999999,roll+.12),false);
+    const mined=dig(roll,false);
     mine.ores[mined.ore]=Math.min(1000000,mine.ores[mined.ore]+1);
     mine.found[mined.ore]=Math.min(10000000,mine.found[mined.ore]+1);
     return succeed('✦ Đúng mạch! +'+(mined.quantity+1)+' '+ORE_NAMES[mined.ore],
@@ -456,15 +518,18 @@
   if(action==='mine'){
    if(mine.repairUntil)return fail('Cuốc đang tự sửa chữa');
    if(!mine.durability)return fail('Cuốc đã hết độ bền');
+   if(time<mine.nextDigAt)return fail('Cuốc đang lấy nhịp, chờ 1 giây');
    if(typeof roll!=='number'||roll<0||roll>=1)return fail('Lượt đào không hợp lệ');
    const mined=dig(roll);
+   mine.nextDigAt=time+MINE_DIG_INTERVAL;
    return succeed(mined.ore,{quantity:mined.quantity});
   }
   if(action==='mine-burst'){
    if(mine.repairUntil||mine.durability<3)return fail('Cuốc cần ít nhất 3 độ bền');
+   if(time<mine.nextDigAt)return fail('Cuốc đang lấy nhịp, chờ 1 giây');
    if(mine.charge<5)return fail('Cần 5 năng lượng để phá mạch quặng');
    if(typeof roll!=='number'||roll<0||roll>=1)return fail('Lượt đào không hợp lệ');
-   mine.charge-=5;mine.bursts++;
+   mine.charge-=5;mine.bursts++;mine.nextDigAt=time+MINE_DIG_INTERVAL;
    const ores=[roll,(roll+.37)%1,(roll+.71)%1].map(v=>dig(v,false));
    return succeed('⚡ Phá mạch: '+ores.map(hit=>hit.quantity+' '+ORE_NAMES[hit.ore]).join(' · '),
     {quantity:ores.reduce((sum,hit)=>sum+hit.quantity,0)});
@@ -472,13 +537,15 @@
   if(action==='repair-wait'){
    if(mine.repairUntil||mine.durability===maxDurability(mine))return fail('Cuốc chưa cần sửa');
    mine.repairUntil=time+REPAIR_INTERVAL;
-   return succeed('Bắt đầu tự sửa chữa trong 4 phút');
+   return succeed('Bắt đầu tự sửa chữa trong 6 phút');
   }
   if(action==='repair-forge'){
    if(mine.durability===maxDurability(mine)||mine.repairUntil)return fail('Không thể rèn cuốc lúc này');
-   if(mine.ores.coal<5||mine.ores.iron<2)return fail('Cần 5 than và 2 sắt để sửa ngay');
-   mine.ores.coal-=5;mine.ores.iron-=2;mine.durability=maxDurability(mine);
-   return succeed('Đã sửa cuốc bằng than và sắt');
+   if(mine.ores.coal<12||mine.ores.iron<8||mine.ores.copper<2)
+    return fail('Cần 12 than, 8 sắt và 2 đồng để rèn cuốc');
+   mine.ores.coal-=12;mine.ores.iron-=8;mine.ores.copper-=2;
+   mine.durability=maxDurability(mine);
+   return succeed('Đã rèn cuốc bằng than, sắt và đồng');
   }
   if(action==='buy-oil'){
    if(mine.repairUntil||mine.durability===maxDurability(mine))return fail('Cuốc chưa cần bôi dầu');
@@ -620,8 +687,9 @@
  }
  const formatXu=tenths=>(tenths/10).toLocaleString('vi-VN',{maximumFractionDigits:1});
  return Object.freeze({fresh,norm,advance,act,rate,upgradeCost,formatXu,
-  neonCapacity,neonService,NEON_SERVICE_INTERVAL,NEON_ORDER_COOLDOWN,neonOrderPattern,mineProbeTarget,seasonGame,
-  WATER_INTERVAL,REPAIR_INTERVAL,GROW_INTERVAL,BUBBLE_INTERVAL,ORE_VALUES,ORE_NAMES,
+  neonCapacity,neonService,NEON_SERVICE_INTERVAL,NEON_ORDER_COOLDOWN,neonOrderPattern,
+  neonBeatPattern,neonBeatWindow,mineProbeTarget,seasonGame,
+  WATER_INTERVAL,REPAIR_INTERVAL,MINE_DIG_INTERVAL,GROW_INTERVAL,BUBBLE_INTERVAL,ORE_VALUES,ORE_NAMES,
   CROPS,FISH_SPECIES,FISH_REEL_WINDOW,GARDEN_WEATHER_INTERVAL,gardenWeather,choosePondFish,
   maxCharge,zoneUnlocked,cropUnlocked,maxDurability,bubbleInterval,
   JADE:jadeGame,NEON_EVENTS:neonGame});

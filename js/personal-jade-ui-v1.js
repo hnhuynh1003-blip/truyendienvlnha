@@ -169,7 +169,6 @@
        <span class="jade-stall-counter"></span>
        ${[0,1,2].map(slot=>`<button type="button" class="jade-stall-stone jade-stall-stone-${['a','b','c'][slot]} ${shellVisual(i,jade.marketOffer(j,i,slot).stone.seed)} ${chosen===slot?'is-selected':''}"
         data-jade-preview-slot="${slot}" aria-pressed="${chosen===slot}" style="--jade-item-x:${((i+slot)%5)*25}%" aria-label="Xem phôi ${['A','B','C'][slot]} tại sạp ${m.short}"><span>${['A','B','C'][slot]}</span></button>`).join('')}
-       <span class="jade-stall-banner">${['◈','≋','◇','◆','✵'][i]} ${m.short}</span>
       </div>
       <div class="jade-market-top"><div class="jade-market-copy"><b>${m.name}</b>
        <small>${m.skin}</small></div><strong class="jade-stall-price">${fmt(m.price)} Xu/viên</strong></div>
