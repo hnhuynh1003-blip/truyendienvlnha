@@ -70,7 +70,8 @@ body.dudu-phone-v11 #cyber-phone .museum-c426-select .museum-c426-mini-art{
  filter:grayscale(1) brightness(.74) contrast(1.07) drop-shadow(0 3px 5px #0009);
 }
 body.dudu-phone-v11 #cyber-phone .museum-c426-collection{
- grid-template-columns:repeat(5,minmax(0,1fr));gap:3px;
+ display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px;
+ overflow:visible;
 }
 body.dudu-phone-v11 #cyber-phone .museum-c426-collection .museum-c426-select small{
  font-size:7px;white-space:normal;text-align:center;
