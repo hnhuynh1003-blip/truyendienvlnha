@@ -66,6 +66,8 @@ test('C4.39 gallery wiring shares real AI art, keeps verified museum separate an
  const css=readFileSync(join(root,'css/arcade-showcase-c439.css'),'utf8');
  for(const name of ['arcade-showcase-c439.js','arcade-showcase-ui-c439.js',
   'arcade-showcase-c439.css'])assert.match(index,new RegExp(name.replace(/\./g,'\\.')+'\\?v=c439-1'));
+ assert.match(index,/museum-vault-c426\.js\?v=c426-3&amp;gallery=c429-2&amp;display=c439-2/);
+ assert.match(index,/arcade-treasure-ui-c438\.js\?v=c438-1&amp;display=c439-2/);
  assert.match(vault,/museum-c426-panel-display/);
  assert.match(vault,/\['gallery','display','preview','owned','memories'\]/);
  assert.match(vault,/DuduArcadeShowcaseUIV439\?\.mount/);
