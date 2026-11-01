@@ -148,6 +148,7 @@
  const drawerButton=(label,icon,name)=>`<button type="button" class="arcade-drawer-trigger" data-arcade-drawer="${name}"><span aria-hidden="true">${icon}</span>${label}</button>`;
  const drawerTitles={
   'neon-upgrades':'Nâng cấp Trạm Neon','neon-awards':'Thành tựu & hợp đồng',
+  'neon-events':'Khách đặc biệt · Trạm Neon',
   'mine-map':'Bản đồ địa tầng','mine-bag':'Túi quặng & sổ khoáng',
   'mine-tools':'Xưởng rèn & trang bị','garden-seeds':'Vườn cây & hạt giống',
   'garden-album':'Nhật ký cá','garden-upgrades':'Tiệm câu · Vườn Sương',
@@ -202,6 +203,55 @@
    </section></div>`;
  }
  const hud=(name,value,small='')=>`<div class="arcade-stat"><span>${name}</span><strong>${value}</strong>${small?`<small>${small}</small>`:''}</div>`;
+ function neonEventsPanel(s){
+  const events=core.NEON_EVENTS;if(!events)return '';
+  const n=s.neon,program=n.program,active=events.progress(n),
+   selected=events.CONTRACTS.find(c=>c.id===program.selected)||null,
+   done=new Map(program.done.map(record=>[record.id,record]));
+  return `<section class="neon-events-panel" data-arcade-panel="neon-events" aria-label="Chuỗi hợp đồng khách đặc biệt">
+    <div class="neon-events-intro"><span>✦ NEON PRIVATE SESSIONS</span>
+     <strong>${done.size}/3 KỶ VẬT PHÒNG MÁY</strong><small>Hợp đồng riêng · không tự nhận bằng lượt khách máy chạy</small></div>
+    <div class="neon-event-list">${events.CONTRACTS.map((contract,index)=>{
+     const record=done.get(contract.id),chosen=program.selected===contract.id,
+      isEligible=events.eligible(n,program,contract);
+     return `<button type="button" class="neon-event-entry ${chosen?'is-selected':''} ${record?'is-done':''}"
+      data-arcade-action="neon-event-open-${index}" ${program.active||record?'disabled':''}
+      aria-pressed="${chosen}"><span class="neon-event-entry-mark">${record?'✦':String(index+1).padStart(2,'0')}</span>
+      <span><b>${contract.name}</b><small>${record?'Kỷ vật đã lưu':!isEligible?'Chưa đủ điều kiện':contract.guest}</small></span>
+      <span class="neon-event-entry-arrow">${record?'✓':'›'}</span></button>`;}).join('')}</div>
+    ${selected?`<div class="neon-event-detail">
+     <small class="neon-event-eyebrow">${selected.guest}</small>
+     <h4>${selected.name}</h4><p>${selected.story}</p>
+     <div class="neon-event-requirements"><b>ĐIỀU KIỆN MỞ</b>
+      ${events.missing(n,selected.needs).length?
+       `<small>Còn thiếu: ${events.missing(n,selected.needs).join(' · ')}</small>`:
+       '<small>✓ Hạ tầng đã đủ</small>'}
+      ${events.CONTRACTS.indexOf(selected)>0&&!done.has(events.CONTRACTS[events.CONTRACTS.indexOf(selected)-1].id)?
+       `<small>Cần hoàn thành ${events.CONTRACTS[events.CONTRACTS.indexOf(selected)-1].name} trước</small>`:''}</div>
+     ${active?`<div class="neon-event-progress">
+       <b>✦ ĐANG TỔ CHỨC · ${active.choice.name}</b>
+       <small>Phục vụ thêm ${Math.max(0,active.choice.orders-active.orders)} đơn · Giữ combo tối thiểu ×${active.choice.streak}</small>
+       <div class="neon-event-meter"><i style="width:${Math.min(100,active.orders/active.choice.orders*100)}%"></i></div>
+       <span>${Math.min(active.orders,active.choice.orders)}/${active.choice.orders} đơn · combo ×${active.streak}</span>
+       ${button(active.ready?'✦ Nhận '+selected.souvenir:'Tiếp tục phục vụ tại quầy',
+        'neon-event-claim','neon-event-claim',!active.ready)}</div>`:
+      `<div class="neon-event-options"><b>CHỌN CÁCH TỔ CHỨC</b>${selected.choices.map((choice,i)=>{
+        const lacks=events.missing(n,choice.needs),available=events.eligible(n,program,selected),
+         affordable=s.coins>=choice.cost;
+        return `<div class="neon-event-option"><div><strong>${choice.name}</strong><small>${choice.detail}</small>
+         <em>${choice.orders} đơn · combo ×${choice.streak}${lacks.length?' · '+lacks.join(' / '):''}</em></div>
+         ${button('Đầu tư '+fmt(choice.cost)+' Xu','neon-event-pick-'+i,
+          'neon-event-pick',!available||!affordable||!!lacks.length)}</div>`;}).join('')}</div>`}
+     ${!active?button('← Xem các chương trình','neon-event-back','neon-event-back'):''}
+    </div>`:
+    '<p class="neon-event-empty">Chọn một chương trình để xem khách mời, hạ tầng và phương án đầu tư.</p>'}
+    <div class="neon-event-mementos"><b>KỶ VẬT ĐÃ LƯU TRÊN THIẾT BỊ</b>
+     ${events.CONTRACTS.map(contract=>`<div class="neon-event-memento ${done.has(contract.id)?'is-owned':''}">
+      <span aria-hidden="true">${done.has(contract.id)?'✦':'◇'}</span>
+      <small>${done.has(contract.id)?contract.souvenir:'Chưa khám phá'}</small></div>`).join('')}</div>
+    <p class="neon-event-local-note">Kỷ vật chỉ ghi nhận hành trình chơi tại Trạm Neon. Đây chưa phải thưởng mùa hoặc danh hiệu xác minh máy chủ.</p>
+   </section>`;
+ }
  function neonPanel(s){
   const n=s.neon,capacity=core.neonCapacity(n),service=core.neonService(n),
    roomCost=core.upgradeCost(s,'room-tier'),requiredGuests=n.roomTier===1?20:100,
@@ -266,9 +316,14 @@
          '🔒 Mở rộng · '+fmt(roomCost)+' Xu','room-tier','market',!canExpand||s.coins<roomCost):
          '<span class="neon-expansion-complete">✓ Đã khai phá đủ ba cấp phòng</span>'}
       </div>
-      <div class="arcade-quick-drawers">
+      <div class="neon-event-spotlight"><span>✦ KHÁCH ĐẶC BIỆT</span>
+       <b>${n.program?.active?'Sự kiện đang diễn ra':n.program?.done?.length===3?'Đã lưu trọn bộ kỷ vật':'Mở chuỗi hợp đồng riêng'}</b>
+       <small>${n.program?.done?.length||0}/3 kỷ vật · yêu cầu phục vụ tại quầy</small></div>
+      <div class="arcade-quick-drawers arcade-quick-drawers-triple">
        ${drawerButton('Nâng cấp','⬡','neon-upgrades')}
-       ${drawerButton('Thành tựu','✦','neon-awards')}</div>
+       ${drawerButton('Thành tựu','✦','neon-awards')}
+       ${drawerButton('Khách VIP','♛','neon-events')}</div>
+      ${neonEventsPanel(s)}
       <div class="arcade-upgrade-grid" data-arcade-panel="neon-upgrades">
        ${upgrade('▦','CPU','Cấp '+s.neon.cpu+'/50','cpu',s.neon.cpu>=50?null:cpuCost)}
        ${upgrade('◈','VGA','Cấp '+s.neon.gpu+'/20','gpu',s.neon.gpu>=20?null:gpuCost)}

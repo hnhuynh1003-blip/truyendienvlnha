@@ -14,6 +14,9 @@
  const seasonGame=typeof module==='object'&&module.exports?
   require('./personal-arcade-season-c423.js'):
   typeof window!=='undefined'?window.DuduPersonalArcadeSeasonC423:null;
+ const neonGame=typeof module==='object'&&module.exports?
+  require('./personal-arcade-neon-c441.js'):
+  typeof window!=='undefined'?window.DuduPersonalArcadeNeonC441:null;
  const WATER_INTERVAL=15*60*1000,REPAIR_INTERVAL=4*60*1000;
  const GROW_INTERVAL=3*60*1000,BUBBLE_INTERVAL=90*1000;
  const MAX_COIN=1000000000,MAX_IDLE_MS=12*60*60*1000;
@@ -112,7 +115,8 @@
     contracts:[],running:true,remainder:0,economyV:ECONOMY_VERSION,
     roomTier:1,seating:1,ambiance:1,snack:0,guestsServed:0,serviceRevenue:0,
     operatingExpense:0,sessionMs:0,milestones:[],orderRound:0,orderStep:0,
-    orderWon:0,orderStreak:0,orderReadyAt:0},
+    orderWon:0,orderStreak:0,orderReadyAt:0,
+    program:neonGame?neonGame.fresh():null},
    mine:{durability:100,pickLevel:1,drillLevel:1,lantern:1,cart:1,scanner:0,
     zone:0,charge:0,bursts:0,repairUntil:0,dug:0,probes:0,probeHits:0,
     ores:Object.fromEntries(Object.keys(ORE_VALUES).map(ore=>[ore,0])),
@@ -164,6 +168,7 @@
    // Convert unfinished sub-Xu earnings from the earlier 0.1 Xu/s economy.
    remainder:neon.economyV===ECONOMY_VERSION?
     number(neon.remainder,0,99999,0):number(neon.remainder,0,999,0)*100};
+  if(neonGame)state.neon.program=neonGame.norm(neon.program,state.neon);
   const pickLevel=number(mine.pickLevel,1,4,1);
   state.mine={pickLevel,drillLevel:number(mine.drillLevel,1,5,1),
    lantern:number(mine.lantern,1,3,1),cart:number(mine.cart,1,4,1),
@@ -294,6 +299,8 @@
   const garden=state.garden,mine=state.mine;
   if(/^jade-/.test(action||''))return jadeGame?
    jadeGame.act(state,action,roll,time):fail('Ngọc Phường chưa sẵn sàng');
+  if(/^neon-event-/.test(action||''))return neonGame?
+   neonGame.act(state,action,time):fail('Chương trình Trạm Neon chưa sẵn sàng');
   if(action==='toggle-neon'){
    state.neon.running=!state.neon.running;
    return succeed(state.neon.running?'Máy đã chạy':'Đã tạm dừng máy');
@@ -313,10 +320,12 @@
    const expected=neonOrderPattern(n)[n.orderStep];
    if(choice!==expected){
     n.orderRound++;n.orderStep=0;n.orderStreak=0;n.orderReadyAt=time+NEON_ORDER_MISS;
+    if(neonGame)neonGame.recordOrder(n,false);
     return succeed('✕ Nhầm món! Khách sẽ quay lại sau');
    }
    if(n.orderStep===0){n.orderStep=1;return succeed('✓ Đã chuẩn bị món đầu tiên');}
    n.orderRound++;n.orderStep=0;n.orderWon++;n.orderStreak=Math.min(1000,n.orderStreak+1);
+   if(neonGame)neonGame.recordOrder(n,true);
    n.orderReadyAt=time+NEON_ORDER_COOLDOWN;
    const bonus=3+Math.min(2,Math.floor(n.orderStreak/3));
    give(state,bonus);
@@ -615,5 +624,5 @@
   WATER_INTERVAL,REPAIR_INTERVAL,GROW_INTERVAL,BUBBLE_INTERVAL,ORE_VALUES,ORE_NAMES,
   CROPS,FISH_SPECIES,FISH_REEL_WINDOW,GARDEN_WEATHER_INTERVAL,gardenWeather,choosePondFish,
   maxCharge,zoneUnlocked,cropUnlocked,maxDurability,bubbleInterval,
-  JADE:jadeGame});
+  JADE:jadeGame,NEON_EVENTS:neonGame});
 });
