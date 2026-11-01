@@ -3,7 +3,7 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const {readFileSync}=require('node:fs');
 const {join}=require('node:path');
-const {PAGE_SIZE,KEY,createPager}=require('../js/library-catalog-l2e.js');
+const {PAGE_SIZE,KEY,pageTokens,createPager}=require('../js/library-catalog-l2e.js');
 const read=p=>readFileSync(join(__dirname,'..',p),'utf8');
 function storage(){const values=new Map();return {
   getItem:key=>values.get(key)||null,
@@ -44,6 +44,17 @@ test('L2E restores the exact catalog scroll only when returning from its book',(
  assert.equal(pager.rememberScroll(win),false,'home/other tabs cannot replace the catalog position');
 });
 
+test('L2E.1 circular number strip keeps beginning, neighbors and last pages beyond page 9',()=>{
+ assert.deepEqual(pageTokens(1,54),[1,2,3,4,5,6,'…',53,54]);
+ assert.deepEqual(pageTokens(25,54),[1,2,'…',24,25,26,'…',53,54]);
+ assert.deepEqual(pageTokens(53,54),[1,2,'…',49,50,51,52,53,54]);
+ assert.deepEqual(pageTokens(478,1000),[1,2,'…',477,478,479,'…',999,1000]);
+ assert.deepEqual(pageTokens(2,3),[1,2,3]);
+ const pager=createPager(storage());pager.setPage(478);
+ assert.equal(pager.paginate(Array(20000).fill({})).page,478);
+ assert.equal(pager.paginate(Array(20000).fill({})).pages,1000);
+});
+
 test('L2E page controls and labels provide a jump-to-page without a long list',()=>{
  class Element{
   constructor(tag){this.tagName=tag;this.children=[];this.handlers={};this.attributes={};}
@@ -64,14 +75,25 @@ test('L2E page controls and labels provide a jump-to-page without a long list',(
  for(const host of Object.values(hosts)){
   assert.equal(host.hidden,false);
   assert.equal(host.children.length,4);
-  assert.equal(host.children[1].value,'2');
-  assert.equal(host.children[1].children.length,3);
-  assert.equal(host.children[3].textContent,'21–40 / 47 truyện');
+  const ribbon=host.children[0];
+  assert.equal(ribbon.children.length,5);
+  assert.equal(ribbon.children[2].textContent,'2');
+  assert.equal(ribbon.children[2].attributes['aria-current'],'page');
+  assert.equal(host.children[1].textContent,'21–40 / 47 truyện');
+  assert.equal(host.children[3].hidden,true);
  }
- hosts['library-catalog-pager-top'].children[2].handlers.click();
- hosts['library-catalog-pager-bottom'].children[1].value='1';
- hosts['library-catalog-pager-bottom'].children[1].handlers.change();
+ hosts['library-catalog-pager-top'].children[0].children[4].handlers.click();
+ const bottom=hosts['library-catalog-pager-bottom'];
+ bottom.children[2].handlers.click();
+ assert.equal(bottom.children[3].hidden,false);
+ const input=bottom.children[3].children[0].children[0];
+ input.value='1';
+ bottom.children[3].handlers.submit({preventDefault(){}});
  assert.deepEqual(selections,[3,1]);
+ input.value='90';
+ bottom.children[3].handlers.submit({preventDefault(){}});
+ assert.equal(bottom.children[3].children[2].textContent,'Chọn trang từ 1 đến 3');
+ assert.deepEqual(selections,[3,1], 'out-of-range numbers cannot navigate');
  pager.renderControls(doc,pager.paginate(Array(10).fill({})),()=>{});
  assert.ok(Object.values(hosts).every(host=>host.hidden));
 });

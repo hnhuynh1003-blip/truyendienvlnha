@@ -47,7 +47,7 @@ async function main(){
    const template=novels[0];
    const chapters=template?.chapters?.length?template.chapters:
     [{id:'one',title:'Chương 1',content:'Một chương thử nghiệm.'}];
-   const fake=Array.from({length:47},(_,i)=>({
+   const fake=Array.from({length:247},(_,i)=>({
     ...template,id:'l2e-test-'+i,title:'Truyện thử phân trang '+String(i+1).padStart(2,'0'),
     desc:'Văn án mẫu độc lập',coverImage:'',genre:'Hành trình',
     chapters:chapters.map(ch=>({...ch}))
@@ -57,7 +57,7 @@ async function main(){
    DuduSiteV60.navigate('library');
   });
   await page.waitForFunction(()=>document.querySelectorAll('#novel-grid-container .novel-card').length===20);
-  assert.equal(await page.locator('#search-result-count').innerText(),'47 / 47 tác phẩm');
+  assert.equal(await page.locator('#search-result-count').innerText(),'247 / 247 tác phẩm');
   for(const width of [320,390]){
    await page.setViewportSize({width,height:844});
    const state=await page.evaluate(()=>({
@@ -69,14 +69,14 @@ async function main(){
    assert.ok(state.overflow<=2&&state.pager<=width+2,
     'catalog pagination fits '+width+'px without horizontal overflow');
   }
-  await page.locator('#library-catalog-pager-top select').selectOption('2');
-  assert.equal(await page.locator('#library-catalog-pager-bottom select').inputValue(),'2');
+  await page.locator('#library-catalog-pager-top .library-catalog-page-number[data-page="2"]').click();
+  assert.equal(await page.locator('#library-catalog-pager-bottom .library-catalog-page-number.is-current').innerText(),'2');
   assert.equal(await page.locator('#novel-grid-container .novel-card').count(),20);
   assert.equal(await page.locator('#library-catalog-pager-top .library-catalog-page-range').innerText(),
-   '21–40 / 47 truyện');
+   '21–40 / 247 truyện');
   await page.reload({waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.querySelectorAll('#novel-grid-container .novel-card').length===20&&
-   document.querySelector('#library-catalog-pager-top select')?.value==='2');
+   document.querySelector('#library-catalog-pager-top .library-catalog-page-number.is-current')?.textContent==='2');
   await page.waitForTimeout(90); // page-jump position settles before recording a return.
   await page.evaluate(()=>window.scrollTo(0,800));
   await page.waitForFunction(()=>window.scrollY>400);
@@ -86,7 +86,7 @@ async function main(){
   await page.locator('#cover-view').getByRole('button',{name:'‹ Thư viện'}).click();
   await page.waitForFunction(()=>document.getElementById('home-view').style.display==='block');
   await page.waitForFunction(expected=>Math.abs(window.scrollY-expected)<80,before);
-  assert.equal(await page.locator('#library-catalog-pager-top select').inputValue(),'2',
+  assert.equal(await page.locator('#library-catalog-pager-top .library-catalog-page-number.is-current').innerText(),'2',
    'returning from synopsis keeps the exact catalog page');
   await page.locator('#search-novel-input').fill('Truyện thử phân trang 43');
   await page.waitForFunction(()=>document.querySelectorAll('#novel-grid-container .novel-card').length===1);
@@ -94,9 +94,25 @@ async function main(){
    'search recalculates pages and resets to page one');
   await page.locator('#search-novel-input').fill('');
   assert.equal(await page.locator('#novel-grid-container .novel-card').count(),20);
-  assert.equal(await page.locator('#library-catalog-pager-top select').inputValue(),'1');
+  assert.equal(await page.locator('#library-catalog-pager-top .library-catalog-page-number.is-current').innerText(),'1');
+  assert.equal(await page.locator('#library-catalog-pager-bottom .library-catalog-page-dots').count(),1,
+   'many-page catalogs show an ellipsis before the final page numbers');
+  await page.locator('#library-catalog-pager-bottom .library-catalog-page-number[data-page="12"]').click();
+  assert.equal(await page.locator('#library-catalog-pager-top .library-catalog-page-range').innerText(),
+   '221–240 / 247 truyện','the numbered strip reaches beyond nine pages');
+  await page.locator('#library-catalog-pager-top .library-catalog-page-jump-toggle').click();
+  const jump=page.locator('#library-catalog-pager-top .library-catalog-page-jump');
+  await jump.locator('input').fill('90');
+  await jump.locator('button[type="submit"]').click();
+  assert.equal(await jump.locator('.library-catalog-page-error').innerText(),
+   'Chọn trang từ 1 đến 13');
+  await jump.locator('input').fill('7');
+  await jump.locator('button[type="submit"]').click();
+  assert.equal(await page.locator('#library-catalog-pager-bottom .library-catalog-page-number.is-current').innerText(),'7');
+  assert.equal(await page.locator('#library-catalog-pager-bottom .library-catalog-page-range').innerText(),
+   '121–140 / 247 truyện');
   assert.equal(await page.evaluate(()=>window.__l2eExternalWrites?.length||0),0);
-  console.log('L2E browser PASS: 20/page, jump, synopsis return scroll/page, filter reset, mobile widths, no external writes');
+  console.log('L2E browser PASS: 20/page, numbered 13-page strip, arbitrary jump, synopsis return scroll/page, filter reset, mobile widths, no external writes');
  }finally{
   if(browser)await browser.close();
   await new Promise(resolve=>server.close(resolve));

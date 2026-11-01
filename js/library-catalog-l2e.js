@@ -12,17 +12,37 @@
   'use strict';
   const PAGE_SIZE=20;
   const KEY='dudu-library-catalog-page-l2e';
+  // Keep the first/last pages discoverable without ever limiting the catalog
+  // to a fixed count. Middle pages orbit the current selection.
+  function pageTokens(current,total){
+    if(!Number.isSafeInteger(total)||total<1)return [];
+    if(total<=9)return Array.from({length:total},(_,i)=>i+1);
+    const chosen=new Set([1,2,total-1,total]);
+    if(current<=5){
+      for(let n=1;n<=6;n++)chosen.add(n);
+    }else if(current>=total-4){
+      for(let n=total-5;n<=total;n++)chosen.add(n);
+    }else{
+      for(let n=current-1;n<=current+1;n++)chosen.add(n);
+    }
+    const sorted=[...chosen].filter(n=>n>=1&&n<=total).sort((a,b)=>a-b);
+    const result=[];
+    for(const n of sorted){
+      if(result.length&&n-result[result.length-1]>1)result.push('…');
+      result.push(n);
+    }
+    return result;
+  }
   function createPager(storage){
     let page=1;
     let returnScroll=null;
     try{
       const value=Number(storage?.getItem(KEY));
-      if(Number.isSafeInteger(value)&&value>0&&value<100000)page=value;
+      if(Number.isSafeInteger(value)&&value>0)page=value;
     }catch{/* Storage may be disabled. */}
 
     function setPage(next){
-      page=Number.isSafeInteger(Number(next))&&Number(next)>0?
-        Math.min(99999,Number(next)):1;
+      page=Number.isSafeInteger(Number(next))&&Number(next)>0?Number(next):1;
       try{storage?.setItem(KEY,String(page));}catch{/* Browser storage is optional. */}
       return page;
     }
@@ -56,32 +76,80 @@
         host.replaceChildren();
         host.hidden=data.pages<=1;
         if(host.hidden)continue;
-        const previous=doc.createElement('button');
-        previous.type='button';previous.className='library-catalog-page-step';
-        previous.textContent='‹ Trước';previous.disabled=data.page===1;
-        previous.addEventListener('click',()=>onChoose(data.page-1));
-        const select=doc.createElement('select');
-        select.className='library-catalog-page-select';
-        select.setAttribute('aria-label','Chọn trang truyện trong thư viện');
-        for(let n=1;n<=data.pages;n++){
-          const option=doc.createElement('option');
-          option.value=String(n);option.textContent=`Trang ${n} / ${data.pages}`;
-          select.appendChild(option);
+        const ribbon=doc.createElement('div');
+        ribbon.className='library-catalog-page-ribbon';
+        ribbon.setAttribute('role','group');
+        ribbon.setAttribute('aria-label','Các trang truyện');
+        const round=(label,cls,action)=>{
+          const node=doc.createElement('button');
+          node.type='button';node.className='library-catalog-page-round '+cls;
+          node.textContent=label;node.addEventListener('click',action);
+          return node;
+        };
+        const previous=round('‹','library-catalog-page-step',()=>onChoose(data.page-1));
+        previous.disabled=data.page===1;
+        previous.setAttribute('aria-label','Trang trước');
+        ribbon.appendChild(previous);
+        for(const token of pageTokens(data.page,data.pages)){
+          if(token==='…'){
+            const gap=doc.createElement('span');
+            gap.className='library-catalog-page-dots';gap.textContent='…';
+            gap.setAttribute('aria-hidden','true');
+            ribbon.appendChild(gap);continue;
+          }
+          const item=round(String(token),'library-catalog-page-number'+
+            (token===data.page?' is-current':''),()=>onChoose(token));
+          item.setAttribute('data-page',String(token));
+          item.setAttribute('aria-label',`Trang ${token} trên ${data.pages}`);
+          if(token===data.page)item.setAttribute('aria-current','page');
+          ribbon.appendChild(item);
         }
-        select.value=String(data.page);
-        select.addEventListener('change',()=>onChoose(Number(select.value)));
-        const next=doc.createElement('button');
-        next.type='button';next.className='library-catalog-page-step';
-        next.textContent='Sau ›';next.disabled=data.page===data.pages;
-        next.addEventListener('click',()=>onChoose(data.page+1));
+        const next=round('›','library-catalog-page-step',()=>onChoose(data.page+1));
+        next.disabled=data.page===data.pages;
+        next.setAttribute('aria-label','Trang sau');
+        ribbon.appendChild(next);
         const range=doc.createElement('span');
         range.className='library-catalog-page-range';
         range.textContent=`${data.from}–${data.to} / ${data.total} truyện`;
-        host.append(previous,select,next,range);
+        const jumpTrigger=doc.createElement('button');
+        jumpTrigger.type='button';jumpTrigger.className='library-catalog-page-jump-toggle';
+        jumpTrigger.textContent='⌕ Đi tới trang';
+        jumpTrigger.setAttribute('aria-expanded','false');
+        const form=doc.createElement('form');
+        form.className='library-catalog-page-jump';form.hidden=true;
+        const label=doc.createElement('label');
+        label.textContent='Trang số';
+        const input=doc.createElement('input');
+        input.type='number';input.min='1';input.max=String(data.pages);
+        input.step='1';input.value=String(data.page);
+        input.setAttribute('inputmode','numeric');
+        input.setAttribute('aria-label',`Nhập số trang từ 1 đến ${data.pages}`);
+        label.appendChild(input);
+        const submit=doc.createElement('button');
+        submit.type='submit';submit.textContent='Đi';
+        const error=doc.createElement('small');
+        error.className='library-catalog-page-error';
+        error.setAttribute('role','status');
+        form.append(label,submit,error);
+        jumpTrigger.addEventListener('click',()=>{
+          form.hidden=!form.hidden;
+          jumpTrigger.setAttribute('aria-expanded',String(!form.hidden));
+          if(!form.hidden)input.focus?.();
+        });
+        form.addEventListener('submit',event=>{
+          event.preventDefault();
+          const target=Number(input.value);
+          if(!Number.isSafeInteger(target)||target<1||target>data.pages){
+            error.textContent=`Chọn trang từ 1 đến ${data.pages}`;
+            input.focus?.();return;
+          }
+          onChoose(target);
+        });
+        host.append(ribbon,range,jumpTrigger,form);
       }
     }
     return Object.freeze({get page(){return page;},setPage,resetPage,paginate,
       rememberScroll,restoreScroll,renderControls});
   }
-  return Object.freeze({PAGE_SIZE,KEY,createPager});
+  return Object.freeze({PAGE_SIZE,KEY,pageTokens,createPager});
 });
