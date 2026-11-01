@@ -71,7 +71,7 @@ test('C4.39 gallery wiring shares real AI art, keeps verified museum separate an
  assert.match(index,/museum-vault-c426\.js\?v=c426-3&amp;gallery=c429-2&amp;display=c439-2/);
  assert.match(index,/arcade-treasure-ui-c438\.js\?v=c438-1&amp;display=c439-2/);
  assert.match(index,/arcade-showcase-c439\.css\?v=c439-1&amp;layout=c439-3/);
- assert.match(index,/museum-stage-c439r2\.css\?v=c439r2-2/);
+ assert.match(index,/museum-stage-c439r2\.css\?v=c439r2-3/);
  assert.match(vault,/museum-c426-panel-display/);
  assert.match(vault,/\['gallery','display','preview','owned','memories'\]/);
  assert.match(vault,/DuduArcadeShowcaseUIV439\?\.mount/);
@@ -92,6 +92,8 @@ test('C4.39 gallery wiring shares real AI art, keeps verified museum separate an
  assert.match(repair,/s01-relic-atlas\.webp/);
  assert.match(repair,/s01-founder-crest\.webp/);
  assert.match(repair,/\.museum-c426-collection\{\s*display:grid;grid-template-columns:repeat\(5/);
+ assert.match(repair,/filter:saturate\(\.82\) brightness\(\.86\)/,
+  'Preview must retain the authentic Season 01 art palette');
  assert.doesNotMatch(ui,/scene\.append\(light,el\('div','dudu-c439-plinth'/);
  for(const name of ['assets/museum-c426/hall-night.webp',
   'assets/arcade-c425a/ore-atlas.webp','assets/arcade-c425b/fish-bestiary.webp',
