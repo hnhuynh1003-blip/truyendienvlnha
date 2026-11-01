@@ -294,6 +294,8 @@
    if(!routes[page])page='home';
    if(page==='author'&&!isAuthor())page='home';
    const cover=id('cover-view'),reader=id('reader-view');
+   const returningToCatalog=page==='library'&&
+     (cover?.style.display==='block'||reader?.style.display==='block');
    if(cover?.style.display==='block'||reader?.style.display==='block')oldGoHome();
    cover.style.display='none';reader.style.display='none';hidePages();
    current=page;
@@ -303,6 +305,7 @@
    refresh();navState();
    if(updateHash&&location.hash!==routes[page])location.hash=routes[page];
    window.scrollTo(0,0);
+   if(returningToCatalog)window.DuduLibraryCatalogL2E?.restoreScroll(window);
  }
  function navButton(page,mobile){
    const n=button(labels[page],()=>navigate(page),'d60-navitem');n.dataset.d60Route=page;
@@ -358,7 +361,10 @@
  window.DuduSiteV60={navigate,refresh,get page(){return current;}};
  window.renderHome=function(){const v=oldRenderHome.apply(this,arguments);refresh();return v;};
  window.goHome=function(){const v=oldGoHome.apply(this,arguments);enterLegacy();id('home-view').style.display='block';return v;};
- window.openCover=function(){enterLegacy();return oldOpenCover.apply(this,arguments);};
+ window.openCover=function(){
+   window.DuduLibraryCatalogL2E?.rememberScroll(window);
+   enterLegacy();return oldOpenCover.apply(this,arguments);
+ };
  window.readChapter=function(){enterLegacy();return oldReadChapter.apply(this,arguments);};
  setup();
 })();

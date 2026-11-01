@@ -834,6 +834,8 @@
   <link rel="stylesheet" href="css/arcade-c427-tackle.css?v=c427-2">
   <link rel="stylesheet" href="css/arcade-c428-weather.css?v=c428-1">
   <link rel="stylesheet" href="css/library-reading-return-c443.css?v=c443-1">
+  <link rel="stylesheet" href="css/library-catalog-l2e.css?v=l2e-1">
+  <script src="js/library-catalog-l2e.js?v=l2e-1"></script>
 </head>
 <body>
 
@@ -900,8 +902,10 @@
         </details>
       </div>
 
-      <div class="archive-catalog-bar"><span>✦ &nbsp; DANH MỤC TÁC PHẨM</span><span id="search-result-count" aria-live="polite">Đang tải danh mục</span></div>
+      <div class="archive-catalog-bar" id="archive-catalog-bar"><span>✦ &nbsp; DANH MỤC TÁC PHẨM</span><span id="search-result-count" aria-live="polite">Đang tải danh mục</span></div>
+      <nav class="library-catalog-pager" id="library-catalog-pager-top" aria-label="Chọn trang truyện phía trên" hidden></nav>
       <div class="novel-grid" id="novel-grid-container"></div>
+      <nav class="library-catalog-pager" id="library-catalog-pager-bottom" aria-label="Chọn trang truyện phía dưới" hidden></nav>
     </div>
 
     <!-- 2. TRANG BÌA & MỤC LỤC -->
@@ -7144,6 +7148,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 
     function onSearchChange() {
       searchQuery = document.getElementById('search-novel-input').value.trim();
+      window.DuduLibraryCatalogL2E?.resetPage();
       renderHome();
       scheduleSynopsisSearchL2D();
     }
@@ -7176,11 +7181,13 @@ document.getElementById('phone-home-screen').style.display = 'none';
 
     function onSortChange() {
       sortMode = document.getElementById('sort-select-ctrl').value;
+      window.DuduLibraryCatalogL2E?.resetPage();
       renderHome();
     }
 
     function filterStatus(status, btn) {
       currentFilterStatus = status;
+      window.DuduLibraryCatalogL2E?.resetPage();
       document.querySelectorAll('.filter-status-row .filter-btn').forEach(b => {
         b.classList.remove('active');
         b.setAttribute('aria-pressed', 'false');
@@ -7192,6 +7199,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 
     function selectTagFilter(tag, element) {
       selectedTag = tag;
+      window.DuduLibraryCatalogL2E?.resetPage();
       document.querySelectorAll('#tag-cloud-container .tag-chip').forEach(el => el.classList.remove('active'));
       element.classList.add('active');
       renderHome();
@@ -7225,6 +7233,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 
     function smartReadAction(novelIdx, event) {
       if (event) event.stopPropagation();
+      window.DuduLibraryCatalogL2E?.rememberScroll(window);
 
       selectedNovelIndex = novelIdx;
       const novel = novels[novelIdx];
@@ -7280,6 +7289,19 @@ document.getElementById('phone-home-screen').style.display = 'none';
         return 0;
       });
 
+      // Keep just 20 cards in the DOM per page, without changing the catalog
+      // order or the existing EPUB/legacy story records.
+      const catalogPager=typeof DuduLibraryCatalogL2E==='undefined'?null:DuduLibraryCatalogL2E;
+      const catalogPage=catalogPager?.paginate(filtered)||{items:filtered,offset:0};
+      catalogPager?.renderControls(document,catalogPage,nextPage=>{
+        catalogPager.setPage(nextPage);
+        renderHome();
+        requestAnimationFrame(()=>{
+          const bar=document.getElementById('archive-catalog-bar');
+          if(bar)window.scrollTo({top:Math.max(0,bar.getBoundingClientRect().top+window.scrollY-12),behavior:'instant'});
+        });
+      });
+
       const pendingSynopses=missingSearchSynopsesL2D().length;
       const failedSynopses=searchQuery?novels.filter(n=>librarySynopsisIndexL2D.isFailed(n)&&
         !DuduLibrarySynopsisSearchL2D.matches(n,searchQuery)).length:0;
@@ -7318,7 +7340,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
         return;
       }
 
-      filtered.forEach((novel, displayIndex) => {
+      catalogPage.items.forEach((novel, displayIndex) => {
         const originalIndex = novels.indexOf(novel);
         const latestDate = getNovelLatestDate(novel);
         const card = document.createElement('article');
@@ -7353,7 +7375,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
         const details = document.createElement('div');
         const indexLabel = document.createElement('div');
         indexLabel.className = 'archive-card-index';
-        indexLabel.textContent = 'ARCHIVE  /  ' + String(displayIndex + 1).padStart(2, '0');
+        indexLabel.textContent = 'ARCHIVE  /  ' + String(catalogPage.offset + displayIndex + 1).padStart(2, '0');
         const badges = document.createElement('div');
         badges.className = 'novel-badges';
         const badge = (value, cls) => {
@@ -7414,6 +7436,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 
     function resetAllFilters() {
       searchQuery = "";
+      window.DuduLibraryCatalogL2E?.resetPage();
       if(synopsisSearchTimerL2D!==null)clearTimeout(synopsisSearchTimerL2D);
       synopsisSearchTimerL2D=null;
       selectedTag = "ALL";
@@ -7531,6 +7554,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
     function openCover(idx) {
       window.DuduLibraryReaderStatusL2A?.cancel();
       document.body.classList.remove('dudu-reading-active');
+      window.DuduLibraryCatalogL2E?.rememberScroll(window);
       c443ResumePending=false;
       if(document.getElementById('reader-view').style.display==='block'){
         window.DuduReadingReturnC443?.clear(sessionStorage);

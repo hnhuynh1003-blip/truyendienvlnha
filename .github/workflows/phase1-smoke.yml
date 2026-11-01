@@ -85,6 +85,8 @@ jobs:
         run: node tests/browser-arcade-mobile-c410.cjs
       - name: C4.43 mobile reader navigation and refresh return (Sandbox, no external writes)
         run: node tests/browser-library-reading-return-c443.cjs
+      - name: L2E mobile Library pagination and synopsis return (Sandbox, no external writes)
+        run: node tests/browser-library-catalog-l2e.cjs
       - name: Legacy Sandbox regression (advisory; cannot block main V71)
         continue-on-error: true
         run: |
