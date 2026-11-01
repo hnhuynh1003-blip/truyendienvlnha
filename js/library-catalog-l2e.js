@@ -117,6 +117,7 @@
         jumpTrigger.setAttribute('aria-expanded','false');
         const form=doc.createElement('form');
         form.className='library-catalog-page-jump';form.hidden=true;
+        form.noValidate=true; // Show our in-page range hint instead of a native popup.
         const label=doc.createElement('label');
         label.textContent='Trang số';
         const input=doc.createElement('input');

@@ -81,6 +81,8 @@ test('L2E page controls and labels provide a jump-to-page without a long list',(
   assert.equal(ribbon.children[2].attributes['aria-current'],'page');
   assert.equal(host.children[1].textContent,'21–40 / 47 truyện');
   assert.equal(host.children[3].hidden,true);
+  assert.equal(host.children[3].noValidate,true,
+   'invalid jump numbers display a friendly inline hint rather than a browser validation popup');
  }
  hosts['library-catalog-pager-top'].children[0].children[4].handlers.click();
  const bottom=hosts['library-catalog-pager-bottom'];
