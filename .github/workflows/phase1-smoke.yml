@@ -83,6 +83,8 @@ jobs:
           node tests/browser-vangioi-erro-author.cjs
       - name: C4.11 mobile Arcade journey and Honor reveal (Sandbox, no external writes)
         run: node tests/browser-arcade-mobile-c410.cjs
+      - name: C4.43 mobile reader navigation and refresh return (Sandbox, no external writes)
+        run: node tests/browser-library-reading-return-c443.cjs
       - name: Legacy Sandbox regression (advisory; cannot block main V71)
         continue-on-error: true
         run: |
