@@ -833,9 +833,10 @@
   <link rel="stylesheet" href="css/museum-stage-c439r3.css?v=c439r6-1">
   <link rel="stylesheet" href="css/arcade-c427-tackle.css?v=c427-2">
   <link rel="stylesheet" href="css/arcade-c428-weather.css?v=c428-1">
-  <link rel="stylesheet" href="css/library-reading-return-c443.css?v=c443-1">
-  <link rel="stylesheet" href="css/library-catalog-l2e.css?v=l2e-2">
-  <script src="js/library-catalog-l2e.js?v=l2e-2"></script>
+  <link rel="stylesheet" href="css/library-reading-return-c443.css?v=l2f-1">
+  <link rel="stylesheet" href="css/library-catalog-l2e.css?v=l2e-3">
+  <script src="js/library-catalog-l2e.js?v=l2e-3"></script>
+  <script src="js/library-reader-shortcut-l2f.js?v=l2f-1"></script>
 </head>
 <body>
 
@@ -843,7 +844,6 @@
 
   <div class="floating-reading-controls" id="floating-reading-bar">
     <button class="floating-btn" onclick="goCover()">‹ Mục lục</button>
-    <button class="floating-btn" onclick="scrollToTop()">↑ Đầu trang</button>
   </div>
 
   <div id="system-alert-banner">
@@ -7812,7 +7812,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
       document.body.classList.add('dudu-reading-active');
       window.DuduReadingReturnC443?.enterHistory(window);
       c443Remember(scrollPos,true);
-      document.getElementById('floating-reading-bar').style.display='flex';
+      window.DuduReaderShortcutL2F?.reset(window.scrollY);
+      document.getElementById('floating-reading-bar').style.display='none';
       window.DuduReaderPreferencesL2C?.close();
       const readerEdit=document.getElementById('reader-edit-chapter');
       if(readerEdit)readerEdit.hidden=!!novel._cloudV49;
@@ -7996,9 +7997,10 @@ document.getElementById('phone-home-screen').style.display = 'none';
         const scrolled = (winScroll / height) * 100;
         document.getElementById('reading-bar').style.width = scrolled + '%';
 
-        // The real Phone FAB occupies the lower right. Keep the table-of-
-        // contents shortcut on the lower left, including while scrolling down.
-        floatBar.style.display = 'flex';
+        // The hardware/browser Back already returns to this book's contents.
+        // Surface a small TOC shortcut only after a deliberate upward swipe.
+        const revealToc=window.DuduReaderShortcutL2F?.update(winScroll)||false;
+        floatBar.style.display = revealToc?'flex':'none';
 
         const novel = novels[selectedNovelIndex];
         if (novel && novel.chapters && novel.chapters.length > 0) {
@@ -8007,6 +8009,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
           c443Remember(winScroll);
         }
       } else {
+        window.DuduReaderShortcutL2F?.reset(0);
         document.getElementById('reading-bar').style.width = '0%';
         floatBar.style.display = 'none';
       }

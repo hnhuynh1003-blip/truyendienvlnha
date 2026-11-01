@@ -2,7 +2,7 @@
 
 ## Trải nghiệm
 
-- Khi đọc chương dài, thanh nhỏ **‹ Mục lục / ↑ Đầu trang** luôn có thể chạm ở góc trái dưới màn hình; Cyber Phone vẫn ở góc phải, không che nút điều hướng.
+- Từ L2F, thanh **‹ Mục lục** không chiếm màn hình khi đọc bình thường: chỉ xuất hiện sau khi vuốt ngược lên khoảng 85px ở giữa chương và tự ẩn khi kéo xuống hoặc trở về đầu chương. Cyber Phone vẫn ở góc phải và nút Back của trình duyệt vẫn về mục lục.
 - Vuốt **Trở lại** của trình duyệt khi đang đọc đưa về bìa và Mục lục của đúng tác phẩm, không đi thẳng ra khỏi website. Nút Mục lục trong trang và thanh nổi vẫn hoạt động bằng một lần chạm.
 - Nếu tải lại trang **ngay khi đang đọc**, phiên tab này tự mở lại đúng truyện, đúng chương và vị trí cuộn gần nhất. Một khi đã chủ động rời trang đọc, tải lại sẽ không tự mở chương cũ.
 - Nếu sang trang mới/tab mới, dùng dấu trang **Đang đọc / Đọc tiếp** đã có ở Trang chủ hoặc Tủ sách; không tự mở chương một cách bất ngờ.

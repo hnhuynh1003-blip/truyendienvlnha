@@ -97,7 +97,7 @@ test('L2A reading focus is confined to the reader and leaves author permissions 
  assert.match(html,/document\.getElementById\('reader-view'\)\.style\.display = 'block';\s*document\.body\.classList\.add\('dudu-reading-active'\)/);
  assert.match(css,/body\.dudu-reading-active \.d60-bottomnav/);
  assert.match(readerCss,/body\.dudu-site-v60\.dudu-reading-active #phone-fab/);
- assert.match(html,/floatBar\.style\.display = 'flex';/);
+ assert.match(html,/floatBar\.style\.display = revealToc\?'flex':'none';/);
  assert.match(html,/canEditStories\(\)/);
  assert.match(html,/DuduEpubProductionV49\.readChapter\(db,bookId,chapterId\)/);
  assert.match(html,/<button type="button" class="chapter-name-click" \$\{isCurrent \?/);

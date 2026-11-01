@@ -1,7 +1,7 @@
-/* C4.43 — reachable table-of-contents shortcut through long chapters.
-   The Phone stays at lower right; the reader shortcut owns lower left. */
+/* C4.43/L2F — TOC shortcut is hidden until an intentional upward swipe.
+   Hardware/browser Back remains the primary navigation on mobile. */
 body.dudu-site-v60.dudu-reading-active #floating-reading-bar{
-  display:flex;left:calc(12px + env(safe-area-inset-left));right:auto;
+  display:none;left:calc(12px + env(safe-area-inset-left));right:auto;
   bottom:calc(14px + env(safe-area-inset-bottom));
   max-width:calc(100vw - 94px);z-index:1000;
   background:#172435f2;border-color:#8c806c;

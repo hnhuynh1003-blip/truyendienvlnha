@@ -63,20 +63,24 @@ async function main(){
    const state=await page.evaluate(()=>({
     count:document.querySelectorAll('#novel-grid-container .novel-card').length,
     overflow:document.documentElement.scrollWidth-window.innerWidth,
-    pager:document.getElementById('library-catalog-pager-top').getBoundingClientRect().right
+    pager:document.getElementById('library-catalog-pager-top').getBoundingClientRect().right,
+    topHeight:document.getElementById('library-catalog-pager-top').getBoundingClientRect().height,
+    bottomHeight:document.getElementById('library-catalog-pager-bottom').getBoundingClientRect().height
    }));
    assert.equal(state.count,20);
    assert.ok(state.overflow<=2&&state.pager<=width+2,
     'catalog pagination fits '+width+'px without horizontal overflow');
+   assert.ok(state.topHeight<=60&&state.bottomHeight<=115,
+    'pagination uses compact toolbars at '+width+'px');
   }
-  await page.locator('#library-catalog-pager-top .library-catalog-page-number[data-page="2"]').click();
+  await page.locator('#library-catalog-pager-bottom .library-catalog-page-number[data-page="2"]').click();
   assert.equal(await page.locator('#library-catalog-pager-bottom .library-catalog-page-number.is-current').innerText(),'2');
   assert.equal(await page.locator('#novel-grid-container .novel-card').count(),20);
   assert.equal(await page.locator('#library-catalog-pager-top .library-catalog-page-range').innerText(),
-   '21–40 / 247 truyện');
+   'Trang 2/13');
   await page.reload({waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.querySelectorAll('#novel-grid-container .novel-card').length===20&&
-   document.querySelector('#library-catalog-pager-top .library-catalog-page-number.is-current')?.textContent==='2');
+   document.querySelector('#library-catalog-pager-top .library-catalog-page-range')?.textContent==='Trang 2/13');
   await page.waitForTimeout(90); // page-jump position settles before recording a return.
   await page.evaluate(()=>window.scrollTo(0,800));
   await page.waitForFunction(()=>window.scrollY>400);
@@ -86,7 +90,7 @@ async function main(){
   await page.locator('#cover-view').getByRole('button',{name:'‹ Thư viện'}).click();
   await page.waitForFunction(()=>document.getElementById('home-view').style.display==='block');
   await page.waitForFunction(expected=>Math.abs(window.scrollY-expected)<80,before);
-  assert.equal(await page.locator('#library-catalog-pager-top .library-catalog-page-number.is-current').innerText(),'2',
+  assert.equal(await page.locator('#library-catalog-pager-top .library-catalog-page-range').innerText(),'Trang 2/13',
    'returning from synopsis keeps the exact catalog page');
   await page.locator('#search-novel-input').fill('Truyện thử phân trang 247');
   await page.waitForFunction(()=>document.querySelectorAll('#novel-grid-container .novel-card').length===1);
@@ -94,14 +98,16 @@ async function main(){
    'search recalculates pages and resets to page one');
   await page.locator('#search-novel-input').fill('');
   assert.equal(await page.locator('#novel-grid-container .novel-card').count(),20);
-  assert.equal(await page.locator('#library-catalog-pager-top .library-catalog-page-number.is-current').innerText(),'1');
+  assert.equal(await page.locator('#library-catalog-pager-top .library-catalog-page-range').innerText(),'Trang 1/13');
   assert.equal(await page.locator('#library-catalog-pager-bottom .library-catalog-page-dots').count(),1,
    'many-page catalogs show an ellipsis before the final page numbers');
-  await page.locator('#library-catalog-pager-bottom .library-catalog-page-number[data-page="12"]').click();
-  assert.equal(await page.locator('#library-catalog-pager-top .library-catalog-page-range').innerText(),
-   '221–240 / 247 truyện','the numbered strip reaches beyond nine pages');
   await page.locator('#library-catalog-pager-top .library-catalog-page-jump-toggle').click();
   const jump=page.locator('#library-catalog-pager-top .library-catalog-page-jump');
+  await jump.locator('input').fill('12');
+  await jump.locator('button[type="submit"]').click();
+  assert.equal(await page.locator('#library-catalog-pager-bottom .library-catalog-page-range').innerText(),
+   '221–240 / 247 truyện','direct jump reaches beyond nine pages');
+  await page.locator('#library-catalog-pager-top .library-catalog-page-jump-toggle').click();
   await jump.locator('input').fill('90');
   await jump.locator('button[type="submit"]').click();
   assert.equal(await jump.locator('.library-catalog-page-error').innerText(),

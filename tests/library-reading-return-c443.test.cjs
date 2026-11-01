@@ -61,10 +61,13 @@ test('C4.43 browser Back returns to TOC once; manual TOC unwinds without repeati
  assert.equal(pops,1,'tapping the TOC button cannot trigger a second back action');
 });
 
-test('C4.43 mobile reader keeps a visible TOC button left of the Phone',()=>{
+test('L2F mobile reader reveals a compact TOC only after intentional upward scrolling',()=>{
  const index=read('index.html'),css=read('css/library-reading-return-c443.css');
  assert.match(index,/floating-reading-bar[\s\S]*?onclick="goCover\(\)">‹ Mục lục/);
- assert.match(index,/floatBar\.style\.display = 'flex'/);
+ assert.match(index,/floatBar\.style\.display = revealToc\?'flex':'none'/);
+ assert.match(index,/DuduReaderShortcutL2F\?\.update\(winScroll\)/);
+ assert.match(index,/DuduReaderShortcutL2F\?\.reset\(window\.scrollY\)/);
+ assert.match(css,/#floating-reading-bar\{\s*display:none/);
  assert.match(css,/#floating-reading-bar\{[\s\S]*?right:auto/);
  assert.match(css,/safe-area-inset-bottom/);
  assert.match(index,/DuduReadingReturnC443\?\.enterHistory\(window\)/);

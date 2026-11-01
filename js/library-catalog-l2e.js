@@ -12,26 +12,14 @@
   'use strict';
   const PAGE_SIZE=20;
   const KEY='dudu-library-catalog-page-l2e';
-  // Keep the first/last pages discoverable without ever limiting the catalog
-  // to a fixed count. Middle pages orbit the current selection.
+  // A deliberately small strip: never render a wall of page numbers.
+  // The jump control still reaches any of the actual total pages.
   function pageTokens(current,total){
     if(!Number.isSafeInteger(total)||total<1)return [];
-    if(total<=9)return Array.from({length:total},(_,i)=>i+1);
-    const chosen=new Set([1,2,total-1,total]);
-    if(current<=5){
-      for(let n=1;n<=6;n++)chosen.add(n);
-    }else if(current>=total-4){
-      for(let n=total-5;n<=total;n++)chosen.add(n);
-    }else{
-      for(let n=current-1;n<=current+1;n++)chosen.add(n);
-    }
-    const sorted=[...chosen].filter(n=>n>=1&&n<=total).sort((a,b)=>a-b);
-    const result=[];
-    for(const n of sorted){
-      if(result.length&&n-result[result.length-1]>1)result.push('…');
-      result.push(n);
-    }
-    return result;
+    if(total<=5)return Array.from({length:total},(_,i)=>i+1);
+    if(current<=3)return [1,2,3,'…',total];
+    if(current>=total-2)return [1,'…',total-2,total-1,total];
+    return [1,'…',current,'…',total];
   }
   function createPager(storage){
     let page=1;
@@ -110,7 +98,9 @@
         ribbon.appendChild(next);
         const range=doc.createElement('span');
         range.className='library-catalog-page-range';
-        range.textContent=`${data.from}–${data.to} / ${data.total} truyện`;
+        range.textContent=id==='library-catalog-pager-top'?
+          `Trang ${data.page}/${data.pages}`:
+          `${data.from}–${data.to} / ${data.total} truyện`;
         const jumpTrigger=doc.createElement('button');
         jumpTrigger.type='button';jumpTrigger.className='library-catalog-page-jump-toggle';
         jumpTrigger.textContent='⌕ Đi tới trang';

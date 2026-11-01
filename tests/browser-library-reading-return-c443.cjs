@@ -63,12 +63,21 @@ async function main(){
     return {left:a.left,right:a.right,phoneLeft:phone.left,visible:getComputedStyle(shortcut).display,
      overflow:document.documentElement.scrollWidth-innerWidth};
    });
-   assert.equal(boxes.visible,'flex','TOC stays visible without an upward scroll');
-   assert.ok(boxes.right+6<=boxes.phoneLeft,'TOC shortcut cannot overlap the Phone at '+width);
+   assert.equal(boxes.visible,'none','TOC stays tucked away while reading at '+width);
    assert.ok(boxes.left>=0&&boxes.overflow<=2,'reader fits at '+width);
   }
   await page.evaluate(()=>window.scrollTo(0,700));
   await page.waitForFunction(()=>window.scrollY>500);
+  assert.equal(await page.locator('#floating-reading-bar').isVisible(),false);
+  await page.evaluate(()=>window.scrollTo(0,560));
+  await page.waitForFunction(()=>getComputedStyle(document.getElementById('floating-reading-bar')).display==='flex');
+  const positions=await page.evaluate(()=>({
+   right:document.getElementById('floating-reading-bar').getBoundingClientRect().right,
+   phoneLeft:document.getElementById('phone-fab').getBoundingClientRect().left
+  }));
+  assert.ok(positions.right+6<=positions.phoneLeft,'revealed TOC stays clear of the Phone');
+  await page.evaluate(()=>window.scrollTo(0,700));
+  await page.waitForFunction(()=>getComputedStyle(document.getElementById('floating-reading-bar')).display==='none');
   await page.waitForFunction(()=>{
    const saved=JSON.parse(sessionStorage.getItem(DuduReadingReturnC443.KEY)||'null');
    return saved?.scrollTop>500;

@@ -44,11 +44,11 @@ test('L2E restores the exact catalog scroll only when returning from its book',(
  assert.equal(pager.rememberScroll(win),false,'home/other tabs cannot replace the catalog position');
 });
 
-test('L2E.1 circular number strip keeps beginning, neighbors and last pages beyond page 9',()=>{
- assert.deepEqual(pageTokens(1,54),[1,2,3,4,5,6,'…',53,54]);
- assert.deepEqual(pageTokens(25,54),[1,2,'…',24,25,26,'…',53,54]);
- assert.deepEqual(pageTokens(53,54),[1,2,'…',49,50,51,52,53,54]);
- assert.deepEqual(pageTokens(478,1000),[1,2,'…',477,478,479,'…',999,1000]);
+test('L2E.2 keeps a short number strip while reaching any page count',()=>{
+ assert.deepEqual(pageTokens(1,54),[1,2,3,'…',54]);
+ assert.deepEqual(pageTokens(25,54),[1,'…',25,'…',54]);
+ assert.deepEqual(pageTokens(53,54),[1,'…',52,53,54]);
+ assert.deepEqual(pageTokens(478,1000),[1,'…',478,'…',1000]);
  assert.deepEqual(pageTokens(2,3),[1,2,3]);
  const pager=createPager(storage());pager.setPage(478);
  assert.equal(pager.paginate(Array(20000).fill({})).page,478);
@@ -79,7 +79,8 @@ test('L2E page controls and labels provide a jump-to-page without a long list',(
   assert.equal(ribbon.children.length,5);
   assert.equal(ribbon.children[2].textContent,'2');
   assert.equal(ribbon.children[2].attributes['aria-current'],'page');
-  assert.equal(host.children[1].textContent,'21–40 / 47 truyện');
+  assert.equal(host.children[1].textContent,
+   host===hosts['library-catalog-pager-top']?'Trang 2/3':'21–40 / 47 truyện');
   assert.equal(host.children[3].hidden,true);
   assert.equal(host.children[3].noValidate,true,
    'invalid jump numbers display a friendly inline hint rather than a browser validation popup');
@@ -113,5 +114,6 @@ test('L2E is wired to the existing Library route and resets after search/filter/
  assert.match(shell,/DuduLibraryCatalogL2E\?\.rememberScroll\(window\)/);
  assert.match(shell,/DuduLibraryCatalogL2E\?\.restoreScroll\(window\)/);
  assert.match(css,/@media\(max-width:355px\)/);
+ assert.match(css,/#library-catalog-pager-top \.library-catalog-page-number/);
  assert.doesNotMatch(read('js/library-catalog-l2e.js'),/firestore|profiles_v2|addExp|grantReward/i);
 });
