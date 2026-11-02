@@ -6,7 +6,7 @@ const {join}=require('node:path');
 const root=join(__dirname,'..');
 const read=path=>readFileSync(join(root,path),'utf8');
 
-test('C4.45 plants move into a compact farm sheet and leave the AI lake clear',()=>{
+test('C4.46b full-height garden sheet keeps the lake clear and preserves farm actions',()=>{
  const css=read('css/arcade-c445-garden-popup.css');
  const html=read('index.html');
  const ui=read('js/personal-arcade-ui-v1.js');
@@ -21,7 +21,12 @@ test('C4.45 plants move into a compact farm sheet and leave the AI lake clear',(
  assert.match(css,/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
  assert.match(css,/\.garden-farm-workbench \.garden-plot\{/);
  assert.match(css,/\.garden-farm-workbench \.garden-plot \.garden-crop-sprite\{/);
- assert.match(css,/max-height:min\(80dvh,690px\)/);
+ assert.match(css,/height:100%;max-height:100%;min-height:0/);
+ assert.match(css,/container-type:inline-size/,'Desktop phone widths should be handled as narrow containers');
+ assert.match(ui,/class="garden-sheet-back" data-arcade-drawer="close"/);
+ assert.match(ui,/event\.stopImmediatePropagation\(\)/,'App Back closes drawers before calling phoneHome');
  assert.match(ui,/aria-label="Luống \$\{index\+1\}/,'Screen readers keep full plot identity');
- assert.match(ui,/class="garden-plot-label"><b>\$\{String\(index\+1\)/,'Visible labels no longer repeat LUỐNG');
+ assert.match(ui,/class="garden-bed-number"/);
+ assert.match(ui,/class="garden-plot-label"><b>\$\{b\.status===/,'Plant names stay readable below the illustration');
+ assert.match(ui,/class="garden-farm-hero"/);
 });

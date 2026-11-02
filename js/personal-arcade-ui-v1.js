@@ -489,11 +489,13 @@
    const disabled=b.status==='empty'?!g.seeds:b.status==='dry'?!g.water:!mature;
    return `<button class="garden-plot ${b.status} crop-${b.crop} growth-stage-${growthStage} ${mature?'mature':''} ${plotHit?.index===index?'is-action-burst plot-burst-'+plotHit.action:''}" type="button" data-arcade-action="${action}" ${disabled?'disabled':''}
      aria-label="Luống ${index+1}: ${text}, ${caption}">
+     <span class="garden-bed-number" aria-hidden="true">${String(index+1).padStart(2,'0')}</span>
+     ${mature?'<span class="garden-bed-ready" aria-hidden="true">✦ CHÍN</span>':''}
      <span class="garden-soil"></span><span class="garden-stem"><i></i><i></i><i></i></span>
      <span class="garden-flower"><i></i><i></i><i></i><i></i><i></i></span>
      <span class="garden-crop-sprite" aria-hidden="true"></span>
      <span class="garden-plant-aura" aria-hidden="true"></span>
-     <span class="garden-plot-label"><b>${String(index+1).padStart(2,'0')} · ${b.status==='empty'?'Trống':core.CROPS[b.crop].name}</b><small ${b.status==='growing'&&!mature?`data-arcade-until="${b.readyAt}"`:''}>${caption}</small><em>${text}</em></span></button>`;
+     <span class="garden-plot-label"><b>${b.status==='empty'?'Đất trống':core.CROPS[b.crop].name}</b><small ${b.status==='growing'&&!mature?`data-arcade-until="${b.readyAt}"`:''}>${caption}</small><em>${text}</em></span></button>`;
   };
   return `<section class="arcade-world arcade-world-garden ${biting?'is-biting':''}" aria-label="Vườn Sương">
     <header class="arcade-world-heading"><div><span class="arcade-eyebrow">03 / CHILL FARM</span>
@@ -566,15 +568,16 @@
        ${drawerButton('Vườn cây'+(g.beds.some(b=>b.status==='growing'&&time>=b.readyAt)?' · Có cây chín':''),'✿','garden-seeds')}
        ${drawerButton('Sổ cá','🐟','garden-album')}
        ${drawerButton('Tiệm câu','🎣','garden-upgrades')}</div>
-      <div class="arcade-panel-heading" data-arcade-panel="garden-seeds"><div><span class="arcade-eyebrow">VƯỜN CÂY</span><h4>Chọn giống</h4></div></div>
-      <div class="garden-seed-list" data-arcade-panel="garden-seeds">${Object.entries(core.CROPS).map(([id,crop])=>`<button type="button" class="garden-seed ${g.crop===id?'selected':''}" data-arcade-action="crop-${id}" ${core.cropUnlocked(g,id)?'':'disabled'}>
-       <b>${id==='bloom'?'✿':id==='mint'?'❧':'☾'} ${crop.name}</b><small>${core.cropUnlocked(g,id)?`${crop.grow/60000} phút · +${fmt(crop.value)} Xu`:`Mở sau ${id==='mint'?10:30} lần thu`}</small></button>`).join('')}</div>
+      <div class="garden-farm-hero" data-arcade-panel="garden-seeds"><span>✧ MOONLIT GARDEN</span><strong>Mùa nở hoa</strong><small>Gieo mầm · Chăm cây · Thu hoạch</small></div>
+      <div class="arcade-panel-heading garden-seed-heading" data-arcade-panel="garden-seeds"><div><span class="arcade-eyebrow">HẠT GIỐNG</span><h4>Chọn để gieo</h4></div></div>
+      <div class="garden-seed-list" data-arcade-panel="garden-seeds">${Object.entries(core.CROPS).map(([id,crop])=>`<button type="button" class="garden-seed ${g.crop===id?'selected':''}" data-arcade-action="crop-${id}" ${core.cropUnlocked(g,id)?'':'disabled'} aria-pressed="${g.crop===id}">
+       <span class="garden-seed-mark" aria-hidden="true">${id==='bloom'?'✿':id==='mint'?'❧':'☾'}</span><b>${crop.name}</b><small>${core.cropUnlocked(g,id)?`${crop.grow/60000} phút · +${fmt(crop.value)} Xu`:`Mở sau ${id==='mint'?10:30} lần thu`}</small></button>`).join('')}</div>
       <div class="garden-farm-workbench" data-arcade-panel="garden-seeds">
        <div class="garden-resources">${hud('NƯỚC','💧 '+g.water+'/'+g.waterCap,'Hồi mỗi 15 phút')}
         ${hud('HẠT GIỐNG','✿ '+g.seeds,'Trong túi hạt')}</div>
        <div class="garden-plot-area" role="group" aria-label="Luống cây">${g.beds.map(bed).join('')}</div>
-       <div class="garden-quick-actions">${button('💧 Tưới các luống khô','water-all','tool',!g.sprinkler||!g.water||!g.beds.some(b=>b.status==='dry'))}
-        ${button('✿ Thu hoạch tất cả','harvest-all','tool',!g.beds.some(b=>b.status==='growing'&&time>=b.readyAt))}</div>
+       <div class="garden-quick-actions">${button('💧 Tưới đồng loạt','water-all','tool',!g.sprinkler||!g.water||!g.beds.some(b=>b.status==='dry'))}
+        ${button('✦ Thu tất cả','harvest-all','tool',!g.beds.some(b=>b.status==='growing'&&time>=b.readyAt))}</div>
       </div>
       <div class="arcade-panel-heading" data-arcade-panel="garden-seeds"><div><span class="arcade-eyebrow">NHÀ KÍNH</span>
         <h4>Vật tư & thu hoạch</h4></div>${button('＋ 3 hạt · 10 Xu','buy-seeds','market',s.coins<100)}</div>
@@ -665,7 +668,7 @@
     const overlay=root.document.createElement('div');
     overlay.className='arcade-sheet-overlay';overlay.dataset.sheet=drawerOpen;
     overlay.innerHTML=`<section class="arcade-sheet" role="dialog" aria-modal="true" aria-label="${drawerTitles[drawerOpen]}">
-      <header class="arcade-sheet-heading"><div><small>✦ ARCADE</small><h3>${drawerTitles[drawerOpen]}</h3></div>
+      <header class="arcade-sheet-heading">${drawerOpen==='garden-seeds'?'<button type="button" class="garden-sheet-back" data-arcade-drawer="close" aria-label="Quay về bốn trò chơi">← 4 GAME</button>':''}<div><small>✦ ARCADE</small><h3>${drawerTitles[drawerOpen]}</h3></div>
        <div class="arcade-sheet-controls"><button type="button" class="arcade-sheet-honor" data-arcade-honor="${tab}"
         aria-label="Xem thử thách ${modeLabels[tab]}" title="Thử thách & danh hiệu">✦</button>
         <button type="button" class="arcade-sheet-close" data-arcade-drawer="close" aria-label="Đóng cửa sổ">✕</button></div></header>
@@ -837,6 +840,16 @@
  }
  function init(){
   const element=host();if(!element)return false;
+  // The phone's Back key returns to the four games while a drawer is open.
+  // Its original inline phoneHome() still works when no Arcade overlay exists.
+  root.document.querySelector?.('#phone-app-arcade .phone-back-btn')?.addEventListener?.('click',event=>{
+   if(!drawerOpen&&!exchangeOpen&&!seasonOpen)return;
+   event.preventDefault();event.stopImmediatePropagation();
+   if(drawerOpen)drawerOpen=null;
+   else if(exchangeOpen)exchangeOpen=false;
+   else seasonOpen=false;
+   render();
+  },true);
   root.document.getElementById('arcade-season-portal-c423')?.addEventListener('click',()=>{
    if(!ensure())return;
    seasonOpen=true;drawerOpen=null;exchangeOpen=false;render();
