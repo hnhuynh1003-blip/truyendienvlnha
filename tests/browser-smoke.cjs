@@ -2033,6 +2033,38 @@ async function main() {
     assert.equal(wallpaperR4.unchanged,true);
     assert.equal(wallpaperR4.writes,0);
 
+    // V38: the real gallery button must both persist and visibly apply a
+    // free AI wallpaper; previous storage and account data remain untouched.
+    const wallpaperV38=await page.evaluate(()=>{
+      const owner=phoneWallpaperOwnerV27(),key=DuduPhoneWallpaperV27.keyFor(owner);
+      const old=localStorage.getItem(key),profileBefore=JSON.stringify(userProfile);
+      const beforeWrites=window.__firestoreWrites.length;
+      try{
+        if(document.getElementById('cyber-phone').style.display!=='flex')togglePhone();
+        openPhoneApp('settings');
+        document.getElementById('dudu-v34-open').click();
+        document.querySelector('.dudu-v38-wall-card[data-v38-id="v38-moon"]').click();
+        document.querySelector('.dudu-v38-inspect-action').click();
+        return {selected:DuduPhoneWallpaperV27.read(localStorage,owner),
+          visible:document.body.dataset.duduPhoneWallpaper,
+          background:getComputedStyle(document.querySelector('#cyber-phone .phone-screen'))
+            .backgroundImage.includes('moon-garden.webp'),
+          closed:document.getElementById('dudu-v34-overlay').hidden,
+          profileSafe:JSON.stringify(userProfile)===profileBefore,
+          writes:window.__firestoreWrites.length-beforeWrites};
+      }finally{
+        if(old===null)localStorage.removeItem(key);
+        else localStorage.setItem(key,old);
+        renderPhoneWallpaperV27();phoneHome();
+      }
+    });
+    assert.equal(wallpaperV38.selected,'v38-moon');
+    assert.equal(wallpaperV38.visible,'v38-moon');
+    assert.equal(wallpaperV38.background,true);
+    assert.equal(wallpaperV38.closed,true);
+    assert.equal(wallpaperV38.profileSafe,true);
+    assert.equal(wallpaperV38.writes,0);
+
     // V38 retires auto story backgrounds without erasing old mode preferences.
     const worldV28=await page.evaluate(()=>{
       const account=currentUsername,profileBefore=JSON.stringify(userProfile);

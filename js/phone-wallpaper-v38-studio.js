@@ -116,8 +116,39 @@
   if(item.kind==='gift'&&!allowed('font',item.id)){
    if(!catalog.claimGift(localStorage,owner(),item.id)){notice('Không lưu được quà trên thiết bị.');return;}
   }
+  const uid=owner(),type=window.DuduPhoneTypographyV31;
+  if(!uid||!type){notice('Hãy mở tài khoản điện thoại trước khi đổi font.');return;}
   if(typeof window.setPhoneFontV31==='function')window.setPhoneFontV31(item.id);
+  if(type.read(localStorage,uid).font!==item.id){
+   const current=type.read(localStorage,uid);
+   if(!type.write(localStorage,uid,{font:item.id,size:current.size})){
+    notice('Không lưu được font trên thiết bị.');return;
+   }
+   window.v568SavePhoneAppearance?.();
+  }
+  const target=$('cyber-phone'),font=type.fontById(item.id);
+  target?.style.setProperty('--dudu-v31-font',font.family);
+  if(!$('dudu-v31-font-link-'+font.id)){
+   const link=el('link');link.id='dudu-v31-font-link-'+font.id;
+   link.rel='stylesheet';link.href=font.url;document.head.append(link);
+  }
   syncCards();notice('✓ Đã áp dụng kiểu chữ '+item.name+'.');
+ }
+ function applyWallpaper(id){
+  const uid=owner(),model=window.DuduPhoneWallpaperV27;
+  if(!uid||!model||!allowed('wallpaper',id))return false;
+  // Use the established setter, and recover if an older embedded page did not
+  // expose its handler to standalone gallery scripts.
+  if(typeof window.setPhoneWallpaperV27==='function')window.setPhoneWallpaperV27(id);
+  if(model.read(localStorage,uid)!==id){
+   if(!model.write(localStorage,uid,id))return false;
+   window.DuduMultiverseArtV28?.writeMode?.(localStorage,uid,'personal');
+   window.v568SavePhoneAppearance?.();
+  }
+  document.body.dataset.duduPhoneWallpaper=id;
+  window.renderPhoneWallpaperV27?.();
+  window.DuduWallpaperGalleryV34?.sync?.();
+  return model.read(localStorage,uid)===id;
  }
  function showPreview(item){
   activePreview=item;returnFocus=document.activeElement;
@@ -144,7 +175,10 @@
   if(item.kind==='gift'&&!allowed('wallpaper',item.id)&&!catalog.claimGift(localStorage,owner(),item.id)){
    notice('Không lưu được quà; thử lại sau.');return;
   }
-  if(typeof window.setPhoneWallpaperV27==='function')window.setPhoneWallpaperV27(item.id);
+  if(!applyWallpaper(item.id)){
+   notice('Chưa lưu được hình nền. Hãy thử lại sau khi mở tài khoản điện thoại.');
+   hidePreview();return;
+  }
   syncCards();hidePreview();window.DuduWallpaperGalleryV34?.close?.();
  }
  function makeInspect(){
