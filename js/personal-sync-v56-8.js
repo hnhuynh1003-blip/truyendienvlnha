@@ -14,7 +14,8 @@
  const WALLPAPERS=new Set(['midnight','sakura','astral','jade',
   'world-xianxia','world-modern','world-cyberpunk','world-gothic',
   'v34-night','v34-room','v34-sakura','v34-neon','v37-sakura','v37-city-rain',
-  'v37-city-night','v38-jade','v38-moon','v38-neon','v38-lantern','v38-fox','v38-abyss']);
+  'v37-city-night','v38-jade','v38-moon','v38-neon','v38-lantern','v38-fox','v38-abyss',
+  'v39-mage','v39-swordsman','v39-wanderer','v39-whitefox']);
  const FONTS=new Set(['be','quicksand','nunito','serif','outfit','cormorant','prata','marcellus']);
  const SIZES=new Set(['small','normal','large']);
  const THEMES=new Set(['default','warm','oled']);

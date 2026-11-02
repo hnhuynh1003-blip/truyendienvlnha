@@ -14,7 +14,11 @@
   {id:'v38-neon',name:'Neon Vũ',category:'Neon',tag:'FREE',kind:'free',price:0,asset:'neon-rain.webp'},
   {id:'v38-lantern',name:'Đế Đô',category:'Cổ phong',tag:'GOLD',kind:'premium',price:45,asset:'lantern-imperial.webp'},
   {id:'v38-fox',name:'Cửu Vĩ',category:'Linh thú',tag:'GOLD',kind:'premium',price:75,asset:'spirit-fox.webp'},
-  {id:'v38-abyss',name:'Hải Điện',category:'Huyền ảo',tag:'FREE',kind:'free',price:0,asset:'abyss-sanctuary.webp'}
+  {id:'v38-abyss',name:'Hải Điện',category:'Huyền ảo',tag:'FREE',kind:'free',price:0,asset:'abyss-sanctuary.webp'},
+  {id:'v39-mage',name:'Nguyệt Sư',category:'Chân dung',tag:'FREE',kind:'free',price:0,asset:'moon-mage.webp',folder:'v39'},
+  {id:'v39-swordsman',name:'Kiếm Khách',category:'Chân dung',tag:'QUÀ TẶNG',kind:'gift',price:0,asset:'jade-swordsman.webp',folder:'v39'},
+  {id:'v39-wanderer',name:'Dạ Hành',category:'Neon',tag:'FREE',kind:'free',price:0,asset:'neon-wanderer.webp',folder:'v39'},
+  {id:'v39-whitefox',name:'Bạch Hồ',category:'Linh thú',tag:'GOLD',kind:'premium',price:95,asset:'white-fox.webp',folder:'v39'}
  ].map(x=>Object.freeze(x)));
  const FONTS=Object.freeze([
   {id:'be',name:'Be Vietnam',kind:'free',price:0,sample:'Đơn giản · thanh thoát'},

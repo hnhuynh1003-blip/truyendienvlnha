@@ -2065,6 +2065,46 @@ async function main() {
     assert.equal(wallpaperV38.profileSafe,true);
     assert.equal(wallpaperV38.writes,0);
 
+    // V39 portraits plus uncluttered focus mode. No account or currency writes.
+    const portraitV39=await page.evaluate(()=>{
+      const owner=phoneWallpaperOwnerV27(),key=DuduPhoneWallpaperV27.keyFor(owner);
+      const previous=localStorage.getItem(key),profile=JSON.stringify(userProfile);
+      const writes=window.__firestoreWrites.length;
+      try{
+        setPhoneWallpaperV27('v39-mage');
+        phoneHome();
+        const artwork=getComputedStyle(document.querySelector('#cyber-phone .phone-screen'))
+          .backgroundImage.includes('moon-mage.webp');
+        const button=document.getElementById('dudu-v38-focus-toggle');
+        button.click();
+        const focus=document.getElementById('cyber-phone').classList.contains('is-wallpaper-focus');
+        const gridHidden=getComputedStyle(document.querySelector('#phone-home-screen .phone-app-grid')).display==='none';
+        const back=button.textContent;
+        button.click();
+        const restored=getComputedStyle(document.querySelector('#phone-home-screen .phone-app-grid')).display!=='none';
+        openPhoneApp('wallet');
+        const actual=document.querySelector('.dudu-wallet-card').dataset.walletCardTier;
+        document.getElementById('dudu-wallet-upgrade-button').click();
+        selectDuduWalletCard('diamond');
+        toggleDuduWalletTierSheet(false);
+        const reset=document.querySelector('.dudu-wallet-card').dataset.walletCardTier;
+        return {artwork,focus,gridHidden,back,restored,actual,reset,
+          profileSafe:JSON.stringify(userProfile)===profile,writes:window.__firestoreWrites.length-writes};
+      }finally{
+        if(previous===null)localStorage.removeItem(key);else localStorage.setItem(key,previous);
+        renderPhoneWallpaperV27();phoneHome();
+      }
+    });
+    assert.equal(portraitV39.artwork,true);
+    assert.equal(portraitV39.focus,true);
+    assert.equal(portraitV39.gridHidden,true);
+    assert.equal(portraitV39.back,'‹');
+    assert.equal(portraitV39.restored,true);
+    assert.equal(portraitV39.actual,'silver');
+    assert.equal(portraitV39.reset,'silver');
+    assert.equal(portraitV39.profileSafe,true);
+    assert.equal(portraitV39.writes,0);
+
     // V38 retires auto story backgrounds without erasing old mode preferences.
     const worldV28=await page.evaluate(()=>{
       const account=currentUsername,profileBefore=JSON.stringify(userProfile);

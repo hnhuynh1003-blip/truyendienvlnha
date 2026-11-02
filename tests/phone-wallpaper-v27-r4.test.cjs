@@ -10,9 +10,9 @@ function store(){
  const values=new Map();
  return {getItem:k=>values.get(k)||null,setItem:(k,v)=>values.set(k,v),keys:()=>[...values.keys()]};
 }
-test('V27 R4 keeps all legacy presets and adds V38 art without changing scoped keys',()=>{
- assert.equal(wp.PRESETS.length,22);
- assert.deepEqual(wp.PRESETS.map(x=>x.id),['midnight','sakura','astral','jade','world-xianxia','world-modern','world-cyberpunk','world-gothic','v34-night','v34-room','v34-sakura','v34-neon','v37-sakura','v37-city-rain','v37-city-night','v36-custom','v38-jade','v38-moon','v38-neon','v38-lantern','v38-fox','v38-abyss']);
+test('V27 R4 keeps all legacy presets and adds V39 portraits without changing scoped keys',()=>{
+ assert.equal(wp.PRESETS.length,26);
+ assert.deepEqual(wp.PRESETS.map(x=>x.id),['midnight','sakura','astral','jade','world-xianxia','world-modern','world-cyberpunk','world-gothic','v34-night','v34-room','v34-sakura','v34-neon','v37-sakura','v37-city-rain','v37-city-night','v36-custom','v38-jade','v38-moon','v38-neon','v38-lantern','v38-fox','v38-abyss','v39-mage','v39-swordsman','v39-wanderer','v39-whitefox']);
  assert.equal(wp.normalize('astral'),'astral');
  assert.equal(wp.normalize('../../evil.css'),wp.DEFAULT);
  assert.equal(wp.keyFor('../../another-user'),null);
@@ -39,7 +39,7 @@ test('V27 R4 safely defaults on disabled storage',()=>{
 });
 test('V27 R4 markup includes settings, no uploaded remote photo or story save writes',()=>{
  assert.match(html,/href="css\/phone-wallpaper-v27-r4.css"/);
- assert.match(html,/src="js\/phone-wallpaper-v27-r4.js\?v=38-1"/);
+ assert.match(html,/src="js\/phone-wallpaper-v27-r4.js\?v=39-1"/);
  assert.match(html,/id="dudu-v27-wallpaper-heading"/);
  assert.match(html,/function setPhoneWallpaperV27\(id\)/);
  assert.match(html,/if\(!phoneWallpaperOwnerV27\(\)\|\|!window\.DuduPhoneWallpaperV27\)return/);

@@ -5,8 +5,15 @@ body.dudu-phone-v11[data-dudu-phone-wallpaper="v38-neon"] #cyber-phone{--dudu-v3
 body.dudu-phone-v11[data-dudu-phone-wallpaper="v38-lantern"] #cyber-phone{--dudu-v30-art:url('../assets/wallpapers/v38/lantern-imperial.webp');}
 body.dudu-phone-v11[data-dudu-phone-wallpaper="v38-fox"] #cyber-phone{--dudu-v30-art:url('../assets/wallpapers/v38/spirit-fox.webp');}
 body.dudu-phone-v11[data-dudu-phone-wallpaper="v38-abyss"] #cyber-phone{--dudu-v30-art:url('../assets/wallpapers/v38/abyss-sanctuary.webp');}
+body.dudu-phone-v11[data-dudu-phone-wallpaper="v39-mage"] #cyber-phone{--dudu-v30-art:url('../assets/wallpapers/v39/moon-mage.webp');}
+body.dudu-phone-v11[data-dudu-phone-wallpaper="v39-swordsman"] #cyber-phone{--dudu-v30-art:url('../assets/wallpapers/v39/jade-swordsman.webp');}
+body.dudu-phone-v11[data-dudu-phone-wallpaper="v39-wanderer"] #cyber-phone{--dudu-v30-art:url('../assets/wallpapers/v39/neon-wanderer.webp');}
+body.dudu-phone-v11[data-dudu-phone-wallpaper="v39-whitefox"] #cyber-phone{--dudu-v30-art:url('../assets/wallpapers/v39/white-fox.webp');}
 body.dudu-phone-v11 #cyber-phone .phone-screen{
  background-image:linear-gradient(180deg,#060c1c4d 0%,#09102218 30%,#06122240 100%),var(--dudu-v30-art)!important;
+}
+body.dudu-phone-v11 #cyber-phone.is-wallpaper-focus .phone-screen{
+ background-image:linear-gradient(180deg,#040b1840 0%,#0000 18%,#0000 83%,#050c1829 100%),var(--dudu-v30-art)!important;
 }
 body.dudu-phone-v11 #cyber-phone .dudu-v34-sheet{
  position:relative;min-width:0;background:linear-gradient(150deg,#0c1425,#131e32 62%,#19253d)!important;
@@ -192,6 +199,26 @@ body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-v38-home-signature{
  font-size:28px;color:#fff7e5;z-index:1;opacity:.9;text-shadow:0 3px 12px #000b;
 }
 body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-v38-home-signature[hidden]{display:none!important;}
+body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-v38-focus-toggle{
+ position:absolute;z-index:11;right:11px;bottom:89px;width:34px;height:34px;
+ display:grid;place-items:center;padding:0;border:1px solid #f2e4c479;border-radius:50%;
+ color:#fff2db;background:#0b2032b8;box-shadow:0 3px 12px #0007;
+ font:800 20px/1 ui-sans-serif,system-ui;backdrop-filter:blur(6px);cursor:pointer;
+}
+body.dudu-phone-v11 #cyber-phone.is-wallpaper-focus #phone-home-screen{
+ justify-content:end;
+}
+body.dudu-phone-v11 #cyber-phone.is-wallpaper-focus #phone-home-screen .dudu-honor-identity-frame,
+body.dudu-phone-v11 #cyber-phone.is-wallpaper-focus #phone-home-screen .phone-app-grid,
+body.dudu-phone-v11 #cyber-phone.is-wallpaper-focus #phone-home-screen .dudu-v30-dock,
+body.dudu-phone-v11 #cyber-phone.is-wallpaper-focus #phone-home-screen .phone-home-caption,
+body.dudu-phone-v11 #cyber-phone.is-wallpaper-focus #phone-home-screen .dudu-v38-home-signature{display:none!important;}
+body.dudu-phone-v11 #cyber-phone.is-wallpaper-focus #phone-home-screen .dudu-v38-focus-toggle{
+ bottom:16px;right:calc(50% - 17px);background:#0c2538c7;border-color:#e7d9c4ad;font-size:29px;
+}
+body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-v38-focus-toggle:focus-visible{
+ outline:2px solid #fff0bf;outline-offset:3px;
+}
 @media(max-width:350px){
  body.dudu-phone-v11 #cyber-phone .dudu-v38-hero{padding:11px 9px;gap:8px;}
  body.dudu-phone-v11 #cyber-phone .dudu-v38-hero strong{font-size:13px;}

@@ -14,6 +14,7 @@
  let activeFilter='Tất cả',activePreview=null,returnFocus=null;
  let gallery=null,fontsPanel=null,inspect=null,feedback=null;
  const money=()=>'<i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i>';
+ const artPath=item=>'assets/wallpapers/'+(item.folder||'v38')+'/'+item.asset;
  function notice(message){if(feedback){feedback.textContent=message;feedback.hidden=false;}}
  function labelFor(item){return item.kind==='premium'?'GOLD':item.kind==='gift'?'✦ QUÀ':'MIỄN PHÍ';}
  function priceLabel(node,item){
@@ -54,9 +55,9 @@
  }
  function makeStudio(){
   const panel=el('section','dudu-v35-gallery-panel dudu-v38-studio');panel.dataset.duduV35Tab='studio';
-  const hero=el('div','dudu-v38-hero');hero.innerHTML='<span class="dudu-v38-hero-spark">✦</span><div><small>DUDU · WALLPAPER ATELIER</small><strong>Thế giới trong lòng bàn tay</strong><span>6 tác phẩm AI · mỗi nền một câu chuyện riêng</span></div>';
+  const hero=el('div','dudu-v38-hero');hero.innerHTML='<span class="dudu-v38-hero-spark">✦</span><div><small>DUDU · WALLPAPER ATELIER</small><strong>Thế giới trong lòng bàn tay</strong><span>10 tác phẩm AI · phong cảnh & chân dung</span></div>';
   const filters=el('div','dudu-v38-filters');filters.setAttribute('aria-label','Chủ đề hình nền');
-  ['Tất cả','Thiên nhiên','Huyền ảo','Neon','Cổ phong','Linh thú'].forEach(name=>{
+  ['Tất cả','Chân dung','Thiên nhiên','Huyền ảo','Neon','Cổ phong','Linh thú'].forEach(name=>{
    const b=el('button','dudu-v38-filter',name);b.type='button';b.dataset.v38Filter=name;
    b.addEventListener('click',()=>filterTo(name));filters.append(b);
   });
@@ -65,7 +66,7 @@
    const card=el('button','dudu-v38-wall-card');card.type='button';card.dataset.v38Id=item.id;
    card.setAttribute('aria-label','Xem thử '+item.name);card.setAttribute('aria-pressed','false');
    const art=el('span','dudu-v38-wall-art');
-   const img=el('img');img.src='assets/wallpapers/v38/'+item.asset;img.alt='';img.loading='lazy';img.decoding='async';img.width=180;img.height=389;
+   const img=el('img');img.src=artPath(item);img.alt='';img.loading='lazy';img.decoding='async';img.width=180;img.height=389;
    const badge=el('span','dudu-v38-price');priceLabel(badge,item);art.append(img,badge);
    const foot=el('span','dudu-v38-wall-info');foot.append(el('strong','',item.name),el('small','',item.category));
    card.append(art,foot);card.addEventListener('click',()=>showPreview(item));grid.append(card);
@@ -155,7 +156,7 @@
   if(!inspect)return;
   inspect.hidden=false;
   const art=q('.dudu-v38-inspect-art',inspect);
-  art.style.backgroundImage='linear-gradient(180deg,#080e2288,transparent 28%,transparent 68%,#080e2299),url("assets/wallpapers/v38/'+item.asset+'")';
+  art.style.backgroundImage='linear-gradient(180deg,#080e2288,transparent 28%,transparent 68%,#080e2299),url("'+artPath(item)+'")';
   q('.dudu-v38-inspect-name',inspect).textContent=item.name;
   q('.dudu-v38-inspect-category',inspect).textContent=item.category;
   const action=q('.dudu-v38-inspect-action',inspect);
@@ -230,6 +231,20 @@
   sheet.append(makeInspect());
   const signature=el('span','dudu-v38-home-signature');signature.id='dudu-v38-home-signature';signature.hidden=true;signature.setAttribute('aria-label','Chữ ký cá nhân');
   $('phone-home-screen')?.append(signature);
+  const focusToggle=el('button','dudu-v38-focus-toggle','◉');
+  focusToggle.id='dudu-v38-focus-toggle';focusToggle.type='button';
+  focusToggle.setAttribute('aria-label','Ngắm hình nền toàn màn hình');
+  focusToggle.setAttribute('aria-pressed','false');
+  focusToggle.title='Ngắm hình nền';
+  focusToggle.addEventListener('click',()=>{
+   const phone=$('cyber-phone');if(!phone)return;
+   const enabled=phone.classList.toggle('is-wallpaper-focus');
+   focusToggle.textContent=enabled?'‹':'◉';
+   focusToggle.setAttribute('aria-pressed',String(enabled));
+   focusToggle.setAttribute('aria-label',enabled?'Quay lại màn hình ứng dụng':'Ngắm hình nền toàn màn hình');
+   focusToggle.title=enabled?'Quay lại':'Ngắm hình nền';
+  });
+  $('phone-home-screen')?.append(focusToggle);
   const open=$('dudu-v34-open');open?.addEventListener('click',()=>{if(feedback)feedback.hidden=true;switchTab('studio');});
   document.body.addEventListener('dudu-account-changed',syncSignature);
   new MutationObserver(()=>{syncSignature();syncCards();}).observe(document.body,{attributes:true,attributeFilter:['data-dudu-phone-wallpaper']});
@@ -240,7 +255,8 @@
  window.DuduWallpaperStudioV38=Object.freeze({
   canUseWallpaper:id=>allowed('wallpaper',id),
   canUseFont:id=>allowed('font',id),
-  sync:()=>{syncSignature();syncCards();}
+  sync:()=>{syncSignature();syncCards();},
+  endFocus:()=>{if($('cyber-phone')?.classList.contains('is-wallpaper-focus'))$('dudu-v38-focus-toggle')?.click();}
  });
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();

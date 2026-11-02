@@ -15,13 +15,14 @@ test('Ví Xu is a first-class phone app, backed by existing profile Xu',()=>{
  assert.match(html,/userProfile\.currency/);
  assert.match(html,/appName === 'wallet'/);
  assert.match(html,/if\(document\.getElementById\('phone-app-wallet'\)\?\.style\.display==='flex'\)renderWallet\(\)/);
- assert.match(html,/css\/dudu-wallet-v1\.css\?v=wallet-p2-1/);
+ assert.match(html,/css\/dudu-wallet-v1\.css\?v=wallet-p3-1/);
  assert.match(html,/css\/dudu-currency-icons-v1\.css\?v=fun-p1-2/);
 });
 
-test('wallet navigation has working shopping and Arcade controls but cannot mint Xu',()=>{
+test('wallet keeps compact Arcade/exchange access but cannot mint Xu',()=>{
  const wallet=html.slice(html.indexOf('id="phone-app-wallet"'),html.indexOf('<!-- APP: CỬA HÀNG -->'));
- assert.match(wallet,/onclick="openPhoneApp\('shop'\)"/);
+ assert.doesNotMatch(wallet,/onclick="openPhoneApp\('shop'\)"/);
+ assert.match(wallet,/id="dudu-wallet-upgrade-button"/);
  assert.match(wallet,/onclick="openPhoneApp\('arcade'\)"/);
  assert.match(wallet,/DuduPersonalArcadeUIV1\?\.openExchange\?\.\(\)/);
  assert.doesNotMatch(wallet,/onclick="[^\"]*(transfer|claim|award|grant)/i);

@@ -29,7 +29,7 @@
   <link rel="stylesheet" href="css/phone-settings-v35.css?v=1">
   <link rel="stylesheet" href="css/phone-wallpaper-v36-custom.css?v=1">
   <link rel="stylesheet" href="css/phone-wallpaper-v37-gallery.css?v=3">
-  <link rel="stylesheet" href="css/phone-wallpaper-v38-studio.css?v=2">
+  <link rel="stylesheet" href="css/phone-wallpaper-v38-studio.css?v=39-1">
   <link rel="stylesheet" href="css/npc-portrait-v38.css?v=1">
   <link rel="stylesheet" href="css/npc-portrait-v39.css?v=2">
   <link rel="stylesheet" href="css/inventory-v42.css?v=c24c-1">
@@ -64,7 +64,7 @@
   <link rel="stylesheet" href="css/arcade-c449-garden-progression.css?v=c449-1">
   <link rel="stylesheet" href="css/honor-presentation-c437p.css?v=c437p-1">
   <link rel="stylesheet" href="css/arcade-treasure-c438.css?v=c438-1">
-  <link rel="stylesheet" href="css/dudu-wallet-v1.css?v=wallet-p2-1">
+  <link rel="stylesheet" href="css/dudu-wallet-v1.css?v=wallet-p3-1">
   <link rel="stylesheet" href="css/dudu-currency-icons-v1.css?v=fun-p1-2">
   <link rel="stylesheet" href="css/item-actions-v43.css?v=43-5-3b">
   <link rel="stylesheet" href="css/museum-memories-v43.css?v=1">
@@ -180,11 +180,11 @@
   <script src="js/npc-anime-candidates-v14.js"></script>
   <script src="js/player-avatar-v16.js"></script>
   <script src="js/roleplay-identity-v56.js?v=56-1"></script>
-  <script src="js/personal-sync-v56-8.js?v=56-8-v38-1"></script>
+  <script src="js/personal-sync-v56-8.js?v=56-8-v39-1"></script>
   <script src="js/personal-cloud-v56-9.js?v=56-9"></script>
   <script src="js/npc-premium-v40.js?v=1"></script>
   <script src="js/player-avatar-compress-v41.js?v=1"></script>
-  <script src="js/phone-wallpaper-v27-r4.js?v=38-1"></script>
+  <script src="js/phone-wallpaper-v27-r4.js?v=39-1"></script>
   <script src="js/dudu-multiverse-art-v28-r5.js"></script>
   <script src="js/phone-typography-v31.js?v=38-1"></script>
   <script src="js/red-packet-v32.js?v=timeline-1"></script>
@@ -1536,15 +1536,10 @@
         <div class="phone-app-header">
           <button type="button" class="phone-back-btn" onclick="phoneHome()" aria-label="Về màn hình chính">‹</button>
           <span>Ví</span>
-          <span class="dudu-wallet-mark">GOLD</span>
+          <span class="dudu-wallet-mark" aria-label="Ví Xu Vàng"><i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i></span>
         </div>
         <div class="dudu-wallet-shell">
           <div class="dudu-bank-intro"><span>✦ DUDU TREASURY</span><small><i aria-hidden="true"></i> VÍ ẢO</small></div>
-          <nav class="dudu-bank-tier-tabs" aria-label="Xem mẫu hạng thẻ DUDU">
-            <button type="button" class="is-selected" data-wallet-card-select="silver" aria-pressed="true" onclick="selectDuduWalletCard('silver')"><span aria-hidden="true">◈</span> BẠC</button>
-            <button type="button" data-wallet-card-select="gold" aria-pressed="false" onclick="selectDuduWalletCard('gold')"><span aria-hidden="true">✦</span> GOLD</button>
-            <button type="button" data-wallet-card-select="diamond" aria-pressed="false" onclick="selectDuduWalletCard('diamond')"><span aria-hidden="true">◆</span> VIP</button>
-          </nav>
           <section class="dudu-wallet-card" data-wallet-card-tier="silver" aria-label="Số dư Xu Vàng mua sắm, thẻ Bạc mặc định">
             <div class="dudu-bank-art" aria-hidden="true"></div>
             <div class="dudu-bank-card-top">
@@ -1558,27 +1553,28 @@
             </div>
             <div class="dudu-bank-card-bottom"><div><small>CHỦ VÍ</small><b id="dudu-wallet-owner-name">DUDU</b></div><div><small>THẺ ẢO</small><b id="dudu-wallet-card-edition">01 · BẠC</b></div></div>
           </section>
-          <div class="dudu-bank-tier-details" data-wallet-detail-tier="silver" aria-live="polite">
-            <div data-wallet-tier-detail="silver"><div class="dudu-bank-tier-detail-head"><b>THẺ BẠC · MẶC ĐỊNH</b><small class="is-owned">ĐANG DÙNG</small></div><p>Tỷ giá chuẩn · Không yêu cầu mở khóa</p></div>
-            <div data-wallet-tier-detail="gold" hidden><div class="dudu-bank-tier-detail-head"><b>TIỀM NĂNG · GOLD</b><small>CHƯA MỞ</small></div><p>Nâng <i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i>120 hoặc chi tiêu <i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i>300</p><p>Đổi lô từ 100 <i class="dudu-money-icon dudu-money-icon--green" aria-hidden="true"></i>: thưởng +1 <i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i>/100 · Cửa hàng −3%</p></div>
-            <div data-wallet-tier-detail="diamond" hidden><div class="dudu-bank-tier-detail-head"><b>VIP · KIM CƯƠNG</b><small>CHƯA MỞ</small></div><p>Nâng <i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i>450 hoặc chi tiêu <i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i>1.200</p><p>Đổi lô từ 100 <i class="dudu-money-icon dudu-money-icon--green" aria-hidden="true"></i>: thưởng +2 <i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i>/100 · Cửa hàng −6%</p></div>
+          <button type="button" id="dudu-wallet-upgrade-button" class="dudu-wallet-upgrade-button" onclick="toggleDuduWalletTierSheet()" aria-expanded="false" aria-controls="dudu-wallet-tier-sheet"><span aria-hidden="true">✦</span><strong>Nâng hạng thẻ</strong><span aria-hidden="true">›</span></button>
+          <div class="dudu-wallet-tier-sheet" id="dudu-wallet-tier-sheet" hidden>
+            <div class="dudu-wallet-tier-sheet-heading"><b>Đặc quyền thẻ</b><button type="button" onclick="toggleDuduWalletTierSheet(false)" aria-label="Đóng phần nâng hạng">‹</button></div>
+            <nav class="dudu-bank-tier-tabs" aria-label="Xem mẫu hạng thẻ DUDU">
+              <button type="button" class="is-selected" data-wallet-card-select="silver" aria-pressed="true" onclick="selectDuduWalletCard('silver')"><span aria-hidden="true">◈</span> BẠC</button>
+              <button type="button" data-wallet-card-select="gold" aria-pressed="false" onclick="selectDuduWalletCard('gold')"><span aria-hidden="true">✦</span> GOLD</button>
+              <button type="button" data-wallet-card-select="diamond" aria-pressed="false" onclick="selectDuduWalletCard('diamond')"><span aria-hidden="true">◆</span> VIP</button>
+            </nav>
+            <div class="dudu-bank-tier-details" data-wallet-detail-tier="silver" aria-live="polite">
+              <div data-wallet-tier-detail="silver"><div class="dudu-bank-tier-detail-head"><b>THẺ BẠC</b><small class="is-owned">ĐANG DÙNG</small></div><p>Tỷ giá chuẩn · Mặc định</p></div>
+              <div data-wallet-tier-detail="gold" hidden><div class="dudu-bank-tier-detail-head"><b>GOLD · TIỀM NĂNG</b><small>CHƯA MỞ</small></div><p>✦ Dự kiến: <i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i>120 hoặc chi tiêu <i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i>300</p><p>Đổi tiền ưu đãi +1% · Cửa hàng −3%</p></div>
+              <div data-wallet-tier-detail="diamond" hidden><div class="dudu-bank-tier-detail-head"><b>VIP · KIM CƯƠNG</b><small>CHƯA MỞ</small></div><p>◆ Dự kiến: <i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i>450 hoặc chi tiêu <i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i>1.200</p><p>Đổi tiền ưu đãi +2% · Cửa hàng −6%</p></div>
+            </div>
+            <div class="dudu-bank-tier-note">Chỉ xem mẫu · Chưa thu phí hoặc kích hoạt đặc quyền.</div>
           </div>
-          <div class="dudu-bank-tier-note">Quyền lợi Gold/VIP là phương án xem trước, chưa thu phí hay áp dụng ưu đãi.</div>
-          <div class="dudu-bank-quick-label">TIỆN ÍCH</div>
-          <div class="dudu-wallet-actions" aria-label="Thao tác nhanh">
-            <button type="button" onclick="openPhoneApp('shop')" aria-label="Mở cửa hàng"><span class="dudu-bank-action-icon" aria-hidden="true">🛍</span><span>Mua sắm</span></button>
-            <button type="button" onclick="openPhoneApp('fun')" aria-label="Mở DUDU FUN"><span class="dudu-bank-action-icon" aria-hidden="true">✦</span><span>DUDU FUN</span></button>
-            <button type="button" onclick="openPhoneApp('arcade')" aria-label="Vào Arcade"><span class="dudu-bank-action-icon" aria-hidden="true">🎮</span><span>Arcade</span></button>
-            <button type="button" onclick="window.DuduPersonalArcadeUIV1?.openExchange?.()" aria-label="Xem quầy đổi tiền, chưa kích hoạt"><span class="dudu-bank-action-icon" aria-hidden="true">⇄</span><span>Đổi tiền</span></button>
-          </div>
-          <div class="dudu-bank-quick-label">TÀI SẢN ARCADE</div>
           <button type="button" class="dudu-wallet-secondary" onclick="openPhoneApp('arcade')" aria-label="Xem Tiền Xanh trong Arcade">
             <span class="dudu-bank-green-emblem" aria-hidden="true"><i class="dudu-money-icon dudu-money-icon--green"></i></span>
             <span class="dudu-bank-green-copy"><small>TRẠM KIẾM TIỀN</small><strong class="dudu-money-display--green" id="dudu-wallet-arcade-balance" aria-label="Số dư Tiền Xanh Arcade">—</strong></span>
             <span class="dudu-bank-chevron" aria-hidden="true">›</span>
           </button>
           <section class="dudu-bank-exchange" aria-label="Quầy đổi tiền xem trước">
-            <div class="dudu-bank-exchange-top"><b>QUẦY ĐỔI</b><small>CHƯA KÍCH HOẠT</small></div>
+            <div class="dudu-bank-exchange-top"><b>⇄ QUẦY ĐỔI</b><small>CHƯA KÍCH HOẠT</small></div>
             <div class="dudu-bank-rate" aria-label="Tỷ giá xem trước: 10 Tiền Xanh đổi 1 Xu Vàng"><span><i class="dudu-money-icon dudu-money-icon--green" aria-hidden="true"></i>10</span><i aria-hidden="true">➜</i><span><i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i>1</span></div>
             <button type="button" class="dudu-wallet-exchange-launch" onclick="window.DuduPersonalArcadeUIV1?.openExchange?.()">Xem quầy đổi <span aria-hidden="true">›</span></button>
           </section>
@@ -5500,6 +5496,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       } else if (appName === 'honors') {
         window.DuduHonorUIV46?.open();
       } else if (appName === 'wallet') {
+        toggleDuduWalletTierSheet(false);
         renderWallet();
       } else if (appName === 'quests') {
         renderQuests();
@@ -6382,6 +6379,16 @@ document.getElementById('phone-home-screen').style.display = 'none';
       });
       return true;
     }
+    function toggleDuduWalletTierSheet(force) {
+      const sheet=document.getElementById('dudu-wallet-tier-sheet');
+      const button=document.getElementById('dudu-wallet-upgrade-button');
+      if(!sheet||!button)return false;
+      const shouldOpen=typeof force==='boolean'?force:sheet.hidden;
+      sheet.hidden=!shouldOpen;
+      button.setAttribute('aria-expanded',String(shouldOpen));
+      if(!shouldOpen)selectDuduWalletCard('silver');
+      return shouldOpen;
+    }
     // Wallet card controls are display-only; never alter profile currency or storage.
     let duduWalletMasked=false;
     function toggleDuduWalletVisibility() {
@@ -6504,7 +6511,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
     function setPhoneWallpaperV27(id){
       if(!phoneWallpaperOwnerV27()||!window.DuduPhoneWallpaperV27)return;
       if(!DuduPhoneWallpaperV27.PRESETS.some(p=>p.id===id))return;
-      if(id.startsWith('v38-')&&!window.DuduWallpaperStudioV38?.canUseWallpaper(id))return;
+      if(window.DuduWallpaperCatalogV38?.ITEMS.some(item=>item.id===id)&&
+         !window.DuduWallpaperStudioV38?.canUseWallpaper(id))return;
       const saved=DuduPhoneWallpaperV27.write(localStorage,phoneWallpaperOwnerV27(),id);
       if(saved){
         // Explicitly choosing a personal swatch returns to personal mode.
@@ -8876,8 +8884,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/phone-wallpaper-v34.js?v=copy-1"></script>
 <script src="js/phone-settings-v35.js?v=1"></script>
 <script src="js/phone-wallpaper-v36-custom.js?v=1"></script>
-<script src="js/phone-wallpaper-v38-catalog.js?v=1"></script>
-<script src="js/phone-wallpaper-v38-studio.js?v=2"></script>
+<script src="js/phone-wallpaper-v38-catalog.js?v=39-1"></script>
+<script src="js/phone-wallpaper-v38-studio.js?v=39-1"></script>
 <script src="js/world-registry-v63.js?v=63-1"></script>
 <script src="js/world-taxonomy-v66.js?v=66-2"></script>
 <script src="js/world-blueprint-v66.js?v=66-1"></script>

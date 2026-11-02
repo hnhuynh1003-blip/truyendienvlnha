@@ -6,13 +6,33 @@ body.dudu-phone-v11 #cyber-phone #phone-app-wallet{
 #phone-app-wallet *{box-sizing:border-box}
 #phone-app-wallet .phone-app-header{flex-shrink:0;margin-bottom:1px}
 #phone-app-wallet .dudu-wallet-mark{font:900 9px ui-monospace,monospace;letter-spacing:.12em;
- color:#f6dc96;border:1px solid #a99155;border-radius:5px;padding:4px 6px;background:#69512a55}
+ color:#f6dc96;border:1px solid #a99155;border-radius:50%;width:27px;height:27px;
+ display:grid;place-items:center;background:#69512a55}
+#phone-app-wallet .dudu-wallet-mark .dudu-money-icon{font-size:17px;margin:0}
 .dudu-wallet-shell{min-width:0;display:flex;flex-direction:column;gap:9px}
 .dudu-bank-intro{display:flex;align-items:center;justify-content:space-between;min-width:0;
  color:#f2d6a4;font:850 10px ui-monospace,monospace;letter-spacing:.12em;padding:2px 1px}
 .dudu-bank-intro small{display:inline-flex;align-items:center;gap:5px;flex:none;
  font:800 8px ui-monospace,monospace;letter-spacing:.07em;color:#a8dec3}
 .dudu-bank-intro small i{display:inline-block;width:5px;height:5px;background:#8ff3bc;border-radius:50%;box-shadow:0 0 8px #8ff3bc}
+.dudu-wallet-upgrade-button{width:100%;min-height:43px;display:flex;align-items:center;gap:10px;
+ border:1px solid #b9a07a79;border-radius:12px;padding:8px 13px;color:#ffe8ba;
+ background:linear-gradient(110deg,#3f3b3d,#273b45);cursor:pointer;touch-action:manipulation;
+ box-shadow:inset 0 1px #fff3cc24;text-align:left}
+.dudu-wallet-upgrade-button>span:first-child{width:25px;height:25px;display:grid;place-items:center;
+ border-radius:8px;background:#d2ac6440;color:#ffe5ac;font-size:17px}
+.dudu-wallet-upgrade-button strong{flex:1;font-size:11px;letter-spacing:.025em}
+.dudu-wallet-upgrade-button>span:last-child{font-size:24px;line-height:1;color:#e9d6b5}
+.dudu-wallet-upgrade-button[aria-expanded=true]{border-color:#f1d49b}
+.dudu-wallet-tier-sheet{display:flex;flex-direction:column;gap:8px;padding:10px;border:1px solid #bfa16a7d;
+ border-radius:13px;background:linear-gradient(135deg,#222e40,#151f31);box-shadow:0 8px 20px #0004}
+.dudu-wallet-tier-sheet[hidden]{display:none!important}
+.dudu-wallet-tier-sheet-heading{display:flex;align-items:center;justify-content:space-between;color:#ffefd3}
+.dudu-wallet-tier-sheet-heading b{font-size:11px}
+.dudu-wallet-tier-sheet-heading button{display:grid;place-items:center;width:28px;height:28px;
+ border:1px solid #8b96a878;border-radius:9px;color:#fbefdc;background:#314257;
+ font-size:23px;line-height:1;cursor:pointer}
+.dudu-wallet-upgrade-button:focus-visible,.dudu-wallet-tier-sheet-heading button:focus-visible{outline:2px solid #ffe5ae;outline-offset:2px}
 .dudu-bank-tier-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
 .dudu-bank-tier-tabs button{min-width:0;min-height:35px;padding:6px 3px;
  border:1px solid #4c6076;border-radius:10px;color:#c6d0df;
