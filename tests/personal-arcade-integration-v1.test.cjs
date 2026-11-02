@@ -17,7 +17,7 @@ test('C4.4 joins the phone as one Arcade app with four named games',()=>{
  assert.match(html,/personal-arcade-core-v1\.js\?v=c442-1/);
  assert.match(html,/personal-arcade-ui-v1\.js\?v=[^"&]+/);
  assert.match(html,/arcade-season-c424-art\.css\?v=c424-1/);
- assert.match(html,/personal-arcade-v1\.css\?v=c414-1/);
+ assert.match(html,/personal-arcade-v1\.css\?v=fun-p1-1/);
  assert.match(html,/arcade-immersive-c417\.css\?v=c417-1/);
  assert.match(html,/arcade-playfield-c418\.css\?v=c418-4/);
  assert.match(html,/arcade-live-c419\.css\?v=c419-1/);
@@ -69,7 +69,7 @@ test('Arcade V1 is local-playable and only wires its Spark transfer behind a dis
  assert.match(ui,/root\.localStorage\.setItem/);
  assert.match(ui,/DUDU_SPARK_EXCHANGE_V1_READY===true/);
  assert.match(ui,/sparkBridge\.transfer/);
- assert.match(ui,/Chuyển Xu · Sắp mở/);
+ assert.match(ui,/Chuyển tiền · Chưa mở/);
  assert.equal(ui.includes('.collection('),false,'Wallet mutations must go through the tested bridge');
  assert.equal(core.includes('.collection('),false);
  assert.equal(core.includes('userProfile.currency'),false);

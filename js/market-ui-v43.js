@@ -23,7 +23,7 @@
    const intro=make('div','dudu-v43-market-intro');
    intro.append(make('strong','','✦ DUDU MARKET'),
      make('small','','Chung kho đồ · riêng nguồn nhận'));
-   // On main the phone already says "Cửa Hàng Xu" and shows the balance.
+   // On main the phone already says "Cửa Hàng Xu Vàng" and shows the balance.
    if(!personalMode)toolbar.append(intro);
    const tabs=make('div','dudu-v43-market-tabs');
    for(const [id,label] of [['COMMON','Mua sắm'],['REALM','Vị diện'],
@@ -87,11 +87,11 @@
      const pending=utility?.norm(functionalState).pending;
      if(tab==='COMMON'){
        hint.textContent=personalMode?'':
-        '🪙 '+coins+' Xu · '+ledger.total+'/'+core.PURCHASE_TOTAL_PER_DAY+
+        '🟡 '+coins+' Xu Vàng · '+ledger.total+'/'+core.PURCHASE_TOTAL_PER_DAY+
          ' lượt mua hôm nay · Mua hàng không cộng EXP'+
          (pending?' · 🎟️ Phiếu -25% đang chờ áp dụng':'');
      }else if(tab==='REALM'){
-       hint.textContent='Vật phẩm vị diện chỉ rơi ở chương được tác giả gắn đúng thế giới. Chưa bán bằng Xu.';
+       hint.textContent='Vật phẩm vị diện chỉ rơi ở chương được tác giả gắn đúng thế giới. Chưa bán bằng Xu Vàng.';
      }else if(tab==='DUDU'){
        hint.textContent='Kỷ vật hiếm · Chưa mở bán.';
      }else if(tab==='STORY'){
@@ -156,9 +156,9 @@
          const save=!personalMode&&tab==='COMMON'?(utility?.discount(functionalState,{
            itemId:item.id,price:item.price}).amount||0):0;
          right.append(make('strong','',save?
-           (item.price-save)+' Xu':item.price+' Xu'));
+           (item.price-save)+' Xu Vàng':item.price+' Xu Vàng'));
          if(save)right.append(make('small','dudu-v438-discount',
-           '−'+save+' Xu (phiếu)'));
+           '−'+save+' Xu Vàng (phiếu)'));
          const button=make('button','btn','Mua');
          button.type='button';
          button.disabled=readOnly||(Array.isArray(saleIds)&&!saleIds.includes(item.id))||
@@ -168,7 +168,7 @@
            button.textContent='Chưa mở';
            button.title='Vật phẩm này chưa hỗ trợ mua trên máy chủ';
          }
-         button.setAttribute('aria-label',readOnly?'Xem '+item.name+'; chưa hỗ trợ mua':'Mua '+item.name+' giá '+(item.price-save)+' Xu');
+         button.setAttribute('aria-label',readOnly?'Xem '+item.name+'; chưa hỗ trợ mua':'Mua '+item.name+' giá '+(item.price-save)+' Xu Vàng');
          button.addEventListener('click',()=>onBuy(item.id));
          right.append(button);
          if(!personalMode)right.append(make('small','',n+'/'+limit+' hôm nay'));

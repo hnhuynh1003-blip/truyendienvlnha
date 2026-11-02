@@ -1,5 +1,5 @@
-/* Ví Xu — a dedicated small-screen view of the existing profile shopping Xu.
- * Arcade coins remain device-local; no exchange or reward authority here. */
+/* FUN-P1: Xu Vàng in the existing profile, Tiền Xanh local to Arcade.
+ * Presentation only; no exchange or reward authority here. */
 #phone-app-wallet{min-width:0;gap:10px;padding:8px 10px 20px;background:#101624}
 #phone-app-wallet .phone-app-header{flex-shrink:0;margin-bottom:2px}
 #phone-app-wallet *{box-sizing:border-box}
@@ -28,7 +28,7 @@
  padding:12px;border:1px solid #384e62;border-radius:13px;background:#182638;color:#c3d7de}
 .dudu-wallet-secondary>div{display:flex;flex-direction:column;gap:5px}
 .dudu-wallet-secondary>div span{font-size:9px;color:#9cb7c3}
-.dudu-wallet-secondary strong{font:900 18px ui-monospace,monospace;color:#bde5dc}
+.dudu-wallet-secondary strong{font:900 18px ui-monospace,monospace;color:#a1f1bc}
 .dudu-wallet-source-badge{font:700 9px ui-monospace,monospace;color:#a7b7c8;border-radius:99px;
  background:#2c3b4d;padding:5px 7px}
 .dudu-wallet-exchange-launch{width:100%;min-height:42px;border:1px solid #c5a36b;border-radius:10px;

@@ -134,7 +134,7 @@
    root.renderQuests?.();
    root.showSystemAlert?.('ĐÃ MUA VẬT PHẨM',
     (result.status==='already-applied'?'Đã xác nhận lại đơn mua. ':'')+
-    'Đồ đã vào Kho · Số dư: '+result.balance+' Xu.');
+   'Đồ đã vào Kho · Số dư: '+result.balance+' Xu Vàng.');
    return true;
   }catch(e){
    console.warn('DUDU Spark personal shop:',e?.code||e?.message||'unavailable');

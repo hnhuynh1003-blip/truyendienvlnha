@@ -101,15 +101,15 @@
    if(kind==='start')message('Hộp đã sẵn sàng. Chạm để mở và xem vật phẩm!');
    if(kind==='claim'&&response.reward){
     message(response.reward.duplicate?
-     'Trùng vật phẩm đã có · hoàn lại '+response.reward.returned+' Xu.':
+     'Trùng vật phẩm đã có · hoàn lại '+response.reward.returned+' Xu Vàng.':
      'Đã thêm '+response.reward.item.name+' vào Kho và Sổ Vạn Bảo!');
    }
   }catch(error){
-   const reasons={'not-enough-xu':'Cần 20 Xu để mua thêm một hộp.',
+   const reasons={'not-enough-xu':'Cần 20 Xu Vàng để mua thêm một hộp.',
     'inventory-full':'Kho đã đầy. Hãy dọn chỗ rồi thử lại nhé.',
     'unfinished-box':'Mở hộp đang chờ trước khi mua hộp mới.',
     'free-used':'Hôm nay đã nhận lượt miễn phí rồi.',
-    'wallet-cap':'Ví đã đầy, hãy dùng bớt Xu trước.',
+    'wallet-cap':'Ví đã đầy, hãy dùng bớt Xu Vàng trước.',
     'box-not-found':'Hộp này không còn ở đây. Hãy mở lại DUDU FUN.'};
    message(reasons[error?.reason]||root.DuduPersonalErrorC416?.message(error,
     'Chưa mở được hộp. Hãy thử lại.')||'Chưa mở được hộp. Hãy thử lại.');
@@ -137,13 +137,13 @@
     message('Vé đã vào tay bạn! Hãy cào các số để dò giải.');
    }
    if(kind==='claim'&&response.status==='applied')message(response.reward.amount?
-    '✦ '+response.reward.tier+' · +'+response.reward.amount+' Xu vào Ví!':
+    '✦ '+response.reward.tier+' · +'+response.reward.amount+' Xu Vàng vào Ví!':
     'Lần này chưa trúng số. Chúc bạn may mắn ở vé tiếp theo!');
    return true;
   }catch(error){
-   const errors={'not-enough-xu':'Bạn cần ít nhất 10 Xu trong Ví để mua vé.',
+   const errors={'not-enough-xu':'Bạn cần ít nhất 10 Xu Vàng trong Ví để mua vé.',
     'unfinished-ticket':'Hãy cào và nhận giải của vé hiện tại trước nhé.',
-    'wallet-cap':'Ví đã đầy, hãy dùng bớt Xu trước khi nhận.',
+    'wallet-cap':'Ví đã đầy, hãy dùng bớt Xu Vàng trước khi nhận.',
     'ticket-not-found':'Vé này đã được thay thế. Hãy tải lại trò chơi.',
     'not-ready':'Bạn cần cào đủ ba ô để nhận giải.'};
    message(errors[error?.reason]||root.DuduPersonalErrorC416?.message(error,
@@ -193,7 +193,7 @@
      luckyCurrency=result.currency;blindCurrency=result.currency;
     }
     if(typeof showSystemAlert==='function')showSystemAlert('DUDU FUN · ĐÃ NHẬN',
-     result.reward.kind==='COIN'?'+'+result.reward.amount+' Xu vào Ví.':
+     result.reward.kind==='COIN'?'+'+result.reward.amount+' Xu Vàng vào Ví.':
       result.reward.label+' đã vào Kho.');
    }
    return true;
@@ -203,7 +203,7 @@
     'already-claimed':'Bạn đã nhận phần thưởng này rồi.',
     'not-ready-or-claimed':'Hoàn thành trò chơi trước khi nhận thưởng nhé.',
     'inventory-full':'Kho đã đầy. Hãy để trống một ô rồi nhận lại.',
-    'wallet-cap':'Ví đã đạt giới hạn Xu.',
+    'wallet-cap':'Ví Xu Vàng đã đạt giới hạn.',
     'clock-backwards':'Ngày chơi chưa khớp. Hãy kiểm tra đồng hồ.'};
    message(reasons[error?.reason]||root.DuduPersonalErrorC416?.message(error,
     'Chưa thực hiện được. Hãy thử lại khi kết nối ổn định.')||
@@ -254,7 +254,7 @@
    });
    if(!plan.ok){
     const names={'inventory-full':'Kho đã đầy. Hãy dọn một ô trống rồi nhận lại.',
-     'wallet-cap':'Ví Xu đã đạt giới hạn. Không thể nhận thêm.',
+     'wallet-cap':'Ví Xu Vàng đã đạt giới hạn. Không thể nhận thêm.',
      'not-ready-or-claimed':'Hãy hoàn thành trò chơi trước khi nhận thưởng.'};
     message(names[plan.reason]||'Chưa đủ điều kiện nhận thưởng.');
     return false;
@@ -262,7 +262,7 @@
    if(!sandbox()){
     if(!saveNewState(plan.state)){message('Không lưu được lượt chơi trên thiết bị.');return false;}
     render();
-    message('Hoàn tất lượt giải trí! Kết quả chỉ mang tính minh họa, không cộng Xu hay vật phẩm.');
+    message('Hoàn tất lượt giải trí! Kết quả chỉ mang tính minh họa, không cộng Xu Vàng hay vật phẩm.');
     return true;
    }
    // Commit the game reward AND its daily quest event in one local profile write.
@@ -296,7 +296,7 @@
    render();
    if(typeof updatePhoneUI==='function')updatePhoneUI();
    if(typeof showSystemAlert==='function')showSystemAlert('DUDU FUN · ĐÃ NHẬN THƯỞNG',
-    plan.reward.kind==='COIN'?('+'+plan.reward.amount+' Xu Sandbox'):
+    plan.reward.kind==='COIN'?('+'+plan.reward.amount+' Xu Vàng Sandbox'):
     ('Đã nhận '+plan.reward.label+' vào Kho Sandbox'));
    return true;
   }finally{processing=false;}
@@ -308,7 +308,7 @@
   const chip=$('dudu-fun-header-balance');if(!chip)return;
   const currency=!sandbox()?(open==='ticket'?luckyCurrency:blindCurrency)??
    userProfile.currency:userProfile.currency;
-  chip.textContent=signed()?'🪙 '+currency+' Xu':'Khách';
+  chip.textContent=signed()?'🟡 '+Number(currency).toLocaleString('vi-VN'):'Khách';
  }
  function blindBoxes(rootNode){
   if(!blind()||!blindLoaded){
@@ -342,7 +342,7 @@
      if(!root.DuduItemArtV13?.mount?.(picture,item))picture.textContent=item.icon;
      reveal.append(picture,el('strong','',item.name),
       el('span','','Hạng '+item.rank+(active.duplicate?' · Trùng vật phẩm':' · Đã vào Kho')),
-      el('small','',active.duplicate?'Nhận lại '+blind().DUPLICATE_RETURN+' Xu thay vì món trùng.':
+      el('small','',active.duplicate?'Nhận lại '+blind().DUPLICATE_RETURN+' Xu Vàng thay vì món trùng.':
        item.desc));
      rootNode.append(reveal);
     }
@@ -385,7 +385,7 @@
     el('b','',(chance/10000).toLocaleString('vi-VN',{maximumFractionDigits:4})+'%'));
    list.append(row);
   }
-  odds.append(list,el('small','','Mọi hộp có cùng tỷ lệ. Trùng món đã có được hoàn 4 Xu; không tạo vật phẩm trùng.'));
+  odds.append(list,el('small','','Mọi hộp có cùng tỷ lệ. Trùng món đã có được hoàn 4 Xu Vàng; không tạo vật phẩm trùng.'));
   rootNode.append(odds);
   // Outstanding old C2.5 daily boxes remain claimable; we do not delete them.
   const legacy=view().rounds.box;
@@ -444,7 +444,7 @@
  function rewardPanel(target,reward){
   const r=el('div','dudu-fun-win');
   r.append(el('span','',reward.kind==='COIN'?'🪙':'🎁'),
-   el('strong','',reward.kind==='COIN'?'+'+reward.amount+' Xu':reward.label),
+   el('strong','',reward.kind==='COIN'?'+'+reward.amount+' Xu Vàng':reward.label),
    el('small','',sandbox()?'Đã nhận trong Sandbox · quay lại ngày mai':
     'Đã nhận vào tài khoản · quay lại ngày mai'));
   target.append(r);
@@ -498,7 +498,7 @@
   const head=el('div','lucky-kiosk-head');
   head.append(el('span','','✦ LỘC ĐẾN NHÀ · 刮刮乐'),
    el('strong','','VÉ CÀO VẠN PHÚC'),
-   el('small','','10 Xu/vé · Không giới hạn lượt · Giải cao nhất 10.000 Xu'));
+   el('small','','10 Xu Vàng/vé · Không giới hạn lượt · Giải cao nhất 10.000 Xu Vàng'));
   rootNode.append(head);
   if(a?.layout==='numbers'){
    if(scratchLocal.id!==a.id)scratchLocal={id:a.id,cells:new Set()};
@@ -514,7 +514,7 @@
    const target=el('div','lucky-winning-number');
    const star=el('div','lucky-winning-star');
    star.append(el('small','','SỐ MAY MẮN'),el('strong','',ticket.winning));
-   target.append(star,el('p','','Cào các số: trùng số may mắn sẽ trúng Xu ghi dưới ô. Năm hộp quà bên dưới có thể chứa lộc bất ngờ!'));
+   target.append(star,el('p','','Cào các số: trùng số may mắn sẽ trúng Xu Vàng ghi dưới ô. Năm hộp quà bên dưới có thể chứa lộc bất ngờ!'));
    card.append(target);
    const panel=el('div','lucky-number-panel');
    panel.append(el('b','','DÃY SỐ CỦA BẠN'));
@@ -526,8 +526,8 @@
     button.classList.remove('covered');button.classList.add('revealed');
     if(entry.match)button.classList.add('matched');
     button.replaceChildren(el('strong','',entry.number),
-     el('small','',entry.prize.toLocaleString('vi-VN')+' Xu'));
-    button.setAttribute('aria-label','Số '+entry.number+' · '+entry.prize+' Xu');
+     el('small','',entry.prize.toLocaleString('vi-VN')+' Xu Vàng'));
+    button.setAttribute('aria-label','Số '+entry.number+' · '+entry.prize+' Xu Vàng');
     button.disabled=true;
     const counter=card.querySelector('.lucky-number-count');
     if(counter)counter.textContent='Đã cào '+scratchLocal.cells.size+'/10 ô';
@@ -540,7 +540,7 @@
     tile.type='button';tile.disabled=opened||luckyBusy;
     tile.setAttribute('aria-label',opened?'Số '+entry.number:'Cào ô số '+(i+1));
     if(opened)tile.append(el('strong','',entry.number),
-     el('small','',entry.prize.toLocaleString('vi-VN')+' Xu'));
+     el('small','',entry.prize.toLocaleString('vi-VN')+' Xu Vàng'));
     else tile.append(el('strong','','✦'),el('small','','CÀO'));
     tile.addEventListener('click',()=>scratchCell(i));grid.append(tile);
    }
@@ -569,7 +569,7 @@
     const openGift=a.status!=='playing'||scratchLocal.cells.size===10,
      gift=el('span','lucky-gift'+(openGift&&ticket.gifts[i]?' is-prize':''));
     gift.append(el('strong','',openGift&&ticket.gifts[i]?'🧧':'🎁'),
-     el('small','',openGift?(ticket.gifts[i]?ticket.gifts[i].toLocaleString('vi-VN')+' Xu':'✧'):'?'));
+     el('small','',openGift?(ticket.gifts[i]?ticket.gifts[i].toLocaleString('vi-VN')+' Xu Vàng':'✧'):'?'));
     gifts.append(gift);
    }
    ribbon.append(gifts);
@@ -585,7 +585,7 @@
     rootNode.append(claim);
    }
    if(a.status==='claimed')rootNode.append(el('p','lucky-last-win',a.amount?
-    'Đã nhận '+a.amount.toLocaleString('vi-VN')+' Xu vào Ví. Mua vé tiếp thôi!':
+    'Đã nhận '+a.amount.toLocaleString('vi-VN')+' Xu Vàng vào Ví. Mua vé tiếp thôi!':
     'Vé này không trúng. Có muốn thử tấm tiếp theo không?'));
   }
   if(!a||a.status==='claimed'){
@@ -598,7 +598,7 @@
   const list=el('div','lucky-odds-list');
   for(const prize of [...rule.PRIZES].reverse()){
    const row=el('div','lucky-odds-row');
-   row.append(el('span','',prize.tier+' · '+prize.amount.toLocaleString('vi-VN')+' Xu'),
+    row.append(el('span','',prize.tier+' · '+prize.amount.toLocaleString('vi-VN')+' Xu Vàng'),
     el('b','',(prize.weight/10000).toLocaleString('vi-VN',{maximumFractionDigits:4})+'%'));
    list.append(row);
   }
@@ -610,7 +610,7 @@
    for(const h of s.history.slice(-8).reverse()){
     const line=el('div','dudu-fun-history-line');
     line.append(el('span','',h.day+' · Vé Vạn Phúc'),
-     el('strong','',h.amount.toLocaleString('vi-VN')+' Xu'));
+     el('strong','',h.amount.toLocaleString('vi-VN')+' Xu Vàng'));
     history.append(line);
    }
    rootNode.append(history);
@@ -630,7 +630,7 @@
   const intro=el('div','lucky-kiosk-head');
   intro.append(el('span','','🏮 LỘC ĐẾN NHÀ · 刮刮乐'),
    el('strong','','Vé Cào Vạn Phúc'),
-   el('small','','10 Xu/thẻ · Mua không giới hạn · Giải cao nhất 10.000 Xu'));
+   el('small','','10 Xu Vàng/thẻ · Mua không giới hạn · Giải cao nhất 10.000 Xu Vàng'));
   rootNode.append(intro);
   if(!active||active.status==='claimed'){
    rootNode.append(el('p','dudu-fun-caption','Chọn phong cách tấm vé. Mọi mẫu có cùng tỷ lệ trúng giải.'));
@@ -674,12 +674,12 @@
    rootNode.append(card);
    if(active.status==='ready'){
     const claim=el('button','dudu-fun-claim lucky-claim',active.amount?
-     '🧧 Nhận '+active.amount+' Xu vào Ví':'✓ Hoàn tất lượt cào');
+     '🧧 Nhận '+active.amount+' Xu Vàng vào Ví':'✓ Hoàn tất lượt cào');
     claim.disabled=luckyBusy;claim.addEventListener('click',()=>{void luckyAction('claim');});
     rootNode.append(claim);
    }
    if(active.status==='claimed')rootNode.append(el('p','lucky-last-win',
-    active.amount?'✦ Đã nhận '+active.amount+' Xu · Chọn mẫu và mua vé tiếp!':
+    active.amount?'✦ Đã nhận '+active.amount+' Xu Vàng · Chọn mẫu và mua vé tiếp!':
     'Vé này không trúng giải. Thử một vận may khác nhé!'));
   }
   // Historical theme counters remain in saved data, but tickets are never a
@@ -689,11 +689,11 @@
   const list=el('div','lucky-odds-list');
   for(const prize of [...rule.PRIZES].reverse()){
    const row=el('div','lucky-odds-row');
-   row.append(el('span','',prize.tier+' · '+prize.amount.toLocaleString('vi-VN')+' Xu'),
+   row.append(el('span','',prize.tier+' · '+prize.amount.toLocaleString('vi-VN')+' Xu Vàng'),
     el('b','',Number((prize.weight/10000).toFixed(4)).toLocaleString('vi-VN',{maximumFractionDigits:4})+'%'));
    list.append(row);
   }
-  odds.append(list,el('small','','Tỷ lệ là xác suất trên mỗi vé, không bảo đảm thắng. Giá 10 Xu, giá trị thưởng trung bình 8,43 Xu/vé.'));
+  odds.append(list,el('small','','Tỷ lệ là xác suất trên mỗi vé, không bảo đảm thắng. Giá 10 Xu Vàng, giá trị thưởng trung bình 8,43 Xu Vàng/vé.'));
   rootNode.append(odds);
   if(s.history.length){
    const book=el('details','dudu-fun-history');
@@ -701,7 +701,7 @@
    for(const h of s.history.slice(-8).reverse()){
     const title=rule.THEMES.find(t=>t.id===h.theme)?.name||'Vạn Phúc';
     const line=el('div','dudu-fun-history-line');
-    line.append(el('span','',h.day+' · '+title),el('strong','',h.amount+' Xu'));
+    line.append(el('span','',h.day+' · '+title),el('strong','',h.amount+' Xu Vàng'));
     book.append(line);
    }
    rootNode.append(book);
@@ -715,7 +715,7 @@
   for(const row of state.history.slice(-5).reverse()){
    const line=el('div','dudu-fun-history-line');
    line.append(el('span','',row.day+' · '+(row.type==='box'?'Hộp Mù':'Vé Số')),
-    el('strong','',row.reward.kind==='COIN'?row.reward.amount+' Xu':row.reward.label));
+    el('strong','',row.reward.kind==='COIN'?row.reward.amount+' Xu Vàng':row.reward.label));
    details.append(line);
   }
   target.append(details);
@@ -760,8 +760,8 @@
   host.append(el('p','dudu-fun-notice',noticeText));
   history(host,state);
   host.append(el('small','dudu-fun-disclaimer',sandbox()?
-   'Bản thử: Vé Số miễn phí mỗi ngày. Xu và vật phẩm chỉ thuộc Sandbox.':
-   'DUDU FUN dùng Xu trong trò chơi, không đổi thành tiền thật. Bảo vật chỉ là vật phẩm sưu tầm.'));
+   'Bản thử: Vé Số miễn phí mỗi ngày. Xu Vàng và vật phẩm chỉ thuộc Sandbox.':
+   'DUDU FUN dùng Xu Vàng ảo, không quy đổi hoặc rút thành tiền thật.'));
   return true;
  }
  function init(){

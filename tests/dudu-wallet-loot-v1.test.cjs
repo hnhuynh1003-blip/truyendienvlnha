@@ -7,7 +7,7 @@ const src=name=>fs.readFileSync(path.join(__dirname,'..',name),'utf8');
 const html=src('index.html');
 
 test('Ví Xu is a first-class phone app, backed by existing profile Xu',()=>{
- assert.match(html,/onclick="openPhoneApp\('wallet'\)" aria-label="Mở Ví Xu mua sắm"/);
+ assert.match(html,/onclick="openPhoneApp\('wallet'\)" aria-label="Mở Ví Xu Vàng mua sắm"/);
  assert.match(html,/id="phone-app-wallet"/);
  assert.match(html,/id="dudu-wallet-system-balance"/);
  assert.match(html,/id="dudu-wallet-arcade-balance"/);
@@ -15,7 +15,7 @@ test('Ví Xu is a first-class phone app, backed by existing profile Xu',()=>{
  assert.match(html,/userProfile\.currency/);
  assert.match(html,/appName === 'wallet'/);
  assert.match(html,/if\(document\.getElementById\('phone-app-wallet'\)\?\.style\.display==='flex'\)renderWallet\(\)/);
- assert.match(html,/css\/dudu-wallet-v1\.css\?v=wallet-1/);
+ assert.match(html,/css\/dudu-wallet-v1\.css\?v=fun-p1-1/);
 });
 
 test('wallet navigation has working shopping and Arcade controls but cannot mint Xu',()=>{
@@ -27,7 +27,7 @@ test('wallet navigation has working shopping and Arcade controls but cannot mint
  const arcade=src('js/personal-arcade-ui-v1.js');
  assert.match(arcade,/peekBalance/);
  assert.match(arcade,/data-arcade-exchange="wallet"/);
- assert.match(arcade,/Chuyển Xu · Sắp mở/);
+ assert.match(arcade,/Chuyển tiền · Chưa mở/);
  assert.match(arcade,/DUDU_SPARK_EXCHANGE_V1_READY===true/);
  assert.match(arcade,/userProfile\.currency=result\.balance/);
  assert.doesNotMatch(arcade,/userProfile\.currency\s*\+=/);

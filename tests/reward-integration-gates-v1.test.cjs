@@ -12,7 +12,7 @@ test('Arcade conversion is accessible at the wallet but still requires verified 
  assert.match(ui,/headerWallet\?\.addEventListener\('click'/);
  assert.match(ui,/role="dialog"/);
  assert.match(ui,/DUDU_SPARK_EXCHANGE_V1_READY===true/);
- assert.match(ui,/!exchangeEnabled\(\)\?'Chuyển Xu · Sắp mở'/);
+ assert.match(ui,/!exchangeEnabled\(\)\?'Chuyển tiền · Chưa mở'/);
  assert.match(ui,/!exchangeEnabled\(\)\|\|exchangeBusy\|\|!quoteForExchange\(\)\.ok/);
  assert.match(ui,/userProfile\.currency=result\.balance/);
  assert.doesNotMatch(ui,/userProfile\.currency\s*\+=/);

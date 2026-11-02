@@ -80,28 +80,31 @@
  }
  const visible=()=>root.document.getElementById('phone-app-arcade')?.style.display==='flex';
  const fmt=amount=>core.formatXu(amount);
+ // FUN-P1: display labels only. Saved coins remain in tenths, unchanged.
+ const money=amount=>'💚 '+fmt(amount);
+ const arcadeNotice=value=>String(value||'').replace(/ Xu Arcade| Xu(?! Vàng)/g,' Tiền Xanh');
  function updateWalletHeader(s){
   const chip=root.document.getElementById('arcade-header-wallet-v1');if(!chip)return;
-  chip.textContent=s?'🪙 '+fmt(s.coins)+' Xu':'Khách';
+  chip.textContent=s?money(s.coins):'Khách';
   chip.disabled=!s;
  }
  const quoteForExchange=()=>exchangePolicy?.quote({
   availableTenths:readPending()?.availableTenths??state?.coins??0,
   requestedGameXu:readPending()?.gameXu??exchangeAmount})||
   {ok:false,reason:'not-ready',walletXu:0,maxGameXu:0};
- const exchangeHint=q=>q.ok?'Số Xu sẽ nhận khi giao dịch được mở.':
-  q.reason==='minimum-10-game-xu'?'Tối thiểu 10 Xu Arcade mỗi lần.':
-  q.reason==='must-be-multiple-of-10'?'Chọn bội số của 10 Xu Arcade.':
+ const exchangeHint=q=>q.ok?'Số Xu Vàng dự kiến nhận (chưa chuyển).':
+  q.reason==='minimum-10-game-xu'?'Tối thiểu 10 Tiền Xanh mỗi lần.':
+  q.reason==='must-be-multiple-of-10'?'Chọn bội số của 10 Tiền Xanh.':
   q.reason==='insufficient-balance'?'Số dư Arcade chưa đủ để đổi mức này.':
-  'Chưa đủ Xu để đổi.';
+  'Chưa đủ Tiền Xanh để đổi.';
  function updateExchangePreview(){
   if(!exchangeOpen)return;
   const element=host(),q=quoteForExchange(),pending=readPending();
   const amount=element?.querySelector('[data-arcade-exchange-result]');
-  if(amount)amount.textContent=q.walletXu.toLocaleString('vi-VN')+' Xu hệ thống';
+  if(amount)amount.textContent='🟡 '+q.walletXu.toLocaleString('vi-VN');
   const hint=element?.querySelector('[data-arcade-exchange-hint]');
   if(hint)hint.textContent=pending?'Lệnh trước chưa xác nhận. Hãy thử lại cùng mã.':exchangeEnabled()&&q.ok?
-   'Số Xu này sẽ vào Ví Xu hệ thống.':exchangeHint(q);
+   'Số Xu Vàng này sẽ vào ví chung.':exchangeHint(q);
   const input=element?.querySelector('[data-arcade-exchange-input]');
   if(input){input.max=String(Math.max(10,q.maxGameXu));
    input.disabled=!!pending||exchangeBusy;
@@ -119,8 +122,8 @@
   const q=quoteForExchange(),pending=readPending(),allowance=exchangePolicy?.remaining({availableTenths:pending?.availableTenths??s.coins});
   const max=allowance?.maxGameXu??0;
   const choices=[10,50,100,'max'];
-  return `<div class="arcade-exchange-rate"><b>10 Xu Arcade</b><span>→</span><b>1 Xu ví</b></div>
-    <div class="arcade-exchange-balance">Đang có <b data-arcade-exchange-available>${fmt(s.coins)}</b> Xu Arcade</div>
+  return `<div class="arcade-exchange-rate"><b>💚 10 Tiền Xanh</b><span>→</span><b>🟡 1 Xu Vàng</b></div>
+    <div class="arcade-exchange-balance">Đang có 💚 <b data-arcade-exchange-available>${fmt(s.coins)}</b> Tiền Xanh</div>
     <label class="arcade-exchange-label" for="arcade-exchange-input-v1">Muốn đổi bao nhiêu?</label>
     <input type="number" id="arcade-exchange-input-v1" data-arcade-exchange-input
       min="10" max="${Math.max(10,max)}" step="10" inputmode="numeric"
@@ -128,10 +131,10 @@
     <div class="arcade-exchange-presets" role="group" aria-label="Mức đổi nhanh">
       ${choices.map(choice=>{const value=choice==='max'?max:choice;
        return `<button type="button" data-arcade-exchange-preset="${choice}"
-        ${pending||exchangeBusy||value<10||value>max?'disabled':''} aria-pressed="${exchangeAmount===value&&value>=10}">${choice==='max'?'Tối đa':value+' Xu'}</button>`;}).join('')}
+        ${pending||exchangeBusy||value<10||value>max?'disabled':''} aria-pressed="${exchangeAmount===value&&value>=10}">${choice==='max'?'Tối đa':'💚 '+value}</button>`;}).join('')}
     </div>
-    <div class="arcade-exchange-quote"><span>Dự kiến nhận</span><strong aria-live="polite" data-arcade-exchange-result>${q.walletXu.toLocaleString('vi-VN')} Xu hệ thống</strong></div>
-    <p class="arcade-exchange-hint" id="arcade-exchange-hint-v1" data-arcade-exchange-hint>${pending?'Thử lại lệnh cũ để tránh nhận Xu hai lần.':exchangeEnabled()&&q.ok?'Nhận ngay vào Ví Xu hệ thống.':exchangeHint(q)}</p>`;
+    <div class="arcade-exchange-quote"><span>Dự kiến nhận</span><strong aria-live="polite" data-arcade-exchange-result>🟡 ${q.walletXu.toLocaleString('vi-VN')}</strong></div>
+    <p class="arcade-exchange-hint" id="arcade-exchange-hint-v1" data-arcade-exchange-hint>${pending?'Thử lại lệnh cũ để tránh nhận hai lần.':exchangeEnabled()&&q.ok?'Nhận vào Ví Xu Vàng.':exchangeHint(q)}</p>`;
  }
  function countdown(ms){
   const seconds=Math.max(0,Math.ceil(ms/1000));
@@ -156,10 +159,10 @@
   'jade-workshop':'Xưởng ngọc','jade-gallery':'Sổ sưu tầm phỉ thúy'};
  const upgrade=(glyph,name,level,type,cost)=>`<div class="arcade-upgrade-card">
    <span class="arcade-upgrade-symbol">${glyph}</span><div><strong>${name}</strong><small>${level}</small></div>
-   ${button(cost===null?'Tối đa':'＋ '+fmt(cost)+' Xu',type,'upgrade',cost===null||state.coins<cost)}</div>`;
+   ${button(cost===null?'Tối đa':'＋ '+money(cost),type,'upgrade',cost===null||state.coins<cost)}</div>`;
  const neonFacility=(symbol,name,detail,type,level,max,cost)=>`<div class="neon-facility-row">
    <span class="neon-facility-icon">${symbol}</span><div><strong>${name}</strong><small>${detail} · ${level}/${max}</small></div>
-   ${button(cost===null?'Tối đa':'＋ '+fmt(cost)+' Xu',type,'upgrade',cost===null||state.coins<cost)}</div>`;
+   ${button(cost===null?'Tối đa':'＋ '+money(cost),type,'upgrade',cost===null||state.coins<cost)}</div>`;
  const activeFeedback=(type,time)=>feedback?.type===type&&time-feedback.at<1700?feedback:null;
  function seasonPanel(s){
   if(!seasonGame)return '';
@@ -240,7 +243,7 @@
          affordable=s.coins>=choice.cost;
         return `<div class="neon-event-option"><div><strong>${choice.name}</strong><small>${choice.detail}</small>
          <em>${choice.orders} đơn · combo ×${choice.streak}${lacks.length?' · '+lacks.join(' / '):''}</em></div>
-         ${button('Đầu tư '+fmt(choice.cost)+' Xu','neon-event-pick-'+i,
+         ${button('Đầu tư '+money(choice.cost),'neon-event-pick-'+i,
           'neon-event-pick',!available||!affordable||!!lacks.length)}</div>`;}).join('')}</div>`}
      ${!active?button('← Xem các chương trình','neon-event-back','neon-event-back'):''}
     </div>`:
@@ -295,15 +298,15 @@
       <div class="neon-server-stack"><span></span><span></span><span></span><span></span></div>
       <div class="neon-aisle-glow" aria-hidden="true"></div>
       <div class="neon-gaming-floor neon-floor-capacity-${capacity}">${stations}</div>
-      ${servicePulse?`<div class="neon-coin-fountain" aria-live="polite">✦ +${fmt(servicePulse.quantity)} Xu <small>ĐÃ PHỤC VỤ</small></div>`:''}
-      <div class="neon-stage-income"><span>${boost?'⚡ ĐANG ÉP XUNG ×2':'THU NHẬP TRỰC TIẾP'}</span><b>+${(boost?activeRate*2/1000:activeRate/1000).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:3})} <small>Xu / giây</small></b>
+      ${servicePulse?`<div class="neon-coin-fountain" aria-live="polite">✦ +${money(servicePulse.quantity)} <small>ĐÃ PHỤC VỤ</small></div>`:''}
+      <div class="neon-stage-income"><span>${boost?'⚡ ĐANG ÉP XUNG ×2':'THU NHẬP TRỰC TIẾP'}</span><b>+${(boost?activeRate*2/1000:activeRate/1000).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:3})} <small>💚 / giây</small></b>
         <div class="neon-income-track"><i></i></div></div>
       <div class="neon-room-level">PHÒNG ${n.roomTier}/3 · ${n.stations}/${capacity} CỤM · CẤP ${level}</div>
     </div>
     <div class="arcade-control-panel">
       <div class="neon-operations-strip" aria-label="Hoạt động phòng máy">
         <span><i></i><b>${n.running?service.guests:0}/${n.stations}</b> khách đang chơi</span>
-        <span>Thực thu <b>+${fmt(service.profit)} Xu</b>/lượt</span></div>
+        <span>Thực thu <b>+${money(service.profit)}</b>/lượt</span></div>
       <div class="neon-service-timing"><div><b>◉ Phục vụ tự động</b><small>Đã đón <b data-neon-served>${n.guestsServed}</b> khách</small></div>
         <span data-neon-session-time>${n.running?Math.ceil((core.NEON_SERVICE_INTERVAL-n.sessionMs)/1000)+'s':'Tạm dừng'}</span></div>
       <div class="neon-service-track" role="progressbar" aria-label="Tiến độ lượt phục vụ" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(n.sessionMs/core.NEON_SERVICE_INTERVAL*100)}" data-neon-service-track><i style="width:${n.sessionMs/core.NEON_SERVICE_INTERVAL*100}%"></i></div>
@@ -314,8 +317,8 @@
          `Muốn mở cấp ${n.roomTier+1}: lắp ${capacity}/${capacity} dàn và phục vụ ${requiredGuests} khách.`}</p>
         <div class="neon-expansion-progress"><span>${n.stations}/${capacity} dàn</span><span>${Math.min(n.guestsServed,requiredGuests)}/${requiredGuests} khách</span></div>
         <div class="neon-expansion-track"><i style="width:${n.roomTier===3?100:Math.min(100,n.guestsServed/requiredGuests*100)}%"></i></div>
-        ${n.roomTier<3?button(canExpand?'✦ Mở cấp '+(n.roomTier+1)+' · '+fmt(roomCost)+' Xu':
-         '🔒 Mở rộng · '+fmt(roomCost)+' Xu','room-tier','market',!canExpand||s.coins<roomCost):
+        ${n.roomTier<3?button(canExpand?'✦ Mở cấp '+(n.roomTier+1)+' · '+money(roomCost):
+         '🔒 Mở rộng · '+money(roomCost),'room-tier','market',!canExpand||s.coins<roomCost):
          '<span class="neon-expansion-complete">✓ Đã khai phá đủ ba cấp phòng</span>'}
       </div>
       <div class="arcade-quick-drawers arcade-quick-drawers-triple">
@@ -345,13 +348,13 @@
        ['Đón 25 khách',n.guestsServed>=25,200],['Đón 100 khách',n.guestsServed>=100,500],
        ['Mở phòng cấp 2',n.roomTier>=2,300],['Mở phòng cấp 3',n.roomTier>=3,900]
       ].map(([name,met,reward],i)=>`<div class="arcade-contract"><span>${n.milestones.includes(i)?'✓':met?'✦':'○'} ${name}</span>
-       ${button(n.milestones.includes(i)?'Đã nhận':met?'Nhận '+fmt(reward)+' Xu':'+'+fmt(reward)+' Xu',
+       ${button(n.milestones.includes(i)?'Đã nhận':met?'Nhận '+money(reward):'+'+money(reward),
         'neon-milestone-'+i,'contract',!met||n.milestones.includes(i))}</div>`).join('')}</div>
       <div class="arcade-contracts" data-arcade-panel="neon-awards"><h4>▤ Hợp đồng phòng máy</h4>${[
        ['Lắp CPU cấp 2',s.neon.cpu>=2,50],['Mở hai dàn máy',s.neon.stations>=2,120],
        ['Nâng mạng cấp 3',s.neon.router>=3,180]
       ].map(([name,met,reward],i)=>`<div class="arcade-contract"><span>${s.neon.contracts.includes(i)?'✓':met?'✦':'○'} ${name}</span>
-       ${button(s.neon.contracts.includes(i)?'Đã nhận':met?'Nhận '+fmt(reward)+' Xu':'+'+fmt(reward)+' Xu',
+       ${button(s.neon.contracts.includes(i)?'Đã nhận':met?'Nhận '+money(reward):'+'+money(reward),
         'neon-contract-'+i,'contract',!met||s.neon.contracts.includes(i))}</div>`).join('')}</div>
       <div class="neon-order-game neon-beat-game ${orderReady?'is-ready':'is-waiting'} ${beatActive?'is-playing':''} ${seasonTicket?'is-season-ticket':''} ${orderPulse?(orderPulse.success?'is-complete':'is-mistake'):''}" aria-label="Quầy thử thách nhịp: hoàn thành ${n.orderWon} đơn, liên tiếp ${n.orderStreak}">
        <div class="neon-order-heading"><b>♫ QUẦY NHỊP ĐIỆU</b><span>COMBO ×${n.orderStreak}</span></div>
@@ -415,7 +418,7 @@
        const eligible=i>0&&m.depthPermit===i-1&&m.dug>=dug&&m.lantern>=lamp;
        return `<div class="mine-zone-card"><button type="button" class="mine-zone ${m.zone===i?'selected':''}" data-arcade-action="mine-zone-${i}" ${unlocked?'':'disabled'}>
        <b>${i===0?'Ⅰ':i===1?'Ⅱ':'Ⅲ'} ${name}</b><small>${unlocked?sub:`${Math.max(0,dug-m.dug)} lượt · đèn ${lamp}`}</small></button>
-       ${i>0&&!unlocked?button('Mở · '+fmt(permit.xu)+' Xu · '+Object.entries(permit.ores).map(([ore,count])=>count+' '+oreLabels[ore]).join(', '),'mine-permit-'+i,'tool',!eligible||s.coins<permit.xu||Object.entries(permit.ores).some(([ore,count])=>m.ores[ore]<count)):''}</div>`;}).join('')}</div>
+       ${i>0&&!unlocked?button('Mở · '+money(permit.xu)+' · '+Object.entries(permit.ores).map(([ore,count])=>count+' '+oreLabels[ore]).join(', '),'mine-permit-'+i,'tool',!eligible||s.coins<permit.xu||Object.entries(permit.ores).some(([ore,count])=>m.ores[ore]<count)):''}</div>`;}).join('')}</div>
       <div class="mine-energy"><div><b>⚡ Phá mạch quặng</b><small>Đào để nạp năng lượng</small></div><strong>${m.charge}/${maxEnergy}</strong></div>
       <div class="mine-charge-track" role="progressbar" aria-label="Năng lượng phá mạch" aria-valuenow="${m.charge}" aria-valuemax="${maxEnergy}"><i style="width:${m.charge/maxEnergy*100}%"></i></div>
       ${button('⚡ PHÁ MẠCH · 5 NĂNG LƯỢNG','mine-burst','power mine-burst',!canDig||m.durability<3||m.charge<5)}
@@ -434,8 +437,8 @@
       <div class="mine-tool-actions" data-arcade-panel="mine-tools">
         ${button(repairing?`⏳ <span data-arcade-until="${m.repairUntil}">${countdown(m.repairUntil-time)}</span>`:'🔧 Tự sửa · 6 phút','repair-wait','tool',repairing||m.durability===max)}
         ${button('⚒ Rèn · 12 than + 8 sắt + 2 đồng','repair-forge','tool',repairing||m.durability===max||m.ores.coal<12||m.ores.iron<8||m.ores.copper<2)}
-        ${button('Dầu +25 · 15 Xu','buy-oil','tool',repairing||m.durability===max||s.coins<150)}
-        ${button('Cuốc mới · 80 Xu','buy-pick','tool',(m.durability===max&&!repairing)||s.coins<800)}
+        ${button('Dầu +25 · 💚 15','buy-oil','tool',repairing||m.durability===max||s.coins<150)}
+        ${button('Cuốc mới · 💚 80','buy-pick','tool',(m.durability===max&&!repairing)||s.coins<800)}
       </div>
       <div class="arcade-upgrade-grid arcade-tool-upgrades" data-arcade-panel="mine-tools">
        ${upgrade('⛏','Cuốc thép','Cấp '+m.pickLevel+'/4','pick-level',core.upgradeCost(s,'pick-level'))}
@@ -580,7 +583,7 @@
       <div class="garden-farm-hero" data-arcade-panel="garden-seeds"><span>✧ MOONLIT GARDEN</span><strong>Mùa nở hoa</strong><small>Gieo mầm · Chăm cây · Thu hoạch</small></div>
       <div class="arcade-panel-heading garden-seed-heading" data-arcade-panel="garden-seeds"><div><span class="arcade-eyebrow">HẠT GIỐNG</span><h4>Chọn để gieo</h4></div></div>
       <div class="garden-seed-list" data-arcade-panel="garden-seeds">${Object.entries(core.CROPS).map(([id,crop])=>`<button type="button" class="garden-seed ${g.crop===id?'selected':''}" data-arcade-action="crop-${id}" ${core.cropUnlocked(g,id)?'':'disabled'} aria-pressed="${g.crop===id}">
-       <span class="garden-seed-mark" aria-hidden="true">${id==='bloom'?'✿':id==='mint'?'❧':'☾'}</span><b>${crop.name}</b><small>${core.cropUnlocked(g,id)?`${cropMinutes(id)} phút · +${fmt(crop.value)} Xu`:`${id==='mint'?'Hoa sương '+Math.min(4,g.cropHarvested.bloom):'Bạc hà '+Math.min(4,g.cropHarvested.mint)}/4`}</small></button>`).join('')}</div>
+       <span class="garden-seed-mark" aria-hidden="true">${id==='bloom'?'✿':id==='mint'?'❧':'☾'}</span><b>${crop.name}</b><small>${core.cropUnlocked(g,id)?`${cropMinutes(id)} phút · +${money(crop.value)}`:`${id==='mint'?'Hoa sương '+Math.min(4,g.cropHarvested.bloom):'Bạc hà '+Math.min(4,g.cropHarvested.mint)}/4`}</small></button>`).join('')}</div>
       <div class="garden-farm-workbench" data-arcade-panel="garden-seeds">
        <div class="garden-resources">${hud('NƯỚC','💧 '+g.water+'/'+g.waterCap,'Hồi mỗi 15 phút')}
         ${hud('HẠT GIỐNG','✿ '+g.seeds,'Trong túi hạt')}</div>
@@ -589,7 +592,7 @@
         ${button('✦ Thu tất cả','harvest-all','tool',!g.beds.some(b=>b.status==='growing'&&time>=b.readyAt))}</div>
       </div>
       <div class="arcade-panel-heading" data-arcade-panel="garden-seeds"><div><span class="arcade-eyebrow">NHÀ KÍNH</span>
-        <h4>Vật tư & thu hoạch</h4></div>${button('＋ 3 hạt · 10 Xu','buy-seeds','market',s.coins<100)}</div>
+        <h4>Vật tư & thu hoạch</h4></div>${button('＋ 3 hạt · 💚 10','buy-seeds','market',s.coins<100)}</div>
       <div class="garden-statline" data-arcade-panel="garden-seeds"><span>🌿 Đã thu hoạch <b>${g.harvests}</b></span><span>✿ <b>${g.plots}</b> luống</span></div>
       <div class="garden-crop-stock" data-arcade-panel="garden-seeds"><b>✿ Kho nông sản</b>
        ${Object.entries(core.CROPS).map(([id,crop])=>`<span>${crop.name} <strong>×${g.cropStock[id]}</strong></span>`).join('')}</div>
@@ -627,7 +630,7 @@
         <b>${known?'×'+count:'◈'}</b></div>`;}).join('')}</div>`:''}
       ${fishView==='sets'?`<div class="garden-fish-set-list" data-arcade-panel="garden-album">${core.FISH_COLLECTIONS.map((set,i)=>{
        const have=set.fish.filter(id=>g.fishAlbum[id]>0).length,done=g.fishSetsClaimed.includes(i);
-       const reward=[set.coins?fmt(set.coins)+' Xu':'',set.bait?'+'+set.bait+' mồi':'',set.moonBait?'+'+set.moonBait+' mồi xịn':''].filter(Boolean).join(' · ');
+       const reward=[set.coins?money(set.coins):'',set.bait?'+'+set.bait+' mồi':'',set.moonBait?'+'+set.moonBait+' mồi xịn':''].filter(Boolean).join(' · ');
        return `<div class="garden-fish-set-card ${done?'is-claimed':have===set.fish.length?'is-ready':''}"><div class="garden-fish-card-title"><b>✦ ${set.name}</b><small>${have}/${set.fish.length} loài</small></div>
        <div class="garden-fish-set-icons">${set.fish.map(id=>`<div class="${g.fishAlbum[id]?'is-known':'is-locked'}"><span class="garden-fish-portrait ${g.fishAlbum[id]?'fish-'+id:'fish-undiscovered'}" aria-hidden="true"></span><small>${g.fishAlbum[id]?core.FISH_SPECIES[id].name:'Hồ cấp '+core.FISH_POND_LEVEL[id]}</small></div>`).join('')}</div>
        <div class="garden-fish-card-foot"><small>🎁 ${reward}</small>${button(done?'✓ Đã nhận':'Nhận thưởng','garden-fish-set-'+i,'tool',done||have<set.fish.length)}</div></div>`;
@@ -636,7 +639,7 @@
        <div class="garden-fish-section-head"><b>✦ Đơn cá một lần</b><small>Chỉ dùng cá trùng, giữ lại 1 con/loài</small></div>
        ${core.FISH_ORDERS.map((order,i)=>{
         const done=g.fishOrdersDone.includes(i),ready=Object.entries(order.need).every(([id,count])=>core.fishAvailable(g,id)>=count);
-        return `<div class="garden-fish-order"><div><strong>${order.name}</strong><small>${Object.entries(order.need).map(([id,count])=>core.FISH_SPECIES[id].name+' '+Math.min(core.fishAvailable(g,id),count)+'/'+count).join(' · ')}</small><small class="garden-fish-reward">🎁 ${fmt(order.coins)} Xu${order.bait?' · '+order.bait+' mồi':''}${order.moonBait?' · '+order.moonBait+' mồi xịn':''}</small></div>
+        return `<div class="garden-fish-order"><div><strong>${order.name}</strong><small>${Object.entries(order.need).map(([id,count])=>core.FISH_SPECIES[id].name+' '+Math.min(core.fishAvailable(g,id),count)+'/'+count).join(' · ')}</small><small class="garden-fish-reward">🎁 ${money(order.coins)}${order.bait?' · '+order.bait+' mồi':''}${order.moonBait?' · '+order.moonBait+' mồi xịn':''}</small></div>
          ${button(done?'✓ Đã giao':'Giao cá','garden-fish-order-'+i,'tool',done||!ready)}</div>`;
        }).join('')}
        <div class="garden-fish-section-head garden-fish-forge-head"><b>✧ Lò Tinh Hoa Hồ Sương</b><small>Đổi ngay · không chờ tuần</small></div>
@@ -649,7 +652,7 @@
           ${button('Tạo · '+core.FISH_RECORD_CHARM_COST+' ✦','garden-fish-record-charm','tool',g.fishEssence<core.FISH_RECORD_CHARM_COST||g.recordCharms>=10)}</div>
         </div>
        </div>
-       <div class="garden-fish-section-head"><b>✧ Luyện cá trùng</b><small>Giữ 1 con/loài · không tạo Xu</small></div>
+       <div class="garden-fish-section-head"><b>✧ Luyện cá trùng</b><small>Giữ 1 con/loài · không tạo Tiền Xanh</small></div>
        <div class="garden-fish-trade-grid">${extraFish.length?extraFish.map(id=>{
         const value=core.fishEssenceValue(id);
         return `<div class="garden-fish-trade"><strong>${core.FISH_SPECIES[id].name}</strong><small>Cá dư ${core.fishAvailable(g,id)} · +${value} tinh hoa/con</small>
@@ -661,14 +664,14 @@
        <div class="garden-tackle-offers">
         <div class="garden-tackle-offer garden-tackle-regular"><span class="garden-tackle-item garden-tackle-worm" aria-hidden="true"></span>
          <div><b>Mồi hồ sương</b><small>5 viên · dùng ngay</small><em>Đang có ${g.bait}</em></div>
-         ${button('＋ 7 Xu','buy-bait-pack','market',s.coins<70||g.bait>9995)}</div>
+         ${button('＋ 💚 7','buy-bait-pack','market',s.coins<70||g.bait>9995)}</div>
         <div class="garden-tackle-offer garden-tackle-moon"><span class="garden-tackle-item garden-tackle-pearl" aria-hidden="true"></span>
          <div><b>Mồi Tinh Nguyệt</b><small>${g.pondTier<2?'2 viên · cá hiếm từ hồ cấp 2':'2 viên · cá hiếm +18%'}</small><em>Đang có ${g.moonBait}</em></div>
-         ${button('＋ 6 Xu','buy-moon-bait','market',s.coins<60||g.moonBait>9998)}</div>
+         ${button('＋ 💚 6','buy-moon-bait','market',s.coins<60||g.moonBait>9998)}</div>
        </div>
        <div class="garden-tackle-rod"><span class="garden-tackle-rod-art" aria-hidden="true"></span>
         <div><b>Cần câu Hồ Trăng</b><small>${g.rod>=4?'Cấp '+g.rod+'/5 · thêm 1 lần chịu lỗi cá khó':'Cấp '+g.rod+'/5 · cấp 4 tăng chịu lỗi cá khó'}</small></div>
-        ${button(core.upgradeCost(s,'rod')===null?'Tối đa':'＋ '+fmt(core.upgradeCost(s,'rod'))+' Xu','rod','upgrade',core.upgradeCost(s,'rod')===null||s.coins<core.upgradeCost(s,'rod'))}</div>
+        ${button(core.upgradeCost(s,'rod')===null?'Tối đa':'＋ '+money(core.upgradeCost(s,'rod')),'rod','upgrade',core.upgradeCost(s,'rod')===null||s.coins<core.upgradeCost(s,'rod'))}</div>
        <div class="garden-tackle-chance">${g.pondTier===1?'◈ Cá hiếm mở từ hồ cấp 2':`◈ Gặp cá hiếm: <b>${fishRareChance}%</b> mồi thường <span>→</span> <b>${Math.min(43,fishRareChance+18)}%</b> mồi xịn`}</div>
        <div class="garden-tackle-subheading">NÂNG CẤP KHU VƯỜN</div>
       </div>
@@ -710,18 +713,18 @@
     </nav>
     ${showToast?`<div class="arcade-status arcade-status-toast" data-error="${error}" aria-live="polite" data-arcade-notice></div>`:''}
     ${exchangeOpen?`<div class="arcade-exchange-overlay" data-arcade-exchange="close">
-      <section class="arcade-exchange-dialog" role="dialog" aria-modal="true" aria-label="Đổi Xu">
-        <div class="arcade-exchange-heading"><strong>Đổi Xu</strong><button type="button" data-arcade-exchange="close" aria-label="Đóng">✕</button></div>
+      <section class="arcade-exchange-dialog" role="dialog" aria-modal="true" aria-label="Quầy đổi tiền">
+        <div class="arcade-exchange-heading"><strong>Quầy đổi tiền</strong><button type="button" data-arcade-exchange="close" aria-label="Đóng">✕</button></div>
         ${exchangeForm(s)}
-        <div class="arcade-exchange-target">Ví Xu hệ thống <button type="button" data-arcade-exchange="wallet">Xem ví ↗</button></div>
-        ${button(!exchangeEnabled()?'Chuyển Xu · Sắp mở':exchangeBusy?'Đang chuyển…':
-          readPending()?'↻ Xác nhận lệnh cũ':'✓ Chuyển vào Ví Xu',
+        <div class="arcade-exchange-target">🟡 Ví Xu Vàng <button type="button" data-arcade-exchange="wallet">Xem ví ↗</button></div>
+        ${button(!exchangeEnabled()?'Chuyển tiền · Chưa mở':exchangeBusy?'Đang chuyển…':
+          readPending()?'↻ Xác nhận lệnh cũ':'✓ Chuyển vào Ví Xu Vàng',
           'transfer','gold',!exchangeEnabled()||exchangeBusy||!quoteForExchange().ok)}
-        ${exchangeEnabled()?'':'<p>Chức năng đổi Xu chưa mở.</p>'}
+        ${exchangeEnabled()?'':'<p>Đây chỉ là báo giá. Chưa có giao dịch hay lịch sử đổi tiền.</p>'}
       </section></div>`:''}
     ${seasonOpen?seasonPanel(s):''}
   </div>`;
-  if(showToast)element.querySelector('[data-arcade-notice]').textContent=notice;
+  if(showToast)element.querySelector('[data-arcade-notice]').textContent=arcadeNotice(notice);
   const scrollPort=element.querySelector?.('.arcade-scroll');if(scrollPort)scrollPort.scrollTop=previousScroll;
   resetScrollOnPaint=false;
   if(drawerOpen&&drawerTitles[drawerOpen]&&root.document.createElement){
@@ -867,7 +870,7 @@
   const uid=identity(),pendingKey=exchangeKey(PENDING),settledKey=exchangeKey(SETTLED);
   const auth=root.firebase?.auth?.(),firestore=root.firebase?.firestore?.();
   if(!uid||!pendingKey||!settledKey||auth?.currentUser?.uid!==uid||!firestore){
-   notice='Hãy đăng nhập trước khi đổi Xu.';error=true;noticeUntil=now()+4500;render();return false;
+   notice='Hãy đăng nhập trước khi đổi Tiền Xanh.';error=true;noticeUntil=now()+4500;render();return false;
   }
   let pending=readPending();
   if(!pending){
@@ -895,7 +898,7 @@
     if(typeof saveCurrentAccount==='function')saveCurrentAccount();
    }
    root.renderWallet?.();
-   exchangeOpen=false;notice='✓ Đã chuyển '+result.walletXu+' Xu vào Ví hệ thống.';
+   exchangeOpen=false;notice='✓ Đã chuyển 🟡 '+result.walletXu+' vào Ví Xu Vàng.';
    error=false;noticeUntil=now()+4500;return true;
   }catch(e){
    notice='Chưa xác nhận lệnh đổi. Thử lại đúng lệnh đang chờ.';

@@ -61,7 +61,7 @@
     ${cut?`<div class="jade-stage-quote jade-quote-${tier}" role="status">
       <small>${tier==='legendary'?'✦ HUYỀN THOẠI':tier==='precious'?'◇ NGỌC QUÝ':tier==='common'?'◈ NGỌC THƯỜNG':'PHẾ THẠCH'}</small>
       <strong>${revealed?stoneName(stone):'Không có ngọc'}</strong>
-      <b>${fmt(jade.marketQuote(stone).value)} Xu</b></div>`:''}
+      <b>💚 ${fmt(jade.marketQuote(stone).value)}</b></div>`:''}
     ${phasePulse?`<span class="${phasePulse.type==='jade-window'?'jade-window-flash':'jade-cut-flash'} jade-flash-${tier}" aria-hidden="true"></span>`:''}
     <div class="jade-stage-base">${stone?'MẪU #'+String(stone.id).padStart(3,'0')+' · '+jade.MARKETS[stone.site].short.toUpperCase():
      'CHỜ CHỦ NHÂN CHỌN ĐÁ THÔ'}
@@ -86,7 +86,7 @@
     ${j.bought===0?btn('◈ Vào chợ đá','jade-open-market','upgrade'):''}
     ${j.vault.length?btn('▱ Kho đang giữ '+j.vault.length+' món ngọc','jade-open-vault','upgrade'):''}
     ${canRescue?`<div class="jade-recovery">
-      <small>Xu Arcade dưới 5 · Xưởng ngọc có đá tập cứu vốn, soi và xẻ không tốn phí.</small>
+      <small>Tiền Xanh dưới 5 · Xưởng ngọc có đá tập cứu vốn, soi và xẻ không tốn phí.</small>
       ${btn(rescueLeft?'◷ Đá cứu vốn · '+rescueTime+' phút':'✦ Nhận đá cứu vốn · Miễn phí',
        'jade-rescue','upgrade',rescueLeft>0)}</div>`:''}</div>`;
   if(['raw','window'].includes(stone.phase)){
@@ -97,23 +97,23 @@
          <span>${['Thủy đầu','Mãng đới','Liệt văn'][i]}</span>
          <small>${stone.scans[i]?jade.scanHint(stone,i,j.lamp):'Chạm để soi'}</small></button>`).join('')}</div>
       </details>
-     ${stone.phase==='window'?`<div class="jade-trader-offer"><span>GIÁ THU MUA HÔM NAY</span><strong>${fmt(windowQuote.value)} <small>Xu</small></strong>
+     ${stone.phase==='window'?`<div class="jade-trader-offer"><span>GIÁ THU MUA HÔM NAY</span><strong>${fmt(windowQuote.value)} <small>💚</small></strong>
       <small class="${trendClass(windowQuote.rate)}">${trend(windowQuote.rate)} · Giá thay đổi theo thị trường sắc ngọc. Có thể cất chờ.</small></div>
       <div class="jade-main-actions">${btn('✓ Bán sang tay','jade-sell-window','gold')}
-      ${btn(jade.actionFee(stone,'cut')?'⚔ Xẻ đôi · '+fmt(jade.actionFee(stone,'cut'))+' Xu':'⚔ Xẻ đôi · Miễn phí','jade-cut','power',s.coins<jade.actionFee(stone,'cut'))}</div>`:
-      `<div class="jade-main-actions">${btn(jade.actionFee(stone,'window')?'◈ Khai song · '+fmt(jade.actionFee(stone,'window'))+' Xu':'◈ Khai song · Miễn phí','jade-window','gold',s.coins<jade.actionFee(stone,'window'))}
-      ${btn(jade.actionFee(stone,'cut')?'⚔ Xẻ đôi · '+fmt(jade.actionFee(stone,'cut'))+' Xu':'⚔ Xẻ đôi · Miễn phí','jade-cut','power',s.coins<jade.actionFee(stone,'cut'))}</div>`}
+      ${btn(jade.actionFee(stone,'cut')?'⚔ Xẻ đôi · 💚 '+fmt(jade.actionFee(stone,'cut')):'⚔ Xẻ đôi · Miễn phí','jade-cut','power',s.coins<jade.actionFee(stone,'cut'))}</div>`:
+      `<div class="jade-main-actions">${btn(jade.actionFee(stone,'window')?'◈ Khai song · 💚 '+fmt(jade.actionFee(stone,'window')):'◈ Khai song · Miễn phí','jade-window','gold',s.coins<jade.actionFee(stone,'window'))}
+      ${btn(jade.actionFee(stone,'cut')?'⚔ Xẻ đôi · 💚 '+fmt(jade.actionFee(stone,'cut')):'⚔ Xẻ đôi · Miễn phí','jade-cut','power',s.coins<jade.actionFee(stone,'cut'))}</div>`}
 
      ${btn('↩ Cất đá · Đổi viên khác','jade-store','upgrade')}
      ${stone.phase==='raw'&&jade.rawSalvageValue(stone)?`<div class="jade-recovery jade-recovery-compact">
       <small>Thiếu tiền cắt? Trả lại đá nguyên vỏ, thu hồi 25% giá mua; không tính lượt giao dịch.</small>
-      ${btn('↩ Thanh lý đá thô · +'+fmt(jade.rawSalvageValue(stone))+' Xu','jade-sell-raw','upgrade')}
+      ${btn('↩ Thanh lý đá thô · +💚 '+fmt(jade.rawSalvageValue(stone)),'jade-sell-raw','upgrade')}
      </div>`:''}`;
   }
   const good=stone.grade>0&&stone.flaw!=='skin',quote=jade.marketQuote(stone,nowOf(s)),value=quote.value;
-  return `<div class="jade-cut-summary"><span>${stone.phase==='crafted'?'✦ Đã chế tác · '+jade.CRAFTS[stone.craft].name:'✦ Đã xẻ đá'}</span><small>${good?'Cỡ '+stone.size+' · '+jade.FLAW_NAMES[stone.flaw]:'Phế thạch · Có thể thu hồi'} · Giá ${fmt(value)} Xu</small></div>
+  return `<div class="jade-cut-summary"><span>${stone.phase==='crafted'?'✦ Đã chế tác · '+jade.CRAFTS[stone.craft].name:'✦ Đã xẻ đá'}</span><small>${good?'Cỡ '+stone.size+' · '+jade.FLAW_NAMES[stone.flaw]:'Phế thạch · Có thể thu hồi'} · Giá 💚 ${fmt(value)}</small></div>
     <div class="jade-main-actions">
-     ${btn('✓ Bán · +'+fmt(value)+' Xu','jade-sell','gold')}
+     ${btn('✓ Bán · +💚 '+fmt(value),'jade-sell','gold')}
      ${stone.phase==='crafted'?btn('✦ Đưa vào tủ','jade-exhibit','power',j.exhibits.length>=40):
       btn(good?'◈ Chế tác ngọc':'Phế thạch không thể chế tác','jade-open-workshop','power',!good)}</div>
     <div class="jade-hold-action">${btn('▱ Cất vào Kho Ngọc · Chờ giá tốt','jade-vault-store','upgrade',j.vault.length>=jade.MAX_VAULT)}
@@ -154,7 +154,7 @@
       ${jade.MARKETS.map((m,i)=>{const unlocked=jade.unlocked(j,i);
        return `<button type="button" class="jade-market-stop jade-stop-${i} ${active===i?'is-active':''} ${unlocked?'':'is-locked'}"
         ${unlocked?'data-jade-market-switch':'data-jade-market-lock'}="${i}" aria-pressed="${active===i}"
-        aria-label="${m.short}${unlocked?' · '+fmt(jade.purchasePrice(j,i))+' Xu/viên':' · chưa mở, chạm để xem điều kiện'}" title="${unlocked?m.name:m.unlock}">
+        aria-label="${m.short}${unlocked?' · '+fmt(jade.purchasePrice(j,i))+' Tiền Xanh/viên':' · chưa mở, chạm để xem điều kiện'}" title="${unlocked?m.name:m.unlock}">
         <span class="jade-market-stop-icon" aria-hidden="true">${unlocked?['◈','≋','◇','◆','✵'][i]:'🔒'}</span>
         <strong>${m.short}</strong></button>`;}).join('')}
      </div>
@@ -171,8 +171,8 @@
         data-jade-preview-slot="${slot}" aria-pressed="${chosen===slot}" style="--jade-item-x:${((i+slot)%5)*25}%" aria-label="Xem phôi ${['A','B','C'][slot]} tại sạp ${m.short}"><span>${['A','B','C'][slot]}</span></button>`).join('')}
       </div>
       <div class="jade-market-top"><div class="jade-market-copy"><b>${m.name}</b>
-       <small>${m.skin}</small></div><div class="jade-stall-pricing"><strong class="jade-stall-price">${fmt(jade.purchasePrice(j,i))} Xu/viên</strong>
-       ${jade.stallFee(j,i)?`<small>Gồm phí quầy ${fmt(jade.stallFee(j,i))} Xu</small>`:''}</div></div>
+       <small>${m.skin}</small></div><div class="jade-stall-pricing"><strong class="jade-stall-price">💚 ${fmt(jade.purchasePrice(j,i))}/viên</strong>
+       ${jade.stallFee(j,i)?`<small>Gồm phí quầy 💚 ${fmt(jade.stallFee(j,i))}</small>`:''}</div></div>
       <details class="jade-market-tray ${chosen!==null?'is-focused':''}" data-market-stall="${i}" ${openStall===i?'open':''} data-selected-slot="${chosen??'all'}">
        <summary>${chosen===null?'◈ Tự lựa 3 viên':'◈ Đang xem phôi '+['A','B','C'][chosen]} <span>Quan sát · Soi · Mang về</span></summary>
        ${chosen!==null?'<div class="jade-preview-compare"><button type="button" data-jade-preview-all="1">↔ So sánh cả 3 viên</button></div>':''}
@@ -184,19 +184,19 @@
          <div class="jade-sample-top"><b>PHÔI ${['A','B','C'][slot]}</b><em>${offer.size}</em></div>
          <button type="button" class="jade-sample-pick" data-arcade-action="jade-pick-${i}-${slot}"
           ${held>=jade.MAX_STONES||!free&&s.coins<offer.ask?'disabled':''}
-          aria-label="Chọn phôi ${['A','B','C'][slot]} · ${free?'miễn phí':fmt(offer.ask)+' Xu'} · ${offer.marks}">
+          aria-label="Chọn phôi ${['A','B','C'][slot]} · ${free?'miễn phí':fmt(offer.ask)+' Tiền Xanh'} · ${offer.marks}">
           <span class="jade-sample-pebble jade-shell-${(i+slot)%5} ${shellVisual(i,offer.stone.seed)} jade-sample-type-${slot}" aria-hidden="true"><i></i></span>
-          <strong>${free?'TẶNG':fmt(offer.ask)+' Xu'}</strong><span>✦ CHỌN</span></button>
+          <strong>${free?'TẶNG':'💚 '+fmt(offer.ask)}</strong><span>✦ CHỌN</span></button>
          <small title="${offer.marks}">${offer.marks}</small>
          <div class="jade-sample-clue">${inspected?visibleHints.map(hint=>`<span class="jade-clue-line">◉ ${hint}</span>`).join('')+
           (hints.length>visibleHints.length?`<span class="jade-clue-extra">+${hints.length-visibleHints.length} dấu · chọn phôi để xem</span>`:''):'? Bí ẩn'}</div>
-         ${btn(inspected?'✓ Đã soi':'◉ Soi · '+fmt(fee)+' Xu','jade-inspect-'+i+'-'+slot,
+         ${btn(inspected?'✓ Đã soi':'◉ Soi · 💚 '+fmt(fee),'jade-inspect-'+i+'-'+slot,
           'upgrade',inspected||s.coins<fee)}</div>`;}).join('')}</div>
       </details>
       <div class="jade-market-bundles" aria-label="Mua nhanh đá ${m.short}">
        <small>MUA LÔ NGẪU NHIÊN</small>
        ${[1,3,5].map(q=>{const cost=(q-(free?1:0))*jade.purchasePrice(j,i);
-        return btn(q+' viên · '+(cost?fmt(cost)+' Xu':'Tặng'),'jade-buy-pack-'+i+'-'+q,
+        return btn(q+' viên · '+(cost?'💚 '+fmt(cost):'Tặng'),'jade-buy-pack-'+i+'-'+q,
          'market',held+q>jade.MAX_STONES||s.coins<cost);}).join('')}</div>
       </section>`;}).join('')}
     <p class="jade-market-fairness">✧ Đèn cấp cao giảm phí quầy; cấp 3/4 soi 2/3 dấu khi chọn phôi. Soi không đảm bảo trúng.</p></div>`;
@@ -217,11 +217,11 @@
     return `<article class="jade-vault-card jade-result-${gemTier(stone)}"><span class="jade-vault-gem jade-collectible-art ${valuable?'':'is-waste'} ${gemVisual(stone)}" style="--jade-color:${jade.COLOR_HEX[stone.color]};--jade-item-x:${(valuable?(Math.max(1,stone.grade)-1)%5:stone.site)*25}%" aria-hidden="true"></span>
      <div class="jade-vault-info"><b>#${String(stone.id).padStart(3,'0')} · ${stoneName(stone)}</b>
        <small>${stone.phase==='crafted'?jade.CRAFTS[stone.craft].name:'Phôi chưa chế tác'} · Cỡ ${stone.size}</small>
-       <span class="${trendClass(q.rate)}">${trend(q.rate)} · <strong>${fmt(q.value)} Xu</strong></span></div>
+       <span class="${trendClass(q.rate)}">${trend(q.rate)} · <strong>💚 ${fmt(q.value)}</strong></span></div>
      <div class="jade-vault-actions">${btn('Bán ngay','jade-vault-sell-'+i,'gold')}
       ${btn('Đưa ra bàn','jade-vault-select-'+i,'upgrade',!!j.active)}</div></article>`;}).join('')}</div>`:
     '<p class="jade-vault-empty">Chưa có ngọc lưu kho. Cắt viên đầu tiên rồi chọn “Cất vào Kho Ngọc” để giữ giá trị cho tương lai.</p>'}
-   <p class="jade-sheet-hint">Giá cao hôm nay không chắc tiếp tục tăng ngày mai. Đây là thị trường giả lập chỉ dùng Xu Arcade, không liên kết giá ngọc thật.</p>
+   <p class="jade-sheet-hint">Giá cao hôm nay không chắc tiếp tục tăng ngày mai. Thị trường giả lập chỉ dùng Tiền Xanh, không liên kết giá ngọc thật.</p>
   </div>`;
  }
  function workshopPanel(s){
@@ -239,11 +239,11 @@
       !(id==='bangle'&&stone.flaw==='fracture'&&!stone.savedFracture);
      return `<div class="jade-craft-card"><span>${{bangle:'◯',pendant:'◇',ring:'◈',beads:'❈'}[id]}</span>
       <div><b>${item.name}</b><small>Phôi cỡ ${item.min}+ · x${item.mult.toLocaleString('vi-VN')} giá trị</small></div>
-      ${btn('+'+fmt(fee)+' Xu','jade-craft-'+id,'upgrade',!allowed||s.coins<fee||exhausted)}</div>`;}).join('')}</div>
-    <div class="jade-sheet-heading"><b>⚒ Nâng cấp xưởng</b><small>Đầu tư bằng Xu Arcade</small></div>
+      ${btn('+💚 '+fmt(fee),'jade-craft-'+id,'upgrade',!allowed||s.coins<fee||exhausted)}</div>`;}).join('')}</div>
+    <div class="jade-sheet-heading"><b>⚒ Nâng cấp xưởng</b><small>Đầu tư bằng Tiền Xanh</small></div>
     ${upgrades.map(([id,icon,title,desc])=>{const cost=jade.upgradeCost(j,id);
      return `<div class="jade-tool-card"><span>${icon}</span><div><b>${title}</b><small>${desc} · ${id==='permit'?(j.permit?'Đã có':'Giấy phép'): 'Cấp '+j[id]+'/4'}</small></div>
-      ${btn(cost===null?'Tối đa':fmt(cost)+' Xu','jade-upgrade-'+id,'upgrade',cost===null||s.coins<cost||id==='permit'&&j.sold<25)}</div>`;}).join('')}
+      ${btn(cost===null?'Tối đa':'💚 '+fmt(cost),'jade-upgrade-'+id,'upgrade',cost===null||s.coins<cost||id==='permit'&&j.sold<25)}</div>`;}).join('')}
     <p class="jade-sheet-hint">Cưa tốt giúp giảm tổn thất do đường nứt lúc xẻ; không thể biến phế thạch thành ngọc thật.</p></div>`;
  }
  function galleryPanel(s){
@@ -265,7 +265,7 @@
        return `<div class="jade-album-slot ${count?'is-found':''} ${owned?'is-owned':''} ${isNew?'is-new':''} jade-tier-${grade>=7?'legendary':grade>=5||color>=6?'precious':'common'} jade-grade-${grade} jade-item-shade-${color}" title="${name}${count?' · Đã mở ×'+count:' · Chưa mở'}${owned?' · Đang giữ':''}${isNew?' · Mới mở':''}"
         style="--jade-color:${jade.COLOR_HEX[color]};--jade-item-x:${((grade-1)%5)*25}%" aria-label="${jade.GRADES[grade]}, ${name}, ${count?'đã mở '+count+' lần':'chưa mở'}${owned?', đang giữ':''}${isNew?', mới mở':''}">${count?`<span class="jade-collectible-art ${gemVisual({grade,color,flaw:'perfect'})}" aria-hidden="true"></span>`:'◇'}</div>`;}).join('')}</div></div>`).join('')}
     <div class="jade-sheet-heading"><b>✦ Tủ Triển Lãm Cá Nhân</b><small>${j.exhibits.length}/40 tác phẩm</small></div>
-    ${exhibits||'<p class="jade-sheet-hint">Chế tác rồi chọn “Đưa vào tủ” để lưu tác phẩm hiếm. Trưng bày không nhận Xu bán.</p>'}</div>`;
+    ${exhibits||'<p class="jade-sheet-hint">Chế tác rồi chọn “Đưa vào tủ” để lưu tác phẩm hiếm. Trưng bày không nhận Tiền Xanh bán.</p>'}</div>`;
  }
  function panel(s,cutPulse){
   const j=s.jade||jade.fresh(),stone=j.active,found=Object.keys(j.album).length;
@@ -278,7 +278,7 @@
     ${stockPanel(s)}
     <div class="jade-accounting"><div><small>ĐÃ GIAO DỊCH</small><b>${j.sold}</b></div>
       <div><small>ĐÃ KHÁM PHÁ</small><b>${found}<em>/56</em></b></div>
-      <div><small>LỢI NHUẬN RÒNG</small><b>${fmt(j.received-j.invested)}<em> Xu</em></b></div></div>
+      <div><small>LỢI NHUẬN RÒNG</small><b>${fmt(j.received-j.invested)}<em> 💚</em></b></div></div>
     <div class="arcade-quick-drawers arcade-quick-drawers-quad jade-quick-drawers">
      ${sheet('Chợ đá','◈','jade-market')}${sheet('Kho ngọc','▱','jade-vault')}
      ${sheet('Xưởng','⚒','jade-workshop')}${sheet('Sổ ngọc','✧','jade-gallery')}</div>

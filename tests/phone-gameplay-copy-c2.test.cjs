@@ -38,7 +38,7 @@ test('AI model metadata is opt-in; Arcade exchange remains disabled by the same 
  assert.match(html,/document\.getElementById\('dudu-v5612-ai-settings'\)\?\.open&&/);
  assert.match(html,/meta\.textContent=source\?/);
  const arcade=read('js/personal-arcade-ui-v1.js');
- assert.match(arcade,/Chuyển Xu · Sắp mở/);
+ assert.match(arcade,/Chuyển tiền · Chưa mở/);
  assert.match(arcade,/!exchangeEnabled\(\)\|\|exchangeBusy\|\|!quoteForExchange\(\)\.ok/);
  assert.doesNotMatch(arcade,/Chuyển Xu · Chờ Rules/);
 });
