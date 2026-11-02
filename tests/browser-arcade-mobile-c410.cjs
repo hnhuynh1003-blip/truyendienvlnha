@@ -340,27 +340,31 @@ async function main(){
   const pondVisual=await page.evaluate(async()=>{
    const stage=document.querySelector('.garden-stage'),pond=stage.querySelector('.garden-pond');
    const width=pond.getBoundingClientRect().width/stage.getBoundingClientRect().width;
-   const imagePath=getComputedStyle(stage).backgroundImage.match(/url\(["']?([^"')]+)/)?.[1];
-   const ripples=pond.querySelector('.garden-water-ripples');
-   const haze=pond.querySelector('.garden-shore-mist');
-   const moonlight=pond.querySelector('.garden-moon-reflection');
    const glaze=pond.querySelector('.garden-water-surface');
    const fish=pond.querySelector('.garden-fish');
    const artifacts=pond.querySelectorAll('.garden-pond-upgrade').length;
-   stage.classList.add('garden-pond-tier-5');
-   const waterEffects=[ripples,haze,moonlight].every(el=>el&&getComputedStyle(el).display==='block');
+   const overlays=pond.querySelectorAll('.garden-water-ripples,.garden-shore-mist,.garden-moon-reflection').length;
    const submerged=Number(getComputedStyle(glaze).zIndex)>Number(getComputedStyle(fish).zIndex)
     &&Number(getComputedStyle(fish).opacity)<1;
-   stage.classList.remove('garden-pond-tier-5');
-   const picture=new Image();picture.src=imagePath||'';
-   try{await picture.decode();}catch(_){return {width,waterEffects,submerged,artifacts,loaded:false};}
-   return {width,waterEffects,submerged,artifacts,loaded:picture.naturalWidth>=1000};
+   const original=stage.className,paintings=[];
+   for(let tier=1;tier<=5;tier++){
+    stage.className=original.replace(/garden-pond-tier-\d+/,'garden-pond-tier-'+tier);
+    const imagePath=getComputedStyle(stage).backgroundImage.match(/url\(["']?([^"')]+)/)?.[1]||'';
+    const picture=new Image();picture.src=imagePath;
+    let decoded=false;
+    try{await picture.decode();decoded=picture.naturalWidth>=1000;}catch(_){/* report below */}
+    paintings.push({tier,decoded,correct:imagePath.includes('pond-level-'+tier+'.webp'),url:imagePath});
+   }
+   stage.className=original;
+   return {width,submerged,artifacts,overlays,
+    distinct:new Set(paintings.map(p=>p.url)).size===5,
+    loaded:paintings.every(p=>p.decoded&&p.correct)};
   });
   assert.ok(pondVisual.width>.88,'Painted pond uses most of the stage width');
   assert.equal(pondVisual.artifacts,0,'No free-standing architecture floats over the fish');
-  assert.ok(pondVisual.waterEffects,'Higher pond tiers unlock integrated lake-light effects');
+  assert.equal(pondVisual.overlays,0,'No synthetic scenery layers sit over the lake');
   assert.ok(pondVisual.submerged,'Water highlights sit above translucent fish artwork');
-  assert.ok(pondVisual.loaded,'New AI lake backdrop loads on mobile');
+  assert.ok(pondVisual.distinct&&pondVisual.loaded,'All five AI-painted pond levels load distinctly on mobile');
 
   const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem(
    'dudu-personal-arcade:v1:sandbox%3Ac410-mobile-tester')));
