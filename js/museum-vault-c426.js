@@ -32,6 +32,7 @@
   return node;
  };
  let host=null,owner='',sandboxMode=false,active='gallery',selected='s01-neon';
+ let vanBaoRequest=0;
  const byId=id=>root.document.getElementById(id);
  const getPanel=id=>host?.querySelector('[data-museum-panel="'+id+'"]');
  function openSource(item){
@@ -76,6 +77,81 @@
   for(const panel of host?.querySelectorAll('[data-museum-panel]')||[])
    panel.hidden=panel.dataset.museumPanel!==id;
   if(id==='display')root.DuduArcadeShowcaseUIV439?.render?.();
+  if(id==='owned')void refreshVanBao();
+ }
+ // A separate Firestore-backed FUN shelf: it never masquerades as the Worker
+ // collectible ledger, grants items, or trusts browser storage as ownership.
+ function renderVanBao(result,reason=''){
+  const container=host?.querySelector('.museum-c426-vanbao');if(!container)return;
+  container.replaceChildren();
+  const rare=(root.DuduItemCatalog?.funCollectibles||[])
+   .filter(item=>item.collectionSet==='VAN_BAO'&&['S','SS','SSS'].includes(item.rank));
+  const ids=new Set(Array.isArray(result?.state?.album)?result.state.album:[]);
+  const owned=rare.filter(item=>ids.has(item.id)).length;
+  const heading=el('div','museum-vanbao-head');
+  heading.append(el('span','','✦ KỆ VẠN BẢO'),
+   el('strong','',owned+'/'+rare.length+' BẢO VẬT HIẾM'));
+  container.append(heading);
+  if(reason){container.append(el('small','museum-vanbao-note',
+   reason==='sandbox'?'Xem thử · Sandbox không xác nhận sở hữu.':
+   reason==='unauthenticated'?'Đăng nhập để xem kệ bảo vật của bạn.':
+   'Chưa tải được sổ Vạn Bảo · thử mở lại Bảo Tàng.'));}
+  else container.append(el('small','museum-vanbao-note',
+   'Đồng bộ từ Hộp Mù DUDU FUN · không cần nhận lại.'));
+  if(!rare.length)return;
+  const focus=el('div','museum-vanbao-focus');
+  const artwork=el('span','museum-vanbao-hero');
+  const caption=el('div','museum-vanbao-caption');
+  focus.append(artwork,caption);container.append(focus);
+  const gallery=el('div','museum-vanbao-pedestals');
+  const buttons=[];
+  function chooseRare(item){
+   const has=ids.has(item.id);
+   artwork.replaceChildren();artwork.className='museum-vanbao-hero'+(has?'':' is-locked');
+   if(!root.DuduItemArtV13?.mount?.(artwork,item))artwork.textContent=has?(item.icon||'✦'):'◆';
+   caption.replaceChildren(el('span','','HẠNG '+item.rank),
+    el('strong','',has?item.name:'Bảo vật chưa tìm thấy'),
+    el('small','',has?'✦ Đã ghi nhận trong Sổ Vạn Bảo':'Mở Hộp Mù để sưu tập'));
+   for(const button of buttons){
+    const on=button.dataset.itemId===item.id;
+    button.classList.toggle('is-selected',on);
+    button.setAttribute('aria-pressed',String(on));
+   }
+  }
+  for(const item of rare){
+   const has=ids.has(item.id),card=el('button','museum-vanbao-pedestal'+
+    (has?' is-owned':' is-locked')+' rank-'+item.rank.toLowerCase());
+   card.type='button';card.dataset.itemId=item.id;
+   card.setAttribute('aria-label',has?'Ngắm '+item.name:
+    'Bảo vật hạng '+item.rank+' chưa sở hữu');
+   const image=el('span','museum-vanbao-mini');
+   image.setAttribute('aria-hidden','true');
+   if(!root.DuduItemArtV13?.mount?.(image,item))image.textContent='◆';
+   card.append(image,el('b','',item.rank));
+   card.addEventListener('click',()=>chooseRare(item));
+   buttons.push(card);gallery.append(card);
+  }
+  container.append(gallery);
+  chooseRare([...rare].reverse().find(item=>ids.has(item.id))||rare[rare.length-1]);
+ }
+ async function refreshVanBao(){
+  const request=++vanBaoRequest,bridge=root.DuduBlindBoxLiveBridgeC29;
+  if(sandboxMode){renderVanBao(null,'sandbox');return;}
+  if(!owner||!bridge?.ready?.()||bridge.uid?.()!==owner){
+   renderVanBao(null,'unauthenticated');return;
+  }
+  const uid=owner;
+  const container=host?.querySelector('.museum-c426-vanbao');
+  if(container)container.textContent='Đang tải kệ Vạn Bảo…';
+  try{
+   const result=await bridge.load();
+   if(request!==vanBaoRequest||uid!==owner||!bridge.ready?.()||
+    bridge.uid?.()!==uid)return;
+   renderVanBao(result);
+  }catch(_){
+   if(request!==vanBaoRequest||uid!==owner)return;
+   renderVanBao(null,'unavailable');
+  }
  }
  function build(){
   host.replaceChildren();host.classList.add('museum-c426-root');
@@ -128,6 +204,7 @@
   const owned=el('section','museum-c426-owned');owned.id='museum-c426-panel-owned';
   owned.dataset.museumPanel='owned';owned.setAttribute('role','tabpanel');
   owned.setAttribute('aria-labelledby','museum-c426-tab-owned');
+  owned.append(el('section','museum-c426-vanbao'));
   owned.append(el('span','museum-c426-ledger','Sổ sở hữu chưa xác minh'));
   const verified=el('div','museum-c426-verified');
   verified.setAttribute('aria-live','polite');owned.append(verified);host.append(owned);
@@ -146,11 +223,16 @@
   const changed=host!==container||owner!==ownerKey||sandboxMode!==!!sandbox||
    !container.classList.contains('museum-c426-root-ready');
   host=container;
-  if(changed){owner=ownerKey;sandboxMode=!!sandbox;active='gallery';selected='s01-neon';
+  if(changed){vanBaoRequest++;owner=ownerKey;sandboxMode=!!sandbox;active='gallery';selected='s01-neon';
    build();host.classList.add('museum-c426-root-ready');}
   root.DuduMuseumGalleryC429?.mount?.({container:getPanel('gallery'),ownerKey:owner,sandbox:sandboxMode});
   root.DuduArcadeShowcaseUIV439?.mount?.({container:getPanel('display')});
+  if(active==='owned')void refreshVanBao();
   return true;
+ }
+ function showVanBao(){
+  if(!host)return false;
+  switchTab('owned');return true;
  }
  function showDisplay(){
   if(!host)return false;
@@ -202,5 +284,5 @@
   }
   container.append(list);return true;
  }
- root.DuduMuseumVaultC426=Object.freeze({init,updateVerified,showDisplay,exhibits});
+ root.DuduMuseumVaultC426=Object.freeze({init,updateVerified,showDisplay,showVanBao,exhibits});
 })(typeof window!=='undefined'?window:{});

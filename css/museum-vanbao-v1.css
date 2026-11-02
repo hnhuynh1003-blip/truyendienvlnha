@@ -1,0 +1,69 @@
+/* FUN-VIS4 · Rare S/SS/SSS FUN keepsakes displayed separately from Worker relics. */
+body.dudu-phone-v11 #cyber-phone .museum-c426-vanbao{
+ display:flex;flex-direction:column;gap:7px;padding:10px;margin-bottom:12px;
+ border:1px solid #e4c48c88;border-radius:13px;
+ background:radial-gradient(ellipse 70% 52% at 50% 15%,#7358a148,transparent),
+  linear-gradient(155deg,#152840,#27223c);
+ box-shadow:inset 0 1px #fff2}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-head{
+ display:flex;align-items:center;justify-content:space-between;gap:6px}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-head span{
+ color:#ffe1a1;font-size:10px;font-weight:900;letter-spacing:.06em}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-head strong{
+ font-size:9px;color:#e7cbee;white-space:nowrap}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-note{
+ font-size:9px;color:#c5b9d7;line-height:1.3}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-focus{
+ display:flex;align-items:center;justify-content:center;gap:10px;
+ padding:5px 3px;border-radius:10px;border:1px solid #d2ae7852;
+ background:radial-gradient(circle at 31% 44%,#9b85c94a,transparent 67%),#161f34c7}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-hero{
+ flex:0 0 120px;height:114px;display:grid;place-items:center;
+ border:0;background:transparent;box-shadow:none;overflow:visible}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-hero.dudu-item-v13-frame,
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-mini.dudu-item-v13-frame{
+ background:transparent!important;border:0!important;
+ box-shadow:none!important;overflow:visible!important}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-hero img{
+ width:100%;height:100%;object-fit:contain;
+ filter:drop-shadow(0 7px 10px #020814ae) drop-shadow(0 0 9px #f5d18e5a)}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-hero.is-locked img{
+ filter:brightness(0) opacity(.75)!important}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-caption{
+ display:flex;flex:1;min-width:0;flex-direction:column;gap:6px}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-caption span{
+ font-size:9px;color:#e9c284;font-weight:900;letter-spacing:.08em}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-caption strong{
+ font-size:12px;color:#ffebc8;line-height:1.2;overflow-wrap:anywhere}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-caption small{
+ font-size:9px;color:#bfc4d9;line-height:1.35}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-pedestals{
+ display:grid;grid-auto-flow:column;grid-auto-columns:minmax(70px,1fr);
+ gap:6px;overflow-x:auto;scrollbar-width:thin;padding:2px}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-pedestal{
+ min-width:0;min-height:71px;display:flex;flex-direction:column;align-items:center;
+ justify-content:center;gap:0;padding:3px;border:1px solid #bba68b87;
+ border-radius:10px;color:#ffdfad;background:#233147a8;cursor:pointer;
+ font:inherit;touch-action:manipulation}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-pedestal.is-selected{
+ border-color:#ffe1a2;box-shadow:0 0 12px #ffe2a658,inset 0 0 8px #dca96f3b}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-pedestal.rank-sss.is-owned{
+ background:radial-gradient(ellipse at top,#7757a2,#263044)}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-pedestal:focus-visible{
+ outline:2px solid #fff2c9;outline-offset:2px}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-mini{
+ display:grid;place-items:center;width:58px;height:49px;
+ border:0;overflow:visible;background:none;box-shadow:none}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-mini img{
+ width:58px;height:49px;object-fit:contain}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-pedestal.is-locked .museum-vanbao-mini img{
+ filter:brightness(0) opacity(.67)!important}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-pedestal b{
+ font-size:9px;letter-spacing:.08em}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-pedestal.is-locked b{color:#979bb3}
+@media(max-width:355px){
+ body.dudu-phone-v11 #cyber-phone .museum-vanbao-hero{flex-basis:100px;height:101px}
+ body.dudu-phone-v11 #cyber-phone .museum-vanbao-head span{font-size:9px}
+ body.dudu-phone-v11 #cyber-phone .museum-vanbao-head strong{font-size:8px}
+ body.dudu-phone-v11 #cyber-phone .museum-vanbao-caption strong{font-size:11px}
+}

@@ -353,9 +353,9 @@
   close.focus();
  }
  function featuredTreasure(){
-  const showcase=el('section','blind-treasure-showcase');
+  const showcase=el('section','blind-treasure-showcase is-compact');
   showcase.setAttribute('aria-label','Bảo vật tiêu biểu có thể sưu tập');
-  showcase.append(el('small','blind-treasure-eyebrow','✦ BÁU VẬT ĐÁNG SĂN'));
+  showcase.append(el('small','blind-treasure-eyebrow','✦ SƯU TẦM'));
   const jewels=el('div','blind-treasure-featured');
   for(const id of ['fun-celestial-harp','fun-eternal-crown','fun-universe-egg']){
    const item=root.DuduItemCatalog?.byId(id);if(!item)continue;

@@ -17,11 +17,14 @@ test('FUN-VIS3 has two distinct transparent fantasy chest frames, optimized for 
   assert.ok(data.length>12000&&data.length<220000,'optimized '+state+' chest');
  }
  const html=read('index.html'),css=read('css/van-bao-stage-v2.css');
- assert.match(html,/css\/van-bao-stage-v2\.css\?v=fun-vis3/);
- assert.match(html,/js\/dudu-fun-ui-v43\.js\?v=fun-vis3/);
+ assert.match(html,/css\/van-bao-stage-v2\.css\?v=fun-vis4/);
+ assert.match(html,/js\/dudu-fun-ui-v43\.js\?v=fun-vis4/);
  assert.match(css,/\.vanbao-chest-art/);
  assert.match(css,/\.vanbao-celebrating\.rank-sss/);
  assert.match(css,/\.blind-album-tile\.locked \.blind-album-art img/);
+ assert.match(css,/\.blind-treasure-showcase\.is-compact/);
+ assert.match(css,/\.blind-result-art\.dudu-item-v13-frame/);
+ assert.match(css,/\.blind-result:not\(\.vanbao-celebrating\) \.vanbao-open-burst/);
  assert.match(css,/@media\(max-width:355px\)/);
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
  assert.equal(blind.PRICE,20);
