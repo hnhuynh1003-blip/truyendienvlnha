@@ -82,6 +82,12 @@ body.dudu-site-v60 #home-view .archive-shelf-item .novel-info{min-width:0;gap:6p
 body.dudu-site-v60 #home-view .archive-shelf-item .novel-title-button{line-height:1.38}
 body.dudu-site-v60 #home-view .archive-shelf-item .novel-desc{display:-webkit-box;-webkit-line-clamp:2;line-clamp:2}
 body.dudu-site-v60 #home-view .archive-shelf-item .novel-meta{margin-top:auto;gap:7px}
+@media(min-width:761px){
+ /* A lone result (or the final odd card) sits on the center line, not stranded left. */
+ body.dudu-site-v60 #home-view .novel-grid > .archive-shelf-item:last-child:nth-child(odd){
+  grid-column:1/-1;justify-self:center;width:min(100%,calc((100% - 15px)/2));
+ }
+}
 @media(max-width:760px){
  #home-view .search-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
  #home-view .archive-search-field{grid-column:1/-1;min-height:43px}

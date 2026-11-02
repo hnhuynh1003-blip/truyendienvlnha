@@ -98,6 +98,14 @@ async function main(){
   await drawer.getByRole('button',{name:'EPUB',exact:true}).click();
   await drawer.getByRole('button',{name:'Áp dụng'}).click();
   assert.deepEqual(await page.locator('.novel-title-button').allInnerTexts(),['Bí kíp EPUB']);
+  await page.setViewportSize({width:1366,height:900});
+  const lone=await page.locator('#novel-grid-container .novel-card').evaluate(node=>{
+   const card=node.getBoundingClientRect(),grid=node.parentElement.getBoundingClientRect();
+   return {cardCenter:card.left+card.width/2,gridCenter:grid.left+grid.width/2,width:card.width};
+  });
+  assert.ok(Math.abs(lone.cardCenter-lone.gridCenter)<2&&lone.width<550,
+   'one filtered book stays centered and proportionate on laptop');
+  await page.setViewportSize({width:390,height:844});
   await page.locator('#search-novel-input').fill('Tác giả D');
   assert.equal(await page.locator('#search-result-count').innerText(),'0 / 4 tác phẩm');
   await page.locator('#search-novel-input').fill('Tác giả C');
