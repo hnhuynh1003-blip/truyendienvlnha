@@ -6,6 +6,8 @@ let playerAvatarEditOwnerV16=null;
 let playerAvatarUploadGenerationV16=0;
 let playerAvatarReturnFocusV16=null;
 let playerAvatarVisibleCountV41=12;
+// Previewing a locked frame is cosmetic; it never becomes the saved frameId.
+let playerAvatarFramePreviewOnlyV16=null;
 function playerAvatarOwnerV16(){
   return DuduPlayerAvatarV16.uploadIdentity(IS_SANDBOX_MODE ? (currentUsername||'sandbox-guest') : (currentUsername?'live-'+currentUsername:''));
 }
@@ -110,11 +112,22 @@ function selectPlayerAvatarKindV16(kind){
 function renderPlayerAvatarEditorV16(){
   if(!playerAvatarAllowedV497()||!playerAvatarDraftV16)return;
   const draft=playerAvatarDraftV16;
-  renderPlayerAvatarV16(document.getElementById('player-avatar-preview-v16'),draft);
+  const avatarPreview=document.getElementById('player-avatar-preview-v16');
+  renderPlayerAvatarV16(avatarPreview,draft);
+  const previewFrame=playerAvatarFramePreviewOnlyV16?
+    DuduPlayerAvatarV16.frame(playerAvatarFramePreviewOnlyV16):null;
+  if(avatarPreview){
+    if(previewFrame){
+      avatarPreview.dataset.framePreview=previewFrame.id;
+      avatarPreview.style.setProperty('--avatar-frame',previewFrame.color);
+      avatarPreview.style.setProperty('--avatar-glow',previewFrame.color+'66');
+    }else delete avatarPreview.dataset.framePreview;
+  }
   document.getElementById('player-avatar-preview-name-v16').textContent=
     userProfile.name||currentUsername||'Kẻ Lang Bạt';
   document.getElementById('player-avatar-preview-frame-v16').textContent=
-    'Khung: '+DuduPlayerAvatarV16.frame(draft.frameId).name;
+    previewFrame?'🔒 '+previewFrame.name+' · Xem thử':
+      'Khung: '+DuduPlayerAvatarV16.frame(draft.frameId).name;
   const tabs=document.getElementById('player-avatar-v16-kind');
   tabs.replaceChildren();
   for(const type of [
@@ -204,28 +217,35 @@ function renderPlayerAvatarEditorV16(){
   frames.replaceChildren();
   for(const frame of DuduPlayerAvatarV16.FRAMES){
     const btn=document.createElement('button');
-    btn.type='button';btn.disabled=!DuduPlayerAvatarV16.canChooseFrame(frame.id);
+    const locked=!DuduPlayerAvatarV16.canChooseFrame(frame.id);
+    btn.type='button';btn.dataset.frameChoice=frame.id;btn.dataset.frameTier=frame.tier;
+    btn.dataset.frameLocked=String(locked);
+    btn.setAttribute('aria-label',(locked?'Xem thử khung bị khóa ':'Chọn khung ')+frame.name);
     const lockReason={
       legend:'Chờ xác minh thành tựu truyện từ máy chủ',
       soulbond:'Chờ xác minh mốc quan hệ NPC từ máy chủ',
       author:'Chỉ mở khi tài khoản được máy chủ xác thực là Tác Giả'
     };
-    btn.title=btn.disabled?(lockReason[frame.id]||'Chưa mở khóa'):frame.name;
-    btn.setAttribute('aria-pressed',String(draft.frameId===frame.id));
+    btn.title=locked?(lockReason[frame.id]||'Chưa mở khóa')+' · Chạm để xem thử':frame.name;
+    btn.setAttribute('aria-pressed',String((playerAvatarFramePreviewOnlyV16||draft.frameId)===frame.id));
     const dot=document.createElement('span');
     dot.className='dudu-avatar-v16-frame-dot';
     dot.style.setProperty('--frame-color',frame.color);
     const text=document.createElement('span');
-    text.textContent=frame.name+(btn.disabled?' 🔒':'');
-    if(btn.disabled){
+    text.textContent=frame.name+(locked?' 🔒':'');
+    if(locked){
       const reason=document.createElement('small');
       reason.className='dudu-avatar-v18-lock-reason';
-      reason.textContent=lockReason[frame.id]||'Chưa mở khóa';
+      reason.textContent='Xem thử';
       text.append(reason);
     }
     btn.append(dot,text);
     btn.addEventListener('click',()=>{
-      if(!DuduPlayerAvatarV16.canChooseFrame(frame.id))return;
+      if(!DuduPlayerAvatarV16.canChooseFrame(frame.id)){
+        playerAvatarFramePreviewOnlyV16=frame.id;
+        renderPlayerAvatarEditorV16();return;
+      }
+      playerAvatarFramePreviewOnlyV16=null;
       playerAvatarDraftV16={...playerAvatarDraftV16,frameId:frame.id};
       renderPlayerAvatarEditorV16();
     });
@@ -248,6 +268,7 @@ function openPlayerAvatarEditorV16(){
   playerAvatarUploadGenerationV16++;
   playerAvatarEditOwnerV16=playerAvatarOwnerV16();
   playerAvatarDraftV16={...playerAvatarCurrentV16()};
+  playerAvatarFramePreviewOnlyV16=null;
   playerAvatarVisibleCountV41=12;
   const gender=document.getElementById('player-avatar-v41-gender');
   const search=document.getElementById('player-avatar-v41-search');
@@ -269,6 +290,7 @@ function closePlayerAvatarEditorV16(){
   modal.style.display='none';modal.setAttribute('aria-hidden','true');
   playerAvatarUploadGenerationV16++;
   playerAvatarDraftV16=null;playerAvatarEditOwnerV16=null;
+  playerAvatarFramePreviewOnlyV16=null;
   if(typeof avatarV22Reset==='function')avatarV22Reset();
   if(typeof closePlayerAvatarSyncReviewV21==='function')
     closePlayerAvatarSyncReviewV21();
@@ -279,6 +301,11 @@ function closePlayerAvatarEditorV16(){
 function savePlayerAvatarV16(){
   if(!playerAvatarAllowedV497()||!playerAvatarDraftV16||
      playerAvatarEditOwnerV16!==playerAvatarOwnerV16())return;
+  if(playerAvatarFramePreviewOnlyV16){
+    document.getElementById('player-avatar-v16-status').textContent=
+      'Khung này đang khóa · Hãy chọn khung đã mở để lưu.';
+    return;
+  }
   const valid=DuduPlayerAvatarV16.validate(playerAvatarDraftV16,playerAvatarOptionsV16());
   if(!valid){
     document.getElementById('player-avatar-v16-status').textContent=

@@ -16,7 +16,10 @@
    {id:'violet',name:'Huyền Tím',color:'#dbaaff',tier:'B',effect:'violet'},
    {id:'sakura',name:'Hoa Đào',color:'#ffb7d6',tier:'B',effect:'sakura'},
    {id:'cyber',name:'Cyber Link',color:'#79efec',tier:'A',effect:'cyber'},
-   {id:'starlight',name:'Tinh Tú',color:'#ffe4a5',tier:'A',effect:'starlight'}
+   {id:'starlight',name:'Tinh Tú',color:'#ffe4a5',tier:'A',effect:'starlight'},
+   {id:'nebula',name:'Tinh Vân',color:'#9ea8ff',tier:'A',effect:'nebula'},
+   {id:'jadecrest',name:'Long Ngọc',color:'#8cf3cd',tier:'A',effect:'jadecrest'},
+   {id:'frostwing',name:'Băng Dực',color:'#b9eaff',tier:'A',effect:'frostwing'}
  ]);
  const RESTRICTED=Object.freeze([
    {id:'legend',name:'Huyền Thoại',color:'#ffd17d',tier:'S',effect:'legend',unlock:'EVENT'},
