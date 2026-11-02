@@ -78,6 +78,29 @@
  });
  const pondUnlocks=tier=>Object.keys(FISH_POND_LEVEL).filter(id=>FISH_POND_LEVEL[id]===tier);
  const pondCanHost=(id,tier)=>FISH_POND_LEVEL[id]!=null&&FISH_POND_LEVEL[id]<=tier;
+ // C4.48: album counters remain lifetime discoveries. Trade only the spare
+ // copies above the first one and record spent copies separately.
+ const FISH_COLLECTIONS=Object.freeze([
+  {name:'Sương Mai',fish:['reed','carp','silver'],coins:50,bait:2,moonBait:0},
+  {name:'Vảy Ngọc',fish:['koi','blue','rainpetal','glassfin'],coins:120,bait:0,moonBait:1},
+  {name:'Đêm Trăng',fish:['moonfish','lantern','fogveil','nightlamp'],coins:180,bait:0,moonBait:2},
+  {name:'Huyền Tinh',fish:['crystal','dragon','phoenix'],coins:250,bait:0,moonBait:3}
+ ].map(set=>Object.freeze({...set,fish:Object.freeze(set.fish)})));
+ const FISH_ORDERS=Object.freeze([
+  {name:'Giỏ Rêu',need:{reed:2,carp:1},coins:40,bait:2,moonBait:0},
+  {name:'Phiên Koi',need:{silver:1,koi:1,blue:1},coins:60,bait:1,moonBait:1},
+  {name:'Làn Sương',need:{glassfin:1,lantern:1},coins:90,bait:0,moonBait:1},
+  {name:'Tiệc Trăng',need:{moonfish:1,fogveil:1,nightlamp:1},coins:140,bait:0,moonBait:2},
+  {name:'Ngọc Bảo',need:{crystal:1,dragon:1,phoenix:1},coins:200,bait:0,moonBait:3}
+ ].map(order=>Object.freeze({...order,need:Object.freeze(order.need)})));
+ const FISH_TRADE_WEEK_MS=7*24*60*60*1000,FISH_TRADE_LIMIT=2;
+ const fishAvailable=(garden,id)=>Math.max(0,(garden.fishAlbum?.[id]||0)-
+  (garden.fishSpent?.[id]||0)-1);
+ const fishTradeAllowance=(garden,time)=>{
+  const week=Math.floor(time/FISH_TRADE_WEEK_MS),previous=garden.fishTradeWeek;
+  return previous>week?0:previous===week?
+   Math.max(0,FISH_TRADE_LIMIT-garden.fishTradeUsed):FISH_TRADE_LIMIT;
+ };
  // A fictional 60-minute pond weather cycle (three 20-minute phases), not
  // actual weather or server state. No extra saved fields, rewards or timers.
  const GARDEN_WEATHER_INTERVAL=20*60*1000;
@@ -169,7 +192,9 @@
     bubbleAt:time+BUBBLE_INTERVAL,bubbleReady:false,bait:0,moonBait:0,harvests:0,
     cropStock:{bloom:0,mint:0,moon:0},cropOrdersDone:[],pondDisplay:[],
     line:null,fishAlbum:Object.fromEntries(Object.keys(FISH_SPECIES).map(id=>[id,0])),
-    fishBest:Object.fromEntries(Object.keys(FISH_SPECIES).map(id=>[id,0]))},
+    fishBest:Object.fromEntries(Object.keys(FISH_SPECIES).map(id=>[id,0])),
+    fishSpent:Object.fromEntries(Object.keys(FISH_SPECIES).map(id=>[id,0])),
+    fishSetsClaimed:[],fishOrdersDone:[],fishTradeWeek:-1,fishTradeUsed:0},
    jade:jadeGame?jadeGame.fresh():null,
    season:seasonGame?seasonGame.fresh():null};
  };
@@ -264,7 +289,15 @@
   for(const id of Object.keys(FISH_SPECIES)){
    state.garden.fishAlbum[id]=number(garden.fishAlbum?.[id],0,10000000,0);
    state.garden.fishBest[id]=number(garden.fishBest?.[id],0,200,0);
+   state.garden.fishSpent[id]=Number.isSafeInteger(garden.fishSpent?.[id])?
+    Math.min(Math.max(0,garden.fishSpent[id]),Math.max(0,state.garden.fishAlbum[id]-1)):0;
   }
+  state.garden.fishSetsClaimed=Array.isArray(garden.fishSetsClaimed)?
+   FISH_COLLECTIONS.map((_,i)=>i).filter(i=>garden.fishSetsClaimed.includes(i)):[];
+  state.garden.fishOrdersDone=Array.isArray(garden.fishOrdersDone)?
+   FISH_ORDERS.map((_,i)=>i).filter(i=>garden.fishOrdersDone.includes(i)):[];
+  state.garden.fishTradeWeek=number(garden.fishTradeWeek,-1,1000000,-1);
+  state.garden.fishTradeUsed=number(garden.fishTradeUsed,0,FISH_TRADE_LIMIT,0);
   state.garden.pondDisplay=Array.isArray(garden.pondDisplay)?[...new Set(garden.pondDisplay
    .filter(id=>FISH_SPECIES[id]&&state.garden.fishAlbum[id]>0))].slice(0,3):[];
   const line=garden.line;
@@ -682,6 +715,45 @@
    else garden.pondDisplay=[...garden.pondDisplay.slice(-2),id];
    return succeed('Đã đổi cá trưng bày trong hồ');
   }
+  const fishSetAction=/^garden-fish-set-([0-3])$/.exec(action||'');
+  if(fishSetAction){
+   const index=Number(fishSetAction[1]),set=FISH_COLLECTIONS[index];
+   if(garden.fishSetsClaimed.includes(index))return fail('Bộ cá này đã nhận thưởng');
+   if(set.fish.some(id=>garden.fishAlbum[id]<1))return fail('Chưa tìm đủ loài trong bộ');
+   garden.fishSetsClaimed.push(index);
+   garden.bait=Math.min(10000,garden.bait+set.bait);
+   garden.moonBait=Math.min(10000,garden.moonBait+set.moonBait);
+   give(state,set.coins);
+   return succeed('✦ Hoàn thành '+set.name+' · +'+formatXu(set.coins)+' Xu và mồi câu');
+  }
+  const fishOrderAction=/^garden-fish-order-([0-4])$/.exec(action||'');
+  if(fishOrderAction){
+   const index=Number(fishOrderAction[1]),order=FISH_ORDERS[index];
+   if(garden.fishOrdersDone.includes(index))return fail('Đơn cá này đã giao');
+   if(Object.entries(order.need).some(([id,count])=>fishAvailable(garden,id)<count))
+    return fail('Chưa có đủ cá trùng để giao');
+   for(const [id,count] of Object.entries(order.need))garden.fishSpent[id]+=count;
+   garden.fishOrdersDone.push(index);
+   garden.bait=Math.min(10000,garden.bait+order.bait);
+   garden.moonBait=Math.min(10000,garden.moonBait+order.moonBait);
+   give(state,order.coins);
+   return succeed('✦ Đã giao '+order.name+' · +'+formatXu(order.coins)+' Xu và mồi');
+  }
+  const fishTradeAction=/^garden-fish-trade-([a-z]+)$/.exec(action||'');
+  if(fishTradeAction){
+   const id=fishTradeAction[1],fish=FISH_SPECIES[id];
+   if(!fish)return fail('Loài cá không hợp lệ');
+   const count=fish.rare?1:2;
+   if(fishAvailable(garden,id)<count)return fail('Hãy giữ lại một con trong bộ sưu tập');
+   if(fishTradeAllowance(garden,time)===0)return fail('Đã hết lượt đổi cá tuần này');
+   const week=Math.floor(time/FISH_TRADE_WEEK_MS);
+   if(garden.fishTradeWeek!==week){garden.fishTradeWeek=week;garden.fishTradeUsed=0;}
+   garden.fishSpent[id]+=count;
+   garden.fishTradeUsed++;
+   const baitType=fish.rare?'moonBait':'bait';
+   garden[baitType]=Math.min(10000,garden[baitType]+1);
+   return succeed('✦ Đã đổi cá dư lấy 1 '+(fish.rare?'mồi Tinh Nguyệt':'mồi thường'));
+  }
   const gardenOrderAction=/^garden-order-([012])$/.exec(action||'');
   if(gardenOrderAction){
    const index=Number(gardenOrderAction[1]),order=GARDEN_ORDERS[index];
@@ -763,7 +835,9 @@
   neonCapacity,neonService,NEON_SERVICE_INTERVAL,NEON_ORDER_COOLDOWN,neonOrderPattern,
   neonBeatPattern,neonBeatWindow,mineProbeTarget,seasonGame,
   WATER_INTERVAL,REPAIR_INTERVAL,MINE_DIG_INTERVAL,GROW_INTERVAL,BUBBLE_INTERVAL,ORE_VALUES,ORE_NAMES,
-  CROPS,GARDEN_ORDERS,FISH_SPECIES,FISH_POND_LEVEL,pondUnlocks,pondCanHost,FISH_REEL_WINDOW,GARDEN_WEATHER_INTERVAL,gardenWeather,choosePondFish,
+  CROPS,GARDEN_ORDERS,FISH_SPECIES,FISH_POND_LEVEL,pondUnlocks,pondCanHost,
+  FISH_COLLECTIONS,FISH_ORDERS,FISH_TRADE_LIMIT,fishAvailable,fishTradeAllowance,
+  FISH_REEL_WINDOW,GARDEN_WEATHER_INTERVAL,gardenWeather,choosePondFish,
   MINE_PERMITS,
   maxCharge,zoneUnlocked,cropUnlocked,maxDurability,bubbleInterval,
   JADE:jadeGame,NEON_EVENTS:neonGame});

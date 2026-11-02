@@ -29,7 +29,7 @@
  let tab='neon',drawerOpen=null,activeKey=null,state=null,lastTick=Date.now(),lastSave=0,
   lastPaint=0,lastRenderedKey=null,notice='',noticeUntil=0,error=false,feedback=null,
   exchangeOpen=false,exchangeAmount=10,exchangeBusy=false,resetScrollOnPaint=false,
-  seasonOpen=false,reelFight=null;
+  seasonOpen=false,reelFight=null,fishView='atlas';
  const now=()=>Date.now();
  const isSandbox=()=>typeof IS_SANDBOX_MODE!=='undefined'&&IS_SANDBOX_MODE;
  function identity(){
@@ -66,7 +66,7 @@
   const nextKey=keyFor(identity());
   if(nextKey!==activeKey){
    if(activeKey&&state)save();
-   activeKey=nextKey;state=null;feedback=null;exchangeOpen=false;drawerOpen=null;seasonOpen=false;reelFight=null;
+   activeKey=nextKey;state=null;feedback=null;exchangeOpen=false;drawerOpen=null;seasonOpen=false;reelFight=null;fishView='atlas';
    const time=now();lastTick=time;lastSave=time;
    if(activeKey){
     let saved=null;
@@ -479,6 +479,12 @@
   const nextUnlocks=nextPondTier?core.pondUnlocks(nextPondTier):[];
   const nextNames=nextUnlocks.map(id=>core.FISH_SPECIES[id].name).join(' · ');
   const fishRareChance=g.pondTier===1?0:Math.round((1-Math.max(.75,.94-.035*(g.rod-1)-.02*(g.pondTier-1)))*100);
+  const fishSetsComplete=g.fishSetsClaimed.length;
+  const fishRecords=Object.entries(g.fishBest).filter(([,cm])=>cm>0)
+   .sort((a,b)=>b[1]-a[1]).slice(0,3);
+  const tradeLeft=core.fishTradeAllowance(g,time);
+  const extraFish=Object.keys(core.FISH_SPECIES).filter(id=>core.fishAvailable(g,id)>=
+   (core.FISH_SPECIES[id].rare?1:2));
   const bed=(b,index)=>{
    const mature=b.status==='growing'&&time>=b.readyAt;
    const growthStage=b.status==='growing'?Math.max(0,Math.min(3,
@@ -592,13 +598,46 @@
        <small>${nextPondTier?'Cấp '+nextPondTier+': '+nextNames+' · bọt hồi nhanh hơn':'Đã mở toàn bộ 5 cấp hồ'} </small>
        <div class="garden-pond-path" role="list" aria-label="Lộ trình mở khóa cá">${[1,2,3,4,5].map(t=>`<span role="listitem" class="${g.pondTier===t?'is-current':g.pondTier>t?'is-cleared':'is-locked'}" title="Hồ ${t}: ${core.pondUnlocks(t).map(id=>core.FISH_SPECIES[id].name).join(', ')}">${t}<small>${core.pondUnlocks(t).length} cá</small></span>`).join('')}</div>
       </div>
+      <div class="garden-fish-tabs" data-arcade-panel="garden-album" role="tablist" aria-label="Chọn mục sổ cá">
+       ${[['atlas','Sổ cá'],['sets','Bộ cá'],['orders','Giao cá']].map(([id,label])=>`<button type="button" role="tab" data-arcade-fish-tab="${id}" aria-selected="${fishView===id}" class="${fishView===id?'is-active':''}">${label}${id==='sets'?' '+fishSetsComplete+'/'+core.FISH_COLLECTIONS.length:''}</button>`).join('')}
+      </div>
+      ${fishView==='atlas'?`<div class="garden-fish-showcase" data-arcade-panel="garden-album" aria-label="Cá trưng bày trong hồ">
+       <div class="garden-fish-section-head"><b>✦ Cá yêu thích</b><small>Chọn tối đa 3 loài đã câu</small></div>
+       <div class="garden-fish-showcase-grid">${[0,1,2].map(i=>{
+        const id=g.pondDisplay.filter(canSwim)[i];
+        return `<div class="garden-fish-showcase-slot ${id?'is-filled':''}">${id?`<span class="garden-fish-portrait fish-${id}" aria-hidden="true"></span><strong>${core.FISH_SPECIES[id].name}</strong>`:`<span aria-hidden="true">✧</span><small>Chỗ ${i+1}</small>`}</div>`;
+       }).join('')}</div>
+      </div>
+      ${fishRecords.length?`<div class="garden-fish-records" data-arcade-panel="garden-album"><b>🏆 Kỷ lục kích thước</b>
+       ${fishRecords.map(([id,size],i)=>`<span>${i+1}. ${core.FISH_SPECIES[id].name} <strong>${size} cm</strong></span>`).join('')}</div>`:''}
       <div class="garden-fish-album" data-arcade-panel="garden-album" aria-label="Sổ sưu tầm cá">${Object.entries(core.FISH_SPECIES).map(([id,fish])=>{
        const count=g.fishAlbum[id],known=count>0,unlocked=canSwim(id),tier=core.FISH_POND_LEVEL[id];
        return `<div class="garden-fish-entry fish-${id} ${known?'is-discovered':'is-unknown'} ${g.pondDisplay.includes(id)?'is-displayed':''}">
         <span class="garden-fish-art garden-fish-portrait ${known?'fish-'+id:'fish-undiscovered'}" aria-hidden="true"></span>
-        <div><strong>${known?fish.name:unlocked?'Chưa khám phá':'🔒 Chưa mở'}</strong><small>${known?fish.rarity+' · Kỷ lục '+g.fishBest[id]+' cm':unlocked?fish.habitat?'Chỉ gặp: '+fish.habitat:fish.rarity+' · Trong hồ':'Mở ở hồ cấp '+tier}</small>
+        <div><strong>${known?fish.name:unlocked?'Chưa khám phá':'🔒 Chưa mở'}</strong><small>${known?fish.rarity+' · Kỷ lục '+g.fishBest[id]+' cm · Dư '+core.fishAvailable(g,id):unlocked?fish.habitat?'Chỉ gặp: '+fish.habitat:fish.rarity+' · Trong hồ':'Mở ở hồ cấp '+tier}</small>
         ${known?button(!unlocked?'Hồ cấp '+tier:g.pondDisplay.includes(id)?'✓ Đang trưng':'Trưng bày','garden-display-'+id,'tool',!unlocked):''}</div>
-        <b>${known?'×'+count:'◈'}</b></div>`;}).join('')}</div>
+        <b>${known?'×'+count:'◈'}</b></div>`;}).join('')}</div>`:''}
+      ${fishView==='sets'?`<div class="garden-fish-set-list" data-arcade-panel="garden-album">${core.FISH_COLLECTIONS.map((set,i)=>{
+       const have=set.fish.filter(id=>g.fishAlbum[id]>0).length,done=g.fishSetsClaimed.includes(i);
+       const reward=[set.coins?fmt(set.coins)+' Xu':'',set.bait?'+'+set.bait+' mồi':'',set.moonBait?'+'+set.moonBait+' mồi xịn':''].filter(Boolean).join(' · ');
+       return `<div class="garden-fish-set-card ${done?'is-claimed':have===set.fish.length?'is-ready':''}"><div class="garden-fish-card-title"><b>✦ ${set.name}</b><small>${have}/${set.fish.length} loài</small></div>
+       <div class="garden-fish-set-icons">${set.fish.map(id=>`<div class="${g.fishAlbum[id]?'is-known':'is-locked'}"><span class="garden-fish-portrait ${g.fishAlbum[id]?'fish-'+id:'fish-undiscovered'}" aria-hidden="true"></span><small>${g.fishAlbum[id]?core.FISH_SPECIES[id].name:'Hồ cấp '+core.FISH_POND_LEVEL[id]}</small></div>`).join('')}</div>
+       <div class="garden-fish-card-foot"><small>🎁 ${reward}</small>${button(done?'✓ Đã nhận':'Nhận thưởng','garden-fish-set-'+i,'tool',done||have<set.fish.length)}</div></div>`;
+      }).join('')}</div>`:''}
+      ${fishView==='orders'?`<div class="garden-fish-orders" data-arcade-panel="garden-album">
+       <div class="garden-fish-section-head"><b>✦ Đơn cá một lần</b><small>Chỉ dùng cá trùng, giữ lại 1 con/loài</small></div>
+       ${core.FISH_ORDERS.map((order,i)=>{
+        const done=g.fishOrdersDone.includes(i),ready=Object.entries(order.need).every(([id,count])=>core.fishAvailable(g,id)>=count);
+        return `<div class="garden-fish-order"><div><strong>${order.name}</strong><small>${Object.entries(order.need).map(([id,count])=>core.FISH_SPECIES[id].name+' '+Math.min(core.fishAvailable(g,id),count)+'/'+count).join(' · ')}</small><small class="garden-fish-reward">🎁 ${fmt(order.coins)} Xu${order.bait?' · '+order.bait+' mồi':''}${order.moonBait?' · '+order.moonBait+' mồi xịn':''}</small></div>
+         ${button(done?'✓ Đã giao':'Giao cá','garden-fish-order-'+i,'tool',done||!ready)}</div>`;
+       }).join('')}
+       <div class="garden-fish-section-head garden-fish-weekly-head"><b>✧ Đổi cá dư</b><small>Còn ${tradeLeft}/${core.FISH_TRADE_LIMIT} lượt tuần này · không nhận Xu</small></div>
+       <div class="garden-fish-trade-grid">${extraFish.length?extraFish.map(id=>{
+        const rare=core.FISH_SPECIES[id].rare,cost=rare?1:2;
+        return `<div class="garden-fish-trade"><strong>${core.FISH_SPECIES[id].name}</strong><small>Cá dư ${core.fishAvailable(g,id)} · đổi ${cost} con</small>
+          ${button(rare?'✦ +1 mồi xịn':'✿ +1 mồi','garden-fish-trade-'+id,'tool',tradeLeft===0)}</div>`;
+       }).join(''):'<small class="garden-fish-empty">Câu thêm cá trùng để đổi lấy mồi.</small>'}</div>
+      </div>`:''}
       <div class="garden-tackle-shop" data-arcade-panel="garden-upgrades">
        <div class="garden-tackle-sign"><span>✧ BẾN TRĂNG · CỬA TIỆM CÂU</span><b>Đồ câu Hồ Sương</b><small>Chọn mồi, nâng cần rồi ra hồ ngay.</small></div>
        <div class="garden-tackle-offers">
@@ -901,6 +940,13 @@
    if(drawer?.dataset?.arcadeDrawer){
     drawerOpen=drawer.dataset.arcadeDrawer==='close'?null:drawer.dataset.arcadeDrawer;
     if(drawerOpen)exchangeOpen=false;
+    if(drawerOpen==='garden-album')fishView='atlas';
+    render();return;
+   }
+   const fishTab=event.target.closest?.('button[data-arcade-fish-tab]');
+   if(fishTab&&drawerOpen==='garden-album'&&['atlas','sets','orders'].includes(fishTab.dataset.arcadeFishTab)){
+    fishView=fishTab.dataset.arcadeFishTab;
+    const sheet=host()?.querySelector('.arcade-sheet-body');if(sheet)sheet.scrollTop=0;
     render();return;
    }
    if(event.target.classList?.contains('arcade-sheet-overlay')){

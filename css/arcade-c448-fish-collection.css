@@ -1,0 +1,112 @@
+/* C4.48 — compact fantasy collection, orders and spare-fish exchange. */
+#personal-arcade-v1 .garden-fish-tabs{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;min-width:0;
+}
+#personal-arcade-v1 .garden-fish-tabs button{
+ min-width:0;min-height:37px;padding:7px 3px;border-radius:9px;
+ border:1px solid #769487;background:linear-gradient(145deg,#24443f,#17353a);
+ color:#d4e7df;font:700 11px/1.25 system-ui,sans-serif;cursor:pointer;
+}
+#personal-arcade-v1 .garden-fish-tabs button.is-active{
+ border-color:#f1cf8f;color:#fff1bf;
+ background:linear-gradient(140deg,#6b6240,#315a4b);
+ box-shadow:inset 0 0 0 1px #e7d99a44;
+}
+#personal-arcade-v1 .garden-fish-section-head,
+#personal-arcade-v1 .garden-fish-card-title,
+#personal-arcade-v1 .garden-fish-card-foot{
+ display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;
+}
+#personal-arcade-v1 .garden-fish-section-head b,
+#personal-arcade-v1 .garden-fish-card-title b{font-size:11px;color:#ffebb6}
+#personal-arcade-v1 .garden-fish-section-head small,
+#personal-arcade-v1 .garden-fish-card-title small{font-size:9px;color:#cfdfd5;text-align:right}
+#personal-arcade-v1 .garden-fish-showcase,
+#personal-arcade-v1 .garden-fish-records,
+#personal-arcade-v1 .garden-fish-set-card,
+#personal-arcade-v1 .garden-fish-orders{
+ border:1px solid #91ad9a80;border-radius:12px;padding:10px;
+ background:linear-gradient(135deg,#26463e,#183b3b);
+}
+#personal-arcade-v1 .garden-fish-showcase-grid{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:9px;
+}
+#personal-arcade-v1 .garden-fish-showcase-slot{
+ display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+ min-width:0;min-height:88px;padding:5px 3px;border:1px dashed #688c80;
+ background:#122d2b88;border-radius:9px;color:#a2b6a7;
+}
+#personal-arcade-v1 .garden-fish-showcase-slot.is-filled{
+ border:1px solid #c4ae78;background:linear-gradient(150deg,#3b5042,#263b38);
+}
+#personal-arcade-v1 .garden-fish-showcase-slot>.garden-fish-portrait{
+ width:57px;height:48px;flex:none;filter:drop-shadow(0 3px 4px #071d1c);
+}
+#personal-arcade-v1 .garden-fish-showcase-slot strong,
+#personal-arcade-v1 .garden-fish-showcase-slot small{
+ font-size:9px;line-height:1.25;text-align:center;overflow-wrap:anywhere;
+}
+#personal-arcade-v1 .garden-fish-showcase-slot strong{color:#f6e3b5}
+#personal-arcade-v1 .garden-fish-records{display:flex;flex-direction:column;gap:6px}
+#personal-arcade-v1 .garden-fish-records>b{color:#ffecb8;font-size:11px}
+#personal-arcade-v1 .garden-fish-records>span{
+ display:flex;align-items:center;justify-content:space-between;gap:8px;
+ color:#e5e5d9;font-size:10px;
+}
+#personal-arcade-v1 .garden-fish-records strong{color:#ffe0a0;white-space:nowrap}
+#personal-arcade-v1 .garden-fish-set-list{display:flex;flex-direction:column;gap:9px;min-width:0}
+#personal-arcade-v1 .garden-fish-set-card.is-ready{border-color:#f3d38d}
+#personal-arcade-v1 .garden-fish-set-card.is-claimed{border-color:#8ac6a3;background:linear-gradient(145deg,#285147,#1b3c3b)}
+#personal-arcade-v1 .garden-fish-set-icons{
+ display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin:9px 0;
+}
+#personal-arcade-v1 .garden-fish-set-icons>div{
+ display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;
+ padding:5px 2px;border-radius:8px;background:#102c2d8c;
+ border:1px solid #738c7b4f;
+}
+#personal-arcade-v1 .garden-fish-set-icons>div.is-locked{opacity:.64}
+#personal-arcade-v1 .garden-fish-set-icons .garden-fish-portrait{width:52px;height:43px;max-width:100%}
+#personal-arcade-v1 .garden-fish-set-icons small{
+ color:#e7dfc4;text-align:center;font-size:8px;line-height:1.25;
+ overflow-wrap:anywhere;
+}
+#personal-arcade-v1 .garden-fish-card-foot small{
+ font-size:9px;line-height:1.5;color:#e7d6ac;min-width:0;
+}
+#personal-arcade-v1 .garden-fish-card-foot .arcade-button,
+#personal-arcade-v1 .garden-fish-order .arcade-button,
+#personal-arcade-v1 .garden-fish-trade .arcade-button{
+ flex:none;min-width:76px;min-height:32px;padding:6px;font-size:10px;
+}
+#personal-arcade-v1 .garden-fish-orders{display:flex;flex-direction:column;gap:8px}
+#personal-arcade-v1 .garden-fish-order{
+ display:flex;align-items:center;justify-content:space-between;gap:8px;
+ border:1px solid #6e938682;border-radius:10px;padding:9px;
+ background:#17342e95;min-width:0;
+}
+#personal-arcade-v1 .garden-fish-order>div{
+ display:flex;flex-direction:column;gap:4px;min-width:0;
+}
+#personal-arcade-v1 .garden-fish-order strong{font-size:11px;color:#f5e2b7}
+#personal-arcade-v1 .garden-fish-order small{font-size:9px;line-height:1.45;color:#d2dfd1}
+#personal-arcade-v1 .garden-fish-order .garden-fish-reward{color:#e9c990}
+#personal-arcade-v1 .garden-fish-weekly-head{margin-top:8px;padding-top:12px;border-top:1px solid #94b29d66}
+#personal-arcade-v1 .garden-fish-trade-grid{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;
+}
+#personal-arcade-v1 .garden-fish-trade{
+ display:flex;flex-direction:column;gap:5px;min-width:0;padding:9px;
+ background:#163630;border:1px solid #79998a8c;border-radius:10px;
+}
+#personal-arcade-v1 .garden-fish-trade strong{font-size:10px;color:#fae6bc;overflow-wrap:anywhere}
+#personal-arcade-v1 .garden-fish-trade small{font-size:9px;color:#b9d9c7}
+#personal-arcade-v1 .garden-fish-trade .arcade-button{width:100%;margin-top:auto}
+#personal-arcade-v1 .garden-fish-empty{grid-column:1/-1;font-size:10px;color:#c8d8ce}
+@media(max-width:355px){
+ #personal-arcade-v1 .garden-fish-set-card,
+ #personal-arcade-v1 .garden-fish-orders{padding:8px}
+ #personal-arcade-v1 .garden-fish-showcase-slot>.garden-fish-portrait{width:49px;height:42px}
+ #personal-arcade-v1 .garden-fish-set-icons .garden-fish-portrait{width:42px;height:36px}
+ #personal-arcade-v1 .garden-fish-card-foot .arcade-button{min-width:70px}
+}
