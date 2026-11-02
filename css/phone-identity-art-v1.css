@@ -18,12 +18,12 @@ body.dudu-phone-v11.dudu-live-mode #cyber-phone #phone-home-screen .dudu-honor-i
  box-shadow:none!important;
 }
 /* A real illustrated bezel for the entire player info panel, separate from the round portrait frame. */
-body.dudu-phone-v11.dudu-live-mode #cyber-phone #phone-home-screen #player-avatar-home-v16::before{
+body.dudu-phone-v11 #cyber-phone #phone-home-screen #player-avatar-home-v16::before{
  content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
  background:url('../assets/identity-frames/v1/player-panel.webp') center/100% 100% no-repeat;
  opacity:.9;
 }
-body.dudu-phone-v11.dudu-live-mode #cyber-phone #phone-home-screen #player-avatar-home-v16>*{
+body.dudu-phone-v11 #cyber-phone #phone-home-screen #player-avatar-home-v16>*{
  position:relative;z-index:2;
 }
 body.dudu-phone-v11 #cyber-phone #phone-home-screen #phone-player-avatar-v16{
@@ -49,6 +49,9 @@ body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-home-chip{
   linear-gradient(117deg,var(--honor-glass-first,rgba(20,28,49,.42)),var(--honor-glass-last,rgba(23,40,58,.35))) padding-box,
   linear-gradient(110deg,var(--honor-edge-first),var(--honor-edge-middle),var(--honor-edge-last)) border-box;
  box-shadow:inset 0 1px #ffffff21,0 3px 10px #03091c57,0 0 10px var(--honor-halo);
+}
+body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-home-chip:disabled{
+ opacity:.9;cursor:default;
 }
 body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-home-chip[data-rarity="rare"]{
  --honor-glass-first:rgba(13,53,59,.44);--honor-glass-last:rgba(13,33,49,.38);
