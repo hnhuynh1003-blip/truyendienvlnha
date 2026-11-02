@@ -37,6 +37,10 @@
  let revealMoment=null,luckyOutcomeMoment=null;
  let scratchLocal={id:null,cells:new Set()};
  let noticeText='';
+ // One shared in-flight FUN operation per page. Individual games already use
+ // Firestore transactions/receipts; this stops ordinary fast cross-tab clicks
+ // from racing stale balance displays or starting two purchases together.
+ let funActionBusy=false;
  function stored(){
   if(sandbox())return userProfile.duduFunV43;
   return liveLoaded?liveState:null;
@@ -95,9 +99,9 @@
   }).finally(()=>{if(blindUid!==uid)return;blindLoading=false;render();});
  }
  async function blindAction(kind,mode){
-  if(!signed()||!blindLoaded||blindBusy||!blindBridge()?.ready?.())return;
+  if(!signed()||!blindLoaded||blindBusy||funActionBusy||!blindBridge()?.ready?.())return;
   const uid=blindUid;
-  blindBusy=true;message('');
+  blindBusy=true;funActionBusy=true;message('');
   // Immediate button feedback while the existing Firestore transaction runs.
   const actionButton=document.querySelector('#dudu-fun-content-v43 .'+
    (kind==='claim'?'blind-reveal':mode==='free'?'blind-free':'blind-paid'));
@@ -129,12 +133,12 @@
    message(reasons[error?.reason]||root.DuduPersonalErrorC416?.message(error,
     'Chưa mở được hộp. Hãy thử lại.')||'Chưa mở được hộp. Hãy thử lại.');
    blindLoaded=false;blindError=false;
-  }finally{blindBusy=false;render();}
+  }finally{blindBusy=false;funActionBusy=false;render();}
  }
  async function luckyAction(kind,cell){
-  if(!signed()||!luckyLoaded||luckyBusy||!luckyBridge()?.ready?.())return false;
+  if(!signed()||!luckyLoaded||luckyBusy||funActionBusy||!luckyBridge()?.ready?.())return false;
   const uid=luckyUid,ticket=luckyState?.active;
-  luckyBusy=true;message('');
+  luckyBusy=true;funActionBusy=true;message('');
   try{
    const opts={kind,id:kind==='buy'?crypto.randomUUID():ticket?.id};
    if(kind==='buy'){
@@ -170,7 +174,7 @@
     'Chưa thực hiện được. Hãy kiểm tra kết nối rồi thử lại.');
    luckyLoaded=false;luckyError=false;
    return false;
-  }finally{luckyBusy=false;render();}
+  }finally{luckyBusy=false;funActionBusy=false;render();}
  }
  function rng(){
   const a=new Uint32Array(2);
@@ -195,9 +199,9 @@
   if(notice)notice.textContent=msg;
  }
  async function liveAction(kind,options={}){
-  if(!signed()||!liveLoaded||processing||!bridge()?.ready?.())return false;
+  if(!signed()||!liveLoaded||processing||funActionBusy||!bridge()?.ready?.())return false;
   const uid=liveUid,type=open;
-  processing=true;message('');
+  processing=true;funActionBusy=true;message('');
   try{
    const opts={kind,type,...options};
    if(kind==='begin')Object.assign(opts,rng());
@@ -230,7 +234,7 @@
    // A second device may have changed the round; reread before retrying.
    liveState=null;liveLoaded=false;liveError=false;
    return false;
-  }finally{processing=false;render();}
+  }finally{processing=false;funActionBusy=false;render();}
  }
  function begin(theme){
   if(!sandbox()){void liveAction('begin',{theme});return;}
@@ -415,7 +419,7 @@
    const stage=el('div','blind-opening-stage');
    stage.append(chestArt(false));
    const claim=el('button','dudu-fun-claim blind-reveal','✦ MỞ HỘP NGAY');
-   claim.type='button';claim.disabled=blindBusy;
+   claim.type='button';claim.disabled=blindBusy||funActionBusy;
    claim.addEventListener('click',()=>{void blindAction('claim');});
    stage.append(claim);rootNode.append(stage);
   }else{
@@ -455,11 +459,11 @@
    const controls=el('div','blind-buy-actions');
    if(s.lastFreeDay!==day()){
     const free=el('button','dudu-fun-start blind-free','🎁 MỞ MIỄN PHÍ HÔM NAY');
-    free.type='button';free.disabled=blindBusy;
+    free.type='button';free.disabled=blindBusy||funActionBusy;
     free.addEventListener('click',()=>{void blindAction('start','free');});controls.append(free);
    }else controls.append(el('small','blind-free-done','✓ Đã dùng lượt tặng hôm nay'));
    const paid=withGold('button','dudu-fun-start blind-paid','✨ MUA HỘP · ',blind().PRICE);
-   paid.type='button';paid.disabled=blindBusy||walletBalance()<blind().PRICE;
+   paid.type='button';paid.disabled=blindBusy||funActionBusy||walletBalance()<blind().PRICE;
    paid.addEventListener('click',()=>{void blindAction('start','paid');});
    controls.append(paid);rootNode.append(controls);
   }
@@ -687,7 +691,7 @@
     const opened=a.status!=='playing'||scratchLocal.cells.has(i),
      tile=el('button','lucky-number-cell'+(opened?' revealed':' covered')+
        (opened&&entry.match?' matched':''));
-    tile.type='button';tile.disabled=opened||luckyBusy;
+    tile.type='button';tile.disabled=opened||luckyBusy||funActionBusy;
     tile.setAttribute('aria-label',opened?'Số '+entry.number:'Cào ô số '+(i+1));
     if(opened)tile.append(el('strong','',entry.number),
      gold('small','',entry.prize.toLocaleString('vi-VN')));
@@ -731,7 +735,7 @@
    if(a.status==='ready'){
     const claim=a.amount?withGold('button','dudu-fun-claim lucky-claim','NHẬN ',a.amount.toLocaleString('vi-VN')):
      el('button','dudu-fun-claim lucky-claim','✓ HOÀN TẤT VÉ');
-    claim.disabled=luckyBusy;claim.addEventListener('click',()=>{void luckyAction('claim');});
+    claim.disabled=luckyBusy||funActionBusy;claim.addEventListener('click',()=>{void luckyAction('claim');});
     rootNode.append(claim);
    }
    if(a.status==='claimed')rootNode.append(el('p','lucky-last-win',a.amount?
@@ -740,7 +744,7 @@
   }
   if(!a||a.status==='claimed'){
    const buy=withGold('button','dudu-fun-start lucky-buy','🧧 MUA VÉ · ',rule.PRICE);
-   buy.type='button';buy.disabled=luckyBusy||walletBalance()<rule.PRICE;
+   buy.type='button';buy.disabled=luckyBusy||funActionBusy||walletBalance()<rule.PRICE;
    buy.addEventListener('click',()=>{void luckyAction('buy');});rootNode.append(buy);
   }
   const odds=el('details','lucky-odds');
@@ -784,14 +788,14 @@
    for(const design of rule.THEMES){
     const count=s.album[design.id]||0;
     const tile=el('button','lucky-theme lucky-theme-'+design.id+(luckyTheme===design.id?' selected':''));
-    tile.type='button';tile.disabled=luckyBusy;tile.setAttribute('aria-pressed',String(luckyTheme===design.id));
+    tile.type='button';tile.disabled=luckyBusy||funActionBusy;tile.setAttribute('aria-pressed',String(luckyTheme===design.id));
     tile.append(el('span','lucky-theme-icon',design.symbol),
      el('b','',design.name),el('small','',count?'Đã chọn '+count+' lượt':'Chọn mẫu vé'));
     tile.addEventListener('click',()=>{luckyTheme=design.id;render();});shelf.append(tile);
    }
    rootNode.append(shelf);
    const buy=withGold('button','dudu-fun-start lucky-buy','🧧 MUA VÉ · ',rule.PRICE);
-   buy.disabled=luckyBusy||walletBalance()<rule.PRICE;
+   buy.disabled=luckyBusy||funActionBusy||walletBalance()<rule.PRICE;
    buy.type='button';buy.addEventListener('click',()=>{void luckyAction('buy');});
    rootNode.append(buy);
   }
@@ -809,7 +813,7 @@
    for(let i=0;i<9;i++){
     const opened=active.cells.includes(i);
     const tile=el('button','lucky-scratch-cell'+(opened?' opened':''),opened?symbols[i]:'✦');
-    tile.type='button';tile.disabled=opened||active.status!=='playing'||luckyBusy;
+    tile.type='button';tile.disabled=opened||active.status!=='playing'||luckyBusy||funActionBusy;
     tile.setAttribute('aria-label',opened?'Ô '+(i+1)+' đã cào':'Cào ô '+(i+1));
     tile.addEventListener('click',()=>{void luckyAction('scratch',i);});
     grid.append(tile);
@@ -823,7 +827,7 @@
    if(active.status==='ready'){
     const claim=active.amount?withGold('button','dudu-fun-claim lucky-claim','🧧 Nhận ',active.amount):
      el('button','dudu-fun-claim lucky-claim','✓ Hoàn tất lượt cào');
-    claim.disabled=luckyBusy;claim.addEventListener('click',()=>{void luckyAction('claim');});
+    claim.disabled=luckyBusy||funActionBusy;claim.addEventListener('click',()=>{void luckyAction('claim');});
     rootNode.append(claim);
    }
    if(active.status==='claimed')rootNode.append(el('p','lucky-last-win',
