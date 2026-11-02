@@ -90,7 +90,11 @@
     return {status:'applied',kind,currency:currency-bet,state:next};
    }
    const active=state.active;
-   if(!active||active.id!==id)throw fail('spin-not-found');
+   if(!active||active.id!==id){
+    if(state.history.some(item=>item.id===id))return {
+     status:'already-applied',kind,currency,state};
+    throw fail('spin-not-found');
+   }
    if(active.status==='claimed')return {status:'already-applied',kind,currency,state};
    if(currency>MAX_WALLET-active.payout)throw fail('wallet-cap');
    const next={...state,active:{...active,status:'claimed'},

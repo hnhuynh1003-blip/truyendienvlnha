@@ -90,6 +90,9 @@ test('CASINO-SLOT1 receipt: unfinished spins block new bets, insufficient Xu blo
  assert.equal(e.accounts.get('du').currency,6);
  await e.run('claim',2);
  assert.equal(e.accounts.get('du').currency,10506);
+ const after=e.writes;
+ assert.equal((await e.run('claim',1)).status,'already-applied');
+ assert.equal(e.writes,after);
  const poor=env(9);
  await assert.rejects(poor.run('start',1),x=>x.reason==='not-enough-xu');
  assert.equal(poor.writes,0);
