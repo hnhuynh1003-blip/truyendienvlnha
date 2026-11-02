@@ -43,12 +43,13 @@ async function main(){
   await page.locator('#auth-username').fill('c446b-farmer');
   await page.getByRole('button',{name:'Đổi tài khoản thử'}).click();
   await page.waitForFunction(()=>typeof currentUsername!=='undefined'&&currentUsername==='c446b-farmer');
+  if(await modal.isVisible())await modal.getByRole('button',{name:'Đóng'}).click();
   await page.evaluate(()=>{
    if(document.getElementById('cyber-phone').style.display!=='flex')togglePhone();
    openPhoneApp('arcade');
    const time=Date.now(),core=window.DuduPersonalArcadeCoreV1;
    const saved=core.fresh(time);
-   saved.coins=1234;saved.garden.plots=4;saved.garden.harvests=35;
+   saved.coins=1234;saved.neon.running=false;saved.garden.plots=4;saved.garden.harvests=35;
    saved.garden.fishAlbum.reed=4;
    saved.garden.beds=[
     {status:'growing',crop:'bloom',readyAt:time+60000},
