@@ -44,6 +44,12 @@ async function main(){
   await page.locator('#auth-username').fill('c443-reader-tester');
   await page.getByRole('button',{name:'Đổi tài khoản thử'}).click();
   await page.waitForFunction(()=>currentUsername==='c443-reader-tester');
+  // The initial Sandbox welcome dialog can be scheduled for 600ms after
+  // boot. If a fast test signs in before that timer fires, it reopens over
+  // the reader and intercepts real tap gestures. Let it settle, then dismiss
+  // it through the existing UI just as a user would.
+  await page.waitForTimeout(700);
+  if(await modal.isVisible())await modal.getByRole('button',{name:'Đóng'}).click();
   await page.evaluate(()=>{
    // Long-form fixture belongs to the isolated Sandbox browser context only.
    novels[0].chapters[0].content=Array.from({length:90},(_,i)=>
