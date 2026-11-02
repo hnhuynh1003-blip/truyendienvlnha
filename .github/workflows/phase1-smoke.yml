@@ -56,6 +56,8 @@ jobs:
           npx playwright install chromium --with-deps
       - name: C4.46b garden back navigation on desktop and four mobile widths (Sandbox)
         run: node tests/browser-arcade-garden-c446b.cjs
+      - name: C4.47 pond tiers and collection journal on four mobile widths (Sandbox)
+        run: node tests/browser-arcade-pond-c447.cjs
       - name: V71 main production-mode browser acceptance (no Sandbox, no external writes)
         run: |
           node tests/browser-main-system-v71.cjs

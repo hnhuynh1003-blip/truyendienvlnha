@@ -53,13 +53,15 @@ test('C4.42 garden harvests physical produce and mixed orders only once',()=>{
  assert.deepEqual(game.norm(copy(s),T).garden.cropOrdersDone,[0]);
 });
 
-test('C4.42 pond tier gates only ordinary species, event fish bypass tiers, display is historical',()=>{
+test('C4.47 pond tier gates every encounter, while historical display records survive',()=>{
  const threshold=.9;
- assert.equal(game.choosePondFish(.99,threshold,T,1),'moonfish');
- assert.equal(game.choosePondFish(.99,threshold,T,3),'crystal');
- assert.equal(game.choosePondFish(.999,threshold,T,4),'dragon');
- assert.equal(game.choosePondFish(.999,threshold,T,1),'moonfish');
- assert.equal(game.choosePondFish(.958,threshold,0,1),'fogveil','Mist fish stays available as a weather event');
+ assert.equal(game.choosePondFish(.99,threshold,T,1),'silver');
+ assert.equal(game.choosePondFish(.99,threshold,T,3),'lantern');
+ assert.equal(game.choosePondFish(.99,threshold,T,4),'crystal');
+ assert.equal(game.choosePondFish(.999,threshold,T,5),'dragon');
+ assert.equal(game.choosePondFish(.999,threshold,T,1),'silver');
+ assert.notEqual(game.choosePondFish(.958,threshold,0,1),'fogveil','Event fish needs a suitable pond');
+ assert.equal(game.choosePondFish(.958,threshold,0,3),'fogveil','Mist fish opens with pond level 3');
  let s=game.fresh(T);s.garden.fishAlbum.dragon=1;
  s=use(s,'garden-display-dragon').state;
  assert.deepEqual(s.garden.pondDisplay,['dragon']);

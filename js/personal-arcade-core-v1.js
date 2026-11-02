@@ -63,7 +63,21 @@
  const FISH_BITE_MIN=3000,FISH_BITE_SPAN=3000,FISH_REEL_WINDOW=25000;
  const FISH_COMMON=['reed','carp','silver','koi','blue','glassfin'];
  const FISH_RARE=['moonfish','lantern','crystal','phoenix','dragon'];
- const FISH_POND_LEVEL=Object.freeze({moonfish:1,lantern:2,crystal:3,dragon:4,phoenix:5});
+ // C4.47: one source of truth for both the pond encounter pool and collection hints.
+ // Weather fish still require their own weather/time condition after this level gate.
+ const FISH_POND_LEVEL=Object.freeze({
+  reed:1,carp:1,silver:1,
+  koi:2,blue:2,moonfish:2,rainpetal:2,
+  glassfin:3,lantern:3,fogveil:3,
+  crystal:4,nightlamp:4,
+  dragon:5,phoenix:5
+ });
+ const FISH_WEIGHT=Object.freeze({
+  reed:30,carp:26,silver:24,koi:10,blue:7,glassfin:3,
+  moonfish:56,lantern:25,crystal:17,dragon:1.2,phoenix:.8
+ });
+ const pondUnlocks=tier=>Object.keys(FISH_POND_LEVEL).filter(id=>FISH_POND_LEVEL[id]===tier);
+ const pondCanHost=(id,tier)=>FISH_POND_LEVEL[id]!=null&&FISH_POND_LEVEL[id]<=tier;
  // A fictional 60-minute pond weather cycle (three 20-minute phases), not
  // actual weather or server state. No extra saved fields, rewards or timers.
  const GARDEN_WEATHER_INTERVAL=20*60*1000;
@@ -97,10 +111,15 @@
   const expense=1+neon.roomTier+guests+neon.snack;
   return {guests,revenue,expense,profit:Math.max(0,revenue-expense)};
  };
- function chooseFish(roll,threshold){
+ function chooseFish(roll,threshold,pondTier=1){
   const rare=roll>=threshold,scaled=rare?(roll-threshold)/(1-threshold):roll/threshold;
-  const limits=rare?[.55,.72,.94,.985,1]:[.27,.5,.7,.85,.96,1];
-  return (rare?FISH_RARE:FISH_COMMON)[limits.findIndex(limit=>scaled<limit)];
+  const unlocked=(rare?FISH_RARE:FISH_COMMON).filter(id=>pondCanHost(id,pondTier));
+  // A starter pond cannot spawn a rare fish, but a rare roll is not wasted.
+  const pool=unlocked.length?unlocked:FISH_COMMON.filter(id=>pondCanHost(id,pondTier));
+  const total=pool.reduce((sum,id)=>sum+FISH_WEIGHT[id],0);
+  let point=Math.max(0,Math.min(.999999,scaled))*total;
+  for(const id of pool){point-=FISH_WEIGHT[id];if(point<0)return id;}
+  return pool.at(-1)||'reed';
  }
  function gardenWeather(now=Date.now()){
   const time=Number.isSafeInteger(now)&&now>=0?now:Date.now();
@@ -110,17 +129,15 @@
    night:hour>=19||hour<6};
  }
  function choosePondFish(roll,threshold,time,pondTier=1){
-  const fish=chooseFish(roll,threshold),rare=roll>=threshold;
+  const tier=Math.max(1,Math.min(5,Math.floor(pondTier)||1));
+  const fish=chooseFish(roll,threshold,tier),rare=roll>=threshold;
   const scaled=rare?(roll-threshold)/(1-threshold):roll/threshold;
   const weather=gardenWeather(time);
-  // Event fish replace a slice of their *existing* rarity band. Neither the
-  // overall rare odds nor the normal/rare Xu payouts change with weather.
-  if(!rare&&weather.id==='rain'&&scaled>=.85&&scaled<.96)return 'rainpetal';
-  if(rare&&weather.id==='mist'&&scaled>=.55&&scaled<.72)return 'fogveil';
-  if(rare&&weather.night&&scaled>=.39&&scaled<.55)return 'nightlamp';
-  // Weather/event fish bypass pond-level gates. Standard rare fish do not.
-  if(FISH_POND_LEVEL[fish]>pondTier)return Object.keys(FISH_POND_LEVEL)
-   .filter(id=>FISH_POND_LEVEL[id]<=pondTier).at(-1)||'moonfish';
+  // Weather/event fish replace a slice of their rarity band only if unlocked.
+  // A high rolled value no longer creates legendary fish in a starter pond.
+  if(pondCanHost('rainpetal',tier)&&!rare&&weather.id==='rain'&&scaled>=.85&&scaled<.96)return 'rainpetal';
+  if(pondCanHost('fogveil',tier)&&rare&&weather.id==='mist'&&scaled>=.55&&scaled<.72)return 'fogveil';
+  if(pondCanHost('nightlamp',tier)&&rare&&weather.night&&scaled>=.39&&scaled<.55)return 'nightlamp';
   return fish;
  }
  const MINE_PERMITS=Object.freeze([
@@ -746,7 +763,7 @@
   neonCapacity,neonService,NEON_SERVICE_INTERVAL,NEON_ORDER_COOLDOWN,neonOrderPattern,
   neonBeatPattern,neonBeatWindow,mineProbeTarget,seasonGame,
   WATER_INTERVAL,REPAIR_INTERVAL,MINE_DIG_INTERVAL,GROW_INTERVAL,BUBBLE_INTERVAL,ORE_VALUES,ORE_NAMES,
-  CROPS,GARDEN_ORDERS,FISH_SPECIES,FISH_POND_LEVEL,FISH_REEL_WINDOW,GARDEN_WEATHER_INTERVAL,gardenWeather,choosePondFish,
+  CROPS,GARDEN_ORDERS,FISH_SPECIES,FISH_POND_LEVEL,pondUnlocks,pondCanHost,FISH_REEL_WINDOW,GARDEN_WEATHER_INTERVAL,gardenWeather,choosePondFish,
   MINE_PERMITS,
   maxCharge,zoneUnlocked,cropUnlocked,maxDurability,bubbleInterval,
   JADE:jadeGame,NEON_EVENTS:neonGame});

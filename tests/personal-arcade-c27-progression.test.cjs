@@ -106,7 +106,7 @@ test('Garden seed selection, extra beds, irrigation and two-stage crop timers af
 });
 
 test('Garden fishing waits for a bite and pond level gates standard fish',()=>{
- let state=arcade.fresh(START);state.coins=8000;state.garden.pondTier=3;
+ let state=arcade.fresh(START);state.coins=8000;state.garden.pondTier=4;
  assert.equal(act(state,'cast-line').ok,false);
  state=arcade.advance(state,START+arcade.BUBBLE_INTERVAL,0);
  state=act(state,'catch-bubble',.5,START+arcade.BUBBLE_INTERVAL).state;

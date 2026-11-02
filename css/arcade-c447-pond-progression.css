@@ -1,0 +1,32 @@
+/* C4.47 — five meaningful pond tiers without adding scenery over the AI lake. */
+#personal-arcade-v1 .garden-pond-progress{
+ flex:none;margin:0;padding:10px;border-color:#a7c39b89;
+ background:linear-gradient(155deg,#23473e,#1a343a);
+}
+#personal-arcade-v1 .garden-pond-progress>b{color:#ffe4ad;font-size:12px}
+#personal-arcade-v1 .garden-pond-progress>small{
+ margin-top:5px;font-size:9px;line-height:1.6;color:#d2e0d3;
+}
+#personal-arcade-v1 .garden-pond-path{
+ display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;margin-top:10px;
+}
+#personal-arcade-v1 .garden-pond-path>span{
+ display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+ min-height:38px;border:1px solid #6e8886;border-radius:8px;background:#21373c;
+ color:#b2bfba;font:800 13px/1 system-ui,sans-serif;
+}
+#personal-arcade-v1 .garden-pond-path>span small{font:700 8px/1.3 system-ui,sans-serif;color:inherit;margin:0}
+#personal-arcade-v1 .garden-pond-path .is-cleared{background:#294e47;border-color:#7cb69d;color:#d0ead6}
+#personal-arcade-v1 .garden-pond-path .is-current{
+ border-color:#f0d092;background:linear-gradient(145deg,#6e6744,#315948);
+ color:#fff0c0;box-shadow:inset 0 0 0 1px #ead6a44d,0 0 11px #ddc88035;
+}
+#personal-arcade-v1 .garden-pond-next{
+ flex:none;display:flex;flex-direction:column;gap:5px;padding:10px 12px;
+ border:1px solid #a9c3a588;border-radius:11px;
+ background:linear-gradient(125deg,#365b48,#1d4142);
+}
+#personal-arcade-v1 .garden-pond-next b{font-size:11px;color:#ffe9b0}
+#personal-arcade-v1 .garden-pond-next small{font-size:9px;line-height:1.5;color:#cde6d5}
+#personal-arcade-v1 .garden-fish-entry.is-unknown{opacity:.9}
+#personal-arcade-v1 .garden-fish-entry.is-unknown strong{color:#d3ded7}

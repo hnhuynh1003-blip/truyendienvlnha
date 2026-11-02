@@ -8,8 +8,8 @@ const fishing=require('../js/personal-arcade-fishing-c425f.js');
 const src=file=>readFileSync(join(__dirname,'..',file),'utf8');
 const STEP=core.GARDEN_WEATHER_INTERVAL,BASE=Math.floor(1793440000000/(STEP*3))*STEP*3;
 const slot=i=>BASE+i*STEP+1000;
-const cast=(time,roll,premium=false)=>{
- const s=core.fresh(time);s.garden.bait=1;s.garden.moonBait=1;
+const cast=(time,roll,premium=false,pondTier=1)=>{
+ const s=core.fresh(time);s.garden.bait=1;s.garden.moonBait=1;s.garden.pondTier=pondTier;
  return core.act(s,premium?'cast-premium-line':'cast-line',time,roll);
 };
 
@@ -33,31 +33,34 @@ test('C4.28 weather rotates predictably without changing saved state',()=>{
  }
 });
 
-test('Rain and mist fish appear only in their conditions with existing rarity odds',()=>{
- const rareRoll=.94+.6*.06,commonRoll=.94*.9;
- const mist=cast(slot(0),rareRoll),rain=cast(slot(1),rareRoll);
+test('Rain and mist fish require the correct pond tier and weather',()=>{
+ const rareRoll=.9+.6*.1,commonRoll=.92*.9;
+ const mist=cast(slot(0),rareRoll,false,3),rain=cast(slot(1),rareRoll,false,3);
  assert.equal(mist.state.garden.line.fishId,'fogveil');
- assert.equal(rain.state.garden.line.fishId,'moonfish','Ordinary lantern fish waits for pond tier 2');
+ assert.equal(rain.state.garden.line.fishId,'moonfish');
  assert.equal(core.FISH_SPECIES[mist.state.garden.line.fishId].rare,true);
- const rainFish=cast(slot(1),commonRoll),clear=cast(slot(2),commonRoll);
+ const rainFish=cast(slot(1),commonRoll,false,2),clear=cast(slot(2),commonRoll,false,2);
  assert.equal(rainFish.state.garden.line.fishId,'rainpetal');
- assert.equal(clear.state.garden.line.fishId,'blue');
+ assert.equal(clear.state.garden.line.fishId,'koi');
+ assert.notEqual(cast(slot(0),rareRoll).state.garden.line.fishId,'fogveil');
+ assert.notEqual(cast(slot(1),commonRoll).state.garden.line.fishId,'rainpetal');
  assert.equal(core.FISH_SPECIES.rainpetal.rare,false);
 });
 
 test('Night-only fish depends on local evening, not buying a special lure',()=>{
  const evening=new Date(2026,9,31,21,0).getTime();
  const day=new Date(2026,9,31,13,0).getTime();
- const rareRoll=.94+.47*.06;
+ const rareRoll=.88+.47*.12;
  assert.equal(core.gardenWeather(evening).night,true);
  assert.equal(core.gardenWeather(day).night,false);
- assert.equal(cast(evening,rareRoll).state.garden.line.fishId,'nightlamp');
- assert.equal(cast(day,rareRoll).state.garden.line.fishId,'moonfish');
+ assert.equal(cast(evening,rareRoll,false,4).state.garden.line.fishId,'nightlamp');
+ assert.equal(cast(day,rareRoll,false,4).state.garden.line.fishId,'moonfish');
+ assert.notEqual(cast(evening,rareRoll,false,3).state.garden.line.fishId,'nightlamp');
 });
 
 test('Premium bait increases rarity as before; weather fish still need skill and pay old Arcade rewards',()=>{
  const time=slot(0),premiumRareRoll=.76+.6*.24;
- const premium=cast(time,premiumRareRoll,true);
+ const premium=cast(time,premiumRareRoll,true,3);
  assert.equal(premium.ok,true);
  assert.equal(premium.state.garden.line.fishId,'fogveil');
  assert.equal(premium.state.garden.moonBait,0);

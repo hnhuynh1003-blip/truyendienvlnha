@@ -87,7 +87,7 @@ test('C4.10 Garden journey: plant, mature, fish, collect and unlock fish achieve
  assert.equal(s.coins,50);
  s=doAct(s,'catch-bubble',mature);
  assert.equal(s.garden.bait,1);
- s.garden.pondTier=4;
+ s.garden.pondTier=5;
  s=doAct(s,'cast-line',mature,.9999);
  const before=s.garden.fish;
  assert.equal(arcade.act(s,'reel-line',mature).ok,false,'Cannot reel before bite');

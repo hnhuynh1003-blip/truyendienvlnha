@@ -47,8 +47,8 @@ test('Tackle shop sells finite Arcade bait packs, never grants earned Xu',()=>{
  assert.equal(act(full,'buy-moon-bait').ok,false,'bait inventory has a cap');
 });
 
-test('Moon bait changes actual bite rarity, is consumed once, and remains a skill catch',()=>{
- const s=core.fresh(T);s.garden.bait=1;s.garden.moonBait=2;
+test('Moon bait changes actual bite rarity after rare fish unlock, and remains a skill catch',()=>{
+ const s=core.fresh(T);s.garden.bait=1;s.garden.moonBait=2;s.garden.pondTier=2;
  const common=act(s,'cast-line',.79);
  const premium=act(s,'cast-premium-line',.79);
  assert.equal(common.ok,true);assert.equal(premium.ok,true);
@@ -73,7 +73,7 @@ test('Moon bait changes actual bite rarity, is consumed once, and remains a skil
 });
 
 test('All three new fish can be encountered with ordinary bait once the pond is upgraded',()=>{
- const samples=[['glassfin',.91,1],['lantern',.976,2],['phoenix',.994,5]];
+ const samples=[['glassfin',.899,3],['lantern',.989,3],['phoenix',.9978,5]];
  for(const [expected,roll,pondTier] of samples){
   const s=core.fresh(T);s.garden.bait=1;s.garden.pondTier=pondTier;
   const result=act(s,'cast-line',roll);
