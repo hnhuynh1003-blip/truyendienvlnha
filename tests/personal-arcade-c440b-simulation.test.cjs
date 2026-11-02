@@ -19,7 +19,7 @@ test('C4.40B repeatable scenarios quantify open-tab income without fabricating o
 test('C4.40B premium bait projection is explicitly an upper bound, not a promise of a catch',()=>{
  const starter=sim.fishCatchCeiling(1,1,true);
  const endgame=sim.fishCatchCeiling(5,5,true);
- assert.equal(starter.rarePct,24);
+ assert.equal(starter.rarePct,0,'Tier-1 lake does not host rare fish even with premium bait');
  assert.equal(endgame.rarePct,43);
  assert.ok(endgame.netPerSuccessfulCastXu>starter.netPerSuccessfulCastXu);
  const sample=arcade.fresh(NOW);sample.coins=60;
@@ -36,7 +36,8 @@ test('C4.40B all Jade markets retain jackpots but new stones no longer compound 
  for(let site=1;site<5;site++){
   const old=rows[site].legacyV2,newer=rows[site].newV3;
   assert.ok(newer.netPerStoneXu<old.netPerStoneXu,'Profit decreases at '+site);
-  assert.ok(newer.netPerStoneXu>0,'Risky but viable expert market at '+site);
+  assert.ok(newer.netPerStoneXu>-4&&newer.netPerStoneXu<9,
+   'Blind bulk cutting is near breakeven, not a Xu faucet, at market '+site);
   assert.ok(newer.profitablePct<50,'Most new high-tier purchases do not guarantee profit');
  }
  assert.ok(rows[4].newV3.maxPayoutXu>rows[4].priceXu*10,

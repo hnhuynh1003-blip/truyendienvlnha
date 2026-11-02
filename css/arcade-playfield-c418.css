@@ -290,6 +290,8 @@
  color:#ffdf99;font:900 10px ui-monospace,monospace;
  white-space:nowrap;text-shadow:0 0 10px #ffcc6170;
 }
+#personal-arcade-v1 .jade-stall-pricing{display:grid;gap:2px;min-width:0;text-align:right}
+#personal-arcade-v1 .jade-stall-pricing small{font-size:8px;color:#cbdcc9;line-height:1.2}
 #personal-arcade-v1 .jade-market-tray{margin:0;padding:0;border:0}
 #personal-arcade-v1 .jade-market-tray summary{
  display:flex;align-items:center;justify-content:space-between;gap:4px;

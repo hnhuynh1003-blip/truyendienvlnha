@@ -154,7 +154,7 @@
       ${jade.MARKETS.map((m,i)=>{const unlocked=jade.unlocked(j,i);
        return `<button type="button" class="jade-market-stop jade-stop-${i} ${active===i?'is-active':''} ${unlocked?'':'is-locked'}"
         ${unlocked?'data-jade-market-switch':'data-jade-market-lock'}="${i}" aria-pressed="${active===i}"
-        aria-label="${m.short}${unlocked?' · '+fmt(m.price)+' Xu/viên':' · chưa mở, chạm để xem điều kiện'}" title="${unlocked?m.name:m.unlock}">
+        aria-label="${m.short}${unlocked?' · '+fmt(jade.purchasePrice(j,i))+' Xu/viên':' · chưa mở, chạm để xem điều kiện'}" title="${unlocked?m.name:m.unlock}">
         <span class="jade-market-stop-icon" aria-hidden="true">${unlocked?['◈','≋','◇','◆','✵'][i]:'🔒'}</span>
         <strong>${m.short}</strong></button>`;}).join('')}
      </div>
@@ -171,7 +171,8 @@
         data-jade-preview-slot="${slot}" aria-pressed="${chosen===slot}" style="--jade-item-x:${((i+slot)%5)*25}%" aria-label="Xem phôi ${['A','B','C'][slot]} tại sạp ${m.short}"><span>${['A','B','C'][slot]}</span></button>`).join('')}
       </div>
       <div class="jade-market-top"><div class="jade-market-copy"><b>${m.name}</b>
-       <small>${m.skin}</small></div><strong class="jade-stall-price">${fmt(m.price)} Xu/viên</strong></div>
+       <small>${m.skin}</small></div><div class="jade-stall-pricing"><strong class="jade-stall-price">${fmt(jade.purchasePrice(j,i))} Xu/viên</strong>
+       ${jade.stallFee(j,i)?`<small>Gồm phí quầy ${fmt(jade.stallFee(j,i))} Xu</small>`:''}</div></div>
       <details class="jade-market-tray ${chosen!==null?'is-focused':''}" data-market-stall="${i}" ${openStall===i?'open':''} data-selected-slot="${chosen??'all'}">
        <summary>${chosen===null?'◈ Tự lựa 3 viên':'◈ Đang xem phôi '+['A','B','C'][chosen]} <span>Quan sát · Soi · Mang về</span></summary>
        ${chosen!==null?'<div class="jade-preview-compare"><button type="button" data-jade-preview-all="1">↔ So sánh cả 3 viên</button></div>':''}
@@ -192,11 +193,11 @@
       </details>
       <div class="jade-market-bundles" aria-label="Mua nhanh đá ${m.short}">
        <small>MUA LÔ NGẪU NHIÊN</small>
-       ${[1,3,5].map(q=>{const cost=(q-(free?1:0))*m.price;
+       ${[1,3,5].map(q=>{const cost=(q-(free?1:0))*jade.purchasePrice(j,i);
         return btn(q+' viên · '+(cost?fmt(cost)+' Xu':'Tặng'),'jade-buy-pack-'+i+'-'+q,
          'market',held+q>jade.MAX_STONES||s.coins<cost);}).join('')}</div>
       </section>`;}).join('')}
-    <p class="jade-market-fairness">✧ Ruột đá chưa biết. Soi tốn phí, không đảm bảo trúng.</p></div>`;
+    <p class="jade-market-fairness">✧ Ruột đá chưa biết, soi không đảm bảo trúng. Đèn cấp cao giảm phí quầy, không đổi giá ngọc đã có.</p></div>`;
  }
  function vaultPanel(s){
   const j=s.jade,time=nowOf(s),rates=marketRates(s);

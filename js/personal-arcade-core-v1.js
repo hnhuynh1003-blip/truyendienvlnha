@@ -824,12 +824,16 @@
    const dry=garden.beds.filter(b=>b.status==='dry');
    if(!dry.length)return fail('Không có luống cần tưới');
    if(!garden.water)return fail('Bình đã hết nước');
-   const count=Math.min(dry.length,garden.water);
+   // C4.50: the second sprinkler tier waters two beds per bottle, making
+   // the upgrade useful even when water refills slower than crops mature.
+   const efficiency=garden.sprinkler>=2?2:1;
+   const count=Math.min(dry.length,garden.water*efficiency);
    dry.slice(0,count).forEach(b=>{
     b.status='growing';b.readyAt=time+cropGrowTime(garden,b.crop);
    });
-   garden.water-=count;if(garden.water<garden.waterCap)garden.waterAt=time;
-   return succeed('💧 Đã tưới '+count+' luống');
+   const used=Math.ceil(count/efficiency);
+   garden.water-=used;if(garden.water<garden.waterCap)garden.waterAt=time;
+   return succeed('💧 Đã tưới '+count+' luống · dùng '+used+' bình');
   }
   if(action==='harvest-all'){
    const ready=garden.beds.filter(b=>b.status==='growing'&&time>=b.readyAt);

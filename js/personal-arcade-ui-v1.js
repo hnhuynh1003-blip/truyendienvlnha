@@ -662,7 +662,7 @@
          <div><b>Mồi hồ sương</b><small>5 viên · dùng ngay</small><em>Đang có ${g.bait}</em></div>
          ${button('＋ 7 Xu','buy-bait-pack','market',s.coins<70||g.bait>9995)}</div>
         <div class="garden-tackle-offer garden-tackle-moon"><span class="garden-tackle-item garden-tackle-pearl" aria-hidden="true"></span>
-         <div><b>Mồi Tinh Nguyệt</b><small>2 viên · cá hiếm +18%</small><em>Đang có ${g.moonBait}</em></div>
+         <div><b>Mồi Tinh Nguyệt</b><small>${g.pondTier<2?'2 viên · cá hiếm từ hồ cấp 2':'2 viên · cá hiếm +18%'}</small><em>Đang có ${g.moonBait}</em></div>
          ${button('＋ 6 Xu','buy-moon-bait','market',s.coins<60||g.moonBait>9998)}</div>
        </div>
        <div class="garden-tackle-rod"><span class="garden-tackle-rod-art" aria-hidden="true"></span>
@@ -677,7 +677,7 @@
        ${upgrade('💧','Bồn nước',g.waterCap+'/7 bình','water-cap',core.upgradeCost(s,'water-cap'))}
        ${upgrade('🐟','Hồ cá',g.pondTier===5?'Cấp 5/5 · Đã tối đa':'Cấp '+g.pondTier+'/5 · tiếp theo +'+nextUnlocks.length+' loài','pond-tier',core.upgradeCost(s,'pond-tier'))}
        ${upgrade('▦','Mở thêm luống',g.plots+'/4 luống','plots',core.upgradeCost(s,'plots'))}
-       ${upgrade('☂','Dàn tưới sương','Cấp '+g.sprinkler+'/2 · tưới nhanh','sprinkler',core.upgradeCost(s,'sprinkler'))}
+       ${upgrade('☂','Dàn tưới sương',g.sprinkler===2?'Cấp 2/2 · 1 bình / 2 luống':'Cấp '+g.sprinkler+'/2 · cấp 2 tiết kiệm 50% nước','sprinkler',core.upgradeCost(s,'sprinkler'))}
       </div>
     </div>
   </section>`;

@@ -31,6 +31,11 @@
  // specimens already store their final price and are never repriced here.
  const payoutScaleV2=[1,.8,.34,.30,.15];
  const payoutScaleV3=[1,.72,.26,.22,.09];
+ // C4.50: new high-tier lots carry a transparent stall fee. Blind bulk
+ // buy/cut/sell should not print Xu indefinitely; studying surface clues,
+ // crafting and upgrading equipment still leave room for skilled profit.
+ // MARKETS[].price and every stone's payoutV stay unchanged for old saves.
+ const STALL_FEES=Object.freeze([0,40,75,320,800]);
  const RESCUE_INTERVAL=10*60*1000;
  const CRAFT_WINDOW=60*1000,CRAFT_LIMIT=3;
  const gradeOdds=[
@@ -57,6 +62,9 @@
    site===3&&j.sold>=25&&j.lamp>=3&&j.carver>=2||
    site===4&&j.sold>=40&&j.permit;
  }
+ const stallFee=(j,site)=>Math.round((STALL_FEES[site]||0)*
+  (1-.05*(Math.max(1,Math.min(4,j?.lamp||1))-1)));
+ const purchasePrice=(j,site)=>MARKETS[site].price+stallFee(j,site);
  const fresh=()=>({bought:0,cut:0,sold:0,invested:0,received:0,lamp:1,saw:1,
   carver:1,permit:false,rescueReadyAt:0,active:null,stash:[],vault:[],
   inspected:[],album:{},exhibits:[],last:null,craftWindowAt:0,craftUsed:0,
@@ -143,7 +151,7 @@
   const seed=(Math.imul(id+17,1597334677)^Math.imul(site+7,2246822519)^
    Math.imul(slot+31,3266489917))>>>0;
   const stone=generate(site,id,seed/4294967296);
-  const ask=Math.max(1,Math.round(MARKETS[site].price*(.8+(seed%9)*.05)));
+  const ask=Math.max(1,Math.round(MARKETS[site].price*(.8+(seed%9)*.05)))+stallFee(j,site);
   return {stone,ask,...surface(stone)};
  }
  const inspectionKey=(j,site,slot)=>`${j.bought+1}:${site}:${slot}`;
@@ -225,7 +233,7 @@
    if(j.bought+count>1000000)return fail('Đã đạt giới hạn mẫu đá của xưởng.');
    const free=j.bought===0&&site===0?1:0;
    const cost=pick?(free?0:marketOffer(j,site,Number(pick[2])).ask):
-    (count-free)*MARKETS[site].price;
+    (count-free)*purchasePrice(j,site);
    if(!charge(cost))return fail('Chưa đủ Xu Arcade để lấy '+count+' viên đá.');
    for(let i=0;i<count;i++){
     const offer=pick?marketOffer(j,site,Number(pick[2])):null;
@@ -292,7 +300,7 @@
    const site=Number(buy[1]);if(j.active)return fail('Hãy xử lý viên đá trên bàn trước.');
    if(!unlocked(j,site))return fail('Bãi đá này chưa được mở khóa.');
    if(held()>=MAX_STONES||j.bought>=1000000)return fail('Túi đá đã đầy hoặc hết chỗ cho mẫu mới.');
-   const cost=j.bought===0&&site===0?0:MARKETS[site].price;
+   const cost=j.bought===0&&site===0?0:purchasePrice(j,site);
    if(!charge(cost))return fail('Chưa đủ Xu Arcade để mua lô đá.');
    j.bought++;j.active=generate(site,j.bought,roll);j.inspected=[];
    return succeed(cost?'Đã mang đá thô lên bàn. Hãy soi ba điểm.':'Tặng viên đá thử đầu tiên! Hãy soi ba điểm.');
@@ -395,6 +403,6 @@
  }
  return Object.freeze({fresh,norm,act,MARKETS,GRADES,COLORS,COLOR_HEX,FLAWS,FLAW_NAMES,
   CRAFTS,RESCUE_INTERVAL,CRAFT_WINDOW,CRAFT_LIMIT,unlocked,scanHint,baseValue,cutValue,cuttingFee,windowFee,
-  actionFee,rawSalvageValue,upgradeCost,craftFee,generate,marketOffer,surface,
+  actionFee,rawSalvageValue,upgradeCost,craftFee,generate,marketOffer,surface,stallFee,purchasePrice,
   MAX_STONES,MAX_VAULT,marketRate,marketQuote,inspectFee,inspectionKey});
 });

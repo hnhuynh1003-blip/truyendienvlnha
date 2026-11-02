@@ -1,4 +1,4 @@
-/* C4.40B: reproducible, read-only Arcade balance scenarios.
+/* C4.40B–C4.50: reproducible, read-only Arcade balance scenarios.
  * Run: node tools/arcade-balance-c440b.cjs
  * All amounts are local Arcade Xu, not the spendable wallet.
  */
@@ -23,21 +23,27 @@ function neonSession({stations=1,roomTier=1,seating=1,ambiance=1,snack=0,
 }
 
 function jadeMarket(site,attempts=SAMPLE_SIZE){
- const market=jade.MARKETS[site],cost=market.price+jade.cuttingFee(site);
+ const market=jade.MARKETS[site],lamp=site>=3?3:site>=1?2:1;
+ const currentPrice=jade.purchasePrice({lamp},site);
  const versions=[2,3].map(version=>{
-  let total=0,wins=0,duds=0,best=0;
+  const cost=(version===2?market.price:currentPrice)+jade.cuttingFee(site);
+  let total=0,quoteTotal=0,wins=0,duds=0,best=0;
   for(let i=0;i<attempts;i++){
    const sample=jade.generate(site,i+1,(i*ROLL_STEP)%1);
    sample.payoutV=version;
    const paid=jade.cutValue(sample,1);
    total+=paid-cost;wins+=paid>cost;duds+=sample.grade===0;
+   quoteTotal+=jade.marketQuote({...sample,phase:'cut',cutValue:paid},START).value-cost;
    best=Math.max(best,paid);
   }
   return {version,netPerStoneXu:+(total/attempts/10).toFixed(2),
+   quoteDayNetXu:+(quoteTotal/attempts/10).toFixed(2),
    profitablePct:+(wins/attempts*100).toFixed(1),
    wastePct:+(duds/attempts*100).toFixed(1),maxPayoutXu:xu(best)};
  });
- return {site,market:market.short,priceXu:xu(market.price),cutFeeXu:xu(jade.cuttingFee(site)),
+ return {site,market:market.short,priceXu:xu(market.price),lamp,
+  purchasePriceXu:xu(currentPrice),stallFeeXu:xu(jade.stallFee({lamp},site)),
+  cutFeeXu:xu(jade.cuttingFee(site)),
   attempts,legacyV2:versions[0],newV3:versions[1]};
 }
 
@@ -63,7 +69,9 @@ function mineSample(zone,attempts=1000){
 function fishCatchCeiling(rod,pondTier,premium){
  const baseline=Math.max(.75,.94-.035*(rod-1)-.02*(pondTier-1));
  const threshold=premium?Math.max(.57,baseline-.18):baseline;
- const rareChance=1-threshold;
+ // C4.47 gates every rare fish behind at least pond level 2; a rare roll in
+ // the starter pond is rerouted to common fish, even with premium bait.
+ const rareChance=pondTier>=2?1-threshold:0;
  const averageTenths=rareChance*(100+20*(rod-1))+
   (1-rareChance)*(20+10*(rod-1));
  const baitCostTenths=premium?30:14;
@@ -72,16 +80,30 @@ function fishCatchCeiling(rod,pondTier,premium){
   netPerSuccessfulCastXu:xu(averageTenths-baitCostTenths)};
 }
 
+function cropWaterCeiling(crop='moon',sprinkler=2,plots=4,soil=3){
+ const garden={sprinkler,gardenSoilLevel:soil};
+ const minutes=arcade.cropGrowTime(garden,crop)/60000;
+ const waterBedsPerHour=60/(arcade.WATER_INTERVAL/60000)*(sprinkler>=2?2:1);
+ const growthBedsPerHour=60/minutes*plots;
+ // The harvest refunds its seed; this is a steady-state ceiling, ignoring
+ // free starting water and hands-on planting/watering/harvesting time.
+ const harvestsPerHour=Math.min(waterBedsPerHour,growthBedsPerHour);
+ return {crop,sprinkler,plots,soil,harvestsPerHour:+harvestsPerHour.toFixed(2),
+  xuPerActiveHour:+(harvestsPerHour*arcade.CROPS[crop].value/10).toFixed(2),
+  bottleneck:waterBedsPerHour<=growthBedsPerHour?'water':'growth'};
+}
+
 function report(){return {
  sampleSize:SAMPLE_SIZE,
- note:'Mô phỏng định lượng, không phải dữ liệu người chơi; các cấu hình nâng cấp cao là trạng thái giả định, không tính thời gian mua thiết bị.',
+ note:'Mô phỏng định lượng, không phải dữ liệu người chơi. Ngọc V2 dùng giá mua cũ; V3 dùng phí quầy C4.50. Các mức tối đa chưa trừ vốn nâng cấp, thao tác và cá tuột dây.',
  neon:[neonSession(),neonSession({minutes:30,days:7}),
   neonSession({stations:3,seating:3,minutes:120}),
   neonSession({stations:7,roomTier:3,seating:5,ambiance:3,snack:2,minutes:60})],
  mine:[mineSample(0),mineSample(2)],
  garden:[fishCatchCeiling(1,1,false),fishCatchCeiling(1,1,true),
   fishCatchCeiling(5,5,false),fishCatchCeiling(5,5,true)],
+ greenhouse:[cropWaterCeiling('moon',1,4,0),cropWaterCeiling('moon',2,4,3)],
  jade:jade.MARKETS.map((_,site)=>jadeMarket(site))};}
 
 if(require.main===module)console.log(JSON.stringify(report(),null,2));
-module.exports={neonSession,jadeMarket,mineSample,fishCatchCeiling,report,SAMPLE_SIZE};
+module.exports={neonSession,jadeMarket,mineSample,fishCatchCeiling,cropWaterCeiling,report,SAMPLE_SIZE};
