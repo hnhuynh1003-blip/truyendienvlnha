@@ -212,6 +212,8 @@
   if(!document.body.classList.contains('dudu-phone-v11'))return;
   const tabs=q('.dudu-v35-gallery-tabs'),panels=q('.dudu-v35-gallery-panels'),sheet=q('.dudu-v34-sheet');
   if(!tabs||!panels||!sheet||$('dudu-v38-studio'))return;
+  const galleryBack=q('.dudu-v34-close',sheet);
+  if(galleryBack){galleryBack.textContent='‹';galleryBack.setAttribute('aria-label','Về Cài Đặt');}
   const current=panels.querySelector('[data-dudu-v35-tab="calm"]');
   if(current){q('h3',current).textContent='Sắc màu tối giản';q('p',current).textContent='Bộ màu nhẹ, dễ nhìn.';}
   gallery=makeStudio();gallery.id='dudu-v38-studio';fontsPanel=makeFonts();
