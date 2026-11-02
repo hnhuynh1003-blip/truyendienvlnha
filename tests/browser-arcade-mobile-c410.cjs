@@ -296,7 +296,9 @@ async function main(){
   await tab('mine').click();
   assert.equal(await page.locator('.arcade-scroll').evaluate(el=>el.scrollTop),0);
   await action('mine').click();
-  await action('sell-ores').click();
+  await page.locator('#personal-arcade-v1 button[data-arcade-drawer="mine-bag"]').click();
+  await page.locator('.arcade-sheet-overlay button[data-arcade-action="sell-ores"]').click();
+  await page.locator('.arcade-sheet-close').click();
   await tab('garden').click();
   await action('plant-0').click();
   await action('water-0').click();
@@ -309,6 +311,21 @@ async function main(){
   });
   assert.equal(stages.controlsBelowPond,true,'Fishing control must not cover the pond');
   assert.equal(stages.tabbarInside,true);
+  const pondVisual=await page.evaluate(async()=>{
+   const stage=document.querySelector('.garden-stage'),pond=stage.querySelector('.garden-pond');
+   const width=pond.getBoundingClientRect().width/stage.getBoundingClientRect().width;
+   const imagePath=getComputedStyle(stage).backgroundImage.match(/url\(["']?([^"')]+)/)?.[1];
+   const ornament=pond.querySelector('.garden-pond-moon-gate');
+   stage.classList.add('garden-pond-tier-5');
+   const ornamentVisible=getComputedStyle(ornament).display!=='none';
+   stage.classList.remove('garden-pond-tier-5');
+   const picture=new Image();picture.src=imagePath||'';
+   try{await picture.decode();}catch(_){return {width,ornamentVisible,loaded:false};}
+   return {width,ornamentVisible,loaded:picture.naturalWidth>=1000};
+  });
+  assert.ok(pondVisual.width>.88,'Painted pond uses most of the stage width');
+  assert.ok(pondVisual.ornamentVisible,'Higher pond tiers reveal AI artwork');
+  assert.ok(pondVisual.loaded,'New AI lake backdrop loads on mobile');
 
   const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem(
    'dudu-personal-arcade:v1:sandbox%3Ac410-mobile-tester')));

@@ -1,0 +1,57 @@
+/* C4.43A — wide, coherent AI-painted water garden and tier decorations.
+ * The pond itself is a transparent hit/play layer over the painted lake, so
+ * fish and bait remain real controls without a second cartoon oval. */
+#personal-arcade-v1 .garden-stage{
+ background:linear-gradient(180deg,#111b3b48 0%,#14373e1c 53%,#06253b35 100%),
+  url('../assets/arcade-c443-ai/moon-garden-wide.webp') center 48%/cover no-repeat;
+}
+#personal-arcade-v1 .garden-stage .garden-pond{
+ left:3%;right:3%;bottom:8px;height:51%;z-index:3;overflow:visible;
+ border:0!important;border-radius:0!important;
+ background:transparent!important;box-shadow:none!important;
+}
+#personal-arcade-v1 .garden-stage.garden-expanded .garden-pond{height:47%}
+#personal-arcade-v1 .garden-stage .garden-pond-shine{
+ inset:7% 5%;border-radius:42%;opacity:.14;pointer-events:none;
+ background:linear-gradient(165deg,transparent 25%,#dbfff83c 45%,transparent 69%);
+}
+#personal-arcade-v1 .garden-stage .garden-pond .garden-lotus{display:none}
+#personal-arcade-v1 .garden-stage .garden-pond .garden-fish{z-index:2}
+#personal-arcade-v1 .garden-stage .garden-fish-a{left:19%;top:38%}
+#personal-arcade-v1 .garden-stage .garden-fish-b{left:57%;top:25%}
+#personal-arcade-v1 .garden-stage .garden-fish-c{left:40%;top:54%}
+#personal-arcade-v1 .garden-stage .garden-fish-d{left:78%;top:58%}
+#personal-arcade-v1 .garden-stage .garden-fish-e{left:12%;top:75%}
+#personal-arcade-v1 .garden-stage .garden-fish-f{left:64%;top:77%}
+#personal-arcade-v1 .garden-stage .garden-pond .garden-bubble-harvest{right:9%;top:32%}
+
+/* One transparent sprite atlas — carved bridge / waterfall / moon pavilion.
+ * Each third contains its own finished painting, not a CSS approximation. */
+#personal-arcade-v1 .garden-stage .garden-pond-upgrade{
+ position:absolute;display:none;z-index:1;pointer-events:none;
+ border:0!important;border-radius:0;background-color:transparent;
+ background-image:url('../assets/arcade-c443-ai/pond-ornaments.webp');
+ background-repeat:no-repeat;background-size:300% 100%;box-shadow:none!important;
+ filter:drop-shadow(0 7px 8px #061e3688);
+}
+#personal-arcade-v1 .garden-stage:is(.garden-pond-tier-2,.garden-pond-tier-3,.garden-pond-tier-4,.garden-pond-tier-5) .garden-pond-lotus-bridge{
+ display:block;left:0;top:10%;width:38%;height:78%;background-position:0% 50%;
+}
+#personal-arcade-v1 .garden-stage:is(.garden-pond-tier-3,.garden-pond-tier-4,.garden-pond-tier-5) .garden-pond-falls{
+ display:block;right:0;top:-12%;width:35%;height:74%;background-position:50% 50%;
+}
+#personal-arcade-v1 .garden-stage:is(.garden-pond-tier-4,.garden-pond-tier-5) .garden-pond-moon-gate{
+ display:block;left:35%;top:-24%;width:32%;height:79%;background-position:100% 50%;
+}
+#personal-arcade-v1 .garden-stage.garden-pond-tier-5 .garden-pond-upgrade{
+ filter:brightness(1.06) saturate(1.08) drop-shadow(0 7px 9px #112241b3);
+}
+/* A wider pond stays inside the illustrated scene on compact phones. */
+@media(max-width:360px){
+ #personal-arcade-v1 .garden-stage .garden-pond{left:2%;right:2%;bottom:7px;height:52%}
+ #personal-arcade-v1 .garden-stage.garden-expanded .garden-pond{height:47%}
+ #personal-arcade-v1 .garden-stage .garden-pond .garden-bubble-harvest{right:5%;top:32%}
+}
+@media(prefers-reduced-motion:reduce){
+ #personal-arcade-v1 .garden-stage .garden-pond-shine{animation:none!important}
+}

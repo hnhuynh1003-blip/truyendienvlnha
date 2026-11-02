@@ -419,7 +419,6 @@
       <div class="mine-energy"><div><b>⚡ Phá mạch quặng</b><small>Đào để nạp năng lượng</small></div><strong>${m.charge}/${maxEnergy}</strong></div>
       <div class="mine-charge-track" role="progressbar" aria-label="Năng lượng phá mạch" aria-valuenow="${m.charge}" aria-valuemax="${maxEnergy}"><i style="width:${m.charge/maxEnergy*100}%"></i></div>
       ${button('⚡ PHÁ MẠCH · 5 NĂNG LƯỢNG','mine-burst','power mine-burst',!canDig||m.durability<3||m.charge<5)}
-      <div class="arcade-mine-sell">${button('Bán quặng · '+all+' mẫu','sell-ores','market',!all)}</div>
       <div class="arcade-quick-drawers arcade-quick-drawers-triple">
        ${drawerButton('Địa tầng','⌁','mine-map')}
        ${drawerButton('Túi quặng','◈','mine-bag')}
@@ -429,6 +428,7 @@
       <div class="mine-inventory" data-arcade-panel="mine-bag">${Object.entries(m.ores).map(([ore,count])=>
         `<div class="mine-inventory-slot mine-slot-${ore} ${m.found[ore]?'is-found':'is-mystery'}" aria-label="${oreLabels[ore]} · ${oreKinds[ore]} · ${count} mẫu">
          ${orePortrait(ore)}<small>${m.found[ore]?oreLabels[ore]:'Chưa thấy'}</small><b>×${count}</b><em>${oreKinds[ore]}</em></div>`).join('')}</div>
+      <div class="arcade-mine-sell" data-arcade-panel="mine-bag">${button('Bán tất cả · '+all+' mẫu','sell-ores','market',!all)}</div>
       <div class="mine-codex" data-arcade-panel="mine-bag"><b>📜 Sổ địa tầng · ${found}/10 phát hiện</b><small>Món đã từng đào vẫn được ghi nhận sau khi bán. Xuống hầm sâu để gặp khoáng sản hiếm.</small></div>
       <div class="arcade-panel-heading arcade-panel-heading-sub" data-arcade-panel="mine-tools"><div><span class="arcade-eyebrow">XƯỞNG RÈN</span><h4>Bảo dưỡng dụng cụ</h4></div></div>
       <div class="mine-tool-actions" data-arcade-panel="mine-tools">
