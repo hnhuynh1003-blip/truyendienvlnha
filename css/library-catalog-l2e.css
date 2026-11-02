@@ -54,7 +54,8 @@ body.dudu-site-v60 #home-view #library-catalog-pager-top .library-catalog-page-r
 body.dudu-site-v60 #home-view #library-catalog-pager-top .library-catalog-page-step:last-child{order:3}
 body.dudu-site-v60 #home-view #library-catalog-pager-top .library-catalog-page-jump-toggle{order:4}
 body.dudu-site-v60 #home-view #library-catalog-pager-top .library-catalog-page-jump{
-  order:5;flex-basis:100%;margin:5px auto 0;
+  order:5;flex:0 0 100%;max-width:none;margin:5px 0 0;
+  padding:5px 0 0;border:0;background:transparent;
 }
 body.dudu-site-v60 #home-view #library-catalog-pager-bottom .library-catalog-page-ribbon{
   flex-basis:100%;

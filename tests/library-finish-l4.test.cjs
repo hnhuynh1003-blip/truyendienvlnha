@@ -11,9 +11,9 @@ const detail=read('css/library-finish-l4.css');
 
 test('L4 centers both paginator controls and Go-to-page forms',()=>{
  assert.match(pager,/#library-catalog-pager-top\{\s*flex-wrap:wrap;justify-content:center/);
- assert.match(pager,/#library-catalog-pager-top \.library-catalog-page-jump\{\s*order:5;flex-basis:100%;margin:5px auto 0/);
+ assert.match(pager,/#library-catalog-pager-top \.library-catalog-page-jump\{\s*order:5;flex:0 0 100%;max-width:none;margin:5px 0 0/);
  assert.match(pager,/\.library-catalog-page-jump\{[\s\S]*?margin-inline:auto;/);
- assert.match(html,/css\/library-catalog-l2e\.css\?v=l4-1/);
+ assert.match(html,/css\/library-catalog-l2e\.css\?v=l4-2/);
  assert.match(html,/css\/library-finish-l4\.css\?v=l4-1/);
 });
 
