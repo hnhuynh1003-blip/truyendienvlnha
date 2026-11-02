@@ -45,8 +45,9 @@ body.dudu-phone-v11 #cyber-phone .vanbao-chest-kiosk{
  position:relative;display:flex;flex-direction:column;align-items:center;
  justify-content:center;gap:0;min-height:110px;overflow:hidden;
  border-radius:14px;border:1px solid #ccb07470;
- background:radial-gradient(ellipse 62% 65% at 50% 46%,#61589766,transparent 100%),
-  linear-gradient(140deg,#172439,#28223e);box-shadow:inset 0 1px #fff2}
+ background:linear-gradient(180deg,#0b0e29a8,#0b12328c 48%,#090e26cc),
+  url('../assets/van-bao/v3/celestial-vault-stage.webp') center 48%/cover no-repeat;
+ box-shadow:inset 0 1px #fff3,0 0 13px #9973e234}
 body.dudu-phone-v11 #cyber-phone .vanbao-chest-kiosk::before{
  content:'✦';position:absolute;top:8px;left:11px;color:#fbd6a578;font-size:17px}
 body.dudu-phone-v11 #cyber-phone .vanbao-chest-art{
@@ -58,8 +59,9 @@ body.dudu-phone-v11 #cyber-phone .vanbao-chest-fallback{
  font:900 72px Georgia,serif;color:#eacc86}
 body.dudu-phone-v11 #cyber-phone .blind-opening-stage{
  padding:10px 10px 12px;gap:10px;overflow:hidden;position:relative;
- background:radial-gradient(ellipse 75% 70% at 50% 15%,#7b67ae7c,transparent),
-  linear-gradient(145deg,#152743,#31223e);border-color:#e3bc7c9c}
+ background:linear-gradient(180deg,#0c10316e,#1a174b63 48%,#090e2ee3),
+  url('../assets/van-bao/v3/celestial-vault-stage.webp') center 43%/cover no-repeat;
+ border-color:#e3bc7c9c;box-shadow:inset 0 0 28px #15122b66,0 0 13px #b07ce12a}
 body.dudu-phone-v11 #cyber-phone .blind-opening-stage .vanbao-chest-art{
  width:min(100%,191px);height:150px;
  animation:vanbaoIdle 3s ease-in-out infinite alternate}
@@ -70,7 +72,10 @@ body.dudu-phone-v11 #cyber-phone .blind-reveal{
  border:1px solid #ffe4aa;box-shadow:0 2px 13px #f6b96962}
 body.dudu-phone-v11 #cyber-phone .blind-result{
  position:relative;isolation:isolate;overflow:hidden;
- border-color:#e6c48d99;background:radial-gradient(ellipse at top,#664772,#24273f)}
+ border-color:#e6c48d99;
+ background:linear-gradient(180deg,#18153682,#15113955 42%,#0b1025e8),
+  url('../assets/van-bao/v3/celestial-vault-stage.webp') center 48%/cover no-repeat;
+ box-shadow:inset 0 0 25px #0b1029a6,0 0 12px #f4cd9252}
 body.dudu-phone-v11 #cyber-phone .blind-result-art{width:140px;height:137px}
 body.dudu-phone-v11 #cyber-phone .blind-result-art .dudu-item-v13-art{
  width:133px;height:133px;object-fit:contain}
@@ -164,9 +169,12 @@ body .vanbao-artifact-dialog::backdrop{background:#030611c7;backdrop-filter:blur
 body .vanbao-artifact-dialog .vanbao-artifact-panel{
  position:relative;display:flex;flex-direction:column;align-items:center;
  gap:10px;padding:17px 15px 20px;text-align:center;
- background:radial-gradient(ellipse at 50% 38%,#a7a2ff38,transparent 55%)}
+ background:linear-gradient(180deg,#141832ae,#1416388e 40%,#13152ced 100%),
+  url('../assets/van-bao/v3/celestial-vault-stage.webp') center/cover no-repeat}
 body .vanbao-artifact-dialog.rank-sss .vanbao-artifact-panel{
- background:radial-gradient(ellipse at 50% 38%,#f1c47767,#7650bc2d 45%,transparent 77%)}
+ background:radial-gradient(ellipse at 50% 35%,#f1c47755,transparent 65%),
+  linear-gradient(180deg,#141832ae,#1416388e 40%,#13152ced 100%),
+  url('../assets/van-bao/v3/celestial-vault-stage.webp') center/cover no-repeat}
 body .vanbao-artifact-dialog .vanbao-artifact-close{
  position:absolute;right:11px;top:9px;width:31px;height:31px;border-radius:50%;
  border:1px solid #e8d5b789;background:#18233ad9;color:#fce9c8;

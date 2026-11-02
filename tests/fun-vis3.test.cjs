@@ -17,8 +17,8 @@ test('FUN-VIS3 has two distinct transparent fantasy chest frames, optimized for 
   assert.ok(data.length>12000&&data.length<220000,'optimized '+state+' chest');
  }
  const html=read('index.html'),css=read('css/van-bao-stage-v2.css');
- assert.match(html,/css\/van-bao-stage-v2\.css\?v=fun-vis5/);
- assert.match(html,/js\/dudu-fun-ui-v43\.js\?v=fun-vis5/);
+ assert.match(html,/css\/van-bao-stage-v2\.css\?v=fun-vis6/);
+ assert.match(html,/js\/dudu-fun-ui-v43\.js\?v=fun-vis6/);
  assert.match(css,/\.vanbao-chest-art/);
  assert.match(css,/\.vanbao-celebrating\.rank-sss/);
  assert.match(css,/\.blind-album-tile\.locked \.blind-album-art img/);
@@ -125,4 +125,17 @@ test('Mythic identity and full-screen relic leave text unobstructed on mobile',(
  assert.match(relic,/\.vanbao-artifact-large img\{[^}]*object-fit:contain!important/s);
  assert.doesNotMatch(ui,/✦ TỦ BÁU VẬT · DUDU FUN|19 bảo vật · E → SSS · chỉ dùng Xu Vàng ảo/);
  assert.doesNotMatch(ui,/DUDU FUN dùng Xu Vàng ảo, không quy đổi hoặc rút thành tiền thật/);
+ assert.doesNotMatch(ui,/✦ LỘC ĐẾN NHÀ · 刮刮乐|VÉ CÀO VẠN PHÚC/,
+  'The current number scratch card does not need a second title above its ticket');
+});
+
+test('FUN-VIS6 ships a lightweight new AI vault backdrop across the reveal journey',()=>{
+ const file=path.join(base,'assets/van-bao/v3/celestial-vault-stage.webp');
+ const data=fs.readFileSync(file);
+ assert.equal(data.toString('ascii',0,4),'RIFF');
+ assert.equal(data.toString('ascii',8,12),'WEBP');
+ assert.ok(data.length>25000&&data.length<180000,'mobile background stays lightweight');
+ const css=read('css/van-bao-stage-v2.css');
+ const uses=css.match(/v3\/celestial-vault-stage\.webp/g)||[];
+ assert.ok(uses.length>=4,'sealed, unsealed, opened and inspected art share the new scene');
 });

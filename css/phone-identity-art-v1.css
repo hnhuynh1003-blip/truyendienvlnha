@@ -1,30 +1,28 @@
 /* IDENTITY ATELIER — visual-only polish. No avatar unlock, currency or Honor data writes. */
 body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-identity-frame{
- position:relative;isolation:isolate;overflow:visible;padding:5px 5px 6px;
- border:2px solid #9db6d499;border-radius:17px;
+ position:relative;isolation:isolate;overflow:visible;padding:13px 12px 11px;
+ border:0!important;border-radius:19px;
  --identity-border-art:url('../assets/identity-frames/v1/player-panel.webp');
- background:radial-gradient(ellipse at 5% 12%,#8ca8f025,transparent 48%),
-  linear-gradient(135deg,#0714268c,#15253f64 62%,#0b192b82);
- box-shadow:0 9px 22px #02071175,inset 0 1px #fff3,inset 0 0 0 1px #8eaccc21;
+ background:linear-gradient(135deg,#071426b3,#1420399d 62%,#0b192bb8);
+ box-shadow:0 9px 22px #02071175;
  backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);
 }
 body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-identity-frame::before{
- content:"";position:absolute;inset:3px;border:1px solid #cad9ff39;border-radius:12px;
- pointer-events:none;z-index:0;
+ content:none!important;
 }
 /* Slice only the painted outer rim of the existing AI asset. Its horizontal
    ornament can never run across the name, EXP or earned Honor text. */
 body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-identity-frame::after{
- content:"";position:absolute;inset:-4px;z-index:3;pointer-events:none;
- border:12px solid transparent;
+ content:"";position:absolute;inset:-2px;z-index:3;pointer-events:none;
+ border:14px solid transparent;
  border-image-source:var(--identity-border-art);
- border-image-slice:60 82 60 82;border-image-width:12px;border-image-repeat:stretch;
- opacity:.82;
+ border-image-slice:60 82 60 82;border-image-width:14px;border-image-repeat:stretch;
+ opacity:.95;
 }
 body.dudu-phone-v11.dudu-live-mode #cyber-phone #phone-home-screen .dudu-honor-identity-frame #player-avatar-home-v16.dudu-avatar-home-v16.dudu-v50-compact-profile{
- position:relative;z-index:1;min-height:59px!important;padding:8px 9px!important;margin:0!important;
+ position:relative;z-index:1;min-height:59px!important;padding:5px 2px!important;margin:0!important;
  border:0!important;border-radius:13px 13px 7px 7px!important;
- background:linear-gradient(109deg,#2234533d,#111d3630 75%,#8ab1ed0c)!important;
+ background:transparent!important;
  box-shadow:none!important;
 }
 /* One ornamented perimeter embraces BOTH account and Honor. Interior filigree
@@ -51,11 +49,10 @@ body.dudu-phone-v11.dudu-live-mode #cyber-phone #phone-home-screen #phone-exp-fi
  box-shadow:0 0 7px #a6afff77;
 }
 body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-home-chip{
- z-index:1;width:calc(100% - 16px);margin:0 8px 1px;
- min-height:43px;padding:7px 8px 7px 5px;
- border:0!important;border-top:1px solid var(--honor-edge-middle)!important;
- border-radius:0!important;
- background:linear-gradient(100deg,var(--honor-halo),transparent 65%)!important;
+ z-index:1;width:100%;margin:0;
+ min-height:42px;padding:5px 3px 4px;
+ border:0!important;border-radius:0!important;
+ background:transparent!important;
  box-shadow:none!important;
 }
 body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-home-chip:disabled{
@@ -71,7 +68,7 @@ body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-home-chip[data-r
  --honor-glass-first:rgba(71,38,26,.47);--honor-glass-last:rgba(35,36,48,.39);
 }
 body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-home-chip:is([data-rarity="common"],[data-rarity="rare"],[data-rarity="epic"],[data-rarity="mythic"]){
- background:linear-gradient(100deg,var(--honor-halo),transparent 65%)!important;
+ background:transparent!important;
 }
 /* Each rank decorates the SINGLE outer frame, not a second plate around Honor. */
 body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-identity-frame[data-rarity="common"]{
@@ -100,18 +97,13 @@ body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-home-copy strong
  font-size:11px;letter-spacing:.01em;
 }
 body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-identity-frame[data-rarity="mythic"]{
- border-color:#e9bd72d9;
  background:radial-gradient(ellipse at 91% 3%,#f6d58920,transparent 52%),
   linear-gradient(125deg,#271e2f8c,#293b3d64,#1f253d82);
- box-shadow:0 12px 26px #02071193,0 0 18px #f1c36f27,inset 0 1px #ffecc466;
+ box-shadow:0 12px 26px #02071193,0 0 18px #f1c36f27;
 }
 body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-identity-frame[data-rarity="epic"]{
- border-color:#c9abf4d9;
  background:radial-gradient(ellipse at 90% 0,#a882f124,transparent 55%),
   linear-gradient(125deg,#1f1e398c,#282b4b64,#172a4182);
-}
-body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-identity-frame[data-rarity="rare"]{
- border-color:#7bdccbd9;
 }
 
 /* AI frame ornaments sit ABOVE portrait pixels. The 74% transparent center keeps faces clear. */

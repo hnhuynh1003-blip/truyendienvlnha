@@ -18,6 +18,8 @@ test('Identity Atelier loads after compact phone styles and retains the existing
  assert.match(css,/\.dudu-honor-identity-frame::after/,'One illustrated perimeter encloses player and Honor');
  assert.match(css,/border-image-source:var\(--identity-border-art\)/,'AI assets only decorate the outer perimeter');
  assert.match(css,/\.dudu-honor-home-chip::before\{\s*content:none!important/,'Honor title cannot be crossed by artwork');
+ assert.match(css,/\.dudu-honor-identity-frame::before\{\s*content:none!important/,'No old nested CSS outline');
+ assert.match(css,/\.dudu-honor-identity-frame\{[^}]*border:0!important/s,'No duplicate CSS outer rim');
  assert.match(css,/backdrop-filter:blur\(2px\)/,'Wallpaper remains perceptible through glass cards');
  assert.match(css,/honor-glass-first/,'Rarity title plates preserve translucent backgrounds');
  assert.match(css,/@media\(max-width:355px\)/);

@@ -613,11 +613,8 @@
     'Vé kiểu cũ của bạn vẫn còn nguyên. Cào nốt và nhận giải trước khi đổi vé mới nhé.'));
    luckyLottery(rootNode);return;
   }
-  const head=el('div','lucky-kiosk-head');
-  head.append(el('span','','✦ LỘC ĐẾN NHÀ · 刮刮乐'),
-   el('strong','','VÉ CÀO VẠN PHÚC'),
-   withGold('small','','', '10/vé · Giải lớn 10.000'));
-  rootNode.append(head);
+  // The tab and the printed ticket already identify the game and its price.
+  // Keep the play area first, without a second gold-lettered headline.
   if(a?.layout==='numbers'){
    if(scratchLocal.id!==a.id)scratchLocal={id:a.id,cells:new Set()};
    const ticket=rule.cardNumbers(a.seed,a.amount);

@@ -42,5 +42,5 @@ test('C4.16 live UI loads cached-busted login/transaction error scripts',()=>{
  for(const file of ['profile-save-c23','auth-v2','personal-transaction-error-c416',
    'economy-live-v52'])
   assert.match(html,new RegExp('js/'+file+'\\.js\\?v=c416-1'));
- assert.match(html,/js\/dudu-fun-ui-v43\.js\?v=fun-vis5/);
+ assert.match(html,/js\/dudu-fun-ui-v43\.js\?v=fun-vis6/);
 });

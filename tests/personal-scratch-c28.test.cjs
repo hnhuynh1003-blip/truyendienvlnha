@@ -185,7 +185,8 @@ test('Main UI offers priced numbered scratch tickets without a collection shelf'
  assert.equal(shelf,undefined);
  assert.ok(nodes.some(n=>n.className.includes('lucky-buy')&&n.disabled===false));
  assert.ok(nodes.some(n=>n.className==='lucky-odds'));
- assert.ok(nodes.some(n=>n.className.includes('dudu-money-display--gold')&&n.textContent.includes('10/vé · Giải lớn 10.000')));
+ assert.ok(nodes.some(n=>n.className.includes('dudu-money-display--gold')&&String(n.textContent)==='10'));
+ assert.equal(nodes.some(n=>n.className==='lucky-kiosk-head'),false,'Do not repeat the ticket title above the card');
 });
 
 test('Number cards cannot present a false matching number after an unlucky roll',()=>{
