@@ -13,6 +13,18 @@
 }
 #personal-arcade-v1 .garden-reel-heading{color:#fff3d1;margin-bottom:6px}
 #personal-arcade-v1 .garden-reel-heading span:last-child{color:#aff9df;font-size:11px}
+#personal-arcade-v1 .garden-reel-phases{
+ display:flex;align-items:center;gap:4px;margin:0 2px 6px;
+ color:#d7e7dd;font:800 9px/1.2 system-ui,sans-serif;letter-spacing:.04em;
+}
+#personal-arcade-v1 .garden-reel-phases span{
+ width:17px;height:4px;flex:0 0 17px;border-radius:5px;background:#66848b;
+}
+#personal-arcade-v1 .garden-reel-phases span.is-cleared{background:#9ceac8}
+#personal-arcade-v1 .garden-reel-phases span.is-active{
+ background:#ffe2a2;box-shadow:0 0 7px #ffe4a1a6;
+}
+#personal-arcade-v1 .garden-reel-phases b{margin-left:auto;color:#ffebc5;font-size:9px}
 #personal-arcade-v1 .garden-reel-challenge.reel-tier-epic{
  border-top-color:#c3b8ff;border-bottom-color:#b9b1f788;
  background:linear-gradient(180deg,#29264cf3,#111d35f7);
@@ -25,6 +37,9 @@
 #personal-arcade-v1 .garden-reel-challenge.reel-tier-mythic .garden-reel-safe{
  background:linear-gradient(180deg,#f8e5a5aa,#d9b56f99 52%,#e7d0a4a8);
  box-shadow:0 0 13px #fbe49db8,inset 0 0 8px #fff1c6ac;
+}
+#personal-arcade-v1 .garden-reel-challenge.reel-phase-3 .garden-reel-track{
+ border-color:#e1c997;box-shadow:inset 0 3px 7px #051b2acb,0 0 9px #ffc97855;
 }
 #personal-arcade-v1 .garden-reel-track{
  position:relative;height:26px;margin:0 2px 6px;overflow:hidden;border-radius:18px;
@@ -50,7 +65,9 @@
 #personal-arcade-v1 .garden-reel-marker{
  position:absolute;z-index:3;top:2px;left:0;width:16px;height:20px;
  transform:translateX(-50%);pointer-events:none;
- animation:c425f-reel-travel var(--reel-speed,1.8s) linear infinite alternate;
+ animation:c425f-reel-travel var(--reel-speed,1.8s) linear infinite;
+ animation-direction:var(--reel-direction,alternate);
+ animation-delay:var(--reel-delay,0s);
 }
 #personal-arcade-v1 .garden-reel-marker::before{
  content:'';position:absolute;left:7px;top:0;height:20px;width:2px;
