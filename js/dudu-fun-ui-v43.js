@@ -33,6 +33,8 @@
   luckyBusy=false,luckyCurrency=null,luckyTheme='dragon';
  let blindUid=null,blindState=null,blindLoaded=false,blindLoading=false,
   blindError=false,blindBusy=false,blindCurrency=null;
+ // Visual-only, one-use celebration. It is never persisted with the receipt.
+ let revealMoment=null;
  let scratchLocal={id:null,cells:new Set()};
  let noticeText='';
  function stored(){
@@ -82,7 +84,7 @@
   if(sandbox()||!blind()||!blindBridge())return;
   const uid=signed()?blindBridge().uid?.():null;
   if(uid!==blindUid){blindUid=uid;blindState=null;blindLoaded=false;
-   blindLoading=false;blindError=false;blindCurrency=null;}
+   blindLoading=false;blindError=false;blindCurrency=null;revealMoment=null;}
   if(!uid||blindLoaded||blindLoading||blindError)return;
   blindLoading=true;
   void blindBridge().load().then(result=>{
@@ -96,6 +98,10 @@
   if(!signed()||!blindLoaded||blindBusy||!blindBridge()?.ready?.())return;
   const uid=blindUid;
   blindBusy=true;message('');
+  // Immediate button feedback while the existing Firestore transaction runs.
+  const actionButton=document.querySelector('#dudu-fun-content-v43 .'+
+   (kind==='claim'?'blind-reveal':mode==='free'?'blind-free':'blind-paid'));
+  if(actionButton){actionButton.disabled=true;actionButton.textContent='✦ ĐANG XỬ LÝ…';}
   try{
    const opts={kind,id:kind==='start'?crypto.randomUUID():blindState.active?.id};
    if(kind==='start'){
@@ -107,7 +113,8 @@
    blindState=response.state;blindCurrency=response.currency;
    luckyCurrency=response.currency;
    if(kind==='start')message('Hộp đã sẵn sàng. Chạm để mở và xem vật phẩm!');
-   if(kind==='claim'&&response.reward){
+   if(kind==='claim'&&response.status==='applied'&&response.reward){
+    revealMoment={id:response.state?.active?.id,rank:response.reward.item.rank};
     message(response.reward.duplicate?
      'Trùng vật phẩm đã có · hoàn lại '+response.reward.returned+' Xu Vàng.':
      'Đã thêm '+response.reward.item.name+' vào Kho và Sổ Vạn Bảo!');
@@ -318,6 +325,70 @@
    userProfile.currency:userProfile.currency;
   chip.textContent=signed()?Number(currency).toLocaleString('vi-VN'):'Khách';
  }
+ function chestArt(opened=false){
+  const holder=el('span','vanbao-chest-art'+(opened?' is-open':''));
+  const img=el('img');
+  img.src='assets/van-bao/v2/van-bao-chest-'+(opened?'open':'closed')+'.webp';
+  img.alt='';img.width=768;img.height=768;img.decoding='async';
+  img.onerror=()=>{img.onerror=null;img.replaceWith(el('span','vanbao-chest-fallback','✦'));};
+  holder.append(img);return holder;
+ }
+ function viewTreasure(item,preview=false){
+  if(!item||document.querySelector('dialog.vanbao-artifact-dialog'))return;
+  const dialog=el('dialog','vanbao-artifact-dialog rank-'+item.rank.toLowerCase());
+  const content=el('div','vanbao-artifact-panel');
+  const close=el('button','vanbao-artifact-close','×');
+  close.type='button';close.setAttribute('aria-label','Đóng ảnh bảo vật');
+  close.onclick=()=>dialog.close();
+  const picture=el('div','vanbao-artifact-large');
+  if(!root.DuduItemArtV13?.mount?.(picture,item))picture.textContent=item.icon||'✦';
+  content.append(close,el('small','vanbao-artifact-rank','✦ VẠN BẢO · '+item.rank),
+   picture,el('strong','',item.name),el('p','',item.desc),
+   el('small','vanbao-artifact-status',preview?'Mẫu trưng bày · không nhận vật phẩm':'✦ Đã ghi vào Sổ Vạn Bảo'));
+  dialog.append(content);
+  dialog.addEventListener('close',()=>dialog.remove(),{once:true});
+  dialog.addEventListener('click',event=>{if(event.target===dialog)dialog.close();});
+  document.body.append(dialog);
+  if(typeof dialog.showModal==='function')dialog.showModal();else dialog.setAttribute('open','');
+  close.focus();
+ }
+ function featuredTreasure(){
+  const showcase=el('section','blind-treasure-showcase');
+  showcase.setAttribute('aria-label','Bảo vật tiêu biểu có thể sưu tập');
+  showcase.append(el('small','blind-treasure-eyebrow','✦ BÁU VẬT ĐÁNG SĂN'));
+  const jewels=el('div','blind-treasure-featured');
+  for(const id of ['fun-celestial-harp','fun-eternal-crown','fun-universe-egg']){
+   const item=root.DuduItemCatalog?.byId(id);if(!item)continue;
+   const card=el('button','blind-treasure-feature rank-'+item.rank.toLowerCase());
+   card.type='button';card.title=item.name+' · Hạng '+item.rank;
+   card.setAttribute('aria-label','Ngắm '+item.name+' · hạng '+item.rank);
+   const art=el('span','blind-treasure-feature-art');
+   if(!root.DuduItemArtV13?.mount?.(art,item))art.textContent=item.icon;
+   card.append(art,el('b','',item.rank),el('small','',item.name));
+   card.addEventListener('click',()=>viewTreasure(item,true));jewels.append(card);
+  }
+  showcase.append(jewels);return showcase;
+ }
+ // Sandbox shows the art as a read-only gallery, while retaining its older
+ // local-only memory game; it never calls the paid or free receipt bridge.
+ function sandboxTreasurePreview(rootNode){
+  const panel=el('section','vanbao-sandbox-gallery');
+  panel.append(el('strong','','✦ Tủ Vạn Bảo · Xem thử'),
+   el('small','','19 bảo vật AI · Chỉ ngắm, không mua hoặc nhận đồ'));
+  panel.append(featuredTreasure());
+  const album=el('details','vanbao-sandbox-album');
+  album.append(el('summary','','Ngắm toàn bộ 19 bảo vật ›'));
+  const grid=el('div','vanbao-sandbox-grid');
+  for(const item of root.DuduItemCatalog?.funCollectibles||[]){
+   const tile=el('button','vanbao-sandbox-item rank-'+item.rank.toLowerCase());
+   tile.type='button';tile.setAttribute('aria-label','Ngắm '+item.name);
+   const art=el('span','vanbao-sandbox-art');
+   if(!root.DuduItemArtV13?.mount?.(art,item))art.textContent=item.icon;
+   tile.append(art,el('small','',item.name));
+   tile.addEventListener('click',()=>viewTreasure(item,true));grid.append(tile);
+  }
+  album.append(grid);panel.append(album);rootNode.append(panel);
+ }
  function blindBoxes(rootNode){
   if(!blind()||!blindLoaded){
    rootNode.append(el('p','dudu-fun-caption',blindError?
@@ -330,45 +401,48 @@
   const intro=el('div','blind-kiosk');
   intro.append(el('span','','✦ TỦ BÁU VẬT · DUDU FUN'),
    el('strong','','Hộp Mù Vạn Bảo'),
-   el('small','','19 bảo vật riêng · từ E đến SSS · mở ra sẽ vào Kho thật'));
+   el('small','','19 bảo vật · E → SSS · chỉ dùng Xu Vàng ảo'));
   rootNode.append(intro);
-  // Three read-only museum-quality previews give the sealed collection a goal.
-  // This never reveals the pending draw, grants items, or changes any odds.
-  const showcase=el('section','blind-treasure-showcase');
-  showcase.setAttribute('aria-label','Bảo vật tiêu biểu có thể sưu tập');
-  showcase.append(el('small','blind-treasure-eyebrow','✦ NHỮNG BẢO VẬT ĐÁNG SĂN'));
-  const jewels=el('div','blind-treasure-featured');
-  for(const id of ['fun-celestial-harp','fun-eternal-crown','fun-universe-egg']){
-   const item=root.DuduItemCatalog?.byId(id);
-   if(!item)continue;
-   const card=el('div','blind-treasure-feature rank-'+item.rank.toLowerCase());
-   card.title=item.name+' · Hạng '+item.rank;
-   const art=el('span','blind-treasure-feature-art');
-   if(!root.DuduItemArtV13?.mount?.(art,item))art.textContent=item.icon;
-   card.append(art,el('b','',item.rank),el('small','',item.name));
-   jewels.append(card);
-  }
-  showcase.append(jewels);rootNode.append(showcase);
+  rootNode.append(featuredTreasure());
   if(active?.status==='sealed'){
    const stage=el('div','blind-opening-stage');
-   stage.append(el('span','blind-box-3d','🎁'),
-    el('strong','','Có gì đang đợi trong hộp nhỉ?'),
-    el('small','','Chạm mở hộp để nhận phần thưởng và lưu dấu trong Sổ Vạn Bảo.'));
+   stage.append(chestArt(false),el('strong','','Rương đã niêm phong'),
+    el('small','','Chạm để khai mở bảo vật đang chờ · chỉ nhận một lần'));
    const claim=el('button','dudu-fun-claim blind-reveal','✦ MỞ HỘP NGAY');
    claim.type='button';claim.disabled=blindBusy;
    claim.addEventListener('click',()=>{void blindAction('claim');});
    stage.append(claim);rootNode.append(stage);
   }else{
+   if(!active||active.status==='claimed'){
+    const display=el('div','vanbao-chest-kiosk');
+    display.append(chestArt(false),el('span','','✦ TINH VÂN BẢO HẠP'));
+    rootNode.append(display);
+   }
    if(active?.status==='claimed'){
     const item=root.DuduItemCatalog?.byId(active.itemId);
     if(item){
      const reveal=el('div','blind-result rank-'+item.rank.toLowerCase());
+     const isMoment=revealMoment?.id===active.id;
+     if(isMoment){
+      const band=['SSS','SS','S'].includes(item.rank)?'legend':
+       ['B','A'].includes(item.rank)?'rare':'common';
+      reveal.classList.add('vanbao-celebrating','vanbao-tier-'+band);
+      const burst=el('div','vanbao-open-burst');burst.append(chestArt(true));
+      reveal.append(burst);
+      const skip=el('button','vanbao-skip','Bỏ qua ›');
+      skip.type='button';skip.addEventListener('click',()=>{
+       reveal.classList.remove('vanbao-celebrating');skip.remove();
+      });reveal.append(skip);revealMoment=null;
+     }
      const picture=el('div','blind-result-art');
      if(!root.DuduItemArtV13?.mount?.(picture,item))picture.textContent=item.icon;
      reveal.append(picture,el('strong','',item.name),
       el('span','','Hạng '+item.rank+(active.duplicate?' · Trùng vật phẩm':' · Đã vào Kho')),
       el('small','',active.duplicate?'Nhận lại '+blind().DUPLICATE_RETURN+' Xu Vàng thay vì món trùng.':
        item.desc));
+     const inspect=el('button','vanbao-inspect','✧ Ngắm bảo vật');
+     inspect.type='button';inspect.addEventListener('click',()=>viewTreasure(item,false));
+     reveal.append(inspect);
      rootNode.append(reveal);
     }
    }
@@ -384,22 +458,39 @@
    controls.append(paid);rootNode.append(controls);
   }
   const heading=el('div','blind-album-heading');
-  heading.append(el('strong','','📖 Sổ Vạn Bảo · '+s.album.length+'/'+items.length),
+  heading.append(el('strong','','✦ Sổ Vạn Bảo · '+s.album.length+'/'+items.length),
    el('small','','Đã mở '+s.total+' hộp · Trùng '+s.duplicate+' lần'));
   rootNode.append(heading);
   const bar=el('div','lucky-album-track'),fill=el('i','');
   fill.style.width=(s.album.length/items.length*100)+'%';bar.append(fill);rootNode.append(bar);
+  const albumBook=el('details','vanbao-album-book');
+  albumBook.append(el('summary','','Xem bộ sưu tập · '+s.album.length+'/'+items.length+' món ›'));
   const grid=el('div','blind-album-grid');
   for(const item of items){
-   const owned=s.album.includes(item.id),tile=el('div','blind-album-tile'+
+   const owned=s.album.includes(item.id),tile=el(owned?'button':'div','blind-album-tile'+
     (owned?' owned':' locked')+' rank-'+item.rank.toLowerCase());
+   if(owned){tile.type='button';tile.setAttribute('aria-label','Ngắm '+item.name);
+    tile.addEventListener('click',()=>viewTreasure(item,false));}
    const picture=el('span','blind-album-art');
-   if(owned&&root.DuduItemArtV13?.mount)root.DuduItemArtV13.mount(picture,item);
-   else picture.textContent='✧';
+   picture.setAttribute('aria-hidden','true');
+   if(!root.DuduItemArtV13?.mount?.(picture,item))picture.textContent='✧';
    tile.append(picture,el('small','',owned?item.name:'Bảo vật chưa tìm thấy'),
     el('b','',item.rank));grid.append(tile);
   }
-  rootNode.append(grid);
+  albumBook.append(grid);rootNode.append(albumBook);
+  if(s.history?.length){
+   const history=el('details','vanbao-pull-history');
+   history.append(el('summary','','Lịch sử mở hộp · '+s.total+' lần'));
+   for(const row of s.history.slice(-8).reverse()){
+    const item=root.DuduItemCatalog?.byId(row.itemId);
+    const line=el('div','vanbao-pull-row');
+    line.append(el('span','',row.day+' · '+(row.mode==='free'?'Tặng':'Mua')),
+     el('strong','',item?.name||'Bảo vật'),
+     el('small','',row.duplicate?'Trùng · hoàn 4':'Hạng '+(item?.rank||'?')));
+    history.append(line);
+   }
+   rootNode.append(history);
+  }
   const odds=el('details','lucky-odds');
   odds.append(el('summary','','✦ Xem tỷ lệ từng phẩm chất'));
   const list=el('div','lucky-odds-list');
@@ -779,7 +870,10 @@
   host.append(tabs);
   const content=el('section','dudu-fun-stage');
   const state=view(),round=state.rounds[open];
-  if(open==='box')sandbox()?boxes(content,round):blindBoxes(content);
+  if(open==='box'){
+   if(sandbox()){boxes(content,round);sandboxTreasurePreview(content);}
+   else blindBoxes(content);
+  }
   else lottery(content,round);
   host.append(content);
   host.append(el('p','dudu-fun-notice',noticeText));

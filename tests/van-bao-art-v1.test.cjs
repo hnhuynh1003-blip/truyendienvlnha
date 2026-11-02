@@ -32,7 +32,7 @@ test('Vạn Bảo features S, SS and SSS visually, keeping unopened prizes seale
  assert.match(funUI,/blind-treasure-showcase/);
  for(const id of ['fun-celestial-harp','fun-eternal-crown','fun-universe-egg'])
   assert.ok(funUI.includes("'"+id+"'"));
- assert.match(funUI,/if\(owned&&root\.DuduItemArtV13\?\.mount\)/);
+ assert.match(funUI,/if\(!root\.DuduItemArtV13\?\.mount\?\.\(picture,item\)\)/);
  assert.match(css,/\.blind-treasure-featured/);
  assert.match(css,/\.blind-treasure-feature\.rank-sss/);
  assert.match(css,/@media\(max-width:355px\)/);
@@ -40,7 +40,7 @@ test('Vạn Bảo features S, SS and SSS visually, keeping unopened prizes seale
  assert.match(marketUI,/root\.openPhoneApp\?\.\('fun'\)/);
  assert.match(html,/href="css\/van-bao-art-v1\.css\?v=vanbao-1"/);
  assert.match(html,/src="js\/item-visuals-v13\.js\?v=vanbao-1"/);
- assert.match(html,/src="js\/dudu-fun-ui-v43\.js\?v=vanbao-1"/);
+ assert.match(html,/src="js\/dudu-fun-ui-v43\.js\?v=fun-vis3"/);
 });
 
 test('Avatar artwork moves out of the face while keeping original and restricted unlock rules',()=>{
