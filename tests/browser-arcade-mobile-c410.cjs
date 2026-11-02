@@ -311,6 +311,32 @@ async function main(){
   });
   assert.equal(stages.controlsBelowPond,true,'Fishing control must not cover the pond');
   assert.equal(stages.tabbarInside,true);
+  const bedLayout=await page.evaluate(()=>{
+   const stage=document.querySelector('.garden-stage');
+   const area=stage.querySelector('.garden-plot-area');
+   const extras=[];
+   while(area.children.length<4){
+    const clone=area.firstElementChild.cloneNode(true);
+    area.appendChild(clone);extras.push(clone);
+   }
+   const expanded=stage.classList.contains('garden-expanded');
+   stage.classList.add('garden-expanded');
+   const pondTop=stage.querySelector('.garden-pond').getBoundingClientRect().top;
+   const plots=[...area.children].map(el=>el.getBoundingClientRect());
+   const spr=area.querySelector('.garden-crop-sprite').getBoundingClientRect();
+   const width=stage.getBoundingClientRect().width;
+   const result={count:plots.length,within:plots.every(rect=>rect.left>=stage.getBoundingClientRect().left-1&&rect.right<=stage.getBoundingClientRect().right+1),
+    clear:Math.max(...plots.map(rect=>rect.bottom))<pondTop-12,
+    sameRow:Math.max(...plots.map(rect=>rect.top))-Math.min(...plots.map(rect=>rect.top))<5,
+    spriteWidth:spr.width,stageWidth:width};
+   extras.forEach(el=>el.remove());
+   if(!expanded)stage.classList.remove('garden-expanded');
+   return result;
+  });
+  assert.equal(bedLayout.count,4);
+  assert.ok(bedLayout.within&&bedLayout.sameRow,'Four compact plots fit in a single row');
+  assert.ok(bedLayout.clear,'Flower beds leave the illustrated lake unobstructed');
+  assert.ok(bedLayout.spriteWidth<bedLayout.stageWidth*.25,'Plants are smaller than the water scene');
   const pondVisual=await page.evaluate(async()=>{
    const stage=document.querySelector('.garden-stage'),pond=stage.querySelector('.garden-pond');
    const width=pond.getBoundingClientRect().width/stage.getBoundingClientRect().width;

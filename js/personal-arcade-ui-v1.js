@@ -493,7 +493,7 @@
      <span class="garden-flower"><i></i><i></i><i></i><i></i><i></i></span>
      <span class="garden-crop-sprite" aria-hidden="true"></span>
      <span class="garden-plant-aura" aria-hidden="true"></span>
-     <span class="garden-plot-label"><b>LUỐNG ${String(index+1).padStart(2,'0')} · ${b.status==='empty'?'✿':core.CROPS[b.crop].name}</b><small ${b.status==='growing'&&!mature?`data-arcade-until="${b.readyAt}"`:''}>${caption}</small><em>${text}</em></span></button>`;
+     <span class="garden-plot-label"><b>${String(index+1).padStart(2,'0')} · ${b.status==='empty'?'Trống':core.CROPS[b.crop].name}</b><small ${b.status==='growing'&&!mature?`data-arcade-until="${b.readyAt}"`:''}>${caption}</small><em>${text}</em></span></button>`;
   };
   return `<section class="arcade-world arcade-world-garden ${biting?'is-biting':''}" aria-label="Vườn Sương">
     <header class="arcade-world-heading"><div><span class="arcade-eyebrow">03 / CHILL FARM</span>

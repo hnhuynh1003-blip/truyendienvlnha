@@ -21,7 +21,7 @@ test('C4.43A garden artwork is a real wide AI lake and three alpha-painted tier 
  const css=source('css/arcade-c443-pond-ai.css');
  const html=source('index.html');
  assert.match(html,/arcade-c443-pond-ai\.css\?v=c443a-1/);
- assert.match(html,/personal-arcade-ui-v1\.js\?v=c443a-1/);
+ assert.match(html,/personal-arcade-ui-v1\.js\?v=c443b-1/);
  assert.match(css,/moon-garden-wide\.webp/);
  assert.match(css,/pond-ornaments\.webp/);
  assert.match(css,/garden-pond\{[\s\S]*?left:3%;right:3%;/);
