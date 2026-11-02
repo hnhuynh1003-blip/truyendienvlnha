@@ -1987,7 +1987,7 @@ async function main() {
         openPhoneApp('settings');
         const gallery=document.getElementById('dudu-v34-overlay');
         const choices=gallery?.querySelectorAll('[data-dudu-wallpaper-choice]')||[];
-        const animeCount=gallery?.querySelectorAll('#dudu-v37-anime-panel [data-dudu-wallpaper-choice]').length||0;
+        const animeCount=gallery?.querySelectorAll('.dudu-v38-studio [data-v38-id]').length||0;
         const initial=document.body.dataset.duduPhoneWallpaper;
         setPhoneWallpaperV27('sakura');
         const chosen=document.body.dataset.duduPhoneWallpaper;
@@ -2021,8 +2021,8 @@ async function main() {
         phoneHome();
       }
     });
-    assert.equal(wallpaperR4.choices,15,'V44 gallery includes 4 calm, 4 world, 4 classic and 3 anime choices');
-    assert.equal(wallpaperR4.animeCount,3,'Anime wallpapers live in the gallery, not Settings');
+    assert.equal(wallpaperR4.choices,12,'Legacy options remain in the DOM for safe old-setting fallback');
+    assert.equal(wallpaperR4.animeCount,6,'V38 gallery displays six distinct original AI wallpapers');
     assert.equal(wallpaperR4.currentName,'Hoa anh đào','V44 preview updates when wallpaper selection changes');
     assert.equal(wallpaperR4.chosen,'sakura');
     assert.equal(wallpaperR4.selected,'true');
@@ -2033,8 +2033,7 @@ async function main() {
     assert.equal(wallpaperR4.unchanged,true);
     assert.equal(wallpaperR4.writes,0);
 
-    // V28 R5 — world/personal wallpaper tracks the currently selected story.
-    // Test transitions on Cyber Phone without making any Firebase or story writes.
+    // V38 retires auto story backgrounds without erasing old mode preferences.
     const worldV28=await page.evaluate(()=>{
       const account=currentUsername,profileBefore=JSON.stringify(userProfile);
       const writes=window.__firestoreWrites.length;
@@ -2087,8 +2086,8 @@ async function main() {
         phoneHome();
       }
     });
-    assert.equal(worldV28.selected,'true');
-    assert.equal(worldV28.matched,'world-xianxia');
+    assert.equal(worldV28.selected,'false');
+    assert.equal(worldV28.matched,'jade');
     assert.equal(worldV28.fallback,'jade');
     assert.equal(worldV28.personal,'jade');
     assert.equal(worldV28.galleryIsPresent,true);

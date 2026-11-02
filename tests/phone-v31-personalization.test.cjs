@@ -8,8 +8,8 @@ const css=fs.readFileSync(path.join(base,'css/phone-refinement-v31.css'),'utf8')
 const t=require('../js/phone-typography-v31.js');
 const store=()=>{const values=new Map();return {getItem:k=>values.get(k)||null,setItem:(k,v)=>values.set(k,v),values};};
 
-test('V31 offers four whitelist fonts and three sizes, fallbacks reject bad identifiers',()=>{
- assert.deepEqual(t.FONTS.map(x=>x.id),['be','quicksand','nunito','serif']);
+test('V31 keeps four legacy fonts and adds V38 font atelier entries',()=>{
+ assert.deepEqual(t.FONTS.map(x=>x.id),['be','quicksand','nunito','serif','outfit','cormorant','prata','marcellus']);
  assert.deepEqual(t.SIZES,['small','normal','large']);
  assert.equal(t.normalize({font:'../../bad',size:'huge'}).font,'be');
  assert.equal(t.normalize({font:'../../bad',size:'huge'}).size,'normal');
@@ -32,7 +32,8 @@ test('V31 settings use selected font only and do not alter chapter reading CSS',
  assert.match(html,/font\.url/);
  assert.match(html,/function setPhoneFontV31\(id\)/);
  assert.match(html,/function setPhoneSizeV31\(size\)/);
- for(const x of t.FONTS)assert.match(html,new RegExp('data-dudu-v31-font="'+x.id+'"'));
+ for(const x of t.FONTS.slice(0,4))assert.match(html,new RegExp('data-dudu-v31-font="'+x.id+'"'));
+ assert.match(html,/src="js\/phone-wallpaper-v38-studio\.js/);
  for(const x of t.SIZES)assert.match(html,new RegExp('data-dudu-v31-size="'+x+'"'));
  assert.doesNotMatch(css,/--font-reading\s*:/);
  assert.match(css,/#cyber-phone \:is\(button,input,select,textarea\)/);

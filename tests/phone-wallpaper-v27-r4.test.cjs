@@ -10,9 +10,9 @@ function store(){
  const values=new Map();
  return {getItem:k=>values.get(k)||null,setItem:(k,v)=>values.set(k,v),keys:()=>[...values.keys()]};
 }
-test('V27 R4 plus V29 eight safe wallpaper presets, invalid identifiers fail closed',()=>{
- assert.equal(wp.PRESETS.length,16);
- assert.deepEqual(wp.PRESETS.map(x=>x.id),['midnight','sakura','astral','jade','world-xianxia','world-modern','world-cyberpunk','world-gothic','v34-night','v34-room','v34-sakura','v34-neon','v37-sakura','v37-city-rain','v37-city-night','v36-custom']);
+test('V27 R4 keeps all legacy presets and adds V38 art without changing scoped keys',()=>{
+ assert.equal(wp.PRESETS.length,22);
+ assert.deepEqual(wp.PRESETS.map(x=>x.id),['midnight','sakura','astral','jade','world-xianxia','world-modern','world-cyberpunk','world-gothic','v34-night','v34-room','v34-sakura','v34-neon','v37-sakura','v37-city-rain','v37-city-night','v36-custom','v38-jade','v38-moon','v38-neon','v38-lantern','v38-fox','v38-abyss']);
  assert.equal(wp.normalize('astral'),'astral');
  assert.equal(wp.normalize('../../evil.css'),wp.DEFAULT);
  assert.equal(wp.keyFor('../../another-user'),null);

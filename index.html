@@ -29,6 +29,7 @@
   <link rel="stylesheet" href="css/phone-settings-v35.css?v=1">
   <link rel="stylesheet" href="css/phone-wallpaper-v36-custom.css?v=1">
   <link rel="stylesheet" href="css/phone-wallpaper-v37-gallery.css?v=3">
+  <link rel="stylesheet" href="css/phone-wallpaper-v38-studio.css?v=1">
   <link rel="stylesheet" href="css/npc-portrait-v38.css?v=1">
   <link rel="stylesheet" href="css/npc-portrait-v39.css?v=2">
   <link rel="stylesheet" href="css/inventory-v42.css?v=c24c-1">
@@ -6458,6 +6459,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
     }
     function setPhoneFontV31(id){
       if(!phoneWallpaperOwnerV27()||!window.DuduPhoneTypographyV31)return;
+      if(window.DuduWallpaperCatalogV38?.FONTS.some(x=>x.id===id)&&
+        !window.DuduWallpaperStudioV38?.canUseFont(id))return;
       const state=DuduPhoneTypographyV31.read(localStorage,phoneWallpaperOwnerV27());
       if(!DuduPhoneTypographyV31.write(localStorage,phoneWallpaperOwnerV27(),{...state,font:id}))return;
       renderPhoneTypographyV31();
@@ -6475,25 +6478,16 @@ document.getElementById('phone-home-screen').style.display = 'none';
       if(!window.DuduPhoneWallpaperV27)return;
       const owner=phoneWallpaperOwnerV27();
       const chosen=DuduPhoneWallpaperV27.read(localStorage,owner);
-      const art=window.DuduMultiverseArtV28;
-      const mode=art?art.readMode(localStorage,owner):'personal';
-      const resolved=art?art.resolve({mode,personal:chosen,story:activeStoryForWallpaperV28()}):
-        {wallpaperId:chosen,worldId:null,usedFallback:false};
-      document.body.dataset.duduPhoneWallpaper=resolved.wallpaperId;
+      // V38: story-based automatic wallpaper is retired. Keep the legacy
+      // stored mode untouched so no older preference or account data is reset.
+      document.body.dataset.duduPhoneWallpaper=chosen;
       renderPhoneTypographyV31();
       document.querySelectorAll('#cyber-phone [data-dudu-wallpaper-choice]').forEach(button=>{
         button.setAttribute('aria-pressed',
           String(button.dataset.duduWallpaperChoice===chosen));
       });
-      document.querySelectorAll('#cyber-phone [data-wallpaper-mode]').forEach(button=>{
-        button.setAttribute('aria-pressed',String(button.dataset.wallpaperMode===mode));
-      });
       const info=document.getElementById('dudu-v28-active-world');
-      if(info&&art)info.textContent=mode==='personal'?
-        'Đang sử dụng hình nền cá nhân của bạn.':
-        resolved.worldId?
-          'Đang dùng nền theo truyện: '+art.WORLDS.find(w=>w.id===resolved.worldId).label:
-          'Truyện này chưa có thể loại nền phù hợp: giữ hình nền cá nhân.';
+      if(info)info.textContent='Hình nền cá nhân.';
       // V44: options were moved into the modal; keep the preview in sync.
       window.DuduWallpaperGalleryV34?.sync?.();
     }
@@ -6510,6 +6504,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
     function setPhoneWallpaperV27(id){
       if(!phoneWallpaperOwnerV27()||!window.DuduPhoneWallpaperV27)return;
       if(!DuduPhoneWallpaperV27.PRESETS.some(p=>p.id===id))return;
+      if(id.startsWith('v38-')&&!window.DuduWallpaperStudioV38?.canUseWallpaper(id))return;
       const saved=DuduPhoneWallpaperV27.write(localStorage,phoneWallpaperOwnerV27(),id);
       if(saved){
         // Explicitly choosing a personal swatch returns to personal mode.
@@ -8881,7 +8876,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/phone-wallpaper-v34.js?v=copy-1"></script>
 <script src="js/phone-settings-v35.js?v=1"></script>
 <script src="js/phone-wallpaper-v36-custom.js?v=1"></script>
-<script src="js/phone-wallpaper-v37-gallery.js?v=2"></script>
+<script src="js/phone-wallpaper-v38-catalog.js?v=1"></script>
+<script src="js/phone-wallpaper-v38-studio.js?v=1"></script>
 <script src="js/world-registry-v63.js?v=63-1"></script>
 <script src="js/world-taxonomy-v66.js?v=66-2"></script>
 <script src="js/world-blueprint-v66.js?v=66-1"></script>

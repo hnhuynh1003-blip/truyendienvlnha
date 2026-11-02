@@ -24,7 +24,13 @@
     Object.freeze({id:'v37-sakura',name:'Thung lũng hoa',description:'Tranh anime phong cảnh hoa đào'}),
     Object.freeze({id:'v37-city-rain',name:'Phố đêm',description:'Tranh anime đường phố đêm'}),
     Object.freeze({id:'v37-city-night',name:'Đô thị neon',description:'Tranh anime đô thị hiện đại'}),
-    Object.freeze({id:'v36-custom',name:'Ảnh của tôi',description:'Ảnh riêng trên thiết bị'})
+    Object.freeze({id:'v36-custom',name:'Ảnh của tôi',description:'Ảnh riêng trên thiết bị'}),
+    Object.freeze({id:'v38-jade',name:'Thiên Cung',description:'Cung ngọc giữa biển mây'}),
+    Object.freeze({id:'v38-moon',name:'Vườn Trăng',description:'Rừng bạc bên hồ sao'}),
+    Object.freeze({id:'v38-neon',name:'Neon Vũ',description:'Thành phố trong màn mưa'}),
+    Object.freeze({id:'v38-lantern',name:'Đế Đô',description:'Đèn lồng cổ thành'}),
+    Object.freeze({id:'v38-fox',name:'Cửu Vĩ',description:'Linh thú giữa đêm ngọc'}),
+    Object.freeze({id:'v38-abyss',name:'Hải Điện',description:'Thánh đường dưới đáy biển'})
   ]);
   const IDS=new Set(PRESETS.map(p=>p.id));
   const PREFIX='dudu-sandbox:phone-wallpaper:v27-r4:';

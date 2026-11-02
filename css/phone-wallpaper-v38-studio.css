@@ -1,0 +1,204 @@
+/* V38 — compact luxury gallery: originals, gifts, font atelier, signature. */
+body.dudu-phone-v11[data-dudu-phone-wallpaper="v38-jade"] #cyber-phone{--dudu-v30-art:url('../assets/wallpapers/v38/jade-palace.webp');}
+body.dudu-phone-v11[data-dudu-phone-wallpaper="v38-moon"] #cyber-phone{--dudu-v30-art:url('../assets/wallpapers/v38/moon-garden.webp');}
+body.dudu-phone-v11[data-dudu-phone-wallpaper="v38-neon"] #cyber-phone{--dudu-v30-art:url('../assets/wallpapers/v38/neon-rain.webp');}
+body.dudu-phone-v11[data-dudu-phone-wallpaper="v38-lantern"] #cyber-phone{--dudu-v30-art:url('../assets/wallpapers/v38/lantern-imperial.webp');}
+body.dudu-phone-v11[data-dudu-phone-wallpaper="v38-fox"] #cyber-phone{--dudu-v30-art:url('../assets/wallpapers/v38/spirit-fox.webp');}
+body.dudu-phone-v11[data-dudu-phone-wallpaper="v38-abyss"] #cyber-phone{--dudu-v30-art:url('../assets/wallpapers/v38/abyss-sanctuary.webp');}
+body.dudu-phone-v11 #cyber-phone .phone-screen{
+ background-image:linear-gradient(180deg,#060c1c4d 0%,#09102218 30%,#06122240 100%),var(--dudu-v30-art)!important;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v34-sheet{
+ position:relative;min-width:0;background:linear-gradient(150deg,#0c1425,#131e32 62%,#19253d)!important;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v34-heading{border-color:#bba97540!important;}
+body.dudu-phone-v11 #cyber-phone .dudu-v34-heading strong{font-size:13px;color:#f8e9ce;letter-spacing:.03em;}
+body.dudu-phone-v11 #cyber-phone .dudu-v34-close{
+ border-radius:50%;background:#223044;border-color:#bdb4a74d;width:32px;height:32px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v35-gallery-tabs{
+ padding:3px!important;gap:2px!important;background:#071323!important;flex:none!important;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v35-gallery-tabs button{
+ min-width:64px!important;min-height:35px!important;padding:8px 7px!important;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v35-gallery-tabs button[aria-pressed="true"]{
+ background:linear-gradient(145deg,#5b4a35,#8b7046)!important;color:#fff2cd!important;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-studio{padding:1px 1px 12px;}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-hero{
+ display:flex;gap:10px;align-items:center;padding:14px 12px;margin:2px 0 10px;
+ border:1px solid #d9b97950;border-radius:17px;
+ background:radial-gradient(ellipse at 86% 25%,#a4763c59,transparent 58%),linear-gradient(135deg,#302c38,#182840);
+ box-shadow:inset 0 1px 0 #f8d5a92b,0 9px 20px #070a193d;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-hero-spark{
+ display:grid;place-items:center;flex:none;font-size:23px;color:#ffe3a8;width:40px;height:47px;
+ border-radius:12px;border:1px solid #e6c27e57;background:#c3a26717;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-hero div{display:flex;min-width:0;flex-direction:column;gap:4px;}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-hero small,
+body.dudu-phone-v11 #cyber-phone .dudu-v38-font-intro small{
+ color:#dbbd84;font-size:8px;font-weight:750;letter-spacing:.13em;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-hero strong{
+ font-family:Georgia,serif;font-size:15px;line-height:1.25;color:#fff4df;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-hero div>span{font-size:9px;color:#c3cbd5;line-height:1.3;}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-filters{
+ display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;padding:0 1px 10px;
+ overscroll-behavior-inline:contain;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-filters::-webkit-scrollbar{display:none;}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-filter{
+ flex:0 0 auto;font-size:10px;line-height:1;min-height:30px;border:1px solid #8294a047;
+ border-radius:99px;padding:7px 11px;color:#bbc7d8;background:#1d2c3c;cursor:pointer;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-filter[aria-pressed="true"]{
+ color:#fff0cb;border-color:#c9a96d;background:#665036;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-wall-grid{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-wall-card{
+ appearance:none;display:flex;flex-direction:column;gap:7px;min-width:0;
+ padding:6px;border-radius:15px;background:linear-gradient(150deg,#25344b,#17273a);
+ border:1px solid #9ba7bc47;text-align:left;color:#fff;cursor:pointer;
+ box-shadow:0 4px 12px #0002;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-wall-card[hidden]{display:none!important;}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-wall-card[aria-pressed="true"]{
+ border-color:#ebd09b;box-shadow:0 0 0 1px #e0c48c7d,0 4px 14px #e6b96426;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-wall-art{
+ display:block;position:relative;width:100%;aspect-ratio:10/16;overflow:hidden;
+ background:#233247;border-radius:11px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-wall-art img{
+ display:block;width:100%;height:100%;object-fit:cover;object-position:center;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-price{
+ position:absolute;left:6px;top:6px;display:flex;align-items:center;gap:3px;padding:4px 6px;border-radius:6px;
+ font-size:8px;font-weight:850;letter-spacing:.05em;color:#fff4db;
+ background:#121a2bbd;border:1px solid #efd4a765;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-wall-info{
+ display:flex;flex-direction:column;gap:2px;min-width:0;padding:0 4px 3px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-wall-info strong{font-size:11px;color:#f7f3ec;}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-wall-info small{font-size:9px;color:#aebccf;}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-honesty{
+ font-size:9px;line-height:1.5;color:#acbbcf;margin:12px 2px 0;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-feedback{
+ border:1px solid #d5b67c71;border-radius:9px;background:#3a322bc9;
+ padding:8px 10px;color:#fff0cd;font-size:10px;line-height:1.4;margin:8px 2px 0;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-feedback[hidden]{display:none!important;}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-inspect{
+ position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;
+ gap:10px;padding:11px;min-height:0;background:#0d1728;overflow-y:auto;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-inspect[hidden]{display:none!important;}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-inspect-top{display:flex;align-items:center;gap:11px;}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-inspect-close{
+ width:33px;height:33px;border-radius:10px;border:1px solid #8da3b160;
+ background:#223349;color:#f3ebdd;font-size:25px;line-height:1;cursor:pointer;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-inspect-top strong{font-size:13px;color:#f7ead5;}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-inspect-art{
+ position:relative;align-self:center;width:min(100%,225px);min-height:0;
+ flex:1;max-height:470px;aspect-ratio:9/17;
+ border:5px solid #202c3b;border-radius:27px;overflow:hidden;
+ background-size:cover;background-position:center;
+ box-shadow:0 14px 28px #0009,0 0 0 1px #d2b88c7d;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-inspect-time{
+ display:block;position:absolute;top:9%;left:0;right:0;text-align:center;
+ font-size:35px;letter-spacing:-.05em;font-weight:250;color:white;text-shadow:0 2px 12px #000a;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-inspect-dots{
+ position:absolute;top:6px;left:0;right:0;text-align:center;font-size:8px;letter-spacing:.12em;
+ font-weight:750;color:#fff8ee;text-shadow:0 2px 8px #000;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-inspect-nav{
+ position:absolute;width:27%;height:4px;bottom:9px;left:36.5%;border-radius:3px;background:#ffffffcd;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-inspect-detail{
+ display:flex;align-items:center;justify-content:space-between;gap:8px;flex:none;
+ padding:9px 2px 4px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-inspect-detail>div{display:flex;flex-direction:column;gap:3px;}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-inspect-name{font-size:13px;color:#fff3df;}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-inspect-category{font-size:9px;color:#a9b8c9;}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-inspect-action{
+ display:flex;align-items:center;justify-content:center;gap:5px;flex:0 0 auto;
+ min-height:39px;padding:8px 13px;border:1px solid #f3cd8e9c;border-radius:11px;
+ background:linear-gradient(140deg,#a0773c,#725331);color:#fff7de;font-size:11px;font-weight:750;cursor:pointer;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-font-intro{
+ display:flex;flex-direction:column;gap:5px;border-radius:15px;padding:14px;
+ background:linear-gradient(120deg,#312935,#1d3147);border:1px solid #c6a16b68;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-font-intro strong{
+ color:#fff0d1;font-family:Georgia,serif;font-size:17px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-font-intro p{margin:0;color:#bac9d8;font-size:10px;}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-font-list{display:flex;flex-direction:column;gap:8px;margin:12px 0;}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-font-card{
+ display:grid;grid-template-columns:90px 1fr auto;align-items:center;gap:7px;min-width:0;
+ padding:10px 8px;border:1px solid #7d93b250;border-radius:13px;
+ background:#1b293b;color:#f4f5fb;text-align:left;cursor:pointer;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-font-card[aria-pressed="true"]{border-color:#e6ca96;background:#2d3543;}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-font-sample{font-size:17px;white-space:nowrap;line-height:1.2;color:#ffe6b5;}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-font-meta{min-width:0;display:flex;flex-direction:column;gap:3px;}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-font-meta strong{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-font-meta small{font-size:8px;line-height:1.3;color:#abb8c9;}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-font-kind{display:flex;align-items:center;gap:2px;font-size:8px;color:#f5d59b;white-space:nowrap;}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-signature{
+ display:flex;flex-direction:column;gap:9px;border:1px solid #c09b695c;
+ border-radius:14px;padding:12px;background:#131e32;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-sign-title{display:flex;flex-direction:column;gap:3px;}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-sign-title strong{font-size:12px;color:#f8dfae;}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-sign-title small{font-size:9px;color:#a9bad0;}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-sign-preview{
+ display:grid;place-items:center;min-height:76px;padding:6px 10px;border-radius:10px;
+ font-size:35px;color:#fbe5b5;background:radial-gradient(ellipse,#43516d,#1a2a41);
+ text-shadow:0 2px 9px #0008;overflow:hidden;
+}
+body.dudu-phone-v11 #cyber-phone .is-script{font-family:'Great Vibes','Dancing Script',cursive;font-style:italic;}
+body.dudu-phone-v11 #cyber-phone .is-royal{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;letter-spacing:.03em;}
+body.dudu-phone-v11 #cyber-phone .is-neon{font-family:'Outfit',sans-serif;font-weight:300;letter-spacing:.13em;text-shadow:0 0 9px #7dd5f4,0 0 22px #8eb5fe;}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-sign-input{
+ border:1px solid #72839c82;background:#0b182c;color:#f7f1ea;
+ border-radius:9px;padding:10px 11px;min-height:37px;width:100%;font-size:12px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-sign-styles{display:flex;gap:5px;}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-sign-style{
+ flex:1 1 0;min-width:0;padding:7px 3px;border-radius:8px;border:1px solid #7d8b9a50;
+ color:#c4d1e0;background:#213048;font-size:9px;cursor:pointer;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-sign-style[aria-pressed="true"]{
+ color:#ffecbf;border-color:#e6c58c;background:#604a36;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v38-sign-toggle{
+ padding:10px;border-radius:10px;background:#8b693d;color:#fff4df;
+ border:1px solid #e9c99b;font-weight:750;font-size:11px;cursor:pointer;
+}
+body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-v38-home-signature{
+ position:absolute;left:0;right:0;top:40%;text-align:center;pointer-events:none;
+ font-size:28px;color:#fff7e5;z-index:1;opacity:.9;text-shadow:0 3px 12px #000b;
+}
+body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-v38-home-signature[hidden]{display:none!important;}
+@media(max-width:350px){
+ body.dudu-phone-v11 #cyber-phone .dudu-v38-hero{padding:11px 9px;gap:8px;}
+ body.dudu-phone-v11 #cyber-phone .dudu-v38-hero strong{font-size:13px;}
+ body.dudu-phone-v11 #cyber-phone .dudu-v38-font-card{grid-template-columns:72px 1fr auto;gap:5px;}
+ body.dudu-phone-v11 #cyber-phone .dudu-v38-font-sample{font-size:14px;}
+ body.dudu-phone-v11 #cyber-phone .dudu-v38-wall-grid{gap:7px;}
+}
+@media(prefers-reduced-motion:reduce){
+ body.dudu-phone-v11 #cyber-phone .dudu-v38-wall-card{transition:none!important;}
+}
