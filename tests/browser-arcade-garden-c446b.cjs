@@ -37,6 +37,8 @@ async function main(){
   });
   await page.goto('http://127.0.0.1:'+server.address().port+'/?sandbox=1',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>!!window.DuduPersonalArcadeUIV1&&!!window.DuduPhoneAppsV67);
+  // Let the Sandbox's delayed first-login modal appear before changing accounts.
+  await page.waitForTimeout(800);
   const modal=page.locator('#auth-modal');
   if(await modal.isVisible())await modal.getByRole('button',{name:'Đóng'}).click();
   if(!(await modal.isVisible()))await page.locator('#account-status-btn').click();
