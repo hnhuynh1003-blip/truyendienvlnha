@@ -324,6 +324,7 @@ async function main(){
      noOverlap:beds[0].right<=beds[1].left&&beds[2].right<=beds[3].left,
      actionHeight:sheet.querySelector('.garden-plot.empty .garden-plot-label em').getBoundingClientRect().height,
      spriteWidth:sheet.querySelector('.garden-crop-sprite').getBoundingClientRect().width,
+     spriteClipped:getComputedStyle(area.firstElementChild).overflow==='hidden',
      sheetWithin:sheet.querySelector('.arcade-sheet').getBoundingClientRect().width<=innerWidth};
     clones.forEach(el=>el.remove());
     return result;
@@ -334,8 +335,8 @@ async function main(){
    assert.equal(layout.count,4);
    assert.ok(layout.inside&&layout.twoColumns&&layout.noOverlap&&layout.sheetWithin,
     `Farm popup fits four beds in a compact 2x2 grid at ${width}px`);
-   assert.ok(layout.actionHeight>=26&&layout.spriteWidth<=120,
-    `Readable actions and compact flowers at ${width}px`);
+   assert.ok(layout.actionHeight>=26&&layout.spriteWidth>=85&&layout.spriteWidth<=190&&layout.spriteClipped,
+    `Readable actions and larger flowers stay clipped within the beds at ${width}px`);
   }
   await page.setViewportSize({width:390,height:844});
   await page.locator('.arcade-sheet-close').click();
