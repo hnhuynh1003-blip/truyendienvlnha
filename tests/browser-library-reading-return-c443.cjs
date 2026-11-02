@@ -60,12 +60,30 @@ async function main(){
    const boxes=await page.evaluate(()=>{
     const shortcut=document.getElementById('floating-reading-bar');
     const a=shortcut.getBoundingClientRect(),phone=document.getElementById('phone-fab').getBoundingClientRect();
+    const paper=document.getElementById('reader-paper').getBoundingClientRect();
+    const content=document.getElementById('reader-content').getBoundingClientRect();
     return {left:a.left,right:a.right,phoneLeft:phone.left,visible:getComputedStyle(shortcut).display,
+     paperLeft:paper.left,paperRight:paper.right,contentLeft:content.left,contentRight:content.right,
      overflow:document.documentElement.scrollWidth-innerWidth};
    });
    assert.equal(boxes.visible,'none','TOC stays tucked away while reading at '+width);
    assert.ok(boxes.left>=0&&boxes.overflow<=2,'reader fits at '+width);
+   assert.ok(Math.abs(boxes.paperLeft)<=1&&Math.abs(boxes.paperRight-width)<=1,
+    'reading paper spans the screen without the old double gutter at '+width);
+   assert.ok(boxes.contentLeft>=14&&boxes.contentLeft<=20&&
+    width-boxes.contentRight>=14&&width-boxes.contentRight<=20,
+    'text keeps a comfortable 15–18px inset at '+width);
   }
+  await page.locator('#reader-ch-title').click();
+  assert.equal(await page.locator('#floating-reading-bar').isVisible(),true,
+   'tapping the reading paper reveals quick controls');
+  assert.equal(await page.locator('#reader-quick-prev').isDisabled(),true);
+  assert.equal(await page.locator('#reader-quick-next').isEnabled(),true);
+  await page.locator('#reader-quick-settings').click();
+  assert.equal(await page.locator('#reader-settings-popover').isVisible(),true,
+   'quick settings opens the existing reader preference sheet');
+  await page.locator('#reader-settings-close').click();
+  assert.equal(await page.locator('#floating-reading-bar').isVisible(),false);
   // Flush the downward scroll event before reversing direction. Without this,
   // Chromium may coalesce two instant scrollTo() calls into one event at 560px.
   await page.evaluate(async()=>{
@@ -76,6 +94,8 @@ async function main(){
   assert.equal(await page.locator('#floating-reading-bar').isVisible(),false);
   await page.evaluate(()=>window.scrollTo(0,560));
   await page.waitForFunction(()=>getComputedStyle(document.getElementById('floating-reading-bar')).display==='flex');
+  assert.ok(parseInt(await page.locator('#reader-quick-progress').innerText(),10)>0,
+   'quick progress measures the current chapter');
   const positions=await page.evaluate(()=>({
    right:document.getElementById('floating-reading-bar').getBoundingClientRect().right,
    phoneLeft:document.getElementById('phone-fab').getBoundingClientRect().left

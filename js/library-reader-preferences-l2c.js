@@ -137,7 +137,9 @@
     if(!popover||popover.hidden)return;
     popover.hidden=true;
     trigger?.setAttribute('aria-expanded','false');
-    if(restoreFocus)trigger?.focus();
+    // Closing settings from the floating toolbar must not jump the reader
+    // back to the top just to focus the original header button.
+    if(restoreFocus)trigger?.focus({preventScroll:true});
   }
   function toggle(){
     const popover=document.getElementById('reader-settings-popover');

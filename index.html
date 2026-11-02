@@ -829,6 +829,7 @@
   <link rel="stylesheet" href="css/library-discovery-l2b.css?v=l2d-1">
   <link rel="stylesheet" href="css/library-cards-l2b4.css?v=l2c-2">
   <link rel="stylesheet" href="css/library-reader-l2c.css?v=l2a-2">
+  <link rel="stylesheet" href="css/library-reader-focus-l2b.css?v=l2b-1">
   <link rel="stylesheet" href="css/library-editorial-l2c3.css?v=l2c-3">
   <link rel="stylesheet" href="css/library-epub-manage-l2d2.css?v=c422-1">
   <link rel="stylesheet" href="css/library-epub-edit-l2d5.css?v=l2d5b-1">
@@ -853,13 +854,18 @@
   <link rel="stylesheet" href="css/library-catalog-l2e.css?v=l2e-3">
   <script src="js/library-catalog-l2e.js?v=l2e-3"></script>
   <script src="js/library-reader-shortcut-l2f.js?v=l2f-2"></script>
+  <script src="js/library-reader-focus-l2b.js?v=l2b-1"></script>
 </head>
 <body>
 
   <div class="reader-progress-bar" id="reading-bar"></div>
 
-  <div class="floating-reading-controls" id="floating-reading-bar">
-    <button class="floating-btn" onclick="goCover()">‹ Mục lục</button>
+  <div class="floating-reading-controls" id="floating-reading-bar" role="toolbar" aria-label="Công cụ đọc nhanh">
+    <button type="button" class="reader-quick-btn" id="reader-quick-prev" onclick="prevChapter()" aria-label="Chương trước" title="Chương trước">‹</button>
+    <button type="button" class="reader-quick-btn reader-quick-toc" onclick="goCover()" aria-label="Mở mục lục">☰ Mục lục</button>
+    <button type="button" class="reader-quick-btn" id="reader-quick-next" onclick="nextChapter()" aria-label="Chương sau" title="Chương sau">›</button>
+    <button type="button" class="reader-quick-btn reader-mobile-only" id="reader-quick-settings" aria-label="Cài đặt đọc" title="Cài đặt đọc">⚙</button>
+    <span class="reader-quick-progress" id="reader-quick-progress" aria-label="Tiến độ chương">0%</span>
   </div>
 
   <div id="system-alert-banner">
@@ -7678,6 +7684,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
     function openCover(idx) {
       window.DuduLibraryReaderStatusL2A?.cancel();
       document.body.classList.remove('dudu-reading-active');
+      window.DuduReaderFocusL2B?.reset();
       window.DuduLibraryCatalogL2E?.rememberScroll(window);
       c443ResumePending=false;
       if(document.getElementById('reader-view').style.display==='block'){
@@ -7938,6 +7945,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       window.DuduReadingReturnC443?.enterHistory(window);
       c443Remember(scrollPos,true);
       window.DuduReaderShortcutL2F?.reset(window.scrollY);
+      window.DuduReaderFocusL2B?.reset(chIdx,novel.chapters.length);
       document.getElementById('floating-reading-bar').style.display='none';
       window.DuduReaderPreferencesL2C?.close();
       const readerEdit=document.getElementById('reader-edit-chapter');
@@ -8023,7 +8031,10 @@ document.getElementById('phone-home-screen').style.display = 'none';
       }
 
       setTimeout(() => {
-        window.scrollTo({ top: scrollPos, behavior: scrollPos ? 'smooth' : 'auto' });
+        // A bookmark must return to the saved pixel, not sweep through many
+        // intermediate positions that could overwrite it during smooth scroll.
+        window.scrollTo({ top: scrollPos, behavior: 'auto' });
+        window.DuduReaderFocusL2B?.onScroll(window.scrollY,false);
       }, 50);
     }
 
@@ -8118,14 +8129,11 @@ document.getElementById('phone-home-screen').style.display = 'none';
 
       if (isReaderActive) {
         const winScroll = document.documentElement.scrollTop;
-        const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-        const scrolled = (winScroll / height) * 100;
-        document.getElementById('reading-bar').style.width = scrolled + '%';
-
         // The hardware/browser Back already returns to this book's contents.
-        // Surface a small TOC shortcut only after a deliberate upward swipe.
+        // Reveal controls on an upward swipe; a tap on the prose also toggles them.
         const revealToc=window.DuduReaderShortcutL2F?.update(winScroll)||false;
-        floatBar.style.display = revealToc?'flex':'none';
+        if(window.DuduReaderFocusL2B)window.DuduReaderFocusL2B.onScroll(winScroll,revealToc);
+        else floatBar.style.display = revealToc?'flex':'none';
 
         const novel = novels[selectedNovelIndex];
         if (novel && novel.chapters && novel.chapters.length > 0) {
@@ -8135,6 +8143,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
         }
       } else {
         window.DuduReaderShortcutL2F?.reset(0);
+        window.DuduReaderFocusL2B?.reset();
         document.getElementById('reading-bar').style.width = '0%';
         floatBar.style.display = 'none';
       }
@@ -8143,6 +8152,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
     function goHome() {
       window.DuduLibraryReaderStatusL2A?.cancel();
       document.body.classList.remove('dudu-reading-active');
+      window.DuduReaderFocusL2B?.reset();
       c443ResumePending=false;
       if(document.getElementById('reader-view')?.style.display==='block'){
         window.DuduReadingReturnC443?.clear(sessionStorage);
@@ -8932,7 +8942,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/world-taxonomy-v66.js?v=66-2"></script>
 <script src="js/world-blueprint-v66.js?v=66-1"></script>
 <script src="js/library-reader-status-l2a.js?v=l2a-1"></script>
-<script src="js/library-reader-preferences-l2c.js?v=l2a-1"></script>
+<script src="js/library-reader-preferences-l2c.js?v=l2b-1"></script>
 <script src="js/library-reading-return-c443.js?v=c443-1"></script>
   <script src="js/site-shell-v60.js?v=l2d2-1&amp;pause=c446c-1"></script>
 <script src="js/world-experience-v66.js?v=66-2"></script>

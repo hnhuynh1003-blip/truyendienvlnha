@@ -37,7 +37,7 @@ test('L2F uses the existing back-to-contents route and adds no new data writes',
  const html=readFileSync(join(root,'index.html'),'utf8');
  const css=readFileSync(join(root,'css/library-reading-return-c443.css'),'utf8');
  assert.match(html,/js\/library-reader-shortcut-l2f\.js\?v=/);
- assert.match(html,/floatBar\.style\.display = revealToc\?'flex':'none'/);
+ assert.match(html,/DuduReaderFocusL2B\.onScroll\(winScroll,revealToc\)/);
  assert.match(html,/handleBack\(window,\(\)=>goCover\(\)\)/);
  assert.match(css,/display:none/);
  assert.doesNotMatch(readFileSync(join(root,'js/library-reader-shortcut-l2f.js'),'utf8'),

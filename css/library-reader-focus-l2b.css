@@ -1,0 +1,38 @@
+/* L2B: the reading page stays quiet until an upward swipe or a tap on prose. */
+body.dudu-site-v60.dudu-reading-active #floating-reading-bar {
+  align-items:center;flex-wrap:nowrap;gap:3px;padding:4px;
+  max-width:calc(100vw - 94px);border-radius:12px;
+}
+body.dudu-site-v60.dudu-reading-active #floating-reading-bar .reader-quick-btn {
+  flex:0 0 35px;display:inline-flex;align-items:center;justify-content:center;
+  width:35px;min-width:35px;min-height:40px;padding:0;
+  border:0;border-radius:7px;background:transparent;color:#f2e5cf;
+  font:650 18px/1 system-ui,-apple-system,'Segoe UI',Arial,sans-serif;cursor:pointer;
+}
+body.dudu-site-v60.dudu-reading-active #floating-reading-bar .reader-quick-toc {
+  flex-basis:60px;width:60px;min-width:60px;
+  background:#d1b783;color:#1e2938;font-size:10px;
+}
+body.dudu-site-v60.dudu-reading-active #floating-reading-bar .reader-quick-progress {
+  display:inline-flex;align-items:center;justify-content:center;
+  flex:0 0 35px;min-width:35px;color:#bed7d9;
+  font:650 10px/1 system-ui,sans-serif;font-variant-numeric:tabular-nums;
+}
+body.dudu-site-v60.dudu-reading-active #floating-reading-bar .reader-quick-btn:disabled {
+  color:#788997;opacity:.55;cursor:default;
+}
+body.dudu-site-v60.dudu-reading-active #floating-reading-bar .reader-quick-btn:focus-visible {
+  outline:2px solid #f2e5cf;outline-offset:2px;
+}
+body.dudu-site-v60.dudu-reading-active #floating-reading-bar .reader-mobile-only {display:none}
+@media(max-width:600px){
+  body.dudu-site-v60.dudu-reading-active #floating-reading-bar .reader-mobile-only {display:inline-flex}
+  /* The Phone remains reachable but becomes unobtrusive during long reading. */
+  body.dudu-site-v60.dudu-reading-active #phone-fab {opacity:.22;transition:opacity .18s}
+  body.dudu-site-v60.dudu-reading-active.dudu-reader-tools-visible #phone-fab,
+  body.dudu-site-v60.dudu-reading-active #phone-fab:hover,
+  body.dudu-site-v60.dudu-reading-active #phone-fab:focus-visible {opacity:1}
+}
+@media(prefers-reduced-motion:reduce){
+  body.dudu-site-v60.dudu-reading-active #phone-fab {transition:none}
+}
