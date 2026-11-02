@@ -17,8 +17,8 @@ test('FUN-VIS3 has two distinct transparent fantasy chest frames, optimized for 
   assert.ok(data.length>12000&&data.length<220000,'optimized '+state+' chest');
  }
  const html=read('index.html'),css=read('css/van-bao-stage-v2.css');
- assert.match(html,/css\/van-bao-stage-v2\.css\?v=fun-vis4/);
- assert.match(html,/js\/dudu-fun-ui-v43\.js\?v=fun-vis4b/);
+ assert.match(html,/css\/van-bao-stage-v2\.css\?v=fun-vis5/);
+ assert.match(html,/js\/dudu-fun-ui-v43\.js\?v=fun-vis5/);
  assert.match(css,/\.vanbao-chest-art/);
  assert.match(css,/\.vanbao-celebrating\.rank-sss/);
  assert.match(css,/\.blind-album-tile\.locked \.blind-album-art img/);
@@ -77,4 +77,52 @@ test('Sandbox shows all 19 artwork previews without invoking the purchase or rew
  assert.equal(elements.filter(node=>node.className?.includes('blind-treasure-feature rank-')).length,3);
  assert.ok(elements.some(node=>node.textContent.includes('Chỉ ngắm, không mua hoặc nhận đồ')));
  assert.equal(bridgeCalls,0);
+});
+
+test('DUDU FUN reads the current shared wallet, not an older Vạn Bảo snapshot',async()=>{
+ class FakeNode{
+  constructor(tag){this.tag=tag;this.children=[];this.style={};this.listeners={};}
+  set textContent(value){this.text=String(value);this.children=[];}
+  get textContent(){return this.text||this.children.map(n=>n.textContent||'').join('');}
+  append(...children){this.children.push(...children);}
+  replaceChildren(...children){this.children=[...children];}
+  setAttribute(){}
+  addEventListener(name,fn){this.listeners[name]=fn;}
+ }
+ const nodes={};
+ const doc={createElement:tag=>new FakeNode(tag),getElementById:id=>nodes[id]||null};
+ for(const id of ['dudu-fun-content-v43','dudu-fun-header-balance','dudu-fun-launch-v43'])
+  nodes[id]=doc.createElement('div');
+ const root={document:doc,currentUsername:'du',userProfile:{currency:311},
+  DuduAuth:{isReady:()=>true,uid:()=> 'du'},IS_SANDBOX_MODE:false,
+  DuduFunRulesV43:{norm:()=>({rounds:{box:null,ticket:null},history:[]})},
+  DuduPersonalFunC25:{utcDay:()=> '2026-11-02'},
+  DuduFunLiveBridgeC25:{uid:()=> 'du',load:async()=>({state:{}})},
+  DuduPersonalBlindBoxC29:{PRICE:20,TOTAL:1000000,DUPLICATE_RETURN:4,POOL:[]},
+  DuduBlindBoxLiveBridgeC29:{uid:()=> 'du',load:async()=>({currency:311,
+   state:{active:null,lastFreeDay:'2026-11-02',album:[],total:0,duplicate:0,history:[]}})},
+  DuduItemCatalog:{byId:()=>null,funCollectibles:[]}};
+ root.window=root;
+ vm.runInNewContext(read('js/dudu-fun-ui-v43.js'),root,{filename:'dudu-fun-ui-v43.js'});
+ root.DuduFunUIV43.render();
+ await new Promise(resolve=>setImmediate(resolve));
+ root.userProfile.currency=315; // A newer scratch-ticket receipt updated the shared wallet.
+ root.DuduFunUIV43.render();
+ assert.equal(nodes['dudu-fun-header-balance'].textContent,'315');
+ const walk=node=>[node,...node.children.flatMap(walk)];
+ const buy=walk(nodes['dudu-fun-content-v43']).find(n=>n.className?.includes('blind-paid'));
+ assert.ok(buy);
+ assert.equal(buy.disabled,false);
+});
+
+test('Mythic identity and full-screen relic leave text unobstructed on mobile',()=>{
+ const frame=read('css/phone-identity-art-v1.css');
+ const relic=read('css/van-bao-stage-v2.css');
+ const ui=read('js/dudu-fun-ui-v43.js');
+ assert.match(frame,/\.dudu-honor-home-chip::before\{\s*content:none!important/);
+ assert.match(frame,/\.dudu-honor-home-chip::after\{\s*content:none!important/);
+ assert.match(relic,/\.vanbao-artifact-large\{[^}]*flex:0 0 auto/s);
+ assert.match(relic,/\.vanbao-artifact-large img\{[^}]*object-fit:contain!important/s);
+ assert.doesNotMatch(ui,/✦ TỦ BÁU VẬT · DUDU FUN|19 bảo vật · E → SSS · chỉ dùng Xu Vàng ảo/);
+ assert.doesNotMatch(ui,/DUDU FUN dùng Xu Vàng ảo, không quy đổi hoặc rút thành tiền thật/);
 });

@@ -112,7 +112,7 @@
    if(uid!==blindUid||!signed())return;
    blindState=response.state;blindCurrency=response.currency;
    luckyCurrency=response.currency;
-   if(kind==='start')message('Hộp đã sẵn sàng. Chạm để mở và xem vật phẩm!');
+   if(kind==='start')message('');
    if(kind==='claim'&&response.status==='applied'&&response.reward){
     revealMoment={id:response.state?.active?.id,rank:response.reward.item.rank};
     message(response.reward.duplicate?
@@ -321,9 +321,17 @@
  }
  function updateHeaderBalance(){
   const chip=$('dudu-fun-header-balance');if(!chip)return;
-  const currency=!sandbox()?(open==='ticket'?luckyCurrency:blindCurrency)??
-   userProfile.currency:userProfile.currency;
+  // Both receipts commit to the same account wallet. Per-game load snapshots
+  // can be older than a prize claimed in the other tab, so never present them
+  // as the current balance after the account mirror has been refreshed.
+  const currency=walletBalance();
   chip.textContent=signed()?Number(currency).toLocaleString('vi-VN'):'Khách';
+ }
+ function walletBalance(){
+  const accountMoney=Number(userProfile?.currency);
+  if(Number.isSafeInteger(accountMoney)&&accountMoney>=0)return accountMoney;
+  const snapshot=open==='ticket'?luckyCurrency:blindCurrency;
+  return Number.isSafeInteger(snapshot)&&snapshot>=0?snapshot:0;
  }
  function chestArt(opened=false){
   const holder=el('span','vanbao-chest-art'+(opened?' is-open':''));
@@ -342,9 +350,9 @@
   close.onclick=()=>dialog.close();
   const picture=el('div','vanbao-artifact-large');
   if(!root.DuduItemArtV13?.mount?.(picture,item))picture.textContent=item.icon||'✦';
-  content.append(close,el('small','vanbao-artifact-rank','✦ VẠN BẢO · '+item.rank),
-   picture,el('strong','',item.name),el('p','',item.desc),
-   el('small','vanbao-artifact-status',preview?'Mẫu trưng bày · không nhận vật phẩm':'✦ Đã ghi vào Sổ Vạn Bảo'));
+  content.append(close,el('small','vanbao-artifact-rank','✦ '+item.rank),
+   picture,el('strong','',item.name),el('p','',item.desc));
+  if(preview)content.append(el('small','vanbao-artifact-status','Chỉ ngắm · không nhận vật phẩm'));
   dialog.append(content);
   dialog.addEventListener('close',()=>dialog.remove(),{once:true});
   dialog.addEventListener('click',event=>{if(event.target===dialog)dialog.close();});
@@ -398,16 +406,10 @@
    return;
   }
   const s=blindState,active=s.active,items=root.DuduItemCatalog?.funCollectibles||[];
-  const intro=el('div','blind-kiosk');
-  intro.append(el('span','','✦ TỦ BÁU VẬT · DUDU FUN'),
-   el('strong','','Hộp Mù Vạn Bảo'),
-   el('small','','19 bảo vật · E → SSS · chỉ dùng Xu Vàng ảo'));
-  rootNode.append(intro);
   rootNode.append(featuredTreasure());
   if(active?.status==='sealed'){
    const stage=el('div','blind-opening-stage');
-   stage.append(chestArt(false),el('strong','','Rương đã niêm phong'),
-    el('small','','Chạm để khai mở bảo vật đang chờ · chỉ nhận một lần'));
+   stage.append(chestArt(false));
    const claim=el('button','dudu-fun-claim blind-reveal','✦ MỞ HỘP NGAY');
    claim.type='button';claim.disabled=blindBusy;
    claim.addEventListener('click',()=>{void blindAction('claim');});
@@ -417,7 +419,7 @@
    // unopened showroom chest only before the player starts a new box.
    if(!active){
     const display=el('div','vanbao-chest-kiosk');
-    display.append(chestArt(false),el('span','','✦ TINH VÂN BẢO HẠP'));
+    display.append(chestArt(false));
     rootNode.append(display);
    }
    if(active?.status==='claimed'){
@@ -439,9 +441,7 @@
      const picture=el('div','blind-result-art');
      if(!root.DuduItemArtV13?.mount?.(picture,item))picture.textContent=item.icon;
      reveal.append(picture,el('strong','',item.name),
-      el('span','','Hạng '+item.rank+(active.duplicate?' · Trùng vật phẩm':' · Đã vào Kho')),
-      el('small','',active.duplicate?'Nhận lại '+blind().DUPLICATE_RETURN+' Xu Vàng thay vì món trùng.':
-       item.desc));
+      el('span','',active.duplicate?'Hạng '+item.rank+' · Đã hoàn Xu':'Hạng '+item.rank+' · Đã vào Kho'));
      const inspect=el('button','vanbao-inspect','✧ Ngắm bảo vật');
      inspect.type='button';inspect.addEventListener('click',()=>viewTreasure(item,false));
      reveal.append(inspect);
@@ -455,7 +455,7 @@
     free.addEventListener('click',()=>{void blindAction('start','free');});controls.append(free);
    }else controls.append(el('small','blind-free-done','✓ Đã dùng lượt tặng hôm nay'));
    const paid=withGold('button','dudu-fun-start blind-paid','✨ MUA HỘP · ',blind().PRICE);
-   paid.type='button';paid.disabled=blindBusy||blindCurrency<blind().PRICE;
+   paid.type='button';paid.disabled=blindBusy||walletBalance()<blind().PRICE;
    paid.addEventListener('click',()=>{void blindAction('start','paid');});
    controls.append(paid);rootNode.append(controls);
   }
@@ -708,7 +708,7 @@
   }
   if(!a||a.status==='claimed'){
    const buy=withGold('button','dudu-fun-start lucky-buy','🧧 MUA VÉ · ',rule.PRICE);
-   buy.type='button';buy.disabled=luckyBusy||luckyCurrency<rule.PRICE;
+   buy.type='button';buy.disabled=luckyBusy||walletBalance()<rule.PRICE;
    buy.addEventListener('click',()=>{void luckyAction('buy');});rootNode.append(buy);
   }
   const odds=el('details','lucky-odds');
@@ -745,13 +745,7 @@
   }
   const s=luckyState,active=s.active,
    theme=rule.THEMES.find(t=>t.id===(active?.theme||luckyTheme))||rule.THEMES[0];
-  const intro=el('div','lucky-kiosk-head');
-  intro.append(el('span','','🏮 LỘC ĐẾN NHÀ · 刮刮乐'),
-   el('strong','','Vé Cào Vạn Phúc'),
-   withGold('small','','','10/thẻ · Giải lớn 10.000'));
-  rootNode.append(intro);
   if(!active||active.status==='claimed'){
-   rootNode.append(el('p','dudu-fun-caption','Chọn phong cách tấm vé. Mọi mẫu có cùng tỷ lệ trúng giải.'));
    const shelf=el('div','lucky-theme-grid');
    for(const design of rule.THEMES){
     const count=s.album[design.id]||0;
@@ -763,7 +757,7 @@
    }
    rootNode.append(shelf);
    const buy=withGold('button','dudu-fun-start lucky-buy','🧧 MUA VÉ · ',rule.PRICE);
-   buy.disabled=luckyBusy||luckyCurrency<rule.PRICE;
+   buy.disabled=luckyBusy||walletBalance()<rule.PRICE;
    buy.type='button';buy.addEventListener('click',()=>{void luckyAction('buy');});
    rootNode.append(buy);
   }
@@ -880,9 +874,8 @@
   host.append(content);
   host.append(el('p','dudu-fun-notice',noticeText));
   history(host,state);
-  host.append(el('small','dudu-fun-disclaimer',sandbox()?
-   'Bản thử: Vé Số miễn phí mỗi ngày. Xu Vàng và vật phẩm chỉ thuộc Sandbox.':
-   'DUDU FUN dùng Xu Vàng ảo, không quy đổi hoặc rút thành tiền thật.'));
+  if(sandbox())host.append(el('small','dudu-fun-disclaimer',
+   'Bản thử: Vé Số miễn phí mỗi ngày. Xu Vàng và vật phẩm chỉ thuộc Sandbox.'));
   return true;
  }
  function init(){

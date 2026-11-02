@@ -15,15 +15,16 @@ test('Identity Atelier loads after compact phone styles and retains the existing
  }
  assert.match(css,/\.dudu-honor-identity-frame/);
  assert.match(css,/\.dudu-honor-home-chip/);
- assert.match(css,/player-avatar-home-v16::before/,'Player info panel has its own illustrated bezel');
- assert.match(css,/\.dudu-honor-home-chip::before/,'Honor title has an independent illustrated bezel');
+ assert.match(css,/\.dudu-honor-identity-frame::after/,'One illustrated perimeter encloses player and Honor');
+ assert.match(css,/border-image-source:var\(--identity-border-art\)/,'AI assets only decorate the outer perimeter');
+ assert.match(css,/\.dudu-honor-home-chip::before\{\s*content:none!important/,'Honor title cannot be crossed by artwork');
  assert.match(css,/backdrop-filter:blur\(2px\)/,'Wallpaper remains perceptible through glass cards');
  assert.match(css,/honor-glass-first/,'Rarity title plates preserve translucent backgrounds');
  assert.match(css,/@media\(max-width:355px\)/);
  assert.match(css,/prefers-reduced-motion:reduce/);
 });
 
-test('Both compact identity cards use distinct transparent AI assets for ordinary and special titles',()=>{
+test('Combined identity card uses the existing transparent AI assets for each earned rank',()=>{
  for(const id of ['player-panel','honor-common','honor-rare','honor-epic','honor-mythic']){
   const asset='assets/identity-frames/v1/'+id+'.webp';
   const buffer=fs.readFileSync(path.join(root,asset));

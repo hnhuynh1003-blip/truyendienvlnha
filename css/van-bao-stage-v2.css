@@ -43,15 +43,12 @@ body.dudu-phone-v11 #cyber-phone .vanbao-sandbox-item:focus-visible{
  outline:2px solid #ffe4a6;outline-offset:2px}
 body.dudu-phone-v11 #cyber-phone .vanbao-chest-kiosk{
  position:relative;display:flex;flex-direction:column;align-items:center;
- justify-content:center;gap:0;min-height:116px;overflow:hidden;
+ justify-content:center;gap:0;min-height:110px;overflow:hidden;
  border-radius:14px;border:1px solid #ccb07470;
  background:radial-gradient(ellipse 62% 65% at 50% 46%,#61589766,transparent 100%),
   linear-gradient(140deg,#172439,#28223e);box-shadow:inset 0 1px #fff2}
 body.dudu-phone-v11 #cyber-phone .vanbao-chest-kiosk::before{
  content:'✦';position:absolute;top:8px;left:11px;color:#fbd6a578;font-size:17px}
-body.dudu-phone-v11 #cyber-phone .vanbao-chest-kiosk>span:last-child{
- font-size:9px;letter-spacing:.13em;color:#f6d8aa;font-weight:800;
- margin:-8px 0 5px;position:relative;z-index:1}
 body.dudu-phone-v11 #cyber-phone .vanbao-chest-art{
  display:grid;place-items:center;position:relative;width:min(100%,178px);
  height:116px;margin:0 auto;flex:0 0 auto;filter:drop-shadow(0 7px 8px #080a1b9e)}
@@ -60,11 +57,11 @@ body.dudu-phone-v11 #cyber-phone .vanbao-chest-art img{
 body.dudu-phone-v11 #cyber-phone .vanbao-chest-fallback{
  font:900 72px Georgia,serif;color:#eacc86}
 body.dudu-phone-v11 #cyber-phone .blind-opening-stage{
- padding:8px 10px 10px;gap:5px;overflow:hidden;position:relative;
+ padding:10px 10px 12px;gap:10px;overflow:hidden;position:relative;
  background:radial-gradient(ellipse 75% 70% at 50% 15%,#7b67ae7c,transparent),
   linear-gradient(145deg,#152743,#31223e);border-color:#e3bc7c9c}
 body.dudu-phone-v11 #cyber-phone .blind-opening-stage .vanbao-chest-art{
- width:min(100%,191px);height:139px;
+ width:min(100%,191px);height:150px;
  animation:vanbaoIdle 3s ease-in-out infinite alternate}
 body.dudu-phone-v11 #cyber-phone .blind-opening-stage strong{font-size:13px}
 body.dudu-phone-v11 #cyber-phone .blind-opening-stage small{font-size:9px}
@@ -166,7 +163,7 @@ body .vanbao-artifact-dialog{
 body .vanbao-artifact-dialog::backdrop{background:#030611c7;backdrop-filter:blur(3px)}
 body .vanbao-artifact-dialog .vanbao-artifact-panel{
  position:relative;display:flex;flex-direction:column;align-items:center;
- gap:9px;padding:20px 15px 17px;text-align:center;
+ gap:10px;padding:17px 15px 20px;text-align:center;
  background:radial-gradient(ellipse at 50% 38%,#a7a2ff38,transparent 55%)}
 body .vanbao-artifact-dialog.rank-sss .vanbao-artifact-panel{
  background:radial-gradient(ellipse at 50% 38%,#f1c47767,#7650bc2d 45%,transparent 77%)}
@@ -177,10 +174,12 @@ body .vanbao-artifact-dialog .vanbao-artifact-close{
 body .vanbao-artifact-dialog .vanbao-artifact-rank{
  font-size:11px;letter-spacing:.15em;color:#ffdb94;font-weight:850}
 body .vanbao-artifact-dialog .vanbao-artifact-large{
- width:min(100%,270px);height:min(60vw,270px);max-height:270px;
- display:grid;place-items:center;border:0;background:none;box-shadow:none}
+ box-sizing:border-box;flex:0 0 auto;overflow:hidden!important;
+ width:min(100%,255px);height:min(68vw,255px,42dvh);max-height:255px;
+ display:grid;place-items:center;border:0;background:none!important;box-shadow:none!important}
 body .vanbao-artifact-dialog .vanbao-artifact-large img{
- width:100%;height:100%;object-fit:contain;
+ display:block;width:100%!important;height:100%!important;
+ max-width:100%!important;max-height:100%!important;object-fit:contain!important;
  filter:drop-shadow(0 12px 18px #000b) drop-shadow(0 0 11px #f6c98061)}
 body .vanbao-artifact-dialog strong{font:900 20px/1.25 Georgia,serif;color:#ffe3ab}
 body .vanbao-artifact-dialog p{margin:0;font-size:12px;line-height:1.5;color:#e4d9ed}
