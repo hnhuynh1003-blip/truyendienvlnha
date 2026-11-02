@@ -20,6 +20,11 @@ test('Wallet P3 shows one owned Silver card, an upgrade sheet and an honest exch
  for(const tier of ['silver','gold','diamond'])assert.match(html,new RegExp('data-wallet-card-select="'+tier+'"'));
  assert.match(html,/id="dudu-wallet-card-preview" hidden/);
  assert.match(html,/dudu-bank-card-tier" id="dudu-wallet-card-tier">◈ SILVER/);
+ const artMarkup=html.slice(html.indexOf('<section class="dudu-wallet-card"'),html.indexOf('</section>',html.indexOf('<section class="dudu-wallet-card"')));
+ assert.doesNotMatch(artMarkup,/dudu-wallet-card-tier|dudu-wallet-card-preview|dudu-wallet-card-edition/,
+  'rank labels and duplicate edition must stay outside the card artwork');
+ assert.match(html,/data-wallet-heading-tier="silver"/);
+ assert.match(css,/\.dudu-bank-card-preview\{position:static/);
  assert.match(html,/CHƯA MỞ/);
  assert.match(html,/onclick="openPhoneApp\('shop'\)"/);
  assert.match(html,/onclick="openPhoneApp\('fun'\)"/);
@@ -65,17 +70,20 @@ test('Rank selection changes the preview only, not ownership or balances',()=>{
  const source=html.slice(start,end);
  assert.doesNotMatch(source,/localStorage|userProfile|\.currency\s*=|firebase|saveCurrentAccount/);
  const card={dataset:{},attrs:{},setAttribute(k,v){this.attrs[k]=v;}};
- const labels=new Map(['dudu-wallet-card-tier','dudu-wallet-card-edition','dudu-wallet-card-preview','dudu-wallet-brand-seal']
+ const heading={dataset:{}};
+ const labels=new Map(['dudu-wallet-card-tier','dudu-wallet-card-preview','dudu-wallet-brand-seal']
   .map(id=>[id,{textContent:'',hidden:false}]));
  const detailFrame={dataset:{}};
  const tabs=['silver','gold','diamond'].map(tier=>({dataset:{walletCardSelect:tier},attrs:{},classList:{toggle(){}},setAttribute(k,v){this.attrs[k]=v;}}));
  const details=['silver','gold','diamond'].map(tier=>({dataset:{walletTierDetail:tier},hidden:false}));
- const doc={querySelector:selector=>selector.includes('.dudu-bank-tier-details')?detailFrame:card,
+ const doc={querySelector:selector=>selector.includes('.dudu-bank-tier-details')?detailFrame:
+  selector.includes('.dudu-bank-intro')?heading:card,
   querySelectorAll:selector=>selector.includes('card-select')?tabs:details,
   getElementById:id=>labels.get(id)||null};
  const context={document:doc};vm.runInNewContext(source,context);
  assert.equal(context.selectDuduWalletCard('diamond'),true);
  assert.equal(card.dataset.walletCardTier,'diamond');
+ assert.equal(heading.dataset.walletHeadingTier,'diamond');
  assert.equal(labels.get('dudu-wallet-brand-seal').textContent,'◆');
  assert.equal(detailFrame.dataset.walletDetailTier,'diamond');
  assert.equal(labels.get('dudu-wallet-card-preview').hidden,false);
@@ -83,6 +91,7 @@ test('Rank selection changes the preview only, not ownership or balances',()=>{
  assert.equal(details.find(d=>d.dataset.walletTierDetail==='silver').hidden,true);
  assert.equal(tabs.find(t=>t.dataset.walletCardSelect==='diamond').attrs['aria-pressed'],'true');
  assert.equal(context.selectDuduWalletCard('silver'),true);
+ assert.equal(heading.dataset.walletHeadingTier,'silver');
  assert.equal(labels.get('dudu-wallet-card-preview').hidden,true);
  assert.equal(context.selectDuduWalletCard('platinum'),false);
 });

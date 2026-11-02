@@ -64,7 +64,7 @@
   <link rel="stylesheet" href="css/arcade-c449-garden-progression.css?v=c449-1">
   <link rel="stylesheet" href="css/honor-presentation-c437p.css?v=c437p-1">
   <link rel="stylesheet" href="css/arcade-treasure-c438.css?v=c438-1">
-  <link rel="stylesheet" href="css/dudu-wallet-v1.css?v=wallet-p3-1">
+  <link rel="stylesheet" href="css/dudu-wallet-v1.css?v=wallet-p3-2">
   <link rel="stylesheet" href="css/dudu-currency-icons-v1.css?v=fun-p1-2">
   <link rel="stylesheet" href="css/item-actions-v43.css?v=43-5-3b">
   <link rel="stylesheet" href="css/museum-memories-v43.css?v=1">
@@ -1539,19 +1539,20 @@
           <span class="dudu-wallet-mark" aria-label="Ví Xu Vàng"><i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i></span>
         </div>
         <div class="dudu-wallet-shell">
-          <div class="dudu-bank-intro"><span>✦ DUDU TREASURY</span><small><i aria-hidden="true"></i> VÍ ẢO</small></div>
+          <div class="dudu-bank-intro" data-wallet-heading-tier="silver">
+            <span>✦ DUDU TREASURY</span>
+            <span class="dudu-bank-rank-status"><small class="dudu-bank-card-preview" id="dudu-wallet-card-preview" hidden>XEM TRƯỚC</small><span class="dudu-bank-card-tier" id="dudu-wallet-card-tier">◈ SILVER</span></span>
+          </div>
           <section class="dudu-wallet-card" data-wallet-card-tier="silver" aria-label="Số dư Xu Vàng mua sắm, thẻ Bạc mặc định">
             <div class="dudu-bank-art" aria-hidden="true"></div>
             <div class="dudu-bank-card-top">
               <div class="dudu-bank-card-brand"><span class="dudu-bank-brand-seal" id="dudu-wallet-brand-seal" aria-hidden="true">◈</span><div><b>DUDU</b><small>STUDIO</small></div></div>
-              <span class="dudu-bank-card-tier" id="dudu-wallet-card-tier">◈ SILVER</span>
             </div>
-            <span class="dudu-bank-card-preview" id="dudu-wallet-card-preview" hidden>⌁ XEM TRƯỚC</span>
             <div class="dudu-bank-balance-block">
               <div class="dudu-bank-balance-caption"><span>SỐ DƯ KHẢ DỤNG</span><button type="button" id="dudu-wallet-visibility" class="dudu-bank-visibility" onclick="toggleDuduWalletVisibility()" aria-label="Ẩn số dư" aria-pressed="false" title="Ẩn hoặc hiện số dư">◉</button></div>
               <strong id="dudu-wallet-system-balance" aria-live="polite"><i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i><span id="dudu-wallet-system-amount">0</span></strong>
             </div>
-            <div class="dudu-bank-card-bottom"><div><small>CHỦ VÍ</small><b id="dudu-wallet-owner-name">DUDU</b></div><div><small>THẺ ẢO</small><b id="dudu-wallet-card-edition">01 · BẠC</b></div></div>
+            <div class="dudu-bank-card-bottom"><div><small>CHỦ VÍ</small><b id="dudu-wallet-owner-name">DUDU</b></div></div>
           </section>
           <button type="button" id="dudu-wallet-upgrade-button" class="dudu-wallet-upgrade-button" onclick="toggleDuduWalletTierSheet()" aria-expanded="false" aria-controls="dudu-wallet-tier-sheet"><span aria-hidden="true">✦</span><strong>Nâng hạng thẻ</strong><span aria-hidden="true">›</span></button>
           <div class="dudu-wallet-tier-sheet" id="dudu-wallet-tier-sheet" hidden>
@@ -6352,20 +6353,19 @@ document.getElementById('phone-home-screen').style.display = 'none';
     // Card rank selection is a read-only showcase until tier receipts are server-verifiable.
     function selectDuduWalletCard(tier) {
       const names={silver:'◈ SILVER',gold:'✦ GOLD',diamond:'◆ DIAMOND'};
-      const editions={silver:'01 · BẠC',gold:'02 · GOLD',diamond:'03 · VIP'};
       const seals={silver:'◈',gold:'✦',diamond:'◆'};
       if(!Object.hasOwn(names,tier))return false;
       const card=document.querySelector('#phone-app-wallet .dudu-wallet-card');
       if(!card)return false;
       card.dataset.walletCardTier=tier;
       card.setAttribute('aria-label','Số dư Xu Vàng, '+(tier==='silver'?'thẻ Bạc mặc định':'bản xem trước thẻ '+(tier==='gold'?'Gold':'Kim Cương')));
+      const heading=document.querySelector('#phone-app-wallet .dudu-bank-intro');
       const title=document.getElementById('dudu-wallet-card-tier');
-      const edition=document.getElementById('dudu-wallet-card-edition');
       const preview=document.getElementById('dudu-wallet-card-preview');
       const seal=document.getElementById('dudu-wallet-brand-seal');
       const tierDetails=document.querySelector('#phone-app-wallet .dudu-bank-tier-details');
+      if(heading)heading.dataset.walletHeadingTier=tier;
       if(title)title.textContent=names[tier];
-      if(edition)edition.textContent=editions[tier];
       if(seal)seal.textContent=seals[tier];
       if(preview)preview.hidden=tier==='silver';
       if(tierDetails)tierDetails.dataset.walletDetailTier=tier;
