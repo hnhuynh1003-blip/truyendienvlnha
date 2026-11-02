@@ -39,7 +39,7 @@ test('V27 R4 safely defaults on disabled storage',()=>{
 });
 test('V27 R4 markup includes settings, no uploaded remote photo or story save writes',()=>{
  assert.match(html,/href="css\/phone-wallpaper-v27-r4.css"/);
- assert.match(html,/src="js\/phone-wallpaper-v27-r4.js\?v=37-1"/);
+ assert.match(html,/src="js\/phone-wallpaper-v27-r4.js\?v=38-1"/);
  assert.match(html,/id="dudu-v27-wallpaper-heading"/);
  assert.match(html,/function setPhoneWallpaperV27\(id\)/);
  assert.match(html,/if\(!phoneWallpaperOwnerV27\(\)\|\|!window\.DuduPhoneWallpaperV27\)return/);

@@ -27,7 +27,7 @@ test('V31 typography settings are local and account-isolated',()=>{
 });
 test('V31 settings use selected font only and do not alter chapter reading CSS',()=>{
  assert.match(html,/href="css\/phone-refinement-v31.css\?v=1"/);
- assert.match(html,/src="js\/phone-typography-v31.js"/);
+ assert.match(html,/src="js\/phone-typography-v31.js\?v=38-1"/);
  assert.match(html,/function renderPhoneTypographyV31\(\)/);
  assert.match(html,/font\.url/);
  assert.match(html,/function setPhoneFontV31\(id\)/);

@@ -52,7 +52,7 @@ test('V56.8 phone appearance whitelist never uploads custom images or arbitrary 
  assert.equal(invalid.readerFontSize,16);
 });
 test('V56.8 production wiring saves chapter separately from one-time reward and restores phone by verified UID',()=>{
- assert.match(html,/src="js\/personal-sync-v56-8\.js\?v=56-8"/);
+ assert.match(html,/src="js\/personal-sync-v56-8\.js\?v=56-8-v38-1"/);
  assert.match(auth,/window\.hydratePersonalSyncV568\(\)/);
  assert.match(html,/DuduPersonalSyncV568\.hydrateBookmarks\(localStorage,userProfile,novels/);
  assert.match(html,/DuduPersonalCloudV569\.patch\(opts\)/);
