@@ -413,7 +413,9 @@
    claim.addEventListener('click',()=>{void blindAction('claim');});
    stage.append(claim);rootNode.append(stage);
   }else{
-   if(!active||active.status==='claimed'){
+   // Once a receipt is claimed, the relic replaces the chest. Show the
+   // unopened showroom chest only before the player starts a new box.
+   if(!active){
     const display=el('div','vanbao-chest-kiosk');
     display.append(chestArt(false),el('span','','✦ TINH VÂN BẢO HẠP'));
     rootNode.append(display);

@@ -18,7 +18,7 @@ test('FUN-VIS3 has two distinct transparent fantasy chest frames, optimized for 
  }
  const html=read('index.html'),css=read('css/van-bao-stage-v2.css');
  assert.match(html,/css\/van-bao-stage-v2\.css\?v=fun-vis4/);
- assert.match(html,/js\/dudu-fun-ui-v43\.js\?v=fun-vis4/);
+ assert.match(html,/js\/dudu-fun-ui-v43\.js\?v=fun-vis4b/);
  assert.match(css,/\.vanbao-chest-art/);
  assert.match(css,/\.vanbao-celebrating\.rank-sss/);
  assert.match(css,/\.blind-album-tile\.locked \.blind-album-art img/);
@@ -35,6 +35,8 @@ test('FUN-VIS3 has two distinct transparent fantasy chest frames, optimized for 
 test('FUN-VIS3 only celebrates applied receipts, keeps historical boxes and hides locked names',()=>{
  const js=read('js/dudu-fun-ui-v43.js');
  assert.match(js,/kind==='claim'&&response\.status==='applied'&&response\.reward/);
+ assert.match(js,/if\(!active\)\{\s*const display=el\('div','vanbao-chest-kiosk'\)/,
+  'A claimed box must show its reward without a second chest above it');
  assert.match(js,/if\(legacy&&\['playing','ready'\]\.includes\(legacy\.status\)\)/);
  assert.match(js,/owned\?item\.name:'Bảo vật chưa tìm thấy'/);
  assert.match(js,/vanbao-album-book/);
