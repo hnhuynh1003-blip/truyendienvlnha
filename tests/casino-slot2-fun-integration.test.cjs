@@ -45,11 +45,11 @@ test('CASINO-SLOT2 replaces the third FUN tab and keeps existing Vạn Bảo/Vé
  h.context.DuduFunUIV43.render();await new Promise(done=>setImmediate(done));
  const tabs=h.content().filter(n=>n.tag==='button'&&n.className.startsWith('dudu-fun-tab'));
  assert.deepEqual(tabs.map(n=>n.textContent),
-  ['🎁 Vạn Bảo','🎟️ Vé Cào','🎰 Máy Quay']);
+  ['🎁 Vạn Bảo','🎟️ Vé Cào','🎰 Vạn Tượng']);
  assert.equal(h.nodes['dudu-fun-header-balance'].textContent,'777');
  tabs[2].listeners.click();
  assert.equal(h.content().filter(n=>n.className.includes('dudu-slot-tile')).length,9);
- assert.ok(h.content().some(n=>n.textContent.includes('KHÔNG TRỪ / CỘNG XU THẬT')));
+ assert.ok(h.content().some(n=>n.textContent.includes('Không trừ/cộng Xu trong Ví')));
  assert.equal(h.userProfile.currency,777);
 });
 
@@ -58,30 +58,31 @@ test('CASINO-SLOT2 switching FUN tabs mid-spin never rerolls or touches the wall
  h.context.DuduFunUIV43.render();await new Promise(done=>setImmediate(done));
  const tab=label=>h.content().find(n=>n.tag==='button'&&
   n.className.startsWith('dudu-fun-tab')&&n.textContent.includes(label));
- tab('Máy Quay').listeners.click();
+ tab('Vạn Tượng').listeners.click();
  const spin=h.content().find(n=>n.className==='dudu-slot-spin');
  spin.listeners.click();
  assert.equal(h.timers.length,1);
  tab('Vạn Bảo').listeners.click();
- tab('Máy Quay').listeners.click();
+ tab('Vạn Tượng').listeners.click();
  const spinning=h.content().find(n=>n.className==='dudu-slot-spin');
  assert.equal(spinning.disabled,true);
- assert.match(h.content().map(n=>n.textContent).join(' '),/Đã dừng 0\/3 cuộn/);
+ assert.match(h.content().map(n=>n.textContent).join(' '),/Dừng 0\/3 cuộn/);
  for(let col=0;col<3;col++){
   h.timers.shift()();await Promise.resolve();
  }
  // The final spin settled on the reattached FUN stage, no second wager.
  assert.equal(h.content().filter(n=>n.className==='dudu-slot-line is-winning').length,3);
- assert.match(h.content().map(n=>n.textContent).join(' '),/Đã xem 1 lượt/);
+ assert.match(h.content().map(n=>n.textContent).join(' '),/Lượt 1 · Mức 10 Xu mẫu/);
  assert.equal(h.userProfile.currency,777);
 });
 
 test('CASINO-SLOT2 only loads UI and odds; leaves Rules and wallet adapters dormant',()=>{
  const html=src('index.html'),css=src('css/dudu-casino-slot-v1.css');
  const fun=src('js/dudu-fun-ui-v43.js');
- assert.match(html,/href="css\/dudu-casino-slot-v1\.css\?v=casino-slot2"/);
- assert.match(html,/src="js\/dudu-casino-design-v1\.js\?v=casino-slot2"/);
- assert.match(html,/src="js\/dudu-casino-slot-ui-v1\.js\?v=casino-slot2"/);
+ assert.match(html,/href="css\/dudu-casino-slot-v1\.css\?v=casino-slot3"/);
+ assert.match(html,/src="js\/dudu-casino-design-v1\.js\?v=casino-slot3"/);
+ assert.match(html,/src="js\/dudu-casino-slot-ui-v1\.js\?v=casino-slot3"/);
+ assert.match(css,/#cyber-phone:has\(#phone-app-fun/);
  assert.doesNotMatch(html,/src="js\/dudu-casino-slot-receipt-v1\.js/);
  assert.doesNotMatch(html,/src="js\/dudu-fate-tower-(?:ui-)?v1\.js/);
  assert.doesNotMatch(html,/href="css\/dudu-fate-tower-v1\.css/);

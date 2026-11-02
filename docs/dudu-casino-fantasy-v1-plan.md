@@ -6,6 +6,8 @@
 
 **Cập nhật CASINO-SLOT2 · 03/11/2026 theo yêu cầu Du:** Máy Quay Vạn Tượng **thay thế trực tiếp tab Tháp Vận Mệnh** trong DUDU FUN (giữ tổng cộng 3 tab: Vạn Bảo, Vé Cào, Máy Quay). Nội dung Tháp ở mục 2 bên dưới chỉ là bản thiết kế lưu lại, **không còn được tải trong ứng dụng**. Không xóa mã nguồn, ảnh hoặc dữ liệu cũ; tạm dừng CASINO-TOWER2. Máy Quay dùng chính UI chung với bản preview độc lập để tránh phải dựng lại. Chưa kết nối ví.
 
+**Cập nhật CASINO-SLOT3 · 03/11/2026:** Tab đặt tên ngắn **🎰 Vạn Tượng**. Bỏ khối tiêu đề/giới thiệu trùng nhau; lựa chọn 10/20/50 và nút **QUAY** đặt ngay trên trục. Riêng FUN trên laptop dùng bàn rộng hơn, các app điện thoại khác giữ kích thước cũ. Sau khi quay có thưởng, người chơi có thể **chốt** hoặc chọn 1 trong 2 cổng để thử nhân đôi (đúng 50%, thưởng ×2; trượt 0; đúng một lần, không mạo hiểm nối tiếp). Kết quả thưởng phụ được chọn trước khi hoạt ảnh, không lựa chọn lại. Tất cả vẫn là **Xu mẫu trong demo, chưa thay đổi ví hay biên nhận thật**.
+
 ## Định hướng đã chọn
 
 Kết hợp **Máy Quay Vạn Tượng** + **Tháp Vận Mệnh** + **Tiệm Thiên Cơ** vào *DUDU FUN hiện có*, không dựng thêm ứng dụng riêng. Giữ Vạn Bảo và Vé Cào. Mỗi trò phải có tương tác thực, hiệu ứng quay/mở, kết quả rõ, có vật phẩm để mua và đầu tư chiến thuật; không biến thành trò đọc văn bản hoặc chỉ chọn Đỏ/Đen.
@@ -110,3 +112,10 @@ Các hằng số thiết kế và phép tính nằm trong `js/dudu-casino-design
 - Dùng nguyên giao diện Máy Quay đã làm: cả trang xem thử và FUN tải cùng `dudu-casino-slot-ui-v1.js` và CSS. Chuyển tab rồi quay lại không tạo kết quả mới hoặc mở khóa nút khi một lượt còn quay; session chỉ lưu trong bộ nhớ của trình duyệt.
 - Không tải các tập lệnh Tháp trong trang chính, nhưng vẫn giữ nguyên mã, hình và bài test độc lập của Tháp. Đây là quyết định UI theo yêu cầu mới, không phải xóa/reset dữ liệu.
 - Lưu ý các phát biểu ở trên về `index.html` là **trạng thái của CASINO-SLOT1**, trước khi tích hợp CASINO-SLOT2. Ở đợt SLOT2, `index.html` chỉ đổi phần nạp module Máy Quay và danh mục tab FUN; vẫn không động vào Ví/Auth/Rules.
+
+### CASINO-SLOT3 — tinh gọn và thêm một quyết định casino
+
+- Bố cục chung máy preview và máy trong FUN: chọn mức + **QUAY** trước, một bảng Vạn Tượng duy nhất, các đường thưởng và thông báo thắng ngắn. Thu gọn không gian chết trên điện thoại.
+- Mở rộng riêng vỏ Cyber Phone khi FUN đang hiện trên laptop (CSS `:has` + breakpoint lớn); quay về các app khác thì độ rộng quay lại bình thường. Không thay đổi giao diện Arcade, Kho, Auth hay Ví.
+- **Thử Vận ×2** chỉ hiện sau lượt có `payout > 0`: `Chốt` giữ thưởng, chọn Mặt Trời/Mặt Trăng có đúng 1/2 xác suất nhân hai, sai trả 0. Không chơi liều liên tiếp. Nếu tham gia hoặc chốt thì không thể thao tác lại cho lượt đó. Trước khi có bất kỳ bản trả thưởng bằng Xu thật nào, biên nhận sẽ phải ghi nhận quyết định phụ trong một Firestore transaction và kiểm thử Rules theo một đợt có Du duyệt.
+- Với 50% nhân hai và 50% mất hết, **giá trị kỳ vọng của phần thưởng phụ bằng giá trị phần thưởng gốc**. Do đó người chơi không thể tăng kỳ vọng kiếm Xu nhờ lặp chiến lược này; không có chuỗi nhân liên tục. Chưa bán bùa hay vật phẩm thay đổi xác suất.

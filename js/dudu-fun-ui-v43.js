@@ -900,7 +900,7 @@
   }
   const tabs=el('div','dudu-fun-tabs');
   for(const [type,label] of [['box','🎁 Vạn Bảo'],['ticket','🎟️ Vé Cào'],
-   ['slot','🎰 Máy Quay']]){
+   ['slot','🎰 Vạn Tượng']]){
    const button=el('button','dudu-fun-tab'+(open===type?' is-active':''),label);
    button.type='button';button.setAttribute('aria-pressed',String(open===type));
    button.addEventListener('click',()=>{open=type;hint=true;render();});

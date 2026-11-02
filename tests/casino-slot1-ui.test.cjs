@@ -41,7 +41,7 @@ test('CASINO-SLOT1 preview renders cabinet, chips, 3 × 3 reels, odds and no Xu 
   x.className.startsWith('dudu-slot-line')).length,3);
  assert.equal(nodes.filter(x=>x.tag==='button'&&
   x.className.includes('dudu-slot-chip')).length,3);
- assert.match(nodes.map(x=>x.textContent).join(' '),/KHÔNG TRỪ \/ CỘNG XU THẬT/);
+ assert.match(nodes.map(x=>x.textContent).join(' '),/Không trừ\/cộng Xu trong Ví/);
  assert.match(nodes.map(x=>x.textContent).join(' '),/92,0784%/);
  assert.equal(ctrl.state().bet,10);
  assert.equal(e.draws,0);
@@ -98,7 +98,41 @@ test('CASINO-SLOT2 reattaches one FUN machine across tab switches without reroll
  assert.equal(ctrl.state().spins,1);
  assert.equal(ctrl.state().quote.payout,150);
  assert.equal(e.draws,1);
- assert.match(flatten(thirdHost).map(x=>x.textContent).join(' '),/Đã xem 1 lượt/);
+ assert.match(flatten(thirdHost).map(x=>x.textContent).join(' '),/Lượt 1 · Mức 10 Xu mẫu/);
+});
+
+test('CASINO-SLOT3 bonus offers bank or one precommitted 50:50 double, never repeats',async()=>{
+ const e=env(),ctrl=e.window.DuduCasinoSlotUIV1.mount({host:e.host,demo:true});
+ const pending=ctrl.play();
+ for(let col=0;col<3;col++){e.timers.shift()();await Promise.resolve();}
+ await pending;
+ assert.equal(ctrl.state().bonus.status,'offer');
+ assert.equal(ctrl.state().bonus.base,150);
+ assert.equal(e.draws,1,'bonus gate is chosen with the spin, not upon choosing');
+ const buttons=flatten(e.host).filter(n=>n.className==='dudu-slot-bonus-choice');
+ assert.equal(buttons.length,3);
+ assert.match(buttons[0].textContent,/CHỐT/);
+ assert.equal(ctrl.bonusChoice(0),true);
+ assert.deepEqual(JSON.parse(JSON.stringify(ctrl.state().bonus)),
+  {status:'won',base:150,final:300});
+ assert.equal(ctrl.bonusChoice(1),false,'cannot choose a second gate');
+ assert.equal(ctrl.bonusChoice('bank'),false,'cannot bank after risk is revealed');
+ assert.equal(e.draws,1);
+ assert.match(flatten(e.host).map(n=>n.textContent).join(' '),/ĐÚNG CỔNG/);
+ const other=env(),bank=other.window.DuduCasinoSlotUIV1.mount({host:other.host,demo:true});
+ const waiting=bank.play();
+ for(let col=0;col<3;col++){other.timers.shift()();await Promise.resolve();}
+ await waiting;
+ assert.equal(bank.bonusChoice('bank'),true);
+ assert.equal(bank.state().bonus.final,150);
+ assert.equal(bank.bonusChoice('bank'),false);
+ const lost=env(),risk=lost.window.DuduCasinoSlotUIV1.mount({host:lost.host,demo:true});
+ const pendingLoss=risk.play();
+ for(let col=0;col<3;col++){lost.timers.shift()();await Promise.resolve();}
+ await pendingLoss;
+ assert.equal(risk.bonusChoice(1),true);
+ assert.equal(risk.state().bonus.status,'lost');
+ assert.equal(risk.state().bonus.final,0);
 });
 
 test('CASINO-SLOT1 preview uses code-native themed assets, and excludes Firebase',()=>{

@@ -133,7 +133,7 @@ test('CASINO-SLOT1 receipt remains disconnected from public DUDU FUN and Firebas
  const code=readFileSync(join(root,'js/dudu-casino-slot-receipt-v1.js'),'utf8');
  const rules=readFileSync(join(root,'firestore.rules'),'utf8');
  assert.doesNotMatch(html,/src="js\/dudu-casino-slot-receipt-v1/);
- assert.match(html,/src="js\/dudu-casino-slot-ui-v1\.js\?v=casino-slot2/);
+ assert.match(html,/src="js\/dudu-casino-slot-ui-v1\.js\?v=casino-slot3/);
  assert.doesNotMatch(preview,/dudu-casino-slot-receipt|firebase-app|firebase-firestore/);
  assert.doesNotMatch(code,/localStorage|userProfile|setInterval/);
  assert.match(code,/runTransaction/);

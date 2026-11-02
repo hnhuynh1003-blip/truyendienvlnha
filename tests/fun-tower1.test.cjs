@@ -153,7 +153,7 @@ test('Máy Quay replaces the old Tháp tab inside DUDU FUN',async()=>{
  const all=()=>{const visit=n=>[n,...n.children.flatMap(visit)];
   return visit(nodes['dudu-fun-content-v43']);};
  const tabs=all().filter(n=>n.tag==='button'&&n.className.startsWith('dudu-fun-tab'));
- assert.deepEqual(tabs.map(n=>n.textContent),['🎁 Vạn Bảo','🎟️ Vé Cào','🎰 Máy Quay']);
+ assert.deepEqual(tabs.map(n=>n.textContent),['🎁 Vạn Bảo','🎟️ Vé Cào','🎰 Vạn Tượng']);
  tabs[2].listeners.click();
  assert.equal(slotRenders,1);
  assert.equal(towerRenders,0);

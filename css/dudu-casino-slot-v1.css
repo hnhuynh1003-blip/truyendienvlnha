@@ -5,7 +5,7 @@
  padding:9px 12px;border:1px solid #ab846a66;border-radius:13px;
  text-decoration:none;font-size:13px;font-weight:700;background:#332a4480}
 .dudu-slot-back:hover{background:#5c426b;border-color:#e2b477}
-.dudu-slot-preview{text-align:center;margin-top:20px;color:#fbeccf;
+.dudu-slot-preview{text-align:center;margin-top:10px;color:#fbeccf;
  font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
 .dudu-slot-eyebrow{color:#d9b6df;font-size:10px;letter-spacing:3px;font-weight:850}
 .dudu-slot-heading{margin:9px 0 6px;color:#ffebbd;
@@ -16,7 +16,7 @@
  font-size:10px;line-height:1.45;font-weight:900;letter-spacing:1px;color:#e9f3ff;
  border:1px solid #82a7d777;border-radius:99px;background:#34527288}
 .dudu-slot-cabinet{position:relative;overflow:hidden;isolation:isolate;
- margin:24px auto 0;padding:14px 16px 20px;border:5px solid #ab794f;
+ margin:10px auto 0;padding:12px 12px 13px;border:4px solid #ab794f;
  border-radius:35px 35px 28px 28px;background:
  radial-gradient(ellipse at 50% 0,#c385c34d,transparent 46%),
  linear-gradient(140deg,#57384f,#251d45 49%,#3c2952);
@@ -28,7 +28,7 @@
 .dudu-slot-cabinet::after{content:"";position:absolute;z-index:-1;
  width:260px;height:260px;top:-180px;left:calc(50% - 130px);
  border-radius:50%;background:#ffdba93d;filter:blur(40px);pointer-events:none}
-.dudu-slot-marquee{width:80%;margin:12px auto 18px;padding:10px 6px;
+.dudu-slot-marquee{width:75%;margin:10px auto 13px;padding:8px 6px;
  border:1px solid #e2ba7f;border-radius:25px 25px 12px 12px;
  background:linear-gradient(110deg,#6f4258,#bd825f 48%,#6b446d);
  box-shadow:inset 0 2px #fff1c274,0 3px 0 #382639,0 0 20px #d3a16a40;
@@ -55,45 +55,58 @@
  box-shadow:inset 0 0 0 2px #fff8ce,0 0 14px #ffe087,0 0 24px #ffe2ab75;
  animation:duduTileGold .85s ease-in-out 2}
 .dudu-slot-lines{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
- gap:5px;margin-top:14px}
-.dudu-slot-line{min-width:0;padding:10px 2px;border:1px solid #8e7197;
+ gap:5px;margin-top:9px}
+.dudu-slot-line{min-width:0;padding:7px 2px;border:1px solid #8e7197;
  border-radius:11px;background:#201c36bd;color:#d8b9d3;
  font-size:clamp(9px,2.3vw,12px);font-weight:800}
 .dudu-slot-line.is-winning{color:#2e2342;background:#ffdfa0;
  border-color:#fff4d0;box-shadow:0 0 18px #efc178b8}
-.dudu-slot-result{display:flex;min-height:83px;flex-direction:column;
- align-items:center;justify-content:center;gap:7px;margin-top:14px;
- padding:13px 8px;border:1px solid #b898a46d;border-radius:13px;
+.dudu-slot-result{display:flex;min-height:51px;flex-direction:column;
+ align-items:center;justify-content:center;gap:4px;margin-top:9px;
+ padding:8px 6px;border:1px solid #b898a46d;border-radius:11px;
  background:linear-gradient(135deg,#251e3c,#40304c)}
-.dudu-slot-result strong{font-size:clamp(14px,3.4vw,18px);line-height:1.35}
-.dudu-slot-result small{color:#d5bace;font-size:11px}
+.dudu-slot-result strong{font-size:clamp(12px,2.6vw,16px);line-height:1.3}
+.dudu-slot-result small{color:#d5bace;font-size:10px}
 .dudu-slot-result.is-win,.dudu-slot-result.is-jackpot{background:linear-gradient(125deg,#704155,#8d614e 45%,#765675);
  border-color:#ffda8b;color:#fff4c9;animation:duduResultWin .7s ease-out}
 .dudu-slot-result.is-jackpot{box-shadow:0 0 30px #ffda917a,inset 0 0 15px #ffc77838}
 .dudu-slot-result.is-loss{animation:duduResultLoss .55s ease-out}
-.dudu-slot-controls{display:flex;flex-direction:column;gap:11px;margin:24px 0 0;
- padding:18px;border:1px solid #b998945e;border-radius:21px;
+.dudu-slot-controls{display:grid;grid-template-columns:minmax(0,1fr) minmax(90px,.48fr);
+ align-items:stretch;gap:7px;margin:0;padding:7px;
+ border:1px solid #b998945e;border-radius:13px;
  background:linear-gradient(145deg,#3d304f,#26233e)}
-.dudu-slot-bet-label{font-size:13px;letter-spacing:.3px}
-.dudu-slot-chips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.dudu-slot-chips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
 .dudu-slot-chip,.dudu-slot-spin{font-family:inherit;cursor:pointer;
  -webkit-tap-highlight-color:transparent;touch-action:manipulation}
-.dudu-slot-chip{padding:12px 5px;background:#171c35;
- border:2px solid #947fa5;border-radius:13px;color:#f0d7db;font-size:14px;font-weight:900}
+.dudu-slot-chip{min-width:0;padding:11px 2px;background:#171c35;
+ border:2px solid #947fa5;border-radius:10px;color:#f0d7db;font-size:13px;font-weight:900}
 .dudu-slot-chip.is-selected{color:#402c34;border-color:#fff3c8;
  background:linear-gradient(115deg,#ffcb78,#fff0b8,#e5b974);
  box-shadow:0 0 16px #f4d08a66,0 2px #17192c}
-.dudu-slot-spin{border:2px solid #fff1be;border-radius:15px;padding:17px 8px;
+.dudu-slot-spin{border:2px solid #fff1be;border-radius:11px;padding:9px 4px;
  background:linear-gradient(115deg,#e8b56d,#fff2b9 50%,#c78d5c);
- color:#44263a;font-size:18px;font-weight:1000;letter-spacing:2px;
- box-shadow:0 5px #7a4c4d,0 9px 25px #12142c8c;transition:filter .15s}
+ color:#44263a;font-size:15px;font-weight:1000;letter-spacing:.3px;
+ box-shadow:0 3px #7a4c4d,0 7px 18px #12142c8c;transition:filter .15s}
 .dudu-slot-spin:active:not(:disabled){transform:translateY(3px);box-shadow:0 2px #7a4c4d}
 .dudu-slot-spin:hover:not(:disabled){filter:brightness(1.1)}
 .dudu-slot-chip:disabled,.dudu-slot-spin:disabled{cursor:wait;opacity:.72}
 .dudu-slot-chip:focus-visible,.dudu-slot-spin:focus-visible,.dudu-slot-back:focus-visible{
  outline:3px solid #d0eeff;outline-offset:3px}
 .dudu-slot-error{color:#ffc1c1;font-size:11px;margin:0}
-.dudu-slot-payouts{margin:19px 0 0;padding:14px;border:1px solid #ae8c916a;
+.dudu-slot-bonus{margin-top:10px;padding:12px 10px;display:flex;
+ flex-direction:column;align-items:center;gap:7px;
+ border:1px solid #e7be827a;border-radius:14px;
+ background:linear-gradient(130deg,#5c3556,#302648)}
+.dudu-slot-bonus strong{color:#ffe2a1;font-size:14px;letter-spacing:1px}
+.dudu-slot-bonus small{max-width:490px;color:#eed8df;line-height:1.4;font-size:11px}
+.dudu-slot-bonus-actions{display:grid;grid-template-columns:1.4fr 1fr 1fr;
+ gap:7px;width:100%}
+.dudu-slot-bonus-choice{padding:10px 5px;border-radius:10px;
+ border:1px solid #ffdb9c;background:#362541;color:#ffefd7;
+ font:900 14px/1.2 system-ui,sans-serif;cursor:pointer;touch-action:manipulation}
+.dudu-slot-bonus-choice:first-child{background:#e3b672;color:#39243f}
+.dudu-slot-bonus-choice:focus-visible{outline:3px solid #d0eeff;outline-offset:2px}
+.dudu-slot-payouts{margin:12px 0 0;padding:11px;border:1px solid #ae8c916a;
  border-radius:15px;text-align:left;background:#2a2844ce}
 .dudu-slot-payouts summary{font-weight:800;color:#ffe4ad;cursor:pointer}
 .dudu-slot-payouts p,.dudu-slot-payouts small{font-size:12px;color:#e1d1e2;line-height:1.55}
@@ -101,8 +114,8 @@
  margin:10px 0;font-size:12px}
 .dudu-slot-odds-grid span{padding:9px 5px;border-bottom:1px solid #a58da13f}
 .dudu-slot-odds-grid span:nth-child(2n){text-align:right;color:#ffdcaa;font-weight:850}
-.dudu-slot-notice{margin:20px auto;max-width:510px;color:#aeafc8;
- font-size:11px;line-height:1.65}
+.dudu-slot-notice{display:block;margin:10px auto 0;max-width:510px;
+ color:#aeafc8;font-size:10px;line-height:1.35}
 .dudu-slot-cabinet.is-spinning .dudu-slot-tile:not(.is-stopped) .dudu-slot-icon{
  animation:duduReel .23s linear infinite;animation-delay:calc(var(--col)*-.08s)}
 .dudu-slot-cabinet.is-spinning .dudu-slot-tile{overflow:hidden}
@@ -116,9 +129,10 @@
 @keyframes duduResultWin{0%{transform:scale(.95);filter:brightness(1.6)}
  70%{transform:scale(1.035)}100%{transform:scale(1)}}
 @keyframes duduResultLoss{35%{filter:brightness(.7)}100%{filter:brightness(1)}}
-@media(max-width:385px){.dudu-slot-cabinet{padding:12px 10px 14px;border-width:4px}
+@media(max-width:385px){.dudu-slot-cabinet{padding:9px 7px 11px;border-width:3px}
  .dudu-slot-screen{padding:7px}.dudu-slot-reels{gap:4px}.dudu-slot-tile{border-radius:8px}
- .dudu-slot-controls{padding:13px}.dudu-slot-line{font-size:9px}
+ .dudu-slot-controls{padding:6px;gap:5px}.dudu-slot-chip{font-size:11px}
+ .dudu-slot-line{font-size:9px}
  .dudu-slot-marquee{margin-bottom:14px;letter-spacing:2px}}
 /* The existing FUN phone stage reuses this same machine, without page-wide CSS. */
 body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-fun-tabs{
@@ -129,25 +143,31 @@ body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-fun-stage.is-slot{
  padding:7px;overflow:hidden}
 body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-preview{
  margin-top:0;min-width:0;width:100%}
-body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-eyebrow{font-size:9px}
-body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-heading{
- font-size:24px;letter-spacing:0}
-body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-caption{font-size:10px}
-body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-demo-badge{
- font-size:8px;padding:7px 9px}
 body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-cabinet{
- margin-top:17px;padding:9px 6px 13px;border-width:3px;border-radius:22px}
+ margin-top:8px;padding:9px 6px 11px;border-width:3px;border-radius:22px}
 body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-marquee{
- margin:10px auto 13px;font-size:14px}
+ margin:7px auto 10px;font-size:14px}
 body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-screen{padding:6px}
 body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-reels{gap:4px}
 body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-tile{border-radius:8px}
 body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-controls{
- margin-top:15px;padding:12px;gap:9px}
+ margin-top:0;padding:6px;gap:5px}
 body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-line{font-size:9px}
 body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-result strong{font-size:13px}
 body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-spin{
- font-size:14px;letter-spacing:1px}
+ font-size:12px;letter-spacing:0}
+/* FUN alone expands to a tabletop on desktop; all other phone apps stay small. */
+@media(min-width:860px){
+ body.dudu-phone-v11 #cyber-phone:has(#phone-app-fun[style*="display: flex"]){
+  width:min(724px,calc(100vw - 40px));max-width:calc(100vw - 40px);
+  height:min(850px,calc(100dvh - 42px));right:20px;bottom:20px}
+ body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-tile{
+  aspect-ratio:1.65;font-size:clamp(34px,4vw,58px)}
+ body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-controls{
+  grid-template-columns:minmax(0,1fr) 170px}
+ body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-chip{font-size:16px}
+ body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-spin{font-size:18px}
+}
 @media(prefers-reduced-motion:reduce){.dudu-slot-preview *,
  .dudu-slot-preview *::before,.dudu-slot-preview *::after{
  animation:none!important;transition:none!important;scroll-behavior:auto!important}}

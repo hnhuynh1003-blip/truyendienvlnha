@@ -77,7 +77,7 @@ test('CASINO-DESIGN1 shop is a proposal, never an open-ended money multiplier',(
 
 test('CASINO-DESIGN1 has only pure rules, now loaded by the FUN slot tab',()=>{
  const html=text('index.html'),source=text('js/dudu-casino-design-v1.js');
- assert.match(html,/src="js\/dudu-casino-design-v1\.js\?v=casino-slot2/);
+ assert.match(html,/src="js\/dudu-casino-design-v1\.js\?v=casino-slot3/);
  assert.doesNotMatch(source,/\.currency\s*=|runTransaction\(|\.update\(|\.set\(/);
  assert.doesNotMatch(html,/src="js\/dudu-fate-tower-ui-v1\.js/);
  assert.match(html,/js\/personal-scratch-c28\.js/);
