@@ -85,8 +85,8 @@ async function main(){
   }
   await page.locator('#personal-arcade-v1 .arcade-sheet-close').click();
   await open('garden-upgrades');
-  assert.match(await page.locator('#personal-arcade-v1 .garden-pond-next').innerText(),/Hồ cấp 2 · \+4 loài/);
-  assert.match(await page.locator('#personal-arcade-v1 .garden-tackle-chance').innerText(),/Cá hiếm mở từ hồ cấp 2/);
+  assert.match(await page.locator('#personal-arcade-v1 .arcade-sheet-body .garden-pond-next').innerText(),/Hồ cấp 2 · \+4 loài/);
+  assert.match(await page.locator('#personal-arcade-v1 .arcade-sheet-body .garden-tackle-chance').innerText(),/Cá hiếm mở từ hồ cấp 2/);
   await page.locator('#personal-arcade-v1 .arcade-sheet-close').click();
   assert.equal(await page.locator('#personal-arcade-v1 .arcade-tab').count(),4);
   const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem(
