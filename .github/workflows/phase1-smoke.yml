@@ -68,6 +68,8 @@ jobs:
         run: |
           npm install --no-save playwright@1.56.1
           npx playwright install chromium --with-deps
+      - name: C4.46b garden back navigation on desktop and four mobile widths (Sandbox)
+        run: node tests/browser-arcade-garden-c446b.cjs
       - name: V71 main production-mode browser acceptance (no Sandbox, no external writes)
         run: |
           node tests/browser-main-system-v71.cjs
@@ -85,8 +87,6 @@ jobs:
         run: node tests/browser-arcade-mobile-c410.cjs
       - name: C4.46 phased fishing on four mobile widths (Sandbox, no external writes)
         run: node tests/browser-arcade-fishing-c446.cjs
-      - name: C4.46b garden back navigation on desktop and four mobile widths (Sandbox)
-        run: node tests/browser-arcade-garden-c446b.cjs
       - name: C4.43 mobile reader navigation and refresh return (Sandbox, no external writes)
         run: node tests/browser-library-reading-return-c443.cjs
       - name: L2E mobile Library pagination and synopsis return (Sandbox, no external writes)

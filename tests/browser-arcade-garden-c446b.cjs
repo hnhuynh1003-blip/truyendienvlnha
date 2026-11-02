@@ -110,11 +110,11 @@ async function main(){
     const header=root.querySelector('.arcade-sheet-heading').getBoundingClientRect();
     const back=root.querySelector('.garden-sheet-back').getBoundingClientRect();
     const sheet=root.querySelector('.arcade-sheet').getBoundingClientRect();
-    const plots=[...root.querySelectorAll('.garden-farm-workbench .garden-plot')]
+    const plots=[...body.querySelectorAll('.garden-farm-workbench .garden-plot')]
      .map(el=>el.getBoundingClientRect());
     return {header,back,sheet,plots,overflow:body.scrollWidth-body.clientWidth,
-     labels:[...root.querySelectorAll('.garden-plot-label b')].map(el=>el.textContent),
-     seedCount:root.querySelectorAll('.garden-seed').length};
+     labels:[...body.querySelectorAll('.garden-plot-label b')].map(el=>el.textContent),
+     seedCount:body.querySelectorAll('.garden-seed').length};
    });
    assert.ok(layout.header.top>=layout.sheet.top-1&&layout.back.bottom<=layout.header.bottom+1,
     `The 4-game back button stays visible at ${width}px`);
