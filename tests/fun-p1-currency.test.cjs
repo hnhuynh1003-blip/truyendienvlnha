@@ -11,8 +11,8 @@ test('FUN-P1.1 uses bill/coin icons on compact counters without migrating old ke
  assert.match(html,/class="widget-currency dudu-money-display--gold" id="phone-currency-display"[^>]*>50/);
  assert.match(html,/id="dudu-wallet-system-amount"/);
  assert.match(html,/dudu-money-display--green" id="dudu-wallet-arcade-balance"/);
- assert.match(html,/dudu-money-icon--green[^>]*><\/i>10 →/);
- assert.match(html,/dudu-money-icon--gold[^>]*><\/i>1 · Chưa kích hoạt đổi/);
+ assert.match(html,/dudu-bank-rate[^>]*>[\s\S]*?dudu-money-icon--green[^>]*><\/i>10/);
+ assert.match(html,/dudu-bank-rate[^>]*>[\s\S]*?dudu-money-icon--gold[^>]*><\/i>1/);
  assert.match(html,/css\/dudu-currency-icons-v1\.css/);
  assert.match(html,/userProfile\.currency\.toLocaleString\('vi-VN'\)/);
  const ui=src('js/personal-arcade-ui-v1.js');

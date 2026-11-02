@@ -1,39 +1,167 @@
-/* FUN-P1: Xu Vàng in the existing profile, Tiền Xanh local to Arcade.
- * Presentation only; no exchange or reward authority here. */
-#phone-app-wallet{min-width:0;gap:10px;padding:8px 10px 20px;background:#101624}
-#phone-app-wallet .phone-app-header{flex-shrink:0;margin-bottom:2px}
+/* DUDU Treasury: bank-like virtual wallet. Visual only; original profile currency stays authoritative. */
+body.dudu-phone-v11 #cyber-phone #phone-app-wallet{
+ min-width:0;gap:7px;padding:7px 10px 20px;overflow-x:hidden;
+ background:radial-gradient(circle at 85% 0,#24413666,transparent 46%),
+ linear-gradient(160deg,#111b29 0%,#0d1925 58%,#101523 100%)}
 #phone-app-wallet *{box-sizing:border-box}
-#phone-app-wallet .dudu-wallet-mark{font:800 9px ui-monospace,monospace;letter-spacing:.15em;color:#e3c88d}
-.dudu-wallet-shell{min-width:0;display:flex;flex-direction:column;gap:11px}
-.dudu-wallet-card{position:relative;overflow:hidden;min-height:170px;padding:19px 17px 16px;
- display:flex;flex-direction:column;justify-content:center;gap:9px;border:1px solid #be9d63;
- border-radius:19px;background:radial-gradient(circle at 94% 12%,#b8884568,transparent 51%),
- linear-gradient(135deg,#463b46,#29283e 60%,#172c3f);box-shadow:0 12px 34px #02061073,inset 0 1px #fff3c231}
-.dudu-wallet-card::after{content:'';position:absolute;inset:0;pointer-events:none;opacity:.2;
- background:repeating-linear-gradient(120deg,transparent 0 33px,#dfc596 34px 34.5px,transparent 36px 70px)}
-.dudu-wallet-card-glow{position:absolute;top:3px;right:17px;color:#f9d78b2a;font:900 94px/1 Georgia,serif}
-.dudu-wallet-overline{position:relative;z-index:1;color:#d2e8e4;font:800 9px ui-monospace,monospace;letter-spacing:.18em}
-#phone-app-wallet #dudu-wallet-system-balance{position:relative;z-index:1;font:900 clamp(27px,8vw,39px)/1.15 ui-monospace,monospace;
- letter-spacing:-.06em;color:#ffe3a4;overflow-wrap:anywhere}
-#phone-app-wallet #dudu-wallet-system-balance small{font:800 11px ui-monospace,monospace;letter-spacing:0;color:#d7cfb8}
-.dudu-wallet-caption{position:relative;z-index:1;font-size:10px;line-height:1.5;color:#c3d1d6;max-width:225px}
-.dudu-wallet-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-.dudu-wallet-actions button{min-width:0;min-height:60px;padding:12px 6px;display:flex;flex-direction:column;
- align-items:center;justify-content:center;gap:6px;border:1px solid #536877;border-radius:13px;
- color:#f5e1b0;background:linear-gradient(145deg,#29414d,#222d40);
- font-family:inherit;font-weight:800;font-size:11px;line-height:1.2;cursor:pointer}
-.dudu-wallet-actions button:focus-visible{outline:2px solid #f3d9a6;outline-offset:2px}
-.dudu-wallet-actions button:active{transform:scale(.98)}
-.dudu-wallet-secondary{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;
- padding:12px;border:1px solid #384e62;border-radius:13px;background:#182638;color:#c3d7de}
-.dudu-wallet-secondary>div{display:flex;flex-direction:column;gap:5px}
-.dudu-wallet-secondary>div span{font-size:9px;color:#9cb7c3}
-.dudu-wallet-secondary strong{font:900 18px ui-monospace,monospace;color:#a1f1bc}
-.dudu-wallet-source-badge{font:700 9px ui-monospace,monospace;color:#a7b7c8;border-radius:99px;
- background:#2c3b4d;padding:5px 7px}
-.dudu-wallet-exchange-launch{width:100%;min-height:42px;border:1px solid #c5a36b;border-radius:10px;
- background:linear-gradient(130deg,#53473f,#3a394a);color:#ffe2ac;
- font:800 11px ui-monospace,monospace;cursor:pointer}
-.dudu-wallet-exchange-launch:focus-visible{outline:2px solid #ffdc9e;outline-offset:2px}
-.dudu-wallet-lock{display:flex;align-items:center;gap:8px;padding:5px 3px;font-size:10px;line-height:1.45;color:#879bb1}
-.dudu-wallet-lock>span:first-child{font-size:17px;color:#b49c75}
+#phone-app-wallet .phone-app-header{flex-shrink:0;margin-bottom:1px}
+#phone-app-wallet .dudu-wallet-mark{font:900 9px ui-monospace,monospace;letter-spacing:.12em;
+ color:#f6dc96;border:1px solid #a99155;border-radius:5px;padding:4px 6px;background:#69512a55}
+.dudu-wallet-shell{min-width:0;display:flex;flex-direction:column;gap:9px}
+.dudu-bank-intro{display:flex;align-items:center;justify-content:space-between;min-width:0;
+ color:#f2d6a4;font:850 10px ui-monospace,monospace;letter-spacing:.12em;padding:2px 1px}
+.dudu-bank-intro small{display:inline-flex;align-items:center;gap:5px;flex:none;
+ font:800 8px ui-monospace,monospace;letter-spacing:.07em;color:#a8dec3}
+.dudu-bank-intro small i{display:inline-block;width:5px;height:5px;background:#8ff3bc;border-radius:50%;box-shadow:0 0 8px #8ff3bc}
+.dudu-bank-tier-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.dudu-bank-tier-tabs button{min-width:0;min-height:35px;padding:6px 3px;
+ border:1px solid #4c6076;border-radius:10px;color:#c6d0df;
+ background:linear-gradient(145deg,#293746,#192636);cursor:pointer;touch-action:manipulation;
+ font:850 9px ui-monospace,monospace;letter-spacing:.055em}
+.dudu-bank-tier-tabs button>span{font-size:14px;vertical-align:-.06em;margin-right:3px}
+.dudu-bank-tier-tabs button[data-wallet-card-select=gold]{color:#f2d18b}
+.dudu-bank-tier-tabs button[data-wallet-card-select=diamond]{color:#d6ddff}
+.dudu-bank-tier-tabs button.is-selected{border-color:#d5b97e;
+ background:linear-gradient(145deg,#535445,#2f4044);box-shadow:inset 0 1px #f3eac43d}
+.dudu-bank-tier-tabs button[data-wallet-card-select=silver].is-selected{border-color:#b9c8d8;
+ background:linear-gradient(145deg,#465969,#263441)}
+.dudu-bank-tier-tabs button[data-wallet-card-select=diamond].is-selected{border-color:#b6bfff;
+ background:linear-gradient(145deg,#3f4f75,#222941)}
+.dudu-bank-tier-tabs button:focus-visible{outline:2px solid #f8dbab;outline-offset:2px}
+.dudu-wallet-card{position:relative;isolation:isolate;overflow:hidden;width:100%;min-height:165px;
+ aspect-ratio:1.78;border:1px solid #c9a96a;border-radius:17px;
+ padding:clamp(11px,3.7vw,16px);display:flex;flex-direction:column;gap:8px;
+ background:#071b21 url('../assets/wallet/dudu-silver-card-p2.webp') center/cover no-repeat;
+ box-shadow:0 11px 25px #02080eac,0 3px 0 #c49d5354,inset 0 0 0 1px #ffecbd4b}
+.dudu-wallet-card[data-wallet-card-tier=gold]{border-color:#e1bc73;
+ background-image:url('../assets/wallet/dudu-gold-card-p2.webp');
+ box-shadow:0 12px 27px #02080eb8,0 3px 0 #e0b7647f,inset 0 0 0 1px #ffe7ad7c}
+.dudu-wallet-card[data-wallet-card-tier=diamond]{border-color:#d0d7fb;
+ background-image:url('../assets/wallet/dudu-diamond-card-p2.webp');
+ border-radius:20px;box-shadow:0 11px 27px #02080eb8,0 3px 0 #9eace89c,inset 0 0 0 1px #f2f5ffb0}
+.dudu-wallet-card::before{content:"";position:absolute;z-index:-1;inset:0;pointer-events:none;
+ background:linear-gradient(90deg,#05161ddd 0%,#06161db0 45%,#06192244 79%,#0000 100%)}
+.dudu-wallet-card::after{content:"";position:absolute;inset:4px;z-index:-1;pointer-events:none;
+ border:1px solid #dbbd8259;border-radius:12px}
+.dudu-bank-art{position:absolute;right:0;bottom:0;width:45%;height:100%;pointer-events:none;
+ background:radial-gradient(circle at 76% 46%,#b2f6c616,transparent 60%)}
+.dudu-bank-card-top,.dudu-bank-card-bottom{display:flex;justify-content:space-between;
+ align-items:center;gap:9px;position:relative;z-index:1}
+.dudu-bank-card-brand{display:flex;align-items:center;gap:8px;color:#fff3c6}
+.dudu-bank-brand-seal{display:grid;place-items:center;flex:none;width:27px;height:27px;
+ border:1px solid #d9bd7e;border-radius:50%;background:linear-gradient(135deg,#2c6f5f,#102f36);
+ box-shadow:inset 0 0 0 2px #e3cd8654;font:900 21px Georgia,serif}
+.dudu-wallet-card[data-wallet-card-tier=silver] .dudu-bank-brand-seal{border-radius:6px;
+ border-color:#b0c8db;background:linear-gradient(145deg,#627486,#273847);color:#e4f1f9}
+.dudu-wallet-card[data-wallet-card-tier=gold] .dudu-bank-brand-seal{border-color:#f0ca7b;
+ background:linear-gradient(145deg,#c49448,#38594c);color:#fff2b0}
+.dudu-wallet-card[data-wallet-card-tier=diamond] .dudu-bank-brand-seal{
+ clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);border-radius:0;border:0;
+ background:linear-gradient(135deg,#e9fcff,#6575b9,#c3abf8);color:#18274f;
+ box-shadow:inset 0 0 0 2px #f3e7ff}
+.dudu-bank-card-brand b{display:block;font:900 15px/.9 ui-serif,Georgia,serif;letter-spacing:.12em;text-shadow:0 1px 4px #030c0c}
+.dudu-bank-card-brand small{display:block;color:#b9e4cf;font:700 7px ui-monospace,monospace;letter-spacing:.3em;margin-top:5px}
+.dudu-bank-card-tier{flex:none;font:900 9px ui-monospace,monospace;letter-spacing:.08em;
+ color:#fff2cb;border:1px solid #f3d69492;border-radius:5px;padding:4px 6px;background:#0a2428b9}
+.dudu-wallet-card[data-wallet-card-tier=silver] .dudu-bank-card-tier{color:#e3effa;border-color:#b3c9d3}
+.dudu-wallet-card[data-wallet-card-tier=diamond] .dudu-bank-card-tier{color:#f4f4ff;border-color:#ced7ff;background:#2b3150c9}
+.dudu-bank-card-preview{position:absolute;right:11px;top:51px;z-index:3;
+ font:850 8px ui-monospace,monospace;letter-spacing:.04em;color:#fff4c9;
+ border:1px solid #cbb589a8;border-radius:4px;padding:4px 6px;background:#0a1a26ca}
+.dudu-bank-card-preview[hidden],.dudu-bank-tier-details [hidden]{display:none!important}
+.dudu-wallet-card[data-wallet-card-tier=diamond] .dudu-bank-card-preview{color:#e7efff;
+ border-color:#bfc8ff;background:#1b2449da}
+.dudu-bank-balance-block{position:relative;z-index:1;margin-top:auto;max-width:77%}
+.dudu-bank-balance-caption{display:flex;align-items:center;gap:8px;color:#c6ead5;
+ font:800 8px ui-monospace,monospace;letter-spacing:.09em;white-space:nowrap}
+.dudu-bank-visibility{width:25px;height:23px;flex:none;border:0;border-radius:6px;
+ color:#f3dbab;background:#18353d97;font:900 15px/1 ui-sans-serif,system-ui;cursor:pointer}
+.dudu-bank-visibility[aria-pressed=true]{color:#a9b0b4;background:#1f2934d9}
+.dudu-bank-visibility:focus-visible{outline:2px solid #ffe6a6;outline-offset:2px}
+#phone-app-wallet #dudu-wallet-system-balance{display:flex;align-items:center;gap:5px;min-width:0;
+ color:#ffe5a9;font:900 clamp(23px,7.6vw,34px)/1.16 ui-monospace,monospace;
+ letter-spacing:-.055em;text-shadow:0 2px 10px #030d10;white-space:nowrap}
+#phone-app-wallet #dudu-wallet-system-balance .dudu-money-icon{font-size:.82em;margin:0}
+#phone-app-wallet #dudu-wallet-system-amount{overflow:hidden;text-overflow:ellipsis}
+.dudu-bank-card-bottom{margin-top:auto;align-items:end;max-width:81%}
+.dudu-bank-card-bottom>div{display:flex;flex-direction:column;gap:3px;min-width:0}
+.dudu-bank-card-bottom small{font:800 7px ui-monospace,monospace;letter-spacing:.11em;color:#a4caba}
+.dudu-bank-card-bottom b{font:850 10px ui-sans-serif,system-ui;color:#fff0ca;
+ overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:138px;text-shadow:0 1px 4px #000a}
+.dudu-bank-card-bottom>div:last-child{text-align:right}
+.dudu-bank-card-bottom>div:last-child b{font:800 9px ui-monospace,monospace;color:#e0c48e}
+.dudu-bank-tier-details{min-height:53px;padding:10px 11px;border:1px solid #506277;
+ border-radius:12px;background:linear-gradient(120deg,#202f40,#182638)}
+.dudu-bank-tier-details[data-wallet-detail-tier=gold]{border-color:#84704e;
+ background:linear-gradient(120deg,#40372e,#222c3b)}
+.dudu-bank-tier-details[data-wallet-detail-tier=diamond]{border-color:#8d97c6;
+ background:linear-gradient(120deg,#343a62,#1e2949)}
+.dudu-bank-tier-detail-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px}
+.dudu-bank-tier-detail-head b{color:#f3ddb6;font:900 10px ui-monospace,monospace;letter-spacing:.035em}
+.dudu-bank-tier-detail-head small{flex:none;padding:3px 5px;border:1px solid #9a8068;
+ border-radius:5px;background:#493a3b76;color:#e8bca0;font:850 8px ui-monospace,monospace}
+.dudu-bank-tier-detail-head small.is-owned{border-color:#579e79;color:#b7e7c3;background:#1b4a3876}
+.dudu-bank-tier-details p{margin:3px 0 0;color:#b8cbda;font:700 9px/1.4 ui-sans-serif,system-ui}
+.dudu-bank-tier-details .dudu-money-icon{font-size:11px;margin-right:2px}
+.dudu-bank-tier-note{margin-top:-4px;color:#91a4b3;text-align:center;
+ font:700 8.5px/1.3 ui-sans-serif,system-ui;padding:0 5px}
+.dudu-bank-quick-label{display:flex;align-items:center;min-height:12px;margin:3px 2px -3px;
+ color:#9bb4b7;font:850 9px ui-monospace,monospace;letter-spacing:.12em}
+.dudu-wallet-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.dudu-wallet-actions button{min-width:0;min-height:66px;padding:7px 2px;display:flex;flex-direction:column;
+ align-items:center;justify-content:center;gap:5px;border:1px solid #4b6b72;border-radius:12px;
+ background:linear-gradient(160deg,#25434b,#172a3b);color:#f5e7c6;
+ font:800 9px/1.2 ui-sans-serif,system-ui;cursor:pointer;touch-action:manipulation}
+.dudu-wallet-actions button:nth-child(2){border-color:#9e765e;background:linear-gradient(160deg,#594454,#322b42)}
+.dudu-wallet-actions button:nth-child(4){border-color:#aa935e;background:linear-gradient(160deg,#4b443a,#2b323e)}
+.dudu-bank-action-icon{display:grid;place-items:center;width:28px;height:28px;border-radius:9px;
+ border:1px solid #d6bb856b;background:radial-gradient(circle at 35% 25%,#ffffff20,#0d182429);
+ color:#ffe0a7;font:900 19px/1 Georgia,serif;text-shadow:0 1px 4px #12151e}
+.dudu-wallet-actions button:focus-visible,.dudu-wallet-secondary:focus-visible,
+.dudu-wallet-exchange-launch:focus-visible{outline:2px solid #f9e2ad;outline-offset:2px}
+.dudu-wallet-actions button:active,.dudu-wallet-secondary:active,.dudu-wallet-exchange-launch:active{transform:scale(.98)}
+.dudu-wallet-secondary{display:flex;align-items:center;gap:12px;width:100%;min-height:63px;padding:10px 12px;
+ border:1px solid #3d7869;border-radius:13px;text-align:left;cursor:pointer;
+ background:radial-gradient(circle at 0 50%,#306d5652,transparent 60%),linear-gradient(110deg,#1a3b3b,#172c3d);
+ color:#e5f9e5;box-shadow:inset 0 1px #b0edb51a}
+.dudu-bank-green-emblem{width:40px;height:40px;flex:none;display:grid;place-items:center;
+ border:1px solid #76b992;border-radius:12px;background:linear-gradient(135deg,#3b8267,#184c41);
+ box-shadow:0 2px 10px #020b1266}
+.dudu-bank-green-emblem .dudu-money-icon{font-size:19px;margin:0}
+.dudu-bank-green-copy{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+.dudu-bank-green-copy small{color:#a7d2c4;font:800 8px ui-monospace,monospace;letter-spacing:.11em}
+.dudu-bank-green-copy strong{color:#b8ffcf;font:900 19px ui-monospace,monospace;letter-spacing:-.045em}
+.dudu-bank-chevron{font:400 24px/1 ui-sans-serif,system-ui;color:#bce4cf}
+.dudu-bank-exchange{display:flex;flex-direction:column;gap:8px;border:1px solid #594b40;
+ border-radius:13px;background:linear-gradient(135deg,#242e3d,#1a2333);padding:12px}
+.dudu-bank-exchange-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.dudu-bank-exchange-top b{color:#f2dfb3;font:900 10px ui-monospace,monospace;letter-spacing:.08em}
+.dudu-bank-exchange-top small{color:#c9bba4;font:800 8px ui-monospace,monospace;letter-spacing:.05em;
+ border:1px solid #9a815963;border-radius:99px;padding:4px 7px;background:#554b3552}
+.dudu-bank-rate{display:flex;justify-content:center;align-items:center;gap:16px;
+ font:900 20px ui-monospace,monospace;color:#f9e2aa}
+.dudu-bank-rate>span{display:inline-flex;align-items:center;gap:5px}
+.dudu-bank-rate>span:first-child{color:#a8efbf}
+.dudu-bank-rate .dudu-money-icon{font-size:18px;margin:0}
+.dudu-bank-rate>i{font:800 14px ui-sans-serif,system-ui;color:#94b8aa}
+.dudu-wallet-exchange-launch{width:100%;min-height:38px;display:flex;align-items:center;
+ justify-content:space-between;gap:8px;border:1px solid #bda36a;border-radius:10px;
+ background:linear-gradient(125deg,#5b4d3e,#403c46);color:#ffe4ad;padding:8px 13px;
+ font:900 11px ui-sans-serif,system-ui;cursor:pointer}
+.dudu-wallet-exchange-launch>span{font-size:18px;line-height:1}
+.dudu-bank-disclaimer{margin:0;padding:0 5px 6px;text-align:center;color:#889dad;
+ font:700 9px/1.45 ui-sans-serif,system-ui}
+@media (max-width:355px){
+ body.dudu-phone-v11 #cyber-phone #phone-app-wallet{padding-left:7px;padding-right:7px}
+ .dudu-wallet-shell{gap:7px}
+ .dudu-wallet-card{padding:10px;min-height:161px}
+ .dudu-bank-card-brand b{font-size:13px}
+ .dudu-bank-card-brand small{font-size:6px}
+ .dudu-bank-card-bottom b{max-width:110px}
+ .dudu-bank-card-bottom{max-width:86%}
+ .dudu-wallet-actions{gap:4px}
+ .dudu-wallet-actions button{font-size:8.5px}
+}
+@media (prefers-reduced-motion:reduce){
+ .dudu-wallet-actions button,.dudu-wallet-secondary,.dudu-wallet-exchange-launch{transition:none}
+}

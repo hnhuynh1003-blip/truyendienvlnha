@@ -15,7 +15,7 @@ test('Ví Xu is a first-class phone app, backed by existing profile Xu',()=>{
  assert.match(html,/userProfile\.currency/);
  assert.match(html,/appName === 'wallet'/);
  assert.match(html,/if\(document\.getElementById\('phone-app-wallet'\)\?\.style\.display==='flex'\)renderWallet\(\)/);
- assert.match(html,/css\/dudu-wallet-v1\.css\?v=fun-p1-2/);
+ assert.match(html,/css\/dudu-wallet-v1\.css\?v=wallet-p2-1/);
  assert.match(html,/css\/dudu-currency-icons-v1\.css\?v=fun-p1-2/);
 });
 
