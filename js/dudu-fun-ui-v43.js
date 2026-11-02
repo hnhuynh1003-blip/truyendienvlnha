@@ -899,7 +899,8 @@
    return true;
   }
   const tabs=el('div','dudu-fun-tabs');
-  for(const [type,label] of [['box','🎁 Vạn Bảo'],['ticket','🎟️ Vé Cào']]){
+  for(const [type,label] of [['box','🎁 Vạn Bảo'],['ticket','🎟️ Vé Cào'],
+   ['tower','🗼 Vận Mệnh']]){
    const button=el('button','dudu-fun-tab'+(open===type?' is-active':''),label);
    button.type='button';button.setAttribute('aria-pressed',String(open===type));
    button.addEventListener('click',()=>{open=type;hint=true;render();});
@@ -908,7 +909,11 @@
   host.append(tabs);
   const content=el('section','dudu-fun-stage');
   const state=view(),round=state.rounds[open];
-  if(open==='box'){
+  if(open==='tower'){
+   if(root.DuduFateTowerUIV1?.render)
+    root.DuduFateTowerUIV1.render(content,{uid:currentUsername});
+   else content.append(el('p','dudu-fun-caption','Tháp Vận Mệnh đang chuẩn bị…'));
+  }else if(open==='box'){
    if(sandbox()){boxes(content,round);sandboxTreasurePreview(content);}
    else blindBoxes(content);
   }

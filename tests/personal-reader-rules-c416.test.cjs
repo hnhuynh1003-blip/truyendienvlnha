@@ -44,5 +44,5 @@ test('C4.16 live UI loads cached-busted login/transaction error scripts',()=>{
   assert.match(html,new RegExp('js/'+file+'\\.js\\?v=c416-1'));
  assert.match(html,/js\/account-approval-v1\.js\?v=auth-a1/);
  assert.match(html,/js\/auth-v2\.js\?v=auth-a1/);
- assert.match(html,/js\/dudu-fun-ui-v43\.js\?v=fun-lock1/);
+ assert.match(html,/js\/dudu-fun-ui-v43\.js\?v=fun-tower1/);
 });

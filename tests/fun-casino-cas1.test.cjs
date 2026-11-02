@@ -70,7 +70,7 @@ for(const amount of [15,0])test('FUN-CAS1 '+(amount?'win':'loss')+
 test('FUN-CAS1 is visual-only and preserves wallet, odds and rule gates',()=>{
  const html=read('index.html'),ui=read('js/dudu-fun-ui-v43.js'),css=read('css/dudu-fun-casino-v1.css');
  assert.match(html,/dudu-fun-casino-v1\.css\?v=fun-cas1/);
- assert.match(html,/dudu-fun-ui-v43\.js\?v=fun-lock1/);
+ assert.match(html,/dudu-fun-ui-v43\.js\?v=fun-tower1/);
  assert.match(ui,/kind==='claim'&&response\.status==='applied'/);
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
  assert.doesNotMatch(css,/localStorage|\.currency|firebase|walletXu/);
