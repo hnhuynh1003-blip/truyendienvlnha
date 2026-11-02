@@ -19,8 +19,9 @@ body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-identity-frame::
  border-image-slice:60 82 60 82;border-image-width:14px;border-image-repeat:stretch;
  opacity:.95;
 }
-body.dudu-phone-v11.dudu-live-mode #cyber-phone #phone-home-screen .dudu-honor-identity-frame #player-avatar-home-v16.dudu-avatar-home-v16.dudu-v50-compact-profile{
- position:relative;z-index:1;min-height:59px!important;padding:5px 2px!important;margin:0!important;
+body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-identity-frame #player-avatar-home-v16.dudu-avatar-home-v16.dudu-v50-compact-profile{
+ position:relative;z-index:1;width:100%!important;max-width:none!important;
+ min-height:59px!important;padding:5px 2px!important;margin:0!important;
  border:0!important;border-radius:13px 13px 7px 7px!important;
  background:transparent!important;
  box-shadow:none!important;
@@ -169,7 +170,7 @@ body.dudu-phone-v11 .dudu-avatar-v16-frames button[data-frame-locked="true"] .du
 body.dudu-phone-v11 .dudu-avatar-v16-frames button[data-frame-locked="true"][aria-pressed="true"]{box-shadow:0 0 0 1px #e6c58da8,inset 0 1px #fff4;}
 body.dudu-phone-v11 .dudu-avatar-v18-lock-reason{font-size:8px;color:#dcc29d;}
 @media(max-width:355px){
- body.dudu-phone-v11.dudu-live-mode #cyber-phone #phone-home-screen .dudu-honor-identity-frame #player-avatar-home-v16.dudu-avatar-home-v16.dudu-v50-compact-profile{padding:7px!important;gap:6px!important;}
+ body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-identity-frame #player-avatar-home-v16.dudu-avatar-home-v16.dudu-v50-compact-profile{padding:7px!important;gap:6px!important;}
  body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-home-chip{padding:6px;gap:6px;}
  body.dudu-phone-v11 .dudu-avatar-v16-frames button{font-size:10px;min-height:45px;gap:5px;}
  body.dudu-phone-v11 .dudu-avatar-v16-frame-dot{width:25px;height:25px;flex-basis:25px;}

@@ -48,5 +48,5 @@ test('Avatar artwork moves out of the face while keeping original and restricted
  assert.match(css,/inset:-12%/);
  assert.match(css,/border-radius:24%;overflow:visible/);
  assert.match(css,/\.dudu-avatar-v16-preview\{/);
- assert.match(html,/phone-identity-art-v1\.css\?v=identity-5/);
+ assert.match(html,/phone-identity-art-v1\.css\?v=identity-6/);
 });
