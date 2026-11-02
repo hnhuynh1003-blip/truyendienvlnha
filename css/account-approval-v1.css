@@ -1,0 +1,26 @@
+/* AUTH-A1 — dormant until the owner publishes approval Rules and enables it. */
+#auth-modal .dudu-approval-policy,
+#auth-modal .dudu-approval-pending{
+ margin:9px 0 0;padding:8px 10px;border-radius:9px;
+ border:1px solid #bd9d5b92;background:#43334479;
+ color:#f6dfb9;font-size:11px;line-height:1.55;text-align:left;
+}
+#auth-modal .dudu-approval-pending{border-color:#97a6d09e;background:#2b3458a3}
+#auth-modal .dudu-approval-owner{
+ margin-top:10px;padding:10px;border:1px solid #d9ad7aa0;
+ border-radius:11px;background:#24344dcc;display:flex;flex-direction:column;
+ gap:8px;text-align:left;color:#f4e5d0;font-size:11px;
+}
+#auth-modal .dudu-approval-owner>.btn{width:100%}
+#auth-modal .dudu-approval-owner>p{margin:0;line-height:1.4;font-size:10px;color:#d8d2e7}
+#auth-modal .dudu-approval-list{display:flex;flex-direction:column;gap:7px;max-height:180px;overflow-y:auto}
+#auth-modal .dudu-approval-row{
+ display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;
+ gap:5px;padding:7px 4px;border-top:1px solid #c6a7a54d;
+}
+#auth-modal .dudu-approval-row span{min-width:0;display:flex;flex-direction:column;gap:3px}
+#auth-modal .dudu-approval-row small{font-size:9px;color:#d9c5d8;overflow-wrap:anywhere}
+#auth-modal .dudu-approval-row .btn{font-size:10px;padding:5px}
+#auth-modal .dudu-approval-policy[hidden],
+#auth-modal .dudu-approval-pending[hidden],
+#auth-modal .dudu-approval-owner[hidden]{display:none!important}

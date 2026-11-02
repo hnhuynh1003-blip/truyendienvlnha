@@ -40,6 +40,7 @@
   <link rel="stylesheet" href="css/van-bao-art-v1.css?v=vanbao-1">
   <link rel="stylesheet" href="css/van-bao-stage-v2.css?v=fun-vis6">
   <link rel="stylesheet" href="css/dudu-fun-casino-v1.css?v=fun-cas1">
+  <link rel="stylesheet" href="css/account-approval-v1.css?v=auth-a1">
   <link rel="stylesheet" href="css/personal-arcade-v1.css?v=fun-p1-1">
   <link rel="stylesheet" href="css/arcade-immersive-c417.css?v=c417-1">
   <link rel="stylesheet" href="css/arcade-playfield-c418.css?v=c418-4&amp;economy=c450-1&amp;c452=1">
@@ -108,7 +109,8 @@
   <script src="js/appcheck-sitekey-v52.js?v=52-3"></script>
   <script src="js/firestore-profile-fallback-v56-7.js?v=56-7"></script>
   <script src="js/profile-save-c23.js?v=c416-1"></script>
-  <script src="js/auth-v2.js?v=c416-1"></script>
+  <script src="js/account-approval-v1.js?v=auth-a1"></script>
+  <script src="js/auth-v2.js?v=auth-a1"></script>
   <script src="js/personal-transaction-error-c416.js?v=c416-1"></script>
   <script src="js/npc-context-v56-10.js?v=56-10"></script>
   <script src="js/npc-reply-style-v56-12.js?v=56-12"></script>
@@ -1890,6 +1892,11 @@
           <button id="auth-email-login-btn" type="button" class="btn btn-primary" style="flex:1;" onclick="DuduAuth.email(false)">Đăng nhập</button>
           <button id="auth-email-register-btn" type="button" class="btn" style="flex:1;" onclick="DuduAuth.email(true)">Đăng ký</button>
         </div>
+        <p id="auth-approval-policy-a1" class="dudu-approval-policy" hidden>
+          Đăng ký tạo danh tính Firebase trước. Chỉ sau khi chủ sở hữu duyệt mới mở hồ sơ, Xu và trò chơi.
+        </p>
+        <p id="auth-approval-pending-a1" class="dudu-approval-pending" role="status" hidden></p>
+        <section id="auth-approval-owner-a1" class="dudu-approval-owner" aria-label="Duyệt người chơi DUDU" hidden></section>
         <button class="btn" style="width:100%;margin-top:8px;" onclick="DuduAuth.signout()">Đăng xuất</button>
       </div>
       <p id="auth-status-message" style="font-size:12px;color:var(--gold);margin-top:10px;line-height:1.6;min-height:20px;" role="status" aria-live="polite"></p>
@@ -2393,6 +2400,9 @@
     // Local NPC scripts never change wallet, items, quests or relationship rewards.
     const DUDU_SPARK_PERSONAL_MODE = !IS_SANDBOX_MODE;
     window.DUDU_SPARK_ITEMS_V1_READY = true; // Personal Spark shop; no Rules deploy.
+    // AUTH-A1 remains OFF until current player UIDs are approved and the
+    // owner has explicitly published the reviewed Firestore approval Rules.
+    window.DUDU_ACCOUNT_APPROVAL_V1_READY = false;
     const DUDU_NPC_AI_MODE = !IS_SANDBOX_MODE; // Cloudflare/Gemini; Firebase Spark remains free.
     // V47 requires both sandbox=1 and pilot=1; neither default mode can access Pilot.
     const IS_PILOT_STAGING_MODE = IS_SANDBOX_MODE && DUDU_QUERY.get('pilot') === '1';

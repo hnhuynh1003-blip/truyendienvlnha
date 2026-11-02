@@ -38,6 +38,8 @@ function harness(options = {}) {
   };
   const context = {
     IS_SANDBOX_MODE: false,
+    DUDU_ACCOUNT_APPROVAL_V1_READY: !!options.approvalGate,
+    DuduAccountApprovalV1: options.approvalHelper,
     DuduFirestoreProfileFallbackV567: options.enableFallback ? require('../js/firestore-profile-fallback-v56-7.js') : undefined,
     setTimeout: options.setTimeout || setTimeout, clearTimeout, AbortController,
     fetch: options.fetch || (async () => { throw new Error('No mock HTTP route'); }),
@@ -190,6 +192,42 @@ test('first-time reader creates an owned Firestore profile before becoming ready
   assert.equal(h.profile().currency,50);
   assert.deepEqual(h.profile().inventory,[]);
   assert.equal(h.profile().role,undefined,'profile never grants its own admin rights');
+});
+
+test('AUTH-A1 pending identity never reads or creates a gameplay profile', async () => {
+  let reads = 0, checks = 0;
+  const h = harness({
+    approvalGate: true,
+    approvalHelper: {check: async () => { checks++; return {approved:false,status:'pending'}; }},
+    profileGet: () => { reads++; return {exists:false}; }
+  });
+  await h.login('new-pending',{},null);
+  assert.equal(checks,1);
+  assert.equal(reads,0,'no profile fetch may happen before approval');
+  assert.equal(h.profile(),null,'no first-sign-in bonus or profile bootstrap');
+  assert.equal(h.context.DuduAuth.isReady(),false);
+  assert.equal(h.context.DuduAuth.isAdmin(),false);
+  assert.match(h.elements['auth-status-message'].textContent,/chờ chủ sở hữu/i);
+  assert.match(h.elements['auth-approval-pending-a1'].textContent,/chờ chủ sở hữu/i);
+});
+
+test('AUTH-A1 approved identity may load its own profile', async () => {
+  let checks=0;
+  const h=harness({approvalGate:true,
+    approvalHelper:{check:async()=>{checks++;return {approved:true,status:'approved'};}}});
+  await h.login('approved-reader',{},null);
+  assert.equal(checks,1);
+  assert.equal(h.context.DuduAuth.isReady(),true);
+  assert.equal(h.profile().username,'approved-reader');
+});
+
+test('AUTH-A1 rejected identity cannot bootstrap and is not ready', async () => {
+  const h=harness({approvalGate:true,
+    approvalHelper:{check:async()=>({approved:false,status:'rejected'})}});
+  await h.login('rejected-reader',{},null);
+  assert.equal(h.context.DuduAuth.isReady(),false);
+  assert.equal(h.profile(),null);
+  assert.match(h.elements['auth-status-message'].textContent,/chưa được chấp thuận/i);
 });
 
 test('profile created in another tab wins over the missing-profile device backup', async () => {

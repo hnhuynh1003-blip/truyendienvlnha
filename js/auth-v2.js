@@ -9,6 +9,10 @@
   let generation = 0;
   let defaultProfile = null;
   let loginPending = false;
+  // AUTH-A1 ships inert until the matching Firestore Rules and existing UID
+  // approvals have been reviewed and explicitly published by the owner.
+  const approvalEnabled = () => !IS_SANDBOX_MODE &&
+    window.DUDU_ACCOUNT_APPROVAL_V1_READY === true;
 
   function status(message) {
     const el = document.getElementById('auth-status-message');
@@ -60,6 +64,8 @@
   function showControls() {
     document.getElementById('auth-sandbox-controls').style.display = IS_SANDBOX_MODE ? 'block' : 'none';
     document.getElementById('auth-secure-controls').style.display = IS_SANDBOX_MODE ? 'none' : 'block';
+    const policy = document.getElementById('auth-approval-policy-a1');
+    if (policy) policy.hidden = !approvalEnabled();
   }
   function resetSession() {
     window.DuduProfileSaveC23?.reset?.();
@@ -69,6 +75,14 @@
     userProfile = JSON.parse(defaultProfile);
     chatHistories = {};
     activeChatNovelId = null;
+    const pending = document.getElementById('auth-approval-pending-a1');
+    if (pending) pending.hidden = true;
+    const ownerPanel = document.getElementById('auth-approval-owner-a1');
+    if (ownerPanel) {
+      ownerPanel.hidden = true;
+      if (ownerPanel.dataset) delete ownerPanel.dataset.approvalMounted;
+      ownerPanel.replaceChildren?.();
+    }
   }
   function showRetry(show) {
     for (const id of ['auth-retry-profile-btn','auth-diagnose-firestore-btn']) {
@@ -240,10 +254,41 @@
     refreshSessionUI();
 
     try {
-      const [token, snapshot] = await Promise.all([
-        withTimeout(account.getIdTokenResult(), 'Firebase token'),
-        readProfile(account)
-      ]);
+      let token, snapshot;
+      if (approvalEnabled()) {
+        token = await withTimeout(account.getIdTokenResult(), 'Firebase token');
+        if (ticket !== generation || client.currentUser?.uid !== account.uid) return;
+        const helper = window.DuduAccountApprovalV1;
+        if (!helper?.check) throw Error('Thiếu bộ kiểm tra duyệt tài khoản');
+        // No profile read or profile bootstrap until server-backed approval.
+        const decision = await withTimeout(helper.check({db:firebase.firestore(),
+          auth:client,uid:account.uid,claims:token.claims}), 'Duyệt tài khoản');
+        if (ticket !== generation || client.currentUser?.uid !== account.uid) return;
+        if (!decision.approved) {
+          const descriptions = {
+            pending:'Yêu cầu đã gửi. Đang chờ chủ sở hữu DUDU duyệt.',
+            rejected:'Yêu cầu chưa được chấp thuận. Hãy liên hệ chủ sở hữu.',
+            revoked:'Quyền chơi đã được chủ sở hữu thu hồi.',
+            'awaiting-access':'Chưa có quyền vào game. Hãy liên hệ chủ sở hữu.'
+          };
+          profileError = descriptions[decision.status] || descriptions.pending;
+          if (btn) btn.textContent = '👤 ' + label + ' · Chờ duyệt';
+          if (prof) prof.textContent = 'Firebase UID: ' + account.uid.slice(0,8) + '… (chưa cấp quyền chơi)';
+          const pendingPanel=document.getElementById('auth-approval-pending-a1');
+          if (pendingPanel) {pendingPanel.hidden=false;pendingPanel.textContent=profileError;}
+          showRetry(true);
+          refreshSessionUI();
+          openAuthModal();
+          status(profileError);
+          return;
+        }
+        snapshot = await readProfile(account);
+      } else {
+        [token, snapshot] = await Promise.all([
+          withTimeout(account.getIdTokenResult(), 'Firebase token'),
+          readProfile(account)
+        ]);
+      }
       if (ticket !== generation || client.currentUser?.uid !== account.uid) return;
 
       let cloudData = snapshot.exists ? snapshot.data() : null;
@@ -316,6 +361,12 @@
       showRetry(false);
       closeModals();
       refreshSessionUI();
+      if (approvalEnabled() && admin) {
+        window.DuduAccountApprovalV1?.mountOwnerPanel?.({
+          db:firebase.firestore(),auth:client,
+          host:document.getElementById('auth-approval-owner-a1')
+        });
+      }
       if (migratedPersonal && typeof window.saveCurrentAccount==='function') {
         // Legacy profile backup remains available locally; remote preference
         // writes happen only via narrow authenticated field-mask requests.
@@ -418,7 +469,9 @@
       else await client.signInWithEmailAndPassword(address, password);
       // onAuthStateChanged loads the profile; completion of signIn alone
       // does not prove that the profile is synced with Firestore.
-      if (!ready && !profileError) status('Đã xác thực. Đang tải hồ sơ người chơi…');
+      if (!ready && !profileError) status(register && approvalEnabled()
+        ? 'Đã tạo đăng nhập Firebase. Đang gửi yêu cầu chờ chủ sở hữu duyệt…'
+        : 'Đã xác thực. Đang tải hồ sơ người chơi…');
       passwordInput.value = '';
     } catch (error) {
       fail(error);
