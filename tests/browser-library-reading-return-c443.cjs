@@ -78,7 +78,9 @@ async function main(){
   assert.equal(await page.locator('#floating-reading-bar').isVisible(),true,
    'tapping the reading paper reveals quick controls');
   assert.equal(await page.locator('#reader-quick-prev').isDisabled(),true);
-  assert.equal(await page.locator('#reader-quick-next').isEnabled(),true);
+  const hasNext=await page.evaluate(()=>novels[selectedNovelIndex].chapters.length>1);
+  assert.equal(await page.locator('#reader-quick-next').isEnabled(),hasNext,
+   'the next button matches the real chapter count of the Sandbox fixture');
   await page.locator('#reader-quick-settings').click();
   assert.equal(await page.locator('#reader-settings-popover').isVisible(),true,
    'quick settings opens the existing reader preference sheet');
