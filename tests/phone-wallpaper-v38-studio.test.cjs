@@ -33,6 +33,7 @@ test('home wallpaper focus can hide app tiles and restore the home navigation',(
  assert.match(js,/classList\.toggle\('is-wallpaper-focus'\)/);
  assert.match(css,/\.is-wallpaper-focus #phone-home-screen \.phone-app-grid/);
  assert.match(css,/\.is-wallpaper-focus #phone-home-screen \.dudu-v30-dock/);
+ assert.match(css,/\.dudu-v38-inspect-time\{[\s\S]*?font-size:11px/);
  assert.match(js,/enabled\?'‹':'◉'/);
  assert.match(html,/id="phone-home-screen"/);
 });

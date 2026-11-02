@@ -121,8 +121,8 @@ body.dudu-phone-v11 #cyber-phone .dudu-v38-inspect-art{
  box-shadow:0 14px 28px #0009,0 0 0 1px #d2b88c7d;
 }
 body.dudu-phone-v11 #cyber-phone .dudu-v38-inspect-time{
- display:block;position:absolute;top:9%;left:0;right:0;text-align:center;
- font-size:35px;letter-spacing:-.05em;font-weight:250;color:white;text-shadow:0 2px 12px #000a;
+ display:block;position:absolute;top:8px;left:11px;right:auto;text-align:left;
+ font-size:11px;letter-spacing:.02em;font-weight:750;color:#fff9ec;text-shadow:0 2px 8px #000b;
 }
 body.dudu-phone-v11 #cyber-phone .dudu-v38-inspect-dots{
  position:absolute;top:6px;left:0;right:0;text-align:center;font-size:8px;letter-spacing:.12em;
