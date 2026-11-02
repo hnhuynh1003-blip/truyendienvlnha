@@ -22,7 +22,7 @@ test('C4.44 upgrades the same AI garden painting across five real pond tiers',()
  const html=source('index.html');
  const ui=source('js/personal-arcade-ui-v1.js');
  assert.match(html,/arcade-c443-pond-ai\.css\?v=c444-1/);
- assert.match(html,/personal-arcade-ui-v1\.js\?v=c444-1/);
+ assert.match(html,/personal-arcade-ui-v1\.js\?v=c445-1/);
  assert.doesNotMatch(css,/moon-garden-wide\.webp/);
  assert.doesNotMatch(css,/pond-ornaments\.webp/);
  assert.match(css,/garden-pond\{[\s\S]*?left:3%;right:3%;/);

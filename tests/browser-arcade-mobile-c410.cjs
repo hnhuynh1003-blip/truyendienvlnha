@@ -300,8 +300,45 @@ async function main(){
   await page.locator('.arcade-sheet-overlay button[data-arcade-action="sell-ores"]').click();
   await page.locator('.arcade-sheet-close').click();
   await tab('garden').click();
-  await action('plant-0').click();
-  await action('water-0').click();
+  assert.equal(await page.locator('.garden-stage .garden-plot-area').count(),0,
+   'The AI lake is never covered by the planted beds');
+  await page.locator('.arcade-world-garden button[data-arcade-drawer="garden-seeds"]').click();
+  await page.locator('.arcade-sheet-overlay button[data-arcade-action="plant-0"]').click();
+  await page.locator('.arcade-sheet-overlay button[data-arcade-action="water-0"]').click();
+  assert.equal(await page.locator('.arcade-sheet-overlay .garden-plot').count(),2,
+   'The farm sheet keeps the active number of purchased beds');
+  const farmAtWidth=async width=>{
+   await page.setViewportSize({width,height:844});
+   return page.evaluate(()=>{
+    const sheet=document.querySelector('.arcade-sheet-overlay[data-sheet="garden-seeds"]');
+    const area=sheet.querySelector('.garden-plot-area');
+    const clones=[];
+    while(area.children.length<4){
+     const clone=area.firstElementChild.cloneNode(true);
+     area.appendChild(clone);clones.push(clone);
+    }
+    const rect=area.getBoundingClientRect();
+    const beds=[...area.children].map(el=>el.getBoundingClientRect());
+    const result={count:beds.length,inside:beds.every(b=>b.left>=rect.left-1&&b.right<=rect.right+1),
+     twoColumns:Math.abs(beds[0].top-beds[1].top)<2&&beds[2].top>beds[0].bottom,
+     noOverlap:beds[0].right<=beds[1].left&&beds[2].right<=beds[3].left,
+     actionHeight:sheet.querySelector('.garden-plot-label em').getBoundingClientRect().height,
+     spriteWidth:sheet.querySelector('.garden-crop-sprite').getBoundingClientRect().width,
+     sheetWithin:sheet.querySelector('.arcade-sheet').getBoundingClientRect().width<=innerWidth};
+    clones.forEach(el=>el.remove());
+    return result;
+   });
+  };
+  for(const width of [390,320]){
+   const layout=await farmAtWidth(width);
+   assert.equal(layout.count,4);
+   assert.ok(layout.inside&&layout.twoColumns&&layout.noOverlap&&layout.sheetWithin,
+    `Farm popup fits four beds in a compact 2x2 grid at ${width}px`);
+   assert.ok(layout.actionHeight>=26&&layout.spriteWidth<=120,
+    `Readable actions and compact flowers at ${width}px`);
+  }
+  await page.setViewportSize({width:390,height:844});
+  await page.locator('.arcade-sheet-close').click();
   const stages=await page.evaluate(()=>{
    const panel=document.querySelector('.arcade-world-garden');
    const pond=panel.querySelector('.garden-stage').getBoundingClientRect();
@@ -311,32 +348,6 @@ async function main(){
   });
   assert.equal(stages.controlsBelowPond,true,'Fishing control must not cover the pond');
   assert.equal(stages.tabbarInside,true);
-  const bedLayout=await page.evaluate(()=>{
-   const stage=document.querySelector('.garden-stage');
-   const area=stage.querySelector('.garden-plot-area');
-   const extras=[];
-   while(area.children.length<4){
-    const clone=area.firstElementChild.cloneNode(true);
-    area.appendChild(clone);extras.push(clone);
-   }
-   const expanded=stage.classList.contains('garden-expanded');
-   stage.classList.add('garden-expanded');
-   const pondTop=stage.querySelector('.garden-pond').getBoundingClientRect().top;
-   const plots=[...area.children].map(el=>el.getBoundingClientRect());
-   const spr=area.querySelector('.garden-crop-sprite').getBoundingClientRect();
-   const width=stage.getBoundingClientRect().width;
-   const result={count:plots.length,within:plots.every(rect=>rect.left>=stage.getBoundingClientRect().left-1&&rect.right<=stage.getBoundingClientRect().right+1),
-    clear:Math.max(...plots.map(rect=>rect.bottom))<pondTop-12,
-    sameRow:Math.max(...plots.map(rect=>rect.top))-Math.min(...plots.map(rect=>rect.top))<5,
-    spriteWidth:spr.width,stageWidth:width};
-   extras.forEach(el=>el.remove());
-   if(!expanded)stage.classList.remove('garden-expanded');
-   return result;
-  });
-  assert.equal(bedLayout.count,4);
-  assert.ok(bedLayout.within&&bedLayout.sameRow,'Four compact plots fit in a single row');
-  assert.ok(bedLayout.clear,'Flower beds leave the illustrated lake unobstructed');
-  assert.ok(bedLayout.spriteWidth<bedLayout.stageWidth*.25,'Plants are smaller than the water scene');
   const pondVisual=await page.evaluate(async()=>{
    const stage=document.querySelector('.garden-stage'),pond=stage.querySelector('.garden-pond');
    const width=pond.getBoundingClientRect().width/stage.getBoundingClientRect().width;

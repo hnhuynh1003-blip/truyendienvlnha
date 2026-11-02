@@ -1,0 +1,77 @@
+/* C4.45 — the lake is scenery and fishing only; crops live in a small farm sheet. */
+#personal-arcade-v1 .garden-lake-summary{
+ display:flex;align-items:center;justify-content:space-between;gap:8px;
+ margin:10px 0 0;padding:7px 10px;border:1px solid #547b74;border-radius:10px;
+ background:#1c3c42;color:#c5e5d8;font-size:11px;
+}
+#personal-arcade-v1 .garden-lake-summary b{color:#ffe3a4;font-size:12px}
+#personal-arcade-v1 .arcade-world-garden .arcade-quick-drawers{margin-top:8px}
+#personal-arcade-v1 .arcade-world-garden .arcade-drawer-trigger:first-child{
+ background:linear-gradient(145deg,#315b48,#254740);border-color:#8cbb91;
+}
+#personal-arcade-v1 .arcade-sheet-overlay[data-sheet="garden-seeds"]{
+ align-items:flex-end;padding:8px 5px 5px;
+}
+#personal-arcade-v1 .arcade-sheet-overlay[data-sheet="garden-seeds"] .arcade-sheet{
+ max-height:min(80dvh,690px);border-color:#8fb6a0;
+ background:linear-gradient(155deg,#283e3a,#162b32 75%);
+}
+#personal-arcade-v1 .arcade-sheet-overlay[data-sheet="garden-seeds"] .arcade-sheet-heading{
+ background:#27473e;border-color:#6b9685;
+}
+#personal-arcade-v1 .arcade-sheet-overlay[data-sheet="garden-seeds"] .arcade-sheet-body{gap:9px;padding:10px}
+#personal-arcade-v1 .arcade-sheet-overlay[data-sheet="garden-seeds"] .arcade-panel-heading h4{font-size:13px}
+#personal-arcade-v1 .garden-farm-workbench{
+ display:flex;flex-direction:column;gap:8px;flex:none;
+ border:1px solid #5b8c75;border-radius:13px;padding:9px;
+ background:radial-gradient(ellipse at 45% 22%,#46634c88,transparent 68%),
+ linear-gradient(160deg,#294c44,#1a343c);
+}
+#personal-arcade-v1 .garden-farm-workbench .garden-resources{margin:0;gap:7px}
+#personal-arcade-v1 .garden-farm-workbench .garden-plot-area{
+ position:relative;inset:auto;width:100%;display:grid;
+ grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 10px;
+ padding:5px 0;z-index:auto;
+}
+#personal-arcade-v1 .garden-farm-workbench .garden-plot{
+ box-sizing:border-box;height:143px;min-width:0;overflow:hidden;
+ border:1px solid #648777;border-radius:11px;
+ background:radial-gradient(ellipse at 45% 63%,#465741 0%,#284b40 53%,#203c3c 100%);
+ filter:none!important;
+}
+#personal-arcade-v1 .garden-farm-workbench .garden-plot:focus-visible{
+ outline:2px solid #ffe5aa;outline-offset:2px;
+}
+#personal-arcade-v1 .garden-farm-workbench .garden-plot .garden-crop-sprite{
+ width:min(85%,115px);max-width:115px;bottom:40px;
+}
+#personal-arcade-v1 .garden-farm-workbench .garden-plot.empty .garden-soil{
+ bottom:60px;height:24px;left:11%;width:78%;
+}
+#personal-arcade-v1 .garden-farm-workbench .garden-plot-label{
+ display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+ bottom:5px;left:4px;right:4px;gap:2px;z-index:8;
+}
+#personal-arcade-v1 .garden-farm-workbench .garden-plot-label b{
+ font-size:10px;line-height:1.2;letter-spacing:0;color:#fff3d9;
+}
+#personal-arcade-v1 .garden-farm-workbench .garden-plot-label small{
+ font-size:9px;line-height:1.15;white-space:nowrap;
+}
+#personal-arcade-v1 .garden-farm-workbench .garden-plot-label em{
+ box-sizing:border-box;min-height:32px;min-width:84px;max-width:100%;
+ display:grid;place-items:center;padding:5px 8px;font-size:11px;
+ background:#285d52;border:1px solid #a6d0ae;border-radius:9px;
+}
+#personal-arcade-v1 .garden-farm-workbench .garden-quick-actions{margin:2px 0 0}
+#personal-arcade-v1 .garden-farm-workbench .garden-quick-actions .arcade-button{
+ min-height:42px;font-size:10px;
+}
+@media(max-width:360px){
+ #personal-arcade-v1 .garden-lake-summary{font-size:10px;padding:7px}
+ #personal-arcade-v1 .garden-farm-workbench{padding:7px}
+ #personal-arcade-v1 .garden-farm-workbench .garden-plot-area{gap:6px}
+ #personal-arcade-v1 .garden-farm-workbench .garden-plot{height:137px}
+ #personal-arcade-v1 .garden-farm-workbench .garden-plot .garden-crop-sprite{width:84%;bottom:40px}
+ #personal-arcade-v1 .garden-farm-workbench .garden-plot-label b{font-size:9px}
+}
