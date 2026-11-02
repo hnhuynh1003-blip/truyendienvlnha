@@ -548,21 +548,22 @@
     </div>
     <div class="arcade-control-panel">
       <div class="garden-fishing-status" role="status" aria-live="polite">${reel?
-       reelFlash==='hit'?'✦ ĐÚNG NHỊP! KÉO TIẾP':reelFlash==='miss'?'⚠ TRƯỢT NHỊP · DÂY CĂNG!':'✦ CÁ CẮN! GIỮ NHỊP KÉO':biting?'✦ CÁ CẮN CÂU!':waiting?
+       reelFlash==='perfect'?'✦ KÉO CHUẨN! DÂY ÊM HƠN':reelFlash==='hit'?'✦ ĐÚNG NHỊP! KÉO TIẾP':reelFlash==='miss'?'⚠ TRƯỢT NHỊP · DÂY CĂNG!':'✦ CÁ CẮN! GIỮ NHỊP KÉO':biting?'✦ CÁ CẮN CÂU!':waiting?
        `Đang chờ… <span data-arcade-until="${line.biteAt}">${countdown(line.biteAt-time)}</span>`:
        '✧ HỒ SƯƠNG YÊN Ả'}</div>
       ${!line?`<div class="garden-weather-whisper">◈ ${weather.hint}${weather.night?' · Cá đêm có thể xuất hiện':''}</div>`:''}
       ${reel?`<div class="garden-reel-challenge reel-tier-${reelRules.tier} reel-phase-${reelRules.phase} ${reelFlash?'reel-'+reelFlash:''}" role="group" aria-label="Canh nhịp kéo ${reelRules.label.toLowerCase()}, pha ${reelRules.phase} trên ${reelRules.phaseCount}">
-       <div class="garden-reel-heading"><span>✧ ${reelRules.label.toUpperCase()}</span><span>${reel.hits}/${reelRules.required} NHỊP</span></div>
+       <div class="garden-reel-heading"><span>✧ ${reelRules.label.toUpperCase()}</span><span aria-label="${reel.hits} trên ${reelRules.required} nhịp, ${reel.perfects} kéo chuẩn">${reel.hits}/${reelRules.required} NHỊP · ✦${reel.perfects}</span></div>
        <div class="garden-reel-phases" aria-label="${reelRules.phaseName}, pha ${reelRules.phase} trên ${reelRules.phaseCount}">
         ${Array.from({length:reelRules.phaseCount},(_,i)=>`<span class="${i+1<reelRules.phase?'is-cleared':i+1===reelRules.phase?'is-active':''}"></span>`).join('')}
         <b>${reelRules.phaseName} · ${reelRules.phaseBeat+1}/${reelRules.phaseRequired}</b>
        </div>
-       <div class="garden-reel-track" role="img" aria-label="Phao chạy qua vùng sáng: chạm Kéo dây khi phao nằm trong vùng sáng">
+       <div class="garden-reel-track" role="img" aria-label="Phao vào vùng sáng để kéo; kéo đúng tâm vàng liên tiếp giúp giảm căng dây">
         <span class="garden-reel-safe" style="left:${reelRules.left}%;width:${reelRules.width}%"></span>
+        <span class="garden-reel-perfect" style="left:${reelRules.perfectLeft}%;width:${reelRules.perfectWidth}%" aria-hidden="true"></span>
         <span class="garden-reel-marker" style="--reel-speed:${reelRules.travelSeconds}s;--reel-delay:-${reelRules.offsetSeconds}s;--reel-direction:${reelRules.reverse?'alternate-reverse':'alternate'};--reel-rest:${reelRules.left+reelRules.width/2}%"><i></i></span>
        </div>
-       <div class="garden-reel-foot"><span>${reelFlash==='hit'?'✦ ĐÃ GIỮ ĐƯỢC CÁ':reelFlash==='miss'?'✧ THẢ LỎNG, CANH LẠI':'CHẠM KHI PHAO VÀO VÙNG SÁNG'}</span>
+       <div class="garden-reel-foot"><span>${reelFlash==='perfect'?(reel.lastRecovery?'✦ GIẢM 1 CĂNG DÂY':'✦ TÂM VÀNG! +1 CHUẨN'):reelFlash==='hit'?'✦ ĐÃ GIỮ ĐƯỢC CÁ':reelFlash==='miss'?'✧ THẢ LỎNG, CANH LẠI':'✦ TÂM VÀNG = KÉO CHUẨN'}</span>
         <span class="garden-reel-tension">CĂNG DÂY ${reel.misses}/${reelRules.maxMisses}</span></div>
       </div>`:''}
       <div class="garden-fishing-controls ${!line&&g.moonBait?'garden-has-premium':''}" role="group" aria-label="Điều khiển câu cá">
@@ -666,7 +667,7 @@
          ${button('＋ 6 Xu','buy-moon-bait','market',s.coins<60||g.moonBait>9998)}</div>
        </div>
        <div class="garden-tackle-rod"><span class="garden-tackle-rod-art" aria-hidden="true"></span>
-        <div><b>Cần câu Hồ Trăng</b><small>Cấp ${g.rod}/5 · dễ kéo cá hơn, Xu thưởng cao hơn</small></div>
+        <div><b>Cần câu Hồ Trăng</b><small>${g.rod>=4?'Cấp '+g.rod+'/5 · thêm 1 lần chịu lỗi cá khó':'Cấp '+g.rod+'/5 · cấp 4 tăng chịu lỗi cá khó'}</small></div>
         ${button(core.upgradeCost(s,'rod')===null?'Tối đa':'＋ '+fmt(core.upgradeCost(s,'rod'))+' Xu','rod','upgrade',core.upgradeCost(s,'rod')===null||s.coins<core.upgradeCost(s,'rod'))}</div>
        <div class="garden-tackle-chance">${g.pondTier===1?'◈ Cá hiếm mở từ hồ cấp 2':`◈ Gặp cá hiếm: <b>${fishRareChance}%</b> mồi thường <span>→</span> <b>${Math.min(43,fishRareChance+18)}%</b> mồi xịn`}</div>
        <div class="garden-tackle-subheading">NÂNG CẤP KHU VƯỜN</div>
@@ -838,12 +839,15 @@
   const challenge=currentReelFight(line,time),meter=host()?.querySelector('.garden-reel-challenge');
   const marker=meter?.querySelector('.garden-reel-marker');
   const safe=meter?.querySelector('.garden-reel-safe');
-  if(!challenge||!marker||!safe)return false;
+  const perfect=meter?.querySelector('.garden-reel-perfect');
+  if(!challenge||!marker||!safe||!perfect)return false;
   // Judge the *visible* moving float, not a separate timer that could drift
   // from its animation on slower Android phones.
   const m=marker.getBoundingClientRect(),target=safe.getBoundingClientRect();
   const center=m.left+m.width/2,accurate=center>=target.left+2&&center<=target.right-2;
-  const result=fishing.pulse(challenge,accurate,
+  const inner=perfect.getBoundingClientRect();
+  const grade=!accurate?'miss':center>=inner.left+1&&center<=inner.right-1?'perfect':'hit';
+  const result=fishing.pulse(challenge,grade,
    {...line,essenceLevel:state.garden.fishEssenceLevel},core.FISH_SPECIES[line.fishId],time);
   if(!result.ok)return false;
   reelFight=result.fight;

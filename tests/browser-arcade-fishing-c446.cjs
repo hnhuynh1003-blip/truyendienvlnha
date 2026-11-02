@@ -65,12 +65,14 @@ async function main(){
     const host=document.querySelector('#personal-arcade-v1');
     const track=host.querySelector('.garden-reel-track').getBoundingClientRect();
     const safe=host.querySelector('.garden-reel-safe').getBoundingClientRect();
+    const perfect=host.querySelector('.garden-reel-perfect').getBoundingClientRect();
     const button=host.querySelector('button[data-arcade-action="reel-pulse"]');
     const pond=host.querySelector('.garden-stage');
     const scroll=host.querySelector('.arcade-scroll');
     const marker=host.querySelector('.garden-reel-marker');
     return {track:{left:track.left,right:track.right,width:track.width},
      safe:{left:safe.left,right:safe.right,width:safe.width},
+     perfect:{left:perfect.left,right:perfect.right,width:perfect.width},
      buttonWidth:button.getBoundingClientRect().width,
      overflow:scroll.scrollWidth-scroll.clientWidth,
      phaseCount:host.querySelectorAll('.garden-reel-phases span').length,
@@ -85,6 +87,10 @@ async function main(){
     `Entire skill track remains inside ${width}px mobile viewport`);
    assert.ok(view.safe.left>=view.track.left&&view.safe.right<=view.track.right);
    assert.ok(view.safe.width>=20,'Late phases remain visible and hittable');
+   assert.ok(view.perfect.left>=view.safe.left&&view.perfect.right<=view.safe.right,
+    'C4.51 precision zone stays inside the safe band');
+   assert.ok(view.perfect.width>=8&&view.perfect.width<view.safe.width,
+    `C4.51 center target is visible and harder at ${width}px`);
    assert.ok(view.buttonWidth>=180,'Keep a large thumb control');
    assert.ok(view.overflow<=2,'No horizontal scroll in Arcade');
    assert.equal(view.writes,0);
@@ -97,10 +103,10 @@ async function main(){
    const container=document.querySelector('#personal-arcade-v1');
    try{
     for(let beat=0;beat<7;beat++){
-     const safe=container.querySelector('.garden-reel-safe');
+     const perfect=container.querySelector('.garden-reel-perfect');
      const track=container.querySelector('.garden-reel-track');
      const marker=container.querySelector('.garden-reel-marker');
-     const s=safe.getBoundingClientRect(),t=track.getBoundingClientRect();
+     const s=perfect.getBoundingClientRect(),t=track.getBoundingClientRect();
      marker.style.animation='none';
      marker.style.left=((s.left+s.right)/2-t.left)/t.width*100+'%';
      container.querySelector('button[data-arcade-action="reel-pulse"]').click();
@@ -116,7 +122,7 @@ async function main(){
   assert.equal(caught.garden.fishBest.reed,28,'Old personal records are preserved');
   assert.equal(caught.coins,2470,'Rod-3 legendary payout is issued exactly once');
   assert.equal(await page.locator('#personal-arcade-v1 button[data-arcade-action="reel-pulse"]').count(),0);
-  console.log('C4.46 mobile fishing: 320/375/390/430px, 3 phases, catch and save ✓');
+  console.log('C4.51 mobile fishing: 320/375/390/430px, precision bands, 3 phases, catch and save ✓');
  }finally{
   if(browser)await browser.close();
   await new Promise(resolve=>server.close(resolve));

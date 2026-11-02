@@ -1,4 +1,4 @@
-/* C4.46 — phased fishing, built on the original C4.40A timing challenge.
+/* C4.51 — phased fishing with precision streaks, built on C4.46.
  * The challenge has no wallet access and does not modify saved game data.
  * Only the existing Arcade core may award a caught fish.
  */
@@ -38,29 +38,45 @@
    (String(line?.fishId||'').length*11);
   const center=26+(seed%49);
   const travelSeconds=Math.max(1.04,tier.speed-.09*(phase-1)+.09*(rod-1)+(premium?0.07:0));
+  const left=Math.max(4,Math.min(96-width,center-width/2));
+  const perfectWidth=Math.max(5,Math.round(width*.42));
   return {required:tier.required,tier:tier.key,label:tier.label,
-   width,left:Math.max(4,Math.min(96-width,center-width/2)),
+   width,left,perfectWidth,perfectLeft:left+(width-perfectWidth)/2,
    travelSeconds,phase,phaseCount:tier.phases.length,
    phaseName:PHASE_NAMES[Math.min(phase-1,2)],
    phaseBeat:beat-(tier.phases[phase-2]||0),
    phaseRequired:tier.phases[phase-1]-(tier.phases[phase-2]||0),
    offsetSeconds:Math.round(travelSeconds*(.13+(seed%7)*.07)*100)/100,
    reverse:(seed%2)===1,
-   maxMisses:MAX_MISSES+(premium&&tier.required>=4?1:0)};
+   maxMisses:MAX_MISSES+(premium&&tier.required>=4?1:0)+
+    (rod>=4&&tier.required>=4?1:0)};
  }
- function begin(line){return {key:key(line),hits:0,misses:0,last:'',lastAt:0,done:false};}
- function pulse(fight,accurate,line,fish,time=Date.now()){
+ function begin(line){return {key:key(line),hits:0,misses:0,perfects:0,chain:0,
+  recovered:0,lastRecovery:false,last:'',lastAt:0,done:false};}
+ function pulse(fight,accuracy,line,fish,time=Date.now()){
   if(!fight||fight.key!==key(line))return {ok:false,reason:'stale'};
   if(!Number.isSafeInteger(time)||time<0)return {ok:false,reason:'invalid-time'};
   if(fight.done)return {ok:false,reason:'finished'};
   if(fight.lastAt&&time-fight.lastAt<PULSE_COOLDOWN_MS)
    return {ok:false,reason:'cooldown'};
+  // Boolean input remains compatible with all pre-C4.51 saved-line tests.
+  if(![true,false,'perfect','hit','miss'].includes(accuracy))
+   return {ok:false,reason:'invalid-accuracy'};
+  const perfect=accuracy==='perfect',accurate=perfect||accuracy===true||accuracy==='hit';
   const requirement=rules(line,fish,fight.hits);
-  const next={...fight,last:accurate?'hit':'miss',lastAt:time};
-  if(accurate)next.hits++;
-  else next.misses++;
+  const next={...fight,last:perfect?'perfect':accurate?'hit':'miss',lastAt:time,lastRecovery:false};
+  if(accurate){
+   next.hits++;
+   if(perfect){
+    next.perfects++;next.chain=Math.min(2,next.chain+1);
+    // Two consecutive center hits let a skilled player recover ONE mistake.
+    // The streak is spent only when it actually lowers tension.
+    if(next.chain>=2&&next.misses>0){next.misses--;next.chain=0;
+     next.recovered++;next.lastRecovery=true;}
+   }else next.chain=0;
+  }else{next.misses++;next.chain=0;}
   const result=next.hits>=requirement.required?'caught':
-   next.misses>=requirement.maxMisses?'escaped':accurate?'hit':'miss';
+   next.misses>=requirement.maxMisses?'escaped':perfect?'perfect':accurate?'hit':'miss';
   next.done=result==='caught'||result==='escaped';
   return {ok:true,fight:next,result};
  }
