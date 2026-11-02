@@ -188,6 +188,18 @@ body.dudu-site-v60.theme-warm,body.dudu-site-v60.theme-oled {background:var(--bg
 
 /* DUDU World Atlas V64 — mobile-first compact portal. No explanatory cards. */
 #d60-worlds{--w64-muted:#9aa6c1;min-width:0}
+#d60-worlds .d60-world-pause{display:flex;flex-direction:column;align-items:center;justify-content:center;
+ gap:12px;min-height:340px;margin:20px auto;padding:36px 20px;text-align:center;
+ border:1px solid #9c88b45e;border-radius:22px;max-width:560px;
+ background:radial-gradient(circle at 50% 25%,#79659e2c,transparent 55%),linear-gradient(145deg,#232438,#141c2d);
+ box-shadow:inset 0 1px #efe5ff24,0 16px 40px #060a185c}
+#d60-worlds .d60-world-pause-glyph{display:grid;place-items:center;width:76px;height:76px;
+ border:1px solid #d3bceb7e;border-radius:50%;font:700 46px/1 Georgia,serif;color:#d4c1ed;
+ background:radial-gradient(circle,#67517a85,#24243a);box-shadow:0 0 28px #9c75c133}
+#d60-worlds .d60-world-pause-kicker{font:800 10px/1.4 ui-monospace,monospace;letter-spacing:.14em;color:#baa9d4}
+#d60-worlds .d60-world-pause h2{font:800 clamp(22px,4vw,30px)/1.2 Georgia,serif;color:#f7e8ff;margin:0}
+#d60-worlds .d60-world-pause p{max-width:360px;color:#b8b9d1;font-size:13px;line-height:1.7;margin:0 0 5px}
+#d60-worlds .d60-world-pause .d60-btn{min-height:40px;padding:9px 19px}
 #d60-worlds .d64-atlas-heading{display:flex;justify-content:space-between;gap:12px;
  align-items:flex-end;padding:3px 0 13px;border-bottom:1px solid rgba(182,175,219,.15)}
 #d60-worlds .d64-atlas-kicker{display:block;font:700 9px/1.2 ui-monospace,Consolas,monospace;

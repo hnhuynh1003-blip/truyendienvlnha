@@ -6,6 +6,9 @@
  const routes={home:'#/home',library:'#/library',worlds:'#/worlds',shelf:'#/shelf',author:'#/author'};
  const labels={home:'Trang chủ',library:'Thư viện',worlds:'Thế giới',shelf:'Tủ sách',author:'Góc tác giả'};
  const icons={home:'⌂',library:'▤',worlds:'✧',shelf:'▧'};
+ // C4.46c: pause world authoring/playtests without deleting drafts or game data.
+ // Reopening Vạn Giới requires a separate, approved development round.
+ const WORLDS_PAUSED=true;
  const oldGoHome=window.goHome,oldOpenCover=window.openCover,oldReadChapter=window.readChapter,oldRenderHome=window.renderHome;
  let current='home',refreshPending=false;
  function element(tag,cls,value){
@@ -175,6 +178,16 @@
    const root=id('d60-worlds-list');if(!root)return;
    const wasOpen=!!root.querySelector('details.d64-unknown')?.open;
    root.replaceChildren();
+   if(WORLDS_PAUSED){
+     const seal=element('section','d60-world-pause');
+     seal.append(element('span','d60-world-pause-glyph','◇'),
+       element('span','d60-world-pause-kicker','WORLD ATLAS / ĐANG TẠM DỪNG'),
+       element('h2','','Vạn Giới tạm niêm phong'),
+       element('p','','Các phó bản và bàn viết đang tạm khóa. Bản thảo và dữ liệu cũ vẫn được giữ nguyên.'));
+     seal.append(button('Về Thư viện',()=>navigate('library'),'d60-btn'));
+     root.append(seal);
+     return;
+   }
    const taxonomy=window.DuduWorldTaxonomyV66;
    if(!taxonomy||!Array.isArray(taxonomy.genres)){
      root.append(element('p','d60-empty','Không thể tải bản đồ thể loại.'));
@@ -253,7 +266,9 @@
  }
  function isAuthor(){return typeof canEditStories==='function'&&canEditStories();}
  function fillAuthor(){
-   document.querySelectorAll('[data-d60-author]').forEach(n=>{n.hidden=!isAuthor();});
+   document.querySelectorAll('[data-d60-author]').forEach(n=>{
+     n.hidden=!isAuthor()||(WORLDS_PAUSED&&n.id==='d60-world-creator-launch');
+   });
    const root=id('d60-author-actions');if(!root)return;root.replaceChildren();
    if(!isAuthor()){
      root.append(element('div','d60-empty','Bạn chưa có quyền quản lý tác phẩm. Đăng nhập bằng tài khoản đã được cấp quyền tác giả.'));return;
@@ -261,8 +276,8 @@
    root.append(button('＋ Đăng / nhập truyện',()=>{
       if(!isAuthor())return;
       if(!window.DuduLibraryIntakeV1?.open?.())openStoryModal();
-     }),
-     button('◇ Khung kịch bản',()=>window.DuduWorldUXV66?.openAuthorStudio(),'d60-btn secondary'));
+     }));
+   if(!WORLDS_PAUSED)root.append(button('◇ Khung kịch bản',()=>window.DuduWorldUXV66?.openAuthorStudio(),'d60-btn secondary'));
    if(window.duduEpubManagementL2D2?.enabled){
      root.append(button('Tác phẩm EPUB đã gỡ',()=>{
        if(!isAuthor())return;
@@ -328,11 +343,11 @@
    const atlasTitles=contextHeading('Thế giới','WORLD ATLAS');
    atlasTitles.classList.add('d64-atlas-titleblock');
    atlasHeading.append(atlasTitles);
-   const seal=element('span','d64-atlas-seal','Khế ước · F/E');
+   const seal=element('span','d64-atlas-seal',WORLDS_PAUSED?'Tạm khóa':'Khế ước · F/E');
    atlasHeading.append(seal);
    worlds.append(atlasHeading);
    const createWorld=button('✎ Tạo / nhập thế giới',()=>window.DuduWorldCreator?.open?.());
-   createWorld.id='d60-world-creator-launch';createWorld.dataset.d60Author='1';createWorld.hidden=!isAuthor();
+   createWorld.id='d60-world-creator-launch';createWorld.dataset.d60Author='1';createWorld.hidden=WORLDS_PAUSED||!isAuthor();
    const creatorActions=element('div','d60-world-creator-actions');creatorActions.append(createWorld);worlds.append(creatorActions);
    const worldList=element('div','');worldList.id='d60-worlds-list';worlds.append(worldList);
    const shelf=element('section','d60-page');shelf.id='d60-shelf';
@@ -358,7 +373,7 @@
      // Unknown hashes may be used by legacy reader flows; do not overwrite them.
    });
  }
- window.DuduSiteV60={navigate,refresh,get page(){return current;}};
+ window.DuduSiteV60={navigate,refresh,get page(){return current;},get worldsPaused(){return WORLDS_PAUSED;}};
  window.renderHome=function(){const v=oldRenderHome.apply(this,arguments);refresh();return v;};
  window.goHome=function(){const v=oldGoHome.apply(this,arguments);enterLegacy();id('home-view').style.display='block';return v;};
  window.openCover=function(){

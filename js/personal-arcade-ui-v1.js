@@ -668,7 +668,7 @@
     const overlay=root.document.createElement('div');
     overlay.className='arcade-sheet-overlay';overlay.dataset.sheet=drawerOpen;
     overlay.innerHTML=`<section class="arcade-sheet" role="dialog" aria-modal="true" aria-label="${drawerTitles[drawerOpen]}">
-      <header class="arcade-sheet-heading">${drawerOpen==='garden-seeds'?'<button type="button" class="garden-sheet-back" data-arcade-drawer="close" aria-label="Quay về bốn trò chơi">← 4 GAME</button>':''}<div><small>✦ ARCADE</small><h3>${drawerTitles[drawerOpen]}</h3></div>
+      <header class="arcade-sheet-heading">${drawerOpen==='garden-seeds'?'<button type="button" class="garden-sheet-back" data-arcade-drawer="close" aria-label="Quay về bốn trò chơi" title="Quay lại">‹</button>':''}<div><small>✦ ARCADE</small><h3>${drawerTitles[drawerOpen]}</h3></div>
        <div class="arcade-sheet-controls"><button type="button" class="arcade-sheet-honor" data-arcade-honor="${tab}"
         aria-label="Xem thử thách ${modeLabels[tab]}" title="Thử thách & danh hiệu">✦</button>
         <button type="button" class="arcade-sheet-close" data-arcade-drawer="close" aria-label="Đóng cửa sổ">✕</button></div></header>

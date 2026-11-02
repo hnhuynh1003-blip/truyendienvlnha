@@ -1,0 +1,53 @@
+name: DUDU Van Gioi archived checks (manual only)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  contracts:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - name: Offline authoring contracts (no writes)
+        run: |
+          python3 -m pip install -r tools/vangioi/requirements.txt
+          python3 -m unittest discover -s contracts/vangioi/source-v0.1 -p 'test_*.py' -v
+          python3 -m unittest discover -s tools/vangioi -p 'test_*.py' -v
+  playtests:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Build and verify archived world demos (no deployment)
+        run: |
+          npm install --prefix cloudflare --no-audit --no-fund
+          node tools/vangioi/build-online-playtest.mjs
+          git diff --exit-code -- playtests/ben-suong/app.js playtests/ben-suong/demo-content.json
+          node tools/vangioi/build-tang-may-author-playtest.mjs
+          git diff --exit-code -- playtests/tang-may-9/app.js playtests/tang-may-9/author-content.json
+          node tools/vangioi/build-erro-modern-author-playtest.mjs
+          git diff --exit-code -- playtests/he-thong-erro/app.js playtests/he-thong-erro/author-content.json
+          npm test --prefix cloudflare
+          npm run build --prefix cloudflare
+  browser:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Install test browser
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install chromium --with-deps
+      - name: Archived world authoring and playtest browser acceptance
+        run: |
+          npm install --prefix cloudflare --ignore-scripts --no-audit --no-fund
+          node tests/browser-vangioi-creator.cjs
+          node tests/browser-quan-dao-items.cjs
+          node tests/browser-vangioi-author-roleplay.cjs
+          node tests/browser-vangioi-online-playtest.cjs
+          node tests/browser-vangioi-tang-may-author.cjs
+          node tests/browser-vangioi-erro-author.cjs

@@ -32,11 +32,8 @@ jobs:
           node --check cloudflare/src/index.mjs
           node --check cloudflare/src/auth.mjs
           node --check cloudflare/src/quota.mjs
-      - name: Validate Van Gioi offline authoring contracts (no runtime writes)
-        run: |
-          python3 -m pip install -r tools/vangioi/requirements.txt
-          python3 -m unittest discover -s contracts/vangioi/source-v0.1 -p 'test_*.py' -v
-          python3 -m unittest discover -s tools/vangioi -p 'test_*.py' -v
+      - name: NPC AI request and Gemini regression (without paused Van Gioi)
+        run: node --test cloudflare/tests/npc-*.test.mjs cloudflare/tests/gemini-*.test.mjs
       - name: Parse V52 manual Firebase deploy script (never execute)
         shell: pwsh
         run: |
@@ -44,17 +41,6 @@ jobs:
           $parseErrors = $null
           [System.Management.Automation.Language.Parser]::ParseFile('scripts/deploy-economy-v52.ps1', [ref]$tokens, [ref]$parseErrors) | Out-Null
           if ($parseErrors.Count -gt 0) { $parseErrors | ForEach-Object { Write-Error $_.ToString() }; exit 1 }
-      - name: Test and bundle Cloudflare Worker without deploying
-        run: |
-          npm install --prefix cloudflare --no-audit --no-fund
-          node tools/vangioi/build-online-playtest.mjs
-          git diff --exit-code -- playtests/ben-suong/app.js playtests/ben-suong/demo-content.json
-          node tools/vangioi/build-tang-may-author-playtest.mjs
-          git diff --exit-code -- playtests/tang-may-9/app.js playtests/tang-may-9/author-content.json
-          node tools/vangioi/build-erro-modern-author-playtest.mjs
-          git diff --exit-code -- playtests/he-thong-erro/app.js playtests/he-thong-erro/author-content.json
-          npm test --prefix cloudflare
-          npm run build --prefix cloudflare
   browser:
     runs-on: ubuntu-24.04
     steps:
@@ -74,15 +60,6 @@ jobs:
         run: |
           node tests/browser-main-system-v71.cjs
           node tests/browser-auth-private.cjs
-          node tests/browser-vangioi-creator.cjs
-          node tests/browser-quan-dao-items.cjs
-      - name: G5C-P6 offline author/story-identity browser acceptance (no external writes)
-        run: |
-          npm install --prefix cloudflare --ignore-scripts --no-audit --no-fund
-          node tests/browser-vangioi-author-roleplay.cjs
-          node tests/browser-vangioi-online-playtest.cjs
-          node tests/browser-vangioi-tang-may-author.cjs
-          node tests/browser-vangioi-erro-author.cjs
       - name: C4.11 mobile Arcade journey and Honor reveal (Sandbox, no external writes)
         run: node tests/browser-arcade-mobile-c410.cjs
       - name: C4.46 phased fishing on four mobile widths (Sandbox, no external writes)

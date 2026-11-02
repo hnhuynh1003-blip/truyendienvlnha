@@ -89,6 +89,7 @@ async function main(){
   assert.ok(bounds.hasHero);
   assert.match(bounds.picture,/garden-growth-atlas\.webp/);
   assert.equal(bounds.writes,0);
+  assert.equal((await page.locator('#personal-arcade-v1 .garden-sheet-back').innerText()).trim(),'‹');
 
   await page.locator('#personal-arcade-v1 .garden-sheet-back').click();
   assert.equal(await page.locator('#personal-arcade-v1 .arcade-sheet-overlay').count(),0);
@@ -112,7 +113,8 @@ async function main(){
     const sheet=root.querySelector('.arcade-sheet').getBoundingClientRect();
     const plots=[...body.querySelectorAll('.garden-farm-workbench .garden-plot')]
      .map(el=>el.getBoundingClientRect());
-    return {header,back,sheet,plots,overflow:body.scrollWidth-body.clientWidth,
+    const seeds=[...body.querySelectorAll('.garden-seed')].map(el=>el.getBoundingClientRect());
+    return {header,back,sheet,plots,seeds,overflow:body.scrollWidth-body.clientWidth,
      labels:[...body.querySelectorAll('.garden-plot-label b')].map(el=>el.textContent),
      seedCount:body.querySelectorAll('.garden-seed').length};
    });
@@ -122,18 +124,25 @@ async function main(){
    assert.ok(layout.overflow<=3,`Farm sheet should not scroll sideways at ${width}px`);
    assert.equal(layout.plots.length,4);
    assert.equal(layout.seedCount,3);
+   assert.ok(layout.seeds.every(rect=>rect.height<=69),`Seed cards remain compact at ${width}px`);
    assert.ok(layout.plots[0].right<=layout.plots[1].left+1,'Beds in one row do not overlap');
    assert.ok(layout.plots[0].bottom<=layout.plots[2].top+1,'Rows do not overlap');
    assert.ok(layout.labels.includes('Hoa sương')&&layout.labels.includes('Hoa nguyệt'));
    await page.locator('#personal-arcade-v1 .garden-sheet-back').click();
   }
+  await page.evaluate(()=>window.DuduSiteV60.navigate('worlds'));
+  await page.locator('#d60-worlds-list .d60-world-pause').waitFor();
+  assert.match(await page.locator('#d60-worlds-list').innerText(),/Vạn Giới tạm niêm phong/);
+  assert.equal(await page.locator('#d60-worlds-list a[href*="playtests/"]').count(),0);
+  assert.equal(await page.locator('#d60-worlds-list a[href*="dudu-pilot"]').count(),0);
+  assert.equal(await page.evaluate(()=>window.DuduSiteV60.worldsPaused),true);
   const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem(
    'dudu-personal-arcade:v1:'+encodeURIComponent('sandbox:c446b-farmer'))));
   assert.equal(saved.coins,1234);
   assert.equal(saved.garden.harvests,35);
   assert.equal(saved.garden.plots,4);
   assert.equal(saved.garden.fishAlbum.reed,4);
-  console.log('C4.46b greenhouse: desktop Back + mobile 320/375/390/430px ✓');
+  console.log('C4.46c greenhouse compact seeds, icon Back, archived worlds + four mobile widths ✓');
  }finally{
   if(browser)await browser.close();
   await new Promise(resolve=>server.close(resolve));
