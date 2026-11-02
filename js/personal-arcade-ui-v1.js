@@ -480,6 +480,8 @@
   const nextUnlocks=nextPondTier?core.pondUnlocks(nextPondTier):[];
   const nextNames=nextUnlocks.map(id=>core.FISH_SPECIES[id].name).join(' · ');
   const fishRareChance=g.pondTier===1?0:Math.round((1-Math.max(.75,.94-.035*(g.rod-1)-.02*(g.pondTier-1)))*100);
+  const cropMinutes=id=>(core.cropGrowTime(g,id)/60000).toLocaleString('vi-VN',{maximumFractionDigits:1});
+  const soilCost=core.gardenSoilCost(g);
   const fishSetsComplete=g.fishSetsClaimed.length;
   const fishRecords=Object.entries(g.fishBest).filter(([,cm])=>cm>0)
    .sort((a,b)=>b[1]-a[1]).slice(0,3);
@@ -488,7 +490,7 @@
   const bed=(b,index)=>{
    const mature=b.status==='growing'&&time>=b.readyAt;
    const growthStage=b.status==='growing'?Math.max(0,Math.min(3,
-    Math.floor((1-Math.max(0,b.readyAt-time)/core.CROPS[b.crop].grow)*3))):0;
+    Math.floor((1-Math.max(0,b.readyAt-time)/core.cropGrowTime(g,b.crop))*3))):0;
    const action=b.status==='empty'?'plant-'+index:b.status==='dry'?'water-'+index:'harvest-'+index;
    const text=b.status==='empty'?'＋ Gieo':b.status==='dry'?'💧 Tưới':mature?'✦ Thu':'Đang lớn';
    const caption=b.status==='empty'?'Đất trống':b.status==='dry'?'Thiếu nước':mature?'Đã chín':countdown(b.readyAt-time);
@@ -577,7 +579,7 @@
       <div class="garden-farm-hero" data-arcade-panel="garden-seeds"><span>✧ MOONLIT GARDEN</span><strong>Mùa nở hoa</strong><small>Gieo mầm · Chăm cây · Thu hoạch</small></div>
       <div class="arcade-panel-heading garden-seed-heading" data-arcade-panel="garden-seeds"><div><span class="arcade-eyebrow">HẠT GIỐNG</span><h4>Chọn để gieo</h4></div></div>
       <div class="garden-seed-list" data-arcade-panel="garden-seeds">${Object.entries(core.CROPS).map(([id,crop])=>`<button type="button" class="garden-seed ${g.crop===id?'selected':''}" data-arcade-action="crop-${id}" ${core.cropUnlocked(g,id)?'':'disabled'} aria-pressed="${g.crop===id}">
-       <span class="garden-seed-mark" aria-hidden="true">${id==='bloom'?'✿':id==='mint'?'❧':'☾'}</span><b>${crop.name}</b><small>${core.cropUnlocked(g,id)?`${crop.grow/60000} phút · +${fmt(crop.value)} Xu`:`Mở sau ${id==='mint'?10:30} lần thu`}</small></button>`).join('')}</div>
+       <span class="garden-seed-mark" aria-hidden="true">${id==='bloom'?'✿':id==='mint'?'❧':'☾'}</span><b>${crop.name}</b><small>${core.cropUnlocked(g,id)?`${cropMinutes(id)} phút · +${fmt(crop.value)} Xu`:`${id==='mint'?'Hoa sương '+Math.min(4,g.cropHarvested.bloom):'Bạc hà '+Math.min(4,g.cropHarvested.mint)}/4`}</small></button>`).join('')}</div>
       <div class="garden-farm-workbench" data-arcade-panel="garden-seeds">
        <div class="garden-resources">${hud('NƯỚC','💧 '+g.water+'/'+g.waterCap,'Hồi mỗi 15 phút')}
         ${hud('HẠT GIỐNG','✿ '+g.seeds,'Trong túi hạt')}</div>
@@ -590,9 +592,14 @@
       <div class="garden-statline" data-arcade-panel="garden-seeds"><span>🌿 Đã thu hoạch <b>${g.harvests}</b></span><span>✿ <b>${g.plots}</b> luống</span></div>
       <div class="garden-crop-stock" data-arcade-panel="garden-seeds"><b>✿ Kho nông sản</b>
        ${Object.entries(core.CROPS).map(([id,crop])=>`<span>${crop.name} <strong>×${g.cropStock[id]}</strong></span>`).join('')}</div>
-      <div class="garden-crop-orders" data-arcade-panel="garden-seeds"><b>◈ Đơn hàng phối giống · ${g.cropOrdersDone.length}/3</b>
+      <div class="garden-crop-orders" data-arcade-panel="garden-seeds"><b>◈ Đơn hàng phối giống · ${g.cropOrdersDone.length}/${core.GARDEN_ORDERS.length}</b>
        ${core.GARDEN_ORDERS.map((order,i)=>`<div class="garden-crop-order"><span><strong>${order.name}</strong><small>${Object.entries(order.need).map(([id,count])=>core.CROPS[id].name+' '+Math.min(g.cropStock[id],count)+'/'+count).join(' · ')}</small></span>
-       ${button(g.cropOrdersDone.includes(i)?'✓ Đã giao':'Giao đơn','garden-order-'+i,'tool',g.cropOrdersDone.includes(i)||i>0&&!g.cropOrdersDone.includes(i-1)||Object.entries(order.need).some(([id,count])=>g.cropStock[id]<count))}</div>`).join('')}</div>
+       <div class="garden-order-actions"><small>✦ +${order.seals} Dấu Vườn</small>${button(g.cropOrdersDone.includes(i)?'✓ Đã giao':'Giao đơn','garden-order-'+i,'tool',g.cropOrdersDone.includes(i)||i>0&&!g.cropOrdersDone.includes(i-1)||Object.entries(order.need).some(([id,count])=>g.cropStock[id]<count))}</div></div>`).join('')}</div>
+      <div class="garden-soil-workshop" data-arcade-panel="garden-seeds">
+       <div class="garden-soil-head"><span>✧ ĐÀI DƯỠNG ĐẤT</span><strong>Đất Nguyệt · cấp ${g.gardenSoilLevel}/3</strong><small>Cây lớn nhanh hơn ${g.gardenSoilLevel*8}% · vĩnh viễn</small></div>
+       <div class="garden-soil-actions"><b>✦ ${g.gardenSeals} Dấu Vườn</b>
+        ${button(soilCost===null?'✓ Tối đa':'Dưỡng đất · '+soilCost+' ✦','garden-soil-upgrade','tool',soilCost===null||g.gardenSeals<soilCost)}</div>
+      </div>
       <div class="garden-fishing" data-arcade-panel="garden-album"><div><b>🎣 Nhật ký hồ sương</b><small>${g.fish} cá đã câu · ${g.rareFish} cá hiếm · ${discovered}/${Object.keys(core.FISH_SPECIES).length} loài từng tìm thấy</small></div></div>
       <div class="garden-pond-progress" data-arcade-panel="garden-album"><b>Hồ cấp ${g.pondTier}/5 · ${Object.keys(core.FISH_SPECIES).filter(canSwim).length} loài có thể gặp</b>
        <small>${nextPondTier?'Cấp '+nextPondTier+': '+nextNames+' · bọt hồi nhanh hơn':'Đã mở toàn bộ 5 cấp hồ'} </small>

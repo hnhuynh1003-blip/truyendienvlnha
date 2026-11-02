@@ -38,10 +38,16 @@
   mint:{name:'Lá bạc hà',grow:GROW_INTERVAL*2,value:100},
   moon:{name:'Hoa nguyệt',grow:GROW_INTERVAL*3,value:200}});
  const GARDEN_ORDERS=Object.freeze([
-  Object.freeze({name:'Giỏ Sương',need:Object.freeze({bloom:4,mint:2}),bait:2,moonBait:0}),
-  Object.freeze({name:'Hương Trăng',need:Object.freeze({mint:4,moon:3}),bait:0,moonBait:1}),
-  Object.freeze({name:'Hội Vườn',need:Object.freeze({bloom:6,mint:5,moon:5}),bait:3,moonBait:1})
+  Object.freeze({name:'Giỏ Sương',need:Object.freeze({bloom:4,mint:2}),bait:2,moonBait:0,seals:2}),
+  Object.freeze({name:'Hương Trăng',need:Object.freeze({mint:4,moon:3}),bait:0,moonBait:1,seals:4}),
+  Object.freeze({name:'Hội Vườn',need:Object.freeze({bloom:6,mint:5,moon:5}),bait:3,moonBait:1,seals:6}),
+  Object.freeze({name:'Tiệc Trăng',need:Object.freeze({bloom:3,mint:3,moon:2}),bait:0,moonBait:1,seals:5}),
+  Object.freeze({name:'Lễ Mùa Sương',need:Object.freeze({bloom:4,mint:4,moon:4}),bait:0,moonBait:2,seals:7})
  ]);
+ const GARDEN_SOIL_COSTS=Object.freeze([4,8,12]);
+ const gardenSoilCost=garden=>GARDEN_SOIL_COSTS[garden.gardenSoilLevel]??null;
+ const cropGrowTime=(garden,id)=>Math.floor(CROPS[id].grow*
+  (garden.sprinkler>=2?.8:1)*(1-.08*garden.gardenSoilLevel));
  // Fish are discoveries, not tradable main-wallet items. Preserve the old
  // fish/rareFish totals for pre-C4.1 players without fabricating past catches.
  const FISH_SPECIES=Object.freeze({
@@ -191,7 +197,8 @@
     crop:'bloom',sprinkler:0,rod:1,fish:0,rareFish:0,
     beds:[{status:'empty',readyAt:0,crop:'bloom'},{status:'empty',readyAt:0,crop:'bloom'}],
     bubbleAt:time+BUBBLE_INTERVAL,bubbleReady:false,bait:0,moonBait:0,harvests:0,
-    cropStock:{bloom:0,mint:0,moon:0},cropOrdersDone:[],pondDisplay:[],
+    cropStock:{bloom:0,mint:0,moon:0},cropOrdersDone:[],
+    cropHarvested:{bloom:0,mint:0,moon:0},gardenSeals:0,gardenSoilLevel:0,pondDisplay:[],
     line:null,fishAlbum:Object.fromEntries(Object.keys(FISH_SPECIES).map(id=>[id,0])),
     fishBest:Object.fromEntries(Object.keys(FISH_SPECIES).map(id=>[id,0])),
     fishSpent:Object.fromEntries(Object.keys(FISH_SPECIES).map(id=>[id,0])),
@@ -286,8 +293,16 @@
   state.garden.bait=number(garden.bait,0,10000,0);
   state.garden.moonBait=number(garden.moonBait,0,10000,0);
   state.garden.harvests=number(garden.harvests,0,1000000,0);
-  for(const id of Object.keys(CROPS))state.garden.cropStock[id]=number(garden.cropStock?.[id],0,1000000,0);
-  state.garden.cropOrdersDone=Array.isArray(garden.cropOrdersDone)?[0,1,2].filter(i=>garden.cropOrdersDone.includes(i)):[];
+  for(const id of Object.keys(CROPS)){
+   state.garden.cropStock[id]=number(garden.cropStock?.[id],0,1000000,0);
+   state.garden.cropHarvested[id]=number(garden.cropHarvested?.[id],0,1000000,0);
+  }
+  state.garden.cropOrdersDone=Array.isArray(garden.cropOrdersDone)?
+   GARDEN_ORDERS.map((_,i)=>i).filter(i=>garden.cropOrdersDone.includes(i)):[];
+  // Existing growers who finished old orders receive their earned seals once.
+  const oldSeals=state.garden.cropOrdersDone.reduce((sum,i)=>sum+GARDEN_ORDERS[i].seals,0);
+  state.garden.gardenSeals=number(garden.gardenSeals,0,1000,oldSeals);
+  state.garden.gardenSoilLevel=number(garden.gardenSoilLevel,0,3,0);
   for(const id of Object.keys(FISH_SPECIES)){
    state.garden.fishAlbum[id]=number(garden.fishAlbum?.[id],0,10000000,0);
    state.garden.fishBest[id]=number(garden.fishBest?.[id],0,200,0);
@@ -323,8 +338,9 @@
  const maxCharge=mine=>12+4*(mine.cart-1);
  const zoneUnlocked=(mine,zone)=>zone===0||(zone===1&&mine.depthPermit>=1&&mine.dug>=40&&mine.lantern>=2)||
   (zone===2&&mine.depthPermit>=2&&mine.dug>=160&&mine.lantern>=3);
- const cropUnlocked=(garden,crop)=>crop==='bloom'||crop==='mint'&&garden.harvests>=10||
-  crop==='moon'&&garden.harvests>=30;
+ const cropUnlocked=(garden,crop)=>crop==='bloom'||
+  crop==='mint'&&(garden.harvests>=10||garden.cropHarvested?.bloom>=4)||
+  crop==='moon'&&(garden.harvests>=30||garden.cropHarvested?.mint>=4);
  const upgradeCost=(state,type)=>type==='cpu'?400*state.neon.cpu*state.neon.cpu:
   type==='gpu'?900*state.neon.gpu*state.neon.gpu:
   type==='station'&&state.neon.stations<neonCapacity(state.neon)?800*state.neon.stations*state.neon.stations:
@@ -773,7 +789,7 @@
    garden.fishEssence-=FISH_RECORD_CHARM_COST;garden.recordCharms++;
    return succeed('✦ Bùa Kỷ Lục sẽ giúp lượt câu sau gặp cá kích thước lớn');
   }
-  const gardenOrderAction=/^garden-order-([012])$/.exec(action||'');
+  const gardenOrderAction=/^garden-order-([0-4])$/.exec(action||'');
   if(gardenOrderAction){
    const index=Number(gardenOrderAction[1]),order=GARDEN_ORDERS[index];
    if(garden.cropOrdersDone.includes(index))return fail('Đơn này đã giao');
@@ -783,7 +799,20 @@
    garden.cropOrdersDone.push(index);
    garden.bait=Math.min(10000,garden.bait+order.bait);
    garden.moonBait=Math.min(10000,garden.moonBait+order.moonBait);
-   return succeed('Đã giao '+order.name+' · nhận mồi câu, giữ kỷ niệm trong sổ vườn');
+   garden.gardenSeals=Math.min(1000,garden.gardenSeals+order.seals);
+   return succeed('✦ Giao '+order.name+' · +'+order.seals+' Dấu Vườn và vật tư');
+  }
+  if(action==='garden-soil-upgrade'){
+   const cost=gardenSoilCost(garden);
+   if(cost===null)return fail('Đất Nguyệt đã dưỡng cấp tối đa');
+   if(garden.gardenSeals<cost)return fail('Cần thêm Dấu Vườn từ đơn nông sản');
+   const oldSpeed=1-.08*garden.gardenSoilLevel;
+   garden.gardenSeals-=cost;garden.gardenSoilLevel++;
+   const newSpeed=1-.08*garden.gardenSoilLevel;
+   // Planted crops receive the improvement immediately; no lost progress.
+   for(const bed of garden.beds)if(bed.status==='growing'&&bed.readyAt>time)
+    bed.readyAt=time+Math.ceil((bed.readyAt-time)*newSpeed/oldSpeed);
+   return succeed('✦ Dưỡng Đất Nguyệt cấp '+garden.gardenSoilLevel+' · cây lớn nhanh hơn');
   }
   const cropAction=/^crop-(bloom|mint|moon)$/.exec(action||'');
   if(cropAction){
@@ -797,7 +826,7 @@
    if(!garden.water)return fail('Bình đã hết nước');
    const count=Math.min(dry.length,garden.water);
    dry.slice(0,count).forEach(b=>{
-    b.status='growing';b.readyAt=time+Math.floor(CROPS[b.crop].grow*(garden.sprinkler>=2?.8:1));
+    b.status='growing';b.readyAt=time+cropGrowTime(garden,b.crop);
    });
    garden.water-=count;if(garden.water<garden.waterCap)garden.waterAt=time;
    return succeed('💧 Đã tưới '+count+' luống');
@@ -808,6 +837,7 @@
    let total=0;
    for(const bed of ready){total+=CROPS[bed.crop].value;
     garden.cropStock[bed.crop]=Math.min(1000000,garden.cropStock[bed.crop]+1);
+    garden.cropHarvested[bed.crop]=Math.min(1000000,garden.cropHarvested[bed.crop]+1);
     bed.status='empty';bed.readyAt=0;
     garden.harvests++;garden.seeds=Math.min(10000,garden.seeds+1);}
    give(state,total);return succeed('✦ Nhập kho '+ready.length+' nông sản · +'+formatXu(total)+' Xu Arcade');
@@ -823,12 +853,13 @@
    if(verb==='water'){
     if(bed.status!=='dry'||!garden.water)return fail('Ô này không cần tưới hoặc bình đã hết nước');
     garden.water--;if(garden.water<garden.waterCap)garden.waterAt=time;
-    bed.status='growing';bed.readyAt=time+Math.floor(CROPS[bed.crop].grow*(garden.sprinkler>=2?.8:1));
+    bed.status='growing';bed.readyAt=time+cropGrowTime(garden,bed.crop);
     return succeed('Cây bắt đầu lớn lên');
    }
    if(verb==='harvest'){
     if(bed.status!=='growing'||time<bed.readyAt)return fail('Cây chưa đến lúc thu hoạch');
     garden.cropStock[bed.crop]=Math.min(1000000,garden.cropStock[bed.crop]+1);
+    garden.cropHarvested[bed.crop]=Math.min(1000000,garden.cropHarvested[bed.crop]+1);
     bed.status='empty';bed.readyAt=0;garden.harvests++;garden.seeds=Math.min(10000,garden.seeds+1);
     give(state,CROPS[bed.crop].value);return succeed('Nhập kho 1 '+CROPS[bed.crop].name+' · +'+formatXu(CROPS[bed.crop].value)+' Xu, 1 hạt');
    }
@@ -854,7 +885,8 @@
   neonCapacity,neonService,NEON_SERVICE_INTERVAL,NEON_ORDER_COOLDOWN,neonOrderPattern,
   neonBeatPattern,neonBeatWindow,mineProbeTarget,seasonGame,
   WATER_INTERVAL,REPAIR_INTERVAL,MINE_DIG_INTERVAL,GROW_INTERVAL,BUBBLE_INTERVAL,ORE_VALUES,ORE_NAMES,
-  CROPS,GARDEN_ORDERS,FISH_SPECIES,FISH_POND_LEVEL,pondUnlocks,pondCanHost,
+  CROPS,GARDEN_ORDERS,GARDEN_SOIL_COSTS,gardenSoilCost,cropGrowTime,
+  FISH_SPECIES,FISH_POND_LEVEL,pondUnlocks,pondCanHost,
   FISH_COLLECTIONS,FISH_ORDERS,FISH_ESSENCE_CAP,FISH_ESSENCE_UPGRADES,
   FISH_RECORD_CHARM_COST,fishAvailable,fishEssenceValue,fishEssenceUpgradeCost,
   FISH_REEL_WINDOW,GARDEN_WEATHER_INTERVAL,gardenWeather,choosePondFish,
