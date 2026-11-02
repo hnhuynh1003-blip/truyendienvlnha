@@ -17,7 +17,9 @@
    const current=Math.max(0,Number(y)||0);
    const delta=current-lastY;
    if(current<240||delta>7){upward=0;visible=false;}
-   else if(delta< -5){
+   // Touchpad and smooth finger swipes often report 1–5px per frame.
+   // Accumulate all upward motion; the 85px threshold filters tiny jitter.
+   else if(delta<0){
     upward+=-delta;
     if(upward>=85)visible=true;
    }

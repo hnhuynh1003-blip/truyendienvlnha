@@ -66,7 +66,12 @@ async function main(){
    assert.equal(boxes.visible,'none','TOC stays tucked away while reading at '+width);
    assert.ok(boxes.left>=0&&boxes.overflow<=2,'reader fits at '+width);
   }
-  await page.evaluate(()=>window.scrollTo(0,700));
+  // Flush the downward scroll event before reversing direction. Without this,
+  // Chromium may coalesce two instant scrollTo() calls into one event at 560px.
+  await page.evaluate(async()=>{
+   window.scrollTo(0,700);
+   await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+  });
   await page.waitForFunction(()=>window.scrollY>500);
   assert.equal(await page.locator('#floating-reading-bar').isVisible(),false);
   await page.evaluate(()=>window.scrollTo(0,560));

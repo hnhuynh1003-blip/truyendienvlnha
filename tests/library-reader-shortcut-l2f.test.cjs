@@ -22,6 +22,16 @@ test('L2F only reveals floating TOC after a sustained upward swipe, not while re
  assert.equal(detector.update(799),true,'a deliberate upward swipe can reveal again');
 });
 
+test('L2F accumulates a slow upward finger swipe without showing on tiny jitter',()=>{
+ const detector=createDetector();
+ detector.update(850);
+ for(let y=847;y>=769;y-=3)
+  assert.equal(detector.update(y),false,'a short upward movement stays hidden');
+ assert.equal(detector.update(763),true,'many small scroll events combine into an intentional swipe');
+ assert.equal(detector.update(770),true,'small scroll bounce does not flicker the shortcut');
+ assert.equal(detector.update(780),false,'reading downward hides the shortcut');
+});
+
 test('L2F uses the existing back-to-contents route and adds no new data writes',()=>{
  const root=join(__dirname,'..');
  const html=readFileSync(join(root,'index.html'),'utf8');
