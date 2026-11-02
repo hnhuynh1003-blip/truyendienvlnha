@@ -75,11 +75,11 @@ test('CASINO-DESIGN1 shop is a proposal, never an open-ended money multiplier',(
  assert.equal(casino.item('missing'),null);
 });
 
-test('CASINO-DESIGN1 is inert; leaves all existing games, account and Firestore rules alone',()=>{
+test('CASINO-DESIGN1 has only pure rules, now loaded by the FUN slot tab',()=>{
  const html=text('index.html'),source=text('js/dudu-casino-design-v1.js');
- assert.doesNotMatch(html,/src="js\/dudu-casino-design-v1\.js/);
+ assert.match(html,/src="js\/dudu-casino-design-v1\.js\?v=casino-slot2/);
  assert.doesNotMatch(source,/\.currency\s*=|runTransaction\(|\.update\(|\.set\(/);
- assert.match(html,/js\/dudu-fate-tower-ui-v1\.js\?v=fun-tower1/);
+ assert.doesNotMatch(html,/src="js\/dudu-fate-tower-ui-v1\.js/);
  assert.match(html,/js\/personal-scratch-c28\.js/);
  assert.match(html,/js\/personal-blind-box-c29\.js/);
  assert.match(html,/DUDU_ACCOUNT_APPROVAL_V1_READY\s*=\s*false/);

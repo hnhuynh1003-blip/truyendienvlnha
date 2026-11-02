@@ -79,6 +79,28 @@ test('CASINO-SLOT1 preview commits result before animation and blocks double-cli
  assert.equal(e.draws,1);
 });
 
+test('CASINO-SLOT2 reattaches one FUN machine across tab switches without reroll',async()=>{
+ const e=env(),opts={demo:true,sessionKey:'fun:du'};
+ const ctrl=e.window.DuduCasinoSlotUIV1.mount({host:e.host,...opts});
+ const pending=ctrl.play();
+ const secondHost=new Node('section');
+ const rebound=e.window.DuduCasinoSlotUIV1.mount({host:secondHost,...opts});
+ assert.equal(rebound,ctrl);
+ assert.equal(ctrl.state().busy,true);
+ assert.equal(e.draws,1);
+ assert.equal(await rebound.play(),false);
+ for(let col=0;col<3;col++){
+  e.timers.shift()();await Promise.resolve();
+ }
+ assert.equal(await pending,true);
+ const thirdHost=new Node('section');
+ assert.equal(e.window.DuduCasinoSlotUIV1.mount({host:thirdHost,...opts}),ctrl);
+ assert.equal(ctrl.state().spins,1);
+ assert.equal(ctrl.state().quote.payout,150);
+ assert.equal(e.draws,1);
+ assert.match(flatten(thirdHost).map(x=>x.textContent).join(' '),/Đã xem 1 lượt/);
+});
+
 test('CASINO-SLOT1 preview uses code-native themed assets, and excludes Firebase',()=>{
  const preview=read('previews/casino-slot1.html');
  const css=read('css/dudu-casino-slot-v1.css');

@@ -8,6 +8,7 @@
  if(!rules)return;
  const initial=[['star','bell','dragon'],['peach','jade','star'],
   ['phoenix','bell','crown']];
+ const sessions=new Map();
  const lookup=new Map(rules.SYMBOLS.map(s=>[s.id,s]));
  const $=(tag,cls,label)=>{
   const node=root.document.createElement(tag);
@@ -33,8 +34,16 @@
   }
   return rolls;
  }
- function mount({host,demo}={}){
+ function mount({host,demo,sessionKey}={}){
   if(!host||demo!==true)return false;
+  // FUN swaps the stage node when changing tabs. Rebind the same preview
+  // session so any precommitted spin survives navigation and rerenders.
+  const key=typeof sessionKey==='string'&&sessionKey.length<=128?sessionKey:null;
+  if(key&&sessions.has(key)){
+   const previous=sessions.get(key);previous.attach(host);
+   return previous.controller;
+  }
+  let target=host;
   const state={bet:10,rows:initial.map(row=>[...row]),busy:false,
    quote:null,spins:0,pending:null,stopped:0,error:''};
   function render(){
@@ -110,7 +119,7 @@
     '%. Chưa gồm các vật phẩm đang thiết kế.'));
    shell.append(odds,$('p','dudu-slot-notice',
     'Chỉ xem hoạt ảnh và luật quay. Không kết nối Firebase, không nhận thưởng, không mua đồ. Khi Du duyệt Xu thật mới tích hợp vào DUDU FUN.'));
-   host.replaceChildren(shell);
+   target.replaceChildren(shell);
   }
   async function play(){
    if(state.busy)return false;
@@ -131,9 +140,12 @@
    }catch(_){state.error='Trình duyệt không tạo được lượt xem thử.';return false;}
    finally{state.busy=false;state.stopped=0;render();}
   }
-  render();
-  return Object.freeze({play,state:()=>({bet:state.bet,busy:state.busy,
+  function attach(next){target=next;render();}
+  const controller=Object.freeze({play,state:()=>({bet:state.bet,busy:state.busy,
    spins:state.spins,quote:state.quote})});
+  render();
+  if(key)sessions.set(key,{attach,controller});
+  return controller;
  }
  root.DuduCasinoSlotUIV1=Object.freeze({mount});
 })(typeof window!=='undefined'?window:{});

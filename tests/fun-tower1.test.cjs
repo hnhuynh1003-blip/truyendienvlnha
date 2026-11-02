@@ -11,15 +11,14 @@ const ID='00000000-0000-4000-8000-000000000001';
 const NEXT='00000000-0000-4000-8000-000000000002';
 const layout=tower.FLOORS.map(f=>Array.from({length:f.safe},(_,i)=>i));
 
-test('Tháp: odds, stakes and rewards are transparent and are only practice points',()=>{
+test('Tháp: archived design remains intact but is no longer loaded in DUDU FUN',()=>{
  assert.deepEqual(tower.odds().map(f=>[f.safe,f.gates,f.points]),
   [[2,3,2],[2,3,5],[1,2,9],[1,2,14],[1,3,24]]);
  assert.equal(tower.MAX_POINTS,24);
  const html=src('index.html'),ui=src('js/dudu-fate-tower-ui-v1.js');
- assert.match(html,/dudu-fate-tower-v1\.js\?v=fun-tower1/);
- assert.match(html,/dudu-fate-tower-ui-v1\.js\?v=fun-tower1/);
- assert.match(html,/dudu-fate-tower-v1\.css\?v=fun-tower1/);
- assert.match(src('js/dudu-fun-ui-v43.js'),/\['tower','🗼 Vận Mệnh'\]/);
+ assert.doesNotMatch(html,/src="js\/dudu-fate-tower-(?:ui-)?v1\.js/);
+ assert.doesNotMatch(html,/href="css\/dudu-fate-tower-v1\.css/);
+ assert.doesNotMatch(src('js/dudu-fun-ui-v43.js'),/\['tower','🗼 Vận Mệnh'\]/);
  assert.match(ui,/Điểm Tháp chỉ để trải nghiệm, không phải Xu Vàng\/Tiền Xanh/);
  assert.doesNotMatch(src('js/dudu-fate-tower-v1.js'),/firebase|firestore|runTransaction|\.currency\b/);
  const image=path.join(root,'assets/dudu-fun/tower-v1/fate-tower-stage.webp');
@@ -121,7 +120,7 @@ test('Tháp UI: session restores a precommitted climb and never touches the wall
  assert.equal(current.currency,77,'nothing is written to Xu Vàng');
 });
 
-test('Tháp appears as a third tab inside DUDU FUN, preserving both previous games',async()=>{
+test('Máy Quay replaces the old Tháp tab inside DUDU FUN',async()=>{
  class Node{
   constructor(tag){this.tag=tag;this.className='';this.children=[];this.listeners={};this.style={};}
   set textContent(value){this.text=String(value);this.children=[];}
@@ -134,7 +133,7 @@ test('Tháp appears as a third tab inside DUDU FUN, preserving both previous gam
  const nodes={};
  for(const id of ['dudu-fun-content-v43','dudu-fun-header-balance','dudu-fun-launch-v43'])
   nodes[id]=new Node('div');
- let towerRenders=0;
+ let towerRenders=0,slotRenders=0;
  const context={document:{createElement:tag=>new Node(tag),getElementById:id=>nodes[id]||null},
   currentUsername:'du',userProfile:{currency:88},IS_SANDBOX_MODE:false,
   DuduAuth:{isReady:()=>true,uid:()=> 'du'},
@@ -143,7 +142,10 @@ test('Tháp appears as a third tab inside DUDU FUN, preserving both previous gam
   DuduPersonalFunC25:{utcDay:()=> '2026-11-02'},
   DuduFunLiveBridgeC25:{uid:()=> 'du',ready:()=>true,load:async()=>({state:{}})},
   DuduFateTowerUIV1:{render:(host,{uid})=>{
-   assert.equal(uid,'du');assert.equal(host.tag,'section');towerRenders++;}}
+   assert.equal(uid,'du');assert.equal(host.tag,'section');towerRenders++;}},
+  DuduCasinoSlotUIV1:{mount:({host,demo,sessionKey})=>{
+   assert.equal(host.tag,'section');assert.equal(demo,true);
+   assert.equal(sessionKey,'fun:du');slotRenders++;}}
  };
  context.window=context;
  vm.runInNewContext(src('js/dudu-fun-ui-v43.js'),context);
@@ -151,7 +153,8 @@ test('Tháp appears as a third tab inside DUDU FUN, preserving both previous gam
  const all=()=>{const visit=n=>[n,...n.children.flatMap(visit)];
   return visit(nodes['dudu-fun-content-v43']);};
  const tabs=all().filter(n=>n.tag==='button'&&n.className.startsWith('dudu-fun-tab'));
- assert.deepEqual(tabs.map(n=>n.textContent),['🎁 Vạn Bảo','🎟️ Vé Cào','🗼 Vận Mệnh']);
+ assert.deepEqual(tabs.map(n=>n.textContent),['🎁 Vạn Bảo','🎟️ Vé Cào','🎰 Máy Quay']);
  tabs[2].listeners.click();
- assert.equal(towerRenders,1);
+ assert.equal(slotRenders,1);
+ assert.equal(towerRenders,0);
 });

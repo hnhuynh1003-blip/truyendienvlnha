@@ -4,6 +4,8 @@
 
 **KHÔNG kích hoạt cược Xu, KHÔNG sửa ví/Auth/Rules, KHÔNG reset dữ liệu.**
 
+**Cập nhật CASINO-SLOT2 · 03/11/2026 theo yêu cầu Du:** Máy Quay Vạn Tượng **thay thế trực tiếp tab Tháp Vận Mệnh** trong DUDU FUN (giữ tổng cộng 3 tab: Vạn Bảo, Vé Cào, Máy Quay). Nội dung Tháp ở mục 2 bên dưới chỉ là bản thiết kế lưu lại, **không còn được tải trong ứng dụng**. Không xóa mã nguồn, ảnh hoặc dữ liệu cũ; tạm dừng CASINO-TOWER2. Máy Quay dùng chính UI chung với bản preview độc lập để tránh phải dựng lại. Chưa kết nối ví.
+
 ## Định hướng đã chọn
 
 Kết hợp **Máy Quay Vạn Tượng** + **Tháp Vận Mệnh** + **Tiệm Thiên Cơ** vào *DUDU FUN hiện có*, không dựng thêm ứng dụng riêng. Giữ Vạn Bảo và Vé Cào. Mỗi trò phải có tương tác thực, hiệu ứng quay/mở, kết quả rõ, có vật phẩm để mua và đầu tư chiến thuật; không biến thành trò đọc văn bản hoặc chỉ chọn Đỏ/Đen.
@@ -30,7 +32,7 @@ Phong cách: casino fantasy tím–vàng, pha lê/sao/kim loại giống bộ V�
 
 **RTP cơ sở tính chính xác: 92,0784%** (trước vật phẩm; các ô được lấy ngẫu nhiên độc lập). Một lượt cược 10 Xu có trung bình 9,20784 Xu trả về, chênh lệch kỳ vọng −0,79216 Xu. Đây là đề xuất để Du duyệt, chưa phải tỷ lệ đang chạy. Vật phẩm thay đổi kết quả phải được mô phỏng lại trước khi bán để không tạo vòng Xu vô hạn.
 
-## 2. Tháp Vận Mệnh — mạo hiểm có nhiều lựa chọn
+## 2. Tháp Vận Mệnh — thiết kế đã tạm dừng, không hiển thị trong FUN
 
 - Tạo **5 tầng** hiện trực tiếp trên hình tháp. Người chơi bấm cổng/cửa, quan sát hoạt ảnh, khám phá phòng và quyết định *Rút thưởng* hoặc *Leo tiếp*.
 - Phòng thay đổi giữa các lượt: cổng may mắn, rương nhỏ, thương nhân bán bùa. Các tình huống này cần thiết kế ảnh và thao tác, không triển khai bằng hộp thoại chữ dài.
@@ -81,7 +83,7 @@ Tiệm nằm trong DUDU FUN, nhưng **không tạo ví/kho thứ hai**. Vật ph
 | **CASINO-DESIGN1 (hiện tại)** | Bản thiết kế, danh mục đồ, phép tính trả thưởng thuần và test | **Không** |
 | **CASINO-SLOT1 (xem thử)** | [Máy Quay Vạn Tượng](../previews/casino-slot1.html): cuộn dừng lần lượt, bảng thưởng, chốt kết quả mô phỏng; biên nhận ID lượt được viết riêng và test | **Không**; bản xem thử không kết nối tài khoản, biên nhận chưa được gọi |
 | CASINO-SHOP1 | Tiệm Thiên Cơ hiển thị và tích hợp Kho, vật phẩm tiêu hao/trang trí | Cần Du duyệt giá trước khi bật mua |
-| CASINO-TOWER2 | Tháp có cổng/rương/phòng tiệm, rút thưởng, dùng bùa có giới hạn | Cần Du duyệt tỷ lệ và giao dịch |
+| ~~CASINO-TOWER2~~ (tạm dừng) | Giữ thiết kế và file cũ để tham khảo; đã thay tab Tháp bằng Máy Quay | **Không** |
 | CASINO-ECONOMY | Gắn Xu Vàng đã xác minh, Quầy đổi tiền, replay tests, backup/rollback | **Thay đổi quan trọng, phải Du duyệt trước** |
 | SEASON1 | Gom Auth/Rules/Wallet/reset, kiểm thử Emulator, một đợt Publish do Du duyệt | Chỉ cuối dự án |
 
@@ -101,3 +103,10 @@ Các hằng số thiết kế và phép tính nằm trong `js/dudu-casino-design
 - `js/dudu-casino-slot-ui-v1.js` dựng 9 ô, ba đường ngang, ba cuộn lần lượt dừng, đèn hàng trúng và tỷ lệ chi tiết. Kết quả được chọn trước hoạt ảnh và khóa nút Quay trong toàn bộ quá trình.
 - `js/dudu-casino-slot-receipt-v1.js` là **bản nháp giao dịch không được tải/chạy trong trang công khai**: `start` trừ cược và giữ biên nhận đang quay; `claim` cộng đúng một lần theo ID đã lưu bằng Firestore transaction. Test mô phỏng giao dịch đồng thời và tải lại. Chưa kiểm tra được edition/cấu hình Firebase thực tế vì CLI chưa được đăng nhập; không xem đây là hạ tầng kinh tế đã xác minh. Giá trị ngẫu nhiên hiện do trình duyệt đề xuất, **chưa được server xác thực**.
 - Chưa sửa `index.html`, ví, Auth, Firestore Rules, Arcade, Tiệm, Kho hay dữ liệu người chơi. Muốn mở cược thật phải xác minh Firestore và được Du duyệt riêng về 10/20/50 Xu cùng luật thưởng, sau đó mới tích hợp và chạy Emulator.
+
+### CASINO-SLOT2 — đưa máy vào FUN
+
+- Tích hợp cùng màn hình DUDU FUN hiện có, **thay tab Vận Mệnh** bằng **🎰 Máy Quay**, không tạo app hay màn casino riêng trong điện thoại.
+- Dùng nguyên giao diện Máy Quay đã làm: cả trang xem thử và FUN tải cùng `dudu-casino-slot-ui-v1.js` và CSS. Chuyển tab rồi quay lại không tạo kết quả mới hoặc mở khóa nút khi một lượt còn quay; session chỉ lưu trong bộ nhớ của trình duyệt.
+- Không tải các tập lệnh Tháp trong trang chính, nhưng vẫn giữ nguyên mã, hình và bài test độc lập của Tháp. Đây là quyết định UI theo yêu cầu mới, không phải xóa/reset dữ liệu.
+- Lưu ý các phát biểu ở trên về `index.html` là **trạng thái của CASINO-SLOT1**, trước khi tích hợp CASINO-SLOT2. Ở đợt SLOT2, `index.html` chỉ đổi phần nạp module Máy Quay và danh mục tab FUN; vẫn không động vào Ví/Auth/Rules.

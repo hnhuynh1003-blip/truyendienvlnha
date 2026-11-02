@@ -900,19 +900,20 @@
   }
   const tabs=el('div','dudu-fun-tabs');
   for(const [type,label] of [['box','🎁 Vạn Bảo'],['ticket','🎟️ Vé Cào'],
-   ['tower','🗼 Vận Mệnh']]){
+   ['slot','🎰 Máy Quay']]){
    const button=el('button','dudu-fun-tab'+(open===type?' is-active':''),label);
    button.type='button';button.setAttribute('aria-pressed',String(open===type));
    button.addEventListener('click',()=>{open=type;hint=true;render();});
    tabs.append(button);
   }
   host.append(tabs);
-  const content=el('section','dudu-fun-stage');
+  const content=el('section','dudu-fun-stage'+(open==='slot'?' is-slot':''));
   const state=view(),round=state.rounds[open];
-  if(open==='tower'){
-   if(root.DuduFateTowerUIV1?.render)
-    root.DuduFateTowerUIV1.render(content,{uid:currentUsername});
-   else content.append(el('p','dudu-fun-caption','Tháp Vận Mệnh đang chuẩn bị…'));
+  if(open==='slot'){
+   if(root.DuduCasinoSlotUIV1?.mount)
+    root.DuduCasinoSlotUIV1.mount({host:content,demo:true,
+     sessionKey:'fun:'+currentUsername});
+   else content.append(el('p','dudu-fun-caption','Máy Quay Vạn Tượng đang chuẩn bị…'));
   }else if(open==='box'){
    if(sandbox()){boxes(content,round);sandboxTreasurePreview(content);}
    else blindBoxes(content);

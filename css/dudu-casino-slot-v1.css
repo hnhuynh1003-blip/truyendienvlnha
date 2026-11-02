@@ -1,16 +1,12 @@
 /* CASINO-SLOT1 — a wallet-free Vạn Tượng cabinet preview. */
-:root{color-scheme:dark;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
-*{box-sizing:border-box}
-body{margin:0;min-height:100vh;color:#fbeccf;
- background:radial-gradient(ellipse at 50% 0,#5a336b 0,transparent 44%),
- radial-gradient(ellipse at 12% 45%,#39487590,transparent 55%),
- linear-gradient(160deg,#1b182f,#101e33 76%)}
+.dudu-slot-preview,.dudu-slot-preview *{box-sizing:border-box}
 .dudu-slot-page{width:min(100%,650px);margin:0 auto;padding:22px 15px 70px}
 .dudu-slot-back{display:inline-flex;gap:8px;align-items:center;color:#f8d6a9;
  padding:9px 12px;border:1px solid #ab846a66;border-radius:13px;
  text-decoration:none;font-size:13px;font-weight:700;background:#332a4480}
 .dudu-slot-back:hover{background:#5c426b;border-color:#e2b477}
-.dudu-slot-preview{text-align:center;margin-top:20px}
+.dudu-slot-preview{text-align:center;margin-top:20px;color:#fbeccf;
+ font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
 .dudu-slot-eyebrow{color:#d9b6df;font-size:10px;letter-spacing:3px;font-weight:850}
 .dudu-slot-heading{margin:9px 0 6px;color:#ffebbd;
  font-family:Georgia,"Times New Roman",serif;font-size:clamp(26px,7.3vw,39px);
@@ -124,5 +120,34 @@ body{margin:0;min-height:100vh;color:#fbeccf;
  .dudu-slot-screen{padding:7px}.dudu-slot-reels{gap:4px}.dudu-slot-tile{border-radius:8px}
  .dudu-slot-controls{padding:13px}.dudu-slot-line{font-size:9px}
  .dudu-slot-marquee{margin-bottom:14px;letter-spacing:2px}}
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{
+/* The existing FUN phone stage reuses this same machine, without page-wide CSS. */
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-fun-tabs{
+ grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-fun-tab{
+ padding:9px 3px;font-size:10px;min-height:41px;line-height:1.25}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-fun-stage.is-slot{
+ padding:7px;overflow:hidden}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-preview{
+ margin-top:0;min-width:0;width:100%}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-eyebrow{font-size:9px}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-heading{
+ font-size:24px;letter-spacing:0}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-caption{font-size:10px}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-demo-badge{
+ font-size:8px;padding:7px 9px}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-cabinet{
+ margin-top:17px;padding:9px 6px 13px;border-width:3px;border-radius:22px}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-marquee{
+ margin:10px auto 13px;font-size:14px}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-screen{padding:6px}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-reels{gap:4px}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-tile{border-radius:8px}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-controls{
+ margin-top:15px;padding:12px;gap:9px}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-line{font-size:9px}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-result strong{font-size:13px}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-spin{
+ font-size:14px;letter-spacing:1px}
+@media(prefers-reduced-motion:reduce){.dudu-slot-preview *,
+ .dudu-slot-preview *::before,.dudu-slot-preview *::after{
  animation:none!important;transition:none!important;scroll-behavior:auto!important}}
