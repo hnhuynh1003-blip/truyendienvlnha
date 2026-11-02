@@ -54,7 +54,7 @@ async function main(){
     saved.garden.fishAlbum.reed=4;saved.garden.fishBest.reed=28;
     saved.garden.line={fishId:'dragon',biteAt:time-5000,escapeAt:time+20000,
      size:82,rod:3,lure:'moon'};
-    const key='dudu-personal-arcade:v1:sandbox:c446-fisher';
+    const key='dudu-personal-arcade:v1:'+encodeURIComponent('sandbox:c446-fisher');
     localStorage.setItem(key,JSON.stringify(saved));
     dispatchEvent(new StorageEvent('storage',{key,newValue:JSON.stringify(saved)}));
     window.DuduPersonalArcadeUIV1.openGarden();
@@ -106,7 +106,7 @@ async function main(){
      container.querySelector('button[data-arcade-action="reel-pulse"]').click();
      time+=550;
     }
-    const raw=localStorage.getItem('dudu-personal-arcade:v1:sandbox:c446-fisher');
+    const raw=localStorage.getItem('dudu-personal-arcade:v1:'+encodeURIComponent('sandbox:c446-fisher'));
     return JSON.parse(raw);
    }finally{Date.now=original;}
   });
