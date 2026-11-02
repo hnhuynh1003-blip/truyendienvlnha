@@ -81,11 +81,13 @@
  const visible=()=>root.document.getElementById('phone-app-arcade')?.style.display==='flex';
  const fmt=amount=>core.formatXu(amount);
  // FUN-P1: display labels only. Saved coins remain in tenths, unchanged.
- const money=amount=>'💚 '+fmt(amount);
+ const greenMark='<i class="dudu-money-icon dudu-money-icon--green" aria-hidden="true"></i>';
+ const goldMark='<i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i>';
+ const money=amount=>greenMark+fmt(amount);
  const arcadeNotice=value=>String(value||'').replace(/ Xu Arcade| Xu(?! Vàng)/g,' Tiền Xanh');
  function updateWalletHeader(s){
   const chip=root.document.getElementById('arcade-header-wallet-v1');if(!chip)return;
-  chip.textContent=s?money(s.coins):'Khách';
+  chip.textContent=s?fmt(s.coins):'Khách';
   chip.disabled=!s;
  }
  const quoteForExchange=()=>exchangePolicy?.quote({
@@ -101,7 +103,7 @@
   if(!exchangeOpen)return;
   const element=host(),q=quoteForExchange(),pending=readPending();
   const amount=element?.querySelector('[data-arcade-exchange-result]');
-  if(amount)amount.textContent='🟡 '+q.walletXu.toLocaleString('vi-VN');
+  if(amount)amount.textContent=q.walletXu.toLocaleString('vi-VN');
   const hint=element?.querySelector('[data-arcade-exchange-hint]');
   if(hint)hint.textContent=pending?'Lệnh trước chưa xác nhận. Hãy thử lại cùng mã.':exchangeEnabled()&&q.ok?
    'Số Xu Vàng này sẽ vào ví chung.':exchangeHint(q);
@@ -122,8 +124,8 @@
   const q=quoteForExchange(),pending=readPending(),allowance=exchangePolicy?.remaining({availableTenths:pending?.availableTenths??s.coins});
   const max=allowance?.maxGameXu??0;
   const choices=[10,50,100,'max'];
-  return `<div class="arcade-exchange-rate"><b>💚 10 Tiền Xanh</b><span>→</span><b>🟡 1 Xu Vàng</b></div>
-    <div class="arcade-exchange-balance">Đang có 💚 <b data-arcade-exchange-available>${fmt(s.coins)}</b> Tiền Xanh</div>
+  return `<div class="arcade-exchange-rate"><b>${greenMark}10</b><span>→</span><b>${goldMark}1</b></div>
+    <div class="arcade-exchange-balance">Số dư ${greenMark}<b data-arcade-exchange-available>${fmt(s.coins)}</b></div>
     <label class="arcade-exchange-label" for="arcade-exchange-input-v1">Muốn đổi bao nhiêu?</label>
     <input type="number" id="arcade-exchange-input-v1" data-arcade-exchange-input
       min="10" max="${Math.max(10,max)}" step="10" inputmode="numeric"
@@ -131,9 +133,9 @@
     <div class="arcade-exchange-presets" role="group" aria-label="Mức đổi nhanh">
       ${choices.map(choice=>{const value=choice==='max'?max:choice;
        return `<button type="button" data-arcade-exchange-preset="${choice}"
-        ${pending||exchangeBusy||value<10||value>max?'disabled':''} aria-pressed="${exchangeAmount===value&&value>=10}">${choice==='max'?'Tối đa':'💚 '+value}</button>`;}).join('')}
+        ${pending||exchangeBusy||value<10||value>max?'disabled':''} aria-pressed="${exchangeAmount===value&&value>=10}">${choice==='max'?'Tối đa':greenMark+value}</button>`;}).join('')}
     </div>
-    <div class="arcade-exchange-quote"><span>Dự kiến nhận</span><strong aria-live="polite" data-arcade-exchange-result>🟡 ${q.walletXu.toLocaleString('vi-VN')}</strong></div>
+    <div class="arcade-exchange-quote"><span>Dự kiến nhận</span><strong class="dudu-money-display--gold" aria-live="polite" data-arcade-exchange-result>${q.walletXu.toLocaleString('vi-VN')}</strong></div>
     <p class="arcade-exchange-hint" id="arcade-exchange-hint-v1" data-arcade-exchange-hint>${pending?'Thử lại lệnh cũ để tránh nhận hai lần.':exchangeEnabled()&&q.ok?'Nhận vào Ví Xu Vàng.':exchangeHint(q)}</p>`;
  }
  function countdown(ms){
@@ -299,7 +301,7 @@
       <div class="neon-aisle-glow" aria-hidden="true"></div>
       <div class="neon-gaming-floor neon-floor-capacity-${capacity}">${stations}</div>
       ${servicePulse?`<div class="neon-coin-fountain" aria-live="polite">✦ +${money(servicePulse.quantity)} <small>ĐÃ PHỤC VỤ</small></div>`:''}
-      <div class="neon-stage-income"><span>${boost?'⚡ ĐANG ÉP XUNG ×2':'THU NHẬP TRỰC TIẾP'}</span><b>+${(boost?activeRate*2/1000:activeRate/1000).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:3})} <small>💚 / giây</small></b>
+      <div class="neon-stage-income"><span>${boost?'⚡ ĐANG ÉP XUNG ×2':'THU NHẬP TRỰC TIẾP'}</span><b>+${(boost?activeRate*2/1000:activeRate/1000).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:3})} <small>${greenMark}/giây</small></b>
         <div class="neon-income-track"><i></i></div></div>
       <div class="neon-room-level">PHÒNG ${n.roomTier}/3 · ${n.stations}/${capacity} CỤM · CẤP ${level}</div>
     </div>
@@ -437,8 +439,8 @@
       <div class="mine-tool-actions" data-arcade-panel="mine-tools">
         ${button(repairing?`⏳ <span data-arcade-until="${m.repairUntil}">${countdown(m.repairUntil-time)}</span>`:'🔧 Tự sửa · 6 phút','repair-wait','tool',repairing||m.durability===max)}
         ${button('⚒ Rèn · 12 than + 8 sắt + 2 đồng','repair-forge','tool',repairing||m.durability===max||m.ores.coal<12||m.ores.iron<8||m.ores.copper<2)}
-        ${button('Dầu +25 · 💚 15','buy-oil','tool',repairing||m.durability===max||s.coins<150)}
-        ${button('Cuốc mới · 💚 80','buy-pick','tool',(m.durability===max&&!repairing)||s.coins<800)}
+        ${button('Dầu +25 · '+money(150),'buy-oil','tool',repairing||m.durability===max||s.coins<150)}
+        ${button('Cuốc mới · '+money(800),'buy-pick','tool',(m.durability===max&&!repairing)||s.coins<800)}
       </div>
       <div class="arcade-upgrade-grid arcade-tool-upgrades" data-arcade-panel="mine-tools">
        ${upgrade('⛏','Cuốc thép','Cấp '+m.pickLevel+'/4','pick-level',core.upgradeCost(s,'pick-level'))}
@@ -592,7 +594,7 @@
         ${button('✦ Thu tất cả','harvest-all','tool',!g.beds.some(b=>b.status==='growing'&&time>=b.readyAt))}</div>
       </div>
       <div class="arcade-panel-heading" data-arcade-panel="garden-seeds"><div><span class="arcade-eyebrow">NHÀ KÍNH</span>
-        <h4>Vật tư & thu hoạch</h4></div>${button('＋ 3 hạt · 💚 10','buy-seeds','market',s.coins<100)}</div>
+        <h4>Vật tư & thu hoạch</h4></div>${button('＋ 3 hạt · '+money(100),'buy-seeds','market',s.coins<100)}</div>
       <div class="garden-statline" data-arcade-panel="garden-seeds"><span>🌿 Đã thu hoạch <b>${g.harvests}</b></span><span>✿ <b>${g.plots}</b> luống</span></div>
       <div class="garden-crop-stock" data-arcade-panel="garden-seeds"><b>✿ Kho nông sản</b>
        ${Object.entries(core.CROPS).map(([id,crop])=>`<span>${crop.name} <strong>×${g.cropStock[id]}</strong></span>`).join('')}</div>
@@ -664,10 +666,10 @@
        <div class="garden-tackle-offers">
         <div class="garden-tackle-offer garden-tackle-regular"><span class="garden-tackle-item garden-tackle-worm" aria-hidden="true"></span>
          <div><b>Mồi hồ sương</b><small>5 viên · dùng ngay</small><em>Đang có ${g.bait}</em></div>
-         ${button('＋ 💚 7','buy-bait-pack','market',s.coins<70||g.bait>9995)}</div>
+         ${button('＋ '+money(70),'buy-bait-pack','market',s.coins<70||g.bait>9995)}</div>
         <div class="garden-tackle-offer garden-tackle-moon"><span class="garden-tackle-item garden-tackle-pearl" aria-hidden="true"></span>
          <div><b>Mồi Tinh Nguyệt</b><small>${g.pondTier<2?'2 viên · cá hiếm từ hồ cấp 2':'2 viên · cá hiếm +18%'}</small><em>Đang có ${g.moonBait}</em></div>
-         ${button('＋ 💚 6','buy-moon-bait','market',s.coins<60||g.moonBait>9998)}</div>
+         ${button('＋ '+money(60),'buy-moon-bait','market',s.coins<60||g.moonBait>9998)}</div>
        </div>
        <div class="garden-tackle-rod"><span class="garden-tackle-rod-art" aria-hidden="true"></span>
         <div><b>Cần câu Hồ Trăng</b><small>${g.rod>=4?'Cấp '+g.rod+'/5 · thêm 1 lần chịu lỗi cá khó':'Cấp '+g.rod+'/5 · cấp 4 tăng chịu lỗi cá khó'}</small></div>
@@ -716,7 +718,7 @@
       <section class="arcade-exchange-dialog" role="dialog" aria-modal="true" aria-label="Quầy đổi tiền">
         <div class="arcade-exchange-heading"><strong>Quầy đổi tiền</strong><button type="button" data-arcade-exchange="close" aria-label="Đóng">✕</button></div>
         ${exchangeForm(s)}
-        <div class="arcade-exchange-target">🟡 Ví Xu Vàng <button type="button" data-arcade-exchange="wallet">Xem ví ↗</button></div>
+        <div class="arcade-exchange-target">${goldMark} Ví <button type="button" data-arcade-exchange="wallet">Xem ví ↗</button></div>
         ${button(!exchangeEnabled()?'Chuyển tiền · Chưa mở':exchangeBusy?'Đang chuyển…':
           readPending()?'↻ Xác nhận lệnh cũ':'✓ Chuyển vào Ví Xu Vàng',
           'transfer','gold',!exchangeEnabled()||exchangeBusy||!quoteForExchange().ok)}

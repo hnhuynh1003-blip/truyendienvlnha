@@ -117,9 +117,9 @@ test('C4.50 market and garden text show true prices, discounts and unlocked bait
  const ui=window.DuduPersonalJadeUIV1,s=expert();
  assert.equal(ui.chooseMarket(4,s.jade),true);
  const html=ui.panel(s);
- assert.match(html,/💚 472\/viên/);
- assert.match(html,/Gồm phí quầy 💚 72/);
- assert.match(html,/5 viên · 💚 2\.360/);
+ assert.match(html,/dudu-money-icon--green[^>]*><\/i>472\/viên/);
+ assert.match(html,/Gồm phí quầy <i class="dudu-money-icon dudu-money-icon--green" aria-hidden="true"><\/i>72/);
+ assert.match(html,/5 viên · <i class="dudu-money-icon dudu-money-icon--green" aria-hidden="true"><\/i>2\.360/);
  assert.match(html,/Đèn cấp cao giảm phí quầy/);
  const src=readFileSync(join(__dirname,'../js/personal-arcade-ui-v1.js'),'utf8');
  assert.match(src,/cá hiếm từ hồ cấp 2/);

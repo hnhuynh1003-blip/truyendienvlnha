@@ -1,0 +1,28 @@
+/* DUDU currency marks: decorative only; never read as money or account state. */
+.dudu-money-icon{display:inline-block;position:relative;flex:none;box-sizing:border-box;
+ vertical-align:-.12em;margin-right:.23em;line-height:1;pointer-events:none}
+.dudu-money-icon--green{width:1.35em;height:.87em;border:1px solid #beffbd;
+ border-radius:2px;transform:rotate(-7deg);
+ background:linear-gradient(142deg,#b8f795 0%,#49b475 45%,#15734f 100%);
+ box-shadow:0 1px 3px #081b20a8,inset 0 0 0 1px #166144}
+.dudu-money-icon--green::before{content:"";position:absolute;inset:2px;
+ border:1px solid #d7ffc7a8;border-radius:1px}
+.dudu-money-icon--green::after{content:"";position:absolute;left:39%;top:14%;
+ width:25%;height:70%;border-radius:50%;background:#c8f5a2;
+ box-shadow:inset 0 0 0 1px #2d9654,0 0 1px #efffe8}
+.dudu-money-icon--gold{width:1.02em;height:1.02em;border:1px solid #fff1b9;
+ border-radius:50%;background:radial-gradient(circle at 28% 20%,#fff8c8 0%,#ffcf55 39%,#d59624 73%,#9e5e15 100%);
+ box-shadow:0 1px 3px #130b07a6,inset 0 0 0 2px #b67d2e,inset 0 0 0 3px #ffe9a0}
+.dudu-money-icon--gold::after{content:"✦";position:absolute;inset:0;
+ display:grid;place-items:center;font:900 .59em/1 Georgia,serif;color:#8c5416;
+ text-shadow:0 1px #ffe9a0}
+.dudu-money-display--green::before,.dudu-money-display--gold::before{
+ content:"";display:inline-block;vertical-align:-.11em;flex:none;margin-right:.26em;
+ width:1.35em;height:.87em;box-sizing:border-box;pointer-events:none}
+.dudu-money-display--green::before{border:1px solid #baf3ad;border-radius:2px;
+ transform:rotate(-7deg);background:radial-gradient(ellipse at center,#e4ffc3 0 15%,transparent 18%),
+ linear-gradient(142deg,#b8f795,#49b475 48%,#15734f);box-shadow:inset 0 0 0 2px #26744d,0 1px 3px #0008}
+.dudu-money-display--gold::before{width:1.02em;height:1.02em;border:1px solid #fff1b9;
+ border-radius:50%;background:radial-gradient(circle at 28% 20%,#fff8c8,#ffcf55 40%,#b77c19 100%);
+ box-shadow:inset 0 0 0 2px #ae751f,inset 0 0 0 3px #ffe9a0,0 1px 3px #0008}
+@media (prefers-reduced-motion:reduce){.dudu-money-icon{transition:none}}

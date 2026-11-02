@@ -23,7 +23,7 @@
    const intro=make('div','dudu-v43-market-intro');
    intro.append(make('strong','','✦ DUDU MARKET'),
      make('small','','Chung kho đồ · riêng nguồn nhận'));
-   // On main the phone already says "Cửa Hàng Xu Vàng" and shows the balance.
+   // The phone already presents the coin mark and wallet balance.
    if(!personalMode)toolbar.append(intro);
    const tabs=make('div','dudu-v43-market-tabs');
    for(const [id,label] of [['COMMON','Mua sắm'],['REALM','Vị diện'],
@@ -86,17 +86,22 @@
      const utility=root.DuduFunctionalItemsV438;
      const pending=utility?.norm(functionalState).pending;
      if(tab==='COMMON'){
+       hint.className='dudu-v43-market-hint'+(personalMode?'':' dudu-money-display--gold');
        hint.textContent=personalMode?'':
-        '🟡 '+coins+' Xu Vàng · '+ledger.total+'/'+core.PURCHASE_TOTAL_PER_DAY+
+        coins+' · '+ledger.total+'/'+core.PURCHASE_TOTAL_PER_DAY+
          ' lượt mua hôm nay · Mua hàng không cộng EXP'+
          (pending?' · 🎟️ Phiếu -25% đang chờ áp dụng':'');
      }else if(tab==='REALM'){
+       hint.className='dudu-v43-market-hint';
        hint.textContent='Vật phẩm vị diện chỉ rơi ở chương được tác giả gắn đúng thế giới. Chưa bán bằng Xu Vàng.';
      }else if(tab==='DUDU'){
+       hint.className='dudu-v43-market-hint';
        hint.textContent='Kỷ vật hiếm · Chưa mở bán.';
      }else if(tab==='STORY'){
+       hint.className='dudu-v43-market-hint';
        hint.textContent='Vật phẩm trong truyện · Xem trước.';
      }else{
+       hint.className='dudu-v43-market-hint';
        hint.textContent=(personalMode?'Công cụ hỗ trợ: ':'Công cụ Sandbox: ')+
         'nạp hồi chiêu, gia tốc 60 giây, gói tiếp tế và phiếu giảm giá. Không tạo thêm Nhặt bảo trong chương.';
      }
@@ -155,10 +160,9 @@
          const limit=core.TOOL_LIMITS[item.id]||core.PURCHASE_PER_ITEM_PER_DAY;
          const save=!personalMode&&tab==='COMMON'?(utility?.discount(functionalState,{
            itemId:item.id,price:item.price}).amount||0):0;
-         right.append(make('strong','',save?
-           (item.price-save)+' Xu Vàng':item.price+' Xu Vàng'));
-         if(save)right.append(make('small','dudu-v438-discount',
-           '−'+save+' Xu Vàng (phiếu)'));
+         right.append(make('strong','dudu-money-display--gold',item.price-save));
+         if(save)right.append(make('small','dudu-v438-discount dudu-money-display--gold',
+           '−'+save+' (phiếu)'));
          const button=make('button','btn','Mua');
          button.type='button';
          button.disabled=readOnly||(Array.isArray(saleIds)&&!saleIds.includes(item.id))||

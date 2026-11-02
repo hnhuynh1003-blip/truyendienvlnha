@@ -12,6 +12,14 @@
   if(text!==undefined)n.textContent=String(text);
   return n;
  };
+ const gold=(tag,cls,amount)=>el(tag,(cls?cls+' ':'')+'dudu-money-display--gold',amount);
+ const withGold=(tag,cls,prefix,amount,suffix='')=>{
+  const node=el(tag,cls);
+  if(prefix)node.append(el('span','',prefix));
+  node.append(gold('span','',amount));
+  if(suffix)node.append(el('span','',suffix));
+  return node;
+ };
  const sandbox=()=>typeof IS_SANDBOX_MODE!=='undefined'&&IS_SANDBOX_MODE;
  const signed=()=>!!currentUsername&&(sandbox()||
   (!!root.DuduAuth?.isReady?.()&&root.DuduAuth.uid()===currentUsername));
@@ -308,7 +316,7 @@
   const chip=$('dudu-fun-header-balance');if(!chip)return;
   const currency=!sandbox()?(open==='ticket'?luckyCurrency:blindCurrency)??
    userProfile.currency:userProfile.currency;
-  chip.textContent=signed()?'🟡 '+Number(currency).toLocaleString('vi-VN'):'Khách';
+  chip.textContent=signed()?Number(currency).toLocaleString('vi-VN'):'Khách';
  }
  function blindBoxes(rootNode){
   if(!blind()||!blindLoaded){
@@ -353,7 +361,7 @@
     free.type='button';free.disabled=blindBusy;
     free.addEventListener('click',()=>{void blindAction('start','free');});controls.append(free);
    }else controls.append(el('small','blind-free-done','✓ Đã dùng lượt tặng hôm nay'));
-   const paid=el('button','dudu-fun-start blind-paid','✨ MUA HỘP · 20 XU');
+   const paid=withGold('button','dudu-fun-start blind-paid','✨ MUA HỘP · ',blind().PRICE);
    paid.type='button';paid.disabled=blindBusy||blindCurrency<blind().PRICE;
    paid.addEventListener('click',()=>{void blindAction('start','paid');});
    controls.append(paid);rootNode.append(controls);
@@ -443,8 +451,8 @@
  }
  function rewardPanel(target,reward){
   const r=el('div','dudu-fun-win');
-  r.append(el('span','',reward.kind==='COIN'?'🪙':'🎁'),
-   el('strong','',reward.kind==='COIN'?'+'+reward.amount+' Xu Vàng':reward.label),
+  r.append(el('span','',reward.kind==='COIN'?'✦':'🎁'),
+   reward.kind==='COIN'?withGold('strong','', '+',reward.amount):el('strong','',reward.label),
    el('small','',sandbox()?'Đã nhận trong Sandbox · quay lại ngày mai':
     'Đã nhận vào tài khoản · quay lại ngày mai'));
   target.append(r);
@@ -498,14 +506,14 @@
   const head=el('div','lucky-kiosk-head');
   head.append(el('span','','✦ LỘC ĐẾN NHÀ · 刮刮乐'),
    el('strong','','VÉ CÀO VẠN PHÚC'),
-   el('small','','10 Xu Vàng/vé · Không giới hạn lượt · Giải cao nhất 10.000 Xu Vàng'));
+   withGold('small','','', '10/vé · Giải lớn 10.000'));
   rootNode.append(head);
   if(a?.layout==='numbers'){
    if(scratchLocal.id!==a.id)scratchLocal={id:a.id,cells:new Set()};
    const ticket=rule.cardNumbers(a.seed,a.amount);
    const card=el('div','lucky-number-card');
    const top=el('div','lucky-number-top');
-   top.append(el('i','','Vé số may mắn'),el('b','','🪙 10 XU'));
+   top.append(el('i','','Vé số may mắn'),gold('b','',10));
    card.append(top);
    const banner=el('div','lucky-number-banner');
    banner.append(el('span','','✦ ✦ ✦'),el('strong','','WINNER'),
@@ -526,7 +534,7 @@
     button.classList.remove('covered');button.classList.add('revealed');
     if(entry.match)button.classList.add('matched');
     button.replaceChildren(el('strong','',entry.number),
-     el('small','',entry.prize.toLocaleString('vi-VN')+' Xu Vàng'));
+     gold('small','',entry.prize.toLocaleString('vi-VN')));
     button.setAttribute('aria-label','Số '+entry.number+' · '+entry.prize+' Xu Vàng');
     button.disabled=true;
     const counter=card.querySelector('.lucky-number-count');
@@ -540,7 +548,7 @@
     tile.type='button';tile.disabled=opened||luckyBusy;
     tile.setAttribute('aria-label',opened?'Số '+entry.number:'Cào ô số '+(i+1));
     if(opened)tile.append(el('strong','',entry.number),
-     el('small','',entry.prize.toLocaleString('vi-VN')+' Xu Vàng'));
+     gold('small','',entry.prize.toLocaleString('vi-VN')));
     else tile.append(el('strong','','✦'),el('small','','CÀO'));
     tile.addEventListener('click',()=>scratchCell(i));grid.append(tile);
    }
@@ -569,18 +577,18 @@
     const openGift=a.status!=='playing'||scratchLocal.cells.size===10,
      gift=el('span','lucky-gift'+(openGift&&ticket.gifts[i]?' is-prize':''));
     gift.append(el('strong','',openGift&&ticket.gifts[i]?'🧧':'🎁'),
-     el('small','',openGift?(ticket.gifts[i]?ticket.gifts[i].toLocaleString('vi-VN')+' Xu Vàng':'✧'):'?'));
+     openGift&&ticket.gifts[i]?gold('small','',ticket.gifts[i].toLocaleString('vi-VN')):el('small','',openGift?'✧':'?'));
     gifts.append(gift);
    }
    ribbon.append(gifts);
    card.append(ribbon,el('div','lucky-number-count',
     a.status==='playing'?'Đã cào '+scratchLocal.cells.size+'/10 ô':
-     a.amount?'TRÚNG '+a.amount.toLocaleString('vi-VN')+' XU':'CHƯA TRÚNG GIẢI'));
+     a.amount?'TRÚNG '+a.amount.toLocaleString('vi-VN'):'CHƯA TRÚNG GIẢI'));
    card.append(el('small','lucky-number-foot','TRÙNG SỐ · NHẬN LỘC · MAY MẮN ĐẾN NHÀ'));
    rootNode.append(card);
    if(a.status==='ready'){
-    const claim=el('button','dudu-fun-claim lucky-claim',a.amount?
-     '🪙 NHẬN '+a.amount.toLocaleString('vi-VN')+' XU':'✓ HOÀN TẤT VÉ');
+    const claim=a.amount?withGold('button','dudu-fun-claim lucky-claim','NHẬN ',a.amount.toLocaleString('vi-VN')):
+     el('button','dudu-fun-claim lucky-claim','✓ HOÀN TẤT VÉ');
     claim.disabled=luckyBusy;claim.addEventListener('click',()=>{void luckyAction('claim');});
     rootNode.append(claim);
    }
@@ -589,7 +597,7 @@
     'Vé này không trúng. Có muốn thử tấm tiếp theo không?'));
   }
   if(!a||a.status==='claimed'){
-   const buy=el('button','dudu-fun-start lucky-buy','🧧 MUA VÉ MỚI · 10 XU');
+   const buy=withGold('button','dudu-fun-start lucky-buy','🧧 MUA VÉ · ',rule.PRICE);
    buy.type='button';buy.disabled=luckyBusy||luckyCurrency<rule.PRICE;
    buy.addEventListener('click',()=>{void luckyAction('buy');});rootNode.append(buy);
   }
@@ -598,7 +606,7 @@
   const list=el('div','lucky-odds-list');
   for(const prize of [...rule.PRIZES].reverse()){
    const row=el('div','lucky-odds-row');
-    row.append(el('span','',prize.tier+' · '+prize.amount.toLocaleString('vi-VN')+' Xu Vàng'),
+    row.append(withGold('span','',prize.tier+' · ',prize.amount.toLocaleString('vi-VN')),
     el('b','',(prize.weight/10000).toLocaleString('vi-VN',{maximumFractionDigits:4})+'%'));
    list.append(row);
   }
@@ -610,7 +618,7 @@
    for(const h of s.history.slice(-8).reverse()){
     const line=el('div','dudu-fun-history-line');
     line.append(el('span','',h.day+' · Vé Vạn Phúc'),
-     el('strong','',h.amount.toLocaleString('vi-VN')+' Xu Vàng'));
+     gold('strong','',h.amount.toLocaleString('vi-VN')));
     history.append(line);
    }
    rootNode.append(history);
@@ -630,7 +638,7 @@
   const intro=el('div','lucky-kiosk-head');
   intro.append(el('span','','🏮 LỘC ĐẾN NHÀ · 刮刮乐'),
    el('strong','','Vé Cào Vạn Phúc'),
-   el('small','','10 Xu Vàng/thẻ · Mua không giới hạn · Giải cao nhất 10.000 Xu Vàng'));
+   withGold('small','','','10/thẻ · Giải lớn 10.000'));
   rootNode.append(intro);
   if(!active||active.status==='claimed'){
    rootNode.append(el('p','dudu-fun-caption','Chọn phong cách tấm vé. Mọi mẫu có cùng tỷ lệ trúng giải.'));
@@ -644,7 +652,7 @@
     tile.addEventListener('click',()=>{luckyTheme=design.id;render();});shelf.append(tile);
    }
    rootNode.append(shelf);
-   const buy=el('button','dudu-fun-start lucky-buy','🧧 MUA VÉ · 10 XU');
+   const buy=withGold('button','dudu-fun-start lucky-buy','🧧 MUA VÉ · ',rule.PRICE);
    buy.disabled=luckyBusy||luckyCurrency<rule.PRICE;
    buy.type='button';buy.addEventListener('click',()=>{void luckyAction('buy');});
    rootNode.append(buy);
@@ -673,8 +681,8 @@
     '✦ '+rule.PRIZES.find(p=>p.amount===active.amount).tier.toUpperCase()+' · '+active.amount+' XU ✦'));
    rootNode.append(card);
    if(active.status==='ready'){
-    const claim=el('button','dudu-fun-claim lucky-claim',active.amount?
-     '🧧 Nhận '+active.amount+' Xu Vàng vào Ví':'✓ Hoàn tất lượt cào');
+    const claim=active.amount?withGold('button','dudu-fun-claim lucky-claim','🧧 Nhận ',active.amount):
+     el('button','dudu-fun-claim lucky-claim','✓ Hoàn tất lượt cào');
     claim.disabled=luckyBusy;claim.addEventListener('click',()=>{void luckyAction('claim');});
     rootNode.append(claim);
    }
@@ -689,7 +697,7 @@
   const list=el('div','lucky-odds-list');
   for(const prize of [...rule.PRIZES].reverse()){
    const row=el('div','lucky-odds-row');
-   row.append(el('span','',prize.tier+' · '+prize.amount.toLocaleString('vi-VN')+' Xu Vàng'),
+   row.append(withGold('span','',prize.tier+' · ',prize.amount.toLocaleString('vi-VN')),
     el('b','',Number((prize.weight/10000).toFixed(4)).toLocaleString('vi-VN',{maximumFractionDigits:4})+'%'));
    list.append(row);
   }
@@ -701,7 +709,7 @@
    for(const h of s.history.slice(-8).reverse()){
     const title=rule.THEMES.find(t=>t.id===h.theme)?.name||'Vạn Phúc';
     const line=el('div','dudu-fun-history-line');
-    line.append(el('span','',h.day+' · '+title),el('strong','',h.amount+' Xu Vàng'));
+    line.append(el('span','',h.day+' · '+title),gold('strong','',h.amount));
     book.append(line);
    }
    rootNode.append(book);
@@ -715,7 +723,7 @@
   for(const row of state.history.slice(-5).reverse()){
    const line=el('div','dudu-fun-history-line');
    line.append(el('span','',row.day+' · '+(row.type==='box'?'Hộp Mù':'Vé Số')),
-    el('strong','',row.reward.kind==='COIN'?row.reward.amount+' Xu Vàng':row.reward.label));
+    row.reward.kind==='COIN'?gold('strong','',row.reward.amount):el('strong','',row.reward.label));
    details.append(line);
   }
   target.append(details);

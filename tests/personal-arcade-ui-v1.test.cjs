@@ -56,7 +56,7 @@ test('Arcade phone UI renders four named tabs and a disabled transfer control',(
  assert.match(host.innerHTML,/Địa Tầng 07/);
  assert.match(host.innerHTML,/Vườn Sương/);
  assert.match(host.innerHTML,/Ngọc Phường/);
- assert.equal(headerWallet.textContent,'💚 0');
+ assert.equal(headerWallet.textContent,'0');
  assert.equal(headerWallet.disabled,false);
  assert.doesNotMatch(host.innerHTML,/CHƠI TỰ DO|arcade-topbar/);
  assert.match(host.innerHTML,/class="arcade-scroll"/);
@@ -66,7 +66,7 @@ test('Arcade phone UI renders four named tabs and a disabled transfer control',(
  assert.doesNotMatch(host.innerHTML,/arcade-privacy|LOCAL \/ FREE/);
  assert.match(host.innerHTML,/arcade-stage neon-stage/);
  assert.match(host.innerHTML,/neon-gaming-floor neon-floor-capacity-3/);
- assert.match(host.innerHTML,/\+0,01 <small>💚 \/ giây<\/small>/);
+ assert.match(host.innerHTML,/\+0,01 <small><i class="dudu-money-icon dudu-money-icon--green" aria-hidden="true"><\/i>\/giây<\/small>/);
  assert.match(host.innerHTML,/data-arcade-action="cpu"/);
  assert.match(host.innerHTML,/data-arcade-action="gpu"/);
  assert.match(host.innerHTML,/data-arcade-action="station"/);

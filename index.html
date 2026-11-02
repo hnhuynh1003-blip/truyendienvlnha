@@ -63,7 +63,8 @@
   <link rel="stylesheet" href="css/arcade-c449-garden-progression.css?v=c449-1">
   <link rel="stylesheet" href="css/honor-presentation-c437p.css?v=c437p-1">
   <link rel="stylesheet" href="css/arcade-treasure-c438.css?v=c438-1">
-  <link rel="stylesheet" href="css/dudu-wallet-v1.css?v=fun-p1-1">
+  <link rel="stylesheet" href="css/dudu-wallet-v1.css?v=fun-p1-2">
+  <link rel="stylesheet" href="css/dudu-currency-icons-v1.css?v=fun-p1-2">
   <link rel="stylesheet" href="css/item-actions-v43.css?v=43-5-3b">
   <link rel="stylesheet" href="css/museum-memories-v43.css?v=1">
   <link rel="stylesheet" href="css/npc-diary-ui.css?v=1">
@@ -1046,7 +1047,7 @@
           <span class="dudu-v50-account-details">
             <span class="dudu-v50-account-head">
               <strong id="phone-player-name-v16">Kẻ Lang Bạt</strong>
-              <span class="widget-currency" id="phone-currency-display" aria-label="Xu Vàng">🟡 50</span>
+              <span class="widget-currency dudu-money-display--gold" id="phone-currency-display" aria-label="Xu Vàng">50</span>
             </span>
             <span class="phone-widgets">
               <span class="dudu-v50-progress-meta">
@@ -1058,7 +1059,7 @@
               </span>
             </span>
             <!-- Sandbox continues using its original pill; live mode hides this duplicate. -->
-            <small id="dudu-v30-account-meta">Lv.1 · 🟡 50</small>
+            <small id="dudu-v30-account-meta">Lv.1 · <i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i>50</small>
           </span>
         </button>
         <button type="button" id="dudu-honor-home-title" class="dudu-honor-home-chip"
@@ -1089,7 +1090,7 @@
             <div class="app-box" style="background:#10b981;">🛒</div><div class="app-label">Cửa Hàng</div>
           </button>
           <button type="button" class="app-icon" onclick="openPhoneApp('wallet')" aria-label="Mở Ví Xu Vàng mua sắm">
-            <div class="app-box" style="background:linear-gradient(140deg,#b1843d,#695344);">🟡</div><div class="app-label">Ví Vàng</div>
+            <div class="app-box" style="background:linear-gradient(140deg,#b1843d,#695344);"><i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i></div><div class="app-label">Ví</div>
           </button>
           <button type="button" class="app-icon" id="dudu-fun-launch-v43"
             onclick="openPhoneApp('fun')" aria-label="Mở DUDU FUN" hidden>
@@ -1533,14 +1534,14 @@
       <div class="phone-sub-app" id="phone-app-wallet">
         <div class="phone-app-header">
           <button type="button" class="phone-back-btn" onclick="phoneHome()" aria-label="Về màn hình chính">‹</button>
-          <span>Ví Xu Vàng</span>
+          <span>Ví</span>
           <span class="dudu-wallet-mark">DUDU</span>
         </div>
         <div class="dudu-wallet-shell">
           <section class="dudu-wallet-card" aria-label="Số dư Xu Vàng mua sắm">
             <div class="dudu-wallet-card-glow" aria-hidden="true">✦</div>
-            <span class="dudu-wallet-overline">🟡 XU VÀNG · DUDU STUDIO</span>
-            <strong id="dudu-wallet-system-balance" aria-live="polite"><span id="dudu-wallet-system-amount">0</span> <small>Xu Vàng</small></strong>
+            <span class="dudu-wallet-overline">DUDU STUDIO</span>
+            <strong id="dudu-wallet-system-balance" aria-live="polite"><i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i><span id="dudu-wallet-system-amount">0</span></strong>
             <span class="dudu-wallet-caption">Mua sắm, sưu tập và vui chơi trong DUDU FUN</span>
           </section>
           <div class="dudu-wallet-actions">
@@ -1548,11 +1549,11 @@
             <button type="button" onclick="openPhoneApp('arcade')">🎮 <span>Chơi Arcade</span></button>
           </div>
           <section class="dudu-wallet-secondary" aria-label="Tiền Xanh trong Arcade">
-            <div><span>💚 Tiền Xanh · Arcade</span><strong id="dudu-wallet-arcade-balance">—</strong></div>
+            <div><span>ARCADE</span><strong class="dudu-money-display--green" id="dudu-wallet-arcade-balance" aria-label="Số dư Tiền Xanh Arcade">—</strong></div>
             <span class="dudu-wallet-source-badge">Trên thiết bị</span>
           </section>
           <button type="button" class="dudu-wallet-exchange-launch" onclick="window.DuduPersonalArcadeUIV1?.openExchange?.()">⇄ Quầy đổi tiền · Xem trước</button>
-          <div class="dudu-wallet-lock"><span aria-hidden="true">⌁</span><span>💚 10 → 🟡 1 · Chưa chuyển tiền thật vào ví.</span></div>
+          <div class="dudu-wallet-lock" aria-label="Tỷ giá xem trước: 10 Tiền Xanh đổi 1 Xu Vàng, chưa kích hoạt"><span aria-hidden="true">⌁</span><span><i class="dudu-money-icon dudu-money-icon--green" aria-hidden="true"></i>10 → <i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i>1 · Chưa kích hoạt đổi</span></div>
         </div>
       </div>
 
@@ -1560,10 +1561,10 @@
       <div class="phone-sub-app" id="phone-app-shop">
         <div class="phone-app-header">
           <button class="phone-back-btn" onclick="phoneHome()">‹</button>
-          <span>Cửa Hàng Xu Vàng</span>
+          <span>Cửa Hàng</span>
           <span></span>
         </div>
-        <div style="font-size:10px; color:var(--gold); margin-bottom:6px;">🟡 Xu Vàng: <b id="shop-currency-val">50</b></div>
+        <div style="font-size:10px; color:var(--gold); margin-bottom:6px;"><span class="dudu-money-display--gold" aria-label="Số dư Xu Vàng"><b id="shop-currency-val">50</b></span></div>
         <div id="shop-items-container" class="dudu-v27-shop-grid"></div>
       </div>
 
@@ -1572,7 +1573,7 @@
         <div class="phone-app-header">
           <button type="button" class="phone-back-btn" onclick="phoneHome()" aria-label="Trở về">‹</button>
           <span>✦ DUDU FUN</span>
-          <span id="dudu-fun-header-balance" aria-label="Số dư Xu Vàng">—</span>
+          <span class="dudu-money-display--gold" id="dudu-fun-header-balance" aria-label="Số dư Xu Vàng">—</span>
         </div>
         <div id="dudu-fun-content-v43" aria-live="polite"></div>
       </div>
@@ -1584,7 +1585,7 @@
           <button type="button" id="arcade-season-portal-c423" class="arcade-season-portal" aria-label="Mở Hộ Chiếu Mùa 1">✦ MÙA 01</button>
           <button type="button" id="arcade-treasure-launch-c438" class="arcade-treasure-launch"
             aria-label="Mở Sổ Báu Vật" title="Sổ Báu Vật">◈</button>
-          <button type="button" id="arcade-header-wallet-v1" class="arcade-header-wallet" data-arcade-exchange="open" aria-label="Số dư Tiền Xanh Arcade, chạm để xem quầy đổi">💚 —</button>
+          <button type="button" id="arcade-header-wallet-v1" class="arcade-header-wallet dudu-money-display--green" data-arcade-exchange="open" aria-label="Số dư Tiền Xanh Arcade, chạm để xem quầy đổi">—</button>
         </div>
         <div id="personal-arcade-v1" aria-label="Bốn trò chơi cá nhân"></div>
       </div>
@@ -6285,7 +6286,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
         div.innerHTML = `
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <span class="rank-tag rank-D">${q.type}</span>
-            <span style="font-size:9px; color:var(--gold); font-weight:bold;">+${q.rewardCoin} 🪙</span>
+            <span style="font-size:9px; color:var(--gold); font-weight:bold;">+${q.rewardCoin} <i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i></span>
           </div>
           <div style="font-size:11px; font-weight:bold; color:var(--text-white); margin-top:2px;">${escapeHtml(q.title)}</div>
           <div class="quest-prog-bar">
@@ -6314,7 +6315,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
               <span class="rank-tag rank-${item.rank}">${item.rank}</span>
               <span style="font-size:11px; font-weight:bold; color:var(--text-white);">${escapeHtml(item.name)}</span>
             </div>
-            <div style="font-size:9px; color:var(--gold); font-weight:bold; margin-top:1px;">${item.price} 🪙 Xu</div>
+            <div style="font-size:9px; color:var(--gold); font-weight:bold; margin-top:1px;"><i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i>${item.price}</div>
           </div>
           <button class="btn" style="padding:3px 6px; font-size:9px;" onclick="buyShopItem('${item.id}')">Mua</button>
         `;
@@ -6329,7 +6330,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
         Math.max(0,Math.floor(Number(userProfile.currency))):0;
       if(main)main.textContent=balance.toLocaleString('vi-VN');
       const gameXu=window.DuduPersonalArcadeUIV1?.peekBalance?.();
-      if(arcade)arcade.textContent=gameXu===null||gameXu===undefined?'—':'💚 '+gameXu;
+      if(arcade)arcade.textContent=gameXu===null||gameXu===undefined?'—':gameXu;
     }
 
     function buyShopItem(shopItemId) {
@@ -6604,10 +6605,13 @@ document.getElementById('phone-home-screen').style.display = 'none';
       if (expTextEl) expTextEl.textContent = userProfile.exp + '/' + expNeeded + ' EXP';
 
       const coinEl = document.getElementById('phone-currency-display');
-      if (coinEl) coinEl.textContent = `🟡 ${userProfile.currency.toLocaleString('vi-VN')}`;
+      if (coinEl) coinEl.textContent = userProfile.currency.toLocaleString('vi-VN');
       const miniMeta=document.getElementById('dudu-v30-account-meta');
-      if(miniMeta)miniMeta.textContent='Lv.'+userProfile.level+' · 🟡 '+
-        userProfile.currency.toLocaleString('vi-VN');
+      if(miniMeta){
+        const mark=document.createElement('i');mark.className='dudu-money-icon dudu-money-icon--gold';
+        mark.setAttribute('aria-hidden','true');
+        miniMeta.replaceChildren('Lv.'+userProfile.level+' · ',mark,userProfile.currency.toLocaleString('vi-VN'));
+      }
 
       const shopCoinEl = document.getElementById('shop-currency-val');
       if (shopCoinEl) shopCoinEl.textContent = userProfile.currency;
@@ -8787,11 +8791,11 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/npc-portrait-v39.js?v=2"></script>
 <script src="js/phone-inbox-v33.js?v=51-1"></script>
 <script src="js/companion-ui-v43.js?v=69-restore-1"></script>
-<script src="js/market-ui-v43.js?v=c24a-1&amp;fun=p1-1"></script>
-<script src="js/dudu-fun-ui-v43.js?v=c416-1&amp;fun=p1-1"></script>
-<script src="js/personal-jade-ui-v1.js?v=c442-1&amp;art=c432-1&amp;materials=c425c-1&amp;compact=c425d-2&amp;market=c441b-1&amp;c450=1&amp;c452=1&amp;fun=p1-1"></script>
+<script src="js/market-ui-v43.js?v=c24a-1&amp;fun=p1-2"></script>
+<script src="js/dudu-fun-ui-v43.js?v=c416-1&amp;fun=p1-2"></script>
+<script src="js/personal-jade-ui-v1.js?v=c442-1&amp;art=c432-1&amp;materials=c425c-1&amp;compact=c425d-2&amp;market=c441b-1&amp;c450=1&amp;c452=1&amp;fun=p1-2"></script>
 <script src="js/personal-honor-ui-c46.js?v=c412-1&amp;journey=c437-1&amp;progression=c425g-1&amp;art=c437p-1"></script>
-<script src="js/personal-arcade-ui-v1.js?v=c445-1&amp;art=c425a-2&amp;worlds=c425b-2&amp;materials=c425c-1&amp;pods=c425d-1&amp;interaction=c425e-1&amp;fishing=c440a-1&amp;progression=c425g-1&amp;tackle=c427-1&amp;weather=c428-1&amp;museum=c429-1&amp;season-preview=c439r2-1&amp;neon=c441a-1&amp;beat=c441b-1&amp;phase=c446-1&amp;farm=c446b-1&amp;layout=c446c-1&amp;pond=c447-1&amp;album=c448-1&amp;economy=c448b-1&amp;garden=c449-1&amp;c450=1&amp;precision=c451-1&amp;c452=1&amp;fun=p1-1"></script>
+<script src="js/personal-arcade-ui-v1.js?v=c445-1&amp;art=c425a-2&amp;worlds=c425b-2&amp;materials=c425c-1&amp;pods=c425d-1&amp;interaction=c425e-1&amp;fishing=c440a-1&amp;progression=c425g-1&amp;tackle=c427-1&amp;weather=c428-1&amp;museum=c429-1&amp;season-preview=c439r2-1&amp;neon=c441a-1&amp;beat=c441b-1&amp;phase=c446-1&amp;farm=c446b-1&amp;layout=c446c-1&amp;pond=c447-1&amp;album=c448-1&amp;economy=c448b-1&amp;garden=c449-1&amp;c450=1&amp;precision=c451-1&amp;c452=1&amp;fun=p1-2"></script>
 <script src="js/arcade-treasure-ui-c438.js?v=c438-1&amp;display=c439-2&amp;repair=c439r2-1"></script>
 <script src="js/arcade-showcase-ui-c439.js?v=c439-1&amp;repair=c439r2-1&amp;align=c439r4-1"></script>
 <script src="js/quest-ui-v43-7.js?v=c23c-1&amp;progression=c425g-1"></script>
