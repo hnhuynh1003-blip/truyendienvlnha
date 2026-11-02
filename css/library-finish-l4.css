@@ -1,0 +1,58 @@
+/* L4 — quiet, data-safe detail and chapter navigation polish. */
+body.dudu-site-v60 #cover-view .archive-cover-topbar{
+ display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;
+ gap:9px 12px;margin:0 0 14px;
+}
+body.dudu-site-v60 #cover-view .archive-cover-topbar > .btn{flex:none}
+body.dudu-site-v60 #cover-view .archive-cover-main-actions{
+ display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;
+ gap:7px;min-width:0;margin-left:auto;
+}
+body.dudu-site-v60 #cover-view .archive-cover-main-actions .btn{min-height:37px}
+body.dudu-site-v60 #cover-view .book-banner-meta h1,
+body.dudu-site-v60 #cover-view .chapter-name-click{overflow-wrap:anywhere}
+body.dudu-site-v60 #cover-view .archive-chapter-find{
+ display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;
+ gap:9px 12px;padding:12px 2px 10px;
+}
+body.dudu-site-v60 #cover-view .archive-chapter-find[hidden],
+body.dudu-site-v60 #cover-view .archive-chapter-more[hidden]{display:none!important}
+body.dudu-site-v60 #cover-view .archive-chapter-find label{
+ display:flex;align-items:center;gap:8px;flex:1 1 220px;min-width:0;
+ min-height:42px;padding:0 12px;border:1px solid rgba(220,198,156,.31);
+ border-radius:8px;background:#182536;color:#dec69b;
+}
+body.dudu-site-v60 #cover-view .archive-chapter-find label > span{font:25px/1 Georgia,serif}
+body.dudu-site-v60 #cover-view .archive-chapter-find input{
+ flex:1;min-width:0;min-height:40px;border:0;background:none;outline:none;
+ color:#f3ecdd;font-size:13px;
+}
+body.dudu-site-v60 #cover-view .archive-chapter-find label:focus-within{
+ border-color:#dcc69c;box-shadow:0 0 0 2px rgba(220,198,156,.1);
+}
+body.dudu-site-v60 #cover-view #chapter-index-count-l4{
+ margin-left:auto;color:#a9b8c8;font:600 11px/1.4 ui-monospace,Consolas,monospace;white-space:nowrap;
+}
+body.dudu-site-v60 #cover-view .archive-chapter-more{
+ display:block;margin:20px auto 14px;min-height:43px;
+ padding:10px 19px;border:1px solid rgba(220,198,156,.45);
+ border-radius:8px;background:#202e3e;color:#e5ce9e;
+ font:650 12px/1.4 system-ui,sans-serif;cursor:pointer;
+}
+body.dudu-site-v60 #cover-view .archive-chapter-more:hover{
+ border-color:#e7d2a7;background:#2a3747;color:#fff;
+}
+body.dudu-site-v60 #cover-view .archive-chapter-more:focus-visible{
+ outline:2px solid #e7d2a7;outline-offset:3px;
+}
+body.dudu-site-v60 #cover-view .archive-chapter-empty{
+ grid-column:1/-1;padding:19px 8px;color:#aab7c8;font-size:13px;
+}
+@media(max-width:760px){
+ body.dudu-site-v60 #cover-view .archive-cover-topbar{align-items:flex-start;gap:8px}
+ body.dudu-site-v60 #cover-view .archive-cover-main-actions{flex:1 1 155px;gap:6px}
+ body.dudu-site-v60 #cover-view .archive-cover-main-actions .btn{font-size:11px;padding:8px 10px}
+ body.dudu-site-v60 #cover-view .archive-chapter-find{align-items:stretch;gap:6px}
+ body.dudu-site-v60 #cover-view .archive-chapter-find label{flex-basis:100%}
+ body.dudu-site-v60 #cover-view .chapter-item{min-height:55px}
+}

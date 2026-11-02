@@ -58,20 +58,28 @@ async function main(){
   });
   await page.waitForFunction(()=>document.querySelectorAll('#novel-grid-container .novel-card').length===20);
   assert.equal(await page.locator('#search-result-count').innerText(),'247 / 247 tác phẩm');
-  for(const width of [320,390]){
+  for(const width of [320,390,768,1366]){
    await page.setViewportSize({width,height:844});
-   const state=await page.evaluate(()=>({
-    count:document.querySelectorAll('#novel-grid-container .novel-card').length,
-    overflow:document.documentElement.scrollWidth-window.innerWidth,
-    pager:document.getElementById('library-catalog-pager-top').getBoundingClientRect().right,
-    topHeight:document.getElementById('library-catalog-pager-top').getBoundingClientRect().height,
-    bottomHeight:document.getElementById('library-catalog-pager-bottom').getBoundingClientRect().height
-   }));
+    const state=await page.evaluate(()=>{
+     const top=document.getElementById('library-catalog-pager-top');
+     const bottom=document.getElementById('library-catalog-pager-bottom');
+     const topRect=top.getBoundingClientRect();
+     const parts=[...top.querySelectorAll('.library-catalog-page-step,.library-catalog-page-range,.library-catalog-page-jump-toggle')]
+       .map(node=>node.getBoundingClientRect());
+     const bounds={left:Math.min(...parts.map(r=>r.left)),right:Math.max(...parts.map(r=>r.right))};
+     return {count:document.querySelectorAll('#novel-grid-container .novel-card').length,
+      overflow:document.documentElement.scrollWidth-window.innerWidth,
+      pager:topRect.right,topHeight:topRect.height,
+      bottomHeight:bottom.getBoundingClientRect().height,
+      pagerCenter:topRect.left+topRect.width/2,controlsCenter:(bounds.left+bounds.right)/2};
+   });
    assert.equal(state.count,20);
    assert.ok(state.overflow<=2&&state.pager<=width+2,
     'catalog pagination fits '+width+'px without horizontal overflow');
    assert.ok(state.topHeight<=60&&state.bottomHeight<=115,
     'pagination uses compact toolbars at '+width+'px');
+   assert.ok(Math.abs(state.pagerCenter-state.controlsCenter)<=3,
+    'top pagination and jump toggle stay centered at '+width+'px');
   }
   await page.locator('#library-catalog-pager-bottom .library-catalog-page-number[data-page="2"]').click();
   assert.equal(await page.locator('#library-catalog-pager-bottom .library-catalog-page-number.is-current').innerText(),'2');
@@ -103,6 +111,12 @@ async function main(){
    'many-page catalogs show an ellipsis before the final page numbers');
   await page.locator('#library-catalog-pager-top .library-catalog-page-jump-toggle').click();
   const jump=page.locator('#library-catalog-pager-top .library-catalog-page-jump');
+  const centered=await jump.evaluate(el=>{
+   const r=el.getBoundingClientRect(),p=el.parentElement.getBoundingClientRect();
+   return {formCenter:r.left+r.width/2,pagerCenter:p.left+p.width/2};
+  });
+  assert.ok(Math.abs(centered.formCenter-centered.pagerCenter)<=3,
+   'the Go to page form opens in the horizontal center');
   await jump.locator('input').fill('12');
   await jump.locator('button[type="submit"]').click();
   assert.equal(await page.locator('#library-catalog-pager-bottom .library-catalog-page-range').innerText(),

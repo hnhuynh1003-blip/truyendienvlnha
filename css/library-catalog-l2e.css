@@ -40,7 +40,7 @@ body.dudu-site-v60 #home-view .library-catalog-page-jump-toggle{
   font:inherit;font-size:11px;font-weight:700;cursor:pointer;
 }
 body.dudu-site-v60 #home-view #library-catalog-pager-top{
-  flex-wrap:wrap;justify-content:flex-end;margin:0 0 8px;padding:2px 0;
+  flex-wrap:wrap;justify-content:center;margin:0 0 8px;padding:2px 0;
 }
 body.dudu-site-v60 #home-view #library-catalog-pager-top .library-catalog-page-ribbon{
   display:contents;
@@ -53,14 +53,16 @@ body.dudu-site-v60 #home-view #library-catalog-pager-top .library-catalog-page-s
 body.dudu-site-v60 #home-view #library-catalog-pager-top .library-catalog-page-range{order:2}
 body.dudu-site-v60 #home-view #library-catalog-pager-top .library-catalog-page-step:last-child{order:3}
 body.dudu-site-v60 #home-view #library-catalog-pager-top .library-catalog-page-jump-toggle{order:4}
-body.dudu-site-v60 #home-view #library-catalog-pager-top .library-catalog-page-jump{order:5;flex-basis:100%}
+body.dudu-site-v60 #home-view #library-catalog-pager-top .library-catalog-page-jump{
+  order:5;flex-basis:100%;margin:5px auto 0;
+}
 body.dudu-site-v60 #home-view #library-catalog-pager-bottom .library-catalog-page-ribbon{
   flex-basis:100%;
 }
 body.dudu-site-v60 #home-view .library-catalog-page-jump{
   display:flex;flex-wrap:wrap;align-items:end;justify-content:center;
   gap:8px;width:100%;max-width:360px;box-sizing:border-box;
-  padding:10px;border:1px solid #85687d66;border-radius:13px;background:#1e2733;
+  margin-inline:auto;padding:10px;border:1px solid #85687d66;border-radius:13px;background:#1e2733;
 }
 body.dudu-site-v60 #home-view .library-catalog-page-jump label{
   display:flex;flex-direction:column;gap:4px;min-width:0;

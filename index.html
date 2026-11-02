@@ -851,8 +851,9 @@
   <link rel="stylesheet" href="css/arcade-c427-tackle.css?v=c427-2">
   <link rel="stylesheet" href="css/arcade-c428-weather.css?v=c428-1">
   <link rel="stylesheet" href="css/library-reading-return-c443.css?v=l2f-1">
-  <link rel="stylesheet" href="css/library-catalog-l2e.css?v=l2e-3">
+  <link rel="stylesheet" href="css/library-catalog-l2e.css?v=l4-1">
   <link rel="stylesheet" href="css/library-smart-filter-l3.css?v=l3-2">
+  <link rel="stylesheet" href="css/library-finish-l4.css?v=l4-1">
   <script src="js/library-catalog-l2e.js?v=l2e-3"></script>
   <script src="js/library-smart-filter-l3.js?v=l3-1"></script>
   <script src="js/library-reader-shortcut-l2f.js?v=l2f-2"></script>
@@ -958,9 +959,9 @@
 
     <!-- 2. TRANG BÌA & MỤC LỤC -->
     <div id="cover-view">
-      <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+      <div class="archive-cover-topbar">
         <button class="btn" onclick="window.DuduSiteV60 ? DuduSiteV60.navigate('library') : goHome()">‹ Thư viện</button>
-        <div style="display: flex; gap: 6px;">
+        <div class="archive-cover-main-actions">
           <button class="btn btn-gold" id="btn-main-reading-action" onclick="smartReadActionCover()">▶ Đọc ngay</button>
           <button type="button" class="btn admin-only" id="epub-edit-tools-open" style="display:none" onclick="epubEditorL2D5.open(novels[selectedNovelIndex])">Biên tập chương</button>
           <button class="btn admin-only" onclick="openEditStoryModal()">✎ Sửa</button>
@@ -999,7 +1000,14 @@
           <button class="btn btn-primary admin-only" onclick="openCreateChapterModal()">+ Thêm chương</button>
         </div>
       </div>
+      <div class="archive-chapter-find" id="chapter-index-tools-l4" hidden>
+        <label for="chapter-search-l4"><span aria-hidden="true">⌕</span>
+          <input id="chapter-search-l4" type="search" autocomplete="off" placeholder="Tìm tên hoặc số chương…" oninput="onChapterSearchL4()">
+        </label>
+        <span id="chapter-index-count-l4" aria-live="polite"></span>
+      </div>
       <div class="chapter-items" id="chapter-list-container"></div>
+      <button type="button" class="archive-chapter-more" id="chapter-index-more-l4" onclick="showMoreChaptersL4()" hidden>Hiển thị thêm chương</button>
       <section id="story-comments-pilot-v452" class="dudu-v452-host"
         aria-label="Bình luận chung Pilot của truyện" hidden></section>
       <section id="story-comments-v442" class="dudu-v442-host"
@@ -2642,6 +2650,9 @@
     let privateDraftRequestCounter = 0;
     let pendingAuthorRelease = null;
     let isReversedOrder = false;
+    let chapterIndexNovelIdL4=null;
+    let chapterIndexQueryL4='';
+    let chapterVisibleLimitL4=80;
     let currentFilterStatus = "ALL";
     let selectedTag = "ALL";
     // L3 filter state is display-only; published story records stay untouched.
@@ -7832,6 +7843,11 @@ document.getElementById('phone-home-screen').style.display = 'none';
       selectedNovelIndex = idx;
       activeChatNovelId = novels[idx].id;
       const novel = novels[idx];
+      if(chapterIndexNovelIdL4!==novel.id){
+        chapterIndexNovelIdL4=novel.id;chapterIndexQueryL4='';chapterVisibleLimitL4=80;
+        const search=document.getElementById('chapter-search-l4');
+        if(search)search.value='';
+      }
       for(const action of ['openEditStoryModal()','deleteCurrentNovel()']){
         const button=document.querySelector('#cover-view [onclick="'+action+'"]');
         if(button){
@@ -7856,7 +7872,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       document.getElementById('book-chapter-count').textContent = String(novel.chapters.length);
       const genreHost=document.getElementById('book-genre-tags');
       genreHost.replaceChildren();
-      const genres=[...new Set(String(novel.genre||'').split(/[,/]+/).map(g=>g.trim()).filter(g=>g&&g!=='Chưa phân loại'))].slice(0,8);
+      const genres=DuduLibrarySmartFilterL3.genres(novel).slice(0,8);
       genres.forEach(genre=>{const tag=document.createElement('span');tag.textContent=genre;genreHost.appendChild(tag);});
       genreHost.hidden=!genres.length;
       const bookDesc=document.getElementById('book-desc');
@@ -7939,18 +7955,30 @@ document.getElementById('phone-home-screen').style.display = 'none';
     function renderChapterIndex() {
       const novel = novels[selectedNovelIndex];
       const chContainer = document.getElementById('chapter-list-container');
-      chContainer.innerHTML = "";
+      chContainer.replaceChildren();
+      const tools=document.getElementById('chapter-index-tools-l4');
+      const countLabel=document.getElementById('chapter-index-count-l4');
+      const more=document.getElementById('chapter-index-more-l4');
+      tools.hidden=novel.chapters.length<=24;
+      if(more)more.hidden=true;
 
       if (novel.chapters.length === 0) {
-        chContainer.innerHTML = `<div style="color: var(--text-dim); font-size: 13px;">Chưa có chương nào.</div>`;
+        const empty=document.createElement('p');empty.className='archive-chapter-empty';
+        empty.textContent='Chưa có chương nào.';chContainer.appendChild(empty);
         return;
       }
 
       let list = novel.chapters.map((ch, idx) => ({ ...ch, originalIdx: idx }));
       if (isReversedOrder) list.reverse();
+      const q=DuduLibrarySmartFilterL3.normalize(chapterIndexQueryL4);
+      if(q)list=list.filter(ch=>DuduLibrarySmartFilterL3.normalize(
+        `${ch.originalIdx+1} ${ch.title||''}`).includes(q));
+      const total=list.length;
+      const visible=list.slice(0,chapterVisibleLimitL4);
+      if(countLabel)countLabel.textContent=`${visible.length} / ${total} chương`;
       const bookmark = v568ReadBookmarkForNovel(novel);
 
-      list.forEach((ch) => {
+      visible.forEach((ch) => {
         const item = document.createElement('div');
         const isCurrent = bookmark?.chIdx === ch.originalIdx;
         item.className = 'chapter-item' + (isCurrent ? ' is-bookmarked' : '');
@@ -7967,11 +7995,31 @@ document.getElementById('phone-home-screen').style.display = 'none';
         `;
         chContainer.appendChild(item);
       });
+      if(!total){
+        const empty=document.createElement('p');empty.className='archive-chapter-empty';
+        empty.textContent='Không tìm thấy chương. Thử tên hoặc số khác nhé.';
+        chContainer.appendChild(empty);
+      }
+      if(more&&total>visible.length){
+        more.hidden=false;
+        more.textContent=`Hiển thị thêm ${Math.min(80,total-visible.length)} chương ↓`;
+      }
       applyUserRole();
+    }
+
+    function onChapterSearchL4(){
+      chapterIndexQueryL4=document.getElementById('chapter-search-l4').value.trim();
+      chapterVisibleLimitL4=80;
+      renderChapterIndex();
+    }
+    function showMoreChaptersL4(){
+      chapterVisibleLimitL4+=80;
+      renderChapterIndex();
     }
 
     function toggleChapterOrder() {
       isReversedOrder = !isReversedOrder;
+      chapterVisibleLimitL4=80;
       renderChapterIndex();
     }
 

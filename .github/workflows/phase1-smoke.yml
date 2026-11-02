@@ -78,6 +78,8 @@ jobs:
         run: node tests/browser-library-catalog-l2e.cjs
       - name: L3 smart Library filters and responsive catalog (Sandbox, no external writes)
         run: node tests/browser-library-smart-filter-l3.cjs
+      - name: L4 EPUB details and 200+ chapter contents (Sandbox, no external writes)
+        run: node tests/browser-library-finish-l4.cjs
       - name: Legacy Sandbox regression (advisory; cannot block main V71)
         continue-on-error: true
         run: |

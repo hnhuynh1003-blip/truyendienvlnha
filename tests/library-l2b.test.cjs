@@ -180,12 +180,15 @@ test('L2B bookmark marker derives from existing chapter index and preserves chap
  const end=html.indexOf('function toggleChapterOrder()',start);
  assert.ok(start>0&&end>start);
  const items=[];
- const document={getElementById:()=>({set innerHTML(v){assert.equal(v,'');},appendChild:x=>items.push(x)}),
+ const host={replaceChildren(){items.length=0;},appendChild:x=>items.push(x)};
+ const document={getElementById:id=>id==='chapter-list-container'?host:{hidden:false,textContent:''},
   createElement:()=>({className:'',innerHTML:''})};
  const novel={id:'same-id',chapters:[{id:'ch1',title:'Chương một',content:'Đầu'},
   {id:'ch2',title:'Chương hai',content:'Sau'}]};
  vm.runInNewContext(html.slice(start,end)+'\nrenderChapterIndex();',{
   document,novels:[novel],selectedNovelIndex:0,isReversedOrder:false,
+  chapterIndexQueryL4:'',chapterVisibleLimitL4:80,
+  DuduLibrarySmartFilterL3:require('../js/library-smart-filter-l3.js'),
   v568ReadBookmarkForNovel:()=>({chIdx:1}),
   escapeHtml:x=>x,countWords:()=>1,applyUserRole:()=>{}
  });
