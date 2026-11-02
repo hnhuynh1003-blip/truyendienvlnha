@@ -341,16 +341,25 @@ async function main(){
    const stage=document.querySelector('.garden-stage'),pond=stage.querySelector('.garden-pond');
    const width=pond.getBoundingClientRect().width/stage.getBoundingClientRect().width;
    const imagePath=getComputedStyle(stage).backgroundImage.match(/url\(["']?([^"')]+)/)?.[1];
-   const ornament=pond.querySelector('.garden-pond-moon-gate');
+   const ripples=pond.querySelector('.garden-water-ripples');
+   const haze=pond.querySelector('.garden-shore-mist');
+   const moonlight=pond.querySelector('.garden-moon-reflection');
+   const glaze=pond.querySelector('.garden-water-surface');
+   const fish=pond.querySelector('.garden-fish');
+   const artifacts=pond.querySelectorAll('.garden-pond-upgrade').length;
    stage.classList.add('garden-pond-tier-5');
-   const ornamentVisible=getComputedStyle(ornament).display!=='none';
+   const waterEffects=[ripples,haze,moonlight].every(el=>el&&getComputedStyle(el).display==='block');
+   const submerged=Number(getComputedStyle(glaze).zIndex)>Number(getComputedStyle(fish).zIndex)
+    &&Number(getComputedStyle(fish).opacity)<1;
    stage.classList.remove('garden-pond-tier-5');
    const picture=new Image();picture.src=imagePath||'';
-   try{await picture.decode();}catch(_){return {width,ornamentVisible,loaded:false};}
-   return {width,ornamentVisible,loaded:picture.naturalWidth>=1000};
+   try{await picture.decode();}catch(_){return {width,waterEffects,submerged,artifacts,loaded:false};}
+   return {width,waterEffects,submerged,artifacts,loaded:picture.naturalWidth>=1000};
   });
   assert.ok(pondVisual.width>.88,'Painted pond uses most of the stage width');
-  assert.ok(pondVisual.ornamentVisible,'Higher pond tiers reveal AI artwork');
+  assert.equal(pondVisual.artifacts,0,'No free-standing architecture floats over the fish');
+  assert.ok(pondVisual.waterEffects,'Higher pond tiers unlock integrated lake-light effects');
+  assert.ok(pondVisual.submerged,'Water highlights sit above translucent fish artwork');
   assert.ok(pondVisual.loaded,'New AI lake backdrop loads on mobile');
 
   const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem(

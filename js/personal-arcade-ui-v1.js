@@ -522,10 +522,11 @@
       <span class="garden-firefly garden-firefly-right" aria-hidden="true"></span>
       <div class="garden-plot-area">${g.beds.map(bed).join('')}</div>
       <div class="garden-pond"><div class="garden-pond-shine"></div>
-        <span class="garden-pond-upgrade garden-pond-lotus-bridge" aria-hidden="true"></span>
-        <span class="garden-pond-upgrade garden-pond-falls" aria-hidden="true"></span>
-        <span class="garden-pond-upgrade garden-pond-moon-gate" aria-hidden="true"></span>
+        <span class="garden-water-ripples" aria-hidden="true"></span>
+        <span class="garden-shore-mist" aria-hidden="true"></span>
+        <span class="garden-moon-reflection" aria-hidden="true"></span>
         ${['a','b','c','d','e','f'].map((id,i)=>`<span class="garden-fish garden-fish-${id} garden-fish-species-${pondResidents[i]}"></span>`).join('')}
+        <span class="garden-water-surface" aria-hidden="true"></span>
         <span class="garden-lotus garden-lotus-a" aria-hidden="true"></span><span class="garden-lotus garden-lotus-b" aria-hidden="true"></span>
         <span class="garden-bubble garden-bubble-a"></span><span class="garden-bubble garden-bubble-b"></span>
         <span class="garden-bubble garden-bubble-c"></span>

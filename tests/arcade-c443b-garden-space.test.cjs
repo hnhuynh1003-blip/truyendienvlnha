@@ -10,8 +10,8 @@ test('C4.43B garden crops stay compact above the AI lake on phones',()=>{
  const css=read('css/arcade-c443b-garden-space.css');
  const html=read('index.html');
  const ui=read('js/personal-arcade-ui-v1.js');
- assert.match(html,/arcade-c443-pond-ai\.css\?v=c443a-1[\s\S]*?arcade-c443b-garden-space\.css\?v=c443b-1/);
- assert.match(html,/personal-arcade-ui-v1\.js\?v=c443b-1/);
+ assert.match(html,/arcade-c443-pond-ai\.css\?v=c443c-1[\s\S]*?arcade-c443b-garden-space\.css\?v=c443b-1/);
+ assert.match(html,/personal-arcade-ui-v1\.js\?v=c443c-1/);
  assert.match(css,/grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
  assert.match(css,/\.garden-expanded \.garden-plot-area/);
  assert.match(css,/\.garden-plot\{\s*height:120px!important/);
