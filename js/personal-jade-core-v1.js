@@ -155,6 +155,10 @@
   return {stone,ask,...surface(stone)};
  }
  const inspectionKey=(j,site,slot)=>`${j.bought+1}:${site}:${slot}`;
+ // C4.52: the paid stall inspection reveals more *different* signals at
+ // higher lamp levels. Stored inspections remain a single legacy key.
+ const marketScanSpots=(j,slot)=>Array.from({length:Math.max(1,Math.min(3,(j?.lamp||1)-1))},
+  (_,offset)=>(slot+1+offset)%3);
  const inspectFee=site=>[5,12,28,80,220][site];
  // Arcade-only market bulletin. One UTC day = one public quote; each hue
  // follows its own deterministic cycle, shared across every held specimen.
@@ -403,6 +407,6 @@
  }
  return Object.freeze({fresh,norm,act,MARKETS,GRADES,COLORS,COLOR_HEX,FLAWS,FLAW_NAMES,
   CRAFTS,RESCUE_INTERVAL,CRAFT_WINDOW,CRAFT_LIMIT,unlocked,scanHint,baseValue,cutValue,cuttingFee,windowFee,
-  actionFee,rawSalvageValue,upgradeCost,craftFee,generate,marketOffer,surface,stallFee,purchasePrice,
+  actionFee,rawSalvageValue,upgradeCost,craftFee,generate,marketOffer,surface,stallFee,purchasePrice,marketScanSpots,
   MAX_STONES,MAX_VAULT,marketRate,marketQuote,inspectFee,inspectionKey});
 });

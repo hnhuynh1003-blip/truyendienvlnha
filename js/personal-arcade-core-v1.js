@@ -130,7 +130,11 @@
  ].map(x=>Object.freeze(x)));
  const neonBeatPattern=neon=>NEON_BEAT_PATTERNS[(neon.orderRound+neon.roomTier-1)%NEON_BEAT_PATTERNS.length]
   .slice(0,neon.roomTier+2);
- const neonBeatWindow=neon=>12000-2000*(neon.roomTier-1);
+ // C4.52: better networking gives real value at the skill counter: more
+ // reaction room and quicker new guests, never extra unattended Xu.
+ const neonRouterBonus=neon=>Math.max(0,Math.min(9,(neon.router||1)-1));
+ const neonBeatWindow=neon=>12000-2000*(neon.roomTier-1)+400*neonRouterBonus(neon);
+ const neonOrderCooldown=neon=>NEON_ORDER_COOLDOWN-6000*neonRouterBonus(neon);
  const NEON_ROOM_CAPACITY=[3,5,7];
  const neonCapacity=neon=>NEON_ROOM_CAPACITY[neon.roomTier-1]||3;
  const neonService=neon=>{
@@ -209,6 +213,9 @@
  };
  const maxDurability=mine=>100+25*(mine.pickLevel-1);
  const mineProbeTarget=mine=>(mine.probes*2+mine.zone+1)%3;
+ // A crafted scanner raises the reward for identifying the right seam.
+ // The wrong tunnel still costs charge and durability, with no bonus.
+ const mineProbeBonus=mine=>1+Math.max(0,(mine.scanner||0)-1);
  const bubbleInterval=garden=>BUBBLE_INTERVAL-10000*(garden.pondTier-1);
  function norm(raw,now=Date.now()){
   const time=safeTime(now),fallback=fresh(time);
@@ -221,9 +228,10 @@
   state.coins=number(source.coins,0,MAX_COIN,0);
   state.earned=number(source.earned,0,MAX_COIN,0);
   const roomTier=number(neon.roomTier,1,3,1);
+  const router=number(neon.router,1,10,1);
   state.neon={cpu:number(neon.cpu,1,50,1),gpu:number(neon.gpu,1,20,1),
    roomTier,stations:number(neon.stations,1,neonCapacity({roomTier}),1),
-   router:number(neon.router,1,10,1),
+   router,
    skin:number(neon.skin,0,2,0),cooling:number(neon.cooling,1,5,1),
    seating:number(neon.seating,1,5,1),ambiance:number(neon.ambiance,1,5,1),
    snack:number(neon.snack,0,3,0),
@@ -237,7 +245,7 @@
    orderStreak:number(neon.orderStreak,0,1000,0),
    orderReadyAt:number(neon.orderReadyAt,0,time+NEON_ORDER_COOLDOWN,0),
    beatStep:number(neon.beatStep,0,4,0),
-   beatUntil:number(neon.beatUntil,0,time+12000,0),
+   beatUntil:number(neon.beatUntil,0,time+neonBeatWindow({roomTier,router}),0),
    ledColor:number(neon.skin,0,2,0)>0&&typeof neon.ledColor==='string'&&
     /^#[0-9a-fA-F]{6}$/.test(neon.ledColor)?
     neon.ledColor.toLowerCase():null,
@@ -458,7 +466,7 @@
    if(n.beatStep<sequence.length)return succeed('✓ Đúng nhịp '+n.beatStep+'/'+sequence.length);
    n.beatStep=0;n.beatUntil=0;n.orderRound++;n.orderWon++;
    n.orderStreak=Math.min(1000,n.orderStreak+1);
-   n.orderReadyAt=time+NEON_ORDER_COOLDOWN;
+   n.orderReadyAt=time+neonOrderCooldown(n);
    if(neonGame)neonGame.recordOrder(n,true);
    const bonus=3+Math.min(2,Math.floor(n.orderStreak/3));
    give(state,bonus);
@@ -479,7 +487,7 @@
    if(n.orderStep===0){n.orderStep=1;return succeed('✓ Đã chuẩn bị món đầu tiên');}
    n.orderRound++;n.orderStep=0;n.orderWon++;n.orderStreak=Math.min(1000,n.orderStreak+1);
    if(neonGame)neonGame.recordOrder(n,true);
-   n.orderReadyAt=time+NEON_ORDER_COOLDOWN;
+   n.orderReadyAt=time+neonOrderCooldown(n);
    const bonus=3+Math.min(2,Math.floor(n.orderStreak/3));
    give(state,bonus);
    return succeed('✦ Phục vụ trọn đơn · +'+formatXu(bonus)+' Xu Arcade');
@@ -612,10 +620,11 @@
    if(chosen===target){
     mine.probeHits++;
     const mined=dig(roll,false);
-    mine.ores[mined.ore]=Math.min(1000000,mine.ores[mined.ore]+1);
-    mine.found[mined.ore]=Math.min(10000000,mine.found[mined.ore]+1);
-    return succeed('✦ Đúng mạch! +'+(mined.quantity+1)+' '+ORE_NAMES[mined.ore],
-     {ore:mined.ore,quantity:mined.quantity+1,hit:true});
+    const extra=mineProbeBonus(mine);
+    mine.ores[mined.ore]=Math.min(1000000,mine.ores[mined.ore]+extra);
+    mine.found[mined.ore]=Math.min(10000000,mine.found[mined.ore]+extra);
+    return succeed('✦ Đúng mạch! +'+(mined.quantity+extra)+' '+ORE_NAMES[mined.ore],
+     {ore:mined.ore,quantity:mined.quantity+extra,hit:true});
    }
    mine.durability--;mine.dug++;
    mine.ores.stone=Math.min(1000000,mine.ores.stone+1);
@@ -887,7 +896,7 @@
  const formatXu=tenths=>(tenths/10).toLocaleString('vi-VN',{maximumFractionDigits:1});
  return Object.freeze({fresh,norm,advance,act,rate,upgradeCost,formatXu,
   neonCapacity,neonService,NEON_SERVICE_INTERVAL,NEON_ORDER_COOLDOWN,neonOrderPattern,
-  neonBeatPattern,neonBeatWindow,mineProbeTarget,seasonGame,
+  neonBeatPattern,neonBeatWindow,neonOrderCooldown,mineProbeTarget,mineProbeBonus,seasonGame,
   WATER_INTERVAL,REPAIR_INTERVAL,MINE_DIG_INTERVAL,GROW_INTERVAL,BUBBLE_INTERVAL,ORE_VALUES,ORE_NAMES,
   CROPS,GARDEN_ORDERS,GARDEN_SOIL_COSTS,gardenSoilCost,cropGrowTime,
   FISH_SPECIES,FISH_POND_LEVEL,pondUnlocks,pondCanHost,

@@ -327,7 +327,7 @@
        ${upgrade('▦','CPU','Cấp '+s.neon.cpu+'/50','cpu',s.neon.cpu>=50?null:cpuCost)}
        ${upgrade('◈','VGA','Cấp '+s.neon.gpu+'/20','gpu',s.neon.gpu>=20?null:gpuCost)}
        ${upgrade('▣','Dàn máy',n.stations+'/'+capacity+' dàn'+(stationCost===null&&n.roomTier<3?' · cần mở phòng':''),'station',stationCost)}
-       ${upgrade('⌁','Mạng', 'Cấp '+s.neon.router+'/10','router',routerCost)}
+       ${upgrade('⌁','Mạng','Cấp '+s.neon.router+'/10 · khách -'+6*(s.neon.router-1)+'s','router',routerCost)}
        ${upgrade('✧','LED phòng', ['Lam','Tím','Hổ phách'][s.neon.skin],'skin',skinCost)}
        ${upgrade('❄','Tản nhiệt','Cấp '+s.neon.cooling+'/5 · kéo dài ép xung','cooling',coolingCost)}
       </div>
@@ -370,7 +370,7 @@
         ${beatSymbols.map((symbol,i)=>`<button type="button" data-arcade-action="neon-beat-${i}" aria-label="Nhịp ${beatNames[i]}"
          ${!beatActive||!n.running?'disabled':''}><strong>${symbol}</strong><span>${beatNames[i]}</span></button>`).join('')}
        </div>
-       <div class="neon-order-footer"><span>✓ ${n.orderWon} ĐƠN HOÀN THÀNH</span><span>SAI/HẾT GIỜ: MẤT COMBO</span></div>
+       <div class="neon-order-footer"><span>✓ ${n.orderWon} ĐƠN HOÀN THÀNH</span><span>${n.router>1?'MẠNG: +'+((core.neonBeatWindow(n)-(12000-2000*(n.roomTier-1)))/1000).toLocaleString('vi-VN',{maximumFractionDigits:1})+'s NHỊP':'SAI/HẾT GIỜ: MẤT COMBO'}</span></div>
       </div>
     </div>
   </section>`;
@@ -443,7 +443,7 @@
        ${upgrade('◉','Đèn thám hiểm','Cấp '+m.lantern+'/3 · mở hầm','lantern',core.upgradeCost(s,'lantern'))}
        ${upgrade('▤','Xe chở quặng','Cấp '+m.cart+'/4 · +10% giá/cấp','cart',core.upgradeCost(s,'cart'))}
       </div>
-      <div class="arcade-craft-row" data-arcade-panel="mine-tools"><div><b>✦ Chế máy dò · cấp ${m.scanner}/3</b><small>8 sắt + 3 tinh thạch · tăng cơ hội quặng hiếm</small></div>
+      <div class="arcade-craft-row" data-arcade-panel="mine-tools"><div><b>✦ Chế máy dò · cấp ${m.scanner}/3</b><small>8 sắt + 3 tinh thạch · cấp 2/3: +1/+2 quặng dò trúng</small></div>
        ${button(m.scanner>=3?'Đã tối đa':'⚒ Chế tạo','mine-scanner','tool',m.scanner>=3||m.ores.iron<8||m.ores.crystal<3)}</div>
       <div class="mine-seam-game ${probeHit?'is-revealing':''} ${seasonVein?'is-season-vein':''}" aria-label="Thăm dò ba ngách, đã dò ${m.probes} lần và tìm đúng ${m.probeHits} lần">
        <div class="mine-seam-heading"><b>${seasonVein?'✧ MẠCH SƯƠNG LAM':'⌁ THĂM DÒ MẠCH NGẦM'}</b><span>⚡ 5 / LƯỢT</span></div>
@@ -456,7 +456,7 @@
           <strong>NGÁCH ${['Ⅰ','Ⅱ','Ⅲ'][i]}</strong></button>`;}).join('')}
        </div>
        ${probeHit?`<div class="mine-seam-result ${probeHit.hit?'is-hit':'is-miss'}" aria-live="polite">${orePortrait(probeHit.ore)}<b>${probeHit.hit?'ĐÚNG MẠCH':'MẠCH YẾU'}</b><small>+${probeHit.quantity} ${oreLabels[probeHit.ore]}</small></div>`:''}
-       <div class="mine-seam-footer"><span>✦ ${m.probeHits}/${m.probes} DÒ TRÚNG</span>
+       <div class="mine-seam-footer"><span>✦ ${m.probeHits}/${m.probes} DÒ TRÚNG · +${core.mineProbeBonus(m)} MẪU</span>
         <b>${canProbe?'CHỌN TÍN HIỆU SÁNG NHẤT':'ĐÀO ĐỂ NẠP ⚡'}</b></div>
       </div>
     </div>

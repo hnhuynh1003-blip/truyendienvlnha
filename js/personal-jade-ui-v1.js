@@ -178,7 +178,8 @@
        ${chosen!==null?'<div class="jade-preview-compare"><button type="button" data-jade-preview-all="1">↔ So sánh cả 3 viên</button></div>':''}
        <div class="jade-market-samples">${[0,1,2].map(slot=>{const offer=jade.marketOffer(j,i,slot);
         const inspected=j.inspected?.includes(jade.inspectionKey(j,i,slot)),fee=jade.inspectFee(i),
-         hint=inspected?jade.scanHint(offer.stone,(slot+1)%3,j.lamp):null;
+         hints=inspected?jade.marketScanSpots(j,slot).map(spot=>jade.scanHint(offer.stone,spot,j.lamp)):[],
+         visibleHints=chosen===slot?hints:hints.slice(0,1);
         return `<div class="jade-market-sample ${inspected?'is-inspected':''} ${chosen===slot?'is-selected':''}" data-jade-sample-slot="${slot}" ${chosen===slot?'tabindex="-1"':''}>
          <div class="jade-sample-top"><b>PHÔI ${['A','B','C'][slot]}</b><em>${offer.size}</em></div>
          <button type="button" class="jade-sample-pick" data-arcade-action="jade-pick-${i}-${slot}"
@@ -187,7 +188,8 @@
           <span class="jade-sample-pebble jade-shell-${(i+slot)%5} ${shellVisual(i,offer.stone.seed)} jade-sample-type-${slot}" aria-hidden="true"><i></i></span>
           <strong>${free?'TẶNG':fmt(offer.ask)+' Xu'}</strong><span>✦ CHỌN</span></button>
          <small title="${offer.marks}">${offer.marks}</small>
-         <div class="jade-sample-clue">${inspected?'◉ '+hint:'? Bí ẩn'}</div>
+         <div class="jade-sample-clue">${inspected?visibleHints.map(hint=>`<span class="jade-clue-line">◉ ${hint}</span>`).join('')+
+          (hints.length>visibleHints.length?`<span class="jade-clue-extra">+${hints.length-visibleHints.length} dấu · chọn phôi để xem</span>`:''):'? Bí ẩn'}</div>
          ${btn(inspected?'✓ Đã soi':'◉ Soi · '+fmt(fee)+' Xu','jade-inspect-'+i+'-'+slot,
           'upgrade',inspected||s.coins<fee)}</div>`;}).join('')}</div>
       </details>
@@ -197,7 +199,7 @@
         return btn(q+' viên · '+(cost?fmt(cost)+' Xu':'Tặng'),'jade-buy-pack-'+i+'-'+q,
          'market',held+q>jade.MAX_STONES||s.coins<cost);}).join('')}</div>
       </section>`;}).join('')}
-    <p class="jade-market-fairness">✧ Ruột đá chưa biết, soi không đảm bảo trúng. Đèn cấp cao giảm phí quầy, không đổi giá ngọc đã có.</p></div>`;
+    <p class="jade-market-fairness">✧ Đèn cấp cao giảm phí quầy; cấp 3/4 soi 2/3 dấu khi chọn phôi. Soi không đảm bảo trúng.</p></div>`;
  }
  function vaultPanel(s){
   const j=s.jade,time=nowOf(s),rates=marketRates(s);

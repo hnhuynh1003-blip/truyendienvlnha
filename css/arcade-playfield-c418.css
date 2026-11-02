@@ -349,6 +349,11 @@
  font-size:8px;line-height:1.2;min-height:18px;padding:4px 2px;
  border-color:#b59b6770;background:#14392fc4;
 }
+#personal-arcade-v1 .jade-clue-line{display:block;overflow-wrap:anywhere}
+#personal-arcade-v1 .jade-clue-line+.jade-clue-line{
+ margin-top:3px;padding-top:3px;border-top:1px solid #c6aa8650;
+}
+#personal-arcade-v1 .jade-clue-extra{display:block;margin-top:3px;color:#d3edcc;font-size:8px}
 #personal-arcade-v1 .jade-market-sample .arcade-button{
  min-height:28px;width:100%;padding:3px 1px;font-size:8px;
  white-space:normal;flex:none;
