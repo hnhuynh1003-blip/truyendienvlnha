@@ -1,6 +1,7 @@
 # DUDU FUN — CASINO FANTASY / VẠN TƯỢNG THIÊN CƠ
 
-**Đợt CASINO-DESIGN1 · 02/11/2026 · Chỉ thiết kế và toán thưởng.**  
+**Đợt CASINO-DESIGN1 · 02/11/2026 · Chỉ thiết kế và toán thưởng.**
+
 **KHÔNG kích hoạt cược Xu, KHÔNG sửa ví/Auth/Rules, KHÔNG reset dữ liệu.**
 
 ## Định hướng đã chọn
