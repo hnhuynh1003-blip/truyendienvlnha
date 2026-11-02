@@ -86,6 +86,7 @@ test('CASINO-SLOT2 only loads UI and odds; leaves Rules and wallet adapters dorm
  assert.doesNotMatch(html,/src="js\/dudu-fate-tower-(?:ui-)?v1\.js/);
  assert.doesNotMatch(html,/href="css\/dudu-fate-tower-v1\.css/);
  assert.doesNotMatch(fun,/\['tower','🗼 Vận Mệnh'\]/);
+ assert.doesNotMatch(fun,/khám phá hai trò chơi/);
  assert.match(fun,/DuduCasinoSlotUIV1\.mount\(\{host:content,demo:true/);
  assert.doesNotMatch(css,/^body\{margin:0/m);
  assert.doesNotMatch(css,/@media\(prefers-reduced-motion:reduce\)\{\*/);

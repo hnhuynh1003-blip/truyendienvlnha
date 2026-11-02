@@ -895,7 +895,7 @@
   if(!signed()){
    host.append(el('p','dudu-fun-guest',
     sandbox()?'Đăng nhập Sandbox để nhận lượt chơi riêng của tài khoản. Chưa có phần thưởng nào được tạo.':
-    'Đăng nhập để khám phá hai trò chơi và nhận thưởng.'));
+    'Đăng nhập để khám phá DUDU FUN và nhận thưởng.'));
    return true;
   }
   const tabs=el('div','dudu-fun-tabs');
