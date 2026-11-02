@@ -1,0 +1,128 @@
+/* CASINO-SLOT1 — a wallet-free Vạn Tượng cabinet preview. */
+:root{color-scheme:dark;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;color:#fbeccf;
+ background:radial-gradient(ellipse at 50% 0,#5a336b 0,transparent 44%),
+ radial-gradient(ellipse at 12% 45%,#39487590,transparent 55%),
+ linear-gradient(160deg,#1b182f,#101e33 76%)}
+.dudu-slot-page{width:min(100%,650px);margin:0 auto;padding:22px 15px 70px}
+.dudu-slot-back{display:inline-flex;gap:8px;align-items:center;color:#f8d6a9;
+ padding:9px 12px;border:1px solid #ab846a66;border-radius:13px;
+ text-decoration:none;font-size:13px;font-weight:700;background:#332a4480}
+.dudu-slot-back:hover{background:#5c426b;border-color:#e2b477}
+.dudu-slot-preview{text-align:center;margin-top:20px}
+.dudu-slot-eyebrow{color:#d9b6df;font-size:10px;letter-spacing:3px;font-weight:850}
+.dudu-slot-heading{margin:9px 0 6px;color:#ffebbd;
+ font-family:Georgia,"Times New Roman",serif;font-size:clamp(26px,7.3vw,39px);
+ letter-spacing:1px;text-shadow:0 2px #9f6f69,0 0 27px #c58a86a0}
+.dudu-slot-caption{color:#d4c5dc;font-size:12px;margin:0 0 18px}
+.dudu-slot-demo-badge{display:inline-flex;max-width:100%;padding:8px 14px;
+ font-size:10px;line-height:1.45;font-weight:900;letter-spacing:1px;color:#e9f3ff;
+ border:1px solid #82a7d777;border-radius:99px;background:#34527288}
+.dudu-slot-cabinet{position:relative;overflow:hidden;isolation:isolate;
+ margin:24px auto 0;padding:14px 16px 20px;border:5px solid #ab794f;
+ border-radius:35px 35px 28px 28px;background:
+ radial-gradient(ellipse at 50% 0,#c385c34d,transparent 46%),
+ linear-gradient(140deg,#57384f,#251d45 49%,#3c2952);
+ box-shadow:0 0 0 2px #f4d3a8,0 0 0 8px #553450,0 15px 42px #080b22,
+ inset 0 5px 0 #ffebc55c,inset 0 -7px 20px #0b1128a6}
+.dudu-slot-cabinet::before{content:"✦  ✧  ✦";position:absolute;inset:0 auto auto 0;
+ width:100%;padding-top:6px;font-size:11px;letter-spacing:13px;
+ color:#fff2cd70;pointer-events:none}
+.dudu-slot-cabinet::after{content:"";position:absolute;z-index:-1;
+ width:260px;height:260px;top:-180px;left:calc(50% - 130px);
+ border-radius:50%;background:#ffdba93d;filter:blur(40px);pointer-events:none}
+.dudu-slot-marquee{width:80%;margin:12px auto 18px;padding:10px 6px;
+ border:1px solid #e2ba7f;border-radius:25px 25px 12px 12px;
+ background:linear-gradient(110deg,#6f4258,#bd825f 48%,#6b446d);
+ box-shadow:inset 0 2px #fff1c274,0 3px 0 #382639,0 0 20px #d3a16a40;
+ font:bold clamp(14px,4vw,21px)/1.1 Georgia,serif;color:#fff1c6;
+ letter-spacing:3px;text-shadow:0 2px 3px #412539}
+.dudu-slot-screen{position:relative;padding:10px;border:3px solid #cd9f71;
+ border-radius:18px;background:linear-gradient(135deg,#433351,#181d38 60%,#42304e);
+ box-shadow:inset 0 0 0 3px #13162c,0 0 0 2px #f1c99061,
+ inset 0 0 32px #11162de0}
+.dudu-slot-screen::before,.dudu-slot-screen::after{content:"✦";
+ position:absolute;top:50%;color:#ffdca4;font-size:17px;transform:translateY(-50%)}
+.dudu-slot-screen::before{left:-11px}.dudu-slot-screen::after{right:-11px}
+.dudu-slot-reels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+ grid-template-rows:repeat(3,minmax(0,1fr));gap:6px}
+.dudu-slot-tile{position:relative;min-width:0;aspect-ratio:1.12;
+ display:grid;place-items:center;border:1px solid #b898a4;
+ border-radius:12px;background:radial-gradient(circle at 50% 34%,#eee6e3,#bdc1d3 73%,#969cb6);
+ box-shadow:inset 0 3px 7px #fff7,inset 0 -5px 9px #4035585e;
+ font-size:clamp(25px,8vw,52px);transform:translateZ(0)}
+.dudu-slot-tile:nth-child(3n+2){background:radial-gradient(circle at 50% 34%,#fff3db,#dabfc4 73%,#ae91ae)}
+.dudu-slot-icon{display:block;filter:drop-shadow(0 3px 1px #342d5744);
+ transition:transform .28s ease,filter .3s ease}
+.dudu-slot-tile.is-winning{border:2px solid #ffdf7a;
+ box-shadow:inset 0 0 0 2px #fff8ce,0 0 14px #ffe087,0 0 24px #ffe2ab75;
+ animation:duduTileGold .85s ease-in-out 2}
+.dudu-slot-lines{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+ gap:5px;margin-top:14px}
+.dudu-slot-line{min-width:0;padding:10px 2px;border:1px solid #8e7197;
+ border-radius:11px;background:#201c36bd;color:#d8b9d3;
+ font-size:clamp(9px,2.3vw,12px);font-weight:800}
+.dudu-slot-line.is-winning{color:#2e2342;background:#ffdfa0;
+ border-color:#fff4d0;box-shadow:0 0 18px #efc178b8}
+.dudu-slot-result{display:flex;min-height:83px;flex-direction:column;
+ align-items:center;justify-content:center;gap:7px;margin-top:14px;
+ padding:13px 8px;border:1px solid #b898a46d;border-radius:13px;
+ background:linear-gradient(135deg,#251e3c,#40304c)}
+.dudu-slot-result strong{font-size:clamp(14px,3.4vw,18px);line-height:1.35}
+.dudu-slot-result small{color:#d5bace;font-size:11px}
+.dudu-slot-result.is-win,.dudu-slot-result.is-jackpot{background:linear-gradient(125deg,#704155,#8d614e 45%,#765675);
+ border-color:#ffda8b;color:#fff4c9;animation:duduResultWin .7s ease-out}
+.dudu-slot-result.is-jackpot{box-shadow:0 0 30px #ffda917a,inset 0 0 15px #ffc77838}
+.dudu-slot-result.is-loss{animation:duduResultLoss .55s ease-out}
+.dudu-slot-controls{display:flex;flex-direction:column;gap:11px;margin:24px 0 0;
+ padding:18px;border:1px solid #b998945e;border-radius:21px;
+ background:linear-gradient(145deg,#3d304f,#26233e)}
+.dudu-slot-bet-label{font-size:13px;letter-spacing:.3px}
+.dudu-slot-chips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.dudu-slot-chip,.dudu-slot-spin{font-family:inherit;cursor:pointer;
+ -webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.dudu-slot-chip{padding:12px 5px;background:#171c35;
+ border:2px solid #947fa5;border-radius:13px;color:#f0d7db;font-size:14px;font-weight:900}
+.dudu-slot-chip.is-selected{color:#402c34;border-color:#fff3c8;
+ background:linear-gradient(115deg,#ffcb78,#fff0b8,#e5b974);
+ box-shadow:0 0 16px #f4d08a66,0 2px #17192c}
+.dudu-slot-spin{border:2px solid #fff1be;border-radius:15px;padding:17px 8px;
+ background:linear-gradient(115deg,#e8b56d,#fff2b9 50%,#c78d5c);
+ color:#44263a;font-size:18px;font-weight:1000;letter-spacing:2px;
+ box-shadow:0 5px #7a4c4d,0 9px 25px #12142c8c;transition:filter .15s}
+.dudu-slot-spin:active:not(:disabled){transform:translateY(3px);box-shadow:0 2px #7a4c4d}
+.dudu-slot-spin:hover:not(:disabled){filter:brightness(1.1)}
+.dudu-slot-chip:disabled,.dudu-slot-spin:disabled{cursor:wait;opacity:.72}
+.dudu-slot-chip:focus-visible,.dudu-slot-spin:focus-visible,.dudu-slot-back:focus-visible{
+ outline:3px solid #d0eeff;outline-offset:3px}
+.dudu-slot-error{color:#ffc1c1;font-size:11px;margin:0}
+.dudu-slot-payouts{margin:19px 0 0;padding:14px;border:1px solid #ae8c916a;
+ border-radius:15px;text-align:left;background:#2a2844ce}
+.dudu-slot-payouts summary{font-weight:800;color:#ffe4ad;cursor:pointer}
+.dudu-slot-payouts p,.dudu-slot-payouts small{font-size:12px;color:#e1d1e2;line-height:1.55}
+.dudu-slot-odds-grid{display:grid;grid-template-columns:1fr auto;gap:0 10px;
+ margin:10px 0;font-size:12px}
+.dudu-slot-odds-grid span{padding:9px 5px;border-bottom:1px solid #a58da13f}
+.dudu-slot-odds-grid span:nth-child(2n){text-align:right;color:#ffdcaa;font-weight:850}
+.dudu-slot-notice{margin:20px auto;max-width:510px;color:#aeafc8;
+ font-size:11px;line-height:1.65}
+.dudu-slot-cabinet.is-spinning .dudu-slot-tile:not(.is-stopped) .dudu-slot-icon{
+ animation:duduReel .23s linear infinite;animation-delay:calc(var(--col)*-.08s)}
+.dudu-slot-cabinet.is-spinning .dudu-slot-tile{overflow:hidden}
+.dudu-slot-cabinet.is-spinning .dudu-slot-tile.is-stopped{
+ border-color:#fff0be;box-shadow:inset 0 0 10px #fff8d5,0 0 12px #ffe2a67c}
+.dudu-slot-cabinet.is-spinning .dudu-slot-screen{box-shadow:
+ inset 0 0 0 3px #13162c,0 0 0 2px #f1c99061,0 0 24px #efc08b85}
+@keyframes duduReel{0%{transform:translateY(-90%) scaleY(.7);filter:blur(2px)}
+ 100%{transform:translateY(90%) scaleY(.7);filter:blur(2px)}}
+@keyframes duduTileGold{50%{filter:brightness(1.23);transform:scale(1.035)}}
+@keyframes duduResultWin{0%{transform:scale(.95);filter:brightness(1.6)}
+ 70%{transform:scale(1.035)}100%{transform:scale(1)}}
+@keyframes duduResultLoss{35%{filter:brightness(.7)}100%{filter:brightness(1)}}
+@media(max-width:385px){.dudu-slot-cabinet{padding:12px 10px 14px;border-width:4px}
+ .dudu-slot-screen{padding:7px}.dudu-slot-reels{gap:4px}.dudu-slot-tile{border-radius:8px}
+ .dudu-slot-controls{padding:13px}.dudu-slot-line{font-size:9px}
+ .dudu-slot-marquee{margin-bottom:14px;letter-spacing:2px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{
+ animation:none!important;transition:none!important;scroll-behavior:auto!important}}

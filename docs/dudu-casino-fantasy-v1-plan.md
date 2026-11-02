@@ -79,7 +79,7 @@ Tiệm nằm trong DUDU FUN, nhưng **không tạo ví/kho thứ hai**. Vật ph
 | Đợt | Kết quả có thể kiểm tra | Ảnh hưởng tiền thật trong game |
 |---|---|---|
 | **CASINO-DESIGN1 (hiện tại)** | Bản thiết kế, danh mục đồ, phép tính trả thưởng thuần và test | **Không** |
-| CASINO-SLOT1 | Cuộn quay hoạt ảnh, bảng thưởng, chốt kết quả và ID lượt | Chưa mở cược khi chưa có giao dịch an toàn |
+| **CASINO-SLOT1 (xem thử)** | [Máy Quay Vạn Tượng](../previews/casino-slot1.html): cuộn dừng lần lượt, bảng thưởng, chốt kết quả mô phỏng; biên nhận ID lượt được viết riêng và test | **Không**; bản xem thử không kết nối tài khoản, biên nhận chưa được gọi |
 | CASINO-SHOP1 | Tiệm Thiên Cơ hiển thị và tích hợp Kho, vật phẩm tiêu hao/trang trí | Cần Du duyệt giá trước khi bật mua |
 | CASINO-TOWER2 | Tháp có cổng/rương/phòng tiệm, rút thưởng, dùng bùa có giới hạn | Cần Du duyệt tỷ lệ và giao dịch |
 | CASINO-ECONOMY | Gắn Xu Vàng đã xác minh, Quầy đổi tiền, replay tests, backup/rollback | **Thay đổi quan trọng, phải Du duyệt trước** |
@@ -94,3 +94,10 @@ Tiệm nằm trong DUDU FUN, nhưng **không tạo ví/kho thứ hai**. Vật ph
 - Giữ nguyên bốn khu Arcade, Vạn Bảo, Vé Cào, Kho, Bảo Tàng và bảo vệ EPUB xóa vĩnh viễn C4.22.
 
 Các hằng số thiết kế và phép tính nằm trong `js/dudu-casino-design-v1.js` (không tải vào trang người chơi ở đợt này).
+
+## Phụ lục CASINO-SLOT1 — trạng thái triển khai
+
+- `previews/casino-slot1.html` là trang **demo độc lập**, không được liên kết vào giao diện người chơi chính. Bấm Quay chỉ tạo kết quả mẫu trong phiên trình duyệt; không có Firebase, số dư hay vật phẩm.
+- `js/dudu-casino-slot-ui-v1.js` dựng 9 ô, ba đường ngang, ba cuộn lần lượt dừng, đèn hàng trúng và tỷ lệ chi tiết. Kết quả được chọn trước hoạt ảnh và khóa nút Quay trong toàn bộ quá trình.
+- `js/dudu-casino-slot-receipt-v1.js` là **bản nháp giao dịch không được tải/chạy trong trang công khai**: `start` trừ cược và giữ biên nhận đang quay; `claim` cộng đúng một lần theo ID đã lưu bằng Firestore transaction. Test mô phỏng giao dịch đồng thời và tải lại. Chưa kiểm tra được edition/cấu hình Firebase thực tế vì CLI chưa được đăng nhập; không xem đây là hạ tầng kinh tế đã xác minh. Giá trị ngẫu nhiên hiện do trình duyệt đề xuất, **chưa được server xác thực**.
+- Chưa sửa `index.html`, ví, Auth, Firestore Rules, Arcade, Tiệm, Kho hay dữ liệu người chơi. Muốn mở cược thật phải xác minh Firestore và được Du duyệt riêng về 10/20/50 Xu cùng luật thưởng, sau đó mới tích hợp và chạy Emulator.
