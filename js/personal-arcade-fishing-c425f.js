@@ -26,10 +26,11 @@
  function rules(line,fish,hits=0){
   const tier=TIERS[fish?.rarity]||TIERS[fish?.rare?'Hiếm':'Thường'];
   const rod=Math.max(1,Math.min(5,line?.rod||1));
+  const essenceLevel=Math.max(0,Math.min(3,line?.essenceLevel||0));
   const premium=line?.lure==='moon';
   const beat=Math.max(0,Math.min(tier.required-1,Math.floor(hits)||0));
   const phase=tier.phases.findIndex(end=>beat<end)+1;
-  const width=Math.min(48,Math.max(12,tier.width+2*(rod-1)+(premium?2:0)-
+  const width=Math.min(48,Math.max(12,tier.width+2*(rod-1)+2*essenceLevel+(premium?2:0)-
    2*(phase-1)-((line?.size||0)>=70?2:0)));
   // The safe area shifts after each beat; a new phase also changes the sweep.
   // Every value comes from this particular line and requires no new save fields.

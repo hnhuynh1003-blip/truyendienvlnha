@@ -90,28 +90,22 @@ test('C4.48 finite commissions can never pay unlimited Xu on repeated requests',
  assert.equal(core.norm(clone(s),TIME).coins,1130);
 });
 
-test('C4.48 weekly trade gives bait, never Xu, at most twice per week',()=>{
+test('C4.48b instant spare-fish exchange gives crafting essence without coins or weekly waits',()=>{
  let s=core.fresh(TIME);s.garden.fishAlbum.reed=10;s.garden.fishAlbum.moonfish=3;
- const weekStart=Math.floor(TIME/(7*86400000))*7*86400000;
- assert.equal(core.fishTradeAllowance(s.garden,TIME),2);
+ s.garden.fishTradeWeek=Math.floor(TIME/(7*86400000));s.garden.fishTradeUsed=2;
  s=use(s,'garden-fish-trade-reed').state;
- assert.equal(s.garden.bait,1);assert.equal(s.garden.fishSpent.reed,2);
+ assert.equal(s.garden.fishEssence,1);assert.equal(s.garden.fishSpent.reed,1);
  assert.equal(s.garden.fishAlbum.reed,10);assert.equal(s.coins,0);
- assert.equal(core.fishTradeAllowance(s.garden,TIME),1);
  s=use(s,'garden-fish-trade-moonfish').state;
- assert.equal(s.garden.moonBait,1);assert.equal(s.garden.fishSpent.moonfish,1);
- assert.equal(core.fishTradeAllowance(s.garden,TIME),0);
- assert.equal(use(s,'garden-fish-trade-reed').ok,false);
+ assert.equal(s.garden.fishEssence,4);assert.equal(s.garden.fishSpent.moonfish,1);
+ assert.equal(s.garden.bait,0);assert.equal(s.garden.moonBait,0);
+ assert.equal(use(s,'garden-fish-trade-reed').ok,true,'Legacy cap is no longer active');
  const reload=core.norm(clone(s),TIME);
- assert.equal(use(reload,'garden-fish-trade-reed').ok,false);
- assert.equal(use(reload,'garden-fish-trade-reed',weekStart-1000).ok,false,
-  'Moving the clock backwards cannot replenish the same saved week');
- const nextWeek=use(reload,'garden-fish-trade-reed',weekStart+7*86400000+1000);
- assert.equal(nextWeek.ok,true);
- assert.equal(nextWeek.state.garden.fishTradeUsed,1);
- assert.equal(nextWeek.state.garden.bait,2);
- assert.equal(nextWeek.state.coins,0);
- assert.equal(nextWeek.state.garden.fishAlbum.reed,10);
+ assert.equal(use(reload,'garden-fish-trade-reed',TIME).ok,true);
+ assert.equal(use(reload,'garden-fish-trade-reed',TIME-1000).ok,true,
+  'No real-world clock or cooldown gates spare fish');
+ assert.equal(reload.garden.fishTradeUsed,2,'Old saved counter is kept for compatibility');
+ assert.equal(reload.coins,0);
 });
 
 test('C4.48 malformed spent-fish saves cannot erase the last fish of any species',()=>{

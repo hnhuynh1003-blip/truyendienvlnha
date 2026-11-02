@@ -93,14 +93,15 @@
   {name:'Tiệc Trăng',need:{moonfish:1,fogveil:1,nightlamp:1},coins:140,bait:0,moonBait:2},
   {name:'Ngọc Bảo',need:{crystal:1,dragon:1,phoenix:1},coins:200,bait:0,moonBait:3}
  ].map(order=>Object.freeze({...order,need:Object.freeze(order.need)})));
- const FISH_TRADE_WEEK_MS=7*24*60*60*1000,FISH_TRADE_LIMIT=2;
+ // C4.48b: spare fish become crafting essence, not cheap bait or timed rewards.
+ const FISH_ESSENCE_VALUE=Object.freeze({'Thường':1,'Quý':2,'Hiếm':3,'Sử thi':5,'Huyền thoại':8});
+ const FISH_ESSENCE_UPGRADES=Object.freeze([8,20,40]);
+ const FISH_RECORD_CHARM_COST=6,FISH_ESSENCE_CAP=200;
+ const fishEssenceValue=id=>FISH_ESSENCE_VALUE[FISH_SPECIES[id]?.rarity]||0;
+ const fishEssenceUpgradeCost=garden=>FISH_ESSENCE_UPGRADES[garden.fishEssenceLevel]??null;
+ const FISH_TRADE_LIMIT=2; // Legacy weekly counter: retained in saves, no longer limits trades.
  const fishAvailable=(garden,id)=>Math.max(0,(garden.fishAlbum?.[id]||0)-
   (garden.fishSpent?.[id]||0)-1);
- const fishTradeAllowance=(garden,time)=>{
-  const week=Math.floor(time/FISH_TRADE_WEEK_MS),previous=garden.fishTradeWeek;
-  return previous>week?0:previous===week?
-   Math.max(0,FISH_TRADE_LIMIT-garden.fishTradeUsed):FISH_TRADE_LIMIT;
- };
  // A fictional 60-minute pond weather cycle (three 20-minute phases), not
  // actual weather or server state. No extra saved fields, rewards or timers.
  const GARDEN_WEATHER_INTERVAL=20*60*1000;
@@ -194,7 +195,8 @@
     line:null,fishAlbum:Object.fromEntries(Object.keys(FISH_SPECIES).map(id=>[id,0])),
     fishBest:Object.fromEntries(Object.keys(FISH_SPECIES).map(id=>[id,0])),
     fishSpent:Object.fromEntries(Object.keys(FISH_SPECIES).map(id=>[id,0])),
-    fishSetsClaimed:[],fishOrdersDone:[],fishTradeWeek:-1,fishTradeUsed:0},
+    fishSetsClaimed:[],fishOrdersDone:[],fishTradeWeek:-1,fishTradeUsed:0,
+    fishEssence:0,fishEssenceLevel:0,recordCharms:0},
    jade:jadeGame?jadeGame.fresh():null,
    season:seasonGame?seasonGame.fresh():null};
  };
@@ -298,6 +300,9 @@
    FISH_ORDERS.map((_,i)=>i).filter(i=>garden.fishOrdersDone.includes(i)):[];
   state.garden.fishTradeWeek=number(garden.fishTradeWeek,-1,1000000,-1);
   state.garden.fishTradeUsed=number(garden.fishTradeUsed,0,FISH_TRADE_LIMIT,0);
+  state.garden.fishEssence=number(garden.fishEssence,0,FISH_ESSENCE_CAP,0);
+  state.garden.fishEssenceLevel=number(garden.fishEssenceLevel,0,FISH_ESSENCE_UPGRADES.length,0);
+  state.garden.recordCharms=number(garden.recordCharms,0,10,0);
   state.garden.pondDisplay=Array.isArray(garden.pondDisplay)?[...new Set(garden.pondDisplay
    .filter(id=>FISH_SPECIES[id]&&state.garden.fishAlbum[id]>0))].slice(0,3):[];
   const line=garden.line;
@@ -678,7 +683,12 @@
    const threshold=premium?Math.max(.57,baseline-MOON_BAIT_RARE_BONUS):baseline;
    const fishId=choosePondFish(roll,threshold,time,garden.pondTier),fish=FISH_SPECIES[fishId];
    const biteAt=time+FISH_BITE_MIN+Math.floor(roll*FISH_BITE_SPAN);
-   const size=fish.min+Math.floor((fish.max-fish.min+1)*((roll*997)%1));
+   let size=fish.min+Math.floor((fish.max-fish.min+1)*((roll*997)%1));
+   // Record charms change size only, never spawn odds, reel rewards or rarity.
+   if(garden.recordCharms>0){
+    size=Math.max(size,fish.min+Math.ceil((fish.max-fish.min)*.8));
+    garden.recordCharms--;
+   }
    garden[field]--;
    garden.line={fishId,biteAt,escapeAt:biteAt+FISH_REEL_WINDOW,rod:garden.rod,size,
     lure:premium?'moon':'regular'};
@@ -743,16 +753,25 @@
   if(fishTradeAction){
    const id=fishTradeAction[1],fish=FISH_SPECIES[id];
    if(!fish)return fail('Loài cá không hợp lệ');
-   const count=fish.rare?1:2;
-   if(fishAvailable(garden,id)<count)return fail('Hãy giữ lại một con trong bộ sưu tập');
-   if(fishTradeAllowance(garden,time)===0)return fail('Đã hết lượt đổi cá tuần này');
-   const week=Math.floor(time/FISH_TRADE_WEEK_MS);
-   if(garden.fishTradeWeek!==week){garden.fishTradeWeek=week;garden.fishTradeUsed=0;}
-   garden.fishSpent[id]+=count;
-   garden.fishTradeUsed++;
-   const baitType=fish.rare?'moonBait':'bait';
-   garden[baitType]=Math.min(10000,garden[baitType]+1);
-   return succeed('✦ Đã đổi cá dư lấy 1 '+(fish.rare?'mồi Tinh Nguyệt':'mồi thường'));
+   if(fishAvailable(garden,id)<1)return fail('Hãy giữ lại một con trong bộ sưu tập');
+   const essence=fishEssenceValue(id);
+   if(garden.fishEssence>FISH_ESSENCE_CAP-essence)return fail('Tinh Hoa đã đầy. Hãy rèn hoặc dùng trước');
+   garden.fishSpent[id]++;
+   garden.fishEssence+=essence;
+   return succeed('✦ Đổi '+fish.name+' lấy +'+essence+' Tinh Hoa Hồ Sương');
+  }
+  if(action==='garden-fish-essence-upgrade'){
+   const cost=fishEssenceUpgradeCost(garden);
+   if(cost===null)return fail('Dây Sương đã rèn đến cấp tối đa');
+   if(garden.fishEssence<cost)return fail('Chưa đủ Tinh Hoa để rèn dây');
+   garden.fishEssence-=cost;garden.fishEssenceLevel++;
+   return succeed('✦ Dây Sương cấp '+garden.fishEssenceLevel+' · vùng kéo cá rộng hơn');
+  }
+  if(action==='garden-fish-record-charm'){
+   if(garden.fishEssence<FISH_RECORD_CHARM_COST)return fail('Chưa đủ Tinh Hoa để tạo Bùa Kỷ Lục');
+   if(garden.recordCharms>=10)return fail('Đã có đủ 10 Bùa Kỷ Lục');
+   garden.fishEssence-=FISH_RECORD_CHARM_COST;garden.recordCharms++;
+   return succeed('✦ Bùa Kỷ Lục sẽ giúp lượt câu sau gặp cá kích thước lớn');
   }
   const gardenOrderAction=/^garden-order-([012])$/.exec(action||'');
   if(gardenOrderAction){
@@ -836,7 +855,8 @@
   neonBeatPattern,neonBeatWindow,mineProbeTarget,seasonGame,
   WATER_INTERVAL,REPAIR_INTERVAL,MINE_DIG_INTERVAL,GROW_INTERVAL,BUBBLE_INTERVAL,ORE_VALUES,ORE_NAMES,
   CROPS,GARDEN_ORDERS,FISH_SPECIES,FISH_POND_LEVEL,pondUnlocks,pondCanHost,
-  FISH_COLLECTIONS,FISH_ORDERS,FISH_TRADE_LIMIT,fishAvailable,fishTradeAllowance,
+  FISH_COLLECTIONS,FISH_ORDERS,FISH_ESSENCE_CAP,FISH_ESSENCE_UPGRADES,
+  FISH_RECORD_CHARM_COST,fishAvailable,fishEssenceValue,fishEssenceUpgradeCost,
   FISH_REEL_WINDOW,GARDEN_WEATHER_INTERVAL,gardenWeather,choosePondFish,
   MINE_PERMITS,
   maxCharge,zoneUnlocked,cropUnlocked,maxDurability,bubbleInterval,

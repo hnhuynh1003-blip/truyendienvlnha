@@ -465,7 +465,8 @@
  function gardenPanel(s,time){
   const g=s.garden,fishHit=activeFeedback('fish',time),plotHit=activeFeedback('garden-plot',time),bubbleHit=activeFeedback('garden-bubble',time);
   const line=g.line,waiting=!!line&&time<line.biteAt,biting=!!line&&!waiting;
-  const reel=currentReelFight(line,time),reelRules=reel?fishing.rules(line,core.FISH_SPECIES[line.fishId],reel.hits):null;
+  const reel=currentReelFight(line,time),reelRules=reel?
+   fishing.rules({...line,essenceLevel:g.fishEssenceLevel},core.FISH_SPECIES[line.fishId],reel.hits):null;
   const reelFlash=reel?.last&&time-reel.lastAt<1100?reel.last:'';
   const discovered=Object.values(g.fishAlbum).filter(count=>count>0).length;
   const weather=core.gardenWeather(time);
@@ -482,9 +483,8 @@
   const fishSetsComplete=g.fishSetsClaimed.length;
   const fishRecords=Object.entries(g.fishBest).filter(([,cm])=>cm>0)
    .sort((a,b)=>b[1]-a[1]).slice(0,3);
-  const tradeLeft=core.fishTradeAllowance(g,time);
-  const extraFish=Object.keys(core.FISH_SPECIES).filter(id=>core.fishAvailable(g,id)>=
-   (core.FISH_SPECIES[id].rare?1:2));
+  const essenceCost=core.fishEssenceUpgradeCost(g);
+  const extraFish=Object.keys(core.FISH_SPECIES).filter(id=>core.fishAvailable(g,id)>=1);
   const bed=(b,index)=>{
    const mature=b.status==='growing'&&time>=b.readyAt;
    const growthStage=b.status==='growing'?Math.max(0,Math.min(3,
@@ -631,12 +631,22 @@
         return `<div class="garden-fish-order"><div><strong>${order.name}</strong><small>${Object.entries(order.need).map(([id,count])=>core.FISH_SPECIES[id].name+' '+Math.min(core.fishAvailable(g,id),count)+'/'+count).join(' · ')}</small><small class="garden-fish-reward">🎁 ${fmt(order.coins)} Xu${order.bait?' · '+order.bait+' mồi':''}${order.moonBait?' · '+order.moonBait+' mồi xịn':''}</small></div>
          ${button(done?'✓ Đã giao':'Giao cá','garden-fish-order-'+i,'tool',done||!ready)}</div>`;
        }).join('')}
-       <div class="garden-fish-section-head garden-fish-weekly-head"><b>✧ Đổi cá dư</b><small>Còn ${tradeLeft}/${core.FISH_TRADE_LIMIT} lượt tuần này · không nhận Xu</small></div>
+       <div class="garden-fish-section-head garden-fish-forge-head"><b>✧ Lò Tinh Hoa Hồ Sương</b><small>Đổi ngay · không chờ tuần</small></div>
+       <div class="garden-fish-essence-forge">
+        <div class="garden-fish-essence-count"><span>✦ TINH HOA <strong>${g.fishEssence}/${core.FISH_ESSENCE_CAP}</strong></span><small>Cá càng quý, càng nhiều tinh hoa</small></div>
+        <div class="garden-fish-essence-actions">
+         <div><strong>Dây Sương · cấp ${g.fishEssenceLevel}/3</strong><small>Vùng kéo cá +${g.fishEssenceLevel*2}% · vĩnh viễn</small>
+          ${button(essenceCost===null?'✓ Tối đa':'Rèn · '+essenceCost+' ✦','garden-fish-essence-upgrade','tool',essenceCost===null||g.fishEssence<essenceCost)}</div>
+         <div><strong>Bùa Kỷ Lục · ${g.recordCharms} bùa</strong><small>Cá lượt sau lớn từ 80% cỡ tối đa</small>
+          ${button('Tạo · '+core.FISH_RECORD_CHARM_COST+' ✦','garden-fish-record-charm','tool',g.fishEssence<core.FISH_RECORD_CHARM_COST||g.recordCharms>=10)}</div>
+        </div>
+       </div>
+       <div class="garden-fish-section-head"><b>✧ Luyện cá trùng</b><small>Giữ 1 con/loài · không tạo Xu</small></div>
        <div class="garden-fish-trade-grid">${extraFish.length?extraFish.map(id=>{
-        const rare=core.FISH_SPECIES[id].rare,cost=rare?1:2;
-        return `<div class="garden-fish-trade"><strong>${core.FISH_SPECIES[id].name}</strong><small>Cá dư ${core.fishAvailable(g,id)} · đổi ${cost} con</small>
-          ${button(rare?'✦ +1 mồi xịn':'✿ +1 mồi','garden-fish-trade-'+id,'tool',tradeLeft===0)}</div>`;
-       }).join(''):'<small class="garden-fish-empty">Câu thêm cá trùng để đổi lấy mồi.</small>'}</div>
+        const value=core.fishEssenceValue(id);
+        return `<div class="garden-fish-trade"><strong>${core.FISH_SPECIES[id].name}</strong><small>Cá dư ${core.fishAvailable(g,id)} · +${value} tinh hoa/con</small>
+          ${button('✦ Luyện +'+value,'garden-fish-trade-'+id,'tool',g.fishEssence>core.FISH_ESSENCE_CAP-value)}</div>`;
+       }).join(''):'<small class="garden-fish-empty">Câu thêm cá trùng để luyện Tinh Hoa.</small>'}</div>
       </div>`:''}
       <div class="garden-tackle-shop" data-arcade-panel="garden-upgrades">
        <div class="garden-tackle-sign"><span>✧ BẾN TRĂNG · CỬA TIỆM CÂU</span><b>Đồ câu Hồ Sương</b><small>Chọn mồi, nâng cần rồi ra hồ ngay.</small></div>
@@ -826,7 +836,8 @@
   // from its animation on slower Android phones.
   const m=marker.getBoundingClientRect(),target=safe.getBoundingClientRect();
   const center=m.left+m.width/2,accurate=center>=target.left+2&&center<=target.right-2;
-  const result=fishing.pulse(challenge,accurate,line,core.FISH_SPECIES[line.fishId],time);
+  const result=fishing.pulse(challenge,accurate,
+   {...line,essenceLevel:state.garden.fishEssenceLevel},core.FISH_SPECIES[line.fishId],time);
   if(!result.ok)return false;
   reelFight=result.fight;
   if(result.result==='caught'){
