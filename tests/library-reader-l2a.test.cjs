@@ -7,6 +7,7 @@ const {runInNewContext}=require('node:vm');
 const root=join(__dirname,'..');
 const index=readFileSync(join(root,'index.html'),'utf8');
 const css=readFileSync(join(root,'css/library-reader-l2c.css'),'utf8');
+const shellCss=readFileSync(join(root,'css/site-shell-v60.css'),'utf8');
 const js=readFileSync(join(root,'js/library-reader-preferences-l2c.js'),'utf8');
 const prefs=require('../js/library-reader-preferences-l2c.js');
 
@@ -69,6 +70,15 @@ test('L2A reading themes have readable foreground/background contrast',()=>{
     ['#131e2c','#e5e7ed'],['#f4e9d4','#382f28'],
     ['#f5f6f3','#232b32'],['#1d2a32','#dce5e1']
   ])assert.ok(contrast(background,foreground)>=7,background+' theme needs AAA contrast');
+});
+
+test('L2A mobile reading paper cancels the shell gutter without losing text padding',()=>{
+  assert.match(shellCss,/body\.dudu-reading-active \.container \{padding:16px 19px 90px\}/);
+  const mobile=css.slice(css.indexOf('@media(max-width:600px)'));
+  assert.match(mobile,/\.reader-paper\[data-reader-theme\] \{[\s\S]*?margin-inline:-19px/);
+  assert.match(mobile,/padding:clamp\(18px,4vw,22px\) clamp\(15px,4vw,18px\) 26px/);
+  assert.match(mobile,/border-radius:0/);
+  assert.match(index,/css\/library-reader-l2c\.css\?v=l2a-2/);
 });
 
 function mockReader(storageItems=new Map()){
