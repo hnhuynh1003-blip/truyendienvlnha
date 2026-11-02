@@ -76,6 +76,8 @@ jobs:
         run: node tests/browser-library-reading-return-c443.cjs
       - name: L2E mobile Library pagination and synopsis return (Sandbox, no external writes)
         run: node tests/browser-library-catalog-l2e.cjs
+      - name: L3 smart Library filters and responsive catalog (Sandbox, no external writes)
+        run: node tests/browser-library-smart-filter-l3.cjs
       - name: Legacy Sandbox regression (advisory; cannot block main V71)
         continue-on-error: true
         run: |

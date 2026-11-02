@@ -111,7 +111,7 @@ test('L2B removes permanent filter walls while preserving real search/sort/statu
  assert.match(html,/id="search-novel-input"[^>]+oninput="onSearchChange\(\)"/);
  assert.match(html,/id="sort-select-ctrl"[^>]+onchange="onSortChange\(\)"/);
  assert.match(html,/onclick="filterStatus\('Hoàn thành', this\)"/);
- assert.match(html,/onclick="resetAllFilters\(\)"/);
+ assert.match(html,/onclick="clearLibraryFiltersL3\(\)"/);
  assert.match(html,/const span = document\.createElement\('button'\);/);
  assert.match(html,/span\.setAttribute\('aria-pressed'/);
  assert.match(html,/button\.classList\.toggle\('active', active\)/);

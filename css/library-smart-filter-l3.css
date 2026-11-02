@@ -1,0 +1,105 @@
+/* L3: balanced Library discovery, compact advanced filters, readable book rows.
+   Everything stays within #home-view; reading, Firebase and other apps untouched. */
+body.dudu-site-v60 #home-view{max-width:1060px;margin-inline:auto}
+body.dudu-site-v60 #home-view .filter-panel{position:relative;z-index:5;margin-bottom:12px}
+#home-view .search-row{
+ display:grid;grid-template-columns:minmax(0,1fr) 174px 126px;gap:9px;align-items:stretch;
+}
+#home-view .archive-filter-details{margin:0;border:0;min-width:0}
+#home-view .archive-filter-details > summary{
+ display:flex;justify-content:center;gap:8px;align-items:center;box-sizing:border-box;
+ min-height:47px;height:100%;padding:0 12px;border:1px solid rgba(209,193,156,.34);
+ border-radius:10px;background:#222c3b;color:#e5cf9e;cursor:pointer;
+ font-size:12px;font-weight:700;
+}
+#home-view .archive-filter-details[open] > summary,
+#home-view .archive-filter-details > summary:hover{background:#2b3544;border-color:#dcc69c}
+#home-view .archive-filter-caret{margin-left:0;font-size:14px}
+#home-view .archive-filter-content{
+ position:absolute;right:0;top:calc(100% + 7px);z-index:100;width:min(590px,100%);
+ box-sizing:border-box;max-height:min(72vh,660px);overflow-y:auto;overscroll-behavior:contain;
+ padding:19px 20px 0;border:1px solid rgba(220,198,156,.4);border-radius:12px;
+ background:#17222f;box-shadow:0 25px 58px rgba(0,0,0,.44);
+}
+#home-view .archive-filter-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:12px}
+#home-view .archive-filter-head strong{font-size:17px;line-height:1.35;color:#f4ecdc}
+#home-view .archive-filter-head small{font-size:11px;color:#aebac8;text-align:right}
+#home-view .archive-genre-help{display:flex;gap:9px;align-items:center;flex-wrap:wrap;font-size:11px;color:#a7b5c4;margin-bottom:12px}
+#home-view .archive-example-include{color:#a5ded0}
+#home-view .archive-example-exclude{color:#f4b0a4}
+#home-view .archive-genre-search-label{display:block;font-size:11px;color:#d1c5a9;margin-bottom:5px}
+#home-view .archive-genre-search{
+ display:block;box-sizing:border-box;width:100%;height:40px;padding:9px 12px;
+ border:1px solid #455164;border-radius:8px;background:#101924;color:#f1e8d9;
+ font-size:13px;outline:none;
+}
+#home-view .archive-genre-search:focus{border-color:#dcc69c}
+#home-view .tags-container{
+ display:flex;flex-wrap:wrap;align-content:flex-start;gap:7px;max-height:190px;min-height:36px;
+ margin:11px 0 14px;padding:0 3px 7px 0;overflow-y:auto;overflow-x:hidden;
+ scrollbar-width:thin;scrollbar-color:#6b7383 transparent;
+}
+#home-view .tag-chip{min-height:36px;border-radius:7px;font-size:12px;line-height:1.3;text-align:left;white-space:normal}
+#home-view .tag-chip[data-state="include"]{
+ border-color:#73b4a5;background:rgba(71,161,139,.22);color:#d5fff0;
+}
+#home-view .tag-chip[data-state="exclude"]{
+ border-color:#cc8982;background:rgba(180,83,75,.17);color:#ffd6cc;
+}
+#home-view .archive-no-genres{color:#9eacbb;font-size:12px;padding:8px 0}
+#home-view .archive-filter-mode{display:flex;align-items:center;flex-wrap:wrap;gap:7px 14px;border-top:1px solid #ffffff20;padding:12px 0}
+#home-view .archive-filter-mode > span{margin-right:auto;color:#dcc69c;font:700 10px/1.4 ui-monospace,Consolas,monospace;letter-spacing:.08em}
+#home-view .archive-filter-mode label{font-size:12px;color:#d0dae4;display:inline-flex;align-items:center;gap:5px;cursor:pointer}
+#home-view .archive-filter-mode input{accent-color:#d8c297;width:16px;height:16px}
+#home-view .filter-status-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin:0;padding:12px 0;border-top:1px solid #ffffff20}
+#home-view .archive-filter-caption{margin:0;color:#dcc69c;white-space:nowrap}
+#home-view .archive-filter-source{display:flex;align-items:center;flex-wrap:wrap;gap:7px;padding:12px 0;border-top:1px solid #ffffff20}
+#home-view .archive-filter-source > span{margin-right:auto}
+#home-view .filter-btn{min-height:36px;line-height:1.25}
+#home-view .archive-advanced-filter{padding:12px 0;border-top:1px solid #ffffff20;font-size:12px}
+#home-view .archive-advanced-filter summary{cursor:pointer;color:#ddc99e;font-weight:600}
+#home-view .archive-advanced-filter label{display:block;margin:10px 0 5px;color:#b9c7d4}
+#home-view .archive-advanced-filter input{width:120px;min-height:38px;padding:7px 10px;border-radius:7px;border:1px solid #526070;background:#101924;color:#fff;font-size:14px}
+#home-view .archive-filter-actions{
+ position:sticky;bottom:0;display:flex;justify-content:space-between;align-items:center;gap:13px;
+ margin:8px -20px 0;padding:11px 20px 13px;border-top:1px solid #ffffff25;background:#17222f;
+}
+#home-view .archive-apply-filter{min-height:42px;padding:9px 26px;border:1px solid #dfcda8;border-radius:8px;background:#dbc59a;color:#17212d;font-size:13px;font-weight:750;cursor:pointer}
+#home-view .archive-apply-filter:hover{background:#f1dfbc}
+#home-view .archive-active-filters{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin:0 0 18px}
+#home-view .archive-active-filters[hidden]{display:none!important}
+#home-view .archive-active-filters button{min-height:32px;padding:6px 10px;border-radius:999px;border:1px solid #687785;background:#263445;color:#dce6e6;font-size:11px;cursor:pointer}
+#home-view .archive-active-filters button[data-kind="include"]{border-color:#6ba99a;color:#c1e9d8}
+#home-view .archive-active-filters button[data-kind="exclude"]{border-color:#bf827a;color:#f4c9c2}
+#home-view .archive-active-filters button:hover{border-color:#eee1c0}
+#home-view .archive-active-filters .archive-chip-heading{font:700 10px/1.3 ui-monospace,monospace;letter-spacing:.06em;color:#a9b8c7;margin-right:3px}
+#home-view .archive-filter-details button:focus-visible,#home-view .archive-active-filters button:focus-visible,
+#home-view .archive-filter-content input:focus-visible{outline:2px solid #e6d29e;outline-offset:2px}
+/* Fixed-height cards clipped chapter counts and actions at 320px. Let text determine height. */
+body.dudu-site-v60 #home-view .novel-grid{gap:15px}
+body.dudu-site-v60 #home-view .archive-shelf-item{height:auto;min-height:199px;max-height:none}
+body.dudu-site-v60 #home-view .archive-shelf-item .novel-info{min-width:0;gap:6px;padding:14px 16px}
+body.dudu-site-v60 #home-view .archive-shelf-item .novel-title-button{line-height:1.38}
+body.dudu-site-v60 #home-view .archive-shelf-item .novel-desc{display:-webkit-box;-webkit-line-clamp:2;line-clamp:2}
+body.dudu-site-v60 #home-view .archive-shelf-item .novel-meta{margin-top:auto;gap:7px}
+@media(max-width:760px){
+ #home-view .search-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+ #home-view .archive-search-field{grid-column:1/-1;min-height:43px}
+ body.dudu-site-v60 #home-view .sort-select{min-height:42px;font-size:12px;padding-inline:10px}
+ #home-view .archive-filter-details > summary{min-height:42px;font-size:12px}
+ #home-view .archive-filter-content{width:100%;max-height:min(70dvh,620px);padding:15px 13px 0}
+ #home-view .archive-filter-head{flex-direction:column;align-items:flex-start;gap:3px}
+ #home-view .archive-filter-head small{text-align:left}
+ #home-view .archive-filter-actions{margin:8px -13px 0;padding:10px 13px calc(10px + env(safe-area-inset-bottom))}
+ #home-view .archive-filter-mode > span{width:100%}
+ body.dudu-site-v60 #home-view .archive-shelf-item{grid-template-columns:83px minmax(0,1fr);min-height:171px}
+ body.dudu-site-v60 #home-view .archive-shelf-item .novel-info{padding:11px 12px;gap:5px}
+ body.dudu-site-v60 #home-view .archive-shelf-item .novel-desc{display:none}
+ body.dudu-site-v60 #home-view .archive-shelf-item .novel-title-button{font-size:16px}
+ body.dudu-site-v60 #home-view .archive-shelf-item .novel-meta{flex-wrap:wrap}
+}
+@media(max-width:370px){
+ body.dudu-site-v60 #home-view .archive-shelf-item{grid-template-columns:76px minmax(0,1fr)}
+ body.dudu-site-v60 #home-view .archive-shelf-item .novel-info{padding:10px;gap:4px}
+ #home-view .archive-filter-content{max-height:69dvh}
+}

@@ -852,7 +852,9 @@
   <link rel="stylesheet" href="css/arcade-c428-weather.css?v=c428-1">
   <link rel="stylesheet" href="css/library-reading-return-c443.css?v=l2f-1">
   <link rel="stylesheet" href="css/library-catalog-l2e.css?v=l2e-3">
+  <link rel="stylesheet" href="css/library-smart-filter-l3.css?v=l3-1">
   <script src="js/library-catalog-l2e.js?v=l2e-3"></script>
+  <script src="js/library-smart-filter-l3.js?v=l3-1"></script>
   <script src="js/library-reader-shortcut-l2f.js?v=l2f-2"></script>
   <script src="js/library-reader-focus-l2b.js?v=l2b-1"></script>
 </head>
@@ -901,28 +903,52 @@
           </label>
           <select class="sort-select" id="sort-select-ctrl" aria-label="Sắp xếp tác phẩm" onchange="onSortChange()">
             <option value="NEWEST_UPDATE">Mới cập nhật</option>
+            <option value="NEWEST_ADDED">Mới thêm</option>
             <option value="OLDEST_UPDATE">Cũ nhất</option>
             <option value="MOST_CHAPTERS">Nhiều chương</option>
             <option value="MOST_WORDS">Nhiều chữ</option>
+            <option value="TITLE_AZ">Tên A–Z</option>
           </select>
-        </div>
-
-        <details class="archive-filter-details" id="archive-filter-details">
-          <summary><span aria-hidden="true">◇</span><span id="archive-filter-label">Thể loại & trạng thái</span><span class="archive-filter-caret" aria-hidden="true">⌄</span></summary>
+          <details class="archive-filter-details" id="archive-filter-details">
+          <summary><span aria-hidden="true">☷</span><span id="archive-filter-label">Bộ lọc</span><span class="archive-filter-caret" aria-hidden="true">⌄</span></summary>
           <div class="archive-filter-content">
-            <p class="archive-filter-caption">THỂ LOẠI</p>
+            <div class="archive-filter-head"><strong>Tìm đúng gu đọc</strong><small>Chọn thể loại muốn xem hoặc tránh</small></div>
+            <div class="archive-genre-help"><span class="archive-example-include">+ Bao gồm</span><span class="archive-example-exclude">− Loại trừ</span><span>Chạm tiếp để đổi trạng thái</span></div>
+            <label class="archive-genre-search-label" for="archive-genre-search">Tìm thể loại</label>
+            <input type="search" id="archive-genre-search" class="archive-genre-search" autocomplete="off" placeholder="Gõ tên thể loại…" oninput="onLibraryGenreSearchL3()">
             <div class="tags-container" id="tag-cloud-container"></div>
+            <div class="archive-filter-mode" role="group" aria-label="Cách kết hợp thể loại bao gồm">
+              <span>ĐIỀU KIỆN</span>
+              <label><input type="radio" name="archive-filter-mode" value="AND" checked onchange="setLibraryFilterModeL3('AND')"> Khớp tất cả (AND)</label>
+              <label><input type="radio" name="archive-filter-mode" value="OR" onchange="setLibraryFilterModeL3('OR')"> Khớp ít nhất một (OR)</label>
+            </div>
             <div class="filter-status-row">
+              <span class="archive-filter-caption">TRẠNG THÁI</span>
               <div class="archive-status-buttons" role="group" aria-label="Trạng thái tác phẩm">
                 <button class="filter-btn active" aria-pressed="true" onclick="filterStatus('ALL', this)">Tất cả</button>
                 <button class="filter-btn" aria-pressed="false" onclick="filterStatus('Đang ra', this)">Đang ra</button>
                 <button class="filter-btn" aria-pressed="false" onclick="filterStatus('Hoàn thành', this)">Hoàn thành</button>
               </div>
-              <button class="archive-reset-filter" type="button" onclick="resetAllFilters()">Xóa bộ lọc</button>
+            </div>
+            <div class="archive-filter-source" role="group" aria-label="Định dạng tác phẩm">
+              <span class="archive-filter-caption">ĐỊNH DẠNG</span>
+              <button class="filter-btn active" type="button" data-source="ALL" aria-pressed="true" onclick="filterLibrarySourceL3('ALL')">Tất cả</button>
+              <button class="filter-btn" type="button" data-source="WEB" aria-pressed="false" onclick="filterLibrarySourceL3('WEB')">Web</button>
+              <button class="filter-btn" type="button" data-source="EPUB" aria-pressed="false" onclick="filterLibrarySourceL3('EPUB')">EPUB</button>
+            </div>
+            <details class="archive-advanced-filter"><summary>Nâng cao · Số chương</summary>
+              <label for="archive-min-chapters">Ít nhất bao nhiêu chương?</label>
+              <input id="archive-min-chapters" type="number" min="0" max="100000" step="1" inputmode="numeric" value="0" onchange="setLibraryMinChaptersL3(this.value)">
+            </details>
+            <div class="archive-filter-actions">
+              <button class="archive-reset-filter" type="button" onclick="clearLibraryFiltersL3()">Xóa bộ lọc</button>
+              <button class="archive-apply-filter" type="button" onclick="applyLibraryFiltersL3()">Áp dụng</button>
             </div>
           </div>
         </details>
+        </div>
       </div>
+      <div class="archive-active-filters" id="archive-active-filters" aria-label="Bộ lọc đang áp dụng" hidden></div>
 
       <div class="archive-catalog-bar" id="archive-catalog-bar"><span>✦ &nbsp; DANH MỤC TÁC PHẨM</span><span id="search-result-count" aria-live="polite">Đang tải danh mục</span></div>
       <nav class="library-catalog-pager" id="library-catalog-pager-top" aria-label="Chọn trang truyện phía trên" hidden></nav>
@@ -2618,6 +2644,9 @@
     let isReversedOrder = false;
     let currentFilterStatus = "ALL";
     let selectedTag = "ALL";
+    // L3 filter state is display-only; published story records stay untouched.
+    let appliedLibraryFiltersL3=DuduLibrarySmartFilterL3.state();
+    let draftLibraryFiltersL3=DuduLibrarySmartFilterL3.state();
     let searchQuery = "";
     let synopsisSearchTimerL2D=null;
     let synopsisSearchTaskL2D=null;
@@ -7316,48 +7345,148 @@ document.getElementById('phone-home-screen').style.display = 'none';
     }
 
     function filterStatus(status, btn) {
-      currentFilterStatus = status;
-      window.DuduLibraryCatalogL2E?.resetPage();
+      draftLibraryFiltersL3=DuduLibrarySmartFilterL3.state({...draftLibraryFiltersL3,status});
       document.querySelectorAll('.filter-status-row .filter-btn').forEach(b => {
         b.classList.remove('active');
         b.setAttribute('aria-pressed', 'false');
       });
       btn.classList.add('active');
       btn.setAttribute('aria-pressed', 'true');
-      renderHome();
     }
 
     function selectTagFilter(tag, element) {
-      selectedTag = tag;
-      window.DuduLibraryCatalogL2E?.resetPage();
-      document.querySelectorAll('#tag-cloud-container .tag-chip').forEach(el => el.classList.remove('active'));
-      element.classList.add('active');
-      renderHome();
+      draftLibraryFiltersL3=DuduLibrarySmartFilterL3.cycle(draftLibraryFiltersL3,tag);
+      renderTagCloud();
     }
 
     function renderTagCloud() {
       const container = document.getElementById('tag-cloud-container');
-      const allTags = new Set();
-      allTags.add("Tất cả");
-
-      novels.forEach(n => {
-        if (n.genre) {
-          n.genre.split(/[,/]+/).forEach(g => {
-            const trimmed = g.trim();
-            if (trimmed && !/^(?:epub|nhập epub)$/i.test(trimmed)) allTags.add(trimmed);
-          });
-        }
-      });
-
-      container.innerHTML = "";
-      allTags.forEach(tag => {
+      if(!container)return;
+      const text=document.getElementById('archive-genre-search')?.value||'';
+      const needle=DuduLibrarySmartFilterL3.normalize(text);
+      const tags=DuduLibrarySmartFilterL3.catalogGenres(novels)
+        .filter(tag=>!needle||DuduLibrarySmartFilterL3.normalize(tag.label).includes(needle));
+      container.replaceChildren();
+      tags.forEach(tag => {
         const span = document.createElement('button');
         span.type = 'button';
-        span.className = `tag-chip ${(selectedTag === tag || (selectedTag === 'ALL' && tag === 'Tất cả')) ? 'active' : ''}`;
-        span.textContent = tag;
-        span.setAttribute('aria-pressed', String(selectedTag === tag || (selectedTag === 'ALL' && tag === 'Tất cả')));
-        span.onclick = () => selectTagFilter(tag === 'Tất cả' ? 'ALL' : tag, span);
+        const state=draftLibraryFiltersL3.include.includes(tag.key)?'include':
+          (draftLibraryFiltersL3.exclude.includes(tag.key)?'exclude':'neutral');
+        span.className = `tag-chip ${state==='neutral'?'':'active'}`;
+        span.dataset.state=state;
+        span.textContent = (state==='include'?'+ ':state==='exclude'?'− ':'')+tag.label;
+        span.title=state==='neutral'?'Chạm để bao gồm':state==='include'?
+          'Chạm để loại trừ':'Chạm để bỏ điều kiện';
+        span.setAttribute('aria-pressed', state==='exclude'?'mixed':String(state==='include'));
+        span.setAttribute('aria-label',`${tag.label}: ${state==='neutral'?'Không chọn':state==='include'?'Bao gồm':'Loại trừ'}`);
+        span.onclick = () => selectTagFilter(tag.key, span);
         container.appendChild(span);
+      });
+      if(!tags.length){
+        const empty=document.createElement('span');
+        empty.className='archive-no-genres';empty.textContent='Không có thể loại phù hợp.';
+        container.appendChild(empty);
+      }
+    }
+
+    function onLibraryGenreSearchL3(){renderTagCloud();}
+    function refreshLibraryFilterControlsL3(){
+      document.querySelectorAll('.filter-status-row .filter-btn').forEach(button=>{
+        const active=button.textContent.trim()===(draftLibraryFiltersL3.status==='ALL'?'Tất cả':draftLibraryFiltersL3.status);
+        button.classList.toggle('active',active);
+        button.setAttribute('aria-pressed',String(active));
+      });
+      document.querySelectorAll('.archive-filter-source .filter-btn').forEach(button=>{
+        const active=button.dataset.source===draftLibraryFiltersL3.source;
+        button.classList.toggle('active',active);
+        button.setAttribute('aria-pressed',String(active));
+      });
+      document.querySelectorAll('input[name="archive-filter-mode"]').forEach(input=>{
+        input.checked=input.value===draftLibraryFiltersL3.mode;
+      });
+      const chapters=document.getElementById('archive-min-chapters');
+      if(chapters)chapters.value=String(draftLibraryFiltersL3.minChapters);
+    }
+    function filterLibrarySourceL3(source){
+      draftLibraryFiltersL3=DuduLibrarySmartFilterL3.state({...draftLibraryFiltersL3,source});
+      refreshLibraryFilterControlsL3();
+    }
+    function setLibraryFilterModeL3(mode){
+      draftLibraryFiltersL3=DuduLibrarySmartFilterL3.state({...draftLibraryFiltersL3,mode});
+      refreshLibraryFilterControlsL3();
+    }
+    function setLibraryMinChaptersL3(value){
+      draftLibraryFiltersL3=DuduLibrarySmartFilterL3.state({...draftLibraryFiltersL3,minChapters:value});
+      refreshLibraryFilterControlsL3();
+    }
+    function applyLibraryFiltersL3(){
+      appliedLibraryFiltersL3=DuduLibrarySmartFilterL3.state(draftLibraryFiltersL3);
+      currentFilterStatus=appliedLibraryFiltersL3.status;
+      selectedTag='ALL';
+      document.getElementById('archive-filter-details').open=false;
+      window.DuduLibraryCatalogL2E?.resetPage();
+      renderHome();
+    }
+    function clearLibraryFiltersL3(){
+      appliedLibraryFiltersL3=DuduLibrarySmartFilterL3.state();
+      draftLibraryFiltersL3=DuduLibrarySmartFilterL3.state();
+      currentFilterStatus='ALL';selectedTag='ALL';
+      const genreInput=document.getElementById('archive-genre-search');
+      if(genreInput)genreInput.value='';
+      const drawer=document.getElementById('archive-filter-details');
+      if(drawer)drawer.open=false;
+      window.DuduLibraryCatalogL2E?.resetPage();
+      renderHome();
+    }
+    function removeLibraryFilterL3(kind,tag){
+      appliedLibraryFiltersL3=DuduLibrarySmartFilterL3.remove(appliedLibraryFiltersL3,kind,tag);
+      draftLibraryFiltersL3=DuduLibrarySmartFilterL3.state(appliedLibraryFiltersL3);
+      currentFilterStatus=appliedLibraryFiltersL3.status;
+      window.DuduLibraryCatalogL2E?.resetPage();
+      renderHome();
+    }
+    function renderActiveLibraryFiltersL3(){
+      const host=document.getElementById('archive-active-filters');
+      if(!host)return;
+      host.replaceChildren();
+      const filters=appliedLibraryFiltersL3;
+      const labels=new Map(DuduLibrarySmartFilterL3.catalogGenres(novels).map(t=>[t.key,t.label]));
+      const add=(kind,key,label)=>{
+        const chip=document.createElement('button');
+        chip.type='button';chip.dataset.kind=kind;
+        chip.textContent=label+' ×';chip.setAttribute('aria-label','Bỏ điều kiện '+label);
+        chip.addEventListener('click',()=>removeLibraryFilterL3(kind,key));
+        host.appendChild(chip);
+      };
+      for(const key of filters.include)add('include',key,'+ '+(labels.get(key)||key));
+      for(const key of filters.exclude)add('exclude',key,'− '+(labels.get(key)||key));
+      if(filters.status!=='ALL')add('status','',filters.status);
+      if(filters.source!=='ALL')add('source','',filters.source==='EPUB'?'Truyện EPUB':'Truyện Web');
+      if(filters.minChapters)add('minChapters','',`Từ ${filters.minChapters} chương`);
+      const active=host.children.length;
+      host.hidden=!active;
+      if(active){
+        const heading=document.createElement('span');heading.className='archive-chip-heading';
+        heading.textContent=filters.include.length>1?
+          `ĐANG LỌC · ${filters.mode}`:'ĐANG LỌC';host.prepend(heading);
+      }
+      const label=document.getElementById('archive-filter-label');
+      if(label)label.textContent=active?`Bộ lọc · ${active}`:'Bộ lọc';
+    }
+    function bindLibraryFilterDrawerL3(){
+      const drawer=document.getElementById('archive-filter-details');
+      if(!drawer||drawer.dataset.l3Bound)return;
+      drawer.dataset.l3Bound='1';
+      drawer.addEventListener('toggle',()=>{
+        draftLibraryFiltersL3=DuduLibrarySmartFilterL3.state(appliedLibraryFiltersL3);
+        if(drawer.open){
+          const input=document.getElementById('archive-genre-search');
+          if(input)input.value='';
+        }
+        refreshLibraryFilterControlsL3();renderTagCloud();
+      });
+      drawer.addEventListener('keydown',event=>{
+        if(event.key==='Escape'){drawer.open=false;event.stopPropagation();}
       });
     }
 
@@ -7388,20 +7517,19 @@ document.getElementById('phone-home-screen').style.display = 'none';
     }
 
     function renderHome() {
+      if(typeof DuduLibrarySmartFilterL3!=='undefined'&&typeof bindLibraryFilterDrawerL3==='function')
+        bindLibraryFilterDrawerL3();
       renderTagCloud();
 
       const container = document.getElementById('novel-grid-container');
       container.innerHTML = "";
 
-      let filtered = novels.filter(n => currentFilterStatus === "ALL" || n.status === currentFilterStatus);
-
-      if (selectedTag !== "ALL") {
-        filtered = filtered.filter(n => {
-          if (!n.genre) return false;
-          const tags = n.genre.split(/[,/]+/).map(t => t.trim().toLowerCase());
-          return tags.includes(selectedTag.toLowerCase());
-        });
-      }
+      let filtered = typeof DuduLibrarySmartFilterL3!=='undefined'?
+        novels.filter(n=>DuduLibrarySmartFilterL3.matches(n,appliedLibraryFiltersL3)):
+        novels.filter(n=>currentFilterStatus==='ALL'&&selectedTag==='ALL'||
+          (currentFilterStatus==='ALL'||n.status===currentFilterStatus)&&
+          (selectedTag==='ALL'||String(n.genre||'').toLowerCase().split(/[,/]+/)
+            .map(g=>g.trim()).includes(selectedTag.toLowerCase())));
 
       if (searchQuery) {
         filtered = filtered.filter(n=>DuduLibrarySynopsisSearchL2D.matches(n,
@@ -7413,9 +7541,12 @@ document.getElementById('phone-home-screen').style.display = 'none';
         const dateB = DuduStoryDates.ordering(getNovelLatestDate(b));
 
         if (sortMode === 'NEWEST_UPDATE') return dateB - dateA;
+        if (sortMode === 'NEWEST_ADDED')return DuduStoryDates.ordering(b.createdAt||getNovelLatestDate(b))-
+          DuduStoryDates.ordering(a.createdAt||getNovelLatestDate(a));
         if (sortMode === 'OLDEST_UPDATE') return dateA - dateB;
         if (sortMode === 'MOST_CHAPTERS') return (b.chapters ? b.chapters.length : 0) - (a.chapters ? a.chapters.length : 0);
         if (sortMode === 'MOST_WORDS') return getNovelTotalWords(b) - getNovelTotalWords(a);
+        if (sortMode === 'TITLE_AZ')return String(a.title||'').localeCompare(String(b.title||''),'vi');
         return 0;
       });
 
@@ -7440,7 +7571,9 @@ document.getElementById('phone-home-screen').style.display = 'none';
         (pendingSynopses?' · Đang tra văn án…':'')+
         (!pendingSynopses&&failedSynopses?' · Có văn án chưa tải được':'');
       const filterLabel = document.getElementById('archive-filter-label');
-      if (filterLabel) {
+      if(typeof DuduLibrarySmartFilterL3!=='undefined'&&typeof renderActiveLibraryFiltersL3==='function'){
+        renderActiveLibraryFiltersL3();
+      }else if (filterLabel) {
         const active = [selectedTag !== 'ALL' ? selectedTag : '',
           currentFilterStatus !== 'ALL' ? currentFilterStatus : ''].filter(Boolean);
         filterLabel.textContent = active.length ? active.join(' · ') : 'Thể loại & trạng thái';
@@ -7571,9 +7704,13 @@ document.getElementById('phone-home-screen').style.display = 'none';
       synopsisSearchTimerL2D=null;
       selectedTag = "ALL";
       currentFilterStatus = "ALL";
+      appliedLibraryFiltersL3=DuduLibrarySmartFilterL3.state();
+      draftLibraryFiltersL3=DuduLibrarySmartFilterL3.state();
       sortMode = "NEWEST_UPDATE";
       document.getElementById('search-novel-input').value = "";
       document.getElementById('sort-select-ctrl').value = "NEWEST_UPDATE";
+      const drawer=document.getElementById('archive-filter-details');
+      if(drawer)drawer.open=false;
       document.querySelectorAll('.filter-status-row .filter-btn').forEach(button => {
         const active = button.textContent.trim() === 'Tất cả';
         button.classList.toggle('active', active);
