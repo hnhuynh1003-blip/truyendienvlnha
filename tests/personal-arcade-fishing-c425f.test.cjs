@@ -92,18 +92,20 @@ test('Real success still requires core reel-line; the timing helper never awards
  assert.equal(loaded.garden.fish,1);
 });
 
-test('Three missed timing pulls snap only the active line without fish or reward',()=>{
+test('Two missed timing pulls snap only the active line without fish or reward',()=>{
  const cast=core.act(loadedBait(),'cast-line',T+core.BUBBLE_INTERVAL+1,.99);
  assert.equal(cast.ok,true);
  const before=cast.state;
  const line=before.garden.line;
  assert.equal(core.act(before,'snap-line',line.biteAt-1,.2).ok,false);
  let challenge=fishing.begin(line),out;
- for(let i=0;i<3;i++){
+ for(let i=0;i<fishing.MAX_MISSES;i++){
   out=fishing.pulse(challenge,false,line,core.FISH_SPECIES[line.fishId],T+3000+i*500);
   challenge=out.fight;
  }
  assert.equal(out.result,'escaped');
+ assert.equal(fishing.pulse(challenge,true,line,core.FISH_SPECIES[line.fishId],T+5000).reason,
+  'finished','A snapped fight cannot be reused to claim a catch');
  const snap=core.act(before,'snap-line',line.biteAt+1,.2);
  assert.equal(snap.ok,true);
  assert.equal(snap.state.garden.line,null);
@@ -134,4 +136,64 @@ test('C4.25F is an actual animated and tappable game surface on top of the paint
  assert.match(css,/@keyframes c425f-reel-travel/);
  assert.match(css,/prefers-reduced-motion:reduce/);
  assert.doesNotMatch(ui,/onpointerdown|onpointerup/,'Button taps must remain accessible to keyboard');
+});
+
+test('C4.46 fish fights shift through visible skill phases with no waiting penalties',()=>{
+ const line={fishId:'dragon',biteAt:T+3000,escapeAt:T+28000,size:82,rod:1,lure:'regular'};
+ const fish=core.FISH_SPECIES.dragon;
+ const stages=[0,1,2,3,4,5,6].map(hits=>fishing.rules(line,fish,hits));
+ assert.deepEqual(stages.map(step=>step.phase),[1,1,2,2,2,3,3]);
+ assert.equal(stages[0].phaseName,'DÒ NHỊP');
+ assert.equal(stages[2].phaseName,'GIẰNG CO');
+ assert.equal(stages[5].phaseName,'CHỐT CÁ');
+ assert.ok(stages[0].width>stages[2].width&&stages[2].width>stages[5].width);
+ assert.ok(stages[0].travelSeconds>stages[2].travelSeconds);
+ assert.notEqual(stages[0].left,stages[1].left,'Safe area shifts even between beats');
+ for(const step of stages){
+  assert.ok(step.left>=4&&step.left+step.width<=96);
+  assert.ok(step.width>=12,'Keep the final target visible on 320px phones');
+  assert.ok(step.travelSeconds>=1.04,'Do not make the float impossibly fast');
+  assert.ok(step.offsetSeconds>=0&&step.offsetSeconds<step.travelSeconds);
+ }
+ assert.equal(fishing.rules(line,core.FISH_SPECIES.reed,0).phaseCount,1);
+ assert.equal(fishing.rules({...line,fishId:'crystal'},core.FISH_SPECIES.crystal,4).phase,3);
+});
+
+test('C4.46 rod and moon bait help with precision and tension, but cannot skip mythic phases',()=>{
+ const line={fishId:'phoenix',biteAt:T+3000,escapeAt:T+28000,size:88,rod:1,lure:'regular'};
+ const fish=core.FISH_SPECIES.phoenix;
+ const basic=fishing.rules(line,fish,5);
+ const rod=fishing.rules({...line,rod:5},fish,5);
+ const premium=fishing.rules({...line,lure:'moon'},fish,5);
+ assert.ok(rod.width>basic.width);
+ assert.ok(rod.travelSeconds>basic.travelSeconds);
+ assert.ok(premium.width>basic.width);
+ assert.equal(basic.maxMisses,2);
+ assert.equal(premium.maxMisses,3);
+ assert.equal(rod.required,7);
+ assert.equal(premium.required,7);
+ assert.equal(premium.phase,3);
+ let challenge=fishing.begin({...line,lure:'moon'});
+ for(let i=0;i<2;i++){
+  const step=fishing.pulse(challenge,false,{...line,lure:'moon'},fish,T+3000+i*500);
+  assert.equal(step.result,'miss','Premium bait permits one extra correction');
+  challenge=step.fight;
+ }
+ const third=fishing.pulse(challenge,false,{...line,lure:'moon'},fish,T+4000);
+ assert.equal(third.result,'escaped');
+});
+
+test('C4.46 cache revision loads phased reel on mobile while retaining the painted pond',()=>{
+ const html=source('index.html'),ui=source('js/personal-arcade-ui-v1.js');
+ const css=source('css/arcade-c425f-fishing.css');
+ assert.match(html,/arcade-c425f-fishing\.css\?v=c440a-1&amp;phase=c446-1/);
+ assert.match(html,/personal-arcade-fishing-c425f\.js\?v=c442-1&amp;phase=c446-1/);
+ assert.match(html,/personal-arcade-ui-v1\.js[^\n]*phase=c446-1/);
+ assert.match(ui,/garden-reel-phases/);
+ assert.match(ui,/reelRules\.phaseName/);
+ assert.match(ui,/reelRules\.offsetSeconds/);
+ assert.match(css,/animation-delay:var\(--reel-delay/);
+ assert.match(css,/animation-direction:var\(--reel-direction/);
+ assert.match(css,/reel-phase-3/);
+ assert.doesNotMatch(ui,/class="garden-plot-area">/);
 });

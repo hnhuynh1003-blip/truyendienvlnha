@@ -542,11 +542,15 @@
        `Đang chờ… <span data-arcade-until="${line.biteAt}">${countdown(line.biteAt-time)}</span>`:
        '✧ HỒ SƯƠNG YÊN Ả'}</div>
       ${!line?`<div class="garden-weather-whisper">◈ ${weather.hint}${weather.night?' · Cá đêm có thể xuất hiện':''}</div>`:''}
-      ${reel?`<div class="garden-reel-challenge reel-tier-${reelRules.tier} ${reelFlash?'reel-'+reelFlash:''}" role="group" aria-label="Canh nhịp kéo ${reelRules.label.toLowerCase()}">
+      ${reel?`<div class="garden-reel-challenge reel-tier-${reelRules.tier} reel-phase-${reelRules.phase} ${reelFlash?'reel-'+reelFlash:''}" role="group" aria-label="Canh nhịp kéo ${reelRules.label.toLowerCase()}, pha ${reelRules.phase} trên ${reelRules.phaseCount}">
        <div class="garden-reel-heading"><span>✧ ${reelRules.label.toUpperCase()}</span><span>${reel.hits}/${reelRules.required} NHỊP</span></div>
+       <div class="garden-reel-phases" aria-label="${reelRules.phaseName}, pha ${reelRules.phase} trên ${reelRules.phaseCount}">
+        ${Array.from({length:reelRules.phaseCount},(_,i)=>`<span class="${i+1<reelRules.phase?'is-cleared':i+1===reelRules.phase?'is-active':''}"></span>`).join('')}
+        <b>${reelRules.phaseName} · ${reelRules.phaseBeat+1}/${reelRules.phaseRequired}</b>
+       </div>
        <div class="garden-reel-track" role="img" aria-label="Phao chạy qua vùng sáng: chạm Kéo dây khi phao nằm trong vùng sáng">
         <span class="garden-reel-safe" style="left:${reelRules.left}%;width:${reelRules.width}%"></span>
-        <span class="garden-reel-marker" style="--reel-speed:${reelRules.travelSeconds}s;--reel-rest:${reelRules.left+reelRules.width/2}%"><i></i></span>
+        <span class="garden-reel-marker" style="--reel-speed:${reelRules.travelSeconds}s;--reel-delay:-${reelRules.offsetSeconds}s;--reel-direction:${reelRules.reverse?'alternate-reverse':'alternate'};--reel-rest:${reelRules.left+reelRules.width/2}%"><i></i></span>
        </div>
        <div class="garden-reel-foot"><span>${reelFlash==='hit'?'✦ ĐÃ GIỮ ĐƯỢC CÁ':reelFlash==='miss'?'✧ THẢ LỎNG, CANH LẠI':'CHẠM KHI PHAO VÀO VÙNG SÁNG'}</span>
         <span class="garden-reel-tension">CĂNG DÂY ${reel.misses}/${reelRules.maxMisses}</span></div>
