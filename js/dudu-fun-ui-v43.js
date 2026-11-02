@@ -34,7 +34,7 @@
  let blindUid=null,blindState=null,blindLoaded=false,blindLoading=false,
   blindError=false,blindBusy=false,blindCurrency=null;
  // Visual-only, one-use celebration. It is never persisted with the receipt.
- let revealMoment=null;
+ let revealMoment=null,luckyOutcomeMoment=null;
  let scratchLocal={id:null,cells:new Set()};
  let noticeText='';
  function stored(){
@@ -70,7 +70,7 @@
   const uid=signed()?luckyBridge().uid?.():null;
   if(uid!==luckyUid){luckyUid=uid;luckyState=null;luckyLoaded=false;
    luckyLoading=false;luckyError=false;luckyCurrency=null;
-   scratchLocal={id:null,cells:new Set()};}
+   scratchLocal={id:null,cells:new Set()};luckyOutcomeMoment=null;}
   if(!uid||luckyLoaded||luckyLoading||luckyError)return;
   luckyLoading=true;
   void luckyBridge().load().then(result=>{
@@ -149,11 +149,15 @@
    blindCurrency=response.currency;
    if(kind==='buy'){
     scratchLocal={id:response.state?.active?.id,cells:new Set()};
+    luckyOutcomeMoment=null;
     message('Vé đã vào tay bạn! Hãy cào các số để dò giải.');
    }
-   if(kind==='claim'&&response.status==='applied')message(response.reward.amount?
-    '✦ '+response.reward.tier+' · +'+response.reward.amount+' Xu Vàng vào Ví!':
-    'Lần này chưa trúng số. Chúc bạn may mắn ở vé tiếp theo!');
+   if(kind==='claim'&&response.status==='applied'){
+    luckyOutcomeMoment={id:response.state?.active?.id,amount:response.reward.amount};
+    message(response.reward.amount?
+     '✦ '+response.reward.tier+' · +'+response.reward.amount+' Xu Vàng vào Ví!':
+     'Lần này chưa trúng số. Chúc bạn may mắn ở vé tiếp theo!');
+   }
    return true;
   }catch(error){
    const errors={'not-enough-xu':'Bạn cần ít nhất 10 Xu Vàng trong Ví để mua vé.',
@@ -598,6 +602,36 @@
   if(round.status==='ready')claimButton(rootNode);
   if(round.status==='claimed')rewardPanel(rootNode,round.reward);
  }
+ // A successful Firestore claim causes exactly one visual pulse. Reloads and
+ // duplicate claim acknowledgments must never replay a win animation.
+ function takeLuckyOutcome(active){
+  if(active?.status!=='claimed'||!luckyOutcomeMoment||
+     luckyOutcomeMoment.id!==active.id)return '';
+  const moment=luckyOutcomeMoment;luckyOutcomeMoment=null;
+  return moment.amount>0?'win':'loss';
+ }
+ function luckyOddsSummary(rule){
+  const total=rule.PRIZES.reduce((n,p)=>n+p.weight,0);
+  const payout=rule.PRIZES.reduce((n,p)=>n+p.weight*p.amount,0)/total;
+  const chance=predicate=>rule.PRIZES.filter(predicate)
+   .reduce((n,p)=>n+p.weight,0)/total*100;
+  const fmtPercent=n=>n.toLocaleString('vi-VN',{maximumFractionDigits:4})+'%';
+  const overview=el('div','lucky-odds-overview');
+  for(const [label,value] of [
+   ['Lãi ròng',fmtPercent(chance(p=>p.amount>rule.PRICE))],
+   ['Hòa vốn',fmtPercent(chance(p=>p.amount===rule.PRICE))],
+   ['Lỗ ròng',fmtPercent(chance(p=>p.amount<rule.PRICE))]]){
+   const stat=el('span','lucky-odds-stat');
+   stat.append(el('small','',label),el('b','',value));overview.append(stat);
+  }
+  const signedNet=payout-rule.PRICE;
+  const note=el('small','lucky-odds-math',
+   'Giá '+rule.PRICE+' Xu · Trả trung bình '+payout.toLocaleString('vi-VN',
+    {maximumFractionDigits:2})+' Xu/vé · Kỳ vọng '+
+   (signedNet<0?'−':'+')+Math.abs(signedNet).toLocaleString('vi-VN',
+    {maximumFractionDigits:2})+' Xu/vé. Đây là thống kê dài hạn, không bảo đảm kết quả từng vé.');
+  return [overview,note];
+ }
  function numberLottery(rootNode){
   const rule=lucky();
   if(!rule||!luckyLoaded){
@@ -618,13 +652,14 @@
   if(a?.layout==='numbers'){
    if(scratchLocal.id!==a.id)scratchLocal={id:a.id,cells:new Set()};
    const ticket=rule.cardNumbers(a.seed,a.amount);
-   const card=el('div','lucky-number-card');
+   const outcome=takeLuckyOutcome(a);
+   const card=el('div','lucky-number-card'+(outcome?' lucky-outcome-'+outcome:''));
    const top=el('div','lucky-number-top');
    top.append(el('i','','Vé số may mắn'),gold('b','',10));
    card.append(top);
    const banner=el('div','lucky-number-banner');
    banner.append(el('span','','✦ ✦ ✦'),el('strong','','WINNER'),
-    el('small','','GIẢI ĐẶC BIỆT 10.000 XU'));
+    el('small','','GIẢI CAO NHẤT 10.000 XU'));
    card.append(banner);
    const target=el('div','lucky-winning-number');
    const star=el('div','lucky-winning-star');
@@ -709,7 +744,8 @@
    buy.addEventListener('click',()=>{void luckyAction('buy');});rootNode.append(buy);
   }
   const odds=el('details','lucky-odds');
-  odds.append(el('summary','','✧ Xem 13 mức giải và tỷ lệ trúng'));
+  odds.append(el('summary','','✧ Luật thưởng · 13 mức giải và tỷ lệ'));
+  odds.append(...luckyOddsSummary(rule));
   const list=el('div','lucky-odds-list');
   for(const prize of [...rule.PRIZES].reverse()){
    const row=el('div','lucky-odds-row');
@@ -717,7 +753,8 @@
     el('b','',(prize.weight/10000).toLocaleString('vi-VN',{maximumFractionDigits:4})+'%'));
    list.append(row);
   }
-  odds.append(list,el('small','','Tỷ lệ độc lập mỗi vé, không bảo đảm thắng. Kết quả được cố định khi mua vé.'));
+  odds.append(list,el('small','',
+   'Mỗi vé có xác suất độc lập. Kết quả được trình duyệt chọn và lưu khi mua vé, chưa có xác minh ngẫu nhiên từ máy chủ.'));
   rootNode.append(odds);
   if(s.history.length){
    const history=el('details','dudu-fun-history');
@@ -760,7 +797,9 @@
   }
   if(active){
    const design=rule.THEMES.find(t=>t.id===active.theme)||theme;
-   const card=el('div','lucky-card lucky-theme-'+design.id);
+   const outcome=takeLuckyOutcome(active);
+   const card=el('div','lucky-card lucky-theme-'+design.id+
+    (outcome?' lucky-outcome-'+outcome:''));
    const heading=el('div','lucky-card-top');
    heading.append(el('b','','DUDU · 萬福'),el('small','','THẺ LỘC #'+active.id.slice(-6).toUpperCase()));
    card.append(heading);
@@ -794,7 +833,8 @@
   // Historical theme counters remain in saved data, but tickets are never a
   // collectible album. Only the purchase/result history is displayed below.
   const odds=el('details','lucky-odds');
-  odds.append(el('summary','','✧ Xem 13 hạng giải & tỷ lệ trúng'));
+  odds.append(el('summary','','✧ Luật thưởng · 13 hạng giải và tỷ lệ'));
+  odds.append(...luckyOddsSummary(rule));
   const list=el('div','lucky-odds-list');
   for(const prize of [...rule.PRIZES].reverse()){
    const row=el('div','lucky-odds-row');
@@ -802,7 +842,8 @@
     el('b','',Number((prize.weight/10000).toFixed(4)).toLocaleString('vi-VN',{maximumFractionDigits:4})+'%'));
    list.append(row);
   }
-  odds.append(list,el('small','','Tỷ lệ là xác suất trên mỗi vé, không bảo đảm thắng. Giá 10 Xu Vàng, giá trị thưởng trung bình 8,43 Xu Vàng/vé.'));
+  odds.append(list,el('small','',
+   'Mỗi vé có xác suất độc lập. Kết quả được trình duyệt chọn và lưu khi mua vé, chưa có xác minh ngẫu nhiên từ máy chủ.'));
   rootNode.append(odds);
   if(s.history.length){
    const book=el('details','dudu-fun-history');

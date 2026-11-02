@@ -18,7 +18,7 @@ test('FUN-VIS3 has two distinct transparent fantasy chest frames, optimized for 
  }
  const html=read('index.html'),css=read('css/van-bao-stage-v2.css');
  assert.match(html,/css\/van-bao-stage-v2\.css\?v=fun-vis6/);
- assert.match(html,/js\/dudu-fun-ui-v43\.js\?v=fun-vis6/);
+ assert.match(html,/js\/dudu-fun-ui-v43\.js\?v=fun-cas1/);
  assert.match(css,/\.vanbao-chest-art/);
  assert.match(css,/\.vanbao-celebrating\.rank-sss/);
  assert.match(css,/\.blind-album-tile\.locked \.blind-album-art img/);
