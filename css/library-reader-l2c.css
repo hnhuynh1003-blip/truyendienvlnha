@@ -19,7 +19,9 @@ body.dudu-reading-active #reader-view .reader-top-nav [hidden] {display:none!imp
 body.dudu-reading-active #reader-view .reader-settings-anchor {position:relative}
 
 body.dudu-reading-active #reader-view .reader-settings-popover {
-  position:absolute;z-index:120;right:0;top:calc(100% + 12px);width:min(320px,calc(100vw - 38px));
+  position:absolute;z-index:1101;right:0;top:calc(100% + 12px);
+  width:min(360px,calc(100vw - 30px));max-height:min(78dvh,680px);
+  overflow-y:auto;overscroll-behavior:contain;
   padding:18px;border:1px solid #7b8fa0;border-top:2px solid #d8bf8a;border-radius:11px;
   background:#172330;color:#e8edf0;box-shadow:0 18px 55px rgba(0,0,0,.48);
   font:500 13px/1.5 system-ui,-apple-system,'Segoe UI',Arial,sans-serif;
@@ -34,24 +36,35 @@ body.dudu-reading-active #reader-view .reader-settings-close {
   border:0;background:transparent;color:#ebedf0;font-size:23px;line-height:1;cursor:pointer;
 }
 body.dudu-reading-active #reader-view .reader-settings-popover label,
-body.dudu-reading-active #reader-view .reader-settings-label {display:block;margin:15px 0 7px;font-size:12px;color:#b9cad5}
+body.dudu-reading-active #reader-view .reader-settings-label {display:block;margin:12px 0 5px;font-size:12px;color:#b9cad5}
 body.dudu-reading-active #reader-view .reader-settings-popover label output {float:right;color:#e2c998}
 body.dudu-reading-active #reader-view .reader-settings-popover select {
   width:100%;min-height:40px;padding:8px 11px;color:#edf3f6;border:1px solid #506779;
   background:#0f1b26;border-radius:6px;font:inherit;
 }
 body.dudu-reading-active #reader-view .reader-settings-popover input[type=range] {
-  width:100%;accent-color:#d8bf8a;cursor:pointer;
+  display:block;width:100%;min-height:28px;margin:0;accent-color:#d8bf8a;cursor:pointer;
 }
-body.dudu-reading-active #reader-view .reader-theme-choices {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-body.dudu-reading-active #reader-view .reader-theme-choices button {
+body.dudu-reading-active #reader-view .reader-theme-choices {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+body.dudu-reading-active #reader-view .reader-align-choices {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+body.dudu-reading-active #reader-view .reader-theme-choices button,
+body.dudu-reading-active #reader-view .reader-align-choices button {
   min-height:38px;border:1px solid #647688;border-radius:6px;background:#233243;
   color:#d8e1e9;font:600 11px/1.3 system-ui,-apple-system,'Segoe UI',Arial,sans-serif;cursor:pointer;
 }
-body.dudu-reading-active #reader-view .reader-theme-choices button[aria-pressed=true] {
+body.dudu-reading-active #reader-view .reader-theme-choices button[aria-pressed=true],
+body.dudu-reading-active #reader-view .reader-align-choices button[aria-pressed=true] {
   background:#d8bf8a;border-color:#d8bf8a;color:#192532;
 }
-body.dudu-reading-active #reader-view .reader-settings-footnote {margin:14px 0 0;color:#93a9b7;font-size:11px;line-height:1.5}
+body.dudu-reading-active #reader-view .reader-settings-footer {
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin-top:16px;padding-top:12px;border-top:1px solid #40505f;
+  color:#93a9b7;font-size:11px;line-height:1.5;
+}
+body.dudu-reading-active #reader-view #reader-settings-reset {
+  min-height:34px;padding:6px 11px;border:1px solid #647688;border-radius:6px;
+  background:transparent;color:#e2c998;cursor:pointer;font:600 11px/1.4 system-ui,sans-serif;
+}
 body.dudu-reading-active #reader-view .reader-settings-popover :focus-visible,
 body.dudu-reading-active #reader-view .reader-settings-close:focus-visible {
   outline:2px solid #e2c998;outline-offset:3px;
@@ -71,11 +84,20 @@ body.dudu-reading-active #reader-view .reader-paper[data-reader-theme=light] {
   --reader-ink:#232b32;background:#f5f6f3;padding:clamp(16px,4vw,34px);
   box-shadow:0 10px 34px rgba(0,0,0,.13);
 }
+body.dudu-reading-active #reader-view .reader-paper[data-reader-theme=soft] {
+  --reader-ink:#dce5e1;background:#1d2a32;padding:clamp(16px,4vw,34px);
+  box-shadow:0 10px 34px rgba(0,0,0,.2);
+}
 body.dudu-reading-active #reader-view .reader-paper .reader-chapter-title {color:var(--reader-ink)}
 body.dudu-reading-active #reader-view .reader-paper .reading-time-badge {color:var(--reader-ink);opacity:.7}
 body.dudu-reading-active #reader-view .reader-body {
   color:var(--reader-ink);font-family:var(--reader-font,system-ui,-apple-system,'Segoe UI',Arial,sans-serif);
-  font-size:var(--reader-size,18px);line-height:1.9;
+  font-size:var(--reader-size,18px);line-height:var(--reader-line-height,1.85);
+  max-width:var(--reader-column-width,68ch);text-align:var(--reader-align,start);
+  overflow-wrap:anywhere;
+}
+body.dudu-reading-active #reader-view .reader-body p {
+  margin-bottom:var(--reader-paragraph-gap,1.2em);
 }
 /* An occasional find inside the prose, not a guaranteed reward at the end. */
 body.dudu-reading-active #reader-view .reader-loot-encounter {
@@ -109,11 +131,18 @@ body.dudu-site-v60.dudu-reading-active #cyber-phone {
   max-height:calc(100dvh - 94px);
 }
 @media(max-width:600px){
+  body.dudu-reading-active #reader-view .reader-settings-popover {
+    position:fixed;top:auto;bottom:calc(12px + env(safe-area-inset-bottom));
+    left:12px;right:12px;width:auto;max-height:calc(100dvh - 40px);
+    padding:16px;
+  }
+  body.dudu-reading-active #reader-view .reader-setting-desktop-only {display:none}
+  body.dudu-reading-active #reader-view .reader-theme-choices {grid-template-columns:repeat(2,minmax(0,1fr))}
   body.dudu-reading-active #reader-view .reader-top-nav {margin-bottom:21px;gap:9px}
   body.dudu-reading-active #reader-view .reader-top-nav .btn {padding:8px 10px;font-size:11px}
   body.dudu-reading-active #reader-view .reader-nav-chapters {gap:5px}
   body.dudu-reading-active #reader-view .reader-top-actions {margin-left:0}
-  body.dudu-reading-active #reader-view .reader-body {line-height:1.8}
+  body.dudu-reading-active #reader-view .reader-body {line-height:var(--reader-line-height,1.85)}
 }
 @media(prefers-reduced-motion:reduce){
   body.dudu-reading-active #reader-view .reader-settings-popover {scroll-behavior:auto}

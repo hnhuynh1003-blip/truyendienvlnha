@@ -828,7 +828,7 @@
   <link rel="stylesheet" href="css/site-shell-v60.css?v=lib-l2c-2&amp;pause=c446c-1">
   <link rel="stylesheet" href="css/library-discovery-l2b.css?v=l2d-1">
   <link rel="stylesheet" href="css/library-cards-l2b4.css?v=l2c-2">
-  <link rel="stylesheet" href="css/library-reader-l2c.css?v=l2c-3">
+  <link rel="stylesheet" href="css/library-reader-l2c.css?v=l2a-1">
   <link rel="stylesheet" href="css/library-editorial-l2c3.css?v=l2c-3">
   <link rel="stylesheet" href="css/library-epub-manage-l2d2.css?v=c422-1">
   <link rel="stylesheet" href="css/library-epub-edit-l2d5.css?v=l2d5b-1">
@@ -985,19 +985,42 @@
         <div class="reader-top-actions">
           <div class="reader-settings-anchor">
             <button type="button" class="btn" id="reader-settings-trigger" aria-expanded="false" aria-controls="reader-settings-popover">⚙ Kiểu đọc</button>
-            <section id="reader-settings-popover" class="reader-settings-popover" aria-label="Tùy chỉnh trang đọc" hidden>
-              <div class="reader-settings-heading"><span>TÙY CHỈNH TRANG ĐỌC</span><button type="button" class="reader-settings-close" id="reader-settings-close" aria-label="Đóng tùy chỉnh">×</button></div>
+            <section id="reader-settings-popover" class="reader-settings-popover" role="dialog" aria-labelledby="reader-settings-title" hidden>
+              <div class="reader-settings-heading"><span id="reader-settings-title">CÀI ĐẶT ĐỌC</span><button type="button" class="reader-settings-close" id="reader-settings-close" aria-label="Đóng tùy chỉnh">×</button></div>
               <label for="reader-font-choice">Phông chữ truyện</label>
-              <select id="reader-font-choice"><option value="system">Dễ đọc · Không chân</option><option value="serif">Văn học · Có chân</option><option value="mono">Bản thảo · Đơn cách</option></select>
-              <label for="reader-font-size">Kích cỡ chữ <output id="reader-size-value" for="reader-font-size">18px</output></label>
-              <input type="range" id="reader-font-size" min="16" max="26" step="2" value="18">
+              <select id="reader-font-choice">
+                <option value="literata">Literata · Sách</option>
+                <option value="noto-serif">Noto Serif · Cổ điển</option>
+                <option value="lora">Lora · Tiểu thuyết</option>
+                <option value="be-vietnam-pro">Be Vietnam Pro · Hiện đại</option>
+                <option value="source-sans-3">Source Sans 3 · Thoáng</option>
+              </select>
+              <label for="reader-font-size">Cỡ chữ <output id="reader-size-value" for="reader-font-size">18px</output></label>
+              <input type="range" id="reader-font-size" min="16" max="28" step="1" value="18">
+              <label for="reader-line-height">Giãn dòng <output id="reader-line-height-value" for="reader-line-height">1.85×</output></label>
+              <input type="range" id="reader-line-height" min="1.5" max="2.2" step="0.05" value="1.85">
+              <label for="reader-paragraph-space">Khoảng cách đoạn <output id="reader-paragraph-space-value" for="reader-paragraph-space">1.2em</output></label>
+              <input type="range" id="reader-paragraph-space" min="0.6" max="1.8" step="0.1" value="1.2">
+              <div class="reader-setting-desktop-only">
+                <label for="reader-column-width">Độ rộng dòng <output id="reader-column-width-value" for="reader-column-width">68 ký tự</output></label>
+                <input type="range" id="reader-column-width" min="52" max="72" step="4" value="68">
+              </div>
               <div class="reader-settings-label">Màu trang đọc</div>
               <div class="reader-theme-choices" role="group" aria-label="Màu nền trang đọc">
-                <button type="button" data-reader-theme="dark" aria-pressed="true">Đêm</button>
+                <button type="button" data-reader-theme="light" aria-pressed="false">Giấy trắng</button>
                 <button type="button" data-reader-theme="sepia" aria-pressed="false">Giấy ấm</button>
-                <button type="button" data-reader-theme="light" aria-pressed="false">Sáng</button>
+                <button type="button" data-reader-theme="dark" aria-pressed="true">Đêm</button>
+                <button type="button" data-reader-theme="soft" aria-pressed="false">Đêm dịu</button>
               </div>
-              <p class="reader-settings-footnote">Chỉ áp dụng cho trang đọc · lưu trên thiết bị này.</p>
+              <div class="reader-settings-label">Căn chữ</div>
+              <div class="reader-align-choices" role="group" aria-label="Căn lề nội dung">
+                <button type="button" data-reader-align="left" aria-pressed="true">Căn trái</button>
+                <button type="button" data-reader-align="justify" aria-pressed="false">Căn đều</button>
+              </div>
+              <div class="reader-settings-footer">
+                <span>Tự lưu trên thiết bị này</span>
+                <button type="button" id="reader-settings-reset">Mặc định</button>
+              </div>
             </section>
           </div>
           <button class="btn admin-only" id="reader-edit-chapter" onclick="editCurrentReadingChapter()">✎ Sửa</button>
@@ -7911,6 +7934,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       document.getElementById('cover-view').style.display = 'none';
       document.getElementById('reader-view').style.display = 'block';
       document.body.classList.add('dudu-reading-active');
+      window.DuduReaderPreferencesL2C?.apply();
       window.DuduReadingReturnC443?.enterHistory(window);
       c443Remember(scrollPos,true);
       window.DuduReaderShortcutL2F?.reset(window.scrollY);
@@ -8908,7 +8932,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/world-taxonomy-v66.js?v=66-2"></script>
 <script src="js/world-blueprint-v66.js?v=66-1"></script>
 <script src="js/library-reader-status-l2a.js?v=l2a-1"></script>
-<script src="js/library-reader-preferences-l2c.js?v=l2c-1"></script>
+<script src="js/library-reader-preferences-l2c.js?v=l2a-1"></script>
 <script src="js/library-reading-return-c443.js?v=c443-1"></script>
   <script src="js/site-shell-v60.js?v=l2d2-1&amp;pause=c446c-1"></script>
 <script src="js/world-experience-v66.js?v=66-2"></script>

@@ -11,7 +11,7 @@ const prefs=require('../js/library-reader-preferences-l2c.js');
 test('L2C reading preferences validate unsupported values without touching Phone',()=>{
   assert.deepEqual(prefs.sanitize({font:'javascript:',size:500,theme:'unknown'}),prefs.DEFAULT);
   assert.deepEqual(prefs.sanitize({font:'serif',size:24,theme:'sepia'}),{
-    font:'serif',size:24,theme:'sepia'
+    ...prefs.DEFAULT,font:'serif',size:24,theme:'sepia'
   });
   assert.doesNotMatch(readFileSync(join(root,'js/library-reader-preferences-l2c.js'),'utf8'),
     /cyber-phone|setReadingFontSize\(|setTheme\(|phone-app-settings|v568SavePhoneAppearance\(/);
@@ -21,7 +21,7 @@ test('L2C reading preferences persist only to a separate device key',()=>{
   const items=new Map([['phone','preserved']]);
   const store={getItem:key=>items.get(key)||null,setItem:(key,value)=>items.set(key,value)};
   assert.equal(prefs.save(store,{font:'mono',size:20,theme:'light'}),true);
-  assert.deepEqual(prefs.load(store),{font:'mono',size:20,theme:'light'});
+  assert.deepEqual(prefs.load(store),{...prefs.DEFAULT,font:'mono',size:20,theme:'light'});
   assert.equal(items.get('phone'),'preserved');
   store.setItem(prefs.KEY,'{invalid');
   assert.deepEqual(prefs.load(store),prefs.DEFAULT);
