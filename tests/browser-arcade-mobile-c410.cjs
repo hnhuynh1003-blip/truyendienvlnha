@@ -322,7 +322,7 @@ async function main(){
     const result={count:beds.length,inside:beds.every(b=>b.left>=rect.left-1&&b.right<=rect.right+1),
      twoColumns:Math.abs(beds[0].top-beds[1].top)<2&&beds[2].top>beds[0].bottom,
      noOverlap:beds[0].right<=beds[1].left&&beds[2].right<=beds[3].left,
-     actionHeight:sheet.querySelector('.garden-plot-label em').getBoundingClientRect().height,
+     actionHeight:sheet.querySelector('.garden-plot.empty .garden-plot-label em').getBoundingClientRect().height,
      spriteWidth:sheet.querySelector('.garden-crop-sprite').getBoundingClientRect().width,
      sheetWithin:sheet.querySelector('.arcade-sheet').getBoundingClientRect().width<=innerWidth};
     clones.forEach(el=>el.remove());
