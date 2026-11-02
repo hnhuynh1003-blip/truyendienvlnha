@@ -332,6 +332,23 @@
    el('strong','','Hộp Mù Vạn Bảo'),
    el('small','','19 bảo vật riêng · từ E đến SSS · mở ra sẽ vào Kho thật'));
   rootNode.append(intro);
+  // Three read-only museum-quality previews give the sealed collection a goal.
+  // This never reveals the pending draw, grants items, or changes any odds.
+  const showcase=el('section','blind-treasure-showcase');
+  showcase.setAttribute('aria-label','Bảo vật tiêu biểu có thể sưu tập');
+  showcase.append(el('small','blind-treasure-eyebrow','✦ NHỮNG BẢO VẬT ĐÁNG SĂN'));
+  const jewels=el('div','blind-treasure-featured');
+  for(const id of ['fun-celestial-harp','fun-eternal-crown','fun-universe-egg']){
+   const item=root.DuduItemCatalog?.byId(id);
+   if(!item)continue;
+   const card=el('div','blind-treasure-feature rank-'+item.rank.toLowerCase());
+   card.title=item.name+' · Hạng '+item.rank;
+   const art=el('span','blind-treasure-feature-art');
+   if(!root.DuduItemArtV13?.mount?.(art,item))art.textContent=item.icon;
+   card.append(art,el('b','',item.rank),el('small','',item.name));
+   jewels.append(card);
+  }
+  showcase.append(jewels);rootNode.append(showcase);
   if(active?.status==='sealed'){
    const stage=el('div','blind-opening-stage');
    stage.append(el('span','blind-box-3d','🎁'),

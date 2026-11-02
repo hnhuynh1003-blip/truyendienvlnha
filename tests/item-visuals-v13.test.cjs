@@ -25,7 +25,10 @@ test('catalog items have visible defined art with safe unknown fallback',()=>{
  for(const item of catalog.items){
   const v=art.visual(item);
   assert.ok(v&&art.SHAPES[v.shape],item.id);
-  assert.ok(v.src.length>300,item.id);
+  if(item.collectionSet==='VAN_BAO'){
+   assert.equal(v.src,'assets/van-bao/v1/'+item.id+'.webp');
+   assert.match(v.fallbackSrc,/^data:image\/svg\+xml/);
+  }else assert.ok(v.src.length>300,item.id);
  }
  assert.equal(art.visual({id:'custom',rank:'__proto__',type:'ITEM'}).rank,'F');
 });

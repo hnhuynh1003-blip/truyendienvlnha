@@ -109,7 +109,9 @@ body.dudu-phone-v11 #cyber-phone #phone-home-screen .dudu-honor-identity-frame[d
 /* AI frame ornaments sit ABOVE portrait pixels. The 74% transparent center keeps faces clear. */
 body.dudu-phone-v11 .dudu-player-avatar-v16:is([data-frame="nebula"],[data-frame="jadecrest"],
  [data-frame="frostwing"],[data-frame="legend"],[data-frame="soulbond"],[data-frame="author"]),
-body.dudu-phone-v11 #player-avatar-preview-v16[data-frame-preview]{border-width:1px;border-radius:24%;}
+ body.dudu-phone-v11 #player-avatar-preview-v16[data-frame-preview]{
+ border-width:1px;border-radius:24%;overflow:visible;
+}
 body.dudu-phone-v11 .dudu-player-avatar-v16[data-frame="nebula"]{--avatar-art-frame:url('../assets/avatar-frames/v1/nebula.webp');}
 body.dudu-phone-v11 .dudu-player-avatar-v16[data-frame="jadecrest"]{--avatar-art-frame:url('../assets/avatar-frames/v1/jadecrest.webp');}
 body.dudu-phone-v11 .dudu-player-avatar-v16[data-frame="frostwing"]{--avatar-art-frame:url('../assets/avatar-frames/v1/frostwing.webp');}
@@ -121,15 +123,34 @@ body.dudu-phone-v11 #player-avatar-preview-v16[data-frame-preview="soulbond"]{--
 body.dudu-phone-v11 #player-avatar-preview-v16[data-frame-preview="author"]{--avatar-art-frame:url('../assets/avatar-frames/v1/author.webp');}
 body.dudu-phone-v11 .dudu-player-avatar-v16:is([data-frame="nebula"],[data-frame="jadecrest"],
  [data-frame="frostwing"],[data-frame="legend"],[data-frame="soulbond"],[data-frame="author"],[data-frame-preview])::before{
- content:"";position:absolute;inset:0;z-index:4;pointer-events:none;
+ content:"";position:absolute;inset:-12%;z-index:4;pointer-events:none;
  background:var(--avatar-art-frame) center/100% 100% no-repeat;
- filter:drop-shadow(0 0 3px var(--avatar-glow));
+ filter:drop-shadow(0 0 2px var(--avatar-glow));
+}
+/* Lift filigree OUTSIDE the face instead of masking the portrait. */
+body.dudu-phone-v11 .dudu-player-avatar-v16:is([data-frame="nebula"],[data-frame="jadecrest"],
+ [data-frame="frostwing"],[data-frame="legend"],[data-frame="soulbond"],[data-frame="author"],[data-frame-preview]) .dudu-avatar-image,
+body.dudu-phone-v11 .dudu-player-avatar-v16:is([data-frame="nebula"],[data-frame="jadecrest"],
+ [data-frame="frostwing"],[data-frame="legend"],[data-frame="soulbond"],[data-frame="author"],[data-frame-preview]) img{
+ border-radius:24%;clip-path:inset(0 round 24%);
 }
 
 /* Illustrated selector tiles: the miniature asset previews its true border, not only a color dot. */
 body.dudu-phone-v11 .dudu-avatar-v16-frames button{
  min-height:47px;gap:8px;padding:7px;border-radius:12px;
  background:linear-gradient(135deg,#243047,#1b2941);border-color:#7d93ab64;
+}
+body.dudu-phone-v11 .dudu-avatar-v16-preview{
+ overflow:visible;border-color:#9dabc77e;
+ background:radial-gradient(ellipse at 11% 46%,#8ca9eb2d,transparent 46%),
+  linear-gradient(125deg,#1c2947dc,#2a2849e5 65%,#1b2a44dc);
+ box-shadow:inset 0 1px #fff2,0 8px 20px #050b2555;
+}
+body.dudu-phone-v11 .dudu-avatar-v16-preview-info{
+ padding-left:4px;
+}
+body.dudu-phone-v11 #player-avatar-preview-frame-v16{
+ color:#e1caff;font-weight:750;
 }
 body.dudu-phone-v11 .dudu-avatar-v16-frames button[data-frame-tier="A"]{border-color:#83b5cb73;}
 body.dudu-phone-v11 .dudu-avatar-v16-frames button[data-frame-tier="S"],

@@ -40,7 +40,8 @@ test('C2.9 has 19 illustrated, unique items and exact rare weighted probabilitie
  for(const item of catalog.funCollectibles){
   assert.equal(item.collectionSet,'VAN_BAO');
   assert.equal(item.tradeable,false);
-  assert.ok(art.visual(item)?.src.startsWith('data:image/svg+xml;'));
+  assert.equal(art.visual(item)?.src,'assets/van-bao/v1/'+item.id+'.webp');
+  assert.ok(art.visual(item)?.fallbackSrc.startsWith('data:image/svg+xml;'));
  }
  assert.equal(boxes.draw(0).itemId,catalog.funCollectibles[0].id);
  assert.equal(boxes.draw(999999).itemId,catalog.funCollectibles.at(-1).id);

@@ -1,0 +1,78 @@
+/* Vạn Bảo Atelier: collectible art and shop presentation only; no purchase/loot logic. */
+body.dudu-phone-v11 #cyber-phone .blind-treasure-showcase{
+ display:flex;flex-direction:column;gap:8px;padding:9px;
+ border:1px solid #e5c28d77;border-radius:15px;
+ background:radial-gradient(ellipse at 50% 0,#c19a5525,transparent 60%),
+  linear-gradient(140deg,#1d2646dc,#29213dd8);
+ box-shadow:inset 0 1px #fff3,0 4px 12px #05091355;
+}
+body.dudu-phone-v11 #cyber-phone .blind-treasure-eyebrow{
+ font-size:9px;color:#ffdfaf;font-weight:850;letter-spacing:.08em;text-align:center;
+}
+body.dudu-phone-v11 #cyber-phone .blind-treasure-featured{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;
+}
+body.dudu-phone-v11 #cyber-phone .blind-treasure-feature{
+ min-width:0;min-height:109px;padding:5px 3px 6px;
+ display:flex;flex-direction:column;align-items:center;gap:2px;
+ border:1px solid #d1b2e670;border-radius:11px;
+ background:linear-gradient(150deg,#19263be8,#322344e5);
+ box-shadow:inset 0 1px #fff2;text-align:center;
+}
+body.dudu-phone-v11 #cyber-phone .blind-treasure-feature.rank-s{border-color:#edbf74a1;}
+body.dudu-phone-v11 #cyber-phone .blind-treasure-feature.rank-ss{border-color:#fa9f9dba;}
+body.dudu-phone-v11 #cyber-phone .blind-treasure-feature.rank-sss{
+ border-color:#f7d28d;box-shadow:inset 0 1px #fff3,0 0 12px #f2ce7940;
+ background:radial-gradient(ellipse at top,#573b77,#1c2540 79%);
+}
+body.dudu-phone-v11 #cyber-phone .blind-treasure-feature-art{
+ display:grid;place-items:center;width:100%;height:72px;
+ border:0;background:none;box-shadow:none;overflow:visible;
+}
+body.dudu-phone-v11 #cyber-phone .blind-treasure-feature-art img{
+ display:block;width:100%;max-width:77px;height:74px;object-fit:contain;
+ filter:drop-shadow(0 3px 6px #0007) drop-shadow(0 0 5px var(--rarity-glow,#f5d09e));
+}
+body.dudu-phone-v11 #cyber-phone .blind-treasure-feature b{
+ font-size:10px;color:#ffe6a9;letter-spacing:.08em;
+}
+body.dudu-phone-v11 #cyber-phone .blind-treasure-feature small{
+ font-size:8px;line-height:1.2;color:#f2e5fd;
+ display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+body.dudu-phone-v11 #cyber-phone .blind-result-art .dudu-item-v13-art{
+ width:112px;height:112px;object-fit:contain;filter:drop-shadow(0 5px 12px #fff6);
+}
+body.dudu-phone-v11 #cyber-phone .blind-album-art .dudu-item-v13-art{
+ width:65px;height:65px;object-fit:contain;filter:drop-shadow(0 2px 4px #0009);
+}
+/* Existing shop inventory stays intact; the visual goods should not look like empty dark squares. */
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-item{
+ border-color:#8698b79c;background:linear-gradient(130deg,#202d44f0,#29263ff0);
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-icon{
+ width:52px;height:52px;flex:0 0 52px;
+ border:1px solid var(--rarity-glow,#8499bc);
+ border-radius:12px;background:radial-gradient(circle at 45% 28%,#52678c5c,#111b31 85%);
+ box-shadow:inset 0 1px #fff3,0 0 8px var(--rarity-glow,#7186ad);
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-icon .dudu-item-v13-art{
+ width:100%;height:100%;object-fit:contain;
+ filter:brightness(1.25) saturate(1.17);
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-fun-entry{
+ width:100%;min-height:34px;padding:7px 10px;border-radius:9px;
+ border:1px solid #dbb17cb5;background:linear-gradient(120deg,#553c62,#684751);
+ color:#ffe7be;font-size:10px;font-weight:850;text-align:center;cursor:pointer;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-market-fun-entry[hidden]{display:none!important;}
+@media(max-width:355px){
+ body.dudu-phone-v11 #cyber-phone .blind-treasure-featured{gap:4px;}
+ body.dudu-phone-v11 #cyber-phone .blind-treasure-feature{padding:4px 2px;min-height:103px;}
+ body.dudu-phone-v11 #cyber-phone .blind-treasure-feature-art{height:65px;}
+ body.dudu-phone-v11 #cyber-phone .blind-treasure-feature-art img{height:65px;}
+ body.dudu-phone-v11 #cyber-phone .dudu-v43-market-icon{width:46px;height:46px;flex-basis:46px;}
+}
+@media(prefers-reduced-motion:reduce){
+ body.dudu-phone-v11 #cyber-phone .blind-treasure-showcase *{animation:none!important;}
+}

@@ -70,14 +70,18 @@
    });
    filters.append(storySelector);
    const hint=make('p','dudu-v43-market-hint');
+   const funEntry=make('button','dudu-v43-market-fun-entry','✦ Đến Hộp Mù Vạn Bảo ›');
+   funEntry.type='button';funEntry.hidden=true;
+   funEntry.addEventListener('click',()=>root.openPhoneApp?.('fun'));
    const collection=make('div','dudu-v43-market-grid');
    const footer=make('small','dudu-v43-market-footer',
      readOnly?'Chỉ xem trước · Chưa thể mua các món này.':
      personalMode?'Đồ hiếm đang chờ ngày mở bán.':
      'Khám phá vật phẩm và kỷ vật của DUDU.');
-   toolbar.append(tabs,filters,hint);
+   toolbar.append(tabs,filters,hint,funEntry);
    host.append(toolbar,collection,footer);
    function draw(){
+     funEntry.hidden=tab!=='DUDU';
      realmSelector.hidden=tab!=='REALM';
      storySelector.hidden=tab!=='STORY'||!storyOptions.length;
      input.hidden=false;

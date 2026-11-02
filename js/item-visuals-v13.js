@@ -113,6 +113,15 @@
     '⚫':'relic','🏮':'lantern','🎵':'cassette','🖋️':'journal',
     '🪞':'mirror','🏚️':'relic','🧴':'water'
   });
+  // Vạn Bảo art is cosmetic only. All existing IDs, ranks and reward receipts stay untouched.
+  const VAN_BAO_ART=new Set([
+    'fun-firefly-lamp','fun-starglass','fun-cloud-bell','fun-peach-tea',
+    'fun-moon-fan','fun-koi-charm','fun-golden-origami','fun-dew-flower',
+    'fun-fox-mask','fun-sun-compass','fun-moon-hourglass','fun-koi-crown',
+    'fun-butterfly-vial','fun-phoenix-feather','fun-dragon-pearl',
+    'fun-dream-lantern','fun-celestial-harp','fun-eternal-crown',
+    'fun-universe-egg'
+  ]);
   function visual(item){
     if(!item||typeof item!=='object')return null;
     const rank=Object.prototype.hasOwnProperty.call(RANKS,item.rank)?item.rank:'F';
@@ -137,8 +146,11 @@
       '<circle cx="38" cy="38" r="23" fill="'+light+'" opacity=".13"/>'+
       SHAPES[shape]+sparkles+
       '<circle cx="63" cy="12" r="4" fill="'+glow+'" opacity=".8"/></svg>';
+    const fallback='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+    const painted=item.collectionSet==='VAN_BAO'&&VAN_BAO_ART.has(id);
     return Object.freeze({rank,shape,light,dark,
-      src:'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)});
+      src:painted?'assets/van-bao/v1/'+id+'.webp':fallback,
+      fallbackSrc:painted?fallback:null});
   }
   // One artwork renderer for both the store and all warehouse views.
   // It changes presentation only; it never edits the item or its ownership.
@@ -149,6 +161,9 @@
     if(!data||!doc?.createElement)return false;
     const img=doc.createElement('img');
     img.className='dudu-item-v13-art';
+    if(data.fallbackSrc){
+      img.onerror=()=>{img.onerror=null;img.src=data.fallbackSrc;};
+    }
     img.src=data.src;img.alt='';img.width=76;img.height=76;
     img.decoding='async';img.loading='lazy';
     container.replaceChildren(img);
