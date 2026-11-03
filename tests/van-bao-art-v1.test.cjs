@@ -39,8 +39,8 @@ test('Vạn Bảo features S, SS and SSS visually, keeping unopened prizes seale
  assert.match(marketUI,/funEntry\.hidden=tab!==\'DUDU\'/);
  assert.match(marketUI,/root\.openPhoneApp\?\.\('fun'\)/);
  assert.match(html,/href="css\/van-bao-art-v1\.css\?v=vanbao-1"/);
- assert.match(html,/src="js\/item-visuals-v13\.js\?v=vanbao-1"/);
- assert.match(html,/src="js\/dudu-fun-ui-v43\.js\?v=f33-1"/);
+ assert.match(html,/src="js\/item-visuals-v13\.js\?v=f34-1"/);
+ assert.match(html,/src="js\/dudu-fun-ui-v43\.js\?v=f34-1"/);
 });
 
 test('Avatar artwork moves out of the face while keeping original and restricted unlock rules',()=>{

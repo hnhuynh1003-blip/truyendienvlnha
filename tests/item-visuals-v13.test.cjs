@@ -28,12 +28,9 @@ test('catalog items have visible defined art with safe unknown fallback',()=>{
   if(item.collectionSet==='VAN_BAO'){
    assert.equal(v.src,'assets/van-bao/v1/'+item.id+'.webp');
    assert.match(v.fallbackSrc,/^data:image\/svg\+xml/);
-  }else if(item.collectionSet==='VAN_VAT'&&
-    ['f32-fossil-egg','f32-cult-sword','f32-cyber-robot','f32-waste-mask',
-     'f32-anime-queen','f32-doll-porcelain','f32-fruit-peach','f32-cosmos-sovereign',
-     'f32b-fossil-kirin','f32b-cult-spear','f32b-cyber-time','f32b-waste-flower',
-     'f32b-anime-angel','f32b-doll-fairy','f32b-fruit-dragon','f32b-cosmos-crown'].includes(item.id)){
-   const folder=item.id.startsWith('f32b-')?'f32b':'f32';
+  }else if(item.collectionSet==='VAN_VAT'&&v.src.endsWith('.webp')){
+   const folder=item.id.startsWith('f34-')||item.id.startsWith('f31-')?'f34':
+    item.id.startsWith('f32b-')?'f32b':'f32';
    assert.equal(v.src,'assets/van-tuong/'+folder+'/'+item.id+'.webp');
    assert.match(v.fallbackSrc,/^data:image\/svg\+xml/);
    const image=fs.readFileSync(path.resolve(__dirname,'..',v.src));

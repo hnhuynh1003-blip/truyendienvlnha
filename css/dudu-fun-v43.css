@@ -395,3 +395,37 @@ body.dudu-phone-v11 #cyber-phone .blind-legacy{padding-top:10px;display:flex;fle
 .f33-vantvat-zoom-value{font-weight:800;color:#f3cf83}
 @media(max-width:355px){.f33-vantvat-shelf{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(prefers-reduced-motion:reduce){.f33-rare-reveal,.f33-rank-sss{animation:none}}
+/* F3.4 · illustrated physical roulette. Server picks the outcome, not CSS. */
+.f34-vantvat-machine{position:relative;display:grid;place-items:center;width:min(100%,340px);
+ aspect-ratio:1;border:1px solid #dbbf82b3;border-radius:22px;overflow:hidden;
+ background:#14142c url('../assets/van-tuong/f34/f34-spin-backdrop.webp') center/cover;
+ box-shadow:inset 0 0 38px #000a,0 12px 38px #03051370}
+.f34-vantvat-machine::before{content:'';position:absolute;inset:0;
+ background:radial-gradient(circle,#160f3200 28%,#090b19a0 83%);pointer-events:none}
+.f34-vantvat-wheel{--f34-wheel-radius:clamp(86px,28vw,116px);position:relative;
+ display:grid;place-items:center;width:min(86%,294px);aspect-ratio:1;border-radius:50%;
+ border:5px solid #d7b979;outline:2px solid #ffe8b87c;outline-offset:4px;
+ background:repeating-conic-gradient(from -20deg,#502f73cc 0deg 40deg,#253d60cc 40deg 80deg);
+ box-shadow:0 0 24px #d7b97975,inset 0 0 35px #06081e;will-change:transform}
+.f34-vantvat-wheel::before{content:'';position:absolute;inset:9px;
+ border:1px dotted #f6dfacb3;border-radius:50%;box-shadow:inset 0 0 18px #fae2af38}
+.f34-vantvat-wheel.is-spinning{animation:f34-vantvat-spin 1.7s cubic-bezier(.12,.77,.27,1) both}
+.f34-vantvat-medallion{position:absolute;width:50px;height:50px;display:grid;place-items:center;
+ border:1px solid #f2d3a99c;border-radius:50%;overflow:hidden;background:#18243ddd;
+ box-shadow:0 3px 9px #05071288;
+ transform:rotate(calc(var(--f34-sector) * 40deg)) translateY(calc(-1 * var(--f34-wheel-radius))) rotate(calc(var(--f34-sector) * -40deg))}
+.f34-vantvat-medallion .dudu-item-v13-art{width:100%;height:100%;object-fit:contain}
+.f34-vantvat-center{z-index:1;display:grid;place-items:center;width:78px;height:78px;
+ border:2px solid #f5d9a8;border-radius:50%;background:radial-gradient(circle,#7851a4,#261c4d 72%);
+ box-shadow:0 0 22px #c89bff80,inset 0 0 13px #fff4c24d;
+ font-size:24px;font-weight:900;letter-spacing:.015em;color:#fff2bf;text-align:center}
+.f34-vantvat-wheel.is-spinning .f34-vantvat-center{font-size:10px}
+.f34-vantvat-pointer{position:absolute;z-index:3;top:1px;color:#ffe5a6;
+ text-shadow:0 2px 8px #000;font-size:27px;transform:rotate(180deg)}
+.f34-vantvat-title{font-size:12px;letter-spacing:.12em;color:#fbe6c0;text-align:center}
+.f34-vantvat-sealed{font-size:11px;color:#d9cbe9;margin:0;text-align:center}
+@keyframes f34-vantvat-spin{from{transform:rotate(0deg)}to{transform:rotate(1550deg)}}
+@media(max-width:360px){.f34-vantvat-medallion{width:42px;height:42px}
+ .f34-vantvat-wheel{--f34-wheel-radius:clamp(76px,26vw,100px)}
+ .f34-vantvat-center{width:64px;height:64px}}
+@media(prefers-reduced-motion:reduce){.f34-vantvat-wheel.is-spinning{animation:none}}

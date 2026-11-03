@@ -129,3 +129,35 @@ body.dudu-phone-v11 #cyber-phone .dudu-v43-market-locked{
 body.dudu-phone-v11 #cyber-phone .dudu-v43-market-copy .dudu-v43-market-provenance{
  display:block;font-size:9px;color:#ddc8ab;line-height:1.3;
 }
+/* F3.4 · personal quick sale lives in the shop; no wallet mutation in CSS/UI. */
+body.dudu-phone-v11 #cyber-phone .f34-quick-head{
+ display:flex;flex-direction:column;gap:4px;padding:12px;border:1px solid #c4ac7975;
+ border-radius:12px;background:linear-gradient(130deg,#3b3146,#1c3144)}
+body.dudu-phone-v11 #cyber-phone .f34-quick-head strong{font-size:12px;color:#ffe4ae}
+body.dudu-phone-v11 #cyber-phone .f34-quick-head small{font-size:10px;line-height:1.4;color:#cfdaef}
+body.dudu-phone-v11 #cyber-phone .f34-quick-ranks{display:flex;gap:8px;flex-wrap:wrap}
+body.dudu-phone-v11 #cyber-phone .f34-quick-rank{flex:1;min-width:60px;min-height:36px;
+ display:flex;align-items:center;justify-content:center;gap:8px;padding:7px;
+ border:1px solid #b19fca8c;border-radius:9px;background:#30364e;color:#f3e9ff;font-weight:800}
+body.dudu-phone-v11 #cyber-phone .f34-quick-rank:has(input:checked){border-color:#e8c384;background:#56435b}
+body.dudu-phone-v11 #cyber-phone .f34-quick-keep{display:flex;align-items:center;gap:8px;
+ padding:6px 3px;color:#dfd9eb;font-size:11px}
+body.dudu-phone-v11 #cyber-phone .f34-quick-rank input,
+body.dudu-phone-v11 #cyber-phone .f34-quick-keep input{accent-color:#e8c384;width:16px;height:16px}
+body.dudu-phone-v11 #cyber-phone .f34-quick-total{display:flex;justify-content:space-between;
+ align-items:center;gap:8px;padding:12px 10px;border:1px solid #e0be8188;border-radius:10px;
+ background:#d7b77c18;color:#f4ebdd;font-size:12px}
+body.dudu-phone-v11 #cyber-phone .f34-quick-total strong{font-size:19px;color:#ffe09b}
+body.dudu-phone-v11 #cyber-phone .f34-quick-list{max-height:195px;overflow-y:auto;
+ display:grid;gap:4px;padding:2px}
+body.dudu-phone-v11 #cyber-phone .f34-quick-row{display:flex;align-items:center;gap:8px;
+ padding:7px 8px;border-bottom:1px solid #ffffff21;color:#ebebf6;font-size:11px}
+body.dudu-phone-v11 #cyber-phone .f34-quick-rank-tag{min-width:22px;text-align:center;
+ border-radius:6px;background:#4a5875;color:#eff6ff;font-weight:800;padding:3px}
+body.dudu-phone-v11 #cyber-phone .f34-quick-name{flex:1;min-width:0;overflow-wrap:anywhere}
+body.dudu-phone-v11 #cyber-phone .f34-quick-row b{color:#ffdd96;font-size:11px}
+body.dudu-phone-v11 #cyber-phone .f34-quick-confirm{min-height:44px;width:100%;
+ border:1px solid #f6d393;border-radius:11px;background:linear-gradient(125deg,#aa754f,#6f4d9c);
+ color:#fff4da;font-size:12px;font-weight:800;cursor:pointer}
+body.dudu-phone-v11 #cyber-phone .f34-quick-confirm:disabled{opacity:.48;cursor:not-allowed}
+body.dudu-phone-v11 #cyber-phone .f34-quick-note{font-size:10px;color:#c7bdd9}

@@ -678,6 +678,10 @@
     ['f31-fossil-phoenix','Hóa Thạch Phượng Hoàng','SS','🔥','FOSSIL'],
     ['f31-card-destiny','Thẻ Thiên Mệnh','SS','🎴','LUCK_CARD'],
     ['f31-figure-eternal','Tượng Người Giữ Thời Gian','SSS','⏳','FIGURE'],
+    // F3.4 · original, distinct AI-painted goddess/fairy figurines.
+    ['f34-origin-dawn-goddess','Tượng Nữ Thần Bình Minh','SSS','☀️','FIGURE'],
+    ['f34-origin-moon-fairy','Tượng Tiên Nữ Ngân Nguyệt','SS','🧚','FIGURE'],
+    ['f34-origin-star-priestess','Tượng Nữ Tư Tế Tinh Hà','S','🔮','FIGURE'],
     // F3.2A · eight realm sets, three unique artefacts each.
     ['f32-fossil-fern','Dấu Lá Kỷ Nguyên','E','🍃','FOSSIL','PALEO'],
     ['f32-fossil-amber','Hổ Phách Cánh Bướm','C','🦋','FOSSIL','PALEO'],
@@ -775,9 +779,9 @@
       if(x.scope!=='REALM'&&x.realmTag!==null)errors.push('Unexpected realm tag: '+x.id);
       if(x.scope==='DUDU'&&(x.acquisition.method==='RANDOM'||x.giftable||x.discardable||!x.unique))errors.push('Invalid collector guard: '+x.id);
     }
-    if(scopes.COMMON!==25||scopes.REALM!==120||scopes.DUDU!==97)errors.push('Unexpected catalog counts: '+JSON.stringify(scopes));
-    if(items.length!==242||funCollectibles.length!==19||funVantVat.length!==63)
-      errors.push('Expected 179 inherited + 63 Vạn Vật records');
+    if(scopes.COMMON!==25||scopes.REALM!==120||scopes.DUDU!==100)errors.push('Unexpected catalog counts: '+JSON.stringify(scopes));
+    if(items.length!==245||funCollectibles.length!==19||funVantVat.length!==66)
+      errors.push('Expected 179 inherited + 66 Vạn Vật records');
     for(const tag of REALM_TAGS){
       const inRealm=realms.filter(x=>x.realmTag===tag);
       if(inRealm.length!==20)errors.push('Unexpected realm size: '+tag);

@@ -102,7 +102,7 @@ test('F3.2B completes 8 sets of 6 and leaves the first 39 records intact',()=>{
   .reduce((a,x)=>(a[x.funRealm]=(a[x.funRealm]||0)+1,a),{});
  assert.equal(Object.keys(counts).length,8);
  assert.ok(Object.values(counts).every(x=>x===6));
- assert.equal(catalog.funVantVat.length,63);
+ assert.equal(catalog.funVantVat.length,66);
  const ev=prices.POOL.reduce((sum,x)=>sum+x.weight*(x.amount||prices.VALUES[x.rank]),0)/prices.TOTAL;
  assert.ok(ev>12&&ev<12.2,'expected payout preserves the F3.1 economy');
 });

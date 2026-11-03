@@ -7,6 +7,7 @@
  const storyCatalog=root.DuduStoryMarketV43;
  if(!core)return;
  let tab='COMMON',realm='URBAN',query='',storyId='';
+ let quickRanks=['F','E','D'],quickKeepOne=false;
  const REALMS={URBAN:'Hiện đại',APOCALYPSE:'Tận thế',CULTIVATION:'Tu tiên',
   FANTASY:'Huyền huyễn',SCIFI:'Viễn tưởng',HORROR:'Kinh dị'};
  const make=(tag,cls,copy)=>{
@@ -16,7 +17,8 @@
    return node;
  };
  function render({host,coins,state,onBuy,stories=[],readRewards={},
-   functionalState=null,readOnly=false,saleIds=null,personalMode=false}={}){
+   functionalState=null,readOnly=false,saleIds=null,personalMode=false,
+   inventory=[],storyStates={},onBulkSell=null,bulkBusy=false}={}){
    if(!host||typeof onBuy!=='function')return false;
    host.replaceChildren();
    const toolbar=make('section','dudu-v43-market-toolbar');
@@ -26,12 +28,18 @@
    // The phone already presents the coin mark and wallet balance.
    if(!personalMode)toolbar.append(intro);
    const tabs=make('div','dudu-v43-market-tabs');
-   for(const [id,label] of [['COMMON','Mua sắm'],['REALM','Vị diện'],
-     ['DUDU','Kỷ vật'],['STORY','Theo truyện'],['TOOLS','Chức năng']]){
+   const tabOptions=[['COMMON','Mua sắm']];
+   if(personalMode&&typeof onBulkSell==='function')
+    tabOptions.push(['SELL','Bán nhanh']);
+   tabOptions.push(['REALM','Vị diện'],['DUDU','Kỷ vật'],
+    ['STORY','Theo truyện'],['TOOLS','Chức năng']);
+   if(tab==='SELL'&&!personalMode)tab='COMMON';
+   for(const [id,label] of tabOptions){
      const button=make('button','dudu-v43-market-tab'+(id===tab?' is-active':''),label);
      button.type='button';button.setAttribute('aria-pressed',String(tab===id));
      button.addEventListener('click',()=>{
-       tab=id;render({host,coins,state,onBuy,stories,readRewards,functionalState,readOnly,saleIds,personalMode});
+       tab=id;render({host,coins,state,onBuy,stories,readRewards,functionalState,
+        readOnly,saleIds,personalMode,inventory,storyStates,onBulkSell,bulkBusy});
      });
      tabs.append(button);
    }
@@ -84,8 +92,66 @@
      funEntry.hidden=tab!=='DUDU';
      realmSelector.hidden=tab!=='REALM';
      storySelector.hidden=tab!=='STORY'||!storyOptions.length;
-     input.hidden=false;
+     input.hidden=tab==='SELL';
      hint.hidden=personalMode&&tab==='COMMON';
+     if(tab==='SELL'){
+       hint.hidden=true;collection.replaceChildren();
+       const engine=root.DuduPersonalBulkSaleF34;
+       const heading=make('div','f34-quick-head');
+       heading.append(make('strong','','BÁN NHANH · F / E / D'),
+        make('small','','Chỉ bán món đủ điều kiện · không đụng vào bảo vật đã khóa'));
+       const rankBar=make('div','f34-quick-ranks');
+       for(const rank of ['F','E','D']){
+         const label=make('label','f34-quick-rank');
+         const cb=make('input');cb.type='checkbox';cb.checked=quickRanks.includes(rank);
+         cb.addEventListener('change',()=>{
+           quickRanks=cb.checked?[...quickRanks,rank]:quickRanks.filter(x=>x!==rank);
+           draw();
+         });label.append(cb,make('span','',rank));rankBar.append(label);
+       }
+       const keepLabel=make('label','f34-quick-keep');
+       const keep=make('input');keep.type='checkbox';keep.checked=quickKeepOne;
+       keep.addEventListener('change',()=>{quickKeepOne=keep.checked;draw();});
+       keepLabel.append(keep,make('span','','Giữ lại 1 bản mỗi loại'));
+       const all=engine?.candidates(inventory,storyStates,quickRanks,quickKeepOne)||[];
+       const selected=all.slice(0,engine?.MAX_BATCH||100);
+       const total=selected.reduce((n,x)=>n+x.price,0);
+       const count=make('div','f34-quick-total');
+       count.append(make('span','',selected.length+' món được chọn'),
+         make('strong','dudu-money-display--gold','+'+total));
+       const rows=make('div','f34-quick-list');
+       const groups=new Map();
+       for(const item of selected){
+         const key=item.itemId;
+         if(!groups.has(key))groups.set(key,{...item,count:0,total:0});
+         const group=groups.get(key);group.count++;group.total+=item.price;
+       }
+       for(const group of groups.values()){
+         const row=make('div','f34-quick-row');
+         row.append(make('span','f34-quick-rank-tag',group.rank),
+          make('span','f34-quick-name',group.name+' ×'+group.count),
+          make('b','dudu-money-display--gold','+'+group.total));
+         rows.append(row);
+       }
+       if(!selected.length)rows.append(make('p','dudu-v43-market-empty',
+         'Không có món F/E/D phù hợp. Đồ khóa và công cụ đang dùng được giữ lại.'));
+       const action=make('button','f34-quick-confirm',
+         bulkBusy?'Đang xác nhận…':'Bán '+selected.length+' món · +'+total+' Xu');
+       action.type='button';action.disabled=bulkBusy||!selected.length||readOnly;
+       action.addEventListener('click',()=>{
+         if(action.disabled)return;
+         if(!root.confirm?.('Bán '+selected.length+' món F/E/D để nhận '+total+
+          ' Xu Vàng? Không thể hoàn tác.'))return;
+         void onBulkSell(selected.map(x=>x.instanceId));
+       });
+       collection.append(heading,rankBar,keepLabel,count,rows,action);
+       if(all.length>selected.length)collection.append(make('small','f34-quick-note',
+        'Mỗi lần tối đa '+selected.length+' món. Bán xong có thể tiếp tục.'));
+       footer.textContent='Giao dịch một lần · Có biên nhận · Không cộng Xu lặp.';
+       return;
+     }
+     footer.textContent=readOnly?'Chỉ xem trước · Chưa thể mua các món này.':
+      personalMode?'Đồ hiếm đang chờ ngày mở bán.':'Khám phá vật phẩm và kỷ vật của DUDU.';
      const ledger=core.norm(state);
      const utility=root.DuduFunctionalItemsV438;
      const pending=utility?.norm(functionalState).pending;

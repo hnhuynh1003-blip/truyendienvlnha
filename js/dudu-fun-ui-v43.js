@@ -45,6 +45,16 @@
   DREAM:'Kỷ vật mang ký ức của một giấc mộng chưa phai.',
   GARDEN:'Dị quả kết tinh từ linh khí và những mùa không tên.',
   COSMOS:'Một phần bí mật đang trôi giữa muôn vàn tinh hệ.'};
+ const originLoreF34={
+  'f34-origin-dawn-goddess':'Nữ thần của tia sáng đầu tiên, được tạc từ bình minh còn sót lại ngoài rìa Vạn Giới.',
+  'f34-origin-moon-fairy':'Tiên nữ canh giấc mộng bạc, ngồi chờ trên vành trăng nơi thời gian ngừng chảy.',
+  'f34-origin-star-priestess':'Nữ tư tế đọc vận mệnh trong tinh đồ vỡ, mỗi vì sao là một lời hứa chưa được mở.',
+  'f31-figure-eternal':'Người giữ chiếc đồng hồ cuối cùng; mỗi vòng kim là một thế giới đã đi qua.',
+  'f31-figure-fox':'Hồ ly chín đuôi ngậm một dải ngân hà, chỉ xuất hiện trước người giữ lời hẹn.',
+  'f31-figure-samurai':'Kiếm sĩ lạc giới vẫn canh giữ cánh cổng không còn tên trên bản đồ.',
+  'f31-fossil-phoenix':'Bộ xương phượng hoàng hóa thạch trong nham thạch, vẫn ánh lên sắc lửa cổ đại.',
+  'f31-card-destiny':'Lá bài chứa một chiếc đồng hồ cát không chịu đổ, tượng trưng cho lựa chọn thứ hai.',
+  'f31-background-aurora':'Cảnh cực quang được phong trong một ô cửa nhỏ, có thể ngắm như một bảo vật.'};
  function vantVatZoom(item){
   if(!item||!root.DuduItemCatalog?.byId(item.id))return;
   document.getElementById('f33-vantvat-zoom')?.remove();
@@ -63,7 +73,8 @@
   if(!root.DuduItemArtV13?.mount?.(picture,item))picture.textContent=item.icon||'✦';
   panel.append(close,picture,el('small','',item.rank+' · '+
    (realmNamesF33[item.funRealm]||'Vạn Tượng')),
-   el('strong','',item.name),el('p','',realmLoreF33[item.funRealm]||item.desc),
+   el('strong','',item.name),el('p','',originLoreF34[item.id]||
+    realmLoreF33[item.funRealm]||item.desc),
    withGold('div','f33-vantvat-zoom-value','Giá thu mua · ',vvRule()?.VALUES[item.rank]||0));
   overlay.append(panel);document.body.append(overlay);close.focus();
  }
@@ -155,6 +166,8 @@
   if(!vvLoaded||vvBusy||funActionBusy||!vvBridge()?.ready?.())return;
   const uid=vvUid,id=kind==='start'?crypto.randomUUID():vvState?.active?.id;
   vvBusy=true;funActionBusy=true;message('');
+  const startedAt=Date.now();
+  if(kind==='start')render(); // The roulette visibly spins while the signed transaction runs.
   try{
    const opts={kind,id};
    if(kind==='start'){
@@ -164,6 +177,9 @@
    const result=await vvBridge().run(opts);
    if(uid!==vvUid||!signed())return;
    vvState=result.state;vvCurrency=result.currency;
+   // Result and Xu are already committed; the animation is presentation only.
+   if(kind==='start'&&typeof setTimeout==='function')
+    await new Promise(done=>setTimeout(done,Math.max(0,1700-(Date.now()-startedAt))));
    if(kind==='claim'&&result.status==='applied'&&result.reward?.rank&&
       ['A','S','SS','SSS'].includes(result.reward.rank))
     vvRevealMoment={id:result.state?.active?.id,rank:result.reward.rank};
@@ -190,9 +206,26 @@
   const active=vvState?.active,prize=active&&root.DuduItemCatalog?.byId(active.itemId),
    coinPrize=active&&rule.POOL.find(p=>p.itemId===active.itemId&&p.rank==='COIN');
   const stage=el('div','f31-vantvat-stage');
-  stage.append(el('div','f31-vantvat-orb',active?'✦':'🌌'),
-   el('strong','','VẠN VẬT · ĐA VỊ DIỆN'));
-  if(active){
+  const machine=el('div','f34-vantvat-machine');
+  machine.setAttribute('aria-label','Vòng quay Vạn Tượng chín vị diện');
+  const wheel=el('div','f34-vantvat-wheel'+(vvBusy?' is-spinning':''));
+  const anchors=['f34-origin-dawn-goddess','f32-fossil-egg','f32-cult-sword',
+   'f32-cyber-robot','f32-waste-mask','f32-anime-queen','f32-doll-porcelain',
+   'f32-fruit-peach','f32-cosmos-sovereign'];
+  anchors.forEach((id,i)=>{
+   const entry=root.DuduItemCatalog?.byId(id);
+   const medallion=el('span','f34-vantvat-medallion');
+   medallion.style.setProperty('--f34-sector',i);
+   if(entry&&!root.DuduItemArtV13?.mount?.(medallion,entry))
+    medallion.textContent=entry.icon||'✦';
+   wheel.append(medallion);
+  });
+  wheel.append(el('span','f34-vantvat-center',vvBusy?'ĐANG QUAY':'✦'));
+  machine.append(wheel,el('span','f34-vantvat-pointer','◆'));
+  stage.append(machine,el('strong','f34-vantvat-title','VẠN TƯỢNG · CỬU GIỚI'));
+  if(active&&active.status==='sealed')
+   stage.append(el('p','f34-vantvat-sealed','✧ Phong ấn đã định · Mở để nhận bảo vật'));
+  if(active&&active.status==='claimed'){
    const celebrate=active.status==='claimed'&&vvRevealMoment?.id===active.id?
     vvRevealMoment:null;
    if(celebrate)vvRevealMoment=null;
@@ -212,11 +245,11 @@
     const zoom=el('button','f33-zoom-action','🔍 Xem lớn');
     zoom.type='button';zoom.onclick=()=>vantVatZoom(prize);stage.append(zoom);
    }
-   if(active.status==='sealed'){
-    const button=el('button','dudu-fun-claim','✦ MỞ NHẬN THƯỞNG');
-    button.disabled=vvBusy||funActionBusy;
-    button.onclick=()=>{void vantVatAction('claim');};stage.append(button);
-   }
+  }
+  if(active?.status==='sealed'){
+   const button=el('button','dudu-fun-claim','✦ KHAI PHONG BẢO VẬT');
+   button.disabled=vvBusy||funActionBusy;
+   button.onclick=()=>{void vantVatAction('claim');};stage.append(button);
   }
   if(!active||active.status==='claimed'){
    const button=withGold('button','dudu-fun-start','↻ QUAY · ',rule.PRICE);

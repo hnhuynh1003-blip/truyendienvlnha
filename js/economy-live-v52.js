@@ -95,11 +95,49 @@
    stories:typeof novels!=='undefined'?novels:[],
    readRewards:userProfile?.readRewards||{},functionalState:null,
    personalMode:true,readOnly:false,
+   inventory:userProfile?.inventory||[],storyStates:userProfile?.storyStates||{},
+   bulkBusy:personalBusy,onBulkSell:personalBulkSell,
    saleIds:[...root.DuduEconomyCoreV43.SHOP_IDS,
     root.DuduEconomyCoreV43.SUPPLY_ID,root.DuduEconomyCoreV43.TOOL_ID,
     root.DuduEconomyCoreV43.PULSE_ID],
    onBuy:personalPurchase
   })||false;
+ }
+ const bulkPendingKey=account=>'dudu-personal-bulk:pending:'+account;
+ async function personalBulkSell(instanceIds){
+  const account=uid(),bridge=root.DuduBulkSaleBridgeF34;
+  if(!personal()||personalBusy||!account||!bridge?.ready?.()||
+    !Array.isArray(instanceIds)||!instanceIds.length)return false;
+  const key=bulkPendingKey(account),engine=root.DuduPersonalSparkItemsV1;
+  let pending=null;
+  try{pending=JSON.parse(localStorage.getItem(key)||'null');}catch(_){}
+  if(!pending||!Array.isArray(pending.instanceIds)||!pending.requestId)
+   pending={instanceIds:[...instanceIds],requestId:engine.requestId('sell')};
+  try{localStorage.setItem(key,JSON.stringify(pending));}
+  catch(_){root.showSystemAlert?.('CHƯA BÁN ĐƯỢC','Chưa thể lưu mã giao dịch.');return false;}
+  personalBusy=true;showPersonalMarket();
+  try{
+   // A retry first reconciles the exact original batch. Never mint a second payout.
+   const result=await bridge.run(pending);
+   if(uid()!==account)return false;
+   localStorage.removeItem(key);
+   showPersonalMarket();
+   root.showSystemAlert?.(result.status==='already-applied'?
+    'ĐÃ XÁC MINH GIAO DỊCH':'BÁN NHANH THÀNH CÔNG',
+     'Đã ghi nhận '+result.count+' món · +'+result.price+' Xu Vàng.');
+   return true;
+  }catch(e){
+   // A permanent ownership change cannot be retried with the old batch.
+   // Removing the pending key never credits money; the server still enforces
+   // physical ownership and receipt identity on the next request.
+   if(/vật phẩm đã đổi|không thể bán|không hợp lệ|Mã giao dịch đã dùng/.test(e?.message||''))
+    localStorage.removeItem(key);
+   root.showSystemAlert?.('CHƯA XÁC NHẬN BÁN NHANH',
+     root.DuduPersonalErrorC416?.message(e,
+      'Chưa thể xác nhận giao dịch. Mã bán được giữ để thử lại, không cộng Xu hai lần.')||
+      'Mã bán được giữ để thử lại.');
+   return false;
+  }finally{personalBusy=false;showPersonalMarket();}
  }
  async function personalPurchase(itemId){
   const account=uid(),engine=root.DuduPersonalSparkItemsV1;

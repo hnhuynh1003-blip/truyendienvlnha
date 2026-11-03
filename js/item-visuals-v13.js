@@ -128,6 +128,11 @@
     'f32b-fossil-kirin','f32b-cult-spear','f32b-cyber-time','f32b-waste-flower',
     'f32b-anime-angel','f32b-doll-fairy','f32b-fruit-dragon','f32b-cosmos-crown'
   ]);
+  const VAN_VAT_F34_ART=new Set([
+    'f34-origin-dawn-goddess','f34-origin-moon-fairy','f34-origin-star-priestess',
+    'f31-figure-eternal','f31-figure-fox','f31-figure-samurai',
+    'f31-fossil-phoenix','f31-card-destiny','f31-background-aurora'
+  ]);
   function visual(item){
     if(!item||typeof item!=='object')return null;
     const rank=Object.prototype.hasOwnProperty.call(RANKS,item.rank)?item.rank:'F';
@@ -160,10 +165,12 @@
     const fallback='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
     const painted=item.collectionSet==='VAN_BAO'&&VAN_BAO_ART.has(id);
     const realmPainted=item.collectionSet==='VAN_VAT'&&VAN_VAT_F32_ART.has(id);
+    const originPainted=item.collectionSet==='VAN_VAT'&&VAN_VAT_F34_ART.has(id);
     return Object.freeze({rank,shape,light,dark,
       src:painted?'assets/van-bao/v1/'+id+'.webp':
+        originPainted?'assets/van-tuong/f34/'+id+'.webp':
         realmPainted?'assets/van-tuong/'+(id.startsWith('f32b-')?'f32b/':'f32/')+id+'.webp':fallback,
-      fallbackSrc:painted||realmPainted?fallback:null});
+      fallbackSrc:painted||realmPainted||originPainted?fallback:null});
   }
   // One artwork renderer for both the store and all warehouse views.
   // It changes presentation only; it never edits the item or its ownership.
