@@ -67,3 +67,132 @@ body.dudu-phone-v11 #cyber-phone .museum-vanbao-pedestal.is-locked b{color:#979b
  body.dudu-phone-v11 #cyber-phone .museum-vanbao-head strong{font-size:8px}
  body.dudu-phone-v11 #cyber-phone .museum-vanbao-caption strong{font-size:11px}
 }
+
+/* F3.8 · authenticated Vạn Tượng wing in the main phone Museum. */
+body.dudu-phone-v11 #cyber-phone .museum-c426-vantvat{
+ display:flex;flex-direction:column;gap:9px;min-width:0;padding:8px 3px 14px;
+ color:#f5e7c9;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-head{
+ display:flex;justify-content:space-between;align-items:center;gap:7px;
+ font-size:10px;line-height:1.3;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-head strong{color:#ffe6b5}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-head span{
+ color:#dec8f6;font-size:9px;font-weight:800;white-space:nowrap}
+body.dudu-phone-v11 #cyber-phone :is(.museum-vantvat-note,.museum-vantvat-empty){
+ margin:0;font-size:10px;line-height:1.5;color:#c8c4d5;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-feature{
+ position:relative;isolation:isolate;display:flex;align-items:center;gap:10px;
+ min-width:0;min-height:157px;padding:11px;border:1px solid #8a7795b3;
+ border-radius:14px;background:radial-gradient(circle at 35% 40%,#5446789a,#1b253f 75%);
+ box-shadow:inset 0 1px #ffffff1f;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-art{
+ display:grid;place-items:center;flex:0 0 42%;height:138px;min-width:0;
+ font-size:69px;color:#7d839e;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-art.dudu-item-v13-frame,
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-mini.dudu-item-v13-frame{
+ background:transparent!important;border:0!important;
+ box-shadow:none!important;overflow:visible!important;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-art img{
+ width:100%;height:100%;object-fit:contain;
+ filter:drop-shadow(0 6px 8px #070917a8);
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-desc{
+ display:flex;flex:1;flex-direction:column;gap:7px;min-width:0;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-desc small{
+ font-size:9px;font-weight:900;color:#e7c88e;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-desc strong{
+ font-size:13px;line-height:1.3;overflow-wrap:anywhere;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-desc span{
+ font-size:10px;line-height:1.4;color:#c8c3de;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-grid{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-card{
+ display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;
+ padding:8px 4px;min-height:112px;border:1px solid #8589a56e;
+ border-radius:11px;background:linear-gradient(145deg,#202940,#1b2238);
+ color:#f2e9e2;cursor:pointer;font:inherit;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-card.is-selected{
+ outline:2px solid #f7d7a5;outline-offset:-2px;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-card:focus-visible{
+ outline:2px solid #f9e2b9;outline-offset:1px;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-mini{
+ display:grid;place-items:center;width:72px;height:70px;
+ font-size:39px;color:#646b80;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-mini img{
+ width:100%;height:100%;object-fit:contain;
+ filter:drop-shadow(0 3px 5px #03091699);
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-card b{
+ color:#f6d59c;font-size:10px;line-height:1;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-card small{
+ font-size:9px;line-height:1.2;text-align:center;overflow-wrap:anywhere;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-card.is-locked{
+ color:#9197ad;background:#202638;border-color:#65728755;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-card.is-locked b{color:#8990a7}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-unfound{
+ border:1px solid #756b895c;border-radius:11px;padding:8px;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-unfound summary{
+ cursor:pointer;color:#c8bfd7;font-size:10px;font-weight:850;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-unfound .museum-vantvat-grid{
+ margin-top:9px;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-go{
+ align-self:center;padding:9px 14px;border:1px solid #d9bb85;border-radius:10px;
+ background:linear-gradient(135deg,#6e447e,#363a65);color:#f9eace;
+ font-size:11px;font-weight:850;cursor:pointer;
+}
+/* The rank aura belongs on the display frame, never across the text itself. */
+body.dudu-phone-v11 #cyber-phone :is(.museum-vantvat-card,.museum-vantvat-feature).is-owned.rank-b{
+ border-color:#c59aea99;box-shadow:0 0 8px #ba83f44e;
+}
+body.dudu-phone-v11 #cyber-phone :is(.museum-vantvat-card,.museum-vantvat-feature).is-owned.rank-a{
+ border-color:#efa4d0;box-shadow:0 0 13px #ed94d07a;
+}
+body.dudu-phone-v11 #cyber-phone :is(.museum-vantvat-card,.museum-vantvat-feature).is-owned.rank-s{
+ border-color:#ffe0a6;animation:museum-vantvat-s 3.9s ease-in-out infinite alternate;
+}
+body.dudu-phone-v11 #cyber-phone :is(.museum-vantvat-card,.museum-vantvat-feature).is-owned.rank-ss{
+ border-color:#ffd1ce;animation:museum-vantvat-ss 3.3s ease-in-out infinite alternate;
+}
+body.dudu-phone-v11 #cyber-phone :is(.museum-vantvat-card,.museum-vantvat-feature).is-owned.rank-sss{
+ border-color:#fff1b7;animation:museum-vantvat-sss 2.9s ease-in-out infinite alternate;
+}
+@keyframes museum-vantvat-s{
+ from{box-shadow:0 0 10px #f9bd6b66}to{box-shadow:0 0 23px #ffe29ba8}
+}
+@keyframes museum-vantvat-ss{
+ from{box-shadow:0 0 14px #f4a2ad88}to{box-shadow:0 0 30px #f6a6c8dd,0 0 40px #a88cf866}
+}
+@keyframes museum-vantvat-sss{
+ from{box-shadow:0 0 18px #ffe3a4a8,0 0 29px #b58dff88}
+ to{box-shadow:0 0 36px #fff4bce8,0 0 54px #c89df5bc}
+}
+@media(max-width:350px){
+ body.dudu-phone-v11 #cyber-phone .museum-vantvat-mini{width:58px;height:58px}
+ body.dudu-phone-v11 #cyber-phone .museum-vantvat-card{min-height:104px}
+}
+@media(prefers-reduced-motion:reduce){
+ body.dudu-phone-v11 #cyber-phone :is(.museum-vantvat-card,.museum-vantvat-feature){
+  animation:none!important;
+ }
+}

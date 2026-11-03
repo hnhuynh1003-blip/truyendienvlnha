@@ -32,7 +32,7 @@
   return node;
  };
  let host=null,owner='',sandboxMode=false,active='gallery',selected='s01-neon';
- let vanBaoRequest=0;
+ let vanBaoRequest=0,vanVatRequest=0;
  const byId=id=>root.document.getElementById(id);
  const getPanel=id=>host?.querySelector('[data-museum-panel="'+id+'"]');
  function openSource(item){
@@ -68,7 +68,7 @@
   }
  }
  function switchTab(id){
-  if(!['gallery','display','preview','owned','memories'].includes(id))return;
+  if(!['gallery','display','preview','owned','vantvat','memories'].includes(id))return;
   active=id;
   for(const tab of host?.querySelectorAll('.museum-c426-tab')||[]){
    const on=tab.dataset.tab===id;
@@ -78,6 +78,7 @@
    panel.hidden=panel.dataset.museumPanel!==id;
   if(id==='display')root.DuduArcadeShowcaseUIV439?.render?.();
   if(id==='owned')void refreshVanBao();
+  if(id==='vantvat')void refreshVanVat();
  }
  // A separate Firestore-backed FUN shelf: it never masquerades as the Worker
  // collectible ledger, grants items, or trusts browser storage as ownership.
@@ -153,12 +154,116 @@
    renderVanBao(null,'unavailable');
   }
  }
+ // F3.8 · This is the permanent, read-only Vạn Tượng collection wing.
+ // The source is the account's authenticated Firestore album, never a demo
+ // inventory, a browser snapshot, or the Worker collectible ledger.
+ function renderVanVat(result,reason=''){
+  const container=host?.querySelector('.museum-c426-vantvat');if(!container)return;
+  container.replaceChildren();
+  const all=(root.DuduItemCatalog?.funVantVat||[])
+   .filter(item=>item.collectionSet==='VAN_VAT');
+  const permitted=new Set(all.map(item=>item.id));
+  const album=new Set((Array.isArray(result?.state?.album)?result.state.album:[])
+   .filter(id=>permitted.has(id)));
+  const owned=all.filter(item=>album.has(item.id));
+  const header=el('div','museum-vantvat-head');
+  header.append(el('strong','','✦ KỲ TRÂN ĐA VỊ DIỆN'),
+   el('span','',owned.length+'/'+all.length+' ĐÃ SƯU TẦM'));
+  container.append(header);
+  if(reason){
+   const message=reason==='sandbox'?'Sandbox chỉ xem thử, không xác nhận vật phẩm.':
+    reason==='unauthenticated'?'Đăng nhập để xem bảo vật đã quay trên tài khoản.':
+    'Chưa tải được sổ Vạn Tượng. Hãy thử mở lại tab.';
+   container.append(el('p','museum-vantvat-empty',message));return;
+  }
+  container.append(el('small','museum-vantvat-note',
+   'Đã sưu tầm được ghi nhớ kể cả khi vật phẩm đã bán · chỉ xem, không nhận quà lần hai.'));
+  if(!all.length)return;
+  const rankOrder=['SSS','SS','S','A','B','C','D','E','F'];
+  const sorted=[...all].sort((a,b)=>Number(album.has(b.id))-Number(album.has(a.id))||
+   rankOrder.indexOf(a.rank)-rankOrder.indexOf(b.rank)||a.name.localeCompare(b.name,'vi'));
+  const feature=el('div','museum-vantvat-feature');
+  const art=el('span','museum-vantvat-art');
+  const description=el('div','museum-vantvat-desc');
+  feature.append(art,description);container.append(feature);
+  const grid=el('div','museum-vantvat-grid');
+  grid.setAttribute('aria-label','Các bảo vật đã sưu tầm từ Vạn Tượng');
+  const missing=el('div','museum-vantvat-grid');
+  missing.setAttribute('aria-label','Các bảo vật chưa tìm thấy');
+  const buttons=[];
+  function select(item){
+   const found=album.has(item.id);
+   feature.className='museum-vantvat-feature rank-'+item.rank.toLowerCase()+
+    (found?' is-owned':' is-locked');
+   art.replaceChildren();art.className='museum-vantvat-art'+(found?'':' is-locked');
+   if(found){
+    if(!root.DuduItemArtV13?.mount?.(art,item))art.textContent=item.icon||'✦';
+   }else art.textContent='◇';
+   description.replaceChildren(el('small','',found?'HẠNG '+item.rank+' · ĐÃ SƯU TẦM':
+    'HẠNG '+item.rank+' · CHƯA MỞ KHÓA'),
+    el('strong','',found?item.name:'Bảo vật chưa tìm thấy'),
+    el('span','',found?'Kỷ vật đã từng nhận từ vòng quay.':
+     'Quay Vạn Tượng để khám phá món đồ này.'));
+   for(const button of buttons){
+    const chosen=button.dataset.itemId===item.id;
+    button.classList.toggle('is-selected',chosen);
+    button.setAttribute('aria-pressed',String(chosen));
+   }
+  }
+  for(const item of sorted){
+   const found=album.has(item.id);
+   const card=el('button','museum-vantvat-card rank-'+item.rank.toLowerCase()+
+    (found?' is-owned':' is-locked'));
+   card.type='button';card.dataset.itemId=item.id;
+   card.setAttribute('aria-label',found?'Ngắm '+item.name:
+    'Bảo vật hạng '+item.rank+' chưa mở khóa');
+   const picture=el('span','museum-vantvat-mini');
+   if(found){
+    if(!root.DuduItemArtV13?.mount?.(picture,item))picture.textContent=item.icon||'✦';
+   }else picture.textContent='◇';
+   card.append(picture,el('b','',item.rank),
+    el('small','',found?item.name:'Chưa có'));
+   card.addEventListener('click',()=>select(item));
+   (found?grid:missing).append(card);buttons.push(card);
+  }
+  if(!owned.length)container.append(el('p','museum-vantvat-empty',
+   'Chưa có bảo vật Vạn Tượng. Hãy quay để mở những hiện vật đầu tiên.'));
+  else container.append(grid);
+  if(missing.children.length){
+   const unknown=el('details','museum-vantvat-unfound');
+   unknown.append(el('summary','','Chưa khám phá · '+missing.children.length+' món'),missing);
+   container.append(unknown);
+  }
+  select(sorted.find(item=>album.has(item.id))||sorted[0]);
+  const go=el('button','museum-vantvat-go','🎰 Đến vòng quay');
+  go.type='button';go.onclick=()=>root.DuduFunUIV43?.showVantVat?.();
+  container.append(go);
+ }
+ async function refreshVanVat(){
+  const request=++vanVatRequest,bridge=root.DuduVantVatLiveBridgeF31;
+  if(sandboxMode){renderVanVat(null,'sandbox');return;}
+  if(!owner||!bridge?.ready?.()||bridge.uid?.()!==owner){
+   renderVanVat(null,'unauthenticated');return;
+  }
+  const uid=owner,container=host?.querySelector('.museum-c426-vantvat');
+  if(container)container.textContent='Đang đối chiếu bảo vật Vạn Tượng…';
+  try{
+   const result=await bridge.load();
+   if(request!==vanVatRequest||uid!==owner||!bridge.ready?.()||
+    bridge.uid?.()!==uid)return;
+   renderVanVat(result);
+  }catch(_){
+   if(request!==vanVatRequest||uid!==owner)return;
+   renderVanVat(null,'unavailable');
+  }
+ }
  function build(){
   host.replaceChildren();host.classList.add('museum-c426-root');
   const nav=el('nav','museum-c426-tabs');nav.setAttribute('role','tablist');
   nav.setAttribute('aria-label','Khu vực bảo tàng');
   for(const [id,label] of [['gallery','Chiến tích'],['display','Tủ riêng'],
-   ['preview','Quà mùa'],['owned','Đã sở hữu'],['memories','Kỷ niệm']]){
+   ['preview','Quà mùa'],['owned','Đã sở hữu'],
+   ['vantvat','Vạn Tượng'],['memories','Kỷ niệm']]){
    const tab=el('button','museum-c426-tab',label);tab.type='button';
    tab.dataset.tab=id;tab.setAttribute('role','tab');tab.id='museum-c426-tab-'+id;
    tab.setAttribute('aria-controls','museum-c426-panel-'+id);
@@ -208,6 +313,11 @@
   owned.append(el('span','museum-c426-ledger','Sổ sở hữu chưa xác minh'));
   const verified=el('div','museum-c426-verified');
   verified.setAttribute('aria-live','polite');owned.append(verified);host.append(owned);
+  const vantvat=el('section','museum-c426-vantvat');
+  vantvat.id='museum-c426-panel-vantvat';vantvat.dataset.museumPanel='vantvat';
+  vantvat.setAttribute('role','tabpanel');
+  vantvat.setAttribute('aria-labelledby','museum-c426-tab-vantvat');
+  host.append(vantvat);
   const memories=el('section','museum-c426-memories');memories.id='museum-c426-panel-memories';
   memories.dataset.museumPanel='memories';memories.setAttribute('role','tabpanel');
   memories.setAttribute('aria-labelledby','museum-c426-tab-memories');
@@ -223,16 +333,22 @@
   const changed=host!==container||owner!==ownerKey||sandboxMode!==!!sandbox||
    !container.classList.contains('museum-c426-root-ready');
   host=container;
-  if(changed){vanBaoRequest++;owner=ownerKey;sandboxMode=!!sandbox;active='gallery';selected='s01-neon';
+  if(changed){vanBaoRequest++;vanVatRequest++;owner=ownerKey;sandboxMode=!!sandbox;
+   active='gallery';selected='s01-neon';
    build();host.classList.add('museum-c426-root-ready');}
   root.DuduMuseumGalleryC429?.mount?.({container:getPanel('gallery'),ownerKey:owner,sandbox:sandboxMode});
   root.DuduArcadeShowcaseUIV439?.mount?.({container:getPanel('display')});
   if(active==='owned')void refreshVanBao();
+  if(active==='vantvat')void refreshVanVat();
   return true;
  }
  function showVanBao(){
   if(!host)return false;
   switchTab('owned');return true;
+ }
+ function showVanVat(){
+  if(!host)return false;
+  switchTab('vantvat');return true;
  }
  function showDisplay(){
   if(!host)return false;
@@ -284,5 +400,6 @@
   }
   container.append(list);return true;
  }
- root.DuduMuseumVaultC426=Object.freeze({init,updateVerified,showDisplay,showVanBao,exhibits});
+ root.DuduMuseumVaultC426=Object.freeze({init,updateVerified,showDisplay,
+  showVanBao,showVanVat,exhibits});
 })(typeof window!=='undefined'?window:{});

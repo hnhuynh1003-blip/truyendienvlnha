@@ -35,7 +35,8 @@ test('F3.7 Vạn Tượng result, museum, and zoom carry original rarity classes
  const html=read('index.html');
  for(const file of ['css/dudu-fun-v43.css','css/item-visuals-v13.css',
   'js/item-visuals-v13.js','js/dudu-fun-ui-v43.js']){
-  assert.ok(html.includes(file+'?v=f37-1'),file);
+  assert.ok(html.includes(file+'?v='+
+   (file.includes('dudu-fun-')?'f38-1':'f37-1')),file);
  }
 });
 

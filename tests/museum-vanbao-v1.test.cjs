@@ -78,8 +78,8 @@ test('Sandbox cannot present the SSS artefact as an owned museum reward',async()
 test('Museum and FUN stay view-only, with transparent relic art and no data writes',()=>{
  const html=source('index.html'),css=source('css/museum-vanbao-v1.css');
  const museum=source('js/museum-vault-c426.js');
- assert.match(html,/museum-vanbao-v1\.css\?v=fun-vis4/);
- assert.match(html,/fun=vanbao-1/);
+ assert.match(html,/museum-vanbao-v1\.css\?v=f38-1/);
+ assert.match(html,/fun=f38-1/);
  assert.match(css,/\.museum-vanbao-hero\.dudu-item-v13-frame/);
  assert.match(css,/\.museum-vanbao-pedestal\.is-locked/);
  assert.match(museum,/const result=await bridge\.load\(\)/);

@@ -559,3 +559,11 @@ body.dudu-phone-v11 #cyber-phone .blind-legacy{padding-top:10px;display:flex;fle
  .f36-vantvat-reward[class*="f37-tier-"],
  .f33-vantvat-zoom-panel[class*="f37-tier-"]{animation:none !important}
 }
+
+/* F3.8 · direct link to the real phone Museum, visible under the roulette. */
+.f38-vantvat-museum-link{width:min(100%,340px);min-height:42px;
+ border:1px solid #a69dcf99;border-radius:11px;padding:10px 14px;
+ background:linear-gradient(140deg,#39314f,#222b48);
+ color:#f5dfbd;font-size:12px;font-weight:850;cursor:pointer;
+}
+.f38-vantvat-museum-link:focus-visible{outline:2px solid #fae0ae;outline-offset:3px}

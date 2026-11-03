@@ -352,6 +352,14 @@
   const bar=el('span','f36-vantvat-pity-bar');
   const fill=el('i','');fill.style.width=(vvState?.pity||0)+'%';bar.append(fill);
   pity.append(bar);stage.append(pity);
+  const museumLink=el('button','f38-vantvat-museum-link','🏛️ Xem trong Bảo Tàng');
+  museumLink.type='button';
+  museumLink.setAttribute('aria-label','Mở tab Vạn Tượng trong Bảo Tàng');
+  museumLink.onclick=()=>{
+   root.openPhoneApp?.('museum');
+   root.DuduMuseumVaultC426?.showVanVat?.();
+  };
+  stage.append(museumLink);
   const gallery=el('details','f31-vantvat-gallery');
   gallery.append(el('summary','','✧ Bách Giới Kỳ Trân · '+
    rule.POOL.filter(x=>x.rank!=='COIN').length+' bảo vật'));
@@ -1237,6 +1245,11 @@
   const launch=$('dudu-fun-launch-v43');
   if(launch)launch.hidden=false;
  }
- root.DuduFunUIV43=Object.freeze({init,render});
+ function showVantVat(){
+  open='slot';hint=true;
+  root.openPhoneApp?.('fun');
+  render();return true;
+ }
+ root.DuduFunUIV43=Object.freeze({init,render,showVantVat});
  init();
 })(typeof window!=='undefined'?window:{});
