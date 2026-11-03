@@ -567,3 +567,91 @@ body.dudu-phone-v11 #cyber-phone .blind-legacy{padding-top:10px;display:flex;fle
  color:#f5dfbd;font-size:12px;font-weight:850;cursor:pointer;
 }
 .f38-vantvat-museum-link:focus-visible{outline:2px solid #fae0ae;outline-offset:3px}
+
+/* F3.9 · honest roulette motion: finish angle comes from the committed item. */
+.f34-vantvat-wheel.f39-wheel-spinning{
+ animation:f39-wheel-run .72s linear infinite;
+}
+.f34-vantvat-wheel.f39-wheel-settling{
+ animation:f39-wheel-settle 2.15s cubic-bezier(.11,.72,.09,1) both;
+}
+.f34-vantvat-wheel.f39-wheel-landed{
+ transform:rotate(var(--f39-stop-deg,0deg));
+}
+.f34-vantvat-medallion.f39-wheel-winning{
+ z-index:2;border:2px solid #ffe8b5;background:#48345b;
+ box-shadow:0 0 15px #ffda9edb,0 0 30px #be9bff77;
+}
+.f34-vantvat-machine:has(.f39-wheel-settling) .f34-vantvat-pointer,
+.f34-vantvat-machine:has(.f39-wheel-landed) .f34-vantvat-pointer{
+ text-shadow:0 0 9px #fff7dc,0 0 19px #ffe29b,0 2px 8px #000;
+}
+.f39-vantvat-landed{max-width:340px;font-size:11px;text-align:center;
+ color:#ffdfaa;line-height:1.4;text-shadow:0 0 12px #cf8bff7b}
+@keyframes f39-wheel-run{
+ from{transform:rotate(0deg)}to{transform:rotate(360deg)}
+}
+@keyframes f39-wheel-settle{
+ from{transform:rotate(0deg)}to{transform:rotate(var(--f39-stop-deg,2880deg))}
+}
+
+/* High-rank reveal is a small theatre, keeping all cards and close button usable. */
+.f39-vantvat-celebration{position:relative;isolation:isolate;
+ display:grid;justify-items:center;gap:6px;min-height:132px;padding:10px;
+ margin-bottom:11px;border:1px solid #e5ca9cb3;border-radius:15px;
+ background:radial-gradient(ellipse at 50% 45%,#694c86a6,#232540 70%);
+ text-align:center;overflow:hidden;
+}
+.f39-vantvat-celebration::before{content:'✧';position:absolute;z-index:0;
+ inset:-30px;display:grid;place-items:center;font-size:190px;line-height:1;
+ color:#f8d9ab2c;animation:f39-rare-halo 5s linear infinite;pointer-events:none}
+.f39-vantvat-celebration>*{position:relative;z-index:1}
+.f39-vantvat-celebration strong{font-size:13px;letter-spacing:.09em;color:#ffde9c}
+.f39-vantvat-celebration small{font-size:11px;color:#fff1cf;line-height:1.3}
+.f39-vantvat-celebration-art{display:grid;place-items:center;width:112px;height:112px}
+.f39-vantvat-celebration-art.dudu-item-v13-frame{
+ background:none!important;border:0!important;box-shadow:none!important;overflow:visible!important}
+.f39-vantvat-celebration-art img{width:100%;height:100%;object-fit:contain;
+ filter:drop-shadow(0 0 13px #ffe3acb3)}
+.f39-vantvat-celebration.rank-s{box-shadow:0 0 22px #e4ac6d88}
+.f39-vantvat-celebration.rank-ss{border-color:#ffb9c4;
+ box-shadow:0 0 28px #f69baab5,0 0 36px #b68df877}
+.f39-vantvat-celebration.rank-sss{border-color:#fff4bf;
+ box-shadow:0 0 36px #ffdfa8da,0 0 64px #c592ff9a;
+ animation:f39-sss-pulse 2.7s ease-in-out infinite alternate}
+.f39-vantvat-celebration.rank-sss strong{color:#fff8d0;text-shadow:0 0 16px #ffd883}
+.f39-vantvat-reveal{animation:f39-reward-appear .45s ease-out both}
+.f39-vantvat-summary{display:flex;justify-content:center;align-items:center;
+ gap:6px;flex-wrap:wrap;padding:0 2px 12px;font-size:10px;color:#e8d3af}
+.f39-vantvat-summary>span{padding:4px 6px;border:1px solid #a68ac56b;
+ border-radius:7px;background:#272a4699}
+.f39-vantvat-summary>small{font-size:9px;color:#d5c9df}
+@keyframes f39-rare-halo{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes f39-sss-pulse{
+ from{box-shadow:0 0 20px #ffdfa8bb,0 0 36px #aa86ef85}
+ to{box-shadow:0 0 47px #ffe8baff,0 0 73px #c592ffcf}
+}
+@keyframes f39-reward-appear{from{opacity:0;transform:translateY(12px) scale(.95)}
+ to{opacity:1;transform:none}}
+
+.f39-vantvat-history{width:min(100%,450px);padding:9px;
+ border:1px solid #a697bd6c;border-radius:11px;background:#191e34b8}
+.f39-vantvat-history summary{cursor:pointer;color:#e7d8c4;font-size:11px;font-weight:850}
+.f39-vantvat-history-list{max-height:230px;overflow:auto;display:grid;gap:5px;margin-top:9px}
+.f39-vantvat-history-row{display:flex;gap:8px;align-items:center;min-width:0;
+ padding:5px 6px;border:1px solid #7384a34a;border-radius:8px;background:#262c42}
+.f39-vantvat-history-row>span:nth-child(2){flex:1;min-width:0;
+ font-size:10px;overflow-wrap:anywhere}
+.f39-vantvat-history-row>small{flex:none;color:#efd3a1;font-size:9px}
+.f39-vantvat-history-art{width:32px;height:32px;display:grid;place-items:center;font-size:21px}
+.f39-vantvat-history-art img{width:100%;height:100%;object-fit:contain}
+.f39-vantvat-history-row.f39-rank-sss{border-color:#e9c588a8}
+.f39-vantvat-history-row.f39-rank-ss{border-color:#e79eaaa0}
+.f39-vantvat-history-row.f39-rank-s{border-color:#dfa56b9e}
+.f39-vantvat-history-empty{display:block;margin-top:8px;font-size:10px;color:#c8c0d3}
+@media(prefers-reduced-motion:reduce){
+ .f34-vantvat-wheel:is(.f39-wheel-spinning,.f39-wheel-settling),
+ .f39-vantvat-celebration,.f39-vantvat-celebration::before,
+ .f39-vantvat-reveal{animation:none!important}
+ .f34-vantvat-wheel.f39-wheel-settling{transform:rotate(var(--f39-stop-deg,0deg))}
+}

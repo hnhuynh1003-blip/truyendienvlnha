@@ -68,7 +68,7 @@
   }
  }
  function switchTab(id){
-  if(!['gallery','display','preview','owned','vantvat','memories'].includes(id))return;
+  if(!['gallery','display','preview','owned','memories'].includes(id))return;
   active=id;
   for(const tab of host?.querySelectorAll('.museum-c426-tab')||[]){
    const on=tab.dataset.tab===id;
@@ -77,8 +77,7 @@
   for(const panel of host?.querySelectorAll('[data-museum-panel]')||[])
    panel.hidden=panel.dataset.museumPanel!==id;
   if(id==='display')root.DuduArcadeShowcaseUIV439?.render?.();
-  if(id==='owned')void refreshVanBao();
-  if(id==='vantvat')void refreshVanVat();
+  if(id==='owned'){void refreshVanBao();void refreshVanVat();}
  }
  // A separate Firestore-backed FUN shelf: it never masquerades as the Worker
  // collectible ledger, grants items, or trusts browser storage as ownership.
@@ -154,30 +153,31 @@
    renderVanBao(null,'unavailable');
   }
  }
- // F3.8 · This is the permanent, read-only Vạn Tượng collection wing.
- // The source is the account's authenticated Firestore album, never a demo
- // inventory, a browser snapshot, or the Worker collectible ledger.
+ // F3.9 · Rare S/SS/SSS keepsakes share the "Đã sở hữu" wing with Vạn Bảo.
+ // The account's server-backed album is historical collection evidence, not
+ // physical Kho ownership (selling an item does not erase its museum record).
  function renderVanVat(result,reason=''){
   const container=host?.querySelector('.museum-c426-vantvat');if(!container)return;
   container.replaceChildren();
   const all=(root.DuduItemCatalog?.funVantVat||[])
-   .filter(item=>item.collectionSet==='VAN_VAT');
+   .filter(item=>item.collectionSet==='VAN_VAT'&&
+    ['S','SS','SSS'].includes(item.rank));
   const permitted=new Set(all.map(item=>item.id));
   const album=new Set((Array.isArray(result?.state?.album)?result.state.album:[])
    .filter(id=>permitted.has(id)));
   const owned=all.filter(item=>album.has(item.id));
   const header=el('div','museum-vantvat-head');
-  header.append(el('strong','','✦ KỲ TRÂN ĐA VỊ DIỆN'),
-   el('span','',owned.length+'/'+all.length+' ĐÃ SƯU TẦM'));
+  header.append(el('strong','','✦ KỆ VẠN TƯỢNG'),
+   el('span','',owned.length+'/'+all.length+' BẢO VẬT HIẾM'));
   container.append(header);
   if(reason){
    const message=reason==='sandbox'?'Sandbox chỉ xem thử, không xác nhận vật phẩm.':
     reason==='unauthenticated'?'Đăng nhập để xem bảo vật đã quay trên tài khoản.':
-    'Chưa tải được sổ Vạn Tượng. Hãy thử mở lại tab.';
+    'Chưa tải được sổ Vạn Tượng. Hãy mở lại mục Đã sở hữu.';
    container.append(el('p','museum-vantvat-empty',message));return;
   }
   container.append(el('small','museum-vantvat-note',
-   'Đã sưu tầm được ghi nhớ kể cả khi vật phẩm đã bán · chỉ xem, không nhận quà lần hai.'));
+   'Chỉ trưng bày hạng S–SSS đã sưu tầm · vật phẩm thực và giá bán ở Kho.'));
   if(!all.length)return;
   const rankOrder=['SSS','SS','S','A','B','C','D','E','F'];
   const sorted=[...all].sort((a,b)=>Number(album.has(b.id))-Number(album.has(a.id))||
@@ -227,11 +227,11 @@
    (found?grid:missing).append(card);buttons.push(card);
   }
   if(!owned.length)container.append(el('p','museum-vantvat-empty',
-   'Chưa có bảo vật Vạn Tượng. Hãy quay để mở những hiện vật đầu tiên.'));
+   'Chưa sưu tầm được bảo vật S trở lên. Quay để tìm kỳ trân nhé!'));
   else container.append(grid);
   if(missing.children.length){
    const unknown=el('details','museum-vantvat-unfound');
-   unknown.append(el('summary','','Chưa khám phá · '+missing.children.length+' món'),missing);
+   unknown.append(el('summary','','Bảo vật hiếm chưa khám phá · '+missing.children.length),missing);
    container.append(unknown);
   }
   select(sorted.find(item=>album.has(item.id))||sorted[0]);
@@ -262,8 +262,7 @@
   const nav=el('nav','museum-c426-tabs');nav.setAttribute('role','tablist');
   nav.setAttribute('aria-label','Khu vực bảo tàng');
   for(const [id,label] of [['gallery','Chiến tích'],['display','Tủ riêng'],
-   ['preview','Quà mùa'],['owned','Đã sở hữu'],
-   ['vantvat','Vạn Tượng'],['memories','Kỷ niệm']]){
+   ['preview','Quà mùa'],['owned','Đã sở hữu'],['memories','Kỷ niệm']]){
    const tab=el('button','museum-c426-tab',label);tab.type='button';
    tab.dataset.tab=id;tab.setAttribute('role','tab');tab.id='museum-c426-tab-'+id;
    tab.setAttribute('aria-controls','museum-c426-panel-'+id);
@@ -310,14 +309,10 @@
   owned.dataset.museumPanel='owned';owned.setAttribute('role','tabpanel');
   owned.setAttribute('aria-labelledby','museum-c426-tab-owned');
   owned.append(el('section','museum-c426-vanbao'));
+  owned.append(el('section','museum-c426-vantvat'));
   owned.append(el('span','museum-c426-ledger','Sổ sở hữu chưa xác minh'));
   const verified=el('div','museum-c426-verified');
   verified.setAttribute('aria-live','polite');owned.append(verified);host.append(owned);
-  const vantvat=el('section','museum-c426-vantvat');
-  vantvat.id='museum-c426-panel-vantvat';vantvat.dataset.museumPanel='vantvat';
-  vantvat.setAttribute('role','tabpanel');
-  vantvat.setAttribute('aria-labelledby','museum-c426-tab-vantvat');
-  host.append(vantvat);
   const memories=el('section','museum-c426-memories');memories.id='museum-c426-panel-memories';
   memories.dataset.museumPanel='memories';memories.setAttribute('role','tabpanel');
   memories.setAttribute('aria-labelledby','museum-c426-tab-memories');
@@ -338,8 +333,7 @@
    build();host.classList.add('museum-c426-root-ready');}
   root.DuduMuseumGalleryC429?.mount?.({container:getPanel('gallery'),ownerKey:owner,sandbox:sandboxMode});
   root.DuduArcadeShowcaseUIV439?.mount?.({container:getPanel('display')});
-  if(active==='owned')void refreshVanBao();
-  if(active==='vantvat')void refreshVanVat();
+  if(active==='owned'){void refreshVanBao();void refreshVanVat();}
   return true;
  }
  function showVanBao(){
@@ -348,7 +342,9 @@
  }
  function showVanVat(){
   if(!host)return false;
-  switchTab('vantvat');return true;
+  switchTab('owned');
+  host.querySelector('.museum-c426-vantvat')?.scrollIntoView?.({block:'nearest'});
+  return true;
  }
  function showDisplay(){
   if(!host)return false;

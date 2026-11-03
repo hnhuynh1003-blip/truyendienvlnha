@@ -30,9 +30,12 @@
  const blindBridge=()=>root.DuduBlindBoxLiveBridgeC29;
  const vvRule=()=>root.DuduFunVantVatF31;
  const vvBridge=()=>root.DuduVantVatLiveBridgeF31;
+ const wheelUI=()=>root.DuduVantVatWheelF39;
  let vvUid=null,vvState=null,vvCurrency=null,vvLoaded=false,vvLoading=false,
   vvError=false,vvBusy=false;
  let vvRewardModal=null;
+ // Wheel geometry is only a visual replay of the already committed reward.
+ let vvSpinPhase='idle',vvSpinFocus=null,vvSpinLanding=null,vvSpinCount=1;
  const realmNamesF33={ORIGIN:'Khởi Nguyên',PALEO:'Cổ Sinh Bí Cảnh',
   CULTIVATION:'Tiên Hiệp Thần Binh',CYBER:'Cyberpunk 2099',
   WASTELAND:'Tận Thế Di Vật',ANIME:'Điện Phủ Nhân Vật',
@@ -162,6 +165,7 @@
   const uid=signed()?vvBridge().uid?.():null;
   if(uid!==vvUid){vvUid=uid;vvState=null;vvCurrency=null;
    vvRewardModal?.remove?.();vvRewardModal=null;
+   vvSpinPhase='idle';vvSpinFocus=null;vvSpinLanding=null;
    vvLoaded=false;vvLoading=false;vvError=false;}
   if(!uid||vvLoaded||vvLoading||vvError)return;
   vvLoading=true;
@@ -172,12 +176,61 @@
    if(vvUid===uid){vvLoading=false;render();}
   });
  }
+ function beginVisualSpin(count){
+  vvSpinCount=count;vvSpinPhase='spin';vvSpinFocus=null;vvSpinLanding=null;
+  render();
+ }
+ async function landVisualSpin(reward,count){
+  const account=vvUid;
+  const reducedMotion=!!root.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+  vvSpinFocus=reward||null;vvSpinCount=count;
+  vvSpinLanding=wheelUI()?.landing?.(reward?.itemId)||null;
+  vvSpinPhase='settle';
+  const wheel=document.querySelector?.('#dudu-fun-content-v43 .f34-vantvat-wheel');
+  let canAnimate=false;
+  if(wheel&&vvSpinLanding&&typeof root.getComputedStyle==='function'&&
+   typeof root.requestAnimationFrame==='function'){
+   // Preserve the wheel's current rotation rather than jumping back to zero.
+   const matrix=root.getComputedStyle(wheel).transform;
+   const numbers=/^matrix\(([^)]+)\)$/.exec(matrix||'')?.[1]?.split(',').map(Number);
+   const angle=numbers?.length===6?((Math.atan2(numbers[1],numbers[0])*
+    180/Math.PI)%360+360)%360:0;
+   const target=vvSpinLanding.degrees%360;
+   const end=vvSpinLanding.degrees+(target<=angle?360:0);
+   const targetMedallion=wheel.querySelectorAll('.f34-vantvat-medallion')
+    [vvSpinLanding.slot];
+   if(targetMedallion){
+    const item=root.DuduItemCatalog?.byId(reward?.itemId);
+    if(item&&root.DuduItemArtV13?.mount)root.DuduItemArtV13.mount(targetMedallion,item);
+    else targetMedallion.textContent='🪙';
+    targetMedallion.classList.add('f39-wheel-winning');
+   }
+   wheel.classList.remove('f39-wheel-spinning');
+   wheel.style.animation='none';wheel.style.transition='none';
+   wheel.style.transform='rotate('+angle+'deg)';
+   void wheel.offsetWidth;
+   const center=wheel.querySelector('.f34-vantvat-center');
+   if(center)center.textContent='SẮP DỪNG';
+   if(reducedMotion){
+    wheel.style.transform='rotate('+end+'deg)';
+   }else root.requestAnimationFrame(()=>{
+    if(account!==vvUid||vvSpinPhase!=='settle')return;
+    wheel.style.transition='transform 2.15s cubic-bezier(.11,.72,.09,1)';
+    wheel.style.transform='rotate('+end+'deg)';
+   });
+   canAnimate=true;
+  }
+  if(!canAnimate)render();
+  if(typeof setTimeout==='function')
+   await new Promise(done=>setTimeout(done,reducedMotion?120:2250));
+  if(account!==vvUid)return;
+  vvSpinPhase='landed';render();
+ }
  async function vantVatAction(kind){
   if(!vvLoaded||vvBusy||funActionBusy||!vvBridge()?.ready?.())return;
   const uid=vvUid,id=kind==='start'?crypto.randomUUID():vvState?.active?.id;
   vvBusy=true;funActionBusy=true;message('');
-  const startedAt=Date.now();
-  if(kind==='start')render(); // The roulette visibly spins while the signed transaction runs.
+  if(kind==='start')beginVisualSpin(1);
   try{
    const opts={kind,id};
    if(kind==='start'){
@@ -187,9 +240,13 @@
    const result=await vvBridge().run(opts);
    if(uid!==vvUid||!signed())return;
    vvState=result.state;vvCurrency=result.currency;
-   // Result and Xu are already committed; the animation is presentation only.
-   if(kind==='start'&&typeof setTimeout==='function')
-    await new Promise(done=>setTimeout(done,Math.max(0,1700-(Date.now()-startedAt))));
+   // Result and Xu are committed first; the wheel only presents that outcome.
+   if(kind==='start'){
+    const itemId=result.state?.active?.itemId;
+    const item=root.DuduItemCatalog?.byId(itemId);
+    await landVisualSpin({itemId,rank:item?.rank||'COIN',kind:item?'ITEM':'COIN'},1);
+    if(uid!==vvUid||!signed())return;
+   }
    if(kind==='claim'&&result.status==='applied'&&result.reward){
     const reward=result.reward;
     const itemId=reward.itemId||reward.id||result.state?.active?.itemId;
@@ -201,6 +258,7 @@
     'Vật phẩm đã được khóa kết quả. Mở để nhận vào Kho.':
     'Đã đưa vật phẩm vào Kho. Có thể bán từ thẻ vật phẩm.');
   }catch(error){
+   vvSpinPhase='idle';vvSpinFocus=null;vvSpinLanding=null;
    const reason={'not-enough-xu':'Chưa đủ '+vvRule().PRICE+' Xu Vàng.',
     'inventory-full':'Kho đã đầy 500 ô.',
     'unfinished-spin':'Hãy nhận món đang chờ trước.',
@@ -226,12 +284,31 @@
   document.addEventListener('keydown',onKey);
   const heading=el('div','f36-vantvat-modal-head');
   heading.append(el('strong','','✦ KẾT QUẢ '+count+' LƯỢT'),close);
+  const stats=wheelUI()?.summary?.(results),best=stats?.focus;
+  const grand=['S','SS','SSS'].includes(best?.rank);
+  const celebration=grand?el('div','f39-vantvat-celebration rank-'+best.rank.toLowerCase()):null;
+  if(celebration){
+   const treasure=root.DuduItemCatalog?.byId(best.itemId);
+   const halo=el('span','f39-vantvat-celebration-art');
+   if(treasure&&root.DuduItemArtV13?.mount)root.DuduItemArtV13.mount(halo,treasure);
+   else halo.textContent='✦';
+   celebration.append(el('strong','',best.rank==='SSS'?'✦ CHÍ TÔN HIỆN THẾ ✦':
+    best.rank==='SS'?'✦ SIÊU HIẾM ✦':'✦ HUYỀN THOẠI ✦'),
+    halo,el('small','',treasure?.name||'Bảo vật quý hiếm'));
+  }
+  const summary=el('div','f39-vantvat-summary');
+  if(count>1&&stats){
+   summary.append(el('span','','✦ '+stats.items+' món vào Kho'),
+    el('span','','♻ '+stats.duplicates+' món trùng'));
+   if(stats.gold)summary.append(gold('span','f39-vantvat-summary-xu',stats.gold),
+    el('small','','Xu nhận về'));
+  }
   const grid=el('div','f36-vantvat-reward-grid'+(count===1?' is-single':''));
   for(const result of results){
    const item=root.DuduItemCatalog?.byId(result.itemId);
    const rarity=['A','S','SS','SSS'].includes(result.rank)?
     ' f33-rank-'+result.rank.toLowerCase():'';
-   const card=el('article','f36-vantvat-reward f37-tier-'+
+   const card=el('article','f36-vantvat-reward f39-vantvat-reveal f37-tier-'+
     String(result.rank||'F').toLowerCase()+rarity);
    const art=el('span','f36-vantvat-reward-art');
    if(item&&result.kind!=='COIN'&&root.DuduItemArtV13?.mount)
@@ -248,7 +325,10 @@
     detail.onclick=()=>vantVatZoom(item);card.append(detail);}
    grid.append(card);
   }
-  panel.append(heading,grid,el('small','f36-vantvat-modal-foot',
+  panel.append(heading);
+  if(celebration)panel.append(celebration);
+  if(count>1)panel.append(summary);
+  panel.append(grid,el('small','f36-vantvat-modal-foot',
    'Quà đã vào Kho hoặc Ví · Nhấn X để đóng'));
   overlay.append(panel);document.body.append(overlay);vvRewardModal=overlay;
   close.focus();
@@ -271,16 +351,17 @@
   try{localStorage.setItem(key,JSON.stringify(pending));}
   catch(_){message('Không lưu được mã lượt quay, chưa trừ Xu.');return;}
   vvBusy=true;funActionBusy=true;message('');render();
-  const started=Date.now();
+  beginVisualSpin(pending.count);
   try{
    const result=await vvBridge().runBatch(pending);
    if(uid!==vvUid||!signed())return;
    vvState=result.state;vvCurrency=result.currency;
-   if(typeof setTimeout==='function')
-    await new Promise(done=>setTimeout(done,Math.max(0,1700-(Date.now()-started))));
+   await landVisualSpin(wheelUI()?.featured?.(result.results),pending.count);
+   if(uid!==vvUid||!signed())return;
    localStorage.removeItem(key);
    showVantVatRewards(result.results,pending.count);
   }catch(error){
+   vvSpinPhase='idle';vvSpinFocus=null;vvSpinLanding=null;
    const reasons={'not-enough-xu':'Chưa đủ Xu Vàng cho '+pending.count+' lượt.',
     'inventory-full':'Kho đã đầy. Hãy bán bớt đồ trước.',
     'unfinished-spin':'Nhận món đang chờ trước khi quay tiếp.',
@@ -302,21 +383,35 @@
   const stage=el('div','f31-vantvat-stage');
   const machine=el('div','f34-vantvat-machine');
   machine.setAttribute('aria-label','Vòng quay Vạn Tượng chín vị diện');
-  const wheel=el('div','f34-vantvat-wheel'+(vvBusy?' is-spinning':''));
+  const wheel=el('div','f34-vantvat-wheel'+
+   (vvSpinPhase==='spin'?' f39-wheel-spinning':
+    vvSpinPhase==='settle'?' f39-wheel-settling':
+    vvSpinPhase==='landed'?' f39-wheel-landed':''));
+  if(vvSpinLanding)wheel.style.setProperty('--f39-stop-deg',vvSpinLanding.degrees+'deg');
   const anchors=['f34-origin-dawn-goddess','f32-fossil-egg','f32-cult-sword',
    'f32-cyber-robot','f32-waste-mask','f32-anime-queen','f32-doll-porcelain',
    'f32-fruit-peach','f32-cosmos-sovereign'];
   anchors.forEach((id,i)=>{
-   const entry=root.DuduItemCatalog?.byId(id);
-   const medallion=el('span','f34-vantvat-medallion');
+   const winning=vvSpinLanding?.slot===i&&vvSpinFocus&&
+    ['settle','landed'].includes(vvSpinPhase);
+   const entry=root.DuduItemCatalog?.byId(winning?vvSpinFocus.itemId:id);
+   const medallion=el('span','f34-vantvat-medallion'+(winning?' f39-wheel-winning':''));
    medallion.style.setProperty('--f34-sector',i);
-   if(entry&&!root.DuduItemArtV13?.mount?.(medallion,entry))
+   if(winning&&!entry)medallion.textContent='🪙';
+   else if(entry&&!root.DuduItemArtV13?.mount?.(medallion,entry))
     medallion.textContent=entry.icon||'✦';
    wheel.append(medallion);
   });
-  wheel.append(el('span','f34-vantvat-center',vvBusy?'ĐANG QUAY':'✦'));
+  wheel.append(el('span','f34-vantvat-center',vvSpinPhase==='spin'?'ĐANG QUAY':
+   vvSpinPhase==='settle'?'SẮP DỪNG':'✦'));
   machine.append(wheel,el('span','f34-vantvat-pointer','◆'));
   stage.append(machine);
+  if(vvSpinPhase==='landed'&&vvSpinFocus){
+   const item=root.DuduItemCatalog?.byId(vvSpinFocus.itemId);
+   stage.append(el('small','f39-vantvat-landed',
+    '✦ '+(vvSpinCount>1?'Món nổi bật ×'+vvSpinCount+' · ':'')+
+    (item?.name||'Xu Vàng')));
+  }
   if(active&&active.status==='sealed')
    stage.append(el('p','f34-vantvat-sealed','✧ Phong ấn đã định · Mở để nhận bảo vật'));
   if(active?.status==='sealed'){
@@ -393,22 +488,26 @@
   coins.append(el('span','','🪙 Xu Vàng trực tiếp'),
    el('small','','8 / 30 Xu'));gallery.append(coins);
   stage.append(gallery);
-  const museum=el('details','f33-vantvat-museum');
-  museum.append(el('summary','','🏛️ Bảo Tàng Vạn Vật · '+album.size+'/'+
-   rule.POOL.filter(x=>x.rank!=='COIN').length));
-  const shelf=el('div','f33-vantvat-shelf');
-  for(const id of album){
-   const item=root.DuduItemCatalog.byId(id);
-   if(!item||item.collectionSet!=='VAN_VAT')continue;
-   const card=el('button','f33-vantvat-card f37-tier-'+item.rank.toLowerCase());
-   card.type='button';
-   const art=el('span','f33-vantvat-card-art');
-   if(!root.DuduItemArtV13?.mount?.(art,item))art.textContent=item.icon;
-   card.append(art,el('small','',item.name));
-   card.onclick=()=>vantVatZoom(item);shelf.append(card);
-  }
-  if(!album.size)shelf.append(el('small','','Chưa có bảo vật. Quay để mở bộ sưu tập nhé!'));
-  museum.append(shelf);stage.append(museum);
+  const recent=wheelUI()?.recent?.(vvState,20)||[];
+  const history=el('details','f39-vantvat-history');
+  history.append(el('summary','','↶ Lượt quay gần đây · '+recent.length));
+  if(recent.length){
+   const list=el('div','f39-vantvat-history-list');
+   for(const result of recent){
+    const item=root.DuduItemCatalog?.byId(result.itemId);
+    const rank=result.rank||item?.rank||'COIN';
+    const line=el('div','f39-vantvat-history-row f39-rank-'+rank.toLowerCase());
+    const picture=el('span','f39-vantvat-history-art');
+    if(item&&root.DuduItemArtV13?.mount)root.DuduItemArtV13.mount(picture,item);
+    else picture.textContent='🪙';
+    const caption=el('span','',item?.name||'Xu Vàng');
+    const note=result.kind==='DUPLICATE'?'Trùng · +'+result.amount+' Xu':
+     result.kind==='COIN'?('+'+result.amount+' Xu'):rank;
+    line.append(picture,caption,el('small','',note));list.append(line);
+   }
+   history.append(list);
+  }else history.append(el('small','f39-vantvat-history-empty','Chưa có lượt quay nào.'));
+  stage.append(history);
   host.append(stage);
  }
  async function blindAction(kind,mode){

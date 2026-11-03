@@ -139,7 +139,7 @@ test('C4.2 places the wallet in the DUDU FUN header and removes only the redunda
  const ui=readFileSync(join(__dirname,'../js/dudu-fun-ui-v43.js'),'utf8');
  const css=readFileSync(join(__dirname,'../css/dudu-fun-v43.css'),'utf8');
  assert.match(html,/id="dudu-fun-header-balance"/);
- assert.match(html,/dudu-fun-v43\.css\?v=f38-1/);
+ assert.match(html,/dudu-fun-v43\.css\?v=f39-1/);
  assert.match(ui,/function updateHeaderBalance\(\)/);
  assert.match(ui,/chip\.textContent=signed\(\)/);
  assert.doesNotMatch(ui,/function heading\(container\)|✦ Vạn Bảo & Vé Cào|Hộp miễn phí hôm nay:/);

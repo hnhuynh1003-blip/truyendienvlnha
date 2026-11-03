@@ -30,13 +30,13 @@ test('F3.7 individually painted B items retain original IDs/ranks and alpha WebP
 test('F3.7 Vạn Tượng result, museum, and zoom carry original rarity classes',()=>{
  const ui=read('js/dudu-fun-ui-v43.js');
  assert.match(ui,/f33-vantvat-zoom-panel f37-tier-/);
- assert.match(ui,/f36-vantvat-reward f37-tier-/);
- assert.match(ui,/f33-vantvat-card f37-tier-/);
+ assert.match(ui,/f36-vantvat-reward f39-vantvat-reveal f37-tier-/);
+ assert.match(ui,/f36-vantvat-reward f39-vantvat-reveal f37-tier-/);
  const html=read('index.html');
  for(const file of ['css/dudu-fun-v43.css','css/item-visuals-v13.css',
   'js/item-visuals-v13.js','js/dudu-fun-ui-v43.js']){
   assert.ok(html.includes(file+'?v='+
-   (file.includes('dudu-fun-')?'f38-1':'f37-1')),file);
+   (file.includes('dudu-fun-')?'f39-1':'f37-1')),file);
  }
 });
 
