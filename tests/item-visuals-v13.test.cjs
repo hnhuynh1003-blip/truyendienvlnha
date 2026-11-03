@@ -28,10 +28,13 @@ test('catalog items have visible defined art with safe unknown fallback',()=>{
   if(item.collectionSet==='VAN_BAO'){
    assert.equal(v.src,'assets/van-bao/v1/'+item.id+'.webp');
    assert.match(v.fallbackSrc,/^data:image\/svg\+xml/);
-  }else if(item.collectionSet==='VAN_VAT'&&item.id.startsWith('f32-')&&
+  }else if(item.collectionSet==='VAN_VAT'&&
     ['f32-fossil-egg','f32-cult-sword','f32-cyber-robot','f32-waste-mask',
-     'f32-anime-queen','f32-doll-porcelain','f32-fruit-peach','f32-cosmos-sovereign'].includes(item.id)){
-   assert.equal(v.src,'assets/van-tuong/f32/'+item.id+'.webp');
+     'f32-anime-queen','f32-doll-porcelain','f32-fruit-peach','f32-cosmos-sovereign',
+     'f32b-fossil-kirin','f32b-cult-spear','f32b-cyber-time','f32b-waste-flower',
+     'f32b-anime-angel','f32b-doll-fairy','f32b-fruit-dragon','f32b-cosmos-crown'].includes(item.id)){
+   const folder=item.id.startsWith('f32b-')?'f32b':'f32';
+   assert.equal(v.src,'assets/van-tuong/'+folder+'/'+item.id+'.webp');
    assert.match(v.fallbackSrc,/^data:image\/svg\+xml/);
    const image=fs.readFileSync(path.resolve(__dirname,'..',v.src));
    assert.equal(image.toString('ascii',0,4),'RIFF');
@@ -54,6 +57,13 @@ test('frequency cell has dedicated battery illustration, never fallback parcel',
  assert.equal(art.visual({...tool,icon:'📦'}).shape,'frequencyCell');
  assert.equal(art.visual({id:'future-tool',rank:'D',type:'ITEM',
    scope:'FUNCTIONAL'}).shape,'device','other future functional items also avoid generic parcel');
+});
+test('F3.2 non-painted relics retain distinct safe silhouettes',()=>{
+ const a=art.visual(catalog.byId('f32-fossil-fern'));
+ const b=art.visual(catalog.byId('f32-cyber-chip'));
+ assert.match(a.src,/^data:image\/svg\+xml/);
+ assert.notEqual(a.src,b.src);
+ assert.match(decodeURIComponent(a.src.slice(a.src.indexOf(',')+1)),/font-size="34"/);
 });
 test('SVG cannot interpolate unsafe item-provided HTML',()=>{
  const fake={id:'<svg onload=alert(1)>',name:'<img src=x onerror=alert(2)>',

@@ -48,7 +48,7 @@ test('F3.1 starts once, claims once, sells exactly one actual item',async()=>{
 });
 test('F3.1 resale rejects forged source and never touches another UID',async()=>{
  const e=env();
- await e.spin('start',4,{roll:prices.TOTAL-921});
+ await e.spin('start',4,{roll:prices.TOTAL-92001});
  const reward=(await e.spin('claim',4)).reward;
  assert.equal(prices.valueOf(reward),900);
  assert.equal(prices.valueOf({...reward,obtainedFrom:{kind:'EVENT',source:'FAKE',eventId:id(4)}}),0);
@@ -89,8 +89,20 @@ test('F3.2A adds eight three-item realm sets without changing rank probabilities
  const groups=fresh.reduce((acc,item)=>(acc[item.funRealm]=(acc[item.funRealm]||0)+1,acc),{});
  assert.equal(Object.keys(groups).length,8);
  assert.ok(Object.values(groups).every(n=>n===3));
- assert.equal(prices.TOTAL,10752);
- const expected={E:4000,D:2800,C:1700,B:800,A:360,S:140,SS:30,SSS:2,COIN:920};
+ assert.equal(prices.TOTAL,1075200);
+ const expected={E:400000,D:280000,C:170000,B:80000,A:36000,S:14000,SS:3000,SSS:200,COIN:92000};
  for(const [rank,weight] of Object.entries(expected))
   assert.equal(prices.POOL.filter(x=>x.rank===rank).reduce((n,x)=>n+x.weight,0),weight);
+ assert.ok(prices.POOL.filter(x=>x.rank==='SSS').every(x=>x.weight>0));
+});
+test('F3.2B completes 8 sets of 6 and leaves the first 39 records intact',()=>{
+ const fresh=catalog.funVantVat.filter(x=>x.id.startsWith('f32b-'));
+ assert.equal(fresh.length,24);
+ const counts=catalog.funVantVat.filter(x=>x.funRealm!=='ORIGIN')
+  .reduce((a,x)=>(a[x.funRealm]=(a[x.funRealm]||0)+1,a),{});
+ assert.equal(Object.keys(counts).length,8);
+ assert.ok(Object.values(counts).every(x=>x===6));
+ assert.equal(catalog.funVantVat.length,63);
+ const ev=prices.POOL.reduce((sum,x)=>sum+x.weight*(x.amount||prices.VALUES[x.rank]),0)/prices.TOTAL;
+ assert.ok(ev>12&&ev<12.2,'expected payout preserves the F3.1 economy');
 });

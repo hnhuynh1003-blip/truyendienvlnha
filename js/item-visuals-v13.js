@@ -124,7 +124,9 @@
   ]);
   const VAN_VAT_F32_ART=new Set([
     'f32-fossil-egg','f32-cult-sword','f32-cyber-robot','f32-waste-mask',
-    'f32-anime-queen','f32-doll-porcelain','f32-fruit-peach','f32-cosmos-sovereign'
+    'f32-anime-queen','f32-doll-porcelain','f32-fruit-peach','f32-cosmos-sovereign',
+    'f32b-fossil-kirin','f32b-cult-spear','f32b-cyber-time','f32b-waste-flower',
+    'f32b-anime-angel','f32b-doll-fairy','f32b-fruit-dragon','f32b-cosmos-crown'
   ]);
   function visual(item){
     if(!item||typeof item!=='object')return null;
@@ -138,6 +140,11 @@
        item.realmTag==='SCIFI'?'device':item.realmTag==='FANTASY'?'flask':
        item.scope==='FUNCTIONAL'?'device':'parcel'));
     const stars=rank==='SSS'?4:rank==='SS'?3:rank==='S'?2:rank==='A'?1:0;
+    // F3.2 inventories use safe, item-specific emoji silhouettes for the
+    // non-painted miniatures; otherwise every DUDU item appears as one relic.
+    const vantVatEmblem=item.collectionSet==='VAN_VAT'&&/^f32b?-/.test(id);
+    const safeGlyph=Array.from(vantVatEmblem?String(item.icon||'✦').slice(0,8):'')
+      .map(ch=>'&#'+ch.codePointAt(0)+';').join('');
     const sparkles=Array.from({length:stars},(_,i)=>{
       const x=[14,61,56,19][i],y=[17,16,59,59][i];
       return '<path d="M'+x+' '+(y-4)+'v8m-4-4h8" stroke="'+glow+'" stroke-width="1.8"/>';
@@ -148,14 +155,14 @@
       '<rect x="2" y="2" width="72" height="72" rx="18" fill="url(#p)"/>'+
       '<circle cx="38" cy="38" r="28" stroke="'+light+'" stroke-width="1.6" fill="none" opacity=".5"/>'+
       '<circle cx="38" cy="38" r="23" fill="'+light+'" opacity=".13"/>'+
-      SHAPES[shape]+sparkles+
+      (vantVatEmblem?'<text x="38" y="49" font-size="34" text-anchor="middle">'+safeGlyph+'</text>':SHAPES[shape])+sparkles+
       '<circle cx="63" cy="12" r="4" fill="'+glow+'" opacity=".8"/></svg>';
     const fallback='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
     const painted=item.collectionSet==='VAN_BAO'&&VAN_BAO_ART.has(id);
     const realmPainted=item.collectionSet==='VAN_VAT'&&VAN_VAT_F32_ART.has(id);
     return Object.freeze({rank,shape,light,dark,
       src:painted?'assets/van-bao/v1/'+id+'.webp':
-        realmPainted?'assets/van-tuong/f32/'+id+'.webp':fallback,
+        realmPainted?'assets/van-tuong/'+(id.startsWith('f32b-')?'f32b/':'f32/')+id+'.webp':fallback,
       fallbackSrc:painted||realmPainted?fallback:null});
   }
   // One artwork renderer for both the store and all warehouse views.

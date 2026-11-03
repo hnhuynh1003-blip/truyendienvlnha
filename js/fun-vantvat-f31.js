@@ -10,7 +10,9 @@
  const PRICE=15,MAX_WALLET=1000000000;
  // A fixed probability budget PER RANK. Adding a collectible must never
  // silently make S/SS/SSS drops more common or inflate expected Xu returns.
- const RANK_BUDGET=Object.freeze({E:4000,D:2800,C:1700,B:800,A:360,S:140,SS:30,SSS:2});
+ // 100x resolution permits all three SSS identities to remain drawable,
+ // while preserving the exact percentages and expected Xu value.
+ const RANK_BUDGET=Object.freeze({E:400000,D:280000,C:170000,B:80000,A:36000,S:14000,SS:3000,SSS:200});
  const rankCounters={};
  const counts=(catalog.funVantVat||[]).reduce((a,item)=>
   (a[item.rank]=(a[item.rank]||0)+1,a),{});
@@ -20,8 +22,8 @@
   const count=counts[item.rank],budget=RANK_BUDGET[item.rank];
   return Object.freeze({itemId:item.id,rank:item.rank,
    weight:Math.floor(budget/count)+(index<budget%count?1:0)});
- }).concat([Object.freeze({itemId:'F31_COIN_8',rank:'COIN',weight:700,amount:8}),
-  Object.freeze({itemId:'F31_COIN_30',rank:'COIN',weight:220,amount:30})]));
+ }).concat([Object.freeze({itemId:'F31_COIN_8',rank:'COIN',weight:70000,amount:8}),
+  Object.freeze({itemId:'F31_COIN_30',rank:'COIN',weight:22000,amount:30})]));
  const TOTAL=POOL.reduce((n,p)=>n+p.weight,0);
  function draw(roll){
   if(!Number.isSafeInteger(roll)||roll<0||roll>=TOTAL)return null;
