@@ -270,6 +270,18 @@ async function main(){
   });
   assert.deepEqual(scans.scans,[true,true,true]);
   assert.equal(scans.coins,0,'First Jade sample is free');
+  await action('jade-window').click();
+  const floatingQuote=page.locator('#personal-arcade-v1 .jade-stage .jade-window-quote');
+  assert.equal(await floatingQuote.count(),1,'C4.60c window appraisal has one floating quote above the stone');
+  assert.equal(await page.locator('#personal-arcade-v1 .jade-trader-offer').count(),0,
+   'C4.60c no duplicate market price panel shifts the action buttons');
+  const floatGeometry=await floatingQuote.evaluate(el=>{
+   const card=el.getBoundingClientRect(),stage=el.closest('.jade-stage').getBoundingClientRect();
+   return {inside:card.top>=stage.top&&card.bottom<=stage.bottom,
+    glass:getComputedStyle(el).backdropFilter!=='none'};
+  });
+  assert.equal(floatGeometry.inside,true,'The quote stays within the Jade scene on mobile');
+  assert.equal(floatGeometry.glass,true,'The quote uses transparent frosted glass');
   await action('jade-cut').click();
   await action('jade-vault-store').click();
   const heldJade=await page.evaluate(()=>JSON.parse(localStorage.getItem(

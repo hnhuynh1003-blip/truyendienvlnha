@@ -48,6 +48,37 @@
 #personal-arcade-v1 .jade-glass-note-heading>button:focus-visible{
  outline:2px solid #fff0bb;outline-offset:2px;
 }
+/* After the first window is opened, the live market quote floats above the
+   specimen instead of inserting a full-width card into the action panel. */
+#personal-arcade-v1 .jade-window-quote{
+ position:absolute;z-index:8;top:58px;right:9px;
+ width:min(140px,calc(50% - 22px));padding:8px 9px;
+ display:grid;gap:3px;border:1px solid #e2c58baf;border-radius:10px;
+ background:rgba(19,43,36,.72);color:#f2deb5;
+ box-shadow:0 8px 20px #04150e80,inset 0 1px 0 #fff8ce30;
+ backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);
+ pointer-events:none;
+}
+#personal-arcade-v1 .jade-window-quote>span{
+ font:800 8px/1.2 system-ui,sans-serif;letter-spacing:.035em;
+}
+#personal-arcade-v1 .jade-window-quote>strong{
+ display:flex;align-items:center;gap:5px;white-space:nowrap;
+ color:#ffe7a8;font:850 19px/1.15 Georgia,serif;
+}
+#personal-arcade-v1 .jade-window-quote>strong .dudu-money-icon{flex:none}
+#personal-arcade-v1 .jade-window-quote.is-compact>strong{font-size:14px}
+#personal-arcade-v1 .jade-window-quote>small{font:800 10px/1.2 system-ui,sans-serif}
+#personal-arcade-v1 .jade-window-quote>small.is-up{color:#9cf2c0}
+#personal-arcade-v1 .jade-window-quote>small.is-down{color:#ffb8a4}
+#personal-arcade-v1 .jade-window-quote>small.is-flat{color:#e8d8b7}
+#personal-arcade-v1 .jade-window-quote.is-revealing{
+ animation:jade-window-quote-rise .48s cubic-bezier(.2,.8,.3,1) both;
+}
+@keyframes jade-window-quote-rise{
+ from{opacity:0;transform:translateY(16px) scale(.92)}
+ to{opacity:1;transform:none}
+}
 /* Only show the single-row appraisal console after two real inspections.
    No second copy of the three scan cards is rendered below the stone. */
 #personal-arcade-v1 .jade-forecast-console{
@@ -105,4 +136,10 @@
  #personal-arcade-v1 .jade-saw-choices>b{grid-column:1/-1}
  #personal-arcade-v1 .jade-glass-note{padding:7px}
  #personal-arcade-v1 .jade-glass-note-text{font-size:9px}
+ #personal-arcade-v1 .jade-window-quote{right:6px;padding:7px;top:62px}
+ #personal-arcade-v1 .jade-window-quote>strong{font-size:16px}
+ #personal-arcade-v1 .jade-window-quote.is-compact>strong{font-size:12px}
+}
+@media(prefers-reduced-motion:reduce){
+ #personal-arcade-v1 .jade-window-quote.is-revealing{animation:none}
 }

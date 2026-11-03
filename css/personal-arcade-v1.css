@@ -813,10 +813,6 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header>span:nth-ch
 #personal-arcade-v1 .jade-craft-card{padding:6px 7px;gap:6px}
 #personal-arcade-v1 .jade-craft-card .arcade-button{min-width:65px}
 .jade-decision-note{font-size:9px;color:#a6c5b9;line-height:1.4;margin:6px 2px 0}
-.jade-trader-offer{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:3px 6px;
- border:1px solid #bca174;border-radius:10px;background:#5b4938;padding:7px 10px;margin-top:7px}
-.jade-trader-offer>span{font:800 9px ui-monospace,monospace;color:#f3dab2}.jade-trader-offer strong{color:#fff1c4;font-size:18px}
-.jade-trader-offer strong small{font-size:9px}.jade-trader-offer>small{color:#e2cda9;font-size:9px;width:100%}
 .jade-reveal{text-align:center;background:#223a36;border:1px solid #78937e;border-radius:12px;padding:10px}
 .jade-reveal>small{color:#b6d0c6;font-size:10px}.jade-reveal-price{display:flex;justify-content:space-between;align-items:center;margin-top:9px;padding-top:7px;border-top:1px solid #748d7459;font:800 9px ui-monospace,monospace;color:#d1dfc2}
 .jade-reveal-price b{font-size:18px;color:#f7db9f}
@@ -1020,8 +1016,8 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header>span:nth-ch
 .jade-market-card .jade-market-sample .arcade-button{font-size:9px;padding:6px 2px;min-height:35px}
 .jade-market-card .jade-market-sample .arcade-button.upgrade{background:#254a48;border-color:#7aa89c;color:#e8f9ed}
 .jade-quote-trend{font-size:10px;line-height:1.35;margin-top:8px;font-weight:700}
-.jade-quote-trend.is-up,.jade-vault-info .is-up,.jade-trend-chip.is-up b,.jade-trader-offer .is-up{color:#92f0bc}
-.jade-quote-trend.is-down,.jade-vault-info .is-down,.jade-trend-chip.is-down b,.jade-trader-offer .is-down{color:#ffb7a4}
+.jade-quote-trend.is-up,.jade-vault-info .is-up,.jade-trend-chip.is-up b{color:#92f0bc}
+.jade-quote-trend.is-down,.jade-vault-info .is-down,.jade-trend-chip.is-down b{color:#ffb7a4}
 .jade-quote-trend.is-flat,.jade-vault-info .is-flat,.jade-trend-chip.is-flat b{color:#e7d6a5}
 .jade-hold-action{display:grid;gap:4px;margin-top:7px}
 .jade-hold-action>.arcade-button{width:100%;min-height:37px;font-weight:900;

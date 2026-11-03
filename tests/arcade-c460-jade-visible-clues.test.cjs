@@ -86,6 +86,30 @@ test('C4.60b the entire redundant scan drawer is removed, clues exist only on th
  assert.match(render(s),/jade-glass-note/,'The glass note is the sole scan explanation');
 });
 
+test('C4.60c window appraisal price floats over the stone, never stretches the action panel',()=>{
+ let s=testStone('perfect',5);
+ const result=act(s,'jade-window');
+ assert.equal(result.ok,true);
+ s=result.state;
+ const html=render(s);
+ const stage=html.indexOf('class="arcade-stage jade-stage');
+ const price=html.indexOf('class="jade-window-quote');
+ const controls=html.indexOf('class="arcade-control-panel jade-control-panel');
+ assert.ok(stage>=0&&stage<price&&price<controls,'The floating price lives inside the stone stage');
+ assert.doesNotMatch(html,/jade-trader-offer/,'No full-width price card remains below');
+ assert.match(html,/THU MUA HÔM NAY/);
+ assert.match(html,new RegExp(arcade.formatXu(jade.marketQuote(s.jade.active,s.lastAt).value).replace(/[.*+?^${}()|[\]\\]/g,'\\$&')));
+ assert.match(html,/data-arcade-action="jade-sell-window"/,'The spot-sale action still uses the live quote');
+ assert.match(html,/data-arcade-action="jade-cut"/);
+ assert.match(context.window.DuduPersonalJadeUIV1.panel(s,{type:'jade-window'}),/jade-window-quote is-revealing/);
+ context.window.DuduPersonalJadeUIV1.chooseClue(0,s.jade.active);
+ s=act(s,'jade-scan-0').state;
+ assert.match(render(s),/jade-glass-note is-left/,'Window clues use the opposite edge from the price');
+ const css=readFileSync(join(__dirname,'../css/arcade-jade-c460.css'),'utf8');
+ assert.match(css,/\.jade-window-quote\s*\{[\s\S]*?position:absolute/);
+ assert.match(css,/backdrop-filter:blur\(5px\)/);
+});
+
 test('C4.60 safe, standard and bold cutting have visible risk-reward on an intact core',()=>{
  const seed=testStone();
  const payouts=[];

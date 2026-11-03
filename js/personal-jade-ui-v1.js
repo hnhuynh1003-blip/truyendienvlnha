@@ -81,20 +81,22 @@
   const spot=selectedPoint;
   if(!stone.scans[spot])return '';
   const names=['Thủy đầu','Mãng đới','Liệt văn'];
-  return `<aside class="jade-glass-note ${spot===1?'is-left':'is-right'}"
+  return `<aside class="jade-glass-note ${stone.phase==='window'||spot===1?'is-left':'is-right'}"
     aria-label="${names[spot]}" role="group">
     <div class="jade-glass-note-heading"><b>${['◉ THỦY ĐẦU','〽 MÃNG ĐỚI','⌁ LIỆT VĂN'][spot]}</b>
      <button type="button" data-jade-close-clue aria-label="Đóng ô soi">×</button></div>
     <div class="jade-glass-note-text">${jade.scanHint(stone,spot,j.lamp)}</div>
    </aside>`;
  }
- function stoneScene(stone,j,phasePulse){
+ function stoneScene(stone,j,phasePulse,now){
   const phase=stone?.phase||'none',color=stone?jade.COLOR_HEX[stone.color]:'#8bc4a7',
    scanned=stone?stone.scans.filter(Boolean).length:0,
    carved=phase==='crafted',cut=phase==='cut'||carved,
    revealed=cut&&stone?.grade>0&&stone.flaw!=='skin',
    visual=cut?(revealed?'gem':'waste'):phase==='window'?'window':'rough',
-   artworkIndex=stone?.site??0,tier=gemTier(stone);
+   artworkIndex=stone?.site??0,tier=gemTier(stone),
+   windowQuote=phase==='window'?jade.marketQuote(stone,now):null,
+   windowPrice=windowQuote?fmt(windowQuote.value):'';
   return `<div class="arcade-stage jade-stage jade-site-${stone?.site??0} jade-phase-${phase} ${cut?'jade-result-'+tier:''} ${phasePulse?'is-'+phasePulse.type+'-reveal':''}"
     style="--jade-color:${color}" aria-label="Bàn soi đá Ngọc Phường">
     <div class="jade-hall-lattice jade-lattice-left"></div><div class="jade-hall-lattice jade-lattice-right"></div>
@@ -110,6 +112,12 @@
        ${cut?`<span class="jade-gem-inner"></span><span class="jade-gem-shine"></span>`:''}
       </div>`:`<div class="jade-showcase-rough" aria-hidden="true"><i></i><i></i><i></i></div>`}
     ${glassNote(stone,j)}
+    ${windowQuote?`<aside class="jade-window-quote${windowPrice.length>7?' is-compact':''}${phasePulse?.type==='jade-window'?' is-revealing':''}"
+       aria-label="Giá thu mua hôm nay" role="status">
+      <span>THU MUA HÔM NAY</span>
+      <strong>${windowPrice}${greenMark}</strong>
+      <small class="${trendClass(windowQuote.rate)}">${trend(windowQuote.rate)}</small>
+     </aside>`:''}
     ${cut?`<div class="jade-stage-quote jade-quote-${tier}" role="status">
       <small>${tier==='legendary'?'✦ HUYỀN THOẠI':tier==='precious'?'◇ NGỌC QUÝ':tier==='common'?'◈ NGỌC THƯỜNG':'PHẾ THẠCH'}</small>
       <strong>${revealed?stoneName(stone):'Không có ngọc'}</strong>
@@ -158,9 +166,7 @@
       ${['Giữ ngọc','Cưa chuẩn','Mạo hiểm'].map((name,i)=>`<button type="button"
        class="${(stone.cutMode??1)===i?'is-selected':''}" data-arcade-action="jade-cut-mode-${i}"
        aria-pressed="${(stone.cutMode??1)===i}" title="${['Ít hao khi đá nứt, giảm 12% giá trị','Cân bằng, giữ luật cắt trước đây','Lõi lành tăng 22%, nứt giảm giá mạnh'][i]}">${name}</button>`).join('')}</div>
-     ${stone.phase==='window'?`<div class="jade-trader-offer"><span>GIÁ THU MUA HÔM NAY</span><strong>${fmt(windowQuote.value)} <small>${greenMark}</small></strong>
-      <small class="${trendClass(windowQuote.rate)}">${trend(windowQuote.rate)}</small></div>
-      <div class="jade-main-actions jade-stone-workbench">${stoneTool('Bán sang tay','◇',0,'jade-sell-window','gold',false,windowQuote.value)}
+     ${stone.phase==='window'?`<div class="jade-main-actions jade-stone-workbench">${stoneTool('Bán sang tay','◇',0,'jade-sell-window','gold',false,windowQuote.value)}
       ${stoneTool('Xẻ đá','⚒',jade.actionFee(stone,'cut'),'jade-cut','emerald',s.coins<jade.actionFee(stone,'cut'))}</div>`:
       `<div class="jade-main-actions jade-stone-workbench">${stoneTool('Khai song','◈',jade.actionFee(stone,'window'),'jade-window','gold',s.coins<jade.actionFee(stone,'window'))}
       ${stoneTool('Xẻ đá','⚒',jade.actionFee(stone,'cut'),'jade-cut','emerald',s.coins<jade.actionFee(stone,'cut'))}</div>`}
@@ -407,7 +413,7 @@
   return `<section class="arcade-world arcade-world-jade" aria-label="Ngọc Phường">
    <header class="arcade-world-heading"><div><span class="arcade-eyebrow">04 / JADE APPRAISAL</span>
      <h3>Ngọc Phường</h3></div></header>
-   ${stoneScene(stone,j,cutPulse)}
+   ${stoneScene(stone,j,cutPulse,nowOf(s))}
    ${job?`<button type="button" class="jade-work-order ${jobReady?'is-ready':''}" data-arcade-action="jade-open-workshop">
      <span aria-hidden="true">${jobReady?'✦':'⚒'}</span><strong>${jobReady?'Ngọc đã hoàn thành':'Thợ đang chế tác '+jade.CRAFTS[job.type].name}</strong>
      <small>${jobReady?'Vào Xưởng để nhận':`<span data-arcade-until="${job.readyAt}">${Math.ceil((job.readyAt-Date.now())/1000)}s</span> · vẫn tính giờ khi chơi game khác`}</small></button>`:''}
