@@ -142,6 +142,8 @@
   <script src="js/personal-scratch-c28.js?v=c29-numbers-1"></script>
   <script src="js/personal-fun-c25.js?v=c25-1"></script>
   <script src="js/personal-blind-box-c29.js?v=c29-box-1"></script>
+  <script src="js/fun-vantvat-f31.js?v=f31-1"></script>
+  <script src="js/personal-vantvat-f31.js?v=f31-1"></script>
   <script src="js/personal-jade-core-v1.js?v=c442-1&amp;economy=c450-1&amp;c452=1&amp;c454=1&amp;c457a=1&amp;c457b=1&amp;c458=1&amp;c460=1"></script>
   <script src="js/personal-arcade-season-c423.js?v=c423-1&amp;beat=c441b-1"></script>
   <script src="js/personal-arcade-neon-c441.js?v=c441a-1"></script>
@@ -215,7 +217,7 @@
   <script src="js/personal-progress-c23.js?v=c24c-1"></script>
   <script src="js/item-actions-v43.js?v=1"></script>
   <script src="js/functional-items-v43-8.js?v=44-9"></script>
-  <script src="js/personal-spark-items-v1.js?v=c24c-1"></script>
+  <script src="js/personal-spark-items-v1.js?v=f31-1"></script>
   <script src="js/companion-rules-v43.js?v=1"></script>
   <script src="js/dudu-system-steward-v67-3.js?v=67-3-3"></script>
   <script src="js/npc-bond-v43.js?v=1"></script>
@@ -7060,6 +7062,35 @@ document.getElementById('phone-home-screen').style.display = 'none';
         try{localStorage.setItem('profile_'+uid,JSON.stringify(userProfile));}
         catch(error){console.warn('Blind box device backup:',error);}
         updatePhoneUI();renderWallet();renderInventory();renderQuests();
+        return result;
+      }
+    });
+    const vantVatReadyF31=()=>!IS_SANDBOX_MODE&&DuduAuth.isReady()&&
+      DuduAuth.uid()===currentUsername&&!!window.DuduPersonalVantVatF31;
+    window.DuduVantVatLiveBridgeF31=Object.freeze({
+      ready:vantVatReadyF31,
+      uid:()=>vantVatReadyF31()?currentUsername:null,
+      async load(){
+        if(!vantVatReadyF31())throw Error('Chưa sẵn sàng');
+        const uid=currentUsername;
+        await Promise.allSettled([...pendingLiveProfileWrites]);
+        if(!vantVatReadyF31()||currentUsername!==uid)throw Error('Tài khoản đã thay đổi');
+        return DuduPersonalVantVatF31.load({db,auth:firebase.auth(),uid});
+      },
+      async run(options){
+        if(!vantVatReadyF31())throw Error('Chưa sẵn sàng');
+        const uid=currentUsername;
+        await Promise.allSettled([...pendingLiveProfileWrites]);
+        if(!vantVatReadyF31()||currentUsername!==uid)throw Error('Tài khoản đã thay đổi');
+        const result=await DuduPersonalVantVatF31.run({
+          db,auth:firebase.auth(),uid,...options});
+        if(!vantVatReadyF31()||currentUsername!==uid)throw Error('Tài khoản đã thay đổi');
+        userProfile.currency=result.currency;
+        userProfile.inventory=result.inventory;
+        userProfile.storyStates=result.storyStates;
+        try{localStorage.setItem('profile_'+uid,JSON.stringify(userProfile));}
+        catch(error){console.warn('Vạn Vật backup:',error);}
+        updatePhoneUI();renderWallet();renderInventory();
         return result;
       }
     });

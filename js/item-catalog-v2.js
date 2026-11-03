@@ -661,7 +661,29 @@
   const funCollectibles=FUN_SOURCE.map(([id,name,rank,icon,desc])=>
     item(id,name,rank,'ITEM',icon,desc,'DUDU',null,'FUN_BOX',{
       collectionSet:'VAN_BAO',tradeable:false}));
-  const items = Object.freeze([...common,...realms,...souvenirs,...funCollectibles]);
+  // F3.1: additive multiverse prizes. Never alter the 19 original Vạn Bảo IDs.
+  const VANTVAT_SOURCE=[
+    ['f31-fossil-shell','Hóa thạch Vỏ Sao','E','🐚','FOSSIL'],
+    ['f31-apple-moon','Táo Nguyệt Quang','E','🍎','FRUIT'],
+    ['f31-doll-cloud','Búp Bê Mây','D','🪆','DOLL'],
+    ['f31-sword-bamboo','Kiếm Trúc Linh','D','🗡️','WEAPON'],
+    ['f31-card-clover','Thẻ Tứ Diệp','C','🃏','LUCK_CARD'],
+    ['f31-fossil-dragon','Hóa Thạch Long Cốt','C','🦴','FOSSIL'],
+    ['f31-figure-fox','Tượng Hồ Ly Ngân Hà','B','🦊','FIGURE'],
+    ['f31-background-aurora','Nền Cực Quang','B','🌌','BACKGROUND'],
+    ['f31-weapon-neon','Song Đao Neon','A','⚔️','WEAPON'],
+    ['f31-doll-starlight','Búp Bê Tinh Tú','A','🧸','DOLL'],
+    ['f31-figure-samurai','Tượng Kiếm Sĩ Dị Giới','S','🥷','FIGURE'],
+    ['f31-background-cosmos','Nền Vạn Giới','S','🪐','BACKGROUND'],
+    ['f31-fossil-phoenix','Hóa Thạch Phượng Hoàng','SS','🔥','FOSSIL'],
+    ['f31-card-destiny','Thẻ Thiên Mệnh','SS','🎴','LUCK_CARD'],
+    ['f31-figure-eternal','Tượng Người Giữ Thời Gian','SSS','⏳','FIGURE']
+  ];
+  const funVantVat=VANTVAT_SOURCE.map(([id,name,rank,icon,category])=>
+    item(id,name,rank,'ITEM',icon,'Kỷ vật đa vị diện · '+category,
+      'DUDU',null,'FUN_VANTUONG',{collectionSet:'VAN_VAT',tradeable:false,
+       funCategory:category}));
+  const items = Object.freeze([...common,...realms,...souvenirs,...funCollectibles,...funVantVat]);
   const index = new Map(items.map(record=>[record.id,record]));
 
   // Archived legacy item in the old random pool but not part of the approved
@@ -703,8 +725,9 @@
       if(x.scope!=='REALM'&&x.realmTag!==null)errors.push('Unexpected realm tag: '+x.id);
       if(x.scope==='DUDU'&&(x.acquisition.method==='RANDOM'||x.giftable||x.discardable||!x.unique))errors.push('Invalid collector guard: '+x.id);
     }
-    if(scopes.COMMON!==25||scopes.REALM!==120||scopes.DUDU!==34)errors.push('Unexpected catalog counts: '+JSON.stringify(scopes));
-    if(items.length!==179)errors.push('Expected exactly 179 records');
+    if(scopes.COMMON!==25||scopes.REALM!==120||scopes.DUDU!==49)errors.push('Unexpected catalog counts: '+JSON.stringify(scopes));
+    if(items.length!==194||funCollectibles.length!==19||funVantVat.length!==15)
+      errors.push('Expected 179 inherited + 15 F3.1 records');
     for(const tag of REALM_TAGS){
       const inRealm=realms.filter(x=>x.realmTag===tag);
       if(inRealm.length!==20)errors.push('Unexpected realm size: '+tag);
@@ -716,6 +739,7 @@
   return Object.freeze({VERSION,RANKS,REALM_TAGS,items,common:Object.freeze(common),
     realms:Object.freeze(realms),souvenirs:Object.freeze(souvenirs),
     funCollectibles:Object.freeze(funCollectibles),
+    funVantVat:Object.freeze(funVantVat),
     legacyItemCount:70,worldExpansionCount:additions.length,
     byId,list,previewDropPool,validate});
 });

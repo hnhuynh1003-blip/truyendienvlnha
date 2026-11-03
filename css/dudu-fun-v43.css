@@ -349,3 +349,11 @@ body.dudu-phone-v11 #cyber-phone .blind-album-tile.locked{opacity:.56;filter:sat
 body.dudu-phone-v11 #cyber-phone .blind-album-tile.owned{box-shadow:inset 0 0 13px #c1a7e540}
 body.dudu-phone-v11 #cyber-phone .blind-legacy{padding-top:10px;display:flex;flex-direction:column;gap:8px}
 @media(prefers-reduced-motion:reduce){body.dudu-phone-v11 #cyber-phone .blind-box-3d{animation:none}}
+/* F3.1 · Vạn Vật */
+.f31-vantvat-stage{display:grid;gap:14px;justify-items:center;padding:18px 10px;color:#fbe9bd}
+.f31-vantvat-orb{display:grid;place-items:center;width:min(55vw,180px);aspect-ratio:1;border-radius:50%;font-size:64px;background:radial-gradient(circle at 35% 30%,#8065a7,#322654 52%,#10152b 78%);box-shadow:0 0 35px #a48aff55,inset 0 0 20px #b09adb77;border:2px solid #dfc08d}
+.f31-vantvat-result{display:grid;justify-items:center;gap:6px;width:min(100%,360px);padding:14px;border:1px solid #d9bd7c88;border-radius:16px;background:linear-gradient(145deg,#302b52,#151b33);text-align:center}
+.f31-vantvat-result>span{font-size:42px}.f31-vantvat-result b{font-size:1.15rem}.f31-vantvat-result small{color:#e4c995}
+.f31-vantvat-gallery{width:min(100%,450px);padding:12px;border:1px solid #a48aff66;border-radius:12px;background:#15162cbb}
+.f31-vantvat-gallery summary{cursor:pointer}.f31-vantvat-row{display:flex;justify-content:space-between;gap:10px;padding:8px 2px;border-bottom:1px solid #ffffff20;font-size:.9rem}
+.f31-vantvat-row:last-child{border:0}

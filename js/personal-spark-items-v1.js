@@ -8,10 +8,11 @@
   root?.DuduInventoryTradeV439||(typeof require==='function'?require('./inventory-trade-v43-9.js'):null),
   root?.DuduFunctionalItemsV438||(typeof require==='function'?require('./functional-items-v43-8.js'):null),
   root?.DuduPersonalCollectionC24||(typeof require==='function'?require('./personal-collection-c24.js'):null),
-  root?.DuduPersonalQuestEventsC45||(typeof require==='function'?require('./personal-quest-events-c45.js'):null));
+  root?.DuduPersonalQuestEventsC45||(typeof require==='function'?require('./personal-quest-events-c45.js'):null),
+  root?.DuduFunVantVatF31||(typeof require==='function'?require('./fun-vantvat-f31.js'):null));
  if(typeof module==='object'&&module.exports)module.exports=api;
  if(root)root.DuduPersonalSparkItemsV1=api;
-})(typeof window!=='undefined'?window:null,function(economy,trade,functional,collection,questEvents){
+})(typeof window!=='undefined'?window:null,function(economy,trade,functional,collection,questEvents,vantvat){
  'use strict';
  const META='__duduPersonalItemsV1',PROGRESS_META='__duduPersonalProgressC23',
   MAX_RECEIPTS=80,MAX_WALLET=1000000000,MAX_ITEMS=500;
@@ -34,6 +35,8 @@
   return result;
  }
  function sellPrice(item){
+  const funPrice=vantvat?.valueOf(item)||0;
+  if(funPrice)return funPrice;
   const commonPrice=trade?.saleValue?.(item)||0;
   if(commonPrice)return commonPrice;
   // Personal accounts may resell a verified, unused SHOP functional tool.

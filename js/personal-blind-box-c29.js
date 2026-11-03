@@ -108,9 +108,8 @@
      const approved=catalog.byId(s.active.itemId);
      if(!approved||approved.collectionSet!=='VAN_BAO'||!approved.unique)
       throw fail('invalid-prize');
-     const owned=inventory.some(item=>item?.id===approved.id),
-      seen=s.album.includes(approved.id);
-     if(owned||seen){
+     const owned=inventory.some(item=>item?.id===approved.id);
+     if(owned){
       if(currency>MAX_WALLET-DUPLICATE_RETURN)throw fail('wallet-cap');
       currency+=DUPLICATE_RETURN;s.duplicate=Math.min(100000000,s.duplicate+1);
       reward={item:approved,duplicate:true,returned:DUPLICATE_RETURN};
@@ -125,7 +124,7 @@
        eventId:instanceId,kind:'FUN',item,at,instanceId,inventory:data.inventory});
       if(!journal.ok)throw fail('journal-failed');
       nextStates={...states,[collection.META]:journal.state};
-      s.album.push(approved.id);
+      if(!s.album.includes(approved.id))s.album.push(approved.id);
       reward={item:approved,duplicate:false,returned:0};
      }
      s.history=[...s.history,{id,itemId:approved.id,day:s.active.day,

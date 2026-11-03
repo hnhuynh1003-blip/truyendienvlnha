@@ -5,7 +5,8 @@ const path=require('node:path');
 const catalog=require('../js/item-catalog-v2.js');
 
 test('V44.1 base catalog stays intact and C2.9 adds 19 unique FUN collectibles',()=>{
-  assert.equal(catalog.items.length,179);
+  assert.equal(catalog.items.length,194);
+  assert.equal(catalog.funVantVat.length,15);
   assert.equal(catalog.common.length,25);
   assert.equal(catalog.realms.length,120);
   assert.equal(catalog.souvenirs.length,15);
@@ -26,7 +27,7 @@ test('permanent IDs and legacy objects are preserved without editing inventories
   assert.equal(catalog.byId('e1').name,'Mì Tôm Cay Dung Thành');
   assert.equal(catalog.byId('e1').archived,true);
   assert.equal(catalog.byId('missing-item'),null);
-  assert.equal(new Set(catalog.items.map(x=>x.id)).size,179);
+  assert.equal(new Set(catalog.items.map(x=>x.id)).size,194);
   assert.ok(catalog.items.every(x=>x.id===x.itemId));
 });
 test('DUDU memorabilia are collectible by milestone/event, not random loot or gifts',()=>{

@@ -28,6 +28,10 @@
  const luckyBridge=()=>root.DuduScratchLiveBridgeC28;
  const blind=()=>root.DuduPersonalBlindBoxC29;
  const blindBridge=()=>root.DuduBlindBoxLiveBridgeC29;
+ const vvRule=()=>root.DuduFunVantVatF31;
+ const vvBridge=()=>root.DuduVantVatLiveBridgeF31;
+ let vvUid=null,vvState=null,vvCurrency=null,vvLoaded=false,vvLoading=false,
+  vvError=false,vvBusy=false;
  let liveUid=null,liveState=null,liveLoaded=false,liveLoading=false,liveError=false;
  let luckyUid=null,luckyState=null,luckyLoaded=false,luckyLoading=false,luckyError=false,
   luckyBusy=false,luckyCurrency=null,luckyTheme='dragon';
@@ -97,6 +101,88 @@
   }).catch(error=>{if(blindUid!==uid)return;blindError=true;
    console.warn('DUDU blind box read:',error?.reason||error?.message);
   }).finally(()=>{if(blindUid!==uid)return;blindLoading=false;render();});
+ }
+ function ensureVantVat(){
+  if(sandbox()||!vvBridge())return;
+  const uid=signed()?vvBridge().uid?.():null;
+  if(uid!==vvUid){vvUid=uid;vvState=null;vvCurrency=null;
+   vvLoaded=false;vvLoading=false;vvError=false;}
+  if(!uid||vvLoaded||vvLoading||vvError)return;
+  vvLoading=true;
+  void vvBridge().load().then(res=>{
+   if(vvUid!==uid)return;
+   vvState=res.state;vvCurrency=res.currency;vvLoaded=true;
+  }).catch(()=>{if(vvUid===uid)vvError=true;}).finally(()=>{
+   if(vvUid===uid){vvLoading=false;render();}
+  });
+ }
+ async function vantVatAction(kind){
+  if(!vvLoaded||vvBusy||funActionBusy||!vvBridge()?.ready?.())return;
+  const uid=vvUid,id=kind==='start'?crypto.randomUUID():vvState?.active?.id;
+  vvBusy=true;funActionBusy=true;message('');
+  try{
+   const opts={kind,id};
+   if(kind==='start'){
+    const arr=new Uint32Array(1);crypto.getRandomValues(arr);
+    opts.roll=arr[0]%vvRule().TOTAL;
+   }
+   const result=await vvBridge().run(opts);
+   if(uid!==vvUid||!signed())return;
+   vvState=result.state;vvCurrency=result.currency;
+   if(result.status==='applied')message(kind==='start'?
+    'Vật phẩm đã được khóa kết quả. Mở để nhận vào Kho.':
+    'Đã đưa vật phẩm vào Kho. Có thể bán từ thẻ vật phẩm.');
+  }catch(error){
+   const reason={'not-enough-xu':'Không đủ 15 Xu Vàng.',
+    'inventory-full':'Kho đã đầy 500 ô.',
+    'unfinished-spin':'Hãy nhận món đang chờ trước.',
+    'spin-not-found':'Không tìm thấy lượt quay.'};
+   message(reason[error?.reason]||'Chưa thực hiện được. Kiểm tra kết nối rồi thử lại.');
+   vvLoaded=false;vvError=false;
+  }finally{vvBusy=false;funActionBusy=false;render();}
+ }
+ function vantVatStage(host){
+  const rule=vvRule();
+  if(!rule||!vvLoaded){
+   host.append(el('p','dudu-fun-caption',vvError?'Không tải được Vạn Tượng.':'Đang mở Vạn Tượng…'));
+   if(vvError){const retry=el('button','dudu-fun-start','Thử lại');
+    retry.onclick=()=>{vvError=false;render();};host.append(retry);}
+   return;
+  }
+  const active=vvState?.active,prize=active&&root.DuduItemCatalog?.byId(active.itemId),
+   coinPrize=active&&rule.POOL.find(p=>p.itemId===active.itemId&&p.rank==='COIN');
+  const stage=el('div','f31-vantvat-stage');
+  stage.append(el('div','f31-vantvat-orb',active?'✦':'🌌'),
+   el('strong','','VẠN VẬT · ĐA VỊ DIỆN'));
+  if(active){
+   const result=el('div','f31-vantvat-result');
+   result.append(el('span','',coinPrize?'🪙':prize?.icon||'🎁'),
+    el('b','',coinPrize?coinPrize.amount+' Xu Vàng':prize?.name||'Bảo vật'),
+    el('small','',coinPrize?'Nhận trực tiếp vào Ví':
+     prize?.rank+' · Giá bán '+(rule.VALUES[prize?.rank]||0)+' Xu Vàng'));
+   stage.append(result);
+   if(active.status==='sealed'){
+    const button=el('button','dudu-fun-claim','✦ MỞ NHẬN VẬT PHẨM');
+    button.disabled=vvBusy||funActionBusy;
+    button.onclick=()=>{void vantVatAction('claim');};stage.append(button);
+   }
+  }
+  if(!active||active.status==='claimed'){
+   const button=withGold('button','dudu-fun-start','↻ QUAY · ',rule.PRICE);
+   button.disabled=vvBusy||funActionBusy||vvCurrency<rule.PRICE;
+   button.onclick=()=>{void vantVatAction('start');};stage.append(button);
+  }
+  const gallery=el('details','f31-vantvat-gallery');
+  gallery.append(el('summary','','✧ Bộ sưu tập đa vị diện · '+rule.POOL.length+' vật phẩm'));
+  for(const entry of rule.POOL){
+   const item=root.DuduItemCatalog.byId(entry.itemId);
+   const line=el('div','f31-vantvat-row');
+   line.append(el('span','',item?item.icon+' '+item.name:'🪙 '+entry.amount+' Xu Vàng'),
+    gold('b','',item?rule.VALUES[item.rank]:entry.amount));gallery.append(line);
+  }
+  stage.append(gallery,el('small','dudu-slot-notice',
+   'Xu Vàng ảo · Vật phẩm vào Kho · Bán một lần mỗi bản thể.'));
+  host.append(stage);
  }
  async function blindAction(kind,mode){
   if(!signed()||!blindLoaded||blindBusy||funActionBusy||!blindBridge()?.ready?.())return;
@@ -879,6 +965,7 @@
   updateHeaderBalance();
   ensureLive();
   if(!sandbox())ensureBlind();
+  if(!sandbox()&&open==='slot')ensureVantVat();
   if(open==='ticket'&&!sandbox())ensureLucky();
   host.replaceChildren();
   if(!sandbox()&&signed()&&!liveLoaded){
@@ -910,7 +997,8 @@
   const content=el('section','dudu-fun-stage'+(open==='slot'?' is-slot':''));
   const state=view(),round=state.rounds[open];
   if(open==='slot'){
-   if(root.DuduCasinoSlotUIV1?.mount)
+   if(!sandbox()&&vvBridge()&&vvRule())vantVatStage(content);
+   else if(root.DuduCasinoSlotUIV1?.mount)
     root.DuduCasinoSlotUIV1.mount({host:content,demo:true,
      sessionKey:'fun:'+currentUsername});
    else content.append(el('p','dudu-fun-caption','Máy Quay Vạn Tượng đang chuẩn bị…'));
