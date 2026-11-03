@@ -54,6 +54,8 @@ async function main(){
   const panel=page.locator('#library-capacity-r1');
   assert.equal(await panel.isVisible(),true);
   await panel.locator('summary').click();
+  await page.locator('#library-capacity-body-r1 .library-capacity-card-r1').first()
+   .waitFor({state:'visible'});
   assert.match(await panel.innerText(),/Truyện Web/);
   assert.match(await panel.innerText(),/Truyện EPUB/);
   assert.match(await panel.innerText(),/Văn bản tiếng Việt dùng để kiểm thử/);
