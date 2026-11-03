@@ -392,7 +392,9 @@
          ${!beatActive||!n.running||strikeReady?'disabled':''}><strong>${symbol}</strong><span>${beatNames[i]}</span></button>`).join('')}
        </div>
        ${strikeReady?button('⎵ SPACE · CHỐT NHỊP','neon-beat-finish','neon-beat-finish'):''}
-       <div class="neon-order-footer"><span>✓ ${n.orderWon} ĐƠN</span><span>${beatMode?'PERFECT +25% · '+guest.name:'SAI NHỊP: MẤT COMBO'}</span></div>
+       <div class="neon-order-footer"><span>✓ ${n.orderWon} ĐƠN</span><span>${beatMode?'PERFECT +25% · '+guest.name:
+        n.router>1?'MẠNG: +'+((core.neonBeatWindow(n)-(12000-2000*(n.roomTier-1)))/1000).toLocaleString('vi-VN',{maximumFractionDigits:1})+'s NHỊP':
+        'SAI NHỊP: MẤT COMBO'}</span></div>
       </div>
     </div>
   </section>`;
