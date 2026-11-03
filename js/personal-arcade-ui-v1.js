@@ -50,13 +50,13 @@
    return item;
   }catch(_){return null;}
  }
- function save(candidate=state,previousState=null){
+ function save(candidate=state,previousState=null,skipHonor=false){
   if(!activeKey||!candidate)return false;
   try{
    root.localStorage.setItem(activeKey,JSON.stringify(candidate));
    // A session switch may be persisting the *previous* owner's game. Never
    // attribute its achievements to the newly selected account.
-   if(activeKey===keyFor(identity()))
+   if(!skipHonor&&activeKey===keyFor(identity()))
     root.DuduHonorUIV46?.observeArcade?.(candidate,previousState);
    lastSave=now();return true;
   }catch(_){notice='Không lưu được game trên thiết bị. Kiểm tra dung lượng trình duyệt.';
@@ -383,7 +383,7 @@
        ${beatActive&&beatMode>0?`<div class="neon-hit-wrap"><div class="neon-hit-meter" data-neon-beat-meter="1"
          data-neon-beat-start="${n.beatUntil-core.neonBeatWindow(n)}" data-neon-beat-end="${n.beatUntil}"
          style="--neon-zone-start:${zone.start*100}%;--neon-zone-end:${zone.end*100}%">
-         <span class="neon-hit-target"></span><i class="neon-hit-marker" style="left:${strikeProgress}%"></i></div>
+         <span class="neon-hit-target"></span><i class="neon-hit-marker" style="left:${strikeProgress}%;--neon-hit-duration:${core.neonBeatWindow(n)}ms;--neon-hit-elapsed:${Math.max(0,time-(n.beatUntil-core.neonBeatWindow(n)))}ms"></i></div>
          <small>${strikeReady?'⎵ SPACE đúng vùng sáng':'Đi đủ hướng rồi canh vùng sáng'}</small></div>`:''}
        ${!beatActive?button(orderReady?'▶ CHƠI · '+core.neonBeatWindow(n)/1000+'s':'Chờ khách',
         'neon-beat-start','neon-beat-start',!n.running||!orderReady):''}
@@ -784,7 +784,10 @@
    const start=Number(meter.dataset.neonBeatStart),end=Number(meter.dataset.neonBeatEnd);
    if(end>start){
     const marker=meter.querySelector('.neon-hit-marker');
-    if(marker)marker.style.left=Math.max(0,Math.min(100,(time-start)/(end-start)*100))+'%';
+   // CSS runs the needle continuously on the compositor timeline. Update the
+   // fallback only when the player explicitly requests reduced motion.
+   if(marker&&root.matchMedia?.('(prefers-reduced-motion: reduce)').matches)
+    marker.style.left=Math.max(0,Math.min(100,(time-start)/(end-start)*100))+'%';
    }
   });
   const session=element.querySelector?.('[data-neon-service-track]');
@@ -797,6 +800,35 @@
     Math.ceil((core.NEON_SERVICE_INTERVAL-state.neon.sessionMs)/1000)+'s':'Tạm dừng';
   }
   lastPaint=time;
+ }
+ function refreshNeonBeatStep(){
+  // Correct arrow presses must not rebuild the entire illustrated café.
+  // Keep the existing stage, LEDs, scroll position and focused control alive.
+  const n=state?.neon,game=tab==='neon'?host()?.querySelector('.neon-order-game'):null;
+  if(!n?.beatUntil||!game)return false;
+  const pattern=core.neonBeatPattern(n),sequence=game.querySelectorAll('.neon-beat-sequence > span');
+  if(sequence.length!==pattern.length)return false;
+  const symbols=['←','↑','→','↓'],names=['Trái','Lên','Phải','Xuống'];
+  sequence.forEach((node,i)=>{
+   node.classList.toggle('is-done',i<n.beatStep);
+   node.classList.toggle('is-next',i===n.beatStep);
+   node.textContent=i<n.beatStep?'✓':symbols[pattern[i]];
+   node.setAttribute('aria-label',names[pattern[i]]);
+  });
+  const counter=game.querySelector('.neon-order-ticket em');
+  const clock=counter?.querySelector('.neon-beat-clock');
+  if(!clock||!counter.firstChild||counter.firstChild.nodeType!==3)return false;
+  const strikeReady=n.beatMode>0&&n.beatStep>=pattern.length;
+  counter.firstChild.textContent=(strikeReady?'CHỐT':Math.min(n.beatStep+1,pattern.length)+'/'+pattern.length)+' · ';
+  game.querySelectorAll('.neon-beat-actions [data-arcade-action]').forEach(control=>{
+   control.disabled=strikeReady;
+  });
+  const hint=game.querySelector('.neon-hit-wrap > small');
+  if(hint)hint.textContent=strikeReady?'⎵ SPACE đúng vùng sáng':'Đi đủ hướng rồi canh vùng sáng';
+  if(strikeReady&&!game.querySelector('[data-arcade-action="neon-beat-finish"]'))
+   game.querySelector('.neon-beat-actions')?.insertAdjacentHTML('afterend',
+    button('⎵ SPACE · CHỐT NHỊP','neon-beat-finish','neon-beat-finish'));
+  return true;
  }
  function tick(){
   const time=now(),s=ensure();
@@ -827,13 +859,17 @@
    const turboReady=!!s.neon.turboReadyAt&&s.lastAt<s.neon.turboReadyAt&&time>=s.neon.turboReadyAt;
    const nextOrder=!!s.neon.orderReadyAt&&s.lastAt<s.neon.orderReadyAt&&time>=s.neon.orderReadyAt;
    const missedBeat=!!s.neon.beatUntil&&!state.neon.beatUntil;
-   if(missedBeat){notice='⌛ Hết giờ! Khách sẽ quay lại, combo đã về 0.';
+   if(missedBeat&&tab==='neon'){notice='⌛ Hết giờ! Khách sẽ quay lại, combo đã về 0.';
     noticeUntil=time+2200;error=false;}
-   if(fishEscaped){notice='Cá đã tuột khỏi lưỡi câu. Hãy thử lượt khác nhé.';
+   if(fishEscaped&&tab==='garden'){notice='Cá đã tuột khỏi lưỡi câu. Hãy thử lượt khác nhé.';
     noticeUntil=time+3500;error=false;}
    const craftReady=tab==='jade'&&!!s.jade?.craftJob&&
     s.lastAt<s.jade.craftJob.readyAt&&time>=s.jade.craftJob.readyAt;
-   if(lastRenderedKey!==activeKey||completedRepair||waterRefilled||bubbleAppeared||plantMatured||fishBit||fishEscaped||customerServed||boostExpired||turboReady||nextOrder||missedBeat||craftReady||weatherShifted)render();
+   const activeGameChanged=tab==='neon'?customerServed||boostExpired||turboReady||nextOrder||missedBeat:
+    tab==='mine'?completedRepair:
+    tab==='garden'?waterRefilled||bubbleAppeared||plantMatured||fishBit||fishEscaped||weatherShifted:
+    tab==='jade'&&craftReady;
+   if(lastRenderedKey!==activeKey||activeGameChanged)render();
    else if(time-lastPaint>=900)refreshLive(time);
   }
  }
@@ -864,7 +900,14 @@
    action==='neon-beat-start'||/^neon-beat-[0123]$/.test(action)&&result.label.startsWith('✓')?'':
    result.label==='stone'?'Nhặt được Đá.':result.label==='coal'?'Nhặt được Than.':
    result.label==='iron'?'Nhặt được Sắt.':result.label==='crystal'?'✦ Nhặt được Tinh thạch!':result.label;
-  noticeUntil=notice?now()+2500:0;error=false;save(state,previousState);render();return true;
+  const quickBeat=/^neon-beat-[0123]$/.test(action)&&state.neon.beatUntil&&
+   state.neon.beatStep>previousState.neon.beatStep;
+  noticeUntil=notice?now()+2500:0;error=false;
+  // Mid-sequence arrows unlock no achievements; avoid an expensive full honor
+  // scan on each key while still persisting the exact game state immediately.
+  save(state,previousState,quickBeat);
+  if(quickBeat&&refreshNeonBeatStep())return true;
+  render();return true;
  }
  function pulseReel(){
   tick();

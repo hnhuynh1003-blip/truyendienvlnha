@@ -6,6 +6,8 @@
  const fmt=core.formatXu;
  const greenMark='<i class="dudu-money-icon dudu-money-icon--green" aria-hidden="true"></i>';
  const btn=(label,action,kind='primary',disabled=false)=>`<button type="button" class="arcade-button ${kind}" data-arcade-action="${action}" ${disabled?'disabled':''}>${label}</button>`;
+ const stoneTool=(label,glyph,fee,action,kind,disabled=false,payout=null)=>`<button type="button" class="jade-tool-action jade-tool-${kind}" data-arcade-action="${action}" aria-label="${label}, ${payout!==null?'nhận '+fmt(payout)+' Tiền Xanh':fee?'phí '+fmt(fee)+' Tiền Xanh':'miễn phí'}" ${disabled?'disabled':''}>
+   <span class="jade-tool-emblem" aria-hidden="true">${glyph}</span><span class="jade-tool-copy"><b>${label}</b><small>${payout!==null?'+'+greenMark+fmt(payout):fee?greenMark+fmt(fee):'Miễn phí'}</small></span></button>`;
  const sheet=(label,icon,id)=>`<button type="button" class="arcade-drawer-trigger" data-arcade-drawer="${id}"><span aria-hidden="true">${icon}</span>${label}</button>`;
  const stoneName=stone=>stone.grade?jade.GRADES[stone.grade]+' · '+jade.COLORS[stone.color]:'Phế thạch';
  const isGem=stone=>stone&&stone.grade>0&&stone.flaw!=='skin';
@@ -92,23 +94,21 @@
   if(['raw','window'].includes(stone.phase)){
    const windowQuote=jade.marketQuote(stone,nowOf(s));
    return `<details class="jade-scan-drawer" ${stone.scans.some(Boolean)&&stone.scans.some(v=>!v)?'open':''}>
-       <summary>◉ Soi dấu hiệu <small>${stone.scans.filter(Boolean).length}/3 · Tùy chọn</small></summary>
+       <summary>◉ Soi dấu hiệu <small>${stone.scans.filter(Boolean).length}/3</small></summary>
        <div class="jade-scan-options">${[0,1,2].map(i=>`<button type="button" class="jade-scan-choice" data-arcade-action="jade-scan-${i}" ${stone.scans[i]?'disabled':''}>
          <span>${['Thủy đầu','Mãng đới','Liệt văn'][i]}</span>
-         <small>${stone.scans[i]?jade.scanHint(stone,i,j.lamp):'Chạm để soi'}</small></button>`).join('')}</div>
+         <small>${stone.scans[i]?jade.scanHint(stone,i,j.lamp):'Chưa soi'}</small></button>`).join('')}</div>
       </details>
      ${stone.phase==='window'?`<div class="jade-trader-offer"><span>GIÁ THU MUA HÔM NAY</span><strong>${fmt(windowQuote.value)} <small>${greenMark}</small></strong>
-      <small class="${trendClass(windowQuote.rate)}">${trend(windowQuote.rate)} · Giá thay đổi theo thị trường sắc ngọc. Có thể cất chờ.</small></div>
-      <div class="jade-main-actions">${btn('✓ Bán sang tay','jade-sell-window','gold')}
-      ${btn(jade.actionFee(stone,'cut')?'⚔ Xẻ đôi · '+greenMark+fmt(jade.actionFee(stone,'cut')):'⚔ Xẻ đôi · Miễn phí','jade-cut','power',s.coins<jade.actionFee(stone,'cut'))}</div>`:
-      `<div class="jade-main-actions">${btn(jade.actionFee(stone,'window')?'◈ Khai song · '+greenMark+fmt(jade.actionFee(stone,'window')):'◈ Khai song · Miễn phí','jade-window','gold',s.coins<jade.actionFee(stone,'window'))}
-      ${btn(jade.actionFee(stone,'cut')?'⚔ Xẻ đôi · '+greenMark+fmt(jade.actionFee(stone,'cut')):'⚔ Xẻ đôi · Miễn phí','jade-cut','power',s.coins<jade.actionFee(stone,'cut'))}</div>`}
-
-     ${btn('↩ Cất đá · Đổi viên khác','jade-store','upgrade')}
-     ${stone.phase==='raw'&&jade.rawSalvageValue(stone)?`<div class="jade-recovery jade-recovery-compact">
-      <small>Thiếu tiền cắt? Trả lại đá nguyên vỏ, thu hồi 25% giá mua; không tính lượt giao dịch.</small>
-      ${btn('↩ Thanh lý đá thô · +'+greenMark+fmt(jade.rawSalvageValue(stone)),'jade-sell-raw','upgrade')}
-     </div>`:''}`;
+      <small class="${trendClass(windowQuote.rate)}">${trend(windowQuote.rate)}</small></div>
+      <div class="jade-main-actions jade-stone-workbench">${stoneTool('Bán sang tay','◇',0,'jade-sell-window','gold',false,windowQuote.value)}
+      ${stoneTool('Xẻ đá','⚒',jade.actionFee(stone,'cut'),'jade-cut','emerald',s.coins<jade.actionFee(stone,'cut'))}</div>`:
+      `<div class="jade-main-actions jade-stone-workbench">${stoneTool('Khai song','◈',jade.actionFee(stone,'window'),'jade-window','gold',s.coins<jade.actionFee(stone,'window'))}
+      ${stoneTool('Xẻ đá','⚒',jade.actionFee(stone,'cut'),'jade-cut','emerald',s.coins<jade.actionFee(stone,'cut'))}</div>`}
+     <div class="jade-stone-side-actions">
+      <button type="button" class="jade-stone-side-button" data-arcade-action="jade-store" title="Cất đá, chọn viên khác">▱ Cất đá</button>
+      ${stone.phase==='raw'&&jade.rawSalvageValue(stone)?`<button type="button" class="jade-stone-side-button jade-salvage-button" data-arcade-action="jade-sell-raw" title="Thanh lý đá thô: thu hồi 25% giá mua, không tính lượt giao dịch" aria-label="Thanh lý đá thô, nhận ${fmt(jade.rawSalvageValue(stone))} Tiền Xanh">↩ Thanh lý <small>+${greenMark}${fmt(jade.rawSalvageValue(stone))}</small></button>`:''}
+     </div>`;
   }
   const good=stone.grade>0&&stone.flaw!=='skin',quote=jade.marketQuote(stone,nowOf(s)),value=quote.value;
   return `<div class="jade-cut-summary"><span>${stone.phase==='crafted'?'✦ Đã chế tác · '+jade.CRAFTS[stone.craft].name:'✦ Đã xẻ đá'}</span><small>${good?'Cỡ '+stone.size+' · '+jade.FLAW_NAMES[stone.flaw]:'Phế thạch · Có thể thu hồi'} · Giá ${greenMark}${fmt(value)}</small></div>

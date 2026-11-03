@@ -719,6 +719,50 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header>span:nth-ch
 .jade-clue small{display:block;font-size:9px;line-height:1.35;color:#acc9c2;margin-top:2px}
 .jade-main-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px}
 .jade-main-actions .arcade-button{min-width:0;padding:8px 4px;min-height:40px;font-size:10px}
+/* C4.56 · Physical stonework controls: price is a badge, not a sentence. */
+#personal-arcade-v1 .jade-stone-workbench{gap:6px;margin-top:6px}
+#personal-arcade-v1 .jade-tool-action{
+ display:flex;align-items:center;justify-content:center;gap:7px;min-width:0;min-height:47px;
+ padding:5px 7px;border:1px solid #d3ad70;border-radius:6px 13px 6px 13px;
+ background:linear-gradient(145deg,#7e613e,#352d26);color:#fff1d9;
+ box-shadow:inset 0 1px #fff6d536,0 3px 7px #080f0d74;cursor:pointer;
+ font-family:system-ui,sans-serif;touch-action:manipulation;
+}
+#personal-arcade-v1 .jade-tool-emerald{
+ border-color:#8fcdb1;border-radius:13px 6px 13px 6px;
+ background:linear-gradient(145deg,#326c5b,#173b35);color:#d5ffef;
+}
+#personal-arcade-v1 .jade-tool-emblem{
+ display:grid;place-items:center;flex:0 0 28px;width:28px;height:28px;
+ border:1px solid #f6ddb073;border-radius:8px 3px 8px 3px;
+ background:radial-gradient(circle at 30% 25%,#f8d89a55,#8f633733 65%,#231e1977);
+ box-shadow:inset 0 1px #fff8d53b;font:800 17px/1 serif;color:#ffebba;
+}
+#personal-arcade-v1 .jade-tool-emerald .jade-tool-emblem{
+ border-color:#9ce6bc8c;background:radial-gradient(circle at 30% 25%,#adf7d277,#18604966 65%,#0b241f);
+ color:#d0ffe5;
+}
+#personal-arcade-v1 .jade-tool-copy{display:grid;justify-items:start;gap:2px;min-width:0}
+#personal-arcade-v1 .jade-tool-copy b{font-size:11px;font-weight:800;line-height:1.1;white-space:nowrap}
+#personal-arcade-v1 .jade-tool-copy small{
+ display:flex;align-items:center;gap:3px;min-height:15px;font-size:10px;
+ font-weight:800;line-height:1;color:#f7d997;white-space:nowrap;
+}
+#personal-arcade-v1 .jade-tool-emerald .jade-tool-copy small{color:#a8e8cb}
+#personal-arcade-v1 .jade-tool-action:disabled{opacity:.46;cursor:not-allowed;box-shadow:none}
+#personal-arcade-v1 .jade-tool-action:active:not(:disabled){transform:translateY(1px)}
+#personal-arcade-v1 .jade-tool-action:focus-visible,
+#personal-arcade-v1 .jade-stone-side-button:focus-visible{outline:2px solid #ffdc9d;outline-offset:2px}
+#personal-arcade-v1 .jade-stone-side-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:5px}
+#personal-arcade-v1 .jade-stone-side-button{
+ display:flex;align-items:center;justify-content:center;gap:5px;min-width:0;min-height:30px;
+ padding:4px 5px;border:1px solid #61867a;border-radius:5px;background:#203b34;
+ color:#c5dfd0;font:700 10px/1.15 system-ui,sans-serif;cursor:pointer;touch-action:manipulation;
+}
+#personal-arcade-v1 .jade-stone-side-button:only-child{grid-column:1/-1}
+#personal-arcade-v1 .jade-salvage-button{border-color:#8c7760;color:#e9cfac;background:#352f29}
+#personal-arcade-v1 .jade-stone-side-button small{display:inline-flex;align-items:center;gap:2px;font:800 10px/1 system-ui,sans-serif;color:#f0d092}
+#personal-arcade-v1 .jade-stone-side-button:active{transform:translateY(1px)}
 .jade-decision-note{font-size:9px;color:#a6c5b9;line-height:1.4;margin:6px 2px 0}
 .jade-trader-offer{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:3px 6px;
  border:1px solid #bca174;border-radius:10px;background:#5b4938;padding:7px 10px;margin-top:7px}

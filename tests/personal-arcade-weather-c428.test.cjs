@@ -84,7 +84,8 @@ test('Weather visuals and collectible artwork are linked to the mobile garden, n
  assert.match(html,/arcade-c428-weather\.css\?v=c428-1/);
  assert.match(html,/tackle=c427-1&amp;weather=c428-1/);
  assert.match(ui,/garden-weather-\$\{weather\.id\}/);
- assert.match(ui,/weatherShifted\)render\(\)/);
+ assert.match(ui,/tab==='garden'\?waterRefilled\|\|bubbleAppeared\|\|plantMatured\|\|fishBit\|\|fishEscaped\|\|weatherShifted/);
+ assert.match(ui,/lastRenderedKey!==activeKey\|\|activeGameChanged\)render\(\)/);
  assert.match(ui,/data-arcade-until="\$\{weather\.until\}"/);
  assert.match(css,/c428-rainfall/);
  assert.match(css,/garden-weather-mist/);
