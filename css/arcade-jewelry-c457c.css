@@ -1,0 +1,62 @@
+/* C4.57c: actual 36-piece jewelry images (4 crafts × 3 designs × 3 settings).
+   A finished jewel displays the same sprite on the bench, in the workshop,
+   in the vault and in the personal gallery. Uncut jade keeps its own art. */
+#personal-arcade-v1 .jade-jewelry-sprite{
+ --jade-jewelry-x:0%;--jade-jewelry-y:0%;
+ display:block;flex-shrink:0;position:relative;
+ background-color:transparent!important;
+ background-image:var(--jade-jewelry-atlas)!important;
+ background-repeat:no-repeat!important;
+ background-size:400% 300%!important;
+ background-position:var(--jade-jewelry-x) var(--jade-jewelry-y)!important;
+ border:0!important;border-radius:0!important;
+ clip-path:none!important;box-shadow:none!important;
+ text-shadow:none!important;
+ filter:drop-shadow(0 4px 5px #03150cca)!important;
+ pointer-events:none;
+}
+#personal-arcade-v1 .jade-jewelry-sprite.jade-jewelry-setting-0{
+ --jade-jewelry-atlas:url('../assets/arcade-c457c/jade-jewelry-jade.webp');
+}
+#personal-arcade-v1 .jade-jewelry-sprite.jade-jewelry-setting-1{
+ --jade-jewelry-atlas:url('../assets/arcade-c457c/jade-jewelry-silver.webp');
+}
+#personal-arcade-v1 .jade-jewelry-sprite.jade-jewelry-setting-2{
+ --jade-jewelry-atlas:url('../assets/arcade-c457c/jade-jewelry-gold.webp');
+}
+#personal-arcade-v1 .jade-jewelry-sprite.jade-jewelry-ring{--jade-jewelry-x:0%}
+#personal-arcade-v1 .jade-jewelry-sprite.jade-jewelry-pendant{--jade-jewelry-x:33.333333%}
+#personal-arcade-v1 .jade-jewelry-sprite.jade-jewelry-bangle{--jade-jewelry-x:66.666667%}
+#personal-arcade-v1 .jade-jewelry-sprite.jade-jewelry-beads{--jade-jewelry-x:100%}
+#personal-arcade-v1 .jade-jewelry-sprite.jade-jewelry-design-0{--jade-jewelry-y:0%}
+#personal-arcade-v1 .jade-jewelry-sprite.jade-jewelry-design-1{--jade-jewelry-y:50%}
+#personal-arcade-v1 .jade-jewelry-sprite.jade-jewelry-design-2{--jade-jewelry-y:100%}
+
+/* The finished piece has no synthetic ring drawn over the finished photo. */
+#personal-arcade-v1 .jade-specimen .jade-item-art.jade-jewelry-sprite{
+ position:absolute!important;inset:auto!important;left:50%;top:50%;width:174px;height:174px;
+ transform:translate(-50%,-50%);
+}
+#personal-arcade-v1 .jade-vault-gem.jade-jewelry-sprite{
+ width:76px;height:76px;align-self:center;margin:0 auto;
+}
+#personal-arcade-v1 .jade-exhibit>span.jade-jewelry-sprite{
+ width:64px;height:64px;flex:0 0 64px;
+}
+#personal-arcade-v1 .jade-craft-card>span.jade-craft-preview,
+#personal-arcade-v1 .jade-commission-detail>span.jade-craft-preview,
+#personal-arcade-v1 .jade-craft-job>span.jade-craft-preview{
+ width:42px;height:42px;flex:0 0 42px;
+}
+#personal-arcade-v1 .jade-commission-detail>span.jade-craft-preview{
+ background-color:transparent!important;
+}
+@media(max-width:370px){
+ #personal-arcade-v1 .jade-craft-card>span.jade-craft-preview,
+ #personal-arcade-v1 .jade-commission-detail>span.jade-craft-preview{
+  width:36px;height:36px;flex-basis:36px;
+ }
+ #personal-arcade-v1 .jade-exhibit>span.jade-jewelry-sprite{
+  width:52px;height:52px;flex-basis:52px;
+ }
+}
