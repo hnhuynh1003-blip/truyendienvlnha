@@ -497,7 +497,7 @@
 
 /* C4.31 — uncluttered cutting scene and compact optional appraisal */
 #personal-arcade-v1 .jade-stage-quote{
- position:absolute;top:67px;right:9px;z-index:9;
+ position:absolute;top:13px;right:9px;z-index:9;
  max-width:min(52%,178px);padding:7px 10px;
  background:linear-gradient(135deg,#101f1bed,#20372bdc);
  border:1px solid #b79c65;border-radius:5px 14px 5px 13px;
@@ -527,7 +527,7 @@
 #personal-arcade-v1 .jade-stage .jade-scan-target{display:none!important}
 @keyframes jade-quote-float{from{opacity:0;transform:translateY(12px) scale(.92)}to{opacity:1;transform:none}}
 @media(max-width:360px){
- #personal-arcade-v1 .jade-stage-quote{max-width:50%;top:62px;padding:5px 7px}
+ #personal-arcade-v1 .jade-stage-quote{max-width:50%;top:13px;padding:5px 7px}
  #personal-arcade-v1 .jade-stage-quote strong{font-size:11px}
  #personal-arcade-v1 .jade-stage-quote b{font-size:16px}
  #personal-arcade-v1 .jade-scan-options{gap:3px;padding:4px 5px 6px}

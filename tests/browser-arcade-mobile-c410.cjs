@@ -283,6 +283,14 @@ async function main(){
   assert.equal(floatGeometry.inside,true,'The quote stays within the Jade scene on mobile');
   assert.equal(floatGeometry.glass,true,'The quote uses transparent frosted glass');
   await action('jade-cut').click();
+  await page.locator('#personal-arcade-v1 .jade-stage-quote').waitFor({state:'visible'});
+  await page.waitForTimeout(650);
+  const resultQuoteSpace=await page.locator('#personal-arcade-v1 .jade-stage-quote').evaluate(el=>{
+   const quote=el.getBoundingClientRect(),splitRock=el.parentElement.querySelector('.jade-specimen').getBoundingClientRect();
+   return {quoteBottom:quote.bottom,rockTop:splitRock.top};
+  });
+  assert.ok(resultQuoteSpace.quoteBottom<=resultQuoteSpace.rockTop-8,
+   'C4.60d cut appraisal must float above the split rock instead of obscuring it');
   await action('jade-vault-store').click();
   const heldJade=await page.evaluate(()=>JSON.parse(localStorage.getItem(
    'dudu-personal-arcade:v1:sandbox%3Ac410-mobile-tester'))?.jade);

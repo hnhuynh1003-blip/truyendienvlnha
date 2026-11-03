@@ -110,6 +110,17 @@ test('C4.60c window appraisal price floats over the stone, never stretches the a
  assert.match(css,/backdrop-filter:blur\(5px\)/);
 });
 
+test('C4.60d cut-result appraisal stays high enough to reveal the split stone',()=>{
+ let s=testStone('perfect',5);
+ s=act(s,'jade-cut').state;
+ const html=render(s);
+ assert.match(html,/jade-stage-quote/);
+ assert.match(html,/jade-revealed/);
+ const css=readFileSync(join(__dirname,'../css/arcade-c425b-worlds.css'),'utf8');
+ assert.match(css,/\.jade-stage-quote\{\s*position:absolute;top:13px;right:9px/);
+ assert.match(css,/@media\(max-width:360px\)\{\s*#personal-arcade-v1 \.jade-stage-quote\{max-width:50%;top:13px/);
+});
+
 test('C4.60 safe, standard and bold cutting have visible risk-reward on an intact core',()=>{
  const seed=testStone();
  const payouts=[];
