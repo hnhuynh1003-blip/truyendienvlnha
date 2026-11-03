@@ -23,7 +23,12 @@
    {id:a.id,itemId:a.itemId,status:a.status,
     duplicate:a.status==='claimed'&&a.duplicate===true,
     returned:Number.isSafeInteger(a.returned)&&a.returned>=0?a.returned:0}:null;
-  return {version:1,ids,history,active};
+  const permitted=new Set(catalog.funVantVat.map(item=>item.id));
+  const album=[...new Set([...(Array.isArray(raw?.album)?raw.album:[]),
+   ...history.map(row=>row.itemId),
+   ...(active?.status==='claimed'?[active.itemId]:[])]
+   .filter(id=>permitted.has(id)))];
+  return {version:1,ids,history,album,active};
  }
  function session(db,auth,uid){
   if(!uid||auth?.currentUser?.uid!==uid||!db?.collection||!db?.runTransaction)
@@ -85,7 +90,8 @@
    if(inventory.some(x=>x.id===approved.id)){
     const returned=rule.VALUES[approved.rank];
     if(!returned||currency>rule.MAX_WALLET-returned)throw fail('wallet-cap');
-    const next={...s,active:{...active,status:'claimed',duplicate:true,returned},
+    const next={...s,album:[...new Set([...s.album,active.itemId])],
+     active:{...active,status:'claimed',duplicate:true,returned},
      history:[...s.history,{id,itemId:active.itemId,duplicate:true,returned}].slice(-MAX_HISTORY)};
     const nextStates={...states,[META]:next};
     tx.update(ref,{currency:currency+returned,storyStates:nextStates});
@@ -100,7 +106,8 @@
    const journal=collection.append(states[collection.META],{eventId:instanceId,
     kind:'FUN',item,at,instanceId,inventory});
    if(!journal.ok)throw fail('journal-failed');
-   const next={...s,active:{...active,status:'claimed'},
+   const next={...s,album:[...new Set([...s.album,approved.id])],
+    active:{...active,status:'claimed'},
     history:[...s.history,{id,itemId:approved.id}].slice(-MAX_HISTORY)};
    const nextStates={...states,[META]:next,[collection.META]:journal.state};
    const nextInventory=[item,...inventory];

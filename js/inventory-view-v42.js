@@ -254,6 +254,16 @@
     args.onSell(entry.item);
    });footer.append(sell);
   }
+  if(tradeStatus?.lockEligible&&typeof args.onToggleLock==='function'){
+   const lock=make('button','btn dudu-f33-lock',tradeStatus.locked?
+    '🔒 Bỏ khóa bảo vật':'🔓 Khóa bảo vật');
+   lock.type='button';lock.disabled=tradeStatus.busy===true;
+   lock.addEventListener('click',()=>{
+    if(lock.disabled)return;
+    if(!Array.isArray(args.inventory)||args.inventory[entry.index]!==entry.item)return;
+    args.onToggleLock(entry.item);
+   });footer.append(lock);
+  }
   if(tradeStatus?.auction&&typeof args.onAuction==='function'){
    const listing=make('details','dudu-v439-action-card');
    listing.append(make('summary','','⚖️ Đưa vào đấu giá thử'));

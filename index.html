@@ -36,7 +36,7 @@
   <link rel="stylesheet" href="css/companion-v43.css?v=1">
   <link rel="stylesheet" href="css/npc-bond-v43.css?v=2">
   <link rel="stylesheet" href="css/market-v43.css?v=c24a-1">
-  <link rel="stylesheet" href="css/dudu-fun-v43.css?v=c42-fun-1">
+  <link rel="stylesheet" href="css/dudu-fun-v43.css?v=f33-1">
   <link rel="stylesheet" href="css/van-bao-art-v1.css?v=vanbao-1">
   <link rel="stylesheet" href="css/van-bao-stage-v2.css?v=fun-vis6">
   <link rel="stylesheet" href="css/dudu-fun-casino-v1.css?v=fun-cas1">
@@ -143,7 +143,8 @@
   <script src="js/personal-fun-c25.js?v=c25-1"></script>
   <script src="js/personal-blind-box-c29.js?v=c29-box-1"></script>
   <script src="js/fun-vantvat-f31.js?v=f31-1"></script>
-  <script src="js/personal-vantvat-f31.js?v=f31-1"></script>
+  <script src="js/personal-vantvat-f31.js?v=f33-1"></script>
+  <script src="js/personal-vantvat-f33.js?v=f33-1"></script>
   <script src="js/personal-jade-core-v1.js?v=c442-1&amp;economy=c450-1&amp;c452=1&amp;c454=1&amp;c457a=1&amp;c457b=1&amp;c458=1&amp;c460=1"></script>
   <script src="js/personal-arcade-season-c423.js?v=c423-1&amp;beat=c441b-1"></script>
   <script src="js/personal-arcade-neon-c441.js?v=c441a-1"></script>
@@ -160,7 +161,7 @@
   <script src="js/inventory-trade-v43-9.js?v=44-9"></script>
   <script src="js/gift-recipient-v44.js?v=1"></script>
   <script src="js/inventory-hub-v43-9.js?v=c24b-1"></script>
-  <script src="js/inventory-view-v42.js?v=c24d-1"></script>
+  <script src="js/inventory-view-v42.js?v=f33-1"></script>
   <script src="js/item-visuals-v13.js?v=vanbao-1"></script>
   <script src="js/npc-relationship-v2-r1.js"></script>
   <script src="js/npc-gift-v2-r2.js"></script>
@@ -217,7 +218,7 @@
   <script src="js/personal-progress-c23.js?v=c24c-1"></script>
   <script src="js/item-actions-v43.js?v=1"></script>
   <script src="js/functional-items-v43-8.js?v=44-9"></script>
-  <script src="js/personal-spark-items-v1.js?v=f31-1"></script>
+  <script src="js/personal-spark-items-v1.js?v=f33-1"></script>
   <script src="js/companion-rules-v43.js?v=1"></script>
   <script src="js/dudu-system-steward-v67-3.js?v=67-3-3"></script>
   <script src="js/npc-bond-v43.js?v=1"></script>
@@ -5841,6 +5842,24 @@ document.getElementById('phone-home-screen').style.display = 'none';
     // Spark/free private-account actions. Existing profile fields are updated
     // atomically in Firestore; no Firebase Functions or separate paid wallet.
     let personalItemBusy=false;
+    let favoriteBusyF33=false;
+    async function toggleFavoriteF33(item){
+      const bridge=window.DuduVantVatLockBridgeF33;
+      if(!bridge?.ready?.()||favoriteBusyF33||!item?.instanceId)return false;
+      const uid=currentUsername;
+      const locked=window.DuduPersonalVantVatF33?.locked(userProfile.storyStates,item.instanceId);
+      favoriteBusyF33=true;
+      try{
+        const result=await bridge.run({kind:locked?'unlock':'lock',instanceId:item.instanceId});
+        if(uid!==currentUsername)return false;
+        userProfile.storyStates=result.storyStates;
+        renderInventory();
+        return true;
+      }catch(error){
+        showSystemAlert('CHƯA ĐỔI ĐƯỢC KHÓA',error?.reason||error?.message||'Thử lại sau nhé.');
+        return false;
+      }finally{favoriteBusyF33=false;renderInventory();}
+    }
     const personalItemsReady=()=>!IS_SANDBOX_MODE&&
       window.DUDU_SPARK_ITEMS_V1_READY===true&&!!window.DuduPersonalSparkItemsV1&&
       DuduAuth.isReady()&&DuduAuth.uid()===currentUsername;
@@ -6262,10 +6281,16 @@ document.getElementById('phone-home-screen').style.display = 'none';
           tradeStatus(item){
             const engine=window.DuduPersonalSparkItemsV1;
             const price=engine.sellPrice(item);
-            return {useable:engine.canUse(item),buyback:price,auction:false,
-              rare:false,giftTargets:0,busy:personalItemBusy,
+            const locked=window.DuduPersonalVantVatF33?.locked(userProfile.storyStates,item.instanceId)||false;
+            return {useable:engine.canUse(item),buyback:locked?0:price,auction:false,
+              rare:false,giftTargets:0,busy:personalItemBusy||favoriteBusyF33,
+              locked,lockEligible:price>0&&!!window.DuduFunVantVatF31?.valueOf(item),
               label:engine.canUse(item)?'Vật phẩm có công dụng':
-                price?'Có thể bán về Ví hệ thống':'Đang lưu trong Kho'};
+                locked?'Đã khóa bảo vật':price?'Có thể bán về Ví hệ thống':'Đang lưu trong Kho'};
+          },
+          onToggleLock(item){
+            if(userProfile.inventory!==current)return false;
+            return toggleFavoriteF33(item);
           },
           onSell(item){
             if(userProfile.inventory!==current)return false;
@@ -7091,6 +7116,24 @@ document.getElementById('phone-home-screen').style.display = 'none';
         try{localStorage.setItem('profile_'+uid,JSON.stringify(userProfile));}
         catch(error){console.warn('Vạn Vật backup:',error);}
         updatePhoneUI();renderWallet();renderInventory();
+        return result;
+      }
+    });
+    const favoriteReadyF33=()=>!IS_SANDBOX_MODE&&DuduAuth.isReady()&&
+      DuduAuth.uid()===currentUsername&&!!window.DuduPersonalVantVatF33;
+    window.DuduVantVatLockBridgeF33=Object.freeze({
+      ready:favoriteReadyF33,
+      async run(options){
+        if(!favoriteReadyF33())throw Error('Chưa sẵn sàng');
+        const uid=currentUsername;
+        await Promise.allSettled([...pendingLiveProfileWrites]);
+        if(!favoriteReadyF33()||currentUsername!==uid)throw Error('Tài khoản đã thay đổi');
+        const result=await DuduPersonalVantVatF33.run({db,auth:firebase.auth(),uid,...options});
+        if(!favoriteReadyF33()||currentUsername!==uid)throw Error('Tài khoản đã thay đổi');
+        userProfile.storyStates=result.storyStates;
+        try{localStorage.setItem('profile_'+uid,JSON.stringify(userProfile));}
+        catch(error){console.warn('Vạn Vật favorites backup:',error);}
+        renderInventory();
         return result;
       }
     });
@@ -9255,7 +9298,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/market-ui-v43.js?v=vanbao-1"></script>
 <script src="js/dudu-casino-design-v1.js?v=casino-slot3"></script>
 <script src="js/dudu-casino-slot-ui-v1.js?v=casino-slot3"></script>
-<script src="js/dudu-fun-ui-v43.js?v=casino-slot3"></script>
+<script src="js/dudu-fun-ui-v43.js?v=f33-1"></script>
 <script src="js/personal-jade-ui-v1.js?v=c442-1&amp;art=c432-1&amp;materials=c425c-1&amp;compact=c425d-2&amp;market=c441b-1&amp;c450=1&amp;c452=1&amp;fun=p1-2&amp;c454=1&amp;huntui=c455b2&amp;c456=1&amp;c457a=1&amp;c457b=1&amp;c457c=1&amp;c458=1&amp;c460=1&amp;c460a=1&amp;c460b=1&amp;c460c=1&amp;c460e=1"></script>
 <script src="js/personal-honor-ui-c46.js?v=c412-1&amp;journey=c437-1&amp;progression=c425g-1&amp;art=c437p-1"></script>
 <script src="js/personal-arcade-ui-v1.js?v=c445-1&amp;art=c425a-2&amp;worlds=c425b-2&amp;materials=c425c-1&amp;pods=c425d-1&amp;interaction=c425e-1&amp;fishing=c440a-1&amp;progression=c425g-1&amp;tackle=c427-1&amp;weather=c428-1&amp;museum=c429-1&amp;season-preview=c439r2-1&amp;neon=c441a-1&amp;beat=c441b-1&amp;phase=c446-1&amp;farm=c446b-1&amp;layout=c446c-1&amp;pond=c447-1&amp;album=c448-1&amp;economy=c448b-1&amp;garden=c449-1&amp;c450=1&amp;precision=c451-1&amp;c452=1&amp;fun=p1-2&amp;c454=1&amp;c455=3&amp;c456=1&amp;c457b=1&amp;c459=1&amp;c460=1&amp;c460a=1&amp;c460b=1&amp;c460e=1"></script>

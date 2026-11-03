@@ -25,5 +25,5 @@ test('C2.4d legacy fallback also sells without confirm, while discard still warn
  assert.doesNotMatch(fallback[1],/confirm\(/);
  assert.match(html,/if\(!confirm\('Vứt '\+String\(item\.name/);
  assert.match(read('js/inventory-view-v42.js'),/if\(!confirm\('Vứt 1 '\+detail\.name/);
- assert.match(html,/inventory-view-v42\.js\?v=c24d-1/);
+ assert.match(html,/inventory-view-v42\.js\?v=f33-1/);
 });

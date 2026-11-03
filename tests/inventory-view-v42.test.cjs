@@ -11,7 +11,7 @@ const personal=require('../js/personal-spark-items-v1.js');
 
 test('V42: category-aware inventory runs for Sandbox and authenticated personal accounts',()=>{
  assert.match(html,/src="js\/inventory-model-v42.js\?v=[\w-]+"/);
- assert.match(html,/src="js\/inventory-view-v42.js\?v=c24d-1"/);
+ assert.match(html,/src="js\/inventory-view-v42.js\?v=f33-1"/);
  assert.ok(html.indexOf('src="js/inventory-model-v42.js')<
    html.indexOf('src="js/inventory-view-v42.js'));
  assert.match(html,/if\(IS_SANDBOX_MODE&&window\.DuduInventoryViewV42\)/);
@@ -19,7 +19,8 @@ test('V42: category-aware inventory runs for Sandbox and authenticated personal 
  assert.match(html,/personalMode:true/);
  assert.match(html,/onUse\(item\)\{[\s\S]*?personalInventoryAction\('use',item\)/);
  assert.match(html,/onSell\(item\)\{[\s\S]*?personalInventoryAction\('sell',item\)/);
- assert.match(html,/buyback:price/);
+ assert.match(html,/buyback:locked\?0:price/);
+ assert.match(html,/onToggleLock\(item\)/);
  assert.match(html,/if\(ready\)return;/);
  assert.match(html,/css\/inventory-v42.css\?v=c24c-1/);
  assert.match(css,/body\.dudu-phone-v11 #cyber-phone #inventory-container\.dudu-v42-grid/);

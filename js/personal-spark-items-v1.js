@@ -111,6 +111,11 @@
     target=matches[0];
     if(target.id!==itemId)throw Error('Vật phẩm đã bị đổi');
     if(kind==='sell'){
+     // A favorite lock is checked INSIDE the same Firestore transaction as
+     // the payout, so another tab cannot sell a protected physical instance.
+     if(Array.isArray(storyStates.__duduVantVatF33?.lockedIds)&&
+       storyStates.__duduVantVatF33.lockedIds.includes(instanceId))
+      throw Error('Bảo vật đang khóa. Hãy mở khóa trong Kho trước khi bán.');
      price=sellPrice(target);
      if(!price||balance>MAX_WALLET-price)throw Error('Món này không thể bán');
      nextBalance=balance+price;

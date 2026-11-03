@@ -367,3 +367,31 @@ body.dudu-phone-v11 #cyber-phone .blind-legacy{padding-top:10px;display:flex;fle
 .f32-realm-thumb .dudu-item-v13-art{width:38px;height:38px;object-fit:contain}
 .f32-realm-title{flex:1;min-width:0;font-size:.86rem}
 .f32-realm-rank{color:#d3b5ee;font-weight:800;min-width:25px}
+/* F3.3 · visual celebration only; no payout runs from animations. */
+.f33-rare-reveal{position:relative;animation:f33-rare-rise .7s cubic-bezier(.18,.8,.2,1) both}
+.f33-rank-a{box-shadow:0 0 25px #ed94d060;border-color:#ed94d0}
+.f33-rank-s{box-shadow:0 0 35px #f5bd6980;border-color:#f5bd69}
+.f33-rank-ss{box-shadow:0 0 42px #f3849f99;border-color:#f3849f}
+.f33-rank-sss{box-shadow:0 0 60px #ffdd83aa,0 0 100px #bc8bff66;border-color:#ffe79b;animation:f33-rare-rise .7s cubic-bezier(.18,.8,.2,1),f33-legendary-glow 2.6s ease-in-out 2}
+@keyframes f33-rare-rise{from{opacity:0;transform:translateY(20px) scale(.86)}to{opacity:1;transform:none}}
+@keyframes f33-legendary-glow{50%{box-shadow:0 0 85px #ffe49ecc,0 0 130px #b896ffbb}}
+.f33-zoom-action,.f33-realm-look{border:1px solid #bca5ed80;border-radius:9px;background:#33244c;color:#f5e7ff;cursor:pointer;padding:7px 11px}
+.f33-realm-look{padding:3px 9px;flex:none}
+.f33-vantvat-museum{width:min(100%,450px);border:1px solid #ad90ee66;border-radius:12px;padding:12px;background:linear-gradient(135deg,#201b36,#10182b)}
+.f33-vantvat-museum>summary{cursor:pointer;color:#f1ddbd;font-weight:800}
+.f33-complete-realm{border-color:#e8c47caa;background:linear-gradient(120deg,#69512c33,#3e2d6633)}
+.f33-complete-realm>summary{color:#ffdf9b}
+.f33-vantvat-shelf{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:14px}
+.f33-vantvat-card{display:grid;justify-items:center;align-content:start;gap:4px;min-width:0;padding:8px 5px;border:1px solid #b89acb55;border-radius:10px;background:#ffffff0b;color:#f3e8ff;cursor:pointer}
+.f33-vantvat-card-art{width:68px;height:68px;display:grid;place-items:center;font-size:34px}
+.f33-vantvat-card-art .dudu-item-v13-art{width:68px;height:68px;object-fit:contain}
+.f33-vantvat-card small{font-size:10px;line-height:1.25;text-align:center;overflow-wrap:anywhere}
+.f33-vantvat-zoom{position:fixed;inset:0;z-index:99999;background:#090b1bdb;display:grid;place-items:center;padding:14px;overflow:auto}
+.f33-vantvat-zoom-panel{position:relative;width:min(100%,400px);max-height:min(95vh,720px);overflow:auto;display:grid;justify-items:center;gap:9px;padding:36px 18px 22px;border:1px solid #d9be8c99;border-radius:18px;background:radial-gradient(circle at 50% 15%,#463765,#17192e 68%);box-shadow:0 20px 65px #0009;text-align:center;color:#f9ebd5}
+.f33-vantvat-zoom-close{position:absolute;right:12px;top:10px;border:1px solid #ffffff55;border-radius:8px;background:#ffffff15;color:white;padding:6px 10px;cursor:pointer}
+.f33-vantvat-zoom-art{display:grid;place-items:center;width:min(62vw,260px);height:min(62vw,260px);font-size:100px}
+.f33-vantvat-zoom-art .dudu-item-v13-art{width:100%;height:100%;object-fit:contain}
+.f33-vantvat-zoom-panel>strong{font-size:1.2rem}.f33-vantvat-zoom-panel>p{font-size:.9rem;line-height:1.5;color:#d8d4ed;margin:0}
+.f33-vantvat-zoom-value{font-weight:800;color:#f3cf83}
+@media(max-width:355px){.f33-vantvat-shelf{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(prefers-reduced-motion:reduce){.f33-rare-reveal,.f33-rank-sss{animation:none}}
