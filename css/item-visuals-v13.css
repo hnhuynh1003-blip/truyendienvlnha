@@ -29,3 +29,36 @@ body.dudu-phone-v11 #cyber-phone #inventory-v12-detail
     animation:none !important;
   }
 }
+
+/* F3.7 · strong rarity contrast: common loot is intentionally unremarkable. */
+body.dudu-phone-v11 #cyber-phone .dudu-item-v13-frame:is(
+ [data-rarity="F"],[data-rarity="E"],[data-rarity="D"]){
+ box-shadow:inset 0 1px #ffffff18,0 0 3px #09102055 !important;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-item-v13-frame[data-rarity="B"]{
+ box-shadow:0 0 8px #bd9cf05b,inset 0 1px #fff4 !important;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-item-v13-frame[data-rarity="A"]{
+ box-shadow:0 0 12px #ed96cc8a,inset 0 1px #fff5 !important;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-item-v13-frame:is(
+ [data-rarity="S"],[data-rarity="SS"],[data-rarity="SSS"]){
+ box-shadow:0 0 18px color-mix(in srgb,var(--rarity-glow) 70%,transparent),
+  inset 0 0 11px color-mix(in srgb,var(--rarity-glow) 34%,transparent) !important;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-item-v13-frame:is(
+ [data-rarity="S"],[data-rarity="SS"],[data-rarity="SSS"]) .dudu-item-v13-art{
+ filter:drop-shadow(0 0 4px color-mix(in srgb,var(--rarity-glow) 75%,transparent));
+}
+body.dudu-phone-v11 #cyber-phone .dudu-item-v13-frame[data-rarity="SSS"] .dudu-item-v13-art{
+ animation:f37-mini-legendary 3.2s ease-in-out infinite alternate;
+}
+@keyframes f37-mini-legendary{
+ from{filter:drop-shadow(0 0 3px #ffdc91a8) brightness(1)}
+ to{filter:drop-shadow(0 0 12px #ffdfbff0) brightness(1.16)}
+}
+@media(prefers-reduced-motion:reduce){
+ body.dudu-phone-v11 #cyber-phone .dudu-item-v13-frame .dudu-item-v13-art{
+  animation:none !important;
+ }
+}

@@ -70,7 +70,7 @@
   const overlay=el('div','f33-vantvat-zoom');overlay.id='f33-vantvat-zoom';
   overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');
   overlay.setAttribute('aria-label','Chi tiết '+item.name);
-  const panel=el('div','f33-vantvat-zoom-panel');
+  const panel=el('div','f33-vantvat-zoom-panel f37-tier-'+item.rank.toLowerCase());
   const close=el('button','f33-vantvat-zoom-close','✕');
   close.type='button';close.setAttribute('aria-label','Đóng chi tiết bảo vật');
   const dismiss=()=>{overlay.remove();document.removeEventListener('keydown',onKey);};
@@ -231,7 +231,8 @@
    const item=root.DuduItemCatalog?.byId(result.itemId);
    const rarity=['A','S','SS','SSS'].includes(result.rank)?
     ' f33-rank-'+result.rank.toLowerCase():'';
-   const card=el('article','f36-vantvat-reward'+rarity);
+   const card=el('article','f36-vantvat-reward f37-tier-'+
+    String(result.rank||'F').toLowerCase()+rarity);
    const art=el('span','f36-vantvat-reward-art');
    if(item&&result.kind!=='COIN'&&root.DuduItemArtV13?.mount)
     root.DuduItemArtV13.mount(art,item);
@@ -391,7 +392,8 @@
   for(const id of album){
    const item=root.DuduItemCatalog.byId(id);
    if(!item||item.collectionSet!=='VAN_VAT')continue;
-   const card=el('button','f33-vantvat-card');card.type='button';
+   const card=el('button','f33-vantvat-card f37-tier-'+item.rank.toLowerCase());
+   card.type='button';
    const art=el('span','f33-vantvat-card-art');
    if(!root.DuduItemArtV13?.mount?.(art,item))art.textContent=item.icon;
    card.append(art,el('small','',item.name));

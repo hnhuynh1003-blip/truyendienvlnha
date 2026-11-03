@@ -139,6 +139,11 @@
     'f31-sword-bamboo','f31-card-clover','f31-fossil-dragon',
     'f31-weapon-neon','f31-doll-starlight','f31-background-cosmos'
   ]);
+  // F3.7: selected B-rank treasures receive distinct yet restrained artwork.
+  // Lower-rank items intentionally keep simpler silhouettes.
+  const VAN_VAT_F37_ART=new Set([
+    'f32-anime-guardian','f32b-anime-witch','f32-cult-fan'
+  ]);
   function visual(item){
     if(!item||typeof item!=='object')return null;
     const rank=Object.prototype.hasOwnProperty.call(RANKS,item.rank)?item.rank:'F';
@@ -173,12 +178,14 @@
     const realmPainted=item.collectionSet==='VAN_VAT'&&VAN_VAT_F32_ART.has(id);
     const originPainted=item.collectionSet==='VAN_VAT'&&VAN_VAT_F34_ART.has(id);
     const newOriginPainted=item.collectionSet==='VAN_VAT'&&VAN_VAT_F35_ART.has(id);
+    const tierPainted=item.collectionSet==='VAN_VAT'&&VAN_VAT_F37_ART.has(id);
     return Object.freeze({rank,shape,light,dark,
       src:painted?'assets/van-bao/v1/'+id+'.webp':
+        tierPainted?'assets/van-tuong/f37/'+id+'.webp':
         newOriginPainted?'assets/van-tuong/f35/'+id+'.webp':
         originPainted?'assets/van-tuong/f34/'+id+'.webp':
         realmPainted?'assets/van-tuong/'+(id.startsWith('f32b-')?'f32b/':'f32/')+id+'.webp':fallback,
-      fallbackSrc:painted||realmPainted||originPainted||newOriginPainted?fallback:null});
+      fallbackSrc:painted||realmPainted||originPainted||newOriginPainted||tierPainted?fallback:null});
   }
   // One artwork renderer for both the store and all warehouse views.
   // It changes presentation only; it never edits the item or its ownership.

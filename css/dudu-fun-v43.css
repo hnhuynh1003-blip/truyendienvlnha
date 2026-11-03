@@ -474,3 +474,88 @@ body.dudu-phone-v11 #cyber-phone .blind-legacy{padding-top:10px;display:flex;fle
 @media(max-width:355px){.f36-vantvat-spin{font-size:10px;padding:9px 2px}
  .f36-vantvat-reward-art{width:75px;height:75px}}
 @media(prefers-reduced-motion:reduce){.f36-vantvat-pity-bar i{transition:none}}
+
+/* F3.7 · tiered physical relic presentation. Only S/SS/SSS are animated. */
+.f33-vantvat-card,.f36-vantvat-reward,.f33-vantvat-zoom-panel{
+ --f37-light:#91a2c3;--f37-halo:#91a2c340;
+}
+.f33-vantvat-card:is(.f37-tier-f,.f37-tier-e,.f37-tier-d),
+.f36-vantvat-reward:is(.f37-tier-f,.f37-tier-e,.f37-tier-d){
+ background:linear-gradient(145deg,#242a3b,#1c2132);
+ border-color:#79889a55;box-shadow:none;
+}
+.f33-vantvat-card.f37-tier-c,.f36-vantvat-reward.f37-tier-c{
+ border-color:#7984fa65;background:linear-gradient(145deg,#302f4b,#20263d);
+}
+.f33-vantvat-card.f37-tier-b,.f36-vantvat-reward.f37-tier-b{
+ border-color:#c59aea9a;background:linear-gradient(145deg,#3a2b50,#21213c);
+ box-shadow:0 0 10px #ba83f43b;
+}
+.f33-vantvat-card.f37-tier-a,.f36-vantvat-reward.f37-tier-a,
+.f33-vantvat-zoom-panel.f37-tier-a{
+ border-color:#f1a0cd;background-color:#3b2944;
+ box-shadow:0 0 17px #ed94d062,0 0 28px #dd89bf27;
+}
+.f33-vantvat-card.f37-tier-s,.f36-vantvat-reward.f37-tier-s,
+.f33-vantvat-zoom-panel.f37-tier-s{
+ --f37-light:#ffdc9a;--f37-halo:#f7b65e55;
+ border-color:#ffd59b;
+ background-image:radial-gradient(circle at 50% 28%,#8a5c3d78,transparent 64%),
+  linear-gradient(150deg,#392c44,#1d263f);
+ animation:f37-legendary-s 3.8s ease-in-out infinite alternate;
+}
+.f33-vantvat-card.f37-tier-ss,.f36-vantvat-reward.f37-tier-ss,
+.f33-vantvat-zoom-panel.f37-tier-ss{
+ --f37-light:#ffe9e1;--f37-halo:#f59d9d70;
+ border-color:#ffc5bc;
+ background-image:radial-gradient(circle at 50% 28%,#8e415c99,transparent 65%),
+  linear-gradient(150deg,#442a47,#1d233c);
+ animation:f37-legendary-ss 3.1s ease-in-out infinite alternate;
+}
+.f33-vantvat-card.f37-tier-sss,.f36-vantvat-reward.f37-tier-sss,
+.f33-vantvat-zoom-panel.f37-tier-sss{
+ --f37-light:#fff5cd;--f37-halo:#e5bbff9a;
+ border-color:#fff0b4;
+ background-image:radial-gradient(circle at 50% 26%,#a47850b2,transparent 65%),
+  linear-gradient(150deg,#483255,#1b2340);
+ animation:f37-legendary-sss 2.7s ease-in-out infinite alternate;
+}
+/* A halo is painted behind the object, never over names or controls. */
+.f33-vantvat-card:is(.f37-tier-s,.f37-tier-ss,.f37-tier-sss),
+.f36-vantvat-reward:is(.f37-tier-s,.f37-tier-ss,.f37-tier-sss),
+.f33-vantvat-zoom-panel:is(.f37-tier-s,.f37-tier-ss,.f37-tier-sss){
+ position:relative;isolation:isolate;
+}
+.f33-vantvat-card:is(.f37-tier-s,.f37-tier-ss,.f37-tier-sss)::before,
+.f36-vantvat-reward:is(.f37-tier-s,.f37-tier-ss,.f37-tier-sss)::before,
+.f33-vantvat-zoom-panel:is(.f37-tier-s,.f37-tier-ss,.f37-tier-sss)::before{
+ content:'';position:absolute;pointer-events:none;z-index:0;
+ inset:5px 4px auto; height:72%;border-radius:50%;
+ background:radial-gradient(ellipse at center,var(--f37-halo),transparent 70%);
+}
+.f33-vantvat-card:is(.f37-tier-s,.f37-tier-ss,.f37-tier-sss)>*,
+.f36-vantvat-reward:is(.f37-tier-s,.f37-tier-ss,.f37-tier-sss)>*,
+.f33-vantvat-zoom-panel:is(.f37-tier-s,.f37-tier-ss,.f37-tier-sss)>*{
+ position:relative;z-index:1;
+}
+.f36-vantvat-reward:is(.f37-tier-s,.f37-tier-ss,.f37-tier-sss) .f36-vantvat-view,
+.f33-vantvat-zoom-panel:is(.f37-tier-s,.f37-tier-ss,.f37-tier-sss) .f33-vantvat-zoom-close{
+ position:absolute;z-index:2;
+}
+@keyframes f37-legendary-s{
+ from{box-shadow:0 0 14px #f8b96366,0 0 24px #f8bf6030}
+ to{box-shadow:0 0 23px #f8c77ab0,0 0 40px #f5bf6555}
+}
+@keyframes f37-legendary-ss{
+ from{box-shadow:0 0 20px #fa8e9390,0 0 29px #b58cff55}
+ to{box-shadow:0 0 33px #ffabbfe0,0 0 53px #d39bff8c}
+}
+@keyframes f37-legendary-sss{
+ from{box-shadow:0 0 24px #fff0a6a6,0 0 42px #b389ff88}
+ to{box-shadow:0 0 49px #fff2baff,0 0 73px #c09cffcb}
+}
+@media(prefers-reduced-motion:reduce){
+ .f33-vantvat-card[class*="f37-tier-"],
+ .f36-vantvat-reward[class*="f37-tier-"],
+ .f33-vantvat-zoom-panel[class*="f37-tier-"]{animation:none !important}
+}

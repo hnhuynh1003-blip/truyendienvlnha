@@ -67,7 +67,8 @@ test('F3.6 popup and new spin controls are wired, old inline result title remove
  assert.match(market,/quickSelectedIds=new Set\(\)/);
  for(const filename of ['fun-vantvat-f31','personal-vantvat-f31',
   'market-ui-v43','dudu-fun-ui-v43'])
-  assert.match(html,new RegExp(filename+'\\.js\\?v=f36-1'));
- assert.match(html,/css\/dudu-fun-v43\.css\?v=f36-1/);
+  assert.match(html,new RegExp(filename+'\\.js\\?v='+
+   (filename==='dudu-fun-ui-v43'?'f37-1':'f36-1')));
+ assert.match(html,/css\/dudu-fun-v43\.css\?v=f37-1/);
  assert.match(html,/css\/market-v43\.css\?v=f36-1/);
 });

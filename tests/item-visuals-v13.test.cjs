@@ -32,7 +32,8 @@ test('catalog items have visible defined art with safe unknown fallback',()=>{
    const f35=new Set(['f31-fossil-shell','f31-apple-moon','f31-doll-cloud',
     'f31-sword-bamboo','f31-card-clover','f31-fossil-dragon',
     'f31-weapon-neon','f31-doll-starlight','f31-background-cosmos']);
-   const folder=f35.has(item.id)?'f35':item.id.startsWith('f34-')||item.id.startsWith('f31-')?'f34':
+   const f37=new Set(['f32-anime-guardian','f32b-anime-witch','f32-cult-fan']);
+   const folder=f37.has(item.id)?'f37':f35.has(item.id)?'f35':item.id.startsWith('f34-')||item.id.startsWith('f31-')?'f34':
     item.id.startsWith('f32b-')?'f32b':'f32';
    assert.equal(v.src,'assets/van-tuong/'+folder+'/'+item.id+'.webp');
    assert.match(v.fallbackSrc,/^data:image\/svg\+xml/);
@@ -73,7 +74,7 @@ test('SVG cannot interpolate unsafe item-provided HTML',()=>{
 });
 test('item art works for sandbox and read-only live inventory without mutating ownership',()=>{
  assert.match(html,/src="js\/item-visuals-v13.js(?:\?v=[\w-]+)?"/);
- assert.match(html,/href="css\/item-visuals-v13.css"/);
+ assert.match(html,/href="css\/item-visuals-v13.css\?v=f37-1"/);
  assert.match(html,/function renderSandboxItemArt\(element,item\)\{\s*if\(!element\|\|!item\)return/);
  assert.match(html,/renderSandboxItemArt\(artwork,item\)/);
  assert.match(html,/renderSandboxItemArt\(icon,item\)/);
