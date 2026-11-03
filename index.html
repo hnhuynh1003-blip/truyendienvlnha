@@ -854,7 +854,9 @@
   <link rel="stylesheet" href="css/library-catalog-l2e.css?v=l4-2">
   <link rel="stylesheet" href="css/library-smart-filter-l3.css?v=l3-2">
   <link rel="stylesheet" href="css/library-finish-l4.css?v=l4-1">
+  <link rel="stylesheet" href="css/library-capacity-r1.css?v=r1-1">
   <script src="js/library-catalog-l2e.js?v=l2e-3"></script>
+  <script src="js/library-capacity-r1.js?v=r1-1"></script>
   <script src="js/library-smart-filter-l3.js?v=l3-1"></script>
   <script src="js/library-reader-shortcut-l2f.js?v=l2f-2"></script>
   <script src="js/library-reader-focus-l2b.js?v=l2b-1"></script>
@@ -952,6 +954,10 @@
       <div class="archive-active-filters" id="archive-active-filters" aria-label="Bộ lọc đang áp dụng" hidden></div>
 
       <div class="archive-catalog-bar" id="archive-catalog-bar"><span>✦ &nbsp; DANH MỤC TÁC PHẨM</span><span id="search-result-count" aria-live="polite">Đang tải danh mục</span></div>
+      <details class="library-capacity-r1 admin-only" id="library-capacity-r1" hidden>
+        <summary>◈ Dung lượng Thư viện <span aria-hidden="true">⌄</span></summary>
+        <div id="library-capacity-body-r1" class="library-capacity-body-r1"></div>
+      </details>
       <nav class="library-catalog-pager" id="library-catalog-pager-top" aria-label="Chọn trang truyện phía trên" hidden></nav>
       <div class="novel-grid" id="novel-grid-container"></div>
       <nav class="library-catalog-pager" id="library-catalog-pager-bottom" aria-label="Chọn trang truyện phía dưới" hidden></nav>
@@ -3154,6 +3160,15 @@
     function canEditStories() {
       return userProfile.role === 'admin' && (IS_SANDBOX_MODE || DuduAuth.isAdmin());
     }
+
+    const libraryCapacityR1=window.DuduLibraryCapacityR1?.create?.({
+      document,novels:()=>novels,canEdit:()=>canEditStories(),
+      db:()=>db,isSandbox:IS_SANDBOX_MODE,
+      confirm:message=>window.confirm(message)
+    });
+    document.getElementById('library-capacity-r1')?.addEventListener('toggle',()=>{
+      libraryCapacityR1?.render();
+    });
 
     function applyUserRole() {
       window.DuduWorldCreator?.syncAccess?.();
@@ -7528,6 +7543,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
     }
 
     function renderHome() {
+      if(typeof libraryCapacityR1!=='undefined')libraryCapacityR1?.render();
       if(typeof DuduLibrarySmartFilterL3!=='undefined'&&typeof bindLibraryFilterDrawerL3==='function')
         bindLibraryFilterDrawerL3();
       renderTagCloud();
