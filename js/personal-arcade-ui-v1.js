@@ -157,7 +157,7 @@
   'mine-map':'Bản đồ địa tầng','mine-bag':'Túi quặng & sổ khoáng',
   'mine-tools':'Xưởng rèn & trang bị','garden-seeds':'Vườn cây',
   'garden-album':'Nhật ký cá','garden-upgrades':'Tiệm câu · Vườn Sương',
-  'jade-market':'Chợ cược thạch','jade-vault':'Kho ngọc & bảng giá',
+  'jade-market':'Chợ cược thạch','jade-hunt':'Săn đá mù','jade-vault':'Kho ngọc & bảng giá',
   'jade-workshop':'Xưởng ngọc','jade-gallery':'Sổ sưu tầm phỉ thúy'};
  const upgrade=(glyph,name,level,type,cost)=>`<div class="arcade-upgrade-card">
    <span class="arcade-upgrade-symbol">${glyph}</span><div><strong>${name}</strong><small>${level}</small></div>
@@ -823,6 +823,8 @@
    // than leaving the same letter highlighted for a different incoming stone.
    root.DuduPersonalJadeUIV1?.chooseMarketSample?.(Number(action.split('-')[2]),null);
   }
+  // After receiving a sealed specimen, return to the workbench and its bag.
+  if(/^jade-blind-[0-2]$/.test(action))drawerOpen=null;
   feedback=/^mine-probe-[012]$/.test(action)?{type:'probe',hit:result.hit,ore:result.ore,
    quantity:result.quantity,branch:Number(action.slice(-1)),at:now()}:
    action==='mine'||action==='mine-burst'?{type:'mine',ore:action==='mine-burst'?'burst':result.label,

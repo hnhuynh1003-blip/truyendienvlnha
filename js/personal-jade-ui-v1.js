@@ -64,7 +64,7 @@
       <strong>${revealed?stoneName(stone):'Không có ngọc'}</strong>
       <b>${greenMark}${fmt(jade.marketQuote(stone).value)}</b></div>`:''}
     ${phasePulse?`<span class="${phasePulse.type==='jade-window'?'jade-window-flash':'jade-cut-flash'} jade-flash-${tier}" aria-hidden="true"></span>`:''}
-    <div class="jade-stage-base">${stone?'MẪU #'+String(stone.id).padStart(3,'0')+' · '+jade.MARKETS[stone.site].short.toUpperCase():
+    <div class="jade-stage-base">${stone?'MẪU #'+String(stone.id).padStart(3,'0')+' · '+(stone.hunt!=null&&['raw','window'].includes(stone.phase)?'ĐÁ MÙ · '+jade.HUNTS[stone.hunt].name.toUpperCase():jade.MARKETS[stone.site].short.toUpperCase()):
      'CHỜ CHỦ NHÂN CHỌN ĐÁ THÔ'}
       ${stone&&phase==='window'?'<b>◈ ĐÃ KHAI SONG</b>':stone&&!cut?`<b>${scanned}/3 ĐIỂM ĐÃ SOI</b>`:stone&&cut?`<b>${revealed?'✦ ĐÃ LỘ NGỌC':'✦ ĐÁ ĐÃ XẺ'}</b>`:''}</div>
   </div>`;
@@ -129,10 +129,10 @@
     ${j.stash.length?`<div class="jade-stock-rail">${j.stash.map((stone,i)=>{
      const clue=jade.surface(stone);
      return `<button type="button" class="jade-stock-item" data-arcade-action="jade-select-${i}"
-      ${j.active?'disabled':''} aria-label="Chọn mẫu ${stone.id} từ ${jade.MARKETS[stone.site].short}">
+      ${j.active?'disabled':''} aria-label="Chọn mẫu ${stone.id} từ ${stone.hunt!=null?'kiện đá mù':jade.MARKETS[stone.site].short}">
       <span class="jade-stock-pebble jade-shell-${stone.site} ${shellVisual(stone.site,stone.seed)}" aria-hidden="true"></span>
       <b>#${String(stone.id).padStart(3,'0')}</b>
-      <small>${jade.MARKETS[stone.site].short}</small>
+      <small>${stone.hunt!=null&&['raw','window'].includes(stone.phase)?'🎒 Đá mù':jade.MARKETS[stone.site].short}</small>
       <em>${stone.phase==='window'?'Đã khai song':clue.size}</em></button>`;}).join('')}</div>`:
      '<small class="jade-stock-empty">Chợ đang có các khay đá; mua trước rồi soi sau.</small>'}
    </div>`;
@@ -201,6 +201,31 @@
          'market',held+q>jade.MAX_STONES||s.coins<cost);}).join('')}</div>
       </section>`;}).join('')}
     <p class="jade-market-fairness">✧ Đèn cấp cao giảm phí quầy; cấp 3/4 soi 2/3 dấu khi chọn phôi. Soi không đảm bảo trúng.</p></div>`;
+ }
+ function huntPanel(s){
+  const j=s.jade,held=j.stash.length+(j.active?1:0);
+  return `<div class="jade-hunt-content" data-arcade-panel="jade-hunt">
+   <div class="jade-hunt-hero">
+    <div class="jade-hunt-orbit" aria-hidden="true"><i></i><i></i><i></i></div>
+    <span>PHỈ THÚY KÝ · MẬT LỘ</span><strong>SĂN ĐÁ MÙ</strong>
+    <small>Ba tuyến thám ngọc. Một túi niêm phong. Không có manh mối trước khi mua.</small>
+    <em>🎒 ${held}/${jade.MAX_STONES} chỗ trong túi</em>
+   </div>
+   ${jade.HUNTS.map((hunt,i)=>{
+    const unlocked=jade.huntUnlocked(j,i),price=hunt.price;
+    const chances=hunt.weights.map((weight,site)=>weight?`${jade.MARKETS[site].short} ${weight}%`:null)
+     .filter(Boolean).join(' · ');
+    return `<article class="jade-hunt-card jade-hunt-route-${i} ${unlocked?'':'is-locked'}">
+     <div class="jade-hunt-card-top"><div><small>TUYẾN ${String(i+1).padStart(2,'0')} · ${hunt.rank.toUpperCase()}</small>
+      <b>${hunt.name}</b></div><div class="jade-hunt-sack" aria-hidden="true"><span>?</span></div></div>
+     <p>${hunt.hint}</p>
+     <div class="jade-hunt-odds"><span>NGUỒN PHÔI CÓ THỂ GẶP</span><small>${chances}</small></div>
+     ${btn(unlocked?'🎒 Săn · '+greenMark+fmt(price):'🔒 Chưa mở','jade-blind-'+i,'gold',
+      !unlocked||held>=jade.MAX_STONES||j.bought>=1000000||s.coins<price)}
+     ${unlocked?`<small class="jade-hunt-cost">Trọn chuyến ${greenMark}${fmt(price)} · nhận 1 phôi</small>`:
+      `<small class="jade-hunt-cost">${hunt.unlock}</small>`}</article>`;}).join('')}
+   <p class="jade-sheet-hint">✧ Tỷ lệ trên là <b>nguồn đá</b>, không phải tỷ lệ trúng ngọc. Mỗi chuyến chắc chắn có 1 phôi; phẩm chất và vết nứt chỉ rõ sau khi soi/xẻ. Phí xẻ tính riêng.</p>
+  </div>`;
  }
  function vaultPanel(s){
   const j=s.jade,time=nowOf(s),rates=marketRates(s);
@@ -292,7 +317,9 @@
     <div class="arcade-quick-drawers arcade-quick-drawers-quad jade-quick-drawers">
      ${sheet('Chợ đá','◈','jade-market')}${sheet('Kho ngọc','▱','jade-vault')}
      ${sheet('Xưởng','⚒','jade-workshop')}${sheet('Sổ ngọc','✧','jade-gallery')}</div>
-    ${marketPanel(s)}${vaultPanel(s)}${workshopPanel(s)}${galleryPanel(s)}
+    <button type="button" class="jade-hunt-trigger" data-arcade-drawer="jade-hunt">
+     <span class="jade-hunt-trigger-icon" aria-hidden="true">🎒</span><span><b>SĂN ĐÁ MÙ</b><small>3 tuyến bí cảnh · chọn may rủi</small></span><strong>VÀO SĂN ›</strong></button>
+    ${marketPanel(s)}${huntPanel(s)}${vaultPanel(s)}${workshopPanel(s)}${galleryPanel(s)}
    </div>
   </section>`;
  }

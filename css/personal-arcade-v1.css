@@ -777,6 +777,59 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header>span:nth-ch
  .jade-sample-pebble{width:37px;height:35px}
 }
 .jade-sheet-hint{font-size:10px;color:#afc5bc;line-height:1.5;margin:4px 0}
+/* C4.54 · Three sealed expeditions, visually distinct from informed market trays. */
+.jade-hunt-trigger{display:flex;align-items:center;gap:10px;width:100%;min-height:57px;margin-top:8px;
+ padding:9px 11px;border:1px solid #b99465;border-radius:12px;
+ background:radial-gradient(ellipse at 85% 0,#78573188,transparent 55%),linear-gradient(125deg,#453b32,#1b403e 83%);
+ box-shadow:inset 0 1px #ffe4a02b,0 4px 12px #08191a66;color:#f9e8c5;text-align:left;cursor:pointer}
+.jade-hunt-trigger:hover,.jade-hunt-trigger:focus-visible{border-color:#f4d39b;filter:brightness(1.08)}
+.jade-hunt-trigger-icon{display:grid;place-items:center;width:38px;height:38px;flex:0 0 38px;
+ border:1px solid #dcb7837d;border-radius:11px;background:#503e32;font-size:21px}
+.jade-hunt-trigger>span:nth-child(2){display:grid;gap:3px;min-width:0;flex:1}
+.jade-hunt-trigger b{font-size:12px;letter-spacing:.08em}.jade-hunt-trigger small{color:#d7c7b1;font-size:9px}
+.jade-hunt-trigger>strong{flex:0 0 auto;font-size:9px;color:#ffdf9c}
+.jade-hunt-content{display:grid;gap:10px}
+.jade-hunt-hero{position:relative;isolation:isolate;overflow:hidden;display:grid;gap:6px;
+ min-height:156px;padding:20px 16px;border:1px solid #b69874;border-radius:14px;
+ background:radial-gradient(circle at 82% 25%,#8e704eaa,transparent 39%),
+ linear-gradient(115deg,#202f37,#4d3b32 65%,#292f37);color:#e5e3d9}
+.jade-hunt-hero>span{font:800 9px ui-monospace,monospace;letter-spacing:.16em;color:#dbb680}
+.jade-hunt-hero>strong{font:700 26px Georgia,ui-serif,serif;letter-spacing:.04em;color:#ffedca;text-shadow:0 4px 12px #140d0d}
+.jade-hunt-hero>small{font-size:10px;line-height:1.5;max-width:235px;color:#e6d7c3}
+.jade-hunt-hero>em{font:700 10px ui-monospace,monospace;color:#f4d69c;font-style:normal}
+.jade-hunt-orbit{position:absolute;z-index:-1;right:-5px;top:13px;width:130px;height:125px;
+ border:1px dashed #d3b89366;border-radius:50%;transform:rotate(-29deg)}
+.jade-hunt-orbit::before{content:'?';position:absolute;inset:21px 28px;display:grid;place-items:center;
+ border-radius:39% 48% 38% 50%;font:700 54px Georgia,serif;color:#fff5dab2;
+ background:linear-gradient(145deg,#897966,#443e39 60%,#242c36);
+ box-shadow:inset 7px 5px 15px #d8c3a54d,inset -9px -7px 14px #0b182077,0 6px 18px #10141b88}
+.jade-hunt-orbit i{position:absolute;display:block;width:9px;height:9px;background:#eed6a3;border-radius:50%;box-shadow:0 0 14px #ffdf9f}
+.jade-hunt-orbit i:first-child{left:3px;top:27px}.jade-hunt-orbit i:nth-child(2){right:11px;bottom:9px}.jade-hunt-orbit i:nth-child(3){right:5px;top:12px}
+.jade-hunt-card{display:grid;gap:8px;min-width:0;padding:13px 12px;border:1px solid #8a997b;border-radius:13px;
+ background:linear-gradient(130deg,#2d403c,#20333b);box-shadow:inset 0 1px #f6e8c417}
+.jade-hunt-route-1{border-color:#8b9eaf;background:linear-gradient(135deg,#2b444d,#233b3c)}
+.jade-hunt-route-2{border-color:#b28c9a;background:radial-gradient(circle at 90% 10%,#7b4b7b55,transparent 50%),linear-gradient(135deg,#3c3546,#212e3a)}
+.jade-hunt-card.is-locked{opacity:.76}
+.jade-hunt-card-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.jade-hunt-card-top>div:first-child{min-width:0;display:grid;gap:4px}
+.jade-hunt-card-top small{font:800 9px ui-monospace,monospace;letter-spacing:.07em;color:#d0c7ae}
+.jade-hunt-card-top b{font:700 17px Georgia,ui-serif,serif;color:#ffe7b7}
+.jade-hunt-sack{flex:0 0 56px;display:grid;place-items:center;width:56px;height:52px;
+ border:1px solid #cbaa7366;border-radius:41% 42% 48% 45%;transform:rotate(-7deg);
+ background:radial-gradient(circle at 28% 23%,#c3b59b,#7c6c5d 46%,#454a4a 79%,#263b3b);
+ box-shadow:inset -7px -7px 12px #10252888,0 7px 14px #10262799}
+.jade-hunt-route-1 .jade-hunt-sack{background:radial-gradient(circle at 28% 23%,#a2b8ba,#537379 50%,#263c4a 87%)}
+.jade-hunt-route-2 .jade-hunt-sack{background:radial-gradient(circle at 28% 23%,#b29aaa,#594d68 50%,#292e3f 87%)}
+.jade-hunt-sack span{font:700 29px Georgia,serif;color:#fff4d2;text-shadow:0 3px 5px #172524}
+.jade-hunt-card p{margin:0;color:#cedbd3;font-size:10px;line-height:1.45}
+.jade-hunt-odds{display:grid;gap:5px;padding:9px;border:1px solid #8ea6905c;border-radius:8px;background:#101f2880}
+.jade-hunt-odds>span{font:800 8px ui-monospace,monospace;letter-spacing:.07em;color:#d9b87e}
+.jade-hunt-odds>small{font-size:10px;color:#e1e8dc;line-height:1.45}
+.jade-hunt-card .arcade-button{width:100%;min-height:39px;font-size:11px}
+.jade-hunt-cost{font-size:9px;color:#d7cdb6;text-align:center;line-height:1.4}
+.jade-hunt-content>.jade-sheet-hint{padding:6px 2px}
+@media(max-width:370px){.jade-hunt-trigger{gap:7px;padding:7px}.jade-hunt-trigger>strong{font-size:8px}
+ .jade-hunt-hero{padding:17px 12px}.jade-hunt-hero>strong{font-size:23px}}
 .jade-sheet-heading{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:7px;padding-bottom:4px;border-bottom:1px solid #66847399}
 .jade-sheet-heading b{font-size:13px;color:#f4dca9}.jade-sheet-heading small{font-size:9px;color:#accdbd}
 .jade-craft-list{display:grid;gap:6px}.jade-tool-card,.jade-craft-card{display:flex;align-items:center;gap:8px;border-radius:9px;background:#203b38;border:1px solid #567467;padding:7px}

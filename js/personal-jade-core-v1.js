@@ -18,6 +18,17 @@
   {name:'Tử Địa Hắc Ô Sa',short:'Hắc Ô Sa',price:1350,skin:'Hắc sa dày',detail:'Đèn khó xuyên vỏ. Có cơ hội gặp Đế Vương Lục.',unlock:'Bán 25 viên · Đèn cấp 3 · Thợ cấp 2'},
   {name:'Rãnh Nứt Tàn Tích',short:'Tàn Tích',price:4000,skin:'Thiên thạch dị tinh',detail:'Khoáng thạch mang vân tinh tú, chỉ mở cho chủ xưởng lão luyện.',unlock:'Bán 40 viên · Giấy phép'}
  ]);
+ // C4.54: sealed expeditions are a separate risk choice from the market's
+ // inspectable trays. Every contract yields one uncut stone, never direct Xu.
+ // Weights indicate the *origin*, not the guaranteed quality of the stone.
+ const HUNTS=Object.freeze([
+  Object.freeze({name:'Đường Mưa',rank:'Dễ',price:110,weights:Object.freeze([65,30,5,0,0]),
+   unlock:'Nhận đá tặng ở Chợ Đêm',hint:'Phần lớn cuội chợ, đôi khi lọt phôi mỏ sâu.'}),
+  Object.freeze({name:'Sông Ngầm',rank:'Mạo hiểm',price:650,weights:Object.freeze([0,40,45,15,0]),
+   unlock:'Bán 5 viên · Đèn cấp 2',hint:'Hàng hỗn hợp, dễ gặp đá nứt lẫn ngọc quý.'}),
+  Object.freeze({name:'Hắc Sa Bí Cảnh',rank:'Liều lĩnh',price:2350,weights:Object.freeze([0,0,25,55,20]),
+   unlock:'Bán 25 viên · Đèn cấp 3 · Thợ cấp 2',hint:'Tỷ lệ hàng quý cao hơn, giá cược cũng lớn.'})
+ ]);
  const GRADES=Object.freeze(['Phế thạch','Đậu Chủng','Nhu Chủng','Phù Dung Chủng','Kim Ti Chủng','Băng Chủng','Kính Chủng','Long Thạch Chủng']);
  const COLORS=Object.freeze(['Bạch Ngọc','Thúy Lục','Dương Lục','Tử La Lan','Hồng Phỉ','Mặc Thúy','Đế Vương Lục','Tam Thải']);
  const COLOR_HEX=Object.freeze(['#e7f3e7','#41bc8f','#b2d76c','#b98de6','#e98679','#193a3d','#05ac68','#e9bb8b']);
@@ -58,13 +69,17 @@
  ];
  const clamp=(n,min,max)=>Math.min(max,Math.max(min,n));
  const integer=(n,min,max,fallback)=>Number.isSafeInteger(n)&&n>=min&&n<=max?n:fallback;
- const pick=(weights,r)=>{let x=r*weights.reduce((a,b)=>a+b,0);for(let i=0;i<weights.length;i++){x-=weights[i];if(x<0)return i;}return weights.length-1;};
+ const pickWeighted=(weights,r)=>{let x=r*weights.reduce((a,b)=>a+b,0);for(let i=0;i<weights.length;i++){x-=weights[i];if(x<0)return i;}return weights.length-1;};
  const randomFrom=seed=>{let x=seed>>>0;return ()=>{x^=x<<13;x^=x>>>17;x^=x<<5;return (x>>>0)/4294967296;};};
  function unlocked(j,site){
   return site===0||site===1&&j.sold>=3&&j.lamp>=2||
    site===2&&j.sold>=12&&j.saw>=2||
    site===3&&j.sold>=25&&j.lamp>=3&&j.carver>=2||
    site===4&&j.sold>=40&&j.permit;
+ }
+ function huntUnlocked(j,route){
+  return route===0&&j.bought>0||route===1&&j.sold>=5&&j.lamp>=2||
+   route===2&&j.sold>=25&&j.lamp>=3&&j.carver>=2;
  }
  const stallFee=(j,site)=>Math.round((STALL_FEES[site]||0)*
   (1-.05*(Math.max(1,Math.min(4,j?.lamp||1))-1)));
@@ -83,12 +98,15 @@
    !FLAWS.includes(v.flaw)||!Number.isSafeInteger(v.seed)||v.seed<0||v.seed>4294967295||
    !Array.isArray(v.scans)||v.scans.length!==3||!v.scans.every(x=>typeof x==='boolean'))return null;
   if(v.phase==='crafted'&&!CRAFTS[v.craft])return null;
-  return {id:v.id,site:v.site,grade:v.grade,color:v.color,size:v.size,
+  const stone={id:v.id,site:v.site,grade:v.grade,color:v.color,size:v.size,
    flaw:v.flaw,seed:v.seed,phase:v.phase,scans:[...v.scans],
    payoutV:integer(v.payoutV,1,3,1),practice:v.practice===true,
    savedFracture:v.savedFracture===true,offer:integer(v.offer,0,MAX,0),
    cutValue:integer(v.cutValue,0,MAX,0),craft:CRAFTS[v.craft]?v.craft:null,
    craftValue:integer(v.craftValue,0,MAX,0)};
+  const hunt=integer(v.hunt,0,HUNTS.length-1,-1);
+  if(hunt>=0)stone.hunt=hunt; // Legacy shop stones keep their original shape.
+  return stone;
  }
  const craftDuration=(stone,type,carver=1)=>Math.max(60000,
   (CRAFT_TIMES[type]||60000)+Math.max(0,(stone?.grade||1)-1)*15000-
@@ -147,10 +165,10 @@
  function generate(site,id,roll){
   const seed=(Math.floor(clamp(Number.isFinite(roll)?roll:.5,0,.999999999)*4294967295) ^
    Math.imul(id,2654435761) ^ Math.imul(site+1,2246822519))>>>0;
-  const rng=randomFrom(seed||1),grade=pick(gradeOdds[site],rng());
-  let color=pick(colorOdds[site],rng());
+  const rng=randomFrom(seed||1),grade=pickWeighted(gradeOdds[site],rng());
+  let color=pickWeighted(colorOdds[site],rng());
   if(color===6&&site<3)color=1; // The Imperial-green deposit belongs to Hắc Ô Sa / Tàn Tích.
-  const flaw=FLAWS[pick([15,35,25,8,17],rng())];
+  const flaw=FLAWS[pickWeighted([15,35,25,8,17],rng())];
   return {id,site,grade,color,size:2+Math.floor(rng()*7)+(site>=2?1:0),
    flaw,seed,phase:'raw',scans:[false,false,false],payoutV:3,practice:false,savedFracture:false,
    offer:0,cutValue:0,craft:null,craftValue:0};
@@ -246,6 +264,22 @@
   const credit=amount=>{state.coins=clamp(state.coins+amount,0,MAX);
    state.earned=clamp(state.earned+amount,0,MAX);j.received=clamp(j.received+amount,0,MAX);};
   const held=()=>j.stash.length+(j.active?1:0);
+  const hunt=/^jade-blind-([0-2])$/.exec(action||'');
+  if(hunt){
+   const route=Number(hunt[1]),contract=HUNTS[route];
+   if(!j.bought)return fail('Nhận viên đá tặng ở Chợ Đêm trước khi đi săn.');
+   if(!huntUnlocked(j,route))return fail('Tuyến săn chưa mở: '+contract.unlock+'.');
+   if(held()>=MAX_STONES)return fail('Túi đá đã đầy '+MAX_STONES+' chỗ, hãy xử lý đá trước.');
+   if(j.bought>=1000000)return fail('Đã đạt giới hạn mẫu đá của xưởng.');
+   if(!charge(contract.price))return fail('Chưa đủ Tiền Xanh để ký chuyến '+contract.name+'.');
+   const value=clamp(Number.isFinite(roll)?roll:.5,0,.999999999);
+   const seed=(Math.floor(value*4294967296)^Math.imul(j.bought+1,2654435761)^
+    Math.imul(route+41,2246822519))>>>0;
+   const rng=randomFrom(seed||1),site=pickWeighted(contract.weights,rng());
+   const stone=generate(site,j.bought+1,rng());stone.hunt=route;
+   j.stash.push(stone);j.bought++;j.inspected=[];
+   return succeed('🎒 Đã nhận kiện niêm phong từ '+contract.name+' · +1 đá mù vào túi. Lên bàn soi để mở bí mật!');
+  }
   const pick=/^jade-pick-([0-4])-([0-2])$/.exec(action||'');
   const pack=/^jade-buy-pack-([0-4])-(1|3|5)$/.exec(action||'');
   if(pick||pack){
@@ -435,7 +469,7 @@
   }
   return fail('Thao tác Ngọc Phường chưa hỗ trợ.');
  }
- return Object.freeze({fresh,norm,act,MARKETS,GRADES,COLORS,COLOR_HEX,FLAWS,FLAW_NAMES,
+ return Object.freeze({fresh,norm,act,MARKETS,HUNTS,huntUnlocked,GRADES,COLORS,COLOR_HEX,FLAWS,FLAW_NAMES,
   CRAFTS,CRAFT_TIMES,craftDuration,RESCUE_INTERVAL,CRAFT_WINDOW,CRAFT_LIMIT,unlocked,scanHint,baseValue,cutValue,cuttingFee,windowFee,
   actionFee,rawSalvageValue,upgradeCost,craftFee,generate,marketOffer,surface,stallFee,purchasePrice,marketScanSpots,
   MAX_STONES,MAX_VAULT,marketRate,marketQuote,inspectFee,inspectionKey});
