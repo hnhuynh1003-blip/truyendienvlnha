@@ -64,6 +64,20 @@ test('F3.1 coin reward is credited once on claim, not again on retry',async()=>{
  assert.equal((await e.spin('claim',7)).status,'already-applied');
  assert.equal(e.accounts.get('a').currency,115);
 });
+test('F3.1 unique prize cannot duplicate in Kho; duplicate is auto-sold once',async()=>{
+ const e=env();
+ await e.spin('start',8,{roll:0});
+ await e.spin('claim',8);
+ assert.equal(e.accounts.get('a').inventory.length,1);
+ await e.spin('start',9,{roll:0});
+ const duplicate=await e.spin('claim',9);
+ assert.equal(duplicate.reward.kind,'DUPLICATE');
+ assert.equal(duplicate.reward.amount,3);
+ assert.equal(duplicate.currency,73);
+ assert.equal(duplicate.inventory.length,1);
+ assert.equal((await e.spin('claim',9)).status,'already-applied');
+ assert.equal(e.accounts.get('a').currency,73);
+});
 test('Vạn Bảo legacy pool stays 19 items at 20 Xu per paid box',()=>{
  assert.equal(box.POOL.length,19);
  assert.equal(box.PRICE,20);

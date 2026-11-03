@@ -158,11 +158,12 @@
    const result=el('div','f31-vantvat-result');
    result.append(el('span','',coinPrize?'🪙':prize?.icon||'🎁'),
     el('b','',coinPrize?coinPrize.amount+' Xu Vàng':prize?.name||'Bảo vật'),
-    el('small','',coinPrize?'Nhận trực tiếp vào Ví':
+    el('small','',active.duplicate?'Trùng bảo vật · tự động bán +'+active.returned+' Xu Vàng':
+     coinPrize?'Nhận trực tiếp vào Ví':
      prize?.rank+' · Giá bán '+(rule.VALUES[prize?.rank]||0)+' Xu Vàng'));
    stage.append(result);
    if(active.status==='sealed'){
-    const button=el('button','dudu-fun-claim','✦ MỞ NHẬN VẬT PHẨM');
+    const button=el('button','dudu-fun-claim','✦ MỞ NHẬN THƯỞNG');
     button.disabled=vvBusy||funActionBusy;
     button.onclick=()=>{void vantVatAction('claim');};stage.append(button);
    }

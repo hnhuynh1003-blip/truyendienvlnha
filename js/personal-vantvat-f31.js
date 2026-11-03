@@ -20,7 +20,9 @@
   const a=raw?.active;
   const active=a&&validId(a.id)&&rule.POOL.some(p=>p.itemId===a.itemId)&&
    ['sealed','claimed'].includes(a.status)?
-   {id:a.id,itemId:a.itemId,status:a.status}:null;
+   {id:a.id,itemId:a.itemId,status:a.status,
+    duplicate:a.status==='claimed'&&a.duplicate===true,
+    returned:Number.isSafeInteger(a.returned)&&a.returned>=0?a.returned:0}:null;
   return {version:1,ids,history,active};
  }
  function session(db,auth,uid){
@@ -52,8 +54,10 @@
     if(s.ids.includes(id))return {status:'already-applied',kind,currency,inventory,state:s,storyStates:states};
     if(s.active?.status==='sealed')throw fail('unfinished-spin');
     if(currency<rule.PRICE)throw fail('not-enough-xu');
-    if(inventory.length>=500&&rule.draw(roll).rank!=='COIN')throw fail('inventory-full');
-    const prize=rule.draw(roll),next={...s,
+    const prize=rule.draw(roll);
+    if(inventory.length>=500&&prize.rank!=='COIN'&&
+     !inventory.some(item=>item.id===prize.itemId))throw fail('inventory-full');
+    const next={...s,
      ids:[...s.ids,id].slice(-MAX_IDS),active:{id,itemId:prize.itemId,status:'sealed'}};
     const nextStates={...states,[META]:next};
     tx.update(ref,{currency:currency-rule.PRICE,storyStates:nextStates});
@@ -76,9 +80,20 @@
     return {status:'applied',kind,currency:currency+prize.amount,inventory,
      state:next,storyStates:nextStates,reward:{kind:'COIN',amount:prize.amount}};
    }
-   if(inventory.length>=500)throw fail('inventory-full');
    const approved=catalog.byId(active.itemId);
    if(!approved||approved.collectionSet!=='VAN_VAT')throw fail('invalid-prize');
+   if(inventory.some(x=>x.id===approved.id)){
+    const returned=rule.VALUES[approved.rank];
+    if(!returned||currency>rule.MAX_WALLET-returned)throw fail('wallet-cap');
+    const next={...s,active:{...active,status:'claimed',duplicate:true,returned},
+     history:[...s.history,{id,itemId:active.itemId,duplicate:true,returned}].slice(-MAX_HISTORY)};
+    const nextStates={...states,[META]:next};
+    tx.update(ref,{currency:currency+returned,storyStates:nextStates});
+    return {status:'applied',kind,currency:currency+returned,inventory,
+     state:next,storyStates:nextStates,
+     reward:{kind:'DUPLICATE',amount:returned,itemId:active.itemId}};
+   }
+   if(inventory.length>=500)throw fail('inventory-full');
    const instanceId='fun-vantvat-'+id;
    if(inventory.some(x=>x.instanceId===instanceId))throw fail('duplicate-instance');
    const item={...approved,instanceId,obtainedFrom:{kind:'EVENT',source:'DUDU_FUN_VANTUONG',eventId:id}};
