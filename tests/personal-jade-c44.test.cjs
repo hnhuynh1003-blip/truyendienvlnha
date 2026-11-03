@@ -75,8 +75,15 @@ test('C4.4 cutting, crafting and exhibition are one-shot; exhibits do not mint A
  const cost=jade.craftFee(s.jade.active,'pendant'),before=s.coins;
  const crafting=take(s,'jade-craft-pendant');assert.equal(crafting.ok,true);
  s=crafting.state;assert.equal(s.coins,before-cost);
- assert.equal(s.jade.active.phase,'crafted');
+ assert.equal(s.jade.active,null,'Stone is reserved at the workshop, freeing the workbench');
+ assert.equal(s.jade.craftJob.stone.phase,'cut');
  assert.equal(take(s,'jade-craft-pendant').ok,false);
+ assert.equal(take(s,'jade-claim-craft').ok,false,'Cannot claim before real elapsed time');
+ s=arcade.norm(JSON.parse(JSON.stringify(s)),TIME);
+ s=arcade.act(s,'jade-claim-craft',s.jade.craftJob.readyAt).state;
+ assert.equal(s.jade.craftJob,null);
+ assert.equal(s.jade.vault[0].phase,'crafted');
+ s=take(s,'jade-vault-select-0').state;
  const wallet=s.coins;
  const exhibit=take(s,'jade-exhibit');assert.equal(exhibit.ok,true);
  assert.equal(exhibit.state.coins,wallet);

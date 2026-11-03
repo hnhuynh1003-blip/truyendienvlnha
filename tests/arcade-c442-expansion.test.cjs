@@ -72,21 +72,21 @@ test('C4.47 pond tier gates every encounter, while historical display records su
  assert.equal(use(s,'garden-display-phoenix').ok,false);
 });
 
-test('C4.42 jade new discovery is separate from owned pieces, crafting capped at three per minute',()=>{
+test('C4.53 jade discovery stays separate and workshop handles one timed order at a time',()=>{
  const s=game.fresh(T);s.coins=100000;
  const stone=id=>({...jade.generate(0,id,.12),grade:2,color:3,size:6,flaw:'perfect',phase:'cut',cutValue:2500});
- for(let i=0;i<3;i++){
-  s.jade.active=stone(i+1);
-  const result=jade.act(s,'jade-craft-pendant',.5,T+i*1000);
-  assert.equal(result.ok,true);
- }
- assert.equal(s.jade.craftUsed,3);
- s.jade.active=stone(4);
+ s.jade.active=stone(1);
+ assert.equal(jade.act(s,'jade-craft-pendant',.5,T).ok,true);
+ assert.equal(s.jade.active,null);
+ assert.ok(s.jade.craftJob.readyAt-T>=60000);
+ s.jade.active=stone(2);
  const previous=s.coins;
  assert.equal(jade.act(s,'jade-craft-pendant',.5,T+3000).ok,false);
- assert.equal(s.coins,previous,'No fee taken on cooldown');
- assert.equal(jade.act(s,'jade-craft-pendant',.5,T+60000).ok,true);
- assert.equal(s.jade.craftUsed,1);
+ assert.equal(s.coins,previous,'No extra fee while the bench is occupied');
+ assert.equal(jade.act(s,'jade-claim-craft',.5,T+3000).ok,false);
+ assert.equal(jade.act(s,'jade-claim-craft',.5,s.jade.craftJob.readyAt).ok,true);
+ assert.equal(s.jade.vault[0].phase,'crafted');
+ assert.equal(jade.act(s,'jade-craft-pendant',.5,T+120000).ok,true);
  s.jade.active={...stone(5),phase:'raw'};
  const cut=jade.act(s,'jade-cut',.5,T+60001);
  assert.equal(cut.ok,true);

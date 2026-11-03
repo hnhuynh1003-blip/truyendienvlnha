@@ -227,25 +227,30 @@
  }
  function workshopPanel(s){
   const j=s.jade,stone=j.active,canCraft=stone?.phase==='cut'&&stone.grade>0&&stone.flaw!=='skin';
-  const exhausted=j.craftUsed>=jade.CRAFT_LIMIT&&Date.now()<j.craftWindowAt+jade.CRAFT_WINDOW;
+  const job=j.craftJob,time=Date.now(),ready=!!job&&time>=job.readyAt;
   const upgrades=[['lamp','◉','Đèn giám ngọc','Soi rõ tín hiệu và bì dày'],
    ['saw','⚙','Cưa hợp kim','Tăng cơ hội giữ nguyên phôi nứt'],
    ['carver','✧','Thợ khắc bậc cao','Tăng giá thành phẩm 17%/cấp'],
    ['permit','✵','Giấy phép Tàn Tích','Mở lô thiên thạch khi đủ giao dịch']];
   return `<div class="jade-workshop-content" data-arcade-panel="jade-workshop">
-    <div class="jade-sheet-heading"><b>⌘ Xưởng chế tác</b><small>${exhausted?`0 lượt · <span data-arcade-until="${j.craftWindowAt+jade.CRAFT_WINDOW}">${Math.ceil((j.craftWindowAt+jade.CRAFT_WINDOW-Date.now())/1000)}s</span>`:`${jade.CRAFT_LIMIT-(Date.now()>=j.craftWindowAt+jade.CRAFT_WINDOW?0:j.craftUsed)}/3 lượt/phút`}</small></div>
+    <div class="jade-sheet-heading"><b>⌘ Xưởng chế tác</b><small>${job?'1 bàn đang hoạt động':'1 bàn thợ · tính giờ thực'}</small></div>
+    ${job?`<div class="jade-craft-job ${ready?'is-ready':'is-working'}" role="status">
+      <span aria-hidden="true">${ready?'✦':'⚒'}</span><div><b>${ready?'Thành phẩm đã hoàn tất':'Đang làm '+jade.CRAFTS[job.type].name}</b>
+      <small>${jade.GRADES[job.stone.grade]} · ${jade.COLORS[job.stone.color]} · ${ready?'Sẵn sàng vào Kho Ngọc':`Còn <span data-arcade-until="${job.readyAt}">${Math.ceil((job.readyAt-time)/1000)}s</span> · chơi game khác vẫn tính giờ`}</small></div>
+      ${btn(ready?'✦ Nhận ngọc':'Đang chế tác','jade-claim-craft','gold',!ready||j.vault.length>=jade.MAX_VAULT)}</div>`:''}
     <div class="jade-craft-list">${Object.entries(jade.CRAFTS).map(([id,item])=>{
      const fee=stone?jade.craftFee(stone,id):0;
+     const seconds=stone?Math.ceil(jade.craftDuration(stone,id,j.carver)/1000):Math.ceil(jade.CRAFT_TIMES[id]/1000);
      const allowed=canCraft&&stone.size>=item.min&&
       !(id==='bangle'&&stone.flaw==='fracture'&&!stone.savedFracture);
      return `<div class="jade-craft-card"><span>${{bangle:'◯',pendant:'◇',ring:'◈',beads:'❈'}[id]}</span>
-      <div><b>${item.name}</b><small>Phôi cỡ ${item.min}+ · x${item.mult.toLocaleString('vi-VN')} giá trị</small></div>
-      ${btn('+'+greenMark+fmt(fee),'jade-craft-'+id,'upgrade',!allowed||s.coins<fee||exhausted)}</div>`;}).join('')}</div>
+      <div><b>${item.name}</b><small>Phôi cỡ ${item.min}+ · ${Math.floor(seconds/60)}p${seconds%60?String(seconds%60).padStart(2,'0')+'s':''} · x${item.mult.toLocaleString('vi-VN')} giá trị</small></div>
+      ${btn('⚒ '+greenMark+fmt(fee),'jade-craft-'+id,'upgrade',!allowed||s.coins<fee||!!job||j.vault.length>=jade.MAX_VAULT)}</div>`;}).join('')}</div>
     <div class="jade-sheet-heading"><b>⚒ Nâng cấp xưởng</b><small>Đầu tư bằng Tiền Xanh</small></div>
     ${upgrades.map(([id,icon,title,desc])=>{const cost=jade.upgradeCost(j,id);
      return `<div class="jade-tool-card"><span>${icon}</span><div><b>${title}</b><small>${desc} · ${id==='permit'?(j.permit?'Đã có':'Giấy phép'): 'Cấp '+j[id]+'/4'}</small></div>
       ${btn(cost===null?'Tối đa':greenMark+fmt(cost),'jade-upgrade-'+id,'upgrade',cost===null||s.coins<cost||id==='permit'&&j.sold<25)}</div>`;}).join('')}
-    <p class="jade-sheet-hint">Cưa tốt giúp giảm tổn thất do đường nứt lúc xẻ; không thể biến phế thạch thành ngọc thật.</p></div>`;
+    <p class="jade-sheet-hint">Gửi phôi xong, cứ sang Net, Đào đá hoặc Câu cá. Quay lại nhận ngọc sau khi thợ hoàn tất; mỗi lần một phôi.</p></div>`;
  }
  function galleryPanel(s){
   const j=s.jade,found=Object.keys(j.album).length;
@@ -270,10 +275,14 @@
  }
  function panel(s,cutPulse){
   const j=s.jade||jade.fresh(),stone=j.active,found=Object.keys(j.album).length;
+  const job=j.craftJob,jobReady=!!job&&Date.now()>=job.readyAt;
   return `<section class="arcade-world arcade-world-jade" aria-label="Ngọc Phường">
    <header class="arcade-world-heading"><div><span class="arcade-eyebrow">04 / JADE APPRAISAL</span>
      <h3>Ngọc Phường</h3><p>Đoán đá · Chế tác · Sưu tầm</p></div><span class="arcade-world-live">✦ PHỈ THÚY KÝ</span></header>
    ${stoneScene(stone,j,cutPulse)}
+   ${job?`<button type="button" class="jade-work-order ${jobReady?'is-ready':''}" data-arcade-action="jade-open-workshop">
+     <span aria-hidden="true">${jobReady?'✦':'⚒'}</span><strong>${jobReady?'Ngọc đã hoàn thành':'Thợ đang chế tác '+jade.CRAFTS[job.type].name}</strong>
+     <small>${jobReady?'Vào Xưởng để nhận':`<span data-arcade-until="${job.readyAt}">${Math.ceil((job.readyAt-Date.now())/1000)}s</span> · vẫn tính giờ khi chơi game khác`}</small></button>`:''}
    <div class="arcade-control-panel jade-control-panel">
     ${activePanel(s)}
     ${stockPanel(s)}

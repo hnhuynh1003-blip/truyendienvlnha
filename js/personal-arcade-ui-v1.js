@@ -805,7 +805,8 @@
     noticeUntil=time+2200;error=false;}
    if(fishEscaped){notice='Cá đã tuột khỏi lưỡi câu. Hãy thử lượt khác nhé.';
     noticeUntil=time+3500;error=false;}
-   const craftReady=tab==='jade'&&s.jade?.craftUsed>=3&&s.jade?.craftWindowAt+60000> s.lastAt&&time>=s.jade.craftWindowAt+60000;
+   const craftReady=tab==='jade'&&!!s.jade?.craftJob&&
+    s.lastAt<s.jade.craftJob.readyAt&&time>=s.jade.craftJob.readyAt;
    if(lastRenderedKey!==activeKey||completedRepair||waterRefilled||bubbleAppeared||plantMatured||fishBit||fishEscaped||customerServed||boostExpired||turboReady||nextOrder||missedBeat||craftReady||weatherShifted)render();
    else if(time-lastPaint>=900)refreshLive(time);
   }

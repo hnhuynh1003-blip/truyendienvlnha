@@ -55,8 +55,11 @@ test('C4.14 cut and crafted stones can be stored, resumed and held without block
  assert.equal(s.jade.active.id,first.id);
  assert.equal(s.jade.vault.length,0);
  s=play(s,'jade-craft-pendant').state;
- assert.equal(s.jade.active.phase,'crafted');
- s=play(s,'jade-vault-store').state;
+ assert.equal(s.jade.active,null);
+ assert.equal(s.jade.craftJob.stone.id,first.id);
+ s=restore(s);
+ s=play(s,'jade-claim-craft',s.jade.craftJob.readyAt).state;
+ assert.equal(s.jade.craftJob,null);
  assert.equal(s.jade.vault[0].craft,'pendant');
  assert.equal(s.jade.stash.length,3,'Raw purchases stay separate from the finished vault');
 });
