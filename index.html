@@ -123,6 +123,7 @@
   <script src="js/ai-proxy.js?v=58-2-mobile-v70-1"></script>
   <script src="js/npc-chat-lite.js?v=53-1"></script>
   <script src="js/player-reset-v54.js?v=54-1"></script>
+  <script src="js/season-reset-s01.js?v=s01-preview-1"></script>
   <script src="js/story-memory.js"></script>
   <script src="js/npc-memory-v2.js"></script>
   <script src="js/world-items-v44-1.js?v=1"></script>
@@ -1709,8 +1710,9 @@
           <h3 id="dudu-v54-reset-title" style="font-size:12px;margin:0 0 5px;color:#d3efff">✦ Tiến độ &amp; mùa chơi</h3>
           <p style="font-size:10px;line-height:1.5;margin:0 0 9px;color:#c8ddea">Lưu lại hành trình của bạn trước khi bắt đầu mùa mới. Tệp sao lưu có tiến độ và hội thoại cá nhân, hãy giữ riêng.</p>
           <button type="button" class="btn btn-primary" id="dudu-v26-backup-action" onclick="duduBackupPlayerV26()" style="width:100%">⬇ Tải bản sao tiến độ</button>
+          <button type="button" class="btn" id="dudu-s01-preview-action" onclick="duduPreviewSeasonS01()" style="width:100%;margin-top:7px">◈ Xem trước reset Mùa 01</button>
           <button type="button" class="btn btn-danger" id="dudu-v54-reset-action" disabled title="Chỉ mở khi chốt mùa mới và có bản sao lưu" style="width:100%;margin-top:7px;opacity:.52">Khởi tạo mùa mới · Chưa mở</button>
-          <small style="display:block;margin-top:7px;color:#b6c9d9;font-size:9px">Xu, Kho, nhiệm vụ và liên lạc đang được giữ nguyên.</small>
+          <small style="display:block;margin-top:7px;color:#b6c9d9;font-size:9px">Chỉ xem trước tài khoản đang đăng nhập. Chưa reset ai; truyện, vị trí đọc và Auth sẽ được giữ.</small>
         </section>
         <section class="dudu-v27-settings-card" aria-labelledby="dudu-v27-reading-title">
           <h3 id="dudu-v27-reading-title">✦ Trải nghiệm đọc</h3>
@@ -3327,6 +3329,44 @@
     // expose a destructive reset while real rewards and inventories are live.
     const DUDU_SEASON_RESET_READY_C26=false;
     let duduBackupBusyV26=false;
+    let duduSeasonPreviewBusyS01=false;
+    async function duduPreviewSeasonS01(){
+      const engine=window.DuduSeasonResetS01;
+      if(!engine||engine.ENABLE_APPLY!==false)return;
+      if(IS_SANDBOX_MODE||window.DUDU_RESET_IN_PROGRESS){
+        showSystemAlert('CHỈ XEM TÀI KHOẢN THẬT','Hãy đăng nhập để xem trước phần tiến độ mùa mới.');return;
+      }
+      if(duduSeasonPreviewBusyS01)return;
+      if(!DuduAuth.isReady()||DuduAuth.uid()!==currentUsername){
+        showSystemAlert('CHƯA ĐĂNG NHẬP','Vui lòng đăng nhập để kiểm tra tiến độ của mình.');return;
+      }
+      const uid=currentUsername,auth=firebase.auth(),account=auth.currentUser;
+      const button=document.getElementById('dudu-s01-preview-action');
+      duduSeasonPreviewBusyS01=true;if(button)button.disabled=true;
+      try{
+        await Promise.allSettled([...pendingLiveProfileWrites]);
+        DuduPersonalResetV54.safetyCheck(uid,auth);
+        if(auth.currentUser!==account)throw Error('Tài khoản đã thay đổi');
+        const snap=await db.collection('profiles_v2').doc(uid).get({source:'server'});
+        DuduPersonalResetV54.safetyCheck(uid,auth);
+        if(auth.currentUser!==account||!snap.exists)throw Error('Không có hồ sơ máy chủ');
+        const plan=engine.preview(uid,snap.data(),localStorage,DEFAULT_SYSTEM_QUESTS);
+        showSystemAlert('MÙA 01 · CHỈ XEM TRƯỚC',
+          'Hiện có: '+plan.cloud.levelBefore+' cấp · '+plan.cloud.expBefore+
+          ' EXP · '+plan.cloud.xuBefore+' Xu · '+plan.cloud.inventoryCount+
+          ' vật phẩm · '+plan.cloud.questCount+' nhiệm vụ.\n'+
+          'Dự kiến: cấp 1 · 0 EXP · '+plan.cloud.starterXu+' Xu; làm mới Kho, nhiệm vụ, game và liên lạc.\n'+
+          'Giữ lại '+plan.cloud.bookmarkCount+' dấu tiến độ đọc, truyện, tài khoản và giao diện cá nhân.\n'+
+          'Có '+plan.device.gameKeys.length+' vùng dữ liệu game riêng trên thiết bị này.'+
+          (plan.cloud.unknownFields.length?' Cần rà thêm '+plan.cloud.unknownFields.length+' trường chưa phân loại.':'')+
+          '\nChưa có dữ liệu nào bị thay đổi. Hãy tải bản sao tiến độ trước ngày mở mùa.');
+      }catch(error){
+        console.warn('S01 preview:',error?.code||error?.message||'failed');
+        showSystemAlert('CHƯA XEM ĐƯỢC','Không tải được hồ sơ từ máy chủ. Kiểm tra kết nối và đăng nhập.');
+      }finally{
+        duduSeasonPreviewBusyS01=false;if(button)button.disabled=false;
+      }
+    }
     async function duduBackupPlayerV26(){
       if(IS_SANDBOX_MODE){
         showSystemAlert('BẢN THỬ SANDBOX','Bản sao tài khoản chính chỉ có khi đăng nhập ở chế độ chơi.');
