@@ -53,6 +53,9 @@
  // and the legacy craftWindowAt/craftUsed fields remain valid on reload.
  const CRAFT_TIMES=Object.freeze({ring:60000,pendant:90000,beads:120000,bangle:180000});
  const CRAFT_WINDOW=60*1000,CRAFT_LIMIT=3;
+ // C4.57a: a prediction is a one-shot judgement before the full cut. Clues
+ // are imperfect but useful; only an actual cut settles the prediction.
+ const FORECASTS=Object.freeze(['Phế thạch','Ngọc thường','Ngọc quý']);
  const gradeOdds=[
   [70,15,9,5,1,0,0,0],
   [20,12,28,23,11,5,1,0],
@@ -87,7 +90,7 @@
  const fresh=()=>({bought:0,cut:0,sold:0,invested:0,received:0,lamp:1,saw:1,
   carver:1,permit:false,rescueReadyAt:0,active:null,stash:[],vault:[],craftJob:null,
   inspected:[],album:{},exhibits:[],last:null,craftWindowAt:0,craftUsed:0,
-  lastDiscoveryKey:null,lastDiscoveryAt:0});
+  lastDiscoveryKey:null,lastDiscoveryAt:0,forecasts:{total:0,correct:0,streak:0,best:0}});
  function validStone(v){
   if(!v||typeof v!=='object'||!['raw','window','cut','crafted'].includes(v.phase)||
    !Number.isSafeInteger(v.id)||v.id<1||v.id>1000000||
@@ -104,6 +107,12 @@
    savedFracture:v.savedFracture===true,offer:integer(v.offer,0,MAX,0),
    cutValue:integer(v.cutValue,0,MAX,0),craft:CRAFTS[v.craft]?v.craft:null,
    craftValue:integer(v.craftValue,0,MAX,0)};
+  // Keep untouched legacy stones byte-for-byte stable on normalize; forecast
+  // fields exist only after a player voluntarily enters the new challenge.
+  const forecast=integer(v.forecast,0,2,-1);
+  if(forecast>=0)stone.forecast=forecast;
+  if(typeof v.forecastWon==='boolean')stone.forecastWon=v.forecastWon;
+  if(integer(v.forecastBonus,1,MAX,0))stone.forecastBonus=v.forecastBonus;
   const hunt=integer(v.hunt,0,HUNTS.length-1,-1);
   if(hunt>=0)stone.hunt=hunt; // Legacy shop stones keep their original shape.
   return stone;
@@ -124,6 +133,13 @@
   const j=fresh();if(!source||typeof source!=='object')return j;
   for(const field of ['bought','cut','sold','invested','received'])j[field]=integer(source[field],0,MAX,0);
   for(const field of ['lamp','saw','carver'])j[field]=integer(source[field],1,4,1);
+  if(source.forecasts&&typeof source.forecasts==='object'){
+   const f=source.forecasts,jf=j.forecasts;
+   jf.total=integer(f.total,0,1000000,0);
+   jf.correct=integer(f.correct,0,jf.total,0);
+   jf.streak=integer(f.streak,0,jf.correct,0);
+   jf.best=integer(f.best,0,jf.correct,0);
+  }
   j.rescueReadyAt=integer(source.rescueReadyAt,0,Number.MAX_SAFE_INTEGER,0);
   j.craftWindowAt=integer(source.craftWindowAt,0,Number.MAX_SAFE_INTEGER,0);
   j.craftUsed=integer(source.craftUsed,0,CRAFT_LIMIT,0);
@@ -404,6 +420,14 @@
    stone.scans[index]=true;
    return succeed(['Đã đọc thủy đầu.','Đã đọc vân ngọc.','Đã kiểm tra liệt văn.'][index]);
   }
+  const forecast=/^jade-forecast-([012])$/.exec(action||'');
+  if(forecast){
+   if(!['raw','window'].includes(stone.phase))return fail('Đá đã xẻ, không thể dự đoán trước.');
+   if(stone.forecast>=0)return fail('Mỗi viên đá chỉ được ghi một phán đoán.');
+   if(stone.scans.filter(Boolean).length<2)return fail('Hãy soi ít nhất hai điểm trước khi đoán lõi ngọc.');
+   stone.forecast=Number(forecast[1]);
+   return succeed('Đã ghi phán đoán: '+FORECASTS[stone.forecast]+'. Kết quả sẽ rõ sau khi xẻ.');
+  }
   if(action==='jade-window'){
    if(stone.phase!=='raw')return fail('Viên đá đã được khai song.');
    if(!charge(actionFee(stone,'window')))return fail('Chưa đủ phí khai song.');
@@ -428,6 +452,23 @@
     (stone.seed%1000)/1000<(.25/.35)*(j.saw-1)/3;
    if(stone.flaw==='mutation'&&stone.grade>0)stone.grade=Math.min(7,stone.grade+1);
    stone.cutValue=cutValue(stone,j.saw);stone.phase='cut';j.cut++;
+   if(stone.forecast>=0){
+    const actual=stone.grade===0||stone.flaw==='skin'?0:stone.grade>=4?2:1;
+    const f=j.forecasts;
+    f.total=Math.min(1000000,f.total+1);
+    stone.forecastWon=stone.forecast===actual;
+   stone.forecastBonus=0;
+    if(stone.forecastWon){
+     f.correct=Math.min(1000000,f.correct+1);
+     f.streak=Math.min(1000000,f.streak+1);f.best=Math.max(f.best,f.streak);
+     // At most 15% of the paid stone's base cost; free rescue stones are
+     // training material, not a path to mint unlimited Arcade currency.
+     const paid=!(stone.practice||stone.id===1&&stone.site===0);
+     stone.forecastBonus=paid?Math.min(Math.max(1,Math.round(stone.cutValue*.08)),
+      Math.max(1,Math.round(MARKETS[stone.site].price*.15))):0;
+     if(stone.forecastBonus)credit(stone.forecastBonus);
+    }else f.streak=0;
+   }
    let newFind=false;
    if(stone.grade>0&&stone.flaw!=='skin'){
     const key=stone.grade+'-'+stone.color;
@@ -469,7 +510,7 @@
   }
   return fail('Thao tác Ngọc Phường chưa hỗ trợ.');
  }
- return Object.freeze({fresh,norm,act,MARKETS,HUNTS,huntUnlocked,GRADES,COLORS,COLOR_HEX,FLAWS,FLAW_NAMES,
+ return Object.freeze({fresh,norm,act,MARKETS,HUNTS,huntUnlocked,GRADES,COLORS,COLOR_HEX,FLAWS,FLAW_NAMES,FORECASTS,
   CRAFTS,CRAFT_TIMES,craftDuration,RESCUE_INTERVAL,CRAFT_WINDOW,CRAFT_LIMIT,unlocked,scanHint,baseValue,cutValue,cuttingFee,windowFee,
   actionFee,rawSalvageValue,upgradeCost,craftFee,generate,marketOffer,surface,stallFee,purchasePrice,marketScanSpots,
   MAX_STONES,MAX_VAULT,marketRate,marketQuote,inspectFee,inspectionKey});

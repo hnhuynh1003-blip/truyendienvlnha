@@ -176,7 +176,10 @@
   const guests=Math.min(neon.stations,1+(neon.seating-1)+
    Math.floor((neon.ambiance-1)/2)+(neon.roomTier-1));
   // Arcade tenths, per occupied service session; expenses are never negative.
-  const revenue=guests*(6+2*neon.snack+(neon.ambiance-1));
+  // C4.57a: a 45s guest service should pay meaningfully, even before upgrades.
+  // Keep receipts grounded in actually served guests (not a repeatable claim),
+  // with visible improvements from snacks, atmosphere and higher room tiers.
+  const revenue=guests*(15+3*neon.snack+2*(neon.ambiance-1)+3*(neon.roomTier-1));
   const expense=1+neon.roomTier+guests+neon.snack;
   return {guests,revenue,expense,profit:Math.max(0,revenue-expense)};
  };

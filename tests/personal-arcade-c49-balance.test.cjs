@@ -93,13 +93,13 @@ test('C4.9 bankruptcy rescue is fee-free, saved and time-gated without minting X
  assert.equal(take(s,'jade-rescue').ok,false,'cannot request rescue while stone on table');
 });
 
-test('C4.9 high balance cannot farm rescue; other three games retain base earning mechanics',()=>{
+test('C4.9 high balance cannot farm rescue; other three games retain bounded earning mechanics',()=>{
  let s=arcade.fresh(TIME);s=take(s,'jade-buy-0').state;
  s=take(s,'jade-cut').state;s=take(s,'jade-sell').state;
  s.coins=50;
  assert.match(take(s,'jade-rescue').reason,/Xu Arcade/);
  const idle=arcade.advance(arcade.fresh(TIME),TIME+3600000,3600000);
- assert.equal(idle.coins,600,'Neon 60 Xu per active hour is unchanged');
+ assert.equal(idle.coins,1320,'C4.57a improves measured Neon guest receipts without paying closed-tab time');
  assert.equal(take(arcade.fresh(TIME),'mine',.99).ok,true);
  let garden=arcade.fresh(TIME);
  garden=take(garden,'plant-0').state;

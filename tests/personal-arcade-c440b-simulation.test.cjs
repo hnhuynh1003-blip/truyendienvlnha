@@ -8,8 +8,8 @@ const NOW=1793510000000;
 
 test('C4.40B repeatable scenarios quantify open-tab income without fabricating offline earnings',()=>{
  const baseline=sim.neonSession();
- assert.deepEqual(baseline,{sessions:1,minutesPerSession:30,stations:1,coinsXu:30,guests:40});
- assert.equal(sim.neonSession({days:7}).coinsXu,210);
+ assert.deepEqual(baseline,{sessions:1,minutesPerSession:30,stations:1,coinsXu:66,guests:40});
+ assert.equal(sim.neonSession({days:7}).coinsXu,462);
  const unopened=arcade.advance(arcade.fresh(NOW),NOW+86400000,0);
  assert.equal(unopened.coins,0,'No Xu is minted for a closed browser');
  const elevated=sim.neonSession({stations:7,roomTier:3,seating:5,ambiance:3,snack:2,minutes:60});

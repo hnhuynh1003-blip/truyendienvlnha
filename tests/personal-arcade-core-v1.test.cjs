@@ -19,12 +19,12 @@ test('Neon earns only measured open-tab time, not closed-app downtime',()=>{
  const reopened=arcade.advance(initial,START+60*60*1000,0);
  assert.equal(reopened.coins,0);
  const afterMinute=arcade.advance(reopened,START+61*60*1000,60*1000);
- assert.equal(afterMinute.coins,9,'0,6 Xu from terminals plus 0,3 Xu from one served guest');
- assert.equal(arcade.formatXu(afterMinute.coins),'0,9');
+ assert.equal(afterMinute.coins,18,'0,6 Xu from terminals plus 1,2 Xu from one served guest');
+ assert.equal(arcade.formatXu(afterMinute.coins),'1,8');
  const twice=arcade.advance(afterMinute,START+61*60*1000,60*1000);
- assert.equal(twice.coins,9,'Same timestamp never pays twice');
+ assert.equal(twice.coins,18,'Same timestamp never pays twice');
  const afterHour=arcade.advance(initial,START+60*60*1000,60*60*1000);
- assert.equal(afterHour.coins,600,'Base 36 Xu plus 24 Xu in net visitor receipts per active hour');
+ assert.equal(afterHour.coins,1320,'Base 36 Xu plus 96 Xu in net visitor receipts per active hour');
  assert.equal(afterHour.neon.guestsServed,80);
 });
 test('Neon can pause, upgrade using only game money and increase its rate',()=>{
@@ -55,21 +55,21 @@ test('Neon Tycoon unlocks real stations, triples output and preserves old local 
 });
 test('C4.2 serves customers only in the foreground, subtracts expenses and avoids duplicate sessions',()=>{
  const initial=arcade.fresh(START),service=arcade.neonService(initial.neon);
- assert.deepEqual(service,{guests:1,revenue:6,expense:3,profit:3});
+ assert.deepEqual(service,{guests:1,revenue:15,expense:3,profit:12});
  const offline=arcade.advance(initial,START+90000,0);
  assert.equal(offline.neon.guestsServed,0);
  const active=arcade.advance(offline,START+180000,90000);
  assert.equal(active.neon.guestsServed,2);
- assert.equal(active.neon.serviceRevenue,12);
+ assert.equal(active.neon.serviceRevenue,30);
  assert.equal(active.neon.operatingExpense,6);
- assert.equal(active.coins,15,'0,9 Xu terminal time and 0,6 Xu net receipts');
+ assert.equal(active.coins,33,'0,9 Xu terminal time and 2,4 Xu net receipts');
  const duplicate=arcade.advance(active,START+180000,90000);
- assert.equal(duplicate.coins,15);
+ assert.equal(duplicate.coins,33);
  assert.equal(duplicate.neon.guestsServed,2);
  const paused=apply(active,'toggle-neon',START+180000).state;
  const stopped=arcade.advance(paused,START+270000,90000);
  assert.equal(stopped.neon.guestsServed,2);
- assert.equal(stopped.coins,15);
+ assert.equal(stopped.coins,33);
 });
 test('C4.2 unlocks new floors only after real service and an affordable expansion',()=>{
  let state=arcade.fresh(START);state.coins=500000;

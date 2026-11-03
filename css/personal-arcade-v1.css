@@ -763,6 +763,28 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header>span:nth-ch
 #personal-arcade-v1 .jade-salvage-button{border-color:#8c7760;color:#e9cfac;background:#352f29}
 #personal-arcade-v1 .jade-stone-side-button small{display:inline-flex;align-items:center;gap:2px;font:800 10px/1 system-ui,sans-serif;color:#f0d092}
 #personal-arcade-v1 .jade-stone-side-button:active{transform:translateY(1px)}
+/* C4.57a · The stone reading challenge lives inside the existing scan drawer;
+   three compact choices replace another full-size instruction card. */
+#personal-arcade-v1 .jade-forecast-panel{margin:0 7px 7px;padding:6px 7px;
+ border-top:1px solid #7494815e;background:#132a22;border-radius:0 0 6px 6px}
+#personal-arcade-v1 .jade-forecast-label{display:flex;align-items:center;justify-content:space-between;gap:5px;margin-bottom:5px}
+#personal-arcade-v1 .jade-forecast-label b{color:#e5d4aa;font-size:10px}
+#personal-arcade-v1 .jade-forecast-label small{color:#95bba7;font-size:9px}
+#personal-arcade-v1 .jade-forecast-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+#personal-arcade-v1 .jade-forecast-choice{min-width:0;min-height:29px;padding:4px 2px;
+ border:1px solid #728e73;border-radius:6px;background:#28443a;
+ color:#e1eacb;font:800 10px/1 system-ui,sans-serif;cursor:pointer;touch-action:manipulation}
+#personal-arcade-v1 .jade-forecast-choice.is-picked{border-color:#f1d195;background:#655439;color:#fff3bd}
+#personal-arcade-v1 .jade-forecast-choice:disabled:not(.is-picked){opacity:.5;cursor:default}
+#personal-arcade-v1 .jade-forecast-choice:focus-visible{outline:2px solid #f5dfad;outline-offset:2px}
+#personal-arcade-v1 .jade-forecast-verdict{margin:4px 2px 6px;padding:4px 7px;
+ border-left:2px solid #6fa68c;background:#1b3a2e;color:#aaf0c5;font-size:10px;font-weight:800}
+#personal-arcade-v1 .jade-forecast-verdict.is-wrong{border-left-color:#a88d70;background:#332d26;color:#d9c3a9}
+#personal-arcade-v1 .jade-forecast-record{display:flex;align-items:center;gap:8px;padding:7px 8px;
+ background:#17332a;border:1px solid #577e6a;border-radius:6px;color:#dbe7c4;font-size:10px}
+#personal-arcade-v1 .jade-forecast-record span{flex:1;min-width:0}
+#personal-arcade-v1 .jade-forecast-record b{color:#f2d897;font-size:12px}
+#personal-arcade-v1 .jade-forecast-record small{font-size:9px;color:#a4c7b0}
 .jade-decision-note{font-size:9px;color:#a6c5b9;line-height:1.4;margin:6px 2px 0}
 .jade-trader-offer{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:3px 6px;
  border:1px solid #bca174;border-radius:10px;background:#5b4938;padding:7px 10px;margin-top:7px}

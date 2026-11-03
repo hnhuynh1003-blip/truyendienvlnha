@@ -93,11 +93,18 @@
       ${btn(rescueLeft?rescueTime+' phút':'Nhận miễn phí','jade-rescue','upgrade',rescueLeft>0)}</div>`:''}</div>`;
   if(['raw','window'].includes(stone.phase)){
    const windowQuote=jade.marketQuote(stone,nowOf(s));
+   const scanned=stone.scans.filter(Boolean).length,guessed=stone.forecast>=0;
    return `<details class="jade-scan-drawer" ${stone.scans.some(Boolean)&&stone.scans.some(v=>!v)?'open':''}>
        <summary>◉ Soi dấu hiệu <small>${stone.scans.filter(Boolean).length}/3</small></summary>
        <div class="jade-scan-options">${[0,1,2].map(i=>`<button type="button" class="jade-scan-choice" data-arcade-action="jade-scan-${i}" ${stone.scans[i]?'disabled':''}>
          <span>${['Thủy đầu','Mãng đới','Liệt văn'][i]}</span>
          <small>${stone.scans[i]?jade.scanHint(stone,i,j.lamp):'Chưa soi'}</small></button>`).join('')}</div>
+       <div class="jade-forecast-panel" role="group" aria-label="Dự đoán lõi ngọc sau khi soi đá">
+        <div class="jade-forecast-label"><b>◈ Đoán lõi</b><small>${guessed?'Đã ghi':Math.min(scanned,2)+'/2 điểm soi'}</small></div>
+        <div class="jade-forecast-choices">${['Phế','Thường','Quý'].map((label,i)=>`<button type="button" class="jade-forecast-choice ${stone.forecast===i?'is-picked':''}"
+          data-arcade-action="jade-forecast-${i}" aria-pressed="${stone.forecast===i}" title="${jade.FORECASTS[i]} · Đoán đúng nhận thưởng tay nghề"
+          ${scanned<2||guessed?'disabled':''}>${['◇','◈','✦'][i]} ${label}</button>`).join('')}</div>
+       </div>
       </details>
      ${stone.phase==='window'?`<div class="jade-trader-offer"><span>GIÁ THU MUA HÔM NAY</span><strong>${fmt(windowQuote.value)} <small>${greenMark}</small></strong>
       <small class="${trendClass(windowQuote.rate)}">${trend(windowQuote.rate)}</small></div>
@@ -112,6 +119,7 @@
   }
   const good=stone.grade>0&&stone.flaw!=='skin',quote=jade.marketQuote(stone,nowOf(s)),value=quote.value;
   return `<div class="jade-cut-summary"><span>${stone.phase==='crafted'?'✦ Đã chế tác · '+jade.CRAFTS[stone.craft].name:'✦ Đã xẻ đá'}</span><small>${good?'Cỡ '+stone.size+' · '+jade.FLAW_NAMES[stone.flaw]:'Phế thạch · Có thể thu hồi'} · Giá ${greenMark}${fmt(value)}</small></div>
+    ${stone.forecast>=0?`<div class="jade-forecast-verdict ${stone.forecastWon?'is-right':'is-wrong'}">${stone.forecastWon?'✓ Đoán đúng'+(stone.forecastBonus?' · +'+greenMark+fmt(stone.forecastBonus):' · luyện tay nghề'):'◇ Dự đoán chưa đúng'}</div>`:''}
     <div class="jade-main-actions">
      ${btn('✓ Bán · +'+greenMark+fmt(value),'jade-sell','gold')}
      ${stone.phase==='crafted'?btn('✦ Đưa vào tủ','jade-exhibit','power',j.exhibits.length>=40):
@@ -273,7 +281,7 @@
     <p class="jade-sheet-hint">Gửi phôi xong, cứ sang Net, Đào đá hoặc Câu cá. Quay lại nhận ngọc sau khi thợ hoàn tất; mỗi lần một phôi.</p></div>`;
  }
  function galleryPanel(s){
-  const j=s.jade,found=Object.keys(j.album).length;
+  const j=s.jade,found=Object.keys(j.album).length,forecasts=j.forecasts||{correct:0,total:0,best:0};
   const held=new Set([j.active,...j.vault,...j.exhibits].filter(stone=>stone&&stone.grade>0&&stone.flaw!=='skin')
    .map(stone=>stone.grade+'-'+stone.color));
   const latest=j.lastDiscoveryKey?.split('-').map(Number),newest=latest?.length===2&&j.album[j.lastDiscoveryKey];
@@ -284,6 +292,7 @@
   return `<div class="jade-gallery-content" data-arcade-panel="jade-gallery">
     <div class="jade-gallery-banner"><span>✦ SỔ PHỈ THÚY</span><strong>${found}/56</strong>
       <small>Đã mở = từng tìm thấy · Đang giữ = còn trong kho/tủ</small></div>
+    <div class="jade-forecast-record"><span>◈ Tay nghề soi đá</span><b>${forecasts.correct}/${forecasts.total}</b><small>Chuỗi tốt nhất ×${forecasts.best}</small></div>
     ${newest?`<div class="jade-discovery-highlight"><b>${recentNew?'✦ MỚI MỞ':'✧ PHÁT HIỆN GẦN NHẤT'}</b><strong>${jade.GRADES[latest[0]]} · ${jade.COLORS[latest[1]]}</strong><small>${held.has(j.lastDiscoveryKey)?'✓ Đang giữ trong bộ sưu tập':'Đã ghi sổ · hiện không còn giữ viên này'}</small></div>`:''}
     ${Array.from({length:7},(_,index)=>index+1).map(grade=>`<div class="jade-album-row"><b>${jade.GRADES[grade]}</b>
       <div class="jade-album-gems">${jade.COLORS.map((name,color)=>{
