@@ -49,14 +49,14 @@ test('F3.4 sells multiple physical instances in one receipt; retry never credits
  const requestId='sell-'+uuid(12);
  const sale=await quick.run({db:h.db,auth:h.auth,uid:'du',requestId,instanceIds:ids});
  assert.equal(sale.status,'applied');assert.equal(sale.count,2);
- assert.equal(sale.price,6);assert.equal(sale.balance,balance+6);
+ assert.equal(sale.price,8);assert.equal(sale.balance,balance+8);
  assert.equal(sale.inventory.length,0);
  const writes=h.writes;
  const again=await quick.run({db:h.db,auth:h.auth,uid:'du',requestId,instanceIds:ids});
- assert.equal(again.status,'already-applied');assert.equal(again.balance,balance+6);
+ assert.equal(again.status,'already-applied');assert.equal(again.balance,balance+8);
  assert.equal(h.writes,writes);
  const receipt=h.accounts.get('du').storyStates.__duduPersonalItemsV1.receipts[requestId];
- assert.deepEqual(receipt.instanceIds,ids);assert.equal(receipt.price,6);
+ assert.deepEqual(receipt.instanceIds,ids);assert.equal(receipt.price,8);
  assert.equal(h.accounts.get('other').currency,100);
 });
 test('F3.4 blocks locked, stale, forged or reused batches with no partial payout',async()=>{
@@ -88,5 +88,5 @@ test('F3.4 adds three illustrated Origin statues without increasing rarity budge
  for(const row of rule.POOL)budgets[row.rank]=(budgets[row.rank]||0)+row.weight;
  assert.deepEqual(budgets,{E:400000,D:280000,C:170000,B:80000,
   A:36000,S:14000,SS:3000,SSS:200,COIN:92000});
- assert.equal(rule.PRICE,15); // The repricing proposal must not silently change live costs.
+ assert.equal(rule.PRICE,25); // F3.5 changes Vạn Tượng but not Vạn Bảo.
 });

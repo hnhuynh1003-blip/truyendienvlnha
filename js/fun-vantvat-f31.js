@@ -1,4 +1,4 @@
-/* F3.1 shared, fixed Xu values. Not a player-to-player market. */
+/* F3.5 source-specific, fixed Xu values. Not a player-to-player market. */
 (function(root,factory){
  const api=factory(typeof module==='object'&&module.exports?
   require('./item-catalog-v2.js'):root?.DuduItemCatalog);
@@ -6,8 +6,11 @@
  if(root)root.DuduFunVantVatF31=api;
 })(typeof window!=='undefined'?window:null,function(catalog){
  'use strict';
- const VALUES=Object.freeze({E:3,D:6,C:12,B:26,A:55,S:120,SS:320,SSS:900});
- const PRICE=15,MAX_WALLET=1000000000;
+ // F3.5 reprices Vạn Tượng only. Existing Vạn Bảo keeps its old sale
+ // quotes, including for collectors who already own those items.
+ const BOX_VALUES=Object.freeze({E:3,D:6,C:12,B:26,A:55,S:120,SS:320,SSS:900});
+ const VALUES=Object.freeze({E:4,D:8,C:16,B:40,A:100,S:300,SS:900,SSS:3000});
+ const PRICE=25,MAX_WALLET=1000000000;
  // A fixed probability budget PER RANK. Adding a collectible must never
  // silently make S/SS/SSS drops more common or inflate expected Xu returns.
  // 100x resolution permits all three SSS identities to remain drawable,
@@ -43,7 +46,8 @@
    !/^fun-(box|vantvat)-[0-9a-f-]{36}$/.test(item.instanceId)||
    item.instanceId!=='fun-'+(approved.collectionSet==='VAN_BAO'?'box-':'vantvat-')+
     item.obtainedFrom.eventId)return 0;
-  return VALUES[approved.rank]||0;
+  const scale=approved.collectionSet==='VAN_BAO'?BOX_VALUES:VALUES;
+  return scale[approved.rank]||0;
  }
- return Object.freeze({PRICE,MAX_WALLET,POOL,TOTAL,VALUES,draw,valueOf});
+ return Object.freeze({PRICE,MAX_WALLET,POOL,TOTAL,VALUES,BOX_VALUES,draw,valueOf});
 });

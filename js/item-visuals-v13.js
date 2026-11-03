@@ -133,6 +133,12 @@
     'f31-figure-eternal','f31-figure-fox','f31-figure-samurai',
     'f31-fossil-phoenix','f31-card-destiny','f31-background-aurora'
   ]);
+  // F3.5 finishes Khởi Nguyên with real item-specific AI art, not recolored icons.
+  const VAN_VAT_F35_ART=new Set([
+    'f31-fossil-shell','f31-apple-moon','f31-doll-cloud',
+    'f31-sword-bamboo','f31-card-clover','f31-fossil-dragon',
+    'f31-weapon-neon','f31-doll-starlight','f31-background-cosmos'
+  ]);
   function visual(item){
     if(!item||typeof item!=='object')return null;
     const rank=Object.prototype.hasOwnProperty.call(RANKS,item.rank)?item.rank:'F';
@@ -166,11 +172,13 @@
     const painted=item.collectionSet==='VAN_BAO'&&VAN_BAO_ART.has(id);
     const realmPainted=item.collectionSet==='VAN_VAT'&&VAN_VAT_F32_ART.has(id);
     const originPainted=item.collectionSet==='VAN_VAT'&&VAN_VAT_F34_ART.has(id);
+    const newOriginPainted=item.collectionSet==='VAN_VAT'&&VAN_VAT_F35_ART.has(id);
     return Object.freeze({rank,shape,light,dark,
       src:painted?'assets/van-bao/v1/'+id+'.webp':
+        newOriginPainted?'assets/van-tuong/f35/'+id+'.webp':
         originPainted?'assets/van-tuong/f34/'+id+'.webp':
         realmPainted?'assets/van-tuong/'+(id.startsWith('f32b-')?'f32b/':'f32/')+id+'.webp':fallback,
-      fallbackSrc:painted||realmPainted||originPainted?fallback:null});
+      fallbackSrc:painted||realmPainted||originPainted||newOriginPainted?fallback:null});
   }
   // One artwork renderer for both the store and all warehouse views.
   // It changes presentation only; it never edits the item or its ownership.

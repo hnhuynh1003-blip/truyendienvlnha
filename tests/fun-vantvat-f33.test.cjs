@@ -36,12 +36,12 @@ test('F3.3 lock prevents a sale in the same profile transaction; unlock restores
  assert.equal(h.writes,count);
  await assert.rejects(spark.run({db:h.db,auth:h.auth,uid:'du',kind:'sell',
   requestId:'sell-'+id(2),itemId:item.id,instanceId:item.instanceId}),/đang khóa/);
- assert.equal(h.profiles.get('du').currency,85);
+ assert.equal(h.profiles.get('du').currency,75);
  assert.equal(h.profiles.get('du').inventory.length,1);
  await favorite.run({db:h.db,auth:h.auth,uid:'du',kind:'unlock',instanceId:item.instanceId});
  const sale=await spark.run({db:h.db,auth:h.auth,uid:'du',kind:'sell',
   requestId:'sell-'+id(3),itemId:item.id,instanceId:item.instanceId});
- assert.equal(sale.balance,88);
+ assert.equal(sale.balance,79);
  assert.equal(sale.inventory.length,0);
  assert.equal(h.profiles.get('other').currency,100);
 });

@@ -29,41 +29,41 @@ function env(){
 test('F3.1 starts once, claims once, sells exactly one actual item',async()=>{
  const e=env(),before=e.accounts.get('a');
  const start=await e.spin('start',1,{roll:0});
- assert.equal(start.currency,85);
+ assert.equal(start.currency,75);
  assert.equal((await e.spin('start',1,{roll:0})).status,'already-applied');
  const claimed=await e.spin('claim',1);
  assert.equal(claimed.inventory.length,1);
  assert.equal(claimed.inventory[0].id,prices.POOL[0].itemId);
- assert.equal(prices.valueOf(claimed.inventory[0]),3);
+ assert.equal(prices.valueOf(claimed.inventory[0]),4);
  const count=e.writes;
  assert.equal((await e.spin('claim',1)).status,'already-applied');
  assert.equal(e.writes,count);
  const item=claimed.inventory[0];
  const sold=await e.sell(item,2);
- assert.equal(sold.balance,88);
+ assert.equal(sold.balance,79);
  assert.equal(sold.inventory.length,0);
  assert.equal((await e.sell(item,2)).status,'already-applied');
- assert.equal(e.accounts.get('a').currency,88);
+ assert.equal(e.accounts.get('a').currency,79);
  await assert.rejects(e.sell(item,3));
 });
 test('F3.1 resale rejects forged source and never touches another UID',async()=>{
  const e=env();
  await e.spin('start',4,{roll:prices.TOTAL-92001});
  const reward=(await e.spin('claim',4)).reward;
- assert.equal(prices.valueOf(reward),900);
+ assert.equal(prices.valueOf(reward),3000);
  assert.equal(prices.valueOf({...reward,obtainedFrom:{kind:'EVENT',source:'FAKE',eventId:id(4)}}),0);
  assert.equal(e.accounts.get('b').currency,100);
  assert.equal(e.accounts.get('b').inventory.length,0);
 });
 test('F3.1 coin reward is credited once on claim, not again on retry',async()=>{
  const e=env(),coinRoll=prices.TOTAL-1;
- assert.equal((await e.spin('start',7,{roll:coinRoll})).currency,85);
+ assert.equal((await e.spin('start',7,{roll:coinRoll})).currency,75);
  const first=await e.spin('claim',7);
  assert.equal(first.reward.kind,'COIN');
- assert.equal(first.currency,115);
+ assert.equal(first.currency,105);
  assert.equal(first.inventory.length,0);
  assert.equal((await e.spin('claim',7)).status,'already-applied');
- assert.equal(e.accounts.get('a').currency,115);
+ assert.equal(e.accounts.get('a').currency,105);
 });
 test('F3.1 unique prize cannot duplicate in Kho; duplicate is auto-sold once',async()=>{
  const e=env();
@@ -73,11 +73,11 @@ test('F3.1 unique prize cannot duplicate in Kho; duplicate is auto-sold once',as
  await e.spin('start',9,{roll:0});
  const duplicate=await e.spin('claim',9);
  assert.equal(duplicate.reward.kind,'DUPLICATE');
- assert.equal(duplicate.reward.amount,3);
- assert.equal(duplicate.currency,73);
+ assert.equal(duplicate.reward.amount,4);
+ assert.equal(duplicate.currency,54);
  assert.equal(duplicate.inventory.length,1);
  assert.equal((await e.spin('claim',9)).status,'already-applied');
- assert.equal(e.accounts.get('a').currency,73);
+ assert.equal(e.accounts.get('a').currency,54);
 });
 test('Vạn Bảo legacy pool stays 19 items at 20 Xu per paid box',()=>{
  assert.equal(box.POOL.length,19);
@@ -104,5 +104,6 @@ test('F3.2B completes 8 sets of 6 and leaves the first 39 records intact',()=>{
  assert.ok(Object.values(counts).every(x=>x===6));
  assert.equal(catalog.funVantVat.length,66);
  const ev=prices.POOL.reduce((sum,x)=>sum+x.weight*(x.amount||prices.VALUES[x.rank]),0)/prices.TOTAL;
- assert.ok(ev>12&&ev<12.2,'expected payout preserves the F3.1 economy');
+ assert.ok(ev>20&&ev<21,'F3.5 increases values while controlling spin EV');
+ assert.ok(ev/prices.PRICE<.85,'a non-guaranteed positive return keeps the roulette economy bounded');
 });

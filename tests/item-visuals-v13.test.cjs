@@ -29,7 +29,10 @@ test('catalog items have visible defined art with safe unknown fallback',()=>{
    assert.equal(v.src,'assets/van-bao/v1/'+item.id+'.webp');
    assert.match(v.fallbackSrc,/^data:image\/svg\+xml/);
   }else if(item.collectionSet==='VAN_VAT'&&v.src.endsWith('.webp')){
-   const folder=item.id.startsWith('f34-')||item.id.startsWith('f31-')?'f34':
+   const f35=new Set(['f31-fossil-shell','f31-apple-moon','f31-doll-cloud',
+    'f31-sword-bamboo','f31-card-clover','f31-fossil-dragon',
+    'f31-weapon-neon','f31-doll-starlight','f31-background-cosmos']);
+   const folder=f35.has(item.id)?'f35':item.id.startsWith('f34-')||item.id.startsWith('f31-')?'f34':
     item.id.startsWith('f32b-')?'f32b':'f32';
    assert.equal(v.src,'assets/van-tuong/'+folder+'/'+item.id+'.webp');
    assert.match(v.fallbackSrc,/^data:image\/svg\+xml/);

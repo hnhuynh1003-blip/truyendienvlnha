@@ -54,7 +54,16 @@
   'f31-figure-samurai':'Kiếm sĩ lạc giới vẫn canh giữ cánh cổng không còn tên trên bản đồ.',
   'f31-fossil-phoenix':'Bộ xương phượng hoàng hóa thạch trong nham thạch, vẫn ánh lên sắc lửa cổ đại.',
   'f31-card-destiny':'Lá bài chứa một chiếc đồng hồ cát không chịu đổ, tượng trưng cho lựa chọn thứ hai.',
-  'f31-background-aurora':'Cảnh cực quang được phong trong một ô cửa nhỏ, có thể ngắm như một bảo vật.'};
+  'f31-background-aurora':'Cảnh cực quang được phong trong một ô cửa nhỏ, có thể ngắm như một bảo vật.',
+  'f31-fossil-shell':'Vỏ xoắn của sinh linh biển cổ đại, mỗi vòng vân giữ một kỷ nguyên đã chìm.',
+  'f31-apple-moon':'Quả táo trổ màu trăng, nghe nói chỉ chín vào khoảnh khắc hai thế giới giao nhau.',
+  'f31-doll-cloud':'Búp bê mây giữ hộ những giấc ngủ bình yên của lữ khách qua giới.',
+  'f31-sword-bamboo':'Thanh kiếm từ trúc linh ngàn tuổi, vừa nhẹ như lá vừa bền như lời thề.',
+  'f31-card-clover':'Bốn chiếc lá lưu lại một lần thoát hiểm khỏi định mệnh, không thể sử dụng để đổi vận.',
+  'f31-fossil-dragon':'Cổ long đã hóa đá, bộ cốt nguyên vẹn vẫn mang đường vân của long mạch.',
+  'f31-weapon-neon':'Cặp song đao ánh plasma từng bảo vệ thành phố sau cánh cổng neon.',
+  'f31-doll-starlight':'Thỏ bông tinh tú được may từ những mảnh đêm, mắt giữ ánh sao phương xa.',
+  'f31-background-cosmos':'Một cửa sổ nhỏ nhìn thẳng vào tinh hà chưa ai từng đặt tên.'};
  function vantVatZoom(item){
   if(!item||!root.DuduItemCatalog?.byId(item.id))return;
   document.getElementById('f33-vantvat-zoom')?.remove();
@@ -187,7 +196,7 @@
     'Vật phẩm đã được khóa kết quả. Mở để nhận vào Kho.':
     'Đã đưa vật phẩm vào Kho. Có thể bán từ thẻ vật phẩm.');
   }catch(error){
-   const reason={'not-enough-xu':'Không đủ 15 Xu Vàng.',
+   const reason={'not-enough-xu':'Chưa đủ '+vvRule().PRICE+' Xu Vàng.',
     'inventory-full':'Kho đã đầy 500 ô.',
     'unfinished-spin':'Hãy nhận món đang chờ trước.',
     'spin-not-found':'Không tìm thấy lượt quay.'};
