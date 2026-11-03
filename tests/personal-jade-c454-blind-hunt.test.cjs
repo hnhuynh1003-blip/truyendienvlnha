@@ -110,6 +110,7 @@ test('C4.54: hunt has an accessible separate drawer, real prices, odds and hidde
  assert.match(html,/30%/);
  assert.match(html,/5%/);
  assert.match(html,/🎒 Đá mù/);
- assert.match(html,/Tỷ lệ trên là/);
- assert.match(html,/Phí xẻ tính riêng/);
+ assert.match(html,/Tỷ lệ hiển thị là/);
+ assert.match(html,/xẻ tính phí/);
+ assert.doesNotMatch(html,/Ba tuyến thám ngọc\. Một túi niêm phong/);
 });

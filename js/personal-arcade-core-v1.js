@@ -128,12 +128,45 @@
   [0,2,1,3,0],[1,0,3,2,1],[2,3,0,1,2],[3,1,2,0,3],
   [0,3,2,1,0],[2,0,1,3,2]
  ].map(x=>Object.freeze(x)));
- const neonBeatPattern=neon=>NEON_BEAT_PATTERNS[(neon.orderRound+neon.roomTier-1)%NEON_BEAT_PATTERNS.length]
-  .slice(0,neon.roomTier+2);
+ const neonBeatPattern=neon=>{
+  const mode=neon.beatMode||0;
+  if(!mode)return NEON_BEAT_PATTERNS[(neon.orderRound+neon.roomTier-1)%NEON_BEAT_PATTERNS.length]
+   .slice(0,neon.roomTier+2);
+  // C4.55: procedural tickets; no repeating six memorized fixed sequences.
+  let seed=(Math.imul((neon.orderRound||0)+1,2654435761)^
+   Math.imul(neon.roomTier+11,1597334677)^Math.imul(mode+37,2246822519))>>>0;
+  const sequence=[];
+  for(let i=0;i<Math.min(7,neon.roomTier+2+mode);i++){
+   seed^=seed<<13;seed^=seed>>>17;seed^=seed<<5;
+   let direction=(seed>>>0)%4;
+   if(i&&direction===sequence[i-1])direction=(direction+1+((seed>>>2)&1))%4;
+   sequence.push(direction);
+  }
+  return sequence;
+ };
+ const NEON_GUESTS=Object.freeze([
+  Object.freeze({name:'Game thủ',icon:'🎮',extra:0}),
+  Object.freeze({name:'Khách gấp',icon:'⚡',extra:10}),
+  Object.freeze({name:'Khách VIP',icon:'✦',extra:18}),
+  Object.freeze({name:'Đội thi đấu',icon:'🏆',extra:24})
+ ]);
+ const neonBeatGuest=neon=>NEON_GUESTS[(Math.floor((neon.orderRound||0)/2)+neon.roomTier-1)%NEON_GUESTS.length];
+ const neonStyleUnlocked=(neon,mode)=>mode===0||mode===1||mode===2&&neon.roomTier>=2&&neon.router>=2;
+ const neonBeatZone=neon=>(neon.beatMode||0)===2?{start:.61,end:.86}:
+  {start:.46,end:.90};
+ const neonBeatReward=(neon,perfect=false)=>{
+  const mode=neon.beatMode||0,combo=Math.min(6,neon.orderStreak||0);
+  if(!mode)return 3+Math.min(2,Math.floor(combo/3));
+  const base=(mode===1?25:64)+neon.roomTier*(mode===1?9:16)+
+   neonBeatGuest(neon).extra+combo*(mode===1?4:7);
+  return Math.round(base*(perfect?1.25:1));
+ };
  // C4.52: better networking gives real value at the skill counter: more
  // reaction room and quicker new guests, never extra unattended Xu.
  const neonRouterBonus=neon=>Math.max(0,Math.min(9,(neon.router||1)-1));
- const neonBeatWindow=neon=>12000-2000*(neon.roomTier-1)+400*neonRouterBonus(neon);
+ const neonBeatWindow=neon=>(neon.beatMode===2?10300-1200*(neon.roomTier-1):
+  neon.beatMode===1?13300-1300*(neon.roomTier-1):12000-2000*(neon.roomTier-1))+
+  400*neonRouterBonus(neon);
  const neonOrderCooldown=neon=>NEON_ORDER_COOLDOWN-6000*neonRouterBonus(neon);
  const NEON_ROOM_CAPACITY=[3,5,7];
  const neonCapacity=neon=>NEON_ROOM_CAPACITY[neon.roomTier-1]||3;
@@ -191,7 +224,7 @@
     contracts:[],running:true,remainder:0,economyV:ECONOMY_VERSION,
     roomTier:1,seating:1,ambiance:1,snack:0,guestsServed:0,serviceRevenue:0,
     operatingExpense:0,sessionMs:0,milestones:[],orderRound:0,orderStep:0,
-    orderWon:0,orderStreak:0,orderReadyAt:0,beatStep:0,beatUntil:0,ledColor:null,
+    orderWon:0,orderStreak:0,orderReadyAt:0,beatStep:0,beatUntil:0,beatMode:0,ledColor:null,
     program:neonGame?neonGame.fresh():null},
    mine:{durability:100,pickLevel:1,drillLevel:1,lantern:1,cart:1,scanner:0,
     zone:0,depthPermit:0,charge:0,bursts:0,repairUntil:0,nextDigAt:0,dug:0,probes:0,probeHits:0,
@@ -229,6 +262,7 @@
   state.earned=number(source.earned,0,MAX_COIN,0);
   const roomTier=number(neon.roomTier,1,3,1);
   const router=number(neon.router,1,10,1);
+  const beatMode=number(neon.beatMode,0,2,0);
   state.neon={cpu:number(neon.cpu,1,50,1),gpu:number(neon.gpu,1,20,1),
    roomTier,stations:number(neon.stations,1,neonCapacity({roomTier}),1),
    router,
@@ -244,8 +278,8 @@
    orderWon:number(neon.orderWon,0,1000000,0),
    orderStreak:number(neon.orderStreak,0,1000,0),
    orderReadyAt:number(neon.orderReadyAt,0,time+NEON_ORDER_COOLDOWN,0),
-   beatStep:number(neon.beatStep,0,4,0),
-   beatUntil:number(neon.beatUntil,0,time+neonBeatWindow({roomTier,router}),0),
+   beatStep:number(neon.beatStep,0,7,0),beatMode,
+   beatUntil:number(neon.beatUntil,0,time+neonBeatWindow({roomTier,router,beatMode}),0),
    ledColor:number(neon.skin,0,2,0)>0&&typeof neon.ledColor==='string'&&
     /^#[0-9a-fA-F]{6}$/.test(neon.ledColor)?
     neon.ledColor.toLowerCase():null,
@@ -443,6 +477,14 @@
    state.neon.turboReadyAt=time+600000;
    return succeed('⚡ Ép xung! Thu nhập tăng gấp đôi trong ít phút');
   }
+  const style=/^neon-style-([012])$/.exec(action||'');
+  if(style){
+   const n=state.neon,mode=Number(style[1]);
+   if(n.beatUntil)return fail('Kết thúc đơn hiện tại rồi đổi chế độ phục vụ.');
+   if(!neonStyleUnlocked(n,mode))return fail('Đơn VIP cần phòng cấp 2 và mạng cấp 2.');
+   n.beatMode=mode;
+   return succeed(['♫ Chế độ Tập nhịp','⚡ Chế độ Tốc chiến','✦ Chế độ Khách VIP'][mode]);
+  }
   if(action==='neon-beat-start'){
    const n=state.neon;
    if(!n.running)return fail('Hãy mở Trạm Neon trước');
@@ -456,6 +498,7 @@
    const n=state.neon;
    if(!n.running||!n.beatUntil)return fail('Hãy bắt đầu lượt nhịp trước');
    const sequence=neonBeatPattern(n),pressed=Number(beat[1]);
+   if(n.beatStep>=sequence.length)return fail('Đã đủ mũi tên! Nhấn SPACE đúng vùng sáng.');
    if(pressed!==sequence[n.beatStep]){
     n.beatStep=0;n.beatUntil=0;n.orderRound++;n.orderStreak=0;
     n.orderReadyAt=time+NEON_ORDER_MISS;
@@ -464,6 +507,7 @@
    }
    n.beatStep++;
    if(n.beatStep<sequence.length)return succeed('✓ Đúng nhịp '+n.beatStep+'/'+sequence.length);
+   if(n.beatMode)return succeed('♫ Đã đủ hướng! Canh thanh sáng và nhấn SPACE.');
    n.beatStep=0;n.beatUntil=0;n.orderRound++;n.orderWon++;
    n.orderStreak=Math.min(1000,n.orderStreak+1);
    n.orderReadyAt=time+neonOrderCooldown(n);
@@ -471,6 +515,28 @@
    const bonus=3+Math.min(2,Math.floor(n.orderStreak/3));
    give(state,bonus);
    return succeed('✦ PERFECT! Phục vụ đủ nhịp · +'+formatXu(bonus)+' Xu Arcade');
+  }
+  if(action==='neon-beat-finish'){
+   const n=state.neon,sequence=neonBeatPattern(n);
+   if(!n.running||!n.beatUntil||!n.beatMode||n.beatStep!==sequence.length)
+    return fail('Hãy hoàn tất các phím hướng trước khi chốt nhịp.');
+   const progress=(time-(n.beatUntil-neonBeatWindow(n)))/neonBeatWindow(n),
+    zone=neonBeatZone(n),mid=(zone.start+zone.end)/2;
+   if(progress<zone.start||progress>zone.end){
+    n.beatStep=0;n.beatUntil=0;n.orderRound++;n.orderStreak=0;
+    n.orderReadyAt=time+NEON_ORDER_MISS;
+    if(neonGame)neonGame.recordOrder(n,false);
+    return succeed('✕ Lệch điểm rơi! Khách hẹn lượt sau.');
+   }
+   const perfect=Math.abs(progress-mid)<=.07;
+   n.beatStep=0;n.beatUntil=0;n.orderRound++;n.orderWon++;
+   n.orderStreak=Math.min(1000,n.orderStreak+1);
+   const bonus=neonBeatReward({...n,orderRound:n.orderRound-1},perfect);
+   n.orderReadyAt=time+Math.max(24000,58000-5000*neonRouterBonus(n));
+   if(neonGame)neonGame.recordOrder(n,true);
+   give(state,bonus);
+   return succeed((perfect?'✦ PERFECT!':'✓ GOOD!')+' Phục vụ '+neonBeatGuest({...n,orderRound:n.orderRound-1}).name+
+    ' · +'+formatXu(bonus)+' Tiền Xanh');
   }
   const orderAction=/^neon-order-([012])$/.exec(action||'');
   if(orderAction){
@@ -896,7 +962,8 @@
  const formatXu=tenths=>(tenths/10).toLocaleString('vi-VN',{maximumFractionDigits:1});
  return Object.freeze({fresh,norm,advance,act,rate,upgradeCost,formatXu,
   neonCapacity,neonService,NEON_SERVICE_INTERVAL,NEON_ORDER_COOLDOWN,neonOrderPattern,
-  neonBeatPattern,neonBeatWindow,neonOrderCooldown,mineProbeTarget,mineProbeBonus,seasonGame,
+  neonBeatPattern,neonBeatWindow,neonOrderCooldown,neonBeatGuest,neonBeatZone,
+  neonBeatReward,neonStyleUnlocked,mineProbeTarget,mineProbeBonus,seasonGame,
   WATER_INTERVAL,REPAIR_INTERVAL,MINE_DIG_INTERVAL,GROW_INTERVAL,BUBBLE_INTERVAL,ORE_VALUES,ORE_NAMES,
   CROPS,GARDEN_ORDERS,GARDEN_SOIL_COSTS,gardenSoilCost,cropGrowTime,
   FISH_SPECIES,FISH_POND_LEVEL,pondUnlocks,pondCanHost,

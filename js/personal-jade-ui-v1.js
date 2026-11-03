@@ -206,25 +206,21 @@
   const j=s.jade,held=j.stash.length+(j.active?1:0);
   return `<div class="jade-hunt-content" data-arcade-panel="jade-hunt">
    <div class="jade-hunt-hero">
-    <div class="jade-hunt-orbit" aria-hidden="true"><i></i><i></i><i></i></div>
-    <span>PHỈ THÚY KÝ · MẬT LỘ</span><strong>SĂN ĐÁ MÙ</strong>
-    <small>Ba tuyến thám ngọc. Một túi niêm phong. Không có manh mối trước khi mua.</small>
-    <em>🎒 ${held}/${jade.MAX_STONES} chỗ trong túi</em>
+    <strong>🎒 SĂN ĐÁ MÙ</strong><em>${held}/${jade.MAX_STONES} ô túi</em>
+    <small>Chọn tuyến · Mở phôi tại bàn</small>
    </div>
    ${jade.HUNTS.map((hunt,i)=>{
     const unlocked=jade.huntUnlocked(j,i),price=hunt.price;
     const chances=hunt.weights.map((weight,site)=>weight?`${jade.MARKETS[site].short} ${weight}%`:null)
      .filter(Boolean).join(' · ');
     return `<article class="jade-hunt-card jade-hunt-route-${i} ${unlocked?'':'is-locked'}">
-     <div class="jade-hunt-card-top"><div><small>TUYẾN ${String(i+1).padStart(2,'0')} · ${hunt.rank.toUpperCase()}</small>
+     <div class="jade-hunt-card-top"><div><small>${String(i+1).padStart(2,'0')} · ${hunt.rank}</small>
       <b>${hunt.name}</b></div><div class="jade-hunt-sack" aria-hidden="true"><span>?</span></div></div>
-     <p>${hunt.hint}</p>
-     <div class="jade-hunt-odds"><span>NGUỒN PHÔI CÓ THỂ GẶP</span><small>${chances}</small></div>
-     ${btn(unlocked?'🎒 Săn · '+greenMark+fmt(price):'🔒 Chưa mở','jade-blind-'+i,'gold',
-      !unlocked||held>=jade.MAX_STONES||j.bought>=1000000||s.coins<price)}
-     ${unlocked?`<small class="jade-hunt-cost">Trọn chuyến ${greenMark}${fmt(price)} · nhận 1 phôi</small>`:
-      `<small class="jade-hunt-cost">${hunt.unlock}</small>`}</article>`;}).join('')}
-   <p class="jade-sheet-hint">✧ Tỷ lệ trên là <b>nguồn đá</b>, không phải tỷ lệ trúng ngọc. Mỗi chuyến chắc chắn có 1 phôi; phẩm chất và vết nứt chỉ rõ sau khi soi/xẻ. Phí xẻ tính riêng.</p>
+     <div class="jade-hunt-odds" aria-label="Xác suất nguồn đá, không phải tỷ lệ ra ngọc">${chances}</div>
+     <div class="jade-hunt-footer"><small>${unlocked?'1 phôi · xẻ tính phí':hunt.unlock}</small>
+      ${btn(unlocked?'Săn · '+greenMark+fmt(price):'🔒','jade-blind-'+i,'gold',
+       !unlocked||held>=jade.MAX_STONES||j.bought>=1000000||s.coins<price)}</div></article>`;}).join('')}
+   <p class="jade-hunt-note">✧ Tỷ lệ hiển thị là <b>nguồn đá</b>; ngọc quý không được bảo đảm.</p>
   </div>`;
  }
  function vaultPanel(s){

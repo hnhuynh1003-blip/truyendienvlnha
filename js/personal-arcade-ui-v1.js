@@ -268,6 +268,11 @@
   const activeRate=s.neon.running?core.rate(s):0,
    beat=core.neonBeatPattern(n),beatSymbols=['←','↑','→','↓'],
    beatNames=['Trái','Lên','Phải','Xuống'],beatActive=n.beatUntil>time,
+   beatMode=n.beatMode||0,guest=core.neonBeatGuest(n),
+   strikeReady=beatActive&&beatMode>0&&n.beatStep>=beat.length,
+   zone=core.neonBeatZone(n),
+   strikeProgress=beatActive?Math.round(Math.max(0,Math.min(100,
+    (1-(n.beatUntil-time)/core.neonBeatWindow(n))*100))):0,
    orderReady=time>=n.orderReadyAt,
    seasonTicket=!!seasonGame?.neonTicket?.(n),
    servicePulse=activeFeedback('neon-service',time),
@@ -360,22 +365,34 @@
         'neon-contract-'+i,'contract',!met||s.neon.contracts.includes(i))}</div>`).join('')}</div>
       <div class="neon-order-game neon-beat-game ${orderReady?'is-ready':'is-waiting'} ${beatActive?'is-playing':''} ${seasonTicket?'is-season-ticket':''} ${orderPulse?(orderPulse.success?'is-complete':'is-mistake'):''}" aria-label="Quầy thử thách nhịp: hoàn thành ${n.orderWon} đơn, liên tiếp ${n.orderStreak}">
        <div class="neon-order-heading"><b>♫ QUẦY NHỊP ĐIỆU</b><span>COMBO ×${n.orderStreak}</span></div>
+       <div class="neon-shift-modes" role="group" aria-label="Chọn chế độ phục vụ">
+        ${[['Tập nhịp',0],['⚡ Tốc chiến',1],['✦ VIP',2]].map(([name,i])=>{
+         const locked=!core.neonStyleUnlocked(n,i),selected=beatMode===i;
+         return `<button type="button" class="${selected?'is-active':''}" aria-pressed="${selected}"
+          data-arcade-action="neon-style-${i}" ${beatActive||locked?'disabled':''}
+          title="${locked?'Cần phòng 2 và mạng 2':name}">${locked?'🔒 ':''}${name}</button>`;}).join('')}</div>
        <div class="neon-order-scene">
-        <div class="neon-order-customer" aria-hidden="true"><i></i><span>♪</span></div>
+        <div class="neon-order-customer" aria-hidden="true"><i></i><span>${guest.icon}</span></div>
         <div class="neon-order-ticket"><small>${!n.running?'ĐÃ ĐÓNG QUẦY':beatActive?(seasonTicket?'✧ ĐƠN SƯƠNG #':'ĐƠN #')+String(n.orderRound+1).padStart(3,'0'):orderReady?'SẴN SÀNG VÀO NHỊP':'KHÁCH MỚI SAU'}</small>
          <div class="neon-order-recipe neon-beat-sequence">${beatActive?beat.map((item,i)=>`<span class="${i<n.beatStep?'is-done':i===n.beatStep?'is-next':''}" aria-label="${beatNames[item]}">${i<n.beatStep?'✓':beatSymbols[item]}</span>`).join(''):
           orderReady?'<span class="neon-beat-prompt">BẮT ĐẦU ♫</span>':
           `<span class="neon-order-timer" data-arcade-until="${n.orderReadyAt}">${countdown(n.orderReadyAt-time)}</span>`}</div>
-         <em>${beatActive?`${n.beatStep+1}/${beat.length} · <span class="neon-beat-clock" data-arcade-until="${n.beatUntil}">${countdown(n.beatUntil-time)}</span>`:
-          orderReady?'Bấm bắt đầu':'Chờ lượt mới'}</em></div>
+         <em>${beatActive?`${strikeReady?'CHỐT':Math.min(n.beatStep+1,beat.length)+'/'+beat.length} · <span class="neon-beat-clock" data-arcade-until="${n.beatUntil}">${countdown(n.beatUntil-time)}</span>`:
+          orderReady?guest.name+' · +'+money(core.neonBeatReward({...n,orderStreak:n.orderStreak+1},true)):'Chờ lượt mới'}</em></div>
        </div>
+       ${beatActive&&beatMode>0?`<div class="neon-hit-wrap"><div class="neon-hit-meter" data-neon-beat-meter="1"
+         data-neon-beat-start="${n.beatUntil-core.neonBeatWindow(n)}" data-neon-beat-end="${n.beatUntil}"
+         style="--neon-zone-start:${zone.start*100}%;--neon-zone-end:${zone.end*100}%">
+         <span class="neon-hit-target"></span><i class="neon-hit-marker" style="left:${strikeProgress}%"></i></div>
+         <small>${strikeReady?'⎵ SPACE đúng vùng sáng':'Đi đủ hướng rồi canh vùng sáng'}</small></div>`:''}
        ${!beatActive?button(orderReady?'▶ CHƠI · '+core.neonBeatWindow(n)/1000+'s':'Chờ khách',
         'neon-beat-start','neon-beat-start',!n.running||!orderReady):''}
        <div class="neon-order-actions neon-beat-actions" role="group" aria-label="Nhấn mũi tên đúng thứ tự">
         ${beatSymbols.map((symbol,i)=>`<button type="button" data-arcade-action="neon-beat-${i}" aria-label="Nhịp ${beatNames[i]}"
-         ${!beatActive||!n.running?'disabled':''}><strong>${symbol}</strong><span>${beatNames[i]}</span></button>`).join('')}
+         ${!beatActive||!n.running||strikeReady?'disabled':''}><strong>${symbol}</strong><span>${beatNames[i]}</span></button>`).join('')}
        </div>
-       <div class="neon-order-footer"><span>✓ ${n.orderWon} ĐƠN HOÀN THÀNH</span><span>${n.router>1?'MẠNG: +'+((core.neonBeatWindow(n)-(12000-2000*(n.roomTier-1)))/1000).toLocaleString('vi-VN',{maximumFractionDigits:1})+'s NHỊP':'SAI/HẾT GIỜ: MẤT COMBO'}</span></div>
+       ${strikeReady?button('⎵ SPACE · CHỐT NHỊP','neon-beat-finish','neon-beat-finish'):''}
+       <div class="neon-order-footer"><span>✓ ${n.orderWon} ĐƠN</span><span>${beatMode?'PERFECT +25% · '+guest.name:'SAI NHỊP: MẤT COMBO'}</span></div>
       </div>
     </div>
   </section>`;
@@ -761,6 +778,13 @@
    const until=Number(node.dataset.arcadeUntil);
    if(Number.isFinite(until))node.textContent=countdown(until-time);
   });
+  element.querySelectorAll?.('[data-neon-beat-meter]').forEach(meter=>{
+   const start=Number(meter.dataset.neonBeatStart),end=Number(meter.dataset.neonBeatEnd);
+   if(end>start){
+    const marker=meter.querySelector('.neon-hit-marker');
+    if(marker)marker.style.left=Math.max(0,Math.min(100,(time-start)/(end-start)*100))+'%';
+   }
+  });
   const session=element.querySelector?.('[data-neon-service-track]');
   if(session){
    const progress=Math.round(state.neon.sessionMs/core.NEON_SERVICE_INTERVAL*100);
@@ -828,7 +852,7 @@
   feedback=/^mine-probe-[012]$/.test(action)?{type:'probe',hit:result.hit,ore:result.ore,
    quantity:result.quantity,branch:Number(action.slice(-1)),at:now()}:
    action==='mine'||action==='mine-burst'?{type:'mine',ore:action==='mine-burst'?'burst':result.label,
-   quantity:result.quantity||1,at:now()}:/^(neon-order-[012]|neon-beat-[0123])$/.test(action)?
+   quantity:result.quantity||1,at:now()}:/^(neon-order-[012]|neon-beat-[0123]|neon-beat-finish)$/.test(action)?
     {type:'neon-order',success:!/(Nhầm|Lệch)/.test(result.label),at:now()}:
     action==='reel-line'?{type:'fish',fishId:hookedFish,label:result.label,at:now()}:
     action==='catch-bubble'?{type:'garden-bubble',at:now()}:
@@ -1078,6 +1102,13 @@
   root.addEventListener('pagehide',()=>save());
   root.document.addEventListener?.('keydown',event=>{
    const keys={ArrowLeft:0,ArrowUp:1,ArrowRight:2,ArrowDown:3};
+   if(tab==='neon'&&!drawerOpen&&!exchangeOpen&&!seasonOpen&&
+      state?.neon?.beatUntil>now()&&state.neon.beatMode>0&&
+      state.neon.beatStep>=core.neonBeatPattern(state.neon).length&&
+      (event.code==='Space'||event.key===' ')&&!event.repeat&&
+      !['INPUT','TEXTAREA','SELECT'].includes(event.target?.tagName)){
+    event.preventDefault?.();interact('neon-beat-finish');return;
+   }
    if(tab==='neon'&&!drawerOpen&&!exchangeOpen&&!seasonOpen&&
       state?.neon?.beatUntil>now()&&Object.hasOwn(keys,event.key)&&
       !['INPUT','TEXTAREA','SELECT'].includes(event.target?.tagName)){
