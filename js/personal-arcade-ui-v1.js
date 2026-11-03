@@ -1103,6 +1103,13 @@
    if(control.dataset.jadeCloseClue!=null){
     root.DuduPersonalJadeUIV1?.closeClue?.();render();return;
    }
+   if(control.dataset.jadeForecastToggle!=null){
+    if(root.DuduPersonalJadeUIV1?.toggleForecast?.(state?.jade?.active))render();
+    return;
+   }
+   if(control.dataset.jadeForecastClose!=null){
+    root.DuduPersonalJadeUIV1?.closeForecast?.();render();return;
+   }
    if(control.dataset.jadeDesign!=null){
     if(root.DuduPersonalJadeUIV1?.chooseDesign?.(Number(control.dataset.jadeDesign)))render();
     return;
@@ -1179,6 +1186,7 @@
     drawerOpen=action==='jade-open-market'?'jade-market':
      action==='jade-open-vault'?'jade-vault':'jade-workshop';render();return;
    }
+   if(/^jade-forecast-[012]$/.test(action||''))root.DuduPersonalJadeUIV1?.closeForecast?.();
    if(action)interact(action);
   });
   root.setInterval(tick,1000);

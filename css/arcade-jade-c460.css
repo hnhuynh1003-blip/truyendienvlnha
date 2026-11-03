@@ -79,39 +79,43 @@
  from{opacity:0;transform:translateY(16px) scale(.92)}
  to{opacity:1;transform:none}
 }
-/* Only show the single-row appraisal console after two real inspections.
-   No second copy of the three scan cards is rendered below the stone. */
-#personal-arcade-v1 .jade-forecast-console{
- display:grid;gap:5px;margin:6px 6px 5px;padding:7px 8px;
- border:1px solid #bba4778f;border-radius:10px;
- background:linear-gradient(115deg,#1b3e36,#253a38 65%,#3c3b32);
+/* A permanent-height stone stage hosts the optional forecast. No new card
+   is inserted in the scrollable workshop when the second clue is found. */
+#personal-arcade-v1 .jade-forecast-trigger{
+ position:absolute;top:12px;left:9px;z-index:11;min-height:29px;
+ max-width:148px;padding:5px 10px;border:1px solid #d5b77f;
+ border-radius:9px;background:rgba(24,55,44,.84);color:#ffdfaa;
+ backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+ font:850 10px/1.2 system-ui,sans-serif;cursor:pointer;
+ box-shadow:0 5px 13px #071d1680;
 }
-#personal-arcade-v1 .jade-forecast-console-head{
- display:flex;align-items:center;justify-content:space-between;gap:6px;
+#personal-arcade-v1 .jade-forecast-trigger:disabled{opacity:.65;cursor:default}
+#personal-arcade-v1 .jade-forecast-trigger.is-guessed{border-color:#93d5b2;color:#b5f1d2;opacity:.9}
+#personal-arcade-v1 .jade-forecast-popover{
+ position:absolute;z-index:14;top:47px;left:9px;
+ width:min(218px,calc(100% - 18px));padding:8px;
+ display:grid;gap:6px;border:1px solid #e8c991;border-radius:11px;
+ background:rgba(17,44,36,.91);color:#f8e8c7;
+ backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
+ box-shadow:0 8px 24px #03170fbd;
 }
-#personal-arcade-v1 .jade-forecast-console-head>b{
- font:850 10px/1.2 system-ui,sans-serif;letter-spacing:.06em;color:#f4d9a5;
+#personal-arcade-v1 .jade-forecast-popover-head{display:flex;align-items:center;justify-content:space-between}
+#personal-arcade-v1 .jade-forecast-popover-head>b{font:850 9px/1.2 system-ui,sans-serif;letter-spacing:.06em}
+#personal-arcade-v1 .jade-forecast-popover-head>button{
+ width:20px;height:20px;border:0;border-radius:50%;background:#f6dab52d;color:#ffefcf;
+ font:900 15px/1 system-ui,sans-serif;cursor:pointer;
 }
-#personal-arcade-v1 .jade-forecast-console-head>small{
- font:700 9px/1.2 system-ui,sans-serif;color:#b9d8ba;
+#personal-arcade-v1 .jade-forecast-popover-options{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;
 }
-#personal-arcade-v1 .jade-forecast-console-options{
- display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;
+#personal-arcade-v1 .jade-forecast-popover-options>button{
+ display:flex;align-items:center;justify-content:center;gap:3px;min-width:0;min-height:32px;
+ padding:5px 2px;border:1px solid #80aa90;border-radius:7px;
+ background:#2b5142;color:#f0f2de;font:800 10px/1.2 system-ui,sans-serif;cursor:pointer;
 }
-#personal-arcade-v1 .jade-forecast-console-choice{
- display:flex;justify-content:center;align-items:center;gap:5px;
- min-width:0;min-height:34px;padding:5px 4px;
- border:1px solid #5c8c78;border-radius:8px;
- background:#25463d;color:#e4efdf;cursor:pointer;
-}
-#personal-arcade-v1 .jade-forecast-console-choice>span{font:900 17px/1 serif;color:#c8dbbc}
-#personal-arcade-v1 .jade-forecast-console-choice>b{font:850 11px/1 system-ui,sans-serif;white-space:nowrap}
-#personal-arcade-v1 .jade-forecast-console-choice.is-selected{
- background:#75603e;border-color:#efce8c;color:#fff2d0;
-}
-#personal-arcade-v1 .jade-forecast-console-choice.is-selected>span{color:#ffe1a2}
-#personal-arcade-v1 .jade-forecast-console-choice:disabled:not(.is-selected){opacity:.48;cursor:default}
-#personal-arcade-v1 .jade-forecast-console-choice:focus-visible{outline:2px solid #fff0bb;outline-offset:2px}
+#personal-arcade-v1 .jade-forecast-popover-options>button>span{color:#f3d595;font-size:15px}
+#personal-arcade-v1 .jade-forecast-trigger:focus-visible,
+#personal-arcade-v1 .jade-forecast-popover button:focus-visible{outline:2px solid #fff0bb;outline-offset:2px}
 #personal-arcade-v1 .jade-saw-choices{
  display:grid;grid-template-columns:auto repeat(3,minmax(0,1fr));align-items:center;
  gap:4px;margin:5px 6px 7px;padding:5px 6px;border:1px solid #7c997d80;

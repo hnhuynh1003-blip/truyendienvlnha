@@ -90,16 +90,19 @@ test('C4.57a a correct guess on the free first stone scores skill, never currenc
  assert.equal(s.jade.forecasts.correct,1);
 });
 
-test('C4.60b forecast is a compact one-shot console after two scans; the obsolete drawer is absent',()=>{
+test('C4.60e forecast picker lives on the rock and opens only on demand; no duplicate drawer',()=>{
  const window={DuduPersonalArcadeCoreV1:arcade};
  vm.runInNewContext(readFileSync(join(__dirname,'../js/personal-jade-ui-v1.js'),'utf8'),{window});
  let s=arcade.fresh(TIME);s=act(s,'jade-buy-0').state;
- assert.doesNotMatch(window.DuduPersonalJadeUIV1.panel(s),/jade-forecast-console/);
+ assert.match(window.DuduPersonalJadeUIV1.panel(s),/data-jade-forecast-toggle/);
+ assert.equal(window.DuduPersonalJadeUIV1.toggleForecast(s.jade.active),false);
  s=act(s,'jade-scan-0').state;s=act(s,'jade-scan-1').state;
+ assert.doesNotMatch(window.DuduPersonalJadeUIV1.panel(s),/jade-forecast-popover/);
+ assert.equal(window.DuduPersonalJadeUIV1.toggleForecast(s.jade.active),true);
  const html=window.DuduPersonalJadeUIV1.panel(s);
- assert.match(html,/jade-forecast-console/);
+ assert.match(html,/jade-forecast-popover/);
  for(let i=0;i<3;i++)assert.match(html,new RegExp('data-arcade-action="jade-forecast-'+i+'"'));
- assert.doesNotMatch(html,/jade-scan-drawer/);
+ assert.doesNotMatch(html,/jade-scan-drawer|jade-forecast-console/);
  const index=readFileSync(join(__dirname,'../index.html'),'utf8');
  assert.match(index,/c457a=1/);
 });

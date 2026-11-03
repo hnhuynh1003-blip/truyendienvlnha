@@ -53,26 +53,36 @@ test('C4.60a glass notes reveal each scan beside the real stone, never paint ove
  assert.doesNotMatch(render(s),/jade-glass-note/);
 });
 
-test('C4.60b the compact three-choice forecast appears after two scans and locks a prediction',()=>{
+test('C4.60e forecast is an on-demand stone popup that never inserts a workshop card',()=>{
  let s=testStone('perfect',5);
- assert.doesNotMatch(render(s),/jade-forecast-console/);
+ context.window.DuduPersonalJadeUIV1.closeForecast();
+ assert.match(render(s),/data-jade-forecast-toggle/);
+ assert.doesNotMatch(render(s),/jade-forecast-console|jade-forecast-popover/);
+ assert.equal(context.window.DuduPersonalJadeUIV1.toggleForecast(s.jade.active),false,'Two scan points are required');
  s=act(s,'jade-scan-0').state;
- assert.doesNotMatch(render(s),/jade-forecast-console/);
+ assert.doesNotMatch(render(s),/jade-forecast-popover/);
  s=act(s,'jade-scan-1').state;
+ assert.doesNotMatch(render(s),/jade-forecast-popover/,'The second scan must not open or push down a surprise card');
+ assert.equal(context.window.DuduPersonalJadeUIV1.toggleForecast(s.jade.active),true);
  const open=render(s);
- assert.match(open,/jade-forecast-console/);
- assert.match(open,/1 lần/);
+ assert.match(open,/jade-forecast-popover/);
+ assert.ok(open.indexOf('jade-forecast-popover')<open.indexOf('arcade-control-panel jade-control-panel'),
+  'The picker remains inside the stone stage and outside document flow');
  for(let i=0;i<3;i++){
-  assert.match(open,new RegExp('jade-forecast-console-choice'));
+  assert.match(open,/jade-forecast-popover-options/);
   assert.equal((open.match(new RegExp('data-arcade-action="jade-forecast-'+i+'"','g'))||[]).length,1,
-   'Exactly one forecast action is visible in the compact console');
+   'Exactly one forecast action appears in the user-opened picker');
  }
+ context.window.DuduPersonalJadeUIV1.closeForecast();
+ assert.doesNotMatch(render(s),/jade-forecast-popover/);
+ assert.equal(context.window.DuduPersonalJadeUIV1.toggleForecast(s.jade.active),true);
  s=act(s,'jade-forecast-2').state;
- assert.match(render(s),/✓ Đã ghi/);
- assert.match(render(s),/jade-forecast-console-choice is-selected/);
+ context.window.DuduPersonalJadeUIV1.closeForecast();
+ assert.match(render(s),/✓ Quý/);
+ assert.doesNotMatch(render(s),/jade-forecast-popover/);
  assert.equal(act(s,'jade-forecast-0').ok,false,'No second prediction');
  const restored=arcade.norm(clone(s),T);
- assert.match(render(restored),/✓ Đã ghi/,'The sealed guess remains selected after reload');
+ assert.match(render(restored),/✓ Quý/,'The sealed guess remains selected after reload');
  s=act(s,'jade-cut').state;
  assert.match(render(s),/jade-forecast-verdict/,'Cut still settles the saved prediction');
 });

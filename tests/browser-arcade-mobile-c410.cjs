@@ -260,9 +260,25 @@ async function main(){
   await action('jade-select-0').first().click();
   assert.equal(await page.locator('#personal-arcade-v1 .jade-scan-drawer').count(),0,
    'C4.60b removes the duplicate text-heavy inspection drawer');
-  for(let i=0;i<3;i++)await page.locator('#personal-arcade-v1 button[data-jade-scan-point="'+i+'"]').click();
-  assert.equal(await page.locator('#personal-arcade-v1 .jade-forecast-console').count(),1,
-   'After two or more scans the compact forecast console is available');
+  const relativeWorkbenchTop=()=>page.locator('#personal-arcade-v1 .jade-saw-choices').evaluate(el=>
+   Math.round(el.getBoundingClientRect().top-el.closest('.arcade-world-jade').querySelector('.jade-stage').getBoundingClientRect().bottom));
+  const workbenchStart=await relativeWorkbenchTop();
+  for(let i=0;i<3;i++){
+   await page.locator('#personal-arcade-v1 button[data-jade-scan-point="'+i+'"]').click();
+   if(i===1)assert.equal(await relativeWorkbenchTop(),workbenchStart,
+    'C4.60e second scan never pushes the saw and action buttons down');
+  }
+  assert.equal(await page.locator('#personal-arcade-v1 .jade-forecast-console').count(),0);
+  assert.equal(await page.locator('#personal-arcade-v1 .jade-forecast-popover').count(),0,
+   'The forecast must wait for an explicit player tap');
+  await page.locator('#personal-arcade-v1 button[data-jade-forecast-toggle]').click();
+  const guessPopup=page.locator('#personal-arcade-v1 .jade-forecast-popover');
+  assert.equal(await guessPopup.count(),1);
+  assert.equal(await guessPopup.evaluate(el=>getComputedStyle(el).position),'absolute',
+   'Prediction choices float within the scene, not inside the scrollable panel');
+  assert.equal(await relativeWorkbenchTop(),workbenchStart,
+   'Opening the prediction popup also leaves all lower buttons in place');
+  await page.locator('#personal-arcade-v1 button[data-jade-forecast-close]').click();
   const scans=await page.evaluate(()=>{
    const raw=localStorage.getItem('dudu-personal-arcade:v1:sandbox%3Ac410-mobile-tester');
    const game=raw?JSON.parse(raw):null;
