@@ -366,7 +366,7 @@
       <div class="neon-order-game neon-beat-game ${orderReady?'is-ready':'is-waiting'} ${beatActive?'is-playing':''} ${seasonTicket?'is-season-ticket':''} ${orderPulse?(orderPulse.success?'is-complete':'is-mistake'):''}" aria-label="Quầy thử thách nhịp: hoàn thành ${n.orderWon} đơn, liên tiếp ${n.orderStreak}">
        <div class="neon-order-heading"><b>♫ QUẦY NHỊP ĐIỆU</b><span>COMBO ×${n.orderStreak}</span></div>
        <div class="neon-shift-modes" role="group" aria-label="Chọn chế độ phục vụ">
-        ${[['Tập nhịp',0],['⚡ Tốc chiến',1],['✦ VIP',2]].map(([name,i])=>{
+        ${[['Tập',0],['⚡ Nhanh',1],['✦ VIP',2]].map(([name,i])=>{
          const locked=!core.neonStyleUnlocked(n,i),selected=beatMode===i;
          return `<button type="button" class="${selected?'is-active':''}" aria-pressed="${selected}"
           data-arcade-action="neon-style-${i}" ${beatActive||locked?'disabled':''}

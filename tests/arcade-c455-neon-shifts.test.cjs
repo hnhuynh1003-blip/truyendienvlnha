@@ -21,6 +21,8 @@ test('C4.55 retains the C4.41B legacy mode and unlocks advanced shifts through u
  assert.equal(s.neon.beatMode,0);
  assert.equal(arcade.neonBeatPattern(s.neon).length,3);
  assert.equal(arcade.neonBeatWindow(s.neon),12000);
+ assert.ok(arcade.neonBeatReward({...s.neon,orderStreak:1})>=30,
+  'The visible default shift pays at least 3 Tiền Xanh, not 0.3');
  assert.equal(arcade.neonStyleUnlocked(s.neon,1),true);
  assert.equal(arcade.neonStyleUnlocked(s.neon,2),false);
  assert.equal(act(s,'neon-style-2').ok,false);
@@ -104,4 +106,8 @@ test('C4.55 mobile counter and compact Jade hunt controls are present without ex
  assert.match(css,/\.neon-hit-target/);
  assert.match(css,/\.jade-hunt-card\{display:grid;gap:5px/);
  assert.doesNotMatch(jadeUI,/Ba tuyến thám ngọc\. Một túi niêm phong/);
+ assert.doesNotMatch(jadeUI,/Mỗi viên đá ẩn một câu chuyện/);
+ assert.match(jadeUI,/jade-welcome-compact/);
+ assert.match(ui,/\['Tập',0\]/);
+ assert.match(css,/height:26px;min-height:26px/);
 });

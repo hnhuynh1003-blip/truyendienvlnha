@@ -4,7 +4,7 @@ const assert=require('node:assert/strict');
 const arcade=require('../js/personal-arcade-core-v1.js');
 const TIME=1793440000000;
 
-test('C4.20 Neon serves two distinct steps once, pays a tiny bounded bonus and enforces cooldown',()=>{
+test('C4.20 Neon serves two distinct steps once, pays a bounded manual bonus and enforces cooldown',()=>{
  let state=arcade.fresh(TIME);
  const recipe=arcade.neonOrderPattern(state.neon);
  assert.equal(recipe.length,2);
@@ -19,11 +19,13 @@ test('C4.20 Neon serves two distinct steps once, pays a tiny bounded bonus and e
  assert.equal(state.neon.orderStep,0);
  assert.equal(state.neon.orderWon,1);
  assert.equal(state.neon.orderStreak,1);
- assert.equal(state.coins,3,'First completed order rewards just 0.3 Arcade Xu');
+ const reward=arcade.neonBeatReward({...state.neon,orderRound:state.neon.orderRound-1});
+ assert.equal(state.coins,reward,'Default manual orders now pay meaningful Tiền Xanh');
+ assert.ok(reward>=30,'At least 3 Tiền Xanh for the first full order');
  assert.equal(state.neon.orderReadyAt,TIME+arcade.NEON_ORDER_COOLDOWN);
  const blocked=arcade.act(state,'neon-order-'+recipe[0],TIME+1000);
  assert.equal(blocked.ok,false,'Cannot farm the order during its cooldown');
- assert.equal(blocked.state.coins,3);
+ assert.equal(blocked.state.coins,reward);
  const next=arcade.neonOrderPattern(state.neon);
  state=arcade.act(state,'neon-order-'+next[0],TIME+arcade.NEON_ORDER_COOLDOWN).state;
  assert.equal(state.neon.orderStep,1);

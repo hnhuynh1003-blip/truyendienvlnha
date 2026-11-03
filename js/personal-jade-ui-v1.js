@@ -80,16 +80,14 @@
       ${btn('Đưa mẫu #'+j.stash[0].id,'jade-select-0','gold')}
       ${btn('＋ Đi chợ','jade-open-market','upgrade',j.stash.length>=jade.MAX_STONES)}
     </div></div>`;
-  if(!stone)return `<div class="jade-welcome">
-    <span>✧ PHƯỜNG NGỌC ĐÃ MỞ CỬA</span><strong>Mỗi viên đá ẩn một câu chuyện.</strong>
-    <p>Chọn đá · Soi ngọc · Xẻ phôi · Chế tác.</p>
-    ${btn(j.bought===0?'✦ Nhận đá tặng':'✦ Mở chợ đá',j.bought===0?'jade-buy-0':'jade-open-market','gold')}
-    ${j.bought===0?btn('◈ Vào chợ đá','jade-open-market','upgrade'):''}
-    ${j.vault.length?btn('▱ Kho đang giữ '+j.vault.length+' món ngọc','jade-open-vault','upgrade'):''}
-    ${canRescue?`<div class="jade-recovery">
-      <small>Tiền Xanh dưới 5 · Xưởng ngọc có đá tập cứu vốn, soi và xẻ không tốn phí.</small>
-      ${btn(rescueLeft?'◷ Đá cứu vốn · '+rescueTime+' phút':'✦ Nhận đá cứu vốn · Miễn phí',
-       'jade-rescue','upgrade',rescueLeft>0)}</div>`:''}</div>`;
+  if(!stone)return `<div class="jade-welcome jade-welcome-compact">
+    <div class="jade-compact-main"><span aria-hidden="true">◈</span>
+     <b>${j.bought===0?'Có 1 phôi miễn phí':'Chưa chọn đá'}</b>
+     ${btn(j.bought===0?'Nhận phôi':'Đến chợ',j.bought===0?'jade-buy-0':'jade-open-market','gold')}</div>
+    ${j.vault.length?`<div class="jade-compact-extra">${btn('▱ Kho · '+j.vault.length,'jade-open-vault','upgrade')}</div>`:''}
+    ${canRescue?`<div class="jade-recovery jade-recovery-inline">
+      <small>◷ Đá cứu vốn</small>
+      ${btn(rescueLeft?rescueTime+' phút':'Nhận miễn phí','jade-rescue','upgrade',rescueLeft>0)}</div>`:''}</div>`;
   if(['raw','window'].includes(stone.phase)){
    const windowQuote=jade.marketQuote(stone,nowOf(s));
    return `<details class="jade-scan-drawer" ${stone.scans.some(Boolean)&&stone.scans.some(v=>!v)?'open':''}>
@@ -299,7 +297,7 @@
   const job=j.craftJob,jobReady=!!job&&Date.now()>=job.readyAt;
   return `<section class="arcade-world arcade-world-jade" aria-label="Ngọc Phường">
    <header class="arcade-world-heading"><div><span class="arcade-eyebrow">04 / JADE APPRAISAL</span>
-     <h3>Ngọc Phường</h3><p>Đoán đá · Chế tác · Sưu tầm</p></div><span class="arcade-world-live">✦ PHỈ THÚY KÝ</span></header>
+     <h3>Ngọc Phường</h3></div></header>
    ${stoneScene(stone,j,cutPulse)}
    ${job?`<button type="button" class="jade-work-order ${jobReady?'is-ready':''}" data-arcade-action="jade-open-workshop">
      <span aria-hidden="true">${jobReady?'✦':'⚒'}</span><strong>${jobReady?'Ngọc đã hoàn thành':'Thợ đang chế tác '+jade.CRAFTS[job.type].name}</strong>
@@ -314,7 +312,7 @@
      ${sheet('Chợ đá','◈','jade-market')}${sheet('Kho ngọc','▱','jade-vault')}
      ${sheet('Xưởng','⚒','jade-workshop')}${sheet('Sổ ngọc','✧','jade-gallery')}</div>
     <button type="button" class="jade-hunt-trigger" data-arcade-drawer="jade-hunt">
-     <span class="jade-hunt-trigger-icon" aria-hidden="true">🎒</span><span><b>SĂN ĐÁ MÙ</b><small>3 tuyến bí cảnh · chọn may rủi</small></span><strong>VÀO SĂN ›</strong></button>
+     <span class="jade-hunt-trigger-icon" aria-hidden="true">🎒</span><span><b>Săn đá mù</b></span><strong>›</strong></button>
     ${marketPanel(s)}${huntPanel(s)}${vaultPanel(s)}${workshopPanel(s)}${galleryPanel(s)}
    </div>
   </section>`;

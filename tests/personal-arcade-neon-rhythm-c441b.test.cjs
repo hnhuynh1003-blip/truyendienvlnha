@@ -50,9 +50,11 @@ test('C4.41B correct arrows within deadline complete one real manual order, no i
  assert.equal(state.neon.orderWon,1);
  assert.equal(state.neon.orderStreak,1);
  assert.equal(state.neon.beatUntil,0);
- assert.equal(state.coins,3,'Only a complete manual ticket gives 0.3 fictional Xu');
+ const reward=arcade.neonBeatReward({...state.neon,orderRound:state.neon.orderRound-1});
+ assert.equal(state.coins,reward,'Only a complete ticket pays the improved default reward');
+ assert.ok(reward>=30);
  assert.equal(act(state,'neon-beat-start',TIME+3500).ok,false,'90s cooldown');
- assert.equal(arcade.advance(state,TIME+3600000,0).coins,3,'No offline earnings');
+ assert.equal(arcade.advance(state,TIME+3600000,0).coins,reward,'No offline earnings');
 });
 
 test('C4.41B a wrong direction or expired timer resets event combo and requires a new guest',()=>{

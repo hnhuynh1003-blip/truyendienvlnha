@@ -156,7 +156,9 @@
   {start:.46,end:.90};
  const neonBeatReward=(neon,perfect=false)=>{
   const mode=neon.beatMode||0,combo=Math.min(6,neon.orderStreak||0);
-  if(!mode)return 3+Math.min(2,Math.floor(combo/3));
+  // C4.55b: even the default counter shift must feel worth serving. The old
+  // 0.3–0.5 Tiền Xanh was a legacy tutorial reward, not a live economy goal.
+  if(!mode)return 18+neon.roomTier*8+combo*4+Math.floor(neonBeatGuest(neon).extra/2);
   const base=(mode===1?25:64)+neon.roomTier*(mode===1?9:16)+
    neonBeatGuest(neon).extra+combo*(mode===1?4:7);
   return Math.round(base*(perfect?1.25:1));
@@ -512,9 +514,9 @@
    n.orderStreak=Math.min(1000,n.orderStreak+1);
    n.orderReadyAt=time+neonOrderCooldown(n);
    if(neonGame)neonGame.recordOrder(n,true);
-   const bonus=3+Math.min(2,Math.floor(n.orderStreak/3));
+   const bonus=neonBeatReward({...n,orderRound:n.orderRound-1});
    give(state,bonus);
-   return succeed('✦ PERFECT! Phục vụ đủ nhịp · +'+formatXu(bonus)+' Xu Arcade');
+   return succeed('✦ Xong đơn! +'+formatXu(bonus)+' Tiền Xanh');
   }
   if(action==='neon-beat-finish'){
    const n=state.neon,sequence=neonBeatPattern(n);
@@ -554,9 +556,9 @@
    n.orderRound++;n.orderStep=0;n.orderWon++;n.orderStreak=Math.min(1000,n.orderStreak+1);
    if(neonGame)neonGame.recordOrder(n,true);
    n.orderReadyAt=time+neonOrderCooldown(n);
-   const bonus=3+Math.min(2,Math.floor(n.orderStreak/3));
+   const bonus=neonBeatReward({...n,orderRound:n.orderRound-1});
    give(state,bonus);
-   return succeed('✦ Phục vụ trọn đơn · +'+formatXu(bonus)+' Xu Arcade');
+   return succeed('✦ Phục vụ trọn đơn · +'+formatXu(bonus)+' Tiền Xanh');
   }
   const contract=/^neon-contract-([012])$/.exec(action||'');
   if(contract){

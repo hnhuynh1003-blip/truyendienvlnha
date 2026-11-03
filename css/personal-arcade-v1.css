@@ -219,11 +219,12 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header>span:nth-ch
 .neon-service-track{height:6px;border-radius:10px;overflow:hidden;background:#253a49;margin-bottom:12px;border:1px solid #51717c}
 .neon-service-track i{display:block;height:100%;background:linear-gradient(90deg,#64bba8,#a2f7db);transition:width .3s}
 /* C4.55 · Selectable shifts, procedural arrows and Audition-style final strike. */
-.neon-shift-modes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
-.neon-shift-modes button{min-height:32px;padding:5px 4px;border:1px solid #457184;border-radius:8px;
+#personal-arcade-v1 .neon-shift-modes{display:flex;gap:4px;flex:none}
+#personal-arcade-v1 .neon-shift-modes button{flex:1 1 0;min-width:0;height:26px;min-height:26px;padding:2px 3px;
+ white-space:nowrap;border:1px solid #457184;border-radius:6px;
  background:#152b42;color:#bdd4e1;font:800 10px system-ui,sans-serif;cursor:pointer}
-.neon-shift-modes button.is-active{border-color:#f4d78b;background:linear-gradient(120deg,#554970,#246b6e);color:#fff2c2;box-shadow:inset 0 1px #fff5b037}
-.neon-shift-modes button:disabled:not(.is-active){opacity:.5;cursor:default}
+#personal-arcade-v1 .neon-shift-modes button.is-active{border-color:#f4d78b;background:linear-gradient(120deg,#554970,#246b6e);color:#fff2c2;box-shadow:inset 0 1px #fff5b037}
+#personal-arcade-v1 .neon-shift-modes button:disabled:not(.is-active){opacity:.5;cursor:default}
 .neon-hit-wrap{display:grid;gap:4px;min-width:0}
 .neon-hit-wrap>small{text-align:center;color:#b7e9e3;font-size:9px;font-weight:700}
 .neon-hit-meter{position:relative;height:17px;overflow:hidden;border:1px solid #5597a2;border-radius:9px;
@@ -694,6 +695,16 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header>span:nth-ch
 .jade-welcome strong,.jade-reveal strong{display:block;font:700 17px Georgia,ui-serif,serif;color:#fff0d5;margin:6px 0}
 .jade-welcome p{font-size:10px;color:#d8dfd5;line-height:1.5;margin:5px 0 12px}
 .jade-welcome .arcade-button{width:100%}
+#personal-arcade-v1 .jade-welcome.jade-welcome-compact{display:grid;gap:5px;padding:7px 8px;
+ min-height:0;border-radius:8px;text-align:left}
+#personal-arcade-v1 .jade-compact-main{display:flex;align-items:center;gap:7px;min-height:34px}
+#personal-arcade-v1 .jade-compact-main>span{flex:none;font-size:18px;color:#f5d29a}
+#personal-arcade-v1 .jade-compact-main>b{flex:1;min-width:0;color:#fff0cf;font-size:11px}
+#personal-arcade-v1 .jade-welcome-compact .arcade-button{flex:none;width:auto;min-height:30px;padding:5px 10px;font-size:10px}
+#personal-arcade-v1 .jade-compact-extra{display:flex;justify-content:flex-end}
+#personal-arcade-v1 .jade-recovery.jade-recovery-inline{display:flex;align-items:center;justify-content:space-between;
+ gap:5px;margin-top:2px;padding:5px 7px}
+#personal-arcade-v1 .jade-recovery-inline small{font-size:10px}
 .jade-recovery{display:grid;gap:5px;margin-top:8px;padding:8px;border:1px dashed #a28b5d;border-radius:9px;background:rgba(32,45,44,.55)}
 .jade-recovery small{color:#d6d5be;font-size:9px;line-height:1.4}
 .jade-recovery .arcade-button{width:100%;min-height:34px;font-size:10px}
@@ -720,6 +731,11 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header>span:nth-ch
 .jade-accounting small{display:block;font:800 8px ui-monospace,monospace;color:#9fceb9;line-height:1.3}
 .jade-accounting b{display:block;color:#f5dfae;font-size:14px;margin-top:4px;overflow-wrap:anywhere}
 .jade-accounting em{font-size:9px;font-style:normal;color:#aac2b3}.jade-quick-drawers{margin-top:8px}
+#personal-arcade-v1 .jade-accounting{margin-top:6px;gap:4px}
+#personal-arcade-v1 .jade-accounting>div{padding:4px 2px;border-radius:6px}
+#personal-arcade-v1 .jade-accounting b{margin-top:2px;font-size:12px}
+#personal-arcade-v1 .jade-quick-drawers{margin-top:6px}
+#personal-arcade-v1 .jade-quick-drawers .arcade-drawer-trigger{min-height:40px}
 .jade-market-grid,.jade-workshop-content,.jade-gallery-content{display:flex;flex-direction:column;gap:8px}
 .jade-market-card{display:flex;align-items:center;gap:8px;padding:9px 7px;border:1px solid #567b70;border-radius:11px;
  background:linear-gradient(140deg,#294541,#23333e)}.jade-market-card.is-locked{opacity:.65}
@@ -799,16 +815,16 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header>span:nth-ch
 }
 .jade-sheet-hint{font-size:10px;color:#afc5bc;line-height:1.5;margin:4px 0}
 /* C4.54 · Three sealed expeditions, visually distinct from informed market trays. */
-.jade-hunt-trigger{display:flex;align-items:center;gap:10px;width:100%;min-height:57px;margin-top:8px;
- padding:9px 11px;border:1px solid #b99465;border-radius:12px;
+.jade-hunt-trigger{display:flex;align-items:center;gap:8px;width:100%;min-height:40px;margin-top:6px;
+ padding:5px 9px;border:1px solid #b99465;border-radius:9px;
  background:radial-gradient(ellipse at 85% 0,#78573188,transparent 55%),linear-gradient(125deg,#453b32,#1b403e 83%);
  box-shadow:inset 0 1px #ffe4a02b,0 4px 12px #08191a66;color:#f9e8c5;text-align:left;cursor:pointer}
 .jade-hunt-trigger:hover,.jade-hunt-trigger:focus-visible{border-color:#f4d39b;filter:brightness(1.08)}
-.jade-hunt-trigger-icon{display:grid;place-items:center;width:38px;height:38px;flex:0 0 38px;
- border:1px solid #dcb7837d;border-radius:11px;background:#503e32;font-size:21px}
+.jade-hunt-trigger-icon{display:grid;place-items:center;width:27px;height:27px;flex:0 0 27px;
+ border:1px solid #dcb7837d;border-radius:7px;background:#503e32;font-size:15px}
 .jade-hunt-trigger>span:nth-child(2){display:grid;gap:3px;min-width:0;flex:1}
-.jade-hunt-trigger b{font-size:12px;letter-spacing:.08em}.jade-hunt-trigger small{color:#d7c7b1;font-size:9px}
-.jade-hunt-trigger>strong{flex:0 0 auto;font-size:9px;color:#ffdf9c}
+.jade-hunt-trigger b{font-size:11px;letter-spacing:.04em}
+.jade-hunt-trigger>strong{flex:0 0 auto;font-size:16px;color:#ffdf9c}
 .jade-hunt-content{display:grid;gap:7px}
 .jade-hunt-hero{display:grid;grid-template-columns:1fr auto;gap:3px 6px;align-items:center;
  min-height:65px;padding:10px 12px;border:1px solid #b69874;border-radius:11px;

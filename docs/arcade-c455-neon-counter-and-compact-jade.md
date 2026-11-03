@@ -10,11 +10,12 @@
 
 | Chế độ | Truy cập | Cách chơi | Phần thưởng |
 | --- | --- | --- | --- |
-| Tập nhịp | Luôn mở | Chuỗi 3–5 phím của C4.41B | Giữ 0,3–0,5 Tiền Xanh để tương thích save và test cũ |
+| Tập nhịp | Luôn mở | Chuỗi 3–5 phím của C4.41B | Tăng lên từ 3 Tiền Xanh/đơn, tăng theo cấp phòng, khách và combo (C4.55b) |
 | Tốc chiến | Luôn mở | Chuỗi biến thiên 4–6 phím, sau đó chốt SPACE đúng vùng sáng | Từ khoảng 3,8 Tiền Xanh và tăng theo phòng, khách, combo; PERFECT +25% |
 | Khách VIP | Phòng 2 + mạng 2 | Chuỗi biến thiên 6–7 phím, vùng chốt hẹp hơn, ít giây hơn | Thưởng cao hơn Tốc chiến, tăng cùng cấp phòng và combo |
 
 - Nhiều nhóm khách: game thủ, khách gấp, khách VIP, đội thi đấu. Thứ tự khách và chuỗi phím sinh theo `orderRound`/cấp phòng; không random lại khi reload.
+- C4.55b: thanh chọn chế độ là ba nút nhỏ, bỏ các thẻ dài; màn chào Ngọc Phường thành hàng thao tác một nút, không còn slogan/đoạn hướng dẫn lặp.
 - Chạm phím theo hướng trên điện thoại hoặc dùng phím mũi tên trên PC. Với hai chế độ mới, chờ con trỏ chạy đến vùng sáng rồi nhấn nút **SPACE / Chốt nhịp** (hoặc phím Space).
 - Hoàn thành hướng chưa trao thưởng; chỉ chốt nhịp hợp lệ mới cộng Tiền Xanh một lần và ghi đơn/chuỗi. Bấm sai hoặc hết giờ mất combo, không mất thêm tiền.
 - Ca kỹ năng hẹn khách tiếp theo sớm hơn giới hạn 90 giây của chế độ cũ; mạng cấp cao tiếp tục có ích.
