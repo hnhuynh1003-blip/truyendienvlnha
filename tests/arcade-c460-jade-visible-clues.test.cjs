@@ -20,7 +20,7 @@ function testStone(flaw='perfect',grade=5){
  return s;
 }
 
-test('C4.60 the raw photographic specimen exposes three interactive scan points, not hidden clues',()=>{
+test('C4.60a glass notes reveal each scan beside the real stone, never paint over its artwork',()=>{
  let s=testStone('fracture');
  const before=render(s);
  assert.match(before,/jade-inspection-overlay/);
@@ -30,18 +30,69 @@ test('C4.60 the raw photographic specimen exposes three interactive scan points,
   assert.equal((before.match(new RegExp('data-arcade-action="jade-scan-'+i+'"','g'))||[]).length,1,
    'The legacy scanner keeps one unique action for browser automation');
  }
- assert.doesNotMatch(before,/<ellipse cx=/);
- assert.doesNotMatch(before,/stroke="#eedac0"/);
+ assert.doesNotMatch(before,/jade-glass-note/);
+ assert.doesNotMatch(before,/<svg/);
+ assert.equal(context.window.DuduPersonalJadeUIV1.chooseClue(0,s.jade.active),true);
  s=act(s,'jade-scan-0').state;
- assert.match(render(s),/<ellipse cx=/,'Light scattering is drawn directly onto the rough stone');
+ assert.match(render(s),/jade-glass-note/);
+ assert.match(render(s),/THỦY ĐẦU/);
+ assert.equal(context.window.DuduPersonalJadeUIV1.chooseClue(0,s.jade.active),false,
+  'A scanned point can be tapped again without charging or rescanning');
+ assert.doesNotMatch(render(s),/jade-glass-note/,'Second tap closes the glass note');
+ assert.equal(context.window.DuduPersonalJadeUIV1.chooseClue(1,s.jade.active),true);
  s=act(s,'jade-scan-1').state;
- assert.match(render(s),/stroke="#68cda8"/,'The vein is physically revealed');
+ assert.match(render(s),/MÃNG ĐỚI/);
+ assert.equal(context.window.DuduPersonalJadeUIV1.chooseClue(2,s.jade.active),true);
  s=act(s,'jade-scan-2').state;
- assert.match(render(s),/stroke="#eedac0"/,'Fracture has a visible marked line');
+ assert.match(render(s),/LIỆT VĂN/);
+ assert.match(render(s),/Liệt văn giao nhau|đường rạn/);
  const reloaded=arcade.norm(clone(s),T);
- assert.match(render(reloaded),/stroke="#eedac0"/,'Previously seen clues survive reload');
+ assert.match(render(reloaded),/Liệt văn giao nhau|đường rạn/,'Findings survive reload');
  s=act(s,'jade-cut').state;
  assert.doesNotMatch(render(s),/jade-inspection-overlay/,'Inspection hotspots disappear after cutting');
+ assert.doesNotMatch(render(s),/jade-glass-note/);
+});
+
+test('C4.60a forecast opens on the rock only after two scans, locks exactly one guess',()=>{
+ let s=testStone('perfect',5);
+ assert.match(render(s),/data-jade-guess-popup[^>]*disabled/);
+ assert.equal(context.window.DuduPersonalJadeUIV1.chooseForecast(s.jade.active),false);
+ s=act(s,'jade-scan-0').state;
+ assert.equal(context.window.DuduPersonalJadeUIV1.chooseForecast(s.jade.active),false);
+ s=act(s,'jade-scan-1').state;
+ assert.equal(context.window.DuduPersonalJadeUIV1.chooseForecast(s.jade.active),true);
+ const open=render(s);
+ assert.match(open,/jade-glass-forecast-choices/);
+ for(let i=0;i<3;i++){
+  assert.match(open,new RegExp('data-jade-forecast-choice="'+i+'"'));
+  assert.equal((open.match(new RegExp('data-arcade-action="jade-forecast-'+i+'"','g'))||[]).length,1,
+   'Legacy forecast keeps a unique action for automation');
+ }
+ s=act(s,'jade-forecast-2').state;
+ assert.match(render(s),/✓ Đã chọn: Quý/);
+ assert.equal(act(s,'jade-forecast-0').ok,false,'No second prediction');
+ context.window.DuduPersonalJadeUIV1.closeClue();
+ assert.doesNotMatch(render(s),/jade-glass-note/);
+ assert.equal(context.window.DuduPersonalJadeUIV1.chooseForecast(s.jade.active),true);
+ assert.match(render(s),/✓ Đã chọn: Quý/,'Reopening is review only');
+ s=act(s,'jade-cut').state;
+ assert.match(render(s),/jade-forecast-verdict/,'Cut still settles the saved prediction');
+});
+
+test('C4.60a legacy scanner stays folded during stone taps and remains open if user explicitly expands it',()=>{
+ let s=testStone();
+ assert.match(render(s),/<details class="jade-scan-drawer" >/);
+ context.window.DuduPersonalJadeUIV1.chooseClue(0,s.jade.active);
+ s=act(s,'jade-scan-0').state;
+ assert.match(render(s),/<details class="jade-scan-drawer" >/,
+  'Scanning on the art must not expand the old text-heavy cards');
+ context.window.DuduPersonalJadeUIV1.setScanDrawerOpen(true);
+ assert.match(render(s),/<details class="jade-scan-drawer" open>/);
+ s=act(s,'jade-scan-1').state;
+ assert.match(render(s),/<details class="jade-scan-drawer" open>/,
+  'Classic scanner controls remain usable across re-renders');
+ context.window.DuduPersonalJadeUIV1.setScanDrawerOpen(false);
+ assert.match(render(s),/<details class="jade-scan-drawer" >/);
 });
 
 test('C4.60 safe, standard and bold cutting have visible risk-reward on an intact core',()=>{

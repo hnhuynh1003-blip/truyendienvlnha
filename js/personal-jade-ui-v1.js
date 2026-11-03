@@ -24,6 +24,21 @@
  const nowOf=s=>s.lastAt||Date.now();
  const marketRates=s=>jade.COLORS.map((name,i)=>({name,index:i,rate:jade.marketRate(i,nowOf(s))}));
  let openStall=null,selectedMarket=0,selectedDesign=0,selectedSetting=0;
+ // Inspection notes are temporary UI state; the immutable scan/forecast
+ // results continue to live in the saved stone as before.
+ let selectedPoint=-1,activeStoneId=0,scanDrawerOpen=false;
+ const chooseClue=(spot,stone)=>{
+  if(!stone||!['raw','window'].includes(stone.phase)||!Number.isInteger(spot)||spot<0||spot>2)return false;
+  selectedPoint=selectedPoint===spot&&stone.scans[spot]?-1:spot;
+  return !stone.scans[spot];
+ };
+ const chooseForecast=stone=>{
+  if(!stone||!['raw','window'].includes(stone.phase)||stone.scans.filter(Boolean).length<2)return false;
+  selectedPoint=selectedPoint===3?-1:3;
+  return true;
+ };
+ const closeClue=()=>{selectedPoint=-1;};
+ const setScanDrawerOpen=open=>{scanDrawerOpen=!!open;};
  const chooseDesign=value=>{if(!Number.isInteger(value)||value<0||value>2)return false;selectedDesign=value;return true;};
  const chooseSetting=value=>{if(!Number.isInteger(value)||value<0||value>2)return false;selectedSetting=value;return true;};
  const jewelryLabel=stone=>stone?.craft&&jade.DESIGNS[stone.craft]?
@@ -57,29 +72,32 @@
   else return;
   openStall=index;
  }
- // Findings become visible on the specimen itself only after touching a scan point.
- function stoneEvidence(stone,j){
+ // Three very small inspection marks; results appear in the floating glass
+ // note beside the photographed rock, never painted over its artwork.
+ function stoneEvidence(stone){
   if(!stone||!['raw','window'].includes(stone.phase))return '';
-  const seed=stone.seed>>>0,dx=(seed>>>8)%19-9,dy=(seed>>>15)%13-6;
-  const light=stone.scans[0]?`<ellipse cx="${81+dx}" cy="${57+dy}" rx="${stone.grade>=5?35:25}" ry="${stone.grade>=5?25:16}"
-    fill="#9cefc8" fill-opacity="${stone.site===3&&j.lamp<4?.12:stone.grade>=5?.43:stone.grade>=3?.27:.11}"
-    stroke="#c4f7dd" stroke-opacity=".45" stroke-width="1.5"/>`:'';
-  const vein=stone.scans[1]?`<path d="M${stone.flaw==='skin'?28:46} ${51+dy} Q${76+dx} ${33+dy} ${stone.flaw==='skin'?103:131} ${73+dy}"
-    fill="none" stroke="${stone.flaw==='skin'?'#b2e0a0':'#68cda8'}" stroke-width="${stone.flaw==='skin'?5:stone.grade>=4?4:2}"
-    stroke-opacity=".82" stroke-linecap="round"/>`:'';
-  const fracture=!stone.scans[2]?'':stone.flaw==='fracture'?`<path d="M${62+dx} 19 L${77+dx} 45 L${69+dx} 62 L${92+dx} 86 L${84+dx} 113 M${69+dx} 62 L${48+dx} 70"
-    fill="none" stroke="#eedac0" stroke-width="2" stroke-opacity=".9"/>`:
-   stone.flaw==='inclusion'?`<circle cx="${72+dx}" cy="${59+dy}" r="8" fill="#141b1b" opacity=".83"/>
-    <circle cx="${96+dx}" cy="${76+dy}" r="4" fill="#121919" opacity=".7"/>`:
-   stone.flaw==='mutation'?`<path d="M${48+dx} 68 Q${79+dx} 30 ${117+dx} 54" fill="none"
-    stroke="#ffdc98" stroke-width="2.5" stroke-opacity=".87"/>`:
-   `<circle cx="${88+dx}" cy="${61+dy}" r="17" stroke="#dbf4cf" stroke-opacity=".42" fill="none"/>`;
-  return `<div class="jade-inspection-overlay"><svg viewBox="0 0 178 143" preserveAspectRatio="none"
-   aria-hidden="true">${light}${vein}${fracture}</svg>
+  return `<div class="jade-inspection-overlay">
    ${['Thủy đầu','Mãng đới','Liệt văn'].map((name,i)=>`<button type="button"
     class="jade-evidence-point jade-evidence-${i} ${stone.scans[i]?'is-scanned':''}"
     data-jade-scan-point="${i}" aria-label="${stone.scans[i]?'Đã soi':'Soi'} ${name}"
-    title="${name}" ${stone.scans[i]?'disabled':''}>${stone.scans[i]?'✓':'◎'}</button>`).join('')}</div>`;
+    aria-pressed="${selectedPoint===i}" title="${name}">${stone.scans[i]?'✓':'◎'}</button>`).join('')}</div>`;
+ }
+ function glassNote(stone,j){
+  if(!stone||!['raw','window'].includes(stone.phase)||selectedPoint<0)return '';
+  const isForecast=selectedPoint===3,spot=selectedPoint;
+  if(!isForecast&&!stone.scans[spot])return '';
+  const names=['Thủy đầu','Mãng đới','Liệt văn'];
+  return `<aside class="jade-glass-note ${isForecast?'is-forecast':spot===1?'is-left':'is-right'}"
+    aria-label="${isForecast?'Phán đoán lõi ngọc':names[spot]}" role="group">
+    <div class="jade-glass-note-heading"><b>${isForecast?'◈ ĐOÁN LÕI':
+     ['◉ THỦY ĐẦU','〽 MÃNG ĐỚI','⌁ LIỆT VĂN'][spot]}</b>
+     <button type="button" data-jade-close-clue aria-label="Đóng ô soi">×</button></div>
+    ${isForecast?stone.forecast>=0?
+     `<div class="jade-glass-note-text">✓ Đã chọn: ${['Phế','Thường','Quý'][stone.forecast]}</div>`:
+     `<div class="jade-glass-forecast-choices">${['◇ Phế','◈ Thường','✦ Quý'].map((name,i)=>
+      `<button type="button" data-jade-forecast-choice="${i}" aria-label="Đoán ${jade.FORECASTS[i]}">${name}</button>`).join('')}</div>`:
+     `<div class="jade-glass-note-text">${jade.scanHint(stone,spot,j.lamp)}</div>`}
+   </aside>`;
  }
  function stoneScene(stone,j,phasePulse){
   const phase=stone?.phase||'none',color=stone?jade.COLOR_HEX[stone.color]:'#8bc4a7',
@@ -98,10 +116,15 @@
         aria-label="${cut?stoneName(stone):'Đá thô chưa cắt'}">
        <span class="jade-rock-face"></span><span class="jade-rock-grain"></span><span class="jade-rock-vein"></span>
        <span class="jade-item-art ${carved&&jade.CRAFTS[stone.craft]?jewelryArt(stone):`jade-item-${visual} ${cut?(carved?gemVisual(stone):splitVisual(stone)):shellVisual(stone.site,stone.seed)}`}" style="--jade-item-x:${artworkIndex*25}%;--jade-gem-tone:${color}" aria-hidden="true"></span>
-       ${stoneEvidence(stone,j)}${cut&&revealed?'<span class="jade-reveal-rays" aria-hidden="true"></span>':''}
+       ${stoneEvidence(stone)}${cut&&revealed?'<span class="jade-reveal-rays" aria-hidden="true"></span>':''}
        ${phase==='window'?'<span class="jade-polished-window"></span>':''}
        ${cut?`<span class="jade-gem-inner"></span><span class="jade-gem-shine"></span>`:''}
       </div>`:`<div class="jade-showcase-rough" aria-hidden="true"><i></i><i></i><i></i></div>`}
+    ${glassNote(stone,j)}
+    ${stone&&!cut?`<button type="button" class="jade-guess-trigger ${stone.forecast>=0?'is-guessed':''}"
+      data-jade-guess-popup aria-label="${stone.forecast>=0?'Xem phán đoán đã ghi':'Dự đoán lõi ngọc sau khi soi ít nhất hai điểm'}"
+      aria-pressed="${selectedPoint===3}" ${scanned<2?'disabled':''}>
+      ${stone.forecast>=0?'✓ Đã đoán':scanned<2?'◈ '+scanned+'/2':'◈ Đoán lõi'}</button>`:''}
     ${cut?`<div class="jade-stage-quote jade-quote-${tier}" role="status">
       <small>${tier==='legendary'?'✦ HUYỀN THOẠI':tier==='precious'?'◇ NGỌC QUÝ':tier==='common'?'◈ NGỌC THƯỜNG':'PHẾ THẠCH'}</small>
       <strong>${revealed?stoneName(stone):'Không có ngọc'}</strong>
@@ -135,7 +158,7 @@
   if(['raw','window'].includes(stone.phase)){
    const windowQuote=jade.marketQuote(stone,nowOf(s));
    const scanned=stone.scans.filter(Boolean).length,guessed=stone.forecast>=0;
-   return `<details class="jade-scan-drawer" ${stone.scans.some(Boolean)&&stone.scans.some(v=>!v)?'open':''}>
+   return `<details class="jade-scan-drawer" ${scanDrawerOpen?'open':''}>
        <summary>◉ Soi dấu hiệu <small>${stone.scans.filter(Boolean).length}/3</small></summary>
        <div class="jade-scan-options">${[0,1,2].map(i=>`<button type="button" class="jade-scan-choice" data-arcade-action="jade-scan-${i}" ${stone.scans[i]?'disabled':''}>
          <span>${['Thủy đầu','Mãng đới','Liệt văn'][i]}</span>
@@ -396,6 +419,9 @@
  }
  function panel(s,cutPulse){
   const j=s.jade||jade.fresh(),stone=j.active,found=Object.keys(j.album).length;
+  if((stone?.id||0)!==activeStoneId){
+   activeStoneId=stone?.id||0;selectedPoint=-1;scanDrawerOpen=false;
+  }
   const job=j.craftJob,jobReady=!!job&&Date.now()>=job.readyAt;
   return `<section class="arcade-world arcade-world-jade" aria-label="Ngọc Phường">
    <header class="arcade-world-heading"><div><span class="arcade-eyebrow">04 / JADE APPRAISAL</span>
@@ -419,5 +445,6 @@
    </div>
   </section>`;
  }
- root.DuduPersonalJadeUIV1=Object.freeze({panel,rememberTray,chooseMarketSample,chooseMarket,chooseDesign,chooseSetting});
+ root.DuduPersonalJadeUIV1=Object.freeze({panel,rememberTray,chooseMarketSample,chooseMarket,
+  chooseDesign,chooseSetting,chooseClue,chooseForecast,closeClue,setScanDrawerOpen});
 })(typeof window!=='undefined'?window:{});
