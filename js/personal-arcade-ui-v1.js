@@ -274,6 +274,8 @@
    strikeProgress=beatActive?Math.round(Math.max(0,Math.min(100,
     (1-(n.beatUntil-time)/core.neonBeatWindow(n))*100))):0,
    orderReady=time>=n.orderReadyAt,
+   rushReady=time>=n.rushReadyAt,
+   rushPayout=Math.round(n.rushPot*(n.rushClears===2?1.25:1)),
    seasonTicket=!!seasonGame?.neonTicket?.(n),
    servicePulse=activeFeedback('neon-service',time),
    orderPulse=activeFeedback('neon-order',time);
@@ -369,15 +371,26 @@
         ${[['Tập',0],['⚡ Nhanh',1],['✦ VIP',2]].map(([name,i])=>{
          const locked=!core.neonStyleUnlocked(n,i),selected=beatMode===i;
          return `<button type="button" class="${selected?'is-active':''}" aria-pressed="${selected}"
-          data-arcade-action="neon-style-${i}" ${beatActive||locked?'disabled':''}
+          data-arcade-action="neon-style-${i}" ${beatActive||n.rushActive||locked?'disabled':''}
           title="${locked?'Cần phòng 2 và mạng 2':name}">${locked?'🔒 ':''}${name}</button>`;}).join('')}</div>
+       <div class="neon-rush-strip ${n.rushActive?'is-active':''}" aria-label="Ca liên hoàn">
+        <div class="neon-rush-meta"><b>★ CA LIÊN HOÀN</b>
+         <small>${n.rushActive?`${n.rushClears}/3 · Két ${money(n.rushPot)} ${greenMark}`:
+          `3 đơn · thưởng ×2 · kỷ lục ${n.rushBest}/3`}</small></div>
+        <div class="neon-rush-controls">${n.rushActive?
+         (!beatActive?button('▶ Tiếp','neon-rush-next','neon-rush-next',!n.running):'')+
+          (!beatActive&&n.rushClears?button('✓ Chốt '+money(rushPayout),'neon-rush-bank','neon-rush-bank'):''):
+         button(rushReady?'▶ Vào ca':`⏳ <span data-arcade-until="${n.rushReadyAt}">${countdown(n.rushReadyAt-time)}</span>`,
+          'neon-rush-open','neon-rush-open',!rushReady||!n.running||beatActive)}</div>
+       </div>
        <div class="neon-order-scene">
         <div class="neon-order-customer" aria-hidden="true"><i></i><span>${guest.icon}</span></div>
-        <div class="neon-order-ticket"><small>${!n.running?'ĐÃ ĐÓNG QUẦY':beatActive?(seasonTicket?'✧ ĐƠN SƯƠNG #':'ĐƠN #')+String(n.orderRound+1).padStart(3,'0'):orderReady?'SẴN SÀNG VÀO NHỊP':'KHÁCH MỚI SAU'}</small>
+        <div class="neon-order-ticket"><small>${!n.running?'ĐÃ ĐÓNG QUẦY':n.rushActive?'★ CA '+(n.rushClears+1)+'/3':beatActive?(seasonTicket?'✧ ĐƠN SƯƠNG #':'ĐƠN #')+String(n.orderRound+1).padStart(3,'0'):orderReady?'SẴN SÀNG VÀO NHỊP':'KHÁCH MỚI SAU'}</small>
          <div class="neon-order-recipe neon-beat-sequence">${beatActive?beat.map((item,i)=>`<span class="${i<n.beatStep?'is-done':i===n.beatStep?'is-next':''}" aria-label="${beatNames[item]}">${i<n.beatStep?'✓':beatSymbols[item]}</span>`).join(''):
-          orderReady?'<span class="neon-beat-prompt">BẮT ĐẦU ♫</span>':
+          n.rushActive?'<span class="neon-beat-prompt">TIẾP HAY CHỐT?</span>':orderReady?'<span class="neon-beat-prompt">BẮT ĐẦU ♫</span>':
           `<span class="neon-order-timer" data-arcade-until="${n.orderReadyAt}">${countdown(n.orderReadyAt-time)}</span>`}</div>
          <em>${beatActive?`${strikeReady?'CHỐT':Math.min(n.beatStep+1,beat.length)+'/'+beat.length} · <span class="neon-beat-clock" data-arcade-until="${n.beatUntil}">${countdown(n.beatUntil-time)}</span>`:
+          n.rushActive?'Két ca '+money(n.rushPot)+' · Đang giữ thưởng':
           orderReady?guest.name+' · +'+money(core.neonBeatReward({...n,orderStreak:n.orderStreak+1},true)):'Chờ lượt mới'}</em></div>
        </div>
        ${beatActive&&beatMode>0?`<div class="neon-hit-wrap"><div class="neon-hit-meter" data-neon-beat-meter="1"
@@ -385,7 +398,7 @@
          style="--neon-zone-start:${zone.start*100}%;--neon-zone-end:${zone.end*100}%">
          <span class="neon-hit-target"></span><i class="neon-hit-marker" style="left:${strikeProgress}%;--neon-hit-duration:${core.neonBeatWindow(n)}ms;--neon-hit-elapsed:${Math.max(0,time-(n.beatUntil-core.neonBeatWindow(n)))}ms"></i></div>
          <small>${strikeReady?'⎵ SPACE đúng vùng sáng':'Đi đủ hướng rồi canh vùng sáng'}</small></div>`:''}
-       ${!beatActive?button(orderReady?'▶ CHƠI · '+core.neonBeatWindow(n)/1000+'s':'Chờ khách',
+       ${!beatActive&&!n.rushActive?button(orderReady?'▶ CHƠI · '+core.neonBeatWindow(n)/1000+'s':'Chờ khách',
         'neon-beat-start','neon-beat-start',!n.running||!orderReady):''}
        <div class="neon-order-actions neon-beat-actions" role="group" aria-label="Nhấn mũi tên đúng thứ tự">
         ${beatSymbols.map((symbol,i)=>`<button type="button" data-arcade-action="neon-beat-${i}" aria-label="Nhịp ${beatNames[i]}"

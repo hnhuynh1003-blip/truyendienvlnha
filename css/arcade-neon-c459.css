@@ -1,0 +1,30 @@
+/* C4.59 — a compact control strip, no live CSS animation or repaints. */
+#personal-arcade-v1 .neon-rush-strip{
+ display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;
+ margin:6px 0;padding:8px 9px;border:1px solid #4ba4b77a;border-radius:10px;
+ background:linear-gradient(105deg,#123444,#1d2941);color:#ecf6ff;
+}
+#personal-arcade-v1 .neon-rush-strip.is-active{
+ border-color:#e4bd76ad;background:linear-gradient(105deg,#373243,#1b3046);
+}
+#personal-arcade-v1 .neon-rush-meta{display:grid;gap:2px;flex:1;min-width:0}
+#personal-arcade-v1 .neon-rush-meta>b{
+ font:850 10px/1.2 system-ui,sans-serif;letter-spacing:.08em;color:#f4dcaa;
+}
+#personal-arcade-v1 .neon-rush-meta>small{
+ font:600 10px/1.35 system-ui,sans-serif;color:#b5d4e1;
+}
+#personal-arcade-v1 .neon-rush-controls{
+ display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:5px;
+}
+#personal-arcade-v1 .neon-rush-controls .arcade-button{
+ width:auto;min-height:33px;padding:6px 9px;font:800 10px/1.2 system-ui,sans-serif;
+ border-radius:8px;white-space:nowrap;
+}
+#personal-arcade-v1 .neon-rush-controls [data-arcade-action="neon-rush-bank"]{
+ border-color:#debd79;background:#ead1a3;color:#26253b;
+}
+@media(max-width:360px){
+ #personal-arcade-v1 .neon-rush-strip{align-items:flex-start;flex-direction:column}
+ #personal-arcade-v1 .neon-rush-controls{width:100%;justify-content:flex-start}
+}

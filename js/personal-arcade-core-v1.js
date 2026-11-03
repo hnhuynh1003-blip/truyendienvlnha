@@ -120,6 +120,7 @@
  const BAIT_PACK_PRICE=70,MOON_BAIT_PRICE=60,MOON_BAIT_RARE_BONUS=.18;
  const NEON_SERVICE_INTERVAL=45000;
  const NEON_ORDER_COOLDOWN=90000,NEON_ORDER_MISS=30000;
+ const NEON_RUSH_GOAL=3,NEON_RUSH_COOLDOWN=30000,NEON_RUSH_MISS=20000;
  const NEON_ORDERS=Object.freeze([[0,1],[2,0],[1,2],[0,2],[2,1],[1,0]].map(x=>Object.freeze(x)));
  const neonOrderPattern=neon=>NEON_ORDERS[(neon.orderRound+neon.roomTier-1)%NEON_ORDERS.length];
  // C4.41B: a new timed four-direction counter, keeping old two-item tickets
@@ -130,6 +131,20 @@
  ].map(x=>Object.freeze(x)));
  const neonBeatPattern=neon=>{
   const mode=neon.beatMode||0;
+  if(neon.rushActive){
+   // A different, longer order at every station; stable across reloads.
+   let seed=(Math.imul((neon.orderRound||0)+23,2654435761)^
+    Math.imul((neon.rushClears||0)+7,1597334677)^
+    Math.imul(neon.roomTier+mode+41,2246822519))>>>0;
+   const sequence=[];
+   for(let i=0;i<Math.min(7,neon.roomTier+3+(neon.rushClears||0)+mode);i++){
+    seed^=seed<<13;seed^=seed>>>17;seed^=seed<<5;
+    let direction=(seed>>>0)%4;
+    if(i&&direction===sequence[i-1])direction=(direction+1+((seed>>>2)&1))%4;
+    sequence.push(direction);
+   }
+   return sequence;
+  }
   if(!mode)return NEON_BEAT_PATTERNS[(neon.orderRound+neon.roomTier-1)%NEON_BEAT_PATTERNS.length]
    .slice(0,neon.roomTier+2);
   // C4.55: procedural tickets; no repeating six memorized fixed sequences.
@@ -166,10 +181,14 @@
  // C4.52: better networking gives real value at the skill counter: more
  // reaction room and quicker new guests, never extra unattended Xu.
  const neonRouterBonus=neon=>Math.max(0,Math.min(9,(neon.router||1)-1));
- const neonBeatWindow=neon=>(neon.beatMode===2?10300-1200*(neon.roomTier-1):
+ const neonBeatWindow=neon=>Math.max(5500,(neon.beatMode===2?10300-1200*(neon.roomTier-1):
   neon.beatMode===1?13300-1300*(neon.roomTier-1):12000-2000*(neon.roomTier-1))+
-  400*neonRouterBonus(neon);
+  400*neonRouterBonus(neon)-(neon.rushActive?(neon.rushClears||0)*1200:0));
  const neonOrderCooldown=neon=>NEON_ORDER_COOLDOWN-6000*neonRouterBonus(neon);
+ const neonRushDiscard=(neon,time)=>{
+  neon.rushActive=false;neon.rushClears=0;neon.rushPot=0;
+  neon.rushReadyAt=time+NEON_RUSH_MISS;
+ };
  const NEON_ROOM_CAPACITY=[3,5,7];
  const neonCapacity=neon=>NEON_ROOM_CAPACITY[neon.roomTier-1]||3;
  const neonService=neon=>{
@@ -230,6 +249,7 @@
     roomTier:1,seating:1,ambiance:1,snack:0,guestsServed:0,serviceRevenue:0,
     operatingExpense:0,sessionMs:0,milestones:[],orderRound:0,orderStep:0,
     orderWon:0,orderStreak:0,orderReadyAt:0,beatStep:0,beatUntil:0,beatMode:0,ledColor:null,
+    rushActive:false,rushClears:0,rushPot:0,rushReadyAt:0,rushBest:0,rushCompleted:0,
     program:neonGame?neonGame.fresh():null},
    mine:{durability:100,pickLevel:1,drillLevel:1,lantern:1,cart:1,scanner:0,
     zone:0,depthPermit:0,charge:0,bursts:0,repairUntil:0,nextDigAt:0,dug:0,probes:0,probeHits:0,
@@ -285,6 +305,11 @@
    orderReadyAt:number(neon.orderReadyAt,0,time+NEON_ORDER_COOLDOWN,0),
    beatStep:number(neon.beatStep,0,7,0),beatMode,
    beatUntil:number(neon.beatUntil,0,time+neonBeatWindow({roomTier,router,beatMode}),0),
+   rushActive:neon.rushActive===true&&number(neon.rushClears,0,2,0)<NEON_RUSH_GOAL,
+   rushClears:number(neon.rushClears,0,2,0),rushPot:number(neon.rushPot,0,MAX_COIN,0),
+   rushReadyAt:number(neon.rushReadyAt,0,time+NEON_RUSH_COOLDOWN,0),
+   rushBest:number(neon.rushBest,0,NEON_RUSH_GOAL,0),
+   rushCompleted:number(neon.rushCompleted,0,1000000,0),
    ledColor:number(neon.skin,0,2,0)>0&&typeof neon.ledColor==='string'&&
     /^#[0-9a-fA-F]{6}$/.test(neon.ledColor)?
     neon.ledColor.toLowerCase():null,
@@ -435,6 +460,7 @@
    }
   }
   if(state.neon.beatUntil&&time>=state.neon.beatUntil){
+   if(state.neon.rushActive)neonRushDiscard(state.neon,time);
    state.neon.beatUntil=0;state.neon.beatStep=0;
    state.neon.orderRound++;state.neon.orderStreak=0;
    state.neon.orderReadyAt=Math.max(state.neon.orderReadyAt,time+NEON_ORDER_MISS);
@@ -485,14 +511,54 @@
   const style=/^neon-style-([012])$/.exec(action||'');
   if(style){
    const n=state.neon,mode=Number(style[1]);
-   if(n.beatUntil)return fail('Kết thúc đơn hiện tại rồi đổi chế độ phục vụ.');
+   if(n.beatUntil||n.rushActive)return fail('Kết thúc ca hiện tại rồi đổi chế độ phục vụ.');
    if(!neonStyleUnlocked(n,mode))return fail('Đơn VIP cần phòng cấp 2 và mạng cấp 2.');
    n.beatMode=mode;
    return succeed(['♫ Chế độ Tập nhịp','⚡ Chế độ Tốc chiến','✦ Chế độ Khách VIP'][mode]);
   }
+  if(action==='neon-rush-open'){
+   const n=state.neon;
+   if(!n.running||n.rushActive||n.beatUntil||time<n.rushReadyAt)
+    return fail('Chưa thể bắt đầu ca liên hoàn.');
+   n.rushActive=true;n.rushClears=0;n.rushPot=0;
+   n.beatStep=0;n.orderStep=0;n.beatUntil=time+neonBeatWindow(n);
+   return succeed('★ Ca liên hoàn bắt đầu · 1/3');
+  }
+  if(action==='neon-rush-next'){
+   const n=state.neon;
+   if(!n.running||!n.rushActive||n.beatUntil||n.rushClears<1||n.rushClears>=NEON_RUSH_GOAL)
+    return fail('Chưa tới lượt phục vụ tiếp theo.');
+   n.beatStep=0;n.beatUntil=time+neonBeatWindow(n);
+   return succeed('★ Khách tiếp theo · '+(n.rushClears+1)+'/3');
+  }
+  if(action==='neon-rush-bank'){
+   const n=state.neon;
+   if(!n.rushActive||n.beatUntil||!n.rushClears)return fail('Chưa có thưởng để chốt.');
+   const payout=Math.round(n.rushPot*(n.rushClears===2?1.25:1));
+   give(state,payout);
+   n.rushActive=false;n.rushClears=0;n.rushPot=0;
+   n.rushReadyAt=time+NEON_RUSH_COOLDOWN;
+   n.orderReadyAt=Math.min(n.orderReadyAt,time+18000);
+   return succeed('✓ Đã chốt ca! +'+formatXu(payout)+' Tiền Xanh');
+  }
+  const settleNeonRush=(n,bonus)=>{
+   n.rushPot=clamp(n.rushPot+Math.round(bonus*[1,1.2,1.45][n.rushClears]),MAX_COIN);
+   n.rushClears++;
+   n.rushBest=Math.max(n.rushBest,n.rushClears);
+   if(n.rushClears<NEON_RUSH_GOAL)
+    return succeed('★ Hoàn thành '+n.rushClears+'/3 · Két ca '+formatXu(n.rushPot)+' Tiền Xanh');
+   const payout=Math.round(n.rushPot*2);
+   give(state,payout);
+   n.rushActive=false;n.rushClears=0;n.rushPot=0;
+   n.rushCompleted=Math.min(1000000,n.rushCompleted+1);
+   n.rushReadyAt=time+NEON_RUSH_COOLDOWN;
+   n.orderReadyAt=Math.min(n.orderReadyAt,time+18000);
+   return succeed('🏆 TRỌN CA! +'+formatXu(payout)+' Tiền Xanh ×2');
+  };
   if(action==='neon-beat-start'){
    const n=state.neon;
    if(!n.running)return fail('Hãy mở Trạm Neon trước');
+   if(n.rushActive)return fail('Hãy chọn tiếp ca hoặc chốt két ca.');
    if(time<n.orderReadyAt)return fail('Khách mới chưa tới quầy');
    if(n.beatUntil)return fail('Nhịp phục vụ đang chạy');
    n.beatStep=0;n.orderStep=0;n.beatUntil=time+neonBeatWindow(n);
@@ -505,19 +571,23 @@
    const sequence=neonBeatPattern(n),pressed=Number(beat[1]);
    if(n.beatStep>=sequence.length)return fail('Đã đủ mũi tên! Nhấn SPACE đúng vùng sáng.');
    if(pressed!==sequence[n.beatStep]){
+    const wasRush=n.rushActive;
+    if(wasRush)neonRushDiscard(n,time);
     n.beatStep=0;n.beatUntil=0;n.orderRound++;n.orderStreak=0;
-    n.orderReadyAt=time+NEON_ORDER_MISS;
+    n.orderReadyAt=time+(wasRush?NEON_RUSH_MISS:NEON_ORDER_MISS);
     if(neonGame)neonGame.recordOrder(n,false);
-    return succeed('✕ Lệch nhịp! Khách quay lại sau 30 giây.');
+    return succeed(wasRush?'✕ Hỏng ca! Mất két thưởng, thử lại sau 20 giây.':
+     '✕ Lệch nhịp! Khách quay lại sau 30 giây.');
    }
    n.beatStep++;
    if(n.beatStep<sequence.length)return succeed('✓ Đúng nhịp '+n.beatStep+'/'+sequence.length);
    if(n.beatMode)return succeed('♫ Đã đủ hướng! Canh thanh sáng và nhấn SPACE.');
    n.beatStep=0;n.beatUntil=0;n.orderRound++;n.orderWon++;
    n.orderStreak=Math.min(1000,n.orderStreak+1);
-   n.orderReadyAt=time+neonOrderCooldown(n);
    if(neonGame)neonGame.recordOrder(n,true);
    const bonus=neonBeatReward({...n,orderRound:n.orderRound-1});
+   if(n.rushActive)return settleNeonRush(n,bonus);
+   n.orderReadyAt=time+neonOrderCooldown(n);
    give(state,bonus);
    return succeed('✦ Xong đơn! +'+formatXu(bonus)+' Tiền Xanh');
   }
@@ -528,17 +598,21 @@
    const progress=(time-(n.beatUntil-neonBeatWindow(n)))/neonBeatWindow(n),
     zone=neonBeatZone(n),mid=(zone.start+zone.end)/2;
    if(progress<zone.start||progress>zone.end){
+    const wasRush=n.rushActive;
+    if(wasRush)neonRushDiscard(n,time);
     n.beatStep=0;n.beatUntil=0;n.orderRound++;n.orderStreak=0;
-    n.orderReadyAt=time+NEON_ORDER_MISS;
+    n.orderReadyAt=time+(wasRush?NEON_RUSH_MISS:NEON_ORDER_MISS);
     if(neonGame)neonGame.recordOrder(n,false);
-    return succeed('✕ Lệch điểm rơi! Khách hẹn lượt sau.');
+    return succeed(wasRush?'✕ Lệch điểm rơi! Két ca đã mất.':
+     '✕ Lệch điểm rơi! Khách hẹn lượt sau.');
    }
    const perfect=Math.abs(progress-mid)<=.07;
    n.beatStep=0;n.beatUntil=0;n.orderRound++;n.orderWon++;
    n.orderStreak=Math.min(1000,n.orderStreak+1);
    const bonus=neonBeatReward({...n,orderRound:n.orderRound-1},perfect);
-   n.orderReadyAt=time+Math.max(24000,58000-5000*neonRouterBonus(n));
    if(neonGame)neonGame.recordOrder(n,true);
+   if(n.rushActive)return settleNeonRush(n,bonus);
+   n.orderReadyAt=time+Math.max(24000,58000-5000*neonRouterBonus(n));
    give(state,bonus);
    return succeed((perfect?'✦ PERFECT!':'✓ GOOD!')+' Phục vụ '+neonBeatGuest({...n,orderRound:n.orderRound-1}).name+
     ' · +'+formatXu(bonus)+' Tiền Xanh');
@@ -546,7 +620,7 @@
   const orderAction=/^neon-order-([012])$/.exec(action||'');
   if(orderAction){
    const n=state.neon,choice=Number(orderAction[1]);
-   if(n.beatUntil)return fail('Hoàn thành lượt nhịp hiện tại trước');
+   if(n.beatUntil||n.rushActive)return fail('Hoàn thành ca hiện tại trước');
    if(!n.running)return fail('Hãy mở cửa Trạm Neon trước');
    if(time<n.orderReadyAt)return fail('Khách mới chưa tới quầy');
    const expected=neonOrderPattern(n)[n.orderStep];
