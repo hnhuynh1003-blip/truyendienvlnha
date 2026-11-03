@@ -146,6 +146,7 @@
   if(forecast>=0)stone.forecast=forecast;
   if(typeof v.forecastWon==='boolean')stone.forecastWon=v.forecastWon;
   if(integer(v.forecastBonus,1,MAX,0))stone.forecastBonus=v.forecastBonus;
+  if(integer(v.cutMode,0,2,-1)>=0)stone.cutMode=v.cutMode;
   if(integer(v.design,0,2,-1)>=0)stone.design=v.design;
   if(integer(v.setting,0,2,-1)>=0)stone.setting=v.setting;
   if(v.phase==='crafted'){
@@ -580,6 +581,14 @@
    stone.forecast=Number(forecast[1]);
    return succeed('Đã ghi phán đoán: '+FORECASTS[stone.forecast]+'. Kết quả sẽ rõ sau khi xẻ.');
   }
+  const cuttingStyle=/^jade-cut-mode-([012])$/.exec(action||'');
+  if(cuttingStyle){
+   if(!['raw','window'].includes(stone.phase))return fail('Đã xẻ đá, không thể đổi đường cưa.');
+   stone.cutMode=Number(cuttingStyle[1]);
+   return succeed(['◈ Cưa giữ ngọc: giữ đá nứt tốt hơn, bớt sản lượng.',
+    '⚒ Cưa chuẩn: cân bằng giữa rủi ro và giá trị.',
+    '✦ Cưa mạo hiểm: thêm sản lượng nếu lõi lành, dễ hỏng đá nứt.'][stone.cutMode]);
+  }
   if(action==='jade-window'){
    if(stone.phase!=='raw')return fail('Viên đá đã được khai song.');
    if(!charge(actionFee(stone,'window')))return fail('Chưa đủ phí khai song.');
@@ -599,11 +608,21 @@
   if(action==='jade-cut'){
    if(!['raw','window'].includes(stone.phase))return fail('Đá đã được xẻ.');
    if(!charge(actionFee(stone,'cut')))return fail('Chưa đủ phí vận hành máy cưa.');
+   const cutMode=stone.cutMode??1;
    // Predetermined damage roll; better saw changes the threshold, not the stone.
    stone.savedFracture=stone.flaw==='fracture'&&
-    (stone.seed%1000)/1000<(.25/.35)*(j.saw-1)/3;
+    (stone.seed%1000)/1000<(cutMode===0?.22+.2*(j.saw-1):
+     cutMode===2?.07*(j.saw-1):(.25/.35)*(j.saw-1)/3);
    if(stone.flaw==='mutation'&&stone.grade>0)stone.grade=Math.min(7,stone.grade+1);
-   stone.cutValue=cutValue(stone,j.saw);stone.phase='cut';j.cut++;
+   const originalValue=cutValue(stone,j.saw);
+   // The choice never rerolls composition; high-risk cutting only improves
+   // intact cores and is significantly worse on pre-existing fractures.
+   stone.cutValue=stone.grade===0||stone.flaw==='skin'?originalValue:
+    clamp(Math.max(1,cutMode===0&&stone.flaw==='fracture'?
+     Math.max(Math.round(originalValue*.88),Math.round(baseValue(stone)*.5)):
+     Math.round(originalValue*(cutMode===0?.88:
+      cutMode===2?(stone.flaw==='fracture'?.5:1.22):1))),1,MAX);
+   stone.phase='cut';j.cut++;
    if(stone.forecast>=0){
     const actual=stone.grade===0||stone.flaw==='skin'?0:stone.grade>=4?2:1;
     const f=j.forecasts;

@@ -57,6 +57,30 @@
   else return;
   openStall=index;
  }
+ // Findings become visible on the specimen itself only after touching a scan point.
+ function stoneEvidence(stone,j){
+  if(!stone||!['raw','window'].includes(stone.phase))return '';
+  const seed=stone.seed>>>0,dx=(seed>>>8)%19-9,dy=(seed>>>15)%13-6;
+  const light=stone.scans[0]?`<ellipse cx="${81+dx}" cy="${57+dy}" rx="${stone.grade>=5?35:25}" ry="${stone.grade>=5?25:16}"
+    fill="#9cefc8" fill-opacity="${stone.site===3&&j.lamp<4?.12:stone.grade>=5?.43:stone.grade>=3?.27:.11}"
+    stroke="#c4f7dd" stroke-opacity=".45" stroke-width="1.5"/>`:'';
+  const vein=stone.scans[1]?`<path d="M${stone.flaw==='skin'?28:46} ${51+dy} Q${76+dx} ${33+dy} ${stone.flaw==='skin'?103:131} ${73+dy}"
+    fill="none" stroke="${stone.flaw==='skin'?'#b2e0a0':'#68cda8'}" stroke-width="${stone.flaw==='skin'?5:stone.grade>=4?4:2}"
+    stroke-opacity=".82" stroke-linecap="round"/>`:'';
+  const fracture=!stone.scans[2]?'':stone.flaw==='fracture'?`<path d="M${62+dx} 19 L${77+dx} 45 L${69+dx} 62 L${92+dx} 86 L${84+dx} 113 M${69+dx} 62 L${48+dx} 70"
+    fill="none" stroke="#eedac0" stroke-width="2" stroke-opacity=".9"/>`:
+   stone.flaw==='inclusion'?`<circle cx="${72+dx}" cy="${59+dy}" r="8" fill="#141b1b" opacity=".83"/>
+    <circle cx="${96+dx}" cy="${76+dy}" r="4" fill="#121919" opacity=".7"/>`:
+   stone.flaw==='mutation'?`<path d="M${48+dx} 68 Q${79+dx} 30 ${117+dx} 54" fill="none"
+    stroke="#ffdc98" stroke-width="2.5" stroke-opacity=".87"/>`:
+   `<circle cx="${88+dx}" cy="${61+dy}" r="17" stroke="#dbf4cf" stroke-opacity=".42" fill="none"/>`;
+  return `<div class="jade-inspection-overlay"><svg viewBox="0 0 178 143" preserveAspectRatio="none"
+   aria-hidden="true">${light}${vein}${fracture}</svg>
+   ${['Thủy đầu','Mãng đới','Liệt văn'].map((name,i)=>`<button type="button"
+    class="jade-evidence-point jade-evidence-${i} ${stone.scans[i]?'is-scanned':''}"
+    data-arcade-action="jade-scan-${i}" aria-label="${stone.scans[i]?'Đã soi':'Soi'} ${name}"
+    title="${name}" ${stone.scans[i]?'disabled':''}>${stone.scans[i]?'✓':'◎'}</button>`).join('')}</div>`;
+ }
  function stoneScene(stone,j,phasePulse){
   const phase=stone?.phase||'none',color=stone?jade.COLOR_HEX[stone.color]:'#8bc4a7',
    scanned=stone?stone.scans.filter(Boolean).length:0,
@@ -73,7 +97,8 @@
     ${stone?`<div class="jade-specimen ${cut?'jade-revealed':''} ${carved?'jade-crafted':''} jade-craft-${stone.craft||'raw'}"
         aria-label="${cut?stoneName(stone):'Đá thô chưa cắt'}">
        <span class="jade-rock-face"></span><span class="jade-rock-grain"></span><span class="jade-rock-vein"></span>
-       <span class="jade-item-art ${carved&&jade.CRAFTS[stone.craft]?jewelryArt(stone):`jade-item-${visual} ${cut?(carved?gemVisual(stone):splitVisual(stone)):shellVisual(stone.site,stone.seed)}`}" style="--jade-item-x:${artworkIndex*25}%;--jade-gem-tone:${color}" aria-hidden="true"></span>${cut&&revealed?'<span class="jade-reveal-rays" aria-hidden="true"></span>':''}
+       <span class="jade-item-art ${carved&&jade.CRAFTS[stone.craft]?jewelryArt(stone):`jade-item-${visual} ${cut?(carved?gemVisual(stone):splitVisual(stone)):shellVisual(stone.site,stone.seed)}`}" style="--jade-item-x:${artworkIndex*25}%;--jade-gem-tone:${color}" aria-hidden="true"></span>
+       ${stoneEvidence(stone,j)}${cut&&revealed?'<span class="jade-reveal-rays" aria-hidden="true"></span>':''}
        ${phase==='window'?'<span class="jade-polished-window"></span>':''}
        ${cut?`<span class="jade-gem-inner"></span><span class="jade-gem-shine"></span>`:''}
       </div>`:`<div class="jade-showcase-rough" aria-hidden="true"><i></i><i></i><i></i></div>`}
@@ -122,6 +147,11 @@
           ${scanned<2||guessed?'disabled':''}>${['◇','◈','✦'][i]} ${label}</button>`).join('')}</div>
        </div>
       </details>
+     <div class="jade-saw-choices" role="group" aria-label="Chọn đường cưa đá">
+      <b>⚒ Đường cưa</b>
+      ${['Giữ ngọc','Cưa chuẩn','Mạo hiểm'].map((name,i)=>`<button type="button"
+       class="${(stone.cutMode??1)===i?'is-selected':''}" data-arcade-action="jade-cut-mode-${i}"
+       aria-pressed="${(stone.cutMode??1)===i}" title="${['Ít hao khi đá nứt, giảm 12% giá trị','Cân bằng, giữ luật cắt trước đây','Lõi lành tăng 22%, nứt giảm giá mạnh'][i]}">${name}</button>`).join('')}</div>
      ${stone.phase==='window'?`<div class="jade-trader-offer"><span>GIÁ THU MUA HÔM NAY</span><strong>${fmt(windowQuote.value)} <small>${greenMark}</small></strong>
       <small class="${trendClass(windowQuote.rate)}">${trend(windowQuote.rate)}</small></div>
       <div class="jade-main-actions jade-stone-workbench">${stoneTool('Bán sang tay','◇',0,'jade-sell-window','gold',false,windowQuote.value)}
