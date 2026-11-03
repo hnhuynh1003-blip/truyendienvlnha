@@ -83,7 +83,8 @@
   if(!stone)return `<div class="jade-welcome jade-welcome-compact">
     <div class="jade-compact-main"><span aria-hidden="true">◈</span>
      <b>${j.bought===0?'Có 1 phôi miễn phí':'Chưa chọn đá'}</b>
-     ${btn(j.bought===0?'Nhận phôi':'Đến chợ',j.bought===0?'jade-buy-0':'jade-open-market','gold')}</div>
+     ${btn(j.bought===0?'Nhận phôi':'Đến chợ',j.bought===0?'jade-buy-0':'jade-open-market','gold')}
+     ${j.bought===0?'<button type="button" class="arcade-button upgrade jade-compact-market" data-arcade-action="jade-open-market" aria-label="Vào chợ đá" title="Chợ đá">▣</button>':''}</div>
     ${j.vault.length?`<div class="jade-compact-extra">${btn('▱ Kho · '+j.vault.length,'jade-open-vault','upgrade')}</div>`:''}
     ${canRescue?`<div class="jade-recovery jade-recovery-inline">
       <small>◷ Đá cứu vốn</small>

@@ -701,6 +701,7 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header>span:nth-ch
 #personal-arcade-v1 .jade-compact-main>span{flex:none;font-size:18px;color:#f5d29a}
 #personal-arcade-v1 .jade-compact-main>b{flex:1;min-width:0;color:#fff0cf;font-size:11px}
 #personal-arcade-v1 .jade-welcome-compact .arcade-button{flex:none;width:auto;min-height:30px;padding:5px 10px;font-size:10px}
+#personal-arcade-v1 .jade-welcome-compact .jade-compact-market{min-width:30px;padding:5px 6px}
 #personal-arcade-v1 .jade-compact-extra{display:flex;justify-content:flex-end}
 #personal-arcade-v1 .jade-recovery.jade-recovery-inline{display:flex;align-items:center;justify-content:space-between;
  gap:5px;margin-top:2px;padding:5px 7px}

@@ -3,6 +3,7 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const {readFileSync}=require('node:fs');
 const {join}=require('node:path');
+const vm=require('node:vm');
 const arcade=require('../js/personal-arcade-core-v1.js');
 const T=1793710000000;
 const clone=s=>JSON.parse(JSON.stringify(s));
@@ -110,4 +111,15 @@ test('C4.55 mobile counter and compact Jade hunt controls are present without ex
  assert.match(jadeUI,/jade-welcome-compact/);
  assert.match(ui,/\['Tập',0\]/);
  assert.match(css,/height:26px;min-height:26px/);
+});
+
+test('C4.55b compact first-stone dock preserves separate free sample and market navigation',()=>{
+ const window={DuduPersonalArcadeCoreV1:arcade};
+ vm.runInNewContext(readFileSync(join(__dirname,'../js/personal-jade-ui-v1.js'),'utf8'),{window});
+ const html=window.DuduPersonalJadeUIV1.panel(arcade.fresh(T));
+ assert.match(html,/jade-welcome jade-welcome-compact/);
+ assert.match(html,/data-arcade-action="jade-buy-0"/);
+ assert.match(html,/data-arcade-action="jade-open-market"/);
+ assert.match(html,/aria-label="Vào chợ đá"/);
+ assert.doesNotMatch(html,/Mỗi viên đá ẩn một câu chuyện/);
 });
