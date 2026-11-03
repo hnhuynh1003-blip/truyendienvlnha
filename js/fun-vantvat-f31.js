@@ -8,9 +8,19 @@
  'use strict';
  const VALUES=Object.freeze({E:3,D:6,C:12,B:26,A:55,S:120,SS:320,SSS:900});
  const PRICE=15,MAX_WALLET=1000000000;
- const POOL=Object.freeze((catalog.funVantVat||[]).map(item=>Object.freeze({
-  itemId:item.id,rank:item.rank,weight:({E:2000,D:1400,C:850,B:400,A:180,S:70,SS:15,SSS:2})[item.rank]
- })).concat([Object.freeze({itemId:'F31_COIN_8',rank:'COIN',weight:700,amount:8}),
+ // A fixed probability budget PER RANK. Adding a collectible must never
+ // silently make S/SS/SSS drops more common or inflate expected Xu returns.
+ const RANK_BUDGET=Object.freeze({E:4000,D:2800,C:1700,B:800,A:360,S:140,SS:30,SSS:2});
+ const rankCounters={};
+ const counts=(catalog.funVantVat||[]).reduce((a,item)=>
+  (a[item.rank]=(a[item.rank]||0)+1,a),{});
+ const POOL=Object.freeze((catalog.funVantVat||[]).map(item=>{
+  const index=rankCounters[item.rank]||0;
+  rankCounters[item.rank]=index+1;
+  const count=counts[item.rank],budget=RANK_BUDGET[item.rank];
+  return Object.freeze({itemId:item.id,rank:item.rank,
+   weight:Math.floor(budget/count)+(index<budget%count?1:0)});
+ }).concat([Object.freeze({itemId:'F31_COIN_8',rank:'COIN',weight:700,amount:8}),
   Object.freeze({itemId:'F31_COIN_30',rank:'COIN',weight:220,amount:30})]));
  const TOTAL=POOL.reduce((n,p)=>n+p.weight,0);
  function draw(roll){

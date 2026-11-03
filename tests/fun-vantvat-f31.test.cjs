@@ -5,6 +5,7 @@ const engine=require('../js/personal-vantvat-f31.js');
 const prices=require('../js/fun-vantvat-f31.js');
 const market=require('../js/personal-spark-items-v1.js');
 const box=require('../js/personal-blind-box-c29.js');
+const catalog=require('../js/item-catalog-v2.js');
 const copy=x=>structuredClone(x);
 const id=n=>'00000000-0000-4000-8000-'+String(n).padStart(12,'0');
 function env(){
@@ -81,4 +82,15 @@ test('F3.1 unique prize cannot duplicate in Kho; duplicate is auto-sold once',as
 test('Vạn Bảo legacy pool stays 19 items at 20 Xu per paid box',()=>{
  assert.equal(box.POOL.length,19);
  assert.equal(box.PRICE,20);
+});
+test('F3.2A adds eight three-item realm sets without changing rank probabilities',()=>{
+ const fresh=catalog.funVantVat.filter(x=>x.id.startsWith('f32-'));
+ assert.equal(fresh.length,24);
+ const groups=fresh.reduce((acc,item)=>(acc[item.funRealm]=(acc[item.funRealm]||0)+1,acc),{});
+ assert.equal(Object.keys(groups).length,8);
+ assert.ok(Object.values(groups).every(n=>n===3));
+ assert.equal(prices.TOTAL,10752);
+ const expected={E:4000,D:2800,C:1700,B:800,A:360,S:140,SS:30,SSS:2,COIN:920};
+ for(const [rank,weight] of Object.entries(expected))
+  assert.equal(prices.POOL.filter(x=>x.rank===rank).reduce((n,x)=>n+x.weight,0),weight);
 });

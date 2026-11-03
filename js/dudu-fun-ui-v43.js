@@ -156,7 +156,11 @@
    el('strong','','VẠN VẬT · ĐA VỊ DIỆN'));
   if(active){
    const result=el('div','f31-vantvat-result');
-   result.append(el('span','',coinPrize?'🪙':prize?.icon||'🎁'),
+   const picture=el('span','f31-vantvat-prize');
+   if(!coinPrize&&prize&&root.DuduItemArtV13?.mount)
+    root.DuduItemArtV13.mount(picture,prize);
+   else picture.textContent=coinPrize?'🪙':prize?.icon||'🎁';
+   result.append(picture,
     el('b','',coinPrize?coinPrize.amount+' Xu Vàng':prize?.name||'Bảo vật'),
     el('small','',active.duplicate?'Trùng bảo vật · tự động bán +'+active.returned+' Xu Vàng':
      coinPrize?'Nhận trực tiếp vào Ví':
@@ -174,13 +178,31 @@
    button.onclick=()=>{void vantVatAction('start');};stage.append(button);
   }
   const gallery=el('details','f31-vantvat-gallery');
-  gallery.append(el('summary','','✧ Bộ sưu tập đa vị diện · '+rule.POOL.length+' vật phẩm'));
-  for(const entry of rule.POOL){
-   const item=root.DuduItemCatalog.byId(entry.itemId);
-   const line=el('div','f31-vantvat-row');
-   line.append(el('span','',item?item.icon+' '+item.name:'🪙 '+entry.amount+' Xu Vàng'),
-    gold('b','',item?rule.VALUES[item.rank]:entry.amount));gallery.append(line);
+  gallery.append(el('summary','','✧ Bách Giới Kỳ Trân · '+
+   rule.POOL.filter(x=>x.rank!=='COIN').length+' bảo vật'));
+  const realmNames={ORIGIN:'Khởi Nguyên',PALEO:'Cổ Sinh Bí Cảnh',
+   CULTIVATION:'Tiên Hiệp Thần Binh',CYBER:'Cyberpunk 2099',
+   WASTELAND:'Tận Thế Di Vật',ANIME:'Điện Phủ Nhân Vật',
+   DREAM:'Mộng Cảnh Búp Bê',GARDEN:'Thần Nông Dị Quả',COSMOS:'Tinh Hà Vạn Tượng'};
+  for(const [realm,label] of Object.entries(realmNames)){
+   const entries=rule.POOL.filter(x=>root.DuduItemCatalog.byId(x.itemId)?.funRealm===realm);
+   if(!entries.length)continue;
+   const group=el('details','f32-realm-group');
+   group.append(el('summary','',label+' · '+entries.length+' món'));
+   for(const entry of entries){
+    const item=root.DuduItemCatalog.byId(entry.itemId);
+    const line=el('div','f31-vantvat-row');
+    const picture=el('span','f32-realm-thumb');
+    if(!root.DuduItemArtV13?.mount?.(picture,item))picture.textContent=item.icon;
+    line.append(picture,el('span','f32-realm-title',item.name),
+     el('small','f32-realm-rank',item.rank),gold('b','',rule.VALUES[item.rank]));
+    group.append(line);
+   }
+   gallery.append(group);
   }
+  const coins=el('div','f31-vantvat-row');
+  coins.append(el('span','','🪙 Xu Vàng trực tiếp'),
+   el('small','','8 / 30 Xu'));gallery.append(coins);
   stage.append(gallery,el('small','dudu-slot-notice',
    'Xu Vàng ảo · Vật phẩm vào Kho · Bán một lần mỗi bản thể.'));
   host.append(stage);

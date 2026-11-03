@@ -267,7 +267,7 @@
   function validateCatalog(){
     const errors=[];
     const all=catalog?.items||[];
-    if(all.length!==194)errors.push('Expected 179 inherited + 15 Vạn Vật records');
+    if(all.length!==218)errors.push('Expected 179 inherited + 39 Vạn Vật records');
     const seen=new Set();
     for(const row of all){
       const category=categoryFor(row);

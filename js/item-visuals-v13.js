@@ -122,6 +122,10 @@
     'fun-dream-lantern','fun-celestial-harp','fun-eternal-crown',
     'fun-universe-egg'
   ]);
+  const VAN_VAT_F32_ART=new Set([
+    'f32-fossil-egg','f32-cult-sword','f32-cyber-robot','f32-waste-mask',
+    'f32-anime-queen','f32-doll-porcelain','f32-fruit-peach','f32-cosmos-sovereign'
+  ]);
   function visual(item){
     if(!item||typeof item!=='object')return null;
     const rank=Object.prototype.hasOwnProperty.call(RANKS,item.rank)?item.rank:'F';
@@ -148,9 +152,11 @@
       '<circle cx="63" cy="12" r="4" fill="'+glow+'" opacity=".8"/></svg>';
     const fallback='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
     const painted=item.collectionSet==='VAN_BAO'&&VAN_BAO_ART.has(id);
+    const realmPainted=item.collectionSet==='VAN_VAT'&&VAN_VAT_F32_ART.has(id);
     return Object.freeze({rank,shape,light,dark,
-      src:painted?'assets/van-bao/v1/'+id+'.webp':fallback,
-      fallbackSrc:painted?fallback:null});
+      src:painted?'assets/van-bao/v1/'+id+'.webp':
+        realmPainted?'assets/van-tuong/f32/'+id+'.webp':fallback,
+      fallbackSrc:painted||realmPainted?fallback:null});
   }
   // One artwork renderer for both the store and all warehouse views.
   // It changes presentation only; it never edits the item or its ownership.

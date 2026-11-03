@@ -357,3 +357,13 @@ body.dudu-phone-v11 #cyber-phone .blind-legacy{padding-top:10px;display:flex;fle
 .f31-vantvat-gallery{width:min(100%,450px);padding:12px;border:1px solid #a48aff66;border-radius:12px;background:#15162cbb}
 .f31-vantvat-gallery summary{cursor:pointer}.f31-vantvat-row{display:flex;justify-content:space-between;gap:10px;padding:8px 2px;border-bottom:1px solid #ffffff20;font-size:.9rem}
 .f31-vantvat-row:last-child{border:0}
+.f31-vantvat-prize{display:grid;place-items:center;width:110px;height:110px;font-size:58px}
+.f31-vantvat-prize .dudu-item-v13-art{width:110px;height:110px;object-fit:contain}
+.f31-vantvat-prize.dudu-item-v13-frame{background:none;border:0}
+.f32-realm-group{margin:8px 0;padding:6px 8px;border:1px solid #ffffff25;border-radius:9px;background:#ffffff08}
+.f32-realm-group>summary{padding:5px 2px;cursor:pointer;font-size:.9rem;color:#e5d2fb}
+.f32-realm-group .f31-vantvat-row{align-items:center;gap:8px}
+.f32-realm-thumb{flex:none;width:38px;height:38px;display:grid;place-items:center;font-size:24px}
+.f32-realm-thumb .dudu-item-v13-art{width:38px;height:38px;object-fit:contain}
+.f32-realm-title{flex:1;min-width:0;font-size:.86rem}
+.f32-realm-rank{color:#d3b5ee;font-weight:800;min-width:25px}

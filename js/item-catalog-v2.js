@@ -677,12 +677,37 @@
     ['f31-background-cosmos','Nền Vạn Giới','S','🪐','BACKGROUND'],
     ['f31-fossil-phoenix','Hóa Thạch Phượng Hoàng','SS','🔥','FOSSIL'],
     ['f31-card-destiny','Thẻ Thiên Mệnh','SS','🎴','LUCK_CARD'],
-    ['f31-figure-eternal','Tượng Người Giữ Thời Gian','SSS','⏳','FIGURE']
+    ['f31-figure-eternal','Tượng Người Giữ Thời Gian','SSS','⏳','FIGURE'],
+    // F3.2A · eight realm sets, three unique artefacts each.
+    ['f32-fossil-fern','Dấu Lá Kỷ Nguyên','E','🍃','FOSSIL','PALEO'],
+    ['f32-fossil-amber','Hổ Phách Cánh Bướm','C','🦋','FOSSIL','PALEO'],
+    ['f32-fossil-egg','Trứng Long Thạch','SS','🥚','FOSSIL','PALEO'],
+    ['f32-cult-bell','Chuông Ngọc Thanh Tâm','D','🔔','WEAPON','CULTIVATION'],
+    ['f32-cult-fan','Quạt Cửu Vân','B','🪭','WEAPON','CULTIVATION'],
+    ['f32-cult-sword','Thanh Kiếm Tiên Lưu','S','🗡️','WEAPON','CULTIVATION'],
+    ['f32-cyber-chip','Chip Ký Ức Neon','E','💾','DEVICE','CYBER'],
+    ['f32-cyber-blade','Dao Plasma Lam','C','🔪','WEAPON','CYBER'],
+    ['f32-cyber-robot','Robot Sao Lạc','A','🤖','FIGURE','CYBER'],
+    ['f32-waste-mask','Mặt Nạ Tro Bụi','E','🎭','RELIC','WASTELAND'],
+    ['f32-waste-compass','La Bàn Cuối Cùng','D','🧭','RELIC','WASTELAND'],
+    ['f32-waste-watch','Đồng Hồ Ngày Tận','C','⌚','RELIC','WASTELAND'],
+    ['f32-anime-apprentice','Tượng Pháp Sư Tập Sự','E','🧙','FIGURE','ANIME'],
+    ['f32-anime-guardian','Tượng Hộ Vệ Lam Nguyệt','B','🛡️','FIGURE','ANIME'],
+    ['f32-anime-queen','Tượng Nữ Hoàng Băng','A','👑','FIGURE','ANIME'],
+    ['f32-doll-charm','Thỏ Bông Ngủ Say','E','🐰','DOLL','DREAM'],
+    ['f32-doll-moon','Búp Bê Nguyệt Y','D','🪆','DOLL','DREAM'],
+    ['f32-doll-porcelain','Thỏ Sứ Ngân Hà','B','🐇','DOLL','DREAM'],
+    ['f32-fruit-berry','Dâu Sao Khuya','E','🍓','FRUIT','GARDEN'],
+    ['f32-fruit-peach','Đào Linh Vân','D','🍑','FRUIT','GARDEN'],
+    ['f32-fruit-phoenix','Quả Phượng Hỏa','C','🍊','FRUIT','GARDEN'],
+    ['f32-cosmos-map','Mảnh Bản Đồ Sao','E','🗺️','LUCK_CARD','COSMOS'],
+    ['f32-cosmos-fate','Lá Bài Vọng Tinh','D','🎴','LUCK_CARD','COSMOS'],
+    ['f32-cosmos-sovereign','Thẻ Chủ Thần Tinh Hà','SSS','🌌','LUCK_CARD','COSMOS']
   ];
-  const funVantVat=VANTVAT_SOURCE.map(([id,name,rank,icon,category])=>
+  const funVantVat=VANTVAT_SOURCE.map(([id,name,rank,icon,category,realm])=>
     item(id,name,rank,'ITEM',icon,'Kỷ vật đa vị diện · '+category,
       'DUDU',null,'FUN_VANTUONG',{collectionSet:'VAN_VAT',tradeable:false,
-       funCategory:category}));
+       funCategory:category,funRealm:realm||'ORIGIN'}));
   const items = Object.freeze([...common,...realms,...souvenirs,...funCollectibles,...funVantVat]);
   const index = new Map(items.map(record=>[record.id,record]));
 
@@ -725,9 +750,9 @@
       if(x.scope!=='REALM'&&x.realmTag!==null)errors.push('Unexpected realm tag: '+x.id);
       if(x.scope==='DUDU'&&(x.acquisition.method==='RANDOM'||x.giftable||x.discardable||!x.unique))errors.push('Invalid collector guard: '+x.id);
     }
-    if(scopes.COMMON!==25||scopes.REALM!==120||scopes.DUDU!==49)errors.push('Unexpected catalog counts: '+JSON.stringify(scopes));
-    if(items.length!==194||funCollectibles.length!==19||funVantVat.length!==15)
-      errors.push('Expected 179 inherited + 15 F3.1 records');
+    if(scopes.COMMON!==25||scopes.REALM!==120||scopes.DUDU!==73)errors.push('Unexpected catalog counts: '+JSON.stringify(scopes));
+    if(items.length!==218||funCollectibles.length!==19||funVantVat.length!==39)
+      errors.push('Expected 179 inherited + 39 Vạn Vật records');
     for(const tag of REALM_TAGS){
       const inRealm=realms.filter(x=>x.realmTag===tag);
       if(inRealm.length!==20)errors.push('Unexpected realm size: '+tag);

@@ -28,6 +28,15 @@ test('catalog items have visible defined art with safe unknown fallback',()=>{
   if(item.collectionSet==='VAN_BAO'){
    assert.equal(v.src,'assets/van-bao/v1/'+item.id+'.webp');
    assert.match(v.fallbackSrc,/^data:image\/svg\+xml/);
+  }else if(item.collectionSet==='VAN_VAT'&&item.id.startsWith('f32-')&&
+    ['f32-fossil-egg','f32-cult-sword','f32-cyber-robot','f32-waste-mask',
+     'f32-anime-queen','f32-doll-porcelain','f32-fruit-peach','f32-cosmos-sovereign'].includes(item.id)){
+   assert.equal(v.src,'assets/van-tuong/f32/'+item.id+'.webp');
+   assert.match(v.fallbackSrc,/^data:image\/svg\+xml/);
+   const image=fs.readFileSync(path.resolve(__dirname,'..',v.src));
+   assert.equal(image.toString('ascii',0,4),'RIFF');
+   assert.equal(image.toString('ascii',8,12),'WEBP');
+   assert.ok(image.length>10000&&image.length<150000);
   }else assert.ok(v.src.length>300,item.id);
  }
  assert.equal(art.visual({id:'custom',rank:'__proto__',type:'ITEM'}).rank,'F');
