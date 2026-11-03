@@ -865,10 +865,14 @@
     noticeUntil=time+3500;error=false;}
    const craftReady=tab==='jade'&&!!s.jade?.craftJob&&
     s.lastAt<s.jade.craftJob.readyAt&&time>=s.jade.craftJob.readyAt;
+   const orderReady=tab==='jade'&&!!s.jade?.commissions?.readyAt&&
+    s.lastAt<s.jade.commissions.readyAt&&time>=s.jade.commissions.readyAt;
+   const rerollReady=tab==='jade'&&!!s.jade?.commissions?.rerollAt&&
+    s.lastAt<s.jade.commissions.rerollAt&&time>=s.jade.commissions.rerollAt;
    const activeGameChanged=tab==='neon'?customerServed||boostExpired||turboReady||nextOrder||missedBeat:
     tab==='mine'?completedRepair:
     tab==='garden'?waterRefilled||bubbleAppeared||plantMatured||fishBit||fishEscaped||weatherShifted:
-    tab==='jade'&&craftReady;
+    tab==='jade'&&(craftReady||orderReady||rerollReady);
    if(lastRenderedKey!==activeKey||activeGameChanged)render();
    else if(time-lastPaint>=900)refreshLive(time);
   }
@@ -1073,6 +1077,14 @@
    }
    const control=event.target.closest('button');
    if(!control||control.disabled)return;
+   if(control.dataset.jadeDesign!=null){
+    if(root.DuduPersonalJadeUIV1?.chooseDesign?.(Number(control.dataset.jadeDesign)))render();
+    return;
+   }
+   if(control.dataset.jadeSetting!=null){
+    if(root.DuduPersonalJadeUIV1?.chooseSetting?.(Number(control.dataset.jadeSetting)))render();
+    return;
+   }
    if(control.dataset.jadeMarketLock!=null){
     const market=core.JADE?.MARKETS?.[Number(control.dataset.jadeMarketLock)];
     if(market){notice='🔒 '+market.short+': '+market.unlock;noticeUntil=now()+4500;error=false;render();}

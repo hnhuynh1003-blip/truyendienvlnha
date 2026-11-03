@@ -85,6 +85,6 @@ test('C4.53 Ngọc Phường renders a live workshop timer and a clear claim pat
  assert.match(html,/jade-work-order/);
  assert.match(html,/data-arcade-until=/);
  assert.match(html,/jade-claim-craft/);
- assert.match(html,/chơi game khác vẫn tính giờ/);
+ assert.match(html,/Chế tác vẫn chạy khi sang game khác/);
  assert.match(html,/Đang chế tác/);
 });

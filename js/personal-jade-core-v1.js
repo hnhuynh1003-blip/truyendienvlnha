@@ -35,6 +35,25 @@
  const FLAWS=Object.freeze(['perfect','fracture','inclusion','mutation','skin']);
  const FLAW_NAMES=Object.freeze({perfect:'Hoàn hảo',fracture:'Nứt ăn sâu',inclusion:'Hắc điểm',mutation:'Hóa băng',skin:'Kháo bì'});
  const CRAFTS=Object.freeze({bangle:{name:'Vòng tay',mult:1.75,min:5},pendant:{name:'Mặt dây chuyền',mult:1.45,min:2},ring:{name:'Mặt nhẫn',mult:1.25,min:1},beads:{name:'Chuỗi hạt',mult:1.12,min:1}});
+ // C4.57b · Twelve named silhouettes, three optional finishing materials.
+ // Existing crafted stones without these fields remain the classic design.
+ const DESIGNS=Object.freeze({
+  bangle:Object.freeze(['Trơn cổ','Vân mây','Long văn']),
+  pendant:Object.freeze(['Thủy giọt','Nguyệt phù','Liên hoa']),
+  ring:Object.freeze(['Mặt đơn','Song vân','Tinh tú']),
+  beads:Object.freeze(['Tràng trơn','Hồi văn','Liên châu'])
+ });
+ const SETTINGS=Object.freeze(['Nguyên ngọc','Điểm bạc','Viền vàng']);
+ const COMMISSIONS=Object.freeze([
+  Object.freeze({name:'Khách lữ hành',craft:'ring',design:0,setting:0,minGrade:1,premium:1.18}),
+  Object.freeze({name:'Cô chủ trà quán',craft:'pendant',design:1,setting:0,minGrade:1,premium:1.2}),
+  Object.freeze({name:'Nhà sưu tầm',craft:'beads',design:2,setting:0,minGrade:1,premium:1.25}),
+  Object.freeze({name:'Thương nhân phố ngọc',craft:'ring',design:2,setting:1,minGrade:2,premium:1.3}),
+  Object.freeze({name:'Phú thương Mộc Khảm',craft:'bangle',design:0,setting:0,minGrade:2,premium:1.26}),
+  Object.freeze({name:'Tiểu thư Tử Lan',craft:'pendant',design:2,setting:1,minGrade:3,premium:1.3}),
+  Object.freeze({name:'Đại sư luyện ngọc',craft:'beads',design:1,setting:2,minGrade:4,premium:1.36}),
+  Object.freeze({name:'Chủ hội Phỉ Thúy',craft:'bangle',design:2,setting:2,minGrade:5,premium:1.4})
+ ]);
  const gradeMult=[0,.85,1.25,1.8,2.7,4.2,6.5,11];
  const colorMult=[1,1.25,1.65,1.7,2.1,1.9,4.6,3.8];
  // C4.40B: temper the expected returns of newly purchased high-tier stones.
@@ -90,7 +109,8 @@
  const fresh=()=>({bought:0,cut:0,sold:0,invested:0,received:0,lamp:1,saw:1,
   carver:1,permit:false,rescueReadyAt:0,active:null,stash:[],vault:[],craftJob:null,
   inspected:[],album:{},exhibits:[],last:null,craftWindowAt:0,craftUsed:0,
-  lastDiscoveryKey:null,lastDiscoveryAt:0,forecasts:{total:0,correct:0,streak:0,best:0}});
+  lastDiscoveryKey:null,lastDiscoveryAt:0,forecasts:{total:0,correct:0,streak:0,best:0},
+  commissions:{offer:0,done:0,readyAt:0,rerollAt:0}});
  function validStone(v){
   if(!v||typeof v!=='object'||!['raw','window','cut','crafted'].includes(v.phase)||
    !Number.isSafeInteger(v.id)||v.id<1||v.id>1000000||
@@ -113,13 +133,20 @@
   if(forecast>=0)stone.forecast=forecast;
   if(typeof v.forecastWon==='boolean')stone.forecastWon=v.forecastWon;
   if(integer(v.forecastBonus,1,MAX,0))stone.forecastBonus=v.forecastBonus;
+  if(integer(v.design,0,2,-1)>=0)stone.design=v.design;
+  if(integer(v.setting,0,2,-1)>=0)stone.setting=v.setting;
   const hunt=integer(v.hunt,0,HUNTS.length-1,-1);
   if(hunt>=0)stone.hunt=hunt; // Legacy shop stones keep their original shape.
   return stone;
  }
- const craftDuration=(stone,type,carver=1)=>Math.max(60000,
+ const craftDuration=(stone,type,carver=1,design=0,setting=0)=>Math.max(60000,
   (CRAFT_TIMES[type]||60000)+Math.max(0,(stone?.grade||1)-1)*15000-
-   (clamp(carver,1,4)-1)*15000);
+   (clamp(carver,1,4)-1)*15000+clamp(design,0,2)*20000+clamp(setting,0,2)*15000);
+ const commissionFor=j=>COMMISSIONS[(j?.commissions?.offer||0)%
+  (j?.sold>=25?COMMISSIONS.length:j?.sold>=8?6:4)];
+ const commissionMatch=(stone,order)=>!!stone&&stone.phase==='crafted'&&
+  stone.craft===order.craft&&(stone.design||0)===order.design&&
+  (stone.setting||0)>=order.setting&&stone.grade>=order.minGrade;
  function validCraftJob(job){
   if(!job||typeof job!=='object'||!CRAFTS[job.type])return null;
   const stone=validStone(job.stone),startedAt=job.startedAt,readyAt=job.readyAt;
@@ -127,7 +154,10 @@
    !Number.isSafeInteger(startedAt)||startedAt<0||
    !Number.isSafeInteger(readyAt)||readyAt<=startedAt||readyAt-startedAt>1800000||
    !Number.isSafeInteger(job.value)||job.value<1||job.value>MAX)return null;
-  return {stone,type:job.type,startedAt,readyAt,value:job.value};
+  const safe={stone,type:job.type,startedAt,readyAt,value:job.value};
+  if(integer(job.design,0,2,-1)>=0)safe.design=job.design;
+  if(integer(job.setting,0,2,-1)>=0)safe.setting=job.setting;
+  return safe;
  }
  function norm(source){
   const j=fresh();if(!source||typeof source!=='object')return j;
@@ -139,6 +169,13 @@
    jf.correct=integer(f.correct,0,jf.total,0);
    jf.streak=integer(f.streak,0,jf.correct,0);
    jf.best=integer(f.best,0,jf.correct,0);
+  }
+  if(source.commissions&&typeof source.commissions==='object'){
+   const c=source.commissions,jc=j.commissions;
+   jc.offer=integer(c.offer,0,1000000,0);
+   jc.done=integer(c.done,0,1000000,0);
+   jc.readyAt=integer(c.readyAt,0,Number.MAX_SAFE_INTEGER,0);
+   jc.rerollAt=integer(c.rerollAt,0,Number.MAX_SAFE_INTEGER,0);
   }
   j.rescueReadyAt=integer(source.rescueReadyAt,0,Number.MAX_SAFE_INTEGER,0);
   j.craftWindowAt=integer(source.craftWindowAt,0,Number.MAX_SAFE_INTEGER,0);
@@ -173,7 +210,9 @@
   if(Array.isArray(source.exhibits))j.exhibits=source.exhibits.slice(0,40).filter(x=>
    x&&integer(x.grade,1,7,0)&&integer(x.color,0,7,-1)>=0&&integer(x.size,1,12,0)&&
    typeof x.craft==='string'&&CRAFTS[x.craft]).map(x=>({grade:x.grade,color:x.color,
-    size:x.size,craft:x.craft,site:integer(x.site,0,4,0)}));
+    size:x.size,craft:x.craft,site:integer(x.site,0,4,0),
+    ...(integer(x.design,0,2,-1)>=0?{design:x.design}:{}),
+    ...(integer(x.setting,0,2,-1)>=0?{setting:x.setting}:{})}));
   if(source.last&&typeof source.last==='object'&&typeof source.last.label==='string')
    j.last={label:source.last.label.slice(0,110),value:integer(source.last.value,0,MAX,0)};
   return j;
@@ -271,7 +310,8 @@
   type==='saw'&&j.saw<4?180*j.saw*j.saw:
   type==='carver'&&j.carver<4?240*j.carver*j.carver:
   type==='permit'&&!j.permit?3000:null;
- const craftFee=(stone,type)=>Math.max(4,Math.round(MARKETS[stone.site].price*({bangle:.16,pendant:.1,ring:.08,beads:.055}[type])));
+ const craftFee=(stone,type,design=0,setting=0)=>Math.max(4,Math.round(
+  MARKETS[stone.site].price*({bangle:.16,pendant:.1,ring:.08,beads:.055}[type]+.035*clamp(design,0,2)+.08*clamp(setting,0,2))));
  function act(state,action,roll=.5,now=Date.now()){
   const j=state.jade;if(!j)return {ok:false,reason:'Chưa khởi tạo Ngọc Phường',state};
   const fail=reason=>({ok:false,reason,state});
@@ -400,10 +440,37 @@
    if(now<job.readyAt)return fail('Thợ vẫn đang chế tác. Chờ thêm '+Math.ceil((job.readyAt-now)/1000)+' giây.');
    if(j.vault.length>=MAX_VAULT)return fail('Kho Ngọc đã đầy. Bán hoặc trưng bày một món trước khi nhận.');
    const product={...job.stone,scans:[...job.stone.scans],phase:'crafted',
-    craft:job.type,craftValue:job.value};
+    craft:job.type,craftValue:job.value,
+    ...(job.design!==undefined?{design:job.design}:{}),
+    ...(job.setting!==undefined?{setting:job.setting}:{})};
    j.vault.unshift(product);j.craftJob=null;
    j.last={label:'Hoàn thành '+CRAFTS[job.type].name,value:0};
    return succeed('✦ '+CRAFTS[job.type].name+' đã vào Kho Ngọc! Có thể bán, đeo sưu tập hoặc trưng bày.');
+  }
+  if(action==='jade-change-commission'){
+   if(now<j.commissions.rerollAt)return fail('Chờ quầy khách nhận lượt đổi đơn tiếp theo.');
+   if(now<j.commissions.readyAt)return fail('Khách mới chưa tới.');
+   j.commissions.offer=(j.commissions.offer+1)%1000000;
+   j.commissions.rerollAt=now+60000;
+   return succeed('✉ Đã nhận yêu cầu mới tại quầy đặt ngọc.');
+  }
+  if(action==='jade-deliver-commission'){
+   if(now<j.commissions.readyAt)return fail('Đơn mới chưa mở.');
+   const order=commissionFor(j),index=j.vault.findIndex(x=>commissionMatch(x,order));
+   if(index<0)return fail('Kho Ngọc chưa có thành phẩm đúng yêu cầu.');
+   const piece=j.vault[index],quote=marketQuote(piece,now);
+   if(!quote)return fail('Không định giá được thành phẩm.');
+   // Full NPC sale, not a free bonus. A real crafted item leaves the vault
+   // atomically, and a 2-minute order cooldown limits repeat submissions.
+   const value=clamp(Math.round(quote.value*order.premium),1,MAX);
+   j.vault.splice(index,1);credit(value);j.sold++;
+   j.commissions.done=Math.min(1000000,j.commissions.done+1);
+   j.commissions.offer=(j.commissions.offer+1)%1000000;
+   j.commissions.readyAt=now+120000;
+   j.commissions.rerollAt=Math.max(j.commissions.rerollAt,j.commissions.readyAt);
+   j.last={label:'Đơn ngọc · '+order.name,value};
+   return succeed('✦ Giao '+CRAFTS[piece.craft].name+' thành công · +'+
+    (value/10).toLocaleString('vi-VN',{maximumFractionDigits:1})+' Tiền Xanh');
   }
   const stone=j.active;if(!stone)return fail('Hãy chọn một viên đá thô ở chợ.');
   if(action==='jade-sell-raw'){
@@ -457,7 +524,7 @@
     const f=j.forecasts;
     f.total=Math.min(1000000,f.total+1);
     stone.forecastWon=stone.forecast===actual;
-   stone.forecastBonus=0;
+    stone.forecastBonus=0;
     if(stone.forecastWon){
      f.correct=Math.min(1000000,f.correct+1);
      f.streak=Math.min(1000000,f.streak+1);f.best=Math.max(f.best,f.streak);
@@ -479,21 +546,22 @@
     stone.grade===0?'Đá phế! Chỉ có thể bán thu hồi.':
     (newFind?'✦ MỚI VÀO SỔ · ':'ĐÃ CÓ TRONG SỔ · ')+GRADES[stone.grade]+' · '+COLORS[stone.color]+'!');
   }
-  const craft=/^jade-craft-(bangle|pendant|ring|beads)$/.exec(action||'');
+  const craft=/^jade-craft-(bangle|pendant|ring|beads)(?:-([012])-([012]))?$/.exec(action||'');
   if(craft){
    if(stone.phase!=='cut'||stone.grade===0||stone.flaw==='skin')return fail('Chỉ chế tác được phôi ngọc đã cắt.');
    if(j.craftJob)return fail('Bàn thợ đang bận. Nhận thành phẩm trước khi gửi phôi mới.');
    if(j.vault.length>=MAX_VAULT)return fail('Kho Ngọc đã đầy, chưa có chỗ nhận thành phẩm.');
-   const type=craft[1],spec=CRAFTS[type];
+   const type=craft[1],spec=CRAFTS[type],design=Number(craft[2]||0),setting=Number(craft[3]||0);
    if(stone.size<spec.min)return fail('Phôi ngọc quá nhỏ cho thành phẩm này.');
    if(type==='bangle'&&stone.flaw==='fracture'&&!stone.savedFracture)return fail('Đá nứt tâm, không tiện được vòng nguyên khối.');
-   const fee=craftFee(stone,type);if(!charge(fee))return fail('Chưa đủ phí chế tác.');
-   const duration=craftDuration(stone,type,j.carver);
+   const fee=craftFee(stone,type,design,setting);if(!charge(fee))return fail('Chưa đủ phí chế tác.');
+   const duration=craftDuration(stone,type,j.carver,design,setting);
    j.craftJob={stone:{...stone,scans:[...stone.scans]},type,startedAt:now,
-    readyAt:now+duration,
-    value:clamp(Math.round(stone.cutValue*spec.mult*(1+.17*(j.carver-1))),1,MAX)};
+    readyAt:now+duration,design,setting,
+    value:clamp(Math.round(stone.cutValue*spec.mult*(1+.17*(j.carver-1))*
+     (1+.05*design+.08*setting)),1,MAX)};
    j.active=null;
-   return succeed('⚒ Đã gửi phôi làm '+spec.name+' · '+Math.ceil(duration/60000)+' phút. Cứ chơi game khác, xưởng vẫn chạy!');
+   return succeed('⚒ '+DESIGNS[type][design]+' · '+SETTINGS[setting]+' · '+Math.ceil(duration/60000)+' phút.');
   }
   if(action==='jade-sell'){
    if(!['cut','crafted'].includes(stone.phase))return fail('Hãy cắt đá hoặc khai song trước.');
@@ -504,14 +572,16 @@
   if(action==='jade-exhibit'){
    if(stone.phase!=='crafted'||stone.grade===0||stone.flaw==='skin')return fail('Cần chế tác tác phẩm trước.');
    if(j.exhibits.length>=40)return fail('Tủ triển lãm đã đầy (40 tác phẩm).');
-   j.exhibits.unshift({grade:stone.grade,color:stone.color,size:stone.size,craft:stone.craft,site:stone.site});
+   j.exhibits.unshift({grade:stone.grade,color:stone.color,size:stone.size,craft:stone.craft,site:stone.site,
+    ...(stone.design!==undefined?{design:stone.design}:{}),
+    ...(stone.setting!==undefined?{setting:stone.setting}:{})});
    j.last={label:'Đã cất '+CRAFTS[stone.craft].name+' vào tủ',value:0};j.active=null;
    return succeed('✦ Đã bổ sung tác phẩm vào Tủ Triển Lãm!');
   }
   return fail('Thao tác Ngọc Phường chưa hỗ trợ.');
  }
  return Object.freeze({fresh,norm,act,MARKETS,HUNTS,huntUnlocked,GRADES,COLORS,COLOR_HEX,FLAWS,FLAW_NAMES,FORECASTS,
-  CRAFTS,CRAFT_TIMES,craftDuration,RESCUE_INTERVAL,CRAFT_WINDOW,CRAFT_LIMIT,unlocked,scanHint,baseValue,cutValue,cuttingFee,windowFee,
+  CRAFTS,DESIGNS,SETTINGS,COMMISSIONS,commissionFor,commissionMatch,CRAFT_TIMES,craftDuration,RESCUE_INTERVAL,CRAFT_WINDOW,CRAFT_LIMIT,unlocked,scanHint,baseValue,cutValue,cuttingFee,windowFee,
   actionFee,rawSalvageValue,upgradeCost,craftFee,generate,marketOffer,surface,stallFee,purchasePrice,marketScanSpots,
   MAX_STONES,MAX_VAULT,marketRate,marketQuote,inspectFee,inspectionKey});
 });

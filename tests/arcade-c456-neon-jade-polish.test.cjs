@@ -50,7 +50,7 @@ test('C4.56 Neon tick only repaints on events belonging to the selected game',()
  assert.match(ui,/const activeGameChanged=tab==='neon'\?customerServed\|\|boostExpired\|\|turboReady\|\|nextOrder\|\|missedBeat/);
  assert.match(ui,/tab==='mine'\?completedRepair/);
  assert.match(ui,/tab==='garden'\?waterRefilled\|\|bubbleAppeared\|\|plantMatured/);
- assert.match(ui,/tab==='jade'&&craftReady/);
+ assert.match(ui,/tab==='jade'&&\(craftReady\|\|orderReady\|\|rerollReady\)/);
  assert.match(ui,/lastRenderedKey!==activeKey\|\|activeGameChanged/);
  assert.match(ui,/refreshNeonBeatStep\(\)\)return true;/,
   'Correct arrow presses should patch only the counter instead of rebuilding the full café');

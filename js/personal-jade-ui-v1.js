@@ -23,7 +23,11 @@
  const dateText=time=>new Date(time||Date.now()).toLocaleDateString('vi-VN',{timeZone:'UTC',day:'2-digit',month:'2-digit'});
  const nowOf=s=>s.lastAt||Date.now();
  const marketRates=s=>jade.COLORS.map((name,i)=>({name,index:i,rate:jade.marketRate(i,nowOf(s))}));
- let openStall=null,selectedMarket=0;
+ let openStall=null,selectedMarket=0,selectedDesign=0,selectedSetting=0;
+ const chooseDesign=value=>{if(!Number.isInteger(value)||value<0||value>2)return false;selectedDesign=value;return true;};
+ const chooseSetting=value=>{if(!Number.isInteger(value)||value<0||value>2)return false;selectedSetting=value;return true;};
+ const jewelryLabel=stone=>stone?.craft&&jade.DESIGNS[stone.craft]?
+  jade.DESIGNS[stone.craft][stone.design||0]+' · '+jade.SETTINGS[stone.setting||0]:null;
  const chosenSamples=new Map();
  function chooseMarket(index,j){
   if(!Number.isSafeInteger(index)||index<0||index>=jade.MARKETS.length||!j||!jade.unlocked(j,index))return false;
@@ -60,6 +64,7 @@
        <span class="jade-item-art jade-item-${visual} ${cut?(carved?gemVisual(stone):splitVisual(stone)):shellVisual(stone.site,stone.seed)}" style="--jade-item-x:${artworkIndex*25}%;--jade-gem-tone:${color}" aria-hidden="true"></span>${cut&&revealed?'<span class="jade-reveal-rays" aria-hidden="true"></span>':''}
        ${phase==='window'?'<span class="jade-polished-window"></span>':''}
        ${cut?`<span class="jade-gem-inner"></span><span class="jade-gem-shine"></span>`:''}
+       ${carved?`<span class="jade-finish-emblem jade-pattern-${stone.design||0} jade-setting-${stone.setting||0}" aria-hidden="true"></span>`:''}
       </div>`:`<div class="jade-showcase-rough" aria-hidden="true"><i></i><i></i><i></i></div>`}
     ${cut?`<div class="jade-stage-quote jade-quote-${tier}" role="status">
       <small>${tier==='legendary'?'✦ HUYỀN THOẠI':tier==='precious'?'◇ NGỌC QUÝ':tier==='common'?'◈ NGỌC THƯỜNG':'PHẾ THẠCH'}</small>
@@ -243,9 +248,9 @@
    ${j.vault.length?`<div class="jade-vault-list">${j.vault.map((stone,i)=>{
     const q=jade.marketQuote(stone,time);
     const valuable=stone.grade>0&&stone.flaw!=='skin';
-    return `<article class="jade-vault-card jade-result-${gemTier(stone)}"><span class="jade-vault-gem jade-collectible-art ${valuable?'':'is-waste'} ${gemVisual(stone)}" style="--jade-color:${jade.COLOR_HEX[stone.color]};--jade-item-x:${(valuable?(Math.max(1,stone.grade)-1)%5:stone.site)*25}%" aria-hidden="true"></span>
+    return `<article class="jade-vault-card jade-result-${gemTier(stone)}"><span class="jade-vault-gem jade-collectible-art ${valuable?'':'is-waste'} ${gemVisual(stone)} ${stone.craft?'jade-jewel-variant jade-design-'+(stone.design||0)+' jade-setting-'+(stone.setting||0):''}" style="--jade-color:${jade.COLOR_HEX[stone.color]};--jade-item-x:${(valuable?(Math.max(1,stone.grade)-1)%5:stone.site)*25}%" aria-hidden="true"></span>
      <div class="jade-vault-info"><b>#${String(stone.id).padStart(3,'0')} · ${stoneName(stone)}</b>
-       <small>${stone.phase==='crafted'?jade.CRAFTS[stone.craft].name:'Phôi chưa chế tác'} · Cỡ ${stone.size}</small>
+       <small>${stone.phase==='crafted'?jade.CRAFTS[stone.craft].name+' · '+jewelryLabel(stone):'Phôi chưa chế tác'} · Cỡ ${stone.size}</small>
        <span class="${trendClass(q.rate)}">${trend(q.rate)} · <strong>${greenMark}${fmt(q.value)}</strong></span></div>
      <div class="jade-vault-actions">${btn('Bán ngay','jade-vault-sell-'+i,'gold')}
       ${btn('Đưa ra bàn','jade-vault-select-'+i,'upgrade',!!j.active)}</div></article>`;}).join('')}</div>`:
@@ -256,6 +261,10 @@
  function workshopPanel(s){
   const j=s.jade,stone=j.active,canCraft=stone?.phase==='cut'&&stone.grade>0&&stone.flaw!=='skin';
   const job=j.craftJob,time=Date.now(),ready=!!job&&time>=job.readyAt;
+  const requests=j.commissions||{done:0,readyAt:0,rerollAt:0},order=jade.commissionFor(j);
+  const matching=j.vault.find(piece=>jade.commissionMatch(piece,order));
+  const orderReady=time>=requests.readyAt,rerollReady=time>=requests.rerollAt;
+  const orderValue=matching?Math.min(1000000000,Math.round(jade.marketQuote(matching,time).value*order.premium)):0;
   const upgrades=[['lamp','◉','Đèn giám ngọc','Soi rõ tín hiệu và bì dày'],
    ['saw','⚙','Cưa hợp kim','Tăng cơ hội giữ nguyên phôi nứt'],
    ['carver','✧','Thợ khắc bậc cao','Tăng giá thành phẩm 17%/cấp'],
@@ -264,21 +273,39 @@
     <div class="jade-sheet-heading"><b>⌘ Xưởng chế tác</b><small>${job?'1 bàn đang hoạt động':'1 bàn thợ · tính giờ thực'}</small></div>
     ${job?`<div class="jade-craft-job ${ready?'is-ready':'is-working'}" role="status">
       <span aria-hidden="true">${ready?'✦':'⚒'}</span><div><b>${ready?'Thành phẩm đã hoàn tất':'Đang làm '+jade.CRAFTS[job.type].name}</b>
-      <small>${jade.GRADES[job.stone.grade]} · ${jade.COLORS[job.stone.color]} · ${ready?'Sẵn sàng vào Kho Ngọc':`Còn <span data-arcade-until="${job.readyAt}">${Math.ceil((job.readyAt-time)/1000)}s</span> · chơi game khác vẫn tính giờ`}</small></div>
+      <small>${jade.DESIGNS[job.type][job.design||0]} · ${jade.SETTINGS[job.setting||0]} · ${ready?'Đã xong':`<span data-arcade-until="${job.readyAt}">${Math.ceil((job.readyAt-time)/1000)}s</span>`}</small></div>
       ${btn(ready?'✦ Nhận ngọc':'Đang chế tác','jade-claim-craft','gold',!ready||j.vault.length>=jade.MAX_VAULT)}</div>`:''}
+    <div class="jade-commission" aria-label="Đơn đặt trang sức từ khách">
+      <div class="jade-commission-head"><b>✉ Đơn khách</b><small>${requests.done} đã giao</small></div>
+      <div class="jade-commission-detail"><span aria-hidden="true">${{ring:'◈',pendant:'◇',bangle:'◯',beads:'❈'}[order.craft]}</span>
+       <div><strong>${jade.CRAFTS[order.craft].name} · ${jade.DESIGNS[order.craft][order.design]}</strong>
+        <small>${order.name} · ${jade.GRADES[order.minGrade]}+ · ${jade.SETTINGS[order.setting]}+ · x${order.premium.toLocaleString('vi-VN')}</small></div></div>
+      <div class="jade-commission-actions">
+       ${btn(!orderReady?`◷ <span data-arcade-until="${requests.readyAt}">${Math.ceil((requests.readyAt-time)/1000)}s</span>`:
+        matching?'Giao · +'+greenMark+fmt(orderValue):'Chưa có món phù hợp','jade-deliver-commission','gold',!orderReady||!matching)}
+       ${btn(!rerollReady&&orderReady?`Đổi · <span data-arcade-until="${requests.rerollAt}">${Math.ceil((requests.rerollAt-time)/1000)}s</span>`:'↻ Đổi đơn',
+        'jade-change-commission','upgrade',!orderReady||!rerollReady)}</div>
+    </div>
+    <div class="jade-style-picker" role="group" aria-label="Tùy chọn trang sức">
+     <div class="jade-picker-row"><small>HỌA TIẾT</small>${['Trơn','Vân','Chạm'].map((label,i)=>`<button type="button" class="jade-picker-chip ${selectedDesign===i?'is-selected':''}"
+       data-jade-design="${i}" aria-pressed="${selectedDesign===i}">${label}</button>`).join('')}</div>
+     <div class="jade-picker-row"><small>CHẤT LIỆU</small>${['Ngọc','Bạc','Vàng'].map((label,i)=>`<button type="button" class="jade-picker-chip ${selectedSetting===i?'is-selected':''}"
+       data-jade-setting="${i}" aria-pressed="${selectedSetting===i}">${label}</button>`).join('')}</div>
+    </div>
     <div class="jade-craft-list">${Object.entries(jade.CRAFTS).map(([id,item])=>{
-     const fee=stone?jade.craftFee(stone,id):0;
-     const seconds=stone?Math.ceil(jade.craftDuration(stone,id,j.carver)/1000):Math.ceil(jade.CRAFT_TIMES[id]/1000);
+     const fee=stone?jade.craftFee(stone,id,selectedDesign,selectedSetting):0;
+     const seconds=stone?Math.ceil(jade.craftDuration(stone,id,j.carver,selectedDesign,selectedSetting)/1000):
+      Math.ceil((jade.CRAFT_TIMES[id]+selectedDesign*20000+selectedSetting*15000)/1000);
      const allowed=canCraft&&stone.size>=item.min&&
       !(id==='bangle'&&stone.flaw==='fracture'&&!stone.savedFracture);
      return `<div class="jade-craft-card"><span>${{bangle:'◯',pendant:'◇',ring:'◈',beads:'❈'}[id]}</span>
-      <div><b>${item.name}</b><small>Phôi cỡ ${item.min}+ · ${Math.floor(seconds/60)}p${seconds%60?String(seconds%60).padStart(2,'0')+'s':''} · x${item.mult.toLocaleString('vi-VN')} giá trị</small></div>
-      ${btn('⚒ '+greenMark+fmt(fee),'jade-craft-'+id,'upgrade',!allowed||s.coins<fee||!!job||j.vault.length>=jade.MAX_VAULT)}</div>`;}).join('')}</div>
+      <div><b>${item.name} · ${jade.DESIGNS[id][selectedDesign]}</b><small>Cỡ ${item.min}+ · ${Math.floor(seconds/60)}p${seconds%60?String(seconds%60).padStart(2,'0')+'s':''}</small></div>
+      ${btn('⚒ '+greenMark+fmt(fee),'jade-craft-'+id+'-'+selectedDesign+'-'+selectedSetting,'upgrade',!allowed||s.coins<fee||!!job||j.vault.length>=jade.MAX_VAULT)}</div>`;}).join('')}</div>
     <div class="jade-sheet-heading"><b>⚒ Nâng cấp xưởng</b><small>Đầu tư bằng Tiền Xanh</small></div>
     ${upgrades.map(([id,icon,title,desc])=>{const cost=jade.upgradeCost(j,id);
      return `<div class="jade-tool-card"><span>${icon}</span><div><b>${title}</b><small>${desc} · ${id==='permit'?(j.permit?'Đã có':'Giấy phép'): 'Cấp '+j[id]+'/4'}</small></div>
       ${btn(cost===null?'Tối đa':greenMark+fmt(cost),'jade-upgrade-'+id,'upgrade',cost===null||s.coins<cost||id==='permit'&&j.sold<25)}</div>`;}).join('')}
-    <p class="jade-sheet-hint">Gửi phôi xong, cứ sang Net, Đào đá hoặc Câu cá. Quay lại nhận ngọc sau khi thợ hoàn tất; mỗi lần một phôi.</p></div>`;
+    <p class="jade-sheet-hint">Một bàn thợ · Chế tác vẫn chạy khi sang game khác.</p></div>`;
  }
  function galleryPanel(s){
   const j=s.jade,found=Object.keys(j.album).length,forecasts=j.forecasts||{correct:0,total:0,best:0};
@@ -286,9 +313,9 @@
    .map(stone=>stone.grade+'-'+stone.color));
   const latest=j.lastDiscoveryKey?.split('-').map(Number),newest=latest?.length===2&&j.album[j.lastDiscoveryKey];
   const recentNew=newest&&Date.now()-j.lastDiscoveryAt<10*60*1000;
-  const exhibits=j.exhibits.map((item,i)=>`<div class="jade-exhibit"><span class="jade-collectible-art ${gemVisual(item)}" style="--jade-color:${jade.COLOR_HEX[item.color]};--jade-item-x:${((Math.max(1,item.grade)-1)%5)*25}%" aria-hidden="true"></span>
+  const exhibits=j.exhibits.map((item,i)=>`<div class="jade-exhibit"><span class="jade-collectible-art jade-jewel-variant jade-design-${item.design||0} jade-setting-${item.setting||0} ${gemVisual(item)}" style="--jade-color:${jade.COLOR_HEX[item.color]};--jade-item-x:${((Math.max(1,item.grade)-1)%5)*25}%" aria-hidden="true"></span>
    <div><b>${jade.GRADES[item.grade]} · ${jade.COLORS[item.color]}</b>
-   <small>${jade.CRAFTS[item.craft].name} · Cỡ ${item.size} · #${i+1}</small></div></div>`).join('');
+   <small>${jade.CRAFTS[item.craft].name} · ${jewelryLabel(item)} · #${i+1}</small></div></div>`).join('');
   return `<div class="jade-gallery-content" data-arcade-panel="jade-gallery">
     <div class="jade-gallery-banner"><span>✦ SỔ PHỈ THÚY</span><strong>${found}/56</strong>
       <small>Đã mở = từng tìm thấy · Đang giữ = còn trong kho/tủ</small></div>
@@ -327,5 +354,5 @@
    </div>
   </section>`;
  }
- root.DuduPersonalJadeUIV1=Object.freeze({panel,rememberTray,chooseMarketSample,chooseMarket});
+ root.DuduPersonalJadeUIV1=Object.freeze({panel,rememberTray,chooseMarketSample,chooseMarket,chooseDesign,chooseSetting});
 })(typeof window!=='undefined'?window:{});

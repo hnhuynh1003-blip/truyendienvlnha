@@ -785,6 +785,59 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header>span:nth-ch
 #personal-arcade-v1 .jade-forecast-record span{flex:1;min-width:0}
 #personal-arcade-v1 .jade-forecast-record b{color:#f2d897;font-size:12px}
 #personal-arcade-v1 .jade-forecast-record small{font-size:9px;color:#a4c7b0}
+/* C4.57b · Small jewelry workshop selector and finite customer commission. */
+#personal-arcade-v1 .jade-commission{padding:8px;margin:6px 0 9px;border:1px solid #a78e60;
+ border-radius:7px;background:linear-gradient(125deg,#294237,#182e29);box-shadow:inset 0 1px #f8df9c20}
+#personal-arcade-v1 .jade-commission-head{display:flex;justify-content:space-between;gap:6px;align-items:center}
+#personal-arcade-v1 .jade-commission-head b{color:#eed9a7;font-size:11px}
+#personal-arcade-v1 .jade-commission-head small{color:#a1c1af;font-size:9px}
+#personal-arcade-v1 .jade-commission-detail{display:flex;align-items:center;gap:7px;margin:5px 0}
+#personal-arcade-v1 .jade-commission-detail>span{display:grid;place-items:center;flex:0 0 30px;
+ height:30px;border:1px solid #bdab79;border-radius:50%;color:#f7df9e;background:#423e2c;font:800 18px serif}
+#personal-arcade-v1 .jade-commission-detail>div{min-width:0;flex:1}
+#personal-arcade-v1 .jade-commission-detail strong{display:block;font-size:10px;color:#f2e2c6}
+#personal-arcade-v1 .jade-commission-detail small{display:block;color:#b7cabb;font-size:9px;line-height:1.35;margin-top:2px}
+#personal-arcade-v1 .jade-commission-actions{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:5px}
+#personal-arcade-v1 .jade-commission-actions .arcade-button{min-width:0;min-height:30px;
+ padding:4px 5px;font-size:10px;white-space:normal}
+#personal-arcade-v1 .jade-style-picker{display:grid;gap:5px;margin:7px 0;padding:7px;
+ border:1px solid #557566;border-radius:7px;background:#162f29}
+#personal-arcade-v1 .jade-picker-row{display:grid;grid-template-columns:60px repeat(3,minmax(0,1fr));
+ gap:4px;align-items:center}
+#personal-arcade-v1 .jade-picker-row>small{color:#b8ccad;font:800 8px/1.1 system-ui,sans-serif}
+#personal-arcade-v1 .jade-picker-chip{min-width:0;min-height:28px;padding:4px 2px;
+ border:1px solid #567d68;border-radius:5px;background:#29493a;color:#b8d8c4;
+ font:800 10px/1 system-ui,sans-serif;cursor:pointer;touch-action:manipulation}
+#personal-arcade-v1 .jade-picker-chip.is-selected{border-color:#f2d399;background:#685339;color:#fff0bf}
+#personal-arcade-v1 .jade-picker-chip:focus-visible{outline:2px solid #fff0bf;outline-offset:2px}
+#personal-arcade-v1 .jade-craft-card{padding:6px 7px;gap:6px}
+#personal-arcade-v1 .jade-craft-card .arcade-button{min-width:65px}
+/* The material is a real rim, while the pattern changes its geometry. These
+   are light CSS ornaments over the existing stone artwork, no extra bitmaps. */
+#personal-arcade-v1 .jade-finish-emblem{--jewel-metal:#92bfa8;position:absolute;
+ z-index:8;pointer-events:none;left:50%;top:46%;width:100px;height:85px;
+ transform:translate(-50%,-50%);border:2px solid var(--jewel-metal);border-radius:50%;
+ box-shadow:inset 0 0 7px #fff6de50,0 0 8px #f4dba455;opacity:.78}
+#personal-arcade-v1 .jade-setting-1{--jewel-metal:#c9dce7}
+#personal-arcade-v1 .jade-setting-2{--jewel-metal:#f0c979}
+#personal-arcade-v1 .jade-finish-emblem.jade-pattern-1{border-style:double;border-width:5px;
+ border-radius:37% 63% 52% 48%;transform:translate(-50%,-50%) rotate(16deg)}
+#personal-arcade-v1 .jade-finish-emblem.jade-pattern-2{border-style:dashed;border-width:3px;
+ border-radius:47% 53% 36% 64%;transform:translate(-50%,-50%) rotate(-12deg)}
+#personal-arcade-v1 .jade-craft-ring .jade-finish-emblem{width:77px;height:59px;top:54%}
+#personal-arcade-v1 .jade-craft-bangle .jade-finish-emblem{width:102px;height:103px;top:45%}
+#personal-arcade-v1 .jade-craft-pendant .jade-finish-emblem{width:82px;height:103px;top:44%}
+#personal-arcade-v1 .jade-craft-beads .jade-finish-emblem{width:115px;height:67px;top:50%}
+#personal-arcade-v1 .jade-jewel-variant{--jewel-metal:#92bfa8;position:relative}
+#personal-arcade-v1 .jade-jewel-variant::after{content:'';position:absolute;inset:4px;
+ border:2px solid var(--jewel-metal);border-radius:50%;pointer-events:none;
+ box-shadow:inset 0 0 6px #efffe044}
+#personal-arcade-v1 .jade-jewel-variant.jade-design-1::after{border-style:double;
+ border-width:4px;border-radius:37% 63% 53% 47%}
+#personal-arcade-v1 .jade-jewel-variant.jade-design-2::after{border-style:dashed;
+ border-radius:45% 55% 32% 68%}
+#personal-arcade-v1 .jade-jewel-variant.jade-setting-1{--jewel-metal:#c9dce7}
+#personal-arcade-v1 .jade-jewel-variant.jade-setting-2{--jewel-metal:#f0c979}
 .jade-decision-note{font-size:9px;color:#a6c5b9;line-height:1.4;margin:6px 2px 0}
 .jade-trader-offer{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:3px 6px;
  border:1px solid #bca174;border-radius:10px;background:#5b4938;padding:7px 10px;margin-top:7px}
