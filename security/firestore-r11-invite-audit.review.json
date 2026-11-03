@@ -1,0 +1,36 @@
+{
+  "score": 3,
+  "summary": "R1.1 candidate: static red-team review found no direct self-approval without a valid, unredeemed invite in a paired atomic batch. Score is provisional: Firebase Rules Emulator and a diff against actual Published Firestore/Storage Rules have not been completed. DO NOT PUBLISH YET.",
+  "findings": [
+    {
+      "check": "Authority source and privilege escalation",
+      "severity": "moderate",
+      "issue": "Issuing invitations requires an existing Firebase custom claim admin:true, whose presence for the owner has not been independently verified.",
+      "recommendation": "Verify the owner's ID token custom claim through a trusted channel before enabling invite generation. Do not trust profiles_v2.role."
+    },
+    {
+      "check": "Atomic counter/action replay and update bypass",
+      "severity": "minor",
+      "issue": "Both halves of one-time redemption are cross-checked using getAfter(), but correctness and Firestore Rules syntax have only been structurally tested, not by the Firebase Emulator.",
+      "recommendation": "Test fresh, expired, revoked, reused, simultaneous, forged and one-sided batch writes in Emulator before any Publish."
+    },
+    {
+      "check": "Business logic versus Rules and mixed-content leak",
+      "severity": "moderate",
+      "issue": "Public Web uses one entire Firestore document, and actual Published Rules/data are not yet inspected. Older EPUB or private fields mixed into main_library would remain public.",
+      "recommendation": "Read-only audit the live main_library document and compare the complete Published Firestore/Storage Rules before rollout."
+    },
+    {
+      "check": "Client authorization and offline data",
+      "severity": "minor",
+      "issue": "Firestore Rules deny new server reads after revocation but cannot retroactively erase previously downloaded or offline-cached content. UI gates are staged off.",
+      "recommendation": "Exercise logout/account switch and cache behavior on Android and laptop; activate client flags only after server policy is live."
+    },
+    {
+      "check": "Wallet and resource abuse",
+      "severity": "minor",
+      "issue": "The pre-existing profile contains self-mutable virtual Xu; invitation rules do not provide a validated payment entitlement or strong anti-cheat controls.",
+      "recommendation": "Keep all real-value transactions and paid EPUB entitlement authorization separate; no additional anti-cheat changes are needed for the owner's current solo-play scope."
+    }
+  ]
+}

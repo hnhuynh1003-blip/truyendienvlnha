@@ -9,10 +9,16 @@
   let generation = 0;
   let defaultProfile = null;
   let loginPending = false;
+  let lastInviteCode = '';
   // AUTH-A1 ships inert until the matching Firestore Rules and existing UID
   // approvals have been reviewed and explicitly published by the owner.
   const approvalEnabled = () => !IS_SANDBOX_MODE &&
     window.DUDU_ACCOUNT_APPROVAL_V1_READY === true;
+  const inviteEnabled = () => approvalEnabled() &&
+    window.DUDU_ACCOUNT_INVITES_R11_READY === true;
+  function syncEpubAccess(approved) {
+    if (approvalEnabled()) window.duduSyncEpubAccessR11?.(approved);
+  }
 
   function status(message) {
     const el = document.getElementById('auth-status-message');
@@ -65,7 +71,12 @@
     document.getElementById('auth-sandbox-controls').style.display = IS_SANDBOX_MODE ? 'block' : 'none';
     document.getElementById('auth-secure-controls').style.display = IS_SANDBOX_MODE ? 'none' : 'block';
     const policy = document.getElementById('auth-approval-policy-a1');
-    if (policy) policy.hidden = !approvalEnabled();
+    if (policy) {
+      policy.hidden = !approvalEnabled();
+      if (approvalEnabled()) policy.textContent = inviteEnabled()
+        ? 'Tạo tài khoản Firebase trước, sau đó nhập mã mời do chủ sở hữu cấp để mở EPUB và ứng dụng cá nhân.'
+        : 'Đăng ký tạo danh tính Firebase trước. Chỉ sau khi chủ sở hữu duyệt mới mở hồ sơ, Xu và trò chơi.';
+    }
   }
   function resetSession() {
     window.DuduProfileSaveC23?.reset?.();
@@ -75,6 +86,18 @@
     userProfile = JSON.parse(defaultProfile);
     chatHistories = {};
     activeChatNovelId = null;
+    lastInviteCode = '';
+    for (const id of ['auth-invite-redeem-r11','auth-invite-owner-r11']) {
+      const panel = document.getElementById(id);
+      if (panel) panel.hidden = true;
+    }
+    const code = document.getElementById('auth-invite-code-r11');
+    if (code) code.value = '';
+    const output = document.getElementById('auth-invite-created-r11');
+    if (output) output.textContent = '';
+    const copy = document.getElementById('auth-invite-copy-r11');
+    if (copy) copy.hidden = true;
+    syncEpubAccess(false);
     const pending = document.getElementById('auth-approval-pending-a1');
     if (pending) pending.hidden = true;
     const ownerPanel = document.getElementById('auth-approval-owner-a1');
@@ -262,20 +285,24 @@
         if (!helper?.check) throw Error('Thiếu bộ kiểm tra duyệt tài khoản');
         // No profile read or profile bootstrap until server-backed approval.
         const decision = await withTimeout(helper.check({db:firebase.firestore(),
-          auth:client,uid:account.uid,claims:token.claims}), 'Duyệt tài khoản');
+          auth:client,uid:account.uid,claims:token.claims,
+          inviteOnly:inviteEnabled()}), 'Duyệt tài khoản');
         if (ticket !== generation || client.currentUser?.uid !== account.uid) return;
         if (!decision.approved) {
           const descriptions = {
             pending:'Yêu cầu đã gửi. Đang chờ chủ sở hữu DUDU duyệt.',
             rejected:'Yêu cầu chưa được chấp thuận. Hãy liên hệ chủ sở hữu.',
             revoked:'Quyền chơi đã được chủ sở hữu thu hồi.',
-            'awaiting-access':'Chưa có quyền vào game. Hãy liên hệ chủ sở hữu.'
+            'awaiting-access':'Chưa có quyền vào game. Hãy liên hệ chủ sở hữu.',
+            'invite-required':'Nhập mã mời của chủ sở hữu để mở EPUB và các ứng dụng cá nhân.'
           };
           profileError = descriptions[decision.status] || descriptions.pending;
           if (btn) btn.textContent = '👤 ' + label + ' · Chờ duyệt';
           if (prof) prof.textContent = 'Firebase UID: ' + account.uid.slice(0,8) + '… (chưa cấp quyền chơi)';
           const pendingPanel=document.getElementById('auth-approval-pending-a1');
           if (pendingPanel) {pendingPanel.hidden=false;pendingPanel.textContent=profileError;}
+          const invitePanel=document.getElementById('auth-invite-redeem-r11');
+          if (invitePanel) invitePanel.hidden=!(inviteEnabled() && decision.status==='invite-required');
           showRetry(true);
           refreshSessionUI();
           openAuthModal();
@@ -360,12 +387,15 @@
       if (prof) prof.textContent = 'Firebase UID: ' + account.uid.slice(0, 8) + '…';
       showRetry(false);
       closeModals();
+      syncEpubAccess(true);
       refreshSessionUI();
       if (approvalEnabled() && admin) {
         window.DuduAccountApprovalV1?.mountOwnerPanel?.({
           db:firebase.firestore(),auth:client,
           host:document.getElementById('auth-approval-owner-a1')
         });
+        const inviteOwner=document.getElementById('auth-invite-owner-r11');
+        if(inviteOwner)inviteOwner.hidden=!inviteEnabled();
       }
       if (migratedPersonal && typeof window.saveCurrentAccount==='function') {
         // Legacy profile backup remains available locally; remote preference
@@ -470,7 +500,9 @@
       // onAuthStateChanged loads the profile; completion of signIn alone
       // does not prove that the profile is synced with Firestore.
       if (!ready && !profileError) status(register && approvalEnabled()
-        ? 'Đã tạo đăng nhập Firebase. Đang gửi yêu cầu chờ chủ sở hữu duyệt…'
+        ? (inviteEnabled()
+          ? 'Đã tạo đăng nhập Firebase. Hãy nhập mã mời để kích hoạt DUDU.'
+          : 'Đã tạo đăng nhập Firebase. Đang gửi yêu cầu chờ chủ sở hữu duyệt…')
         : 'Đã xác thực. Đang tải hồ sơ người chơi…');
       passwordInput.value = '';
     } catch (error) {
@@ -482,6 +514,44 @@
   async function signout() {
     if (!client) return;
     try { await client.signOut(); } catch (error) { fail(error); }
+  }
+  async function createInvite() {
+    if(!inviteEnabled()||!ready||!admin||!client?.currentUser)return;
+    const button=document.getElementById('auth-invite-create-r11');
+    if(button)button.disabled=true;
+    try {
+      const result=await window.DuduAccountInviteR11.create({db:firebase.firestore(),auth:client});
+      lastInviteCode=result.code;
+      const output=document.getElementById('auth-invite-created-r11');
+      if(output)output.textContent=result.code;
+      const copy=document.getElementById('auth-invite-copy-r11');
+      if(copy)copy.hidden=false;
+      status('Mã mời đã tạo. Sao chép và gửi riêng cho người bạn muốn cấp quyền.');
+    } catch(error) {
+      status('Chưa tạo được mã: '+(error?.code||'Kiểm tra Rules R1.1 và quyền admin.'));
+    } finally {if(button)button.disabled=false;}
+  }
+  async function copyInvite() {
+    if(!lastInviteCode||!inviteEnabled()||!admin)return;
+    try {await navigator.clipboard.writeText(lastInviteCode);status('Đã sao chép mã mời.');}
+    catch(_){status('Hãy chọn và sao chép mã mời đang hiển thị.');}
+  }
+  async function redeemInvite() {
+    if(!inviteEnabled()||ready||!client?.currentUser)return;
+    const input=document.getElementById('auth-invite-code-r11');
+    const button=document.getElementById('auth-invite-redeem-btn-r11');
+    if(button)button.disabled=true;
+    try {
+      await window.DuduAccountInviteR11.redeem({db:firebase.firestore(),auth:client,
+        code:input?.value});
+      if(input)input.value='';
+      status('Mã mời hợp lệ. Đang tải hồ sơ DUDU của bạn…');
+      await applySession(client.currentUser);
+    } catch(error) {
+      status(error?.code==='invalid-code-format'
+        ? 'Mã mời chưa đúng định dạng DUDU-XXXXXXXX-XXXXXXXX.'
+        : 'Mã không tồn tại, đã dùng, hết hạn hoặc tài khoản đã có quyền. Hãy kiểm tra với chủ sở hữu.');
+    } finally {if(button)button.disabled=false;}
   }
   function showStatus() {
     showControls();
@@ -498,6 +568,7 @@
   }
   window.DuduAuth = {
     init, google, email, signout, showStatus, retry, diagnoseFirestore,
+    createInvite, copyInvite, redeemInvite,
     isReady: () => ready && !!client?.currentUser,
     isAdmin: canAuthor,
     uid: () => client?.currentUser?.uid || null

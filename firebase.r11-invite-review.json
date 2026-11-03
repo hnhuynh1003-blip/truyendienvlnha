@@ -1,0 +1,14 @@
+{
+  "firestore": {
+    "rules": "security/firestore-r11-invite-approved.rules.review"
+  },
+  "emulators": {
+    "firestore": {
+      "host": "127.0.0.1",
+      "port": 18087
+    },
+    "ui": {
+      "enabled": false
+    }
+  }
+}

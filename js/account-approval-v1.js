@@ -32,7 +32,7 @@
   return data?.status==='rejected'?'rejected':
    data?.status==='approved'?'awaiting-access':'pending';
  }
- async function check({db,auth,uid,claims}={}){
+ async function check({db,auth,uid,claims,inviteOnly=false}={}){
   const user=session(auth,uid);
   if(!db?.collection||!db?.runTransaction)throw fail('invalid-firestore');
   // The actual `admin` claim is checked by Firebase Rules on every write.
@@ -42,6 +42,10 @@
   if(approved.exists)return approved.data()?.enabled===true?
    {approved:true,status:'approved',source:'allowlist'}:
    {approved:false,status:'revoked'};
+  // R1.1 invitation mode: no pending request/UID setup is necessary. Users
+  // with an existing legacy profile keep that document intact until a code
+  // atomically creates approved_accounts_v1/{uid}.
+  if(inviteOnly)return {approved:false,status:'invite-required'};
   const requestRef=db.collection(REQUESTS).doc(uid);
   const request=await db.runTransaction(async tx=>{
    const snap=await tx.get(requestRef);

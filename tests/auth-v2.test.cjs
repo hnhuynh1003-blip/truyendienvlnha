@@ -39,7 +39,10 @@ function harness(options = {}) {
   const context = {
     IS_SANDBOX_MODE: false,
     DUDU_ACCOUNT_APPROVAL_V1_READY: !!options.approvalGate,
+    DUDU_ACCOUNT_INVITES_R11_READY: !!options.invitationGate,
     DuduAccountApprovalV1: options.approvalHelper,
+    DuduAccountInviteR11: options.inviteHelper,
+    duduSyncEpubAccessR11: options.onEpub,
     DuduFirestoreProfileFallbackV567: options.enableFallback ? require('../js/firestore-profile-fallback-v56-7.js') : undefined,
     setTimeout: options.setTimeout || setTimeout, clearTimeout, AbortController,
     fetch: options.fetch || (async () => { throw new Error('No mock HTTP route'); }),
@@ -426,4 +429,39 @@ test('V56.7 slow REST response from A never overrides signed-in account B',async
  assert.equal(h.context.userProfile.name,'Account B');
  assert.equal(h.context.userProfile.currency,4);
  assert.equal(h.context.DuduAuth.isReady(),true);
+});
+
+test('R1.1 reader is held at invite entry, then redeems once and loads existing profile',async()=>{
+ let approved=false,redeemed=0;
+ const access=[];
+ const h=harness({
+  approvalGate:true,invitationGate:true,
+  approvalHelper:{check:async()=>approved?
+   {approved:true,status:'approved'}:{approved:false,status:'invite-required'}},
+  inviteHelper:{redeem:async({code})=>{
+   assert.equal(code,'DUDU-BBBBBBBB-BBBBBBBB');redeemed++;approved=true;
+  }},
+  onEpub:allowed=>access.push(allowed)
+ });
+ await h.login('reader-existing',{}, {name:'Truyện cũ',currency:95,storyStates:{saved:{}}});
+ assert.equal(h.context.DuduAuth.isReady(),false);
+ assert.equal(h.elements['auth-invite-redeem-r11'].hidden,false);
+ assert.equal(h.context.userProfile.currency,undefined);
+ h.elements['auth-invite-code-r11'].value='DUDU-BBBBBBBB-BBBBBBBB';
+ await h.context.DuduAuth.redeemInvite();
+ assert.equal(redeemed,1);
+ assert.equal(h.context.DuduAuth.isReady(),true);
+ assert.equal(h.context.userProfile.currency,95);
+ assert.ok(h.context.userProfile.storyStates.saved);
+ assert.equal(access.at(-1),true);
+ await h.logout();
+ assert.equal(access.at(-1),false);
+});
+
+test('R1.1 invitation UI remains inactive when either release switch is off',async()=>{
+ const h=harness({approvalGate:false,invitationGate:true});
+ await h.login('reader-existing',{}, {name:'Reader',currency:7});
+ assert.equal(h.context.DuduAuth.isReady(),true);
+ assert.notEqual(h.elements['auth-invite-redeem-r11']?.hidden,false);
+ assert.notEqual(h.elements['auth-invite-owner-r11']?.hidden,false);
 });

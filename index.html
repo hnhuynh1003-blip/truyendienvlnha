@@ -42,6 +42,7 @@
   <link rel="stylesheet" href="css/dudu-fun-casino-v1.css?v=fun-cas1">
   <link rel="stylesheet" href="css/dudu-casino-slot-v1.css?v=casino-slot3">
   <link rel="stylesheet" href="css/account-approval-v1.css?v=auth-a1">
+  <link rel="stylesheet" href="css/account-invite-r11.css?v=r11-1">
   <link rel="stylesheet" href="css/personal-arcade-v1.css?v=fun-p1-1">
   <link rel="stylesheet" href="css/arcade-immersive-c417.css?v=c417-1">
   <link rel="stylesheet" href="css/arcade-playfield-c418.css?v=c418-4&amp;economy=c450-1&amp;c452=1">
@@ -111,6 +112,7 @@
   <script src="js/firestore-profile-fallback-v56-7.js?v=56-7"></script>
   <script src="js/profile-save-c23.js?v=c416-1"></script>
   <script src="js/account-approval-v1.js?v=auth-a1"></script>
+  <script src="js/account-invite-r11.js?v=r11-1"></script>
   <script src="js/auth-v2.js?v=auth-a1"></script>
   <script src="js/personal-transaction-error-c416.js?v=c416-1"></script>
   <script src="js/npc-context-v56-10.js?v=56-10"></script>
@@ -1966,7 +1968,22 @@
           Đăng ký tạo danh tính Firebase trước. Chỉ sau khi chủ sở hữu duyệt mới mở hồ sơ, Xu và trò chơi.
         </p>
         <p id="auth-approval-pending-a1" class="dudu-approval-pending" role="status" hidden></p>
+        <section id="auth-invite-redeem-r11" class="dudu-invite-panel" aria-label="Nhập mã mời DUDU" hidden>
+          <label for="auth-invite-code-r11">Mã mời DUDU</label>
+          <div class="dudu-invite-row">
+            <input id="auth-invite-code-r11" type="text" maxlength="22" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="DUDU-XXXXXXXX-XXXXXXXX">
+            <button id="auth-invite-redeem-btn-r11" type="button" class="btn btn-primary" onclick="DuduAuth.redeemInvite()">Kích hoạt</button>
+          </div>
+        </section>
         <section id="auth-approval-owner-a1" class="dudu-approval-owner" aria-label="Duyệt người chơi DUDU" hidden></section>
+        <section id="auth-invite-owner-r11" class="dudu-invite-panel" aria-label="Tạo mã mời DUDU" hidden>
+          <button id="auth-invite-create-r11" type="button" class="btn" onclick="DuduAuth.createInvite()">✧ Tạo mã mời một lần</button>
+          <div class="dudu-invite-row">
+            <output id="auth-invite-created-r11" aria-live="polite"></output>
+            <button id="auth-invite-copy-r11" type="button" class="btn" onclick="DuduAuth.copyInvite()" hidden>Sao chép</button>
+          </div>
+          <small>Mã có hiệu lực 6 ngày và chỉ kích hoạt được một tài khoản.</small>
+        </section>
         <button class="btn" style="width:100%;margin-top:8px;" onclick="DuduAuth.signout()">Đăng xuất</button>
       </div>
       <p id="auth-status-message" style="font-size:12px;color:var(--gold);margin-top:10px;line-height:1.6;min-height:20px;" role="status" aria-live="polite"></p>
@@ -2473,6 +2490,9 @@
     // AUTH-A1 remains OFF until current player UIDs are approved and the
     // owner has explicitly published the reviewed Firestore approval Rules.
     window.DUDU_ACCOUNT_APPROVAL_V1_READY = false;
+    // R1.1 invitation UI and Rules are still review-only; do not flip until
+    // server-side one-use redemption and legacy accounts pass Emulator QA.
+    window.DUDU_ACCOUNT_INVITES_R11_READY = false;
     const DUDU_NPC_AI_MODE = !IS_SANDBOX_MODE; // Cloudflare/Gemini; Firebase Spark remains free.
     // V47 requires both sandbox=1 and pilot=1; neither default mode can access Pilot.
     const IS_PILOT_STAGING_MODE = IS_SANDBOX_MODE && DUDU_QUERY.get('pilot') === '1';
@@ -2558,6 +2578,10 @@
     ];
 
     let novels = JSON.parse(localStorage.getItem(IS_SANDBOX_MODE ? 'dudu-sandbox-library' : 'my_novels_library_db')) || initialNovels;
+    // Once R1 is enabled, stale local EPUB cards must never appear before the
+    // approved Firestore identity is confirmed. Legacy Web novels stay public.
+    if(!IS_SANDBOX_MODE && window.DUDU_ACCOUNT_APPROVAL_V1_READY)
+      novels=novels.filter(n=>!n._cloudV49);
     // V49 production EPUBs live in separate Firestore story/chapter documents.
     let epubPublishedBooksV49 = [];
     // C3.1: C3.0 Firestore owner-edit and atomic-revision Rules were published
@@ -2599,8 +2623,13 @@
       DuduEpubProductionV49.readChapter(db,bookId,chapterId));
     async function refreshEpubCloudBooksV49(){
       if(IS_SANDBOX_MODE||!window.DuduEpubProductionV49)return;
+      if(window.DUDU_ACCOUNT_APPROVAL_V1_READY&&!DuduAuth.isReady())return;
+      const accountUid=DuduAuth.uid();
       try{
-        epubPublishedBooksV49=await DuduEpubProductionV49.publicBooks(db);
+        const books=await DuduEpubProductionV49.publicBooks(db);
+        if(window.DUDU_ACCOUNT_APPROVAL_V1_READY&&
+          (!DuduAuth.isReady()||DuduAuth.uid()!==accountUid))return;
+        epubPublishedBooksV49=books;
         mergeEpubCloudBooksV49();
         renderHome();
         c443RestoreOnReload();
@@ -2615,6 +2644,19 @@
       if(selected>=0)selectedNovelIndex=selected;
       else selectedNovelIndex=Math.min(Math.max(selectedNovelIndex,0),Math.max(novels.length-1,0));
     }
+    window.duduSyncEpubAccessR11=allowed=>{
+      if(IS_SANDBOX_MODE||!window.DUDU_ACCOUNT_APPROVAL_V1_READY)return;
+      if(allowed){void refreshEpubCloudBooksV49();return;}
+      const activeEpub=Boolean(novels[selectedNovelIndex]?._cloudV49);
+      epubPublishedBooksV49=[];
+      mergeEpubCloudBooksV49();
+      if(activeEpub && (document.getElementById('reader-view')?.style.display==='block'
+        || document.getElementById('cover-view')?.style.display==='block')){
+        if(window.DuduSiteV60?.navigate)window.DuduSiteV60.navigate('library');
+        else goHome();
+      } else renderHome();
+      window.DuduSiteV60?.refresh?.();
+    };
     let currentUsername = IS_SANDBOX_MODE ? (localStorage.getItem('dudu-sandbox-current-user') || '') : '';
     
     let userProfile = {
@@ -5538,6 +5580,11 @@ document.querySelectorAll('.phone-sub-app').forEach(el => el.style.display = 'no
     }
 
     function openPhoneApp(appName) {
+      if(!IS_SANDBOX_MODE && window.DUDU_ACCOUNT_APPROVAL_V1_READY &&
+        !DuduAuth.isReady()){
+        openAuthModal();
+        return;
+      }
       if(appName==='lab-v445'&&!IS_SANDBOX_MODE)return;
       // AU Core is an independent author app, not a secret option in reader chat.
       // This UI check is not a backend permission; live enforcement stays server-side.
@@ -7848,6 +7895,11 @@ document.getElementById('phone-home-screen').style.display = 'none';
     function openCover(idx) {
       window.DuduLibraryReaderStatusL2A?.cancel();
       document.body.classList.remove('dudu-reading-active');
+      if(window.DUDU_ACCOUNT_APPROVAL_V1_READY && novels[idx]?._cloudV49 &&
+        !DuduAuth.isReady()){
+        openAuthModal();
+        return;
+      }
       window.DuduReaderFocusL2B?.reset();
       window.DuduLibraryCatalogL2E?.rememberScroll(window);
       c443ResumePending=false;
@@ -8115,12 +8167,20 @@ document.getElementById('phone-home-screen').style.display = 'none';
     function readChapter(chIdx, scrollPos = 0) {
       const pendingBook=novels[selectedNovelIndex];
       const pendingChapter=pendingBook?.chapters?.[chIdx];
+      if(window.DUDU_ACCOUNT_APPROVAL_V1_READY && pendingBook?._cloudV49 &&
+        !DuduAuth.isReady()){
+        openAuthModal();
+        return;
+      }
       if(pendingBook?._cloudV49 && pendingChapter && typeof pendingChapter.content!=='string'){
         const bookId=pendingBook.id,chapterId=pendingChapter.id;
+        const requestUid=DuduAuth.uid();
         const feedback=window.DuduLibraryReaderStatusL2A;
         const ticket=feedback?.begin(pendingChapter.title);
         DuduEpubProductionV49.readChapter(db,bookId,chapterId)
          .then(result=>{
+          if(window.DUDU_ACCOUNT_APPROVAL_V1_READY&&
+            (!DuduAuth.isReady()||DuduAuth.uid()!==requestUid))return;
           if(novels[selectedNovelIndex]?.id!==bookId||
             novels[selectedNovelIndex]?.chapters?.[chIdx]?.id!==chapterId)return;
           if(feedback&&!feedback.success(ticket))return;

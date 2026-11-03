@@ -1,0 +1,638 @@
+// DUDU Studio — R1.1 ONE-USE INVITES — REVIEW ONLY, NEVER AUTO-DEPLOY.
+// Public guests (including unapproved Firebase identities) can read every
+// legacy Web novel in studio_data/main_library. EPUB catalog, metadata and
+// chapters require an approved UID or Firebase admin claim.
+// Do not publish until legacy UID handling is approved and the UI login flow
+// refreshes/clears EPUB when approval status changes.
+// Based on main/firestore.rules, including C4.22 EPUB deletion safeguards.
+// Before publishing: back up LIVE Rules, pre-approve every existing player UID,
+// test in Emulator, then obtain the owner's explicit final approval.
+// Database: (default). NOT DEPLOYED. Export current live Rules before replacing.
+// Prior Rules snapshot: 30/10/2026. This proposal maintains public reading
+// of the common Web library and restricts published EPUB to approved accounts.
+// C4.22 prototype: owner-only, archive-first permanent EPUB cleanup, with a
+// retryable `deleting` state. Review against the LIVE Rules before deploying.
+// No paid-entitlement or VERIFIED server-currency grant is authorized here.
+// The experimental Arcade -> real Xu bridge stays OFF and its receipts DENIED.
+//
+// Assumed data model:
+//   studio_data/main_library: legacy shared novel blob; author-admin writes only.
+//   profiles_v2/{uid}: owner's PRIVATE, CLIENT-MUTABLE progress/preferences,
+//     including self-reported Xu/items. For private-account play only; NOT an
+//     authority for cross-account real-value trades or paid chapter access.
+//     Optional honorV1: {version:1, earned:[achievement ID],
+//       equipped:title ID, pinned:[up to 3 earned achievement IDs]}.
+//   .../arcade_receipts_v1/{receiptId}: experimental Arcade exchange, blocked
+//     until server-verifiable awards and an explicit enablement decision.
+//   epub_stories_v49/{storyId}: {id,title,author,genre,desc,
+//     publicationState,status,ownerUid,chapterCount,chapterIndex,createdAt,
+//     updatedAt,sourceName,importSchema,importFingerprint,coverImage,
+//     publishedAt?}; only owner with Firebase admin claim can write.
+//     status `deleting`: irreversible, owner-only cleanup in progress.
+//   .../chapters/{chapterId}: {id,order,title,content,wordCount,
+//     editVersion?,editedAt?,lastRevisionId?}; importing creates, guarded edits.
+//   .../chapters/{chapterId}/revisions/{revId}: immutable backup of previous
+//     chapter {id,chapterId,ownerUid,beforeVersion,version,createdAt,
+//     reason,title,content,wordCount} in SAME transaction as chapter change.
+//   economy_accounts_v52/{uid}/items|receipts and system_config/economy_v52:
+//     reserved for trusted server operations; direct client writes always DENY.
+//   invite_codes_r11/{DUDU-xxxxxxxx-xxxxxxxx}: owner-created 6-day token,
+//     {createdBy:string,createdAt:timestamp,expiresAt:timestamp,status:string,
+//      redeemedBy:string,redeemedAt:timestamp|null}. Only one redemption.
+//   approved_accounts_v1/{uid}: {uid:string,enabled:bool,
+//     approvedAt:timestamp,approvedBy:string,inviteCode?:string}.
+//     Legacy/admin-approved records omit inviteCode; successful invite
+//     redemption creates the allowlist doc atomically with consuming the token.
+//
+// Important: published EPUB is NOT publicly accessible in this R1 candidate.
+// All approved readers share EPUB access; per-chapter Xu entitlements are NOT
+// represented in these Rules. Never use this as a paid-chapter enforcement gate.
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function self(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function admin() {
+      return signedIn() && request.auth.token.admin == true;
+    }
+
+    function approvedPath(uid) {
+      return /databases/$(database)/documents/approved_accounts_v1/$(uid);
+    }
+
+    function approvedPlayer(uid) {
+      // Existing owner with a verified admin claim remains able to log in.
+      return admin() || (exists(approvedPath(uid))
+        && get(approvedPath(uid)).data.enabled == true);
+    }
+
+    function approvedReader() {
+      // A Firebase Auth identity alone is NOT permission to open EPUB.
+      return signedIn() && approvedPlayer(request.auth.uid);
+    }
+
+    function invitePath(code) {
+      return /databases/$(database)/documents/invite_codes_r11/$(code);
+    }
+
+    function validInviteCode(code) {
+      return code is string
+        && code.matches('^DUDU-[A-HJ-NP-Z2-9]{8}-[A-HJ-NP-Z2-9]{8}$');
+    }
+
+    function validInviteData(data) {
+      return data is map
+        && data.keys().hasOnly([
+          'createdBy','createdAt','expiresAt','status','redeemedBy','redeemedAt'
+        ])
+        && data.keys().hasAll([
+          'createdBy','createdAt','expiresAt','status','redeemedBy','redeemedAt'
+        ])
+        && data.createdBy is string && data.createdBy.size() > 0
+        && data.createdBy.size() <= 128
+        && data.createdAt is timestamp && data.expiresAt is timestamp
+        && data.status in ['open','redeemed','revoked']
+        && data.redeemedBy is string && data.redeemedBy.size() <= 128
+        && (data.redeemedAt == null || data.redeemedAt is timestamp)
+        && (data.status == 'redeemed'
+          ? (data.redeemedBy.size() > 0 && data.redeemedAt is timestamp)
+          : (data.redeemedBy == '' && data.redeemedAt == null));
+    }
+
+    function validApprovedData(data, uid) {
+      return data is map
+        && data.keys().hasOnly([
+          'uid','enabled','approvedAt','approvedBy','inviteCode'
+        ])
+        && data.keys().hasAll(['uid','enabled','approvedAt','approvedBy'])
+        && data.uid == uid && data.enabled is bool
+        && data.approvedAt is timestamp
+        && data.approvedBy is string && data.approvedBy.size() > 0
+        && data.approvedBy.size() <= 128
+        && (!('inviteCode' in data) || validInviteCode(data.inviteCode));
+    }
+
+    match /invite_codes_r11/{code} {
+      // No outsider can enumerate codes or read unredeemed tokens.
+      allow get: if admin();
+      allow list: if admin() && request.query.limit != null
+        && request.query.limit <= 30;
+      allow create: if admin() && validInviteCode(code)
+        && validInviteData(request.resource.data)
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.expiresAt > request.time
+        && request.resource.data.expiresAt <= request.time + duration.value(7,'d')
+        && request.resource.data.status == 'open'
+        && request.resource.data.redeemedBy == ''
+        && request.resource.data.redeemedAt == null;
+      allow update: if validInviteData(request.resource.data)
+        && request.resource.data.createdBy == resource.data.createdBy
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.expiresAt == resource.data.expiresAt
+        && resource.data.status == 'open'
+        && (
+          (admin() && request.resource.data.status == 'revoked'
+            && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['status']))
+          ||
+          (signedIn() && request.resource.data.status == 'redeemed'
+            && resource.data.expiresAt > request.time
+            && request.resource.data.redeemedBy == request.auth.uid
+            && request.resource.data.redeemedAt == request.time
+            && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['status','redeemedBy','redeemedAt'])
+            && !exists(approvedPath(request.auth.uid))
+            && getAfter(approvedPath(request.auth.uid)).data.uid == request.auth.uid
+            && getAfter(approvedPath(request.auth.uid)).data.enabled == true
+            && getAfter(approvedPath(request.auth.uid)).data.inviteCode == code
+            && getAfter(approvedPath(request.auth.uid)).data.approvedBy == 'invite')
+        );
+      allow delete: if false;
+    }
+
+    // A Firebase Auth signup is only an identity. It is NOT yet a player.
+    // A user may file one immutable request; only the owner can review it.
+    match /account_requests_v1/{uid} {
+      allow get: if self(uid) || admin();
+      allow list: if admin() && request.query.limit != null
+        && request.query.limit <= 50;
+      allow create: if self(uid)
+        && request.auth.token.email is string
+        && request.resource.data is map
+        && request.resource.data.keys().hasOnly([
+          'uid','email','name','status','createdAt'
+        ])
+        && request.resource.data.keys().hasAll([
+          'uid','email','name','status','createdAt'
+        ])
+        && request.resource.data.uid == uid
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.email.size() <= 254
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 140
+        && request.resource.data.status == 'pending'
+        && request.resource.data.createdAt == request.time;
+      allow update: if admin() && resource.data.status == 'pending'
+        && request.resource.data.diff(resource.data).affectedKeys()
+           .hasOnly(['status','reviewedAt','reviewedBy'])
+        && request.resource.data.status in ['approved','rejected']
+        && request.resource.data.reviewedBy == request.auth.uid
+        && request.resource.data.reviewedAt == request.time;
+      allow delete: if false;
+    }
+
+    // Only a verified admin custom claim can enable or revoke gameplay access.
+    // This document contains no balance, profile, or user-written role.
+    match /approved_accounts_v1/{uid} {
+      allow get: if self(uid) || admin();
+      allow list: if false;
+      allow create: if validApprovedData(request.resource.data, uid)
+        && request.resource.data.enabled == true
+        && request.resource.data.approvedAt == request.time
+        && (
+          (admin() && request.resource.data.keys().hasOnly([
+            'uid','enabled','approvedAt','approvedBy'
+           ]) && request.resource.data.approvedBy == request.auth.uid)
+          ||
+          (self(uid)
+            && request.resource.data.keys().hasAll(['inviteCode'])
+            && request.resource.data.approvedBy == 'invite'
+            && exists(invitePath(request.resource.data.inviteCode))
+            && get(invitePath(request.resource.data.inviteCode)).data.status == 'open'
+            && get(invitePath(request.resource.data.inviteCode)).data.expiresAt > request.time
+            && getAfter(invitePath(request.resource.data.inviteCode))
+                 .data.status == 'redeemed'
+            && getAfter(invitePath(request.resource.data.inviteCode))
+                 .data.redeemedBy == uid
+            && getAfter(invitePath(request.resource.data.inviteCode))
+                 .data.redeemedAt == request.time)
+        );
+      allow update: if admin()
+        && validApprovedData(request.resource.data, uid)
+        && request.resource.data.uid == resource.data.uid
+        && request.resource.data.approvedAt == resource.data.approvedAt
+        && request.resource.data.approvedBy == resource.data.approvedBy
+        && request.resource.data.get('inviteCode','')
+           == resource.data.get('inviteCode','');
+      allow delete: if false;
+    }
+
+    function bookPath(storyId) {
+      return /databases/$(database)/documents/epub_stories_v49/$(storyId);
+    }
+
+    function chapterPath(storyId, chapterId) {
+      return /databases/$(database)/documents/epub_stories_v49/$(storyId)/chapters/$(chapterId);
+    }
+
+    function revisionPath(storyId, chapterId, revId) {
+      return /databases/$(database)/documents/epub_stories_v49/$(storyId)/chapters/$(chapterId)/revisions/$(revId);
+    }
+
+    function ownerOfBook(storyId) {
+      return admin() && exists(bookPath(storyId))
+        && get(bookPath(storyId)).data.ownerUid == request.auth.uid;
+    }
+
+    function editableBook(storyId) {
+      return ownerOfBook(storyId)
+        && get(bookPath(storyId)).data.status in ['published', 'archived'];
+    }
+
+    function deletingOwnedBook(storyId) {
+      return ownerOfBook(storyId)
+        && get(bookPath(storyId)).data.status == 'deleting';
+    }
+
+    // Author-controlled legacy library. Preserve existing public-reader UX.
+    function validLegacyLibrary(data) {
+      return data is map && data.keys().size() <= 50;
+    }
+
+    match /studio_data/main_library {
+      allow get, list: if true;
+      allow create, update: if admin() && validLegacyLibrary(request.resource.data);
+      allow delete: if admin();
+    }
+
+    // Legacy profile, deliberately NOT a verified wallet or role authority.
+    // Compatibility: existing profiles may contain optional older fields.
+    function honorAchievementIdsC463() {
+      return [
+        'read-one','read-six','neon-first-contract','neon-all-contracts',
+        'neon-25','neon-100','neon-second-room','neon-third-room',
+        'neon-milestones','mine-40','mine-160','mine-relic','mine-burst',
+        'mine-collection','garden-one','garden-ten','garden-rare',
+        'garden-album','garden-dragon','jade-first','jade-twelve',
+        'jade-exhibits','jade-imperial','jade-longstone','npc-gift',
+        'quest-five','fun-first',
+        // C4.8 journeys: every earned ID must be permitted here, otherwise
+        // valid Shop/FUN/Kho writes also fail once honorV1 includes it.
+        'neon-250','neon-revenue-500','neon-pro-setup','neon-crown',
+        'mine-deep-ready','mine-burst-25','mine-scanner-3','mine-guardian',
+        'garden-harvest-10','garden-harvest-30','garden-five-species',
+        'garden-sanctuary','jade-cut-20','jade-album-12',
+        'jade-exhibit-10','jade-ruins-access','jade-masterwork'
+      ];
+    }
+
+    function honorTitleIdsC463() {
+      return [
+        'entity','reader','reader-master','neon-owner',
+        'neon-contractor','neon-tycoon','mine-explorer','mine-collector',
+        'garden-angler','garden-legend','jade-appraiser','jade-curator',
+        'jade-king','npc-friend','quest-hunter','fun-visitor',
+        'neon-emperor','mine-lord','garden-keeper','jade-artisan'
+      ];
+    }
+
+    function validHonorV1C463(honor) {
+      return honor is map
+        && honor.keys().hasOnly(['version','earned','equipped','pinned'])
+        && honor.keys().hasAll(['version','earned','equipped','pinned'])
+        && honor.version == 1
+        && honor.earned is list
+        && honor.earned.size() <= 100
+        && honor.earned.hasOnly(honorAchievementIdsC463())
+        && honor.equipped is string
+        && honor.equipped in honorTitleIdsC463()
+        && honor.pinned is list
+        && honor.pinned.size() <= 3
+        && honor.pinned.hasOnly(honorAchievementIdsC463())
+        && honor.earned.hasAll(honor.pinned);
+    }
+
+    function validLegacyProfile(data) {
+      return data is map
+        && data.keys().size() <= 80
+        && data.get('name', '') is string
+        && data.get('name', '').size() <= 140
+        && data.get('username', '') is string
+        && data.get('username', '').size() <= 140
+        && data.get('title', '') is string
+        && data.get('title', '').size() <= 140
+        && data.get('level', 1) is int
+        && data.get('level', 1) >= 1
+        && data.get('level', 1) <= 1000000
+        && data.get('exp', 0) is int
+        && data.get('exp', 0) >= 0
+        && data.get('exp', 0) <= 1000000000
+        && data.get('currency', 0) is int
+        && data.get('currency', 0) >= 0
+        && data.get('currency', 0) <= 1000000000
+        && data.get('inventory', []) is list
+        && data.get('inventory', []).size() <= 1000
+        && data.get('quests', []) is list
+        && data.get('quests', []).size() <= 200
+        // C4.16: reader quest rewards can create these fields for the first
+        // time. Shop, FUN and Kho commit the same quest progress atomically.
+        && data.get('questV437', {}) is map
+        && data.get('questV437', {}).keys().size() <= 40
+        && data.get('questsDayV43', '') is string
+        && data.get('questsDayV43', '').size() <= 10
+        && data.get('lootedChapters', {}) is map
+        && data.get('lootedChapters', {}).keys().size() <= 2000
+        && data.get('readRewards', {}) is map
+        && data.get('readRewards', {}).keys().size() <= 2000
+        && data.get('collectedCharacters', {}) is map
+        && data.get('collectedCharacters', {}).keys().size() <= 2000
+        && data.get('storyStates', {}) is map
+        && data.get('storyStates', {}).keys().size() <= 500
+        && data.get('dailyReadLog', {}) is map
+        && data.get('dailyReadLog', {}).keys().size() <= 12
+        && data.get('readingBookmarksV568', {}) is map
+        && data.get('readingBookmarksV568', {}).keys().size() <= 2000
+        && data.get('phoneAppearanceV568', {}) is map
+        && data.get('phoneAppearanceV568', {}).keys().size() <= 20
+        && data.get('playerAvatar', {}) is map
+        && data.get('playerAvatar', {}).keys().size() <= 20
+        && (!('honorV1' in data) || validHonorV1C463(data.honorV1))
+        && data.get('arcadeLastReceiptV1', '') is string
+        && (data.get('arcadeLastReceiptV1', '') == '' ||
+            data.get('arcadeLastReceiptV1', '').matches('^ex-[0-9a-f-]{36}$'))
+        && data.get('role', 'reader') in ['reader', 'admin']
+        && (data.get('role', 'reader') != 'admin' || admin());
+    }
+
+    function allowedLegacyProfileFields() {
+      return [
+        'username','name','title','role','level','exp','currency',
+        'inventory','quests','questV437','questsDayV43',
+        'lootedChapters','readRewards','dailyReadLog',
+        'collectedCharacters','storyStates','playerAvatar',
+        'readingBookmarksV568','phoneAppearanceV568','arcadeLastReceiptV1',
+        'honorV1'
+      ];
+    }
+
+    // Write only to one's own document; never use this role or Xu in Rules.
+    match /profiles_v2/{uid} {
+      allow get: if self(uid) && approvedPlayer(uid);
+      allow list: if false;
+      allow create: if self(uid) && approvedPlayer(uid)
+        && validLegacyProfile(request.resource.data)
+        && request.resource.data.keys().hasOnly(allowedLegacyProfileFields());
+      allow update: if self(uid) && approvedPlayer(uid)
+        && validLegacyProfile(request.resource.data)
+        && request.resource.data.diff(resource.data).addedKeys()
+           .hasOnly(allowedLegacyProfileFields())
+        && (admin() || request.resource.data.get('role', 'reader')
+                        == resource.data.get('role', 'reader'));
+      allow delete: if false;
+
+      match /arcade_receipts_v1/{receiptId} {
+        // The profile wallet is client-mutable already. Do not additionally
+        // accept a self-reported, unverified Arcade conversion receipt.
+        allow read, write: if false;
+      }
+    }
+
+    match /user_profiles/{username} {
+      allow read, write: if false;
+    }
+
+    function validBook(data) {
+      return data is map
+        && data.keys().hasOnly([
+          'id','title','author','genre','desc','publicationState','status',
+          'ownerUid','chapterCount','chapterIndex','createdAt','updatedAt',
+          'sourceName','importSchema','importFingerprint','coverImage','publishedAt'
+        ])
+        && data.keys().hasAll([
+          'id','title','author','status','ownerUid','chapterCount',
+          'chapterIndex','createdAt','updatedAt'
+        ])
+        && data.id is string && data.id.size() >= 4 && data.id.size() <= 128
+        && data.title is string && data.title.size() > 0 && data.title.size() <= 140
+        && data.author is string && data.author.size() > 0 && data.author.size() <= 140
+        && data.get('genre', '') is string && data.get('genre', '').size() <= 220
+        && data.get('desc', '') is string && data.get('desc', '').size() <= 3000
+        && data.get('publicationState', 'Đang ra') in ['Đang ra','Hoàn thành']
+        && data.status in ['importing','draft','published','archived','deleting']
+        && data.ownerUid is string && data.ownerUid.size() > 0
+        && data.ownerUid.size() <= 128
+        && data.chapterCount is int && data.chapterCount >= 1
+        && data.chapterCount <= 160
+        && data.chapterIndex is list
+        && data.chapterIndex.size() == data.chapterCount
+        && data.createdAt is string && data.createdAt.size() <= 40
+        && data.updatedAt is string && data.updatedAt.size() <= 40
+        && data.get('sourceName', '') is string && data.get('sourceName', '').size() <= 180
+        && data.get('importSchema', 57) is int
+        && data.get('importFingerprint', '') is string
+        && data.get('importFingerprint', '').size() <= 70
+        && data.get('coverImage', '') is string
+        && data.get('coverImage', '').size() <= 32000
+        && (data.get('coverImage', '') == '' || data.get('coverImage', '')
+             .matches('^data:image/jpeg;base64,[A-Za-z0-9+/]+={0,2}$'))
+        && data.get('publishedAt', '') is string
+        && data.get('publishedAt', '').size() <= 40;
+    }
+
+    function validImportCreate(data, storyId) {
+      return validBook(data) && data.id == storyId
+        && data.status == 'importing'
+        && data.ownerUid == request.auth.uid;
+    }
+
+    function validBookUpdate(before, after) {
+      return validBook(after)
+        && after.id == before.id
+        && after.ownerUid == before.ownerUid
+        && after.chapterCount == before.chapterCount
+        && after.chapterIndex == before.chapterIndex
+        && after.createdAt == before.createdAt
+        && after.get('importSchema', 57) == before.get('importSchema', 57)
+        && after.get('importFingerprint', '') == before.get('importFingerprint', '')
+        && after.get('sourceName', '') == before.get('sourceName', '');
+    }
+
+    function validBookTransition(before, after) {
+      return (
+          before.status == 'importing' && after.status == 'draft'
+          && after.diff(before).affectedKeys().hasOnly(['status','updatedAt'])
+        ) || (
+          before.status == 'draft' && after.status == 'published'
+          && after.diff(before).affectedKeys().hasOnly(['status','updatedAt','publishedAt'])
+        ) || (
+          before.status in ['published','archived']
+          && after.status == before.status
+          && after.diff(before).affectedKeys().hasOnly([
+            'title','author','genre','desc','publicationState','coverImage','updatedAt'
+          ])
+        ) || (
+          (before.status == 'published' && after.status == 'archived'
+            || before.status == 'archived' && after.status == 'published')
+          && after.diff(before).affectedKeys().hasOnly(['status','updatedAt'])
+        ) || (
+          // C4.22: explicit, irreversible phase before deleting nested data.
+          before.status == 'archived' && after.status == 'deleting'
+          && after.diff(before).affectedKeys().hasOnly(['status','updatedAt'])
+        );
+    }
+
+    match /epub_stories_v49/{storyId} {
+      // All Web novels stay public in studio_data/main_library above.
+      // Published EPUB metadata is accessible ONLY to approved accounts.
+      // Owner/admin queries include draft books; importDraft probes missing IDs.
+      allow get: if (approvedReader() && resource != null
+          && resource.data.status == 'published')
+        || (admin() && (!exists(bookPath(storyId))
+          || resource.data.ownerUid == request.auth.uid));
+      allow list: if request.query.limit != null && request.query.limit <= 60
+        && ((approvedReader() && resource.data.status == 'published')
+          || (admin() && resource.data.ownerUid == request.auth.uid));
+
+      allow create: if admin()
+        && validImportCreate(request.resource.data, storyId);
+
+      allow update: if admin() && resource.data.ownerUid == request.auth.uid
+        && validBookUpdate(resource.data, request.resource.data)
+        && validBookTransition(resource.data, request.resource.data);
+      // Deleting a parent does NOT implicitly delete child subcollections.
+      // The owner-only client removes revisions and chapters first.
+      allow delete: if admin() && resource.data.ownerUid == request.auth.uid
+        && resource.data.status == 'deleting';
+
+      function validChapter(data, chapterId) {
+        return data is map
+          && data.keys().hasOnly([
+            'id','order','title','content','wordCount',
+            'editVersion','editedAt','lastRevisionId'
+          ])
+          && data.keys().hasAll(['id','order','title','content','wordCount'])
+          && data.id == chapterId
+          && data.order is int && data.order >= 0 && data.order < 160
+          && data.title is string && data.title.size() > 0 && data.title.size() <= 140
+          && data.content is string && data.content.size() > 0
+          && data.content.size() <= 420000
+          && data.wordCount is int && data.wordCount > 0
+          && data.wordCount <= 220000
+          && data.get('editVersion', 0) is int
+          && data.get('editVersion', 0) >= 0
+          && data.get('editVersion', 0) <= 999999
+          && data.get('editedAt', '') is string && data.get('editedAt', '').size() <= 40
+          && data.get('lastRevisionId', '') is string
+          && (data.get('lastRevisionId', '') == '' ||
+              data.get('lastRevisionId', '').matches('^rev-[0-9]{6}$'));
+      }
+
+      function validChapterEdit(before, after, chapterId) {
+        return validChapter(after, chapterId)
+          && after.diff(before).affectedKeys().hasOnly([
+            'content','wordCount','editVersion','editedAt','lastRevisionId'
+          ])
+          && after.content != before.content
+          && after.get('editVersion', 0) == before.get('editVersion', 0) + 1
+          && after.get('lastRevisionId', '').matches('^rev-[0-9]{6}$')
+          && after.editedAt is string && after.editedAt.size() > 0
+          && !exists(revisionPath(storyId, chapterId, after.lastRevisionId))
+          && getAfter(revisionPath(storyId, chapterId, after.lastRevisionId))
+               .data.id == after.lastRevisionId
+          && getAfter(revisionPath(storyId, chapterId, after.lastRevisionId))
+               .data.ownerUid == request.auth.uid
+          && getAfter(revisionPath(storyId, chapterId, after.lastRevisionId))
+               .data.version == after.editVersion
+          && getAfter(revisionPath(storyId, chapterId, after.lastRevisionId))
+               .data.content == before.content;
+      }
+
+      function validRevision(data, revId, chapterId) {
+        return data is map
+          && data.keys().hasOnly([
+            'id','chapterId','ownerUid','beforeVersion','version','createdAt',
+            'reason','title','content','wordCount'
+          ])
+          && data.keys().hasAll([
+            'id','chapterId','ownerUid','beforeVersion','version','createdAt',
+            'reason','title','content','wordCount'
+          ])
+          && revId.matches('^rev-[0-9]{6}$') && data.id == revId
+          && data.chapterId == chapterId
+          && data.ownerUid == request.auth.uid
+          && data.beforeVersion is int && data.beforeVersion >= 0
+          && data.beforeVersion < 999999
+          && data.version is int && data.version == data.beforeVersion + 1
+          && data.createdAt is string && data.createdAt.size() > 0
+          && data.createdAt.size() <= 40
+          && data.reason in ['edit','restore']
+          && data.title is string && data.title.size() > 0
+          && data.title.size() <= 140
+          && data.content is string && data.content.size() > 0
+          && data.content.size() <= 420000
+          && data.wordCount is int && data.wordCount > 0
+          && data.wordCount <= 220000;
+      }
+
+      function validRevisionCreate(data, revId, chapterId) {
+        return validRevision(data, revId, chapterId)
+          && exists(chapterPath(storyId, chapterId))
+          && data.beforeVersion == get(chapterPath(storyId, chapterId))
+               .data.get('editVersion', 0)
+          && data.content == get(chapterPath(storyId, chapterId)).data.content
+          && data.title == get(chapterPath(storyId, chapterId)).data.title
+          && data.wordCount == get(chapterPath(storyId, chapterId)).data.wordCount
+          && getAfter(chapterPath(storyId, chapterId)).data.get('editVersion', 0)
+               == data.version
+          && getAfter(chapterPath(storyId, chapterId)).data.lastRevisionId == revId
+          && getAfter(chapterPath(storyId, chapterId)).data.content != data.content;
+      }
+
+      match /chapters/{chapterId} {
+        allow get, list: if ownerOfBook(storyId)
+          || (approvedReader() && exists(bookPath(storyId))
+            && get(bookPath(storyId)).data.status == 'published');
+        allow create: if ownerOfBook(storyId)
+          && get(bookPath(storyId)).data.status == 'importing'
+          && validChapter(request.resource.data, chapterId);
+        allow update: if editableBook(storyId)
+          && validChapterEdit(resource.data, request.resource.data, chapterId);
+        allow delete: if deletingOwnedBook(storyId);
+
+        match /revisions/{revId} {
+          allow get: if ownerOfBook(storyId);
+          allow list: if ownerOfBook(storyId)
+            && request.query.limit != null && request.query.limit <= 50;
+          allow create: if editableBook(storyId)
+            && validRevisionCreate(request.resource.data, revId, chapterId);
+          allow update: if false;
+          allow delete: if deletingOwnedBook(storyId);
+        }
+      }
+    }
+
+    // Reserved verified ledger. Admin SDK on a trusted server bypasses
+    // client Rules; browser/phone clients CANNOT mint or transfer real Xu.
+    match /economy_accounts_v52/{uid} {
+      allow get: if self(uid) && approvedPlayer(uid);
+      allow list, create, update, delete: if false;
+      match /items/{itemId} {
+        allow get, list: if self(uid) && approvedPlayer(uid);
+        allow create, update, delete: if false;
+      }
+      match /receipts/{receiptId} {
+        allow get, list: if self(uid) && approvedPlayer(uid);
+        allow create, update, delete: if false;
+      }
+    }
+    match /system_config/economy_v52 {
+      allow read, write: if false;
+    }
+
+    // All other paths, including AI/NPC grants and cross-account trades.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
