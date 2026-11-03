@@ -78,7 +78,7 @@
    aria-hidden="true">${light}${vein}${fracture}</svg>
    ${['Thủy đầu','Mãng đới','Liệt văn'].map((name,i)=>`<button type="button"
     class="jade-evidence-point jade-evidence-${i} ${stone.scans[i]?'is-scanned':''}"
-    data-arcade-action="jade-scan-${i}" aria-label="${stone.scans[i]?'Đã soi':'Soi'} ${name}"
+    data-jade-scan-point="${i}" aria-label="${stone.scans[i]?'Đã soi':'Soi'} ${name}"
     title="${name}" ${stone.scans[i]?'disabled':''}>${stone.scans[i]?'✓':'◎'}</button>`).join('')}</div>`;
  }
  function stoneScene(stone,j,phasePulse){

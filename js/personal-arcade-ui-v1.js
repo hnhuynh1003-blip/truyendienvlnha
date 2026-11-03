@@ -1093,6 +1093,9 @@
    }
    const control=event.target.closest('button');
    if(!control||control.disabled)return;
+   if(control.dataset.jadeScanPoint!=null){
+    interact('jade-scan-'+control.dataset.jadeScanPoint);return;
+   }
    if(control.dataset.jadeDesign!=null){
     if(root.DuduPersonalJadeUIV1?.chooseDesign?.(Number(control.dataset.jadeDesign)))render();
     return;

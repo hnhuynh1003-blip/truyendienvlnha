@@ -25,7 +25,11 @@ test('C4.60 the raw photographic specimen exposes three interactive scan points,
  const before=render(s);
  assert.match(before,/jade-inspection-overlay/);
  assert.match(before,/jade-item-rough/);
- for(let i=0;i<3;i++)assert.match(before,new RegExp('data-arcade-action="jade-scan-'+i+'"'));
+ for(let i=0;i<3;i++){
+  assert.match(before,new RegExp('data-jade-scan-point="'+i+'"'));
+  assert.equal((before.match(new RegExp('data-arcade-action="jade-scan-'+i+'"','g'))||[]).length,1,
+   'The legacy scanner keeps one unique action for browser automation');
+ }
  assert.doesNotMatch(before,/<ellipse cx=/);
  assert.doesNotMatch(before,/stroke="#eedac0"/);
  s=act(s,'jade-scan-0').state;
@@ -102,6 +106,8 @@ test('C4.60 compact cutting selector and CSS are wired into the published page',
  const css=readFileSync(join(__dirname,'../css/arcade-jade-c460.css'),'utf8');
  assert.match(index,/arcade-jade-c460\.css/);
  assert.match(index,/c460=1/);
+ const mainUI=readFileSync(join(__dirname,'../js/personal-arcade-ui-v1.js'),'utf8');
+ assert.match(mainUI,/control\.dataset\.jadeScanPoint/);
  assert.match(css,/\.jade-evidence-point/);
  assert.match(css,/\.jade-saw-choices/);
 });
