@@ -161,3 +161,24 @@ body.dudu-phone-v11 #cyber-phone .f34-quick-confirm{min-height:44px;width:100%;
  color:#fff4da;font-size:12px;font-weight:800;cursor:pointer}
 body.dudu-phone-v11 #cyber-phone .f34-quick-confirm:disabled{opacity:.48;cursor:not-allowed}
 body.dudu-phone-v11 #cyber-phone .f34-quick-note{font-size:10px;color:#c7bdd9}
+/* F3.6 · choose individual physical items instead of auto-selling the first 100. */
+body.dudu-phone-v11 #cyber-phone .f36-quick-choose{display:flex;gap:7px}
+body.dudu-phone-v11 #cyber-phone .f36-quick-choose button{flex:1;min-height:34px;
+ border:1px solid #b59ac5a0;border-radius:8px;background:#343251;color:#f7e7de;
+ font-size:10px;font-weight:800;cursor:pointer}
+body.dudu-phone-v11 #cyber-phone .f36-quick-item{cursor:pointer;min-height:54px;
+ border:1px solid #ffffff1b;border-radius:10px;background:#20263c;padding:7px}
+body.dudu-phone-v11 #cyber-phone .f36-quick-item:has(input:checked){
+ border-color:#eec580;background:#4d3948}
+body.dudu-phone-v11 #cyber-phone .f36-quick-item input{width:18px;height:18px;
+ flex:none;accent-color:#f0c577}
+body.dudu-phone-v11 #cyber-phone .f36-quick-art{flex:none;width:40px;height:40px;
+ display:grid;place-items:center;overflow:hidden}
+body.dudu-phone-v11 #cyber-phone .f36-quick-art .dudu-item-v13-art{width:40px;
+ height:40px;object-fit:contain}
+body.dudu-phone-v11 #cyber-phone .f36-quick-item .f34-quick-name{display:grid;gap:2px}
+body.dudu-phone-v11 #cyber-phone .f36-quick-item .f34-quick-name b{font-size:10px;
+ line-height:1.35;color:#f3e6d9}
+body.dudu-phone-v11 #cyber-phone .f36-quick-item .f34-quick-name small{font-size:9px;
+ color:#c5b2d5}
+body.dudu-phone-v11 #cyber-phone .f34-quick-list{max-height:295px;gap:6px}

@@ -28,10 +28,26 @@
  }).concat([Object.freeze({itemId:'F31_COIN_8',rank:'COIN',weight:70000,amount:8}),
   Object.freeze({itemId:'F31_COIN_30',rank:'COIN',weight:22000,amount:30})]));
  const TOTAL=POOL.reduce((n,p)=>n+p.weight,0);
+ const HIGH_RANKS=Object.freeze(['A','S','SS','SSS']);
+ const RARE_POOL=Object.freeze(POOL.filter(p=>HIGH_RANKS.includes(p.rank)));
+ const RARE_TOTAL=RARE_POOL.reduce((n,p)=>n+p.weight,0);
  function draw(roll){
   if(!Number.isSafeInteger(roll)||roll<0||roll>=TOTAL)return null;
   let cursor=0;
   for(const prize of POOL){cursor+=prize.weight;if(roll<cursor)return prize;}
+  return null;
+ }
+ // F3.6: the hundredth non-A+ spin guarantees a physical collectible, not coins.
+ // Prefer one the player doesn't already hold, without inventing an item ID.
+ function guaranteed(roll,ownedIds=[]){
+  if(!Number.isSafeInteger(roll)||roll<0||roll>=RARE_TOTAL)return null;
+  const owned=new Set(Array.isArray(ownedIds)?ownedIds:[]);
+  const available=RARE_POOL.filter(row=>!owned.has(row.itemId));
+  const pool=available.length?available:RARE_POOL;
+  const total=pool.reduce((n,p)=>n+p.weight,0);
+  const target=roll%total;
+  let cursor=0;
+  for(const prize of pool){cursor+=prize.weight;if(target<cursor)return prize;}
   return null;
  }
  function valueOf(item){
@@ -49,5 +65,6 @@
   const scale=approved.collectionSet==='VAN_BAO'?BOX_VALUES:VALUES;
   return scale[approved.rank]||0;
  }
- return Object.freeze({PRICE,MAX_WALLET,POOL,TOTAL,VALUES,BOX_VALUES,draw,valueOf});
+ return Object.freeze({PRICE,MAX_WALLET,POOL,TOTAL,RARE_TOTAL,HIGH_RANKS,
+  VALUES,BOX_VALUES,draw,guaranteed,valueOf});
 });

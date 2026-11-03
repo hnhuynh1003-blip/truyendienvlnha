@@ -7,7 +7,7 @@
  const storyCatalog=root.DuduStoryMarketV43;
  if(!core)return;
  let tab='COMMON',realm='URBAN',query='',storyId='';
- let quickRanks=['F','E','D'],quickKeepOne=false;
+ let quickRanks=['F','E','D'],quickKeepOne=false,quickSelectedIds=new Set();
  const REALMS={URBAN:'Hiện đại',APOCALYPSE:'Tận thế',CULTIVATION:'Tu tiên',
   FANTASY:'Huyền huyễn',SCIFI:'Viễn tưởng',HORROR:'Kinh dị'};
  const make=(tag,cls,copy)=>{
@@ -99,54 +99,90 @@
        const engine=root.DuduPersonalBulkSaleF34;
        const heading=make('div','f34-quick-head');
        heading.append(make('strong','','BÁN NHANH · F / E / D'),
-        make('small','','Chỉ bán món đủ điều kiện · không đụng vào bảo vật đã khóa'));
+        make('small','','Tích từng món muốn bán · đồ đã khóa tự động được giữ lại'));
        const rankBar=make('div','f34-quick-ranks');
        for(const rank of ['F','E','D']){
          const label=make('label','f34-quick-rank');
          const cb=make('input');cb.type='checkbox';cb.checked=quickRanks.includes(rank);
          cb.addEventListener('change',()=>{
            quickRanks=cb.checked?[...quickRanks,rank]:quickRanks.filter(x=>x!==rank);
+           quickSelectedIds.clear();
            draw();
          });label.append(cb,make('span','',rank));rankBar.append(label);
        }
        const keepLabel=make('label','f34-quick-keep');
        const keep=make('input');keep.type='checkbox';keep.checked=quickKeepOne;
-       keep.addEventListener('change',()=>{quickKeepOne=keep.checked;draw();});
+       keep.addEventListener('change',()=>{quickKeepOne=keep.checked;
+        quickSelectedIds.clear();draw();});
        keepLabel.append(keep,make('span','','Giữ lại 1 bản mỗi loại'));
        const all=engine?.candidates(inventory,storyStates,quickRanks,quickKeepOne)||[];
-       const selected=all.slice(0,engine?.MAX_BATCH||100);
-       const total=selected.reduce((n,x)=>n+x.price,0);
+       const max=engine?.MAX_BATCH||100;
+       const selectionBar=make('div','f36-quick-choose');
+       const chooseAll=make('button','','✓ Chọn tất cả');chooseAll.type='button';
+       const clearAll=make('button','','Bỏ chọn');clearAll.type='button';
+       selectionBar.append(chooseAll,clearAll);
        const count=make('div','f34-quick-total');
-       count.append(make('span','',selected.length+' món được chọn'),
-         make('strong','dudu-money-display--gold','+'+total));
+       const countText=make('span','','0 món được chọn'),
+        sumText=make('strong','dudu-money-display--gold','+0');
+       count.append(countText,sumText);
        const rows=make('div','f34-quick-list');
-       const groups=new Map();
-       for(const item of selected){
-         const key=item.itemId;
-         if(!groups.has(key))groups.set(key,{...item,count:0,total:0});
-         const group=groups.get(key);group.count++;group.total+=item.price;
-       }
-       for(const group of groups.values()){
-         const row=make('div','f34-quick-row');
-         row.append(make('span','f34-quick-rank-tag',group.rank),
-          make('span','f34-quick-name',group.name+' ×'+group.count),
-          make('b','dudu-money-display--gold','+'+group.total));
+       const boxes=[];
+       for(const item of all){
+         const row=make('label','f34-quick-row f36-quick-item');
+         const cb=make('input');cb.type='checkbox';
+         cb.checked=quickSelectedIds.has(item.instanceId);
+         cb.setAttribute('aria-label','Chọn bán '+item.name+' giá '+item.price+' Xu');
+         const art=make('span','f36-quick-art');
+         const owned=inventory.find(x=>x?.instanceId===item.instanceId);
+         if(owned&&!root.DuduItemArtV13?.mount?.(art,owned))
+          art.textContent=owned.icon||'✦';
+         const name=make('span','f34-quick-name');
+         name.append(make('b','',item.name),make('small','',item.rank));
+         row.append(cb,art,name,
+          make('b','dudu-money-display--gold','+'+item.price));
+         cb.addEventListener('change',()=>{
+           if(cb.checked){
+             const picked=all.filter(x=>quickSelectedIds.has(x.instanceId)).length;
+             if(picked>=max){cb.checked=false;return;}
+             quickSelectedIds.add(item.instanceId);
+           }else quickSelectedIds.delete(item.instanceId);
+           refreshSelection();
+         });
+         boxes.push(cb);
          rows.append(row);
        }
-       if(!selected.length)rows.append(make('p','dudu-v43-market-empty',
+       if(!all.length)rows.append(make('p','dudu-v43-market-empty',
          'Không có món F/E/D phù hợp. Đồ khóa và công cụ đang dùng được giữ lại.'));
-       const action=make('button','f34-quick-confirm',
-         bulkBusy?'Đang xác nhận…':'Bán '+selected.length+' món · +'+total+' Xu');
-       action.type='button';action.disabled=bulkBusy||!selected.length||readOnly;
+       const action=make('button','f34-quick-confirm');action.type='button';
+       function picked(){return all.filter(x=>quickSelectedIds.has(x.instanceId)).slice(0,max);}
+       function refreshSelection(){
+         const chosen=picked(),total=chosen.reduce((n,x)=>n+x.price,0);
+         countText.textContent=chosen.length+' món được chọn';sumText.textContent='+'+total;
+         action.textContent=bulkBusy?'Đang xác nhận…':
+          'Bán '+chosen.length+' món · +'+total+' Xu';
+         action.disabled=bulkBusy||!chosen.length||readOnly;
+       }
+       chooseAll.addEventListener('click',()=>{
+         quickSelectedIds.clear();
+         for(const item of all.slice(0,max))quickSelectedIds.add(item.instanceId);
+         boxes.forEach((cb,i)=>{cb.checked=quickSelectedIds.has(all[i].instanceId);});
+         refreshSelection();
+       });
+       clearAll.addEventListener('click',()=>{
+         quickSelectedIds.clear();boxes.forEach(cb=>{cb.checked=false;});
+         refreshSelection();
+       });
        action.addEventListener('click',()=>{
          if(action.disabled)return;
+         const selected=picked(),total=selected.reduce((n,x)=>n+x.price,0);
          if(!root.confirm?.('Bán '+selected.length+' món F/E/D để nhận '+total+
           ' Xu Vàng? Không thể hoàn tác.'))return;
          void onBulkSell(selected.map(x=>x.instanceId));
        });
-       collection.append(heading,rankBar,keepLabel,count,rows,action);
-       if(all.length>selected.length)collection.append(make('small','f34-quick-note',
-        'Mỗi lần tối đa '+selected.length+' món. Bán xong có thể tiếp tục.'));
+       refreshSelection();
+       collection.append(heading,rankBar,keepLabel,selectionBar,count,rows,action);
+       if(all.length>max)collection.append(make('small','f34-quick-note',
+        'Mỗi giao dịch tối đa '+max+' món. Bán xong có thể tiếp tục.'));
        footer.textContent='Giao dịch một lần · Có biên nhận · Không cộng Xu lặp.';
        return;
      }
