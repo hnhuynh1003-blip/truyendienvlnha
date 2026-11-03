@@ -871,8 +871,11 @@
    const boostExpired=!!s.neon.turboUntil&&s.lastAt<s.neon.turboUntil&&time>=s.neon.turboUntil;
    const turboReady=!!s.neon.turboReadyAt&&s.lastAt<s.neon.turboReadyAt&&time>=s.neon.turboReadyAt;
    const nextOrder=!!s.neon.orderReadyAt&&s.lastAt<s.neon.orderReadyAt&&time>=s.neon.orderReadyAt;
+   const rushReady=!!s.neon.rushReadyAt&&s.lastAt<s.neon.rushReadyAt&&time>=s.neon.rushReadyAt;
    const missedBeat=!!s.neon.beatUntil&&!state.neon.beatUntil;
-   if(missedBeat&&tab==='neon'){notice='⌛ Hết giờ! Khách sẽ quay lại, combo đã về 0.';
+   if(missedBeat&&tab==='neon'){notice=s.neon.rushActive?
+     '⌛ Hết giờ! Ca liên hoàn thất bại, két thưởng chưa chốt đã mất.':
+     '⌛ Hết giờ! Khách sẽ quay lại, combo đã về 0.';
     noticeUntil=time+2200;error=false;}
    if(fishEscaped&&tab==='garden'){notice='Cá đã tuột khỏi lưỡi câu. Hãy thử lượt khác nhé.';
     noticeUntil=time+3500;error=false;}
@@ -882,7 +885,7 @@
     s.lastAt<s.jade.commissions.readyAt&&time>=s.jade.commissions.readyAt;
    const rerollReady=tab==='jade'&&!!s.jade?.commissions?.rerollAt&&
     s.lastAt<s.jade.commissions.rerollAt&&time>=s.jade.commissions.rerollAt;
-   const activeGameChanged=tab==='neon'?customerServed||boostExpired||turboReady||nextOrder||missedBeat:
+   const activeGameChanged=tab==='neon'?customerServed||boostExpired||turboReady||nextOrder||missedBeat||rushReady:
     tab==='mine'?completedRepair:
     tab==='garden'?waterRefilled||bubbleAppeared||plantMatured||fishBit||fishEscaped||weatherShifted:
     tab==='jade'&&(craftReady||orderReady||rerollReady);

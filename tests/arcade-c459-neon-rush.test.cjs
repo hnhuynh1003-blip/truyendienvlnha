@@ -110,6 +110,7 @@ test('C4.59 compact Rush controls are linked, and old Neon mode keeps its defaul
  assert.match(ui,/neon-rush-open/);
  assert.match(ui,/neon-rush-next/);
  assert.match(ui,/neon-rush-bank/);
+ assert.match(ui,/nextOrder\|\|missedBeat\|\|rushReady/);
  assert.match(css,/\.neon-rush-strip/);
  assert.match(html,/arcade-neon-c459\.css/);
  assert.match(html,/c459=1/);
