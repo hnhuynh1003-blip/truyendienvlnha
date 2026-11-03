@@ -26,19 +26,13 @@
  let openStall=null,selectedMarket=0,selectedDesign=0,selectedSetting=0;
  // Inspection notes are temporary UI state; the immutable scan/forecast
  // results continue to live in the saved stone as before.
- let selectedPoint=-1,activeStoneId=0,scanDrawerOpen=false;
+ let selectedPoint=-1,activeStoneId=0;
  const chooseClue=(spot,stone)=>{
   if(!stone||!['raw','window'].includes(stone.phase)||!Number.isInteger(spot)||spot<0||spot>2)return false;
   selectedPoint=selectedPoint===spot&&stone.scans[spot]?-1:spot;
   return !stone.scans[spot];
  };
- const chooseForecast=stone=>{
-  if(!stone||!['raw','window'].includes(stone.phase)||stone.scans.filter(Boolean).length<2)return false;
-  selectedPoint=selectedPoint===3?-1:3;
-  return true;
- };
  const closeClue=()=>{selectedPoint=-1;};
- const setScanDrawerOpen=open=>{scanDrawerOpen=!!open;};
  const chooseDesign=value=>{if(!Number.isInteger(value)||value<0||value>2)return false;selectedDesign=value;return true;};
  const chooseSetting=value=>{if(!Number.isInteger(value)||value<0||value>2)return false;selectedSetting=value;return true;};
  const jewelryLabel=stone=>stone?.craft&&jade.DESIGNS[stone.craft]?
@@ -84,19 +78,14 @@
  }
  function glassNote(stone,j){
   if(!stone||!['raw','window'].includes(stone.phase)||selectedPoint<0)return '';
-  const isForecast=selectedPoint===3,spot=selectedPoint;
-  if(!isForecast&&!stone.scans[spot])return '';
+  const spot=selectedPoint;
+  if(!stone.scans[spot])return '';
   const names=['Thủy đầu','Mãng đới','Liệt văn'];
-  return `<aside class="jade-glass-note ${isForecast?'is-forecast':spot===1?'is-left':'is-right'}"
-    aria-label="${isForecast?'Phán đoán lõi ngọc':names[spot]}" role="group">
-    <div class="jade-glass-note-heading"><b>${isForecast?'◈ ĐOÁN LÕI':
-     ['◉ THỦY ĐẦU','〽 MÃNG ĐỚI','⌁ LIỆT VĂN'][spot]}</b>
+  return `<aside class="jade-glass-note ${spot===1?'is-left':'is-right'}"
+    aria-label="${names[spot]}" role="group">
+    <div class="jade-glass-note-heading"><b>${['◉ THỦY ĐẦU','〽 MÃNG ĐỚI','⌁ LIỆT VĂN'][spot]}</b>
      <button type="button" data-jade-close-clue aria-label="Đóng ô soi">×</button></div>
-    ${isForecast?stone.forecast>=0?
-     `<div class="jade-glass-note-text">✓ Đã chọn: ${['Phế','Thường','Quý'][stone.forecast]}</div>`:
-     `<div class="jade-glass-forecast-choices">${['◇ Phế','◈ Thường','✦ Quý'].map((name,i)=>
-      `<button type="button" data-jade-forecast-choice="${i}" aria-label="Đoán ${jade.FORECASTS[i]}">${name}</button>`).join('')}</div>`:
-     `<div class="jade-glass-note-text">${jade.scanHint(stone,spot,j.lamp)}</div>`}
+    <div class="jade-glass-note-text">${jade.scanHint(stone,spot,j.lamp)}</div>
    </aside>`;
  }
  function stoneScene(stone,j,phasePulse){
@@ -121,10 +110,6 @@
        ${cut?`<span class="jade-gem-inner"></span><span class="jade-gem-shine"></span>`:''}
       </div>`:`<div class="jade-showcase-rough" aria-hidden="true"><i></i><i></i><i></i></div>`}
     ${glassNote(stone,j)}
-    ${stone&&!cut?`<button type="button" class="jade-guess-trigger ${stone.forecast>=0?'is-guessed':''}"
-      data-jade-guess-popup aria-label="${stone.forecast>=0?'Xem phán đoán đã ghi':'Dự đoán lõi ngọc sau khi soi ít nhất hai điểm'}"
-      aria-pressed="${selectedPoint===3}" ${scanned<2?'disabled':''}>
-      ${stone.forecast>=0?'✓ Đã đoán':scanned<2?'◈ '+scanned+'/2':'◈ Đoán lõi'}</button>`:''}
     ${cut?`<div class="jade-stage-quote jade-quote-${tier}" role="status">
       <small>${tier==='legendary'?'✦ HUYỀN THOẠI':tier==='precious'?'◇ NGỌC QUÝ':tier==='common'?'◈ NGỌC THƯỜNG':'PHẾ THẠCH'}</small>
       <strong>${revealed?stoneName(stone):'Không có ngọc'}</strong>
@@ -158,18 +143,16 @@
   if(['raw','window'].includes(stone.phase)){
    const windowQuote=jade.marketQuote(stone,nowOf(s));
    const scanned=stone.scans.filter(Boolean).length,guessed=stone.forecast>=0;
-   return `<details class="jade-scan-drawer" ${scanDrawerOpen?'open':''}>
-       <summary>◉ Soi dấu hiệu <small>${stone.scans.filter(Boolean).length}/3</small></summary>
-       <div class="jade-scan-options">${[0,1,2].map(i=>`<button type="button" class="jade-scan-choice" data-arcade-action="jade-scan-${i}" ${stone.scans[i]?'disabled':''}>
-         <span>${['Thủy đầu','Mãng đới','Liệt văn'][i]}</span>
-         <small>${stone.scans[i]?jade.scanHint(stone,i,j.lamp):'Chưa soi'}</small></button>`).join('')}</div>
-       <div class="jade-forecast-panel" role="group" aria-label="Dự đoán lõi ngọc sau khi soi đá">
-        <div class="jade-forecast-label"><b>◈ Đoán lõi</b><small>${guessed?'Đã ghi':Math.min(scanned,2)+'/2 điểm soi'}</small></div>
-        <div class="jade-forecast-choices">${['Phế','Thường','Quý'].map((label,i)=>`<button type="button" class="jade-forecast-choice ${stone.forecast===i?'is-picked':''}"
-          data-arcade-action="jade-forecast-${i}" aria-pressed="${stone.forecast===i}" title="${jade.FORECASTS[i]} · Đoán đúng nhận thưởng tay nghề"
-          ${scanned<2||guessed?'disabled':''}>${['◇','◈','✦'][i]} ${label}</button>`).join('')}</div>
-       </div>
-      </details>
+   return `${scanned>=2?`<div class="jade-forecast-console ${guessed?'is-locked':''}"
+     role="group" aria-label="Dự đoán loại lõi ngọc, chỉ được chọn một lần trước khi xẻ đá">
+     <div class="jade-forecast-console-head"><b>◈ ĐOÁN LÕI</b>
+      <small>${guessed?'✓ Đã ghi':scanned+'/3 · 1 lần'}</small></div>
+     <div class="jade-forecast-console-options">${['Phế','Thường','Quý'].map((name,i)=>`<button type="button"
+       class="jade-forecast-console-choice ${stone.forecast===i?'is-selected':''}"
+       data-arcade-action="jade-forecast-${i}" aria-pressed="${stone.forecast===i}"
+       title="${['Không có lõi ngọc giá trị','Lõi cấp 1–3','Lõi cấp 4–7'][i]} · Đoán đúng có thể được thưởng tay nghề"
+       ${guessed?'disabled':''}><span aria-hidden="true">${['◇','◈','✦'][i]}</span><b>${name}</b></button>`).join('')}</div>
+    </div>`:''}
      <div class="jade-saw-choices" role="group" aria-label="Chọn đường cưa đá">
       <b>⚒ Đường cưa</b>
       ${['Giữ ngọc','Cưa chuẩn','Mạo hiểm'].map((name,i)=>`<button type="button"
@@ -419,9 +402,7 @@
  }
  function panel(s,cutPulse){
   const j=s.jade||jade.fresh(),stone=j.active,found=Object.keys(j.album).length;
-  if((stone?.id||0)!==activeStoneId){
-   activeStoneId=stone?.id||0;selectedPoint=-1;scanDrawerOpen=false;
-  }
+  if((stone?.id||0)!==activeStoneId){activeStoneId=stone?.id||0;selectedPoint=-1;}
   const job=j.craftJob,jobReady=!!job&&Date.now()>=job.readyAt;
   return `<section class="arcade-world arcade-world-jade" aria-label="Ngọc Phường">
    <header class="arcade-world-heading"><div><span class="arcade-eyebrow">04 / JADE APPRAISAL</span>
@@ -446,5 +427,5 @@
   </section>`;
  }
  root.DuduPersonalJadeUIV1=Object.freeze({panel,rememberTray,chooseMarketSample,chooseMarket,
-  chooseDesign,chooseSetting,chooseClue,chooseForecast,closeClue,setScanDrawerOpen});
+  chooseDesign,chooseSetting,chooseClue,closeClue});
 })(typeof window!=='undefined'?window:{});

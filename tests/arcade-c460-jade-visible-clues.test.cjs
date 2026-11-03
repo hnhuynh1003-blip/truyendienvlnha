@@ -27,8 +27,8 @@ test('C4.60a glass notes reveal each scan beside the real stone, never paint ove
  assert.match(before,/jade-item-rough/);
  for(let i=0;i<3;i++){
   assert.match(before,new RegExp('data-jade-scan-point="'+i+'"'));
-  assert.equal((before.match(new RegExp('data-arcade-action="jade-scan-'+i+'"','g'))||[]).length,1,
-   'The legacy scanner keeps one unique action for browser automation');
+  assert.doesNotMatch(before,new RegExp('data-arcade-action="jade-scan-'+i+'"'),
+   'There is no duplicate scan card below the stone');
  }
  assert.doesNotMatch(before,/jade-glass-note/);
  assert.doesNotMatch(before,/<svg/);
@@ -53,46 +53,37 @@ test('C4.60a glass notes reveal each scan beside the real stone, never paint ove
  assert.doesNotMatch(render(s),/jade-glass-note/);
 });
 
-test('C4.60a forecast opens on the rock only after two scans, locks exactly one guess',()=>{
+test('C4.60b the compact three-choice forecast appears after two scans and locks a prediction',()=>{
  let s=testStone('perfect',5);
- assert.match(render(s),/data-jade-guess-popup[^>]*disabled/);
- assert.equal(context.window.DuduPersonalJadeUIV1.chooseForecast(s.jade.active),false);
+ assert.doesNotMatch(render(s),/jade-forecast-console/);
  s=act(s,'jade-scan-0').state;
- assert.equal(context.window.DuduPersonalJadeUIV1.chooseForecast(s.jade.active),false);
+ assert.doesNotMatch(render(s),/jade-forecast-console/);
  s=act(s,'jade-scan-1').state;
- assert.equal(context.window.DuduPersonalJadeUIV1.chooseForecast(s.jade.active),true);
  const open=render(s);
- assert.match(open,/jade-glass-forecast-choices/);
+ assert.match(open,/jade-forecast-console/);
+ assert.match(open,/1 lần/);
  for(let i=0;i<3;i++){
-  assert.match(open,new RegExp('data-jade-forecast-choice="'+i+'"'));
+  assert.match(open,new RegExp('jade-forecast-console-choice'));
   assert.equal((open.match(new RegExp('data-arcade-action="jade-forecast-'+i+'"','g'))||[]).length,1,
-   'Legacy forecast keeps a unique action for automation');
+   'Exactly one forecast action is visible in the compact console');
  }
  s=act(s,'jade-forecast-2').state;
- assert.match(render(s),/✓ Đã chọn: Quý/);
+ assert.match(render(s),/✓ Đã ghi/);
+ assert.match(render(s),/jade-forecast-console-choice is-selected/);
  assert.equal(act(s,'jade-forecast-0').ok,false,'No second prediction');
- context.window.DuduPersonalJadeUIV1.closeClue();
- assert.doesNotMatch(render(s),/jade-glass-note/);
- assert.equal(context.window.DuduPersonalJadeUIV1.chooseForecast(s.jade.active),true);
- assert.match(render(s),/✓ Đã chọn: Quý/,'Reopening is review only');
+ const restored=arcade.norm(clone(s),T);
+ assert.match(render(restored),/✓ Đã ghi/,'The sealed guess remains selected after reload');
  s=act(s,'jade-cut').state;
  assert.match(render(s),/jade-forecast-verdict/,'Cut still settles the saved prediction');
 });
 
-test('C4.60a legacy scanner stays folded during stone taps and remains open if user explicitly expands it',()=>{
+test('C4.60b the entire redundant scan drawer is removed, clues exist only on the photographed stone',()=>{
  let s=testStone();
- assert.match(render(s),/<details class="jade-scan-drawer" >/);
+ assert.doesNotMatch(render(s),/jade-scan-drawer|jade-scan-options|jade-forecast-panel/);
  context.window.DuduPersonalJadeUIV1.chooseClue(0,s.jade.active);
  s=act(s,'jade-scan-0').state;
- assert.match(render(s),/<details class="jade-scan-drawer" >/,
-  'Scanning on the art must not expand the old text-heavy cards');
- context.window.DuduPersonalJadeUIV1.setScanDrawerOpen(true);
- assert.match(render(s),/<details class="jade-scan-drawer" open>/);
- s=act(s,'jade-scan-1').state;
- assert.match(render(s),/<details class="jade-scan-drawer" open>/,
-  'Classic scanner controls remain usable across re-renders');
- context.window.DuduPersonalJadeUIV1.setScanDrawerOpen(false);
- assert.match(render(s),/<details class="jade-scan-drawer" >/);
+ assert.doesNotMatch(render(s),/jade-scan-drawer|jade-scan-options/);
+ assert.match(render(s),/jade-glass-note/,'The glass note is the sole scan explanation');
 });
 
 test('C4.60 safe, standard and bold cutting have visible risk-reward on an intact core',()=>{

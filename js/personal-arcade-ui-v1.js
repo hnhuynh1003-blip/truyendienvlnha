@@ -1047,8 +1047,6 @@
     const tray=marketSummary.parentElement;
     root.DuduPersonalJadeUIV1?.rememberTray?.(Number(tray.dataset.marketStall),!tray.open);
    }
-   const jadeScanSummary=event.target.closest?.('.jade-scan-drawer summary');
-   if(jadeScanSummary?.parentElement)root.DuduPersonalJadeUIV1?.setScanDrawerOpen?.(!jadeScanSummary.parentElement.open);
    const honorLink=event.target.closest?.('button[data-arcade-honor]');
    if(honorLink?.dataset?.arcadeHonor){
     const source=modeLabels[honorLink.dataset.arcadeHonor];
@@ -1101,13 +1099,6 @@
     if(needsScan)interact('jade-scan-'+point);
     else render();
     return;
-   }
-   if(control.dataset.jadeGuessPopup!=null){
-    if(root.DuduPersonalJadeUIV1?.chooseForecast?.(state?.jade?.active))render();
-    return;
-   }
-   if(control.dataset.jadeForecastChoice!=null){
-    interact('jade-forecast-'+control.dataset.jadeForecastChoice);return;
    }
    if(control.dataset.jadeCloseClue!=null){
     root.DuduPersonalJadeUIV1?.closeClue?.();render();return;

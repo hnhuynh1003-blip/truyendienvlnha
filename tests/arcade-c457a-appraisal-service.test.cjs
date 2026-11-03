@@ -90,14 +90,16 @@ test('C4.57a a correct guess on the free first stone scores skill, never currenc
  assert.equal(s.jade.forecasts.correct,1);
 });
 
-test('C4.57a forecast controls stay inside compact scan drawer and cache bust reaches players',()=>{
+test('C4.60b forecast is a compact one-shot console after two scans; the obsolete drawer is absent',()=>{
  const window={DuduPersonalArcadeCoreV1:arcade};
  vm.runInNewContext(readFileSync(join(__dirname,'../js/personal-jade-ui-v1.js'),'utf8'),{window});
  let s=arcade.fresh(TIME);s=act(s,'jade-buy-0').state;
+ assert.doesNotMatch(window.DuduPersonalJadeUIV1.panel(s),/jade-forecast-console/);
+ s=act(s,'jade-scan-0').state;s=act(s,'jade-scan-1').state;
  const html=window.DuduPersonalJadeUIV1.panel(s);
- assert.match(html,/jade-forecast-panel/);
+ assert.match(html,/jade-forecast-console/);
  for(let i=0;i<3;i++)assert.match(html,new RegExp('data-arcade-action="jade-forecast-'+i+'"'));
- assert.match(html,/jade-scan-drawer/);
+ assert.doesNotMatch(html,/jade-scan-drawer/);
  const index=readFileSync(join(__dirname,'../index.html'),'utf8');
  assert.match(index,/c457a=1/);
 });

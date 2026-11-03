@@ -114,7 +114,8 @@ test('C4.9 controls clearly expose recovery and keep all four game tabs',()=>{
  s=take(s,'jade-cut').state;s=take(s,'jade-sell').state;s.coins=0;
  assert.match(jadeUI.panel(s),/data-arcade-action="jade-rescue"/);
  s=take(s,'jade-rescue').state;
- assert.match(jadeUI.panel(s),/đá tập cứu vốn|Soi dấu hiệu/);
+ assert.match(jadeUI.panel(s),/đá tập cứu vốn|data-jade-scan-point="0"/,
+  'Rescue practice still has clickable stone inspection spots after the old drawer is removed');
  s=take(s,'jade-cut').state;s=take(s,'jade-sell').state;s.coins=0;
  assert.match(jadeUI.panel(s),/Đá cứu vốn/);
 });

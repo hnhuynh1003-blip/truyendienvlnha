@@ -45,27 +45,42 @@
  font:650 10px/1.4 system-ui,sans-serif;color:#ecf3e4;
  overflow-wrap:break-word;
 }
-#personal-arcade-v1 .jade-glass-forecast-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px}
-#personal-arcade-v1 .jade-glass-forecast-choices>button{
- min-width:0;min-height:30px;padding:5px 1px;border:1px solid #e3c390;
- border-radius:6px;background:#5d533b;color:#fff0ca;font:800 9px/1.1 system-ui,sans-serif;
- pointer-events:auto;cursor:pointer;
-}
-#personal-arcade-v1 .jade-glass-forecast-choices>button:focus-visible,
 #personal-arcade-v1 .jade-glass-note-heading>button:focus-visible{
  outline:2px solid #fff0bb;outline-offset:2px;
 }
-#personal-arcade-v1 .jade-guess-trigger{
- position:absolute;z-index:9;right:11px;bottom:37px;min-height:28px;
- padding:5px 8px;border-radius:8px;border:1px solid #e9c789;
- background:#253e35e8;color:#fce4ae;
- font:800 10px/1.1 system-ui,sans-serif;cursor:pointer;
+/* Only show the single-row appraisal console after two real inspections.
+   No second copy of the three scan cards is rendered below the stone. */
+#personal-arcade-v1 .jade-forecast-console{
+ display:grid;gap:5px;margin:6px 6px 5px;padding:7px 8px;
+ border:1px solid #bba4778f;border-radius:10px;
+ background:linear-gradient(115deg,#1b3e36,#253a38 65%,#3c3b32);
 }
-#personal-arcade-v1 .jade-guess-trigger:disabled{
- opacity:.6;border-color:#8eac8d;color:#c2d7c4;cursor:default;
+#personal-arcade-v1 .jade-forecast-console-head{
+ display:flex;align-items:center;justify-content:space-between;gap:6px;
 }
-#personal-arcade-v1 .jade-guess-trigger.is-guessed{border-color:#80d1b1;color:#b8f3d2}
-#personal-arcade-v1 .jade-guess-trigger:focus-visible{outline:2px solid #fff0bb;outline-offset:2px}
+#personal-arcade-v1 .jade-forecast-console-head>b{
+ font:850 10px/1.2 system-ui,sans-serif;letter-spacing:.06em;color:#f4d9a5;
+}
+#personal-arcade-v1 .jade-forecast-console-head>small{
+ font:700 9px/1.2 system-ui,sans-serif;color:#b9d8ba;
+}
+#personal-arcade-v1 .jade-forecast-console-options{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;
+}
+#personal-arcade-v1 .jade-forecast-console-choice{
+ display:flex;justify-content:center;align-items:center;gap:5px;
+ min-width:0;min-height:34px;padding:5px 4px;
+ border:1px solid #5c8c78;border-radius:8px;
+ background:#25463d;color:#e4efdf;cursor:pointer;
+}
+#personal-arcade-v1 .jade-forecast-console-choice>span{font:900 17px/1 serif;color:#c8dbbc}
+#personal-arcade-v1 .jade-forecast-console-choice>b{font:850 11px/1 system-ui,sans-serif;white-space:nowrap}
+#personal-arcade-v1 .jade-forecast-console-choice.is-selected{
+ background:#75603e;border-color:#efce8c;color:#fff2d0;
+}
+#personal-arcade-v1 .jade-forecast-console-choice.is-selected>span{color:#ffe1a2}
+#personal-arcade-v1 .jade-forecast-console-choice:disabled:not(.is-selected){opacity:.48;cursor:default}
+#personal-arcade-v1 .jade-forecast-console-choice:focus-visible{outline:2px solid #fff0bb;outline-offset:2px}
 #personal-arcade-v1 .jade-saw-choices{
  display:grid;grid-template-columns:auto repeat(3,minmax(0,1fr));align-items:center;
  gap:4px;margin:5px 6px 7px;padding:5px 6px;border:1px solid #7c997d80;

@@ -258,11 +258,11 @@ async function main(){
   assert.equal(basket.bought,1);
   await page.locator('.arcade-sheet-close').click();
   await action('jade-select-0').first().click();
-  const scanDrawer=page.locator('#personal-arcade-v1 .jade-scan-drawer');
-  assert.equal(await scanDrawer.evaluate(el=>el.open),false,
-   'Soi dấu hiệu stays folded until requested');
-  await scanDrawer.locator('summary').click();
-  for(let i=0;i<3;i++)await action('jade-scan-'+i).click();
+  assert.equal(await page.locator('#personal-arcade-v1 .jade-scan-drawer').count(),0,
+   'C4.60b removes the duplicate text-heavy inspection drawer');
+  for(let i=0;i<3;i++)await page.locator('#personal-arcade-v1 button[data-jade-scan-point="'+i+'"]').click();
+  assert.equal(await page.locator('#personal-arcade-v1 .jade-forecast-console').count(),1,
+   'After two or more scans the compact forecast console is available');
   const scans=await page.evaluate(()=>{
    const raw=localStorage.getItem('dudu-personal-arcade:v1:sandbox%3Ac410-mobile-tester');
    const game=raw?JSON.parse(raw):null;

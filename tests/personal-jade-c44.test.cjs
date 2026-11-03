@@ -127,7 +127,7 @@ test('C4.4 jade mobile panel includes interactive scans, workshop and collector,
  assert.match(html,/data-arcade-panel="jade-gallery"/);
  s=take(s,'jade-buy-0',promising()).state;
  html=window.DuduPersonalJadeUIV1.panel(s);
- assert.match(html,/data-arcade-action="jade-scan-0"/);
+ assert.match(html,/data-jade-scan-point="0"/,'Inspection happens on the stone, without a redundant scan drawer');
  assert.match(html,/data-arcade-action="jade-window"/);
  assert.match(html,/data-arcade-action="jade-cut"/);
  assert.match(html,/jade-lantern-left/);
