@@ -44,6 +44,10 @@
   beads:Object.freeze(['Tràng trơn','Hồi văn','Liên châu'])
  });
  const SETTINGS=Object.freeze(['Nguyên ngọc','Điểm bạc','Viền vàng']);
+ // C4.58 · The finish quality is rolled once from the original specimen and
+ // workshop choices. Appraisal only reveals it; it never rerolls the stone.
+ const QUALITY_NAMES=Object.freeze(['Phổ phẩm','Tinh phẩm','Trân phẩm','Tuyệt phẩm']);
+ const QUALITY_VALUES=Object.freeze([1,1.08,1.18,1.32]);
  const COMMISSIONS=Object.freeze([
   Object.freeze({name:'Khách lữ hành',craft:'ring',design:0,setting:0,minGrade:1,premium:1.18}),
   Object.freeze({name:'Cô chủ trà quán',craft:'pendant',design:1,setting:0,minGrade:1,premium:1.2}),
@@ -53,6 +57,14 @@
   Object.freeze({name:'Tiểu thư Tử Lan',craft:'pendant',design:2,setting:1,minGrade:3,premium:1.3}),
   Object.freeze({name:'Đại sư luyện ngọc',craft:'beads',design:1,setting:2,minGrade:4,premium:1.36}),
   Object.freeze({name:'Chủ hội Phỉ Thúy',craft:'bangle',design:2,setting:2,minGrade:5,premium:1.4})
+ ]);
+ const SPECIAL_ORDERS=Object.freeze([
+  Object.freeze({name:'Dạ Hội Ngân Tinh',craft:'ring',design:2,setting:1,minGrade:3,minQuality:1,premium:1.65}),
+  Object.freeze({name:'Lễ Trăng Ngọc',craft:'pendant',design:1,setting:1,minGrade:4,minQuality:1,premium:1.72}),
+  Object.freeze({name:'Phỉ Thúy Long Các',craft:'bangle',design:2,setting:2,minGrade:5,minQuality:2,premium:2.05}),
+  Object.freeze({name:'Thất Bảo Vân Đài',craft:'beads',design:2,setting:2,minGrade:5,minQuality:2,premium:2.15}),
+  Object.freeze({name:'Tử Nguyệt Cung',craft:'pendant',design:2,setting:1,minGrade:4,minQuality:1,color:3,premium:2.25}),
+  Object.freeze({name:'Đế Vương Ngọc Ấn',craft:'ring',design:2,setting:2,minGrade:6,minQuality:3,color:6,premium:2.65})
  ]);
  const gradeMult=[0,.85,1.25,1.8,2.7,4.2,6.5,11];
  const colorMult=[1,1.25,1.65,1.7,2.1,1.9,4.6,3.8];
@@ -110,7 +122,8 @@
   carver:1,permit:false,rescueReadyAt:0,active:null,stash:[],vault:[],craftJob:null,
   inspected:[],album:{},exhibits:[],last:null,craftWindowAt:0,craftUsed:0,
   lastDiscoveryKey:null,lastDiscoveryAt:0,forecasts:{total:0,correct:0,streak:0,best:0},
-  commissions:{offer:0,done:0,readyAt:0,rerollAt:0}});
+  commissions:{offer:0,done:0,readyAt:0,rerollAt:0,
+   specialOffer:0,specialDone:0,specialReadyAt:0,specialRerollAt:0}});
  function validStone(v){
   if(!v||typeof v!=='object'||!['raw','window','cut','crafted'].includes(v.phase)||
    !Number.isSafeInteger(v.id)||v.id<1||v.id>1000000||
@@ -135,6 +148,10 @@
   if(integer(v.forecastBonus,1,MAX,0))stone.forecastBonus=v.forecastBonus;
   if(integer(v.design,0,2,-1)>=0)stone.design=v.design;
   if(integer(v.setting,0,2,-1)>=0)stone.setting=v.setting;
+  if(v.phase==='crafted'){
+   if(integer(v.quality,0,3,-1)>=0)stone.quality=v.quality;
+   if(v.certified===true)stone.certified=true;
+  }
   const hunt=integer(v.hunt,0,HUNTS.length-1,-1);
   if(hunt>=0)stone.hunt=hunt; // Legacy shop stones keep their original shape.
   return stone;
@@ -142,11 +159,33 @@
  const craftDuration=(stone,type,carver=1,design=0,setting=0)=>Math.max(60000,
   (CRAFT_TIMES[type]||60000)+Math.max(0,(stone?.grade||1)-1)*15000-
    (clamp(carver,1,4)-1)*15000+clamp(design,0,2)*20000+clamp(setting,0,2)*15000);
+ function jewelryQuality(stone,type=stone?.craft,design=stone?.design||0,setting=stone?.setting||0,carver=1){
+  if(!stone||!CRAFTS[type])return 0;
+  // Distinct stable mix: a repeated appraisal can never improve the result.
+  let hash=((stone.seed>>>0)^Math.imul(stone.id||1,0x9e3779b1)^
+   Math.imul(Object.keys(CRAFTS).indexOf(type)+1,0x85ebca6b)^
+   Math.imul(design+1,0xc2b2ae35)^Math.imul(setting+1,0x27d4eb2d))>>>0;
+  hash^=hash>>>16;hash=Math.imul(hash,0x7feb352d);hash^=hash>>>15;
+  const luck=(hash>>>0)%1000/1000*24-12;
+  const flawBonus=stone.flaw==='perfect'?8:stone.flaw==='mutation'?4:
+   stone.flaw==='fracture'?-10:stone.flaw==='inclusion'?-7:0;
+  const score=stone.grade*10+stone.size*1.3+flawBonus+clamp(design,0,2)*4+
+   clamp(setting,0,2)*3+clamp(carver,1,4)*5+(stone.color>=6?6:0)+luck;
+  return stone.grade>=6&&score>=124?3:stone.grade>=4&&score>=94?2:
+   score>=64?1:0;
+ }
+ const appraisalFee=stone=>!stone||stone.phase!=='crafted'?0:Math.max(10,
+  Math.round(MARKETS[stone.site].price*.035+stone.grade*4));
  const commissionFor=j=>COMMISSIONS[(j?.commissions?.offer||0)%
   (j?.sold>=25?COMMISSIONS.length:j?.sold>=8?6:4)];
  const commissionMatch=(stone,order)=>!!stone&&stone.phase==='crafted'&&
   stone.craft===order.craft&&(stone.design||0)===order.design&&
   (stone.setting||0)>=order.setting&&stone.grade>=order.minGrade;
+ const specialUnlocked=j=>(j?.commissions?.done||0)>=2||(j?.sold||0)>=8;
+ const specialFor=j=>SPECIAL_ORDERS[(j?.commissions?.specialOffer||0)%SPECIAL_ORDERS.length];
+ const specialMatch=(stone,order)=>commissionMatch(stone,order)&&stone.certified===true&&
+  (stone.quality??jewelryQuality(stone))>=order.minQuality&&
+  (order.color===undefined||stone.color===order.color);
  function validCraftJob(job){
   if(!job||typeof job!=='object'||!CRAFTS[job.type])return null;
   const stone=validStone(job.stone),startedAt=job.startedAt,readyAt=job.readyAt;
@@ -157,6 +196,7 @@
   const safe={stone,type:job.type,startedAt,readyAt,value:job.value};
   if(integer(job.design,0,2,-1)>=0)safe.design=job.design;
   if(integer(job.setting,0,2,-1)>=0)safe.setting=job.setting;
+  if(integer(job.quality,0,3,-1)>=0)safe.quality=job.quality;
   return safe;
  }
  function norm(source){
@@ -176,6 +216,10 @@
    jc.done=integer(c.done,0,1000000,0);
    jc.readyAt=integer(c.readyAt,0,Number.MAX_SAFE_INTEGER,0);
    jc.rerollAt=integer(c.rerollAt,0,Number.MAX_SAFE_INTEGER,0);
+   jc.specialOffer=integer(c.specialOffer,0,1000000,0);
+   jc.specialDone=integer(c.specialDone,0,1000000,0);
+   jc.specialReadyAt=integer(c.specialReadyAt,0,Number.MAX_SAFE_INTEGER,0);
+   jc.specialRerollAt=integer(c.specialRerollAt,0,Number.MAX_SAFE_INTEGER,0);
   }
   j.rescueReadyAt=integer(source.rescueReadyAt,0,Number.MAX_SAFE_INTEGER,0);
   j.craftWindowAt=integer(source.craftWindowAt,0,Number.MAX_SAFE_INTEGER,0);
@@ -212,7 +256,9 @@
    typeof x.craft==='string'&&CRAFTS[x.craft]).map(x=>({grade:x.grade,color:x.color,
     size:x.size,craft:x.craft,site:integer(x.site,0,4,0),
     ...(integer(x.design,0,2,-1)>=0?{design:x.design}:{}),
-    ...(integer(x.setting,0,2,-1)>=0?{setting:x.setting}:{})}));
+    ...(integer(x.setting,0,2,-1)>=0?{setting:x.setting}:{}),
+    ...(integer(x.quality,0,3,-1)>=0?{quality:x.quality}:{}),
+    ...(x.certified===true?{certified:true}:{})}));
   if(source.last&&typeof source.last==='object'&&typeof source.last.label==='string')
    j.last={label:source.last.label.slice(0,110),value:integer(source.last.value,0,MAX,0)};
   return j;
@@ -407,6 +453,18 @@
    j.vault.splice(index,1);
    return succeed('Đã bán ngọc trong kho theo giá hôm nay · +'+(quote.value/10).toLocaleString('vi-VN',{maximumFractionDigits:1})+' Xu');
   }
+  const appraise=/^jade-appraise-(\d{1,2})$/.exec(action||'');
+  if(appraise){
+   const item=j.vault[Number(appraise[1])];
+   if(!item||item.phase!=='crafted')return fail('Chỉ giám định trang sức đang nằm trong Kho Ngọc.');
+   if(item.certified)return fail('Món trang sức này đã được cấp chứng thư.');
+   const fee=appraisalFee(item);
+   if(!charge(fee))return fail('Chưa đủ Tiền Xanh trả phí giám định.');
+   item.quality=integer(item.quality,0,3,-1)>=0?item.quality:jewelryQuality(item);
+   item.certified=true;
+   j.last={label:'Giám định · '+QUALITY_NAMES[item.quality],value:0};
+   return succeed('◈ Giám định: '+QUALITY_NAMES[item.quality]+' · chứng thư đã gắn vào thành phẩm.');
+  }
   const buy=/^jade-buy-([0-4])$/.exec(action||'');
   if(buy){
    const site=Number(buy[1]);if(j.active)return fail('Hãy xử lý viên đá trên bàn trước.');
@@ -442,7 +500,8 @@
    const product={...job.stone,scans:[...job.stone.scans],phase:'crafted',
     craft:job.type,craftValue:job.value,
     ...(job.design!==undefined?{design:job.design}:{}),
-    ...(job.setting!==undefined?{setting:job.setting}:{})};
+    ...(job.setting!==undefined?{setting:job.setting}:{}),
+    ...(job.quality!==undefined?{quality:job.quality}:{})};
    j.vault.unshift(product);j.craftJob=null;
    j.last={label:'Hoàn thành '+CRAFTS[job.type].name,value:0};
    return succeed('✦ '+CRAFTS[job.type].name+' đã vào Kho Ngọc! Có thể bán, đeo sưu tập hoặc trưng bày.');
@@ -470,6 +529,32 @@
    j.commissions.rerollAt=Math.max(j.commissions.rerollAt,j.commissions.readyAt);
    j.last={label:'Đơn ngọc · '+order.name,value};
    return succeed('✦ Giao '+CRAFTS[piece.craft].name+' thành công · +'+
+    (value/10).toLocaleString('vi-VN',{maximumFractionDigits:1})+' Tiền Xanh');
+  }
+  if(action==='jade-change-special'){
+   if(!specialUnlocked(j))return fail('Cần hoàn tất 2 đơn thường hoặc bán 8 viên để nhận đơn hiếm.');
+   if(now<j.commissions.specialReadyAt||now<j.commissions.specialRerollAt)
+    return fail('Quầy đặt hàng đặc biệt chưa đến lượt đổi đơn.');
+   j.commissions.specialOffer=(j.commissions.specialOffer+1)%1000000;
+   j.commissions.specialRerollAt=now+90000;
+   return succeed('✦ Đã đổi yêu cầu của khách đặc biệt.');
+  }
+  if(action==='jade-deliver-special'){
+   if(!specialUnlocked(j))return fail('Quầy đặt ngọc đặc biệt chưa mở.');
+   if(now<j.commissions.specialReadyAt)return fail('Khách đặc biệt chưa đến nhận hàng.');
+   const order=specialFor(j),index=j.vault.findIndex(piece=>specialMatch(piece,order));
+   if(index<0)return fail('Cần trang sức đúng kiểu, đã giám định và đạt phẩm cấp của khách.');
+   const quote=marketQuote(j.vault[index],now);
+   if(!quote)return fail('Không định giá được thành phẩm.');
+   // Exactly one physical certified piece leaves the vault per payout.
+   const value=clamp(Math.round(quote.value*order.premium),1,MAX);
+   j.vault.splice(index,1);credit(value);j.sold++;
+   j.commissions.specialDone=Math.min(1000000,j.commissions.specialDone+1);
+   j.commissions.specialOffer=(j.commissions.specialOffer+1)%1000000;
+   j.commissions.specialReadyAt=now+240000;
+   j.commissions.specialRerollAt=Math.max(j.commissions.specialRerollAt,j.commissions.specialReadyAt);
+   j.last={label:'Đơn hiếm · '+order.name,value};
+   return succeed('✦ Đã giao báu vật cho '+order.name+' · +'+
     (value/10).toLocaleString('vi-VN',{maximumFractionDigits:1})+' Tiền Xanh');
   }
   const stone=j.active;if(!stone)return fail('Hãy chọn một viên đá thô ở chợ.');
@@ -556,10 +641,11 @@
    if(type==='bangle'&&stone.flaw==='fracture'&&!stone.savedFracture)return fail('Đá nứt tâm, không tiện được vòng nguyên khối.');
    const fee=craftFee(stone,type,design,setting);if(!charge(fee))return fail('Chưa đủ phí chế tác.');
    const duration=craftDuration(stone,type,j.carver,design,setting);
+   const quality=jewelryQuality(stone,type,design,setting,j.carver);
    j.craftJob={stone:{...stone,scans:[...stone.scans]},type,startedAt:now,
-    readyAt:now+duration,design,setting,
+    readyAt:now+duration,design,setting,quality,
     value:clamp(Math.round(stone.cutValue*spec.mult*(1+.17*(j.carver-1))*
-     (1+.05*design+.08*setting)),1,MAX)};
+     (1+.05*design+.08*setting)*QUALITY_VALUES[quality]),1,MAX)};
    j.active=null;
    return succeed('⚒ '+DESIGNS[type][design]+' · '+SETTINGS[setting]+' · '+Math.ceil(duration/60000)+' phút.');
   }
@@ -574,14 +660,18 @@
    if(j.exhibits.length>=40)return fail('Tủ triển lãm đã đầy (40 tác phẩm).');
    j.exhibits.unshift({grade:stone.grade,color:stone.color,size:stone.size,craft:stone.craft,site:stone.site,
     ...(stone.design!==undefined?{design:stone.design}:{}),
-    ...(stone.setting!==undefined?{setting:stone.setting}:{})});
+    ...(stone.setting!==undefined?{setting:stone.setting}:{}),
+    ...(stone.quality!==undefined?{quality:stone.quality}:{}),
+    ...(stone.certified===true?{certified:true}:{})});
    j.last={label:'Đã cất '+CRAFTS[stone.craft].name+' vào tủ',value:0};j.active=null;
    return succeed('✦ Đã bổ sung tác phẩm vào Tủ Triển Lãm!');
   }
   return fail('Thao tác Ngọc Phường chưa hỗ trợ.');
  }
  return Object.freeze({fresh,norm,act,MARKETS,HUNTS,huntUnlocked,GRADES,COLORS,COLOR_HEX,FLAWS,FLAW_NAMES,FORECASTS,
-  CRAFTS,DESIGNS,SETTINGS,COMMISSIONS,commissionFor,commissionMatch,CRAFT_TIMES,craftDuration,RESCUE_INTERVAL,CRAFT_WINDOW,CRAFT_LIMIT,unlocked,scanHint,baseValue,cutValue,cuttingFee,windowFee,
+  CRAFTS,DESIGNS,SETTINGS,QUALITY_NAMES,QUALITY_VALUES,SPECIAL_ORDERS,
+  COMMISSIONS,commissionFor,commissionMatch,specialUnlocked,specialFor,specialMatch,jewelryQuality,appraisalFee,
+  CRAFT_TIMES,craftDuration,RESCUE_INTERVAL,CRAFT_WINDOW,CRAFT_LIMIT,unlocked,scanHint,baseValue,cutValue,cuttingFee,windowFee,
   actionFee,rawSalvageValue,upgradeCost,craftFee,generate,marketOffer,surface,stallFee,purchasePrice,marketScanSpots,
   MAX_STONES,MAX_VAULT,marketRate,marketQuote,inspectFee,inspectionKey});
 });
