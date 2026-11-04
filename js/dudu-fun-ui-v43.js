@@ -33,8 +33,8 @@
  const wheelUI=()=>root.DuduVantVatWheelF39;
  let vvUid=null,vvState=null,vvCurrency=null,vvLoaded=false,vvLoading=false,
   vvError=false,vvBusy=false;
- let vvRewardModal=null;
- // Wheel geometry is only a visual replay of the already committed reward.
+ let vvRewardModal=null,vvRewardDismiss=null,vvZoomDismiss=null;
+ // The cosmic hunt only replays an already committed reward.
  let vvSpinPhase='idle',vvSpinFocus=null,vvSpinLanding=null,vvSpinCount=1;
  const realmNamesF33={ORIGIN:'Khởi Nguyên',PALEO:'Cổ Sinh Bí Cảnh',
   CULTIVATION:'Tiên Hiệp Thần Binh',CYBER:'Cyberpunk 2099',
@@ -69,15 +69,16 @@
   'f31-background-cosmos':'Một cửa sổ nhỏ nhìn thẳng vào tinh hà chưa ai từng đặt tên.'};
  function vantVatZoom(item){
   if(!item||!root.DuduItemCatalog?.byId(item.id))return;
-  document.getElementById('f33-vantvat-zoom')?.remove();
+  vvZoomDismiss?.();document.getElementById('f33-vantvat-zoom')?.remove();
   const overlay=el('div','f33-vantvat-zoom');overlay.id='f33-vantvat-zoom';
   overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');
   overlay.setAttribute('aria-label','Chi tiết '+item.name);
   const panel=el('div','f33-vantvat-zoom-panel f37-tier-'+item.rank.toLowerCase());
   const close=el('button','f33-vantvat-zoom-close','✕');
   close.type='button';close.setAttribute('aria-label','Đóng chi tiết bảo vật');
-  const dismiss=()=>{overlay.remove();document.removeEventListener('keydown',onKey);};
-  function onKey(e){if(e.key==='Escape')dismiss();}
+  const dismiss=()=>{overlay.remove();vvZoomDismiss=null;document.removeEventListener('keydown',onKey);};
+  vvZoomDismiss=dismiss;
+  function onKey(e){if(e.key==='Escape')dismiss();if(e.key==='Tab'){e.preventDefault();close.focus();}}
   close.onclick=dismiss;
   overlay.addEventListener('click',event=>{if(event.target===overlay)dismiss();});
   document.addEventListener('keydown',onKey);
@@ -164,7 +165,9 @@
   if(sandbox()||!vvBridge())return;
   const uid=signed()?vvBridge().uid?.():null;
   if(uid!==vvUid){vvUid=uid;vvState=null;vvCurrency=null;
-   vvRewardModal?.remove?.();vvRewardModal=null;
+   vvRewardDismiss?.();vvRewardModal?.remove?.();vvRewardModal=null;
+   root.DuduCosmicHuntF41?.dispose?.();
+   vvZoomDismiss?.();document.getElementById('f33-vantvat-zoom')?.remove();
    vvSpinPhase='idle';vvSpinFocus=null;vvSpinLanding=null;
    vvLoaded=false;vvLoading=false;vvError=false;}
   if(!uid||vvLoaded||vvLoading||vvError)return;
@@ -176,53 +179,20 @@
    if(vvUid===uid){vvLoading=false;render();}
   });
  }
+ function vantVatVisible(){
+  const host=$('dudu-fun-content-v43');
+  return open==='slot'&&(!host?.getClientRects||host.getClientRects().length>0);
+ }
  function beginVisualSpin(count){
+  vvRewardDismiss?.();
   vvSpinCount=count;vvSpinPhase='spin';vvSpinFocus=null;vvSpinLanding=null;
   render();
  }
- async function landVisualSpin(reward,count){
+ async function landVisualSpin(reward,count,results=[reward]){
   const account=vvUid;
-  const reducedMotion=!!root.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
-  vvSpinFocus=reward||null;vvSpinCount=count;
-  vvSpinLanding=wheelUI()?.landing?.(reward?.itemId)||null;
-  vvSpinPhase='settle';
-  const wheel=document.querySelector?.('#dudu-fun-content-v43 .f34-vantvat-wheel');
-  let canAnimate=false;
-  if(wheel&&vvSpinLanding&&typeof root.getComputedStyle==='function'&&
-   typeof root.requestAnimationFrame==='function'){
-   // Preserve the wheel's current rotation rather than jumping back to zero.
-   const matrix=root.getComputedStyle(wheel).transform;
-   const numbers=/^matrix\(([^)]+)\)$/.exec(matrix||'')?.[1]?.split(',').map(Number);
-   const angle=numbers?.length===6?((Math.atan2(numbers[1],numbers[0])*
-    180/Math.PI)%360+360)%360:0;
-   const target=vvSpinLanding.degrees%360;
-   const end=vvSpinLanding.degrees+(target<=angle?360:0);
-   const targetMedallion=wheel.querySelectorAll('.f34-vantvat-medallion')
-    [vvSpinLanding.slot];
-   if(targetMedallion){
-    const item=root.DuduItemCatalog?.byId(reward?.itemId);
-    if(item&&root.DuduItemArtV13?.mount)root.DuduItemArtV13.mount(targetMedallion,item);
-    else targetMedallion.textContent='🪙';
-    targetMedallion.classList.add('f39-wheel-winning');
-   }
-   wheel.classList.remove('f39-wheel-spinning');
-   wheel.style.animation='none';wheel.style.transition='none';
-   wheel.style.transform='rotate('+angle+'deg)';
-   void wheel.offsetWidth;
-   const center=wheel.querySelector('.f34-vantvat-center');
-   if(center)center.textContent='SẮP DỪNG';
-   if(reducedMotion){
-    wheel.style.transform='rotate('+end+'deg)';
-   }else root.requestAnimationFrame(()=>{
-    if(account!==vvUid||vvSpinPhase!=='settle')return;
-    wheel.style.transition='transform 2.15s cubic-bezier(.11,.72,.09,1)';
-    wheel.style.transform='rotate('+end+'deg)';
-   });
-   canAnimate=true;
-  }
-  if(!canAnimate)render();
-  if(typeof setTimeout==='function')
-   await new Promise(done=>setTimeout(done,reducedMotion?120:2250));
+  vvSpinFocus=reward||null;vvSpinCount=count;vvSpinPhase='settle';
+  // No draw, claim or balance change is performed by this animation.
+  await root.DuduCosmicHuntF41?.play?.(results,count);
   if(account!==vvUid)return;
   vvSpinPhase='landed';render();
  }
@@ -247,7 +217,7 @@
     await landVisualSpin({itemId,rank:item?.rank||'COIN',kind:item?'ITEM':'COIN'},1);
     if(uid!==vvUid||!signed())return;
    }
-   if(kind==='claim'&&result.status==='applied'&&result.reward){
+   if(kind==='claim'&&result.status==='applied'&&result.reward&&vantVatVisible()){
     const reward=result.reward;
     const itemId=reward.itemId||reward.id||result.state?.active?.itemId;
     showVantVatRewards([{kind:reward.kind||'ITEM',itemId,
@@ -269,16 +239,27 @@
  }
  const vvPendingKey=uid=>'dudu-vantvat-batch-f36:'+uid;
  function showVantVatRewards(results,count){
-  vvRewardModal?.remove?.();
+  vvRewardDismiss?.();vvRewardModal?.remove?.();
+  vvZoomDismiss?.();document.getElementById('f33-vantvat-zoom')?.remove();
   const overlay=el('div','f36-vantvat-overlay');
   overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');
-  overlay.setAttribute('aria-label','Kết quả quay '+count+' lượt');
+  overlay.setAttribute('aria-label','Kết quả truy bảo '+count+' lượt');
   const panel=el('section','f36-vantvat-modal');
   const close=el('button','f36-vantvat-close','✕');close.type='button';
   close.setAttribute('aria-label','Đã nhận, đóng kết quả');
-  function dismiss(){overlay.remove();vvRewardModal=null;
-   document.removeEventListener('keydown',onKey);}
-  function onKey(event){if(event.key==='Escape')dismiss();}
+  function dismiss(){overlay.remove();vvRewardModal=null;vvRewardDismiss=null;
+   document.removeEventListener('keydown',onKey);
+   document.querySelector?.('.f36-vantvat-spin:not(:disabled)')?.focus?.();}
+  vvRewardDismiss=dismiss;
+  function onKey(event){
+   if(event.key==='Escape')dismiss();
+   if(event.key==='Tab'){
+    const buttons=[...panel.querySelectorAll('button:not(:disabled)')];
+    const first=buttons[0],last=buttons[buttons.length-1];
+    if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus();}
+    else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}
+   }
+  }
   close.onclick=dismiss;
   overlay.addEventListener('click',event=>{if(event.target===overlay)dismiss();});
   document.addEventListener('keydown',onKey);
@@ -313,16 +294,16 @@
    const art=el('span','f36-vantvat-reward-art');
    if(item&&result.kind!=='COIN'&&root.DuduItemArtV13?.mount)
     root.DuduItemArtV13.mount(art,item);
-   else art.textContent='🪙';
+   else art.append(el('span','f41-gold-result'));
    const label=result.kind==='COIN'?result.amount+' Xu Vàng':item?.name||'Bảo vật';
-   const note=result.kind==='DUPLICATE'?'Trùng · +'+result.amount+' Xu':
+   const note=result.kind==='DUPLICATE'?result.rank+' · Trùng · +'+result.amount+' Xu':
     result.kind==='COIN'?'Đã cộng vào Ví':
     result.rank+' · '+(vvRule()?.VALUES[result.rank]||0)+' Xu';
    card.append(art,el('b','',label),el('small','',note));
    if(result.pityTriggered)card.append(el('em','f36-vantvat-guarantee','BẢO ĐẢM A+'));
    if(item){const detail=el('button','f36-vantvat-view','⌕');detail.type='button';
     detail.setAttribute('aria-label','Xem '+item.name);
-    detail.onclick=()=>vantVatZoom(item);card.append(detail);}
+    detail.onclick=()=>{dismiss();vantVatZoom(item);};card.append(detail);}
    grid.append(card);
   }
   panel.append(heading);
@@ -356,10 +337,10 @@
    const result=await vvBridge().runBatch(pending);
    if(uid!==vvUid||!signed())return;
    vvState=result.state;vvCurrency=result.currency;
-   await landVisualSpin(wheelUI()?.featured?.(result.results),pending.count);
+   await landVisualSpin(wheelUI()?.featured?.(result.results),pending.count,result.results);
    if(uid!==vvUid||!signed())return;
    localStorage.removeItem(key);
-   showVantVatRewards(result.results,pending.count);
+   if(vantVatVisible())showVantVatRewards(result.results,pending.count);
   }catch(error){
    vvSpinPhase='idle';vvSpinFocus=null;vvSpinLanding=null;
    const reasons={'not-enough-xu':'Chưa đủ Xu Vàng cho '+pending.count+' lượt.',
@@ -381,37 +362,7 @@
   }
   const active=vvState?.active;
   const stage=el('div','f31-vantvat-stage');
-  const machine=el('div','f34-vantvat-machine');
-  machine.setAttribute('aria-label','Vòng quay Vạn Tượng chín vị diện');
-  const wheel=el('div','f34-vantvat-wheel'+
-   (vvSpinPhase==='spin'?' f39-wheel-spinning':
-    vvSpinPhase==='settle'?' f39-wheel-settling':
-    vvSpinPhase==='landed'?' f39-wheel-landed':''));
-  if(vvSpinLanding)wheel.style.setProperty('--f39-stop-deg',vvSpinLanding.degrees+'deg');
-  const anchors=['f34-origin-dawn-goddess','f32-fossil-egg','f32-cult-sword',
-   'f32-cyber-robot','f32-waste-mask','f32-anime-queen','f32-doll-porcelain',
-   'f32-fruit-peach','f32-cosmos-sovereign'];
-  anchors.forEach((id,i)=>{
-   const winning=vvSpinLanding?.slot===i&&vvSpinFocus&&
-    ['settle','landed'].includes(vvSpinPhase);
-   const entry=root.DuduItemCatalog?.byId(winning?vvSpinFocus.itemId:id);
-   const medallion=el('span','f34-vantvat-medallion'+(winning?' f39-wheel-winning':''));
-   medallion.style.setProperty('--f34-sector',i);
-   if(winning&&!entry)medallion.textContent='🪙';
-   else if(entry&&!root.DuduItemArtV13?.mount?.(medallion,entry))
-    medallion.textContent=entry.icon||'✦';
-   wheel.append(medallion);
-  });
-  wheel.append(el('span','f34-vantvat-center',vvSpinPhase==='spin'?'ĐANG QUAY':
-   vvSpinPhase==='settle'?'SẮP DỪNG':'✦'));
-  machine.append(wheel,el('span','f34-vantvat-pointer','◆'));
-  stage.append(machine);
-  if(vvSpinPhase==='landed'&&vvSpinFocus){
-   const item=root.DuduItemCatalog?.byId(vvSpinFocus.itemId);
-   stage.append(el('small','f39-vantvat-landed',
-    '✦ '+(vvSpinCount>1?'Món nổi bật ×'+vvSpinCount+' · ':'')+
-    (item?.name||'Xu Vàng')));
-  }
+  root.DuduCosmicHuntF41?.mount?.({host:stage,phase:vvSpinPhase,count:vvSpinCount});
   if(active&&active.status==='sealed')
    stage.append(el('p','f34-vantvat-sealed','✧ Phong ấn đã định · Mở để nhận bảo vật'));
   if(active?.status==='sealed'){
@@ -423,7 +374,7 @@
    let pending=null;
    try{pending=JSON.parse(localStorage.getItem(vvPendingKey(vvUid))||'null');}
    catch(_){}
-   if([1,5,10].includes(pending?.count)){
+   if(!vvBusy&&[1,5,10].includes(pending?.count)){
     const retry=el('button','dudu-fun-claim',
      '↻ KHÔI PHỤC '+pending.count+' LƯỢT ĐÃ ĐẶT');
     retry.type='button';retry.disabled=vvBusy||funActionBusy;
@@ -431,11 +382,11 @@
    }else{
     const controls=el('div','f36-vantvat-spin-controls');
     for(const count of [1,5,10]){
-     const button=withGold('button','f36-vantvat-spin','↻ ×'+count+' · ',
+     const button=withGold('button','f36-vantvat-spin','✦ ×'+count+' · ',
       rule.PRICE*count);
      button.type='button';button.disabled=vvBusy||funActionBusy||
       vvCurrency<rule.PRICE*count;
-     button.setAttribute('aria-label','Quay '+count+' lượt giá '+rule.PRICE*count+' Xu Vàng');
+     button.setAttribute('aria-label','Truy bảo '+count+' lượt giá '+rule.PRICE*count+' Xu Vàng');
      button.onclick=()=>{void vantVatBatchAction(count);};controls.append(button);
     }
     stage.append(controls);
@@ -1288,6 +1239,13 @@
  }
  function render(){
   const host=$('dudu-fun-content-v43');if(!host)return false;
+  root.DuduCosmicHuntF41?.dispose?.();
+  if(vvUid&&(sandbox()||!signed()||vvBridge()?.uid?.()!==vvUid)){
+   vvRewardDismiss?.();vvRewardModal?.remove?.();vvRewardModal=null;
+   vvZoomDismiss?.();document.getElementById('f33-vantvat-zoom')?.remove();
+   vvUid=null;vvState=null;vvCurrency=null;vvLoaded=false;vvLoading=false;
+   vvSpinPhase='idle';vvSpinFocus=null;
+  }
   updateHeaderBalance();
   ensureLive();
   if(!sandbox())ensureBlind();

@@ -237,7 +237,7 @@
    container.append(unknown);
   }
   select(sorted.find(item=>album.has(item.id))||sorted[0]);
-  const go=el('button','museum-vantvat-go','🎰 Đến vòng quay');
+  const go=el('button','museum-vantvat-go','✦ Truy Bảo');
   go.type='button';go.onclick=()=>root.DuduFunUIV43?.showVantVat?.();
   container.append(go);
  }

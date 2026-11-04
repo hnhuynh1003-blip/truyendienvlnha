@@ -92,7 +92,7 @@
     details.append(el('summary','','Chưa khám phá · '+missing.children.length),missing);shelf.append(details);}
   }
   filter.addEventListener('change',draw);draw();
-  const go=el('button','museum-vantvat-go','✦ Đến vòng quay');go.type='button';
+  const go=el('button','museum-vantvat-go','✦ Truy Bảo');go.type='button';
   go.onclick=()=>{close();root.DuduFunUIV43?.showVantVat?.();};container.append(go);
  }
  return Object.freeze({REALMS,snapshot,mount,close});
