@@ -125,6 +125,7 @@
   <script src="js/npc-profile-v56-15.js?v=56-15"></script>
   <script src="js/npc-auto-model-v56-11.js?v=56-11"></script>
   <script src="js/ai-proxy.js?v=58-2-mobile-v70-1"></script>
+  <script src="js/chapter-ai-chunk-l5.js?v=l5-1"></script>
   <script src="js/npc-chat-lite.js?v=53-1"></script>
   <script src="js/player-reset-v54.js?v=54-1"></script>
   <script src="js/season-reset-s01.js?v=s01-preview-1"></script>
@@ -845,6 +846,7 @@
   <link rel="stylesheet" href="css/library-editorial-l2c3.css?v=l2c-3">
   <link rel="stylesheet" href="css/library-epub-manage-l2d2.css?v=c422-1">
   <link rel="stylesheet" href="css/library-epub-edit-l2d5.css?v=l2d5b-1">
+  <link rel="stylesheet" href="css/chapter-ai-l5.css?v=l5-1">
   <link rel="stylesheet" href="css/world-experience-v65.css?v=65-1">
   <link rel="stylesheet" href="css/world-experience-v66.css?v=66-2">
   <link rel="stylesheet" href="css/dudu-pilot-v1.css?v=play-v8">
@@ -2266,6 +2268,29 @@
         <span id="ai-status-loader" style="display:none; font-size:10px; color:var(--neon);">Đang suy nghĩ...</span>
       </div>
 
+      <section id="chapter-ai-review-l5" class="chapter-ai-review-l5" hidden aria-label="Xem trước biên tập AI">
+        <div class="chapter-ai-review-head">
+          <strong id="chapter-ai-review-title-l5">Xem trước AI</strong>
+          <button type="button" class="btn" onclick="closeChapterAIReviewL5()" aria-label="Đóng bảng xem trước AI">✕</button>
+        </div>
+        <p id="chapter-ai-review-status-l5" role="status" aria-live="polite"></p>
+        <div class="chapter-ai-progress-l5" role="progressbar" aria-label="Tiến độ biên tập AI"
+          aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <span id="chapter-ai-progress-fill-l5"></span>
+        </div>
+        <div id="chapter-ai-comparison-l5" class="chapter-ai-comparison-l5" hidden>
+          <label>Bản gốc<textarea id="chapter-ai-original-l5" readonly spellcheck="false"></textarea></label>
+          <label>AI đề xuất<textarea id="chapter-ai-proposed-l5" readonly spellcheck="false"></textarea></label>
+        </div>
+        <div class="chapter-ai-actions-l5">
+          <button id="chapter-ai-stop-l5" type="button" class="btn" hidden onclick="stopChapterAIL5()">Dừng sau đoạn này</button>
+          <button id="chapter-ai-resume-l5" type="button" class="btn" hidden onclick="resumeChapterAIL5()">Tiếp tục đoạn còn lại</button>
+          <button id="chapter-ai-apply-l5" type="button" class="btn btn-primary" hidden onclick="applyChapterAIL5()">Áp dụng vào bản thảo</button>
+          <button id="chapter-ai-undo-l5" type="button" class="btn" hidden onclick="undoChapterAIL5()">Hoàn tác áp dụng</button>
+        </div>
+        <small>AI chỉ đề xuất. Bản thảo không thay đổi nếu chưa bấm Áp dụng; lưu chương vẫn là bước riêng.</small>
+      </section>
+
       <div class="modal-field">
         <label>Tên chương:</label>
         <input type="text" id="chapter-modal-title" name="new_chapter_title_custom" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Ví dụ: Chương 1: Khoảng Trắng Của Kẻ Lang Bạt">
@@ -3202,6 +3227,7 @@
     }
 
     function closeModals() {
+      closeChapterAIReviewL5();
       epubEditorL2D5.close?.();
       ['story-modal', 'chapter-modal', 'char-modal', 'auth-modal', 'gift-modal', 'author-item-modal', 'author-release-modal', 'epub-import-modal'].forEach(id => {
         const el = document.getElementById(id);
@@ -3723,49 +3749,194 @@
       }
     }
 
-    async function callGeminiAI(systemPrompt, userText) {
-      const loader = document.getElementById('ai-status-loader');
-      if (loader) loader.style.display = 'inline';
+    // L5.1: AI results are always local proposals. The original draft and
+    // chapter in Firestore never change until the author explicitly saves.
+    let chapterAIJobL5 = null;
+    let chapterAIEpochL5 = 0;
+    const chapterAIElL5 = id => document.getElementById(id);
+    function updateChapterAIReviewL5() {
+      const job = chapterAIJobL5, panel = chapterAIElL5('chapter-ai-review-l5');
+      if (!panel) return;
+      panel.hidden = !job;
+      const loader = chapterAIElL5('ai-status-loader');
+      if (loader) {
+        loader.style.display = job?.working ? 'inline' : 'none';
+        loader.textContent = job?.working ?
+          'AI: '+(Math.min(job.index+1,job.total))+'/'+job.total+' đoạn' : '';
+      }
+      if (!job) return;
+      chapterAIElL5('chapter-ai-review-title-l5').textContent =
+        job.type === 'polish' ? '✍️ Trau chuốt · xem trước' :
+        job.type === 'continue' ? '✨ Viết tiếp · xem trước' : '💡 Gợi ý tình tiết';
+      const completed = job.type === 'polish'
+        ? job.parts.slice(0,job.index).filter(p=>p.core).length : job.index;
+      const percent = Math.round(completed / job.total * 100);
+      const bar = panel.querySelector('.chapter-ai-progress-l5');
+      if (bar) bar.setAttribute('aria-valuenow',String(percent));
+      chapterAIElL5('chapter-ai-progress-fill-l5').style.width = percent+'%';
+      const finished = job.index >= job.parts.length && !job.error && !job.working;
+      const pending = !finished && !job.working && !job.applied;
+      const description = job.error ? 'Đoạn '+(job.index+1)+' chưa xử lý: '+job.error+
+        '. Các đoạn đã xong vẫn được giữ để tiếp tục.' :
+        job.working ? 'Đang xử lý '+Math.min(job.index+1,job.total)+'/'+job.total+
+          ' lượt. Có thể dừng sau đoạn hiện tại.' :
+        job.stopped ? 'Đã tạm dừng tại '+completed+'/'+job.total+
+          ' lượt. Bản thảo chưa thay đổi.' :
+        finished ? 'Hoàn tất '+job.total+' lượt. Hãy so sánh trước khi áp dụng.' :
+        'Sẵn sàng tiếp tục.';
+      chapterAIElL5('chapter-ai-review-status-l5').textContent = description;
+      const comparison = chapterAIElL5('chapter-ai-comparison-l5');
+      const anyResult = job.answers.some(value=>typeof value==='string'&&value.trim());
+      comparison.hidden = !anyResult;
+      if (anyResult) {
+        chapterAIElL5('chapter-ai-original-l5').value = job.source;
+        chapterAIElL5('chapter-ai-proposed-l5').value = job.type === 'polish'
+          ? job.parts.map((part,i)=>part.core&&job.answers[i]
+            ? part.leading+job.answers[i].trim()+part.trailing : part.raw).join('')
+          : job.answers[0] || '';
+      }
+      chapterAIElL5('chapter-ai-stop-l5').hidden = !job.working;
+      chapterAIElL5('chapter-ai-resume-l5').hidden = !pending;
+      chapterAIElL5('chapter-ai-apply-l5').hidden =
+        !finished || job.type === 'ideas' || job.applied;
+      chapterAIElL5('chapter-ai-undo-l5').hidden = !job.applied;
+    }
+    function closeChapterAIReviewL5() {
+      if (chapterAIJobL5) chapterAIJobL5.stop = true;
+      chapterAIJobL5 = null;
+      chapterAIEpochL5++;
+      updateChapterAIReviewL5();
+    }
+    function stopChapterAIL5() {
+      if (!chapterAIJobL5?.working) return;
+      chapterAIJobL5.stop = true;
+      chapterAIElL5('chapter-ai-review-status-l5').textContent =
+        'Đang chờ đoạn hiện tại kết thúc rồi sẽ dừng…';
+    }
+    async function callGeminiAI(systemPrompt,userText) {
+      return DuduAI.generate('assist',systemPrompt,[{role:'user',text:userText}]);
+    }
+    async function runChapterAIL5(job) {
+      if (!job || job.working || chapterAIJobL5 !== job) return;
+      job.working = true; job.stop = false; job.error = '';
+      updateChapterAIReviewL5();
       try {
-        const result = await DuduAI.generate('assist',systemPrompt,[{role:'user',text:userText}]);
-        if (result.error) {
-          alert('⚠️ ' + result.error);
-          return null;
+        while (chapterAIJobL5 === job && job.epoch === chapterAIEpochL5 &&
+          job.index < job.parts.length && !job.stop) {
+          const i = job.index,part = job.parts[i];
+          if (!part.core) {job.index++;continue;}
+          const prompt = job.type === 'polish' ? part.core :
+            'Tiêu đề: '+job.title.slice(0,140)+'\nNgữ cảnh:\n'+part.core;
+          const instruction = job.type === 'polish'
+            ? 'Bạn là biên tập viên truyện tiếng Việt. Chỉ trau chuốt văn phong của đoạn được gửi; không thêm hoặc bỏ sự kiện, tên riêng, lời thoại hay nhân vật. Giữ cách xưng hô, xuống dòng, thứ tự ý và nội dung. Trả lại nguyên văn đoạn đã sửa, không giải thích.'
+            : job.type === 'continue'
+            ? 'Viết tiếp đoạn truyện khoảng 150–250 từ dựa trên ngữ cảnh; giữ nhân vật và giọng kể, không lặp lại đoạn đã có. Chỉ trả văn bản tiếp nối.'
+            : 'Dựa trên ngữ cảnh tóm lược, gợi ý đúng 3 hướng phát triển tình tiết khác nhau; không tự viết lại chương.';
+          const answer = await callGeminiAI(instruction,prompt);
+          if (chapterAIJobL5 !== job || job.epoch !== chapterAIEpochL5) return;
+          if (answer?.error || typeof answer?.text !== 'string' ||
+            !answer.text.trim() || answer.text.length > 12000) {
+            job.error = answer?.error || 'AI trả văn bản rỗng hoặc quá dài (tối đa 12.000 ký tự/đoạn).';
+            break;
+          }
+          job.answers[i] = answer.text;
+          job.index++;
+          updateChapterAIReviewL5();
         }
-        return result.text || null;
+      } catch(error) {
+        if (chapterAIJobL5 === job) job.error =
+          String(error?.message||'Không thể xử lý đoạn này.');
       } finally {
-        if (loader) loader.style.display = 'none';
+        job.working = false;
+        if (chapterAIJobL5 === job) {
+          job.stopped = job.stop && job.index < job.parts.length;
+          updateChapterAIReviewL5();
+        }
       }
     }
-
-    async function handleAIAssist(type) {
-      const contentArea = document.getElementById('chapter-modal-content');
-      const titleInput = document.getElementById('chapter-modal-title');
-      const text = contentArea.value.trim();
-
-      if (type === 'continue') {
-        if (!text) { alert("Vui lòng viết vài câu mở đầu trước!"); return; }
-        const sys = "Bạn là đồng tác giả tiểu thuyết vô hạn lưu, glitch, hệ thống rùng rợn bí ẩn. Dựa trên tên chương và các đoạn văn sau, hãy viết tiếp đoạn tiếp theo khoảng 150-250 từ với giọng văn đồng nhất, gợi cảm giác hồi hộp bí ẩn. Trả về trực tiếp nội dung văn bản tiếp nối, không kèm lời chào hỏi.";
-        const result = await callGeminiAI(sys, `Tiêu đề: ${titleInput.value}\nNội dung hiện tại:\n${text}`);
-        if (result) {
-          contentArea.value += "\n\n" + result.trim();
-          onChapterInput();
-        }
-      } else if (type === 'polish') {
-        if (!text) { alert("Chưa có nội dung để trau chuốt!"); return; }
-        const sys = "Bạn là biên tập viên văn học chuyên nghiệp. Hãy chỉnh sửa, trau chuốt câu cú, từ ngữ cho đoạn văn sau mượt mà, sâu sắc và ấn tượng hơn mà không làm thay đổi cốt truyện gốc. Trả về toàn bộ đoạn văn bản đã hoàn thiện.";
-        const result = await callGeminiAI(sys, text);
-        if (result && confirm("AI đã hoàn thành trau chuốt. Thay thế nội dung hiện tại bằng bản mới này?")) {
-          contentArea.value = result.trim();
-          onChapterInput();
-        }
-      } else if (type === 'ideas') {
-        const sys = "Dựa trên nội dung chương này, hãy gợi ý ngắn gọn 3 hướng rẽ tình tiết (plot twist / sự kiện kỳ bí) bất ngờ và kịch tính nhất để tác giả chọn lựa viết tiếp.";
-        const result = await callGeminiAI(sys, `Tiêu đề: ${titleInput.value}\nNội dung:\n${text || '[Chưa có nội dung]'}`);
-        if (result) {
-          alert("💡 GỢI Ý TÌNH TIẾT TỪ AI:\n\n" + result);
-        }
+    function resumeChapterAIL5() {
+      const job = chapterAIJobL5;
+      if (!job || job.working || job.applied || job.index >= job.parts.length) return;
+      void runChapterAIL5(job);
+    }
+    function chapterAISourceMatchesL5(job) {
+      return chapterAIElL5('chapter-modal-content')?.value === job.source &&
+        chapterAIElL5('chapter-modal-title')?.value === job.title &&
+        novels[selectedNovelIndex]?.id === job.novelId &&
+        editingChapterIndex === job.chapterIndex;
+    }
+    function applyChapterAIL5() {
+      const job = chapterAIJobL5;
+      if (!job || job.working || job.applied || job.error ||
+        job.index < job.parts.length || job.type === 'ideas') return;
+      if (!chapterAISourceMatchesL5(job)) {
+        chapterAIElL5('chapter-ai-review-status-l5').textContent =
+          'Bản thảo hoặc chương đã thay đổi từ lúc gọi AI. Không ghi đè; hãy tạo lượt mới.';
+        return;
       }
+      let result;
+      try {
+        result = job.type === 'polish'
+          ? DuduChapterAIChunkL5.assemble(job.prepared,job.answers)
+          : job.source+(job.source.trim()?'\n\n':'')+job.answers[0].trim();
+      } catch(error) {
+        chapterAIElL5('chapter-ai-review-status-l5').textContent = String(error.message);
+        return;
+      }
+      if (!result.trim() || !confirm('Áp dụng đề xuất AI vào bản thảo trên thiết bị? Chương chưa được lưu lên thư viện.')) return;
+      const area = chapterAIElL5('chapter-modal-content');
+      area.value = result; job.applied = result; onChapterInput();
+      updateChapterAIReviewL5();
+      chapterAIElL5('chapter-ai-review-status-l5').textContent =
+        'Đã áp dụng vào bản thảo. Chưa lưu chương; có thể Hoàn tác tại đây.';
+    }
+    function undoChapterAIL5() {
+      const job = chapterAIJobL5,area = chapterAIElL5('chapter-modal-content');
+      if (!job?.applied || !area) return;
+      if (area.value !== job.applied) {
+        chapterAIElL5('chapter-ai-review-status-l5').textContent =
+          'Bạn đã tự sửa bản thảo sau khi áp dụng. Không hoàn tác để tránh mất chữ.';
+        return;
+      }
+      area.value = job.source; job.applied = ''; onChapterInput();
+      updateChapterAIReviewL5();
+      chapterAIElL5('chapter-ai-review-status-l5').textContent =
+        'Đã phục hồi bản gốc trong ô soạn thảo.';
+    }
+    function handleAIAssist(type) {
+      if (!canEditStories() || !['continue','polish','ideas'].includes(type)) return;
+      if (chapterAIJobL5?.working) {
+        chapterAIElL5('chapter-ai-review-status-l5').textContent =
+          'Vui lòng dừng hoặc chờ lượt AI hiện tại trước khi mở lượt khác.';
+        return;
+      }
+      const area = chapterAIElL5('chapter-modal-content');
+      const title = chapterAIElL5('chapter-modal-title').value;
+      const source = area.value;
+      if (type !== 'ideas' && !source.trim()) {
+        alert('Hãy nhập nội dung chương trước khi dùng AI.');return;
+      }
+      const engine = window.DuduChapterAIChunkL5;
+      if (!engine) {alert('Bộ biên tập AI chưa tải xong. Hãy tải lại trang.');return;}
+      let prepared,parts;
+      try {
+        prepared = type === 'polish' ? engine.plan(source) : null;
+        parts = type === 'polish' ? prepared.parts :
+          [{core:type === 'ideas'
+            ? engine.context(source,'ideas') || '[Chưa có nội dung]'
+            : engine.context(source,'continue')}];
+      } catch(error) {alert(String(error?.message||'Không thể chia chương.'));return;}
+      const total = type === 'polish' ? prepared.requests : 1;
+      if (total>1 && !confirm('Chương này cần '+total+
+        ' lượt AI riêng. Bắt đầu biên tập lần lượt? Có thể dừng và tiếp tục trong cùng bảng.'))return;
+      closeChapterAIReviewL5();
+      const job = {type,source,title,novelId:novels[selectedNovelIndex]?.id,
+        chapterIndex:editingChapterIndex,prepared,parts,answers:Array(parts.length).fill(null),
+        total,index:0,working:false,stop:false,error:'',stopped:false,applied:'',
+        epoch:chapterAIEpochL5};
+      chapterAIJobL5 = job;
+      updateChapterAIReviewL5();
+      void runChapterAIL5(job);
     }
 
     function saveChatHistories() {
@@ -9183,6 +9354,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 
     function openCreateChapterModal() {
       if(novels[selectedNovelIndex]?._cloudV49){alert('Không thể thêm chương EPUB từ trình soạn cũ.');return;}
+      closeChapterAIReviewL5();
       editingChapterIndex = null;
       chapterNpcExpanded=false;
       chapterNpcSelectedIds=new Set();
@@ -9215,6 +9387,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 
     function openEditChapterModal(chIdx) {
       if(novels[selectedNovelIndex]?._cloudV49){alert('Chương EPUB đã tách khỏi thư viện cũ; không sửa tại đây.');return;}
+      closeChapterAIReviewL5();
       editingChapterIndex = chIdx;
       chapterNpcExpanded=false;
       const ch = novels[selectedNovelIndex].chapters[chIdx];

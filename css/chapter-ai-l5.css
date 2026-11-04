@@ -1,0 +1,31 @@
+/* L5.1 — concise, author-only AI chapter review. No reader changes. */
+#chapter-ai-review-l5[hidden],
+#chapter-ai-review-l5 [hidden] { display:none!important }
+.chapter-ai-review-l5 {
+  display:grid;gap:10px;padding:13px;border:1px solid #577f81;
+  border-radius:12px;background:linear-gradient(145deg,#0e2027,#172538);
+  color:#e6edf1;font-size:12px;box-sizing:border-box;
+}
+.chapter-ai-review-head {display:flex;justify-content:space-between;align-items:center;gap:8px}
+.chapter-ai-review-head strong {font-size:14px;color:#bfe4d7}
+.chapter-ai-review-head button {padding:5px 9px;min-height:32px}
+#chapter-ai-review-status-l5 {margin:0;line-height:1.5;overflow-wrap:anywhere;color:#d2e3e3}
+.chapter-ai-progress-l5 {height:5px;background:#324453;border-radius:10px;overflow:hidden}
+#chapter-ai-progress-fill-l5 {display:block;height:100%;width:0%;background:#8dd9c4;transition:width .18s}
+.chapter-ai-comparison-l5 {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.chapter-ai-comparison-l5 label {min-width:0;display:grid;gap:5px;color:#bad5d1;font-weight:650}
+.chapter-ai-comparison-l5 textarea {
+  min-width:0;width:100%;height:185px;resize:vertical;box-sizing:border-box;
+  border:1px solid #425d69;border-radius:8px;padding:10px;background:#0c1721;
+  color:#f0ebdf;white-space:pre-wrap;line-height:1.65;
+  font-family:inherit;font-size:13px;
+}
+.chapter-ai-actions-l5 {display:flex;flex-wrap:wrap;gap:8px}
+.chapter-ai-actions-l5 button {min-height:36px}
+.chapter-ai-review-l5 small {color:#a5bbba;line-height:1.5}
+@media(max-width:600px) {
+ .chapter-ai-review-l5 {padding:11px}
+ .chapter-ai-comparison-l5 {grid-template-columns:1fr}
+ .chapter-ai-comparison-l5 textarea {height:145px;font-size:16px}
+ .chapter-ai-actions-l5 button {flex:1 1 auto}
+}
