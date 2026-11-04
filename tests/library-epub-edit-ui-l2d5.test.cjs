@@ -99,6 +99,61 @@ test('Single-chapter preview uses original text but never writes to Firestore',a
  assert.equal(typeof instance.save,'undefined');
  assert.equal(typeof instance.restore,'undefined');
 });
+
+test('L5.2 proposes proper names without overwriting the author’s manual replacements',()=>{
+ const {instance,elements}=manager();instance.open(book);instance.switchMode('bulk');
+ const first=elements.get('epub-edit-rule-list').children[0];
+ first.children[0].value='đường  oanh ngữ';
+ assert.equal(instance.suggestNames(),1);
+ assert.equal(first.children[1].value,'Đường Oanh Ngữ');
+ first.children[1].value='Đường Oanh Ngữ (bản dịch)';
+ assert.equal(instance.suggestNames(),0);
+ assert.equal(first.children[1].value,'Đường Oanh Ngữ (bản dịch)');
+ assert.match(elements.get('epub-edit-status').textContent,/ô tên chuẩn còn trống/);
+});
+
+test('L5.2 scans every chapter of a 245-chapter EPUB in explicit 80-chapter lots without writes',async()=>{
+ const ids=Array.from({length:245},(_,i)=>'chapter-'+String(i+1).padStart(4,'0'));
+ const large={...book,chapters:ids.map((id,i)=>({id,title:'Chương '+(i+1)}))};
+ const loaded=[],writes=[];
+ const {instance,elements,window}=manager({loadChapter:async(id,chId)=>{
+  loaded.push(chId);
+  return {id:chId,title:chId,content:'kỳ an và kỳ an.',editVersion:0};
+ },bulkSaver:{apply:async()=>{writes.push(true);throw Error('Unexpected write');}}});
+ assert.equal(instance.open(large),true);
+ instance.switchMode('bulk');
+ const ranges=elements.get('epub-edit-scan-range');
+ assert.equal(ranges.children.length,4);
+ assert.equal(ranges.children[0].textContent,'Chương 1–80 / 245');
+ assert.equal(ranges.children[3].textContent,'Chương 241–245 / 245');
+ const row=elements.get('epub-edit-rule-list').children[0];
+ row.children[0].value='kỳ an';
+ assert.equal(instance.suggestNames(),1);
+ const first=await instance.scan();
+ assert.equal(first.chapters.length,80);
+ assert.equal(first.total,160);
+ assert.equal(loaded.length,80);
+ assert.match(elements.get('epub-edit-status').textContent,/lô 1\/4/i);
+ instance.chooseAll(true);
+ const preview=instance.previewBulk();
+ assert.equal(preview.chaptersChanged,80,'Each safe write plan stays below the 160-chapter backend cap');
+ window.confirm=()=>false;
+ ranges.value='1';
+ assert.equal(instance.chooseScanRange(),false,'A range change cannot silently discard checked hits');
+ assert.equal(ranges.value,'0');
+ window.confirm=()=>true;
+ for(let lot=1;lot<4;lot++){
+  const next=await instance.scanNext();
+  assert.equal(next.chapters.length,lot===3?5:80);
+  assert.equal(next.total,lot===3?10:160);
+  assert.equal(loaded.length,Math.min((lot+1)*80,245));
+ }
+ assert.equal(instance.scanNext(),false,'There are no chapters beyond the fourth lot');
+ assert.equal(loaded.length,245);
+ assert.deepEqual(loaded,ids,'All chapters are covered once in the original order');
+ assert.equal(writes.length,0,'Scanning, casing suggestions, and previews are read-only');
+ assert.match(elements.get('epub-edit-status').textContent,/chương 241–245 \/ 245/);
+});
 test('L2D.5B staged chapter save needs preview, confirmation and persists a revision through the chapter API',async()=>{
  let writes=0,last=null;const changes=[];
  const editor={...single,saveChapter:async(bookId,chapterId,options)=>{

@@ -32,6 +32,8 @@
 .epub-edit-rule input[type=checkbox],.epub-edit-hit input[type=checkbox] {accent-color:#7cc5bd;flex-shrink:0}
 .epub-edit-filter-row {display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .epub-edit-filter-row select {flex:1}
+.epub-edit-scan-row select {flex:1 1 240px}
+.epub-edit-scan-row button {flex:0 0 auto}
 .epub-edit-selection {border-top:1px solid #354858;padding-top:10px}
 #epub-edit-count {font:500 11px/1.4 ui-monospace,monospace;color:#a6cfc9}
 .epub-edit-matches {display:grid;gap:8px}
@@ -64,6 +66,8 @@
  .epub-edit-rule label {grid-column:1}
  .epub-edit-rule button {grid-column:2}
  .epub-edit-panel :is(input[type=text],select,textarea) {font-size:16px}
+ .epub-edit-scan-row select {flex-basis:100%;width:100%}
+ .epub-edit-scan-row button {flex:1 1 135px}
  .epub-edit-hit {padding:10px;gap:8px}
  .epub-edit-revision {align-items:flex-start;flex-direction:column}
 }

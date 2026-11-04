@@ -190,10 +190,10 @@
   <script src="js/library-synopsis-search-l2d.js?v=l2d-1"></script>
   <script src="js/library-epub-manage-l2d2.js?v=c422-1"></script>
   <script src="js/epub-chapter-editor-l2d3.js?v=l2d5b-1"></script>
-  <script src="js/epub-bulk-replace-l2d4.js?v=l2d5c-1"></script>
+  <script src="js/epub-bulk-replace-l2d4.js?v=l5-2"></script>
   <script src="js/epub-bulk-save-l2d5b.js?v=l2d5b-1"></script>
   <script src="js/epub-recovery-journal-l2d5c.js?v=l2d5c-1"></script>
-  <script src="js/library-epub-edit-ui-l2d5.js?v=l2d5d-1"></script>
+  <script src="js/library-epub-edit-ui-l2d5.js?v=l5-2"></script>
   <script src="js/npc-portrait-library-v1.js?v=40-1"></script>
   <script src="js/npc-anime-candidates-v14.js"></script>
   <script src="js/player-avatar-v16.js?v=identity-1"></script>
@@ -845,7 +845,7 @@
   <link rel="stylesheet" href="css/library-reader-focus-l2b.css?v=l2b-1">
   <link rel="stylesheet" href="css/library-editorial-l2c3.css?v=l2c-3">
   <link rel="stylesheet" href="css/library-epub-manage-l2d2.css?v=c422-1">
-  <link rel="stylesheet" href="css/library-epub-edit-l2d5.css?v=l2d5b-1">
+  <link rel="stylesheet" href="css/library-epub-edit-l2d5.css?v=l5-2">
   <link rel="stylesheet" href="css/chapter-ai-l5.css?v=l5-1">
   <link rel="stylesheet" href="css/world-experience-v65.css?v=65-1">
   <link rel="stylesheet" href="css/world-experience-v66.css?v=66-2">
@@ -2161,11 +2161,17 @@
         <div id="epub-edit-history" class="epub-edit-history" aria-label="Các bản lưu để phục hồi"></div>
       </section>
       <section id="epub-edit-panel-bulk" class="epub-edit-panel" aria-label="Tìm và thay thế toàn truyện" hidden>
-        <p>Chuẩn hóa nhiều tên riêng trong một lượt. Tìm theo cụm từ, không tự đổi những chỗ chưa chọn.</p>
+        <p>Chuẩn hóa tên riêng theo từng lô chương. Tên chuẩn có thể gợi ý viết hoa; mọi vị trí vẫn cần được duyệt trước khi lưu.</p>
         <div id="epub-edit-rule-list" class="epub-edit-rules"></div>
         <div class="epub-edit-inline">
           <button type="button" class="btn" onclick="epubEditorL2D5.addRule()">+ Thêm tên / địa danh</button>
+          <button type="button" class="btn" onclick="epubEditorL2D5.suggestNames()">Viết hoa tên riêng</button>
+        </div>
+        <div class="epub-edit-filter-row epub-edit-scan-row">
+          <label for="epub-edit-scan-range">Lô chương cần quét</label>
+          <select id="epub-edit-scan-range" onchange="epubEditorL2D5.chooseScanRange()" aria-label="Chọn lô chương EPUB"></select>
           <button type="button" class="btn btn-primary" onclick="epubEditorL2D5.scan()">Quét các chương</button>
+          <button type="button" class="btn" id="epub-edit-scan-next" hidden onclick="epubEditorL2D5.scanNext()">Lô tiếp theo →</button>
         </div>
         <div class="epub-edit-filter-row"><label for="epub-edit-chapter-filter">Kết quả trong</label>
           <select id="epub-edit-chapter-filter" onchange="epubEditorL2D5.filterChapter()"></select></div>
@@ -2191,7 +2197,7 @@
       </section>
       <div id="epub-edit-preview" class="epub-edit-preview" aria-live="polite"></div>
       <p id="epub-edit-status" class="epub-edit-status" role="status" aria-live="polite"></p>
-      <p class="epub-edit-footnote">Công cụ đang khóa trên website. Khi được nghiệm thu, nhật ký phục hồi lưu trên trình duyệt này (không đồng bộ giữa các thiết bị). Mỗi lần sửa đều giữ bản gốc trên Firebase.</p>
+      <p class="epub-edit-footnote">Chỉ tác giả có quyền quản lý mới được lưu. Mỗi lô tối đa 80 chương; cần hoàn tất hoặc khôi phục lượt cũ trước khi lưu lô khác. Nhật ký phục hồi nằm trên thiết bị này. Mỗi chương đã sửa đều có bản lưu trước đó.</p>
     </div>
   </div>
 

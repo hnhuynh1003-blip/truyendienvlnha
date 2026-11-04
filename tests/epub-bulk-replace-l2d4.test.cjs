@@ -7,6 +7,15 @@ const one={id:'chapter-0001',title:'Chương 1',editVersion:2,
 const two={id:'chapter-0002',title:'Chương 2',content:'Tại thượng hải, kỳ an suy nghĩ.'};
 const rules=[{from:'kỳ an',to:'Kỳ An'},{from:'thượng hải',to:'Thượng Hải'}];
 
+test('L5.2 suggests Vietnamese proper-name casing without guessing missing word boundaries',()=>{
+ assert.equal(engine.suggestProperName('  đường  oanh   ngữ '),'Đường Oanh Ngữ');
+ assert.equal(engine.suggestProperName('tiêu khinh'),'Tiêu Khinh');
+ assert.equal(engine.suggestProperName('thượng-hải'),'Thượng-Hải');
+ assert.equal(engine.suggestProperName('kỳan'),'Kỳan',
+  'Concatenated names still require an explicitly edited replacement');
+ assert.equal(engine.suggestProperName(null),'');
+});
+
 test('Multiple rules find lowercased proper nouns across chapters without touching correct spelling',()=>{
  const plan=engine.prepare([one,two],rules);
  assert.equal(plan.total,5);

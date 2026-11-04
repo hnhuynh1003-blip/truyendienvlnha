@@ -7,10 +7,10 @@
  if(root)root.DuduLibraryEpubEditL2D5=api;
 })(typeof window!=='undefined'?window:null,function(root){
  'use strict';
- const MAX_VISIBLE=80;
+ const MAX_VISIBLE=80,SCAN_SIZE=80;
  function create({enabled=false,engine,chapterEditor,bulkSaver,journal,db,auth,uid,canEdit,
    loadChapter,onChapterSaved=()=>{}}={}){
-  let book=null,session=0,mode='single',plan=null,selected=new Set(),
+  let book=null,session=0,mode='single',plan=null,selected=new Set(),scanRange=0,
    chapters=new Map(),page=0,busy=false,writing=false;
   let loadedSingleId=null,reviewedSingle=null,reviewedBulk=null,lastBatch=null;
   const el=id=>root?.document?.getElementById(id);
@@ -92,6 +92,11 @@
    const option=root.document.createElement('option');option.value=id;option.textContent=label;
    return option;
   };
+  const scanScope=()=>{
+   const all=book?.chapters||[],start=scanRange*SCAN_SIZE;
+   return {all,start,end:Math.min(start+SCAN_SIZE,all.length),
+    entries:all.slice(start,start+SCAN_SIZE),lots:Math.ceil(all.length/SCAN_SIZE)};
+  };
   function invalidatePlan(){
    plan=null;reviewedBulk=null;selected.clear();page=0;
    toggle('epub-edit-bulk-save',false);
@@ -112,7 +117,7 @@
   }
   function open(candidate){
    if(!owns(candidate)||busy)return false;
-   session++;book=candidate;plan=null;selected=new Set();chapters.clear();page=0;
+   session++;book=candidate;plan=null;selected=new Set();chapters.clear();page=0;scanRange=0;
    loadedSingleId=null;reviewedSingle=null;reviewedBulk=null;lastBatch=null;
    resetWriteActions();
    text('epub-edit-heading','Biên tập EPUB · '+candidate.title);
@@ -124,6 +129,14 @@
    el('epub-edit-chapter-filter').replaceChildren();
    el('epub-edit-chapter-filter').append(buildOption('all','Tất cả chương'));
    el('epub-edit-rule-list').replaceChildren();addRule();
+   const ranges=el('epub-edit-scan-range');ranges.replaceChildren();
+   for(let start=0;start<(candidate.chapters||[]).length;start+=SCAN_SIZE){
+    const end=Math.min(start+SCAN_SIZE,candidate.chapters.length);
+    ranges.append(buildOption(String(start/SCAN_SIZE),
+     'Chương '+(start+1)+'–'+end+' / '+candidate.chapters.length));
+   }
+   ranges.value='0';
+   toggle('epub-edit-scan-next',candidate.chapters?.length>SCAN_SIZE);
    el('epub-edit-history').replaceChildren();
    el('epub-edit-modal').style.display='flex';
    switchMode('single');
@@ -211,6 +224,47 @@
     caseSensitive:row.children[2].children[0].checked,wholeWord:true
    }));
   }
+  function suggestNames(){
+   if(!owns(book)||busy)return false;
+   let filled=0;
+   for(const row of el('epub-edit-rule-list').children){
+    const from=row.children[0].value,to=row.children[1];
+    if(!from.trim()||to.value.trim())continue;
+    const suggestion=engine.suggestProperName?.(from);
+    if(suggestion&&suggestion!==from.trim()){
+     to.value=suggestion;filled++;
+    }
+   }
+   if(filled)invalidatePlan();
+   status(filled?'Đã gợi ý cách viết hoa cho '+filled+
+    ' tên. Hãy kiểm tra từng tên chuẩn trước khi quét.':
+    'Hãy nhập tên cần tìm; ô tên chuẩn còn trống mới được gợi ý tự động.');
+   return filled;
+  }
+  function chooseScanRange(){
+   if(!owns(book)||busy)return false;
+   const selector=el('epub-edit-scan-range'),next=Number(selector.value);
+   if(!Number.isSafeInteger(next)||next<0||next>=scanScope().lots){
+    selector.value=String(scanRange);return false;
+   }
+   if(next===scanRange)return true;
+   if(selected.size&&(!root.confirm||!root.confirm(
+    'Đổi lô sẽ bỏ các vị trí đã chọn nhưng chưa lưu. Tiếp tục?'))){
+    selector.value=String(scanRange);return false;
+   }
+   scanRange=next;invalidatePlan();
+   toggle('epub-edit-scan-next',scanRange+1<scanScope().lots);
+   text('epub-edit-count','Đã đổi lô · cần quét để xem kết quả');
+   status('Đã chọn '+selector.children[next].textContent+'. Chỉ quét lô này; không tự thay đổi truyện.');
+   return true;
+  }
+  function scanNext(){
+   if(!owns(book)||busy||scanRange+1>=scanScope().lots)return false;
+   const selector=el('epub-edit-scan-range');
+   selector.value=String(scanRange+1);
+   if(!chooseScanRange())return false;
+   return scan();
+  }
   async function scan(){
    if(!owns(book)||busy)return false;
    try{if(job()){
@@ -227,12 +281,18 @@
    try{
     const rules=engine.normalizeRules(getRules());
     await ensureAdmin();
-    const entries=book.chapters||[],loaded=[];
+    const scope=scanScope(),entries=scope.entries,loaded=[];
+    // Keep at most one scanning lot in memory, plus any currently opened
+    // single-chapter draft. Each lot has its own safe review/recovery cycle.
+    const validIds=new Set(entries.map(ch=>ch.id));
+    for(const id of chapters.keys())if(id!==loadedSingleId&&!validIds.has(id))
+     chapters.delete(id);
     for(let offset=0;offset<entries.length;offset+=4){
      const batch=await Promise.all(entries.slice(offset,offset+4).map(ch=>chapter(ch.id)));
      if(!current(token))return false;
      loaded.push(...batch);
-     status('Đang đọc '+loaded.length+'/'+entries.length+' chương…');
+     status('Đang đọc '+loaded.length+'/'+entries.length+' chương · lô '+
+      (scanRange+1)+'/'+scope.lots+'…');
     }
     plan=engine.prepare(loaded,rules);
     const filter=el('epub-edit-chapter-filter');filter.replaceChildren();
@@ -240,9 +300,11 @@
     for(const part of plan.chapters)if(part.hits.length)
      filter.append(buildOption(part.id,part.title+' ('+part.hits.length+')'));
     renderMatches();
-    status('Tìm thấy '+plan.total+' vị trí qua '+entries.length+' chương. '+
+    status('Lô '+(scanRange+1)+'/'+scope.lots+': chương '+
+     (scope.start+1)+'–'+scope.end+' / '+scope.all.length+
+     ' · tìm thấy '+plan.total+' vị trí. '+
      (plan.conflictCount?'Có '+plan.conflictCount+' vùng trùng cần xem kỹ.':'')+
-     ' Chưa thay đổi nội dung truyện.');
+     ' Chưa thay đổi nội dung truyện; các lô khác chưa quét.');
     return plan;
    }catch(error){status(String(error?.message||'Không quét được EPUB'),true);return false;}
    finally{busy=false;}
@@ -545,7 +607,8 @@
    finally{writing=false;busy=false;}
   }
   return Object.freeze({enabled,owns,open,close,switchMode,loadSingle,previewSingle,
-   saveSingle,showHistory,restoreRevision,addRule,scan,filterChapter,more,
+   saveSingle,showHistory,restoreRevision,addRule,suggestNames,scan,scanNext,
+   chooseScanRange,filterChapter,more,
    chooseAll,previewBulk,saveBulk,reopenSavedJob,recoverBulk});
  }
  return Object.freeze({create});

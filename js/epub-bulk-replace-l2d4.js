@@ -31,6 +31,17 @@
  const overlaps=(start,end,ranges)=>ranges.some(([a,b])=>start<b&&end>a);
  const pattern=rule=>new RegExp(escapeRegex(rule.from),'gu'+(rule.caseSensitive?'':'i'));
 
+ // L5.2 suggests only the spelling of an explicitly supplied name.
+ // A name with missing word boundaries cannot be inferred safely; the author
+ // may edit the suggested replacement before scanning any chapter.
+ function suggestProperName(value){
+  if(typeof value!=='string')return '';
+  return value.normalize('NFC').trim().replace(/\s+/gu,' ')
+   .toLocaleLowerCase('vi')
+   .replace(/(^|[\s-])(\p{L})/gu,(_,space,letter)=>
+    space+letter.toLocaleUpperCase('vi'));
+ }
+
  function normalizeRules(inputs){
   if(!Array.isArray(inputs)||!inputs.length||inputs.length>MAX_RULES)
    throw Error('Cần 1–30 quy tắc tìm và thay thế');
@@ -147,6 +158,6 @@
   return Object.freeze({patches:Object.freeze(patches),chaptersChanged:patches.length,
    occurrencesChanged:patches.reduce((n,p)=>n+p.changedOccurrences,0)});
  }
- return Object.freeze({MAX_CHAPTERS,MAX_RULES,MAX_MATCHES,normalizeRules,
+ return Object.freeze({MAX_CHAPTERS,MAX_RULES,MAX_MATCHES,normalizeRules,suggestProperName,
   prepare,selectedPatches});
 });
