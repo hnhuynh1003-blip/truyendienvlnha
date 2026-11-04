@@ -64,6 +64,33 @@ const path=require('node:path');
   });
   assert.equal(await page.locator('#other-book-p').textContent(),
    'Trần Sao gặp Trần Sao.','Aliases must not bleed into unrelated books');
-  console.log('L5.3 browser desktop selection, mobile popup, cross-book isolation: PASS');
+  // Mobile native Copy/Search controls appear around the selected text.
+  // Our edit action must be docked near the bottom, away from that overlay.
+  for(const width of [320,390,430]){
+   await page.setViewportSize({width,height:844});
+   await page.evaluate(()=>{
+    const node=document.getElementById('other-book-p').firstChild;
+    const range=document.createRange();range.setStart(node,0);range.setEnd(node,8);
+    const selection=window.getSelection();
+    selection.removeAllRanges();selection.addRange(range);
+   });
+   await page.locator('#reader-name-hint-l53').waitFor({state:'visible',timeout:3000});
+   const hint=await page.locator('#reader-name-hint-l53').boundingBox();
+   assert.ok(hint&&hint.x>=0&&hint.x+hint.width<=width+1,
+    `Mobile ${width}px name action must fit horizontally: ${JSON.stringify(hint)}`);
+   assert.ok(hint.y>690&&hint.y+hint.height<=834,
+    `Mobile ${width}px name action must stay at bottom away from Copy menu: ${JSON.stringify(hint)}`);
+   await page.evaluate(()=>window.dispatchEvent(new Event('scroll')));
+   await page.waitForTimeout(300);
+   assert.equal(await page.locator('#reader-name-hint-l53').isVisible(),true,
+    'Automatic scrolling during text-selection should not dismiss the mobile action');
+   await page.locator('#reader-name-hint-button-l53').click();
+   assert.equal(await page.locator('#reader-name-from-l53').inputValue(),'Trần Sao');
+   await page.evaluate(()=>{
+    DuduReaderNamesL53.close();
+    window.getSelection().removeAllRanges();
+   });
+  }
+  console.log('L5.3 mobile fixed bottom edit action (320/390/430px), desktop, alias isolation: PASS');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

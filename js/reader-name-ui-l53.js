@@ -72,13 +72,16 @@
  }
  function openManager(from=''){
   if(!hasStory())return false;
+  // The permanent "Aa Tên riêng" control doubles as a mobile fallback:
+  // it can pick up the current reader selection without using the native menu.
+  const initial=from||selectedName();
   hideHint();
   el('reader-name-modal-l53').hidden=false;
-  el('reader-name-from-l53').value=from;
+  el('reader-name-from-l53').value=initial;
   el('reader-name-to-l53').value='';
   listNames();
   status('Chỉ đổi cách hiển thị khi đọc; không sửa chương gốc.');
-  if(from)el('reader-name-to-l53').focus();
+  if(initial)el('reader-name-to-l53').focus();
   return true;
  }
  function openSelected(){return openManager(candidate);}
@@ -107,24 +110,40 @@
   const p=element?.closest?.('p');
   return p?.parentElement===el('reader-content')?p:null;
  }
- function updateHint(){
-  if(!hasStory()||!el('reader-name-modal-l53')?.hidden||
-     root.document.getElementById('reader-view')?.style.display==='none')return;
+ function selectedName(){
   const selection=root.getSelection?.();
-  if(!selection||selection.isCollapsed||!selection.rangeCount)return;
+  if(!selection||selection.isCollapsed||!selection.rangeCount)return '';
   const p1=selectionParagraph(selection.anchorNode);
   const p2=selectionParagraph(selection.focusNode);
   const text=selection.toString().replace(/\s+/gu,' ').trim();
-  if(!p1||p1!==p2||!text||text.length>lib.MAX_PHRASE||!/\p{L}/u.test(text))return;
+  return p1&&p1===p2&&text&&text.length<=lib.MAX_PHRASE&&/\p{L}/u.test(text)
+   ?text:'';
+ }
+ function isMobileReader(){
+  return root.matchMedia?.('(max-width: 600px)')?.matches??root.innerWidth<=600;
+ }
+ function updateHint(){
+  if(!hasStory()||!el('reader-name-modal-l53')?.hidden||
+     root.document.getElementById('reader-view')?.style.display==='none'){
+   hideHint();return;
+  }
+  const text=selectedName();
+  if(!text){hideHint();return;}
   candidate=text;
   const hint=el('reader-name-hint-l53');
   const btn=el('reader-name-hint-button-l53');
   if(!hint||!btn)return;
   btn.textContent='✎ Sửa “'+(text.length>25?text.slice(0,25)+'…':text)+'”';
-  const rect=selection.getRangeAt(0).getBoundingClientRect();
-  const top=Math.min(root.innerHeight-58,Math.max(10,rect.top-50));
-  const left=Math.min(root.innerWidth-190,Math.max(10,rect.left));
-  hint.style.top=top+'px';hint.style.left=Math.max(10,left)+'px';
+  if(isMobileReader()){
+   // Android/iOS selection menus (Copy, Search, etc.) are native overlays near
+   // the selected text. Dock our action away from that menu, within thumb reach.
+   hint.style.top='';hint.style.left='';
+  }else{
+   const rect=root.getSelection().getRangeAt(0).getBoundingClientRect();
+   const top=Math.min(root.innerHeight-58,Math.max(10,rect.top-50));
+   const left=Math.min(root.innerWidth-190,Math.max(10,rect.left));
+   hint.style.top=top+'px';hint.style.left=Math.max(10,left)+'px';
+  }
   hint.hidden=false;
  }
  function init(){
@@ -143,7 +162,13 @@
   root.document.addEventListener('keydown',event=>{
    if(event.key==='Escape'&&!el('reader-name-modal-l53').hidden)close();
   });
-  root.addEventListener('scroll',hideHint,{passive:true});
+  root.addEventListener('scroll',()=>{
+   if(!isMobileReader()){hideHint();return;}
+   // Android can scroll automatically when dragging text-selection handles.
+   // Keep the docked action as long as the selection remains valid.
+   root.clearTimeout(selectionTimer);
+   selectionTimer=root.setTimeout(updateHint,200);
+  },{passive:true});
  }
  if(root.document.readyState==='loading')
   root.document.addEventListener('DOMContentLoaded',init,{once:true});

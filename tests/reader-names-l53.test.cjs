@@ -121,7 +121,7 @@ test('L5.3 reader integration includes contextual selection, manual manager and 
   assert.ok(html.includes('id="'+id+'"'),id);
  assert.match(html,/DuduReaderNamesL53\?\.setStory\(\(novel\._cloudV49\?'epub:':'web:'\)\+novel\.id\)/);
  assert.match(html,/DuduReaderNamesL53\.bindParagraph\(pTag,p\.trim\(\)\)/);
- assert.match(html,/css\/reader-names-l53\.css\?v=l5-3/);
+ assert.match(html,/css\/reader-names-l53\.css\?v=l5-3a/);
  assert.match(css,/@media\(max-width:600px\)/);
  assert.match(fs.readFileSync(path.join(__dirname,'../js/reader-name-ui-l53.js'),'utf8'),
   /selectionchange/);

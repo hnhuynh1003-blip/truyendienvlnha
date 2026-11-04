@@ -37,6 +37,18 @@
  border:1px solid #526d70;background:#1e3540;color:#e8f1ec;cursor:pointer}
 .reader-name-foot-l53{font-size:11px;color:#98b4b1!important}
 @media(max-width:600px){
+ /* Do not anchor an action next to the selected text on Android:
+    its native Copy/Search floating menu covers that space. */
+ .reader-name-hint-l53{
+  top:auto!important;left:50%!important;bottom:calc(78px + env(safe-area-inset-bottom));
+  transform:translateX(-50%);width:max-content;max-width:calc(100vw - 28px);
+  box-sizing:border-box;text-align:center;pointer-events:auto;
+ }
+ .reader-name-hint-l53 button{
+  display:block;max-width:100%;min-height:46px;box-sizing:border-box;
+  padding:12px 17px;white-space:normal;overflow-wrap:anywhere;
+  box-shadow:0 5px 26px #000c,0 0 0 2px #091920;
+ }
  .reader-name-overlay-l53{align-items:flex-end;padding:8px 8px max(8px,env(safe-area-inset-bottom))}
  .reader-name-dialog-l53{max-height:calc(100dvh - 24px);padding:15px;border-radius:13px}
  .reader-name-row-l53{grid-template-columns:minmax(0,1fr) auto auto}
