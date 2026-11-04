@@ -92,6 +92,74 @@ test('rejection and revocation both refuse gameplay',async()=>{
  assert.equal((await api.check({db:h.db,auth:revoked,uid:'revoked',claims:{}})).status,'revoked');
 });
 
+test('R1.2 grandfathering accepts an existing self-owned profile in either invitation mode',async()=>{
+ for(const inviteOnly of [false,true]){
+  const api=app(),h=dbHarness(),uid='existing-reader',auth=makeAuth(uid);
+  const previous={username:uid,level:5,exp:120,currency:77};
+  h.docs.set('profiles_v2/'+uid,previous);
+  const decision=await api.check({db:h.db,auth,uid,claims:{},inviteOnly});
+  assert.equal(decision.approved,true);
+  assert.equal(decision.status,'approved');
+  assert.equal(decision.source,'legacy-profile');
+  assert.equal(h.docs.get('profiles_v2/'+uid),previous);
+  assert.deepEqual(h.writes,[]);
+  assert.equal(h.docs.has('approved_accounts_v1/'+uid),false);
+ }
+});
+
+test('R1.2 an explicit revoked allowlist overrides a pre-existing profile',async()=>{
+ const api=app(),h=dbHarness(),uid='revoked-old-reader',auth=makeAuth(uid);
+ h.docs.set('profiles_v2/'+uid,{username:uid,currency:1000});
+ h.docs.set('approved_accounts_v1/'+uid,{uid,enabled:false});
+ const decision=await api.check({db:h.db,auth,uid,claims:{},inviteOnly:true});
+ assert.equal(decision.approved,false);
+ assert.equal(decision.status,'revoked');
+ assert.equal(h.writes.length,0);
+});
+
+test('R1.2 new identities cannot inherit access or create a profile without approval',async()=>{
+ const api=app(),h=dbHarness(),uid='brand-new',auth=makeAuth(uid);
+ const invite=await api.check({db:h.db,auth,uid,claims:{},inviteOnly:true});
+ assert.equal(invite.status,'invite-required');
+ assert.equal(invite.approved,false);
+ assert.equal(h.writes.length,0);
+ const review=await api.check({db:h.db,auth,uid,claims:{},inviteOnly:false});
+ assert.equal(review.status,'pending');
+ assert.deepEqual(h.writes,[['set','account_requests_v1/'+uid]]);
+ assert.equal(h.docs.has('profiles_v2/'+uid),false);
+});
+
+test('R1.2 profile permission-denied never becomes approval',async()=>{
+ const api=app(),h=dbHarness(),uid='new-with-denied-profile',auth=makeAuth(uid);
+ const original=h.db.collection.bind(h.db);
+ h.db.collection=name=>{
+  const collection=original(name);
+  if(name==='profiles_v2')collection.doc=()=>({get:async()=>{
+   throw Object.assign(Error('missing or forbidden profile'),{code:'permission-denied'});
+  }});
+  return collection;
+ };
+ const decision=await api.check({db:h.db,auth,uid,claims:{},inviteOnly:true});
+ assert.equal(decision.status,'invite-required');
+ assert.equal(decision.approved,false);
+ assert.equal(h.writes.length,0);
+});
+
+test('R1.2 no profile inheritance after Firebase user changes mid-request',async()=>{
+ const api=app(),h=dbHarness(),uid='reader-switch',auth=makeAuth(uid);
+ const original=h.db.collection.bind(h.db);
+ h.db.collection=name=>{
+  const collection=original(name);
+  if(name==='profiles_v2')collection.doc=()=>({get:async()=>{
+   auth.currentUser=makeAuth('other-user').currentUser;
+   return {exists:true,data:()=>({username:uid})};
+  }});
+  return collection;
+ };
+ await assert.rejects(api.check({db:h.db,auth,uid,claims:{},inviteOnly:true}),/account-changed/);
+ assert.equal(h.writes.length,0);
+});
+
 test('changed Firebase identity cannot file a request for another session',async()=>{
  const api=app(),h=dbHarness(),auth=makeAuth('original');
  const originalCollection=h.db.collection.bind(h.db);

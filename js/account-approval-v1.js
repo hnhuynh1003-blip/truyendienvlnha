@@ -1,7 +1,7 @@
 /* AUTH-A1 — Firebase Auth identity is NOT a DUDU gameplay account.
  * Candidate approval flow; activated only after owner-reviewed Rules rollout.
  * No wallet/role/profile migration. Client guards are UX; Firestore Rules
- * must independently require an approved UID before profile access.
+ * must independently enforce an approved UID or R1.2 legacy-profile access.
  */
 (function(root,factory){
  'use strict';
@@ -42,9 +42,21 @@
   if(approved.exists)return approved.data()?.enabled===true?
    {approved:true,status:'approved',source:'allowlist'}:
    {approved:false,status:'revoked'};
-  // R1.1 invitation mode: no pending request/UID setup is necessary. Users
-  // with an existing legacy profile keep that document intact until a code
-  // atomically creates approved_accounts_v1/{uid}.
+  // R1.2: an existing *self-owned* profile predates the approval collection.
+  // Probe only after explicit allowlist revocation has been checked. A fresh
+  // identity may receive permission-denied when its profile does not exist:
+  // this is NEVER treated as approval, and still requires an invitation.
+  let existingProfile=null;
+  try{
+   existingProfile=await db.collection('profiles_v2').doc(uid).get();
+  }catch(error){
+   if(error?.code!=='permission-denied')throw error;
+  }
+  unchanged(auth,user);
+  if(existingProfile?.exists)return {approved:true,status:'approved',
+   source:'legacy-profile'};
+  // R1.1 invitation mode remains the default for NEW identities: no pending
+  // request or profile bootstrap until an invite is atomically redeemed.
   if(inviteOnly)return {approved:false,status:'invite-required'};
   const requestRef=db.collection(REQUESTS).doc(uid);
   const request=await db.runTransaction(async tx=>{
