@@ -1,0 +1,43 @@
+/* L5.3 — compact local name dictionary, shared Web/EPUB reader. */
+#reader-name-hint-l53[hidden],#reader-name-modal-l53[hidden]{display:none!important}
+.reader-name-hint-l53{position:fixed;z-index:12040;max-width:min(85vw,330px)}
+.reader-name-hint-l53 button{border:1px solid #83bcb3;border-radius:22px;
+ background:#172b33;color:#ebf6ee;box-shadow:0 8px 26px #0008;
+ padding:10px 13px;font:600 13px/1.4 system-ui,sans-serif;cursor:pointer}
+.reader-name-overlay-l53{position:fixed;inset:0;z-index:12050;
+ background:#030911b9;display:flex;align-items:center;justify-content:center;
+ padding:max(12px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom));
+ box-sizing:border-box}
+.reader-name-dialog-l53{width:min(100%,520px);max-height:min(85dvh,800px);overflow-y:auto;
+ box-sizing:border-box;display:grid;gap:12px;padding:20px;border-radius:14px;
+ border:1px solid #607e7d;background:#132330;color:#edf4ef;
+ box-shadow:0 24px 70px #0009;font:400 13px/1.5 system-ui,sans-serif}
+.reader-name-head-l53{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.reader-name-head-l53 h3{font:700 19px/1.3 system-ui,sans-serif;margin:0;color:#d9e9e0}
+.reader-name-head-l53 button{font-size:18px;padding:5px 11px}
+.reader-name-dialog-l53 p{margin:0;color:#b8c9c9;line-height:1.55}
+.reader-name-dialog-l53 label{display:grid;gap:5px;color:#c3d6d2;font-weight:650}
+.reader-name-dialog-l53 input{width:100%;min-width:0;box-sizing:border-box;
+ padding:10px 12px;border:1px solid #506b70;border-radius:8px;
+ background:#0b1721;color:#f3f4ed;font:400 16px/1.45 system-ui,sans-serif}
+.reader-name-dialog-l53 input:focus-visible,.reader-name-dialog-l53 button:focus-visible,
+.reader-name-hint-l53 button:focus-visible{outline:2px solid #d2c38b;outline-offset:2px}
+.reader-name-actions-l53{display:flex;flex-wrap:wrap;gap:8px}
+.reader-name-actions-l53 button{flex:1 1 130px;min-height:38px}
+#reader-name-status-l53{font-size:12px;overflow-wrap:anywhere;color:#a9d6bf}
+#reader-name-status-l53[data-error=true]{color:#ffada8}
+.reader-name-list-head-l53{display:flex;justify-content:space-between;gap:8px;
+ padding-top:9px;border-top:1px solid #37525c;color:#cfe1d9}
+.reader-name-list-l53{display:grid;gap:6px;max-height:210px;overflow-y:auto}
+.reader-name-row-l53{display:grid;grid-template-columns:minmax(0,1fr) auto auto;
+ align-items:center;gap:7px;padding:7px 8px;background:#0b1b28;
+ border:1px solid #314b56;border-radius:8px}
+.reader-name-row-l53 span{overflow-wrap:anywhere;color:#e1eae5}
+.reader-name-row-l53 button{padding:6px 9px;min-height:32px;border-radius:6px;
+ border:1px solid #526d70;background:#1e3540;color:#e8f1ec;cursor:pointer}
+.reader-name-foot-l53{font-size:11px;color:#98b4b1!important}
+@media(max-width:600px){
+ .reader-name-overlay-l53{align-items:flex-end;padding:8px 8px max(8px,env(safe-area-inset-bottom))}
+ .reader-name-dialog-l53{max-height:calc(100dvh - 24px);padding:15px;border-radius:13px}
+ .reader-name-row-l53{grid-template-columns:minmax(0,1fr) auto auto}
+}

@@ -194,6 +194,8 @@
   <script src="js/epub-bulk-save-l2d5b.js?v=l2d5b-1"></script>
   <script src="js/epub-recovery-journal-l2d5c.js?v=l2d5c-1"></script>
   <script src="js/library-epub-edit-ui-l2d5.js?v=l5-2"></script>
+  <script src="js/reader-name-dictionary-l53.js?v=l5-3"></script>
+  <script src="js/reader-name-ui-l53.js?v=l5-3"></script>
   <script src="js/npc-portrait-library-v1.js?v=40-1"></script>
   <script src="js/npc-anime-candidates-v14.js"></script>
   <script src="js/player-avatar-v16.js?v=identity-1"></script>
@@ -846,6 +848,7 @@
   <link rel="stylesheet" href="css/library-editorial-l2c3.css?v=l2c-3">
   <link rel="stylesheet" href="css/library-epub-manage-l2d2.css?v=c422-1">
   <link rel="stylesheet" href="css/library-epub-edit-l2d5.css?v=l5-2">
+  <link rel="stylesheet" href="css/reader-names-l53.css?v=l5-3">
   <link rel="stylesheet" href="css/chapter-ai-l5.css?v=l5-1">
   <link rel="stylesheet" href="css/world-experience-v65.css?v=65-1">
   <link rel="stylesheet" href="css/world-experience-v66.css?v=66-2">
@@ -1043,6 +1046,7 @@
           <button class="btn" id="btn-next-ch-top" onclick="nextChapter()">Sau →</button>
         </div>
         <div class="reader-top-actions">
+          <button type="button" class="btn" id="reader-name-open-l53" onclick="DuduReaderNamesL53.openManager()" title="Sửa tên riêng khi đọc">Aa Tên riêng</button>
           <div class="reader-settings-anchor">
             <button type="button" class="btn" id="reader-settings-trigger" aria-expanded="false" aria-controls="reader-settings-popover">⚙ Kiểu đọc</button>
             <section id="reader-settings-popover" class="reader-settings-popover" role="dialog" aria-labelledby="reader-settings-title" hidden>
@@ -1091,6 +1095,29 @@
         <div class="reading-time-badge" id="reader-ch-time">⏱ Khoảng 1 phút đọc</div>
         <div class="reader-body" id="reader-content"></div>
       </article>
+
+      <div id="reader-name-hint-l53" class="reader-name-hint-l53" hidden>
+        <button type="button" id="reader-name-hint-button-l53" onclick="DuduReaderNamesL53.openSelected()">✎ Sửa tên</button>
+      </div>
+      <div id="reader-name-modal-l53" class="reader-name-overlay-l53" role="dialog" aria-modal="true" aria-labelledby="reader-name-title-l53" hidden>
+        <section class="reader-name-dialog-l53">
+          <div class="reader-name-head-l53"><h3 id="reader-name-title-l53">Tên riêng trong truyện</h3>
+            <button type="button" class="btn" onclick="DuduReaderNamesL53.close()" aria-label="Đóng từ điển tên riêng">×</button></div>
+          <p>Gặp tên bị dịch sai? Bôi đen trong chương hoặc nhập trực tiếp tên cần sửa.</p>
+          <label for="reader-name-from-l53">Tên đang xuất hiện
+            <input id="reader-name-from-l53" type="text" maxlength="90" autocomplete="off" placeholder="Ví dụ: Trần Sao"></label>
+          <label for="reader-name-to-l53">Tên muốn hiển thị
+            <input id="reader-name-to-l53" type="text" maxlength="90" autocomplete="off" placeholder="Ví dụ: Trần An"></label>
+          <div class="reader-name-actions-l53">
+            <button type="button" class="btn btn-primary" onclick="DuduReaderNamesL53.save()">Lưu cách gọi</button>
+            <button type="button" class="btn" onclick="DuduReaderNamesL53.close()">Xong</button>
+          </div>
+          <p id="reader-name-status-l53" role="status" aria-live="polite"></p>
+          <div class="reader-name-list-head-l53"><strong>Đã lưu trong truyện này</strong><span id="reader-name-count-l53"></span></div>
+          <div id="reader-name-list-l53" class="reader-name-list-l53" aria-label="Danh sách tên riêng đã sửa"></div>
+          <p class="reader-name-foot-l53">Chỉ đổi chữ khi đọc trên thiết bị này, áp dụng cho từng truyện Web/EPUB. Nội dung gốc và tiến độ đọc không thay đổi.</p>
+        </section>
+      </div>
 
       <!-- HỘP MỞ KHÓA TÂM THỨC NPC CỦA CHƯƠNG ĐANG ĐỌC -->
       <div class="reader-soul-unlock-box" id="reader-soul-unlock-container" style="display:none;">
@@ -8561,10 +8588,12 @@ document.getElementById('phone-home-screen').style.display = 'none';
         if(displayHeading(paragraphs[0])===displayHeading(ch.title))paragraphs.shift();
       }
       const contentEl = document.getElementById('reader-content');
+      window.DuduReaderNamesL53?.setStory((novel._cloudV49?'epub:':'web:')+novel.id);
       contentEl.innerHTML = "";
       paragraphs.forEach(p => {
         const pTag = document.createElement('p');
-        pTag.textContent = p.trim();
+        if(window.DuduReaderNamesL53)DuduReaderNamesL53.bindParagraph(pTag,p.trim());
+        else pTag.textContent = p.trim();
         contentEl.appendChild(pTag);
       });
 

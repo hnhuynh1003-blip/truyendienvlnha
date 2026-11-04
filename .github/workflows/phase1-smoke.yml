@@ -80,6 +80,8 @@ jobs:
         run: node tests/browser-library-smart-filter-l3.cjs
       - name: L4 EPUB details and 200+ chapter contents (Sandbox, no external writes)
         run: node tests/browser-library-finish-l4.cjs
+      - name: L5.3 select a name, save an alias and check mobile reader popup (local only)
+        run: node tests/browser-reader-names-l53.cjs
       - name: R1 Library capacity and responsive owner panel (Sandbox, no external writes)
         run: node tests/browser-library-capacity-r1.cjs
       - name: Legacy Sandbox regression (advisory; cannot block main V71)
