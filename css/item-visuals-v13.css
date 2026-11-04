@@ -62,3 +62,7 @@ body.dudu-phone-v11 #cyber-phone .dudu-item-v13-frame[data-rarity="SSS"] .dudu-i
   animation:none !important;
  }
 }
+
+/* F4.2D: retain complete transparent silhouettes, including wide AR glasses. */
+body.dudu-phone-v11 #cyber-phone .dudu-item-v13-art.f42d-painted-art,
+.dudu-item-v13-art.f42d-painted-art{object-fit:contain}

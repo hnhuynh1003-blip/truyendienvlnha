@@ -144,6 +144,38 @@
   const VAN_VAT_F37_ART=new Set([
     'f32-anime-guardian','f32b-anime-witch','f32-cult-fan'
   ]);
+  // F4.2D: approved, ID-matched transparent art for the 29 former fallbacks.
+  const VAN_VAT_F42D_ART=new Set([
+  "f32b-cult-seal",
+  "f32-cyber-blade",
+  "f32-fossil-amber",
+  "f32-fruit-phoenix",
+  "f32-waste-watch",
+  "f32b-cyber-drive",
+  "f32b-fossil-meteor",
+  "f32-cosmos-fate",
+  "f32-cult-bell",
+  "f32-doll-moon",
+  "f32-waste-compass",
+  "f32b-cosmos-meteor",
+  "f32b-cult-gourd",
+  "f32b-doll-music",
+  "f32b-fruit-pear",
+  "f32b-waste-badge",
+  "f32-anime-apprentice",
+  "f32-cosmos-map",
+  "f32-cyber-chip",
+  "f32-doll-charm",
+  "f32-fossil-fern",
+  "f32-fruit-berry",
+  "f32b-anime-squire",
+  "f32b-cosmos-badge",
+  "f32b-cyber-glass",
+  "f32b-doll-bear",
+  "f32b-fossil-tooth",
+  "f32b-fruit-grape",
+  "f32b-waste-oxygen"
+]);
   function visual(item){
     if(!item||typeof item!=='object')return null;
     const rank=Object.prototype.hasOwnProperty.call(RANKS,item.rank)?item.rank:'F';
@@ -174,18 +206,20 @@
       (vantVatEmblem?'<text x="38" y="49" font-size="34" text-anchor="middle">'+safeGlyph+'</text>':SHAPES[shape])+sparkles+
       '<circle cx="63" cy="12" r="4" fill="'+glow+'" opacity=".8"/></svg>';
     const fallback='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+    const completedPainted=item.collectionSet==='VAN_VAT'&&VAN_VAT_F42D_ART.has(id);
     const painted=item.collectionSet==='VAN_BAO'&&VAN_BAO_ART.has(id);
     const realmPainted=item.collectionSet==='VAN_VAT'&&VAN_VAT_F32_ART.has(id);
     const originPainted=item.collectionSet==='VAN_VAT'&&VAN_VAT_F34_ART.has(id);
     const newOriginPainted=item.collectionSet==='VAN_VAT'&&VAN_VAT_F35_ART.has(id);
     const tierPainted=item.collectionSet==='VAN_VAT'&&VAN_VAT_F37_ART.has(id);
     return Object.freeze({rank,shape,light,dark,
-      src:painted?'assets/van-bao/v1/'+id+'.webp':
+      src:completedPainted?'assets/van-tuong/f42d/'+id+'.webp':
+        painted?'assets/van-bao/v1/'+id+'.webp':
         tierPainted?'assets/van-tuong/f37/'+id+'.webp':
         newOriginPainted?'assets/van-tuong/f35/'+id+'.webp':
         originPainted?'assets/van-tuong/f34/'+id+'.webp':
         realmPainted?'assets/van-tuong/'+(id.startsWith('f32b-')?'f32b/':'f32/')+id+'.webp':fallback,
-      fallbackSrc:painted||realmPainted||originPainted||newOriginPainted||tierPainted?fallback:null});
+      fallbackSrc:completedPainted||painted||realmPainted||originPainted||newOriginPainted||tierPainted?fallback:null});
   }
   // One artwork renderer for both the store and all warehouse views.
   // It changes presentation only; it never edits the item or its ownership.
@@ -195,7 +229,7 @@
     const doc=container.ownerDocument||(typeof document!=='undefined'?document:null);
     if(!data||!doc?.createElement)return false;
     const img=doc.createElement('img');
-    img.className='dudu-item-v13-art';
+    img.className='dudu-item-v13-art'+(item.collectionSet==='VAN_VAT'&&VAN_VAT_F42D_ART.has(item.id)?' f42d-painted-art':'');
     if(data.fallbackSrc){
       img.onerror=()=>{img.onerror=null;img.src=data.fallbackSrc;};
     }

@@ -3,12 +3,12 @@ const {test}=require('node:test'),assert=require('node:assert/strict'),fs=requir
 const m=require('../js/fun-stream-f42b1.js'),c=require('../js/item-catalog-v2.js'),r=require('../js/fun-vantvat-f31.js'),a=require('../js/item-visuals-v13.js');
 const rows=m.entries(c,r,a),tick=()=>new Promise(resolve=>setImmediate(resolve));
 test('F4.2B.1 flying metadata contains all 66 actual physical prizes, with canonical names, types, ranks and art',()=>{
- assert.equal(rows.length,66);assert.equal(new Set(rows.map(x=>x.id)).size,66);assert.equal(rows.filter(x=>x.hasOwnArt).length,37);assert.equal(new Set(rows.filter(x=>x.hasOwnArt).map(x=>x.imageSrc)).size,37,'each painted prize retains its own image');assert.equal(rows.filter(x=>!x.hasOwnArt).length,29);
+ assert.equal(rows.length,66);assert.equal(new Set(rows.map(x=>x.id)).size,66);assert.equal(rows.filter(x=>x.hasOwnArt).length,66);assert.equal(new Set(rows.filter(x=>x.hasOwnArt).map(x=>x.imageSrc)).size,66,'each painted prize retains its own image');assert.equal(rows.filter(x=>!x.hasOwnArt).length,0);
  for(const row of rows){const item=c.byId(row.id);assert.equal(row.name,item.name);assert.equal(row.rank,item.rank);assert.equal(row.type,item.funCategory);assert.equal(row.realm,item.funRealm);assert.equal(row.imageSrc,a.visual(item).src);assert.ok(r.POOL.some(p=>p.itemId===row.id&&p.rank===row.rank&&p.weight>0));assert.ok(!row.src.includes('/f42b/sample-'));}
  assert.ok(Object.isFrozen(rows));assert.ok(rows.every(Object.isFrozen));
  const bad={...r,POOL:[...r.POOL,{itemId:rows[0].id,rank:'SSS',weight:1},{itemId:'not-a-prize',rank:'S',weight:1}]};assert.equal(m.entries(c,bad,a).length,66);
 });
-test('F4.2B.1 optimized thumbnails exist only for the 37 correctly matched original images',()=>{
+test('F4.2B.1 optimized thumbnails exist only for the 66 correctly matched catalog images',()=>{
  for(const row of rows.filter(x=>x.hasOwnArt)){const file=fs.readFileSync(path.join(__dirname,'..',row.src));assert.equal(file.toString('ascii',0,4),'RIFF');assert.equal(file.toString('ascii',8,12),'WEBP');assert.ok(file.length<50000,row.id);}
  assert.ok(rows.filter(x=>!x.hasOwnArt).every(x=>x.src.startsWith('data:image/svg')));
 });
@@ -35,4 +35,4 @@ test('F4.2B.1 failed images do not create a retry storm, and cleared caches igno
 });
 test('F4.2B.1 audit tables list each real prize once and all 29 missing artworks',()=>{const root=path.join(__dirname,'..'),report=fs.readFileSync(path.join(root,'docs/VANTUONG_F42B1_IMAGE_AUDIT.md'),'utf8'),csv=fs.readFileSync(path.join(root,'docs/VANTUONG_F42B1_MISSING_ART.csv'),'utf8');for(const row of rows)assert.equal(report.split('| '+row.id+' |').length-1,1,row.id);assert.equal(csv.trim().split(/\r?\n/).length,30);for(const row of rows.filter(x=>!x.hasOwnArt))assert.ok(csv.includes('"'+row.id+'"'));});
 
-test('F4.2B.1 existing fallback glyphs lose the warehouse card frame without borrowing a different item image',()=>{for(const row of rows.filter(x=>!x.hasOwnArt)){const before=decodeURIComponent(row.imageSrc.split(',').slice(1).join(',')),after=decodeURIComponent(row.src.split(',').slice(1).join(','));assert.ok(after.includes('<text '));assert.doesNotMatch(after,/<rect|<circle/);assert.equal(after.match(/<text[^>]*>(.*?)<\/text>/)[1],before.match(/<text[^>]*>(.*?)<\/text>/)[1]);}});
+test('F4.2D all 29 historical missing IDs now use their own approved WebP',()=>{const manifest=require('../docs/VANTUONG_F42D_IMAGE_MAPPING.json');assert.equal(manifest.entries.length,29);for(const entry of manifest.entries){const row=rows.find(x=>x.id===entry.id);assert.ok(row.hasOwnArt);assert.equal(row.imageSrc,entry.full.path);assert.equal(row.src,entry.thumbnail.path);assert.equal(row.rank,entry.rank);}});

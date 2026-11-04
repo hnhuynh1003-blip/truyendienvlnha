@@ -24,7 +24,7 @@ test('F3.7 individually painted B items retain original IDs/ranks and alpha WebP
   paths.add(visual.src);
  }
  assert.equal(paths.size,3);
- assert.match(art.visual(catalog.byId('f32-fossil-fern')).src,/^data:image\/svg/);
+ assert.equal(art.visual(catalog.byId('f32-fossil-fern')).src,'assets/van-tuong/f42d/f32-fossil-fern.webp');
 });
 
 test('F3.7 Vạn Tượng result, museum, and zoom carry original rarity classes',()=>{

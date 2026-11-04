@@ -33,14 +33,15 @@ test('catalog items have visible defined art with safe unknown fallback',()=>{
     'f31-sword-bamboo','f31-card-clover','f31-fossil-dragon',
     'f31-weapon-neon','f31-doll-starlight','f31-background-cosmos']);
    const f37=new Set(['f32-anime-guardian','f32b-anime-witch','f32-cult-fan']);
-   const folder=f37.has(item.id)?'f37':f35.has(item.id)?'f35':item.id.startsWith('f34-')||item.id.startsWith('f31-')?'f34':
+   const f42d=new Set(require('../docs/VANTUONG_F42D_IMAGE_MAPPING.json').entries.map(e=>e.id));
+   const folder=f42d.has(item.id)?'f42d':f37.has(item.id)?'f37':f35.has(item.id)?'f35':item.id.startsWith('f34-')||item.id.startsWith('f31-')?'f34':
     item.id.startsWith('f32b-')?'f32b':'f32';
    assert.equal(v.src,'assets/van-tuong/'+folder+'/'+item.id+'.webp');
    assert.match(v.fallbackSrc,/^data:image\/svg\+xml/);
    const image=fs.readFileSync(path.resolve(__dirname,'..',v.src));
    assert.equal(image.toString('ascii',0,4),'RIFF');
    assert.equal(image.toString('ascii',8,12),'WEBP');
-   assert.ok(image.length>10000&&image.length<150000);
+   assert.ok(image.length>10000&&image.length<(folder==='f42d'?400000:150000));
   }else assert.ok(v.src.length>300,item.id);
  }
  assert.equal(art.visual({id:'custom',rank:'__proto__',type:'ITEM'}).rank,'F');
@@ -59,12 +60,12 @@ test('frequency cell has dedicated battery illustration, never fallback parcel',
  assert.equal(art.visual({id:'future-tool',rank:'D',type:'ITEM',
    scope:'FUNCTIONAL'}).shape,'device','other future functional items also avoid generic parcel');
 });
-test('F3.2 non-painted relics retain distinct safe silhouettes',()=>{
+test('F4.2D painted relics retain distinct art and safe emergency silhouettes',()=>{
  const a=art.visual(catalog.byId('f32-fossil-fern'));
  const b=art.visual(catalog.byId('f32-cyber-chip'));
- assert.match(a.src,/^data:image\/svg\+xml/);
+ assert.equal(a.src,'assets/van-tuong/f42d/f32-fossil-fern.webp');
  assert.notEqual(a.src,b.src);
- assert.match(decodeURIComponent(a.src.slice(a.src.indexOf(',')+1)),/font-size="34"/);
+ assert.match(decodeURIComponent(a.fallbackSrc.slice(a.fallbackSrc.indexOf(',')+1)),/font-size="34"/);
 });
 test('SVG cannot interpolate unsafe item-provided HTML',()=>{
  const fake={id:'<svg onload=alert(1)>',name:'<img src=x onerror=alert(2)>',
@@ -73,8 +74,8 @@ test('SVG cannot interpolate unsafe item-provided HTML',()=>{
  assert.doesNotMatch(svg,/onload|onerror|alert|<script|src=x/);
 });
 test('item art works for sandbox and read-only live inventory without mutating ownership',()=>{
- assert.match(html,/src="js\/item-visuals-v13.js(?:\?v=[\w-]+)?"/);
- assert.match(html,/href="css\/item-visuals-v13.css\?v=f37-1"/);
+ assert.match(html,/src="js\/item-visuals-v13.js(?:\?v=[\w-]+)?(?:&amp;art=f42d-1)?"/);
+ assert.match(html,/href="css\/item-visuals-v13.css\?v=f37-1&amp;art=f42d-1"/);
  assert.match(html,/function renderSandboxItemArt\(element,item\)\{\s*if\(!element\|\|!item\)return/);
  assert.match(html,/renderSandboxItemArt\(artwork,item\)/);
  assert.match(html,/renderSandboxItemArt\(icon,item\)/);

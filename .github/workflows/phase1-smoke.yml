@@ -80,6 +80,8 @@ jobs:
         run: node tests/browser-library-smart-filter-l3.cjs
       - name: L4 EPUB details and 200+ chapter contents (Sandbox, no external writes)
         run: node tests/browser-library-finish-l4.cjs
+      - name: F4.2D all 29 approved images and responsive silhouettes
+        run: node tests/browser-item-art-f42d.cjs
       - name: F4.2B.1 canonical stream diversity, decode budget and reduced motion
         run: node tests/browser-vantvat-stream-f42b1.cjs
       - name: F4.2B approved AI layers, lazy rare FX and touch/mouse retrieval

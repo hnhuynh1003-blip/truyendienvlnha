@@ -70,6 +70,9 @@ const path=require('node:path');const fs=require('node:fs/promises');
  const rareRequests=assetRequests.filter(url=>url.includes('/open-')).length;
  await page.evaluate(()=>{forcedIds=['f31-apple-moon'];});await startHunt(1);await awaitTarget();await page.locator('.f41-target').click();await page.locator('.f36-vantvat-overlay').waitFor();
  assert.equal(assetRequests.filter(url=>url.includes('/open-')).length,rareRequests);await page.locator('.f36-vantvat-close').click();await page.evaluate(()=>{forcedIds=['f34-origin-dawn-goddess'];});
+ // F4.2D newly painted items: exact full image, inventory receipt and one debit.
+ for(const id of ['f32-cyber-chip','f32b-cyber-glass']){await page.evaluate(id=>{forcedIds=[id];},id);const before=await page.evaluate(()=>({writes,currency:accounts.du.currency}));await startHunt(1);await awaitTarget();await page.locator('.f41-target').click();await page.locator('.f36-vantvat-overlay').waitFor();const img=page.locator('.f36-vantvat-reward-art img');await img.evaluate(i=>i.decode());assert.ok((await img.getAttribute('src')).endsWith('/f42d/'+id+'.webp'));assert.equal(await img.evaluate(i=>getComputedStyle(i).objectFit),'contain');assert.ok(await page.evaluate(id=>accounts.du.inventory.some(i=>i.id===id),id));assert.equal(await page.evaluate(()=>writes),before.writes+1);assert.equal(await page.evaluate(()=>accounts.du.currency),before.currency-25);await page.locator('.f36-vantvat-close').click();}
+ await page.evaluate(()=>{forcedIds=['f34-origin-dawn-goddess'];});
  // Native Chromium touch events at Android width exercise capture, cancel and pull.
  await page.emulateMedia({reducedMotion:'no-preference'});await startHunt(1);await awaitTarget();
  await page.waitForTimeout(600);const touchBox=await page.locator('.f41-target').boundingBox();
