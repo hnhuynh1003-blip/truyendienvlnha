@@ -25,6 +25,7 @@
 .reader-name-actions-l53{display:flex;flex-wrap:wrap;gap:8px}
 .reader-name-actions-l53 button{flex:1 1 130px;min-height:38px}
 #reader-name-status-l53{font-size:12px;overflow-wrap:anywhere;color:#a9d6bf}
+#reader-name-status-l53:empty{display:none}
 #reader-name-status-l53[data-error=true]{color:#ffada8}
 .reader-name-list-head-l53{display:flex;justify-content:space-between;gap:8px;
  padding-top:9px;border-top:1px solid #37525c;color:#cfe1d9}
@@ -35,7 +36,6 @@
 .reader-name-row-l53 span{overflow-wrap:anywhere;color:#e1eae5}
 .reader-name-row-l53 button{padding:6px 9px;min-height:32px;border-radius:6px;
  border:1px solid #526d70;background:#1e3540;color:#e8f1ec;cursor:pointer}
-.reader-name-foot-l53{font-size:11px;color:#98b4b1!important}
 @media(max-width:600px){
  /* Do not anchor an action next to the selected text on Android:
     its native Copy/Search floating menu covers that space. */

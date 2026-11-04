@@ -58,7 +58,19 @@ test('L5.3 caps dictionary size and tolerates corrupted local records',()=>{
  const device=storage(),book=dictionary.create({storage:device});
  for(let i=0;i<dictionary.MAX_ENTRIES;i++)
   book.add('epub:many','Tên '+i,'Nhân Vật '+i);
- assert.throws(()=>book.add('epub:many','Tên 81','Nhân Vật 81'),/80/);
+ assert.equal(dictionary.MAX_ENTRIES,300);
+ assert.throws(()=>book.add('epub:many','Tên 301','Nhân Vật 301'),/300/);
+ const restored=dictionary.create({storage:device});
+ assert.equal(restored.read('epub:many').length,300);
+ assert.equal(restored.render('epub:many','Tên 1 gặp Tên 299.'),
+  'Nhân Vật 1 gặp Nhân Vật 299.');
+ // A previously saved 80-name dictionary can grow without losing any aliases.
+ const oldDevice=storage(),oldVersion=dictionary.create({storage:oldDevice});
+ for(let i=0;i<80;i++)oldVersion.add('epub:legacy','Tên '+i,'Danh Xưng '+i);
+ const upgraded=dictionary.create({storage:oldDevice});
+ assert.equal(upgraded.read('epub:legacy').length,80);
+ upgraded.add('epub:legacy','Tên 80','Danh Xưng 80');
+ assert.equal(upgraded.read('epub:legacy').length,81);
  device.data.set('dudu-reader-names-l53:epub%3Abroken','not-json');
  assert.deepEqual(dictionary.create({storage:device}).read('epub:broken'),[]);
 });
@@ -121,7 +133,9 @@ test('L5.3 reader integration includes contextual selection, manual manager and 
   assert.ok(html.includes('id="'+id+'"'),id);
  assert.match(html,/DuduReaderNamesL53\?\.setStory\(\(novel\._cloudV49\?'epub:':'web:'\)\+novel\.id\)/);
  assert.match(html,/DuduReaderNamesL53\.bindParagraph\(pTag,p\.trim\(\)\)/);
- assert.match(html,/css\/reader-names-l53\.css\?v=l5-3a/);
+ assert.match(html,/css\/reader-names-l53\.css\?v=l5-3b/);
+ assert.doesNotMatch(html,/Gặp tên bị dịch sai\? Bôi đen/);
+ assert.doesNotMatch(html,/reader-name-foot-l53/);
  assert.match(css,/@media\(max-width:600px\)/);
  assert.match(fs.readFileSync(path.join(__dirname,'../js/reader-name-ui-l53.js'),'utf8'),
   /selectionchange/);

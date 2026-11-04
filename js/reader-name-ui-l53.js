@@ -80,7 +80,7 @@
   el('reader-name-from-l53').value=initial;
   el('reader-name-to-l53').value='';
   listNames();
-  status('Chỉ đổi cách hiển thị khi đọc; không sửa chương gốc.');
+  status('');
   if(initial)el('reader-name-to-l53').focus();
   return true;
  }

@@ -8,7 +8,7 @@
  if(root)root.DuduReaderNameDictionaryL53=api;
 })(typeof window!=='undefined'?window:null,function(){
  'use strict';
- const MAX_ENTRIES=80,MAX_PHRASE=90,PREFIX='dudu-reader-names-l53:';
+ const MAX_ENTRIES=300,MAX_PHRASE=90,PREFIX='dudu-reader-names-l53:';
  const forbidden=/[\u0000-\u001f\u007f<>]/u;
  const escapeRegExp=value=>value.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
  const norm=value=>typeof value==='string'
@@ -77,7 +77,7 @@
    const item=clean(from,to),existing=read(storyId);
    const index=existing.findIndex(row=>fold(row.from)===fold(item.from));
    if(index<0&&existing.length>=MAX_ENTRIES)
-    throw Error('Một truyện chỉ lưu tối đa 80 cách gọi. Hãy bỏ tên không dùng.');
+    throw Error('Một truyện chỉ lưu tối đa 300 cách gọi. Hãy bỏ tên không dùng.');
    const next=[...existing];
    if(index<0)next.push(item);else next[index]=item;
    write(storyId,next);return item;
