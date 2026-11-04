@@ -35,7 +35,7 @@
   vvError=false,vvBusy=false;
  let vvRewardModal=null,vvRewardDismiss=null,vvZoomDismiss=null;
  // The cosmic hunt only replays an already committed reward.
- let vvSpinPhase='idle',vvSpinFocus=null,vvSpinLanding=null,vvSpinCount=1;
+ let vvSpinPhase='idle',vvSpinFocus=null,vvSpinLanding=null,vvSpinCount=1,vvSelectedCount=1;
  const realmNamesF33={ORIGIN:'Khởi Nguyên',PALEO:'Cổ Sinh Bí Cảnh',
   CULTIVATION:'Tiên Hiệp Thần Binh',CYBER:'Cyberpunk 2099',
   WASTELAND:'Tận Thế Di Vật',ANIME:'Điện Phủ Nhân Vật',
@@ -192,9 +192,9 @@
   const account=vvUid;
   vvSpinFocus=reward||null;vvSpinCount=count;vvSpinPhase='settle';
   // No draw, claim or balance change is performed by this animation.
-  await root.DuduCosmicHuntF41?.play?.(results,count);
-  if(account!==vvUid)return;
-  vvSpinPhase='landed';render();
+  const presented=await root.DuduCosmicHuntF41?.play?.(results,count);
+  if(account!==vvUid)return false;
+  vvSpinPhase='landed';render();return presented!==false;
  }
  async function vantVatAction(kind){
   if(!vvLoaded||vvBusy||funActionBusy||!vvBridge()?.ready?.())return;
@@ -249,7 +249,7 @@
   close.setAttribute('aria-label','Đã nhận, đóng kết quả');
   function dismiss(){overlay.remove();vvRewardModal=null;vvRewardDismiss=null;
    document.removeEventListener('keydown',onKey);
-   document.querySelector?.('.f36-vantvat-spin:not(:disabled)')?.focus?.();}
+   document.querySelector?.('.f41-hunt:not(:disabled),.f36-vantvat-spin:not(:disabled)')?.focus?.();}
   vvRewardDismiss=dismiss;
   function onKey(event){
    if(event.key==='Escape')dismiss();
@@ -337,10 +337,10 @@
    const result=await vvBridge().runBatch(pending);
    if(uid!==vvUid||!signed())return;
    vvState=result.state;vvCurrency=result.currency;
-   await landVisualSpin(wheelUI()?.featured?.(result.results),pending.count,result.results);
+   const presented=await landVisualSpin(wheelUI()?.featured?.(result.results),pending.count,result.results);
    if(uid!==vvUid||!signed())return;
    localStorage.removeItem(key);
-   if(vantVatVisible())showVantVatRewards(result.results,pending.count);
+   if(presented&&vantVatVisible())showVantVatRewards(result.results,pending.count);
   }catch(error){
    vvSpinPhase='idle';vvSpinFocus=null;vvSpinLanding=null;
    const reasons={'not-enough-xu':'Chưa đủ Xu Vàng cho '+pending.count+' lượt.',
@@ -380,32 +380,39 @@
     retry.type='button';retry.disabled=vvBusy||funActionBusy;
     retry.onclick=()=>{void vantVatBatchAction(pending.count);};stage.append(retry);
    }else{
-    const controls=el('div','f36-vantvat-spin-controls');
+    const controls=el('div','f36-vantvat-spin-controls f41-hunt-controls');
+    const amounts=el('div','f41-amounts');amounts.setAttribute('role','group');
+    amounts.setAttribute('aria-label','Số lượt truy bảo');
     for(const count of [1,5,10]){
-     const button=withGold('button','f36-vantvat-spin','✦ ×'+count+' · ',
-      rule.PRICE*count);
-     button.type='button';button.disabled=vvBusy||funActionBusy||
-      vvCurrency<rule.PRICE*count;
-     button.setAttribute('aria-label','Truy bảo '+count+' lượt giá '+rule.PRICE*count+' Xu Vàng');
-     button.onclick=()=>{void vantVatBatchAction(count);};controls.append(button);
+     const button=el('button','f36-vantvat-spin f41-count'+(vvSelectedCount===count?' is-selected':''),'×'+count);
+     button.type='button';button.disabled=vvBusy||funActionBusy;
+     button.setAttribute('aria-label',count+' lượt · '+rule.PRICE*count+' Xu Vàng');
+     button.setAttribute('aria-pressed',String(vvSelectedCount===count));
+     button.onclick=()=>{if(vvBusy||funActionBusy)return;vvSelectedCount=count;render();};amounts.append(button);
     }
-    stage.append(controls);
+    const hunt=withGold('button','f41-hunt','✦ Truy Bảo · ',rule.PRICE*vvSelectedCount);
+    hunt.type='button';hunt.disabled=vvBusy||funActionBusy||vvCurrency<rule.PRICE*vvSelectedCount;
+    hunt.setAttribute('aria-label','Truy Bảo '+vvSelectedCount+' lượt giá '+rule.PRICE*vvSelectedCount+' Xu Vàng');
+    hunt.onclick=()=>{void vantVatBatchAction(vvSelectedCount);};
+    controls.append(amounts,hunt);stage.append(controls);
    }
   }
   const remaining=Math.max(1,100-(vvState?.pity||0));
+  const meta=el('div','f41-meta');
   const pity=el('div','f36-vantvat-pity');
-  pity.append(el('small','','Bảo đảm hạng A+ trong tối đa '+remaining+' lượt nữa'));
+  pity.setAttribute('aria-label','Bảo đảm hạng A trở lên trong tối đa '+remaining+' lượt');
+  pity.append(el('small','','A+ · tối đa '+remaining+' lượt'));
   const bar=el('span','f36-vantvat-pity-bar');
   const fill=el('i','');fill.style.width=(vvState?.pity||0)+'%';bar.append(fill);
-  pity.append(bar);stage.append(pity);
-  const museumLink=el('button','f38-vantvat-museum-link','🏛️ Xem trong Bảo Tàng');
+  pity.append(bar);meta.append(pity);
+  const museumLink=el('button','f38-vantvat-museum-link','Bảo Tàng ↗');
   museumLink.type='button';
   museumLink.setAttribute('aria-label','Mở tab Vạn Tượng trong Bảo Tàng');
   museumLink.onclick=()=>{
    root.openPhoneApp?.('museum');
    root.DuduMuseumVaultC426?.showVanVat?.();
   };
-  stage.append(museumLink);
+  meta.append(museumLink);stage.append(meta);
   const gallery=el('details','f31-vantvat-gallery');
   gallery.append(el('summary','','✧ Bách Giới Kỳ Trân · '+
    rule.POOL.filter(x=>x.rank!=='COIN').length+' bảo vật'));
@@ -1239,6 +1246,12 @@
  }
  function render(){
   const host=$('dudu-fun-content-v43');if(!host)return false;
+  const runningScene=host.querySelector?.('.f41-cosmos');
+  // Background reads must not replace the target while the player retrieves it.
+  if(vvBusy&&!sandbox()&&signed()&&vvBridge()?.uid?.()===vvUid&&open==='slot'&&
+   ['spin','settle'].includes(vvSpinPhase)&&
+   ['travel','target','recall','open'].includes(runningScene?.dataset.phase)&&
+   (!host.getClientRects||host.getClientRects().length))return true;
   root.DuduCosmicHuntF41?.dispose?.();
   if(vvUid&&(sandbox()||!signed()||vvBridge()?.uid?.()!==vvUid)){
    vvRewardDismiss?.();vvRewardModal?.remove?.();vvRewardModal=null;
@@ -1269,7 +1282,7 @@
     'Đăng nhập để khám phá DUDU FUN và nhận thưởng.'));
    return true;
   }
-  const tabs=el('div','dudu-fun-tabs');
+  const tabs=el('div','dudu-fun-tabs'+(open==='slot'?' is-hunt':''));
   for(const [type,label] of [['box','🎁 Vạn Bảo'],['ticket','🎟️ Vé Cào'],
    ['slot','🎰 Vạn Tượng']]){
    const button=el('button','dudu-fun-tab'+(open===type?' is-active':''),label);

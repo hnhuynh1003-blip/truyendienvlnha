@@ -25,44 +25,68 @@ const path=require('node:path');const fs=require('node:fs/promises');
    if(unknown){unknown=false;throw Error('lost response');}return result;},run:p=>DuduPersonalVantVatF31.run({...p,db,auth,uid:auth.currentUser.uid})};
  });
  await page.addScriptTag({path:path.join(base,'js/dudu-fun-ui-v43.js')});await page.evaluate(()=>DuduFunUIV43.showVantVat());await page.locator('.f41-cosmos').waitFor();
- assert.equal(await page.locator('.f34-vantvat-wheel').count(),0);assert.equal(await page.locator('.f41-drift').count(),12);
- await page.waitForFunction(()=>[...document.querySelectorAll('.f41-drift img')].every(i=>i.complete&&i.naturalWidth));
+ assert.equal(await page.locator('.f34-vantvat-wheel').count(),0);assert.equal(await page.locator('.f41-universe').count(),1);assert.equal(await page.locator('.f41-drift,.f41-core,.f41-ring').count(),0);
+ await page.waitForLoadState('networkidle');
+ async function startHunt(n){await page.locator('.f41-count').nth([1,5,10].indexOf(n)).click();await page.locator('.f41-hunt').click();}
+ async function awaitTarget(){await page.waitForFunction(()=>document.querySelector('.f41-cosmos')?.dataset.phase==='target');assert.equal(await page.locator('.f41-crystal').count(),0,'prize stays hidden before retrieval');}
+
  for(const width of [320,360,390,430,1280]){await page.setViewportSize({width,height:844});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'no overflow '+width);
   const buttons=await page.locator('.f36-vantvat-spin').all();assert.equal(buttons.length,3);for(const b of buttons)assert.ok((await b.boundingBox()).height>=44);}
  await page.setViewportSize({width:390,height:844});if(process.env.DUDU_QA_SCREENSHOT)await page.screenshot({path:process.env.DUDU_QA_SCREENSHOT});
  // Skip before confirmation never finishes or pays a second time.
- await page.evaluate(()=>{delayReceipt=true;});await page.locator('.f36-vantvat-spin').nth(0).click();await page.waitForFunction(()=>typeof releaseReceipt==='function');
+ await page.evaluate(()=>{delayReceipt=true;});await startHunt(1);await page.waitForFunction(()=>typeof releaseReceipt==='function');
  await page.locator('.f41-skip').click();assert.equal(await page.locator('.f36-vantvat-overlay').count(),0);assert.equal(await page.evaluate(()=>calls),1);assert.equal(await page.evaluate(()=>writes),1);
  await page.evaluate(()=>{delayReceipt=false;releaseReceipt();});await page.locator('.f36-vantvat-overlay').waitFor();assert.equal(await page.locator('.f36-vantvat-reward').count(),1);
  assert.equal(await page.locator('.f36-vantvat-reward.f37-tier-e').count(),1);assert.equal(await page.evaluate(()=>writes),1);await page.locator('.f36-vantvat-close').click();
  // Five crystals, exact committed IDs; double clicks cannot start another batch.
  await page.evaluate(()=>{forcedIds=['f32-cult-sword','f31-apple-moon','f32-fossil-egg','f31-doll-starlight','F31_COIN_30'];});
- await page.locator('.f36-vantvat-spin').nth(1).click();await page.waitForFunction(()=>document.querySelectorAll('.f41-crystal').length===5);
+ await startHunt(5);await awaitTarget();await page.evaluate(()=>DuduFunUIV43.render());assert.equal(await page.locator('.f41-cosmos').getAttribute('data-phase'),'target','background refresh must preserve retrieval');await page.locator('.f41-target').click();await page.waitForFunction(()=>document.querySelectorAll('.f41-crystal').length===5);
  assert.deepEqual(await page.locator('.f41-crystal').evaluateAll(ns=>ns.map(n=>n.dataset.itemId)),['f32-cult-sword','f31-apple-moon','f32-fossil-egg','f31-doll-starlight','F31_COIN_30']);
- await page.evaluate(()=>document.querySelector('.f36-vantvat-spin').click());assert.equal(await page.evaluate(()=>calls),2);
+ await page.evaluate(()=>document.querySelector('.f41-hunt').click());assert.equal(await page.evaluate(()=>calls),2);
  await page.locator('.f41-skip').click();await page.locator('.f36-vantvat-overlay').waitFor();assert.equal(await page.locator('.f36-vantvat-reward').count(),5);assert.equal(await page.evaluate(()=>writes),2);
  await page.locator('.f36-vantvat-view').first().click();assert.equal(await page.locator('.f36-vantvat-overlay').count(),0);assert.equal(await page.locator('.f33-vantvat-zoom').count(),1);await page.locator('.f33-vantvat-zoom-close').click();
  // Ten-star shower completes naturally and preserves every receipt result.
- await page.evaluate(()=>{forcedIds=['f34-origin-dawn-goddess'];});await page.locator('.f36-vantvat-spin').nth(2).click();
- await page.waitForFunction(()=>document.querySelectorAll('.f41-crystal').length===10);assert.equal(await page.locator('.f41-crystal.rank-sss').count(),10);
+ await page.evaluate(()=>{forcedIds=['f34-origin-dawn-goddess'];});await startHunt(10);
+ await awaitTarget();if(process.env.DUDU_QA_SCREENSHOT)await page.waitForTimeout(650);if(process.env.DUDU_QA_SCREENSHOT)await page.screenshot({path:process.env.DUDU_QA_SCREENSHOT.replace('.png','-target.png')});const targetBox=await page.locator('.f41-target').boundingBox();await page.mouse.move(targetBox.x+targetBox.width/2,targetBox.y+targetBox.height/2);await page.mouse.down();await page.mouse.move(targetBox.x+targetBox.width/2,targetBox.y+targetBox.height/2+72,{steps:8});await page.mouse.up();await page.waitForFunction(()=>document.querySelectorAll('.f41-crystal').length===10);assert.equal(await page.locator('.f41-crystal.rank-sss').count(),10);
  if(process.env.DUDU_QA_SCREENSHOT){await page.waitForTimeout(1200);await page.screenshot({path:process.env.DUDU_QA_SCREENSHOT.replace('.png','-crystals.png')});}
  await page.locator('.f36-vantvat-overlay').waitFor();assert.equal(await page.locator('.f36-vantvat-reward').count(),10);
  for(const card of await page.locator('.f36-vantvat-reward').all()){const image=await card.locator('.f36-vantvat-reward-art').boundingBox(),name=await card.locator('b').boundingBox();assert.ok(image.y+image.height<=name.y+1,'art must not overlap item name');}
  if(process.env.DUDU_QA_SCREENSHOT)await page.screenshot({path:process.env.DUDU_QA_SCREENSHOT.replace('.png','-results.png')});assert.equal(await page.evaluate(()=>writes),3);await page.locator('.f36-vantvat-close').click();
  // Reduced motion gets the committed result immediately.
- await page.emulateMedia({reducedMotion:'reduce'});await page.locator('.f36-vantvat-spin').nth(0).click();await page.locator('.f36-vantvat-overlay').waitFor();assert.equal(await page.evaluate(()=>writes),4);await page.locator('.f36-vantvat-close').click();
+ await page.emulateMedia({reducedMotion:'reduce'});await startHunt(1);await awaitTarget();await page.locator('.f41-target').click();await page.locator('.f36-vantvat-overlay').waitFor();assert.equal(await page.evaluate(()=>writes),4);await page.locator('.f36-vantvat-close').click();
+ // Native Chromium touch events at Android width exercise capture, cancel and pull.
+ await page.emulateMedia({reducedMotion:'no-preference'});await startHunt(1);await awaitTarget();
+ await page.waitForTimeout(600);const touchBox=await page.locator('.f41-target').boundingBox();
+ const touchX=touchBox.x+touchBox.width/2,touchY=touchBox.y+touchBox.height/2;
+ const cdp=await page.context().newCDPSession(page);await cdp.send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:1});
+ const touchPoint=(y)=>({x:touchX,y,id:1,radiusX:3,radiusY:3,force:1});
+ await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[touchPoint(touchY)]});
+ await cdp.send('Input.dispatchTouchEvent',{type:'touchCancel',touchPoints:[]});
+ assert.equal(await page.locator('.f41-cosmos').getAttribute('data-phase'),'target');assert.equal(await page.locator('.f41-crystal').count(),0);
+ const touchWrites=await page.evaluate(()=>writes);
+ await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[touchPoint(touchY)]});
+ for(let dy=10;dy<=70;dy+=10)await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[touchPoint(touchY+dy)]});
+ await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+ await page.locator('.f36-vantvat-overlay').waitFor();assert.equal(await page.evaluate(()=>writes),touchWrites);
+ await page.locator('.f36-vantvat-close').click();await cdp.send('Emulation.setTouchEmulationEnabled',{enabled:false});await cdp.detach();
+ // Leaving while the sealed target waits releases the interaction without a late popup.
+ await startHunt(1);await awaitTarget();const leaveWrites=await page.evaluate(()=>writes);
+ await page.evaluate(()=>{document.getElementById('dudu-fun-content-v43').style.display='none';});await page.waitForTimeout(200);
+ assert.equal(await page.locator('.f36-vantvat-overlay').count(),0);assert.equal(await page.evaluate(()=>writes),leaveWrites);
+ await page.evaluate(()=>{document.getElementById('dudu-fun-content-v43').style.display='';DuduFunUIV43.render();});await page.locator('.f41-hunt:not(:disabled)').waitFor();
+ await page.emulateMedia({reducedMotion:'reduce'});
  // A lost response retains its receipt and retries the same transaction once.
- await page.evaluate(()=>{unknown=true;});await page.locator('.f36-vantvat-spin').nth(0).click();await page.waitForFunction(()=>document.querySelector('.dudu-fun-notice').textContent.includes('Chưa xác nhận'));
+ await page.evaluate(()=>{unknown=true;});await startHunt(1);await page.waitForFunction(()=>document.querySelector('.dudu-fun-notice').textContent.includes('Chưa xác nhận'));
  const afterLoss=await page.evaluate(()=>({writes,currency:accounts.du.currency,spins:accounts.du.storyStates.__duduVantVatF31.totalSpins}));
- await page.locator('.dudu-fun-claim').click();await page.locator('.f36-vantvat-overlay').waitFor();assert.deepEqual(await page.evaluate(()=>({writes,currency:accounts.du.currency,spins:accounts.du.storyStates.__duduVantVatF31.totalSpins})),afterLoss);await page.locator('.f36-vantvat-close').click();
+ await page.locator('.dudu-fun-claim').click();await awaitTarget();await page.locator('.f41-target').click();await page.locator('.f36-vantvat-overlay').waitFor();assert.deepEqual(await page.evaluate(()=>({writes,currency:accounts.du.currency,spins:accounts.du.storyStates.__duduVantVatF31.totalSpins})),afterLoss);await page.locator('.f36-vantvat-close').click();
  // Leaving the app does not place a late result dialog over another screen.
- await page.evaluate(()=>{delayReceipt=true;delete window.releaseReceipt;});await page.locator('.f36-vantvat-spin').nth(0).click();await page.waitForFunction(()=>typeof releaseReceipt==='function');
+ await page.evaluate(()=>{delayReceipt=true;delete window.releaseReceipt;});await startHunt(1);await page.waitForFunction(()=>typeof releaseReceipt==='function');
  const beforeLeave=await page.evaluate(()=>writes);await page.evaluate(()=>{document.getElementById('dudu-fun-content-v43').style.display='none';releaseReceipt();delayReceipt=false;});await page.waitForTimeout(100);
  assert.equal(await page.locator('.f36-vantvat-overlay').count(),0);assert.equal(await page.evaluate(()=>writes),beforeLeave);
  await page.evaluate(()=>{document.getElementById('dudu-fun-content-v43').style.display='';DuduFunUIV43.render();});await page.locator('.f41-cosmos').waitFor();
  // Account switch in flight: no previous user's result dialog or artifacts.
- await page.evaluate(()=>{delayReceipt=true;});await page.locator('.f36-vantvat-spin').nth(0).click();await page.waitForFunction(()=>typeof releaseReceipt==='function');
+ await page.evaluate(()=>{delayReceipt=true;});await startHunt(1);await page.waitForFunction(()=>typeof releaseReceipt==='function');
  await page.evaluate(()=>{currentUsername='other';auth.currentUser={uid:'other'};userProfile={currency:10000};DuduFunUIV43.render();});await page.locator('.f41-cosmos').waitFor();
  await page.evaluate(()=>{releaseReceipt();delayReceipt=false;});await page.waitForTimeout(100);assert.equal(await page.locator('.f36-vantvat-overlay').count(),0);assert.equal(await page.evaluate(()=>accounts.other.inventory.length),0);
- assert.deepEqual(errors,[]);console.log('F4.1 browser passed: 1/5/10, skip before/after receipt, no double grant, recovery, account isolation, reduced motion, five widths.');
+ assert.deepEqual(errors,[]);console.log('F4.1a browser passed: sealed target, native touch cancel/pull, mouse drag, 1/5/10, skip, retry, account/exit isolation, reduced motion and five widths.');
  }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

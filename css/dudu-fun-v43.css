@@ -656,82 +656,90 @@ body.dudu-phone-v11 #cyber-phone .blind-legacy{padding-top:10px;display:flex;fle
  .f34-vantvat-wheel.f39-wheel-settling{transform:rotate(var(--f39-stop-deg,0deg))}
 }
 
-/* F4.1 — cosmic hunt; the old roulette styles remain inert for saved compatibility. */
-.f31-vantvat-stage{width:100%;max-width:600px;gap:12px}
-.f41-cosmos{position:relative;isolation:isolate;width:100%;height:clamp(365px,54dvh,530px);min-width:0;overflow:hidden;border:1px solid #b99ce266;border-radius:24px;background:#060816;box-shadow:0 14px 40px #03051088,inset 0 0 45px #050711;contain:layout paint;perspective:800px}
-.f41-backdrop,.f41-nebula,.f41-stars,.f41-planets,.f41-rifts,.f41-debris,.f41-stream,.f41-crystals{position:absolute;inset:0;pointer-events:none}
-.f41-backdrop{z-index:-3;background:linear-gradient(0deg,#07091ae6,transparent 65%),url('../assets/van-tuong/f34/f34-spin-backdrop.webp') center 42%/cover;opacity:.65;transform:scale(1.2)}
-.f41-nebula{z-index:-2;background:radial-gradient(ellipse at 25% 45%,#753bc460,transparent 48%),radial-gradient(ellipse at 80% 23%,#245bb95a,transparent 50%),radial-gradient(ellipse at 50% 55%,#f4c38a20,transparent 50%);animation:f41-nebula 22s ease-in-out infinite alternate}
-.f41-stars{width:100%;height:100%;z-index:0}
-.f41-eyebrow{position:absolute;top:16px;left:0;right:0;text-align:center;font-size:9px;font-weight:600;letter-spacing:.22em;color:#e1cfedbd;text-shadow:0 2px 8px #080915}
-.f41-well{position:absolute;left:50%;top:43%;width:68%;aspect-ratio:1;transform:translate(-50%,-50%);pointer-events:none}
-.f41-ring{position:absolute;inset:0;border-radius:50%;border:1px solid #d3adffb3;box-shadow:0 0 9px #dfbcff77,inset 0 0 12px #7957cb99;transform:rotateX(64deg) rotate(-24deg)}
-.f41-ring.outer{background:repeating-conic-gradient(from 22deg,#d8b6ff10 0deg,#c299ffbb 2deg,#b58cff10 5deg,#996fce20 19deg);animation:f41-ring 19s linear infinite;filter:drop-shadow(0 0 13px #c49becaa)}
-.f41-ring.inner{inset:15%;transform:rotateX(64deg) rotate(22deg);border:3px double #f5dbaa;box-shadow:0 0 16px #f5b6fb99,inset 0 0 18px #e5b6ff77;animation:f41-ring 14s linear infinite reverse}
-.f41-core{position:absolute;inset:24%;border-radius:50%;background:radial-gradient(ellipse at 40% 50%,#00020c 25%,#070616 55%,#422572 69%,#e6bcffb3 73%,#5c3b7d00 78%);box-shadow:0 0 35px #8c60c57a;transform:rotateX(43deg) rotate(-18deg)}
-.f41-planet{position:absolute;display:block;width:43px;height:43px;border-radius:50%;background:radial-gradient(circle at 32% 24%,#a6c8e7,#5d5a95 38%,#181b35 70%);box-shadow:inset -9px -10px 10px #060616,0 0 10px #6968a533}
-.f41-planet.one{left:10%;top:18%;transform:scale(.72)}
-.f41-planet.two{right:8%;bottom:14%;width:60px;height:60px;background:radial-gradient(circle at 28% 22%,#d7b0a0,#775d8e 35%,#10152b 72%)}
-.f41-planet.two::after{content:'';position:absolute;inset:22% -30%;border:3px double #bbadd278;border-radius:50%;transform:rotate(-28deg) scaleY(.48)}
-.f41-rift{position:absolute;left:calc(13% + var(--i) * 33%);top:calc(26% + var(--i) * 4%);width:18px;height:31px;border-radius:50%;border:1px solid #ba9bfa99;background:radial-gradient(ellipse,#e5cbff77,#4b36756b 45%,#0c1136);box-shadow:0 0 12px #9d7ce266;transform:rotate(calc(-20deg + var(--i) * 21deg));opacity:.7}
-.f41-drift{position:absolute;left:50%;top:43%;width:78px;height:78px;transform-origin:0 0;animation:f41-drift 24s linear infinite;animation-delay:calc(var(--i) * -1.91s);opacity:0;will-change:transform}
-.f41-drift img{display:block;width:100%;height:100%;object-fit:contain;mask-image:radial-gradient(ellipse,#000 40%,transparent 73%);filter:brightness(.88)}
-.f41-drift.depth-0{width:92px;height:92px;animation-duration:29s}
-.f41-drift.depth-1{width:62px;height:62px;animation-duration:25s}
-.f41-drift.depth-2{width:43px;height:43px;animation-duration:21s;filter:blur(.35px)}
-.f41-stream{opacity:0;background:conic-gradient(from 0deg at 50% 43%,transparent 0deg,#f0d6ff66 2deg,transparent 5deg 80deg,#e8c8ff66 82deg,transparent 85deg 180deg,#c4baff66 182deg,transparent 185deg);mask-image:radial-gradient(ellipse at 50% 43%,transparent 10%,#000 40%,transparent 70%)}
-.f41-cosmos[data-phase='spin'] .f41-well{animation:f41-breathe 1.8s ease-in-out infinite alternate}
-.f41-cosmos[data-phase='settle'] .f41-stream{animation:f41-stream 1.6s ease-out both}
-.f41-cosmos[data-phase='settle'][data-count='10'] .f41-stream{animation-duration:2.7s}
-.f41-crystal{position:absolute;left:50%;top:43%;width:50px;height:66px;opacity:0;transform:translate(-50%,-50%) scale(.05);animation:f41-emerge 1.8s cubic-bezier(.18,.7,.2,1) both;animation-delay:calc(var(--n) * 75ms);--glow:#8b94ba;--tier:#647492}
-.f41-cosmos[data-count='1'] .f41-crystal{width:154px;height:174px}
-.f41-cosmos[data-count='5'] .f41-crystal{left:calc(17% + var(--n) * 16.5%);top:calc(50% + (var(--n) - 2) * 2%);width:56px;height:75px}
-.f41-cosmos[data-count='10'] .f41-crystals{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;padding:130px 16px 60px;align-content:center}
-.f41-cosmos[data-count='10'] .f41-crystal{position:relative;left:auto;top:auto;width:100%;height:72px;transform:scale(.05);animation-name:f41-emerge-grid}
-.f41-seal{position:absolute;inset:5%;display:block;clip-path:polygon(50% 0,95% 24%,80% 82%,50% 100%,20% 82%,5% 24%);background:linear-gradient(120deg,#bcb4cf99,#524b7c 35%,#8b94b9 36%,#302949 70%,#bdb2d9aa);border:1px solid #c7bcdf;animation:f41-unseal 1.6s both;animation-delay:inherit}
-.f41-prize-art{position:absolute;inset:-10%;display:grid;place-items:center;opacity:0;animation:f41-open 1.8s ease both;animation-delay:inherit}
-.f41-prize-art img{display:block;width:100%;height:100%;min-height:0;object-fit:contain}
-.f41-gold-coin{position:absolute;inset:16% 9%;border-radius:50%;background:radial-gradient(ellipse at 35% 25%,#fff0a5,#d9a938 45%,#876122 75%);border:3px double #f7e9aa;opacity:0;animation:f41-open 1.8s ease both;animation-delay:inherit}
-.f41-crystal.rank-c{--tier:#919be2}.f41-crystal.rank-b{--tier:#bc9fe3}.f41-crystal.rank-a{--tier:#e5aed2}
-.f41-crystal.rank-s{--tier:#efd3a0;filter:drop-shadow(0 0 5px #e1be7577)}
-.f41-crystal.rank-ss{--tier:#f4bbdc;filter:drop-shadow(0 0 9px #e49fcfbb)}
-.f41-crystal.rank-sss{--tier:#fff0b8;filter:drop-shadow(0 0 14px #f5cbffdd)}
-.f41-crystal:is(.rank-c,.rank-b,.rank-a,.rank-s,.rank-ss,.rank-sss) .f41-seal{background:linear-gradient(125deg,#ffffffaa,var(--tier),#28283e 70%,var(--tier))}
-.f41-crystal:is(.rank-ss,.rank-sss)::before{content:'';position:absolute;inset:-30%;background:radial-gradient(circle,#ffe7b777 1px,transparent 2px) 0 0/19px 23px;animation:f41-sparkle 2s ease-out both;pointer-events:none}
-.f41-crystal.rank-sss::after{content:'';position:absolute;inset:-35%;border:1px solid #efd6ffb3;border-radius:50%;box-shadow:0 0 12px #cfa6ff77;transform:rotateX(65deg);animation:f41-legendary 2s ease-out both;pointer-events:none}
-.f41-skip{position:absolute;right:12px;bottom:12px;min-width:76px;min-height:44px;padding:8px 12px;border:1px solid #ad9cc681;border-radius:20px;background:#11172cdb;color:#eadff4;font:inherit;font-size:11px;z-index:5;cursor:pointer}
-.f41-skip[hidden]{display:none}.f41-skip:focus-visible{outline:2px solid #ffe8bc;outline-offset:2px}
+/* F4.1a — a traversable rift, no dial or circular sticker arrangement. */
+.dudu-fun-tabs.is-hunt{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.dudu-fun-tabs.is-hunt .dudu-fun-tab{min-width:0;padding:9px 4px;font-size:11px;min-height:44px}
+.dudu-fun-stage.is-slot{padding:0;border:0;background:none;box-shadow:none}
+.f31-vantvat-stage{width:100%;max-width:600px;gap:10px}
+.f41-cosmos{position:relative;isolation:isolate;width:100%;height:clamp(350px,52dvh,500px);min-width:0;overflow:hidden;border:1px solid #68829c55;border-radius:19px;background:#060c1a;contain:layout paint;box-shadow:0 14px 40px #03081566}
+.f41-universe{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.f41-haze{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,#060b1944,transparent 25% 78%,#060b19bb);z-index:1}
+.f41-coordinate{position:absolute;top:16px;left:16px;color:#9aadc091;font-size:9px;font-weight:500;letter-spacing:.22em;pointer-events:none}
+.f41-cosmos::after{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 42%,transparent 40%,#02071144 82%);z-index:1}
+.f41-cosmos[data-phase='travel'] .f41-haze{animation:f41a-accelerate .85s ease-out infinite}
+.f41-target{position:absolute;z-index:4;left:50%;top:43%;width:130px;height:156px;padding:0;border:0;background:none;cursor:grab;touch-action:none;transform:translate(calc(-50% + var(--pull-x,0px)),calc(-50% + var(--pull-y,0px)));transition:transform .2s ease;filter:drop-shadow(0 10px 20px #010610aa);-webkit-tap-highlight-color:transparent}
+.f41-target[hidden]{display:none}.f41-target:focus-visible{outline:2px solid #d5e9fc;outline-offset:10px;border-radius:12px}
+.f41-target:disabled{cursor:default}.f41-cosmos.is-pulling .f41-target{transition:none;cursor:grabbing}
+.f41-target-seal{position:absolute;inset:8px;display:block;animation:f41a-suspend 3.5s ease-in-out infinite alternate}
+.f41-seal-face{display:block;position:absolute;inset:0;clip-path:polygon(48% 0,91% 22%,100% 65%,55% 100%,11% 80%,0 31%);background:linear-gradient(135deg,#b9cddd 0%,#526c86 23%,#172b43 24%,#263d56 51%,#7890a5 52%,#334b66 72%,#111f35 73%);box-shadow:inset 0 0 28px #b6cfdf22}
+.f41-seal-face::after{content:'';position:absolute;inset:3px;clip-path:polygon(48% 0,91% 22%,100% 65%,55% 100%,11% 80%,0 31%);background:linear-gradient(125deg,#c5d8e460,#314a6533 30%,#111c3344 68%,#b8ccdf55)}
+.f41-seal-stroke{position:absolute;inset:28% 42%;display:block;background:linear-gradient(#c6deea,#81b6d2,#d6dced);clip-path:polygon(15% 0,80% 20%,44% 42%,90% 61%,35% 100%,52% 65%,0 42%,47% 23%);opacity:.72}
+.f41-seal-shard{position:absolute;left:-20%;top:37%;width:15%;height:29%;background:linear-gradient(135deg,#9cbed1,#223d5a);clip-path:polygon(50% 0,100% 45%,60% 100%,0 70%);transform:rotate(-17deg);opacity:.65}
+.f41-seal-shard::after{content:'';position:absolute;inset:20%;border-left:1px solid #d5f2ff}
+.f41-retrieve-hint{position:absolute;z-index:5;top:calc(43% + 102px);left:0;right:0;text-align:center;color:#b2c7d6;font-size:12px;font-weight:500;pointer-events:none;letter-spacing:.04em}
+.f41-retrieve-hint[hidden]{display:none}
+.f41-cosmos[data-phase='target'] .f41-target{animation:f41a-target-arrive .55s cubic-bezier(.2,.7,.2,1) both}
+.f41-cosmos[data-phase='recall'] .f41-target{animation:f41a-retrieve .42s cubic-bezier(.2,.7,.4,1) both}
+.f41-cosmos[data-phase='recall'] .f41-seal-face{animation:f41a-crack .42s ease-out both}
+.f41-crystals{position:absolute;inset:0;pointer-events:none;z-index:3;display:grid;place-items:center}
+.f41-crystal{position:relative;display:grid;place-items:center;width:80%;max-width:260px;height:58%;animation:f41a-artifact .5s ease-out both;min-height:0}
+.f41-prize-art{display:flex;align-items:center;justify-content:center;position:absolute;inset:0;min-height:0}
+.f41-prize-art img{width:100%;height:100%;min-height:0;min-width:0;object-fit:contain}
+.f41-cosmos[data-count='5'] .f41-crystals,.f41-cosmos[data-count='10'] .f41-crystals{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;align-content:center;padding:60px 14px}
+.f41-cosmos:is([data-count='5'],[data-count='10']) .f41-crystal{width:100%;height:110px;animation-delay:calc(var(--n)*35ms)}
+.f41-crystal:is(.rank-f,.rank-e,.rank-d){filter:none}
+.f41-crystal.rank-c{background:radial-gradient(ellipse,#8ca6d310,transparent 65%)}
+.f41-crystal.rank-b{background:radial-gradient(ellipse,#b5a4d51c,transparent 67%)}
+.f41-crystal.rank-a{background:radial-gradient(ellipse,#d8b6d933,transparent 70%)}
+.f41-crystal.rank-s{filter:drop-shadow(0 0 7px #d5b68366)}
+.f41-crystal.rank-ss{filter:drop-shadow(0 0 14px #bdc9ed99)}
+.f41-crystal.rank-sss{filter:drop-shadow(0 0 22px #f2d4a9b3)}
+.f41-crystal:is(.rank-s,.rank-ss,.rank-sss)::before{content:'';position:absolute;inset:-20%;background:radial-gradient(circle,#dbe6fa99 1px,transparent 2px) 2px 6px/29px 37px;mask-image:radial-gradient(ellipse,#000,transparent 70%);animation:f41a-stardust 2s linear infinite;pointer-events:none}
+.f41-crystal.rank-ss::after,.f41-crystal.rank-sss::after{content:'';position:absolute;inset:-10%;border-top:1px solid #cddcf199;border-bottom:1px solid #edd7b277;transform:rotate(-24deg) scaleX(1.3);opacity:.6;pointer-events:none;animation:f41a-space-break .8s ease-out both}
+.f41-cosmos[data-phase='open'][data-rank='SSS']::before{content:'';position:absolute;inset:0;z-index:6;pointer-events:none;border-top:22px solid #030710;border-bottom:22px solid #030710;animation:f41a-cinema 1.5s ease-in-out both}
+.f41-cosmos[data-phase='open'][data-rank='SSS'] .f41-haze{background:linear-gradient(90deg,transparent,#f4e2bb22,transparent);animation:f41a-light-sweep .7s ease-out both}
+.f41-gold-coin{width:70%;max-width:140px;aspect-ratio:1;border-radius:50%;border:5px double #ffdf8b;background:radial-gradient(circle at 32% 24%,#fff6b6,#eac65b 24%,#b47c25 68%,#735018 94%);box-shadow:inset 0 0 0 5px #bb882e,inset 0 0 0 7px #ffe291}
+.f41-skip{position:absolute;z-index:8;right:12px;bottom:12px;min-width:76px;min-height:44px;padding:8px 12px;border:1px solid #9eb5cb66;border-radius:22px;background:#0b1729dc;color:#c6d8e7;font:inherit;font-size:11px;font-weight:500;cursor:pointer}
+.f41-skip[hidden]{display:none}.f41-skip:focus-visible{outline:2px solid #d1e8fa;outline-offset:2px}
 .f41-status{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 .f41-cosmos.is-paused *{animation-play-state:paused!important}
-.f41-cosmos.is-skipped .f41-crystal{animation-duration:1ms;animation-delay:0s}
-.f31-vantvat-stage :is(.f36-vantvat-spin-controls,.f36-vantvat-pity,.f38-vantvat-museum-link){width:100%;max-width:600px}
-.f31-vantvat-stage .f36-vantvat-spin{min-height:48px;background:linear-gradient(130deg,#583d77,#34294f);border-color:#bba0d0;font-size:12px}
-.f31-vantvat-stage .f38-vantvat-museum-link{min-height:44px;background:#191d33;border-color:#7f6f9766;box-shadow:none}
+.f41-hunt-controls.f36-vantvat-spin-controls{display:grid;grid-template-columns:minmax(126px,.9fr) minmax(0,1.3fr);width:100%;max-width:600px;gap:9px;align-items:stretch}
+.f41-amounts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;padding:3px;border:1px solid #627c9466;background:#101c2d;border-radius:13px}
+.f41-amounts .f41-count.f36-vantvat-spin{display:grid;place-items:center;min-width:0;min-height:44px;padding:5px 2px;font-size:12px;box-shadow:none;border:0;border-radius:9px;background:none;color:#93a9bb;font-weight:600}
+.f41-amounts .f41-count.is-selected.f36-vantvat-spin{color:#e5f2fc;background:#2e465d;box-shadow:inset 0 0 0 1px #8cacc155}
+.f41-hunt{display:flex;align-items:center;justify-content:center;gap:5px;min-height:52px;min-width:0;padding:9px 7px;border:1px solid #d8c29399;border-radius:13px;background:linear-gradient(115deg,#dec796,#b49c70);color:#182435;font:inherit;font-size:13px;font-weight:800;box-shadow:0 4px 18px #b19b6c22;cursor:pointer}
+.f41-hunt:disabled{opacity:.45;cursor:default}.f41-hunt:focus-visible,.f41-count:focus-visible{outline:2px solid #cfe2f3;outline-offset:3px}
+.f41-meta{display:flex;align-items:center;gap:14px;width:100%;padding:0 3px;min-height:44px}
+.f41-meta .f36-vantvat-pity{flex:1;width:auto;gap:4px;min-width:0;text-align:left}
+.f41-meta .f36-vantvat-pity small{font-size:10px;font-weight:500;color:#9db1c2}
+.f41-meta .f36-vantvat-pity-bar{height:3px;border:0;background:#233349}
+.f41-meta .f36-vantvat-pity-bar i{background:linear-gradient(90deg,#6d8aab,#d5bd88)}
+.f41-meta .f38-vantvat-museum-link{width:auto;max-width:105px;flex:none;min-height:44px;padding:8px 0;border:0;background:none;box-shadow:none;font-size:11px;font-weight:500;color:#b3c7d8}
+.f31-vantvat-stage :is(.f31-vantvat-gallery,.f39-vantvat-history){width:100%;background:#0d1728;border:1px solid #66839a33;border-radius:12px;box-shadow:none}
+.f31-vantvat-stage :is(.f31-vantvat-gallery,.f39-vantvat-history)>summary{min-height:44px;padding:10px 4px;font-size:11px;color:#a9bdcf}
+/* Preserve the verified result and enlarged-art layout. */
 .f36-vantvat-overlay,.f36-vantvat-overlay *{box-sizing:border-box}
 .f36-vantvat-close,.f36-vantvat-view,.f33-vantvat-zoom-close{min-width:44px;min-height:44px}
-.f36-vantvat-reward:is(.f37-tier-f,.f37-tier-e,.f37-tier-d) .f36-vantvat-reward-art{filter:none;box-shadow:none}
-@keyframes f41-nebula{to{transform:scale(1.16) rotate(7deg);opacity:.65}}
-@keyframes f41-ring{to{transform:rotateX(64deg) rotate(336deg)}}
-@keyframes f41-drift{0%{transform:rotate(var(--x)) translate(8px) rotate(calc(-1 * var(--x))) scale(.12);opacity:0}20%{opacity:.3}68%{opacity:.82}100%{transform:rotate(calc(var(--x) + 22deg)) translate(230px) rotate(calc(-1 * var(--x) - 22deg)) scale(1.3);opacity:0}}
-@keyframes f41-breathe{to{filter:brightness(1.45);scale:1.08}}
-@keyframes f41-stream{0%{opacity:0;transform:scale(.1)}40%{opacity:.8}100%{opacity:0;transform:scale(1.8) rotate(35deg)}}
-@keyframes f41-emerge{0%{opacity:0;transform:translate(-50%,-50%) scale(.05)}35%{opacity:1;transform:translate(-50%,-50%) scale(.9)}65%,100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
-@keyframes f41-emerge-grid{0%{opacity:0;transform:scale(.05)}35%{opacity:1;transform:scale(.9)}65%,100%{opacity:1;transform:scale(1)}}
-@keyframes f41-unseal{0%,45%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.3)}}
-@keyframes f41-open{0%,43%{opacity:0;transform:scale(.5)}85%,100%{opacity:1;transform:scale(1)}}
-@keyframes f41-sparkle{0%,40%{opacity:0;transform:scale(.5)}70%{opacity:1}100%{opacity:.3;transform:scale(1.25)}}
-@keyframes f41-legendary{0%,40%{opacity:0;transform:rotateX(65deg) scale(.4)}80%,100%{opacity:1;transform:rotateX(65deg) scale(1.2)}}
-@media(min-width:800px){.f41-cosmos{height:500px}.f41-drift{width:100px;height:100px}}
-@media(max-width:350px){.f41-cosmos{height:365px;border-radius:18px}.f41-cosmos[data-count='10'] .f41-crystals{gap:5px;padding-left:12px;padding-right:12px}.f41-cosmos[data-count='10'] .f41-crystal{height:60px}.f31-vantvat-stage .f36-vantvat-spin{font-size:10px}}
-@media(prefers-reduced-motion:reduce){.f41-cosmos *,.f41-cosmos[data-phase='spin'] .f41-well{animation:none!important;transition:none!important}.f41-drift{opacity:.6;transform:rotate(var(--x)) translate(120px) rotate(calc(-1 * var(--x))) scale(.6)}.f41-crystal{opacity:1;transform:none}.f41-prize-art,.f41-gold-coin{opacity:1}.f41-seal{display:none}}
-
-.f41-cosmos[data-count='1'] .f41-stream{inset:25% 40% 12%;background:linear-gradient(90deg,transparent,#e9caff88,transparent);mask-image:linear-gradient(transparent,#000 28%,transparent);transform-origin:50% 25%}
 .f36-vantvat-modal-head{position:sticky;top:-14px;z-index:4;min-height:48px;padding:8px 0;background:#24213bea;border-bottom:1px solid #d2bce333}
-
-/* Contain portrait paintings within the art row, clear of rank and item names. */
 .f36-vantvat-reward-art,.f39-vantvat-celebration .f39-vantvat-celebration-art.dudu-item-v13-frame,.f33-vantvat-zoom-art{display:flex;align-items:center;justify-content:center;min-height:0;overflow:hidden!important}
 :is(.f36-vantvat-reward-art,.f39-vantvat-celebration-art,.f33-vantvat-zoom-art) img{display:block;min-width:0;min-height:0;max-width:100%;max-height:100%;object-fit:contain;flex:1}
 body.dudu-phone-v11 #cyber-phone .f41-prize-art.dudu-item-v13-frame{background:none!important;box-shadow:none!important;border:0!important;display:flex;min-height:0;overflow:hidden}
 body.dudu-phone-v11 #cyber-phone .f41-prize-art .dudu-item-v13-art{min-height:0;object-fit:contain;animation:none}
-
 .f41-gold-result{display:block;width:80%;aspect-ratio:1;border-radius:50%;border:5px double #ffdf8b;background:radial-gradient(circle at 32% 24%,#fff6b6,#eac65b 24%,#b47c25 68%,#735018 94%);box-shadow:inset 0 0 0 5px #bb882e,inset 0 0 0 7px #ffe291,0 5px 12px #0b0b1d66}
+@keyframes f41a-accelerate{0%{opacity:.2;transform:scale(.7)}60%{opacity:.7}100%{opacity:.1;transform:scale(1.4)}}
+@keyframes f41a-suspend{to{transform:translateY(-7px) rotate(3deg)}}
+@keyframes f41a-target-arrive{from{opacity:0;scale:.12}to{opacity:1;scale:1}}
+@keyframes f41a-retrieve{to{transform:translate(-50%,-30%) scale(1.7);opacity:.15;filter:brightness(1.5)}}
+@keyframes f41a-crack{to{clip-path:polygon(0 0,45% 0,40% 30%,55% 53%,43% 80%,100% 100%,100% 0);opacity:.3}}
+@keyframes f41a-artifact{from{opacity:0;scale:.7}to{opacity:1;scale:1}}
+@keyframes f41a-stardust{to{background-position:13px -23px}}
+@keyframes f41a-space-break{from{opacity:0;scale:.5}to{opacity:.6;scale:1.2}}
+@keyframes f41a-cinema{0%{border-width:0;opacity:0}25%,70%{border-width:22px;opacity:1}100%{border-width:0;opacity:0}}
+@keyframes f41a-light-sweep{from{transform:translateX(-100%);opacity:0}40%{opacity:1}to{transform:translateX(100%);opacity:0}}
+@media(max-width:350px){.f41-cosmos{height:350px}.f41-hunt-controls.f36-vantvat-spin-controls{grid-template-columns:120px minmax(0,1fr);gap:6px}.f41-hunt{font-size:11px;gap:3px}.f41-cosmos:is([data-count='5'],[data-count='10']) .f41-crystal{height:90px}}
+@media(prefers-reduced-motion:reduce){.f41-cosmos *,.f41-cosmos[data-phase='travel'] .f41-haze{animation:none!important;transition:none!important}.f41-target{filter:none}.f41-crystal{animation:none!important}}
+
+/* Override the phone's older, more-specific FUN frame and two-column tabs. */
+body.dudu-phone-v11 #cyber-phone .dudu-fun-stage.is-slot{padding:0;border:0;background:none;box-shadow:none}
+body.dudu-phone-v11 #cyber-phone .dudu-fun-tabs.is-hunt{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+body.dudu-phone-v11 #cyber-phone .dudu-fun-tabs.is-hunt .dudu-fun-tab{padding:8px 3px;font-size:11px;min-height:44px;min-width:0}
