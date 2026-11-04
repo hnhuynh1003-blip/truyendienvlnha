@@ -100,7 +100,7 @@
  }
  function fill(from,to,profileId=''){
   const stored=dictionary.read(storyId).find(r=>!r.disabledAuto&&engine.fold(r.from)===engine.fold(from));
-  el('reader-name-from-l53').value=from;el('reader-name-from-l53').readOnly=!!selected;
+  el('reader-name-from-l53').value=from;el('reader-name-from-l53').readOnly=!!selected||!!stored;
   el('reader-name-to-l53').value=to??stored?.to??engine.title(from);
   updateLinks(from,profileId||stored?.characterId||'');
   el('reader-name-modal-l53').querySelector('.l54-range').hidden=!selected;
@@ -160,7 +160,9 @@
    if(!cleaned.from.includes(' ')&&!root.confirm('Đây là một từ đơn, có thể có nghĩa thông thường. Áp dụng trong cả truyện?'))return false;
    const existing=dictionary.read(storyId).find(r=>!r.disabledAuto&&engine.fold(r.from)===engine.fold(from));
    if(existing&&existing.to!==cleaned.to&&!root.confirm('Thay quy tắc hiện có cho “'+existing.from+'”?'))return false;
-   dictionary.add(storyId,cleaned.from,cleaned.to,profile);refresh();close();return true;
+   const reassign=!!(profile&&existing?.characterId&&existing.characterId!==profile);
+   if(reassign&&!root.confirm('Chuyển cách gọi “'+existing.from+'” sang nhân vật đã chọn? Cách gọi này chỉ thuộc một nhân vật trong truyện.'))return false;
+   dictionary.add(storyId,cleaned.from,cleaned.to,profile,{allowReassign:reassign});refresh();close();return true;
   }catch(error){status(error.message,true);return false;}
  }
  function listNames(){

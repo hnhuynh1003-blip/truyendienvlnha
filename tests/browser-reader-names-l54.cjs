@@ -95,6 +95,14 @@ async function desktop(browser){
  const backup=await require('node:fs/promises').readFile(await download.path(),'utf8');assert.equal(JSON.parse(backup).entries.length,2);
  await page.locator('#reader-name-import-l54').setInputFiles({name:'dictionary.json',mimeType:'application/json',buffer:Buffer.from(backup)});
  await page.waitForFunction(()=>document.getElementById('reader-name-status-l53').textContent.includes('Đã nhập'));
+ // An already-saved alias can be linked later, with an explicit transfer dialog.
+ await page.evaluate(()=>DuduReaderNamesL53.openManager('tần mặc hàm'));await page.locator('[data-name-action="save"]').click();
+ await page.evaluate(()=>DuduReaderNamesL53.openManager());assert.equal(await page.locator('.l54-character').count(),2);
+ await page.locator('.l54-character').filter({hasText:'Tần Minh'}).click();
+ await page.locator('.reader-name-row-l53').filter({hasText:'tần minh →'}).getByRole('button',{name:'Sửa',exact:true}).click();
+ assert.equal(await page.locator('#reader-name-from-l53').getAttribute('readonly'),'');
+ await page.locator('#reader-name-link-l54').selectOption({label:'Tần Mặc Hàm'});await page.locator('[data-name-action="save"]').click();
+ await page.evaluate(()=>DuduReaderNamesL53.openManager());assert.match(await page.locator('.l54-character').filter({hasText:'Tần Mặc Hàm'}).textContent(),/2 cách gọi/);
  await fits(page,'.l54-dialog');await page.screenshot({path:path.join(os.tmpdir(),'dudu-l54-pc.png')});
  assert.deepEqual(errors,[]);await context.close();
 }

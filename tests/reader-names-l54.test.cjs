@@ -58,6 +58,16 @@ test('L5.4c: ambiguous short names never merge profiles or become automatic repl
  assert.equal(store.render('epub:x','mặc hàm'),'Mặc Hàm','A profile label does not force the full name into the prose');
 });
 
+test('L5.4c: an existing alias can move only with explicit owner confirmation and can be undone',()=>{
+ const store=engine.create({storage:device()}),a=store.add('epub:x','tần mặc hàm','Tần Mặc Hàm'),b=store.add('epub:x','mặc hàm','Mặc Hàm');
+ assert.equal(store.characters('epub:x').length,2);
+ assert.throws(()=>store.add('epub:x','mặc hàm','Mặc Hàm',a.characterId),/nhân vật khác/);
+ store.add('epub:x','mặc hàm','Mặc Hàm',a.characterId,{allowReassign:true});
+ assert.equal(store.characters('epub:x').length,1);assert.equal(store.characters('epub:x')[0].aliases.length,2);
+ assert.equal(store.render('epub:x','mặc hàm gặp tần mặc hàm.'),'Mặc Hàm gặp Tần Mặc Hàm.');
+ store.undo('epub:x');assert.equal(store.characters('epub:x').length,2);assert.ok(store.characters('epub:x').some(p=>p.id===b.characterId));
+});
+
 test('L5.4c: semantic suggestions need confirmation; ordinary shortened names are never inferred',()=>{
  const store=engine.create({storage:device()});store.add('epub:x','tần minh','Tần Minh');
  const results=engine.analyze('tần rõ ràng đến. minh nói. minh hỏi. minh cười.',store.read('epub:x'));

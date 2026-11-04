@@ -133,11 +133,11 @@
    if(remember){const history=histories.get(token)||[];history.push({before:old,after:JSON.stringify(next)});histories.set(token,history.slice(-20));}
    return next;
   }
-  function add(id,from,to,profileId=''){
+  function add(id,from,to,profileId='',{allowReassign=false}={}){
    const clean=legacy.clean(from,to),rows=read(id),index=rows.findIndex(r=>fold(r.from)===fold(clean.from));
    const profiles=characters(rows),profile=profiles.find(p=>p.id===profileId);
    if(profileId&&!profile)throw Error('Nhân vật đã thay đổi. Hãy chọn lại.');
-   if(index>=0&&profile&&rows[index].characterId&&rows[index].characterId!==profile.id&&!rows[index].disabledAuto)
+   if(index>=0&&profile&&rows[index].characterId&&rows[index].characterId!==profile.id&&!rows[index].disabledAuto&&!allowReassign)
     throw Error('Cách gọi này đã thuộc nhân vật khác. Hãy dùng tên đầy đủ để phân biệt.');
    const old=rows[index];
    const characterId=profile?.id||old?.characterId||('person:'+Date.now().toString(36)+':'+Math.random().toString(36).slice(2,10));

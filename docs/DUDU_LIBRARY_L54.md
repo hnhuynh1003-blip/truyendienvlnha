@@ -25,7 +25,7 @@ This is a conservative heuristic, not recovery of Chinese source names. Rare nam
 
 ## Validation
 
-1. `node --test` over reader names, reader preferences/focus/shortcuts/status, reading-return and EPUB wiring tests: 49 passed.
+1. `node --test` over reader names, reader preferences/focus/shortcuts/status, reading-return and EPUB wiring tests: 50 passed.
 2. `node tests/browser-reader-names-l54.cjs`: PC + touch mobile widths 320/390/430; whole-word / phrase / range adjustment, source-to-display mapping, ordinary mode restoration, swipe scrolling, save position, chapter and story isolation, automatic capitalization, manual scans, profiles, delete / undo and backup / import passed. Keyboard behavior is tested by shrinking the visual viewport to 420px, not by opening a real Android IME.
 3. `node tests/browser-library-reading-return-c443.cjs`: full Sandbox application, real floating settings, name selection/save, immutable source chapter, mobile layout, browser Back, refresh/scroll restoration, no repeated chapter EXP and no external writes passed.
 4. New JavaScript and inline HTML script syntax checks, `git diff --check`, visual inspection of PC, Android sheet and full application screenshots.
