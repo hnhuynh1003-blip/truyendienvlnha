@@ -1,11 +1,11 @@
-/* F4.2B — approved AI layers, parallax and unchanged receipt-only retrieval. */
+/* F4.2B.1 — real catalog prize stream, bounded thumbnails and receipt-consistent retrieval. */
 (function(root){
  'use strict';if(!root?.document)return;
  let current=null;
  const HIGH=['S','SS','SSS'];
  function mount({host,phase='idle',count=1}={}){
   current?.dispose();
-  const pack=root.DuduVantVatArtF42B;if(!pack)return null;
+  const pack=root.DuduVantVatArtF42B,stream=root.DuduVantVatStreamF42B1;if(!pack||!stream)return null;
   const doc=root.document,el=(tag,cls,text)=>{const n=doc.createElement(tag);n.className=cls||'';
    if(text!==undefined)n.textContent=text;return n;};
   const scene=el('div','f41-cosmos');scene.dataset.phase=phase==='spin'?'travel':'idle';
@@ -20,8 +20,8 @@
   const target=el('button','f41-target');target.type='button';target.hidden=true;
   target.setAttribute('aria-label','Thu hồi mục tiêu bí ẩn');
   const seal=el('span','f41-target-seal');seal.setAttribute('aria-hidden','true');
-  // One neutral sealed vessel, independent of the committed prize and its rarity.
-  const vessel=el('img','f42b-sealed-vessel');vessel.src=pack.seal;vessel.alt='';vessel.decoding='async';
+  // The sealed silhouette uses the actual receipt image, never an unmapped sample.
+  const vessel=el('img','f42b-sealed-vessel');vessel.alt='';vessel.decoding='async';
   seal.append(vessel);
   target.append(seal);const instruction=el('span','f41-retrieve-hint','Chạm hoặc kéo về');instruction.hidden=true;
   const status=el('span','f41-status');status.setAttribute('role','status');
@@ -37,16 +37,16 @@
   function clearTimers(){for(const id of timers)root.clearTimeout(id);timers.clear();}
   function complete(value){clearTimers();target.hidden=true;instruction.hidden=true;skip.hidden=true;
    drag=null;const done=finish;finish=null;rows=null;if(done)done(value);}
-  // Five approved sample paintings are scenery only; 20 particles reuse these resources.
-  // Particle motion, stars and material streams share one 30-fps, capped-DPR canvas.
-  const context=canvas.getContext?.('2d'),sprites=[];
-  const particles=Array.from({length:20},(_,i)=>({z:.22+(i%10)/8,x:Math.sin(i*7.13)*1.25,
-   y:Math.cos(i*4.87)*1.15,art:i%pack.samples.length,tilt:Math.sin(i)*.3}));
+  // Public prize metadata only; independent of the transaction and its probabilities.
+  const displayEntries=stream.entries(root.DuduItemCatalog,root.DuduFunVantVatF31,root.DuduItemArtV13);
+  const flow=stream.flow(displayEntries,{seed:Math.floor(Math.random()*4294967296),count:12});
+  const context=canvas.getContext?.('2d');
+  const images=stream.cache({limit:14,concurrent:2,onChange:()=>resume(),
+   load:src=>new Promise((resolve,reject)=>{const image=doc.createElement('img');image.decoding='async';
+    image.onload=()=>{image.onload=null;image.onerror=null;resolve(image);};
+    image.onerror=()=>{image.onload=null;image.onerror=null;reject(Error('stream-art-unavailable'));};image.src=src;
+   }),release:image=>{if(image){image.onload=null;image.onerror=null;image.src='';}}});
   const stars=Array.from({length:170},(_,i)=>({z:.08+(i%80)/85,x:Math.sin(i*12.37)*2.8,y:Math.cos(i*6.31)*2.8}));
-  pack.samples.forEach(sample=>{
-   const image=doc.createElement('img');image.decoding='async';image.src=sample.src;sprites.push(image);
-   image.onload=()=>{if(disposed)return;resume();};
-  });
   let cameraX=0,cameraY=0,aimX=0,aimY=0,tick=0,flight=0;
   function readyLayer(){if(!disposed)resume();}
   background.onload=readyLayer;gate.onload=readyLayer;
@@ -73,17 +73,24 @@
      if(state==='travel'||state==='recall'){c.strokeStyle='#b4d8f0';c.beginPath();c.moveTo(x,y);
       c.lineTo(x+(x-cx)*.14,y+(y-cy)*.14);c.stroke();}
     }
-    // Sort far to near: projected size and velocity both rise as depth approaches camera.
-    for(const p of [...particles].sort((a,b)=>b.z-a.z)){
-     if(!reduced())p.z-=speed*dt*(.75+p.art*.013);if(p.z<.12)p.z=1.35;
-     const img=sprites[p.art];if(!img?.complete||!img.naturalWidth)continue;
-     const s=Math.min(w*.32,w*.06/p.z),wave=Math.sin(tick*.006+p.art)*.04;
-     const x=cx+(p.x+wave)*w*.09/p.z+cameraX*(1-p.z),y=cy+p.y*h*.09/p.z+cameraY*(1-p.z);
-     if(x<-s||x>w+s||y<-s||y>h+s)continue;
-     c.save();c.globalAlpha=Math.min(.96,Math.max(.17,(1.4-p.z)*.82))*(state==='target'?.24:1);
-     c.translate(x,y);c.rotate(p.tilt+tick*.0008*(1-p.z));c.globalCompositeOperation='source-over';
-     const ratio=img.naturalWidth/img.naturalHeight,iw=ratio>1?s:s*ratio,ih=ratio>1?s/ratio:s;
-     c.drawImage(img,-iw/2,-ih/2,iw,ih);c.restore();
+    // Only the visible rows enter the decode window. Far/near slots do not share images.
+    const moving=flow.tick(reduced()?0:dt/30*(state==='travel'?4:state==='recall'?2:1));
+    const visible=moving.filter(p=>p.entry).map(p=>({slot:p,...flow.project(p,w,h,time,cameraX,cameraY)})).filter(p=>p.visible);
+    images.sync([...visible].sort((a,b)=>a.z-b.z).map(p=>p.slot.entry.src));
+    for(const p of visible.sort((a,b)=>b.z-a.z)){
+     const entry=p.slot.entry,img=images.get(entry.src);if(!img?.naturalWidth)continue;
+     const size=p.size,ratio=img.naturalWidth/img.naturalHeight;
+     const iw=ratio>1?size:size*ratio,ih=ratio>1?size/ratio:size;
+     c.save();c.globalAlpha=p.alpha*(state==='target'?.24:1);c.translate(p.x,p.y);c.rotate(p.angle);
+     c.shadowBlur=0;
+     if(HIGH.includes(entry.rank)){c.shadowColor=entry.rank==='S'?'#d9c19a':entry.rank==='SS'?'#bbc8ed':'#efd6a8';
+      c.shadowBlur=(entry.rank==='S'?3:entry.rank==='SS'?6:10)*dpr;}
+     if(p.slot.mode==='distant'){c.strokeStyle='#d3deeb55';c.lineWidth=.6*dpr;c.beginPath();c.moveTo(-size*.5,0);c.lineTo(-size*1.6,0);c.stroke();}
+     c.drawImage(img,-iw/2,-ih/2,iw,ih);
+     if(['SS','SSS'].includes(entry.rank)){
+      c.fillStyle='#fff1cd';const pulse=reduced()?.4:.45+Math.sin(time*.003+p.slot.index)*.25;
+      c.globalAlpha*=pulse;c.fillRect(iw*.4,-ih*.35,1.3*dpr,1.3*dpr);
+     }c.restore();
     }
     c.globalAlpha=1;
     if(state==='open'&&HIGH.includes(scene.dataset.rank)){
@@ -107,6 +114,11 @@
   scene.addEventListener('pointermove',event=>{if(drag||reduced())return;const r=scene.getBoundingClientRect();aimX=(event.clientX-r.left-r.width/2)*.07;aimY=(event.clientY-r.top-r.height/2)*.06;});
   scene.addEventListener('pointerleave',()=>{aimX=0;aimY=0;});
   function showTarget(){if(!finish||disposed||skipped)return;scene.dataset.phase='target';
+   const focus=root.DuduVantVatWheelF39?.featured?.(rows)||rows?.[0];
+   const actual=displayEntries.find(x=>x.id===focus?.itemId);
+   seal.replaceChildren(vessel);vessel.hidden=!actual;
+   if(actual)vessel.src=actual.src;
+   else{const coin=el('span','f41-gold-coin f42b1-sealed-coin');seal.append(coin);}
    target.hidden=false;target.disabled=false;instruction.hidden=false;
    target.style.setProperty('--pull-x','0px');target.style.setProperty('--pull-y','0px');
    status.textContent='Mục tiêu bí ẩn đã xuất hiện. Chạm hoặc kéo về để thu hồi.';
@@ -154,6 +166,8 @@
   skip.addEventListener('click',()=>{skipped=true;skip.disabled=true;
    if(finish){scene.dataset.phase='landed';complete(true);}else status.textContent='Đang xác nhận bảo vật…';});
   const controller={
+   inspectStream(){return{eligible:displayEntries.length,emissions:flow.emissions,cache:images.stats(),
+    active:flow.snapshot().filter(p=>p.entry).map(p=>({serial:p.serial,id:p.entry.id,name:p.entry.name,type:p.entry.type,rank:p.entry.rank,realm:p.entry.realm,src:p.entry.src,mode:p.mode,age:p.age}))};},
    play(results,n){
     if(disposed||finish||!intersecting||doc.hidden||
      (scene.getClientRects&&!scene.getClientRects().length)||
@@ -164,10 +178,10 @@
    },
    dispose(){if(disposed)return;disposed=true;complete(false);if(frame)root.cancelAnimationFrame(frame);
     observer?.disconnect();resizeObserver?.disconnect();doc.removeEventListener('visibilitychange',visibility);motion?.removeEventListener?.('change',onMotion);
-    for(const img of sprites)img.onload=null;background.onload=null;gate.onload=null;
+    images.clear();vessel.src='';background.onload=null;gate.onload=null;
     if(openingFx)openingFx.onload=null;scene.remove();if(current===controller)current=null;}
   };
   current=controller;resume();return controller;
  }
- root.DuduCosmicHuntF41=Object.freeze({mount,play:(rows,n)=>current?.play(rows,n)??Promise.resolve(false),dispose:()=>current?.dispose()});
+ root.DuduCosmicHuntF41=Object.freeze({mount,play:(rows,n)=>current?.play(rows,n)??Promise.resolve(false),dispose:()=>current?.dispose(),inspectStream:()=>current?.inspectStream()??null});
 })(typeof window!=='undefined'?window:null);

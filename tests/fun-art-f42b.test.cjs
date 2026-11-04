@@ -18,8 +18,8 @@ test('F4.2B sample art is scenery only and cannot introduce catalog prizes, rank
  for(const sample of art.samples){assert.equal(sample.catalogId,null);assert.equal(sample.role,'SCENERY_ONLY');assert.ok(!rule.POOL.some(p=>p.itemId===sample.src));}
  assert.deepEqual(Object.keys(art.effects),['S','SS','SSS']);assert.equal(art.effects.D,undefined);assert.equal(art.effects.A,undefined);
 });
-test('F4.2B entry image budget stays bounded and asset declarations precede the interaction module',()=>{
+test('F4.2B original reference pack remains bounded and asset declarations precede the current scene',()=>{
  const initial=bytes(art.background.mobile).length+bytes(art.gate).length+art.samples.reduce((n,x)=>n+bytes(x.src).length,0);
- assert.ok(initial<700000);const html=bytes('index.html').toString('utf8');assert.ok(html.includes('css/fun-art-f42b.css?v=f42b-1'));
- assert.ok(html.indexOf('js/fun-art-f42b.js?v=f42b-1')<html.indexOf('js/fun-cosmos-f41.js?v=f42b-1'));
+ assert.ok(initial<700000);const html=bytes('index.html').toString('utf8');assert.ok(html.includes('css/fun-art-f42b.css?v=f42b1-1'));
+ assert.ok(html.indexOf('js/fun-art-f42b.js?v=f42b-1')<html.indexOf('js/fun-cosmos-f41.js?v=f42b1-1'));
 });

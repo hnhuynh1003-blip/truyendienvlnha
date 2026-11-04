@@ -8,9 +8,9 @@ const path=require('node:path');const fs=require('node:fs/promises');
   if(url.pathname.startsWith('/assets/'))return route.fulfill({status:200,body:await fs.readFile(path.join(base,url.pathname.slice(1))),contentType:'image/webp'});
   return route.fulfill({status:200,contentType:'text/html',body:'<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><style>*{box-sizing:border-box}body{margin:0;background:#080b18;color:#f7ecd8;font:14px Arial}#cyber-phone{max-width:520px;margin:auto;padding:10px}</style><body class="dudu-phone-v11"><main id="cyber-phone"><span id="dudu-fun-header-balance"></span><div id="dudu-fun-content-v43"></div><button id="dudu-fun-launch-v43" hidden></button></main>'});});
  await page.goto('https://hunt.local/');
- await page.evaluate(()=>{window.drawnArt=[];const original=CanvasRenderingContext2D.prototype.drawImage;CanvasRenderingContext2D.prototype.drawImage=function(image,...args){if(image?.src?.includes('/f42b/sample-'))window.drawnArt.push(image.src);return original.call(this,image,...args);};});
+ await page.evaluate(()=>{window.drawnArt=[];const original=CanvasRenderingContext2D.prototype.drawImage;CanvasRenderingContext2D.prototype.drawImage=function(image,...args){if((image?.src?.includes('/stream-f42b1/')||image?.src?.startsWith('data:image/svg')))window.drawnArt.push(image.src);return original.call(this,image,...args);};});
  for(const f of ['css/item-visuals-v13.css','css/dudu-fun-v43.css','css/fun-art-f42b.css'])await page.addStyleTag({path:path.join(base,f)});
- for(const f of ['world-items-v44-1','item-catalog-v2','economy-core-v43','personal-collection-c24','fun-vantvat-f31','personal-vantvat-f31','item-visuals-v13','fun-wheel-f39','fun-art-f42b','fun-cosmos-f41'])await page.addScriptTag({path:path.join(base,'js',f+'.js')});
+ for(const f of ['world-items-v44-1','item-catalog-v2','economy-core-v43','personal-collection-c24','fun-vantvat-f31','personal-vantvat-f31','item-visuals-v13','fun-wheel-f39','fun-art-f42b','fun-stream-f42b1','fun-cosmos-f41'])await page.addScriptTag({path:path.join(base,'js',f+'.js')});
  await page.evaluate(()=>{
   window.currentUsername='du';window.IS_SANDBOX_MODE=false;window.userProfile={currency:10000};
   window.auth={currentUser:{uid:'du'}};window.accounts={du:{currency:10000,inventory:[],storyStates:{}},other:{currency:10000,inventory:[],storyStates:{}}};
@@ -28,12 +28,12 @@ const path=require('node:path');const fs=require('node:fs/promises');
  await page.addScriptTag({path:path.join(base,'js/dudu-fun-ui-v43.js')});assert.equal(assetRequests.length,0,'AI images must not load merely from opening the app page');await page.evaluate(()=>DuduFunUIV43.showVantVat());await page.locator('.f41-cosmos').waitFor();
  assert.equal(await page.locator('.f34-vantvat-wheel').count(),0);assert.equal(await page.locator('.f41-universe').count(),1);assert.equal(await page.locator('.f41-drift,.f41-core,.f41-ring').count(),0);
  await page.waitForLoadState('networkidle');
- assert.ok(assetRequests.length>0);assert.ok(assetRequests.every(url=>!url.includes('/open-')),'rare FX are demand loaded');
+ assert.ok(assetRequests.length>0);assert.ok(assetRequests.every(url=>!url.includes('/sample-')),'unmapped samples are not the flying prize stream');assert.ok(assetRequests.every(url=>!url.includes('/open-')),'rare FX are demand loaded');
  await page.waitForFunction(()=>window.drawnArt.length>0);
  const firstFrame=await page.locator('.f41-universe').evaluate(c=>c.toDataURL());await page.waitForTimeout(150);assert.notEqual(await page.locator('.f41-universe').evaluate(c=>c.toDataURL()),firstFrame,'depth particles must actually move');
  await page.waitForFunction(()=>[...document.querySelectorAll('.f42b-background,.f42b-gate')].every(i=>i.complete&&i.naturalWidth));
  async function startHunt(n){await page.locator('.f41-count').nth([1,5,10].indexOf(n)).click();await page.locator('.f41-hunt').click();}
- async function awaitTarget(){await page.waitForFunction(()=>document.querySelector('.f41-cosmos')?.dataset.phase==='target');assert.equal(await page.locator('.f41-crystal').count(),0,'prize stays hidden before retrieval');}
+ async function awaitTarget(){await page.waitForFunction(()=>document.querySelector('.f41-cosmos')?.dataset.phase==='target');assert.equal(await page.locator('.f41-crystal').count(),0,'prize stays hidden before retrieval');const expected=await page.evaluate(()=>{const receipts=Object.values(accounts[currentUsername].storyStates.__duduVantVatF31.batchReceipts);return DuduVantVatWheelF39.featured(receipts[receipts.length-1].results).itemId;});const item=await page.evaluate(id=>DuduItemCatalog.byId(id),expected);if(item)assert.ok((await page.locator('.f42b-sealed-vessel').getAttribute('src')).includes(item.id),'sealed target uses the actual prize thumbnail');}
 
  for(const width of [320,360,390,430,1280]){await page.setViewportSize({width,height:844});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'no overflow '+width);
   const buttons=await page.locator('.f36-vantvat-spin').all();assert.equal(buttons.length,3);for(const b of buttons)assert.ok((await b.boundingBox()).height>=44);assert.equal(await page.locator('.f42b-gate').evaluate(el=>getComputedStyle(el).objectFit),'contain');}
@@ -50,7 +50,7 @@ const path=require('node:path');const fs=require('node:fs/promises');
  assert.deepEqual(await page.locator('.f41-crystal').evaluateAll(ns=>ns.map(n=>n.dataset.itemId)),['f32-cult-sword','f31-apple-moon','f32-fossil-egg','f31-doll-starlight','F31_COIN_30']);
  await page.evaluate(()=>document.querySelector('.f41-hunt').click());assert.equal(await page.evaluate(()=>calls),2);
  await page.waitForFunction(()=>document.querySelector('.f42b-effect-image')?.complete&&document.querySelector('.f42b-effect-image')?.naturalWidth);assert.ok(assetRequests.some(url=>url.includes('/open-ss.webp')));
- await page.locator('.f41-skip').click();await page.locator('.f36-vantvat-overlay').waitFor();assert.equal(await page.locator('.f36-vantvat-reward').count(),5);assert.equal(await page.evaluate(()=>writes),2);
+ await page.locator('.f41-skip').click();await page.locator('.f36-vantvat-overlay').waitFor();assert.equal(await page.locator('.f36-vantvat-reward').count(),5);assert.ok(await page.evaluate(()=>accounts.du.inventory.some(i=>i.id==='f32-cult-sword')),'the displayed sword is the physical inventory prize');assert.equal(await page.evaluate(()=>writes),2);
  await page.locator('.f36-vantvat-view').first().click();assert.equal(await page.locator('.f36-vantvat-overlay').count(),0);assert.equal(await page.locator('.f33-vantvat-zoom').count(),1);await page.locator('.f33-vantvat-zoom-close').click();
  // Ten-star shower completes naturally and preserves every receipt result.
  await page.evaluate(()=>{forcedIds=['f34-origin-dawn-goddess'];});await startHunt(10);
@@ -104,5 +104,5 @@ const path=require('node:path');const fs=require('node:fs/promises');
  await page.evaluate(()=>{delayReceipt=true;});await startHunt(1);await page.waitForFunction(()=>typeof releaseReceipt==='function');
  await page.evaluate(()=>{currentUsername='other';auth.currentUser={uid:'other'};userProfile={currency:10000};DuduFunUIV43.render();});await page.locator('.f41-cosmos').waitFor();
  await page.evaluate(()=>{releaseReceipt();delayReceipt=false;});await page.waitForTimeout(100);assert.equal(await page.locator('.f36-vantvat-overlay').count(),0);assert.equal(await page.evaluate(()=>accounts.other.inventory.length),0);
- assert.deepEqual(errors,[]);console.log('F4.2B browser passed: lazy approved layers and FX, correct catalog images, sealed target, native touch cancel/pull, mouse drag, 1/5/10, skip, retry, account/exit isolation, reduced motion and five widths.');
+ assert.deepEqual(errors,[]);console.log('F4.2B.1 browser passed: canonical flying prizes, bounded thumbnail stream, lazy approved layers and FX, correct catalog images, sealed target, native touch cancel/pull, mouse drag, 1/5/10, skip, retry, account/exit isolation, reduced motion and five widths.');
  }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

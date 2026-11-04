@@ -1,0 +1,15 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path');
+const root=path.resolve(__dirname,'..'),catalog=require('../js/item-catalog-v2.js'),rule=require('../js/fun-vantvat-f31.js'),art=require('../js/item-visuals-v13.js'),stream=require('../js/fun-stream-f42b1.js');
+const realms=require('../js/museum-collection-f40.js').REALMS;
+const types={DEVICE:'Thiết bị công nghệ',RELIC:'Di vật',FOSSIL:'Hóa thạch',WEAPON:'Vũ khí / thần khí',FIGURE:'Tượng nhân vật',DOLL:'Búp bê',FRUIT:'Dị quả',LUCK_CARD:'Thẻ may mắn',BACKGROUND:'Hình nền / cảnh giới'};
+const rows=stream.entries(catalog,rule,art).map(x=>({...x,kind:types[x.type]||x.type,realmName:realms[x.realm]||x.realm,path:x.hasOwnArt?x.imageSrc:'SVG nội bộ — js/item-visuals-v13.js#visual'}));
+const missing=rows.filter(x=>!x.hasOwnArt),painted=rows.filter(x=>x.hasOwnArt);
+const header=['ID vật phẩm','Tên','Loại','Độ hiếm','Vị diện hoặc chủ đề','Đã có hình riêng','Đường dẫn hình hiện tại','Cần tạo ảnh AI mới'];
+const values=x=>[x.id,x.name,x.kind,x.rank,x.realmName,x.hasOwnArt?'Có':'Chưa',x.path,x.hasOwnArt?'Không':'Có'];
+const esc=x=>String(x).replaceAll('|','\|').replaceAll('\n',' ');
+const table=list=>['| '+header.join(' | ')+' |','| '+header.map(()=> '---').join(' | ')+' |',...list.map(x=>'| '+values(x).map(esc).join(' | ')+' |')].join('\n');
+const csv=list=>'\ufeff'+[header,...list.map(values)].map(row=>row.map(x=>'"'+String(x).replaceAll('"','""')+'"').join(',')).join('\r\n')+'\r\n';
+const summary='# Vạn Tượng — danh sách ảnh F4.2B.1\n\n'+rows.length+' vật phẩm thực sự có thể nhận; '+painted.length+' món có ảnh riêng; '+missing.length+' món cần ảnh riêng.\n\nNguồn: catalog, POOL phần thưởng và bộ dựng ảnh hiện hành. Hai phần dưới bao gồm đủ 66 ID, mỗi ID một dòng. Hình SVG dự phòng vẫn hợp lệ để hiển thị, nhưng chưa được tính là ảnh riêng. Khi bay trong cảnh, hình dự phòng được bỏ phần khung thẻ; giữ nguyên biểu tượng và ID. Năm mẫu F4.2A chưa có mapping không thuộc danh mục này.\n\n## Cần tạo ảnh AI riêng ('+missing.length+' món)\n\n'+table(missing)+'\n\n## Đã có ảnh riêng ('+painted.length+' món)\n\n'+table(painted)+'\n\nẢnh mới cần giữ nguyên ID, tên và hạng; nền trong suốt, một vật thể chính, không chữ/giá/khung UI. Độ tinh xảo tăng theo hạng; không gắn hào quang S/SS/SSS cho đồ thường. Chưa tạo ảnh hoặc đổi metadata trong đợt này.\n';
+fs.mkdirSync(path.join(root,'docs'),{recursive:true});fs.writeFileSync(path.join(root,'docs/VANTUONG_F42B1_IMAGE_AUDIT.md'),summary);fs.writeFileSync(path.join(root,'docs/VANTUONG_F42B1_IMAGE_AUDIT.csv'),csv(rows));fs.writeFileSync(path.join(root,'docs/VANTUONG_F42B1_MISSING_ART.csv'),csv(missing));
+if(process.argv.includes('--json'))process.stdout.write(JSON.stringify(rows));else console.log(JSON.stringify({total:rows.length,painted:painted.length,missing:missing.length}));

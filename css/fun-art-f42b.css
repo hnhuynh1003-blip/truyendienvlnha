@@ -24,3 +24,9 @@ body.dudu-phone-v11 #cyber-phone .f41-crystals{z-index:5}
 @media(min-width:800px){body.dudu-phone-v11 #cyber-phone .f41-cosmos{height:min(620px,70dvh)}}
 @media(max-width:350px){body.dudu-phone-v11 #cyber-phone .f41-cosmos{height:450px}.f42b-open-effect{height:66%}}
 @media(prefers-reduced-motion:reduce){.f42b-background,.f42b-gate{will-change:auto}.f42b-effect-image,.f41-cosmos[data-phase='target'] .f41-target-seal{animation:none!important}.f42b-sealed-vessel{filter:brightness(.52) saturate(.2)}}
+
+/* F4.2B.1: actual receipt silhouette remains sealed until the opening phase. */
+.f42b-sealed-vessel{filter:brightness(.08) saturate(0) blur(3px)}
+.f41-target-seal::after{content:'';position:absolute;inset:8%;pointer-events:none;border:1px solid #c6dce473;clip-path:polygon(50% 0,98% 26%,90% 78%,50% 100%,10% 78%,2% 26%);background:linear-gradient(130deg,#152b3e8c,#7694ab23,#13263d88)}
+.f42b1-sealed-coin{position:absolute;left:15%;top:16%;width:70%;filter:brightness(.22) saturate(0)}
+@media(prefers-reduced-motion:reduce){.f42b-sealed-vessel{filter:brightness(.08) saturate(0) blur(3px)}}
