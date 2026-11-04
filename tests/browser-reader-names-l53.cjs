@@ -8,6 +8,13 @@ const path=require('node:path');
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
  try{
   const page=await browser.newPage({viewport:{width:1280,height:900}});
+  // A newly created about:blank page has an opaque origin: Chromium rejects
+  // localStorage, which is required for device-local reader name aliases.
+  // Intercept a fictitious HTTP origin so this test remains fully offline.
+  await page.route('http://reader.local/**',route=>route.fulfill({
+   status:200,contentType:'text/html',body:'<!doctype html><title>Offline reader fixture</title>'
+  }));
+  await page.goto('http://reader.local/');
   await page.setContent(`<!doctype html><html><body>
    <div id="reader-view" style="display:block">
     <div id="reader-content"><p id="chapter-p">Trần Sao gặp Trần Sao.</p></div>
@@ -40,6 +47,8 @@ const path=require('node:path');
   assert.equal(await page.locator('#reader-name-from-l53').inputValue(),'Trần Sao');
   await page.locator('#reader-name-to-l53').fill('Trần An');
   await page.locator('#reader-name-save').click();
+  assert.match(await page.locator('#reader-name-status-l53').textContent(),
+   /Đã lưu/, 'Name alias must persist to the fixture’s localStorage');
   assert.equal(await page.locator('#chapter-p').textContent(),'Trần An gặp Trần An.');
   // Even after changing viewport, controls must remain fully inside the screen.
   await page.setViewportSize({width:390,height:844});
