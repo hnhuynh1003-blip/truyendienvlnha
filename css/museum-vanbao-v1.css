@@ -196,3 +196,46 @@ body.dudu-phone-v11 #cyber-phone :is(.museum-vantvat-card,.museum-vantvat-featur
   animation:none!important;
  }
 }
+
+/* F4.0 — compact realm atlas and item-specific legendary display. */
+body.dudu-phone-v11 #cyber-phone .museum-f40-overview{margin:0;color:#c9c3dc;font-size:11px;line-height:1.5}
+body.dudu-phone-v11 #cyber-phone .museum-f40-filter{display:flex;align-items:center;gap:10px;font-size:12px;min-width:0}
+body.dudu-phone-v11 #cyber-phone .museum-f40-filter select{flex:1;min-width:0;max-width:100%;min-height:44px;padding:8px;border:1px solid #9582b9;border-radius:10px;background:#20243b;color:#f7eddf;font:inherit}
+body.dudu-phone-v11 #cyber-phone .museum-f40-realms{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+body.dudu-phone-v11 #cyber-phone .museum-f40-realm{display:grid;grid-template-columns:1fr auto;gap:6px;padding:10px;min-width:0;border:1px solid #8b7ca64d;border-radius:12px;background:linear-gradient(135deg,#272c48,#192236)}
+body.dudu-phone-v11 #cyber-phone .museum-f40-realm strong{font-size:11px;overflow-wrap:anywhere}
+body.dudu-phone-v11 #cyber-phone .museum-f40-realm>span{font-size:11px;color:#e5c896}
+body.dudu-phone-v11 #cyber-phone .museum-f40-realm progress{grid-column:1/-1;width:100%;height:5px;accent-color:#e5bf7e}
+body.dudu-phone-v11 #cyber-phone .museum-f40-realm small{grid-column:1/-1;font-size:10px;color:#bbb4cc;line-height:1.4}
+body.dudu-phone-v11 #cyber-phone .museum-f40-realm.is-complete{border-color:#e0c385;background:linear-gradient(130deg,#49394e,#292b42);animation:museum-f40-complete .8s ease-out}
+body.dudu-phone-v11 #cyber-phone .museum-f40-realm .museum-f40-badge{grid-column:1/-1;font-size:10px;color:#ffdf98;overflow-wrap:anywhere}
+body.dudu-phone-v11 #cyber-phone .museum-f40-shelf{min-width:0}
+body.dudu-phone-v11 #cyber-phone .museum-f40-shelf .museum-vantvat-card{min-height:138px;min-width:0;overflow:hidden;animation:none;box-shadow:none}
+body.dudu-phone-v11 #cyber-phone .museum-f40-shelf .museum-vantvat-mini{width:100%;height:90px}
+body.dudu-phone-v11 #cyber-phone .museum-f40-shelf .museum-vantvat-card small{font-size:11px;line-height:1.35}
+body.dudu-phone-v11 #cyber-phone .museum-f40-shelf .is-owned.rank-s{border-color:#dbbc7d}
+body.dudu-phone-v11 #cyber-phone .museum-f40-shelf .is-owned.rank-ss{border-color:#e0a8ca;background:linear-gradient(145deg,#3a2d4d,#20253c)}
+body.dudu-phone-v11 #cyber-phone .museum-f40-shelf .is-owned.rank-sss{border:2px solid #f6dda2;background:radial-gradient(ellipse at top,#68507c,#25283e 75%)}
+body.dudu-phone-v11 #cyber-phone .museum-f40-shelf .rank-s.is-owned .museum-vantvat-mini{filter:drop-shadow(0 0 3px #e2c08377)}
+body.dudu-phone-v11 #cyber-phone .museum-f40-shelf .rank-ss.is-owned .museum-vantvat-mini{filter:drop-shadow(0 0 6px #d997cb99)}
+body.dudu-phone-v11 #cyber-phone .museum-f40-shelf .rank-sss.is-owned .museum-vantvat-mini{animation:museum-f40-aura 3s ease-in-out infinite alternate}
+body.dudu-phone-v11 #cyber-phone .museum-f40-dialog{box-sizing:border-box;position:fixed;inset:0;margin:auto;width:min(440px,calc(100vw - 24px));max-width:calc(100vw - 24px);max-height:calc(100dvh - 32px);overflow-y:auto;overscroll-behavior:contain;padding:48px 20px 24px;border:1px solid #d6bc8a;border-radius:20px;background:radial-gradient(ellipse at top,#4f3c61,#171e33 65%);color:#f8eddf;text-align:center;font:inherit;box-shadow:0 18px 80px #000a}
+body.dudu-phone-v11 #cyber-phone .museum-f40-dialog::backdrop{background:#090b19df}
+body.dudu-phone-v11 #cyber-phone .museum-f40-close{position:absolute;right:8px;top:8px;width:44px;height:44px;border:1px solid #baa2c9;border-radius:50%;background:#252b43;color:#fff;font-size:26px;cursor:pointer}
+body.dudu-phone-v11 #cyber-phone .museum-f40-large{display:grid;place-items:center;width:100%;height:clamp(160px,35dvh,300px);margin-bottom:16px}
+body.dudu-phone-v11 #cyber-phone .museum-f40-large img{width:100%;height:100%;object-fit:contain}
+body.dudu-phone-v11 #cyber-phone .museum-f40-dialog h3{font-size:21px;line-height:1.35;overflow-wrap:anywhere}
+body.dudu-phone-v11 #cyber-phone .museum-f40-dialog p{font-size:13px;line-height:1.6}
+body.dudu-phone-v11 #cyber-phone .museum-f40-dialog small{font-size:11px;line-height:1.5;color:#d4c6dc}
+body.dudu-phone-v11 #cyber-phone .museum-f40-record{color:#e8cf9b}
+body.dudu-phone-v11 #cyber-phone .museum-f40-dialog.rank-s .museum-f40-large{filter:drop-shadow(0 0 5px #e2c08377)}
+body.dudu-phone-v11 #cyber-phone .museum-f40-dialog.rank-ss .museum-f40-large{filter:drop-shadow(0 0 10px #e2accb99)}
+body.dudu-phone-v11 #cyber-phone .museum-f40-dialog.rank-sss .museum-f40-large{animation:museum-f40-aura 3s ease-in-out infinite alternate}
+@keyframes museum-f40-aura{from{filter:drop-shadow(0 0 5px #e8c1ff77)}to{filter:drop-shadow(0 0 14px #ffe0a4cc)}}
+@keyframes museum-f40-complete{from{box-shadow:inset 0 0 30px #f9d78999}to{box-shadow:inset 0 0 0 #f9d78900}}
+@media(max-width:350px){body.dudu-phone-v11 #cyber-phone .museum-f40-shelf .museum-vantvat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(prefers-reduced-motion:reduce){body.dudu-phone-v11 #cyber-phone :is(.museum-f40-realm,.museum-f40-large,.museum-vantvat-mini){animation:none!important}}
+
+/* Keep the enlarged painting inside its own row, clear of rank and name. */
+body.dudu-phone-v11 #cyber-phone .museum-f40-large{display:flex;align-items:center;justify-content:center;min-height:0;overflow:hidden;flex:none}
+body.dudu-phone-v11 #cyber-phone .museum-f40-large img{display:block;min-width:0;min-height:0;max-width:100%;max-height:100%;flex:1;object-fit:contain}

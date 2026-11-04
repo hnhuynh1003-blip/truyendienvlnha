@@ -69,6 +69,7 @@
  }
  function switchTab(id){
   if(!['gallery','display','preview','owned','memories'].includes(id))return;
+  root.DuduMuseumF40?.close?.();
   active=id;
   for(const tab of host?.querySelectorAll('.museum-c426-tab')||[]){
    const on=tab.dataset.tab===id;
@@ -176,6 +177,7 @@
     'Chưa tải được sổ Vạn Tượng. Hãy mở lại mục Đã sở hữu.';
    container.append(el('p','museum-vantvat-empty',message));return;
   }
+  if(root.DuduMuseumF40){root.DuduMuseumF40.mount(root,container,result);return;}
   container.append(el('small','museum-vantvat-note',
    'Chỉ trưng bày hạng S–SSS đã sưu tầm · vật phẩm thực và giá bán ở Kho.'));
   if(!all.length)return;
@@ -328,7 +330,7 @@
   const changed=host!==container||owner!==ownerKey||sandboxMode!==!!sandbox||
    !container.classList.contains('museum-c426-root-ready');
   host=container;
-  if(changed){vanBaoRequest++;vanVatRequest++;owner=ownerKey;sandboxMode=!!sandbox;
+  if(changed){root.DuduMuseumF40?.close?.();vanBaoRequest++;vanVatRequest++;owner=ownerKey;sandboxMode=!!sandbox;
    active='gallery';selected='s01-neon';
    build();host.classList.add('museum-c426-root-ready');}
   root.DuduMuseumGalleryC429?.mount?.({container:getPanel('gallery'),ownerKey:owner,sandbox:sandboxMode});
