@@ -54,6 +54,7 @@ async function main(){
    // Long-form fixture belongs to the isolated Sandbox browser context only.
    novels[0].chapters[0].content=Array.from({length:90},(_,i)=>
     'Đoạn '+(i+1)+': Một hành trình tiếp tục giữa trang sách. '.repeat(8)).join('\n\n');
+   novels[0].chapters[0].content+='\n\ntần minh nói. tần minh hỏi. tần minh cười.';
    localStorage.setItem('dudu-sandbox-library',JSON.stringify(novels));
    smartReadAction(0);
   });
@@ -92,6 +93,29 @@ async function main(){
    'quick settings opens the existing reader preference sheet');
   await page.locator('#reader-settings-close').click();
   assert.equal(await page.locator('#floating-reading-bar').isVisible(),false);
+  // L5.4 also runs inside the full application shell, not just the offline
+  // adapter fixture: use the same floating settings and real readChapter DOM.
+  await page.locator('#reader-ch-title').click();
+  await page.locator('#reader-quick-settings').click();
+  await page.locator('#reader-name-edit-toggle-l54').click();
+  assert.equal(await page.locator('#reader-settings-popover').isVisible(),false);
+  const source=await page.evaluate(()=>novels[selectedNovelIndex].chapters[0].content);
+  const last=page.locator('#reader-content > p').last();await last.scrollIntoViewIfNeeded();
+  assert.match(await last.textContent(),/Tần Minh nói/);
+  const letter=await last.evaluate(p=>{const r=document.createRange();r.setStart(p.firstChild,1);r.setEnd(p.firstChild,2);const b=r.getBoundingClientRect();return {x:b.x+b.width/2,y:b.y+b.height/2};});
+  await page.mouse.click(letter.x,letter.y);
+  await page.locator('#reader-name-modal-l53').waitFor({state:'visible'});
+  assert.equal(await page.locator('#reader-name-from-l53').inputValue(),'tần');
+  await page.locator('[data-name-action="phrase"]').click();
+  await page.locator('#reader-name-to-l53').fill('Tần An');
+  const dialog=await page.locator('.l54-dialog').boundingBox();
+  assert.ok(dialog.x>=0&&dialog.x+dialog.width<=391,'Hologram fits the actual mobile app shell');
+  await page.screenshot({path:path.join(require('node:os').tmpdir(),'dudu-l54-full-app.png')});
+  await page.locator('[data-name-action="save"]').click();
+  assert.match(await last.textContent(),/Tần An nói/);
+  assert.equal(await page.evaluate(()=>novels[selectedNovelIndex].chapters[0].content),source,'L5.4 never edits the chapter source');
+  await page.locator('#reader-name-done-l54').click();
+  await page.evaluate(async()=>{scrollTo(0,0);await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));DuduReaderFocusL2B.hide();});
   // Flush the downward scroll event before reversing direction. Without this,
   // Chromium may coalesce two instant scrollTo() calls into one event at 560px.
   await page.evaluate(async()=>{

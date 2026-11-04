@@ -3,6 +3,7 @@
  */
 (function(root){
  'use strict';
+ if(root?.DuduReaderNameIntelligenceL54)return; // L5.4 owns the same reader adapter API.
  const lib=root?.DuduReaderNameDictionaryL53;
  if(!lib||!root.document)return;
  let storage=null;
