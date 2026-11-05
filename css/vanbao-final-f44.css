@@ -1,6 +1,6 @@
 /* Final lobby: scoped to Vạn Bảo, preserves other FUN/Arcade/reader layouts. */
 body.dudu-phone-v11 #cyber-phone #phone-app-fun:has(.is-vanbao-final){overflow:hidden;min-height:0}
-body.dudu-phone-v11 #cyber-phone:has(.is-vanbao-final) .phone-close-btn{display:none!important}
+body.dudu-phone-v11 #cyber-phone:has(#phone-app-fun[style*="display: flex"] .is-vanbao-final) .phone-close-btn{display:none!important}
 #phone-app-fun:has(.is-vanbao-final)>.phone-app-header>span:not(#dudu-fun-header-balance){display:none}
 #dudu-fun-content-v43.is-vanbao-final{display:flex!important;flex-direction:column;flex:1;min-height:0;overflow:hidden;position:relative}
 .is-vanbao-final>.dudu-fun-history,.is-vanbao-final>.dudu-fun-notice:empty{display:none!important}
@@ -56,3 +56,5 @@ body.dudu-phone-v11 #cyber-phone #phone-app-fun .f44-node{background:none!import
 .f44-node>span,.f44-node>small{background:#10212bc9;padding:2px 5px;border-radius:4px;text-shadow:0 1px 3px #000}
 .f44-node-links{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
 .f44-node-links path{fill:none;stroke:var(--branch);stroke-width:.6;opacity:.5;stroke-dasharray:2 1}
+
+#phone-app-fun:has(>.phone-app-header) .f44-back{display:none!important}

@@ -25,13 +25,13 @@ jobs:
 
           base='https://hnhuynh1003-blip.github.io/truyendienvlnha/'
           paths=(
-              ('', 'js/vanbao-lobby-final-f44.js?v=final-2'),
+              ('', 'js/vanbao-lobby-final-f44.js?v=final-3'),
               ('js/features-t0.js?v=t0-1', 'const worlds=false'),
               ('js/cultivation-t0.js?v=final-1', 'DuduCultivationT0'),
               ('js/vanbao-rewards-f44.js?v=f44-1', 'DuduVanBaoRewardsF44'),
               ('js/vanbao-sessions-f44.js?v=final-2', 'DuduVanBaoSessionsF44'),
               ('js/vanbao-duel-worker-f44.js', 'self.onmessage'),
-              ('css/vanbao-final-f44.css?v=final-1', '.f44-nav'),
+              ('css/vanbao-final-f44.css?v=final-2', '.f44-nav'),
               ('docs/DUDU_F44_ART_MANIFEST.csv', 'f44-card-plain'),
           )
           def read(url):
