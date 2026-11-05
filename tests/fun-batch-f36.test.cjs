@@ -35,7 +35,7 @@ test('F3.6 ten ×10 spins guarantee a physical A+ by the hundredth draw',async()
  const guarantee=last.results.find(x=>x.pityTriggered);
  assert.ok(rule.HIGH_RANKS.includes(guarantee.rank));
  assert.equal(guarantee.kind,'ITEM','pity selects a high item, not coin');
- assert.equal(f.accounts.get('du').inventory.length,2,'low duplicate and high item each use one physical slot');
+ assert.equal(f.accounts.get('du').inventory.length,100,'every paid physical draw retains its own instance');
  assert.equal(f.accounts.get('other').inventory.length,0);
 });
 test('F3.6 x5 batch is one atomic receipt; retry, even after sale, pays nothing',async()=>{
@@ -46,11 +46,11 @@ test('F3.6 x5 batch is one atomic receipt; retry, even after sale, pays nothing'
  assert.equal(first.state.totalSpins,5);
  assert.equal(first.results.length,5);
  assert.equal(first.results[0].kind,'ITEM');
- assert.equal(first.results.slice(1).every(x=>x.kind==='DUPLICATE'),true);
- assert.equal(first.currency,500-125+4*4);
+ assert.equal(first.results.slice(1).every(x=>x.kind==='ITEM'),true);
+ assert.equal(first.currency,500-125);
  const item=first.inventory[0];
  assert.equal(spark.sellPrice(item),4);
- assert.equal(quick.candidates(first.inventory,first.storyStates).length,1);
+ assert.equal(quick.candidates(first.inventory,first.storyStates).length,5);
  const written=f.writes;
  const same=await engine.runBatch(params);
  assert.equal(same.status,'already-applied');
@@ -66,7 +66,7 @@ test('F3.6 x5 batch is one atomic receipt; retry, even after sale, pays nothing'
  const lateReplay=await engine.runBatch(params);
  assert.equal(lateReplay.status,'already-applied');
  assert.equal(lateReplay.currency,sale.balance);
- assert.equal(lateReplay.inventory.length,0);
+ assert.equal(lateReplay.inventory.length,4);
  assert.equal(f.writes,afterSale);
 });
 test('F3.6 pity at 99 guarantees unowned A+ and resets; low roll cannot bypass',async()=>{

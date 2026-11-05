@@ -100,7 +100,7 @@
    const diary=elem('details','dudu-v441-timeline');
    diary.append(elem('summary','','✦ Nhật ký vật phẩm · '+events.length+' mốc gần đây'));
    const body=elem('div','dudu-v441-events');
-   const labels={SHOP:'Đã mua',USE:'Đã dùng',SELL:'Đã bán',
+   const labels={DELIVER:'Đã giao nộp',SHOP:'Đã mua',USE:'Đã dùng',SELL:'Đã bán',
     GLOBAL:'Nhặt trên Điện thoại',CHAPTER:'Nhặt trong chương',
     QUEST:'Quà nhiệm vụ',NPC_GIFT:'Tặng NPC',SUPPLY:'Mở tiếp tế',
     FUN:'DUDU FUN'};

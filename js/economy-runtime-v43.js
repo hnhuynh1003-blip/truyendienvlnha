@@ -190,8 +190,8 @@
    reset.textContent='Tự làm mới theo ngày';
    reset.title='Không thể đặt lại thủ công để nhận Xu trùng';
   }
-  if(questsV437&&root.DuduQuestUIV437)
-   return root.DuduQuestUIV437.render({
+  if(questsV437&&root.DuduQuestUIV437){
+   const rendered=root.DuduQuestUIV437.render({
     host:document.getElementById('quests-container'),
     quests:signedMain?personalPreview.quests:
       readOnly?(questsV437?.ensure(core.ensureQuests(Array.isArray(userProfile.quests)?userProfile.quests:[]))||[]):owner()?userProfile.quests:[],
@@ -199,6 +199,8 @@
     signed:signedMain||(!readOnly?owner():!!(root.DuduAuth?.isReady?.()&&root.DuduAuth.uid()===currentUsername)),
     onClaim:readOnly?null:root.claimQuestReward,readOnly,personalMode:signedMain
    });
+   if(signedMain)root.renderCollectionQuestsF43?.(document.getElementById('quests-container'));return rendered;
+  }
   return old.renderQuests.apply(this,arguments);
  };
  root.advanceQuest=function(){

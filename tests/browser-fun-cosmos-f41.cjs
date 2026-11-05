@@ -10,7 +10,7 @@ const path=require('node:path');const fs=require('node:fs/promises');
  await page.goto('https://hunt.local/');
  await page.evaluate(()=>{window.drawnArt=[];const original=CanvasRenderingContext2D.prototype.drawImage;CanvasRenderingContext2D.prototype.drawImage=function(image,...args){if((image?.src?.includes('/stream-f42b1/')||image?.src?.startsWith('data:image/svg')))window.drawnArt.push(image.src);return original.call(this,image,...args);};});
  for(const f of ['css/item-visuals-v13.css','css/dudu-fun-v43.css','css/fun-art-f42b.css'])await page.addStyleTag({path:path.join(base,f)});
- for(const f of ['world-items-v44-1','item-catalog-v2','economy-core-v43','personal-collection-c24','fun-vantvat-f31','personal-vantvat-f31','item-visuals-v13','fun-wheel-f39','fun-art-f42b','fun-stream-f42b1','fun-cosmos-f41'])await page.addScriptTag({path:path.join(base,'js',f+'.js')});
+ for(const f of ['world-items-v44-1','item-catalog-v2','economy-core-v43','personal-collection-c24','fun-vantvat-f31','collection-quests-f43','personal-vantvat-f31','item-visuals-v13','fun-wheel-f39','fun-art-f42b','fun-stream-f42b1','fun-cosmos-f41'])await page.addScriptTag({path:path.join(base,'js',f+'.js')});
  await page.evaluate(()=>{
   window.currentUsername='du';window.IS_SANDBOX_MODE=false;window.userProfile={currency:10000};
   window.auth={currentUser:{uid:'du'}};window.accounts={du:{currency:10000,inventory:[],storyStates:{}},other:{currency:10000,inventory:[],storyStates:{}}};
@@ -41,7 +41,7 @@ const path=require('node:path');const fs=require('node:fs/promises');
  // Skip before confirmation never finishes or pays a second time.
  await page.evaluate(()=>{delayReceipt=true;});await startHunt(1);await page.waitForFunction(()=>typeof releaseReceipt==='function');
  await page.locator('.f41-skip').click();assert.equal(await page.locator('.f36-vantvat-overlay').count(),0);assert.equal(await page.evaluate(()=>calls),1);assert.equal(await page.evaluate(()=>writes),1);
- await page.evaluate(()=>{delayReceipt=false;releaseReceipt();});await page.locator('.f36-vantvat-overlay').waitFor();assert.equal(await page.locator('.f36-vantvat-reward').count(),1);
+ await page.evaluate(()=>{delayReceipt=false;releaseReceipt();});await page.locator('.f36-vantvat-overlay').waitFor();assert.equal(await page.locator('.f36-vantvat-reward').count(),1);await page.waitForTimeout(2200);assert.equal(await page.locator('.f36-vantvat-overlay').count(),1,'reward stays until explicit dismissal');
  assert.equal(await page.locator('.f36-vantvat-reward.f37-tier-e').count(),1);assert.ok(assetRequests.every(url=>!url.includes('/open-')),'ordinary E reward must not load rare FX');assert.equal(await page.evaluate(()=>writes),1);await page.locator('.f36-vantvat-close').click();
  // Five crystals, exact committed IDs; double clicks cannot start another batch.
  await page.evaluate(()=>{forcedIds=['f32-cult-sword','f31-apple-moon','f32-fossil-egg','f31-doll-starlight','F31_COIN_30'];});

@@ -391,7 +391,7 @@
      button.onclick=()=>{if(vvBusy||funActionBusy)return;vvSelectedCount=count;render();};amounts.append(button);
     }
     const hunt=withGold('button','f41-hunt','✦ Truy Bảo · ',rule.PRICE*vvSelectedCount);
-    hunt.type='button';hunt.disabled=vvBusy||funActionBusy||vvCurrency<rule.PRICE*vvSelectedCount;
+    hunt.type='button';hunt.disabled=vvBusy||funActionBusy||walletBalance()<rule.PRICE*vvSelectedCount;
     hunt.setAttribute('aria-label','Truy Bảo '+vvSelectedCount+' lượt giá '+rule.PRICE*vvSelectedCount+' Xu Vàng');
     hunt.onclick=()=>{void vantVatBatchAction(vvSelectedCount);};
     controls.append(amounts,hunt);stage.append(controls);
@@ -413,6 +413,7 @@
    root.DuduMuseumVaultC426?.showVanVat?.();
   };
   meta.append(museumLink);stage.append(meta);
+  root.renderCollectionQuestsF43?.(stage);
   const gallery=el('details','f31-vantvat-gallery');
   gallery.append(el('summary','','✧ Bách Giới Kỳ Trân · '+
    rule.POOL.filter(x=>x.rank!=='COIN').length+' bảo vật'));

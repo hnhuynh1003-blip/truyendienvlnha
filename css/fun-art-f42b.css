@@ -30,3 +30,6 @@ body.dudu-phone-v11 #cyber-phone .f41-crystals{z-index:5}
 .f41-target-seal::after{content:'';position:absolute;inset:8%;pointer-events:none;border:1px solid #c6dce473;clip-path:polygon(50% 0,98% 26%,90% 78%,50% 100%,10% 78%,2% 26%);background:linear-gradient(130deg,#152b3e8c,#7694ab23,#13263d88)}
 .f42b1-sealed-coin{position:absolute;left:15%;top:16%;width:70%;filter:brightness(.22) saturate(0)}
 @media(prefers-reduced-motion:reduce){.f42b-sealed-vessel{filter:brightness(.08) saturate(0) blur(3px)}}
+
+/* F4.3: a deliberate approach and retrieval arc. */
+.f41-cosmos[data-phase=travel] .f41-haze{animation:f43-approach 3.5s ease-in-out both}.f41-cosmos[data-phase=recall] .f41-haze{animation:f43-recall .9s ease-in both}@keyframes f43-approach{0%{opacity:.12;transform:scale(.8)}60%{opacity:.55;transform:scale(1.13)}100%{opacity:.24;transform:scale(1.3)}}@keyframes f43-recall{to{opacity:.6;transform:scale(1.35)}}@media(prefers-reduced-motion:reduce){.f41-cosmos[data-phase] .f41-haze{animation:none}}

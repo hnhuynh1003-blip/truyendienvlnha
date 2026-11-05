@@ -32,12 +32,12 @@
   <link rel="stylesheet" href="css/phone-wallpaper-v38-studio.css?v=39-2">
   <link rel="stylesheet" href="css/npc-portrait-v38.css?v=1">
   <link rel="stylesheet" href="css/npc-portrait-v39.css?v=2">
-  <link rel="stylesheet" href="css/inventory-v42.css?v=c24c-1">
+  <link rel="stylesheet" href="css/inventory-v42.css?v=c24c-1&amp;f43=1">
   <link rel="stylesheet" href="css/companion-v43.css?v=1">
   <link rel="stylesheet" href="css/npc-bond-v43.css?v=2">
   <link rel="stylesheet" href="css/market-v43.css?v=f36-1">
   <link rel="stylesheet" href="css/dudu-fun-v43.css?v=f39-1&amp;hunt=f42d-1">
-  <link rel="stylesheet" href="css/fun-art-f42b.css?v=f42b1-1">
+  <link rel="stylesheet" href="css/fun-art-f42b.css?v=f42b1-1&amp;f43=1">
   <link rel="stylesheet" href="css/van-bao-art-v1.css?v=vanbao-1">
   <link rel="stylesheet" href="css/van-bao-stage-v2.css?v=fun-vis6">
   <link rel="stylesheet" href="css/dudu-fun-casino-v1.css?v=fun-cas1">
@@ -134,9 +134,9 @@
   <script src="js/npc-memory-v2.js"></script>
   <script src="js/world-items-v44-1.js?v=1"></script>
   <script src="js/item-catalog-v2.js?v=f34-1"></script>
-  <script src="js/world-collection-v44-1.js?v=c25-1"></script>
+  <script src="js/world-collection-v44-1.js?v=c25-1&amp;f43=1"></script>
   <script src="js/economy-core-v43.js?v=6"></script>
-  <script src="js/personal-collection-c24.js?v=c25-1"></script>
+  <script src="js/personal-collection-c24.js?v=c25-1&amp;f43=1"></script>
   <script src="js/quest-engine-v43-7.js?v=44-9"></script>
   <script src="js/personal-quest-events-c45.js?v=c45-1"></script>
   <script src="js/personal-companion-checkin-c45.js?v=c45-1"></script>
@@ -146,7 +146,8 @@
   <script src="js/personal-blind-box-c29.js?v=c29-box-1"></script>
   <script src="js/fun-vantvat-f31.js?v=f36-1"></script>
   <script src="js/fun-wheel-f39.js?v=f39-1"></script>
-  <script src="js/personal-vantvat-f31.js?v=f36-1"></script>
+  <script src="js/collection-quests-f43.js?v=f43-1"></script>
+  <script src="js/personal-vantvat-f31.js?v=f36-1&amp;f43=1"></script>
   <script src="js/personal-vantvat-f33.js?v=f33-1"></script>
   <script src="js/personal-jade-core-v1.js?v=c442-1&amp;economy=c450-1&amp;c452=1&amp;c454=1&amp;c457a=1&amp;c457b=1&amp;c458=1&amp;c460=1"></script>
   <script src="js/personal-arcade-season-c423.js?v=c423-1&amp;beat=c441b-1"></script>
@@ -160,11 +161,11 @@
   <script src="js/personal-arcade-exchange-v1.js?v=xu-quote-2"></script>
   <script src="js/personal-spark-exchange-v1.js?v=spark-bridge-1"></script>
   <script src="js/story-market-v43.js?v=1"></script>
-  <script src="js/inventory-model-v42.js?v=44-1"></script>
+  <script src="js/inventory-model-v42.js?v=44-1&amp;f43=1"></script>
   <script src="js/inventory-trade-v43-9.js?v=44-9"></script>
   <script src="js/gift-recipient-v44.js?v=1"></script>
   <script src="js/inventory-hub-v43-9.js?v=c24b-1"></script>
-  <script src="js/inventory-view-v42.js?v=f33-1"></script>
+  <script src="js/inventory-view-v42.js?v=f33-1&amp;f43=1"></script>
   <script src="js/item-visuals-v13.js?v=f37-1&amp;art=f42d-1"></script>
   <script src="js/npc-relationship-v2-r1.js"></script>
   <script src="js/npc-gift-v2-r2.js"></script>
@@ -226,6 +227,7 @@
   <script src="js/item-actions-v43.js?v=1"></script>
   <script src="js/functional-items-v43-8.js?v=44-9"></script>
   <script src="js/personal-spark-items-v1.js?v=f33-1"></script>
+  <script src="js/collection-transactions-f43.js?v=f43-1"></script>
   <script src="js/personal-bulk-sale-f34.js?v=f34-1"></script>
   <script src="js/companion-rules-v43.js?v=1"></script>
   <script src="js/dudu-system-steward-v67-3.js?v=67-3-3"></script>
@@ -6071,6 +6073,28 @@ document.getElementById('phone-home-screen').style.display = 'none';
     const personalItemsReady=()=>!IS_SANDBOX_MODE&&
       window.DUDU_SPARK_ITEMS_V1_READY===true&&!!window.DuduPersonalSparkItemsV1&&
       DuduAuth.isReady()&&DuduAuth.uid()===currentUsername;
+    let collectionQuestBusyF43=false;
+    function renderCollectionQuestsF43(host){
+      if(!host||!personalItemsReady()||!window.DuduCollectionQuestsF43)return;
+      const engine=DuduCollectionQuestsF43,rows=engine.preview(userProfile),box=document.createElement('details');box.className='f43-collection-quests';
+      const summary=document.createElement('summary');summary.textContent='Hành trình sưu tầm · '+rows.filter(x=>x.complete).length+'/'+rows.length;box.append(summary);
+      for(const q of rows){const card=document.createElement('section');card.className='f43-quest-card';const title=document.createElement('strong');title.textContent=q.title;const label=document.createElement('small');label.textContent=(q.mode==='receive'||q.mode==='realms'?'Lượt nhận từ F4.3':q.mode==='deliver'?'Giao nộp '+DuduItemCatalog.byId(q.itemId).name:'Đang sở hữu · '+(q.mode==='own-types'?'Loại khác nhau':'Trọn bộ vị diện'))+' · '+Math.min(q.current,q.target)+'/'+q.target;const meter=document.createElement('progress');meter.max=q.target;meter.value=Math.min(q.current,q.target);const prize=document.createElement('small');prize.textContent=q.exp+' EXP · '+q.badge;const button=document.createElement('button');button.type='button';button.className='btn';button.textContent=q.complete?'✓ '+q.badge:q.mode==='deliver'?'Giao nộp ×'+q.target:'Nhận thành tựu';button.disabled=q.complete||!q.ready||collectionQuestBusyF43;
+       button.onclick=async()=>{if(collectionQuestBusyF43||!personalItemsReady())return;const uid=DuduAuth.uid();if(q.mode==='deliver'&&!confirm('Giao nộp '+q.target+' '+DuduItemCatalog.byId(q.itemId).name+' để nhận '+q.exp+' EXP? Các bản này sẽ rời Kho.'))return;collectionQuestBusyF43=true;button.disabled=true;try{await Promise.allSettled([...pendingLiveProfileWrites]);if(!personalItemsReady()||DuduAuth.uid()!==uid)return;const result=await engine.claim({db,auth:firebase.auth(),uid,questId:q.id,instanceIds:q.instanceIds,confirmed:q.mode==='deliver'});if(!personalItemsReady()||DuduAuth.uid()!==uid)return;for(const key of ['currency','exp','level','inventory','storyStates'])userProfile[key]=result[key];collectionQuestBusyF43=false;renderInventory();renderQuests();renderWallet();window.DuduFunUIV43?.render?.();}catch(error){if(DuduAuth.uid()===uid)showSystemAlert('CHƯA HOÀN THÀNH',error?.message||'Thử lại để xác nhận giao dịch.');}finally{collectionQuestBusyF43=false;if(DuduAuth.uid()===uid){button.disabled=q.complete||!q.ready;}}};card.append(title,label,meter,prize,button);box.append(card);
+      }host.append(box);
+    }
+    async function sellQuantityF43(item,instanceIds){
+      if(!personalItemsReady()||personalItemBusy)return false;
+      const uid=DuduAuth.uid(),key='dudu-f43-sale:'+uid+':'+item.id;
+      let pending;try{pending=JSON.parse(localStorage.getItem(key)||'null');}catch(_){}
+      if(pending&&(pending.itemId!==item.id||!Array.isArray(pending.instanceIds)))return false;
+      if(pending&&JSON.stringify(pending.instanceIds)!==JSON.stringify(instanceIds)&&!confirm('Xác nhận lại giao dịch bán '+pending.instanceIds.length+' bản đang chờ phản hồi?'))return false;
+      if(!pending)pending={itemId:item.id,instanceIds,requestId:'sell-'+crypto.randomUUID()};
+      try{localStorage.setItem(key,JSON.stringify(pending));}catch(_){return false;}
+      personalItemBusy=true;
+      try{await Promise.allSettled([...pendingLiveProfileWrites]);if(!personalItemsReady()||DuduAuth.uid()!==uid)return false;const result=await DuduCollectionTransactionsF43.sell({...pending,db,auth:firebase.auth(),uid});if(!personalItemsReady()||DuduAuth.uid()!==uid)return false;
+        userProfile.currency=result.balance;userProfile.inventory=result.inventory;userProfile.storyStates=result.storyStates;inventoryDetailSelection=result.inventory.find(i=>i.id===item.id)||null;localStorage.removeItem(key);renderInventory();renderWallet();renderQuests();return true;
+      }catch(error){showSystemAlert('CHƯA BÁN ĐƯỢC',error?.message||'Hãy thử lại để xác nhận cùng giao dịch.');return false;}finally{personalItemBusy=false;if(DuduAuth.uid()===uid)renderInventory();}
+    }
     async function personalInventoryAction(kind,item){
       if(!personalItemsReady()||personalItemBusy||!item?.instanceId)return false;
       const engine=window.DuduPersonalSparkItemsV1,uid=DuduAuth.uid();
@@ -6500,6 +6524,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
             if(userProfile.inventory!==current)return false;
             return toggleFavoriteF33(item);
           },
+          onSellMany(item,ids){if(userProfile.inventory!==current)return false;return sellQuantityF43(item,ids);},
           onSell(item){
             if(userProfile.inventory!==current)return false;
             return personalInventoryAction('sell',item);
@@ -9550,15 +9575,15 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/dudu-casino-slot-ui-v1.js?v=casino-slot3"></script>
 <script src="js/fun-art-f42b.js?v=f42b-1"></script>
 <script src="js/fun-stream-f42b1.js?v=f42b1-1"></script>
-<script src="js/fun-cosmos-f41.js?v=f42b1-1"></script>
-<script src="js/dudu-fun-ui-v43.js?v=f39-1&amp;hunt=f42d-1"></script>
+<script src="js/fun-cosmos-f41.js?v=f42b1-1&amp;f43=1"></script>
+<script src="js/dudu-fun-ui-v43.js?v=f39-1&amp;hunt=f42d-1&amp;f43=1"></script>
 <script src="js/personal-jade-ui-v1.js?v=c442-1&amp;art=c432-1&amp;materials=c425c-1&amp;compact=c425d-2&amp;market=c441b-1&amp;c450=1&amp;c452=1&amp;fun=p1-2&amp;c454=1&amp;huntui=c455b2&amp;c456=1&amp;c457a=1&amp;c457b=1&amp;c457c=1&amp;c458=1&amp;c460=1&amp;c460a=1&amp;c460b=1&amp;c460c=1&amp;c460e=1"></script>
 <script src="js/personal-honor-ui-c46.js?v=c412-1&amp;journey=c437-1&amp;progression=c425g-1&amp;art=c437p-1"></script>
 <script src="js/personal-arcade-ui-v1.js?v=c445-1&amp;art=c425a-2&amp;worlds=c425b-2&amp;materials=c425c-1&amp;pods=c425d-1&amp;interaction=c425e-1&amp;fishing=c440a-1&amp;progression=c425g-1&amp;tackle=c427-1&amp;weather=c428-1&amp;museum=c429-1&amp;season-preview=c439r2-1&amp;neon=c441a-1&amp;beat=c441b-1&amp;phase=c446-1&amp;farm=c446b-1&amp;layout=c446c-1&amp;pond=c447-1&amp;album=c448-1&amp;economy=c448b-1&amp;garden=c449-1&amp;c450=1&amp;precision=c451-1&amp;c452=1&amp;fun=p1-2&amp;c454=1&amp;c455=3&amp;c456=1&amp;c457b=1&amp;c459=1&amp;c460=1&amp;c460a=1&amp;c460b=1&amp;c460e=1"></script>
 <script src="js/arcade-treasure-ui-c438.js?v=c438-1&amp;display=c439-2&amp;repair=c439r2-1"></script>
 <script src="js/arcade-showcase-ui-c439.js?v=c439-1&amp;repair=c439r2-1&amp;align=c439r4-1"></script>
 <script src="js/quest-ui-v43-7.js?v=c23c-1&amp;progression=c425g-1"></script>
-<script src="js/economy-runtime-v43.js?v=c23c-1"></script>
+<script src="js/economy-runtime-v43.js?v=c23c-1&amp;f43=1"></script>
 <script src="js/economy-live-v52.js?v=f34-1"></script>
 <script src="js/museum-memories-ui-v43.js?v=c426-1"></script>
 <script src="js/museum-collection-f40.js?v=f40-1&amp;hunt=f42d-1"></script>

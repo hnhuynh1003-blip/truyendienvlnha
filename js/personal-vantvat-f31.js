@@ -10,6 +10,7 @@
  if(root)root.DuduPersonalVantVatF31=api;
 })(typeof window!=='undefined'?window:null,function(rule,catalog,collection){
  'use strict';
+ const collectionQuests=typeof module==='object'&&module.exports?require('./collection-quests-f43.js'):window.DuduCollectionQuestsF43;
  const META='__duduVantVatF31',MAX_IDS=100,MAX_HISTORY=60,MAX_BATCH_RECEIPTS=24;
  const validId=id=>typeof id==='string'&&/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(id);
  const fail=reason=>Object.assign(new Error(reason),{reason});
@@ -44,6 +45,7 @@
    Math.min(raw.totalSpins,100000000):0;
   return {version:1,ids,history,album,active,pity,totalSpins,batchReceipts:receipts};
  }
+ const fit=(data,patch)=>{if(new TextEncoder().encode(JSON.stringify({...data,...patch})).length>750*1024)throw fail('profile-size-limit');};
  const nextPity=(pity,prize)=>rule.HIGH_RANKS.includes(prize?.rank)?0:
   Math.min(99,pity+1);
  function session(db,auth,uid){
@@ -76,12 +78,11 @@
     if(s.active?.status==='sealed')throw fail('unfinished-spin');
     if(currency<rule.PRICE)throw fail('not-enough-xu');
     const prize=rule.draw(roll);
-    if(inventory.length>=500&&prize.rank!=='COIN'&&
-     !inventory.some(item=>item.id===prize.itemId))throw fail('inventory-full');
+    if(inventory.length>=500&&prize.rank!=='COIN')throw fail('inventory-full');
     const next={...s,
      ids:[...s.ids,id].slice(-MAX_IDS),active:{id,itemId:prize.itemId,status:'sealed'}};
     const nextStates={...states,[META]:next};
-    tx.update(ref,{currency:currency-rule.PRICE,storyStates:nextStates});
+    fit(data,{currency:currency-rule.PRICE,storyStates:nextStates});tx.update(ref,{currency:currency-rule.PRICE,storyStates:nextStates});
     return {status:'applied',kind,currency:currency-rule.PRICE,inventory,
      state:next,storyStates:nextStates};
    }
@@ -98,25 +99,12 @@
      active:{...active,status:'claimed'},
      history:[...s.history,{id,itemId:active.itemId}].slice(-MAX_HISTORY)};
     const nextStates={...states,[META]:next};
-    tx.update(ref,{currency:currency+prize.amount,storyStates:nextStates});
+    fit(data,{currency:currency+prize.amount,storyStates:nextStates});tx.update(ref,{currency:currency+prize.amount,storyStates:nextStates});
     return {status:'applied',kind,currency:currency+prize.amount,inventory,
      state:next,storyStates:nextStates,reward:{kind:'COIN',amount:prize.amount}};
    }
    const approved=catalog.byId(active.itemId);
    if(!approved||approved.collectionSet!=='VAN_VAT')throw fail('invalid-prize');
-   if(inventory.some(x=>x.id===approved.id)){
-    const returned=rule.VALUES[approved.rank];
-    if(!returned||currency>rule.MAX_WALLET-returned)throw fail('wallet-cap');
-    const next={...s,pity:nextPity(s.pity,prize),totalSpins:Math.min(100000000,s.totalSpins+1),
-     album:[...new Set([...s.album,active.itemId])],
-     active:{...active,status:'claimed',duplicate:true,returned},
-     history:[...s.history,{id,itemId:active.itemId,duplicate:true,returned}].slice(-MAX_HISTORY)};
-    const nextStates={...states,[META]:next};
-    tx.update(ref,{currency:currency+returned,storyStates:nextStates});
-    return {status:'applied',kind,currency:currency+returned,inventory,
-     state:next,storyStates:nextStates,
-     reward:{kind:'DUPLICATE',amount:returned,itemId:active.itemId}};
-   }
    if(inventory.length>=500)throw fail('inventory-full');
    const instanceId='fun-vantvat-'+id;
    if(inventory.some(x=>x.instanceId===instanceId))throw fail('duplicate-instance');
@@ -128,9 +116,9 @@
     album:[...new Set([...s.album,approved.id])],
     active:{...active,status:'claimed'},
     history:[...s.history,{id,itemId:approved.id}].slice(-MAX_HISTORY)};
-   const nextStates={...states,[META]:next,[collection.META]:journal.state};
+   const nextStates={...states,[META]:next,[collection.META]:journal.state,[collectionQuests.META]:collectionQuests.record(states[collectionQuests.META],[approved.id],at)};
    const nextInventory=[item,...inventory];
-   tx.update(ref,{inventory:nextInventory,storyStates:nextStates});
+   fit(data,{inventory:nextInventory,storyStates:nextStates});tx.update(ref,{inventory:nextInventory,storyStates:nextStates});
    return {status:'applied',kind,currency,inventory:nextInventory,
     state:next,storyStates:nextStates,reward:item};
   });
@@ -190,14 +178,6 @@
     const approved=catalog.byId(prize.itemId);
     if(!approved||approved.collectionSet!=='VAN_VAT')throw fail('invalid-prize');
     album.add(approved.id);
-    if(owned.some(item=>item.id===approved.id)){
-     const returned=rule.VALUES[approved.rank];
-     if(!returned||balance>rule.MAX_WALLET-returned)throw fail('wallet-cap');
-     balance+=returned;
-     results.push({kind:'DUPLICATE',itemId:approved.id,rank:approved.rank,
-      amount:returned,pityTriggered:guaranteed,spinId:spinIds[i]});
-     continue;
-    }
     if(owned.length>=500)throw fail('inventory-full');
     const instanceId='fun-vantvat-'+spinIds[i];
     if(owned.some(x=>x.instanceId===instanceId))throw fail('duplicate-instance');
@@ -219,7 +199,8 @@
     totalSpins:Math.min(100000000,s.totalSpins+count),batchReceipts:receipts};
    const nextStates={...states,[META]:next};
    if(journal!==undefined)nextStates[collection.META]=journal;
-   tx.update(ref,{currency:balance,inventory:owned,storyStates:nextStates});
+   nextStates[collectionQuests.META]=collectionQuests.record(states[collectionQuests.META],results.filter(x=>x.kind==='ITEM').map(x=>x.itemId),at);
+   fit(data,{currency:balance,inventory:owned,storyStates:nextStates});tx.update(ref,{currency:balance,inventory:owned,storyStates:nextStates});
    return {status:'applied',currency:balance,inventory:owned,state:next,
     storyStates:nextStates,results,cost};
   });

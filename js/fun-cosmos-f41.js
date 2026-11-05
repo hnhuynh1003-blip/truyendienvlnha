@@ -143,12 +143,12 @@
     if(item){const image=el('span','f41-prize-art');root.DuduItemArtV13?.mount?.(image,item);card.append(image);}
     else card.append(el('span','f41-gold-coin'));crystals.append(card);});
    status.textContent=amount+' phần thưởng đã khai mở';resume();
-   later(()=>{scene.dataset.phase='landed';complete(true);},reduced()?0:rank==='SSS'?1600:rank==='SS'?1250:rank==='S'?1000:['A','B','C'].includes(rank)?700:400);
+   later(()=>{scene.dataset.phase='landed';complete(true);},reduced()?0:rank==='SSS'?3600:rank==='SS'?3000:rank==='S'?2600:2000);
   }
   function retrieve(){if(!finish||scene.dataset.phase!=='target')return;
    clearTimers();drag=null;scene.classList.remove('is-pulling');scene.dataset.phase='recall';target.disabled=true;instruction.hidden=true;
    target.style.setProperty('--pull-x','0px');target.style.setProperty('--pull-y','0px');
-   status.textContent='Đang thu hồi phong ấn';prepareOpeningFx();later(showPrizes,reduced()?0:420);resume();
+   status.textContent='Đang thu hồi phong ấn';prepareOpeningFx();later(showPrizes,reduced()?0:900);resume();
   }
   target.addEventListener('click',retrieve);
   target.addEventListener('pointerdown',event=>{if(scene.dataset.phase!=='target'||drag)return;
@@ -174,7 +174,7 @@
      ![1,5,10].includes(n)||!Array.isArray(results)||results.length!==n)return Promise.resolve(false);
     rows=results;amount=n;opened=false;scene.dataset.count=String(n);scene.dataset.phase='travel';skip.hidden=false;
     if(skipped){rows=null;scene.dataset.phase='landed';skip.hidden=true;return Promise.resolve(true);}
-    return new Promise(done=>{finish=done;later(showTarget,reduced()?0:750);resume();});
+    return new Promise(done=>{finish=done;later(showTarget,reduced()?0:3500);resume();});
    },
    dispose(){if(disposed)return;disposed=true;complete(false);if(frame)root.cancelAnimationFrame(frame);
     observer?.disconnect();resizeObserver?.disconnect();doc.removeEventListener('visibilitychange',visibility);motion?.removeEventListener?.('change',onMotion);

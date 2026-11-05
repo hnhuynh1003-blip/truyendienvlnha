@@ -185,6 +185,11 @@
     if(!plain(record))return null;
     const alias=starterAlias(record);
     const item=catalog?.byId(alias||idOf(record));
+    // F4.3: group verified catalog collectibles without rewriting physical records.
+    if(item?.collectionSet==='VAN_VAT'&&record.id===item.id&&record.itemId===item.id&&record.name===item.name&&record.rank===item.rank&&record.type===item.type&&record.scope===item.scope&&/^fun-vantvat-[0-9a-f-]{36}$/.test(record.instanceId||'')&&record.obtainedFrom?.source==='DUDU_FUN_VANTUONG'&&record.instanceId==='fun-vantvat-'+record.obtainedFrom.eventId){
+      const allowed=new Set([...Object.keys(item),'instanceId','obtainedFrom']);
+      if(Object.keys(record).every(k=>allowed.has(k)&&(k==='instanceId'||k==='obtainedFrom'||JSON.stringify(record[k])===JSON.stringify(item[k]))))return 'VAN_VAT:'+item.id;
+    }
     if(!item||!['COMMON','REALM'].includes(item.scope)||
        // Rank B+ and story-significant rare finds remain individual slots.
        !['F','E','D','C'].includes(item.rank)||
