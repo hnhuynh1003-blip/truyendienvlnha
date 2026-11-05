@@ -42,7 +42,7 @@ test('catalog items have visible defined art with safe unknown fallback',()=>{
    assert.equal(image.toString('ascii',0,4),'RIFF');
    assert.equal(image.toString('ascii',8,12),'WEBP');
    assert.ok(image.length>10000&&image.length<(folder==='f42d'?400000:150000));
-  }else if(item.collectionSet==='VAN_CARD'){assert.equal(v.src,'assets/van-bao/cards/'+item.id+'.svg');assert.match(fs.readFileSync(path.resolve(__dirname,'..',v.src),'utf8'),/<svg/);}else assert.ok(v.src.length>300,item.id);
+  }else if(item.collectionSet==='VAN_CARD'){assert.equal(v.src,item.artPath);const webp=fs.readFileSync(path.resolve(__dirname,'..',v.src));assert.equal(webp.toString('ascii',0,4),'RIFF');assert.equal(webp.toString('ascii',8,12),'WEBP');}else assert.ok(v.src.length>300,item.id);
  }
  assert.equal(art.visual({id:'custom',rank:'__proto__',type:'ITEM'}).rank,'F');
 });
@@ -74,8 +74,8 @@ test('SVG cannot interpolate unsafe item-provided HTML',()=>{
  assert.doesNotMatch(svg,/onload|onerror|alert|<script|src=x/);
 });
 test('item art works for sandbox and read-only live inventory without mutating ownership',()=>{
- assert.match(html,/src="js\/item-visuals-v13.js(?:\?v=[\w-]+)?(?:&amp;art=f42d-1)?&amp;f44=1"/);
- assert.match(html,/href="css\/item-visuals-v13.css\?v=f37-1&amp;art=f42d-1&amp;f44=1"/);
+ assert.match(html,/src="js\/item-visuals-v13.js(?:\?v=[\w-]+)?(?:&amp;art=f42d-1)?&amp;f44=1(?:&amp;final=f44-1)?"/);
+ assert.match(html,/href="css\/item-visuals-v13.css\?v=f37-1&amp;art=f42d-1&amp;f44=1(?:&amp;final=f44-1)?"/);
  assert.match(html,/function renderSandboxItemArt\(element,item\)\{\s*if\(!element\|\|!item\)return/);
  assert.match(html,/renderSandboxItemArt\(artwork,item\)/);
  assert.match(html,/renderSandboxItemArt\(icon,item\)/);

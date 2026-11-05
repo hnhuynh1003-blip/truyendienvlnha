@@ -1,3 +1,5 @@
+> Historical batch-1 design. Current gameplay, art, economy and honest content limits are documented in [DUDU_F44_FINAL.md](DUDU_F44_FINAL.md).
+
 # F4.4 — Ngũ Tử Phá Trận, batch 1
 
 12 authored and verified 9×9 positions: four NOVICE (1 X move), four EASY (2 X moves), four MEDIUM (3 X moves). No HARD or MASTER puzzles are released. 88 of the 100 target positions remain unimplemented; the requested final 15/25/30/20/10 distribution is a future target, not a claim of completion. build-vanbao-puzzles-f44.cjs contains the fixed authored seed positions; no random board generator is used.

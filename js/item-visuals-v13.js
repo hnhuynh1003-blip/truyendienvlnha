@@ -214,7 +214,7 @@
     const newOriginPainted=item.collectionSet==='VAN_VAT'&&VAN_VAT_F35_ART.has(id);
     const tierPainted=item.collectionSet==='VAN_VAT'&&VAN_VAT_F37_ART.has(id);
     return Object.freeze({rank,shape,light,dark,
-      src:cardPainted?'assets/van-bao/cards/'+id+'.svg':completedPainted?'assets/van-tuong/f42d/'+id+'.webp':
+      src:cardPainted?'assets/van-bao/final/'+({'f44-card-plain':'blank01_ancientpaper','f44-card-spirit':'blank02_spiritwood','f44-card-star':'blank06_astral'}[id])+'.webp':completedPainted?'assets/van-tuong/f42d/'+id+'.webp':
         painted?'assets/van-bao/v1/'+id+'.webp':
         tierPainted?'assets/van-tuong/f37/'+id+'.webp':
         newOriginPainted?'assets/van-tuong/f35/'+id+'.webp':

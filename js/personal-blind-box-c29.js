@@ -87,6 +87,7 @@
     else if(s.active?.status==='sealed')throw fail('unfinished-box');
     else if(!['paid','free'].includes(mode)||!draw(roll))throw fail('invalid-draw');
     else if(s.lastFreeDay>day)throw fail('clock-backwards');
+    else if(states.__duduVanBaoEndlessFinalF44)throw fail('blind-box-moved-to-endless');
     else if(mode==='free'&&s.lastFreeDay===day)throw fail('free-used');
     else if(mode==='paid'&&currency<PRICE)throw fail('not-enough-xu');
     else if(inventory.length>=MAX_ITEMS)throw fail('inventory-full');

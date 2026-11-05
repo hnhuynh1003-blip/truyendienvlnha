@@ -83,6 +83,7 @@ jobs:
         run: |
           node tests/browser-vanbao-f44.cjs
           node tests/browser-vanbao-main-f44.cjs
+          node tests/browser-vanbao-final-f44.cjs
       - name: F4.3 inventory viewer, quantity controls and collection delivery
         run: |
           node tests/browser-inventory-f43.cjs

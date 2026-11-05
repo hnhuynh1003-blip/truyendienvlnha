@@ -828,7 +828,7 @@
     }
    }
    const controls=el('div','blind-buy-actions');
-   if(s.lastFreeDay!==day()){
+   if(root.DuduVanBaoSessionsF44){controls.append(el('small','','Lượt miễn phí hằng ngày ở Vô Tận'));}else if(s.lastFreeDay!==day()){
     const free=el('button','dudu-fun-start blind-free','🎁 MỞ MIỄN PHÍ HÔM NAY');
     free.type='button';free.disabled=blindBusy||funActionBusy;
     free.addEventListener('click',()=>{void blindAction('start','free');});controls.append(free);
@@ -836,7 +836,7 @@
    const paid=withGold('button','dudu-fun-start blind-paid','✨ MUA HỘP · ',blind().PRICE);
    paid.type='button';paid.disabled=blindBusy||funActionBusy||walletBalance()<blind().PRICE;
    paid.addEventListener('click',()=>{void blindAction('start','paid');});
-   controls.append(paid);rootNode.append(controls);
+   if(!root.DuduVanBaoSessionsF44)controls.append(paid);else controls.append(el('small','','Hộp cũ chỉ nhận nốt lượt đã mở · lượt mới ở Vô Tận'));rootNode.append(controls);
   }
   const heading=el('div','blind-album-heading');
   heading.append(el('strong','','✦ Sổ Vạn Bảo · '+s.album.length+'/'+items.length),
@@ -1285,7 +1285,7 @@
     'Đăng nhập để khám phá DUDU FUN và nhận thưởng.'));
    return true;
   }
-  const tabs=el('div','dudu-fun-tabs'+(open==='slot'?' is-hunt':''));
+  host.classList?.toggle?.('is-vanbao-final',open==='box');const tabs=el('div','dudu-fun-tabs'+(open==='slot'?' is-hunt':''));
   for(const [type,label] of [['box','🎁 Vạn Bảo'],['ticket','🎟️ Vé Cào'],
    ['slot','🎰 Vạn Tượng']]){
    const button=el('button','dudu-fun-tab'+(open===type?' is-active':''),label);
@@ -1293,7 +1293,7 @@
    button.addEventListener('click',()=>{open=type;hint=true;render();});
    tabs.append(button);
   }
-  host.append(tabs);
+  if(open==='box'){const other=el('details','f44-other-games');other.append(el('summary','','Trò khác'),tabs);host.append(other);}else host.append(tabs);
   const content=el('section','dudu-fun-stage'+(open==='slot'?' is-slot':''));
   const state=view(),round=state.rounds[open];
   if(open==='slot'){
