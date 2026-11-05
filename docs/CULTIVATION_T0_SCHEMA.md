@@ -1,0 +1,3 @@
+# T0 — Tu Tiên transition
+
+Same Firebase UID, account profile, EXP, currency, inventory, quests and server passport records are retained. No T0 profile writes or migration. Proposed T1 metadata: __duduCultivationT1.version, character.name/sectId/spiritualRootId, cultivation.realmId/stage/progress. Cultivation progress is separate from old account EXP; no conversion is approved at T0. Existing profile, inventory, quests and wallet remain available. The explicit Thiên Mệnh cũ button lazily loads the four compatibility modules; world engines/creator stay archived. Change the deployed worlds flag and run restoreArchive to restore the preserved script list in a future approved round.

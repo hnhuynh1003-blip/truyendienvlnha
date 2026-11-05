@@ -11,14 +11,14 @@ const ui=read('js/dudu-pilot-ui-v1.js');
 const standalone=read('dudu-pilot.html');
 assert.match(shell,/dudu-pilot-entry-inline/,'World Atlas must render persistent pilot card');
 assert.match(shell,/pilotLink\.href='dudu-pilot\.html\?v=play-v8'/,'World Atlas needs direct fallback');
-assert.match(shell,/root\.append\(pilot,starter,hidden\)/,'Pilot should appear before genre tiles');
-assert.match(html,/site-shell-v60\.js\?v=play-v8/,'Refresh old HTML asset version');
+assert.match(shell,/if\(WORLDS_PAUSED\)\{/,'Archive gate must precede pilot rendering');
+assert.match(html,/site-shell-v60\.js\?v=l2d2-1/,'Refresh old HTML asset version');
 assert.match(html,/dudu-pilot-ui-v1\.js\?v=play-v8/,'Refresh pilot UI bundle version');
 assert.match(ui,/querySelector\('\.dudu-pilot-entry-inline'\)/,
  'Optional modal module must not create duplicate CTA');
 assert.match(ui,/queueMicrotask\(mount\)/,'Wait for world shell render');
 assert.match(standalone,/id="dudu-pilot-standalone-start"/);
-assert.match(standalone,/window\.DuduPilotUIV1\.open\(\)/);
+assert.match(standalone,/window\.DuduPilotUIV1\.open\(\)/);assert.match(standalone,/application\/x-dudu-archive/);assert.match(standalone,/archive-page-t0\.js/);
 assert.match(standalone,/js\/dudu-story-engine-v1\.js/);
 assert.match(standalone,/js\/dudu-pilot-f-v1\.js/);
 assert.match(standalone,/js\/dudu-pilot-ui-v1\.js/);

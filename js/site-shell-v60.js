@@ -8,7 +8,7 @@
  const icons={home:'⌂',library:'▤',worlds:'✧',shelf:'▧'};
  // C4.46c: pause world authoring/playtests without deleting drafts or game data.
  // Reopening Vạn Giới requires a separate, approved development round.
- const WORLDS_PAUSED=true;
+ const WORLDS_PAUSED=window.DuduFeaturesT0?.worlds!==true;
  const oldGoHome=window.goHome,oldOpenCover=window.openCover,oldReadChapter=window.readChapter,oldRenderHome=window.renderHome;
  let current='home',refreshPending=false;
  function element(tag,cls,value){
@@ -306,6 +306,7 @@
  }
  function navigate(page,updateHash=true){
    window.DuduLibraryReaderStatusL2A?.cancel();
+   if(page==='worlds'&&WORLDS_PAUSED)page='home';
    if(!routes[page])page='home';
    if(page==='author'&&!isAuthor())page='home';
    const cover=id('cover-view'),reader=id('reader-view');
@@ -331,10 +332,10 @@
  function setup(){
    const header=document.querySelector('body > header');
    const top=element('nav','d60-topnav');top.setAttribute('aria-label','Điều hướng DUDU');
-   ['home','library','worlds','shelf','author'].forEach(p=>top.append(navButton(p,false)));
+   ['home','library',...(WORLDS_PAUSED?[]:['worlds']),'shelf','author'].forEach(p=>top.append(navButton(p,false)));
    header.insertBefore(top,header.querySelector('.header-controls'));
    const bottom=element('nav','d60-bottomnav');bottom.setAttribute('aria-label','Điều hướng di động');
-   ['home','library','worlds','shelf'].forEach(p=>bottom.append(navButton(p,true)));
+   ['home','library',...(WORLDS_PAUSED?[]:['worlds']),'shelf'].forEach(p=>bottom.append(navButton(p,true)));
    document.body.append(bottom);
    const container=document.querySelector('.container');
    const home=element('main','d60-page');home.id='d60-home';

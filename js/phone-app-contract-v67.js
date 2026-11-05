@@ -13,7 +13,7 @@
   ['lab-v445','Phòng thử nghiệm','sandbox','DuduMultiActorLabUIV445','lab'],
   ['museum','Bảo tàng','retain','renderMuseum','collectibles'],
   ['quests','Nhiệm vụ','bridge','renderQuests','quests'],
-  ['system','Hệ Thống Xuyên Truyện','bridge','DuduSystemAppsV69','transmigration'],
+  ['system','Tu Tiên','bridge','DuduCultivationT0','cultivation'],
   ['core-console','Chủ Thần AU','author','DuduSystemAppsV69','world-authority'],
   ['stories','Truyện','retain','renderPhoneStoryListV29','stories'],
   ['codex','Nhân vật','retain','renderCodexList','npc'],

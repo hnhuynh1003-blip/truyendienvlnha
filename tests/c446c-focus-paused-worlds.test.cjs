@@ -9,7 +9,7 @@ const read=file=>readFileSync(join(root,file),'utf8');
 test('C4.46c pauses only Van Gioi entry points while Library and Arcade remain available',()=>{
  const ui=read('js/site-shell-v60.js');
  const html=read('index.html');
- assert.match(ui,/const WORLDS_PAUSED=true/);
+ assert.match(ui,/const WORLDS_PAUSED=window\.DuduFeaturesT0\?\.worlds!==true/);
  assert.ok(ui.indexOf('if(WORLDS_PAUSED){')<ui.indexOf('const taxonomy=window.DuduWorldTaxonomyV66;',ui.indexOf('function fillWorlds()')));
  assert.match(ui,/root\.append\(seal\);\s*return;/,'World cards and playtest links never render while sealed');
  assert.match(ui,/WORLDS_PAUSED&&n\.id==='d60-world-creator-launch'/);

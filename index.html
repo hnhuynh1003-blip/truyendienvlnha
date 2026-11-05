@@ -2,6 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
+  <script src="js/features-t0.js?v=t0-1"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>DUDU Studio</title>
   
@@ -861,7 +862,7 @@
   <link rel="stylesheet" href="css/dudu-pilot-v1.css?v=play-v8">
   <link rel="stylesheet" href="css/dudu-messenger-v67-2.css?v=69-restore-1">
   <link rel="stylesheet" href="css/dudu-steward-v67-3.css?v=67-3">
-  <link rel="stylesheet" href="css/dudu-system-app-v69.css?v=71-hud-11">
+  <link rel="stylesheet" href="css/dudu-system-app-v69.css?v=71-hud-11&amp;t0=1">
   <link rel="stylesheet" href="css/vangioi-creator.css?v=3c-1">
   <link rel="stylesheet" href="css/phone-frame-c415.css?v=c415-3">
   <link rel="stylesheet" href="css/arcade-c425g-progression.css?v=c425g-1">
@@ -1200,8 +1201,8 @@
           <button type="button" class="app-icon" onclick="openPhoneApp('quests')" aria-label="Mở Nhiệm Vụ">
             <div class="app-box" style="background:#f59e0b;">📜</div><div class="app-label">Nhiệm Vụ</div>
           </button>
-          <button type="button" class="app-icon" onclick="openPhoneApp('system')" aria-label="Mở Thiên Mệnh">
-            <div class="app-box" style="background:linear-gradient(140deg,#7161ae,#375d9d);">✦</div><div class="app-label">Thiên Mệnh</div>
+          <button type="button" class="app-icon" onclick="openPhoneApp('system')" aria-label="Mở Tu Tiên">
+            <div class="app-box" style="background:linear-gradient(140deg,#7161ae,#375d9d);">✦</div><div class="app-label">Tu Tiên</div>
           </button>
           <!-- Core console is not a reader app; AU launcher remains absent for readers. -->
           <button type="button" class="app-icon" id="dudu-v69-core-launch"
@@ -1446,7 +1447,7 @@
       <div class="phone-sub-app" id="phone-app-system">
         <div class="phone-app-header">
           <button type="button" class="phone-back-btn" onclick="phoneHome()" aria-label="Về màn hình chính">‹</button>
-          <span>✧ Thiên Mệnh</span><span></span>
+          <span>✧ Tu Tiên</span><span></span>
         </div>
         <div id="dudu-v69-system-view" class="dudu-v69-screen" aria-live="polite"></div>
       </div>
@@ -5837,6 +5838,7 @@ document.querySelectorAll('.phone-sub-app').forEach(el => el.style.display = 'no
     }
 
     function openPhoneApp(appName) {
+      if(['worlds','vangioi','world','core-console'].includes(appName)&&!window.DuduFeaturesT0?.worlds){window.DuduCultivationT0?.archived?.();return false;}
       if(!IS_SANDBOX_MODE && window.DUDU_ACCOUNT_APPROVAL_V1_READY &&
         !DuduAuth.isReady()){
         openAuthModal();
@@ -5862,7 +5864,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
         renderCodexDropdown();
         renderCodexList();
       } else if (appName === 'system') {
-        window.DuduSystemAppsV69?.renderSystem();
+        window.DuduCultivationT0?.render();
       } else if (appName === 'core-console') {
         window.DuduSystemAppsV69?.renderCore();
       } else if (appName === 'chat') {
@@ -9596,32 +9598,33 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/phone-wallpaper-v36-custom.js?v=1"></script>
 <script src="js/phone-wallpaper-v38-catalog.js?v=39-1"></script>
 <script src="js/phone-wallpaper-v38-studio.js?v=39-1"></script>
-<script src="js/world-registry-v63.js?v=63-1"></script>
-<script src="js/world-taxonomy-v66.js?v=66-2"></script>
-<script src="js/world-blueprint-v66.js?v=66-1"></script>
+<script type="application/x-dudu-archive" data-src="js/world-registry-v63.js?v=63-1"></script>
+<script type="application/x-dudu-archive" data-src="js/world-taxonomy-v66.js?v=66-2"></script>
+<script type="application/x-dudu-archive" data-src="js/world-blueprint-v66.js?v=66-1"></script>
 <script src="js/library-reader-status-l2a.js?v=l2a-1"></script>
 <script src="js/library-reader-preferences-l2c.js?v=l2b-1"></script>
 <script src="js/library-reading-return-c443.js?v=c443-1"></script>
-  <script src="js/site-shell-v60.js?v=l2d2-1&amp;pause=c446c-1"></script>
-<script src="js/world-experience-v66.js?v=66-2"></script>
-<script src="js/dudu-core-rules-v1.js?v=1"></script>
-<script src="js/dudu-story-engine-v1.js?v=play-v8"></script>
-<script src="js/dudu-pilot-f-v1.js?v=1"></script>
-<script src="js/dudu-world-model-v2b.js?v=play-v8"></script>
-<script src="js/dudu-pilot-world-v2b.js?v=play-v8"></script>
-<script src="js/dudu-story-engine-v2b.js?v=play-v8-items-1"></script>
-<script src="js/dudu-pilot-f-v2b.js?v=play-v8-items-1"></script>
-<script src="js/dudu-pilot-ui-v1.js?v=play-v8"></script>
-<script src="js/dudu-transmigration-v69.js?v=69-1"></script>
-<script src="js/dudu-system-client-v71.js?v=71-2"></script>
-<script src="js/dudu-core-ai-v70.js?v=70-3"></script>
-<script src="js/vangioi-creator-validation.js?v=3c-2"></script>
-<script src="js/vangioi-arc-plan.js?v=1n-1"></script>
-<script src="js/vangioi-creator.js?v=3c-1"></script>
+  <script src="js/site-shell-v60.js?v=l2d2-1&amp;pause=c446c-1&amp;t0=1"></script>
+<script type="application/x-dudu-archive" data-src="js/world-experience-v66.js?v=66-2"></script>
+<script type="application/x-dudu-archive" data-src="js/dudu-core-rules-v1.js?v=1"></script>
+<script type="application/x-dudu-archive" data-src="js/dudu-story-engine-v1.js?v=play-v8"></script>
+<script type="application/x-dudu-archive" data-src="js/dudu-pilot-f-v1.js?v=1"></script>
+<script type="application/x-dudu-archive" data-src="js/dudu-world-model-v2b.js?v=play-v8"></script>
+<script type="application/x-dudu-archive" data-src="js/dudu-pilot-world-v2b.js?v=play-v8"></script>
+<script type="application/x-dudu-archive" data-src="js/dudu-story-engine-v2b.js?v=play-v8-items-1"></script>
+<script type="application/x-dudu-archive" data-src="js/dudu-pilot-f-v2b.js?v=play-v8-items-1"></script>
+<script type="application/x-dudu-archive" data-src="js/dudu-pilot-ui-v1.js?v=play-v8"></script>
+<script type="application/x-dudu-archive" data-src="js/dudu-transmigration-v69.js?v=69-1"></script>
+<script type="application/x-dudu-archive" data-src="js/dudu-system-client-v71.js?v=71-2"></script>
+<script type="application/x-dudu-archive" data-src="js/dudu-core-ai-v70.js?v=70-3"></script>
+<script type="application/x-dudu-archive" data-src="js/vangioi-creator-validation.js?v=3c-2"></script>
+<script type="application/x-dudu-archive" data-src="js/vangioi-arc-plan.js?v=1n-1"></script>
+<script type="application/x-dudu-archive" data-src="js/vangioi-creator.js?v=3c-1"></script>
 <script src="js/library-intake-v1.js?v=lib1-ui3"></script>
-<script src="js/dudu-system-app-v69.js?v=71-main-13"></script>
-<script src="js/dudu-character-name-v71.js?v=71-1"></script>
-<script src="js/phone-app-contract-v67.js?v=67-arcade-wallet-1"></script>
+<script type="application/x-dudu-archive" data-src="js/dudu-system-app-v69.js?v=71-main-13"></script>
+<script type="application/x-dudu-archive" data-src="js/dudu-character-name-v71.js?v=71-1"></script>
+<script src="js/cultivation-t0.js?v=t0-1"></script>
+<script src="js/phone-app-contract-v67.js?v=67-arcade-wallet-1&amp;t0=1"></script>
 <script src="js/phone-lifecycle-v67-1.js?v=67-arcade-wallet-1"></script>
 <script src="js/dudu-messenger-v67-2.js?v=67-2"></script>
 </body>

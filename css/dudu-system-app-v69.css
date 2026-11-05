@@ -817,3 +817,6 @@ body.dudu-phone-v11 #cyber-phone .dudu-v71-hero.dudu-v71-hostline{
 body.dudu-phone-v11 #cyber-phone .dudu-v71-hostline .dudu-v71-id{
  font-size:9px;color:#afc0dc;
 }
+
+/* T0 transition keeps existing character functions reachable. */
+.t0-transition{padding:18px;display:grid;gap:12px;min-width:0}.t0-transition h2{margin:0;color:#edddba}.t0-transition p{color:#c8c5d5;font-size:13px}.t0-transition .btn{min-height:44px;white-space:normal}
