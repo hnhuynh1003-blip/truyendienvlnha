@@ -84,6 +84,7 @@ function renderPlayerAvatarV16(element,selection=playerAvatarCurrentV16()){
   }
 }
 function renderPlayerAvatarPlacesV16(){
+  window.DuduCultivationT0?.refreshIdentity?.();
   if(!playerAvatarAllowedV497())return;
   for(const [id,display] of [
     ['player-avatar-v1','grid'],['phone-player-avatar-v16','grid'],

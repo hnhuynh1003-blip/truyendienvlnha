@@ -822,3 +822,6 @@ body.dudu-phone-v11 #cyber-phone .dudu-v71-hostline .dudu-v71-id{
 .t0-transition{padding:18px;display:grid;gap:12px;min-width:0}.t0-transition h2{margin:0;color:#edddba}.t0-transition p{color:#c8c5d5;font-size:13px}.t0-transition .btn{min-height:44px;white-space:normal}
 
 body.dudu-phone-v11 #cyber-phone #phone-app-system .t0-transition .btn{min-height:44px!important;height:auto!important;max-height:none!important;white-space:normal}
+
+/* Shared Phone/Library/Tu Tiên portrait, no second decorative frame. */
+.t0-shared-avatar{display:block!important;width:96px!important;height:96px!important;max-width:100%;margin:12px auto}.t0-transition>strong{display:block;text-align:center}.t0-transition>small{display:block;margin:8px 0;color:#b4c2cb}

@@ -217,7 +217,7 @@
   <script src="js/red-packet-v32.js?v=timeline-1"></script>
   <script src="js/chat-social-v32.js?v=copy-1"></script>
   <script src="js/dudu-multiverse-ui-v28-r5.js"></script>
-  <script src="js/player-avatar-ui-v16.js?v=identity-1"></script>
+  <script src="js/player-avatar-ui-v16.js?v=identity-final-1"></script>
   <script src="js/player-avatar-sync-plan-v20.js"></script>
   <script src="js/player-avatar-conflict-ui-v21.js"></script>
   <script src="js/player-avatar-sync-v17.js"></script>
@@ -864,7 +864,7 @@
   <link rel="stylesheet" href="css/dudu-pilot-v1.css?v=play-v8">
   <link rel="stylesheet" href="css/dudu-messenger-v67-2.css?v=69-restore-1">
   <link rel="stylesheet" href="css/dudu-steward-v67-3.css?v=67-3">
-  <link rel="stylesheet" href="css/dudu-system-app-v69.css?v=71-hud-11&amp;t0=2">
+  <link rel="stylesheet" href="css/dudu-system-app-v69.css?v=71-hud-11&amp;t0=final-1">
   <link rel="stylesheet" href="css/vangioi-creator.css?v=3c-1">
   <link rel="stylesheet" href="css/phone-frame-c415.css?v=c415-3">
   <link rel="stylesheet" href="css/arcade-c425g-progression.css?v=c425g-1">
@@ -7329,6 +7329,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
     });
     const vantVatReadyF31=()=>!IS_SANDBOX_MODE&&DuduAuth.isReady()&&
       DuduAuth.uid()===currentUsername&&!!window.DuduPersonalVantVatF31;
+    window.DuduCultivationIdentityT0=Object.freeze({snapshot:()=>({uid:IS_SANDBOX_MODE?'sandbox:'+currentUsername:DuduAuth.uid(),name:userProfile.name||currentUsername||'Khách',exp:userProfile.exp||0,level:userProfile.level||1,inventoryCount:userProfile.inventory?.length||0}),avatar:node=>window.renderPlayerAvatarV16?.(node)});
     window.DuduVanBaoBridgeF44=Object.freeze({
       uid:()=>IS_SANDBOX_MODE?'sandbox:'+currentUsername:DuduAuth.uid(),ready:()=>!IS_SANDBOX_MODE&&personalItemsReady()&&!!window.DuduVanBaoRewardsF44,
       async load(){if(!this.ready())throw Error('invalid-account');const uid=DuduAuth.uid();await Promise.allSettled([...pendingLiveProfileWrites]);if(!this.ready()||DuduAuth.uid()!==uid)throw Error('account-changed');return DuduVanBaoRewardsF44.load({db,auth:firebase.auth(),uid});},
@@ -9634,7 +9635,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/library-intake-v1.js?v=lib1-ui3"></script>
 <script type="application/x-dudu-archive" data-src="js/dudu-system-app-v69.js?v=71-main-13"></script>
 <script type="application/x-dudu-archive" data-src="js/dudu-character-name-v71.js?v=71-1"></script>
-<script src="js/cultivation-t0.js?v=t0-1"></script>
+<script src="js/cultivation-t0.js?v=final-1"></script>
 <script src="js/phone-app-contract-v67.js?v=67-arcade-wallet-1&amp;t0=1"></script>
 <script src="js/phone-lifecycle-v67-1.js?v=67-arcade-wallet-1"></script>
 <script src="js/dudu-messenger-v67-2.js?v=67-2"></script>
