@@ -14,7 +14,7 @@ const assert = require('node:assert/strict');
     if (!filename.startsWith(root + path.sep)) { res.writeHead(403).end(); return; }
     fs.readFile(filename, (err, bytes) => {
       if (err) { res.writeHead(404).end(); return; }
-      const mime = filename.endsWith('.js') ? 'text/javascript' : filename.endsWith('.json') ? 'application/json' : 'text/html; charset=utf-8';
+      const mime = ({'.js':'text/javascript','.css':'text/css','.json':'application/json','.svg':'image/svg+xml','.webp':'image/webp','.png':'image/png','.jpg':'image/jpeg','.woff2':'font/woff2'})[path.extname(filename)] || 'text/html; charset=utf-8';
       res.writeHead(200, {'content-type': mime}).end(bytes);
     });
   });
