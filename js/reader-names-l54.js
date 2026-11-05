@@ -26,11 +26,12 @@
     (parts.length>=2&&name.endsWith(' '+key));
   });
  }
- function analyze(input,entries=[]){
+ function analyze(input,entries=[],lookup=null){
   const text=String(input||'').normalize('NFC'),tokens=words(text),found=new Map(),positions=new Map();
   const profiles=characters(entries),confirmed=entries.filter(e=>!e.disabledAuto),ignored=new Set(entries.filter(e=>e.disabledAuto).map(e=>fold(e.from)));
+  const knownKeys=new Set(confirmed.flatMap(e=>[fold(e.from),fold(e.to)]));
   const add=(name,start,end,reason,context=false,suspect=false)=>{
-   const key=fold(name);if(ignored.has(key)||common.has(key))return;
+   const key=fold(name);if(ignored.has(key)||common.has(key)&&!knownKeys.has(key))return;
    const item=found.get(key)||{from:norm(name),to:title(name),count:0,context:0,reason,suspect,occurrences:[]};
    if(!positions.has(key))positions.set(key,new Map());
    if(positions.get(key).has(start))return;positions.get(key).set(start,end);
@@ -50,6 +51,13 @@
     const context=/^\s*(?:nói|hỏi|đáp|cười|gật đầu|lắc đầu|quát|thở dài|bước|nhìn|nghe|đứng|đến|rời|xoay người)\b/iu.test(after)||/(?:gọi|tên là|đệ tử|công tử|cô nương|gặp|nhìn|hỏi)\s*$/iu.test(before);
     add(name,first.start,end,'Họ Hán–Việt và ngữ cảnh',context,suspect);
    }
+  }
+  if(lookup)for(const span of lookup.detect(text)){
+   const after=text.slice(span.end,span.end+45),before=text.slice(Math.max(0,span.start-35),span.start);
+   const context=/^\s*(?:nói|hỏi|đáp|cười|gật đầu|lắc đầu|quát|thở dài|bước|nhìn|nghe|đứng|đến|rời|xoay người)\b/iu.test(after)||/(?:gọi|tên là|đệ tử|công tử|cô nương|gặp|nhìn|hỏi)\s*$/iu.test(before);
+   const onlyDictionary=!found.has(fold(span.from));
+   add(span.from,span.start,span.end,'Bộ tra Hán–Việt và nghĩa Việt',context,span.suspect);
+   if(onlyDictionary&&found.has(fold(span.from)))found.get(fold(span.from)).dictionaryOnly=true;
   }
   // Explicitly confirmed aliases are evidence, even if a word is also ordinary.
   // Index a bounded number of literal patterns; no whole-book scans.
@@ -75,10 +83,18 @@
     if(key.endsWith(' rõ ràng'))item.links=profiles.filter(p=>fold(p.name)===key.replace(/rõ ràng$/u,'minh')).map(p=>({id:p.id,name:p.name}));
    }
    if(links.length>1){item.auto=false;item.category=rule?'confirmed':'suspect';item.reason='Trùng cách gọi giữa nhiều nhân vật';}
+   if(lookup){
+    item.suggestions=lookup.suggest(item.from,{profiles});
+    const inferred=item.suggestions.filter(s=>s.kind==='inferred'),best=item.suggestions[0];
+    if(!rule&&best){item.to=best.name;if(best.kind==='inferred'){item.auto=false;item.suspect=true;item.category='suspect';item.reason=best.reason;}}
+    item.inferredAutomatic=!rule&&best?.kind==='inferred'&&best.automatic&&(inferred.length===1||best.personalExact)&&item.count>=3&&item.context>=2&&links.length<=1;
+    const at=item.occurrences[0];item.excerpt=text.slice(Math.max(0,at.start-65),Math.min(text.length,at.end+95));
+   }
    return item;
   });
   // Suppress prefix fragments when every occurrence belongs to a longer name.
-  return all.filter(a=>!all.some(b=>b!==a&&fold(b.from).startsWith(fold(a.from)+' ')&&a.occurrences.every(x=>(positions.get(fold(b.from)).get(x.start)||0)>x.end)))
+  return all.filter(a=>!a.dictionaryOnly||a.context>0||a.category==='confirmed'||a.count>=2&&a.from===title(a.from))
+   .filter(a=>!all.some(b=>b!==a&&fold(b.from).startsWith(fold(a.from)+' ')&&a.occurrences.every(x=>(positions.get(fold(b.from)).get(x.start)||0)>x.end)))
    .sort((a,b)=>({confirmed:0,high:1,suspect:2}[a.category]-{confirmed:0,high:1,suspect:2}[b.category])||b.count-a.count);
  }
  function characters(entries){

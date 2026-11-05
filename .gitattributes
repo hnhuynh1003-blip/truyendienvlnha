@@ -1,0 +1,2 @@
+# Keep the pinned reader dictionary payload hashes identical across platforms.
+assets/reader-name-lookup-l55/*.json text eol=lf

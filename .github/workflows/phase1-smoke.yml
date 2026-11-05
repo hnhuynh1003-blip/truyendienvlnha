@@ -100,6 +100,8 @@ jobs:
         run: node tests/browser-reader-names-l53.cjs
       - name: L5.4 smart names, character links, backups and Android touch selection (local only)
         run: node tests/browser-reader-names-l54.cjs
+      - name: L5.5 real offline lookup, reverse candidates, custom packs and manual fallback (local only)
+        run: node tests/browser-reader-name-lookup-l55.cjs
       - name: R1 Library capacity and responsive owner panel (Sandbox, no external writes)
         run: node tests/browser-library-capacity-r1.cjs
       - name: Shared Sandbox comments and EPUB regression (advisory)

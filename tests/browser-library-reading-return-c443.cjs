@@ -54,7 +54,7 @@ async function main(){
    // Long-form fixture belongs to the isolated Sandbox browser context only.
    novels[0].chapters[0].content=Array.from({length:90},(_,i)=>
     'Đoạn '+(i+1)+': Một hành trình tiếp tục giữa trang sách. '.repeat(8)).join('\n\n');
-   novels[0].chapters[0].content+='\n\ntần minh nói. tần minh hỏi. tần minh cười.';
+   novels[0].chapters[0].content+='\n\nlộc biết thuyền nói. lộc biết thuyền hỏi. lộc biết thuyền cười.\n\ntần minh nói. tần minh hỏi. tần minh cười.';
    localStorage.setItem('dudu-sandbox-library',JSON.stringify(novels));
    smartReadAction(0);
   });
@@ -115,6 +115,17 @@ async function main(){
   assert.match(await last.textContent(),/Tần An nói/);
   assert.equal(await page.evaluate(()=>novels[selectedNovelIndex].chapters[0].content),source,'L5.4 never edits the chapter source');
   await page.locator('#reader-name-done-l54').click();
+  if(await page.evaluate(()=>!!window.DuduReaderNameLookupL55)){
+   await page.evaluate(()=>DuduReaderNamesL53.scan());
+   const actual=page.locator('.l54-result').filter({hasText:'lộc biết thuyền → Lộc Tri Chu'});
+   await actual.waitFor({timeout:20000});assert.match(await actual.locator('.l55-excerpt').textContent(),/lộc biết thuyền/);
+   await actual.getByRole('button',{name:'Kiểm tra'}).click();
+   const choice=page.locator('#reader-name-proposals-l55 .l55-choice').getByText('Lộc Tri Chu',{exact:true});await choice.waitFor();await choice.click();
+   await page.screenshot({path:path.join(require('node:os').tmpdir(),'dudu-l55-full-app.png')});
+   await page.locator('[data-name-action="save"]').click();
+   assert.match(await page.locator('#reader-content').textContent(),/Lộc Tri Chu nói/);
+   assert.equal(await page.evaluate(()=>novels[selectedNovelIndex].chapters[0].content),source);
+  }
   await page.evaluate(async()=>{scrollTo(0,0);await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));DuduReaderFocusL2B.hide();});
   // Flush the downward scroll event before reversing direction. Without this,
   // Chromium may coalesce two instant scrollTo() calls into one event at 560px.
