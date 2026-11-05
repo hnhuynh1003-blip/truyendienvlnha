@@ -130,19 +130,13 @@ async function main(){
    assert.ok(layout.labels.includes('Hoa sương')&&layout.labels.includes('Hoa nguyệt'));
    await page.locator('#personal-arcade-v1 .garden-sheet-back').click();
   }
-  await page.evaluate(()=>window.DuduSiteV60.navigate('worlds'));
-  await page.locator('#d60-worlds-list .d60-world-pause').waitFor();
-  assert.match(await page.locator('#d60-worlds-list').innerText(),/Vạn Giới tạm niêm phong/);
-  assert.equal(await page.locator('#d60-worlds-list a[href*="playtests/"]').count(),0);
-  assert.equal(await page.locator('#d60-worlds-list a[href*="dudu-pilot"]').count(),0);
-  assert.equal(await page.evaluate(()=>window.DuduSiteV60.worldsPaused),true);
   const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem(
    'dudu-personal-arcade:v1:'+encodeURIComponent('sandbox:c446b-farmer'))));
   assert.equal(saved.coins,1234);
   assert.equal(saved.garden.harvests,35);
   assert.equal(saved.garden.plots,4);
   assert.equal(saved.garden.fishAlbum.reed,4);
-  console.log('C4.46c greenhouse compact seeds, icon Back, archived worlds + four mobile widths ✓');
+  console.log('C4.46c greenhouse compact seeds, icon Back + four mobile widths ✓');
  }finally{
   if(browser)await browser.close();
   await new Promise(resolve=>server.close(resolve));

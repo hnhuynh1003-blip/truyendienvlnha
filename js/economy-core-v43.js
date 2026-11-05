@@ -137,7 +137,7 @@
    else if(tab==='REALM'&&catalog.REALM_TAGS.includes(realmTag))
      items=catalog.list({scope:'REALM',realmTag});
    else if(tab==='DUDU')items=catalog.list({scope:'DUDU'})
-     .filter(item=>!['VAN_BAO','VAN_VAT'].includes(item.collectionSet));
+     .filter(item=>!['VAN_BAO','VAN_VAT','VAN_CARD'].includes(item.collectionSet));
    else if(tab==='TOOLS')items=FUNCTIONAL_TOOLS;
    return items.filter(item=>
      !text||[item.name,item.desc,item.rank].some(v=>

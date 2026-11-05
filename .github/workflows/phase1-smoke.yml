@@ -79,6 +79,10 @@ jobs:
         run: node tests/browser-library-smart-filter-l3.cjs
       - name: L4 EPUB details and 200+ chapter contents (Sandbox, no external writes)
         run: node tests/browser-library-finish-l4.cjs
+      - name: F4.4 verified puzzle board, immutable chests and card delivery
+        run: |
+          node tests/browser-vanbao-f44.cjs
+          node tests/browser-vanbao-main-f44.cjs
       - name: F4.3 inventory viewer, quantity controls and collection delivery
         run: |
           node tests/browser-inventory-f43.cjs

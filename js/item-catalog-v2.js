@@ -7,10 +7,11 @@
   'use strict';
   const pack=typeof module==='object'&&module.exports?
     require('./world-items-v44-1.js'):root?.DuduWorldItemsV441;
-  const catalog = factory(pack);
+  const cards=typeof module==='object'&&module.exports?require('./card-blanks-f44.js'):root?.DuduCardBlanksF44;
+  const catalog = factory(pack,cards);
   if (typeof module === 'object' && module.exports) module.exports = catalog;
   if (root) root.DuduItemCatalog = catalog;
-})(typeof window !== 'undefined' ? window : null, function (worldPack) {
+})(typeof window !== 'undefined' ? window : null, function (worldPack,cards) {
   'use strict';
   const VERSION = 3;
   const RANKS = Object.freeze(['F','E','D','C','B','A','S','SS','SSS']);
@@ -737,7 +738,7 @@
     item(id,name,rank,'ITEM',icon,'Kỷ vật đa vị diện · '+category,
       'DUDU',null,'FUN_VANTUONG',{collectionSet:'VAN_VAT',tradeable:false,
        funCategory:category,funRealm:realm||'ORIGIN'}));
-  const items = Object.freeze([...common,...realms,...souvenirs,...funCollectibles,...funVantVat]);
+  const items = Object.freeze([...common,...realms,...souvenirs,...funCollectibles,...funVantVat,...(cards?.items||[])]);
   const index = new Map(items.map(record=>[record.id,record]));
 
   // Archived legacy item in the old random pool but not part of the approved
@@ -779,9 +780,9 @@
       if(x.scope!=='REALM'&&x.realmTag!==null)errors.push('Unexpected realm tag: '+x.id);
       if(x.scope==='DUDU'&&(x.acquisition.method==='RANDOM'||x.giftable||x.discardable||!x.unique))errors.push('Invalid collector guard: '+x.id);
     }
-    if(scopes.COMMON!==25||scopes.REALM!==120||scopes.DUDU!==100)errors.push('Unexpected catalog counts: '+JSON.stringify(scopes));
-    if(items.length!==245||funCollectibles.length!==19||funVantVat.length!==66)
-      errors.push('Expected 179 inherited + 66 Vạn Vật records');
+    if(scopes.COMMON!==25||scopes.REALM!==120||scopes.DUDU!==103)errors.push('Unexpected catalog counts: '+JSON.stringify(scopes));
+    if(items.length!==248||funCollectibles.length!==19||funVantVat.length!==66)
+      errors.push('Expected 245 inherited + 3 card blanks');
     for(const tag of REALM_TAGS){
       const inRealm=realms.filter(x=>x.realmTag===tag);
       if(inRealm.length!==20)errors.push('Unexpected realm size: '+tag);

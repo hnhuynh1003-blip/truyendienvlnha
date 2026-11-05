@@ -1247,6 +1247,8 @@
  }
  function render(){
   const host=$('dudu-fun-content-v43');if(!host)return false;
+  if(open==='box'&&host.querySelector?.('.f44-vanbao')&&root.DuduVanBaoUIF44?.preserve()){updateHeaderBalance();root.DuduVanBaoUIF44.refreshLegacy?.();return true;}
+  root.DuduVanBaoUIF44?.dispose?.();
   const runningScene=host.querySelector?.('.f41-cosmos');
   // Background reads must not replace the target while the player retrieves it.
   if(vvBusy&&!sandbox()&&signed()&&vvBridge()?.uid?.()===vvUid&&open==='slot'&&
@@ -1301,7 +1303,8 @@
      sessionKey:'fun:'+currentUsername});
    else content.append(el('p','dudu-fun-caption','Máy Quay Vạn Tượng đang chuẩn bị…'));
   }else if(open==='box'){
-   if(sandbox()){boxes(content,round);sandboxTreasurePreview(content);}
+   if(root.DuduVanBaoUIF44)root.DuduVanBaoUIF44.mount({host:content,onLegacy:node=>{if(sandbox()){boxes(node,round);sandboxTreasurePreview(node);}else blindBoxes(node);}});
+   else if(sandbox()){boxes(content,round);sandboxTreasurePreview(content);}
    else blindBoxes(content);
   }
   else lottery(content,round);

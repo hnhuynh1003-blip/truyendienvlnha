@@ -7,7 +7,7 @@
 })(typeof window!=='undefined'?window:null,function(rule){
  'use strict';
  const META='__duduVantVatF33',MAX_LOCKS=100;
- const idOk=id=>typeof id==='string'&&/^fun-(?:box|vantvat)-[0-9a-f-]{36}$/.test(id);
+ const idOk=id=>typeof id==='string'&&/^fun-(?:box|vantvat|chess)-[0-9a-f-]{36}$/.test(id);
  const fail=reason=>Object.assign(new Error(reason),{reason});
  function norm(raw){
   return {version:1,lockedIds:[...new Set((Array.isArray(raw?.lockedIds)?raw.lockedIds:[])

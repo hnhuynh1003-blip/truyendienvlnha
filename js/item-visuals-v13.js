@@ -206,6 +206,7 @@
       (vantVatEmblem?'<text x="38" y="49" font-size="34" text-anchor="middle">'+safeGlyph+'</text>':SHAPES[shape])+sparkles+
       '<circle cx="63" cy="12" r="4" fill="'+glow+'" opacity=".8"/></svg>';
     const fallback='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+    const cardPainted=['f44-card-plain','f44-card-spirit','f44-card-star'].includes(id);
     const completedPainted=item.collectionSet==='VAN_VAT'&&VAN_VAT_F42D_ART.has(id);
     const painted=item.collectionSet==='VAN_BAO'&&VAN_BAO_ART.has(id);
     const realmPainted=item.collectionSet==='VAN_VAT'&&VAN_VAT_F32_ART.has(id);
@@ -213,13 +214,13 @@
     const newOriginPainted=item.collectionSet==='VAN_VAT'&&VAN_VAT_F35_ART.has(id);
     const tierPainted=item.collectionSet==='VAN_VAT'&&VAN_VAT_F37_ART.has(id);
     return Object.freeze({rank,shape,light,dark,
-      src:completedPainted?'assets/van-tuong/f42d/'+id+'.webp':
+      src:cardPainted?'assets/van-bao/cards/'+id+'.svg':completedPainted?'assets/van-tuong/f42d/'+id+'.webp':
         painted?'assets/van-bao/v1/'+id+'.webp':
         tierPainted?'assets/van-tuong/f37/'+id+'.webp':
         newOriginPainted?'assets/van-tuong/f35/'+id+'.webp':
         originPainted?'assets/van-tuong/f34/'+id+'.webp':
         realmPainted?'assets/van-tuong/'+(id.startsWith('f32b-')?'f32b/':'f32/')+id+'.webp':fallback,
-      fallbackSrc:completedPainted||painted||realmPainted||originPainted||newOriginPainted||tierPainted?fallback:null});
+      fallbackSrc:cardPainted||completedPainted||painted||realmPainted||originPainted||newOriginPainted||tierPainted?fallback:null});
   }
   // One artwork renderer for both the store and all warehouse views.
   // It changes presentation only; it never edits the item or its ownership.

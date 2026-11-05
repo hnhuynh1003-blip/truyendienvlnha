@@ -52,6 +52,8 @@
  }
  function valueOf(item){
   const approved=catalog.byId(item?.id);
+  if(approved?.collectionSet==='VAN_CARD'&&['id','itemId','name','rank','type','scope','collectionSet'].every(k=>item[k]===approved[k])&&JSON.stringify(item.crafting)===JSON.stringify(approved.crafting)&&item.cardKind===approved.cardKind&&item.obtainedFrom?.kind==='EVENT'&&item.obtainedFrom.source==='DUDU_FUN_VANBAO_CHESS'&&/^fun-chess-[0-9a-f-]{36}$/.test(item.instanceId||'')&&item.instanceId==='fun-chess-'+item.obtainedFrom.eventId)return approved.sellValue;
+
   if(!approved||!['VAN_BAO','VAN_VAT'].includes(approved.collectionSet)||
    item.itemId!==approved.id||item.name!==approved.name||
    item.rank!==approved.rank||item.scope!==approved.scope||
