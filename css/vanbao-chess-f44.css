@@ -6,3 +6,5 @@
 .f44-head>.btn{min-width:44px;min-height:44px}
 
 .f44-head{flex-wrap:wrap}.f44-info[open]{flex-basis:100%;order:3}.f44-info[open] p{max-width:100%;overflow-wrap:anywhere}
+
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .f44-vanbao .btn{min-height:44px!important;height:auto!important;max-height:none!important;white-space:normal}body.dudu-phone-v11 #cyber-phone #phone-app-fun .f44-box{min-height:90px!important;height:auto!important}
