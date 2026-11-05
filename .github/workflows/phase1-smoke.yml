@@ -101,9 +101,8 @@ jobs:
         run: node tests/browser-reader-names-l54.cjs
       - name: R1 Library capacity and responsive owner panel (Sandbox, no external writes)
         run: node tests/browser-library-capacity-r1.cjs
-      - name: Legacy Sandbox regression (advisory; cannot block main V71)
+      - name: Shared Sandbox comments and EPUB regression (advisory)
         continue-on-error: true
         run: |
-          node tests/browser-smoke.cjs
           node --test tests/browser-sandbox-discussion.cjs
           node --test tests/browser-epub-import-v48.cjs

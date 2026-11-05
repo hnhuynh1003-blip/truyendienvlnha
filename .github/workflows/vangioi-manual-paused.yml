@@ -49,6 +49,7 @@ jobs:
       - name: Archived world authoring and playtest browser acceptance
         run: |
           npm install --prefix cloudflare --ignore-scripts --no-audit --no-fund
+          node tests/browser-smoke.cjs
           node tests/browser-vangioi-creator.cjs
           node tests/browser-quan-dao-items.cjs
           node tests/browser-vangioi-author-roleplay.cjs

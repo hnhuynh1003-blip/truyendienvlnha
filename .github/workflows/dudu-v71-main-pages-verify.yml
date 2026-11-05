@@ -1,4 +1,4 @@
-name: DUDU V71 Published Main - read-only verification
+name: DUDU Published Main - core and FUN read-only verification
 on:
   workflow_run:
     workflows: ["pages build and deployment"]
@@ -25,10 +25,11 @@ jobs:
 
           base='https://hnhuynh1003-blip.github.io/truyendienvlnha/'
           paths=(
-              ('', 'js/dudu-system-app-v69.js?v=71-main-11'),
-              ('js/dudu-system-app-v69.js?v=71-main-11', 'dudu-v71-unavailable'),
-              ('js/dudu-system-client-v71.js?v=71-2', 'DuduSystemClientV71'),
-              ('css/dudu-system-app-v69.css?v=71-hud-11', 'dudu-v71'),
+              ('', 'js/vanbao-ui-f44.js?v=f44-1'),
+              ('js/features-t0.js?v=t0-1', 'const worlds=false'),
+              ('js/cultivation-t0.js?v=t0-1', 'DuduCultivationT0'),
+              ('js/vanbao-rewards-f44.js?v=f44-1', 'DuduVanBaoRewardsF44'),
+              ('docs/DUDU_F44_ART_MANIFEST.csv', 'f44.card.plain'),
           )
           def read(url):
               request=urllib.request.Request(url,headers={
@@ -47,7 +48,7 @@ jobs:
                       body=read(base+path)
                       if needle not in body:
                           raise AssertionError(f'missing published marker in {path or "index.html"}')
-                  print('PASS: production Pages main HTML, System UI, client and CSS are published')
+                  print('PASS: production Pages main HTML, T0 flags, FUN rewards and Art manifest are published')
                   print('READ-ONLY: no Firebase login, Worker call, passport issuance, reward or user write')
                   break
               except Exception as error:
