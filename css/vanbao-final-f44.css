@@ -58,3 +58,12 @@ body.dudu-phone-v11 #cyber-phone #phone-app-fun .f44-node{background:none!import
 .f44-node-links path{fill:none;stroke:var(--branch);stroke-width:.6;opacity:.5;stroke-dasharray:2 1}
 
 #phone-app-fun:has(>.phone-app-header) .f44-back{display:none!important}
+
+/* Entrance first; show a single selected branch, not a stack of maps. */
+.f44-vanbao[data-scene=entrance] .f44-lobby-content{display:flex;min-height:0;padding:0}
+.f44-entrance{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-start;min-height:260px;padding:24px 16px 28px;gap:9px;background:linear-gradient(0deg,#0b1925f0,transparent 75%),url('../assets/van-bao/final/bg_tangthecac.webp') center/cover;color:#f8e5b8}
+.f44-entrance h2{font-size:clamp(20px,6cqw,27px);line-height:1.3;margin:0;max-width:95%;text-shadow:0 2px 5px #000}
+.f44-entrance small{letter-spacing:.12em;font-size:10px;color:#d3bd8b}
+.f44-entrance p{font-size:12px;line-height:1.5;margin:0;color:#f1e4ca}
+.f44-vanbao[data-scene=entrance] .f44-nav button{font-size:12px!important;min-height:54px!important}
+.f44-map-back{margin-bottom:10px}
