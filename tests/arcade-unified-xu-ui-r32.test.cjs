@@ -26,8 +26,9 @@ test('R3.2 live Arcade purchases debit profiles_v2 currency, never legacy local 
   return result;
  }};
  const profile={currency:30};
+ const notice={textContent:''},scroll={scrollTop:0};
  const host={innerHTML:'',scrollTop:0,listeners:{},
-  querySelector:()=>null,querySelectorAll:()=>[],
+  querySelector:selector=>selector==='.arcade-scroll'?scroll:notice,querySelectorAll:()=>[],
   addEventListener(k,cb){this.listeners[k]=cb;}};
  const arcade={style:{display:'flex'}};
  const walletChip={textContent:'',listeners:{},addEventListener(k,cb){this.listeners[k]=cb;}};
