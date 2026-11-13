@@ -17,7 +17,7 @@ test('R3.3 main phone labels are Bách Hí and Kỳ Vận while stable routes su
  assert.match(html,/id="phone-app-arcade"/);
  assert.match(html,/<span>✦ Kỳ Vận<\/span>/);
  assert.match(html,/css\/ky-van-r33-compact\.css\?v=r33-1/);
- assert.match(html,/dudu-fun-ui-v43\\.js\\?v=f39-1&amp;hunt=f42d-1&amp;f43=1&amp;f44=1&amp;final=f44-1&amp;ky-van=r33-1/);
+ assert.match(html,/dudu-fun-ui-v43\.js\?v=f39-1&amp;hunt=f42d-1&amp;f43=1&amp;f44=1&amp;final=f44-1&amp;ky-van=r33-1/);
 });
 test('R3.3 Kỳ Vận always renders three navigation tabs; no Trò khác dropdown',()=>{
  const js=source('js/dudu-fun-ui-v43.js');
