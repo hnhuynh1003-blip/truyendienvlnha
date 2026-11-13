@@ -75,7 +75,7 @@
   <link rel="stylesheet" href="css/arcade-c449-garden-progression.css?v=c449-1">
   <link rel="stylesheet" href="css/honor-presentation-c437p.css?v=c437p-1">
   <link rel="stylesheet" href="css/arcade-treasure-c438.css?v=c438-1">
-  <link rel="stylesheet" href="css/dudu-wallet-v1.css?v=wallet-p3-2">
+  <link rel="stylesheet" href="css/dudu-wallet-v1.css?v=wallet-r32-stone-1">
   <link rel="stylesheet" href="css/dudu-currency-icons-v1.css?v=fun-p1-2">
   <link rel="stylesheet" href="css/item-actions-v43.css?v=43-5-3b">
   <link rel="stylesheet" href="css/museum-memories-v43.css?v=1">
@@ -1665,24 +1665,38 @@
         <div class="phone-app-header">
           <button type="button" class="phone-back-btn" onclick="phoneHome()" aria-label="Về màn hình chính">‹</button>
           <span>Ví</span>
-          <span class="dudu-wallet-mark" aria-label="Ví Xu Vàng"><i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i></span>
+          <span class="dudu-wallet-mark" aria-label="Ví Xu"><i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i></span>
         </div>
         <div class="dudu-wallet-shell">
           <div class="dudu-bank-intro" data-wallet-heading-tier="silver">
             <span>✦ DUDU TREASURY</span>
             <span class="dudu-bank-rank-status"><small class="dudu-bank-card-preview" id="dudu-wallet-card-preview" hidden>XEM TRƯỚC</small><span class="dudu-bank-card-tier" id="dudu-wallet-card-tier">◈ SILVER</span></span>
           </div>
-          <section class="dudu-wallet-card" data-wallet-card-tier="silver" aria-label="Số dư Xu Vàng mua sắm, thẻ Bạc mặc định">
+          <section class="dudu-wallet-card" data-wallet-card-tier="silver" aria-label="Số dư Xu mua sắm, thẻ Bạc mặc định">
             <div class="dudu-bank-art" aria-hidden="true"></div>
             <div class="dudu-bank-card-top">
               <div class="dudu-bank-card-brand"><span class="dudu-bank-brand-seal" id="dudu-wallet-brand-seal" aria-hidden="true">◈</span><div><b>DUDU</b><small>STUDIO</small></div></div>
             </div>
             <div class="dudu-bank-balance-block">
-              <div class="dudu-bank-balance-caption"><span>SỐ DƯ KHẢ DỤNG</span><button type="button" id="dudu-wallet-visibility" class="dudu-bank-visibility" onclick="toggleDuduWalletVisibility()" aria-label="Ẩn số dư" aria-pressed="false" title="Ẩn hoặc hiện số dư">◉</button></div>
+              <div class="dudu-bank-balance-caption"><span>SỐ DƯ XU</span><button type="button" id="dudu-wallet-visibility" class="dudu-bank-visibility" onclick="toggleDuduWalletVisibility()" aria-label="Ẩn số dư" aria-pressed="false" title="Ẩn hoặc hiện số dư">◉</button></div>
               <strong id="dudu-wallet-system-balance" aria-live="polite"><i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i><span id="dudu-wallet-system-amount">0</span></strong>
             </div>
             <div class="dudu-bank-card-bottom"><div><small>CHỦ VÍ</small><b id="dudu-wallet-owner-name">DUDU</b></div></div>
           </section>
+          <section class="dudu-wallet-stone-pocket" aria-label="Ngăn Linh Thạch Tu Tiên chưa kích hoạt">
+            <span class="dudu-wallet-stone-emblem" aria-hidden="true"></span>
+            <span class="dudu-wallet-stone-copy"><strong>Linh Thạch</strong><small>Tài sản Tu Tiên · Dự kiến</small></span>
+            <span class="dudu-wallet-stone-readout" aria-label="Chưa có số dư Linh Thạch được xác thực"><b>—</b><small>CHƯA MỞ</small></span>
+          </section>
+          <details class="dudu-wallet-stone-exchange" id="dudu-wallet-stone-exchange">
+            <summary><strong>⇄ Quy đổi Xu ↔ Linh Thạch</strong><small>100 : 1 · Xem tỷ giá</small></summary>
+            <div class="dudu-wallet-stone-quote">
+              <div class="dudu-wallet-stone-rate" aria-label="Tỷ giá hai chiều: 100 Xu bằng 1 Linh Thạch">
+                <span class="dudu-stone-xu">100 Xu</span><span class="dudu-stone-arrow" aria-hidden="true">⇄</span><span class="dudu-stone-gem">1 Linh Thạch</span>
+              </div>
+              <p>Chỉ xem tỷ giá dự kiến · Chưa trừ Xu, chưa nhận Linh Thạch.</p>
+            </div>
+          </details>
           <button type="button" id="dudu-wallet-upgrade-button" class="dudu-wallet-upgrade-button" onclick="toggleDuduWalletTierSheet()" aria-expanded="false" aria-controls="dudu-wallet-tier-sheet"><span aria-hidden="true">✦</span><strong>Nâng hạng thẻ</strong><span aria-hidden="true">›</span></button>
           <div class="dudu-wallet-tier-sheet" id="dudu-wallet-tier-sheet" hidden>
             <div class="dudu-wallet-tier-sheet-heading"><b>Đặc quyền thẻ</b><button type="button" onclick="toggleDuduWalletTierSheet(false)" aria-label="Đóng phần nâng hạng">‹</button></div>
@@ -1704,7 +1718,7 @@
             <span class="dudu-bank-chevron" aria-hidden="true">›</span>
           </button>
           <section class="dudu-bank-exchange" aria-label="Quầy đổi tiền xem trước">
-            <div class="dudu-bank-exchange-top"><b>⇄ QUẦY ĐỔI</b><small>CHƯA KÍCH HOẠT</small></div>
+            <div class="dudu-bank-exchange-top"><b>⇄ ĐỔI TIỀN XANH (CŨ)</b><small>CHƯA KÍCH HOẠT</small></div>
             <div class="dudu-bank-rate" aria-label="Tỷ giá xem trước: 10 Tiền Xanh đổi 1 Xu Vàng"><span><i class="dudu-money-icon dudu-money-icon--green" aria-hidden="true"></i>10</span><i aria-hidden="true">➜</i><span><i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i>1</span></div>
             <button type="button" class="dudu-wallet-exchange-launch" onclick="window.DuduPersonalArcadeUIV1?.openExchange?.()">Xem quầy đổi <span aria-hidden="true">›</span></button>
           </section>
