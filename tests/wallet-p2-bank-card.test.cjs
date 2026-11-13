@@ -29,8 +29,8 @@ test('Wallet P3 shows one owned Silver card, an upgrade sheet and an honest exch
  assert.match(html,/onclick="openPhoneApp\('shop'\)"/);
  assert.match(html,/onclick="openPhoneApp\('fun'\)"/);
  assert.match(html,/onclick="openPhoneApp\('arcade'\)"/);
- assert.match(html,/DuduPersonalArcadeUIV1\?\.openExchange\?\.\(\)/);
- assert.match(html,/CHƯA KÍCH HOẠT/);
+ assert.doesNotMatch(html.slice(html.indexOf('id="phone-app-wallet"'),html.indexOf('<!-- APP: CỬA HÀNG -->')),/DuduPersonalArcadeUIV1\?\.openExchange|dudu-wallet-arcade-balance/);
+ assert.match(html,/CHƯA MỞ/);
  assert.match(html,/Không phải tài khoản ngân hàng hay tiền thật/);
  for(const tier of ['silver','gold','diamond']){
   assert.match(css,new RegExp('dudu-'+tier+'-card-p2\\.webp'));
@@ -104,7 +104,7 @@ test('Wallet P2 can mask only the display; legacy balance and Arcade state never
  const script=html.slice(start,end);
  assert.doesNotMatch(script,/\.currency\s*=|localStorage|firebase|setDoc|updateDoc|saveCurrentAccount/);
  const nodes=new Map();
- for(const id of ['dudu-wallet-system-amount','dudu-wallet-arcade-balance',
+ for(const id of ['dudu-wallet-system-amount',
   'dudu-wallet-owner-name','dudu-wallet-visibility']){
   nodes.set(id,{textContent:'',attributes:{},setAttribute(key,value){this.attributes[key]=value;}});
  }
@@ -114,7 +114,7 @@ test('Wallet P2 can mask only the display; legacy balance and Arcade state never
  vm.runInNewContext(script,context);
  context.renderWallet();
  assert.equal(nodes.get('dudu-wallet-system-amount').textContent,'350');
- assert.equal(nodes.get('dudu-wallet-arcade-balance').textContent,12500);
+ assert.equal(nodes.has('dudu-wallet-arcade-balance'),false);
  assert.equal(nodes.get('dudu-wallet-owner-name').textContent,'An Du');
  context.toggleDuduWalletVisibility();
  assert.equal(nodes.get('dudu-wallet-system-amount').textContent,'••••');
@@ -142,8 +142,8 @@ test('R3.2 keeps ATM Silver card and places preview-only Linh Thach below it',()
  assert.match(wallet,/class="dudu-wallet-stone-readout"[^>]*><b>—<\/b><small>CHƯA MỞ<\/small>/);
  assert.match(wallet,/100 Xu<\/span>[^\n]*1 Linh Thạch/);
  assert.match(wallet,/Chỉ xem tỷ giá dự kiến/);
- assert.match(wallet,/DuduPersonalArcadeUIV1\?\.openExchange\?\.\(\)/,
-  'keep old Arcade quote separate');
+ assert.doesNotMatch(wallet,/DuduPersonalArcadeUIV1\?\.openExchange|dudu-wallet-arcade-balance/,
+  'the obsolete Arcade balance and exchange must be absent');
  assert.match(html,/css\/dudu-wallet-v1\.css\?v=wallet-r32-stone-1/);
  assert.match(css,/#phone-app-wallet \.dudu-wallet-stone-pocket/);
  assert.match(css,/#phone-app-wallet \.dudu-wallet-stone-exchange\[open\]/);
