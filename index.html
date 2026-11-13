@@ -45,6 +45,7 @@
   <link rel="stylesheet" href="css/van-bao-stage-v2.css?v=fun-vis6">
   <link rel="stylesheet" href="css/dudu-fun-casino-v1.css?v=fun-cas1">
   <link rel="stylesheet" href="css/dudu-casino-slot-v1.css?v=casino-slot3">
+  <link rel="stylesheet" href="css/ky-van-r33-compact.css?v=r33-1">
   <link rel="stylesheet" href="css/account-approval-v1.css?v=auth-a1">
   <link rel="stylesheet" href="css/account-invite-r11.css?v=r11-1">
   <link rel="stylesheet" href="css/personal-arcade-v1.css?v=fun-p1-1&amp;arcxu=r32-1">
@@ -1223,14 +1224,14 @@
             <div class="app-box" style="background:linear-gradient(140deg,#b1843d,#695344);"><i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i></div><div class="app-label">Ví</div>
           </button>
           <button type="button" class="app-icon" id="dudu-fun-launch-v43"
-            onclick="openPhoneApp('fun')" aria-label="Mở DUDU FUN" hidden>
+            onclick="openPhoneApp('fun')" aria-label="Mở Kỳ Vận" hidden>
             <div class="app-box" style="background:linear-gradient(130deg,#b35395,#674daa);">🎁</div>
-            <div class="app-label">DUDU FUN</div>
+            <div class="app-label">Kỳ Vận</div>
           </button>
           <button type="button" class="app-icon" id="personal-arcade-launch-v1"
-            onclick="openPhoneApp('arcade')" aria-label="Mở khu trò chơi cá nhân">
+            onclick="openPhoneApp('arcade')" aria-label="Mở Bách Hí">
             <div class="app-box" style="background:linear-gradient(140deg,#1d6475,#3c3b70);">🎮</div>
-            <div class="app-label">Arcade</div>
+            <div class="app-label">Bách Hí</div>
           </button>
           <!-- Archived mailbox launcher: author gifts are no longer offered. -->
           <button type="button" class="app-icon" onclick="openPhoneApp('author-mail')" aria-label="Mở Hộp thư tác giả" hidden style="display:none!important">
@@ -1727,24 +1728,24 @@
         <div id="shop-items-container" class="dudu-v27-shop-grid"></div>
       </div>
 
-      <!-- APP: DUDU FUN — owner-scoped main rewards, Sandbox unchanged -->
+      <!-- APP: KỲ VẬN (stable route id: fun) — owner-scoped rewards; Sandbox unchanged -->
       <div class="phone-sub-app" id="phone-app-fun">
         <div class="phone-app-header">
           <button type="button" class="phone-back-btn" onclick="if(!window.DuduVanBaoUIF44?.back?.())phoneHome()" aria-label="Trở về">‹</button>
-          <span>✦ DUDU FUN</span>
+          <span>✦ Kỳ Vận</span>
           <span class="dudu-money-display--gold" id="dudu-fun-header-balance" aria-label="Số dư Xu">—</span>
         </div>
         <div id="dudu-fun-content-v43" aria-live="polite"></div>
       </div>
 
-      <!-- Personal local-only arcade: zero Firestore writes, no real Xu transfers. -->
+      <!-- BÁCH HÍ (stable route id: arcade): personal-mode Xu uses the shared wallet; Sandbox stays local. -->
       <div class="phone-sub-app" id="phone-app-arcade">
         <div class="phone-app-header">
           <button type="button" class="phone-back-btn" onclick="phoneHome()" aria-label="Về màn hình điện thoại">‹</button>
           <button type="button" id="arcade-season-portal-c423" class="arcade-season-portal" aria-label="Mở Hộ Chiếu Mùa 1">✦ MÙA 01</button>
           <button type="button" id="arcade-treasure-launch-c438" class="arcade-treasure-launch"
             aria-label="Mở Sổ Báu Vật" title="Sổ Báu Vật">◈</button>
-          <span id="arcade-header-wallet-v1" class="arcade-header-wallet dudu-money-display--gold" aria-label="Số Xu trò chơi Arcade, đang lưu riêng trên thiết bị, chưa dùng chung Ví" title="Xu Arcade lưu riêng trên thiết bị, chưa gộp vào Ví">—</span>
+          <span id="arcade-header-wallet-v1" class="arcade-header-wallet dudu-money-display--gold" aria-label="Số Xu tại Bách Hí" title="Chế độ cá nhân dùng Xu chung với Ví; Sandbox có tiền thử riêng">—</span>
         </div>
         <div id="personal-arcade-v1" aria-label="Bốn trò chơi cá nhân"></div>
       </div>
@@ -9602,7 +9603,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/vanbao-sessions-f44.js?v=final-2"></script>
 <script src="js/vanbao-ui-f44.js?v=final-1"></script>
 <script src="js/vanbao-lobby-final-f44.js?v=final-3"></script>
-<script src="js/dudu-fun-ui-v43.js?v=f39-1&amp;hunt=f42d-1&amp;f43=1&amp;f44=1&amp;final=f44-1"></script>
+<script src="js/dudu-fun-ui-v43.js?v=f39-1&amp;ky-van=r33-1&amp;hunt=f42d-1&amp;f43=1&amp;f44=1&amp;final=f44-1"></script>
 <script src="js/personal-jade-ui-v1.js?v=c442-1&amp;art=c432-1&amp;materials=c425c-1&amp;compact=c425d-2&amp;market=c441b-1&amp;c450=1&amp;c452=1&amp;fun=p1-2&amp;c454=1&amp;huntui=c455b2&amp;c456=1&amp;c457a=1&amp;c457b=1&amp;c457c=1&amp;c458=1&amp;c460=1&amp;c460a=1&amp;c460b=1&amp;c460c=1&amp;c460e=1&amp;arcxu=r32-1"></script>
 <script src="js/personal-honor-ui-c46.js?v=c412-1&amp;journey=c437-1&amp;progression=c425g-1&amp;art=c437p-1"></script>
 <script src="js/arcade-unified-xu-r32.js?v=arcxu-r32-1"></script>
