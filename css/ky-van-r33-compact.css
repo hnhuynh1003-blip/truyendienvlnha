@@ -1,0 +1,112 @@
+/* DUDU Studio R3.3 — Kỳ Vận compact shell.
+ * Presentation only: do not change Vạn Bảo 9x9 board, gameplay, rewards,
+ * Vạn Tượng effects, Vé Cào logic or the personal Xu wallet.
+ */
+body.dudu-phone-v11 #cyber-phone #phone-app-fun {
+ padding:6px 7px 8px;
+ gap:0;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun>.phone-app-header {
+ margin-bottom:5px;
+ padding-bottom:3px;
+ min-height:44px;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun>.phone-app-header>span:nth-child(2) {
+ font-size:11.5px;
+ letter-spacing:.015em;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun #dudu-fun-header-balance {
+ padding:5px 7px;
+ min-height:28px;
+ font-size:10px;
+ max-width:110px;
+ overflow:hidden;
+ text-overflow:ellipsis;
+}
+body.dudu-phone-v11 #cyber-phone #dudu-fun-content-v43 {
+ gap:5px;
+ padding-bottom:5px;
+ min-width:0;
+}
+body.dudu-phone-v11 #cyber-phone #dudu-fun-content-v43>.ky-van-game-tabs {
+ display:grid!important;
+ grid-template-columns:repeat(3,minmax(0,1fr))!important;
+ gap:5px;
+ width:100%;
+ min-width:0;
+ flex:0 0 auto;
+ align-self:stretch;
+ padding:2px;
+ border:1px solid #766e9570;
+ border-radius:12px;
+ background:linear-gradient(120deg,#172333,#231f37);
+ box-shadow:inset 0 1px #f4e8ff0d;
+ position:relative;
+ z-index:3;
+}
+body.dudu-phone-v11 #cyber-phone #dudu-fun-content-v43>.ky-van-game-tabs>.dudu-fun-tab {
+ display:flex;
+ justify-content:center;
+ align-items:center;
+ width:100%;
+ min-width:0;
+ min-height:44px;
+ height:44px;
+ padding:5px 2px;
+ border:1px solid transparent;
+ border-radius:9px;
+ font:800 10.5px/1.15 ui-sans-serif,system-ui;
+ letter-spacing:-.015em;
+ color:#d6d5e8;
+ background:transparent;
+ white-space:nowrap;
+ touch-action:manipulation;
+ cursor:pointer;
+}
+body.dudu-phone-v11 #cyber-phone #dudu-fun-content-v43>.ky-van-game-tabs>.dudu-fun-tab.is-active {
+ color:#fff1d9;
+ border-color:#c8a8cf84;
+ background:linear-gradient(135deg,#6a486f,#473d64);
+ box-shadow:inset 0 1px #ffeafa2a,0 2px 8px #09091855;
+}
+body.dudu-phone-v11 #cyber-phone #dudu-fun-content-v43>.ky-van-game-tabs>.dudu-fun-tab:focus-visible {
+ outline:2px solid #f3d5a6;
+ outline-offset:2px;
+}
+body.dudu-phone-v11 #cyber-phone #dudu-fun-content-v43>.dudu-fun-stage:not(.is-slot) {
+ padding:7px;
+ gap:7px;
+ min-height:0;
+}
+body.dudu-phone-v11 #cyber-phone #dudu-fun-content-v43>.dudu-fun-stage.is-slot {
+ padding:0;
+ gap:6px;
+}
+body.dudu-phone-v11 #cyber-phone #dudu-fun-content-v43 .f31-vantvat-stage {
+ gap:7px;
+}
+body.dudu-phone-v11 #cyber-phone #dudu-fun-content-v43 .f41-cosmos {
+ height:clamp(300px,44dvh,395px);
+}
+body.dudu-phone-v11 #cyber-phone #dudu-fun-content-v43 .f44-lobby-title {
+ padding:8px 10px 5px;
+}
+body.dudu-phone-v11 #cyber-phone #dudu-fun-content-v43 .f44-lobby-title h1 {
+ font-size:19px;
+}
+body.dudu-phone-v11 #cyber-phone #dudu-fun-content-v43.is-vanbao-final>.dudu-fun-stage {
+ padding:0!important;
+ min-height:0!important;
+ overflow:hidden!important;
+ flex:1!important;
+}
+@media(max-width:350px){
+ body.dudu-phone-v11 #cyber-phone #phone-app-fun {padding-left:5px;padding-right:5px}
+ body.dudu-phone-v11 #cyber-phone #dudu-fun-content-v43>.ky-van-game-tabs {gap:2px}
+ body.dudu-phone-v11 #cyber-phone #dudu-fun-content-v43>.ky-van-game-tabs>.dudu-fun-tab {
+  font-size:9.8px;padding:5px 1px;
+ }
+ body.dudu-phone-v11 #cyber-phone #dudu-fun-content-v43 .f41-cosmos {
+  height:clamp(280px,42dvh,360px);
+ }
+}
