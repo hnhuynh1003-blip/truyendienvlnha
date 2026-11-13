@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" role="img" aria-labelledby="t d">
+<title id="t">Quán trọ Quan Đạo trong chiều mưa</title><desc id="d">Một quán trọ gỗ mái ngói bên con đường đất, núi mờ và đèn lồng sáng dưới trời mưa</desc>
+<defs>
+<linearGradient id="sky" x2="0" y2="1"><stop stop-color="#263953"/><stop offset=".57" stop-color="#586b7f"/><stop offset="1" stop-color="#b9a7a0"/></linearGradient>
+<linearGradient id="road" x2="0" y2="1"><stop stop-color="#6e6c69"/><stop offset="1" stop-color="#303a47"/></linearGradient>
+<linearGradient id="roof" x2="0" y2="1"><stop stop-color="#4c5264"/><stop offset="1" stop-color="#171e30"/></linearGradient>
+<linearGradient id="wall" x2="0" y2="1"><stop stop-color="#95836c"/><stop offset="1" stop-color="#494c50"/></linearGradient>
+<radialGradient id="lamp"><stop stop-color="#ffe6a0" stop-opacity=".93"/><stop offset=".25" stop-color="#e0a45f" stop-opacity=".3"/><stop offset="1" stop-color="#e0a45f" stop-opacity="0"/></radialGradient>
+<filter id="soft"><feGaussianBlur stdDeviation="18"/></filter>
+<pattern id="rain" width="46" height="58" patternUnits="userSpaceOnUse" patternTransform="rotate(14)"><path d="M14 6v25 M37 38v16" stroke="#d0e7f0" stroke-width="1.3" stroke-opacity=".20"/></pattern>
+</defs>
+<rect width="1280" height="720" fill="url(#sky)"/>
+<path d="M0 355 135 214 239 319 395 163 582 338 723 205 920 349 1086 220 1280 348v372H0Z" fill="#364e63" opacity=".55"/>
+<path d="M0 439 190 303 317 399 518 275 690 417 891 318 1105 424 1280 338v382H0Z" fill="#30475a" opacity=".74"/>
+<path d="M0 475Q286 380 520 470t760-10v260H0Z" fill="#50616a"/>
+<path d="M0 574Q252 509 527 556T1280 528v192H0Z" fill="#364c55"/>
+<path d="M270 720 522 465 770 472 1158 720Z" fill="url(#road)"/>
+<path d="M438 720 567 492 679 497 917 720" fill="none" stroke="#afaa9e" stroke-width="5" stroke-opacity=".35"/>
+<path d="M780 494 1034 440 1200 502 1200 650 778 647Z" fill="#23303d" opacity=".85"/>
+<path d="M448 310 935 313 1002 382 394 382Z" fill="url(#roof)"/>
+<path d="M467 374h464v234H467z" fill="url(#wall)"/>
+<path d="M476 384h440v18H476z" fill="#242d3a"/>
+<path d="M461 375 497 337 900 339 950 377Z" fill="#293341"/>
+<path d="M512 402v204M896 402v204" stroke="#272938" stroke-width="19"/>
+<path d="M545 419h145v128H545z M721 419h149v128H721z" fill="#293743" stroke="#293541" stroke-width="10"/>
+<path d="M556 430h123v104H556z M732 430h127v104H732z" fill="#e2b27b" opacity=".38"/>
+<path d="M628 470v66M798 470v66" stroke="#373740" stroke-width="9"/>
+<path d="M615 525h155v82H615z" fill="#272e35"/>
+<path d="M685 529v77" stroke="#a58c66" stroke-width="4"/>
+<rect x="556" y="328" width="126" height="64" rx="5" fill="#352d30" stroke="#cab38a" stroke-width="4"/>
+<path d="M572 343h93v36h-93z" fill="#8d6047"/>
+<path d="M715 376v103M874 376v103" stroke="#644c44" stroke-width="4"/>
+<ellipse cx="715" cy="442" rx="92" ry="100" fill="url(#lamp)"/><ellipse cx="874" cy="442" rx="94" ry="104" fill="url(#lamp)"/>
+<path d="M703 399q12-10 24 0l-3 34q-12 11-19 0z M862 399q12-10 24 0l-3 34q-12 11-19 0z" fill="#d89f59" stroke="#513b37" stroke-width="3"/>
+<path d="M715 403v29M874 403v29" stroke="#a64f43" stroke-width="5"/>
+<path d="M190 610q-5-140 26-212" stroke="#283c40" stroke-width="24" fill="none"/>
+<path d="M193 449q-133-23-117-99 85 11 132 65 M204 432q-17-110 62-126 27 77-43 123 M233 443q65-76 121-24-38 56-121 48" fill="#233f42"/>
+<path d="M1070 652q-10-125 14-190" stroke="#2a3b40" stroke-width="17" fill="none"/>
+<path d="M1052 509q-104-37-87-93 75 3 103 67 M1082 498q-15-94 62-111 15 75-52 116" fill="#274344"/>
+<path d="M0 564Q187 527 333 562" fill="none" stroke="#a0b9bd" stroke-opacity=".2" stroke-width="26" filter="url(#soft)"/>
+<path d="M0 610Q203 581 361 599T871 599 1280 571" fill="none" stroke="#c4d0cf" stroke-opacity=".18" stroke-width="32" filter="url(#soft)"/>
+<rect width="1280" height="720" fill="url(#rain)"/>
+<path d="M0 0h1280v720H0z" fill="#1a283c" opacity=".13"/>
+</svg>

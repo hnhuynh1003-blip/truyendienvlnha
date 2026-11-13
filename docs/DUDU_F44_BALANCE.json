@@ -1,0 +1,56 @@
+[
+  {
+    "mode": "NOVICE",
+    "treasureEV": 4.257189310029468,
+    "blankEV": 1.4,
+    "coinEV": 20.000000000000004,
+    "winRewardLiquidationEV": 8.55239643667649,
+    "paidBreakEvenWinRate": 2.3385258328567513,
+    "available": true
+  },
+  {
+    "mode": "EASY",
+    "treasureEV": 5.108196689775238,
+    "blankEV": 1.4,
+    "coinEV": 28.85,
+    "winRewardLiquidationEV": 11.786065563258413,
+    "paidBreakEvenWinRate": 1.6969191196719202,
+    "available": true
+  },
+  {
+    "mode": "MEDIUM",
+    "treasureEV": 6.59164815351428,
+    "blankEV": 1.4,
+    "coinEV": 31.3,
+    "winRewardLiquidationEV": 13.097216051171428,
+    "paidBreakEvenWinRate": 1.5270420768703117,
+    "available": true
+  },
+  {
+    "mode": "HARD",
+    "treasureEV": 9.159330985915496,
+    "blankEV": 1.4,
+    "coinEV": 38.6,
+    "winRewardLiquidationEV": 16.386443661971832,
+    "paidBreakEvenWinRate": 1.2205210851463872,
+    "available": false
+  },
+  {
+    "mode": "MASTER",
+    "treasureEV": 13.509318568797562,
+    "blankEV": 1.4,
+    "coinEV": 50,
+    "winRewardLiquidationEV": 21.63643952293252,
+    "paidBreakEvenWinRate": 0.924366505810808,
+    "available": false
+  },
+  {
+    "mode": "DUEL",
+    "treasureEV": 13.509318568797562,
+    "blankEV": 1.4,
+    "coinEV": 50,
+    "winRewardLiquidationEV": 21.63643952293252,
+    "paidBreakEvenWinRate": 0.924366505810808,
+    "available": true
+  }
+]

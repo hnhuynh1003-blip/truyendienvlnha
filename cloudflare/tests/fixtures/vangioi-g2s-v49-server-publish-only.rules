@@ -1,0 +1,158 @@
+// G2S -- ISOLATED FIRESTORE EMULATOR PUBLISH GATE, NOT A DEPLOYABLE PROJECT RULESET.
+// Forked from G2M candidate for rehearsal ONLY; G2M stays unchanged.
+// No firebase.json wiring, no live database or Firestore edition selected.
+//
+// Assumed V49 documents (from js/epub-production-v49.js):
+// epub_stories_v49/{storyId}:
+//   id, title, author, genre='Nhập EPUB', status, ownerUid, chapterCount,
+//   chapterIndex (1..160 [{id,title,wordCount,order}]), createdAt,
+//   updatedAt, sourceName, importSchema=57, importFingerprint, coverImage;
+//   publishedAt is required only after publication. Identity/metadata immutable.
+// epub_stories_v49/{storyId}/chapters/{chapterId}:
+//   id, order, title, content, wordCount; create-only while book is importing.
+// This candidate intentionally does not cover the rest of the Firebase app.
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    function isOwner(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
+    }
+    function isVerifiedV49Author() {
+      return isAuthenticated() && request.auth.token.admin == true;
+    }
+    function isVerifiedOwner(uid) {
+      return isVerifiedV49Author() && isOwner(uid);
+    }
+    function uidUnchanged(data) {
+      return isOwner(data.ownerUid);
+    }
+    function uidNotModified(before, after) {
+      return before.ownerUid == after.ownerUid;
+    }
+    function validIdentifier(value) {
+      return value is string &&
+        value.matches('^[A-Za-z0-9][A-Za-z0-9_-]{3,120}$');
+    }
+    function validTitle(value) {
+      return value is string && value.size() >= 1 && value.size() <= 140;
+    }
+    function validIsoStamp(value) {
+      // Format only; ISO strings do not give server-verified temporal ordering.
+      return value is string && value.size() == 24 &&
+        value.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$');
+    }
+    function validCover(value) {
+      return value is string &&
+        (value == '' || (value.size() < 32000 &&
+        value.matches('^data:image/jpeg;base64,[A-Za-z0-9+/]+={0,2}$')));
+    }
+    function validIndexEntry(entry, position) {
+      return entry is map &&
+        entry.keys().hasAll(['id', 'title', 'wordCount', 'order']) &&
+        entry.keys().hasOnly(['id', 'title', 'wordCount', 'order']) &&
+        validIdentifier(entry.id) && entry.id.matches('^chapter-[0-9]{4}$') &&
+        validTitle(entry.title) &&
+        entry.wordCount is int && entry.wordCount >= 1 && entry.wordCount <= 220000 &&
+        entry.order is int && entry.order == position;
+    }
+    function validIndexBoundary(data) {
+      // Rules has no bounded map/list every() operator for all 160 slots.
+      // Every individual slot IS revalidated on chapter create below.
+      return validIndexEntry(data.chapterIndex[0], 0) &&
+        validIndexEntry(data.chapterIndex[data.chapterCount - 1], data.chapterCount - 1);
+    }
+    function validBookV49(data, storyId) {
+      return data.keys().hasAll([
+          'id','title','author','genre','status','ownerUid','chapterCount',
+          'chapterIndex','createdAt','updatedAt','sourceName','importSchema',
+          'importFingerprint','coverImage']) &&
+        data.keys().hasOnly([
+          'id','title','author','genre','status','ownerUid','chapterCount',
+          'chapterIndex','createdAt','updatedAt','sourceName','importSchema',
+          'importFingerprint','coverImage','publishedAt']) &&
+        validIdentifier(storyId) && data.id == storyId &&
+        validTitle(data.title) && validTitle(data.author) &&
+        data.genre == 'Nhập EPUB' &&
+        data.status in ['importing','draft','published'] &&
+        data.ownerUid is string && data.ownerUid.size() >= 1 &&
+        data.ownerUid.size() <= 128 &&
+        data.chapterCount is int && data.chapterCount >= 1 && data.chapterCount <= 160 &&
+        data.chapterIndex is list && data.chapterIndex.size() == data.chapterCount &&
+        validIndexBoundary(data) &&
+        validIsoStamp(data.createdAt) && validIsoStamp(data.updatedAt) &&
+        data.sourceName is string && data.sourceName.size() <= 180 &&
+        data.importSchema == 57 &&
+        data.importFingerprint is string &&
+        data.importFingerprint.matches('^v57-[a-f0-9]{16}-[0-9]{1,3}$') &&
+        validCover(data.coverImage) &&
+        ((data.status == 'published' && 'publishedAt' in data &&
+          validIsoStamp(data.publishedAt)) ||
+         (data.status != 'published' && !('publishedAt' in data)));
+    }
+    function allowedStatusUpdate(before, after) {
+      let changes = after.diff(before).affectedKeys();
+      // Owners may finalize an import, but NEVER publish from a client.
+      // Publishing requires a separate trusted server workflow (not built here).
+      return before.status == 'importing' && after.status == 'draft' &&
+        changes.hasOnly(['status','updatedAt']);
+    }
+    function bookPath(storyId) {
+      return /databases/$(database)/documents/epub_stories_v49/$(storyId);
+    }
+    function bookExists(storyId) {
+      return exists(bookPath(storyId));
+    }
+    function bookData(storyId) {
+      return get(bookPath(storyId)).data;
+    }
+    function canReadBook(data) {
+      // Existing V49 guest library requires public published stories.
+      return data.status == 'published' || isVerifiedOwner(data.ownerUid);
+    }
+    function validChapterV49(data, storyId, chapterId) {
+      let parent = bookData(storyId);
+      return data.keys().hasAll(['id','order','title','content','wordCount']) &&
+        data.keys().hasOnly(['id','order','title','content','wordCount']) &&
+        validIdentifier(chapterId) && chapterId.matches('^chapter-[0-9]{4}$') &&
+        data.id == chapterId &&
+        data.order is int && data.order >= 0 && data.order < parent.chapterCount &&
+        validTitle(data.title) &&
+        data.content is string && data.content.size() >= 1 &&
+        data.content.size() <= 220000 &&
+        data.content.toUtf8().size() <= 420000 &&
+        data.wordCount is int && data.wordCount >= 1 && data.wordCount <= 220000 &&
+        validIndexEntry(parent.chapterIndex[data.order], data.order) &&
+        parent.chapterIndex[data.order].id == chapterId &&
+        parent.chapterIndex[data.order].title == data.title &&
+        parent.chapterIndex[data.order].wordCount == data.wordCount;
+    }
+
+    match /epub_stories_v49/{storyId} {
+      allow get, list: if canReadBook(resource.data);
+      allow create: if isVerifiedV49Author() && uidUnchanged(request.resource.data) &&
+        validBookV49(request.resource.data, storyId) &&
+        request.resource.data.status == 'importing';
+      allow update: if isVerifiedOwner(resource.data.ownerUid) &&
+        uidNotModified(resource.data, request.resource.data) &&
+        validBookV49(request.resource.data, storyId) &&
+        request.resource.data.status != 'published' &&
+        allowedStatusUpdate(resource.data, request.resource.data);
+      allow delete: if false;
+
+      match /chapters/{chapterId} {
+        allow get, list: if bookExists(storyId) && canReadBook(bookData(storyId));
+        allow create: if bookExists(storyId) &&
+          isVerifiedOwner(bookData(storyId).ownerUid) &&
+          bookData(storyId).status == 'importing' &&
+          validChapterV49(request.resource.data, storyId, chapterId);
+        allow update, delete: if false;
+      }
+    }
+    // No claim-based reviewer bypass. A future trusted server must check the
+    // reviewer-to-draft assignment independently, outside client rules.
+    match /{everythingElse=**} { allow read, write: if false; }
+  }
+}

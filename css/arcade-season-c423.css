@@ -1,0 +1,195 @@
+/* C4.23 — Season passport / time capsule. Preview only until verified launch. */
+#phone-app-arcade .arcade-season-portal{
+ min-width:0;justify-self:center;display:inline-flex;align-items:center;justify-content:center;
+ min-height:29px;max-width:112px;padding:5px 11px;white-space:nowrap;cursor:pointer;
+ font:900 11px/1.2 ui-monospace,Consolas,monospace;letter-spacing:.075em;
+ color:#ecf0ff;border:1px solid #b5c4fc9a;border-radius:999px;
+ background:linear-gradient(115deg,#293f65,#513c72 65%,#2b5076);
+ box-shadow:inset 0 1px #dbdbff54,0 0 12px #9a7bf74a;
+}
+#phone-app-arcade .arcade-season-portal:focus-visible{outline:2px solid #fff3b9;outline-offset:2px}
+#personal-arcade-v1 .neon-order-game.is-season-ticket{
+ border-top-color:#ffe9b2;
+ background:radial-gradient(ellipse at 25% 50%,#f29bd24d,transparent 70%),
+  linear-gradient(180deg,#211b3d,#2e234e);
+}
+#personal-arcade-v1 .neon-order-game.is-season-ticket .neon-order-ticket{
+ border-color:#fee19e;box-shadow:0 0 17px #ebacec8c,0 4px 14px #05051f80;
+}
+#personal-arcade-v1 .mine-seam-game.is-season-vein{
+ border-top-color:#d1a4ff;
+ background:radial-gradient(ellipse at 50% 70%,#a57dce69,transparent 70%),
+  linear-gradient(180deg,#2a1d3c,#171e36);
+}
+#personal-arcade-v1 .mine-seam-game.is-season-vein .mine-seam-arch{
+ box-shadow:inset 0 0 18px #080b25,0 0 15px #d3a4ffad;
+}
+#personal-arcade-v1 .arcade-season-overlay{
+ position:absolute;inset:0;z-index:80;padding:5px;display:flex;align-items:stretch;justify-content:center;
+ background:#050918e8;backdrop-filter:blur(7px);
+}
+#personal-arcade-v1 .arcade-season-book{
+ width:100%;min-width:0;min-height:0;display:flex;flex-direction:column;overflow:hidden;
+ border:1px solid #d0b6ff8a;border-radius:17px;
+ background:radial-gradient(ellipse at 12% 1%,#614fa04a,transparent 55%),
+  linear-gradient(170deg,#151d37,#191b39 53%,#101a32);
+ box-shadow:0 15px 35px #000c,inset 0 0 0 2px #dfc7ff15;
+}
+#personal-arcade-v1 .arcade-season-book-header{
+ flex:none;min-height:55px;display:flex;align-items:center;justify-content:space-between;gap:7px;
+ padding:9px 12px;border-bottom:1px solid #9b87ce80;
+ background:linear-gradient(90deg,#18294a,#34315e);
+}
+#personal-arcade-v1 .arcade-season-book-header>div{display:flex;flex-direction:column;min-width:0;gap:3px}
+#personal-arcade-v1 .arcade-season-book-header span{
+ color:#9adfeb;font:800 8px ui-monospace,monospace;letter-spacing:.12em;
+}
+#personal-arcade-v1 .arcade-season-book-header b{
+ color:#fff3df;font:900 14px/1.15 ui-sans-serif,system-ui;letter-spacing:.04em;
+}
+#personal-arcade-v1 .arcade-season-book-header button{
+ flex:none;width:33px;height:33px;border-radius:10px;color:#fff2f6;
+ border:1px solid #a9abd1;background:#4d507c;cursor:pointer;
+}
+#personal-arcade-v1 .arcade-season-book-scroll{
+ min-height:0;flex:1;overflow-y:auto;overscroll-behavior:contain;
+ padding:9px;scrollbar-width:thin;scrollbar-color:#7b74b4 #1c2241;
+}
+#personal-arcade-v1 .arcade-season-hero{
+ position:relative;isolation:isolate;min-height:174px;overflow:hidden;
+ display:flex;flex-direction:column;justify-content:flex-end;
+ padding:16px 15px 13px;border:1px solid #b9c8ff9c;border-radius:13px;
+ background:radial-gradient(circle at 70% 20%,#dfe3ff5e,transparent 27%),
+  radial-gradient(ellipse at 75% 63%,#b15fbc8c,transparent 46%),
+  linear-gradient(135deg,#1b3c64,#2c3262 58%,#4b2a67);
+ box-shadow:inset 0 0 30px #9facff43,0 5px 18px #010b26a3;
+}
+#personal-arcade-v1 .arcade-season-hero::before{
+ content:'';position:absolute;z-index:-1;inset:auto -10% -44% -10%;height:74%;
+ background:radial-gradient(ellipse at 45% 22%,#82e7f89e,transparent 52%),
+  repeating-linear-gradient(140deg,#a8a2ef25 0 2px,transparent 3px 17px);
+ clip-path:polygon(0 35%,17% 28%,32% 50%,50% 8%,68% 40%,84% 21%,100% 47%,100% 100%,0 100%);
+}
+#personal-arcade-v1 .arcade-season-moon{
+ position:absolute;z-index:-1;top:10px;right:21px;width:89px;height:89px;border-radius:50%;
+ background:radial-gradient(circle at 30% 30%,#fcf4ff,#c5d7fc 45%,#8cbce1 70%);
+ box-shadow:0 0 34px 15px #a1c0ff8a,0 0 70px #f4b9f869;
+}
+#personal-arcade-v1 .arcade-season-crystals{position:absolute;right:10px;bottom:5px;width:130px;height:108px}
+#personal-arcade-v1 .arcade-season-crystals i{
+ position:absolute;bottom:-8px;width:60px;height:104px;
+ clip-path:polygon(50% 0,92% 35%,73% 100%,16% 100%,0 31%);
+ border-radius:2px;background:linear-gradient(110deg,#73d0eec2 0 31%,#7d7bddb2 34% 58%,#f4b1ff9c 59% 80%,#e3ffff 100%);
+ box-shadow:inset 10px 2px #fff6;
+ transform:rotate(-17deg);
+}
+#personal-arcade-v1 .arcade-season-crystals i:nth-child(2){height:78px;left:51px;bottom:-15px;transform:rotate(27deg);opacity:.8}
+#personal-arcade-v1 .arcade-season-crystals i:nth-child(3){height:53px;left:-21px;bottom:-20px;transform:rotate(-31deg);opacity:.7}
+#personal-arcade-v1 .arcade-season-hero-type{
+ position:relative;z-index:2;color:#c4f8ff;font:900 9px ui-monospace,monospace;
+ letter-spacing:.19em;text-shadow:0 2px 8px #071d47;
+}
+#personal-arcade-v1 .arcade-season-hero h3{
+ position:relative;z-index:2;margin:5px 0;color:#fff7f5;
+ font:1000 clamp(23px,8vw,32px)/1.07 ui-sans-serif,system-ui;
+ letter-spacing:-.045em;text-shadow:0 3px 9px #081a4f;
+}
+#personal-arcade-v1 .arcade-season-hero h3 em{font-style:normal;color:#c8eefd}
+#personal-arcade-v1 .arcade-season-phase{
+ position:relative;z-index:2;width:max-content;max-width:100%;padding:4px 7px;
+ color:#ffedbb;background:#121a39d4;border:1px solid #fbd9a38f;border-radius:5px;
+ font:800 8px ui-monospace,monospace;letter-spacing:.06em;
+}
+#personal-arcade-v1 .arcade-season-progress{
+ display:flex;align-items:center;justify-content:space-between;margin:14px 2px 6px;
+ color:#e4ddff;font:900 10px ui-monospace,monospace;
+}
+#personal-arcade-v1 .arcade-season-progress span{color:#a9f7f2;font-size:13px}
+#personal-arcade-v1 .arcade-season-track{
+ height:6px;overflow:hidden;background:#303558;border:1px solid #666fa9;
+ border-radius:10px;
+}
+#personal-arcade-v1 .arcade-season-track i{
+ display:block;height:100%;border-radius:inherit;
+ background:linear-gradient(90deg,#66cbe9,#c18dff,#f3c0ef);
+ box-shadow:0 0 10px #b1cafa;
+}
+#personal-arcade-v1 .arcade-season-relic-grid{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px;
+}
+#personal-arcade-v1 .arcade-season-relic{
+ position:relative;min-width:0;min-height:157px;display:flex;flex-direction:column;
+ align-items:center;gap:5px;padding:12px 5px 8px;cursor:pointer;
+ border:1px solid var(--relic-line,#6f9bb0);border-radius:13px;
+ color:#f9f3ff;background:radial-gradient(ellipse at 50% 18%,var(--relic-glow,#4f91b2),transparent 64%),
+  linear-gradient(155deg,#2b2d51,#1a2340);
+ box-shadow:inset 0 2px #ffffff1f,0 4px 10px #0005;
+}
+#personal-arcade-v1 .season-theme-cyan{--relic-line:#64dceb;--relic-glow:#207b94b9}
+#personal-arcade-v1 .season-theme-violet{--relic-line:#c4a1ff;--relic-glow:#7655a8b9}
+#personal-arcade-v1 .season-theme-rose{--relic-line:#eea5cf;--relic-glow:#ad5489b9}
+#personal-arcade-v1 .season-theme-gold{--relic-line:#f2d39b;--relic-glow:#9f7a3cb9}
+#personal-arcade-v1 .arcade-season-relic-mark{
+ position:absolute;top:5px;right:7px;color:#b3bdd4;font-size:13px;
+}
+#personal-arcade-v1 .arcade-season-relic-art{
+ display:grid;place-items:center;width:63px;height:63px;border-radius:47% 53% 42% 58%;
+ border:2px solid var(--relic-line);color:#fff8ee;
+ background:radial-gradient(circle at 42% 28%,#ffffff70,#ffffff0a 40%,#101d3b8c 80%);
+ box-shadow:0 0 22px var(--relic-glow),inset 0 0 15px #f6ecff59;
+ font:900 37px/1 ui-serif,Georgia,serif;text-shadow:0 2px 12px var(--relic-line);
+}
+#personal-arcade-v1 .arcade-season-relic strong{
+ display:block;max-width:100%;text-align:center;color:#fff1df;
+ font:900 11px/1.12 ui-sans-serif,system-ui;
+}
+#personal-arcade-v1 .arcade-season-relic small{
+ display:block;color:#c4c9dc;max-width:100%;text-align:center;
+ font:700 9px/1.15 ui-sans-serif,system-ui;
+}
+#personal-arcade-v1 .arcade-season-relic-world{
+ margin-top:auto;color:#a4e8ed;font:800 8px ui-monospace,monospace;
+}
+#personal-arcade-v1 .arcade-season-relic.is-owned{
+ background:radial-gradient(ellipse at 50% 15%,var(--relic-glow),transparent 70%),#234a59;
+}
+#personal-arcade-v1 .arcade-season-relic:focus-visible{
+ outline:2px solid #fff4be;outline-offset:2px;
+}
+#personal-arcade-v1 .arcade-season-final{
+ display:flex;align-items:center;gap:11px;margin-top:12px;padding:10px;
+ background:linear-gradient(120deg,#292841,#3b3050);border:1px solid #9a789e;
+ border-radius:11px;opacity:.73;
+}
+#personal-arcade-v1 .arcade-season-final.is-unlocked{
+ opacity:1;border-color:#f8d394;box-shadow:0 0 21px #efbe785c;
+}
+#personal-arcade-v1 .arcade-season-final-crest{
+ flex:none;display:grid;place-items:center;width:57px;height:57px;
+ color:#ffe5b3;border:2px solid #f9d68c;border-radius:50%;
+ background:radial-gradient(circle,#8669aa,#342442 75%);
+ font-size:35px;text-shadow:0 0 12px #ffe9b5;
+}
+#personal-arcade-v1 .arcade-season-final>div{min-width:0;display:flex;flex-direction:column;gap:5px}
+#personal-arcade-v1 .arcade-season-final small{
+ color:#bfabd6;font:800 8px ui-monospace,monospace;
+}
+#personal-arcade-v1 .arcade-season-final strong{
+ color:#fff0ca;font:900 13px/1.2 ui-sans-serif,system-ui;
+}
+#personal-arcade-v1 .arcade-season-final>div>span{
+ color:#cdbddd;font:700 10px ui-sans-serif,system-ui;
+}
+#personal-arcade-v1 .arcade-season-archive-note{
+ margin:10px 3px 5px;color:#b9cce0;font:600 10px/1.45 ui-sans-serif,system-ui;
+}
+@media(max-width:360px){
+ #phone-app-arcade .arcade-season-portal{padding:5px 7px;font-size:10px}
+ #personal-arcade-v1 .arcade-season-book-scroll{padding:7px}
+ #personal-arcade-v1 .arcade-season-relic{min-height:151px;padding:10px 3px 7px}
+ #personal-arcade-v1 .arcade-season-relic strong{font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){
+ #phone-app-arcade .arcade-season-portal,
+ #personal-arcade-v1 .arcade-season-relic{scroll-behavior:auto;transition:none}
+}

@@ -3,7 +3,7 @@ export const USER_DAILY_LIMIT=120;
 export const GLOBAL_DAILY_LIMIT=250;
 export const MIN_INTERVAL_MS=5_000;
 export const MAX_TOTAL_INPUT=12_000;
-import {resolveModel} from './npc-models.mjs';
+import {resolveModel,resolveNpcModel} from './npc-models.mjs';
 export function utcDay(ms) {return new Date(ms).toISOString().slice(0,10);}
 export function validRequest(data, isAdmin=false) {
   if (!data || typeof data!=='object' || Array.isArray(data)) return null;
@@ -34,7 +34,7 @@ export function validRequest(data, isAdmin=false) {
   }
   if(!contents.length||contents[0].role!=='user'||contents.at(-1).role!=='user')return null;
   // A model ID is accepted only from the server's explicit text-model allowlist.
-  const model=data.purpose==='chat'?resolveModel(data.model):resolveModel(undefined);
+  const model=data.purpose==='chat'?resolveNpcModel(data.model):resolveModel(undefined);
   if(!model)return null;
   return {purpose:data.purpose,model,systemInstruction:{parts:[{text:data.instruction}]},contents};
 }

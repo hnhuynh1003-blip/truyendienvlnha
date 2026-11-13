@@ -51,12 +51,276 @@ async function main() {
       await route.fulfill({ status: 200, contentType: 'application/javascript', body: code });
     });
     await page.goto(`http://127.0.0.1:${port}/?sandbox=1`, { waitUntil: 'domcontentloaded' });
+    const dismissSandboxLogin=async()=>{
+      // Real user action; do not force clicks behind the expected login modal.
+      const auth=page.locator('#auth-modal');
+      if(await auth.isVisible())
+        await auth.getByRole('button',{name:'Đóng'}).click();
+    };
+    // Initial guest login opens after 600ms. Wait for that expected dialog
+    // before UI exploration, otherwise it can appear between two click steps.
+    await page.waitForTimeout(750);
+    await dismissSandboxLogin();
+
+    // DUDU editorial homepage: compact opening without duplicate navigation.
+    await page.waitForFunction(() => !!window.DuduSiteV60 && !!document.querySelector('.d61-hero'));
+    const siteHome = await page.evaluate(() => {
+      const hero=document.querySelector('.d61-hero');
+      return {
+        heroHeight: Math.round(hero.getBoundingClientRect().height),
+        heroTitle: hero.querySelector('h1')?.textContent||'',
+        modules: document.querySelectorAll('#d60-home .d61-quick').length,
+        heroActions: document.querySelectorAll('#d60-home .d61-hero-actions button').length,
+        readActions: document.querySelectorAll('#d60-home .d61-resume-action').length,
+        worldTeasers: document.querySelectorAll('#d60-home .d61-world-strip').length,
+        worlds: document.querySelector('.d61-signal-off')?.textContent||'',
+        path: window.DuduSiteV60.page
+      };
+    });
+    assert.ok(siteHome.heroHeight>100 && siteHome.heroHeight<300,'Desktop editorial opening must be compact');
+    assert.match(siteHome.heroTitle,/Từ chữ thành thế giới/);
+    assert.equal(siteHome.modules,0,'No duplicated quick-entry menu beneath hero');
+    assert.equal(siteHome.heroActions,0,'Hero must not duplicate navigation or Cyber Phone controls');
+    assert.ok(siteHome.readActions<=1,'At most one Resume chapter action on home');
+    assert.equal(siteHome.worldTeasers,0,'Do not repeat World status in a second large card');
+    assert.match(siteHome.worlds,/Đang kiến tạo/,'Worlds must not be presented as live gameplay');
+    assert.equal(siteHome.path,'home');
+    await page.setViewportSize({width:390,height:844});
+    const mobileSite = await page.evaluate(() => ({
+      heroHeight:Math.round(document.querySelector('.d61-hero').getBoundingClientRect().height),
+      navigationVisible:getComputedStyle(document.querySelector('.d60-bottomnav')).display!=='none',
+      overflow: document.documentElement.scrollWidth > window.innerWidth+2
+    }));
+    assert.ok(mobileSite.heroHeight<280,'Mobile hero should leave room for visible story content');
+    assert.equal(mobileSite.navigationVisible,true,'Mobile bottom navigation visible');
+    assert.equal(mobileSite.overflow,false,'Homepage should not overflow viewport horizontally');
+    // C4.6: Honor Hall joins the stable Cyber Phone app inventory.
+    await page.waitForFunction(()=>window.DuduPhoneAppsV67?.specs?.length===17);
+    const phoneAudit=await page.evaluate(()=>{
+      const app=window.DuduPhoneAppsV67;
+      const entries=app.snapshot();
+      return {
+        count:entries.length,
+        mounted:entries.filter(x=>x.mounted).length,
+        missingModules:entries.filter(x=>x.state==='missing_entrypoint').map(x=>x.id),
+        decisions:Object.fromEntries(entries.map(x=>[x.id,x.decision])),
+        profileRenderer:app.get('profile')?.entrypointDetected===true,
+        messengerRenderer:app.get('chat')?.entrypointDetected===true,
+        questsRenderer:app.get('quests')?.entrypointDetected===true,
+        inventoryRenderer:app.get('inventory')?.entrypointDetected===true,
+        shopRenderer:app.get('shop')?.entrypointDetected===true,
+        systemRenderer:app.get('system')?.entrypointDetected===true,
+        coreRenderer:app.get('core-console')?.entrypointDetected===true,
+        walletRenderer:app.get('wallet')?.entrypointDetected===true,
+        arcadeRenderer:app.get('arcade')?.entrypointDetected===true,
+        honorsRenderer:app.get('honors')?.entrypointDetected===true,
+        unknownId:app.get('unknown')===null,
+        noFirestoreWrites:window.__firestoreWrites.length===0
+      };
+    });
+    assert.equal(phoneAudit.count,17,'Cyber Phone must register the Honor Hall');
+    assert.equal(phoneAudit.mounted,17,'Every Phone app should have a stable DOM mount');
+    assert.equal(phoneAudit.honorsRenderer,true,'Honor Hall renderer must be loaded');
+    assert.deepEqual(phoneAudit.missingModules,[],
+      'Phone app entrypoints should remain loaded: '+phoneAudit.missingModules.join(', '));
+    assert.equal(phoneAudit.decisions.chat,'modernize');
+    assert.equal(phoneAudit.decisions.quests,'bridge');
+    assert.equal(phoneAudit.decisions.inventory,'retain');
+    assert.ok(phoneAudit.profileRenderer&&phoneAudit.messengerRenderer&&
+      phoneAudit.questsRenderer&&phoneAudit.inventoryRenderer&&phoneAudit.shopRenderer&&
+       phoneAudit.systemRenderer&&phoneAudit.coreRenderer&&
+       phoneAudit.walletRenderer&&phoneAudit.arcadeRenderer,
+      'Core Phone renderer entrypoints must exist');
+    assert.equal(phoneAudit.unknownId,true);
+    assert.equal(phoneAudit.noFirestoreWrites,true);
+    // V71.1: unsigned reader sees an authentication gate, not a redeem form.
+    const systemV71Locked=await page.evaluate(async()=>{
+      const api=window.DuduSystemAppsV69;
+      await api.renderSystem();
+      const surface=document.getElementById('dudu-v69-system-view');
+      return {
+        gated:surface.children.length===1&&
+          surface.children[0].classList.contains('dudu-v71-unavailable')&&
+          !surface.querySelector('form'),
+        popupDenied:api.statusPopup()===false,
+        hidden:!surface.querySelector('.dudu-v71-hero,.dudu-v69-stat'),
+        authorDenied:api.renderCore()===false,
+        authorButtonHidden:document.getElementById('dudu-v69-core-launch').hidden===true,
+        noWrites:window.__firestoreWrites.length===0
+      };
+    });
+    assert.deepEqual(systemV71Locked,{
+      gated:true,popupDenied:true,hidden:true,
+      authorDenied:true,authorButtonHidden:true,noWrites:true
+    },'V71 reader and Sandbox cannot invent a server-issued passport');
+
+    // World Atlas V64: compact two-column mobile display, not a second novel library.
+    await page.evaluate(() => DuduSiteV60.navigate('worlds'));
+    await page.locator('#d60-worlds .d64-world-card').first().waitFor();
+    const atlas=await page.evaluate(()=>{
+      const tax=window.DuduWorldTaxonomyV66,reg=window.DuduWorldRegistryV63;
+      const worlds=tax?.genres||[],missions=tax?.missions||[];
+      const unknown=reg?.unverifiedWorlds||[];
+      const closed=document.querySelector('#d60-worlds .d64-unknown');
+      return {
+        registered:!!tax&&!!reg,
+        basic:worlds.length,
+        missions:missions.length,
+        unverified:unknown.length,
+        cards:document.querySelectorAll('#d60-worlds .d64-world-card').length,
+        signals:document.querySelectorAll('#d60-worlds .d64-unknown-card').length,
+        duplicateBooks:document.querySelectorAll('#d60-worlds .d60-book').length,
+        playableLinks:document.querySelectorAll('#d60-worlds .d64-world-card button, #d60-worlds .d64-world-card a').length,
+        allLowTier:missions.every(m=>['F','E'].includes(m.tier)&&m.status==='seed'),
+        unverifiedSealed:unknown.every(w=>w.status==='unverified'),
+        uniqueIds:new Set(missions.map(m=>m.missionId)).size===48 &&
+          new Set(worlds.map(g=>g.genreId)).size===6,
+        emptyBindings:missions.every(m=>m.storyId===null&&m.scenarioId===null&&m.storyPromptId===null&&m.npcIds.length===0),
+        unknownCollapsed:!closed?.open,
+        noLongHelp:!document.querySelector('#d60-worlds .d63-intro, #d60-worlds .d63-atlas-status, #d60-worlds .d64-card-teaser'),
+        noFirestoreWrites:window.__firestoreWrites.length===0,
+        route:window.DuduSiteV60.page
+      };
+    });
+    assert.deepEqual(atlas,{
+      registered:true,basic:6,missions:48,unverified:3,cards:6,signals:3,
+      duplicateBooks:0,playableLinks:0,allLowTier:true,unverifiedSealed:true,
+      uniqueIds:true,emptyBindings:true,unknownCollapsed:true,noLongHelp:true,
+      noFirestoreWrites:true,route:'worlds'
+    },'V66 must show six genre gates backed by 48 locked missions');
+    for(const [width,columns,maxHeight] of [[320,2,165],[390,2,165],[768,2,180],[1280,3,180]]){
+      await page.setViewportSize({width,height:844});
+      const layout=await page.evaluate(()=>({
+        overflow:document.documentElement.scrollWidth>window.innerWidth+2,
+        columns:getComputedStyle(document.querySelector('.d64-world-grid')).gridTemplateColumns.split(' ').length,
+        height:Math.round(document.querySelector('.d64-world-card').getBoundingClientRect().height)
+      }));
+      assert.equal(layout.overflow,false,'Atlas must not overflow horizontally at '+width+'px');
+      assert.equal(layout.columns,columns,'Expected compact Atlas columns at '+width+'px');
+      assert.ok(layout.height<=maxHeight,'World cards should be compact at '+width+'px: '+layout.height);
+    }
+    await page.setViewportSize({width:390,height:844});
+    await dismissSandboxLogin();
+    await page.locator('#d60-worlds .d64-unknown-summary').click();
+    assert.equal(await page.locator('#d60-worlds .d64-unknown').evaluate(el=>el.open),true,
+      'Unverified coordinates reveal on demand');
+    await page.evaluate(()=>DuduSiteV60.refresh());
+    await page.waitForFunction(()=>document.querySelector('#d60-worlds .d64-unknown')?.open);
+    assert.equal(await page.locator('#d60-worlds .d64-unknown-card').count(),3);
+    await dismissSandboxLogin();
+    await page.locator('#d60-worlds .d64-unknown-summary').click();
+    assert.equal(await page.locator('#d60-worlds .d64-unknown').evaluate(el=>el.open),false);
+    // V66: Genre gate previews multiple F/E story seeds, not a playable session.
+    await dismissSandboxLogin();
+    await page.locator('#d60-worlds .d64-world-card').first().click();
+    const dossier=page.locator('#d65-world-dialog');
+    await dossier.waitFor({state:'visible'});
+    assert.match(await dossier.textContent(),/Cổ đại/);
+    assert.match(await dossier.textContent(),/Khế ước bắt buộc/);
+    assert.equal(await dossier.locator('.d66-catalog-list li').count(),8);
+    const firstPreview=await dossier.locator('.d66-preview-panel').first().locator('.d66-preview-result').getAttribute('data-mission-id');
+    await dossier.locator('.d66-preview-panel').first().locator('.d66-shuffle').click();
+    const secondPreview=await dossier.locator('.d66-preview-panel').first().locator('.d66-preview-result').getAttribute('data-mission-id');
+    assert.notEqual(firstPreview,secondPreview,'F previews should not repeat consecutively');
+    assert.equal(await page.evaluate(()=>window.__firestoreWrites.length),0,
+      'Viewing a world dossier must never write to Firestore');
+    await page.keyboard.press('Escape');
+    await dossier.waitFor({state:'hidden'});
+    const firstWorld=page.locator('#d60-worlds .d64-world-card').first();
+    await page.waitForFunction(()=>document.querySelector('.d64-world-card')?.getAttribute('role')==='button');
+    await firstWorld.focus();
+    await page.keyboard.press('Enter');
+    await dossier.waitFor({state:'visible'});
+    await dossier.locator('.d65-close').click();
+    await dossier.waitFor({state:'hidden'});
+    // The sandbox login dialog may appear asynchronously while inspecting
+    // guest world previews. Close it as a user would, never force a click
+    // through an obscuring modal or weaken production auth behavior.
+    if(await page.locator('#auth-modal').isVisible())
+      await page.locator('#auth-modal').getByRole('button',{name:'Đóng'}).click();
+    await dismissSandboxLogin();
+    await page.locator('#d60-worlds .d66-random-entry').click();
+    await dossier.waitFor({state:'visible'});
+    assert.match(await dossier.textContent(),/Tín hiệu sơ cấp/);
+    const firstGlobal=await dossier.locator('.d66-random-result').getAttribute('data-mission-id');
+    await dossier.locator('.d66-random-next').click();
+    const secondGlobal=await dossier.locator('.d66-random-result').getAttribute('data-mission-id');
+    assert.notEqual(firstGlobal,secondGlobal,'Global random F preview should avoid repeat');
+    await dossier.locator('.d65-close').click();
+    await dossier.waitFor({state:'hidden'});
+    const blueprintSafety=await page.evaluate(()=>{
+      const api=window.DuduWorldBlueprintV66;
+      const a=api?.makeDraft('dudu-m-an-f01'),bad=api?.makeDraft('dudu-u001');
+      const corrupted=a?{...a,access:{enabled:true,serverValidated:false,requiresContract:true}}:null;
+      const withNpc=a?{...a,npcIds:['unapproved-npc']}:null;
+      return {
+        valid:!!a&&api.validateDraft(a).length===0,
+        modes:a?.entryModes?.join(','),
+        isDraft:a?.state==='draft'&&a.access.enabled===false&&a.rewards.enabled===false,
+        unknownBlocked:bad===null,
+        publishBlocked:api?.canPublish(a)===false,
+        unauthorizedUI:window.DuduWorldUXV66?.openAuthorStudio()===false,
+        badAccessRejected:api?.validateDraft(corrupted).includes('access_must_remain_locked'),
+        npcRejected:api?.validateDraft(withNpc).includes('npc_binding_requires_review'),
+        contractRequired:a?.pactRequired===true&&a.access.requiresContract===true,
+        previewDenied:window.DuduWorldTaxonomyV66.entryCheck({missionId:'dudu-m-an-f01'}).reason==='pact_required',
+        noWrites:window.__firestoreWrites.length===0
+      };
+    });
+    assert.deepEqual(blueprintSafety,{
+      valid:true,modes:'main,passerby,free',isDraft:true,
+      unknownBlocked:true,publishBlocked:true,unauthorizedUI:true,
+      badAccessRejected:true,npcRejected:true,contractRequired:true,previewDenied:true,noWrites:true
+    },'V66 mission blueprints must stay offline and contract-locked');
+    await page.evaluate(()=>DuduSiteV60.navigate('home'));
+    await page.setViewportSize({width:1280,height:720});
+
     await page.waitForFunction(() => typeof window.handleAuthSubmit === 'function' && !!document.getElementById('auth-username'));
     await page.waitForTimeout(800);
+    // Reopen through the real UI if we dismissed the optional sandbox login.
+    if(!(await page.locator('#auth-modal').isVisible()))
+      await page.locator('#account-status-btn').click();
     await page.locator('#auth-username').fill('tester-a');
     await page.getByRole('button', { name: 'Đổi tài khoản thử' }).click();
     await page.waitForFunction(() => document.getElementById('account-status-btn').textContent.includes('tester-a'));
+    // V71: the old published Sandbox code must not unlock a real System.
+    const sandboxSystem=await page.evaluate(async()=>{
+      const old=document.getElementById('cyber-phone').style.display==='flex';
+      if(!old)togglePhone();
+      openPhoneApp('system');
+      await window.DuduSystemAppsV69.renderSystem();
+      const view=document.getElementById('dudu-v69-system-view');
+      const client=await window.DuduSystemClientV71.me();
+      const sample=window.DuduSystemAppsV69.statusPopup();
+      const output={
+       denied:client.ok===false,onlyGate:view.children.length===1&&
+         view.children[0].classList.contains('dudu-v71-unavailable')&&
+         !view.querySelector('form'),
+       noStat:sample===false&&!view.querySelector('.dudu-v69-stat'),
+       noWrites:window.__firestoreWrites.length===0
+      };
+      phoneHome();if(!old&&document.getElementById('cyber-phone').style.display==='flex')
+       togglePhone();
+      return output;
+    });
+    assert.deepEqual(sandboxSystem,{denied:true,onlyGate:true,noStat:true,noWrites:true});
     await page.locator('#role-toggle-btn').click();
+    // V66 author entry is permission-gated even though templates never publish.
+    const worldStudioAuth=await page.evaluate(()=>({
+      authorized:canEditStories(),
+      hasEntry:[...document.querySelectorAll('#d60-author-actions button')].some(b=>b.textContent.includes('Khung kịch bản'))
+    }));
+    if(worldStudioAuth.authorized){
+      await page.waitForFunction(()=>[...document.querySelectorAll('#d60-author-actions button')]
+        .some(b=>b.textContent.includes('Khung kịch bản')));
+      assert.equal(worldStudioAuth.hasEntry||await page.evaluate(()=>[...document.querySelectorAll('#d60-author-actions button')]
+        .some(b=>b.textContent.includes('Khung kịch bản'))),true,
+        'Author Studio should expose scenario template tool');
+      const opened=await page.evaluate(()=>DuduWorldUXV66.openAuthorStudio());
+      assert.equal(opened,true,'Authorized authors can open offline scenario tooling');
+      assert.match(await page.locator('#d65-world-dialog').textContent(),/Khung kịch bản/);
+      await page.locator('#d65-world-dialog .d65-close').click();
+    }
 
     const catalogSnapshot = await page.evaluate(() => ({
       count:window.DuduItemCatalog?.items.length,
@@ -87,8 +351,20 @@ async function main() {
       const visible=app?.classList.contains('dudu-v43-companion-open')&&
         getComputedStyle(panel).display==='flex';
       const input=document.getElementById('dudu-v43-message-input');
+      const diary=document.getElementById('dudu-v43-diary');
+      const messengerLayout={
+        textarea:input?.tagName==='TEXTAREA',
+        menuInHead:diary?.parentElement?.classList.contains('dudu-v43-head'),
+        hiddenTools:diary?.open===false &&
+          diary?.querySelector('.dudu-v43-shortcuts')!==null,
+        compactPanel:panel?.children.length===3,
+        viewportHelper:window.DuduMessengerV672?.version===2
+      };
       input.value='Hướng dẫn nhặt đồ';
+      input.dispatchEvent(new Event('input',{bubbles:true}));
+      const enabledBefore=document.querySelector('.dudu-v672-send')?.disabled===false;
       document.querySelector('.dudu-v43-composer').requestSubmit();
+      const disabledAfter=document.querySelector('.dudu-v672-send')?.disabled===true;
       const history=userProfile.duduCompanionV43?.messages||[];
       const scriptedHelp=history.some(m=>m.role==='model'&&/2 phút/.test(m.text));
       const chatCount=userProfile.duduCompanionV43?.chat?.count||0;
@@ -98,16 +374,29 @@ async function main() {
       const claimed=claim.disabled&&userProfile.duduCompanionV43.login.count===1;
       claim.click();
       const noDouble=Number(userProfile.currency)===currencyAfter;
+      input.value='Ký khế ước hệ thống';
+      input.dispatchEvent(new Event('input',{bubbles:true}));
+      document.querySelector('.dudu-v43-composer').requestSubmit();
+      const stewardResponse=(userProfile.duduCompanionV43?.messages||[]).slice(-1)[0]?.text||'';
+      const stewardSafe=/chưa được triển khai/i.test(stewardResponse)&&
+        /chưa thể xác nhận/i.test(stewardResponse)&&
+        window.DuduSystemStewardV673?.canSignPact()===false;
       window.DuduCompanionV43.back();
       const back=app.classList.contains('dudu-v33-inbox');
       userProfile=JSON.parse(backup);saveCurrentAccount();
       phoneHome();if(!prevOpen)togglePhone();
       return {pinned,name,visible,scriptedHelp,chatCount,claimed,noDouble,back,
+       stewardSafe,messengerLayout,enabledBefore,disabledAfter,
        increment:currencyAfter-currencyBefore,writes:window.__firestoreWrites.length};
     });
     assert.equal(companionSmoke.pinned,true,'DUDU must be the first conversation');
     assert.match(companionSmoke.name,/DUDU/);
     assert.equal(companionSmoke.visible,true,'DUDU companion UI opens inside Cyber Phone');
+    assert.deepEqual(companionSmoke.messengerLayout,{
+      textarea:true,menuInHead:true,hiddenTools:true,compactPanel:true,viewportHelper:true
+    },'V67.2 keeps messenger uncluttered without changing V43 persistence');
+    assert.equal(companionSmoke.enabledBefore,true,'DUDU send enables for a nonblank draft');
+    assert.equal(companionSmoke.disabledAfter,true,'DUDU send resets after successful save');
     assert.equal(companionSmoke.scriptedHelp,true,'DUDU can explain the real loot cooldown');
     assert.equal(companionSmoke.chatCount,1,'First valid conversation counts toward daily streak');
     assert.equal(companionSmoke.claimed,true,'Claim is one time per local day');
@@ -115,6 +404,8 @@ async function main() {
     assert.equal(companionSmoke.increment,3,'First Sandbox check-in awards three Xu');
     assert.equal(companionSmoke.back,true,'Return to contacts from DUDU');
     assert.equal(companionSmoke.writes,0,'DUDU Sandbox never calls production Firestore');
+    assert.equal(companionSmoke.stewardSafe,true,
+      'V67.3 DUDU must explain unsigned pact without pretending it can sign or unlock it');
 
     const museumSandbox=await page.evaluate(async()=>{
       openPhoneApp('museum');
@@ -134,14 +425,18 @@ async function main() {
       const phoneWasOpen=phone?.style.display==='flex';
       const firestoreCount=window.__firestoreWrites.length;
       try{
-        if(!phoneWasOpen)togglePhone();
+        // V67.1 closes the Phone on any account change; exercise the
+        // real protected guest transition before opening the guest Museum.
         currentUsername='';
+        window.DuduPhoneLifecycleV671?.onAccountChanged?.();
+        if(phone?.style.display!=='flex')togglePhone();
         // Deliberately LEAVE prior user's profile object in memory:
         // a guest MUST NOT see that person's progress.
         openPhoneApp('museum');
         await renderMuseum();
         const album=document.getElementById('dudu-v43-memory-album');
         const museum=document.getElementById('phone-app-museum');
+        museum.querySelector('[data-tab="memories"]')?.click();
         const verified=museum.querySelector('.dudu-v27-museum-help');
         const options=album?.querySelectorAll('#dudu-v43-memory-source option').length;
         const cards=album?.querySelectorAll('.dudu-v43-memory-card').length;
@@ -154,7 +449,9 @@ async function main() {
           noWrites:window.__firestoreWrites.length===firestoreCount};
       }finally{
         currentUsername=savedUsername;userProfile=savedProfile;
+        window.DuduPhoneLifecycleV671?.onAccountChanged?.();
         phoneHome();
+        if(phoneWasOpen&&phone.style.display!=='flex')togglePhone();
         if(!phoneWasOpen&&phone.style.display==='flex')togglePhone();
       }
     });
@@ -181,6 +478,7 @@ async function main() {
           milestones:['dudu-letter-3','dudu-rose-7']};
         openPhoneApp('museum');
         await renderMuseum();
+        document.querySelector('#phone-app-museum [data-tab="memories"]')?.click();
         const album=document.getElementById('dudu-v43-memory-album');
         const select=document.getElementById('dudu-v43-memory-source');
         const duduCards=album?.querySelectorAll('.dudu-v43-memory-card').length;
@@ -765,36 +1063,61 @@ async function main() {
       readChapter(0);
       const expSecond=userProfile.exp;
       const oldRandom=Math.random;
-      Math.random=()=>0.999999;
-      let base,scifi,freeOk,freeAgain,freeCountBefore,freeCountAfter,yesterdayRefresh,stillDailyLocked;
+      let base,scifi,freeOk,freeAgain,freeCountBefore,freeCountAfter,
+        stableReload,stillLocked,findVisible,failConsumed,failNoReward;
+      const findId=prefix=>{
+        for(let i=0;i<1000;i++){
+          const id=prefix+'-'+i;
+          if(DuduChapterLootEncounterV1.encounter({accountId:currentUsername,
+            storyId:novel.id,chapterId:id,paragraphCount:3}).visible)return id;
+        }
+        throw Error('Chapter find fixture not found');
+      };
+      const testChapter=(id,realmTag)=>({id,title:'Chương thử bảo vật',
+        content:'Đoạn mở đầu.\nĐoạn giữa.\nĐoạn kết.',realmTag});
+      const winningRoll=()=>{
+        let n=0;
+        Math.random=()=>n++===0?0:0.999999;
+      };
       try {
+        const baseChapter=testChapter(findId('phase2-common'),null);
+        novel.chapters.push(baseChapter);
+        readChapter(novel.chapters.length-1);
+        findVisible=!!document.querySelector('#reader-content .reader-loot-discovery');
+        winningRoll();
         freeCountBefore=userProfile.inventory.length;
         claimChapterLootDrop();
-        freeOk=userProfile.lootedChapters[readKey]===DuduLootCadenceV42.dayKey();
+        const baseKey=DuduChapterLootEncounterV1.lootKey(novel.id,baseChapter.id);
+        freeOk=DuduChapterLootEncounterV1.attempted(userProfile.lootedChapters[baseKey]);
         const drop=userProfile.inventory[0];
         base={id:drop.id,rank:drop.rank,scope:drop.scope,source:drop.obtainedFrom,
           namedChapter:drop.obtainedFrom?.storyId===novel.id};
         const countOnce=userProfile.inventory.length;
         claimChapterLootDrop();
         freeAgain=userProfile.inventory.length===countOnce;
-        // An old, undated boolean from pre-V42 does not lock a chapter forever.
-        // A prior-day claim becomes eligible again, then locks for today.
-        const recordedToday=userProfile.lootedChapters[readKey];
-        userProfile.lootedChapters[readKey]=DuduLootCadenceV42.dayKey(Date.now()-86400000);
+        readChapter(novel.chapters.length-1);
+        stableReload=!document.querySelector('#reader-content .reader-loot-discovery');
+        userProfile.lootedChapters[baseKey]=DuduLootCadenceV42.dayKey(Date.now()-86400000);
         claimChapterLootDrop();
-        yesterdayRefresh=userProfile.inventory.length===countOnce+1 &&
-          userProfile.lootedChapters[readKey]===recordedToday;
-        const countAfterRefresh=userProfile.inventory.length;
-        claimChapterLootDrop();
-        stillDailyLocked=userProfile.inventory.length===countAfterRefresh;
-        const second={id:'phase2-realm-chapter',title:'Chương thử vị diện',
-          content:'Nội dung dành cho kiểm thử thế giới.',realmTag:'SCIFI'};
+        stillLocked=userProfile.inventory.length===countOnce;
+        const second=testChapter(findId('phase2-realm'),'SCIFI');
         novel.chapters.push(second);
         readChapter(novel.chapters.length-1);
+        winningRoll();
         claimChapterLootDrop();
         const item=userProfile.inventory[0];
         scifi={rank:item.rank,scope:item.scope,realmTag:item.realmTag,source:item.obtainedFrom,
-          chapterClaim:userProfile.lootedChapters[novel.id+'_'+second.id]===DuduLootCadenceV42.dayKey()};
+          chapterClaim:DuduChapterLootEncounterV1.attempted(userProfile.lootedChapters[novel.id+'_'+second.id])};
+        const missed=testChapter(findId('phase2-miss'),null);
+        novel.chapters.push(missed);
+        readChapter(novel.chapters.length-1);
+        const beforeMiss=userProfile.inventory.length;
+        Math.random=()=>0.99;
+        claimChapterLootDrop();
+        failConsumed=!document.querySelector('#reader-content .reader-loot-discovery')&&
+          String(userProfile.lootedChapters[novel.id+'_'+missed.id]).startsWith('miss:');
+        failNoReward=userProfile.inventory.length===beforeMiss;
+        Math.random=()=>0.999999;
         const cooldownBefore=userProfile.inventory.length;
         const rollOne=rollLootDrop(false);
         const cooldownAfterOne=userProfile.inventory.length;
@@ -809,7 +1132,7 @@ async function main() {
       }
       return {
         expBefore,expFirst,expSecond,alreadyCounted,freeOk,freeAgain,
-        yesterdayRefresh,stillDailyLocked,
+        stableReload,stillLocked,findVisible,failConsumed,failNoReward,
         freeCountBefore,freeCountAfter,base,scifi,
         firestoreWrites:window.__firestoreWrites.length
       };
@@ -817,10 +1140,13 @@ async function main() {
     assert.equal(lootPhase2.alreadyCounted,true);
     assert.equal(lootPhase2.expFirst-lootPhase2.expBefore,5,'First chapter open gets a one-time reward');
     assert.equal(lootPhase2.expSecond,lootPhase2.expFirst,'Re-opening chapter must never repeat EXP');
+    assert.equal(lootPhase2.findVisible,true,'Eligible chapter shows a collectible inline');
     assert.equal(lootPhase2.freeOk,true);
-    assert.equal(lootPhase2.freeAgain,true,'Same chapter cannot grant a second drop today');
-    assert.equal(lootPhase2.yesterdayRefresh,true,'A previous-day chapter loot claim can be collected again');
-    assert.equal(lootPhase2.stillDailyLocked,true,'The next repeated claim remains blocked on the same day');
+    assert.equal(lootPhase2.freeAgain,true,'Same chapter cannot grant a second drop');
+    assert.equal(lootPhase2.stableReload,true,'Reloading the chapter cannot reroll the find');
+    assert.equal(lootPhase2.stillLocked,true,'Prior-day claims stay consumed instead of refreshing');
+    assert.equal(lootPhase2.failConsumed,true,'Failed loot attempt consumes the inline find');
+    assert.equal(lootPhase2.failNoReward,true,'Failure cannot grant an item');
     assert.equal(lootPhase2.base.scope,'COMMON','Untagged chapter must use global item pool');
     assert.equal(lootPhase2.base.rank,'B','Empty higher ranks must not silently become F');
     assert.equal(lootPhase2.base.namedChapter,true);
@@ -1489,7 +1815,7 @@ async function main() {
     assert.equal(phoneDesktop.ariaExpanded,'true');
     assert.equal(phoneDesktop.ariaHidden,'false');
     assert.match(phoneDesktop.clock,/^\d{2}:\d{2}$/);
-    assert.equal(phoneDesktop.appCount,11,'V44.5 adds an isolated Sandbox testing room');
+    assert.equal(phoneDesktop.appCount,13,'V69 adds player System and AU Core without removing Sandbox apps');
     assert.equal(phoneDesktop.nativeButtons,true);
     assert.ok(phoneDesktop.phoneWidth>=350&&phoneDesktop.phoneWidth<=390);
     assert.notEqual(phoneDesktop.cardRadius,'0px');
@@ -1661,7 +1987,7 @@ async function main() {
         openPhoneApp('settings');
         const gallery=document.getElementById('dudu-v34-overlay');
         const choices=gallery?.querySelectorAll('[data-dudu-wallpaper-choice]')||[];
-        const animeCount=gallery?.querySelectorAll('#dudu-v37-anime-panel [data-dudu-wallpaper-choice]').length||0;
+        const animeCount=gallery?.querySelectorAll('.dudu-v38-studio [data-v38-id]').length||0;
         const initial=document.body.dataset.duduPhoneWallpaper;
         setPhoneWallpaperV27('sakura');
         const chosen=document.body.dataset.duduPhoneWallpaper;
@@ -1695,8 +2021,8 @@ async function main() {
         phoneHome();
       }
     });
-    assert.equal(wallpaperR4.choices,15,'V44 gallery includes 4 calm, 4 world, 4 classic and 3 anime choices');
-    assert.equal(wallpaperR4.animeCount,3,'Anime wallpapers live in the gallery, not Settings');
+    assert.equal(wallpaperR4.choices,12,'Legacy options remain in the DOM for safe old-setting fallback');
+    assert.equal(wallpaperR4.animeCount,6,'V38 gallery displays six distinct original AI wallpapers');
     assert.equal(wallpaperR4.currentName,'Hoa anh đào','V44 preview updates when wallpaper selection changes');
     assert.equal(wallpaperR4.chosen,'sakura');
     assert.equal(wallpaperR4.selected,'true');
@@ -1707,8 +2033,79 @@ async function main() {
     assert.equal(wallpaperR4.unchanged,true);
     assert.equal(wallpaperR4.writes,0);
 
-    // V28 R5 — world/personal wallpaper tracks the currently selected story.
-    // Test transitions on Cyber Phone without making any Firebase or story writes.
+    // V38: the real gallery button must both persist and visibly apply a
+    // free AI wallpaper; previous storage and account data remain untouched.
+    const wallpaperV38=await page.evaluate(()=>{
+      const owner=phoneWallpaperOwnerV27(),key=DuduPhoneWallpaperV27.keyFor(owner);
+      const old=localStorage.getItem(key),profileBefore=JSON.stringify(userProfile);
+      const beforeWrites=window.__firestoreWrites.length;
+      try{
+        if(document.getElementById('cyber-phone').style.display!=='flex')togglePhone();
+        openPhoneApp('settings');
+        document.getElementById('dudu-v34-open').click();
+        document.querySelector('.dudu-v38-wall-card[data-v38-id="v38-moon"]').click();
+        document.querySelector('.dudu-v38-inspect-action').click();
+        return {selected:DuduPhoneWallpaperV27.read(localStorage,owner),
+          visible:document.body.dataset.duduPhoneWallpaper,
+          background:getComputedStyle(document.querySelector('#cyber-phone .phone-screen'))
+            .backgroundImage.includes('moon-garden.webp'),
+          closed:document.getElementById('dudu-v34-overlay').hidden,
+          profileSafe:JSON.stringify(userProfile)===profileBefore,
+          writes:window.__firestoreWrites.length-beforeWrites};
+      }finally{
+        if(old===null)localStorage.removeItem(key);
+        else localStorage.setItem(key,old);
+        renderPhoneWallpaperV27();phoneHome();
+      }
+    });
+    assert.equal(wallpaperV38.selected,'v38-moon');
+    assert.equal(wallpaperV38.visible,'v38-moon');
+    assert.equal(wallpaperV38.background,true);
+    assert.equal(wallpaperV38.closed,true);
+    assert.equal(wallpaperV38.profileSafe,true);
+    assert.equal(wallpaperV38.writes,0);
+
+    // V39 portraits plus uncluttered focus mode. No account or currency writes.
+    const portraitV39=await page.evaluate(()=>{
+      const owner=phoneWallpaperOwnerV27(),key=DuduPhoneWallpaperV27.keyFor(owner);
+      const previous=localStorage.getItem(key),profile=JSON.stringify(userProfile);
+      const writes=window.__firestoreWrites.length;
+      try{
+        setPhoneWallpaperV27('v39-mage');
+        phoneHome();
+        const artwork=getComputedStyle(document.querySelector('#cyber-phone .phone-screen'))
+          .backgroundImage.includes('moon-mage.webp');
+        const button=document.getElementById('dudu-v38-focus-toggle');
+        button.click();
+        const focus=document.getElementById('cyber-phone').classList.contains('is-wallpaper-focus');
+        const gridHidden=getComputedStyle(document.querySelector('#phone-home-screen .phone-app-grid')).display==='none';
+        const back=button.textContent;
+        button.click();
+        const restored=getComputedStyle(document.querySelector('#phone-home-screen .phone-app-grid')).display!=='none';
+        openPhoneApp('wallet');
+        const actual=document.querySelector('.dudu-wallet-card').dataset.walletCardTier;
+        document.getElementById('dudu-wallet-upgrade-button').click();
+        selectDuduWalletCard('diamond');
+        toggleDuduWalletTierSheet(false);
+        const reset=document.querySelector('.dudu-wallet-card').dataset.walletCardTier;
+        return {artwork,focus,gridHidden,back,restored,actual,reset,
+          profileSafe:JSON.stringify(userProfile)===profile,writes:window.__firestoreWrites.length-writes};
+      }finally{
+        if(previous===null)localStorage.removeItem(key);else localStorage.setItem(key,previous);
+        renderPhoneWallpaperV27();phoneHome();
+      }
+    });
+    assert.equal(portraitV39.artwork,true);
+    assert.equal(portraitV39.focus,true);
+    assert.equal(portraitV39.gridHidden,true);
+    assert.equal(portraitV39.back,'‹');
+    assert.equal(portraitV39.restored,true);
+    assert.equal(portraitV39.actual,'silver');
+    assert.equal(portraitV39.reset,'silver');
+    assert.equal(portraitV39.profileSafe,true);
+    assert.equal(portraitV39.writes,0);
+
+    // V38 retires auto story backgrounds without erasing old mode preferences.
     const worldV28=await page.evaluate(()=>{
       const account=currentUsername,profileBefore=JSON.stringify(userProfile);
       const writes=window.__firestoreWrites.length;
@@ -1761,8 +2158,8 @@ async function main() {
         phoneHome();
       }
     });
-    assert.equal(worldV28.selected,'true');
-    assert.equal(worldV28.matched,'world-xianxia');
+    assert.equal(worldV28.selected,'false');
+    assert.equal(worldV28.matched,'jade');
     assert.equal(worldV28.fallback,'jade');
     assert.equal(worldV28.personal,'jade');
     assert.equal(worldV28.galleryIsPresent,true);
@@ -2273,7 +2670,7 @@ async function main() {
           renderPhoneWallpaperV27();
         }
       });
-      assert.equal(v30.apps,11,'Home includes an isolated Sandbox lab shortcut');
+      assert.equal(v30.apps,13,'V69 home retains the Sandbox shortcut and adds System plus AU Core');
       assert.equal(v30.dockCount,4,'Dock has only four primary apps');
       assert.equal(v30.visibleAppIds.some(s=>s.includes("openPhoneApp('profile')")),false);
       assert.equal(v30.visibleAppIds.some(s=>s.includes("openPhoneApp('codex')")),true);
@@ -3276,7 +3673,7 @@ async function main() {
         localStorage.setItem(key,String(lastLootTimestamp));
         const pulseWorked=useFunctionItemV438(pulse);
         const remaining=DuduLootCadenceV42.phoneRemainingMs(lastLootTimestamp);
-        const shortened=remaining>0&&remaining<65000;
+        const shortened=remaining>0&&remaining<DuduLootCadenceV42.PHONE_COOLDOWN_MS-60000;
         const activated=useFunctionItemV438(coupon);
         const pending=!!userProfile.functionalV438.pending;
         const beforeBuy=userProfile.currency;

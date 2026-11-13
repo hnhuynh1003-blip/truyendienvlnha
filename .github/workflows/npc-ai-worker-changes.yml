@@ -1,0 +1,34 @@
+name: DUDU NPC AI Worker checks (only when Worker changes)
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'cloudflare/src/**'
+      - 'cloudflare/tests/npc-*'
+      - 'cloudflare/tests/gemini-*'
+      - 'cloudflare/tests/auth.test.mjs'
+      - 'cloudflare/package*.json'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'cloudflare/src/**'
+      - 'cloudflare/tests/npc-*'
+      - 'cloudflare/tests/gemini-*'
+      - 'cloudflare/tests/auth.test.mjs'
+      - 'cloudflare/package*.json'
+permissions:
+  contents: read
+jobs:
+  worker:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Install Worker dependencies
+        run: npm ci --prefix cloudflare --ignore-scripts --no-audit --no-fund
+      - name: Verify NPC AI, auth and bundle only
+        run: |
+          node --test cloudflare/tests/npc-*.test.mjs cloudflare/tests/gemini-*.test.mjs cloudflare/tests/auth.test.mjs
+          npm run build --prefix cloudflare

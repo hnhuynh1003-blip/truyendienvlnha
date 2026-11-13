@@ -30,10 +30,14 @@ const assert = require('node:assert/strict');
       const isApp = route.request().url().includes('firebase-app-compat');
       const mock = isApp ? `
         (() => {
-          let authObserver = null;
+          const authObservers = new Set();
           const userSession = {
             currentUser: null,
-            onAuthStateChanged(fn) { authObserver = fn; setTimeout(() => fn(null), 0); },
+            onAuthStateChanged(fn) {
+              authObservers.add(fn);
+              setTimeout(() => fn(this.currentUser), 0);
+              return () => authObservers.delete(fn);
+            },
             async signInWithEmailAndPassword(email, password) {
               if (email !== 'reader@example.test' || password !== 'testing-secret') {
                 const err = new Error('Invalid credential'); err.code = 'auth/invalid-credential'; throw err;
@@ -41,10 +45,13 @@ const assert = require('node:assert/strict');
               const user = {uid:'reader-uid', email, displayName:'Reader',
                 getIdTokenResult:async () => ({claims:{}})};
               this.currentUser = user;
-              if (authObserver) setTimeout(() => authObserver(user), 0);
+              for (const fn of authObservers) setTimeout(() => fn(user), 0);
               return {user};
             },
-            async signOut() { this.currentUser=null; if (authObserver) await authObserver(null); }
+            async signOut() {
+              this.currentUser=null;
+              await Promise.all([...authObservers].map(fn => fn(null)));
+            }
           };
           const firestore = function() {
             return {collection(name) { return {doc(id) {
@@ -90,8 +97,21 @@ const assert = require('node:assert/strict');
 
     await page.locator('#auth-password').fill('testing-secret');
     await page.locator('#auth-email-login-btn').click();
-    await page.waitForFunction(() => document.getElementById('account-status-btn').textContent.includes('reader@example.test') ||
-      document.getElementById('account-status-btn').textContent.includes('Reader'));
+    try {
+      await page.waitForFunction(() => document.getElementById('account-status-btn').textContent.includes('reader@example.test') ||
+        document.getElementById('account-status-btn').textContent.includes('Reader'), {timeout:12000});
+    } catch (error) {
+      const snapshot = await page.evaluate(() => ({
+        label: document.getElementById('account-status-btn')?.textContent,
+        feedback: document.getElementById('auth-status-message')?.textContent,
+        authUid: window.firebase?.auth?.()?.currentUser?.uid || null,
+        duduUid: window.DuduAuth?.uid?.() || null,
+        authReady: window.DuduAuth?.isReady?.() || false
+      }));
+      console.error('Firebase mock sign-in diagnostic (no private credentials):',
+        JSON.stringify(snapshot), 'pageErrors:', JSON.stringify(pageErrors));
+      throw error;
+    }
     const result = await page.evaluate(() => ({
       username:currentUsername, role:userProfile.role,
       canEdit:canEditStories(), loggedIn:DuduAuth.isReady(),

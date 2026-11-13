@@ -29,8 +29,8 @@
  const TOOL=Object.freeze({
    id:TOOL_ID,itemId:TOOL_ID,
    name:'Bộ Nạp Tần Số',icon:'🔋',rank:'D',type:'ITEM',
-   desc:'Xóa hồi chiêu nhặt đồ của Điện thoại (2 phút). Không hồi lượt nhặt chương.',
-   description:'Xóa hồi chiêu nhặt đồ của Điện thoại (2 phút). Không hồi lượt nhặt chương.',
+   desc:'Xóa hồi chiêu nhặt đồ của Điện thoại (15 phút). Không tạo dấu vết Nhặt bảo trong chương.',
+   description:'Xóa hồi chiêu nhặt đồ của Điện thoại (15 phút). Không tạo dấu vết Nhặt bảo trong chương.',
    scope:'FUNCTIONAL',acquisition:Object.freeze({method:'SHOP'}),
    price:30,storeCategory:'TOOL',unique:false,maxOwned:null,
    giftable:false,tradeable:false,discardable:true,published:true,
@@ -50,8 +50,8 @@
   }),
   Object.freeze({
    id:PULSE_ID,itemId:PULSE_ID,name:'Xung Thời Gian',icon:'⏳',rank:'D',type:'ITEM',
-   desc:'Giảm 60 giây hồi chiêu nhặt đồ Điện thoại, không thay lượt chương.',
-   description:'Giảm 60 giây hồi chiêu nhặt đồ Điện thoại, không thay lượt chương.',
+   desc:'Giảm 60 giây hồi chiêu nhặt đồ Điện thoại, không tạo thêm Nhặt bảo trong chương.',
+   description:'Giảm 60 giây hồi chiêu nhặt đồ Điện thoại, không tạo thêm Nhặt bảo trong chương.',
    scope:'FUNCTIONAL',acquisition:Object.freeze({method:'SHOP'}),price:16,
    storeCategory:'TOOL',unique:false,maxOwned:null,giftable:false,
    tradeable:false,discardable:true,published:true,schemaVersion:2
@@ -77,7 +77,7 @@
  });
  const EXTRA_DAILY_QUESTS=Object.freeze([
   Object.freeze({id:'q_daily_fun',type:'DAILY',title:'Giải Trí DUDU',
-   desc:'Hoàn thành và nhận thưởng 1 trò trong DUDU FUN.',
+   desc:'Mở Vạn Bảo hoặc nhận kết quả Vé Cào Vạn Phúc một lần trong ngày.',
    current:0,target:1,rewardExp:10,rewardCoin:10,claimed:false}),
   Object.freeze({id:'q_daily_npc',type:'DAILY',title:'Gửi Một Món Quà',
    desc:'Tặng thành công 1 món quà cho NPC đã mở khóa.',
@@ -136,7 +136,8 @@
    if(tab==='COMMON')items=stock;
    else if(tab==='REALM'&&catalog.REALM_TAGS.includes(realmTag))
      items=catalog.list({scope:'REALM',realmTag});
-   else if(tab==='DUDU')items=catalog.list({scope:'DUDU'});
+   else if(tab==='DUDU')items=catalog.list({scope:'DUDU'})
+     .filter(item=>!['VAN_BAO','VAN_VAT','VAN_CARD'].includes(item.collectionSet));
    else if(tab==='TOOLS')items=FUNCTIONAL_TOOLS;
    return items.filter(item=>
      !text||[item.name,item.desc,item.rank].some(v=>

@@ -1,0 +1,205 @@
+/* C4.25G — mobile progression journal. Cosmetic presentation only:
+   reward quantities, unlock gates, persistence and Season 01 preview stay unchanged. */
+body.dudu-phone-v11 #cyber-phone .dudu-v71-quest{
+ display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;
+ gap:3px 8px;padding:8px 9px;margin:3px 0 7px;border-radius:9px;
+ background:linear-gradient(115deg,#243a46,#26304a);border-color:#6f829092;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v71-quest strong{
+ font-size:10px;line-height:1.35;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v71-quest small{
+ font-size:9px;line-height:1.35;max-width:35ch;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v71-quest button{
+ grid-column:2;grid-row:1 / span 2;align-self:center;
+ min-height:36px;padding:6px 8px;font-size:9px;white-space:normal;
+ max-width:104px;
+}
+body.dudu-phone-v11 #cyber-phone #quests-container.dudu-v437-quest-root{
+ gap:5px;padding-bottom:12px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v437-summary{
+ gap:6px;border-radius:11px;padding:9px 10px;
+ background:linear-gradient(105deg,#263c50,#322c47);
+ box-shadow:inset 0 1px #ffffff16;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v437-summary-copy{gap:1px}
+body.dudu-phone-v11 #cyber-phone .dudu-v437-summary-copy small{font-size:8px}
+body.dudu-phone-v11 #cyber-phone .dudu-v437-summary-copy strong{font-size:12px}
+body.dudu-phone-v11 #cyber-phone .dudu-v437-counter{
+ min-width:42px;padding:6px;font-size:13px;border-radius:7px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v437-track{height:4px}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-quest-status{
+ font-size:9px;line-height:1.3;color:#c3d9e1!important;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v437-tabs{gap:3px;padding:1px 0 3px}
+body.dudu-phone-v11 #cyber-phone .dudu-v437-tab{
+ padding:5px 9px;min-height:30px;border-radius:7px;font-size:10px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v437-subtitle{font-size:9px;line-height:1.2}
+body.dudu-phone-v11 #cyber-phone .dudu-v437-cards{gap:5px}
+body.dudu-phone-v11 #cyber-phone .dudu-v437-card,
+body.dudu-phone-v11 #cyber-phone .dudu-v437-card.is-ready{
+ padding:8px 9px;gap:5px;border-radius:8px;
+ background:#1b3040;border-left:3px solid #6fa0a5;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v437-card.is-ready{
+ background:#333b3b;border-left-color:#f2ca8e;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v437-card.is-claimed{opacity:.72}
+body.dudu-phone-v11 #cyber-phone .dudu-v437-icon{
+ width:27px;height:27px;border:0;border-radius:7px;
+ background:#334c599e;font-size:15px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v437-row{gap:6px}
+body.dudu-phone-v11 #cyber-phone .dudu-v437-copy{gap:0}
+body.dudu-phone-v11 #cyber-phone .dudu-v437-copy small{font-size:8px}
+body.dudu-phone-v11 #cyber-phone .dudu-v437-copy strong{font-size:11px;line-height:1.25}
+body.dudu-phone-v11 #cyber-phone .dudu-v437-status{font-size:9px}
+body.dudu-phone-v11 #cyber-phone .dudu-v437-quest-summary{
+ display:block;cursor:pointer;list-style:none;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v437-quest-summary::-webkit-details-marker{display:none}
+body.dudu-phone-v11 #cyber-phone .dudu-v437-quest-summary > .dudu-v437-row::after{
+ content:'⌄';display:block;flex-shrink:0;color:#9bb2bc;font-size:13px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v437-details[open] .dudu-v437-quest-summary > .dudu-v437-row::after{
+ content:'⌃';
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v437-details .dudu-v437-desc{
+ margin:6px 0 2px 31px!important;padding-top:5px;
+ border-top:1px solid #8094a338;font-size:10px;line-height:1.45;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v437-meter{height:4px}
+body.dudu-phone-v11 #cyber-phone .dudu-v437-reward{font-size:9px}
+body.dudu-phone-v11 #cyber-phone .dudu-v437-claim{
+ border-radius:7px;min-height:34px;padding:6px 11px;font-size:10px;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v437-history{padding:8px;border-radius:8px}
+body.dudu-phone-v11 #cyber-phone .dudu-v437-disclaimer{font-size:8px;line-height:1.3}
+body.dudu-phone-v11 #cyber-phone .dudu-v437-quest-summary:focus-visible{
+ outline:2px solid #a9e9ff;outline-offset:2px;
+}
+
+/* A distinct illustrated Season 01 exhibit, not a claim or reward button. */
+#dudu-honor-content-c46{padding-top:7px}
+#dudu-honor-content-c46 .dudu-honor-hero{
+ padding:9px 10px;border-radius:11px;box-shadow:inset 0 1px #f4d6a51a;
+}
+#dudu-honor-content-c46 .dudu-honor-hero > small{font-size:8px}
+#dudu-honor-content-c46 .dudu-honor-hero:after{font-size:42px;right:9px}
+#dudu-honor-content-c46 .dudu-honor-hero-row{gap:8px;margin:5px 0 7px}
+#dudu-honor-content-c46 .dudu-honor-main-symbol{
+ width:43px;height:43px;font-size:23px;border-radius:9px;
+}
+#dudu-honor-content-c46 .dudu-honor-main-copy small{font-size:8px}
+#dudu-honor-content-c46 .dudu-honor-main-copy strong{font-size:14px}
+#dudu-honor-content-c46 .dudu-honor-main-copy .dudu-honor-rarity{
+ padding:1px 6px;font-size:8px;
+}
+#dudu-honor-content-c46 .dudu-honor-stats{padding-top:7px;font-size:8px}
+#dudu-honor-content-c46 .dudu-honor-season-bridge{
+ display:flex;align-items:center;gap:7px;min-width:0;margin-top:7px;padding:5px 7px;
+ border:1px solid #c3a46f81;border-radius:10px;
+ background:radial-gradient(circle at 6% 45%,#bb8e4140,transparent 38%),#25313b;
+ box-shadow:inset 0 1px #fff4d520;
+}
+#dudu-honor-content-c46 .dudu-honor-season-crest{
+ flex:0 0 49px;width:49px;height:52px;
+ background:url('../assets/arcade-season/s01-founder-crest.webp') center/contain no-repeat;
+ filter:drop-shadow(0 2px 5px #efbe7352);
+}
+#dudu-honor-content-c46 .dudu-honor-season-copy{
+ display:flex;flex:1;flex-direction:column;gap:2px;min-width:0;
+}
+#dudu-honor-content-c46 .dudu-honor-season-copy small{
+ font-size:8px;font-weight:800;letter-spacing:.075em;color:#e5c386;
+}
+#dudu-honor-content-c46 .dudu-honor-season-copy strong{
+ font-size:11px;line-height:1.3;color:#fff0cb;
+}
+#dudu-honor-content-c46 .dudu-honor-season-copy span{
+ color:#bbced3;font-size:8px;line-height:1.3;
+}
+#dudu-honor-content-c46 .dudu-honor-season-open{
+ flex:0 0 auto;min-height:36px;max-width:72px;
+ border:1px solid #c7aa79;border-radius:8px;
+ padding:5px 6px;background:#634c37;color:#ffebbf;
+ font-size:9px;font-weight:800;cursor:pointer;
+}
+#dudu-honor-content-c46 .dudu-honor-season-open:focus-visible{
+ outline:2px solid #fff1bb;outline-offset:2px;
+}
+#dudu-honor-content-c46 .dudu-honor-tabs{
+ grid-template-columns:repeat(4,minmax(0,1fr));
+ gap:3px;margin:7px 0;padding:3px;border-radius:9px;
+}
+#dudu-honor-content-c46 .dudu-honor-tabs button{
+ min-height:34px;font-size:10px;border-radius:7px;
+}
+#dudu-honor-content-c46 .dudu-honor-collection{gap:6px}
+#dudu-honor-content-c46 .dudu-honor-tip,
+#dudu-honor-content-c46 .dudu-honor-footnote{
+ font-size:9px;line-height:1.35;margin:2px;
+}
+#dudu-honor-content-c46 .dudu-honor-hunt-spotlight{
+ gap:7px;padding:7px;border-radius:9px;
+}
+#dudu-honor-content-c46 .dudu-honor-hunt-sigil{
+ flex-basis:34px;width:34px;height:35px;font-size:18px;border-radius:7px;
+}
+#dudu-honor-content-c46 .dudu-honor-hunt-info{gap:1px}
+#dudu-honor-content-c46 .dudu-honor-hunt-info strong{font-size:11px}
+#dudu-honor-content-c46 .dudu-honor-hunt-info span{font-size:9px}
+#dudu-honor-content-c46 .dudu-honor-hunt-open{
+ flex-basis:34px;width:34px;min-height:36px;border-radius:7px;
+}
+#dudu-honor-content-c46 .dudu-honor-title-scopes,
+#dudu-honor-content-c46 .dudu-honor-filters{gap:3px;padding:1px 0 2px}
+#dudu-honor-content-c46 .dudu-honor-title-scopes button,
+#dudu-honor-content-c46 .dudu-honor-filters button{
+ padding:5px 8px;min-height:29px;font-size:9px;
+}
+#dudu-honor-content-c46 .dudu-honor-card,
+#dudu-honor-content-c46 .dudu-honor-achievement{
+ gap:7px;padding:8px 7px;border-radius:9px;
+ background:#1d3040;
+}
+#dudu-honor-content-c46 .dudu-honor-symbol,
+#dudu-honor-content-c46 .dudu-honor-ach-icon{
+ flex:0 0 33px;width:33px;height:35px;font-size:18px;border-radius:8px;
+}
+#dudu-honor-content-c46 .dudu-honor-card-copy,
+#dudu-honor-content-c46 .dudu-honor-ach-copy{gap:2px}
+#dudu-honor-content-c46 .dudu-honor-card-copy strong,
+#dudu-honor-content-c46 .dudu-honor-ach-copy strong{font-size:11px;line-height:1.28}
+#dudu-honor-content-c46 .dudu-honor-card-copy small,
+#dudu-honor-content-c46 .dudu-honor-ach-copy small{font-size:9px;line-height:1.3}
+#dudu-honor-content-c46 .dudu-honor-rarity{padding:1px 6px;font-size:8px}
+#dudu-honor-content-c46 .dudu-honor-action{
+ min-height:35px;max-width:62px!important;font-size:9px;padding:5px 6px;
+}
+#dudu-honor-content-c46 .dudu-honor-pin{
+ flex:0 0 36px;width:36px;height:36px;font-size:19px;
+}
+#dudu-honor-content-c46 .dudu-honor-title-progress{margin:1px 0}
+#dudu-honor-content-c46 .dudu-honor-ach-detail{width:100%}
+#dudu-honor-content-c46 .dudu-honor-ach-detail summary{
+ display:inline-block;cursor:pointer;color:#a7caca;
+ font-size:9px;line-height:1.5;
+}
+#dudu-honor-content-c46 .dudu-honor-ach-detail p{
+ margin:3px 0!important;font-size:9px;line-height:1.35;
+ color:#cedbd6;
+}
+#dudu-honor-content-c46 .dudu-honor-ach-detail summary:focus-visible{
+ outline:2px solid #ade7e1;outline-offset:2px;
+}
+@media (max-width:360px){
+ #dudu-honor-content-c46 .dudu-honor-season-bridge{gap:5px;padding:5px}
+ #dudu-honor-content-c46 .dudu-honor-season-crest{flex-basis:42px;width:42px;height:47px}
+ #dudu-honor-content-c46 .dudu-honor-season-open{max-width:64px;font-size:8px}
+ #dudu-honor-content-c46 .dudu-honor-tabs button{font-size:9px}
+}

@@ -1,28 +1,21 @@
 /* V43.5.4 DUDU FUN — compact, premium, touch-first; no generated art assets. */
 body.dudu-phone-v11 #cyber-phone #dudu-fun-launch-v43[hidden]{display:none!important}
 body.dudu-phone-v11 #cyber-phone #phone-app-fun{gap:0}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun{padding:7px 9px 11px}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .phone-app-header{
+ min-height:39px;padding-bottom:5px;margin-bottom:8px;
+ display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:5px;align-items:center}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .phone-app-header>span:nth-child(2){
+ min-width:0;white-space:nowrap;text-align:center;font-size:12px;letter-spacing:.015em}
+body.dudu-phone-v11 #cyber-phone #dudu-fun-header-balance{
+ display:inline-flex;align-items:center;justify-content:center;min-height:27px;
+ padding:5px 7px;border:1px solid #ddbd808c;border-radius:20px;
+ background:linear-gradient(135deg,#304054,#25374c);color:#ffe4a2;
+ font-size:10px;font-weight:800;white-space:nowrap;letter-spacing:-.025em}
 body.dudu-phone-v11 #cyber-phone #dudu-fun-content-v43{
- display:flex;flex-direction:column;gap:10px;min-width:0;padding-bottom:12px;
+ display:flex;flex-direction:column;gap:8px;min-width:0;padding-bottom:12px;
 }
-body.dudu-phone-v11 #cyber-phone .dudu-fun-top{
- display:flex;justify-content:space-between;align-items:center;gap:6px;
- background:linear-gradient(115deg,#43345d,#1e4153);
- border:1px solid #bda0df9a;border-radius:13px;padding:11px;
-}
-body.dudu-phone-v11 #cyber-phone .dudu-fun-title{
- display:flex;flex-direction:column;gap:3px;min-width:0;
-}
-body.dudu-phone-v11 #cyber-phone .dudu-fun-title strong{
- color:#ffe8f7;font-size:13px;letter-spacing:.04em;
-}
-body.dudu-phone-v11 #cyber-phone .dudu-fun-title span,
-body.dudu-phone-v11 #cyber-phone .dudu-fun-disclaimer{
- font-size:9px;line-height:1.45;color:#cbd1e4;
-}
-body.dudu-phone-v11 #cyber-phone .dudu-fun-balance{
- flex:none;border:1px solid #e9d8a868;background:#2d3d4ecb;
- padding:6px 8px;border-radius:20px;font-size:10px;font-weight:750;color:#ffe6a8;
-}
+body.dudu-phone-v11 #cyber-phone .dudu-fun-disclaimer{font-size:9px;line-height:1.45;color:#cbd1e4}
 body.dudu-phone-v11 #cyber-phone .dudu-fun-daily-meter{
  display:flex;justify-content:space-between;gap:6px;
  font-size:10px;color:#e7dcf4;
@@ -38,8 +31,8 @@ body.dudu-phone-v11 #cyber-phone .dudu-fun-tabs{
  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;
 }
 body.dudu-phone-v11 #cyber-phone .dudu-fun-tab{
- padding:9px 7px;border:1px solid #7885ad8c;border-radius:10px;
- background:#22354e;color:#d9def1;font-size:11px;cursor:pointer;
+ padding:10px 7px;border:1px solid #7885ad8c;border-radius:10px;min-height:42px;
+ background:#22354e;color:#d9def1;font-size:12px;font-weight:750;cursor:pointer;
 }
 body.dudu-phone-v11 #cyber-phone .dudu-fun-tab.is-active{
  background:linear-gradient(130deg,#724e79,#57426f);
@@ -129,6 +122,85 @@ body.dudu-phone-v11 #cyber-phone .dudu-fun-history-line{
 }
 body.dudu-phone-v11 #cyber-phone .dudu-fun-history-line strong{color:#ffe0a8}
 body.dudu-phone-v11 #cyber-phone .dudu-fun-disclaimer{display:block}
+
+/* Vạn Phúc — collectible red-and-gold Chinese-style lucky scratch cards. */
+body.dudu-phone-v11 #cyber-phone .lucky-kiosk-head{display:flex;flex-direction:column;gap:5px;padding:4px 5px 8px;text-align:center}
+body.dudu-phone-v11 #cyber-phone .lucky-kiosk-head span{font-size:10px;letter-spacing:.08em;color:#e8b575}
+body.dudu-phone-v11 #cyber-phone .lucky-kiosk-head strong{font:900 22px/1.15 ui-serif,Georgia,serif;color:#ffe4a0;text-shadow:0 2px 9px #df91404a}
+body.dudu-phone-v11 #cyber-phone .lucky-kiosk-head small{font-size:10px;color:#f3d8c0;line-height:1.4}
+body.dudu-phone-v11 #cyber-phone .lucky-theme-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+body.dudu-phone-v11 #cyber-phone .lucky-theme{display:flex;flex-direction:column;justify-content:center;align-items:center;
+ min-width:0;min-height:83px;padding:7px 3px;border-radius:10px;border:1px solid #a86c4b;
+ background:linear-gradient(135deg,#832b36,#401d32);color:#ffe8b8;cursor:pointer;gap:3px}
+body.dudu-phone-v11 #cyber-phone .lucky-theme.selected{border-color:#ffe2a0;
+ box-shadow:0 0 0 1px #e9ca8c88,inset 0 0 18px #e79b4170}
+body.dudu-phone-v11 #cyber-phone .lucky-theme-phoenix{background:linear-gradient(145deg,#bc5b2d,#64293c)}
+body.dudu-phone-v11 #cyber-phone .lucky-theme-lantern{background:linear-gradient(145deg,#ba262f,#6d2127)}
+body.dudu-phone-v11 #cyber-phone .lucky-theme-jade{background:linear-gradient(145deg,#3d7c68,#214e4b)}
+body.dudu-phone-v11 #cyber-phone .lucky-theme-lotus{background:linear-gradient(145deg,#ae4f77,#63345f)}
+body.dudu-phone-v11 #cyber-phone .lucky-theme-lion{background:linear-gradient(145deg,#98642d,#57331e)}
+body.dudu-phone-v11 #cyber-phone .lucky-theme-cloud{background:linear-gradient(145deg,#577b9f,#333e70)}
+body.dudu-phone-v11 #cyber-phone .lucky-theme-gold{background:linear-gradient(145deg,#9c8036,#3f312b)}
+body.dudu-phone-v11 #cyber-phone .lucky-theme-icon{display:grid;place-items:center;
+ border:1px solid #e4a464ad;border-radius:50%;width:30px;height:30px;color:#ffe5a8;
+ font:900 20px ui-serif,Georgia,serif;background:#30151e55}
+body.dudu-phone-v11 #cyber-phone .lucky-theme b{font-size:9px;line-height:1.1}
+body.dudu-phone-v11 #cyber-phone .lucky-theme small{font-size:8px;color:#efbea7}
+body.dudu-phone-v11 #cyber-phone .dudu-fun-start.lucky-buy{border:2px solid #ffe0a1;
+ background:linear-gradient(120deg,#e8aa49,#fff1bb,#d88d3c);color:#5e281c;
+ min-height:45px;box-shadow:0 4px 18px #f0b44f4a;letter-spacing:.06em}
+body.dudu-phone-v11 #cyber-phone .lucky-card{border:3px double #f9df9b;border-radius:15px;padding:11px;
+ background:radial-gradient(ellipse at 50% 15%,#bd4237,#6a1928 65%,#350f20);
+ position:relative;overflow:hidden;box-shadow:inset 0 0 0 3px #8b3442,0 5px 20px #090e1e7d}
+body.dudu-phone-v11 #cyber-phone .lucky-card.lucky-theme-jade{background:radial-gradient(circle at 50% 15%,#4baf7c,#1c5a53 65%,#143633)}
+body.dudu-phone-v11 #cyber-phone .lucky-card.lucky-theme-lotus{background:radial-gradient(circle at 50% 15%,#cc779b,#79365f 65%,#3f1e4b)}
+body.dudu-phone-v11 #cyber-phone .lucky-card.lucky-theme-cloud{background:radial-gradient(circle at 50% 15%,#649bc5,#344e83 65%,#1e2950)}
+body.dudu-phone-v11 #cyber-phone .lucky-card.lucky-theme-phoenix{background:radial-gradient(circle at 50% 15%,#ed9350,#9a362b 65%,#471c2b)}
+body.dudu-phone-v11 #cyber-phone .lucky-card.lucky-theme-lantern{background:radial-gradient(circle at 50% 15%,#e7484c,#9c2334 65%,#4c1929)}
+body.dudu-phone-v11 #cyber-phone .lucky-card.lucky-theme-lion{background:radial-gradient(circle at 50% 15%,#cb9850,#815324 65%,#3c2a22)}
+body.dudu-phone-v11 #cyber-phone .lucky-card.lucky-theme-gold{background:radial-gradient(circle at 50% 15%,#d9ad58,#71572a 65%,#2c2925)}
+body.dudu-phone-v11 #cyber-phone .lucky-card::before{content:'✧　福　✧　福　✧';position:absolute;top:32%;left:-22px;
+ color:#f6d37d10;transform:rotate(-23deg);font-size:38px;pointer-events:none}
+body.dudu-phone-v11 #cyber-phone .lucky-card-top{display:flex;justify-content:space-between;gap:4px;
+ align-items:center;color:#fff3cb;font-size:10px;position:relative;z-index:1}
+body.dudu-phone-v11 #cyber-phone .lucky-card-top small{font-size:8px;color:#fbd09e}
+body.dudu-phone-v11 #cyber-phone .lucky-card-emblem{width:94px;height:94px;border:5px double #edb86d;
+ border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+ margin:10px auto;color:#fdf1c8;font:900 47px/1 ui-serif,Georgia,serif;
+ background:radial-gradient(circle,#a84b34,#6b1b2c);box-shadow:0 0 20px #e9a75e6e}
+body.dudu-phone-v11 #cyber-phone .lucky-card-emblem small{margin-top:5px;font:700 10px sans-serif;color:#ffe7aa}
+body.dudu-phone-v11 #cyber-phone .lucky-scratch-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;position:relative;z-index:1}
+body.dudu-phone-v11 #cyber-phone .lucky-scratch-cell{min-height:53px;border:2px solid #ffe1a2;
+ border-radius:8px;cursor:pointer;color:#fff0c4;font-size:23px;font-weight:900;
+ background:repeating-linear-gradient(135deg,#d4a85e,#d4a85e 7px,#b98545 7px,#b98545 14px);
+ box-shadow:inset 0 1px 1px #fff5dcaa;touch-action:manipulation;transition:transform .1s,filter .12s}
+body.dudu-phone-v11 #cyber-phone .lucky-scratch-cell:active:not(:disabled){transform:scale(.93);filter:brightness(1.2)}
+body.dudu-phone-v11 #cyber-phone .lucky-scratch-cell.opened{color:#f9d88b;border-color:#ecb05c;
+ background:linear-gradient(145deg,#702b35,#401b2d);box-shadow:inset 0 0 14px #2b0c19}
+body.dudu-phone-v11 #cyber-phone .lucky-scratch-cell:disabled{opacity:1;cursor:default}
+body.dudu-phone-v11 #cyber-phone .lucky-card-foot{display:block;text-align:center;color:#ffe4a2;
+ font:900 10px ui-monospace,monospace;letter-spacing:.12em;margin-top:12px;line-height:1.5}
+body.dudu-phone-v11 #cyber-phone .lucky-claim{background:linear-gradient(100deg,#e1b45c,#aa472d);
+ color:#fff8d4;border-color:#ffe2a0;min-height:44px}
+body.dudu-phone-v11 #cyber-phone .lucky-last-win{padding:9px;border-radius:9px;text-align:center;
+ color:#ffe5b4;background:#4d2c3b;font-size:10px;line-height:1.5;margin:0}
+body.dudu-phone-v11 #cyber-phone .lucky-album{background:linear-gradient(140deg,#30243f,#4e313f);
+ border:1px solid #b1786e;border-radius:11px;padding:11px;display:flex;flex-direction:column;gap:5px}
+body.dudu-phone-v11 #cyber-phone .lucky-album strong{font-size:12px;color:#ffe5ad}
+body.dudu-phone-v11 #cyber-phone .lucky-album small{font-size:9px;color:#ebc8c3}
+body.dudu-phone-v11 #cyber-phone .lucky-album-track{height:7px;border-radius:9px;background:#211522;overflow:hidden}
+body.dudu-phone-v11 #cyber-phone .lucky-album-track i{display:block;height:100%;background:linear-gradient(90deg,#ce693b,#ffe195);border-radius:9px}
+body.dudu-phone-v11 #cyber-phone .lucky-odds{border:1px solid #916451;border-radius:10px;padding:10px;
+ background:#2d2636;color:#e7d5d6}
+body.dudu-phone-v11 #cyber-phone .lucky-odds summary{font-size:10px;font-weight:850;cursor:pointer;color:#f8d6ac}
+body.dudu-phone-v11 #cyber-phone .lucky-odds-list{margin-top:9px}
+body.dudu-phone-v11 #cyber-phone .lucky-odds-row{display:flex;justify-content:space-between;gap:7px;
+ border-bottom:1px solid #b3856a28;padding:5px 0;font-size:9px}
+body.dudu-phone-v11 #cyber-phone .lucky-odds-row b{color:#ffe0a8;white-space:nowrap}
+body.dudu-phone-v11 #cyber-phone .lucky-odds>small{display:block;margin-top:9px;font-size:9px;line-height:1.4;color:#c7b9c1}
+body.dudu-phone-v11 #cyber-phone .lucky-theme:focus-visible,
+body.dudu-phone-v11 #cyber-phone .lucky-scratch-cell:focus-visible{
+ outline:2px solid #fff0b1;outline-offset:2px}
 body.dudu-phone-v11 #cyber-phone .dudu-fun-tab:focus-visible,
 body.dudu-phone-v11 #cyber-phone .dudu-fun-symbol:focus-visible,
 body.dudu-phone-v11 #cyber-phone .dudu-fun-scratch:focus-visible,
@@ -142,3 +214,532 @@ body.dudu-phone-v11 #cyber-phone .dudu-fun-claim:focus-visible{
  body.dudu-phone-v11 #cyber-phone .dudu-fun-box{min-height:72px;font-size:23px}
  body.dudu-phone-v11 #cyber-phone .dudu-fun-symbol{min-height:47px}
 }
+
+/* C2.9 · Number-matching scratch cards inspired by a physical ticket. */
+body.dudu-phone-v11 #cyber-phone .lucky-number-card{
+ position:relative;overflow:hidden;border:3px solid #f8d17d;border-radius:7px;
+ padding:9px 8px 13px;color:#fff5db;
+ background:radial-gradient(ellipse at 10% 15%,#ffe5a15c,transparent 45%),
+  repeating-linear-gradient(35deg,#e58c30,#e58c30 3px,#e99334 3px,#e99334 7px);
+ box-shadow:0 2px 0 #8f3819,0 8px 24px #0d0b21ae,inset 0 0 0 2px #fff0bd88;
+}
+body.dudu-phone-v11 #cyber-phone .lucky-number-card::before{
+ content:'✦ ✦ ✦ ✦ ✦';position:absolute;inset:20px 0 auto;
+ font-size:25px;letter-spacing:13px;color:#fff3d633;pointer-events:none;
+}
+body.dudu-phone-v11 #cyber-phone .lucky-number-top{display:flex;justify-content:space-between;
+ align-items:center;position:relative;z-index:1;color:#7b291e;text-shadow:0 1px #ffe6a0}
+body.dudu-phone-v11 #cyber-phone .lucky-number-top i{font:italic 800 12px ui-serif,serif}
+body.dudu-phone-v11 #cyber-phone .lucky-number-top b{font-size:14px}
+body.dudu-phone-v11 #cyber-phone .lucky-number-banner{text-align:center;display:flex;
+ flex-direction:column;align-items:center;gap:1px;position:relative;z-index:1;margin:5px 0}
+body.dudu-phone-v11 #cyber-phone .lucky-number-banner span{font-size:18px;
+ letter-spacing:15px;color:#8664e0;margin-right:-15px}
+body.dudu-phone-v11 #cyber-phone .lucky-number-banner strong{
+ font:1000 clamp(30px,9vw,42px)/1 ui-sans-serif,system-ui,sans-serif;
+ letter-spacing:-2px;color:#f0d2ff;-webkit-text-stroke:1.3px #673f99;
+ text-shadow:3px 3px #63366e,-2px 2px #934db1,0 6px #ad6d35}
+body.dudu-phone-v11 #cyber-phone .lucky-number-banner small{
+ color:#fff0dc;font-size:10px;font-weight:950;text-shadow:0 2px #814222}
+body.dudu-phone-v11 #cyber-phone .lucky-winning-number{display:grid;
+ grid-template-columns:84px 1fr;align-items:center;gap:11px;margin:7px 0}
+body.dudu-phone-v11 #cyber-phone .lucky-winning-star{display:flex;
+ flex-direction:column;align-items:center;justify-content:center;
+ width:84px;height:84px;clip-path:polygon(50% 0%,61% 31%,95% 30%,69% 51%,79% 84%,50% 66%,21% 84%,31% 51%,5% 30%,39% 31%);
+ background:linear-gradient(160deg,#bb78e5,#654bbf);filter:drop-shadow(0 3px #593a84)}
+body.dudu-phone-v11 #cyber-phone .lucky-winning-star small{font-size:6px;
+ font-weight:950;width:50px;text-align:center;line-height:1.1}
+body.dudu-phone-v11 #cyber-phone .lucky-winning-star strong{font-size:22px}
+body.dudu-phone-v11 #cyber-phone .lucky-winning-number p{margin:0;
+ font-size:9px;line-height:1.4;color:#772e22;font-weight:850;
+ background:#ffe6adce;padding:7px;border-radius:7px}
+body.dudu-phone-v11 #cyber-phone .lucky-number-panel{
+ border:3px solid #ae511f;background:linear-gradient(#aa552c,#c8753b);
+ padding:4px 4px 7px;border-radius:6px;position:relative;z-index:1}
+body.dudu-phone-v11 #cyber-phone .lucky-number-panel>b{display:block;text-align:center;
+ font-size:9px;letter-spacing:.1em;color:#ffe9bd;margin-bottom:5px}
+body.dudu-phone-v11 #cyber-phone .lucky-number-grid{display:grid;
+ grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;touch-action:none}
+body.dudu-phone-v11 #cyber-phone .lucky-number-cell{
+ min-width:0;min-height:60px;padding:4px 1px;display:flex;
+ flex-direction:column;align-items:center;justify-content:center;gap:4px;
+ border-radius:3px;border:1px solid #b68c80;color:#352d38;
+ cursor:crosshair;position:relative;transition:background .22s,transform .17s}
+body.dudu-phone-v11 #cyber-phone .lucky-number-cell strong{font:850 18px/1 ui-sans-serif,system-ui,sans-serif}
+body.dudu-phone-v11 #cyber-phone .lucky-number-cell small{font-size:8px;font-weight:800;white-space:nowrap}
+body.dudu-phone-v11 #cyber-phone .lucky-number-cell.covered{
+ color:#f7fbff;border:1px dashed #fff0df;background:repeating-linear-gradient(135deg,
+ #b1b1bb,#b1b1bb 4px,#7e8193 4px,#7e8193 8px)}
+body.dudu-phone-v11 #cyber-phone .lucky-number-cell.revealed{
+ background:#c4bbc4;border:1px dashed #7f778a;cursor:default}
+body.dudu-phone-v11 #cyber-phone .lucky-number-cell.matched{
+ background:#fff1ad;color:#923b21;box-shadow:inset 0 0 0 2px #f6b343,0 0 10px #ffeec9}
+body.dudu-phone-v11 #cyber-phone .lucky-number-cell:disabled{opacity:1}
+body.dudu-phone-v11 #cyber-phone .lucky-number-gifts{
+ display:flex;flex-direction:column;gap:5px;padding:8px 0 5px;
+ border:1px solid #f3ca816b;margin:6px 0;border-radius:6px;background:#bc6c3680}
+body.dudu-phone-v11 #cyber-phone .lucky-number-gifts>b{text-align:center;
+ font-size:9px;letter-spacing:.12em;color:#fff3c4}
+body.dudu-phone-v11 #cyber-phone .lucky-gift-strip{display:grid;
+ grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;padding:0 4px}
+body.dudu-phone-v11 #cyber-phone .lucky-gift{display:flex;flex-direction:column;
+ align-items:center;gap:2px;min-width:0;font-size:21px;padding:2px;
+ border-radius:5px;background:#e9a45271}
+body.dudu-phone-v11 #cyber-phone .lucky-gift small{font:900 8px ui-sans-serif;
+ white-space:nowrap;color:#fff2d6}
+body.dudu-phone-v11 #cyber-phone .lucky-gift.is-prize{background:#fff0ae;
+ box-shadow:0 0 13px #fff2b8;color:#8b371d}
+body.dudu-phone-v11 #cyber-phone .lucky-gift.is-prize small{color:#7e3721}
+body.dudu-phone-v11 #cyber-phone .lucky-number-count{text-align:center;font-size:11px;
+ font-weight:950;color:#742b1e;background:#ffe2a5bf;padding:5px;border-radius:5px}
+body.dudu-phone-v11 #cyber-phone .lucky-number-foot{display:block;text-align:center;
+ font:900 9px ui-sans-serif,system-ui,sans-serif;color:#fff0d2;
+ text-shadow:0 1px #924f25;letter-spacing:.05em;margin-top:7px}
+
+/* C2.9 · Vạn Bảo, actual collectible items and their ownership album. */
+body.dudu-phone-v11 #cyber-phone .blind-kiosk{text-align:center;display:flex;
+ flex-direction:column;align-items:center;gap:5px}
+body.dudu-phone-v11 #cyber-phone .blind-kiosk span{font-size:9px;color:#f5ca9f;letter-spacing:.1em}
+body.dudu-phone-v11 #cyber-phone .blind-kiosk strong{font:900 22px/1.1 ui-serif,Georgia,serif;
+ color:#ffe6b8;text-shadow:0 3px 14px #d888ac60}
+body.dudu-phone-v11 #cyber-phone .blind-kiosk small{font-size:9px;color:#d9cbe8;line-height:1.5}
+body.dudu-phone-v11 #cyber-phone .blind-buy-actions{display:flex;flex-direction:column;gap:7px}
+body.dudu-phone-v11 #cyber-phone .blind-buy-actions .blind-free{
+ background:linear-gradient(110deg,#574698,#a66bad)}
+body.dudu-phone-v11 #cyber-phone .blind-buy-actions .blind-paid{
+ background:linear-gradient(110deg,#b2733a,#e6a56d);color:#391d28}
+body.dudu-phone-v11 #cyber-phone .blind-free-done{text-align:center;color:#d2c9dc;font-size:10px}
+body.dudu-phone-v11 #cyber-phone .blind-opening-stage{
+ background:radial-gradient(ellipse at top,#7c4b9f,#302a55 75%);
+ border:1px solid #eac4b4;border-radius:16px;padding:19px 12px;
+ display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+body.dudu-phone-v11 #cyber-phone .blind-box-3d{font-size:84px;line-height:1.2;
+ filter:drop-shadow(0 10px 8px #11172d);animation:blindFloat 1.75s ease-in-out infinite alternate}
+@keyframes blindFloat{from{transform:translateY(4px) rotate(-6deg)}to{transform:translateY(-7px) rotate(6deg)}}
+body.dudu-phone-v11 #cyber-phone .blind-opening-stage strong{color:#ffe5bd;font-size:13px}
+body.dudu-phone-v11 #cyber-phone .blind-opening-stage small{font-size:9px;color:#dbd0ee;line-height:1.5}
+body.dudu-phone-v11 #cyber-phone .blind-opening-stage button{width:100%}
+body.dudu-phone-v11 #cyber-phone .blind-result{display:flex;flex-direction:column;
+ align-items:center;gap:6px;text-align:center;padding:12px;
+ border-radius:13px;border:1px solid #e4c7ad;background:radial-gradient(ellipse at top,#6b476d,#29253f)}
+body.dudu-phone-v11 #cyber-phone .blind-result-art{width:120px;height:120px;
+ display:grid;place-items:center;filter:drop-shadow(0 5px 13px #f8c3ff50)}
+body.dudu-phone-v11 #cyber-phone .blind-result-art img{width:112px;height:112px}
+body.dudu-phone-v11 #cyber-phone .blind-result strong{font-size:16px;color:#ffe6aa}
+body.dudu-phone-v11 #cyber-phone .blind-result span{font-size:10px;color:#e1c0f3}
+body.dudu-phone-v11 #cyber-phone .blind-result small{font-size:9px;line-height:1.5;color:#ccc5da}
+body.dudu-phone-v11 #cyber-phone .blind-album-heading{display:flex;justify-content:space-between;
+ align-items:center;gap:5px;margin-top:5px}
+body.dudu-phone-v11 #cyber-phone .blind-album-heading strong{font-size:12px;color:#fbd99a}
+body.dudu-phone-v11 #cyber-phone .blind-album-heading small{font-size:9px;color:#dacadd}
+body.dudu-phone-v11 #cyber-phone .blind-album-grid{display:grid;
+ grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+body.dudu-phone-v11 #cyber-phone .blind-album-tile{position:relative;min-width:0;
+ display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 3px;
+ border:1px solid #967d9d;background:linear-gradient(140deg,#39304f,#222a43);
+ border-radius:8px;text-align:center;min-height:110px}
+body.dudu-phone-v11 #cyber-phone .blind-album-art{display:grid;place-items:center;
+ width:65px;height:65px;font-size:27px;color:#b9a4ce}
+body.dudu-phone-v11 #cyber-phone .blind-album-art img{width:65px;height:65px}
+body.dudu-phone-v11 #cyber-phone .blind-album-tile small{font-size:8px;color:#e9d9fa;
+ line-height:1.2;min-height:20px}
+body.dudu-phone-v11 #cyber-phone .blind-album-tile b{position:absolute;
+ top:5px;right:6px;color:#ffe2ab;font-size:9px}
+body.dudu-phone-v11 #cyber-phone .blind-album-tile.locked{opacity:.56;filter:saturate(.6)}
+body.dudu-phone-v11 #cyber-phone .blind-album-tile.owned{box-shadow:inset 0 0 13px #c1a7e540}
+body.dudu-phone-v11 #cyber-phone .blind-legacy{padding-top:10px;display:flex;flex-direction:column;gap:8px}
+@media(prefers-reduced-motion:reduce){body.dudu-phone-v11 #cyber-phone .blind-box-3d{animation:none}}
+/* F3.1 · Vạn Vật */
+.f31-vantvat-stage{display:grid;gap:14px;justify-items:center;padding:18px 10px;color:#fbe9bd}
+.f31-vantvat-orb{display:grid;place-items:center;width:min(55vw,180px);aspect-ratio:1;border-radius:50%;font-size:64px;background:radial-gradient(circle at 35% 30%,#8065a7,#322654 52%,#10152b 78%);box-shadow:0 0 35px #a48aff55,inset 0 0 20px #b09adb77;border:2px solid #dfc08d}
+.f31-vantvat-result{display:grid;justify-items:center;gap:6px;width:min(100%,360px);padding:14px;border:1px solid #d9bd7c88;border-radius:16px;background:linear-gradient(145deg,#302b52,#151b33);text-align:center}
+.f31-vantvat-result>span{font-size:42px}.f31-vantvat-result b{font-size:1.15rem}.f31-vantvat-result small{color:#e4c995}
+.f31-vantvat-gallery{width:min(100%,450px);padding:12px;border:1px solid #a48aff66;border-radius:12px;background:#15162cbb}
+.f31-vantvat-gallery summary{cursor:pointer}.f31-vantvat-row{display:flex;justify-content:space-between;gap:10px;padding:8px 2px;border-bottom:1px solid #ffffff20;font-size:.9rem}
+.f31-vantvat-row:last-child{border:0}
+.f31-vantvat-prize{display:grid;place-items:center;width:110px;height:110px;font-size:58px}
+.f31-vantvat-prize .dudu-item-v13-art{width:110px;height:110px;object-fit:contain}
+.f31-vantvat-prize.dudu-item-v13-frame{background:none;border:0}
+.f32-realm-group{margin:8px 0;padding:6px 8px;border:1px solid #ffffff25;border-radius:9px;background:#ffffff08}
+.f32-realm-group>summary{padding:5px 2px;cursor:pointer;font-size:.9rem;color:#e5d2fb}
+.f32-realm-group .f31-vantvat-row{align-items:center;gap:8px}
+.f32-realm-thumb{flex:none;width:38px;height:38px;display:grid;place-items:center;font-size:24px}
+.f32-realm-thumb .dudu-item-v13-art{width:38px;height:38px;object-fit:contain}
+.f32-realm-title{flex:1;min-width:0;font-size:.86rem}
+.f32-realm-rank{color:#d3b5ee;font-weight:800;min-width:25px}
+/* F3.3 · visual celebration only; no payout runs from animations. */
+.f33-rare-reveal{position:relative;animation:f33-rare-rise .7s cubic-bezier(.18,.8,.2,1) both}
+.f33-rank-a{box-shadow:0 0 25px #ed94d060;border-color:#ed94d0}
+.f33-rank-s{box-shadow:0 0 35px #f5bd6980;border-color:#f5bd69}
+.f33-rank-ss{box-shadow:0 0 42px #f3849f99;border-color:#f3849f}
+.f33-rank-sss{box-shadow:0 0 60px #ffdd83aa,0 0 100px #bc8bff66;border-color:#ffe79b;animation:f33-rare-rise .7s cubic-bezier(.18,.8,.2,1),f33-legendary-glow 2.6s ease-in-out 2}
+@keyframes f33-rare-rise{from{opacity:0;transform:translateY(20px) scale(.86)}to{opacity:1;transform:none}}
+@keyframes f33-legendary-glow{50%{box-shadow:0 0 85px #ffe49ecc,0 0 130px #b896ffbb}}
+.f33-zoom-action,.f33-realm-look{border:1px solid #bca5ed80;border-radius:9px;background:#33244c;color:#f5e7ff;cursor:pointer;padding:7px 11px}
+.f33-realm-look{padding:3px 9px;flex:none}
+.f33-vantvat-museum{width:min(100%,450px);border:1px solid #ad90ee66;border-radius:12px;padding:12px;background:linear-gradient(135deg,#201b36,#10182b)}
+.f33-vantvat-museum>summary{cursor:pointer;color:#f1ddbd;font-weight:800}
+.f33-complete-realm{border-color:#e8c47caa;background:linear-gradient(120deg,#69512c33,#3e2d6633)}
+.f33-complete-realm>summary{color:#ffdf9b}
+.f33-vantvat-shelf{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:14px}
+.f33-vantvat-card{display:grid;justify-items:center;align-content:start;gap:4px;min-width:0;padding:8px 5px;border:1px solid #b89acb55;border-radius:10px;background:#ffffff0b;color:#f3e8ff;cursor:pointer}
+.f33-vantvat-card-art{width:68px;height:68px;display:grid;place-items:center;font-size:34px}
+.f33-vantvat-card-art .dudu-item-v13-art{width:68px;height:68px;object-fit:contain}
+.f33-vantvat-card small{font-size:10px;line-height:1.25;text-align:center;overflow-wrap:anywhere}
+.f33-vantvat-zoom{position:fixed;inset:0;z-index:99999;background:#090b1bdb;display:grid;place-items:center;padding:14px;overflow:auto}
+.f33-vantvat-zoom-panel{position:relative;width:min(100%,400px);max-height:min(95vh,720px);overflow:auto;display:grid;justify-items:center;gap:9px;padding:36px 18px 22px;border:1px solid #d9be8c99;border-radius:18px;background:radial-gradient(circle at 50% 15%,#463765,#17192e 68%);box-shadow:0 20px 65px #0009;text-align:center;color:#f9ebd5}
+.f33-vantvat-zoom-close{position:absolute;right:12px;top:10px;border:1px solid #ffffff55;border-radius:8px;background:#ffffff15;color:white;padding:6px 10px;cursor:pointer}
+.f33-vantvat-zoom-art{display:grid;place-items:center;width:min(62vw,260px);height:min(62vw,260px);font-size:100px}
+.f33-vantvat-zoom-art .dudu-item-v13-art{width:100%;height:100%;object-fit:contain}
+.f33-vantvat-zoom-panel>strong{font-size:1.2rem}.f33-vantvat-zoom-panel>p{font-size:.9rem;line-height:1.5;color:#d8d4ed;margin:0}
+.f33-vantvat-zoom-value{font-weight:800;color:#f3cf83}
+@media(max-width:355px){.f33-vantvat-shelf{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(prefers-reduced-motion:reduce){.f33-rare-reveal,.f33-rank-sss{animation:none}}
+/* F3.4 · illustrated physical roulette. Server picks the outcome, not CSS. */
+.f34-vantvat-machine{position:relative;display:grid;place-items:center;width:min(100%,340px);
+ aspect-ratio:1;border:1px solid #dbbf82b3;border-radius:22px;overflow:hidden;
+ background:#14142c url('../assets/van-tuong/f34/f34-spin-backdrop.webp') center/cover;
+ box-shadow:inset 0 0 38px #000a,0 12px 38px #03051370}
+.f34-vantvat-machine::before{content:'';position:absolute;inset:0;
+ background:radial-gradient(circle,#160f3200 28%,#090b19a0 83%);pointer-events:none}
+.f34-vantvat-wheel{--f34-wheel-radius:clamp(86px,28vw,116px);position:relative;
+ display:grid;place-items:center;width:min(86%,294px);aspect-ratio:1;border-radius:50%;
+ border:5px solid #d7b979;outline:2px solid #ffe8b87c;outline-offset:4px;
+ background:repeating-conic-gradient(from -20deg,#502f73cc 0deg 40deg,#253d60cc 40deg 80deg);
+ box-shadow:0 0 24px #d7b97975,inset 0 0 35px #06081e;will-change:transform}
+.f34-vantvat-wheel::before{content:'';position:absolute;inset:9px;
+ border:1px dotted #f6dfacb3;border-radius:50%;box-shadow:inset 0 0 18px #fae2af38}
+.f34-vantvat-wheel.is-spinning{animation:f34-vantvat-spin 1.7s cubic-bezier(.12,.77,.27,1) both}
+.f34-vantvat-medallion{position:absolute;width:50px;height:50px;display:grid;place-items:center;
+ border:1px solid #f2d3a99c;border-radius:50%;overflow:hidden;background:#18243ddd;
+ box-shadow:0 3px 9px #05071288;
+ transform:rotate(calc(var(--f34-sector) * 40deg)) translateY(calc(-1 * var(--f34-wheel-radius))) rotate(calc(var(--f34-sector) * -40deg))}
+.f34-vantvat-medallion .dudu-item-v13-art{width:100%;height:100%;object-fit:contain}
+.f34-vantvat-center{z-index:1;display:grid;place-items:center;width:78px;height:78px;
+ border:2px solid #f5d9a8;border-radius:50%;background:radial-gradient(circle,#7851a4,#261c4d 72%);
+ box-shadow:0 0 22px #c89bff80,inset 0 0 13px #fff4c24d;
+ font-size:24px;font-weight:900;letter-spacing:.015em;color:#fff2bf;text-align:center}
+.f34-vantvat-wheel.is-spinning .f34-vantvat-center{font-size:10px}
+.f34-vantvat-pointer{position:absolute;z-index:3;top:1px;color:#ffe5a6;
+ text-shadow:0 2px 8px #000;font-size:27px;transform:rotate(180deg)}
+.f34-vantvat-title{font-size:12px;letter-spacing:.12em;color:#fbe6c0;text-align:center}
+.f34-vantvat-sealed{font-size:11px;color:#d9cbe9;margin:0;text-align:center}
+@keyframes f34-vantvat-spin{from{transform:rotate(0deg)}to{transform:rotate(1550deg)}}
+@media(max-width:360px){.f34-vantvat-medallion{width:42px;height:42px}
+ .f34-vantvat-wheel{--f34-wheel-radius:clamp(76px,26vw,100px)}
+ .f34-vantvat-center{width:64px;height:64px}}
+@media(prefers-reduced-motion:reduce){.f34-vantvat-wheel.is-spinning{animation:none}}
+/* F3.6 · compact batch controls, pity meter and dismissible results modal. */
+.f36-vantvat-spin-controls{width:min(100%,340px);display:grid;
+ grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.f36-vantvat-spin{display:flex;align-items:center;justify-content:center;gap:3px;
+ padding:11px 4px;min-height:47px;border:1px solid #ecd19d;border-radius:11px;
+ background:linear-gradient(145deg,#8a4c9c,#623675 60%,#36345b);color:#fff0d0;
+ font-size:11px;font-weight:850;cursor:pointer;box-shadow:0 3px 12px #0a0c236a}
+.f36-vantvat-spin:disabled{opacity:.45;cursor:not-allowed}
+.f36-vantvat-spin .dudu-money-display--gold{font-weight:900}
+.f36-vantvat-pity{display:grid;gap:6px;width:min(100%,340px);text-align:center}
+.f36-vantvat-pity small{font-size:10px;color:#e5d3b5}
+.f36-vantvat-pity-bar{height:5px;border-radius:8px;background:#2a2d48;overflow:hidden;
+ border:1px solid #bca66b44}
+.f36-vantvat-pity-bar i{display:block;height:100%;border-radius:8px;
+ background:linear-gradient(90deg,#8870cc,#e7c27d);transition:width .25s}
+.f36-vantvat-overlay{position:fixed;inset:0;z-index:100010;display:grid;
+ place-items:center;padding:12px;background:#070918dc;backdrop-filter:blur(8px)}
+.f36-vantvat-modal{width:min(100%,410px);max-height:88dvh;overflow:auto;
+ border:1px solid #dec48ba8;border-radius:19px;padding:14px;
+ background:radial-gradient(circle at 50% 5%,#514475,#1a1b33 63%,#111526);
+ box-shadow:0 20px 70px #000b;color:#ffefd1}
+.f36-vantvat-modal-head{display:flex;align-items:center;justify-content:space-between;
+ gap:10px;margin-bottom:12px;font-size:13px;letter-spacing:.07em}
+.f36-vantvat-close{flex:none;width:37px;height:37px;border:1px solid #dac39c8c;
+ border-radius:10px;background:#ffffff15;color:#fff7e3;cursor:pointer;font-size:19px}
+.f36-vantvat-reward-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.f36-vantvat-reward-grid.is-single{grid-template-columns:1fr;max-width:250px;margin:auto}
+.f36-vantvat-reward{position:relative;display:grid;justify-items:center;align-content:start;
+ gap:5px;min-width:0;padding:10px 5px;border:1px solid #c4a17c88;border-radius:13px;
+ background:linear-gradient(150deg,#37314d,#1d2640);text-align:center}
+.f36-vantvat-reward-art{width:92px;height:92px;display:grid;place-items:center;font-size:54px}
+.f36-vantvat-reward-grid.is-single .f36-vantvat-reward-art{width:145px;height:145px}
+.f36-vantvat-reward-art .dudu-item-v13-art{width:100%;height:100%;object-fit:contain}
+.f36-vantvat-reward b{font-size:11px;line-height:1.35;overflow-wrap:anywhere}
+.f36-vantvat-reward small{font-size:10px;color:#e4c898;line-height:1.3}
+.f36-vantvat-guarantee{font-size:9px;font-style:normal;font-weight:900;
+ color:#ffe9a6;padding:3px 6px;border-radius:6px;background:#a46c3044}
+.f36-vantvat-view{position:absolute;top:5px;right:5px;padding:4px 7px;border:0;
+ border-radius:7px;background:#5b4971;color:#fff;cursor:pointer}
+.f36-vantvat-modal-foot{display:block;text-align:center;color:#cfc4dc;
+ margin-top:12px;font-size:10px}
+.f33-vantvat-zoom{z-index:100020}
+@media(max-width:355px){.f36-vantvat-spin{font-size:10px;padding:9px 2px}
+ .f36-vantvat-reward-art{width:75px;height:75px}}
+@media(prefers-reduced-motion:reduce){.f36-vantvat-pity-bar i{transition:none}}
+
+/* F3.7 · tiered physical relic presentation. Only S/SS/SSS are animated. */
+.f33-vantvat-card,.f36-vantvat-reward,.f33-vantvat-zoom-panel{
+ --f37-light:#91a2c3;--f37-halo:#91a2c340;
+}
+.f33-vantvat-card:is(.f37-tier-f,.f37-tier-e,.f37-tier-d),
+.f36-vantvat-reward:is(.f37-tier-f,.f37-tier-e,.f37-tier-d){
+ background:linear-gradient(145deg,#242a3b,#1c2132);
+ border-color:#79889a55;box-shadow:none;
+}
+.f33-vantvat-card.f37-tier-c,.f36-vantvat-reward.f37-tier-c{
+ border-color:#7984fa65;background:linear-gradient(145deg,#302f4b,#20263d);
+}
+.f33-vantvat-card.f37-tier-b,.f36-vantvat-reward.f37-tier-b{
+ border-color:#c59aea9a;background:linear-gradient(145deg,#3a2b50,#21213c);
+ box-shadow:0 0 10px #ba83f43b;
+}
+.f33-vantvat-card.f37-tier-a,.f36-vantvat-reward.f37-tier-a,
+.f33-vantvat-zoom-panel.f37-tier-a{
+ border-color:#f1a0cd;background-color:#3b2944;
+ box-shadow:0 0 17px #ed94d062,0 0 28px #dd89bf27;
+}
+.f33-vantvat-card.f37-tier-s,.f36-vantvat-reward.f37-tier-s,
+.f33-vantvat-zoom-panel.f37-tier-s{
+ --f37-light:#ffdc9a;--f37-halo:#f7b65e55;
+ border-color:#ffd59b;
+ background-image:radial-gradient(circle at 50% 28%,#8a5c3d78,transparent 64%),
+  linear-gradient(150deg,#392c44,#1d263f);
+ animation:f37-legendary-s 3.8s ease-in-out infinite alternate;
+}
+.f33-vantvat-card.f37-tier-ss,.f36-vantvat-reward.f37-tier-ss,
+.f33-vantvat-zoom-panel.f37-tier-ss{
+ --f37-light:#ffe9e1;--f37-halo:#f59d9d70;
+ border-color:#ffc5bc;
+ background-image:radial-gradient(circle at 50% 28%,#8e415c99,transparent 65%),
+  linear-gradient(150deg,#442a47,#1d233c);
+ animation:f37-legendary-ss 3.1s ease-in-out infinite alternate;
+}
+.f33-vantvat-card.f37-tier-sss,.f36-vantvat-reward.f37-tier-sss,
+.f33-vantvat-zoom-panel.f37-tier-sss{
+ --f37-light:#fff5cd;--f37-halo:#e5bbff9a;
+ border-color:#fff0b4;
+ background-image:radial-gradient(circle at 50% 26%,#a47850b2,transparent 65%),
+  linear-gradient(150deg,#483255,#1b2340);
+ animation:f37-legendary-sss 2.7s ease-in-out infinite alternate;
+}
+/* A halo is painted behind the object, never over names or controls. */
+.f33-vantvat-card:is(.f37-tier-s,.f37-tier-ss,.f37-tier-sss),
+.f36-vantvat-reward:is(.f37-tier-s,.f37-tier-ss,.f37-tier-sss),
+.f33-vantvat-zoom-panel:is(.f37-tier-s,.f37-tier-ss,.f37-tier-sss){
+ position:relative;isolation:isolate;
+}
+.f33-vantvat-card:is(.f37-tier-s,.f37-tier-ss,.f37-tier-sss)::before,
+.f36-vantvat-reward:is(.f37-tier-s,.f37-tier-ss,.f37-tier-sss)::before,
+.f33-vantvat-zoom-panel:is(.f37-tier-s,.f37-tier-ss,.f37-tier-sss)::before{
+ content:'';position:absolute;pointer-events:none;z-index:0;
+ inset:5px 4px auto; height:72%;border-radius:50%;
+ background:radial-gradient(ellipse at center,var(--f37-halo),transparent 70%);
+}
+.f33-vantvat-card:is(.f37-tier-s,.f37-tier-ss,.f37-tier-sss)>*,
+.f36-vantvat-reward:is(.f37-tier-s,.f37-tier-ss,.f37-tier-sss)>*,
+.f33-vantvat-zoom-panel:is(.f37-tier-s,.f37-tier-ss,.f37-tier-sss)>*{
+ position:relative;z-index:1;
+}
+.f36-vantvat-reward:is(.f37-tier-s,.f37-tier-ss,.f37-tier-sss) .f36-vantvat-view,
+.f33-vantvat-zoom-panel:is(.f37-tier-s,.f37-tier-ss,.f37-tier-sss) .f33-vantvat-zoom-close{
+ position:absolute;z-index:2;
+}
+@keyframes f37-legendary-s{
+ from{box-shadow:0 0 14px #f8b96366,0 0 24px #f8bf6030}
+ to{box-shadow:0 0 23px #f8c77ab0,0 0 40px #f5bf6555}
+}
+@keyframes f37-legendary-ss{
+ from{box-shadow:0 0 20px #fa8e9390,0 0 29px #b58cff55}
+ to{box-shadow:0 0 33px #ffabbfe0,0 0 53px #d39bff8c}
+}
+@keyframes f37-legendary-sss{
+ from{box-shadow:0 0 24px #fff0a6a6,0 0 42px #b389ff88}
+ to{box-shadow:0 0 49px #fff2baff,0 0 73px #c09cffcb}
+}
+@media(prefers-reduced-motion:reduce){
+ .f33-vantvat-card[class*="f37-tier-"],
+ .f36-vantvat-reward[class*="f37-tier-"],
+ .f33-vantvat-zoom-panel[class*="f37-tier-"]{animation:none !important}
+}
+
+/* F3.8 · direct link to the real phone Museum, visible under the roulette. */
+.f38-vantvat-museum-link{width:min(100%,340px);min-height:42px;
+ border:1px solid #a69dcf99;border-radius:11px;padding:10px 14px;
+ background:linear-gradient(140deg,#39314f,#222b48);
+ color:#f5dfbd;font-size:12px;font-weight:850;cursor:pointer;
+}
+.f38-vantvat-museum-link:focus-visible{outline:2px solid #fae0ae;outline-offset:3px}
+
+/* F3.9 · honest roulette motion: finish angle comes from the committed item. */
+.f34-vantvat-wheel.f39-wheel-spinning{
+ animation:f39-wheel-run .72s linear infinite;
+}
+.f34-vantvat-wheel.f39-wheel-settling{
+ animation:f39-wheel-settle 2.15s cubic-bezier(.11,.72,.09,1) both;
+}
+.f34-vantvat-wheel.f39-wheel-landed{
+ transform:rotate(var(--f39-stop-deg,0deg));
+}
+.f34-vantvat-medallion.f39-wheel-winning{
+ z-index:2;border:2px solid #ffe8b5;background:#48345b;
+ box-shadow:0 0 15px #ffda9edb,0 0 30px #be9bff77;
+}
+.f34-vantvat-machine:has(.f39-wheel-settling) .f34-vantvat-pointer,
+.f34-vantvat-machine:has(.f39-wheel-landed) .f34-vantvat-pointer{
+ text-shadow:0 0 9px #fff7dc,0 0 19px #ffe29b,0 2px 8px #000;
+}
+.f39-vantvat-landed{max-width:340px;font-size:11px;text-align:center;
+ color:#ffdfaa;line-height:1.4;text-shadow:0 0 12px #cf8bff7b}
+@keyframes f39-wheel-run{
+ from{transform:rotate(0deg)}to{transform:rotate(360deg)}
+}
+@keyframes f39-wheel-settle{
+ from{transform:rotate(0deg)}to{transform:rotate(var(--f39-stop-deg,2880deg))}
+}
+
+/* High-rank reveal is a small theatre, keeping all cards and close button usable. */
+.f39-vantvat-celebration{position:relative;isolation:isolate;
+ display:grid;justify-items:center;gap:6px;min-height:132px;padding:10px;
+ margin-bottom:11px;border:1px solid #e5ca9cb3;border-radius:15px;
+ background:radial-gradient(ellipse at 50% 45%,#694c86a6,#232540 70%);
+ text-align:center;overflow:hidden;
+}
+.f39-vantvat-celebration::before{content:'✧';position:absolute;z-index:0;
+ inset:-30px;display:grid;place-items:center;font-size:190px;line-height:1;
+ color:#f8d9ab2c;animation:f39-rare-halo 5s linear infinite;pointer-events:none}
+.f39-vantvat-celebration>*{position:relative;z-index:1}
+.f39-vantvat-celebration strong{font-size:13px;letter-spacing:.09em;color:#ffde9c}
+.f39-vantvat-celebration small{font-size:11px;color:#fff1cf;line-height:1.3}
+.f39-vantvat-celebration-art{display:grid;place-items:center;width:112px;height:112px}
+.f39-vantvat-celebration-art.dudu-item-v13-frame{
+ background:none!important;border:0!important;box-shadow:none!important;overflow:visible!important}
+.f39-vantvat-celebration-art img{width:100%;height:100%;object-fit:contain;
+ filter:drop-shadow(0 0 13px #ffe3acb3)}
+.f39-vantvat-celebration.rank-s{box-shadow:0 0 22px #e4ac6d88}
+.f39-vantvat-celebration.rank-ss{border-color:#ffb9c4;
+ box-shadow:0 0 28px #f69baab5,0 0 36px #b68df877}
+.f39-vantvat-celebration.rank-sss{border-color:#fff4bf;
+ box-shadow:0 0 36px #ffdfa8da,0 0 64px #c592ff9a;
+ animation:f39-sss-pulse 2.7s ease-in-out infinite alternate}
+.f39-vantvat-celebration.rank-sss strong{color:#fff8d0;text-shadow:0 0 16px #ffd883}
+.f39-vantvat-reveal{animation:f39-reward-appear .45s ease-out both}
+.f39-vantvat-summary{display:flex;justify-content:center;align-items:center;
+ gap:6px;flex-wrap:wrap;padding:0 2px 12px;font-size:10px;color:#e8d3af}
+.f39-vantvat-summary>span{padding:4px 6px;border:1px solid #a68ac56b;
+ border-radius:7px;background:#272a4699}
+.f39-vantvat-summary>small{font-size:9px;color:#d5c9df}
+@keyframes f39-rare-halo{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes f39-sss-pulse{
+ from{box-shadow:0 0 20px #ffdfa8bb,0 0 36px #aa86ef85}
+ to{box-shadow:0 0 47px #ffe8baff,0 0 73px #c592ffcf}
+}
+@keyframes f39-reward-appear{from{opacity:0;transform:translateY(12px) scale(.95)}
+ to{opacity:1;transform:none}}
+
+.f39-vantvat-history{width:min(100%,450px);padding:9px;
+ border:1px solid #a697bd6c;border-radius:11px;background:#191e34b8}
+.f39-vantvat-history summary{cursor:pointer;color:#e7d8c4;font-size:11px;font-weight:850}
+.f39-vantvat-history-list{max-height:230px;overflow:auto;display:grid;gap:5px;margin-top:9px}
+.f39-vantvat-history-row{display:flex;gap:8px;align-items:center;min-width:0;
+ padding:5px 6px;border:1px solid #7384a34a;border-radius:8px;background:#262c42}
+.f39-vantvat-history-row>span:nth-child(2){flex:1;min-width:0;
+ font-size:10px;overflow-wrap:anywhere}
+.f39-vantvat-history-row>small{flex:none;color:#efd3a1;font-size:9px}
+.f39-vantvat-history-art{width:32px;height:32px;display:grid;place-items:center;font-size:21px}
+.f39-vantvat-history-art img{width:100%;height:100%;object-fit:contain}
+.f39-vantvat-history-row.f39-rank-sss{border-color:#e9c588a8}
+.f39-vantvat-history-row.f39-rank-ss{border-color:#e79eaaa0}
+.f39-vantvat-history-row.f39-rank-s{border-color:#dfa56b9e}
+.f39-vantvat-history-empty{display:block;margin-top:8px;font-size:10px;color:#c8c0d3}
+@media(prefers-reduced-motion:reduce){
+ .f34-vantvat-wheel:is(.f39-wheel-spinning,.f39-wheel-settling),
+ .f39-vantvat-celebration,.f39-vantvat-celebration::before,
+ .f39-vantvat-reveal{animation:none!important}
+ .f34-vantvat-wheel.f39-wheel-settling{transform:rotate(var(--f39-stop-deg,0deg))}
+}
+
+/* F4.1a — a traversable rift, no dial or circular sticker arrangement. */
+.dudu-fun-tabs.is-hunt{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.dudu-fun-tabs.is-hunt .dudu-fun-tab{min-width:0;padding:9px 4px;font-size:11px;min-height:44px}
+.dudu-fun-stage.is-slot{padding:0;border:0;background:none;box-shadow:none}
+.f31-vantvat-stage{width:100%;max-width:600px;gap:10px}
+.f41-cosmos{position:relative;isolation:isolate;width:100%;height:clamp(350px,52dvh,500px);min-width:0;overflow:hidden;border:1px solid #68829c55;border-radius:19px;background:#060c1a;contain:layout paint;box-shadow:0 14px 40px #03081566}
+.f41-universe{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.f41-haze{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,#060b1944,transparent 25% 78%,#060b19bb);z-index:1}
+.f41-coordinate{position:absolute;top:16px;left:16px;color:#9aadc091;font-size:9px;font-weight:500;letter-spacing:.22em;pointer-events:none}
+.f41-cosmos::after{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 42%,transparent 40%,#02071144 82%);z-index:1}
+.f41-cosmos[data-phase='travel'] .f41-haze{animation:f41a-accelerate .85s ease-out infinite}
+.f41-target{position:absolute;z-index:4;left:50%;top:43%;width:130px;height:156px;padding:0;border:0;background:none;cursor:grab;touch-action:none;transform:translate(calc(-50% + var(--pull-x,0px)),calc(-50% + var(--pull-y,0px)));transition:transform .2s ease;filter:drop-shadow(0 10px 20px #010610aa);-webkit-tap-highlight-color:transparent}
+.f41-target[hidden]{display:none}.f41-target:focus-visible{outline:2px solid #d5e9fc;outline-offset:10px;border-radius:12px}
+.f41-target:disabled{cursor:default}.f41-cosmos.is-pulling .f41-target{transition:none;cursor:grabbing}
+.f41-target-seal{position:absolute;inset:8px;display:block;animation:f41a-suspend 3.5s ease-in-out infinite alternate}
+.f41-seal-face{display:block;position:absolute;inset:0;clip-path:polygon(48% 0,91% 22%,100% 65%,55% 100%,11% 80%,0 31%);background:linear-gradient(135deg,#b9cddd 0%,#526c86 23%,#172b43 24%,#263d56 51%,#7890a5 52%,#334b66 72%,#111f35 73%);box-shadow:inset 0 0 28px #b6cfdf22}
+.f41-seal-face::after{content:'';position:absolute;inset:3px;clip-path:polygon(48% 0,91% 22%,100% 65%,55% 100%,11% 80%,0 31%);background:linear-gradient(125deg,#c5d8e460,#314a6533 30%,#111c3344 68%,#b8ccdf55)}
+.f41-seal-stroke{position:absolute;inset:28% 42%;display:block;background:linear-gradient(#c6deea,#81b6d2,#d6dced);clip-path:polygon(15% 0,80% 20%,44% 42%,90% 61%,35% 100%,52% 65%,0 42%,47% 23%);opacity:.72}
+.f41-seal-shard{position:absolute;left:-20%;top:37%;width:15%;height:29%;background:linear-gradient(135deg,#9cbed1,#223d5a);clip-path:polygon(50% 0,100% 45%,60% 100%,0 70%);transform:rotate(-17deg);opacity:.65}
+.f41-seal-shard::after{content:'';position:absolute;inset:20%;border-left:1px solid #d5f2ff}
+.f41-retrieve-hint{position:absolute;z-index:5;top:calc(43% + 102px);left:0;right:0;text-align:center;color:#b2c7d6;font-size:12px;font-weight:500;pointer-events:none;letter-spacing:.04em}
+.f41-retrieve-hint[hidden]{display:none}
+.f41-cosmos[data-phase='target'] .f41-target{animation:f41a-target-arrive .55s cubic-bezier(.2,.7,.2,1) both}
+.f41-cosmos[data-phase='recall'] .f41-target{animation:f41a-retrieve .42s cubic-bezier(.2,.7,.4,1) both}
+.f41-cosmos[data-phase='recall'] .f41-seal-face{animation:f41a-crack .42s ease-out both}
+.f41-crystals{position:absolute;inset:0;pointer-events:none;z-index:3;display:grid;place-items:center}
+.f41-crystal{position:relative;display:grid;place-items:center;width:80%;max-width:260px;height:58%;animation:f41a-artifact .5s ease-out both;min-height:0}
+.f41-prize-art{display:flex;align-items:center;justify-content:center;position:absolute;inset:0;min-height:0}
+.f41-prize-art img{width:100%;height:100%;min-height:0;min-width:0;object-fit:contain}
+.f41-cosmos[data-count='5'] .f41-crystals,.f41-cosmos[data-count='10'] .f41-crystals{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;align-content:center;padding:60px 14px}
+.f41-cosmos:is([data-count='5'],[data-count='10']) .f41-crystal{width:100%;height:110px;animation-delay:calc(var(--n)*35ms)}
+.f41-crystal:is(.rank-f,.rank-e,.rank-d){filter:none}
+.f41-crystal.rank-c{background:radial-gradient(ellipse,#8ca6d310,transparent 65%)}
+.f41-crystal.rank-b{background:radial-gradient(ellipse,#b5a4d51c,transparent 67%)}
+.f41-crystal.rank-a{background:radial-gradient(ellipse,#d8b6d933,transparent 70%)}
+.f41-crystal.rank-s{filter:drop-shadow(0 0 7px #d5b68366)}
+.f41-crystal.rank-ss{filter:drop-shadow(0 0 14px #bdc9ed99)}
+.f41-crystal.rank-sss{filter:drop-shadow(0 0 22px #f2d4a9b3)}
+.f41-crystal:is(.rank-s,.rank-ss,.rank-sss)::before{content:'';position:absolute;inset:-20%;background:radial-gradient(circle,#dbe6fa99 1px,transparent 2px) 2px 6px/29px 37px;mask-image:radial-gradient(ellipse,#000,transparent 70%);animation:f41a-stardust 2s linear infinite;pointer-events:none}
+.f41-crystal.rank-ss::after,.f41-crystal.rank-sss::after{content:'';position:absolute;inset:-10%;border-top:1px solid #cddcf199;border-bottom:1px solid #edd7b277;transform:rotate(-24deg) scaleX(1.3);opacity:.6;pointer-events:none;animation:f41a-space-break .8s ease-out both}
+.f41-cosmos[data-phase='open'][data-rank='SSS']::before{content:'';position:absolute;inset:0;z-index:6;pointer-events:none;border-top:22px solid #030710;border-bottom:22px solid #030710;animation:f41a-cinema 1.5s ease-in-out both}
+.f41-cosmos[data-phase='open'][data-rank='SSS'] .f41-haze{background:linear-gradient(90deg,transparent,#f4e2bb22,transparent);animation:f41a-light-sweep .7s ease-out both}
+.f41-gold-coin{width:70%;max-width:140px;aspect-ratio:1;border-radius:50%;border:5px double #ffdf8b;background:radial-gradient(circle at 32% 24%,#fff6b6,#eac65b 24%,#b47c25 68%,#735018 94%);box-shadow:inset 0 0 0 5px #bb882e,inset 0 0 0 7px #ffe291}
+.f41-skip{position:absolute;z-index:8;right:12px;bottom:12px;min-width:76px;min-height:44px;padding:8px 12px;border:1px solid #9eb5cb66;border-radius:22px;background:#0b1729dc;color:#c6d8e7;font:inherit;font-size:11px;font-weight:500;cursor:pointer}
+.f41-skip[hidden]{display:none}.f41-skip:focus-visible{outline:2px solid #d1e8fa;outline-offset:2px}
+.f41-status{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+.f41-cosmos.is-paused *{animation-play-state:paused!important}
+.f41-hunt-controls.f36-vantvat-spin-controls{display:grid;grid-template-columns:minmax(126px,.9fr) minmax(0,1.3fr);width:100%;max-width:600px;gap:9px;align-items:stretch}
+.f41-amounts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;padding:3px;border:1px solid #627c9466;background:#101c2d;border-radius:13px}
+.f41-amounts .f41-count.f36-vantvat-spin{display:grid;place-items:center;min-width:0;min-height:44px;padding:5px 2px;font-size:12px;box-shadow:none;border:0;border-radius:9px;background:none;color:#93a9bb;font-weight:600}
+.f41-amounts .f41-count.is-selected.f36-vantvat-spin{color:#e5f2fc;background:#2e465d;box-shadow:inset 0 0 0 1px #8cacc155}
+.f41-hunt{display:flex;align-items:center;justify-content:center;gap:5px;min-height:52px;min-width:0;padding:9px 7px;border:1px solid #d8c29399;border-radius:13px;background:linear-gradient(115deg,#dec796,#b49c70);color:#182435;font:inherit;font-size:13px;font-weight:800;box-shadow:0 4px 18px #b19b6c22;cursor:pointer}
+.f41-hunt:disabled{opacity:.45;cursor:default}.f41-hunt:focus-visible,.f41-count:focus-visible{outline:2px solid #cfe2f3;outline-offset:3px}
+.f41-meta{display:flex;align-items:center;gap:14px;width:100%;padding:0 3px;min-height:44px}
+.f41-meta .f36-vantvat-pity{flex:1;width:auto;gap:4px;min-width:0;text-align:left}
+.f41-meta .f36-vantvat-pity small{font-size:10px;font-weight:500;color:#9db1c2}
+.f41-meta .f36-vantvat-pity-bar{height:3px;border:0;background:#233349}
+.f41-meta .f36-vantvat-pity-bar i{background:linear-gradient(90deg,#6d8aab,#d5bd88)}
+.f41-meta .f38-vantvat-museum-link{width:auto;max-width:105px;flex:none;min-height:44px;padding:8px 0;border:0;background:none;box-shadow:none;font-size:11px;font-weight:500;color:#b3c7d8}
+.f31-vantvat-stage :is(.f31-vantvat-gallery,.f39-vantvat-history){width:100%;background:#0d1728;border:1px solid #66839a33;border-radius:12px;box-shadow:none}
+.f31-vantvat-stage :is(.f31-vantvat-gallery,.f39-vantvat-history)>summary{min-height:44px;padding:10px 4px;font-size:11px;color:#a9bdcf}
+/* Preserve the verified result and enlarged-art layout. */
+.f36-vantvat-overlay,.f36-vantvat-overlay *{box-sizing:border-box}
+.f36-vantvat-close,.f36-vantvat-view,.f33-vantvat-zoom-close{min-width:44px;min-height:44px}
+.f36-vantvat-modal-head{position:sticky;top:-14px;z-index:4;min-height:48px;padding:8px 0;background:#24213bea;border-bottom:1px solid #d2bce333}
+.f36-vantvat-reward-art,.f39-vantvat-celebration .f39-vantvat-celebration-art.dudu-item-v13-frame,.f33-vantvat-zoom-art{display:flex;align-items:center;justify-content:center;min-height:0;overflow:hidden!important}
+:is(.f36-vantvat-reward-art,.f39-vantvat-celebration-art,.f33-vantvat-zoom-art) img{display:block;min-width:0;min-height:0;max-width:100%;max-height:100%;object-fit:contain;flex:1}
+body.dudu-phone-v11 #cyber-phone .f41-prize-art.dudu-item-v13-frame{background:none!important;box-shadow:none!important;border:0!important;display:flex;min-height:0;overflow:hidden}
+body.dudu-phone-v11 #cyber-phone .f41-prize-art .dudu-item-v13-art{min-height:0;object-fit:contain;animation:none}
+.f41-gold-result{display:block;width:80%;aspect-ratio:1;border-radius:50%;border:5px double #ffdf8b;background:radial-gradient(circle at 32% 24%,#fff6b6,#eac65b 24%,#b47c25 68%,#735018 94%);box-shadow:inset 0 0 0 5px #bb882e,inset 0 0 0 7px #ffe291,0 5px 12px #0b0b1d66}
+@keyframes f41a-accelerate{0%{opacity:.2;transform:scale(.7)}60%{opacity:.7}100%{opacity:.1;transform:scale(1.4)}}
+@keyframes f41a-suspend{to{transform:translateY(-7px) rotate(3deg)}}
+@keyframes f41a-target-arrive{from{opacity:0;scale:.12}to{opacity:1;scale:1}}
+@keyframes f41a-retrieve{to{transform:translate(-50%,-30%) scale(1.7);opacity:.15;filter:brightness(1.5)}}
+@keyframes f41a-crack{to{clip-path:polygon(0 0,45% 0,40% 30%,55% 53%,43% 80%,100% 100%,100% 0);opacity:.3}}
+@keyframes f41a-artifact{from{opacity:0;scale:.7}to{opacity:1;scale:1}}
+@keyframes f41a-stardust{to{background-position:13px -23px}}
+@keyframes f41a-space-break{from{opacity:0;scale:.5}to{opacity:.6;scale:1.2}}
+@keyframes f41a-cinema{0%{border-width:0;opacity:0}25%,70%{border-width:22px;opacity:1}100%{border-width:0;opacity:0}}
+@keyframes f41a-light-sweep{from{transform:translateX(-100%);opacity:0}40%{opacity:1}to{transform:translateX(100%);opacity:0}}
+@media(max-width:350px){.f41-cosmos{height:350px}.f41-hunt-controls.f36-vantvat-spin-controls{grid-template-columns:120px minmax(0,1fr);gap:6px}.f41-hunt{font-size:11px;gap:3px}.f41-cosmos:is([data-count='5'],[data-count='10']) .f41-crystal{height:90px}}
+@media(prefers-reduced-motion:reduce){.f41-cosmos *,.f41-cosmos[data-phase='travel'] .f41-haze{animation:none!important;transition:none!important}.f41-target{filter:none}.f41-crystal{animation:none!important}}
+
+/* Override the phone's older, more-specific FUN frame and two-column tabs. */
+body.dudu-phone-v11 #cyber-phone .dudu-fun-stage.is-slot{padding:0;border:0;background:none;box-shadow:none}
+body.dudu-phone-v11 #cyber-phone .dudu-fun-tabs.is-hunt{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+body.dudu-phone-v11 #cyber-phone .dudu-fun-tabs.is-hunt .dudu-fun-tab{padding:8px 3px;font-size:11px;min-height:44px;min-width:0}

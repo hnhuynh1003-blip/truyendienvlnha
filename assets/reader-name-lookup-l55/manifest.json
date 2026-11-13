@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "build": "l55-1",
+  "sources": [
+    {
+      "id": "hanviet",
+      "repo": "ph0ngp/hanviet-pinyin-wordlist",
+      "ref": "b9923df92c8b55f013001390e37cddd35e986dc1",
+      "file": "hanviet.csv",
+      "license": "MIT",
+      "sha256": "dd90d59db1265a47317477c9f741baeff7cb4dfed58d9a0c2be5f69b9ed14d66",
+      "url": "https://raw.githubusercontent.com/ph0ngp/hanviet-pinyin-wordlist/b9923df92c8b55f013001390e37cddd35e986dc1/hanviet.csv"
+    },
+    {
+      "id": "cvdict",
+      "repo": "ph0ngp/CVDICT",
+      "ref": "c379d909e308343a247e51619f7839a2060a271c",
+      "file": "CVDICT.u8",
+      "license": "CC-BY-SA-4.0",
+      "sha256": "4dde4b204193efa9c192d7f7daeab1bb579c8ccd7c41ed90d1b6caee22ba0948",
+      "url": "https://raw.githubusercontent.com/ph0ngp/CVDICT/c379d909e308343a247e51619f7839a2060a271c/CVDICT.u8"
+    }
+  ],
+  "counts": {
+    "sourceEntries": 122596,
+    "pronunciationRows": 11187,
+    "characters": 13079,
+    "meaningRows": 109168
+  },
+  "files": {
+    "characters.json": {
+      "bytes": 217205,
+      "sha256": "a7b7c87c97d9c084f33f2958f1b7f3a4ce50f32008173be8b278bb1b989405c0"
+    },
+    "meanings.json": {
+      "bytes": 7228588,
+      "sha256": "4a06ba1b91d4ff785a4b1dfea6de7eed52d4e8ccf0b981f981f177b9fb3cc34a"
+    }
+  }
+}

@@ -1,0 +1,297 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dudu.studio/schemas/van-gioi/world-authoring-0.1.json",
+  "title": "Van Gioi World Authoring Draft V0.1",
+  "description": "De xuat hop dong noi dung. Chua phai schema runtime v71.11.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "worldId", "contentVersion", "title", "genreId", "worldRank", "dangerLevel", "status", "author", "story", "worldCoverAssetId", "assets", "maps", "places", "scenes", "views", "cast", "npcs", "playerEntryProfiles", "entryPolicy", "items", "shops", "missions", "endings", "playRequirements", "entry", "aiPolicy"],
+  "properties": {
+    "schemaVersion": {"const": "world-authoring-0.1"},
+    "worldId": {"$ref": "#/$defs/id"},
+    "contentVersion": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "title": {"$ref": "#/$defs/nonempty"},
+    "genreId": {"enum": ["ancient", "modern", "period", "future", "cultivation", "apocalypse"]},
+    "worldRank": {"enum": ["F", "E", "D", "C", "B", "A", "S"]},
+    "dangerLevel": {"enum": ["low", "moderate", "high", "extreme"]},
+    "status": {"enum": ["draft", "submitted", "inReview", "approved", "staged", "published", "retired"]},
+    "contentTags": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "estimatedMinutes": {"type": "integer", "minimum": 1},
+    "rankException": {"type": "string", "description": "Giai trinh ngoai le chi tieu, reviewer phai duyet."},
+    "author": {
+      "type": "object", "additionalProperties": false,
+      "required": ["authorId", "displayName", "ownershipDeclaration"],
+      "properties": {
+        "authorId": {"$ref": "#/$defs/id"},
+        "displayName": {"$ref": "#/$defs/nonempty"},
+        "ownershipDeclaration": {"type": "boolean"},
+        "sourceNotes": {"type": "string"},
+        "collaboratorIds": {"type": "array", "items": {"$ref": "#/$defs/id"}, "uniqueItems": true}
+      }
+    },
+    "story": {
+      "type": "object", "additionalProperties": false,
+      "required": ["logline", "setting", "playerRole", "opening", "secretTruth", "plotBeats", "worldRules"],
+      "properties": {
+        "logline": {"$ref": "#/$defs/nonempty"},
+        "setting": {"$ref": "#/$defs/nonempty"},
+        "playerRole": {"$ref": "#/$defs/nonempty"},
+        "opening": {"$ref": "#/$defs/nonempty"},
+        "secretTruth": {"$ref": "#/$defs/nonempty"},
+        "plotBeats": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/nonempty"}},
+        "worldRules": {"type": "array", "items": {"$ref": "#/$defs/nonempty"}}
+      }
+    },
+    "visualIdentity": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "palette": {"type": "array", "items": {"type": "string"}},
+        "landmarks": {"type": "array", "items": {"type": "string"}},
+        "mood": {"type": "string"},
+        "artStyle": {"type": "string"}
+      }
+    },
+    "worldCoverAssetId": {"$ref": "#/$defs/id"},
+    "assets": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/asset"}},
+    "maps": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/map"}},
+    "places": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/place"}},
+    "scenes": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/scene"}},
+    "views": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/view"}},
+    "cast": {"type": "array", "items": {"$ref": "#/$defs/character"}},
+    "characterVisuals": {"type": "array", "items": {"$ref": "#/$defs/characterVisual"}},
+    "characterAppearances": {"type": "array", "items": {"$ref": "#/$defs/characterAppearance"}},
+    "npcs": {"type": "array", "items": {"$ref": "#/$defs/npc"}},
+    "playerEntryProfiles": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/playerEntryProfile"}},
+    "entryPolicy": {
+      "type": "object", "additionalProperties": false,
+      "required": ["mode"],
+      "properties": {"mode": {"enum": ["fixed", "player_choice"]}, "forcedEntryId": {"$ref": "#/$defs/id"}, "authorNote": {"type": "string"}}
+    },
+    "items": {"type": "array", "items": {"$ref": "#/$defs/item"}},
+    "shops": {"type": "array", "items": {"$ref": "#/$defs/shop"}},
+    "missions": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/mission"}},
+    "events": {"type": "array", "items": {"$ref": "#/$defs/event"}},
+    "endings": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/ending"}},
+    "playRequirements": {
+      "type": "object", "additionalProperties": false,
+      "required": ["requiredVisitPlaceIds", "requiredInteractNpcIds"],
+      "properties": {
+        "requiredVisitPlaceIds": {"type": "array", "items": {"$ref": "#/$defs/id"}, "uniqueItems": true},
+        "requiredInteractNpcIds": {"type": "array", "items": {"$ref": "#/$defs/id"}, "uniqueItems": true}
+      }
+    },
+    "entry": {
+      "type": "object", "additionalProperties": false,
+      "required": ["trialInstance", "passportRequired", "entrySceneId"],
+      "properties": {
+        "trialInstance": {"type": "boolean"},
+        "passportRequired": {"type": "boolean"},
+        "entrySceneId": {"$ref": "#/$defs/id"},
+        "minimumPlayerRank": {"enum": ["F", "E", "D", "C", "B", "A", "S"]}
+      }
+    },
+    "aiPolicy": {
+      "type": "object", "additionalProperties": false,
+      "required": ["aiNpcRequested", "allowAiRewards", "allowAiWorldMutation"],
+      "properties": {
+        "aiNpcRequested": {"type": "boolean"},
+        "allowAiRewards": {"const": false},
+        "allowAiWorldMutation": {"const": false},
+        "reviewNotes": {"type": "string"}
+      }
+    }
+  },
+  "$defs": {
+    "nonempty": {"type": "string", "minLength": 1},
+    "id": {"type": "string", "pattern": "^[a-z][a-z0-9-]{1,63}$"},
+    "asset": {
+      "type": "object", "additionalProperties": false,
+      "required": ["assetId", "kind", "assetStatus", "license", "sourceNote", "altText"],
+      "properties": {
+        "assetId": {"$ref": "#/$defs/id"},
+        "kind": {"enum": ["worldCover", "sceneBackground", "sceneVariant", "npcPortrait", "characterPortrait", "characterSprite", "characterIllustration", "characterSilhouette", "characterAvatar", "itemIcon", "other"]},
+        "assetStatus": {"enum": ["pending", "inReview", "approved", "rejected"]},
+        "license": {"enum": ["original", "licensed", "public_domain", "unknown"]},
+        "sourceNote": {"type": "string"},
+        "proofRef": {"type": "string"},
+        "altText": {"type": "string"},
+        "focalPoint": {"type": "array", "prefixItems": [{"type": "number", "minimum": 0, "maximum": 1}, {"type": "number", "minimum": 0, "maximum": 1}], "minItems": 2, "maxItems": 2}
+      }
+    },
+    "map": {
+      "type": "object", "additionalProperties": false,
+      "required": ["mapId", "name", "placeIds"],
+      "properties": {
+        "mapId": {"$ref": "#/$defs/id"}, "name": {"$ref": "#/$defs/nonempty"},
+        "placeIds": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/id"}, "uniqueItems": true},
+        "overviewAssetId": {"$ref": "#/$defs/id"}
+      }
+    },
+    "place": {
+      "type": "object", "additionalProperties": false,
+      "required": ["placeId", "mapId", "name", "sceneIds"],
+      "properties": {
+        "placeId": {"$ref": "#/$defs/id"}, "mapId": {"$ref": "#/$defs/id"}, "name": {"$ref": "#/$defs/nonempty"},
+        "parentPlaceId": {"$ref": "#/$defs/id"},
+        "description": {"type": "string"}, "sceneIds": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/id"}, "uniqueItems": true},
+        "accessFlag": {"type": "string"}
+      }
+    },
+    "scene": {
+      "type": "object", "additionalProperties": false,
+      "required": ["sceneId", "placeId", "backgroundAssetId", "summary"],
+      "properties": {
+        "sceneId": {"$ref": "#/$defs/id"}, "placeId": {"$ref": "#/$defs/id"},
+        "backgroundAssetId": {"$ref": "#/$defs/id"}, "summary": {"$ref": "#/$defs/nonempty"},
+        "phase": {"type": "string"},
+        "viewIds": {"type": "array", "items": {"$ref": "#/$defs/id"}, "uniqueItems": true},
+        "transitions": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["toSceneId", "trigger"], "properties": {"toSceneId": {"$ref": "#/$defs/id"}, "trigger": {"type": "string"}, "requiredFlag": {"type": "string"}}}}
+      }
+    },
+    "view": {
+      "type": "object", "additionalProperties": false,
+      "required": ["viewId", "sceneId", "kind", "hotspots"],
+      "properties": {
+        "viewId": {"$ref": "#/$defs/id"}, "sceneId": {"$ref": "#/$defs/id"},
+        "kind": {"enum": ["wide", "detail", "interior", "illustration", "text_only"]},
+        "assetId": {"$ref": "#/$defs/id"},
+        "depictedCharacterIds": {"type": "array", "items": {"$ref": "#/$defs/id"}, "uniqueItems": true},
+        "summary": {"type": "string"},
+        "hotspots": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["hotspotId", "presentation", "label", "action", "targetId"], "properties": {"hotspotId": {"$ref": "#/$defs/id"}, "presentation": {"enum": ["text", "hotspot_overlay", "item_card", "dialogue_reward"]}, "label": {"$ref": "#/$defs/nonempty"}, "action": {"enum": ["inspect", "pickup", "talk", "focus", "move", "shop", "read"]}, "targetId": {"$ref": "#/$defs/id"}, "uniquePickupId": {"$ref": "#/$defs/id"}, "visibleWhenFlag": {"type": "string"}}}}
+      }
+    },
+    "character": {
+      "type": "object", "additionalProperties": false,
+      "required": ["characterId", "displayName", "narrativeRole", "presence"],
+      "properties": {
+        "characterId": {"$ref": "#/$defs/id"}, "displayName": {"$ref": "#/$defs/nonempty"},
+        "narrativeRole": {"enum": ["protagonist", "supporting", "antagonist", "cannon_fodder", "minor", "passerby", "cameo", "mentioned", "group"]},
+        "presence": {"enum": ["onstage", "offstage", "mention_only"]},
+        "storyNotes": {"type": "string"}, "playableAsCast": {"type": "boolean"}
+      }
+    },
+    "characterVisual": {
+      "type": "object", "additionalProperties": false,
+      "required": ["characterId", "visualPriority", "identityNotes", "fixedTraits", "variants"],
+      "properties": {
+        "characterId": {"$ref": "#/$defs/id"},
+        "visualPriority": {"enum": ["signature", "supporting", "cameo", "ambient", "offscreen"]},
+        "identityNotes": {"type": "string"},
+        "fixedTraits": {"type": "array", "items": {"$ref": "#/$defs/nonempty"}},
+        "variants": {"type": "array", "items": {"$ref": "#/$defs/characterVisualVariant"}}
+      }
+    },
+    "characterVisualVariant": {
+      "type": "object", "additionalProperties": false,
+      "required": ["variantId", "assetId", "format"],
+      "properties": {
+        "variantId": {"$ref": "#/$defs/id"}, "assetId": {"$ref": "#/$defs/id"},
+        "format": {"enum": ["portrait", "sprite", "illustration", "silhouette", "avatar"]},
+        "expression": {"type": "string"}, "pose": {"type": "string"}, "outfitTag": {"type": "string"},
+        "timelineTag": {"type": "string"}, "artNote": {"type": "string"}
+      }
+    },
+    "characterAppearance": {
+      "type": "object", "additionalProperties": false,
+      "required": ["appearanceId", "characterId", "viewId", "variantId", "displayMode", "showOn", "hideOn"],
+      "properties": {
+        "appearanceId": {"$ref": "#/$defs/id"},
+        "characterId": {"$ref": "#/$defs/id"}, "viewId": {"$ref": "#/$defs/id"},
+        "variantId": {"$ref": "#/$defs/id"},
+        "displayMode": {"enum": ["portrait", "sprite", "illustration", "silhouette"]},
+        "showOn": {"enum": ["scene_enter", "dialogue_start", "event_flag"]},
+        "triggerRef": {"type": "string"},
+        "hideOn": {"enum": ["dialogue_end", "view_exit", "flag_change", "event_end"]},
+        "requiredFlags": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+        "forbiddenFlags": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+        "suppressWhenPossessed": {"type": "boolean"},
+        "position": {
+          "type": "object", "additionalProperties": false,
+          "required": ["anchor", "x", "y", "scale"],
+          "properties": {
+            "anchor": {"enum": ["left", "center", "right", "custom"]},
+            "x": {"type": "number", "minimum": 0, "maximum": 1},
+            "y": {"type": "number", "minimum": 0, "maximum": 1},
+            "scale": {"type": "number", "exclusiveMinimum": 0, "maximum": 3},
+            "layer": {"type": "integer", "minimum": 0, "maximum": 20}
+          }
+        },
+        "fallbackText": {"type": "string"}
+      }
+    },
+    "playerEntryProfile": {
+      "type": "object", "additionalProperties": false,
+      "required": ["entryId", "label", "mode", "startSceneId", "initialKnownFacts", "initialFlags"],
+      "properties": {
+        "entryId": {"$ref": "#/$defs/id"}, "label": {"$ref": "#/$defs/nonempty"},
+        "mode": {"enum": ["cast_possession", "system_cover", "native_extra"]},
+        "startSceneId": {"$ref": "#/$defs/id"},
+        "castTargetId": {"$ref": "#/$defs/id"}, "nativeSlotId": {"$ref": "#/$defs/id"},
+        "identityAssurance": {"enum": ["verified", "forged", "unknown"]},
+        "coverName": {"type": "string"}, "socialAnchorNotes": {"type": "string"},
+        "initialKnownFacts": {"type": "array", "items": {"type": "string"}},
+        "initialFlags": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "npc": {
+      "type": "object", "additionalProperties": false,
+      "required": ["npcId", "name", "mode", "interactionLevels", "dialoguePolicy", "friendable", "introSceneId", "role", "knowledge"],
+      "properties": {
+        "npcId": {"$ref": "#/$defs/id"}, "name": {"$ref": "#/$defs/nonempty"},
+        "characterId": {"$ref": "#/$defs/id"},
+        "mode": {"enum": ["scripted", "ai_candidate"]}, "friendable": {"type": "boolean"},
+        "interactionLevels": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["ambient", "scripted", "stateful", "service", "ai_candidate"]}},
+        "dialoguePolicy": {"enum": ["no_dialogue", "barks", "choice_tree", "stateful_tree", "service", "ai_limited"]},
+        "introSceneId": {"$ref": "#/$defs/id"}, "role": {"type": "string"},
+        "personality": {"type": "string"}, "knowledge": {"type": "array", "items": {"type": "string"}},
+        "contactEligibilityFlag": {"type": "string"},
+        "aiRequestNotes": {"type": "string"},
+        "dialogueNodes": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["nodeId", "text"], "properties": {"nodeId": {"$ref": "#/$defs/id"}, "text": {"$ref": "#/$defs/nonempty"}, "choices": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["label"], "properties": {"label": {"$ref": "#/$defs/nonempty"}, "nextNodeId": {"$ref": "#/$defs/id"}, "setFlag": {"type": "string"}}}}}}}
+      }
+    },
+    "item": {
+      "type": "object", "additionalProperties": false,
+      "required": ["itemId", "name", "category", "transferPolicy", "stackLimit", "acquisitionMethods"],
+      "properties": {
+        "itemId": {"$ref": "#/$defs/id"}, "name": {"$ref": "#/$defs/nonempty"},
+        "description": {"type": "string"},
+        "category": {"enum": ["quest", "consumable", "equipment", "artifact", "souvenir", "evidence", "currency"]},
+        "transferPolicy": {"enum": ["world_only", "extractable", "review_required"]},
+        "stackLimit": {"type": "integer", "minimum": 1},
+        "acquisitionMethods": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["type"], "properties": {"type": {"enum": ["pickup", "shop", "questReward", "npcGift", "craft", "starting"]}, "placeId": {"$ref": "#/$defs/id"}, "viewId": {"$ref": "#/$defs/id"}, "hotspotId": {"$ref": "#/$defs/id"}, "shopId": {"$ref": "#/$defs/id"}, "missionId": {"$ref": "#/$defs/id"}, "uniquePickupId": {"$ref": "#/$defs/id"}}}}
+      }
+    },
+    "shop": {
+      "type": "object", "additionalProperties": false,
+      "required": ["shopId", "name", "placeId", "currencyItemId", "stock"],
+      "properties": {
+        "shopId": {"$ref": "#/$defs/id"}, "name": {"$ref": "#/$defs/nonempty"},
+        "placeId": {"$ref": "#/$defs/id"}, "merchantNpcId": {"$ref": "#/$defs/id"},
+        "currencyItemId": {"$ref": "#/$defs/id"},
+        "stock": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["itemId", "price", "quantity"], "properties": {"itemId": {"$ref": "#/$defs/id"}, "price": {"type": "integer", "minimum": 0}, "quantity": {"type": "integer", "minimum": 0}}}}
+      }
+    },
+    "mission": {
+      "type": "object", "additionalProperties": false,
+      "required": ["missionId", "name", "kind", "requiredForCompletion", "startSceneId", "summary", "objectives", "rewardRequest", "replayPolicy"],
+      "properties": {
+        "missionId": {"$ref": "#/$defs/id"}, "name": {"$ref": "#/$defs/nonempty"},
+        "kind": {"enum": ["main", "side", "hidden"]}, "requiredForCompletion": {"type": "boolean"},
+        "startSceneId": {"$ref": "#/$defs/id"}, "summary": {"$ref": "#/$defs/nonempty"},
+        "objectives": {"type": "array", "minItems": 1, "items": {"type": "object", "additionalProperties": false, "required": ["objectiveId", "verb", "targetId", "requiredCount"], "properties": {"objectiveId": {"$ref": "#/$defs/id"}, "verb": {"enum": ["talk", "collect", "inspect", "purchase", "reach", "choose", "survive", "deliver"]}, "targetId": {"$ref": "#/$defs/id"}, "requiredCount": {"type": "integer", "minimum": 1}}}},
+        "rewardRequest": {"type": "object", "additionalProperties": false, "required": ["exp", "items"], "properties": {"exp": {"type": "integer", "minimum": 0}, "items": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["itemId", "quantity"], "properties": {"itemId": {"$ref": "#/$defs/id"}, "quantity": {"type": "integer", "minimum": 1}}}}}},
+        "replayPolicy": {"enum": ["none", "repeat_no_reward", "repeat_review_required"]}
+      }
+    },
+    "event": {
+      "type": "object", "additionalProperties": false,
+      "required": ["eventId", "trigger", "setFlags"],
+      "properties": {"eventId": {"$ref": "#/$defs/id"}, "trigger": {"type": "string"}, "requiredFlags": {"type": "array", "items": {"type": "string"}}, "setFlags": {"type": "array", "items": {"type": "string"}}}
+    },
+    "ending": {
+      "type": "object", "additionalProperties": false,
+      "required": ["endingId", "title", "result", "requiredFlags"],
+      "properties": {"endingId": {"$ref": "#/$defs/id"}, "title": {"$ref": "#/$defs/nonempty"}, "result": {"enum": ["success", "partial", "failure"]}, "requiredFlags": {"type": "array", "items": {"type": "string"}}}
+    }
+  }
+}

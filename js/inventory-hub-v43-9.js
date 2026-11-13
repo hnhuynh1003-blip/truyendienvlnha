@@ -1,6 +1,6 @@
 /* DUDU V44.0.1 — compact, inventory-first phone navigation.
  * The default view is the grid, not a dashboard of repeated labels.
- * V43.9 sandbox trade/escrow/gift contracts remain unchanged.
+ * Legacy Sandbox gift receipts are retained as history, not new actions.
  */
 (function(root){
  'use strict';
@@ -13,7 +13,7 @@
  };
  const fmt=n=>new Intl.NumberFormat('vi-VN').format(n);
  const TITLES=Object.freeze({
-  overview:'Kho đồ',market:'Bán thường',auction:'Đấu giá',gifts:'Quà truyện'
+  overview:'Kho đồ',market:'Bán thường',auction:'Đấu giá'
  });
  function active(){return pane;}
  function reset(){pane='overview';}
@@ -29,8 +29,7 @@
   const tabs=[
    ['overview','🎒','Kho'],
    ['market','🪙','Bán'],
-   ['auction','⚖️','Đấu giá'],
-   ['gifts','💌','Tặng']
+   ['auction','⚖️','Đấu giá']
   ];
   for(const [id,emoji,label] of tabs){
    const button=$('button','dudu-v439-tab'+(pane===id?' active':''),emoji+' '+label);
@@ -50,12 +49,10 @@
 
   if(pane!=='overview'){
    const eligible=inventory.filter(x=>rules.saleValue(x)>0).length;
-   const giftable=inventory.filter(x=>rules.storyTargets(x,stories).length>0).length;
    const intro=$('div','dudu-v440-mode-summary');
    const modeStatus=pane==='market'?
     'Có '+eligible+' món · Đã bán '+s.sold+'/'+rules.DAILY_SALES:
-    pane==='auction'?'Ký gửi '+s.listings.length+'/'+rules.MAX_LISTINGS:
-    'Có '+giftable+' món phù hợp';
+    'Ký gửi '+s.listings.length+'/'+rules.MAX_LISTINGS;
    intro.append($('strong','',modeStatus));
    const help=$('details','dudu-v440-help');
    const summary=$('summary','','?');
@@ -64,9 +61,7 @@
    help.append(summary);
    const desc=$('p','',pane==='market'?
     'Nhấn vào món phổ thông trong lưới rồi chọn Bán. Giá thu mua thấp hơn giá mua; tối đa 12 món/ngày. Không bán kỷ vật hoặc đồ khóa.':
-    pane==='auction'?
-    'Chỉ ký gửi thử vật phẩm hiếm đúng nguồn chương/thế giới. Chưa có mua bán giữa người chơi; rút lô để lấy lại vật phẩm.':
-    'Chọn vật phẩm và ghi thiệp ủng hộ truyện. Chỉ có hiệu lực trong Sandbox, chưa chuyển đồ cho tác giả hoặc đăng bình luận.');
+    'Chỉ ký gửi thử vật phẩm hiếm đúng nguồn chương/thế giới. Chưa có mua bán giữa người chơi; rút lô để lấy lại vật phẩm.');
    help.append(desc);intro.append(help);
    const historyCount=s.history.length;
    if(historyCount){
@@ -98,13 +93,17 @@
      const card=$('article','dudu-v439-lot');
      const info=$('div','dudu-v439-lot-info');
      const story=stories.find(x=>x?.id===lot.storyId);
-     info.append($('strong','',(lot.item.icon||'🎁')+' '+lot.item.name),
+     const artwork=$('span','dudu-v439-lot-art',lot.item.icon||'🎁');
+     artwork.setAttribute('aria-hidden','true');
+     root.DuduItemArtV13?.mount(artwork,
+      root.DuduItemCatalog?.byId(lot.item.id)||lot.item);
+     info.append($('strong','',lot.item.name),
       $('small','',lot.item.rank+' · '+(story?.title||lot.storyId)+
        ' · '+fmt(lot.ask)+' Xu đề xuất'));
      const cancel=$('button','','Rút lô');
      cancel.type='button';
      cancel.addEventListener('click',()=>onCancel?.(lot.id));
-     card.append(info,cancel);content.append(card);
+     card.append(artwork,info,cancel);content.append(card);
     }
     host.append(content);
    }

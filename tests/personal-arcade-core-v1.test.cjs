@@ -1,0 +1,241 @@
+'use strict';
+const {test}=require('node:test');
+const assert=require('node:assert/strict');
+const arcade=require('../js/personal-arcade-core-v1.js');
+const START=1761730000000;
+const apply=(state,action,now=START,roll=0.5)=>arcade.act(state,action,now,roll);
+
+test('Arcade V1 starts with separate fictional Xu, three optional games and no cloud wallet',()=>{
+ const state=arcade.fresh(START);
+ assert.equal(state.coins,0);
+ assert.equal(state.neon.running,true);
+ assert.equal(state.mine.durability,100);
+ assert.equal(state.garden.water,1);
+ assert.equal('ownerUid' in state,false);
+ assert.equal('systemWallet' in state,false);
+});
+test('Neon earns only measured open-tab time, not closed-app downtime',()=>{
+ const initial=arcade.fresh(START);
+ const reopened=arcade.advance(initial,START+60*60*1000,0);
+ assert.equal(reopened.coins,0);
+ const afterMinute=arcade.advance(reopened,START+61*60*1000,60*1000);
+ assert.equal(afterMinute.coins,18,'0,6 Xu from terminals plus 1,2 Xu from one served guest');
+ assert.equal(arcade.formatXu(afterMinute.coins),'1,8');
+ const twice=arcade.advance(afterMinute,START+61*60*1000,60*1000);
+ assert.equal(twice.coins,18,'Same timestamp never pays twice');
+ const afterHour=arcade.advance(initial,START+60*60*1000,60*60*1000);
+ assert.equal(afterHour.coins,1320,'Base 36 Xu plus 96 Xu in net visitor receipts per active hour');
+ assert.equal(afterHour.neon.guestsServed,80);
+});
+test('Neon can pause, upgrade using only game money and increase its rate',()=>{
+ let state=arcade.fresh(START);state.coins=400;
+ const upgrade=apply(state,'cpu');assert.equal(upgrade.ok,true);
+ assert.equal(upgrade.state.coins,0);assert.equal(arcade.rate(upgrade.state),13);
+ const next=arcade.advance(upgrade.state,START+10000,10000);
+ assert.equal(next.coins,1);
+ const pause=apply(next,'toggle-neon',START+10000);
+ assert.equal(pause.state.neon.running,false);
+ const idle=arcade.advance(pause.state,START+20000,10000);
+ assert.equal(idle.coins,1);
+ assert.equal(apply(idle,'cpu',START+20000).ok,false);
+});
+test('Neon Tycoon unlocks real stations, triples output and preserves old local saves',()=>{
+ let state=arcade.fresh(START);state.coins=6000;
+ assert.equal(state.neon.stations,1);
+ const second=apply(state,'station');
+ assert.equal(second.ok,true);assert.equal(second.state.neon.stations,2);
+ assert.equal(arcade.rate(second.state),20);
+ assert.equal(second.state.coins,5200);
+ const third=apply(second.state,'station');
+ assert.equal(third.ok,true);assert.equal(third.state.neon.stations,3);
+ assert.equal(arcade.rate(third.state),30);
+ assert.equal(apply(third.state,'station').ok,false);
+ const old=arcade.fresh(START);delete old.neon.stations;
+ assert.equal(arcade.norm(old,START).neon.stations,1,'Existing saves start with one working station');
+});
+test('C4.2 serves customers only in the foreground, subtracts expenses and avoids duplicate sessions',()=>{
+ const initial=arcade.fresh(START),service=arcade.neonService(initial.neon);
+ assert.deepEqual(service,{guests:1,revenue:15,expense:3,profit:12});
+ const offline=arcade.advance(initial,START+90000,0);
+ assert.equal(offline.neon.guestsServed,0);
+ const active=arcade.advance(offline,START+180000,90000);
+ assert.equal(active.neon.guestsServed,2);
+ assert.equal(active.neon.serviceRevenue,30);
+ assert.equal(active.neon.operatingExpense,6);
+ assert.equal(active.coins,33,'0,9 Xu terminal time and 2,4 Xu net receipts');
+ const duplicate=arcade.advance(active,START+180000,90000);
+ assert.equal(duplicate.coins,33);
+ assert.equal(duplicate.neon.guestsServed,2);
+ const paused=apply(active,'toggle-neon',START+180000).state;
+ const stopped=arcade.advance(paused,START+270000,90000);
+ assert.equal(stopped.neon.guestsServed,2);
+ assert.equal(stopped.coins,33);
+});
+test('C4.2 unlocks new floors only after real service and an affordable expansion',()=>{
+ let state=arcade.fresh(START);state.coins=500000;
+ assert.equal(apply(state,'room-tier').ok,false);
+ for(let i=0;i<2;i++)state=apply(state,'station').state;
+ assert.equal(state.neon.stations,3);
+ assert.equal(apply(state,'station').ok,false,'Three stations fit the starter floor');
+ assert.equal(apply(state,'room-tier').ok,false,'Guest requirement cannot be bypassed');
+ state=arcade.advance(state,START+arcade.NEON_SERVICE_INTERVAL*20,
+  arcade.NEON_SERVICE_INTERVAL*20);
+ assert.equal(state.neon.guestsServed,20);
+ const next=apply(state,'room-tier',state.lastAt);
+ assert.equal(next.ok,true);
+ assert.equal(next.state.neon.roomTier,2);
+ assert.equal(arcade.neonCapacity(next.state.neon),5);
+ assert.equal(next.state.coins,state.coins-2400);
+ state=apply(next.state,'station',next.state.lastAt).state;
+ assert.equal(state.neon.stations,4);
+ state=apply(state,'station',state.lastAt).state;
+ assert.equal(state.neon.stations,5);
+ assert.equal(apply(state,'station',state.lastAt).ok,false);
+ assert.equal(apply(state,'room-tier',state.lastAt).ok,false,'Tier three requires one hundred guests');
+ state.neon.guestsServed=100;
+ const final=apply(state,'room-tier',state.lastAt);
+ assert.equal(final.ok,true);assert.equal(final.state.neon.roomTier,3);
+ assert.equal(arcade.neonCapacity(final.state.neon),7);
+});
+test('C4.2 facility choices improve occupancy and are saved with old arcade records',()=>{
+ const old=arcade.fresh(START);old.coins=9000;
+ delete old.neon.roomTier;delete old.neon.seating;delete old.neon.ambiance;
+ delete old.neon.snack;delete old.neon.guestsServed;delete old.neon.sessionMs;
+ const migrated=arcade.norm(old,START);
+ assert.equal(migrated.neon.roomTier,1);
+ assert.equal(migrated.neon.seating,1);
+ assert.equal(migrated.coins,9000);
+ const second=apply(migrated,'station').state;
+ const seats=apply(second,'seating');assert.equal(seats.ok,true);
+ assert.equal(arcade.neonService(seats.state.neon).guests,2);
+ const better=apply(seats.state,'ambiance');assert.equal(better.ok,true);
+ assert.ok(arcade.neonService(better.state.neon).revenue>
+  arcade.neonService(seats.state.neon).revenue);
+ const snacks=apply(better.state,'snack');assert.equal(snacks.ok,true);
+ assert.ok(arcade.neonService(snacks.state.neon).profit>
+  arcade.neonService(better.state.neon).profit);
+ const restored=arcade.norm(snacks.state,START);
+ assert.equal(restored.neon.seating,2);
+ assert.equal(restored.neon.ambiance,2);
+ assert.equal(restored.neon.snack,1);
+ assert.equal(restored.coins,snacks.state.coins);
+});
+test('C4.2 milestone rewards are local Arcade Xu and can be claimed once',()=>{
+ const state=arcade.fresh(START);state.neon.guestsServed=25;
+ const reward=apply(state,'neon-milestone-0');assert.equal(reward.ok,true);
+ assert.equal(reward.state.coins,200);
+ assert.equal(apply(reward.state,'neon-milestone-0').ok,false);
+ assert.equal(apply(reward.state,'neon-milestone-1').ok,false);
+ assert.deepEqual(reward.state.neon.milestones,[0]);
+});
+test('New upgrades spend only local Xu, change gameplay and preserve old saves',()=>{
+ let state=arcade.fresh(START);state.coins=20000;
+ const initial=state.coins;
+ for(const action of ['router','skin','pick-level','drill-level','water-cap','pond-tier']){
+  const result=apply(state,action);
+  assert.equal(result.ok,true,action);
+  assert.ok(result.state.coins<state.coins,action+' must charge its price');
+  state=result.state;
+ }
+ assert.ok(state.coins<initial);
+ assert.equal(state.neon.router,2);
+ assert.equal(state.neon.skin,1);
+ assert.equal(arcade.rate(state),12);
+ assert.equal(arcade.maxDurability(state.mine),125);
+ assert.equal(state.mine.drillLevel,2);
+ assert.equal(state.garden.waterCap,4);
+ assert.equal(arcade.bubbleInterval(state.garden),80000);
+ state.mine.durability=0;
+ const repaired=arcade.advance(apply(state,'repair-wait').state,
+  START+arcade.REPAIR_INTERVAL,0);
+ assert.equal(repaired.mine.durability,125);
+ const legacy=arcade.fresh(START);delete legacy.mine.pickLevel;
+ delete legacy.mine.drillLevel;delete legacy.garden.waterCap;delete legacy.garden.pondTier;
+ assert.equal(arcade.norm(legacy,START).mine.pickLevel,1);
+ assert.equal(arcade.norm(legacy,START).garden.waterCap,3);
+});
+test('Economy migration preserves prior Xu and converts partial idle income safely',()=>{
+ const old=arcade.fresh(START);old.coins=1029;old.earned=1200;
+ old.neon.remainder=500;delete old.neon.economyV;
+ const migrated=arcade.norm(old,START);
+ assert.equal(migrated.coins,1029);
+ assert.equal(migrated.earned,1200);
+ assert.equal(migrated.neon.remainder,50000);
+ assert.equal(migrated.neon.economyV,2);
+ assert.equal(arcade.norm(migrated,START).neon.remainder,50000,'No double migration');
+});
+test('Mining consumes one durability per click; ore sale credits only local game Xu',()=>{
+ let state=arcade.fresh(START);
+ const expected={stone:0.2,coal:0.6,iron:0.9,crystal:0.995};
+ for(const [i,[ore,roll]] of Object.entries(expected).entries()){
+  const result=apply(state,'mine',START+i*arcade.MINE_DIG_INTERVAL,roll);
+  assert.equal(result.ok,true);assert.equal(result.label,ore);
+  state=result.state;
+ }
+ assert.equal(state.mine.durability,96);
+ assert.equal(state.coins,0);
+ const sold=apply(state,'sell-ores');assert.equal(sold.ok,true);
+ assert.equal(sold.state.coins,49);
+ for(const count of Object.values(sold.state.mine.ores))assert.equal(count,0);
+ assert.equal(apply(sold.state,'sell-ores').ok,false);
+});
+test('Pick self-repairs in six minutes or consumes coal, iron and copper',()=>{
+ let state=arcade.fresh(START);state.mine.durability=0;
+ assert.equal(apply(state,'mine').ok,false);
+ const started=apply(state,'repair-wait');assert.equal(started.ok,true);
+ assert.equal(apply(started.state,'mine',START+1000).ok,false);
+ const premature=arcade.advance(started.state,START+arcade.REPAIR_INTERVAL-1,0);
+ assert.equal(premature.mine.durability,0);
+ const repaired=arcade.advance(premature,START+arcade.REPAIR_INTERVAL,0);
+ assert.equal(repaired.mine.durability,100);
+ assert.equal(repaired.mine.repairUntil,0);
+ state=arcade.fresh(START);state.mine.durability=17;
+ state.mine.ores.coal=12;state.mine.ores.iron=8;state.mine.ores.copper=2;
+ const forged=apply(state,'repair-forge');assert.equal(forged.ok,true);
+ assert.equal(forged.state.mine.durability,100);
+ assert.equal(forged.state.mine.ores.coal,0);
+ assert.equal(forged.state.mine.ores.iron,0);
+ assert.equal(forged.state.mine.ores.copper,0);
+});
+test('Mining tools can be bought with game earnings without waiting for reader missions',()=>{
+ let state=arcade.fresh(START);state.coins=1000;state.mine.durability=40;
+ const oil=apply(state,'buy-oil');assert.equal(oil.ok,true);
+ assert.equal(oil.state.mine.durability,65);
+ assert.equal(oil.state.coins,850);
+ const pick=apply(oil.state,'buy-pick');assert.equal(pick.ok,true);
+ assert.equal(pick.state.mine.durability,100);
+ assert.equal(pick.state.coins,50);
+ assert.equal(apply(pick.state,'buy-pick').ok,false);
+});
+test('Garden refills dew offline, grows only watered plants and fish offers bubbles',()=>{
+ let state=arcade.fresh(START);
+ assert.equal(apply(state,'harvest-0').ok,false);
+ state=apply(state,'plant-0').state;
+ assert.equal(state.garden.beds[0].status,'dry');
+ state=apply(state,'water-0').state;
+ assert.equal(state.garden.water,0);
+ assert.equal(apply(state,'harvest-0',START+1000).ok,false);
+ state=arcade.advance(state,START+arcade.GROW_INTERVAL,0);
+ const harvested=apply(state,'harvest-0',START+arcade.GROW_INTERVAL);
+ assert.equal(harvested.ok,true);assert.equal(harvested.state.coins,50);
+ assert.equal(harvested.state.garden.seeds,3);
+ state=arcade.advance(harvested.state,START+arcade.WATER_INTERVAL,0);
+ assert.equal(state.garden.water,1);
+ assert.equal(state.garden.bubbleReady,true);
+ const bubble=apply(state,'catch-bubble',START+arcade.WATER_INTERVAL);
+ assert.equal(bubble.ok,true);assert.equal(bubble.state.garden.bait,1);
+ assert.equal(bubble.state.coins,55);
+ assert.equal(apply(bubble.state,'catch-bubble',START+arcade.WATER_INTERVAL).ok,false);
+});
+test('Invalid/corrupt saved state cannot introduce non-finite counters or unlimited upgrades',()=>{
+ const bad={...arcade.fresh(START),coins:Infinity,earned:-1,
+  neon:{cpu:999,gpu:0,stations:999,running:true,remainder:999999},
+  mine:{durability:-100,repairUntil:Infinity,ores:{stone:NaN}},
+  garden:{water:1e6,waterAt:-12,seeds:-1,beds:[{status:'evil'}]}};
+ const state=arcade.norm(bad,START);
+ assert.equal(state.coins,0);assert.equal(state.earned,0);
+ assert.equal(state.neon.cpu,1);assert.equal(state.neon.gpu,1);
+ assert.equal(state.neon.stations,1);
+ assert.equal(state.mine.durability,100);assert.equal(state.garden.water,1);
+ assert.equal(apply(state,'unknown').ok,false);
+});

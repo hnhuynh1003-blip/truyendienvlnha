@@ -7,10 +7,11 @@
   'use strict';
   const pack=typeof module==='object'&&module.exports?
     require('./world-items-v44-1.js'):root?.DuduWorldItemsV441;
-  const catalog = factory(pack);
+  const cards=typeof module==='object'&&module.exports?require('./card-blanks-f44.js'):root?.DuduCardBlanksF44;
+  const catalog = factory(pack,cards);
   if (typeof module === 'object' && module.exports) module.exports = catalog;
   if (root) root.DuduItemCatalog = catalog;
-})(typeof window !== 'undefined' ? window : null, function (worldPack) {
+})(typeof window !== 'undefined' ? window : null, function (worldPack,cards) {
   'use strict';
   const VERSION = 3;
   const RANKS = Object.freeze(['F','E','D','C','B','A','S','SS','SSS']);
@@ -598,6 +599,30 @@
   ]
 ];
 
+  // Vạn Bảo collection: decorative, unique DUDU FUN blind-box keepsakes.
+  // These are not sellable tools, combat power, or the legacy random loot pool.
+  const FUN_SOURCE = [
+    ['fun-firefly-lamp','Đèn Đom Đóm','E','🏮','Chiếc đèn thủy tinh giữ ánh sáng của đêm hạ.'],
+    ['fun-starglass','Lọ Sao Rơi','E','🌟','Những mảnh sao ngân hà lấp lánh trong lọ pha lê.'],
+    ['fun-cloud-bell','Chuông Mây','E','🔔','Lắc khẽ, tiếng chuông như gió đầu mùa.'],
+    ['fun-peach-tea','Bình Trà Đào','E','🍑','Bình trà men hồng, thơm hương vườn xuân.'],
+    ['fun-moon-fan','Quạt Nguyệt','E','🌙','Chiếc quạt giấy thêu ánh trăng dịu.'],
+    ['fun-koi-charm','Bùa Cá Chép','E','🐟','Móc ngọc khắc đôi cá chép bơi trong sóng.'],
+    ['fun-golden-origami','Hạc Giấy Kim Sa','D','🕊️','Hạc giấy gấp từ tờ vàng ánh kim.'],
+    ['fun-dew-flower','Hoa Sương Lam','D','🪷','Đóa hoa bất tận đọng giọt sương xanh.'],
+    ['fun-fox-mask','Mặt Nạ Hồ Ly','D','🎭','Mặt nạ sơn mài khảm ánh bạc.'],
+    ['fun-sun-compass','La Bàn Nhật Quang','D','🧭','La bàn nhỏ luôn hướng về bình minh.'],
+    ['fun-moon-hourglass','Đồng Hồ Cát Nguyệt','C','⌛','Cát bạc chảy ngược vào đêm trăng tròn.'],
+    ['fun-koi-crown','Vương Miện Cá Chép','C','👑','Vương miện khảm vảy vàng và đá lam.'],
+    ['fun-butterfly-vial','Lọ Bướm Pha Lê','C','🦋','Cánh bướm trong suốt đậu trên nắp bình ngọc.'],
+    ['fun-phoenix-feather','Lông Vũ Phượng Hỏa','B','🔥','Sợi lông đỏ rực vẫn tỏa ánh lửa ấm.'],
+    ['fun-dragon-pearl','Long Châu Biển Mây','B','🔮','Viên châu khiến mây biếc xoáy quanh.'],
+    ['fun-dream-lantern','Thiên Đăng Mộng','A','🏮','Ngọn thiên đăng mang theo điều ước chưa nói.'],
+    ['fun-celestial-harp','Dao Cầm Tinh Tú','S','🎼','Dây đàn ngân lên tiếng vọng của các vì sao.'],
+    ['fun-eternal-crown','Vương Miện Vĩnh Nguyệt','SS','👑','Báu vật khắc chu kỳ nghìn mùa trăng.'],
+    ['fun-universe-egg','Trứng Vũ Trụ Sơ Khai','SSS','🌌','Một dải ngân hà còn đang ngủ trong lòng trứng.']
+  ];
+
   function item(id,name,rank,type,icon,desc,scope,realmTag,method,extras={}) {
     const isMemorial = scope === 'DUDU';
     return Object.freeze({
@@ -634,7 +659,86 @@
         loreReviewRequired:true
       } : {});
   });
-  const items = Object.freeze([...common,...realms,...souvenirs]);
+  const funCollectibles=FUN_SOURCE.map(([id,name,rank,icon,desc])=>
+    item(id,name,rank,'ITEM',icon,desc,'DUDU',null,'FUN_BOX',{
+      collectionSet:'VAN_BAO',tradeable:false}));
+  // F3.1: additive multiverse prizes. Never alter the 19 original Vạn Bảo IDs.
+  const VANTVAT_SOURCE=[
+    ['f31-fossil-shell','Hóa thạch Vỏ Sao','E','🐚','FOSSIL'],
+    ['f31-apple-moon','Táo Nguyệt Quang','E','🍎','FRUIT'],
+    ['f31-doll-cloud','Búp Bê Mây','D','🪆','DOLL'],
+    ['f31-sword-bamboo','Kiếm Trúc Linh','D','🗡️','WEAPON'],
+    ['f31-card-clover','Thẻ Tứ Diệp','C','🃏','LUCK_CARD'],
+    ['f31-fossil-dragon','Hóa Thạch Long Cốt','C','🦴','FOSSIL'],
+    ['f31-figure-fox','Tượng Hồ Ly Ngân Hà','B','🦊','FIGURE'],
+    ['f31-background-aurora','Nền Cực Quang','B','🌌','BACKGROUND'],
+    ['f31-weapon-neon','Song Đao Neon','A','⚔️','WEAPON'],
+    ['f31-doll-starlight','Búp Bê Tinh Tú','A','🧸','DOLL'],
+    ['f31-figure-samurai','Tượng Kiếm Sĩ Dị Giới','S','🥷','FIGURE'],
+    ['f31-background-cosmos','Nền Vạn Giới','S','🪐','BACKGROUND'],
+    ['f31-fossil-phoenix','Hóa Thạch Phượng Hoàng','SS','🔥','FOSSIL'],
+    ['f31-card-destiny','Thẻ Thiên Mệnh','SS','🎴','LUCK_CARD'],
+    ['f31-figure-eternal','Tượng Người Giữ Thời Gian','SSS','⏳','FIGURE'],
+    // F3.4 · original, distinct AI-painted goddess/fairy figurines.
+    ['f34-origin-dawn-goddess','Tượng Nữ Thần Bình Minh','SSS','☀️','FIGURE'],
+    ['f34-origin-moon-fairy','Tượng Tiên Nữ Ngân Nguyệt','SS','🧚','FIGURE'],
+    ['f34-origin-star-priestess','Tượng Nữ Tư Tế Tinh Hà','S','🔮','FIGURE'],
+    // F3.2A · eight realm sets, three unique artefacts each.
+    ['f32-fossil-fern','Dấu Lá Kỷ Nguyên','E','🍃','FOSSIL','PALEO'],
+    ['f32-fossil-amber','Hổ Phách Cánh Bướm','C','🦋','FOSSIL','PALEO'],
+    ['f32-fossil-egg','Trứng Long Thạch','SS','🥚','FOSSIL','PALEO'],
+    ['f32-cult-bell','Chuông Ngọc Thanh Tâm','D','🔔','WEAPON','CULTIVATION'],
+    ['f32-cult-fan','Quạt Cửu Vân','B','🪭','WEAPON','CULTIVATION'],
+    ['f32-cult-sword','Thanh Kiếm Tiên Lưu','S','🗡️','WEAPON','CULTIVATION'],
+    ['f32-cyber-chip','Chip Ký Ức Neon','E','💾','DEVICE','CYBER'],
+    ['f32-cyber-blade','Dao Plasma Lam','C','🔪','WEAPON','CYBER'],
+    ['f32-cyber-robot','Robot Sao Lạc','A','🤖','FIGURE','CYBER'],
+    ['f32-waste-mask','Mặt Nạ Tro Bụi','E','🎭','RELIC','WASTELAND'],
+    ['f32-waste-compass','La Bàn Cuối Cùng','D','🧭','RELIC','WASTELAND'],
+    ['f32-waste-watch','Đồng Hồ Ngày Tận','C','⌚','RELIC','WASTELAND'],
+    ['f32-anime-apprentice','Tượng Pháp Sư Tập Sự','E','🧙','FIGURE','ANIME'],
+    ['f32-anime-guardian','Tượng Hộ Vệ Lam Nguyệt','B','🛡️','FIGURE','ANIME'],
+    ['f32-anime-queen','Tượng Nữ Hoàng Băng','A','👑','FIGURE','ANIME'],
+    ['f32-doll-charm','Thỏ Bông Ngủ Say','E','🐰','DOLL','DREAM'],
+    ['f32-doll-moon','Búp Bê Nguyệt Y','D','🪆','DOLL','DREAM'],
+    ['f32-doll-porcelain','Thỏ Sứ Ngân Hà','B','🐇','DOLL','DREAM'],
+    ['f32-fruit-berry','Dâu Sao Khuya','E','🍓','FRUIT','GARDEN'],
+    ['f32-fruit-peach','Đào Linh Vân','D','🍑','FRUIT','GARDEN'],
+    ['f32-fruit-phoenix','Quả Phượng Hỏa','C','🍊','FRUIT','GARDEN'],
+    ['f32-cosmos-map','Mảnh Bản Đồ Sao','E','🗺️','LUCK_CARD','COSMOS'],
+    ['f32-cosmos-fate','Lá Bài Vọng Tinh','D','🎴','LUCK_CARD','COSMOS'],
+    ['f32-cosmos-sovereign','Thẻ Chủ Thần Tinh Hà','SSS','🌌','LUCK_CARD','COSMOS'],
+    // F3.2B · second trio for every realm, no changes to earlier permanent IDs.
+    ['f32b-fossil-tooth','Răng Cổ Ngư','E','🦷','FOSSIL','PALEO'],
+    ['f32b-fossil-meteor','Hổ Phách Thiên Thạch','C','☄️','FOSSIL','PALEO'],
+    ['f32b-fossil-kirin','Long Lân Cổ Cốt','SS','🦴','FOSSIL','PALEO'],
+    ['f32b-cult-gourd','Hồ Lô Vân Đan','D','🏺','WEAPON','CULTIVATION'],
+    ['f32b-cult-seal','Ngọc Ấn Thần Sơn','B','💠','WEAPON','CULTIVATION'],
+    ['f32b-cult-spear','Thương Long Hồn','S','🔱','WEAPON','CULTIVATION'],
+    ['f32b-cyber-glass','Kính AR Hoa Hồng','E','🥽','DEVICE','CYBER'],
+    ['f32b-cyber-drive','Ổ Cứng Ý Thức','C','💽','DEVICE','CYBER'],
+    ['f32b-cyber-time','Cỗ Máy Thời Không Mini','A','⏱️','DEVICE','CYBER'],
+    ['f32b-waste-oxygen','Bình Khí Cuối Cùng','E','🫧','RELIC','WASTELAND'],
+    ['f32b-waste-badge','Phù Hiệu Kẻ Sống Sót','D','🎖️','RELIC','WASTELAND'],
+    ['f32b-waste-flower','Hoa Pha Lê Phóng Xạ','C','🌺','RELIC','WASTELAND'],
+    ['f32b-anime-squire','Tượng Học Viên Kiếm','E','🗡️','FIGURE','ANIME'],
+    ['f32b-anime-witch','Tượng Phù Thủy Sao Đêm','B','🪄','FIGURE','ANIME'],
+    ['f32b-anime-angel','Tượng Thiên Sứ Kiếm','A','🪽','FIGURE','ANIME'],
+    ['f32b-doll-bear','Gấu Bông Ký Ức','E','🧸','DOLL','DREAM'],
+    ['f32b-doll-music','Búp Bê Hộp Nhạc','D','🎶','DOLL','DREAM'],
+    ['f32b-doll-fairy','Nàng Tiên Đồng Hồ','B','🧚','DOLL','DREAM'],
+    ['f32b-fruit-grape','Nho Sương Lam','E','🍇','FRUIT','GARDEN'],
+    ['f32b-fruit-pear','Lê Tinh Lộ','D','🍐','FRUIT','GARDEN'],
+    ['f32b-fruit-dragon','Quả Tâm Long','C','🐉','FRUIT','GARDEN'],
+    ['f32b-cosmos-badge','Huy Hiệu Lữ Khách Sao','E','🌟','LUCK_CARD','COSMOS'],
+    ['f32b-cosmos-meteor','Thiên Thạch Nguyện Ước','D','🌠','LUCK_CARD','COSMOS'],
+    ['f32b-cosmos-crown','Vương Miện Hư Không','SSS','👑','LUCK_CARD','COSMOS']
+  ];
+  const funVantVat=VANTVAT_SOURCE.map(([id,name,rank,icon,category,realm])=>
+    item(id,name,rank,'ITEM',icon,'Kỷ vật đa vị diện · '+category,
+      'DUDU',null,'FUN_VANTUONG',{collectionSet:'VAN_VAT',tradeable:false,
+       funCategory:category,funRealm:realm||'ORIGIN'}));
+  const items = Object.freeze([...common,...realms,...souvenirs,...funCollectibles,...funVantVat,...(cards?.items||[])]);
   const index = new Map(items.map(record=>[record.id,record]));
 
   // Archived legacy item in the old random pool but not part of the approved
@@ -676,8 +780,9 @@
       if(x.scope!=='REALM'&&x.realmTag!==null)errors.push('Unexpected realm tag: '+x.id);
       if(x.scope==='DUDU'&&(x.acquisition.method==='RANDOM'||x.giftable||x.discardable||!x.unique))errors.push('Invalid collector guard: '+x.id);
     }
-    if(scopes.COMMON!==25||scopes.REALM!==120||scopes.DUDU!==15)errors.push('Unexpected catalog counts: '+JSON.stringify(scopes));
-    if(items.length!==160)errors.push('Expected exactly 160 records');
+    if(scopes.COMMON!==25||scopes.REALM!==120||scopes.DUDU!==103)errors.push('Unexpected catalog counts: '+JSON.stringify(scopes));
+    if(items.length!==248||funCollectibles.length!==19||funVantVat.length!==66)
+      errors.push('Expected 245 inherited + 3 card blanks');
     for(const tag of REALM_TAGS){
       const inRealm=realms.filter(x=>x.realmTag===tag);
       if(inRealm.length!==20)errors.push('Unexpected realm size: '+tag);
@@ -688,6 +793,8 @@
   }
   return Object.freeze({VERSION,RANKS,REALM_TAGS,items,common:Object.freeze(common),
     realms:Object.freeze(realms),souvenirs:Object.freeze(souvenirs),
+    funCollectibles:Object.freeze(funCollectibles),
+    funVantVat:Object.freeze(funVantVat),
     legacyItemCount:70,worldExpansionCount:additions.length,
     byId,list,previewDropPool,validate});
 });

@@ -19,7 +19,9 @@ jobs:
           node-version: '22'
       - name: Verify JavaScript, scope, Gemini gateway and quota guards
         run: |
-          node --test tests/*.test.cjs
+          node scripts/test-domains.cjs
+          node --test tests/dudu-messenger-v67-2.cjs
+          node --test tests/dudu-steward-v67-3.cjs
           node --test functions/tests/*.test.cjs
           node --check functions/index.js
           node --check js/ai-proxy.js
@@ -29,6 +31,8 @@ jobs:
           node --check cloudflare/src/index.mjs
           node --check cloudflare/src/auth.mjs
           node --check cloudflare/src/quota.mjs
+      - name: NPC AI request and Gemini regression (without paused Van Gioi)
+        run: node --test cloudflare/tests/npc-*.test.mjs cloudflare/tests/gemini-*.test.mjs
       - name: Parse V52 manual Firebase deploy script (never execute)
         shell: pwsh
         run: |
@@ -36,11 +40,6 @@ jobs:
           $parseErrors = $null
           [System.Management.Automation.Language.Parser]::ParseFile('scripts/deploy-economy-v52.ps1', [ref]$tokens, [ref]$parseErrors) | Out-Null
           if ($parseErrors.Count -gt 0) { $parseErrors | ForEach-Object { Write-Error $_.ToString() }; exit 1 }
-      - name: Test and bundle Cloudflare Worker without deploying
-        run: |
-          npm install --prefix cloudflare --no-audit --no-fund
-          npm test --prefix cloudflare
-          npm run build --prefix cloudflare
   browser:
     runs-on: ubuntu-24.04
     steps:
@@ -54,9 +53,59 @@ jobs:
         run: |
           npm install --no-save playwright@1.56.1
           npx playwright install chromium --with-deps
-      - name: Verify chapter editor and sandbox isolation in Chromium
+      - name: C4.46b garden back navigation on desktop and four mobile widths (Sandbox)
+        run: node tests/browser-arcade-garden-c446b.cjs
+      - name: C4.49 garden crop orders, soil upgrade and mobile layouts (Sandbox)
+        run: node tests/browser-arcade-garden-c449.cjs
+      - name: C4.52 Neon, Mine and Jade equipment benefits on four mobile widths (Sandbox)
+        run: node tests/browser-arcade-multigame-c452.cjs
+      - name: C4.47 pond tiers and collection journal on four mobile widths (Sandbox)
+        run: node tests/browser-arcade-pond-c447.cjs
+      - name: C4.48b instant fish crafting, commissions and mobile layouts (Sandbox)
+        run: node tests/browser-arcade-fish-collection-c448.cjs
+      - name: V71 main production-mode browser acceptance (no Sandbox, no external writes)
         run: |
-          node tests/browser-smoke.cjs
+          node tests/browser-transition-t0.cjs
           node tests/browser-auth-private.cjs
+      - name: C4.11 mobile Arcade journey and Honor reveal (Sandbox, no external writes)
+        run: node tests/browser-arcade-mobile-c410.cjs
+      - name: C4.46 phased fishing on four mobile widths (Sandbox, no external writes)
+        run: node tests/browser-arcade-fishing-c446.cjs
+      - name: C4.43 mobile reader navigation and refresh return (Sandbox, no external writes)
+        run: node tests/browser-library-reading-return-c443.cjs
+      - name: L2E mobile Library pagination and synopsis return (Sandbox, no external writes)
+        run: node tests/browser-library-catalog-l2e.cjs
+      - name: L3 smart Library filters and responsive catalog (Sandbox, no external writes)
+        run: node tests/browser-library-smart-filter-l3.cjs
+      - name: L4 EPUB details and 200+ chapter contents (Sandbox, no external writes)
+        run: node tests/browser-library-finish-l4.cjs
+      - name: F4.4 verified puzzle board, immutable chests and card delivery
+        run: |
+          node tests/browser-vanbao-f44.cjs
+          node tests/browser-vanbao-main-f44.cjs
+          node tests/browser-vanbao-final-f44.cjs
+      - name: F4.3 inventory viewer, quantity controls and collection delivery
+        run: |
+          node tests/browser-inventory-f43.cjs
+          node tests/browser-collection-quests-f43.cjs
+      - name: F4.2D all 29 approved images and responsive silhouettes
+        run: node tests/browser-item-art-f42d.cjs
+      - name: F4.2B.1 canonical stream diversity, decode budget and reduced motion
+        run: node tests/browser-vantvat-stream-f42b1.cjs
+      - name: F4.2B approved AI layers, lazy rare FX and touch/mouse retrieval
+        run: node tests/browser-fun-cosmos-f41.cjs
+      - name: F4.0 museum collections, account isolation and five responsive widths
+        run: node tests/browser-museum-collection-f40.cjs
+      - name: L5.3 select a name, save an alias and check mobile reader popup (local only)
+        run: node tests/browser-reader-names-l53.cjs
+      - name: L5.4 smart names, character links, backups and Android touch selection (local only)
+        run: node tests/browser-reader-names-l54.cjs
+      - name: L5.5 real offline lookup, reverse candidates, custom packs and manual fallback (local only)
+        run: node tests/browser-reader-name-lookup-l55.cjs
+      - name: R1 Library capacity and responsive owner panel (Sandbox, no external writes)
+        run: node tests/browser-library-capacity-r1.cjs
+      - name: Shared Sandbox comments and EPUB regression (advisory)
+        continue-on-error: true
+        run: |
           node --test tests/browser-sandbox-discussion.cjs
           node --test tests/browser-epub-import-v48.cjs

@@ -1,0 +1,3 @@
+# Python offline authoring checks
+__pycache__/
+*.py[cod]

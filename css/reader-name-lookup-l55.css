@@ -1,0 +1,21 @@
+.l55-enabled .l54-dialog{width:min(100%,520px)}
+.l55-proposals{display:grid;gap:6px;max-height:200px;overflow:auto;overscroll-behavior:contain;padding:3px 1px;margin:8px 0;font-size:12px;color:#446778}
+.l55-proposals:empty{display:none}
+.l55-candidate{display:grid;gap:4px;padding:8px;border:1px solid #a3c5cf;background:#eef8fbb8;border-radius:10px}
+.l55-candidate[data-inferred=true]{border-color:#c4a7b4;background:#f8f1f5ab}
+.l55-candidate .l55-choice{text-align:left;width:100%;min-height:38px;background:#ffffff85;font-size:14px;color:#244f62}
+.l55-candidate small{font-size:11px;letter-spacing:normal;line-height:1.5;overflow-wrap:anywhere}
+.l55-candidate[data-inferred=true] small{color:#905169}
+.l54-dialog .l55-trace{color:#476c7e;font-family:system-ui,sans-serif}
+.l54-dialog .l55-manual{width:100%;font-size:12px;min-height:36px;margin:0 0 12px;background:transparent}
+.l55-lookup-tools{padding:12px 0 15px;border-bottom:1px solid #b3cbd6;margin-bottom:14px}
+.l55-lookup-tools > button{width:100%}
+.l54-dialog .l55-sources{font-size:12px;padding:10px 0;border-bottom:1px solid #b8cdd555}
+.l55-sources summary{color:#365f73;cursor:pointer;font-weight:650;min-height:28px}
+.l55-sources a{display:block;color:#246e86;text-decoration:underline;font-size:11px;margin:7px 0;overflow-wrap:anywhere}
+.l54-dialog .l55-sources p,.l54-dialog .l55-note{font-size:11px;line-height:1.6;color:#526c7c;margin:6px 0;overflow-wrap:anywhere}
+.l54-dialog .l55-auto-option{display:flex;align-items:flex-start;gap:8px;font-size:12px;line-height:1.5;margin:12px 0 4px;font-weight:550}
+.l54-dialog .l55-auto-option input{width:18px;height:18px;min-height:18px;flex:0 0 18px;margin:1px 0;padding:0;accent-color:#347e8b}
+.l54-dialog .l55-excerpt{grid-column:1/-1;grid-row:auto;order:3;margin:5px 0 0;padding:5px 8px;border-left:2px solid #8bb9c8;color:#4b697b;background:#ffffff4d;font-size:12px;line-height:1.6;overflow-wrap:anywhere;white-space:pre-wrap}
+.l55-enabled .reader-name-list-l53{max-height:min(38dvh,320px)}
+@media(max-width:600px){.l55-proposals{max-height:170px}.l55-enabled .l54-dialog{width:100%}.l55-candidate{padding:6px}.l55-candidate .l55-choice{min-height:40px}.l55-enabled .reader-name-list-l53{max-height:32dvh}}

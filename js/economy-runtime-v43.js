@@ -165,33 +165,52 @@
   })||false;
  };
  root.buyShopItem=buy;
+ function personalQuestPreview(){
+  const rows=questsV437?.ensure(core.ensureQuests(userProfile.quests||[]))||[];
+  const day=new Date().toISOString().slice(0,10);
+  if(userProfile.questsDayV43&&userProfile.questsDayV43>day)
+   return {quests:rows,state:userProfile.questV437};
+  const daily=core.rolloverQuests(rows,userProfile.questsDayV43,day);
+  if(!daily.ok)return {quests:rows,state:userProfile.questV437};
+  const weekly=questsV437?.rotate(daily.quests,userProfile.questV437,
+   {day,previousDay:userProfile.questsDayV43});
+  if(!weekly?.ok)return {quests:daily.quests,state:userProfile.questV437};
+  // UI-only preview: an actual profile write/claim must still transact.
+  return {quests:weekly.quests,state:weekly.state};
+ }
  root.renderQuests=function(){
-  const readOnly=!sandbox();
+  const signedMain=!sandbox()&&!!(root.DuduAuth?.isReady?.()&&
+   root.DuduAuth.uid()===currentUsername&&root.DuduPersonalProgressC23);
+  const readOnly=!sandbox()&&!signedMain;
   if(!readOnly)rotate();
+  const personalPreview=signedMain?personalQuestPreview():null;
   const reset=document.querySelector('#phone-app-quests .dudu-v27-quest-tools button');
   if(reset){
    reset.disabled=true;reset.classList.remove('btn-danger');
    reset.textContent='Tự làm mới theo ngày';
    reset.title='Không thể đặt lại thủ công để nhận Xu trùng';
   }
-  if(questsV437&&root.DuduQuestUIV437)
-   return root.DuduQuestUIV437.render({
+  if(questsV437&&root.DuduQuestUIV437){
+   const rendered=root.DuduQuestUIV437.render({
     host:document.getElementById('quests-container'),
-    quests:readOnly?(questsV437?.ensure(core.ensureQuests(Array.isArray(userProfile.quests)?userProfile.quests:[]))||[]):owner()?userProfile.quests:[],
-    questState:readOnly?userProfile.questV437:owner()?userProfile.questV437:null,
-    signed:readOnly?!!(root.DuduAuth?.isReady?.()&&root.DuduAuth.uid()===currentUsername):owner(),
-    onClaim:readOnly?null:root.claimQuestReward,readOnly
+    quests:signedMain?personalPreview.quests:
+      readOnly?(questsV437?.ensure(core.ensureQuests(Array.isArray(userProfile.quests)?userProfile.quests:[]))||[]):owner()?userProfile.quests:[],
+    questState:signedMain?personalPreview.state:readOnly?userProfile.questV437:owner()?userProfile.questV437:null,
+    signed:signedMain||(!readOnly?owner():!!(root.DuduAuth?.isReady?.()&&root.DuduAuth.uid()===currentUsername)),
+    onClaim:readOnly?null:root.claimQuestReward,readOnly,personalMode:signedMain
    });
+   if(signedMain)root.renderCollectionQuestsF43?.(document.getElementById('quests-container'));return rendered;
+  }
   return old.renderQuests.apply(this,arguments);
  };
  root.advanceQuest=function(){
-  if(sandbox())rotate();
+  if(!sandbox())return false;
+  rotate();
   return old.advanceQuest.apply(this,arguments);
  };
  root.claimQuestReward=function(id){
   if(!sandbox()){
-   alertMessage('CHƯA MỞ NHẬN THƯỞNG','Nhiệm vụ trên tài khoản thật hiện chỉ để theo dõi; phần thưởng yêu cầu máy chủ.');
-   return false;
+   return root.personalClaimQuestC23?.(id)||false;
   }
   if(!owner()||!questsV437)return false;
   rotate();

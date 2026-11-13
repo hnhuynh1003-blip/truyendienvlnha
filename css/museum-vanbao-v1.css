@@ -1,0 +1,241 @@
+/* FUN-VIS4 · Rare S/SS/SSS FUN keepsakes displayed separately from Worker relics. */
+body.dudu-phone-v11 #cyber-phone .museum-c426-vanbao{
+ display:flex;flex-direction:column;gap:7px;padding:10px;margin-bottom:12px;
+ border:1px solid #e4c48c88;border-radius:13px;
+ background:radial-gradient(ellipse 70% 52% at 50% 15%,#7358a148,transparent),
+  linear-gradient(155deg,#152840,#27223c);
+ box-shadow:inset 0 1px #fff2}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-head{
+ display:flex;align-items:center;justify-content:space-between;gap:6px}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-head span{
+ color:#ffe1a1;font-size:10px;font-weight:900;letter-spacing:.06em}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-head strong{
+ font-size:9px;color:#e7cbee;white-space:nowrap}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-note{
+ font-size:9px;color:#c5b9d7;line-height:1.3}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-focus{
+ display:flex;align-items:center;justify-content:center;gap:10px;
+ padding:5px 3px;border-radius:10px;border:1px solid #d2ae7852;
+ background:radial-gradient(circle at 31% 44%,#9b85c94a,transparent 67%),#161f34c7}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-hero{
+ flex:0 0 120px;height:114px;display:grid;place-items:center;
+ border:0;background:transparent;box-shadow:none;overflow:visible}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-hero.dudu-item-v13-frame,
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-mini.dudu-item-v13-frame{
+ background:transparent!important;border:0!important;
+ box-shadow:none!important;overflow:visible!important}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-hero img{
+ width:100%;height:100%;object-fit:contain;
+ filter:drop-shadow(0 7px 10px #020814ae) drop-shadow(0 0 9px #f5d18e5a)}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-hero.is-locked img{
+ filter:brightness(0) opacity(.75)!important}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-caption{
+ display:flex;flex:1;min-width:0;flex-direction:column;gap:6px}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-caption span{
+ font-size:9px;color:#e9c284;font-weight:900;letter-spacing:.08em}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-caption strong{
+ font-size:12px;color:#ffebc8;line-height:1.2;overflow-wrap:anywhere}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-caption small{
+ font-size:9px;color:#bfc4d9;line-height:1.35}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-pedestals{
+ display:grid;grid-auto-flow:column;grid-auto-columns:minmax(70px,1fr);
+ gap:6px;overflow-x:auto;scrollbar-width:thin;padding:2px}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-pedestal{
+ min-width:0;min-height:71px;display:flex;flex-direction:column;align-items:center;
+ justify-content:center;gap:0;padding:3px;border:1px solid #bba68b87;
+ border-radius:10px;color:#ffdfad;background:#233147a8;cursor:pointer;
+ font:inherit;touch-action:manipulation}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-pedestal.is-selected{
+ border-color:#ffe1a2;box-shadow:0 0 12px #ffe2a658,inset 0 0 8px #dca96f3b}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-pedestal.rank-sss.is-owned{
+ background:radial-gradient(ellipse at top,#7757a2,#263044)}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-pedestal:focus-visible{
+ outline:2px solid #fff2c9;outline-offset:2px}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-mini{
+ display:grid;place-items:center;width:58px;height:49px;
+ border:0;overflow:visible;background:none;box-shadow:none}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-mini img{
+ width:58px;height:49px;object-fit:contain}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-pedestal.is-locked .museum-vanbao-mini img{
+ filter:brightness(0) opacity(.67)!important}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-pedestal b{
+ font-size:9px;letter-spacing:.08em}
+body.dudu-phone-v11 #cyber-phone .museum-vanbao-pedestal.is-locked b{color:#979bb3}
+@media(max-width:355px){
+ body.dudu-phone-v11 #cyber-phone .museum-vanbao-hero{flex-basis:100px;height:101px}
+ body.dudu-phone-v11 #cyber-phone .museum-vanbao-head span{font-size:9px}
+ body.dudu-phone-v11 #cyber-phone .museum-vanbao-head strong{font-size:8px}
+ body.dudu-phone-v11 #cyber-phone .museum-vanbao-caption strong{font-size:11px}
+}
+
+/* F3.8 · authenticated Vạn Tượng wing in the main phone Museum. */
+body.dudu-phone-v11 #cyber-phone .museum-c426-vantvat{
+ display:flex;flex-direction:column;gap:9px;min-width:0;padding:8px 3px 14px;
+ color:#f5e7c9;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-head{
+ display:flex;justify-content:space-between;align-items:center;gap:7px;
+ font-size:10px;line-height:1.3;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-head strong{color:#ffe6b5}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-head span{
+ color:#dec8f6;font-size:9px;font-weight:800;white-space:nowrap}
+body.dudu-phone-v11 #cyber-phone :is(.museum-vantvat-note,.museum-vantvat-empty){
+ margin:0;font-size:10px;line-height:1.5;color:#c8c4d5;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-feature{
+ position:relative;isolation:isolate;display:flex;align-items:center;gap:10px;
+ min-width:0;min-height:157px;padding:11px;border:1px solid #8a7795b3;
+ border-radius:14px;background:radial-gradient(circle at 35% 40%,#5446789a,#1b253f 75%);
+ box-shadow:inset 0 1px #ffffff1f;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-art{
+ display:grid;place-items:center;flex:0 0 42%;height:138px;min-width:0;
+ font-size:69px;color:#7d839e;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-art.dudu-item-v13-frame,
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-mini.dudu-item-v13-frame{
+ background:transparent!important;border:0!important;
+ box-shadow:none!important;overflow:visible!important;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-art img{
+ width:100%;height:100%;object-fit:contain;
+ filter:drop-shadow(0 6px 8px #070917a8);
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-desc{
+ display:flex;flex:1;flex-direction:column;gap:7px;min-width:0;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-desc small{
+ font-size:9px;font-weight:900;color:#e7c88e;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-desc strong{
+ font-size:13px;line-height:1.3;overflow-wrap:anywhere;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-desc span{
+ font-size:10px;line-height:1.4;color:#c8c3de;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-grid{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-card{
+ display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;
+ padding:8px 4px;min-height:112px;border:1px solid #8589a56e;
+ border-radius:11px;background:linear-gradient(145deg,#202940,#1b2238);
+ color:#f2e9e2;cursor:pointer;font:inherit;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-card.is-selected{
+ outline:2px solid #f7d7a5;outline-offset:-2px;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-card:focus-visible{
+ outline:2px solid #f9e2b9;outline-offset:1px;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-mini{
+ display:grid;place-items:center;width:72px;height:70px;
+ font-size:39px;color:#646b80;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-mini img{
+ width:100%;height:100%;object-fit:contain;
+ filter:drop-shadow(0 3px 5px #03091699);
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-card b{
+ color:#f6d59c;font-size:10px;line-height:1;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-card small{
+ font-size:9px;line-height:1.2;text-align:center;overflow-wrap:anywhere;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-card.is-locked{
+ color:#9197ad;background:#202638;border-color:#65728755;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-card.is-locked b{color:#8990a7}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-unfound{
+ border:1px solid #756b895c;border-radius:11px;padding:8px;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-unfound summary{
+ cursor:pointer;color:#c8bfd7;font-size:10px;font-weight:850;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-unfound .museum-vantvat-grid{
+ margin-top:9px;
+}
+body.dudu-phone-v11 #cyber-phone .museum-vantvat-go{
+ align-self:center;padding:9px 14px;border:1px solid #d9bb85;border-radius:10px;
+ background:linear-gradient(135deg,#6e447e,#363a65);color:#f9eace;
+ font-size:11px;font-weight:850;cursor:pointer;
+}
+/* The rank aura belongs on the display frame, never across the text itself. */
+body.dudu-phone-v11 #cyber-phone :is(.museum-vantvat-card,.museum-vantvat-feature).is-owned.rank-b{
+ border-color:#c59aea99;box-shadow:0 0 8px #ba83f44e;
+}
+body.dudu-phone-v11 #cyber-phone :is(.museum-vantvat-card,.museum-vantvat-feature).is-owned.rank-a{
+ border-color:#efa4d0;box-shadow:0 0 13px #ed94d07a;
+}
+body.dudu-phone-v11 #cyber-phone :is(.museum-vantvat-card,.museum-vantvat-feature).is-owned.rank-s{
+ border-color:#ffe0a6;animation:museum-vantvat-s 3.9s ease-in-out infinite alternate;
+}
+body.dudu-phone-v11 #cyber-phone :is(.museum-vantvat-card,.museum-vantvat-feature).is-owned.rank-ss{
+ border-color:#ffd1ce;animation:museum-vantvat-ss 3.3s ease-in-out infinite alternate;
+}
+body.dudu-phone-v11 #cyber-phone :is(.museum-vantvat-card,.museum-vantvat-feature).is-owned.rank-sss{
+ border-color:#fff1b7;animation:museum-vantvat-sss 2.9s ease-in-out infinite alternate;
+}
+@keyframes museum-vantvat-s{
+ from{box-shadow:0 0 10px #f9bd6b66}to{box-shadow:0 0 23px #ffe29ba8}
+}
+@keyframes museum-vantvat-ss{
+ from{box-shadow:0 0 14px #f4a2ad88}to{box-shadow:0 0 30px #f6a6c8dd,0 0 40px #a88cf866}
+}
+@keyframes museum-vantvat-sss{
+ from{box-shadow:0 0 18px #ffe3a4a8,0 0 29px #b58dff88}
+ to{box-shadow:0 0 36px #fff4bce8,0 0 54px #c89df5bc}
+}
+@media(max-width:350px){
+ body.dudu-phone-v11 #cyber-phone .museum-vantvat-mini{width:58px;height:58px}
+ body.dudu-phone-v11 #cyber-phone .museum-vantvat-card{min-height:104px}
+}
+@media(prefers-reduced-motion:reduce){
+ body.dudu-phone-v11 #cyber-phone :is(.museum-vantvat-card,.museum-vantvat-feature){
+  animation:none!important;
+ }
+}
+
+/* F4.0 — compact realm atlas and item-specific legendary display. */
+body.dudu-phone-v11 #cyber-phone .museum-f40-overview{margin:0;color:#c9c3dc;font-size:11px;line-height:1.5}
+body.dudu-phone-v11 #cyber-phone .museum-f40-filter{display:flex;align-items:center;gap:10px;font-size:12px;min-width:0}
+body.dudu-phone-v11 #cyber-phone .museum-f40-filter select{flex:1;min-width:0;max-width:100%;min-height:44px;padding:8px;border:1px solid #9582b9;border-radius:10px;background:#20243b;color:#f7eddf;font:inherit}
+body.dudu-phone-v11 #cyber-phone .museum-f40-realms{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+body.dudu-phone-v11 #cyber-phone .museum-f40-realm{display:grid;grid-template-columns:1fr auto;gap:6px;padding:10px;min-width:0;border:1px solid #8b7ca64d;border-radius:12px;background:linear-gradient(135deg,#272c48,#192236)}
+body.dudu-phone-v11 #cyber-phone .museum-f40-realm strong{font-size:11px;overflow-wrap:anywhere}
+body.dudu-phone-v11 #cyber-phone .museum-f40-realm>span{font-size:11px;color:#e5c896}
+body.dudu-phone-v11 #cyber-phone .museum-f40-realm progress{grid-column:1/-1;width:100%;height:5px;accent-color:#e5bf7e}
+body.dudu-phone-v11 #cyber-phone .museum-f40-realm small{grid-column:1/-1;font-size:10px;color:#bbb4cc;line-height:1.4}
+body.dudu-phone-v11 #cyber-phone .museum-f40-realm.is-complete{border-color:#e0c385;background:linear-gradient(130deg,#49394e,#292b42);animation:museum-f40-complete .8s ease-out}
+body.dudu-phone-v11 #cyber-phone .museum-f40-realm .museum-f40-badge{grid-column:1/-1;font-size:10px;color:#ffdf98;overflow-wrap:anywhere}
+body.dudu-phone-v11 #cyber-phone .museum-f40-shelf{min-width:0}
+body.dudu-phone-v11 #cyber-phone .museum-f40-shelf .museum-vantvat-card{min-height:138px;min-width:0;overflow:hidden;animation:none;box-shadow:none}
+body.dudu-phone-v11 #cyber-phone .museum-f40-shelf .museum-vantvat-mini{width:100%;height:90px}
+body.dudu-phone-v11 #cyber-phone .museum-f40-shelf .museum-vantvat-card small{font-size:11px;line-height:1.35}
+body.dudu-phone-v11 #cyber-phone .museum-f40-shelf .is-owned.rank-s{border-color:#dbbc7d}
+body.dudu-phone-v11 #cyber-phone .museum-f40-shelf .is-owned.rank-ss{border-color:#e0a8ca;background:linear-gradient(145deg,#3a2d4d,#20253c)}
+body.dudu-phone-v11 #cyber-phone .museum-f40-shelf .is-owned.rank-sss{border:2px solid #f6dda2;background:radial-gradient(ellipse at top,#68507c,#25283e 75%)}
+body.dudu-phone-v11 #cyber-phone .museum-f40-shelf .rank-s.is-owned .museum-vantvat-mini{filter:drop-shadow(0 0 3px #e2c08377)}
+body.dudu-phone-v11 #cyber-phone .museum-f40-shelf .rank-ss.is-owned .museum-vantvat-mini{filter:drop-shadow(0 0 6px #d997cb99)}
+body.dudu-phone-v11 #cyber-phone .museum-f40-shelf .rank-sss.is-owned .museum-vantvat-mini{animation:museum-f40-aura 3s ease-in-out infinite alternate}
+body.dudu-phone-v11 #cyber-phone .museum-f40-dialog{box-sizing:border-box;position:fixed;inset:0;margin:auto;width:min(440px,calc(100vw - 24px));max-width:calc(100vw - 24px);max-height:calc(100dvh - 32px);overflow-y:auto;overscroll-behavior:contain;padding:48px 20px 24px;border:1px solid #d6bc8a;border-radius:20px;background:radial-gradient(ellipse at top,#4f3c61,#171e33 65%);color:#f8eddf;text-align:center;font:inherit;box-shadow:0 18px 80px #000a}
+body.dudu-phone-v11 #cyber-phone .museum-f40-dialog::backdrop{background:#090b19df}
+body.dudu-phone-v11 #cyber-phone .museum-f40-close{position:absolute;right:8px;top:8px;width:44px;height:44px;border:1px solid #baa2c9;border-radius:50%;background:#252b43;color:#fff;font-size:26px;cursor:pointer}
+body.dudu-phone-v11 #cyber-phone .museum-f40-large{display:grid;place-items:center;width:100%;height:clamp(160px,35dvh,300px);margin-bottom:16px}
+body.dudu-phone-v11 #cyber-phone .museum-f40-large img{width:100%;height:100%;object-fit:contain}
+body.dudu-phone-v11 #cyber-phone .museum-f40-dialog h3{font-size:21px;line-height:1.35;overflow-wrap:anywhere}
+body.dudu-phone-v11 #cyber-phone .museum-f40-dialog p{font-size:13px;line-height:1.6}
+body.dudu-phone-v11 #cyber-phone .museum-f40-dialog small{font-size:11px;line-height:1.5;color:#d4c6dc}
+body.dudu-phone-v11 #cyber-phone .museum-f40-record{color:#e8cf9b}
+body.dudu-phone-v11 #cyber-phone .museum-f40-dialog.rank-s .museum-f40-large{filter:drop-shadow(0 0 5px #e2c08377)}
+body.dudu-phone-v11 #cyber-phone .museum-f40-dialog.rank-ss .museum-f40-large{filter:drop-shadow(0 0 10px #e2accb99)}
+body.dudu-phone-v11 #cyber-phone .museum-f40-dialog.rank-sss .museum-f40-large{animation:museum-f40-aura 3s ease-in-out infinite alternate}
+@keyframes museum-f40-aura{from{filter:drop-shadow(0 0 5px #e8c1ff77)}to{filter:drop-shadow(0 0 14px #ffe0a4cc)}}
+@keyframes museum-f40-complete{from{box-shadow:inset 0 0 30px #f9d78999}to{box-shadow:inset 0 0 0 #f9d78900}}
+@media(max-width:350px){body.dudu-phone-v11 #cyber-phone .museum-f40-shelf .museum-vantvat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(prefers-reduced-motion:reduce){body.dudu-phone-v11 #cyber-phone :is(.museum-f40-realm,.museum-f40-large,.museum-vantvat-mini){animation:none!important}}
+
+/* Keep the enlarged painting inside its own row, clear of rank and name. */
+body.dudu-phone-v11 #cyber-phone .museum-f40-large{display:flex;align-items:center;justify-content:center;min-height:0;overflow:hidden;flex:none}
+body.dudu-phone-v11 #cyber-phone .museum-f40-large img{display:block;min-width:0;min-height:0;max-width:100%;max-height:100%;flex:1;object-fit:contain}

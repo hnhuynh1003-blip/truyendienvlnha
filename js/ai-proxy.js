@@ -7,18 +7,32 @@
   const WORKER_URL = 'https://dudu-ai-staging.dudu-studio-ai.workers.dev'; // Public endpoint; GEMINI_API_KEY stays secret in Cloudflare.
   let sandbox = false;
   const DEFAULT_MODEL='gemini-3.5-flash-lite';
+  // Gemini may use 25s before a single Workers Free fallback starts.
+  // Avoid aborting a legitimate fallback at the original 32s browser cap.
+  const CHAT_TIMEOUT_MS=65000;
+  const STATUS_TIMEOUT_MS=15000;
   const AUTO='auto'; // Browser-only routing option, never an API model ID.
-  // Auto routes to one of the seven explicitly allowlisted Gemini models.
-  const MODELS=Object.freeze([
+  // Auto routes only to Gemini 3.1+ models; Workers AI requires server approval.
+  const BASE_MODELS=Object.freeze([
     ['auto','✦ Tự động · phù hợp câu hỏi'],
     ['gemini-3.5-flash-lite','3.5 Flash-Lite · nhanh'],
     ['gemini-3.1-flash-lite','3.1 Flash-Lite · nhẹ'],
     ['gemini-3.6-flash','3.6 Flash · nhập vai'],
-    ['gemini-3.8-flash','3.8 Flash · mới'],
-    ['gemini-3-flash-preview','3 Flash Preview'],
-    ['gemini-2.5-flash-lite','2.5 Flash-Lite · cũ'],
-    ['gemini-2.5-flash','2.5 Flash · cũ']
+    ['gemini-3.8-flash','3.8 Flash · mới']
   ].map(([id,label])=>Object.freeze({id,label})));
+  // V58 only exposes models explicitly advertised by the signed-in Worker.
+  // No paid OpenAI/Claude/DeepSeek endpoints are reachable from this client.
+  const WORKERS_OPTIONS=Object.freeze([
+    Object.freeze({id:'@cf/zai-org/glm-4.7-flash',label:'Workers AI · GLM-4.7 Flash'}),
+    Object.freeze({id:'@cf/google/gemma-4-26b-a4b-it',label:'Workers AI · Gemma 4 26B'})
+  ]);
+  let MODELS=BASE_MODELS;
+  function updateModelsFromStatus(status){
+    const available=new Set((Array.isArray(status?.models)?status.models:[])
+      .map(m=>m?.id).filter(id=>typeof id==='string'));
+    MODELS=Object.freeze([...BASE_MODELS,...WORKERS_OPTIONS.filter(x=>available.has(x.id))]);
+    return MODELS;
+  }
   function modelStorageKey(){
     const uid=firebase?.auth?.()?.currentUser?.uid;
     return uid&&!sandbox?'dudu-v2:'+encodeURIComponent(uid)+':global:npc-model':null;
@@ -28,7 +42,12 @@
     if(!key)return AUTO;
     try{
       const saved=localStorage.getItem(key);
-      return MODELS.some(x=>x.id===saved)?saved:AUTO;
+      if(MODELS.some(x=>x.id===saved))return saved;
+      // Retire only legacy Gemini IDs, preserving a Workers AI preference
+      // while its server-approved catalog loads asynchronously.
+      if(['gemini-2.5-flash','gemini-2.5-flash-lite','gemini-3-flash-preview'].includes(saved))
+        localStorage.setItem(key,AUTO);
+      return AUTO;
     }catch(_){return AUTO;}
   }
   function setModel(id){
@@ -55,6 +74,7 @@
     if(code==='unauthenticated'||status===401)return 'Hãy đăng nhập DUDU Studio trước khi trò chuyện.';
     if(code==='daily-user'||code==='daily-global'||code==='cooldown'||code==='in-flight')
       return error.message||'Vui lòng đợi trước khi tiếp tục trò chuyện.';
+    if(code==='provider-not-enabled')return error?.message||'Nhà cung cấp miễn phí này chưa được kích hoạt.';
     if(code==='ai-disabled'||status===503)return 'Tần số NPC AI chưa sẵn sàng.';
     if(code==='ai-busy'||status===429)return error?.message||'Tần số NPC đang bận.';
     if(code==='invalid-request'||code==='invalid-content')
@@ -76,27 +96,51 @@
           ...(method==='POST'?{'Content-Type':'application/json'}:{})},
         ...(method==='POST'?{body:JSON.stringify(data)}:{}),
         cache:'no-store',
-        signal:AbortSignal.timeout(32000)
+        signal:AbortSignal.timeout(method==='POST'?CHAT_TIMEOUT_MS:STATUS_TIMEOUT_MS)
       });
       const body=await response.json().catch(()=>null);
       if(!response.ok||body?.error)return {
         error:explain(body,response.status),
         // Diagnostic only: the exact allowlisted model attempted by this user.
-        model:method==='POST'&&MODELS.some(x=>x.id===data?.model)?data.model:undefined,
-        code:typeof body?.error?.code==='string'?body.error.code:'http-'+response.status
+        // If Gemini failed and a Workers AI fallback also failed, show the
+        // actual last attempted model, not a misleading Gemini-only label.
+        model:method==='POST'&&MODELS.some(x=>x.id===body?.error?.model)
+          ?body.error.model
+          :(method==='POST'&&MODELS.some(x=>x.id===data?.model)?data.model:undefined),
+        code:typeof body?.error?.code==='string'?body.error.code:'http-'+response.status,
+        reference:/^[a-f0-9]{8}$/.test(body?.error?.reference||'')?body.error.reference:undefined,
+        field:['contents','systemInstruction','generationConfig','model'].includes(body?.error?.diagnostic?.field)?body.error.diagnostic.field:undefined
       };
-      return body || {error:'Máy chủ không trả lời.'};
+      if(!body)return {
+        error:'Máy chủ trả phản hồi không đọc được. Tin nhắn vẫn được lưu trên thiết bị.',
+        code:'client-invalid-json',
+        model:method==='POST'&&MODELS.some(x=>x.id===data?.model)?data.model:undefined
+      };
+      return body;
     }catch(e){
-      console.warn('DUDU AI gateway unavailable:',e?.name||'network');
-      return {error:'Tần số NPC tạm thời gián đoạn.'};
+      const timeout=e?.name==='TimeoutError'||e?.name==='AbortError';
+      console.warn('DUDU AI gateway unavailable:',timeout?'client-timeout':(e?.name||'network'));
+      return {
+        error:timeout
+          ?'Đợi AI quá 65 giây nên thiết bị ngừng chờ. NPC có thể vẫn đang xử lý; hãy kiểm tra kết nối trước khi thử lại.'
+          :'Không thể kết nối đến máy chủ AI từ thiết bị này. Hãy kiểm tra Wi-Fi, DNS riêng hoặc trình chặn kết nối và thử lại.',
+        code:timeout?'client-timeout':'client-network',
+        model:method==='POST'&&MODELS.some(x=>x.id===data?.model)?data.model:undefined
+      };
     }
   }
   function generate(purpose,instruction,messages,currentQuestion){
     const chosen=model();
     // No additional request is made to select a model. Manual choices take
     // precedence; Auto only routes among the existing server allowlist.
+    // V58 Free: Auto chooses Cloudflare's independently hosted model first
+    // when /v1/status has confirmed this binding and the operator's Free gates.
+    // Both Firebase roles use the same rule; manual Gemini choices still win.
+    const preferredFree=purpose==='chat' &&
+      MODELS.some(x=>x.id==='@cf/zai-org/glm-4.7-flash')
+      ?'@cf/zai-org/glm-4.7-flash':null;
     const resolved=chosen===AUTO?
-      (window.DuduNpcAutoModelV5611?.route(currentQuestion
+      (preferredFree||window.DuduNpcAutoModelV5611?.route(currentQuestion
         ?[{role:'user',text:currentQuestion}]:messages)||DEFAULT_MODEL):chosen;
     return call('POST','/v1/generate',{
       purpose,instruction,messages,...(purpose==='chat'?{model:resolved}:{})
@@ -105,5 +149,8 @@
   function status(){
     return call('GET','/v1/status');
   }
-  window.DuduAI={init,isConfigured,generate,status,model,setModel,models:MODELS};
+  window.DuduAI={init,isConfigured,generate,status,model,setModel,
+    // Public base URL only; secrets remain on Worker. Shared by AU Core V70.
+    get workerBase(){return base();},
+    get models(){return MODELS;},updateModelsFromStatus};
 })();

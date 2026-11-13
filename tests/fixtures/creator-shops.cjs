@@ -1,0 +1,63 @@
+// Synthetic authoring only: no player balances or real transactions.
+const assert=require('node:assert/strict'),fs=require('node:fs');
+module.exports=async function shopCreator({page,editor,secret}){
+ const tab=async name=>editor.getByRole('button',{name,exact:true}).click();
+ const fill=async(scope,name,value)=>scope.getByLabel(name,{exact:true}).fill(value);
+ const select=async(scope,name,value)=>scope.getByLabel(name,{exact:true}).selectOption(value);
+ const click=async(scope,name)=>scope.getByRole('button',{name,exact:true}).click();
+ const rows=kind=>editor.locator('[data-vg-kind="'+kind+'"]');
+ await tab('Vật phẩm');await click(editor,'+ Thêm vật phẩm');const currency=rows('item').last();
+ await fill(currency,'Tên vật phẩm','Đồng thư');await select(currency,'Loại vật phẩm','currency');await fill(currency,'Giới hạn cộng dồn','1000');await click(currency,'+ Thêm cách nhận');
+ await click(editor,'+ Thêm vật phẩm');const goods=rows('item').last();await fill(goods,'Tên vật phẩm','Dấu sáp');await select(goods,'Loại vật phẩm','consumable');await fill(goods,'Giới hạn cộng dồn','20');
+ await tab('Cửa hàng');await click(editor,'+ Thêm cửa hàng');const shop=rows('shop').first();
+ await fill(shop,'Tên cửa hàng','Quầy bưu cục');await select(shop,'Địa điểm cửa hàng',{label:'Phòng phía Đông'});await select(shop,'NPC bán hàng',{label:'Người đưa thư'});
+ const moneyChoices=await shop.getByLabel('Đơn vị tiền của cửa hàng',{exact:true}).locator('option').allTextContents();
+ assert.equal(moneyChoices.includes('Lá thư'),false);assert.equal(moneyChoices.includes('Đồng thư'),true);await select(shop,'Đơn vị tiền của cửa hàng',{label:'Đồng thư'});
+ await click(shop,'+ Thêm mặt hàng');const stock=rows('stock').first();await select(stock,'Mặt hàng',{label:'Dấu sáp'});await fill(stock,'Giá trong kịch bản','7');
+ await click(editor,'Kiểm tra hồ sơ');let report=await editor.locator('#vg-report').innerText();assert.match(report,/đang hết trong cấu hình/);assert.match(report,/chưa khai cách nhận qua cửa hàng/);
+ await click(stock,'Khai cách nhận qua cửa hàng');await click(rows('stock').first(),'Khai cách nhận qua cửa hàng');
+ await fill(rows('stock').first(),'Giá trong kịch bản','-1');await click(editor,'Lưu trên thiết bị');assert.match(await editor.locator('#vg-message').innerText(),/sai định dạng/);
+ await fill(rows('stock').first(),'Giá trong kịch bản','7');await fill(rows('stock').first(),'Số lượng trong kịch bản','3');
+ const selected=await rows('stock').first().getByLabel('Mặt hàng',{exact:true}).inputValue();
+ await select(rows('stock').first(),'Mặt hàng',{label:'Đồng thư'});assert.equal(await rows('stock').first().getByLabel('Mặt hàng',{exact:true}).inputValue(),selected);
+ await click(rows('stock').first(),'Xóa mặt hàng');assert.equal(await rows('stock').count(),1);
+ await click(shop,'+ Thêm mặt hàng');assert.equal((await rows('stock').last().getByLabel('Mặt hàng',{exact:true}).locator('option').allTextContents()).includes('Dấu sáp'),false);
+ await select(rows('stock').last(),'Mặt hàng',{label:'Lá thư'});await fill(rows('stock').last(),'Số lượng trong kịch bản','1');await click(rows('stock').last(),'Khai cách nhận qua cửa hàng');
+ await tab('Địa điểm & cảnh');await click(rows('view').first(),'+ Thêm tương tác');
+ const action=rows('hotspot').last();await fill(action,'Nhãn tương tác','Ghé quầy bưu cục');await select(action,'Hành động','shop');await select(action,'Đối tượng tương tác',{label:'Quầy bưu cục'});
+ await tab('Nhiệm vụ');await click(rows('mission').first(),'+ Thêm mục tiêu');const objective=rows('mission').first().locator('[data-vg-kind="objective"]').last();
+ await select(objective,'Hành động mục tiêu','purchase');await select(objective,'Đích mục tiêu',{label:'Dấu sáp'});await fill(objective,'Số lượng cần','4');
+ await click(editor,'Kiểm tra hồ sơ');assert.match(await editor.locator('#vg-report').innerText(),/Số hàng được khai thấp hơn/);
+ await tab('Cửa hàng');await fill(rows('stock').first(),'Số lượng trong kịch bản','5');await click(editor,'Kiểm tra hồ sơ');
+ report=await editor.locator('#vg-report').innerText();assert.match(report,/Cấu trúc đủ/);assert.equal(report.includes('Số hàng được khai thấp hơn'),false);assert.equal(report.includes(secret),false);
+ await click(shop,'Xóa cửa hàng');assert.equal(await rows('shop').count(),1);
+ await tab('Vật phẩm');await click(rows('item').nth(1),'Xóa vật phẩm');assert.equal(await rows('item').count(),3);
+ const letter=rows('item').first();const methods=letter.locator('[data-vg-kind="acquisition"]');
+ assert.equal(await methods.count(),2);await click(methods.nth(1),'Xóa cách nhận');
+ await tab('Cửa hàng');await click(rows('stock').last(),'Xóa mặt hàng');assert.equal(await rows('stock').count(),1);
+ for(const width of [320,375,390,430,1280]){await page.setViewportSize({width,height:900});assert.equal(await editor.evaluate(n=>n.scrollWidth<=n.clientWidth+1),true,'Shop overflow at '+width);}
+ if(process.env.CREATOR_QA_DIR){const path=require('node:path');fs.mkdirSync(process.env.CREATOR_QA_DIR,{recursive:true});await shop.evaluate(n=>n.scrollIntoView({block:'start'}));await page.locator('#vg-creator-dialog').screenshot({path:path.join(process.env.CREATOR_QA_DIR,'shop-form.png')});}
+ await click(editor,'Lưu trên thiết bị');await page.waitForFunction(()=>document.getElementById('vg-save-state')?.textContent.includes('Đã lưu'));
+ if(!await editor.locator('.vg-files').evaluate(n=>n.open))await editor.locator('.vg-files summary').click();
+ const waiting=page.waitForEvent('download');await click(editor,'Xuất JSON');const download=await waiting,draft=JSON.parse(fs.readFileSync(await download.path(),'utf8'));
+ const s=draft.shops[0],money=draft.items.find(x=>x.name==='Đồng thư'),product=draft.items.find(x=>x.name==='Dấu sáp');
+ assert.equal(s.currencyItemId,money.itemId);assert.equal(s.merchantNpcId,draft.npcs[0].npcId);assert.equal(s.placeId,draft.places[0].placeId);
+ assert.deepEqual(s.stock,[{itemId:product.itemId,price:7,quantity:5}]);assert.equal(typeof s.stock[0].price,'number');
+ assert.equal(product.acquisitionMethods.filter(x=>x.type==='shop'&&x.shopId===s.shopId).length,1);
+ assert.equal(draft.items[0].acquisitionMethods[0].type,'pickup');assert.equal(draft.items[0].acquisitionMethods.length,1);
+ assert.equal(draft.views[0].hotspots.find(x=>x.action==='shop').targetId,s.shopId);
+ const buy=draft.missions[0].objectives.find(x=>x.verb==='purchase');assert.equal(buy.targetId,product.itemId);assert.equal(buy.requiredCount,4);
+ assert.equal(draft.story.secretTruth,secret);assert.equal('balance' in s,false);assert.equal('status' in draft,false);
+ // A duplicate imported through JSON can be repaired without stripping its valid acquisition link.
+ const duplicate=structuredClone(draft);duplicate.shops[0].stock.push({...duplicate.shops[0].stock[0],price:11});
+ await editor.locator('#vg-import').setInputFiles({name:'duplicate-stock.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(duplicate))});
+ await page.waitForFunction(()=>document.getElementById('vg-message')?.textContent.includes('Đã nhập nội dung'));
+ await click(editor,'Kiểm tra hồ sơ');assert.match(await editor.locator('#vg-report').innerText(),/Mặt hàng bị lặp/);
+ await click(rows('stock').last(),'Xóa mặt hàng');assert.equal(await rows('stock').count(),1);
+ await click(editor,'Kiểm tra hồ sơ');assert.match(await editor.locator('#vg-report').innerText(),/Cấu trúc đủ/);
+ await click(editor,'Lưu trên thiết bị');await page.waitForFunction(()=>document.getElementById('vg-save-state')?.textContent.includes('Đã lưu'));
+ await click(editor,'‹ Vạn Giới');await page.locator('#d60-world-creator-launch').click();await tab('Cửa hàng');
+ assert.equal(await rows('shop').first().getByLabel('Tên cửa hàng',{exact:true}).inputValue(),'Quầy bưu cục');
+ assert.equal(await rows('stock').first().getByLabel('Số lượng trong kịch bản',{exact:true}).inputValue(),'5');
+ await tab('Thông tin');console.log('PASS G1J shop forms: typed currency/stock, reciprocal acquisition, no duplicate links, warnings, guarded deletion, purchase targets and JSON persistence');
+};

@@ -1,0 +1,32 @@
+'use strict';
+const {test}=require('node:test');
+const assert=require('node:assert/strict');
+const {readFileSync}=require('node:fs');
+const {join}=require('node:path');
+const root=join(__dirname,'..');
+const read=path=>readFileSync(join(root,path),'utf8');
+
+test('C4.46b full-height garden sheet keeps the lake clear and preserves farm actions',()=>{
+ const css=read('css/arcade-c445-garden-popup.css');
+ const html=read('index.html');
+ const ui=read('js/personal-arcade-ui-v1.js');
+ assert.match(html,/arcade-c443b-garden-space\.css\?v=c443b-1[\s\S]*?arcade-c445-garden-popup\.css\?v=c445-1/);
+ assert.match(html,/personal-arcade-ui-v1\.js\?v=c445-1/);
+ assert.match(ui,/data-arcade-drawer="\$\{name\}"/);
+ assert.match(ui,/drawerButton\('Vườn cây'/);
+ assert.match(ui,/class="garden-farm-workbench" data-arcade-panel="garden-seeds"/);
+ assert.match(ui,/class="garden-plot-area" role="group" aria-label="Luống cây"/);
+ assert.doesNotMatch(ui,/class="garden-plot-area">/,'No more plant overlay in the lake');
+ assert.match(ui,/class="garden-quick-actions"/);
+ assert.match(css,/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+ assert.match(css,/\.garden-farm-workbench \.garden-plot\{/);
+ assert.match(css,/\.garden-farm-workbench \.garden-plot \.garden-crop-sprite\{/);
+ assert.match(css,/height:100%;max-height:100%;min-height:0/);
+ assert.match(css,/container-type:inline-size/,'Desktop phone widths should be handled as narrow containers');
+ assert.match(ui,/class="garden-sheet-back" data-arcade-drawer="close"/);
+ assert.match(ui,/event\.stopImmediatePropagation\(\)/,'App Back closes drawers before calling phoneHome');
+ assert.match(ui,/aria-label="Luống \$\{index\+1\}/,'Screen readers keep full plot identity');
+ assert.match(ui,/class="garden-bed-number"/);
+ assert.match(ui,/class="garden-plot-label"><b>\$\{b\.status===/,'Plant names stay readable below the illustration');
+ assert.match(ui,/class="garden-farm-hero"/);
+});

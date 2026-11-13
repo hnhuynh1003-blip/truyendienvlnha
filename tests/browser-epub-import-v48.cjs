@@ -35,7 +35,7 @@ test('EPUB V48 parses OPF spine, strips scripts, previews chapters and imports i
   await page.locator('#epub-import-content input[type=file]').setInputFiles({
    name:'sample.epub',mimeType:'application/epub+zip',buffer:Buffer.from('stub')
   });
-  await page.getByText(/Đã nhận 2 mục nội dung/).waitFor();
+  await page.getByText(/Đã nhận 2 mục văn bản/).waitFor();
   await page.getByRole('button',{name:'Nhập chương vào Sandbox'}).click();
   await page.getByText(/Đã nhập 2 chương/).waitFor();
   const snapshot=await page.evaluate(()=>({novels:window.sandboxNovels,saveCalls:window.saveCalls,evil:window.evil}));

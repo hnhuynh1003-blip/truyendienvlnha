@@ -8,9 +8,14 @@
  if(root)root.DuduEpubImportV48=api;
 })(typeof window!=='undefined'?window:null,function(root){
  'use strict';
- const LIMIT_FILE=15*1024*1024,LIMIT_CHAPTERS=160,LIMIT_CHAPTER_CHARS=220000;
- const LIMIT_TOTAL_CHARS=1500000,MAX_ZIP_ENTRIES=1800,MAX_TOTAL_UNPACKED=40*1024*1024;
+ // V57: allow bigger text-heavy books while retaining the existing Firestore
+ // 160-chapter author rules and per-document safety limits.
+ const LIMIT_FILE=30*1024*1024,LIMIT_CHAPTERS=160,LIMIT_CHAPTER_CHARS=220000;
+ const LIMIT_TOTAL_CHARS=4500000,MAX_ZIP_ENTRIES=3000,MAX_TOTAL_UNPACKED=80*1024*1024;
  const safeName=s=>String(s||'').trim().slice(0,140);
+ const safeSynopsis=s=>String(s||'').replace(/[\u0000-\u001f\u007f]/g,' ').replace(/\s+/g,' ').trim().slice(0,3000);
+ const safeGenres=s=>String(s||'').split(/[,;/|]+/).map(x=>x.replace(/\s+/g,' ').trim())
+  .filter(x=>x&&!/^(?:epub|nhập epub)$/i.test(x)).slice(0,8).join(', ').slice(0,220);
  const safePath=(href,base='')=>{
   if(typeof href!=='string'||!href||/^[a-z][a-z0-9+.-]*:/i.test(href)||
      href.startsWith('/')||href.includes('\\')||/[\u0000-\u001f]/.test(href))return null;
@@ -38,18 +43,24 @@
  const allTags=(el,tag)=>[...el.getElementsByTagName('*')].filter(x=>x.localName===tag);
  function extractText(raw,Parser){
   if(typeof raw!=='string'||raw.length>LIMIT_CHAPTER_CHARS*5)throw Error('Chương EPUB vượt giới hạn');
-  const doc=new Parser().parseFromString(raw,'text/html');
-  for(const node of doc.querySelectorAll('script,style,iframe,object,embed,svg,math,nav,form,head,noscript'))node.remove();
-  const body=doc.body||doc.documentElement;
-  const blocks=[...body.querySelectorAll('h1,h2,h3,h4,p,li,blockquote,pre')];
-  const lines=blocks.filter(n=>!n.parentElement?.closest('h1,h2,h3,h4,p,li,blockquote,pre'))
-   .map(n=>(n.textContent||'').replace(/\s+/g,' ').trim()).filter(Boolean);
-  const text=(lines.length?lines.join('\n\n'):(body.textContent||'').replace(/\s+/g,' ').trim()).trim();
+  const text=root?.DuduEpubTextV57?.getText(raw,Parser)||legacyText(raw,Parser);
   if(text.length>LIMIT_CHAPTER_CHARS)throw Error('Một chương EPUB quá dài');
   return text;
  }
+ // Backward-compatible test/embedded use if the V57 module is unavailable:
+ // preserve <br> with text nodes instead of discarding line boundaries.
+ function legacyText(raw,Parser){
+  const doc=new Parser().parseFromString(raw,'text/html');
+  for(const n of doc.querySelectorAll('script,style,iframe,object,embed,svg,math,nav,form,head,noscript'))n.remove();
+  const body=doc.body||doc.documentElement;
+  for(const br of body.querySelectorAll('br'))br.replaceWith(doc.createTextNode('\n'));
+  const blocks=[...body.querySelectorAll('h1,h2,h3,h4,p,li,blockquote,pre')];
+  const lines=blocks.filter(n=>!n.parentElement?.closest('h1,h2,h3,h4,p,li,blockquote,pre'))
+   .map(n=>(n.textContent||'').replace(/[^\S\n]+/g,' ').replace(/ *\n */g,'\n').trim()).filter(Boolean);
+  return (lines.length?lines.join('\n\n'):body.textContent||'').trim();
+ }
  async function parse(file,{zipLib,Parser}={}){
-  if(!validFile(file))throw Error('Chỉ hỗ trợ tệp EPUB từ 1 byte đến 15 MB');
+  if(!validFile(file))throw Error('Chỉ hỗ trợ tệp EPUB từ 1 byte đến 30 MB');
   const Zip=zipLib||(root&&root.JSZip);
   const XmlParser=Parser||(root&&root.DOMParser);
   if(!Zip||!XmlParser)throw Error('Bộ đọc EPUB chưa được tải; hãy kiểm tra kết nối mạng');
@@ -72,6 +83,10 @@
   const metadata=firstTag(opf,'metadata');
   const metadataTitle=metadata?firstTag(metadata,'title')?.textContent?.trim():null;
   const metadataAuthor=metadata?firstTag(metadata,'creator')?.textContent?.trim():null;
+  const metadataGenres=metadata?allTags(metadata,'subject').map(x=>x.textContent||'').join(', '):'';
+  const metadataSynopsis=metadata?firstTag(metadata,'description')?.textContent||'':'';
+  const coverMeta=allTags(opf,'meta').find(x=>x.getAttribute('name')==='cover');
+  const coverId=coverMeta?.getAttribute('content')||'';
   const items=new Map();
   for(const it of allTags(opf,'item')){
    const id=it.getAttribute('id'),href=it.getAttribute('href');
@@ -82,7 +97,16 @@
   if(!spine)throw Error('EPUB thiếu danh sách chương');
   const refs=allTags(spine,'itemref').filter(x=>x.getAttribute('linear')!=='no');
   if(!refs.length||refs.length>LIMIT_CHAPTERS)throw Error('EPUB cần 1–160 mục nội dung');
-  let totalChars=0;
+  // Thumbnail only: the original image remains in the source EPUB on the
+  // author's device. An explicitly bounded small JPEG is safe for Firestore
+  // metadata and does not require Cloud Storage/Blaze.
+  const coverRecord=items.get(coverId)||items.get('cover-image')||
+    [...items.entries()].find(([id,it])=>/cover/i.test(id)&&/^image\/(?:jpeg|png|webp)$/i.test(it.media))?.[1];
+  const coverEntry=coverRecord&&/\.(?:jpe?g|png|webp)$/i.test(coverRecord.filename)
+    ?zip.file(coverRecord.filename):null;
+  const coverImage=coverEntry&&root?.DuduEpubTextV57
+    ?await root.DuduEpubTextV57.coverThumbnail(coverEntry):'';
+  let totalChars=0,skippedMetadata=0;
   const chapters=[];
   for(const itemref of refs){
    const record=items.get(itemref.getAttribute('idref'));
@@ -90,18 +114,25 @@
    if(!/xhtml|html|xml/i.test(record.media)&&!/\.x?html?$/i.test(record.filename))
     throw Error('Định dạng chương EPUB không được hỗ trợ');
    const body=await zip.file(record.filename).async('string');
+   const doc=new XmlParser().parseFromString(body,'text/html');
+   const heading=doc.body?.querySelector('h1,h2,h3')?.textContent?.replace(/\s+/g,' ').trim()
+     ||doc.querySelector('head title')?.textContent?.trim()||'';
+   const kind=root?.DuduEpubTextV57?.category(heading,record.filename)||
+     (/\/(?:cover|title_page)\./i.test(record.filename)?'metadata':'chapter');
+   if(kind==='metadata'){skippedMetadata++;continue}
    const text=extractText(body,XmlParser);
    if(!text)continue;
    totalChars+=text.length;
-   if(totalChars>LIMIT_TOTAL_CHARS)throw Error('Nội dung EPUB quá lớn để nhập một lượt');
-   const doc=new XmlParser().parseFromString(body,'text/html');
-   for(const node of doc.querySelectorAll('script,style,nav'))node.remove();
-   const heading=doc.body?.querySelector('h1,h2,h3')?.textContent?.replace(/\s+/g,' ').trim();
-   chapters.push({title:safeName(heading)||'Chương '+(chapters.length+1),content:text});
+   if(totalChars>LIMIT_TOTAL_CHARS)throw Error('EPUB có trên 4,5 triệu ký tự; cần tách thành nhiều tập');
+   chapters.push({title:safeName(heading)||'Chương '+(chapters.length+1),
+    content:text,kind,sourcePath:record.filename});
   }
   if(!chapters.length)throw Error('Không tìm thấy chương có nội dung');
   return {title:safeName(metadataTitle)||safeName(file.name.replace(/\.epub$/i,''))||'Truyện EPUB',
-   author:safeName(metadataAuthor)||'Chưa rõ',chapters,totalChars,sourceName:file.name};
+   author:safeName(metadataAuthor)||'Chưa rõ',genre:safeGenres(metadataGenres),
+   desc:safeSynopsis(metadataSynopsis),chapters,totalChars,sourceName:file.name,
+   skippedMetadata,noticeCount:chapters.filter(ch=>ch.kind==='notice').length,
+   coverImage,hasCover:!!coverEntry};
  }
  function prepareSandboxImport(parsed,{novels,targetId='',author='Tác giả',id}){
   if(!parsed||!Array.isArray(parsed.chapters)||!parsed.chapters.length)throw Error('Chưa có nội dung EPUB');
@@ -121,8 +152,12 @@
    updated[index]={...target,chapters:[...(target.chapters||[]),...chapters],updatedAt:date};
   }else{
    updated.unshift({id:'novel-epub-'+prefix,title:parsed.title,author:parsed.author||author,
-    genre:'Nhập EPUB',status:'Đang ra',desc:'',coverImage:'',
-    createdAt:date,updatedAt:date,introData:{title:'VĂN ÁN',code:'EPUB',text:''},
+    genre:safeGenres(parsed.genre),
+    status:parsed.publicationState==='Hoàn thành'?'Hoàn thành':'Đang ra',desc:safeSynopsis(parsed.desc),
+    coverImage:typeof parsed.coverImage==='string'&&parsed.coverImage.length<32000&&
+      /^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/.test(parsed.coverImage)?parsed.coverImage:'',
+    createdAt:date,updatedAt:date,
+    introData:{title:'VĂN ÁN',code:'ARCHIVE',text:safeSynopsis(parsed.desc)},
     characters:[],chapters});
   }
   // localStorage is usually limited to ~5MB per origin; keep plenty of headroom.
@@ -131,7 +166,11 @@
   return updated;
  }
  async function uploadOriginal(file,{uid,auth,storage,onProgress=()=>{}}={}){
-  if(!validFile(file))throw Error('Tệp EPUB không hợp lệ hoặc vượt 15 MB');
+  // Storage backup is separate and disabled on Spark. Its existing V48
+  // Storage Rules are capped at 15 MB; do not imply that parsing up to
+  // 30 MB grants a larger Storage write.
+  if(!validFile(file)||file.size>15*1024*1024)
+   throw Error('Sao lưu EPUB gốc lên Storage chỉ hỗ trợ tối đa 15 MB và cần Rules/Blaze');
   if(!auth||!storage||!uid)throw Error('Firebase Storage hoặc tài khoản tác giả chưa sẵn sàng');
   const user=auth.currentUser;
   if(!user||user.uid!==uid)throw Error('Tài khoản đăng nhập đã thay đổi');
@@ -169,12 +208,50 @@
   input.setAttribute('aria-label','Chọn tệp EPUB');
   const status=el('p','');status.setAttribute('role','status');status.className='dudu-epub-status';
   const title=el('input');title.type='text';title.maxLength=140;title.placeholder='Tên tác phẩm';
+  const authorInput=el('input');authorInput.type='text';authorInput.maxLength=140;
+  authorInput.placeholder='Tên tác giả';
+  const genreInput=el('input');genreInput.type='text';genreInput.maxLength=220;
+  genreInput.placeholder='Ví dụ: Hệ thống, Huyền huyễn, Bách Hợp';
+  const completionInput=el('select');completionInput.append(new Option('Đang ra','Đang ra'),
+   new Option('Hoàn thành','Hoàn thành'));
+  const descInput=el('textarea');descInput.maxLength=3000;descInput.rows=4;
+  descInput.placeholder='Văn án để độc giả tìm hiểu truyện và tìm kiếm theo nội dung…';
+  const fields=el('div');fields.className='dudu-epub-fields';
+  const field=(label,control)=>{const wrapper=el('label');wrapper.append(el('span',label),control);return wrapper};
+  fields.append(field('Tên truyện',title),field('Tác giả',authorInput),
+   field('Thể loại · cách nhau bằng dấu phẩy',genreInput),
+   field('Tình trạng tác phẩm',completionInput),field('Văn án',descInput));
   const target=el('select');target.setAttribute('aria-label','Đích nhập EPUB');
   target.append(new Option('Tạo truyện mới (Sandbox)',''));
   for(const book of options.novels||[])target.append(new Option(book.title||book.id,book.id));
   const list=el('div');list.className='dudu-epub-preview';
+  const noticeLabel=el('label');
+  const includeNotices=el('input');includeNotices.type='checkbox';
+  noticeLabel.append(includeNotices,doc.createTextNode(' Nhập cả trang thông báo / lời nhắn của người đóng gói'));
+  noticeLabel.style.cssText='display:none;font-size:11px;margin:7px 0;';
+  const coverPreview=el('img');coverPreview.alt='Ảnh bìa xem trước từ EPUB';
+  coverPreview.style.cssText='display:none;width:84px;height:auto;max-height:120px;object-fit:contain;border-radius:7px;margin:8px 0;';
+  const info=el('small','');info.style.cssText='display:block;font-size:11px;margin:6px 0;white-space:pre-line;';
   const buttons=el('div');buttons.className='dudu-epub-actions';
   const button=(caption,handler)=>{const b=el('button',caption);b.type='button';b.className='btn';b.onclick=handler;buttons.append(b);return b};
+  // A crash-safe pointer for this signed-in author only. It is not a bearer
+  // token and cannot grant write access; Firestore still verifies owner/admin.
+  const resumeKey=()=>{
+    const uid=options.uid?.();
+    return uid?'dudu-epub-v57-pending:'+encodeURIComponent(uid):'';
+  };
+  const getResume=()=>{
+    try{return resumeKey()?root.localStorage?.getItem(resumeKey())||'':''}
+    catch(_){return ''}
+  };
+  const setResume=id=>{
+    try{const key=resumeKey();if(key&&id)root.localStorage?.setItem(key,id)}
+    catch(_){}
+  };
+  const clearResume=()=>{
+    try{const key=resumeKey();if(key)root.localStorage?.removeItem(key)}
+    catch(_){}
+  };
   const run=async task=>{
    if(state.busy)return;
    state.busy=true;[...buttons.children].forEach(x=>x.disabled=true);
@@ -182,22 +259,50 @@
    finally{
     state.busy=false;
     [...buttons.children].forEach(x=>{
-     x.disabled=x.dataset.requiresDraft==='true'?
+     x.disabled=x.dataset.requiresResume==='true'?(!state.parsed||!getResume()):
+      x.dataset.requiresDraft==='true'?
       !(state.cloudDraft&&state.cloudDraft.status==='draft'):
       x.dataset.onceOnly==='true'?!!state.cloudDraft:
       x.dataset.requiresParsed==='true'?!state.parsed:false;
     });
    }
   };
-  const makeParsed=()=>state.parsed?{...state.parsed,title:safeName(title.value)||state.parsed.title}:null;
+  const makeParsed=()=>state.parsed?{
+    ...state.parsed,title:safeName(title.value)||state.parsed.title,
+    author:safeName(authorInput.value)||state.parsed.author,
+    genre:safeGenres(genreInput.value),desc:safeSynopsis(descInput.value),
+    publicationState:completionInput.value==='Hoàn thành'?'Hoàn thành':'Đang ra',
+    chapters:state.parsed.chapters.filter(ch=>ch.kind!=='notice'||includeNotices.checked)
+   }:null;
+  includeNotices.onchange=()=>{
+    const selected=makeParsed();
+    if(selected)status.textContent='Sẽ nhập '+selected.chapters.length+
+      ' mục văn bản. Các trang thông báo là tùy chọn và bản EPUB gốc không bị sửa.';
+  };
   input.onchange=()=>run(async()=>{
    const file=input.files?.[0];state.file=file;state.parsed=null;state.cloudDraft=null;
    list.replaceChildren();status.textContent='Đang phân tích EPUB trên thiết bị…';
-   if(!validFile(file))throw Error('Tệp phải có đuôi .epub và dung lượng tối đa 15 MB');
+   if(!validFile(file))throw Error('Tệp phải có đuôi .epub và dung lượng tối đa 30 MB');
    const parsed=await parse(file);state.parsed=parsed;title.value=parsed.title;
-   status.textContent='Đã nhận '+parsed.chapters.length+' mục nội dung ('+parsed.totalChars.toLocaleString('vi-VN')+' ký tự).';
+   authorInput.value=parsed.author;genreInput.value=parsed.genre||'';descInput.value=parsed.desc||'';
+   completionInput.value='Đang ra';
+   includeNotices.checked=false;noticeLabel.style.display=parsed.noticeCount?'block':'none';
+   coverPreview.style.display=parsed.coverImage?'block':'none';
+   if(parsed.coverImage)coverPreview.src=parsed.coverImage;
+   else coverPreview.removeAttribute('src');
+   const selected=makeParsed();
+   status.textContent='Đã nhận '+parsed.chapters.length+' mục văn bản; dự kiến nhập '+
+     selected.chapters.length+' ('+parsed.totalChars.toLocaleString('vi-VN')+' ký tự).'+
+     (getResume()?' Có bản nhập Firebase từng gián đoạn; có thể bấm Tiếp tục sau khi kiểm tra tệp.':'');
+   info.textContent=(parsed.skippedMetadata?'Đã bỏ '+parsed.skippedMetadata+' trang bìa/thông tin tệp. ':'')+
+     (parsed.noticeCount?'Có '+parsed.noticeCount+' trang thông báo tùy chọn. ':'')+
+     (parsed.coverImage?'Ảnh bìa được thu nhỏ để lưu cùng truyện. ':
+       parsed.hasCover?'Có ảnh bìa nhưng chưa tạo được ảnh thu nhỏ; sách vẫn nhập được. ':'')+
+     'Ảnh minh họa trong chương chưa được chuyển vào nội dung. Chỉ bấm Xuất bản khi bạn có quyền phát hành.';
    for(const [i,ch] of parsed.chapters.entries()){
-    const item=el('div',(i+1)+'. '+ch.title+' — '+ch.content.length+' ký tự');
+    const item=el('div',(i+1)+'. '+ch.title+
+      (ch.kind==='notice'?' · trang thông báo':ch.kind==='intro'?' · văn án':'')+
+      ' — '+ch.content.length+' ký tự');
     item.className='dudu-epub-item';list.append(item);
    }
   });
@@ -244,14 +349,33 @@
    if(!root.confirm('Lưu '+parsed.chapters.length+' chương EPUB thành bản thảo riêng trên Firestore? Dữ liệu hiện có không bị thay thế.'))return;
    status.textContent='Đang lưu bản thảo Firebase; chưa công khai cho độc giả…';
    const stored=await production.importDraft(parsed,{
-    db:options.firestore(),auth:options.auth(),
+    db:options.firestore(),auth:options.auth(),onCreated:id=>setResume(id),
     onProgress:percent=>{status.textContent='Đang lưu chương trên Firebase: '+percent+'%'}
    });
-   state.cloudDraft=stored;publishBtn.disabled=false;
+   state.cloudDraft=stored;clearResume();publishBtn.disabled=false;
    status.textContent='✅ Đã lưu '+stored.chapterCount+' chương dưới dạng bản thảo Firebase. Chưa công khai. Bạn có thể xác nhận xuất bản.';
   }));
   saveCloud.hidden=!!options.sandbox;saveCloud.dataset.onceOnly='true';
   saveCloud.dataset.requiresParsed='true';
+  const resumeBtn=button('↻ Tiếp tục bản nhập Firebase dang dở',()=>run(async()=>{
+   if(options.sandbox||!options.canEdit?.())throw Error('Chỉ tác giả Firebase được tiếp tục bản nhập');
+   if(!production||!options.firestore?.()||!options.auth?.())throw Error('Firebase chưa sẵn sàng');
+   const id=getResume(),parsed=makeParsed();
+   if(!id||!parsed)throw Error('Chưa có bản nhập và EPUB gốc để đối chiếu');
+   if(state.cloudDraft)throw Error('Bản thảo hiện tại đã sẵn sàng');
+   if(!root.confirm('Tiếp tục kiểm tra bản thảo '+id+
+      ' bằng tệp EPUB đã chọn? Chỉ các chương chưa có sẽ được lưu; không ghi đè dữ liệu cũ.'))return;
+   status.textContent='Đang kiểm tra bản thảo dang dở và các chương chưa lưu…';
+   const stored=await production.importDraft(parsed,{
+    db:options.firestore(),auth:options.auth(),resumeBookId:id,
+    onCreated:resumed=>setResume(resumed),
+    onProgress:percent=>{status.textContent='Đang tiếp tục chương Firebase: '+percent+'%'}
+   });
+   state.cloudDraft=stored;clearResume();publishBtn.disabled=false;
+   status.textContent='✅ Đã khôi phục bản thảo riêng tư '+stored.chapterCount+' chương. Chưa công khai.';
+  }));
+  resumeBtn.hidden=!!options.sandbox;
+  resumeBtn.dataset.requiresResume='true';
   publishBtn=button('Xác nhận xuất bản cho độc giả',()=>run(async()=>{
    if(options.sandbox||!options.canEdit?.())throw Error('Chỉ tác giả thật được xuất bản');
    if(!state.cloudDraft)throw Error('Hãy lưu bản thảo đầy đủ lên Firebase trước');
@@ -268,15 +392,17 @@
   publishBtn.disabled=true;publishBtn.hidden=!!options.sandbox;publishBtn.dataset.requiresDraft='true';
   if(!options.sandbox){
    buttons.insertBefore(saveCloud,cloudBtn);
+   buttons.insertBefore(resumeBtn,cloudBtn);
    buttons.insertBefore(publishBtn,cloudBtn);
   }
   // Prevent uploading an EPUB before parsing succeeds (the old message
   // "Hãy chọn và kiểm tra EPUB trước" gave no useful explanation).
   for(const control of buttons.children){
-   if(control.dataset.requiresParsed==='true')control.disabled=true;
+   if(control.dataset.requiresParsed==='true'||control.dataset.requiresResume==='true')
+     control.disabled=true;
   }
   button('Đóng',()=>{modal.style.display='none'});
-  host.append(help,input,title);
+  host.append(help,input,fields,coverPreview,noticeLabel,info);
   if(options.sandbox)host.append(el('p','Nhập vào truyện:'),target);
   host.append(status,list,buttons);
   modal.style.display='flex';

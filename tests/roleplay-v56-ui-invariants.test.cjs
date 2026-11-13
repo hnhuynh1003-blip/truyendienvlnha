@@ -16,8 +16,9 @@ test('V56.5 production affinity comes from active role and not V55 shared unlock
 });
 
 test('V56.5 gift response is scoped by role and never indexed under null',()=>{
- const gift=html.split("if (document.getElementById('phone-app-chat').style.display === 'flex') {")[1]?.split('function npcClearAnimeVisual()')[0];
+ const gift=html.split("if (document.getElementById('phone-app-chat').style.display === 'flex'&&")[1]?.split('function npcClearAnimeVisual()')[0];
  assert.ok(gift);
+ assert.match(gift,/activeChatNovelId===giftStory/);
  const rolePos=gift.indexOf('const giftRole=v56CurrentRole(giftStory)');
  const guardPos=gift.indexOf('if(!giftRole||!giftChatKey)return;');
  const writePos=gift.indexOf('chatHistories[giftChatKey].push');

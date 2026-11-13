@@ -3,7 +3,7 @@
  'use strict';
  const engine=root.DuduQuestEngineV437;
  if(!engine)return;
- let tab='ALL';
+ let tab='DAILY';
  const tabs=[['ALL','Tất cả'],['DAILY','Ngày'],['WEEKLY','Tuần'],
   ['STORY','Truyện'],['NPC','NPC'],['EVENT','Sự kiện']];
  const icons={DAILY:'☀️',WEEKLY:'🗓️',STORY:'📖',MAIN:'📖',NPC:'💝',EVENT:'🎊'};
@@ -15,7 +15,8 @@
   if(copy!==undefined)el.textContent=String(copy);
   return el;
  };
- function render({host,quests=[],questState=null,signed=false,onClaim,readOnly=false}={}){
+ function render({host,quests=[],questState=null,signed=false,onClaim,readOnly=false,
+   personalMode=false}={}){
   if(!host)return false;
   host.replaceChildren();
   host.classList.add('dudu-v437-quest-root');
@@ -24,7 +25,7 @@
   if(!signed){
    const blank=$('div','dudu-v437-empty');
    blank.append($('strong','','🔒 Nhiệm vụ cá nhân'),
-    $('p','',readOnly?'Đăng nhập Firebase để xem tiến độ hiện tại.':'Đăng nhập tài khoản thử nghiệm để lưu tiến độ và nhận thưởng trong Sandbox.'));
+    $('p','',readOnly?'Đăng nhập để xem hành trình của bạn.':'Đăng nhập tài khoản thử để bắt đầu.'));
    host.append(blank);return true;
   }
   const rows=Array.isArray(quests)?quests:[];
@@ -34,8 +35,8 @@
   const summary=$('section','dudu-v437-summary');
   const top=$('div','dudu-v437-summary-top');
   const words=$('div','dudu-v437-summary-copy');
-  words.append($('small','','DUDU · NHIỆM VỤ 2.0'),
-   $('strong','','Một chút tiến bộ mỗi ngày'));
+  words.append($('small','','✦ NHẬT TRÌNH HÔM NAY'),
+   $('strong','','Nhiệm vụ ngày'));
   const completed=$('span','dudu-v437-counter',dailyDone+'/'+daily.length);
   completed.title='Nhiệm vụ ngày đã nhận thưởng';
   top.append(words,completed);
@@ -43,7 +44,7 @@
   fill.style.width=(daily.length?dailyDone/daily.length*100:0)+'%';
   track.append(fill);
   const note=$('p','dudu-v43-quest-status',
-   '✦ '+stats.ready+' nhiệm vụ có thể nhận · Tự làm mới theo ngày/tuần');
+   stats.ready+' phần thưởng chờ nhận · Nhiệm vụ cho Xu/EXP, thành tựu lưu ở Sổ Vinh Danh');
   summary.append(top,track,note);
   host.append(summary);
   const nav=$('nav','dudu-v437-tabs');
@@ -54,18 +55,16 @@
    const btn=$('button','dudu-v437-tab'+(tab===id?' is-active':''),name);
    btn.type='button';btn.setAttribute('aria-pressed',String(tab===id));
    btn.title=name+' · '+count+' nhiệm vụ';
-   btn.addEventListener('click',()=>{tab=id;render({host,quests,questState,signed,onClaim,readOnly});});
+   btn.addEventListener('click',()=>{tab=id;render({host,quests,questState,signed,onClaim,readOnly,personalMode});});
    nav.append(btn);
   }
   host.append(nav);
   const caption=$('p','dudu-v437-subtitle',
-   tab==='ALL'?'Hoàn thành hoạt động để mở phần thưởng':
-   tab==='WEEKLY'?'Nhiệm vụ tuần làm mới vào Thứ Hai':
-   tab==='EVENT'?'Sự kiện Hộp Mù/Vé Số miễn phí mỗi ngày':
-   tab==='STORY'?'Mốc mở chương và hành trình chính tuyến':
-   tab==='NPC'?'Kỷ niệm chỉ là tiến độ Sandbox; chưa phải kỷ vật máy chủ':
-   'Lượt ngày tự làm mới lúc sang ngày mới');
-  host.append(caption);
+   tab==='DAILY'?'Làm mới mỗi ngày':tab==='WEEKLY'?'Làm mới vào Thứ Hai':
+   tab==='ALL'?'Tất cả nhiệm vụ · Ưu tiên phần thưởng chờ nhận':
+   tab==='EVENT'?'Sự kiện thường kỳ · Không bao gồm kỷ vật Mùa 1':
+   tab==='STORY'?'Mốc đọc và sáng tác':tab==='NPC'?'Kết nối nhân vật':'');
+  if(caption.textContent)host.append(caption);
   const list=$('div','dudu-v437-cards');
   const visible=rows.filter(q=>tab==='ALL'||(tab==='STORY'?
    q?.type==='STORY'||q?.type==='MAIN':q?.type===tab));
@@ -75,7 +74,10 @@
   });
   for(const q of visible){
    if(!q||!q.id)continue;
-   const ready=!q.claimed&&Number(q.current)>=Number(q.target);
+   const canonical=engine.DEFINITIONS.find(x=>x.id===q.id)||
+    root.DuduEconomyCoreV43?.EXTRA_DAILY_QUESTS.find(x=>x.id===q.id)||q;
+   const locked=personalMode&&q.id==='q_main_write';
+   const ready=!locked&&!q.claimed&&Number(q.current)>=Number(q.target);
    const target=Math.max(1,Number(q.target)||1),current=Math.min(target,Math.max(0,Number(q.current)||0));
    const card=$('article','dudu-v437-card'+(ready?' is-ready':'')+(q.claimed?' is-claimed':''));
    card.dataset.questId=q.id;
@@ -83,14 +85,19 @@
    const header=$('div','dudu-v437-row');
    const icon=$('span','dudu-v437-icon',q.icon||icons[q.type]||'✦');
    const text=$('div','dudu-v437-copy');
-   const title=$('strong','',q.title||'Nhiệm vụ');
+   const title=$('strong','',canonical.title||'Nhiệm vụ');
    const type=$('small','',labels[q.type]||q.type||'Nhiệm vụ');
    text.append(type,title);
    header.append(icon,text);
    const status=$('span','dudu-v437-status',
-    q.claimed?'✓ Đã nhận':ready?'Sẵn sàng':current+'/'+target);
+    q.claimed?'✓ Đã nhận':locked?'Chưa mở':ready?'Sẵn sàng':current+'/'+target);
    header.append(status);
-   card.append(header,$('p','dudu-v437-desc',q.desc||'Thực hiện hoạt động để nhận thưởng.'));
+   const details=$('details','dudu-v437-details'),summaryRow=$('summary','dudu-v437-quest-summary');
+   summaryRow.title='Chạm để xem cách hoàn thành '+(canonical.title||'nhiệm vụ');
+   summaryRow.append(header);details.append(summaryRow,$('p','dudu-v437-desc',locked?
+    'Nhiệm vụ sáng tác chưa được xác thực trên tài khoản chính; tiến độ cũ vẫn được giữ.':
+    canonical.desc||'Thực hiện hoạt động để nhận thưởng.'));
+   card.append(details);
    const meter=$('div','dudu-v437-meter'),bar=$('span','');
    bar.style.width=(current/target*100)+'%';meter.append(bar);
    meter.setAttribute('role','progressbar');
@@ -121,7 +128,7 @@
   const s=engine.state(questState);
   const history=$('details','dudu-v437-history');
   history.append($('summary','', '🕘 Lịch sử nhận thưởng · '+s.history.length+' lần'));
-  if(!s.history.length)history.append($('p','','Chưa có lần nhận thưởng nào được ghi ở bản V43.7.'));
+  if(!s.history.length)history.append($('p','','Chưa có lần nhận thưởng nào.'));
   else for(const line of s.history.slice(-15).reverse()){
    const h=$('div','dudu-v437-history-line');
    h.append($('span','',line.day+' · '+line.title),
@@ -129,8 +136,9 @@
    history.append(h);
   }
   host.append(history,$('p','dudu-v437-disclaimer',readOnly?
-   'Tiến độ tham khảo từ hồ sơ hiện tại. Nhận Xu, EXP hoặc vật phẩm phải được máy chủ xác thực.':
-   'Chỉ là tiến độ và phần thưởng trên thiết bị Sandbox; không cấp kỷ vật thật hoặc quyền máy chủ.'));
+   'Phần thưởng của mục này chưa mở.':personalMode?
+   'Tiến độ và phần thưởng thuộc hành trình của bạn.':
+   'Trong phòng thử, phần thưởng chưa chuyển sang hành trình chính.'));
   return true;
  }
  root.DuduQuestUIV437=Object.freeze({render});

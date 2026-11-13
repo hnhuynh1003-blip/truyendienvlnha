@@ -1,0 +1,36 @@
+{
+  "score": 3,
+  "summary": "C3.1 hotfix: 73 isolated Firestore Emulator probes passed, including a reproduced and corrected denial of the new-EPUB-ID read used by the real importDraft() flow, successful import/publish/edit transactions, and denial of guest/reader preflight, while preserving owner-scoped drafts and revisions. The 145 local Node tests also passed. The owner published C3.0 but must still publish C3.1 in Console; no database data was modified by these tests.",
+  "findings": [
+    {
+      "check": "Business logic / paid-chapter confidentiality",
+      "severity": "major",
+      "issue": "The existing EPUB document layout makes every chapter readable by anyone while the parent book is published. Hiding a paid chapter in the browser does not enforce a purchase.",
+      "recommendation": "Design a private paid-content path, verified entitlements, and a server-issued purchase operation before enabling paid EPUB reading. Retain the existing publication behavior until the migration is ready."
+    },
+    {
+      "check": "Authority source / user profile economy",
+      "severity": "moderate",
+      "issue": "The legacy profiles_v2 currency and inventory remain owner-editable. Arcade scores are client-calculated and cannot safely constitute verified proof for direct currency conversion.",
+      "recommendation": "Keep the experimental arcade_receipts_v1 path entirely denied and the 10:1 conversion feature disabled. Accept existing owner-editable virtual wallet only for the owner's few private accounts. Keep economy_accounts_v52 client-write denied; introduce server-attested rewards before public competition or real-value trades."
+    },
+    {
+      "check": "Published metadata / mixed content",
+      "severity": "moderate",
+      "issue": "Each public EPUB metadata document includes ownerUid, importFingerprint, sourceName and other importer details. Firestore Rules cannot selectively redact fields from an allowed document read.",
+      "recommendation": "In a later content-schema migration, separate public catalog metadata from private author/import metadata. Avoid sensitive local filenames in sourceName."
+    },
+    {
+      "check": "Legacy profile schema / resource exhaustion",
+      "severity": "minor",
+      "issue": "Unknown fields already present in older owner-only profiles are tolerated to avoid breaking existing saves and resets; nested list/map elements are not fully validated.",
+      "recommendation": "After backing up and examining real profile field shapes, migrate to an exhaustive validated schema. No privileged decision may consume a profile field."
+    },
+    {
+      "check": "Live rollout status",
+      "severity": "minor",
+      "issue": "The CLI session has no authenticated access to the real Firebase project. Only the demo emulator was used; the candidate has not been deployed or checked against live documents.",
+      "recommendation": "Before a one-time console update, export production Rules/data, verify both EPUB document schemas and profile optional fields, review diff, then deploy only after trusted exchange and paid-chapter design is finalized."
+    }
+  ]
+}

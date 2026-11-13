@@ -1,0 +1,26 @@
+/* R1.1 dormant invitation panel; compact inside the existing Auth modal. */
+#auth-modal .dudu-invite-panel{
+ margin-top:10px;padding:10px;border:1px solid #bda96b9c;
+ border-radius:11px;background:#263049cc;display:flex;
+ flex-direction:column;gap:8px;text-align:left;color:#e9e5da;
+}
+#auth-modal .dudu-invite-panel[hidden],
+#auth-modal .dudu-invite-panel button[hidden]{display:none!important}
+#auth-modal .dudu-invite-panel label{font-size:12px;font-weight:600}
+#auth-modal .dudu-invite-row{display:flex;gap:6px;align-items:center;min-width:0}
+#auth-modal .dudu-invite-row input{
+ min-width:0;flex:1 1 auto;font-size:12px;letter-spacing:.03em;
+}
+#auth-modal .dudu-invite-row .btn{flex:0 0 auto;font-size:11px;padding:8px}
+#auth-modal .dudu-invite-panel>.btn{width:100%;font-size:12px}
+#auth-modal .dudu-invite-panel output{
+ flex:1;min-width:0;overflow-wrap:anywhere;user-select:all;
+ font-family:ui-monospace,monospace;font-weight:700;color:#f8da95;
+}
+#auth-modal .dudu-invite-panel small{font-size:10px;color:#bfc9df;line-height:1.5}
+@media(max-width:390px){
+ #auth-modal .dudu-invite-panel{padding:9px}
+ #auth-modal .dudu-invite-row{flex-wrap:wrap}
+ #auth-modal .dudu-invite-row input{flex-basis:100%;width:100%}
+ #auth-modal .dudu-invite-row .btn{margin-left:auto}
+}

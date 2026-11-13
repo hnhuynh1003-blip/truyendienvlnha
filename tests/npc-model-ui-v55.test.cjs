@@ -13,7 +13,7 @@ test('V55 shows compact model picker and server-only usage counter in Contacts',
  assert.match(html,/function refreshNpcQuotaV55\(\)/);
  assert.match(html,/DuduAI\.status\(\)/);
  assert.match(html,/if\(!IS_SANDBOX_MODE\)void refreshNpcQuotaV55\(\)/);
- assert.match(html,/src="js\/ai-proxy\.js\?v=56-11"/);
+ assert.match(html,/src="js\/ai-proxy\.js\?v=58-2-mobile-v70-1"/);
 });
 
 test('V55 stores selected model per Firebase UID and labels each AI response',()=>{
@@ -21,8 +21,8 @@ test('V55 stores selected model per Firebase UID and labels each AI response',()
  assert.match(client,/MODELS\.some\(x=>x\.id===id\)/);
  assert.match(client,/purpose==='chat'\?\{model:resolved\}:\{\}/);
  assert.match(html,/chatHistories\[requestChatKey\]\.push\(\{role:'model',text:res\.text,/);
- assert.match(html,/meta\.textContent='✦ '\+msg\.model/);
- assert.match(html,/res\.error\+' · Tin nhắn đã lưu trên thiết bị\.'/);
+ assert.match(html,/meta\.textContent=source\?/);
+ assert.match(html,/showNpcConnectionStatus\('Tạm thời chưa thể nhận hồi âm/);
  assert.doesNotMatch(client,/GEMINI_API_KEY\s*=/);
 });
 
@@ -31,4 +31,26 @@ test('V55 personal Worker config keeps non-AI production features closed',()=>{
  for(const key of ['COLLECTIBLES_ENABLED','GIFTS_ENABLED','PILOT_ENABLED','COMMENTS_ENABLED','GIFT_SETTLEMENT_ENABLED'])
    assert.match(config,new RegExp('^'+key+' = "false"$','m'));
  assert.match(config,/name = "dudu-ai-staging"/);
+});
+
+test('V58 hides retired Gemini model options and migrates saved choices',()=>{
+ assert.match(client,/localStorage\.setItem\(key,AUTO\)/);
+ const picker=client.slice(0,client.indexOf('const WORKERS_OPTIONS='));
+ for(const id of ['gemini-2.5-flash-lite','gemini-2.5-flash','gemini-3-flash-preview'])
+  assert.equal(picker.includes("['"+id+"',"),false,'old model in UI: '+id);
+});
+
+test('V58 authenticated AU/reader Auto prefers approved Free Workers AI',()=>{
+ const proxy=require('fs').readFileSync(require('path').resolve(__dirname,'../js/ai-proxy.js'),'utf8');
+ assert.match(proxy,/const preferredFree=purpose==='chat'/);
+ assert.match(proxy,/MODELS\.some\(x=>x\.id==='@cf\/zai-org\/glm-4\.7-flash'\)/);
+ assert.match(proxy,/preferredFree\|\|window\.DuduNpcAutoModelV5611/);
+ assert.match(proxy,/updateModelsFromStatus\(status\)/);
+});
+
+
+test('V58.1 failed free provider is shown instead of the original Gemini model',()=>{
+  assert.match(client,/MODELS\.some\(x=>x\.id===body\?\.error\?\.model\)/);
+  assert.match(client,/body\.error\.model/);
+  assert.match(client,/body\.error\.model/);
 });

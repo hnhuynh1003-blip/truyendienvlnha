@@ -211,3 +211,10 @@ body.dudu-phone-v11 #cyber-phone #inventory-container .dudu-v42-slot-quantity+ .
   min-width:23px;font-size:10px;padding:2px 4px;
  }
 }
+
+/* F4.3 image viewer: independent of phone stacking contexts. */
+.f43-art-viewer{position:fixed;inset:0;z-index:2147483000;background:rgba(3,5,12,.96);display:grid;place-items:center;overscroll-behavior:contain}.f43-art-stage{position:absolute;inset:0;overflow:hidden;touch-action:none;cursor:grab}.f43-art-image{width:100%;height:100%;object-fit:contain;user-select:none;pointer-events:none;transform-origin:center;will-change:transform}.f43-art-close{position:absolute;right:max(14px,env(safe-area-inset-right));top:max(14px,env(safe-area-inset-top));width:48px;height:48px;border-radius:50%;border:1px solid #ffffff55;color:white;background:#101623dd;font-size:30px;cursor:pointer}.dudu-v42-large-art[role=button]{cursor:zoom-in}
+
+.f43-quantity-sale{display:flex;flex-wrap:wrap;gap:8px;align-items:center;width:100%}.f43-quantity-sale label{display:flex;gap:6px;align-items:center}.f43-quantity-sale input{width:70px;min-height:44px}.f43-quantity-sale small{width:100%}.f43-copy-select{display:flex;flex-wrap:wrap;gap:8px;align-items:center;width:100%}.f43-copy-select select{min-height:44px;max-width:100%}
+
+.f43-collection-quests{margin:12px 0;width:100%;min-width:0;color:#e6def3}.f43-collection-quests summary{padding:12px;min-height:44px;cursor:pointer}.f43-quest-card{padding:12px;margin:8px 0;background:#192035;border:1px solid #ffffff1b;border-radius:14px;display:grid;gap:8px;min-width:0;overflow-wrap:anywhere}.f43-quest-card progress{width:100%;height:6px;accent-color:#b89ce8}.f43-quest-card small{color:#bdc4d4}.f43-quest-card button{min-height:44px;white-space:normal}.f43-quantity-sale button{min-height:44px}

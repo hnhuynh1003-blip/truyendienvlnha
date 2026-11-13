@@ -9,6 +9,16 @@
   let generation = 0;
   let defaultProfile = null;
   let loginPending = false;
+  let lastInviteCode = '';
+  // AUTH-A1 ships inert until the matching Firestore Rules and existing UID
+  // approvals have been reviewed and explicitly published by the owner.
+  const approvalEnabled = () => !IS_SANDBOX_MODE &&
+    window.DUDU_ACCOUNT_APPROVAL_V1_READY === true;
+  const inviteEnabled = () => approvalEnabled() &&
+    window.DUDU_ACCOUNT_INVITES_R11_READY === true;
+  function syncEpubAccess(approved) {
+    if (approvalEnabled()) window.duduSyncEpubAccessR11?.(approved);
+  }
 
   function status(message) {
     const el = document.getElementById('auth-status-message');
@@ -60,14 +70,42 @@
   function showControls() {
     document.getElementById('auth-sandbox-controls').style.display = IS_SANDBOX_MODE ? 'block' : 'none';
     document.getElementById('auth-secure-controls').style.display = IS_SANDBOX_MODE ? 'none' : 'block';
+    const policy = document.getElementById('auth-approval-policy-a1');
+    if (policy) {
+      policy.hidden = !approvalEnabled();
+      if (approvalEnabled()) policy.textContent = inviteEnabled()
+        ? 'Tạo tài khoản Firebase trước, sau đó nhập mã mời do chủ sở hữu cấp để mở EPUB và ứng dụng cá nhân.'
+        : 'Đăng ký tạo danh tính Firebase trước. Chỉ sau khi chủ sở hữu duyệt mới mở hồ sơ, Xu và trò chơi.';
+    }
   }
   function resetSession() {
+    window.DuduProfileSaveC23?.reset?.();
     ready = false;
     admin = false;
     currentUsername = '';
     userProfile = JSON.parse(defaultProfile);
     chatHistories = {};
     activeChatNovelId = null;
+    lastInviteCode = '';
+    for (const id of ['auth-invite-redeem-r11','auth-invite-owner-r11']) {
+      const panel = document.getElementById(id);
+      if (panel) panel.hidden = true;
+    }
+    const code = document.getElementById('auth-invite-code-r11');
+    if (code) code.value = '';
+    const output = document.getElementById('auth-invite-created-r11');
+    if (output) output.textContent = '';
+    const copy = document.getElementById('auth-invite-copy-r11');
+    if (copy) copy.hidden = true;
+    syncEpubAccess(false);
+    const pending = document.getElementById('auth-approval-pending-a1');
+    if (pending) pending.hidden = true;
+    const ownerPanel = document.getElementById('auth-approval-owner-a1');
+    if (ownerPanel) {
+      ownerPanel.hidden = true;
+      if (ownerPanel.dataset) delete ownerPanel.dataset.approvalMounted;
+      ownerPanel.replaceChildren?.();
+    }
   }
   function showRetry(show) {
     for (const id of ['auth-retry-profile-btn','auth-diagnose-firestore-btn']) {
@@ -126,6 +164,8 @@
   }
   function readableProfileError(error) {
     if (error?.code === 'permission-denied') {
+      if(error?.stage==='Firestore profile create')
+        return 'Firestore từ chối tạo hồ sơ riêng cho tài khoản này. Cần kiểm tra Rules profiles_v2/{UID} đang Published.';
       return 'Firestore từ chối đọc profiles_v2 của tài khoản. Cần kiểm tra Rules đang triển khai; không sửa quyền hay xóa dữ liệu.';
     }
     if (error?.code === 'profile/timeout') {
@@ -181,6 +221,25 @@
       }
     }
   }
+  function newProfileData(account,profile){
+    const obj=value=>value&&typeof value==='object'&&!Array.isArray(value)?value:{};
+    const wallet=Number(profile.currency);
+    return {
+      username:account.uid,
+      name:String(profile.name||account.displayName||account.email||'Độc giả').slice(0,140),
+      title:String(profile.title||'Thực Thể Ký Tự').slice(0,140),
+      level:Math.max(1,Math.floor(Number(profile.level)||1)),
+      exp:Math.max(0,Math.floor(Number(profile.exp)||0)),
+      currency:Number.isSafeInteger(wallet)&&wallet>=0?wallet:50,
+      inventory:Array.isArray(profile.inventory)?profile.inventory:[],
+      quests:Array.isArray(profile.quests)?profile.quests:[],
+      lootedChapters:obj(profile.lootedChapters),
+      readRewards:obj(profile.readRewards),
+      dailyReadLog:obj(profile.dailyReadLog),
+      collectedCharacters:obj(profile.collectedCharacters),
+      storyStates:obj(profile.storyStates)
+    };
+  }
   function refreshSessionUI() {
     // A phone/widget render error must never invalidate Firebase authentication.
     for (const fn of [applyUserRole, renderHome, updatePhoneUI, updateActiveModelInfo]) {
@@ -218,13 +277,48 @@
     refreshSessionUI();
 
     try {
-      const [token, snapshot] = await Promise.all([
-        withTimeout(account.getIdTokenResult(), 'Firebase token'),
-        readProfile(account)
-      ]);
+      let token, snapshot;
+      if (approvalEnabled()) {
+        token = await withTimeout(account.getIdTokenResult(), 'Firebase token');
+        if (ticket !== generation || client.currentUser?.uid !== account.uid) return;
+        const helper = window.DuduAccountApprovalV1;
+        if (!helper?.check) throw Error('Thiếu bộ kiểm tra duyệt tài khoản');
+        // No profile read or profile bootstrap until server-backed approval.
+        const decision = await withTimeout(helper.check({db:firebase.firestore(),
+          auth:client,uid:account.uid,claims:token.claims,
+          inviteOnly:inviteEnabled()}), 'Duyệt tài khoản');
+        if (ticket !== generation || client.currentUser?.uid !== account.uid) return;
+        if (!decision.approved) {
+          const descriptions = {
+            pending:'Yêu cầu đã gửi. Đang chờ chủ sở hữu DUDU duyệt.',
+            rejected:'Yêu cầu chưa được chấp thuận. Hãy liên hệ chủ sở hữu.',
+            revoked:'Quyền chơi đã được chủ sở hữu thu hồi.',
+            'awaiting-access':'Chưa có quyền vào game. Hãy liên hệ chủ sở hữu.',
+            'invite-required':'Nhập mã mời của chủ sở hữu để mở EPUB và các ứng dụng cá nhân.'
+          };
+          profileError = descriptions[decision.status] || descriptions.pending;
+          if (btn) btn.textContent = '👤 ' + label + ' · Chờ duyệt';
+          if (prof) prof.textContent = 'Firebase UID: ' + account.uid.slice(0,8) + '… (chưa cấp quyền chơi)';
+          const pendingPanel=document.getElementById('auth-approval-pending-a1');
+          if (pendingPanel) {pendingPanel.hidden=false;pendingPanel.textContent=profileError;}
+          const invitePanel=document.getElementById('auth-invite-redeem-r11');
+          if (invitePanel) invitePanel.hidden=!(inviteEnabled() && decision.status==='invite-required');
+          showRetry(true);
+          refreshSessionUI();
+          openAuthModal();
+          status(profileError);
+          return;
+        }
+        snapshot = await readProfile(account);
+      } else {
+        [token, snapshot] = await Promise.all([
+          withTimeout(account.getIdTokenResult(), 'Firebase token'),
+          readProfile(account)
+        ]);
+      }
       if (ticket !== generation || client.currentUser?.uid !== account.uid) return;
 
-      const cloudData = snapshot.exists ? snapshot.data() : null;
+      let cloudData = snapshot.exists ? snapshot.data() : null;
       if (cloudData) userProfile = { ...JSON.parse(defaultProfile), ...cloudData };
       else {
         // V56.5: saveCurrentAccount() has always written profile_<UID>.
@@ -248,6 +342,36 @@
       userProfile.role = admin ? 'admin' : 'reader'; // Never trust a cached profile for permissions.
       userProfile.storyStates ||= {};
       userProfile.collectedCharacters ||= {};
+      if (!cloudData) {
+        // Authentication alone is not a usable economy account: personal
+        // transactions require profiles_v2/{UID} to exist on the server.
+        // The transaction only creates when still absent; another tab's
+        // existing wallet/inventory always wins over a device backup.
+        const saver=window.DuduProfileSaveC23;
+        if(typeof saver?.ensureNewProfile!=='function')
+          throw Error('Chưa tải được bộ khởi tạo hồ sơ Firebase');
+        let initialized;
+        try {
+          initialized=await withTimeout(saver.ensureNewProfile({
+            uid:account.uid,db:firebase.firestore(),auth:client,
+            data:newProfileData(account,userProfile),
+            isCurrent:uid=>ticket===generation&&client.currentUser?.uid===uid
+          }), 'Firestore profile create');
+        } catch(error) {
+          error.stage='Firestore profile create';
+          throw error;
+        }
+        if (ticket !== generation || client.currentUser?.uid !== account.uid) return;
+        cloudData=initialized.data;
+        if (!initialized.created) {
+          userProfile={...JSON.parse(defaultProfile),...cloudData};
+          userProfile.username=account.uid;
+          userProfile.name=cloudData.name||account.displayName||account.email||'Độc giả';
+          userProfile.role=admin?'admin':'reader';
+          userProfile.storyStates ||= {};
+          userProfile.collectedCharacters ||= {};
+        }
+      }
       loadScopedInteractionState();
       // V56.8: restore per-UID reader position and built-in phone appearance
       // only after the authenticated profile is loaded. Legacy local bookmarks
@@ -255,12 +379,24 @@
       const migratedPersonal = typeof window.hydratePersonalSyncV568==='function'
         ? window.hydratePersonalSyncV568() : false;
       ready = true;
+      // The server document is the comparison baseline. Local defaults or
+      // device backups are never authority to overwrite a newer profile.
+      window.DuduProfileSaveC23?.begin?.(account.uid, cloudData);
       profileError = '';
       if (btn) btn.textContent = '👤 ' + label;
       if (prof) prof.textContent = 'Firebase UID: ' + account.uid.slice(0, 8) + '…';
       showRetry(false);
       closeModals();
+      syncEpubAccess(true);
       refreshSessionUI();
+      if (approvalEnabled() && admin) {
+        window.DuduAccountApprovalV1?.mountOwnerPanel?.({
+          db:firebase.firestore(),auth:client,
+          host:document.getElementById('auth-approval-owner-a1')
+        });
+        const inviteOwner=document.getElementById('auth-invite-owner-r11');
+        if(inviteOwner)inviteOwner.hidden=!inviteEnabled();
+      }
       if (migratedPersonal && typeof window.saveCurrentAccount==='function') {
         // Legacy profile backup remains available locally; remote preference
         // writes happen only via narrow authenticated field-mask requests.
@@ -363,7 +499,11 @@
       else await client.signInWithEmailAndPassword(address, password);
       // onAuthStateChanged loads the profile; completion of signIn alone
       // does not prove that the profile is synced with Firestore.
-      if (!ready && !profileError) status('Đã xác thực. Đang tải hồ sơ người chơi…');
+      if (!ready && !profileError) status(register && approvalEnabled()
+        ? (inviteEnabled()
+          ? 'Đã tạo đăng nhập Firebase. Hãy nhập mã mời để kích hoạt DUDU.'
+          : 'Đã tạo đăng nhập Firebase. Đang gửi yêu cầu chờ chủ sở hữu duyệt…')
+        : 'Đã xác thực. Đang tải hồ sơ người chơi…');
       passwordInput.value = '';
     } catch (error) {
       fail(error);
@@ -374,6 +514,44 @@
   async function signout() {
     if (!client) return;
     try { await client.signOut(); } catch (error) { fail(error); }
+  }
+  async function createInvite() {
+    if(!inviteEnabled()||!ready||!admin||!client?.currentUser)return;
+    const button=document.getElementById('auth-invite-create-r11');
+    if(button)button.disabled=true;
+    try {
+      const result=await window.DuduAccountInviteR11.create({db:firebase.firestore(),auth:client});
+      lastInviteCode=result.code;
+      const output=document.getElementById('auth-invite-created-r11');
+      if(output)output.textContent=result.code;
+      const copy=document.getElementById('auth-invite-copy-r11');
+      if(copy)copy.hidden=false;
+      status('Mã mời đã tạo. Sao chép và gửi riêng cho người bạn muốn cấp quyền.');
+    } catch(error) {
+      status('Chưa tạo được mã: '+(error?.code||'Kiểm tra Rules R1.1 và quyền admin.'));
+    } finally {if(button)button.disabled=false;}
+  }
+  async function copyInvite() {
+    if(!lastInviteCode||!inviteEnabled()||!admin)return;
+    try {await navigator.clipboard.writeText(lastInviteCode);status('Đã sao chép mã mời.');}
+    catch(_){status('Hãy chọn và sao chép mã mời đang hiển thị.');}
+  }
+  async function redeemInvite() {
+    if(!inviteEnabled()||ready||!client?.currentUser)return;
+    const input=document.getElementById('auth-invite-code-r11');
+    const button=document.getElementById('auth-invite-redeem-btn-r11');
+    if(button)button.disabled=true;
+    try {
+      await window.DuduAccountInviteR11.redeem({db:firebase.firestore(),auth:client,
+        code:input?.value});
+      if(input)input.value='';
+      status('Mã mời hợp lệ. Đang tải hồ sơ DUDU của bạn…');
+      await applySession(client.currentUser);
+    } catch(error) {
+      status(error?.code==='invalid-code-format'
+        ? 'Mã mời chưa đúng định dạng DUDU-XXXXXXXX-XXXXXXXX.'
+        : 'Mã không tồn tại, đã dùng, hết hạn hoặc tài khoản đã có quyền. Hãy kiểm tra với chủ sở hữu.');
+    } finally {if(button)button.disabled=false;}
   }
   function showStatus() {
     showControls();
@@ -390,6 +568,7 @@
   }
   window.DuduAuth = {
     init, google, email, signout, showStatus, retry, diagnoseFirestore,
+    createInvite, copyInvite, redeemInvite,
     isReady: () => ready && !!client?.currentUser,
     isAdmin: canAuthor,
     uid: () => client?.currentUser?.uid || null

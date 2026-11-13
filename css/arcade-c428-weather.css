@@ -1,0 +1,110 @@
+/* C4.28 — fictional weather cycling across the painted moon garden.
+   Atmospheric layers are motion-only; gameplay/weather selection lives in core. */
+#personal-arcade-v1 .garden-fish-portrait.fish-fogveil,
+#personal-arcade-v1 .garden-fish-species-fogveil{
+ background-image:url('../assets/arcade-c428/fish-fogveil.webp');
+ background-size:contain;background-position:center;
+}
+#personal-arcade-v1 .garden-fish-portrait.fish-rainpetal,
+#personal-arcade-v1 .garden-fish-species-rainpetal{
+ background-image:url('../assets/arcade-c428/fish-rainpetal.webp');
+ background-size:contain;background-position:center;
+}
+#personal-arcade-v1 .garden-fish-portrait.fish-nightlamp,
+#personal-arcade-v1 .garden-fish-species-nightlamp{
+ background-image:url('../assets/arcade-c428/fish-nightlamp.webp');
+ background-size:contain;background-position:center;
+}
+#personal-arcade-v1 .garden-fish-entry.fish-fogveil.is-discovered{
+ border-color:#c4d6f3;background:radial-gradient(ellipse at 10% 24%,#c9c8ef53,transparent 66%),#243944;
+}
+#personal-arcade-v1 .garden-fish-entry.fish-rainpetal.is-discovered{
+ border-color:#84e6d8;background:radial-gradient(ellipse at 10% 24%,#64ddd459,transparent 66%),#1b454a;
+}
+#personal-arcade-v1 .garden-fish-entry.fish-nightlamp.is-discovered{
+ border-color:#f2c884;background:radial-gradient(ellipse at 10% 24%,#dcae8666,transparent 66%),#292b49;
+ box-shadow:inset 0 0 13px #ffd38a3b;
+}
+#personal-arcade-v1 .garden-stage .garden-fish-species-fogveil,
+#personal-arcade-v1 .garden-stage .garden-fish-species-rainpetal,
+#personal-arcade-v1 .garden-stage .garden-fish-species-nightlamp{
+ width:60px;height:50px;filter:drop-shadow(0 0 7px #d3fff7b4);
+}
+#personal-arcade-v1 .garden-stage .garden-fish-species-nightlamp{
+ filter:drop-shadow(0 0 8px #ffe3a4b8);
+}
+#personal-arcade-v1 .garden-weather-badge{
+ position:absolute;left:50%;top:7px;transform:translateX(-50%);z-index:12;
+ display:flex;align-items:center;gap:5px;justify-content:center;
+ width:max-content;max-width:calc(100% - 22px);min-height:25px;
+ padding:3px 9px 3px 6px;border:1px solid #d7e4d5b8;border-radius:5px 13px 5px 13px;
+ background:#203d49e5;box-shadow:inset 0 1px #f8fff333,0 3px 8px #0b2934bb;
+ pointer-events:none;backdrop-filter:blur(3px);
+}
+#personal-arcade-v1 .garden-weather-badge span{color:#f5e5ad;font:900 14px/1 system-ui,sans-serif}
+#personal-arcade-v1 .garden-weather-badge b{
+ font:800 9px/1.2 ui-monospace,monospace;letter-spacing:.03em;color:#f4fae7;
+ white-space:nowrap;
+}
+#personal-arcade-v1 .garden-weather-badge em{
+ font:700 9px/1 ui-monospace,monospace;color:#c7e8df;font-style:normal;
+ border-left:1px solid #a8bebd7a;padding-left:6px;white-space:nowrap;
+}
+#personal-arcade-v1 .garden-weather-whisper{
+ margin:-1px 0 5px;color:#c4e3db;font:700 9px/1.3 system-ui,sans-serif;
+ text-align:center;white-space:normal;
+}
+#personal-arcade-v1 .garden-weather-effects{
+ position:absolute;inset:0;z-index:3;overflow:hidden;pointer-events:none;
+}
+#personal-arcade-v1 .garden-weather-effects::before,
+#personal-arcade-v1 .garden-weather-effects::after{
+ content:'';position:absolute;inset:0;pointer-events:none;
+}
+/* Mist thickens around the shore instead of hiding taps and plant sprites. */
+#personal-arcade-v1 .garden-weather-mist .garden-mist{opacity:.72;filter:blur(18px)}
+#personal-arcade-v1 .garden-weather-mist .garden-weather-effects::before{
+ opacity:.53;background:radial-gradient(ellipse at 15% 65%,#d9f9ebbf,transparent 48%),
+ radial-gradient(ellipse at 85% 78%,#c7f7f3ba,transparent 48%);
+ animation:c428-weather-breathe 9s ease-in-out infinite alternate;
+}
+#personal-arcade-v1 .garden-weather-mist .garden-pond-shine{filter:brightness(1.15) saturate(.7)}
+/* Rain moves continuously over the real illustrated garden and pond. */
+#personal-arcade-v1 .garden-weather-rain .garden-weather-effects::after{
+ inset:-60px -45px;opacity:.57;
+ background:repeating-linear-gradient(112deg,transparent 0 17px,#c9fff592 17.5px 18.2px,transparent 19px 35px);
+ background-size:68px 90px;
+ animation:c428-rainfall .62s linear infinite;
+}
+#personal-arcade-v1 .garden-weather-rain .garden-pond{
+ box-shadow:inset 0 0 23px #b6ffffad,0 0 0 4px #a1c9d381,0 0 20px #c1edf1a0;
+}
+#personal-arcade-v1 .garden-weather-rain .garden-pond-shine{
+ animation-duration:1.8s;filter:contrast(1.12);
+}
+/* Clear skies reveal subdued starlight; night further deepens the scene. */
+#personal-arcade-v1 .garden-weather-clear .garden-weather-effects::before{
+ opacity:.76;background:radial-gradient(circle at 18% 22%,#fffddf 0 1px,transparent 3px),
+ radial-gradient(circle at 67% 12%,#fff7d6 0 1px,transparent 3px),
+ radial-gradient(circle at 83% 56%,#c4fffc 0 1px,transparent 3px);
+ animation:c428-star-twinkle 4s ease-in-out infinite alternate;
+}
+#personal-arcade-v1 .garden-weather-night .garden-weather-effects::before{
+ box-shadow:inset 0 0 38px 7px #0917368f;
+}
+#personal-arcade-v1 .garden-special-bite .garden-pond{
+ border-color:#d1c1f4;box-shadow:inset 0 0 23px #9be3fa,0 0 26px #ebc4f3c9;
+}
+@keyframes c428-rainfall{to{transform:translate(-37px,60px)}}
+@keyframes c428-weather-breathe{to{opacity:.8;transform:translate(25px,-13px) scale(1.09)}}
+@keyframes c428-star-twinkle{to{opacity:.36;filter:brightness(1.2)}}
+@media(max-width:355px){
+ #personal-arcade-v1 .garden-weather-badge{padding:3px 5px;gap:3px}
+ #personal-arcade-v1 .garden-weather-badge b,
+ #personal-arcade-v1 .garden-weather-badge em{font-size:8px}
+ #personal-arcade-v1 .garden-weather-whisper{font-size:8px}
+}
+@media(prefers-reduced-motion:reduce){
+ #personal-arcade-v1 .garden-weather-effects::before,
+ #personal-arcade-v1 .garden-weather-effects::after{animation:none!important}
+}

@@ -59,14 +59,14 @@ test('V28 UI only allows packaged portraits after asset has loaded, with auth ga
  assert.match(pick,/document\.getElementById\('npc-r7-portrait'\)\.value=npc\.portraitPath/);
  assert.doesNotMatch(pick,/saveCurrentAccount\(|saveDB\(|\.addDoc\(|\.setDoc\(/);
 });
-test('V28 world wallpaper controls never write Firestore or alter story/character metadata',()=>{
+test('V38 retires story wallpaper display without deleting V28 preference APIs',()=>{
  assert.match(html,/data-wallpaper-mode="personal"/);
  assert.match(html,/data-wallpaper-mode="world"/);
  assert.match(html,/function setPhoneWallpaperModeV28\(mode\)/);
  assert.match(html,/function activeStoryForWallpaperV28\(\)/);
  assert.match(html,/DuduMultiverseArtV28\.writeMode\(localStorage/);
- assert.match(html,/art\.readMode\(localStorage/);
- assert.match(html,/resolved\.worldId/);
+ assert.match(html,/document\.body\.dataset\.duduPhoneWallpaper=chosen/);
+ assert.match(html,/V38: story-based automatic wallpaper is retired/);
  assert.doesNotMatch(art.toString(),/saveCurrentAccount\(|firebase|fetch\(/);
  assert.match(css,/data-dudu-phone-wallpaper="world-xianxia"/);
  assert.match(css,/data-dudu-phone-wallpaper="world-gothic"/);

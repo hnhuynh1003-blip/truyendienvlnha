@@ -36,3 +36,7 @@ Chỉ model trong allowlist này được chấp nhận. Tất cả model chia s
 - Cloudflare Workers có giới hạn sử dụng riêng, kể cả với 120 lượt Gemini.
 - Các mô hình Pro, hình ảnh, audio/live và mô hình không nằm trong allowlist **không có trong NPC chat**.
 - `wrangler.toml` cơ sở vẫn `AI_ENABLED=false` để rollback. Tránh tự động deploy khi push main.
+
+## V57.2 (19/10/2026): Ngưng model dưới Gemini 3.1
+
+V55 ở trên được giữ lại làm tài liệu lịch sử. **Danh sách đang áp dụng từ V57.2** chỉ gồm `gemini-3.1-flash-lite`, `gemini-3.5-flash-lite`, `gemini-3.6-flash` và `gemini-3.8-flash`. Website không còn liệt kê Gemini 2.5 và Gemini 3 Flash Preview; Worker từ chối các model cũ tại lớp xác thực trước khi đặt lượt quota. Các lựa chọn cũ lưu trên thiết bị sẽ tự quay về chế độ Tự động mà không xóa chat hoặc hồ sơ nhập vai. Cần deploy Worker thủ công sau khi CI đạt; GitHub Pages deploy không đủ để thay allowlist Worker.

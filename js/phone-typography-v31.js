@@ -15,7 +15,15 @@
     Object.freeze({id:'nunito',label:'Nunito',family:'"Nunito", "Segoe UI", sans-serif',
       url:'https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap'}),
     Object.freeze({id:'serif',label:'Noto Serif',family:'"Noto Serif", Georgia, serif',
-      url:'https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;500;600;700&display=swap'})
+      url:'https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;500;600;700&display=swap'}),
+    Object.freeze({id:'outfit',label:'Outfit',family:'"Outfit", "Segoe UI", sans-serif',
+      url:'https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap'}),
+    Object.freeze({id:'cormorant',label:'Cormorant',family:'"Cormorant Garamond", Georgia, serif',
+      url:'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&display=swap'}),
+    Object.freeze({id:'prata',label:'Prata',family:'"Prata", Georgia, serif',
+      url:'https://fonts.googleapis.com/css2?family=Prata&display=swap'}),
+    Object.freeze({id:'marcellus',label:'Marcellus',family:'"Marcellus", Georgia, serif',
+      url:'https://fonts.googleapis.com/css2?family=Marcellus&display=swap'})
   ]);
   const SIZES=Object.freeze(['small','normal','large']);
   const PREFIX='dudu-sandbox:phone-type:v31:';

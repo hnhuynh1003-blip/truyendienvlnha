@@ -50,7 +50,7 @@ test('V43: story recommendations use supplied library names only, no invented re
  assert.match(reply,/Một Giấc Mơ/);
  assert.match(reply,/Tàn Ảnh/);
  assert.doesNotMatch(reply,/vừa ra mắt|mới cập nhật/i);
- assert.match(rules.reply('Nhặt đồ kiểu gì'),/2 phút/);
+ assert.match(rules.reply('Nhặt đồ kiểu gì'),/15 phút/);
 });
 test('V43: UI is sandbox-only and does not claim server validated keepsakes',()=>{
  const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
@@ -61,7 +61,10 @@ test('V43: UI is sandbox-only and does not claim server validated keepsakes',()=
  assert.match(inbox,/dudu-v43-system-contact/);
  assert.match(inbox,/window\.DuduCompanionV43\.open\(\)/);
  assert.match(ui,/IS_SANDBOX_MODE/);
- assert.match(ui,/DUDU · Người bạn đầu tiên/);
+ assert.match(ui,/Bạn đồng hành/);
+ assert.doesNotMatch(ui,/dudu-v68-agent-select|DuduAgentV68/);
+ assert.match(html,/dudu-system-app-v69\.js/);
+ assert.match(html,/phone-app-core-console/);
  assert.match(ui,/Xu thử nghiệm/);
  assert.match(ui,/chưa phải kỷ vật Bảo Tàng/);
  assert.doesNotMatch(ui,/db\.collection\(|DuduCollectiblesClient\.grant|fetch\(/);

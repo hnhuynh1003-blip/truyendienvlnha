@@ -1,0 +1,51 @@
+/* C4.43B — four useful flower beds, one unobstructed painted lake.
+ * The crop artwork is part of the garden, not a second wall over the pond. */
+#personal-arcade-v1 .garden-stage .garden-plot-area{
+ top:65px;left:4%;right:4%;z-index:6;
+ grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;
+ align-items:start;
+}
+#personal-arcade-v1 .garden-stage:not(.garden-expanded) .garden-plot-area{
+ top:40px;left:13%;right:13%;
+ grid-template-columns:repeat(2,minmax(0,100px));
+ justify-content:space-between;
+}
+#personal-arcade-v1 .garden-stage.garden-expanded .garden-plot-area{
+ top:65px;gap:6px;
+}
+#personal-arcade-v1 .garden-stage .garden-plot{
+ height:120px!important;filter:drop-shadow(0 3px 4px #061d2799);
+}
+#personal-arcade-v1 .garden-stage .garden-plot .garden-crop-sprite{
+ width:min(86%,92px);max-width:92px;bottom:50px;
+}
+#personal-arcade-v1 .garden-stage .garden-plot-label{
+ bottom:0;left:0;right:0;gap:3px;z-index:8;
+}
+#personal-arcade-v1 .garden-stage .garden-plot-label b{
+ width:100%;font-size:9px;line-height:1.2;letter-spacing:0;
+ color:#fff4db;text-shadow:0 2px 5px #071720,0 0 7px #071720;
+}
+#personal-arcade-v1 .garden-stage .garden-plot-label em{
+ width:100%;min-height:32px;box-sizing:border-box;
+ padding:5px 4px;border-radius:999px;
+ font-size:11px;background:#163e41e8;border:1px solid #c7dcb0;
+ box-shadow:0 3px 7px #08182690;
+}
+#personal-arcade-v1 .garden-stage .garden-plot.growing:not(.mature) .garden-plot-label small{
+ font-size:9px;line-height:1.2;max-width:100%;
+}
+#personal-arcade-v1 .garden-stage .garden-plot.empty .garden-soil{
+ bottom:47px;height:22px;left:9%;width:82%;
+}
+@media(max-width:360px){
+ #personal-arcade-v1 .garden-stage.garden-expanded .garden-plot-area{
+  top:62px;left:3%;right:3%;gap:4px;
+ }
+ #personal-arcade-v1 .garden-stage .garden-plot{height:116px!important}
+ #personal-arcade-v1 .garden-stage .garden-plot .garden-crop-sprite{
+  width:84%;bottom:48px;
+ }
+ #personal-arcade-v1 .garden-stage .garden-plot-label b{font-size:8px}
+ #personal-arcade-v1 .garden-stage .garden-plot-label em{min-height:32px;font-size:10px}
+}

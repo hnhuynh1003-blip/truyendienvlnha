@@ -1,0 +1,79 @@
+/* R1 — a quiet owner-only size guide, separate from reader controls. */
+body.dudu-site-v60 #home-view .library-capacity-r1{
+ margin:0 0 11px;border:1px solid rgba(213,185,139,.28);border-radius:9px;
+ background:rgba(15,27,39,.6);color:#e0d2b7;
+}
+body.dudu-site-v60 #home-view .library-capacity-r1[hidden],
+body.is-reader #home-view .library-capacity-r1{display:none!important}
+body.dudu-site-v60 #home-view .library-capacity-r1 > summary{
+ display:flex;align-items:center;justify-content:space-between;gap:8px;
+ min-height:42px;padding:9px 13px;cursor:pointer;list-style:none;
+ font:650 12px/1.4 system-ui,sans-serif;
+}
+body.dudu-site-v60 #home-view .library-capacity-r1 > summary::-webkit-details-marker{display:none}
+body.dudu-site-v60 #home-view .library-capacity-r1 > summary:focus-visible{
+ outline:2px solid #e1c99b;outline-offset:2px;border-radius:8px;
+}
+body.dudu-site-v60 #home-view .library-capacity-body-r1{
+ padding:1px 13px 15px;font:12px/1.55 system-ui,sans-serif;
+}
+body.dudu-site-v60 #home-view .library-capacity-metrics-r1{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:9px 0 11px;
+}
+body.dudu-site-v60 #home-view .library-capacity-card-r1{
+ display:flex;flex-direction:column;gap:5px;min-width:0;padding:12px;
+ border:1px solid rgba(210,185,150,.24);border-radius:9px;background:#182633;
+}
+body.dudu-site-v60 #home-view .library-capacity-card-r1 strong{font-size:12px;color:#e6d4af}
+body.dudu-site-v60 #home-view .library-capacity-value-r1{
+ font-size:clamp(16px,2vw,21px);font-weight:700;color:#f5eee0;overflow-wrap:anywhere;
+}
+body.dudu-site-v60 #home-view .library-capacity-card-r1 small,
+body.dudu-site-v60 #home-view .library-capacity-guide-r1,
+body.dudu-site-v60 #home-view .library-capacity-book-r1 small{color:#b6c4d0;font-size:11px}
+body.dudu-site-v60 #home-view .library-capacity-progress-r1{
+ width:100%;height:8px;accent-color:#d6bc84;
+}
+body.dudu-site-v60 #home-view .library-capacity-guide-r1{
+ margin:7px 0 12px;line-height:1.65;
+}
+body.dudu-site-v60 #home-view .library-capacity-console-r1{
+ display:inline-block;color:#efcf90;text-underline-offset:3px;
+}
+body.dudu-site-v60 #home-view .library-capacity-list-r1{margin-top:13px}
+body.dudu-site-v60 #home-view .library-capacity-list-r1 h4{
+ margin:0 0 5px;color:#e4ca95;font-size:12px;font-weight:700;
+}
+body.dudu-site-v60 #home-view .library-capacity-list-r1:nth-last-child(1){
+ max-height:360px;overflow:auto;scrollbar-width:thin;
+}
+body.dudu-site-v60 #home-view .library-capacity-row-r1{
+ display:flex;align-items:center;justify-content:space-between;gap:10px;
+ min-height:38px;padding:8px 2px;border-bottom:1px solid rgba(215,191,153,.14);
+}
+body.dudu-site-v60 #home-view .library-capacity-book-r1{
+ display:flex;flex-direction:column;min-width:0;gap:1px;color:#eee7da;
+ overflow-wrap:anywhere;
+}
+body.dudu-site-v60 #home-view .library-capacity-row-r1 > small{
+ flex:none;color:#d9bd89;text-align:right;
+}
+body.dudu-site-v60 #home-view .library-capacity-measure-r1,
+body.dudu-site-v60 #home-view .library-capacity-cancel-r1{
+ flex:none;min-height:34px;padding:6px 12px;border-radius:7px;
+ border:1px solid rgba(221,198,158,.52);background:#263647;color:#f3e6c9;
+ font:650 11px/1.4 system-ui,sans-serif;cursor:pointer;
+}
+body.dudu-site-v60 #home-view .library-capacity-measure-r1:disabled{
+ cursor:not-allowed;opacity:.55;
+}
+body.dudu-site-v60 #home-view .library-capacity-cancel-r1{margin:8px 0}
+body.dudu-site-v60 #home-view .library-capacity-message-r1{
+ color:#f0cf93;overflow-wrap:anywhere;margin:9px 0;
+}
+@media(max-width:560px){
+ body.dudu-site-v60 #home-view .library-capacity-metrics-r1{grid-template-columns:1fr}
+ body.dudu-site-v60 #home-view .library-capacity-body-r1{padding:1px 10px 12px}
+ body.dudu-site-v60 #home-view .library-capacity-row-r1{gap:7px}
+ body.dudu-site-v60 #home-view .library-capacity-book-r1{font-size:11px}
+}

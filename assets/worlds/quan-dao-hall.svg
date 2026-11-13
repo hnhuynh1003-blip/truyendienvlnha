@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" role="img" aria-labelledby="t d">
+<title id="t">Đại sảnh quán trọ Quan Đạo</title><desc id="d">Nội thất quán trọ gỗ, bàn trà, rèm, cửa sổ mưa và đèn dầu trong đêm</desc>
+<defs>
+<linearGradient id="wall" x2="0" y2="1"><stop stop-color="#5e5662"/><stop offset="1" stop-color="#887663"/></linearGradient>
+<linearGradient id="floor" x2="0" y2="1"><stop stop-color="#534c4b"/><stop offset="1" stop-color="#292e3a"/></linearGradient>
+<linearGradient id="window" x2="0" y2="1"><stop stop-color="#30435c"/><stop offset="1" stop-color="#657884"/></linearGradient>
+<radialGradient id="glow"><stop stop-color="#f9dfa1" stop-opacity=".86"/><stop offset=".45" stop-color="#eeb36d" stop-opacity=".25"/><stop offset="1" stop-color="#f1bb85" stop-opacity="0"/></radialGradient>
+<pattern id="planks" width="130" height="70" patternUnits="userSpaceOnUse"><path d="M0 0h130M0 67h130M68 0v65" fill="none" stroke="#191d27" stroke-opacity=".33" stroke-width="3"/></pattern>
+</defs>
+<rect width="1280" height="720" fill="url(#wall)"/>
+<path d="M0 0h1280v103H0z" fill="#262b35"/><path d="M0 103h1280v23H0z" fill="#b49574"/>
+<path d="M0 0 119 103h65L63 0m355 0 110 103h74L501 0m303 0 108 103h70L875 0m310 0 95 103v-83L1260 0" fill="#373743"/>
+<path d="M0 480h1280v240H0z" fill="url(#floor)"/><path d="M0 480h1280v240H0z" fill="url(#planks)"/>
+<path d="M118 145h350v319H118z" fill="#292f3b" stroke="#403c3c" stroke-width="17"/>
+<path d="M138 169h307v275H138z" fill="url(#window)"/>
+<path d="M138 169 286 293l159-124v275H138z" fill="#576c7d" opacity=".36"/>
+<path d="M291 171v273M138 311h307" stroke="#3b3c42" stroke-width="20"/>
+<path d="M115 149q26 149 0 314h69q-18-166 10-314zM398 149q-15 138 6 314h66q-22-150-10-314z" fill="#6c4a53"/>
+<path d="M541 163h195v290H541z" fill="#3b3235" stroke="#201e29" stroke-width="15"/>
+<path d="M569 195h142v224H569z" fill="#61504a"/>
+<path d="M570 274h141M640 195v224" stroke="#312b32" stroke-width="12"/>
+<rect x="570" y="217" width="31" height="51" fill="#858f82"/><rect x="618" y="229" width="48" height="38" fill="#665b4f"/>
+<rect x="677" y="216" width="16" height="52" fill="#c19568"/>
+<rect x="580" y="291" width="24" height="41" fill="#9f7851"/><rect x="624" y="290" width="55" height="41" fill="#a6815a"/>
+<path d="M861 163h296v287H861z" fill="#292f3b" stroke="#474143" stroke-width="16"/>
+<path d="M888 186h241v230H888z" fill="#5e4b47"/>
+<path d="M912 247h193v13H912z M913 327h193v13H913z" fill="#b39777" opacity=".64"/>
+<path d="M933 211h62v36h-62z M1027 203h46v43h-46z" fill="#8d6954"/>
+<path d="M929 282h86v43h-86z M1037 276h40v48h-40z" fill="#8b6d4d"/>
+<ellipse cx="640" cy="506" rx="325" ry="170" fill="url(#glow)"/>
+<path d="M425 492q225-26 448 0l-30 66q-202 19-387 0z" fill="#7d5b43" stroke="#302e37" stroke-width="11"/>
+<path d="M469 550l-14 118h48l30-115 M806 552l36 115h49l-22-123" fill="#4c3531"/>
+<path d="M602 488h68v17h-68z" fill="#d4ad74"/>
+<path d="M627 488v-46h20v46" fill="#a28661"/>
+<ellipse cx="635" cy="443" rx="110" ry="106" fill="url(#glow)"/>
+<path d="M618 415q18-19 34 0l-4 39q-15 18-25 0z" fill="#f0bf74" stroke="#8b6f52" stroke-width="4"/>
+<path d="M628 413v-21m15 21v-21" stroke="#a97b4f" stroke-width="6"/>
+<path d="M0 477h1280v18H0z" fill="#302e35"/>
+<path d="M0 0h1280v720H0z" fill="#1f2230" opacity=".12"/>
+</svg>

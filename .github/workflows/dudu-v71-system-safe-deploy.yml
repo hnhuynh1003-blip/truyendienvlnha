@@ -1,0 +1,177 @@
+name: DUDU V71 System registry safe deploy (manual)
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: "Type DEPLOY_DUDU_V71 to authorize Worker migration and deployment"
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: dudu-worker-production-deploy
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      - uses: actions/checkout@v7
+      - name: Authorize production Durable Object migration
+        shell: bash
+        env:
+          CONFIRM: ${{ inputs.confirmation }}
+        run: |
+          set -euo pipefail
+          test "$CONFIRM" = "DEPLOY_DUDU_V71" || { echo "STOP: no V71 migration approval"; exit 1; }
+          test -n "$CLOUDFLARE_API_TOKEN" && test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo "STOP: Cloudflare secrets missing"; exit 1; }
+          grep -q 'DUDU_SYSTEM_LIVE_ENABLED = "true"' cloudflare/wrangler.npc-ai-v54.toml
+          grep -q 'DUDU_PAID_PROVIDERS_ENABLED = "false"' cloudflare/wrangler.npc-ai-v54.toml
+          grep -q 'DUDU_HIVE_ENABLED = "false"' cloudflare/wrangler.npc-ai-v54.toml
+          grep -q 'DUDU_HIVE_TEST_APPROVED = "false"' cloudflare/wrangler.npc-ai-v54.toml
+          grep -q 'v6-dudu-system-registry-sqlite' cloudflare/wrangler.npc-ai-v54.toml
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Validate application and full Worker tests
+        run: |
+          npm ci --prefix cloudflare --ignore-scripts --no-audit --no-fund || npm install --prefix cloudflare --ignore-scripts --no-audit --no-fund
+          node --check cloudflare/src/dudu-system-registry-v71.mjs
+          node --check cloudflare/src/dudu-system-api-v71.mjs
+          node --check cloudflare/src/index.mjs
+          node --test cloudflare/tests/dudu-system-v71.test.mjs
+          npm test --prefix cloudflare
+          node --test tests/dudu-transmigration-v69.test.cjs
+      - name: Dry-run V71 bundle (no cloud writes)
+        working-directory: cloudflare
+        run: npx wrangler deploy --config wrangler.npc-ai-v54.toml --dry-run
+      - name: Audit deployed Worker and protect legacy bindings
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --silent --show-error --fail --max-time 30 \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/dudu-ai-staging/settings" > "$RUNNER_TEMP/dudu-v71-settings.json"
+          python3 - <<'PY'
+          import json, os, tomllib
+          from pathlib import Path
+          d=json.loads((Path(os.environ['RUNNER_TEMP'])/'dudu-v71-settings.json').read_text())
+          if not d.get('success') or not isinstance(d.get('result',{}).get('bindings'),list):
+              raise SystemExit('STOP: existing Worker unavailable; migration not attempted')
+          live=d['result']['bindings']
+          with open('cloudflare/wrangler.npc-ai-v54.toml','rb') as f:
+              cfg=tomllib.load(f)
+          if cfg.get('name')!='dudu-ai-staging':
+              raise SystemExit('STOP: wrong Worker name')
+          old={(x.get('name'),x.get('class_name')) for x in live if x.get('type')=='durable_object_namespace'}
+          new={(x['name'],x['class_name']) for x in cfg['durable_objects']['bindings']}
+          if not old.issubset(new) or len(new-old)!=1 or ('DUDU_SYSTEM_REGISTRY','DuduSystemRegistry') not in new-old:
+              raise SystemExit('STOP: existing Durable Object binding would be lost')
+          secrets={x.get('name') for x in live if x.get('type')=='secret_text'}
+          missing=[name for name in ('GEMINI_API_KEY','DUDU_SYSTEM_PILOT_UID')
+                   if name not in secrets]
+          if missing:
+              for name in missing:
+                  print('STOP: missing Cloudflare Worker secret binding: '+name)
+              print('Configure the missing secret(s) in the existing Worker dudu-ai-staging.')
+              print('Do NOT add these values to GitHub files, workflow inputs or logs.')
+              raise SystemExit('STOP: V71 migration was not attempted; missing Worker secret binding(s)')
+          current={x['name']:str(x.get('text','')) for x in live if x.get('type')=='plain_text'}
+          wanted={k:str(v) for k,v in cfg['vars'].items()}
+          # An old production Worker legitimately has none of these V68/V71 flags.
+          # Permit only these exact additions. Existing values must NEVER be
+          # silently changed, including existing flags of the same names.
+          additive={
+              'DUDU_HIVE_ENABLED':'false',
+              'DUDU_HIVE_TEST_APPROVED':'false',
+              'DUDU_SYSTEM_LIVE_ENABLED':'true',
+              'DUDU_SYSTEM_PILOT_CARD_ENABLED':'true',
+          }
+          changes=sorted(k for k in current.keys() & wanted.keys()
+                         if current[k]!=wanted[k])
+          missing=sorted(k for k in wanted.keys()-current.keys()
+                         if k not in additive or wanted[k]!=additive[k])
+          if changes:
+              for k in changes: print('STOP: existing Worker var would change: '+k)
+              raise SystemExit('STOP: existing values must be preserved; no migration attempted')
+          if missing:
+              for k in missing: print('STOP: unexpected new Worker var: '+k)
+              raise SystemExit('STOP: only four approved additive feature flags are permitted')
+          extra=sorted(current.keys()-wanted.keys())
+          if extra:
+              for k in extra: print('STOP: unexpected live Worker var: '+k)
+              raise SystemExit('STOP: preserve unknown Worker vars explicitly')
+          if any(x.get('type') not in ('plain_text','secret_text','durable_object_namespace','ai') for x in live):
+              raise SystemExit('STOP: unknown legacy binding type')
+          additions=sorted(wanted.keys()-current.keys())
+          for k in additions: print('PASS: approved additive feature flag: '+k)
+          print('PASS: existing Worker vars unchanged; secrets present; one additive Durable Object binding')
+          PY
+      - name: Deploy V71 System registry into existing Worker
+        working-directory: cloudflare
+        run: |
+          # This workflow has no automatic trigger. Never enable paid Hive.
+          npx wrangler deploy --config wrangler.npc-ai-v54.toml --keep-vars
+      - name: Health and V71 registry route smoke (no user data, no paid AI)
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --silent --show-error --fail --max-time 20 \
+            https://dudu-ai-staging.dudu-studio-ai.workers.dev/health \
+            | python3 -c "import json,sys; d=json.load(sys.stdin); assert d.get('service')=='dudu-ai'; print('PASS: Worker health OK')"
+          # GET only, without a Firebase token. A deployed V71 registry requires
+          # authorization, so HTTP 401 proves the route exists and is protected.
+          # 404 means the old Worker is still serving traffic; 503 means the
+          # registry flag/binding is missing. Never create data as a health check.
+          python3 - <<'PY'
+          import json
+          import time
+          import urllib.error
+          import urllib.request
+
+          target='https://dudu-ai-staging.dudu-studio-ai.workers.dev/v1/system/me'
+          origin='https://hnhuynh1003-blip.github.io'
+          # Check against the new deployment over multiple short intervals.
+          # The edge may briefly serve 403/404 before propagation completes.
+          # This does NOT waive auth/CORS requirements: fail after 12 attempts.
+          attempts=12
+          for attempt in range(1,attempts+1):
+              request=urllib.request.Request(target,method='GET',
+                  headers={'Origin':origin,'Cache-Control':'no-cache'})
+              status=None
+              body=b''
+              cors=''
+              try:
+                  with urllib.request.urlopen(request,timeout=12) as response:
+                      status=response.status
+                      body=response.read(1024)
+                      cors=response.headers.get('Access-Control-Allow-Origin','')
+              except urllib.error.HTTPError as error:
+                  status=error.code
+                  body=error.read(1024)
+                  cors=error.headers.get('Access-Control-Allow-Origin','')
+              except Exception as error:
+                  print('V71 route check',attempt,'network:',type(error).__name__)
+              code=None
+              try:
+                  payload=json.loads(body)
+                  if isinstance(payload,dict):
+                      code=(payload.get('error') or {}).get('code')
+              except (ValueError,TypeError,AttributeError):
+                  pass
+              if status==401 and code=='unauthenticated' and cors==origin:
+                  print('PASS: deployed V71 requires Firebase auth and allows main Pages')
+                  print('READ ONLY: no test card, user data, or paid AI involved')
+                  break
+              print('V71 route check',attempt,'of',attempts,
+                    'HTTP',status,'error_code',code or 'unknown',
+                    'CORS','ok' if cors==origin else 'missing-or-wrong')
+              if attempt==attempts:
+                  raise SystemExit('STOP: V71 anonymous route did not stabilize to HTTP 401; inspect Worker deployment')
+              time.sleep(5)
+          PY

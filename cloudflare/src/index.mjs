@@ -6,6 +6,8 @@ export {DuduCollectibles} from './collectibles.mjs';
 export {DuduPlayerAppearance} from './player-appearance.mjs';
 export {DuduDiscussion} from './comments-v44-2.mjs';
 export {DuduGiftLedger} from './gift-ledger-v44-3.mjs';
+export {DuduSystemRegistry} from './dudu-system-registry-v71.mjs';
+import {routeSystem} from './dudu-system-api-v71.mjs';
 import {requestGift,requestDecision} from './gift-requests-v44-3.mjs';
 import {scope,postBody,reportBody,moderatorBody,registerBody}
  from './comment-policy-v44-2.mjs';
@@ -16,8 +18,11 @@ import {putQuarantinedPhoto,deleteQuarantinedPhoto} from './avatar-r2-quarantine
 import {normalizedPrivateDraft,normalizedDraftApproval,parseScopedIds,cleanId} from './collectible-rules.mjs';
 
 import {NPC_MODELS} from './npc-models.mjs';
-import {classifyGemini400} from './gemini-error-v56-10.mjs';
+import {summarizeGemini400} from './gemini-diagnostics-v57-3.mjs';
 import {textOnlyNpcContents} from './npc-chat-format-v56-11.mjs';
+import {routeNpcAi,isWorkersAiModel,availableWorkersModels} from './ai-router-v58.mjs';
+import {validateDuduChat,duduHiveAllowed,callDuduHive,
+  DUDU_HIVE_LIFETIME_CALLS} from './dudu-hive-v68.mjs';
 const MODEL='gemini-3.5-flash-lite'; // same ID as server model registry; kept literal for isolated route tests
 const MAX_BODY_BYTES=18000;
 
@@ -493,13 +498,15 @@ async function limitedJson(req){
 async function gemini(payload,env){
   if(!env.GEMINI_API_KEY)return {error:{code:'not-configured',message:'Máy chủ AI chưa có khóa bí mật.'},status:503};
   const model=payload.model||MODEL; // selected only after server allowlist validation
+  // V57.1: never silently fall back to incompatible legacy multi-turn content.
+  // A malformed transcript is rejected locally; Google must only see valid text.
+  const npcContents=payload.purpose==='chat'?textOnlyNpcContents(payload.contents):null;
+  if(payload.purpose==='chat'&&!npcContents)return {error:{
+    code:'gemini-content-format',message:'Không thể chuẩn hóa hội thoại NPC. Tin nhắn đã được giữ để thử lại.'
+  },status:400};
   const body={
     systemInstruction:payload.systemInstruction,
-    // V56.11: standard NPC text does not call tools. Replay stored text
-    // as quoted context in one user turn; no synthetic unsigned model parts.
-    contents:payload.purpose==='chat'
-      ? (textOnlyNpcContents(payload.contents)||payload.contents)
-      : payload.contents,
+    contents:payload.purpose==='chat'?npcContents:payload.contents,
     generationConfig:{
       // Gemini 3.6+ deprecates custom temperature. Leave provider defaults to
       // avoid model-specific invalid-argument responses in mixed Auto routing.
@@ -524,9 +531,19 @@ async function gemini(payload,env){
     if(response.status===400){
       try{
         const upstream=await response.json();
-        upstream400=classifyGemini400(upstream?.error?.message);
-      }catch(_){upstream400=classifyGemini400('');}
+        upstream400=summarizeGemini400(upstream?.error,body);
+      }catch(_){upstream400=summarizeGemini400(null,body);}
+      const reference=crypto.randomUUID().slice(0,8);
+      upstream400.reference=reference;
       console.warn('Gemini HTTP 400 class:',upstream400.code);
+      console.warn('Gemini HTTP 400 diagnostic:',JSON.stringify({
+        reference,model,googleStatus:upstream400.diagnostic.upstreamStatus,
+        prerequisite:upstream400.diagnostic.prerequisite,
+        field:upstream400.diagnostic.field,
+        instructionSize:upstream400.diagnostic.instructionSize,
+        contentSize:upstream400.diagnostic.contentSize,
+        contentTurns:upstream400.diagnostic.contentTurns
+      }));
     }
     const errorKind=response.status===400?upstream400.code:
       response.status===401||response.status===403?'gemini-access-denied':
@@ -541,7 +558,9 @@ async function gemini(payload,env){
       'gemini-overloaded':'Máy chủ Gemini đang quá tải (HTTP 503).',
       'upstream-error':'Không thể nhận phản hồi từ Gemini (HTTP '+response.status+').'
     };
-    return {error:{code:errorKind,message:upstream400?.message||details[errorKind]},
+    return {error:{code:errorKind,message:upstream400?.message||details[errorKind],
+      ...(upstream400?.reference?{reference:upstream400.reference}:{}),
+      ...(upstream400?.diagnostic?{diagnostic:upstream400.diagnostic}:{})},
       status:response.status===429?429:response.status===503?502:response.status===404?409:502};
   }
   let data;
@@ -567,17 +586,24 @@ export default {
     if(!allowed)return error('origin-blocked','Nguồn yêu cầu không được phép.',403,origin,env);
     if(req.method==='OPTIONS'){
       if(!origin||!allowOrigin(origin,env))return error('origin-blocked','Nguồn yêu cầu không được phép.',403,origin,env);
-      if(!['/v1/generate','/v1/status',...Object.keys(COLLECTIBLE_PATHS),...Object.keys(PLAYER_APPEARANCE_PATHS),...Object.keys(AVATAR_DRAFT_PATHS),...Object.keys(COMMENT_PATHS),...Object.keys(GIFT_PATHS),'/v1/pilot/status'].includes(path))
+      if(!['/v1/generate','/v1/status','/v1/dudu-ai/status','/v1/dudu-ai/chat',...Object.keys(COLLECTIBLE_PATHS),...Object.keys(PLAYER_APPEARANCE_PATHS),...Object.keys(AVATAR_DRAFT_PATHS),...Object.keys(COMMENT_PATHS),...Object.keys(GIFT_PATHS),'/v1/system/me','/v1/system/redeem','/v1/system/register-name','/v1/system/consent-pact','/v1/system/owner/issue-test-pass','/v1/pilot/status'].includes(path))
         return error('not-found','Không tìm thấy đường dẫn.',404,origin,env);
       return new Response(null,{status:204,headers:headers(origin,env)});
     }
     if(path==='/health'&&req.method==='GET'){
-      return json({service:'dudu-ai',enabled:env.AI_ENABLED==='true',model:MODEL,models:NPC_MODELS},200,origin,env);
+      return json({service:'dudu-ai',enabled:env.AI_ENABLED==='true',model:MODEL,models:[...NPC_MODELS,...availableWorkersModels(env)],freeOnly:true},200,origin,env);
     }
     if(path==='/v1/pilot/status'){
       if(req.method!=='GET')
         return error('method-not-allowed','Phương thức không được hỗ trợ.',405,origin,env);
       return handlePilotStatus(req,env,origin);
+    }
+    if(path.startsWith('/v1/system/')){
+      try{
+        const answer=await routeSystem(req,env,path);
+        return json(answer.body,answer.status,origin,env);
+      }catch(_){return error('registry-unavailable',
+        'Chưa truy cập được sổ Hệ Thống. Không có Thẻ hoặc hồ sơ nào được ghi.',503,origin,env);}
     }
     if(path in GIFT_PATHS){
       if(req.method!==GIFT_PATHS[path])
@@ -604,6 +630,54 @@ export default {
         return error('method-not-allowed','Phương thức không được hỗ trợ.',405,origin,env);
       return handleCollectibles(req,env,path,origin);
     }
+    // V68: DUDU's four owner-only AI personas, independent from NPC AI.
+    // Existing AI_ENABLED/NPC routes and their billing behavior are unchanged.
+    if(path==='/v1/dudu-ai/status'||path==='/v1/dudu-ai/chat'){
+      if((path==='/v1/dudu-ai/status'&&req.method!=='GET')||
+         (path==='/v1/dudu-ai/chat'&&req.method!=='POST'))
+        return error('method-not-allowed','Phương thức không hợp lệ.',405,origin,env);
+      const user=await verifyFirebaseIdToken(req,env.PROJECT_ID);
+      if(!user)return error('unauthenticated','Hãy đăng nhập Firebase để thử DUDU.',401,origin,env);
+      // Core/child pilots are restricted to an actual Firebase admin claim,
+      // never only a client-side author toggle or a secret-listed UID.
+      if(!user.admin)return error('author-only',
+        'Kênh thử nghiệm Chủ Thần chỉ dành cho AU đã được máy chủ xác nhận.',403,origin,env);
+      const enabled=duduHiveAllowed(env,user.uid);
+      if(path==='/v1/dudu-ai/status'){
+        if(!enabled)return json({enabled:false,mode:'scripted',
+          remaining:0,limit:DUDU_HIVE_LIFETIME_CALLS},200,origin,env);
+        if(!env.DUDU_QUOTA)
+          return error('quota-unavailable','Sổ giới hạn thử AI chưa có.',503,origin,env);
+        try{
+          const state=await env.DUDU_QUOTA.getByName('global-budget-v1').hiveTestStatus();
+          return json({enabled:state.remaining>0,mode:'owner-pilot',
+            ...state,model:'deepseek-ai/deepseek-v4.1-flash-1017'},200,origin,env);
+        }catch(_){return error('quota-unavailable','Không đọc được hạn mức.',503,origin,env);}
+      }
+      if(!enabled)return error('dudu-ai-disabled',
+        'DUDU AI chưa được chủ dự án mở cho tài khoản thử nghiệm.',503,origin,env);
+      if(!req.headers.get('Content-Type')?.toLowerCase().startsWith('application/json'))
+        return error('invalid-content','Yêu cầu phải là JSON.',415,origin,env);
+      const payload=validateDuduChat(await limitedJson(req));
+      if(!payload)return error('invalid-request','Tin nhắn hoặc vai DUDU không hợp lệ.',400,origin,env);
+      if(!env.DUDU_QUOTA)
+        return error('quota-unavailable','Sổ giới hạn thử AI chưa có.',503,origin,env);
+      const bucket=env.DUDU_QUOTA.getByName('global-budget-v1');
+      let lease;
+      try{lease=await bucket.reserveHiveTest(Date.now());}
+      catch(_){return error('quota-unavailable','Sổ giới hạn đang bận.',503,origin,env);}
+      if(!lease?.ok)return error(lease?.code||'dudu-test-limit',
+        'Đã chạm giới hạn thử nghiệm hoặc cần đợi 5 giây trước lượt mới.',
+        429,origin,env);
+      try{
+        const result=await callDuduHive(payload,env);
+        return result.error?json({error:result.error},result.status,origin,env):
+          json({...result.data,remaining:lease.remaining},200,origin,env);
+      }finally{
+        try{await bucket.releaseHiveTest(lease.id);}
+        catch(_){console.warn('DUDU Hive lease will expire.');}
+      }
+    }
     if(!['/v1/generate','/v1/status'].includes(path))
       return error('not-found','Không tìm thấy đường dẫn.',404,origin,env);
     if((path==='/v1/generate'&&req.method!=='POST')||(path==='/v1/status'&&req.method!=='GET')){
@@ -617,7 +691,7 @@ export default {
     if(path==='/v1/status'){
       try {
         const state=await bucket.status(user.uid,Date.now());
-        return json({...state,enabled:true,models:NPC_MODELS,defaultModel:MODEL},200,origin,env);
+        return json({...state,enabled:true,models:[...NPC_MODELS,...availableWorkersModels(env)],defaultModel:MODEL,freeOnly:true},200,origin,env);
       }catch(_){return error('quota-unavailable','Không thể đọc hạn mức AI.',503,origin,env);}
     }
     if(!req.headers.get('Content-Type')?.toLowerCase().startsWith('application/json')){
@@ -626,7 +700,7 @@ export default {
     const parsed=await limitedJson(req);
     const payload=validRequest(parsed,user.admin);
     if(!payload)return error('invalid-request','Nội dung quá dài hoặc không hợp lệ.',400,origin,env);
-    if(!env.GEMINI_API_KEY)return error('ai-disabled','Máy chủ AI chưa được cấu hình.',503,origin,env);
+    if(!env.GEMINI_API_KEY&&!isWorkersAiModel(payload.model))return error('ai-disabled','Máy chủ AI chưa được cấu hình.',503,origin,env);
     let lease;
     try{lease=await bucket.reserve(user.uid,Date.now());}
     catch(_){return error('quota-unavailable','Máy chủ giới hạn AI đang bận.',503,origin,env);}
@@ -634,7 +708,9 @@ export default {
       return error(lease?.code||'quota-error',lease?.message||quotaMessage(lease?.code),429,origin,env);
     }
     try {
-      const result=await gemini(payload,env);
+      const result=payload.purpose==='chat'
+        ?await routeNpcAi(payload,env,gemini)
+        :await gemini(payload,env);
       if(result.error)return json({error:result.error},result.status,origin,env);
       return json(result.data,result.status,origin,env);
     } finally {

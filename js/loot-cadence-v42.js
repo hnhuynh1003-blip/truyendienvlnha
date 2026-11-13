@@ -1,8 +1,7 @@
-/* DUDU V42.6 — predictable collection cadence.
- * Phone: one attempt every two minutes.
- * Chapter: one successful drop per chapter per browser-local calendar day.
- * Historic boolean values remain readable and become eligible for a new
- * daily claim; no player save is erased or bulk-migrated.
+/* DUDU V42.6 — phone collection cadence & legacy claim compatibility.
+ * Phone: one attempt every fifteen minutes.
+ * Chapter encounters are now deterministic, one-shot opportunities rather
+ * than daily quotas. See chapter-loot-encounter-v1.js.
  *
  * This client-only module is a gameplay rule, NOT server-side anti-cheat.
  */
@@ -13,7 +12,7 @@
   if(root)root.DuduLootCadenceV42=api;
 })(typeof window!=='undefined'?window:null,function(){
   'use strict';
-  const PHONE_COOLDOWN_MS=2*60*1000;
+  const PHONE_COOLDOWN_MS=15*60*1000;
   function dayKey(now=Date.now()){
     const date=new Date(now);
     if(!Number.isFinite(date.getTime()))return '';

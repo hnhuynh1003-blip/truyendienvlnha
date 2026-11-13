@@ -1,0 +1,217 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": "item-policy-proposal-1"
+    },
+    "worldId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{1,63}$"
+    },
+    "contentHash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "items": {
+      "type": "array",
+      "maxItems": 1000,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "itemId": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]{1,63}$"
+          },
+          "definition": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "definitionId": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]{1,63}$"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]{1,63}$"
+              },
+              "contentHash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "required": [
+              "definitionId",
+              "version",
+              "contentHash"
+            ]
+          },
+          "origin": {
+            "enum": [
+              "standard",
+              "custom"
+            ]
+          },
+          "layer": {
+            "enum": [
+              "notebook",
+              "world"
+            ]
+          },
+          "provenance": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000,
+            "pattern": "\\S"
+          },
+          "effects": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000,
+            "pattern": "\\S"
+          },
+          "limits": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000,
+            "pattern": "\\S"
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "permissions": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "hold": {
+                "type": "boolean"
+              },
+              "use": {
+                "type": "boolean"
+              },
+              "trade": {
+                "type": "boolean"
+              },
+              "crossWorld": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "hold",
+              "use",
+              "trade",
+              "crossWorld"
+            ]
+          },
+          "exceptions": {
+            "type": "array",
+            "maxItems": 8,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "era",
+                    "power"
+                  ]
+                },
+                "rationale": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4000,
+                  "pattern": "\\S"
+                },
+                "sourceNote": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4000,
+                  "pattern": "\\S"
+                }
+              },
+              "required": [
+                "kind",
+                "rationale",
+                "sourceNote"
+              ]
+            }
+          }
+        },
+        "required": [
+          "itemId",
+          "definition",
+          "origin",
+          "layer",
+          "provenance",
+          "effects",
+          "limits",
+          "quantity",
+          "permissions",
+          "exceptions"
+        ]
+      }
+    },
+    "acquisitionGroups": {
+      "type": "array",
+      "maxItems": 2000,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "groupId": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]{1,63}$"
+          },
+          "itemId": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]{1,63}$"
+          },
+          "entityId": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]{1,63}$"
+          },
+          "scope": {
+            "enum": [
+              "instance",
+              "continuity"
+            ]
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "routes": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 1000,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9-]{1,63}$"
+            }
+          }
+        },
+        "required": [
+          "groupId",
+          "itemId",
+          "entityId",
+          "scope",
+          "quantity",
+          "routes"
+        ]
+      }
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "worldId",
+    "contentHash",
+    "items",
+    "acquisitionGroups"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

@@ -1,6 +1,5 @@
-/* DUDU V42.2 — Sandbox-only inventory interface.
- * Read-only RPG classification and inspector: never mutates economy, NPC
- * relationships or server collectibles. Existing discard callback is reused.
+/* DUDU V42.2 — read-only inventory view for Sandbox and private Spark profiles.
+ * Game/economy mutations remain in the caller's verified callbacks.
  */
 (function(root,factory){
  'use strict';
@@ -17,6 +16,27 @@
   if(value!==undefined)node.textContent=String(value);
   return node;
  };
+
+ // F4.3: a transient image-only layer; closing never rerenders inventory.
+ let dismissArt=null;
+ function viewArt(icon){
+  dismissArt?.();const source=icon.querySelector('img');if(!source?.src)return;
+  const overlay=make('div','f43-art-viewer'),stage=make('div','f43-art-stage'),image=make('img','f43-art-image'),close=make('button','f43-art-close','×');
+  overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','Ngắm bảo vật');close.type='button';close.setAttribute('aria-label','Đóng ngắm bảo vật');image.src=source.src;image.alt=source.alt||'Bảo vật';image.draggable=false;stage.append(image);overlay.append(stage,close);document.body.append(overlay);
+  const modal=$('inventory-v42-modal'),priorInert=modal?.inert; if(modal)modal.inert=true;
+  let zoom=1,x=0,y=0,previous=null;const points=new Map();
+  function draw(){const r=stage.getBoundingClientRect(),limitX=r.width*(zoom-1)/2,limitY=r.height*(zoom-1)/2;x=Math.max(-limitX,Math.min(limitX,x));y=Math.max(-limitY,Math.min(limitY,y));image.style.transform='translate3d('+x+'px,'+y+'px,0) scale('+zoom+')';overlay.dataset.zoom=String(zoom);}
+  function sample(){const ps=[...points.values()];if(ps.length===1)return{x:ps[0].x,y:ps[0].y,d:0};if(ps.length>=2)return{x:(ps[0].x+ps[1].x)/2,y:(ps[0].y+ps[1].y)/2,d:Math.hypot(ps[0].x-ps[1].x,ps[0].y-ps[1].y)};return null;}
+  stage.addEventListener('pointerdown',e=>{if(e.button!==0&&e.pointerType==='mouse')return;e.preventDefault();points.set(e.pointerId,{x:e.clientX,y:e.clientY});stage.setPointerCapture(e.pointerId);previous=sample();});
+  stage.addEventListener('pointermove',e=>{if(!points.has(e.pointerId))return;e.preventDefault();points.set(e.pointerId,{x:e.clientX,y:e.clientY});const next=sample();if(previous){if(next.d&&previous.d)zoom=Math.max(1,Math.min(6,zoom*next.d/previous.d));x+=next.x-previous.x;y+=next.y-previous.y;draw();}previous=next;});
+  for(const type of ['pointerup','pointercancel','lostpointercapture'])stage.addEventListener(type,e=>{points.delete(e.pointerId);previous=sample();});
+  stage.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(1,Math.min(6,zoom*Math.exp(-e.deltaY*.002)));draw();},{passive:false});
+  const key=e=>{if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();dismissArt?.();}else if(e.key==='Tab'){e.preventDefault();close.focus();}};
+  const gone=new MutationObserver(()=>{if(modal&&(modal.hidden||!modal.isConnected))dismissArt?.();});if(modal)gone.observe(modal,{attributes:true,attributeFilter:['hidden'],childList:false});
+  const owner=typeof currentUsername==='string'?currentUsername:null;const monitor=setInterval(()=>{if((typeof currentUsername==='string'?currentUsername:null)!==owner){dismissArt?.();hideModal(false);}else if(document.hidden||($('phone-app-inventory')&&getComputedStyle($('phone-app-inventory')).display==='none'))dismissArt?.();},200);window.addEventListener('resize',draw);
+  dismissArt=()=>{clearInterval(monitor);window.removeEventListener('resize',draw);document.removeEventListener('keydown',key,true);gone.disconnect();overlay.remove();if(modal)modal.inert=priorInert;dismissArt=null;if(icon.isConnected)icon.focus({preventScroll:true});};document.addEventListener('keydown',key,true);close.onclick=()=>dismissArt?.();close.focus({preventScroll:true});draw();
+ }
+
  function filters(){
   const read=(id,fallback)=>$(id)?.value||fallback;
   return {
@@ -54,13 +74,17 @@
  function artwork(item,art){
   const container=make('span','dudu-inventory-v12-icon dudu-v27-slot-art dudu-v42-art');
   container.textContent=item.icon||'🎒';
-  const data=art?.visual?.(catalog?.byId(item.id)||item);
+  const approved=catalog?.byId(item.id)||item;
+  const data=art?.visual?.(approved);
   if(data?.src){
-   const img=make('img','dudu-item-v13-art');img.src=data.src;img.alt='';
-   img.width=76;img.height=76;img.decoding='async';img.loading='lazy';
-   container.replaceChildren(img);
-   container.classList.add('dudu-item-v13-frame');
-   container.style.setProperty('--rarity-glow',data.light);
+   if(typeof art.mount==='function')art.mount(container,approved);
+   else{
+    const img=make('img','dudu-item-v13-art');img.src=data.src;img.alt='';
+    img.width=76;img.height=76;img.decoding='async';img.loading='lazy';
+    container.replaceChildren(img);
+    container.classList.add('dudu-item-v13-frame');
+    container.style.setProperty('--rarity-glow',data.light);
+   }
   }
   return {container,color:data?.light||'#988fb8'};
  }
@@ -88,7 +112,7 @@
   });
   // Intercept Escape before the parent phone's shortcuts, trap focus inside.
   document.addEventListener('keydown',event=>{
-    if(overlay.hidden||!overlay.isConnected)return;
+    if(overlay.hidden||!overlay.isConnected||dismissArt)return;
     if(event.key==='Escape'){
       event.preventDefault();event.stopImmediatePropagation();
       if(last?.onClose)last.onClose();
@@ -127,11 +151,13 @@
   const panel=$('inventory-v42-modal-scroll');
   if(!detail){hideModal();return;}
   if(!panel)return;
+  if(entry.items.includes(args.selected)){entry={...entry,item:args.selected,index:args.inventory.indexOf(args.selected)};}
   focusIndex=entry.index;
   panel.replaceChildren();
   const head=make('div','dudu-v42-inspector-head');
   const {container:icon}=artwork(detail,args.art);
   icon.classList.add('dudu-v42-large-art');
+  if(icon.querySelector('img')){icon.setAttribute('role','button');icon.tabIndex=0;icon.setAttribute('aria-label','Ngắm ảnh bảo vật');icon.addEventListener('click',()=>viewArt(icon));icon.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();viewArt(icon);}});}
   const info=make('div','dudu-v42-inspector-info');
   const title=make('strong','dudu-v42-inspector-name',detail.name);
   title.id='inventory-v42-modal-heading';
@@ -150,7 +176,7 @@
    row.append(make('span','',key),make('strong','',value));facts.append(row);
   }
   fact('Phẩm chất',detail.rank);
-  if(entry.count>1)fact('Số lượng sở hữu','×'+entry.count);
+  if(entry.count>1||entry.item.collectionSet==='VAN_VAT')fact('Số lượng sở hữu','×'+entry.count);
   fact('Nguồn',detail.scope==='DUDU'?'Kỷ vật hệ thống':
     detail.scope==='REALM'?'Chung trong thế giới '+(model.REALMS[detail.realm]||''): 
     detail.scope==='COMMON'?'Chung toàn hệ thống':
@@ -178,20 +204,22 @@
      ACTIVATE_COUPON:'Kích hoạt -25% (tối đa 12 Xu) cho 1 món phổ thông hôm nay'
     };
     fact('Công dụng',descriptions[detail.usageStatus]||'Công cụ tiêu hao');
-    fact('Đã dùng hôm nay',(usage?.used||0)+'/'+(usage?.limit||2));
+    if(!args.personalMode)fact('Đã dùng hôm nay',(usage?.used||0)+'/'+(usage?.limit||2));
     if(['CLEAR_PHONE_COOLDOWN','SHORTEN_PHONE_COOLDOWN'].includes(detail.usageStatus))
      fact('Nhặt theo chương','Không thay đổi');
     if(detail.usageStatus==='ACTIVATE_COUPON')
      fact('Điều kiện','Một phiếu hiệu lực cùng ngày, không giảm vật phẩm chức năng');
   }else{
-    fact('Chức năng RPG','Chưa kích hoạt trong V42');
+    fact(args.personalMode?'Sử dụng':'Chức năng RPG',
+      args.personalMode?'Chưa có công dụng để kích hoạt trực tiếp':'Chưa kích hoạt trong V42');
   }
   const tradeStatus=typeof args.tradeStatus==='function'?args.tradeStatus(entry.item):null;
   if(tradeStatus){
    fact('Trạng thái',tradeStatus.label);
    if(tradeStatus.rare)fact('Thị trường hiếm',tradeStatus.auction?
     'Đủ điều kiện ký gửi thử nghiệm':'Khóa giao dịch / chưa xác nhận nguồn gốc');
-   if(tradeStatus.buyback)fact('Giá thu mua Sandbox',tradeStatus.buyback+' Xu / món');
+   if(tradeStatus.buyback)fact(args.personalMode?'Giá bán về ví':'Giá thu mua Sandbox',
+     tradeStatus.buyback+' Xu / món');
   }
   if(detail.protected)fact('Sở hữu','Đồ bảo vệ · Không được vứt');
   // User-owned browser items are not proof of a server-verified relic.
@@ -200,6 +228,10 @@
   if(detail.scope==='DUDU'&&!detail.verifiedCollectible)
    fact('Xác minh','Kiểm tra tại Bảo Tàng Ký Ức');
   const footer=make('div','dudu-v42-inspector-footer');
+  if(entry.count>1){const copies=make('label','f43-copy-select','Bản đang chọn '),pick=make('select','');entry.items.forEach((item,i)=>{const option=make('option','',String(i+1)+(args.tradeStatus?.(item)?.locked?' · Đã khóa':''));option.value=String(i);option.selected=item===entry.item;pick.append(option);});pick.onchange=()=>args.onSelect?.(entry.items[Number(pick.value)]);copies.append(pick);footer.append(copies);}
+  const saleItems=entry.items.filter(i=>args.tradeStatus?.(i)?.buyback>0&&!args.tradeStatus?.(i)?.locked&&!i.locked&&!i.equipped&&!i.keep&&!i.kept&&!i.isEquipped);
+  if(typeof args.onSellMany==='function'&&saleItems.length){const box=make('section','f43-quantity-sale'),qty=make('input',''),keep=make('input',''),sell=make('button','btn','Bán số lượng'),remaining=make('small','');qty.type=keep.type='number';qty.min='1';qty.max=String(Math.min(100,saleItems.length));qty.value='1';keep.min=String(entry.count-Math.min(100,saleItems.length));keep.max=String(entry.count-1);keep.value=String(entry.count-1);qty.setAttribute('aria-label','Số lượng bán');keep.setAttribute('aria-label','Số lượng giữ lại');const price=args.tradeStatus(saleItems[0]).buyback;const update=()=>{const n=Number(qty.value);sell.disabled=!Number.isSafeInteger(n)||n<1||n>Math.min(100,saleItems.length)||tradeStatus?.busy;remaining.textContent=price+' Xu / bản · Còn ×'+(entry.count-(Number.isSafeInteger(n)?n:0));};qty.oninput=()=>{keep.value=String(entry.count-Number(qty.value));update();};keep.oninput=()=>{qty.value=String(entry.count-Number(keep.value));update();};sell.type='button';sell.onclick=()=>{if(sell.disabled)return;const n=Number(qty.value);if(!confirm('Bán '+n+' '+detail.name+' với tổng '+(price*n)+' Xu? Còn '+(entry.count-n)+' bản.'))return;args.onSellMany(entry.item,saleItems.slice(0,n).map(i=>i.instanceId));};const a=make('label','','Bán '),b=make('label','','Giữ ');a.append(qty);b.append(keep);box.append(a,b,remaining,sell);footer.append(box);update();}
+
   const status=make('span','dudu-v42-inspector-status',detail.giftable?
     'Quà NPC: tùy điều kiện tặng':'Quà NPC: chưa được phép hoặc chưa xác nhận');
   footer.append(status);
@@ -216,7 +248,8 @@
       usage?.reason==='daily-limit'?'Đã hết lượt dùng hôm nay.':
       usage?.reason==='coupon-active'?'Đang có một phiếu giảm giá chờ mua.':
       usage?.reason==='inventory-full'?'Kho cần ít nhất một ô trống.':
-      usage?.canUse?'Tiêu hao 1 vật phẩm chức năng trong Sandbox.':
+      usage?.canUse?args.personalMode?'Dùng vật phẩm đang sở hữu.':
+        'Tiêu hao 1 vật phẩm chức năng trong Sandbox.':
       'Vật phẩm không hợp lệ hoặc đã sử dụng.';
     button.addEventListener('click',()=>{
       if(!Array.isArray(args.inventory)||args.inventory[entry.index]!==entry.item)return;
@@ -226,6 +259,7 @@
     if(!usage?.canUse){
       footer.append(make('small','dudu-v43-use-hint',
         usage?.reason==='no-cooldown'?'Chỉ dùng khi đồng hồ nhặt đồ đang chạy.':
+        usage?.reason==='busy'?'Đang xử lý giao dịch trước đó.':
         usage?.reason==='daily-limit'?'Đã đạt giới hạn dùng hôm nay.':
         usage?.reason==='coupon-active'?'Đã có một phiếu đang chờ dùng.':
         usage?.reason==='inventory-full'?'Cần dọn kho để nhận 2 món tiếp tế.':
@@ -237,13 +271,26 @@
    museum.type='button';museum.addEventListener('click',()=>args.onMuseum());
    footer.append(museum);
   }
-  if(tradeStatus?.buyback&&typeof args.onSell==='function'){
+  if(tradeStatus?.buyback&&typeof args.onSell==='function'&&typeof args.onSellMany!=='function'){
    const sell=make('button','btn dudu-v439-sell','🪙 Bán · +'+tradeStatus.buyback+' Xu');
-   sell.type='button';sell.addEventListener('click',()=>{
+   sell.type='button';sell.disabled=tradeStatus.busy===true;
+   if(sell.disabled)sell.title='Đang xử lý giao dịch trước đó.';
+   sell.addEventListener('click',()=>{
+    if(sell.disabled)return;
     if(!Array.isArray(args.inventory)||args.inventory[entry.index]!==entry.item)return;
-    if(!confirm('Bán 1 '+detail.name+' để nhận '+tradeStatus.buyback+' Xu Sandbox?'))return;
+    if(!confirm('Bán 1 '+detail.name+' với giá '+tradeStatus.buyback+' Xu?'))return;
     args.onSell(entry.item);
    });footer.append(sell);
+  }
+  if(tradeStatus?.lockEligible&&typeof args.onToggleLock==='function'){
+   const lock=make('button','btn dudu-f33-lock',tradeStatus.locked?
+    '🔒 Bỏ khóa bảo vật':'🔓 Khóa bảo vật');
+   lock.type='button';lock.disabled=tradeStatus.busy===true;
+   lock.addEventListener('click',()=>{
+    if(lock.disabled)return;
+    if(!Array.isArray(args.inventory)||args.inventory[entry.index]!==entry.item)return;
+    args.onToggleLock(entry.item);
+   });footer.append(lock);
   }
   if(tradeStatus?.auction&&typeof args.onAuction==='function'){
    const listing=make('details','dudu-v439-action-card');
@@ -260,61 +307,7 @@
    });
    listing.append(lbl,notice,button);footer.append(listing);
   }
-  if(tradeStatus?.giftTargets&&typeof args.onStoryGift==='function'&&
-    typeof args.storyGiftTargets==='function'){
-   const targets=args.storyGiftTargets(entry.item);
-   if(targets.length){
-    const gift=make('details','dudu-v439-action-card');
-    gift.append(make('summary','','💌 Tặng cho truyện · Ghi lời nhắn'));
-    const storyLabel=make('label','','Chọn truyện');
-    const story=make('select','dudu-v439-story-pick');
-    for(const target of targets){
-     const option=make('option','',target.title);option.value=target.id;story.append(option);
-    }
-    storyLabel.append(story);
-    const chapterLabel=make('label','','Chương (không bắt buộc)');
-    const chapter=make('select','dudu-v439-chapter-pick');
-    const refreshChapters=()=>{
-     chapter.replaceChildren();
-     const rootOption=make('option','','Cả truyện');rootOption.value='';chapter.append(rootOption);
-     const target=targets.find(x=>x.id===story.value);
-     for(const ch of target?.chapters||[]){
-      const option=make('option','',ch.title);option.value=ch.id;chapter.append(option);
-     }
-    };
-    story.addEventListener('change',refreshChapters);refreshChapters();
-    chapterLabel.append(chapter);
-    // A public story object never proves its author's Firebase UID.
-    // In V44.0 only the local STORY_SANDBOX destination is enabled.
-    const recipient=make('div','dudu-v44-recipient');
-    const recipientTitle=make('strong','','📚 Ủng hộ truyện');
-    const recipientDesc=make('small','','');
-    const authorLocked=make('div','dudu-v44-recipient-locked',
-      '🔒 Gửi trực tiếp tác giả: chưa mở · cần xác minh UID chủ truyện và quyền sở hữu trên máy chủ.');
-    const refreshRecipient=()=>{
-      const result=typeof args.recipientFor==='function'?
-       args.recipientFor(story.value):null;
-      recipientDesc.textContent=result?.description||
-        'Chỉ lưu thiệp vào nhật ký Sandbox cá nhân, không chuyển cho tác giả.';
-    };
-    story.addEventListener('change',refreshRecipient);refreshRecipient();
-    recipient.append(recipientTitle,recipientDesc,authorLocked);
-    const noteLabel=make('label','','Lời nhắn riêng · tối đa 160 ký tự');
-    const note=make('textarea','dudu-v439-note');note.maxLength=160;note.rows=2;
-    note.placeholder='Viết lời nhắn khi tặng quà cho truyện...';
-    noteLabel.append(note);
-    gift.append(storyLabel,chapterLabel,recipient,noteLabel,
-     make('small','','V44.0 · Chỉ lưu ở Sandbox. Đồ sẽ bị trừ khỏi Kho Sandbox và ghi nhật ký, nhưng không gửi sang tài khoản khác.'));
-    const button=make('button','btn dudu-v439-gift','Lưu thiệp ủng hộ Sandbox');
-    button.type='button';button.addEventListener('click',()=>{
-     if(!Array.isArray(args.inventory)||args.inventory[entry.index]!==entry.item)return;
-     if(!confirm('Dùng 1 '+detail.name+' để ghi thiệp ủng hộ trong Sandbox? Quà KHÔNG được gửi tới tài khoản tác giả.'))return;
-     args.onStoryGift(entry.item,story.value,chapter.value||null,note.value);
-    });
-    gift.append(button);footer.append(gift);
-   }
-  }
-  if(!detail.protected){
+  if(!detail.protected&&typeof args.onDiscard==='function'){
    const discard=make('button','btn btn-danger dudu-v42-discard',entry.count>1?'Vứt 1 vật phẩm':'Vứt vật phẩm');
    discard.type='button';
    discard.addEventListener('click',()=>{
@@ -365,7 +358,6 @@
    container.append(make('p','dudu-v27-inventory-empty',
      args.viewMode==='market'?'Không có vật phẩm phổ thông đủ điều kiện bán.':
      args.viewMode==='auction'?'Không có vật phẩm phù hợp để ký gửi thử.':
-     args.viewMode==='gifts'?'Chưa có vật phẩm phù hợp để tặng truyện.':
      all?'Không có vật phẩm phù hợp bộ lọc.':'Hành trang còn trống. Đồ nhặt được sẽ xuất hiện ở đây.'));
   }
   const current=result.entries.find(row=>row.items.includes(args.selected))||null;
@@ -388,7 +380,7 @@
    slot.append(art.container,badge,label);
    const action=typeof args.tradeStatus==='function'?args.tradeStatus(entry.item):null;
    const hint=action?.useable?'⚡ Dùng':action?.auction?'⚖️ Ký gửi':
-     action?.buyback?'🪙 Bán':action?.giftTargets?'💌 Tặng':
+     action?.buyback?'🪙 Bán':
      detail.protected?'🔒 Khóa':'📦 Lưu trữ';
    const ribbon=make('span','dudu-v439-slot-hint',hint);
    slot.append(ribbon);
@@ -401,7 +393,7 @@
     marker.setAttribute('aria-hidden','true');
     slot.append(marker);
    }
-   if(entry.count>1){
+   if(entry.count>1||entry.item.collectionSet==='VAN_VAT'){
      const quantity=make('span','dudu-v42-slot-quantity','×'+entry.count);
      quantity.setAttribute('aria-label','Số lượng '+entry.count);
      slot.append(quantity);
@@ -443,7 +435,7 @@
   return panel.open;
  }
  function close(){
-  hideModal(false);
+  dismissArt?.();hideModal(false);
   const legacy=$('inventory-v12-detail');
   if(legacy){legacy.replaceChildren();legacy.style.display='none';}
  }

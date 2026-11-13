@@ -25,7 +25,7 @@ test('V32 chat restores gift button but NPC details remain in Nhân Vật',()=>{
  assert.match(part,/class="dudu-v27-more-panel"/);
  assert.match(part,/onclick="clearCurrentChat\(\)"/);
  assert.match(part,/onclick="openGiftModalFromChat\(\)"/);
- assert.match(html,/onclick="openGiftModalForChar\('\$\{c\.id\}'\)"/);
+ assert.match(html,/openGiftModalForChar\(c\.id,novel\.id\)/);
  assert.match(html,/function npcCheckInFromCodexV31\(storyId,npcId\)/);
   assert.match(html,/confirm\("Xóa hội thoại và ký ức NPC của RIÊNG VAI đang chọn/);
  assert.match(part,/id="chat-character-selector"/);

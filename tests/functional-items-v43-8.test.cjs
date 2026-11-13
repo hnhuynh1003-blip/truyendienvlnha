@@ -18,7 +18,7 @@ const coupon=()=>mk(core.COUPON_ID,'coupon');
 const quote=(item,params={})=>rules.quoteUse({inventory:[item],itemInstanceId:item.instanceId,
  day,now,lastLootTimestamp:now-1000,...params});
 test('V44.1 retains 70 legacy plus 90 realm items, shop limits and 4 function tools',()=>{
- assert.equal(catalog.items.length,160);
+ assert.equal(catalog.items.length,248); // 179 inherited + 66 Vạn Vật prizes
  assert.equal(catalog.validate().length,0);
  assert.deepEqual(core.preview({tab:'TOOLS'}).map(x=>x.id),
   [core.TOOL_ID,core.SUPPLY_ID,core.PULSE_ID,core.COUPON_ID]);
@@ -59,8 +59,8 @@ test('V43.8 pulse shortens only phone cooldown by 60 seconds',()=>{
  assert.equal(a.lastLootTimestamp,now-61000);
  assert.equal(a.inventory.length,0);
  assert.equal(a.added.length,0);
- assert.equal(quote(p,{lastLootTimestamp:now-110000}).lastLootTimestamp,0);
- assert.equal(quote(p,{lastLootTimestamp:now-200000}).reason,'no-cooldown');
+ assert.equal(quote(p,{lastLootTimestamp:now-850000}).lastLootTimestamp,0);
+ assert.equal(quote(p,{lastLootTimestamp:now-920000}).reason,'no-cooldown');
  assert.equal(a.lootedChapters,undefined);
 });
 test('V43.8 coupon activates once, discounts common goods, never tools or future days',()=>{

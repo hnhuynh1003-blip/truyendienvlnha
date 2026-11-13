@@ -11,9 +11,11 @@ const rules=file('security/firestore-spark-personal-v53.rules.review');
 
 test('V53 Spark personal mode prevents Cloud Functions economy calls without touching sandbox',()=>{
  assert.match(html,/const DUDU_SPARK_PERSONAL_MODE = !IS_SANDBOX_MODE;/);
- for(const action of ['openInventory','openShop','openQuests']){
+ for(const action of ['openInventory','openQuests']){
   assert.match(html,new RegExp('!IS_SANDBOX_MODE&&!DUDU_SPARK_PERSONAL_MODE\\)window\\.DuduEconomyLiveV52\\?\\.'+action+'\\(\\)'));
  }
+ assert.match(html,/!IS_SANDBOX_MODE&&\(!DUDU_SPARK_PERSONAL_MODE\|\|window\.DUDU_SPARK_ITEMS_V1_READY===true\)/);
+ assert.match(file('js/economy-live-v52.js'),/if\(personal\(\)\)\{showPersonalMarket\(\);return;\}/);
  assert.match(html,/document\.body\.classList\.add\('dudu-spark-personal-mode'\)/);
 });
 test('V53 offline NPC replies are clearly scripted, scoped and never award currency',()=>{
@@ -33,7 +35,7 @@ test('V53 offline NPC replies are clearly scripted, scoped and never award curre
  assert.match(local,/saveChatHistories\(\)/);
  assert.match(local,/return;/);
  assert.doesNotMatch(local.slice(0,local.indexOf('return;')),/DuduAI\.generate|userProfile\.currency\s*=|v43RecordNpcBond/);
- assert.match(html,/NPC AI \(cần Worker bật\)|NPC AI .*Cloudflare|Hội thoại NPC dùng Gemini qua Cloudflare/);
+ assert.match(html,/Mỗi ngày có giới hạn lượt trò chuyện/);
 });
 test('V53 EPUB supports Firestore Spark without Cloud Storage backup UI',()=>{
  assert.match(html,/sparkPersonal:DUDU_SPARK_PERSONAL_MODE/);

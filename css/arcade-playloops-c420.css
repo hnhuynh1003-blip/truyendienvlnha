@@ -1,0 +1,233 @@
+/* C4.20 — Small real side games replace duplicate machine/bag dashboards. */
+#personal-arcade-v1 .neon-order-game,
+#personal-arcade-v1 .mine-seam-game{
+ position:relative;isolation:isolate;flex:1 1 auto;min-height:171px;
+ display:flex;flex-direction:column;gap:7px;justify-content:space-between;
+ margin-top:11px;padding:10px 8px 8px;overflow:hidden;
+ border-top:1px solid #7fe9f17c;
+}
+#personal-arcade-v1 .neon-order-game{
+ background:radial-gradient(ellipse at 22% 60%,#ae388b36,transparent 63%),
+ repeating-linear-gradient(90deg,transparent 0 44px,#b578ff0d 45px 46px),
+ linear-gradient(180deg,#0e162e00,#20172f);
+}
+#personal-arcade-v1 .mine-seam-game{
+ border-top-color:#e7a66799;
+ background:radial-gradient(ellipse at 50% 63%,#c67d4e3c,transparent 69%),
+ repeating-linear-gradient(100deg,transparent 0 45px,#d09e6b0a 46px 47px),
+ linear-gradient(180deg,#1c132200,#24182b);
+}
+#personal-arcade-v1 .neon-order-heading,
+#personal-arcade-v1 .mine-seam-heading,
+#personal-arcade-v1 .neon-order-footer,
+#personal-arcade-v1 .mine-seam-footer{
+ position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;
+ gap:6px;font:800 9px/1.3 ui-monospace,monospace;letter-spacing:.055em;
+}
+#personal-arcade-v1 .neon-order-heading{color:#90f2ed}
+#personal-arcade-v1 .neon-order-heading span{color:#ffbdde}
+#personal-arcade-v1 .neon-order-footer{color:#bad3fa;font-size:8px}
+#personal-arcade-v1 .mine-seam-heading{color:#f6ca91}
+#personal-arcade-v1 .mine-seam-heading span{color:#ffb578}
+#personal-arcade-v1 .mine-seam-footer{color:#e4bda0}
+#personal-arcade-v1 .mine-seam-footer>b{color:#ffdc9e}
+
+/* Neon: a customer arrives with a two-step ticket. The player serves items
+   in sequence; this is independent from idle computer earnings/upgrades. */
+#personal-arcade-v1 .neon-order-scene{
+ position:relative;z-index:1;flex:1;min-height:78px;
+ display:grid;grid-template-columns:78px minmax(0,1fr);gap:8px;
+ align-items:center;padding:3px 7px;
+ background:linear-gradient(90deg,#11244900,#1b2e5277 60%,#1019367f);
+}
+#personal-arcade-v1 .neon-order-scene::after{
+ content:'';position:absolute;left:0;right:0;bottom:1px;height:7px;
+ background:repeating-linear-gradient(90deg,#56dcf3 0 22px,#c66bcb 24px 26px,#284874 28px 36px);
+ opacity:.55;
+}
+#personal-arcade-v1 .neon-order-customer{
+ width:72px;height:83px;position:relative;align-self:end;
+ filter:drop-shadow(0 4px 7px #040919a0);
+ animation:neon-customer-bob 2.4s ease-in-out infinite alternate;
+}
+#personal-arcade-v1 .neon-order-customer::before{
+ content:'';position:absolute;top:10px;left:19px;width:37px;height:37px;
+ border-radius:42% 45% 49% 44%;z-index:2;
+ background:linear-gradient(120deg,#ffc9ac,#e29fa2 72%,#bc739c);
+ box-shadow:inset -4px -2px #a75f8399,0 -8px 0 -3px #30264d;
+}
+#personal-arcade-v1 .neon-order-customer::after{
+ content:'';position:absolute;bottom:0;left:7px;width:63px;height:40px;
+ border-radius:26px 25px 6px 6px;background:linear-gradient(135deg,#6e8dd5,#493a8a 70%);
+ border:2px solid #a880d7;box-shadow:inset 0 4px #adcfff4c;
+}
+#personal-arcade-v1 .neon-order-customer i{
+ position:absolute;top:7px;left:14px;width:47px;height:33px;z-index:4;
+ border:5px solid #4f3e7b;border-bottom:0;border-radius:28px 28px 0 0;
+ box-shadow:-3px 14px 0 -1px #2d2756,6px 14px 0 -1px #2d2756;
+}
+#personal-arcade-v1 .neon-order-customer>span{
+ position:absolute;top:-6px;right:-3px;z-index:5;color:#fcade9;font-size:23px;
+ text-shadow:0 0 9px #fca4e3;
+}
+#personal-arcade-v1 .neon-order-ticket{
+ align-self:center;min-height:77px;display:flex;flex-direction:column;
+ align-items:center;justify-content:center;gap:4px;padding:8px 5px;
+ border:1px solid #e9ccefa3;border-radius:7px 7px 12px 12px;
+ background:linear-gradient(145deg,#f5e7ed,#d8cce5);color:#363154;
+ box-shadow:0 4px 14px #05051f80,inset 0 2px #ffffffab;
+ transform:rotate(-1deg);
+}
+#personal-arcade-v1 .neon-order-ticket small{
+ color:#716284;font:900 9px ui-monospace,monospace;letter-spacing:.1em;
+}
+#personal-arcade-v1 .neon-order-recipe{display:flex;align-items:center;gap:8px;justify-content:center;min-height:30px}
+#personal-arcade-v1 .neon-order-recipe>span:not(.neon-order-timer){
+ display:grid;place-items:center;width:35px;height:35px;border-radius:50%;font-size:21px;
+ background:#ffffffb5;box-shadow:inset 0 0 9px #bd94cd7a;
+}
+#personal-arcade-v1 .neon-order-recipe>span.is-done{color:#20856d;font-size:20px}
+#personal-arcade-v1 .neon-order-recipe>i{font:900 18px ui-monospace,monospace;color:#89728f}
+#personal-arcade-v1 .neon-order-timer{font:900 23px ui-monospace,monospace;color:#695182}
+#personal-arcade-v1 .neon-order-ticket em{
+ color:#65526e;font:800 8px ui-monospace,monospace;letter-spacing:.035em;font-style:normal;
+}
+#personal-arcade-v1 .neon-order-actions{
+ position:relative;z-index:3;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;
+}
+#personal-arcade-v1 .neon-order-actions button{
+ min-height:62px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+ gap:2px;cursor:pointer;border-radius:9px;border:1px solid #c789cf9c;
+ background:linear-gradient(140deg,#4d3579,#34265b);color:#ffdef6;
+ box-shadow:inset 0 2px #faaff43b,0 4px 0 #141028;
+ transition:transform .12s,filter .12s;
+}
+#personal-arcade-v1 .neon-order-actions button:nth-child(2){
+ border-color:#83cdffab;background:linear-gradient(140deg,#235c9c,#263b7f);
+}
+#personal-arcade-v1 .neon-order-actions button:nth-child(3){
+ border-color:#81ddc5ab;background:linear-gradient(140deg,#256a6e,#244b65);
+}
+#personal-arcade-v1 .neon-order-actions button>strong{font-size:25px;line-height:1.2}
+#personal-arcade-v1 .neon-order-actions button>span{font:800 10px ui-monospace,monospace}
+#personal-arcade-v1 .neon-order-actions button:active:not(:disabled){transform:translateY(3px);box-shadow:inset 0 2px #faaff43b}
+#personal-arcade-v1 .neon-order-actions button:disabled{opacity:.38;filter:grayscale(.7);cursor:default}
+#personal-arcade-v1 .neon-order-actions button:focus-visible{outline:2px solid #ffe4f3;outline-offset:2px}
+
+/* Mine: three clickable cave mouths with different signal strengths. */
+#personal-arcade-v1 .mine-seam-scene{
+ position:relative;z-index:1;flex:1;min-height:100px;
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;
+ padding:8px 4px 5px;
+}
+#personal-arcade-v1 .mine-seam-tunnel{
+ position:relative;min-height:102px;display:flex;flex-direction:column;
+ align-items:center;justify-content:flex-end;gap:3px;padding:5px 3px 7px;
+ border:1px solid #986d5fa5;border-radius:38% 38% 9px 9px;
+ background:radial-gradient(ellipse at 50% 75%,#6d5779,#2e243b 70%),
+ linear-gradient(135deg,#785655,#30283e);
+ box-shadow:inset 4px 4px 15px #f4ad785c,inset -8px -8px 13px #080714ad,0 5px 7px #0c0714ad;
+ cursor:pointer;overflow:hidden;transition:transform .13s,filter .13s;
+}
+#personal-arcade-v1 .mine-seam-tunnel:nth-of-type(2){
+ background:radial-gradient(ellipse at 50% 75%,#51869a,#2d364f 70%),linear-gradient(135deg,#6a7283,#303047);
+}
+#personal-arcade-v1 .mine-seam-tunnel:nth-of-type(3){
+ background:radial-gradient(ellipse at 50% 75%,#85618b,#362744 70%),linear-gradient(135deg,#76507d,#28263f);
+}
+#personal-arcade-v1 .mine-seam-arch{
+ position:absolute;left:12%;right:12%;top:11%;height:54%;overflow:hidden;
+ border:4px solid #a2807a;border-bottom:0;border-radius:49% 49% 0 0;
+ background:radial-gradient(ellipse at 50% 85%,#6995a669,#101622 70%);
+ box-shadow:inset 0 0 16px #05040add,0 0 12px #e5a77e67;
+}
+#personal-arcade-v1 .mine-seam-arch::after{
+ content:'';position:absolute;inset:3px 5px 0;
+ background:linear-gradient(140deg,#6ccbe2 0 18%,transparent 19% 70%,#bd89e5 75% 90%,transparent 91%);
+ clip-path:polygon(50% 4%,70% 20%,60% 70%,38% 100%,18% 54%,28% 17%);
+ opacity:.72;
+}
+#personal-arcade-v1 .mine-seam-arch>i{
+ position:absolute;bottom:2px;left:23%;right:23%;height:35%;border-radius:50%;
+ background:radial-gradient(ellipse,#75ffff88,transparent 70%);
+ animation:mine-seam-glow 1.6s ease-in-out infinite alternate;
+}
+#personal-arcade-v1 .mine-seam-arch>em{
+ position:absolute;top:24%;left:43%;font-size:17px;font-style:normal;color:#b4fbff;
+ text-shadow:0 0 12px #b9ffff;
+}
+#personal-arcade-v1 .mine-seam-signal{display:flex;gap:4px;align-items:flex-end;z-index:1;min-height:16px}
+#personal-arcade-v1 .mine-seam-signal i{
+ width:8px;height:9px;border:1px solid #8f7c7e;border-radius:2px;background:#594d57;
+}
+#personal-arcade-v1 .mine-seam-signal i:nth-child(2){height:12px}
+#personal-arcade-v1 .mine-seam-signal i:nth-child(3){height:16px}
+#personal-arcade-v1 .mine-seam-signal i.is-lit{
+ border-color:#c6f8ff;background:linear-gradient(#ecffff,#66dbf2);
+ box-shadow:0 0 9px #89f5ff;
+}
+#personal-arcade-v1 .mine-seam-tunnel>strong{
+ position:relative;z-index:1;color:#ffdfa9;font:800 10px ui-monospace,monospace;
+}
+#personal-arcade-v1 .mine-seam-tunnel:hover:not(:disabled){filter:brightness(1.16)}
+#personal-arcade-v1 .mine-seam-tunnel:active:not(:disabled){transform:translateY(4px) scale(.97)}
+#personal-arcade-v1 .mine-seam-tunnel:disabled{opacity:.52;filter:grayscale(.35);cursor:default}
+#personal-arcade-v1 .mine-seam-tunnel:focus-visible{outline:2px solid #ffe3a3;outline-offset:3px}
+#personal-arcade-v1 .mine-seam-result{
+ position:absolute;inset:28% 17% auto;z-index:5;padding:8px 4px;
+ text-align:center;color:#e6fff3;font:900 12px ui-monospace,monospace;
+ background:#224c4cde;border:1px solid #9bf4d9;border-radius:6px;
+ box-shadow:0 0 20px #8be8d98c;pointer-events:none;
+ animation:mine-seam-pop .4s ease-out both;
+}
+#personal-arcade-v1 .mine-seam-result.is-miss{color:#ffe4c7;background:#54342fdc;border-color:#f0ae73}
+
+/* Compact district chips replace oversized cards with tiny type. */
+#personal-arcade-v1 .jade-market-route{
+ padding:4px 5px 3px;border-radius:6px;background:#17372ff0;
+ border-color:#c1a77370;box-shadow:0 3px 9px #092219a8;
+}
+#personal-arcade-v1 .jade-market-stop-list{
+ gap:5px;padding:1px 0 2px;scrollbar-width:none;align-items:center;
+}
+#personal-arcade-v1 .jade-market-stop-list::-webkit-scrollbar{display:none}
+#personal-arcade-v1 .jade-market-stop{
+ flex:0 0 auto;min-height:32px;width:auto;max-width:135px;
+ display:flex;align-items:center;gap:5px;padding:5px 10px;
+ border-radius:999px;border:1px solid #8baa8c8b;
+ background:#274c42;color:#e3e4cb;box-shadow:none;
+}
+#personal-arcade-v1 .jade-market-stop-icon{
+ display:inline-flex;grid-row:auto;font-size:13px;line-height:1;
+}
+#personal-arcade-v1 .jade-market-stop strong{
+ font:800 10px ui-monospace,monospace;line-height:1.1;
+}
+#personal-arcade-v1 .jade-market-stop.is-active{
+ color:#fff1c7;border-color:#f5d09b;background:linear-gradient(110deg,#74563f,#456c55);
+ box-shadow:0 0 9px #f3cf7859;
+}
+#personal-arcade-v1 .jade-market-stop.is-locked{
+ opacity:.68;filter:none;cursor:pointer;color:#c8c6af;
+}
+#personal-arcade-v1 .jade-market-stop.is-locked:focus-visible{outline-color:#ffdfad}
+
+@keyframes neon-customer-bob{to{transform:translateY(-4px)}}
+@keyframes mine-seam-glow{to{opacity:.3;transform:scale(.8)}}
+@keyframes mine-seam-pop{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+@media(max-width:360px){
+ #personal-arcade-v1 .neon-order-game,
+ #personal-arcade-v1 .mine-seam-game{min-height:158px;padding:8px 5px;gap:5px}
+ #personal-arcade-v1 .neon-order-scene{grid-template-columns:67px 1fr;gap:5px;padding:1px}
+ #personal-arcade-v1 .neon-order-customer{transform:scale(.86);transform-origin:bottom left}
+ #personal-arcade-v1 .neon-order-actions{gap:5px}
+ #personal-arcade-v1 .neon-order-actions button{min-height:54px}
+ #personal-arcade-v1 .mine-seam-scene{gap:5px}
+ #personal-arcade-v1 .mine-seam-tunnel{min-height:93px}
+ #personal-arcade-v1 .jade-market-stop{padding:5px 8px}
+}
+@media(prefers-reduced-motion:reduce){
+ #personal-arcade-v1 .neon-order-customer,
+ #personal-arcade-v1 .mine-seam-arch>i,
+ #personal-arcade-v1 .mine-seam-result{animation:none!important}
+}

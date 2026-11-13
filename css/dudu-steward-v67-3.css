@@ -1,0 +1,15 @@
+/* DUDU V67.3 — understated read-only navigation inside system answers. */
+body.dudu-phone-v11 #cyber-phone .dudu-v43-bubble .dudu-v673-action{
+ display:flex;align-items:center;justify-content:space-between;gap:8px;
+ width:fit-content;max-width:100%;min-height:32px;margin:10px 0 0;
+ padding:7px 10px;border:1px solid rgba(176,191,240,.34);
+ border-radius:10px;background:rgba(137,149,211,.14);
+ color:#e4eafa;font:700 11px/1.35 system-ui,-apple-system,sans-serif;
+ cursor:pointer;text-align:left;
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-bubble .dudu-v673-action:hover{
+ background:rgba(150,165,227,.25);border-color:rgba(192,206,255,.62);
+}
+body.dudu-phone-v11 #cyber-phone .dudu-v43-bubble .dudu-v673-action:focus-visible{
+ outline:2px solid #d5d1ff;outline-offset:2px;
+}

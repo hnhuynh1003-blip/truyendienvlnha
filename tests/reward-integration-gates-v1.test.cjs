@@ -1,0 +1,39 @@
+'use strict';
+const {test}=require('node:test');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const src=p=>fs.readFileSync(path.join(__dirname,'..',p),'utf8');
+
+test('Arcade conversion is accessible at the wallet but still requires verified release gate',()=>{
+ const ui=src('js/personal-arcade-ui-v1.js');
+ const html=src('index.html');
+ assert.match(html,/id="arcade-header-wallet-v1"[^>]+data-arcade-exchange="open"/);
+ assert.match(ui,/headerWallet\?\.addEventListener\('click'/);
+ assert.match(ui,/role="dialog"/);
+ assert.match(ui,/DUDU_SPARK_EXCHANGE_V1_READY===true/);
+ assert.match(ui,/!exchangeEnabled\(\)\?'Chuyển tiền · Chưa mở'/);
+ assert.match(ui,/!exchangeEnabled\(\)\|\|exchangeBusy\|\|!quoteForExchange\(\)\.ok/);
+ assert.match(ui,/userProfile\.currency=result\.balance/);
+ assert.doesNotMatch(ui,/userProfile\.currency\s*\+=/);
+ assert.doesNotMatch(ui,/firebase\.firestore\(/);
+});
+test('Production DUDU FUN claims run through owner-scoped transactions only',()=>{
+ const fun=src('js/dudu-fun-ui-v43.js');
+ const service=src('js/personal-fun-c25.js');
+ assert.match(fun,/if\(!sandbox\(\)\)return liveAction\('claim'\)/);
+ assert.match(fun,/bridge\(\)\.run\(opts\)/);
+ assert.match(service,/await db\.runTransaction/);
+ assert.match(service,/fun\.claim\(raw,\{type,day,coins:data\.currency,inventory:data\.inventory\}\)/);
+ assert.doesNotMatch(fun,/dudu-fun:practice:v51:/);
+});
+test('One-shot Rules readiness tracks legacy quest and loot profile mutations',()=>{
+ const main=src('index.html'),readiness=src('docs/DUDU-SPARK-ONE-SHOT-RULES-READINESS-2026-10-29.md');
+ assert.match(main,/function claimQuestReward\(questId\)/);
+ assert.match(main,/userProfile\.currency \+= q\.rewardCoin/);
+ assert.match(main,/function rollLootDrop\(/);
+ assert.match(main,/userProfile\.inventory\.unshift\(copy\)/);
+ for(const source of ['ARCADE_TRANSFER','QUEST_CLAIM','FUN_CLAIM','LOOT_CLAIM'])
+  assert.ok(readiness.includes(source));
+ assert.match(readiness,/chưa bật quyền và chưa sửa\/deploy Firestore Rules/);
+});

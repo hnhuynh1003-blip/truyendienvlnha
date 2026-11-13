@@ -1,0 +1,149 @@
+/* FUN-TOWER1 — consistent violet/gold DUDU FUN fantasy stage. */
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-fun-tabs{
+ grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-fun-tab{
+ padding:9px 3px;font-size:10px;min-height:41px;line-height:1.25;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-shell{
+ position:relative;isolation:isolate;min-height:555px;overflow:hidden;
+ margin:-8px;border-radius:14px;
+ background:#151334 url('../assets/dudu-fun/tower-v1/fate-tower-stage.webp')
+  center 19%/cover no-repeat;
+ color:#f6e6cf;text-align:center;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-art{
+ position:absolute;inset:0;z-index:-1;pointer-events:none;
+ background:linear-gradient(180deg,#110e32ad 0%,#14143372 26%,
+  #171333ae 49%,#0b1029eb 68%,#0b1029fc 100%);
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-content{
+ display:flex;flex-direction:column;gap:9px;align-items:stretch;
+ padding:20px 11px 14px;min-height:555px;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-eyebrow{
+ color:#f2d28c;letter-spacing:1.5px;font-size:9px;font-weight:850;
+ text-shadow:0 2px 5px #0b0925;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-title{
+ margin:0;font:800 clamp(18px,5vw,24px)/1.12 Georgia,serif;
+ letter-spacing:1.5px;color:#fff0bc;text-shadow:0 0 10px #b969d3,0 3px 8px #17092d;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-caption{
+ margin:0 auto;font-size:10px;line-height:1.5;max-width:300px;color:#f4e5f4;
+ text-shadow:0 2px 5px #110f29;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-stats{
+ display:flex;justify-content:space-around;gap:6px;padding:7px 5px;
+ border:1px solid #b08ac38a;border-radius:10px;background:#211837b8;
+ color:#ffdb9f;font-size:10px;font-weight:750;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-track{
+ display:flex;justify-content:space-between;gap:5px;margin:2px auto 0;width:min(100%,270px);
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-step{
+ display:grid;place-items:center;width:31px;height:31px;border-radius:50%;
+ border:1px solid #b9a3c477;background:#271d45dc;color:#bcb1d6;
+ font:850 13px/1 Georgia,serif;box-shadow:0 3px 10px #0c072a80;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-step.is-clear{
+ background:#735394;border-color:#f5d28b;color:#fff1ba;
+ box-shadow:0 0 10px #c9a1f588;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-step.is-next{
+ border-color:#ffd987;color:#ffefbd;box-shadow:0 0 0 2px #fff1b421,0 0 13px #e9b8f185;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-play{
+ margin-top:auto;display:flex;align-items:center;flex-direction:column;gap:10px;
+ padding:14px 10px;border-radius:14px;
+ border:1px solid #d6b77ca8;
+ background:linear-gradient(160deg,#34254fe8,#1e223cfa);
+ box-shadow:0 8px 25px #080823b3,inset 0 1px #fff0be2e;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-floor{
+ font-size:9px;letter-spacing:2px;font-weight:800;color:#d9aefe;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-status{
+ font:800 16px/1.2 Georgia,serif;color:#ffebbc;text-shadow:0 1px 8px #e4bb9154;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-small,
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-final{
+ margin:0;font-size:11px;line-height:1.5;color:#e3d9ef;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-gates{
+ width:100%;display:flex;justify-content:center;gap:7px;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-gate{
+ display:flex;flex:1;max-width:95px;min-height:79px;flex-direction:column;
+ align-items:center;justify-content:center;gap:6px;border-radius:12px;
+ border:1px solid #d0ace2a8;background:linear-gradient(155deg,#765198,#493d7b);
+ color:#ffe2bd;cursor:pointer;box-shadow:inset 0 1px #fff3d562,0 4px 12px #0d10317f;
+ transition:transform .14s,filter .14s,box-shadow .14s;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-gate:active{
+ transform:scale(.96);filter:brightness(1.25);
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-gate .dudu-tower-glyph{
+ font:900 30px/1 Georgia,serif;text-shadow:0 0 12px #e1b8ff;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-gate small{
+ font-size:9px;color:#fce9ce;font-weight:800;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-primary{
+ width:100%;min-height:41px;border:1px solid #ffe0a0;border-radius:11px;
+ background:linear-gradient(130deg,#b579a3,#71518f 70%);color:#fff2d4;
+ font-size:11px;font-weight:900;letter-spacing:.35px;cursor:pointer;
+ box-shadow:inset 0 1px #fff5d980,0 5px 13px #0a092c94;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-bank{
+ background:linear-gradient(130deg,#ad7b42,#805b5f 75%);
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-gate:focus-visible,
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-primary:focus-visible{
+ outline:2px solid #fff0aa;outline-offset:2px;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-feedback{
+ margin:0;color:#ffcaad;font-size:10px;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-rules{
+ border:1px solid #ae9bb85e;border-radius:9px;padding:8px;
+ background:#10142ac9;text-align:left;font-size:10px;line-height:1.6;color:#ded2ed;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-rules summary{
+ color:#ffe0a1;font-weight:800;cursor:pointer;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-rule-row{
+ border-top:1px solid #c2a7cd36;margin-top:5px;padding-top:4px;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-preview-note{
+ font-size:9px;line-height:1.5;color:#cfc6e2;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-moment-passed .dudu-tower-play,
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-moment-crowned .dudu-tower-play,
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-moment-banked .dudu-tower-play{
+ animation:duduTowerRise .75s ease-out both;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-moment-lost .dudu-tower-play{
+ animation:duduTowerFall .65s ease-out both;
+}
+@keyframes duduTowerRise{
+ 0%{filter:brightness(.9);transform:translateY(9px)}
+ 55%{filter:brightness(1.3);box-shadow:0 0 25px #ffd9a4ad}
+ 100%{filter:brightness(1);transform:translateY(0)}
+}
+@keyframes duduTowerFall{
+ 0%,100%{filter:brightness(1)}50%{filter:brightness(.6) saturate(.65)}
+}
+@media(max-width:375px){
+ body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-fun-tab{font-size:9px}
+ body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-shell{margin:-6px}
+ body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-content{padding:15px 8px 11px}
+}
+@media(prefers-reduced-motion:reduce){
+ body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-moment-passed .dudu-tower-play,
+ body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-moment-crowned .dudu-tower-play,
+ body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-moment-banked .dudu-tower-play,
+ body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-tower-moment-lost .dudu-tower-play{
+  animation:none!important;
+ }
+}

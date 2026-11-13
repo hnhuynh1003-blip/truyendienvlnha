@@ -23,6 +23,26 @@ PILOT_ENABLED = "false"
 # provenance, cross-DO outbox/saga and independent pilot audit.
 PILOT_SETTLEMENT_ENABLED = "false"
 MODEL = "gemini-3.5-flash-lite"
+# V58 fail-closed. Verification/approval requires a separate explicit change
+# after confirming Workers FREE plan and absence of paid AI billing.
+DUDU_AI_FREE_ONLY = "true"
+DUDU_WORKERS_AI_APPROVED = "false"
+DUDU_WORKERS_ACCOUNT_FREE_VERIFIED = "false"
+DUDU_AI_FALLBACK_ENABLED = "false"
+DUDU_PAID_PROVIDERS_ENABLED = "false"
+# V68 owner-only Hive pilot. Requires three separate Cloudflare Secrets:
+# HIVE_API_KEY, DUDU_HIVE_TEST_UID. Never put either value in git.
+# BOTH manual flags remain OFF even when a key is configured.
+DUDU_HIVE_ENABLED = "false"
+DUDU_HIVE_TEST_APPROVED = "false"
+# V71 genuine server-side system identities. No browser/Sandbox fake state.
+DUDU_SYSTEM_LIVE_ENABLED = "true"
+# Test issuance still requires Firebase admin AND DUDU_SYSTEM_PILOT_UID Secret.
+DUDU_SYSTEM_PILOT_CARD_ENABLED = "true"
+
+# Binding itself does not call AI; all executions require the above gates.
+[ai]
+binding = "AI"
 
 [[durable_objects.bindings]]
 name = "DUDU_QUOTA"
@@ -63,3 +83,11 @@ class_name = "DuduGiftLedger"
 [[migrations]]
 tag = "v5-gift-ledger-sqlite"
 new_sqlite_classes = ["DuduGiftLedger"]
+
+[[durable_objects.bindings]]
+name = "DUDU_SYSTEM_REGISTRY"
+class_name = "DuduSystemRegistry"
+
+[[migrations]]
+tag = "v6-dudu-system-registry-sqlite"
+new_sqlite_classes = ["DuduSystemRegistry"]

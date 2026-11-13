@@ -1,0 +1,82 @@
+/* FUN-CAS1 — casino-fantasy chrome and one-shot ticket feedback only.
+   The AI Vạn Bảo scenes and all economy/gameplay rules stay untouched. */
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-fun-tab{
+ position:relative;isolation:isolate;overflow:hidden;
+ border-color:#d4af78aa;border-radius:12px;
+ background:linear-gradient(155deg,#3d3155,#252b4d 67%,#202c43);
+ box-shadow:inset 0 1px #f7e2ae45,0 3px 8px #090c2280;
+ color:#f6e2cc;transition:border-color .15s,filter .15s;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-fun-tab.is-active{
+ border-color:#ffe2a7;background:linear-gradient(155deg,#745077,#57395e 55%,#3d315a);
+ color:#fff3d6;box-shadow:inset 0 1px #ffedc2a3,0 0 12px #c388b85a;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-fun-tab:active{filter:brightness(1.14)}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-fun-stage{
+ position:relative;isolation:isolate;overflow:hidden;
+ border:1px solid #d7ae79b5;border-radius:16px;
+ background:radial-gradient(ellipse at 50% -12%,#a56e9a44,transparent 62%),
+  radial-gradient(ellipse at 100% 90%,#6859a232,transparent 54%),
+  linear-gradient(155deg,#26243e,#1b2b43 72%);
+ box-shadow:inset 0 0 0 1px #f4ce8e27,inset 0 18px 32px #110f2c30,
+  0 7px 18px #090b2480;
+}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-fun-stage::before{
+ content:'✧  ✦  ✧';position:absolute;right:9px;top:0;
+ font:13px/1 Georgia,serif;letter-spacing:3px;color:#f7d79b67;
+ pointer-events:none;z-index:-1;
+}
+body.dudu-phone-v11 #cyber-phone .lucky-odds-overview{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:10px;
+}
+body.dudu-phone-v11 #cyber-phone .lucky-odds-stat{
+ display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+ min-width:0;padding:8px 3px;border-radius:8px;
+ border:1px solid #d4ad794e;background:linear-gradient(150deg,#4c3447,#2d2c48);
+}
+body.dudu-phone-v11 #cyber-phone .lucky-odds-stat small{
+ font-size:9px;color:#e5c4bf;font-weight:800;
+}
+body.dudu-phone-v11 #cyber-phone .lucky-odds-stat b{
+ font-size:11px;color:#ffe5ae;font-variant-numeric:tabular-nums;
+}
+body.dudu-phone-v11 #cyber-phone .lucky-odds-math{
+ display:block;margin-top:8px;font-size:9px;line-height:1.5;color:#e9d3c4;
+}
+body.dudu-phone-v11 #cyber-phone .lucky-number-card.lucky-outcome-win,
+body.dudu-phone-v11 #cyber-phone .lucky-card.lucky-outcome-win{
+ animation:funCasinoWin .95s ease-out both;
+}
+body.dudu-phone-v11 #cyber-phone .lucky-number-card.lucky-outcome-loss,
+body.dudu-phone-v11 #cyber-phone .lucky-card.lucky-outcome-loss{
+ animation:funCasinoLoss .62s ease-out both;
+}
+body.dudu-phone-v11 #cyber-phone .lucky-outcome-win::after{
+ content:'✦';position:absolute;z-index:3;left:50%;top:42%;pointer-events:none;
+ color:#fff8c9;text-shadow:0 0 12px #fff1a4,0 0 33px #ffe3ad;
+ font:900 54px/1 Georgia,serif;animation:funCasinoSpark 1s ease-out both;
+}
+@keyframes funCasinoWin{
+ 0%{filter:brightness(1);transform:scale(.985)}
+ 40%{filter:brightness(1.33);box-shadow:0 0 28px #fff0ae,0 0 0 3px #ffe0a6}
+ 100%{filter:brightness(1);transform:scale(1)}
+}
+@keyframes funCasinoLoss{
+ 0%,100%{filter:brightness(1)}
+ 45%{filter:brightness(.7) saturate(.78)}
+}
+@keyframes funCasinoSpark{
+ 0%{opacity:0;transform:translate(-50%,-50%) scale(.35) rotate(-30deg)}
+ 35%{opacity:1;transform:translate(-50%,-50%) scale(1.2) rotate(0)}
+ 100%{opacity:0;transform:translate(-50%,-85%) scale(1.6) rotate(24deg)}
+}
+@media(prefers-reduced-motion:reduce){
+ body.dudu-phone-v11 #cyber-phone .lucky-outcome-win,
+ body.dudu-phone-v11 #cyber-phone .lucky-outcome-loss,
+ body.dudu-phone-v11 #cyber-phone .lucky-outcome-win::after{animation:none!important}
+ body.dudu-phone-v11 #cyber-phone .lucky-outcome-win::after{display:none}
+}
+@media(max-width:355px){
+ body.dudu-phone-v11 #cyber-phone .lucky-odds-stat b{font-size:10px}
+ body.dudu-phone-v11 #cyber-phone .lucky-odds-stat small{font-size:8px}
+}

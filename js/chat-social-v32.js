@@ -1,5 +1,5 @@
 /* DUDU V32 Chinese-inspired character messenger interactions.
- * Sandbox-only, virtual Xu red envelopes: no cash, no NPC balances or auto-affinity.
+ * Sandbox local / real-account Firestore virtual Xu: no cash, NPC balance or affinity.
  * Depends on existing inline app bindings (userProfile / selected NPC / story).
  */
 (function(root){
@@ -8,7 +8,9 @@
   let draft=null,busy=false,focusReturn=null;
   const el=id=>document.getElementById(id);
   function context(){
-    if(!IS_SANDBOX_MODE||!currentUsername)return null;
+    if(!currentUsername||(!IS_SANDBOX_MODE&&
+       (!DuduAuth?.isReady?.()||DuduAuth.uid()!==currentUsername||
+        !root.DuduPersonalNpcExchangeV1)))return null;
     const id=el('chat-character-selector')?.value;
     const storyId=activeChatNovelId||(novels[selectedNovelIndex]||{}).id;
     const npc=novels.find(n=>n?.id===storyId)?.characters?.find(c=>c?.id===id&&!c.archived);
@@ -22,7 +24,13 @@
   function sync(){
     const ctx=context();
     for(const id of ['dudu-v32-gift-button','dudu-v32-envelope-button']){
-      const b=el(id);if(b){b.disabled=!ctx;b.title=ctx?'':'Cần đăng nhập Sandbox và mở khóa NPC';}
+      const b=el(id);if(b){
+        b.disabled=!ctx;b.title=ctx?'':'Cần đăng nhập và mở khóa NPC';
+        if(id==='dudu-v32-envelope-button'){
+          b.textContent='🧧 Phong bao';
+          b.setAttribute('aria-label','Gửi phong bao cho NPC');
+        }
+      }
     }
     const chip=el('dudu-v32-mini-affinity');
     if(chip){
@@ -62,10 +70,34 @@
     modal.style.display='flex';modal.setAttribute('aria-hidden','false');
     choose(10);el('dudu-v32-envelope-note').focus();
   }
-  function send(){
-    if(busy||!draft||!IS_SANDBOX_MODE)return;
+  async function send(){
+    if(busy||!draft)return;
     const ctx=context();
     if(!ctx||ctx.owner!==draft.owner||ctx.storyId!==draft.storyId||ctx.npcId!==draft.npcId){close();return;}
+    if(!IS_SANDBOX_MODE){
+      if(typeof root.commitPersonalNpcExchangeV1!=='function'){
+        feedback('Phong bao chưa sẵn sàng. Thử lại sau nhé.');return;
+      }
+      busy=true;
+      el('dudu-v32-envelope-confirm').disabled=true;
+      el('dudu-v32-envelope-result').textContent='Đang gửi phong bao...';
+      try{
+        const result=await root.commitPersonalNpcExchangeV1('rp',ctx.storyId,ctx.npcId,{
+          amount:draft.amount,note:rules.sanitizeNote(el('dudu-v32-envelope-note').value)});
+        if(!result){
+          el('dudu-v32-envelope-result').textContent='Chưa gửi được. Hãy thử lại.';
+          return;
+        }
+        close();
+        feedback(result.status==='already-applied'? '🧧 Phong bao này đã gửi rồi.':
+          '🧧 Đã gửi phong bao '+result.amount+' Xu cho '+ctx.npc.name+'.');
+        renderChatMessages(ctx.npcId);
+      }finally{
+        busy=false;
+        if(draft)choose(draft.amount);
+      }
+      return;
+    }
     const now=Date.now(),balance=Number(userProfile.currency);
     const state=getStoryProgress(ctx.storyId);
     const current=state.redPacketsV32&&typeof state.redPacketsV32==='object'?state.redPacketsV32:{};
@@ -87,19 +119,25 @@
       busy=false;return;
     }
     busy=false;close();
-    feedback('🧧 Đã lưu phong bao '+plan.amount+' Xu trong Sandbox.');
+    feedback('🧧 Đã gửi phong bao '+plan.amount+' Xu.');
     renderChatMessages(ctx.npcId);
   }
-  function render(container,storyId,id){
-    if(!IS_SANDBOX_MODE||!storyId||!id)return;
-    const events=rules.normalizeRecord(record(storyId,id)).events.slice(-5);
+  function render(container,storyId,id,onlyEvent=null){
+    if(!storyId||!id||(!IS_SANDBOX_MODE&&!context()))return;
+    const events=onlyEvent?[onlyEvent]:rules.normalizeRecord(record(storyId,id)).events.slice(-5);
     for(const item of events){
       const card=document.createElement('div');card.className='dudu-v32-red-packet-card';
+      card.dataset.packetId=item.id;
       const emoji=document.createElement('span');emoji.textContent='🧧';emoji.className='dudu-v32-packet-emoji';
       const value=document.createElement('strong');value.textContent='Phong bao '+item.amount+' Xu';
       const note=document.createElement('small');note.textContent=item.note||'Tấm lòng gửi bạn';
-      const info=document.createElement('small');info.className='dudu-v32-packet-info';info.textContent='Xu ảo · Chỉ lưu tại Sandbox';
-      card.append(emoji,value,note,info);container.append(card);
+      const status=document.createElement('small');status.className='dudu-v32-packet-status';
+      status.textContent=item.status===rules.STATES.RECEIVED?
+        '✓ Đã nhận':'✓ Đã gửi · Chưa có hồi âm';
+      const when=document.createElement('small');when.className='dudu-v32-packet-time';
+      when.textContent=new Date(item.at).toLocaleString('vi-VN',{
+        day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+      card.append(emoji,value,note,status,when);container.append(card);
     }
   }
   document.addEventListener('keydown',e=>{
@@ -120,4 +158,6 @@
   root.confirmRedPacketV32=send;
   root.syncRedPacketButtonsV32=sync;
   root.renderRedPacketEventsV32=render;
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',sync,{once:true});
+  else sync();
 })(typeof window!=='undefined'?window:{});

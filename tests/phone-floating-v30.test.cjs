@@ -4,11 +4,11 @@ const fs=require('node:fs');
 const path=require('node:path');
 const html=fs.readFileSync(path.resolve(__dirname,'../index.html'),'utf8');
 const css=fs.readFileSync(path.resolve(__dirname,'../css/phone-floating-v30.css'),'utf8');
-test('V30 Home has 4 floating apps + 4 dock apps and no duplicate personal shortcut',()=>{
+test('V69 Home keeps the dock and adds one System shortcut and no duplicate personal shortcut',()=>{
  const home=html.slice(html.indexOf('<div id="phone-home-screen">'),
   html.indexOf('<!-- APP: HỒ SƠ -->'));
  const shortcuts=[...home.matchAll(/class="app-icon" onclick="openPhoneApp\('([a-z]+)'\)"/g)].map(m=>m[1]);
- assert.deepEqual(shortcuts,['inventory','quests','shop','museum','stories','codex','chat','settings']);
+ assert.deepEqual(shortcuts,['inventory','quests','system','shop','wallet','museum','stories','codex','chat','settings']);
  assert.equal(shortcuts.filter(x=>x==='codex').length,1);
  assert.equal(shortcuts.filter(x=>x==='stories').length,1);
  assert.ok(!shortcuts.includes('profile'));
@@ -35,7 +35,8 @@ test('V30 retains exp/coins update hooks, safely shows compact account meta',()=
  assert.match(html,/id="phone-level-display"/);
  assert.match(html,/id="phone-currency-display"/);
  assert.match(html,/id="phone-exp-fill"/);
- assert.match(html,/miniMeta\.textContent=/);
+ assert.match(html,/miniMeta\.replaceChildren\(/);
+ assert.match(html,/dudu-money-icon--gold/);
  assert.match(css,/body\.dudu-phone-v11\.dudu-live-mode[\s\S]*?clip-path:none !important/);
  assert.match(css,/body\.dudu-phone-v11\.dudu-sandbox-mode[\s\S]*?clip-path:inset\(50%\)/);
  assert.doesNotMatch(css,/(?:^|\n)\s*body\s*\{/);

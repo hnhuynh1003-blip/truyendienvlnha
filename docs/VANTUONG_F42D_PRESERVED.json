@@ -1,0 +1,2400 @@
+{
+  "oldArt": [
+    {
+      "id": "f31-fossil-shell",
+      "src": "assets/van-tuong/f35/f31-fossil-shell.webp",
+      "sha256": "92d4ec9e9048b4e3631632a7a76cef5ce6f25ebed5214fda2484a781f8390ec1"
+    },
+    {
+      "id": "f31-apple-moon",
+      "src": "assets/van-tuong/f35/f31-apple-moon.webp",
+      "sha256": "c2a914d4b02df5eacc05493d5d33d98f002a86095a047a054eb87c85e0c661e2"
+    },
+    {
+      "id": "f31-doll-cloud",
+      "src": "assets/van-tuong/f35/f31-doll-cloud.webp",
+      "sha256": "5d9964e498889354fa810ff4084db3d3384612d913d1c01b357f41f64a439b17"
+    },
+    {
+      "id": "f31-sword-bamboo",
+      "src": "assets/van-tuong/f35/f31-sword-bamboo.webp",
+      "sha256": "1ebc5fccd2070c32c1abb8ca88b8f36a0cdcbb1b683e3743e35b1ec8cb0f5c32"
+    },
+    {
+      "id": "f31-card-clover",
+      "src": "assets/van-tuong/f35/f31-card-clover.webp",
+      "sha256": "1a79f3ff808236f04f4bc297f463f60a60b306b49bd80d252ffee4fb6aff9cc2"
+    },
+    {
+      "id": "f31-fossil-dragon",
+      "src": "assets/van-tuong/f35/f31-fossil-dragon.webp",
+      "sha256": "60f0d7c0a88309c1147d62f76575a8bc51cbc300ad818af531111d2dcef66136"
+    },
+    {
+      "id": "f31-figure-fox",
+      "src": "assets/van-tuong/f34/f31-figure-fox.webp",
+      "sha256": "6726fc6a3a89503ead963643a0f4e9f1b00f9d504632beb3b950a7e811e2745d"
+    },
+    {
+      "id": "f31-background-aurora",
+      "src": "assets/van-tuong/f34/f31-background-aurora.webp",
+      "sha256": "f63005d8ee4ff648023c2263d870e94dfed22396cff9ae6b2e78e6132c2e0e92"
+    },
+    {
+      "id": "f31-weapon-neon",
+      "src": "assets/van-tuong/f35/f31-weapon-neon.webp",
+      "sha256": "eef4936058a769b7915153df07319ef7e2a393db096d194119e2d946744ffd0a"
+    },
+    {
+      "id": "f31-doll-starlight",
+      "src": "assets/van-tuong/f35/f31-doll-starlight.webp",
+      "sha256": "caf1e7f8b77144992d8cb391cfb1e8d28d5eb5199a83b1283dc405e9d984c851"
+    },
+    {
+      "id": "f31-figure-samurai",
+      "src": "assets/van-tuong/f34/f31-figure-samurai.webp",
+      "sha256": "acfefa1c137b028f1fceedbe1d3d2a5fc0bc592a59a956fcba5d92e2d0e8b292"
+    },
+    {
+      "id": "f31-background-cosmos",
+      "src": "assets/van-tuong/f35/f31-background-cosmos.webp",
+      "sha256": "1b78f2a6fac0126fc25fcfdb7a11061db3cacb46c38961a73927859cf87b6ad1"
+    },
+    {
+      "id": "f31-fossil-phoenix",
+      "src": "assets/van-tuong/f34/f31-fossil-phoenix.webp",
+      "sha256": "4678efa53de681fce6afe08dc2cf07a269a446435b627a0f1bb2b3d42d628feb"
+    },
+    {
+      "id": "f31-card-destiny",
+      "src": "assets/van-tuong/f34/f31-card-destiny.webp",
+      "sha256": "41e5f81f18f565b11f983da1bee90de9545aa219a45486b8fb1b46e28e514d0d"
+    },
+    {
+      "id": "f31-figure-eternal",
+      "src": "assets/van-tuong/f34/f31-figure-eternal.webp",
+      "sha256": "cb9ddad362ead0b9bec3ae9f5685d1d9dbaab9dabe3a9caf8fbd27929425b93c"
+    },
+    {
+      "id": "f34-origin-dawn-goddess",
+      "src": "assets/van-tuong/f34/f34-origin-dawn-goddess.webp",
+      "sha256": "b551a6909fef90aeab53d4dfdeca2e7c8f8906e915ef9903e59f61922edf97a3"
+    },
+    {
+      "id": "f34-origin-moon-fairy",
+      "src": "assets/van-tuong/f34/f34-origin-moon-fairy.webp",
+      "sha256": "5c241a5f5e33a251c5947548f4cc6b73bc034d7e0294baac108e84f165061f8f"
+    },
+    {
+      "id": "f34-origin-star-priestess",
+      "src": "assets/van-tuong/f34/f34-origin-star-priestess.webp",
+      "sha256": "4e10f9607ceb26cc3ded6f385eb393996cec8fd68c8ae286d0a62f7973b5baa4"
+    },
+    {
+      "id": "f32-fossil-egg",
+      "src": "assets/van-tuong/f32/f32-fossil-egg.webp",
+      "sha256": "277fce22fbace5ece5c8a66a14010c7bf0de7191ac5f91e634f2f1594a71bf32"
+    },
+    {
+      "id": "f32-cult-fan",
+      "src": "assets/van-tuong/f37/f32-cult-fan.webp",
+      "sha256": "7a3284e5843f2b3be23c735a2151a7d909aff320f475831980deddc06c69ef1c"
+    },
+    {
+      "id": "f32-cult-sword",
+      "src": "assets/van-tuong/f32/f32-cult-sword.webp",
+      "sha256": "7c78675bf937dedbc364b32cbfeb92d24436345163b8d87d495fe412ee3cca7d"
+    },
+    {
+      "id": "f32-cyber-robot",
+      "src": "assets/van-tuong/f32/f32-cyber-robot.webp",
+      "sha256": "5c5c2b9e5870990e16d718a532f2adf06a1cf78d1de8d9dc5afcb77a67600ba7"
+    },
+    {
+      "id": "f32-waste-mask",
+      "src": "assets/van-tuong/f32/f32-waste-mask.webp",
+      "sha256": "ab72694cbfdeba7f9ecd3731e671b7a7a9b7a018d9be682d3755e9c2d6e68b0a"
+    },
+    {
+      "id": "f32-anime-guardian",
+      "src": "assets/van-tuong/f37/f32-anime-guardian.webp",
+      "sha256": "57a607ef1484be3ece827ce658db44b5f8fb2733a86c9597c1cf5284a7f6c65b"
+    },
+    {
+      "id": "f32-anime-queen",
+      "src": "assets/van-tuong/f32/f32-anime-queen.webp",
+      "sha256": "ad360ee8d4ff517d5ab04afe83c096eef40b56776367a295b8ede3b0841dd3bf"
+    },
+    {
+      "id": "f32-doll-porcelain",
+      "src": "assets/van-tuong/f32/f32-doll-porcelain.webp",
+      "sha256": "7ee9d005bd992175a0d076adab74db9d561089a680c9b0067cef316bcca65cb1"
+    },
+    {
+      "id": "f32-fruit-peach",
+      "src": "assets/van-tuong/f32/f32-fruit-peach.webp",
+      "sha256": "799dff39d5e553444d45ab248fad8b73351edfeaba1c78939a0b9641a9c8b19a"
+    },
+    {
+      "id": "f32-cosmos-sovereign",
+      "src": "assets/van-tuong/f32/f32-cosmos-sovereign.webp",
+      "sha256": "b0b145adb19c36816a2c35b808a7a833ec0c576054e438b131493666e211e592"
+    },
+    {
+      "id": "f32b-fossil-kirin",
+      "src": "assets/van-tuong/f32b/f32b-fossil-kirin.webp",
+      "sha256": "cadf201ef2fcc2cbf67e1b2567b1033241f4238557cb2abb58691a7ed4c20d91"
+    },
+    {
+      "id": "f32b-cult-spear",
+      "src": "assets/van-tuong/f32b/f32b-cult-spear.webp",
+      "sha256": "9ad207d231760be31f041adaf2163a1cae8cf1fc621bbece0683e58fb661d2cf"
+    },
+    {
+      "id": "f32b-cyber-time",
+      "src": "assets/van-tuong/f32b/f32b-cyber-time.webp",
+      "sha256": "04253f1847e3e62f37e54ac00d5324a18fbec21ee47efbe31f14556fe3aaaa5d"
+    },
+    {
+      "id": "f32b-waste-flower",
+      "src": "assets/van-tuong/f32b/f32b-waste-flower.webp",
+      "sha256": "318f15ea471e27d1aac7928daf43f4cf9508e7b39dfe01bcfe44541298e4818d"
+    },
+    {
+      "id": "f32b-anime-witch",
+      "src": "assets/van-tuong/f37/f32b-anime-witch.webp",
+      "sha256": "75c22a88ac2dbe34fc83814d5bb8cafd99be1ce9a44c15a194dd5f60ff0694cd"
+    },
+    {
+      "id": "f32b-anime-angel",
+      "src": "assets/van-tuong/f32b/f32b-anime-angel.webp",
+      "sha256": "8668737d5f67d99a9a9c8362ec506a971f79d8993b1956e7f8862bf19319b4e6"
+    },
+    {
+      "id": "f32b-doll-fairy",
+      "src": "assets/van-tuong/f32b/f32b-doll-fairy.webp",
+      "sha256": "e53140fc5c117de75f2a728b676b37852048cfabc5f62b3fbb54e765e7595015"
+    },
+    {
+      "id": "f32b-fruit-dragon",
+      "src": "assets/van-tuong/f32b/f32b-fruit-dragon.webp",
+      "sha256": "82e67d887d60abb16503649f2e1f7e4a1956bb49ee98e725621269763e8cddc7"
+    },
+    {
+      "id": "f32b-cosmos-crown",
+      "src": "assets/van-tuong/f32b/f32b-cosmos-crown.webp",
+      "sha256": "0a679daf6783c33ec24025115c5081b8fc974446ed7839b5bc5a308346be2b3c"
+    }
+  ],
+  "catalog": [
+    {
+      "id": "f31-fossil-shell",
+      "itemId": "f31-fossil-shell",
+      "name": "Hóa thạch Vỏ Sao",
+      "rank": "E",
+      "type": "ITEM",
+      "icon": "🐚",
+      "desc": "Kỷ vật đa vị diện · FOSSIL",
+      "description": "Kỷ vật đa vị diện · FOSSIL",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "FOSSIL",
+      "funRealm": "ORIGIN",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f31-apple-moon",
+      "itemId": "f31-apple-moon",
+      "name": "Táo Nguyệt Quang",
+      "rank": "E",
+      "type": "ITEM",
+      "icon": "🍎",
+      "desc": "Kỷ vật đa vị diện · FRUIT",
+      "description": "Kỷ vật đa vị diện · FRUIT",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "FRUIT",
+      "funRealm": "ORIGIN",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f31-doll-cloud",
+      "itemId": "f31-doll-cloud",
+      "name": "Búp Bê Mây",
+      "rank": "D",
+      "type": "ITEM",
+      "icon": "🪆",
+      "desc": "Kỷ vật đa vị diện · DOLL",
+      "description": "Kỷ vật đa vị diện · DOLL",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "DOLL",
+      "funRealm": "ORIGIN",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f31-sword-bamboo",
+      "itemId": "f31-sword-bamboo",
+      "name": "Kiếm Trúc Linh",
+      "rank": "D",
+      "type": "ITEM",
+      "icon": "🗡️",
+      "desc": "Kỷ vật đa vị diện · WEAPON",
+      "description": "Kỷ vật đa vị diện · WEAPON",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "WEAPON",
+      "funRealm": "ORIGIN",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f31-card-clover",
+      "itemId": "f31-card-clover",
+      "name": "Thẻ Tứ Diệp",
+      "rank": "C",
+      "type": "ITEM",
+      "icon": "🃏",
+      "desc": "Kỷ vật đa vị diện · LUCK_CARD",
+      "description": "Kỷ vật đa vị diện · LUCK_CARD",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "LUCK_CARD",
+      "funRealm": "ORIGIN",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f31-fossil-dragon",
+      "itemId": "f31-fossil-dragon",
+      "name": "Hóa Thạch Long Cốt",
+      "rank": "C",
+      "type": "ITEM",
+      "icon": "🦴",
+      "desc": "Kỷ vật đa vị diện · FOSSIL",
+      "description": "Kỷ vật đa vị diện · FOSSIL",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "FOSSIL",
+      "funRealm": "ORIGIN",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f31-figure-fox",
+      "itemId": "f31-figure-fox",
+      "name": "Tượng Hồ Ly Ngân Hà",
+      "rank": "B",
+      "type": "ITEM",
+      "icon": "🦊",
+      "desc": "Kỷ vật đa vị diện · FIGURE",
+      "description": "Kỷ vật đa vị diện · FIGURE",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "FIGURE",
+      "funRealm": "ORIGIN",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f31-background-aurora",
+      "itemId": "f31-background-aurora",
+      "name": "Nền Cực Quang",
+      "rank": "B",
+      "type": "ITEM",
+      "icon": "🌌",
+      "desc": "Kỷ vật đa vị diện · BACKGROUND",
+      "description": "Kỷ vật đa vị diện · BACKGROUND",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "BACKGROUND",
+      "funRealm": "ORIGIN",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f31-weapon-neon",
+      "itemId": "f31-weapon-neon",
+      "name": "Song Đao Neon",
+      "rank": "A",
+      "type": "ITEM",
+      "icon": "⚔️",
+      "desc": "Kỷ vật đa vị diện · WEAPON",
+      "description": "Kỷ vật đa vị diện · WEAPON",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "WEAPON",
+      "funRealm": "ORIGIN",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f31-doll-starlight",
+      "itemId": "f31-doll-starlight",
+      "name": "Búp Bê Tinh Tú",
+      "rank": "A",
+      "type": "ITEM",
+      "icon": "🧸",
+      "desc": "Kỷ vật đa vị diện · DOLL",
+      "description": "Kỷ vật đa vị diện · DOLL",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "DOLL",
+      "funRealm": "ORIGIN",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f31-figure-samurai",
+      "itemId": "f31-figure-samurai",
+      "name": "Tượng Kiếm Sĩ Dị Giới",
+      "rank": "S",
+      "type": "ITEM",
+      "icon": "🥷",
+      "desc": "Kỷ vật đa vị diện · FIGURE",
+      "description": "Kỷ vật đa vị diện · FIGURE",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "FIGURE",
+      "funRealm": "ORIGIN",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f31-background-cosmos",
+      "itemId": "f31-background-cosmos",
+      "name": "Nền Vạn Giới",
+      "rank": "S",
+      "type": "ITEM",
+      "icon": "🪐",
+      "desc": "Kỷ vật đa vị diện · BACKGROUND",
+      "description": "Kỷ vật đa vị diện · BACKGROUND",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "BACKGROUND",
+      "funRealm": "ORIGIN",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f31-fossil-phoenix",
+      "itemId": "f31-fossil-phoenix",
+      "name": "Hóa Thạch Phượng Hoàng",
+      "rank": "SS",
+      "type": "ITEM",
+      "icon": "🔥",
+      "desc": "Kỷ vật đa vị diện · FOSSIL",
+      "description": "Kỷ vật đa vị diện · FOSSIL",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "FOSSIL",
+      "funRealm": "ORIGIN",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f31-card-destiny",
+      "itemId": "f31-card-destiny",
+      "name": "Thẻ Thiên Mệnh",
+      "rank": "SS",
+      "type": "ITEM",
+      "icon": "🎴",
+      "desc": "Kỷ vật đa vị diện · LUCK_CARD",
+      "description": "Kỷ vật đa vị diện · LUCK_CARD",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "LUCK_CARD",
+      "funRealm": "ORIGIN",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f31-figure-eternal",
+      "itemId": "f31-figure-eternal",
+      "name": "Tượng Người Giữ Thời Gian",
+      "rank": "SSS",
+      "type": "ITEM",
+      "icon": "⏳",
+      "desc": "Kỷ vật đa vị diện · FIGURE",
+      "description": "Kỷ vật đa vị diện · FIGURE",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "FIGURE",
+      "funRealm": "ORIGIN",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f34-origin-dawn-goddess",
+      "itemId": "f34-origin-dawn-goddess",
+      "name": "Tượng Nữ Thần Bình Minh",
+      "rank": "SSS",
+      "type": "ITEM",
+      "icon": "☀️",
+      "desc": "Kỷ vật đa vị diện · FIGURE",
+      "description": "Kỷ vật đa vị diện · FIGURE",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "FIGURE",
+      "funRealm": "ORIGIN",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f34-origin-moon-fairy",
+      "itemId": "f34-origin-moon-fairy",
+      "name": "Tượng Tiên Nữ Ngân Nguyệt",
+      "rank": "SS",
+      "type": "ITEM",
+      "icon": "🧚",
+      "desc": "Kỷ vật đa vị diện · FIGURE",
+      "description": "Kỷ vật đa vị diện · FIGURE",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "FIGURE",
+      "funRealm": "ORIGIN",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f34-origin-star-priestess",
+      "itemId": "f34-origin-star-priestess",
+      "name": "Tượng Nữ Tư Tế Tinh Hà",
+      "rank": "S",
+      "type": "ITEM",
+      "icon": "🔮",
+      "desc": "Kỷ vật đa vị diện · FIGURE",
+      "description": "Kỷ vật đa vị diện · FIGURE",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "FIGURE",
+      "funRealm": "ORIGIN",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32-fossil-fern",
+      "itemId": "f32-fossil-fern",
+      "name": "Dấu Lá Kỷ Nguyên",
+      "rank": "E",
+      "type": "ITEM",
+      "icon": "🍃",
+      "desc": "Kỷ vật đa vị diện · FOSSIL",
+      "description": "Kỷ vật đa vị diện · FOSSIL",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "FOSSIL",
+      "funRealm": "PALEO",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32-fossil-amber",
+      "itemId": "f32-fossil-amber",
+      "name": "Hổ Phách Cánh Bướm",
+      "rank": "C",
+      "type": "ITEM",
+      "icon": "🦋",
+      "desc": "Kỷ vật đa vị diện · FOSSIL",
+      "description": "Kỷ vật đa vị diện · FOSSIL",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "FOSSIL",
+      "funRealm": "PALEO",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32-fossil-egg",
+      "itemId": "f32-fossil-egg",
+      "name": "Trứng Long Thạch",
+      "rank": "SS",
+      "type": "ITEM",
+      "icon": "🥚",
+      "desc": "Kỷ vật đa vị diện · FOSSIL",
+      "description": "Kỷ vật đa vị diện · FOSSIL",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "FOSSIL",
+      "funRealm": "PALEO",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32-cult-bell",
+      "itemId": "f32-cult-bell",
+      "name": "Chuông Ngọc Thanh Tâm",
+      "rank": "D",
+      "type": "ITEM",
+      "icon": "🔔",
+      "desc": "Kỷ vật đa vị diện · WEAPON",
+      "description": "Kỷ vật đa vị diện · WEAPON",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "WEAPON",
+      "funRealm": "CULTIVATION",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32-cult-fan",
+      "itemId": "f32-cult-fan",
+      "name": "Quạt Cửu Vân",
+      "rank": "B",
+      "type": "ITEM",
+      "icon": "🪭",
+      "desc": "Kỷ vật đa vị diện · WEAPON",
+      "description": "Kỷ vật đa vị diện · WEAPON",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "WEAPON",
+      "funRealm": "CULTIVATION",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32-cult-sword",
+      "itemId": "f32-cult-sword",
+      "name": "Thanh Kiếm Tiên Lưu",
+      "rank": "S",
+      "type": "ITEM",
+      "icon": "🗡️",
+      "desc": "Kỷ vật đa vị diện · WEAPON",
+      "description": "Kỷ vật đa vị diện · WEAPON",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "WEAPON",
+      "funRealm": "CULTIVATION",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32-cyber-chip",
+      "itemId": "f32-cyber-chip",
+      "name": "Chip Ký Ức Neon",
+      "rank": "E",
+      "type": "ITEM",
+      "icon": "💾",
+      "desc": "Kỷ vật đa vị diện · DEVICE",
+      "description": "Kỷ vật đa vị diện · DEVICE",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "DEVICE",
+      "funRealm": "CYBER",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32-cyber-blade",
+      "itemId": "f32-cyber-blade",
+      "name": "Dao Plasma Lam",
+      "rank": "C",
+      "type": "ITEM",
+      "icon": "🔪",
+      "desc": "Kỷ vật đa vị diện · WEAPON",
+      "description": "Kỷ vật đa vị diện · WEAPON",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "WEAPON",
+      "funRealm": "CYBER",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32-cyber-robot",
+      "itemId": "f32-cyber-robot",
+      "name": "Robot Sao Lạc",
+      "rank": "A",
+      "type": "ITEM",
+      "icon": "🤖",
+      "desc": "Kỷ vật đa vị diện · FIGURE",
+      "description": "Kỷ vật đa vị diện · FIGURE",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "FIGURE",
+      "funRealm": "CYBER",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32-waste-mask",
+      "itemId": "f32-waste-mask",
+      "name": "Mặt Nạ Tro Bụi",
+      "rank": "E",
+      "type": "ITEM",
+      "icon": "🎭",
+      "desc": "Kỷ vật đa vị diện · RELIC",
+      "description": "Kỷ vật đa vị diện · RELIC",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "RELIC",
+      "funRealm": "WASTELAND",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32-waste-compass",
+      "itemId": "f32-waste-compass",
+      "name": "La Bàn Cuối Cùng",
+      "rank": "D",
+      "type": "ITEM",
+      "icon": "🧭",
+      "desc": "Kỷ vật đa vị diện · RELIC",
+      "description": "Kỷ vật đa vị diện · RELIC",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "RELIC",
+      "funRealm": "WASTELAND",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32-waste-watch",
+      "itemId": "f32-waste-watch",
+      "name": "Đồng Hồ Ngày Tận",
+      "rank": "C",
+      "type": "ITEM",
+      "icon": "⌚",
+      "desc": "Kỷ vật đa vị diện · RELIC",
+      "description": "Kỷ vật đa vị diện · RELIC",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "RELIC",
+      "funRealm": "WASTELAND",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32-anime-apprentice",
+      "itemId": "f32-anime-apprentice",
+      "name": "Tượng Pháp Sư Tập Sự",
+      "rank": "E",
+      "type": "ITEM",
+      "icon": "🧙",
+      "desc": "Kỷ vật đa vị diện · FIGURE",
+      "description": "Kỷ vật đa vị diện · FIGURE",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "FIGURE",
+      "funRealm": "ANIME",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32-anime-guardian",
+      "itemId": "f32-anime-guardian",
+      "name": "Tượng Hộ Vệ Lam Nguyệt",
+      "rank": "B",
+      "type": "ITEM",
+      "icon": "🛡️",
+      "desc": "Kỷ vật đa vị diện · FIGURE",
+      "description": "Kỷ vật đa vị diện · FIGURE",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "FIGURE",
+      "funRealm": "ANIME",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32-anime-queen",
+      "itemId": "f32-anime-queen",
+      "name": "Tượng Nữ Hoàng Băng",
+      "rank": "A",
+      "type": "ITEM",
+      "icon": "👑",
+      "desc": "Kỷ vật đa vị diện · FIGURE",
+      "description": "Kỷ vật đa vị diện · FIGURE",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "FIGURE",
+      "funRealm": "ANIME",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32-doll-charm",
+      "itemId": "f32-doll-charm",
+      "name": "Thỏ Bông Ngủ Say",
+      "rank": "E",
+      "type": "ITEM",
+      "icon": "🐰",
+      "desc": "Kỷ vật đa vị diện · DOLL",
+      "description": "Kỷ vật đa vị diện · DOLL",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "DOLL",
+      "funRealm": "DREAM",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32-doll-moon",
+      "itemId": "f32-doll-moon",
+      "name": "Búp Bê Nguyệt Y",
+      "rank": "D",
+      "type": "ITEM",
+      "icon": "🪆",
+      "desc": "Kỷ vật đa vị diện · DOLL",
+      "description": "Kỷ vật đa vị diện · DOLL",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "DOLL",
+      "funRealm": "DREAM",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32-doll-porcelain",
+      "itemId": "f32-doll-porcelain",
+      "name": "Thỏ Sứ Ngân Hà",
+      "rank": "B",
+      "type": "ITEM",
+      "icon": "🐇",
+      "desc": "Kỷ vật đa vị diện · DOLL",
+      "description": "Kỷ vật đa vị diện · DOLL",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "DOLL",
+      "funRealm": "DREAM",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32-fruit-berry",
+      "itemId": "f32-fruit-berry",
+      "name": "Dâu Sao Khuya",
+      "rank": "E",
+      "type": "ITEM",
+      "icon": "🍓",
+      "desc": "Kỷ vật đa vị diện · FRUIT",
+      "description": "Kỷ vật đa vị diện · FRUIT",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "FRUIT",
+      "funRealm": "GARDEN",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32-fruit-peach",
+      "itemId": "f32-fruit-peach",
+      "name": "Đào Linh Vân",
+      "rank": "D",
+      "type": "ITEM",
+      "icon": "🍑",
+      "desc": "Kỷ vật đa vị diện · FRUIT",
+      "description": "Kỷ vật đa vị diện · FRUIT",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "FRUIT",
+      "funRealm": "GARDEN",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32-fruit-phoenix",
+      "itemId": "f32-fruit-phoenix",
+      "name": "Quả Phượng Hỏa",
+      "rank": "C",
+      "type": "ITEM",
+      "icon": "🍊",
+      "desc": "Kỷ vật đa vị diện · FRUIT",
+      "description": "Kỷ vật đa vị diện · FRUIT",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "FRUIT",
+      "funRealm": "GARDEN",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32-cosmos-map",
+      "itemId": "f32-cosmos-map",
+      "name": "Mảnh Bản Đồ Sao",
+      "rank": "E",
+      "type": "ITEM",
+      "icon": "🗺️",
+      "desc": "Kỷ vật đa vị diện · LUCK_CARD",
+      "description": "Kỷ vật đa vị diện · LUCK_CARD",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "LUCK_CARD",
+      "funRealm": "COSMOS",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32-cosmos-fate",
+      "itemId": "f32-cosmos-fate",
+      "name": "Lá Bài Vọng Tinh",
+      "rank": "D",
+      "type": "ITEM",
+      "icon": "🎴",
+      "desc": "Kỷ vật đa vị diện · LUCK_CARD",
+      "description": "Kỷ vật đa vị diện · LUCK_CARD",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "LUCK_CARD",
+      "funRealm": "COSMOS",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32-cosmos-sovereign",
+      "itemId": "f32-cosmos-sovereign",
+      "name": "Thẻ Chủ Thần Tinh Hà",
+      "rank": "SSS",
+      "type": "ITEM",
+      "icon": "🌌",
+      "desc": "Kỷ vật đa vị diện · LUCK_CARD",
+      "description": "Kỷ vật đa vị diện · LUCK_CARD",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "LUCK_CARD",
+      "funRealm": "COSMOS",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32b-fossil-tooth",
+      "itemId": "f32b-fossil-tooth",
+      "name": "Răng Cổ Ngư",
+      "rank": "E",
+      "type": "ITEM",
+      "icon": "🦷",
+      "desc": "Kỷ vật đa vị diện · FOSSIL",
+      "description": "Kỷ vật đa vị diện · FOSSIL",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "FOSSIL",
+      "funRealm": "PALEO",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32b-fossil-meteor",
+      "itemId": "f32b-fossil-meteor",
+      "name": "Hổ Phách Thiên Thạch",
+      "rank": "C",
+      "type": "ITEM",
+      "icon": "☄️",
+      "desc": "Kỷ vật đa vị diện · FOSSIL",
+      "description": "Kỷ vật đa vị diện · FOSSIL",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "FOSSIL",
+      "funRealm": "PALEO",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32b-fossil-kirin",
+      "itemId": "f32b-fossil-kirin",
+      "name": "Long Lân Cổ Cốt",
+      "rank": "SS",
+      "type": "ITEM",
+      "icon": "🦴",
+      "desc": "Kỷ vật đa vị diện · FOSSIL",
+      "description": "Kỷ vật đa vị diện · FOSSIL",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "FOSSIL",
+      "funRealm": "PALEO",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32b-cult-gourd",
+      "itemId": "f32b-cult-gourd",
+      "name": "Hồ Lô Vân Đan",
+      "rank": "D",
+      "type": "ITEM",
+      "icon": "🏺",
+      "desc": "Kỷ vật đa vị diện · WEAPON",
+      "description": "Kỷ vật đa vị diện · WEAPON",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "WEAPON",
+      "funRealm": "CULTIVATION",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32b-cult-seal",
+      "itemId": "f32b-cult-seal",
+      "name": "Ngọc Ấn Thần Sơn",
+      "rank": "B",
+      "type": "ITEM",
+      "icon": "💠",
+      "desc": "Kỷ vật đa vị diện · WEAPON",
+      "description": "Kỷ vật đa vị diện · WEAPON",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "WEAPON",
+      "funRealm": "CULTIVATION",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32b-cult-spear",
+      "itemId": "f32b-cult-spear",
+      "name": "Thương Long Hồn",
+      "rank": "S",
+      "type": "ITEM",
+      "icon": "🔱",
+      "desc": "Kỷ vật đa vị diện · WEAPON",
+      "description": "Kỷ vật đa vị diện · WEAPON",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "WEAPON",
+      "funRealm": "CULTIVATION",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32b-cyber-glass",
+      "itemId": "f32b-cyber-glass",
+      "name": "Kính AR Hoa Hồng",
+      "rank": "E",
+      "type": "ITEM",
+      "icon": "🥽",
+      "desc": "Kỷ vật đa vị diện · DEVICE",
+      "description": "Kỷ vật đa vị diện · DEVICE",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "DEVICE",
+      "funRealm": "CYBER",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32b-cyber-drive",
+      "itemId": "f32b-cyber-drive",
+      "name": "Ổ Cứng Ý Thức",
+      "rank": "C",
+      "type": "ITEM",
+      "icon": "💽",
+      "desc": "Kỷ vật đa vị diện · DEVICE",
+      "description": "Kỷ vật đa vị diện · DEVICE",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "DEVICE",
+      "funRealm": "CYBER",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32b-cyber-time",
+      "itemId": "f32b-cyber-time",
+      "name": "Cỗ Máy Thời Không Mini",
+      "rank": "A",
+      "type": "ITEM",
+      "icon": "⏱️",
+      "desc": "Kỷ vật đa vị diện · DEVICE",
+      "description": "Kỷ vật đa vị diện · DEVICE",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "DEVICE",
+      "funRealm": "CYBER",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32b-waste-oxygen",
+      "itemId": "f32b-waste-oxygen",
+      "name": "Bình Khí Cuối Cùng",
+      "rank": "E",
+      "type": "ITEM",
+      "icon": "🫧",
+      "desc": "Kỷ vật đa vị diện · RELIC",
+      "description": "Kỷ vật đa vị diện · RELIC",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "RELIC",
+      "funRealm": "WASTELAND",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32b-waste-badge",
+      "itemId": "f32b-waste-badge",
+      "name": "Phù Hiệu Kẻ Sống Sót",
+      "rank": "D",
+      "type": "ITEM",
+      "icon": "🎖️",
+      "desc": "Kỷ vật đa vị diện · RELIC",
+      "description": "Kỷ vật đa vị diện · RELIC",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "RELIC",
+      "funRealm": "WASTELAND",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32b-waste-flower",
+      "itemId": "f32b-waste-flower",
+      "name": "Hoa Pha Lê Phóng Xạ",
+      "rank": "C",
+      "type": "ITEM",
+      "icon": "🌺",
+      "desc": "Kỷ vật đa vị diện · RELIC",
+      "description": "Kỷ vật đa vị diện · RELIC",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "RELIC",
+      "funRealm": "WASTELAND",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32b-anime-squire",
+      "itemId": "f32b-anime-squire",
+      "name": "Tượng Học Viên Kiếm",
+      "rank": "E",
+      "type": "ITEM",
+      "icon": "🗡️",
+      "desc": "Kỷ vật đa vị diện · FIGURE",
+      "description": "Kỷ vật đa vị diện · FIGURE",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "FIGURE",
+      "funRealm": "ANIME",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32b-anime-witch",
+      "itemId": "f32b-anime-witch",
+      "name": "Tượng Phù Thủy Sao Đêm",
+      "rank": "B",
+      "type": "ITEM",
+      "icon": "🪄",
+      "desc": "Kỷ vật đa vị diện · FIGURE",
+      "description": "Kỷ vật đa vị diện · FIGURE",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "FIGURE",
+      "funRealm": "ANIME",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32b-anime-angel",
+      "itemId": "f32b-anime-angel",
+      "name": "Tượng Thiên Sứ Kiếm",
+      "rank": "A",
+      "type": "ITEM",
+      "icon": "🪽",
+      "desc": "Kỷ vật đa vị diện · FIGURE",
+      "description": "Kỷ vật đa vị diện · FIGURE",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "FIGURE",
+      "funRealm": "ANIME",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32b-doll-bear",
+      "itemId": "f32b-doll-bear",
+      "name": "Gấu Bông Ký Ức",
+      "rank": "E",
+      "type": "ITEM",
+      "icon": "🧸",
+      "desc": "Kỷ vật đa vị diện · DOLL",
+      "description": "Kỷ vật đa vị diện · DOLL",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "DOLL",
+      "funRealm": "DREAM",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32b-doll-music",
+      "itemId": "f32b-doll-music",
+      "name": "Búp Bê Hộp Nhạc",
+      "rank": "D",
+      "type": "ITEM",
+      "icon": "🎶",
+      "desc": "Kỷ vật đa vị diện · DOLL",
+      "description": "Kỷ vật đa vị diện · DOLL",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "DOLL",
+      "funRealm": "DREAM",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32b-doll-fairy",
+      "itemId": "f32b-doll-fairy",
+      "name": "Nàng Tiên Đồng Hồ",
+      "rank": "B",
+      "type": "ITEM",
+      "icon": "🧚",
+      "desc": "Kỷ vật đa vị diện · DOLL",
+      "description": "Kỷ vật đa vị diện · DOLL",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "DOLL",
+      "funRealm": "DREAM",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32b-fruit-grape",
+      "itemId": "f32b-fruit-grape",
+      "name": "Nho Sương Lam",
+      "rank": "E",
+      "type": "ITEM",
+      "icon": "🍇",
+      "desc": "Kỷ vật đa vị diện · FRUIT",
+      "description": "Kỷ vật đa vị diện · FRUIT",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "FRUIT",
+      "funRealm": "GARDEN",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32b-fruit-pear",
+      "itemId": "f32b-fruit-pear",
+      "name": "Lê Tinh Lộ",
+      "rank": "D",
+      "type": "ITEM",
+      "icon": "🍐",
+      "desc": "Kỷ vật đa vị diện · FRUIT",
+      "description": "Kỷ vật đa vị diện · FRUIT",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "FRUIT",
+      "funRealm": "GARDEN",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32b-fruit-dragon",
+      "itemId": "f32b-fruit-dragon",
+      "name": "Quả Tâm Long",
+      "rank": "C",
+      "type": "ITEM",
+      "icon": "🐉",
+      "desc": "Kỷ vật đa vị diện · FRUIT",
+      "description": "Kỷ vật đa vị diện · FRUIT",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "FRUIT",
+      "funRealm": "GARDEN",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32b-cosmos-badge",
+      "itemId": "f32b-cosmos-badge",
+      "name": "Huy Hiệu Lữ Khách Sao",
+      "rank": "E",
+      "type": "ITEM",
+      "icon": "🌟",
+      "desc": "Kỷ vật đa vị diện · LUCK_CARD",
+      "description": "Kỷ vật đa vị diện · LUCK_CARD",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "LUCK_CARD",
+      "funRealm": "COSMOS",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32b-cosmos-meteor",
+      "itemId": "f32b-cosmos-meteor",
+      "name": "Thiên Thạch Nguyện Ước",
+      "rank": "D",
+      "type": "ITEM",
+      "icon": "🌠",
+      "desc": "Kỷ vật đa vị diện · LUCK_CARD",
+      "description": "Kỷ vật đa vị diện · LUCK_CARD",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "LUCK_CARD",
+      "funRealm": "COSMOS",
+      "schemaVersion": 3
+    },
+    {
+      "id": "f32b-cosmos-crown",
+      "itemId": "f32b-cosmos-crown",
+      "name": "Vương Miện Hư Không",
+      "rank": "SSS",
+      "type": "ITEM",
+      "icon": "👑",
+      "desc": "Kỷ vật đa vị diện · LUCK_CARD",
+      "description": "Kỷ vật đa vị diện · LUCK_CARD",
+      "scope": "DUDU",
+      "realmTag": null,
+      "storyId": null,
+      "chapterId": null,
+      "npcId": null,
+      "acquisition": {
+        "method": "FUN_VANTUONG"
+      },
+      "unique": true,
+      "maxOwned": 1,
+      "giftable": false,
+      "tradeable": false,
+      "discardable": false,
+      "published": true,
+      "collectionSet": "VAN_VAT",
+      "funCategory": "LUCK_CARD",
+      "funRealm": "COSMOS",
+      "schemaVersion": 3
+    }
+  ],
+  "pool": [
+    {
+      "itemId": "f31-fossil-shell",
+      "rank": "E",
+      "weight": 25000
+    },
+    {
+      "itemId": "f31-apple-moon",
+      "rank": "E",
+      "weight": 25000
+    },
+    {
+      "itemId": "f31-doll-cloud",
+      "rank": "D",
+      "weight": 23334
+    },
+    {
+      "itemId": "f31-sword-bamboo",
+      "rank": "D",
+      "weight": 23334
+    },
+    {
+      "itemId": "f31-card-clover",
+      "rank": "C",
+      "weight": 17000
+    },
+    {
+      "itemId": "f31-fossil-dragon",
+      "rank": "C",
+      "weight": 17000
+    },
+    {
+      "itemId": "f31-figure-fox",
+      "rank": "B",
+      "weight": 10000
+    },
+    {
+      "itemId": "f31-background-aurora",
+      "rank": "B",
+      "weight": 10000
+    },
+    {
+      "itemId": "f31-weapon-neon",
+      "rank": "A",
+      "weight": 6000
+    },
+    {
+      "itemId": "f31-doll-starlight",
+      "rank": "A",
+      "weight": 6000
+    },
+    {
+      "itemId": "f31-figure-samurai",
+      "rank": "S",
+      "weight": 2800
+    },
+    {
+      "itemId": "f31-background-cosmos",
+      "rank": "S",
+      "weight": 2800
+    },
+    {
+      "itemId": "f31-fossil-phoenix",
+      "rank": "SS",
+      "weight": 600
+    },
+    {
+      "itemId": "f31-card-destiny",
+      "rank": "SS",
+      "weight": 600
+    },
+    {
+      "itemId": "f31-figure-eternal",
+      "rank": "SSS",
+      "weight": 50
+    },
+    {
+      "itemId": "f34-origin-dawn-goddess",
+      "rank": "SSS",
+      "weight": 50
+    },
+    {
+      "itemId": "f34-origin-moon-fairy",
+      "rank": "SS",
+      "weight": 600
+    },
+    {
+      "itemId": "f34-origin-star-priestess",
+      "rank": "S",
+      "weight": 2800
+    },
+    {
+      "itemId": "f32-fossil-fern",
+      "rank": "E",
+      "weight": 25000
+    },
+    {
+      "itemId": "f32-fossil-amber",
+      "rank": "C",
+      "weight": 17000
+    },
+    {
+      "itemId": "f32-fossil-egg",
+      "rank": "SS",
+      "weight": 600
+    },
+    {
+      "itemId": "f32-cult-bell",
+      "rank": "D",
+      "weight": 23334
+    },
+    {
+      "itemId": "f32-cult-fan",
+      "rank": "B",
+      "weight": 10000
+    },
+    {
+      "itemId": "f32-cult-sword",
+      "rank": "S",
+      "weight": 2800
+    },
+    {
+      "itemId": "f32-cyber-chip",
+      "rank": "E",
+      "weight": 25000
+    },
+    {
+      "itemId": "f32-cyber-blade",
+      "rank": "C",
+      "weight": 17000
+    },
+    {
+      "itemId": "f32-cyber-robot",
+      "rank": "A",
+      "weight": 6000
+    },
+    {
+      "itemId": "f32-waste-mask",
+      "rank": "E",
+      "weight": 25000
+    },
+    {
+      "itemId": "f32-waste-compass",
+      "rank": "D",
+      "weight": 23334
+    },
+    {
+      "itemId": "f32-waste-watch",
+      "rank": "C",
+      "weight": 17000
+    },
+    {
+      "itemId": "f32-anime-apprentice",
+      "rank": "E",
+      "weight": 25000
+    },
+    {
+      "itemId": "f32-anime-guardian",
+      "rank": "B",
+      "weight": 10000
+    },
+    {
+      "itemId": "f32-anime-queen",
+      "rank": "A",
+      "weight": 6000
+    },
+    {
+      "itemId": "f32-doll-charm",
+      "rank": "E",
+      "weight": 25000
+    },
+    {
+      "itemId": "f32-doll-moon",
+      "rank": "D",
+      "weight": 23333
+    },
+    {
+      "itemId": "f32-doll-porcelain",
+      "rank": "B",
+      "weight": 10000
+    },
+    {
+      "itemId": "f32-fruit-berry",
+      "rank": "E",
+      "weight": 25000
+    },
+    {
+      "itemId": "f32-fruit-peach",
+      "rank": "D",
+      "weight": 23333
+    },
+    {
+      "itemId": "f32-fruit-phoenix",
+      "rank": "C",
+      "weight": 17000
+    },
+    {
+      "itemId": "f32-cosmos-map",
+      "rank": "E",
+      "weight": 25000
+    },
+    {
+      "itemId": "f32-cosmos-fate",
+      "rank": "D",
+      "weight": 23333
+    },
+    {
+      "itemId": "f32-cosmos-sovereign",
+      "rank": "SSS",
+      "weight": 50
+    },
+    {
+      "itemId": "f32b-fossil-tooth",
+      "rank": "E",
+      "weight": 25000
+    },
+    {
+      "itemId": "f32b-fossil-meteor",
+      "rank": "C",
+      "weight": 17000
+    },
+    {
+      "itemId": "f32b-fossil-kirin",
+      "rank": "SS",
+      "weight": 600
+    },
+    {
+      "itemId": "f32b-cult-gourd",
+      "rank": "D",
+      "weight": 23333
+    },
+    {
+      "itemId": "f32b-cult-seal",
+      "rank": "B",
+      "weight": 10000
+    },
+    {
+      "itemId": "f32b-cult-spear",
+      "rank": "S",
+      "weight": 2800
+    },
+    {
+      "itemId": "f32b-cyber-glass",
+      "rank": "E",
+      "weight": 25000
+    },
+    {
+      "itemId": "f32b-cyber-drive",
+      "rank": "C",
+      "weight": 17000
+    },
+    {
+      "itemId": "f32b-cyber-time",
+      "rank": "A",
+      "weight": 6000
+    },
+    {
+      "itemId": "f32b-waste-oxygen",
+      "rank": "E",
+      "weight": 25000
+    },
+    {
+      "itemId": "f32b-waste-badge",
+      "rank": "D",
+      "weight": 23333
+    },
+    {
+      "itemId": "f32b-waste-flower",
+      "rank": "C",
+      "weight": 17000
+    },
+    {
+      "itemId": "f32b-anime-squire",
+      "rank": "E",
+      "weight": 25000
+    },
+    {
+      "itemId": "f32b-anime-witch",
+      "rank": "B",
+      "weight": 10000
+    },
+    {
+      "itemId": "f32b-anime-angel",
+      "rank": "A",
+      "weight": 6000
+    },
+    {
+      "itemId": "f32b-doll-bear",
+      "rank": "E",
+      "weight": 25000
+    },
+    {
+      "itemId": "f32b-doll-music",
+      "rank": "D",
+      "weight": 23333
+    },
+    {
+      "itemId": "f32b-doll-fairy",
+      "rank": "B",
+      "weight": 10000
+    },
+    {
+      "itemId": "f32b-fruit-grape",
+      "rank": "E",
+      "weight": 25000
+    },
+    {
+      "itemId": "f32b-fruit-pear",
+      "rank": "D",
+      "weight": 23333
+    },
+    {
+      "itemId": "f32b-fruit-dragon",
+      "rank": "C",
+      "weight": 17000
+    },
+    {
+      "itemId": "f32b-cosmos-badge",
+      "rank": "E",
+      "weight": 25000
+    },
+    {
+      "itemId": "f32b-cosmos-meteor",
+      "rank": "D",
+      "weight": 23333
+    },
+    {
+      "itemId": "f32b-cosmos-crown",
+      "rank": "SSS",
+      "weight": 50
+    },
+    {
+      "itemId": "F31_COIN_8",
+      "rank": "COIN",
+      "weight": 70000,
+      "amount": 8
+    },
+    {
+      "itemId": "F31_COIN_30",
+      "rank": "COIN",
+      "weight": 22000,
+      "amount": 30
+    }
+  ],
+  "price": 25,
+  "values": {
+    "E": 4,
+    "D": 8,
+    "C": 16,
+    "B": 40,
+    "A": 100,
+    "S": 300,
+    "SS": 900,
+    "SSS": 3000
+  },
+  "highRanks": [
+    "A",
+    "S",
+    "SS",
+    "SSS"
+  ]
+}

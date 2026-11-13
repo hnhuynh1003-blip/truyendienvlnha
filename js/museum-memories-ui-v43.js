@@ -94,10 +94,13 @@
    }
    chooser.addEventListener('change',update);
    album.append(header,description,chooser,counter,progress,cards,note);
-   // Album comes FIRST, never under the locked, server-only Museum banner.
+   // The C4.26 museum keeps Sandbox memories in their own accessible wing.
+   // The previous insertion remains a fallback if the new gallery fails to load.
    const museum=serverContainer.closest('#phone-app-museum');
+   const newSlot=museum?.querySelector('#dudu-museum-memory-slot');
    const verified=museum?.querySelector('.dudu-v27-museum-help');
-   (verified||serverContainer).before(album);
+   if(newSlot)newSlot.append(album);
+   else (verified||serverContainer).before(album);
    update();
  }
  root.DuduMuseumMemoriesUIV43=Object.freeze({render});

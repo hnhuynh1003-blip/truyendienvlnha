@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "baseline": "354da13fe9f2204768a27b803029c89dd5a10176",
+  "targetCollection": "epub_stories_v49",
+  "writerFiles": [
+    {
+      "path": "js/epub-production-v49.js",
+      "kind": "browser-client-legacy-publish",
+      "risk": "client-publish-fails-under-g2s-candidate-not-live",
+      "sha256": "4dfc42ceb4b8a99c6f63920e6064e7c7e1ef52a19fa6a3fb3ac30ca9a26969a2"
+    },
+    {
+      "path": "js/epub-chapter-editor-l2d3.js",
+      "kind": "browser-owner-chapter-revision-transaction",
+      "risk": "owner-authentication-and-rules-guarded-chapter-plus-immutable-backup",
+      "sha256": "20694022e3c5dd658dee70304035816dcc1702689e66963a5a30a0a88497f6d0"
+    },
+    {
+      "path": "cloudflare/src/vangioi-v49-emulator-epoch-g2r.mjs",
+      "kind": "emulator-source-write",
+      "risk": "changes-draft-source-only",
+      "sha256": "fb904be3019abd689e9b8a7d2e4e4b50bab26bbc1457c52bc4833974257c7a16"
+    },
+    {
+      "path": "cloudflare/src/vangioi-v49-emulator-publish-g2t.mjs",
+      "kind": "emulator-legacy-publish",
+      "risk": "no-g2v-hold-guard-but-isolated-demo-project",
+      "sha256": "e6ccc455138bc80151dadc92acce2cf87a3edf1adb69ab41e485b0b18d49eb0f"
+    },
+    {
+      "path": "cloudflare/src/vangioi-v49-authority-visibility-g2u.mjs",
+      "kind": "emulator-suspend",
+      "risk": "requires-valid-notice-and-epoch",
+      "sha256": "54a7d989e7a844a5d78d94ba1037df36d0a7a4531111953a6b756d9099ee6896"
+    },
+    {
+      "path": "cloudflare/src/vangioi-v49-emergency-hold-g2v.mjs",
+      "kind": "emulator-emergency-hide",
+      "risk": "g2y-repeat-hold-emulator-only-dual-host-decision-no-real-roles",
+      "sha256": "3afcb98fc0ad740087c5d93b0a15441a6be502e00d4d3bdea41dac0e8c908837"
+    },
+    {
+      "path": "cloudflare/src/vangioi-v49-guarded-publisher-g2w.mjs",
+      "kind": "emulator-hold-fenced-publish",
+      "risk": "guard-applies-only-inside-facade-not-raw-admin-sdk",
+      "sha256": "791bce10822931e27ca07ed962a372277a6cea0fcf3df56c2134ac3b281627d5"
+    }
+  ],
+  "watchFiles": [
+    {
+      "path": "js/epub-import-v48.js",
+      "reason": "browser-calls-legacy-publishDraft",
+      "sha256": "aa5998d4cb28e1d1a7d5020ae2f67e4d1acacb54a914bbc14cb34118bd7dd1c1"
+    },
+    {
+      "path": "js/epub-batch-import-c421.js",
+      "reason": "browser-batch-calls-importDraft-and-publishDraft-with-owner-consent",
+      "sha256": "450de5117dff7e1d02bc56d0da37dc1c7eee325cdefda573445e25764a1cb8f9"
+    },
+    {
+      "path": "functions/index.js",
+      "reason": "privileged-admin-sdk-currently-ai-quota-and-economy-not-v49",
+      "sha256": "0218f4fb481ac66b51ebb291957e1a0321eec6514feb78f6e6c6df71ab83eb71"
+    }
+  ],
+  "reviewedNonWriterFiles": [
+    {
+      "path": "js/library-epub-edit-ui-l2d5.js",
+      "reason": "reads V49 chapters; Set and Map mutations are UI-only, not Firestore writes",
+      "sha256": "e32aa900e1b446c62522ce4be4707f417fd74dd1cd042e24707f6ce1ba8966c4"
+    }
+  ],
+  "adminSdkSourceAllowlist": ["functions/index.js"],
+  "sourceRoots": ["js", "cloudflare/src", "functions"]
+}

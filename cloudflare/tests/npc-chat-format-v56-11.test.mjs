@@ -41,8 +41,8 @@ test('V56.11 sends current message intact when prior context is too long',()=>{
  assert.ok(text.length<=2500);
  assert.ok(text.endsWith('Câu hỏi thật cuối cùng'));
 });
-test('V56.11 model server allowlist remains strictly seven IDs, Auto cannot reach Gemini',()=>{
- assert.equal(NPC_MODELS.length,7);
+test('V57.2 model server allowlist remains four IDs >=3.1, Auto cannot reach Gemini',()=>{
+ assert.equal(NPC_MODELS.length,4);
  assert.equal(resolveModel('auto'),null);
  assert.equal(validRequest(base([{role:'user',text:'Xin chào'}]))?.model,'gemini-3.5-flash-lite');
  assert.equal(validRequest({...base([{role:'user',text:'Xin chào'}]),model:'auto'}),null);

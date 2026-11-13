@@ -10,10 +10,14 @@ const source=fs.readFileSync(path.resolve(__dirname,'../js/player-avatar-ui-v16.
 const css=fs.readFileSync(path.resolve(__dirname,'../css/player-avatar-v16.css'),'utf8');
 const vectorIds=portraits.CATALOG.map(x=>x.id);
 
-test('V16 frames: six available, three future-locked, no implicit rewards',()=>{
- assert.equal(avatar.FREE.length,6);
+test('V16 frames: nine available, three future-locked, no implicit rewards',()=>{
+ assert.equal(avatar.FREE.length,9);
  assert.equal(avatar.RESTRICTED.length,3);
- assert.equal(avatar.FRAMES.length,9);
+ assert.equal(avatar.FRAMES.length,12);
+ for(const id of ['nebula','jadecrest','frostwing']){
+  assert.equal(avatar.canChooseFrame(id),true);
+  assert.equal(avatar.validate({kind:'initials',frameId:id}).frameId,id);
+ }
  for(const frame of avatar.FREE){
   assert.equal(avatar.canChooseFrame(frame.id),true);
   assert.ok(frame.color.startsWith('#'));
@@ -72,7 +76,10 @@ test('V16 Sandbox UI fields integrated into home, account, profile and chat',()=
 
 test('V16 does not grant frames via client and has no remote upload',()=>{
  assert.doesNotMatch(source,/fetch\(|db\.collection\(|firebase\.storage\(|grantCollectible\(|grantFrame\(|unlockChapterCharacter\(/);
- assert.match(source,/if\(!DuduPlayerAvatarV16\.canChooseFrame\(frame\.id\)\)return/);
+ assert.match(source,/if\(!DuduPlayerAvatarV16\.canChooseFrame\(frame\.id\)\)\{/);
+ assert.match(source,/playerAvatarFramePreviewOnlyV16=frame\.id/);
+ assert.match(source,/if\(playerAvatarFramePreviewOnlyV16\)\{/);
+ assert.match(source,/Khung này đang khóa/);
  assert.match(source,/Chờ xác minh thành tựu truyện từ máy chủ/);
  assert.match(source,/Chờ xác minh mốc quan hệ NPC từ máy chủ/);
  assert.match(source,/Chỉ mở khi tài khoản được máy chủ xác thực là Tác Giả/);

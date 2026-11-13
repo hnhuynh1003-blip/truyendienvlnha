@@ -1,0 +1,119 @@
+/* C4.41B — balanced Neon pods, owned LED palette, responsive timed rhythm counter. */
+#personal-arcade-v1 .neon-floor-capacity-7{
+ grid-template-columns:repeat(8,minmax(0,1fr));
+ grid-template-rows:repeat(2,minmax(0,1fr));
+ gap:4px 0;
+}
+#personal-arcade-v1 .neon-floor-capacity-7 .neon-gaming-bay{
+ grid-column:span 2;width:100%;height:auto;max-width:88px;max-height:92px;
+ align-self:center;justify-self:center;
+}
+#personal-arcade-v1 .neon-floor-capacity-7 .neon-gaming-bay:nth-child(5){grid-column:2/span 2}
+#personal-arcade-v1 .neon-floor-capacity-7 .neon-gaming-bay:nth-child(6){grid-column:4/span 2}
+#personal-arcade-v1 .neon-floor-capacity-7 .neon-gaming-bay:nth-child(7){grid-column:6/span 2}
+
+#personal-arcade-v1 .neon-stage.has-custom-led{filter:none}
+#personal-arcade-v1 .neon-stage.has-custom-led .neon-light-one,
+#personal-arcade-v1 .neon-stage.has-custom-led .neon-light-two{
+ background:linear-gradient(90deg,transparent,var(--neon-led),transparent);
+ opacity:.24;
+}
+#personal-arcade-v1 .neon-stage.has-custom-led .neon-custom-led-strips{
+ position:absolute;inset:32px 12px auto;z-index:3;height:3px;
+ border-radius:5px;background:var(--neon-led);
+ box-shadow:0 0 6px var(--neon-led),0 0 22px var(--neon-led),
+  0 0 55px var(--neon-led);
+ pointer-events:none;
+}
+#personal-arcade-v1 .neon-stage.has-custom-led .neon-wall-logo{
+ text-shadow:0 0 14px var(--neon-led),0 2px 4px #000;
+}
+#personal-arcade-v1 .neon-stage.has-custom-led .neon-aisle-glow{
+ background:radial-gradient(ellipse at 50% 100%,color-mix(in srgb,var(--neon-led) 47%,transparent),transparent 66%),
+  linear-gradient(0deg,#05112672,transparent 72%);
+}
+#personal-arcade-v1 .neon-stage.has-custom-led .neon-bay-id{
+ border-color:var(--neon-led);box-shadow:0 0 8px var(--neon-led),0 2px 5px #0009;
+}
+#personal-arcade-v1 .neon-stage.has-custom-led .neon-bay-id i{
+ background:var(--neon-led);box-shadow:0 0 6px var(--neon-led);
+}
+
+#personal-arcade-v1 .neon-led-studio{
+ display:grid;gap:9px;padding:12px 11px;margin-top:8px;
+ border-radius:12px;border:1px solid #6381a399;
+ background:linear-gradient(135deg,#1a2f46,#211d3d);
+}
+#personal-arcade-v1 .neon-led-studio>div:first-child{display:grid;gap:3px}
+#personal-arcade-v1 .neon-led-studio b{font:900 11px/1.3 system-ui,sans-serif;color:#efe3ff}
+#personal-arcade-v1 .neon-led-studio small{font:600 10px/1.45 system-ui,sans-serif;color:#bdc7de}
+#personal-arcade-v1 .neon-led-palette{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px}
+#personal-arcade-v1 .neon-led-swatch{
+ min-height:34px;min-width:0;background:var(--swatch);border:2px solid #172338;
+ border-radius:9px;box-shadow:inset 0 2px 4px #fff5,0 2px 5px #0007;
+}
+#personal-arcade-v1 .neon-led-swatch.is-selected{outline:2px solid #fff4d7;outline-offset:1px}
+#personal-arcade-v1 .neon-led-swatch:focus-visible{outline:3px solid #fff}
+#personal-arcade-v1 .neon-led-custom{
+ display:flex;align-items:center;justify-content:space-between;gap:12px;
+ color:#d5e7f5;font:850 10px/1.3 system-ui,sans-serif;
+}
+#personal-arcade-v1 .neon-led-custom input{
+ width:74px;height:40px;padding:3px;cursor:pointer;
+ border-radius:8px;border:1px solid #bcaad2;background:#25334f;
+}
+
+#personal-arcade-v1 .neon-beat-game{gap:8px}
+#personal-arcade-v1 .neon-beat-game .neon-order-scene{grid-template-columns:60px minmax(0,1fr);gap:6px}
+#personal-arcade-v1 .neon-beat-game .neon-order-customer{transform:scale(.78);transform-origin:bottom left}
+#personal-arcade-v1 .neon-beat-game .neon-order-ticket{min-width:0;max-width:100%;padding:8px 4px}
+#personal-arcade-v1 .neon-beat-sequence{gap:4px;flex-wrap:nowrap;max-width:100%;min-width:0}
+#personal-arcade-v1 .neon-beat-sequence>span:not(.neon-order-timer){
+ width:clamp(24px,7vw,35px);height:35px;flex:0 1 auto;
+ border-radius:8px;font:900 20px/1 system-ui,sans-serif;
+}
+#personal-arcade-v1 .neon-beat-sequence>span.is-next{
+ border:2px solid #ffeea5;box-shadow:0 0 12px #f8eb9e78;background:#304c69;
+}
+#personal-arcade-v1 .neon-beat-sequence .neon-beat-prompt{
+ width:auto!important;padding:0 9px;color:#c9fbfd;font-size:13px!important;
+}
+#personal-arcade-v1 .neon-beat-clock{color:#fff2a3;font:900 12px ui-monospace,monospace}
+#personal-arcade-v1 .neon-beat-start{
+ min-height:43px;width:100%;border:1px solid #76e2df;
+ border-radius:9px;background:linear-gradient(110deg,#115b70,#34326c);
+ color:#e3fdff;font-weight:900;letter-spacing:.04em;
+}
+#personal-arcade-v1 .neon-beat-start:disabled{opacity:.55}
+#personal-arcade-v1 .neon-beat-actions{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+#personal-arcade-v1 .neon-beat-actions button{min-width:0;min-height:57px;padding:5px 0}
+#personal-arcade-v1 .neon-beat-actions button>strong{font-size:25px;color:#eafcff}
+#personal-arcade-v1 .neon-beat-actions button>span{font-size:10px}
+#personal-arcade-v1 .neon-beat-actions button:disabled{opacity:.47;cursor:default}
+#personal-arcade-v1 .neon-beat-actions button:nth-child(4){background:#3d345b;border-color:#a998f7}
+@media(max-width:360px){
+ #personal-arcade-v1 .neon-floor-capacity-7 .neon-gaming-bay{max-height:76px}
+ #personal-arcade-v1 .neon-beat-sequence{gap:2px}
+ #personal-arcade-v1 .neon-beat-sequence>span:not(.neon-order-timer){width:26px;height:30px;font-size:17px}
+ #personal-arcade-v1 .neon-led-palette{gap:4px}
+ #personal-arcade-v1 .neon-beat-actions button{min-height:49px}
+}
+
+/* Mining feedback sits in normal flow beneath the three branches instead of
+   obscuring their signal bars and branch labels. No duplicate floating toast. */
+#personal-arcade-v1 .mine-seam-game .mine-seam-result{
+ position:relative;inset:auto;z-index:1;align-self:stretch;
+ display:flex;align-items:center;justify-content:center;gap:8px;
+ min-height:45px;margin:2px 0 0;padding:5px 8px;
+ border-radius:9px;box-shadow:inset 0 1px #c7ffe82e;
+ animation:none;white-space:normal;
+}
+#personal-arcade-v1 .mine-seam-game .mine-seam-result .ore-portrait{
+ width:31px;height:31px;flex:0 0 31px;
+}
+#personal-arcade-v1 .mine-seam-game .mine-seam-result small{
+ white-space:normal;overflow-wrap:anywhere;
+}
+#personal-arcade-v1 .mine-seam-game .mine-seam-scene{
+ flex:none;min-height:115px;
+}

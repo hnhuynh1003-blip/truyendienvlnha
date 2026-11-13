@@ -185,6 +185,11 @@
     if(!plain(record))return null;
     const alias=starterAlias(record);
     const item=catalog?.byId(alias||idOf(record));
+    // F4.3: group verified catalog collectibles without rewriting physical records.
+    if(['VAN_VAT','VAN_BAO','VAN_CARD'].includes(item?.collectionSet)&&record.id===item.id&&record.itemId===item.id&&record.name===item.name&&record.rank===item.rank&&record.type===item.type&&record.scope===item.scope&&/^fun-(?:vantvat|box|chess)-[0-9a-f-]{36}$/.test(record.instanceId||'')&&record.obtainedFrom?.kind==='EVENT'&&record.obtainedFrom?.source===({VAN_VAT:'DUDU_FUN_VANTUONG',VAN_BAO:'DUDU_FUN_BOX',VAN_CARD:'DUDU_FUN_VANBAO_CHESS'}[item.collectionSet])&&record.instanceId==='fun-'+({VAN_VAT:'vantvat-',VAN_BAO:'box-',VAN_CARD:'chess-'}[item.collectionSet])+record.obtainedFrom.eventId){
+      const allowed=new Set([...Object.keys(item),'instanceId','obtainedFrom']);
+      if(Object.keys(record).every(k=>allowed.has(k)&&(k==='instanceId'||k==='obtainedFrom'||JSON.stringify(record[k])===JSON.stringify(item[k]))))return item.collectionSet+':'+item.id;
+    }
     if(!item||!['COMMON','REALM'].includes(item.scope)||
        // Rank B+ and story-significant rare finds remain individual slots.
        !['F','E','D','C'].includes(item.rank)||
@@ -267,7 +272,7 @@
   function validateCatalog(){
     const errors=[];
     const all=catalog?.items||[];
-    if(all.length!==160)errors.push('Expected 160 catalog records (70 legacy + 90 world)');
+    if(all.length!==248)errors.push('Expected 245 inherited + 3 card blanks');
     const seen=new Set();
     for(const row of all){
       const category=categoryFor(row);

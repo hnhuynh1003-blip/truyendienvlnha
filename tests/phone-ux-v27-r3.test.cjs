@@ -33,7 +33,7 @@ test('V27 R3 no inline Vứt on every tile; inspector handles protected/unique o
  assert.match(render,/slot\.append\(artwork,badge,name\)/);
  assert.doesNotMatch(render,/details\.textContent='Chi tiết'/);
  assert.match(inspect,/if\(IS_SANDBOX_MODE&&!protectedItem\)\{/);
- assert.match(inspect,/Giao dịch, tiêu hao và chuyển quà cần xác thực máy chủ/);
+ assert.match(inspect,/Món đồ này tạm thời chưa thể sử dụng hoặc trao đổi/);
  assert.match(inspect,/Vứt vật phẩm/);
  assert.match(inspect,/if\(!confirm\(/);
  assert.match(inspect,/userProfile\.inventory\.indexOf\(item\)/);

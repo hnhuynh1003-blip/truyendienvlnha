@@ -1,0 +1,52 @@
+/* C4.44 — five coherent AI paintings of one garden, selected by pond tier.
+ * Bridge, waterfall, pavilion and lanterns are PAINTED INTO THE SHORELINE.
+ * Only real fish, bait, weather and a subtle translucent water glaze overlap. */
+#personal-arcade-v1 .garden-stage{
+ --garden-tier-art:url('../assets/arcade-c444-pond/pond-level-1.webp');
+ background:linear-gradient(180deg,#111b3b48 0%,#14373e1c 53%,#06253b35 100%),
+  var(--garden-tier-art) 65% 48%/cover no-repeat;
+}
+#personal-arcade-v1 .garden-stage.garden-pond-tier-2{--garden-tier-art:url('../assets/arcade-c444-pond/pond-level-2.webp')}
+#personal-arcade-v1 .garden-stage.garden-pond-tier-3{--garden-tier-art:url('../assets/arcade-c444-pond/pond-level-3.webp')}
+#personal-arcade-v1 .garden-stage.garden-pond-tier-4{--garden-tier-art:url('../assets/arcade-c444-pond/pond-level-4.webp')}
+#personal-arcade-v1 .garden-stage.garden-pond-tier-5{--garden-tier-art:url('../assets/arcade-c444-pond/pond-level-5.webp')}
+#personal-arcade-v1 .garden-stage .garden-pond{
+ left:3%;right:3%;bottom:8px;height:51%;z-index:3;overflow:visible;
+ border:0!important;border-radius:0!important;
+ background:transparent!important;box-shadow:none!important;
+}
+#personal-arcade-v1 .garden-stage.garden-expanded .garden-pond{height:47%}
+#personal-arcade-v1 .garden-stage .garden-pond-shine{
+ inset:7% 5%;border-radius:42%;opacity:.14;pointer-events:none;
+ background:linear-gradient(165deg,transparent 25%,#dbfff83c 45%,transparent 69%);
+}
+#personal-arcade-v1 .garden-stage .garden-pond .garden-lotus{display:none}
+#personal-arcade-v1 .garden-stage .garden-pond .garden-fish{
+ z-index:2;opacity:.85;
+ filter:saturate(.88) contrast(.96) drop-shadow(0 2px 3px #073d619c);
+}
+#personal-arcade-v1 .garden-stage .garden-fish-a{left:19%;top:38%}
+#personal-arcade-v1 .garden-stage .garden-fish-b{left:57%;top:25%}
+#personal-arcade-v1 .garden-stage .garden-fish-c{left:40%;top:54%}
+#personal-arcade-v1 .garden-stage .garden-fish-d{left:78%;top:58%}
+#personal-arcade-v1 .garden-stage .garden-fish-e{left:12%;top:75%}
+#personal-arcade-v1 .garden-stage .garden-fish-f{left:64%;top:77%}
+#personal-arcade-v1 .garden-stage .garden-pond .garden-bubble-harvest{right:9%;top:32%}
+
+/* A whisper of water glints passes over the live fish; no scenery overlays. */
+#personal-arcade-v1 .garden-stage .garden-water-surface{
+ position:absolute;inset:0;z-index:5;pointer-events:none;
+ background:linear-gradient(166deg,transparent 20%,#d7faff1c 35%,transparent 51%,#b2f2ff1b 66%,transparent 83%),
+  repeating-linear-gradient(104deg,transparent 0 39px,#d7faff12 45px,transparent 52px);
+ opacity:.35;mix-blend-mode:screen;
+}
+#personal-arcade-v1 .garden-stage.garden-pond-tier-5 .garden-water-surface{opacity:.45}
+/* A wider pond stays inside the illustrated scene on compact phones. */
+@media(max-width:360px){
+ #personal-arcade-v1 .garden-stage .garden-pond{left:2%;right:2%;bottom:7px;height:52%}
+ #personal-arcade-v1 .garden-stage.garden-expanded .garden-pond{height:47%}
+ #personal-arcade-v1 .garden-stage .garden-pond .garden-bubble-harvest{right:5%;top:32%}
+}
+@media(prefers-reduced-motion:reduce){
+ #personal-arcade-v1 .garden-stage .garden-pond-shine{animation:none!important}
+}

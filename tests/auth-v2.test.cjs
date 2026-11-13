@@ -16,17 +16,41 @@ function harness(options = {}) {
   const authFactory = Object.assign(() => account, { GoogleAuthProvider: class {} });
   const elements = {};
   const logs = [];
+  const snapshot = () => ({exists: !!record, data: () => record});
+  const firestore = {
+    collection: () => ({doc: uid => ({
+      get: async () => options.profileGet ? options.profileGet(record,uid) : snapshot()
+    })}),
+    runTransaction: async callback => {
+      if(options.transactionError)throw options.transactionError;
+      const writes=[];
+      const tx={
+        get: async () => {
+          options.transactionBeforeGet?.(value=>{record=value;});
+          return snapshot();
+        },
+        set: (_ref,data) => writes.push(data)
+      };
+      const result=await callback(tx);
+      for(const data of writes)record=data;
+      return result;
+    }
+  };
   const context = {
     IS_SANDBOX_MODE: false,
+    DUDU_ACCOUNT_APPROVAL_V1_READY: !!options.approvalGate,
+    DUDU_ACCOUNT_INVITES_R11_READY: !!options.invitationGate,
+    DuduAccountApprovalV1: options.approvalHelper,
+    DuduAccountInviteR11: options.inviteHelper,
+    duduSyncEpubAccessR11: options.onEpub,
     DuduFirestoreProfileFallbackV567: options.enableFallback ? require('../js/firestore-profile-fallback-v56-7.js') : undefined,
     setTimeout: options.setTimeout || setTimeout, clearTimeout, AbortController,
     fetch: options.fetch || (async () => { throw new Error('No mock HTTP route'); }),
     firebase: {
       auth: authFactory,
-      firestore: () => ({ collection: () => ({ doc: uid => ({
-        get: async () => options.profileGet ? options.profileGet(record,uid) : ({ exists: !!record, data: () => record })
-      }) }) })
+      firestore: () => firestore
     },
+    DuduProfileSaveC23: require('../js/profile-save-c23.js'),
     document: {
       createElement: () => ({style:{},addEventListener(){}}),
       getElementById: id => (elements[id] ||= {
@@ -53,7 +77,7 @@ function harness(options = {}) {
   vm.runInNewContext(src, context);
   context.DuduAuth.init();
   return {
-    context, account, elements,
+    context, account, elements, profile:()=>record,
     login: async (uid, claims, profile = null) => {
       record = profile;
       const user = {
@@ -157,8 +181,78 @@ test('successful Google identity appears before slow Firestore read and is never
   resolveProfile({ exists: false });
   await login;
   assert.equal(h.context.DuduAuth.isReady(), true);
+  assert.equal(h.profile().username,'google-uid');
   assert.doesNotMatch(h.elements['account-status-btn'].textContent, /Khách|Lỗi hồ sơ/);
   assert.equal(h.elements['auth-status-message'].textContent.includes('Không thể'), false);
+});
+
+test('first-time reader creates an owned Firestore profile before becoming ready to buy', async () => {
+  const h=harness();
+  await h.login('new-reader',{},null);
+  assert.equal(h.context.DuduAuth.isReady(),true);
+  assert.equal(h.context.DuduAuth.isAdmin(),false);
+  assert.equal(h.profile().username,'new-reader');
+  assert.equal(h.profile().currency,50);
+  assert.deepEqual(h.profile().inventory,[]);
+  assert.equal(h.profile().role,undefined,'profile never grants its own admin rights');
+});
+
+test('AUTH-A1 pending identity never reads or creates a gameplay profile', async () => {
+  let reads = 0, checks = 0;
+  const h = harness({
+    approvalGate: true,
+    approvalHelper: {check: async () => { checks++; return {approved:false,status:'pending'}; }},
+    profileGet: () => { reads++; return {exists:false}; }
+  });
+  await h.login('new-pending',{},null);
+  assert.equal(checks,1);
+  assert.equal(reads,0,'no profile fetch may happen before approval');
+  assert.equal(h.profile(),null,'no first-sign-in bonus or profile bootstrap');
+  assert.equal(h.context.DuduAuth.isReady(),false);
+  assert.equal(h.context.DuduAuth.isAdmin(),false);
+  assert.match(h.elements['auth-status-message'].textContent,/chờ chủ sở hữu/i);
+  assert.match(h.elements['auth-approval-pending-a1'].textContent,/chờ chủ sở hữu/i);
+});
+
+test('AUTH-A1 approved identity may load its own profile', async () => {
+  let checks=0;
+  const h=harness({approvalGate:true,
+    approvalHelper:{check:async()=>{checks++;return {approved:true,status:'approved'};}}});
+  await h.login('approved-reader',{},null);
+  assert.equal(checks,1);
+  assert.equal(h.context.DuduAuth.isReady(),true);
+  assert.equal(h.profile().username,'approved-reader');
+});
+
+test('AUTH-A1 rejected identity cannot bootstrap and is not ready', async () => {
+  const h=harness({approvalGate:true,
+    approvalHelper:{check:async()=>({approved:false,status:'rejected'})}});
+  await h.login('rejected-reader',{},null);
+  assert.equal(h.context.DuduAuth.isReady(),false);
+  assert.equal(h.profile(),null);
+  assert.match(h.elements['auth-status-message'].textContent,/chưa được chấp thuận/i);
+});
+
+test('profile created in another tab wins over the missing-profile device backup', async () => {
+  const h=harness({
+    transactionBeforeGet:set=>set({username:'reader-c',name:'Cloud Owner',
+      currency:777,inventory:[{id:'existing-item'}],quests:[],storyStates:{}})
+  });
+  await h.login('reader-c',{},null);
+  assert.equal(h.context.DuduAuth.isReady(),true);
+  assert.equal(h.context.userProfile.currency,777);
+  assert.equal(h.profile().currency,777);
+  assert.equal(h.context.userProfile.inventory[0].id,'existing-item');
+});
+
+test('reader profile bootstrap denied by Rules does not unlock economy actions', async () => {
+  const error=Object.assign(new Error('Missing or insufficient permissions'),
+    {code:'permission-denied'});
+  const h=harness({transactionError:error});
+  await h.login('blocked-reader',{},null);
+  assert.equal(h.context.DuduAuth.isReady(),false);
+  assert.match(h.elements['auth-status-message'].textContent,/từ chối tạo hồ sơ/);
+  assert.equal(h.profile(),null);
 });
 
 test('Firestore permission denied keeps Firebase identity, reports failure, and refuses author rights', async () => {
@@ -335,4 +429,39 @@ test('V56.7 slow REST response from A never overrides signed-in account B',async
  assert.equal(h.context.userProfile.name,'Account B');
  assert.equal(h.context.userProfile.currency,4);
  assert.equal(h.context.DuduAuth.isReady(),true);
+});
+
+test('R1.1 reader is held at invite entry, then redeems once and loads existing profile',async()=>{
+ let approved=false,redeemed=0;
+ const access=[];
+ const h=harness({
+  approvalGate:true,invitationGate:true,
+  approvalHelper:{check:async()=>approved?
+   {approved:true,status:'approved'}:{approved:false,status:'invite-required'}},
+  inviteHelper:{redeem:async({code})=>{
+   assert.equal(code,'DUDU-BBBBBBBB-BBBBBBBB');redeemed++;approved=true;
+  }},
+  onEpub:allowed=>access.push(allowed)
+ });
+ await h.login('reader-existing',{}, {name:'Truyện cũ',currency:95,storyStates:{saved:{}}});
+ assert.equal(h.context.DuduAuth.isReady(),false);
+ assert.equal(h.elements['auth-invite-redeem-r11'].hidden,false);
+ assert.equal(h.context.userProfile.currency,undefined);
+ h.elements['auth-invite-code-r11'].value='DUDU-BBBBBBBB-BBBBBBBB';
+ await h.context.DuduAuth.redeemInvite();
+ assert.equal(redeemed,1);
+ assert.equal(h.context.DuduAuth.isReady(),true);
+ assert.equal(h.context.userProfile.currency,95);
+ assert.ok(h.context.userProfile.storyStates.saved);
+ assert.equal(access.at(-1),true);
+ await h.logout();
+ assert.equal(access.at(-1),false);
+});
+
+test('R1.1 invitation UI remains inactive when either release switch is off',async()=>{
+ const h=harness({approvalGate:false,invitationGate:true});
+ await h.login('reader-existing',{}, {name:'Reader',currency:7});
+ assert.equal(h.context.DuduAuth.isReady(),true);
+ assert.notEqual(h.elements['auth-invite-redeem-r11']?.hidden,false);
+ assert.notEqual(h.elements['auth-invite-owner-r11']?.hidden,false);
 });

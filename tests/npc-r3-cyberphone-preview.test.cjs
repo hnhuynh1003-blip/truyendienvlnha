@@ -10,11 +10,12 @@ test('R3 is loaded after R1 and R2 and preview exists in Cyber Phone',()=>{
  assert.ok(r1>0&&r2>r1&&r3>r2);
  assert.ok(html.includes('id="npc-relationship-r3-preview"'));
 });
-test('R3 display is sandbox-only, read-only and does not trust unverified milestone data',()=>{
+test('R3 displays for Sandbox or authenticated owner and never infers story milestones',()=>{
  const begin=html.indexOf('function switchChatCharacter()');
  const end=html.indexOf('function renderChatMessages(',begin);
  const fn=html.slice(begin,end);
- assert.match(fn,/if \(IS_SANDBOX_MODE && panel\)/);
+ assert.match(fn,/if \(\(IS_SANDBOX_MODE\|\|liveOwner\) && panel\)/);
+ assert.match(fn,/DuduAuth\.uid\(\)===currentUsername/);
  assert.match(fn,/DuduNpcRelationshipV2\.previewRelationship/);
  assert.match(fn,/DuduNpcRelationStages\.stage/);
  assert.match(fn,/approvedMilestones:\[\],completedMilestones:\[\]/);

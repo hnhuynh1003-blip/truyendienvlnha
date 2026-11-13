@@ -1,0 +1,1050 @@
+{
+  "version": "F4.2D",
+  "sourceArchive": "DUDU_F4.2C_29_BaoVat_AI.zip",
+  "entries": [
+    {
+      "id": "f32b-cult-seal",
+      "rank": "B",
+      "source": "DUDU_F4.2C_B_f32b-cult-seal.png",
+      "sourceSHA256": "bd6772deb8bb70a68292dd85005145ef5ab01c30c687a01fc1fd393806e8b019",
+      "width": 1254,
+      "height": 1254,
+      "alphaMin": 0,
+      "alphaMax": 255,
+      "transparentPixels": 682894,
+      "partialPixels": 889118,
+      "edgePixels": 0,
+      "bbox": [
+        80,
+        55,
+        1173,
+        1197
+      ],
+      "pixelHash": "6541abda946b23fabf61d0977b7de74fad8c812c8d7eebe03d1479753c6bce66",
+      "full": {
+        "path": "assets/van-tuong/f42d/f32b-cult-seal.webp",
+        "bytes": 196560,
+        "sha256": "c6b6896a657d0ba8fa16a73806e3c218bc2096658701528b00be0f2bea8cb9a5",
+        "width": 1024,
+        "height": 1024,
+        "transparentPixels": 453893
+      },
+      "thumbnail": {
+        "path": "assets/van-tuong/stream-f42b1/f32b-cult-seal.webp",
+        "bytes": 11622,
+        "sha256": "f4c129e6c0174470ccad75618a743d7869563e3a4fe1f32743e5fdbad927b78c",
+        "width": 180,
+        "height": 180,
+        "transparentPixels": 13988
+      }
+    },
+    {
+      "id": "f32-cyber-blade",
+      "rank": "C",
+      "source": "DUDU_F4.2C_C_f32-cyber-blade.png",
+      "sourceSHA256": "c46f8cd75ba003ced4b590760585100e2637ab70b0e0409a772b859e72e333fa",
+      "width": 1254,
+      "height": 1254,
+      "alphaMin": 0,
+      "alphaMax": 255,
+      "transparentPixels": 1266569,
+      "partialPixels": 305464,
+      "edgePixels": 0,
+      "bbox": [
+        95,
+        80,
+        1202,
+        1173
+      ],
+      "pixelHash": "bb9d13be86720f236426bdfb93b447775916afc670c39656698e6f7af013868e",
+      "full": {
+        "path": "assets/van-tuong/f42d/f32-cyber-blade.webp",
+        "bytes": 107392,
+        "sha256": "09e195952e05b66d9a933f7287ff78c4d594f2bcc00405c0ff3a891ec94ecd5b",
+        "width": 1024,
+        "height": 1024,
+        "transparentPixels": 843458
+      },
+      "thumbnail": {
+        "path": "assets/van-tuong/stream-f42b1/f32-cyber-blade.webp",
+        "bytes": 6496,
+        "sha256": "f5ded103a035f72680a2bdc68ccbb03b38b95935e5c2f5f6b6e63ef0826a8e4a",
+        "width": 180,
+        "height": 180,
+        "transparentPixels": 26055
+      }
+    },
+    {
+      "id": "f32-fossil-amber",
+      "rank": "C",
+      "source": "DUDU_F4.2C_C_f32-fossil-amber.png",
+      "sourceSHA256": "6e74821b56fec54f1aa18c2ae8452e915125349a1f199098002d1907ff8f4bc9",
+      "width": 1254,
+      "height": 1254,
+      "alphaMin": 0,
+      "alphaMax": 255,
+      "transparentPixels": 874448,
+      "partialPixels": 697830,
+      "edgePixels": 0,
+      "bbox": [
+        135,
+        108,
+        1120,
+        1144
+      ],
+      "pixelHash": "1880452932a4107e3ff4d62bc790f74e51f15a0d7a326194c22c7abc2563da07",
+      "full": {
+        "path": "assets/van-tuong/f42d/f32-fossil-amber.webp",
+        "bytes": 272756,
+        "sha256": "b93de83752f6794f415fbbe51f7d9df4b344497970e5d7bbbceeb7e4c13135b7",
+        "width": 1024,
+        "height": 1024,
+        "transparentPixels": 582041
+      },
+      "thumbnail": {
+        "path": "assets/van-tuong/stream-f42b1/f32-fossil-amber.webp",
+        "bytes": 12960,
+        "sha256": "597eff8843f0f95aa5109c194e0b7711e9efcdfd8bab556aa0a2047b3fb48af8",
+        "width": 180,
+        "height": 180,
+        "transparentPixels": 17990
+      }
+    },
+    {
+      "id": "f32-fruit-phoenix",
+      "rank": "C",
+      "source": "DUDU_F4.2C_C_f32-fruit-phoenix.png",
+      "sourceSHA256": "f5baa74b2c756a4eb0037039babc572ae28f2f5fea969f7f0b31f02cf67e5d40",
+      "width": 1254,
+      "height": 1254,
+      "alphaMin": 0,
+      "alphaMax": 255,
+      "transparentPixels": 784864,
+      "partialPixels": 787009,
+      "edgePixels": 0,
+      "bbox": [
+        120,
+        12,
+        1126,
+        1235
+      ],
+      "pixelHash": "7d8d95f14ae44b8b28b5e36e49819674bc082effd34b032fee465e82d2dbf37c",
+      "full": {
+        "path": "assets/van-tuong/f42d/f32-fruit-phoenix.webp",
+        "bytes": 286408,
+        "sha256": "75a8c42c93b4686c268770903f63ac3b1c87c675f067d762e890674c78edf3ad",
+        "width": 1024,
+        "height": 1024,
+        "transparentPixels": 520849
+      },
+      "thumbnail": {
+        "path": "assets/van-tuong/stream-f42b1/f32-fruit-phoenix.webp",
+        "bytes": 13728,
+        "sha256": "816e3526459cf71b1dd9f23735edc91933407448c081980fbb2a403f6db4dcdc",
+        "width": 180,
+        "height": 180,
+        "transparentPixels": 16098
+      }
+    },
+    {
+      "id": "f32-waste-watch",
+      "rank": "C",
+      "source": "DUDU_F4.2C_C_f32-waste-watch.png",
+      "sourceSHA256": "f66f15f703921111941e6a533dc687b364f50c68e7e1fbff10af55d28f38706e",
+      "width": 1254,
+      "height": 1254,
+      "alphaMin": 0,
+      "alphaMax": 255,
+      "transparentPixels": 719391,
+      "partialPixels": 852988,
+      "edgePixels": 0,
+      "bbox": [
+        158,
+        15,
+        1081,
+        1240
+      ],
+      "pixelHash": "96db37fd239f7dfefe14f6e2b55e98cf1ad63da70b9c9a2683f1a2b89a2321f7",
+      "full": {
+        "path": "assets/van-tuong/f42d/f32-waste-watch.webp",
+        "bytes": 273446,
+        "sha256": "2518d9d01a07e8f7359adcfd51b3682143b529d17a892dd7bf3528e2cdeb47f3",
+        "width": 1024,
+        "height": 1024,
+        "transparentPixels": 478863
+      },
+      "thumbnail": {
+        "path": "assets/van-tuong/stream-f42b1/f32-waste-watch.webp",
+        "bytes": 12060,
+        "sha256": "df6f613b5a964cc89f5c8dddede2deba7558004a6c64c44f94d176535571d147",
+        "width": 180,
+        "height": 180,
+        "transparentPixels": 14786
+      }
+    },
+    {
+      "id": "f32b-cyber-drive",
+      "rank": "C",
+      "source": "DUDU_F4.2C_C_f32b-cyber-drive.png",
+      "sourceSHA256": "99378d55c44d08254a3950ed4832f8e9d04fb26dc22f69d927d3026175738ef6",
+      "width": 1254,
+      "height": 1254,
+      "alphaMin": 0,
+      "alphaMax": 255,
+      "transparentPixels": 816040,
+      "partialPixels": 756054,
+      "edgePixels": 0,
+      "bbox": [
+        75,
+        106,
+        1199,
+        1172
+      ],
+      "pixelHash": "2a8b6371793422627abbca277ae4c60332968647c9d6209dce900361ebf72e8f",
+      "full": {
+        "path": "assets/van-tuong/f42d/f32b-cyber-drive.webp",
+        "bytes": 180980,
+        "sha256": "b3586dcf4027300b8eb8693d76aa93fa69de7a847f72a91ad68ecda57cf81bf0",
+        "width": 1024,
+        "height": 1024,
+        "transparentPixels": 542894
+      },
+      "thumbnail": {
+        "path": "assets/van-tuong/stream-f42b1/f32b-cyber-drive.webp",
+        "bytes": 9040,
+        "sha256": "4d6ae73470e23eacca1d44994003d3eb1b6cea27cb80e070f476121a636b85cd",
+        "width": 180,
+        "height": 180,
+        "transparentPixels": 16694
+      }
+    },
+    {
+      "id": "f32b-fossil-meteor",
+      "rank": "C",
+      "source": "DUDU_F4.2C_C_f32b-fossil-meteor.png",
+      "sourceSHA256": "0d1cfbccde065e3b915ba4e4096ff1655e356d2f8ce3b3c188b471575a6a8f54",
+      "width": 1254,
+      "height": 1254,
+      "alphaMin": 0,
+      "alphaMax": 255,
+      "transparentPixels": 748713,
+      "partialPixels": 823257,
+      "edgePixels": 0,
+      "bbox": [
+        58,
+        72,
+        1195,
+        1166
+      ],
+      "pixelHash": "9896ca86f3f74df6f08c21dbae460f772349c0f3e08bc96038b4ba967ce3266f",
+      "full": {
+        "path": "assets/van-tuong/f42d/f32b-fossil-meteor.webp",
+        "bytes": 306774,
+        "sha256": "0b1673902e3b6856ef3b2de28bc400d7e23c468abf7a04313c50cb4c59b97791",
+        "width": 1024,
+        "height": 1024,
+        "transparentPixels": 497958
+      },
+      "thumbnail": {
+        "path": "assets/van-tuong/stream-f42b1/f32b-fossil-meteor.webp",
+        "bytes": 14754,
+        "sha256": "c7241714dba1f4bf8edbec50c508319d58f9ad96b612d4de0705339f0cbe415c",
+        "width": 180,
+        "height": 180,
+        "transparentPixels": 15381
+      }
+    },
+    {
+      "id": "f32-cosmos-fate",
+      "rank": "D",
+      "source": "DUDU_F4.2C_D_f32-cosmos-fate.png",
+      "sourceSHA256": "d3559ef20f7db7043b25fa46fda39c51cd92076e383d58c0ad0c1391cff88a26",
+      "width": 1254,
+      "height": 1254,
+      "alphaMin": 0,
+      "alphaMax": 255,
+      "transparentPixels": 876957,
+      "partialPixels": 694453,
+      "edgePixels": 0,
+      "bbox": [
+        175,
+        53,
+        979,
+        1187
+      ],
+      "pixelHash": "6797a0d7bd5766ffd245b5ecd6e3e3e8fd0cc47d6f7ba34dd3b3d6ead68fcb2e",
+      "full": {
+        "path": "assets/van-tuong/f42d/f32-cosmos-fate.webp",
+        "bytes": 143680,
+        "sha256": "00ea4aac009729923a9092d38e9f7f6e8b439b5b654b4b8ba93927c769be5b9f",
+        "width": 1024,
+        "height": 1024,
+        "transparentPixels": 583070
+      },
+      "thumbnail": {
+        "path": "assets/van-tuong/stream-f42b1/f32-cosmos-fate.webp",
+        "bytes": 8730,
+        "sha256": "debf668d1d77b1ae98b297a9aa35e965d85a638da511c54bca082265cfab73e1",
+        "width": 180,
+        "height": 180,
+        "transparentPixels": 17999
+      }
+    },
+    {
+      "id": "f32-cult-bell",
+      "rank": "D",
+      "source": "DUDU_F4.2C_D_f32-cult-bell.png",
+      "sourceSHA256": "3062937b8f0d1578f279c1e8c435a32577a09cb28bf62026a284b6ba8e1856f2",
+      "width": 1254,
+      "height": 1254,
+      "alphaMin": 0,
+      "alphaMax": 255,
+      "transparentPixels": 1180181,
+      "partialPixels": 391351,
+      "edgePixels": 0,
+      "bbox": [
+        266,
+        4,
+        1040,
+        1164
+      ],
+      "pixelHash": "deea91f80f9ee1b74e590dc27d755b33f2b8dba1319fc2a2e00512dc5e371af2",
+      "full": {
+        "path": "assets/van-tuong/f42d/f32-cult-bell.webp",
+        "bytes": 138288,
+        "sha256": "511be7bdb6c96df4d8d8cf33b7e11ca9bf80132e25893c7703b3594632d5fa05",
+        "width": 1024,
+        "height": 1024,
+        "transparentPixels": 785058
+      },
+      "thumbnail": {
+        "path": "assets/van-tuong/stream-f42b1/f32-cult-bell.webp",
+        "bytes": 7376,
+        "sha256": "139b300fc09ed01e499e21d1bd581dd07f16a5dea0fbe6dc64acf4b7a46a8777",
+        "width": 180,
+        "height": 180,
+        "transparentPixels": 24242
+      }
+    },
+    {
+      "id": "f32-doll-moon",
+      "rank": "D",
+      "source": "DUDU_F4.2C_D_f32-doll-moon.png",
+      "sourceSHA256": "50085da1bb6750b2f5c7df0f0f8d37009be47cebd7d10b0450201ac80357f040",
+      "width": 1254,
+      "height": 1254,
+      "alphaMin": 0,
+      "alphaMax": 255,
+      "transparentPixels": 870542,
+      "partialPixels": 701399,
+      "edgePixels": 0,
+      "bbox": [
+        206,
+        10,
+        1036,
+        1243
+      ],
+      "pixelHash": "5abeb29fb9cd614e9984ad47533c247821331c773912064b4f020a7b3d043b2d",
+      "full": {
+        "path": "assets/van-tuong/f42d/f32-doll-moon.webp",
+        "bytes": 268906,
+        "sha256": "8915b5e5c9d82f44807b80d2957774457a67aeaafa03c78f47c9a8ece0b2478d",
+        "width": 1024,
+        "height": 1024,
+        "transparentPixels": 578823
+      },
+      "thumbnail": {
+        "path": "assets/van-tuong/stream-f42b1/f32-doll-moon.webp",
+        "bytes": 11122,
+        "sha256": "4526b92a6b65812bccd2989653e50e1f3a02986598edefb4cac5ce7b4ff50db1",
+        "width": 180,
+        "height": 180,
+        "transparentPixels": 17881
+      }
+    },
+    {
+      "id": "f32-waste-compass",
+      "rank": "D",
+      "source": "DUDU_F4.2C_D_f32-waste-compass.png",
+      "sourceSHA256": "e96d08b04d3ee80e4b3afaec5ea6670c173cb775f17aa55baeb909680bb7b9be",
+      "width": 1254,
+      "height": 1254,
+      "alphaMin": 0,
+      "alphaMax": 255,
+      "transparentPixels": 789074,
+      "partialPixels": 782575,
+      "edgePixels": 0,
+      "bbox": [
+        78,
+        38,
+        1174,
+        1181
+      ],
+      "pixelHash": "eaab2122251723b13c915f8941f1ea234915f60270fc1798ae753677aaef8af7",
+      "full": {
+        "path": "assets/van-tuong/f42d/f32-waste-compass.webp",
+        "bytes": 317430,
+        "sha256": "05422ebd15179b487232c4dc418d2b3e1374a867e810eacd684311dd55522cc4",
+        "width": 1024,
+        "height": 1024,
+        "transparentPixels": 523793
+      },
+      "thumbnail": {
+        "path": "assets/van-tuong/stream-f42b1/f32-waste-compass.webp",
+        "bytes": 13510,
+        "sha256": "e742846a3fc08dd445b94165cc3b6598067a34cae81a12dfb6c7b64e9fd07141",
+        "width": 180,
+        "height": 180,
+        "transparentPixels": 16160
+      }
+    },
+    {
+      "id": "f32b-cosmos-meteor",
+      "rank": "D",
+      "source": "DUDU_F4.2C_D_f32b-cosmos-meteor.png",
+      "sourceSHA256": "c8006be6a0b9267184f32bf40462a93e0d62ad6430660ac12af8eb1977769a35",
+      "width": 1254,
+      "height": 1254,
+      "alphaMin": 0,
+      "alphaMax": 255,
+      "transparentPixels": 942422,
+      "partialPixels": 629691,
+      "edgePixels": 0,
+      "bbox": [
+        109,
+        140,
+        1150,
+        1130
+      ],
+      "pixelHash": "4aff21671ee9b8390ad5541876f2af3c4fc321af064209f0c06ffe708ba7ea17",
+      "full": {
+        "path": "assets/van-tuong/f42d/f32b-cosmos-meteor.webp",
+        "bytes": 228760,
+        "sha256": "5fa5b0952b00711793dd6cc2fb19c3b1c0a408bc29d39e107790605e70bf8deb",
+        "width": 1024,
+        "height": 1024,
+        "transparentPixels": 627483
+      },
+      "thumbnail": {
+        "path": "assets/van-tuong/stream-f42b1/f32b-cosmos-meteor.webp",
+        "bytes": 9354,
+        "sha256": "cf70b478945955ba31dd2ba074fce9cd83a9e2d9373d1ada223303c1acccf4be",
+        "width": 180,
+        "height": 180,
+        "transparentPixels": 19395
+      }
+    },
+    {
+      "id": "f32b-cult-gourd",
+      "rank": "D",
+      "source": "DUDU_F4.2C_D_f32b-cult-gourd.png",
+      "sourceSHA256": "632573776ae22762f262072c9b8a6a23b362ec6285e7ed373d3b3c4cf6d71358",
+      "width": 1254,
+      "height": 1254,
+      "alphaMin": 0,
+      "alphaMax": 255,
+      "transparentPixels": 1007440,
+      "partialPixels": 564557,
+      "edgePixels": 0,
+      "bbox": [
+        260,
+        39,
+        1066,
+        1226
+      ],
+      "pixelHash": "2b9c9e1849c77080e20e3328523936082f2fdbfb7a726db1f1f1cc837aaf1097",
+      "full": {
+        "path": "assets/van-tuong/f42d/f32b-cult-gourd.webp",
+        "bytes": 152504,
+        "sha256": "a3a4d9487f1706527d39808781c3dc354a2d7e8fc9e81814ce3fdde264b9fd3a",
+        "width": 1024,
+        "height": 1024,
+        "transparentPixels": 670207
+      },
+      "thumbnail": {
+        "path": "assets/van-tuong/stream-f42b1/f32b-cult-gourd.webp",
+        "bytes": 7804,
+        "sha256": "aec44a55bbcc698692119fc7d47ab437e51cc447151e06d9493fd51588fd3024",
+        "width": 180,
+        "height": 180,
+        "transparentPixels": 20696
+      }
+    },
+    {
+      "id": "f32b-doll-music",
+      "rank": "D",
+      "source": "DUDU_F4.2C_D_f32b-doll-music.png",
+      "sourceSHA256": "e56584857db1f01308f66668f818f44cb3cc7f55bbb1194e74d26b632bda5f94",
+      "width": 1254,
+      "height": 1254,
+      "alphaMin": 0,
+      "alphaMax": 255,
+      "transparentPixels": 909894,
+      "partialPixels": 662197,
+      "edgePixels": 0,
+      "bbox": [
+        226,
+        5,
+        1011,
+        1230
+      ],
+      "pixelHash": "d64cd46bb1f2f25fce47b09d1422f54ee075f069733d0ac837a2c0fe2ba44094",
+      "full": {
+        "path": "assets/van-tuong/f42d/f32b-doll-music.webp",
+        "bytes": 289904,
+        "sha256": "16f0ce687b10d7c29a8f3591071cd91d0925663355eae10e5fcb0b578946a786",
+        "width": 1024,
+        "height": 1024,
+        "transparentPixels": 605358
+      },
+      "thumbnail": {
+        "path": "assets/van-tuong/stream-f42b1/f32b-doll-music.webp",
+        "bytes": 12344,
+        "sha256": "18c98205064dc35d41bfa3d05cc258ae9d571c3e0480bf17cf1ec864cb511df2",
+        "width": 180,
+        "height": 180,
+        "transparentPixels": 18705
+      }
+    },
+    {
+      "id": "f32b-fruit-pear",
+      "rank": "D",
+      "source": "DUDU_F4.2C_D_f32b-fruit-pear.png",
+      "sourceSHA256": "e3583b1fbec70211168c0d69f358cea9d363744c0b4c9b92d99fe23cb8e5b7c0",
+      "width": 1254,
+      "height": 1254,
+      "alphaMin": 0,
+      "alphaMax": 255,
+      "transparentPixels": 910911,
+      "partialPixels": 661175,
+      "edgePixels": 0,
+      "bbox": [
+        217,
+        37,
+        1067,
+        1223
+      ],
+      "pixelHash": "9aecd21649d2a6597d7935b1d3d653aa1978e4d713f618d7e77b054c2ce40361",
+      "full": {
+        "path": "assets/van-tuong/f42d/f32b-fruit-pear.webp",
+        "bytes": 180092,
+        "sha256": "170ba7f89d55a7573c7006a2d4bd92b48a7d5b3667ba7cef60738640b2d49e0b",
+        "width": 1024,
+        "height": 1024,
+        "transparentPixels": 606080
+      },
+      "thumbnail": {
+        "path": "assets/van-tuong/stream-f42b1/f32b-fruit-pear.webp",
+        "bytes": 8658,
+        "sha256": "1cd7c242d7d6ef8fabceb28d0c466cf760f27e5e5ecfe2de3ca909f59f121fbc",
+        "width": 180,
+        "height": 180,
+        "transparentPixels": 18721
+      }
+    },
+    {
+      "id": "f32b-waste-badge",
+      "rank": "D",
+      "source": "DUDU_F4.2C_D_f32b-waste-badge.png",
+      "sourceSHA256": "c6b63b4a29d9030e5cd4084a0102bcbdc38eb5809f7ece4f3522f09b3b926f2f",
+      "width": 1254,
+      "height": 1254,
+      "alphaMin": 0,
+      "alphaMax": 255,
+      "transparentPixels": 874060,
+      "partialPixels": 698080,
+      "edgePixels": 0,
+      "bbox": [
+        128,
+        60,
+        1143,
+        1225
+      ],
+      "pixelHash": "7ac8f6f66a3c27f17b4caddf7966bf1363c23ff8bbb73cfc9c8a84aa10e79d0a",
+      "full": {
+        "path": "assets/van-tuong/f42d/f32b-waste-badge.webp",
+        "bytes": 299294,
+        "sha256": "2a80849bbc9f13cde2cb4cb6865720829d1690bf39aa1f92e36b26f08be2f003",
+        "width": 1024,
+        "height": 1024,
+        "transparentPixels": 581608
+      },
+      "thumbnail": {
+        "path": "assets/van-tuong/stream-f42b1/f32b-waste-badge.webp",
+        "bytes": 12292,
+        "sha256": "5d1e91975dac0ef418684d94c253daae4ad094ae937933e6445c121a746872b2",
+        "width": 180,
+        "height": 180,
+        "transparentPixels": 17953
+      }
+    },
+    {
+      "id": "f32-anime-apprentice",
+      "rank": "E",
+      "source": "DUDU_F4.2C_E_f32-anime-apprentice.png",
+      "sourceSHA256": "d3bbb0c07be0c0119d026459be056f3f9c7deb391ab998b396529888f6130af8",
+      "width": 1254,
+      "height": 1254,
+      "alphaMin": 0,
+      "alphaMax": 255,
+      "transparentPixels": 1129106,
+      "partialPixels": 442922,
+      "edgePixels": 0,
+      "bbox": [
+        326,
+        8,
+        909,
+        1246
+      ],
+      "pixelHash": "f92ebc1ddc98d57025573c72cdf86541c44f2328096c739abd6bd6de307e222c",
+      "full": {
+        "path": "assets/van-tuong/f42d/f32-anime-apprentice.webp",
+        "bytes": 168402,
+        "sha256": "1323a44a26db59e18daee70dbcb28a666e7c71d772a29cd5a90c19f992d60437",
+        "width": 1024,
+        "height": 1024,
+        "transparentPixels": 751416
+      },
+      "thumbnail": {
+        "path": "assets/van-tuong/stream-f42b1/f32-anime-apprentice.webp",
+        "bytes": 8036,
+        "sha256": "30aa3d53a1fafb49ffdfed82994dbc0c79f67612043df616bb3df33f31e21ed5",
+        "width": 180,
+        "height": 180,
+        "transparentPixels": 23204
+      }
+    },
+    {
+      "id": "f32-cosmos-map",
+      "rank": "E",
+      "source": "DUDU_F4.2C_E_f32-cosmos-map.png",
+      "sourceSHA256": "ef724abf39267b6bc4a52c85226411deee5ae4e124f943d3a9d8666431500d46",
+      "width": 1254,
+      "height": 1254,
+      "alphaMin": 0,
+      "alphaMax": 255,
+      "transparentPixels": 906481,
+      "partialPixels": 665371,
+      "edgePixels": 0,
+      "bbox": [
+        82,
+        124,
+        1193,
+        1130
+      ],
+      "pixelHash": "5c916621bd77028cf1a50a758c6fac04756e9cb6afe60191a1e9fdd3a0cf4678",
+      "full": {
+        "path": "assets/van-tuong/f42d/f32-cosmos-map.webp",
+        "bytes": 257588,
+        "sha256": "dbc2f08dd7163ea53af9539725456b527cc0d6b04ffbb8d001ffc6361c47e417",
+        "width": 1024,
+        "height": 1024,
+        "transparentPixels": 602477
+      },
+      "thumbnail": {
+        "path": "assets/van-tuong/stream-f42b1/f32-cosmos-map.webp",
+        "bytes": 11216,
+        "sha256": "d5b7209c0b52785ac8f633345cfe540daa753ea07899e20e4802670edeed7926",
+        "width": 180,
+        "height": 180,
+        "transparentPixels": 18616
+      }
+    },
+    {
+      "id": "f32-cyber-chip",
+      "rank": "E",
+      "source": "DUDU_F4.2C_E_f32-cyber-chip.png",
+      "sourceSHA256": "76fb25f713de06307bbcb8254759e5a568807e5df1e9c09c9693b094061a1a7f",
+      "width": 1254,
+      "height": 1254,
+      "alphaMin": 0,
+      "alphaMax": 255,
+      "transparentPixels": 1095086,
+      "partialPixels": 476798,
+      "edgePixels": 0,
+      "bbox": [
+        109,
+        240,
+        1147,
+        1053
+      ],
+      "pixelHash": "696911330bcd65f0b48df8255df2ff0ac66681ba13c829d032c9bd578a7e2218",
+      "full": {
+        "path": "assets/van-tuong/f42d/f32-cyber-chip.webp",
+        "bytes": 152166,
+        "sha256": "36880a26cd8dbd5d088b31a209f1f5596e79a1729c1bd4cdb957330cde2eb4d2",
+        "width": 1024,
+        "height": 1024,
+        "transparentPixels": 728569
+      },
+      "thumbnail": {
+        "path": "assets/van-tuong/stream-f42b1/f32-cyber-chip.webp",
+        "bytes": 7616,
+        "sha256": "0ce9d92ea6f261105ce444c5510fd8d4919b0b57d644cd251197a573c12135c3",
+        "width": 180,
+        "height": 180,
+        "transparentPixels": 22516
+      }
+    },
+    {
+      "id": "f32-doll-charm",
+      "rank": "E",
+      "source": "DUDU_F4.2C_E_f32-doll-charm.png",
+      "sourceSHA256": "9a41cdf65c9b9430cab01eb0c8b4cbcfd08b8d762896e861f197cf5c74f7d71e",
+      "width": 1254,
+      "height": 1254,
+      "alphaMin": 0,
+      "alphaMax": 255,
+      "transparentPixels": 871003,
+      "partialPixels": 701278,
+      "edgePixels": 0,
+      "bbox": [
+        145,
+        109,
+        1096,
+        1167
+      ],
+      "pixelHash": "d7ee8dcaad83786b7ad8ee792fcb387bcf1e6d700bb6c5b61376c7466d183cf9",
+      "full": {
+        "path": "assets/van-tuong/f42d/f32-doll-charm.webp",
+        "bytes": 238132,
+        "sha256": "95855f753e902b35bc3a392418cb7e36ed203e0a6a0b67e2c45efc0e42d7a5d4",
+        "width": 1024,
+        "height": 1024,
+        "transparentPixels": 579755
+      },
+      "thumbnail": {
+        "path": "assets/van-tuong/stream-f42b1/f32-doll-charm.webp",
+        "bytes": 9944,
+        "sha256": "23ef3aba7feea0653eca855a73f92b0fd28c8c77504b5d5e5b6a53de75c44418",
+        "width": 180,
+        "height": 180,
+        "transparentPixels": 17912
+      }
+    },
+    {
+      "id": "f32-fossil-fern",
+      "rank": "E",
+      "source": "DUDU_F4.2C_E_f32-fossil-fern.png",
+      "sourceSHA256": "bd3049102cac2b8c9b7933475c2d2f8107a22273a2f5dde6c07b9ea68d53c2cc",
+      "width": 1254,
+      "height": 1254,
+      "alphaMin": 0,
+      "alphaMax": 255,
+      "transparentPixels": 898407,
+      "partialPixels": 673672,
+      "edgePixels": 0,
+      "bbox": [
+        149,
+        118,
+        1105,
+        1134
+      ],
+      "pixelHash": "f76c156c44966767449ebc6fedab256a17c58d25fd69026e35afe42ac20eb5c9",
+      "full": {
+        "path": "assets/van-tuong/f42d/f32-fossil-fern.webp",
+        "bytes": 289480,
+        "sha256": "58fb4bdb211f49f36d604a7fc8f9853095ca26f5bd43e5b5da910bd75360206c",
+        "width": 1024,
+        "height": 1024,
+        "transparentPixels": 597985
+      },
+      "thumbnail": {
+        "path": "assets/van-tuong/stream-f42b1/f32-fossil-fern.webp",
+        "bytes": 11536,
+        "sha256": "974d19acb3104ead39c0a4d69bfbc07cf55eb0de3ac21956cf62026239eecd25",
+        "width": 180,
+        "height": 180,
+        "transparentPixels": 18487
+      }
+    },
+    {
+      "id": "f32-fruit-berry",
+      "rank": "E",
+      "source": "DUDU_F4.2C_E_f32-fruit-berry.png",
+      "sourceSHA256": "9bdbb23234c386f3f52edbed2ed22c1c9905c178895844ca46e0f588d492918d",
+      "width": 1254,
+      "height": 1254,
+      "alphaMin": 0,
+      "alphaMax": 255,
+      "transparentPixels": 1007195,
+      "partialPixels": 564707,
+      "edgePixels": 0,
+      "bbox": [
+        222,
+        70,
+        1044,
+        1167
+      ],
+      "pixelHash": "4e3dfd8f5e9ba4e2531e618e3894ad541c25040bc41ba8b189fffea8ee102b73",
+      "full": {
+        "path": "assets/van-tuong/f42d/f32-fruit-berry.webp",
+        "bytes": 176876,
+        "sha256": "8499d40828ff9be545f01a63a43b7f4cfff4e9f9dff8aaf5627fc5121bce8798",
+        "width": 1024,
+        "height": 1024,
+        "transparentPixels": 670226
+      },
+      "thumbnail": {
+        "path": "assets/van-tuong/stream-f42b1/f32-fruit-berry.webp",
+        "bytes": 8248,
+        "sha256": "73136fc00d958161360430f953e4e1d7b660447f3c73daa339e3fdf4b0e82fde",
+        "width": 180,
+        "height": 180,
+        "transparentPixels": 20719
+      }
+    },
+    {
+      "id": "f32b-anime-squire",
+      "rank": "E",
+      "source": "DUDU_F4.2C_E_f32b-anime-squire.png",
+      "sourceSHA256": "29ddae936c03b24fdae5ed3fa801116ce5e80a50f9153158c41761b4c7ef1f03",
+      "width": 1254,
+      "height": 1254,
+      "alphaMin": 0,
+      "alphaMax": 255,
+      "transparentPixels": 1213878,
+      "partialPixels": 357997,
+      "edgePixels": 0,
+      "bbox": [
+        338,
+        11,
+        942,
+        1245
+      ],
+      "pixelHash": "3c4ce579c042a559a509ece7043f16294d21962b0c058d11dfdeed1fa6084f8f",
+      "full": {
+        "path": "assets/van-tuong/f42d/f32b-anime-squire.webp",
+        "bytes": 163440,
+        "sha256": "b0735e4b42d6c6c148dd6df16764c2a748f307a92fdfdccefa80fa47c4fdc88e",
+        "width": 1024,
+        "height": 1024,
+        "transparentPixels": 807975
+      },
+      "thumbnail": {
+        "path": "assets/van-tuong/stream-f42b1/f32b-anime-squire.webp",
+        "bytes": 8266,
+        "sha256": "e7506a77239bfeb1ffaf01c6c392b5c1bb9cc968c4037f476ff101cb0a3744fa",
+        "width": 180,
+        "height": 180,
+        "transparentPixels": 24941
+      }
+    },
+    {
+      "id": "f32b-cosmos-badge",
+      "rank": "E",
+      "source": "DUDU_F4.2C_E_f32b-cosmos-badge.png",
+      "sourceSHA256": "c3af260ac36c0dc2f424115b48e654b75c2acdf038151dcf7b8314a6cf7a14a6",
+      "width": 1254,
+      "height": 1254,
+      "alphaMin": 0,
+      "alphaMax": 255,
+      "transparentPixels": 1013906,
+      "partialPixels": 558227,
+      "edgePixels": 0,
+      "bbox": [
+        294,
+        74,
+        1075,
+        1194
+      ],
+      "pixelHash": "65d51b2f5efc857427c93452f434ff4484d9272957e79ff390f93b2c0e46931e",
+      "full": {
+        "path": "assets/van-tuong/f42d/f32b-cosmos-badge.webp",
+        "bytes": 213622,
+        "sha256": "f769866081a828ef84f2440c8a39abe740f5a8d22726bd0d1270b9784f38bf7b",
+        "width": 1024,
+        "height": 1024,
+        "transparentPixels": 674602
+      },
+      "thumbnail": {
+        "path": "assets/van-tuong/stream-f42b1/f32b-cosmos-badge.webp",
+        "bytes": 9550,
+        "sha256": "85b22e22fa8342da5b0058bd91f2a9627f814248236dfb8a6548c9e6767f6683",
+        "width": 180,
+        "height": 180,
+        "transparentPixels": 20844
+      }
+    },
+    {
+      "id": "f32b-cyber-glass",
+      "rank": "E",
+      "source": "DUDU_F4.2C_E_f32b-cyber-glass.png",
+      "sourceSHA256": "13b8d21534f819653e20f8ca0b1091a7bcebb2600a874837532d3512adf36c34",
+      "width": 1312,
+      "height": 1199,
+      "alphaMin": 0,
+      "alphaMax": 255,
+      "transparentPixels": 1270867,
+      "partialPixels": 301974,
+      "edgePixels": 0,
+      "bbox": [
+        11,
+        361,
+        1300,
+        831
+      ],
+      "pixelHash": "792e710a3358e842308b8c70a17f188e428c2347f1fe94e7e717741eefbd2710",
+      "full": {
+        "path": "assets/van-tuong/f42d/f32b-cyber-glass.webp",
+        "bytes": 89172,
+        "sha256": "c382671d4736398ab52caa8fad94761da6b1c1bc8e5fa1ba6c0b45b83367d214",
+        "width": 1024,
+        "height": 936,
+        "transparentPixels": 773296
+      },
+      "thumbnail": {
+        "path": "assets/van-tuong/stream-f42b1/f32b-cyber-glass.webp",
+        "bytes": 6390,
+        "sha256": "c7b8cae43be2099ce79afbd8e1183107c9443a4cebad32ba74976dc3ea75000f",
+        "width": 180,
+        "height": 164,
+        "transparentPixels": 23822
+      }
+    },
+    {
+      "id": "f32b-doll-bear",
+      "rank": "E",
+      "source": "DUDU_F4.2C_E_f32b-doll-bear.png",
+      "sourceSHA256": "c6541016e44f850950c777fc6ffde34edf4ab0641a6fc4cebd1ec0fb9a0dc8c8",
+      "width": 1254,
+      "height": 1254,
+      "alphaMin": 0,
+      "alphaMax": 255,
+      "transparentPixels": 790722,
+      "partialPixels": 781525,
+      "edgePixels": 0,
+      "bbox": [
+        155,
+        20,
+        1040,
+        1235
+      ],
+      "pixelHash": "34cc221e13789dea3c2d699acca053fe10f0c7380cd719859b6e692383d6d1f3",
+      "full": {
+        "path": "assets/van-tuong/f42d/f32b-doll-bear.webp",
+        "bytes": 299600,
+        "sha256": "90765c231ecac92b35f075f1a0ea0639a0a5e02ec211866568a6a580ecee205c",
+        "width": 1024,
+        "height": 1024,
+        "transparentPixels": 526294
+      },
+      "thumbnail": {
+        "path": "assets/van-tuong/stream-f42b1/f32b-doll-bear.webp",
+        "bytes": 12494,
+        "sha256": "589b61ed3802d4148fe99b8d83c752ea6c822d254e36cbc2380d5d904ae0182b",
+        "width": 180,
+        "height": 180,
+        "transparentPixels": 16247
+      }
+    },
+    {
+      "id": "f32b-fossil-tooth",
+      "rank": "E",
+      "source": "DUDU_F4.2C_E_f32b-fossil-tooth.png",
+      "sourceSHA256": "1c0a4f88ac2c7d861fe0b4d32ae7924f72a0327e2a51ea23ba63695c76f9c15c",
+      "width": 1254,
+      "height": 1254,
+      "alphaMin": 0,
+      "alphaMax": 255,
+      "transparentPixels": 1064517,
+      "partialPixels": 507489,
+      "edgePixels": 0,
+      "bbox": [
+        194,
+        56,
+        1057,
+        1217
+      ],
+      "pixelHash": "ebcfe2a463836fa587468c7b815f386012f5c1a34028fb2baf6c0bc1b6f372e6",
+      "full": {
+        "path": "assets/van-tuong/f42d/f32b-fossil-tooth.webp",
+        "bytes": 228080,
+        "sha256": "5f297a0bf989b46904e4da027ab24cc77c9888f07f37f33134d9b439df8a8b60",
+        "width": 1024,
+        "height": 1024,
+        "transparentPixels": 708702
+      },
+      "thumbnail": {
+        "path": "assets/van-tuong/stream-f42b1/f32b-fossil-tooth.webp",
+        "bytes": 9090,
+        "sha256": "d97332bf4f8b279bfe8c53a33042bba079421a8db0f5b37b4e942afb0c481102",
+        "width": 180,
+        "height": 180,
+        "transparentPixels": 21893
+      }
+    },
+    {
+      "id": "f32b-fruit-grape",
+      "rank": "E",
+      "source": "DUDU_F4.2C_E_f32b-fruit-grape.png",
+      "sourceSHA256": "901acbc16b73cfbaf7e3a31a4bee5e5222dbf184f24091b8888983bec4638f3b",
+      "width": 1254,
+      "height": 1254,
+      "alphaMin": 0,
+      "alphaMax": 255,
+      "transparentPixels": 1055986,
+      "partialPixels": 515827,
+      "edgePixels": 0,
+      "bbox": [
+        277,
+        83,
+        1008,
+        1187
+      ],
+      "pixelHash": "4a9f67e181f9881e947b05fcf5c878cfc8f507a9fd408b0b67ae38820ec06c2f",
+      "full": {
+        "path": "assets/van-tuong/f42d/f32b-fruit-grape.webp",
+        "bytes": 209544,
+        "sha256": "7383dc32a2687bd994decda6c0a0b0e8f09d6dbaf4c5eadb90b2143f8597b228",
+        "width": 1024,
+        "height": 1024,
+        "transparentPixels": 702407
+      },
+      "thumbnail": {
+        "path": "assets/van-tuong/stream-f42b1/f32b-fruit-grape.webp",
+        "bytes": 9924,
+        "sha256": "d84a14c40637a13619ad0c2eb808871a976ffdb954375a0cd736c6c0ded56e81",
+        "width": 180,
+        "height": 180,
+        "transparentPixels": 21673
+      }
+    },
+    {
+      "id": "f32b-waste-oxygen",
+      "rank": "E",
+      "source": "DUDU_F4.2C_E_f32b-waste-oxygen.png",
+      "sourceSHA256": "6f2845dbe073f3f6288e628970860f2d7471d9c4a4f169c3fec5091d813d4d14",
+      "width": 1254,
+      "height": 1254,
+      "alphaMin": 0,
+      "alphaMax": 255,
+      "transparentPixels": 1028486,
+      "partialPixels": 543189,
+      "edgePixels": 0,
+      "bbox": [
+        260,
+        10,
+        1107,
+        1248
+      ],
+      "pixelHash": "6e147b01f866332ef9697a9af66ee2b40374508f2e8cfce2fb81320caecd2bc3",
+      "full": {
+        "path": "assets/van-tuong/f42d/f32b-waste-oxygen.webp",
+        "bytes": 226112,
+        "sha256": "408c643f3d18abde0950d67b2ed29bd59fb716f0a1e7d673dc0684956be02e07",
+        "width": 1024,
+        "height": 1024,
+        "transparentPixels": 683535
+      },
+      "thumbnail": {
+        "path": "assets/van-tuong/stream-f42b1/f32b-waste-oxygen.webp",
+        "bytes": 10310,
+        "sha256": "b51e301a0336a224f9bdb63df7cbd2f3cd95ae06bce1b2d9710a02b231968aac",
+        "width": 180,
+        "height": 180,
+        "transparentPixels": 21105
+      }
+    }
+  ]
+}

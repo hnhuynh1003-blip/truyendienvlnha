@@ -1,0 +1,79 @@
+/* C4.58 · Compact certificate chips and rare gallery display. */
+#personal-arcade-v1 .jade-vault-actions.has-appraisal{
+ grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;
+}
+#personal-arcade-v1 .jade-vault-actions.has-appraisal .arcade-button{
+ min-width:0;min-height:32px;padding:5px 2px;font-size:9px;
+}
+#personal-arcade-v1 .jade-certificate{
+ display:inline-block;width:fit-content;max-width:100%;
+ margin:3px 0 5px;padding:3px 6px;border:1px solid #537963;
+ border-radius:4px;background:#192f2a;color:#a2c7b5;
+ font:800 9px/1.2 system-ui,sans-serif;letter-spacing:.02em;
+}
+#personal-arcade-v1 .jade-certificate.jade-quality-1{border-color:#91ad94;color:#d6ebc5}
+#personal-arcade-v1 .jade-certificate.jade-quality-2{border-color:#f1c674;background:#473c2b;color:#ffdc90}
+#personal-arcade-v1 .jade-certificate.jade-quality-3{border-color:#c8b6ff;background:#393447;color:#f5d8ff}
+#personal-arcade-v1 .jade-vault-card.jade-quality-2,
+#personal-arcade-v1 .jade-exhibit.jade-quality-2{
+ border-color:#d4ad61;background:linear-gradient(120deg,#3f4632,#233a2e);
+ box-shadow:inset 0 1px #ffdf9555,0 0 10px #dfb65d26;
+}
+#personal-arcade-v1 .jade-vault-card.jade-quality-3,
+#personal-arcade-v1 .jade-exhibit.jade-quality-3{
+ border-color:#ddb8ff;background:linear-gradient(120deg,#4b3b4a,#243c34);
+ box-shadow:inset 0 1px #fff1ff70,0 0 14px #d0a0ff48;
+}
+#personal-arcade-v1 .jade-exhibit.jade-quality-3{position:relative;overflow:hidden}
+#personal-arcade-v1 .jade-exhibit.jade-quality-3::after{
+ content:'✦';position:absolute;left:51px;top:4px;color:#f7e2ff;
+ font-size:14px;text-shadow:0 0 9px #f2c3ff;
+ animation:jade-c458-star 3.8s ease-in-out infinite;pointer-events:none;
+}
+@keyframes jade-c458-star{0%,100%{opacity:.45}50%{opacity:1}}
+#personal-arcade-v1 .jade-special-order{
+ margin:0 0 8px;border:1px solid #997953;border-radius:8px;
+ background:linear-gradient(115deg,#2e3c34,#222c2c);color:#efdfbf;
+}
+#personal-arcade-v1 .jade-special-order.is-locked{opacity:.8}
+#personal-arcade-v1 .jade-special-order>summary{
+ display:flex;align-items:center;gap:6px;padding:8px 10px;cursor:pointer;
+ list-style:none;font:800 10px/1.2 system-ui,sans-serif;
+}
+#personal-arcade-v1 .jade-special-order>summary::-webkit-details-marker{display:none}
+#personal-arcade-v1 .jade-special-order>summary::after{content:'⌄';color:#ecd0a2;font-size:12px}
+#personal-arcade-v1 .jade-special-order>summary span{color:#f3d99f;white-space:nowrap}
+#personal-arcade-v1 .jade-special-order>summary b{flex:1;min-width:0;
+ overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:10px}
+#personal-arcade-v1 .jade-special-order>summary small{color:#dcc9aa;font-size:9px;white-space:nowrap}
+#personal-arcade-v1 .jade-special-order[open]>summary::after{transform:rotate(180deg)}
+#personal-arcade-v1 .jade-special-order>summary:focus-visible{outline:2px solid #f4d08d;outline-offset:3px}
+#personal-arcade-v1 .jade-special-detail{
+ display:flex;align-items:center;gap:7px;padding:7px 9px 3px;
+ border-top:1px solid #8b785242;
+}
+#personal-arcade-v1 .jade-special-detail .jade-craft-preview{
+ width:42px;height:42px;flex:0 0 42px;
+}
+#personal-arcade-v1 .jade-special-detail>div{min-width:0;flex:1}
+#personal-arcade-v1 .jade-special-detail b{display:block;color:#f4e4bd;font-size:10px}
+#personal-arcade-v1 .jade-special-detail small{display:block;color:#b7d0be;
+ margin-top:3px;font-size:9px;line-height:1.4}
+#personal-arcade-v1 .jade-special-actions{
+ display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);
+ gap:5px;padding:5px 9px 9px;
+}
+#personal-arcade-v1 .jade-special-actions .arcade-button{
+ min-width:0;min-height:30px;padding:5px 4px;font-size:9px;
+}
+#personal-arcade-v1 .jade-special-lock-note{display:block;padding:5px 9px 9px;
+ color:#b6c4b8;font-size:9px;line-height:1.4}
+@media(max-width:370px){
+ #personal-arcade-v1 .jade-vault-actions.has-appraisal .arcade-button{font-size:8px}
+ #personal-arcade-v1 .jade-special-detail .jade-craft-preview{
+  width:36px;height:36px;flex-basis:36px;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ #personal-arcade-v1 .jade-exhibit.jade-quality-3::after{animation:none}
+}

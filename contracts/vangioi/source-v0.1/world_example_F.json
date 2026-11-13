@@ -1,0 +1,138 @@
+{
+  "schemaVersion": "world-authoring-0.1",
+  "worldId": "ben-do-sau-tieng-chuong",
+  "contentVersion": "0.1.0",
+  "title": "Chuyến Đò Sau Tiếng Chuông",
+  "genreId": "ancient",
+  "worldRank": "F",
+  "dangerLevel": "moderate",
+  "status": "draft",
+  "contentTags": ["quy-di-nhe", "suy-luan", "tan-thu"],
+  "estimatedMinutes": 25,
+  "author": {
+    "authorId": "dudu-studio",
+    "displayName": "DUDU Studio (ví dụ thiết kế)",
+    "ownershipDeclaration": false,
+    "sourceNotes": "Ý tưởng thử nghiệm mới; chưa viết toàn bộ thoại, chưa có ảnh hoặc quyền phát hành.",
+    "collaboratorIds": []
+  },
+  "story": {
+    "logline": "Trước khi hồi chuông cuối vang lên, người lữ khách phải tìm ra chuyến đò thật giữa bến sương.",
+    "setting": "Bến đò cổ bên sông. Sau canh ba, sương làm người ta nhầm lẫn tiếng chuông và bóng người.",
+    "playerRole": "Một hành khách lạ có vé đò bị rách và chỉ biết mình phải sang bờ trước bình minh.",
+    "opening": "Người chơi tỉnh dậy dưới mái quán ven bến; trên bàn là vé đò đã ướt và một lời dặn không hỏi tên khách đứng dưới sông.",
+    "secretTruth": "Một chiếc đò là thật, chiếc còn lại chỉ là ảo ảnh của tiếng chuông bị vang ngược. Manh mối nằm ở phản chiếu và lời kể của người lái đò.",
+    "plotBeats": [
+      "Khám phá bến và nói chuyện với người bán nến.",
+      "Nhận biết khách đứng dưới sông không có phản chiếu.",
+      "Tìm người lái đò thật, giữ hoặc đổi vật dụng hỗ trợ.",
+      "Lên thuyền đúng lúc hoặc bị sương đưa trở lại bến."
+    ],
+    "worldRules": [
+      "Chuông vang lần thứ ba là hạn chót cho việc lên thuyền.",
+      "Phản chiếu trên mặt nước có thể dùng làm manh mối; NPC được phép nói sai nhưng kết quả không đổi ngẫu nhiên.",
+      "Sai lựa chọn tại bản thử nghiệm F dẫn đến thất bại có thể chơi lại, không xóa tài khoản."
+    ]
+  },
+  "visualIdentity": {
+    "palette": ["amber", "ink-blue", "fog-gray"],
+    "landmarks": ["chuong-go-cu", "cot-buoc-thuyen", "quan-nen"],
+    "mood": "lạ lùng nhưng đủ manh mối",
+    "artStyle": "2D fantasy hand-painted; ảnh riêng chưa tạo"
+  },
+  "worldCoverAssetId": "asset-cover-ben-do",
+  "assets": [
+    {"assetId": "asset-cover-ben-do", "kind": "worldCover", "assetStatus": "pending", "license": "unknown", "sourceNote": "Chưa chọn ảnh, tác giả sẽ tự tải lên", "altText": "Bến đò cổ phủ sương"},
+    {"assetId": "asset-bg-ben-song", "kind": "sceneBackground", "assetStatus": "pending", "license": "unknown", "sourceNote": "Chưa chọn ảnh", "altText": "Quán nhỏ cạnh bến và dòng sông lúc đêm"},
+    {"assetId": "asset-bg-khoang-do", "kind": "sceneBackground", "assetStatus": "pending", "license": "unknown", "sourceNote": "Chưa chọn ảnh", "altText": "Khoang đò cũ trong làn sương"},
+    {"assetId": "asset-sprite-lai-do", "kind": "characterSprite", "assetStatus": "pending", "license": "unknown", "sourceNote": "Chưa chọn sprite tách nền, phải đúng tuổi ông lão", "altText": "Ông lái đò cao tuổi, tay cầm mái chèo"},
+    {"assetId": "asset-portrait-chu-quan", "kind": "characterPortrait", "assetStatus": "pending", "license": "unknown", "sourceNote": "Chưa chọn chân dung, phải đúng vẻ người phụ nữ trung niên bán nến", "altText": "Bà chủ quán nến trung niên, ánh mắt sắc sảo"}
+  ],
+  "maps": [
+    {"mapId": "map-ben-do", "name": "Bản đồ Bến Đò", "placeIds": ["ben-song", "khoang-do"]}
+  ],
+  "places": [
+    {"placeId": "ben-song", "mapId": "map-ben-do", "name": "Bến Sông", "description": "Quán nến, cột đò, mặt nước", "sceneIds": ["scene-ben-song"]},
+    {"placeId": "khoang-do", "mapId": "map-ben-do", "name": "Khoang Đò", "description": "Chỉ mở sau khi tìm đúng người lái", "sceneIds": ["scene-khoang-do"], "accessFlag": "flag-tim-dung-do"}
+  ],
+  "scenes": [
+    {"sceneId": "scene-ben-song", "placeId": "ben-song", "backgroundAssetId": "asset-bg-ben-song", "summary": "Đêm lặng, tiếng chuông từ xa và ánh nến quán ven sông.", "phase": "night", "viewIds": ["view-toan-ben", "view-duoi-ban", "view-quan-nen"], "transitions": [{"toSceneId": "scene-khoang-do", "trigger": "hanh-dong-len-do", "requiredFlag": "flag-tim-dung-do"}]},
+    {"sceneId": "scene-khoang-do", "placeId": "khoang-do", "backgroundAssetId": "asset-bg-khoang-do", "summary": "Chiếc đò thật rời bến.", "phase": "departure", "viewIds": ["view-khoang-do"], "transitions": []}
+  ],
+  "views": [
+    {"viewId": "view-toan-ben", "sceneId": "scene-ben-song", "kind": "wide", "assetId": "asset-bg-ben-song", "summary": "Toàn cảnh bến sông", "hotspots": [{"hotspotId": "hotspot-noi-lai-do", "presentation": "hotspot_overlay", "label": "Nói với ông lái đò", "action": "talk", "targetId": "npc-lai-do"}, {"hotspotId": "hotspot-nhin-duoi-ban", "presentation": "text", "label": "Cúi nhìn dưới bàn", "action": "focus", "targetId": "view-duoi-ban"}, {"hotspotId": "hotspot-vao-quan", "presentation": "hotspot_overlay", "label": "Nhìn vào gian hàng", "action": "focus", "targetId": "view-quan-nen"}]},
+    {"viewId": "view-duoi-ban", "sceneId": "scene-ben-song", "kind": "detail", "assetId": "asset-bg-ben-song", "summary": "Nhìn kỹ bên dưới bàn quán", "hotspots": [{"hotspotId": "hotspot-dong-xu", "presentation": "text", "label": "Dưới gầm bàn có đồng xu cũ. Nhặt lên?", "action": "pickup", "targetId": "item-dong-xu", "uniquePickupId": "pickup-dong-xu"}, {"hotspotId": "hotspot-quay-lai-ben", "presentation": "text", "label": "Nhìn lại bến", "action": "focus", "targetId": "view-toan-ben"}]},
+    {"viewId": "view-quan-nen", "sceneId": "scene-ben-song", "kind": "interior", "assetId": "asset-bg-ben-song", "summary": "Gian hàng của bà chủ quán", "hotspots": [{"hotspotId": "hotspot-shop-nen", "presentation": "hotspot_overlay", "label": "Xem những cây nến", "action": "shop", "targetId": "shop-quan-nen"}, {"hotspotId": "hotspot-ve-toan-ben", "presentation": "text", "label": "Quay lại bến", "action": "focus", "targetId": "view-toan-ben"}]},
+    {"viewId": "view-khoang-do", "sceneId": "scene-khoang-do", "kind": "wide", "assetId": "asset-bg-khoang-do", "summary": "Khoang đò trong sương", "hotspots": []}
+  ],
+  "cast": [
+    {"characterId": "char-lu-khach", "displayName": "Lữ Khách Vô Danh", "narrativeRole": "protagonist", "presence": "onstage", "playableAsCast": true, "storyNotes": "Một vai có sẵn trong câu chuyện để người chơi có thể nhập vào."},
+    {"characterId": "char-lai-do", "displayName": "Ông Lái Đò", "narrativeRole": "supporting", "presence": "onstage", "playableAsCast": false},
+    {"characterId": "char-ba-chu-quan", "displayName": "Bà Chủ Quán Nến", "narrativeRole": "minor", "presence": "onstage", "playableAsCast": false},
+    {"characterId": "char-nguoi-don", "displayName": "Người Đợi Bên Kia", "narrativeRole": "mentioned", "presence": "mention_only", "playableAsCast": false, "storyNotes": "Chỉ được nhắc trong lời kể, không tạo NPC runtime."}
+  ],
+  "characterVisuals": [
+    {"characterId": "char-lai-do", "visualPriority": "supporting", "identityNotes": "Ông lái đò già gần bảy mươi, mặt rám nắng, không vẽ như người trẻ tô tóc bạc.", "fixedTraits": ["nam lớn tuổi", "nếp nhăn rõ", "vai khom do nhiều năm chèo đò", "áo vải cũ"], "variants": [{"variantId": "look-lai-do-binh-tinh", "assetId": "asset-sprite-lai-do", "format": "sprite", "expression": "điềm tĩnh", "pose": "tay nắm mái chèo", "outfitTag": "ao-vai-cu"}]},
+    {"characterId": "char-ba-chu-quan", "visualPriority": "supporting", "identityNotes": "Người bán nến trung niên, khác hẳn ông lái đò; nét mắt sắc sảo mà hiền.", "fixedTraits": ["phụ nữ trung niên", "tóc búi gọn", "tay có vết sáp nến", "áo lao động giản dị"], "variants": [{"variantId": "look-chu-quan-cuoi", "assetId": "asset-portrait-chu-quan", "format": "portrait", "expression": "mỉm cười dè chừng", "outfitTag": "ao-ban-hang"}]}
+  ],
+  "characterAppearances": [
+    {"appearanceId": "appearance-lai-do-choi-chuyen", "characterId": "char-lai-do", "viewId": "view-toan-ben", "variantId": "look-lai-do-binh-tinh", "displayMode": "sprite", "showOn": "dialogue_start", "triggerRef": "dlg-lai-mo-dau", "hideOn": "dialogue_end", "position": {"anchor": "right", "x": 0.8, "y": 0.86, "scale": 0.9, "layer": 3}, "suppressWhenPossessed": true, "fallbackText": "Ông lái đò chậm rãi quay đầu, tay vẫn nắm mái chèo."},
+    {"appearanceId": "appearance-chu-quan-noi-chuyen", "characterId": "char-ba-chu-quan", "viewId": "view-quan-nen", "variantId": "look-chu-quan-cuoi", "displayMode": "portrait", "showOn": "dialogue_start", "triggerRef": "dlg-quan-mo-dau", "hideOn": "dialogue_end", "fallbackText": "Bà chủ quán nến mỉm cười bên quầy hàng."}
+  ],
+  "npcs": [
+    {
+      "npcId": "npc-lai-do", "name": "Ông Lái Đò", "characterId": "char-lai-do", "mode": "scripted", "interactionLevels": ["scripted", "stateful"], "dialoguePolicy": "stateful_tree", "friendable": false,
+      "introSceneId": "scene-ben-song", "role": "Người giữ chuyến đò cuối",
+      "personality": "Kiệm lời, không bao giờ nói thẳng đáp án", "knowledge": ["Biết dấu hiệu của đò thật", "Không biết người chơi lấy nến từ đâu"],
+      "dialogueNodes": [{"nodeId": "dlg-lai-mo-dau", "text": "Khách lên đò phải nhìn mặt nước trước khi nhìn người.", "choices": [{"label": "Hỏi vì sao", "setFlag": "flag-nghe-loi-dan"}]}]
+    },
+    {
+      "npcId": "npc-ba-chu-quan", "name": "Bà Chủ Quán Nến", "characterId": "char-ba-chu-quan", "mode": "ai_candidate", "interactionLevels": ["service", "scripted", "ai_candidate"], "dialoguePolicy": "service", "friendable": true,
+      "introSceneId": "scene-ben-song", "role": "Thương nhân và người biết chuyện xưa",
+      "personality": "Hóm hỉnh, hay thử sự quan sát của khách", "knowledge": ["Giá nến", "Lịch sử bến sông", "Chưa biết người chơi chọn chiếc đò nào"],
+      "contactEligibilityFlag": "flag-ket-ban-chu-quan",
+      "aiRequestNotes": "Chỉ là đề cử; thoại hiện vẫn scripted. Nếu duyệt AI, không cho biết kết thúc bí mật hoặc tự bán/cho item.",
+      "dialogueNodes": [{"nodeId": "dlg-quan-mo-dau", "text": "Nến không ngăn được sương, nhưng giúp nhìn xem ai đang đứng trong đó.", "choices": [{"label": "Xem hàng", "setFlag": "flag-xem-hang"}]}]
+    }
+  ],
+  "playerEntryProfiles": [
+    {"entryId": "entry-nhap-lu-khach", "label": "Nhập vào vai Lữ Khách Vô Danh", "mode": "cast_possession", "castTargetId": "char-lu-khach", "startSceneId": "scene-ben-song", "initialKnownFacts": ["Biết mình có vé đò bị ướt"], "initialFlags": []},
+    {"entryId": "entry-khach-buon", "label": "Khách buôn giấy qua đường", "mode": "system_cover", "startSceneId": "scene-ben-song", "coverName": "Khách buôn giấy", "identityAssurance": "verified", "socialAnchorNotes": "Bản ví dụ thân phận chính quy có giấy thông hành hợp lệ; với hệ thống khác cần cấu hình riêng.", "initialKnownFacts": ["Biết đường vào bến"], "initialFlags": []},
+    {"entryId": "entry-nguoi-boc-hang", "label": "Người bốc hàng vô danh", "mode": "native_extra", "nativeSlotId": "slot-boc-hang-ben-song", "startSceneId": "scene-ben-song", "socialAnchorNotes": "Cư dân bến lâu năm có việc làm và người quen, không thuộc dàn nhân vật được truyện giới thiệu.", "initialKnownFacts": ["Biết quán nến mở đến canh ba"], "initialFlags": []}
+  ],
+  "entryPolicy": {"mode": "player_choice", "authorNote": "Ví dụ cho chọn cả ba kiểu vì tác giả đã lên phác thảo từng thân phận; cần playtest tất cả trước publish."},
+  "items": [
+    {"itemId": "item-ve-do", "name": "Vé Đò Ướt", "description": "Đạo cụ nhiệm vụ", "category": "quest", "transferPolicy": "world_only", "stackLimit": 1, "acquisitionMethods": [{"type": "starting"}]},
+    {"itemId": "item-dong-xu", "name": "Đồng Xu Cũ", "description": "Tiền địa phương; nhặt một lần", "category": "currency", "transferPolicy": "world_only", "stackLimit": 10, "acquisitionMethods": [{"type": "pickup", "placeId": "ben-song", "viewId": "view-duoi-ban", "hotspotId": "hotspot-dong-xu", "uniquePickupId": "pickup-dong-xu"}]},
+    {"itemId": "item-nen-suong", "name": "Nến Soi Sương", "description": "Cho thêm gợi ý về phản chiếu", "category": "consumable", "transferPolicy": "review_required", "stackLimit": 2, "acquisitionMethods": [{"type": "shop", "shopId": "shop-quan-nen"}]},
+    {"itemId": "item-manh-chuong", "name": "Mảnh Chuông Cũ", "description": "Quà lưu niệm đề xuất, chưa có quyền grant", "category": "souvenir", "transferPolicy": "review_required", "stackLimit": 1, "acquisitionMethods": [{"type": "questReward", "missionId": "mission-qua-song"}]}
+  ],
+  "shops": [
+    {"shopId": "shop-quan-nen", "name": "Quán Nến Ven Sông", "placeId": "ben-song", "merchantNpcId": "npc-ba-chu-quan", "currencyItemId": "item-dong-xu", "stock": [{"itemId": "item-nen-suong", "price": 1, "quantity": 1}]}
+  ],
+  "missions": [
+    {
+      "missionId": "mission-qua-song", "name": "Qua Sông Trước Bình Minh", "kind": "main", "requiredForCompletion": true,
+      "startSceneId": "scene-ben-song", "summary": "Gặp người lái, giữ vé và tìm đúng chuyến đò.",
+      "objectives": [
+        {"objectiveId": "obj-hoi-lai-do", "verb": "talk", "targetId": "npc-lai-do", "requiredCount": 1},
+        {"objectiveId": "obj-kiem-tra-ve", "verb": "inspect", "targetId": "item-ve-do", "requiredCount": 1},
+        {"objectiveId": "obj-len-do", "verb": "reach", "targetId": "scene-khoang-do", "requiredCount": 1}
+      ],
+      "rewardRequest": {"exp": 0, "items": [{"itemId": "item-manh-chuong", "quantity": 1}]},
+      "replayPolicy": "repeat_no_reward"
+    }
+  ],
+  "events": [
+    {"eventId": "event-tim-dung-do", "trigger": "nguoi-choi-xac-minh-phan-chieu", "requiredFlags": ["flag-nghe-loi-dan"], "setFlags": ["flag-tim-dung-do"]},
+    {"eventId": "event-qua-song", "trigger": "nguoi-choi-len-do-thanh-cong", "requiredFlags": ["flag-tim-dung-do"], "setFlags": ["flag-qua-song"]},
+    {"eventId": "event-suong-nuot-ben", "trigger": "het-gio-sai-thuyen", "setFlags": ["flag-that-bai"]}
+  ],
+  "endings": [
+    {"endingId": "ending-ve-ben-kia", "title": "Bình Minh Bên Kia Sông", "result": "success", "requiredFlags": ["flag-qua-song"]},
+    {"endingId": "ending-lac-trong-suong", "title": "Trở Lại Bến Cũ", "result": "failure", "requiredFlags": ["flag-that-bai"]}
+  ],
+  "playRequirements": {"requiredVisitPlaceIds": ["ben-song", "khoang-do"], "requiredInteractNpcIds": ["npc-lai-do"]},
+  "entry": {"trialInstance": true, "passportRequired": false, "entrySceneId": "scene-ben-song", "minimumPlayerRank": "F"},
+  "aiPolicy": {"aiNpcRequested": true, "allowAiRewards": false, "allowAiWorldMutation": false, "reviewNotes": "AI NPC chưa được cấp quyền trong draft."}
+}

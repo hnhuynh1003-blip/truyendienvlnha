@@ -3,6 +3,12 @@
 #epub-import-content{display:grid;gap:11px;font-size:12px;line-height:1.5}
 #epub-import-content>p{margin:0;color:var(--text-dim,#cbd5e1)}
 #epub-import-content>input,#epub-import-content>select{width:100%;min-width:0;max-width:100%;padding:9px;border-radius:8px;background:#141b24;color:#ecf7ff;border:1px solid #485a70;box-sizing:border-box}
+#epub-import-content .dudu-epub-fields{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+#epub-import-content .dudu-epub-fields label{display:flex;flex-direction:column;gap:5px;min-width:0;color:#d9caa8;font-size:12px;font-weight:600}
+#epub-import-content .dudu-epub-fields label:last-child{grid-column:1/-1}
+#epub-import-content .dudu-epub-fields input,#epub-import-content .dudu-epub-fields textarea,#epub-import-content .dudu-epub-fields select{width:100%;min-width:0;max-width:100%;box-sizing:border-box;padding:10px 11px;border:1px solid #485a70;border-radius:7px;background:#141b24;color:#ecf7ff;font:400 13px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif}
+#epub-import-content .dudu-epub-fields textarea{resize:vertical;min-height:94px}
+#epub-import-content .dudu-epub-fields input:focus-visible,#epub-import-content .dudu-epub-fields textarea:focus-visible,#epub-import-content .dudu-epub-fields select:focus-visible{outline:2px solid #8ccac7;outline-offset:1px}
 #epub-import-content input[type=file]{font-size:12px}
 #epub-import-content input:focus-visible,#epub-import-content select:focus-visible{outline:2px solid #48d5f0}
 #epub-import-content .dudu-epub-preview{display:grid;gap:5px;max-height:32vh;overflow-y:auto;border:1px solid #405469;border-radius:9px;padding:6px;background:rgba(10,20,35,.5)}
@@ -11,4 +17,4 @@
 #epub-import-content .dudu-epub-actions{display:flex;gap:8px;flex-wrap:wrap}
 #epub-import-content .dudu-epub-actions .btn{flex:1 1 145px;white-space:normal;min-height:42px}
 #epub-import-content .dudu-epub-actions .btn[hidden]{display:none!important}
-@media(max-width:420px){#epub-import-modal .modal-card{padding:12px}#epub-import-content .dudu-epub-actions{display:grid}}
+@media(max-width:420px){#epub-import-modal .modal-card{padding:12px}#epub-import-content .dudu-epub-actions{display:grid}#epub-import-content .dudu-epub-fields{grid-template-columns:1fr}#epub-import-content .dudu-epub-fields label{grid-column:1/-1}}
