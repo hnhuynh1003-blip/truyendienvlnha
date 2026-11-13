@@ -1,5 +1,5 @@
 /* F4.2B approved AI layers; controls remain independent of decorative pixels. */
-body.dudu-phone-v11 #cyber-phone .f41-cosmos{height:clamp(430px,64dvh,620px);background:#101c39;border-color:#bbd6dc77}
+body.dudu-phone-v11 #cyber-phone .f41-cosmos{height:auto;aspect-ratio:3/4;background:#101c39;border-color:#bbd6dc77}
 .f42b-background{position:absolute;inset:-3%;width:106%;height:106%;max-width:none;object-fit:cover;object-position:50% 54%;pointer-events:none;z-index:0;will-change:transform}
 .f42b-gate{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:50% 50%;pointer-events:none;z-index:1;will-change:transform}
 .f41-universe{z-index:2}
@@ -21,8 +21,8 @@ body.dudu-phone-v11 #cyber-phone .f41-crystals{z-index:5}
 .f41-crystal.rank-sss{filter:drop-shadow(0 0 11px #e8d2bbaa)}
 @keyframes f42b-vessel-float{to{transform:translateY(-8px) rotate(2deg)}}
 @keyframes f42b-unfold{0%{opacity:0;scale:.65}35%{opacity:.8}100%{opacity:1;scale:1}}
-@media(min-width:800px){body.dudu-phone-v11 #cyber-phone .f41-cosmos{height:min(620px,70dvh)}}
-@media(max-width:350px){body.dudu-phone-v11 #cyber-phone .f41-cosmos{height:450px}.f42b-open-effect{height:66%}}
+
+@media(max-width:350px){.f42b-open-effect{height:66%}}
 @media(prefers-reduced-motion:reduce){.f42b-background,.f42b-gate{will-change:auto}.f42b-effect-image,.f41-cosmos[data-phase='target'] .f41-target-seal{animation:none!important}.f42b-sealed-vessel{filter:brightness(.52) saturate(.2)}}
 
 /* F4.2B.1: actual receipt silhouette remains sealed until the opening phase. */
@@ -33,3 +33,9 @@ body.dudu-phone-v11 #cyber-phone .f41-crystals{z-index:5}
 
 /* F4.3: a deliberate approach and retrieval arc. */
 .f41-cosmos[data-phase=travel] .f41-haze{animation:f43-approach 3.5s ease-in-out both}.f41-cosmos[data-phase=recall] .f41-haze{animation:f43-recall .9s ease-in both}@keyframes f43-approach{0%{opacity:.12;transform:scale(.8)}60%{opacity:.55;transform:scale(1.13)}100%{opacity:.24;transform:scale(1.3)}}@keyframes f43-recall{to{opacity:.6;transform:scale(1.35)}}@media(prefers-reduced-motion:reduce){.f41-cosmos[data-phase] .f41-haze{animation:none}}
+
+/* Cosmic hunt owns one coherent scene; legacy slot cabinet must not frame it. */
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-fun-stage.is-slot:has(.f41-cosmos){padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;min-width:0;max-width:100%}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-fun-stage.is-slot:has(.f41-cosmos)::before,
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-fun-stage.is-slot:has(.f41-cosmos)::after{display:none}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun .f41-cosmos{width:100%;max-width:100%;min-height:0;height:auto;aspect-ratio:3/4;margin:0;box-sizing:border-box}

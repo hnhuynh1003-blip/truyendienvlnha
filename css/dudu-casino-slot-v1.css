@@ -156,18 +156,6 @@ body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-line{font-size:9px}
 body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-result strong{font-size:13px}
 body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-spin{
  font-size:12px;letter-spacing:0}
-/* FUN alone expands to a tabletop on desktop; all other phone apps stay small. */
-@media(min-width:860px){
- body.dudu-phone-v11 #cyber-phone:has(#phone-app-fun[style*="display: flex"]){
-  width:min(724px,calc(100vw - 40px));max-width:calc(100vw - 40px);
-  height:min(850px,calc(100dvh - 42px));right:20px;bottom:20px}
- body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-tile{
-  aspect-ratio:1.65;font-size:clamp(34px,4vw,58px)}
- body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-controls{
-  grid-template-columns:minmax(0,1fr) 170px}
- body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-chip{font-size:16px}
- body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-slot-spin{font-size:18px}
-}
 @media(prefers-reduced-motion:reduce){.dudu-slot-preview *,
  .dudu-slot-preview *::before,.dudu-slot-preview *::after{
  animation:none!important;transition:none!important;scroll-behavior:auto!important}}
