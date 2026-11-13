@@ -99,7 +99,7 @@
  const greenMark='<i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i>';
  const goldMark='<i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i>';
  const money=amount=>greenMark+fmt(amount);
- const arcadeNotice=value=>String(value||'').replace(/ Xu Arcade/g,' Xu');
+ const arcadeNotice=value=>String(value||'').replace(/Tiền Xanh/g,'Xu').replace(/ Xu Arcade/g,' Xu');
  function updateWalletHeader(s){
   const chip=root.document.getElementById('arcade-header-wallet-v1');if(!chip)return;
   chip.textContent=s?fmt(s.coins):'Khách';
