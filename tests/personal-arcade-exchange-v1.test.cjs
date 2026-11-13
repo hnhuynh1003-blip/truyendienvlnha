@@ -46,15 +46,14 @@ test('corrupt coin balance cannot produce a quote',()=>{
  assert.doesNotMatch(source('js/personal-arcade-exchange-v1.js'),/localStorage|firebase|fetch\(|userProfile|grantCoins/);
 });
 
-test('both the Arcade popup and the system wallet can open the exact quote UI',()=>{
+test('the old 10:1 quote module remains archival; public wallet uses unified Xu',()=>{
  const html=source('index.html'),ui=source('js/personal-arcade-ui-v1.js');
- assert.match(html,/personal-arcade-exchange-v1\.js\?v=xu-quote-2/);
- assert.match(html,/onclick="window\.DuduPersonalArcadeUIV1\?\.openExchange\?\.\(\)"/);
- assert.match(ui,/data-arcade-exchange-input/);
- assert.match(ui,/data-arcade-exchange-preset/);
- assert.match(ui,/data-arcade-exchange-result/);
- assert.match(html,/personal-spark-exchange-v1\.js\?v=spark-bridge-1/);
- assert.match(ui,/DUDU_SPARK_EXCHANGE_V1_READY===true/);
- assert.match(ui,/sparkBridge\.transfer/);
- assert.match(ui,/Chuyển tiền · Chưa mở/);
+ assert.match(html,/arcade-unified-xu-r32\.js/);
+ assert.match(html,/DUDU_ARCADE_UNIFIED_XU_R32_READY=true/);
+ assert.doesNotMatch(html,/onclick="window\.DuduPersonalArcadeUIV1\?\.openExchange/);
+ assert.doesNotMatch(html,/data-arcade-exchange="open"/);
+ assert.match(ui,/unifiedBridge\.run/);
+ assert.match(ui,/if\(unifiedMode\(\)\)return false;/);
+ assert.match(ui,/DUDU_SPARK_EXCHANGE_V1_READY===true/,
+  'old gate stays unused; it cannot become an automatic credit');
 });
