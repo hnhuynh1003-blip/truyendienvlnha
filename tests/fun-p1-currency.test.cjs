@@ -10,21 +10,22 @@ test('FUN-P1.1 uses bill/coin icons on compact counters without migrating old ke
  const html=src('index.html');
  assert.match(html,/class="widget-currency dudu-money-display--gold" id="phone-currency-display"[^>]*>50/);
  assert.match(html,/id="dudu-wallet-system-amount"/);
- assert.match(html,/dudu-money-display--green" id="dudu-wallet-arcade-balance"/);
- assert.match(html,/dudu-bank-rate[^>]*>[\s\S]*?dudu-money-icon--green[^>]*><\/i>10/);
- assert.match(html,/dudu-bank-rate[^>]*>[\s\S]*?dudu-money-icon--gold[^>]*><\/i>1/);
+ assert.doesNotMatch(html,/dudu-wallet-arcade-balance/);
+ assert.match(html,/id="arcade-header-wallet-v1" class="arcade-header-wallet dudu-money-display--gold"/);
+ assert.doesNotMatch(html,/class="dudu-bank-rate"/);
+ assert.match(html,/100 Xu<\/span>[\s\S]*?1 Linh Thạch<\/span>/);
  assert.match(html,/css\/dudu-currency-icons-v1\.css/);
  assert.match(html,/userProfile\.currency\.toLocaleString\('vi-VN'\)/);
  const ui=src('js/personal-arcade-ui-v1.js');
  assert.match(ui,/const money=amount=>greenMark\+fmt\(amount\)/);
- assert.match(ui,/dudu-money-icon--green/);
+ assert.doesNotMatch(ui,/dudu-money-icon--green/);
  assert.match(ui,/dudu-money-icon--gold/);
  const style=src('css/dudu-currency-icons-v1.css');
  assert.match(style,/dudu-money-icon--green/);
  assert.match(style,/dudu-money-icon--gold/);
  assert.match(style,/border-radius:50%/);
  assert.doesNotMatch(html,/🟡 50|💚 —|XU VÀNG · DUDU STUDIO/);
- assert.match(ui,/DUDU_SPARK_EXCHANGE_V1_READY===true/);
+ assert.match(ui,/DUDU_ARCADE_UNIFIED_XU_R32_READY===true/);
 });
 
 test('FUN-P1 quote is read-only, precise and has no daily cap',()=>{

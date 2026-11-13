@@ -45,9 +45,10 @@
   <link rel="stylesheet" href="css/van-bao-stage-v2.css?v=fun-vis6">
   <link rel="stylesheet" href="css/dudu-fun-casino-v1.css?v=fun-cas1">
   <link rel="stylesheet" href="css/dudu-casino-slot-v1.css?v=casino-slot3&amp;phone=layout-r1-20261113">
+  <link rel="stylesheet" href="css/ky-van-r33-compact.css?v=r33-1">
   <link rel="stylesheet" href="css/account-approval-v1.css?v=auth-a1">
   <link rel="stylesheet" href="css/account-invite-r11.css?v=r11-1">
-  <link rel="stylesheet" href="css/personal-arcade-v1.css?v=fun-p1-1&amp;jade=c454&amp;arcade=c456&amp;c457a=1&amp;c457b=1">
+  <link rel="stylesheet" href="css/personal-arcade-v1.css?v=fun-p1-1&amp;arcxu=r32-1">
   <link rel="stylesheet" href="css/arcade-immersive-c417.css?v=c417-1">
   <link rel="stylesheet" href="css/arcade-playfield-c418.css?v=c418-4&amp;economy=c450-1&amp;c452=1">
   <link rel="stylesheet" href="css/arcade-live-c419.css?v=c419-1">
@@ -75,7 +76,7 @@
   <link rel="stylesheet" href="css/arcade-c449-garden-progression.css?v=c449-1">
   <link rel="stylesheet" href="css/honor-presentation-c437p.css?v=c437p-1">
   <link rel="stylesheet" href="css/arcade-treasure-c438.css?v=c438-1">
-  <link rel="stylesheet" href="css/dudu-wallet-v1.css?v=wallet-p3-2">
+  <link rel="stylesheet" href="css/dudu-wallet-v1.css?v=wallet-r32-stone-1">
   <link rel="stylesheet" href="css/dudu-currency-icons-v1.css?v=fun-p1-2">
   <link rel="stylesheet" href="css/item-actions-v43.css?v=43-5-3b">
   <link rel="stylesheet" href="css/museum-memories-v43.css?v=1">
@@ -102,6 +103,7 @@
   <link rel="stylesheet" href="css/arcade-jewelry-c457c.css?v=c457c-1">
   <link rel="stylesheet" href="css/arcade-jade-c460.css?v=c460e-1">
   <link rel="stylesheet" href="css/arcade-jade-c458.css?v=c458-1">
+  <link rel="stylesheet" href="css/shop-r31r-neon.css?v=r31r-a1">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1176,7 +1178,7 @@
           <span class="dudu-v50-account-details">
             <span class="dudu-v50-account-head">
               <strong id="phone-player-name-v16">Kẻ Lang Bạt</strong>
-              <span class="widget-currency dudu-money-display--gold" id="phone-currency-display" aria-label="Xu Vàng">50</span>
+              <span class="widget-currency dudu-money-display--gold" id="phone-currency-display" aria-label="Xu">50</span>
             </span>
             <span class="phone-widgets">
               <span class="dudu-v50-progress-meta">
@@ -1218,7 +1220,7 @@
           <button type="button" class="app-icon" onclick="openPhoneApp('shop')" aria-label="Mở Cửa Hàng">
             <div class="app-box" style="background:#10b981;">🛒</div><div class="app-label">Cửa Hàng</div>
           </button>
-          <button type="button" class="app-icon" onclick="openPhoneApp('wallet')" aria-label="Mở Ví Xu Vàng mua sắm">
+          <button type="button" class="app-icon" onclick="openPhoneApp('wallet')" aria-label="Mở Ví Xu mua sắm">
             <div class="app-box" style="background:linear-gradient(140deg,#b1843d,#695344);"><i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i></div><div class="app-label">Ví</div>
           </button>
           <button type="button" class="app-icon" id="dudu-fun-launch-v43"
@@ -1227,7 +1229,7 @@
             <div class="app-label">Kỳ Vận</div>
           </button>
           <button type="button" class="app-icon" id="personal-arcade-launch-v1"
-            onclick="openPhoneApp('arcade')" aria-label="Mở khu trò chơi cá nhân">
+            onclick="openPhoneApp('arcade')" aria-label="Mở Bách Hí">
             <div class="app-box" style="background:linear-gradient(140deg,#1d6475,#3c3b70);">🎮</div>
             <div class="app-label">Bách Hí</div>
           </button>
@@ -1659,29 +1661,43 @@
 
       </div>
 
-      <!-- Ví Xu hệ thống (legacy): Xu Vàng dùng profile currency; Tiền Xanh giữ coins riêng trên máy. -->
+      <!-- Ví DUDU R3.2: Xu trong thẻ ATM; Linh Thạch chỉ là ngăn xem trước. Arcade giữ lưu riêng, không tự chuyển vào Ví. -->
       <div class="phone-sub-app" id="phone-app-wallet">
         <div class="phone-app-header">
           <button type="button" class="phone-back-btn" onclick="phoneHome()" aria-label="Về màn hình chính">‹</button>
           <span>Ví</span>
-          <span class="dudu-wallet-mark" aria-label="Ví Xu Vàng"><i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i></span>
+          <span class="dudu-wallet-mark" aria-label="Ví Xu"><i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i></span>
         </div>
         <div class="dudu-wallet-shell">
           <div class="dudu-bank-intro" data-wallet-heading-tier="silver">
             <span>✦ DUDU TREASURY</span>
             <span class="dudu-bank-rank-status"><small class="dudu-bank-card-preview" id="dudu-wallet-card-preview" hidden>XEM TRƯỚC</small><span class="dudu-bank-card-tier" id="dudu-wallet-card-tier">◈ SILVER</span></span>
           </div>
-          <section class="dudu-wallet-card" data-wallet-card-tier="silver" aria-label="Số dư Xu Vàng mua sắm, thẻ Bạc mặc định">
+          <section class="dudu-wallet-card" data-wallet-card-tier="silver" aria-label="Số dư Xu mua sắm, thẻ Bạc mặc định">
             <div class="dudu-bank-art" aria-hidden="true"></div>
             <div class="dudu-bank-card-top">
               <div class="dudu-bank-card-brand"><span class="dudu-bank-brand-seal" id="dudu-wallet-brand-seal" aria-hidden="true">◈</span><div><b>DUDU</b><small>STUDIO</small></div></div>
             </div>
             <div class="dudu-bank-balance-block">
-              <div class="dudu-bank-balance-caption"><span>SỐ DƯ KHẢ DỤNG</span><button type="button" id="dudu-wallet-visibility" class="dudu-bank-visibility" onclick="toggleDuduWalletVisibility()" aria-label="Ẩn số dư" aria-pressed="false" title="Ẩn hoặc hiện số dư">◉</button></div>
+              <div class="dudu-bank-balance-caption"><span>SỐ DƯ XU</span><button type="button" id="dudu-wallet-visibility" class="dudu-bank-visibility" onclick="toggleDuduWalletVisibility()" aria-label="Ẩn số dư" aria-pressed="false" title="Ẩn hoặc hiện số dư">◉</button></div>
               <strong id="dudu-wallet-system-balance" aria-live="polite"><i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i><span id="dudu-wallet-system-amount">0</span></strong>
             </div>
             <div class="dudu-bank-card-bottom"><div><small>CHỦ VÍ</small><b id="dudu-wallet-owner-name">DUDU</b></div></div>
           </section>
+          <section class="dudu-wallet-stone-pocket" aria-label="Ngăn Linh Thạch Tu Tiên chưa kích hoạt">
+            <span class="dudu-wallet-stone-emblem" aria-hidden="true"></span>
+            <span class="dudu-wallet-stone-copy"><strong>Linh Thạch</strong><small>Tài sản Tu Tiên · Dự kiến</small></span>
+            <span class="dudu-wallet-stone-readout" aria-label="Chưa có số dư Linh Thạch được xác thực"><b>—</b><small>CHƯA MỞ</small></span>
+          </section>
+          <details class="dudu-wallet-stone-exchange" id="dudu-wallet-stone-exchange">
+            <summary><strong>⇄ Quy đổi Xu ↔ Linh Thạch</strong><small>100 : 1 · Xem tỷ giá</small></summary>
+            <div class="dudu-wallet-stone-quote">
+              <div class="dudu-wallet-stone-rate" aria-label="Tỷ giá hai chiều: 100 Xu bằng 1 Linh Thạch">
+                <span class="dudu-stone-xu">100 Xu</span><span class="dudu-stone-arrow" aria-hidden="true">⇄</span><span class="dudu-stone-gem">1 Linh Thạch</span>
+              </div>
+              <p>Chỉ xem tỷ giá dự kiến · Chưa trừ Xu, chưa nhận Linh Thạch.</p>
+            </div>
+          </details>
           <button type="button" id="dudu-wallet-upgrade-button" class="dudu-wallet-upgrade-button" onclick="toggleDuduWalletTierSheet()" aria-expanded="false" aria-controls="dudu-wallet-tier-sheet"><span aria-hidden="true">✦</span><strong>Nâng hạng thẻ</strong><span aria-hidden="true">›</span></button>
           <div class="dudu-wallet-tier-sheet" id="dudu-wallet-tier-sheet" hidden>
             <div class="dudu-wallet-tier-sheet-heading"><b>Đặc quyền thẻ</b><button type="button" onclick="toggleDuduWalletTierSheet(false)" aria-label="Đóng phần nâng hạng">‹</button></div>
@@ -1697,16 +1713,6 @@
             </div>
             <div class="dudu-bank-tier-note">Chỉ xem mẫu · Chưa thu phí hoặc kích hoạt đặc quyền.</div>
           </div>
-          <button type="button" class="dudu-wallet-secondary" onclick="openPhoneApp('arcade')" aria-label="Xem Tiền Xanh trong Arcade">
-            <span class="dudu-bank-green-emblem" aria-hidden="true"><i class="dudu-money-icon dudu-money-icon--green"></i></span>
-            <span class="dudu-bank-green-copy"><small>TRẠM KIẾM TIỀN</small><strong class="dudu-money-display--green" id="dudu-wallet-arcade-balance" aria-label="Số dư Tiền Xanh Arcade">—</strong></span>
-            <span class="dudu-bank-chevron" aria-hidden="true">›</span>
-          </button>
-          <section class="dudu-bank-exchange" aria-label="Quầy đổi tiền xem trước">
-            <div class="dudu-bank-exchange-top"><b>⇄ QUẦY ĐỔI</b><small>CHƯA KÍCH HOẠT</small></div>
-            <div class="dudu-bank-rate" aria-label="Tỷ giá xem trước: 10 Tiền Xanh đổi 1 Xu Vàng"><span><i class="dudu-money-icon dudu-money-icon--green" aria-hidden="true"></i>10</span><i aria-hidden="true">➜</i><span><i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i>1</span></div>
-            <button type="button" class="dudu-wallet-exchange-launch" onclick="window.DuduPersonalArcadeUIV1?.openExchange?.()">Xem quầy đổi <span aria-hidden="true">›</span></button>
-          </section>
           <p class="dudu-bank-disclaimer">Tiền ảo trong DUDU Studio · Không phải tài khoản ngân hàng hay tiền thật.</p>
         </div>
       </div>
@@ -1718,28 +1724,28 @@
           <span>Cửa Hàng</span>
           <span></span>
         </div>
-        <div style="font-size:10px; color:var(--gold); margin-bottom:6px;"><span class="dudu-money-display--gold" aria-label="Số dư Xu Vàng"><b id="shop-currency-val">50</b></span></div>
+        <div style="font-size:10px; color:var(--gold); margin-bottom:6px;"><span class="dudu-money-display--gold" aria-label="Số dư Xu"><b id="shop-currency-val">50</b></span></div>
         <div id="shop-items-container" class="dudu-v27-shop-grid"></div>
       </div>
 
-      <!-- APP: DUDU FUN — owner-scoped main rewards, Sandbox unchanged -->
+      <!-- APP: KỲ VẬN (stable route id: fun) — owner-scoped rewards; Sandbox unchanged -->
       <div class="phone-sub-app" id="phone-app-fun">
         <div class="phone-app-header">
           <button type="button" class="phone-back-btn" onclick="if(!window.DuduVanBaoUIF44?.back?.())phoneHome()" aria-label="Trở về">‹</button>
           <span>✦ Kỳ Vận</span>
-          <span class="dudu-money-display--gold" id="dudu-fun-header-balance" aria-label="Số dư Xu Vàng">—</span>
+          <span class="dudu-money-display--gold" id="dudu-fun-header-balance" aria-label="Số dư Xu">—</span>
         </div>
         <div id="dudu-fun-content-v43" aria-live="polite"></div>
       </div>
 
-      <!-- Personal local-only arcade: zero Firestore writes, no real Xu transfers. -->
+      <!-- BÁCH HÍ (stable route id: arcade): personal-mode Xu uses the shared wallet; Sandbox stays local. -->
       <div class="phone-sub-app" id="phone-app-arcade">
         <div class="phone-app-header">
           <button type="button" class="phone-back-btn" onclick="phoneHome()" aria-label="Về màn hình điện thoại">‹</button>
           <button type="button" id="arcade-season-portal-c423" class="arcade-season-portal" aria-label="Mở Hộ Chiếu Mùa 1">✦ MÙA 01</button>
           <button type="button" id="arcade-treasure-launch-c438" class="arcade-treasure-launch"
             aria-label="Mở Sổ Báu Vật" title="Sổ Báu Vật">◈</button>
-          <button type="button" id="arcade-header-wallet-v1" class="arcade-header-wallet dudu-money-display--green" data-arcade-exchange="open" aria-label="Số dư Tiền Xanh Arcade, chạm để xem quầy đổi">—</button>
+          <span id="arcade-header-wallet-v1" class="arcade-header-wallet dudu-money-display--gold" aria-label="Số Xu tại Bách Hí" title="Chế độ cá nhân dùng Xu chung với Ví; Sandbox có tiền thử riêng">—</span>
         </div>
         <div id="personal-arcade-v1" aria-label="Bốn trò chơi cá nhân"></div>
       </div>
@@ -6818,7 +6824,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       const card=document.querySelector('#phone-app-wallet .dudu-wallet-card');
       if(!card)return false;
       card.dataset.walletCardTier=tier;
-      card.setAttribute('aria-label','Số dư Xu Vàng, '+(tier==='silver'?'thẻ Bạc mặc định':'bản xem trước thẻ '+(tier==='gold'?'Gold':'Kim Cương')));
+      card.setAttribute('aria-label','Số dư Xu, '+(tier==='silver'?'thẻ Bạc mặc định':'bản xem trước thẻ '+(tier==='gold'?'Gold':'Kim Cương')));
       const heading=document.querySelector('#phone-app-wallet .dudu-bank-intro');
       const title=document.getElementById('dudu-wallet-card-tier');
       const preview=document.getElementById('dudu-wallet-card-preview');
@@ -6857,7 +6863,6 @@ document.getElementById('phone-home-screen').style.display = 'none';
     }
     function renderWallet() {
       const main=document.getElementById('dudu-wallet-system-amount');
-      const arcade=document.getElementById('dudu-wallet-arcade-balance');
       const owner=document.getElementById('dudu-wallet-owner-name');
       const visibility=document.getElementById('dudu-wallet-visibility');
       const balance=Number.isFinite(Number(userProfile?.currency))?
@@ -6869,8 +6874,6 @@ document.getElementById('phone-home-screen').style.display = 'none';
         visibility.setAttribute('aria-label',duduWalletMasked?'Hiện số dư':'Ẩn số dư');
         visibility.title=duduWalletMasked?'Hiện số dư':'Ẩn số dư';
       }
-      const gameXu=window.DuduPersonalArcadeUIV1?.peekBalance?.();
-      if(arcade)arcade.textContent=gameXu===null||gameXu===undefined?'—':gameXu;
     }
 
     function buyShopItem(shopItemId) {
@@ -9600,10 +9603,12 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/vanbao-sessions-f44.js?v=final-2"></script>
 <script src="js/vanbao-ui-f44.js?v=final-1"></script>
 <script src="js/vanbao-lobby-final-f44.js?v=final-3"></script>
-<script src="js/dudu-fun-ui-v43.js?v=f39-1&amp;hunt=f42d-1&amp;f43=1&amp;f44=1&amp;final=f44-1&amp;vanbao=restart-20261113"></script>
-<script src="js/personal-jade-ui-v1.js?v=c442-1&amp;art=c432-1&amp;materials=c425c-1&amp;compact=c425d-2&amp;market=c441b-1&amp;c450=1&amp;c452=1&amp;fun=p1-2&amp;c454=1&amp;huntui=c455b2&amp;c456=1&amp;c457a=1&amp;c457b=1&amp;c457c=1&amp;c458=1&amp;c460=1&amp;c460a=1&amp;c460b=1&amp;c460c=1&amp;c460e=1"></script>
+<script src="js/dudu-fun-ui-v43.js?v=f39-1&amp;hunt=f42d-1&amp;f43=1&amp;f44=1&amp;final=f44-1&amp;ky-van=r33-1&amp;vanbao=restart-20261113"></script>
+<script src="js/personal-jade-ui-v1.js?v=c442-1&amp;art=c432-1&amp;materials=c425c-1&amp;compact=c425d-2&amp;market=c441b-1&amp;c450=1&amp;c452=1&amp;fun=p1-2&amp;c454=1&amp;huntui=c455b2&amp;c456=1&amp;c457a=1&amp;c457b=1&amp;c457c=1&amp;c458=1&amp;c460=1&amp;c460a=1&amp;c460b=1&amp;c460c=1&amp;c460e=1&amp;arcxu=r32-1"></script>
 <script src="js/personal-honor-ui-c46.js?v=c412-1&amp;journey=c437-1&amp;progression=c425g-1&amp;art=c437p-1"></script>
-<script src="js/personal-arcade-ui-v1.js?v=c445-1&amp;art=c425a-2&amp;worlds=c425b-2&amp;materials=c425c-1&amp;pods=c425d-1&amp;interaction=c425e-1&amp;fishing=c440a-1&amp;progression=c425g-1&amp;tackle=c427-1&amp;weather=c428-1&amp;museum=c429-1&amp;season-preview=c439r2-1&amp;neon=c441a-1&amp;beat=c441b-1&amp;phase=c446-1&amp;farm=c446b-1&amp;layout=c446c-1&amp;pond=c447-1&amp;album=c448-1&amp;economy=c448b-1&amp;garden=c449-1&amp;c450=1&amp;precision=c451-1&amp;c452=1&amp;fun=p1-2&amp;c454=1&amp;c455=3&amp;c456=1&amp;c457b=1&amp;c459=1&amp;c460=1&amp;c460a=1&amp;c460b=1&amp;c460e=1"></script>
+<script src="js/arcade-unified-xu-r32.js?v=arcxu-r32-1"></script>
+<script>window.DUDU_ARCADE_UNIFIED_XU_R32_READY=true;</script>
+<script src="js/personal-arcade-ui-v1.js?v=c445-1&amp;art=c425a-2&amp;worlds=c425b-2&amp;materials=c425c-1&amp;pods=c425d-1&amp;interaction=c425e-1&amp;fishing=c440a-1&amp;progression=c425g-1&amp;tackle=c427-1&amp;weather=c428-1&amp;museum=c429-1&amp;season-preview=c439r2-1&amp;neon=c441a-1&amp;beat=c441b-1&amp;phase=c446-1&amp;farm=c446b-1&amp;layout=c446c-1&amp;pond=c447-1&amp;album=c448-1&amp;economy=c448b-1&amp;garden=c449-1&amp;c450=1&amp;precision=c451-1&amp;c452=1&amp;fun=p1-2&amp;c454=1&amp;c455=3&amp;c456=1&amp;c457b=1&amp;c459=1&amp;c460=1&amp;c460a=1&amp;c460b=1&amp;c460e=1&amp;arcxu=r32-1"></script>
 <script src="js/arcade-treasure-ui-c438.js?v=c438-1&amp;display=c439-2&amp;repair=c439r2-1"></script>
 <script src="js/arcade-showcase-ui-c439.js?v=c439-1&amp;repair=c439r2-1&amp;align=c439r4-1"></script>
 <script src="js/quest-ui-v43-7.js?v=c23c-1&amp;progression=c425g-1"></script>

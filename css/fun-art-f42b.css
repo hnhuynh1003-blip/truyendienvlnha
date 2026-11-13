@@ -38,4 +38,4 @@ body.dudu-phone-v11 #cyber-phone .f41-crystals{z-index:5}
 body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-fun-stage.is-slot:has(.f41-cosmos){padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;min-width:0;max-width:100%}
 body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-fun-stage.is-slot:has(.f41-cosmos)::before,
 body.dudu-phone-v11 #cyber-phone #phone-app-fun .dudu-fun-stage.is-slot:has(.f41-cosmos)::after{display:none}
-body.dudu-phone-v11 #cyber-phone #phone-app-fun .f41-cosmos{width:100%;max-width:100%;min-height:0;height:auto;aspect-ratio:3/4;margin:0;box-sizing:border-box}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun #dudu-fun-content-v43 .f41-cosmos{width:100%;max-width:100%;min-height:0;height:auto;aspect-ratio:3/4;margin:0;box-sizing:border-box}

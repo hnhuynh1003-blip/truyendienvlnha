@@ -10,6 +10,10 @@ body.dudu-phone-v11 #cyber-phone #phone-app-arcade .phone-app-header>span:nth-ch
 #phone-app-arcade .arcade-header-wallet{display:inline-flex;align-items:center;justify-content:center;
  min-height:27px;border:1px solid #68bd93a8;border-radius:20px;background:linear-gradient(130deg,#1d554b,#263f44);
  padding:5px 7px;font:800 10px/1 ui-sans-serif,system-ui;color:#caffdf;white-space:nowrap;cursor:pointer}
+#phone-app-arcade .arcade-header-wallet{
+ border-color:#c6a65eaa;background:linear-gradient(130deg,#604322,#343247);
+ color:#ffe5a7;cursor:default;user-select:none
+}
 #phone-app-arcade .arcade-header-wallet:disabled{opacity:.75;cursor:default}
 #personal-arcade-v1{font:inherit;color:#f1f0e9;min-width:0;min-height:0;flex:1;display:flex;overflow:hidden}
 #personal-arcade-v1 *{box-sizing:border-box}

@@ -187,3 +187,80 @@ body.dudu-phone-v11 #cyber-phone #phone-app-wallet{
 @media (prefers-reduced-motion:reduce){
  .dudu-wallet-actions button,.dudu-wallet-secondary,.dudu-wallet-exchange-launch{transition:none}
 }
+
+/* R3.2 — subordinate Linh Thach pocket; existing metallic ATM card stays intact.
+ * UI only: no wallet, ownership, or transaction mutations.
+ */
+#phone-app-wallet .dudu-wallet-stone-pocket{
+ display:flex;align-items:center;gap:11px;min-width:0;padding:11px 12px;
+ border:1px solid #7f83c18c;border-radius:14px;
+ background:radial-gradient(ellipse at 0 35%,#8066ae28,transparent 55%),
+  linear-gradient(115deg,#1e293f,#29233e 76%,#1c2b3b);
+ box-shadow:inset 0 1px #ded1ff23,0 3px 14px #0207182b
+}
+#phone-app-wallet .dudu-wallet-stone-emblem{
+ position:relative;display:grid;place-items:center;width:48px;height:48px;
+ flex:0 0 48px;border:1px solid #a69bde7d;border-radius:12px;
+ background:radial-gradient(circle at 40% 25%,#68588c,#242b48 80%)
+}
+#phone-app-wallet .dudu-wallet-stone-emblem::before{
+ content:"";width:28px;height:33px;display:block;
+ clip-path:polygon(50% 0,92% 23%,75% 74%,50% 100%,25% 74%,8% 23%);
+ background:linear-gradient(130deg,#dbfff7 0%,#80d3d2 23%,#8a9eee 48%,#b88de8 72%,#4e5e9e 100%);
+ filter:drop-shadow(0 1px 5px #ac8cf6)
+}
+#phone-app-wallet .dudu-wallet-stone-emblem::after{
+ content:"✦";position:absolute;top:7px;right:7px;color:#f6eeff;
+ font:900 10px/1 Georgia,serif;text-shadow:0 0 6px #ffffff
+}
+#phone-app-wallet .dudu-wallet-stone-copy{display:flex;flex-direction:column;min-width:0;flex:1;gap:5px}
+#phone-app-wallet .dudu-wallet-stone-copy strong{color:#f5eaff;font:850 13px/1.2 ui-sans-serif,system-ui}
+#phone-app-wallet .dudu-wallet-stone-copy small{color:#b4c5e2;font:650 9px/1.35 ui-sans-serif,system-ui}
+#phone-app-wallet .dudu-wallet-stone-readout{
+ display:flex;flex-direction:column;align-items:end;gap:4px;flex:none;min-width:60px
+}
+#phone-app-wallet .dudu-wallet-stone-readout b{font:900 22px/1 ui-monospace,monospace;color:#e7ddff}
+#phone-app-wallet .dudu-wallet-stone-readout small{
+ color:#d2bfec;font:800 8px/1.2 ui-sans-serif,system-ui;white-space:nowrap
+}
+#phone-app-wallet .dudu-wallet-stone-exchange{
+ min-width:0;border:1px solid #536589b5;border-radius:12px;
+ background:linear-gradient(130deg,#172438,#20243a);color:#e8e6f5;overflow:hidden
+}
+#phone-app-wallet .dudu-wallet-stone-exchange summary{
+ list-style:none;display:flex;justify-content:space-between;align-items:center;gap:8px;
+ min-height:44px;padding:9px 12px;cursor:pointer;touch-action:manipulation
+}
+#phone-app-wallet .dudu-wallet-stone-exchange summary::-webkit-details-marker{display:none}
+#phone-app-wallet .dudu-wallet-stone-exchange summary:focus-visible{
+ outline:2px solid #a3e8e9;outline-offset:-3px;border-radius:11px
+}
+#phone-app-wallet .dudu-wallet-stone-exchange summary strong{
+ color:#f4eaff;font:800 11px/1.3 ui-sans-serif,system-ui
+}
+#phone-app-wallet .dudu-wallet-stone-exchange summary small{
+ color:#c2b8e4;font:700 9px/1.3 ui-sans-serif,system-ui;white-space:nowrap
+}
+#phone-app-wallet .dudu-wallet-stone-exchange[open] summary{border-bottom:1px solid #67719a6b}
+#phone-app-wallet .dudu-wallet-stone-quote{padding:12px;display:flex;flex-direction:column;gap:9px}
+#phone-app-wallet .dudu-wallet-stone-rate{
+ display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;
+ font:800 14px/1.35 ui-sans-serif,system-ui
+}
+#phone-app-wallet .dudu-wallet-stone-rate .dudu-stone-xu{color:#ffe1a0}
+#phone-app-wallet .dudu-wallet-stone-rate .dudu-stone-gem{color:#d5b8fc}
+#phone-app-wallet .dudu-wallet-stone-rate .dudu-stone-arrow{color:#9cbacb}
+#phone-app-wallet .dudu-wallet-stone-quote p{
+ margin:0;color:#b9c5da;text-align:center;font:650 10px/1.5 ui-sans-serif,system-ui
+}
+#phone-app-wallet .dudu-wallet-stone-note{
+ margin:0 3px;color:#8fa4be;font:600 9px/1.4 ui-sans-serif,system-ui
+}
+@media(max-width:355px){
+ #phone-app-wallet .dudu-wallet-stone-pocket{padding:10px 9px;gap:8px}
+ #phone-app-wallet .dudu-wallet-stone-emblem{width:43px;height:43px;flex-basis:43px}
+ #phone-app-wallet .dudu-wallet-stone-copy strong{font-size:12px}
+ #phone-app-wallet .dudu-wallet-stone-copy small{font-size:8.5px}
+ #phone-app-wallet .dudu-wallet-stone-readout{min-width:55px}
+ #phone-app-wallet .dudu-wallet-stone-exchange summary{padding:9px}
+}

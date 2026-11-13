@@ -66,7 +66,7 @@ test('Arcade phone UI renders four named tabs and a disabled transfer control',(
  assert.doesNotMatch(host.innerHTML,/arcade-privacy|LOCAL \/ FREE/);
  assert.match(host.innerHTML,/arcade-stage neon-stage/);
  assert.match(host.innerHTML,/neon-gaming-floor neon-floor-capacity-3/);
- assert.match(host.innerHTML,/\+0,01 <small><i class="dudu-money-icon dudu-money-icon--green" aria-hidden="true"><\/i>\/giây<\/small>/);
+ assert.match(host.innerHTML,/\+0,01 <small><i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"><\/i>\/giây<\/small>/);
  assert.match(host.innerHTML,/data-arcade-action="cpu"/);
  assert.match(host.innerHTML,/data-arcade-action="gpu"/);
  assert.match(host.innerHTML,/data-arcade-action="station"/);
@@ -83,12 +83,12 @@ test('Arcade phone UI renders four named tabs and a disabled transfer control',(
  assert.match(host.innerHTML,/data-arcade-drawer="neon-awards"/);
  assert.match(host.innerHTML,/data-arcade-panel="neon-awards"/);
 });
-test('FUN-P1 clicking Tiền Xanh opens the guarded exchange preview',()=>{
+test('R3.2 Arcade header shows Xu without opening the obsolete transfer',()=>{
  const {host,window,headerWallet}=harness();
  window.DuduPersonalArcadeUIV1.render();
- headerWallet.listeners.click();
- assert.match(host.innerHTML,/role="dialog"/);
- assert.match(host.innerHTML,/Chuyển tiền · Chưa mở/);
+ assert.equal(headerWallet.textContent,'0');
+ assert.equal(headerWallet.listeners.click,undefined);
+ assert.doesNotMatch(host.innerHTML,/Tiền Xanh/);
 });
 test('C4.8 Arcade drawer Honor shortcut opens the correct game journey',()=>{
  const {host,window}=harness();
@@ -134,7 +134,7 @@ test('Enabled personal exchange credits wallet once and deducts local Arcade coi
  db.set(key,JSON.stringify({...core.norm(null,Date.now()),coins:250}));
  window.DuduPersonalArcadeUIV1.render();
  window.DuduPersonalArcadeUIV1.openExchange();
- assert.match(host.innerHTML,/✓ Chuyển vào Ví Xu Vàng/);
+ assert.match(host.innerHTML,/✓ Chuyển vào Ví Xu/);
  assert.doesNotMatch(host.innerHTML,/data-arcade-action="transfer" disabled/);
  host.listeners.click({target:{closest:selector=>selector==='button'?{
   disabled:false,dataset:{arcadeAction:'transfer'}}:null}});

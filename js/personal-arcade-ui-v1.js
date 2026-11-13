@@ -1,6 +1,7 @@
 /* Personal Arcade — playable scenes for Trạm Neon / Địa Tầng 07 / Vườn Sương / Ngọc Phường.
- * Game simulation remains local. Spark personal transfer is opt-in and gated;
- * the matching Firestore Rules must be installed before enabling it.
+ * Sandbox keeps local simulation. Personal R3.2 syncs future gameplay debits
+ * and credits to the existing Firebase profile currency in atomic transactions.
+ * Historical local game coins remain in a separate, untouched backup.
  */
 (function(root){
  'use strict';
@@ -10,6 +11,9 @@
  const fishing=root.DuduPersonalArcadeFishingC425F;
  const exchangePolicy=root.DuduPersonalArcadeExchangeV1;
  const sparkBridge=root.DuduPersonalSparkExchangeV1;
+ const unifiedBridge=root.DuduArcadeUnifiedXuR32;
+ const LEGACY_BACKUP='dudu-personal-arcade:legacy-pre-unified-r32:';
+ const SYNC_INTERVAL_MS=30000;
  const KEY='dudu-personal-arcade:v1:';
  const PENDING='dudu-personal-arcade:exchange-pending-v1:';
  const SETTLED='dudu-personal-arcade:exchange-settled-v1:';
@@ -29,7 +33,9 @@
  let tab='neon',drawerOpen=null,activeKey=null,state=null,lastTick=Date.now(),lastSave=0,
   lastPaint=0,lastRenderedKey=null,notice='',noticeUntil=0,error=false,feedback=null,
   exchangeOpen=false,exchangeAmount=10,exchangeBusy=false,resetScrollOnPaint=false,
-  seasonOpen=false,reelFight=null,fishView='atlas';
+  seasonOpen=false,reelFight=null,fishView='atlas',
+  syncBusy=false,syncReadyKey=null,syncLastAt=0,syncRetryAt=0,syncGeneration=0,
+  arcadeVisited=false;
  const now=()=>Date.now();
  const isSandbox=()=>typeof IS_SANDBOX_MODE!=='undefined'&&IS_SANDBOX_MODE;
  function identity(){
@@ -39,6 +45,8 @@
   return root.DuduAuth?.isReady?.()&&typeof uid==='string'&&uid?uid:null;
  }
  const keyFor=id=>id?KEY+encodeURIComponent(id):null;
+ const unifiedMode=()=>!isSandbox()&&root.DUDU_ARCADE_UNIFIED_XU_R32_READY===true;
+ const unifiedActive=()=>unifiedMode()&&!!unifiedBridge;
  const exchangeEnabled=()=>!isSandbox()&&root.DUDU_SPARK_EXCHANGE_V1_READY===true&&!!sparkBridge;
  const exchangeKey=prefix=>identity()?prefix+encodeURIComponent(identity()):null;
  function readPending(){
@@ -67,11 +75,18 @@
   if(nextKey!==activeKey){
    if(activeKey&&state)save();
    activeKey=nextKey;state=null;feedback=null;exchangeOpen=false;drawerOpen=null;seasonOpen=false;reelFight=null;fishView='atlas';
+   syncGeneration++;syncBusy=false;syncReadyKey=null;syncLastAt=0;syncRetryAt=0;
+   arcadeVisited=false;
    const time=now();lastTick=time;lastSave=time;
    if(activeKey){
     let saved=null;
     try{saved=JSON.parse(root.localStorage.getItem(activeKey)||'null');}catch(_){/* start fresh */}
     state=core.advance(core.norm(saved,time),time,0);
+    if(unifiedMode()){
+     // Display the common wallet, never the legacy browser-only coin balance.
+     const wallet=typeof userProfile!=='undefined'?Number(userProfile?.currency):0;
+     state.coins=Math.max(0,Math.min(1000000000,Math.floor(Number.isFinite(wallet)?wallet:0)*10));
+    }
     notice='';noticeUntil=0;
     error=false;
    }
@@ -80,33 +95,33 @@
  }
  const visible=()=>root.document.getElementById('phone-app-arcade')?.style.display==='flex';
  const fmt=amount=>core.formatXu(amount);
- // FUN-P1: display labels only. Saved coins remain in tenths, unchanged.
- const greenMark='<i class="dudu-money-icon dudu-money-icon--green" aria-hidden="true"></i>';
+ // R3.2: all Arcade money displays use the regular Xu coin; raw core units stay tenths.
+ const greenMark='<i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i>';
  const goldMark='<i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i>';
  const money=amount=>greenMark+fmt(amount);
- const arcadeNotice=value=>String(value||'').replace(/ Xu Arcade| Xu(?! Vàng)/g,' Tiền Xanh');
+ const arcadeNotice=value=>String(value||'').replace(/Tiền Xanh/g,'Xu').replace(/ Xu Arcade/g,' Xu');
  function updateWalletHeader(s){
   const chip=root.document.getElementById('arcade-header-wallet-v1');if(!chip)return;
   chip.textContent=s?fmt(s.coins):'Khách';
-  chip.disabled=!s;
+  // Pure balance label; no legacy 10:1 transfer trigger.
  }
  const quoteForExchange=()=>exchangePolicy?.quote({
   availableTenths:readPending()?.availableTenths??state?.coins??0,
   requestedGameXu:readPending()?.gameXu??exchangeAmount})||
   {ok:false,reason:'not-ready',walletXu:0,maxGameXu:0};
- const exchangeHint=q=>q.ok?'Số Xu Vàng dự kiến nhận (chưa chuyển).':
-  q.reason==='minimum-10-game-xu'?'Tối thiểu 10 Tiền Xanh mỗi lần.':
-  q.reason==='must-be-multiple-of-10'?'Chọn bội số của 10 Tiền Xanh.':
+ const exchangeHint=q=>q.ok?'Số Xu dự kiến nhận (chưa chuyển).':
+  q.reason==='minimum-10-game-xu'?'Tối thiểu 10 Xu mỗi lần.':
+  q.reason==='must-be-multiple-of-10'?'Chọn bội số của 10 Xu.':
   q.reason==='insufficient-balance'?'Số dư Arcade chưa đủ để đổi mức này.':
-  'Chưa đủ Tiền Xanh để đổi.';
+  'Chưa đủ Xu để đổi.';
  function updateExchangePreview(){
-  if(!exchangeOpen)return;
+  if(!exchangeOpen||unifiedMode())return;
   const element=host(),q=quoteForExchange(),pending=readPending();
   const amount=element?.querySelector('[data-arcade-exchange-result]');
   if(amount)amount.textContent=q.walletXu.toLocaleString('vi-VN');
   const hint=element?.querySelector('[data-arcade-exchange-hint]');
   if(hint)hint.textContent=pending?'Lệnh trước chưa xác nhận. Hãy thử lại cùng mã.':exchangeEnabled()&&q.ok?
-   'Số Xu Vàng này sẽ vào ví chung.':exchangeHint(q);
+   'Số Xu này sẽ vào ví chung.':exchangeHint(q);
   const input=element?.querySelector('[data-arcade-exchange-input]');
   if(input){input.max=String(Math.max(10,q.maxGameXu));
    input.disabled=!!pending||exchangeBusy;
@@ -136,7 +151,7 @@
         ${pending||exchangeBusy||value<10||value>max?'disabled':''} aria-pressed="${exchangeAmount===value&&value>=10}">${choice==='max'?'Tối đa':greenMark+value}</button>`;}).join('')}
     </div>
     <div class="arcade-exchange-quote"><span>Dự kiến nhận</span><strong class="dudu-money-display--gold" aria-live="polite" data-arcade-exchange-result>${q.walletXu.toLocaleString('vi-VN')}</strong></div>
-    <p class="arcade-exchange-hint" id="arcade-exchange-hint-v1" data-arcade-exchange-hint>${pending?'Thử lại lệnh cũ để tránh nhận hai lần.':exchangeEnabled()&&q.ok?'Nhận vào Ví Xu Vàng.':exchangeHint(q)}</p>`;
+    <p class="arcade-exchange-hint" id="arcade-exchange-hint-v1" data-arcade-exchange-hint>${pending?'Thử lại lệnh cũ để tránh nhận hai lần.':exchangeEnabled()&&q.ok?'Nhận vào Ví Xu.':exchangeHint(q)}</p>`;
  }
  function countdown(ms){
   const seconds=Math.max(0,Math.ceil(ms/1000));
@@ -686,7 +701,7 @@
           ${button('Tạo · '+core.FISH_RECORD_CHARM_COST+' ✦','garden-fish-record-charm','tool',g.fishEssence<core.FISH_RECORD_CHARM_COST||g.recordCharms>=10)}</div>
         </div>
        </div>
-       <div class="garden-fish-section-head"><b>✧ Luyện cá trùng</b><small>Giữ 1 con/loài · không tạo Tiền Xanh</small></div>
+       <div class="garden-fish-section-head"><b>✧ Luyện cá trùng</b><small>Giữ 1 con/loài · không tạo Xu</small></div>
        <div class="garden-fish-trade-grid">${extraFish.length?extraFish.map(id=>{
         const value=core.fishEssenceValue(id);
         return `<div class="garden-fish-trade"><strong>${core.FISH_SPECIES[id].name}</strong><small>Cá dư ${core.fishAvailable(g,id)} · +${value} tinh hoa/con</small>
@@ -746,13 +761,13 @@
         aria-selected="${tab===type}" data-arcade-tab="${type}"><span class="arcade-tab-icon arcade-tab-icon-${type}" aria-hidden="true"></span><span>${name}</span></button>`).join('')}
     </nav>
     ${showToast?`<div class="arcade-status arcade-status-toast" data-error="${error}" aria-live="polite" data-arcade-notice></div>`:''}
-    ${exchangeOpen?`<div class="arcade-exchange-overlay" data-arcade-exchange="close">
+    ${exchangeOpen&&!unifiedMode()?`<div class="arcade-exchange-overlay" data-arcade-exchange="close">
       <section class="arcade-exchange-dialog" role="dialog" aria-modal="true" aria-label="Quầy đổi tiền">
         <div class="arcade-exchange-heading"><strong>Quầy đổi tiền</strong><button type="button" data-arcade-exchange="close" aria-label="Đóng">✕</button></div>
         ${exchangeForm(s)}
         <div class="arcade-exchange-target">${goldMark} Ví <button type="button" data-arcade-exchange="wallet">Xem ví ↗</button></div>
         ${button(!exchangeEnabled()?'Chuyển tiền · Chưa mở':exchangeBusy?'Đang chuyển…':
-          readPending()?'↻ Xác nhận lệnh cũ':'✓ Chuyển vào Ví Xu Vàng',
+          readPending()?'↻ Xác nhận lệnh cũ':'✓ Chuyển vào Ví Xu',
           'transfer','gold',!exchangeEnabled()||exchangeBusy||!quoteForExchange().ok)}
         ${exchangeEnabled()?'':'<p>Đây chỉ là báo giá. Chưa có giao dịch hay lịch sử đổi tiền.</p>'}
       </section></div>`:''}
@@ -843,9 +858,78 @@
     button('⎵ SPACE · CHỐT NHỊP','neon-beat-finish','neon-beat-finish'));
   return true;
  }
+ async function syncUnified(mode,action=''){
+  if(syncBusy||!state||!activeKey)return false;
+  const generation=syncGeneration,key=activeKey,uid=identity();
+  if(!unifiedActive()||!uid||!root.firebase?.auth||!root.firebase?.firestore){
+   notice='Chưa thể kết nối Ví Xu chung. Arcade tạm khóa giao dịch.';
+   noticeUntil=now()+5000;error=true;syncRetryAt=now()+12000;
+   if(visible())render();return false;
+  }
+  syncBusy=true;
+  const prior=state,time=now(),isFirst=syncReadyKey!==key;
+  try{
+   if(isFirst){
+    // Save the full old Arcade state once, including its unconverted coins.
+    // Do not credit self-reported legacy coins into the system wallet.
+    const backupKey=LEGACY_BACKUP+encodeURIComponent(uid);
+    const raw=root.localStorage?.getItem(key);
+    if(raw&&!root.localStorage.getItem(backupKey))root.localStorage.setItem(backupKey,raw);
+   }
+   const id=unifiedBridge.requestId(root.crypto);
+   const result=await unifiedBridge.run({
+    db:root.firebase.firestore(),auth:root.firebase.auth(),
+    uid,id,mode,action,seed:isFirst?prior:null,now:time,
+    elapsedMs:isFirst?0:Math.max(0,Math.min(60000,time-syncLastAt)),
+    roll:Math.random()
+   });
+   if(generation!==syncGeneration||activeKey!==key||identity()!==uid)return false;
+   syncReadyKey=key;syncLastAt=now();syncRetryAt=0;
+   if(!result.ok){
+    notice=result.reason||'Không thể thực hiện giao dịch Xu.';
+    noticeUntil=now()+4000;error=true;
+    if(visible())render();return false;
+   }
+   if(typeof userProfile!=='undefined'&&userProfile)userProfile.currency=result.balance;
+   root.updatePhoneUI?.();
+   if(mode==='action'){
+    return finishAction(action,result,prior,action==='reel-line'?prior.garden.line?.fishId:null);
+   }
+   state=result.state;save(state,prior);
+   if(isFirst){
+    notice='Đã dùng Ví Xu chung. Xu Arcade cũ được sao lưu, chưa chuyển đổi.';
+    noticeUntil=now()+5000;error=false;
+   }
+   if(visible())render();
+   return true;
+  }catch(e){
+   if(generation!==syncGeneration)return false;
+   notice='Không thể đồng bộ Ví Xu: '+(e?.message||'kiểm tra kết nối');
+   noticeUntil=now()+5000;error=true;syncRetryAt=now()+12000;
+   if(visible())render();
+   return false;
+  }finally{
+   if(generation===syncGeneration){syncBusy=false;lastTick=now();}
+  }
+ }
  function tick(){
   const time=now(),s=ensure();
   if(!s){lastTick=time;if(visible())render();return;}
+  if(unifiedMode()){
+   if(visible())arcadeVisited=true;
+   // Avoid burning Firestore writes for readers who have never opened Arcade.
+   if(!arcadeVisited){lastTick=time;return;}
+   if(!syncBusy&&time>=syncRetryAt){
+    if(syncReadyKey!==activeKey)void syncUnified('init');
+    else if(time-syncLastAt>=SYNC_INTERVAL_MS)void syncUnified('tick');
+   }
+   lastTick=time;
+   if(visible()){
+    if(lastRenderedKey!==activeKey)render();
+    else if(time-lastPaint>=900)refreshLive(time);
+   }
+   return;
+  }
   state=core.advance(s,time,Math.max(0,time-lastTick));
   lastTick=time;
   const customerServed=s.neon.guestsServed!==state.neon.guestsServed;
@@ -895,9 +979,18 @@
  }
  function interact(action){
   tick();if(!state||!activeKey||exchangeBusy)return false;
+  if(unifiedMode()){
+   if(syncBusy||syncReadyKey!==activeKey){
+    notice='Ví Xu đang đồng bộ, hãy thử lại sau.';noticeUntil=now()+3000;error=true;render();return false;
+   }
+   void syncUnified('action',action);return true;
+  }
   const previousState=state;
   const hookedFish=action==='reel-line'?state.garden.line?.fishId:null;
   const result=core.act(state,action,now(),Math.random());
+  return finishAction(action,result,previousState,hookedFish);
+ }
+ function finishAction(action,result,previousState,hookedFish){
   if(!result.ok){notice=result.reason;noticeUntil=now()+3500;error=true;render();return false;}
   state=result.state;
   if(/^jade-pick-\d+-[0-2]$/.test(action)){
@@ -959,12 +1052,13 @@
   render();return accurate;
  }
  async function transferArcade(){
+  if(unifiedMode())return false;
   tick();
   if(!exchangeEnabled()||exchangeBusy||!state||!activeKey)return false;
   const uid=identity(),pendingKey=exchangeKey(PENDING),settledKey=exchangeKey(SETTLED);
   const auth=root.firebase?.auth?.(),firestore=root.firebase?.firestore?.();
   if(!uid||!pendingKey||!settledKey||auth?.currentUser?.uid!==uid||!firestore){
-   notice='Hãy đăng nhập trước khi đổi Tiền Xanh.';error=true;noticeUntil=now()+4500;render();return false;
+   notice='Hãy đăng nhập trước khi đổi Xu.';error=true;noticeUntil=now()+4500;render();return false;
   }
   let pending=readPending();
   if(!pending){
@@ -992,7 +1086,7 @@
     if(typeof saveCurrentAccount==='function')saveCurrentAccount();
    }
    root.renderWallet?.();
-   exchangeOpen=false;notice='✓ Đã chuyển 🟡 '+result.walletXu+' vào Ví Xu Vàng.';
+   exchangeOpen=false;notice='✓ Đã chuyển 🟡 '+result.walletXu+' vào Ví Xu.';
    error=false;noticeUntil=now()+4500;return true;
   }catch(e){
    notice='Chưa xác nhận lệnh đổi. Thử lại đúng lệnh đang chờ.';
@@ -1017,11 +1111,7 @@
    if(!ensure())return;
    seasonOpen=true;drawerOpen=null;exchangeOpen=false;render();
   });
-  const headerWallet=root.document.getElementById('arcade-header-wallet-v1');
-  headerWallet?.addEventListener('click',()=>{
-   if(!ensure())return;
-   drawerOpen=null;exchangeAmount=10;exchangeOpen=true;render();
-  });
+  // Arcade Xu header is an inert balance label. Conversion belongs to the main Wallet.
   element.addEventListener('input',event=>{
    if(!event.target.matches?.('[data-arcade-exchange-input]'))return;
    exchangeAmount=event.target.value.trim()===''?0:Number(event.target.value);
@@ -1224,6 +1314,9 @@
   return current?fmt(current.coins):null;
  }
  function openExchange(){
+  if(unifiedMode()){
+   root.openPhoneApp?.('wallet');return false;
+  }
   if(!ensure()){
    if(typeof root.openPhoneApp==='function')root.openPhoneApp('arcade');
    return false;

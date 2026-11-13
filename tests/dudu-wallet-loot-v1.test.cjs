@@ -7,29 +7,30 @@ const src=name=>fs.readFileSync(path.join(__dirname,'..',name),'utf8');
 const html=src('index.html');
 
 test('Ví Xu is a first-class phone app, backed by existing profile Xu',()=>{
- assert.match(html,/onclick="openPhoneApp\('wallet'\)" aria-label="Mở Ví Xu Vàng mua sắm"/);
+ assert.match(html,/onclick="openPhoneApp\('wallet'\)" aria-label="Mở Ví Xu mua sắm"/);
  assert.match(html,/id="phone-app-wallet"/);
  assert.match(html,/id="dudu-wallet-system-balance"/);
- assert.match(html,/id="dudu-wallet-arcade-balance"/);
+ assert.doesNotMatch(html,/id="dudu-wallet-arcade-balance"/);
  assert.match(html,/function renderWallet\(\)/);
  assert.match(html,/userProfile\.currency/);
  assert.match(html,/appName === 'wallet'/);
  assert.match(html,/if\(document\.getElementById\('phone-app-wallet'\)\?\.style\.display==='flex'\)renderWallet\(\)/);
- assert.match(html,/css\/dudu-wallet-v1\.css\?v=wallet-p3-2/);
+ assert.match(html,/css\/dudu-wallet-v1\.css\?v=wallet-r32-stone-1/);
  assert.match(html,/css\/dudu-currency-icons-v1\.css\?v=fun-p1-2/);
 });
 
-test('wallet keeps compact Arcade/exchange access but cannot mint Xu',()=>{
+test('wallet retains ATM and Linh Thach, with no obsolete 10:1 Arcade exchange',()=>{
  const wallet=html.slice(html.indexOf('id="phone-app-wallet"'),html.indexOf('<!-- APP: CỬA HÀNG -->'));
  assert.doesNotMatch(wallet,/onclick="openPhoneApp\('shop'\)"/);
  assert.match(wallet,/id="dudu-wallet-upgrade-button"/);
- assert.match(wallet,/onclick="openPhoneApp\('arcade'\)"/);
- assert.match(wallet,/DuduPersonalArcadeUIV1\?\.openExchange\?\.\(\)/);
+ assert.match(wallet,/id="dudu-wallet-stone-pocket"|class="dudu-wallet-stone-pocket"/);
+ assert.doesNotMatch(wallet,/DuduPersonalArcadeUIV1\?\.openExchange|dudu-bank-exchange|dudu-wallet-arcade-balance/);
+ assert.match(wallet,/id="dudu-wallet-stone-exchange"/);
  assert.doesNotMatch(wallet,/onclick="[^\"]*(transfer|claim|award|grant)/i);
  const arcade=src('js/personal-arcade-ui-v1.js');
  assert.match(arcade,/peekBalance/);
- assert.match(arcade,/data-arcade-exchange="wallet"/);
- assert.match(arcade,/Chuyển tiền · Chưa mở/);
+ assert.match(arcade,/DuduArcadeUnifiedXuR32/);
+ assert.match(src('index.html'),/DUDU_ARCADE_UNIFIED_XU_R32_READY=true/);
  assert.match(arcade,/DUDU_SPARK_EXCHANGE_V1_READY===true/);
  assert.match(arcade,/userProfile\.currency=result\.balance/);
  assert.doesNotMatch(arcade,/userProfile\.currency\s*\+=/);
