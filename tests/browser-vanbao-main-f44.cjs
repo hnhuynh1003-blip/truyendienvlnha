@@ -125,14 +125,26 @@ const assert = require('node:assert/strict');
     await page.setViewportSize({width:390,height:844});
     await page.evaluate(()=>{DuduPhoneLifecycleV671.refresh();if(document.getElementById('cyber-phone').style.display!=='flex')togglePhone();openPhoneApp('fun');});
     await page.locator('.f44-nav').waitFor();await page.waitForFunction(()=>!document.querySelector('.f44-busy'));await page.waitForTimeout(400);
+    assert.equal(await page.locator('.f44-other-games').count(),0,'Three games must never be folded');
+    // Exercise the actual FUN renderer without an async account load to conceal a detached-host mount.
+    const snapshotBefore=await page.evaluate(()=>JSON.stringify(userProfile));
+    await page.evaluate(()=>{window.qaOriginalVanBaoBridge=DuduVanBaoBridgeF44;DuduVanBaoUIF44.dispose();window.DuduVanBaoBridgeF44={...qaOriginalVanBaoBridge,ready:()=>false};DuduFunUIV43.render();});
+    assert.equal(await page.locator('.f44-lobby-title h1').count(),1,'Practice lobby renders immediately in the attached stage');
+    assert.equal(await page.evaluate(()=>JSON.stringify(userProfile)),snapshotBefore);
+    await page.evaluate(()=>{DuduVanBaoUIF44.dispose();window.DuduVanBaoBridgeF44=qaOriginalVanBaoBridge;delete window.qaOriginalVanBaoBridge;DuduFunUIV43.render();});
+    await page.waitForFunction(()=>!document.querySelector('.f44-busy'));
+
     assert.equal(await page.locator('.f44-branch').count(),5);assert.equal(await page.locator('[data-puzzle-id]').count(),4);assert.equal(await page.locator('.f44-nav button').count(),3);
     await page.locator('[data-puzzle-id]').first().click();assert.equal(await page.locator('.f44-stone.black').count(),4);assert.ok(!(await page.locator('.f44-board').innerText()).match(/[XO]/));
     assert.equal(await page.locator('.f44-back').isVisible(),false);await page.locator('#phone-app-fun>.phone-app-header .phone-back-btn').click();await page.locator('.f44-nav button').filter({hasText:'Vô Tận'}).click();assert.equal(await page.locator('[data-mode]').count(),6);await page.locator('[data-mode="HARD"]').click();assert.equal(await page.getByRole('button',{name:'Bắt Đầu',exact:true}).isDisabled(),true);
     await page.locator('.f44-nav button').filter({hasText:'Vật phẩm'}).click();assert.equal(await page.locator('.f44-catalog-item').count(),22);
-    for(const width of [320,360,390,1280]){await page.setViewportSize({width,height:844});await page.waitForTimeout(350);const bounds=await page.locator('.f44-nav').boundingBox(),phone=await page.locator('#cyber-phone').boundingBox();assert.ok(bounds.x>=phone.x&&bounds.x+bounds.width<=phone.x+phone.width+1);for(const b of await page.locator('.f44-nav button').all())assert.ok((await b.boundingBox()).height>=44);}
+    await page.locator('.f44-nav button').nth(1).click();
+    for(const width of [320,360,390,430,1280]){await page.setViewportSize({width,height:844});await page.waitForTimeout(350);const bounds=await page.locator('.f44-nav').boundingBox(),phone=await page.locator('#cyber-phone').boundingBox();assert.ok(bounds.x>=phone.x&&bounds.x+bounds.width<=phone.x+phone.width+1);const tabs=await page.locator('.dudu-fun-tab').evaluateAll(ns=>ns.map(n=>{const r=n.getBoundingClientRect();return {x:r.x,y:r.y,right:r.right,h:r.height};}));assert.equal(tabs.length,3);assert.ok(tabs.every(t=>Math.abs(t.y-tabs[0].y)<1&&t.h>=44&&t.x>=phone.x&&t.right<=phone.x+phone.width+1),'Three visible tabs on one row at '+width+JSON.stringify({tabs,phone}));for(const b of await page.locator('.f44-nav button').all())assert.ok((await b.boundingBox()).height>=44);if(process.env.F44_QA_DIR){await fs.promises.mkdir(process.env.F44_QA_DIR,{recursive:true});await page.screenshot({path:path.join(process.env.F44_QA_DIR,'lobby-'+width+'.png')});}}
+    await page.locator('.f44-nav button').nth(0).click();
     if(process.env.F44_FINAL_QA)await page.screenshot({path:process.env.F44_FINAL_QA});
     await page.locator('.f44-legacy summary').click();await page.locator('.blind-buy-actions').waitFor();assert.equal(await page.locator('.blind-free').count(),0);
-    await page.evaluate(()=>DuduFunUIV43.showVantVat());await page.locator('.f41-cosmos').waitFor();assert.equal(await page.locator('.phone-close-btn').isVisible(),true);assert.equal(await page.locator('.f44-vanbao').count(),0);assert.equal(await page.evaluate(()=>DuduFunVantVatF31.PRICE),25);assert.equal(await page.evaluate(()=>DuduPersonalBlindBoxC29.PRICE),20);assert.equal(await page.evaluate(()=>DuduItemCatalog.funVantVat.length),66);
+    await page.locator('.dudu-fun-tab').nth(1).click();assert.equal(await page.locator('.dudu-fun-tab.is-active').evaluate(n=>[...n.parentNode.children].indexOf(n)),1);assert.equal(await page.locator('.f44-vanbao').count(),0);
+    await page.evaluate(()=>DuduFunUIV43.showVantVat());await page.locator('.f41-cosmos').waitFor();assert.equal(await page.locator('.phone-close-btn').isVisible(),true);assert.equal(await page.locator('.f44-vanbao').count(),0);assert.equal(await page.evaluate(()=>DuduFunVantVatF31.PRICE),25);assert.equal(await page.evaluate(()=>DuduPersonalBlindBoxC29.PRICE),20);assert.equal(await page.evaluate(()=>DuduItemCatalog.funVantVat.length),66);await page.evaluate(()=>openPhoneApp('wallet'));await page.locator('.dudu-wallet-card').waitFor();await page.evaluate(()=>openPhoneApp('fun'));await page.locator('.dudu-fun-tabs').waitFor();
     assert.deepEqual(pageErrors, []);
     console.log('F4.4 main entry, old paid-box submenu, Vạn Tượng navigation and auth PASS:', JSON.stringify(result));
     await context.close();

@@ -743,3 +743,7 @@ body.dudu-phone-v11 #cyber-phone .f41-prize-art .dudu-item-v13-art{min-height:0;
 body.dudu-phone-v11 #cyber-phone .dudu-fun-stage.is-slot{padding:0;border:0;background:none;box-shadow:none}
 body.dudu-phone-v11 #cyber-phone .dudu-fun-tabs.is-hunt{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
 body.dudu-phone-v11 #cyber-phone .dudu-fun-tabs.is-hunt .dudu-fun-tab{padding:8px 3px;font-size:11px;min-height:44px;min-width:0}
+
+/* Keep the three peer games visible without changing their routes. */
+body.dudu-phone-v11 #cyber-phone #phone-app-fun #dudu-fun-content-v43>.dudu-fun-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;flex:none}
+body.dudu-phone-v11 #cyber-phone #phone-app-fun #dudu-fun-content-v43>.dudu-fun-tabs>.dudu-fun-tab{min-width:0;min-height:44px;padding:8px 3px;font-size:11px}

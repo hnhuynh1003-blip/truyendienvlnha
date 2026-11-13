@@ -1293,8 +1293,10 @@
    button.addEventListener('click',()=>{open=type;hint=true;render();});
    tabs.append(button);
   }
-  if(open==='box'){const other=el('details','f44-other-games');other.append(el('summary','','Trò khác'),tabs);host.append(other);}else host.append(tabs);
+  host.append(tabs);
   const content=el('section','dudu-fun-stage'+(open==='slot'?' is-slot':''));
+  // Attach before mounting: the lobby deliberately ignores disconnected frames.
+  host.append(content);
   const state=view(),round=state.rounds[open];
   if(open==='slot'){
    if(!sandbox()&&vvBridge()&&vvRule())vantVatStage(content);
@@ -1308,7 +1310,6 @@
    else blindBoxes(content);
   }
   else lottery(content,round);
-  host.append(content);
   host.append(el('p','dudu-fun-notice',noticeText));
   history(host,state);
   if(sandbox())host.append(el('small','dudu-fun-disclaimer',
