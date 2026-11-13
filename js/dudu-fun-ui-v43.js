@@ -1282,18 +1282,26 @@
   if(!signed()){
    host.append(el('p','dudu-fun-guest',
     sandbox()?'Đăng nhập Sandbox để nhận lượt chơi riêng của tài khoản. Chưa có phần thưởng nào được tạo.':
-    'Đăng nhập để khám phá DUDU FUN và nhận thưởng.'));
+    'Đăng nhập để khám phá Kỳ Vận và nhận thưởng.'));
    return true;
   }
-  host.classList?.toggle?.('is-vanbao-final',open==='box');const tabs=el('div','dudu-fun-tabs'+(open==='slot'?' is-hunt':''));
+  // KỲ VẬN R3.3: one persistent row. Vạn Bảo is a first-class tab, not a
+  // collapsed "Trò khác" menu; keep the game-specific lobby and receipts intact.
+  host.classList?.toggle?.('is-vanbao-final',open==='box');
+  const tabs=el('nav','dudu-fun-tabs ky-van-game-tabs');
+  tabs.setAttribute('aria-label','Ba trò chơi Kỳ Vận');
   for(const [type,label] of [['box','🎁 Vạn Bảo'],['ticket','🎟️ Vé Cào'],
    ['slot','🎰 Vạn Tượng']]){
    const button=el('button','dudu-fun-tab'+(open===type?' is-active':''),label);
-   button.type='button';button.setAttribute('aria-pressed',String(open===type));
-   button.addEventListener('click',()=>{open=type;hint=true;render();});
+   button.type='button';
+   button.setAttribute('aria-pressed',String(open===type));
+   button.addEventListener('click',()=>{
+    if(open===type)return;
+    open=type;hint=true;render();
+   });
    tabs.append(button);
   }
-  if(open==='box'){const other=el('details','f44-other-games');other.append(el('summary','','Trò khác'),tabs);host.append(other);}else host.append(tabs);
+  host.append(tabs);
   const content=el('section','dudu-fun-stage'+(open==='slot'?' is-slot':''));
   const state=view(),round=state.rounds[open];
   if(open==='slot'){
