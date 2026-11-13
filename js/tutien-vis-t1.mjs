@@ -1,10 +1,10 @@
 // VIS-T1: presentation only, inside the integrated iframe. No repository or write API.
 import {CHARACTER} from '../prototypes/tutien-combat-s/fixture.mjs';
 import {actionIcon} from '../prototypes/tutien-combat-s/ui-icons.mjs';
-import {readStats} from './tutien-view-ux-r2.mjs';
-import {createQiankunBag,renderQiankunBag} from './tutien-qiankun-vis-t2.mjs';
-import {mountEquipment} from './tutien-equipment-vis-t2e.mjs';
-import {applyNavSkin} from './tutien-nav-skin-r1.mjs';
+import {readStats} from './tutien-view-ux-r2.mjs?v=pages-r2-20261113';
+import {createQiankunBag,renderQiankunBag} from './tutien-qiankun-vis-t2.mjs?v=pages-r2-20261113';
+import {mountEquipment} from './tutien-equipment-vis-t2e.mjs?v=pages-r2-20261113';
+import {applyNavSkin} from './tutien-nav-skin-r1.mjs?v=pages-r2-20261113';
 const doc=document,$=id=>doc.getElementById(id),home=$('home-screen');
 if(home&&!doc.getElementById('vis-t1-hero')){
  doc.body.classList.add('vis-t1');
