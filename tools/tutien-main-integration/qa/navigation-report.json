@@ -1,0 +1,544 @@
+{
+  "results": [
+    {
+      "name": "Equal primary buttons, same row, 8px gap 320",
+      "pass": true
+    },
+    {
+      "name": "Text and symbols fit without overlap 320",
+      "pass": true
+    },
+    {
+      "name": "Locked state retained without shrinking/fading text 320",
+      "pass": true
+    },
+    {
+      "name": "Dungeon callback 320",
+      "pass": true
+    },
+    {
+      "name": "Bag selection unchanged 320",
+      "pass": true
+    },
+    {
+      "name": "Equal primary buttons, same row, 8px gap 360",
+      "pass": true
+    },
+    {
+      "name": "Text and symbols fit without overlap 360",
+      "pass": true
+    },
+    {
+      "name": "Locked state retained without shrinking/fading text 360",
+      "pass": true
+    },
+    {
+      "name": "Dungeon callback 360",
+      "pass": true
+    },
+    {
+      "name": "Bag selection unchanged 360",
+      "pass": true
+    },
+    {
+      "name": "Equal primary buttons, same row, 8px gap 390",
+      "pass": true
+    },
+    {
+      "name": "Text and symbols fit without overlap 390",
+      "pass": true
+    },
+    {
+      "name": "Locked state retained without shrinking/fading text 390",
+      "pass": true
+    },
+    {
+      "name": "Dungeon callback 390",
+      "pass": true
+    },
+    {
+      "name": "Bag selection unchanged 390",
+      "pass": true
+    },
+    {
+      "name": "Equal primary buttons, same row, 8px gap 430",
+      "pass": true
+    },
+    {
+      "name": "Text and symbols fit without overlap 430",
+      "pass": true
+    },
+    {
+      "name": "Locked state retained without shrinking/fading text 430",
+      "pass": true
+    },
+    {
+      "name": "Dungeon callback 430",
+      "pass": true
+    },
+    {
+      "name": "Bag selection unchanged 430",
+      "pass": true
+    },
+    {
+      "name": "Equal primary buttons, same row, 8px gap 1280",
+      "pass": true
+    },
+    {
+      "name": "Text and symbols fit without overlap 1280",
+      "pass": true
+    },
+    {
+      "name": "Locked state retained without shrinking/fading text 1280",
+      "pass": true
+    },
+    {
+      "name": "Dungeon callback 1280",
+      "pass": true
+    },
+    {
+      "name": "Bag selection unchanged 1280",
+      "pass": true
+    },
+    {
+      "name": "UI interactions preserve serialized mock run",
+      "pass": true
+    },
+    {
+      "name": "No runtime exceptions",
+      "pass": true
+    },
+    {
+      "name": "No external requests",
+      "pass": true
+    }
+  ],
+  "metrics": [
+    {
+      "viewport": "320x568",
+      "phone": {
+        "x": 0,
+        "y": 54,
+        "width": 320,
+        "height": 514
+      },
+      "stage": {
+        "x": 0,
+        "y": 113,
+        "width": 320,
+        "height": 455
+      },
+      "character": {
+        "x": 65.734375,
+        "y": 197.0074920654297,
+        "width": 188.53125,
+        "height": 188.53126525878906
+      },
+      "background": {
+        "x": -55.90625,
+        "y": -7.75250244140625,
+        "width": 431.8125,
+        "height": 575.75
+      },
+      "dock": {
+        "x": 8,
+        "y": 388,
+        "width": 304,
+        "height": 173
+      },
+      "six": [
+        {
+          "x": 8,
+          "y": 440,
+          "width": 99.328125,
+          "height": 60
+        },
+        {
+          "x": 110.328125,
+          "y": 440,
+          "width": 99.328125,
+          "height": 60
+        },
+        {
+          "x": 212.65625,
+          "y": 440,
+          "width": 99.34375,
+          "height": 60
+        },
+        {
+          "x": 8,
+          "y": 501,
+          "width": 99.328125,
+          "height": 60
+        },
+        {
+          "x": 110.328125,
+          "y": 501,
+          "width": 99.328125,
+          "height": 60
+        },
+        {
+          "x": 212.65625,
+          "y": 501,
+          "width": 99.34375,
+          "height": 60
+        }
+      ],
+      "primary": [
+        {
+          "x": 13,
+          "y": 388,
+          "width": 143,
+          "height": 48
+        },
+        {
+          "x": 164,
+          "y": 388,
+          "width": 143,
+          "height": 48
+        }
+      ]
+    },
+    {
+      "viewport": "360x640",
+      "phone": {
+        "x": 0,
+        "y": 54,
+        "width": 360,
+        "height": 586
+      },
+      "stage": {
+        "x": 0,
+        "y": 113,
+        "width": 360,
+        "height": 527
+      },
+      "character": {
+        "x": 76.3671875,
+        "y": 251.02249145507812,
+        "width": 207.265625,
+        "height": 207.265625
+      },
+      "background": {
+        "x": -35.90625,
+        "y": 64.24749755859375,
+        "width": 431.8125,
+        "height": 575.75
+      },
+      "dock": {
+        "x": 8,
+        "y": 460,
+        "width": 344,
+        "height": 173
+      },
+      "six": [
+        {
+          "x": 8,
+          "y": 512,
+          "width": 112.65625,
+          "height": 60
+        },
+        {
+          "x": 123.65625,
+          "y": 512,
+          "width": 112.671875,
+          "height": 60
+        },
+        {
+          "x": 239.328125,
+          "y": 512,
+          "width": 112.65625,
+          "height": 60
+        },
+        {
+          "x": 8,
+          "y": 573,
+          "width": 112.65625,
+          "height": 60
+        },
+        {
+          "x": 123.65625,
+          "y": 573,
+          "width": 112.671875,
+          "height": 60
+        },
+        {
+          "x": 239.328125,
+          "y": 573,
+          "width": 112.65625,
+          "height": 60
+        }
+      ],
+      "primary": [
+        {
+          "x": 13,
+          "y": 460,
+          "width": 163,
+          "height": 48
+        },
+        {
+          "x": 184,
+          "y": 460,
+          "width": 163,
+          "height": 48
+        }
+      ]
+    },
+    {
+      "viewport": "390x844",
+      "phone": {
+        "x": 0,
+        "y": 32,
+        "width": 390,
+        "height": 812
+      },
+      "stage": {
+        "x": 0,
+        "y": 91,
+        "width": 390,
+        "height": 753
+      },
+      "character": {
+        "x": 59.4609375,
+        "y": 335.2550048828125,
+        "width": 271.078125,
+        "height": 271.078125
+      },
+      "background": {
+        "x": -87.375,
+        "y": 90.989990234375,
+        "width": 564.75,
+        "height": 753
+      },
+      "dock": {
+        "x": 8,
+        "y": 664,
+        "width": 374,
+        "height": 173
+      },
+      "six": [
+        {
+          "x": 8,
+          "y": 716,
+          "width": 122.65625,
+          "height": 60
+        },
+        {
+          "x": 133.65625,
+          "y": 716,
+          "width": 122.671875,
+          "height": 60
+        },
+        {
+          "x": 259.328125,
+          "y": 716,
+          "width": 122.65625,
+          "height": 60
+        },
+        {
+          "x": 8,
+          "y": 777,
+          "width": 122.65625,
+          "height": 60
+        },
+        {
+          "x": 133.65625,
+          "y": 777,
+          "width": 122.671875,
+          "height": 60
+        },
+        {
+          "x": 259.328125,
+          "y": 777,
+          "width": 122.65625,
+          "height": 60
+        }
+      ],
+      "primary": [
+        {
+          "x": 13,
+          "y": 664,
+          "width": 178,
+          "height": 48
+        },
+        {
+          "x": 199,
+          "y": 664,
+          "width": 178,
+          "height": 48
+        }
+      ]
+    },
+    {
+      "viewport": "430x932",
+      "phone": {
+        "x": 0,
+        "y": 32,
+        "width": 430,
+        "height": 900
+      },
+      "stage": {
+        "x": 0,
+        "y": 91,
+        "width": 430,
+        "height": 841
+      },
+      "character": {
+        "x": 63.625,
+        "y": 363.8275146484375,
+        "width": 302.75,
+        "height": 302.75
+      },
+      "background": {
+        "x": -100.375,
+        "y": 90.998779296875,
+        "width": 630.75,
+        "height": 841
+      },
+      "dock": {
+        "x": 8,
+        "y": 752,
+        "width": 414,
+        "height": 173
+      },
+      "six": [
+        {
+          "x": 8,
+          "y": 804,
+          "width": 136,
+          "height": 60
+        },
+        {
+          "x": 147,
+          "y": 804,
+          "width": 136,
+          "height": 60
+        },
+        {
+          "x": 286,
+          "y": 804,
+          "width": 136,
+          "height": 60
+        },
+        {
+          "x": 8,
+          "y": 865,
+          "width": 136,
+          "height": 60
+        },
+        {
+          "x": 147,
+          "y": 865,
+          "width": 136,
+          "height": 60
+        },
+        {
+          "x": 286,
+          "y": 865,
+          "width": 136,
+          "height": 60
+        }
+      ],
+      "primary": [
+        {
+          "x": 13,
+          "y": 752,
+          "width": 198,
+          "height": 48
+        },
+        {
+          "x": 219,
+          "y": 752,
+          "width": 198,
+          "height": 48
+        }
+      ]
+    },
+    {
+      "viewport": "1280x900",
+      "phone": {
+        "x": 922,
+        "y": 108,
+        "width": 344,
+        "height": 710
+      },
+      "stage": {
+        "x": 929,
+        "y": 174,
+        "width": 330,
+        "height": 637
+      },
+      "character": {
+        "x": 979.34375,
+        "y": 380.6324920654297,
+        "width": 229.3125,
+        "height": 229.31248474121094
+      },
+      "background": {
+        "x": 855.125,
+        "y": 173.99124145507812,
+        "width": 477.75,
+        "height": 637
+      },
+      "dock": {
+        "x": 937,
+        "y": 631,
+        "width": 314,
+        "height": 173
+      },
+      "six": [
+        {
+          "x": 937,
+          "y": 683,
+          "width": 102.65625,
+          "height": 60
+        },
+        {
+          "x": 1042.65625,
+          "y": 683,
+          "width": 102.671875,
+          "height": 60
+        },
+        {
+          "x": 1148.328125,
+          "y": 683,
+          "width": 102.65625,
+          "height": 60
+        },
+        {
+          "x": 937,
+          "y": 744,
+          "width": 102.65625,
+          "height": 60
+        },
+        {
+          "x": 1042.65625,
+          "y": 744,
+          "width": 102.671875,
+          "height": 60
+        },
+        {
+          "x": 1148.328125,
+          "y": 744,
+          "width": 102.65625,
+          "height": 60
+        }
+      ],
+      "primary": [
+        {
+          "x": 942,
+          "y": 631,
+          "width": 148,
+          "height": 48
+        },
+        {
+          "x": 1098,
+          "y": 631,
+          "width": 148,
+          "height": 48
+        }
+      ]
+    }
+  ],
+  "errors": []
+}

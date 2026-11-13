@@ -1,0 +1,27 @@
+{
+  "base": "a4eee89a533e615aa2d9faac123341aca26cb669",
+  "localMainBefore": "51c1972434ced4406498652cb91fe094893d6704",
+  "sourceHead": "f6951e164941556f64a40a8413174e5036a8419f",
+  "node": {
+    "prototypeAndIntegration": 96,
+    "phoneRegression": 61,
+    "fail": 0
+  },
+  "browser": {
+    "app": 21,
+    "equipment": 58,
+    "navigation": 28,
+    "bag": 86,
+    "fail": 0
+  },
+  "excluded": [
+    "modules/quan-tro-r22",
+    "tools/neon-n20",
+    "js/personal-arcade-core-v1.js",
+    "js/personal-arcade-ui-v1.js",
+    "js/vanbao-*",
+    "other app renaming/layout changes",
+    "unused ZIP and source concept art"
+  ],
+  "sourceDirtyDiffSha256": "77ba91be21b48f461dc2a551f20355f93626e0f3deacd54d6e13af0bcf7cdd89"
+}

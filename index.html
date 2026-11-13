@@ -2587,6 +2587,7 @@
         '🧪 V47 PILOT STAGING — Bình luận Firebase riêng; không dùng Xu, Kho hay quà thật' :
         '🧪 SANDBOX — Dữ liệu thử nghiệm cục bộ, không đồng bộ máy chủ';
       banner.style.cssText = 'position:sticky;top:0;z-index:9999;pointer-events:none;text-align:center;background:#78350f;color:#fff;padding:5px;font-size:12px;';
+      banner.id = 'dudu-sandbox-banner';
       document.body.prepend(banner);
     }
     const docRef = db.collection("studio_data").doc("main_library");
@@ -5869,7 +5870,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
         renderCodexDropdown();
         renderCodexList();
       } else if (appName === 'system') {
-        window.DuduCultivationT0?.render();
+        if(window.DuduTuTienIntegT0) window.DuduTuTienIntegT0.render();
+        else window.DuduCultivationT0?.render();
       } else if (appName === 'core-console') {
         window.DuduSystemAppsV69?.renderCore();
       } else if (appName === 'chat') {
@@ -9644,6 +9646,10 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script type="application/x-dudu-archive" data-src="js/dudu-system-app-v69.js?v=71-main-13"></script>
 <script type="application/x-dudu-archive" data-src="js/dudu-character-name-v71.js?v=71-1"></script>
 <script src="js/cultivation-t0.js?v=final-1"></script>
+<link rel="stylesheet" href="css/tutien-integ-t0.css?v=2">
+<link rel="stylesheet" href="css/cyber-phone-host-ui-r1.css?v=tutien-only-1">
+<script src="js/cyber-phone-host-ui-r1.js?v=1"></script>
+<script src="js/tutien-integ-t0.js?v=1"></script>
 <script src="js/phone-app-contract-v67.js?v=67-arcade-wallet-1&amp;t0=1"></script>
 <script src="js/phone-lifecycle-v67-1.js?v=67-arcade-wallet-1"></script>
 <script src="js/dudu-messenger-v67-2.js?v=67-2"></script>

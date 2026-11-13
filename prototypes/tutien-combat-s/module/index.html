@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<link rel="icon" href="data:,"><title>Tu Tiên · Phó bản đầu tiên · MOCK ONLY</title><link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="module.css"><script type="module" src="module-ui.mjs"></script></head>
+<body><main>
+<header class="masthead"><div><p class="eyebrow">DUDU STUDIO · MOD-P1</p><h1>Tu Tiên</h1></div><span class="mock-badge">MOCK ONLY</span></header>
+<p class="isolation">Bản thử độc lập · nhân vật và Tu Vi giả lập · không kết nối tài khoản thật.</p>
+<nav class="module-nav"><button id="home-back" type="button" hidden>← Về Tu Tiên</button><span id="save-note" role="status">Đang tải…</span></nav>
+<p id="module-error" class="error" role="alert" hidden></p>
+<section id="home-screen" class="module-panel" aria-labelledby="home-title">
+ <h2 id="home-title">Tu sĩ vô danh</h2>
+ <div class="meditation" role="img" aria-label="Nhân vật đang tọa thiền, hình khối placeholder"><i class="meditation-head"></i><i class="meditation-body"></i><i class="meditation-legs"></i></div>
+ <p id="realm-view"></p><label class="resource cultivation"><span id="cultivation-text"></span><progress id="cultivation-bar" max="100" value="0"></progress></label>
+ <p class="muted">Chỉ số minh họa, chưa nối Library. Không tăng Tu Vi khi chờ hoặc chiến đấu.</p>
+ <div class="module-buttons"><button type="button" id="breakthrough" disabled aria-describedby="breakthrough-note">Đột phá · chưa khả dụng</button><button type="button" id="go-dungeon" class="primary-entry">Đi phó bản</button></div>
+ <p id="breakthrough-note" class="muted">Cơ chế đột phá chưa triển khai; không giả lập kết quả.</p>
+ <details><summary>Trang bị hiện tại</summary><p id="equipment-view"></p><p>Trang bị fixture cố định, không truy cập Kho thật.</p></details>
+ <p id="home-condition"></p><button type="button" id="home-rest">Nghỉ mock · hồi HP/LL</button>
+</section>
+<section id="floor-screen" class="module-panel" aria-labelledby="floor-title" hidden><h2 id="floor-title">Phó bản</h2><p>Vào trực tiếp, không cần nhận nhiệm vụ.</p><button id="choose-floor" class="floor-card" type="button"><strong>Tầng 1 · Nham thú</strong><span id="floor-status"></span></button><p id="clear-status"></p></section>
+<section id="prepare-screen" class="module-panel" aria-labelledby="prepare-title" hidden><h2 id="prepare-title">Chuẩn bị · Tầng 1</h2><p>Nham thú: 110 HP · Công Kích 30 · Phòng Thủ 10.</p><p>Tụ lực → Trọng kích → Cắn. Ý định được báo trước, không giới hạn thời gian chọn.</p><p>Kiếm cố định và ba công pháp Slice S. Không có thưởng Tu Vi hoặc tiền.</p><p id="prepare-resources"></p><p id="prepare-reason" role="status"></p><div class="module-buttons"><button id="begin-floor" type="button">Bắt đầu</button><button id="prepare-rest" type="button">Nghỉ mock · hồi HP/LL</button><button id="floors-back" type="button">Về danh sách tầng</button></div></section>
+<section id="combat-screen" hidden aria-label="Trận phó bản tầng 1">
+ <div class="settings"><label><input id="reduce-motion" type="checkbox"> Giảm chuyển động</label><button id="skip" type="button" disabled>Bỏ qua hoạt ảnh</button></div>
+ <section id="arena" class="arena">
+  <div class="arena-title"><span id="battle-name">TẦNG 1 · NHAM THÚ</span><span id="battle-turn"></span></div>
+  <div class="enemy-hud"><div class="enemy-heading"><span>Nham thú</span><label class="resource"><span>Sinh Mệnh <b id="enemy-hp"></b></span><progress id="enemy-hp-bar" max="110" value="110"></progress></label></div><div id="intent" class="intent" aria-live="polite"></div><p id="enemy-status" class="status-text"></p></div>
+  <div class="fighters"><article class="fighter player"><h2>Tu sĩ vô danh</h2><div class="portrait human" role="img" aria-label="Tu sĩ placeholder"><i class="head"></i><i class="robe"></i><i class="sword"></i><i class="aura"></i></div></article><div class="versus" aria-hidden="true">ĐẤU<br>PHÁP</div><article class="fighter enemy"><h2>Nham thú</h2><div class="portrait beast" role="img" aria-label="Yêu thú placeholder"><i class="horn left"></i><i class="horn right"></i><i class="beast-head"></i><i class="eye left"></i><i class="eye right"></i></div></article></div>
+  <div id="visual-event" class="visual-event" aria-hidden="true"></div>
+  <div class="player-hud"><div class="player-resources"><label class="resource"><span>Sinh Mệnh <b id="player-hp"></b></span><progress id="player-hp-bar" max="148" value="148"></progress></label><label class="resource ll"><span>Linh Lực <b id="player-ll"></b></span><progress id="player-ll-bar" max="38" value="38"></progress></label></div><p id="player-status" class="status-text"></p></div>
+ </section>
+ <section class="command-panel" id="command-panel"><div id="actions" class="actions"></div><div class="utilities"><div id="potion-slot"></div><details id="action-info"><summary>Thông tin chiêu</summary><label for="skill-select">Hành động</label><select id="skill-select"></select><p id="skill-description"></p><p id="skill-reason" role="status"></p></details><div id="retreat-slot"></div></div><p id="turn-feedback" class="turn-feedback" role="status"></p></section>
+</section>
+<section id="result-screen" class="module-panel" hidden aria-live="polite"><h2 id="result-title"></h2><p id="result-description"></p><p id="result-progress"></p><div class="module-buttons"><button id="replay-floor" type="button">Chơi lại tầng 1</button><button id="result-home" type="button">Quay về Tu Tiên</button></div></section>
+<section id="exploration-screen" class="module-panel" hidden aria-label="Thu thập trong sinh cảnh"></section>
+<details id="loot-bag" class="module-panel" hidden></details>
+<details class="module-debug"><summary>Thông tin kiểm thử</summary><pre id="debug-state"></pre><p>Receipt và sự kiện chỉ lưu local, không gửi ứng dụng Nhiệm Vụ.</p><a href="../index.html">Prototype S/M/MR3 cũ</a></details>
+</main></body></html>

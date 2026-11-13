@@ -1,0 +1,67 @@
+/* VIS-T2 NAV: art-only overlays. No scene/host geometry or popup styling here. */
+.vis-nav-skin-r1 .vis-stage-dock .vis-nav-button,
+.vis-nav-skin-r1 .vis-stage-dock .vis-nav-button:hover:not(:disabled){
+ position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+ height:60px;min-height:60px;min-width:44px;padding:0;gap:0;border:0;border-radius:0;
+ background:none;box-shadow:none;backdrop-filter:none;color:#f6e4ac;isolation:isolate;
+}
+.vis-nav-skin-r1 .vis-stage-dock .vis-nav-button:before{content:none}
+.vis-nav-skin-r1 .vis-nav-button .vis-nav-art{
+ position:relative;display:block;flex:none;width:48px;height:48px;line-height:0;
+}
+.vis-nav-skin-r1 .vis-nav-image{
+ position:absolute;width:122%;height:122%;left:-11%;top:-11%;object-fit:contain;
+ pointer-events:none;transition:filter 120ms ease;
+}
+.vis-nav-skin-r1 .vis-nav-aura{
+ position:absolute;width:112%;height:112%;left:-6%;top:-6%;object-fit:contain;
+ pointer-events:none;opacity:0;transition:opacity 120ms ease;z-index:2;
+}
+.vis-nav-skin-r1 .vis-nav-button[data-nav-selected=true] .vis-nav-aura{opacity:1}
+.vis-nav-skin-r1 .vis-nav-button:hover .vis-nav-image{filter:brightness(1.12)}
+.vis-nav-skin-r1 .vis-nav-button:active .vis-nav-image{filter:brightness(.9)}
+.vis-nav-skin-r1 .vis-nav-button>span:not(.vis-nav-art){
+ font-size:11px;line-height:12px;white-space:nowrap;text-shadow:0 1px 3px #00151f,0 1px 5px #00151f;
+}
+.vis-nav-skin-r1 .vis-nav-lock-badge{
+ position:absolute;z-index:3;right:-5px;bottom:1px;font-size:7px;line-height:11px;
+ padding:0 3px;border-radius:6px;background:#0b2725e8;color:#d6c49b;
+}
+/* Replace the rectangular button outline with an explicit circular keyboard marker. */
+.vis-nav-skin-r1 .vis-stage-dock .vis-nav-button:focus-visible{outline:none}
+.vis-nav-skin-r1 .vis-nav-button:focus-visible .vis-nav-art:after{
+ content:'';position:absolute;inset:-3px;border:2px dashed #e5ffed;border-radius:50%;pointer-events:none;z-index:3;
+}
+/* NAV R2: one shared horizontal frame. Lock is a state, never a size reduction. */
+.vis-nav-skin-r1 .vis-primary-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:stretch}
+.vis-nav-skin-r1 .vis-primary-actions :is(#go-dungeon,#breakthrough){
+ position:relative;display:flex;align-items:center;justify-content:center;gap:5px;
+ width:100%;min-width:0;height:48px;min-height:48px;box-sizing:border-box;padding:0 7px;
+ border:1px solid #bca16b;border-radius:12px 5px;
+ background:linear-gradient(155deg,#306353,#163e39 65%,#1b463d);
+ box-shadow:inset 0 0 0 2px #143b32,inset 0 0 0 3px #c2a66b66,inset 0 0 12px #d7c88914;
+ font:600 12px/1.2 system-ui,sans-serif;color:#ffe7b2;opacity:1;isolation:isolate;
+}
+.vis-nav-skin-r1 .vis-primary-actions :is(#go-dungeon,#breakthrough):before,
+.vis-nav-skin-r1 .vis-primary-actions :is(#go-dungeon,#breakthrough):after{
+ content:'';position:absolute;left:calc(50% - 3px);width:6px;height:6px;
+ transform:rotate(45deg);background:#8caa7a;border:1px solid #c4a875;border-radius:1px;pointer-events:none;
+}
+.vis-nav-skin-r1 .vis-primary-actions :is(#go-dungeon,#breakthrough):before{top:2px}
+.vis-nav-skin-r1 .vis-primary-actions :is(#go-dungeon,#breakthrough):after{bottom:2px}
+.vis-nav-skin-r1 .vis-primary-actions #breakthrough{
+ background:linear-gradient(155deg,#25453e,#15312e 65%,#203c33);border-color:#9b875f;color:#d3ceb8;
+ box-shadow:inset 0 0 0 2px #122e29,inset 0 0 0 3px #a48d5b55;cursor:not-allowed;
+}
+.vis-nav-skin-r1 .vis-primary-actions #go-dungeon:hover:not(:disabled){background:linear-gradient(155deg,#397463,#1d5045);border-color:#e4c68c}
+.vis-nav-skin-r1 .vis-primary-actions :is(#go-dungeon,#breakthrough)>span:last-child{
+ position:static;inset:auto;transform:none;font:inherit;line-height:1.2;text-align:center;white-space:nowrap;
+ color:inherit;text-shadow:0 1px 3px #08251e;
+}
+.vis-nav-skin-r1 .vis-nav-primary-symbol{position:relative;display:block;flex:0 0 36px;width:36px;height:36px;overflow:hidden;pointer-events:none}
+.vis-nav-skin-r1 .vis-nav-primary-image{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none}
+.vis-nav-skin-r1 #breakthrough .vis-nav-primary-image{position:absolute;inset:auto;left:-14%;top:-14%;width:128%;height:128%;max-width:none;filter:saturate(.65)}
+/* Show the existing temple portion at its original uniform aspect ratio; do not stretch the plaque. */
+.vis-nav-skin-r1 #go-dungeon .vis-nav-primary-image{inset:auto;left:-130%;top:-35%;height:170%;width:auto;max-width:none}
+.vis-nav-skin-r1 #go-dungeon:focus-visible{outline:2px dashed #e5ffed;outline-offset:1px}
+@media(prefers-reduced-motion:reduce){.vis-nav-skin-r1 .vis-nav-image,.vis-nav-skin-r1 .vis-nav-aura{transition:none}}

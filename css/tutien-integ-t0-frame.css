@@ -1,0 +1,174 @@
+/* Website-only skin, loaded by the bridge. Original prototype page stays unchanged. */
+:root{--gold:#e6cc91;--muted:#a6bacb}body{background:#101d26;font-family:system-ui,sans-serif}main{max-width:880px;padding:10px}.masthead,.isolation,.module-debug{display:none}.module-nav{margin:4px 0 8px}.module-panel{background:#142633;border-color:#354c61;padding:16px}.module-panel h2{font-size:21px}.arena{border-color:#354c61}button{font-family:inherit}.settings{font-size:12px}.meditation{margin:12px auto}@media(max-width:380px){main{padding:6px}.module-panel{padding:12px}}
+
+/* VIS-T1: home presentation only. Combat selectors/rules and production shell are unchanged. */
+.vis-t1 #home-screen{padding:0;background:transparent;border:0;margin:0 0 12px}
+.vis-t1 .vis-home-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
+.vis-t1 .vis-scene,.vis-t1 .vis-overview{min-width:0}
+.vis-t1 .vis-hero{position:relative;isolation:isolate;aspect-ratio:3/4;border:1px solid #8a916c;border-radius:16px;overflow:hidden;background:#142e35}
+.vis-t1 .vis-cave{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center}
+.vis-t1 .vis-hero:after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(#061a24bd,transparent 30%,transparent 86%,#081a2477);z-index:1}
+.vis-t1 .vis-character{position:absolute;left:6%;bottom:7%;width:88%;height:64%;object-fit:contain;z-index:2;filter:drop-shadow(0 9px 12px #092d3880)}
+.vis-t1 .vis-identity{position:absolute;top:16px;left:16px;right:16px;z-index:3;text-shadow:0 2px 7px #03121f}
+.vis-t1 .vis-identity #home-title{font-size:24px;margin:5px 0;color:#fff4d5}
+.vis-t1 .vis-identity #realm-view{margin:0;color:#d5efe7;font-size:13px}
+.vis-t1 .vis-kicker{font-size:10px;letter-spacing:.15em;color:#e3d8a8}
+.vis-t1 .vis-art-status{position:absolute;bottom:0;left:0;right:0;margin:0;padding:8px;z-index:3;background:#102a34e8;color:#f1e6ba;font-size:12px}
+.vis-t1 .vis-looks{margin-top:9px;padding:9px 12px;border:1px solid #385c61;border-radius:10px;background:#10262e}
+.vis-t1 summary{cursor:pointer;font-size:12px;color:#d5ccab;min-height:28px;line-height:28px}
+.vis-t1 .vis-appearance-picker{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px}
+.vis-t1 .vis-appearance-picker button{padding:6px;min-height:44px;font-size:12px}
+.vis-t1 .vis-appearance-picker button[aria-pressed=true]{border-color:#dfce8f;outline:1px solid #dfce8f;outline-offset:1px;background:#294744}
+.vis-t1 .vis-note{color:var(--muted);font-size:11px;line-height:1.5}
+.vis-t1 .vis-overview{display:flex;flex-direction:column;gap:12px}
+.vis-t1 .vis-progress{padding:13px;border:1px solid #466760;border-radius:10px;max-width:none;background:#183237;margin:0}
+.vis-t1 .vis-progress progress{height:8px;width:100%}
+.vis-t1 .vis-primary-actions{display:grid;grid-template-columns:minmax(0,1fr);margin:0;gap:8px}
+.vis-t1 #go-dungeon{grid-row:1;min-height:52px;background:linear-gradient(140deg,#345f59,#23464b);border-color:#c9b87b;color:#fff2cf;letter-spacing:.04em}
+.vis-t1 #breakthrough{font-size:12px;min-height:40px}
+.vis-t1 .vis-current-condition{font-size:12px;color:#c2dbd4;margin:0;line-height:1.5}
+.vis-t1 #home-rest{font-size:12px;padding:6px;min-height:38px}
+.vis-t1 .vis-stats,.vis-t1 .vis-equipment{padding:12px;border-radius:12px;background:#132a33;border:1px solid #38555d}
+.vis-t1 h3{font-size:14px;color:#e4d6a4;margin:0 0 10px}
+.vis-t1 .vis-stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:0}
+.vis-t1 .vis-stat-grid>div{background:#0e202a;border:1px solid #344d57;padding:9px;border-radius:8px}
+.vis-t1 dt{font-size:11px;color:#aebfca}.vis-t1 dd{font-size:22px;color:#e4eee6;margin:2px 0 0;line-height:1.2}
+.vis-t1 .vis-gear-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.vis-t1 .vis-gear{display:flex;align-items:center;justify-content:center;flex-direction:column;min-width:0;min-height:94px;padding:8px;border:1px solid #8c885c;background:#17383d;border-radius:9px;font-size:12px;text-align:center;gap:4px}
+.vis-t1 .vis-gear svg{width:34px;height:34px;color:#e0d3a8;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.vis-t1 .vis-gear small{font-size:10px;color:#a7c1bb}
+.vis-t1 .vis-empty{border:1px dashed #385159;background:#11242d;color:#a5b8be}
+.vis-t1 .vis-empty-mark{font-size:23px;line-height:30px;color:#5e7882}
+.vis-t1 .vis-item-detail{margin-top:10px;border-top:1px solid #53655e;padding-top:10px;font-size:12px;line-height:1.5}
+.vis-t1 .vis-item-detail button{font-size:12px;min-height:40px;padding:6px 12px}
+.vis-t1 .vis-locked{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.vis-t1 .vis-locked button{font-size:11px;padding:8px 4px}
+.vis-t1 .vis-test-info{border-top:1px solid #395257;padding-top:6px;color:var(--muted);font-size:12px}
+.vis-t1 .module-debug.vis-technical{display:block;margin:14px 0 0}
+.vis-t1 .vis-test-info details{margin-top:8px}
+@media(min-width:680px){.vis-t1 .vis-home-layout{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);align-items:start;gap:18px}.vis-t1 .vis-scene{position:sticky;top:12px}.vis-t1 .vis-gear-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.vis-t1 .vis-gear{font-size:10px}.vis-t1 .vis-gear small{font-size:9px}}
+@media(max-width:679px){.vis-t1 .vis-scene,.vis-t1 .vis-overview{display:contents}.vis-t1 .vis-hero{aspect-ratio:auto;height:clamp(260px,51dvh,350px);order:0}.vis-t1 .vis-character{height:72%;bottom:5%}.vis-t1 .vis-progress{order:1}.vis-t1 .vis-primary-actions{order:2}.vis-t1 .vis-current-condition{order:3}.vis-t1 #home-rest{order:4}.vis-t1 .vis-stats{order:5}.vis-t1 .vis-equipment{order:6}.vis-t1 .vis-looks{order:7}.vis-t1 .vis-locked{order:8}.vis-t1 .vis-test-info{order:9}.vis-t1 .vis-identity{top:12px;left:12px}.vis-t1 .vis-identity #home-title{font-size:21px}}
+@media(prefers-reduced-motion:reduce){.vis-t1 .vis-scene{position:static}}
+/* Embedded layout follows the phone contract; standalone desktop stays unchanged. */
+.cyber-phone-embedded .vis-t1 .vis-home-layout{grid-template-columns:minmax(0,1fr);min-width:0}
+.cyber-phone-embedded .vis-t1 .vis-scene,.cyber-phone-embedded .vis-t1 .vis-overview{display:contents;position:static}
+.cyber-phone-embedded .vis-t1 .vis-hero{aspect-ratio:auto;height:clamp(160px,45dvh,280px);order:0}
+.cyber-phone-embedded .vis-t1 .vis-character{height:72%;bottom:5%}
+.cyber-phone-embedded .vis-t1 .vis-progress{order:1}
+.cyber-phone-embedded .vis-t1 .vis-primary-actions{order:2}
+.cyber-phone-embedded .vis-t1 .vis-current-condition{order:3}
+.cyber-phone-embedded .vis-t1 #home-rest{order:4}
+.cyber-phone-embedded .vis-t1 .vis-stats{order:5}
+.cyber-phone-embedded .vis-t1 .vis-equipment{order:6}
+.cyber-phone-embedded .vis-t1 .vis-looks{order:7}
+.cyber-phone-embedded .vis-t1 .vis-locked{order:8}
+.cyber-phone-embedded .vis-t1 .vis-test-info{order:9}
+.cyber-phone-embedded .vis-t1 .vis-gear-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+/* VIS-T1R1: every home action is an overlay on the cave, never a section below it. */
+.vis-t1r1:has(#home-screen:not([hidden])){overflow:hidden}
+.vis-t1r1:has(#home-screen:not([hidden])) main{padding:0;max-width:none;margin:0;height:100dvh}
+.vis-t1r1:has(#home-screen:not([hidden])) .module-nav{display:none}
+.vis-t1r1 #home-screen{height:100%;margin:0}
+.vis-t1r1 .vis-home-layout{display:block;height:100%;gap:0}
+.cyber-phone-embedded .vis-t1r1 .vis-hero{height:100%;width:100%;aspect-ratio:auto;border:0;border-radius:8px;box-sizing:border-box}
+.vis-t1r1 .vis-hero:after{background:linear-gradient(#041c2be6,transparent 32%,transparent 57%,#051b28ed);z-index:1}
+.cyber-phone-embedded .vis-t1r1 .vis-character{left:12%;width:76%;height:calc(100% - 205px);bottom:125px;object-fit:contain;pointer-events:none}
+.cyber-phone-embedded .vis-t1r1 .vis-identity{top:12px;left:12px;right:78px}
+.cyber-phone-embedded .vis-t1r1 .vis-identity #home-title{font-size:19px;margin:3px 0}
+.vis-t1r1 .vis-identity #realm-view{font-size:11px}
+.vis-t1r1 .vis-kicker{font-size:9px}
+.vis-t1r1 .vis-stage-progress{position:absolute;z-index:3;left:12px;right:12px;top:89px;padding:0;border:0;border-radius:0;background:transparent;font-size:10px;gap:4px;color:#e9ecd4;text-shadow:0 1px 3px #000}
+.vis-t1r1 .vis-stage-progress progress{height:6px;margin:0}
+.vis-t1r1 .vis-stage-footer{position:absolute;z-index:3;left:10px;right:10px;bottom:10px;display:flex;flex-direction:column;gap:7px}
+.vis-t1r1 .vis-primary-actions{display:grid;grid-template-columns:1.2fr 1fr;gap:6px;margin:0}
+.vis-t1r1 .vis-primary-actions #go-dungeon{grid-row:auto;min-height:44px;padding:7px;font-size:12px;background:#163d42e8;border:1px solid #cfbe87;border-radius:10px}
+.vis-t1r1 .vis-primary-actions #breakthrough{min-height:44px;font-size:11px;padding:6px;background:#183039e6}
+.vis-t1r1 .vis-stage-dock{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.vis-t1r1 .vis-stage-tool{min-width:0;min-height:44px;padding:4px;font-size:11px;line-height:1.2;border:1px solid #779b9666;border-radius:9px;background:#0c2834ce;color:#f1e7c8;backdrop-filter:blur(5px);white-space:normal}
+.vis-t1r1 .vis-stage-dock button:nth-child(4){grid-column:1 / span 2}
+.vis-t1r1 .vis-appearance-open,.vis-t1r1 .vis-test-open{position:absolute;z-index:4;right:9px;top:10px;width:66px;min-height:44px;font-size:10px}
+.vis-t1r1 .vis-test-open{top:56px;min-height:30px}
+.vis-t1r1 .vis-art-status{bottom:153px;z-index:4}
+.vis-t1r1 .vis-panel{position:fixed;inset:0;width:calc(100% - 20px);max-width:420px;max-height:calc(100dvh - 24px);padding:0;border:1px solid #91aaa0;border-radius:14px;background:#102a34f5;color:#e6eee8;box-shadow:0 12px 40px #000a;overflow:hidden;box-sizing:border-box}
+.vis-t1r1 .vis-panel[open]{display:flex;flex-direction:column}
+.vis-t1r1 .vis-panel::backdrop{background:#03131ec4;backdrop-filter:blur(3px)}
+.vis-t1r1 .vis-panel-head{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid #78908666;flex-shrink:0}
+.vis-t1r1 .vis-panel-head h2{margin:0;font-size:16px;color:#ead9a5}
+.vis-t1r1 .vis-panel-close{min-height:44px;padding:6px 12px;font-size:12px}
+.vis-t1r1 .vis-panel-body{padding:12px;overflow-y:auto;min-height:0;overscroll-behavior:contain;font-size:13px;line-height:1.6}
+.vis-t1r1 .vis-panel-body [hidden]{display:none!important}
+.vis-t1r1 .vis-panel .vis-stats,.vis-t1r1 .vis-panel .vis-equipment{padding:0;border:0;background:none}
+.vis-t1r1 .vis-panel .vis-looks{margin:0;padding:0;border:0;background:none}
+.vis-t1r1 .vis-panel .vis-looks>summary{display:none}
+.vis-t1r1 .vis-panel .vis-gear-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.vis-t1r1 .vis-panel pre{white-space:pre-wrap;overflow-wrap:anywhere}
+.vis-t1r1 .vis-panel #home-rest{width:100%;margin-top:10px}
+@media(max-height:430px){
+ .cyber-phone-embedded .vis-t1r1 .vis-character{height:calc(100% - 170px);bottom:125px}
+ .cyber-phone-embedded .vis-t1r1 .vis-identity{top:6px}
+ .vis-t1r1 .vis-stage-progress{top:72px}
+ .vis-t1r1 .vis-stage-footer{bottom:6px;gap:5px}
+}
+.vis-t1r1 .vis-primary-actions{order:0}
+.vis-t1r1 .vis-stage-dock{order:1}
+.vis-t1r1 .vis-stage-progress{top:94px;display:flex;flex-direction:column;line-height:1.3}
+@media(max-height:430px){.vis-t1r1 .vis-stage-progress{top:83px}}
+.cyber-phone-embedded .vis-t1r1 .vis-primary-actions{order:0}
+.cyber-phone-embedded .vis-t1r1 .vis-character{top:112px;bottom:158px;height:calc(100% - 270px);left:6%;width:88%}
+/* UX-R2: compact HUD, talisman controls and six equipment slots, presentation only. */
+.cyber-phone-embedded .vis-ux-r2 .vis-identity{top:10px;left:12px;right:72px}
+.vis-ux-r2 .vis-kicker{display:none}
+.cyber-phone-embedded .vis-ux-r2 .vis-identity #home-title{font-size:16px;line-height:1.3;margin:0 0 2px}
+.vis-ux-r2 .vis-identity #realm-view{font-size:10px;line-height:1.4}
+.vis-ux-r2 .vis-stage-progress{top:54px;left:12px;right:78px;font-size:9px;line-height:1.2;gap:3px}
+.vis-ux-r2 .vis-stage-progress progress{height:4px;border-radius:10px;overflow:hidden;border:1px solid #bcb27f66;background:#102e32}
+.vis-ux-r2 .vis-stage-progress progress::-webkit-progress-bar{background:#102e32}
+.vis-ux-r2 .vis-stage-progress progress::-webkit-progress-value{background:linear-gradient(90deg,#437b73,#d7d2a2);box-shadow:0 0 5px #cdeab8}
+.cyber-phone-embedded .vis-ux-r2 .vis-character{top:86px;bottom:188px;height:calc(100% - 274px);width:88%;left:6%}
+.vis-ux-r2 .vis-stage-footer{left:8px;right:8px;bottom:7px;gap:4px}
+.vis-ux-r2 .vis-stage-dock{grid-template-columns:repeat(3,minmax(0,1fr));gap:1px 3px}
+.vis-ux-r2 .vis-stage-dock button:nth-child(4){grid-column:auto}
+.vis-ux-r2 .vis-rune-button{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:60px;padding:4px 1px;background:none;border:0;border-radius:0;backdrop-filter:none;color:#f3e7c8;isolation:isolate}
+.vis-ux-r2 .vis-rune-button:before{content:'';position:absolute;z-index:-1;top:6px;left:calc(50% - 17px);width:34px;height:34px;transform:rotate(45deg);border-radius:9px 3px;background:linear-gradient(140deg,#37675ee6,#123c40e6);border:1px solid #c6bb87;box-shadow:0 2px 9px #001f2da6,inset 0 0 8px #b9ddb822}
+.vis-ux-r2 .vis-rune-button svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.vis-ux-r2 .vis-rune-button span{font-size:10px;line-height:1.2;white-space:nowrap;text-shadow:0 1px 4px #000}
+.vis-ux-r2 .vis-rune-button:hover:before,.vis-ux-r2 .vis-rune-button:focus-visible:before{background:#346c64;box-shadow:0 0 9px #c8c99477}
+.vis-ux-r2 .vis-appearance-open{top:5px;right:6px;width:60px;min-height:60px}
+.vis-ux-r2 .vis-test-open{top:72px;right:10px;width:40px;min-height:24px;padding:2px;font-size:9px;border:0;background:#082833aa;border-radius:12px}
+.vis-ux-r2 .vis-primary-actions{grid-template-columns:1fr 1.7fr;gap:8px;align-items:center;padding:0 5px}
+.vis-ux-r2 .vis-primary-actions #go-dungeon{display:flex;align-items:center;justify-content:center;gap:6px;min-height:48px;padding:5px;border-radius:24px 8px;background:linear-gradient(130deg,#265e54f2,#13383cf2);box-shadow:inset 0 0 12px #e4d5a422,0 2px 10px #021d25;color:#fff1c1}
+.vis-ux-r2 .vis-primary-actions #breakthrough{display:flex;align-items:center;justify-content:center;gap:4px;min-height:44px;border:0;border-radius:50%;background:#183d4280;font-size:10px}
+.vis-ux-r2 .vis-primary-actions svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.6}
+.vis-ux-r2 .vis-primary-actions span{white-space:nowrap}
+.vis-ux-r2 .vis-panel .vis-gear{min-height:86px;gap:2px;padding:6px;border-radius:12px 3px;background:radial-gradient(ellipse at center,#30544c88,#0c242b);font-size:11px}
+.vis-ux-r2 .vis-panel .vis-gear svg{height:30px;width:30px}
+.vis-ux-r2 .vis-panel .vis-empty{border:1px solid #6b82765c;box-shadow:inset 0 0 13px #0007;color:#9db8b0}
+.vis-ux-r2 .vis-panel .vis-empty svg{opacity:.5}
+.vis-ux-r2 .vis-item-detail>svg{width:52px;height:52px;fill:none;stroke:#d8c587;stroke-width:1.5;display:block;margin:0 auto 8px}
+.vis-ux-r2 .vis-stat-grid dd{font-size:20px}
+.vis-ux-r2 .vis-stat-grid progress{width:100%;height:7px;display:block;margin-top:7px;accent-color:#9dc9a0}
+.vis-ux-r2 .vis-stat-grid>div{padding:10px}
+.vis-ux-r2 .vis-stat-source{font-size:11px;color:#b5ccc1;margin-top:12px}
+.vis-ux-r2 .vis-bag-slots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.vis-ux-r2 .vis-bag-slots>div{min-height:64px;border:1px dashed #607e726e;border-radius:8px;display:flex;align-items:center;justify-content:center;gap:7px;color:#8fa99e;background:#0a222b}
+.vis-ux-r2 .vis-bag-slots svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.5}
+.vis-ux-r2 .vis-appearance-open{position:absolute}
+.vis-ux-r2 button,.vis-ux-r2 summary{-webkit-tap-highlight-color:transparent}
+.vis-ux-r2 .vis-rune-button:hover:not(:disabled){background:none;border:0}
+/* LAYOUT-R2: cave landmark = (50%,67%) of the original 1086x1448 artwork.
+   Figure ground pivot = (50%,96%) of its square transparent canvas.
+   Reserve HUD/dock clear-space; scale both axes uniformly, never offset per viewport.
+   Overscan ensures the cave still covers the stage when its floor is raised above the dock. */
+.cyber-phone-embedded .vis-ux-r2 .vis-hero{container-type:size;border-radius:0}
+.vis-ux-r2 .vis-art-plane{
+ --floor:min(67cqh,calc(100cqh - 190px));
+ --art-height:max(100cqh,calc((100cqh - var(--floor))*3.03030304),calc(var(--floor)*1.49253732),calc(100cqw*1.33333334));
+ position:absolute;left:50%;top:var(--floor);height:var(--art-height);width:calc(var(--art-height)*.75);
+ transform:translate(-50%,-67%);pointer-events:none;
+}
+.vis-ux-r2 .vis-art-plane .vis-cave{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%}
+.cyber-phone-embedded .vis-ux-r2 .vis-art-plane .vis-character{
+ position:absolute;left:50%;top:67%;bottom:auto;
+ width:min(48%,80cqw,calc((var(--floor) - 84px)*1.04166667));height:auto;max-width:none;
+ aspect-ratio:1;object-fit:contain;transform:translate(-50%,-96%);
+}

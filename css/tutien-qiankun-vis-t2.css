@@ -1,0 +1,36 @@
+/* VIS-T2: modular artwork skin only for the existing bag dialog. */
+.vis-ux-r2 .vis-panel.vis-qiankun-active{
+ width:min(calc(100% - 8px),calc((100dvh - 12px)*.66666667),420px);
+ max-width:none;max-height:none;overflow:visible;background:transparent;
+ border:0;border-radius:0;box-shadow:none;padding:0;
+}
+.vis-ux-r2 .vis-qiankun-active[open]{display:block}
+.vis-ux-r2 .vis-qiankun-active .vis-panel-head{display:contents}
+.vis-ux-r2 .vis-qiankun-active .vis-panel-head h2{display:none}
+.vis-ux-r2 .vis-qiankun-active .vis-panel-close{
+ position:absolute;z-index:5;top:10.4%;right:6.3%;width:15%;height:10%;
+ min-width:44px;min-height:44px;padding:0;border:0;border-radius:50%;font-size:0;
+ background:transparent url('/assets/tu-tien/vis-t2/web/qiankun-close-button.webp') center/contain no-repeat;
+}
+.vis-ux-r2 .vis-qiankun-active .vis-panel-close:hover{background-color:transparent;filter:brightness(1.12)}
+.vis-ux-r2 .vis-qiankun-active .vis-panel-body{padding:0;overflow:visible;max-height:none}
+.qiankun-bag{position:relative;aspect-ratio:2/3;width:100%;container-type:inline-size;isolation:isolate;font-family:system-ui,sans-serif;color:#efdfab;line-height:1.35}
+.qiankun-bag .qiankun-base{display:block;width:100%;height:auto;aspect-ratio:2/3;pointer-events:none}
+.qiankun-bag .qiankun-title{position:absolute;left:31%;right:31%;top:16%;margin:0;font-size:clamp(11px,4.6cqw,19px);line-height:1.2;text-align:center;color:#244735;text-shadow:0 1px #fff8;white-space:nowrap}
+.qiankun-status{position:absolute;left:20%;right:20%;top:20.8%;text-align:center;margin:0;font-size:clamp(9px,3.2cqw,13px);color:#eedcb0;text-shadow:0 1px 3px #000}
+.vis-ux-r2 .qiankun-bag .qiankun-grid{position:absolute;left:14.5%;top:24%;width:71%;aspect-ratio:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:1.5%;padding:0}
+.vis-ux-r2 .qiankun-bag .qiankun-slot{position:relative;display:block;min-width:0;min-height:0;aspect-ratio:1;padding:0;margin:0;border:0;background:none;border-radius:12%;overflow:visible;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.qiankun-slot-frame{position:absolute;left:-14%;top:-14%;width:128%;height:128%;max-width:none;object-fit:contain;pointer-events:none}
+.qiankun-slot-state{position:absolute;width:74%;height:74%;left:13%;top:13%;object-fit:contain;pointer-events:none}
+.qiankun-slot[data-slot-state=locked] .qiankun-slot-frame{filter:brightness(.7) saturate(.7)}
+.vis-ux-r2 .qiankun-bag .qiankun-slot:hover{background:none;filter:brightness(1.1)}
+.qiankun-slot[aria-pressed=true]{outline:2px solid #e8d49a;outline-offset:-3px}
+.qiankun-capacity{position:absolute;left:16%;top:76%;width:38%;display:flex;flex-direction:column;gap:5px;font-size:clamp(9px,3cqw,12px);text-shadow:0 1px 3px #000}
+.qiankun-capacity progress{display:block;width:100%;height:7px;accent-color:#91d992}
+.qiankun-feedback{position:absolute;left:16%;top:81%;width:38%;margin:0;font-size:clamp(8px,2.8cqw,11px);line-height:1.3;color:#cbd9b7;overflow-wrap:anywhere}
+.vis-ux-r2 .qiankun-bag .qiankun-upgrade{position:absolute;left:55%;top:75.7%;width:32%;aspect-ratio:2/1;min-width:0;min-height:0;display:block;padding:0;border:0;background:none;opacity:.72;cursor:not-allowed}
+.qiankun-upgrade img{display:block;width:100%;height:auto;pointer-events:none}
+.qiankun-upgrade span{position:absolute;left:4%;right:4%;bottom:13%;font-size:clamp(8px,2.8cqw,11px);color:#fff1c1;text-shadow:0 1px 3px #123f29;white-space:nowrap}
+.qiankun-note{position:absolute;left:15%;right:15%;top:87.6%;margin:0;text-align:center;font-size:clamp(8px,2.7cqw,11px);color:#ead7a5;text-shadow:0 1px 4px #000}
+.qiankun-bag button:focus-visible,.vis-qiankun-active .vis-panel-close:focus-visible{outline:2px solid #ffe0a0;outline-offset:2px}
+@media(prefers-reduced-motion:reduce){.qiankun-bag *{transition:none}}

@@ -1,0 +1,16 @@
+/* Tu Tien child layout only. Outer geometry belongs to the shared phone host. */
+body.dudu-phone-v11 #cyber-phone.tutien-integ-open .phone-screen{background:#101d26!important}
+#phone-app-system:has(.tutien-integ-host){padding:8px;overflow:hidden;min-height:0}
+#phone-app-system .phone-app-header{flex-shrink:0;margin-bottom:4px}
+#phone-app-system .tutien-integ-host{display:flex;flex:1;flex-direction:column;min-height:0;overflow:hidden!important;padding:0}
+.tutien-integ-toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-shrink:0;padding:4px;color:#a5d8c9;font:11px/1.4 system-ui,sans-serif}
+.tutien-integ-toolbar button{min-height:36px;border:1px solid #526b76;border-radius:8px;background:#172a37;color:#e2e8f0;padding:4px 10px;cursor:pointer}
+#tutien-integ-frame{display:block;flex:1;min-height:0;width:100%;border:0;border-radius:8px;background:#101d26}
+#phone-app-system,.tutien-integ-host,#tutien-integ-frame{min-width:0;max-width:100%;box-sizing:border-box}
+/* The home scene already exposes mock information in its own overlay. */
+#phone-app-system .tutien-home-stage .tutien-integ-toolbar{display:none}
+/* LAYOUT-R2: only this app consumes its full assigned viewport. Phone chrome is untouched. */
+body.dudu-phone-v11 #cyber-phone #phone-app-system:has(.tutien-integ-host){padding:0 env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px);min-width:0}
+body.dudu-phone-v11 #cyber-phone #phone-app-system:has(.tutien-integ-host)>.phone-app-header{margin:0;padding:calc(8px + env(safe-area-inset-top,0px)) 44px 8px 9px}
+body.dudu-phone-v11 #cyber-phone #phone-app-system #dudu-v69-system-view.tutien-integ-host{padding:0;margin:0;min-width:0;max-width:100%;border:0;border-radius:0}
+#phone-app-system #tutien-integ-frame{border-radius:0}

@@ -1,0 +1,700 @@
+{
+  "base": "a4eee89a533e615aa2d9faac123341aca26cb669",
+  "localMainBefore": "51c1972434ced4406498652cb91fe094893d6704",
+  "sourceHead": "f6951e164941556f64a40a8413174e5036a8419f",
+  "changedFiles": [
+    "assets/tu-tien/vis-t1/tutien-cultivation-cave-v2.png",
+    "assets/tu-tien/vis-t1/tutien-meditation-character.png",
+    "assets/tu-tien/vis-t1/tutien-meditation-female-01.png",
+    "assets/tu-tien/vis-t1/tutien-meditation-female-02.png",
+    "assets/tu-tien/vis-t1/tutien-meditation-female-03.png",
+    "assets/tu-tien/vis-t2-nav/assets/webp/nav-alchemy.webp",
+    "assets/tu-tien/vis-t2-nav/assets/webp/nav-attributes.webp",
+    "assets/tu-tien/vis-t2-nav/assets/webp/nav-breakthrough-locked.webp",
+    "assets/tu-tien/vis-t2-nav/assets/webp/nav-dungeon-action-plaque.webp",
+    "assets/tu-tien/vis-t2-nav/assets/webp/nav-dungeon-pouch.webp",
+    "assets/tu-tien/vis-t2-nav/assets/webp/nav-equipment.webp",
+    "assets/tu-tien/vis-t2-nav/assets/webp/nav-forge.webp",
+    "assets/tu-tien/vis-t2-nav/assets/webp/nav-inventory.webp",
+    "assets/tu-tien/vis-t2-nav/assets/webp/nav-selected-aura.webp",
+    "assets/tu-tien/vis-t2/web/manifest.json",
+    "assets/tu-tien/vis-t2/web/qiankun-close-button.png",
+    "assets/tu-tien/vis-t2/web/qiankun-close-button.webp",
+    "assets/tu-tien/vis-t2/web/qiankun-jade-cloud-ornament.png",
+    "assets/tu-tien/vis-t2/web/qiankun-jade-cloud-ornament.webp",
+    "assets/tu-tien/vis-t2/web/qiankun-lock-overlay.png",
+    "assets/tu-tien/vis-t2/web/qiankun-lock-overlay.webp",
+    "assets/tu-tien/vis-t2/web/qiankun-slot-open.png",
+    "assets/tu-tien/vis-t2/web/qiankun-slot-open.webp",
+    "assets/tu-tien/vis-t2/web/qiankun-upgrade-button.png",
+    "assets/tu-tien/vis-t2/web/qiankun-upgrade-button.webp",
+    "assets/tu-tien/vis-t2/web/qiankun-upgrade-mark.png",
+    "assets/tu-tien/vis-t2/web/qiankun-upgrade-mark.webp",
+    "assets/tu-tien/vis-t2/web/tutien-qiankun-popup-base.png",
+    "assets/tu-tien/vis-t2/web/tutien-qiankun-popup-base.webp",
+    "assets/tu-tien/vis-t2e/web/manifest.json",
+    "assets/tu-tien/vis-t2e/web/phap-khi-cac-button-ivory.webp",
+    "assets/tu-tien/vis-t2e/web/phap-khi-cac-button-jade.webp",
+    "assets/tu-tien/vis-t2e/web/phap-khi-cac-close-button.webp",
+    "assets/tu-tien/vis-t2e/web/phap-khi-cac-detail-panel-empty.webp",
+    "assets/tu-tien/vis-t2e/web/phap-khi-cac-equipment-slot-empty.webp",
+    "assets/tu-tien/vis-t2e/web/phap-khi-cac-female-cultivator.webp",
+    "assets/tu-tien/vis-t2e/web/phap-khi-cac-frame-overlay.webp",
+    "assets/tu-tien/vis-t2e/web/phap-khi-cac-icon-armor.webp",
+    "assets/tu-tien/vis-t2e/web/phap-khi-cac-icon-artifact.webp",
+    "assets/tu-tien/vis-t2e/web/phap-khi-cac-icon-bracelet.webp",
+    "assets/tu-tien/vis-t2e/web/phap-khi-cac-icon-necklace.webp",
+    "assets/tu-tien/vis-t2e/web/phap-khi-cac-icon-ring.webp",
+    "assets/tu-tien/vis-t2e/web/phap-khi-cac-icon-weapon.webp",
+    "assets/tu-tien/vis-t2e/web/phap-khi-cac-main-background.webp",
+    "assets/tu-tien/vis-t2e/web/phap-khi-cac-quality-aura-neutral.webp",
+    "assets/tu-tien/vis-t2e/web/phap-khi-cac-scene-only.webp",
+    "assets/tu-tien/vis-t2e/web/phap-khi-cac-selected-overlay.webp",
+    "css/cyber-phone-host-ui-r1.css",
+    "css/tutien-equipment-vis-t2e.css",
+    "css/tutien-integ-t0-frame.css",
+    "css/tutien-integ-t0.css",
+    "css/tutien-nav-skin-r1.css",
+    "css/tutien-qiankun-vis-t2.css",
+    "index.html",
+    "js/cyber-phone-host-ui-r1.js",
+    "js/tutien-equipment-vis-t2e.mjs",
+    "js/tutien-integ-t0.js",
+    "js/tutien-nav-skin-r1.mjs",
+    "js/tutien-qiankun-vis-t2.mjs",
+    "js/tutien-view-ux-r2.mjs",
+    "js/tutien-vis-t1.mjs",
+    "prototypes/tutien-combat-s/QA.md",
+    "prototypes/tutien-combat-s/README.md",
+    "prototypes/tutien-combat-s/battle-animation.mjs",
+    "prototypes/tutien-combat-s/combat-core.mjs",
+    "prototypes/tutien-combat-s/fixture.mjs",
+    "prototypes/tutien-combat-s/index.html",
+    "prototypes/tutien-combat-s/jade-adapter.mjs",
+    "prototypes/tutien-combat-s/jade-policy.mjs",
+    "prototypes/tutien-combat-s/mock-repository.mjs",
+    "prototypes/tutien-combat-s/module/dungeon-state.mjs",
+    "prototypes/tutien-combat-s/module/exploration-state.mjs",
+    "prototypes/tutien-combat-s/module/exploration-ui.mjs",
+    "prototypes/tutien-combat-s/module/index.html",
+    "prototypes/tutien-combat-s/module/module-repository.mjs",
+    "prototypes/tutien-combat-s/module/module-ui.mjs",
+    "prototypes/tutien-combat-s/module/module.css",
+    "prototypes/tutien-combat-s/module/waves-state.mjs",
+    "prototypes/tutien-combat-s/presentation.mjs",
+    "prototypes/tutien-combat-s/serve.mjs",
+    "prototypes/tutien-combat-s/styles.css",
+    "prototypes/tutien-combat-s/tests/browser-checks.mjs",
+    "prototypes/tutien-combat-s/tests/browser-worker.mjs",
+    "prototypes/tutien-combat-s/tests/browser.html",
+    "prototypes/tutien-combat-s/tests/core.test.mjs",
+    "prototypes/tutien-combat-s/tests/exploration-browser-checks.mjs",
+    "prototypes/tutien-combat-s/tests/exploration.test.mjs",
+    "prototypes/tutien-combat-s/tests/helper-endpoint.test.mjs",
+    "prototypes/tutien-combat-s/tests/isolation.test.mjs",
+    "prototypes/tutien-combat-s/tests/jade-adapter.test.mjs",
+    "prototypes/tutien-combat-s/tests/jade-browser-checks.mjs",
+    "prototypes/tutien-combat-s/tests/module-browser-checks.mjs",
+    "prototypes/tutien-combat-s/tests/module.test.mjs",
+    "prototypes/tutien-combat-s/tests/presentation.test.mjs",
+    "prototypes/tutien-combat-s/tests/repository.test.mjs",
+    "prototypes/tutien-combat-s/tests/run-browser.mjs",
+    "prototypes/tutien-combat-s/tests/run-presentation.mjs",
+    "prototypes/tutien-combat-s/tests/simulate-waves.mjs",
+    "prototypes/tutien-combat-s/tests/waves-browser-checks.mjs",
+    "prototypes/tutien-combat-s/tests/waves.test.mjs",
+    "prototypes/tutien-combat-s/tests/worker.html",
+    "prototypes/tutien-combat-s/tests/world-browser-checks.mjs",
+    "prototypes/tutien-combat-s/tests/world.test.mjs",
+    "prototypes/tutien-combat-s/ui-icons.mjs",
+    "prototypes/tutien-combat-s/ui.mjs",
+    "prototypes/tutien-combat-s/world-core.mjs",
+    "prototypes/tutien-combat-s/world-ui.mjs",
+    "tools/tutien-integ-t0/README.md",
+    "tools/tutien-integ-t0/UX-R2-AUDIT.md",
+    "tools/tutien-integ-t0/VIS-T1.md",
+    "tools/tutien-integ-t0/VIS-T2-NAV-R2-QA.md",
+    "tools/tutien-integ-t0/VIS-T2-NAV-SKIN-R1-QA.md",
+    "tools/tutien-integ-t0/VIS-T2-QIANKUN-QA.md",
+    "tools/tutien-integ-t0/VIS-T2E-QA.md",
+    "tools/tutien-integ-t0/VIS-T2E-R1-QA.md",
+    "tools/tutien-integ-t0/equipment-vis-t2e.test.mjs",
+    "tools/tutien-integ-t0/integration.test.mjs",
+    "tools/tutien-integ-t0/offline-sdk.js",
+    "tools/tutien-integ-t0/qiankun-vis-t2.test.mjs",
+    "tools/tutien-integ-t0/serve.mjs",
+    "tools/tutien-integ-t0/ux-r2.test.mjs",
+    "tools/tutien-main-integration/HANDOFF.md",
+    "tools/tutien-main-integration/prepare.py",
+    "tools/tutien-main-integration/qa/app-report.json",
+    "tools/tutien-main-integration/qa/bag-bag-locked-390.png",
+    "tools/tutien-main-integration/qa/bag-report.json",
+    "tools/tutien-main-integration/qa/equipment-detail-sword-1280.png",
+    "tools/tutien-main-integration/qa/equipment-detail-sword-320.png",
+    "tools/tutien-main-integration/qa/equipment-equipment-320.png",
+    "tools/tutien-main-integration/qa/equipment-report.json",
+    "tools/tutien-main-integration/qa/navigation-after-stage-1280.png",
+    "tools/tutien-main-integration/qa/navigation-after-stage-390.png",
+    "tools/tutien-main-integration/qa/navigation-report.json",
+    "tools/tutien-main-integration/qa/summary.json",
+    "tools/tutien-main-integration/run-browser.mjs",
+    "tools/tutien-main-integration/run-nav-r2.mjs",
+    "tools/tutien-main-integration/run-qiankun-vis-t2.mjs",
+    "tools/tutien-main-integration/run-t2e.mjs"
+  ],
+  "manifest": [
+    {
+      "file": "assets/tu-tien/vis-t1/tutien-cultivation-cave-v2.png",
+      "sha256": "58711375c3d649a0f03cd2786bfb3d0e921421f3d9a30b47dc30aa754c945f68"
+    },
+    {
+      "file": "assets/tu-tien/vis-t1/tutien-meditation-character.png",
+      "sha256": "0a2ae8488b660b4c3bee0246a9ddeb049f1f35839230c58832493ebf0ea07f0b"
+    },
+    {
+      "file": "assets/tu-tien/vis-t1/tutien-meditation-female-01.png",
+      "sha256": "c7e1b566a7cac8c828fbb9f3cbb84f4956c4231c9310c3658fd5ceef4a1f664d"
+    },
+    {
+      "file": "assets/tu-tien/vis-t1/tutien-meditation-female-02.png",
+      "sha256": "820cf79cf4bd4843008a16813398c27d4f054898eb68c7aaaf7fb9e77de3a9e6"
+    },
+    {
+      "file": "assets/tu-tien/vis-t1/tutien-meditation-female-03.png",
+      "sha256": "9d3e5a649d284dd2f0d512a25c4187d98e4565e4fd0a92f72badb8558f14f385"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2-nav/assets/webp/nav-alchemy.webp",
+      "sha256": "b956dbca1e5066a0d1deae441381d19e7d0804add863fdd0c19977fabc0d85bf"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2-nav/assets/webp/nav-attributes.webp",
+      "sha256": "a2e15317154f27878ecc65e4f26f6e2af777c93662832d6eb22b64f7cfd595b6"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2-nav/assets/webp/nav-breakthrough-locked.webp",
+      "sha256": "29fa7ffcb3cae352a6be7d4f40fe5aa4ae5d0009d7fe3031ad891aa5c1c93204"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2-nav/assets/webp/nav-dungeon-action-plaque.webp",
+      "sha256": "cd1b67ae2738351349caf0d639c9a82667e8fdd979d61b5c6a3cfd913da3e3b2"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2-nav/assets/webp/nav-dungeon-pouch.webp",
+      "sha256": "26a97111d145fe8741a5455f215f22ef7527252093f2921e98cf9305447246d5"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2-nav/assets/webp/nav-equipment.webp",
+      "sha256": "049524f2118b1583b39cf135e19594802cd31b48c4919d1acb57989955dddd4b"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2-nav/assets/webp/nav-forge.webp",
+      "sha256": "d608356a9b8afbd3c7ac90efa6f20df51630a8997b2fb5f285e5e513944bf5af"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2-nav/assets/webp/nav-inventory.webp",
+      "sha256": "360ffbedbdc103219a9e1117e4f443c7ec393b5f70504e9211b93d71065eeac3"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2-nav/assets/webp/nav-selected-aura.webp",
+      "sha256": "4eea8d6aaf2175ce15637e045b9dcba7b1231404f69f6e844bb7c2407d9867b0"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2/web/manifest.json",
+      "sha256": "8e9672a6f23b1dba452fd29489f45ed2cf5d53a309bb6d44d6a37156214d6d22"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2/web/qiankun-close-button.png",
+      "sha256": "3bc93a55aca865e7be0d16c920b72f07c7d22c3738158655ba2dbba9121986ae"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2/web/qiankun-close-button.webp",
+      "sha256": "9c1a9c1179b14939b7f46c35ae21d113e011bf70d23ec86a47410a4f13c11718"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2/web/qiankun-jade-cloud-ornament.png",
+      "sha256": "c66239d4168c27e327b441f22db4d89154aeb41e33f6c0d009375104cebc314f"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2/web/qiankun-jade-cloud-ornament.webp",
+      "sha256": "4a1acef74455bdd11a6d939ad4a2eb121e304e43d989202ee5bdf315a8117fde"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2/web/qiankun-lock-overlay.png",
+      "sha256": "e9a75fe8d37401ca80ce6d97caaa9860840ff56923985753c41b67b831ce2165"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2/web/qiankun-lock-overlay.webp",
+      "sha256": "608235fdd7cbbce89ce02016018b5404c7fb0cde8126ec91edda4b326f7e7bfa"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2/web/qiankun-slot-open.png",
+      "sha256": "0430285562732a76948df2f34238a48ac3f58ceec87d272a1fd6e937dcdcb4de"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2/web/qiankun-slot-open.webp",
+      "sha256": "c74afb715b58dc479ba46e82f3086bda566ec3dbdf98d21b6fea5cbd1a5e057c"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2/web/qiankun-upgrade-button.png",
+      "sha256": "09f4be5063f1a7a2561f4de156b9b233801de034665c7adaa8a1c24ffe13a894"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2/web/qiankun-upgrade-button.webp",
+      "sha256": "6a176c96c55c15431be1b666e87b44fc664c71d705c4b75e52af7439c149a9d1"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2/web/qiankun-upgrade-mark.png",
+      "sha256": "8f89741c2e8ad3f357754e217f89f1676de5ce32e0bf54804d347dcfad5187c9"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2/web/qiankun-upgrade-mark.webp",
+      "sha256": "dd829f3bca66feaa519ca6967ebc5f816e2e07b7b821066ae0698455326d81c6"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2/web/tutien-qiankun-popup-base.png",
+      "sha256": "022f7ce1f6fb1f966dbf80d26a0c9e5b3501efca151f1aa06d16d263906c16b3"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2/web/tutien-qiankun-popup-base.webp",
+      "sha256": "f4912c50f46f355c3cd3f350cb4de781dc829e61ea8957d8d40fe6c53e21955d"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2e/web/manifest.json",
+      "sha256": "7c2b35414fb4a26619a57da7847d88bac309b5898c1783fadc23f5da951665e9"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2e/web/phap-khi-cac-button-ivory.webp",
+      "sha256": "fe75dbe1b3bee0965b20b66f6aa564f3472c733cccab923611d307bbfc114d42"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2e/web/phap-khi-cac-button-jade.webp",
+      "sha256": "2b5a9a82903f3ba50d5ee0ce14831d53846fd422606e101f5e2c1a10962e7bd2"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2e/web/phap-khi-cac-close-button.webp",
+      "sha256": "b8656bb14692ba8ff555204023e298e25f4e2adc7e81e0473745febb5869d2d4"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2e/web/phap-khi-cac-detail-panel-empty.webp",
+      "sha256": "2aa8b3308c0a85e30544f75c5afb75f395c10b41a4952bf1932ea0571f4c99bd"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2e/web/phap-khi-cac-equipment-slot-empty.webp",
+      "sha256": "33d9648a8677b1dfc389ac2d4d9626f2e7ff3c5df26cb963d289accf9b853dcb"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2e/web/phap-khi-cac-female-cultivator.webp",
+      "sha256": "f22f4492dbafb9d38b28e9518bcbaeaf145c7f84070512aee68918cbc693af8b"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2e/web/phap-khi-cac-frame-overlay.webp",
+      "sha256": "f547dcb9ce6da993df1d6cf2b2797175443ae952d5c6ac998ceda0a9f3512899"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2e/web/phap-khi-cac-icon-armor.webp",
+      "sha256": "87f2cd09f6fea3d60461bbd93a2356eee330be25399cbd661842f72d3d209653"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2e/web/phap-khi-cac-icon-artifact.webp",
+      "sha256": "032143948197bed4479fb8407e9bac1d3e5a843d9ec03e2956b3e93a7042a9ee"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2e/web/phap-khi-cac-icon-bracelet.webp",
+      "sha256": "f9e7cde2a4720832acd3a060642ec36eb7052f63e3d8620a01024e59c55980f8"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2e/web/phap-khi-cac-icon-necklace.webp",
+      "sha256": "f6af976a48a0cd082f63c63dec04effd617a2e4454d7d801a6c72ce0c5f39006"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2e/web/phap-khi-cac-icon-ring.webp",
+      "sha256": "64188d9908f74dfcc8d5f88fb34a610a228029740f5ce261629a3320dac91b14"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2e/web/phap-khi-cac-icon-weapon.webp",
+      "sha256": "a785a10caaa336c6934f360677b3cc383dda9aa4d2ec6171ab4be5ab1b53e1ca"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2e/web/phap-khi-cac-main-background.webp",
+      "sha256": "e8ff4f767df7f4e700bbbf65ae5757ed6366403f082aa8f2832209d5a95d7b58"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2e/web/phap-khi-cac-quality-aura-neutral.webp",
+      "sha256": "35a527be24cbcfedfafb3a82e6a1ca8c7100dd44a31108c4a7270f208fa123ee"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2e/web/phap-khi-cac-scene-only.webp",
+      "sha256": "71116ff86d9005427d252ea2fa7c1d17448d3596aa1c738c64842e197f37868d"
+    },
+    {
+      "file": "assets/tu-tien/vis-t2e/web/phap-khi-cac-selected-overlay.webp",
+      "sha256": "057dc638b8f06558702ca141dc38a4536d5ddf5f8984452185a5b734a8084b48"
+    },
+    {
+      "file": "css/cyber-phone-host-ui-r1.css",
+      "sha256": "14491f81f1a7ca85e5aa6aa7b9827c46b78a988cc1573542a67fea5868ef3a02"
+    },
+    {
+      "file": "css/tutien-equipment-vis-t2e.css",
+      "sha256": "a53d31c21cedfce9c07147f632da24efd091d4e79611e85895ff63b08a91e905"
+    },
+    {
+      "file": "css/tutien-integ-t0-frame.css",
+      "sha256": "4efef223df091b0af0435ef4323162c58a997e39cdce08cfbb1df417b43565d0"
+    },
+    {
+      "file": "css/tutien-integ-t0.css",
+      "sha256": "cc5996518b467e4bf5b540528c22b1602cb77705d7dda3da5e290d57ce321b3c"
+    },
+    {
+      "file": "css/tutien-nav-skin-r1.css",
+      "sha256": "8dcafd0af9d0d4a9dae60fb7997ec0453427b581a689daa74ed03ad751c0ea7e"
+    },
+    {
+      "file": "css/tutien-qiankun-vis-t2.css",
+      "sha256": "ee387c0f25fe2a6e546e357291c24e6249e52288e178fccd2b81e549fbc4ea62"
+    },
+    {
+      "file": "index.html",
+      "sha256": "5be67bfae18f04e070362e789a1c5823750b8b6f25df1e651208c9436646a409"
+    },
+    {
+      "file": "js/cyber-phone-host-ui-r1.js",
+      "sha256": "8f129910eb857cd125713823bd83343f2f310ff5dff5f6470a2316345b2725ae"
+    },
+    {
+      "file": "js/tutien-equipment-vis-t2e.mjs",
+      "sha256": "e7829d57fa8805eca1ddfbb5ee9dd773356ac8b29bff09afa04b6ed611f5dae0"
+    },
+    {
+      "file": "js/tutien-integ-t0.js",
+      "sha256": "1229cedff5c8cd12710a7630464a894ee290fab5ba6d84137071a7552ff958c9"
+    },
+    {
+      "file": "js/tutien-nav-skin-r1.mjs",
+      "sha256": "0581a953bdeeb6a9e3128988ac5edf35660796e8d246f377da39cd18580a70b4"
+    },
+    {
+      "file": "js/tutien-qiankun-vis-t2.mjs",
+      "sha256": "d4aa3c21e3ad7f4f2667c1d03dd02da143bdf9a24e7352befddc2f94ad04beb4"
+    },
+    {
+      "file": "js/tutien-view-ux-r2.mjs",
+      "sha256": "6811e1fa24cdf26a37bbaae498fef4d01ad51e529a8219d146dde2d21282124d"
+    },
+    {
+      "file": "js/tutien-vis-t1.mjs",
+      "sha256": "923b85823a2e590b3882742bfa5a960693915158d293ada25500a758ec8f1129"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/QA.md",
+      "sha256": "d957da28b20767fda46f129711032ad7f0dd9a1a53da7f035e3f3b44c12c9414"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/README.md",
+      "sha256": "0ed78bb2da5f80ae85c9bbf5322488d7973ba407f5bb4629b9592fa0793c9e2a"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/battle-animation.mjs",
+      "sha256": "6b1f40bbb4794a2b8012ea0dc36f6effe31a9655a846f06dd48136d25863ce22"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/combat-core.mjs",
+      "sha256": "1b16766575c0f7fca78c555f71735d7b5d847de53101c00019da2ec26bb2ecce"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/fixture.mjs",
+      "sha256": "3d9f2a96f18485018e05b08b4c759a87b6744a772947be01e0bcc2643f75a11c"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/index.html",
+      "sha256": "efb7a73d26b88ebdf2a092298c67be4b7f53f76034a8d7a9c44b08b2b27908c5"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/jade-adapter.mjs",
+      "sha256": "6d90012894fc88bb1587aa5fadee9547470994edb91256646d9a8133cd1df272"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/jade-policy.mjs",
+      "sha256": "55e71ec677f3a0cff5ec4227e9784b9152de682fe3f1efe963705879fcd06d03"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/mock-repository.mjs",
+      "sha256": "d208f80641b6e98c354f89aa6170a4bff09ca9c7b65cd04510f10028765f0e51"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/module/dungeon-state.mjs",
+      "sha256": "93703394b4242b44a005ac30215b346df0f4609c0d00873a4c7f0c7323dfb120"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/module/exploration-state.mjs",
+      "sha256": "bcb091d9056f42faf345bc5dbfbc423c5cce3bd15b9eeeabf669285a274fffc4"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/module/exploration-ui.mjs",
+      "sha256": "ac09d34f1dbaec16cf2ebf13a70e55915f45688ebcff0e3e9a9e748971b40b86"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/module/index.html",
+      "sha256": "ef76034dc4d7303d38812c27d73ee19ab4a0adf761a751097d2bfca31da7d714"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/module/module-repository.mjs",
+      "sha256": "11609f3b8cdd1db9147fdc3cecb57838b0aa170220b5ed8bff2d709908f6c2be"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/module/module-ui.mjs",
+      "sha256": "a72ad9e8a6d8b7ce26c59b6f67509ea1c0e9eb8695b91ab7e2a907b8ad2ed23e"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/module/module.css",
+      "sha256": "c0af66dd862b2e9156526b64e45ca4104fc5409d869bff520931f977f47ec4e5"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/module/waves-state.mjs",
+      "sha256": "04de8a83866f063a824255fbe8eb105ae1445a8bd913e6f9a7f3ae20f955232d"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/presentation.mjs",
+      "sha256": "4322b9f11056562493f9f6d0f96370fd5c9a66ce294b65e7175abb2e959f483b"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/serve.mjs",
+      "sha256": "fe83e10454cae1a7ad644618a796bb5859f18c3db359adc983cfba4e689e9efe"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/styles.css",
+      "sha256": "ca5a2e0b1f7af354cefb1a8980f0bb544695507b5bbe3f26ead5095fe8f15cd2"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/tests/browser-checks.mjs",
+      "sha256": "7dd92f29b7c0bc193861f89a57d493a124e2208088f5b7ec46d76afcb7a4be29"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/tests/browser-worker.mjs",
+      "sha256": "d8cf556b240a1e47eae48af98ab5fdfdfb6883b1ff352c887070f14a9e72c004"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/tests/browser.html",
+      "sha256": "fd8486cf5125530f0b49058355971fc368212ffdea4b84d010d8b40bf1ef80df"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/tests/core.test.mjs",
+      "sha256": "886e3d9cdc7c4e071a1f6a3c3c62d4be606cae22c4cd0901c31432f3c54eeadc"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/tests/exploration-browser-checks.mjs",
+      "sha256": "56a9571ac63c6a37da18ee14046f987cdb74e5540461a89e6d5428db4f82fc20"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/tests/exploration.test.mjs",
+      "sha256": "fa5ab5fb05085edcf327762ca8594060a1ad101a475e3dc68ed741a1c3a08a7b"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/tests/helper-endpoint.test.mjs",
+      "sha256": "57c4c5648a7c438f398a49654dbf0688888915f274ec01a41014bceb8150ab6a"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/tests/isolation.test.mjs",
+      "sha256": "2f82041f851b16bd8c9d302bab3d06d803a55deee58d6040a2fb9b0fce48d2ca"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/tests/jade-adapter.test.mjs",
+      "sha256": "5e42949dde7185eaef73e1dc273042d27cc769c0f1f3e5135e2b8c5152692547"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/tests/jade-browser-checks.mjs",
+      "sha256": "e519d8297fe5539565570856433ffaf18658a44a445c06fcdd21a5fbee3ec88b"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/tests/module-browser-checks.mjs",
+      "sha256": "62b3d4d6c460063baaeb5609cb49f14d73f3a550ffe9b8faaaf735323a001a0a"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/tests/module.test.mjs",
+      "sha256": "f00d2b16a6fc3dfa924a07c39e922c16b4e4c9a36a96df89a640962b06a2aa1d"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/tests/presentation.test.mjs",
+      "sha256": "eec39362420463725862416d12feb1ffe73ca31d544a3e36a8cf101c128f41a5"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/tests/repository.test.mjs",
+      "sha256": "df0d0a6a521db09c48c28b5ecf90680e35cf366c9f781f828b9f7b909679b8c9"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/tests/run-browser.mjs",
+      "sha256": "8449f796716d622e49820af0aa41398ae6d3ba7c0d6bca858c008dd2e2924cce"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/tests/run-presentation.mjs",
+      "sha256": "7ff49af911755dd92b7fcf70c349b732db1b574060bd3656dd9bc66d465fad03"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/tests/simulate-waves.mjs",
+      "sha256": "6a9582bc8179a82d3677e8f24fe350cea56ad324a73a352dbdba763a55ad1377"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/tests/waves-browser-checks.mjs",
+      "sha256": "2f4a0860fb97128b5a166601edfb82e1045cba6231968a5857c4444c50f3b51f"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/tests/waves.test.mjs",
+      "sha256": "0191f05beae82493a287c0f839e62bc8ed4fe957618fd658e9ffde01e7d8c71e"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/tests/worker.html",
+      "sha256": "510ec7c437e0f1c7fd2d1d6152eb85960ecb3ba8e7398c2bbd12a839ebf8e451"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/tests/world-browser-checks.mjs",
+      "sha256": "594783c218eecf6ed3d0603ae368778e8c6ed72bf8809db3b01f334b306ac99c"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/tests/world.test.mjs",
+      "sha256": "6f59fbe5de721251d6d828ef22bc005a2e2fbf5b070af29acfd3948b55ae36f0"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/ui-icons.mjs",
+      "sha256": "a651ec6ef2bc0764d3ae968bf53da101ced1bfb9849d601069df7a7df520ff52"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/ui.mjs",
+      "sha256": "a8ef6594e01f6ae21bdda49f687c7a11097e5eabc0832ef237ad4e69fa4eea2d"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/world-core.mjs",
+      "sha256": "6bab4d182ffe5c77c3d8dac1593535f159b4a99808707ff6b4a1d9cd9f2e50c4"
+    },
+    {
+      "file": "prototypes/tutien-combat-s/world-ui.mjs",
+      "sha256": "c05acaee29fa11f62cc0c12135b06a3cc64751aca067cff7fb62adce06bbec2f"
+    },
+    {
+      "file": "tools/tutien-integ-t0/README.md",
+      "sha256": "f73d59a24b55ca8a9e930844b7ed33cdb25773e3adc58b2cc3a4407dbf2f16eb"
+    },
+    {
+      "file": "tools/tutien-integ-t0/UX-R2-AUDIT.md",
+      "sha256": "dfd49d68228859915039d83edc4197c49ed193eb25bc4fddc725a13aac14716e"
+    },
+    {
+      "file": "tools/tutien-integ-t0/VIS-T1.md",
+      "sha256": "bc46ffb0b42275dbafb5fc4fc61d948dba4140a9c0aba51227b1a233a5b46806"
+    },
+    {
+      "file": "tools/tutien-integ-t0/VIS-T2-NAV-R2-QA.md",
+      "sha256": "3351150814b8c6b00e68361f7cca8abdc39fdbf52eec0fe4d03a5b055e86783e"
+    },
+    {
+      "file": "tools/tutien-integ-t0/VIS-T2-NAV-SKIN-R1-QA.md",
+      "sha256": "62aee5e7f9dce6f1248c360b370d412351900d845cbe05331a1a7fa9523fc02b"
+    },
+    {
+      "file": "tools/tutien-integ-t0/VIS-T2-QIANKUN-QA.md",
+      "sha256": "c515e1f465dc8eab863cb79213a40af9e9f6af5472b02963d85231e13a9aae0e"
+    },
+    {
+      "file": "tools/tutien-integ-t0/VIS-T2E-QA.md",
+      "sha256": "6e8974891d9c6503fa087da1ded0619043a76f6c35e8e3d6f8f7364568c5c67d"
+    },
+    {
+      "file": "tools/tutien-integ-t0/VIS-T2E-R1-QA.md",
+      "sha256": "d3fba07a82453d80e2027c5b89bb103f129f40bfaf5499592b20234993f888b4"
+    },
+    {
+      "file": "tools/tutien-integ-t0/equipment-vis-t2e.test.mjs",
+      "sha256": "06687e7ea8039c83f46eb6bef78f83b6eaa7d6d93f6c5402c0db9b62e6cd7a60"
+    },
+    {
+      "file": "tools/tutien-integ-t0/integration.test.mjs",
+      "sha256": "34e03f315123d67dd207d3466f8b1162334da5ca1339cd6295573c7c29f34169"
+    },
+    {
+      "file": "tools/tutien-integ-t0/offline-sdk.js",
+      "sha256": "4a4714921d91d0b804805d32caa76a244bd02576ed41acd6c2fd0596ac206ae2"
+    },
+    {
+      "file": "tools/tutien-integ-t0/qiankun-vis-t2.test.mjs",
+      "sha256": "2a4abd9f363da041f38d9604aedbc5cc87c7975fa134fcc174c06b6874a49293"
+    },
+    {
+      "file": "tools/tutien-integ-t0/serve.mjs",
+      "sha256": "fc333f9de5c6f29ff23f0bce296af1eb308935ea279559336bf18a652aae7f82"
+    },
+    {
+      "file": "tools/tutien-integ-t0/ux-r2.test.mjs",
+      "sha256": "ccf6320d46e6539f6e2d4458b025dc6547df4262aeb9eeb2c713cf472433178b"
+    },
+    {
+      "file": "tools/tutien-main-integration/HANDOFF.md",
+      "sha256": "0238d0f253a8575711ceb6dfba0cc758616b075b6a8fd1efd85b919970c25220"
+    },
+    {
+      "file": "tools/tutien-main-integration/prepare.py",
+      "sha256": "751ff928364197335fc6dc484c2f565b8673d852a0e1956d52f27af2031f6f4d"
+    },
+    {
+      "file": "tools/tutien-main-integration/qa/app-report.json",
+      "sha256": "22ae8e10dfc0442c8412dc01ef6d7eb8d0cb08f989099079788053c5a2e18b75"
+    },
+    {
+      "file": "tools/tutien-main-integration/qa/bag-bag-locked-390.png",
+      "sha256": "3ff9841aedb71517b53b68b091ed97ff36c12301b377a6c654f89963eaaff0f8"
+    },
+    {
+      "file": "tools/tutien-main-integration/qa/bag-report.json",
+      "sha256": "31eba90da8424e4058dd7634b7b5b4c5e8e2bf9a25124c25672b8825e5bbc0b4"
+    },
+    {
+      "file": "tools/tutien-main-integration/qa/equipment-detail-sword-1280.png",
+      "sha256": "3b1c4fba02d2f875571e198cbaf54f8659cb29bbcec41ce5fb46355aa44f2402"
+    },
+    {
+      "file": "tools/tutien-main-integration/qa/equipment-detail-sword-320.png",
+      "sha256": "50a1b2ed4cdd22875e0b7b2016098ea02ed8bd6effa1dbdaa9544c2cc0f2efe6"
+    },
+    {
+      "file": "tools/tutien-main-integration/qa/equipment-equipment-320.png",
+      "sha256": "07d3050f6d777a04d9bf3fcd0c2a4383a37d35040faf6552bc0a318115a590e2"
+    },
+    {
+      "file": "tools/tutien-main-integration/qa/equipment-report.json",
+      "sha256": "28684261b3b0079f389af018de8fd6eef8bc7693412cb467b2c3717178e4c4be"
+    },
+    {
+      "file": "tools/tutien-main-integration/qa/navigation-after-stage-1280.png",
+      "sha256": "cf4cc03b3c91c14c86fed792a557ec4cbcd77a55dcffee49be9474d9b9d1eb4b"
+    },
+    {
+      "file": "tools/tutien-main-integration/qa/navigation-after-stage-390.png",
+      "sha256": "372428adbd8969ebaa414ddf0ddd4f86e339519590638c16eb25100aa0ce2f52"
+    },
+    {
+      "file": "tools/tutien-main-integration/qa/navigation-report.json",
+      "sha256": "2f59864c5d4a484629b02e6166544e9a0d9188621875dad5b4f0a3ea8cca670f"
+    },
+    {
+      "file": "tools/tutien-main-integration/qa/summary.json",
+      "sha256": "12909f5038cd15462d45fb53da93861310a0c90a89851827fd7979d2346be7eb"
+    },
+    {
+      "file": "tools/tutien-main-integration/run-browser.mjs",
+      "sha256": "b47b5074bb9f7c7521c350b675d62323b56b5b64255c52a6485d29fc37199268"
+    },
+    {
+      "file": "tools/tutien-main-integration/run-nav-r2.mjs",
+      "sha256": "b6387c5095c46061609fc4cf007b4ddd1cf458b61f4ca9b33beaa15f103bdff4"
+    },
+    {
+      "file": "tools/tutien-main-integration/run-qiankun-vis-t2.mjs",
+      "sha256": "51fef508353318c5666fb3ea4cf89e9e1880f75c4e7bac5ec69e4b6aefa80809"
+    },
+    {
+      "file": "tools/tutien-main-integration/run-t2e.mjs",
+      "sha256": "1f10da661413676764e2ebd81bf9e8eb00915835df9c6491ff04f89d64ff7198"
+    }
+  ],
+  "sourceEditsPreserved": true
+}

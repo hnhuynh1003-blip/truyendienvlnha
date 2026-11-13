@@ -1,0 +1,634 @@
+{
+  "results": [
+    {
+      "name": "Full-resolution artwork and dark title 320",
+      "pass": true
+    },
+    {
+      "name": "Six touch targets 320",
+      "pass": true
+    },
+    {
+      "name": "Whole character within artwork 320",
+      "pass": true
+    },
+    {
+      "name": "No overflow double frame or invented ownership 320",
+      "pass": true
+    },
+    {
+      "name": "Sharp detail inside jade frame; parent inert 320",
+      "pass": true
+    },
+    {
+      "name": "Only supported item fields; no fake attributes or action 320",
+      "pass": true
+    },
+    {
+      "name": "Touch detail X returns to equipment, not home 320",
+      "pass": true
+    },
+    {
+      "name": "Empty ring is inline state, no fake detail 320",
+      "pass": true
+    },
+    {
+      "name": "Escape closes child only 320",
+      "pass": true
+    },
+    {
+      "name": "Close restores same host and navigation 320",
+      "pass": true
+    },
+    {
+      "name": "Other popup unskinned 320",
+      "pass": true
+    },
+    {
+      "name": "Full-resolution artwork and dark title 344",
+      "pass": true
+    },
+    {
+      "name": "Six touch targets 344",
+      "pass": true
+    },
+    {
+      "name": "Whole character within artwork 344",
+      "pass": true
+    },
+    {
+      "name": "No overflow double frame or invented ownership 344",
+      "pass": true
+    },
+    {
+      "name": "Sharp detail inside jade frame; parent inert 344",
+      "pass": true
+    },
+    {
+      "name": "Only supported item fields; no fake attributes or action 344",
+      "pass": true
+    },
+    {
+      "name": "Touch detail X returns to equipment, not home 344",
+      "pass": true
+    },
+    {
+      "name": "Empty ring is inline state, no fake detail 344",
+      "pass": true
+    },
+    {
+      "name": "Escape closes child only 344",
+      "pass": true
+    },
+    {
+      "name": "Close restores same host and navigation 344",
+      "pass": true
+    },
+    {
+      "name": "Other popup unskinned 344",
+      "pass": true
+    },
+    {
+      "name": "Full-resolution artwork and dark title 375",
+      "pass": true
+    },
+    {
+      "name": "Six touch targets 375",
+      "pass": true
+    },
+    {
+      "name": "Whole character within artwork 375",
+      "pass": true
+    },
+    {
+      "name": "No overflow double frame or invented ownership 375",
+      "pass": true
+    },
+    {
+      "name": "Sharp detail inside jade frame; parent inert 375",
+      "pass": true
+    },
+    {
+      "name": "Only supported item fields; no fake attributes or action 375",
+      "pass": true
+    },
+    {
+      "name": "Touch detail X returns to equipment, not home 375",
+      "pass": true
+    },
+    {
+      "name": "Empty ring is inline state, no fake detail 375",
+      "pass": true
+    },
+    {
+      "name": "Escape closes child only 375",
+      "pass": true
+    },
+    {
+      "name": "Close restores same host and navigation 375",
+      "pass": true
+    },
+    {
+      "name": "Other popup unskinned 375",
+      "pass": true
+    },
+    {
+      "name": "Full-resolution artwork and dark title 430",
+      "pass": true
+    },
+    {
+      "name": "Six touch targets 430",
+      "pass": true
+    },
+    {
+      "name": "Whole character within artwork 430",
+      "pass": true
+    },
+    {
+      "name": "No overflow double frame or invented ownership 430",
+      "pass": true
+    },
+    {
+      "name": "Sharp detail inside jade frame; parent inert 430",
+      "pass": true
+    },
+    {
+      "name": "Only supported item fields; no fake attributes or action 430",
+      "pass": true
+    },
+    {
+      "name": "Touch detail X returns to equipment, not home 430",
+      "pass": true
+    },
+    {
+      "name": "Empty ring is inline state, no fake detail 430",
+      "pass": true
+    },
+    {
+      "name": "Escape closes child only 430",
+      "pass": true
+    },
+    {
+      "name": "Close restores same host and navigation 430",
+      "pass": true
+    },
+    {
+      "name": "Other popup unskinned 430",
+      "pass": true
+    },
+    {
+      "name": "Full-resolution artwork and dark title 1280",
+      "pass": true
+    },
+    {
+      "name": "Six touch targets 1280",
+      "pass": true
+    },
+    {
+      "name": "Whole character within artwork 1280",
+      "pass": true
+    },
+    {
+      "name": "No overflow double frame or invented ownership 1280",
+      "pass": true
+    },
+    {
+      "name": "Sharp detail inside jade frame; parent inert 1280",
+      "pass": true
+    },
+    {
+      "name": "Only supported item fields; no fake attributes or action 1280",
+      "pass": true
+    },
+    {
+      "name": "Touch detail X returns to equipment, not home 1280",
+      "pass": true
+    },
+    {
+      "name": "Empty ring is inline state, no fake detail 1280",
+      "pass": true
+    },
+    {
+      "name": "Escape closes child only 1280",
+      "pass": true
+    },
+    {
+      "name": "Close restores same host and navigation 1280",
+      "pass": true
+    },
+    {
+      "name": "Other popup unskinned 1280",
+      "pass": true
+    },
+    {
+      "name": "Mock run byte-identical after presentation interactions",
+      "pass": true
+    },
+    {
+      "name": "No runtime exceptions",
+      "pass": true
+    },
+    {
+      "name": "No external requests",
+      "pass": true
+    }
+  ],
+  "metrics": [
+    {
+      "viewport": "320x568",
+      "phone": {
+        "x": 0,
+        "y": 54,
+        "width": 320,
+        "height": 514
+      },
+      "stage": {
+        "x": 0,
+        "y": 0,
+        "width": 320,
+        "height": 455
+      },
+      "primary": [
+        {
+          "x": 13,
+          "y": 275,
+          "width": 143,
+          "height": 48
+        },
+        {
+          "x": 164,
+          "y": 275,
+          "width": 143,
+          "height": 48
+        }
+      ],
+      "character": {
+        "x": 101.484375,
+        "y": 97.859375,
+        "width": 117,
+        "height": 254.765625
+      },
+      "popup": {
+        "x": 51.65625,
+        "y": 4,
+        "width": 216.671875,
+        "height": 446.984375
+      },
+      "slots": [
+        {
+          "x": 68.984375,
+          "y": 120.203125,
+          "width": 47.65625,
+          "height": 62.5625
+        },
+        {
+          "x": 68.984375,
+          "y": 196.203125,
+          "width": 47.65625,
+          "height": 62.5625
+        },
+        {
+          "x": 68.984375,
+          "y": 272.1875,
+          "width": 47.65625,
+          "height": 62.5625
+        },
+        {
+          "x": 203.34375,
+          "y": 120.203125,
+          "width": 47.65625,
+          "height": 62.5625
+        },
+        {
+          "x": 203.34375,
+          "y": 196.203125,
+          "width": 47.65625,
+          "height": 62.5625
+        },
+        {
+          "x": 203.34375,
+          "y": 272.1875,
+          "width": 47.65625,
+          "height": 62.5625
+        }
+      ]
+    },
+    {
+      "viewport": "344x710",
+      "phone": {
+        "x": 0,
+        "y": 54,
+        "width": 344,
+        "height": 656
+      },
+      "stage": {
+        "x": 0,
+        "y": 0,
+        "width": 344,
+        "height": 597
+      },
+      "primary": [
+        {
+          "x": 13,
+          "y": 417,
+          "width": 155,
+          "height": 48
+        },
+        {
+          "x": 176,
+          "y": 417,
+          "width": 155,
+          "height": 48
+        }
+      ],
+      "character": {
+        "x": 94.90625,
+        "y": 127.671875,
+        "width": 154.15625,
+        "height": 335.71875
+      },
+      "popup": {
+        "x": 29.25,
+        "y": 4,
+        "width": 285.5,
+        "height": 588.984375
+      },
+      "slots": [
+        {
+          "x": 52.078125,
+          "y": 157.125,
+          "width": 62.796875,
+          "height": 82.453125
+        },
+        {
+          "x": 52.078125,
+          "y": 257.25,
+          "width": 62.796875,
+          "height": 82.453125
+        },
+        {
+          "x": 52.078125,
+          "y": 357.390625,
+          "width": 62.796875,
+          "height": 82.453125
+        },
+        {
+          "x": 229.125,
+          "y": 157.125,
+          "width": 62.796875,
+          "height": 82.453125
+        },
+        {
+          "x": 229.125,
+          "y": 257.25,
+          "width": 62.796875,
+          "height": 82.453125
+        },
+        {
+          "x": 229.125,
+          "y": 357.390625,
+          "width": 62.796875,
+          "height": 82.453125
+        }
+      ]
+    },
+    {
+      "viewport": "375x812",
+      "phone": {
+        "x": 0,
+        "y": 54,
+        "width": 375,
+        "height": 758
+      },
+      "stage": {
+        "x": 0,
+        "y": 0,
+        "width": 375,
+        "height": 699
+      },
+      "primary": [
+        {
+          "x": 13,
+          "y": 519,
+          "width": 170.5,
+          "height": 48
+        },
+        {
+          "x": 191.5,
+          "y": 519,
+          "width": 170.5,
+          "height": 48
+        }
+      ],
+      "character": {
+        "x": 97.0625,
+        "y": 149.109375,
+        "width": 180.859375,
+        "height": 393.84375
+      },
+      "popup": {
+        "x": 20.03125,
+        "y": 4.015625,
+        "width": 334.9375,
+        "height": 690.96875
+      },
+      "slots": [
+        {
+          "x": 46.8125,
+          "y": 183.65625,
+          "width": 73.671875,
+          "height": 96.734375
+        },
+        {
+          "x": 46.8125,
+          "y": 301.125,
+          "width": 73.671875,
+          "height": 96.734375
+        },
+        {
+          "x": 46.8125,
+          "y": 418.59375,
+          "width": 73.671875,
+          "height": 96.734375
+        },
+        {
+          "x": 254.515625,
+          "y": 183.65625,
+          "width": 73.671875,
+          "height": 96.734375
+        },
+        {
+          "x": 254.515625,
+          "y": 301.125,
+          "width": 73.671875,
+          "height": 96.734375
+        },
+        {
+          "x": 254.515625,
+          "y": 418.59375,
+          "width": 73.671875,
+          "height": 96.734375
+        }
+      ]
+    },
+    {
+      "viewport": "430x932",
+      "phone": {
+        "x": 0,
+        "y": 32,
+        "width": 430,
+        "height": 900
+      },
+      "stage": {
+        "x": 0,
+        "y": 0,
+        "width": 430,
+        "height": 841
+      },
+      "primary": [
+        {
+          "x": 13,
+          "y": 661,
+          "width": 198,
+          "height": 48
+        },
+        {
+          "x": 219,
+          "y": 661,
+          "width": 198,
+          "height": 48
+        }
+      ],
+      "character": {
+        "x": 105.96875,
+        "y": 178.9375,
+        "width": 218.03125,
+        "height": 474.78125
+      },
+      "popup": {
+        "x": 13.109375,
+        "y": 4.015625,
+        "width": 403.765625,
+        "height": 832.96875
+      },
+      "slots": [
+        {
+          "x": 45.40625,
+          "y": 220.578125,
+          "width": 88.828125,
+          "height": 116.609375
+        },
+        {
+          "x": 45.40625,
+          "y": 362.1875,
+          "width": 88.828125,
+          "height": 116.609375
+        },
+        {
+          "x": 45.40625,
+          "y": 503.796875,
+          "width": 88.828125,
+          "height": 116.609375
+        },
+        {
+          "x": 295.75,
+          "y": 220.578125,
+          "width": 88.828125,
+          "height": 116.609375
+        },
+        {
+          "x": 295.75,
+          "y": 362.1875,
+          "width": 88.828125,
+          "height": 116.609375
+        },
+        {
+          "x": 295.75,
+          "y": 503.796875,
+          "width": 88.828125,
+          "height": 116.609375
+        }
+      ]
+    },
+    {
+      "viewport": "1280x900",
+      "phone": {
+        "x": 922,
+        "y": 108,
+        "width": 344,
+        "height": 710
+      },
+      "stage": {
+        "x": 0,
+        "y": 0,
+        "width": 330,
+        "height": 637
+      },
+      "primary": [
+        {
+          "x": 13,
+          "y": 457,
+          "width": 148,
+          "height": 48
+        },
+        {
+          "x": 169,
+          "y": 457,
+          "width": 148,
+          "height": 48
+        }
+      ],
+      "character": {
+        "x": 82.65625,
+        "y": 136.078125,
+        "width": 164.640625,
+        "height": 358.515625
+      },
+      "popup": {
+        "x": 12.546875,
+        "y": 4,
+        "width": 304.890625,
+        "height": 628.984375
+      },
+      "slots": [
+        {
+          "x": 36.9375,
+          "y": 167.53125,
+          "width": 67.0625,
+          "height": 88.046875
+        },
+        {
+          "x": 36.9375,
+          "y": 274.453125,
+          "width": 67.0625,
+          "height": 88.046875
+        },
+        {
+          "x": 36.9375,
+          "y": 381.390625,
+          "width": 67.0625,
+          "height": 88.046875
+        },
+        {
+          "x": 225.984375,
+          "y": 167.53125,
+          "width": 67.0625,
+          "height": 88.046875
+        },
+        {
+          "x": 225.984375,
+          "y": 274.453125,
+          "width": 67.0625,
+          "height": 88.046875
+        },
+        {
+          "x": 225.984375,
+          "y": 381.390625,
+          "width": 67.0625,
+          "height": 88.046875
+        }
+      ]
+    }
+  ],
+  "errors": []
+}

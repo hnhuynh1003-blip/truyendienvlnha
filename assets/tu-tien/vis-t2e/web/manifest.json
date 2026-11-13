@@ -1,0 +1,70 @@
+[
+  {
+    "name": "phap-khi-cac-button-ivory",
+    "bytes": 10964
+  },
+  {
+    "name": "phap-khi-cac-button-jade",
+    "bytes": 12262
+  },
+  {
+    "name": "phap-khi-cac-close-button",
+    "bytes": 17124
+  },
+  {
+    "name": "phap-khi-cac-detail-panel-empty",
+    "bytes": 200602
+  },
+  {
+    "name": "phap-khi-cac-equipment-slot-empty",
+    "bytes": 28488
+  },
+  {
+    "name": "phap-khi-cac-female-cultivator",
+    "bytes": 336300
+  },
+  {
+    "name": "phap-khi-cac-frame-overlay",
+    "bytes": 22850
+  },
+  {
+    "name": "phap-khi-cac-icon-armor",
+    "bytes": 50048
+  },
+  {
+    "name": "phap-khi-cac-icon-artifact",
+    "bytes": 45024
+  },
+  {
+    "name": "phap-khi-cac-icon-bracelet",
+    "bytes": 28410
+  },
+  {
+    "name": "phap-khi-cac-icon-necklace",
+    "bytes": 26554
+  },
+  {
+    "name": "phap-khi-cac-icon-ring",
+    "bytes": 26852
+  },
+  {
+    "name": "phap-khi-cac-icon-weapon",
+    "bytes": 14930
+  },
+  {
+    "name": "phap-khi-cac-main-background",
+    "bytes": 300814
+  },
+  {
+    "name": "phap-khi-cac-quality-aura-neutral",
+    "bytes": 74822
+  },
+  {
+    "name": "phap-khi-cac-scene-only",
+    "bytes": 21588
+  },
+  {
+    "name": "phap-khi-cac-selected-overlay",
+    "bytes": 61670
+  }
+]

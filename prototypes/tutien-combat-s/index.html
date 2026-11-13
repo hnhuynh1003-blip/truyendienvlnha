@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <link rel="icon" href="data:,">
+  <title>Tu Tiên · Slice S → M · MOCK ONLY</title>
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="ui.mjs"></script>
+</head>
+<body>
+<main>
+  <header class="masthead"><div><p class="eyebrow">DUDU STUDIO / FIRST PLAYABLE</p><h1>Tu Tiên <span>· Chiến cảnh</span></h1></div><span class="mock-badge">MOCK ONLY · S → M</span></header>
+  <p class="isolation">Bản thử độc lập. Không kết nối tài khoản, Kho, Ví hoặc Library thật. Chỉ số thử nghiệm, không phải cân bằng chính thức.</p>
+  <div id="error" class="error" role="alert" hidden></div>
+  <div class="settings"><label><input id="reduce-motion" type="checkbox"> Giảm chuyển động</label><button id="skip" type="button" disabled>Bỏ qua hoạt ảnh</button></div>
+  <section id="arena" class="arena" aria-label="Cảnh chiến đấu giả lập">
+    <div class="arena-title"><span id="battle-label">ĐIỂM AN TOÀN</span><span id="turn-label">Chưa có trận</span></div>
+    <div id="enemy-hud" class="enemy-hud" hidden>
+      <div class="enemy-heading"><span>Nham thú</span><label class="resource"><span>Sinh Mệnh <b id="enemy-hp">—</b></span><progress id="enemy-hp-bar" max="110" value="110"></progress></label></div>
+      <div id="intent" class="intent" aria-live="polite">Chưa có ý định</div>
+      <p id="enemy-status" class="status-text">Chưa có hiệu ứng</p>
+    </div>
+    <p id="safe-context" class="safe-context">Chưa bắt đầu trận. Chọn Bắt đầu trận mới khi sẵn sàng.</p>
+    <div class="fighters">
+      <article class="fighter player"><h2>Tu sĩ vô danh</h2><p class="fixture-label">Một snapshot · Kiếm cố định</p>
+        <div class="portrait human" role="img" aria-label="Hình tu sĩ placeholder bằng hình khối CSS"><i class="head"></i><i class="robe"></i><i class="sword"></i><i class="aura"></i></div>
+      </article>
+      <div class="versus" aria-hidden="true">ĐẤU<br>PHÁP</div>
+      <article class="fighter enemy"><h2>Nham thú</h2><p class="fixture-label">Yêu thú mẫu · Không RNG</p>
+        <div class="portrait beast" role="img" aria-label="Hình yêu thú placeholder bằng hình khối CSS"><i class="horn left"></i><i class="horn right"></i><i class="beast-head"></i><i class="eye left"></i><i class="eye right"></i></div>
+      </article>
+    </div><div id="visual-event" class="visual-event" aria-hidden="true"></div>
+    <div class="player-hud">
+      <div class="player-resources"><label class="resource"><span>Sinh Mệnh <b id="player-hp">—</b></span><progress id="player-hp-bar" max="148" value="148"></progress></label><label class="resource ll"><span>Linh Lực <b id="player-ll">—</b></span><progress id="player-ll-bar" max="38" value="38"></progress></label></div>
+      <p id="player-status" class="status-text">Chưa có hiệu ứng</p>
+    </div>
+  </section>
+  <section id="command-panel" class="command-panel" aria-label="Chọn hành động" hidden>
+    <div class="section-heading"><h2>Hành động</h2><span id="save-status" role="status">Đang mở kho mock…</span></div>
+    <div id="actions" class="actions"></div>
+    <div class="utilities"><div id="potion-slot"></div><button id="skill-info-toggle" type="button" aria-expanded="false" aria-controls="skill-info">Thông tin chiêu</button><div id="retreat-slot"></div></div>
+    <section id="skill-info" class="skill-info" aria-label="Tên và mô tả hành động" hidden>
+      <div class="info-heading"><label for="skill-select">Xem hành động</label><button id="skill-info-close" type="button">Đóng</button></div>
+      <select id="skill-select" aria-label="Chọn hành động để xem thông tin"></select>
+      <h3 id="skill-name"></h3><p id="skill-description"></p><p id="skill-state" role="status"></p>
+    </section>
+    <p id="turn-feedback" class="turn-feedback" role="status">Chọn một hành động.</p>
+  </section>
+  <section id="result" class="result" aria-live="polite" hidden><h2 id="result-title"></h2><p id="result-text"></p><p id="receipt-text"></p></section>
+  <section class="safe-panel"><div><h2>Điểm an toàn</h2><p id="inventory">Đang tải…</p><p class="muted">Nghỉ hồi HP/LL, không hoàn đan. Chơi lại không cấp thêm phôi. Phôi dùng ở bàn chế tác.</p></div><div class="safe-buttons"><button id="start" type="button" disabled>Bắt đầu trận mới</button><button id="rest" type="button" disabled>Nghỉ mock</button></div></section>
+  <section id="world-panel" class="world-panel" hidden aria-label="Khám phá và chế tác Slice M"></section>
+  <details class="run-switcher"><summary>Run thử riêng — giữ nguyên run hiện tại</summary><p>Mỗi run là dữ liệu thử tách biệt của cùng nhân vật mẫu. Không xóa, gộp tài sản hoặc reset run gốc.</p><label for="run-select">Run đang mở</label><select id="run-select" disabled></select><div class="world-actions"><button id="run-open" type="button" disabled>Mở run đã chọn</button><button id="run-create" type="button" disabled>Tạo run thử mới — không xóa run cũ</button></div><p id="run-status" role="status"></p></details>
+  <details class="journal"><summary>Diễn biến trận</summary><ol id="log"></ol></details>
+  <footer><p>Không có EXP/Tu Vi được cấp từ WORLD. Chưa tích hợp điều hướng DUDU/Library.</p><p id="run-label">—</p><button id="library-info" type="button">Về Library?</button><p id="library-message" hidden>Đây là trang độc lập. Hãy dùng tab Library đang có của bạn; prototype không mở entry page DUDU thật.</p><p><a href="tests/browser.html" target="_blank" rel="noopener">Kiểm tra trình duyệt (chỉ nên dùng profile thử riêng)</a></p></footer>
+</main>
+</body></html>

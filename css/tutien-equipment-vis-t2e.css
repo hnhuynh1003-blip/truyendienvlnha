@@ -1,0 +1,44 @@
+﻿/* VIS-T2E-R1: scope confined to the equipment dialog. Never blur its content. */
+.vis-ux-r2 .vis-panel.vis-pkc-active{width:min(100%,calc((100dvh - 8px)*873/1801));padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;max-width:none;max-height:none;overflow:visible;opacity:1;filter:none;backdrop-filter:none}
+.vis-ux-r2 .vis-pkc-active[open]{display:block}
+.vis-ux-r2 .vis-pkc-active .vis-panel-head{display:contents}
+.vis-pkc-active .vis-panel-head h2{display:none}
+.vis-ux-r2 .vis-pkc-active .vis-panel-close{position:absolute;right:4%;top:5%;width:15%;height:8%;min-width:44px;min-height:44px;z-index:4;border:0;padding:0;background:none;color:transparent;font-size:0}
+.vis-ux-r2 .vis-pkc-active.pkc-detail-open .vis-panel-close{visibility:hidden;pointer-events:none}
+.vis-ux-r2 .vis-pkc-active .vis-panel-body{padding:0;overflow:visible;max-height:none}
+.pkc{position:relative;width:100%;aspect-ratio:873/1801;container-type:inline-size;isolation:isolate;color:#fff2c9;font-family:system-ui,sans-serif;line-height:1.25}
+.pkc-main{position:relative;width:100%;height:100%}
+.pkc img{pointer-events:none}
+.pkc-background{display:block;width:100%;height:auto}
+.pkc-character{position:absolute;left:23%;top:21%;width:54%;height:57%;object-fit:contain}
+.pkc-title{position:absolute;top:9%;left:24%;width:52%;margin:0;text-align:center;font-size:clamp(12px,5cqw,19px);color:#183d2a}
+.pkc-identity{position:absolute;top:16.3%;left:15%;width:70%;margin:0;text-align:center;font-size:clamp(10px,3.5cqw,14px);text-shadow:0 1px 2px #000}
+.pkc-summary{position:absolute;top:81.2%;left:16%;width:68%;height:6%;display:grid;place-items:center;margin:0;text-align:center;font-size:clamp(12px,4cqw,16px);font-weight:600;color:#fff4d5}
+.pkc-hint{position:absolute;top:87.7%;left:17%;width:66%;height:5%;display:grid;place-items:center;margin:0;text-align:center;font-size:clamp(10px,3.4cqw,14px);color:#173c29;font-weight:600}
+.vis-ux-r2 .pkc .pkc-slot{position:absolute;width:22%;height:14%;min-width:44px;min-height:44px;padding:0;border:0;background:none;color:#fff0bb;border-radius:12%;font:inherit;cursor:pointer}
+.pkc-slot[data-slot=weapon],.pkc-slot[data-slot=armor],.pkc-slot[data-slot=artifact]{left:8%}
+.pkc-slot[data-slot=ring],.pkc-slot[data-slot=necklace],.pkc-slot[data-slot=bracelet]{right:8%}
+.pkc-slot[data-slot=weapon],.pkc-slot[data-slot=ring]{top:26%}
+.pkc-slot[data-slot=armor],.pkc-slot[data-slot=necklace]{top:43%}
+.pkc-slot[data-slot=artifact],.pkc-slot[data-slot=bracelet]{top:60%}
+.pkc-slot-frame,.pkc-slot-selected{position:absolute;left:0;top:0;width:100%;height:76%;object-fit:contain}
+.pkc-slot-selected{opacity:0}.pkc-slot[aria-pressed=true] .pkc-slot-selected{opacity:1}
+.pkc-slot-icon{position:absolute;left:20%;top:12%;width:60%;height:48%;object-fit:contain;opacity:.65}
+.pkc-slot[data-equipped=true] .pkc-slot-icon{opacity:1}
+.pkc-slot-label,.pkc-slot-status{position:absolute;left:-5%;width:110%;text-align:center;text-shadow:0 1px 2px #000}
+.pkc-slot-label{top:76%;font-size:clamp(10px,3.7cqw,15px)}.pkc-slot-status{top:92%;font-size:clamp(9px,2.9cqw,12px);color:#fff1c7}
+/* Child detail deliberately escapes the narrow artwork coordinate plane, but stays within the iframe. */
+.pkc-detail{position:fixed;inset:0;z-index:10;display:grid;place-items:center;isolation:isolate}.pkc-detail[hidden]{display:none}
+.pkc-detail-shade{position:absolute;inset:0;background:#031a15ed}
+.pkc-detail-art{position:relative;width:min(calc(100vw - 12px),calc(100dvh - 24px),380px);aspect-ratio:1;container-type:inline-size;opacity:1;filter:none;backdrop-filter:none}
+.pkc-detail-background{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.pkc-detail-content{position:absolute;inset:18% 17%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;color:#fff4d4}
+.pkc-detail-content .pkc-detail-title{position:static;margin:0;font:600 14px/1.3 system-ui,sans-serif;color:#d9d2ae;letter-spacing:.1em}
+.pkc-detail-content .pkc-detail-name{position:static;margin:0;font:600 clamp(18px,6cqw,23px)/1.3 system-ui,sans-serif;color:#fff4d4}
+.pkc-detail-content .pkc-detail-state{position:static;margin:0;font:400 14px/1.3 system-ui,sans-serif;color:#e5f1ce}
+.vis-ux-r2 .pkc .pkc-detail-back{position:static;padding:10px 8px;min-height:44px;max-width:100%;border:0;border-bottom:1px solid #bea866;background:transparent;color:#fff1bc;font:600 12px/1.3 system-ui,sans-serif;box-shadow:none}
+.vis-ux-r2 .pkc .pkc-detail-close{position:absolute;right:5%;top:5%;width:44px;height:44px;min-height:44px;padding:0;border:0;border-radius:50%;background:none;box-shadow:none}
+.pkc-detail-close img{display:block;width:100%;height:100%;object-fit:contain}
+.pkc button:focus-visible,.vis-pkc-active .vis-panel-close:focus-visible{outline:2px dashed #ffedb5;outline-offset:1px}
+@media(max-height:500px){.pkc-detail-content{gap:12px}}
+.vis-pkc-active .pkc-title{color:#173b28;text-shadow:none}

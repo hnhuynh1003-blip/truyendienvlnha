@@ -1,0 +1,30 @@
+[
+  {
+    "name": "tutien-qiankun-popup-base",
+    "bytes": 205646
+  },
+  {
+    "name": "qiankun-slot-open",
+    "bytes": 14216
+  },
+  {
+    "name": "qiankun-lock-overlay",
+    "bytes": 4450
+  },
+  {
+    "name": "qiankun-upgrade-mark",
+    "bytes": 3148
+  },
+  {
+    "name": "qiankun-upgrade-button",
+    "bytes": 19000
+  },
+  {
+    "name": "qiankun-close-button",
+    "bytes": 9922
+  },
+  {
+    "name": "qiankun-jade-cloud-ornament",
+    "bytes": 22300
+  }
+]
