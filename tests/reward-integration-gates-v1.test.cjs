@@ -5,18 +5,19 @@ const fs=require('node:fs');
 const path=require('node:path');
 const src=p=>fs.readFileSync(path.join(__dirname,'..',p),'utf8');
 
-test('Arcade conversion is accessible at the wallet but still requires verified release gate',()=>{
- const ui=src('js/personal-arcade-ui-v1.js');
- const html=src('index.html');
- assert.match(html,/id="arcade-header-wallet-v1"[^>]+data-arcade-exchange="open"/);
- assert.match(ui,/headerWallet\?\.addEventListener\('click'/);
- assert.match(ui,/role="dialog"/);
- assert.match(ui,/DUDU_SPARK_EXCHANGE_V1_READY===true/);
- assert.match(ui,/!exchangeEnabled\(\)\?'Chuyển tiền · Chưa mở'/);
- assert.match(ui,/!exchangeEnabled\(\)\|\|exchangeBusy\|\|!quoteForExchange\(\)\.ok/);
- assert.match(ui,/userProfile\.currency=result\.balance/);
- assert.doesNotMatch(ui,/userProfile\.currency\s*\+=/);
- assert.doesNotMatch(ui,/firebase\.firestore\(/);
+test('R3.2 Arcade uses the existing wallet, never exposes green money or client 10:1 conversion',()=>{
+ const ui=src('js/personal-arcade-ui-v1.js'),html=src('index.html'),
+  bridge=src('js/arcade-unified-xu-r32.js');
+ const wallet=html.slice(html.indexOf('id="phone-app-wallet"'),html.indexOf('<!-- APP: CỬA HÀNG -->'));
+ assert.match(html,/id="arcade-header-wallet-v1" class="arcade-header-wallet dudu-money-display--gold"/);
+ assert.doesNotMatch(html,/data-arcade-exchange="open"/);
+ assert.doesNotMatch(wallet,/dudu-wallet-arcade-balance|openExchange|dudu-bank-exchange/);
+ assert.doesNotMatch(ui,/headerWallet\?\.addEventListener\('click'/);
+ assert.match(ui,/DUDU_ARCADE_UNIFIED_XU_R32_READY===true/);
+ assert.match(ui,/unifiedBridge\.run/);
+ assert.match(bridge,/await db\.runTransaction/);
+ assert.match(bridge,/currency:nextWallet,storyStates:/);
+ assert.match(bridge,/No retroactive grant from localStorage Arcade coins/);
 });
 test('Production DUDU FUN claims run through owner-scoped transactions only',()=>{
  const fun=src('js/dudu-fun-ui-v43.js');
