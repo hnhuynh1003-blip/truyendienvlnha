@@ -10,7 +10,7 @@
 .vis-ux-r2 .vis-qiankun-active .vis-panel-close{
  position:absolute;z-index:5;top:10.4%;right:6.3%;width:15%;height:10%;
  min-width:44px;min-height:44px;padding:0;border:0;border-radius:50%;font-size:0;
- background:transparent url('/assets/tu-tien/vis-t2/web/qiankun-close-button.webp') center/contain no-repeat;
+ background:transparent url('../assets/tu-tien/vis-t2/web/qiankun-close-button.webp') center/contain no-repeat;
 }
 .vis-ux-r2 .vis-qiankun-active .vis-panel-close:hover{background-color:transparent;filter:brightness(1.12)}
 .vis-ux-r2 .vis-qiankun-active .vis-panel-body{padding:0;overflow:visible;max-height:none}

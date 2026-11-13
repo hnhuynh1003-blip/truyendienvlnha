@@ -1,5 +1,5 @@
 ﻿// VIS-T2E-R1: read-only presentation. No equipment, stat, inventory or persistence commands.
-const BASE='/assets/tu-tien/vis-t2e/web/phap-khi-cac-';
+const BASE=new URL('../assets/tu-tien/vis-t2e/web/phap-khi-cac-',import.meta.url).href;
 export const EQUIPMENT_SLOTS=Object.freeze([['weapon','Vũ khí'],['armor','Hộ giáp'],['artifact','Pháp bảo'],['ring','Nhẫn'],['necklace','Dây chuyền'],['bracelet','Vòng tay']].map(Object.freeze));
 export function equipmentView(key){const slot=EQUIPMENT_SLOTS.find(s=>s[0]===key);if(!slot)throw Error('Unknown equipment slot');return Object.freeze({key,label:slot[1],equipped:key==='weapon',name:key==='weapon'?'Kiếm cố định':null,quality:null,image:null,attributes:null,description:null});}
 export function mountEquipment(root,dialog,identity){

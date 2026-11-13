@@ -1,5 +1,5 @@
 // VIS-T2 presentation only. No storage, inventory, license or upgrade commands.
-const ASSET='/assets/tu-tien/vis-t2/web/';
+const ASSET=new URL('../assets/tu-tien/vis-t2/web/',import.meta.url).href;
 export function qiankunView(previewCapacity=null){
  if(previewCapacity!==null&&(!Number.isInteger(previewCapacity)||previewCapacity<1||previewCapacity>9))throw Error('Invalid UI preview capacity');
  const preview=previewCapacity!==null;

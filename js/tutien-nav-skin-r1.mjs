@@ -1,5 +1,5 @@
 // Presentation decorator only. Existing buttons retain their callbacks and disabled state.
-const ASSET='/assets/tu-tien/vis-t2-nav/assets/webp/';
+const ASSET=new URL('../assets/tu-tien/vis-t2-nav/assets/webp/',import.meta.url).href;
 export const NAV_ART=Object.freeze({stats:'nav-attributes',equipment:'nav-equipment',inventory:'nav-inventory',bag:'nav-dungeon-pouch',alchemy:'nav-alchemy',forge:'nav-forge'});
 export function applyNavSkin(doc){
  const dock=doc.querySelector('.vis-stage-dock');if(!dock||dock.dataset.navSkin==='r1')return;

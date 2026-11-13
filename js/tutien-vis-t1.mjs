@@ -1,15 +1,15 @@
 // VIS-T1: presentation only, inside the integrated iframe. No repository or write API.
-import {CHARACTER} from '/prototypes/tutien-combat-s/fixture.mjs';
-import {actionIcon} from '/prototypes/tutien-combat-s/ui-icons.mjs';
-import {readStats} from '/js/tutien-view-ux-r2.mjs';
-import {createQiankunBag,renderQiankunBag} from '/js/tutien-qiankun-vis-t2.mjs';
-import {mountEquipment} from '/js/tutien-equipment-vis-t2e.mjs';
-import {applyNavSkin} from '/js/tutien-nav-skin-r1.mjs';
+import {CHARACTER} from '../prototypes/tutien-combat-s/fixture.mjs';
+import {actionIcon} from '../prototypes/tutien-combat-s/ui-icons.mjs';
+import {readStats} from './tutien-view-ux-r2.mjs';
+import {createQiankunBag,renderQiankunBag} from './tutien-qiankun-vis-t2.mjs';
+import {mountEquipment} from './tutien-equipment-vis-t2e.mjs';
+import {applyNavSkin} from './tutien-nav-skin-r1.mjs';
 const doc=document,$=id=>doc.getElementById(id),home=$('home-screen');
 if(home&&!doc.getElementById('vis-t1-hero')){
  doc.body.classList.add('vis-t1');
  const el=(tag,cls,text)=>{const n=doc.createElement(tag);if(cls)n.className=cls;if(text)n.textContent=text;return n;};
- const base='/assets/tu-tien/vis-t1/';
+ const base=new URL('../assets/tu-tien/vis-t1/',import.meta.url).href;
  const variants=[['female-01','Ngọc xanh','tutien-meditation-female-01.png'],['female-02','Băng lam','tutien-meditation-female-02.png'],['female-03','Trắng vàng','tutien-meditation-female-03.png'],['character','Thanh ngọc','tutien-meditation-character.png']];
  const hero=el('div','vis-hero');hero.id='vis-t1-hero';
  const cave=el('img','vis-cave');cave.src=base+'tutien-cultivation-cave-v2.png';cave.alt='Động phủ giữa tiên sơn, cổng ngọc và pháp trận';cave.width=1086;cave.height=1448;cave.fetchPriority='high';cave.decoding='async';
