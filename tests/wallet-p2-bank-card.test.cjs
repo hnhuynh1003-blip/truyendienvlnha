@@ -123,3 +123,30 @@ test('Wallet P2 can mask only the display; legacy balance and Arcade state never
  assert.equal(nodes.get('dudu-wallet-system-amount').textContent,'350');
  assert.equal(profile.currency,350);
 });
+
+
+test('R3.2 keeps ATM Silver card and places preview-only Linh Thach below it',()=>{
+ const html=src('index.html'),css=src('css/dudu-wallet-v1.css');
+ const start=html.indexOf('id="phone-app-wallet"'),end=html.indexOf('<!-- APP: CỬA HÀNG -->',start);
+ assert.ok(start>=0&&end>start);
+ const wallet=html.slice(start,end);
+ const card=wallet.indexOf('<section class="dudu-wallet-card"');
+ const pocket=wallet.indexOf('class="dudu-wallet-stone-pocket"');
+ const exchange=wallet.indexOf('id="dudu-wallet-stone-exchange"');
+ const upgrade=wallet.indexOf('id="dudu-wallet-upgrade-button"');
+ assert.ok(card>=0&&card<pocket&&pocket<exchange&&exchange<upgrade);
+ assert.match(wallet,/SỐ DƯ XU/);
+ assert.match(wallet,/id="dudu-wallet-system-amount"/);
+ assert.match(wallet,/id="dudu-wallet-owner-name"/);
+ assert.match(wallet,/data-wallet-card-tier="silver"/);
+ assert.match(wallet,/class="dudu-wallet-stone-readout"[^>]*><b>—<\/b><small>CHƯA MỞ<\/small>/);
+ assert.match(wallet,/100 Xu<\/span>[^\n]*1 Linh Thạch/);
+ assert.match(wallet,/Chỉ xem tỷ giá dự kiến/);
+ assert.match(wallet,/DuduPersonalArcadeUIV1\?\.openExchange\?\.\(\)/,
+  'keep old Arcade quote separate');
+ assert.match(html,/css\/dudu-wallet-v1\.css\?v=wallet-r32-stone-1/);
+ assert.match(css,/#phone-app-wallet \.dudu-wallet-stone-pocket/);
+ assert.match(css,/#phone-app-wallet \.dudu-wallet-stone-exchange\[open\]/);
+ const policy=require('../js/dudu-currency-policy-r32.js');
+ assert.equal(policy.XU_PER_LINH_THACH,100);
+});
