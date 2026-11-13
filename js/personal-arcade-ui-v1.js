@@ -34,7 +34,8 @@
   lastPaint=0,lastRenderedKey=null,notice='',noticeUntil=0,error=false,feedback=null,
   exchangeOpen=false,exchangeAmount=10,exchangeBusy=false,resetScrollOnPaint=false,
   seasonOpen=false,reelFight=null,fishView='atlas',
-  syncBusy=false,syncReadyKey=null,syncLastAt=0,syncRetryAt=0,syncGeneration=0;
+  syncBusy=false,syncReadyKey=null,syncLastAt=0,syncRetryAt=0,syncGeneration=0,
+  arcadeVisited=false;
  const now=()=>Date.now();
  const isSandbox=()=>typeof IS_SANDBOX_MODE!=='undefined'&&IS_SANDBOX_MODE;
  function identity(){
@@ -75,6 +76,7 @@
    if(activeKey&&state)save();
    activeKey=nextKey;state=null;feedback=null;exchangeOpen=false;drawerOpen=null;seasonOpen=false;reelFight=null;fishView='atlas';
    syncGeneration++;syncBusy=false;syncReadyKey=null;syncLastAt=0;syncRetryAt=0;
+   arcadeVisited=false;
    const time=now();lastTick=time;lastSave=time;
    if(activeKey){
     let saved=null;
@@ -914,6 +916,9 @@
   const time=now(),s=ensure();
   if(!s){lastTick=time;if(visible())render();return;}
   if(unifiedMode()){
+   if(visible())arcadeVisited=true;
+   // Avoid burning Firestore writes for readers who have never opened Arcade.
+   if(!arcadeVisited){lastTick=time;return;}
    if(!syncBusy&&time>=syncRetryAt){
     if(syncReadyKey!==activeKey)void syncUnified('init');
     else if(time-syncLastAt>=SYNC_INTERVAL_MS)void syncUnified('tick');
