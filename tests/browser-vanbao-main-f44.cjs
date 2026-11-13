@@ -129,7 +129,7 @@ const assert = require('node:assert/strict');
     // Exercise the actual FUN renderer without an async account load to conceal a detached-host mount.
     const snapshotBefore=await page.evaluate(()=>JSON.stringify(userProfile));
     await page.evaluate(()=>{window.qaOriginalVanBaoBridge=DuduVanBaoBridgeF44;DuduVanBaoUIF44.dispose();window.DuduVanBaoBridgeF44={...qaOriginalVanBaoBridge,ready:()=>false};DuduFunUIV43.render();});
-    assert.equal(await page.locator('.f44-lobby-title h1').count(),1,'Practice lobby renders immediately in the attached stage');
+    assert.equal(await page.locator('.f44-lobby-title').count(),0,'Redundant Van Bao heading is removed');assert.equal(await page.locator('.f44-lobby-content').count(),1,'Practice lobby still renders in the attached stage');
     assert.equal(await page.evaluate(()=>JSON.stringify(userProfile)),snapshotBefore);
     await page.evaluate(()=>{DuduVanBaoUIF44.dispose();window.DuduVanBaoBridgeF44=qaOriginalVanBaoBridge;delete window.qaOriginalVanBaoBridge;DuduFunUIV43.render();});
     await page.waitForFunction(()=>!document.querySelector('.f44-busy'));
