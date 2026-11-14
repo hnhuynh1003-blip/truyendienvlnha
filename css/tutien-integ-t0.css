@@ -14,3 +14,10 @@ body.dudu-phone-v11 #cyber-phone #phone-app-system:has(.tutien-integ-host){paddi
 body.dudu-phone-v11 #cyber-phone #phone-app-system:has(.tutien-integ-host)>.phone-app-header{margin:0;padding:calc(8px + env(safe-area-inset-top,0px)) 44px 8px 9px}
 body.dudu-phone-v11 #cyber-phone #phone-app-system #dudu-v69-system-view.tutien-integ-host{padding:0;margin:0;min-width:0;max-width:100%;border:0;border-radius:0}
 #phone-app-system #tutien-integ-frame{border-radius:0}
+/* Present only the completed visual scene, never the raw iframe during boot. */
+#phone-app-system .tutien-integ-host{position:relative}
+.tutien-loading .tutien-integ-toolbar{display:none}
+.tutien-loading-view{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;background:radial-gradient(ellipse at 50% 40%,#25443e,#101d26 75%);color:#eddfb6;text-align:center;font:14px/1.5 system-ui,sans-serif}
+.tutien-loading-view p{margin:0}
+.tutien-loading-view button{min-height:44px;padding:8px 16px;border:1px solid #9c8c64;border-radius:8px;color:#eddfb6;background:#19352f;font:inherit}
+.tutien-loading-view button[hidden]{display:none}

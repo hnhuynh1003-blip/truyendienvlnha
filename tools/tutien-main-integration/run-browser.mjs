@@ -16,7 +16,8 @@ try{
  const doc=`document.getElementById('tutien-integ-frame').contentDocument`;
  const tap=async selector=>{const p=await ev(`(()=>{const d=${doc},b=d.querySelector(${JSON.stringify(selector)});b.scrollIntoView({block:'center'});const r=b.getBoundingClientRect(),f=document.getElementById('tutien-integ-frame').getBoundingClientRect();return {x:f.x+r.x+r.width/2,y:f.y+r.y+r.height/2};})()`);await cdp('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[p]});await cdp('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});};
  await until(`${doc}?.getElementById('save-note')?.textContent==='Đã lưu cục bộ'`);
- await sleep(700);await ev(`closeModals()`);check(await ev(`${doc}.location.search==='?waves=1'`),'Actual DUDU navigation loads MOD-P2, not P3');
+ await sleep(700);await ev(`closeModals()`);check(await ev(`new URLSearchParams(${doc}.location.search).get('waves')==='1'&&!new URLSearchParams(${doc}.location.search).has('explore')`),'Actual DUDU navigation loads MOD-P2, not P3');
+ await until(`document.getElementById('tutien-integ-frame').style.visibility==='visible'`);
  const click=async id=>ev(`${doc}.getElementById(${JSON.stringify(id)}).click()`),settled=()=>until(`${doc}?.getElementById('save-note')?.textContent==='Đã lưu cục bộ'`);
  await tap('#go-dungeon');await until(`${doc}.getElementById('floor-screen').hidden===false`);check(true,'Native touch opens dungeon without a quest');await click('choose-floor');await click('begin-floor');await settled();
  await ev(`${doc}.getElementById('reduce-motion').checked=true;${doc}.getElementById('reduce-motion').dispatchEvent(new Event('change'))`);
