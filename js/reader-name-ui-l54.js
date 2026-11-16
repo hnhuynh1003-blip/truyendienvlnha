@@ -6,17 +6,17 @@
  if(!engine||!doc)return;
  let storage=null;try{storage=root.localStorage;}catch(_){}
  const dictionary=engine.create({storage}),originals=new WeakMap(),details=new WeakMap();
- const lookup=root.DuduReaderNameLookupL55;
+ const lookup=root.DuduReaderNameLookupL55,scanEngine=root.DuduReaderNameScanL56A;
  const el=id=>doc.getElementById(id),content=()=>el('reader-content');
  let storyId=null,editing=false,selected=null,automatic=[],results=[],initialized=false,chapter=0,scanning=false;
  let returnFocus=null,anchor=null,priorOverflow='',activeProfile='',managerView=false;
  let lookupRequest=0,managerRequest=0,viewRevision=0,targetDirty=false,autoInferred=false,autoPending=false;
- try{autoInferred=JSON.parse(storage?.getItem('dudu-reader-lookup-settings-l55')||'{}').automatic===true;}catch(_){}
+ // L5.6A: old opt-in inference is ignored; unconfirmed suggestions cannot rewrite prose.
  const nodes=()=>Array.from(content()?.querySelectorAll(':scope > p')||[]);
  const ui=Object.freeze({
   markup:`<section class="reader-name-dialog-l53 l54-dialog" tabindex="-1">
    <div class="reader-name-head-l53"><div><small>DUDU SYSTEM</small><h3 id="reader-name-title-l53">Tên riêng</h3></div><button type="button" data-name-action="close" aria-label="Đóng">×</button></div>
-   <nav class="l54-tabs" aria-label="Công cụ tên riêng"><button type="button" data-name-action="editor">Sửa tên</button><button type="button" data-name-action="dictionary">Từ điển</button><button type="button" data-name-action="scan">Dò tên</button></nav>
+   <nav class="l54-tabs" aria-label="Công cụ tên riêng"><button type="button" data-name-action="editor">Sửa tên</button><button type="button" data-name-action="dictionary">Từ điển</button></nav>
    <div id="reader-name-editor-l54">
     <label for="reader-name-from-l53">Tên được chọn<input id="reader-name-from-l53" maxlength="90" autocomplete="off"></label>
     <div class="l54-range"><button type="button" data-name-action="shrink">− 1 từ</button><button type="button" data-name-action="grow">+ 1 từ</button><button type="button" data-name-action="phrase" hidden>Chọn cả cụm</button></div>
@@ -28,7 +28,7 @@
     <div class="reader-name-actions-l53 l54-confirm"><button type="button" data-name-action="cancel">Hủy</button><button type="button" data-name-action="save" class="l54-primary">Xác nhận</button></div>
    </div>
    <div id="reader-name-manager-l54" hidden>
-    <section id="reader-lookup-tools-l55" class="l55-lookup-tools" hidden>
+    <details id="reader-lookup-tools-l55" class="l55-lookup-tools l56-advanced" hidden><summary>Công cụ nâng cao</summary><div class="l56-advanced-body"><button type="button" data-name-action="scan" class="l56-scan-open">Kiểm tra tên trong chương</button>
      <label for="reader-lookup-query-l55">Tra Hán–Việt / nghĩa Việt<input id="reader-lookup-query-l55" maxlength="90" placeholder="lộc biết thuyền · 鹿知舟" autocomplete="off"></label>
      <button type="button" data-name-action="lookup">Tra cứu</button>
      <div id="reader-lookup-results-l55" class="l55-proposals" aria-live="polite"></div>
@@ -39,10 +39,10 @@
       <div class="l54-manager-actions"><button type="button" data-name-action="import-pack">Nhập bộ tra</button><button type="button" data-name-action="export-pack">Xuất bộ đã chọn</button><button type="button" data-name-action="clear-packs">Gỡ bộ cá nhân</button></div>
       <input id="reader-lookup-file-l55" type="file" accept=".txt,.json,text/plain,application/json" hidden>
      </details>
-     <label class="l55-auto-option"><input id="reader-lookup-auto-l55" type="checkbox"> Tự áp dụng gợi ý duy nhất, đủ ngữ cảnh</label>
      <p class="l55-note">Tên suy từ nghĩa Việt là ứng viên. Quy tắc bạn xác nhận luôn được ưu tiên.</p>
-     <h4>Quy tắc của truyện</h4>
-    </section>
+     <div id="reader-name-ignored-l56a" class="l56-ignored"></div>
+    </div></details>
+    <h4>Quy tắc của truyện</h4>
     <input id="reader-name-search-l54" type="search" placeholder="Tìm nhân vật hoặc cách gọi" aria-label="Tìm trong từ điển">
     <div class="l54-manager-actions"><button type="button" data-name-action="add">+ Cách gọi</button><button type="button" data-name-action="undo">Hoàn tác</button><button type="button" data-name-action="export">Xuất quy tắc</button><button type="button" data-name-action="import">Nhập quy tắc</button></div>
     <p id="reader-name-backup-help-l55" class="l55-note">Nhập file JSON quy tắc đã xuất từ cùng truyện để khôi phục hoặc chuyển thiết bị.</p>
@@ -66,10 +66,10 @@
  }
  function modalOpen(){return el('reader-name-modal-l53')&&!el('reader-name-modal-l53').hidden;}
  function clearHighlight(){if(selected?.node?.isConnected&&details.has(selected.node))selected.node.textContent=details.get(selected.node).text;}
- function close(){
+ function close(restore=true){
   const panel=el('reader-name-modal-l53');if(!panel||panel.hidden)return;
   doc.activeElement?.blur?.();panel.hidden=true;doc.body.style.overflow=priorOverflow;lookupRequest++;managerRequest++;viewRevision++;
-  clearHighlight();selected=null;restoreAnchor(anchor);returnFocus?.focus?.({preventScroll:true});anchor=null;
+  clearHighlight();selected=null;if(restore)restoreAnchor(anchor);returnFocus?.focus?.({preventScroll:true});anchor=null;
   if(autoPending){autoPending=false;refresh();}
  }
  function show(){
@@ -92,10 +92,8 @@
  function prepareChapter(paragraphs){
   close();setMode(false);chapter++;results=[];automatic=[];
   if(!storyId)return;
-  // This examines just the incoming chapter. New or uncertain names never open UI.
-  const text=Array.isArray(paragraphs)?paragraphs.join('\n'):String(paragraphs||'');
-  automatic=engine.analyze(text,dictionary.read(storyId)).filter(r=>r.auto);
-  if(lookup&&autoInferred)root.setTimeout(applyInferred,0);
+  // Confirmed dictionary aliases still render in detailed(); unknown names never auto-apply.
+  automatic=[];
  }
  function bindParagraph(node,source){
   if(!node)return;originals.set(node,String(source||''));
@@ -109,12 +107,12 @@
  }
  function view(manager,title='Tên riêng'){
   managerView=manager;viewRevision++;el('reader-name-editor-l54').hidden=manager;el('reader-name-manager-l54').hidden=!manager;el('reader-name-title-l53').textContent=title;
-  const scanningView=title==='Dò tên trong chương';
+  const scanningView=title==='Kiểm tra tên trong chương';
   if(el('reader-lookup-tools-l55'))el('reader-lookup-tools-l55').hidden=!lookup||!manager||scanningView;
   el('reader-name-search-l54').hidden=scanningView;
   el('reader-name-import-l54').previousElementSibling.hidden=scanningView;
   el('reader-name-manager-l54').querySelector(':scope > .l54-manager-actions').hidden=scanningView;
-  if(lookup&&manager&&!scanningView)loadMetadata();
+  if(lookup&&manager&&!scanningView)renderIgnored();
  }
  function updateLinks(from,preferred=''){
   const select=el('reader-name-link-l54'),profiles=dictionary.characters(storyId),links=engine.connections(from,profiles);
@@ -223,29 +221,93 @@
   }
   if(!host.children.length){const p=doc.createElement('p');p.textContent='Chưa có tên phù hợp.';host.append(p);}
  }
+ function renderIgnored(){
+  const host=el('reader-name-ignored-l56a');if(!host||!storyId)return;
+  host.replaceChildren();const rows=dictionary.ignored(storyId);
+  if(!rows.length)return;
+  const heading=doc.createElement('h4');heading.textContent='Đã bỏ qua trong truyện · '+rows.length;host.append(heading);
+  for(const phrase of rows){
+   const row=doc.createElement('div');row.className='l56-ignore-row';
+   const label=doc.createElement('span');label.textContent=phrase;
+   row.append(label,button('Khôi phục',()=>{try{dictionary.allowCandidate(storyId,phrase);renderIgnored();status('Có thể kiểm tra lại tên này trong chương.');}catch(e){status(e.message,true);}}));
+   host.append(row);
+  }
+ }
+ function jumpTo(position){
+  const paragraphs=nodes();let cursor=0;
+  for(const node of paragraphs){
+   const value=String(originals.get(node)??node.textContent??'');
+   if(position>=cursor&&position<cursor+value.length){
+    close(false);
+    root.setTimeout(()=>{
+     if(!node.isConnected)return;
+     node.scrollIntoView({block:'center',behavior:'auto'});
+     node.classList.add('l56-jump-target');
+     root.setTimeout(()=>node.classList.remove('l56-jump-target'),2800);
+    },0);
+    return;
+   }
+   cursor+=value.length+1;
+  }
+  status('Không thể xác định vị trí này. Hãy mở lại chương và thử lại.',true);
+ }
+ function positionLabel(position,paragraphs){
+  let cursor=0;
+  for(const [index,node] of paragraphs.entries()){
+   const value=String(originals.get(node)??node.textContent??'');
+   if(position>=cursor&&position<cursor+value.length)return 'Đoạn '+(index+1)+' · ký tự '+(position-cursor+1);
+   cursor+=value.length+1;
+  }
+  return 'Vị trí '+(position+1);
+ }
  async function scan(){
   if(scanning||!show())return;
-  scanning=true;const token=chapter,id=storyId;view(true,'Dò tên trong chương');const revision=viewRevision;el('reader-name-list-title-l54').textContent=lookup?'Đang tải bộ tra / dò tên…':'Đang dò…';el('reader-name-count-l53').textContent='';el('reader-name-list-l53').replaceChildren();
+  scanning=true;const token=chapter,id=storyId;
+  view(true,'Kiểm tra tên trong chương');const revision=viewRevision;
+  el('reader-name-list-title-l54').textContent='Đang kiểm tra chương…';
+  el('reader-name-count-l53').textContent='';el('reader-name-list-l53').replaceChildren();
   await new Promise(resolve=>root.setTimeout(resolve,0));
   try{
-   const text=nodes().map(n=>originals.get(n)||n.textContent).join('\n');
-   const analyzed=lookup?await lookup.analyze(text,dictionary.read(id)):engine.analyze(text,dictionary.read(id));
-   if(id!==storyId||token!==chapter||viewRevision!==revision||!modalOpen())return;results=analyzed;
-   const host=el('reader-name-list-l53');host.replaceChildren();
-   for(const [category,label] of [['confirmed','Đã xác nhận'],['high','Gợi ý có độ tin cậy cao'],['suspect','Nghi vấn cần kiểm tra']]){
-    const group=results.filter(r=>r.category===category);const heading=doc.createElement('h4');heading.textContent=label+' · '+group.length;host.append(heading);
+   const paragraphs=nodes(),text=paragraphs.map(n=>originals.get(n)??n.textContent??'').join('\n');
+   const entries=dictionary.read(id),ignored=dictionary.ignored(id);
+   const analyzed=lookup?await lookup.analyze(text,entries,ignored):scanEngine.analyze(text,entries,null,ignored);
+   if(id!==storyId||token!==chapter||viewRevision!==revision||!modalOpen())return;
+   results=analyzed;const host=el('reader-name-list-l53');host.replaceChildren();
+   if(!results.length){
+    const empty=doc.createElement('p');empty.className='l56-empty';
+    empty.textContent='Không tìm thấy tên đủ căn cứ trong chương này. Bạn vẫn có thể dùng Sửa tên để thêm thủ công.';
+    host.append(empty);
+   }
+   for(const [category,label] of [['confirmed','Đã xác nhận'],['high','Có bằng chứng ngữ cảnh'],['suspect','Ứng viên chưa xác minh']]){
+    const group=results.filter(r=>r.category===category);
+    if(!group.length)continue;
+    const heading=doc.createElement('h4');heading.textContent=label+' · '+group.length;host.append(heading);
     for(const result of group){
-     const row=doc.createElement('div');row.className='l54-result';row.dataset.suspect=String(category==='suspect');
-     const name=doc.createElement('span');name.textContent=(lookup?result.from+' → ':'')+result.to+' · '+result.count+' lần';
-     const evidence=doc.createElement('small');evidence.textContent=result.reason+(result.links.length?' · '+result.links.map(p=>p.name).join(', '):'');
-     if(result.excerpt){const excerpt=doc.createElement('blockquote');excerpt.className='l55-excerpt';excerpt.textContent=result.excerpt;row.append(excerpt);}
-     row.append(name,evidence,button(category==='confirmed'?'Xem':'Kiểm tra',()=>{selected=null;view(false);fill(result.from,result.to);if(!lookup){el('reader-name-evidence-l54').textContent=evidence.textContent;el('reader-name-evidence-l54').dataset.suspect=String(category==='suspect');}status('');}));host.append(row);
+     const row=doc.createElement('div');row.className='l54-result l56-result';row.dataset.suspect=String(category==='suspect');
+     const name=doc.createElement('strong');
+     name.textContent=result.from+(result.to&&engine.fold(result.from)!==engine.fold(result.to)?' → '+result.to:'');
+     const count=doc.createElement('small');count.textContent='Xuất hiện '+result.count+' lần · '+positionLabel(result.occurrences[0].start,paragraphs);
+     const evidence=doc.createElement('small');evidence.textContent=result.reason;
+     const excerpt=doc.createElement('blockquote');excerpt.className='l55-excerpt';excerpt.textContent=result.excerpt;
+     const actions=doc.createElement('div');actions.className='l56-result-actions';
+     actions.append(button('Đến vị trí',()=>jumpTo(result.occurrences[0].start)),button(category==='confirmed'?'Xem quy tắc':'Kiểm tra',()=>{
+      selected=null;view(false);fill(result.from,result.to);status(category==='suspect'?'Gợi ý chưa xác minh. Chỉ Xác nhận nếu đã đối chiếu nội dung.':'');
+     }));
+     if(category!=='confirmed')actions.append(button('Bỏ qua',()=>{
+      try{dictionary.ignoreCandidate(id,result.from);scan();status('Đã bỏ qua đề xuất trong riêng truyện này.');}
+      catch(error){status(error.message,true);}
+     }));
+     row.append(name,count,evidence,excerpt,actions);host.append(row);
     }
    }
-   el('reader-name-list-title-l54').textContent='Kết quả chương hiện tại';el('reader-name-count-l53').textContent=results.length+' tên';
-   status(results.length?'Chỉ lưu khi bạn xác nhận.':'Chưa có tên đủ căn cứ trong chương.');
-  }catch(error){if(id===storyId&&revision===viewRevision)status(error.message+' Có thể sửa tên thủ công.',true);}finally{scanning=false;}
+   el('reader-name-list-title-l54').textContent='Kết quả chương hiện tại';
+   el('reader-name-count-l53').textContent=results.length+' tên';
+   status(results.length?'Đề xuất chưa xác minh chỉ được áp dụng khi bạn xác nhận.':'');
+  }catch(error){
+   if(id===storyId&&revision===viewRevision)status(error.message+' Vẫn có thể sửa tên thủ công.',true);
+  }finally{scanning=false;}
  }
+
  function proposals(host,items,select){
   host.replaceChildren();
   if(!items.length){const p=doc.createElement('p');p.textContent='Chưa có ứng viên phù hợp. Bạn có thể nhập tên thủ công.';host.append(p);return;}
@@ -334,7 +396,7 @@
   const old=el('reader-name-open-l53');if(old)old.hidden=true;
   const tools=doc.createElement('div');tools.className='l54-tools';
   const toggle=button('Sửa tên',()=>{setMode(!editing);root.DuduReaderPreferencesL2C?.close();});toggle.id='reader-name-edit-toggle-l54';toggle.setAttribute('aria-pressed','false');
-  tools.append(toggle,button('Dò tên',scan),button('Từ điển',()=>openManager()));
+  tools.append(toggle,button('Từ điển',()=>openManager()));
   el('reader-settings-popover')?.append(tools);
   const done=button('✓ Xong',()=>setMode(false));done.id='reader-name-done-l54';done.hidden=true;el('reader-view')?.append(done);
   let modalPointerDown=false;
@@ -354,12 +416,7 @@
   el('reader-name-proposals-l55').hidden=!lookup;
   el('reader-name-modal-l53').querySelector('[data-name-action="manual"]').hidden=!lookup;
   if(lookup){
-   el('reader-lookup-auto-l55').checked=autoInferred;
-   el('reader-lookup-auto-l55').addEventListener('change',event=>{
-    try{storage.setItem('dudu-reader-lookup-settings-l55',JSON.stringify({automatic:event.target.checked}));autoInferred=event.target.checked;
-     if(autoInferred)applyInferred();else{automatic=automatic.filter(r=>!r.inferredAutomatic);refresh();}status(autoInferred?'Chỉ tự áp dụng ứng viên duy nhất, đủ ngữ cảnh.':'Đã tắt tự áp dụng gợi ý mới.');
-    }catch(_){event.target.checked=autoInferred;status('Không lưu được tùy chọn trên thiết bị.',true);}
-   });
+   el('reader-lookup-tools-l55').addEventListener('toggle',()=>{if(el('reader-lookup-tools-l55').open)loadMetadata();});
    el('reader-lookup-query-l55').addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();searchLookup();}});
    el('reader-lookup-file-l55').addEventListener('change',async event=>{
     const file=event.target.files[0],id=storyId,token=chapter;event.target.value='';if(!file)return;
