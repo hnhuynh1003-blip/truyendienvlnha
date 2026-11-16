@@ -23,8 +23,8 @@
   return all;
  }
  function evidence(text,at){
-  return beforeRx.test(text.slice(Math.max(0,at.start-55),at.start))||
-   afterRx.test(text.slice(at.end,Math.min(text.length,at.end+55)));
+  return beforeRx.test(text.slice(Math.max(0,at.start-55),at.start).normalize('NFC'))||
+   afterRx.test(text.slice(at.end,Math.min(text.length,at.end+55)).normalize('NFC'));
  }
  function analyze(input,entries=[],lookup=null,ignored=[]){
   const text=String(input||'');
