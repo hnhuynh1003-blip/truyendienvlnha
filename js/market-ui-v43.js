@@ -363,7 +363,8 @@
          right.append(make('span','dudu-v43-market-not-sale',
            tab==='REALM'?'Nhặt theo chương':tab==='STORY'?'Chưa cấp':'Không bán'));
        }
-       card.append(artwork,info,right);
+       info.append(right);
+       card.append(artwork,info);
        collection.append(card);
      }
    }

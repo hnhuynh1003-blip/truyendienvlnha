@@ -16,8 +16,13 @@ const {chromium}=require('playwright'),fs=require('node:fs/promises'),assert=req
   assert.equal(await page.locator('#phone-app-shop>div:has(#shop-currency-val)').isVisible(),false,'unverified guest starter balance stays hidden');
   assert.equal(await page.locator('.shop-r3-hero>img').evaluate(async i=>{await i.decode();return i.naturalWidth>0;}),true);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
+  const geometry=await page.locator('.dudu-v43-market-item').first().evaluate(c=>{
+   const a=c.querySelector('.dudu-v43-market-icon').getBoundingClientRect(),info=c.querySelector('.dudu-v43-market-copy'),b=c.querySelector('.dudu-v43-market-buy');
+   return {artWidth:a.width,artHeight:a.height,cardHeight:c.getBoundingClientRect().height,contentWidth:document.getElementById('shop-items-container').clientWidth,buyInside:info.contains(b),noteHidden:getComputedStyle(info.querySelector('small')).display==='none'};
+  });
+  assert.equal(geometry.artWidth,68);assert.equal(geometry.artHeight,68);assert.equal(geometry.buyInside,true);assert.equal(geometry.noteHidden,true);
   await fs.mkdir(out,{recursive:true});await page.screenshot({path:`${out}/published-${width}.png`});
-  report.widths.push({width,status:'PASS'});await context.close();
+  report.widths.push({width,status:'PASS',geometry});await context.close();
  }await fs.writeFile(`${out}/published-report.json`,JSON.stringify(report,null,2)+'\n');console.log('Published Shop guest UI VERIFIED',JSON.stringify(report));}
  finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

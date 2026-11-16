@@ -1,5 +1,7 @@
 # Card art priority — 16/11/2026
 
+Bố cục hàng mua bên dưới trong tài liệu này là phiên bản lịch sử. [CARD V3](CARD_V3.md) thay bằng cấu trúc information compact, art 68×68 và giá/Mua nằm bên phải.
+
 Baseline: `41e4bbb4bd608fd1693ac6ad36a030e3e8878013`, main khớp origin/main sau fetch. Bản sửa chỉ layout Shop và cache/test liên quan; không sửa catalog, giá, giao dịch, Kho hoặc file Tu Tiên.
 
 Card chuyển sang một hàng ngang trên Cyber Phone: art bên trái 72×72px cố định bằng width/height/min/max, text bên phải, giá và Mua ở hàng riêng phía dưới. Ảnh dùng object-fit contain, không crop. Tên clamp tối đa hai dòng; phẩm và mô tả tối đa một dòng có ellipsis. Mô tả đầy đủ vẫn nằm trong popup. Dùng chung khung FRM-01 hiện có, không thay asset.

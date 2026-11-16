@@ -15,7 +15,7 @@ const inbox=file('js/phone-inbox-v33.js');
 test('V51 phone modules are all loaded with new cache tags',()=>{
  for(const mod of ['market-ui-v43','economy-runtime-v43','dudu-fun-ui-v43',
  'quest-ui-v43-7','phone-inbox-v33']){
-  assert.match(html,new RegExp('src="js/'+mod+'\\.js\\?v=(?:shop-r3-s1b3-3|51-1|52-1|copy-[12]|c23c-1|c24a-1|c25-1|c28-lucky-1|c29-fun-1|c42-fun-1|c416-1|vanbao-1|fun-vis3|fun-vis4|fun-vis4b|fun-vis5|fun-vis6|fun-cas1|fun-lock1|fun-tower1|casino-slot3|f33-1|f34-1|f35-1|f36-1|f37-1|f38-1|f39-1)(?:&amp;art=f42d-1)?(?:&amp;progression=c425g-1)?(?:&amp;fun=p1-[12])?(?:&amp;hunt=f42d-1)?(?:&amp;f43=1)?(?:&amp;f44=1)?(?:&amp;final=f44-1)?(?:&amp;ky-van=r33-1)?(?:&amp;vanbao=restart-20261113)?"'),mod);
+  assert.match(html,new RegExp('src="js/'+mod+'\\.js\\?v=(?:shop-r3-card-v3-1|51-1|52-1|copy-[12]|c23c-1|c24a-1|c25-1|c28-lucky-1|c29-fun-1|c42-fun-1|c416-1|vanbao-1|fun-vis3|fun-vis4|fun-vis4b|fun-vis5|fun-vis6|fun-cas1|fun-lock1|fun-tower1|casino-slot3|f33-1|f34-1|f35-1|f36-1|f37-1|f38-1|f39-1)(?:&amp;art=f42d-1)?(?:&amp;progression=c425g-1)?(?:&amp;fun=p1-[12])?(?:&amp;hunt=f42d-1)?(?:&amp;f43=1)?(?:&amp;f44=1)?(?:&amp;final=f44-1)?(?:&amp;ky-van=r33-1)?(?:&amp;vanbao=restart-20261113)?"'),mod);
  }
  assert.match(html,/src="js\/companion-ui-v43\.js\?v=69-restore-1"/);
  assert.doesNotMatch(html,/<script[^>]*(?:src|data-src)="js\/dudu-(?:system-app-v69|system-client-v71|core-ai-v70|character-name-v71)/);

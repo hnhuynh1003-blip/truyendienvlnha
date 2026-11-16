@@ -19,6 +19,8 @@ Không tìm thấy FINAL_PACK_TRACKER trong workspace. Không có minh họa Vâ
 
 ## Phần tích hợp local
 
+Thiết kế card hiện hành: [CARD V3](CARD_V3.md) — art 68×68, information compact chứa giá/Mua, note mặc định ẩn, border mảnh. Bố cục card/9-slice trong các ghi nhận đợt đầu bên dưới là lịch sử; combo vẫn giữ FRM-01.
+
 Renderer `DuduMarketUIV43.render` vẫn là renderer Shop cũ. Không tạo app, catalog, ví hoặc Kho mới. Callback `onBuy`, `onBulkSell`, saleIds và core được tái sử dụng.
 
 | Nhóm UI | Nguồn kỹ thuật | Quyền giao dịch |
