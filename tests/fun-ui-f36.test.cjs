@@ -36,7 +36,7 @@ test('F3.6 Shop selects physical items explicitly; no sale before user checks a 
  stub.DuduMarketUIV43.render({host,coins:400,onBuy:()=>{},personalMode:true,
   inventory:entries.map(x=>({instanceId:x.instanceId,icon:'✦'})),
   storyStates:{},onBulkSell:ids=>sold.push([...ids])});
- const tab=walk(host).find(n=>n.tag==='button'&&n.textContent==='Bán nhanh');
+ const tab=walk(host).find(n=>n.tag==='button'&&n.textContent==='Bán Nhanh');
  trigger(tab,'click');
  let action=walk(host).find(n=>n.className==='f34-quick-confirm');
  assert.equal(action.disabled,true);
@@ -68,7 +68,7 @@ test('F3.6 popup and new spin controls are wired, old inline result title remove
  for(const filename of ['fun-vantvat-f31','personal-vantvat-f31',
   'market-ui-v43','dudu-fun-ui-v43'])
   assert.match(html,new RegExp(filename+'\\.js\\?v='+
-   (filename==='dudu-fun-ui-v43'?'f39-1':'f36-1')));
+   (filename==='dudu-fun-ui-v43'?'f39-1':filename==='market-ui-v43'?'shop-r3-s1b3-1':'f36-1')));
  assert.match(html,/css\/dudu-fun-v43\.css\?v=f39-1/);
- assert.match(html,/css\/market-v43\.css\?v=f36-1/);
+ assert.match(html,/css\/market-v43\.css\?v=shop-r3-s1b3-1/);
 });

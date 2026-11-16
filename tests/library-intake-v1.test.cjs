@@ -94,11 +94,11 @@ test('Library author buttons use the hub and keep legacy fallback',()=>{
  assert.ok(index.includes('canEditStories() && (window.DuduLibraryIntakeV1?.open?.() || openStoryModal())'));
  assert.ok(siteShell.includes('if(!isAuthor())return;'));
 });
-test('Library hub assets load after creator and do not remove EPUB V57',()=>{
+test('Library hub assets load after site shell without retired creator or removing EPUB V57',()=>{
  const site=index.indexOf('js/site-shell-v60.js');
  const world=index.indexOf('js/vangioi-creator.js');
  const hub=index.indexOf('js/library-intake-v1.js');
- assert.ok(site>=0&&world>site&&hub>world);
+ assert.ok(site>=0&&world===-1&&hub>site);
  assert.ok(index.includes('css/library-intake-v1.css'));
  assert.ok(index.includes('js/library-intake-v1.js?v=lib1-ui3'));
  assert.ok(index.includes('css/library-intake-v1.css?v=lib1-ui3'));

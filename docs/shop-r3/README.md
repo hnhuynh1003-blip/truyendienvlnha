@@ -1,10 +1,10 @@
 # DUDU STUDIO — SHOP R3 / S1-B3
 
-Ngày kiểm tra: 2026-11-16 (Asia/Saigon). Trạng thái: **SHOP RELEASE GATE PASS**. Owner đã xác nhận test gameplay archive không phải gate Shop; commit/push được thực hiện sau kiểm tra staging.
+Ngày kiểm tra: 2026-11-16 (Asia/Saigon). Trạng thái: **PUBLISHED / VERIFIED (PHASE A)**. Commit `57e4aeaa765f867b8a6dc4d7b5860eb181fc2a35` đã push origin/main, remote SHA khớp. Pages build SUCCESS; Chrome kiểm tra Shop guest công khai 320/390px PASS, không giao dịch thật. Xem [báo cáo public](qa/published-report.json) và [retirement handoff](../vangioi-retirement/README.md).
 
 ## Baseline và nguồn
 
-Làm trực tiếp trên `main` theo override của owner. HEAD trước và sau công việc: `a8250ae0b34f700e6dfbe63168487f20b5d0b5d4`. Fetch origin/main thành công; tại thời điểm fetch hai phía bằng nhau. Working tree đã có nhiều thay đổi Tu Tiên không thuộc Shop; giữ nguyên và không stage chúng.
+Làm trực tiếp trên `main` theo override của owner. HEAD baseline: `a8250ae0b34f700e6dfbe63168487f20b5d0b5d4`; HEAD sau PHASE A: `57e4aeaa765f867b8a6dc4d7b5860eb181fc2a35`. Fetch origin/main thành công; tại thời điểm fetch baseline hai phía bằng nhau. Working tree đã có nhiều thay đổi Tu Tiên không thuộc Shop; giữ nguyên và không stage chúng.
 
 Đã đọc [Master Plan](https://docs.google.com/document/d/1w_X985RO2LIG4jYjC6rzurEJ6WITg4CbR4aKZrk9c40/edit), gồm Phụ lục XII/XIII. Lệnh triển khai/duyệt sử dụng tài nguyên mới nhất trong hội thoại của owner được ưu tiên hơn các gate cũ trong tài liệu.
 
@@ -73,7 +73,7 @@ Xác minh PHASE A mới: **52/52 PASS** (50 test trên + 2 test features-t0). Br
 
 Giới hạn: chưa xác minh giao dịch Firebase trên tài khoản thật, race nhiều tab online, đổi UID trong transaction thật, offline/reload receipt ở backend hoặc giao diện GitHub Pages sau phát hành. Các bảo vệ giao dịch hiện hữu được giữ nguyên và regression unit dùng fixture; không gọi đó là QA production online.
 
-`git diff --check`: PASS (cảnh báo chuẩn hóa LF/CRLF không phải lỗi whitespace). Không thay Firebase Rules/schema/Functions/migration, module kinh tế, giá hoặc nguồn Xu. Các workflow hiện có theo dõi `pages build and deployment` trên main; push main có thể kích hoạt GitHub Pages theo thiết lập repository. Chưa push nên chưa có phát hành mới để xác minh.
+`git diff --check`: PASS. Không thay Firebase Rules/schema/Functions/migration, module kinh tế, giá hoặc nguồn Xu. Push PHASE A đã kích hoạt `pages build and deployment`, run `43891378903` hoàn thành SUCCESS. Website công khai đã kiểm tra guest ở 320/390px; toàn bộ nút mua khóa với guest và ảnh banner tải được.
 
 Ảnh: [before 320](qa/before-320.png), [after 320](qa/after-320.png), [before 390](qa/before-390.png), [after 390](qa/after-390.png).
 

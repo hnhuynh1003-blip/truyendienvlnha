@@ -1,0 +1,350 @@
+{
+  ".github/workflows/vangioi-manual-paused.yml": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": [
+      "tests/c446c-focus-paused-worlds.test.cjs"
+    ]
+  },
+  "assets/worlds/quan-dao-gate-cinematic.webp": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": [
+      "dudu-pilot.html"
+    ]
+  },
+  "assets/worlds/quan-dao-gate.svg": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": [
+      "dudu-pilot.html"
+    ]
+  },
+  "assets/worlds/quan-dao-hall-cinematic.webp": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "assets/worlds/quan-dao-hall.svg": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "assets/worlds/quan-dao-store-cinematic.webp": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "assets/worlds/quan-dao-store.svg": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "css/dudu-pilot-v1.css": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": [
+      "tools/tutien-main-integration/qa/app-report.json",
+      "dudu-pilot.html",
+      "tools/tutien-main-integration/qa/bag-report.json",
+      "index.html"
+    ]
+  },
+  "css/world-experience-v65.css": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": [
+      "tools/tutien-main-integration/qa/app-report.json",
+      "tools/tutien-main-integration/qa/bag-report.json",
+      "index.html"
+    ]
+  },
+  "css/world-experience-v66.css": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": [
+      "tools/tutien-main-integration/qa/app-report.json",
+      "tools/tutien-main-integration/qa/bag-report.json",
+      "index.html"
+    ]
+  },
+  "js/dudu-core-rules-v1.js": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": [
+      "index.html"
+    ]
+  },
+  "js/dudu-pilot-f-v1.js": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": [
+      "dudu-pilot.html",
+      "index.html"
+    ]
+  },
+  "js/dudu-pilot-f-v2b.js": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": [
+      "dudu-pilot.html",
+      "index.html"
+    ]
+  },
+  "js/dudu-pilot-ui-v1.js": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": [
+      "dudu-pilot.html",
+      "index.html"
+    ]
+  },
+  "js/dudu-pilot-world-v2b.js": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": [
+      "dudu-pilot.html",
+      "index.html"
+    ]
+  },
+  "js/dudu-story-engine-v1.js": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": [
+      "dudu-pilot.html",
+      "index.html"
+    ]
+  },
+  "js/dudu-story-engine-v2b.js": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": [
+      "dudu-pilot.html",
+      "index.html"
+    ]
+  },
+  "js/dudu-world-model-v2b.js": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": [
+      "dudu-pilot.html",
+      "index.html"
+    ]
+  },
+  "js/world-blueprint-v65.js": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "js/world-blueprint-v66.js": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": [
+      "index.html"
+    ]
+  },
+  "js/world-experience-v65.js": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "js/world-experience-v66.js": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": [
+      "index.html"
+    ]
+  },
+  "js/world-registry-v63.js": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": [
+      "index.html"
+    ]
+  },
+  "playtests/ben-suong/app.js": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "playtests/ben-suong/assets/ba-lan.webp": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "playtests/ben-suong/assets/cau-cang.webp": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "playtests/ben-suong/assets/nha-tru-bao.webp": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "playtests/ben-suong/assets/thap-den.webp": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "playtests/ben-suong/assets/vai-0.webp": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "playtests/ben-suong/assets/vai-1.webp": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "playtests/ben-suong/assets/vai-2.webp": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "playtests/ben-suong/assets/vai-3.webp": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "playtests/ben-suong/demo-content.json": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": [
+      "cloudflare/tests/vangioi-tang-may-p6-continuity.test.mjs"
+    ]
+  },
+  "playtests/ben-suong/style.css": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "playtests/he-thong-erro/app.js": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "playtests/he-thong-erro/assets/ban-hoc.webp": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "playtests/he-thong-erro/assets/luc-thien.webp": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "playtests/he-thong-erro/assets/than-phan.webp": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "playtests/he-thong-erro/assets/thi-tran-mo.webp": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "playtests/he-thong-erro/assets/tu-du.webp": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "playtests/he-thong-erro/author-content.json": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": [
+      "cloudflare/tests/vangioi-erro-modern-author-playtest.test.mjs"
+    ]
+  },
+  "playtests/he-thong-erro/style.css": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": [
+      "cloudflare/tests/vangioi-erro-modern-author-playtest.test.mjs"
+    ]
+  },
+  "playtests/tang-may-9/app.js": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "playtests/tang-may-9/assets/kho-ky-uc.webp": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "playtests/tang-may-9/assets/ong-tuyen.webp": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "playtests/tang-may-9/assets/thanh-pho.webp": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "playtests/tang-may-9/assets/tram-relay.webp": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "playtests/tang-may-9/assets/vai-0.webp": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "playtests/tang-may-9/assets/vai-1.webp": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "playtests/tang-may-9/assets/vai-2.webp": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "playtests/tang-may-9/assets/vai-3.webp": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "playtests/tang-may-9/author-content.json": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": [
+      "cloudflare/tests/vangioi-tang-may-p6-continuity.test.mjs"
+    ]
+  },
+  "playtests/tang-may-9/style.css": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "tests/browser-quan-dao-items.cjs": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "tests/browser-vangioi-author-roleplay.cjs": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "tests/browser-vangioi-erro-author.cjs": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "tests/browser-vangioi-online-playtest.cjs": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "tests/browser-vangioi-tang-may-author.cjs": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "tests/dudu-core-foundation-v1.cjs": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "tests/dudu-core-v2b.cjs": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "tests/dudu-pilot-photo-v2a.cjs": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "tests/dudu-pilot-visibility-v1.cjs": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "tests/quan-dao-item-state.test.cjs": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "tests/world-blueprint-v65.cjs": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "tests/world-taxonomy-v66.cjs": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "tools/vangioi/build-erro-modern-author-playtest.mjs": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "tools/vangioi/build-online-playtest.mjs": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "tools/vangioi/build-tang-may-author-playtest.mjs": {
+    "reason": "Retired frontend gameplay, obsolete gameplay test, demo art or builder",
+    "inbound_references_reviewed": []
+  },
+  "tests/browser-vangioi-creator.cjs": {
+    "reason": "Browser authoring / demo gameplay test requiring retired UI or deleted playtest payload; shared backend security tests retained",
+    "inbound_references_reviewed": []
+  },
+  "cloudflare/tests/vangioi-author-roleplay-online-static.test.mjs": {
+    "reason": "Browser authoring / demo gameplay test requiring retired UI or deleted playtest payload; shared backend security tests retained",
+    "inbound_references_reviewed": []
+  },
+  "cloudflare/tests/vangioi-erro-modern-author-playtest.test.mjs": {
+    "reason": "Browser authoring / demo gameplay test requiring retired UI or deleted playtest payload; shared backend security tests retained",
+    "inbound_references_reviewed": []
+  },
+  "cloudflare/tests/vangioi-tang-may-p6-continuity.test.mjs": {
+    "reason": "Browser authoring / demo gameplay test requiring retired UI or deleted playtest payload; shared backend security tests retained",
+    "inbound_references_reviewed": []
+  },
+  "cloudflare/tests/vangioi-tang-may-author-playtest.test.mjs": {
+    "reason": "Browser authoring / demo gameplay test requiring retired UI or deleted playtest payload; shared backend security tests retained",
+    "inbound_references_reviewed": []
+  }
+}

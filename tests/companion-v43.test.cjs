@@ -63,7 +63,7 @@ test('V43: UI is sandbox-only and does not claim server validated keepsakes',()=
  assert.match(ui,/IS_SANDBOX_MODE/);
  assert.match(ui,/Bạn đồng hành/);
  assert.doesNotMatch(ui,/dudu-v68-agent-select|DuduAgentV68/);
- assert.match(html,/dudu-system-app-v69\.js/);
+ assert.doesNotMatch(html,/<script[^>]*(?:src|data-src)="js\/dudu-system-app-v69\.js/,'retired system UI is not a companion dependency');
  assert.match(html,/phone-app-core-console/);
  assert.match(ui,/Xu thử nghiệm/);
  assert.match(ui,/chưa phải kỷ vật Bảo Tàng/);

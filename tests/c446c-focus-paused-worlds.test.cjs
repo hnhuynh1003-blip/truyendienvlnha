@@ -29,13 +29,11 @@ test('C4.46c garden selection cards are compact and navigation is one icon',()=>
 
 test('C4.46c CI skips the paused worlds while preserving NPC AI and reading checks',()=>{
  const fast=read('.github/workflows/phase1-smoke.yml');
- const world=read('.github/workflows/vangioi-manual-paused.yml');
  const worker=read('.github/workflows/npc-ai-worker-changes.yml');
  assert.doesNotMatch(fast,/node tests\/browser-vangioi-|node tools\/vangioi\/|contracts\/vangioi\/|npm test --prefix cloudflare/);
  assert.match(fast,/NPC AI request and Gemini regression/);
  assert.match(fast,/browser-arcade-garden-c446b\.cjs/);
  assert.match(fast,/browser-library-catalog-l2e\.cjs/);
- assert.match(world,/workflow_dispatch:/);
- assert.doesNotMatch(world,/^  push:|^  pull_request:/m);
+ assert.equal(require('node:fs').existsSync(join(root,'.github/workflows/vangioi-manual-paused.yml')),false,'retired workflow cannot re-enable worlds');
  assert.match(worker,/cloudflare\/src\/\*\*/);
 });

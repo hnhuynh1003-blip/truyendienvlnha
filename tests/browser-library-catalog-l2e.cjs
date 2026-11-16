@@ -43,6 +43,8 @@ async function main(){
   await page.locator('#auth-username').fill('l2e-catalog-test');
   await page.getByRole('button',{name:'Đổi tài khoản thử'}).click();
   await page.waitForFunction(()=>currentUsername==='l2e-catalog-test');
+  await page.waitForTimeout(600); // let the existing account modal settle before catalog pointer QA
+  await page.evaluate(()=>closeModals());
   await page.evaluate(()=>{
    const template=novels[0];
    const chapters=template?.chapters?.length?template.chapters:
