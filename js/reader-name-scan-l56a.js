@@ -53,11 +53,12 @@
    const contextual=all.filter(at=>evidence(text,at)).length;
    if(!isConfirmed&&!contextual)return;
    const matchingRules=confirmed.get(key)||[];
+   const shortLinks=people.filter(p=>fold(p.name)!==key&&fold(p.name).endsWith(' '+key)).map(p=>({id:p.id,name:p.name}));
    const linked=matchingRules.map(r=>{
     const p=people.find(x=>x.aliases.includes(r));
     return p?{id:p.id,name:p.name}:null;
    }).filter(Boolean);
-   const uniqueLinks=[...new Map(linked.map(p=>[p.id,p])).values()];
+   const uniqueLinks=[...new Map(linked.concat(shortLinks).map(p=>[p.id,p])).values()];
    const suggestions=!isConfirmed&&lookup?lookup.suggest(phrase,{profiles:people}):[];
    const proposed=suggestions[0];
    const inferred=!!proposed&&proposed.kind==='inferred';
@@ -73,11 +74,19 @@
     reason:isConfirmed?(matchingRules.length===1?'Quy tắc đã xác nhận trong truyện':'Cách gọi trùng nhiều quy tắc; cần kiểm tra'):
      inferred?'Suy luận từ nghĩa Việt · chưa xác minh':
      ambiguous?'Tên rút gọn trùng nhiều nhân vật · chưa xác minh':
+     uniqueLinks.length?'Tên rút gọn có liên hệ hồ sơ · chưa xác minh':
      'Có bằng chứng ngữ cảnh trong chương · chưa xác minh',
     excerpt:text.slice(Math.max(0,first.start-65),Math.min(text.length,first.end+95))
    });
   }
   for(const key of confirmed.keys())add(key);
+  // A shortened name is a proposal only when its literal phrase has chapter context.
+  for(const person of people){
+   const parts=norm(person.name).split(' ');
+   if(parts.length<3)continue;
+   const short=parts.slice(-2).join(' '),key=fold(short);
+   if(!confirmed.has(key)&&!excluded.has(key))add(short);
+  }
   if(lookup){
    const seeds=new Map();
    for(const span of lookup.detect(text)){
