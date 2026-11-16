@@ -44,6 +44,7 @@ test('L5.6A: 2–4 words and compound surnames must have literal contextual evid
   const row=find(rows,value);assert.ok(row,value);assert.ok(row.count>=1);
   assert.equal(row.auto,false);assert.ok(row.excerpt.includes(row.from));
  }
+ assert.equal(find(rows,'dương thiên vũ'),undefined,'Cannot split Âu Dương into a false Dương surname');
  assert.equal(find(scan.analyze('Âu Dương Thiên Vũ. Tần Minh.',[],lookup),'Âu Dương Thiên Vũ'),undefined);
 });
 
