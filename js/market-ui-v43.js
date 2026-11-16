@@ -50,6 +50,7 @@
    host.replaceChildren();
    const season=THEMES[theme]||THEMES.spring;
    host.dataset.shopTheme=Object.hasOwn(THEMES,theme)?theme:'spring';
+   host.dataset.shopReadOnly=String(readOnly);
    host.style?.setProperty('--shop-accent',season.accent);
    const toolbar=make('section','dudu-v43-market-toolbar');
    const intro=make('div','dudu-v43-market-intro');

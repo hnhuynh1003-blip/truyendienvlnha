@@ -66,6 +66,7 @@ const fs=require('node:fs/promises'),assert=require('node:assert/strict');
    await page.getByRole('button',{name:'Vật Phẩm',exact:true}).click();
    await page.evaluate(()=>DuduMarketUIV43.render({...__shopConfig,readOnly:true,saleIds:[]}));
    assert.equal(await page.locator('.dudu-v43-market-buy button:enabled').count(),0,'V52 disabled/guest contract stays read-only');
+   assert.equal(await page.locator('#phone-app-shop>div:has(#shop-currency-val)').isVisible(),false,'read-only guest wallet does not expose starter coins as a real balance');
    assert.equal(await page.evaluate(()=>JSON.stringify({currency:userProfile.currency,inventory:userProfile.inventory})),before,'QA never changes wallet/inventory');
    assert.equal(await page.evaluate(()=>{const e=document.getElementById('shop-items-container');return e.scrollWidth<=e.clientWidth+1;}),true,'shop overflow '+width);
   }

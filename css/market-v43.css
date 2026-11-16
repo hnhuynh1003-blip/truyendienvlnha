@@ -1,6 +1,8 @@
 /* SHOP R3: one shared shop, no theme-driven transactions or catalog changes. */
 body.dudu-phone-v11 #cyber-phone #phone-app-shop{background:linear-gradient(#151a35bb,#18182fed),url('../assets/shop-r3/shop-bg.webp') center top/cover;color:#eee6ef}
 body.dudu-phone-v11 #cyber-phone #shop-items-container{--shop-accent:#edc888;container-type:inline-size}
+/* A legacy guest profile may contain starter coins; never present those as a verified wallet. */
+body.dudu-phone-v11 #cyber-phone #phone-app-shop:has(#shop-items-container[data-shop-read-only="true"])>div:has(#shop-currency-val){display:none}
 .shop-r3-hero{position:relative;isolation:isolate;min-height:160px;margin:0 0 12px;border:1px solid var(--shop-accent,#edc888);border-radius:14px;overflow:hidden;background:linear-gradient(90deg,#191d39aa,#211f41aa),var(--shop-banner) center/cover,#202240}
 .shop-r3-hero>img{position:absolute;left:0;bottom:0;width:46%;height:100%;object-fit:contain;object-position:center bottom;z-index:-1}
 .shop-r3-hero-copy{margin-left:46%;padding:12px 9px;color:#f7e6c4;background:#171a3570}

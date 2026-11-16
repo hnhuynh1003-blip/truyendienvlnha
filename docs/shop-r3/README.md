@@ -90,4 +90,6 @@ Giới hạn: chưa xác minh giao dịch Firebase trên tài khoản thật, ra
 
 ## Tiếp theo
 
+Kiểm tra public sau PHASE B phát hiện renderer ví cũ có thể ghi lại số dư starter local 50 cho guest chưa xác thực. Bản sửa UI tiếp theo đặt trạng thái readOnly trên host và ẩn chỉ báo ví cũ ở chế độ này; không sửa giá trị tiền trong profile, callback hay giao dịch. Sandbox/Personal và ví V52 đã bật vẫn dùng hiển thị cũ. Mã cache Shop tăng `shop-r3-s1b3-2`; 63 test Shop/T0/cache PASS, browser bốn kích thước PASS với assertion ví readOnly không hiển thị. Ảnh public ban đầu trong repository là bằng chứng PHASE A trước sửa hiển thị guest; verifier public có `SHOP_QA_OUT` để ghi bằng chứng phát hành mới mà không sửa working tree.
+
 PHASE A commit/push chỉ file Shop trên main, xác minh remote SHA và Pages. PHASE B kiểm toán dependency và retirement Vạn Giới trong commit riêng theo lệnh owner; không khôi phục gameplay. Ngoại trang entitlement/model lớp, gameplay SKU mới, bundle thật và mùa tự xoay là các giai đoạn riêng chưa triển khai.
