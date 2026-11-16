@@ -1,0 +1,902 @@
+[
+  {
+    "width": 320,
+    "rows": [
+      {
+        "id": "common-biscuit",
+        "art": {
+          "x": 27,
+          "y": 98,
+          "right": 99,
+          "bottom": 170,
+          "width": 72,
+          "height": 72
+        },
+        "image": {
+          "x": 27,
+          "y": 98,
+          "right": 99,
+          "bottom": 170,
+          "width": 72,
+          "height": 72
+        },
+        "copy": {
+          "x": 109,
+          "y": 98,
+          "right": 293,
+          "bottom": 151.078125,
+          "width": 184,
+          "height": 53.078125
+        },
+        "buy": {
+          "x": 27,
+          "y": 178,
+          "right": 293,
+          "bottom": 214,
+          "width": 266,
+          "height": 36
+        },
+        "name": {
+          "x": 109,
+          "y": 98,
+          "right": 293,
+          "bottom": 114.890625,
+          "width": 184,
+          "height": 16.890625
+        },
+        "nameLine": 16.9,
+        "note": {
+          "x": 109,
+          "y": 137.078125,
+          "right": 293,
+          "bottom": 151.078125,
+          "width": 184,
+          "height": 14
+        },
+        "noteLine": 14,
+        "fit": "contain",
+        "scroll": 0
+      },
+      {
+        "id": "common-bottled-water",
+        "art": {
+          "x": 27,
+          "y": 259,
+          "right": 99,
+          "bottom": 331,
+          "width": 72,
+          "height": 72
+        },
+        "image": {
+          "x": 27,
+          "y": 259,
+          "right": 99,
+          "bottom": 331,
+          "width": 72,
+          "height": 72
+        },
+        "copy": {
+          "x": 109,
+          "y": 259,
+          "right": 293,
+          "bottom": 312.078125,
+          "width": 184,
+          "height": 53.078125
+        },
+        "buy": {
+          "x": 27,
+          "y": 339,
+          "right": 293,
+          "bottom": 375,
+          "width": 266,
+          "height": 36
+        },
+        "name": {
+          "x": 109,
+          "y": 259,
+          "right": 293,
+          "bottom": 275.890625,
+          "width": 184,
+          "height": 16.890625
+        },
+        "nameLine": 16.9,
+        "note": {
+          "x": 109,
+          "y": 298.078125,
+          "right": 293,
+          "bottom": 312.078125,
+          "width": 184,
+          "height": 14
+        },
+        "noteLine": 14,
+        "fit": "contain",
+        "scroll": 0
+      },
+      {
+        "id": "e2",
+        "art": {
+          "x": 27,
+          "y": 420,
+          "right": 99,
+          "bottom": 492,
+          "width": 72,
+          "height": 72
+        },
+        "image": {
+          "x": 27,
+          "y": 420,
+          "right": 99,
+          "bottom": 492,
+          "width": 72,
+          "height": 72
+        },
+        "copy": {
+          "x": 109,
+          "y": 420,
+          "right": 293,
+          "bottom": 473.078125,
+          "width": 184,
+          "height": 53.078125
+        },
+        "buy": {
+          "x": 27,
+          "y": 500,
+          "right": 293,
+          "bottom": 536,
+          "width": 266,
+          "height": 36
+        },
+        "name": {
+          "x": 109,
+          "y": 420,
+          "right": 293,
+          "bottom": 436.890625,
+          "width": 184,
+          "height": 16.890625
+        },
+        "nameLine": 16.9,
+        "note": {
+          "x": 109,
+          "y": 459.078125,
+          "right": 293,
+          "bottom": 473.078125,
+          "width": 184,
+          "height": 14
+        },
+        "noteLine": 14,
+        "fit": "contain",
+        "scroll": 0
+      },
+      {
+        "id": "common-flashlight",
+        "art": {
+          "x": 27,
+          "y": 581,
+          "right": 99,
+          "bottom": 653,
+          "width": 72,
+          "height": 72
+        },
+        "image": {
+          "x": 27,
+          "y": 581,
+          "right": 99,
+          "bottom": 653,
+          "width": 72,
+          "height": 72
+        },
+        "copy": {
+          "x": 109,
+          "y": 581,
+          "right": 293,
+          "bottom": 634.078125,
+          "width": 184,
+          "height": 53.078125
+        },
+        "buy": {
+          "x": 27,
+          "y": 661,
+          "right": 293,
+          "bottom": 697,
+          "width": 266,
+          "height": 36
+        },
+        "name": {
+          "x": 109,
+          "y": 581,
+          "right": 293,
+          "bottom": 597.890625,
+          "width": 184,
+          "height": 16.890625
+        },
+        "nameLine": 16.9,
+        "note": {
+          "x": 109,
+          "y": 620.078125,
+          "right": 293,
+          "bottom": 634.078125,
+          "width": 184,
+          "height": 14
+        },
+        "noteLine": 14,
+        "fit": "contain",
+        "scroll": 0
+      }
+    ]
+  },
+  {
+    "width": 355,
+    "rows": [
+      {
+        "id": "common-biscuit",
+        "art": {
+          "x": 27,
+          "y": 98,
+          "right": 99,
+          "bottom": 170,
+          "width": 72,
+          "height": 72
+        },
+        "image": {
+          "x": 27,
+          "y": 98,
+          "right": 99,
+          "bottom": 170,
+          "width": 72,
+          "height": 72
+        },
+        "copy": {
+          "x": 109,
+          "y": 98,
+          "right": 328,
+          "bottom": 151.078125,
+          "width": 219,
+          "height": 53.078125
+        },
+        "buy": {
+          "x": 27,
+          "y": 178,
+          "right": 328,
+          "bottom": 214,
+          "width": 301,
+          "height": 36
+        },
+        "name": {
+          "x": 109,
+          "y": 98,
+          "right": 328,
+          "bottom": 114.890625,
+          "width": 219,
+          "height": 16.890625
+        },
+        "nameLine": 16.9,
+        "note": {
+          "x": 109,
+          "y": 137.078125,
+          "right": 328,
+          "bottom": 151.078125,
+          "width": 219,
+          "height": 14
+        },
+        "noteLine": 14,
+        "fit": "contain",
+        "scroll": 0
+      },
+      {
+        "id": "common-bottled-water",
+        "art": {
+          "x": 27,
+          "y": 259,
+          "right": 99,
+          "bottom": 331,
+          "width": 72,
+          "height": 72
+        },
+        "image": {
+          "x": 27,
+          "y": 259,
+          "right": 99,
+          "bottom": 331,
+          "width": 72,
+          "height": 72
+        },
+        "copy": {
+          "x": 109,
+          "y": 259,
+          "right": 328,
+          "bottom": 312.078125,
+          "width": 219,
+          "height": 53.078125
+        },
+        "buy": {
+          "x": 27,
+          "y": 339,
+          "right": 328,
+          "bottom": 375,
+          "width": 301,
+          "height": 36
+        },
+        "name": {
+          "x": 109,
+          "y": 259,
+          "right": 328,
+          "bottom": 275.890625,
+          "width": 219,
+          "height": 16.890625
+        },
+        "nameLine": 16.9,
+        "note": {
+          "x": 109,
+          "y": 298.078125,
+          "right": 328,
+          "bottom": 312.078125,
+          "width": 219,
+          "height": 14
+        },
+        "noteLine": 14,
+        "fit": "contain",
+        "scroll": 0
+      },
+      {
+        "id": "e2",
+        "art": {
+          "x": 27,
+          "y": 420,
+          "right": 99,
+          "bottom": 492,
+          "width": 72,
+          "height": 72
+        },
+        "image": {
+          "x": 27,
+          "y": 420,
+          "right": 99,
+          "bottom": 492,
+          "width": 72,
+          "height": 72
+        },
+        "copy": {
+          "x": 109,
+          "y": 420,
+          "right": 328,
+          "bottom": 473.078125,
+          "width": 219,
+          "height": 53.078125
+        },
+        "buy": {
+          "x": 27,
+          "y": 500,
+          "right": 328,
+          "bottom": 536,
+          "width": 301,
+          "height": 36
+        },
+        "name": {
+          "x": 109,
+          "y": 420,
+          "right": 328,
+          "bottom": 436.890625,
+          "width": 219,
+          "height": 16.890625
+        },
+        "nameLine": 16.9,
+        "note": {
+          "x": 109,
+          "y": 459.078125,
+          "right": 328,
+          "bottom": 473.078125,
+          "width": 219,
+          "height": 14
+        },
+        "noteLine": 14,
+        "fit": "contain",
+        "scroll": 0
+      },
+      {
+        "id": "common-flashlight",
+        "art": {
+          "x": 27,
+          "y": 581,
+          "right": 99,
+          "bottom": 653,
+          "width": 72,
+          "height": 72
+        },
+        "image": {
+          "x": 27,
+          "y": 581,
+          "right": 99,
+          "bottom": 653,
+          "width": 72,
+          "height": 72
+        },
+        "copy": {
+          "x": 109,
+          "y": 581,
+          "right": 328,
+          "bottom": 634.078125,
+          "width": 219,
+          "height": 53.078125
+        },
+        "buy": {
+          "x": 27,
+          "y": 661,
+          "right": 328,
+          "bottom": 697,
+          "width": 301,
+          "height": 36
+        },
+        "name": {
+          "x": 109,
+          "y": 581,
+          "right": 328,
+          "bottom": 597.890625,
+          "width": 219,
+          "height": 16.890625
+        },
+        "nameLine": 16.9,
+        "note": {
+          "x": 109,
+          "y": 620.078125,
+          "right": 328,
+          "bottom": 634.078125,
+          "width": 219,
+          "height": 14
+        },
+        "noteLine": 14,
+        "fit": "contain",
+        "scroll": 0
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "rows": [
+      {
+        "id": "common-biscuit",
+        "art": {
+          "x": 27,
+          "y": 98,
+          "right": 99,
+          "bottom": 170,
+          "width": 72,
+          "height": 72
+        },
+        "image": {
+          "x": 27,
+          "y": 98,
+          "right": 99,
+          "bottom": 170,
+          "width": 72,
+          "height": 72
+        },
+        "copy": {
+          "x": 109,
+          "y": 98,
+          "right": 363,
+          "bottom": 151.078125,
+          "width": 254,
+          "height": 53.078125
+        },
+        "buy": {
+          "x": 27,
+          "y": 178,
+          "right": 363,
+          "bottom": 214,
+          "width": 336,
+          "height": 36
+        },
+        "name": {
+          "x": 109,
+          "y": 98,
+          "right": 363,
+          "bottom": 114.890625,
+          "width": 254,
+          "height": 16.890625
+        },
+        "nameLine": 16.9,
+        "note": {
+          "x": 109,
+          "y": 137.078125,
+          "right": 363,
+          "bottom": 151.078125,
+          "width": 254,
+          "height": 14
+        },
+        "noteLine": 14,
+        "fit": "contain",
+        "scroll": 0
+      },
+      {
+        "id": "common-bottled-water",
+        "art": {
+          "x": 27,
+          "y": 259,
+          "right": 99,
+          "bottom": 331,
+          "width": 72,
+          "height": 72
+        },
+        "image": {
+          "x": 27,
+          "y": 259,
+          "right": 99,
+          "bottom": 331,
+          "width": 72,
+          "height": 72
+        },
+        "copy": {
+          "x": 109,
+          "y": 259,
+          "right": 363,
+          "bottom": 312.078125,
+          "width": 254,
+          "height": 53.078125
+        },
+        "buy": {
+          "x": 27,
+          "y": 339,
+          "right": 363,
+          "bottom": 375,
+          "width": 336,
+          "height": 36
+        },
+        "name": {
+          "x": 109,
+          "y": 259,
+          "right": 363,
+          "bottom": 275.890625,
+          "width": 254,
+          "height": 16.890625
+        },
+        "nameLine": 16.9,
+        "note": {
+          "x": 109,
+          "y": 298.078125,
+          "right": 363,
+          "bottom": 312.078125,
+          "width": 254,
+          "height": 14
+        },
+        "noteLine": 14,
+        "fit": "contain",
+        "scroll": 0
+      },
+      {
+        "id": "e2",
+        "art": {
+          "x": 27,
+          "y": 420,
+          "right": 99,
+          "bottom": 492,
+          "width": 72,
+          "height": 72
+        },
+        "image": {
+          "x": 27,
+          "y": 420,
+          "right": 99,
+          "bottom": 492,
+          "width": 72,
+          "height": 72
+        },
+        "copy": {
+          "x": 109,
+          "y": 420,
+          "right": 363,
+          "bottom": 473.078125,
+          "width": 254,
+          "height": 53.078125
+        },
+        "buy": {
+          "x": 27,
+          "y": 500,
+          "right": 363,
+          "bottom": 536,
+          "width": 336,
+          "height": 36
+        },
+        "name": {
+          "x": 109,
+          "y": 420,
+          "right": 363,
+          "bottom": 436.890625,
+          "width": 254,
+          "height": 16.890625
+        },
+        "nameLine": 16.9,
+        "note": {
+          "x": 109,
+          "y": 459.078125,
+          "right": 363,
+          "bottom": 473.078125,
+          "width": 254,
+          "height": 14
+        },
+        "noteLine": 14,
+        "fit": "contain",
+        "scroll": 0
+      },
+      {
+        "id": "common-flashlight",
+        "art": {
+          "x": 27,
+          "y": 581,
+          "right": 99,
+          "bottom": 653,
+          "width": 72,
+          "height": 72
+        },
+        "image": {
+          "x": 27,
+          "y": 581,
+          "right": 99,
+          "bottom": 653,
+          "width": 72,
+          "height": 72
+        },
+        "copy": {
+          "x": 109,
+          "y": 581,
+          "right": 363,
+          "bottom": 634.078125,
+          "width": 254,
+          "height": 53.078125
+        },
+        "buy": {
+          "x": 27,
+          "y": 661,
+          "right": 363,
+          "bottom": 697,
+          "width": 336,
+          "height": 36
+        },
+        "name": {
+          "x": 109,
+          "y": 581,
+          "right": 363,
+          "bottom": 597.890625,
+          "width": 254,
+          "height": 16.890625
+        },
+        "nameLine": 16.9,
+        "note": {
+          "x": 109,
+          "y": 620.078125,
+          "right": 363,
+          "bottom": 634.078125,
+          "width": 254,
+          "height": 14
+        },
+        "noteLine": 14,
+        "fit": "contain",
+        "scroll": 0
+      }
+    ]
+  },
+  {
+    "width": 430,
+    "rows": [
+      {
+        "id": "common-biscuit",
+        "art": {
+          "x": 27,
+          "y": 98,
+          "right": 99,
+          "bottom": 170,
+          "width": 72,
+          "height": 72
+        },
+        "image": {
+          "x": 27,
+          "y": 98,
+          "right": 99,
+          "bottom": 170,
+          "width": 72,
+          "height": 72
+        },
+        "copy": {
+          "x": 109,
+          "y": 98,
+          "right": 403,
+          "bottom": 151.078125,
+          "width": 294,
+          "height": 53.078125
+        },
+        "buy": {
+          "x": 27,
+          "y": 178,
+          "right": 403,
+          "bottom": 214,
+          "width": 376,
+          "height": 36
+        },
+        "name": {
+          "x": 109,
+          "y": 98,
+          "right": 403,
+          "bottom": 114.890625,
+          "width": 294,
+          "height": 16.890625
+        },
+        "nameLine": 16.9,
+        "note": {
+          "x": 109,
+          "y": 137.078125,
+          "right": 403,
+          "bottom": 151.078125,
+          "width": 294,
+          "height": 14
+        },
+        "noteLine": 14,
+        "fit": "contain",
+        "scroll": 0
+      },
+      {
+        "id": "common-bottled-water",
+        "art": {
+          "x": 27,
+          "y": 259,
+          "right": 99,
+          "bottom": 331,
+          "width": 72,
+          "height": 72
+        },
+        "image": {
+          "x": 27,
+          "y": 259,
+          "right": 99,
+          "bottom": 331,
+          "width": 72,
+          "height": 72
+        },
+        "copy": {
+          "x": 109,
+          "y": 259,
+          "right": 403,
+          "bottom": 312.078125,
+          "width": 294,
+          "height": 53.078125
+        },
+        "buy": {
+          "x": 27,
+          "y": 339,
+          "right": 403,
+          "bottom": 375,
+          "width": 376,
+          "height": 36
+        },
+        "name": {
+          "x": 109,
+          "y": 259,
+          "right": 403,
+          "bottom": 275.890625,
+          "width": 294,
+          "height": 16.890625
+        },
+        "nameLine": 16.9,
+        "note": {
+          "x": 109,
+          "y": 298.078125,
+          "right": 403,
+          "bottom": 312.078125,
+          "width": 294,
+          "height": 14
+        },
+        "noteLine": 14,
+        "fit": "contain",
+        "scroll": 0
+      },
+      {
+        "id": "e2",
+        "art": {
+          "x": 27,
+          "y": 420,
+          "right": 99,
+          "bottom": 492,
+          "width": 72,
+          "height": 72
+        },
+        "image": {
+          "x": 27,
+          "y": 420,
+          "right": 99,
+          "bottom": 492,
+          "width": 72,
+          "height": 72
+        },
+        "copy": {
+          "x": 109,
+          "y": 420,
+          "right": 403,
+          "bottom": 473.078125,
+          "width": 294,
+          "height": 53.078125
+        },
+        "buy": {
+          "x": 27,
+          "y": 500,
+          "right": 403,
+          "bottom": 536,
+          "width": 376,
+          "height": 36
+        },
+        "name": {
+          "x": 109,
+          "y": 420,
+          "right": 403,
+          "bottom": 436.890625,
+          "width": 294,
+          "height": 16.890625
+        },
+        "nameLine": 16.9,
+        "note": {
+          "x": 109,
+          "y": 459.078125,
+          "right": 403,
+          "bottom": 473.078125,
+          "width": 294,
+          "height": 14
+        },
+        "noteLine": 14,
+        "fit": "contain",
+        "scroll": 0
+      },
+      {
+        "id": "common-flashlight",
+        "art": {
+          "x": 27,
+          "y": 581,
+          "right": 99,
+          "bottom": 653,
+          "width": 72,
+          "height": 72
+        },
+        "image": {
+          "x": 27,
+          "y": 581,
+          "right": 99,
+          "bottom": 653,
+          "width": 72,
+          "height": 72
+        },
+        "copy": {
+          "x": 109,
+          "y": 581,
+          "right": 403,
+          "bottom": 634.078125,
+          "width": 294,
+          "height": 53.078125
+        },
+        "buy": {
+          "x": 27,
+          "y": 661,
+          "right": 403,
+          "bottom": 697,
+          "width": 376,
+          "height": 36
+        },
+        "name": {
+          "x": 109,
+          "y": 581,
+          "right": 403,
+          "bottom": 597.890625,
+          "width": 294,
+          "height": 16.890625
+        },
+        "nameLine": 16.9,
+        "note": {
+          "x": 109,
+          "y": 620.078125,
+          "right": 403,
+          "bottom": 634.078125,
+          "width": 294,
+          "height": 14
+        },
+        "noteLine": 14,
+        "fit": "contain",
+        "scroll": 0
+      }
+    ]
+  }
+]
