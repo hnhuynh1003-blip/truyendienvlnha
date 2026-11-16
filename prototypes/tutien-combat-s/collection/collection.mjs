@@ -94,7 +94,6 @@ function revealDiscovery(){
 
 // Presentation only: resolve the already-discovered scene and show existing R4 art.
 function renderResult(){const kind=s.explorationDiscovery?.scene;if(!kind)return;$('background').src=asset('backgrounds/'+kind+'_clean.webp');$('result-image').src=asset('objects/'+kind+'/intact.png');$('result-name').textContent=names[kind];$('result-description').textContent=descriptions[kind];const cost=entryCostView(entryEligibility(s,kind).cost);$('result-cost').hidden=cost.hidden;$('result-cost').textContent=cost.text;}
-$('exploration-close').onclick=()=>{if(busy||loadFailure)return;document.dispatchEvent(new CustomEvent('collection:exit'));};
 $('result-back').onclick=()=>{try{const r=cancelSearch(s,commandStorage);if(!r.valid)return;view='portal';message('');draw();}catch{message('Kh\u00f4ng l\u01b0u \u0111\u01b0\u1ee3c vi\u1ec7c h\u1ee7y l\u01b0\u1ee3t d\u00f2. H\u00e3y th\u1eed l\u1ea1i.');}};
 $('result-enter').onclick=()=>{if(view!=='result'||s.scene)return;openScene();};
 function openJournal(){$('journal-content').textContent=s.explorationDiscovery?names[s.explorationDiscovery.scene]+'\n'+(s.lastResult?resultText(s.lastResult):'\u0110\u00e3 ph\u00e1t hi\u1ec7n \u0111\u1ecba \u0111i\u1ec3m.'):'Ch\u01b0a c\u00f3 k\u1ebft qu\u1ea3 th\u0103m d\u00f2.';$('journal').hidden=false;$('journal').showModal();$('retreat').setAttribute('aria-expanded','true');$('journal-close').focus();}

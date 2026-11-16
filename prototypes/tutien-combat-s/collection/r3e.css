@@ -233,3 +233,18 @@ html,body{margin:0;width:100%;height:100%;min-width:0;min-height:0}
 [data-dudu-exploration-r3e] .r3e-player-hud{border:10px solid transparent;border-image:url('../../../assets/tu-tien/exploration-r54/hud/hud_ice_glass_blank.svg') 21 44 36 50 fill / 10px / 0 stretch;padding:6px 4px;min-height:96px}
 [data-dudu-exploration-r3e] .r4-hud-art{display:none}
 [data-dudu-exploration-r3e] .r3e-player-hud::before{inset:8px;border-radius:22px;background:transparent;backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px)}
+/* Full-width top HUD. Only the host close is rendered; no second X in the iframe. */
+[data-dudu-exploration-r3e] #stage{padding-top:0}
+[data-dudu-exploration-r3e] .r3e-player-hud{margin:0 calc(-1 * var(--r3e-edge));width:calc(100% + 2 * var(--r3e-edge));padding-right:52px;min-height:100px}
+/* The existing action artwork supports both text rows inside its painted centre. */
+[data-dudu-exploration-r3e] #stage[data-scene=portal] #footer{grid-template-columns:56px minmax(0,1fr) 56px;min-height:78px;gap:4px}
+[data-dudu-exploration-r3e] #stage[data-scene=portal] #action{height:78px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:12px 16px}
+[data-dudu-exploration-r3e] #stage[data-scene=portal] #action>img{object-fit:fill}
+[data-dudu-exploration-r3e] #stage[data-scene=portal] #action-label{transform:none;font-size:clamp(15px,4.2cqw,20px);line-height:1.4;max-width:100%}
+[data-dudu-exploration-r3e] #stage[data-scene=portal] #search-note{position:static;inset:auto;font-size:9px;line-height:1.4;max-width:100%;white-space:normal;overflow-wrap:break-word}
+/* Nine-slice the supplied gold action frame too; SVG meet must not shrink its painted height. */
+[data-dudu-exploration-r3e] #stage[data-scene=portal] #action{border:12px solid transparent;border-left-width:18px;border-right-width:18px;border-image:url('../../../assets/tu-tien/exploration-r3e/ui/action_blank.svg') 38 90 fill / 12px 18px / 0 stretch;padding:2px 4px}
+[data-dudu-exploration-r3e] #stage[data-scene=portal] #action>img{display:none}
+
+/* Owner clarification: keep host header; remove only the gap below it. */
+[data-dudu-exploration-r3e] .r3e-player-hud{padding-right:6px;border-top-width:4px;border-image-slice:40 44 36 50 fill;border-image-width:4px 10px 10px;min-height:88px}
