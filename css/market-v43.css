@@ -1,4 +1,25 @@
-/* V43.5 shop — clean mobile-first grid, no large banners or multiline menus. */
+/* SHOP R3: one shared shop, no theme-driven transactions or catalog changes. */
+body.dudu-phone-v11 #cyber-phone #phone-app-shop{background:linear-gradient(#151a35bb,#18182fed),url('../assets/shop-r3/shop-bg.webp') center top/cover;color:#eee6ef}
+body.dudu-phone-v11 #cyber-phone #shop-items-container{--shop-accent:#edc888;container-type:inline-size}
+.shop-r3-hero{position:relative;isolation:isolate;min-height:160px;margin:0 0 12px;border:1px solid var(--shop-accent,#edc888);border-radius:14px;overflow:hidden;background:linear-gradient(90deg,#191d39aa,#211f41aa),var(--shop-banner) center/cover,#202240}
+.shop-r3-hero>img{position:absolute;left:0;bottom:0;width:46%;height:100%;object-fit:contain;object-position:center bottom;z-index:-1}
+.shop-r3-hero-copy{margin-left:46%;padding:12px 9px;color:#f7e6c4;background:#171a3570}
+.shop-r3-hero-copy small{font-size:9px;letter-spacing:.06em}.shop-r3-hero-copy h2{font:600 20px/1.15 Georgia,serif;margin:7px 0;color:#ffe6b8}.shop-r3-hero-copy p{font-size:10px;line-height:1.5}
+.shop-r3-hero button,.shop-r3-outfit button,.shop-r3-combo button{border:1px solid #dbbd8c;border-radius:9px;padding:8px;background:#3c3552;color:#ffe6b8;min-height:36px;font:inherit;font-size:11px}
+.shop-r3-groups{display:flex;gap:5px;overflow-x:auto;max-width:100%;padding:3px 0 7px;scrollbar-width:thin}
+.shop-r3-groups button{flex:none;white-space:nowrap;min-height:38px;padding:7px 10px;border:1px solid #84719b;border-radius:9px;background:#24233e;color:#e0d5ea;font:inherit;font-size:11px}
+.shop-r3-groups button.is-active{color:#ffe8bb;border-color:var(--shop-accent);background:#51405d}
+.shop-r3-combos{margin:0 0 12px}.shop-r3-combos h3{color:#f8dfb0;font:600 15px Georgia,serif;margin:8px 0}
+.shop-r3-combo-strip{display:flex;gap:9px;overflow-x:auto;padding:4px;scroll-snap-type:x proximity;max-width:100%}
+.shop-r3-combo{flex:0 0 84%;box-sizing:border-box;scroll-snap-align:start;background:linear-gradient(130deg,#343152,#18213e);border:13px solid #bba378;border-image:url('../assets/shop-r3/combo-frame.webp') 110 fill / 13px / 0 stretch;padding:8px;color:#f3e3ce}
+.shop-r3-combo strong{font:600 14px Georgia,serif}.shop-r3-combo p{font-size:11px;color:#d0c7dc}.shop-r3-combo button:disabled,.shop-r3-outfit button:disabled{opacity:.7;cursor:not-allowed}
+.shop-r3-outfit{padding:12px;border:1px solid #b29b78;border-radius:12px;background:#22233fea;color:#efe2d4;display:grid;gap:8px}.shop-r3-outfit h3,.shop-r3-outfit p{margin:0}.shop-r3-outfit p,.shop-r3-outfit small{font-size:11px;line-height:1.5}.shop-r3-outfit-preview{height:190px;font-size:70px!important}.shop-r3-outfit-preview img{width:100%;height:100%;object-fit:contain}
+.shop-r3-modal{position:fixed;inset:0;z-index:2147483000;background:#070b1cda;display:grid;place-items:center;padding:16px;overscroll-behavior:contain}
+.shop-r3-dialog{position:relative;box-sizing:border-box;width:min(100%,380px);max-height:85dvh;overflow:auto;padding:20px;border:1px solid #eccb92;border-radius:18px;background:linear-gradient(130deg,#363052,#17203e);color:#eee4f0;font:14px/1.55 system-ui;overflow-wrap:anywhere}
+.shop-r3-dialog>button{display:block;margin-left:auto;min-width:40px;min-height:40px;background:#38304e;border:1px solid #bca5c8;border-radius:9px;color:#fff;font-size:25px}.shop-r3-dialog h3{color:#ffe3b2;text-align:center}.shop-r3-detail-art{height:180px;display:grid;place-items:center;font-size:60px}.shop-r3-detail-art img{max-width:100%;height:100%;object-fit:contain}
+.shop-r3-modal [hidden],#shop-items-container [hidden]{display:none!important}
+
+/* V43 shared shop; SHOP R3 presentation overrides follow below. */
 body.dudu-phone-v11 #cyber-phone .dudu-v43-market-toolbar{
   display:flex;flex-direction:column;gap:8px;margin-bottom:8px;
 }
@@ -182,3 +203,17 @@ body.dudu-phone-v11 #cyber-phone .f36-quick-item .f34-quick-name b{font-size:10p
 body.dudu-phone-v11 #cyber-phone .f36-quick-item .f34-quick-name small{font-size:9px;
  color:#c5b2d5}
 body.dudu-phone-v11 #cyber-phone .f34-quick-list{max-height:295px;gap:6px}
+body.dudu-phone-v11 #cyber-phone #shop-items-container .dudu-v43-market-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+body.dudu-phone-v11 #cyber-phone #shop-items-container .dudu-v43-market-item{display:flex;flex-direction:column;align-items:stretch;gap:7px;box-sizing:border-box;padding:10px;border:10px solid #bba378;border-image:url('../assets/shop-r3/card-frame.webp') 110 fill / 10px / 0 stretch;background:#1c213bea}
+body.dudu-phone-v11 #cyber-phone #shop-items-container .dudu-v43-market-icon{width:100%;height:83px;border:0;background:radial-gradient(ellipse,#51427560,#141d37);border-radius:9px;cursor:pointer;position:relative}
+body.dudu-phone-v11 #cyber-phone #shop-items-container .dudu-v43-market-copy strong{font:600 13px/1.3 Georgia,serif;color:#ffe8bf}
+body.dudu-phone-v11 #cyber-phone #shop-items-container .dudu-v43-market-copy small{font-size:10px;line-height:1.4}
+body.dudu-phone-v11 #cyber-phone #shop-items-container .dudu-v43-market-buy{flex-direction:row;justify-content:space-between;flex-wrap:wrap;margin-top:auto;gap:5px;min-width:0}
+body.dudu-phone-v11 #cyber-phone #shop-items-container .dudu-v43-market-buy button{min-height:36px;min-width:50px;border:1px solid #f5d59c;border-radius:10px;background:linear-gradient(#fce6bb,#b98c58);color:#271b2b;font-weight:800}
+body.dudu-phone-v11 #cyber-phone #shop-items-container .dudu-v43-market-filters{flex-wrap:wrap}
+.shop-r3-ranks,.shop-r3-sort{min-width:0;flex:1;padding:8px 5px;background:#20233f;border:1px solid #9380a6;border-radius:8px;color:#eee5ee;font-size:11px}
+body.dudu-phone-v11 #cyber-phone #shop-items-container .dudu-v43-market-search{flex-basis:100%;min-height:36px}
+body.dudu-phone-v11 #cyber-phone #shop-items-container .dudu-v43-market-grid:has(.f34-quick-head){display:flex;flex-direction:column}
+body.dudu-phone-v11 #cyber-phone #shop-items-container .dudu-v43-market-locked,body.dudu-phone-v11 #cyber-phone #shop-items-container .dudu-v43-market-empty{grid-column:1/-1}
+@container(max-width:235px){body.dudu-phone-v11 #cyber-phone #shop-items-container .dudu-v43-market-grid{grid-template-columns:minmax(0,1fr)}}
+@media(prefers-reduced-motion:reduce){.shop-r3-combo-strip{scroll-behavior:auto}}

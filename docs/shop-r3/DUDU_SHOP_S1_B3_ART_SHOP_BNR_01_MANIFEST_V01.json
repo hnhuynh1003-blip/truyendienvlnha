@@ -1,0 +1,100 @@
+{
+  "batch": "SHOP S1-B3",
+  "scope": "Banner only",
+  "sourceReference": "S1-B2 prototype + approved BG-01 palette",
+  "noRepositoryWrites": true,
+  "assets": [
+    {
+      "assetId": "ART-SHOP-BNR-01-BG",
+      "filename": "DUDU_SHOP_S1_B3_ART_SHOP_BNR_01_BG_MASTER_1672x941.png",
+      "bytes": 1958056,
+      "sha256": "ec7234bda4d6f284b45160dab9fe328b8d7725c155479d5542ceb3262eafc7d3",
+      "status": "DRAFT-REVIEW",
+      "role": "bg_png",
+      "dimensions": [
+        1672,
+        941
+      ],
+      "format": "PNG",
+      "alpha": false
+    },
+    {
+      "assetId": "ART-SHOP-BNR-01-BG",
+      "filename": "DUDU_SHOP_S1_B3_ART_SHOP_BNR_01_BG_WEB_1672x941.webp",
+      "bytes": 153250,
+      "sha256": "1279f2699ee3662e9c07cfaa8faff1e9a0b344877eb3fbbf81e33ba3e9012f78",
+      "status": "DRAFT-REVIEW",
+      "role": "bg_webp",
+      "dimensions": [
+        1672,
+        941
+      ],
+      "format": "WEBP",
+      "alpha": false
+    },
+    {
+      "assetId": "ART-SHOP-BNR-01-CHAR",
+      "filename": "DUDU_SHOP_S1_B3_ART_SHOP_BNR_01_THANH_VAN_ALPHA_MASTER_1086x1448.png",
+      "bytes": 2356791,
+      "sha256": "83f19026cdf94292542ef9511646fff3bb1fa25427958613aa670801ac6fecd4",
+      "status": "DRAFT-REVIEW",
+      "role": "ch_png",
+      "dimensions": [
+        1086,
+        1448
+      ],
+      "format": "PNG",
+      "alpha": true
+    },
+    {
+      "assetId": "ART-SHOP-BNR-01-CHAR",
+      "filename": "DUDU_SHOP_S1_B3_ART_SHOP_BNR_01_THANH_VAN_ALPHA_WEB_1086x1448.webp",
+      "bytes": 621538,
+      "sha256": "98174990bce11a45dade86e1df0124d95a33720b94ccba1a557d0af490023fe8",
+      "status": "DRAFT-REVIEW",
+      "role": "ch_webp",
+      "dimensions": [
+        1086,
+        1448
+      ],
+      "format": "WEBP",
+      "alpha": true
+    },
+    {
+      "assetId": "S1-B3-PREVIEW",
+      "filename": "DUDU_SHOP_S1_B3_ART_SHOP_BNR_01_S1_B2_REVIEW.html",
+      "bytes": 2192174,
+      "sha256": "9f80ab7917a58a0137df9dbbdc3d91c32a2cc6879280fc107bc9aebb57aec5df",
+      "status": "DRAFT-REVIEW",
+      "role": "html"
+    },
+    {
+      "assetId": "S1-B3-PREVIEW",
+      "filename": "DUDU_SHOP_S1_B3_ART_SHOP_BNR_01_PREVIEW_PHONE_390.png",
+      "bytes": 303792,
+      "sha256": "f646fd4cf19c9810d83a30dabdff1bda8e06852a4dd57359330e7e0dd24b8409",
+      "status": "DRAFT-REVIEW",
+      "role": "preview390",
+      "dimensions": [
+        390,
+        835
+      ],
+      "format": "PNG",
+      "alpha": false
+    },
+    {
+      "assetId": "S1-B3-PREVIEW",
+      "filename": "DUDU_SHOP_S1_B3_ART_SHOP_BNR_01_PREVIEW_PHONE_320.png",
+      "bytes": 260488,
+      "sha256": "001ba864beb8defb55b55ac952af10ffd06d8104e21c524a90ecf11717664f63",
+      "status": "DRAFT-REVIEW",
+      "role": "preview320",
+      "dimensions": [
+        320,
+        835
+      ],
+      "format": "PNG",
+      "alpha": false
+    }
+  ]
+}

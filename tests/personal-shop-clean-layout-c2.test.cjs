@@ -27,17 +27,19 @@ test('Main shop keeps one phone title and wallet; tabs and filters remain usable
  const host=element('section');
  const config={host,coins:107,state:null,onBuy:()=>true,personalMode:true};
  assert.equal(win.DuduMarketUIV43.render(config),true);
- let toolbar=host.children[0];
+ let toolbar=host.children.find(x=>x.className==='dudu-v43-market-toolbar');
  assert.ok(toolbar);
  assert.equal(toolbar.children.some(child=>child.className==='dudu-v43-market-intro'),false,
   'do not repeat the shop header with a DUDU MARKET tagline');
- const [tabs,filters,hint]=toolbar.children;
- assert.equal(tabs.children.length,5);
+ const [groups,tabs,filters,hint]=toolbar.children;
+ assert.equal(groups.children.length,4,'SELL is only exposed with its callback');
+ assert.deepEqual(Array.from(groups.children,x=>x.textContent),['Vật Phẩm','Tu Tiên','Ngoại Trang','Sưu Tầm']);
  assert.equal(filters.children[0].placeholder,'Tìm tên vật phẩm hoặc phẩm cấp');
  assert.equal(hint.hidden,true,'balance already appears once above the shop');
  assert.equal(hint.textContent,'');
- tabs.children[1].events.click();
- toolbar=host.children[0];
- assert.equal(toolbar.children[2].hidden,false,'realm guidance remains visible on realm tab');
- assert.match(toolbar.children[2].textContent,/Vật phẩm vị diện/);
+ groups.children[3].events.click();
+ toolbar=host.children.find(x=>x.className==='dudu-v43-market-toolbar');
+ assert.equal(toolbar.children[1].children.length,3,'legacy collection sources remain available');
+ assert.equal(toolbar.children[3].hidden,false,'realm guidance remains visible');
+ assert.match(toolbar.children[3].textContent,/Vật phẩm vị diện/);
 });

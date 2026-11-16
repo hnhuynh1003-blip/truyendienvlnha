@@ -6,7 +6,33 @@
  const core=root.DuduEconomyCoreV43;
  const storyCatalog=root.DuduStoryMarketV43;
  if(!core)return;
- let tab='COMMON',realm='URBAN',query='',storyId='';
+ let tab='COMMON',group='ITEMS',realm='URBAN',query='',storyId='',rankFilter='',order='catalog';
+ let dismissDetail=null;
+ const THEMES=Object.freeze(Object.fromEntries([
+  ['spring','Xuân — Hoa Nguyệt','#edc888'],['summer','Hạ — Thanh Trúc','#9ad9bf'],
+  ['autumn','Thu — Kim Phong','#e8b56d'],['winter','Đông — Hàn Nguyệt','#aedbfa']
+ ].map(([id,label,accent])=>[id,Object.freeze({label,accent,banner:'assets/shop-r3/banner-bg.webp',character:'assets/shop-r3/thanh-van.webp'})])));
+ const artImage=(src,alt)=>{const img=make('img','',undefined);img.src=src;img.alt=alt;img.addEventListener('error',()=>{img.hidden=true;});return img;};
+ function detail(item,trigger){
+  dismissDetail?.();
+  const overlay=make('div','shop-r3-modal'),panel=make('section','shop-r3-dialog');
+  panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');panel.setAttribute('aria-label',item.name);
+  const close=make('button','','×');close.type='button';close.setAttribute('aria-label','Đóng chi tiết');
+  const art=make('div','shop-r3-detail-art',item.icon||'✦');
+  root.DuduItemArtV13?.mount(art,root.DuduItemCatalog?.byId(item.id)||item);
+  if(item.previewArt)art.replaceChildren(artImage(item.previewArt,item.name));
+  panel.append(close,art,make('h3','',item.name),make('p','',item.rank?item.rank+' · '+item.scope:'Ngoại trang · Chỉ xem trước'),
+   make('p','',item.desc||item.description||''),make('p','',item.status||'Không bán'));
+  overlay.append(panel);document.body.append(overlay);
+  const overflow=document.body.style.overflow;document.body.style.overflow='hidden';
+  const phone=document.getElementById('cyber-phone'),inert=phone?.inert;if(phone)phone.inert=true;
+  const key=e=>{if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();dismissDetail?.();}if(e.key==='Tab'){e.preventDefault();close.focus();}};
+  const owner=root.DuduAuth?.uid?.();
+  const monitor=setInterval(()=>{if(root.DuduAuth?.uid?.()!==owner||!trigger.isConnected||document.hidden||(phone&&getComputedStyle(phone).display==='none'))dismissDetail?.();},200);
+  dismissDetail=()=>{clearInterval(monitor);document.removeEventListener('keydown',key,true);document.body.style.overflow=overflow;if(phone)phone.inert=inert;overlay.remove();dismissDetail=null;if(trigger.isConnected)trigger.focus({preventScroll:true});};
+  document.addEventListener('keydown',key,true);close.addEventListener('click',()=>dismissDetail?.());
+  overlay.addEventListener('click',e=>{if(e.target===overlay)dismissDetail?.();});close.focus();
+ }
  let quickRanks=['F','E','D'],quickKeepOne=false,quickSelectedIds=new Set();
  const REALMS={URBAN:'Hiện đại',APOCALYPSE:'Tận thế',CULTIVATION:'Tu tiên',
   FANTASY:'Huyền huyễn',SCIFI:'Viễn tưởng',HORROR:'Kinh dị'};
@@ -18,28 +44,35 @@
  };
  function render({host,coins,state,onBuy,stories=[],readRewards={},
    functionalState=null,readOnly=false,saleIds=null,personalMode=false,
-   inventory=[],storyStates={},onBulkSell=null,bulkBusy=false}={}){
+   inventory=[],storyStates={},onBulkSell=null,bulkBusy=false,theme='spring'}={}){
    if(!host||typeof onBuy!=='function')return false;
+   dismissDetail?.();
    host.replaceChildren();
+   const season=THEMES[theme]||THEMES.spring;
+   host.dataset.shopTheme=Object.hasOwn(THEMES,theme)?theme:'spring';
+   host.style?.setProperty('--shop-accent',season.accent);
    const toolbar=make('section','dudu-v43-market-toolbar');
    const intro=make('div','dudu-v43-market-intro');
    intro.append(make('strong','','✦ DUDU MARKET'),
      make('small','','Chung kho đồ · riêng nguồn nhận'));
    // The phone already presents the coin mark and wallet balance.
-   if(!personalMode)toolbar.append(intro);
+   // Keep the Cyber Phone title and wallet as the single header.
    const tabs=make('div','dudu-v43-market-tabs');
-   const tabOptions=[['COMMON','Mua sắm']];
-   if(personalMode&&typeof onBulkSell==='function')
-    tabOptions.push(['SELL','Bán nhanh']);
-   tabOptions.push(['REALM','Vị diện'],['DUDU','Kỷ vật'],
-    ['STORY','Theo truyện'],['TOOLS','Chức năng']);
-   if(tab==='SELL'&&!personalMode)tab='COMMON';
+   const canSell=personalMode&&typeof onBulkSell==='function';
+   if(group==='SELL'&&!canSell){group='ITEMS';tab='COMMON';}
+   const groups=make('nav','shop-r3-groups');groups.setAttribute('aria-label','Gian hàng');
+   const rerender=()=>render({host,coins,state,onBuy,stories,readRewards,functionalState,readOnly,saleIds,personalMode,inventory,storyStates,onBulkSell,bulkBusy,theme});
+   for(const [id,label] of [['ITEMS','Vật Phẩm'],['CULTIVATION','Tu Tiên'],['OUTFITS','Ngoại Trang'],['COLLECTION','Sưu Tầm'],...(canSell?[['SELL','Bán Nhanh']]:[])]){
+    const button=make('button',id===group?'is-active':'',label);button.type='button';button.setAttribute('aria-pressed',String(id===group));
+    button.addEventListener('click',()=>{group=id;tab=id==='SELL'?'SELL':id==='COLLECTION'?'REALM':'COMMON';rerender();});groups.append(button);
+   }
+   const tabOptions=group==='COLLECTION'?[['REALM','Vị diện'],['DUDU','Kỷ vật'],['STORY','Theo truyện']]:[];
    for(const [id,label] of tabOptions){
      const button=make('button','dudu-v43-market-tab'+(id===tab?' is-active':''),label);
      button.type='button';button.setAttribute('aria-pressed',String(tab===id));
      button.addEventListener('click',()=>{
        tab=id;render({host,coins,state,onBuy,stories,readRewards,functionalState,
-        readOnly,saleIds,personalMode,inventory,storyStates,onBulkSell,bulkBusy});
+        readOnly,saleIds,personalMode,inventory,storyStates,onBulkSell,bulkBusy,theme});
      });
      tabs.append(button);
    }
@@ -54,6 +87,11 @@
      draw();
    });
    filters.append(input);
+   const ranks=make('select','shop-r3-ranks'),sort=make('select','shop-r3-sort');
+   ranks.setAttribute('aria-label','Lọc phẩm');sort.setAttribute('aria-label','Sắp xếp vật phẩm');
+   for(const [value,label] of [['','Mọi phẩm'],...['F','E','D','C','B','A','S','SS','SSS'].map(x=>[x,x])]){const o=make('option','',label);o.value=value;ranks.append(o);}
+   for(const [value,label] of [['catalog','Mặc định'],['name','Tên A–Z'],['price','Giá tăng dần']]){const o=make('option','',label);o.value=value;sort.append(o);}
+   ranks.value=rankFilter;sort.value=order;ranks.addEventListener('change',()=>{rankFilter=ranks.value;draw();});sort.addEventListener('change',()=>{order=sort.value;draw();});filters.append(ranks,sort);
    const realmSelector=make('select','dudu-v43-market-realm');
    realmSelector.setAttribute('aria-label','Chọn vị diện để xem vật phẩm');
    for(const [id,label] of Object.entries(REALMS)){
@@ -86,9 +124,36 @@
      readOnly?'Chỉ xem trước · Chưa thể mua các món này.':
      personalMode?'Đồ hiếm đang chờ ngày mở bán.':
      'Khám phá vật phẩm và kỷ vật của DUDU.');
-   toolbar.append(tabs,filters,hint,funEntry);
-   host.append(toolbar,collection,footer);
+   const hero=make('section','shop-r3-hero');
+   hero.style?.setProperty('--shop-banner','url("'+season.banner+'")');
+   hero.append(artImage(season.character,'Minh họa Đạo Bào Thanh Vân'));
+   const heroCopy=make('div','shop-r3-hero-copy'),view=make('button','','Xem bộ đồ ›');view.type='button';
+   view.addEventListener('click',()=>{group='OUTFITS';rerender();});
+   heroCopy.append(make('small','','✧ NGOẠI TRANG ĐỀ CỬ'),make('h2','','Đạo Bào Thanh Vân'),make('p','','Thanh vân như mộng, khí chất xuất trần'),view);hero.append(heroCopy);
+   const combos=make('section','shop-r3-combos');combos.append(make('h3','','Gói Sự Kiện & Combo'));
+   const strip=make('div','shop-r3-combo-strip');
+   for(const name of ['Gói Tân Thủ Tu Tiên','Gói Luyện Công','Gói Ngoại Trang Thanh Vân']){
+    const card=make('article','shop-r3-combo');const locked=make('button','','Chưa mở bán');locked.type='button';locked.disabled=true;
+    card.append(make('strong','',name),make('p','','Nội dung và giá chờ duyệt'),locked);strip.append(card);
+   }combos.append(strip);
+   toolbar.append(groups,tabs,filters,hint,funEntry);
+   host.append(hero,toolbar);
+   if(group==='ITEMS')host.append(combos);
+   host.append(collection,footer);
    function draw(){
+     filters.hidden=['OUTFITS','SELL'].includes(group);tabs.hidden=group!=='COLLECTION';
+     if(group==='OUTFITS'){
+      collection.replaceChildren();hint.hidden=true;funEntry.hidden=true;
+      for(const name of ['Đạo Bào Thanh Vân','Đạo Bào Vân Nguyệt']){
+       const card=make('article','shop-r3-outfit'),preview=make('button','shop-r3-outfit-preview');preview.type='button';preview.setAttribute('aria-label','Xem trước '+name);
+       const item={name,desc:name==='Đạo Bào Thanh Vân'?'Đạo bào trắng lam, thanh nhã và nhẹ như mây.':'Concept trăng tím · Chưa có minh họa riêng được duyệt.',status:'Chỉ xem trước · Chưa mở bán · Không ghi quyền sở hữu'};
+       if(name==='Đạo Bào Thanh Vân'){item.previewArt=season.character;preview.append(artImage(season.character,name));}else preview.textContent='☾';
+       preview.addEventListener('click',()=>detail(item,preview));
+       const lock=make('button','','Chưa mở bán');lock.type='button';lock.disabled=true;
+       card.append(preview,make('h3','',name),make('p','',item.desc),make('small','','Chỉ xem trước · Không thay mặc thật'),lock);collection.append(card);
+      }
+      footer.textContent='Ngoại trang chỉ có tác dụng thẩm mỹ. Chưa mua, chưa sở hữu, chưa thay model Tu Tiên.';return;
+     }
      funEntry.hidden=tab!=='DUDU';
      realmSelector.hidden=tab!=='REALM';
      storySelector.hidden=tab!=='STORY'||!storyOptions.length;
@@ -192,9 +257,9 @@
      const utility=root.DuduFunctionalItemsV438;
      const pending=utility?.norm(functionalState).pending;
      if(tab==='COMMON'){
-       hint.className='dudu-v43-market-hint'+(personalMode?'':' dudu-money-display--gold');
+       hint.className='dudu-v43-market-hint';
        hint.textContent=personalMode?'':
-        coins+' · '+ledger.total+'/'+core.PURCHASE_TOTAL_PER_DAY+
+        ledger.total+'/'+core.PURCHASE_TOTAL_PER_DAY+
          ' lượt mua hôm nay · Mua hàng không cộng EXP'+
          (pending?' · 🎟️ Phiếu -25% đang chờ áp dụng':'');
      }else if(tab==='REALM'){
@@ -218,14 +283,19 @@
          '🔒 '+storyIndex.hidden+' vật phẩm gắn chương chưa đọc được ẩn tên.');
        collection.append(shield);
      }
-     const items=tab==='STORY'?(storyIndex?.items||[]):
-       core.preview({tab,realmTag:realm,query});
+     const items=group==='CULTIVATION'?core.preview({tab:'REALM',realmTag:'CULTIVATION',query}):
+      group==='ITEMS'?[...core.preview({tab:'COMMON',query}),...core.preview({tab:'TOOLS',query})]:
+      tab==='STORY'?(storyIndex?.items||[]):core.preview({tab,realmTag:realm,query});
+     if(group==='CULTIVATION'){hint.hidden=false;hint.textContent='Tu Tiên · Danh mục xem trước, chưa mở bán.';}
      const searchText=query.trim().toLocaleLowerCase('vi');
      // Archived drafts must never return to a sale/preview shelf. They can
      // still be inspected in the owner's warehouse using their permanent ID.
      const activeItems=items.filter(x=>!x.archived&&x.published!==false);
-     const visible=tab==='STORY'&&searchText?
+     let visible=tab==='STORY'&&searchText?
        activeItems.filter(x=>(x.name+' '+x.desc+' '+x.rank).toLocaleLowerCase('vi').includes(searchText)):activeItems;
+     visible=visible.filter(x=>!rankFilter||x.rank===rankFilter);
+     if(order==='name')visible.sort((a,b)=>a.name.localeCompare(b.name,'vi'));
+     if(order==='price')visible.sort((a,b)=>(Number.isSafeInteger(a.price)?a.price:Infinity)-(Number.isSafeInteger(b.price)?b.price:Infinity));
      if(!visible.length){
        collection.append(make('p','dudu-v43-market-empty',
          tab==='STORY'?'Chưa có vật phẩm công khai cho truyện này hoặc bạn chưa mở chương liên quan.':
@@ -236,8 +306,9 @@
        const card=make('article','dudu-v43-market-item');
        card.dataset.itemId=item.id;
        card.dataset.scope=item.scope;
-       const artwork=make('span','dudu-v43-market-icon',item.icon||'🎁');
-       artwork.setAttribute('aria-hidden','true');
+       const artwork=make('button','dudu-v43-market-icon',item.icon||'🎁');
+       artwork.type='button';artwork.setAttribute('aria-label','Xem '+item.name);
+       artwork.addEventListener('click',()=>detail({...item,status:group==='ITEMS'&&(!Array.isArray(saleIds)||saleIds.includes(item.id))&&!readOnly?item.price+' Xu Vàng':'Chỉ xem trước · Chưa mở bán'},artwork));
        const canonical=root.DuduItemCatalog?.byId(item.id);
        const rarity=root.DuduItemArtV13?.visual(canonical||item);
        if(rarity)card.style.setProperty('--rarity-glow',rarity.light);
@@ -261,10 +332,10 @@
          info.append(context);
        }
        const right=make('div','dudu-v43-market-buy');
-       if(tab==='COMMON'||tab==='TOOLS'){
+       if(group==='ITEMS'&&(tab==='COMMON'||tab==='TOOLS')){
          const n=ledger.counts[item.id]||0;
          const limit=core.TOOL_LIMITS[item.id]||core.PURCHASE_PER_ITEM_PER_DAY;
-         const save=!personalMode&&tab==='COMMON'?(utility?.discount(functionalState,{
+         const save=!personalMode&&item.scope==='COMMON'?(utility?.discount(functionalState,{
            itemId:item.id,price:item.price}).amount||0):0;
          right.append(make('strong','dudu-money-display--gold',item.price-save));
          if(save)right.append(make('small','dudu-v438-discount dudu-money-display--gold',
@@ -279,7 +350,12 @@
            button.title='Vật phẩm này chưa hỗ trợ mua trên máy chủ';
          }
          button.setAttribute('aria-label',readOnly?'Xem '+item.name+'; chưa hỗ trợ mua':'Mua '+item.name+' giá '+(item.price-save)+' Xu Vàng');
-         button.addEventListener('click',()=>onBuy(item.id));
+         button.addEventListener('click',async()=>{
+           if(button.disabled||host.dataset.shopBuying==='true')return;
+           host.dataset.shopBuying='true';button.disabled=true;
+           try{await onBuy(item.id);}catch(error){root.console?.warn?.('Shop callback failed',error?.code||'unavailable');}
+           finally{delete host.dataset.shopBuying;if(button.isConnected)button.disabled=readOnly||(Array.isArray(saleIds)&&!saleIds.includes(item.id))||(!personalMode&&(ledger.total>=core.PURCHASE_TOTAL_PER_DAY||n>=limit))||coins<item.price-save;}
+         });
          right.append(button);
          if(!personalMode)right.append(make('small','',n+'/'+limit+' hôm nay'));
        }else{
@@ -293,5 +369,5 @@
    draw();
    return true;
  }
- root.DuduMarketUIV43=Object.freeze({render});
+ root.DuduMarketUIV43=Object.freeze({render,themes:THEMES});
 })(typeof window!=='undefined'?window:{});

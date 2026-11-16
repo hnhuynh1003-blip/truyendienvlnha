@@ -39,19 +39,18 @@ test('every product currently sold has its own coherent illustrated sprite in th
  const host=document.createElement('section');
  const config={host,coins:500,state:null,onBuy:()=>true,personalMode:true};
  assert.equal(window.DuduMarketUIV43.render(config),true);
- let shelfCards=host.children[1].children;
- assert.equal(shelfCards.length,12);
+ let shelfCards=host.children.find(x=>x.className==='dudu-v43-market-grid').children;
+ assert.equal(shelfCards.length,16,'COMMON and TOOLS share the same UI shelf');
  for(const card of shelfCards){
   const itemId=card.dataset.itemId;
   const icon=card.children[0];
   const img=icon.children[0];
   assert.equal(img?.tag,'img',itemId+' has actual image element');
-  assert.equal(img.src,art.visual(catalog.byId(itemId)).src);
+  assert.equal(img.src,art.visual(catalog.byId(itemId)||core.FUNCTIONAL_TOOLS.find(x=>x.id===itemId)).src);
   assert.equal(icon.classList.values.has('dudu-item-v13-frame'),true);
   assert.ok(card.style.values['--rarity-glow']);
  }
- host.children[0].children[0].children[4].events.click();
- shelfCards=host.children[1].children;
+ shelfCards=shelfCards.filter(x=>x.dataset.scope==='FUNCTIONAL');
  assert.equal(shelfCards.length,4);
  for(const card of shelfCards){
   const icon=card.children[0];
@@ -79,13 +78,14 @@ test('old archived product remains available to its owner but cannot appear on n
  assert.equal(core.preview({tab:'COMMON'}).some(x=>x.id===archived.id),false);
  const before=JSON.stringify(archived);
  const document=fakeDom();
- const window={DuduEconomyCoreV43:{...core,preview:()=>[archived,...core.shopCatalog()]},
+ const window={DuduEconomyCoreV43:{...core,preview:({tab})=>tab==='COMMON'?[archived,...core.shopCatalog()]:[]},
   DuduItemCatalog:catalog,DuduItemArtV13:art};
  vm.runInNewContext(market,{window,document});
  const host=document.createElement('section');
  window.DuduMarketUIV43.render({host,coins:500,onBuy:()=>true,personalMode:true});
- assert.equal(host.children[1].children.length,12);
- assert.equal(host.children[1].children.some(x=>x.dataset.itemId==='e1'),false);
+ const grid=host.children.find(x=>x.className==='dudu-v43-market-grid');
+ assert.equal(grid.children.length,12);
+ assert.equal(grid.children.some(x=>x.dataset.itemId==='e1'),false);
  assert.equal(JSON.stringify(archived),before,'retirement is a view rule, not destructive migration');
 });
 
@@ -110,7 +110,7 @@ test('warehouse and auction art use the same dedicated sprite mount, without cha
    (name==='inventory-view-v42.js'?'f33-1':
     ['inventory-hub-v43-9.js','inventory-v43-9.css'].includes(name)
      ?'c24b-1':name==='item-visuals-v13.js'?'f37-1':
-       ['market-ui-v43.js','market-v43.css'].includes(name)?'f36-1':'c24a-1')),
+       ['market-ui-v43.js','market-v43.css'].includes(name)?'shop-r3-s1b3-1':'c24a-1')),
     name+' new cache version');
  }
 });

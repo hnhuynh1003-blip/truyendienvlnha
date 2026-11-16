@@ -1,0 +1,144 @@
+{
+  "batch": "SHOP S1-B3 ART-SHOP-FRM-01",
+  "scope": "Card+combo frame only; Four Seasons = design proposal",
+  "sourceReference": "S1-B2 interactive prototype + approved banner BG/CHAR",
+  "productionModified": false,
+  "borderImageSlice": 110,
+  "status": "DRAFT-REVIEW",
+  "assets": [
+    {
+      "filename": "DUDU_SHOP_S1_B3_ART_SHOP_FRM_01_CARD_9SLICE_VECTOR.svg",
+      "bytes": 2164,
+      "sha256": "469eccd6b822701ccf4b4dbfeb2a41259d1c97de3637640f292ea6f895090a1a",
+      "status": "DRAFT-REVIEW"
+    },
+    {
+      "filename": "DUDU_SHOP_S1_B3_ART_SHOP_FRM_01_CARD_9SLICE_ALPHA_MASTER_512x512.png",
+      "bytes": 39195,
+      "sha256": "a22602853a3ba404a377f7d7324fed78a246a94d122609e644c14dbe482e8332",
+      "status": "DRAFT-REVIEW",
+      "dimensions": [
+        512,
+        512
+      ],
+      "alpha": true
+    },
+    {
+      "filename": "DUDU_SHOP_S1_B3_ART_SHOP_FRM_01_CARD_9SLICE_ALPHA_WEB_512x512.webp",
+      "bytes": 26268,
+      "sha256": "db2ffa1f2a6ba2af81b7b7a63563d251f9b14386b68cac69edce869ba09151d2",
+      "status": "DRAFT-REVIEW",
+      "dimensions": [
+        512,
+        512
+      ],
+      "alpha": true
+    },
+    {
+      "filename": "DUDU_SHOP_S1_B3_ART_SHOP_FRM_01_COMBO_9SLICE_VECTOR.svg",
+      "bytes": 2164,
+      "sha256": "f7f767616c1a08444e66ca89cc0f138be47bc629eab7bf133d4471765f9fcfb8",
+      "status": "DRAFT-REVIEW"
+    },
+    {
+      "filename": "DUDU_SHOP_S1_B3_ART_SHOP_FRM_01_COMBO_9SLICE_ALPHA_MASTER_768x512.png",
+      "bytes": 41429,
+      "sha256": "a9ee4b43a9768fa5294ae79a0c6617ce5227e2cbfe8e7c580e7918eecce73a98",
+      "status": "DRAFT-REVIEW",
+      "dimensions": [
+        768,
+        512
+      ],
+      "alpha": true
+    },
+    {
+      "filename": "DUDU_SHOP_S1_B3_ART_SHOP_FRM_01_COMBO_9SLICE_ALPHA_WEB_768x512.webp",
+      "bytes": 27376,
+      "sha256": "86c8a31b278f07f90b6b5ff69da0dfd0c9929c6c5c8c8d392b6ee8410f6a3ecd",
+      "status": "DRAFT-REVIEW",
+      "dimensions": [
+        768,
+        512
+      ],
+      "alpha": true
+    },
+    {
+      "filename": "DUDU_SHOP_S1_B3_ART_SHOP_FRM_01_S1_B2_REVIEW.html",
+      "bytes": 2301185,
+      "sha256": "8b74da0b86379aa65a04c4281a02976e030b1a167ad00a004095812b9fdac54c",
+      "status": "DRAFT-REVIEW"
+    },
+    {
+      "filename": "DUDU_SHOP_S1_B3_ART_SHOP_FRM_01_PREVIEW_PHONE_390.png",
+      "bytes": 305177,
+      "sha256": "b8a5f0ce716e1c51f1e1603a8bbd65828ca3d77bd279f908ea7dc783db2f3022",
+      "status": "DRAFT-REVIEW",
+      "dimensions": [
+        390,
+        835
+      ],
+      "alpha": false
+    },
+    {
+      "filename": "DUDU_SHOP_S1_B3_ART_SHOP_FRM_01_PREVIEW_PHONE_320.png",
+      "bytes": 261608,
+      "sha256": "8c308b805a07bd1e59ba03ceba714381cf06d491148aa1e954529d1d006581cc",
+      "status": "DRAFT-REVIEW",
+      "dimensions": [
+        320,
+        835
+      ],
+      "alpha": false
+    },
+    {
+      "filename": "DUDU_SHOP_S1_B3_ART_SHOP_FRM_01_PREVIEW_PRODUCTS_390.png",
+      "bytes": 241255,
+      "sha256": "b1a776d71317d4e921360efd47d4b866079bbcfcc8fc3a867757e84bc356d247",
+      "status": "DRAFT-REVIEW",
+      "dimensions": [
+        390,
+        835
+      ],
+      "alpha": false
+    },
+    {
+      "filename": "DUDU_SHOP_S1_B3_ART_SHOP_FRM_01_PREVIEW_PRODUCTS_320.png",
+      "bytes": 212719,
+      "sha256": "985a205658cf37c33c9d1139b453c63f7b3ef0ff80578aa9c79ca73386b92333",
+      "status": "DRAFT-REVIEW",
+      "dimensions": [
+        320,
+        835
+      ],
+      "alpha": false
+    },
+    {
+      "filename": "DUDU_SHOP_S1_B3_ART_SHOP_FRM_01_PREVIEW_WINTER_390.png",
+      "bytes": 240759,
+      "sha256": "ddc18a77d2a228e2047f066e6939bae58374d919167ff935bdf49ce169ec79a8",
+      "status": "DRAFT-REVIEW",
+      "dimensions": [
+        390,
+        835
+      ],
+      "alpha": false
+    },
+    {
+      "filename": "DUDU_SHOP_S1_B3_ART_SHOP_FRM_01_PREVIEW_WINTER_320.png",
+      "bytes": 213859,
+      "sha256": "2efb9c7bbf82e8ba20838f62b07d7fdbfeb4bdfbd745687c30b1e7dd0f1ac7b9",
+      "status": "DRAFT-REVIEW",
+      "dimensions": [
+        320,
+        835
+      ],
+      "alpha": false
+    },
+    {
+      "filename": "DUDU_SHOP_S1_B3_ART_SHOP_FRM_01_FOUR_SEASONS_DESIGN_V01.md",
+      "bytes": 3005,
+      "sha256": "d945e5138e483b4d220bf295c1ee07ab2a4515cec631e9b55ea11e26ac5e7b50",
+      "status": "DRAFT-REVIEW"
+    }
+  ]
+}

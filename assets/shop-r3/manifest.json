@@ -1,0 +1,26 @@
+{
+  "source": "Owner supplied S1-B3 packs, 2026-11-16",
+  "authorization": "Owner direct-main UI-FIRST request; source manifests retained as DRAFT-REVIEW",
+  "files": {
+    "banner-bg.webp": {
+      "bytes": 153250,
+      "sha256": "1279f2699ee3662e9c07cfaa8faff1e9a0b344877eb3fbbf81e33ba3e9012f78"
+    },
+    "card-frame.webp": {
+      "bytes": 26268,
+      "sha256": "db2ffa1f2a6ba2af81b7b7a63563d251f9b14386b68cac69edce869ba09151d2"
+    },
+    "combo-frame.webp": {
+      "bytes": 27376,
+      "sha256": "86c8a31b278f07f90b6b5ff69da0dfd0c9929c6c5c8c8d392b6ee8410f6a3ecd"
+    },
+    "shop-bg.webp": {
+      "bytes": 113972,
+      "sha256": "70d1d3662e021349dbdeb1ce5b5c01a96c8f96480cd14cfe647efad1679b4871"
+    },
+    "thanh-van.webp": {
+      "bytes": 621538,
+      "sha256": "98174990bce11a45dade86e1df0124d95a33720b94ccba1a557d0af490023fe8"
+    }
+  }
+}
