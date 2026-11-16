@@ -148,8 +148,8 @@
      const from=slice.map(w=>w.text).join(' '),key=fold(from);
      if(ordinary.has(key))continue;
      const end=slice.at(-1).end;
-     const context=beforeRx.test(text.slice(Math.max(0,first.start-55),first.start))||
-      afterRx.test(text.slice(end,Math.min(text.length,end+55)));
+     const context=beforeRx.test(text.slice(Math.max(0,first.start-55),first.start).normalize('NFC'))||
+      afterRx.test(text.slice(end,Math.min(text.length,end+55)).normalize('NFC'));
      if(!context)continue; // Surname + proximity or repetition is not name evidence.
      if(!memo.has(key))memo.set(key,suggest(from));
      const options=memo.get(key);
