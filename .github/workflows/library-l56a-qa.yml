@@ -1,0 +1,40 @@
+name: DUDU Library L5.6A QA (read-only)
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'js/reader-name-*.js'
+      - 'js/reader-names-l54.js'
+      - 'css/reader-names-l54.css'
+      - 'index.html'
+      - 'tests/reader-name-*.test.cjs'
+      - 'tests/browser-reader-name-*.cjs'
+      - '.github/workflows/library-l56a-qa.yml'
+permissions:
+  contents: read
+jobs:
+  library-l56a:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax and chapter-name regressions
+        run: |
+          node --check js/reader-name-scan-l56a.js
+          node --check js/reader-name-lookup-l55.js
+          node --check js/reader-name-lookup-worker-l55.js
+          node --check js/reader-names-l54.js
+          node --check js/reader-name-ui-l54.js
+          node --test tests/reader-name-scan-l56a.test.cjs tests/reader-name-lookup-l55.test.cjs tests/reader-names-l53.test.cjs tests/reader-names-l54.test.cjs
+      - name: Install Playwright Chromium (test only)
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install chromium --with-deps
+      - name: Web and EPUB reader browser regressions
+        run: |
+          node tests/browser-reader-names-l53.cjs
+          node tests/browser-reader-names-l54.cjs
+          node tests/browser-reader-name-lookup-l55.cjs
