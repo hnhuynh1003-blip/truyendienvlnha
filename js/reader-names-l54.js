@@ -109,6 +109,34 @@
  function create({storage}={}){
   const histories=new Map(),cache=new Map(),plans=new Map(),EMPTY=[];
   const key=id=>{if(!id||String(id).length>180)throw Error('Không xác định được truyện.');return 'dudu-reader-names-l53:'+encodeURIComponent(id);};
+  // Scan-only exclusions use a separate per-story key; never overwrite L5.3/4/5 rules.
+  const ignoredKey=id=>'dudu-reader-name-scan-ignore-l56a:'+encodeURIComponent(String(id||''));
+  function ignored(id){
+   key(id);
+   try{
+    const data=JSON.parse(storage?.getItem(ignoredKey(id))||'[]');
+    return Array.isArray(data)?[...new Set(data.filter(v=>typeof v==='string'&&norm(v)&&v.length<=90).map(norm))].slice(-300):[];
+   }catch(_){return [];}
+  }
+  function saveIgnored(id,rows){
+   key(id);
+   if(!storage?.setItem)throw Error('Thiết bị không cho lưu đề xuất đã bỏ qua.');
+   try{storage.setItem(ignoredKey(id),JSON.stringify(rows.slice(-300)));}
+   catch(_){throw Error('Thiết bị từ chối lưu danh sách bỏ qua; dữ liệu cũ giữ nguyên.');}
+  }
+  function ignoreCandidate(id,phrase){
+   const value=norm(phrase);legacy.clean(value,value);
+   if(read(id).some(r=>!r.disabledAuto&&(fold(r.from)===fold(value)||fold(r.to)===fold(value))))
+    throw Error('Đây là tên đã xác nhận; hãy chỉnh trong Từ điển nếu cần.');
+   const rows=ignored(id);
+   if(!rows.some(r=>fold(r)===fold(value)))saveIgnored(id,rows.concat(value));
+   return ignored(id);
+  }
+  function allowCandidate(id,phrase){
+   const rows=ignored(id),next=rows.filter(r=>fold(r)!==fold(phrase));
+   if(next.length!==rows.length)saveIgnored(id,next);
+   return next;
+  }
   function validate(rows){
    if(!Array.isArray(rows)||rows.length>legacy.MAX_ENTRIES*2||rows.filter(r=>r?.disabledAuto!==true).length>legacy.MAX_ENTRIES)
     throw Error('Bản sao lưu phải có tối đa 300 cách gọi và 300 tên đã bỏ qua.');
@@ -219,7 +247,7 @@
    }
    return write(id,[...map.values()]);
   }
-  return Object.freeze({read,add,remove,undo,rename,render,detailed,backup,restore,characters:id=>characters(read(id)),canUndo:id=>!!histories.get(key(id))?.length});
+  return Object.freeze({read,add,remove,undo,rename,render,detailed,backup,restore,ignored,ignoreCandidate,allowCandidate,characters:id=>characters(read(id)),canUndo:id=>!!histories.get(key(id))?.length});
  }
  return Object.freeze({norm,fold,title,words,analyze,connections,characters,create});
 });
