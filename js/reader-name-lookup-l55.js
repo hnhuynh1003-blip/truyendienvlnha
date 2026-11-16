@@ -158,7 +158,11 @@
     }
     if(best)spans.push(best);
    }
-   return spans;
+   // A compound surname is one name: do not report the inner single-surname suffix.
+   spans.sort((a,b)=>a.start-b.start||b.end-a.end);
+   const distinct=[];let coveringEnd=-1;
+   for(const span of spans){if(span.end<=coveringEnd)continue;distinct.push(span);coveringEnd=span.end;}
+   return distinct;
   }
 
   packs=initialPacks.map(validatePack);index();
