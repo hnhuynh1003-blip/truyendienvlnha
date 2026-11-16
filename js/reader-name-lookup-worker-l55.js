@@ -1,7 +1,7 @@
 'use strict';
 // Pure libraries attach to this isolated Worker global. No reading DOM or Auth.
 self.window=self;
-importScripts('reader-name-dictionary-l53.js?v=l5-3b','reader-name-lookup-l55.js?v=l55-1','reader-names-l54.js?v=l55-1');
+importScripts('reader-name-dictionary-l53.js?v=l5-3b','reader-name-lookup-l55.js?v=l56a-1','reader-names-l54.js?v=l55-1','reader-name-scan-l56a.js?v=l56a-1');
 let lookup=null;
 const DATA_BASE=new URL('../assets/reader-name-lookup-l55/',self.location.href);
 const DB='dudu-reader-name-lookup-l55';
@@ -41,7 +41,7 @@ self.onmessage=event=>{
     if(message.method==='suggest')result=lookup.suggest(message.text,message.options);
     else if(message.method==='analyze'){
      if(typeof message.text!=='string'||message.text.length>2000000)throw Error('Chương vượt giới hạn 2 triệu ký tự; hãy chọn từng tên để tra.');
-     result=DuduReaderNameIntelligenceL54.analyze(message.text,message.entries||[],lookup).slice(0,200).map(r=>({...r,occurrences:r.occurrences.slice(0,10)}));
+     result=DuduReaderNameScanL56A.analyze(message.text,message.entries||[],lookup,message.ignored||[]);
     }else if(message.method==='preview'){
      const pack=lookup.parsePack(message.text,message.options);result={pack,preview:pack.entries.slice(0,5)};
     }else if(message.method==='install'){
