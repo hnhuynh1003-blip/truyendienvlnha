@@ -98,6 +98,29 @@ async function desktop(browser){
  assert.equal(await p.locator('#reader-content > p').textContent(),automaticText);
  assert.equal(await p.evaluate(()=>localStorage.getItem('dudu-reader-names-l53:web%3Aauto')),null);
  assert.equal(await p.locator('#reader-lookup-auto-l55').count(),0);
+ // L5.6A: real chapter scan → ignore → restore → jump must preserve source/bookmark.
+ const l56Source='Cô gọi lộc biết thuyền. lộc biết thuyền nói. lộc biết thuyền hỏi.';
+ const filler=Array.from({length:35},(_,i)=>'Đoạn '+(i+1)+': Khung cảnh vẫn tiếp diễn. '.repeat(4));
+ await p.evaluate(({filler,text})=>{localStorage.setItem('bookmark:l56a',JSON.stringify({chapter:4,y:105}));fixtureMount('web:l56a-check',[...filler,text]);}, {filler,text:l56Source});
+ await p.evaluate(()=>DuduReaderNamesL53.scan());
+ const candidate=p.locator('.l54-result').filter({hasText:'lộc biết thuyền → Lộc Tri Chu'});
+ await candidate.waitFor({timeout:20000});
+ assert.match(await candidate.textContent(),/Xuất hiện 3 lần/);
+ assert.match(await candidate.locator('.l55-excerpt').textContent(),/Cô gọi lộc biết thuyền/);
+ await candidate.getByRole('button',{name:'Bỏ qua'}).click();
+ await p.waitForFunction(()=>document.getElementById('reader-name-list-l53').textContent.includes('Không tìm thấy tên đủ căn cứ'));
+ await p.evaluate(()=>DuduReaderNamesL53.openManager());
+ if(await p.locator('.l56-advanced').getAttribute('open')===null)await p.locator('.l56-advanced > summary').click();
+ assert.match(await p.locator('#reader-name-ignored-l56a').textContent(),/lộc biết thuyền/);
+ await p.locator('#reader-name-ignored-l56a').getByRole('button',{name:'Khôi phục'}).click();
+ await p.evaluate(()=>DuduReaderNamesL53.scan());
+ await candidate.waitFor({timeout:20000});
+ await candidate.getByRole('button',{name:'Đến vị trí'}).click();
+ await p.locator('#reader-content > p.l56-jump-target').waitFor({timeout:3000});
+ assert.equal(await p.locator('#reader-name-modal-l53').isVisible(),false);
+ assert.equal(await p.locator('#reader-content > p').last().textContent(),l56Source);
+ assert.deepEqual(await p.evaluate(()=>JSON.parse(localStorage.getItem('bookmark:l56a'))),{chapter:4,y:105});
+ assert.equal(await p.evaluate(()=>localStorage.getItem('dudu-reader-names-l53:web%3Al56a-check')),null);
  assert.deepEqual(errors,[]);await c.close();
 }
 async function android(browser,width){
