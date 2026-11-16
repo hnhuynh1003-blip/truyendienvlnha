@@ -1,0 +1,46 @@
+{
+  "node": {
+    "pass": 129,
+    "fail": 0
+  },
+  "ui": {
+    "checks": 1124,
+    "errors": [],
+    "externalRequests": [],
+    "states": 62,
+    "relations": 3730,
+    "maxOverflow": 0
+  },
+  "avatar": 86,
+  "gameplay": {
+    "checks": 1694,
+    "cases": 36
+  },
+  "bagFixture": 39,
+  "viewports": [
+    [
+      320,
+      700
+    ],
+    [
+      375,
+      812
+    ],
+    [
+      390,
+      844
+    ],
+    [
+      430,
+      932
+    ],
+    [
+      760,
+      1100
+    ],
+    [
+      1280,
+      900
+    ]
+  ]
+}

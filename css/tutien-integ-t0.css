@@ -21,3 +21,9 @@ body.dudu-phone-v11 #cyber-phone #phone-app-system #dudu-v69-system-view.tutien-
 .tutien-loading-view p{margin:0}
 .tutien-loading-view button{min-height:44px;padding:8px 16px;border:1px solid #9c8c64;border-radius:8px;color:#eddfb6;background:#19352f;font:inherit}
 .tutien-loading-view button[hidden]{display:none}
+/* R5.4: release the actual header height only while this exploration overlay is open.
+   The existing host header and routes return as soon as its close callback succeeds. */
+body.dudu-phone-v11 #cyber-phone.tutien-exploration-open #phone-app-system>.phone-app-header,
+body.dudu-phone-v11 #cyber-phone.tutien-exploration-open .phone-status-bar .phone-close-btn{display:none!important}
+/* The host status strip is an absolute overlay; otherwise it intercepts the new close hitbox. */
+body.dudu-phone-v11 #cyber-phone.tutien-exploration-open>.phone-screen>.phone-status-bar{display:none!important}

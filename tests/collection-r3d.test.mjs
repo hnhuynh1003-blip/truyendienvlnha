@@ -1,0 +1,9 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';
+import {createState,enter,move} from '../prototypes/tutien-combat-s/collection/model.mjs';
+import {tileView} from '../prototypes/tutien-combat-s/collection/r3d-view.mjs';
+import layout,{getScaledBox} from '../prototypes/tutien-combat-s/collection/r3d-layout/layout-map.mjs';
+test('R3D scales both axes from width; does not infer Y from viewport height',()=>{for(const w of [320,344,375,390,430]){const s=w/390,b=getScaledBox(layout.shared.action,w);assert.equal(b.y,Math.round(layout.shared.action.y*s*100)/100);assert.equal(b.width,Math.round(layout.shared.action.width*s*100)/100);}});
+test('R3D all unrevealed tiles hide hazards, including accessible name',()=>{const s=createState();enter(s,'egg');const visited=new Set([6]);for(let n=0;n<9;n++){const v=tileView(s,n,visited);assert.equal(v.art,n===6?'start':n===2?'goal':'hidden');assert.doesNotMatch(v.label,/Lôi|nguy hiểm/);}move(s,7);assert.equal(tileView(s,7,visited).art,'hazard_revealed');for(const n of [0,1,8])assert.equal(tileView(s,n,visited).art,'hidden');});
+test('R3D safe path reveals only traversed tiles; no preview trap RNG imported',async()=>{const s=createState();enter(s,'egg');const visited=new Set([6]);for(const n of [3,4,5,2]){move(s,n);visited.add(n);}assert.equal(tileView(s,4,visited).art,'safe');assert.equal(tileView(s,7,visited).art,'hidden');const runtime=await readFile(new URL('../prototypes/tutien-combat-s/collection/collection.mjs',import.meta.url),'utf8');assert.doesNotMatch(runtime,/Math\.random|getRandomTraps|preview\.mjs|setStats\(/);assert.match(runtime,/from '\.\/model.mjs'/);});
+
+test('R3D CSP-safe generated module preserves official JSON exactly',async()=>{const source=JSON.parse(await readFile(new URL('../prototypes/tutien-combat-s/collection/r3d-layout/layout-map.json',import.meta.url),'utf8'));assert.deepEqual(layout,source);});

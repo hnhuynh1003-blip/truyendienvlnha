@@ -1,0 +1,13 @@
+.collection-qiankun-portal{position:absolute;inset:0;z-index:10010;pointer-events:none}
+/* Original VIS-T2 artwork and renderer, placed in the actual Cyber Phone root. */
+.collection-qiankun-portal .collection-qiankun-scrim{position:absolute;inset:0;background:#00151db3;z-index:10010;pointer-events:none;border-radius:inherit}
+.collection-qiankun-portal #collection-qiankun-dialog{position:fixed;margin:0;width:var(--trip-bag-width);max-width:none;height:calc(var(--trip-bag-width)*1.5);right:auto;bottom:auto;max-height:none;min-height:0;padding:0;overflow:visible;border:0;background:transparent;box-shadow:none;transform:none;pointer-events:auto}
+#collection-qiankun-dialog::backdrop{background:transparent;backdrop-filter:none}
+#collection-qiankun-dialog .qiankun-title{font-family:system-ui,sans-serif}
+#collection-qiankun-dialog .qiankun-item{position:absolute;inset:9%;width:82%;height:82%;object-fit:contain;pointer-events:none}
+#collection-qiankun-dialog .qiankun-item-count{position:absolute;right:10%;bottom:6%;font:700 clamp(11px,4cqw,16px)/1 system-ui;color:#fff6d4;text-shadow:0 1px 3px #00171d;pointer-events:none}
+#collection-qiankun-dialog .qiankun-slot[data-slot-state=held] .qiankun-slot-state{width:28%;height:28%;left:4%;top:4%}
+#collection-qiankun-dialog .qiankun-slot[data-slot-state=held] .qiankun-slot-frame{filter:brightness(.9)}
+#collection-qiankun-dialog .qiankun-feedback{max-height:3em;overflow:auto;word-break:normal;overflow-wrap:normal;scrollbar-width:thin}
+#collection-qiankun-dialog .qiankun-status{font-size:clamp(9px,3cqw,12px)}
+#collection-qiankun-dialog .qiankun-capacity span{line-height:1.25}

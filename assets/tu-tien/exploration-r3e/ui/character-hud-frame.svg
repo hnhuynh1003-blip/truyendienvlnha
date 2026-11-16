@@ -1,0 +1,9 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 180" role="img" aria-label="Khung hồ sơ ngọc bích và vàng cổ">
+<defs><linearGradient id="jade" x2=".7" y2="1"><stop stop-color="#174f50"/><stop offset=".45" stop-color="#07363f"/><stop offset="1" stop-color="#06262e"/></linearGradient><linearGradient id="gold" x2="0" y2="1"><stop stop-color="#fff0b1"/><stop offset=".3" stop-color="#caa15b"/><stop offset=".65" stop-color="#84612e"/><stop offset="1" stop-color="#e4c582"/></linearGradient><radialGradient id="mist"><stop stop-color="#5fbba9" stop-opacity=".2"/><stop offset="1" stop-color="#183c45" stop-opacity="0"/></radialGradient></defs>
+<path d="M30 9H570Q590 9 590 29V151Q590 171 570 171H30Q10 171 10 151V29Q10 9 30 9Z" fill="url(#jade)" stroke="#453820" stroke-width="9"/>
+<path d="M30 9H570Q590 9 590 29V151Q590 171 570 171H30Q10 171 10 151V29Q10 9 30 9Z" fill="none" stroke="url(#gold)" stroke-width="4"/>
+<rect x="21" y="20" width="558" height="140" rx="17" fill="url(#mist)" stroke="#61a99c" stroke-opacity=".4"/>
+<g fill="none" stroke="url(#gold)" stroke-width="2" opacity=".85"><path d="M13 48Q25 47 27 35Q27 27 35 27H69M13 132Q25 133 27 145Q27 153 35 153H69M587 48Q575 47 573 35Q573 27 565 27H531M587 132Q575 133 573 145Q573 153 565 153H531"/><path d="M43 10Q41 32 23 35M557 10Q559 32 577 35M43 170Q41 148 23 145M557 170Q559 148 577 145"/></g>
+<g fill="#7ac7b7" fill-opacity=".08" stroke="#c9b77a" stroke-opacity=".2"><path d="M80 45q-12-15-25-1-18-5-20 13 5 13 25 8 20 10 32-3 16-8 7-18-8-8-19 1Z"/><path d="M520 135q12 15 25 1 18 5 20-13-5-13-25-8-20-10-32 3-16 8-7 18 8 8 19-1Z"/></g>
+<g fill="#57a795" stroke="url(#gold)" stroke-width="2"><path d="M30 4l6 7-6 7-6-7Z"/><path d="M570 4l6 7-6 7-6-7Z"/><path d="M30 176l6-7-6-7-6 7Z"/><path d="M570 176l6-7-6-7-6 7Z"/></g>
+</svg>

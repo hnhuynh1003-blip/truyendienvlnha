@@ -1,0 +1,467 @@
+{
+  "schema_version": "R3D.1",
+  "base_stage": {
+    "width": 390,
+    "height": 844,
+    "aspect_ratio": 0.46208530805687204,
+    "sizing_rule": "Render at stage width constrained by host; height = width*(844/390). Apply SAME scale factor to x and y; do not stretch independently to viewport width and height. Cyber Phone header is outside the stage."
+  },
+  "coordinate_system": "top-left stage local CSS pixels in 390×844, not browser window coordinates",
+  "shared": {
+    "title": {
+      "x": 58.5,
+      "y": 10.13,
+      "width": 273,
+      "height": 69.2,
+      "normalized": {
+        "x": 0.15,
+        "y": 0.012002,
+        "width": 0.7,
+        "height": 0.081991
+      },
+      "id": "title",
+      "source": "css",
+      "description": "Scene title text separate from frame"
+    },
+    "hp_hud": {
+      "x": 7.8,
+      "y": 87.78,
+      "width": 179.4,
+      "height": 69.2,
+      "normalized": {
+        "x": 0.02,
+        "y": 0.104005,
+        "width": 0.46,
+        "height": 0.081991
+      },
+      "id": "hp_hud",
+      "source": "css",
+      "description": "One Sinh Lực bar, dynamic text & fill inside frame"
+    },
+    "stamina_hud": {
+      "x": 202.8,
+      "y": 87.78,
+      "width": 179.4,
+      "height": 69.2,
+      "normalized": {
+        "x": 0.52,
+        "y": 0.104005,
+        "width": 0.46,
+        "height": 0.081991
+      },
+      "id": "stamina_hud",
+      "source": "css",
+      "description": "One Thể Lực bar"
+    },
+    "injury_anchor": {
+      "right": 12.09,
+      "y": 169.64,
+      "visibility": "ONLY when injured; compact popup, no injury progress bar"
+    },
+    "footer": {
+      "x": 7.8,
+      "y": 753.69,
+      "width": 374.4,
+      "height": 79.34,
+      "normalized": {
+        "x": 0.02,
+        "y": 0.892998,
+        "width": 0.96,
+        "height": 0.094005
+      },
+      "id": "footer",
+      "source": "css",
+      "description": "3 bottom controls anchored inside stage"
+    },
+    "retreat": {
+      "x": 7.8,
+      "y": 761,
+      "width": 63.65,
+      "height": 63.65,
+      "normalized": {
+        "x": 0.02,
+        "y": 0.901659,
+        "width": 0.163205,
+        "height": 0.075415
+      },
+      "id": "retreat",
+      "source": "css",
+      "description": "Arrow-only button / back"
+    },
+    "action": {
+      "x": 71.45,
+      "y": 753.69,
+      "width": 247.1,
+      "height": 79.34,
+      "normalized": {
+        "x": 0.183205,
+        "y": 0.892998,
+        "width": 0.63359,
+        "height": 0.094005
+      },
+      "id": "action",
+      "source": "css",
+      "description": "Dynamic action label and enabled state"
+    },
+    "bag": {
+      "x": 318.55,
+      "y": 761,
+      "width": 63.65,
+      "height": 63.65,
+      "normalized": {
+        "x": 0.816795,
+        "y": 0.901659,
+        "width": 0.163205,
+        "height": 0.075415
+      },
+      "id": "bag",
+      "source": "css",
+      "description": "Bag-only icon"
+    }
+  },
+  "portal": {
+    "background": {
+      "x": 0,
+      "y": 0,
+      "width": 390,
+      "height": 844,
+      "normalized": {
+        "x": 0.0,
+        "y": 0.0,
+        "width": 1.0,
+        "height": 1.0
+      },
+      "id": "portal_background",
+      "source": "css",
+      "description": "Source D3-02 independent background"
+    },
+    "cards_group": {
+      "x": 11.7,
+      "y": 521.59,
+      "width": 366.6,
+      "height": 228.72,
+      "normalized": {
+        "x": 0.03,
+        "y": 0.617998,
+        "width": 0.94,
+        "height": 0.270995
+      },
+      "id": "cards_group",
+      "source": "css",
+      "description": "Three cards; frames/label independent"
+    },
+    "card_herb": {
+      "x": 11.7,
+      "y": 521.59,
+      "width": 118.05,
+      "height": 228.72,
+      "normalized": {
+        "x": 0.03,
+        "y": 0.617998,
+        "width": 0.302692,
+        "height": 0.270995
+      },
+      "id": "card_herb",
+      "source": "css",
+      "description": "Art viewport ends before label"
+    },
+    "card_mineral": {
+      "x": 135.98,
+      "y": 521.59,
+      "width": 118.05,
+      "height": 228.72,
+      "normalized": {
+        "x": 0.348667,
+        "y": 0.617998,
+        "width": 0.302692,
+        "height": 0.270995
+      },
+      "id": "card_mineral",
+      "source": "css",
+      "description": ""
+    },
+    "card_egg": {
+      "x": 260.25,
+      "y": 521.59,
+      "width": 118.05,
+      "height": 228.72,
+      "normalized": {
+        "x": 0.667308,
+        "y": 0.617998,
+        "width": 0.302692,
+        "height": 0.270995
+      },
+      "id": "card_egg",
+      "source": "css",
+      "description": ""
+    },
+    "card_art_relative": {
+      "x": 0.09,
+      "y": 0.05,
+      "width": 0.82,
+      "height": 0.62,
+      "units": "fraction of card frame"
+    },
+    "card_label_relative": {
+      "x": 0.05,
+      "bottom": 0.08,
+      "width": 0.9,
+      "height": 0.23,
+      "units": "fraction of card frame"
+    }
+  },
+  "collection": {
+    "object_herb": {
+      "x": 37.05,
+      "y": 244.76,
+      "width": 315.9,
+      "height": 286.96,
+      "normalized": {
+        "x": 0.095,
+        "y": 0.29,
+        "width": 0.81,
+        "height": 0.34
+      },
+      "id": "object_herb",
+      "source": "css",
+      "description": "Visual window; object-fit contain, pointer-events:none"
+    },
+    "object_mineral": {
+      "x": 3.9,
+      "y": 236.32,
+      "width": 382.2,
+      "height": 312.28,
+      "normalized": {
+        "x": 0.01,
+        "y": 0.28,
+        "width": 0.98,
+        "height": 0.37
+      },
+      "id": "object_mineral",
+      "source": "css",
+      "description": ""
+    },
+    "object_egg": {
+      "x": 29.25,
+      "y": 244.76,
+      "width": 331.5,
+      "height": 278.52,
+      "normalized": {
+        "x": 0.075,
+        "y": 0.29,
+        "width": 0.85,
+        "height": 0.33
+      },
+      "id": "object_egg",
+      "source": "css",
+      "description": ""
+    },
+    "control_panel": {
+      "x": 7.8,
+      "y": 528.34,
+      "width": 374.4,
+      "height": 214.38,
+      "normalized": {
+        "x": 0.02,
+        "y": 0.625995,
+        "width": 0.96,
+        "height": 0.254005
+      },
+      "id": "control_panel",
+      "source": "css",
+      "description": ""
+    },
+    "control_content": {
+      "x": 30.26,
+      "y": 545.49,
+      "width": 329.47,
+      "height": 184.35,
+      "normalized": {
+        "x": 0.07759,
+        "y": 0.646315,
+        "width": 0.844795,
+        "height": 0.218424
+      },
+      "id": "control_content",
+      "source": "css",
+      "description": "Do not overlap footer at y>=754"
+    },
+    "herb": {
+      "force": {
+        "x": 33.55,
+        "y": 604.48,
+        "width": 174.62,
+        "height": 103.23,
+        "normalized": {
+          "x": 0.086026,
+          "y": 0.716209,
+          "width": 0.447744,
+          "height": 0.12231
+        },
+        "id": "herb_force",
+        "source": "css",
+        "description": "Real slider hitbox; dynamic output value"
+      },
+      "pulse": {
+        "x": 249.4,
+        "y": 587.88,
+        "width": 92.25,
+        "height": 92.25,
+        "normalized": {
+          "x": 0.639487,
+          "y": 0.69654,
+          "width": 0.236538,
+          "height": 0.109301
+        },
+        "id": "herb_pulse",
+        "source": "css",
+        "description": "Separate interactive button"
+      }
+    },
+    "mineral": {
+      "target_left": {
+        "x": 30.26,
+        "y": 602.62,
+        "width": 104.8,
+        "height": 43,
+        "normalized": {
+          "x": 0.07759,
+          "y": 0.714005,
+          "width": 0.268718,
+          "height": 0.050948
+        },
+        "id": "mineral_target_left",
+        "source": "css",
+        "description": ""
+      },
+      "target_middle": {
+        "x": 140.96,
+        "y": 602.62,
+        "width": 104.8,
+        "height": 43,
+        "normalized": {
+          "x": 0.361436,
+          "y": 0.714005,
+          "width": 0.268718,
+          "height": 0.050948
+        },
+        "id": "mineral_target_middle",
+        "source": "css",
+        "description": ""
+      },
+      "target_right": {
+        "x": 251.66,
+        "y": 602.62,
+        "width": 104.8,
+        "height": 43,
+        "normalized": {
+          "x": 0.645282,
+          "y": 0.714005,
+          "width": 0.268718,
+          "height": 0.050948
+        },
+        "id": "mineral_target_right",
+        "source": "css",
+        "description": ""
+      },
+      "force": {
+        "x": 50.03,
+        "y": 665.36,
+        "width": 289.9,
+        "height": 64,
+        "normalized": {
+          "x": 0.128282,
+          "y": 0.788341,
+          "width": 0.743333,
+          "height": 0.075829
+        },
+        "id": "mineral_force",
+        "source": "css",
+        "description": ""
+      }
+    },
+    "egg": {
+      "grid": {
+        "x": 40.14,
+        "y": 543.65,
+        "width": 186.17,
+        "height": 186.17,
+        "normalized": {
+          "x": 0.102923,
+          "y": 0.644135,
+          "width": 0.477359,
+          "height": 0.220581
+        },
+        "id": "egg_grid",
+        "source": "css",
+        "description": "Start index 6; goal index 2; hidden traps initially; 9 physical button elements"
+      },
+      "tile_side": 60.06,
+      "tile_gap": 3.0,
+      "tile_indexing": "row-major 0..8, zero-index: start index6; goal index2",
+      "pulse": {
+        "x": 267.5,
+        "y": 604.48,
+        "width": 92.25,
+        "height": 92.25,
+        "normalized": {
+          "x": 0.685897,
+          "y": 0.716209,
+          "width": 0.236538,
+          "height": 0.109301
+        },
+        "id": "egg_pulse",
+        "source": "css",
+        "description": "Hidden until reaches goal in art preview"
+      }
+    }
+  },
+  "dynamic_strings": {
+    "portal_title": "Cổng Thăm Dò",
+    "portal_action": "Thăm dò",
+    "herb_title": "Linh Thảo Cốc",
+    "herb_action": "Thu hoạch",
+    "mineral_title": "Khoáng Linh Trận",
+    "mineral_action": "Khai thác",
+    "egg_title": "Sào Huyền Ấp",
+    "egg_action_before_goal": "Đến tổ",
+    "egg_action_after_goal": "Canh nhịp",
+    "hp": "Sinh Lực",
+    "stamina": "Thể Lực",
+    "injury": "Nội Thương",
+    "cards": [
+      "Linh Thảo Cốc",
+      "Khoáng Linh Trận",
+      "Sào Huyền Ấp"
+    ]
+  },
+  "controls": {
+    "shared": [
+      "retreat",
+      "main-action",
+      "bag",
+      "hp-hud",
+      "stamina-hud",
+      "conditional-injury"
+    ],
+    "herb": [
+      "force-slider",
+      "pulse-ring"
+    ],
+    "mineral": [
+      "target-left",
+      "target-middle",
+      "target-right",
+      "force-slider"
+    ],
+    "egg": [
+      "3x3-grid",
+      "conditional-pulse-after-goal"
+    ]
+  },
+  "art_behavior": {
+    "hidden_traps": "No hazard icons in initially hidden cells; only reveal after a gameplay event.",
+    "injury": "Only visible when injured. Injury severity does not directly define HP loss.",
+    "state_source": "All HUD/text/game state must be supplied from external runtime. Asset preview is not authoritative gameplay."
+  }
+}

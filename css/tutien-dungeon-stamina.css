@@ -1,0 +1,5 @@
+﻿.vis-nav-skin-r1 .vis-primary-actions #go-dungeon{position:relative;display:grid;grid-template-columns:28px minmax(0,1fr);grid-template-rows:1fr 1fr;align-items:center;column-gap:2px;padding:4px 5px}
+.vis-nav-skin-r1 #go-dungeon .vis-nav-primary-symbol{grid-column:1;grid-row:1/3;width:28px;height:28px;min-width:0}
+.vis-nav-skin-r1 .vis-primary-actions #go-dungeon>span.dungeon-entry-label{grid-column:2;grid-row:1;align-self:end;font-size:11px;line-height:1.1;white-space:nowrap;min-width:0}
+.vis-nav-skin-r1 #go-dungeon .dungeon-stamina{grid-column:2;grid-row:2;display:flex;justify-content:center;gap:3px;align-self:start;font:600 9px/1.3 system-ui,sans-serif;color:#f4df9c;white-space:nowrap;min-width:0}
+.vis-nav-skin-r1 #go-dungeon .dungeon-stamina-clock{font-variant-numeric:tabular-nums;color:#b9eddb}

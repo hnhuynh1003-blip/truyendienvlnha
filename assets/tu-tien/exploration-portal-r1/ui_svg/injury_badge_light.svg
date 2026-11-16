@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 86 86" width="86" height="86">
+<defs>
+<linearGradient id="teal" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#245864"/><stop offset=".52" stop-color="#0c303d"/><stop offset="1" stop-color="#071f2d"/></linearGradient>
+<linearGradient id="gold" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#ffefbd"/><stop offset=".35" stop-color="#ffc96c"/><stop offset=".68" stop-color="#98632d"/><stop offset="1" stop-color="#fff0af"/></linearGradient>
+<linearGradient id="heart" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff5ec"/><stop offset=".2" stop-color="#ff8a85"/><stop offset=".74" stop-color="#eb3454"/><stop offset="1" stop-color="#a21040"/></linearGradient>
+<linearGradient id="bolt" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff7c9"/><stop offset=".46" stop-color="#ffe079"/><stop offset="1" stop-color="#e69731"/></linearGradient>
+<radialGradient id="injury"><stop stop-color="#ffda80"/><stop offset=".4" stop-color="#ce9b31"/><stop offset="1" stop-color="#533f1f"/></radialGradient>
+</defs><circle cx="43" cy="43" r="37" fill="url(#teal)" stroke="url(#gold)" stroke-width="4.5"/>
+ <circle cx="43" cy="43" r="30" fill="url(#injury)" stroke="#ce9b31" stroke-width="2"/>
+ <path d="M43 17 C36 26 27 26 26 36 C25 48 32 56 43 65 C54 56 61 47 60 36 C59 26 49 25 43 17Z" fill="#ffda80" stroke="#fff1bf" stroke-width="2" />
+ <path d="M43 22 L39 39 L45 41 L40 58 M43 41 L53 33" fill="none" stroke="#533f1f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+ <circle cx="33" cy="31" r="3" fill="#ffffff" opacity=".65"/></svg>

@@ -1,0 +1,235 @@
+/* VIS-R3E isolated iframe stylesheet. No legacy R3D global classes are loaded. */
+html,body{margin:0;width:100%;height:100%;min-width:0;min-height:0}
+[data-dudu-exploration-r3e]{position:relative;--r3e-edge:clamp(8px,2.5vw,12px);--r3e-gold:#dfbc78;--r3e-cream:#ffedc5;--r3e-ink:#062f38;width:100%;height:100%;min-width:0;min-height:0;color:var(--r3e-cream);background:#062832;font:13px/1.35 Arial,'Segoe UI',sans-serif;color-scheme:dark;isolation:isolate}
+[data-dudu-exploration-r3e], [data-dudu-exploration-r3e] *, [data-dudu-exploration-r3e] *::before,[data-dudu-exploration-r3e] *::after{box-sizing:border-box}
+[data-dudu-exploration-r3e] [hidden]{display:none!important}
+[data-dudu-exploration-r3e] :is(button,input,select){font:inherit}
+[data-dudu-exploration-r3e] button{margin:0;padding:0;border:0;background:none;color:inherit;cursor:pointer;touch-action:manipulation;min-width:0}
+[data-dudu-exploration-r3e] button:disabled{cursor:default;filter:saturate(.55) brightness(.75)}
+[data-dudu-exploration-r3e] :is(button,input,select):focus-visible{outline:2px solid #fff0ad;outline-offset:1px}
+[data-dudu-exploration-r3e] img{display:block;user-select:none;-webkit-user-drag:none}
+[data-dudu-exploration-r3e] .r3e-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:0;clip-path:inset(50%);white-space:nowrap}
+[data-dudu-exploration-r3e] #stage{position:relative;container-type:inline-size;width:100%;height:100%;min-width:0;min-height:0;margin:0;padding:var(--r3e-edge);display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:8px;isolation:isolate;visibility:hidden}
+[data-dudu-exploration-r3e] #stage[data-fit-ready=true]{visibility:visible}
+[data-dudu-exploration-r3e] .r3e-background,[data-dudu-exploration-r3e] .r3e-shade{position:absolute;inset:0;width:100%;height:100%;z-index:-2;pointer-events:none}
+[data-dudu-exploration-r3e] .r3e-background{object-fit:cover;object-position:center}
+[data-dudu-exploration-r3e] .r3e-shade{z-index:-1;background:linear-gradient(#011d2850,transparent 35%,#042a3155)}
+/* Nine-slice the supplied SVG frames. The visible border now belongs to the content box,
+   rather than a second, aspect-ratio-letterboxed image inside a differently shaped box. */
+[data-dudu-exploration-r3e] .r3e-player-hud{grid-area:1/1;position:relative;min-width:0;min-height:94px;display:grid;grid-template-columns:58px minmax(0,1fr);align-items:center;gap:8px;padding:4px 7px;border:9px solid transparent;border-image:url('../../../assets/tu-tien/exploration-r3e/ui/profile_hud_frame_blank.svg') 18 24 fill / 9px / 0 stretch}
+[data-dudu-exploration-r3e] #profile-avatar{position:relative;width:58px;height:58px;min-width:0;display:grid;place-items:center;background:#0b343b;border-radius:50%;font-size:22px;color:#ffdfa2}
+[data-dudu-exploration-r3e] #profile-avatar>*{position:static!important;inset:auto!important;transform:none!important;float:none!important;display:flex;align-items:center;justify-content:center;width:48px!important;height:48px!important;max-width:100%;max-height:100%;margin:0!important;border-radius:50%;object-fit:cover;line-height:1}
+[data-dudu-exploration-r3e] #profile-avatar::after{content:'';position:absolute;inset:0;background:url('../../../assets/tu-tien/exploration-r3e/ui/avatar_ring_blank.svg') center/contain no-repeat;pointer-events:none}
+[data-dudu-exploration-r3e] .r3e-profile-main{min-width:0;display:grid;gap:3px}
+[data-dudu-exploration-r3e] .r3e-profile-heading{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:6px;min-width:0;padding-right:24px}
+[data-dudu-exploration-r3e] #profile-name{min-width:0;font-size:clamp(11px,3cqw,14px);white-space:normal;overflow-wrap:anywhere;line-height:1.2}
+[data-dudu-exploration-r3e] .r3e-profile-power{display:flex;align-items:center;gap:3px;white-space:nowrap;font-size:11px;color:#f4d693}
+[data-dudu-exploration-r3e] .r3e-profile-power>span{position:absolute;width:1px;height:1px;clip-path:inset(50%);white-space:nowrap}
+[data-dudu-exploration-r3e] #profile-level{font-size:10px;line-height:1.2;min-width:0;overflow-wrap:anywhere}
+[data-dudu-exploration-r3e] .r3e-profile-bars{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;min-width:0}
+[data-dudu-exploration-r3e] .r3e-profile-bars>div{min-width:0}
+[data-dudu-exploration-r3e] .r3e-profile-label{display:flex;justify-content:space-between;gap:2px;align-items:center;font-size:clamp(9px,2.5cqw,11px);line-height:1.2;white-space:nowrap}
+[data-dudu-exploration-r3e] .r3e-profile-label output{font-variant-numeric:tabular-nums;flex:none}
+[data-dudu-exploration-r3e] .r3e-profile-track{width:100%;max-width:100%;height:6px;border:1px solid #aa8b4d;border-radius:4px;background:#071e28;margin-top:3px}
+[data-dudu-exploration-r3e] .r3e-profile-track i{display:block;height:100%;max-width:100%;border-radius:inherit}
+[data-dudu-exploration-r3e] #hpbar{background:linear-gradient(90deg,#b75364,#a4de8f)}
+[data-dudu-exploration-r3e] #staminabar{background:linear-gradient(90deg,#0c8bc3,#83e9dd)}
+[data-dudu-exploration-r3e] #profile-recovery{display:block;min-height:11px;min-width:0;text-align:right;font-size:9px;line-height:1.2;font-variant-numeric:tabular-nums;color:#e3d2a4}
+[data-dudu-exploration-r3e] .r3e-play-region{grid-area:2/1;position:relative;display:grid;min-width:0;min-height:0}
+[data-dudu-exploration-r3e] .r3e-screen,[data-dudu-exploration-r3e] .r3e-area,[data-dudu-exploration-r3e] #result-screen{grid-area:1/1;min-width:0;min-height:0}
+[data-dudu-exploration-r3e] #lobby{display:grid;grid-template-rows:minmax(0,1fr) auto;gap:8px}
+[data-dudu-exploration-r3e] .r3e-portal-visual{display:grid;place-items:center;min-width:0;min-height:0}
+[data-dudu-exploration-r3e] #portal-swirl{width:60%;height:100%;max-height:270px;object-fit:contain;pointer-events:none;animation:r3e-portal-breathe 7s ease-in-out infinite alternate}
+@keyframes r3e-portal-breathe{from{opacity:.65}to{opacity:.9}}
+[data-dudu-exploration-r3e] .r3e-random-info{display:grid;grid-template-columns:38px minmax(0,1fr);align-items:center;gap:12px;min-width:0;min-height:112px;padding:10px 12px;border:12px solid transparent;border-image:url('../../../assets/tu-tien/exploration-r3e/ui/panel_blank.svg') 60 80 fill / 12px / 0 stretch;text-shadow:0 1px 2px #001820}
+[data-dudu-exploration-r3e] .r3e-random-info>img{width:38px;height:38px;object-fit:contain}
+[data-dudu-exploration-r3e] .r3e-random-info>div{min-width:0}
+[data-dudu-exploration-r3e] .r3e-random-info strong{font-size:clamp(14px,3.8cqw,18px);line-height:1.2}
+[data-dudu-exploration-r3e] .r3e-random-info p{font-size:11px;line-height:1.35;margin:4px 0;overflow-wrap:break-word}
+[data-dudu-exploration-r3e] #search-note{display:block;font-size:11px;line-height:1.3;color:#f8dda3}
+[data-dudu-exploration-r3e] #result-screen{display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:8px;align-items:stretch}
+[data-dudu-exploration-r3e] #result-screen>h1{font-size:clamp(17px,4.5cqw,22px);line-height:1.2;text-align:center;margin:0;text-shadow:0 2px 3px #001d25}
+[data-dudu-exploration-r3e] .r3e-result-card{position:relative;display:grid;grid-template-rows:minmax(0,1fr) auto auto auto;gap:6px;min-width:0;min-height:0;padding:6px 8px;border:12px solid transparent;border-image:url('../../../assets/tu-tien/exploration-r3e/ui/result_card_blank.svg') 26 26 fill / 12px / 0 stretch;text-align:center}
+[data-dudu-exploration-r3e] #result-paint{position:relative;min-width:0;min-height:0;width:100%;border-radius:12px 12px 4px 4px}
+[data-dudu-exploration-r3e] #result-image{position:absolute;inset:0;display:block;width:100%;height:100%;max-width:100%;max-height:100%;object-fit:cover;border-radius:inherit}
+[data-dudu-exploration-r3e] #result-name{font-size:clamp(18px,4.5cqw,23px);line-height:1.2;margin:0;overflow-wrap:anywhere;color:#ffe1a5}
+[data-dudu-exploration-r3e] #result-description{font-size:12px;line-height:1.3;margin:0;overflow-wrap:break-word}
+[data-dudu-exploration-r3e] #result-cost{font-size:11px;line-height:1.25;color:#ebd09a}
+[data-dudu-exploration-r3e] .r3e-result-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+[data-dudu-exploration-r3e] .r3e-art-action{position:relative;isolation:isolate;min-height:52px;display:grid;place-items:center;color:#173a36;font-weight:bold;font-size:17px}
+[data-dudu-exploration-r3e] .r3e-art-action img{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;z-index:-1;pointer-events:none}
+[data-dudu-exploration-r3e] #result-back{filter:saturate(.55)}
+[data-dudu-exploration-r3e] .r3e-area{position:relative;display:grid;grid-template-rows:minmax(0,1fr) auto;gap:8px}
+[data-dudu-exploration-r3e] .r3e-object-region{position:relative;min-width:0;min-height:0}
+[data-dudu-exploration-r3e] #object{display:block;width:100%;height:100%;min-width:0;min-height:0;object-fit:contain;pointer-events:none}
+[data-dudu-exploration-r3e] .r3e-mechanic-panel{position:relative;min-width:0;min-height:0;padding:6px;border:10px solid transparent;border-image:url('../../../assets/tu-tien/exploration-r3e/ui/panel_blank.svg') 60 80 fill / 10px / 0 stretch;display:grid;grid-template-rows:auto auto;gap:6px}
+[data-dudu-exploration-r3e] #clue{margin:0;min-width:0;text-align:center;font-size:12px;line-height:1.3;overflow-wrap:break-word;text-shadow:0 1px 2px #001a21}
+[data-dudu-exploration-r3e] .r3e-mechanic-controls{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:8px;align-items:center;min-width:0;min-height:0}
+[data-dudu-exploration-r3e] #force-wrap{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:4px;min-width:0;font-size:12px;line-height:1.2}
+[data-dudu-exploration-r3e] #force-value{font-variant-numeric:tabular-nums}
+[data-dudu-exploration-r3e] #force{grid-column:1/-1;display:block;width:100%;min-width:0;max-width:100%;height:44px;margin:0;appearance:none;touch-action:none;cursor:pointer;background:url('../../../assets/tu-tien/exploration-r3e/ui/force_track.svg') center/100% 100% no-repeat}
+[data-dudu-exploration-r3e] #force::-webkit-slider-thumb{appearance:none;width:30px;height:38px;background:url('../../../assets/tu-tien/exploration-r3e/ui/force_handle.svg') center/contain no-repeat}
+[data-dudu-exploration-r3e] #force::-moz-range-thumb{width:30px;height:38px;border:0;background:url('../../../assets/tu-tien/exploration-r3e/ui/force_handle.svg') center/contain no-repeat}
+[data-dudu-exploration-r3e] #cracks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;min-width:0}
+[data-dudu-exploration-r3e] #cracks button{min-height:44px;background:url('../../../assets/tu-tien/exploration-r3e/ui/target_node.svg') center/contain no-repeat;font-size:13px;font-weight:bold;text-shadow:0 1px 2px #001b21}
+[data-dudu-exploration-r3e] #cracks button[aria-pressed=true]{filter:brightness(1.4) drop-shadow(0 0 3px #f4d782)}
+[data-dudu-exploration-r3e] #stage[data-scene=mineral] .r3e-mechanic-controls{grid-template-columns:minmax(0,1fr)}
+[data-dudu-exploration-r3e] #grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:4px;width:100%;max-width:160px;aspect-ratio:1;justify-self:center;min-width:0;min-height:0}
+[data-dudu-exploration-r3e] #grid button{display:grid;place-items:center;min-width:0;min-height:0;aspect-ratio:1;position:relative}
+[data-dudu-exploration-r3e] #grid button img{width:100%;height:100%;min-width:0;min-height:0;object-fit:contain;pointer-events:none}
+[data-dudu-exploration-r3e] #grid button[aria-current=true]{filter:drop-shadow(0 0 3px #8ce6ae)}
+[data-dudu-exploration-r3e] #grid button[aria-disabled=false]{outline:1px solid #b8a269;outline-offset:-2px}
+[data-dudu-exploration-r3e] #timing-wrap{position:relative;display:grid;place-items:center;min-width:0;min-height:0;width:100%;max-width:126px;justify-self:center;aspect-ratio:1}
+[data-dudu-exploration-r3e] #timing{position:relative;width:100%;aspect-ratio:1;min-width:0;min-height:0;isolation:isolate}
+[data-dudu-exploration-r3e] #timing>img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none}
+[data-dudu-exploration-r3e] #timing-tap{position:absolute;inset:0;width:100%;height:100%;border-radius:50%;font-size:10px;line-height:1.2;z-index:2}
+[data-dudu-exploration-r3e] #timing-tap span{position:absolute;left:12%;right:12%;bottom:17%;overflow-wrap:break-word;text-align:center;text-shadow:0 1px 2px #001c24}
+[data-dudu-exploration-r3e] #pointer{position:absolute;left:50%;top:50%;width:8%;height:12%;background:url('../../../assets/tu-tien/exploration-r3e/ui/force_handle.svg') center/contain no-repeat;pointer-events:none}
+[data-dudu-exploration-r3e] #timing[data-ready=true]{filter:brightness(1.12)}
+[data-dudu-exploration-r3e] #vfx{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:5;pointer-events:none}
+[data-dudu-exploration-r3e] #footer{grid-area:3/1;position:relative;min-width:0;display:grid;grid-template-columns:52px minmax(0,1fr) 52px;align-items:center;gap:6px;min-height:52px}
+[data-dudu-exploration-r3e] #footer>button{position:relative;display:grid;place-items:center;isolation:isolate;min-width:0;min-height:52px;height:52px}
+[data-dudu-exploration-r3e] .r3e-round-frame,[data-dudu-exploration-r3e] .r3e-main-button>img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:-1;pointer-events:none}
+[data-dudu-exploration-r3e] .r3e-round-icon{width:24px;height:24px;object-fit:contain;pointer-events:none}
+[data-dudu-exploration-r3e] #action-label{font-size:clamp(17px,4.5cqw,22px);line-height:1.15;font-weight:bold;color:#153b35;text-align:center;text-shadow:0 1px #fff1c7}
+[data-dudu-exploration-r3e] #injury{position:absolute;top:var(--r3e-edge);right:var(--r3e-edge);width:30px;height:30px;display:grid;place-items:center;z-index:8}
+[data-dudu-exploration-r3e] #injury img{width:24px;height:24px;pointer-events:none}
+[data-dudu-exploration-r3e] #injury-label{position:absolute;width:1px;height:1px;clip-path:inset(50%);white-space:nowrap}
+[data-dudu-exploration-r3e] #injury-detail,[data-dudu-exploration-r3e] #journal,[data-dudu-exploration-r3e] #feedback,[data-dudu-exploration-r3e] #cost-hint{grid-area:2/1;align-self:start;position:relative;z-index:9;min-width:0;background:#062f38f5;border:1px solid #bba06c;border-radius:8px;padding:10px;color:#ffeac0;font-size:12px;line-height:1.3}
+[data-dudu-exploration-r3e] #injury-detail{width:min(90%,300px);justify-self:end;padding-right:44px}
+[data-dudu-exploration-r3e] #journal{width:100%;padding-right:44px}
+[data-dudu-exploration-r3e] #injury-close,[data-dudu-exploration-r3e] #journal-close{position:absolute;right:0;top:0;width:44px;height:44px;font-size:24px}
+[data-dudu-exploration-r3e] #journal h2{font-size:17px;margin:0 0 8px}
+[data-dudu-exploration-r3e] #journal-content{white-space:pre-line;margin:0}
+[data-dudu-exploration-r3e] #feedback{margin:4px 6px;text-align:center;pointer-events:none}
+[data-dudu-exploration-r3e] #cost-hint{margin:0;text-align:center;align-self:end;pointer-events:none}
+[data-dudu-exploration-r3e] #demo-tools{position:absolute;right:4px;top:4px;z-index:20;max-width:min(250px,95%);padding:8px;background:#07323af5;border:1px solid #c7a363;font-size:11px}
+[data-dudu-exploration-r3e] #demo-tools button,[data-dudu-exploration-r3e] #demo-tools select{min-height:32px}
+@media(prefers-reduced-motion:reduce){[data-dudu-exploration-r3e] #portal-swirl{animation:none}}
+
+/* Accessibility-only text remains readable by AT without contributing scroll overflow.
+   These 1px clipped labels are not visible game UI, frames, images or controls. */
+[data-dudu-exploration-r3e] :is(.r3e-sr-only,#injury-label,.r3e-profile-power>span){inset:0 auto auto 0;overflow:hidden}
+
+/* A shortfall is a real panel row, never an overlay covering the timing widget. */
+[data-dudu-exploration-r3e] #cost-hint{grid-area:auto;position:static;align-self:auto;margin:0;text-align:center;pointer-events:none}
+/* Match the native thumb's centre travel to the approved SVG rail. One thumb only. */
+[data-dudu-exploration-r3e] #force{height:72px;padding:0;border:0;background-size:100% auto;background-position:center}
+[data-dudu-exploration-r3e] #force::-webkit-slider-runnable-track{height:72px;border:0;background:transparent}
+[data-dudu-exploration-r3e] #force::-webkit-slider-thumb{appearance:none;width:var(--r3e-thumb-width);height:72px;margin:0;border:0;background:url('../../../assets/tu-tien/exploration-r3e/ui/force_handle.svg') center var(--r3e-thumb-art-top)/var(--r3e-thumb-art-width) auto no-repeat}
+[data-dudu-exploration-r3e] #force::-moz-range-track{height:72px;border:0;background:transparent}
+[data-dudu-exploration-r3e] #force::-moz-range-thumb{width:var(--r3e-thumb-width);height:72px;border:0;border-radius:0;background:url('../../../assets/tu-tien/exploration-r3e/ui/force_handle.svg') center var(--r3e-thumb-art-top)/var(--r3e-thumb-art-width) auto no-repeat}
+/* Character HUD: decorative SVG frame, existing avatar ring and RPG icons. */
+[data-dudu-exploration-r3e] .r3e-player-hud{grid-template-columns:66px minmax(0,1fr);gap:8px;min-height:132px;padding:6px 7px;border-width:12px;border-image-source:url('../../../assets/tu-tien/exploration-r3e/ui/character-hud-frame.svg');border-image-slice:30 60 fill;border-image-width:12px;filter:drop-shadow(0 1px 3px #001a2270)}
+[data-dudu-exploration-r3e] .r3e-portrait-group{min-width:0;display:grid;justify-items:center;gap:3px}
+[data-dudu-exploration-r3e] #profile-avatar{width:64px;height:64px;background-color:#103c43;background-repeat:no-repeat;box-shadow:0 0 9px #74c6ae33}
+[data-dudu-exploration-r3e] #profile-avatar>.r3e-avatar-fallback{width:48px!important;height:48px!important;font-size:22px}
+[data-dudu-exploration-r3e] #profile-level{font-size:10px;line-height:1.2;color:#f0d599;text-align:center;font-weight:bold}
+[data-dudu-exploration-r3e] .r3e-profile-main{gap:5px}
+[data-dudu-exploration-r3e] .r3e-profile-heading{padding-right:14px;gap:4px}
+[data-dudu-exploration-r3e] #profile-name{font-family:Georgia,'Segoe UI',serif;font-size:clamp(12px,3.3cqw,15px);color:#ffedc4;text-shadow:0 1px 2px #001c25}
+[data-dudu-exploration-r3e] .r3e-profile-power{gap:3px;font-size:13px}
+[data-dudu-exploration-r3e] .r3e-power-icon{width:16px;height:16px;fill:#adcdbb;stroke:#e6c480;stroke-width:1.3}
+[data-dudu-exploration-r3e] .r3e-profile-bars{grid-template-columns:minmax(0,1fr);gap:5px}
+[data-dudu-exploration-r3e] .r3e-profile-label{font-size:11px;line-height:1.2}
+[data-dudu-exploration-r3e] .r3e-profile-label>span{display:flex;align-items:center;gap:3px}
+[data-dudu-exploration-r3e] .r3e-profile-label img{width:13px;height:13px;object-fit:contain;pointer-events:none}
+[data-dudu-exploration-r3e] .r3e-profile-track{height:7px;border-color:#b99a5e;background:#071e28;box-shadow:0 1px 2px #00151d99}
+[data-dudu-exploration-r3e] #hpbar{background:linear-gradient(90deg,#9b3e4f,#ed9782)}
+[data-dudu-exploration-r3e] #staminabar{background:linear-gradient(90deg,#158d96,#85dec0)}
+[data-dudu-exploration-r3e] #profile-recovery{font-size:10px;line-height:1.2;min-height:12px;color:#e4cb91}
+[data-dudu-exploration-r3e] .r3e-hud-cloud{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:116px;height:30px;object-fit:contain;pointer-events:none}
+/* R4 Owner artwork. Private selectors only; no preview CSS or gameplay imported. */
+[data-dudu-exploration-r3e] .r3e-player-hud{display:block;aspect-ratio:3.35;min-height:0;padding:0;border:0;filter:none}
+[data-dudu-exploration-r3e] .r4-hud-art{position:absolute;left:18%;top:6%;width:82%;height:88%;object-fit:fill;pointer-events:none}
+[data-dudu-exploration-r3e] .r3e-hud-cloud{display:none}
+[data-dudu-exploration-r3e] .r3e-portrait-group{position:absolute;left:0;top:0;width:25%;height:100%;display:block}
+[data-dudu-exploration-r3e] #profile-avatar{position:absolute;left:15%;top:15%;width:68%;height:65%;border-radius:50%;background-color:#063d41}
+[data-dudu-exploration-r3e] #profile-avatar::after{inset:-23% -22%;background-image:url('../../../assets/tu-tien/exploration-r4/ui/hud_avatar_ornate.png');background-size:100% 100%;z-index:1}
+[data-dudu-exploration-r3e] #profile-level{position:absolute;left:18%;bottom:3%;width:64%;text-align:center;font-size:clamp(9px,2.7cqw,11px);color:#fff1bc;background:#063b39;border:1px solid #d6b776;border-radius:10px;line-height:1.3}
+[data-dudu-exploration-r3e] .r3e-profile-main{position:absolute;left:25%;right:6%;top:23%;bottom:12%;display:grid;grid-template-rows:auto auto auto;gap:2px;align-content:center}
+[data-dudu-exploration-r3e] .r3e-profile-heading{padding:0;gap:4px}
+[data-dudu-exploration-r3e] .r3e-profile-bars{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:9px}
+[data-dudu-exploration-r3e] .r3e-profile-label{font-size:clamp(8px,2.4cqw,10px);gap:1px}
+[data-dudu-exploration-r3e] .r3e-profile-label span{gap:1px}
+[data-dudu-exploration-r3e] .r3e-profile-label img{width:10px;height:10px}
+[data-dudu-exploration-r3e] .r3e-profile-track{height:5px;margin-top:2px}
+[data-dudu-exploration-r3e] #profile-recovery{font-size:8px;line-height:1.1;min-height:9px}
+[data-dudu-exploration-r3e] .r3e-random-info{border-image-source:url('../../../assets/tu-tien/exploration-r4/ui/random_info_ornate.svg');border-image-slice:24 32 fill}
+[data-dudu-exploration-r3e] #result-screen{grid-template-rows:38px minmax(0,1fr) 52px;gap:5px}
+[data-dudu-exploration-r3e] #result-screen>h1{display:grid;place-items:center;background:url('../../../assets/tu-tien/exploration-r4/ui/result_title_blank.svg') center/100% 100% no-repeat;font-size:clamp(14px,4cqw,19px)}
+[data-dudu-exploration-r3e] .r3e-result-card{display:block;padding:0;border:0;background:url('../../../assets/tu-tien/exploration-r4/ui/result_frame_ornate.svg') center/100% 100% no-repeat}
+[data-dudu-exploration-r3e] #result-paint{position:absolute;left:7%;top:5.8%;width:86%;height:53%;border-radius:12px}
+[data-dudu-exploration-r3e] #result-image{object-fit:cover;object-position:center}
+[data-dudu-exploration-r3e] #result-name{position:absolute;left:9%;top:65%;width:82%;font-size:clamp(16px,4.5cqw,22px);line-height:1.2}
+[data-dudu-exploration-r3e] #result-description{position:absolute;left:12%;top:77%;width:76%;font-size:clamp(10px,3cqw,12px);line-height:1.25}
+[data-dudu-exploration-r3e] #result-cost{position:absolute;left:12%;bottom:5%;width:76%;font-size:10px;line-height:1.2}
+[data-dudu-exploration-r3e] #result-back{filter:none;color:#fff2ca}
+[data-dudu-exploration-r3e] #result-paint{background:#042c35}
+[data-dudu-exploration-r3e] #result-image{object-fit:contain}
+[data-dudu-exploration-r3e] #result-cost{bottom:14%}
+/* R5.4 Ice Mist Master HUD: one data-driven HUD, private exploration namespace. */
+[data-dudu-exploration-r3e] .r3e-player-hud{margin-right:50px;display:grid;grid-template-columns:52px minmax(0,1fr);gap:5px;align-items:center;aspect-ratio:auto;min-height:88px;border:0;padding:7px 5px;color:#17365e;isolation:isolate}
+[data-dudu-exploration-r3e] .r3e-player-hud::before{content:'';position:absolute;inset:9px 0 8px 28px;border-radius:25px;background:#e1efffa8;backdrop-filter:blur(9px) saturate(1.06);-webkit-backdrop-filter:blur(9px) saturate(1.06);z-index:-1}
+[data-dudu-exploration-r3e] .r4-hud-art{inset:0;width:100%;height:100%;object-fit:fill;z-index:-1}
+[data-dudu-exploration-r3e] .r3e-portrait-group{position:relative;inset:auto;width:52px;height:64px}
+[data-dudu-exploration-r3e] #profile-avatar{position:absolute;left:2px;top:7px;width:48px;height:48px;background-color:#a2d6eb;color:#17365e}
+[data-dudu-exploration-r3e] #profile-avatar::after{inset:-6px;background:url('../../../assets/tu-tien/exploration-r54/hud/avatar_ring_blank.svg') center/contain no-repeat}
+[data-dudu-exploration-r3e] .r3e-profile-main{position:relative;inset:auto;display:grid;grid-template-columns:minmax(35px,.65fr) minmax(102px,1fr);grid-template-rows:auto auto;column-gap:5px;row-gap:1px;align-items:center;min-width:0}
+[data-dudu-exploration-r3e] .r3e-profile-heading{grid-column:1;grid-row:1/3;display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:0;min-width:0}
+[data-dudu-exploration-r3e] #profile-name{color:#17365e;font:800 12px/1.15 system-ui,'Segoe UI',Arial,sans-serif;overflow-wrap:anywhere;max-width:100%}
+[data-dudu-exploration-r3e] #profile-level{position:static;width:auto;max-width:100%;font-size:9px;line-height:1.3;padding:1px 4px;border:1px solid #9cc8fb;border-radius:12px;background:#96c3f273;color:#1e416c;white-space:nowrap}
+[data-dudu-exploration-r3e] .r3e-profile-power{font-size:9px;color:#234e73}
+[data-dudu-exploration-r3e] .r3e-power-icon{width:11px;height:11px}
+[data-dudu-exploration-r3e] .r3e-profile-bars{grid-column:2;grid-row:1;display:grid;grid-template-columns:minmax(0,1fr);gap:5px}
+[data-dudu-exploration-r3e] .r3e-profile-label{font:700 9px/1.25 system-ui,'Segoe UI',Arial,sans-serif;gap:2px;color:#15355a}
+[data-dudu-exploration-r3e] .r3e-profile-track{height:6px;border:1px solid #8baed5;background:#64a0d347;margin-top:2px}
+[data-dudu-exploration-r3e] #hpbar{background:linear-gradient(#b6f6ba,#40cc75)}
+[data-dudu-exploration-r3e] #staminabar{background:linear-gradient(#c3f7ff,#28b4e9)}
+[data-dudu-exploration-r3e] #profile-recovery{grid-column:2;grid-row:2;min-height:9px;font-size:8px;line-height:1.15;color:#19456c}
+[data-dudu-exploration-r3e] #exploration-close{position:absolute;right:var(--r3e-edge);top:max(6px,env(safe-area-inset-top));width:44px;height:44px;z-index:12}
+[data-dudu-exploration-r3e] #exploration-close img{position:absolute;inset:3px;width:38px;height:38px;pointer-events:none}
+[data-dudu-exploration-r3e] #injury{top:102px;right:var(--r3e-edge)}
+/* Results use the existing scene backgrounds and intact sprites, never QA raster composites. */
+[data-dudu-exploration-r3e] #result-screen{grid-template-rows:minmax(0,1fr) auto;gap:14px;padding:0 6px 16px;position:relative}
+[data-dudu-exploration-r3e] #result-screen>h1{position:absolute;left:0;right:0;bottom:144px;height:34px;margin:0;background:none;font:700 23px/1.2 Georgia,'Times New Roman',serif;color:#ebf5ff;text-shadow:0 2px 5px #04274e}
+[data-dudu-exploration-r3e] .r3e-result-card{background:none;border:0;display:grid;grid-template-rows:minmax(0,1fr) auto auto;gap:8px;padding:0 4px 112px;min-height:0;text-align:center}
+[data-dudu-exploration-r3e] #result-paint{position:relative;inset:auto;width:100%;height:100%;min-height:0;background:none;border-radius:0}
+[data-dudu-exploration-r3e] #result-image{object-fit:contain;border-radius:0}
+[data-dudu-exploration-r3e] #result-name{position:absolute;left:0;right:0;top:auto;bottom:105px;width:100%;margin:0;color:#ffedc9;font:700 25px/1.2 Georgia,'Times New Roman',serif;text-shadow:0 2px 6px #061b47}
+[data-dudu-exploration-r3e] #result-description{position:absolute;left:0;right:0;top:auto;bottom:70px;width:100%;margin:0;color:#fff;font:italic 13px/1.35 Georgia,'Times New Roman',serif;text-shadow:0 2px 4px #061b47}
+[data-dudu-exploration-r3e] .r3e-result-actions{grid-row:2;gap:10px;min-height:51px}
+[data-dudu-exploration-r3e] .r3e-art-action{height:51px;min-height:51px;font:700 20px Georgia,'Times New Roman',serif}
+[data-dudu-exploration-r3e] #result-back{color:#193d6c}
+[data-dudu-exploration-r3e] #result-enter{color:#714319}
+[data-dudu-exploration-r3e] #result-cost{position:absolute;left:0;bottom:3px;width:100%;font:9px/1.1 system-ui,sans-serif;color:#714319}
+[data-dudu-exploration-r3e] #result-enter:has(#result-cost:not([hidden]))>span{transform:translateY(-5px)}
+@supports not (backdrop-filter:blur(1px)){[data-dudu-exploration-r3e] .r3e-player-hud::before{background:#e1effff2}}
+/* Keep result captions in normal flow: long Vietnamese labels cannot overlap. */
+[data-dudu-exploration-r3e] #profile-name{text-shadow:none}
+[data-dudu-exploration-r3e] .r3e-result-card{position:relative;display:grid;grid-template-rows:minmax(0,1fr) auto auto auto;gap:8px;padding:0 4px 18px}
+[data-dudu-exploration-r3e] .r54-result-eyebrow{position:static;margin:0;padding:0;font:700 23px/1.2 Georgia,'Times New Roman',serif;color:#ebf5ff;text-shadow:0 2px 5px #04274e}
+[data-dudu-exploration-r3e] #result-name,[data-dudu-exploration-r3e] #result-description{position:static;inset:auto;width:100%}
+[data-dudu-exploration-r3e] #profile-level{border:0;background:url('../../../assets/tu-tien/exploration-r54/hud/level_chip_blank.svg') center/100% 100% no-repeat}
+[data-dudu-exploration-r3e] .r3e-profile-track{border:0;padding:1px;background:url('../../../assets/tu-tien/exploration-r54/hud/stat_track_blank.svg') center/100% 100% no-repeat}
+/* Vietnamese accent glyph bounds need real line height, including at 320px. */
+[data-dudu-exploration-r3e] #profile-name,[data-dudu-exploration-r3e] .r3e-profile-label,[data-dudu-exploration-r3e] #profile-level,[data-dudu-exploration-r3e] .r3e-profile-power,[data-dudu-exploration-r3e] #profile-recovery{line-height:1.6}
+/* Owner correction: clear portal view, journal is an explicit modal, never an inline strip. */
+[data-dudu-exploration-r3e] #lobby{grid-template-rows:minmax(0,1fr)}
+[data-dudu-exploration-r3e] .r54-journal-label{display:none}
+[data-dudu-exploration-r3e] #stage[data-scene=portal] #retreat .r54-journal-label{display:block;position:absolute;bottom:1px;left:0;width:100%;font-size:10px;line-height:1.4;color:#ffedc5;text-align:center}
+[data-dudu-exploration-r3e] #stage[data-scene=portal] #retreat .r3e-round-icon{transform:translateY(-6px)}
+[data-dudu-exploration-r3e] #search-note{display:none}
+[data-dudu-exploration-r3e] #stage[data-scene=portal] #footer{min-height:64px}
+[data-dudu-exploration-r3e] #stage[data-scene=portal] #action{height:64px}
+[data-dudu-exploration-r3e] #stage[data-scene=portal] #action-label{transform:translateY(-9px)}
+[data-dudu-exploration-r3e] #stage[data-scene=portal] #search-note{position:absolute;display:block;left:10%;right:10%;bottom:16px;font-size:9px;line-height:1.3;color:#274937;text-align:center;pointer-events:none}
+[data-dudu-exploration-r3e] #journal{position:fixed;inset:0;margin:auto;grid-area:auto;align-self:auto;width:calc(100% - 32px);max-width:360px;height:fit-content;max-height:calc(100dvh - 96px);padding:20px;overflow:auto;color:#ffedc5;background:#07333bf5;border:1px solid #c6ab6f;border-radius:14px;box-shadow:0 12px 36px #001522b0;font-size:14px;line-height:1.5}
+[data-dudu-exploration-r3e] #journal::backdrop{background:#011d32b3;backdrop-filter:blur(3px)}
+[data-dudu-exploration-r3e] #journal-title{font-size:19px;line-height:1.4;padding-right:26px;margin:0 0 12px}
+[data-dudu-exploration-r3e] #journal-content{white-space:pre-line;overflow-wrap:anywhere;margin:0}
+[data-dudu-exploration-r3e] #journal-close{right:3px;top:3px;width:44px;height:44px;line-height:44px;font-size:24px}
+/* HUD repair: one nine-slice material box, not a letterboxed SVG over a second backplate. */
+[data-dudu-exploration-r3e] .r3e-player-hud{border:10px solid transparent;border-image:url('../../../assets/tu-tien/exploration-r54/hud/hud_ice_glass_blank.svg') 21 44 36 50 fill / 10px / 0 stretch;padding:6px 4px;min-height:96px}
+[data-dudu-exploration-r3e] .r4-hud-art{display:none}
+[data-dudu-exploration-r3e] .r3e-player-hud::before{inset:8px;border-radius:22px;background:transparent;backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px)}

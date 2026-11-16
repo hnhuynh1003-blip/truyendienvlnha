@@ -1,3 +1,4 @@
+import {mountHomeIdentity} from './tutien-character-view.mjs';
 // VIS-T1: presentation only, inside the integrated iframe. No repository or write API.
 import {CHARACTER} from '../prototypes/tutien-combat-s/fixture.mjs';
 import {actionIcon} from '../prototypes/tutien-combat-s/ui-icons.mjs';
@@ -5,6 +6,7 @@ import {readStats} from './tutien-view-ux-r2.mjs?v=pages-r2-20261113';
 import {createQiankunBag,renderQiankunBag} from './tutien-qiankun-vis-t2.mjs?v=pages-r2-20261113';
 import {mountEquipment} from './tutien-equipment-vis-t2e.mjs?v=pages-r2-20261113';
 import {applyNavSkin} from './tutien-nav-skin-r1.mjs?v=pages-r2-20261113';
+import {mountCollectionPreview} from './tutien-collection-preview.mjs';
 const doc=document,$=id=>doc.getElementById(id),home=$('home-screen');
 if(home&&!doc.getElementById('vis-t1-hero')){
  doc.body.classList.add('vis-t1');
@@ -96,6 +98,7 @@ if(home&&!doc.getElementById('vis-t1-hero')){
   const n=el('div');n.append(el('p','',title+' đang khóa.'),el('p','','Điều kiện dự kiến: '+license+'. Nghề và giấy phép chưa triển khai trong bản mock.'));
   const b=addPanel(key,title+' · Đang khóa',n,title+' · Khóa');b.setAttribute('aria-label',title+' đang khóa, xem điều kiện giấy phép');dock.append(b);
  }
+ const accountEdit=el('button','vis-account-avatar-edit','\u0110\u1ed5i avatar t\u00e0i kho\u1ea3n');accountEdit.type='button';accountEdit.dataset.editAccountAvatar='true';accountEdit.onclick=()=>{dialog.close();window.top.openPlayerAvatarEditorV16?.();};looks.prepend(accountEdit);
  looks.open=true;const appearance=addPanel('looks','Ngoại hình minh họa',looks,'Ngoại hình');appearance.classList.add('vis-appearance-open');
  const test=el('div');test.append(info);if(debug)test.append(debug);const testButton=addPanel('test','Thông tin thử nghiệm',test,'Mock');testButton.classList.add('vis-test-open');
  const footer=el('div','vis-stage-footer');footer.append(actions,dock);
@@ -113,5 +116,7 @@ if(home&&!doc.getElementById('vis-t1-hero')){
  const frame=window.frameElement,host=frame?.closest('.tutien-integ-host');
  if(host){const sync=()=>host.classList.toggle('tutien-home-stage',!home.hidden);sync();new MutationObserver(sync).observe(home,{attributes:true,attributeFilter:['hidden']});}
  // No content cards below the scene. The stage uses the iframe's available viewport.
+ mountHomeIdentity(doc);
+ mountCollectionPreview(doc);
  home.dataset.visualReady='true';
 }

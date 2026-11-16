@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 470">
+<defs>
+ <linearGradient id="gold" x2=".3" y2="1"><stop stop-color="#fffbd1"/><stop offset=".19" stop-color="#d99939"/><stop offset=".48" stop-color="#fff0a8"/><stop offset=".72" stop-color="#cb8933"/><stop offset="1" stop-color="#fae99c"/></linearGradient>
+ <linearGradient id="jade" x2="0" y2="1"><stop stop-color="#10e5cb"/><stop offset=".46" stop-color="#026e67"/><stop offset="1" stop-color="#003339"/></linearGradient>
+ <linearGradient id="teal" x2="0" y2="1"><stop stop-color="#053b46"/><stop offset=".55" stop-color="#052a35"/><stop offset="1" stop-color="#041d2b"/></linearGradient>
+ <radialGradient id="gem"><stop stop-color="#e4ffff"/><stop offset=".35" stop-color="#40e7d5"/><stop offset="1" stop-color="#00665f"/></radialGradient>
+ <filter id="glow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="2.0" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+ <pattern id="stars" width="46" height="38" patternUnits="userSpaceOnUse"><path d="M12 7q4 6 8 0M22 29q3-5 6 0" stroke="#0b797b" stroke-opacity=".28" stroke-width="1" fill="none"/></pattern>
+</defs>
+<!-- dark lower information zone ONLY: image window above remains transparent -->
+<path d="M9 275H351V441Q349 460 329 462H31Q11 461 9 441Z" fill="url(#teal)"/>
+<path d="M14 293H346V439Q343 453 325 456H35Q17 453 14 439Z" fill="url(#stars)"/>
+<path d="M28 300H332" stroke="#099386" stroke-width="2" opacity=".4"/>
+<!-- perimeter rim -->
+<rect x="6" y="8" width="348" height="452" rx="33" fill="none" stroke="#523519" stroke-width="12"/>
+<rect x="6" y="8" width="348" height="452" rx="33" fill="none" stroke="url(#gold)" stroke-width="5" filter="url(#glow)"/>
+<rect x="15" y="17" width="330" height="434" rx="26" fill="none" stroke="#4bdeb9" stroke-width="1.4" opacity=".85"/>
+<rect x="21" y="26" width="318" height="268" rx="17" fill="none" stroke="#2e2413" stroke-width="8"/>
+<rect x="21" y="26" width="318" height="268" rx="17" fill="none" stroke="url(#gold)" stroke-width="3"/>
+<rect x="26" y="31" width="308" height="258" rx="12" fill="none" stroke="#67ffee" stroke-opacity=".5" stroke-width="1"/>
+<!-- double cloud scroll along bottom portrait, left and right -->
+<path d="M22 291q13 0 22-18 7-13 15-6-2 18 16 19-4-14 10-17 13 0 15 13M338 291q-13 0-22-18-7-13-15-6 2 18-16 19 4-14-10-17-13 0-15 13" fill="none" stroke="url(#gold)" stroke-width="2"/>
+<!-- name cartouche -->
+<path d="M41 293Q52 276 72 280H288Q309 276 319 293L332 317L315 337Q305 345 290 344H70Q54 345 44 337L29 317Z" fill="url(#teal)" stroke="#c59647" stroke-width="4"/>
+<path d="M38 317L50 315M322 317L310 315M65 287H295M65 338H295" stroke="#fff0a2" stroke-width="1.2" opacity=".9"/>
+<!-- central lower decorative details -->
+<path d="M37 362Q60 346 84 363Q60 354 37 372M323 362Q300 346 276 363Q300 354 323 372" fill="none" stroke="#bd9f5b" stroke-width="1.5" opacity=".7"/>
+<path d="M54 418Q80 431 112 425M306 418Q280 431 248 425" fill="none" stroke="#54c7a5" stroke-width="1.4" opacity=".5"/>
+<path d="M140 439Q180 427 220 439" fill="none" stroke="#deb96f" stroke-width="1.4" opacity=".65"/>
+<!-- gemstone top and base, gold filigree wings -->
+<path d="M145 8Q164 8 176 0L180-4L184 0Q196 8 215 8M143 460Q167 460 180 471Q193 460 217 460" fill="none" stroke="url(#gold)" stroke-width="3"/>
+<path d="M180 -1L192 13L180 31L168 13Z" fill="url(#gem)" stroke="#fff0a0" stroke-width="3"/>
+<path d="M180 444L192 458L180 475L168 458Z" fill="url(#gem)" stroke="#fff0a0" stroke-width="3"/>
+<g fill="none" stroke="url(#gold)" stroke-width="2.7">
+ <path d="M25 49Q22 16 57 19Q66 20 74 25M335 49Q338 16 303 19Q294 20 286 25"/>
+ <path d="M28 407Q18 437 57 447Q66 448 76 443M332 407Q342 437 303 447Q294 448 284 443"/>
+ <path d="M14 89Q41 79 34 57Q21 69 25 78M346 89Q319 79 326 57Q339 69 335 78"/>
+ </g>
+<g fill="url(#gem)" stroke="#ffe7a3" stroke-width="2"><path d="M7 234l8 12-8 12-8-12Z"/><path d="M353 234l8 12-8 12-8-12Z"/><path d="M180 342l7 8-7 8-7-8Z"/></g>
+</svg>
