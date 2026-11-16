@@ -132,24 +132,35 @@
    }
    return [...results.values()].sort((a,b)=>b.score-a.score||a.name.length-b.name.length).slice(0,6);
   }
-  function detect(text){
-   const tokens=Array.from(String(text).matchAll(/[\p{L}\p{M}]+/gu),m=>({text:m[0],key:fold(m[0]),start:m.index,end:m.index+m[0].length}));
+  function detect(input){
+   const text=String(input||''),tokens=Array.from(text.matchAll(/[\p{L}\p{M}]+/gu),m=>({text:m[0],key:fold(m[0]),start:m.index,end:m.index+m[0].length}));
    const spans=[],memo=new Map();
+   const beforeRx=/(?:tên là|gọi là|gọi|công tử|cô nương|đệ tử|thiếu gia|đại nhân|sư huynh|sư tỷ|tiên tử|nhân vật|người tên)\s*$/iu;
+   const afterRx=/^\s*(?:nói|hỏi|đáp|cười|quát|gật đầu|lắc đầu|thở dài|nhìn|bước|xoay người|lên tiếng|trả lời)(?=$|[^\p{L}\p{M}])/iu;
    for(let i=0;i<tokens.length;i++){
-    const first=tokens[i],size=compound.has(first.key+' '+tokens[i+1]?.key)?2:surnames.has(first.key)?1:0;if(!size)continue;
+    const first=tokens[i],size=compound.has(first.key+' '+tokens[i+1]?.key)?2:surnames.has(first.key)?1:0;
+    if(!size)continue;
     let best=null;
     for(let length=size+1;length<=Math.min(size+3,5);length++){
      const slice=tokens.slice(i,i+length);if(slice.length!==length)break;
      if(slice.some((w,j)=>j>0&&!/^\s+$/u.test(text.slice(slice[j-1].end,w.start))))break;
      if(slice.slice(size).some(w=>stop.has(w.key)))break;
-     const from=slice.map(w=>w.text).join(' '),key=fold(from);if(ordinary.has(key))continue;
-     if(!memo.has(key))memo.set(key,suggest(from));const options=memo.get(key);
-     if(options.some(o=>o.kind==='inferred')||options.some(o=>o.kind==='capitalization'))best={from,start:first.start,end:slice.at(-1).end,suspect:options.some(o=>o.kind==='inferred')};
+     const from=slice.map(w=>w.text).join(' '),key=fold(from);
+     if(ordinary.has(key))continue;
+     const end=slice.at(-1).end;
+     const context=beforeRx.test(text.slice(Math.max(0,first.start-55),first.start))||
+      afterRx.test(text.slice(end,Math.min(text.length,end+55)));
+     if(!context)continue; // Surname + proximity or repetition is not name evidence.
+     if(!memo.has(key))memo.set(key,suggest(from));
+     const options=memo.get(key);
+     if(options.some(o=>['confirmed','linked','capitalization','inferred','hanviet','dictionary'].includes(o.kind)))
+      best={from,start:first.start,end,suspect:options.some(o=>o.kind==='inferred'),context:true};
     }
     if(best)spans.push(best);
    }
    return spans;
   }
+
   packs=initialPacks.map(validatePack);index();
   return Object.freeze({suggest,detect,parsePack,validatePack,installPack,metadata,exportPacks:()=>packs.map(p=>({...p,entries:p.entries.map(e=>({...e}))})),clearPacks:()=>{packs=[];index();return metadata();}});
  }
@@ -165,11 +176,11 @@
  function load(){
   if(ready)return ready;
   if(!root?.Worker||!scriptURL)return Promise.reject(Error('Trình duyệt chưa hỗ trợ bộ tra nền. Bạn có thể nhập tên thủ công.'));
-  worker=new root.Worker(new URL('reader-name-lookup-worker-l55.js?v=l55-1',scriptURL));
+  worker=new root.Worker(new URL('reader-name-lookup-worker-l55.js?v=l56a-1',scriptURL));
   worker.onmessage=event=>{const message=event.data,p=pending.get(message.id);if(!p)return;pending.delete(message.id);root.clearTimeout(p.timer);if(message.error)p.reject(Error(message.error));else p.resolve(message.result);};
   worker.onerror=()=>reset(Error('Không tải được bộ tra. Hãy thử lại; chức năng sửa tên thủ công vẫn dùng được.'));
   ready=request('init').then(meta=>{lastMetadata=meta;return meta;}).catch(e=>{reset(e);throw e;});return ready;
  }
  async function call(method,payload){await load();const result=await request(method,payload);if(['install','clear','metadata'].includes(method))lastMetadata=result;return result;}
- return Object.freeze({create,norm,fold,title,load,metadata:()=>lastMetadata,suggest:(text,options)=>call('suggest',{text,options}),analyze:(text,entries)=>call('analyze',{text,entries}),previewPack:(text,options)=>call('preview',{text,options}),installPack:pack=>call('install',{pack}),clearPacks:()=>call('clear'),exportPacks:()=>call('export')});
+ return Object.freeze({create,norm,fold,title,load,metadata:()=>lastMetadata,suggest:(text,options)=>call('suggest',{text,options}),analyze:(text,entries,ignored=[])=>call('analyze',{text,entries,ignored}),previewPack:(text,options)=>call('preview',{text,options}),installPack:pack=>call('install',{pack}),clearPacks:()=>call('clear'),exportPacks:()=>call('export')});
 });
