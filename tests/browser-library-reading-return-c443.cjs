@@ -101,7 +101,7 @@ async function main(){
   assert.equal(await page.locator('#reader-settings-popover').isVisible(),false);
   const source=await page.evaluate(()=>novels[selectedNovelIndex].chapters[0].content);
   const last=page.locator('#reader-content > p').last();await last.scrollIntoViewIfNeeded();
-  assert.match(await last.textContent(),/Tần Minh nói/);
+  assert.match(await last.textContent(),/tần minh nói/,'Unconfirmed name must stay unchanged until approval');
   const letter=await last.evaluate(p=>{const r=document.createRange();r.setStart(p.firstChild,1);r.setEnd(p.firstChild,2);const b=r.getBoundingClientRect();return {x:b.x+b.width/2,y:b.y+b.height/2};});
   await page.mouse.click(letter.x,letter.y);
   await page.locator('#reader-name-modal-l53').waitFor({state:'visible'});
