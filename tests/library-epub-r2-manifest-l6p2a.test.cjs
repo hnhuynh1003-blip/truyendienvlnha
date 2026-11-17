@@ -1,7 +1,7 @@
 'use strict';
 const {test}=require('node:test');
 const a=require('node:assert/strict');
-const {validate,compareVerified}=require('../js/library-epub-r2-manifest-l6p2a.js');
+const {validate,compareDeclaredReceipts}=require('../js/library-epub-r2-manifest-l6p2a.js');
 const hash='b'.repeat(64);
 const source=()=>({schema:1,bookId:'epub-a-b-c',revisionId:'r-0123456789abcdef',
  source:{name:'Truyện mẫu.epub',bytes:1000,sha256:hash},
@@ -52,20 +52,21 @@ test('verified R2 receipts must match source and every chapter and asset',()=>{
  {kind:'original',id:m.bookId,bytes:1000,sha256:hash,verified:true},
  {kind:'chapter',id:'chapter-0001',bytes:123,sha256:hash,verified:true},
  {kind:'asset',id:'cover-v1',bytes:100,sha256:hash,verified:true}];
- a.deepEqual(compareVerified(m,receipts).missing,[]);a.equal(compareVerified(m,receipts).ready,true);
- const partial=compareVerified(m,receipts.slice(0,2));
- a.equal(partial.ready,false);a.deepEqual(partial.missing,['asset:cover-v1']);
+ a.deepEqual(compareDeclaredReceipts(m,receipts).missing,[]);a.equal(compareDeclaredReceipts(m,receipts).matching,true);
+ a.equal(compareDeclaredReceipts(m,receipts).eligibleForDeletion,false);
+ const partial=compareDeclaredReceipts(m,receipts.slice(0,2));
+ a.equal(partial.matching,false);a.deepEqual(partial.missing,['asset:cover-v1']);
 });
 test('cutover remains blocked for hash mismatch, duplicate or unverified receipts',()=>{
  const m=source(),r=[
  {kind:'original',id:m.bookId,bytes:1000,sha256:hash,verified:true},
  {kind:'chapter',id:'chapter-0001',bytes:123,sha256:'c'.repeat(64),verified:true},
  {kind:'asset',id:'cover-v1',bytes:100,sha256:hash,verified:true}];
- a.equal(compareVerified(m,r).ready,false);
- r[1].sha256=hash;r[1].verified=false;a.equal(compareVerified(m,r).ready,false);
- r[1].verified=true;r.push({...r[1]});a.equal(compareVerified(m,r).ready,false);
+ a.equal(compareDeclaredReceipts(m,r).matching,false);
+ r[1].sha256=hash;r[1].verified=false;a.equal(compareDeclaredReceipts(m,r).matching,false);
+ r[1].verified=true;r.push({...r[1]});a.equal(compareDeclaredReceipts(m,r).matching,false);
 });
 test('metadata contract never invokes writes, deletes or R2 requests',()=>{
  const m=source(),x=validate(m);a.equal(x.source.name,'Truyện mẫu.epub');
- a.equal(typeof validate,'function');a.equal(typeof compareVerified,'function');
+ a.equal(typeof validate,'function');a.equal(typeof compareDeclaredReceipts,'function');
 });
