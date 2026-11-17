@@ -78,3 +78,15 @@
 .l54-dialog .l56-empty{padding:12px;border:1px dashed #adcbd2;border-radius:10px;background:#eef8fbba;line-height:1.6}
 #reader-content>p.l56-jump-target{outline:2px solid #48a7ba;outline-offset:5px;background:#85cee025;border-radius:4px}
 @media(max-width:390px){.l54-dialog .l56-result{padding:8px}.l56-advanced{padding:8px!important}.l54-dialog .l56-result-actions button{flex-basis:110px}}
+
+
+/* L5.6B — glossary nested in the dictionary (not the main settings bar). */
+.l54-dialog .l56b-launch{margin:8px 0 12px}
+.l54-dialog .l56b-launch button{display:block;width:100%;min-height:42px;border:1px solid #79b7c4;border-radius:10px;background:#e4f5f8;color:#236578;font-size:13px;font-weight:700}
+.l54-dialog .l56b-editor{display:grid;gap:9px;min-width:0;padding:11px;background:#f0f7f9;border:1px solid #bfd9de;border-radius:12px;margin:0 0 12px}
+.l54-dialog .l56b-editor label{display:grid;gap:5px;min-width:0}
+.l54-dialog .l56b-editor input,.l54-dialog .l56b-editor textarea{box-sizing:border-box;width:100%;min-height:40px;resize:vertical;font-family:inherit;font-size:14px;border:1px solid #aac8d1;border-radius:9px;padding:8px;background:#fff;color:#193b4e}
+.l54-dialog .l56b-editor .l54-manager-actions{display:flex;flex-wrap:wrap;gap:6px}
+.l54-dialog .l56b-editor .l54-manager-actions button{flex:1 1 96px;min-height:40px}
+.l54-dialog .l56b-entry .l55-excerpt{overflow-wrap:anywhere}
+@media(max-width:390px){.l54-dialog .l56b-editor{padding:8px}.l54-dialog .l56b-editor .l54-manager-actions button{flex:1 1 100px}}
