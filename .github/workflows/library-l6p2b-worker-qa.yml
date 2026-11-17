@@ -24,6 +24,8 @@ jobs:
           node --check cloudflare/src/library-r2-firestore-acl-v1.mjs
           node --check cloudflare/src/library-r2-private-v1.mjs
           node --check cloudflare/src/library-r2-preview-entry-v1.mjs
+          node --check cloudflare/src/library-r2-layout-v1.mjs
+          node --check cloudflare/src/library-r2-catalog-draft-v1.mjs
       - name: Firestore R1.2 ACL, R2 mock and isolation tests (no cloud access)
         run: |
-          node --test cloudflare/tests/library-r2-firestore-acl-v1.test.mjs cloudflare/tests/library-r2-private-v1.test.mjs cloudflare/tests/library-r2-isolation-v1.test.mjs
+          node --test cloudflare/tests/library-r2-firestore-acl-v1.test.mjs cloudflare/tests/library-r2-private-v1.test.mjs cloudflare/tests/library-r2-isolation-v1.test.mjs cloudflare/tests/library-r2-layout-v1.test.mjs

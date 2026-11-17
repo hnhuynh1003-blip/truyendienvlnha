@@ -7,6 +7,7 @@ on:
       - 'cloudflare/src/library-r2-promotion-v1.mjs'
       - 'cloudflare/tests/library-r2-quarantine-audit-v1.test.mjs'
       - 'cloudflare/tests/library-r2-promotion-v1.test.mjs'
+      - 'cloudflare/tests/library-r2-layout-pipeline-v1.test.mjs'
       - 'cloudflare/tests/library-r2-rules-review-v1.test.mjs'
       - 'security/epub-catalog-r2-v1.rules.review'
       - '.github/workflows/library-l6p2c-audit-qa.yml'
@@ -26,4 +27,5 @@ jobs:
         run: |
           node --check cloudflare/src/library-r2-quarantine-audit-v1.mjs
           node --check cloudflare/src/library-r2-promotion-v1.mjs
-          node --test cloudflare/tests/library-r2-quarantine-audit-v1.test.mjs cloudflare/tests/library-r2-rules-review-v1.test.mjs cloudflare/tests/library-r2-promotion-v1.test.mjs
+          node --check cloudflare/src/library-r2-layout-v1.mjs
+          node --test cloudflare/tests/library-r2-quarantine-audit-v1.test.mjs cloudflare/tests/library-r2-rules-review-v1.test.mjs cloudflare/tests/library-r2-promotion-v1.test.mjs cloudflare/tests/library-r2-layout-pipeline-v1.test.mjs

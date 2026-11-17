@@ -27,7 +27,18 @@ export function parseCatalog(fields){
   const id=string(f,'id'),bytes=number(f,'bytes'),sha256=string(f,'sha256'),order=number(f,'order');
   if(!ID.test(id||'')||chapters.has(id)||!Number.isInteger(bytes)||bytes<1||bytes>420000||
     !HEX.test(sha256||'')||order!==i)bad();
-  chapters.set(id,Object.freeze({id,bytes,sha256}));
+  // Layout is an optional migration field on draft documents. Legacy
+  // Firestore-only chapters remain valid, but have no R2 layout endpoint.
+  const layoutValue=field(f,'layout'),layoutFields=layoutValue===undefined?null:map(layoutValue);
+  if(layoutValue!==undefined&&!layoutFields)bad();
+  let layout=null;
+  if(layoutFields){
+   const layoutBytes=number(layoutFields,'bytes'),layoutHash=string(layoutFields,'sha256');
+   if(!Number.isInteger(layoutBytes)||layoutBytes<1||layoutBytes>1048576||
+      !HEX.test(layoutHash||''))bad();
+   layout=Object.freeze({bytes:layoutBytes,sha256:layoutHash});
+  }
+  chapters.set(id,Object.freeze({id,bytes,sha256,layout}));
  }
  const as=array(fields,'assets');if(as.length>3000)bad();
  for(const value of as){

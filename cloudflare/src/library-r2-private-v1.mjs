@@ -4,10 +4,11 @@
  * Stage uploads are quarantined; this module cannot publish, delete or migrate.
  */
 import {loadAuthorizedCatalog} from './library-r2-firestore-acl-v1.mjs';
+import {validateLayoutBytes,layoutMatchesChapter,MAX_LAYOUT_BYTES} from './library-r2-layout-v1.mjs';
 const ID=/^[A-Za-z0-9][A-Za-z0-9_-]{3,120}$/;
 const PREFIX='/v1/library/r2/';
 const MIME_EXT=Object.freeze({'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif'});
-const limits=Object.freeze({chapter:420000,asset:10*1024*1024,original:30*1024*1024});
+const limits=Object.freeze({chapter:420000,asset:10*1024*1024,original:30*1024*1024,layout:MAX_LAYOUT_BYTES});
 function headers(origin,env,kind='application/json; charset=utf-8'){
  const out=new Headers({'Cache-Control':'private, no-store, max-age=0',
   'Content-Type':kind,'X-Content-Type-Options':'nosniff','Vary':'Origin',
@@ -28,22 +29,26 @@ function route(path){
  const parts=path.slice(PREFIX.length).split('/');
  if(parts.length<3||parts.length>4)return null;
  const [action,kind,bookId,itemId]=parts;
- if(!['read','stage'].includes(action)||!['chapter','asset','original'].includes(kind)||!ID.test(bookId||''))return null;
+ if(!['read','stage'].includes(action)||!['chapter','asset','original','layout'].includes(kind)||!ID.test(bookId||''))return null;
  if(kind==='original'?parts.length!==3:parts.length!==4||!ID.test(itemId||''))return null;
  return {action,kind,bookId,itemId};
 }
 function target(doc,r){
  if(r.kind==='original')return doc.source;
+ if(r.kind==='layout')return doc.chapters.get(r.itemId)?.layout||null;
  return (r.kind==='chapter'?doc.chapters:doc.assets).get(r.itemId)||null;
 }
 function key(doc,r){
- const base=r.kind==='chapter'?'chapters':r.kind==='asset'?'assets':'originals';
+ const base=r.kind==='chapter'?'chapters':r.kind==='layout'?'layouts':r.kind==='asset'?'assets':'originals';
  const path=base+'/'+r.bookId+'/'+doc.revision+'/';
  return r.kind==='chapter'?path+r.itemId+'.txt':
+  r.kind==='layout'?path+r.itemId+'.json':
   r.kind==='asset'?path+r.itemId+'.'+MIME_EXT[target(doc,r)?.mime]:path+'source.epub';
 }
 function expectedMime(r,target){
- return r.kind==='chapter'?'text/plain; charset=utf-8':r.kind==='original'? 'application/epub+zip':target.mime;
+ return r.kind==='chapter'?'text/plain; charset=utf-8':
+  r.kind==='layout'?'application/json; charset=utf-8':
+  r.kind==='original'?'application/epub+zip':target.mime;
 }
 async function hash(bytes,cryptoApi=globalThis.crypto){
  if(!cryptoApi?.subtle?.digest)throw Error('crypto-unavailable');
@@ -57,11 +62,16 @@ function imageSignature(bytes,mime){
  if(mime==='image/webp')return b.length>=12&&String.fromCharCode(...b.slice(0,4))==='RIFF'&&String.fromCharCode(...b.slice(8,12))==='WEBP';
  return false;
 }
-function validateBytes(bytes,r,meta){
+function validateBytes(bytes,r,meta,catalog){
  const data=new Uint8Array(bytes);
  if(!data.length||data.length>limits[r.kind]||data.length!==meta.bytes)return false;
  if(r.kind==='original')return data.length>=4&&data[0]===80&&data[1]===75&&[3,5,7].includes(data[2])&&[4,6,8].includes(data[3]);
  if(r.kind==='asset')return imageSignature(bytes,meta.mime);
+ if(r.kind==='layout'){
+  try{validateLayoutBytes(bytes,{bookId:r.bookId,revisionId:catalog.revision,
+   chapterId:r.itemId,assetIds:new Set(catalog.assets.keys())});return true;}
+  catch{return false;}
+ }
  try{
   const s=new TextDecoder('utf-8',{fatal:true}).decode(bytes);
   return s.length>0&&s.length<=220000&&!/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/u.test(s);
@@ -118,7 +128,7 @@ export async function handleLibraryR2Private(req,env,{verifyIdentity,loadCatalog
   const rawType=(req.headers.get('Content-Type')||'').toLowerCase().trim();
   if(rawType!==expectedMime(r,meta))return json(415,'invalid-media',origin,env);
   const bytes=await bytesFromBody(req,limits[r.kind]);
-  if(!bytes||!validateBytes(bytes,r,meta))return json(413,'invalid-payload',origin,env);
+  if(!bytes||!validateBytes(bytes,r,meta,catalog))return json(413,'invalid-payload',origin,env);
   let digest;
   try{digest=await hash(bytes,cryptoApi);}catch{return json(503,'digest-unavailable',origin,env);}
   if(digest!==meta.sha256)return json(422,'digest-mismatch',origin,env);
@@ -142,10 +152,31 @@ export async function handleLibraryR2Private(req,env,{verifyIdentity,loadCatalog
   if(Number(obj.size)>limits[r.kind]||Number(obj.size)!==meta.bytes)
    return json(502,'content-unverified',origin,env);
   body=await obj.arrayBuffer();
-  if(!validateBytes(body,r,meta))return json(502,'content-unverified',origin,env);
+  if(!validateBytes(body,r,meta,catalog))return json(502,'content-unverified',origin,env);
   digest=await hash(body,cryptoApi);
  }catch{return json(503,'content-unavailable',origin,env);}
  if(digest!==meta.sha256)return json(502,'content-unverified',origin,env);
+ if(r.kind==='layout'){
+  // Do not trust matching layout SHA alone: compare its plain-text segments to
+  // the independently verified chapter object from the same revision.
+  const chapterMeta=catalog.chapters.get(r.itemId);
+  if(!chapterMeta)return json(502,'layout-chapter-missing',origin,env);
+  let chapterBody;
+  try{
+   const chapterObj=await env.DUDU_LIBRARY_EPUB_BUCKET.get(
+    'chapters/'+r.bookId+'/'+catalog.revision+'/'+r.itemId+'.txt');
+   if(!chapterObj||chapterObj.size!==chapterMeta.bytes||typeof chapterObj.arrayBuffer!=='function')
+    return json(502,'layout-chapter-missing',origin,env);
+   chapterBody=await chapterObj.arrayBuffer();
+   if(!validateBytes(chapterBody,{...r,kind:'chapter'},chapterMeta,catalog)||
+      await hash(chapterBody,cryptoApi)!==chapterMeta.sha256)
+    return json(502,'layout-chapter-unverified',origin,env);
+   const layout=validateLayoutBytes(body,{bookId:r.bookId,revisionId:catalog.revision,
+    chapterId:r.itemId,assetIds:new Set(catalog.assets.keys())});
+   if(!layoutMatchesChapter(layout,new TextDecoder('utf-8',{fatal:true}).decode(chapterBody)))
+    return json(502,'layout-chapter-mismatch',origin,env);
+  }catch{return json(503,'layout-check-unavailable',origin,env);}
+ }
  return new Response(body,{status:200,headers:headers(origin,env,expectedMime(r,meta))});
 }
 export const LIBRARY_R2_PREFIX=PREFIX;
