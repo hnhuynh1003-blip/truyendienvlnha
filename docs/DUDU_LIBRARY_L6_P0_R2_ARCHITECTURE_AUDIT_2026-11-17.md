@@ -6,6 +6,23 @@
 **Thao tác trong giai đoạn này:** chỉ tài liệu kiểm toán. Không ghi Firestore/Firebase Storage/R2, không đổi Rules, không bật Cloudflare feature flag, không di chuyển/xóa sách.
 **Nguồn bằng chứng:** file trong repository tại baseline; không có quyền xem dữ liệu, Rules đang chạy, bucket, hóa đơn và token của tài khoản Firebase/Cloudflare thật.
 
+### Cập nhật thực tế R1.2 và Cloudflare R2 từ chủ dự án (17/11/2026)
+
+- Chủ dự án xác nhận đã có R2 và ảnh Cloudflare Dashboard hiển thị **0 bucket, 0 B lưu trữ, $0.00 billable usage** tại thời điểm chụp; Standard free tier là **10 GB-month**, 1 triệu Class A và 10 triệu Class B operations mỗi tháng. 10 GB-tháng **không phải hard cap**. Chưa có bucket/Workers binding cho EPUB.
+- Chủ dự án cung cấp **bộ Firestore Rules R1.2 và xác nhận đây là Rules đang sử dụng**. Header trong nội dung còn ghi "REVIEW ONLY" / "NOT DEPLOYED" (di sản soạn thảo); cần đối chiếu màn hình Published nếu muốn xác minh độc lập, nhưng không được nhầm với file firestore.rules cũ trong repo.
+- Theo R1.2: truyện Web ở studio_data/main_library vẫn đọc công khai (dòng 273–276); EPUB published metadata (dòng 495–505) và chapters (602–605) cần **approvedReader()** hoặc admin chủ sở hữu. approvedReader() yêu cầu Firebase Auth và approvedPlayer().
+- approvedPlayer() (dòng 77–85) cho phép admin, enabled:true trong approved_accounts_v1/{uid}, hoặc tài khoản cũ có chính profiles_v2/{uid} khi chưa có bản ghi duyệt. enabled:false phủ quyết quyền kế thừa. Không phải tài khoản vừa đăng nhập nào cũng đọc được EPUB.
+- R1.2 không phân quyền theo từng chương trả Xu. Không dùng client profile, Xu, EXP hay chỉ kiểm tra UID ở browser để xác minh quyền Worker R2.
+- **Chênh lệch cần nghiệm thu:** index.html:2574 đang có DUDU_ACCOUNT_APPROVAL_V1_READY=false, chưa bật trải nghiệm duyệt/thu hồi tài khoản đầy đủ phía UI; quyền thực thi thuộc Rules. Trước khi kết nối R2, backend Worker phải tự xác thực JWT và quyết định approvedReader tương đương trên máy chủ.
+- **Không triển khai file firestore.rules ứng viên cũ của repo lên Firebase**. File đó có nhánh cho đọc EPUB công khai hơn, có nguy cơ phá vỡ R1.2. Nếu sửa Rules, trước hết xuất bản live đang dùng, so sánh và chạy Emulator.
+
+### L6-P1 — hợp đồng đọc chương offline trên main
+
+- js/library-epub-storage-l6p1.js: adapter thuần, mặc định Firestore, không nạp ở index.html. Không URL, bucket, API token, yêu cầu mạng hoặc dữ liệu thật.
+- tests/library-epub-storage-l6p1.test.cjs: 9 bài kiểm thử (Firestore mặc định, chặn R2 OFF, chỉ mock khi bật thủ công, ngăn backend sai, giới hạn nội dung, Unicode NFD, chống fallback khi R2 lỗi).
+- Có tên file/code chưa đồng nghĩa với kết nối R2. L6-P2 cần bucket private, quyền được xác minh máy chủ và test thật riêng.
+
+
 ### 1. Sơ đồ dữ liệu và hành vi hiện tại
 
 | Đối tượng | Nơi lưu/đọc trong code | Nguồn bằng chứng | Ghi chú |
@@ -26,8 +43,8 @@
 3. index.html:2673–2674 đã bật EPUB_MANAGEMENT_L2D2_ENABLED=true và EPUB_CHAPTER_TOOLS_L2D5_ENABLED=true. Một số tài liệu L2D.* cũ ghi OFF là trạng thái cũ; phải dùng mã main mới nhất và xác minh Rules sống trước khi chỉnh sửa/xóa.
 4. firestore.rules trên repository tự ghi rõ là REVIEW CANDIDATE / NOT DEPLOYED (dòng 1–6). File này KHÔNG chứng minh Rules đang chạy. firebase.json tại baseline chỉ khai báo functions, không phải bằng chứng triển khai Firestore/Storage Rules.
 5. Bản Rules ứng viên (firestore.rules:224–259, 327–347) chỉ chấp nhận danh sách trường cụ thể và bắt buộc chapter.content (nonempty). Muốn dùng R2 chapter pointer, cần migration schema + Rules mới, Emulator tests và phê duyệt riêng. Không thể chỉ thêm storageBackend/key vào document cũ.
-6. Vấn đề phân quyền trọng yếu: Rules ứng viên cho phép đọc metadata và nội dung chương khi status=published, kể cả không đăng nhập (firestore.rules:304–315, 411–420), trong khi index.html:2574 đặt DUDU_ACCOUNT_APPROVAL_V1_READY=false. Đây là quan sát về MÃ, không phải xác nhận quyền đọc thực tế ở Firebase. Trước bất kỳ xuất bản R2 nào cần quyết định rõ guest/reader/invite/owner và xác minh Rules đang chạy.
-7. R2 chưa có bucket/binding cho EPUB trong repository; Cloudflare account, subscription, billing, quotas, secrets và live Worker deployment chưa được kiểm chứng. Không phát sinh R2 chỉ vì repo có mã avatar quarantine.
+6. **Chỉ bản Rules ứng viên CŨ trong GitHub** cho phép đọc public EPUB published (firestore.rules:304–315, 411–420). Chủ dự án đã cung cấp R1.2 hiện dùng yêu cầu approvedReader() / admin; cần giữ đúng chính sách này. Cờ DUDU_ACCOUNT_APPROVAL_V1_READY=false vẫn cần nghiệm thu luồng tài khoản ở giao diện.
+7. R2 đã xuất hiện trên Dashboard chủ dự án với 0 bucket và 0 B tại thời điểm chụp, đang hiển thị free tier Standard. Chưa có bucket/binding dành cho EPUB, Workers authorizer, cảnh báo chi phí hoặc xác minh triển khai thật. Không phát sinh R2 chỉ vì repo có mã avatar quarantine.
 8. Legacy Web dùng một Firestore document lớn; chuyển riêng EPUB sang R2 không tự chữa vấn đề legacy document 1 MiB. Đây là hạng mục kiến trúc độc lập.
 
 ### 3. Phương án kiến trúc khuyến nghị
@@ -66,4 +83,4 @@ Tài liệu Cloudflare hiện hành cho R2 Standard nêu phần sử dụng mi�
 - https://developers.cloudflare.com/r2/get-started/workers-api/
 - https://developers.cloudflare.com/r2/get-started/
 
-**Quyết định P0:** giữ nguyên Firestore và tất cả chương đã xuất bản. L6-P1 là bước code kế tiếp có thể thực hiện trực tiếp trên main bằng mock/offline, mặc định OFF. L6-P2/P3 cần duyệt riêng trước khi sử dụng dịch vụ R2 thật, thay Rules, xuất bản dữ liệu hoặc xóa bất kỳ bản nào.
+**Quyết định P0/P1:** giữ nguyên Firestore và tất cả chương đã xuất bản. Đã chuẩn bị adapter mock L6-P1 trên main, chưa nạp lên website, R2 mặc định OFF. L6-P2/P3 cần duyệt riêng trước khi tạo và bind bucket production, thay Rules, công khai dữ liệu hoặc xóa bất kỳ bản nào.
