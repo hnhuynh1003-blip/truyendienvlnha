@@ -8,7 +8,7 @@
 File js/library-epub-assets-l6p2c2.js không được nạp trong index.html, không sửa bộ nhập EPUB V48/V57 đang chạy. Từ EPUB gốc do tác giả chọn và danh sách chương đã parse:
 - Giới hạn EPUB <=30 MiB, <=3000 ZIP entries, <=80 MiB unpacked, <=160 chương, <=420.000 byte văn bản/chương, <=10 MiB/ảnh; bắt buộc kiểm CRC và magic ZIP, signature ảnh.
 - Trích tất cả ảnh raster khai trong OPF manifest (JPEG/PNG/WebP/GIF), kể cả ảnh không hiện inline; ảnh bìa lưu nguyên gốc. Không tải từ URL khác hay xử lý raw HTML trong browser reader.
-- Tạo manifest tương thích hợp đồng L6-P2A, byte ảnh, SHA-256, ID asset ổn định theo path, và layout preview theo thứ tự các segment text/image trong XHTML. Alt chỉ là plain text đã lọc; không chèn XHTML.
+- Tạo manifest tương thích hợp đồng L6-P2A, byte ảnh, SHA-256, ID asset ổn định theo path và layout preview theo thứ tự các segment text/image trong XHTML. **bookId và revisionId là đầu vào bắt buộc**, phải được cấp từ bước tạo catalog draft đáng tin cậy; tên EPUB trên máy không được tự tạo danh tính lưu trữ. Alt chỉ là plain text đã lọc; không chèn XHTML.
 - **Không bỏ sót trong im lặng**: ảnh SVG, CSS background/@import, picture/srcset, data/remote URL, image không khai trong OPF, đường dẫn ZIP nguy hiểm hoặc MIME sai sẽ báo lỗi và chặn cutover.
 - Layout hiện chỉ là dữ liệu chuẩn bị; chưa có layout object riêng trên R2 hoặc API đọc/render ảnh. Kết quả luôn có cutoverReady:false.
 
