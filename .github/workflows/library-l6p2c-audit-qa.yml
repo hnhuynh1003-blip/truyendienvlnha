@@ -1,0 +1,26 @@
+name: DUDU Library L6-P2C quarantine audit QA (offline only)
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'cloudflare/src/library-r2-quarantine-audit-v1.mjs'
+      - 'cloudflare/tests/library-r2-quarantine-audit-v1.test.mjs'
+      - 'cloudflare/tests/library-r2-rules-review-v1.test.mjs'
+      - 'security/epub-catalog-r2-v1.rules.review'
+      - '.github/workflows/library-l6p2c-audit-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  quarantine-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax and server-side quarantine audit tests
+        run: |
+          node --check cloudflare/src/library-r2-quarantine-audit-v1.mjs
+          node --test cloudflare/tests/library-r2-quarantine-audit-v1.test.mjs cloudflare/tests/library-r2-rules-review-v1.test.mjs

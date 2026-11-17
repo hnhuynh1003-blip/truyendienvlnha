@@ -1,0 +1,15 @@
+// L6-P2C1 REVIEW FRAGMENT ONLY — NEVER AUTO-DEPLOY.
+// Insert this block INSIDE the owner-provided live R1.2 rules
+// service cloud.firestore / match /databases/{database}/documents.
+// It needs existing R1.2 helper functions approvedReader() and admin().
+// DO NOT deploy the older main/firestore.rules candidate over live R1.2.
+// Client writes are intentionally DISABLED until a trusted catalog creator,
+// independent R2 audit, rollback and Firebase Emulator tests exist.
+match /epub_catalog_r2_v1/{bookId} {
+  allow get: if resource != null && (
+    (approvedReader() && resource.data.status == 'published') ||
+    (admin() && resource.data.ownerUid == request.auth.uid)
+  );
+  allow list: if false;
+  allow create, update, delete: if false;
+}
