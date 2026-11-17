@@ -15,7 +15,7 @@ async function setup(browser,options={}){
  await page.route('http://reader.local/**',r=>r.fulfill({status:200,contentType:'text/html',body:fixture}));await page.goto('http://reader.local/');
  await page.evaluate(()=>localStorage.setItem('bookmark:epub:test',JSON.stringify({chapter:7,y:400})));
  for(const file of ['reader-names-l53.css','reader-names-l54.css'])await page.addStyleTag({path:path.join(root,'css',file)});
- for(const file of ['reader-name-dictionary-l53.js','reader-names-l54.js','reader-name-ui-l53.js','reader-name-ui-l54.js'])await page.addScriptTag({path:path.join(root,'js',file)});
+ for(const file of ['reader-name-dictionary-l53.js','reader-names-l54.js','reader-name-scan-l56a.js','reader-name-ui-l53.js','reader-name-ui-l54.js'])await page.addScriptTag({path:path.join(root,'js',file)});
  await page.evaluate(()=>{
   window.fixtureMount=(id,paragraphs)=>{
    DuduReaderNamesL53.setStory(id);DuduReaderNamesL53.prepareChapter(paragraphs);document.getElementById('reader-content').replaceChildren();
@@ -79,10 +79,11 @@ async function desktop(browser){
  await page.evaluate(()=>fixtureMount('web:scroll',['tần mặc hàm nói.']));assert.equal(await page.locator('#reader-content > p').textContent(),'Tần Mặc Hàm nói.');
  assert.equal(await page.locator('#reader-name-done-l54').isVisible(),false);
  await page.evaluate(()=>fixtureMount('epub:scan',['tần minh nói. tần minh hỏi. tần minh cười. tần rõ ràng đến. ôn nếu hỏi.']));
- assert.match(await page.locator('#reader-content > p').textContent(),/Tần Minh nói/);assert.equal(await page.locator('#reader-name-modal-l53').isVisible(),false);
- await page.evaluate(()=>DuduReaderNamesL53.scan());await page.locator('.l54-result').first().waitFor();
- assert.equal(await page.locator('.l54-result[data-suspect="true"]').count(),2);
- await page.locator('.l54-result').first().getByRole('button').click();await page.locator('[data-name-action="save"]').click();
+ assert.match(await page.locator('#reader-content > p').textContent(),/tần minh nói/);assert.equal(await page.locator('#reader-name-modal-l53').isVisible(),false);
+ await page.evaluate(()=>DuduReaderNamesL53.scan());
+ assert.match(await page.locator('#reader-name-list-l53').textContent(),/Không tìm thấy tên đủ căn cứ/);
+ await page.evaluate(()=>DuduReaderNamesL53.openManager('tần minh'));
+ await page.locator('[data-name-action="save"]').click();
  // Manager: per-character details, alias link, remove, undo, backup, import.
  await page.evaluate(()=>DuduReaderNamesL53.openManager());await page.locator('.l54-character').first().click();
  assert.equal(await page.locator('.reader-name-row-l53').count(),1);
@@ -110,7 +111,7 @@ async function android(browser,width){
  const {page,context,errors}=await setup(browser,{viewport:{width,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:1});
  await page.evaluate(()=>fixtureMount('epub:android',['Đây là đoạn văn mở đầu tần mặc hàm nói. tần mặc hàm hỏi. tần mặc hàm cười.']));
  await page.locator('#reader-name-edit-toggle-l54').tap();
- const i=await page.locator('#reader-content > p').evaluate(p=>p.textContent.indexOf('Tần')+1);await choose(page,0,i,true);
+ const i=await page.locator('#reader-content > p').evaluate(p=>p.textContent.indexOf('tần')+1);await choose(page,0,i,true);
  assert.equal(await page.locator('#reader-name-from-l53').inputValue(),'tần');await page.locator('[data-name-action="phrase"]').tap();
  assert.equal(await page.locator('#reader-name-from-l53').inputValue(),'tần mặc hàm');
  await fits(page,'.l54-dialog');await page.locator('#reader-name-to-l53').focus();
