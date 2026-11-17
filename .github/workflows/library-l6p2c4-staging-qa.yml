@@ -9,6 +9,8 @@ on:
       - 'cloudflare/tests/library-r2-draft-identity-v1.test.mjs'
       - 'scripts/l6p2c4-prepare-rules.cjs'
       - 'tests/l6p2c4-prepare-rules.test.cjs'
+      - 'tests/l6p2c4b-emulator-static.test.cjs'
+      - 'tests/emulator-l6p2c4b/**'
       - '.github/workflows/library-l6p2c4-staging-qa.yml'
   workflow_dispatch:
 permissions:
@@ -27,7 +29,8 @@ jobs:
           node --check js/library-epub-stage-l6p2c4.js
           node --check cloudflare/src/library-r2-draft-identity-v1.mjs
           node --check scripts/l6p2c4-prepare-rules.cjs
-          node --test tests/library-epub-stage-l6p2c4.test.cjs cloudflare/tests/library-r2-draft-identity-v1.test.mjs tests/l6p2c4-prepare-rules.test.cjs
+          node --check tests/emulator-l6p2c4b/rules.integration.mjs
+          node --test tests/library-epub-stage-l6p2c4.test.cjs cloudflare/tests/library-r2-draft-identity-v1.test.mjs tests/l6p2c4-prepare-rules.test.cjs tests/l6p2c4b-emulator-static.test.cjs
       - name: Production entry points remain isolated
         run: |
           node -e "const f=require('fs'); const assert=require('assert'); for(const p of ['index.html','cloudflare/src/index.mjs','cloudflare/wrangler.toml']) {const s=f.readFileSync(p,'utf8');assert(!s.includes('library-epub-stage-l6p2c4.js'));assert(!s.includes('library-r2-draft-identity-v1.mjs'));assert(!s.includes('DUDU_LIBRARY_EPUB_BUCKET'));} const w=f.readFileSync('cloudflare/wrangler.library-r2-preview.toml','utf8');assert(w.includes('LIBRARY_R2_ENABLED = \"false\"'));assert(w.includes('workers_dev = false'));"

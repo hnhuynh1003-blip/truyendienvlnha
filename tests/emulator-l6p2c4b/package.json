@@ -1,0 +1,16 @@
+{
+  "name": "dudu-library-l6p2c4b-rules-emulator",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:rules": "node ./rules.integration.mjs",
+    "emulator": "firebase --project demo-dudu-library-rules --config ./firebase.emulator.json emulators:exec --only firestore \"npm run test:rules\""
+  },
+  "dependencies": {
+    "@firebase/rules-unit-testing": "6.0.0",
+    "firebase": "13.3.0"
+  },
+  "devDependencies": {
+    "firebase-tools": "15.36.0"
+  }
+}
