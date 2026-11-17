@@ -42,7 +42,8 @@ async function openTerms(page){
    assert.ok(await found.count()>=2,'Term candidates visible '+width);
    assert.match(await found.first().innerText(),/Xuất hiện/);
    const readerBefore=await page.locator('#reader-content').innerText();
-   const noteRow=found.filter({hasText:/tu vi/i}).first();
+   const termRow=(name)=>page.locator('.l56b-entry').filter({has:page.locator('strong:text-is("'+name+'")')});
+   const noteRow=termRow("Tu vi");
    await noteRow.getByRole('button',{name:'Xem và lưu'}).click();
    await page.locator('#reader-term-note-l56b').fill('Mức tu luyện trong truyện này');
    await page.locator('[data-name-action="term-save"]').click();
@@ -50,15 +51,15 @@ async function openTerms(page){
    assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('dudu-reader-terms-l56b:web%3Asample')).entries),[{term:'Tu vi',note:'Mức tu luyện trong truyện này'}]);
    assert.equal(await page.locator('#reader-content').innerText(),readerBefore,'Source never rewritten');
    assert.equal(await page.evaluate(()=>localStorage.getItem('bookmark:epub:sample')),JSON.stringify({chapter:5,y:90}));
-   await page.locator('.l56b-entry').filter({hasText:/linh căn/i}).getByRole('button',{name:'Bỏ qua'}).click();
-   assert.equal(await page.locator('.l56b-entry').filter({hasText:/linh căn/i}).count(),0);
+   await termRow('Linh căn').getByRole('button',{name:'Bỏ qua'}).click();
+   assert.equal(await termRow('Linh căn').count(),0);
    await page.locator('.l56-ignore-row').filter({hasText:/Linh căn/i}).getByRole('button',{name:'Khôi phục'}).click();
-   assert.ok(await page.locator('.l56b-entry').filter({hasText:/linh căn/i}).count()>0);
+   assert.ok(await termRow('Linh căn').count()>0);
    // A different story starts with no confirmed glossary entry.
    await page.locator('[data-name-action="close"]').click();
    await page.evaluate(parts=>loadChapter('epub:other',parts),[paragraph]);
    await openTerms(page);
-   assert.equal(await page.locator('.l56b-entry').filter({hasText:/Tu vi/i}).getAttribute('data-suspect'),'true');
+   assert.equal(await termRow('Tu vi').getAttribute('data-suspect'),'true');
    // Test mobile modal geometry and scroll without changing normal selection behavior.
    const box=await page.locator('#reader-name-modal-l53 section').boundingBox();
    assert.ok(box&&box.x>=-1&&box.x+box.width<=width+1,'Overlay fits '+width);
