@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - 'js/reader-name-*.js'
+      - 'js/reader-terms-l56b.js'
       - 'js/reader-names-l5*.js'
       - 'js/library-*.js'
       - 'js/epub-*.js'
@@ -11,14 +12,17 @@ on:
       - 'css/library-*.css'
       - 'index.html'
       - 'tests/reader-name-*.test.cjs'
+      - 'tests/reader-terms-l56b.test.cjs'
       - 'tests/reader-names-l5*.test.cjs'
       - 'tests/browser-reader-*.cjs'
+      - 'tests/browser-reader-terms-l56b.cjs'
       - 'tests/browser-library-*.cjs'
       - '.github/workflows/library-l56a-qa.yml'
   pull_request:
     branches: [main]
     paths:
       - 'js/reader-name-*.js'
+      - 'js/reader-terms-l56b.js'
       - 'js/reader-names-l5*.js'
       - 'js/library-*.js'
       - 'js/epub-*.js'
@@ -49,7 +53,8 @@ jobs:
           node --check js/reader-name-lookup-worker-l55.js
           node --check js/reader-names-l54.js
           node --check js/reader-name-ui-l54.js
-          node --test tests/reader-name-scan-l56a.test.cjs tests/reader-name-lookup-l55.test.cjs tests/reader-names-l53.test.cjs tests/reader-names-l54.test.cjs
+          node --check js/reader-terms-l56b.js
+          node --test tests/reader-name-scan-l56a.test.cjs tests/reader-name-lookup-l55.test.cjs tests/reader-names-l53.test.cjs tests/reader-names-l54.test.cjs tests/reader-terms-l56b.test.cjs
       - name: Install Playwright Chromium (test only)
         run: |
           npm install --no-save playwright@1.56.1
@@ -66,3 +71,4 @@ jobs:
           node tests/browser-reader-names-l53.cjs
           node tests/browser-reader-names-l54.cjs
           node tests/browser-reader-name-lookup-l55.cjs
+          node tests/browser-reader-terms-l56b.cjs

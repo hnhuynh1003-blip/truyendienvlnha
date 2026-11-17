@@ -6,7 +6,7 @@
  if(!engine||!doc)return;
  let storage=null;try{storage=root.localStorage;}catch(_){}
  const dictionary=engine.create({storage}),originals=new WeakMap(),details=new WeakMap();
- const lookup=root.DuduReaderNameLookupL55,scanEngine=root.DuduReaderNameScanL56A;
+ const lookup=root.DuduReaderNameLookupL55,scanEngine=root.DuduReaderNameScanL56A,terms=root.DuduReaderTermsL56B?.create({storage});
  const el=id=>doc.getElementById(id),content=()=>el('reader-content');
  let storyId=null,editing=false,selected=null,automatic=[],results=[],initialized=false,chapter=0,scanning=false;
  let returnFocus=null,anchor=null,priorOverflow='',activeProfile='',managerView=false;
@@ -28,6 +28,22 @@
     <div class="reader-name-actions-l53 l54-confirm"><button type="button" data-name-action="cancel">Hủy</button><button type="button" data-name-action="save" class="l54-primary">Xác nhận</button></div>
    </div>
    <div id="reader-name-manager-l54" hidden>
+    <div id="reader-term-launch-l56b" class="l56b-launch" hidden>
+     <button type="button" data-name-action="terms">Kiểm tra thuật ngữ trong chương</button>
+    </div>
+    <div id="reader-term-editor-l56b" class="l56b-editor" hidden>
+     <p class="l55-note">Thuật ngữ và tên nhân vật được lưu riêng. Gợi ý chưa xác minh không tự sửa câu chữ của truyện.</p>
+     <label for="reader-term-phrase-l56b">Thuật ngữ<input id="reader-term-phrase-l56b" maxlength="90" autocomplete="off" placeholder="Ví dụ: linh căn"></label>
+     <label for="reader-term-note-l56b">Ghi chú của truyện<textarea id="reader-term-note-l56b" rows="2" maxlength="240" placeholder="Ý nghĩa trong truyện (do bạn xác nhận)"></textarea></label>
+     <div class="l54-manager-actions">
+      <button type="button" data-name-action="term-save" class="l54-primary">Lưu thuật ngữ</button>
+      <button type="button" data-name-action="term-new">+ Mục mới</button>
+      <button type="button" data-name-action="term-undo">Hoàn tác</button>
+      <button type="button" data-name-action="term-export">Xuất</button>
+      <button type="button" data-name-action="term-import">Nhập</button>
+     </div>
+     <input id="reader-term-import-l56b" type="file" accept=".json,application/json" hidden>
+    </div>
     <details id="reader-lookup-tools-l55" class="l55-lookup-tools l56-advanced" hidden><summary>Công cụ nâng cao</summary><div class="l56-advanced-body"><button type="button" data-name-action="scan" class="l56-scan-open">Kiểm tra tên trong chương</button>
      <label for="reader-lookup-query-l55">Tra Hán–Việt / nghĩa Việt<input id="reader-lookup-query-l55" maxlength="90" placeholder="lộc biết thuyền · 鹿知舟" autocomplete="off"></label>
      <button type="button" data-name-action="lookup">Tra cứu</button>
@@ -42,7 +58,7 @@
      <p class="l55-note">Tên suy từ nghĩa Việt là ứng viên. Quy tắc bạn xác nhận luôn được ưu tiên.</p>
      <div id="reader-name-ignored-l56a" class="l56-ignored"></div>
     </div></details>
-    <h4>Quy tắc của truyện</h4>
+    <h4 id="reader-name-rules-heading-l54">Quy tắc của truyện</h4>
     <input id="reader-name-search-l54" type="search" placeholder="Tìm nhân vật hoặc cách gọi" aria-label="Tìm trong từ điển">
     <div class="l54-manager-actions"><button type="button" data-name-action="add">+ Cách gọi</button><button type="button" data-name-action="undo">Hoàn tác</button><button type="button" data-name-action="export">Xuất quy tắc</button><button type="button" data-name-action="import">Nhập quy tắc</button></div>
     <p id="reader-name-backup-help-l55" class="l55-note">Nhập file JSON quy tắc đã xuất từ cùng truyện để khôi phục hoặc chuyển thiết bị.</p>
@@ -107,9 +123,13 @@
  }
  function view(manager,title='Tên riêng'){
   managerView=manager;viewRevision++;el('reader-name-editor-l54').hidden=manager;el('reader-name-manager-l54').hidden=!manager;el('reader-name-title-l53').textContent=title;
-  const scanningView=title==='Kiểm tra tên trong chương';
+  const termView=title==='Thuật ngữ trong chương';
+  const scanningView=title==='Kiểm tra tên trong chương'||termView;
   if(el('reader-lookup-tools-l55'))el('reader-lookup-tools-l55').hidden=!lookup||!manager||scanningView;
   el('reader-name-search-l54').hidden=scanningView;
+  el('reader-name-rules-heading-l54').hidden=scanningView;
+  el('reader-term-launch-l56b').hidden=!terms||!manager||scanningView;
+  el('reader-term-editor-l56b').hidden=!termView;
   el('reader-name-import-l54').previousElementSibling.hidden=scanningView;
   el('reader-name-manager-l54').querySelector(':scope > .l54-manager-actions').hidden=scanningView;
   if(lookup&&manager&&!scanningView)renderIgnored();
@@ -308,6 +328,101 @@
   }finally{scanning=false;}
  }
 
+ function termFill(term='',note=''){
+  el('reader-term-phrase-l56b').value=term;
+  el('reader-term-note-l56b').value=note;
+ }
+ function renderTerms(){
+  if(!terms||!storyId)return;
+  const host=el('reader-name-list-l53');host.replaceChildren();
+  const paragraphs=nodes(),source=paragraphs.map(p=>originals.get(p)??p.textContent??'').join('\n');
+  let found,saved,ignored;
+  try{
+   found=terms.scan(storyId,source,dictionary.read(storyId));
+   saved=terms.read(storyId);ignored=terms.ignored(storyId);
+  }catch(e){status(e.message,true);return;}
+  const foldTerm=root.DuduReaderTermsL56B.fold;
+  el('reader-name-list-title-l54').textContent='Thuật ngữ trong chương';
+  el('reader-name-count-l53').textContent=found.length+' cụm · '+saved.length+' đã lưu';
+  if(!found.length){
+   const empty=doc.createElement('p');empty.className='l56-empty';
+   empty.textContent='Chương này chưa có thuật ngữ trong danh mục gợi ý. Bạn vẫn có thể thêm thủ công.';
+   host.append(empty);
+  }
+  for(const item of found){
+   const row=doc.createElement('div');row.className='l54-result l56-result l56b-entry';
+   row.dataset.suspect=String(item.kind==='termCandidate');
+   const title=doc.createElement('strong');title.textContent=item.term;
+   const count=doc.createElement('small');count.textContent='Xuất hiện '+item.count+' lần · '+positionLabel(item.occurrences[0].start,paragraphs);
+   const evidence=doc.createElement('small');evidence.textContent=item.evidence+(item.note?' · '+item.note:'');
+   const quote=doc.createElement('blockquote');quote.className='l55-excerpt';quote.textContent=item.excerpt;
+   const actions=doc.createElement('div');actions.className='l56-result-actions';
+   actions.append(button('Đến vị trí',()=>jumpTo(item.occurrences[0].start)),
+    button(item.kind==='termConfirmed'?'Sửa ghi chú':'Xem và lưu',()=>{
+     termFill(item.term,item.note);el('reader-term-phrase-l56b').focus({preventScroll:true});
+     status('Chỉ lưu sau khi bạn xác nhận. Nội dung truyện không đổi.');
+    }));
+   if(item.kind==='termCandidate')actions.append(button('Bỏ qua',()=>{
+    try{terms.ignore(storyId,item.term);renderTerms();status('Đã bỏ qua thuật ngữ trong truyện này.');}
+    catch(e){status(e.message,true);}
+   }));
+   row.append(title,count,evidence,quote,actions);host.append(row);
+  }
+  const visible=new Set(found.map(r=>foldTerm(r.term)));
+  const elsewhere=saved.filter(r=>!visible.has(foldTerm(r.term)));
+  if(elsewhere.length){
+   const h=doc.createElement('h4');h.textContent='Đã lưu ở chương khác · '+elsewhere.length;host.append(h);
+   for(const entry of elsewhere){
+    const row=doc.createElement('div');row.className='l56-ignore-row';
+    const name=doc.createElement('span');name.textContent=entry.term+(entry.note?' · '+entry.note:'');
+    row.append(name,button('Sửa',()=>termFill(entry.term,entry.note)));host.append(row);
+   }
+  }
+  if(saved.length){
+   const h=doc.createElement('h4');h.textContent='Quản lý thuật ngữ đã lưu';host.append(h);
+   for(const entry of saved){
+    const row=doc.createElement('div');row.className='l56-ignore-row';
+    const name=doc.createElement('span');name.textContent=entry.term+(entry.note?' · '+entry.note:'');
+    row.append(name,button('Xóa',()=>{
+     if(!root.confirm('Xóa thuật ngữ “'+entry.term+'”? Nội dung truyện vẫn giữ nguyên.'))return;
+     try{terms.remove(storyId,entry.term);renderTerms();status('Đã xóa. Có thể hoàn tác.');}
+     catch(e){status(e.message,true);}
+    }));host.append(row);
+   }
+  }
+  if(ignored.length){
+   const h=doc.createElement('h4');h.textContent='Đã bỏ qua · '+ignored.length;host.append(h);
+   for(const phrase of ignored){
+    const row=doc.createElement('div');row.className='l56-ignore-row';
+    const name=doc.createElement('span');name.textContent=phrase;
+    row.append(name,button('Khôi phục',()=>{
+     try{terms.allow(storyId,phrase);renderTerms();status('Đã khôi phục ứng viên thuật ngữ.');}
+     catch(e){status(e.message,true);}
+    }));host.append(row);
+   }
+  }
+ }
+ function openTerms(){
+  if(!terms||!show())return;
+  view(true,'Thuật ngữ trong chương');termFill();renderTerms();
+ }
+ function saveTerm(){
+  if(!terms||!storyId)return;
+  try{
+   terms.add(storyId,el('reader-term-phrase-l56b').value,el('reader-term-note-l56b').value,dictionary.read(storyId));
+   renderTerms();status('Đã lưu vào từ điển riêng của truyện. Không thay đổi câu chữ.');
+  }catch(e){status(e.message,true);}
+ }
+ function exportTerms(){
+  if(!terms||!storyId)return;
+  try{
+   const blob=new root.Blob([terms.backup(storyId)],{type:'application/json'});
+   const url=root.URL.createObjectURL(blob),a=doc.createElement('a');
+   a.href=url;a.download='DUDU_thuat_ngu_'+storyId.replace(/[^a-zA-Z0-9_-]/g,'_')+'.json';
+   a.click();root.setTimeout(()=>root.URL.revokeObjectURL(url),1000);
+   status('Đã xuất từ điển thuật ngữ riêng của truyện.');
+  }catch(e){status(e.message,true);}
+ }
  function proposals(host,items,select){
   host.replaceChildren();
   if(!items.length){const p=doc.createElement('p');p.textContent='Chưa có ứng viên phù hợp. Bạn có thể nhập tên thủ công.';host.append(p);return;}
@@ -378,6 +493,12 @@
   if(action==='phrase'&&selected?.phrase){Object.assign(selected,selected.phrase);return paintSelection();}
   if(action==='dictionary'){view(true,'Từ điển nhân vật');activeProfile='';return listNames();}
   if(action==='scan')return scan();
+  if(action==='terms')return openTerms();
+  if(action==='term-save')return saveTerm();
+  if(action==='term-new'){termFill();el('reader-term-phrase-l56b').focus({preventScroll:true});return;}
+  if(action==='term-undo'){try{if(terms?.undo(storyId)){renderTerms();status('Đã hoàn tác thuật ngữ.');}}catch(e){status(e.message,true);}return;}
+  if(action==='term-export')return exportTerms();
+  if(action==='term-import')return el('reader-term-import-l56b').click();
   if(action==='editor'||action==='add'){clearHighlight();selected=null;view(false);return fill('',undefined,activeProfile);}
   if(action==='undo'){try{if(dictionary.undo(storyId)){refresh();listNames();status('Đã hoàn tác.');}}catch(e){status(e.message,true);}return;}
   if(action==='export')return exportBackup();
@@ -428,6 +549,17 @@
     }catch(error){status(error.message,true);}
    });
   }
+  el('reader-term-import-l56b').addEventListener('change',async event=>{
+   const file=event.target.files[0],id=storyId,token=chapter;event.target.value='';
+   if(!file||!terms)return;
+   try{
+    if(file.size>200000)throw Error('Bản sao lưu thuật ngữ quá lớn.');
+    const payload=await file.text();
+    if(id!==storyId||token!==chapter)return;
+    if(!root.confirm('Nhập thuật ngữ cho truyện đang đọc? Mục trùng có xung đột sẽ bị từ chối.'))return;
+    terms.restore(id,payload);renderTerms();status('Đã nhập thuật ngữ. Có thể hoàn tác.');
+   }catch(e){status(e.message,true);}
+  });
   el('reader-name-import-l54').addEventListener('change',async event=>{
    const file=event.target.files[0],id=storyId,token=chapter;event.target.value='';if(!file)return;
    try{if(file.size>500000)throw Error('Bản sao lưu quá lớn.');const data=await file.text();if(id!==storyId||token!==chapter)return;dictionary.restore(id,data);refresh();listNames();status('Đã nhập từ điển. Có thể hoàn tác.');}catch(e){status(e.message,true);}
