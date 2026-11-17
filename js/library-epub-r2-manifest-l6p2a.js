@@ -56,16 +56,18 @@
    chapters:Object.freeze(chapters),assets:Object.freeze(assets)
   });
  }
- function compareVerified(manifest,receipts){
+ function compareDeclaredReceipts(manifest,receipts){
+  // Caller-provided receipts are untrusted. This helper compares metadata
+  // only: it NEVER authorizes a cutover, publication or deletion.
   const parsed=validate(manifest);
-  if(!Array.isArray(receipts))return Object.freeze({ready:false,missing:['Biên nhận kiểm tra R2 không hợp lệ']});
+  if(!Array.isArray(receipts))return Object.freeze({matching:false,eligibleForDeletion:false,missing:['Biên nhận kiểm tra R2 không hợp lệ']});
   const keys=new Map();
   for(const r of receipts){
    if(!plain(r)||typeof r.kind!=='string'||typeof r.id!=='string'||
       !digest(r.sha256)||!Number.isSafeInteger(r.bytes)||r.bytes<=0||
-      r.verified!==true)return Object.freeze({ready:false,missing:['Biên nhận chưa được xác minh']});
+      r.verified!==true)return Object.freeze({matching:false,eligibleForDeletion:false,missing:['Biên nhận chưa được xác minh']});
    const key=r.kind+':'+r.id;
-   if(keys.has(key))return Object.freeze({ready:false,missing:['Biên nhận trùng']});
+   if(keys.has(key))return Object.freeze({matching:false,eligibleForDeletion:false,missing:['Biên nhận trùng']});
    keys.set(key,r);
   }
   const needed=[
@@ -79,7 +81,7 @@
    if(!actual||actual.bytes!==r.bytes||actual.sha256!==r.sha256)
     missing.push(r.kind+':'+r.id);
   }
-  return Object.freeze({ready:missing.length===0,missing:Object.freeze(missing)});
+  return Object.freeze({matching:missing.length===0,eligibleForDeletion:false,missing:Object.freeze(missing)});
  }
- return Object.freeze({validate,compareVerified,MAX_CHAPTERS,MAX_CHAPTER_BYTES,MAX_EPUB_BYTES});
+ return Object.freeze({validate,compareDeclaredReceipts,MAX_CHAPTERS,MAX_CHAPTER_BYTES,MAX_EPUB_BYTES});
 });
