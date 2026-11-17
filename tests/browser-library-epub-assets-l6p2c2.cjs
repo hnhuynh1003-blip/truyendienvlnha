@@ -36,9 +36,12 @@ async function main(){
    const parsed={chapters:[{sourcePath:'OPS/chap1.xhtml',title:'Chương 1',content:'Chương 1\n\nTu vi tăng. Sau ảnh.\n\nGiữ ảnh bìa và kết thúc.'}]};
    const assets=DuduEpubAssetsL6P2C2;
    const check=(...args)=>assets.extract(...args);
-   const opts={zipLib:lib,Parser:DOMParser,cryptoApi:crypto};
+   const opts={zipLib:lib,Parser:DOMParser,cryptoApi:crypto,bookId:'epub-safe-preview',revisionId:'r-0123456789abcdef'};
    const out=await check(mockFile,parsed,opts);
    DuduEpubR2ManifestL6P2A.validate(out.manifest);
+   let missingIdsError='';
+   try{await check(mockFile,parsed,{zipLib:lib,Parser:DOMParser,cryptoApi:crypto});}
+   catch(e){missingIdsError=String(e.message);}
    const roles=out.assets.map(x=>({id:x.id,role:x.role,mime:x.mime,sourcePath:x.sourcePath,bytes:x.bytes}));
    const segments=out.layouts[0].segments;
    let failed={};
@@ -67,9 +70,10 @@ async function main(){
    rawEntries['OPS/images/bi mat.png'].content=png;
    return {manifest:out.manifest,roles,segments,imageCount:out.layouts[0].imageCount,
     extracted:out.assets.length,originalLength:out.originalBytes.length,
-    cutoverReady:out.cutoverReady,failed};
+    cutoverReady:out.cutoverReady,failed,missingIdsError};
   });
   assert.equal(data.cutoverReady,false);
+  assert.match(data.missingIdsError,/thiếu mã sách và revision/);
   assert.equal(data.extracted,3);
   assert.equal(data.imageCount,2);
   assert.equal(data.manifest.chapters.length,1);
