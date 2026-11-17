@@ -10,10 +10,10 @@ async function run(){
    const context=await browser.newContext({viewport:{width,height:860},isMobile:width<=430,hasTouch:width<=430});
    const page=await context.newPage(),errors=[];
    page.on('pageerror',e=>errors.push(e.message));
-   await page.route('http://reader-layout.local/**',route=>route.fulfill({
+   await page.route('http://localhost:38413/**',route=>route.fulfill({
     status:200,contentType:'text/html',body:'<!doctype html><html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><body><main id="chapter">Old reader remains</main><aside id="other">Bookmark unchanged</aside></body></html>'
    }));
-   await page.goto('http://reader-layout.local/');
+   await page.goto('http://localhost:38413/');
    await page.addScriptTag({path:path.join(root,'js/library-epub-layout-l6p2c3.js')});
    const result=await page.evaluate(async()=>{
     const name='epub-fake-book',revisionId='r-0123456789abcdef',chapterId='chapter-0001';
