@@ -1,15 +1,36 @@
 name: DUDU Library L5.6A QA (read-only)
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'js/reader-name-*.js'
+      - 'js/reader-names-l5*.js'
+      - 'js/library-*.js'
+      - 'js/epub-*.js'
+      - 'css/reader-names-l5*.css'
+      - 'css/library-*.css'
+      - 'index.html'
+      - 'tests/reader-name-*.test.cjs'
+      - 'tests/reader-names-l5*.test.cjs'
+      - 'tests/browser-reader-*.cjs'
+      - 'tests/browser-library-*.cjs'
+      - '.github/workflows/library-l56a-qa.yml'
   pull_request:
     branches: [main]
     paths:
       - 'js/reader-name-*.js'
-      - 'js/reader-names-l54.js'
-      - 'css/reader-names-l54.css'
+      - 'js/reader-names-l5*.js'
+      - 'js/library-*.js'
+      - 'js/epub-*.js'
+      - 'css/reader-names-l5*.css'
+      - 'css/library-*.css'
       - 'index.html'
       - 'tests/reader-name-*.test.cjs'
-      - 'tests/browser-reader-name-*.cjs'
+      - 'tests/reader-names-l5*.test.cjs'
+      - 'tests/browser-reader-*.cjs'
+      - 'tests/browser-library-*.cjs'
       - '.github/workflows/library-l56a-qa.yml'
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
@@ -33,7 +54,14 @@ jobs:
         run: |
           npm install --no-save playwright@1.56.1
           npx playwright install chromium --with-deps
-      - name: Web and EPUB reader browser regressions
+      - name: Read, return and EPUB catalog browser regressions
+        run: |
+          node tests/browser-library-reading-return-c443.cjs
+          node tests/browser-library-catalog-l2e.cjs
+          node tests/browser-library-smart-filter-l3.cjs
+          node tests/browser-library-finish-l4.cjs
+          node tests/browser-library-capacity-r1.cjs
+      - name: Names L5.3 - L5.6A and mobile reader interactions
         run: |
           node tests/browser-reader-names-l53.cjs
           node tests/browser-reader-names-l54.cjs
