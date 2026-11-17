@@ -13,6 +13,7 @@ on:
       - 'index.html'
       - 'tests/reader-name-*.test.cjs'
       - 'tests/library-epub-storage-l6p1.test.cjs'
+      - 'tests/library-epub-r2-manifest-l6p2a.test.cjs'
       - 'tests/reader-terms-l56b.test.cjs'
       - 'tests/reader-names-l5*.test.cjs'
       - 'tests/browser-reader-*.cjs'
@@ -32,6 +33,7 @@ on:
       - 'index.html'
       - 'tests/reader-name-*.test.cjs'
       - 'tests/library-epub-storage-l6p1.test.cjs'
+      - 'tests/library-epub-r2-manifest-l6p2a.test.cjs'
       - 'tests/reader-names-l5*.test.cjs'
       - 'tests/browser-reader-*.cjs'
       - 'tests/browser-library-*.cjs'
@@ -57,7 +59,8 @@ jobs:
           node --check js/reader-name-ui-l54.js
           node --check js/reader-terms-l56b.js
           node --check js/library-epub-storage-l6p1.js
-          node --test tests/reader-name-scan-l56a.test.cjs tests/reader-name-lookup-l55.test.cjs tests/reader-names-l53.test.cjs tests/reader-names-l54.test.cjs tests/reader-terms-l56b.test.cjs tests/library-epub-storage-l6p1.test.cjs
+          node --check js/library-epub-r2-manifest-l6p2a.js
+          node --test tests/reader-name-scan-l56a.test.cjs tests/reader-name-lookup-l55.test.cjs tests/reader-names-l53.test.cjs tests/reader-names-l54.test.cjs tests/reader-terms-l56b.test.cjs tests/library-epub-storage-l6p1.test.cjs tests/library-epub-r2-manifest-l6p2a.test.cjs
       - name: Install Playwright Chromium (test only)
         run: |
           npm install --no-save playwright@1.56.1
