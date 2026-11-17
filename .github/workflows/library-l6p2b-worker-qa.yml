@@ -1,0 +1,29 @@
+name: DUDU Library L6-P2B private Worker QA (offline, no deploy)
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'cloudflare/src/library-r2-*.mjs'
+      - 'cloudflare/wrangler.library-r2-preview.toml'
+      - 'cloudflare/tests/library-r2-*.test.mjs'
+      - '.github/workflows/library-l6p2b-worker-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  library-r2-preview:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax of isolated Worker modules
+        run: |
+          node --check cloudflare/src/library-r2-firestore-acl-v1.mjs
+          node --check cloudflare/src/library-r2-private-v1.mjs
+          node --check cloudflare/src/library-r2-preview-entry-v1.mjs
+      - name: Firestore R1.2 ACL, R2 mock and isolation tests (no cloud access)
+        run: |
+          node --test cloudflare/tests/library-r2-firestore-acl-v1.test.mjs cloudflare/tests/library-r2-private-v1.test.mjs cloudflare/tests/library-r2-isolation-v1.test.mjs

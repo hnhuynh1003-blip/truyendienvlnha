@@ -1,0 +1,17 @@
+# L6-P2B: isolated Library Worker configuration. DO NOT auto-deploy.
+# Firebase Rules for epub_catalog_r2_v1 and import/publish flow are NOT approved.
+# Even if deployed accidentally, feature flag below remains OFF.
+name = "dudu-library-r2-preview"
+main = "src/library-r2-preview-entry-v1.mjs"
+compatibility_date = "2026-11-01"
+workers_dev = false
+
+[vars]
+PROJECT_ID = "truyendienvl"
+ALLOWED_ORIGIN = "https://hnhuynh1003-blip.github.io"
+LIBRARY_R2_ENABLED = "false"
+
+# This is a PRIVATE binding: no S3 API key and no public R2 domain.
+[[r2_buckets]]
+binding = "DUDU_LIBRARY_EPUB_BUCKET"
+bucket_name = "dudu-library-epub-private"
