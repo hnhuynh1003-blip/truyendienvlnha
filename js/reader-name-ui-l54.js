@@ -6,7 +6,7 @@
  if(!engine||!doc)return;
  let storage=null;try{storage=root.localStorage;}catch(_){}
  const dictionary=engine.create({storage}),originals=new WeakMap(),details=new WeakMap();
- const lookup=root.DuduReaderNameLookupL55,scanEngine=root.DuduReaderNameScanL56A;
+ const lookup=root.DuduReaderNameLookupL55,scanEngine=root.DuduReaderNameScanL56A,terms=root.DuduReaderTermsL56B?.create({storage});
  const el=id=>doc.getElementById(id),content=()=>el('reader-content');
  let storyId=null,editing=false,selected=null,automatic=[],results=[],initialized=false,chapter=0,scanning=false;
  let returnFocus=null,anchor=null,priorOverflow='',activeProfile='',managerView=false;
@@ -28,6 +28,22 @@
     <div class="reader-name-actions-l53 l54-confirm"><button type="button" data-name-action="cancel">Hủy</button><button type="button" data-name-action="save" class="l54-primary">Xác nhận</button></div>
    </div>
    <div id="reader-name-manager-l54" hidden>
+    <div id="reader-term-launch-l56b" class="l56b-launch" hidden>
+     <button type="button" data-name-action="terms">Kiểm tra thuật ngữ trong chương</button>
+    </div>
+    <div id="reader-term-editor-l56b" class="l56b-editor" hidden>
+     <p class="l55-note">Thuật ngữ và tên nhân vật được lưu riêng. Gợi ý chưa xác minh không tự sửa câu chữ của truyện.</p>
+     <label for="reader-term-phrase-l56b">Thuật ngữ<input id="reader-term-phrase-l56b" maxlength="90" autocomplete="off" placeholder="Ví dụ: linh căn"></label>
+     <label for="reader-term-note-l56b">Ghi chú của truyện<textarea id="reader-term-note-l56b" rows="2" maxlength="240" placeholder="Ý nghĩa trong truyện (do bạn xác nhận)"></textarea></label>
+     <div class="l54-manager-actions">
+      <button type="button" data-name-action="term-save" class="l54-primary">Lưu thuật ngữ</button>
+      <button type="button" data-name-action="term-new">+ Mục mới</button>
+      <button type="button" data-name-action="term-undo">Hoàn tác</button>
+      <button type="button" data-name-action="term-export">Xuất</button>
+      <button type="button" data-name-action="term-import">Nhập</button>
+     </div>
+     <input id="reader-term-import-l56b" type="file" accept=".json,application/json" hidden>
+    </div>
     <details id="reader-lookup-tools-l55" class="l55-lookup-tools l56-advanced" hidden><summary>Công cụ nâng cao</summary><div class="l56-advanced-body"><button type="button" data-name-action="scan" class="l56-scan-open">Kiểm tra tên trong chương</button>
      <label for="reader-lookup-query-l55">Tra Hán–Việt / nghĩa Việt<input id="reader-lookup-query-l55" maxlength="90" placeholder="lộc biết thuyền · 鹿知舟" autocomplete="off"></label>
      <button type="button" data-name-action="lookup">Tra cứu</button>
@@ -42,7 +58,7 @@
      <p class="l55-note">Tên suy từ nghĩa Việt là ứng viên. Quy tắc bạn xác nhận luôn được ưu tiên.</p>
      <div id="reader-name-ignored-l56a" class="l56-ignored"></div>
     </div></details>
-    <h4>Quy tắc của truyện</h4>
+    <h4 id="reader-name-rules-heading-l54">Quy tắc của truyện</h4>
     <input id="reader-name-search-l54" type="search" placeholder="Tìm nhân vật hoặc cách gọi" aria-label="Tìm trong từ điển">
     <div class="l54-manager-actions"><button type="button" data-name-action="add">+ Cách gọi</button><button type="button" data-name-action="undo">Hoàn tác</button><button type="button" data-name-action="export">Xuất quy tắc</button><button type="button" data-name-action="import">Nhập quy tắc</button></div>
     <p id="reader-name-backup-help-l55" class="l55-note">Nhập file JSON quy tắc đã xuất từ cùng truyện để khôi phục hoặc chuyển thiết bị.</p>
@@ -107,9 +123,13 @@
  }
  function view(manager,title='Tên riêng'){
   managerView=manager;viewRevision++;el('reader-name-editor-l54').hidden=manager;el('reader-name-manager-l54').hidden=!manager;el('reader-name-title-l53').textContent=title;
-  const scanningView=title==='Kiểm tra tên trong chương';
+  const termView=title==='Thuật ngữ trong chương';
+  const scanningView=title==='Kiểm tra tên trong chương'||termView;
   if(el('reader-lookup-tools-l55'))el('reader-lookup-tools-l55').hidden=!lookup||!manager||scanningView;
   el('reader-name-search-l54').hidden=scanningView;
+  el('reader-name-rules-heading-l54').hidden=scanningView;
+  el('reader-term-launch-l56b').hidden=!terms||!manager||scanningView;
+  el('reader-term-editor-l56b').hidden=!termView;
   el('reader-name-import-l54').previousElementSibling.hidden=scanningView;
   el('reader-name-manager-l54').querySelector(':scope > .l54-manager-actions').hidden=scanningView;
   if(lookup&&manager&&!scanningView)renderIgnored();
