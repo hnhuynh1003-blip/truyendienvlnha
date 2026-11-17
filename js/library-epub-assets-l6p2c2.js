@@ -90,7 +90,12 @@
   return Object.freeze({segments:Object.freeze(fragments),imageCount:images});
  }
  function words(s){return s.trim().split(/\s+/u).filter(Boolean).length;}
- async function extract(file,parsed,{zipLib,Parser,cryptoApi=globalThis.crypto}={}){
+ async function extract(file,parsed,{zipLib,Parser,bookId,revisionId,cryptoApi=globalThis.crypto}={}){
+  // Both IDs are assigned by a future trusted draft/catalog creator; local
+  // filename and page state are never sufficient to allocate object keys.
+  if(typeof bookId!=='string'||!/^[A-Za-z0-9][A-Za-z0-9_-]{3,120}$/.test(bookId)||
+   typeof revisionId!=='string'||!/^r-[a-f0-9]{16,32}$/.test(revisionId))
+   reject('thiếu mã sách và revision được xác thực từ bản thảo');
   if(!file||typeof file.arrayBuffer!=='function'||typeof file.name!=='string'||
    file.name.length>180||/[\u0000-\u001F<>]/u.test(file.name)||
    !/\.epub$/i.test(file.name)||!Number.isSafeInteger(file.size)||file.size<1||file.size>MAX_SOURCE)
@@ -181,7 +186,7 @@
     wordCount:words(current.content),bytes:bytes.byteLength,sha256:await hash(bytes,cryptoApi)});
    layouts.push(Object.freeze({chapterId:id,sourcePath:current.sourcePath,...layout}));
   }
-  return {manifest:{schema:1,source:{name:file.name,bytes:raw.byteLength,sha256:await hash(raw,cryptoApi)},
+  return {manifest:{schema:1,bookId,revisionId,source:{name:file.name,bytes:raw.byteLength,sha256:await hash(raw,cryptoApi)},
     chapters,assets:assets.map(({id,role,mime,bytes,sha256})=>({id,role,mime,bytes,sha256}))},
    assets,layouts,originalBytes:new Uint8Array(raw),cutoverReady:false};
  }
