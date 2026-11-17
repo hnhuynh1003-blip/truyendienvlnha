@@ -84,5 +84,5 @@ test('L6-P2C3 rejects tampered/noncanonical JSON even without a supplied digest'
 });
 test('L6-P2C3 refuses chapters with over 220000 chars',async()=>{
  const o=opts();o.segments=[{type:'text',text:'x'.repeat(220001)}];o.chapterText=o.segments[0].text;
- await assert.rejects(layout.encodeLayout(o),/dài/);
+ await assert.rejects(layout.encodeLayout(o),/Layout EPUB không hợp lệ/);
 });
