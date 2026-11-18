@@ -4,7 +4,7 @@
  * Workers AI remains physically disabled until account-free-plan verification,
  * explicit approval, binding presence and free-only flags are ALL satisfied.
  */
-import {textOnlyNpcContents} from './npc-chat-format-v56-11.mjs';
+import {workersNpcDialogue} from './npc-dialogue-v58-3.mjs';
 
 export const WORKERS_AI_MODELS=Object.freeze([
   Object.freeze({id:'@cf/zai-org/glm-4.7-flash',label:'Workers AI · GLM-4.7 Flash · miễn phí nếu còn hạn mức',provider:'workers-ai'}),
@@ -81,10 +81,11 @@ export async function workersAiNpc(payload,env){
     return {error:{code:'model-unavailable',message:'Model Workers AI không nằm trong danh sách DUDU.'},status:409};
   if(!workersAiFreeApproved(env))
     return {error:{code:'provider-not-enabled',message:'Workers AI chưa được chủ DUDU duyệt ở chế độ miễn phí. Không thực hiện yêu cầu tính phí.'},status:503};
-  const contents=textOnlyNpcContents(payload.contents);
+  // Unlike Gemini, Workers AI accepts authenticated OpenAI-style turns.
+  // Do not flatten prior NPC answers into the newest user question.
+  const dialogue=workersNpcDialogue(payload.contents);
   const instruction=payload?.systemInstruction?.parts?.map(x=>x?.text||'').join('\n').trim();
-  const question=contents?.[0]?.parts?.[0]?.text;
-  if(!instruction||!question)
+  if(!instruction||!dialogue?.length)
     return {error:{code:'invalid-content',message:'Ngữ cảnh NPC không hợp lệ; tin nhắn đã được giữ lại.'},status:400};
   try{
     // GLM/Gemma default to reasoning; with a 640-token cap, inference can
@@ -94,9 +95,11 @@ export async function workersAiNpc(payload,env){
     // author's NPC persona / the reader's selected identity in the instruction.
     const npcReplyRule='[QUY TẮC NHẮN TIN] Chỉ trả lời bằng tiếng Việt (trừ tên riêng), không xen chữ Hán. '+ 
       'Bạn là NPC được mô tả ở trên, không nhập vai người dùng. Xưng hô đúng vai và hồ sơ, '+
-      'trả lời trực tiếp tin cuối bằng 1-3 câu tự nhiên, không lặp, không viết lời dẫn truyện.';
+      'trả lời trực tiếp tin cuối bằng 1-3 câu tự nhiên, không lặp, không viết lời dẫn truyện. '+
+      'Lịch sử trước đó chỉ là các lượt người chơi/NPC thực sự từng nói, không phải câu hỏi mới. '+
+      'Đọc lượt cuối của người chơi, trả lời đúng trọng tâm; nếu thiếu dữ kiện thì nói chưa biết, không suy đoán quan hệ hoặc danh tính.';
     const result=await env.AI.run(payload.model,{
-      messages:[{role:'system',content:instruction+'\n'+npcReplyRule},{role:'user',content:question}],
+      messages:[{role:'system',content:instruction+'\n'+npcReplyRule},...dialogue],
       chat_template_kwargs:{enable_thinking:false},
       max_completion_tokens:640
     },{rejectIfBusy:true});
