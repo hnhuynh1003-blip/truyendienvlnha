@@ -71,30 +71,36 @@
     'reader-authorization-unavailable', 'server-auth-unavailable',
     'catalog-list-unavailable'
   ]);
+  const knownAuthStages = new Set(['AUTH_MODE','AUTH_CONFIG','PEM_FORMAT','CLOCK','KEY_IMPORT','JWT_BUILD','JWT_SIGN','OAUTH_FETCH','OAUTH_HTTP','OAUTH_BODY','TOKEN_TYPE','TOKEN_VALUE','TOKEN_LIFETIME','CACHE_EPOCH','AUTH_UNKNOWN']);
   async function readKnown503Code(response) {
+    const empty = () => ({ code: '', stage: '' });
     if (response.status !== 503 ||
         !/^application\/json(?:\s*;|\s*$)/i.test(response.headers?.get('Content-Type') || '') ||
-        !response.body?.getReader) return '';
-    const reader = response.body.getReader();
+        !response.body?.getReader) return empty();
+    let reader;
     const chunks = [];
     let total = 0;
     try {
+      reader = response.body.getReader();
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        if (!(value instanceof Uint8Array) || (total += value.byteLength) > 2048) return '';
+        if (!(value instanceof Uint8Array) || (total += value.byteLength) > 2048) return empty();
         chunks.push(value);
       }
       const raw = new Uint8Array(total);
       let at = 0;
       for (const chunk of chunks) { raw.set(chunk, at); at += chunk.byteLength; }
       const json = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(raw));
-      return json && typeof json === 'object' && !Array.isArray(json) &&
-        typeof json.code === 'string' && known503.has(json.code) ? json.code : '';
+      if (!json || typeof json !== 'object' || Array.isArray(json) ||
+          typeof json.code !== 'string' || !known503.has(json.code)) return empty();
+      return { code: json.code, stage: json.code === 'server-auth-unavailable' &&
+        typeof json.stage === 'string' && knownAuthStages.has(json.stage) ? json.stage : '' };
     } catch {
-      return '';
+      return empty();
     } finally {
-      try { await reader.cancel(); } catch { /* No raw server data is retained. */ }
+      try { await reader?.cancel(); } catch { /* No raw server data is retained. */ }
+      try { reader?.releaseLock(); } catch { /* No raw server data is retained. */ }
     }
   }
   async function getStatus(authorization, signal) {
@@ -108,12 +114,12 @@
       });
       // Only an authenticated 503 is eligible for bounded error-code parsing.
       // Never consume HTTP 200 catalog metadata or any anonymous response body.
-      const code = authorization && response.status === 503
-        ? await readKnown503Code(response) : '';
-      if (!authorization || response.status !== 503 || !code) {
+      const diagnostic = authorization && response.status === 503
+        ? await readKnown503Code(response) : { code: '', stage: '' };
+      if (!authorization || response.status !== 503 || !diagnostic.code) {
         try { await response.body?.cancel(); } catch { /* Status remains authoritative. */ }
       }
-      return { status: response.status, code };
+      return { status: response.status, code: diagnostic.code, stage: diagnostic.stage };
     } catch {
       // CORS/network failures cannot be treated as a server-side HTTP 401/403.
       return { status: null, code: '' };
@@ -180,7 +186,8 @@
       if (!sameSession()) return;
       const ownerStatus = ownerResult.status;
       const detail = ownerStatus === 503
-        ? (ownerResult.code ? `BACKEND_${ownerResult.code}` : 'HTTP_503_UNCLASSIFIED')
+        ? (ownerResult.code ? `BACKEND_${ownerResult.code}` +
+          (ownerResult.stage ? ` · STAGE_${ownerResult.stage}` : '') : 'HTTP_503_UNCLASSIFIED')
         : ownerStatus === null ? 'CORS_OR_NETWORK' :
           ownerStatus === 200 ? '' : 'OWNER_HTTP_FAIL';
       display(anonymousStatus, ownerStatus, detail);
