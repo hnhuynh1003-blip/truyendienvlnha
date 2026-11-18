@@ -2037,6 +2037,15 @@
           </div>
           <small>Mã có hiệu lực 6 ngày và chỉ kích hoạt được một tài khoản.</small>
         </section>
+        <section id="firebase-owner-check" aria-label="Kiểm tra quyền Firebase" hidden style="margin-top:8px;text-align:left;font-size:12px;">
+          <button id="firebase-owner-check-button" type="button" class="btn" style="width:100%;">Kiểm tra quyền Firebase</button>
+          <div id="firebase-owner-check-results" role="status" aria-live="polite" aria-atomic="true" hidden>
+            <div>UID tác giả: <output id="firebase-owner-check-uid"></output></div>
+            <div>Claim admin: <output id="firebase-owner-check-admin"></output></div>
+            <div>Project Firebase: <output id="firebase-owner-check-project"></output></div>
+            <div>Token còn hiệu lực: <output id="firebase-owner-check-valid"></output></div>
+          </div>
+        </section>
         <button class="btn" style="width:100%;margin-top:8px;" onclick="DuduAuth.signout()">Đăng xuất</button>
       </div>
       <p id="auth-status-message" style="font-size:12px;color:var(--gold);margin-top:10px;line-height:1.6;min-height:20px;" role="status" aria-live="polite"></p>
@@ -9635,5 +9644,6 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/phone-app-contract-v67.js?v=67-arcade-wallet-1&amp;t0=1"></script>
 <script src="js/phone-lifecycle-v67-1.js?v=67-arcade-wallet-1"></script>
 <script src="js/dudu-messenger-v67-2.js?v=67-2"></script>
+<script src="js/firebase-owner-self-check-c13b6d.js?v=owner-check-1"></script>
 </body>
 </html>
