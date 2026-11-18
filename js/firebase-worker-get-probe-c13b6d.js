@@ -65,6 +65,38 @@
     output.textContent = '';
     output.hidden = true;
   }
+  // Only approved diagnostic enums may be shown. Never expose raw JSON/error text.
+  const known503 = new Set([
+    'owner-pilot-not-configured', 'library-r2-disabled',
+    'reader-authorization-unavailable', 'server-auth-unavailable',
+    'catalog-list-unavailable'
+  ]);
+  async function readKnown503Code(response) {
+    if (response.status !== 503 ||
+        !/^application\/json(?:\s*;|\s*$)/i.test(response.headers?.get('Content-Type') || '') ||
+        !response.body?.getReader) return '';
+    const reader = response.body.getReader();
+    const chunks = [];
+    let total = 0;
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        if (!(value instanceof Uint8Array) || (total += value.byteLength) > 2048) return '';
+        chunks.push(value);
+      }
+      const raw = new Uint8Array(total);
+      let at = 0;
+      for (const chunk of chunks) { raw.set(chunk, at); at += chunk.byteLength; }
+      const json = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(raw));
+      return json && typeof json === 'object' && !Array.isArray(json) &&
+        typeof json.code === 'string' && known503.has(json.code) ? json.code : '';
+    } catch {
+      return '';
+    } finally {
+      try { await reader.cancel(); } catch { /* No raw server data is retained. */ }
+    }
+  }
   async function getStatus(authorization, signal) {
     const headers = { Accept: 'application/json' };
     if (authorization) headers.Authorization = `Bearer ${authorization}`;
@@ -74,12 +106,17 @@
         redirect: 'error', referrerPolicy: 'no-referrer', cache: 'no-store',
         headers, signal
       });
-      // Do not consume catalog metadata or book content. Release the unread body.
-      try { await response.body?.cancel(); } catch { /* Status remains authoritative. */ }
-      return response.status;
+      // Only an authenticated 503 is eligible for bounded error-code parsing.
+      // Never consume HTTP 200 catalog metadata or any anonymous response body.
+      const code = authorization && response.status === 503
+        ? await readKnown503Code(response) : '';
+      if (!authorization || response.status !== 503 || !code) {
+        try { await response.body?.cancel(); } catch { /* Status remains authoritative. */ }
+      }
+      return { status: response.status, code };
     } catch {
       // CORS/network failures cannot be treated as a server-side HTTP 401/403.
-      return null;
+      return { status: null, code: '' };
     }
   }
   button.addEventListener('click', async () => {
@@ -126,7 +163,8 @@
         display(null, null, 'SESSION_CHECK_FAIL');
         return;
       }
-      anonymousStatus = await Promise.race([getStatus(null, abort.signal), interrupted]);
+      const anonymousResult = await Promise.race([getStatus(null, abort.signal), interrupted]);
+      anonymousStatus = anonymousResult.status;
       if (!sameSession()) return;
       if (anonymousStatus !== 401) {
         display(anonymousStatus, null, anonymousStatus === null ? 'CORS_OR_NETWORK' : 'ANONYMOUS_HTTP_FAIL');
@@ -138,10 +176,14 @@
         display(anonymousStatus, null, 'SESSION_CHECK_FAIL');
         return;
       }
-      const ownerStatus = await Promise.race([getStatus(token, abort.signal), interrupted]);
+      const ownerResult = await Promise.race([getStatus(token, abort.signal), interrupted]);
       if (!sameSession()) return;
-      display(anonymousStatus, ownerStatus, ownerStatus === null ? 'CORS_OR_NETWORK' :
-        ownerStatus === 200 ? '' : 'OWNER_HTTP_FAIL');
+      const ownerStatus = ownerResult.status;
+      const detail = ownerStatus === 503
+        ? (ownerResult.code ? `BACKEND_${ownerResult.code}` : 'HTTP_503_UNCLASSIFIED')
+        : ownerStatus === null ? 'CORS_OR_NETWORK' :
+          ownerStatus === 200 ? '' : 'OWNER_HTTP_FAIL';
+      display(anonymousStatus, ownerStatus, detail);
     } catch {
       if (sameSession()) display(anonymousStatus, null, abort.signal.aborted ? 'TIMEOUT' : 'SESSION_REFRESH_FAIL');
     } finally {
