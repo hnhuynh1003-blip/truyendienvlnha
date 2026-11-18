@@ -193,6 +193,15 @@
   <script src="js/epub-text-v57.js?v=57-1"></script>
   <script src="js/epub-import-v48.js?v=l2b-4"></script>
   <script src="js/epub-production-v49.js?v=c422-1"></script>
+  <!-- L6-P2C5C.4 preview bridge: feature OFF unless separately configured -->
+  <script src="js/library-epub-storage-l6p1.js?v=l6p1"></script>
+  <script src="js/library-epub-r2-client-l6p2c5c3.js?v=l6p2c5c3"></script>
+  <script src="js/library-r2-private-media-l6p2c5c7.js?v=l6p2c5c7"></script>
+  <script src="js/library-r2-preview-media-bridge-l6p2c5c8.js?v=l6p2c5c8"></script>
+  <script src="js/library-r2-preview-flags-l6p2c5c4.js?v=l6p2c5c4"></script>
+  <script src="js/library-epub-stage-l6p2c4.js"></script>
+  <script src="js/library-epub-r2-sidecar-l6c11.js"></script>
+  <script src="js/library-epub-r2-author-import-l6c12.js"></script>
   <script src="js/epub-batch-import-c421.js?v=c421-1"></script>
   <script src="js/library-synopsis-search-l2d.js?v=l2d-1"></script>
   <script src="js/library-epub-manage-l2d2.js?v=c422-1"></script>
@@ -2257,6 +2266,7 @@
         <h2 id="story-modal-heading">THÊM TÁC PHẨM MỚI</h2>
         <div class="story-epub-actions">
           <button type="button" class="btn" onclick="openEpubImportV48()" title="Tự tách chương EPUB và xem trước">Nhập EPUB lẻ</button>
+          <button id="c12-open" type="button" class="btn" hidden>Nhập EPUB R2 (pilot)</button>
           <button type="button" class="btn" onclick="openEpubBatchC421()" title="Chọn thư mục cha hoặc nhiều tệp EPUB">Nhập hàng loạt</button>
         </div>
       </div>
@@ -2676,6 +2686,24 @@
       novels=novels.filter(n=>!n._cloudV49);
     // V49 production EPUBs live in separate Firestore story/chapter documents.
     let epubPublishedBooksV49 = [];
+    // L6 preview is an opt-in READER backend; NEVER changes V49 writer.
+    // A missing/invalid configuration only disables R2 and leaves V49 intact.
+    const l6R2PreviewConfig = window.DUDU_LIBRARY_R2_PREVIEW_CONFIG;
+    let l6R2PreviewClient = null;
+    if (!IS_SANDBOX_MODE && l6R2PreviewConfig?.enabled === true) {
+      try {
+        l6R2PreviewClient = window.DuduLibraryR2ClientL6P2C5C3.create({
+          enabled: true,
+          workerBaseUrl: l6R2PreviewConfig.workerBaseUrl,
+          auth: () => firebase.auth(),
+          firestoreReader: (bookId, chapterId) =>
+            DuduEpubProductionV49.readChapter(db, bookId, chapterId),
+          storageAdapter: window.DuduEpubStorageL6P1
+        });
+      } catch (error) {
+        console.warn('L6 preview: R2 unavailable; V49 remains active.', error?.message);
+      }
+    }
     // C3.1: C3.0 Firestore owner-edit and atomic-revision Rules were published
     // by the owner on 30/10. Display EPUB tools only for the authenticated
     // author who owns that book. Server Rules remain the write authority.
@@ -2711,22 +2739,57 @@
         }
       }
     })||Object.freeze({enabled:false,owns:()=>false,open:()=>false,close:()=>false});
-    const librarySynopsisIndexL2D=DuduLibrarySynopsisSearchL2D.createIndex((bookId,chapterId)=>
-      DuduEpubProductionV49.readChapter(db,bookId,chapterId));
+    // REVIEW ONLY: both private-media clients are confined to the disabled-by-default preview.
+    // Do not wire this to V49 writer, account progress, or game rewards.
+    let l6R2MediaBridge = null;
+    if (l6R2PreviewClient && l6R2PreviewConfig?.enabled === true) {
+      try {
+        l6R2MediaBridge = window.DuduR2PreviewMediaBridgeL6P2C5C8?.create({
+          enabled:true,privateMediaApi:window.DuduR2PrivateMediaL6P2C5C7,
+          workerBaseUrl:l6R2PreviewConfig.workerBaseUrl,
+          auth:()=>firebase.auth(),doc:document
+        }) || null;
+      } catch (error) {
+        console.warn('L6 C8 preview private media unavailable',error?.message);
+      }
+    }
+    // Release short-lived media when the tab is closed or navigated away.
+    window.addEventListener('pagehide',()=>l6R2MediaBridge?.dispose(),{once:true});
+    const librarySynopsisIndexL2D=DuduLibrarySynopsisSearchL2D.createIndex((bookId,chapterId)=>{
+      const epub = novels.find(n => n.id === bookId && n._r2V1 === true);
+      // Never query epub_stories_v49 for a book whose backend is R2.
+      if (epub) return l6R2PreviewClient
+        ? l6R2PreviewClient.readChapter(epub,chapterId)
+        : Promise.reject(new Error('L6 R2 preview chưa được kích hoạt'));
+      return DuduEpubProductionV49.readChapter(db,bookId,chapterId);
+    });
     async function refreshEpubCloudBooksV49(){
       if(IS_SANDBOX_MODE||!window.DuduEpubProductionV49)return;
       if(window.DUDU_ACCOUNT_APPROVAL_V1_READY&&!DuduAuth.isReady())return;
       const accountUid=DuduAuth.uid();
       try{
         const books=await DuduEpubProductionV49.publicBooks(db);
+        // Failure of R2 list MUST remove stale R2 cards from the in-memory view.
+        // Keep already authorized legacy Firestore V49 books readable.
+        let r2Books=[];
+        if(l6R2PreviewClient){
+          try{r2Books=await l6R2PreviewClient.listPublished();}
+          catch(error){console.warn('L6 preview: R2 list unavailable',error?.message);}
+        }
         if(window.DUDU_ACCOUNT_APPROVAL_V1_READY&&
           (!DuduAuth.isReady()||DuduAuth.uid()!==accountUid))return;
-        epubPublishedBooksV49=books;
+        epubPublishedBooksV49=books.concat(r2Books);
         mergeEpubCloudBooksV49();
         renderHome();
         c443RestoreOnReload();
         scheduleSynopsisSearchL2D();
-      }catch(err){console.warn('V49: không tải được truyện EPUB',err?.code||err?.message)}
+      }catch(err){
+        // A failed legacy fetch must not leave previously authorized R2 cards visible.
+        epubPublishedBooksV49=epubPublishedBooksV49.filter(book=>!book._r2V1);
+        mergeEpubCloudBooksV49();
+        renderHome();
+        console.warn('V49: không tải được truyện EPUB',err?.code||err?.message);
+      }
     }
     function mergeEpubCloudBooksV49(){
       if(IS_SANDBOX_MODE)return;
@@ -2739,6 +2802,8 @@
     window.duduSyncEpubAccessR11=allowed=>{
       if(IS_SANDBOX_MODE||!window.DUDU_ACCOUNT_APPROVAL_V1_READY)return;
       if(allowed){void refreshEpubCloudBooksV49();return;}
+      // Revocation also invalidates all previously-issued local blob URLs.
+      l6R2MediaBridge?.clearAll();
       const activeEpub=Boolean(novels[selectedNovelIndex]?._cloudV49);
       epubPublishedBooksV49=[];
       mergeEpubCloudBooksV49();
@@ -7603,6 +7668,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
     // regardless of outcome. No limit per day; the chapter itself is the key.
     let chapterLootGrantReadyKey=null;
     function chapterLootOpportunity(novel,chapter,index,paragraphCount){
+      // Author R2 acceptance does not issue gameplay rewards. Existing books are unchanged.
+      if(novel?._r2V1===true)return {visible:false};
       const key=DuduChapterLootEncounterV1.lootKey(novel.id,chapter.id || index);
       const accountId=(!IS_SANDBOX_MODE&&DuduAuth?.isReady?.())?
         DuduAuth.uid():currentUsername;
@@ -8009,6 +8076,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
       renderTagCloud();
 
       const container = document.getElementById('novel-grid-container');
+      // Each repaint releases previous private cover blob URLs.
+      l6R2MediaBridge?.clearCovers();
       container.innerHTML = "";
 
       let filtered = typeof DuduLibrarySmartFilterL3!=='undefined'?
@@ -8120,6 +8189,9 @@ document.getElementById('phone-home-screen').style.display = 'none';
           cover.textContent = (novel.title || '').replace(/^[^\p{L}\p{N}]+/u, '').slice(0, 1).toLocaleUpperCase('vi') || '✦';
           cover.setAttribute('aria-hidden', 'true');
         }
+        // Authenticated image; never put blob URLs in persisted novel records.
+        if(novel._r2V1===true && l6R2MediaBridge)
+          void l6R2MediaBridge.loadCardCover(novel,cover).catch(()=>{});
         const info = document.createElement('div');
         info.className = 'novel-info';
         const details = document.createElement('div');
@@ -8306,6 +8378,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
     }
 
     function openCover(idx) {
+      l6R2MediaBridge?.clearChapter();
       window.DuduLibraryReaderStatusL2A?.cancel();
       document.body.classList.remove('dudu-reading-active');
       if(window.DUDU_ACCOUNT_APPROVAL_V1_READY && novels[idx]?._cloudV49 &&
@@ -8365,6 +8438,9 @@ document.getElementById('phone-home-screen').style.display = 'none';
       } else {
         coverContainer.style.backgroundImage = `linear-gradient(135deg, #1f2833 0%, #0b0c10 100%)`;
       }
+      l6R2MediaBridge?.clearHero();
+      if(novel._r2V1===true && l6R2MediaBridge)
+        void l6R2MediaBridge.loadHeroCover(novel,coverContainer).catch(()=>{});
 
       const intro = novel.introData || {};
       const introText = String(intro.text || novel.intro || novel.desc ||
@@ -8590,8 +8666,13 @@ document.getElementById('phone-home-screen').style.display = 'none';
         const requestUid=DuduAuth.uid();
         const feedback=window.DuduLibraryReaderStatusL2A;
         const ticket=feedback?.begin(pendingChapter.title);
-        DuduEpubProductionV49.readChapter(db,bookId,chapterId)
-         .then(result=>{
+        // R2 reader reuses the existing chapter UI; NO Firestore fallback.
+        const chapterRequest = pendingBook._r2V1 === true
+          ? (l6R2PreviewClient
+              ? l6R2PreviewClient.readChapter(pendingBook,chapterId)
+              : Promise.reject(new Error('L6 R2 preview chưa được kích hoạt')))
+          : DuduEpubProductionV49.readChapter(db,bookId,chapterId);
+        chapterRequest.then(result=>{
           if(window.DUDU_ACCOUNT_APPROVAL_V1_READY&&
             (!DuduAuth.isReady()||DuduAuth.uid()!==requestUid))return;
           if(novels[selectedNovelIndex]?.id!==bookId||
@@ -8604,6 +8685,35 @@ document.getElementById('phone-home-screen').style.display = 'none';
           alert('Chưa thể tải chương EPUB: '+(err.message||'Firebase không phản hồi'));
          });
         return;
+      }
+      // R2 image layouts must be verified before the reader commits chapter
+      // progress, bookmark or EXP. There is no fallback to V49 content.
+      if(pendingBook?._r2V1===true && pendingChapter){
+        const bookId=pendingBook.id,chapterId=pendingChapter.id;
+        if(!l6R2MediaBridge){
+          const feedback=window.DuduLibraryReaderStatusL2A;
+          const ticket=feedback?.begin(pendingChapter.title);
+          if(feedback)feedback.fail(ticket,()=>readChapter(chIdx,scrollPos));
+          else console.warn('L6 preview media bridge unavailable');
+          return;
+        }
+        if(!l6R2MediaBridge.isChapterReady(pendingBook,chapterId,pendingChapter.content)){
+          const uid=DuduAuth.uid(),feedback=window.DuduLibraryReaderStatusL2A;
+          const ticket=feedback?.begin(pendingChapter.title);
+          l6R2MediaBridge.prepareChapter(pendingBook,chapterId,pendingChapter.content)
+           .then(()=>{
+             if(DuduAuth.uid()!==uid||novels[selectedNovelIndex]?.id!==bookId||
+                novels[selectedNovelIndex]?.chapters?.[chIdx]?.id!==chapterId)return;
+             if(feedback&&!feedback.success(ticket))return;
+             readChapter(chIdx,scrollPos);
+           }).catch(error=>{
+             if(feedback)feedback.fail(ticket,()=>readChapter(chIdx,scrollPos));
+             else console.warn('L6 preview layout unavailable',error?.message);
+           });
+          return;
+        }
+      }else{
+        l6R2MediaBridge?.clearChapter();
       }
       window.DuduLibraryReaderStatusL2A?.cancel();
       window.DuduGiftPickerV4431?.closeActive();
@@ -8649,6 +8759,12 @@ document.getElementById('phone-home-screen').style.display = 'none';
         else pTag.textContent = p.trim();
         contentEl.appendChild(pTag);
       });
+      if(novel._r2V1===true && l6R2MediaBridge){
+        l6R2MediaBridge.renderChapter(contentEl,novel,ch.id,ch.content,(p,text)=>{
+          if(window.DuduReaderNamesL53)DuduReaderNamesL53.bindParagraph(p,text.trim());
+          else p.textContent=text.trim();
+        });
+      }
 
       // HIỂN THỊ CÁC NHÂN VẬT GẮN TRONG CHƯƠNG NÀY ĐỂ ĐỘC GIẢ KẾT NỐI
       renderReaderChapterNpcs(ch, novel);
@@ -8666,7 +8782,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       document.getElementById('btn-prev-ch-top').hidden = chIdx === 0;
       document.getElementById('btn-next-ch-top').hidden = chIdx === novel.chapters.length-1;
 
-      if(window.DuduPersonalSyncV568){
+      if(novel._r2V1!==true&&window.DuduPersonalSyncV568){
         const saved=DuduPersonalSyncV568.captureChapter(novel,chIdx,scrollPos||0);
         if(saved){
           localStorage.setItem(scopedLocalKey('bookmark',novel.id),JSON.stringify(saved));
@@ -8698,7 +8814,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
           window.DuduEconomyRuntimeV43?.questEvent('READ_CHAPTER',readKey);
           saveCurrentAccount();
         }
-      }else if(personalProgressReady()){
+      }else if(novel._r2V1!==true&&personalProgressReady()){
         // Opening is currently the eligibility event, as in Sandbox; it is
         // not server proof that someone finished reading the chapter.
         void personalProgressActionC23('read',{
@@ -8813,7 +8929,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
         else floatBar.style.display = revealToc?'flex':'none';
 
         const novel = novels[selectedNovelIndex];
-        if (novel && novel.chapters && novel.chapters.length > 0) {
+        if (novel && novel._r2V1!==true && novel.chapters && novel.chapters.length > 0) {
           const current=window.DuduPersonalSyncV568?.captureChapter(novel,selectedChapterIndex,winScroll);
           if(current)localStorage.setItem(scopedLocalKey('bookmark',novel.id),JSON.stringify(current));
           c443Remember(winScroll);
@@ -8827,6 +8943,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
     });
 
     function goHome() {
+      l6R2MediaBridge?.clearChapter();
+      l6R2MediaBridge?.clearHero();
       window.DuduLibraryReaderStatusL2A?.cancel();
       document.body.classList.remove('dudu-reading-active');
       window.DuduReaderFocusL2B?.reset();
@@ -8840,7 +8958,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
         const story=novels[selectedNovelIndex];
         const position=story&&window.DuduPersonalSyncV568?DuduPersonalSyncV568.localBookmark(
           localStorage,scopedLocalKey('bookmark',story.id)):null;
-        if(story&&position){
+        if(story&&story._r2V1!==true&&position){
           userProfile.readingBookmarksV568 ||= {};
           userProfile.readingBookmarksV568[story.id]=position;
           saveCurrentAccount();
@@ -9646,5 +9764,25 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/dudu-messenger-v67-2.js?v=67-2"></script>
 <script src="js/firebase-owner-self-check-c13b6d.js?v=owner-check-3"></script>
 <script src="js/firebase-worker-get-probe-c13b6d.js?v=worker-get-probe-3"></script>
+
+<!-- C12 isolated author preview. Both browser flags must be explicitly enabled. -->
+<dialog id="c12-dialog" aria-labelledby="c12-heading" style="max-width:580px;width:90%;background:#172130;color:#fff;border:1px solid #546477;border-radius:12px;padding:20px">
+  <h2 id="c12-heading">Nhập EPUB R2 (pilot)</h2>
+  <form id="c12-form" style="display:grid;gap:10px">
+    <label>Tệp EPUB <input id="c12-file" type="file" accept=".epub" required></label>
+    <label>Tên truyện <input id="c12-title" required maxlength="140"></label>
+    <label>Tác giả <input id="c12-author" required maxlength="140"></label>
+    <label>Văn án <textarea id="c12-description" maxlength="3000"></textarea></label>
+    <label>Thể loại <input id="c12-genre" maxlength="220"></label>
+    <label>Trạng thái <select id="c12-publication" required><option value="">Chọn trạng thái</option><option>Đang ra</option><option>Hoàn thành</option></select></label>
+    <output id="c12-status" aria-live="polite" data-state="idle">Chưa chuẩn bị</output>
+    <div><button id="c12-start" type="button" class="btn btn-primary">Chuẩn bị và tải lên</button>
+    <button id="c12-publish" type="button" class="btn" disabled>Xác nhận xuất bản</button>
+    <button id="c13b3-read" type="button" class="btn" disabled>Mở truyện vừa xuất bản</button>
+    <button id="c12-close" type="button" class="btn">Đóng</button></div>
+  </form>
+</dialog>
+<script src="js/library-r2-author-ui-c13b6d.js?v=c13b6d-1"></script>
+
 </body>
 </html>
