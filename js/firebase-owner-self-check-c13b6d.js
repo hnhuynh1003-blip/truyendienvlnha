@@ -42,6 +42,13 @@
     return Number.isSafeInteger(seconds)&&seconds>0&&Number.isSafeInteger(seconds*1000)
       ?seconds*1000:NaN;
   }
+  // Only disclose coarse clock-offset bands; never the token timestamps.
+  function issuedFutureCode(aheadMs){
+    if(aheadMs<5000)return 'ISSUED_IN_FUTURE_LT_5S';
+    if(aheadMs<60000)return 'ISSUED_IN_FUTURE_5S_TO_1M';
+    if(aheadMs<300000)return 'ISSUED_IN_FUTURE_1M_TO_5M';
+    return 'ISSUED_IN_FUTURE_GE_5M';
+  }
   function checkTimes(claims,result,now){
     const jwtExpiry=expiryFromClaim(claims.exp);
     const sdkExpiry=Date.parse(result.expirationTime);
@@ -52,7 +59,7 @@
     else if(!Number.isFinite(sdkExpiry))code='SDK_EXP_FORMAT';
     else if(sdkExpiry<=now)code='SDK_EXPIRED';
     else if(!Number.isFinite(issued))code='ISSUED_FORMAT';
-    else if(issued>now)code='ISSUED_IN_FUTURE';
+    else if(issued>now)code=issuedFutureCode(issued-now);
     else if(issued>=sdkExpiry)code='ISSUED_AFTER_EXP';
     return {valid:code==='',code,expiresAt:Math.min(jwtExpiry,sdkExpiry)};
   }
