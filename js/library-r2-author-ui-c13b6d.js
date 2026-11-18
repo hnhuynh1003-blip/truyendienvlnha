@@ -1,4 +1,5 @@
 (function(){
+  if(window.DuduC12AuthorPreview)return;
   const id=x=>document.getElementById('c12-'+x),config=window.DUDU_LIBRARY_R2_PREVIEW_CONFIG;
   const enabled=config?.enabled===true&&config?.authorImportEnabled===true;
   let controller=null,abort=null;
@@ -15,6 +16,7 @@
   };
   const syncEpub=window.duduSyncEpubAccessR11;
   window.duduSyncEpubAccessR11=approved=>{syncAccess();return syncEpub?.(approved);};
+  window.addEventListener('dudu-auth-state-changed',syncAccess);
   syncAccess();
   id('open').addEventListener('click',()=>{if(!allowed())return;id('dialog').showModal();render();});
   id('form').addEventListener('submit',e=>e.preventDefault());

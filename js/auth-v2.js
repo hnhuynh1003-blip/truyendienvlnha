@@ -245,6 +245,8 @@
     for (const fn of [applyUserRole, renderHome, updatePhoneUI, updateActiveModelInfo]) {
       try { fn(); } catch (error) { console.warn('DUDU session UI:', error); }
     }
+    // Notify consumers after ready/admin are updated; independent of approval feature flags.
+    try { window.dispatchEvent(new Event('dudu-auth-state-changed')); } catch { /* UI notification must not change authentication. */ }
   }
   let profileError = '';
   async function applySession(account) {
