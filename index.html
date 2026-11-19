@@ -198,7 +198,7 @@
   <script src="js/library-epub-r2-client-l6p2c5c3.js?v=l6p2c5c3"></script>
   <script src="js/library-r2-private-media-l6p2c5c7.js?v=l6p2c5c7"></script>
   <script src="js/library-r2-preview-media-bridge-l6p2c5c8.js?v=l6p2c5c8"></script>
-  <script src="js/library-r2-preview-flags-l6p2c5c4.js?v=l6p2c5c4"></script>
+  <script src="js/library-r2-preview-flags-l6p2c5c4.js?v=r2-production-read-1"></script>
   <script src="js/library-epub-stage-l6p2c4.js"></script>
   <script src="js/library-epub-r2-sidecar-l6c11.js"></script>
   <script src="js/library-epub-r2-author-import-l6c12.js"></script>
@@ -2690,7 +2690,7 @@
     // A missing/invalid configuration only disables R2 and leaves V49 intact.
     const l6R2PreviewConfig = window.DUDU_LIBRARY_R2_PREVIEW_CONFIG;
     let l6R2PreviewClient = null;
-    if (!IS_SANDBOX_MODE && l6R2PreviewConfig?.enabled === true) {
+    if (!IS_SANDBOX_MODE && l6R2PreviewConfig?.enabled === true && l6R2PreviewConfig?.readEnabled === true) {
       try {
         l6R2PreviewClient = window.DuduLibraryR2ClientL6P2C5C3.create({
           enabled: true,
@@ -2742,7 +2742,7 @@
     // REVIEW ONLY: both private-media clients are confined to the disabled-by-default preview.
     // Do not wire this to V49 writer, account progress, or game rewards.
     let l6R2MediaBridge = null;
-    if (l6R2PreviewClient && l6R2PreviewConfig?.enabled === true) {
+    if (l6R2PreviewClient && l6R2PreviewConfig?.enabled === true && l6R2PreviewConfig?.readEnabled === true) {
       try {
         l6R2MediaBridge = window.DuduR2PreviewMediaBridgeL6P2C5C8?.create({
           enabled:true,privateMediaApi:window.DuduR2PrivateMediaL6P2C5C7,
@@ -2778,7 +2778,7 @@
         }
         if(window.DUDU_ACCOUNT_APPROVAL_V1_READY&&
           (!DuduAuth.isReady()||DuduAuth.uid()!==accountUid))return;
-        epubPublishedBooksV49=books.concat(r2Books);
+        epubPublishedBooksV49=Array.from(new Map(books.concat(r2Books).map(book=>[book.id,book])).values());
         mergeEpubCloudBooksV49();
         renderHome();
         c443RestoreOnReload();
