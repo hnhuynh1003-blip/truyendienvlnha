@@ -95,7 +95,7 @@
   <link rel="stylesheet" href="css/pilot-v45-1.css?v=45-1-r2">
   <link rel="stylesheet" href="css/story-comments-pilot-v45-2.css?v=45-2">
   <link rel="stylesheet" href="css/sandbox-discussion-v46.css?v=46-1">
-  <link rel="stylesheet" href="css/epub-import-v48.css?v=l2b-4">
+  <link rel="stylesheet" href="css/epub-import-v48.css?v=r2-unified-1">
   <link rel="stylesheet" href="css/epub-batch-import-c421.css?v=c421-1">
   <link rel="stylesheet" href="css/library-intake-v1.css?v=lib1-ui3">
   <link rel="stylesheet" href="css/chat-messenger-v56-12.css?v=56-12">
@@ -191,7 +191,7 @@
   <script src="js/sandbox-discussion.js?v=46-1"></script>
   <script src="js/sandbox-discussion-ui.js?v=46-1"></script>
   <script src="js/epub-text-v57.js?v=57-1"></script>
-  <script src="js/epub-import-v48.js?v=l2b-4"></script>
+  <script src="js/epub-import-v48.js?v=r2-unified-1"></script>
   <script src="js/epub-production-v49.js?v=c422-1"></script>
   <!-- L6-P2C5C.4 preview bridge: feature OFF unless separately configured -->
   <script src="js/library-epub-storage-l6p1.js?v=l6p1"></script>
@@ -202,7 +202,7 @@
   <script src="js/library-epub-stage-l6p2c4.js"></script>
   <script src="js/library-epub-r2-sidecar-l6c11.js"></script>
   <script src="js/library-epub-r2-author-import-l6c12.js?v=personal-import-2-safe-retry"></script>
-  <script src="js/epub-batch-import-c421.js?v=c421-1"></script>
+  <script src="js/epub-batch-import-c421.js?v=r2-unified-1"></script>
   <script src="js/library-synopsis-search-l2d.js?v=l2d-1"></script>
   <script src="js/library-epub-manage-l2d2.js?v=c422-1"></script>
   <script src="js/epub-chapter-editor-l2d3.js?v=l2d5b-1"></script>
@@ -2265,9 +2265,7 @@
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
         <h2 id="story-modal-heading">THÊM TÁC PHẨM MỚI</h2>
         <div class="story-epub-actions">
-          <button type="button" class="btn" onclick="openEpubImportV48()" title="Tự tách chương EPUB và xem trước">Nhập EPUB lẻ</button>
-          <button id="c12-open" type="button" class="btn" hidden>Nhập EPUB R2</button>
-          <button type="button" class="btn" onclick="openEpubBatchC421()" title="Chọn thư mục cha hoặc nhiều tệp EPUB">Nhập hàng loạt</button>
+          <button id="c12-open" type="button" class="btn" hidden onclick="openEpubImportV48()" title="Chọn một EPUB, nhiều EPUB hoặc thư mục cha">Nhập EPUB</button>
         </div>
       </div>
       <div class="modal-field">
@@ -3348,6 +3346,7 @@
     }
 
     function closeModals() {
+      window.DuduC12AuthorPreview?.close?.();
       closeChapterAIReviewL5();
       epubEditorL2D5.close?.();
       ['story-modal', 'chapter-modal', 'char-modal', 'auth-modal', 'gift-modal', 'author-item-modal', 'author-release-modal', 'epub-import-modal'].forEach(id => {
@@ -9765,35 +9764,9 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/firebase-owner-self-check-c13b6d.js?v=owner-check-3"></script>
 <script src="js/firebase-worker-get-probe-c13b6d.js?v=worker-get-probe-3"></script>
 
-<!-- C12 isolated author preview. Both browser flags must be explicitly enabled. -->
-<dialog id="c12-dialog" aria-labelledby="c12-heading" style="max-width:580px;width:90%;background:#172130;color:#fff;border:1px solid #546477;border-radius:12px;padding:20px">
-  <h2 id="c12-heading">Nhập EPUB R2</h2>
-  <form id="c12-form" style="display:grid;gap:10px">
-    <label>Nhập lẻ <input id="c12-file" type="file" accept=".epub,application/epub+zip"></label>
-    <label>Chọn nhiều EPUB <input id="c12-files" type="file" accept=".epub,application/epub+zip" multiple></label>
-    <label>Chọn thư mục cha <input id="c12-folder" type="file" webkitdirectory directory multiple></label>
-    <p id="c12-folder-note"></p>
-    <div><button id="c12-select-all" type="button">Chọn tất cả hợp lệ</button> <button id="c12-select-none" type="button">Bỏ chọn tất cả</button> <button id="c12-clear" type="button">Xóa danh sách chờ</button></div>
-    <output id="c12-queue-summary" aria-live="polite"></output>
-    <div id="c12-queue" aria-label="Danh sách EPUB chờ đăng" style="max-height:240px;overflow:auto"></div>
-    <p id="c12-editing">Chọn một sách để sửa thông tin.</p>
-    <label>Tên truyện <input id="c12-title" required maxlength="140"></label>
-    <label>Tác giả <input id="c12-author" required maxlength="140"></label>
-    <label>Văn án <textarea id="c12-description" maxlength="3000"></textarea></label>
-    <label>Thể loại <input id="c12-genre" maxlength="220"></label>
-    <label>Trạng thái <select id="c12-publication" required><option value="">Chọn trạng thái</option><option>Đang ra</option><option>Hoàn thành</option></select></label>
-    <output id="c12-status" aria-live="polite" data-state="idle">Chưa chuẩn bị</output>
-    <div><button id="c12-start" type="button" class="btn btn-primary">Đăng các sách đã chọn</button>
-    <button id="c12-pause" type="button" disabled>Dừng sau cuốn hiện tại</button>
-    <button id="c12-publish" type="button" hidden class="btn" disabled>Xác nhận xuất bản</button>
-    <button id="c13b3-read" type="button" class="btn" disabled>Mở truyện vừa xuất bản</button>
-    <button id="c12-status-check" type="button" class="btn">Kiểm tra trạng thái</button>
-    <button id="c12-close" type="button" class="btn">Đóng</button></div>
-  </form>
-</dialog>
 <script src="js/library-r2-personal-intake.js?v=personal-intake-1"></script>
 <script src="js/library-r2-personal-queue.js?v=personal-queue-1"></script>
-<script src="js/library-r2-author-ui-c13b6d.js?v=personal-ui-3-queue"></script>
+<script src="js/library-r2-author-ui-c13b6d.js?v=r2-unified-1"></script>
 
 </body>
 </html>

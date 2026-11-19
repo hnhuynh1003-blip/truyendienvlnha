@@ -190,20 +190,8 @@
   return {path:key};
  }
  let state={file:null,parsed:null,busy:false,cloudDraft:null};
- function open(options={}){
-  if(!options.canEdit?.())return false;
-  const modal=root?.document?.getElementById('epub-import-modal');
-  const host=root?.document?.getElementById('epub-import-content');
-  if(!modal||!host)return false;
-  state={file:null,parsed:null,busy:false,cloudDraft:null};
-  const doc=root.document;
+ function createImportView(doc=root.document){
   const el=(tag,copy)=>{const x=doc.createElement(tag);if(copy!=null)x.textContent=copy;return x};
-  host.replaceChildren();
-  const help=el('p',options.sandbox?
-    'Chọn EPUB → tách chương → xem trước → nhập vào Sandbox. Không thay đổi Firebase.':
-    options.sparkPersonal
-      ? 'Spark miễn phí: Tách chương trên thiết bị → lưu bản thảo văn bản vào Firestore → xuất bản. Không cần Storage/Functions/Blaze. Chỉ lưu được khi EPUB Rules và quyền Tác giả Firebase đã được xác nhận.'
-      : 'Chọn EPUB → tách chương → xem trước → lưu bản thảo có các chương lên Firebase → xác nhận xuất bản. Không ghi đè truyện cũ.');
   const input=el('input');input.type='file';input.accept='.epub,application/epub+zip';
   input.setAttribute('aria-label','Chọn tệp EPUB');
   const status=el('p','');status.setAttribute('role','status');status.className='dudu-epub-status';
@@ -221,19 +209,37 @@
   fields.append(field('Tên truyện',title),field('Tác giả',authorInput),
    field('Thể loại · cách nhau bằng dấu phẩy',genreInput),
    field('Tình trạng tác phẩm',completionInput),field('Văn án',descInput));
-  const target=el('select');target.setAttribute('aria-label','Đích nhập EPUB');
-  target.append(new Option('Tạo truyện mới (Sandbox)',''));
-  for(const book of options.novels||[])target.append(new Option(book.title||book.id,book.id));
   const list=el('div');list.className='dudu-epub-preview';
-  const noticeLabel=el('label');
-  const includeNotices=el('input');includeNotices.type='checkbox';
-  noticeLabel.append(includeNotices,doc.createTextNode(' Nhập cả trang thông báo / lời nhắn của người đóng gói'));
-  noticeLabel.style.cssText='display:none;font-size:11px;margin:7px 0;';
   const coverPreview=el('img');coverPreview.alt='Ảnh bìa xem trước từ EPUB';
   coverPreview.style.cssText='display:none;width:84px;height:auto;max-height:120px;object-fit:contain;border-radius:7px;margin:8px 0;';
   const info=el('small','');info.style.cssText='display:block;font-size:11px;margin:6px 0;white-space:pre-line;';
   const buttons=el('div');buttons.className='dudu-epub-actions';
   const button=(caption,handler)=>{const b=el('button',caption);b.type='button';b.className='btn';b.onclick=handler;buttons.append(b);return b};
+  return {el,input,status,title,authorInput,genreInput,completionInput,descInput,fields,list,coverPreview,info,buttons,button};
+ }
+ function open(options={}){
+  if(!options.canEdit?.())return false;
+  if(!options.sandbox)return root.DuduC12AuthorPreview?.open?.()||false;
+  const modal=root?.document?.getElementById('epub-import-modal');
+  const host=root?.document?.getElementById('epub-import-content');
+  if(!modal||!host)return false;
+  state={file:null,parsed:null,busy:false,cloudDraft:null};
+  const doc=root.document;
+  const el=(tag,copy)=>{const x=doc.createElement(tag);if(copy!=null)x.textContent=copy;return x};
+  host.replaceChildren();
+  const help=el('p',options.sandbox?
+    'Chọn EPUB → tách chương → xem trước → nhập vào Sandbox. Không thay đổi Firebase.':
+    options.sparkPersonal
+      ? 'Spark miễn phí: Tách chương trên thiết bị → lưu bản thảo văn bản vào Firestore → xuất bản. Không cần Storage/Functions/Blaze. Chỉ lưu được khi EPUB Rules và quyền Tác giả Firebase đã được xác nhận.'
+      : 'Chọn EPUB → tách chương → xem trước → lưu bản thảo có các chương lên Firebase → xác nhận xuất bản. Không ghi đè truyện cũ.');
+  const {input,status,title,authorInput,genreInput,completionInput,descInput,fields,list,coverPreview,info,buttons,button}=createImportView(doc);
+  const target=el('select');target.setAttribute('aria-label','Đích nhập EPUB');
+  target.append(new Option('Tạo truyện mới (Sandbox)',''));
+  for(const book of options.novels||[])target.append(new Option(book.title||book.id,book.id));
+  const noticeLabel=el('label');
+  const includeNotices=el('input');includeNotices.type='checkbox';
+  noticeLabel.append(includeNotices,doc.createTextNode(' Nhập cả trang thông báo / lời nhắn của người đóng gói'));
+  noticeLabel.style.cssText='display:none;font-size:11px;margin:7px 0;';
   // A crash-safe pointer for this signed-in author only. It is not a bearer
   // token and cannot grant write access; Firestore still verifies owner/admin.
   const resumeKey=()=>{
@@ -409,5 +415,5 @@
   return true;
  }
  return Object.freeze({LIMIT_FILE,validFile,safePath,extractText,parse,
-  prepareSandboxImport,uploadOriginal,open});
+  prepareSandboxImport,uploadOriginal,createImportView,open});
 });

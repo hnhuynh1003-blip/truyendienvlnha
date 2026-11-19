@@ -177,6 +177,7 @@
  }
  function open(options={}){
   if(!options.canEdit?.())return false;
+  if(!options.sandbox)return root.DuduC12AuthorPreview?.open?.()||false;
   const doc=root?.document,modal=doc?.getElementById('epub-batch-modal');
   if(!modal)return false;
   const importer=options.importer||root.DuduEpubImportV48;

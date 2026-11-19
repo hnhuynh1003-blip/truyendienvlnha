@@ -18,3 +18,25 @@
 #epub-import-content .dudu-epub-actions .btn{flex:1 1 145px;white-space:normal;min-height:42px}
 #epub-import-content .dudu-epub-actions .btn[hidden]{display:none!important}
 @media(max-width:420px){#epub-import-modal .modal-card{padding:12px}#epub-import-content .dudu-epub-actions{display:grid}#epub-import-content .dudu-epub-fields{grid-template-columns:1fr}#epub-import-content .dudu-epub-fields label{grid-column:1/-1}}
+
+/* Unified production intake: old V48 form, shared R2 queue/controller. */
+#epub-import-content .r2-unified-form{display:grid;gap:12px;min-width:0}
+#epub-import-content .r2-unified-form [hidden]{display:none!important}
+#epub-import-content .r2-import-help{margin:0;color:var(--text-dim,#aebdcf)}
+#epub-import-content .r2-import-pickers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+#epub-import-content .r2-import-pickers .btn{font-size:12px;padding:9px 8px;min-height:42px}
+#epub-import-content .r2-import-preview-header{display:flex;align-items:center;gap:12px;min-width:0}
+#epub-import-content .r2-import-preview-header>div{min-width:0}
+#epub-import-content #c12-editing{font-size:15px;font-weight:700;color:var(--text-main,#ecf7ff);margin:0;overflow-wrap:anywhere}
+#epub-import-content #c12-info{color:var(--text-dim,#aebdcf);overflow-wrap:anywhere}
+#epub-import-content .r2-import-queue,#epub-import-content .r2-import-chapters{border:1px solid #405469;border-radius:9px;background:rgba(10,20,35,.5);min-width:0}
+#epub-import-content .r2-import-queue summary,#epub-import-content .r2-import-chapters summary{padding:10px 12px;cursor:pointer;color:#d9caa8;font-weight:600}
+#epub-import-content .r2-queue-tools{padding:0 8px 7px;gap:6px}
+#epub-import-content .r2-queue-tools .btn{font-size:11px;min-height:32px;flex-basis:100px}
+#epub-import-content #c12-queue{max-height:190px;overflow:auto}
+#epub-import-content .r2-import-queue-row{display:grid;grid-template-columns:20px minmax(0,1fr) auto;align-items:center;gap:7px}
+#epub-import-content .r2-import-queue-row .btn{font-size:11px;min-height:32px;padding:6px 8px}
+#epub-import-content .r2-import-chapters .dudu-epub-preview{max-height:190px;border:0;border-top:1px solid #405469;border-radius:0 0 9px 9px}
+#epub-import-content .r2-import-footer{position:sticky;bottom:-12px;background:var(--bg-panel,#172130);padding:10px 0 2px;z-index:1}
+#epub-import-content #c12-folder-note{font-size:11px;color:var(--text-dim,#aebdcf)}
+@media(max-width:420px){#epub-import-content .r2-import-pickers{grid-template-columns:1fr 1fr}#epub-import-content #c12-pick-folder{grid-column:1/-1}#epub-import-content .r2-queue-tools{display:flex}#epub-import-content .r2-import-preview-header{gap:9px}}
