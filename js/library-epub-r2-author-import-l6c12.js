@@ -80,7 +80,7 @@
    ['Đang ra','Hoàn thành'].includes(m.publicationState);
  }
  function createController({enabled=false,getCurrentUser,send,parseV48,sidecar,uploader,
-  zipLib,Parser,textV57,cryptoApi=globalThis.crypto,batchSize=4}={}){
+  zipLib,Parser,textV57,cryptoApi=globalThis.crypto,batchSize=4,onState}={}){
   if(enabled!==true)fail('import-feature-off');
   if(typeof getCurrentUser!=='function'||typeof send!=='function'||
    typeof parseV48!=='function'||typeof sidecar?.buildPackage!=='function'||
@@ -88,8 +88,8 @@
    typeof zipLib?.loadAsync!=='function'||typeof Parser!=='function'||
    typeof textV57?.getText!=='function'||typeof cryptoApi?.subtle?.digest!=='function'||
    !Number.isSafeInteger(batchSize)||batchSize<1||batchSize>8)fail('missing-prerequisites');
-  let status='idle', uid=null, bookId=null, revisionId=null, receipts=[],total=0, busy=false;
-  const statusView=()=>freeze({status,bookId,revisionId,quarantined:receipts.length,total,
+  let status='idle', uid=null, bookId=null, revisionId=null, receipts=[],total=0, busy=false,requestsDispatched=0;
+  const statusView=()=>freeze({status,bookId,revisionId,requestsDispatched,quarantined:receipts.length,total,
    readyForOwnerConfirmation:status==='quarantined',publishAuthorized:false,
    published:status==='published',eligibleForDeletion:false,canMigrateBookmarks:false,
    canAwardExp:false});
@@ -108,8 +108,10 @@
   const post=async(route,{body,mime,signal}={})=>{
    if(signal?.aborted)fail('aborted');
    const jwt=await token();if(signal?.aborted)fail('aborted');
+   // Persist only metadata before dispatch. Failure to persist must stop the request.
+   if(typeof onState==='function')onState(statusView());
    let response;
-   try{response=await send({route,method:'POST',token:jwt,body,mime,signal});}
+   try{requestsDispatched++;response=await send({route,method:'POST',token:jwt,body,mime,signal});}
    catch{fail('request-outcome-unknown');}
    requireUser();if(signal?.aborted)fail('aborted');
    if(!rec(response)||!Number.isSafeInteger(response.status)||!rec(response.data)||
@@ -132,7 +134,7 @@
       typeof issue.data.ticket!=='string'||issue.data.ticket.length<50||
       issue.data.publishable!==false)fail('ticket-not-issued');
     bookId=issue.data.bookId;revisionId=issue.data.revisionId;
-    status='packaging';
+    status='packaging';if(typeof onState==='function')onState(statusView());
     const pack=await sidecar.buildPackage({file,parsed,bookId,revisionId,
       zipLib,Parser,textV57,cryptoApi});requireUser();
     if(pack.manifest?.bookId!==bookId||pack.manifest?.revisionId!==revisionId||
@@ -209,5 +211,5 @@
   }
   return freeze({start,publish,status:statusView});
  }
- return freeze({createTransport,createController});
+ return freeze({createTransport,createController,validateMetadata:validMetadata});
 });
