@@ -75,6 +75,42 @@ async function main(){
   }
   await page.evaluate(()=>document.querySelector('.sonha-book-cover').click());
   assert.equal(await page.locator('#cover-view').isVisible(),true);
+  // COVER-GLASS T2: assert actual computed translucent layers and H3B artwork,
+  // rather than merely checking selector text. Reader remains untouched.
+  const coverGlass=await page.evaluate(async()=>{
+    const alpha=selector=>{
+      const color=getComputedStyle(document.querySelector(selector)).backgroundColor;
+      if(color==='transparent')return 0;
+      const values=color.match(/[\\d.]+/g)?.map(Number)||[];
+      return values.length>=4?values[3]:1;
+    };
+    const background=getComputedStyle(document.querySelector('#cover-view')).backgroundImage;
+    const path=new URL('assets/homepage-sonha-v3/gallery-h3b.webp',document.baseURI).href;
+    const image=await fetch(path);
+    const bitmap=image.ok?await createImageBitmap(await image.blob()):null;
+    const decoded=!!bitmap&&bitmap.width>100&&bitmap.height>100;
+    bitmap?.close();
+    return {background,decoded,status:image.status,
+      banner:alpha('#cover-view .book-cover-banner'),
+      intro:alpha('#cover-view .intro-terminal-box'),
+      index:alpha('#cover-view .chapter-items'),
+      chapter:alpha('#cover-view .chapter-item'),
+      back:alpha('#cover-view .archive-cover-dock-back'),
+      read:alpha('#cover-view #btn-main-reading-action')};
+  });
+  assert.match(coverGlass.background,/gallery-h3b\\.webp/);
+  assert.equal(coverGlass.status,200,'cover artwork must load');
+  assert.equal(coverGlass.decoded,true,'cover artwork must decode');
+  for(const key of ['banner','intro','back'])assert.ok(coverGlass[key]>.3&&coverGlass[key]<.8,
+    key+' must be legible translucent glass');
+  assert.ok(coverGlass.index<.5,'chapter index backdrop must be transparent enough for art');
+  assert.equal(coverGlass.chapter,0,'chapter rows remain individually transparent');
+  assert.equal(coverGlass.read,1,'primary Read button remains solid gold');
+  for(const width of [320,375,390,430,768,1440]){
+    await page.setViewportSize({width,height:850});
+    const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
+    assert.ok(overflow<=2,'cover glass has no horizontal overflow at '+width+'px');
+  }
   await page.evaluate(()=>DuduSiteV60.navigate('library'));
   assert.equal(await page.locator('#novel-grid-container .novel-card').count(),4);
   const libraryBg=await page.locator('#home-view').evaluate(el=>getComputedStyle(el).backgroundImage);
