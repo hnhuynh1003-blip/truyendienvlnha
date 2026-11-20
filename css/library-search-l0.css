@@ -52,7 +52,13 @@ body.dudu-site-v60 #home-view .archive-shelf-item .novel-meta{display:flex;align
 body.dudu-site-v60 #home-view .archive-shelf-item .novel-meta .btn{min-height:32px;margin:0;padding:4px 0 4px 8px;border:0;border-radius:0;background:transparent;color:#e8d1a3;font-size:12px}
 body.dudu-site-v60 #home-view .archive-shelf-item .novel-meta .btn:hover{color:#fff;background:transparent;text-decoration:underline}
 @media(max-width:760px){
-  body.dudu-site-v60 #home-view .search-row{grid-template-columns:minmax(0,1fr);gap:7px}
+  /* A.1.5-R2: keep both independent search fields on one mobile row. */
+  body.dudu-site-v60 #home-view .search-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+  #home-view .l0-search-unit{min-width:0;gap:4px}
+  #home-view .l0-search-unit>label{font-size:10px;line-height:1.35;white-space:nowrap}
+  body.dudu-site-v60 #home-view .archive-search-field{min-width:0;min-height:38px;padding:0 7px;gap:5px}
+  body.dudu-site-v60 #home-view .archive-search-field>span{font-size:18px;line-height:1}
+  body.dudu-site-v60 #home-view .search-input{width:100%;min-width:0;font-size:11px;line-height:1.35;padding:7px 0;box-sizing:border-box}
   body.dudu-site-v60 #home-view .novel-grid{grid-template-columns:minmax(0,1fr);gap:9px}
   body.dudu-site-v60 #home-view .novel-card.archive-shelf-item{grid-template-columns:74px minmax(0,1fr);gap:9px;min-height:129px;padding:9px}
   body.dudu-site-v60 #home-view .archive-shelf-item .novel-cover{width:74px;height:111px;min-height:111px;max-height:111px}
