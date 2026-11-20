@@ -74,11 +74,12 @@
    return task;
   }
 
-  async function loadMissing(books,onProgress=()=>{}){
+  async function loadMissing(books,onProgress=()=>{},shouldContinue=()=>true){
+   const epoch=generation;
    const queue=(Array.isArray(books)?books:[]).filter(isUnresolved);
    let cursor=0;
    async function worker(){
-    while(cursor<queue.length){
+    while(epoch===generation&&shouldContinue()&&cursor<queue.length){
      const book=queue[cursor++];
      try{await ensure(book);}catch(_){/* Keep other results available. */}
      onProgress();
