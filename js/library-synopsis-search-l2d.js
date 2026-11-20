@@ -35,6 +35,11 @@
   const failed=new Set();
   let generation=0;
   function clear(){generation++;resolved.clear();fetching.clear();failed.clear();}
+  function retryFailed(books){
+    for(const book of Array.isArray(books)?books:[]){
+      if(eligible(book))failed.delete(keyFor(book));
+    }
+  }
   const keyFor=book=>{
    const chapter=synopsisChapter(book);
    return chapter?String(book.id)+'|'+String(book.updatedAt||'')+'|'+String(chapter.id):'';
@@ -82,7 +87,7 @@
    await Promise.all(Array.from({length:Math.min(3,queue.length)},worker));
   }
 
-  return Object.freeze({getSynopsis,ensure,loadMissing,isUnresolved,isFailed,clear});
+  return Object.freeze({getSynopsis,ensure,loadMissing,isUnresolved,isFailed,clear,retryFailed});
  }
 
  return Object.freeze({normalize,matches,inlineSynopsis,synopsisChapter,cleanSynopsis,createIndex});
