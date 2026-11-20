@@ -33,7 +33,7 @@ test('P0: receipt remains read-only; preserving instanceId and lock flags',()=>{
   assert.equal(p.instanceId,'inst-existing-004');
   assert.equal(p.locked,true);
   assert.equal(p.ownershipVerified,false);
-  assert.equal(p.ownerStatus.includes('chưa'),true);
+  assert.match(p.ownerStatus,/^Kho đang hiển thị 1 bản \(không xác nhận quyền sở hữu máy chủ\)$/);
   assert.equal(p.receiptSource.includes('bản ghi chưa đối soát'),true);
   assert.equal(p.catalogSource.includes('theo danh mục'),true);
   assert.equal(JSON.stringify(fixture),before);
