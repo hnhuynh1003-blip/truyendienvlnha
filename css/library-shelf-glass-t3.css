@@ -1,0 +1,90 @@
+/* DUDU Studio — LIBRARY-SHELF GLASS T3
+ * Reuse approved Sơn Hà H3B behind the Library and personal Shelf.
+ * Presentation only: no changes to book cover assets, actions or data flow.
+ */
+body.dudu-site-v60:not(.dudu-reading-active) #home-view,
+body.dudu-site-v60:not(.dudu-reading-active) #d60-shelf{
+  background-color:#102536;
+  background-image:
+    linear-gradient(180deg,rgba(5,19,32,.33) 0%,rgba(7,23,37,.49) 47%,rgba(7,23,37,.66) 100%),
+    url('../assets/homepage-sonha-v3/gallery-h3b.webp');
+  background-size:cover,cover;
+  background-position:center top,center top;
+  background-repeat:no-repeat;
+}
+/* Library: transparent ink-blue reading cards, preserving the cover jackets
+ * and separate selected/filter state visuals. */
+body.dudu-site-v60:not(.dudu-reading-active) #home-view .novel-card{
+  background:rgba(10,26,41,.54);
+  border-color:rgba(220,198,156,.34);
+  box-shadow:0 9px 28px rgba(2,12,22,.17),inset 0 1px rgba(255,250,230,.055);
+  -webkit-backdrop-filter:blur(1.5px);
+  backdrop-filter:blur(1.5px);
+}
+body.dudu-site-v60:not(.dudu-reading-active) #home-view .novel-card:hover,
+body.dudu-site-v60:not(.dudu-reading-active) #home-view .novel-card:focus-within{
+  background:rgba(12,31,46,.65);
+  border-color:rgba(237,207,156,.72);
+}
+body.dudu-site-v60:not(.dudu-reading-active) #home-view .novel-title-button{
+  color:#f7f0e4;
+  text-shadow:0 1px 3px rgba(0,10,20,.64);
+}
+body.dudu-site-v60:not(.dudu-reading-active) #home-view .novel-desc{
+  color:#d7e0e5;
+}
+body.dudu-site-v60:not(.dudu-reading-active) #home-view .archive-filter-details > summary{
+  background:rgba(13,32,48,.7);
+}
+body.dudu-site-v60:not(.dudu-reading-active) #home-view .archive-filter-details[open] > summary,
+body.dudu-site-v60:not(.dudu-reading-active) #home-view .archive-filter-details > summary:hover{
+  background:rgba(27,48,64,.86);
+}
+/* Keep the expanded advanced filter readable as an opaque floating panel. */
+body.dudu-site-v60:not(.dudu-reading-active) #home-view .archive-filter-content{
+  background:#17222f;
+}
+/* Tủ sách: same H3B glass treatment; do not fade book images, title or
+ * 'continue reading' and favorites actions. */
+body.dudu-site-v60:not(.dudu-reading-active) #d60-shelf .d62-in-shelf{
+  background:rgba(10,27,42,.54);
+  border-color:rgba(220,198,156,.32);
+  box-shadow:0 9px 24px rgba(2,12,22,.15),inset 0 1px rgba(255,245,219,.055);
+  -webkit-backdrop-filter:blur(1.5px);
+  backdrop-filter:blur(1.5px);
+}
+body.dudu-site-v60:not(.dudu-reading-active) #d60-shelf .d62-in-shelf:hover,
+body.dudu-site-v60:not(.dudu-reading-active) #d60-shelf .d62-in-shelf:focus-within{
+  background:rgba(12,31,46,.64);
+  border-color:rgba(237,207,156,.6);
+}
+body.dudu-site-v60:not(.dudu-reading-active) #d60-shelf .d60-shelf-tab{
+  background:rgba(12,30,47,.62);
+}
+body.dudu-site-v60:not(.dudu-reading-active) #d60-shelf .d60-shelf-tab[aria-selected="true"]{
+  background:rgba(36,59,73,.85);
+  color:#fff0ce;
+}
+body.dudu-site-v60:not(.dudu-reading-active) #d60-shelf .d60-shelf-empty{
+  background:rgba(10,27,42,.55);
+  border:1px solid rgba(220,198,156,.23);
+  -webkit-backdrop-filter:blur(1.5px);
+  backdrop-filter:blur(1.5px);
+}
+@media(max-width:600px){
+  /* Slightly denser glass is easier to read on narrow and bright displays. */
+  body.dudu-site-v60:not(.dudu-reading-active) #home-view .novel-card,
+  body.dudu-site-v60:not(.dudu-reading-active) #d60-shelf .d62-in-shelf{
+    background:rgba(10,26,41,.64);
+  }
+  body.dudu-site-v60:not(.dudu-reading-active) #d60-shelf .d60-shelf-empty{
+    background:rgba(10,26,41,.65);
+  }
+}
+@supports not ((-webkit-backdrop-filter:blur(1.5px)) or (backdrop-filter:blur(1.5px))){
+  body.dudu-site-v60:not(.dudu-reading-active) #home-view .novel-card,
+  body.dudu-site-v60:not(.dudu-reading-active) #d60-shelf .d62-in-shelf,
+  body.dudu-site-v60:not(.dudu-reading-active) #d60-shelf .d60-shelf-empty{
+    background:rgba(10,26,41,.72);
+  }
+}
