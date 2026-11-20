@@ -147,10 +147,6 @@
      row.append(element('span','d61-code-line-no',no),element('code','',line));
      codeArt.append(row);
    });
-   const quick=element('div','d61-hero-actions');
-   quick.append(button('Khám phá Thư viện',()=>navigate('library'),'d60-btn d61-hero-primary'),
-     button('Mở Tủ sách',()=>navigate('shelf'),'d60-btn secondary d61-hero-secondary'));
-   copy.append(quick);
    hero.append(copy,codeArt);
    root.append(hero);
    const signal=element('div','d61-signal');
@@ -304,7 +300,6 @@
    const tabs=[
      {key:'reading',name:'Đang đọc',count:reading.length},
      {key:'favorites',name:'Yêu thích',count:favorites?.length},
-     {key:'following',name:'Theo dõi',count:null},
      {key:'finished',name:'Đã đọc xong',count:null}
    ];
    const tablist=element('div','d60-shelf-tabs');
@@ -341,9 +336,9 @@
        empty.append(button('Khám phá Thư viện →',()=>navigate('library'),'d60-btn secondary'));
      panel.append(empty);
    };
-   if(shelfTab==='following'||shelfTab==='finished'){
-     addEmpty(shelfTab==='following'?'Theo dõi chưa được kích hoạt':'Chưa có dữ liệu hoàn thành',
-       'Mục này cần một trạng thái được xác minh. Hiện chưa tạo dữ liệu hoặc đồng bộ mới.');
+   if(shelfTab==='finished'){
+     addEmpty('Chưa có dữ liệu đã đọc xong',
+       'Đánh dấu đọc xong cần một trạng thái đọc hợp lệ; không tự suy ra từ việc EPUB đã hoàn thành.');
    }else if(shelfTab==='favorites'&&favorites===null){
      addEmpty('Chưa thể đọc danh sách yêu thích','Mã nguồn hiện hành chưa cung cấp cơ chế Yêu thích đã duyệt.');
    }else{
