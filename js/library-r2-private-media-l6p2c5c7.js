@@ -85,14 +85,16 @@
    return current;
   }
   function sameUser(uid){return !disposed&&ownerUid===uid&&auth()?.currentUser?.uid===uid;}
+  const readError=code=>Object.assign(new Error(code),{code});
   async function authorizedGet(path,mime){
    const identity=user(),uid=identity.uid;
-   let token;try{token=await identity.getIdToken();}catch{broken();}
+   let token;try{token=await identity.getIdToken();}catch{throw readError('TOKEN_FAILED');}
    if(!sameUser(uid)||typeof token!=='string'||token.length<100)broken();
    let response;try{response=await fetchFn(base+path,{method:'GET',headers:{
     Authorization:'Bearer '+token,Accept:mime},cache:'no-store',redirect:'error'});}
-   catch{broken();}
-   if(!sameUser(uid)||response?.status!==200)broken();
+   catch{throw readError('NETWORK');}
+   if(!sameUser(uid))throw readError('SESSION_CHANGED');
+   if(response?.status!==200)throw readError(response?.status===401?'HTTP_401':response?.status===403?'HTTP_403':response?.status===404?'HTTP_404':response?.status>=500?'HTTP_5XX':'INVALID_RESPONSE');
    const type=(response.headers?.get('Content-Type')||'').split(';')[0].trim().toLowerCase();
    if(mime==='application/json' ? type!=='application/json' : !MIME.has(type))broken();
    const max=mime==='application/json'?LAYOUT_MAX:IMAGE_MAX;

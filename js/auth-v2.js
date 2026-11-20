@@ -192,7 +192,7 @@
     });
     return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
   }
-  async function readProfile(account) {
+  async function readProfileImpl(account) {
     // First try the regular Firestore SDK, including long polling configured
     // on startup; fall back only when its transport times out or is unavailable.
     try {
@@ -220,6 +220,14 @@
         throw combined;
       }
     }
+  }
+  async function readProfile(account){
+    const epoch=generation;
+    const result=await readProfileImpl(account);
+    if(epoch===generation&&client?.currentUser===account){
+      window.DuduCatalogPerfMeasurements.profile_ready_ms=performance.now()-window.DuduCatalogPerfMeasurements.auth_ready_ms;
+    }
+    return result;
   }
   function newProfileData(account,profile){
     const obj=value=>value&&typeof value==='object'&&!Array.isArray(value)?value:{};
@@ -251,6 +259,8 @@
   let profileError = '';
   async function applySession(account) {
     const ticket = ++generation;
+    const catalogAuthStart=performance.now();
+    window.DuduCatalogPerfMeasurements={auth_ready_ms:catalogAuthStart,profile_ready_ms:null,permissions_ready_ms:null};
     resetSession();
     profileError = '';
     showRetry(false);
@@ -381,6 +391,7 @@
       const migratedPersonal = typeof window.hydratePersonalSyncV568==='function'
         ? window.hydratePersonalSyncV568() : false;
       ready = true;
+      window.DuduCatalogPerfMeasurements.permissions_ready_ms=performance.now()-catalogAuthStart;
       // The server document is the comparison baseline. Local defaults or
       // device backups are never authority to overwrite a newer profile.
       window.DuduProfileSaveC23?.begin?.(account.uid, cloudData);

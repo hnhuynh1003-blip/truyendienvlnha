@@ -56,7 +56,7 @@
    characters:[],chapters};
  }
  function create({enabled=false,workerBaseUrl,auth,firestoreReader,
-  storageAdapter,fetchFn=globalThis.fetch}={}){
+  storageAdapter,fetchFn=globalThis.fetch,requestTimeoutMs=15000,catalogTimeoutMs=45000}={}){
   if(typeof enabled!=='boolean'||typeof auth!=='function'||
      typeof firestoreReader!=='function'||typeof storageAdapter?.create!=='function'||
      typeof fetchFn!=='function'||typeof workerBaseUrl!=='string'||
@@ -74,35 +74,69 @@
   async function authorizedFetch(path,{accept}={}){
    const user=session(),uid=user.uid;
    let token;
-   try{token=await user.getIdToken();}catch{fail();}
+   try{token=await user.getIdToken();}catch{throw catalogError('TOKEN_FAILED');}
    if(auth()?.currentUser?.uid!==uid||typeof token!=='string'||token.length<100)fail();
    let response;
    try{response=await fetchFn(base+path,{method:'GET',headers:{Authorization:'Bearer '+token,
      Accept:accept||'application/json'},cache:'no-store',redirect:'error'});}
-   catch{fail();}
-   if(auth()?.currentUser?.uid!==uid||!response||response.status!==200)fail();
+   catch{throw catalogError('NETWORK');}
+   if(auth()?.currentUser?.uid!==uid)throw catalogError('SESSION_CHANGED');
+   if(response?.status!==200)throw catalogError(response?.status===401?'HTTP_401':response?.status===403?'HTTP_403':response?.status===404?'HTTP_404':response?.status>=500?'HTTP_5XX':'INVALID_RESPONSE');
    return response;
   }
-  async function listPublished(){
+  let catalogEpoch=0;
+  const activeCatalog=new Set();
+  const catalogError=code=>Object.assign(new Error(code),{code});
+  function invalidateCatalog(){catalogEpoch++;for(const c of activeCatalog)c.abort();activeCatalog.clear();chapterTitles.clear();cachedUid=null;}
+  async function catalogPage(path,{user,signal,end,valid,onTiming}){
+   const c=new AbortController();
+   const remaining=Math.min(requestTimeoutMs,end-Date.now());
+   if(remaining<=0)throw catalogError('TIMEOUT');
+   activeCatalog.add(c);
+   let timed=false,timer,phase='token';const abort=()=>c.abort();signal?.addEventListener('abort',abort,{once:true});
+   const stop=new Promise((_,reject)=>{c.signal.addEventListener('abort',()=>reject(catalogError(timed?(phase==='token'?'TOKEN_TIMEOUT':'TIMEOUT'):'SESSION_CHANGED')),{once:true});timer=setTimeout(()=>{timed=true;c.abort();},remaining);});
+   const wait=p=>Promise.race([p,stop]);
+   try{
+    const begin=Date.now();let token;
+    try{token=await wait(user.getIdToken());}catch(e){throw e?.code?e:catalogError('TOKEN_FAILED');}
+    onTiming({stage:'token',duration_ms:Date.now()-begin});valid();
+    if(typeof token!=='string'||token.length<100)throw catalogError('TOKEN_FAILED');
+    let response;phase='fetch';
+    try{response=await wait(fetchFn(base+path,{method:'GET',headers:{Authorization:'Bearer '+token,Accept:'application/json'},cache:'no-store',redirect:'error',signal:c.signal}));}
+    catch(e){throw e?.code?e:catalogError('NETWORK');}
+    valid();if(response?.status!==200)throw catalogError(response?.status===401?'HTTP_401':response?.status===403?'HTTP_403':response?.status>=500?'HTTP_5XX':'INVALID_RESPONSE');
+    if(!/application\/json/i.test(response.headers?.get('Content-Type')||''))throw catalogError('INVALID_RESPONSE');
+    let page;try{page=await wait(response.json());}catch(e){throw e?.code?e:catalogError('INVALID_RESPONSE');}valid();return page;
+   }finally{clearTimeout(timer);signal?.removeEventListener('abort',abort);activeCatalog.delete(c);}
+  }
+  async function listPublished({signal,onPage=()=>{},onTiming=()=>{}}={}){
    if(!enabled)fail();
-   const uid=session().uid;
+   const user=session(),uid=user.uid,epoch=catalogEpoch;
+   const started=Date.now(),end=started+catalogTimeoutMs;
+   const valid=()=>{if(signal?.aborted||auth()?.currentUser!==user||epoch!==catalogEpoch)throw catalogError('SESSION_CHANGED');};
    const out=[],ids=new Set();let after='';
    const titles=new Map();
    for(let i=0;i<LIMIT_PAGES;i++){
-    const response=await authorizedFetch('/v1/library/r2/catalog/books'+
-     (after?'?after='+encodeURIComponent(after):''));
-    if(!/application\/json/i.test(response.headers?.get('Content-Type')||''))fail();
-    let page;try{page=await response.json();}catch{fail();}
-    if(page?.ok!==true||!Array.isArray(page.books)||page.books.length>20)fail();
+    valid();
+    const page=await catalogPage('/v1/library/r2/catalog/books'+
+     (after?'?after='+encodeURIComponent(after):''),{user,signal,end,valid,onTiming});
+    valid();
+    if(page?.ok!==true||!Array.isArray(page.books)||page.books.length>20)throw catalogError('INVALID_RESPONSE');
     for(const raw of page.books){
      const card=mapBook(raw);
      if(ids.has(card.id))fail();ids.add(card.id);
      for(const ch of card.chapters)titles.set(card.id+'/'+ch.id,ch.title);
      out.push(card);
     }
+    valid();
+    if(page.nextAfter!==null&&(!BOOK.test(page.nextAfter||'')||page.books.length!==20||page.books.at(-1)?.id!==page.nextAfter||page.nextAfter<=after))throw catalogError('INVALID_RESPONSE');
+    if(page.nextAfter===null&&page.books.length===20)throw catalogError('INVALID_RESPONSE');
+    chapterTitles.clear();for(const [k,v] of titles)chapterTitles.set(k,v);
+    onPage(out.slice());
     if(page.nextAfter===null){
      if(page.books.length===20||auth()?.currentUser?.uid!==uid)fail();
      chapterTitles.clear();for(const [k,v] of titles)chapterTitles.set(k,v);
+     onTiming({stage:'r2_catalog',duration_ms:Date.now()-started});
      return out;
     }
     if(!BOOK.test(page.nextAfter||'')||page.books.length!==20||
@@ -134,7 +168,7 @@
    }
    return reader.readChapter(book.id,chapterId,{backend:'firestore'});
   }
-  return Object.freeze({enabled,listPublished,readChapter});
+  return Object.freeze({enabled,listPublished,readChapter,invalidateCatalog});
  }
  return Object.freeze({create,mapBook});
 });

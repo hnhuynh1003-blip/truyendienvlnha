@@ -122,7 +122,7 @@
   <script src="js/profile-save-c23.js?v=c416-1"></script>
   <script src="js/account-approval-v1.js?v=auth-a1"></script>
   <script src="js/account-invite-r11.js?v=r11-1"></script>
-  <script src="js/auth-v2.js?v=auth-a1-c13b6d-sync-1"></script>
+  <script src="js/auth-v2.js?v=epub-perf-r1"></script>
   <script src="js/personal-transaction-error-c416.js?v=c416-1"></script>
   <script src="js/npc-context-v56-10.js?v=56-10"></script>
   <script src="js/npc-reply-style-v56-12.js?v=56-12"></script>
@@ -195,8 +195,9 @@
   <script src="js/epub-production-v49.js?v=c422-1"></script>
   <!-- L6-P2C5C.4 preview bridge: feature OFF unless separately configured -->
   <script src="js/library-epub-storage-l6p1.js?v=l6p1"></script>
-  <script src="js/library-epub-r2-client-l6p2c5c3.js?v=l6p2c5c3"></script>
-  <script src="js/library-r2-private-media-l6p2c5c7.js?v=l6p2c5c7"></script>
+  <script src="js/epub-catalog-perf-r1.js?v=epub-perf-r1"></script>
+  <script src="js/library-epub-r2-client-l6p2c5c3.js?v=epub-perf-r1"></script>
+  <script src="js/library-r2-private-media-l6p2c5c7.js?v=epub-perf-r1"></script>
   <script src="js/library-r2-preview-media-bridge-l6p2c5c8.js?v=l6p2c5c8"></script>
   <script src="js/library-r2-preview-flags-l6p2c5c4.js?v=r2-unified-smoke-on-1"></script>
   <script src="js/library-epub-stage-l6p2c4.js"></script>
@@ -2700,7 +2701,7 @@
     let novels = JSON.parse(localStorage.getItem(IS_SANDBOX_MODE ? 'dudu-sandbox-library' : 'my_novels_library_db')) || initialNovels;
     // Once R1 is enabled, stale local EPUB cards must never appear before the
     // approved Firestore identity is confirmed. Legacy Web novels stay public.
-    if(!IS_SANDBOX_MODE && window.DUDU_ACCOUNT_APPROVAL_V1_READY)
+    if(!IS_SANDBOX_MODE)
       novels=novels.filter(n=>!n._cloudV49);
     // V49 production EPUBs live in separate Firestore story/chapter documents.
     let epubPublishedBooksV49 = [];
@@ -2760,7 +2761,8 @@
     // REVIEW ONLY: both private-media clients are confined to the disabled-by-default preview.
     // Do not wire this to V49 writer, account progress, or game rewards.
     let l6R2MediaBridge = null;
-    if (l6R2PreviewClient && l6R2PreviewConfig?.enabled === true && l6R2PreviewConfig?.readEnabled === true) {
+    function ensureR2MediaBridgeR1(){
+    if (!l6R2MediaBridge && l6R2PreviewClient && l6R2PreviewConfig?.enabled === true && l6R2PreviewConfig?.readEnabled === true) {
       try {
         l6R2MediaBridge = window.DuduR2PreviewMediaBridgeL6P2C5C8?.create({
           enabled:true,privateMediaApi:window.DuduR2PrivateMediaL6P2C5C7,
@@ -2771,6 +2773,8 @@
         console.warn('L6 C8 preview private media unavailable',error?.message);
       }
     }
+    }
+    ensureR2MediaBridgeR1();
     // Release short-lived media when the tab is closed or navigated away.
     window.addEventListener('pagehide',()=>l6R2MediaBridge?.dispose(),{once:true});
     const librarySynopsisIndexL2D=DuduLibrarySynopsisSearchL2D.createIndex((bookId,chapterId)=>{
@@ -2782,38 +2786,53 @@
       return DuduEpubProductionV49.readChapter(db,bookId,chapterId);
     });
     let synopsisIndexUidL0=null;
-    async function refreshEpubCloudBooksV49(){
-      if(IS_SANDBOX_MODE||!window.DuduEpubProductionV49)return;
-      if(window.DUDU_ACCOUNT_APPROVAL_V1_READY&&!DuduAuth.isReady())return;
-      const accountUid=DuduAuth.uid();
-      if(synopsisIndexUidL0!==accountUid){
-        librarySynopsisIndexL2D.clear();
-        synopsisIndexUidL0=accountUid;
-      }
-      try{
-        const books=await DuduEpubProductionV49.publicBooks(db);
-        // Failure of R2 list MUST remove stale R2 cards from the in-memory view.
-        // Keep already authorized legacy Firestore V49 books readable.
-        let r2Books=[];
-        if(l6R2PreviewClient){
-          try{r2Books=await l6R2PreviewClient.listPublished();}
-          catch(error){console.warn('L6 preview: R2 list unavailable',error?.message);}
+    // Independent authenticated catalog loads; V49 remains supported during transition.
+    let epubCatalogRestoreR1=false;
+    const epubCatalogPerfR1=window.DuduEpubCatalogPerfR1.create({
+      session:()=>firebase.auth().currentUser,
+      ready:()=>!IS_SANDBOX_MODE&&DuduAuth.isReady(),
+      loadV49:()=>DuduEpubProductionV49.publicBooks(db),
+      loadR2:l6R2PreviewClient?options=>l6R2PreviewClient.listPublished({...options,onTiming:sample=>{if(sample.stage==='token')window.DuduCatalogPerfMeasurements={...(window.DuduCatalogPerfMeasurements||{}),last_token_ms:sample.duration_ms};}}):null,
+      onBooks:books=>{
+        epubPublishedBooksV49=books;
+        mergeEpubCloudBooksV49();
+        // Keep the viewport anchor across incremental catalog renders.
+        const grid=document.getElementById('novel-grid-container');
+        const anchor=grid&&Array.from(grid.children).find(el=>el.getBoundingClientRect().bottom>0);
+        const anchorId=anchor?.dataset.epubCatalogAnchor,top=anchor?.getBoundingClientRect().top,x=window.scrollX,y=window.scrollY;
+        renderHome();
+        const restored=anchorId&&grid?Array.from(grid.children).find(el=>el.dataset.epubCatalogAnchor===anchorId):null;
+        window.scrollTo(x,restored?y+restored.getBoundingClientRect().top-top:y);
+        if(books.length){if(!epubCatalogRestoreR1){epubCatalogRestoreR1=true;c443RestoreOnReload();}scheduleSynopsisSearchL2D();}
+      },
+      onState:state=>{
+        window.DuduCatalogPerfMeasurements={...(window.DuduCatalogPerfMeasurements||{}),...state};
+        const grid=document.getElementById('novel-grid-container');if(!grid)return;
+        let box=document.getElementById('epub-catalog-status-r1');
+        if(!box){box=document.createElement('div');box.id='epub-catalog-status-r1';box.setAttribute('role','status');box.setAttribute('aria-live','polite');grid.before(box);}
+        box.replaceChildren();
+        const labels={"TIMEOUT": "h\u1ebft th\u1eddi gian ch\u1edd", "TOKEN_TIMEOUT": "ch\u1edd token qu\u00e1 l\u00e2u", "TOKEN_FAILED": "kh\u00f4ng l\u1ea5y \u0111\u01b0\u1ee3c token", "HTTP_401": "phi\u00ean ch\u01b0a \u0111\u01b0\u1ee3c x\u00e1c th\u1ef1c", "HTTP_403": "kh\u00f4ng c\u00f3 quy\u1ec1n", "HTTP_5XX": "m\u00e1y ch\u1ee7 l\u1ed7i", "NETWORK": "l\u1ed7i m\u1ea1ng/CORS", "BACKEND_ERROR": "kh\u00f4ng t\u1ea3i \u0111\u01b0\u1ee3c danh m\u1ee5c", "INVALID_RESPONSE": "ph\u1ea3n h\u1ed3i kh\u00f4ng h\u1ee3p l\u1ec7", "SESSION_CHANGED": "phi\u00ean \u0111\u00e3 thay \u0111\u1ed5i"};
+        for(const [name,status]of Object.entries(state.states)){
+          if(status==='success'||status==='disabled')continue;
+          const text=document.createElement('span');text.textContent=(name==='r2'?'EPUB R2':'EPUB V49')+': '+(status==='loading'?'\u0111ang t\u1ea3i\u2026':labels[status]||'l?i')+' ';box.append(text);
+          if(status!=='loading'){const btn=document.createElement('button');btn.type='button';btn.className='btn';btn.textContent='Th\u1eed l\u1ea1i '+(name==='r2'?'R2':'V49');btn.onclick=()=>epubCatalogPerfR1.retry(name);box.append(btn);}
         }
-        if(window.DUDU_ACCOUNT_APPROVAL_V1_READY&&
-          (!DuduAuth.isReady()||DuduAuth.uid()!==accountUid))return;
-        epubPublishedBooksV49=Array.from(new Map(books.concat(r2Books).map(book=>[book.id,book])).values());
-        mergeEpubCloudBooksV49();
-        renderHome();
-        c443RestoreOnReload();
-        scheduleSynopsisSearchL2D();
-      }catch(err){
-        // A failed legacy fetch must not leave previously authorized R2 cards visible.
-        epubPublishedBooksV49=epubPublishedBooksV49.filter(book=>!book._r2V1);
-        mergeEpubCloudBooksV49();
-        renderHome();
-        console.warn('V49: không tải được truyện EPUB',err?.code||err?.message);
+        box.hidden=!box.childNodes.length;
       }
+    });
+    function refreshEpubCloudBooksV49(){
+      if(IS_SANDBOX_MODE||!window.DuduEpubProductionV49)return Promise.resolve();
+      if(DuduAuth.isReady())ensureR2MediaBridgeR1();
+      epubCatalogRestoreR1=false;
+      l6R2PreviewClient?.invalidateCatalog();
+      return epubCatalogPerfR1.refresh();
     }
+    // Auth event fires both before profile ready and after permissions/profile settle.
+    window.addEventListener('dudu-auth-state-changed',()=>{
+      if(!DuduAuth.isReady()){
+        epubCatalogPerfR1.invalidate();l6R2PreviewClient?.invalidateCatalog();l6R2MediaBridge?.dispose();l6R2MediaBridge=null;
+      }else if(!window.DUDU_ACCOUNT_APPROVAL_V1_READY){void refreshEpubCloudBooksV49();}
+    });
     function mergeEpubCloudBooksV49(){
       if(IS_SANDBOX_MODE)return;
       const selectedId=novels[selectedNovelIndex]?.id;
@@ -2824,6 +2843,7 @@
     }
     window.duduSyncEpubAccessR11=allowed=>{
       if(IS_SANDBOX_MODE||!window.DUDU_ACCOUNT_APPROVAL_V1_READY)return;
+      if(!allowed){epubCatalogPerfR1.invalidate();l6R2PreviewClient?.invalidateCatalog();l6R2MediaBridge?.dispose();l6R2MediaBridge=null;}
       if(allowed){void refreshEpubCloudBooksV49();return;}
       // Revocation invalidates cached synopsis and private cover URLs.
       librarySynopsisIndexL2D.clear();
@@ -8284,6 +8304,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
         // All stories have the same catalog footprint: upload method and sort
         // position must never make one author's book visually more important.
         card.className = 'novel-card archive-shelf-item';
+        card.dataset.epubCatalogAnchor=String(novel.id);
         card.addEventListener('click', event => {
           if (!event.target.closest('button')) openCover(originalIndex);
         });
@@ -8846,7 +8867,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
           pendingChapter.content=result.content;
           readChapter(chIdx,scrollPos);
          }).catch(err=>{
-          if(feedback){feedback.fail(ticket,()=>readChapter(chIdx,scrollPos));return;}
+          if(feedback){feedback.fail(ticket,()=>readChapter(chIdx,scrollPos),err,'chapter');return;}
           alert('Chưa thể tải chương EPUB: '+(err.message||'Firebase không phản hồi'));
          });
         return;
@@ -8872,7 +8893,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
              if(feedback&&!feedback.success(ticket))return;
              readChapter(chIdx,scrollPos);
            }).catch(error=>{
-             if(feedback)feedback.fail(ticket,()=>readChapter(chIdx,scrollPos));
+             if(feedback)feedback.fail(ticket,()=>readChapter(chIdx,scrollPos),error,'layout');
              else console.warn('L6 preview layout unavailable',error?.message);
            });
           return;
@@ -9914,7 +9935,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/phone-wallpaper-v36-custom.js?v=1"></script>
 <script src="js/phone-wallpaper-v38-catalog.js?v=39-1"></script>
 <script src="js/phone-wallpaper-v38-studio.js?v=39-1"></script>
-<script src="js/library-reader-status-l2a.js?v=l2a-1"></script>
+<script src="js/library-reader-status-l2a.js?v=epub-perf-r1"></script>
 <script src="js/library-reader-preferences-l2c.js?v=l2b-1"></script>
 <script src="js/library-reading-return-c443.js?v=c443-1"></script>
   <script src="js/site-shell-v60.js?v=l2d2-1&amp;pause=c446c-1&amp;t0=1"></script>
