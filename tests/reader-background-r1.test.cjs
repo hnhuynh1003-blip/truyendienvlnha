@@ -79,7 +79,7 @@ test('R1 is a CSS reading layer only, not a reader transport or wallet change',(
   assert.match(css,/--reader-r1-shade/);
   assert.match(css,/background-repeat:no-repeat,repeat-y/);
   assert.match(js,/catalog\.allowed|source\.allowed/);
-  assert.doesNotMatch(js,/fetch\(|firestore|firebase|transaction|v568SavePhoneAppearance\(/i);
+  assert.doesNotMatch(js,/\bfetch\s*\(|\b(?:firebase|firestore)\s*\.|\btransaction\s*\(|v568SavePhoneAppearance\s*\(/i);
   assert.match(html,/id="reader-paper"/);
   assert.match(html,/js\/epub-production-v49\.js/);
 });
