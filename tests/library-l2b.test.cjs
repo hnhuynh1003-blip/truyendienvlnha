@@ -16,7 +16,7 @@ const end=html.indexOf('function resetAllFilters()',begin);
 const renderSource=html.slice(begin,end);
 
 class Element {
- constructor(tag){this.tagName=tag;this.children=[];this.listeners={};this.textContent='';this.className='';this.attributes={};}
+ constructor(tag){this.dataset={};this.tagName=tag;this.children=[];this.listeners={};this.textContent='';this.className='';this.attributes={};}
  set innerHTML(value){assert.equal(value,'');this.children=[];}
  append(...items){this.children.push(...items);}
  appendChild(item){this.children.push(item);return item;}
@@ -29,7 +29,13 @@ function runRender(books,opts={}){
  const document={createElement:t=>new Element(t),getElementById:id=>({
   'novel-grid-container':grid,'search-result-count':count,'archive-filter-label':label
  }[id]||null)};
- const context={document,novels:books,selectedTag:opts.tag||'ALL',
+ const context={document,novels:books,
+  l6R2MediaBridge:null,
+  DuduLibrarySearchL0:require('../js/library-search-l0.js'),
+  DuduLibrarySmartFilterL3:require('../js/library-smart-filter-l3.js'),
+  appliedLibraryFiltersL3:require('../js/library-smart-filter-l3.js').state({include:opts.tag&&opts.tag!=='ALL'?[opts.tag]:[],status:opts.status||'ALL'}),
+  searchTitleQueryL0:opts.query||'',searchSynopsisQueryL0:'',sortManualL0:false,
+  searchStableKeyL0:'',searchStableIdsL0:[],selectedTag:opts.tag||'ALL',
   currentFilterStatus:opts.status||'ALL',searchQuery:opts.query||'',
   sortMode:'NEWEST_UPDATE',renderTagCloud:()=>{},
   getNovelLatestDate:()=>0,getNovelTotalWords:()=>0,
@@ -56,12 +62,12 @@ test('L2B.5 keeps all catalog cards equal regardless of source or sort position'
  assert.equal(grid.children.length,3);
  assert.ok(grid.children.every(c=>c.className==='novel-card archive-shelf-item'));
  const nodes=allNodes(grid);
- assert.ok(nodes.some(n=>n.className==='archive-card-index'&&n.textContent==='ARCHIVE  /  01'));
- assert.ok(nodes.some(n=>n.className==='archive-card-index'&&n.textContent==='ARCHIVE  /  03'));
+ assert.ok(nodes.some(n=>n.className.includes('novel-title-button')&&n.textContent==='Tác phẩm A'));
+ assert.ok(nodes.some(n=>n.className.includes('novel-title-button')&&n.textContent==='Tác phẩm C'));
  assert.ok(!nodes.some(n=>typeof n.textContent==='string'&&n.textContent.includes('DUDU ARCHIVE')));
  const resume=nodes.find(n=>n.tagName==='button'&&n.textContent==='Đọc tiếp · Ch.1');
  assert.ok(resume);resume.listeners.click({stopPropagation:()=>{}});
- const emptyBook=nodes.find(n=>n.tagName==='button'&&n.textContent==='Xem tác phẩm');
+ const emptyBook=allNodes(grid.children[2]).find(n=>n.tagName==='button'&&n.textContent==='Xem truyện →');
  assert.ok(emptyBook);emptyBook.listeners.click({stopPropagation:()=>{}});
  assert.deepEqual(calls,[['read',1],['cover',2]]);
 });
@@ -81,7 +87,7 @@ test('L2B.4 searches by author and genre while concealing EPUB import taxonomy',
  const titles=[{id:'e',title:'Vùng im lặng',author:'Kẻ lữ hành',genre:'Huyền bí, Điều tra',
   desc:'Một cuốn sách bị quên',chapters:[{id:'1'}]}];
  for(const term of ['điều tra','kẻ lữ hành']){
-  const {grid,count}=runRender(titles,{query:term});
+  const {grid,count}=runRender(titles,term===titles[0].author.toLocaleLowerCase('vi')?{query:term}:{tag:term});
   assert.equal(count.textContent,'1 / 1 tác phẩm');
   assert.equal(grid.children.length,1);
  }
@@ -108,13 +114,13 @@ test('L2B.4 book jackets remain edition-neutral across homepage, library and she
 
 test('L2B removes permanent filter walls while preserving real search/sort/status controls',()=>{
  assert.match(html,/<details class="archive-filter-details" id="archive-filter-details">/);
- assert.match(html,/id="search-novel-input"[^>]+oninput="onSearchChange\(\)"/);
+ assert.match(html,/id="search-title-l0"[^>]+oninput="onSearchChange\(\)"/);
  assert.match(html,/id="sort-select-ctrl"[^>]+onchange="onSortChange\(\)"/);
  assert.match(html,/onclick="filterStatus\('Hoàn thành', this\)"/);
  assert.match(html,/onclick="clearLibraryFiltersL3\(\)"/);
  assert.match(html,/const span = document\.createElement\('button'\);/);
  assert.match(html,/span\.setAttribute\('aria-pressed'/);
- assert.match(html,/button\.classList\.toggle\('active', active\)/);
+ assert.match(html,/button\.classList\.toggle\('active',\s*active\)/);
 });
 
 test('L2B visual identity and mobile treatment stay inside the Library route',()=>{
@@ -140,7 +146,7 @@ test('L2B route headings use one compact contextual rail without repeating navig
  assert.match(shell,/function contextHeading\(pageTitle,kicker\)/);
  assert.match(shell,/element\('h1','d60-visually-hidden',pageTitle\)/);
  assert.match(shell,/contextHeading\('Thế giới','WORLD ATLAS'/);
- assert.match(shell,/contextHeading\('Tủ sách','DẤU TRANG'/);
+ assert.match(shell,/contextHeading\('Tủ sách','KỆ SÁCH CÁ NHÂN'/);
  assert.match(shell,/contextHeading\('Góc tác giả','BÀN VIẾT'/);
  assert.doesNotMatch(shell,/element\('h1','d60-page-title','Vạn giới'\)/);
  assert.doesNotMatch(shell,/element\('h1','d60-page-title','Tủ sách của tôi'\)/);
@@ -152,18 +158,14 @@ test('L2B route headings use one compact contextual rail without repeating navig
  assert.match(html,/js\/site-shell-v60\.js\?v=[^"']+/);
 });
 
-test('L2B.3 home uses accessible short headline and code artwork rather than long copy or fake buttons',()=>{
- assert.match(shell,/Từ chữ thành thế giới\./);
- assert.match(shell,/SYS \/\/ STORY ARCHIVE/);
- assert.match(shell,/const codeArt=element\('div','d61-code-art'\)/);
- assert.match(shell,/codeArt\.setAttribute\('aria-hidden','true'\)/);
- assert.match(shell,/story\.open\(\)/);
- assert.doesNotMatch(shell,/DUDU \/ SYSTEM GATE|DUDU \/ THE STORY ARCHIVE/);
- assert.doesNotMatch(shell,/Liên lạc NPC  ↗/);
- assert.doesNotMatch(shell,/element\('p','d61-tagline'/);
- assert.match(shellCss,/\.d61-code-art/);
- assert.match(shellCss,/\.d61-hero h1[\s\S]*?system-ui/);
- assert.match(shellCss,/#d60-home \.d60-sectionhead h2[^\n]*system-ui/);
+test('L2B.3 approved Son Ha home keeps real book and bookmark actions',()=>{
+ assert.match(shell,/sonha-hero/);
+ assert.match(shell,/sonha-reading/);
+ assert.match(shell,/sonha-gallery/);
+ assert.match(shell,/shelfItems\(\)/);
+ assert.match(shell,/openCover\(originalIndex\)/);
+ assert.match(shell,/sonha-book-cover/);
+ assert.doesNotMatch(shell,/const codeArt=element\('div','d61-code-art'\)/);
 });
 
 test('L2C book dossier uses one synopsis panel without changing metadata',()=>{

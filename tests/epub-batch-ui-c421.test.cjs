@@ -19,11 +19,11 @@ class Element{
 }
 const descendants=root=>[root,...root.children.flatMap(descendants)];
 
-test('C4.21 UI offers directory selection and drives one compact queue into published state',async()=>{
+test('C4.21 directory picker stays local in Sandbox; production intake delegates to R2',async()=>{
  const modal=new Element('div'),host=new Element('div');
  const doc={getElementById:id=>({'epub-batch-modal':modal,'epub-batch-content':host})[id],
   createElement:tag=>new Element(tag),createTextNode:text=>({textContent:text,children:[]})};
- const writes=[],window={document:doc,confirm:()=>true,localStorage:{
+ const writes=[],window={IS_SANDBOX_MODE:true,document:doc,confirm:()=>true,localStorage:{
   items:new Map(),getItem(key){return this.items.get(key)||null},
   setItem(key,value){this.items.set(key,value)}}};
  const script=fs.readFileSync(path.join(__dirname,'../js/epub-batch-import-c421.js'),'utf8');
@@ -36,7 +36,7 @@ test('C4.21 UI offers directory selection and drives one compact queue into publ
    return {id:'epub-one',chapterCount:1,status:'draft'};
   },publishDraft:async()=>{writes.push('published')}};
  let refreshes=0;
- const opened=window.DuduEpubBatchC421.open({canEdit:()=>true,importer,production,
+ const opened=window.DuduEpubBatchC421.open({sandbox:true,canEdit:()=>true,importer,production,
   firestore:()=>({}),auth:()=>({currentUser:{uid:'owner'}}),onPublished:()=>{refreshes++}});
  assert.equal(opened,true);
  assert.equal(modal.style.display,'flex');
@@ -52,7 +52,10 @@ test('C4.21 UI offers directory selection and drives one compact queue into publ
  publish.checked=true;publish.fire('change');
  const start=descendants(host).find(el=>el.tag==='button'&&el.textContent==='Bắt đầu nhập');
  await start.click();
- assert.deepEqual(writes,['Test.epub','published']);
- assert.equal(refreshes,1);
- assert.match(host.textContent,/Đã xuất bản/);
+ assert.deepEqual(writes,[]);
+ assert.equal(refreshes,0);
+ assert.match(host.textContent,/Sandbox/);
+ let openedR2=0;window.DuduC12AuthorPreview={open:()=>{openedR2++;return true;}};
+ assert.equal(window.DuduEpubBatchC421.open({canEdit:()=>true}),true);
+ assert.equal(openedR2,1);assert.deepEqual(writes,[]);
 });

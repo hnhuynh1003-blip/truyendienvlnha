@@ -4,7 +4,7 @@ const assert=require('node:assert/strict');
 const {readFileSync}=require('node:fs');
 const {join}=require('node:path');
 
-const read=path=>readFileSync(join(__dirname,'..',path),'utf8');
+const read=path=>readFileSync(join(__dirname,'..',path),'utf8').replace(/\r\n/g,'\n');
 const rules=read('security/firestore-r1-web-public-epub-approved.rules.review');
 const prior=read('security/firestore-auth-approval-a1.rules.review');
 

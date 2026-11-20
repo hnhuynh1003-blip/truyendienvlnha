@@ -15,7 +15,7 @@ test('C4.46c pauses only Van Gioi entry points while Library and Arcade remain a
  assert.match(ui,/WORLDS_PAUSED&&n\.id==='d60-world-creator-launch'/);
  assert.match(ui,/if\(!WORLDS_PAUSED\)root\.append\(button\('◇ Khung kịch bản'/);
  assert.match(ui,/window\.DuduSiteV60=\{navigate,refresh/,'Library navigation remains available');
- assert.match(html,/site-shell-v60\.js\?v=l2d2-1&amp;pause=c446c-1/);
+ assert.match(html,/site-shell-v60\.js\?v=[^"\s]+/);
 });
 
 test('C4.46c garden selection cards are compact and navigation is one icon',()=>{

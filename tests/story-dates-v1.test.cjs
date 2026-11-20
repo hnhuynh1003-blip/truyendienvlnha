@@ -25,7 +25,8 @@ test('local publishing day stays correct across midnight Vietnam, even UTC yeste
 test('browser wiring uses shared dates instead of hard-coded fallback',()=>{
  const s=fs.readFileSync(path.resolve(__dirname,'../index.html'),'utf8');
  assert.match(s,/function getNovelLatestDate\(novel\)\s*\{\s*return DuduStoryDates\.latest\(novel\)/);
- assert.match(s,/DuduStoryDates\.display\(latestDate\)/);
+ assert.match(s,/DuduStoryDates\.ordering\(getNovelLatestDate\(book\)\)/);
+ assert.match(fs.readFileSync(path.resolve(__dirname,'../js/site-shell-v60.js'),'utf8'),/DuduStoryDates\.ordering\(getNovelLatestDate\(b\)\)/);
  assert.match(s,/DuduStoryDates\.localToday\(\)/);
  assert.doesNotMatch(s,/if \(!n\.updatedAt\) n\.updatedAt = "2026-10-09"/);
 });

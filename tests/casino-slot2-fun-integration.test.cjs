@@ -79,10 +79,10 @@ test('CASINO-SLOT2 switching FUN tabs mid-spin never rerolls or touches the wall
 test('CASINO-SLOT2 only loads UI and odds; leaves Rules and wallet adapters dormant',()=>{
  const html=src('index.html'),css=src('css/dudu-casino-slot-v1.css');
  const fun=src('js/dudu-fun-ui-v43.js');
- assert.match(html,/href="css\/dudu-casino-slot-v1\.css\?v=casino-slot3"/);
+ assert.match(html,/href="css\/dudu-casino-slot-v1\.css\?v=casino-slot3(?:&amp;[^"\s]+)?"/);
  assert.match(html,/src="js\/dudu-casino-design-v1\.js\?v=casino-slot3"/);
  assert.match(html,/src="js\/dudu-casino-slot-ui-v1\.js\?v=casino-slot3"/);
- assert.match(css,/#cyber-phone:has\(#phone-app-fun/);
+ assert.match(css,/\.dudu-slot-preview/);
  assert.doesNotMatch(html,/src="js\/dudu-casino-slot-receipt-v1\.js/);
  assert.doesNotMatch(html,/src="js\/dudu-fate-tower-(?:ui-)?v1\.js/);
  assert.doesNotMatch(html,/href="css\/dudu-fate-tower-v1\.css/);

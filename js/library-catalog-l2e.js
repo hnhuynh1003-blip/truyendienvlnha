@@ -98,7 +98,7 @@
         ribbon.appendChild(next);
         const range=doc.createElement('span');
         range.className='library-catalog-page-range';
-        range.textContent=`${data.page}/${data.pages}`;
+        range.textContent=id==='library-catalog-pager-top'?`Trang ${data.page}/${data.pages}`:`${data.from}–${data.to} / ${data.total} truyện`;
         const jumpTrigger=doc.createElement('button');
         jumpTrigger.type='button';jumpTrigger.className='library-catalog-page-jump-toggle';
         jumpTrigger.textContent='Tới trang';

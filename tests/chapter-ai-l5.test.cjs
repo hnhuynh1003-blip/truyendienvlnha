@@ -73,7 +73,7 @@ test('L5.1 exposes review/stop/resume/undo and never silently writes a chapter',
  assert.match(source,/if \(!chapterAISourceMatchesL5\(job\)\)/);
  assert.match(source,/confirm\('Áp dụng đề xuất AI vào bản thảo/);
  assert.ok(source.includes('chapterAIJobL5.stop = true'),'stop controls pending AI work');
- assert.match(source,/function closeModals\(\) \{\s*closeChapterAIReviewL5\(\);/);
+ assert.match(source,/function closeModals\(\) \{\s*window\.DuduC12AuthorPreview\?\.close\?\.\(\);\s*closeChapterAIReviewL5\(\);/);
  assert.match(source,/closeChapterAIReviewL5\(\);\s*editingChapterIndex = chIdx/);
  assert.doesNotMatch(source,/contentArea\.value = result\.trim\(\)/);
 });

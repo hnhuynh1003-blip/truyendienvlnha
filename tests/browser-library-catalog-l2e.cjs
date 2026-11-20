@@ -102,12 +102,12 @@ async function main(){
   await page.waitForFunction(expected=>Math.abs(window.scrollY-expected)<80,before);
   assert.equal(await page.locator('#library-catalog-pager-top .library-catalog-page-range').innerText(),'Trang 2/13',
    'returning from synopsis keeps the exact catalog page');
-  await page.locator('#search-novel-input').fill('Truyện thử phân trang 247');
+  await page.locator('#search-title-l0').fill('Truyện thử phân trang 247');
   await page.waitForFunction(()=>document.querySelectorAll('#novel-grid-container .novel-card').length===1);
   assert.equal(await page.locator('#library-catalog-pager-top').isVisible(),false,
    'search recalculates pages and resets to page one');
-  await page.locator('#search-novel-input').fill('');
-  assert.equal(await page.locator('#novel-grid-container .novel-card').count(),20);
+  await page.locator('#search-title-l0').fill('');
+  await page.waitForFunction(()=>document.querySelectorAll('#novel-grid-container .novel-card').length===20);
   assert.equal(await page.locator('#library-catalog-pager-top .library-catalog-page-range').innerText(),'Trang 1/13');
   assert.equal(await page.locator('#library-catalog-pager-bottom .library-catalog-page-dots').count(),1,
    'many-page catalogs show an ellipsis before the final page numbers');
@@ -115,7 +115,7 @@ async function main(){
   const jump=page.locator('#library-catalog-pager-top .library-catalog-page-jump');
   const centered=await jump.evaluate(el=>{
    const r=el.getBoundingClientRect(),p=el.parentElement.getBoundingClientRect();
-   return {formCenter:r.left+r.width/2,pagerCenter:p.left+p.width/2};
+   return {formCenter:r.left+r.width/2,pagerCenter:p.left+p.width/2,width:r.width,hostWidth:p.width};
   });
   assert.ok(Math.abs(centered.formCenter-centered.pagerCenter)<=3,
    'the Go to page form opens in the horizontal center');

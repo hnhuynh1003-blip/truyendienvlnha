@@ -14,7 +14,7 @@ body.dudu-site-v60 #home-view .search-input{min-width:0;padding:8px 0;font-size:
 #home-view .archive-toolbar-l0 .archive-sort-field{display:flex;flex-direction:column;gap:6px;margin:10px 0}
 #home-view .archive-toolbar-l0 .archive-sort-field label{color:#dcc69c;font-size:11px;font-weight:650}
 #home-view .archive-toolbar-l0 .archive-sort-field select{min-height:37px}
-#home-view #library-catalog-pager-top.library-catalog-pager{flex:1;display:flex;flex-direction:row;justify-content:flex-end;align-items:center;gap:5px;min-width:0;margin:0;padding:0;flex-wrap:nowrap;border:0}
+#home-view #library-catalog-pager-top.library-catalog-pager{position:relative;flex:1;display:flex;flex-direction:row;justify-content:flex-end;align-items:center;gap:5px;min-width:0;margin:0;padding:0;flex-wrap:nowrap;border:0}
 #home-view #library-catalog-pager-top .library-catalog-page-ribbon{display:contents}
 #home-view #library-catalog-pager-top .library-catalog-page-number,
 #home-view #library-catalog-pager-top .library-catalog-page-dots{display:none}
@@ -22,7 +22,7 @@ body.dudu-site-v60 #home-view .search-input{min-width:0;padding:8px 0;font-size:
 #home-view .library-catalog-pager .library-catalog-page-round{width:30px;height:34px;border-radius:7px;background:var(--l0-panel);border:1px solid #506073;color:#dedad2;box-shadow:none}
 #home-view .library-catalog-pager .library-catalog-page-round.is-current{background:#dcc69c;border-color:#dcc69c;color:#17212e}
 #home-view .library-catalog-pager .library-catalog-page-jump-toggle{min-height:34px;padding:5px 8px;background:var(--l0-panel);border:1px solid #506073;color:#e7d1ab;border-radius:7px;font-weight:650}
-#home-view #library-catalog-pager-top .library-catalog-page-jump{position:absolute;z-index:35;right:0;top:calc(100% + 4px);width:min(285px,100%);padding:9px;margin:0;border:1px solid #516174;background:#1a2835;box-shadow:0 12px 25px #0008}
+#home-view #library-catalog-pager-top .library-catalog-page-jump{position:absolute;z-index:35;left:50%;right:auto;transform:translateX(-50%);top:calc(100% + 4px);width:min(285px,100%);padding:9px;margin:0;border:1px solid #516174;background:#1a2835;box-shadow:0 12px 25px #0008}
 #home-view #library-catalog-pager-bottom.library-catalog-pager{display:flex;flex-wrap:nowrap;align-items:center;justify-content:center;gap:8px;margin:12px 0;padding:2px 0;border:0}
 #home-view #library-catalog-pager-bottom .library-catalog-page-ribbon{display:flex;flex:0 1 auto;flex-basis:auto;min-width:0;align-items:center;gap:4px}
 #home-view #library-catalog-pager-bottom .library-catalog-page-range{display:none}

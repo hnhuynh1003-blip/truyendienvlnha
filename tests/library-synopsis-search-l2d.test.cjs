@@ -83,8 +83,8 @@ test('A new EPUB revision invalidates only its synopsis cache entry',async()=>{
 test('Browser integration indexes on demand and never persists EPUB search data',()=>{
  assert.match(indexHtml,/js\/library-synopsis-search-l2d\.js\?v=l2d-1/);
  assert.match(indexHtml,/scheduleSynopsisSearchL2D\(\)/);
- assert.match(indexHtml,/DuduLibrarySynopsisSearchL2D\.matches\(n,\s*searchQuery,librarySynopsisIndexL2D\.getSynopsis\(n\)\)/);
- assert.match(indexHtml,/librarySynopsisIndexL2D\.loadMissing\(missing/);
+ assert.match(indexHtml,/const synopsis=l0\.inlineSynopsis\(book\)\|\|librarySynopsisIndexL2D\.getSynopsis\(book\)/);
+ assert.match(indexHtml,/librarySynopsisIndexL2D\.loadMissing\(books/);
  assert.match(indexHtml,/librarySynopsisIndexL2D\.ensure\(novel\)/);
  const moduleSource=readFileSync(join(__dirname,'../js/library-synopsis-search-l2d.js'),'utf8');
  assert.doesNotMatch(moduleSource,/\.collection\(|\.doc\(|\.update\(|localStorage|sessionStorage|fetch\(/);

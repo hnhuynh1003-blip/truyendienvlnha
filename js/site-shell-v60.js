@@ -125,67 +125,92 @@
    else s.append(g);return s;
  }
  function fillHome(){
-   const root=id('d60-home');if(!root)return;root.replaceChildren();
-   const all=recent(list()),saved=shelfItems(),resume=saved[0]||null;
-   const hero=element('section','d60-hero d61-hero');
-   const copy=element('div','d61-hero-copy');
-   copy.append(element('p','d61-terminal','SYS // STORY ARCHIVE'),
-     element('h1','','Từ chữ thành thế giới.'));
-   // Code-inspired artwork only: no fake terminal, command execution or live system status.
-   const codeArt=element('div','d61-code-art');codeArt.setAttribute('aria-hidden','true');
-   const codeTop=element('div','d61-code-top');
-   codeTop.append(element('span','d61-code-dots','● ● ●'),
-     element('span','d61-code-filename','story.init / visual'));
-   codeArt.append(codeTop);
-   [
-     ['01','// unlock a chapter','d61-code-comment'],
-     ['02','const story = "unwritten";','d61-code-plain'],
-     ['03','story.open();','d61-code-active'],
-     ['04','// ...to be continued','d61-code-comment']
-   ].forEach(([no,line,tone])=>{
-     const row=element('div','d61-code-row '+tone);
-     row.append(element('span','d61-code-line-no',no),element('code','',line));
-     codeArt.append(row);
-   });
-   hero.append(copy,codeArt);
-   root.append(hero);
-   const signal=element('div','d61-signal');
-   signal.append(element('span','d61-signal-led'),
-     element('span','d61-signal-label','THƯ VIỆN'),
-     element('strong','',all.length+' truyện'),
-     element('span','d61-signal-divider','/'),
-     element('span','d61-signal-label','XUYÊN GIỚI'),
-     element('span','d61-signal-off','Đang kiến tạo'));
+   const root=id('d60-home');if(!root)return;
+   root.replaceChildren();
+   root.classList.add('sonha-home');
+   const all=recent(list()),reading=shelfItems(),resume=reading[0]||null;
+
+   // H1 — approved Sơn Hà Thư Quyển artwork. No fake book/progress data.
+   const hero=element('section','d60-hero sonha-hero');
+   hero.setAttribute('aria-label','Sơn Hà Thư Quyển');
+   const heroText=element('div','sonha-hero-copy');
+   heroText.append(
+     element('span','sonha-kicker','HUYỀN HUYỄN THƯ CÁC'),
+     element('h1','','Sơn Hà Thư Quyển'),
+     element('p','','Một trang sách mở ra, vạn dặm sơn hà hiện hữu.')
+   );
+   hero.append(heroText);root.append(hero);
+
+   // H2 — a genuine last-read entry, or a calm and truthful empty state.
+   const read=element('section','d60-section sonha-reading');
+   const readHead=element('div','sonha-section-heading');
+   readHead.append(element('span','sonha-kicker','CHƯƠNG SÁCH CÒN DANG DỞ'),
+     element('h2','','Đọc tiếp'));
+   read.append(readHead);
    if(resume){
-     const s=section('Đang đọc');
-     const row=element('div','d61-resume-card'),inner=element('div','d61-resume-copy');
-     inner.append(element('strong','',resume.n.title||'Truyện đang đọc'),
-       element('small','','Chương '+(resume.mark.chIdx+1)+' / '+resume.n.chapters.length));
-     row.append(artwork(resume.n),inner,
-       button('Đọc tiếp  →',()=>smartReadAction(novels.indexOf(resume.n)),'d61-resume-action'));
-     s.append(row);root.append(s);
+     const novel=resume.n,mark=resume.mark,idx=novels.indexOf(novel);
+     const row=element('div','sonha-resume');
+     const cover=button('',()=>openCover(idx),'sonha-resume-cover');
+     cover.setAttribute('aria-label','Xem tác phẩm '+(novel.title||'Chưa đặt tên'));
+     cover.append(artwork(novel));
+     const description=element('div','sonha-resume-details');
+     description.append(element('strong','',novel.title||'Chưa đặt tên'),
+       element('small','','Chương '+(mark.chIdx+1)+' / '+novel.chapters.length));
+     row.append(cover,description,
+       button('Tiếp tục đọc ›',()=>smartReadAction(idx),'sonha-resume-action'));
+     read.append(row);
+   }else{
+     const empty=element('div','sonha-resume-empty');
+     empty.append(element('p','','Chưa có chương sách đang đọc. Tác phẩm bạn mở sẽ xuất hiện ở đây.'));
+     read.append(empty);
    }
-   root.append(signal);
+   root.append(read);
+
+   // H3B — dark gallery showing only real catalog book covers and names.
+   const gallery=element('section','d60-section sonha-gallery');
+   const heading=element('div','sonha-gallery-heading');
+   heading.append(element('span','sonha-kicker','MẶC DẠ TÀNG THƯ'),
+     element('h2','','Tàng thư vừa mở'));
+   if(all.length)heading.append(element('p','',all.length+' tác phẩm trong Thư viện'));
+   gallery.append(heading);
    if(all.length){
-     root.append(bookGrid('Mới cập nhật',all.slice(0,4)));
-   }
-   // Use L3's canonical genres and applied state, not legacy selectedTag.
+     const rail=element('div','sonha-book-rail');
+     rail.tabIndex=0;
+     rail.setAttribute('role','region');
+     rail.setAttribute('aria-label','Các tác phẩm mới cập nhật; vuốt ngang để xem thêm trên điện thoại');
+     for(const novel of all.slice(0,4)){
+       const originalIndex=novels.indexOf(novel);
+       const item=element('article','sonha-book');
+       const open=button('',()=>openCover(originalIndex),'sonha-book-cover');
+       open.setAttribute('aria-label','Xem tác phẩm '+(novel.title||'Chưa đặt tên'));
+       open.append(artwork(novel));
+       item.append(open,element('div','sonha-book-title',novel.title||'Chưa đặt tên'));
+       rail.append(item);
+     }
+     gallery.append(rail);
+   }else gallery.append(element('p','sonha-gallery-empty','Chưa có tác phẩm trong Thư viện.'));
+   root.append(gallery);
+
+   // Real L3 genres, unchanged filter semantics and Library navigation.
    const genres=typeof DuduLibrarySmartFilterL3==='undefined'?[]:
      DuduLibrarySmartFilterL3.catalogGenres(all).slice(0,7);
    if(genres.length){
-     const s=section('Khám phá thể loại'),r=element('div','d60-chips d61-chips');
-     genres.forEach(tag=>r.append(button(tag.label,()=>{
-       if(typeof resetAllFilters!=='function'||typeof appliedLibraryFiltersL3==='undefined')return;
-       resetAllFilters();
-       appliedLibraryFiltersL3=DuduLibrarySmartFilterL3.state({include:[tag.key]});
-       draftLibraryFiltersL3=DuduLibrarySmartFilterL3.state(appliedLibraryFiltersL3);
-       window.DuduLibraryCatalogL2E?.resetPage();
-       navigate('library');
-     },'d60-chip')));
-     s.append(r);root.append(s);
+     const sectionGenres=element('section','d60-section sonha-genres');
+     sectionGenres.append(element('h2','','Muôn cõi trong trang sách'));
+     const chips=element('div','sonha-genre-chips');
+     for(const tag of genres){
+       chips.append(button(tag.label,()=>{
+         if(typeof resetAllFilters!=='function'||typeof appliedLibraryFiltersL3==='undefined')return;
+         resetAllFilters();
+         appliedLibraryFiltersL3=DuduLibrarySmartFilterL3.state({include:[tag.key]});
+         draftLibraryFiltersL3=DuduLibrarySmartFilterL3.state(appliedLibraryFiltersL3);
+         window.DuduLibraryCatalogL2E?.resetPage();
+         navigate('library');
+       },'d60-chip sonha-genre-chip'));
+     }
+     sectionGenres.append(chips);root.append(sectionGenres);
    }
  }
- // V64 World Atlas: compact mobile-first coordinates; detailed lore stays in the registry.
  function worldCard(g,index){
    // Genre gate, NOT one playable F/E world.
    const card=element('article','d64-world-card d63-tone-'+g.tone);
