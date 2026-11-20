@@ -11,7 +11,7 @@ const personal=require('../js/personal-spark-items-v1.js');
 
 test('V42: category-aware inventory runs for Sandbox and authenticated personal accounts',()=>{
  assert.match(html,/src="js\/inventory-model-v42.js\?v=[\w-]+&amp;f43=1&amp;f44=1"/);
- assert.match(html,/src="js\/inventory-view-v42.js\?v=f33-1&amp;f43=1"/);
+ assert.match(html,/src="js\/inventory-view-v42.js\?v=f33-1&amp;f43=1&amp;s1b4=1"/);
  assert.ok(html.indexOf('src="js/inventory-model-v42.js')<
    html.indexOf('src="js/inventory-view-v42.js'));
  assert.match(html,/if\(IS_SANDBOX_MODE&&window\.DuduInventoryViewV42\)/);
