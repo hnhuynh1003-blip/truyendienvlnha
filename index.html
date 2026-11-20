@@ -1005,7 +1005,7 @@
       </div>
       <div class="archive-active-filters" id="archive-active-filters" aria-label="Bộ lọc đang áp dụng" hidden></div>
 
-      <div class="archive-catalog-bar" id="archive-catalog-bar" hidden><span id="search-result-count" role="status" aria-live="polite"></span></div>
+      <div class="archive-catalog-bar" id="archive-catalog-bar" hidden><span id="search-result-count" role="status" aria-live="polite"></span><button type="button" class="l0-retry" id="library-search-l0-retry" hidden onclick="retryFailedSearchL0()">Thử lại</button></div>
       <details class="library-capacity-r1 admin-only" id="library-capacity-r1" hidden>
         <summary>◈ Dung lượng Thư viện <span aria-hidden="true">⌄</span></summary>
         <div id="library-capacity-body-r1" class="library-capacity-body-r1"></div>
@@ -2886,6 +2886,8 @@
     let searchTitleQueryL0="";
     let searchSynopsisQueryL0="";
     let searchVersionL0=0;
+    let searchRenderTimerL0=null;
+    let searchProgressTimerL0=null;
     let searchStableKeyL0="";
     let searchStableIdsL0=[];
     let synopsisSearchTimerL2D=null;
@@ -7892,10 +7894,32 @@ document.getElementById('phone-home-screen').style.display = 'none';
       searchQuery=(searchTitleQueryL0+' '+searchSynopsisQueryL0).trim();
       searchVersionL0++;
       window.DuduLibraryCatalogL2E?.resetPage();
-      renderHome();
+      if(searchRenderTimerL0!==null)clearTimeout(searchRenderTimerL0);
+      // A rapid typing sequence should never release/reload R2 cover blobs per keypress.
+      const generation=searchVersionL0;
+      searchRenderTimerL0=setTimeout(()=>{
+        searchRenderTimerL0=null;
+        if(generation===searchVersionL0)renderHome();
+      },300);
       scheduleSynopsisSearchL2D();
     }
 
+    function renderSearchProgressL0(generation){
+      if(generation!==searchVersionL0||searchProgressTimerL0!==null)return;
+      searchProgressTimerL0=setTimeout(()=>{
+        searchProgressTimerL0=null;
+        if(generation===searchVersionL0)renderHome();
+      },125);
+    }
+    function retryFailedSearchL0(){
+      if(!DuduLibrarySearchL0.tokens(searchSynopsisQueryL0).length)return;
+      const books=novels.filter(n=>DuduLibrarySmartFilterL3.matches(n,appliedLibraryFiltersL3)&&
+        DuduLibrarySearchL0.rankTitleAuthor(n,searchTitleQueryL0)!==null&&
+        librarySynopsisIndexL2D.isFailed(n));
+      librarySynopsisIndexL2D.retryFailed(books);
+      searchVersionL0++;
+      renderHome();scheduleSynopsisSearchL2D();
+    }
     function missingSearchSynopsesL2D(){
       if(!DuduLibrarySearchL0.tokens(searchSynopsisQueryL0).length)return [];
       return novels.filter(n=>DuduLibrarySmartFilterL3.matches(n,appliedLibraryFiltersL3)&&
@@ -7913,7 +7937,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
         const books=missingSearchSynopsesL2D();
         if(!books.length||synopsisSearchTaskL2D)return;
         synopsisSearchTaskL2D=librarySynopsisIndexL2D.loadMissing(books,()=>{
-          if(generation===searchVersionL0)renderHome();
+          renderSearchProgressL0(generation);
         }).finally(()=>{
           synopsisSearchTaskL2D=null;
           if(DuduLibrarySearchL0.tokens(searchSynopsisQueryL0).length){
@@ -8058,7 +8082,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
           `ĐANG LỌC · ${filters.mode}`:'ĐANG LỌC';host.prepend(heading);
       }
       const label=document.getElementById('archive-filter-label');
-      if(label)label.textContent=active?`Bộ lọc · ${active}`:'Bộ lọc';
+      if(label)label.textContent=active?`Lọc · ${active}`:'Lọc';
     }
     function bindLibraryFilterDrawerL3(){
       const drawer=document.getElementById('archive-filter-details');
@@ -8208,6 +8232,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
           'Kết quả có thể chưa đầy đủ · '+failedSynopses+' văn án chưa đọc được':'';
       if(statusBar)statusBar.hidden=!detail;
       if(searchStatus)searchStatus.textContent=detail;
+      const retryButton=document.getElementById('library-search-l0-retry');
+      if(retryButton)retryButton.hidden=!failedSynopses||incomplete;
       const filterLabel = document.getElementById('archive-filter-label');
       if(typeof DuduLibrarySmartFilterL3!=='undefined'&&typeof renderActiveLibraryFiltersL3==='function'){
         renderActiveLibraryFiltersL3();
@@ -8334,6 +8360,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
     function resetAllFilters() {
       searchTitleQueryL0='';searchSynopsisQueryL0='';searchQuery='';
       searchVersionL0++;searchStableIdsL0=[];
+      if(searchRenderTimerL0!==null)clearTimeout(searchRenderTimerL0);
+      searchRenderTimerL0=null;
       if(synopsisSearchTimerL2D!==null)clearTimeout(synopsisSearchTimerL2D);
       synopsisSearchTimerL2D=null;
       selectedTag='ALL';currentFilterStatus='ALL';
