@@ -1,0 +1,84 @@
+/* DUDU Studio — COVER-GLASS T2
+ * Visual-only: reveal approved Sơn Hà H3B artwork beneath story detail cards.
+ * Keep foreground content and interactive controls fully opaque.
+ */
+body.dudu-site-v60:not(.dudu-reading-active) #cover-view{
+  --dudu-cover-frost:rgba(10,26,41,.49);
+  background-color:#0e2334;
+  background-image:
+    linear-gradient(180deg,rgba(4,16,27,.27) 0%,rgba(6,21,34,.43) 54%,rgba(6,20,32,.61) 100%),
+    url('../assets/homepage-sonha-v3/gallery-h3b.webp');
+  background-size:cover,cover;
+  background-position:center,center top;
+  background-repeat:no-repeat;
+}
+/* Identity: tint the glass, never fade the book cover, title or metadata. */
+body.dudu-site-v60:not(.dudu-reading-active) #cover-view .book-cover-banner{
+  background:var(--dudu-cover-frost);
+  border-color:rgba(220,198,156,.38);
+  box-shadow:0 12px 28px rgba(0,7,15,.14),inset 0 1px rgba(255,245,219,.08);
+  -webkit-backdrop-filter:blur(2px);
+  backdrop-filter:blur(2px);
+}
+/* Synopsis remains readable without an opaque rectangular block. */
+body.dudu-site-v60:not(.dudu-reading-active) #cover-view .intro-terminal-box{
+  background:rgba(9,24,39,.47);
+  border-color:rgba(221,194,150,.32);
+  border-left-color:#dcc69c;
+  -webkit-backdrop-filter:blur(1.5px);
+  backdrop-filter:blur(1.5px);
+}
+body.dudu-site-v60:not(.dudu-reading-active) #cover-view .intro-text{
+  color:#f1e9dc;
+  text-shadow:0 1px 3px rgba(0,8,17,.78);
+}
+/* One light translucent folio, with genuinely transparent chapter rows. */
+body.dudu-site-v60:not(.dudu-reading-active) #cover-view .chapter-items{
+  background:rgba(7,24,39,.27);
+  border:1px solid rgba(221,194,150,.18);
+  border-radius:11px;
+  padding:2px 12px;
+}
+body.dudu-site-v60:not(.dudu-reading-active) #cover-view .chapter-item{
+  background:transparent;
+}
+body.dudu-site-v60:not(.dudu-reading-active) #cover-view .chapter-item:hover,
+body.dudu-site-v60:not(.dudu-reading-active) #cover-view .chapter-item:focus-within{
+  background:rgba(219,192,151,.1);
+}
+body.dudu-site-v60:not(.dudu-reading-active) #cover-view .chapter-name-click{
+  color:#f5f1e7;
+  text-shadow:0 1px 2px rgba(0,10,20,.7);
+}
+/* De-emphasize secondary controls, preserving the gold Read CTA. */
+body.dudu-site-v60:not(.dudu-reading-active) #cover-view .archive-cover-dock-back,
+body.dudu-site-v60:not(.dudu-reading-active) #cover-view .archive-cover-dock-favorite{
+  background:rgba(12,29,45,.56);
+  -webkit-backdrop-filter:blur(2px);
+  backdrop-filter:blur(2px);
+}
+body.dudu-site-v60:not(.dudu-reading-active) #cover-view .archive-chapter-find label{
+  background:rgba(12,29,45,.6);
+}
+@media(max-width:600px){
+  /* Slightly stronger tint on small screens; same art and book actions. */
+  body.dudu-site-v60:not(.dudu-reading-active) #cover-view .book-cover-banner{
+    background:rgba(10,26,41,.59);
+  }
+  body.dudu-site-v60:not(.dudu-reading-active) #cover-view .intro-terminal-box{
+    background:rgba(9,24,39,.58);
+  }
+  body.dudu-site-v60:not(.dudu-reading-active) #cover-view .chapter-items{
+    background:rgba(7,24,39,.39);
+    padding-inline:9px;
+  }
+}
+@supports not ((-webkit-backdrop-filter:blur(2px)) or (backdrop-filter:blur(2px))){
+  /* Solid-enough fallback on older browsers while still showing the painting. */
+  body.dudu-site-v60:not(.dudu-reading-active) #cover-view .book-cover-banner{
+    background:rgba(10,26,41,.65);
+  }
+  body.dudu-site-v60:not(.dudu-reading-active) #cover-view .intro-terminal-box{
+    background:rgba(9,24,39,.64);
+  }
+}
