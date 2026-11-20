@@ -56,3 +56,61 @@ body.dudu-site-v60 #cover-view .archive-chapter-empty{
  body.dudu-site-v60 #cover-view .archive-chapter-find label{flex-basis:100%}
  body.dudu-site-v60 #cover-view .chapter-item{min-height:55px}
 }
+
+
+/* SEARCH L0 / Cover UX: persistent two-action dock while viewing story details.
+ * The original bookmark-aware reading button is moved here, not duplicated. */
+body.dudu-site-v60 #cover-view{padding-bottom:102px}
+body.dudu-site-v60 #cover-view .archive-cover-action-dock{
+ position:fixed;z-index:190;left:50%;bottom:calc(14px + env(safe-area-inset-bottom));
+ transform:translateX(-50%);
+ display:flex;align-items:center;gap:8px;
+ box-sizing:border-box;width:min(440px,calc(100vw - 28px));
+ padding:8px;background:rgba(20,33,47,.97);
+ border:1px solid #516174;border-radius:13px;
+ box-shadow:0 10px 32px rgba(0,0,0,.42);
+}
+body.dudu-site-v60 #cover-view .archive-cover-action-dock .btn{
+ display:inline-flex;align-items:center;justify-content:center;
+ box-sizing:border-box;min-height:44px;min-width:0;
+ border-radius:9px;padding:9px 12px;
+ font:700 12px/1.3 system-ui,-apple-system,'Segoe UI',sans-serif;
+ text-align:center;white-space:normal;
+}
+body.dudu-site-v60 #cover-view .archive-cover-dock-back{
+ flex:0 0 116px;background:#1a2835;border:1px solid #657484;color:#e4e8ec;
+}
+body.dudu-site-v60 #cover-view .archive-cover-dock-read{
+ flex:1;background:#dcc69c;border:1px solid #dcc69c;color:#17212e;
+}
+body.dudu-site-v60 #cover-view .archive-cover-action-dock .btn:focus-visible{
+ outline:2px solid #f1dfa9;outline-offset:2px;
+}
+body.dudu-site-v60 #cover-view .archive-cover-action-dock .btn:disabled{
+ opacity:.48;cursor:not-allowed;
+}
+body.dudu-site-v60 #cover-view .archive-cover-topbar{margin-bottom:8px}
+@media(max-width:760px){
+ body.dudu-site-v60 #cover-view{padding-bottom:110px}
+ /* Bottom mobile navigation remains clickable underneath this dock. */
+ body.dudu-site-v60 #cover-view .archive-cover-action-dock{
+  width:calc(100vw - 24px);max-width:480px;
+  bottom:calc(69px + env(safe-area-inset-bottom));
+  gap:7px;padding:7px;border-radius:11px;
+ }
+ body.dudu-site-v60 #cover-view .archive-cover-dock-back{flex-basis:106px}
+ body.dudu-site-v60 #cover-view .archive-cover-action-dock .btn{
+  min-height:44px;font-size:12px;padding:8px 9px;
+ }
+ /* Prevent Cyber Phone FAB from overlapping the bottom read action. */
+ body.dudu-site-v60:has(#cover-view[style*="display: block"]) #phone-fab{
+  bottom:calc(151px + env(safe-area-inset-bottom));
+ }
+}
+@media(max-width:360px){
+ body.dudu-site-v60 #cover-view .archive-cover-dock-back{flex-basis:92px}
+ body.dudu-site-v60 #cover-view .archive-cover-action-dock .btn{font-size:11px;padding:7px 6px}
+}
+@media(prefers-reduced-motion:reduce){
+ body.dudu-site-v60 #cover-view .archive-cover-action-dock{scroll-behavior:auto}
+}
