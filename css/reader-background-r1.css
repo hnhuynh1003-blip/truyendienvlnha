@@ -1,0 +1,82 @@
+/* READER-BG R1 — full reading-paper artwork; typography and Reader themes remain independent. */
+body.dudu-reading-active #reader-view .reader-paper[data-reader-bg]{
+  --reader-ink:#f7efe5;
+  background-color:#101923;
+  background-image:
+    linear-gradient(rgba(8,14,23,var(--reader-r1-shade,.72)),rgba(8,14,23,var(--reader-r1-shade,.72))),
+    var(--reader-r1-photo);
+  background-position:center center,center top;
+  background-size:100% 100%,100% auto;
+  background-repeat:no-repeat,repeat-y;
+  background-attachment:scroll;
+  color:var(--reader-ink);
+}
+body.dudu-reading-active #reader-view .reader-bg-r1{
+  margin:14px 0 0;padding-top:13px;border-top:1px solid #40505f;
+}
+body.dudu-reading-active #reader-view .reader-bg-r1-top{
+  display:flex;gap:10px;align-items:center;justify-content:space-between;
+}
+body.dudu-reading-active #reader-view .reader-bg-r1-top strong{
+  font:700 12px/1.4 system-ui,sans-serif;color:#e2c998;
+}
+body.dudu-reading-active #reader-view .reader-bg-r1-toggle{
+  display:inline-flex!important;align-items:center;gap:5px;margin:0!important;
+  color:#f2eee5!important;white-space:nowrap;cursor:pointer;
+}
+body.dudu-reading-active #reader-view .reader-bg-r1-toggle input{
+  width:17px;height:17px;accent-color:#d8bf8a;
+}
+body.dudu-reading-active #reader-view .reader-bg-r1-help{
+  margin:7px 0 10px;color:#afc1ce;font-size:11px;line-height:1.5;
+}
+body.dudu-reading-active #reader-view .reader-bg-r1-grid{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;
+  max-height:275px;overflow-y:auto;overscroll-behavior:contain;padding:2px 3px 5px 2px;
+  scrollbar-width:thin;
+}
+body.dudu-reading-active #reader-view .reader-bg-r1-choice{
+  display:flex;min-width:0;flex-direction:column;align-items:stretch;gap:4px;
+  padding:6px;border:1px solid #526575;border-radius:9px;
+  background:#172534;color:#f1ece5;text-align:left;cursor:pointer;
+  font:600 11px/1.4 system-ui,sans-serif;
+}
+body.dudu-reading-active #reader-view .reader-bg-r1-choice img{
+  display:block;width:100%;height:106px;object-fit:cover;object-position:center;
+  border-radius:5px;background:#243747;
+}
+body.dudu-reading-active #reader-view .reader-bg-r1-choice[aria-pressed=true]{
+  border-color:#ebca89;outline:1px solid #ebca89;background:#283c48;
+}
+body.dudu-reading-active #reader-view .reader-bg-r1-choice:disabled{
+  opacity:.66;cursor:not-allowed;
+}
+body.dudu-reading-active #reader-view .reader-bg-r1-name{
+  display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+body.dudu-reading-active #reader-view .reader-bg-r1-kind{
+  color:#bacbd2;font-size:10px;font-weight:500;line-height:1.35;
+}
+body.dudu-reading-active #reader-view .reader-bg-r1-opacity{
+  margin-top:9px;
+}
+body.dudu-reading-active #reader-view .reader-bg-r1-opacity label{
+  display:flex;gap:8px;justify-content:space-between;
+}
+body.dudu-reading-active #reader-view .reader-bg-r1-opacity output{
+  color:#e2c998;font-variant-numeric:tabular-nums;
+}
+body.dudu-reading-active #reader-view .reader-bg-r1-status{
+  margin:6px 0 0;color:#bccbd2;font-size:10px;line-height:1.5;
+}
+body.dudu-reading-active #reader-view .reader-bg-r1-choice:focus-visible,
+body.dudu-reading-active #reader-view .reader-bg-r1-toggle input:focus-visible{
+  outline:2px solid #f0d39b;outline-offset:2px;
+}
+@media(max-width:360px){
+  body.dudu-reading-active #reader-view .reader-bg-r1-choice img{height:86px}
+  body.dudu-reading-active #reader-view .reader-bg-r1-grid{max-height:245px}
+}
+@media(prefers-reduced-motion:reduce){
+  body.dudu-reading-active #reader-view .reader-bg-r1-choice{transition:none}
+}
