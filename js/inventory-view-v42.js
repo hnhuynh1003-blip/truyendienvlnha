@@ -213,6 +213,18 @@
     fact(args.personalMode?'Sử dụng':'Chức năng RPG',
       args.personalMode?'Chưa có công dụng để kích hoạt trực tiếp':'Chưa kích hoạt trong V42');
   }
+  // S1-B4 P0: read-only facts from the same Shop/Kho adapter. Never
+  // treat browser provenance or a visible instance as server ownership.
+  const profile=typeof window!=='undefined'?window.DuduItemProfileS1B4?.profile(
+    entry.item,{catalog,economy:window.DuduEconomyCoreV43,model,
+      inventory:args.inventory,record:entry.item}):null;
+  if(profile){
+    if(profile.instanceId)fact('instanceId',profile.instanceId);
+    fact('Nguồn theo danh mục',profile.catalogSource);
+    fact('Dấu vết nhận',profile.receiptSource);
+    fact('Điều kiện dùng',profile.conditions);
+    fact('Kho hiển thị',profile.ownerStatus);
+  }
   const tradeStatus=typeof args.tradeStatus==='function'?args.tradeStatus(entry.item):null;
   if(tradeStatus){
    fact('Trạng thái',tradeStatus.label);
@@ -221,7 +233,7 @@
    if(tradeStatus.buyback)fact(args.personalMode?'Giá bán về ví':'Giá thu mua Sandbox',
      tradeStatus.buyback+' Xu / món');
   }
-  if(detail.protected)fact('Sở hữu','Đồ bảo vệ · Không được vứt');
+  if(detail.protected)fact('Bảo vệ','Đồ bảo vệ · Không được vứt');
   // User-owned browser items are not proof of a server-verified relic.
   // verifiedCollectible is always false in this model: the museum has its
   // own authenticated, read-only ledger.
