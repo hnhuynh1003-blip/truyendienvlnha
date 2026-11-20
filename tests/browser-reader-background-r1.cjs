@@ -28,11 +28,19 @@ async function main(){
       const app=route.request().url().includes('firebase-app-compat');
       const stub=app?[
         'window.__readerBgExternalWrites=[];',
-        'window.firebase={initializeApp(){},firestore(){return {collection(){return {doc(){return {',
+        'window.firebase={',
+        'initializeApp(){},',
+        'firestore(){return {',
+        'collection(){return {',
+        'doc(){return {',
         'get:async()=>({exists:false,data:()=>({})}),',
         'set:async x=>{window.__readerBgExternalWrites.push(x);throw Error("blocked");},',
         'update:async x=>{window.__readerBgExternalWrites.push(x);throw Error("blocked");},',
-        'onSnapshot:()=>()=>{}};}};}};}}};',
+        'onSnapshot:()=>()=>{}',
+        '};}};',
+        '};}};',
+        '};}',
+        '};',
         'window.firebase.firestore.FieldValue={serverTimestamp:()=>1};'
       ].join('\n'):'';
       await route.fulfill({status:200,contentType:'application/javascript',body:stub});
