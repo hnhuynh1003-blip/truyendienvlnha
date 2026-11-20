@@ -1023,13 +1023,6 @@
           <button class="btn btn-danger admin-only" onclick="deleteCurrentNovel()">Xóa</button>
         </div>
       </div>
-      <!-- Cover-only actions remain reachable while browsing synopsis, chapters or comments.
-           This is the original reading action, not a duplicate of the bookmark-aware handler. -->
-      <div class="archive-cover-action-dock" role="group" aria-label="Hành động tác phẩm">
-        <button type="button" class="btn archive-cover-dock-back" onclick="window.DuduSiteV60 ? DuduSiteV60.navigate('library') : goHome()">‹ Thư viện</button>
-        <button type="button" class="btn btn-gold archive-cover-dock-read" id="btn-main-reading-action" onclick="smartReadActionCover()">▶ Đọc ngay</button>
-      </div>
-
       <div class="book-cover-banner">
         <div class="book-cover-art" id="book-cover-art-container"></div>
 
@@ -1044,6 +1037,15 @@
           <p style="font-size: 12px; color: var(--text); line-height: 1.5;" id="book-desc">Tóm tắt tác phẩm...</p>
         </div>
       </div>
+
+      <!-- Cover actions: directly below book identity and above the synopsis. -->
+      <div class="archive-cover-action-dock" role="group" aria-label="Hành động tác phẩm">
+        <button type="button" class="btn archive-cover-dock-back" onclick="window.DuduSiteV60 ? DuduSiteV60.navigate('library') : goHome()">‹ Thư viện</button>
+        <button type="button" class="btn btn-gold archive-cover-dock-read" id="btn-main-reading-action" onclick="smartReadActionCover()">Bắt đầu đọc</button>
+        <button type="button" class="btn archive-cover-dock-favorite" id="book-favorite-l0"
+          aria-pressed="false" aria-label="Thêm truyện vào yêu thích" onclick="toggleCoverFavoriteL0()">♡ Yêu thích</button>
+      </div>
+      <p id="book-favorite-l0-status" class="archive-cover-favorite-status" role="status" aria-live="polite" hidden></p>
 
       <div class="intro-terminal-box">
         <div class="intro-header">
@@ -8484,6 +8486,61 @@ document.getElementById('phone-home-screen').style.display = 'none';
       });
     }
 
+    // Cover-only favorite marker for future library features. This is deliberately
+    // local to the device: no Firebase/R2 writes and no claim of cloud syncing.
+    function coverFavoriteStorageKeyL0(){
+      const uid=!IS_SANDBOX_MODE&&window.DuduAuth?.isReady?.()
+        ? String(DuduAuth.uid()||'') : '';
+      const scope=IS_SANDBOX_MODE?'sandbox:'+String(currentUsername||'guest')
+        :uid?'uid:'+uid:'guest';
+      return 'dudu-library-favorites-ui-v1:'+encodeURIComponent(scope);
+    }
+    function coverFavoriteIdL0(book){
+      if(!book||book.id==null)return '';
+      return (book._r2V1===true?'r2':book._cloudV49?'epub':'web')+':'+String(book.id);
+    }
+    function coverFavoriteListL0(){
+      try{
+        const value=JSON.parse(localStorage.getItem(coverFavoriteStorageKeyL0())||'[]');
+        return Array.isArray(value)?value.filter(x=>typeof x==='string').slice(0,5000):[];
+      }catch(_){return [];}
+    }
+    function updateCoverFavoriteL0(){
+      const book=novels[selectedNovelIndex];
+      const button=document.getElementById('book-favorite-l0');
+      const status=document.getElementById('book-favorite-l0-status');
+      if(!button)return;
+      const id=coverFavoriteIdL0(book);
+      const chosen=!!id&&coverFavoriteListL0().includes(id);
+      button.disabled=!id;
+      button.setAttribute('aria-pressed',String(chosen));
+      button.setAttribute('aria-label',chosen?'Bỏ truyện khỏi yêu thích':'Thêm truyện vào yêu thích');
+      button.textContent=chosen?'♥ Đã yêu thích':'♡ Yêu thích';
+      if(status){status.textContent='';status.hidden=true;}
+    }
+    function toggleCoverFavoriteL0(){
+      const book=novels[selectedNovelIndex],id=coverFavoriteIdL0(book);
+      if(!id||document.getElementById('cover-view')?.style.display!=='block')return;
+      const previous=coverFavoriteListL0();
+      const next=new Set(previous);
+      const selected=!next.has(id);
+      if(selected)next.add(id);else next.delete(id);
+      const status=document.getElementById('book-favorite-l0-status');
+      try{
+        localStorage.setItem(coverFavoriteStorageKeyL0(),JSON.stringify([...next]));
+        updateCoverFavoriteL0();
+        if(status){
+          status.hidden=false;
+          status.textContent=selected?'Đã lưu yêu thích trên thiết bị này.':'Đã bỏ yêu thích trên thiết bị này.';
+        }
+      }catch(_){
+        if(status){
+          status.hidden=false;
+          status.textContent='Không thể lưu yêu thích trên thiết bị này.';
+        }
+      }
+    }
+
     function openCover(idx) {
       l6R2MediaBridge?.clearChapter();
       window.DuduLibraryReaderStatusL2A?.cancel();
@@ -8610,6 +8667,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
         mainReadBtn.disabled = !novel.chapters.length;
       }
       if (novel.chapters.length) mainReadBtn.disabled = false;
+      updateCoverFavoriteL0();
 
       renderChapterIndex();
       renderStoryCommentsV442('story');
