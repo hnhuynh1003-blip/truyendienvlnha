@@ -8042,7 +8042,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
     }
     function clearLibraryFiltersL3(){
       draftLibraryFiltersL3=DuduLibrarySmartFilterL3.state();
-      draftSortModeL0='NEWEST_UPDATE';
+      draftSortModeL0=DuduLibrarySearchL0.tokens(searchTitleQueryL0).length||
+        DuduLibrarySearchL0.tokens(searchSynopsisQueryL0).length?'RELEVANCE':'NEWEST_UPDATE';
       draftSortManualL0=false;
       const genreInput=document.getElementById('archive-genre-search');
       if(genreInput)genreInput.value='';
@@ -8090,7 +8091,9 @@ document.getElementById('phone-home-screen').style.display = 'none';
       drawer.dataset.l3Bound='1';
       drawer.addEventListener('toggle',()=>{
         draftLibraryFiltersL3=DuduLibrarySmartFilterL3.state(appliedLibraryFiltersL3);
-        draftSortModeL0=sortMode;
+        draftSortModeL0=sortManualL0?sortMode:
+          ((DuduLibrarySearchL0.tokens(searchTitleQueryL0).length||
+            DuduLibrarySearchL0.tokens(searchSynopsisQueryL0).length)?'RELEVANCE':'NEWEST_UPDATE');
         draftSortManualL0=sortManualL0;
         if(drawer.open){
           const input=document.getElementById('archive-genre-search');
