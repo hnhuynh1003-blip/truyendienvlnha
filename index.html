@@ -869,6 +869,7 @@
   <link rel="stylesheet" href="css/library-cards-l2b4.css?v=l2c-2">
   <link rel="stylesheet" href="css/library-reader-l2c.css?v=l2a-2">
   <link rel="stylesheet" href="css/reader-background-r1.css?v=r1-1">
+  <link rel="stylesheet" href="css/reader-ui-t1.css?v=t1-1">
   <link rel="stylesheet" href="css/library-reader-focus-l2b.css?v=l2b-1">
   <link rel="stylesheet" href="css/library-editorial-l2c3.css?v=l2c-3">
   <link rel="stylesheet" href="css/library-epub-manage-l2d2.css?v=c422-1">
@@ -1091,26 +1092,28 @@
         <div class="reader-top-actions">
           <button type="button" class="btn" id="reader-name-open-l53" onclick="DuduReaderNamesL53.openManager()" title="Sửa tên riêng khi đọc">Aa Tên riêng</button>
           <div class="reader-settings-anchor">
-            <button type="button" class="btn" id="reader-settings-trigger" aria-expanded="false" aria-controls="reader-settings-popover">⚙ Kiểu đọc</button>
+            <button type="button" class="btn" id="reader-settings-trigger" aria-expanded="false" aria-controls="reader-settings-popover" title="Kiểu đọc" aria-label="Kiểu đọc">⚙</button>
             <section id="reader-settings-popover" class="reader-settings-popover" role="dialog" aria-labelledby="reader-settings-title" hidden>
               <div class="reader-settings-heading"><span id="reader-settings-title">CÀI ĐẶT ĐỌC</span><button type="button" class="reader-settings-close" id="reader-settings-close" aria-label="Đóng tùy chỉnh">×</button></div>
-              <label for="reader-font-choice">Phông chữ truyện</label>
+              <div class="reader-type-grid">
+              <div class="reader-type-font"><label for="reader-font-choice">Phông chữ truyện</label>
               <select id="reader-font-choice">
                 <option value="literata">Literata · Sách</option>
                 <option value="noto-serif">Noto Serif · Cổ điển</option>
                 <option value="lora">Lora · Tiểu thuyết</option>
                 <option value="be-vietnam-pro">Be Vietnam Pro · Hiện đại</option>
                 <option value="source-sans-3">Source Sans 3 · Thoáng</option>
-              </select>
-              <label for="reader-font-size">Cỡ chữ <output id="reader-size-value" for="reader-font-size">18px</output></label>
-              <input type="range" id="reader-font-size" min="16" max="28" step="1" value="18">
-              <label for="reader-line-height">Giãn dòng <output id="reader-line-height-value" for="reader-line-height">1.85×</output></label>
-              <input type="range" id="reader-line-height" min="1.5" max="2.2" step="0.05" value="1.85">
-              <label for="reader-paragraph-space">Khoảng cách đoạn <output id="reader-paragraph-space-value" for="reader-paragraph-space">1.2em</output></label>
-              <input type="range" id="reader-paragraph-space" min="0.6" max="1.8" step="0.1" value="1.2">
+              </select></div>
+              <div class="reader-type-field"><label for="reader-font-size">Cỡ chữ <output id="reader-size-value" for="reader-font-size">18px</output></label>
+              <input type="range" id="reader-font-size" min="16" max="28" step="1" value="18"></div>
+              <div class="reader-type-field"><label for="reader-line-height">Giãn dòng <output id="reader-line-height-value" for="reader-line-height">1.85×</output></label>
+              <input type="range" id="reader-line-height" min="1.5" max="2.2" step="0.05" value="1.85"></div>
+              <div class="reader-type-field"><label for="reader-paragraph-space">Khoảng cách đoạn <output id="reader-paragraph-space-value" for="reader-paragraph-space">1.2em</output></label>
+              <input type="range" id="reader-paragraph-space" min="0.6" max="1.8" step="0.1" value="1.2"></div>
               <div class="reader-setting-desktop-only">
                 <label for="reader-column-width">Độ rộng dòng <output id="reader-column-width-value" for="reader-column-width">68 ký tự</output></label>
                 <input type="range" id="reader-column-width" min="52" max="72" step="4" value="68">
+              </div>
               </div>
               <div class="reader-settings-label">Màu trang đọc</div>
               <div class="reader-theme-choices" role="group" aria-label="Màu nền trang đọc">
@@ -1134,7 +1137,8 @@
         </div>
       </div>
       <article class="reader-paper" id="reader-paper">
-        <div class="reader-chapter-title" id="reader-ch-title">Chương 1</div>
+        <div class="reader-story-title" id="reader-story-title" role="heading" aria-level="1"></div>
+        <div class="reader-chapter-title" id="reader-ch-title" role="heading" aria-level="2">Chương 1</div>
         <div class="reading-time-badge" id="reader-ch-time">⏱ Khoảng 1 phút đọc</div>
         <div class="reader-body" id="reader-content"></div>
       </article>
@@ -8930,6 +8934,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       const readerEdit=document.getElementById('reader-edit-chapter');
       if(readerEdit)readerEdit.hidden=!!novel._cloudV49;
 
+      document.getElementById('reader-story-title').textContent = novel.title || '';
       document.getElementById('reader-ch-title').textContent = ch.title;
 
       const wCount = ch.wordCount || countWords(ch.content);
@@ -9946,7 +9951,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/phone-wallpaper-v38-studio.js?v=39-1"></script>
 <script src="js/library-reader-status-l2a.js?v=epub-perf-r1"></script>
 <script src="js/library-reader-preferences-l2c.js?v=l2b-1"></script>
-<script src="js/reader-background-r1.js?v=r1-2"></script>
+<script src="js/reader-background-r1.js?v=r1-2&amp;ui=t1-1"></script>
 <script src="js/library-reading-return-c443.js?v=c443-1"></script>
   <script src="js/site-shell-v60.js?v=sonha-art-v3-1&amp;pause=c446c-1&amp;t0=1"></script>
 <script src="js/library-intake-v1.js?v=lib1-ui3"></script>

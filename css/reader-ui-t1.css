@@ -1,0 +1,46 @@
+/* READER-UI T1: scoped presentation only; no content, transport or progress changes. */
+body.dudu-reading-active #reader-view #reader-settings-trigger{
+  display:inline-grid;place-items:center;min-width:40px;min-height:40px;width:40px;height:40px;padding:0;font-size:20px;
+}
+body.dudu-reading-active #floating-reading-bar #reader-quick-settings{min-width:40px;min-height:40px;width:40px;flex-basis:40px}
+body.dudu-reading-active #reader-view .reader-story-title{
+  color:var(--reader-ink);font:600 clamp(20px,3.6vw,28px)/1.4 var(--reader-font,serif);
+  text-align:center;overflow-wrap:anywhere;max-width:100%;margin:0 auto 10px;
+}
+body.dudu-reading-active #reader-view #reader-ch-title{
+  text-align:center;overflow-wrap:anywhere;max-width:100%;line-height:1.5;margin:0 auto 8px;
+}
+body.dudu-reading-active #reader-view #reader-ch-time{text-align:center;margin-bottom:20px}
+body.dudu-reading-active #reader-view .reader-settings-popover{padding:12px;max-height:min(78dvh,660px);scrollbar-width:thin}
+body.dudu-reading-active #reader-view .reader-settings-heading{padding-bottom:8px;margin-bottom:8px;letter-spacing:.07em}
+body.dudu-reading-active #reader-view .reader-settings-close{min-width:40px;min-height:40px}
+body.dudu-reading-active #reader-view .reader-settings-popover label,
+body.dudu-reading-active #reader-view .reader-settings-label{margin:7px 0 3px;font-size:11px}
+body.dudu-reading-active #reader-view .reader-type-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px}
+body.dudu-reading-active #reader-view .reader-type-font{grid-column:1/-1;min-width:0}
+body.dudu-reading-active #reader-view .reader-type-field{min-width:0}
+body.dudu-reading-active #reader-view .reader-settings-popover select{padding:5px 9px}
+body.dudu-reading-active #reader-view .reader-theme-choices{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+body.dudu-reading-active #reader-view .reader-theme-choices button{min-height:40px;font-size:10px}
+body.dudu-reading-active #reader-view .reader-settings-footer{margin-top:8px;padding-top:8px}
+body.dudu-reading-active #reader-view .reader-bg-r1{margin-top:9px;padding-top:8px}
+body.dudu-reading-active #reader-view .reader-bg-r1-help{margin:4px 0 6px}
+body.dudu-reading-active #reader-view .reader-bg-r1-grid{gap:6px;max-height:174px}
+body.dudu-reading-active #reader-view .reader-bg-r1-choice{padding:4px;gap:2px}
+body.dudu-reading-active #reader-view .reader-bg-r1-choice img{height:54px}
+body.dudu-reading-active #reader-view .reader-bg-r1-opacity{margin-top:5px}
+/* Match the existing H3B Library/Shelf treatment without changing dossier layout. */
+body.dudu-site-v60:not(.dudu-reading-active) #cover-view{
+  background-color:#101f2d;
+  background-image:linear-gradient(180deg,rgba(9,25,39,.8),rgba(10,26,39,.96) 430px),url('../assets/homepage-sonha-v3/gallery-h3b.webp');
+  background-size:cover,100% auto;background-position:top center;background-repeat:no-repeat;
+  color:#e9e2d7;border-radius:12px;
+}
+body.dudu-site-v60:not(.dudu-reading-active) #cover-view #book-title{color:#f3dfbb;overflow-wrap:anywhere}
+body.dudu-site-v60:not(.dudu-reading-active) #cover-view #book-desc,
+body.dudu-site-v60:not(.dudu-reading-active) #cover-view #book-intro{color:#d7dfe5}
+@media(max-width:600px){
+  body.dudu-reading-active #reader-view .reader-type-field:has(#reader-paragraph-space){grid-column:1/-1}
+  body.dudu-reading-active #reader-view .reader-settings-popover{padding:12px;max-height:calc(100dvh - 32px)}
+  body.dudu-reading-active #reader-view .reader-top-nav{gap:6px;margin-bottom:16px}
+}
