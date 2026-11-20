@@ -7938,7 +7938,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
         if(!books.length||synopsisSearchTaskL2D)return;
         synopsisSearchTaskL2D=librarySynopsisIndexL2D.loadMissing(books,()=>{
           renderSearchProgressL0(generation);
-        }).finally(()=>{
+        },()=>generation===searchVersionL0).finally(()=>{
           synopsisSearchTaskL2D=null;
           if(DuduLibrarySearchL0.tokens(searchSynopsisQueryL0).length){
             renderHome();scheduleSynopsisSearchL2D();
