@@ -1017,13 +1017,17 @@
     <!-- 2. TRANG BÌA & MỤC LỤC -->
     <div id="cover-view">
       <div class="archive-cover-topbar">
-        <button class="btn" onclick="window.DuduSiteV60 ? DuduSiteV60.navigate('library') : goHome()">‹ Thư viện</button>
         <div class="archive-cover-main-actions">
-          <button class="btn btn-gold" id="btn-main-reading-action" onclick="smartReadActionCover()">▶ Đọc ngay</button>
           <button type="button" class="btn admin-only" id="epub-edit-tools-open" style="display:none" onclick="epubEditorL2D5.open(novels[selectedNovelIndex])">Biên tập chương</button>
           <button class="btn admin-only" onclick="openEditStoryModal()">✎ Sửa</button>
           <button class="btn btn-danger admin-only" onclick="deleteCurrentNovel()">Xóa</button>
         </div>
+      </div>
+      <!-- Cover-only actions remain reachable while browsing synopsis, chapters or comments.
+           This is the original reading action, not a duplicate of the bookmark-aware handler. -->
+      <div class="archive-cover-action-dock" role="group" aria-label="Hành động tác phẩm">
+        <button type="button" class="btn archive-cover-dock-back" onclick="window.DuduSiteV60 ? DuduSiteV60.navigate('library') : goHome()">‹ Thư viện</button>
+        <button type="button" class="btn btn-gold archive-cover-dock-read" id="btn-main-reading-action" onclick="smartReadActionCover()">▶ Đọc ngay</button>
       </div>
 
       <div class="book-cover-banner">
