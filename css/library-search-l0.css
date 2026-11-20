@@ -1,0 +1,72 @@
+/* DUDU Library A.1.5-R2 — scoped mobile-first search shell and balanced cards. */
+body.dudu-site-v60 #home-view{--l0-panel:#1a2835;--l0-line:#516174;--l0-accent:#dcc69c;--l0-muted:#aebecb}
+body.dudu-site-v60 #home-view .filter-panel{margin:0 0 7px;padding:0;border:0;background:transparent}
+body.dudu-site-v60 #home-view .search-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#home-view .l0-search-unit{display:flex;flex-direction:column;min-width:0;gap:4px}
+#home-view .l0-search-unit>label{color:var(--l0-accent);font:650 11px/1.35 system-ui,sans-serif}
+body.dudu-site-v60 #home-view .archive-search-field{min-height:39px;padding:0 10px;background:var(--l0-panel);border:1px solid #465867;border-radius:8px}
+body.dudu-site-v60 #home-view .search-input{min-width:0;padding:8px 0;font-size:13px}
+#home-view .archive-toolbar-l0{position:relative;display:flex;align-items:center;gap:8px;min-width:0;margin:3px 0 8px}
+#home-view .archive-toolbar-l0 .archive-filter-details{position:static;flex:none;margin:0;border:0;min-width:0}
+#home-view .archive-toolbar-l0 .archive-filter-details>summary{display:inline-flex;align-items:center;justify-content:center;min-height:35px;padding:0 9px;white-space:nowrap;background:var(--l0-panel);border:1px solid var(--l0-line);border-radius:8px;color:#e4d5b7;font-weight:600}
+#home-view .archive-toolbar-l0 .archive-filter-content{position:absolute;z-index:30;left:0;top:calc(100% + 5px);box-sizing:border-box;width:min(410px,100%);max-height:min(72vh,640px);overflow:auto;overscroll-behavior:contain;background:#1a2835;border:1px solid #516174;border-radius:11px;box-shadow:0 16px 42px #0009;padding:13px}
+#home-view .archive-toolbar-l0 .archive-filter-head{margin-bottom:8px}
+#home-view .archive-toolbar-l0 .archive-sort-field{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+#home-view .archive-toolbar-l0 .archive-sort-field label{color:#dcc69c;font-size:11px;font-weight:650}
+#home-view .archive-toolbar-l0 .archive-sort-field select{min-height:37px}
+#home-view #library-catalog-pager-top.library-catalog-pager{flex:1;display:flex;flex-direction:row;justify-content:flex-end;align-items:center;gap:5px;min-width:0;margin:0;padding:0;flex-wrap:nowrap;border:0}
+#home-view #library-catalog-pager-top .library-catalog-page-ribbon{display:contents}
+#home-view #library-catalog-pager-top .library-catalog-page-number,
+#home-view #library-catalog-pager-top .library-catalog-page-dots{display:none}
+#home-view #library-catalog-pager-top .library-catalog-page-range{font-size:11px;color:#d7dfe7;white-space:nowrap}
+#home-view .library-catalog-pager .library-catalog-page-round{width:30px;height:34px;border-radius:7px;background:var(--l0-panel);border:1px solid #506073;color:#dedad2;box-shadow:none}
+#home-view .library-catalog-pager .library-catalog-page-round.is-current{background:#dcc69c;border-color:#dcc69c;color:#17212e}
+#home-view .library-catalog-pager .library-catalog-page-jump-toggle{min-height:34px;padding:5px 8px;background:var(--l0-panel);border:1px solid #506073;color:#e7d1ab;border-radius:7px;font-weight:650}
+#home-view #library-catalog-pager-top .library-catalog-page-jump{position:absolute;z-index:35;right:0;top:calc(100% + 4px);width:min(285px,100%);padding:9px;margin:0;border:1px solid #516174;background:#1a2835;box-shadow:0 12px 25px #0008}
+#home-view #library-catalog-pager-bottom.library-catalog-pager{display:flex;flex-wrap:nowrap;align-items:center;justify-content:center;gap:8px;margin:12px 0;padding:2px 0;border:0}
+#home-view #library-catalog-pager-bottom .library-catalog-page-ribbon{display:flex;flex:0 1 auto;flex-basis:auto;min-width:0;align-items:center;gap:4px}
+#home-view #library-catalog-pager-bottom .library-catalog-page-range{display:none}
+#home-view #library-catalog-pager-bottom .library-catalog-page-jump{position:absolute;z-index:25;bottom:100%;right:5px;width:min(320px,calc(100% - 10px));box-sizing:border-box;background:#1a2835}
+#home-view #library-catalog-pager-bottom{position:relative}
+#home-view .library-catalog-page-jump input{width:110px}
+#home-view .library-catalog-page-jump button{background:#dcc69c;border-color:#dcc69c;color:#17212e}
+#home-view .archive-catalog-bar{padding:0;margin:0 0 5px;border:0;letter-spacing:0}
+#home-view .archive-catalog-bar[hidden],#home-view .archive-active-filters[hidden]{display:none!important}
+#home-view #search-result-count{font:500 11px/1.5 system-ui,sans-serif;text-align:left;color:#b5c6d1}
+body.dudu-site-v60 #home-view .novel-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+body.dudu-site-v60 #home-view .novel-card.archive-shelf-item{display:grid;grid-template-columns:84px minmax(0,1fr);gap:11px;height:auto;min-height:148px;max-height:none;padding:10px;background:#1a2835;border:1px solid #516174;border-radius:9px;box-shadow:none;align-items:start}
+body.dudu-site-v60 #home-view .archive-shelf-item .novel-cover{width:84px;height:126px;min-height:126px;max-height:126px;border:0;border-radius:5px;overflow:hidden}
+body.dudu-site-v60 #home-view .archive-shelf-item .novel-info{display:flex;flex-direction:column;justify-content:space-between;align-self:stretch;min-width:0;padding:0;gap:5px}
+body.dudu-site-v60 #home-view .archive-shelf-item .archive-card-index,
+body.dudu-site-v60 #home-view .archive-shelf-item .novel-badges{display:none}
+body.dudu-site-v60 #home-view .archive-shelf-item .novel-title-button{font-size:15px;line-height:1.38;-webkit-line-clamp:3;overflow-wrap:anywhere}
+body.dudu-site-v60 #home-view .archive-shelf-item .novel-byline{margin:4px 0 0;color:#c1ccd5;font-size:12px;line-height:1.35}
+#home-view .l0-card-meta{margin-top:3px;color:#aabac7;font-size:11px;line-height:1.35}
+#home-view .l0-card-progress{display:block;margin-top:4px;color:#8fc3b6;font-size:11px}
+#home-view .l0-card-snippet{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;margin:5px 0 0;color:#cfd9e1;font-size:11px;line-height:1.42;overflow-wrap:anywhere}
+#home-view .l0-card-snippet strong{color:#f0d49e;font-weight:700}
+body.dudu-site-v60 #home-view .archive-shelf-item .novel-meta{display:flex;align-items:flex-end;justify-content:flex-end;border:0;margin:0;padding:0;min-height:32px}
+body.dudu-site-v60 #home-view .archive-shelf-item .novel-meta .btn{min-height:32px;margin:0;padding:4px 0 4px 8px;border:0;border-radius:0;background:transparent;color:#e8d1a3;font-size:12px}
+body.dudu-site-v60 #home-view .archive-shelf-item .novel-meta .btn:hover{color:#fff;background:transparent;text-decoration:underline}
+@media(max-width:760px){
+  body.dudu-site-v60 #home-view .search-row{grid-template-columns:minmax(0,1fr);gap:7px}
+  body.dudu-site-v60 #home-view .novel-grid{grid-template-columns:minmax(0,1fr);gap:9px}
+  body.dudu-site-v60 #home-view .novel-card.archive-shelf-item{grid-template-columns:74px minmax(0,1fr);gap:9px;min-height:129px;padding:9px}
+  body.dudu-site-v60 #home-view .archive-shelf-item .novel-cover{width:74px;height:111px;min-height:111px;max-height:111px}
+  body.dudu-site-v60 #home-view .archive-shelf-item .novel-info{padding:0;gap:3px}
+  body.dudu-site-v60 #home-view .archive-shelf-item .novel-title-button{font-size:14px}
+  body.dudu-site-v60 #home-view .archive-shelf-item .novel-byline{font-size:11px}
+  #home-view #library-catalog-pager-bottom .library-catalog-page-number,
+  #home-view #library-catalog-pager-bottom .library-catalog-page-dots{display:none}
+  #home-view #library-catalog-pager-bottom .library-catalog-page-range{display:inline;color:#c2cfda;font-size:11px}
+  #home-view #library-catalog-pager-bottom .library-catalog-page-ribbon{display:contents}
+  #home-view .archive-toolbar-l0{gap:4px}
+  #home-view .archive-toolbar-l0 .archive-filter-details>summary{font-size:11px;padding:0 7px}
+  #home-view #library-catalog-pager-top.library-catalog-pager{gap:3px}
+  #home-view .library-catalog-pager .library-catalog-page-jump-toggle{padding:5px 6px;font-size:11px}
+}
+@media(max-width:360px){
+  #home-view .archive-toolbar-l0{gap:2px}
+  #home-view .library-catalog-pager .library-catalog-page-round{width:27px;height:32px}
+  #home-view .library-catalog-pager .library-catalog-page-jump-toggle{font-size:10px;padding:5px}
+}
