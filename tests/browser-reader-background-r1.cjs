@@ -24,6 +24,8 @@ async function main(){
   try{
     browser=await chromium.launch({headless:true,args:['--no-sandbox']});
     const page=await browser.newPage({viewport:{width:375,height:844}});
+    // A deliberately unavailable artwork must fall back to the plain paper.
+    await page.route('**/assets/wallpapers/v38/abyss-sanctuary.webp',route=>route.abort('failed'));
     await page.route('https://www.gstatic.com/firebasejs/**',async route=>{
       const app=route.request().url().includes('firebase-app-compat');
       const stub=app?[
@@ -62,10 +64,25 @@ async function main(){
     assert.equal(await page.locator('[data-reader-bg-id="v38-jade"]').isDisabled(),true);
     assert.equal(await page.locator('[data-reader-bg-id="v38-moon"]').isDisabled(),false);
     await page.locator('[data-reader-bg-id="v38-moon"]').click();
-    assert.equal(await page.locator('#reader-paper').getAttribute('data-reader-bg'),'v38-moon');
-    const background=await page.locator('#reader-paper').evaluate(el=>getComputedStyle(el).backgroundImage);
-    assert.match(background,/moon-garden\.webp/);
-    assert.match(background,/linear-gradient/);
+    // R1 originally passed while requesting /css/assets/... (404) because it
+    // only asserted the asset file name in getComputedStyle. Verify decoded WebP.
+    await page.waitForFunction(()=>document.querySelector('#reader-paper')?.dataset.readerBg==='v38-moon');
+    const imageState=await page.locator('#reader-paper').evaluate(async el=>{
+      const expected=new URL('assets/wallpapers/v38/moon-garden.webp',document.baseURI).href;
+      const background=getComputedStyle(el).backgroundImage;
+      const res=await fetch(expected);
+      const bitmap=await createImageBitmap(await res.blob());
+      const output={expected,background,status:res.status,
+        width:bitmap.width,height:bitmap.height,
+        correctCssUrl:background.includes(expected)};
+      bitmap.close();
+      return output;
+    });
+    assert.equal(imageState.status,200,'WebP must respond successfully');
+    assert.ok(imageState.width>100&&imageState.height>100,'WebP must decode');
+    assert.equal(imageState.correctCssUrl,true,'CSS must reference the actual site image URL');
+    assert.match(imageState.background,/linear-gradient/);
+    assert.doesNotMatch(imageState.background,/\/css\/assets\/wallpapers\//);
     assert.equal(await page.locator('[data-reader-bg-id="v38-moon"]').getAttribute('aria-pressed'),'true');
     await page.locator('#reader-bg-r1-opacity').evaluate(el=>{
       el.value='88';el.dispatchEvent(new Event('input',{bubbles:true}));
@@ -79,6 +96,10 @@ async function main(){
       assert.ok(box.width>0&&box.left>=-2&&box.right<=width+2,
         'reader background never creates horizontal overflow at '+width+'px');
     }
+    await page.locator('[data-reader-bg-id="v38-abyss"]').click();
+    await page.waitForFunction(()=>document.querySelector('#reader-bg-r1-status')?.textContent?.includes('Không tải được ảnh nền'));
+    assert.equal(await page.locator('#reader-paper[data-reader-bg]').count(),0,
+      'failed image must fall back to the original paper theme');
     await page.locator('#reader-bg-r1-enabled').uncheck();
     assert.equal(await page.locator('#reader-paper[data-reader-bg]').count(),0);
     await page.locator('#reader-settings-reset').click();
@@ -86,7 +107,7 @@ async function main(){
     assert.equal(await page.locator('#reader-paper[data-reader-bg]').count(),0);
     assert.equal(await page.locator('#reader-settings-popover [data-reader-theme]').count(),4);
     assert.equal(await page.evaluate(()=>window.__readerBgExternalWrites?.length||0),0);
-    console.log('READER-BG R1 browser PASS: 10 catalog entries, entitlements, layering, opacity, reset and 6 widths.');
+    console.log('READER-BG R1 browser PASS: decoded WebP URL, broken image fallback, entitlements, opacity, reset, 6 widths.');
   }finally{
     if(browser)await browser.close();
     await new Promise(done=>server.close(done));
