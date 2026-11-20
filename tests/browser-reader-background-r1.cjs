@@ -24,8 +24,6 @@ async function main(){
   try{
     browser=await chromium.launch({headless:true,args:['--no-sandbox']});
     const page=await browser.newPage({viewport:{width:375,height:844}});
-    // A deliberately unavailable artwork must fall back to the plain paper.
-    await page.route('**/assets/wallpapers/v38/abyss-sanctuary.webp',route=>route.abort('failed'));
     await page.route('https://www.gstatic.com/firebasejs/**',async route=>{
       const app=route.request().url().includes('firebase-app-compat');
       const stub=app?[
@@ -96,8 +94,28 @@ async function main(){
       assert.ok(box.width>0&&box.left>=-2&&box.right<=width+2,
         'reader background never creates horizontal overflow at '+width+'px');
     }
+    // Force a deterministic image decode failure even if artwork was cached.
+    // The previous network route was nondeterministic with already-loaded thumbnails.
+    await page.evaluate(()=>{
+      const RealImage=window.Image;
+      window.Image=function(...args){
+        const image=new RealImage(...args);
+        const src=Object.getOwnPropertyDescriptor(HTMLImageElement.prototype,'src');
+        Object.defineProperty(image,'src',{
+          configurable:true,
+          get(){return src.get.call(image);},
+          set(value){
+            if(String(value).includes('abyss-sanctuary.webp'))
+              queueMicrotask(()=>image.dispatchEvent(new Event('error')));
+            else src.set.call(image,value);
+          }
+        });
+        return image;
+      };
+    });
     await page.locator('[data-reader-bg-id="v38-abyss"]').click();
-    await page.waitForFunction(()=>document.querySelector('#reader-bg-r1-status')?.textContent?.includes('Không tải được ảnh nền'));
+    await page.waitForFunction(()=>document.querySelector('#reader-bg-r1-status')?.textContent?.includes('Không tải được ảnh nền'),
+      null,{timeout:8000});
     assert.equal(await page.locator('#reader-paper[data-reader-bg]').count(),0,
       'failed image must fall back to the original paper theme');
     await page.locator('#reader-bg-r1-enabled').uncheck();
