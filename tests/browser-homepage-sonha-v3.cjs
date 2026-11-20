@@ -81,7 +81,7 @@ async function main(){
     const alpha=selector=>{
       const color=getComputedStyle(document.querySelector(selector)).backgroundColor;
       if(color==='transparent')return 0;
-      const values=color.match(/[\\d.]+/g)?.map(Number)||[];
+      const values=color.match(/[\d.]+/g)?.map(Number)||[];
       return values.length>=4?values[3]:1;
     };
     const background=getComputedStyle(document.querySelector('#cover-view')).backgroundImage;
@@ -98,7 +98,7 @@ async function main(){
       back:alpha('#cover-view .archive-cover-dock-back'),
       read:alpha('#cover-view #btn-main-reading-action')};
   });
-  assert.match(coverGlass.background,/gallery-h3b\\.webp/);
+  assert.match(coverGlass.background,/gallery-h3b\.webp/);
   assert.equal(coverGlass.status,200,'cover artwork must load');
   assert.equal(coverGlass.decoded,true,'cover artwork must decode');
   for(const key of ['banner','intro','back'])assert.ok(coverGlass[key]>.3&&coverGlass[key]<.8,
