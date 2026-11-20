@@ -27,7 +27,7 @@ test('R1 remains opt-in and preserves four existing Reader themes',()=>{
   assert.match(html,/data-reader-theme="soft"/);
   assert.equal(prefs.DEFAULT.theme,'dark');
   assert.match(html,/css\/reader-background-r1\.css\?v=r1-1/);
-  assert.match(html,/js\/reader-background-r1\.js\?v=r1-1/);
+  assert.match(html,/js\/reader-background-r1\.js\?v=r1-2/);
   assert.ok(html.indexOf('js/library-reader-preferences-l2c.js')<
     html.indexOf('js/reader-background-r1.js'));
 });
