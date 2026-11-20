@@ -33,6 +33,8 @@
   const resolved=new Map();
   const fetching=new Map();
   const failed=new Set();
+  let generation=0;
+  function clear(){generation++;resolved.clear();fetching.clear();failed.clear();}
   const keyFor=book=>{
    const chapter=synopsisChapter(book);
    return chapter?String(book.id)+'|'+String(book.updatedAt||'')+'|'+String(chapter.id):'';
@@ -53,15 +55,16 @@
    if(failed.has(key))return Promise.reject(Error('Văn án EPUB chưa tải được trong phiên này'));
    if(fetching.has(key))return fetching.get(key);
    const chapter=synopsisChapter(book);
+   const epoch=generation;
    const task=Promise.resolve().then(()=>typeof chapter.content==='string'?
     {content:chapter.content}:readChapter(book.id,chapter.id))
     .then(result=>{
      const value=cleanSynopsis(result?.content);
-     resolved.set(key,value);
-     return value;
+     if(epoch===generation)resolved.set(key,value);
+     return epoch===generation?value:'';
     })
-    .catch(error=>{failed.add(key);throw error;})
-    .finally(()=>fetching.delete(key));
+    .catch(error=>{if(epoch===generation)failed.add(key);throw error;})
+    .finally(()=>{if(epoch===generation)fetching.delete(key);});
    fetching.set(key,task);
    return task;
   }
@@ -79,7 +82,7 @@
    await Promise.all(Array.from({length:Math.min(3,queue.length)},worker));
   }
 
-  return Object.freeze({getSynopsis,ensure,loadMissing,isUnresolved,isFailed});
+  return Object.freeze({getSynopsis,ensure,loadMissing,isUnresolved,isFailed,clear});
  }
 
  return Object.freeze({normalize,matches,inlineSynopsis,synopsisChapter,cleanSynopsis,createIndex});
