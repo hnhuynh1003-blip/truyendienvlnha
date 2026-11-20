@@ -4,6 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
+const { performance } = require('node:perf_hooks');
 const src = fs.readFileSync(path.join(__dirname, '../js/auth-v2.js'), 'utf8');
 
 function harness(options = {}) {
@@ -44,7 +45,7 @@ function harness(options = {}) {
     DuduAccountInviteR11: options.inviteHelper,
     duduSyncEpubAccessR11: options.onEpub,
     DuduFirestoreProfileFallbackV567: options.enableFallback ? require('../js/firestore-profile-fallback-v56-7.js') : undefined,
-    setTimeout: options.setTimeout || setTimeout, clearTimeout, AbortController,
+    setTimeout: options.setTimeout || setTimeout, clearTimeout, AbortController, performance,
     fetch: options.fetch || (async () => { throw new Error('No mock HTTP route'); }),
     firebase: {
       auth: authFactory,
@@ -464,4 +465,13 @@ test('R1.1 invitation UI remains inactive when either release switch is off',asy
  assert.equal(h.context.DuduAuth.isReady(),true);
  assert.notEqual(h.elements['auth-invite-redeem-r11']?.hidden,false);
  assert.notEqual(h.elements['auth-invite-owner-r11']?.hidden,false);
+});
+
+// Timing instrumentation must remain active in the isolated VM.
+test('auth and profile telemetry remain numeric without granting profile roles',async()=>{
+ const h=harness();await h.login('timing-reader',{}, {name:'Reader',role:'admin'});
+ const m=h.context.DuduCatalogPerfMeasurements;
+ for(const key of ['auth_ready_ms','profile_ready_ms','permissions_ready_ms'])assert(Number.isFinite(m[key])&&m[key]>=0,key);
+ assert.equal(h.context.DuduAuth.isAdmin(),false);
+ assert(!Object.hasOwn(m,'token'));
 });

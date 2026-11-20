@@ -24,7 +24,7 @@ test('The full Library page inline JavaScript still parses after L2A changes',()
 
 class FakeElement {
  constructor(tag){
-  this.tagName=tag;this.children=[];this.listeners={};this.attributes={};
+  this.dataset={};this.tagName=tag;this.children=[];this.listeners={};this.attributes={};
   this.className='';this.textContent='';this.style={};
  }
  set innerHTML(value){
@@ -46,7 +46,13 @@ function render(books,bookmarks=()=>null){
   createElement:tag=>new FakeElement(tag)
  };
  const calls=[];
- const context={document,novels:books,selectedTag:'ALL',searchQuery:'',
+ const context={document,novels:books,
+  l6R2MediaBridge:null,
+  DuduLibrarySearchL0:require('../js/library-search-l0.js'),
+  DuduLibrarySmartFilterL3:require('../js/library-smart-filter-l3.js'),
+  appliedLibraryFiltersL3:require('../js/library-smart-filter-l3.js').state(),
+  searchTitleQueryL0:'',searchSynopsisQueryL0:'',sortManualL0:false,
+  searchStableKeyL0:'',searchStableIdsL0:[],selectedTag:'ALL',searchQuery:'',
   currentFilterStatus:'ALL',sortMode:'NEWEST_UPDATE',renderTagCloud:()=>{},
   v568ReadBookmarkForNovel:bookmarks,
   DuduStoryDates:{ordering:()=>1,display:()=> '29/10/2026'},
@@ -71,10 +77,10 @@ test('L2A cards render untrusted story fields as inert text, with accessible act
  const nodes=walk(grid);
  assert.equal(nodes.filter(node=>node.tagName==='img').length,1);
  assert.ok(nodes.some(node=>node.tagName==='button'&&node.textContent===title));
- assert.ok(nodes.some(node=>node.textContent===description));
- assert.ok(nodes.some(node=>node.textContent==='<b>Author</b> · 1 chương'));
+ assert.equal(nodes.filter(node=>node.tagName==='svg').length,0);
+ assert.ok(nodes.some(node=>node.textContent==='<b>Author</b>'));
  const open=nodes.find(node=>node.tagName==='button'&&node.textContent===title);
- open.listeners.click();
+ open.listeners.click({stopPropagation(){}});
  assert.deepEqual(calls,[['cover',0]]);
 });
 
@@ -92,8 +98,8 @@ test('L2A shows one real read action for either legacy or EPUB with bookmarks',(
 });
 
 test('L2A reading focus is confined to the reader and leaves author permissions untouched',()=>{
- assert.match(html,/function openCover\(idx\)\s*\{\s*window\.DuduLibraryReaderStatusL2A\?\.cancel\(\);\s*document\.body\.classList\.remove\('dudu-reading-active'\)/);
- assert.match(html,/function goHome\(\)\s*\{\s*window\.DuduLibraryReaderStatusL2A\?\.cancel\(\);\s*document\.body\.classList\.remove\('dudu-reading-active'\)/);
+ assert.match(html,/function openCover\(idx\)\s*\{\s*l6R2MediaBridge\?\.clearChapter\(\);\s*window\.DuduLibraryReaderStatusL2A\?\.cancel\(\);\s*document\.body\.classList\.remove\('dudu-reading-active'\)/);
+ assert.match(html,/function goHome\(\)\s*\{\s*l6R2MediaBridge\?\.clearChapter\(\);\s*l6R2MediaBridge\?\.clearHero\(\);\s*window\.DuduLibraryReaderStatusL2A\?\.cancel\(\);\s*document\.body\.classList\.remove\('dudu-reading-active'\)/);
  assert.match(html,/document\.getElementById\('reader-view'\)\.style\.display = 'block';\s*document\.body\.classList\.add\('dudu-reading-active'\)/);
  assert.match(css,/body\.dudu-reading-active \.d60-bottomnav/);
  assert.match(readerCss,/body\.dudu-site-v60\.dudu-reading-active #phone-fab/);

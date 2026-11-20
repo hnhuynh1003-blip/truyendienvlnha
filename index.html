@@ -894,9 +894,9 @@
   <link rel="stylesheet" href="css/library-smart-filter-l3.css?v=l3-2">
   <link rel="stylesheet" href="css/library-finish-l4.css?v=l4-compact-fav-1">
   <link rel="stylesheet" href="css/library-capacity-r1.css?v=r1-1">
-  <link rel="stylesheet" href="css/library-search-l0.css?v=l0-compact-2">
+  <link rel="stylesheet" href="css/library-search-l0.css?v=ci29-1">
   <link rel="stylesheet" href="css/homepage-sonha-v3.css?v=art-v3-1">
-  <script src="js/library-catalog-l2e.js?v=l2e-3"></script>
+  <script src="js/library-catalog-l2e.js?v=ci29-1"></script>
   <script src="js/library-capacity-r1.js?v=r1-1"></script>
   <script src="js/library-smart-filter-l3.js?v=l3-1"></script>
   <script src="js/library-reader-shortcut-l2f.js?v=l2f-2"></script>
@@ -8127,6 +8127,13 @@ document.getElementById('phone-home-screen').style.display = 'none';
           if(input)input.value='';
         }
         refreshLibraryFilterControlsL3();renderTagCloud();
+        if(drawer.open)requestAnimationFrame(()=>{
+          const panel=drawer.querySelector('.archive-filter-content');
+          if(!panel)return;
+          const nav=document.querySelector('.d60-bottomnav');
+          const navTop=nav&&getComputedStyle(nav).display!=='none'?nav.getBoundingClientRect().top:innerHeight;
+          panel.style.maxHeight=Math.max(96,Math.min(innerHeight*.72,navTop-panel.getBoundingClientRect().top-12))+'px';
+        });
       });
       drawer.addEventListener('keydown',event=>{
         if(event.key==='Escape'){drawer.open=false;event.stopPropagation();}
@@ -8259,7 +8266,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       const detail=incomplete?
         'Đang kiểm tra văn án… · '+filtered.length+' kết quả đã xác minh':
         failedSynopses?
-          'Kết quả có thể chưa đầy đủ · '+failedSynopses+' văn án chưa đọc được':'';
+          'Kết quả có thể chưa đầy đủ · '+failedSynopses+' văn án chưa đọc được':filtered.length+' / '+novels.length+' tác phẩm';
       if(statusBar)statusBar.hidden=!detail;
       if(searchStatus)searchStatus.textContent=detail;
       const retryButton=document.getElementById('library-search-l0-retry');

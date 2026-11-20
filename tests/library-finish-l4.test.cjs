@@ -14,7 +14,7 @@ test('L4 centers both paginator controls and Go-to-page forms',()=>{
  assert.match(pager,/#library-catalog-pager-top \.library-catalog-page-jump\{\s*order:5;flex:0 0 100%;max-width:none;margin:5px 0 0/);
  assert.match(pager,/\.library-catalog-page-jump\{[\s\S]*?margin-inline:auto;/);
  assert.match(html,/css\/library-catalog-l2e\.css\?v=l4-2/);
- assert.match(html,/css\/library-finish-l4\.css\?v=l4-1/);
+ assert.match(html,/css\/library-finish-l4\.css\?v=[^"\s]+/);
 });
 
 test('L4 keeps chapter editing and bookmarks while bounding huge EPUB tables',()=>{
@@ -26,7 +26,7 @@ test('L4 keeps chapter editing and bookmarks while bounding huge EPUB tables',()
  assert.match(html,/isCurrent = bookmark\?\.chIdx === ch\.originalIdx/);
  assert.match(html,/onclick="openEditChapterModal\(\$\{ch\.originalIdx\}\)"/);
  assert.match(html,/onclick="deleteChapter\(\$\{ch\.originalIdx\}\)"/);
- assert.match(html,/library-finish-l4\.css\?v=l4-1/);
+ assert.match(html,/library-finish-l4\.css\?v=[^"\s]+/);
 });
 
 test('L4 responsive fixes are isolated to Library details',()=>{

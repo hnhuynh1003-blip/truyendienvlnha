@@ -107,9 +107,10 @@ test('L2E is wired to the existing Library route and resets after search/filter/
  assert.match(html,/id="library-catalog-pager-bottom"/);
  assert.match(html,/catalogPager\?\.paginate\(filtered\)/);
  assert.match(html,/catalogPage\.items\.forEach/);
- assert.match(html,/catalogPage\.offset \+ displayIndex \+ 1/);
- assert.match(html,/searchQuery = document\.getElementById\('search-novel-input'\)\.value\.trim\(\);\s*window\.DuduLibraryCatalogL2E\?\.resetPage\(\)/);
- assert.match(html,/sortMode = document\.getElementById\('sort-select-ctrl'\)\.value;\s*window\.DuduLibraryCatalogL2E\?\.resetPage\(\)/);
+ assert.match(html,/const originalIndex = novels\.indexOf\(novel\)/);
+ assert.match(html,/function onSearchChange\(\)[\s\S]*?search-title-l0[\s\S]*?DuduLibraryCatalogL2E\?\.resetPage\(\)/);
+ assert.match(html,/draftSortModeL0=document\.getElementById\('sort-select-ctrl'\)\.value/);
+ assert.match(html,/sortMode=draftSortModeL0/);
  assert.match(shell,/returningToCatalog/);
  assert.match(shell,/DuduLibraryCatalogL2E\?\.rememberScroll\(window\)/);
  assert.match(shell,/DuduLibraryCatalogL2E\?\.restoreScroll\(window\)/);

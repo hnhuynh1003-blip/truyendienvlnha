@@ -47,9 +47,9 @@ test('Canceled and superseded cloud reads cannot reopen stale chapters',()=>{
 test('Network failure presents a real retry action without automatic write',()=>{
  const {region,api}=setup();let retries=0;
  const ticket=api.begin('Chương 1');
- assert.equal(api.fail(ticket,()=>retries++),true);
+ assert.equal(api.fail(ticket,()=>retries++,{code:'NETWORK'},'chapter'),true);
  assert.equal(region.hidden,false);
- assert.match(region.children[0].textContent,/Kiểm tra kết nối/);
+ assert.match(region.children[0].textContent,/NETWORK/);
  assert.equal(region.children[1].textContent,'Tải lại chương');
  region.children[1].listeners.click();
  assert.equal(retries,1);

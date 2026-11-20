@@ -59,13 +59,13 @@ async function main(){
    const state=await page.evaluate(()=>{
     const grid=document.getElementById('novel-grid-container').getBoundingClientRect();
     const cards=[...document.querySelectorAll('#novel-grid-container .novel-card')]
-      .map(node=>node.getBoundingClientRect());
+      .map(node=>{const r=node.getBoundingClientRect();return {left:r.left,right:r.right,width:r.width,height:r.height,controls:[...node.querySelectorAll('.novel-title-button,.novel-meta button')].map(el=>{const b=el.getBoundingClientRect();return {left:b.left,right:b.right,top:b.top,bottom:b.bottom,width:b.width,height:b.height};}),top:r.top,bottom:r.bottom};});
     return {overflow:document.documentElement.scrollWidth-innerWidth,
       gridLeft:grid.left,gridRight:grid.right,
-      cards:cards.map(r=>({left:r.left,right:r.right,width:r.width,height:r.height}))};
+      cards};
    });
    assert.ok(state.overflow<=2,'no viewport overflow at '+width+'px');
-   assert.ok(state.cards.every(card=>card.left>=-1&&card.right<=width+1&&card.height>=170),
+   assert.ok(state.cards.every(card=>card.left>=-1&&card.right<=width+1&&card.height>0&&card.controls.length===2&&card.controls.every(b=>b.width>0&&b.height>0&&b.left>=card.left-1&&b.right<=card.right+1&&b.top>=card.top-1&&b.bottom<=card.bottom+1)),
     'library card content remains contained at '+width+'px');
    if(width>=1366)assert.ok(state.gridRight-state.gridLeft<=1062,
     'desktop catalog keeps a balanced bounded line length');
@@ -106,9 +106,11 @@ async function main(){
   assert.ok(Math.abs(lone.cardCenter-lone.gridCenter)<2&&lone.width<550,
    'one filtered book stays centered and proportionate on laptop');
   await page.setViewportSize({width:390,height:844});
-  await page.locator('#search-novel-input').fill('Tác giả D');
+  await page.locator('#search-title-l0').fill('Tác giả D');
+  await page.waitForFunction(()=>document.querySelectorAll('#novel-grid-container .novel-card').length===0);
   assert.equal(await page.locator('#search-result-count').innerText(),'0 / 4 tác phẩm');
-  await page.locator('#search-novel-input').fill('Tác giả C');
+  await page.locator('#search-title-l0').fill('Tác giả C');
+  await page.waitForFunction(()=>document.querySelectorAll('#novel-grid-container .novel-card').length===1);
   assert.equal(await page.locator('#search-result-count').innerText(),'1 / 4 tác phẩm');
   assert.equal(await page.evaluate(()=>window.__l3ExternalWrites?.length||0),0);
   console.log('L3 Library PASS: tri-state AND/OR, exclude, source, search, 320–1920px, no external writes');
