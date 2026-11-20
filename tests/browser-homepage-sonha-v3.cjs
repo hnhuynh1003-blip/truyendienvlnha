@@ -121,8 +121,7 @@ async function main(){
       return values.length>=4?values[3]:color==='transparent'?0:1;};
     const cards=[...document.querySelectorAll('#home-view .novel-card')];
     return {count:cards.length,alpha:cards.map(alpha),
-      title:document.querySelector('#home-view .novel-title-button')?.textContent||'',
-      filter:document.querySelector('#home-view .archive-filter-details > summary')};
+      title:document.querySelector('#home-view .novel-title-button')?.textContent||''};
   });
   assert.equal(libraryGlass.count,4,'Library still shows four fixture books');
   assert.ok(libraryGlass.alpha.every(a=>a>.35&&a<.8),
