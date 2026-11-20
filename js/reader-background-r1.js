@@ -122,7 +122,7 @@
     toggle.id='reader-bg-r1-enabled';toggle.type='checkbox';
     toggleLabel.append(toggle,doc.createTextNode(' Sử dụng'));
     top.append(title,toggleLabel);
-    const note=create('p','reader-bg-r1-help','Dùng chung hình nền Cyber Phone. Không thay hình nền điện thoại.');
+    const note=create('p','reader-bg-r1-help','Hình Cyber Phone · không đổi nền điện thoại.');
     const grid=create('div','reader-bg-r1-grid');
     grid.id='reader-bg-r1-grid';
     for(const item of catalog()?.ITEMS||[]){
@@ -144,7 +144,7 @@
     const opacityWrap=create('div','reader-bg-r1-opacity');
     const opacityLabel=create('label');
     opacityLabel.htmlFor='reader-bg-r1-opacity';
-    opacityLabel.append(doc.createTextNode('Độ phủ bảo vệ chữ '));
+    opacityLabel.append(doc.createTextNode('Độ phủ '));
     const output=create('output');output.id='reader-bg-r1-opacity-value';
     opacityLabel.append(output);
     const slider=create('input');slider.id='reader-bg-r1-opacity';
@@ -175,14 +175,15 @@
       const badge=button.querySelector('.reader-bg-r1-kind');
       if(badge&&item)badge.textContent=label(item,allowed);
     });
-    const current=entry(selected.id,source);
     const usable=canUse(selected.id,source,store,who);
     const status=doc.getElementById('reader-bg-r1-status');
-    if(status)status.textContent=!selected.enabled?'Đang dùng màu trang đọc hiện tại.':
+    if(status){status.textContent=!selected.enabled?'':
       !usable?'Hình nền chưa có quyền sử dụng; tạm dùng màu trang đọc.':
       imageFailed?'Không tải được ảnh nền. Đang dùng màu trang đọc; mở lại cài đặt để thử lại.':
       !imageReady?'Đang tải ảnh nền; tạm dùng màu trang đọc.':
-      'Đang dùng '+current.name+' trên thiết bị này.';
+      '';
+      status.hidden=!status.textContent;
+    }
   }
   function apply(){
     if(!doc)return false;
