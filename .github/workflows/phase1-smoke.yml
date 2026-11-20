@@ -20,6 +20,10 @@ jobs:
       - name: Verify JavaScript, scope, Gemini gateway and quota guards
         run: |
           node scripts/test-domains.cjs
+          node --test tests/item-profile-s1b4.test.cjs
+          node --check js/item-profile-s1b4.js
+          node --check js/market-ui-v43.js
+          node --check js/inventory-view-v42.js
           node --test tests/dudu-messenger-v67-2.cjs
           node --test tests/dudu-steward-v67-3.cjs
           node --test functions/tests/*.test.cjs
@@ -92,6 +96,8 @@ jobs:
           node tests/browser-vanbao-f44.cjs
           node tests/browser-vanbao-main-f44.cjs
           node tests/browser-vanbao-final-f44.cjs
+      - name: S1-B4 shared Item Profile and Appearance mobile QA (local only)
+        run: node --test tests/browser-item-profile-s1b4.cjs
       - name: F4.3 inventory viewer, quantity controls and collection delivery
         run: |
           node tests/browser-inventory-f43.cjs
