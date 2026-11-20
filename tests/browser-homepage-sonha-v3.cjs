@@ -115,10 +115,53 @@ async function main(){
   assert.equal(await page.locator('#novel-grid-container .novel-card').count(),4);
   const libraryBg=await page.locator('#home-view').evaluate(el=>getComputedStyle(el).backgroundImage);
   assert.match(libraryBg,/gallery-h3b\.webp/);
+  const libraryGlass=await page.evaluate(()=>{
+    const alpha=el=>{const color=getComputedStyle(el).backgroundColor;
+      const values=color.match(/[\d.]+/g)?.map(Number)||[];
+      return values.length>=4?values[3]:color==='transparent'?0:1;};
+    const cards=[...document.querySelectorAll('#home-view .novel-card')];
+    return {count:cards.length,alpha:cards.map(alpha),
+      title:document.querySelector('#home-view .novel-title-button')?.textContent||'',
+      filter:document.querySelector('#home-view .archive-filter-details > summary')};
+  });
+  assert.equal(libraryGlass.count,4,'Library still shows four fixture books');
+  assert.ok(libraryGlass.alpha.every(a=>a>.35&&a<.8),
+    'Library cards are tinted glass, not opaque solid panels');
+  for(const width of [320,375,390,430,768,1440]){
+    await page.setViewportSize({width,height:850});
+    const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
+    assert.ok(overflow<=2,'Library cards must not create horizontal overflow at '+width+'px');
+  }
   await page.evaluate(()=>DuduSiteV60.navigate('shelf'));
   assert.equal(await page.locator('#d60-shelf .d60-shelf-tab').count(),3);
   const shelfBg=await page.locator('#d60-shelf').evaluate(el=>getComputedStyle(el).backgroundImage);
   assert.match(shelfBg,/gallery-h3b\.webp/);
+  const shelfGlass=await page.evaluate(()=>{
+    const host=document.querySelector('#d60-shelf .d60-shelf-panel')||
+      document.querySelector('#d60-shelf');
+    const sample=document.createElement('div');
+    sample.className='d62-in-shelf';
+    sample.style.pointerEvents='none';
+    sample.setAttribute('aria-hidden','true');
+    host.appendChild(sample);
+    const alpha=el=>{const color=getComputedStyle(el).backgroundColor;
+      const values=color.match(/[\d.]+/g)?.map(Number)||[];
+      return values.length>=4?values[3]:color==='transparent'?0:1;};
+    const result={cardAlpha:alpha(sample),
+      tabAlpha:alpha(document.querySelector('#d60-shelf .d60-shelf-tab')),
+      hasFocusStyle:!!document.querySelector('#d60-shelf .d60-shelf-tab')};
+    sample.remove();
+    return result;
+  });
+  assert.ok(shelfGlass.cardAlpha>.35&&shelfGlass.cardAlpha<.8,
+    'Shelf book cards use glass, not opaque panels');
+  assert.ok(shelfGlass.tabAlpha>.35&&shelfGlass.tabAlpha<.9,
+    'Shelf tabs remain readable but translucent');
+  for(const width of [320,375,390,430,768,1440]){
+    await page.setViewportSize({width,height:850});
+    const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
+    assert.ok(overflow<=2,'Shelf glass must not create horizontal overflow at '+width+'px');
+  }
   assert.equal(await page.evaluate(()=>window.__sonhaExternalWrites?.length||0),0);
   console.log('Sơn Hà Art V3 browser PASS: real list, real actions, 3 art layers, 5 responsive widths, Library/Shelf preservation.');
  }finally{
