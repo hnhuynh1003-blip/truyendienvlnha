@@ -73,6 +73,10 @@ jobs:
         run: node tests/browser-arcade-fishing-c446.cjs
       - name: C4.43 mobile reader navigation and refresh return (Sandbox, no external writes)
         run: node tests/browser-library-reading-return-c443.cjs
+      - name: READER-BG R1 access, presentation and responsive QA (Sandbox)
+        run: |
+          node --test tests/reader-background-r1.test.cjs
+          node tests/browser-reader-background-r1.cjs
       - name: Sơn Hà Art V3 browser QA (Sandbox, no external writes)
         run: |
           node --test tests/homepage-sonha-v3.test.cjs
