@@ -5,13 +5,21 @@ const {chromium}=require('playwright');
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const path=require('node:path');
+const fs=require('node:fs/promises');
 
 test('S1-B4 Shop and Kho item profiles / appearance placeholders',async()=>{
   const base=path.resolve(__dirname,'..');
   const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
   try{
     const page=await browser.newPage({viewport:{width:390,height:844}});
-    await page.setContent('<meta name="viewport" content="width=device-width,initial-scale=1">'+
+    await page.route('https://s1b4.local/**',async route=>{
+      const requestPath=new URL(route.request().url()).pathname;
+      if(!/^\/assets\/shop-r3\/(thanh-van|banner-bg)\.webp$/.test(requestPath))
+        return route.abort();
+      await route.fulfill({status:200,contentType:'image/webp',
+        body:await fs.readFile(path.join(base,requestPath.slice(1)))});
+    });
+    await page.setContent('<base href="https://s1b4.local/"><meta name="viewport" content="width=device-width,initial-scale=1">'+
       '<style>body{margin:0;color:#fff;background:#101725}.dudu-phone-v11 #cyber-phone{display:flex;flex-direction:column;width:min(100%,430px);box-sizing:border-box}#shop-items-container{min-width:0}#phone-app-inventory{display:flex;flex-direction:column}</style>'+
       '<main id="cyber-phone"><section id="shop-items-container"></section>'+
       '<section id="phone-app-inventory"><div id="inventory-v2-toolbar"></div>'+
@@ -45,6 +53,9 @@ test('S1-B4 Shop and Kho item profiles / appearance placeholders',async()=>{
     const badges=await page.locator('.s1b4-appearance-label').allTextContents();
     assert.deepEqual(badges,['PLACEHOLDER','EXISTING','ART_PENDING']);
     assert.equal(await page.locator('.s1b4-appearance-card [data-buy]').count(),0);
+    const existing=page.locator('[data-visual-status="EXISTING"] img');
+    await existing.evaluate(async img=>{await img.decode();});
+    assert.equal(await existing.evaluate(img=>img.naturalWidth>0),true);
     for(const width of [320,355,390,430]){
       await page.setViewportSize({width,height:844});
       const boxes=await page.locator('.s1b4-appearance-card').evaluateAll(els=>
