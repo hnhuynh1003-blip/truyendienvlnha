@@ -204,6 +204,7 @@
   <script src="js/library-epub-r2-author-import-l6c12.js?v=personal-import-2-safe-retry"></script>
   <script src="js/epub-batch-import-c421.js?v=r2-unified-1"></script>
   <script src="js/library-synopsis-search-l2d.js?v=l2d-1"></script>
+  <script src="js/library-search-l0.js?v=l0-r1"></script>
   <script src="js/library-epub-manage-l2d2.js?v=c422-1"></script>
   <script src="js/epub-chapter-editor-l2d3.js?v=l2d5b-1"></script>
   <script src="js/epub-bulk-replace-l2d4.js?v=l5-2"></script>
@@ -892,6 +893,7 @@
   <link rel="stylesheet" href="css/library-smart-filter-l3.css?v=l3-2">
   <link rel="stylesheet" href="css/library-finish-l4.css?v=l4-1">
   <link rel="stylesheet" href="css/library-capacity-r1.css?v=r1-1">
+  <link rel="stylesheet" href="css/library-search-l0.css?v=l0-r1">
   <script src="js/library-catalog-l2e.js?v=l2e-3"></script>
   <script src="js/library-capacity-r1.js?v=r1-1"></script>
   <script src="js/library-smart-filter-l3.js?v=l3-1"></script>
@@ -937,21 +939,34 @@
     <div id="home-view">
       <div class="filter-panel">
         <div class="search-row">
-          <label class="archive-search-field" for="search-novel-input">
-            <span aria-hidden="true">⌕</span>
-            <input type="search" class="search-input" id="search-novel-input" autocomplete="off" placeholder="Tìm truyện, tác giả, văn án…" oninput="onSearchChange()">
-          </label>
-          <select class="sort-select" id="sort-select-ctrl" aria-label="Sắp xếp tác phẩm" onchange="onSortChange()">
+          <div class="l0-search-unit">
+            <label for="search-title-l0">Tên truyện / Tác giả</label>
+            <div class="archive-search-field"><span aria-hidden="true">⌕</span>
+              <input type="search" class="search-input" id="search-title-l0" autocomplete="off" placeholder="Nhập tên truyện hoặc tác giả…" oninput="onSearchChange()">
+            </div>
+          </div>
+          <div class="l0-search-unit">
+            <label for="search-synopsis-l0">Tìm trong văn án</label>
+            <div class="archive-search-field"><span aria-hidden="true">⌕</span>
+              <input type="search" class="search-input" id="search-synopsis-l0" autocomplete="off" placeholder="Nhập từ khóa trong văn án…" oninput="onSearchChange()">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="archive-toolbar-l0">
+        <details class="archive-filter-details" id="archive-filter-details">
+          <summary><span aria-hidden="true">☷</span><span id="archive-filter-label">Lọc</span><span class="archive-filter-caret" aria-hidden="true">⌄</span></summary>
+          <div class="archive-filter-content">
+            <div class="archive-sort-field"><label for="sort-select-ctrl">Sắp xếp</label>
+            <select class="sort-select" id="sort-select-ctrl" aria-label="Sắp xếp tác phẩm" onchange="onSortChange()">
             <option value="NEWEST_UPDATE">Mới cập nhật</option>
             <option value="NEWEST_ADDED">Mới thêm</option>
             <option value="OLDEST_UPDATE">Cũ nhất</option>
             <option value="MOST_CHAPTERS">Nhiều chương</option>
             <option value="MOST_WORDS">Nhiều chữ</option>
             <option value="TITLE_AZ">Tên A–Z</option>
-          </select>
-          <details class="archive-filter-details" id="archive-filter-details">
-          <summary><span aria-hidden="true">☷</span><span id="archive-filter-label">Bộ lọc</span><span class="archive-filter-caret" aria-hidden="true">⌄</span></summary>
-          <div class="archive-filter-content">
+            <option value="RELEVANCE">Liên quan nhất</option>
+          </select></div>
             <div class="archive-filter-head"><strong>Tìm đúng gu đọc</strong><small>Chọn thể loại muốn xem hoặc tránh</small></div>
             <div class="archive-genre-help"><span class="archive-example-include">+ Bao gồm</span><span class="archive-example-exclude">− Loại trừ</span><span>Chạm tiếp để đổi trạng thái</span></div>
             <label class="archive-genre-search-label" for="archive-genre-search">Tìm thể loại</label>
@@ -986,16 +1001,15 @@
             </div>
           </div>
         </details>
-        </div>
+        <nav class="library-catalog-pager" id="library-catalog-pager-top" aria-label="Chọn trang truyện phía trên" hidden></nav>
       </div>
       <div class="archive-active-filters" id="archive-active-filters" aria-label="Bộ lọc đang áp dụng" hidden></div>
 
-      <div class="archive-catalog-bar" id="archive-catalog-bar"><span>✦ &nbsp; DANH MỤC TÁC PHẨM</span><span id="search-result-count" aria-live="polite">Đang tải danh mục</span></div>
+      <div class="archive-catalog-bar" id="archive-catalog-bar" hidden><span id="search-result-count" role="status" aria-live="polite"></span></div>
       <details class="library-capacity-r1 admin-only" id="library-capacity-r1" hidden>
         <summary>◈ Dung lượng Thư viện <span aria-hidden="true">⌄</span></summary>
         <div id="library-capacity-body-r1" class="library-capacity-body-r1"></div>
       </details>
-      <nav class="library-catalog-pager" id="library-catalog-pager-top" aria-label="Chọn trang truyện phía trên" hidden></nav>
       <div class="novel-grid" id="novel-grid-container"></div>
       <nav class="library-catalog-pager" id="library-catalog-pager-bottom" aria-label="Chọn trang truyện phía dưới" hidden></nav>
     </div>
@@ -2761,10 +2775,15 @@
         : Promise.reject(new Error('L6 R2 preview chưa được kích hoạt'));
       return DuduEpubProductionV49.readChapter(db,bookId,chapterId);
     });
+    let synopsisIndexUidL0=null;
     async function refreshEpubCloudBooksV49(){
       if(IS_SANDBOX_MODE||!window.DuduEpubProductionV49)return;
       if(window.DUDU_ACCOUNT_APPROVAL_V1_READY&&!DuduAuth.isReady())return;
       const accountUid=DuduAuth.uid();
+      if(synopsisIndexUidL0!==accountUid){
+        librarySynopsisIndexL2D.clear();
+        synopsisIndexUidL0=accountUid;
+      }
       try{
         const books=await DuduEpubProductionV49.publicBooks(db);
         // Failure of R2 list MUST remove stale R2 cards from the in-memory view.
@@ -2800,7 +2819,9 @@
     window.duduSyncEpubAccessR11=allowed=>{
       if(IS_SANDBOX_MODE||!window.DUDU_ACCOUNT_APPROVAL_V1_READY)return;
       if(allowed){void refreshEpubCloudBooksV49();return;}
-      // Revocation also invalidates all previously-issued local blob URLs.
+      // Revocation invalidates cached synopsis and private cover URLs.
+      librarySynopsisIndexL2D.clear();
+      synopsisIndexUidL0=null;
       l6R2MediaBridge?.clearAll();
       const activeEpub=Boolean(novels[selectedNovelIndex]?._cloudV49);
       epubPublishedBooksV49=[];
@@ -2862,9 +2883,17 @@
     let appliedLibraryFiltersL3=DuduLibrarySmartFilterL3.state();
     let draftLibraryFiltersL3=DuduLibrarySmartFilterL3.state();
     let searchQuery = "";
+    let searchTitleQueryL0="";
+    let searchSynopsisQueryL0="";
+    let searchVersionL0=0;
+    let searchStableKeyL0="";
+    let searchStableIdsL0=[];
     let synopsisSearchTimerL2D=null;
     let synopsisSearchTaskL2D=null;
     let sortMode = "NEWEST_UPDATE";
+    let sortManualL0=false;
+    let draftSortModeL0="NEWEST_UPDATE";
+    let draftSortManualL0=false;
     let inventoryTab = "ALL";
     let inventoryDetailSelection = null;
     let questTab = "ALL";
@@ -7858,42 +7887,45 @@ document.getElementById('phone-home-screen').style.display = 'none';
     }
 
     function onSearchChange() {
-      searchQuery = document.getElementById('search-novel-input').value.trim();
+      searchTitleQueryL0=document.getElementById('search-title-l0')?.value||'';
+      searchSynopsisQueryL0=document.getElementById('search-synopsis-l0')?.value||'';
+      searchQuery=(searchTitleQueryL0+' '+searchSynopsisQueryL0).trim();
+      searchVersionL0++;
       window.DuduLibraryCatalogL2E?.resetPage();
       renderHome();
       scheduleSynopsisSearchL2D();
     }
 
-    // The historical EPUB synopsis may exist only as a published "Văn án"
-    // chapter. Read that chapter on demand, with a per-session cache. Search
-    // never creates or updates Firestore records or modifies chapter IDs.
     function missingSearchSynopsesL2D(){
-      if(!searchQuery)return [];
-      return novels.filter(n=>librarySynopsisIndexL2D.isUnresolved(n)&&
-        !DuduLibrarySynopsisSearchL2D.matches(n,searchQuery));
+      if(!DuduLibrarySearchL0.tokens(searchSynopsisQueryL0).length)return [];
+      return novels.filter(n=>DuduLibrarySmartFilterL3.matches(n,appliedLibraryFiltersL3)&&
+        DuduLibrarySearchL0.rankTitleAuthor(n,searchTitleQueryL0)!==null&&
+        librarySynopsisIndexL2D.isUnresolved(n));
     }
     function scheduleSynopsisSearchL2D(){
       if(synopsisSearchTimerL2D!==null)clearTimeout(synopsisSearchTimerL2D);
       synopsisSearchTimerL2D=null;
-      if(!searchQuery||IS_SANDBOX_MODE||synopsisSearchTaskL2D||
-        !missingSearchSynopsesL2D().length)return;
+      if(!DuduLibrarySearchL0.tokens(searchSynopsisQueryL0).length||
+        IS_SANDBOX_MODE||synopsisSearchTaskL2D||!missingSearchSynopsesL2D().length)return;
+      const generation=searchVersionL0;
       synopsisSearchTimerL2D=setTimeout(()=>{
         synopsisSearchTimerL2D=null;
-        const missing=missingSearchSynopsesL2D();
-        if(!missing.length||synopsisSearchTaskL2D)return;
-        synopsisSearchTaskL2D=librarySynopsisIndexL2D.loadMissing(missing,()=>{
-          if(searchQuery)renderHome();
+        const books=missingSearchSynopsesL2D();
+        if(!books.length||synopsisSearchTaskL2D)return;
+        synopsisSearchTaskL2D=librarySynopsisIndexL2D.loadMissing(books,()=>{
+          if(generation===searchVersionL0)renderHome();
         }).finally(()=>{
           synopsisSearchTaskL2D=null;
-          if(searchQuery){renderHome();scheduleSynopsisSearchL2D();}
+          if(DuduLibrarySearchL0.tokens(searchSynopsisQueryL0).length){
+            renderHome();scheduleSynopsisSearchL2D();
+          }
         });
-      },260);
+      },300);
     }
 
-    function onSortChange() {
-      sortMode = document.getElementById('sort-select-ctrl').value;
-      window.DuduLibraryCatalogL2E?.resetPage();
-      renderHome();
+    function onSortChange(){
+      draftSortModeL0=document.getElementById('sort-select-ctrl').value;
+      draftSortManualL0=true;
     }
 
     function filterStatus(status, btn) {
@@ -7958,6 +7990,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
       });
       const chapters=document.getElementById('archive-min-chapters');
       if(chapters)chapters.value=String(draftLibraryFiltersL3.minChapters);
+      const sort=document.getElementById('sort-select-ctrl');
+      if(sort)sort.value=draftSortModeL0;
     }
     function filterLibrarySourceL3(source){
       draftLibraryFiltersL3=DuduLibrarySmartFilterL3.state({...draftLibraryFiltersL3,source});
@@ -7973,29 +8007,30 @@ document.getElementById('phone-home-screen').style.display = 'none';
     }
     function applyLibraryFiltersL3(){
       appliedLibraryFiltersL3=DuduLibrarySmartFilterL3.state(draftLibraryFiltersL3);
+      sortMode=draftSortModeL0;
+      sortManualL0=draftSortManualL0;
       currentFilterStatus=appliedLibraryFiltersL3.status;
       selectedTag='ALL';
       document.getElementById('archive-filter-details').open=false;
+      searchVersionL0++;
       window.DuduLibraryCatalogL2E?.resetPage();
-      renderHome();
+      renderHome();scheduleSynopsisSearchL2D();
     }
     function clearLibraryFiltersL3(){
-      appliedLibraryFiltersL3=DuduLibrarySmartFilterL3.state();
       draftLibraryFiltersL3=DuduLibrarySmartFilterL3.state();
-      currentFilterStatus='ALL';selectedTag='ALL';
+      draftSortModeL0='NEWEST_UPDATE';
+      draftSortManualL0=false;
       const genreInput=document.getElementById('archive-genre-search');
       if(genreInput)genreInput.value='';
-      const drawer=document.getElementById('archive-filter-details');
-      if(drawer)drawer.open=false;
-      window.DuduLibraryCatalogL2E?.resetPage();
-      renderHome();
+      refreshLibraryFilterControlsL3();renderTagCloud();
     }
     function removeLibraryFilterL3(kind,tag){
       appliedLibraryFiltersL3=DuduLibrarySmartFilterL3.remove(appliedLibraryFiltersL3,kind,tag);
       draftLibraryFiltersL3=DuduLibrarySmartFilterL3.state(appliedLibraryFiltersL3);
       currentFilterStatus=appliedLibraryFiltersL3.status;
+      searchVersionL0++;
       window.DuduLibraryCatalogL2E?.resetPage();
-      renderHome();
+      renderHome();scheduleSynopsisSearchL2D();
     }
     function renderActiveLibraryFiltersL3(){
       const host=document.getElementById('archive-active-filters');
@@ -8031,6 +8066,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
       drawer.dataset.l3Bound='1';
       drawer.addEventListener('toggle',()=>{
         draftLibraryFiltersL3=DuduLibrarySmartFilterL3.state(appliedLibraryFiltersL3);
+        draftSortModeL0=sortMode;
+        draftSortManualL0=sortManualL0;
         if(drawer.open){
           const input=document.getElementById('archive-genre-search');
           if(input)input.value='';
@@ -8079,52 +8116,98 @@ document.getElementById('phone-home-screen').style.display = 'none';
       l6R2MediaBridge?.clearCovers();
       container.innerHTML = "";
 
-      let filtered = typeof DuduLibrarySmartFilterL3!=='undefined'?
+      let candidateBooks=typeof DuduLibrarySmartFilterL3!=='undefined'?
         novels.filter(n=>DuduLibrarySmartFilterL3.matches(n,appliedLibraryFiltersL3)):
-        novels.filter(n=>currentFilterStatus==='ALL'&&selectedTag==='ALL'||
-          (currentFilterStatus==='ALL'||n.status===currentFilterStatus)&&
-          (selectedTag==='ALL'||String(n.genre||'').toLowerCase().split(/[,/]+/)
-            .map(g=>g.trim()).includes(selectedTag.toLowerCase())));
-
-      if (searchQuery) {
-        filtered = filtered.filter(n=>DuduLibrarySynopsisSearchL2D.matches(n,
-          searchQuery,librarySynopsisIndexL2D.getSynopsis(n)));
+        novels.slice();
+      const l0=DuduLibrarySearchL0;
+      const activeA=l0.tokens(searchTitleQueryL0).length>0;
+      const activeB=l0.tokens(searchSynopsisQueryL0).length>0;
+      const hasQuery=activeA||activeB;
+      const effectiveSort=hasQuery&&!sortManualL0?'RELEVANCE':
+        (!hasQuery&&sortMode==='RELEVANCE'?'NEWEST_UPDATE':sortMode);
+      let pendingSynopses=0,failedSynopses=0;
+      const candidates=[];
+      for(const book of candidateBooks){
+        const rankA=l0.rankTitleAuthor(book,searchTitleQueryL0);
+        if(rankA===null)continue;
+        const synopsis=l0.inlineSynopsis(book)||librarySynopsisIndexL2D.getSynopsis(book);
+        if(activeB&&!synopsis&&librarySynopsisIndexL2D.isUnresolved(book)){
+          pendingSynopses++;continue;
+        }
+        if(activeB&&!synopsis&&librarySynopsisIndexL2D.isFailed(book)){
+          failedSynopses++;continue;
+        }
+        const rankB=activeB?l0.rankSynopsis(synopsis,searchSynopsisQueryL0):0;
+        if(rankB===null)continue;
+        const date=DuduStoryDates.ordering(getNovelLatestDate(book));
+        const name=rankA<4?book.title:book.author;
+        candidates.push({book,rankA,rankB,date,
+          accentPenalty:l0.accentPenalty(name,searchTitleQueryL0)+
+            l0.accentPenalty(synopsis,searchSynopsisQueryL0)});
       }
-
-      filtered.sort((a, b) => {
-        const dateA = DuduStoryDates.ordering(getNovelLatestDate(a));
-        const dateB = DuduStoryDates.ordering(getNovelLatestDate(b));
-
-        if (sortMode === 'NEWEST_UPDATE') return dateB - dateA;
-        if (sortMode === 'NEWEST_ADDED')return DuduStoryDates.ordering(b.createdAt||getNovelLatestDate(b))-
-          DuduStoryDates.ordering(a.createdAt||getNovelLatestDate(a));
-        if (sortMode === 'OLDEST_UPDATE') return dateA - dateB;
-        if (sortMode === 'MOST_CHAPTERS') return (b.chapters ? b.chapters.length : 0) - (a.chapters ? a.chapters.length : 0);
-        if (sortMode === 'MOST_WORDS') return getNovelTotalWords(b) - getNovelTotalWords(a);
-        if (sortMode === 'TITLE_AZ')return String(a.title||'').localeCompare(String(b.title||''),'vi');
-        return 0;
-      });
+      const incomplete=activeB&&pendingSynopses>0;
+      const sortFunction=(x,y)=>{
+        const a=x.book,b=y.book,dateA=x.date,dateB=y.date;
+        if(effectiveSort==='RELEVANCE')return l0.compareRelevance(x,y);
+        if(effectiveSort==='NEWEST_UPDATE')return dateB-dateA||String(a.id).localeCompare(String(b.id));
+        if(effectiveSort==='NEWEST_ADDED')return
+          DuduStoryDates.ordering(b.createdAt||getNovelLatestDate(b))-
+          DuduStoryDates.ordering(a.createdAt||getNovelLatestDate(a))||String(a.id).localeCompare(String(b.id));
+        if(effectiveSort==='OLDEST_UPDATE')return dateA-dateB||String(a.id).localeCompare(String(b.id));
+        if(effectiveSort==='MOST_CHAPTERS')return (b.chapters?.length||0)-(a.chapters?.length||0)||
+          String(a.id).localeCompare(String(b.id));
+        if(effectiveSort==='MOST_WORDS')return getNovelTotalWords(b)-getNovelTotalWords(a)||
+          String(a.id).localeCompare(String(b.id));
+        if(effectiveSort==='TITLE_AZ')return String(a.title||'').localeCompare(String(b.title||''),'vi')||
+          String(a.id).localeCompare(String(b.id));
+        return String(a.id).localeCompare(String(b.id));
+      };
+      const stableKey=JSON.stringify([searchTitleQueryL0,searchSynopsisQueryL0,
+        appliedLibraryFiltersL3,effectiveSort]);
+      if(stableKey!==searchStableKeyL0){searchStableKeyL0=stableKey;searchStableIdsL0=[];}
+      let filtered;
+      if(incomplete){
+        const seen=new Set(searchStableIdsL0);
+        for(const item of candidates){const id=String(item.book.id);if(!seen.has(id)){
+          searchStableIdsL0.push(id);seen.add(id);
+        }}
+        const byId=new Map(candidates.map(x=>[String(x.book.id),x.book]));
+        filtered=searchStableIdsL0.map(id=>byId.get(id)).filter(Boolean);
+      }else{
+        filtered=candidates.sort(sortFunction).map(x=>x.book);
+        searchStableIdsL0=filtered.map(n=>String(n.id));
+      }
 
       // Keep just 20 cards in the DOM per page, without changing the catalog
       // order or the existing EPUB/legacy story records.
+      // L0.4: no unverified page count while old synopsis reads are running.
       const catalogPager=typeof DuduLibraryCatalogL2E==='undefined'?null:DuduLibraryCatalogL2E;
-      const catalogPage=catalogPager?.paginate(filtered)||{items:filtered,offset:0};
-      catalogPager?.renderControls(document,catalogPage,nextPage=>{
-        catalogPager.setPage(nextPage);
-        renderHome();
-        requestAnimationFrame(()=>{
-          const bar=document.getElementById('archive-catalog-bar');
-          if(bar)window.scrollTo({top:Math.max(0,bar.getBoundingClientRect().top+window.scrollY-12),behavior:'instant'});
+      let catalogPage;
+      if(incomplete){
+        for(const id of ['library-catalog-pager-top','library-catalog-pager-bottom']){
+          const host=document.getElementById(id);
+          if(host){host.replaceChildren();host.hidden=true;}
+        }
+        catalogPage={items:filtered.slice(0,20),offset:0};
+      }else{
+        catalogPage=catalogPager?.paginate(filtered)||{items:filtered,offset:0};
+        catalogPager?.renderControls(document,catalogPage,nextPage=>{
+          catalogPager.setPage(nextPage);
+          renderHome();
+          requestAnimationFrame(()=>{
+            const bar=document.querySelector('#home-view .archive-toolbar-l0');
+            if(bar)window.scrollTo({top:Math.max(0,bar.getBoundingClientRect().top+window.scrollY-12),behavior:'instant'});
+          });
         });
-      });
-
-      const pendingSynopses=missingSearchSynopsesL2D().length;
-      const failedSynopses=searchQuery?novels.filter(n=>librarySynopsisIndexL2D.isFailed(n)&&
-        !DuduLibrarySynopsisSearchL2D.matches(n,searchQuery)).length:0;
-      document.getElementById('search-result-count').textContent =
-        `${filtered.length} / ${novels.length} tác phẩm`+
-        (pendingSynopses?' · Đang tra văn án…':'')+
-        (!pendingSynopses&&failedSynopses?' · Có văn án chưa tải được':'');
+      }
+      const statusBar=document.getElementById('archive-catalog-bar');
+      const searchStatus=document.getElementById('search-result-count');
+      const detail=incomplete?
+        'Đang kiểm tra văn án… · '+filtered.length+' kết quả đã xác minh':
+        failedSynopses?
+          'Kết quả có thể chưa đầy đủ · '+failedSynopses+' văn án chưa đọc được':'';
+      if(statusBar)statusBar.hidden=!detail;
+      if(searchStatus)searchStatus.textContent=detail;
       const filterLabel = document.getElementById('archive-filter-label');
       if(typeof DuduLibrarySmartFilterL3!=='undefined'&&typeof renderActiveLibraryFiltersL3==='function'){
         renderActiveLibraryFiltersL3();
@@ -8138,11 +8221,12 @@ document.getElementById('phone-home-screen').style.display = 'none';
         const empty = document.createElement('div');
         empty.className = 'archive-empty-state';
         const heading = document.createElement('strong');
-        heading.textContent = pendingSynopses?'Đang tìm trong văn án EPUB…':
-          (novels.length?'Chưa tìm thấy câu chuyện phù hợp':'Kệ sách đang chờ tác phẩm đầu tiên');
+        heading.textContent = pendingSynopses?'Đang kiểm tra văn án…':
+          (failedSynopses?'Chưa tìm thấy trong dữ liệu đã xác minh':
+          (novels.length?'Chưa tìm thấy câu chuyện phù hợp':'Kệ sách đang chờ tác phẩm đầu tiên'));
         const detail = document.createElement('p');
-        detail.textContent = pendingSynopses?'Đang tra cứu những truyện cũ chưa có văn án trong dữ liệu tìm kiếm.':
-          (failedSynopses?'Không tải được một số văn án EPUB. Hãy thử tải lại trang nếu cần tìm trong những tác phẩm này.':
+        detail.textContent = pendingSynopses?'Vẫn còn tác phẩm chưa kiểm tra xong, kết quả chưa hoàn chỉnh.':
+          (failedSynopses?'Không thể kiểm tra một số văn án EPUB. Danh sách có thể chưa đầy đủ.':
           (novels.length?'Thử tên khác hoặc bỏ bớt bộ lọc để khám phá thêm.':
           'Những tác phẩm được phát hành sẽ xuất hiện tại đây.'));
         empty.append(heading, detail);
@@ -8194,60 +8278,52 @@ document.getElementById('phone-home-screen').style.display = 'none';
         const info = document.createElement('div');
         info.className = 'novel-info';
         const details = document.createElement('div');
-        const indexLabel = document.createElement('div');
-        indexLabel.className = 'archive-card-index';
-        indexLabel.textContent = 'ARCHIVE  /  ' + String(catalogPage.offset + displayIndex + 1).padStart(2, '0');
-        const badges = document.createElement('div');
-        badges.className = 'novel-badges';
-        const badge = (value, cls) => {
-          const node = document.createElement('span');
-          node.className = cls;
-          node.textContent = value;
-          badges.appendChild(node);
-        };
-        badge(novel.status || 'Đang ra', 'tag tag-status');
-        (novel.genre || '').split(/[,/]+/).map(t => t.trim())
-          .filter(t => t && !/^(?:epub|nhập epub)$/i.test(t))
-          .slice(0, 1).forEach(t => badge(t, 'tag'));
         const title = document.createElement('button');
-        title.type = 'button';
-        title.className = 'novel-title novel-title-button';
-        title.textContent = novel.title || 'Chưa đặt tên';
-        title.addEventListener('click', () => openCover(originalIndex));
-        const description = document.createElement('div');
-        description.className = 'novel-desc';
-        description.textContent = novel.desc || '';
-        const byline = document.createElement('div');
-        byline.className = 'novel-byline';
-        byline.textContent = (novel.author || 'Chưa rõ tác giả') +
-          ' · ' + (novel.chapters?.length || 0) + ' chương';
-        details.append(indexLabel, badges, title, byline);
-        if (novel.desc) details.append(description);
-
-        const bookmark = v568ReadBookmarkForNovel(novel);
-        let readButtonText = novel.chapters?.length ? 'Bắt đầu đọc' : 'Xem tác phẩm';
-        let readButtonClass = "btn btn-primary";
-
-        if (bookmark && typeof bookmark.chIdx === 'number' && novel.chapters && novel.chapters[bookmark.chIdx]) {
-          readButtonText = `Đọc tiếp · Ch.${bookmark.chIdx + 1}`;
-          readButtonClass = "btn btn-gold";
+        title.type='button';title.className='novel-title novel-title-button';
+        title.textContent=novel.title||'Chưa đặt tên';
+        title.addEventListener('click',event=>{event.stopPropagation();openCover(originalIndex);});
+        const byline=document.createElement('div');
+        byline.className='novel-byline';
+        byline.textContent=novel.author||'Chưa rõ tác giả';
+        const format=document.createElement('div');
+        format.className='l0-card-meta';
+        format.textContent=(novel._cloudV49?'EPUB':'Web')+' · '+(novel.chapters?.length||0)+' chương';
+        details.append(title,byline,format);
+        const bookmark=v568ReadBookmarkForNovel(novel);
+        const canResume=bookmark&&Number.isInteger(bookmark.chIdx)&&novel.chapters?.[bookmark.chIdx];
+        if(canResume){
+          const progress=document.createElement('span');
+          progress.className='l0-card-progress';
+          progress.textContent='♧ Đang đọc · Ch. '+(bookmark.chIdx+1);
+          details.append(progress);
         }
-
-        const meta = document.createElement('div');
-        meta.className = 'novel-meta';
-        const date = document.createElement('span');
-        date.textContent = DuduStoryDates.display(latestDate);
-        const readButton = document.createElement('button');
-        readButton.type = 'button';
-        readButton.className = readButtonClass;
-        readButton.textContent = readButtonText;
-        readButton.addEventListener('click', event => {
-          if (!novel.chapters?.length) { event.stopPropagation(); openCover(originalIndex); }
-          else smartReadAction(originalIndex, event);
+        if(activeB){
+          const synopsis=DuduLibrarySearchL0.inlineSynopsis(novel)||
+            librarySynopsisIndexL2D.getSynopsis(novel);
+          const excerpt=DuduLibrarySearchL0.snippet(synopsis,searchSynopsisQueryL0);
+          if(excerpt.text){
+            const p=document.createElement('p');p.className='l0-card-snippet';
+            if(excerpt.markStart>=0&&excerpt.markEnd>excerpt.markStart){
+              p.append(document.createTextNode(excerpt.text.slice(0,excerpt.markStart)));
+              const bold=document.createElement('strong');
+              bold.textContent=excerpt.text.slice(excerpt.markStart,excerpt.markEnd);
+              p.append(bold,document.createTextNode(excerpt.text.slice(excerpt.markEnd)));
+            }else p.textContent=excerpt.text;
+            details.append(p);
+          }
+        }
+        const meta=document.createElement('div');meta.className='novel-meta';
+        const readButton=document.createElement('button');
+        readButton.type='button';readButton.className=canResume?'btn btn-gold':'btn btn-primary';
+        readButton.textContent=canResume?'Đọc tiếp · Ch.'+(bookmark.chIdx+1):'Xem truyện →';
+        readButton.addEventListener('click',event=>{
+          event.stopPropagation();
+          if(canResume)smartReadAction(originalIndex,event);
+          else openCover(originalIndex);
         });
-        meta.append(date, readButton);
-        info.append(details, meta);
-        card.append(cover, info);
+        meta.append(readButton);
+        info.append(details,meta);
+        card.append(cover,info);
         container.appendChild(card);
       });
 
@@ -8256,24 +8332,21 @@ document.getElementById('phone-home-screen').style.display = 'none';
     }
 
     function resetAllFilters() {
-      searchQuery = "";
-      window.DuduLibraryCatalogL2E?.resetPage();
+      searchTitleQueryL0='';searchSynopsisQueryL0='';searchQuery='';
+      searchVersionL0++;searchStableIdsL0=[];
       if(synopsisSearchTimerL2D!==null)clearTimeout(synopsisSearchTimerL2D);
       synopsisSearchTimerL2D=null;
-      selectedTag = "ALL";
-      currentFilterStatus = "ALL";
+      selectedTag='ALL';currentFilterStatus='ALL';
       appliedLibraryFiltersL3=DuduLibrarySmartFilterL3.state();
       draftLibraryFiltersL3=DuduLibrarySmartFilterL3.state();
-      sortMode = "NEWEST_UPDATE";
-      document.getElementById('search-novel-input').value = "";
-      document.getElementById('sort-select-ctrl').value = "NEWEST_UPDATE";
+      sortMode='NEWEST_UPDATE';sortManualL0=false;
+      draftSortModeL0=sortMode;draftSortManualL0=false;
+      document.getElementById('search-title-l0').value='';
+      document.getElementById('search-synopsis-l0').value='';
+      document.getElementById('sort-select-ctrl').value=sortMode;
       const drawer=document.getElementById('archive-filter-details');
       if(drawer)drawer.open=false;
-      document.querySelectorAll('.filter-status-row .filter-btn').forEach(button => {
-        const active = button.textContent.trim() === 'Tất cả';
-        button.classList.toggle('active', active);
-        button.setAttribute('aria-pressed', String(active));
-      });
+      refreshLibraryFilterControlsL3();
       renderHome();
     }
 
