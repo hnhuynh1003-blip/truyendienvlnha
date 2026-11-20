@@ -68,8 +68,8 @@ body.dudu-site-v60.theme-warm,body.dudu-site-v60.theme-oled {background:var(--bg
  body.dudu-site-v60 .container {padding:18px 13px 108px}
  body.dudu-site-v60 header .role-badge {display:none}
  .d60-topnav {display:none}
- .d60-bottomnav {position:fixed;bottom:0;left:0;right:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:5px 5px calc(5px + env(safe-area-inset-bottom));background:rgba(16,21,34,.98);border-top:1px solid rgba(190,202,226,.23);z-index:200;backdrop-filter:blur(16px)}
- .d60-bottomnav .d60-navitem {font-size:11px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:5px 2px;min-width:0}
+ .d60-bottomnav {position:fixed;bottom:0;left:0;right:0;display:grid;grid-template-columns:repeat(var(--d60-nav-count,3),minmax(0,1fr));padding:5px 5px calc(5px + env(safe-area-inset-bottom));background:rgba(16,21,34,.98);border-top:1px solid rgba(190,202,226,.23);z-index:200;backdrop-filter:blur(16px)}
+ .d60-bottomnav .d60-navitem {font-size:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:6px 2px;min-width:0;min-height:47px;width:100%;box-sizing:border-box;text-align:center}
  .d60-icon {font-size:20px;line-height:1.2}
  .d60-hero {padding:31px 22px}
  .d60-hero:before {font-size:150px;right:-12px;top:-7px}
