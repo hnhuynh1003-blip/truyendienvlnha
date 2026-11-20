@@ -10,7 +10,7 @@
  // Reopening Vạn Giới requires a separate, approved development round.
  const WORLDS_PAUSED=window.DuduFeaturesT0?.worlds!==true;
  const oldGoHome=window.goHome,oldOpenCover=window.openCover,oldReadChapter=window.readChapter,oldRenderHome=window.renderHome;
- let current='home',refreshPending=false;
+ let current='home',refreshPending=false,shelfTab='reading';
  function element(tag,cls,value){
    const n=document.createElement(tag);if(cls)n.className=cls;if(value!==undefined)n.textContent=String(value);return n;
  }
@@ -36,7 +36,7 @@
  function bookmark(n){
    try{return v568ReadBookmarkForNovel(n);}catch{return null;}
  }
- function card(n,resume=false){
+ function card(n,resume=false,allowFavoriteRemove=false){
    const c=element('article','d60-book d62-book'+(resume?' d62-in-shelf':''));
    const idx=novels.indexOf(n),mark=bookmark(n);
    const cover=button('',()=>openCover(idx),'d62-cover-action');
@@ -52,6 +52,11 @@
    const isResume=resume&&mark&&Number.isInteger(mark.chIdx)&&n.chapters?.[mark.chIdx];
    info.append(button(isResume?'Đọc tiếp · Chương '+(mark.chIdx+1)+' →':'Xem tác phẩm →',
      ()=>{if(isResume)smartReadAction(idx);else openCover(idx);},'d60-bookaction'));
+   if(allowFavoriteRemove){
+     const remove=button('♥ Bỏ yêu thích',()=>removeFavoriteFromShelf(n),'d60-shelf-unfavorite');
+     remove.setAttribute('aria-label','Bỏ '+(n.title||'tác phẩm')+' khỏi yêu thích');
+     info.append(remove);
+   }
    c.append(cover,info);
    return c;
  }
@@ -81,6 +86,34 @@
      return 0;
    };
    return saved.sort((a,b)=>time(b)-time(a));
+ }
+ function favoriteItems(){
+   // Reuse the cover page's user-scoped storage and exact work identity.
+   if(typeof coverFavoriteListL0!=='function'||
+      typeof coverFavoriteIdL0!=='function'||
+      typeof coverFavoriteStorageKeyL0!=='function')return null;
+   try{
+     const visible=new Map(list().map(n=>[coverFavoriteIdL0(n),n]));
+     return coverFavoriteListL0().map(id=>visible.get(id)).filter(Boolean);
+   }catch(error){console.warn('DUDU shelf favorites unavailable',error?.message);return null;}
+ }
+ function removeFavoriteFromShelf(book){
+   if(typeof coverFavoriteListL0!=='function'||
+      typeof coverFavoriteIdL0!=='function'||
+      typeof coverFavoriteStorageKeyL0!=='function')return;
+   const workId=coverFavoriteIdL0(book);
+   if(!workId)return;
+   try{
+     const prior=coverFavoriteListL0();
+     if(!prior.includes(workId))return;
+     localStorage.setItem(coverFavoriteStorageKeyL0(),
+       JSON.stringify(prior.filter(value=>value!==workId)));
+     fillShelf();
+   }catch(error){
+     const status=id('d60-shelf-feedback');
+     if(status)status.textContent='Không lưu được thay đổi trên thiết bị này.';
+     console.warn('DUDU shelf favorite update failed',error?.message);
+   }
  }
  function bookGrid(title,books){
    const s=section(title,'Xem tất cả →',()=>navigate('library'));
@@ -114,6 +147,10 @@
      row.append(element('span','d61-code-line-no',no),element('code','',line));
      codeArt.append(row);
    });
+   const quick=element('div','d61-hero-actions');
+   quick.append(button('Khám phá Thư viện',()=>navigate('library'),'d60-btn d61-hero-primary'),
+     button('Mở Tủ sách',()=>navigate('shelf'),'d60-btn secondary d61-hero-secondary'));
+   copy.append(quick);
    hero.append(copy,codeArt);
    root.append(hero);
    const signal=element('div','d61-signal');
@@ -123,7 +160,6 @@
      element('span','d61-signal-divider','/'),
      element('span','d61-signal-label','XUYÊN GIỚI'),
      element('span','d61-signal-off','Đang kiến tạo'));
-   root.append(signal);
    if(resume){
      const s=section('Đang đọc');
      const row=element('div','d61-resume-card'),inner=element('div','d61-resume-copy');
@@ -133,20 +169,25 @@
        button('Đọc tiếp  →',()=>smartReadAction(novels.indexOf(resume.n)),'d61-resume-action'));
      s.append(row);root.append(s);
    }
+   root.append(signal);
    if(all.length){
      root.append(bookGrid('Mới cập nhật',all.slice(0,4)));
    }
-   const genres=new Set();
-   all.forEach(n=>String(n.genre||'').split(/[,/]+/).map(x=>x.trim())
-     .filter(x=>x&&!/^(?:epub|nhập epub)$/i.test(x)).forEach(x=>genres.add(x)));
-   if(genres.size){
-     const s=section('Dấu hiệu thế giới'),r=element('div','d60-chips d61-chips');
-     [...genres].slice(0,7).forEach(t=>r.append(button(t,()=>{
-       navigate('library');selectedTag=t;renderHome();
+   // Use L3's canonical genres and applied state, not legacy selectedTag.
+   const genres=typeof DuduLibrarySmartFilterL3==='undefined'?[]:
+     DuduLibrarySmartFilterL3.catalogGenres(all).slice(0,7);
+   if(genres.length){
+     const s=section('Khám phá thể loại'),r=element('div','d60-chips d61-chips');
+     genres.forEach(tag=>r.append(button(tag.label,()=>{
+       if(typeof resetAllFilters!=='function'||typeof appliedLibraryFiltersL3==='undefined')return;
+       resetAllFilters();
+       appliedLibraryFiltersL3=DuduLibrarySmartFilterL3.state({include:[tag.key]});
+       draftLibraryFiltersL3=DuduLibrarySmartFilterL3.state(appliedLibraryFiltersL3);
+       window.DuduLibraryCatalogL2E?.resetPage();
+       navigate('library');
      },'d60-chip')));
      s.append(r);root.append(s);
    }
-
  }
  // V64 World Atlas: compact mobile-first coordinates; detailed lore stays in the registry.
  function worldCard(g,index){
@@ -257,12 +298,74 @@
    root.append(pilot,erro,roleplay,starter,hidden);
  }
  function fillShelf(){
-   const root=id('d60-shelf-list');if(!root)return;root.replaceChildren();
-   const arr=shelfItems();
-   if(!arr.length){
-     root.append(element('div','d60-empty','Bạn chưa có truyện đang đọc trên tài khoản hoặc thiết bị này. Hãy chọn một tác phẩm trong Thư viện.'));return;
+   const root=id('d60-shelf-list');if(!root)return;
+   root.replaceChildren();
+   const reading=shelfItems(),favorites=favoriteItems();
+   const tabs=[
+     {key:'reading',name:'Đang đọc',count:reading.length},
+     {key:'favorites',name:'Yêu thích',count:favorites?.length},
+     {key:'following',name:'Theo dõi',count:null},
+     {key:'finished',name:'Đã đọc xong',count:null}
+   ];
+   const tablist=element('div','d60-shelf-tabs');
+   tablist.setAttribute('role','tablist');
+   tablist.setAttribute('aria-label','Nhóm truyện trong Tủ sách');
+   const panel=element('div','d60-shelf-panel');panel.id='d60-shelf-panel';
+   panel.setAttribute('role','tabpanel');
+   for(const tab of tabs){
+     const active=shelfTab===tab.key;
+     const caption=tab.name+(tab.count==null?'':' · '+tab.count);
+     const b=button(caption,()=>{
+       shelfTab=tab.key;fillShelf();
+       id('d60-shelf-tab-'+tab.key)?.focus();
+     },'d60-shelf-tab');
+     b.id='d60-shelf-tab-'+tab.key;b.dataset.shelfTab=tab.key;
+     b.setAttribute('role','tab');b.setAttribute('aria-selected',String(active));
+     b.setAttribute('aria-controls',panel.id);b.tabIndex=active?0:-1;
+     b.addEventListener('keydown',event=>{
+       const direction=event.key==='ArrowRight'?1:event.key==='ArrowLeft'?-1:0;
+       if(!direction)return;
+       event.preventDefault();
+       const idx=tabs.findIndex(x=>x.key===shelfTab);
+       shelfTab=tabs[(idx+direction+tabs.length)%tabs.length].key;
+       fillShelf();id('d60-shelf-tab-'+shelfTab)?.focus();
+     });
+     tablist.append(b);
    }
-   const grid=element('div','d60-grid');arr.forEach(x=>grid.append(card(x.n,true)));root.append(grid);
+   panel.setAttribute('aria-labelledby','d60-shelf-tab-'+shelfTab);
+   root.append(tablist,panel);
+   const addEmpty=(heading,body)=>{
+     const empty=element('div','d60-empty d60-shelf-empty');
+     empty.append(element('strong','',heading),element('p','',body));
+     if(shelfTab==='reading'||shelfTab==='favorites')
+       empty.append(button('Khám phá Thư viện →',()=>navigate('library'),'d60-btn secondary'));
+     panel.append(empty);
+   };
+   if(shelfTab==='following'||shelfTab==='finished'){
+     addEmpty(shelfTab==='following'?'Theo dõi chưa được kích hoạt':'Chưa có dữ liệu hoàn thành',
+       'Mục này cần một trạng thái được xác minh. Hiện chưa tạo dữ liệu hoặc đồng bộ mới.');
+   }else if(shelfTab==='favorites'&&favorites===null){
+     addEmpty('Chưa thể đọc danh sách yêu thích','Mã nguồn hiện hành chưa cung cấp cơ chế Yêu thích đã duyệt.');
+   }else{
+     const items=shelfTab==='reading'?reading:favorites;
+     if(!items.length){
+       addEmpty(shelfTab==='reading'?'Chưa có truyện đang đọc':'Chưa có truyện yêu thích',
+         shelfTab==='reading'?'Mở một tác phẩm và bắt đầu đọc để lưu vị trí.':
+           'Nhấn ♡ Yêu thích tại trang thông tin tác phẩm. Danh sách hiện lưu trên thiết bị này.');
+     }else{
+       if(shelfTab==='favorites')
+         panel.append(element('p','d60-shelf-note','Yêu thích được lưu trên thiết bị này, chưa đồng bộ đa thiết bị.'));
+       const grid=element('div','d60-grid d60-shelf-grid');
+       items.forEach(item=>{
+         const novel=shelfTab==='reading'?item.n:item;
+         grid.append(card(novel,true,shelfTab==='favorites'));
+       });
+       panel.append(grid);
+     }
+   }
+   const feedback=element('p','d60-shelf-feedback');feedback.id='d60-shelf-feedback';
+   feedback.setAttribute('role','status');feedback.setAttribute('aria-live','polite');
+   root.append(feedback);
  }
  function isAuthor(){return typeof canEditStories==='function'&&canEditStories();}
  function fillAuthor(){
