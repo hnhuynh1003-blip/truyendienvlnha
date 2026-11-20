@@ -154,12 +154,17 @@
   if(entry.items.includes(args.selected)){entry={...entry,item:args.selected,index:args.inventory.indexOf(args.selected)};}
   focusIndex=entry.index;
   panel.replaceChildren();
+  // S1-B4 P0: read-only facts from the same Shop/Kho adapter. Never
+  // treat browser provenance or a visible instance as server ownership.
+  const profile=typeof window!=='undefined'?window.DuduItemProfileS1B4?.profile(
+    entry.item,{catalog,economy:window.DuduEconomyCoreV43,model,
+      inventory:args.inventory,record:entry.item}):null;
   const head=make('div','dudu-v42-inspector-head');
   const {container:icon}=artwork(detail,args.art);
   icon.classList.add('dudu-v42-large-art');
   if(icon.querySelector('img')){icon.setAttribute('role','button');icon.tabIndex=0;icon.setAttribute('aria-label','Ngắm ảnh bảo vật');icon.addEventListener('click',()=>viewArt(icon));icon.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();viewArt(icon);}});}
   const info=make('div','dudu-v42-inspector-info');
-  const title=make('strong','dudu-v42-inspector-name',detail.name);
+  const title=make('strong','dudu-v42-inspector-name',profile?.name||detail.name);
   title.id='inventory-v42-modal-heading';
   const sub=make('small','',detail.rank+' · '+detail.categoryLabel+' · '+detail.worldLabel);
   const id=make('code','dudu-v42-code',detail.id||'legacy-unknown');
@@ -168,14 +173,14 @@
   close.setAttribute('aria-label','Đóng chi tiết vật phẩm');
   close.addEventListener('click',()=>args.onClose());
   head.append(icon,info,close);
-  const desc=make('p','dudu-v42-inspector-desc',detail.description);
+  const desc=make('p','dudu-v42-inspector-desc',profile?.description||detail.description);
   desc.id='inventory-v42-modal-description';
   const facts=make('div','dudu-v42-inspector-facts');
   function fact(key,value){
    const row=make('div','dudu-v42-fact');
    row.append(make('span','',key),make('strong','',value));facts.append(row);
   }
-  fact('Phẩm chất',detail.rank);
+  fact('Phẩm chất',profile?.rank||detail.rank);
   if(entry.count>1||entry.item.collectionSet==='VAN_VAT')fact('Số lượng sở hữu','×'+entry.count);
   fact('Nguồn',detail.scope==='DUDU'?'Kỷ vật hệ thống':
     detail.scope==='REALM'?'Chung trong thế giới '+(model.REALMS[detail.realm]||''): 
@@ -213,11 +218,6 @@
     fact(args.personalMode?'Sử dụng':'Chức năng RPG',
       args.personalMode?'Chưa có công dụng để kích hoạt trực tiếp':'Chưa kích hoạt trong V42');
   }
-  // S1-B4 P0: read-only facts from the same Shop/Kho adapter. Never
-  // treat browser provenance or a visible instance as server ownership.
-  const profile=typeof window!=='undefined'?window.DuduItemProfileS1B4?.profile(
-    entry.item,{catalog,economy:window.DuduEconomyCoreV43,model,
-      inventory:args.inventory,record:entry.item}):null;
   if(profile){
     if(profile.instanceId)fact('instanceId',profile.instanceId);
     fact('Nguồn theo danh mục',profile.catalogSource);
