@@ -98,12 +98,10 @@
         ribbon.appendChild(next);
         const range=doc.createElement('span');
         range.className='library-catalog-page-range';
-        range.textContent=id==='library-catalog-pager-top'?
-          `Trang ${data.page}/${data.pages}`:
-          `${data.from}–${data.to} / ${data.total} truyện`;
+        range.textContent=`${data.page}/${data.pages}`;
         const jumpTrigger=doc.createElement('button');
         jumpTrigger.type='button';jumpTrigger.className='library-catalog-page-jump-toggle';
-        jumpTrigger.textContent='⌕ Đi tới trang';
+        jumpTrigger.textContent='Tới trang';
         jumpTrigger.setAttribute('aria-expanded','false');
         const form=doc.createElement('form');
         form.className='library-catalog-page-jump';form.hidden=true;
