@@ -61,10 +61,10 @@ body.dudu-site-v60 #cover-view .archive-chapter-empty{
 /* COVER UX: actions sit immediately below book identity, before the synopsis.
  * Non-sticky so the chapter list and mobile bottom navigation stay unobstructed. */
 body.dudu-site-v60 #cover-view .archive-cover-action-dock{
- display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.6fr) minmax(0,1.12fr);
- align-items:stretch;gap:9px;
+ display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.14fr) minmax(0,1.6fr);
+ align-items:stretch;gap:7px;
  width:100%;box-sizing:border-box;position:static;transform:none;
- margin:0 0 15px;padding:0;border:0;background:transparent;box-shadow:none;
+ margin:0 0 10px;padding:0;border:0;background:transparent;box-shadow:none;
 }
 body.dudu-site-v60 #cover-view .archive-cover-action-dock .btn{
  display:flex;align-items:center;justify-content:center;min-width:0;min-height:45px;
@@ -97,8 +97,8 @@ body.dudu-site-v60 #cover-view .archive-cover-favorite-status[hidden]{display:no
 body.dudu-site-v60 #cover-view .archive-cover-topbar{margin-bottom:8px}
 @media(max-width:760px){
  body.dudu-site-v60 #cover-view .archive-cover-action-dock{
-  grid-template-columns:minmax(0,.9fr) minmax(0,1.53fr) minmax(0,1.16fr);
-  gap:6px;margin-bottom:13px;
+  grid-template-columns:minmax(0,.87fr) minmax(0,1.12fr) minmax(0,1.57fr);
+  gap:6px;margin-bottom:10px;
  }
  body.dudu-site-v60 #cover-view .archive-cover-action-dock .btn{
   min-height:44px;padding:8px 6px;font-size:11px;
@@ -109,4 +109,31 @@ body.dudu-site-v60 #cover-view .archive-cover-topbar{margin-bottom:8px}
  body.dudu-site-v60 #cover-view .archive-cover-action-dock .btn{
   font-size:10.5px;padding:8px 4px;
  }
+}
+
+
+/* Reduce redundant vertical whitespace across the story-detail hierarchy. */
+body.dudu-site-v60 #cover-view .book-cover-banner{
+ padding:16px;margin:4px 0 10px;gap:16px;
+}
+body.dudu-site-v60 #cover-view .book-banner-meta h1{margin:2px 0 8px}
+body.dudu-site-v60 #cover-view .book-stats{margin-bottom:6px;gap:5px 12px}
+body.dudu-site-v60 #cover-view .book-genre-tags{margin-bottom:8px;gap:5px}
+body.dudu-site-v60 #cover-view .intro-terminal-box{
+ padding:14px 16px;margin-bottom:16px;
+}
+body.dudu-site-v60 #cover-view .index-toolbar{
+ margin-top:12px;padding:12px 0 9px;
+}
+@media(max-width:760px){
+ body.dudu-site-v60 #cover-view .book-cover-banner{
+  padding:12px;margin:3px 0 9px;gap:12px;
+ }
+ body.dudu-site-v60 #cover-view .book-banner-meta h1{margin:0 0 6px}
+ body.dudu-site-v60 #cover-view .intro-terminal-box{
+  padding:12px 13px;margin-bottom:13px;
+ }
+}
+@media(max-width:370px){
+ body.dudu-site-v60 #cover-view .book-cover-banner{padding:10px;gap:9px}
 }
