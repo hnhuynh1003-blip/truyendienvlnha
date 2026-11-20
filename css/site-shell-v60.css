@@ -406,24 +406,12 @@ body.dudu-reading-active .floating-btn:focus-visible {outline:2px solid #f0e3c8;
 }
 
 
-/* A.2.2: concise, functional shortcuts; preserve existing brand artwork. */
-#d60-home .d61-hero-actions{
- display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:16px;
-}
-#d60-home .d61-hero-actions .d60-btn{
- min-height:39px;border-radius:8px;padding:9px 13px;
- font:700 12px/1.35 system-ui,-apple-system,'Segoe UI',sans-serif;
-}
-#d60-home .d61-hero-primary{background:#dcc69c;color:#17212e}
-#d60-home .d61-hero-secondary{border-color:rgba(220,198,156,.55);color:#eadbc0}
-#d60-home .d61-hero-actions .d60-btn:focus-visible{
- outline:2px solid #f2dfae;outline-offset:3px;
-}
+/* A.2.2: present the hero without duplicate Library/Shelf navigation buttons. */
 #d60-home .d60-section{margin-top:18px}
 #d60-home .d60-sectionhead{margin-bottom:9px}
 #d60-home .d61-signal{margin-top:11px;border:1px solid rgba(179,186,222,.14);border-radius:9px}
 
-/* D60 Shelf: bounded tab row with accessible 4-way grouping. */
+/* D60 Shelf: tabs for active reading, favorites and future completed reading. */
 #d60-shelf .d60-shelf-tabs{
  display:flex;align-items:stretch;gap:7px;min-width:0;
  margin:5px 0 13px;padding:2px 0;overflow-x:auto;scrollbar-width:thin;
@@ -451,13 +439,10 @@ body.dudu-reading-active .floating-btn:focus-visible {outline:2px solid #f0e3c8;
 #d60-shelf .d60-shelf-feedback{min-height:0;margin:9px 0 0;color:#f0cba4;font-size:12px}
 #d60-shelf .d60-shelf-feedback:empty{display:none}
 @media(max-width:760px){
- #d60-home .d61-hero-actions{margin-top:12px;gap:7px}
- #d60-home .d61-hero-actions .d60-btn{font-size:11px;padding:8px 10px;min-height:39px}
  #d60-home .d60-section{margin-top:15px}
  #d60-shelf .d60-shelf-tabs{gap:6px;margin:3px 0 11px}
  #d60-shelf .d60-shelf-tab{font-size:11px;min-width:93px;min-height:43px;padding:8px 9px}
 }
 @media(max-width:355px){
- #d60-home .d61-hero-actions .d60-btn{font-size:10px;padding:8px}
  #d60-shelf .d60-shelf-tab{font-size:10px;min-width:86px}
 }
