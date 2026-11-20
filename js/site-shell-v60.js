@@ -458,7 +458,7 @@
    const worldList=element('div','');worldList.id='d60-worlds-list';worlds.append(worldList);
    const shelf=element('section','d60-page');shelf.id='d60-shelf';
    const shelfHeading=element('div','d60-context-rail');
-   shelfHeading.append(contextHeading('Tủ sách','DẤU TRANG'));
+   shelfHeading.append(contextHeading('Tủ sách','KỆ SÁCH CÁ NHÂN'));
    shelf.append(shelfHeading);
    const shelfList=element('div','');shelfList.id='d60-shelf-list';shelf.append(shelfList);
    const author=element('section','d60-page');author.id='d60-author';
