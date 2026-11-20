@@ -336,6 +336,8 @@
    header.insertBefore(top,header.querySelector('.header-controls'));
    const bottom=element('nav','d60-bottomnav');bottom.setAttribute('aria-label','Điều hướng di động');
    ['home','library',...(WORLDS_PAUSED?[]:['worlds']),'shelf'].forEach(p=>bottom.append(navButton(p,true)));
+   // Balance the mobile tabs according to the actual number of destinations.
+   bottom.style.setProperty('--d60-nav-count',String(bottom.children.length));
    document.body.append(bottom);
    const container=document.querySelector('.container');
    const home=element('main','d60-page');home.id='d60-home';
