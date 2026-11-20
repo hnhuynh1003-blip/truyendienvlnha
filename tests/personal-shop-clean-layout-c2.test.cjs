@@ -33,7 +33,7 @@ test('Main shop keeps one phone title and wallet; tabs and filters remain usable
   'do not repeat the shop header with a DUDU MARKET tagline');
  const [groups,tabs,filters,hint]=toolbar.children;
  assert.equal(groups.children.length,4,'SELL is only exposed with its callback');
- assert.deepEqual(Array.from(groups.children,x=>x.textContent),['Vật Phẩm','Tu Tiên','Ngoại Trang','Sưu Tầm']);
+ assert.deepEqual(Array.from(groups.children,x=>x.textContent),['Vật Phẩm','Tu Tiên','Ngoại Hình','Sưu Tầm']);
  assert.equal(filters.children[0].placeholder,'Tìm tên vật phẩm hoặc phẩm cấp');
  assert.equal(hint.hidden,true,'balance already appears once above the shop');
  assert.equal(hint.textContent,'');
