@@ -13,6 +13,7 @@
   const ASSET_RE=/^[a-z0-9-]+\.webp$/;
   const doc=host?.document||null;
   let selected={...DEFAULT},activeOwner=null,panel=null,initialized=false;
+  let imageRequestUrl=null,imageReady=false,imageFailed=false;
 
   function catalog(){return host?.DuduWallpaperCatalogV38||null;}
   function entry(id,source=catalog()){
@@ -24,6 +25,37 @@
     const folder=item.folder||'v38';
     if(!['v38','v39'].includes(folder))return null;
     return 'assets/wallpapers/'+folder+'/'+item.asset;
+  }
+  // A relative url() in a custom property is resolved against the stylesheet
+  // where var() is consumed (css/reader-background-r1.css), not index.html.
+  // Produce an absolute same-origin URL so GitHub Pages subpaths work.
+  function assetUrl(item,base=doc?.baseURI){
+    const path=assetPath(item);
+    if(!path||!base)return null;
+    try{
+      const url=new URL(path,base);
+      const root=new URL(base);
+      return url.origin===root.origin&&['https:','http:'].includes(url.protocol)?url.href:null;
+    }catch(_){return null;}
+  }
+  function ensureImage(url){
+    if(!url)return false;
+    if(imageRequestUrl!==url){
+      imageRequestUrl=url;imageReady=false;imageFailed=false;
+      const image=new host.Image();
+      image.onload=()=>{
+        if(imageRequestUrl!==url)return;
+        imageReady=image.naturalWidth>0;imageFailed=!imageReady;
+        apply();
+      };
+      image.onerror=()=>{
+        if(imageRequestUrl!==url)return;
+        imageReady=false;imageFailed=true;
+        apply();
+      };
+      image.src=url;
+    }
+    return imageReady;
   }
   function sanitize(input,source=catalog()){
     const item=entry(input?.id,source);
@@ -148,6 +180,8 @@
     const status=doc.getElementById('reader-bg-r1-status');
     if(status)status.textContent=!selected.enabled?'Đang dùng màu trang đọc hiện tại.':
       !usable?'Hình nền chưa có quyền sử dụng; tạm dùng màu trang đọc.':
+      imageFailed?'Không tải được ảnh nền. Đang dùng màu trang đọc; mở lại cài đặt để thử lại.':
+      !imageReady?'Đang tải ảnh nền; tạm dùng màu trang đọc.':
       'Đang dùng '+current.name+' trên thiết bị này.';
   }
   function apply(){
@@ -155,10 +189,11 @@
     const paper=doc.getElementById('reader-paper');
     if(!paper)return false;
     const item=entry(selected.id),allowed=canUse(selected.id,catalog(),storage(),owner());
-    const path=allowed?assetPath(item):null;
-    if(selected.enabled&&path){
+    const url=allowed?assetUrl(item):null;
+    const ready=selected.enabled&&url?ensureImage(url):false;
+    if(ready){
       paper.dataset.readerBg=selected.id;
-      paper.style.setProperty('--reader-r1-photo','url("'+path+'")');
+      paper.style.setProperty('--reader-r1-photo','url("'+url+'")');
       paper.style.setProperty('--reader-r1-shade',String(selected.opacity/100));
     }else{
       paper.removeAttribute('data-reader-bg');
@@ -166,18 +201,20 @@
       paper.style.removeProperty('--reader-r1-shade');
     }
     render();
-    return !!(selected.enabled&&path);
+    return !!ready;
   }
   function refresh(forceRead=false){
     const who=owner();
     if(who!==activeOwner||forceRead){
       activeOwner=who;
       selected=read(storage(),who);
+      if(imageFailed){imageRequestUrl=null;imageFailed=false;}
     }
     return apply();
   }
   function commit(patch){
     selected=sanitize({...selected,...patch});
+    if(selected.enabled&&imageFailed){imageRequestUrl=null;imageFailed=false;}
     save(storage(),owner(),selected);
     apply();
     return {...selected};
@@ -203,6 +240,6 @@
     if(doc.readyState==='loading')doc.addEventListener('DOMContentLoaded',init,{once:true});
     else init();
   }
-  return Object.freeze({PREFIX,DEFAULT,entry,assetPath,sanitize,keyFor,read,save,canUse,
+  return Object.freeze({PREFIX,DEFAULT,entry,assetPath,assetUrl,sanitize,keyFor,read,save,canUse,
     init,apply,refresh,commit,reset});
 });
