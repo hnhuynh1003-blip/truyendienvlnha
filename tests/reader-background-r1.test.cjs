@@ -68,6 +68,13 @@ test('R1 sanitizes image IDs, asset paths, opacity and broken storage',()=>{
     'assets/wallpapers/v39/moon-mage.webp');
   assert.equal(adapter.assetPath({folder:'../../',asset:'test.webp'}),null);
   assert.equal(adapter.assetPath({folder:'v38',asset:'x.svg'}),null);
+  const moon=catalog.ITEMS.find(item=>item.id==='v38-moon');
+  assert.equal(adapter.assetUrl(moon,'https://example.com/truyendienvlnha/'),
+    'https://example.com/truyendienvlnha/assets/wallpapers/v38/moon-garden.webp');
+  assert.equal(adapter.assetUrl(moon,'https://example.com/truyendienvlnha/index.html'),
+    'https://example.com/truyendienvlnha/assets/wallpapers/v38/moon-garden.webp');
+  assert.equal(adapter.assetUrl({folder:'../../',asset:'fake.webp'},'https://example.com/repo/'),null);
+  assert.equal(adapter.assetUrl(moon,'invalid base URL'),null);
   store.setItem(adapter.keyFor('guest'),'{broken json');
   assert.deepEqual(adapter.read(store,'guest',catalog),adapter.DEFAULT);
 });
