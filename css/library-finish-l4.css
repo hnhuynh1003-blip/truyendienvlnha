@@ -80,7 +80,7 @@ body.dudu-site-v60 #cover-view .archive-cover-action-dock .btn{
 body.dudu-site-v60 #cover-view .archive-cover-dock-back{
  flex:0 0 116px;background:#1a2835;border:1px solid #657484;color:#e4e8ec;
 }
-body.dudu-site-v60 #cover-view .archive-cover-dock-read{
+body.dudu-site-v60 #cover-view .archive-cover-action-dock #btn-main-reading-action{
  flex:1;background:#dcc69c;border:1px solid #dcc69c;color:#17212e;
 }
 body.dudu-site-v60 #cover-view .archive-cover-action-dock .btn:focus-visible{
