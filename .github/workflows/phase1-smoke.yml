@@ -73,6 +73,10 @@ jobs:
         run: node tests/browser-arcade-fishing-c446.cjs
       - name: C4.43 mobile reader navigation and refresh return (Sandbox, no external writes)
         run: node tests/browser-library-reading-return-c443.cjs
+      - name: Sơn Hà Art V3 browser QA (Sandbox, no external writes)
+        run: |
+          node --test tests/homepage-sonha-v3.test.cjs
+          node tests/browser-homepage-sonha-v3.cjs
       - name: L2E mobile Library pagination and synopsis return (Sandbox, no external writes)
         run: node tests/browser-library-catalog-l2e.cjs
       - name: L3 smart Library filters and responsive catalog (Sandbox, no external writes)
