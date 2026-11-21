@@ -38,7 +38,7 @@
  const fields=['title','author','description','genre','publication'];
  const labels={idle:'Chọn EPUB để tự điền thông tin.',parsing:'Đang đọc EPUB…',ticket:'Đang chuẩn bị phiên nhập…',packaging:'Đang chuẩn bị nội dung và ảnh…',draft:'Đang tạo bản nháp…',staging:'Đang tải EPUB…',quarantined:'Đã tải đủ. Bấm xác nhận xuất bản.',promoting:'Đang kiểm tra nội dung đã tải…',publishing:'Đang xuất bản…',published:'Đã xuất bản. Có thể mở đọc.',blocked:'Đã dừng. Kiểm tra trạng thái trước khi nhập tiếp.'};
  let controller=null,abort=null,sessionUid=null,version=0,preparing=false,preparedFile=null,busy=false,activeEntry=null,lastPublishedBook=null,checkingCatalog=false;
- const intake=window.DuduR2PersonalIntake.create({parse:(file,options)=>window.DuduEpubImportV48.parse(file,options),options:{zipLib:window.JSZip,Parser:DOMParser}});
+ const intake=window.DuduR2PersonalIntake.create({parse:(file,options)=>window.DuduEpubImportV48.parse(file,options),options:{zipLib:window.JSZip,Parser:DOMParser,splitOversizedChapters:true}});
  const queueLabels={PREPARING:'Đang kiểm tra trên máy',READY:'Hợp lệ trên máy; chờ đăng',METADATA:'Cần sửa metadata',BLOCKED:'BLOCKED',RETRY:'Chưa gửi request; có thể thử lại',RUNNING:'Đang đăng',PUBLISHED:'Đã xuất bản',UNKNOWN:'Dừng để đối soát',POSSIBLE_DUPLICATE:'Nghi đã đăng · đã bỏ chọn'};
  async function prepareForQueue(file){
   const value=await intake.prepare(file);

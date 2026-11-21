@@ -130,6 +130,6 @@ test('R2: source wiring requires completed matching-owner catalog and preflight 
  assert.match(ui,/Nghi đã đăng/);
  assert.match(ui,/chưa so SHA-256/);
  assert.match(html,/js\/library-r2-personal-queue\.js\?v=r2-compare-r1/);
- assert.match(html,/js\/library-r2-author-ui-c13b6d\.js\?v=r2-compare-r1/);
+ assert.match(html,/js\/library-r2-author-ui-c13b6d\.js\?v=r2-long-split-r1/);
  assert.doesNotMatch(qsrc,/\b(?:fetch|localStorage|firebase|Firestore|setDoc|deleteDoc)\s*\(/);
 });

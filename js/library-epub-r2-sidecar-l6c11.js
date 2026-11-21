@@ -13,6 +13,8 @@
  const REV=/^r-[a-f0-9]{16,32}$/;
  const MAX_FILE=30*1024*1024,MAX_ENTRIES=3000,MAX_UNPACKED=80*1024*1024;
  const MAX_CHAPTERS=160,MAX_CHARS=220000,MAX_CHAPTER_BYTES=420000,MAX_LAYOUT_BYTES=1048576;
+ const chapterSplit=root?.DuduR2ChapterSplitR1||
+  (typeof require==='function'?require('./library-r2-chapter-split-r1.js'):null);
  const MAX_ASSET=10*1024*1024,MAX_IMAGES_PER_CHAPTER=40;
  const MIMES=Object.freeze({'image/png':'.png','image/jpeg':'.jpg','image/webp':'.webp','image/gif':'.gif'});
  const RX_CONTROL=/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/u;
@@ -47,7 +49,9 @@
     if(!segments.length)bad('path traversal');
     segments.pop();continue;
    }
-   if(/[\\/:\u0000-\u001F]/.test(x)||x==='..')bad('unsafe EPUB segment');
+   if(x.includes('/')||x.includes('\\'))bad('unsafe EPUB segment (encoded slash/backslash in path)');
+   if(x.includes(':'))bad('unsafe EPUB segment (colon in resource filename)');
+   if(/[\u0000-\u001F]/.test(x)||x==='..')bad('unsafe EPUB segment (control or traversal)');
    segments.push(x);
   }
   const dest=segments.join('/');
@@ -215,8 +219,25 @@
    if(kind==='metadata')continue;
    const content=textV57.getText(raw,Parser);
    if(!content)continue;
-   contentRecords.push({raw,path:item.path,title:(heading||'').trim().slice(0,140)||'Chương '+(contentRecords.length+1),
-    content,kind});
+   if(!chapterSplit?.split)bad('missing R2 chapter split module');
+   const title=(heading||'').trim().slice(0,140)||'Chương '+(contentRecords.length+1);
+   const parts=chapterSplit.split(content,title);
+   if(contentRecords.length+parts.length>MAX_CHAPTERS)
+    bad('more than 160 chapters after splitting; split book into volumes');
+   if(parts.length>1){
+    // Do not discard or misplace inline images and rich media when splitting.
+    // Long text-only XHTML is supported; mixed-media XHTML stays BLOCKED
+    // until a corresponding, validated image-aware partitioner is approved.
+    const doc=new Parser().parseFromString(raw,'text/html');
+    if([...doc.querySelectorAll('style,[style]')].some(el=>
+       /url\s*\(/i.test(el.getAttribute('style')||el.textContent||'')))
+     bad('long XHTML CSS background media cannot be split');
+    const body=stripDangerous(doc);
+    if(body.querySelector('img,picture,source,video,audio,canvas,svg,math'))
+     bad('long XHTML with images cannot be split without an image-safe adapter');
+   }
+   for(const part of parts)contentRecords.push({raw,path:item.path,title:part.title,
+    content:part.content,kind,fromSplit:parts.length>1});
   }
   if(contentRecords.length!==parsed.chapters.length)bad('V48 spine vs parsed chapter count mismatch');
   const source={name:file.name,bytes:fileBytes.length,sha256:await hash(fileBytes,cryptoApi)};
@@ -246,7 +267,9 @@
    if(fromParser.sourcePath!==record.path||fromParser.content!==record.content||
      fromParser.title!==record.title||fromParser.kind!==record.kind)bad('canonical V48 chapter mismatch');
    const id='chapter-'+String(i+1).padStart(3,'0');
-   const segments=textAndImageSegments(record.raw,Parser,record.content);
+   const segments=record.fromSplit
+    ?[{type:'text',text:record.content}]
+    :textAndImageSegments(record.raw,Parser,record.content);
    for(let j=0;j<segments.length;j++){
     if(segments[j].type!=='image')continue;
     const imagePath=pathOf(segments[j].src,record.path),asset=await useAsset(imagePath,'illustration');
