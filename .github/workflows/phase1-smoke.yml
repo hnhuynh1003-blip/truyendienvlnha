@@ -96,6 +96,12 @@ jobs:
           node tests/browser-vanbao-f44.cjs
           node tests/browser-vanbao-main-f44.cjs
           node tests/browser-vanbao-final-f44.cjs
+      - name: R2 oversized EPUB chapter split (local browser, no uploads)
+        run: |
+          node --check js/library-r2-chapter-split-r1.js
+          node --check js/epub-import-v48.js
+          node --check js/library-epub-r2-sidecar-l6c11.js
+          node --test tests/browser-r2-long-chapter-split-r1.cjs
       - name: R2 published catalog duplicate preflight (local only)
         run: |
           node --check js/library-r2-personal-queue.js
