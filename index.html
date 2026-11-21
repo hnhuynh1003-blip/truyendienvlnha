@@ -3008,6 +3008,20 @@
       return DuduPersonalSyncV568.bookmarkForNovel(local,novel)||
         DuduPersonalSyncV568.bookmarkForNovel(userProfile.readingBookmarksV568?.[novel.id],novel);
     }
+    function persistReaderBookmarkR1(novel,chIdx,scrollTop,syncR2=false){
+      if(!novel||!window.DuduPersonalSyncV568)return null;
+      const sameOwner=!IS_SANDBOX_MODE&&DuduAuth.isReady()&&DuduAuth.uid()===currentUsername;
+      if(novel._r2V1===true&&!IS_SANDBOX_MODE&&!sameOwner)return null;
+      const saved=DuduPersonalSyncV568.captureChapter(novel,chIdx,scrollTop);
+      if(!saved)return null;
+      try{localStorage.setItem(scopedLocalKey('bookmark',novel.id),JSON.stringify(saved));}catch{/* Storage failure must not block reading. */}
+      if(sameOwner){
+        userProfile.readingBookmarksV568 ||= {};
+        userProfile.readingBookmarksV568[novel.id]=saved;
+        if(syncR2&&novel._r2V1===true)v569SyncBookmark(novel.id);
+      }
+      return saved;
+    }
     function v568PhoneFromDevice(){
       if(!window.DuduPersonalSyncV568||!currentUsername)return null;
       const owner='live-'+currentUsername;
@@ -8592,6 +8606,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       window.DuduLibraryCatalogL2E?.rememberScroll(window);
       c443ResumePending=false;
       if(document.getElementById('reader-view').style.display==='block'){
+        persistReaderBookmarkR1(novels[selectedNovelIndex],selectedChapterIndex,window.scrollY);
         window.DuduReadingReturnC443?.clear(sessionStorage);
         window.DuduReadingReturnC443?.exitHistory(window,true);
       }
@@ -8854,7 +8869,10 @@ document.getElementById('phone-home-screen').style.display = 'none';
       }
     });
     window.addEventListener('pagehide',()=>{
-      if(document.getElementById('reader-view').style.display==='block')c443Remember(window.scrollY,true);
+      if(document.getElementById('reader-view').style.display==='block'){
+        persistReaderBookmarkR1(novels[selectedNovelIndex],selectedChapterIndex,window.scrollY);
+        c443Remember(window.scrollY,true);
+      }
     });
     function readChapter(chIdx, scrollPos = 0) {
       const pendingBook=novels[selectedNovelIndex];
@@ -8986,16 +9004,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       document.getElementById('btn-prev-ch-top').hidden = chIdx === 0;
       document.getElementById('btn-next-ch-top').hidden = chIdx === novel.chapters.length-1;
 
-      if(novel._r2V1!==true&&window.DuduPersonalSyncV568){
-        const saved=DuduPersonalSyncV568.captureChapter(novel,chIdx,scrollPos||0);
-        if(saved){
-          localStorage.setItem(scopedLocalKey('bookmark',novel.id),JSON.stringify(saved));
-          if(!IS_SANDBOX_MODE&&DuduAuth.isReady()){
-            userProfile.readingBookmarksV568 ||= {};
-            userProfile.readingBookmarksV568[novel.id]=saved;
-          }
-        }
-      }
+      persistReaderBookmarkR1(novel,chIdx,scrollPos||0,true);
 
       updateChapterLootButtonState();
       renderStoryCommentsV442('chapter');
@@ -9133,11 +9142,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
         else floatBar.style.display = revealToc?'flex':'none';
 
         const novel = novels[selectedNovelIndex];
-        if (novel && novel._r2V1!==true && novel.chapters && novel.chapters.length > 0) {
-          const current=window.DuduPersonalSyncV568?.captureChapter(novel,selectedChapterIndex,winScroll);
-          if(current)localStorage.setItem(scopedLocalKey('bookmark',novel.id),JSON.stringify(current));
-          c443Remember(winScroll);
-        }
+        if(persistReaderBookmarkR1(novel,selectedChapterIndex,winScroll))c443Remember(winScroll);
       } else {
         window.DuduReaderShortcutL2F?.reset(0);
         window.DuduReaderFocusL2B?.reset();
@@ -9154,6 +9159,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       window.DuduReaderFocusL2B?.reset();
       c443ResumePending=false;
       if(document.getElementById('reader-view')?.style.display==='block'){
+        persistReaderBookmarkR1(novels[selectedNovelIndex],selectedChapterIndex,window.scrollY);
         window.DuduReadingReturnC443?.clear(sessionStorage);
         window.DuduReadingReturnC443?.exitHistory(window,false);
       }
@@ -9162,10 +9168,10 @@ document.getElementById('phone-home-screen').style.display = 'none';
         const story=novels[selectedNovelIndex];
         const position=story&&window.DuduPersonalSyncV568?DuduPersonalSyncV568.localBookmark(
           localStorage,scopedLocalKey('bookmark',story.id)):null;
-        if(story&&story._r2V1!==true&&position){
+        if(story&&position&&DuduAuth.uid()===currentUsername){
           userProfile.readingBookmarksV568 ||= {};
           userProfile.readingBookmarksV568[story.id]=position;
-          saveCurrentAccount();
+          if(story._r2V1!==true)saveCurrentAccount();
           v569SyncBookmark(story.id);
         }
       }
@@ -9179,6 +9185,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
     }
     
     function goCover() { 
+      if(document.getElementById('reader-view')?.style.display==='block')
+        persistReaderBookmarkR1(novels[selectedNovelIndex],selectedChapterIndex,window.scrollY,true);
       document.getElementById('floating-reading-bar').style.display = 'none';
       openCover(selectedNovelIndex); 
     }
