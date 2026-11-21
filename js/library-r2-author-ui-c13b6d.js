@@ -17,8 +17,10 @@
  const folderNote=bind(el('small'),'folder-note');
  const queuePanel=bind(el('details'),'queue-panel');queuePanel.className='r2-import-queue';queuePanel.append(bind(el('summary'),'queue-summary'));
  const tools=el('div');tools.className='dudu-epub-actions r2-queue-tools';
- for(const [name,text]of [['select-all','Chọn tất cả'],['select-none','Bỏ chọn'],['clear','Xóa danh sách chờ']]){const b=bind(el('button',text),name);b.type='button';b.className='btn';tools.append(b);}
- queuePanel.append(tools,bind(el('div'),'queue'));
+ for(const [name,text]of [['select-all','Chọn tất cả'],['select-none','Bỏ chọn'],['compare-catalog','Đối chiếu đã đăng'],['clear','Xóa danh sách chờ']]){const b=bind(el('button',text),name);b.type='button';b.className='btn';tools.append(b);}
+ const duplicateHint=bind(el('p'),'duplicate-hint');
+ duplicateHint.setAttribute('role','status');
+ queuePanel.append(tools,duplicateHint,bind(el('div'),'queue'));
  const previewHeader=el('div');previewHeader.className='r2-import-preview-header';
  bind(view.coverPreview,'cover');const intro=el('div');intro.append(bind(el('p'),'editing'),bind(view.info,'info'));previewHeader.append(view.coverPreview,intro);
  const chapterPanel=el('details');chapterPanel.className='r2-import-chapters';chapterPanel.append(bind(el('summary'),'chapter-summary'),bind(view.list,'chapters'));
@@ -35,9 +37,9 @@
  const allowed=()=>enabled&&!IS_SANDBOX_MODE&&window.DuduAuth?.isAdmin?.()===true&&firebase.auth().currentUser?.uid===config.pilotOwnerUid;
  const fields=['title','author','description','genre','publication'];
  const labels={idle:'Chọn EPUB để tự điền thông tin.',parsing:'Đang đọc EPUB…',ticket:'Đang chuẩn bị phiên nhập…',packaging:'Đang chuẩn bị nội dung và ảnh…',draft:'Đang tạo bản nháp…',staging:'Đang tải EPUB…',quarantined:'Đã tải đủ. Bấm xác nhận xuất bản.',promoting:'Đang kiểm tra nội dung đã tải…',publishing:'Đang xuất bản…',published:'Đã xuất bản. Có thể mở đọc.',blocked:'Đã dừng. Kiểm tra trạng thái trước khi nhập tiếp.'};
- let controller=null,abort=null,sessionUid=null,version=0,preparing=false,preparedFile=null,busy=false,activeEntry=null,lastPublishedBook=null;
+ let controller=null,abort=null,sessionUid=null,version=0,preparing=false,preparedFile=null,busy=false,activeEntry=null,lastPublishedBook=null,checkingCatalog=false;
  const intake=window.DuduR2PersonalIntake.create({parse:(file,options)=>window.DuduEpubImportV48.parse(file,options),options:{zipLib:window.JSZip,Parser:DOMParser}});
- const queueLabels={PREPARING:'Đang kiểm tra trên máy',READY:'Hợp lệ trên máy; chờ đăng',METADATA:'Cần sửa metadata',BLOCKED:'BLOCKED',RETRY:'Chưa gửi request; có thể thử lại',RUNNING:'Đang đăng',PUBLISHED:'Đã xuất bản',UNKNOWN:'Dừng để đối soát'};
+ const queueLabels={PREPARING:'Đang kiểm tra trên máy',READY:'Hợp lệ trên máy; chờ đăng',METADATA:'Cần sửa metadata',BLOCKED:'BLOCKED',RETRY:'Chưa gửi request; có thể thử lại',RUNNING:'Đang đăng',PUBLISHED:'Đã xuất bản',UNKNOWN:'Dừng để đối soát',POSSIBLE_DUPLICATE:'Nghi đã đăng · đã bỏ chọn'};
  async function prepareForQueue(file){
   const value=await intake.prepare(file);
   // Fixed local validation labels only, never tickets or allocated catalog identities.
@@ -48,7 +50,17 @@
   return value;
  }
  let queue=window.DuduR2PersonalQueue.create({prepare:prepareForQueue,validateMetadata:m=>window.DuduLibraryR2AuthorImportL6C12.validateMetadata(m),onChange:()=>renderQueue()});
- const locked=()=>busy||preparing||queue.status().running||queue.status().adding||queue.status().halted;
+ const locked=()=>busy||preparing||checkingCatalog||queue.status().running||queue.status().adding||queue.status().halted;
+ const catalogSnapshot=()=>{
+  const data=window.DuduR2AuthorCatalogReviewR1?.snapshot?.();
+  return data?.status==='ready'&&data.uid===sessionUid&&Array.isArray(data.books)?data:null;
+ };
+ function reviewLoadedCatalog(){
+  if(!allowed()||locked())return {ok:false};
+  const catalog=catalogSnapshot();
+  if(!catalog)return {ok:false};
+  return queue.reviewCatalog(catalog.books);
+ }
  const metadata=()=>({title:id('title').value,author:id('author').value,description:id('description').value,genre:id('genre').value,publicationState:id('publication').value});
  function showEntry(entry){
   activeEntry=entry;preparedFile=entry.file;
@@ -70,9 +82,31 @@
    check.setAttribute('aria-label','Chọn '+entry.path);check.addEventListener('change',()=>queue.select(entry.id,check.checked));
    text.textContent=' '+(entry.metadata.title||entry.file.name)+' — '+entry.path+' — '+entry.chapters+' chương'+(entry.hasCover?' · Có bìa':'')+' — '+queueLabels[entry.state]+(entry.message?' · '+entry.message:'');
    edit.type='button';edit.textContent='Sửa thông tin';edit.disabled=!allowed()||locked()||!['READY','METADATA','RETRY'].includes(entry.state);edit.addEventListener('click',()=>showEntry(entry));
-   row.className='dudu-epub-item r2-import-queue-row';edit.className='btn';row.append(check,text,edit);list.append(row);
+   row.className='dudu-epub-item r2-import-queue-row';edit.className='btn';row.append(check,text,edit);
+   if(entry.state==='POSSIBLE_DUPLICATE'){
+    const override=document.createElement('button');
+    override.type='button';override.className='btn';override.textContent='Đây là bản khác';
+    override.disabled=!allowed()||locked();
+    override.setAttribute('aria-label','Xác nhận EPUB khác nội dung: '+entry.path);
+    override.addEventListener('click',()=>{
+     if(!allowed()||locked())return;
+     if(window.confirm('Tên và tác giả trùng sách R2 đã đăng, nhưng chưa so được SHA-256. Bạn đã kiểm tra đây thực sự là phiên bản khác và vẫn muốn đăng?'))
+      queue.confirmDifferentBook(entry.id);
+    });
+    row.append(override);
+   }
+   list.append(row);
   }
-  const all=queue.entries();id('queue-panel').hidden=all.length===0;id('queue-summary').textContent=all.length+' sách · '+all.filter(e=>e.selected).length+' đã chọn · '+all.filter(e=>e.state==='PUBLISHED').length+' đã đăng';
+  const all=queue.entries(),possible=all.filter(e=>e.state==='POSSIBLE_DUPLICATE').length;
+  id('queue-panel').hidden=all.length===0;
+  id('queue-summary').textContent=all.length+' sách · '+all.filter(e=>e.selected).length+
+   ' đã chọn · '+possible+' nghi trùng · '+all.filter(e=>e.state==='PUBLISHED').length+' đã đăng lượt này';
+  const published=catalogSnapshot();
+  id('duplicate-hint').textContent=published
+   ?'Đã đối chiếu với '+published.books.length+' sách R2 trong danh mục. '+possible+
+     ' sách nghi trùng theo tên/tác giả đã được bỏ chọn; chưa so SHA-256 của EPUB gốc.'
+   :'Chưa tải và xác minh xong danh mục R2. Đăng hàng loạt bị khóa để tránh trùng. Hãy bấm Đối chiếu đã đăng.';
+  id('compare-catalog').disabled=!allowed()||locked();
   for(const x of ['file','files','folder','pick-file','pick-files','pick-folder','clear','select-all','select-none'])id(x).disabled=!allowed()||locked();
   id('pause').disabled=!state.running;id('pause').hidden=!state.running;render();
  }
@@ -83,7 +117,8 @@
   const state=controller?.status();let p=null,storageError=false;try{p=sessionUid?pending():null;}catch{storageError=true;}
   id('status').textContent=message||(storageError?'Không đọc được trạng thái lưu trên máy. Dừng nhập.':p&&!controller?'Có phiên nhập cần kiểm tra trạng thái.':labels[state?.status]||labels.idle);
   id('status').dataset.state=state?.status||p?.phase||'idle';
-  id('start').disabled=!allowed()||locked()||storageError||!!p||!queue.entries().some(e=>e.selected&&['READY','RETRY'].includes(e.state));
+  id('start').disabled=!allowed()||locked()||storageError||!!p||!catalogSnapshot()||
+   !queue.entries().some(e=>e.selected&&['READY','RETRY'].includes(e.state));
   document.getElementById('c13b3-read').disabled=!allowed()||busy||queue.status().running||!lastPublishedBook;
   for(const x of ['file','files','folder','pick-file','pick-files','pick-folder','clear','select-all','select-none'])id(x).disabled=!allowed()||locked()||!!p||storageError;
   id('status-check').disabled=!allowed()||busy;id('status-check').hidden=!p&&!queue.status().halted;document.getElementById('c13b3-read').hidden=!lastPublishedBook;
@@ -101,6 +136,7 @@ id('form').addEventListener('submit',e=>e.preventDefault());
   if(controller?.status().published){controller=null;abort=null;}
   const result=await current.add(files,{guard:()=>current===queue&&owner===sessionUid&&mine===version&&allowed()});
   if(current!==queue||owner!==sessionUid)return;
+  reviewLoadedCatalog();
   const next=current.entries().find(e=>['READY','METADATA','RETRY'].includes(e.state));if(next)showEntry(next);
   id('queue-panel').open=current.entries().length>1||current.entries().some(e=>e.state==='BLOCKED');renderQueue();render('Đã thêm '+result.added+' EPUB; bỏ qua '+result.duplicates+' tệp trùng nội dung, '+result.ignored+' tệp khác. '+(result.limited?'Tối đa 500 sách trong danh sách. ':'')+'Chọn sách và sửa thông tin nếu cần; chưa có upload.');
  }
@@ -108,12 +144,39 @@ id('form').addEventListener('submit',e=>e.preventDefault());
  const folderSupported='webkitdirectory' in document.createElement('input');
  id('pick-folder').hidden=!folderSupported;id('folder-note').textContent=folderSupported?'Chọn thư mục cha để lấy EPUB trong các thư mục con.':'Trình duyệt không hỗ trợ chọn thư mục; hãy chọn một hoặc nhiều tệp EPUB.';
  id('select-all').addEventListener('click',()=>{if(allowed())queue.selectAll(true);});id('select-none').addEventListener('click',()=>{if(allowed())queue.selectAll(false);});
+ id('compare-catalog').addEventListener('click',async()=>{
+  if(!allowed()||locked())return;
+  const owner=sessionUid,current=queue;checkingCatalog=true;renderQueue();
+  try{
+   await refreshEpubCloudBooksV49();
+   if(current!==queue||owner!==sessionUid||!allowed())return;
+  }catch{/* Catalog state is checked after the refresh. */}
+  finally{checkingCatalog=false;}
+  const result=reviewLoadedCatalog();renderQueue();
+  render(result.ok?'Đã đối chiếu danh mục R2; các sách nghi trùng đã bỏ chọn.':
+   'Không đối chiếu được danh mục R2; chưa cho phép đăng hàng loạt.');
+ });
+ window.addEventListener('dudu-r2-author-catalog-ready',()=>{
+  if(!allowed()||locked())return;
+  reviewLoadedCatalog();
+  renderQueue();
+ });
  id('pause').addEventListener('click',()=>queue.pause());
  id('clear').addEventListener('click',()=>{if(!allowed()||locked())return;try{if(pending())return;}catch{return;}if(queue.clear()){controller=null;abort=null;activeEntry=null;preparedFile=null;for(const f of fields)id(f).value='';renderQueue();}});
  id('start').addEventListener('click',async()=>{
   if(!allowed()||locked())return;
   try{if(pending())return render('Có phiên cần đối soát.');}catch{return render('Không đọc được phiên nhập.');}
   const current=queue,owner=sessionUid;
+  // Fresh preflight before ANY ticket, draft or R2 object upload.
+  checkingCatalog=true;renderQueue();
+  try{await refreshEpubCloudBooksV49();}
+  catch{/* A failed catalog refresh is caught by the fail-closed snapshot. */}
+  finally{checkingCatalog=false;}
+  if(current!==queue||owner!==sessionUid||!allowed())return;
+  const review=reviewLoadedCatalog();renderQueue();
+  if(!review.ok)return render('Không đối chiếu đủ thư viện R2. Dừng để tránh đăng trùng.');
+  if(!current.entries().some(e=>e.selected&&['READY','RETRY'].includes(e.state)))
+   return render('Không còn sách đã chọn sau đối chiếu. Kiểm tra danh sách nghi trùng.');
   await current.run(async entry=>{
    if(!allowed()||owner!==sessionUid||current!==queue)return {kind:'unknown'};
    showEntry(entry);controller=null;abort=null;

@@ -96,7 +96,7 @@
   <link rel="stylesheet" href="css/pilot-v45-1.css?v=45-1-r2">
   <link rel="stylesheet" href="css/story-comments-pilot-v45-2.css?v=45-2">
   <link rel="stylesheet" href="css/sandbox-discussion-v46.css?v=46-1">
-  <link rel="stylesheet" href="css/epub-import-v48.css?v=r2-unified-1">
+  <link rel="stylesheet" href="css/epub-import-v48.css?v=r2-compare-r1">
   <link rel="stylesheet" href="css/epub-batch-import-c421.css?v=c421-1">
   <link rel="stylesheet" href="css/library-intake-v1.css?v=lib1-ui3">
   <link rel="stylesheet" href="css/chat-messenger-v56-12.css?v=56-12">
@@ -2817,6 +2817,8 @@
       },
       onState:state=>{
         window.DuduCatalogPerfMeasurements={...(window.DuduCatalogPerfMeasurements||{}),...state};
+        if(state.states?.r2==='success')
+          window.dispatchEvent(new Event('dudu-r2-author-catalog-ready'));
         const grid=document.getElementById('novel-grid-container');if(!grid)return;
         let box=document.getElementById('epub-catalog-status-r1');
         if(!box){box=document.createElement('div');box.id='epub-catalog-status-r1';box.setAttribute('role','status');box.setAttribute('aria-live','polite');grid.before(box);}
@@ -2830,6 +2832,22 @@
         box.hidden=!box.childNodes.length;
       }
     });
+    // C13-R2: owner-only, read-only comparison against the COMPLETE R2 catalog.
+    // These entries have no original source digest: matching is tentative,
+    // never an assertion of byte identity or authorization to publish.
+    window.DuduR2AuthorCatalogReviewR1=Object.freeze({snapshot(){
+      const uid=firebase.auth().currentUser?.uid;
+      if(IS_SANDBOX_MODE||!uid||!DuduAuth.isReady()||
+         DuduAuth.isAdmin?.()!==true||
+         uid!==l6R2PreviewConfig?.pilotOwnerUid)
+        return {status:'unauthorized',uid:null,books:[]};
+      const status=epubCatalogPerfR1.snapshot().states?.r2||'loading';
+      if(status!=='success')return {status,uid,books:[]};
+      return {status:'ready',uid,books:epubPublishedBooksV49
+        .filter(n=>n?._r2V1===true)
+        .map(n=>({id:n.id,title:n.title,author:n.author,
+          chapterCount:n.chapters?.length||0}))};
+    }});
     function refreshEpubCloudBooksV49(){
       if(IS_SANDBOX_MODE||!window.DuduEpubProductionV49)return Promise.resolve();
       if(DuduAuth.isReady())ensureR2MediaBridgeR1();
@@ -9979,8 +9997,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/firebase-worker-get-probe-c13b6d.js?v=worker-get-probe-3"></script>
 
 <script src="js/library-r2-personal-intake.js?v=personal-intake-1"></script>
-<script src="js/library-r2-personal-queue.js?v=personal-queue-1"></script>
-<script src="js/library-r2-author-ui-c13b6d.js?v=r2-unified-1"></script>
+<script src="js/library-r2-personal-queue.js?v=r2-compare-r1"></script>
+<script src="js/library-r2-author-ui-c13b6d.js?v=r2-compare-r1"></script>
 
 </body>
 </html>
