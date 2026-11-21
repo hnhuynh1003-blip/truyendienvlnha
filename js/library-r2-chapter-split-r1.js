@@ -23,11 +23,14 @@
   if(textBytes.encode(text.slice(start,cap)).length<=MAX_PART_BYTES)return cap;
   let lo=start+1,hi=cap,ok=start;
   while(lo<=hi){
-   const mid=safeCut(text,Math.floor((lo+hi)/2));
-   if(mid<=start){lo++;continue;}
+   // Advance by the original pivot, NOT the surrogate-adjusted cut:
+   // otherwise a budget boundary inside an emoji pair could loop forever.
+   const pivot=Math.floor((lo+hi)/2);
+   const mid=safeCut(text,pivot);
+   if(mid<=start){lo=pivot+1;continue;}
    if(textBytes.encode(text.slice(start,mid)).length<=MAX_PART_BYTES){
-    ok=mid;lo=mid+1;
-   }else hi=mid-1;
+    ok=mid;lo=pivot+1;
+   }else hi=pivot-1;
   }
   return safeCut(text,ok);
  }
