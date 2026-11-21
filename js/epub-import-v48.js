@@ -12,6 +12,8 @@
  // 160-chapter author rules and per-document safety limits.
  const LIMIT_FILE=30*1024*1024,LIMIT_CHAPTERS=160,LIMIT_CHAPTER_CHARS=220000;
  const LIMIT_TOTAL_CHARS=4500000,MAX_ZIP_ENTRIES=3000,MAX_TOTAL_UNPACKED=80*1024*1024;
+ const splitR2=root?.DuduR2ChapterSplitR1||
+  (typeof require==='function'?require('./library-r2-chapter-split-r1.js'):null);
  const safeName=s=>String(s||'').trim().slice(0,140);
  const safeSynopsis=s=>String(s||'').replace(/[\u0000-\u001f\u007f]/g,' ').replace(/\s+/g,' ').trim().slice(0,3000);
  const safeGenres=s=>String(s||'').split(/[,;/|]+/).map(x=>x.replace(/\s+/g,' ').trim())
@@ -41,10 +43,12 @@
  const firstTag=(el,tag)=>el.getElementsByTagName(tag)[0]||
   [...el.getElementsByTagName('*')].find(x=>x.localName===tag)||null;
  const allTags=(el,tag)=>[...el.getElementsByTagName('*')].filter(x=>x.localName===tag);
- function extractText(raw,Parser){
-  if(typeof raw!=='string'||raw.length>LIMIT_CHAPTER_CHARS*5)throw Error('Chương EPUB vượt giới hạn');
+ function extractText(raw,Parser,splitLong=false){
+  const maxRaw=splitLong?LIMIT_TOTAL_CHARS*3:LIMIT_CHAPTER_CHARS*5;
+  if(typeof raw!=='string'||raw.length>maxRaw)throw Error('Chương EPUB vượt giới hạn');
   const text=root?.DuduEpubTextV57?.getText(raw,Parser)||legacyText(raw,Parser);
-  if(text.length>LIMIT_CHAPTER_CHARS)throw Error('Một chương EPUB quá dài');
+  if(!splitLong&&text.length>LIMIT_CHAPTER_CHARS)throw Error('Một chương EPUB quá dài');
+  if(splitLong&&text.length>LIMIT_TOTAL_CHARS)throw Error('Một mục EPUB vượt giới hạn tổng số ký tự');
   return text;
  }
  // Backward-compatible test/embedded use if the V57 module is unavailable:
@@ -59,7 +63,7 @@
    .map(n=>(n.textContent||'').replace(/[^\S\n]+/g,' ').replace(/ *\n */g,'\n').trim()).filter(Boolean);
   return (lines.length?lines.join('\n\n'):body.textContent||'').trim();
  }
- async function parse(file,{zipLib,Parser}={}){
+ async function parse(file,{zipLib,Parser,splitOversizedChapters=false}={}){
   if(!validFile(file))throw Error('Chỉ hỗ trợ tệp EPUB từ 1 byte đến 30 MB');
   const Zip=zipLib||(root&&root.JSZip);
   const XmlParser=Parser||(root&&root.DOMParser);
@@ -120,12 +124,18 @@
    const kind=root?.DuduEpubTextV57?.category(heading,record.filename)||
      (/\/(?:cover|title_page)\./i.test(record.filename)?'metadata':'chapter');
    if(kind==='metadata'){skippedMetadata++;continue}
-   const text=extractText(body,XmlParser);
+   const text=extractText(body,XmlParser,splitOversizedChapters);
    if(!text)continue;
    totalChars+=text.length;
    if(totalChars>LIMIT_TOTAL_CHARS)throw Error('EPUB có trên 4,5 triệu ký tự; cần tách thành nhiều tập');
-   chapters.push({title:safeName(heading)||'Chương '+(chapters.length+1),
-    content:text,kind,sourcePath:record.filename});
+   const title=safeName(heading)||'Chương '+(chapters.length+1);
+   if(splitOversizedChapters&&!splitR2?.split)
+    throw Error('Thiếu bộ chia chương R2; không thể nhập an toàn.');
+   const parts=splitOversizedChapters?splitR2.split(text,title):[{title,content:text}];
+   if(chapters.length+parts.length>LIMIT_CHAPTERS)
+    throw Error('EPUB sau khi chia vượt 160 chương; cần tách thành nhiều tập.');
+   for(const part of parts)chapters.push({title:part.title,
+    content:part.content,kind,sourcePath:record.filename});
   }
   if(!chapters.length)throw Error('Không tìm thấy chương có nội dung');
   return {title:safeName(metadataTitle)||safeName(file.name.replace(/\.epub$/i,''))||'Truyện EPUB',
