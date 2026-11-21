@@ -11,7 +11,7 @@ test('R2: long Vietnamese text is split without losing characters, spacing or em
  assert.equal(parts.map(x=>x.content).join(''),original);
  assert.ok(parts.every(p=>p.content.length<=155000&&textBytes.encode(p.content).length<=290000));
  assert.ok(parts.every((p,i)=>p.title.endsWith('(phần '+(i+1)+'/'+parts.length+')')));
- assert.equal(epub.extractText?typeof epub.extractText:'existing API unchanged','existing API unchanged');
+ assert.equal(typeof epub.parse,'function','V48 parser remains available');
 });
 test('R2: short chapters keep exactly their original title/content',()=>{
  const content='Thần đi qua núi. 🌙\n\nNúi hóa biển.';
