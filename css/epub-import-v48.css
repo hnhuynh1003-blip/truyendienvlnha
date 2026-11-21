@@ -40,3 +40,14 @@
 #epub-import-content .r2-import-footer{position:sticky;bottom:-12px;background:var(--bg-panel,#172130);padding:10px 0 2px;z-index:1}
 #epub-import-content #c12-folder-note{font-size:11px;color:var(--text-dim,#aebdcf)}
 @media(max-width:420px){#epub-import-content .r2-import-pickers{grid-template-columns:1fr 1fr}#epub-import-content #c12-pick-folder{grid-column:1/-1}#epub-import-content .r2-queue-tools{display:flex}#epub-import-content .r2-import-preview-header{gap:9px}}
+
+/* R2-C13 owner catalog preflight: one-line status and explicit override.
+   No book data, avatar, Reader or storage behavior is modified by CSS. */
+#epub-import-content #c12-duplicate-hint{
+  margin:4px 9px 9px;color:#dce2ea;font-size:11px;line-height:1.55;
+  overflow-wrap:anywhere;
+}
+#epub-import-content .r2-import-queue-row>button:nth-child(4){
+  grid-column:2/-1;justify-self:start;max-width:100%;white-space:normal;
+  background:rgba(70,55,32,.65);border-color:rgba(224,182,115,.55);
+}
