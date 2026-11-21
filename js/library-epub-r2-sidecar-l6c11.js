@@ -49,7 +49,9 @@
     if(!segments.length)bad('path traversal');
     segments.pop();continue;
    }
-   if(/[\\/:\u0000-\u001F]/.test(x)||x==='..')bad('unsafe EPUB segment');
+   if(x.includes('/')||x.includes('\\'))bad('unsafe EPUB segment (encoded slash/backslash in path)');
+   if(x.includes(':'))bad('unsafe EPUB segment (colon in resource filename)');
+   if(/[\u0000-\u001F]/.test(x)||x==='..')bad('unsafe EPUB segment (control or traversal)');
    segments.push(x);
   }
   const dest=segments.join('/');
