@@ -96,6 +96,11 @@ jobs:
           node tests/browser-vanbao-f44.cjs
           node tests/browser-vanbao-main-f44.cjs
           node tests/browser-vanbao-final-f44.cjs
+      - name: R2 published catalog duplicate preflight (local only)
+        run: |
+          node --check js/library-r2-personal-queue.js
+          node --check js/library-r2-author-ui-c13b6d.js
+          node --test tests/browser-r2-published-preflight-r1.cjs
       - name: S1-B4 shared Item Profile and Appearance mobile QA (local only)
         run: node --test tests/browser-item-profile-s1b4.cjs
       - name: F4.3 inventory viewer, quantity controls and collection delivery
