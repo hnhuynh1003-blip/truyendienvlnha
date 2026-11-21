@@ -4,6 +4,12 @@
  function create({prepare,validateMetadata,cryptoApi=globalThis.crypto,onChange=()=>{}}={}){
   const entries=[],seen=new Set();let running=false,adding=false,halted=false,paused=false,sequence=0;
   const editable=e=>e&&['READY','METADATA','RETRY'].includes(e.state);
+  const norm=s=>typeof s==='string'?s.normalize('NFKC').toLocaleLowerCase('vi').replace(/\s+/g,' ').trim():'';
+  const identity=x=>norm(x?.title)+'\u0000'+norm(x?.author);
+  const publishedValid=b=>!!b&&/^epub-[a-f0-9]{32}$/.test(b.id||'')&&
+    typeof b.title==='string'&&b.title.length<=140&&!!norm(b.title)&&
+    typeof b.author==='string'&&b.author.length<=140&&!!norm(b.author)&&
+    Number.isSafeInteger(b.chapterCount)&&b.chapterCount>0&&b.chapterCount<=160;
   const blocked=()=>running||adding||halted;
   function notify(){onChange();}
   return Object.freeze({
@@ -32,7 +38,45 @@
      notify();
     }}finally{adding=false;notify();}return report;
    },
-   edit(id,metadata){if(blocked())return false;const e=entries.find(x=>x.id===id);if(!editable(e))return false;e.metadata={...metadata};e.state=validateMetadata(e.metadata)?'READY':'METADATA';e.message='';notify();return true;},
+   edit(id,metadata){if(blocked())return false;const e=entries.find(x=>x.id===id);if(!editable(e))return false;e.metadata={...metadata};e.state=validateMetadata(e.metadata)?'READY':'METADATA';e.message='';e.reviewConfirmed=false;notify();return true;},
+   // Only a COMPLETE owner-authenticated R2 catalog may be supplied by the UI.
+   // A metadata match is a POSSIBLE duplicate, NEVER a verified hash match.
+   reviewCatalog(books){
+    if(blocked()||!Array.isArray(books)||books.length>2000||!books.every(publishedValid))
+      return {ok:false,possible:0};
+    const lookup=new Map();
+    for(const b of books){const key=identity(b);if(!lookup.has(key))lookup.set(key,b);}
+    let possible=0;
+    for(const entry of entries){
+     if(!['READY','RETRY','METADATA','POSSIBLE_DUPLICATE'].includes(entry.state))continue;
+     if(!validateMetadata(entry.metadata))continue;
+     const match=lookup.get(identity(entry.metadata));
+     if(!match){
+      if(entry.state==='POSSIBLE_DUPLICATE'){
+       entry.state='READY';entry.selected=false;entry.message='';entry.matchId=null;
+      }
+      continue;
+     }
+     // An override requires a separate explicit owner confirmation per book.
+     if(entry.reviewConfirmed===true&&entry.matchId===match.id)continue;
+     entry.state='POSSIBLE_DUPLICATE';entry.selected=false;
+     entry.matchId=match.id;entry.reviewConfirmed=false;
+     entry.message='Trùng tên/tác giả'+
+       (entry.chapters===match.chapterCount?' và số chương':' (số chương khác)')+
+       ' với sách trong thư viện; chưa đối chiếu SHA-256.';
+     possible++;
+    }
+    notify();
+    return {ok:true,possible};
+   },
+   confirmDifferentBook(id){
+    if(blocked())return false;
+    const e=entries.find(x=>x.id===id);
+    if(!e||e.state!=='POSSIBLE_DUPLICATE'||!e.matchId)return false;
+    e.reviewConfirmed=true;e.state='READY';e.selected=true;
+    e.message='Tác giả xác nhận đây là nội dung khác; chưa xác minh SHA-256.';
+    notify();return true;
+   },
    select(id,value){if(blocked())return false;const e=entries.find(x=>x.id===id);if(!editable(e))return false;e.selected=value===true;notify();return true;},
    selectAll(value){if(blocked())return;for(const e of entries)if(editable(e))e.selected=value===true;notify();},
    pause(){paused=true;notify();},
