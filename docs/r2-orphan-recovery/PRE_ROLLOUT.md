@@ -29,6 +29,8 @@ Pre-dispatch validation, media, digest, auth, OAuth or Firestore-read errors do 
 
 Both candidate and rollback use the same guard/fence/storage and exact actor name. The rollback artifact hard-disables inspect/close while guarded writes continue honoring permanent closed-book fences and unknown intents. Native QA hot-swaps it after a synthetic close receipt. See [ACCEPTANCE.md](ACCEPTANCE.md) for rollout/rollback approvals.
 
+The final native harness enables the real legacy route flags and uses only synthetic signing material: ticket issuance=200 and signed create-only draft=201 through the actual commit transport. It also loses a synthetic commit response, restarts the actor with the candidate after rollback, and requires the persisted intent to block inspection with `write-outcome-unknown`. This verifies both availability before dispatch and fail-closed behavior after dispatch; cloud mutations remain zero.
+
 ## Compatibility and release gate
 
 The compatibility CI job builds a temporary integration tree from PR44 and current #41/#42 refs, applies the reviewed test-only patch, and runs the quota/diagnostic/clock, recovery and Library suites. The output records dependency SHAs. Neither Draft PR is merged or rewritten, and #42's single-flight/fresh-boundary optimization is retained.
