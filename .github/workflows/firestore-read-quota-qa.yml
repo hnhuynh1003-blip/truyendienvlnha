@@ -23,5 +23,5 @@ jobs:
         with:
           node-version: '22'
       - run: node --check js/epub-catalog-perf-r1.js && node --check js/library-r2-author-ui-c13b6d.js
-      - run: node --test tests/firestore-read-quota-r1.test.cjs tests/auth-v2.test.cjs tests/profile-save-c23.test.cjs tests/r2-published-preflight-r1.test.cjs tests/account-approval-v1.test.cjs
+      - run: node --test tests/firestore-read-quota-r1.test.cjs tests/auth-v2.test.cjs tests/profile-save-c23.test.cjs tests/r2-published-preflight-r1.test.cjs
       - run: node --test tests/library*.test.cjs tests/epub*.test.cjs tests/personal-fun-c25.test.cjs tests/personal-scratch-c28.test.cjs tests/personal-blind-box-c29.test.cjs

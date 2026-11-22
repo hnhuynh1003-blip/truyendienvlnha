@@ -122,7 +122,7 @@ test('R2: source wiring requires completed matching-owner catalog and preflight 
  assert.match(html,/uid!==l6R2PreviewConfig\?\.pilotOwnerUid/);
  assert.match(ui,/data\.uid===sessionUid/);
  assert.match(ui,/!catalogSnapshot\(\)/);
- assert.match(ui,/await refreshEpubCloudBooksV49\(\)/);
+ assert.match(ui,/await refreshEpubCloudBooksV49\(\{fresh:true\}\)/);
  assert.ok(ui.indexOf('const review=reviewLoadedCatalog();renderQueue();')<
    ui.indexOf('await current.run(async entry=>'));
  assert.match(ui,/!review\.ok\)return render/);
