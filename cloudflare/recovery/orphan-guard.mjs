@@ -8,7 +8,7 @@ export async function boundedJson(request,max=2048){
 }
 export function createGuard({storage,legacy,verifyIdentity,readCatalog,bucket,owner,env,now=Date.now,random=()=>crypto.randomUUID()}){
  let tail=Promise.resolve();
- const reply=(status,code,data={})=>Response.json({ok:status<300,code,...data},{status,headers:{'Cache-Control':'private, no-store','Vary':'Origin','Access-Control-Allow-Origin':env.ALLOWED_ORIGIN}});
+ const reply=(status,code,data={})=>Response.json({ok:status<300,code,...data},{status,headers:{'Cache-Control':'private, no-store','Vary':'Origin','Access-Control-Allow-Origin':env.ALLOWED_ORIGIN,'X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'none'; sandbox"}});
  const serial=fn=>{const task=tail.then(fn);tail=task.catch(()=>{});return task;};
  async function absence(book,revision){
   const classify=d=>{

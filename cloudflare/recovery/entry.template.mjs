@@ -18,6 +18,7 @@ export class OrphanPendingGuard {
 }
 export default {fetch(request,env){
  const recovery=isRecoveryPath(new URL(request.url).pathname);
+ if(recovery&&(env.LIBRARY_R2_ORPHAN_CLOSE_ENABLED!=='true'||env.LIBRARY_R2_ORPHAN_LEGACY_DRAIN_VERIFIED!=='true'))return Response.json({ok:false,code:'recovery-not-activated'},{status:503,headers:{'Cache-Control':'private, no-store','Access-Control-Allow-Origin':env.ALLOWED_ORIGIN,'Vary':'Origin'}});
  if(request.method==='POST'||recovery){
   if(!env.ORPHAN_PENDING_GUARD)return Response.json({ok:false,code:'recovery-guard-unavailable'},{status:503});
   return env.ORPHAN_PENDING_GUARD.get(env.ORPHAN_PENDING_GUARD.idFromName('library-owner-writer-v1')).fetch(request);

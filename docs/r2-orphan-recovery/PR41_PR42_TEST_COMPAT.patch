@@ -1,0 +1,18 @@
+diff --git a/tests/firestore-read-quota-r1.test.cjs b/tests/firestore-read-quota-r1.test.cjs
+index 06747592..1adfe41d 100644
+--- a/tests/firestore-read-quota-r1.test.cjs
++++ b/tests/firestore-read-quota-r1.test.cjs
+@@ -67 +67,2 @@ test('integration wrappers invalidate R2 only when work starts, and publish/comp
+- assert.ok(ui.includes("data.code==='import-status'&&data.found===true&&data.bookId===p.bookId&&data.revision===p.revisionId&&data.status==='published'"));
++ assert.ok(ui.includes("data.bookId!==p.bookId||data.revision!==p.revisionId"));
++ assert.ok(ui.includes("case 'published':return {kind:'published'"));
+@@ -77 +78 @@ for(const [name,change,http,clears] of [
+- vm.createContext(ctx);vm.runInContext(source.slice(start,end),ctx);await handler();assert.equal(removed,clears?1:0);assert.equal(gets,1);
++ vm.createContext(ctx);const ca=source.indexOf(' function classifyRecovery(');vm.runInContext(source.slice(ca,source.indexOf(' function render(',ca))+'\n'+source.slice(start,end),ctx);await handler();assert.equal(removed,clears?1:0);assert.equal(gets,1);
+diff --git a/tests/r2-epub-diagnostics-safety.test.cjs b/tests/r2-epub-diagnostics-safety.test.cjs
+index 80547ec9..d5eccb46 100644
+--- a/tests/r2-epub-diagnostics-safety.test.cjs
++++ b/tests/r2-epub-diagnostics-safety.test.cjs
+@@ -23 +23 @@ for(const [name,change,http,clears] of [
+- vm.createContext(context);vm.runInContext(source.slice(start,end),context);await handler();assert.equal(removed,clears?1:0);assert.equal(reconciled,clears?1:0);assert.equal(posts,0);assert.equal(context.busy,false);
++ vm.createContext(context);const ca=source.indexOf(' function classifyRecovery(');vm.runInContext(source.slice(ca,source.indexOf(' function render(',ca))+'\n'+source.slice(start,end),context);await handler();assert.equal(removed,clears?1:0);assert.equal(reconciled,clears?1:0);assert.equal(posts,0);assert.equal(context.busy,false);

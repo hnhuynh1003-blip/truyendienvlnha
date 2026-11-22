@@ -1,4 +1,4 @@
-import {test} from 'node:test';import assert from 'node:assert/strict';import {createGuard} from '../cloudflare/recovery/orphan-guard.mjs';
+import {test} from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import vm from 'node:vm';import {createGuard,isRecoveryPath} from '../cloudflare/recovery/orphan-guard.mjs';
 const BOOK='epub-'+'a'.repeat(32),REV='r-'+'b'.repeat(32),OWNER='fixture-owner',ORIGIN='https://fixture.invalid';
 const deferred=()=>{let resolve;const promise=new Promise(r=>{resolve=r;});return {promise,resolve};};
 class Storage{constructor(){this.data=new Map();}async get(k){return this.data.get(k);}async put(k,v){this.data.set(k,structuredClone(v));}async delete(k){this.data.delete(k);}async list({prefix,limit}){return new Map([...this.data].filter(([k])=>k.startsWith(prefix)).slice(0,limit));}}
@@ -24,3 +24,11 @@ test('malformed Firestore shape and list failures never produce proof',async()=>
 for(const failure of ['firestore','r2','truncated'])test('backend failure '+failure+' is never an absence proof',async()=>{const h=harness();h.failure(failure);const r=await h.call('inspect');assert.ok(r.status>=400);assert.equal(r.proof,undefined);});
 test('close requires explicit action and correct method',async()=>{const h=harness(),p=(await h.call('inspect')).proof;assert.equal((await h.call('close',{revisionId:REV,phase:'draft',proofId:p.proofId,action:'OTHER'})).status,400);assert.equal((await h.guard().fetch(new Request(ORIGIN+`/v1/library/r2/catalog/${BOOK}/orphan/inspect`,{headers:{Origin:ORIGIN}}))).status,405);});
 test('draft cannot route a signed ticket around a closed-book fence',async()=>{const h=harness(),p=(await h.call('inspect')).proof;await h.close(p);const ticket=btoa(JSON.stringify({bookId:BOOK,revisionId:REV}))+'.synthetic';const request=manifest=>new Request(ORIGIN+'/v1/library/r2/catalog/draft',{method:'POST',headers:{Origin:ORIGIN,'Content-Type':'application/json'},body:JSON.stringify({manifest,ticket})});assert.equal((await h.guard().fetch(request({bookId:BOOK,revisionId:REV}))).status,409);assert.equal((await h.guard().fetch(request({bookId:'epub-'+'d'.repeat(32),revisionId:REV}))).status,400);});
+test('entry kill switch blocks recovery before old actors; every legacy POST requires the guard',async()=>{
+ const source=fs.readFileSync(new URL('../cloudflare/recovery/entry.template.mjs',import.meta.url),'utf8');let actors=0,reads=0;const context={Response,URL,isRecoveryPath,legacy:{fetch:async()=>{reads++;return Response.json({});}}};vm.runInNewContext(source.slice(source.indexOf('export default')).replace('export default','globalThis.entry ='),context);
+ const env={ALLOWED_ORIGIN:ORIGIN,LIBRARY_R2_ORPHAN_CLOSE_ENABLED:'false',LIBRARY_R2_ORPHAN_LEGACY_DRAIN_VERIFIED:'true',ORPHAN_PENDING_GUARD:{idFromName:n=>n,get:()=>({fetch:async()=>{actors++;return Response.json({});}})}};
+ assert.equal((await context.entry.fetch(new Request(ORIGIN+`/v1/library/r2/catalog/${BOOK}/orphan/close`,{method:'POST'}),env)).status,503);assert.equal(actors,0);
+ env.LIBRARY_R2_ORPHAN_CLOSE_ENABLED='true';await context.entry.fetch(new Request(ORIGIN+'/v1/library/r2/catalog/ticket',{method:'POST'}),env);assert.equal(actors,1);assert.equal(reads,0);
+ await context.entry.fetch(new Request(ORIGIN+`/v1/library/r2/catalog/${BOOK}/status`),env);assert.equal(reads,1);
+ delete env.ORPHAN_PENDING_GUARD;assert.equal((await context.entry.fetch(new Request(ORIGIN+'/v1/library/r2/catalog/ticket',{method:'POST'}),env)).status,503);assert.equal(reads,1);
+});

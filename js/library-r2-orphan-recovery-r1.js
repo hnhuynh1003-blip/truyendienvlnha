@@ -21,13 +21,18 @@
     if(!await confirm('Worker vừa xác minh không có bản thảo và không có object R2 cho đúng phiên này. Đây KHÔNG phải xác nhận đã xuất bản. Kết thúc phiên sẽ giữ nguyên bản ghi gốc, lưu bằng chứng cục bộ và yêu cầu tải đầy đủ thư viện để kiểm tra trùng trước khi đăng lại. Bạn có xác nhận kết thúc phiên này?'))return {released:false,code:'CANCELLED'};
     if(!same())throw Error('Phiên đã thay đổi; giữ nguyên pending.');
     const key=prefix(uid,p)+proof.proofId;
-    const evidence={schema:1,uid,raw,state:'backed-up',proof};
+    const safeProof={uid,bookId:p.bookId,revisionId:p.revisionId,phase:p.phase,proofId:proof.proofId,
+     ...Object.fromEntries(['verifiedAt','expiresAt','epoch'].filter(k=>Number.isSafeInteger(proof[k])).map(k=>[k,proof[k]]))};
+    const previous=storage.getItem(key);
+    const evidence=previous?JSON.parse(previous):{schema:1,uid,raw,state:'backed-up',proof:safeProof};
+    if(evidence.schema!==1||evidence.uid!==uid||evidence.raw!==raw||evidence.proof?.proofId!==proof.proofId)throw Error('Bằng chứng cũ không khớp; giữ nguyên pending.');
     const backup=JSON.stringify(evidence);storage.setItem(key,backup);if(storage.getItem(key)!==backup)throw Error('Không lưu được bản sao bằng chứng; giữ nguyên pending.');
     if(!same())throw Error('Phiên đã thay đổi; giữ nguyên pending.');
     const closed=await send('close',{...p,proofId:proof.proofId,action:'CLOSE_ORPHAN_PENDING'});
     if(!same())throw Error('Phiên đã thay đổi; giữ nguyên pending.');
     if(closed?.ok!==true||closed.code!=='orphan-closed'||!receiptMatches(closed.receipt,uid,p,proof.proofId))throw Error('Chưa xác nhận kết thúc phiên; giữ nguyên pending.');
-    const final=JSON.stringify({...evidence,state:'resolved',receipt:closed.receipt});storage.setItem(key,final);if(storage.getItem(key)!==final)throw Error('Không lưu được biên bản kết thúc; giữ nguyên pending.');
+    const receipt={uid,bookId:p.bookId,revisionId:p.revisionId,phase:p.phase,proofId:proof.proofId,action:'CLOSE_ORPHAN_PENDING',closedAt:closed.receipt.closedAt,emptyPrefixes:5};
+    const final=JSON.stringify({...evidence,state:'resolved',receipt});storage.setItem(key,final);if(storage.getItem(key)!==final)throw Error('Không lưu được biên bản kết thúc; giữ nguyên pending.');
     // Never remove/overwrite the original pending. An exact receipt resolves only this raw value.
     if(!same())return {released:false,code:'SESSION_CHANGED'};
     let refreshed=false;try{await refreshCatalog();refreshed=getUser()===user&&isAllowed()&&readRaw(uid)===raw&&catalogReady()===true;}catch{}
