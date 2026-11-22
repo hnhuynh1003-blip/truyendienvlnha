@@ -25,7 +25,7 @@
  bind(view.coverPreview,'cover');const intro=el('div');intro.append(bind(el('p'),'editing'),bind(view.info,'info'));previewHeader.append(view.coverPreview,intro);
  const chapterPanel=el('details');chapterPanel.className='r2-import-chapters';chapterPanel.append(bind(el('summary'),'chapter-summary'),bind(view.list,'chapters'));
  for(const [node,name]of [[view.title,'title'],[view.authorInput,'author'],[view.descInput,'description'],[view.genreInput,'genre'],[view.completionInput,'publication'],[view.status,'status']])bind(node,name);
- for(const [name,text]of [['start','Đăng các sách đã chọn'],['pause','Dừng sau cuốn hiện tại'],['status-check','Kiểm tra trạng thái'],['close','Đóng']])bind(view.button(text,()=>{}),name);
+ for(const [name,text]of [['start','Đăng các sách đã chọn'],['pause','Dừng sau cuốn hiện tại'],['status-check','Kiểm tra trạng thái'],['close-orphan','Xác minh và kết thúc phiên không tồn tại'],['close','Đóng']])bind(view.button(text,()=>{}),name);
  const read=view.button('Mở sách vừa đăng',()=>{});read.id='c13b3-read';
  view.buttons.classList.add('r2-import-footer');
  form.append(help,pickers,view.input,files,folder,folderNote,queuePanel,previewHeader,view.fields,chapterPanel,view.status,view.buttons);host.replaceChildren(form);
@@ -111,7 +111,8 @@
   id('pause').disabled=!state.running;id('pause').hidden=!state.running;render();
  }
  const key=uid=>'dudu-r2-personal:'+uid;
- function pending(){const raw=localStorage.getItem(key(sessionUid));if(!raw)return null;const p=JSON.parse(raw);if(p.schema!==1||!Object.hasOwn(labels,p.phase)||p.bookId!==null&&!/^epub-[a-f0-9]{32}$/.test(p.bookId)||p.revisionId!==null&&!/^r-[a-f0-9]{32}$/.test(p.revisionId))throw Error('Phiên nhập lưu trên máy cần đối soát.');return p;}
+ let orphanResolved=false;
+ function pending(){orphanResolved=false;const raw=localStorage.getItem(key(sessionUid));if(!raw)return null;const p=JSON.parse(raw);if(p.schema!==1||!Object.hasOwn(labels,p.phase)||p.bookId!==null&&!/^epub-[a-f0-9]{32}$/.test(p.bookId)||p.revisionId!==null&&!/^r-[a-f0-9]{32}$/.test(p.revisionId))throw Error('Phiên nhập lưu trên máy cần đối soát.');if(window.DuduR2OrphanRecoveryR1?.resolved({storage:localStorage,uid:sessionUid,raw})===true){orphanResolved=true;return null;}return p;}
  function record(uid,state){localStorage.setItem(key(uid),JSON.stringify({schema:1,phase:state.status,bookId:state.bookId||null,revisionId:state.revisionId||null}));}
  // Interpret only the signed-in owner's read-only server result; every uncertain state remains locked.
  function classifyRecovery(p,data){
@@ -134,11 +135,13 @@
   const state=controller?.status();let p=null,storageError=false;try{p=sessionUid?pending():null;}catch{storageError=true;}
   id('status').textContent=message||(storageError?'Không đọc được trạng thái lưu trên máy. Dừng nhập.':p&&!controller?'Có phiên nhập cần kiểm tra trạng thái.':labels[state?.status]||labels.idle);
   id('status').dataset.state=state?.status||p?.phase||'idle';
-  id('start').disabled=!allowed()||locked()||storageError||!!p||!catalogSnapshot()||
+  id('start').disabled=!allowed()||locked()||storageError||!!p||!catalogSnapshot()||(orphanResolved&&window.DuduR2OrphanCatalogR1?.ready()!==true)||
    !queue.entries().some(e=>e.selected&&['READY','RETRY'].includes(e.state));
   document.getElementById('c13b3-read').disabled=!allowed()||busy||queue.status().running||!lastPublishedBook;
   for(const x of ['file','files','folder','pick-file','pick-files','pick-folder','clear','select-all','select-none'])id(x).disabled=!allowed()||locked()||!!p||storageError;
   id('status-check').disabled=!allowed()||busy;id('status-check').hidden=!p&&!queue.status().halted;document.getElementById('c13b3-read').hidden=!lastPublishedBook;
+  id('close-orphan').hidden=!p||p.phase!=='draft'||!!controller||queue.entries().length!==0;
+  id('close-orphan').disabled=!allowed()||busy||locked()||!window.DuduR2OrphanRecoveryR1;
   for(const f of fields)id(f).disabled=!allowed()||locked()||!!p||!activeEntry||!['READY','METADATA','RETRY'].includes(activeEntry.state);
  }
  function syncAccess(){const uid=allowed()?firebase.auth().currentUser.uid:null;if(sessionUid!==uid){version++;preparedFile=null;preparing=false;activeEntry=null;lastPublishedBook=null;queue.pause();queue=window.DuduR2PersonalQueue.create({prepare:prepareForQueue,validateMetadata:m=>window.DuduLibraryR2AuthorImportL6C12.validateMetadata(m),onChange:()=>renderQueue()});if(sessionUid){abort?.abort();closeView();controller=null;}}sessionUid=uid;id('open').hidden=!uid;renderQueue();}
@@ -191,6 +194,7 @@ id('form').addEventListener('submit',e=>e.preventDefault());
   finally{checkingCatalog=false;}
   if(current!==queue||owner!==sessionUid||!allowed())return;
   const review=reviewLoadedCatalog();renderQueue();
+  if(orphanResolved&&window.DuduR2OrphanCatalogR1?.ready()!==true)return render('Cần tải đầy đủ cả danh mục V49 và R2 trước khi đăng lại.');
   if(!review.ok)return render('Không đối chiếu đủ thư viện R2. Dừng để tránh đăng trùng.');
   if(!current.entries().some(e=>e.selected&&['READY','RETRY'].includes(e.state)))
    return render('Không còn sách đã chọn sau đối chiếu. Kiểm tra danh sách nghi trùng.');
@@ -241,6 +245,16 @@ id('form').addEventListener('submit',e=>e.preventDefault());
  document.getElementById('c13b3-read').addEventListener('click',async()=>{
   if(!allowed()||busy||queue.status().running||!lastPublishedBook)return;const bookId=lastPublishedBook;document.getElementById('c13b3-read').disabled=true;
   try{await refreshEpubCloudBooksV49();if(!allowed())throw Error('Phiên tác giả đã thay đổi.');const i=novels.findIndex(n=>n.id===bookId&&n._r2V1);if(i<0)throw Error('Chưa tải được truyện mới; tải lại thư viện.');closeView();document.getElementById('story-modal').style.display='none';openCover(i);readChapter(0);}catch(error){render(error.message);}
+ });
+ const orphanIdle=()=>allowed()&&window.DuduAuth?.isReady?.()===true&&!controller&&queue.entries().length===0&&!queue.status().running&&!queue.status().adding;
+ const orphanRecovery=enabled&&config.workerBaseUrl==='https://dudu-library-l6-development.dudu-studio-ai.workers.dev'?window.DuduR2OrphanRecoveryR1?.create({storage:localStorage,getUser:()=>firebase.auth().currentUser,isAllowed:orphanIdle,readRaw:uid=>localStorage.getItem(key(uid)),
+  send:window.DuduR2OrphanRecoveryR1.transport({workerBaseUrl:config.workerBaseUrl,getUser:()=>firebase.auth().currentUser,isAllowed:orphanIdle}),
+  confirm:message=>window.confirm(message),refreshCatalog:()=>window.DuduR2OrphanCatalogR1.reload(),catalogReady:()=>window.DuduR2OrphanCatalogR1?.ready()===true}):null;
+ id('close-orphan').addEventListener('click',async()=>{
+  if(!orphanRecovery||!orphanIdle()||busy||checkingCatalog)return;const owner=sessionUid;busy=true;render();
+  try{const result=await orphanRecovery.close();if(sessionUid!==owner)return;
+   renderQueue();render(result.released?(result.catalogReady?'Đã kết thúc đúng phiên; bản gốc và bằng chứng được giữ trên thiết bị. Hãy chọn EPUB và kiểm tra trùng trước khi đăng lại.':'Đã lưu biên bản kết thúc phiên. Chưa tải đầy đủ thư viện; tiếp tục khóa đăng lại.'):'Chưa kết thúc phiên. Giữ nguyên pending; Worker cần xác minh và tác giả phải xác nhận.');
+  }finally{busy=false;render(id('status').textContent);}
  });
  function closeView(){modal.style.display='none';queue.pause();if(busy)abort?.abort();}
  function openView(){if(!allowed())return false;closeModals();modal.style.display='flex';render();id('pick-file').focus();return true;}

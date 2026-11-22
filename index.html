@@ -2870,6 +2870,10 @@
       if(selected>=0)selectedNovelIndex=selected;
       else selectedNovelIndex=Math.min(Math.max(selectedNovelIndex,0),Math.max(novels.length-1,0));
     }
+    window.DuduR2OrphanCatalogR1=Object.freeze({reload:()=>refreshEpubCloudBooksV49({fresh:true}),ready(){
+      return window.DuduR2AuthorCatalogReviewR1.snapshot().status==='ready'&&
+        epubCatalogPerfR1.snapshot().states?.v49==='success';
+    }});
     window.duduSyncEpubAccessR11=allowed=>{
       if(IS_SANDBOX_MODE||!window.DUDU_ACCOUNT_APPROVAL_V1_READY)return;
       if(!allowed){epubCatalogPerfR1.invalidate();l6R2PreviewClient?.invalidateCatalog();l6R2MediaBridge?.dispose();l6R2MediaBridge=null;}
@@ -9999,6 +10003,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 
 <script src="js/library-r2-personal-intake.js?v=personal-intake-1"></script>
 <script src="js/library-r2-personal-queue.js?v=r2-compare-r1"></script>
+<script src="js/library-r2-orphan-recovery-r1.js?v=orphan-r1"></script>
 <script src="js/library-r2-author-ui-c13b6d.js?v=r2-long-split-r1"></script>
 
 </body>
