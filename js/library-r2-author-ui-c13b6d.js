@@ -212,13 +212,25 @@ id('form').addEventListener('submit',e=>e.preventDefault());
    const base=new URL(config.workerBaseUrl);if(base.href!=='https://dudu-library-l6-development.dudu-studio-ai.workers.dev/')throw Error('Worker URL không hợp lệ.');
    const jwt=await user.getIdToken(false);if(firebase.auth().currentUser!==user||!allowed())throw Error('Phiên đã đổi.');
    const response=await fetch(new URL('/v1/library/r2/catalog/'+p.bookId+'/status',base),{method:'GET',headers:{Authorization:'Bearer '+jwt},credentials:'omit',cache:'no-store',redirect:'error'});
-   if(response.status!==200){await response.body?.cancel();throw Error('Không lấy được trạng thái. Giữ nguyên phiên nhập.');}
+   if(response.status!==200){
+    try{await response.body?.cancel();}catch{/* Never parse/log private response bodies. */}
+    const result=window.DuduR2ImportStatusDiagnosticR1?.classify?.(response.status);
+    throw Error(result?.message||'Không lấy được trạng thái (HTTP '+response.status+'). Giữ nguyên phiên nhập.');
+   }
    const reader=response.body.getReader(),chunks=[];let size=0;try{for(;;){const x=await reader.read();if(x.done)break;size+=x.value.length;if(size>2048){reader.cancel().catch(()=>{});throw Error('Phản hồi trạng thái không hợp lệ.');}chunks.push(x.value);}}finally{reader.releaseLock();}
    const bytes=new Uint8Array(size);let at=0;for(const c of chunks){bytes.set(c,at);at+=c.length;}const data=JSON.parse(new TextDecoder().decode(bytes));
    if(firebase.auth().currentUser!==user||sessionUid!==owner||!allowed())return;
    if(data.code==='import-status'&&data.found===true&&data.bookId===p.bookId&&data.revision===p.revisionId&&data.status==='published'){localStorage.removeItem(key(owner));lastPublishedBook=p.bookId;controller=null;abort=null;preparedFile=null;queue.reconcilePublished();renderQueue();render('Đã xác nhận xuất bản. Có thể chọn sách tiếp theo.');}
    else render('Chưa xác nhận xuất bản đúng revision. Giữ nguyên dữ liệu và dừng nhập tiếp.');
-  }catch(error){if(sessionUid===owner)render(error.message);}finally{busy=false;render(id('status').textContent);}
+  }catch(error){
+   if(sessionUid===owner){
+    // Do not surface raw fetch exception details or credentials.
+    const network=error?.name==='TypeError'||error?.name==='AbortError';
+    render(network?(window.DuduR2ImportStatusDiagnosticR1?.classify?.(null).message||
+     'Không kết nối được Worker. Giữ nguyên phiên nhập.'):
+     String(error?.message||'Không đối soát được phiên nhập.').slice(0,200));
+   }
+  }finally{busy=false;render(id('status').textContent);}
  });
  document.getElementById('c13b3-read').addEventListener('click',async()=>{
   if(!allowed()||busy||queue.status().running||!lastPublishedBook)return;const bookId=lastPublishedBook;document.getElementById('c13b3-read').disabled=true;
