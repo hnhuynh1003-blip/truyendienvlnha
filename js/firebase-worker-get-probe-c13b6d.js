@@ -74,6 +74,7 @@
     'catalog-list-unavailable'
   ]);
   const knownAuthStages = new Set(['AUTH_MODE','AUTH_CONFIG','PEM_FORMAT','CLOCK','KEY_IMPORT','JWT_BUILD','JWT_SIGN','OAUTH_FETCH','OAUTH_HTTP','OAUTH_BODY','TOKEN_TYPE','TOKEN_VALUE','TOKEN_LIFETIME','CACHE_EPOCH','AUTH_UNKNOWN']);
+  const knownCatalogStages = new Set(['FIRESTORE_TRANSPORT','FIRESTORE_HTTP_400','FIRESTORE_HTTP_401','FIRESTORE_HTTP_403','FIRESTORE_HTTP_429','FIRESTORE_HTTP_500','FIRESTORE_HTTP_503','FIRESTORE_HTTP_OTHER','FIRESTORE_JSON','FIRESTORE_RESULT','CATALOG_VALIDATION','CATALOG_PAGINATION']);
   async function readKnown503Code(response) {
     const empty = () => ({ code: '', stage: '' });
     if (response.status !== 503 ||
@@ -96,8 +97,10 @@
       const json = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(raw));
       if (!json || typeof json !== 'object' || Array.isArray(json) ||
           typeof json.code !== 'string' || !known503.has(json.code)) return empty();
-      return { code: json.code, stage: json.code === 'server-auth-unavailable' &&
-        typeof json.stage === 'string' && knownAuthStages.has(json.stage) ? json.stage : '' };
+      const stages = json.code === 'server-auth-unavailable' ? knownAuthStages :
+        json.code === 'catalog-list-unavailable' ? knownCatalogStages : null;
+      return { code: json.code, stage: typeof json.stage === 'string' &&
+        stages?.has(json.stage) ? json.stage : '' };
     } catch {
       return empty();
     } finally {
