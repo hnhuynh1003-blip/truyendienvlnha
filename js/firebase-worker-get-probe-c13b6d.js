@@ -2,6 +2,8 @@
 (function () {
   'use strict';
   const OWNER = 'B2yP6xL5rZPcj1GjHUJ5cINx1eT2';
+  // Client-only tolerance; Worker still verifies JWT signature, claims and expiry.
+  const ISSUED_SKEW_MS = 5000;
   const PROJECT = 'truyendienvl';
   const SITE_ORIGIN = 'https://hnhuynh1003-blip.github.io';
   const WORKER_ORIGIN = 'https://dudu-library-l6-development.dudu-studio-ai.workers.dev';
@@ -163,7 +165,7 @@
         claims.iss === `https://securetoken.google.com/${PROJECT}` &&
         Number.isSafeInteger(exp) && exp > 0 &&
         Number.isSafeInteger(exp * 1000) && exp * 1000 > now &&
-        Number.isFinite(issued) && issued <= now &&
+        Number.isFinite(issued) && issued <= now + ISSUED_SKEW_MS &&
         Number.isFinite(expiry) && expiry > now && issued < expiry;
       if (!authorized) {
         display(null, null, 'SESSION_CHECK_FAIL');

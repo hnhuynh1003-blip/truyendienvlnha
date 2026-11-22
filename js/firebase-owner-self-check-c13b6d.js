@@ -2,6 +2,8 @@
 (function(){
   'use strict';
   const OWNER='B2yP6xL5rZPcj1GjHUJ5cINx1eT2',PROJECT='truyendienvl';
+  // Client-only tolerance for minor clock skew. Worker must verify signed JWT independently.
+  const ISSUED_SKEW_MS=5000;
   const panel=document.getElementById('firebase-owner-check');
   const button=document.getElementById('firebase-owner-check-button');
   const results=document.getElementById('firebase-owner-check-results');
@@ -44,7 +46,6 @@
   }
   // Only disclose coarse clock-offset bands; never the token timestamps.
   function issuedFutureCode(aheadMs){
-    if(aheadMs<5000)return 'ISSUED_IN_FUTURE_LT_5S';
     if(aheadMs<60000)return 'ISSUED_IN_FUTURE_5S_TO_1M';
     if(aheadMs<300000)return 'ISSUED_IN_FUTURE_1M_TO_5M';
     return 'ISSUED_IN_FUTURE_GE_5M';
@@ -59,7 +60,7 @@
     else if(!Number.isFinite(sdkExpiry))code='SDK_EXP_FORMAT';
     else if(sdkExpiry<=now)code='SDK_EXPIRED';
     else if(!Number.isFinite(issued))code='ISSUED_FORMAT';
-    else if(issued>now)code=issuedFutureCode(issued-now);
+    else if(issued>now+ISSUED_SKEW_MS)code=issuedFutureCode(issued-now);
     else if(issued>=sdkExpiry)code='ISSUED_AFTER_EXP';
     return {valid:code==='',code,expiresAt:Math.min(jwtExpiry,sdkExpiry)};
   }
