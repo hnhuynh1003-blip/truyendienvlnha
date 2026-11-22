@@ -2,6 +2,8 @@
 const BOOK=/^epub-[a-f0-9]{32}$/,REV=/^r-[a-f0-9]{32}$/,UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/;
 const ROOT='/v1/library/r2/',ORPHAN=/^\/v1\/library\/r2\/catalog\/(epub-[a-f0-9]{32})\/orphan\/(inspect|close)$/;
 export const isRecoveryPath=path=>ORPHAN.test(path);
+// Mirrors the SHA-pinned production gate; unrelated POSTs retain legacy semantics.
+export const isLegacyWritePath=path=>/^\/v1\/library\/r2\/(?:catalog\/(?:ticket|draft|epub-[a-f0-9]{32}\/(?:promote|publish))|stage\/(?:(?:chapter|layout|asset)\/epub-[a-f0-9]{32}\/[A-Za-z0-9][A-Za-z0-9_-]{3,120}|original\/epub-[a-f0-9]{32}))$/.test(path);
 export async function boundedJson(request,max=2048){
  const reader=request.body?.getReader();if(!reader)throw Error('BODY');let text='',size=0;const decoder=new TextDecoder();
  try{for(;;){const r=await reader.read();if(r.done)break;size+=r.value.byteLength;if(size>max)throw Error('BODY');text+=decoder.decode(r.value,{stream:true});}return JSON.parse(text+decoder.decode());}finally{await reader.cancel().catch(()=>{});reader.releaseLock();}
@@ -63,8 +65,8 @@ export function createGuard({storage,legacy,verifyIdentity,readCatalog,bucket,ow
    await storage.put('closed:'+book,receipt); // Permanent fence; never remove on retry or rollback.
    return reply(200,'orphan-closed',{receipt});
   }
-  // Every legacy POST is serialized through this same owner actor.
-  if(!url.pathname.startsWith(ROOT)||url.search)return reply(404,'not-found');
+  // Only audited production write routes enter this actor.
+  if(!isLegacyWritePath(url.pathname))return reply(404,'not-found');
   let book;
   if(url.pathname===ROOT+'catalog/draft'){
    let body;try{body=await boundedJson(request.clone(),1048576);}catch{return reply(400,'bad-draft');}
@@ -74,11 +76,18 @@ export function createGuard({storage,legacy,verifyIdentity,readCatalog,bucket,ow
    if(!BOOK.test(book||'')||issued.bookId!==book||issued.revisionId!==body.manifest?.revisionId)return reply(400,'bad-draft');
   }else{book=url.pathname.match(/\/(epub-[a-f0-9]{32})(?:\/|$)/)?.[1];}
   if(book&&await storage.get('closed:'+book))return reply(409,'session-closed');
-  await storage.put('active',{operation:random(),startedAt:now()});
+  // Advancing the proof epoch is conservative even when validation prevents a write.
   await storage.put('epoch',((await storage.get('epoch'))||0)+1);
-  let response;try{response=await legacy(request,env);}catch{return reply(503,'write-outcome-unknown');}
-  // Non-success may hide a committed backend write. Retain the intent on uncertainty.
-  if(response.status>=200&&response.status<300)await storage.delete('active');
+  let dispatched=false,uncertain=false,intentReady=false;
+  const dispatch=async operation=>{
+   if(!intentReady){await storage.put('active',{operation:random(),startedAt:now()});intentReady=true;}
+   dispatched=true;
+   try{const result=await operation();if(result instanceof Response&&!(result.status>=200&&result.status<300))uncertain=true;return result;}
+   catch(error){uncertain=true;throw error;}
+  };
+  let response;try{response=await legacy(request,env,dispatch);}catch{return reply(503,dispatched?'write-outcome-unknown':'legacy-unavailable');}
+  // Never infer a write outcome from HTTP alone. No dispatch means no intent.
+  if(dispatched&&!uncertain&&response.status>=200&&response.status<300)await storage.delete('active');
   return response;
  }
  return {fetch:request=>serial(()=>handle(request)).catch(()=>reply(503,'recovery-unavailable'))};

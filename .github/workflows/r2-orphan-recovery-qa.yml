@@ -11,6 +11,7 @@ on:
       - 'cloudflare/recovery/**'
       - 'tests/r2-orphan-*.test.*'
       - 'docs/r2-orphan-recovery/**'
+      - 'scripts/test-r2-orphan-compat.cjs'
       - '.github/workflows/r2-orphan-recovery-qa.yml'
 permissions:
   contents: read
@@ -25,3 +26,15 @@ jobs:
           node-version: '22'
       - run: node --check js/library-r2-orphan-recovery-r1.js && node --check js/library-r2-author-ui-c13b6d.js && node --check cloudflare/recovery/orphan-guard.mjs
       - run: node --test tests/r2-orphan-guard.test.mjs tests/r2-orphan-client.test.cjs tests/r2-pending-recovery-r1.test.cjs tests/r2-published-preflight-r1.test.cjs tests/auth-v2.test.cjs tests/profile-save-c23.test.cjs
+  compatibility:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: git fetch origin perf/firestore-read-quota:refs/remotes/origin/perf/firestore-read-quota hotfix/r2-epub-safe-diagnostics:refs/remotes/origin/hotfix/r2-epub-safe-diagnostics
+      - run: node scripts/test-r2-orphan-compat.cjs

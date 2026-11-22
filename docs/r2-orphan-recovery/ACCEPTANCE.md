@@ -29,8 +29,10 @@
 
 ## Rollback
 
-Before any closed-book receipt exists and after all guarded operations are accounted for, a reviewed rollback may restore the original Worker version/configuration. Never delete the DO namespace or clear active intents to force recovery.
+Before rollout, keep the original deployed Worker unchanged. Once the guarded writer is activated, use the guard-retaining rollback below, including before the first receipt. Never delete the DO namespace or clear active intents to force recovery.
 
 **After any successful close, restoring the old unguarded Worker is unsafe:** it would forget the durable closed-book fences. The safe rollback is to disable recovery (`LIBRARY_R2_ORPHAN_CLOSE_ENABLED=false`) while retaining the guard, namespace, active intents and closed records. Existing reads remain on the legacy implementation. A guard-retaining rollback requires its own tested artifact/approval; an unguarded version is not an acceptable substitute. Do not remove the namespace/migration as a shortcut.
+
+`build-private.cjs` prepares `.private/entry.rollback.mjs` with a hard-coded recovery kill switch and `.private/wrangler.rollback.toml` retaining every binding/migration. Its separate dry-run output is `.private/dry-run-rollback/entry.rollback.js`. Native QA first creates a synthetic receipt, replaces the running candidate with that exact rollback artifact using the same SQLite storage, then requires close=503 and a fenced publish=409. The namespace binding, class name, actor name `library-owner-writer-v1`, storage and migration tag must remain unchanged. A future approval must cover the exact artifact SHA/config diff and deployment; this task only prepares and tests it locally. After rollback retain/export receipts through an authorized read-only audit rather than clearing them. Re-enabling recovery requires another reviewed activation/drain check.
 
 Reverting the frontend feature does not erase any data: the original pending and local evidence remain. It may lock the UI again until a reviewed release restores receipt interpretation. Never delete evidence/pending, create a fake published document, modify book metadata or purge R2 to make rollback appear successful.
