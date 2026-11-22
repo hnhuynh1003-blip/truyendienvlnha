@@ -2849,10 +2849,6 @@
         .map(n=>({id:n.id,title:n.title,author:n.author,
           chapterCount:n.chapters?.length||0}))};
     }});
-    window.DuduR2OrphanCatalogR1=Object.freeze({reload:()=>refreshEpubCloudBooksV49({fresh:true}),ready(){
-      return window.DuduR2AuthorCatalogReviewR1.snapshot().status==='ready'&&
-        epubCatalogPerfR1.snapshot().states?.v49==='success';
-    }});
     function refreshEpubCloudBooksV49(){
       if(IS_SANDBOX_MODE||!window.DuduEpubProductionV49)return Promise.resolve();
       if(DuduAuth.isReady())ensureR2MediaBridgeR1();
@@ -2874,6 +2870,10 @@
       if(selected>=0)selectedNovelIndex=selected;
       else selectedNovelIndex=Math.min(Math.max(selectedNovelIndex,0),Math.max(novels.length-1,0));
     }
+    window.DuduR2OrphanCatalogR1=Object.freeze({reload:()=>refreshEpubCloudBooksV49({fresh:true}),ready(){
+      return window.DuduR2AuthorCatalogReviewR1.snapshot().status==='ready'&&
+        epubCatalogPerfR1.snapshot().states?.v49==='success';
+    }});
     window.duduSyncEpubAccessR11=allowed=>{
       if(IS_SANDBOX_MODE||!window.DUDU_ACCOUNT_APPROVAL_V1_READY)return;
       if(!allowed){epubCatalogPerfR1.invalidate();l6R2PreviewClient?.invalidateCatalog();l6R2MediaBridge?.dispose();l6R2MediaBridge=null;}
