@@ -2,18 +2,31 @@
  'use strict';
  const clock=()=>typeof performance!=='undefined'?performance.now():Date.now();
  function error(code){return Object.assign(new Error(code),{code});}
- function create({session,ready,loadV49,loadR2,onBooks,onState=()=>{},timeoutMs=15000}){
-  let generation=0,current=null,account=null,data={v49:[],r2:[]},states={},timings={},started=0,first=null,runs={},lastBooks=[],knownR2=new Set();
+ function create({session,ready,loadV49,loadR2,onBooks,onState=()=>{},beforeRefresh=()=>{},timeoutMs=15000}){
+  let generation=0,current=null,account=null,flight=null,data={v49:[],r2:[]},states={},timings={},started=0,first=null,runs={},lastBooks=[],knownR2=new Set();
   function active(g,u){return g===generation&&account===u&&session()===u&&ready();}
   function snapshot(){return {states:{...states},timings:{...timings},first_epub_visible_ms:first,complete_catalog_visible_ms:Object.keys(states).length===2&&Object.values(states).every(s=>s==='success'||s==='disabled')?clock()-started:null};}
   function emit(g,u){if(!active(g,u))return;const ids=new Map();for(const b of data.v49)if(!knownR2.has(b.id))ids.set(b.id,b);for(const b of data.r2)ids.set(b.id,b);const next=[...ids.values()];if(next.length!==lastBooks.length||next.some((b,i)=>b!==lastBooks[i])){lastBooks=next;onBooks(next);}if(first===null&&ids.size)first=clock()-started;onState(snapshot());}
-  function invalidate(){generation++;current?.abort();current=null;account=null;data={v49:[],r2:[]};states={};timings={};first=null;runs={};lastBooks=[];knownR2.clear();onBooks([]);onState(snapshot());}
+  function invalidate(){generation++;flight=null;current?.abort();current=null;account=null;data={v49:[],r2:[]};states={};timings={};first=null;runs={};lastBooks=[];knownR2.clear();onBooks([]);onState(snapshot());}
   async function source(name,g,u){const run=(runs[name]||0)+1;runs[name]=run;const valid=()=>active(g,u)&&runs[name]===run;const parent=current;const own=new AbortController();const cancel=()=>own.abort();parent.signal.addEventListener('abort',cancel,{once:true});const load=name==='v49'?loadV49:loadR2;if(!load){parent.signal.removeEventListener('abort',cancel);states[name]='disabled';emit(g,u);return;}states[name]='loading';data[name]=[];emit(g,u);let timer;const begin=clock();try{
    const cancelled=new Promise((_,reject)=>own.signal.addEventListener('abort',()=>reject(error('SESSION_CHANGED')),{once:true}));
    const result=await Promise.race([cancelled,Promise.resolve().then(()=>load({signal:own.signal,onPage:books=>{if(valid()&&states[name]==='loading'){data[name]=books;if(name==='r2')for(const b of books)knownR2.add(b.id);emit(g,u);}}})),new Promise((_,reject)=>{timer=setTimeout(()=>{reject(error('TIMEOUT'));own.abort();},name==='r2'?timeoutMs*3:timeoutMs);})]);
    if(!valid())return;data[name]=result;if(name==='r2')for(const b of result)knownR2.add(b.id);states[name]='success';timings[name]=clock()-begin;emit(g,u);
   }catch(e){if(!valid())return;data[name]=[];const raw=String(e?.code||'NETWORK');const code=raw==='permission-denied'?'HTTP_403':raw==='unauthenticated'?'HTTP_401':raw==='unavailable'?'NETWORK':raw;states[name]=['TIMEOUT','TOKEN_TIMEOUT','TOKEN_FAILED','HTTP_401','HTTP_403','HTTP_5XX','NETWORK','SESSION_CHANGED','INVALID_RESPONSE'].includes(code)?code:'BACKEND_ERROR';timings[name]=clock()-begin;emit(g,u);}finally{clearTimeout(timer);parent.signal.removeEventListener('abort',cancel);own.abort();}}
-  function refresh(){const u=session(),known=account===u?new Set(knownR2):new Set();invalidate();knownR2=known;if(!u||!ready())return Promise.resolve();account=u;current=new AbortController();started=clock();const g=generation;return Promise.allSettled([source('v49',g,u),source('r2',g,u)]);}
+  function refresh({fresh=false}={}){
+   const u=session();
+   // Share only unfinished work in this exact identity/access generation.
+   // A publish preflight must start after its own explicit fresh boundary.
+   if(!fresh&&flight&&active(flight.g,u))return flight.promise;
+   const known=account===u?new Set(knownR2):new Set();invalidate();knownR2=known;
+   if(!u||!ready())return Promise.resolve();
+   account=u;current=new AbortController();started=clock();const g=generation;
+   beforeRefresh();
+   const next={g,promise:null};
+   next.promise=Promise.resolve().then(()=>active(g,u)?Promise.allSettled([source('v49',g,u),source('r2',g,u)]):undefined)
+    .finally(()=>{if(flight===next)flight=null;});
+   flight=next;return next.promise;
+  }
   function retry(name){if(session()!==account){invalidate();return Promise.resolve();}if(!['v49','r2'].includes(name)||!current||!ready()||states[name]==='loading')return Promise.resolve();return source(name,generation,session());}
   return Object.freeze({refresh,retry,invalidate,snapshot});
  }

@@ -148,7 +148,7 @@ id('form').addEventListener('submit',e=>e.preventDefault());
   if(!allowed()||locked())return;
   const owner=sessionUid,current=queue;checkingCatalog=true;renderQueue();
   try{
-   await refreshEpubCloudBooksV49();
+   await refreshEpubCloudBooksV49({fresh:true});
    if(current!==queue||owner!==sessionUid||!allowed())return;
   }catch{/* Catalog state is checked after the refresh. */}
   finally{checkingCatalog=false;}
@@ -169,7 +169,7 @@ id('form').addEventListener('submit',e=>e.preventDefault());
   const current=queue,owner=sessionUid;
   // Fresh preflight before ANY ticket, draft or R2 object upload.
   checkingCatalog=true;renderQueue();
-  try{await refreshEpubCloudBooksV49();}
+  try{await refreshEpubCloudBooksV49({fresh:true});}
   catch{/* A failed catalog refresh is caught by the fail-closed snapshot. */}
   finally{checkingCatalog=false;}
   if(current!==queue||owner!==sessionUid||!allowed())return;
@@ -222,7 +222,7 @@ id('form').addEventListener('submit',e=>e.preventDefault());
  });
  document.getElementById('c13b3-read').addEventListener('click',async()=>{
   if(!allowed()||busy||queue.status().running||!lastPublishedBook)return;const bookId=lastPublishedBook;document.getElementById('c13b3-read').disabled=true;
-  try{await refreshEpubCloudBooksV49();if(!allowed())throw Error('Phiên tác giả đã thay đổi.');const i=novels.findIndex(n=>n.id===bookId&&n._r2V1);if(i<0)throw Error('Chưa tải được truyện mới; tải lại thư viện.');closeView();document.getElementById('story-modal').style.display='none';openCover(i);readChapter(0);}catch(error){render(error.message);}
+  try{await refreshEpubCloudBooksV49({fresh:true});if(!allowed())throw Error('Phiên tác giả đã thay đổi.');const i=novels.findIndex(n=>n.id===bookId&&n._r2V1);if(i<0)throw Error('Chưa tải được truyện mới; tải lại thư viện.');closeView();document.getElementById('story-modal').style.display='none';openCover(i);readChapter(0);}catch(error){render(error.message);}
  });
  function closeView(){modal.style.display='none';queue.pause();if(busy)abort?.abort();}
  function openView(){if(!allowed())return false;closeModals();modal.style.display='flex';render();id('pick-file').focus();return true;}
