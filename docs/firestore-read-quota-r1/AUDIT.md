@@ -2,6 +2,8 @@
 
 Status: PARTIAL backend recovery; offline optimization prepared for a separate Draft PR. No production deployment, data mutation, polling, billing, Rules, IAM or secret change.
 
+This is the PR42 audit snapshot. The subsequent opt-in, display-only device metadata cache is documented in [DEVICE_CATALOG.md](DEVICE_CATALOG.md); its six-hour display reuse does not authorize owner preflight, which still requires fresh complete network results.
+
 ## Evidence and coverage
 
 Static scan covered all 887 tracked JS/MJS/CJS/TS/HTML files in the base main revision. There were 59 candidate files: 31 entrypoint/directly loaded files, 23 backend files, one other source/tool and four test/prototype/reference files. See [READ_INVENTORY.md](READ_INVENTORY.md). A candidate is not proof of an executed read: comments, definitions, Map.get and fixture APIs require manual classification. Indirect imports and runtime feature gates were also inspected for the relevant paths. Backend code in the repository is not assumed to equal a deployed Worker or Function.

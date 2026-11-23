@@ -164,6 +164,12 @@
    if(!book||!CHAPTER.test(chapterId||''))fail();
    if(book._r2V1===true){
     if(!BOOK.test(book.id||'')||!book.chapters?.some(c=>c.id===chapterId))fail();
+    session();
+    // Device metadata supplies a display title only. Worker still authorizes
+    // and serves the current chapter on every GET; no cached content fallback.
+    const chapter=book.chapters.find(c=>c.id===chapterId);
+    if(!safeText(chapter.title,140))fail();
+    if(!chapterTitles.has(book.id+'/'+chapterId))chapterTitles.set(book.id+'/'+chapterId,chapter.title);
     return reader.readChapter(book.id,chapterId,{backend:'r2'});
    }
    return reader.readChapter(book.id,chapterId,{backend:'firestore'});

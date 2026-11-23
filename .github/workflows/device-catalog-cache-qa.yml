@@ -1,0 +1,28 @@
+name: Device catalog cache safety QA
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'js/epub-catalog-*.js'
+      - 'js/library-epub-r2-client-l6p2c5c3.js'
+      - 'tests/*device*catalog*.cjs'
+      - 'tests/epub-catalog-device-cache-r1.test.cjs'
+      - '.github/workflows/device-catalog-cache-qa.yml'
+  push:
+    branches: [perf/device-catalog-cache]
+permissions:
+  contents: read
+jobs:
+  offline:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/epub-catalog-device-cache-r1.test.cjs tests/firestore-read-quota-r1.test.cjs tests/r2-pending-recovery-r1.test.cjs tests/r2-published-preflight-r1.test.cjs tests/auth-v2.test.cjs
+      - run: npm install --no-save playwright@1.56.1
+      - run: npx playwright install chromium --with-deps
+      - run: node tests/browser-epub-device-catalog-r1.cjs
