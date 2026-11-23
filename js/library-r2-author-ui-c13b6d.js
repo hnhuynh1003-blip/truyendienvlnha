@@ -27,8 +27,11 @@
  for(const [node,name]of [[view.title,'title'],[view.authorInput,'author'],[view.descInput,'description'],[view.genreInput,'genre'],[view.completionInput,'publication'],[view.status,'status']])bind(node,name);
  for(const [name,text]of [['start','Đăng các sách đã chọn'],['pause','Dừng sau cuốn hiện tại'],['status-check','Kiểm tra trạng thái'],['close','Đóng']])bind(view.button(text,()=>{}),name);
  const read=view.button('Mở sách vừa đăng',()=>{});read.id='c13b3-read';
+ const recovery=bind(el('details'),'recovery');recovery.append(el('summary','Phiên nhập & báo cáo khôi phục'));
+ const recoveryStatus=bind(el('p'),'recovery-status'),exportReport=bind(el('button','Lưu báo cáo phiên nhập'),'export-report');exportReport.type='button';exportReport.className='btn';
+ recovery.append(recoveryStatus,el('p','Báo cáo lưu trên thiết bị, không chứa token hoặc nội dung chương. Có mã phiên và tên sách: giữ riêng, không đăng công khai. Nhật ký không chứng minh dữ liệu đã có trên server và không tự mở khóa pending.'),exportReport);
  view.buttons.classList.add('r2-import-footer');
- form.append(help,pickers,view.input,files,folder,folderNote,queuePanel,previewHeader,view.fields,chapterPanel,view.status,view.buttons);host.replaceChildren(form);
+ form.append(help,pickers,view.input,files,folder,folderNote,queuePanel,previewHeader,view.fields,chapterPanel,view.status,recovery,view.buttons);host.replaceChildren(form);
  document.getElementById('c12-start').classList.add('btn-primary');
  const previewByFile=new WeakMap();
 
@@ -50,6 +53,18 @@
   return value;
  }
  let queue=window.DuduR2PersonalQueue.create({prepare:prepareForQueue,validateMetadata:m=>window.DuduLibraryR2AuthorImportL6C12.validateMetadata(m),onChange:()=>renderQueue()});
+ let journalTimer=null,journalAvailable=true;
+ function journal(){if(!allowed()||!sessionUid||!window.DuduR2ImportJournalR1)return null;return window.DuduR2ImportJournalR1.create({storage:localStorage,owner:sessionUid});}
+ function saveJournal(current,clearQueue=false){const j=journal(),entries=queue.entries();journalAvailable=!!j&&j.save({current,entries:entries.length||clearQueue?entries:undefined});return journalAvailable;}
+ function saveQueueLater(){if(journalTimer!==null)clearTimeout(journalTimer);const owner=sessionUid,current=queue;journalTimer=setTimeout(()=>{journalTimer=null;if(owner===sessionUid&&current===queue&&allowed()){saveJournal();renderRecovery();}},400);}
+ function renderRecovery(){
+  recovery.hidden=!allowed();exportReport.disabled=!allowed();if(!allowed())return;
+  const data=journal()?.read(),s=data?.sessions?.at(-1),r=s?.lastRequest;
+  recoveryStatus.textContent=!journalAvailable?'Không lưu được nhật ký trên thiết bị. Giữ tab khi có lỗi; không xóa pending.':s?'Phiên gần nhất: '+s.status+(s.failurePhase?' (dừng ở '+s.failurePhase+')':'')+'; đã ghi nhận '+s.quarantined+'/'+s.total+' phần.'+(r?' Bước '+r.operation+': '+r.state+(r.http?' — HTTP '+r.http:'')+' — '+r.code+'.':'')+' Danh sách lưu '+(data.queue?.length||0)+' dòng; cần chọn lại tệp sau khi tải lại trang.':'Chưa có nhật ký mới. Phiên cũ vẫn phải kiểm tra trạng thái; không suy luận từ việc thiếu nhật ký.';
+ }
+ exportReport.addEventListener('click',()=>{
+  if(!allowed())return;try{saveJournal(controller?.status());const data=journal()?.report(pending());if(!data)throw Error('JOURNAL_UNAVAILABLE');const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='DUDU-import-report-'+Date.now()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}catch{render('Không xuất được báo cáo phiên nhập. Giữ pending và tab hiện tại.');}
+ });
  const locked=()=>busy||preparing||checkingCatalog||queue.status().running||queue.status().adding||queue.status().halted;
  const catalogSnapshot=()=>{
   const data=window.DuduR2AuthorCatalogReviewR1?.snapshot?.();
@@ -75,6 +90,7 @@
   render();
  }
  function renderQueue(){
+  saveQueueLater();
   const list=id('queue');list.replaceChildren();const state=queue.status();
   for(const entry of queue.entries()){
    const row=document.createElement('div'),check=document.createElement('input'),text=document.createElement('span'),edit=document.createElement('button');
@@ -112,7 +128,7 @@
  }
  const key=uid=>'dudu-r2-personal:'+uid;
  function pending(){const raw=localStorage.getItem(key(sessionUid));if(!raw)return null;const p=JSON.parse(raw);if(p.schema!==1||!Object.hasOwn(labels,p.phase)||p.bookId!==null&&!/^epub-[a-f0-9]{32}$/.test(p.bookId)||p.revisionId!==null&&!/^r-[a-f0-9]{32}$/.test(p.revisionId))throw Error('Phiên nhập lưu trên máy cần đối soát.');return p;}
- function record(uid,state){localStorage.setItem(key(uid),JSON.stringify({schema:1,phase:state.status,bookId:state.bookId||null,revisionId:state.revisionId||null}));}
+ function record(uid,state){if(uid!==sessionUid||!allowed())throw Error('Phiên tác giả đã đổi.');localStorage.setItem(key(uid),JSON.stringify({schema:1,phase:state.status,bookId:state.bookId||null,revisionId:state.revisionId||null}));saveJournal(state);renderRecovery();}
  // Interpret only the signed-in owner's read-only server result; every uncertain state remains locked.
  function classifyRecovery(p,data){
   if(!data||data.code!=='import-status'||typeof data.found!=='boolean')
@@ -131,6 +147,7 @@
   }
  }
  function render(message){
+  renderRecovery();
   const state=controller?.status();let p=null,storageError=false;try{p=sessionUid?pending():null;}catch{storageError=true;}
   id('status').textContent=message||(storageError?'Không đọc được trạng thái lưu trên máy. Dừng nhập.':p&&!controller?'Có phiên nhập cần kiểm tra trạng thái.':labels[state?.status]||labels.idle);
   id('status').dataset.state=state?.status||p?.phase||'idle';
@@ -179,7 +196,7 @@ id('form').addEventListener('submit',e=>e.preventDefault());
   renderQueue();
  });
  id('pause').addEventListener('click',()=>queue.pause());
- id('clear').addEventListener('click',()=>{if(!allowed()||locked())return;try{if(pending())return;}catch{return;}if(queue.clear()){controller=null;abort=null;activeEntry=null;preparedFile=null;for(const f of fields)id(f).value='';renderQueue();}});
+ id('clear').addEventListener('click',()=>{if(!allowed()||locked())return;try{if(pending())return;}catch{return;}if(queue.clear()){saveJournal(undefined,true);controller=null;abort=null;activeEntry=null;preparedFile=null;for(const f of fields)id(f).value='';renderQueue();}});
  id('start').addEventListener('click',async()=>{
   if(!allowed()||locked())return;
   try{if(pending())return render('Có phiên cần đối soát.');}catch{return render('Không đọc được phiên nhập.');}
@@ -216,6 +233,7 @@ id('form').addEventListener('submit',e=>e.preventDefault());
    // The explicit "Đăng EPUB R2" click authorizes this single publish only after verified receipts.
    render('Đã tải phần dữ liệu. Đang xác minh và xuất bản; chưa được đóng tab…');await active.publish({approve:true,expectedBookId:active.status().bookId,signal:abort.signal});localStorage.removeItem(key(owner));globalThis.duduInvalidateDeviceCatalogR1?.();lastPublishedBook=active.status().bookId;render(labels.published);return {kind:'published'};
   }catch(error){
+   if(active&&owner===sessionUid&&allowed())saveJournal(active.status());
    let noPending=false;try{noPending=pending()===null;}catch{}
    const s=active?.status();
    // Only a proven pre-dispatch failure in this exact session may release the UI.
