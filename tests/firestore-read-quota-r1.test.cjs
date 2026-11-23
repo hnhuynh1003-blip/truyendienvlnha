@@ -17,6 +17,7 @@ test('overlapping automatic auth/library refreshes share exact in-flight promise
  const h=harness(),p=h.catalog.refresh();for(let i=0;i<9;i++)assert.equal(h.catalog.refresh(),p);
  await turn();assert.equal(h.starts(),1);assert.equal(h.calls.v49.length,1);assert.equal(h.calls.r2.length,1);
  h.resolve();await p;assert.deepEqual(h.catalog.snapshot().states,{v49:'success',r2:'success'});
+ assert.deepEqual(h.catalog.snapshot().requests,{automaticCalls:10,freshCalls:0,inFlightJoins:9,v49LoaderStarts:1,r2LoaderStarts:1});
 });
 test('completed results are never reused as a later refresh',async()=>{
  const h=harness();let p=h.catalog.refresh();await turn();h.resolve();await p;
@@ -64,7 +65,8 @@ test('integration wrappers invalidate R2 only when work starts, and publish/comp
  assert.match(html,/beforeRefresh:\(\)=>\{\s*epubCatalogRestoreR1=false;\s*l6R2PreviewClient\?\.invalidateCatalog\(\);/);
  assert.equal((ui.match(/refreshEpubCloudBooksV49\(\{fresh:true\}\)/g)||[]).length,3);
  assert.equal((html.match(/(?:onPublished|refresh):\(\)=>refreshEpubCloudBooksV49\(\{fresh:true\}\)/g)||[]).length,3);
- assert.ok(ui.includes("data.code==='import-status'&&data.found===true&&data.bookId===p.bookId&&data.revision===p.revisionId&&data.status==='published'"));
+ assert.ok(ui.includes("data.bookId!==p.bookId||data.revision!==p.revisionId"));
+ assert.ok(ui.includes("case 'published':return {kind:'published'"));
 });
 
 for(const [name,change,http,clears] of [
@@ -74,5 +76,5 @@ for(const [name,change,http,clears] of [
  assert.ok(start>0&&end>start);
  const BOOK='epub-'+'a'.repeat(32),REV='r-'+'b'.repeat(32),owner='fixture-owner',user={getIdToken:async()=>'synthetic'};let handler,removed=0,gets=0;
  const ctx={sessionUid:owner,allowed:()=>true,busy:false,queue:{status:()=>({running:false,adding:false}),reconcilePublished:()=>{}},pending:()=>({bookId:BOOK,revisionId:REV}),firebase:{auth:()=>({currentUser:user})},config:{workerBaseUrl:'https://dudu-library-l6-development.dudu-studio-ai.workers.dev'},id:()=>({addEventListener:(e,fn)=>{handler=fn;},textContent:''}),render:()=>{},renderQueue:()=>{},controller:null,abort:null,preparedFile:null,lastPublishedBook:null,localStorage:{removeItem:()=>{removed++;}},key:()=>owner,URL,TextDecoder,Uint8Array,fetch:async(url,options)=>{assert.equal(options.method,'GET');gets++;return Response.json({code:'import-status',found:true,bookId:BOOK,revision:REV,status:'published',...change},{status:http});}};
- vm.createContext(ctx);vm.runInContext(source.slice(start,end),ctx);await handler();assert.equal(removed,clears?1:0);assert.equal(gets,1);
+ vm.createContext(ctx);const ca=source.indexOf(' function classifyRecovery(');vm.runInContext(source.slice(ca,source.indexOf(' function render(',ca))+'\n'+source.slice(start,end),ctx);await handler();assert.equal(removed,clears?1:0);assert.equal(gets,1);
 });

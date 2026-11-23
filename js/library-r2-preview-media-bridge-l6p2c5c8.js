@@ -10,7 +10,7 @@
  'use strict';
  const fail=()=>{throw Error('R2 media preview unavailable or session changed.');};
  function create({enabled=false,privateMediaApi,workerBaseUrl,auth,fetchFn,
-   urlApi,BlobCtor,doc}={}){
+   urlApi,BlobCtor,doc,IntersectionObserverCtor=globalThis.IntersectionObserver}={}){
   if(enabled!==true||typeof privateMediaApi?.create!=='function'||
     typeof privateMediaApi?.renderSegments!=='function'||
     typeof auth!=='function'||!/^https:\/\/[^/]+$/i.test(workerBaseUrl||''))fail();
@@ -24,10 +24,14 @@
   const documentApi=doc||((typeof document!=='undefined')?document:null);
   let disposed=false,cardEpoch=0,heroEpoch=0,chapterEpoch=0,prepared=null;
   const cardHandles=new Set();
+  const waitingCards=new Map();let cardObserver=null;
   const currentUid=()=>auth()?.currentUser?.uid||null;
   const requireLive=()=>{if(disposed||!currentUid())fail();};
   function clearCovers(){
    cardEpoch++;
+   cardObserver?.disconnect();cardObserver=null;
+   for(const resolve of waitingCards.values())resolve(false);
+   waitingCards.clear();
    for(const handle of cardHandles)handle.release();
    cardHandles.clear();
    cards.releaseAll();
@@ -46,10 +50,25 @@
   }
   // Called when a catalog page is re-rendered; old detached cards are never
   // written after an outstanding asynchronous private cover request finishes.
+  function nearViewport(element){
+   if(typeof IntersectionObserverCtor!=='function')return Promise.resolve(true);
+   if(!cardObserver)cardObserver=new IntersectionObserverCtor(entries=>{
+    for(const entry of entries){if(!entry.isIntersecting)continue;
+     const resolve=waitingCards.get(entry.target);if(!resolve)continue;
+     waitingCards.delete(entry.target);cardObserver.unobserve(entry.target);resolve(true);
+    }
+   },{rootMargin:'100px',threshold:0});
+   // Replace duplicate work for the same DOM node; do not fetch either early.
+   waitingCards.get(element)?.(false);
+   return new Promise(resolve=>{waitingCards.set(element,resolve);cardObserver.observe(element);});
+  }
   async function loadCardCover(book,coverElement){
    if(!book?._r2V1||!book._r2CoverAssetId)return false;
    requireLive();
    const epoch=cardEpoch,uid=currentUid();
+   if(!coverElement?.appendChild)return false;
+   if(!await nearViewport(coverElement)||disposed||epoch!==cardEpoch||
+     currentUid()!==uid||coverElement.isConnected===false)return false;
    const handle=await cards.cover(book);
    if(disposed||epoch!==cardEpoch||currentUid()!==uid||
      !coverElement?.appendChild||coverElement.isConnected===false){

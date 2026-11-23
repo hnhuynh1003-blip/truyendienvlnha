@@ -6,7 +6,7 @@
  const view=window.DuduEpubImportV48.createImportView(document),el=view.el;
  const bind=(node,name)=>{node.id='c12-'+name;return node;};
  const form=bind(el('form'),'form');form.className='r2-unified-form';
- const help=el('p','Chọn EPUB → xem bìa, văn án và chương → sửa thông tin → đăng vào thư viện.');help.className='r2-import-help';
+ const help=el('p','Chọn EPUB → xem bìa, văn án và chương → đăng vào thư viện. Chỉ đóng tab khi có thông báo “Đã xuất bản”; tải tệp xong chưa phải đã xuất bản.');help.className='r2-import-help';
  const pickers=el('div');pickers.className='dudu-epub-actions r2-import-pickers';
  bind(view.input,'file');view.input.hidden=true;
  const files=bind(el('input'),'files');files.type='file';files.multiple=true;files.accept=view.input.accept;files.hidden=true;
@@ -36,7 +36,7 @@
  const enabled=config?.enabled===true&&config?.authorImportEnabled===true;
  const allowed=()=>enabled&&!IS_SANDBOX_MODE&&window.DuduAuth?.isAdmin?.()===true&&firebase.auth().currentUser?.uid===config.pilotOwnerUid;
  const fields=['title','author','description','genre','publication'];
- const labels={idle:'Chọn EPUB để tự điền thông tin.',parsing:'Đang đọc EPUB…',ticket:'Đang chuẩn bị phiên nhập…',packaging:'Đang chuẩn bị nội dung và ảnh…',draft:'Đang tạo bản nháp…',staging:'Đang tải EPUB…',quarantined:'Đã tải đủ. Bấm xác nhận xuất bản.',promoting:'Đang kiểm tra nội dung đã tải…',publishing:'Đang xuất bản…',published:'Đã xuất bản. Có thể mở đọc.',blocked:'Đã dừng. Kiểm tra trạng thái trước khi nhập tiếp.'};
+ const labels={idle:'Chọn EPUB để tự điền thông tin.',parsing:'Đang đọc EPUB…',ticket:'Đang chuẩn bị phiên nhập…',packaging:'Đang chuẩn bị nội dung và ảnh…',draft:'Đang tạo bản nháp…',staging:'Đang tải EPUB… Chưa hoàn tất, đừng đóng tab.',quarantined:'Đã tải các phần dữ liệu, nhưng chưa xác nhận xuất bản. Đừng đóng tab.',promoting:'Đang xác minh EPUB đã tải… Đừng đóng tab.',publishing:'Đang xuất bản… Đừng đóng tab.',published:'Đã xác nhận xuất bản. Có thể đóng tab.',blocked:'Đã dừng. Kiểm tra trạng thái trước khi nhập tiếp.'};
  let controller=null,abort=null,sessionUid=null,version=0,preparing=false,preparedFile=null,busy=false,activeEntry=null,lastPublishedBook=null,checkingCatalog=false;
  const intake=window.DuduR2PersonalIntake.create({parse:(file,options)=>window.DuduEpubImportV48.parse(file,options),options:{zipLib:window.JSZip,Parser:DOMParser,splitOversizedChapters:true}});
  const queueLabels={PREPARING:'Đang kiểm tra trên máy',READY:'Hợp lệ trên máy; chờ đăng',METADATA:'Cần sửa metadata',BLOCKED:'BLOCKED',RETRY:'Chưa gửi request; có thể thử lại',RUNNING:'Đang đăng',PUBLISHED:'Đã xuất bản',UNKNOWN:'Dừng để đối soát',POSSIBLE_DUPLICATE:'Nghi đã đăng · đã bỏ chọn'};
@@ -113,6 +113,23 @@
  const key=uid=>'dudu-r2-personal:'+uid;
  function pending(){const raw=localStorage.getItem(key(sessionUid));if(!raw)return null;const p=JSON.parse(raw);if(p.schema!==1||!Object.hasOwn(labels,p.phase)||p.bookId!==null&&!/^epub-[a-f0-9]{32}$/.test(p.bookId)||p.revisionId!==null&&!/^r-[a-f0-9]{32}$/.test(p.revisionId))throw Error('Phiên nhập lưu trên máy cần đối soát.');return p;}
  function record(uid,state){localStorage.setItem(key(uid),JSON.stringify({schema:1,phase:state.status,bookId:state.bookId||null,revisionId:state.revisionId||null}));}
+ // Interpret only the signed-in owner's read-only server result; every uncertain state remains locked.
+ function classifyRecovery(p,data){
+  if(!data||data.code!=='import-status'||typeof data.found!=='boolean')
+   return {kind:'unknown',message:'Server trả trạng thái không xác định. Giữ phiên nhập; cần đối soát Firestore/R2.'};
+  if(data.found!==true)
+   return {kind:'missing',message:'Firestore chưa tìm thấy bản thảo cho mã phiên này. Chưa đủ bằng chứng để hủy phiên hoặc đăng lại.'};
+  if(data.bookId!==p.bookId||data.revision!==p.revisionId)
+   return {kind:'mismatch',message:'Mã sách hoặc revision trên server không khớp phiên lưu trên máy. Giữ nguyên và đối soát thủ công.'};
+  switch(data.status){
+   case 'published':return {kind:'published',message:'Đã xác nhận xuất bản đúng mã sách và revision. Có thể chọn EPUB tiếp theo.'};
+   case 'importing':return {kind:'importing',message:'Bản thảo còn ở trạng thái importing; dữ liệu tải lên có thể chưa hoàn tất. Giữ phiên, cần kiểm tra Firestore/R2 trước khi tiếp tục.'};
+   case 'draft':return {kind:'draft',message:'Bản thảo chưa published. Cần kiểm tra dữ liệu đã tải trước khi cho phép xuất bản hoặc hủy phiên.'};
+   case 'archived':return {kind:'archived',message:'Sách đang archived; không được tự đăng lại hoặc xóa phiên. Cần kiểm tra trên Firestore.'};
+   case 'deleting':return {kind:'deleting',message:'Sách đang deleting. Dừng để đối soát dữ liệu; không đăng lại.'};
+   default:return {kind:'unknown',message:'Trạng thái sách không được hỗ trợ. Giữ phiên và đối soát thủ công.'};
+  }
+ }
  function render(message){
   const state=controller?.status();let p=null,storageError=false;try{p=sessionUid?pending():null;}catch{storageError=true;}
   id('status').textContent=message||(storageError?'Không đọc được trạng thái lưu trên máy. Dừng nhập.':p&&!controller?'Có phiên nhập cần kiểm tra trạng thái.':labels[state?.status]||labels.idle);
@@ -197,7 +214,7 @@ id('form').addEventListener('submit',e=>e.preventDefault());
    active=controller;busy=true;render();await active.start({file,metadata,signal:abort.signal,onProgress:p=>render('Đã tải '+p.completed+'/'+p.total+' phần')});record(owner,active.status());
    if(controller!==active||sessionUid!==owner||!allowed()||!active.status().readyForOwnerConfirmation)throw Error('Phiên đã đổi hoặc chưa tải đủ; dừng xuất bản.');
    // The explicit "Đăng EPUB R2" click authorizes this single publish only after verified receipts.
-   render('Đã tải đủ. Đang kiểm tra và đăng truyện…');await active.publish({approve:true,expectedBookId:active.status().bookId,signal:abort.signal});localStorage.removeItem(key(owner));lastPublishedBook=active.status().bookId;render(labels.published);return {kind:'published'};
+   render('Đã tải phần dữ liệu. Đang xác minh và xuất bản; chưa được đóng tab…');await active.publish({approve:true,expectedBookId:active.status().bookId,signal:abort.signal});localStorage.removeItem(key(owner));lastPublishedBook=active.status().bookId;render(labels.published);return {kind:'published'};
   }catch(error){
    let noPending=false;try{noPending=pending()===null;}catch{}
    const s=active?.status();
@@ -208,16 +225,17 @@ id('form').addEventListener('submit',e=>e.preventDefault());
  }
  id('status-check').addEventListener('click',async()=>{
   if(!allowed()||busy||queue.status().running||queue.status().adding)return;const owner=sessionUid,user=firebase.auth().currentUser;busy=true;
-  try{const p=pending();if(!p)return render(controller?.status().published?labels.published:'Không có phiên nhập dở trên thiết bị này.');if(!p.bookId)return render('Phiên nhập chưa rõ mã sách. Dừng và đối soát; không tự nhập lại.');
+  try{const p=pending();if(!p)return render(controller?.status().published?labels.published:'Không có phiên nhập dở trên thiết bị này.');if(!p.bookId)return render('Phiên nhập chưa có mã sách để kiểm tra trên Worker. Giữ nguyên phiên; cần đối soát backend trước khi nhập lại.');
    const base=new URL(config.workerBaseUrl);if(base.href!=='https://dudu-library-l6-development.dudu-studio-ai.workers.dev/')throw Error('Worker URL không hợp lệ.');
    const jwt=await user.getIdToken(false);if(firebase.auth().currentUser!==user||!allowed())throw Error('Phiên đã đổi.');
    const response=await fetch(new URL('/v1/library/r2/catalog/'+p.bookId+'/status',base),{method:'GET',headers:{Authorization:'Bearer '+jwt},credentials:'omit',cache:'no-store',redirect:'error'});
-   if(response.status!==200){await response.body?.cancel();throw Error('Không lấy được trạng thái. Giữ nguyên phiên nhập.');}
+   if(response.status!==200){await response.body?.cancel();throw Error(response.status===401?'Phiên Firebase hết hiệu lực. Đăng nhập lại rồi kiểm tra; giữ nguyên phiên.':response.status===403?'Worker từ chối quyền kiểm tra trạng thái. Giữ nguyên phiên.':response.status===503?'Worker chưa đọc được trạng thái từ Firestore. Giữ phiên; không thử đăng lại.':'Không lấy được trạng thái. Giữ nguyên phiên nhập.');}
    const reader=response.body.getReader(),chunks=[];let size=0;try{for(;;){const x=await reader.read();if(x.done)break;size+=x.value.length;if(size>2048){reader.cancel().catch(()=>{});throw Error('Phản hồi trạng thái không hợp lệ.');}chunks.push(x.value);}}finally{reader.releaseLock();}
    const bytes=new Uint8Array(size);let at=0;for(const c of chunks){bytes.set(c,at);at+=c.length;}const data=JSON.parse(new TextDecoder().decode(bytes));
    if(firebase.auth().currentUser!==user||sessionUid!==owner||!allowed())return;
-   if(data.code==='import-status'&&data.found===true&&data.bookId===p.bookId&&data.revision===p.revisionId&&data.status==='published'){localStorage.removeItem(key(owner));lastPublishedBook=p.bookId;controller=null;abort=null;preparedFile=null;queue.reconcilePublished();renderQueue();render('Đã xác nhận xuất bản. Có thể chọn sách tiếp theo.');}
-   else render('Chưa xác nhận xuất bản đúng revision. Giữ nguyên dữ liệu và dừng nhập tiếp.');
+   const outcome=classifyRecovery(p,data);
+   if(outcome.kind==='published'){localStorage.removeItem(key(owner));lastPublishedBook=p.bookId;controller=null;abort=null;preparedFile=null;queue.reconcilePublished();renderQueue();}
+   render(outcome.message);
   }catch(error){if(sessionUid===owner)render(error.message);}finally{busy=false;render(id('status').textContent);}
  });
  document.getElementById('c13b3-read').addEventListener('click',async()=>{
@@ -226,6 +244,8 @@ id('form').addEventListener('submit',e=>e.preventDefault());
  });
  function closeView(){modal.style.display='none';queue.pause();if(busy)abort?.abort();}
  function openView(){if(!allowed())return false;closeModals();modal.style.display='flex';render();id('pick-file').focus();return true;}
+ // Warn only while an upload/publish operation is active. Historical pending does not trap navigation.
+ window.addEventListener('beforeunload',event=>{if(!busy&&!queue.status().running&&!queue.status().adding)return;event.preventDefault();event.returnValue='';});
  id('close').addEventListener('click',closeView);modal.addEventListener('keydown',event=>{if(event.key==='Escape')closeView();});
  window.DuduC12AuthorPreview=Object.freeze({status:()=>controller?.status()||null,open:openView,close:closeView});
 })();

@@ -48,6 +48,11 @@ async function main(){
       {waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>!!window.DuduReaderBackgroundR1&&
       !!document.querySelector('#reader-bg-r1-grid')&&!!window.DuduSiteV60);
+    // Complete the delayed Sandbox welcome lifecycle before Reader interactions.
+    await page.locator('#auth-modal').waitFor({state:'visible'});
+    await page.locator('#auth-username').fill('reader-background-fixture');
+    await page.locator('#auth-sandbox-controls button').click();
+    await page.locator('#auth-modal').waitFor({state:'hidden'});
     await page.evaluate(()=>{
       DuduSiteV60.navigate('library');
       document.getElementById('reader-view').style.display='block';

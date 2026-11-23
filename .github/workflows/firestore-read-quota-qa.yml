@@ -8,6 +8,9 @@ on:
       - 'index.html'
       - 'js/epub-catalog-perf-r1.js'
       - 'js/library-r2-author-ui-c13b6d.js'
+      - 'js/library-r2-preview-media-bridge-l6p2c5c8.js'
+      - 'tests/library-r2-cover-demand-r1.test.cjs'
+      - 'tests/browser-r2-cover-demand-r1.cjs'
       - 'tests/firestore-read-quota-r1.test.cjs'
       - 'docs/firestore-read-quota-r1/**'
       - '.github/workflows/firestore-read-quota-qa.yml'
@@ -25,3 +28,14 @@ jobs:
       - run: node --check js/epub-catalog-perf-r1.js && node --check js/library-r2-author-ui-c13b6d.js
       - run: node --test tests/firestore-read-quota-r1.test.cjs tests/auth-v2.test.cjs tests/profile-save-c23.test.cjs tests/r2-published-preflight-r1.test.cjs
       - run: node --test tests/library*.test.cjs tests/epub*.test.cjs tests/personal-fun-c25.test.cjs tests/personal-scratch-c28.test.cjs tests/personal-blind-box-c29.test.cjs
+  covers-browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save playwright@1.56.1
+      - run: npx playwright install chromium --with-deps
+      - run: node tests/browser-r2-cover-demand-r1.cjs
