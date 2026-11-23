@@ -132,7 +132,9 @@ test('L5.3 reader integration includes contextual selection, manual manager and 
   'reader-name-from-l53','reader-name-to-l53','reader-name-list-l53'])
   assert.ok(html.includes('id="'+id+'"'),id);
  assert.match(html,/DuduReaderNamesL53\?\.setStory\(\(novel\._cloudV49\?'epub:':'web:'\)\+novel\.id\)/);
- assert.match(html,/DuduReaderNamesL53\.bindParagraph\(pTag,p\.trim\(\)\)/);
+ assert.match(html,/const original=text\.trim\(\);paragraphSourcesR1\.set\(p,original\)/);
+ assert.match(html,/DuduReaderNamesL53\.bindParagraph\(p,original\)/);
+ assert.match(html,/bindPersonalParagraphR1\(pTag,p\)/);
  assert.match(html,/css\/reader-names-l53\.css\?v=l5-3b/);
  assert.doesNotMatch(html,/Gặp tên bị dịch sai\? Bôi đen/);
  assert.doesNotMatch(html,/reader-name-foot-l53/);

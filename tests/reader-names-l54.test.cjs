@@ -137,6 +137,7 @@ test('L5.4: long chapter scanning is bounded to chapter text; shared reader inte
  const text=('tần minh nói. tần minh hỏi. tần minh cười.\n').repeat(3000),start=performance.now();
  const results=engine.analyze(text);assert.equal(name(results,'tần minh').count,9000);assert.ok(performance.now()-start<3000);
  const html=fs.readFileSync(require('node:path').join(__dirname,'../index.html'),'utf8');
- assert.ok(html.indexOf('prepareChapter?.(paragraphs)')<html.indexOf('DuduReaderNamesL53.bindParagraph(pTag,p.trim())'));
+ assert.ok(html.indexOf('prepareChapter?.(paragraphs)')<html.indexOf('DuduReaderNamesL53.bindParagraph(p,original)'));
+ assert.ok(html.indexOf('DuduReaderNamesL53.bindParagraph(p,original)')<html.indexOf('bindPersonalParagraphR1(pTag,p)'));
  for(const script of ['reader-names-l54.js','reader-name-ui-l54.js'])assert.ok(html.includes(script));
 });
