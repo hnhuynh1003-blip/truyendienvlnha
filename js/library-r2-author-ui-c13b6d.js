@@ -30,6 +30,7 @@
  const recovery=bind(el('details'),'recovery');recovery.append(el('summary','Phiên nhập & báo cáo khôi phục'));
  const recoveryStatus=bind(el('p'),'recovery-status'),exportReport=bind(el('button','Lưu báo cáo phiên nhập'),'export-report');exportReport.type='button';exportReport.className='btn';
  recovery.append(recoveryStatus,el('p','Báo cáo lưu trên thiết bị, không chứa token hoặc nội dung chương. Có mã phiên và tên sách: giữ riêng, không đăng công khai. Nhật ký không chứng minh dữ liệu đã có trên server và không tự mở khóa pending.'),exportReport);
+ const serverInspect=bind(el('button','Kiểm tra phục hồi trên server'),'server-inspect'),serverPublish=bind(el('button','Hoàn tất xuất bản phiên này'),'server-publish');for(const b of [serverInspect,serverPublish]){b.type='button';b.className='btn';recovery.append(b);}
  view.buttons.classList.add('r2-import-footer');
  form.append(help,pickers,view.input,files,folder,folderNote,queuePanel,previewHeader,view.fields,chapterPanel,view.status,recovery,view.buttons);host.replaceChildren(form);
  document.getElementById('c12-start').classList.add('btn-primary');
@@ -53,19 +54,61 @@
   return value;
  }
  let queue=window.DuduR2PersonalQueue.create({prepare:prepareForQueue,validateMetadata:m=>window.DuduLibraryR2AuthorImportL6C12.validateMetadata(m),onChange:()=>renderQueue()});
- let journalTimer=null,journalAvailable=true;
+ let journalTimer=null,journalAvailable=true,recoveryBusy=false,recoveryReady=false,recoveryClient=null,recoverySummary=null,recoveryJournalActive=false;
+ const serverRecoveryEnabled=config?.serverRecoveryEnabled===true&&!!window.DuduR2ServerRecoveryR1;
+ serverInspect.hidden=serverPublish.hidden=!serverRecoveryEnabled;
+ function getRecoveryClient(){
+  if(!recoveryClient)recoveryClient=window.DuduR2ServerRecoveryR1.create({config,getUser:()=>firebase.auth().currentUser,isAllowed:()=>allowed()&&window.DuduAuth?.isReady?.()===true&&firebase.app().options.projectId==='truyendienvl'&&!busy&&!preparing&&!checkingCatalog&&!queue.status().running&&!queue.status().adding,getPendingRaw:()=>localStorage.getItem(key(sessionUid)),saveAttempt:state=>{const saved=saveJournal(state);if(saved)recoveryJournalActive=true;return saved;},preflight:async(data,p)=>{
+   await refreshEpubCloudBooksV49({fresh:true});const snapshot=catalogSnapshot();if(!snapshot||snapshot.uid!==sessionUid||typeof epubPublishedBooksV49==='undefined'||!Array.isArray(epubPublishedBooksV49))throw Error('RECOVERY_FRESH_CATALOG_REQUIRED');
+   const norm=x=>String(x||'').normalize('NFKC').trim().replace(/\s+/g,' ').toLocaleLowerCase('vi');if(epubPublishedBooksV49.some(b=>b.id!==p.bookId&&norm(b.title)===norm(data.bookSummary.title)&&norm(b.author)===norm(data.bookSummary.author)))throw Error('RECOVERY_POSSIBLE_DUPLICATE');
+  }});return recoveryClient;
+ }
+ async function runRecovery(publishing){
+  if(!serverRecoveryEnabled||!allowed()||recoveryBusy||busy||queue.status().running||queue.status().adding)return;
+  let result;try{recoveryBusy=true;renderQueue();
+   if(publishing){if(!recoveryReady)return;const p=pending();if(!recoverySummary||!p)return;if(!window.confirm('Hoàn tất xuất bản '+recoverySummary.title+' — '+recoverySummary.author+'?\n'+p.bookId+' / '+p.revisionId+'\nServer sẽ kiểm tra lại revision và toàn bộ dữ liệu. Không tải lại EPUB; không tự gửi lại khi kết quả chưa rõ.'))return;recoveryReady=false;result=await getRecoveryClient().publish({approve:true});}
+   else{recoveryReady=false;result=await getRecoveryClient().inspect();recoveryReady=result.classification==='IMPORTING_COMPLETE'&&result.canPublish===true;recoverySummary=recoveryReady?result.bookSummary:null;}
+   const messages={PUBLISHED_EXACT:'Server xác nhận đã xuất bản đúng phiên. Đang đối soát trạng thái để giải phóng pending.',IMPORTING_COMPLETE:result.canPublish===true?'Server đã kiểm tra đủ nội dung và checksum. Có thể chọn Hoàn tất xuất bản phiên này.':'Dữ liệu đã đủ nhưng chức năng ghi đang tắt. Giữ phiên.',IMPORTING_INCOMPLETE:'Dữ liệu còn thiếu hoặc không hợp lệ. Giữ phiên; chưa hỗ trợ tiếp tục phần thiếu ở bản này.',NOT_FOUND_EMPTY:'Server chưa có bản thảo hoặc object. Chưa kiểm soát được request cũ nên chưa cho kết thúc phiên tự động.',NOT_FOUND_WITH_OBJECTS:'Không có bản thảo nhưng còn object liên quan. Giữ phiên để đối soát, không đăng lại.',REVISION_MISMATCH:'Revision/owner trên server không khớp. Giữ phiên.',DRAFT:'Bản thảo chưa ở trạng thái có thể xuất bản. Giữ phiên.',UNKNOWN:'Chưa xác định kết quả. Giữ phiên, chỉ kiểm tra lại; không tự gửi lại xuất bản.'};render((result.bookSummary?result.bookSummary.title+' — '+result.bookSummary.author+'. ':'')+(messages[result.classification]||messages.UNKNOWN));
+  }catch(error){
+   recoveryReady=false;const code=error?.code||error?.message;
+   const notices={
+    RECOVERY_POSSIBLE_DUPLICATE:'Phát hiện sách cùng tên/tác giả trong danh mục mới. Dừng để tránh trùng.',
+    RECOVERY_AUDIT_LIMIT:'Phiên vượt giới hạn kiểm tra một lần. Giữ phiên; bản này chưa có kiểm tra theo từng phần.',
+    RECOVERY_RATE_LIMITED:'Backend đang giới hạn yêu cầu. Giữ phiên và chờ; không đăng lại EPUB.',
+    RECOVERY_WRITE_DISABLED:'Chức năng ghi đang tắt trên server. Giữ phiên.',
+    RECOVERY_REVISION_MISMATCH:'Revision/owner trên server không khớp. Giữ phiên và kiểm tra trạng thái.',
+    RECOVERY_STATE_CHANGED:'Phiên trên server đã thay đổi. Giữ phiên và kiểm tra trạng thái.',
+    RECOVERY_FRESH_INSPECTION_REQUIRED:'Kết quả kiểm tra đã hết hạn. Bấm Kiểm tra phục hồi trên server lại.',
+    RECOVERY_AUTH_UNAVAILABLE:'Chưa xác thực được Firebase. Giữ phiên, chờ kết nối ổn định rồi kiểm tra lại.',
+    RECOVERY_HTTP_401:'Server từ chối xác thực. Giữ phiên và kiểm tra đăng nhập Firebase.',
+    RECOVERY_HTTP_403:'Server từ chối quyền owner/admin. Giữ phiên, kiểm tra đúng tài khoản.',
+    RECOVERY_FRESH_CATALOG_REQUIRED:'Chưa tải đủ danh mục V49/R2 để chống trùng. Giữ phiên, chờ backend sẵn sàng rồi kiểm tra lại.',
+    RECOVERY_SESSION_CHANGED:'Tài khoản hoặc pending đã đổi. Dừng thao tác và kiểm tra đúng tài khoản, đúng phiên.',
+    RECOVERY_NETWORK_OR_UNKNOWN:'Mất kết nối hoặc chưa rõ kết quả. Giữ phiên, bấm Kiểm tra trạng thái; không đăng lại EPUB.',
+    RECOVERY_NOT_DEPLOYED:'Phục hồi trên server chưa được triển khai. Giữ phiên.',
+    RECOVERY_NOT_ENABLED:'Phục hồi trên server chưa được bật. Giữ phiên.',
+    RECOVERY_BACKEND_UNAVAILABLE:'Backend chưa sẵn sàng. Giữ phiên, chờ rồi kiểm tra lại.',
+    RECOVERY_UNAVAILABLE:'Chưa lấy được kết quả từ backend. Giữ phiên, chờ rồi kiểm tra lại.',
+    RECOVERY_JOURNAL_REQUIRED:'Không lưu được bằng chứng trước khi gửi. Chưa gửi publish; giữ phiên.'
+   };
+   render(notices[code]||'Chưa thể phục hồi phiên. Giữ pending và lưu báo cáo; không đăng lại.');
+  }
+  finally{const message=id('status').textContent;recoveryBusy=false;renderQueue();render(message);if(result?.classification==='PUBLISHED_EXACT'&&allowed())id('status-check').click();}
+ }
+ serverInspect.addEventListener('click',()=>runRecovery(false));serverPublish.addEventListener('click',()=>runRecovery(true));
  function journal(){if(!allowed()||!sessionUid||!window.DuduR2ImportJournalR1)return null;return window.DuduR2ImportJournalR1.create({storage:localStorage,owner:sessionUid});}
  function saveJournal(current,clearQueue=false){const j=journal(),entries=queue.entries();journalAvailable=!!j&&j.save({current,entries:entries.length||clearQueue?entries:undefined});return journalAvailable;}
  function saveQueueLater(){if(journalTimer!==null)clearTimeout(journalTimer);const owner=sessionUid,current=queue;journalTimer=setTimeout(()=>{journalTimer=null;if(owner===sessionUid&&current===queue&&allowed()){saveJournal();renderRecovery();}},400);}
  function renderRecovery(){
-  recovery.hidden=!allowed();exportReport.disabled=!allowed();if(!allowed())return;
+  recovery.hidden=!allowed();exportReport.disabled=!allowed()||recoveryBusy;if(!allowed())return;
+  serverInspect.disabled=!serverRecoveryEnabled||recoveryBusy||busy||queue.status().running||queue.status().adding;serverPublish.disabled=serverInspect.disabled||!recoveryReady;
   const data=journal()?.read(),s=data?.sessions?.at(-1),r=s?.lastRequest;
   recoveryStatus.textContent=!journalAvailable?'Không lưu được nhật ký trên thiết bị. Giữ tab khi có lỗi; không xóa pending.':s?'Phiên gần nhất: '+s.status+(s.failurePhase?' (dừng ở '+s.failurePhase+')':'')+'; đã ghi nhận '+s.quarantined+'/'+s.total+' phần.'+(r?' Bước '+r.operation+': '+r.state+(r.http?' — HTTP '+r.http:'')+' — '+r.code+'.':'')+' Danh sách lưu '+(data.queue?.length||0)+' dòng; cần chọn lại tệp sau khi tải lại trang.':'Chưa có nhật ký mới. Phiên cũ vẫn phải kiểm tra trạng thái; không suy luận từ việc thiếu nhật ký.';
  }
  exportReport.addEventListener('click',()=>{
-  if(!allowed())return;try{saveJournal(controller?.status());const data=journal()?.report(pending());if(!data)throw Error('JOURNAL_UNAVAILABLE');const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='DUDU-import-report-'+Date.now()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}catch{render('Không xuất được báo cáo phiên nhập. Giữ pending và tab hiện tại.');}
+  if(!allowed()||recoveryBusy)return;try{saveJournal(recoveryJournalActive?undefined:controller?.status());const data=journal()?.report(pending());if(!data)throw Error('JOURNAL_UNAVAILABLE');const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='DUDU-import-report-'+Date.now()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}catch{render('Không xuất được báo cáo phiên nhập. Giữ pending và tab hiện tại.');}
  });
- const locked=()=>busy||preparing||checkingCatalog||queue.status().running||queue.status().adding||queue.status().halted;
+ const locked=()=>busy||preparing||checkingCatalog||recoveryBusy||queue.status().running||queue.status().adding||queue.status().halted;
  const catalogSnapshot=()=>{
   const data=window.DuduR2AuthorCatalogReviewR1?.snapshot?.();
   return data?.status==='ready'&&data.uid===sessionUid&&Array.isArray(data.books)?data:null;
@@ -155,10 +198,10 @@
    !queue.entries().some(e=>e.selected&&['READY','RETRY'].includes(e.state));
   document.getElementById('c13b3-read').disabled=!allowed()||busy||queue.status().running||!lastPublishedBook;
   for(const x of ['file','files','folder','pick-file','pick-files','pick-folder','clear','select-all','select-none'])id(x).disabled=!allowed()||locked()||!!p||storageError;
-  id('status-check').disabled=!allowed()||busy;id('status-check').hidden=!p&&!queue.status().halted;document.getElementById('c13b3-read').hidden=!lastPublishedBook;
+  id('status-check').disabled=!allowed()||busy||recoveryBusy;id('status-check').hidden=!p&&!queue.status().halted;document.getElementById('c13b3-read').hidden=!lastPublishedBook;
   for(const f of fields)id(f).disabled=!allowed()||locked()||!!p||!activeEntry||!['READY','METADATA','RETRY'].includes(activeEntry.state);
  }
- function syncAccess(){const uid=allowed()?firebase.auth().currentUser.uid:null;if(sessionUid!==uid){version++;preparedFile=null;preparing=false;activeEntry=null;lastPublishedBook=null;queue.pause();queue=window.DuduR2PersonalQueue.create({prepare:prepareForQueue,validateMetadata:m=>window.DuduLibraryR2AuthorImportL6C12.validateMetadata(m),onChange:()=>renderQueue()});if(sessionUid){abort?.abort();closeView();controller=null;}}sessionUid=uid;id('open').hidden=!uid;renderQueue();}
+ function syncAccess(){const uid=allowed()?firebase.auth().currentUser.uid:null;if(sessionUid!==uid){recoveryClient?.invalidate();recoveryReady=false;recoverySummary=null;recoveryJournalActive=false;version++;preparedFile=null;preparing=false;activeEntry=null;lastPublishedBook=null;queue.pause();queue=window.DuduR2PersonalQueue.create({prepare:prepareForQueue,validateMetadata:m=>window.DuduLibraryR2AuthorImportL6C12.validateMetadata(m),onChange:()=>renderQueue()});if(sessionUid){abort?.abort();closeView();controller=null;}}sessionUid=uid;id('open').hidden=!uid;renderQueue();}
  const legacy=window.duduSyncEpubAccessR11;window.duduSyncEpubAccessR11=approved=>{syncAccess();return legacy?.(approved);};
  window.addEventListener('dudu-auth-state-changed',syncAccess);syncAccess();
 id('form').addEventListener('submit',e=>e.preventDefault());
@@ -222,7 +265,7 @@ id('form').addEventListener('submit',e=>e.preventDefault());
   if(!allowed()||busy)return {kind:'unknown'};
   const file=entry.file,metadata=entry.metadata;
   if(!window.DuduLibraryR2AuthorImportL6C12.validateMetadata(metadata))return {kind:'pre-dispatch'};
-  const owner=sessionUid;let active=null;
+  const owner=sessionUid;let active=null;recoveryJournalActive=false;
   try{
    if(pending())return {kind:'unknown'};
    abort=abort||new AbortController();controller=controller||window.DuduLibraryR2AuthorImportL6C12.createController({enabled:true,getCurrentUser:()=>firebase.auth().currentUser,

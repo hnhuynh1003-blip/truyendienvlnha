@@ -1,3 +1,5 @@
 # Python offline authoring checks
 __pycache__/
 *.py[cod]
+# Wrangler local account/build cache is never a source artifact.
+.wrangler/
