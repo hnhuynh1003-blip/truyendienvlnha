@@ -11,10 +11,10 @@ Demo độc lập không đăng nhập thật, không kết nối Firebase/R2. N
 Trong ứng dụng thật: mở chương → ⚙ Kiểu đọc → ¶ Chỉnh đoạn cá nhân.
 Cần UID Firebase đã sẵn sàng; khách chưa đăng nhập vẫn đọc bố cục gốc.
 
-1. Đặt con trỏ trong ô chữ gốc, chọn **Chia tại con trỏ**; kiểm tra đoạn mới trong Reader sau khi đóng hộp.
-2. Chọn đầu đoạn bằng danh sách **Đi tới đầu đoạn để gộp**, chọn **Gộp với đoạn trước**.
+1. Chạm/chọn chữ ngay trong trang Reader, chọn **Chia tại con trỏ**; đoạn mới hiện ngay trong Reader. Thanh công cụ nằm trong trang, không có lớp phủ chặn đọc.
+2. Chạm/chọn trong đoạn muốn gộp, chọn **Gộp với đoạn trước**. Không gộp qua ảnh. Nếu khó chọn trên thiết bị, mở mục **Chọn vị trí bằng ô chữ gốc / Sao lưu** để dùng ô chữ và danh sách đoạn.
 3. Thử Hoàn tác và Bố cục gốc. Hoàn tác giữ tối đa 30 bước trong phiên/chương hiện tại.
-4. Sao lưu chương thành JSON; đổi bố cục rồi phục hồi tệp. Tệp chỉ chứa UID, định danh, fingerprint SHA-256 và mảng vị trí UTF-16, không chứa chương.
+4. Bấm **Xong — đọc tiếp**: thanh công cụ ẩn, bố cục đã lưu vẫn áp dụng và tên riêng được hiển thị lại. Trong lúc chỉnh dùng tên gốc để vị trí chọn không lệch do alias. Sao lưu chương thành JSON trong mục mở rộng; đổi bố cục rồi phục hồi tệp. Tệp chỉ chứa UID, định danh, fingerprint SHA-256 và mảng vị trí UTF-16, không chứa chương.
 5. Tải lại: giữ bố cục. Đổi tài khoản: không áp dụng bố cục cũ. Đổi revision/chữ gốc: không áp dụng fingerprint cũ. Sang thiết bị khác cần chuyển tệp JSON và đăng nhập cùng UID, mở cùng nội dung/revision.
 6. Kiểm tra hình vẫn nằm giữa đúng khối; không thể gộp qua hình. Kiểm tra sửa tên, dấu trang, đọc tiếp và chuyển chương trong bản ứng dụng cục bộ trước nghiệm thu.
 
