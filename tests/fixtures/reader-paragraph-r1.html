@@ -1,0 +1,19 @@
+<!doctype html><html lang="vi"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Chỉnh đoạn R1 — bản xem thử cục bộ</title>
+<link rel="stylesheet" href="../../css/reader-paragraph-r1.css">
+<style>body{max-width:760px;margin:30px auto;font:20px/1.8 system-ui;background:#17212b;color:#eee;padding:14px}button{padding:10px}#reader-content img{width:120px}p{margin:1em 0}</style>
+<h1>Chỉnh đoạn cá nhân R1</h1><p>Bản thử độc lập, không kết nối Firebase/R2. Chữ “Trần An” minh họa sửa tên thành “An”.</p>
+<button onclick="DuduReaderParagraphsR1.open()">¶ Chỉnh đoạn</button>
+<button onclick="who=who==='demo-a'?'demo-b':'demo-a';dispatchEvent(new Event('dudu-auth-state-changed'));setup()">Đổi tài khoản thử</button>
+<button onclick="revision+='x';setup()">Đổi revision gốc</button>
+<div id="reader-content"></div>
+<script src="../../js/reader-paragraph-model-r1.js"></script>
+<script>let who='demo-a',revision='1';window.DuduAuth={isReady:()=>true,uid:()=>who};</script>
+<script src="../../js/reader-paragraph-ui-r1.js"></script>
+<script>
+async function setup(){const host=document.getElementById('reader-content'),sources=new WeakMap();host.replaceChildren();const binder=(p,t)=>{sources.set(p,t);p.textContent=t.replaceAll('Trần An','An');};
+for(const t of ['Trần An bước tới. Nàng nói: “Xin chào!”\nĐây là một đoạn dài chưa được ngắt.'.repeat(location.search.includes('long')?3000:1),'Dòng thứ hai có tiếng Việt e\u0301 và biểu tượng 😀.']){const p=document.createElement('p');binder(p,t);host.append(p);}
+const image=document.createElement('img');image.alt='Ảnh giữa hai khối';image.src='data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="120" height="80"%3E%3Crect width="120" height="80" fill="teal"/%3E%3C/svg%3E';host.append(image);
+const p=document.createElement('p');binder(p,'Văn bản sau ảnh. Không gộp xuyên ảnh.');host.append(p);
+await DuduReaderParagraphsR1.mount({host,book:'web:demo',chapter:'1',content:'immutable fixture',revision,binder,sources});}
+setup();
+</script></html>
