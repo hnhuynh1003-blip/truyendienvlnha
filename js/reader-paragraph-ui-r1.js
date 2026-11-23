@@ -71,6 +71,6 @@
   }catch{/* Fingerprint unavailable: editing stays disabled. */}
  }
  function open(){init();const s=current;if(!s||!live(s)){root.alert('Cần đăng nhập và mở chương đã tải hoàn chỉnh để chỉnh đoạn.');return;}root.DuduReaderPreferencesL2C?.close();root.DuduReaderNamesL53?.setMode?.(false);s.host.before(panel);select.replaceChildren(...s.runs.map((r,i)=>{const o=el('option','Khối '+(i+1));o.value=i;return o;}));panel.hidden=false;paint(s);update();}
- root.addEventListener('dudu-auth-state-changed',()=>{++epoch;close(false);const s=current;if(s&&s.scope.uid!==uid()){s.cuts=s.runs.map(r=>r.originalCuts.slice());if(s.runs.every(r=>r.nodes.every(n=>n.isConnected)))paint(s);current=null;}});
+ root.addEventListener('dudu-auth-state-changed',()=>{const s=current;if(s&&s.scope.uid===uid())return;++epoch;close(false);if(s){s.cuts=s.runs.map(r=>r.originalCuts.slice());if(s.runs.every(r=>r.nodes.every(n=>n.isConnected)))paint(s);current=null;}});
  root.DuduReaderParagraphsR1=Object.freeze({mount,open});
 })(window);
