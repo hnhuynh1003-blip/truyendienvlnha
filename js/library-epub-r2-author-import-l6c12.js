@@ -117,7 +117,7 @@
    try{requestsDispatched++;response=await send({route,method:'POST',token:jwt,body,mime,signal});}
    catch(e){const http=Number.isInteger(e?.http)&&e.http>=100&&e.http<=599?e.http:null;lastRequest={operation,state:'unknown',http,code:http?'INVALID_RESPONSE':'NETWORK_OR_UNKNOWN',at:Date.now()};fail('request-outcome-unknown');}
    requireUser();if(signal?.aborted)fail('aborted');
-   const known=new Set(['ticket-issued','draft-created','quarantined','promotion-verified','catalog-published','unauthenticated','owner-only','invalid-request','invalid-manifest','invalid-metadata','invalid-body','invalid-json','draft-unavailable','request-unavailable','pipeline-disabled','publish-unavailable-or-unknown']);
+   const known=new Set(['ticket-issued','draft-created','quarantined','promotion-verified','catalog-published','unauthenticated','owner-only','invalid-request','invalid-manifest','invalid-metadata','invalid-body','invalid-json','draft-unavailable','request-unavailable','pipeline-disabled','publish-unavailable-or-unknown','not-found','origin-blocked','catalog-disabled','method-not-allowed','auth-unavailable','server-unavailable','unexpected-body','ticket-denied','invalid-media','invalid-fields','writer-unavailable','already-exists','writer-unavailable-or-unknown','draft-denied']);
    lastRequest={operation,state:'response',http:Number.isInteger(response?.status)&&response.status>=100&&response.status<=599?response.status:null,code:known.has(response?.data?.code)?response.data.code:'OTHER_SERVER_CODE',at:Date.now()};
    if(typeof onState==='function')onState(statusView());
    if(!rec(response)||!Number.isSafeInteger(response.status)||!rec(response.data)||
