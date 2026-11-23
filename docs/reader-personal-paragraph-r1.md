@@ -11,8 +11,8 @@ Demo độc lập không đăng nhập thật, không kết nối Firebase/R2. N
 Trong ứng dụng thật: mở chương → ⚙ Kiểu đọc → ¶ Chỉnh đoạn cá nhân.
 Cần UID Firebase đã sẵn sàng; khách chưa đăng nhập vẫn đọc bố cục gốc.
 
-1. Chạm/chọn chữ ngay trong trang Reader, chọn **Chia tại con trỏ**; đoạn mới hiện ngay trong Reader. Thanh công cụ nằm trong trang, không có lớp phủ chặn đọc.
-2. Chạm/chọn trong đoạn muốn gộp, chọn **Gộp với đoạn trước**. Không gộp qua ảnh. Nếu khó chọn trên thiết bị, mở mục **Chọn vị trí bằng ô chữ gốc / Sao lưu** để dùng ô chữ và danh sách đoạn.
+1. Bấm **Tự chia theo câu**: chia toàn chương theo ranh giới câu và ngắt đoạn dài ở khoảng trắng. Kết quả hiện và lưu ngay trong Reader; xem số đoạn rồi bấm **Xong — đọc tiếp**. Có thể Hoàn tác. Đây là bố cục cá nhân do máy đề xuất, không chỉnh chữ gốc.
+2. Muốn chọn chính xác: mở **Chia/gộp thủ công · Bố cục gốc · Sao lưu**, chạm/chọn chữ trong truyện hoặc ô chữ gốc rồi bấm **Chia tại con trỏ** / **Gộp với đoạn trước**. Không gộp qua ảnh. Chọn đúng đầu đoạn đã tồn tại sẽ báo chưa có thay đổi, không báo chia thành công.
 3. Thử Hoàn tác và Bố cục gốc. Hoàn tác giữ tối đa 30 bước trong phiên/chương hiện tại.
 4. Bấm **Xong — đọc tiếp**: thanh công cụ ẩn, bố cục đã lưu vẫn áp dụng và tên riêng được hiển thị lại. Trong lúc chỉnh dùng tên gốc để vị trí chọn không lệch do alias. Sao lưu chương thành JSON trong mục mở rộng; đổi bố cục rồi phục hồi tệp. Tệp chỉ chứa UID, định danh, fingerprint SHA-256 và mảng vị trí UTF-16, không chứa chương.
 5. Tải lại: giữ bố cục. Đổi tài khoản: không áp dụng bố cục cũ. Đổi revision/chữ gốc: không áp dụng fingerprint cũ. Sang thiết bị khác cần chuyển tệp JSON và đăng nhập cùng UID, mở cùng nội dung/revision.
@@ -39,3 +39,7 @@ Browser kiểm tra chia/gộp, undo, reset, download/import JSON, lỗi storage,
 Kết quả local ngày 2026-11-23: 44/44 unit/contract Reader liên quan PASS; browser mới PASS cả chương hơn 200.000 ký tự và hook readChapter thật trong Sandbox offline; 14/14 browser Reader UI T1 PASS. Toàn bộ `tests/*.test.cjs`: 1.562 test, 1.561 PASS, 1 FAIL Tu Tiên như trên (tái hiện với index.html gốc từ origin/main). Khi mở hộp/focus/cuộn, bookmark vẫn cập nhật scrollTop/updatedAt theo cơ chế sẵn có; kiểm tra đảm bảo chapterId/chIdx đúng, không yêu cầu đóng băng tiến độ cuộn. Chưa nghiệm thu trên tài khoản production/thiết bị vật lý.
 
 Rollback trước phát hành: bỏ nhánh. Sau phát hành cần quyết định riêng; có thể bỏ hook và ba asset mà không xóa key người đọc. Không có thay đổi cloud để rollback.
+
+## Thư viện gọn hơn
+
+Ẩn thông báo tải R2/V49 và thông báo cache thông thường; vẫn hiển thị lỗi quyền, mạng, dữ liệu không đầy đủ cùng nút thử lại. Nút **Cập nhật thư viện** nằm cùng hàng số tác phẩm, vẫn dùng fresh:true và bị vô hiệu hóa khi đang tải. Không thay cache TTL, quota logic, preflight chống trùng hoặc pending. Browser QA kiểm tra callback onState thật, vị trí nút, lỗi quyền còn hiển thị và cập nhật luôn yêu cầu fresh. 86/86 test liên quan PASS ở bản sửa này.
