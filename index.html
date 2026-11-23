@@ -198,8 +198,9 @@
   <script src="js/epub-production-v49.js?v=c422-1"></script>
   <!-- L6-P2C5C.4 preview bridge: feature OFF unless separately configured -->
   <script src="js/library-epub-storage-l6p1.js?v=l6p1"></script>
-  <script src="js/epub-catalog-perf-r1.js?v=epub-perf-r1"></script>
-  <script src="js/library-epub-r2-client-l6p2c5c3.js?v=epub-perf-r1"></script>
+  <script src="js/epub-catalog-device-cache-r1.js?v=device-catalog-r1"></script>
+  <script src="js/epub-catalog-perf-r1.js?v=device-catalog-r1"></script>
+  <script src="js/library-epub-r2-client-l6p2c5c3.js?v=device-catalog-r1"></script>
   <script src="js/library-r2-private-media-l6p2c5c7.js?v=epub-perf-r1"></script>
   <script src="js/library-r2-preview-media-bridge-l6p2c5c8.js?v=l6p2c5c8"></script>
   <script src="js/library-r2-preview-flags-l6p2c5c4.js?v=r2-unified-smoke-on-1"></script>
@@ -2799,7 +2800,11 @@
     let synopsisIndexUidL0=null;
     // Independent authenticated catalog loads; V49 remains supported during transition.
     let epubCatalogRestoreR1=false;
+    const epubCatalogDeviceCacheR1=window.DuduEpubCatalogDeviceCacheR1?.create({
+      scope:JSON.stringify(['truyendienvl',l6R2PreviewConfig?.workerBaseUrl||'',!!l6R2PreviewClient])
+    });
     const epubCatalogPerfR1=window.DuduEpubCatalogPerfR1.create({
+      deviceCache:epubCatalogDeviceCacheR1,
       session:()=>firebase.auth().currentUser,
       ready:()=>!IS_SANDBOX_MODE&&DuduAuth.isReady(),
       beforeRefresh:()=>{
@@ -2828,16 +2833,28 @@
         let box=document.getElementById('epub-catalog-status-r1');
         if(!box){box=document.createElement('div');box.id='epub-catalog-status-r1';box.setAttribute('role','status');box.setAttribute('aria-live','polite');grid.before(box);}
         box.replaceChildren();
+        if(state.deviceCatalog?.active){
+          const note=document.createElement('span');
+          note.textContent='Đang xem danh mục đã lưu trên thiết bị (tối đa 6 giờ). Cập nhật để thấy sách mới. ';
+          box.append(note);
+        }
         const labels={"TIMEOUT": "h\u1ebft th\u1eddi gian ch\u1edd", "TOKEN_TIMEOUT": "ch\u1edd token qu\u00e1 l\u00e2u", "TOKEN_FAILED": "kh\u00f4ng l\u1ea5y \u0111\u01b0\u1ee3c token", "HTTP_401": "phi\u00ean ch\u01b0a \u0111\u01b0\u1ee3c x\u00e1c th\u1ef1c", "HTTP_403": "kh\u00f4ng c\u00f3 quy\u1ec1n", "HTTP_5XX": "m\u00e1y ch\u1ee7 l\u1ed7i", "NETWORK": "l\u1ed7i m\u1ea1ng/CORS", "BACKEND_ERROR": "kh\u00f4ng t\u1ea3i \u0111\u01b0\u1ee3c danh m\u1ee5c", "INVALID_RESPONSE": "ph\u1ea3n h\u1ed3i kh\u00f4ng h\u1ee3p l\u1ec7", "SESSION_CHANGED": "phi\u00ean \u0111\u00e3 thay \u0111\u1ed5i"};
         for(const [name,status]of Object.entries(state.states)){
-          if(status==='success'||status==='disabled')continue;
+          if(status==='success'||status==='disabled'||status==='cached')continue;
           const text=document.createElement('span');text.textContent=(name==='r2'?'EPUB R2':'EPUB V49')+': '+(status==='loading'?'\u0111ang t\u1ea3i\u2026':labels[status]||'l?i')+' ';box.append(text);
           if(status!=='loading'){const btn=document.createElement('button');btn.type='button';btn.className='btn';btn.textContent='Th\u1eed l\u1ea1i '+(name==='r2'?'R2':'V49');btn.onclick=()=>epubCatalogPerfR1.retry(name);box.append(btn);}
+        }
+        if(DuduAuth.isReady()){
+          const update=document.createElement('button');update.type='button';update.className='btn';
+          update.id='epub-catalog-update-r1';update.textContent='Cập nhật thư viện';
+          update.disabled=Object.values(state.states).some(s=>s==='loading');
+          update.onclick=()=>refreshEpubCloudBooksV49({fresh:true});box.append(update);
         }
         box.hidden=!box.childNodes.length;
       }
     });
     // C13-R2: owner-only, read-only comparison against the COMPLETE R2 catalog.
+    window.duduInvalidateDeviceCatalogR1=()=>epubCatalogPerfR1.forgetDeviceCatalog?.();
     // These entries have no original source digest: matching is tentative,
     // never an assertion of byte identity or authorization to publish.
     window.DuduR2AuthorCatalogReviewR1=Object.freeze({snapshot(){
@@ -2846,8 +2863,10 @@
          DuduAuth.isAdmin?.()!==true||
          uid!==l6R2PreviewConfig?.pilotOwnerUid)
         return {status:'unauthorized',uid:null,books:[]};
-      const status=epubCatalogPerfR1.snapshot().states?.r2||'loading';
+      const catalogState=epubCatalogPerfR1.snapshot();
+      const status=catalogState.states?.r2||'loading';
       if(status!=='success')return {status,uid,books:[]};
+      if(catalogState.states?.v49!=='success')return {status:'incomplete',uid,books:[]};
       return {status:'ready',uid,books:epubPublishedBooksV49
         .filter(n=>n?._r2V1===true)
         .map(n=>({id:n.id,title:n.title,author:n.author,
@@ -10001,7 +10020,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 
 <script src="js/library-r2-personal-intake.js?v=personal-intake-1"></script>
 <script src="js/library-r2-personal-queue.js?v=r2-compare-r1"></script>
-<script src="js/library-r2-author-ui-c13b6d.js?v=r2-long-split-r1"></script>
+<script src="js/library-r2-author-ui-c13b6d.js?v=device-catalog-r1"></script>
 
 </body>
 </html>
