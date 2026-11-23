@@ -130,7 +130,7 @@ test('R2: source wiring requires completed matching-owner catalog and preflight 
  assert.match(ui,/Nghi đã đăng/);
  assert.match(ui,/chưa so SHA-256/);
  assert.match(html,/js\/library-r2-personal-queue\.js\?v=r2-compare-r1/);
- assert.match(html,/js\/library-r2-author-ui-c13b6d\.js\?v=import-journal-r1/);
+ assert.match(html,/js\/library-r2-author-ui-c13b6d\.js\?v=server-recovery-r1/);
  assert.match(html,/js\/library-epub-r2-client-l6p2c5c3\.js\?v=device-catalog-r1/);
  assert.match(html,/js\/epub-catalog-perf-r1\.js\?v=device-catalog-r1/);
  assert.ok(html.indexOf('js/epub-catalog-device-cache-r1.js')<html.indexOf('js/epub-catalog-perf-r1.js'));

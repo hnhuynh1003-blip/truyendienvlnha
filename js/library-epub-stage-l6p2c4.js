@@ -30,6 +30,9 @@
    !Array.isArray(manifest.chapters)||manifest.chapters.length<1||manifest.chapters.length>160||
    !Array.isArray(manifest.assets)||manifest.assets.length>3000||
    !Array.isArray(layouts)||layouts.length!==manifest.chapters.length)bad('manifest');
+  // Match the current trusted draft schema before a queue entry can request IDs.
+  const safeText=(value,max)=>typeof value==='string'&&!!value.trim()&&value.length<=max&&!/[\u0000-\u001F<>]/u.test(value);
+  if(!safeText(manifest.source?.name,180)||!/\.epub$/i.test(manifest.source.name))bad('tên tệp không đúng giới hạn bản thảo');
   const all=[],ids=new Set();
   function add(kind,id,detail,mime,max){
    const key=kind+':'+id;
@@ -48,6 +51,7 @@
   manifest.chapters.forEach((ch,i)=>{
    if(!exact(ch,['id','title','order','wordCount','bytes','sha256'])||
     ch.order!==i||!lm.has(ch.id))bad('chương thiếu layout');
+   if(!safeText(ch.title,140)||!Number.isSafeInteger(ch.wordCount)||ch.wordCount<1||ch.wordCount>220000)bad('tiêu đề/số từ chương không đúng giới hạn bản thảo');
    add('chapter',ch.id,ch,'text/plain; charset=utf-8',420000);
    add('layout',ch.id,lm.get(ch.id),'application/json; charset=utf-8',1048576);
   });

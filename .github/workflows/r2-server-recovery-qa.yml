@@ -1,0 +1,30 @@
+name: R2 server recovery safety QA
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'js/library-r2-server-recovery-r1.js'
+      - 'js/library-r2-author-ui-c13b6d.js'
+      - 'js/library-r2-preview-flags-l6p2c5c4.js'
+      - 'js/library-epub-stage-l6p2c4.js'
+      - 'cloudflare/recovery-v2/**'
+      - 'tests/*r2-server-recovery*.cjs'
+      - 'tests/r2-draft-preflight-parity-r1.test.cjs'
+      - '.github/workflows/r2-server-recovery-qa.yml'
+permissions:
+  contents: read
+jobs:
+  offline:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/r2-server-recovery-r1.test.cjs tests/r2-server-recovery-client-r1.test.cjs tests/r2-draft-preflight-parity-r1.test.cjs tests/r2-import-journal-r1.test.cjs tests/r2-pending-recovery-r1.test.cjs tests/r2-published-preflight-r1.test.cjs
+      - run: npm install --no-save playwright@1.56.1
+      - run: npx playwright install chromium --with-deps
+      - run: node tests/browser-r2-server-recovery-r1.cjs
+      - run: node tests/browser-r2-import-journal-r1.cjs

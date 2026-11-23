@@ -63,7 +63,8 @@ test('integration wrappers invalidate R2 only when work starts, and publish/comp
  const start=html.indexOf('    function refreshEpubCloudBooksV49('),end=html.indexOf('    // Auth event',start),wrapper=html.slice(start,end);
  assert.match(wrapper,/epubCatalogPerfR1.refresh\(options\)/);assert.doesNotMatch(wrapper,/invalidateCatalog/);
  assert.match(html,/beforeRefresh:\(\)=>\{\s*epubCatalogRestoreR1=false;\s*l6R2PreviewClient\?\.invalidateCatalog\(\);/);
- assert.equal((ui.match(/refreshEpubCloudBooksV49\(\{fresh:true\}\)/g)||[]).length,3);
+ assert.equal((ui.match(/refreshEpubCloudBooksV49\(\{fresh:true\}\)/g)||[]).length,4);
+ assert.match(ui,/preflight:async\(data,p\)=>\{\s*await refreshEpubCloudBooksV49\(\{fresh:true\}\)/);
  assert.equal((html.match(/(?:onPublished|refresh):\(\)=>refreshEpubCloudBooksV49\(\{fresh:true\}\)/g)||[]).length,3);
  assert.ok(ui.includes("data.bookId!==p.bookId||data.revision!==p.revisionId"));
  assert.ok(ui.includes("case 'published':return {kind:'published'"));
