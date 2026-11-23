@@ -66,7 +66,7 @@
    const response=await fetchFn(new URL(route,endpoint).href,{method,headers,
     ...(body===undefined?{}:{body}),cache:'no-store',redirect:'error',
     credentials:'omit',mode:'cors',signal});
-   const data=await jsonBounded(response);
+   let data;try{data=await jsonBounded(response);}catch(e){e.http=Number.isInteger(response.status)&&response.status>=100&&response.status<=599?response.status:null;throw e;}
    return freeze({status:response.status,data});
   };
  }
@@ -88,10 +88,11 @@
    typeof zipLib?.loadAsync!=='function'||typeof Parser!=='function'||
    typeof textV57?.getText!=='function'||typeof cryptoApi?.subtle?.digest!=='function'||
    !Number.isSafeInteger(batchSize)||batchSize<1||batchSize>8)fail('missing-prerequisites');
-  let status='idle', uid=null, bookId=null, revisionId=null, receipts=[],total=0, busy=false,requestsDispatched=0;
-  const statusView=()=>freeze({status,bookId,revisionId,requestsDispatched,quarantined:receipts.length,total,
+  let status='idle', uid=null, bookId=null, revisionId=null, receipts=[],checkpoints=[],total=0, busy=false,requestsDispatched=0,lastRequest=null,failurePhase=null;
+  const statusView=()=>freeze({status,bookId,revisionId,requestsDispatched,quarantined:checkpoints.length,total,
    readyForOwnerConfirmation:status==='quarantined',publishAuthorized:false,
-   published:status==='published',eligibleForDeletion:false,canMigrateBookmarks:false,
+   published:status==='published',lastRequest:lastRequest?freeze({...lastRequest}):null,failurePhase,
+   receipts:freeze(checkpoints.map(r=>freeze({...r}))),eligibleForDeletion:false,canMigrateBookmarks:false,
    canAwardExp:false});
   const requireUser=()=>{
    const user=getCurrentUser();
@@ -101,19 +102,24 @@
   };
   const token=async()=>{
    const user=requireUser();let value;
-   try{value=await user.getIdToken(false);}catch{fail('token-unavailable');}
+   try{value=await user.getIdToken(false);}catch{if(status==='staging')lastRequest={operation:'stage',state:'not-dispatched',http:null,code:'AUTH_UNAVAILABLE',at:Date.now()};fail('token-unavailable');}
    if(getCurrentUser()!==user||!BEARER.test(value||''))fail('token-or-account-changed');
    return value;
   };
   const post=async(route,{body,mime,signal}={})=>{
    if(signal?.aborted)fail('aborted');
-   const jwt=await token();if(signal?.aborted)fail('aborted');
+   const operation=route===routes.ticket?'ticket':route===routes.draft?'draft':route.includes('/stage/')?'stage':route.endsWith('/promote')?'promote':'publish';
+   let jwt;try{jwt=await token();}catch(e){lastRequest={operation,state:'not-dispatched',http:null,code:'AUTH_UNAVAILABLE',at:Date.now()};throw e;}if(signal?.aborted)fail('aborted');
+   lastRequest={operation,state:'dispatching',http:null,code:'NETWORK_OR_UNKNOWN',at:Date.now()};
    // Persist only metadata before dispatch. Failure to persist must stop the request.
    if(typeof onState==='function')onState(statusView());
    let response;
    try{requestsDispatched++;response=await send({route,method:'POST',token:jwt,body,mime,signal});}
-   catch{fail('request-outcome-unknown');}
+   catch(e){const http=Number.isInteger(e?.http)&&e.http>=100&&e.http<=599?e.http:null;lastRequest={operation,state:'unknown',http,code:http?'INVALID_RESPONSE':'NETWORK_OR_UNKNOWN',at:Date.now()};fail('request-outcome-unknown');}
    requireUser();if(signal?.aborted)fail('aborted');
+   const known=new Set(['ticket-issued','draft-created','quarantined','promotion-verified','catalog-published','unauthenticated','owner-only','invalid-request','invalid-manifest','invalid-metadata','invalid-body','invalid-json','draft-unavailable','request-unavailable','pipeline-disabled','publish-unavailable-or-unknown']);
+   lastRequest={operation,state:'response',http:Number.isInteger(response?.status)&&response.status>=100&&response.status<=599?response.status:null,code:known.has(response?.data?.code)?response.data.code:'OTHER_SERVER_CODE',at:Date.now()};
+   if(typeof onState==='function')onState(statusView());
    if(!rec(response)||!Number.isSafeInteger(response.status)||!rec(response.data)||
      typeof response.data.code!=='string')fail('response-unverifiable');
    return response;
@@ -163,6 +169,7 @@
          received.data.code!=='quarantined')fail('quarantine-not-confirmed');
        return {status:received.status,data:received.data};
       },tokenProvider:token,signal,cryptoApi,
+      onReceipt:r=>{const expected=plan.items[checkpoints.length];if(!expected||!exact(r,['kind','id','uploadId'])||r.kind!==expected.kind||r.id!==expected.id||!UUID.test(r.uploadId||''))fail('receipt-mismatch');checkpoints.push(freeze({...r}));if(typeof onState==='function')onState(statusView());},
       onProgress:typeof onProgress==='function'?onProgress:undefined});
      requireUser();
      if(!Array.isArray(batch?.receipts)||batch.next!==offset+batch.receipts.length||
@@ -174,12 +181,15 @@
        !KINDS.has(r.kind)||!UUID.test(r.uploadId||'')||
        receipts.some(x=>x.uploadId===r.uploadId))fail('receipt-mismatch');
       receipts.push(freeze({kind:r.kind,id:r.id,uploadId:r.uploadId}));
+      if(checkpoints.length<receipts.length)checkpoints.push(freeze({...r}));
+      else if(checkpoints[receipts.length-1].uploadId!==r.uploadId)fail('receipt-mismatch');
      }
      offset=batch.next;
+     if(typeof onState==='function')onState(statusView());
     }
     if(receipts.length!==total)fail('partial-stage');
     status='quarantined';return statusView();
-   }catch(e){status='blocked';throw e;}
+   }catch(e){failurePhase=status;status='blocked';try{if((requestsDispatched>0||bookId!==null)&&typeof onState==='function')onState(statusView());}catch{}throw e;}
    finally{busy=false;}
   }
   async function publish({approve=false,expectedBookId,signal}={}){
@@ -204,9 +214,9 @@
       result.data.code!=='catalog-published'||result.data.bookId!==bookId||
       !Number.isSafeInteger(result.data.verifiedObjects)||
       result.data.verifiedObjects!==total)fail('publication-unverified');
-    status='published';receipts=[];
+    status='published';receipts=[];checkpoints=[];if(typeof onState==='function')onState(statusView());
     return statusView();
-   }catch(e){status='blocked';throw e;}
+   }catch(e){failurePhase=status;status='blocked';try{if((requestsDispatched>0||bookId!==null)&&typeof onState==='function')onState(statusView());}catch{}throw e;}
    finally{busy=false;}
   }
   return freeze({start,publish,status:statusView});

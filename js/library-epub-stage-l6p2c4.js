@@ -82,7 +82,7 @@
   * In-memory receipts have no publication authority; restarting requires
   * re-validation by the trusted backend before any publication.
   */
- async function stageBatch({plan,start=0,batchSize=4,send,tokenProvider,onProgress,signal,
+ async function stageBatch({plan,start=0,batchSize=4,send,tokenProvider,onProgress,onReceipt,signal,
   cryptoApi=globalThis.crypto}={}){
   if(!plan||!ID.test(plan.bookId||'')||!REV.test(plan.revisionId||'')||
    !Array.isArray(plan.items)||plan.items.length<1||
@@ -110,6 +110,7 @@
     bad('Worker chưa xác nhận dữ liệu: '+item.kind+':'+item.id);
    const receipt=Object.freeze({kind:item.kind,id:item.id,uploadId:response.data.uploadId});
    receipts.push(receipt);
+   if(typeof onReceipt==='function')onReceipt(receipt);
    if(typeof onProgress==='function')onProgress(Object.freeze({completed:i+1,total:plan.items.length,
     kind:item.kind,id:item.id}));
   }
