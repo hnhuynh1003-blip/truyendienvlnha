@@ -27,7 +27,8 @@
  }
  function update(){const s=current;if(!s||!live(s))return;const i=Number(select.value)||0;area.value=s.runs[i]?.text||'';undoButton.disabled=!s.history.length;
   paragraphChoice.replaceChildren(...[0,...s.cuts[i]].map((pos,j)=>{const o=el('option','Đoạn '+(j+1)+': '+s.runs[i].text.slice(pos,pos+65).trim());o.value=pos;return o;}));
-  message('Chạm hoặc chọn chữ ngay trong truyện bên dưới, rồi bấm Chia tại con trỏ. Xong — đọc tiếp sẽ giữ bố cục đã lưu. Khi chỉnh hiển thị tên gốc để chọn đúng vị trí.');}
+  const count=s.cuts.reduce((n,c)=>n+c.length+1,0);
+  message('Hiện có '+count+' đoạn. Bấm “Tự chia theo câu” để chia cả chương, hoặc chọn chữ rồi chia tại vị trí đó. Bấm Xong để đọc với bố cục đã lưu.');}
  function commit(cuts){const s=current;if(!s||!live(s))return;
   try{const data=M.record(s.scope,cuts);if(!M.validate(data,s.scope,s.runs.map(r=>r.text)))throw Error();localStorage.setItem(s.key,JSON.stringify(data));s.history.push(s.cuts.map(x=>x.slice()));if(s.history.length>30)s.history.shift();s.cuts=cuts;paint(s);update();}catch{message('Không lưu được bố cục. Chưa áp dụng thay đổi. Hãy sao lưu hoặc kiểm tra dung lượng trình duyệt.');}
  }
@@ -35,16 +36,18 @@
  function init(){if(panel)return;
   panel=el('section');panel.id='reader-paragraph-panel-r1';panel.hidden=true;panel.setAttribute('role','region');panel.setAttribute('aria-label','Chỉnh đoạn văn cá nhân');
   const box=el('div');box.className='paragraph-dialog-r1';box.append(el('h3','Chỉnh đoạn cá nhân'));
-  const advanced=el('details');advanced.append(el('summary','Chọn vị trí bằng ô chữ gốc / Sao lưu'));
+  const advanced=el('details');advanced.append(el('summary','Chia/gộp thủ công · Bố cục gốc · Sao lưu'));
   const label=el('label','Khối văn bản ');select=el('select');select.setAttribute('aria-label','Khối văn bản giữa các ảnh');select.addEventListener('change',()=>{point=null;update();});label.append(select);advanced.append(label);
   area=el('textarea');area.readOnly=true;area.setAttribute('aria-label','Chữ gốc: chạm hoặc dùng phím để đặt con trỏ chia đoạn');area.addEventListener('focus',()=>{point=null;});advanced.append(area);
   paragraphChoice=el('select');paragraphChoice.setAttribute('aria-label','Đi tới đầu đoạn để gộp');paragraphChoice.addEventListener('change',()=>{point=null;const pos=+paragraphChoice.value;area.focus();area.setSelectionRange(pos,pos);});advanced.append(paragraphChoice);
   const actions=el('div');actions.className='paragraph-actions-r1';
-  actions.append(button('Chia tại con trỏ',()=>{const s=current;if(!s||!live(s))return;const i=point?.run??+select.value,pos=point?.offset??area.selectionStart,c=s.cuts.map(x=>x.slice());c[i]=[...new Set([...c[i],pos])].sort((a,b)=>a-b);if(!M.valid(s.runs[i].text,c[i]))return message('Chọn vị trí bên trong chữ gốc, không cắt giữa một ký tự Unicode.');commit(c);}),
+  const auto=button('Tự chia theo câu',()=>{const s=current;if(!s||!live(s))return;try{const cuts=s.runs.map((r,i)=>M.suggest(r.text,s.cuts[i]));if(JSON.stringify(cuts)===JSON.stringify(s.cuts))return message('Không tìm thấy điểm chia mới. Chọn chữ để chia thủ công; bố cục chưa thay đổi.');commit(cuts);message('Đã chia và lưu ngay trên trang đọc: '+s.cuts.reduce((n,c)=>n+c.length+1,0)+' đoạn. Bấm Xong — đọc tiếp. Có thể Hoàn tác.');}catch{message('Không thể tự chia chương này. Chọn một vị trí cụ thể để chia; bố cục chưa thay đổi.');}});auto.classList.add('paragraph-primary-r1');actions.append(auto);
+  const manual=el('div');manual.className='paragraph-actions-r1';advanced.append(manual);
+  manual.append(button('Chia tại con trỏ',()=>{const s=current;if(!s||!live(s))return;const i=point?.run??+select.value,pos=point?.offset??area.selectionStart,c=s.cuts.map(x=>x.slice());if(c[i].includes(pos))return message('Vị trí này đã là đầu đoạn, chưa có thay đổi. Chọn chữ ở giữa đoạn hoặc bấm Tự chia theo câu.');c[i]=[...new Set([...c[i],pos])].sort((a,b)=>a-b);if(!M.valid(s.runs[i].text,c[i]))return message('Chưa chọn điểm chia bên trong đoạn. Chọn chữ trong truyện hoặc bấm Tự chia theo câu.');commit(c);}),
    button('Gộp với đoạn trước',()=>{const s=current;if(!s||!live(s))return;const i=point?.run??+select.value,pos=point?.offset??area.selectionStart,c=s.cuts.map(x=>x.slice()),at=c[i].findLastIndex(x=>x<=pos);if(at<0)return message('Đặt con trỏ trong đoạn cần gộp với đoạn trước.');c[i].splice(at,1);commit(c);}));
   undoButton=button('Hoàn tác',()=>{const s=current;if(!s||!live(s)||!s.history.length)return;const previous=s.history.at(-1);try{localStorage.setItem(s.key,JSON.stringify(M.record(s.scope,previous)));s.history.pop();s.cuts=previous;paint(s);update();}catch{message('Không lưu được hoàn tác.');}});actions.append(undoButton,
-   button('Bố cục gốc',()=>{if(current&&live(current)&&root.confirm('Khôi phục bố cục gốc của chương này? Có thể hoàn tác trong phiên hiện tại.'))commit(current.runs.map(r=>r.originalCuts.slice()));}),
    button('Xong — đọc tiếp',()=>close()));
+  manual.append(button('Bố cục gốc',()=>{if(current&&live(current)&&root.confirm('Khôi phục bố cục gốc của chương này? Có thể hoàn tác trong phiên hiện tại.'))commit(current.runs.map(r=>r.originalCuts.slice()));}));
   advanced.append(button('Sao lưu chương',()=>{const s=current;if(!s||!live(s))return;const url=URL.createObjectURL(new Blob([JSON.stringify(M.record(s.scope,s.cuts))],{type:'application/json'})),a=el('a');a.href=url;a.download='dudu-paragraph-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}),button('Phục hồi sao lưu',()=>input.click()));
   const input=el('input');input.type='file';input.accept='.json,application/json';input.hidden=true;
   input.addEventListener('change',async()=>{const s=current,file=input.files[0];input.value='';if(!s||!file||!live(s))return;try{if(file.size>500000)throw Error();const data=JSON.parse(await file.text());if(!live(s)||!M.validate(data,s.scope,s.runs.map(r=>r.text)))throw Error();if(root.confirm('Áp dụng vị trí từ sao lưu cho đúng tài khoản và chương này?'))commit(data.cuts);}catch{message('Không phục hồi: sai tài khoản, chương, fingerprint hoặc tệp không hợp lệ.');}});

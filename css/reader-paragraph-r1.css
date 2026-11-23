@@ -5,3 +5,5 @@
 .paragraph-dialog-r1 textarea{display:block;width:100%;box-sizing:border-box;height:22dvh;margin:8px 0;font:inherit;line-height:1.7;background:#101820;color:#eee;resize:vertical}
 .paragraph-actions-r1{display:flex;gap:8px;flex-wrap:wrap}.paragraph-dialog-r1 select{max-width:100%}
 .paragraph-dialog-r1 button,.paragraph-dialog-r1 select{font:inherit;font-size:14px;padding:9px;border:1px solid #64748b;border-radius:6px;background:#263546;color:#eee;min-height:40px}.paragraph-dialog-r1 button:disabled{opacity:.45}
+.paragraph-dialog-r1 .paragraph-primary-r1{background:#246364;border-color:#63c5c0;font-weight:700}
+#home-view #epub-catalog-update-r1{margin-left:auto;flex-shrink:0;font-size:12px;padding:7px 10px}

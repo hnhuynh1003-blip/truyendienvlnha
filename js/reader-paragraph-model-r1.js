@@ -9,8 +9,21 @@
   return cuts.every((x,i)=>Number.isSafeInteger(x)&&x>0&&x<text.length&&(!i||x>cuts[i-1])&&ends.has(x));
  }
  function parts(text,cuts){if(!valid(text,cuts))throw Error('INVALID_BOUNDARIES');const edges=[0,...cuts,text.length];return edges.slice(1).map((end,i)=>text.slice(edges[i],end).replace(/\n/g,' ').trim()).filter(Boolean);}
+ function suggest(text,cuts){
+  const next=new Set(cuts);
+  for(const sentence of new Intl.Segmenter('vi',{granularity:'sentence'}).segment(text)){
+   if(sentence.index>0)next.add(sentence.index);
+   let last=sentence.index;
+   for(const match of sentence.segment.matchAll(/\s+/gu)){
+    const end=sentence.index+match.index+match[0].length;
+    if(end-last>=280&&end<text.length){next.add(end);last=end;}
+   }
+  }
+  const result=[...next].filter(x=>x>0&&x<text.length).sort((a,b)=>a-b);
+  if(!valid(text,result))throw Error('INVALID_BOUNDARIES');return result;
+ }
  const key=(uid,book,chapter,fp)=>'dudu-paragraph-r1:'+JSON.stringify([uid,book,chapter,fp]);
  function record(scope,cuts){return {schema:1,uid:scope.uid,book:scope.book,chapter:scope.chapter,fingerprint:scope.fingerprint,cuts:cuts.map(x=>x.slice())};}
  function validate(data,scope,texts){return !!data&&data.schema===1&&['uid','book','chapter','fingerprint'].every(k=>data[k]===scope[k])&&Array.isArray(data.cuts)&&data.cuts.length===texts.length&&data.cuts.every((c,i)=>valid(texts[i],c));}
- return Object.freeze({boundaries,valid,parts,key,record,validate});
+ return Object.freeze({boundaries,valid,parts,suggest,key,record,validate});
 });

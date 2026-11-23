@@ -18,6 +18,13 @@ test('backup is positions only; account, device, chapter, fingerprint exact matc
  assert.equal(JSON.stringify(r).includes('abcd'),false);assert.notEqual(M.key('alice','b','c','f'),M.key('bob','b','c','f'));
 });
 test('long chapter and offset budget',()=>{const t='Tiếng Việt 😀. '.repeat(30000);assert.equal(M.valid(t,[20,100]),true);assert.equal(M.valid(t,Array.from({length:10001},(_,i)=>i+1)),false);});
+test('one-click sentence layout keeps existing boundaries and Unicode, with fallback for long prose',()=>{
+ const text='Trần An đi tới. Nàng nói: “Xin chào!” Hôm nay trời đẹp.\nĐoạn gốc.';
+ const original=M.boundaries(text),cuts=M.suggest(text,original);
+ assert.ok(cuts.length>original.length);assert.ok(original.every(x=>cuts.includes(x)));assert.equal(M.valid(text,cuts),true);
+ assert.equal(M.parts(text,cuts).join(' ').replace(/\s+/g,' '),text.replace(/\s+/g,' '));
+ const long='Tiếng Việt e\u0301 😀 không có dấu câu '.repeat(100);assert.ok(M.suggest(long,[]).length>0);
+});
 test('Reader adapter does not re-enter chapter, mutate content or call network',()=>{
  const fs=require('fs'),ui=fs.readFileSync(require.resolve('../js/reader-paragraph-ui-r1.js'),'utf8');
  assert.doesNotMatch(ui.replace(/\/\*[\s\S]*?\*\//g,''),/\bfetch\s*\(|\.content\s*=|readChapter\s*\(|firestore\s*\(/);

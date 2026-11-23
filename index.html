@@ -225,9 +225,9 @@
   <script src="js/reader-name-scan-l56a.js?v=l56a-1"></script>
   <script src="js/reader-terms-l56b.js?v=l56b-1"></script>
   <script src="js/reader-name-ui-l54.js?v=l56b-1"></script>
-  <script src="js/reader-paragraph-model-r1.js?v=r1"></script>
-  <script src="js/reader-paragraph-ui-r1.js?v=r1-inline1"></script>
-  <link rel="stylesheet" href="css/reader-paragraph-r1.css?v=r1-inline1">
+  <script src="js/reader-paragraph-model-r1.js?v=r1-simple2"></script>
+  <script src="js/reader-paragraph-ui-r1.js?v=r1-simple2"></script>
+  <link rel="stylesheet" href="css/reader-paragraph-r1.css?v=r1-simple2">
   <script src="js/npc-portrait-library-v1.js?v=40-1"></script>
   <script src="js/npc-anime-candidates-v14.js"></script>
   <script src="js/player-avatar-v16.js?v=identity-1"></script>
@@ -2839,23 +2839,19 @@
         let box=document.getElementById('epub-catalog-status-r1');
         if(!box){box=document.createElement('div');box.id='epub-catalog-status-r1';box.setAttribute('role','status');box.setAttribute('aria-live','polite');grid.before(box);}
         box.replaceChildren();
-        if(state.deviceCatalog?.active){
-          const note=document.createElement('span');
-          note.textContent='Đang xem danh mục đã lưu trên thiết bị (tối đa 6 giờ). Cập nhật để thấy sách mới. ';
-          box.append(note);
-        }
         const labels={"TIMEOUT": "h\u1ebft th\u1eddi gian ch\u1edd", "TOKEN_TIMEOUT": "ch\u1edd token qu\u00e1 l\u00e2u", "TOKEN_FAILED": "kh\u00f4ng l\u1ea5y \u0111\u01b0\u1ee3c token", "HTTP_401": "phi\u00ean ch\u01b0a \u0111\u01b0\u1ee3c x\u00e1c th\u1ef1c", "HTTP_403": "kh\u00f4ng c\u00f3 quy\u1ec1n", "HTTP_5XX": "m\u00e1y ch\u1ee7 l\u1ed7i", "NETWORK": "l\u1ed7i m\u1ea1ng/CORS", "BACKEND_ERROR": "kh\u00f4ng t\u1ea3i \u0111\u01b0\u1ee3c danh m\u1ee5c", "INVALID_RESPONSE": "ph\u1ea3n h\u1ed3i kh\u00f4ng h\u1ee3p l\u1ec7", "SESSION_CHANGED": "phi\u00ean \u0111\u00e3 thay \u0111\u1ed5i"};
         for(const [name,status]of Object.entries(state.states)){
-          if(status==='success'||status==='disabled'||status==='cached')continue;
+          if(status==='success'||status==='disabled'||status==='cached'||status==='loading')continue;
           const text=document.createElement('span');text.textContent=(name==='r2'?'EPUB R2':'EPUB V49')+': '+(status==='loading'?'\u0111ang t\u1ea3i\u2026':labels[status]||'l?i')+' ';box.append(text);
           if(status!=='loading'){const btn=document.createElement('button');btn.type='button';btn.className='btn';btn.textContent='Th\u1eed l\u1ea1i '+(name==='r2'?'R2':'V49');btn.onclick=()=>epubCatalogPerfR1.retry(name);box.append(btn);}
         }
         if(DuduAuth.isReady()){
-          const update=document.createElement('button');update.type='button';update.className='btn';
+          const update=document.getElementById('epub-catalog-update-r1')||document.createElement('button');update.type='button';update.className='btn';
           update.id='epub-catalog-update-r1';update.textContent='Cập nhật thư viện';
           update.disabled=Object.values(state.states).some(s=>s==='loading');
-          update.onclick=()=>refreshEpubCloudBooksV49({fresh:true});box.append(update);
-        }
+          update.setAttribute('aria-busy',String(update.disabled));
+          update.onclick=()=>refreshEpubCloudBooksV49({fresh:true});document.getElementById('archive-catalog-bar')?.append(update);
+        }else document.getElementById('epub-catalog-update-r1')?.remove();
         box.hidden=!box.childNodes.length;
       }
     });
