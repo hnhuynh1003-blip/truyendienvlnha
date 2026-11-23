@@ -2745,7 +2745,7 @@
       db:()=>db,auth:()=>firebase.auth(),
       canEdit:()=>canEditStories()&&!IS_SANDBOX_MODE,
       uid:()=>DuduAuth.uid(),
-      refresh:()=>refreshEpubCloudBooksV49(),
+      refresh:()=>refreshEpubCloudBooksV49({fresh:true}),
       onUnlisted:()=>window.DuduSiteV60?.navigate('library')
     })||Object.freeze({enabled:false,owns:()=>false,openEditor:()=>false,
       unlist:()=>false,save:()=>false,closeEditor:()=>false,
@@ -2802,6 +2802,10 @@
     const epubCatalogPerfR1=window.DuduEpubCatalogPerfR1.create({
       session:()=>firebase.auth().currentUser,
       ready:()=>!IS_SANDBOX_MODE&&DuduAuth.isReady(),
+      beforeRefresh:()=>{
+        epubCatalogRestoreR1=false;
+        l6R2PreviewClient?.invalidateCatalog();
+      },
       loadV49:()=>DuduEpubProductionV49.publicBooks(db),
       loadR2:l6R2PreviewClient?options=>l6R2PreviewClient.listPublished({...options,onTiming:sample=>{if(sample.stage==='token')window.DuduCatalogPerfMeasurements={...(window.DuduCatalogPerfMeasurements||{}),last_token_ms:sample.duration_ms};}}):null,
       onBooks:books=>{
@@ -2849,12 +2853,10 @@
         .map(n=>({id:n.id,title:n.title,author:n.author,
           chapterCount:n.chapters?.length||0}))};
     }});
-    function refreshEpubCloudBooksV49(){
+    function refreshEpubCloudBooksV49(options){
       if(IS_SANDBOX_MODE||!window.DuduEpubProductionV49)return Promise.resolve();
       if(DuduAuth.isReady())ensureR2MediaBridgeR1();
-      epubCatalogRestoreR1=false;
-      l6R2PreviewClient?.invalidateCatalog();
-      return epubCatalogPerfR1.refresh();
+      return epubCatalogPerfR1.refresh(options);
     }
     // Auth event fires both before profile ready and after permissions/profile settle.
     window.addEventListener('dudu-auth-state-changed',()=>{
@@ -9608,7 +9610,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
         canEdit:()=>canEditStories(),
         cloudApi:window.DuduEpubProductionV49,
         firestore:()=>db,
-        onPublished:()=>refreshEpubCloudBooksV49(),
+        onPublished:()=>refreshEpubCloudBooksV49({fresh:true}),
         saveDB:()=>saveDB(),
         onSaved:()=>{renderHome();updatePhoneUI()},
         uid:()=>DuduAuth.uid(),
@@ -9625,7 +9627,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
         importer:window.DuduEpubImportV48,
         production:window.DuduEpubProductionV49,
         firestore:()=>db,auth:()=>firebase.auth(),
-        onPublished:()=>refreshEpubCloudBooksV49()
+        onPublished:()=>refreshEpubCloudBooksV49({fresh:true})
       });
     }
 
