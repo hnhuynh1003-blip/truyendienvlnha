@@ -199,8 +199,8 @@
   <!-- L6-P2C5C.4 preview bridge: feature OFF unless separately configured -->
   <script src="js/library-epub-storage-l6p1.js?v=l6p1"></script>
   <script src="js/epub-catalog-device-cache-r1.js?v=device-catalog-r1"></script>
-  <script src="js/epub-catalog-perf-r1.js?v=epub-perf-r1"></script>
-  <script src="js/library-epub-r2-client-l6p2c5c3.js?v=epub-perf-r1"></script>
+  <script src="js/epub-catalog-perf-r1.js?v=device-catalog-r1"></script>
+  <script src="js/library-epub-r2-client-l6p2c5c3.js?v=device-catalog-r1"></script>
   <script src="js/library-r2-private-media-l6p2c5c7.js?v=epub-perf-r1"></script>
   <script src="js/library-r2-preview-media-bridge-l6p2c5c8.js?v=l6p2c5c8"></script>
   <script src="js/library-r2-preview-flags-l6p2c5c4.js?v=r2-unified-smoke-on-1"></script>
@@ -2854,6 +2854,7 @@
       }
     });
     // C13-R2: owner-only, read-only comparison against the COMPLETE R2 catalog.
+    window.duduInvalidateDeviceCatalogR1=()=>epubCatalogPerfR1.forgetDeviceCatalog?.();
     // These entries have no original source digest: matching is tentative,
     // never an assertion of byte identity or authorization to publish.
     window.DuduR2AuthorCatalogReviewR1=Object.freeze({snapshot(){
@@ -10019,7 +10020,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 
 <script src="js/library-r2-personal-intake.js?v=personal-intake-1"></script>
 <script src="js/library-r2-personal-queue.js?v=r2-compare-r1"></script>
-<script src="js/library-r2-author-ui-c13b6d.js?v=r2-long-split-r1"></script>
+<script src="js/library-r2-author-ui-c13b6d.js?v=device-catalog-r1"></script>
 
 </body>
 </html>

@@ -214,7 +214,7 @@ id('form').addEventListener('submit',e=>e.preventDefault());
    active=controller;busy=true;render();await active.start({file,metadata,signal:abort.signal,onProgress:p=>render('Đã tải '+p.completed+'/'+p.total+' phần')});record(owner,active.status());
    if(controller!==active||sessionUid!==owner||!allowed()||!active.status().readyForOwnerConfirmation)throw Error('Phiên đã đổi hoặc chưa tải đủ; dừng xuất bản.');
    // The explicit "Đăng EPUB R2" click authorizes this single publish only after verified receipts.
-   render('Đã tải phần dữ liệu. Đang xác minh và xuất bản; chưa được đóng tab…');await active.publish({approve:true,expectedBookId:active.status().bookId,signal:abort.signal});localStorage.removeItem(key(owner));lastPublishedBook=active.status().bookId;render(labels.published);return {kind:'published'};
+   render('Đã tải phần dữ liệu. Đang xác minh và xuất bản; chưa được đóng tab…');await active.publish({approve:true,expectedBookId:active.status().bookId,signal:abort.signal});localStorage.removeItem(key(owner));globalThis.duduInvalidateDeviceCatalogR1?.();lastPublishedBook=active.status().bookId;render(labels.published);return {kind:'published'};
   }catch(error){
    let noPending=false;try{noPending=pending()===null;}catch{}
    const s=active?.status();
@@ -234,7 +234,7 @@ id('form').addEventListener('submit',e=>e.preventDefault());
    const bytes=new Uint8Array(size);let at=0;for(const c of chunks){bytes.set(c,at);at+=c.length;}const data=JSON.parse(new TextDecoder().decode(bytes));
    if(firebase.auth().currentUser!==user||sessionUid!==owner||!allowed())return;
    const outcome=classifyRecovery(p,data);
-   if(outcome.kind==='published'){localStorage.removeItem(key(owner));lastPublishedBook=p.bookId;controller=null;abort=null;preparedFile=null;queue.reconcilePublished();renderQueue();}
+   if(outcome.kind==='published'){localStorage.removeItem(key(owner));globalThis.duduInvalidateDeviceCatalogR1?.();lastPublishedBook=p.bookId;controller=null;abort=null;preparedFile=null;queue.reconcilePublished();renderQueue();}
    render(outcome.message);
   }catch(error){if(sessionUid===owner)render(error.message);}finally{busy=false;render(id('status').textContent);}
  });
