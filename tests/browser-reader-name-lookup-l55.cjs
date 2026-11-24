@@ -49,7 +49,7 @@ async function desktop(browser){
  await p.locator('#reader-name-proposals-l55 .l55-choice').filter({hasText:'Lộc Tri Chu'}).waitFor({timeout:20000});slowData=false;
  assert.equal(await p.locator('#reader-name-to-l53').inputValue(),'Tên Do Du Chọn');
  await p.locator('#reader-name-proposals-l55 .l55-choice').getByText('Lộc Tri Chu',{exact:true}).click();assert.equal(await p.locator('#reader-name-to-l53').inputValue(),'Lộc Tri Chu');
- assert.match(await p.locator('#reader-name-proposals-l55').textContent(),/知/);assert.match(await p.locator('#reader-name-proposals-l55').textContent(),/舟/);
+ assert.equal(await p.locator('#reader-name-proposals-l55 small').count(),0,'Compact editor shows results without reasons');
  await p.locator('[data-name-action="save"]').click();assert.match(await p.locator('#reader-content > p').textContent(),/Lộc Tri Chu nói/);
  assert.deepEqual(await p.evaluate(()=>JSON.parse(localStorage.getItem('bookmark:lookup'))),{chapter:8,y:220});
  const dataAfter=requests.filter(r=>r.endsWith('.json')).length;assert.equal(dataAfter-dataBefore,2);

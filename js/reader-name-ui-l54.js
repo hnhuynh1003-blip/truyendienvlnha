@@ -424,15 +424,15 @@
    status('Đã xuất từ điển thuật ngữ riêng của truyện.');
   }catch(e){status(e.message,true);}
  }
- function proposals(host,items,select){
+ function proposals(host,items,select,compact=false){
   host.replaceChildren();
   if(!items.length){const p=doc.createElement('p');p.textContent='Chưa có ứng viên phù hợp. Bạn có thể nhập tên thủ công.';host.append(p);return;}
   for(const item of items){
    const card=doc.createElement('div');card.className='l55-candidate';card.dataset.inferred=String(item.kind==='inferred');
    const choice=button(item.name,()=>select(item));choice.className='l55-choice';
-   const reason=doc.createElement('small');reason.textContent=item.reason;
-   card.append(choice,reason);
-   if(item.parts.length){const trace=doc.createElement('small');trace.className='l55-trace';trace.textContent=item.parts.map(p=>p.from+' → '+p.to+' ['+p.hanzi+']').join(' · ');card.append(trace);}
+   card.append(choice);
+   if(!compact){const reason=doc.createElement('small');reason.textContent=item.reason;card.append(reason);}
+   if(!compact&&item.parts.length){const trace=doc.createElement('small');trace.className='l55-trace';trace.textContent=item.parts.map(p=>p.from+' → '+p.to+' ['+p.hanzi+']').join(' · ');card.append(trace);}
    host.append(card);
   }
  }
@@ -447,11 +447,10 @@
   for(const group of groups){
    const section=doc.createElement('section');section.dataset.nameGroup=group.id;
    const heading=doc.createElement('strong');heading.textContent=group.label;
-   const note=doc.createElement('small');note.textContent=group.note;
    const choices=doc.createElement('div');
-   if(group.items.length)proposals(choices,group.items,select);
+   if(group.items.length)proposals(choices,group.items,select,true);
    else choices.textContent='Chưa đủ căn cứ để đề xuất.';
-   section.append(heading,note,choices);host.append(section);
+   section.append(heading,choices);host.append(section);
   }
  }
  async function showSuggestions(from){
