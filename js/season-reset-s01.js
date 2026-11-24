@@ -24,6 +24,28 @@
   ]);
   const ALL_KNOWN=new Set([...PRESERVE_FIELDS,...RESET_FIELDS]);
 
+  // P0 reset audit: nested profile namespaces may contain durable economy,
+  // reading, collection and game receipts. Classification is intentionally
+  // conservative: *every* nested key needs review before a real season reset.
+  // No snapshot is modified, and the existing preview cannot execute a reset.
+  function auditProtectedProgress(source){
+    const object=x=>x&&typeof x==='object'&&!Array.isArray(x)?x:{};
+    const states=object(source?.storyStates);
+    const keys=Object.keys(states).sort();
+    const readClaims=Object.keys(object(source?.readRewards)).length;
+    const chapterAttempts=Object.keys(object(source?.lootedChapters)).length;
+    const collectionItems=Array.isArray(source?.inventory)?source.inventory.length:0;
+    const danger=keys.some(k=>k.startsWith('__dudu'))||
+      readClaims>0||chapterAttempts>0||collectionItems>0;
+    return Object.freeze({
+      storyStateKeys:Object.freeze(keys),
+      storyStateCount:keys.length,
+      readClaims,chapterAttempts,collectionItems,
+      durableReceiptReviewRequired:danger,
+      note:'Only a trusted S01 executor can classify/preserve receipts. Preview does not authorize reset.'
+    });
+  }
+
   function validUid(uid){
     return typeof uid==='string'&&uid.length>0&&uid.length<=128;
   }
@@ -42,6 +64,7 @@
       throw Error('Hồ sơ không khớp UID; không thể chuẩn bị reset');
 
     const unknownFields=Object.keys(source).filter(k=>!ALL_KNOWN.has(k)).sort();
+    const protectedAudit=auditProtectedProgress(source);
     const next={username:uid};
     for(const field of PRESERVE_FIELDS){
       if(field!=='username'&&Object.prototype.hasOwnProperty.call(source,field))
@@ -58,7 +81,7 @@
     // are regenerated when the new season actually starts.
     return {
       version:1,season:SEASON,mode:'PREVIEW_ONLY',applyEnabled:ENABLE_APPLY,
-      uid,unknownFields,
+      uid,unknownFields,protectedAudit,
       preserveFields:PRESERVE_FIELDS.filter(k=>k in source),
       resetFields:RESET_FIELDS.filter(k=>k in source),
       nextProfile:next,
@@ -94,6 +117,7 @@
     const plan=createPlan(uid,cloudProfile,defaults);
     const gameKeys=localGameKeys(storage,uid);
     const encoded=encodeURIComponent(uid);
+    const audit=plan.protectedAudit;
     // These must never be cleared as part of a game reset.
     const protectedLocalKeys=[
       'profile_'+uid,
@@ -113,18 +137,38 @@
         bookmarkCount:Object.keys(cloudProfile.readingBookmarksV568||{}).length,
         resetFields:plan.resetFields,
         preserveFields:plan.preserveFields,
-        unknownFields:plan.unknownFields
+        unknownFields:plan.unknownFields,
+        protectedAudit:{
+          storyStateCount:audit.storyStateCount,
+          storyStateKeys:audit.storyStateKeys,
+          readClaims:audit.readClaims,
+          chapterAttempts:audit.chapterAttempts,
+          collectionItems:audit.collectionItems,
+          durableReceiptReviewRequired:audit.durableReceiptReviewRequired
+        }
       },
       device:{gameKeys,protectedLocalKeys},
       blockers:[
         'Chưa được duyệt thực thi và chưa có bản sao lưu được xác nhận',
         'Phải kiểm tra ví máy chủ economy_accounts_v52 và biên nhận trước khi reset',
         'Phải thay phiên mùa cho dữ liệu Arcade trên mọi thiết bị',
+        ...(audit.storyStateCount?[
+          'Phải phân loại '+audit.storyStateCount+' vùng storyStates trước khi xóa (mẫu: '+
+          audit.storyStateKeys.slice(0,6).join(', ')+').'
+        ]:[]),
+        ...(audit.readClaims||audit.chapterAttempts?[
+          'Phải bảo toàn lịch sử đọc/nhặt đã nhận: '+audit.readClaims+
+          ' chương thưởng EXP, '+audit.chapterAttempts+' chương đã thử nhặt.'
+        ]:[]),
+        ...(audit.collectionItems?[
+          'Phải kiểm chứng quyền sở hữu và nguồn nhận của '+audit.collectionItems+
+          ' vật phẩm trước khi làm mới Kho.'
+        ]:[]),
         ...plan.unknownFields.map(key=>'Trường hồ sơ chưa phân loại: '+key)
       ]
     };
   }
 
   return Object.freeze({SEASON,ENABLE_APPLY,STARTER_XU,PRESERVE_FIELDS,
-    RESET_FIELDS,createPlan,localGameKeys,preview});
+    RESET_FIELDS,auditProtectedProgress,createPlan,localGameKeys,preview});
 });
