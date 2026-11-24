@@ -196,3 +196,18 @@ test('constructor requires private SQL, transactional writer and service secret'
   sql:{exec(){}},transactionSync(){},secret:'x'
  }),/trusted private/);
 });
+
+test('WEB and EPUB_R2 are both source-labelled without any book read/loot grants',async()=>{
+ const f=fixture(),r2=f.base();
+ r2.storyId='epub-0123456789abcdef0123456789abcdef';
+ r2.contentRevision='r-0123456789abcdef0123456789abcdef';
+ assert.equal((await f.ledger.ingestSignedEvidence(await f.sign(r2))).ok,true);
+ const web={...f.base(),uid:'firebase_reader_B',sourceMode:'WEB',
+  storyId:'legacy_web_story',chapterId:'web_chapter_1',
+  contentRevision:'web_version_1',verifiedActiveMs:12000};
+ const result=await f.ledger.ingestSignedEvidence(await f.sign(web));
+ assert.equal(result.ok,true);
+ assert.equal(result.awardExp,0);
+ assert.equal(result.awardTuVi,0);
+ assert.equal(f.count(),2);
+});
