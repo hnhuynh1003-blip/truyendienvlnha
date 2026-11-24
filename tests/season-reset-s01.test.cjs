@@ -123,3 +123,49 @@ test('three existing accounts can be previewed independently',()=>{
  assert.ok(preview.every(item=>item.device.gameKeys.length===0));
  assert.ok(preview.every(item=>item.cloud.starterXu===50));
 });
+
+test('S01 flags receipt-containing nested states and historical read claims for owner review',()=>{
+ const uid='uid-protected';
+ const old={username:uid,currency:120,exp:45,
+  storyStates:{
+   __duduPersonalProgressC23:{lastGlobalLootAt:123},
+   __duduPersonalItemsV1:{receipts:{buy1:{}}},
+   __duduArcadeUnifiedXuR32:{recentIds:['id']},
+   storyA:{collectedCharacters:{npc1:true}}
+  },
+  readRewards:{'storyA_ch1':true,'storyA_ch2':true},
+  lootedChapters:{'storyA_ch1':true},
+  inventory:[{id:'canonical-item',instanceId:'shop-once'}]};
+ const untouched=JSON.stringify(old);
+ const p=S01.createPlan(uid,old);
+ assert.equal(p.applyEnabled,false);
+ assert.equal(p.protectedAudit.storyStateCount,4);
+ assert.equal(p.protectedAudit.readClaims,2);
+ assert.equal(p.protectedAudit.chapterAttempts,1);
+ assert.equal(p.protectedAudit.collectionItems,1);
+ assert.equal(p.protectedAudit.durableReceiptReviewRequired,true);
+ assert.ok(p.protectedAudit.storyStateKeys.includes('__duduPersonalItemsV1'));
+ assert.equal(JSON.stringify(old),untouched);
+ const preview=S01.preview(uid,old,storageFrom({}));
+ assert.equal(preview.cloud.protectedAudit.storyStateCount,4);
+ assert.match(preview.blockers.join(' | '),/phân loại 4 vùng storyStates/);
+ assert.match(preview.blockers.join(' | '),/2 chương thưởng EXP/);
+ assert.match(preview.blockers.join(' | '),/1 vật phẩm/);
+ assert.equal(S01.ENABLE_APPLY,false);
+ assert.equal(typeof S01.apply,'undefined');
+});
+
+test('S01 audit remains read-only and safe for empty, malformed or unknown namespaces',()=>{
+ assert.deepEqual(S01.auditProtectedProgress({}),{
+  storyStateKeys:[],storyStateCount:0,readClaims:0,chapterAttempts:0,
+  collectionItems:0,durableReceiptReviewRequired:false,
+  note:'Only a trusted S01 executor can classify/preserve receipts. Preview does not authorize reset.'
+ });
+ const audit=S01.auditProtectedProgress({
+  storyStates:['invalid-shape'],readRewards:'corrupt',
+  lootedChapters:null,inventory:{bad:true}});
+ assert.equal(audit.storyStateCount,0);
+ assert.equal(audit.durableReceiptReviewRequired,false);
+ const p=S01.createPlan('a',{username:'a',futureTuViProof:{lifetime:10}});
+ assert.deepEqual(p.unknownFields,['futureTuViProof']);
+});
