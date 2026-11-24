@@ -152,7 +152,8 @@
   targetDirty=false;
   updateLinks(from,profileId||stored?.characterId||'');
   el('reader-name-modal-l53').querySelector('.l54-range').hidden=!selected;
-  if(lookup)showSuggestions(from,{fillTarget:to===undefined&&!stored});
+  if(lookup)showSuggestions(from);
+  else naturalProposals(el('reader-name-proposals-l55'),from,[],item=>{el('reader-name-to-l53').value=item.name;targetDirty=true;updateLinks(from,'');});
  }
  function openManager(from=''){
   if(!show())return false;
@@ -311,7 +312,7 @@
      const excerpt=doc.createElement('blockquote');excerpt.className='l55-excerpt';excerpt.textContent=result.excerpt;
      const actions=doc.createElement('div');actions.className='l56-result-actions';
      actions.append(button('Đến vị trí',()=>jumpTo(result.occurrences[0].start)),button(category==='confirmed'?'Xem quy tắc':'Kiểm tra',()=>{
-      selected=null;view(false);fill(result.from,result.to);status(category==='suspect'?'Gợi ý chưa xác minh. Chỉ Xác nhận nếu đã đối chiếu nội dung.':'');
+      selected=null;view(false);fill(result.from,category==='confirmed'?result.to:undefined);status(category==='suspect'?'Gợi ý chưa xác minh. Chỉ Xác nhận nếu đã đối chiếu nội dung.':'');
      }));
      if(category!=='confirmed')actions.append(button('Bỏ qua',()=>{
       try{dictionary.ignoreCandidate(id,result.from);scan();status('Đã bỏ qua đề xuất trong riêng truyện này.');}
@@ -435,14 +436,32 @@
    host.append(card);
   }
  }
- async function showSuggestions(from,{fillTarget=false}={}){
+ function naturalProposals(host,from,items,select){
+  // Confirmed identities remain available even when the lookup worker is offline.
+  const confirmed=dictionary.characters(storyId).flatMap(p=>p.aliases
+   .filter(a=>engine.fold(a.from)===engine.fold(from))
+   .map(a=>({name:a.to,kind:'confirmed',profileId:p.id,reason:'',parts:[]})));
+  const groups=root.DuduReaderNaturalNamesL57?.groups(from,[...confirmed,...items]);
+  if(!groups)return proposals(host,items,select);
+  host.replaceChildren();
+  for(const group of groups){
+   const section=doc.createElement('section');section.dataset.nameGroup=group.id;
+   const heading=doc.createElement('strong');heading.textContent=group.label;
+   const note=doc.createElement('small');note.textContent=group.note;
+   const choices=doc.createElement('div');
+   if(group.items.length)proposals(choices,group.items,select);
+   else choices.textContent='Chưa đủ căn cứ để đề xuất.';
+   section.append(heading,note,choices);host.append(section);
+  }
+ }
+ async function showSuggestions(from){
   const host=el('reader-name-proposals-l55'),request=++lookupRequest,id=storyId,token=chapter;
   host.hidden=!engine.norm(from);host.textContent=from?'Đang tra bộ từ điển…':'';if(!from)return;
   try{
    const items=await lookup.suggest(from,{profiles:dictionary.characters(id)});
    if(request!==lookupRequest||id!==storyId||token!==chapter||!modalOpen()||managerView||engine.norm(from)!==engine.norm(el('reader-name-from-l53').value))return;
-   proposals(host,items,item=>{el('reader-name-to-l53').value=item.name;targetDirty=true;if(item.profileId)updateLinks(from,item.profileId);});
-   if(fillTarget&&!targetDirty&&items[0]?.kind==='inferred')el('reader-name-to-l53').value=items[0].name;
+   naturalProposals(host,from,items,item=>{el('reader-name-to-l53').value=item.name;targetDirty=true;updateLinks(from,item.profileId||'');});
+   // L5.7: selecting a proposal never saves; no inferred target autofill.
    // New dictionary evidence can propose the phrase surrounding a tapped word.
    const current=selected;
    if(current&&!current.phrase){
@@ -451,7 +470,10 @@
     const occurrence=analyzed.flatMap(r=>r.occurrences).filter(o=>o.start<=current.tokens[current.a].start&&o.end>=current.tokens[current.b].end).sort((a,b)=>(b.end-b.start)-(a.end-a.start))[0];
     if(occurrence){const a=current.tokens.findIndex(w=>w.start===occurrence.start),b=current.tokens.findIndex(w=>w.end===occurrence.end);if(a>=0&&b>a){current.phrase={a,b};el('reader-name-modal-l53').querySelector('[data-name-action="phrase"]').hidden=false;}}
    }
-  }catch(error){if(request===lookupRequest&&modalOpen()){host.textContent=error.message+' Nhập tên thủ công ở ô phía trên.';}}
+  }catch(error){if(request===lookupRequest&&id===storyId&&token===chapter&&!managerView&&modalOpen()){
+   naturalProposals(host,from,[],item=>{el('reader-name-to-l53').value=item.name;targetDirty=true;updateLinks(from,'');});
+   status(error.message+' Vẫn có thể chọn phương án biên tập hoặc nhập thủ công.',true);
+  }}
  }
  async function loadMetadata(){
   const host=el('reader-lookup-info-l55');if(!host)return;host.textContent='Đang tải bộ tra…';
@@ -532,7 +554,7 @@
   },true);
   el('reader-name-search-l54').addEventListener('input',()=>{activeProfile='';listNames();});
   let lookupTimer=null;
-  el('reader-name-from-l53').addEventListener('input',event=>{el('reader-name-to-l53').value=engine.title(event.target.value);targetDirty=false;updateLinks(event.target.value,el('reader-name-link-l54').value);if(lookup){lookupRequest++;root.clearTimeout(lookupTimer);const from=event.target.value,id=storyId,token=chapter;lookupTimer=root.setTimeout(()=>{if(id===storyId&&token===chapter&&el('reader-name-from-l53').value===from)showSuggestions(from,{fillTarget:true});},220);}});
+  el('reader-name-from-l53').addEventListener('input',event=>{el('reader-name-to-l53').value=engine.title(event.target.value);targetDirty=false;updateLinks(event.target.value,el('reader-name-link-l54').value);if(lookup){lookupRequest++;root.clearTimeout(lookupTimer);const from=event.target.value,id=storyId,token=chapter;lookupTimer=root.setTimeout(()=>{if(id===storyId&&token===chapter&&el('reader-name-from-l53').value===from)showSuggestions(from);},220);}});
   el('reader-name-to-l53').addEventListener('input',()=>{targetDirty=true;});
   el('reader-name-proposals-l55').hidden=!lookup;
   el('reader-name-modal-l53').querySelector('[data-name-action="manual"]').hidden=!lookup;

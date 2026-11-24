@@ -25,7 +25,7 @@ let base;
 async function load(page){
  await page.goto(base+'/fixture');
  for(const file of ['reader-names-l53.css','reader-names-l54.css','reader-name-lookup-l55.css'])await page.addStyleTag({url:base+'/css/'+file});
- for(const file of ['reader-name-dictionary-l53.js','reader-name-lookup-l55.js','reader-names-l54.js','reader-name-scan-l56a.js','reader-name-ui-l53.js','reader-name-ui-l54.js'])await page.addScriptTag({url:base+'/js/'+file});
+ for(const file of ['reader-name-dictionary-l53.js','reader-name-lookup-l55.js','reader-names-l54.js','reader-name-scan-l56a.js','reader-name-ui-l53.js','reader-natural-names-l57.js','reader-name-ui-l54.js'])await page.addScriptTag({url:base+'/js/'+file});
  await page.evaluate(()=>{
   window.fixtureMount=(id,paragraphs)=>{DuduReaderNamesL53.setStory(id);DuduReaderNamesL53.prepareChapter(paragraphs);document.getElementById('reader-content').replaceChildren();for(const text of paragraphs){const p=document.createElement('p');DuduReaderNamesL53.bindParagraph(p,text);document.getElementById('reader-content').append(p);}};
  });
@@ -140,7 +140,8 @@ async function android(browser,width){
 }
 async function failure(browser){
  failData=true;const {c,p,errors}=await context(browser);await p.evaluate(()=>{fixtureMount('epub:failure',['lộc biết thuyền đến.']);DuduReaderNamesL53.openManager('lộc biết thuyền');});
- await p.waitForFunction(()=>document.getElementById('reader-name-proposals-l55').textContent.includes('thủ công'),{},{timeout:10000});
+ // L5.7 keeps proposal groups available; lookup failures use the dialog status.
+ await p.waitForFunction(()=>document.getElementById('reader-name-status-l53').textContent.includes('thủ công'),{},{timeout:10000});
  await p.locator('[data-name-action="manual"]').click();await p.locator('#reader-name-to-l53').fill('Lộc Thủ Công');await p.locator('[data-name-action="save"]').click();assert.equal(await p.locator('#reader-content > p').textContent(),'Lộc Thủ Công đến.');
  failData=false;await p.evaluate(()=>DuduReaderNamesL53.openManager('tần rõ ràng'));await p.locator('#reader-name-proposals-l55 .l55-choice').getByText('Tần Minh',{exact:true}).waitFor({timeout:20000});
  assert.deepEqual(errors,[]);await c.close();
