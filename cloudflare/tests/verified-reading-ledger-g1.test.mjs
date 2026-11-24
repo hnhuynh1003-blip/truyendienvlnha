@@ -18,8 +18,9 @@ function fixture(){
   if(/^INSERT\s+INTO\s+g1_read_windows/i.test(query)&&insertFails)
    throw Error('simulated database failure');
   const stmt=db.prepare(query);
-  return {toArray:()=>/^SELECT/i.test(query)?stmt.all(...args):
-   (stmt.run(...args),[])};
+  if(/^SELECT/i.test(query))return {toArray:()=>stmt.all(...args)};
+  stmt.run(...args);
+  return {toArray:()=>[]};
  }};
  const transactionSync=fn=>{
   db.exec('BEGIN IMMEDIATE');
