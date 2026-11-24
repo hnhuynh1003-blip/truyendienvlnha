@@ -100,6 +100,35 @@ test('Cooldown tool is spent only during active cooldown',async()=>{
  assert.equal(first.effect,'reset-cooldown');
  assert.equal(h.data.inventory.length,0);
 });
+test('Personal whitelist has 15 enabled SKUs; hidden coupon is rejected before writes',async()=>{
+ const expected=[...economy.SHOP_IDS,economy.SUPPLY_ID,economy.TOOL_ID,economy.PULSE_ID];
+ assert.deepEqual(economy.PERSONAL_SALE_IDS,expected);
+ assert.equal(new Set(economy.PERSONAL_SALE_IDS).size,15);
+ assert.ok(!economy.PERSONAL_SALE_IDS.includes(economy.COUPON_ID));
+ const rejected=harness(),before=structuredClone(rejected.data);
+ await assert.rejects(rejected.run({kind:'purchase',requestId:SHOP,itemId:economy.COUPON_ID}),/không bán/);
+ assert.deepEqual(rejected.data,before,'hidden product must not touch wallet, inventory, receipts');
+ for(const id of expected){
+  const h=harness(),balance=h.data.currency;
+  const first=await h.run({kind:'purchase',requestId:SHOP,itemId:id});
+  assert.equal(first.status,'applied',id);
+  assert.equal(h.data.inventory[0].id,id);
+  assert.ok(h.data.currency<balance,id);
+  assert.equal((await h.run({kind:'purchase',requestId:SHOP,itemId:id})).status,'already-applied');
+  assert.equal(h.data.inventory.length,1,id);
+ }
+});
+test('Legacy canonical coupon stays resellable without reopening its purchase',async()=>{
+ const coupon=economy.instance(economy.FUNCTIONAL_TOOLS.find(x=>x.id===economy.COUPON_ID),SHOP);
+ const h=harness(),price=items.sellPrice(coupon);
+ assert.ok(price>0);
+ h.data.inventory=[coupon];
+ const balance=h.data.currency;
+ const sold=await h.run({kind:'sell',requestId:SELL,itemId:economy.COUPON_ID,instanceId:SHOP});
+ assert.equal(sold.status,'applied');
+ assert.equal(h.data.currency,balance+price);
+ assert.equal(h.data.inventory.length,0);
+});
 test('Foreign account, unsupported product, bad request id, and empty balance fail',async()=>{
  const h=harness();
  h.auth.currentUser={uid:'reader-2'};
