@@ -52,6 +52,7 @@ test('Spark shop UI uses returned wallet and inventory with no Cloud Functions c
  assert.equal(marketConfig.personalMode,true);
  assert.equal(marketConfig.readOnly,false);
  assert.equal(marketConfig.coins,15);
+ assert.deepEqual(Array.from(marketConfig.saleIds),Array.from(window.DuduEconomyCoreV43.PERSONAL_SALE_IDS));
  assert.ok(marketConfig.saleIds.includes('common-biscuit'));
  assert.ok(!marketConfig.saleIds.includes('dudu-tool-discount-v438'));
  assert.equal(await marketConfig.onBuy('common-biscuit'),true);
