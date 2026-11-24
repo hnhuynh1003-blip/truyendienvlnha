@@ -3630,6 +3630,12 @@
         DuduPersonalResetV54.safetyCheck(uid,auth);
         if(auth.currentUser!==account||!snap.exists)throw Error('Không có hồ sơ máy chủ');
         const plan=engine.preview(uid,snap.data(),localStorage,DEFAULT_SYSTEM_QUESTS);
+        const protectedAudit=plan.cloud.protectedAudit;
+        const reviewLine=protectedAudit?
+          '\\nCẦN RÀ SOÁT: '+protectedAudit.storyStateCount+' vùng tiến trình game, '+
+          protectedAudit.readClaims+' mốc đọc đã nhận, '+
+          protectedAudit.chapterAttempts+' lượt nhặt cũ, '+
+          protectedAudit.collectionItems+' vật phẩm. Không được tự xóa biên nhận.':'';
         showSystemAlert('MÙA 01 · CHỈ XEM TRƯỚC',
           'Hiện có: '+plan.cloud.levelBefore+' cấp · '+plan.cloud.expBefore+
           ' EXP · '+plan.cloud.xuBefore+' Xu · '+plan.cloud.inventoryCount+
@@ -3637,6 +3643,7 @@
           'Dự kiến: cấp 1 · 0 EXP · '+plan.cloud.starterXu+' Xu; làm mới Kho, nhiệm vụ, game và liên lạc.\n'+
           'Giữ lại '+plan.cloud.bookmarkCount+' dấu tiến độ đọc, truyện, tài khoản và giao diện cá nhân.\n'+
           'Có '+plan.device.gameKeys.length+' vùng dữ liệu game riêng trên thiết bị này.'+
+          reviewLine+
           (plan.cloud.unknownFields.length?' Cần rà thêm '+plan.cloud.unknownFields.length+' trường chưa phân loại.':'')+
           '\nChưa có dữ liệu nào bị thay đổi. Hãy tải bản sao tiến độ trước ngày mở mùa.');
       }catch(error){
