@@ -67,6 +67,9 @@
  ]);
  const FUNCTIONAL_TOOLS=Object.freeze([TOOL,...ADDITIONAL_TOOLS]);
  const FUNCTIONAL_IDS=Object.freeze(FUNCTIONAL_TOOLS.map(x=>x.id));
+ // Personal Spark: 12 COMMON products + 3 supported tools. The coupon is
+ // a Sandbox definition, not an authorized Personal purchase.
+ const PERSONAL_SALE_IDS=Object.freeze([...SHOP_IDS,SUPPLY_ID,TOOL_ID,PULSE_ID]);
  const TOOL_LIMITS=Object.freeze({[TOOL_ID]:2,[SUPPLY_ID]:2,[PULSE_ID]:2,[COUPON_ID]:1});
  const PURCHASE_PER_ITEM_PER_DAY=3, PURCHASE_TOTAL_PER_DAY=8,
    TOOL_PURCHASES_PER_DAY=2;
@@ -191,7 +194,8 @@
    return {...item,instanceId:id,obtainedFrom:{kind:'SHOP',source:'DUDU_MARKET'}};
  }
  return Object.freeze({VERSION,SHOP_IDS,PRICES,TOOL_ID,TOOL,TOOL_PURCHASES_PER_DAY,
-   SUPPLY_ID,PULSE_ID,COUPON_ID,ADDITIONAL_TOOLS,FUNCTIONAL_TOOLS,FUNCTIONAL_IDS,TOOL_LIMITS,
+   SUPPLY_ID,PULSE_ID,COUPON_ID,ADDITIONAL_TOOLS,FUNCTIONAL_TOOLS,FUNCTIONAL_IDS,
+   PERSONAL_SALE_IDS,TOOL_LIMITS,
    PURCHASE_PER_ITEM_PER_DAY,
    PURCHASE_TOTAL_PER_DAY,EVENT_TO_QUEST,EXTRA_DAILY_QUESTS,ensureQuests,
    localDay,norm,shopCatalog,preview,
