@@ -97,9 +97,7 @@
    personalMode:true,readOnly:false,
    inventory:userProfile?.inventory||[],storyStates:userProfile?.storyStates||{},
    bulkBusy:personalBusy,onBulkSell:personalBulkSell,
-   saleIds:[...root.DuduEconomyCoreV43.SHOP_IDS,
-    root.DuduEconomyCoreV43.SUPPLY_ID,root.DuduEconomyCoreV43.TOOL_ID,
-    root.DuduEconomyCoreV43.PULSE_ID],
+   saleIds:root.DuduEconomyCoreV43.PERSONAL_SALE_IDS,
    onBuy:personalPurchase
   })||false;
  }
