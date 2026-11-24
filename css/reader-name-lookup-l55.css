@@ -1,6 +1,8 @@
 .l55-enabled .l54-dialog{width:min(100%,520px)}
 .l55-proposals{display:grid;gap:6px;max-height:200px;overflow:auto;overscroll-behavior:contain;padding:3px 1px;margin:8px 0;font-size:12px;color:#446778}
 .l55-proposals:empty{display:none}
+.l55-proposals > section{display:grid;gap:5px;padding:6px 0;border-bottom:1px solid #a3c5cf}
+.l55-proposals > section > small{font-size:11px;line-height:1.5;overflow-wrap:anywhere}
 .l55-candidate{display:grid;gap:4px;padding:8px;border:1px solid #a3c5cf;background:#eef8fbb8;border-radius:10px}
 .l55-candidate[data-inferred=true]{border-color:#c4a7b4;background:#f8f1f5ab}
 .l55-candidate .l55-choice{text-align:left;width:100%;min-height:38px;background:#ffffff85;font-size:14px;color:#244f62}

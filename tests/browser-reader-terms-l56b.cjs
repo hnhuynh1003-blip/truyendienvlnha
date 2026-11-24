@@ -12,7 +12,7 @@ async function setup(browser,width){
  await page.goto('http://reader.local/');
  await page.evaluate(()=>localStorage.setItem('bookmark:epub:sample',JSON.stringify({chapter:5,y:90})));
  for(const name of ['reader-names-l53.css','reader-names-l54.css'])await page.addStyleTag({path:path.join(root,'css',name)});
- for(const name of ['reader-name-dictionary-l53.js','reader-names-l54.js','reader-name-scan-l56a.js','reader-terms-l56b.js','reader-name-ui-l53.js','reader-name-ui-l54.js'])
+ for(const name of ['reader-name-dictionary-l53.js','reader-names-l54.js','reader-name-scan-l56a.js','reader-terms-l56b.js','reader-name-ui-l53.js','reader-natural-names-l57.js','reader-name-ui-l54.js'])
   await page.addScriptTag({path:path.join(root,'js',name)});
  await page.evaluate(()=>{
   window.loadChapter=(id,parts)=>{

@@ -15,7 +15,7 @@ async function setup(browser,options={}){
  await page.route('http://reader.local/**',r=>r.fulfill({status:200,contentType:'text/html',body:fixture}));await page.goto('http://reader.local/');
  await page.evaluate(()=>localStorage.setItem('bookmark:epub:test',JSON.stringify({chapter:7,y:400})));
  for(const file of ['reader-names-l53.css','reader-names-l54.css'])await page.addStyleTag({path:path.join(root,'css',file)});
- for(const file of ['reader-name-dictionary-l53.js','reader-names-l54.js','reader-name-scan-l56a.js','reader-name-ui-l53.js','reader-name-ui-l54.js'])await page.addScriptTag({path:path.join(root,'js',file)});
+ for(const file of ['reader-name-dictionary-l53.js','reader-names-l54.js','reader-name-scan-l56a.js','reader-name-ui-l53.js','reader-natural-names-l57.js','reader-name-ui-l54.js'])await page.addScriptTag({path:path.join(root,'js',file)});
  await page.evaluate(()=>{
   window.fixtureMount=(id,paragraphs)=>{
    DuduReaderNamesL53.setStory(id);DuduReaderNamesL53.prepareChapter(paragraphs);document.getElementById('reader-content').replaceChildren();
