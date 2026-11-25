@@ -127,6 +127,19 @@ test('reject extra fields, client browser proof, unbounded time and bad identity
  assert.equal(f.count(),0);
 });
 
+test('completed signed reading windows cannot end in the future',async()=>{
+ const f=fixture(),future={
+  ...f.base(),
+  startedAt:START+1000,endedAt:START+60000,
+  verifiedActiveMs:50000
+ };
+ const out=await f.ledger.ingestSignedEvidence(await f.sign(future));
+ assert.equal(out.ok,false);
+ assert.equal(out.code,'invalid-attestation');
+ assert.equal(out.awardExp,0);
+ assert.equal(f.count(),0);
+});
+
 test('2 tabs/devices cannot double count overlapping window within same UID/epoch',async()=>{
  const f=fixture(),first=f.base();
  assert.equal((await f.ledger.ingestSignedEvidence(await f.sign(first))).ok,true);
