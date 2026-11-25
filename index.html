@@ -252,7 +252,7 @@
   <script src="js/loot-rules-v2.js?v=44-1"></script>
   <script src="js/loot-cadence-v42.js?v=wallet-loot-1"></script>
   <script src="js/chapter-loot-encounter-v1.js?v=chapter-surprise-1"></script>
-  <script src="js/personal-progress-c23.js?v=c24c-1-p3"></script>
+  <script src="js/personal-progress-c23.js?v=c24c-1-p3b"></script>
   <script src="js/item-actions-v43.js?v=1"></script>
   <script src="js/functional-items-v43-8.js?v=44-9"></script>
   <script src="js/personal-spark-items-v1.js?v=f33-1"></script>
@@ -1153,6 +1153,7 @@
         <div class="reader-story-title" id="reader-story-title" role="heading" aria-level="1"></div>
         <div class="reader-chapter-title" id="reader-ch-title" role="heading" aria-level="2">Chương 1</div>
         <div class="reading-time-badge" id="reader-ch-time">⏱ Khoảng 1 phút đọc</div>
+        <div id="reader-exp-live-p2d" class="reading-time-badge" hidden></div>
         <div class="reader-body" id="reader-content"></div>
       </article>
 
@@ -7689,14 +7690,15 @@ document.getElementById('phone-home-screen').style.display = 'none';
           return true;
         }catch(error){
           console.warn('DUDU personal progress:',error?.code||error?.reason||error?.message);
-          if(personalProgressReady()&&currentUsername===uid){
+          if(personalProgressReady()&&currentUsername===uid&&kind!=='read-quest'){
             const reasons={
               cooldown:'Bảo vật vẫn đang hồi chiêu. Hãy thử lại sau.',
               'inventory-full':'Kho đã đầy 500 món. Hãy dọn chỗ trước nhé.',
               'not-ready':'Nhiệm vụ chưa đủ tiến độ hoặc đã nhận thưởng.',
               'duplicate-reward':'Phần thưởng này đã có trong hành trình.',
               'clock-backwards':'Ngày chơi chưa khớp. Hãy kiểm tra đồng hồ thiết bị.',
-              'no-encounter':'Dấu vết bảo vật không còn ở chương này.'
+              'no-encounter':'Dấu vết bảo vật không còn ở chương này.',
+              'chapter-history-full':'Lịch sử nhặt bảo đã đạt giới hạn lưu trữ. Kho và Xu vẫn nguyên vẹn.'
             };
             showSystemAlert('CHƯA THỰC HIỆN ĐƯỢC',reasons[error?.reason]||
               window.DuduPersonalErrorC416?.message(error,
@@ -7711,7 +7713,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       personalProgressQueue=task;
       return task;
     }
-    // P2C gate remains OFF until an approved immutable policy is committed.
+    // Personal rollout: one immutable policy for every authenticated UID.
     window.DuduReadingRewardBridgeP2C=Object.freeze({
       enabled:()=>window.DuduPersonalReadingPolicyP2C?.enabled()===true,
       ready(uid){return this.enabled()&&personalProgressReady()&&currentUsername===uid&&!!window.DuduPersonalReadingRewardP2B;},
@@ -10130,10 +10132,10 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/reader-background-r1.js?v=r1-2-p1&amp;ui=t1-1"></script>
 <script src="js/personal-reading-clock-p2a.js?v=1"></script>
 <script src="js/personal-reading-reward-p2b.js?v=2"></script>
-<script src="js/personal-reading-policy-p2c.js?v=1"></script>
+<script src="js/personal-reading-policy-p2c.js?v=2"></script>
 <script src="js/personal-reading-slots-p2c.js?v=1"></script>
-<script src="js/personal-r2-chapter-loot-p3.js?v=1"></script>
-<script src="js/personal-reading-runtime-p2a.js?v=3"></script>
+<script src="js/personal-r2-chapter-loot-p3.js?v=2"></script>
+<script src="js/personal-reading-runtime-p2a.js?v=4"></script>
 <script src="js/library-reading-return-c443.js?v=c443-1"></script>
   <script src="js/site-shell-v60.js?v=sonha-art-v3-1&amp;pause=c446c-1&amp;t0=1"></script>
 <script src="js/library-intake-v1.js?v=lib1-ui3"></script>

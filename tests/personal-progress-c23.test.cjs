@@ -194,3 +194,10 @@ test('P3 retains old recorded chapter claims and full inventory blocks mutation'
  const full=profile();full.inventory=Array.from({length:500},(_,i)=>({id:'old-'+i}));const f=env(full);
  await assert.rejects(f.call('chapter-loot',opts),e=>e.reason==='inventory-full');assert.equal(f.updates,0);
 });
+
+test('P2D read quests remain one per chapter per day without writing old opening EXP history',async()=>{
+ const h=env();const opts={storyId:'story-1',chapterId:'chapter-1'};
+ const a=await h.call('read-quest',opts);assert.equal(a.awardExp,0);assert.equal(h.data.exp,0);
+ assert.deepEqual(h.data.readRewards,{});assert.equal((await h.call('read-quest',opts)).status,'already-read');
+ assert.equal(h.updates,1);
+});

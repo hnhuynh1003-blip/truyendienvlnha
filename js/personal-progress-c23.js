@@ -87,7 +87,7 @@
   const sameDay=oldLog.day===day&&Array.isArray(oldLog.chapters);
   const dailyList=sameDay?oldLog.chapters:[];
   const firstToday=!dailyList.includes(readKey);
-  if(!firstEver&&!firstToday)return resultFrom(data,'already-read');
+  if(!firstToday&&(!awardOpeningExp||!firstEver))return resultFrom(data,'already-read');
   let q=questBase(data,day);
   const openingExp=firstEver&&awardOpeningExp?5:0;
   const earned=expPlan(data,openingExp);
@@ -100,7 +100,7 @@
    q=progressForEvent(q,'READ_CHAPTER',eventId,day);
   }
   const next={...data,...earned,...q,
-   readRewards:firstEver?{...oldRewards,[readKey]:true}:oldRewards,
+   readRewards:firstEver&&awardOpeningExp?{...oldRewards,[readKey]:true}:oldRewards,
    dailyReadLog:{day,chapters:firstToday?[...dailyList,readKey]:dailyList}};
   return resultFrom(next,'applied',{firstEver,firstToday,awardExp:openingExp,
    levelUps:earned.levelUps});
@@ -150,6 +150,7 @@
   if(!chapter&&Object.hasOwn(receipts,requestId))
    return resultFrom(data,'already-looted',{receipt:receipts[requestId],
     lastGlobalLootAt:meta.lastGlobalLootAt});
+  if(chapter&&Object.keys(claims).length>=2000)throw fail('chapter-history-full');
   if(!Array.isArray(data.inventory)||data.inventory.length>=MAX_ITEMS)
    throw fail('inventory-full');
   if(chapter){
