@@ -41,7 +41,9 @@ function normalizeEvidence(raw,now){
     !validTime(ev.startedAt)||!validTime(ev.endedAt)||
     ev.endedAt<=ev.startedAt||
     ev.endedAt-ev.startedAt>MAX_WINDOW_MS||
-    ev.endedAt>now+SIGNATURE_SKEW_MS||
+    // Completed evidence must end at or before the trusted ledger clock.
+    // The signature timestamp skew does NOT permit future reading evidence.
+    ev.endedAt>now||
     !Number.isSafeInteger(ev.verifiedActiveMs)||
     ev.verifiedActiveMs<1||
     ev.verifiedActiveMs>ev.endedAt-ev.startedAt)return null;
