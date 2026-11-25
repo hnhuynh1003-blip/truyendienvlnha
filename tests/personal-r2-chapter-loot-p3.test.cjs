@@ -8,7 +8,7 @@ test('same normalized R2 content across revisions and reimports gets same claim 
  const b=await model.prepare({...ctx,storyId:'book-2',chapterId:'chapter-2',revision:'r-fedcba9876543210',content:'Một đoạn truyện.',cryptoApi:webcrypto});
  assert.equal(a.digest,b.digest);assert.equal(model.source(a).chapterId,model.source(b).chapterId);
  assert.notEqual((await model.prepare({...ctx,content:'Khác.',cryptoApi:webcrypto})).digest,a.digest);
- assert.equal(model.ENABLED,false);
+ assert.equal(model.ENABLED,true);
 });
 test('R2 eligibility requires matching account, content/revision, media, active visible reading and 30 seconds',async()=>{
  const identity=await model.prepare({...ctx,content:'Nội dung chương.',cryptoApi:webcrypto});

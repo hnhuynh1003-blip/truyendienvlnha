@@ -1,5 +1,5 @@
 /* P3: personal reader loot eligibility (not server attestation).
- * Release gate is deliberately OFF pending real R2/Firestore canary.
+ * Personal rollout for all authenticated accounts; live account check pending.
  * No dependence on EXP rate or a new wallet. */
 (function(root,factory){
  const api=factory();
@@ -7,7 +7,7 @@
  if(root)root.DuduPersonalR2ChapterLootP3=api;
 })(typeof window!=='undefined'?window:null,function(){
  'use strict';
- const ENABLED=false,MIN_ACTIVE_MS=30000,STORY='r2-content-v1';
+ const ENABLED=true,MIN_ACTIVE_MS=30000,STORY='r2-content-v1';
  const validId=x=>typeof x==='string'&&/^[A-Za-z0-9][A-Za-z0-9_-]{3,119}$/.test(x);
  const validRevision=x=>typeof x==='string'&&/^r-[a-f0-9]{16,32}$/.test(x);
  const validDigest=x=>typeof x==='string'&&/^sha256-[a-f0-9]{64}$/.test(x);

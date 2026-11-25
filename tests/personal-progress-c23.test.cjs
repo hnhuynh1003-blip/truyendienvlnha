@@ -175,7 +175,7 @@ test('P3 R2 content-addressed claim survives reimport and keeps actual source in
  for(let i=0;i<1000;i++){
   const id='sha256-'+i.toString(16).padStart(64,'0');
   if(encounter.encounter({accountId:'reader-a',storyId,chapterId:id,paragraphCount:20}).visible&&
-    encounter.hash('success:reader-a\\0'+storyId+'\\0'+id)%100<encounter.SUCCESS_PERCENT){chapterId=id;break;}
+    encounter.hash('success:reader-a\0'+storyId+'\0'+id)%100<encounter.SUCCESS_PERCENT){chapterId=id;break;}
  }
  assert.ok(chapterId);const h=env();
  const opts={storyId,chapterId,paragraphCount:20,r2Origin};
