@@ -63,4 +63,10 @@ test('Spark shop UI uses returned wallet and inventory with no Cloud Functions c
  assert.equal(userProfile.storyStates,nextStates);
  assert.equal(refreshed,1);
  assert.equal(storage.has('dudu-personal-shop:pending:reader-1'),false);
+ // During partial browser cache upgrades, old core may lack the new list.
+ // The renderer must expose ZERO purchasable items, not all legacy 16.
+ window.DuduEconomyCoreV43={...window.DuduEconomyCoreV43,PERSONAL_SALE_IDS:undefined};
+ await window.DuduEconomyLiveV52.openShop();
+ assert.deepEqual(Array.from(marketConfig.saleIds),[],
+  'an absent whitelist must render no purchasable SKUs');
 });
