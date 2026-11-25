@@ -4,8 +4,8 @@ const {create,queue}=require('../js/personal-reading-slots-p2c.js');
 const policy=require('../js/personal-reading-policy-p2c.js');
 const fs=require('node:fs');
 const path=require('node:path');
-test('policy remains disabled; no default live rate and legacy first-open gate retained',()=>{
- assert.equal(policy.enabled(),false);assert.equal(policy.policy,null);
+test('personal rollout policy enabled; legacy first-open gate retained as fallback',()=>{
+ assert.equal(policy.enabled(),true);assert.deepEqual(policy.policy,{id:'personal-reading-v1',expPerMinute:2,dailyMaxMinutes:180});
  const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
  assert.match(html,/if\(!window\.DuduReadingRewardBridgeP2C\?\.enabled\(\)\)void personalProgressActionC23\('read'/);
  assert.match(html,/policy:DuduPersonalReadingPolicyP2C\.policy,slots/);

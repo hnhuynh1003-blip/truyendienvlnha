@@ -252,7 +252,7 @@
   <script src="js/loot-rules-v2.js?v=44-1"></script>
   <script src="js/loot-cadence-v42.js?v=wallet-loot-1"></script>
   <script src="js/chapter-loot-encounter-v1.js?v=chapter-surprise-1"></script>
-  <script src="js/personal-progress-c23.js?v=c24c-1-p2c"></script>
+  <script src="js/personal-progress-c23.js?v=c24c-1-p3b"></script>
   <script src="js/item-actions-v43.js?v=1"></script>
   <script src="js/functional-items-v43-8.js?v=44-9"></script>
   <script src="js/personal-spark-items-v1.js?v=f33-1"></script>
@@ -1153,6 +1153,7 @@
         <div class="reader-story-title" id="reader-story-title" role="heading" aria-level="1"></div>
         <div class="reader-chapter-title" id="reader-ch-title" role="heading" aria-level="2">Chương 1</div>
         <div class="reading-time-badge" id="reader-ch-time">⏱ Khoảng 1 phút đọc</div>
+        <div id="reader-exp-live-p2d" class="reading-time-badge" hidden></div>
         <div class="reader-body" id="reader-content"></div>
       </article>
 
@@ -7689,14 +7690,15 @@ document.getElementById('phone-home-screen').style.display = 'none';
           return true;
         }catch(error){
           console.warn('DUDU personal progress:',error?.code||error?.reason||error?.message);
-          if(personalProgressReady()&&currentUsername===uid){
+          if(personalProgressReady()&&currentUsername===uid&&kind!=='read-quest'){
             const reasons={
               cooldown:'Bảo vật vẫn đang hồi chiêu. Hãy thử lại sau.',
               'inventory-full':'Kho đã đầy 500 món. Hãy dọn chỗ trước nhé.',
               'not-ready':'Nhiệm vụ chưa đủ tiến độ hoặc đã nhận thưởng.',
               'duplicate-reward':'Phần thưởng này đã có trong hành trình.',
               'clock-backwards':'Ngày chơi chưa khớp. Hãy kiểm tra đồng hồ thiết bị.',
-              'no-encounter':'Dấu vết bảo vật không còn ở chương này.'
+              'no-encounter':'Dấu vết bảo vật không còn ở chương này.',
+              'chapter-history-full':'Lịch sử nhặt bảo đã đạt giới hạn lưu trữ. Kho và Xu vẫn nguyên vẹn.'
             };
             showSystemAlert('CHƯA THỰC HIỆN ĐƯỢC',reasons[error?.reason]||
               window.DuduPersonalErrorC416?.message(error,
@@ -7711,7 +7713,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       personalProgressQueue=task;
       return task;
     }
-    // P2C gate remains OFF until an approved immutable policy is committed.
+    // Personal rollout: one immutable policy for every authenticated UID.
     window.DuduReadingRewardBridgeP2C=Object.freeze({
       enabled:()=>window.DuduPersonalReadingPolicyP2C?.enabled()===true,
       ready(uid){return this.enabled()&&personalProgressReady()&&currentUsername===uid&&!!window.DuduPersonalReadingRewardP2B;},
@@ -7856,17 +7858,45 @@ document.getElementById('phone-home-screen').style.display = 'none';
     // Chapter finds are stable for an account and consumed on the first tap,
     // regardless of outcome. No limit per day; the chapter itself is the key.
     let chapterLootGrantReadyKey=null;
+    let r2LootIdentityP3=null,r2LootEpochP3=0;
+    const chapterLootPendingP3=new Set();
+    function prepareR2LootP3(novel,ch){
+      r2LootIdentityP3=null;const epoch=++r2LootEpochP3;
+      const api=window.DuduPersonalR2ChapterLootP3;
+      if(!api?.ENABLED||novel?._r2V1!==true||!personalProgressReady()||
+        !l6R2MediaBridge?.isChapterReady(novel,ch.id,ch.content))return;
+      const uid=currentUsername;
+      void api.prepare({uid,storyId:novel.id,chapterId:ch.id,revision:novel._r2Revision,content:ch.content})
+        .then(identity=>{
+          if(epoch!==r2LootEpochP3||!personalProgressReady()||currentUsername!==uid||
+            novels[selectedNovelIndex]!==novel||novel.chapters[selectedChapterIndex]!==ch||
+            !l6R2MediaBridge?.isChapterReady(novel,ch.id,ch.content))return;
+          r2LootIdentityP3=identity;updateChapterLootButtonState();
+        }).catch(()=>{});
+    }
     function chapterLootOpportunity(novel,chapter,index,paragraphCount){
-      // Author R2 acceptance does not issue gameplay rewards. Existing books are unchanged.
-      if(novel?._r2V1===true)return {visible:false};
-      const key=DuduChapterLootEncounterV1.lootKey(novel.id,chapter.id || index);
+      let source={storyId:novel.id,chapterId:String(chapter.id||index)};
+      if(novel?._r2V1===true){
+        const api=window.DuduPersonalR2ChapterLootP3;
+        if(!api?.ENABLED||!personalProgressReady()||!api.eligible({
+          identity:r2LootIdentityP3,observation:window.DuduPersonalReadingRuntimeP2A?.snapshot(),
+          uid:currentUsername,storyId:novel.id,chapterId:chapter.id,revision:novel._r2Revision,
+          mediaReady:l6R2MediaBridge?.isChapterReady(novel,chapter.id,chapter.content)===true,
+          visible:document.getElementById('reader-view')?.style.display==='block'&&!document.hidden&&document.hasFocus(),
+          online:navigator.onLine!==false
+        }))return {visible:false};
+        source=api.source(r2LootIdentityP3);
+        if(DuduChapterLootEncounterV1.attempted(userProfile.lootedChapters?.[DuduChapterLootEncounterV1.lootKey(novel.id,chapter.id)]))
+          return {visible:false};
+      }
+      const key=DuduChapterLootEncounterV1.lootKey(source.storyId,source.chapterId);
       const accountId=(!IS_SANDBOX_MODE&&DuduAuth?.isReady?.())?
         DuduAuth.uid():currentUsername;
       const found=DuduChapterLootEncounterV1.encounter({
-        accountId,storyId:novel.id,chapterId:chapter.id || index,
+        accountId,storyId:source.storyId,chapterId:source.chapterId,
         paragraphCount,claim:userProfile.lootedChapters?.[key]
       });
-      return {key,...found};
+      return {key,...found,...source,visible:found.visible&&!chapterLootPendingP3.has(accountId+'|'+key)};
     }
     function updateChapterLootButtonState() {
       const novel = novels[selectedNovelIndex];
@@ -7874,6 +7904,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       const content=document.getElementById('reader-content');
       if(!ch||!content)return;
       content.querySelectorAll('.reader-loot-encounter').forEach(node=>node.remove());
+      if(document.getElementById('reader-view')?.style.display!=='block')return;
       const paragraphs=content.querySelectorAll('p');
       const opportunity=chapterLootOpportunity(novel,ch,selectedChapterIndex,paragraphs.length);
       if(!opportunity.visible)return;
@@ -7889,22 +7920,28 @@ document.getElementById('phone-home-screen').style.display = 'none';
       paragraphs[opportunity.afterParagraph]?.after(slot);
     }
 
+    window.addEventListener('dudu-r2-loot-observation-p3',()=>{
+      if(novels[selectedNovelIndex]?._r2V1===true)updateChapterLootButtonState();
+    });
     function claimChapterLootDrop() {
       const novel = novels[selectedNovelIndex];
       const chapter = novel?.chapters?.[selectedChapterIndex];
       if (!novel || !chapter) return false;
       const opportunity=chapterLootOpportunity(novel,chapter,selectedChapterIndex,
-        document.querySelectorAll('#reader-content > p').length);
+        document.querySelectorAll('#reader-content p').length);
       if(!opportunity.visible ||
         !document.querySelector('#reader-content .reader-loot-encounter'))return false;
       if(!IS_SANDBOX_MODE){
         if(!personalProgressReady())return false;
         document.querySelector('#reader-content .reader-loot-encounter')?.remove();
+        const pendingKey=currentUsername+'|'+opportunity.key;
+        chapterLootPendingP3.add(pendingKey);
         void personalProgressActionC23('chapter-loot',{
-          storyId:novel.id,chapterId:String(chapter.id||selectedChapterIndex),
-          paragraphCount:document.querySelectorAll('#reader-content > p').length,
+          storyId:opportunity.storyId,chapterId:opportunity.chapterId,
+          ...(opportunity.r2Origin?{r2Origin:opportunity.r2Origin}:{}),
+          paragraphCount:document.querySelectorAll('#reader-content p').length,
           realmTag:DuduLootRules.realmTagFor(chapter,novel)
-        });
+        }).finally(()=>{chapterLootPendingP3.delete(pendingKey);updateChapterLootButtonState();});
         return true;
       }
       if(!Array.isArray(userProfile.inventory))userProfile.inventory=[];
@@ -9134,6 +9171,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
           currentUid:()=>personalProgressReady()?currentUsername:null
         });
       }else window.DuduPersonalReadingRuntimeP2A?.stop();
+      prepareR2LootP3(novel,ch);
 
       // EXP reward: once ever per UID/story/chapter. Opening the chapter is
       // NOT proof of finishing the reading (server verification is future work).
@@ -10094,9 +10132,10 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/reader-background-r1.js?v=r1-2-p1&amp;ui=t1-1"></script>
 <script src="js/personal-reading-clock-p2a.js?v=1"></script>
 <script src="js/personal-reading-reward-p2b.js?v=2"></script>
-<script src="js/personal-reading-policy-p2c.js?v=1"></script>
+<script src="js/personal-reading-policy-p2c.js?v=2"></script>
 <script src="js/personal-reading-slots-p2c.js?v=1"></script>
-<script src="js/personal-reading-runtime-p2a.js?v=2"></script>
+<script src="js/personal-r2-chapter-loot-p3.js?v=2"></script>
+<script src="js/personal-reading-runtime-p2a.js?v=4"></script>
 <script src="js/library-reading-return-c443.js?v=c443-1"></script>
   <script src="js/site-shell-v60.js?v=sonha-art-v3-1&amp;pause=c446c-1&amp;t0=1"></script>
 <script src="js/library-intake-v1.js?v=lib1-ui3"></script>

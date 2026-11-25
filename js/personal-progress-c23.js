@@ -87,7 +87,7 @@
   const sameDay=oldLog.day===day&&Array.isArray(oldLog.chapters);
   const dailyList=sameDay?oldLog.chapters:[];
   const firstToday=!dailyList.includes(readKey);
-  if(!firstEver&&!firstToday)return resultFrom(data,'already-read');
+  if(!firstToday&&(!awardOpeningExp||!firstEver))return resultFrom(data,'already-read');
   let q=questBase(data,day);
   const openingExp=firstEver&&awardOpeningExp?5:0;
   const earned=expPlan(data,openingExp);
@@ -100,7 +100,7 @@
    q=progressForEvent(q,'READ_CHAPTER',eventId,day);
   }
   const next={...data,...earned,...q,
-   readRewards:firstEver?{...oldRewards,[readKey]:true}:oldRewards,
+   readRewards:firstEver&&awardOpeningExp?{...oldRewards,[readKey]:true}:oldRewards,
    dailyReadLog:{day,chapters:firstToday?[...dailyList,readKey]:dailyList}};
   return resultFrom(next,'applied',{firstEver,firstToday,awardExp:openingExp,
    levelUps:earned.levelUps});
@@ -134,7 +134,7 @@
   return resultFrom(next,'applied',{award:plan.award,levelUps:plan.levelUps});
  }
  function lootEvent({data,uid,kind,requestId,storyId,chapterId,
-  paragraphCount,realmTag,day,at}){
+  paragraphCount,realmTag,day,at,r2Origin=null}){
   const chapter=kind==='chapter-loot',key=chapter?
    encounter.lootKey(storyId,chapterId):null;
   const claims=data.lootedChapters&&typeof data.lootedChapters==='object'?
@@ -144,10 +144,13 @@
   const meta=states[META]&&typeof states[META]==='object'?states[META]:{};
   const receipts=meta.globalReceipts&&typeof meta.globalReceipts==='object'?
    meta.globalReceipts:{};
-  if(chapter&&encounter.attempted(claims[key]))return resultFrom(data,'already-looted');
+  if(chapter&&(encounter.attempted(claims[key])||r2Origin&&
+   encounter.attempted(claims[encounter.lootKey(r2Origin.storyId,r2Origin.chapterId)])))
+   return resultFrom(data,'already-looted');
   if(!chapter&&Object.hasOwn(receipts,requestId))
    return resultFrom(data,'already-looted',{receipt:receipts[requestId],
     lastGlobalLootAt:meta.lastGlobalLootAt});
+  if(chapter&&Object.keys(claims).length>=2000)throw fail('chapter-history-full');
   if(!Array.isArray(data.inventory)||data.inventory.length>=MAX_ITEMS)
    throw fail('inventory-full');
   if(chapter){
@@ -173,7 +176,7 @@
   if(data.inventory.some(item=>item?.instanceId===instanceId))
    throw fail('duplicate-item');
   const item={...drop.item,instanceId,obtainedFrom:chapter?
-   {kind:'CHAPTER',storyId,chapterId}:{kind:'GLOBAL'}};
+   {kind:'CHAPTER',storyId:r2Origin?.storyId||storyId,chapterId:r2Origin?.chapterId||chapterId}:{kind:'GLOBAL'}};
   const earned=expPlan({...data,currency:data.currency+reward.coins},reward.exp);
   let q=questBase(data,day);
   q.quests=increment(q.quests,'q_daily_loot');
@@ -196,13 +199,18 @@
    levelUps:earned.levelUps,lastGlobalLootAt:chapter?null:at});
  }
  async function run({db,auth,uid,kind,storyId,chapterId,paragraphCount=0,
-  realmTag=null,questId,requestId,now=()=>Date.now()}={}){
+  realmTag=null,questId,requestId,r2Origin=null,now=()=>Date.now()}={}){
   if(!db?.runTransaction||!db?.collection||!auth?.currentUser||
    auth.currentUser.uid!==uid||!validId(uid)||
    !['read','read-quest','quest','chapter-loot','global-loot'].includes(kind))
    throw fail('invalid-account');
   if((kind==='read'||kind==='read-quest'||kind==='chapter-loot')&&(!validId(storyId)||!validId(chapterId)))
    throw fail('invalid-chapter');
+  if(r2Origin!==null||storyId==='r2-content-v1'){
+   if(kind!=='chapter-loot'||storyId!=='r2-content-v1'||!/^sha256-[a-f0-9]{64}$/.test(chapterId)||
+    !r2Origin||![r2Origin.storyId,r2Origin.chapterId].every(x=>typeof x==='string'&&/^[A-Za-z0-9][A-Za-z0-9_-]{3,119}$/.test(x))||
+    typeof r2Origin.revision!=='string'||!/^r-[a-f0-9]{16,32}$/.test(r2Origin.revision))throw fail('invalid-r2-loot');
+  }
   if(kind==='chapter-loot'&&(!Number.isSafeInteger(paragraphCount)||
     paragraphCount<1||paragraphCount>100000))throw fail('invalid-chapter');
   if(kind==='quest'&&!KNOWN.has(questId))throw fail('unknown-quest');
@@ -222,7 +230,7 @@
    if(kind==='read'||kind==='read-quest')result=bookEvent({data,storyId,chapterId,day,awardOpeningExp:kind==='read'});
    else if(kind==='quest')result=questClaim({data,questId,day,at});
    else result=lootEvent({data,uid,kind,storyId,chapterId,
-    paragraphCount,realmTag,requestId,day,at});
+    paragraphCount,realmTag,requestId,day,at,r2Origin});
    if(result.status==='already-read'||result.status==='already-looted')return result;
    const patch={};
    const relevant=(kind==='read'||kind==='read-quest')?['currency','exp','level','readRewards',
