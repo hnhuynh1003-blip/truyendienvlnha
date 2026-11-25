@@ -1807,12 +1807,12 @@
           Tiến độ đọc và lựa chọn nền đi theo tài khoản. Ảnh tự tải chỉ có trên thiết bị này.
         </p>
         <section class="dudu-v54-reset-settings" aria-labelledby="dudu-v54-reset-title" style="padding:10px;margin:8px 0;border-radius:12px;border:1px solid #4b7d92;background:rgba(20,39,57,.78)">
-          <h3 id="dudu-v54-reset-title" style="font-size:12px;margin:0 0 5px;color:#d3efff">✦ Tiến độ &amp; mùa chơi</h3>
-          <p style="font-size:10px;line-height:1.5;margin:0 0 9px;color:#c8ddea">Lưu lại hành trình của bạn trước khi bắt đầu mùa mới. Tệp sao lưu có tiến độ và hội thoại cá nhân, hãy giữ riêng.</p>
+          <h3 id="dudu-v54-reset-title" style="font-size:12px;margin:0 0 5px;color:#d3efff">✦ Tiến độ tài khoản</h3>
+          <p style="font-size:10px;line-height:1.5;margin:0 0 9px;color:#c8ddea">Có thể sao lưu và kiểm kê tiến độ hiện tại. Bắt đầu lại tài khoản thử nghiệm chỉ được xem xét sau khi hoàn thiện game; tệp sao lưu là dữ liệu riêng tư.</p>
           <button type="button" class="btn btn-primary" id="dudu-v26-backup-action" onclick="duduBackupPlayerV26()" style="width:100%">⬇ Tải bản sao tiến độ</button>
-          <button type="button" class="btn" id="dudu-s01-preview-action" onclick="duduPreviewSeasonS01()" style="width:100%;margin-top:7px">◈ Xem trước reset Mùa 01</button>
-          <button type="button" class="btn btn-danger" id="dudu-v54-reset-action" disabled title="Chỉ mở khi chốt mùa mới và có bản sao lưu" style="width:100%;margin-top:7px;opacity:.52">Khởi tạo mùa mới · Chưa mở</button>
-          <small style="display:block;margin-top:7px;color:#b6c9d9;font-size:9px">Chỉ xem trước tài khoản đang đăng nhập. Chưa reset ai; truyện, vị trí đọc và Auth sẽ được giữ.</small>
+          <button type="button" class="btn" id="dudu-s01-preview-action" onclick="duduPreviewSeasonS01()" style="width:100%;margin-top:7px">◈ Kiểm kê dữ liệu hiện có · Chỉ đọc</button>
+          <button type="button" class="btn btn-danger" id="dudu-v54-reset-action" disabled title="Chỉ xét sau khi hoàn thiện gameplay, sao lưu và duyệt riêng tài khoản test" style="width:100%;margin-top:7px;opacity:.52">Bắt đầu lại tài khoản test · Chưa mở</button>
+          <small style="display:block;margin-top:7px;color:#b6c9d9;font-size:9px">Chỉ kiểm tra tài khoản đang đăng nhập, không thay đổi dữ liệu. Reset test thật chưa được thiết kế hoặc cho phép.</small>
         </section>
         <section class="dudu-v27-settings-card" aria-labelledby="dudu-v27-reading-title">
           <h3 id="dudu-v27-reading-title">✦ Trải nghiệm đọc</h3>
@@ -3606,6 +3606,9 @@
 
     // C2.6: until the owner signs off the new season and its Rules, do not
     // expose a destructive reset while real rewards and inventories are live.
+    // The above is a historical compatibility anchor. Owner-approved scope is
+    // now only a future single TEST-ACCOUNT Fresh Start after game completion.
+    // Never reuse this V54 destructive profile replacement for Fresh Start.
     const DUDU_SEASON_RESET_READY_C26=false;
     let duduBackupBusyV26=false;
     let duduSeasonPreviewBusyS01=false;
@@ -3613,7 +3616,7 @@
       const engine=window.DuduSeasonResetS01;
       if(!engine||engine.ENABLE_APPLY!==false)return;
       if(IS_SANDBOX_MODE||window.DUDU_RESET_IN_PROGRESS){
-        showSystemAlert('CHỈ XEM TÀI KHOẢN THẬT','Hãy đăng nhập để xem trước phần tiến độ mùa mới.');return;
+        showSystemAlert('CHỈ KIỂM KÊ TÀI KHOẢN THẬT','Hãy đăng nhập để xem tiến độ tài khoản.');return;
       }
       if(duduSeasonPreviewBusyS01)return;
       if(!DuduAuth.isReady()||DuduAuth.uid()!==currentUsername){
@@ -3630,15 +3633,22 @@
         DuduPersonalResetV54.safetyCheck(uid,auth);
         if(auth.currentUser!==account||!snap.exists)throw Error('Không có hồ sơ máy chủ');
         const plan=engine.preview(uid,snap.data(),localStorage,DEFAULT_SYSTEM_QUESTS);
-        showSystemAlert('MÙA 01 · CHỈ XEM TRƯỚC',
+        const protectedAudit=plan.cloud.protectedAudit;
+        const reviewLine=protectedAudit?
+          '\nCẦN RÀ SOÁT: '+protectedAudit.storyStateCount+' vùng tiến trình game, '+
+          protectedAudit.readClaims+' mốc đọc đã nhận, '+
+          protectedAudit.chapterAttempts+' lượt nhặt cũ, '+
+          protectedAudit.collectionItems+' vật phẩm. Không được tự xóa biên nhận.':'';
+        showSystemAlert('KIỂM KÊ TIẾN ĐỘ · CHỈ ĐỌC',
           'Hiện có: '+plan.cloud.levelBefore+' cấp · '+plan.cloud.expBefore+
           ' EXP · '+plan.cloud.xuBefore+' Xu · '+plan.cloud.inventoryCount+
           ' vật phẩm · '+plan.cloud.questCount+' nhiệm vụ.\n'+
-          'Dự kiến: cấp 1 · 0 EXP · '+plan.cloud.starterXu+' Xu; làm mới Kho, nhiệm vụ, game và liên lạc.\n'+
-          'Giữ lại '+plan.cloud.bookmarkCount+' dấu tiến độ đọc, truyện, tài khoản và giao diện cá nhân.\n'+
+          'Chưa chốt số Xu hay phạm vi tiến trình sẽ bắt đầu lại. Không có thiết lập mùa mới.\n'+
+          'Đang có '+plan.cloud.bookmarkCount+' dấu tiến độ đọc cần bảo toàn; không được xóa truyện, Auth hay dữ liệu tài khoản khác.\n'+
           'Có '+plan.device.gameKeys.length+' vùng dữ liệu game riêng trên thiết bị này.'+
+          reviewLine+
           (plan.cloud.unknownFields.length?' Cần rà thêm '+plan.cloud.unknownFields.length+' trường chưa phân loại.':'')+
-          '\nChưa có dữ liệu nào bị thay đổi. Hãy tải bản sao tiến độ trước ngày mở mùa.');
+          '\nChưa thay đổi dữ liệu. Fresh Start chỉ được xét cho tài khoản test sau khi game hoàn chỉnh và đã kiểm chứng backup/restore.');
       }catch(error){
         console.warn('S01 preview:',error?.code||error?.message||'failed');
         showSystemAlert('CHƯA XEM ĐƯỢC','Không tải được hồ sơ từ máy chủ. Kiểm tra kết nối và đăng nhập.');
