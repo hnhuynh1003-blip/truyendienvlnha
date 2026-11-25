@@ -7105,6 +7105,35 @@ document.getElementById('phone-home-screen').style.display = 'none';
       return DuduAuth.isReady() && DuduAuth.uid()===currentUsername
         ? 'live-'+currentUsername : null;
     }
+    window.DuduPersonalCosmeticsBridgeP1=Object.freeze({
+      ready:()=>!IS_SANDBOX_MODE&&DuduAuth.isReady()&&DuduAuth.uid()===currentUsername&&!!window.DuduPersonalCosmeticsP1,
+      owns(owner,kind,id){
+        return this.ready()&&owner==='live-'+currentUsername&&
+          DuduPersonalCosmeticsP1.owns(userProfile.storyStates,kind,id);
+      },
+      purchase(kind,id){
+        if(!this.ready())return Promise.reject(Error('Hãy đăng nhập để mua.'));
+        const uid=currentUsername;
+        const perform=async()=>{
+          if(!this.ready()||currentUsername!==uid)throw Error('Tài khoản đã thay đổi.');
+          await Promise.allSettled([...pendingLiveProfileWrites]);
+          if(!this.ready()||currentUsername!==uid)throw Error('Tài khoản đã thay đổi.');
+          const result=await DuduPersonalCosmeticsP1.purchase({db,auth:firebase.auth(),uid,kind,id});
+          if(!this.ready()||currentUsername!==uid)throw Error('Tài khoản đã thay đổi.');
+          userProfile.currency=result.balance;
+          userProfile.storyStates=result.storyStates;
+          try{localStorage.setItem('profile_'+uid,JSON.stringify(userProfile));}
+          catch(error){console.warn('DUDU cosmetic device backup:',error);}
+          updatePhoneUI();renderWallet();
+          window.DuduReaderBackgroundR1?.refresh?.();
+          window.DuduWallpaperStudioV38?.sync?.();
+          return result;
+        };
+        const action=personalProgressQueue.then(perform,perform);
+        personalProgressQueue=action.catch(()=>{});
+        return action;
+      }
+    });
     function activeStoryForWallpaperV28(){
       const chat=document.getElementById('phone-app-chat');
       const chatVisible=chat?.style.display==='flex';
@@ -10018,11 +10047,12 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/phone-wallpaper-v34.js?v=copy-1"></script>
 <script src="js/phone-settings-v35.js?v=1"></script>
 <script src="js/phone-wallpaper-v36-custom.js?v=1"></script>
-<script src="js/phone-wallpaper-v38-catalog.js?v=39-1"></script>
-<script src="js/phone-wallpaper-v38-studio.js?v=39-1"></script>
+<script src="js/phone-wallpaper-v38-catalog.js?v=39-1-p1"></script>
+<script src="js/personal-cosmetics-p1.js?v=1"></script>
+<script src="js/phone-wallpaper-v38-studio.js?v=39-1-p1"></script>
 <script src="js/library-reader-status-l2a.js?v=epub-perf-r1"></script>
 <script src="js/library-reader-preferences-l2c.js?v=l2b-1"></script>
-<script src="js/reader-background-r1.js?v=r1-2&amp;ui=t1-1"></script>
+<script src="js/reader-background-r1.js?v=r1-2-p1&amp;ui=t1-1"></script>
 <script src="js/library-reading-return-c443.js?v=c443-1"></script>
   <script src="js/site-shell-v60.js?v=sonha-art-v3-1&amp;pause=c446c-1&amp;t0=1"></script>
 <script src="js/library-intake-v1.js?v=lib1-ui3"></script>

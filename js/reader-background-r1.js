@@ -99,7 +99,7 @@
     try{return host?.localStorage||null;}catch(_){return null;}
   }
   function label(item,allowed){
-    if(item.kind==='premium')return String(item.price)+' Xu · Chưa mở bán';
+    if(item.kind==='premium')return allowed?'Đã sở hữu':String(item.price)+' Xu · Mua trong Cyber Phone';
     if(item.kind==='gift')return allowed?'Đã nhận quà':'Quà chưa nhận';
     return 'Miễn phí';
   }
@@ -122,7 +122,7 @@
     toggle.id='reader-bg-r1-enabled';toggle.type='checkbox';
     toggleLabel.append(toggle,doc.createTextNode(' Sử dụng'));
     top.append(title,toggleLabel);
-    const note=create('p','reader-bg-r1-help','Hình Cyber Phone · không đổi nền điện thoại.');
+    const note=create('p','reader-bg-r1-help','Dùng chung hình nền đã sở hữu · chọn nền trang đọc độc lập.');
     const grid=create('div','reader-bg-r1-grid');
     grid.id='reader-bg-r1-grid';
     for(const item of catalog()?.ITEMS||[]){
