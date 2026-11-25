@@ -66,7 +66,8 @@
      !db?.collection||!db?.runTransaction||auth?.currentUser?.uid!==uid)
    throw Error('Chưa xác nhận được tài khoản hoặc kết nối Firestore');
   // Enforce the Personal whitelist at the transaction boundary, not just in UI.
-  if(kind==='purchase'&&(!economy.PERSONAL_SALE_IDS.includes(itemId)||!products.has(itemId)))
+  if(kind==='purchase'&&(!Array.isArray(economy.PERSONAL_SALE_IDS)||
+     !economy.PERSONAL_SALE_IDS.includes(itemId)||!products.has(itemId)))
    throw Error('Vật phẩm không bán trong DUDU Market');
   if(kind!=='purchase'&&(typeof instanceId!=='string'||instanceId.length>120))
    throw Error('Chưa chọn vật phẩm');
