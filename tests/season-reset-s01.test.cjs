@@ -172,7 +172,7 @@ test('S01 audit remains read-only and safe for empty, malformed or unknown names
 
 test('legacy S01 settings show only account audit, no approved season or reset promises',()=>{
  const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
- const section=html.match(/<section class="dudu-v54-reset-settings"([\\s\\S]*?)<\\/section>/);
+ const section=html.match(/<section class="dudu-v54-reset-settings"([\s\S]*?)<\/section>/);
  assert.ok(section);
  assert.match(section[1],/Kiểm kê dữ liệu hiện có · Chỉ đọc/);
  assert.match(section[1],/Bắt đầu lại tài khoản test · Chưa mở/);
