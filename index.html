@@ -8676,6 +8676,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
     }
 
     function openCover(idx) {
+      window.DuduPersonalReadingRuntimeP2A?.stop();
       l6R2MediaBridge?.clearChapter();
       window.DuduLibraryReaderStatusL2A?.cancel();
       document.body.classList.remove('dudu-reading-active');
@@ -9097,6 +9098,16 @@ document.getElementById('phone-home-screen').style.display = 'none';
       updateChapterLootButtonState();
       renderStoryCommentsV442('chapter');
 
+      // P2A: observe reading only once content has passed the existing reader gates.
+      if(personalProgressReady()){
+        window.DuduPersonalReadingRuntimeP2A?.open({
+          uid:currentUsername,storyId:String(novel.id),chapterId:String(ch.id||chIdx),
+          mode:novel._r2V1===true?'EPUB_R2':novel._cloudV49?'EPUB_V49':'WEB',
+          revision:novel._r2Revision||ch.revision||'',
+          currentUid:()=>personalProgressReady()?currentUsername:null
+        });
+      }else window.DuduPersonalReadingRuntimeP2A?.stop();
+
       // EXP reward: once ever per UID/story/chapter. Opening the chapter is
       // NOT proof of finishing the reading (server verification is future work).
       if(IS_SANDBOX_MODE){
@@ -9240,6 +9251,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
     });
 
     function goHome() {
+      window.DuduPersonalReadingRuntimeP2A?.stop();
       l6R2MediaBridge?.clearChapter();
       l6R2MediaBridge?.clearHero();
       window.DuduLibraryReaderStatusL2A?.cancel();
@@ -9272,7 +9284,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     
-    function goCover() { 
+    function goCover() {
+      window.DuduPersonalReadingRuntimeP2A?.stop(); 
       if(document.getElementById('reader-view')?.style.display==='block')
         persistReaderBookmarkR1(novels[selectedNovelIndex],selectedChapterIndex,window.scrollY,true);
       document.getElementById('floating-reading-bar').style.display = 'none';
@@ -10053,6 +10066,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/library-reader-status-l2a.js?v=epub-perf-r1"></script>
 <script src="js/library-reader-preferences-l2c.js?v=l2b-1"></script>
 <script src="js/reader-background-r1.js?v=r1-2-p1&amp;ui=t1-1"></script>
+<script src="js/personal-reading-clock-p2a.js?v=1"></script>
+<script src="js/personal-reading-runtime-p2a.js?v=1"></script>
 <script src="js/library-reading-return-c443.js?v=c443-1"></script>
   <script src="js/site-shell-v60.js?v=sonha-art-v3-1&amp;pause=c446c-1&amp;t0=1"></script>
 <script src="js/library-intake-v1.js?v=lib1-ui3"></script>
