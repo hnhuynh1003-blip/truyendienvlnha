@@ -1,12 +1,11 @@
-/* V38 cosmetic catalogue. Gift receipts are scoped to this device/account;
- * premium entries are previews until an approved wallet purchase service exists.
- * No writes to balances, inventory or Firestore.
+/* V38 cosmetic catalogue. Gifts remain device-scoped; premium ownership
+ * is read from the active account through the P1 bridge. No direct wallet writes.
  */
 (function(root,factory){
- const api=factory();
+ const api=factory(root);
  if(typeof module==='object'&&module.exports)module.exports=api;
  if(root)root.DuduWallpaperCatalogV38=api;
-})(typeof window!=='undefined'?window:null,function(){
+})(typeof window!=='undefined'?window:null,function(root){
  'use strict';
  const ITEMS=Object.freeze([
   {id:'v38-jade',name:'Thiên Cung',category:'Huyền ảo',tag:'QUÀ TẶNG',kind:'gift',price:0,asset:'jade-palace.webp'},
@@ -45,7 +44,8 @@
  }
  function allowed(kind,id,storage,owner){
   const found=(kind==='wallpaper'?ITEMS:FONTS).find(x=>x.id===id);
-  return !!found&&(found.kind==='free'||found.kind==='gift'&&readGifts(storage,owner).includes(id));
+  return !!found&&(found.kind==='free'||found.kind==='gift'&&readGifts(storage,owner).includes(id)||
+   found.kind==='premium'&&root?.DuduPersonalCosmeticsBridgeP1?.owns(owner,kind,id)===true);
  }
  function cleanSignature(value){
   const str=typeof value?.text==='string'?value.text.replace(/[<>\u0000-\u001f\u007f]/g,'').trim().slice(0,22):'Du';

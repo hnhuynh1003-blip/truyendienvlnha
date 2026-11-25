@@ -1,4 +1,4 @@
-/* V38 — portrait-art wallpaper boutique + font atelier. No paid writes. */
+/* V38 — portrait-art wallpaper boutique + font atelier. Purchases use P1 bridge. */
 (function(){
  'use strict';
  const $=id=>document.getElementById(id);
@@ -12,7 +12,23 @@
  const selectedWallpaper=()=>window.DuduPhoneWallpaperV27?.read(localStorage,owner());
  const selectedFont=()=>window.DuduPhoneTypographyV31?.read(localStorage,owner())?.font;
  let activeFilter='Tất cả',activePreview=null,returnFocus=null;
- let gallery=null,fontsPanel=null,inspect=null,feedback=null;
+ let gallery=null,fontsPanel=null,inspect=null,feedback=null,purchaseBusy=false;
+ async function buyPremium(kind,item){
+  const bridge=window.DuduPersonalCosmeticsBridgeP1,who=owner();
+  if(purchaseBusy)return false;
+  if(!bridge?.ready?.()||!who){notice('Hãy đăng nhập tài khoản cá nhân để mua.');return false;}
+  if(!window.confirm('Mua '+item.name+' với '+item.price+' Xu Vàng? Chỉ thanh toán một lần.'))return false;
+  purchaseBusy=true;
+  const action=inspect&&q('.dudu-v38-inspect-action',inspect);
+  if(action)action.disabled=true;
+  try{
+   const result=await bridge.purchase(kind,item.id);
+   if(owner()!==who)return false;
+   syncCards();notice(result.status==='already-owned'?'Đã sở hữu '+item.name+'.':'Đã mua '+item.name+' · Còn '+result.balance+' Xu Vàng.');
+   return true;
+  }catch(error){if(owner()===who)notice('Chưa xác nhận mua: '+(error?.message||'Hãy thử lại.'));return false;}
+  finally{purchaseBusy=false;if(action)action.disabled=false;}
+ }
  const money=()=>'<i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i>';
  const artPath=item=>'assets/wallpapers/'+(item.folder||'v38')+'/'+item.asset;
  function notice(message){if(feedback){feedback.textContent=message;feedback.hidden=false;}}
@@ -26,14 +42,16 @@
    const id=card.dataset.v38Id;
    card.setAttribute('aria-pressed',String(selectedWallpaper()===id));
    const badge=q('.dudu-v38-price',card),item=catalog.ITEMS.find(x=>x.id===id);
-   if(badge&&item){if(item.kind==='gift'&&allowed('wallpaper',id))badge.textContent='✓ ĐÃ NHẬN';
+   if(badge&&item){if(item.kind==='premium'&&allowed('wallpaper',id))badge.textContent='✓ ĐÃ SỞ HỮU';
+    else if(item.kind==='gift'&&allowed('wallpaper',id))badge.textContent='✓ ĐÃ NHẬN';
     else priceLabel(badge,item);}
   });
   document.querySelectorAll('.dudu-v38-font-card').forEach(card=>{
    const id=card.dataset.v38Id;
    card.setAttribute('aria-pressed',String(selectedFont()===id));
    const item=catalog.FONTS.find(x=>x.id===id),badge=q('.dudu-v38-font-kind',card);
-   if(badge&&item){if(item.kind==='gift'&&allowed('font',id))badge.textContent='✓ QUÀ';
+   if(badge&&item){if(item.kind==='premium'&&allowed('font',id))badge.textContent='✓ ĐÃ SỞ HỮU';
+    else if(item.kind==='gift'&&allowed('font',id))badge.textContent='✓ QUÀ';
     else priceLabel(badge,item);}
   });
  }
@@ -71,7 +89,7 @@
    const foot=el('span','dudu-v38-wall-info');foot.append(el('strong','',item.name),el('small','',item.category));
    card.append(art,foot);card.addEventListener('click',()=>showPreview(item));grid.append(card);
   });
-  const note=el('p','dudu-v38-honesty','✦ Hình cao cấp xem thử được; thanh toán Xu Vàng đang chờ tích hợp ví an toàn.');
+  const note=el('p','dudu-v38-honesty','✦ Hình cao cấp mua một lần bằng Xu Vàng, dùng chung cho Cyber Phone và trang đọc.');
   panel.append(hero,filters,grid,note);
   filterTo('Tất cả');
   return panel;
@@ -110,10 +128,8 @@
   link.href='https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Dancing+Script:wght@500;700&family=Great+Vibes&family=Marcellus&family=Outfit:wght@400;600&family=Prata&display=swap';
   document.head.append(link);
  }
- function useFont(item){
-  if(item.kind==='premium'){
-   notice('Bản xem thử · '+item.name+' có giá '+item.price+' Xu Vàng. Chưa mở thanh toán để bảo vệ số dư.');return;
-  }
+ async function useFont(item){
+  if(item.kind==='premium'&&!allowed('font',item.id)&&!await buyPremium('font',item))return;
   if(item.kind==='gift'&&!allowed('font',item.id)){
    if(!catalog.claimGift(localStorage,owner(),item.id)){notice('Không lưu được quà trên thiết bị.');return;}
   }
@@ -167,11 +183,12 @@
  }
  function hidePreview(){if(!inspect)return;inspect.hidden=true;activePreview=null;
   if(returnFocus?.isConnected)returnFocus.focus();returnFocus=null;}
- function previewAction(){
-  const item=activePreview;if(!item)return;
-  if(item.kind==='premium'){
-   notice('Mua '+item.name+' · '+item.price+' Xu Vàng. Đang chờ kết nối giao dịch xác thực, chưa trừ Xu.');
-   hidePreview();return;
+ async function previewAction(){
+  const item=activePreview,who=owner();if(!item||purchaseBusy)return;
+  if(item.kind==='premium'&&!allowed('wallpaper',item.id)){
+   const bought=await buyPremium('wallpaper',item);
+   if(owner()!==who||activePreview!==item)return;
+   if(!bought){hidePreview();return;}
   }
   if(item.kind==='gift'&&!allowed('wallpaper',item.id)&&!catalog.claimGift(localStorage,owner(),item.id)){
    notice('Không lưu được quà; thử lại sau.');return;
@@ -246,7 +263,7 @@
   });
   $('phone-home-screen')?.append(focusToggle);
   const open=$('dudu-v34-open');open?.addEventListener('click',()=>{if(feedback)feedback.hidden=true;switchTab('studio');});
-  document.body.addEventListener('dudu-account-changed',syncSignature);
+  document.body.addEventListener('dudu-account-changed',()=>{hidePreview();syncSignature();syncCards();});
   new MutationObserver(()=>{syncSignature();syncCards();}).observe(document.body,{attributes:true,attributeFilter:['data-dudu-phone-wallpaper']});
   // Account changes re-render the phone without changing wallpaper. Refresh on each opening.
   open?.addEventListener('click',()=>{syncSignature();syncCards();});
