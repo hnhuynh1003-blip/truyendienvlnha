@@ -45,8 +45,8 @@ test('wrong UID and failed commit do not change balance or ownership',async()=>{
 
 test('P1B catalog prices and legacy ownership are preserved across repricing',async()=>{
  const catalog=require('../js/phone-wallpaper-v38-catalog.js');
- assert.deepEqual(catalog.ITEMS.filter(x=>x.kind==='premium').map(x=>[x.id,x.price]),[['v38-lantern',450],['v38-fox',750],['v39-whitefox',1200]]);
- assert.equal(catalog.ITEMS.filter(x=>x.kind==='free'||x.kind==='gift').length,7);
+ assert.deepEqual(catalog.ITEMS.filter(x=>x.kind==='premium').map(x=>[x.id,x.price]),[['v38-jade',350],['v38-neon',180],['v38-lantern',450],['v38-fox',750],['v38-abyss',280],['v39-mage',320],['v39-swordsman',400],['v39-wanderer',220],['v39-whitefox',1200]]);
+ assert.equal(catalog.ITEMS.filter(x=>x.kind==='free'||x.kind==='gift').length,1);
  const a=make(1000,{book:{chapter:2},[engine.META]:{version:1,owned:{'wallpaper:v38-lantern':true}}});
  assert.equal((await a.buy()).status,'already-owned');assert.equal(a.state().currency,1000);assert.equal(a.writes(),0);
  assert.equal((await a.buy('wallpaper','v38-fox')).balance,250);
