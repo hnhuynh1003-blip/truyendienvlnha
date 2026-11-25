@@ -118,6 +118,29 @@ test('Personal whitelist has 15 enabled SKUs; hidden coupon is rejected before w
   assert.equal(h.data.inventory.length,1,id);
  }
 });
+test('Direct coupon purchase refuses BEFORE Firestore transaction and never credits EXP or Tu Vi',async()=>{
+ const h=harness();
+ let reads=0;
+ const original=h.db.runTransaction;
+ h.db.runTransaction=async callback=>{reads++;return original(callback);};
+ h.data.exp=240;h.data.level=7;h.data.tuVi=96;
+ const before=structuredClone(h.data);
+ for(const forbidden of [economy.COUPON_ID,'unknown-staged-sku',null,'']){
+  await assert.rejects(h.run({kind:'purchase',requestId:SHOP,itemId:forbidden}),/không bán/);
+  assert.equal(reads,0,'refused SKU must never open Firestore transaction');
+  assert.deepEqual(h.data,before,'refused SKU must never mutate profile');
+ }
+ const purchased=await h.run({kind:'purchase',requestId:SHOP,itemId:'common-biscuit'});
+ assert.equal(purchased.status,'applied');
+ assert.equal(reads,1);
+ assert.equal(h.data.currency,before.currency-economy.PRICES['common-biscuit']);
+ assert.equal(h.data.exp,before.exp,'Shop purchase is not reading EXP');
+ assert.equal(h.data.level,before.level);
+ assert.equal(h.data.tuVi,before.tuVi,'Shopping cannot mint cultivation');
+ assert.equal(purchased.awardExp,undefined);
+ assert.equal(purchased.awardTuVi,undefined);
+});
+
 test('Legacy canonical coupon stays resellable without reopening its purchase',async()=>{
  const coupon=economy.instance(economy.FUNCTIONAL_TOOLS.find(x=>x.id===economy.COUPON_ID),SHOP);
  const h=harness(),price=items.sellPrice(coupon);
