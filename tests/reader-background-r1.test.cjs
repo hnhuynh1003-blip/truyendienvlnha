@@ -47,13 +47,14 @@ test('R1 keeps per-account device storage separate without Phone preference writ
 test('R1 uses the Phone catalogue entitlement; premium cannot be selected by spoofing local state',()=>{
   const store=memoryStore(),owner='live-accountA';
   assert.equal(adapter.canUse('v38-moon',catalog,store,owner),true);
-  assert.equal(adapter.canUse('v38-neon',catalog,store,owner),true);
+  assert.equal(adapter.canUse('v38-neon',catalog,store,owner),false);
   assert.equal(adapter.canUse('v38-jade',catalog,store,owner),false);
   assert.equal(adapter.canUse('v39-swordsman',catalog,store,owner),false);
   assert.equal(adapter.canUse('v38-lantern',catalog,store,owner),false);
   assert.equal(adapter.canUse('v38-fox',catalog,store,owner),false);
   assert.equal(adapter.canUse('v39-whitefox',catalog,store,owner),false);
-  assert.equal(catalog.claimGift(store,owner,'v38-jade'),true);
+  store.setItem(catalog.keyFor(owner,'gift'),JSON.stringify(['v38-jade']));
+  assert.equal(catalog.claimGift(store,owner,'v38-jade'),false);
   assert.equal(adapter.canUse('v38-jade',catalog,store,owner),true);
   assert.equal(adapter.canUse('v38-jade',catalog,store,'live-accountB'),false);
   assert.equal(adapter.canUse('v39-whitefox',catalog,store,owner),false);

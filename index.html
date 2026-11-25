@@ -8676,10 +8676,10 @@ document.getElementById('phone-home-screen').style.display = 'none';
     }
 
     function openCover(idx) {
-      window.DuduPersonalReadingRuntimeP2A?.stop();
       l6R2MediaBridge?.clearChapter();
       window.DuduLibraryReaderStatusL2A?.cancel();
       document.body.classList.remove('dudu-reading-active');
+      window.DuduPersonalReadingRuntimeP2A?.stop();
       if(window.DUDU_ACCOUNT_APPROVAL_V1_READY && novels[idx]?._cloudV49 &&
         !DuduAuth.isReady()){
         openAuthModal();
@@ -9098,7 +9098,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       updateChapterLootButtonState();
       renderStoryCommentsV442('chapter');
 
-      // P2A: observe reading only once content has passed the existing reader gates.
+      // P2A: observe only after successful rendering and existing R2 gates.
       if(personalProgressReady()){
         window.DuduPersonalReadingRuntimeP2A?.open({
           uid:currentUsername,storyId:String(novel.id),chapterId:String(ch.id||chIdx),
@@ -9251,11 +9251,11 @@ document.getElementById('phone-home-screen').style.display = 'none';
     });
 
     function goHome() {
-      window.DuduPersonalReadingRuntimeP2A?.stop();
       l6R2MediaBridge?.clearChapter();
       l6R2MediaBridge?.clearHero();
       window.DuduLibraryReaderStatusL2A?.cancel();
       document.body.classList.remove('dudu-reading-active');
+      window.DuduPersonalReadingRuntimeP2A?.stop();
       window.DuduReaderFocusL2B?.reset();
       c443ResumePending=false;
       if(document.getElementById('reader-view')?.style.display==='block'){
@@ -9284,8 +9284,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     
-    function goCover() {
-      window.DuduPersonalReadingRuntimeP2A?.stop(); 
+    function goCover() { 
       if(document.getElementById('reader-view')?.style.display==='block')
         persistReaderBookmarkR1(novels[selectedNovelIndex],selectedChapterIndex,window.scrollY,true);
       document.getElementById('floating-reading-bar').style.display = 'none';
@@ -10060,9 +10059,9 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/phone-wallpaper-v34.js?v=copy-1"></script>
 <script src="js/phone-settings-v35.js?v=1"></script>
 <script src="js/phone-wallpaper-v36-custom.js?v=1"></script>
-<script src="js/phone-wallpaper-v38-catalog.js?v=39-1-p1"></script>
+<script src="js/phone-wallpaper-v38-catalog.js?v=39-1-p1b2"></script>
 <script src="js/personal-cosmetics-p1.js?v=1"></script>
-<script src="js/phone-wallpaper-v38-studio.js?v=39-1-p1"></script>
+<script src="js/phone-wallpaper-v38-studio.js?v=39-1-p1b"></script>
 <script src="js/library-reader-status-l2a.js?v=epub-perf-r1"></script>
 <script src="js/library-reader-preferences-l2c.js?v=l2b-1"></script>
 <script src="js/reader-background-r1.js?v=r1-2-p1&amp;ui=t1-1"></script>

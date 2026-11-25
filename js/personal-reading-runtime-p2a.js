@@ -24,7 +24,8 @@
   if(timer===null)timer=setInterval(sample,1000);
  }
  function input(event){
-  if(!identity||!event.isTrusted||now()<delayUntil||!eligible())return;
+  if(!identity||!event.isTrusted||!eligible())return;
+  if(now()<delayUntil){lastScroll=window.scrollY;return;}
   const content=document.getElementById('reader-content');
   if(!content)return;
   if(event.type==='scroll'){

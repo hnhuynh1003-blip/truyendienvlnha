@@ -110,7 +110,7 @@ async function main(){
           configurable:true,
           get(){return src.get.call(image);},
           set(value){
-            if(String(value).includes('abyss-sanctuary.webp'))
+            if(String(value).includes('jade-palace.webp'))
               queueMicrotask(()=>image.dispatchEvent(new Event('error')));
             else src.set.call(image,value);
           }
@@ -118,7 +118,14 @@ async function main(){
         return image;
       };
     });
-    await page.locator('[data-reader-bg-id="v38-abyss"]').click();
+    // Simulate an existing device gift receipt, not a newly free paid SKU.
+    await page.evaluate(()=>{
+      const owner=phoneWallpaperOwnerV27();
+      localStorage.setItem(DuduWallpaperCatalogV38.keyFor(owner,'gift'),JSON.stringify(['v38-jade']));
+      DuduReaderBackgroundR1.refresh();
+    });
+    assert.equal(await page.locator('[data-reader-bg-id="v38-jade"]').isDisabled(),false);
+    await page.locator('[data-reader-bg-id="v38-jade"]').click();
     await page.waitForFunction(()=>document.querySelector('#reader-bg-r1-status')?.textContent?.includes('Không tải được ảnh nền'),
       null,{timeout:8000});
     assert.equal(await page.locator('#reader-paper[data-reader-bg]').count(),0,
