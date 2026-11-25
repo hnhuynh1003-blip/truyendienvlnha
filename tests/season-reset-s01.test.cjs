@@ -159,7 +159,7 @@ test('S01 audit remains read-only and safe for empty, malformed or unknown names
  assert.deepEqual(S01.auditProtectedProgress({}),{
   storyStateKeys:[],storyStateCount:0,readClaims:0,chapterAttempts:0,
   collectionItems:0,durableReceiptReviewRequired:false,
-  note:'Only a trusted S01 executor can classify/preserve receipts. Preview does not authorize reset.'
+  note:'Only a trusted Fresh Start executor can classify/preserve receipts. Preview does not authorize reset.'
  });
  const audit=S01.auditProtectedProgress({
   storyStates:['invalid-shape'],readRewards:'corrupt',
@@ -168,4 +168,22 @@ test('S01 audit remains read-only and safe for empty, malformed or unknown names
  assert.equal(audit.durableReceiptReviewRequired,false);
  const p=S01.createPlan('a',{username:'a',futureTuViProof:{lifetime:10}});
  assert.deepEqual(p.unknownFields,['futureTuViProof']);
+});
+
+test('legacy S01 settings show only account audit, no approved season or reset promises',()=>{
+ const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+ const section=html.match(/<section class="dudu-v54-reset-settings"([\\s\\S]*?)<\\/section>/);
+ assert.ok(section);
+ assert.match(section[1],/Kiểm kê dữ liệu hiện có · Chỉ đọc/);
+ assert.match(section[1],/Bắt đầu lại tài khoản test · Chưa mở/);
+ assert.match(section[1],/id="dudu-v54-reset-action" disabled/);
+ assert.doesNotMatch(section[1],/Khởi tạo mùa mới|reset Mùa 01|bắt đầu mùa mới/);
+ const preview=html.split('async function duduPreviewSeasonS01(){')[1]
+  .split('async function duduBackupPlayerV26(){')[0];
+ assert.match(preview,/KIỂM KÊ TIẾN ĐỘ · CHỈ ĐỌC/);
+ assert.match(preview,/Fresh Start chỉ được xét cho tài khoản test sau khi game hoàn chỉnh/);
+ assert.doesNotMatch(preview,/Dự kiến: cấp 1|ngày mở mùa|MÙA 01 · CHỈ XEM TRƯỚC/);
+ assert.match(html,/const DUDU_SEASON_RESET_READY_C26=false;/);
+ assert.equal(S01.ENABLE_APPLY,false);
+ assert.equal(typeof S01.apply,'undefined');
 });
