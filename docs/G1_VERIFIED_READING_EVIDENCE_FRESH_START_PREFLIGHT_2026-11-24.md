@@ -1,7 +1,7 @@
 # DUDU STUDIO — G1 VERIFIED READING EVIDENCE (STAGING CONTRACT)
 
 **Ngày:** 24/11/2026  
-**Gốc mã nguồn:** main `552ad46a5197ae1a3bab9c2df8bfb23f3db29a6f` — PR độc lập, song song G0 Draft PR #56 (chưa merge)  
+**Gốc mã nguồn:** G1 được tách từ main cũ `552ad46a5197ae1a3bab9c2df8bfb23f3db29a6f`; G0 #56 và Shop B1 #51 đã MERGED vào main ngày 25/11/2026; CI blocker #58 đã có bản sửa PR #60 MERGED (`f17766b76998c053dc71afbd3dd41cb8ee868eac`), G1 phải kiểm thử lại trên main mới  
 **Nhiệm vụ:** Issue #53 (EXP đọc truyện, Tu Vi) và #55 (fresh start tài khoản test **sau** khi hoàn thành gameplay).
 
 ## 1. Phân biệt đọc trang với đọc được chứng thực
@@ -18,7 +18,7 @@
 - Trường bắt buộc: `version,eventId,proofId,uid,storyId,chapterId,contentRevision,sourceMode,progressEpoch,startedAt,endedAt,verifiedActiveMs,evidenceSource`.
 - `sourceMode` là `WEB` hoặc `EPUB_R2`; `contentRevision` định danh đúng revision và phải được xác minh với bộ nội dung xuất bản phía máy chủ khi có producer thật.
 - `evidenceSource='STORY_READ_SERVICE'` là nhãn yêu cầu; **tự nhãn không có giá trị** nếu thiếu HMAC xác thực và đối chiếu nguồn. Không dùng đoạn JS/visibility/timer của client như chứng cứ server.
-- HMAC ký `timestamp + '.' + raw JSON bytes`. Thời gian ký chênh tối đa 5 phút; payload tối đa 2 KiB, thời lượng một cửa sổ tối đa 300.000 ms. Các số này chỉ là **ràng buộc kiểm định gói**, **KHÔNG phải** EXP/phút, số phút nhận thưởng/ngày hay cân bằng gameplay đã được duyệt.
+- HMAC ký `timestamp + '.' + raw JSON bytes`. Thời gian ký chênh tối đa 5 phút; payload tối đa 2 KiB, thời lượng một cửa sổ tối đa 300.000 ms. **Cửa sổ đã hoàn tất không được kết thúc trong tương lai**, ngay cả khi timestamp ký nằm trong khoảng sai lệch được phép. Các số này chỉ là **ràng buộc kiểm định gói**, **KHÔNG phải** EXP/phút, số phút nhận thưởng/ngày hay cân bằng gameplay đã được duyệt.
 - SQL append-only `event_id` duy nhất, `proof_id` duy nhất trên mọi tài khoản/epoch. Cùng event + payload được xem là idempotent; event ID khác cùng proof phải dừng. Cấm ghi trùng các cửa sổ giao nhau của **cùng UID + progressEpoch** kể cả hai tab hoặc nhiều thiết bị.
 - `progressEpoch` là số phiên tiến trình, **KHÔNG mang nghĩa Mùa 01**. Fresh Start sau nâng cấp game có thể bắt đầu tiến trình 1 mới trong khi giữ nguyên ledger chứng cứ phiên 0; proof cũ không được tái sử dụng ở epoch mới.
 - Không có API `claim`, `grant`, `earn`, `reset`; `awardExp=0`, `awardTuVi=0`, không thay `profiles_v2`, `economy_accounts_v52`, vật phẩm, Xu, danh hiệu, Firebase Rules.
@@ -53,3 +53,8 @@ G1 chỉ thêm `progressEpoch` như dữ liệu **phục vụ thiết kế**. Kh
 - Roadmap gameplay: https://github.com/hnhuynh1003-blip/truyendienvlnha/issues/53
 - Fresh Start tài khoản test: https://github.com/hnhuynh1003-blip/truyendienvlnha/issues/55
 - G0 Draft PR #56: https://github.com/hnhuynh1003-blip/truyendienvlnha/pull/56
+
+## 6. Checkpoint PR #57 sau khi PR #60 sửa Worker CI
+- PR #56 G0 merged, PR #51 Shop B1 merged và PR #60 lockfile merged vào main. G1 cần kiểm tra merge với nền mới; không suy ra CI cũ của #57 đã pass do lock chưa cập nhật.
+- Bổ sung kiểm tra từ chối thời gian kết thúc đọc trong tương lai; test giả lập tương ứng, vẫn không có EXP/Tu Vi live.
+- Khi chạy lại GitHub Actions, chỉ coi PASS theo đúng commit PR G1 hiện tại. Không gắn nguồn issuer công khai hoặc phát hành EXP tự động.
