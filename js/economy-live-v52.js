@@ -97,7 +97,9 @@
    personalMode:true,readOnly:false,
    inventory:userProfile?.inventory||[],storyStates:userProfile?.storyStates||{},
    bulkBusy:personalBusy,onBulkSell:personalBulkSell,
-   saleIds:root.DuduEconomyCoreV43.PERSONAL_SALE_IDS,
+   // Mixed browser caches must fail CLOSED rather than expose 16 legacy SKUs.
+   saleIds:Array.isArray(root.DuduEconomyCoreV43?.PERSONAL_SALE_IDS)?
+    root.DuduEconomyCoreV43.PERSONAL_SALE_IDS:[],
    onBuy:personalPurchase
   })||false;
  }
