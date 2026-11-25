@@ -42,8 +42,12 @@
   if(meta.policyId!==undefined&&meta.policyId!==p.id)throw fail('policy-migration-required');
   if(meta.policyId!==undefined&&(meta.expPerMinute!==p.expPerMinute||meta.dailyMaxMinutes!==p.dailyMaxMinutes))
    throw fail('policy-migration-required');
+  const lastNow=meta.lastNowMs??nowMs;
+  if(!Number.isSafeInteger(lastNow)||lastNow<DAY_MS||nowMs<lastNow-300000)throw fail('clock-backwards');
+  const highWater=Math.max(nowMs,lastNow);
+  if(slots.some(s=>s<highWater-RETRY_MS))throw fail('invalid-reading-window');
   const days={};
-  for(const day of [dayKey(nowMs-DAY_MS),dayKey(nowMs)])if(Object.hasOwn(oldDays,day)){
+  for(const day of [dayKey(highWater-DAY_MS),dayKey(highWater)])if(Object.hasOwn(oldDays,day)){
    const bits=decode(oldDays[day]);days[day]={bits,used:count(bits)};
   }
   let newSlots=0;
@@ -62,7 +66,7 @@
   const encoded=Object.fromEntries(Object.entries(days).map(([day,row])=>[day,{bits:row.bits.map(v=>v.toString(16)).join('')}]));
   return {status:'applied',newSlots,awardExp,observedMs:newSlots*SLOT_MS,...earned,
    storyStates:{...states,[META]:{version:1,policyId:p.id,expPerMinute:p.expPerMinute,
-    dailyMaxMinutes:p.dailyMaxMinutes,lifetimeObservedMs:nextLifetime,days:encoded}}};
+    dailyMaxMinutes:p.dailyMaxMinutes,lifetimeObservedMs:nextLifetime,lastNowMs:highWater,days:encoded}}};
  }
  async function run({db,auth,uid,policy,slots,now=()=>Date.now()}={}){
   if(!db?.runTransaction||!db?.collection||!validId(uid)||auth?.currentUser?.uid!==uid)throw fail('invalid-account');

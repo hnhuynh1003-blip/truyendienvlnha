@@ -252,7 +252,7 @@
   <script src="js/loot-rules-v2.js?v=44-1"></script>
   <script src="js/loot-cadence-v42.js?v=wallet-loot-1"></script>
   <script src="js/chapter-loot-encounter-v1.js?v=chapter-surprise-1"></script>
-  <script src="js/personal-progress-c23.js?v=c24c-1"></script>
+  <script src="js/personal-progress-c23.js?v=c24c-1-p2c"></script>
   <script src="js/item-actions-v43.js?v=1"></script>
   <script src="js/functional-items-v43-8.js?v=44-9"></script>
   <script src="js/personal-spark-items-v1.js?v=f33-1"></script>
@@ -7443,7 +7443,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       DuduAuth.uid()===currentUsername&&!!window.DuduPersonalProgressC23;
     function applyPersonalProgressC23(result,uid,kind){
       if(!personalProgressReady()||uid!==currentUsername)return false;
-      const fields=kind==='read'?['currency','exp','level','quests',
+      const fields=(kind==='read'||kind==='read-quest')?['currency','exp','level','quests',
         'questV437','questsDayV43','readRewards','dailyReadLog']:
         kind==='quest'?['currency','exp','level','inventory','quests',
           'questV437','questsDayV43','storyStates']:
@@ -7711,6 +7711,33 @@ document.getElementById('phone-home-screen').style.display = 'none';
       personalProgressQueue=task;
       return task;
     }
+    // P2C gate remains OFF until an approved immutable policy is committed.
+    window.DuduReadingRewardBridgeP2C=Object.freeze({
+      enabled:()=>window.DuduPersonalReadingPolicyP2C?.enabled()===true,
+      ready(uid){return this.enabled()&&personalProgressReady()&&currentUsername===uid&&!!window.DuduPersonalReadingRewardP2B;},
+      submit(uid,slots){
+        if(!this.ready(uid))return Promise.reject(Error('reading-disabled'));
+        const perform=async()=>{
+          if(!this.ready(uid))throw Error('account-changed');
+          await Promise.allSettled([...pendingLiveProfileWrites]);
+          if(!this.ready(uid))throw Error('account-changed');
+          const result=await DuduPersonalReadingRewardP2B.run({db,auth:firebase.auth(),uid,
+            policy:DuduPersonalReadingPolicyP2C.policy,slots});
+          if(!this.ready(uid))throw Error('account-changed');
+          for(const field of ['currency','exp','level','storyStates'])userProfile[field]=result[field];
+          try{localStorage.setItem('profile_'+uid,JSON.stringify(userProfile));}catch(_){}
+          updatePhoneUI();renderWallet();
+          return result;
+        };
+        const task=personalProgressQueue.catch(()=>{}).then(perform);
+        personalProgressQueue=task.catch(()=>{});
+        return task;
+      },
+      quest(uid,storyId,chapterId){
+        if(!this.ready(uid))return Promise.resolve(false);
+        return personalProgressActionC23('read-quest',{storyId,chapterId});
+      }
+    });
     function personalClaimQuestC23(id){
       return personalProgressActionC23('quest',{questId:id});
     }
@@ -9129,7 +9156,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       }else if(novel._r2V1!==true&&personalProgressReady()){
         // Opening is currently the eligibility event, as in Sandbox; it is
         // not server proof that someone finished reading the chapter.
-        void personalProgressActionC23('read',{
+        if(!window.DuduReadingRewardBridgeP2C?.enabled())void personalProgressActionC23('read',{
           storyId:novel.id,chapterId:String(ch.id||chIdx)
         });
         v569SyncBookmark(novel.id);
@@ -10066,7 +10093,10 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/library-reader-preferences-l2c.js?v=l2b-1"></script>
 <script src="js/reader-background-r1.js?v=r1-2-p1&amp;ui=t1-1"></script>
 <script src="js/personal-reading-clock-p2a.js?v=1"></script>
-<script src="js/personal-reading-runtime-p2a.js?v=1"></script>
+<script src="js/personal-reading-reward-p2b.js?v=2"></script>
+<script src="js/personal-reading-policy-p2c.js?v=1"></script>
+<script src="js/personal-reading-slots-p2c.js?v=1"></script>
+<script src="js/personal-reading-runtime-p2a.js?v=2"></script>
 <script src="js/library-reading-return-c443.js?v=c443-1"></script>
   <script src="js/site-shell-v60.js?v=sonha-art-v3-1&amp;pause=c446c-1&amp;t0=1"></script>
 <script src="js/library-intake-v1.js?v=lib1-ui3"></script>
