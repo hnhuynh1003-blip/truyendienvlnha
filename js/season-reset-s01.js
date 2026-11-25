@@ -1,5 +1,8 @@
-/* DUDU S01: review-only reset manifest. NEVER writes, clears or deletes data.
- * The real multi-account reset requires a separate, owner-approved server job.
+/* DUDU S01 LEGACY: review-only baseline; NEVER writes, clears or deletes data.
+ * Superseded by owner scope #55: one TEST-ACCOUNT Fresh Start AFTER gameplay
+ * completion, NOT a season reset and NOT a reset of three accounts.
+ * createPlan/STARTER_XU are obsolete proposals; not an approved apply contract.
+ * Any real reset requires a separate trusted, owner-approved fresh-start job.
  */
 (function(root,factory){
   const api=factory();
@@ -10,7 +13,7 @@
 
   const SEASON='S01';
   const ENABLE_APPLY=false;
-  const STARTER_XU=50; // Current V54 starter value; owner may change at launch.
+  const STARTER_XU=50; // LEGACY S01 proposal only; NOT approved for test-account Fresh Start.
   const PRESERVE_FIELDS=Object.freeze([
     'username','name','role',
     'readingBookmarksV568','phoneAppearanceV568','playerAvatar',
@@ -26,7 +29,7 @@
 
   // P0 reset audit: nested profile namespaces may contain durable economy,
   // reading, collection and game receipts. Classification is intentionally
-  // conservative: *every* nested key needs review before a real season reset.
+  // conservative: *every* nested key needs review before any future Fresh Start.
   // No snapshot is modified, and the existing preview cannot execute a reset.
   function auditProtectedProgress(source){
     const object=x=>x&&typeof x==='object'&&!Array.isArray(x)?x:{};
@@ -42,7 +45,7 @@
       storyStateCount:keys.length,
       readClaims,chapterAttempts,collectionItems,
       durableReceiptReviewRequired:danger,
-      note:'Only a trusted S01 executor can classify/preserve receipts. Preview does not authorize reset.'
+      note:'Only a trusted Fresh Start executor can classify/preserve receipts. Preview does not authorize reset.'
     });
   }
 
@@ -78,7 +81,7 @@
     next.dailyReadLog={day:'',chapters:[]};
     next.collectedCharacters={};next.storyStates={};
     // questV437, questsDayV43 and honorV1 are intentionally omitted: they
-    // are regenerated when the new season actually starts.
+    // are a legacy S01 proposal, not approved for test-account Fresh Start.
     return {
       version:1,season:SEASON,mode:'PREVIEW_ONLY',applyEnabled:ENABLE_APPLY,
       uid,unknownFields,protectedAudit,
@@ -151,7 +154,7 @@
       blockers:[
         'Chưa được duyệt thực thi và chưa có bản sao lưu được xác nhận',
         'Phải kiểm tra ví máy chủ economy_accounts_v52 và biên nhận trước khi reset',
-        'Phải thay phiên mùa cho dữ liệu Arcade trên mọi thiết bị',
+        'Khi Fresh Start tài khoản test được duyệt, phải tách tiến trình cũ trên mọi thiết bị',
         ...(audit.storyStateCount?[
           'Phải phân loại '+audit.storyStateCount+' vùng storyStates trước khi xóa (mẫu: '+
           audit.storyStateKeys.slice(0,6).join(', ')+').'
