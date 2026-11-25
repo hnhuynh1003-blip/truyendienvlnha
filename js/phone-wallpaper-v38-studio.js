@@ -12,12 +12,11 @@
  const selectedWallpaper=()=>window.DuduPhoneWallpaperV27?.read(localStorage,owner());
  const selectedFont=()=>window.DuduPhoneTypographyV31?.read(localStorage,owner())?.font;
  let activeFilter='Tất cả',activePreview=null,returnFocus=null;
- let gallery=null,fontsPanel=null,inspect=null,feedback=null,purchaseBusy=false;
+ let gallery=null,fontsPanel=null,inspect=null,feedback=null,purchaseBusy=false,armedFont=null;
  async function buyPremium(kind,item){
   const bridge=window.DuduPersonalCosmeticsBridgeP1,who=owner();
   if(purchaseBusy)return false;
   if(!bridge?.ready?.()||!who){notice('Hãy đăng nhập tài khoản cá nhân để mua.');return false;}
-  if(!window.confirm('Mua '+item.name+' với '+item.price+' Xu Vàng? Chỉ thanh toán một lần.'))return false;
   purchaseBusy=true;
   const action=inspect&&q('.dudu-v38-inspect-action',inspect);
   if(action)action.disabled=true;
@@ -29,12 +28,13 @@
   }catch(error){if(owner()===who)notice('Chưa xác nhận mua: '+(error?.message||'Hãy thử lại.'));return false;}
   finally{purchaseBusy=false;if(action)action.disabled=false;}
  }
+ const formatPrice=value=>value.toLocaleString('vi-VN');
  const money=()=>'<i class="dudu-money-icon dudu-money-icon--gold" aria-hidden="true"></i>';
  const artPath=item=>'assets/wallpapers/'+(item.folder||'v38')+'/'+item.asset;
  function notice(message){if(feedback){feedback.textContent=message;feedback.hidden=false;}}
  function labelFor(item){return item.kind==='premium'?'GOLD':item.kind==='gift'?'✦ QUÀ':'MIỄN PHÍ';}
  function priceLabel(node,item){
-  if(item.kind==='premium')node.innerHTML=money()+' '+item.price;
+  if(item.kind==='premium')node.innerHTML=money()+' '+formatPrice(item.price);
   else node.textContent=labelFor(item);
  }
  function syncCards(){
@@ -52,10 +52,12 @@
    const item=catalog.FONTS.find(x=>x.id===id),badge=q('.dudu-v38-font-kind',card);
    if(badge&&item){if(item.kind==='premium'&&allowed('font',id))badge.textContent='✓ ĐÃ SỞ HỮU';
     else if(item.kind==='gift'&&allowed('font',id))badge.textContent='✓ QUÀ';
+    else if(item.kind==='premium'&&armedFont?.id===id&&armedFont?.owner===owner())badge.textContent='Mua · '+formatPrice(item.price)+' Xu';
     else priceLabel(badge,item);}
   });
  }
  function switchTab(id){
+  armedFont=null;
   const tabs=q('.dudu-v35-gallery-tabs'),panels=q('.dudu-v35-gallery-panels');
   if(!tabs||!panels)return;
   tabs.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.duduV35TabButton===id)));
@@ -129,7 +131,16 @@
   document.head.append(link);
  }
  async function useFont(item){
-  if(item.kind==='premium'&&!allowed('font',item.id)&&!await buyPremium('font',item))return;
+  if(purchaseBusy)return;
+  if(item.kind==='premium'&&!allowed('font',item.id)){
+   const who=owner();
+   if(armedFont?.id!==item.id||armedFont?.owner!==who){
+    armedFont={id:item.id,owner:who};syncCards();
+    notice('Chọn lại Mua '+item.name+' · '+formatPrice(item.price)+' Xu Vàng để xác nhận ngay trong cửa hàng.');return;
+   }
+   armedFont=null;syncCards();
+   if(!await buyPremium('font',item)||owner()!==who)return;
+  }else{armedFont=null;}
   if(item.kind==='gift'&&!allowed('font',item.id)){
    if(!catalog.claimGift(localStorage,owner(),item.id)){notice('Không lưu được quà trên thiết bị.');return;}
   }
@@ -178,7 +189,7 @@
   const action=q('.dudu-v38-inspect-action',inspect);
   if(allowed('wallpaper',item.id))action.textContent='✓ Dùng hình nền';
   else if(item.kind==='gift')action.textContent='✦ Nhận quà & dùng';
-  else action.innerHTML=money()+' '+item.price+' · Mua';
+  else action.innerHTML=money()+' '+formatPrice(item.price)+' · Mua';
   q('.dudu-v38-inspect-close',inspect).focus();
  }
  function hidePreview(){if(!inspect)return;inspect.hidden=true;activePreview=null;
@@ -263,7 +274,8 @@
   });
   $('phone-home-screen')?.append(focusToggle);
   const open=$('dudu-v34-open');open?.addEventListener('click',()=>{if(feedback)feedback.hidden=true;switchTab('studio');});
-  document.body.addEventListener('dudu-account-changed',()=>{hidePreview();syncSignature();syncCards();});
+  document.body.addEventListener('dudu-account-changed',()=>{armedFont=null;hidePreview();syncSignature();syncCards();});
+ window.addEventListener('dudu-account-changed',()=>{armedFont=null;hidePreview();syncSignature();syncCards();});
   new MutationObserver(()=>{syncSignature();syncCards();}).observe(document.body,{attributes:true,attributeFilter:['data-dudu-phone-wallpaper']});
   // Account changes re-render the phone without changing wallpaper. Refresh on each opening.
   open?.addEventListener('click',()=>{syncSignature();syncCards();});
