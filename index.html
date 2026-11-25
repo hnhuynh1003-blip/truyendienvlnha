@@ -3604,8 +3604,10 @@
       catch(e) { console.warn('V44.9: cập nhật Phone sau lưu gặp lỗi:',e); }
     }
 
-    // C2.6 legacy reset remains permanently gated pending a separate,
-    // owner-approved one-account Fresh Start executor AFTER gameplay upgrades.
+    // C2.6: until the owner signs off the new season and its Rules, do not
+    // expose a destructive reset while real rewards and inventories are live.
+    // The above is a historical compatibility anchor. Owner-approved scope is
+    // now only a future single TEST-ACCOUNT Fresh Start after game completion.
     // Never reuse this V54 destructive profile replacement for Fresh Start.
     const DUDU_SEASON_RESET_READY_C26=false;
     let duduBackupBusyV26=false;
