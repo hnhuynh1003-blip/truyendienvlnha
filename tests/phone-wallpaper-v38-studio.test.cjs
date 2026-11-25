@@ -37,21 +37,21 @@ test('home wallpaper focus can hide app tiles and restore the home navigation',(
  assert.match(js,/enabled\?'‹':'◉'/);
  assert.match(html,/id="phone-home-screen"/);
 });
-test('gift wallpapers/fonts unlock once per account, paid items never unlock through local storage',()=>{
+test('repriced wallpapers require purchase; existing gift and selected free rights remain device-scoped',()=>{
  const storage=store();
+ storage.setItem(catalog.keyFor('du','gift'),JSON.stringify(['v38-jade','v39-swordsman']));
+ storage.setItem('dudu-sandbox:phone-wallpaper:v27-r4:du','v39-mage');
  assert.equal(catalog.allowed('wallpaper','v38-moon',storage,'du'),true);
- assert.equal(catalog.allowed('wallpaper','v38-jade',storage,'du'),false);
- assert.equal(catalog.claimGift(storage,'du','v38-jade'),true);
- assert.equal(catalog.claimGift(storage,'du','v38-jade'),true);
- assert.deepEqual(catalog.readGifts(storage,'du'),['v38-jade']);
  assert.equal(catalog.allowed('wallpaper','v38-jade',storage,'du'),true);
- assert.equal(catalog.allowed('wallpaper','v38-jade',storage,'other'),false);
- assert.equal(catalog.claimGift(storage,'du','v38-fox'),false);
- assert.equal(catalog.allowed('wallpaper','v38-fox',storage,'du'),false);
- assert.equal(catalog.allowed('wallpaper','v39-whitefox',storage,'du'),false);
- assert.equal(catalog.allowed('wallpaper','v39-mage',storage,'du'),true);
- assert.equal(catalog.claimGift(storage,'du','v39-swordsman'),true);
  assert.equal(catalog.allowed('wallpaper','v39-swordsman',storage,'du'),true);
+ assert.equal(catalog.allowed('wallpaper','v39-mage',storage,'du'),true);
+ assert.equal(catalog.allowed('wallpaper','v38-neon',storage,'du'),false);
+ assert.equal(catalog.allowed('wallpaper','v38-fox',storage,'du'),false);
+ assert.equal(catalog.allowed('wallpaper','v38-jade',storage,'other'),false);
+ assert.equal(catalog.allowed('wallpaper','v39-mage',storage,'other'),false);
+ assert.equal(catalog.claimGift(storage,'other','v38-jade'),false);
+ storage.setItem('dudu-sandbox:phone-wallpaper:v27-r4:other','v39-mage');
+ assert.equal(catalog.allowed('wallpaper','v39-mage',storage,'other'),false);
  assert.equal(catalog.claimGift(storage,'du','cormorant'),true);
  assert.equal(catalog.allowed('font','cormorant',storage,'du'),true);
  assert.equal(catalog.allowed('font','prata',storage,'du'),false);
