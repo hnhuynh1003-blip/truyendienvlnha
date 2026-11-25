@@ -1,3 +1,15 @@
+> **IMPORTANT · OWNER SCOPE CORRECTION (24/11/2026):** This document describes an **older S01 season reset proposal only**. The owner explicitly rejected that interpretation. **The approved goal is one-time Fresh Start of the high-level TEST account only, AFTER completing gameplay and reward/reading EXP integration, to experience progression from level 1.** Do **not** reset all three accounts, do **not** launch a season, do **not** assume 50 starter Xu, and do **not** enable the V54 full-profile reset function. The historical details below are retained for data-preservation audits, not executable authorization. Canonical plan: https://github.com/hnhuynh1003-blip/truyendienvlnha/issues/55 . Merge queue: https://github.com/hnhuynh1003-blip/truyendienvlnha/issues/59 .
+
+## OWNER CORRECTION — HISTORICAL S01 IS NOT THE APPROVED RESET TARGET
+- Fresh Start scope: **only one owner-selected test UID**, not all author/reader/test accounts.
+- Timing: **after** EXP đọc truyện / Tu Vi / game economy / loot / inventory / QA are ready and stabilized, not as a prerequisite for development.
+- Preservation: stories, chapters, unpublished drafts, EPUB, login/claims, reader bookmarks, transaction receipts and legacy audit proof, plus other UIDs.
+- Reset data fields/starting Xu/character carryovers are **not approved** yet; a reviewed field-level manifest, backup+restore test, idempotent server executor, progress epoch and multi-device QA must precede any live reset.
+- The existing menu button is **disabled**; the S01 preview is renamed to an **account-data audit** and remains read-only. File/module names use S01 for backwards compatibility, not product semantics.
+- No `ref.set(fresh)`, no client-controlled reset across UIDs, no release of a reward issuer from this document.
+
+---
+
 # DUDU Studio — chuẩn bị reset Mùa 01 (S01)
 
 **Trạng thái: CHỈ XEM TRƯỚC. KHÔNG ĐƯỢC CHẠY RESET.**
