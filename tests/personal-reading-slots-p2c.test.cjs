@@ -22,12 +22,12 @@ test('only full contiguous observed aligned slots are emitted; hidden gap and wa
  assert.deepEqual(out,[]);
 });
 test('bounded queue deduplicates pending slots, retries same ticket and isolates account switches',()=>{
- const q=queue();q.bind('a');const slots=Array.from({length:6},(_,i)=>100000+i*10000);
+ const q=queue({now:()=>200000});q.bind('a');const slots=Array.from({length:6},(_,i)=>100000+i*10000);
  q.push('a',slots);q.push('a',slots);assert.equal(q.size(),6);
  const a=q.begin('a',{now:200000});assert.deepEqual(a.slots,slots);
  assert.equal(q.begin('a',{now:200000}),null);q.settle(a,false);
  const b=q.begin('a',{now:200000});assert.deepEqual(b.slots,slots);
  q.bind('b');assert.equal(q.settle(b,true),false);assert.equal(q.size(),0);
  assert.equal(q.push('a',slots),false);q.push('b',slots);
- const c=q.begin('b',{now:200000});assert.equal(q.settle(c,true),true);assert.equal(q.size(),0);
+ const c=q.begin('b',{now:200000});assert.equal(q.settle(c,{status:'applied'}),true);assert.equal(q.size(),0);
 });
