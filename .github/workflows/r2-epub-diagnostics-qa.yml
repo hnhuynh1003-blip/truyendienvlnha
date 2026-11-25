@@ -1,0 +1,24 @@
+name: R2 EPUB diagnostics safety QA
+on:
+  push:
+    branches: [hotfix/r2-epub-safe-diagnostics]
+  pull_request:
+    branches: [main]
+    paths:
+      - 'js/firebase-worker-get-probe-c13b6d.js'
+      - 'tests/r2-epub-diagnostics-safety.test.cjs'
+      - 'docs/r2-epub-safe-diagnostics/SECURITY_REVIEW.md'
+      - '.github/workflows/r2-epub-diagnostics-qa.yml'
+permissions:
+  contents: read
+jobs:
+  offline:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check js/firebase-worker-get-probe-c13b6d.js
+      - run: node --test tests/r2-epub-diagnostics-safety.test.cjs tests/r2-published-preflight-r1.test.cjs tests/r2-long-chapter-split-r1.test.cjs tests/firebase-owner-clock-skew-c13b6d.test.cjs tests/library-epub-r2-manifest-l6p2a.test.cjs
