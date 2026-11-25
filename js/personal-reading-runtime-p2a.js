@@ -6,7 +6,7 @@
  const now=()=>performance.now();
  let identity=null,delayUntil=0,lastScroll=0,timer=null;
  const collector=window.DuduPersonalReadingSlotsP2C?.create(),queue=window.DuduPersonalReadingSlotsP2C?.queue();
- let retryAt=0,chapterSlots=0,questDone=false,questPending=false,chapterEpoch=0;
+ let retryAt=0,chapterSlots=0,questDone=false,questPending=false,chapterEpoch=0,lootEligible=false;
  const bridge=()=>window.DuduReadingRewardBridgeP2C;
  function flush(uid,force=false){
   if(!bridge()?.ready(uid)||!queue||Date.now()<retryAt)return;
@@ -26,6 +26,9 @@
   const mono=now(),wall=Date.now();
   const state=clock.sample({at:mono,uid,readerOpen:true,visible:!document.hidden,
    focused:document.hasFocus(),online:navigator.onLine!==false});
+  const loot=window.DuduPersonalR2ChapterLootP3;
+  const nextLoot=loot?.ENABLED===true&&state.context?.mode==='EPUB_R2'&&state.active&&state.chapterMs>=loot.MIN_ACTIVE_MS;
+  if(nextLoot!==lootEligible){lootEligible=nextLoot;window.dispatchEvent(new Event('dudu-r2-loot-observation-p3'));}
   if(!bridge()?.ready(uid)||!collector||!queue)return;
   const slots=collector.observe({wall,mono,observed:state.observedMs,active:state.active});
   if(slots.length){queue.push(uid,slots);chapterSlots+=slots.length;}
@@ -40,7 +43,7 @@
  function open(ctx){
   if(!ctx?.uid||typeof ctx.currentUid!=='function'){stop();return;}
   if(identity?.uid!==ctx.uid)stop();
-  queue?.bind(ctx.uid);collector?.reset();chapterEpoch++;chapterSlots=0;questDone=false;questPending=false;
+  queue?.bind(ctx.uid);collector?.reset();chapterEpoch++;lootEligible=false;chapterSlots=0;questDone=false;questPending=false;
   identity=ctx;delayUntil=now()+400;lastScroll=window.scrollY;
   clock.open(ctx,now());
   if(timer===null)timer=setInterval(sample,1000);

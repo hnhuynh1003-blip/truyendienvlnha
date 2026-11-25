@@ -169,3 +169,28 @@ test('C2.3c main uses transactional rewards and sandbox stays on old path',()=>{
  assert.match(economy,/return root\.personalClaimQuestC23\?\.\(id\)\|\|false/);
  assert.match(economy,/if\(!sandbox\(\)\)return false;\s*rotate\(\)/);
 });
+
+test('P3 R2 content-addressed claim survives reimport and keeps actual source in obtainedFrom',async()=>{
+ const storyId='r2-content-v1',r2Origin={storyId:'book-1',chapterId:'chapter-1',revision:'r-0123456789abcdef'};let chapterId='';
+ for(let i=0;i<1000;i++){
+  const id='sha256-'+i.toString(16).padStart(64,'0');
+  if(encounter.encounter({accountId:'reader-a',storyId,chapterId:id,paragraphCount:20}).visible&&
+    encounter.hash('success:reader-a\\0'+storyId+'\\0'+id)%100<encounter.SUCCESS_PERCENT){chapterId=id;break;}
+ }
+ assert.ok(chapterId);const h=env();
+ const opts={storyId,chapterId,paragraphCount:20,r2Origin};
+ const first=await h.call('chapter-loot',opts);assert.equal(first.status,'applied');
+ assert.equal(h.data.inventory[0].obtainedFrom.storyId,'book-1');assert.equal(h.data.inventory[0].obtainedFrom.chapterId,'chapter-1');
+ const balance=h.data.currency;
+ assert.equal((await h.call('chapter-loot',{...opts,r2Origin:{...r2Origin,storyId:'book-2',chapterId:'chapter-2'}})).status,'already-looted');
+ assert.equal(h.data.currency,balance);assert.equal(h.data.inventory.length,1);
+ await assert.rejects(h.call('chapter-loot',{...opts,r2Origin:null}),e=>e.reason==='invalid-r2-loot');
+});
+test('P3 retains old recorded chapter claims and full inventory blocks mutation',async()=>{
+ const r2Origin={storyId:'book-1',chapterId:'chapter-1',revision:'r-0123456789abcdef'};
+ const p=profile();p.lootedChapters['book-1_chapter-1']='miss:123';
+ const h=env(p);const opts={storyId:'r2-content-v1',chapterId:'sha256-'+'1'.repeat(64),paragraphCount:20,r2Origin};
+ assert.equal((await h.call('chapter-loot',opts)).status,'already-looted');assert.equal(h.updates,0);
+ const full=profile();full.inventory=Array.from({length:500},(_,i)=>({id:'old-'+i}));const f=env(full);
+ await assert.rejects(f.call('chapter-loot',opts),e=>e.reason==='inventory-full');assert.equal(f.updates,0);
+});
