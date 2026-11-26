@@ -163,6 +163,9 @@ test('C4.6.1 live Honor Hall equips a title unlocked on the phone before profile
  const code=readFileSync(join(__dirname,'../js/personal-honor-ui-c46.js'),'utf8');
  const context={window,document:window.document,currentUsername:'du',
   IS_SANDBOX_MODE:false,userProfile:localProfile};
+ const canonical=require('../js/profile-reconciliation-p4a3a2.js').create({isCurrent:(u,i)=>u==='du'&&i===h.auth.currentUser,read:async()=>({exists:true,fromCache:false,hasPendingWrites:false,data:copy(h.profile)}),apply:(_,data)=>{for(const key of ['honorV1','title','currency','inventory','storyStates'])if(Object.hasOwn(data,key))context.userProfile[key]=data[key];window.DuduHonorUIV46?.refresh();}});
+ canonical.begin('du',h.auth.currentUser);
+ window.DuduCanonicalProfileP4A3A2={capture:canonical.capture,current:t=>canonical.capture()===t,afterCommit:canonical.afterCommit};
  vm.runInNewContext(code,context);
  assert.equal(window.DuduHonorUIV46.render(),true);
  const flatten=n=>[n,...n.children.flatMap(flatten)];
