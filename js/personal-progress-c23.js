@@ -29,6 +29,11 @@
  const validId=value=>typeof value==='string'&&value.length>0&&value.length<=120&&
   !/[\u0000-\u001f]/.test(value)&&
   !['__proto__','constructor','prototype'].includes(value);
+ // EPUB R2 manifest accepts 4..121 ASCII identifier characters.
+ // Preserve legacy chapter IDs and UID/receipt guards; only extend the
+ // chapter/story boundary for the additional manifest-compatible length.
+ const validR2Id=value=>typeof value==='string'&&/^[A-Za-z0-9][A-Za-z0-9_-]{3,120}$/.test(value);
+ const validChapterId=value=>validId(value)||typeof value==='string'&&value.length===121&&validR2Id(value);
  const validDay=day=>typeof day==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(day)&&
   !Number.isNaN(Date.parse(day+'T00:00:00Z'))&&
   new Date(day+'T00:00:00Z').toISOString().slice(0,10)===day;
@@ -204,11 +209,11 @@
    auth.currentUser.uid!==uid||!validId(uid)||
    !['read','read-quest','quest','chapter-loot','global-loot'].includes(kind))
    throw fail('invalid-account');
-  if((kind==='read'||kind==='read-quest'||kind==='chapter-loot')&&(!validId(storyId)||!validId(chapterId)))
+  if((kind==='read'||kind==='read-quest'||kind==='chapter-loot')&&(!validChapterId(storyId)||!validChapterId(chapterId)))
    throw fail('invalid-chapter');
   if(r2Origin!==null||storyId==='r2-content-v1'){
    if(kind!=='chapter-loot'||storyId!=='r2-content-v1'||!/^sha256-[a-f0-9]{64}$/.test(chapterId)||
-    !r2Origin||![r2Origin.storyId,r2Origin.chapterId].every(x=>typeof x==='string'&&/^[A-Za-z0-9][A-Za-z0-9_-]{3,119}$/.test(x))||
+    !r2Origin||![r2Origin.storyId,r2Origin.chapterId].every(validR2Id)||
     typeof r2Origin.revision!=='string'||!/^r-[a-f0-9]{16,32}$/.test(r2Origin.revision))throw fail('invalid-r2-loot');
   }
   if(kind==='chapter-loot'&&(!Number.isSafeInteger(paragraphCount)||
