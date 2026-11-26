@@ -29,12 +29,15 @@ function harness(options={}){
   saveCurrentAccount(){savedProfiles++;}};
  if(options.spark){
   const currentUser={uid:'reader-one'};
-  const firestore={};
+  const firestore={};let server={currency:30};
+  const canonical=require('../js/profile-reconciliation-p4a3a2.js').create({isCurrent:(u,i)=>u===uid&&i===currentUser,read:async()=>({exists:true,fromCache:false,hasPendingWrites:false,data:server}),apply:(_,data)=>{Object.assign(profile,data);walletRefreshes++;}});
+  canonical.begin(uid,currentUser);
+  window.DuduCanonicalProfileP4A3A2={capture:canonical.capture,current:t=>canonical.capture()===t,afterCommit:canonical.afterCommit};
   window.DUDU_SPARK_EXCHANGE_V1_READY=true;
   window.DuduPersonalArcadeExchangeV1=quotePolicy;
   window.DuduPersonalSparkExchangeV1={
    requestId:()=> 'ex-12345678-1234-1234-1234-123456789abc',
-   transfer:async args=>{assert.equal(args.uid,'reader-one');return {
+   transfer:async args=>{assert.equal(args.uid,'reader-one');server={currency:31};return {
     status:'credited',balance:31,walletXu:1,gameXu:10,id:args.id};}
   };
   window.firebase={auth:()=>({currentUser}),firestore:()=>firestore};
@@ -142,7 +145,7 @@ test('Enabled personal exchange credits wallet once and deducts local Arcade coi
  const game=JSON.parse(db.get(key));
  assert.equal(game.coins,150);
  assert.equal(profile.currency,31);
- assert.equal(getSavedProfiles(),1);
+ assert.equal(getSavedProfiles(),0,'no generic profile save after confirmed exchange');
  assert.equal(getWalletRefreshes(),1);
  assert.equal(db.has('dudu-personal-arcade:exchange-pending-v1:reader-one'),false);
  assert.equal(db.get('dudu-personal-arcade:exchange-settled-v1:reader-one'),
