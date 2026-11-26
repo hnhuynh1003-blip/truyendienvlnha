@@ -201,3 +201,66 @@ test('P2D read quests remain one per chapter per day without writing old opening
  assert.deepEqual(h.data.readRewards,{});assert.equal((await h.call('read-quest',opts)).status,'already-read');
  assert.equal(h.updates,1);
 });
+
+test('CP013 A-08 manifest-compatible 121-character chapter IDs preserve quest history without opening EXP',async()=>{
+ const manifest=require('../js/library-epub-r2-manifest-l6p2a.js');
+ const storyId='epub-'+'a'.repeat(32),chapterId='c'+'b'.repeat(120),sha256='a'.repeat(64);
+ const m=manifest.validate({schema:1,bookId:storyId,revisionId:'r-0123456789abcdef',
+ source:{name:'fixture.epub',bytes:1000,sha256},chapters:[{id:chapterId,title:'Fixture',order:0,wordCount:10,bytes:100,sha256}],assets:[]});
+ const h=env(),opts={storyId:m.bookId,chapterId:m.chapters[0].id};
+ const result=await h.call('read-quest',opts);
+ assert.equal(result.status,'applied');assert.equal(result.awardExp,0);
+ assert.equal(h.data.exp,0);assert.equal(h.data.currency,100);
+ assert.deepEqual(h.data.readRewards,{});
+ assert.deepEqual(h.data.dailyReadLog.chapters,[storyId+'_'+chapterId]);
+ assert.equal((await h.call('read-quest',opts)).status,'already-read');
+ assert.equal(h.updates,1);
+ await assert.rejects(h.call('read-quest',{...opts,chapterId:chapterId+'x'}),e=>e.reason==='invalid-chapter');
+ await assert.rejects(h.call('read-quest',{...opts,chapterId:'/'+chapterId.slice(1)}),e=>e.reason==='invalid-chapter');
+ assert.equal(h.updates,1);
+});
+test('CP013 A-08 R2 long origin preserves existing legacy claim and digest deduplication',async()=>{
+ const model=require('../js/personal-r2-chapter-loot-p3.js');
+ const storyId='b'+'a'.repeat(120),chapterId='c'+'b'.repeat(120),revision='r-0123456789abcdef';
+ const origin={storyId,chapterId,revision};
+ let digest='';
+ for(let i=0;i<1000;i++){
+  const id='sha256-'+i.toString(16).padStart(64,'0');
+  if(encounter.encounter({accountId:'reader-a',storyId:'r2-content-v1',chapterId:id,paragraphCount:20}).visible&&
+   encounter.hash('success:reader-a\0r2-content-v1\0'+id)%100<encounter.SUCCESS_PERCENT){digest=id;break;}
+ }
+ assert.ok(digest);
+ const opts={...model.source({...origin,digest}),paragraphCount:20};
+ const p=profile();p.lootedChapters[encounter.lootKey(storyId,chapterId)]='miss:123';
+ const old=env(p);assert.equal((await old.call('chapter-loot',opts)).status,'already-looted');assert.equal(old.updates,0);
+ const h=env();assert.equal((await h.call('chapter-loot',opts)).status,'applied');
+ assert.equal(h.data.inventory[0].obtainedFrom.storyId,storyId);
+ assert.equal(h.data.inventory[0].obtainedFrom.chapterId,chapterId);
+ assert.equal((await h.call('chapter-loot',{...opts,r2Origin:{...origin,chapterId:'other-chapter'}})).status,'already-looted');
+ assert.equal(h.updates,1);
+ for(const bad of [{chapterId:chapterId+'x'},{storyId:'/'+storyId.slice(1)},{revision:'r-invalid'}]){
+  await assert.rejects(h.call('chapter-loot',{...opts,r2Origin:{...origin,...bad}}),e=>e.reason==='invalid-r2-loot');
+ }
+ assert.equal(h.updates,1);
+});
+test('CP013 A-08 does not extend the account or global receipt boundary',async()=>{
+ const h=env(),uid='u'.repeat(121);
+ h.auth.currentUser.uid=uid;
+ await assert.rejects(progress.run({db:h.db,auth:h.auth,uid,kind:'read-quest',storyId:'story',chapterId:'chapter'}),e=>e.reason==='invalid-account');
+ h.auth.currentUser.uid='reader-a';
+ await assert.rejects(h.call('global-loot',{requestId:'g'.repeat(121)}),e=>e.reason==='invalid-receipt');
+ assert.equal(h.updates,0);
+});
+test('CP013 A-11 intro read-quest across UTC days does not award opening EXP or repeat claimed main quest',async()=>{
+ const h=env(),opts={storyId:'truyen-dien-vl',chapterId:'ch-1'};
+ await h.call('read-quest',opts);
+ assert.equal(h.data.exp,0);assert.equal(h.data.quests.find(q=>q.id==='q_main_intro').current,1);
+ await h.call('quest',{questId:'q_main_intro'});
+ const before={exp:h.data.exp,currency:h.data.currency};
+ const next=await h.call('read-quest',opts,'2026-10-31T09:00:00Z');
+ assert.equal(next.awardExp,0);assert.equal(h.data.exp,before.exp);assert.equal(h.data.currency,before.currency);
+ assert.equal(h.data.quests.find(q=>q.id==='q_main_intro').current,1);
+ assert.equal(h.data.quests.find(q=>q.id==='q_main_intro').claimed,true);
+ assert.deepEqual(h.data.readRewards,{});
+ await assert.rejects(h.call('quest',{questId:'q_main_intro'},'2026-10-31T09:00:00Z'),e=>e.reason==='not-ready');
+});
