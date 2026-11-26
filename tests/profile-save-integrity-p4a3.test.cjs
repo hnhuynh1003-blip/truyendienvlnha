@@ -274,3 +274,28 @@ test('old confirmed read cannot rebase after a queued editor edit or session rep
  a.deepEqual(save.reconcileConfirmedPreferences(uid,{name:'Stale'},{name:'Next Name'},fresh),{});
  save.reset();
 });
+
+test('P4A.3A.2 thirty ordered engine pairs converge from reversed receipt delivery; read only, historical NPC preserved',async()=>{
+ const names=['Reader','Shop','Loot','Arcade','VanBao','VanTuong'];
+ const reconciler=req('profile-reconciliation-p4a3a2');
+ let pairs=0;
+ for(const x of names)for(const y of names)if(x!==y){
+  const history={book:{collectedCharacters:{npc:{affinity:72,relationshipV2:{trust:33},unknown:{keep:true}}}},historical:{keep:true}};
+  const h=env({storyStates:history}),ui=h.snapshot(),cache=new Map();let reads=0,publishes=0;
+  const r1=await action(h,x,1),r2=await action(h,y,2);
+  const committed=h.snapshot(),writes=h.writes;
+  const api=reconciler.create({isCurrent:(u,i)=>u===uid&&i===h.auth.currentUser,
+   read:async()=>{reads++;return {exists:true,fromCache:false,hasPendingWrites:false,data:h.snapshot()};},
+   apply:(u,data)=>{publishes++;Object.assign(ui,data);reconciler.storeConfirmed({setItem:(k,v)=>cache.set(k,v)},u,data);}});
+  const ticket=api.begin(uid,h.auth.currentUser);
+  // Notifications carry no response payload. Deliver the later commit first.
+  for(const receipt of [r2,r1]){a.ok(receipt);a.equal((await api.afterCommit(ticket)).status,'synced');a.deepEqual(ui,committed,x+' / '+y);}
+  a.deepEqual(JSON.parse(cache.get(reconciler.cacheKey(uid))),committed);
+  a.deepEqual(ui.storyStates.book,history.book);
+  a.equal(ui.storyStates.historical.keep,true);
+  a.equal(reads,2);a.equal(publishes,2);a.equal(h.writes,writes);
+  a.deepEqual(h.snapshot(),committed);
+  pairs++;
+ }
+ a.equal(pairs,30);
+});
