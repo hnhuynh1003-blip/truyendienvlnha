@@ -31,7 +31,7 @@
    const owner=currentUsername;
    if(root.DuduAuth?.isReady?.()===true&&typeof IS_SANDBOX_MODE!=='undefined'&&
       IS_SANDBOX_MODE===false&&root.DuduAuth?.uid?.()!==owner)return;
-   userProfile.name=next;root.saveCurrentAccount?.();
+   userProfile.name=next;root.saveCurrentAccount?.({name:next});
    if(owner!==currentUsername)return;
    form.hidden=true;
    get('profile-name').textContent=next;

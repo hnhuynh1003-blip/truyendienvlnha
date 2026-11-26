@@ -314,7 +314,8 @@ function savePlayerAvatarV16(){
     return;
   }
   userProfile.playerAvatar={...valid};
-  saveCurrentAccount();
+  if(IS_SANDBOX_MODE)saveCurrentAccount();
+  else saveCurrentAccount({playerAvatar:userProfile.playerAvatar});
   renderPlayerAvatarPlacesV16();
   const npcId=document.getElementById('chat-character-selector')?.value;
   if(npcId)renderChatMessages(npcId);
@@ -345,7 +346,8 @@ async function deletePlayerAvatarLocalV23(){
     userProfile.playerAvatar={kind:'initials',presetId:'',uploadId:'',frameId:
       DuduPlayerAvatarV16.canChooseFrame(userProfile.playerAvatar.frameId)?
         userProfile.playerAvatar.frameId:'none'};
-    saveCurrentAccount();
+    if(IS_SANDBOX_MODE)saveCurrentAccount();
+    else saveCurrentAccount({playerAvatar:userProfile.playerAvatar});
   }
   playerAvatarDraftV16={kind:'initials',presetId:'',uploadId:'',
     frameId:playerAvatarDraftV16.frameId};

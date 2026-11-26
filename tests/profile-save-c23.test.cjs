@@ -36,7 +36,7 @@ test('C2.3 main keeps a newer wallet, item and envelope after an unrelated save'
  const h=harness(live),local=copy(baseline);local.name='An Du';
  saver.begin('reader-a',baseline);
  const result=await saver.enqueue({uid:'reader-a',db:h.db,auth:h.auth,
-  data:local,isCurrent:()=>true});
+  data:local,intents:{name:local.name},isCurrent:()=>true});
  assert.equal(result.saved,true);
  assert.equal(h.server.name,'An Du');
  assert.equal(h.server.currency,80);
@@ -46,34 +46,23 @@ test('C2.3 main keeps a newer wallet, item and envelope after an unrelated save'
  saver.reset();
 });
 
-test('C2.3 rejects a conflicting stale spend but keeps independent progress',async()=>{
- const baseline=sample(),live=copy(baseline),local=copy(baseline);
- live.currency=60;local.currency=90;local.exp=5;
- const h=harness(live),alerts=[];
- saver.begin('reader-a',baseline);
- const opts={uid:'reader-a',db:h.db,auth:h.auth,data:local,
-  isCurrent:()=>true,onConflict:()=>alerts.push(true)};
- const first=await saver.enqueue(opts);
- assert.deepEqual(first.conflicts,[['currency']]);
- assert.equal(h.server.currency,60);
- assert.equal(h.server.exp,5);
- // A follow-up UI save cannot overwrite the 60 Xu once conflict is known.
- local.currency=95;
- await saver.enqueue({...opts,data:local});
- assert.equal(h.server.currency,60);
- assert.equal(alerts.length,1);
- saver.reset();
+// Supersedes generic EXP and NPC-root writes: those belong to domain engines.
+test('C2.3 ignores economic snapshots and explicit protected intents',async()=>{
+ const baseline=sample(),local={...baseline,currency:999,exp:999};
+ const h=harness(baseline);saver.begin('reader-a',baseline);
+ const r=await saver.enqueue({uid:'reader-a',db:h.db,auth:h.auth,data:local,
+  intents:{currency:999,exp:999,storyStates:{evil:{}}},isCurrent:()=>true});
+ assert.equal(r.saved,false);assert.equal(h.transactions,0);
+ assert.deepEqual(r.ignored,['currency','exp','storyStates']);
+ assert.deepEqual(h.server,baseline);saver.reset();
 });
-
-test('C2.3 merges a different NPC preference without erasing red-packet receipts',()=>{
+test('C2.3 generic plans cannot write NPC preferences or remove receipts',()=>{
  const baseline=sample(),remote=copy(baseline),local=copy(baseline);
  remote.storyStates.story1.redPacketsV32['npc-x'].count=2;
  local.storyStates.story1.favoriteNpcV43='npc-y';
  const result=saver.merge({baseline,remote,local});
- assert.deepEqual(result.conflicts,[]);
- assert.equal(result.patch.storyStates.story1.favoriteNpcV43,'npc-y');
- assert.equal(result.patch.storyStates.story1.redPacketsV32['npc-x'].count,2);
- assert.deepEqual(remote.storyStates.story1.redPacketsV32['npc-x'],{count:2});
+ assert.deepEqual(result.patch,{});
+ assert.equal(remote.storyStates.story1.redPacketsV32['npc-x'].count,2);
 });
 
 test('C2.3 serializes saves in one tab and refuses writes after account switch',async()=>{
@@ -82,33 +71,36 @@ test('C2.3 serializes saves in one tab and refuses writes after account switch',
  const local=copy(original);
  local.name='Du 1';
  const one=saver.enqueue({uid:'reader-a',db:h.db,auth:h.auth,
-  data:local,isCurrent:()=>true});
+  data:local,intents:{name:local.name},isCurrent:()=>true});
  local.name='Du 2';
  const two=saver.enqueue({uid:'reader-a',db:h.db,auth:h.auth,
-  data:local,isCurrent:()=>true});
+  data:local,intents:{name:local.name},isCurrent:()=>true});
  await Promise.all([one,two]);
  assert.equal(h.server.name,'Du 2');
  assert.equal(h.transactions,2);
  saver.reset();
  assert.deepEqual(await saver.enqueue({uid:'reader-a',db:h.db,auth:h.auth,
-  data:local,isCurrent:()=>true}),{skipped:true});
+  data:local,intents:{name:local.name},isCurrent:()=>true}),{skipped:true});
 });
 
-test('C2.3 initializes a new owner-scoped profile but never another UID',async()=>{
- const h=harness(null),local=sample();
- saver.begin('reader-a',{});
- const result=await saver.enqueue({uid:'reader-a',db:h.db,auth:h.auth,
+// Generic recreation was unsafe; controlled first-time creation stays separate.
+test('C2.3 missing existing profile fails closed; controlled creation stays owner scoped',async()=>{
+ const h=harness(null),local=sample();saver.begin('reader-a',{});
+ await assert.rejects(saver.enqueue({uid:'reader-a',db:h.db,auth:h.auth,
+  intents:{name:'New Name'},isCurrent:()=>true}),/profile-missing/);
+ assert.equal(h.server,null);
+ const result=await saver.ensureNewProfile({uid:'reader-a',db:h.db,auth:h.auth,
   data:local,isCurrent:()=>true});
- assert.equal(result.created,true);
+ assert.equal(result.created,true);assert.equal(h.server.currency,100);
+ assert.equal((await saver.ensureNewProfile({uid:'reader-a',db:h.db,auth:h.auth,
+  data:{currency:999},isCurrent:()=>true})).created,false);
  assert.equal(h.server.currency,100);
- assert.equal(h.server.inventory.length,1);
  assert.deepEqual(await saver.enqueue({uid:'reader-b',db:h.db,auth:h.auth,
-  data:local,isCurrent:()=>true}),{skipped:true});
- saver.reset();
+  intents:{name:'Other'},isCurrent:()=>true}),{skipped:true});saver.reset();
 });
 
 test('C2.3 live wiring has no broad profile .set and installs the save guard before Auth',()=>{
- assert.match(html,/js\/profile-save-c23\.js\?v=c416-1/);
+ assert.match(html,/js\/profile-save-c23\.js\?v=c416-1-p4a3-1/);
  assert.ok(html.indexOf('js/profile-save-c23.js')<html.indexOf('js/auth-v2.js'));
  const begin=html.indexOf('function saveCurrentAccount() {');
  const end=html.indexOf('// V54: owner-confirmed one-time reset.',begin);
