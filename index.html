@@ -121,9 +121,10 @@
   <script src="js/appcheck-sitekey-v52.js?v=52-3"></script>
   <script src="js/firestore-profile-fallback-v56-7.js?v=56-7"></script>
   <script src="js/profile-save-c23.js?v=c416-1-p4a3-1"></script>
+  <script src="js/profile-reconciliation-p4a3a2.js?v=p4a3a2-1"></script>
   <script src="js/account-approval-v1.js?v=auth-a1"></script>
   <script src="js/account-invite-r11.js?v=r11-1"></script>
-  <script src="js/auth-v2.js?v=epub-perf-r1"></script>
+  <script src="js/auth-v2.js?v=epub-perf-r1-p4a3a2-1"></script>
   <script src="js/personal-transaction-error-c416.js?v=c416-1"></script>
   <script src="js/npc-context-v56-10.js?v=56-10"></script>
   <script src="js/npc-reply-style-v56-12.js?v=56-12"></script>
@@ -1731,6 +1732,7 @@
             </div>
             <div class="dudu-bank-card-bottom"><div><small>CHỦ VÍ</small><b id="dudu-wallet-owner-name">DUDU</b></div></div>
           </section>
+          <div data-profile-reconciliation-status hidden style="font-size:11px;padding:6px"><span role="status" aria-live="polite"></span> <button type="button" class="btn" onclick="window.DuduCanonicalProfileP4A3A2?.retry()">Đồng bộ lại</button></div>
           <section class="dudu-wallet-stone-pocket" aria-label="Ngăn Linh Thạch Tu Tiên chưa kích hoạt">
             <span class="dudu-wallet-stone-emblem" aria-hidden="true"></span>
             <span class="dudu-wallet-stone-copy"><strong>Linh Thạch</strong><small>Tài sản Tu Tiên · Dự kiến</small></span>
@@ -1772,6 +1774,7 @@
           <span></span>
         </div>
         <div style="font-size:10px; color:var(--gold); margin-bottom:6px;"><span class="dudu-money-display--gold" aria-label="Số dư Xu"><b id="shop-currency-val">—</b></span></div>
+          <div data-profile-reconciliation-status hidden style="font-size:11px;padding:6px"><span role="status" aria-live="polite"></span> <button type="button" class="btn" onclick="window.DuduCanonicalProfileP4A3A2?.retry()">Đồng bộ lại</button></div>
         <div id="shop-items-container" class="dudu-v27-shop-grid"></div>
       </div>
 
@@ -3527,6 +3530,58 @@
 
     // Track queued field-aware saves so an NPC exchange can wait for any
     // earlier work in the same tab before starting its own transaction.
+    // P4A.3A.2: first-wave Reader/Shop projection. Commit receipts and UI
+    // reconciliation are independent: a failed read never replays a reward.
+    (function installCanonicalProfileP4A3A2(){
+      const engine=window.DuduProfileReconciliationP4A3A2;
+      if(!engine)return;
+      const fields=['currency','exp','level','inventory','quests','questV437','questsDayV43',
+        'readRewards','dailyReadLog','lootedChapters','storyStates','collectedCharacters'];
+      const controller=engine.create({
+        isCurrent:(uid,identity)=>!IS_SANDBOX_MODE&&!window.DUDU_RESET_IN_PROGRESS&&
+          DuduAuth.isReady()&&DuduAuth.uid()===uid&&currentUsername===uid&&firebase.auth().currentUser===identity,
+        async read(uid){
+          const snap=await db.collection('profiles_v2').doc(uid).get({source:'server'});
+          return {exists:snap.exists,fromCache:snap.metadata?.fromCache,
+            hasPendingWrites:snap.metadata?.hasPendingWrites,data:snap.exists?snap.data():null};
+        },
+        apply(uid,data){
+          // Only domain-owned roots in this phase; leave local bookmark,
+          // phone appearance and unsaved editor preferences untouched.
+          for(const key of fields)if(Object.hasOwn(data,key))userProfile[key]=data[key];
+          try{localStorage.setItem('profile_'+uid,JSON.stringify(data));}
+          catch(error){console.warn('DUDU canonical backup:',error);}
+          for(const render of [updatePhoneUI,renderWallet,renderQuests,renderInventory,updateChapterLootButtonState]){
+            try{render();}catch(error){console.warn('DUDU canonical render:',error);}
+          }
+          if(document.getElementById('phone-app-shop')?.style.display==='flex'){
+            try{renderShop();}catch(error){console.warn('DUDU canonical shop render:',error);}
+          }
+        }
+      });
+      const current=ticket=>!!ticket&&controller.capture()===ticket;
+      function paint(){
+        const ticket=controller.capture(),status=ticket?controller.status(ticket).status:'synced';
+        for(const node of document.querySelectorAll('[data-profile-reconciliation-status]')){
+          node.hidden=status==='synced';
+          node.querySelector('span').textContent=status==='reading'?
+            'Giao dịch đã ghi nhận · Đang đồng bộ hồ sơ':
+            'Giao dịch đã ghi nhận · Hồ sơ chưa đồng bộ';
+          node.querySelector('button').disabled=status==='reading';
+        }
+      }
+      function show(promise,ticket){
+        paint();
+        return promise.then(result=>{if(current(ticket))paint();return result;});
+      }
+      window.DuduCanonicalProfileP4A3A2=Object.freeze({
+        begin(uid,identity){const ticket=controller.begin(uid,identity);paint();return ticket;},
+        reset(){controller.reset();paint();},
+        capture:controller.capture,current,
+        afterCommit(ticket){return show(controller.afterCommit(ticket),ticket);},
+        retry(){const ticket=controller.capture();return show(controller.retry(ticket),ticket);}
+      });
+    })();
     const pendingLiveProfileWrites=new Set();
     let lastLiveProfileSaveWarningAt=0;
     function saveCurrentAccount() {
@@ -7724,16 +7779,17 @@ document.getElementById('phone-home-screen').style.display = 'none';
       ready(uid){return this.enabled()&&personalProgressReady()&&currentUsername===uid&&!!window.DuduPersonalReadingRewardP2B;},
       submit(uid,slots){
         if(!this.ready(uid))return Promise.reject(Error('reading-disabled'));
+        const canonical=window.DuduCanonicalProfileP4A3A2,ticket=canonical?.capture();
+        if(!ticket)return Promise.reject(Error('profile-reconciliation-unavailable'));
         const perform=async()=>{
-          if(!this.ready(uid))throw Error('account-changed');
+          if(!this.ready(uid)||!canonical.current(ticket))throw Error('account-changed');
           await Promise.allSettled([...pendingLiveProfileWrites]);
-          if(!this.ready(uid))throw Error('account-changed');
+          if(!this.ready(uid)||!canonical.current(ticket))throw Error('account-changed');
           const result=await DuduPersonalReadingRewardP2B.run({db,auth:firebase.auth(),uid,
             policy:DuduPersonalReadingPolicyP2C.policy,slots});
-          if(!this.ready(uid))throw Error('account-changed');
-          for(const field of ['currency','exp','level','storyStates'])userProfile[field]=result[field];
-          try{localStorage.setItem('profile_'+uid,JSON.stringify(userProfile));}catch(_){}
-          updatePhoneUI();renderWallet();
+          // ACK committed slots independently of a potentially slow/offline
+          // profile read. Never publish a transaction response as UI state.
+          if(canonical.current(ticket))void canonical.afterCommit(ticket).catch(error=>console.warn('DUDU reading reconciliation:',error));
           return result;
         };
         const task=personalProgressQueue.catch(()=>{}).then(perform);
@@ -10124,7 +10180,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/arcade-showcase-ui-c439.js?v=c439-1&amp;repair=c439r2-1&amp;align=c439r4-1"></script>
 <script src="js/quest-ui-v43-7.js?v=c23c-1&amp;progression=c425g-1"></script>
 <script src="js/economy-runtime-v43.js?v=c23c-1&amp;f43=1"></script>
-<script src="js/economy-live-v52.js?v=f34-1"></script>
+<script src="js/economy-live-v52.js?v=f34-1-p4a3a2-1"></script>
 <script src="js/museum-memories-ui-v43.js?v=c426-1"></script>
 <script src="js/museum-collection-f40.js?v=f40-1&amp;hunt=f42d-1"></script>
 <script src="js/museum-vault-c426.js?v=c426-3&amp;gallery=c429-2&amp;display=c439-2&amp;repair=c439r2-1&amp;label=c439r4-1&amp;fun=f39-1&amp;collection=f40-1&amp;hunt=f42d-1"></script>
