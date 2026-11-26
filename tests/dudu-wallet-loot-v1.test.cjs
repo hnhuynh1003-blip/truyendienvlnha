@@ -32,7 +32,8 @@ test('wallet retains ATM and Linh Thach, with no obsolete 10:1 Arcade exchange',
  assert.match(arcade,/DuduArcadeUnifiedXuR32/);
  assert.match(src('index.html'),/DUDU_ARCADE_UNIFIED_XU_R32_READY=true/);
  assert.match(arcade,/DUDU_SPARK_EXCHANGE_V1_READY===true/);
- assert.match(arcade,/userProfile\.currency=result\.balance/);
+ assert.match(arcade,/canonical\.afterCommit\(ticket\)/);
+ assert.doesNotMatch(arcade,/userProfile\.currency=result\.balance/);
  assert.doesNotMatch(arcade,/userProfile\.currency\s*\+=/);
 });
 
