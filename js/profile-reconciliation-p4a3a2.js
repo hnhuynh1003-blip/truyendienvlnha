@@ -1,5 +1,5 @@
 /* P4A.3A.2 core: read-only, session-fenced canonical profile reconciliation.
- * Not wired to production callers yet. A transaction receipt is NOT a profile
+ * A transaction receipt is NOT a profile
  * version. Only an explicitly server-confirmed read may publish a projection.
  */
 (function(root,factory){
@@ -10,6 +10,14 @@
 })(typeof window!=='undefined'?window:null,function(){
  'use strict';
  const MAX_READS_PER_DRAIN=2;
+ const cacheKey=uid=>'dudu-canonical-profile:p4a3a2:'+encodeURIComponent(uid);
+ // Only the confirmed-read adapter calls this. The legacy device backup
+ // keeps its existing key and cannot overwrite this isolated server copy.
+ function storeConfirmed(storage,uid,data){
+  if(typeof uid!=='string'||!uid||!data||typeof data!=='object'||Array.isArray(data))return false;
+  try{storage.setItem(cacheKey(uid),JSON.stringify(data));return true;}
+  catch(_){return false;}
+ }
  function create({read,apply,isCurrent}={}){
   if([read,apply,isCurrent].some(fn=>typeof fn!=='function'))
    throw TypeError('reconciliation-adapters-required');
@@ -41,7 +49,7 @@
        snap.hasPendingWrites!==false||!snap.data||
        typeof snap.data!=='object'||Array.isArray(snap.data))
      return result('unconfirmed');
-    try{apply(s.uid,snap.data,s.identity);}
+    try{apply(s.uid,snap.data,s.identity,snap.preferenceFence);}
     catch(_){return result(active(s)?'apply-failed':'session-changed');}
     if(!active(s))return result('session-changed');
     s.published=target;
@@ -77,5 +85,5 @@
   }
   return Object.freeze({begin,reset,capture,afterCommit,retry,status});
  }
- return Object.freeze({create,MAX_READS_PER_DRAIN});
+ return Object.freeze({create,MAX_READS_PER_DRAIN,cacheKey,storeConfirmed});
 });
