@@ -24,7 +24,7 @@ test('Live inventory has functional use and common-item sale controls only for o
  assert.match(html,/DuduLootCadenceV42\.phoneRemainingMs/);
  assert.match(html,/localStorage\.setItem\('profile_'\+uid,JSON\.stringify\(userProfile\)\)/);
 });
-test('Spark shop UI uses returned wallet and inventory with no Cloud Functions call',async()=>{
+test('Spark shop UI uses canonical server projection, not a delayed receipt; no Cloud Functions call',async()=>{
  let removedStatus=false;
  const storage=new Map(),shop={},status={remove(){removedStatus=true;}},balance={textContent:''};
  const dom={ 'shop-items-container':shop,'dudu-v52-shop-status':status,'shop-currency-val':balance };
@@ -32,12 +32,25 @@ test('Spark shop UI uses returned wallet and inventory with no Cloud Functions c
   tagName:tag,textContent:'',append(){},replaceChildren(){},setAttribute(){}})};
  const account={uid:'reader-1'},calls=[];let marketConfig=null,refreshed=0;
  const inventory=[{id:'common-biscuit',instanceId:'shop-item'}],nextStates={novel:{chapter:1}};
+ let server={currency:15,inventory:[],storyStates:{}},failRead=false,reads=0;
+ const coordinator=require('../js/profile-reconciliation-p4a3a2.js').create({
+  isCurrent:(uid,identity)=>uid===account.uid&&identity===account,
+  read:async()=>{reads++;if(failRead)throw Error('offline');
+   return {exists:true,fromCache:false,hasPendingWrites:false,data:server};},
+  apply:(_,data)=>{Object.assign(userProfile,data);refreshed++;}
+ });
+ const ticket=coordinator.begin(account.uid,account);
  const window={document,DUDU_SPARK_ITEMS_V1_READY:true,
   DuduAuth:{isReady:()=>true,uid:()=>account.uid},
   DuduEconomyCoreV43:require('../js/economy-core-v43.js'),
+  DuduCanonicalProfileP4A3A2:{capture:coordinator.capture,current:t=>coordinator.capture()===t,
+   afterCommit:coordinator.afterCommit},
   DuduPersonalSparkItemsV1:{requestId:()=> 'shop-12345678-1234-1234-1234-123456789abc',
-   async run(args){calls.push(args);return{
-    status:'applied',balance:7,inventory,storyStates:nextStates};}},
+   async run(args){calls.push(args);
+    // Another committed action changed the wallet and history before this
+    // older Shop response was delivered. The receipt is not a version.
+    server={currency:12,inventory,storyStates:{...nextStates,reading:{keep:true}}};
+    return {status:'applied',balance:7,inventory,storyStates:nextStates};}},
   firebase:{auth:()=>({currentUser:account}),firestore:()=>({})},
   DuduMarketUIV43:{render:cfg=>{marketConfig=cfg;return true;}},
   showSystemAlert(){},renderWallet(){refreshed++;}
@@ -58,11 +71,23 @@ test('Spark shop UI uses returned wallet and inventory with no Cloud Functions c
  assert.equal(await marketConfig.onBuy('common-biscuit'),true);
  assert.equal(calls.length,1);
  assert.equal(calls[0].kind,'purchase');
- assert.equal(userProfile.currency,7);
+ assert.equal((await coordinator.retry(ticket)).status,'synced');
+ assert.equal(userProfile.currency,12);
  assert.equal(userProfile.inventory,inventory);
- assert.equal(userProfile.storyStates,nextStates);
+ assert.deepEqual(userProfile.storyStates,{...nextStates,reading:{keep:true}});
  assert.equal(refreshed,1);
+ assert.equal(reads,1);
  assert.equal(storage.has('dudu-personal-shop:pending:reader-1'),false);
+ // A committed purchase remains successful even when its read fails.
+ failRead=true;
+ assert.equal(await marketConfig.onBuy('common-biscuit'),true);
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(coordinator.status(ticket).status,'pending');
+ assert.equal(calls.length,2);
+ assert.equal(storage.has('dudu-personal-shop:pending:reader-1'),false);
+ failRead=false;
+ assert.equal((await coordinator.retry(ticket)).status,'synced');
+ assert.equal(calls.length,2,'projection retry must never replay a purchase');
  // During partial browser cache upgrades, old core may lack the new list.
  // The renderer must expose ZERO purchasable items, not all legacy 16.
  window.DuduEconomyCoreV43={...window.DuduEconomyCoreV43,PERSONAL_SALE_IDS:undefined};
