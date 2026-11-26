@@ -142,6 +142,8 @@
  async function personalPurchase(itemId){
   const account=uid(),engine=root.DuduPersonalSparkItemsV1;
   if(!personal()||personalBusy||!account||!engine)return false;
+  const canonical=root.DuduCanonicalProfileP4A3A2,ticket=canonical?.capture();
+  if(!ticket){root.showSystemAlert?.('CHƯA MUA ĐƯỢC','Hãy tải lại để đồng bộ hồ sơ.');return false;}
   const key=personalPurchaseKey(account);
   let pending=null;
   try{pending=JSON.parse(localStorage.getItem(key)||'null');}catch(_){}
@@ -156,23 +158,14 @@
   try{
    const result=await engine.run({db:root.firebase.firestore(),auth:root.firebase.auth(),
     uid:account,kind:'purchase',requestId:pending.requestId,itemId});
-   if(uid()!==account)return false;
-   userProfile.currency=result.balance;
-   userProfile.inventory=result.inventory;
-   userProfile.storyStates=result.storyStates;
-   if(result.quests){
-    userProfile.quests=result.quests;
-    userProfile.questV437=result.questV437;
-    userProfile.questsDayV43=result.questsDayV43;
-   }
-   localStorage.setItem('profile_'+account,JSON.stringify(userProfile));
-   localStorage.removeItem(key);
-   showPersonalMarket();
-   root.renderWallet?.();
-   root.renderQuests?.();
-   root.showSystemAlert?.('ĐÃ MUA VẬT PHẨM',
+   if(uid()!==account||!canonical.current(ticket))return false;
+   // The order is confirmed even if projection/cache/rendering fails.
+   try{localStorage.removeItem(key);}catch(error){console.warn('DUDU order cleanup:',error);}
+   void canonical.afterCommit(ticket).catch(error=>console.warn('DUDU shop reconciliation:',error));
+   try{root.showSystemAlert?.('ĐÃ MUA VẬT PHẨM',
     (result.status==='already-applied'?'Đã xác nhận lại đơn mua. ':'')+
-   'Đồ đã vào Kho · Số dư: '+result.balance+' Xu Vàng.');
+    'Đồ đã vào Kho · Đang đồng bộ hồ sơ.');}
+   catch(error){console.warn('DUDU order notification:',error);}
    return true;
   }catch(e){
    console.warn('DUDU Spark personal shop:',e?.code||e?.message||'unavailable');
