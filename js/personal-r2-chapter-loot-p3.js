@@ -8,7 +8,7 @@
 })(typeof window!=='undefined'?window:null,function(){
  'use strict';
  const ENABLED=true,MIN_ACTIVE_MS=30000,STORY='r2-content-v1';
- const validId=x=>typeof x==='string'&&/^[A-Za-z0-9][A-Za-z0-9_-]{3,119}$/.test(x);
+ const validId=x=>typeof x==='string'&&/^[A-Za-z0-9][A-Za-z0-9_-]{3,120}$/.test(x);
  const validRevision=x=>typeof x==='string'&&/^r-[a-f0-9]{16,32}$/.test(x);
  const validDigest=x=>typeof x==='string'&&/^sha256-[a-f0-9]{64}$/.test(x);
  const validSource=x=>!!x&&validId(x.storyId)&&validId(x.chapterId)&&validRevision(x.revision);
