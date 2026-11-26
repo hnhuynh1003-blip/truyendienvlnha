@@ -126,8 +126,27 @@
  function begin(uid,remote){
   if(typeof uid!=='string'||!uid){reset();return false;}
   session={uid,baseline:preferenceSnapshot(remote),blocked:new Set(),
-   queue:Promise.resolve(),warned:false};
+   queue:Promise.resolve(),warned:false,pending:0,fence:Object.freeze({})};
   return true;
+ }
+ // The caller captures this token BEFORE starting a confirmed server read.
+ // Any subsequently queued editor intent invalidates it, even if the intent
+ // completes before that older read returns. Never rebase a dirty local edit.
+ function capturePreferenceFence(uid){
+  return session?.uid===uid&&session.pending===0?session.fence:null;
+ }
+ function reconcileConfirmedPreferences(uid,remote,local,fence){
+  const state=session,patch={};
+  if(!fence||state?.uid!==uid||state.pending!==0||state.fence!==fence)return patch;
+  const incoming=preferenceSnapshot(remote),shown=preferenceSnapshot(local);
+  for(const key of UPDATE_FIELDS){
+   if(!Object.hasOwn(incoming,key)||state.blocked.has(pathId([key])))continue;
+   if(!equal(shown[key],state.baseline[key])&&!equal(shown[key],incoming[key]))continue;
+   state.baseline[key]=clone(incoming[key]);
+   // Keep complete confirmed avatar metadata, not just selection fields.
+   patch[key]=clone(remote[key]);
+  }
+  return patch;
  }
  // A first-time reader must have an owner-scoped server document before
  // Shop/FUN/Kho can use tx.update(). Never overwrite a profile created by
@@ -150,7 +169,7 @@
    if(root){
     const storage=root.localStorage;
     if(!storage?.getItem)throw Error('profile-creation-storage-unavailable');
-    const keys=['profile_'+uid,'dudu-v2:'+encodeURIComponent(uid)+':global:profile'];
+    const keys=['profile_'+uid,'dudu-v2:'+encodeURIComponent(uid)+':global:profile','dudu-canonical-profile:p4a3a2:'+encodeURIComponent(uid)];
     if(keys.some(key=>storage.getItem(key)!==null))throw Error('profile-recovery-required');
    }
    tx.set(ref,initial);
@@ -199,10 +218,14 @@
    return {saved:outcome.saved,created:false,ignored,protectedSnapshotIgnored:!!data,
     conflicts:outcome.conflicts,stale:outcome.stale};
   };
-  const scheduled=state.queue.catch(()=>{}).then(action);
+  const hasPreference=UPDATE_FIELDS.some(key=>Object.hasOwn(requested,key));
+  if(hasPreference){state.pending++;state.fence=Object.freeze({});}
+  const scheduled=state.queue.catch(()=>{}).then(action).finally(()=>{
+   if(hasPreference){state.pending--;state.fence=Object.freeze({});}
+  });
   state.queue=scheduled;
   return scheduled;
  }
  return Object.freeze({FIELDS,UPDATE_FIELDS,fieldSnapshot,changes,merge,begin,reset,enqueue,
-  ensureNewProfile});
+  ensureNewProfile,capturePreferenceFence,reconcileConfirmedPreferences});
 });
