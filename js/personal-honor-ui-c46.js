@@ -487,15 +487,12 @@
  }
  function remember(result,kind){
   if(!profile())return;
-  profile().honorV1=result.honorV1;
-  if(kind==='equip'||kind==='preferences')profile().title=result.title;
   const local=devicePreferences();
   if(local&&(kind==='equip'||kind==='pin'||kind==='preferences')){
    if(kind==='equip'||kind==='preferences')local.equipped=null;
    if(kind==='pin'||kind==='preferences')local.pinned=null;
    writeDevicePreferences(local);
   }
-  try{root.localStorage.setItem('profile_'+account(),JSON.stringify(profile()));}catch(_){}
   refresh();
   if($('phone-app-honors')?.style.display==='flex')render();
   if(kind==='equip'){
@@ -582,17 +579,22 @@
    if(kind!=='sync')root.showSystemAlert?.('CHƯA SẴN SÀNG','Hãy đăng nhập để lưu danh hiệu.');
    return false;
   }
+  const canonical=root.DuduCanonicalProfileP4A3A2,ticket=canonical?.capture();
+  if(!ticket)return false;
   busy=true;
   try{
    if(typeof pendingLiveProfileWrites!=='undefined')
     await Promise.allSettled([...pendingLiveProfileWrites]);
-   if(owner!==uid())return false;
+   if(owner!==uid()||!canonical.current(ticket))return false;
    const result=await honor.run({db:root.firebase.firestore(),auth:root.firebase.auth(),
     uid:owner,kind,arcade,localProfile:localEvidence(),...options});
-   if(owner!==uid())return false;
-   remember(result,kind);return true;
+   if(owner!==uid()||!canonical.current(ticket))return false;
+   void canonical.afterCommit(ticket).catch(error=>console.warn('Honor reconciliation:',error));
+   try{remember(result,kind);}catch(error){console.warn('Honor notification:',error);}
+   return true;
   }catch(error){
    console.warn('Honor Hall:',error?.reason||error?.code||error?.message);
+   if(!canonical.current(ticket))return false;
    if(owner===uid()&&currentUsername===owner&&
     (error?.code==='permission-denied'||error?.code==='unavailable')&&
     deviceTransact(kind,options))return true;

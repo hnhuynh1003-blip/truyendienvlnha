@@ -17,15 +17,25 @@
   const bridge=window.DuduPersonalCosmeticsBridgeP1,who=owner();
   if(purchaseBusy)return false;
   if(!bridge?.ready?.()||!who){notice('Hãy đăng nhập tài khoản cá nhân để mua.');return false;}
+  const canonical=window.DuduCanonicalProfileP4A3A2,ticket=canonical?.capture();
+  if(!ticket){notice('Hãy tải lại để đồng bộ hồ sơ.');return false;}
   purchaseBusy=true;
   const action=inspect&&q('.dudu-v38-inspect-action',inspect);
   if(action)action.disabled=true;
   try{
    const result=await bridge.purchase(kind,item.id);
-   if(owner()!==who)return false;
-   syncCards();notice(result.status==='already-owned'?'Đã sở hữu '+item.name+'.':'Đã mua '+item.name+' · Còn '+result.balance+' Xu Vàng.');
+   if(owner()!==who||!canonical.current(ticket))return false;
+   // Join the bridge's read, never repeat the purchase to refresh entitlement.
+   await canonical.retry();
+   if(owner()!==who||!canonical.current(ticket))return false;
+   syncCards();
+   if(!allowed(kind,item.id)){
+    notice('Đã ghi nhận đơn mua. Hãy Đồng bộ lại trong Ví trước khi áp dụng.');
+    return false;
+   }
+   notice(result.status==='already-owned'?'Đã sở hữu '+item.name+'.':'Đã mua '+item.name+'.');
    return true;
-  }catch(error){if(owner()===who)notice('Chưa xác nhận mua: '+(error?.message||'Hãy thử lại.'));return false;}
+  }catch(error){if(owner()===who&&canonical.current(ticket))notice('Chưa xác nhận mua: '+(error?.message||'Hãy thử lại.'));return false;}
   finally{purchaseBusy=false;if(action)action.disabled=false;}
  }
  const formatPrice=value=>value.toLocaleString('vi-VN');

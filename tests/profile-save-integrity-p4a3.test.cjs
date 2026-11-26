@@ -8,7 +8,7 @@ function env(extra={}){let data={username:uid,name:'Audit',currency:1000,exp:0,l
 const slots=Array.from({length:6},(_,i)=>NOW-60000+i*10000),args=h=>({db:h.db,auth:h.auth,uid});
 async function action(h,n,i=1){if(n==='Reader')return reading.run({...args(h),policy,slots,now:()=>NOW});if(n==='Shop')return shop.run({...args(h),kind:'purchase',requestId:'shop-'+id(i),itemId:economy.SUPPLY_ID,now:()=>new Date(NOW)});if(n==='Loot')return progress.run({...args(h),kind:'global-loot',requestId:'global-'+id(i),now:()=>NOW});if(n==='Arcade'){await arcade.run({...args(h),id:'ax-'+id(900+i),mode:'init',seed:core.fresh(NOW),now:NOW});return arcade.run({...args(h),id:'ax-'+id(i),mode:'action',action:'buy-seeds',now:NOW});}if(n==='VanBao'){const p=bank[0],c={...args(h),puzzleId:p.id,now:()=>NOW};await bao.run({...c,kind:'win',eventId:id(i),xMoves:[p.proof.move],entropy:[1,0,1,4,6,8]});const index=h.snapshot().storyStates[bao.META].wins[p.id].boxes.findIndex(b=>b.group==='CARD');await bao.run({...c,kind:'choose',index});return bao.run({...c,kind:'claim'});}if(n==='VanTuong'){await vv.run({...args(h),kind:'start',id:id(i),roll:0,now:()=>NOW});return vv.run({...args(h),kind:'claim',id:id(i),now:()=>NOW});}}
 function apply(ui,n,r){const fields=n==='Reader'?['currency','exp','level','storyStates']:n==='Shop'?['inventory','storyStates','quests','questV437','questsDayV43']:n==='Arcade'?[]:n==='Loot'?['currency','exp','level','inventory','quests','questV437','questsDayV43','lootedChapters','storyStates']:n==='VanBao'?['currency','inventory','storyStates','exp','level']:['currency','inventory','storyStates'];for(const k of fields)if(r[k]!==undefined)ui[k]=clone(r[k]);if(n==='Shop'||n==='Arcade')ui.currency=r.balance;return ui;}
-test('A-06 actual Reader bridge plus Shop plus advanced saver baseline cannot refund purchase or remove receipt',async()=>{const h=env(),ui=h.snapshot();save.begin(uid,h.snapshot());let release,committed;const gate=new Promise(r=>release=r),done=new Promise(r=>committed=r),source=fs.readFileSync(require('node:path').join(__dirname,'../index.html'),'utf8'),start=source.indexOf('window.DuduReadingRewardBridgeP2C='),code=source.slice(start,source.indexOf('    function personalClaimQuestC23',start));const ctx={window:{DuduPersonalReadingPolicyP2C:{enabled:()=>true},DuduPersonalReadingRewardP2B:{}},personalProgressReady:()=>true,currentUsername:uid,pendingLiveProfileWrites:new Set(),personalProgressQueue:Promise.resolve(),firebase:{auth:()=>h.auth},db:h.db,userProfile:ui,localStorage:{setItem(){}},updatePhoneUI(){},renderWallet(){},DuduPersonalReadingPolicyP2C:{policy},DuduPersonalReadingRewardP2B:{run:async o=>{const r=await reading.run({...o,now:()=>NOW});committed();await gate;return r;}}};vm.runInNewContext(code,ctx);const pending=ctx.window.DuduReadingRewardBridgeP2C.submit(uid,slots);await done;apply(ui,'Shop',await action(h,'Shop'));a.equal(h.snapshot().currency,980);await save.enqueue({...args(h),data:ui,isCurrent:()=>true});release();await pending;a.equal(ui.currency,1000);a.equal(h.snapshot().currency,980);await save.enqueue({...args(h),data:ui,isCurrent:()=>true});a.equal(h.snapshot().currency,980);a.equal(h.snapshot().inventory.length,1);a.ok(h.snapshot().storyStates[shop.META]);save.reset();});
+test('A-06 actual Reader bridge plus Shop plus advanced saver baseline cannot refund purchase or remove receipt',async()=>{const h=env(),ui=h.snapshot();save.begin(uid,h.snapshot());let release,committed;const gate=new Promise(r=>release=r),done=new Promise(r=>committed=r),source=fs.readFileSync(require('node:path').join(__dirname,'../index.html'),'utf8'),start=source.indexOf('window.DuduReadingRewardBridgeP2C='),code=source.slice(start,source.indexOf('    function personalClaimQuestC23',start));const coordinator=req('profile-reconciliation-p4a3a2').create({read:async()=>({exists:true,fromCache:false,hasPendingWrites:false,data:h.snapshot()}),apply:(_,data)=>Object.assign(ui,data),isCurrent:()=>true});const ticket=coordinator.begin(uid,h.auth.currentUser);const ctx={window:{DuduCanonicalProfileP4A3A2:{capture:coordinator.capture,current:t=>t===ticket,afterCommit:coordinator.afterCommit},DuduPersonalReadingPolicyP2C:{enabled:()=>true},DuduPersonalReadingRewardP2B:{}},personalProgressReady:()=>true,currentUsername:uid,pendingLiveProfileWrites:new Set(),personalProgressQueue:Promise.resolve(),firebase:{auth:()=>h.auth},db:h.db,userProfile:ui,localStorage:{setItem(){}},updatePhoneUI(){},renderWallet(){},DuduPersonalReadingPolicyP2C:{policy},DuduPersonalReadingRewardP2B:{run:async o=>{const r=await reading.run({...o,now:()=>NOW});committed();await gate;return r;}}};vm.runInNewContext(code,ctx);const pending=ctx.window.DuduReadingRewardBridgeP2C.submit(uid,slots);await done;apply(ui,'Shop',await action(h,'Shop'));a.equal(h.snapshot().currency,980);await save.enqueue({...args(h),data:ui,isCurrent:()=>true});release();await pending;await coordinator.retry(ticket);a.equal(ui.currency,980);a.equal(ui.exp,2);a.equal(ui.inventory.length,1);a.ok(ui.storyStates[shop.META]);a.equal(h.snapshot().currency,980);await save.enqueue({...args(h),data:ui,isCurrent:()=>true});a.equal(h.snapshot().currency,980);a.equal(h.snapshot().inventory.length,1);a.ok(h.snapshot().storyStates[shop.META]);save.reset();});
 test('P4A.2 containment: stale Shop/Loot snapshot cannot erase bitmap; retained slot replay awards zero',async()=>{
  const h=env(),ui=h.snapshot();save.begin(uid,h.snapshot());const oldShop=await action(h,'Shop');
  const store=new Map(),storage={get length(){return store.size;},key:i=>[...store.keys()][i]??null,getItem:k=>store.get(k)??null,setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)};
@@ -244,4 +244,58 @@ test('actual avatar editor emits only its validated selection intent',()=>{
   a.deepEqual(calls,[sandbox?null:{playerAvatar:{kind:'initials',frameId:'moon',presetId:'',uploadId:''}}]);
  }
  a.match(source.slice(source.indexOf('async function deletePlayerAvatarLocalV23()')),/saveCurrentAccount\(\{playerAvatar:userProfile\.playerAvatar\}\)/);
+});
+
+test('confirmed preference read rebases only clean editor fields, preserves metadata and dirty edits',async()=>{
+ const h=saverEnv({name:'Original',playerAvatar:{kind:'initials',frameId:'none',presetId:'',uploadId:'',historic:{keep:true}}});
+ save.begin(uid,h.snapshot());
+ const fence=save.capturePreferenceFence(uid);
+ const remote={...h.snapshot(),name:'Other Device',playerAvatar:{...h.snapshot().playerAvatar,frameId:'moon'}};
+ const patch=save.reconcileConfirmedPreferences(uid,remote,{...h.snapshot(),name:'Unsaved Draft'},fence);
+ a.equal(Object.hasOwn(patch,'name'),false);
+ a.deepEqual(patch.playerAvatar,remote.playerAvatar);
+ h.setRemote(remote);
+ const conflict=await edit(h,{name:'Unsaved Draft'});
+ a.deepEqual(conflict.conflicts,[['name']]);a.equal(h.snapshot().name,'Other Device');
+ save.reset();
+});
+test('old confirmed read cannot rebase after a queued editor edit or session replacement',async()=>{
+ const h=saverEnv({name:'Original',currency:100});save.begin(uid,h.snapshot());
+ const before=save.capturePreferenceFence(uid);
+ const queued=edit(h,{name:'New Name'});
+ a.equal(save.capturePreferenceFence(uid),null);
+ await queued;
+ a.deepEqual(save.reconcileConfirmedPreferences(uid,{name:'Original'},{name:'New Name'},before),{});
+ const fresh=save.capturePreferenceFence(uid);
+ a.deepEqual(save.reconcileConfirmedPreferences(uid,{name:'Other Device'},{name:'New Name'},fresh),{name:'Other Device'});
+ h.setRemote({name:'Other Device',currency:100});
+ a.equal((await edit(h,{name:'Next Name'})).saved,true);
+ save.begin(uid,h.snapshot());
+ a.deepEqual(save.reconcileConfirmedPreferences(uid,{name:'Stale'},{name:'Next Name'},fresh),{});
+ save.reset();
+});
+
+test('P4A.3A.2 thirty ordered engine pairs converge from reversed receipt delivery; read only, historical NPC preserved',async()=>{
+ const names=['Reader','Shop','Loot','Arcade','VanBao','VanTuong'];
+ const reconciler=req('profile-reconciliation-p4a3a2');
+ let pairs=0;
+ for(const x of names)for(const y of names)if(x!==y){
+  const history={book:{collectedCharacters:{npc:{affinity:72,relationshipV2:{trust:33},unknown:{keep:true}}}},historical:{keep:true}};
+  const h=env({storyStates:history}),ui=h.snapshot(),cache=new Map();let reads=0,publishes=0;
+  const r1=await action(h,x,1),r2=await action(h,y,2);
+  const committed=h.snapshot(),writes=h.writes;
+  const api=reconciler.create({isCurrent:(u,i)=>u===uid&&i===h.auth.currentUser,
+   read:async()=>{reads++;return {exists:true,fromCache:false,hasPendingWrites:false,data:h.snapshot()};},
+   apply:(u,data)=>{publishes++;Object.assign(ui,data);reconciler.storeConfirmed({setItem:(k,v)=>cache.set(k,v)},u,data);}});
+  const ticket=api.begin(uid,h.auth.currentUser);
+  // Notifications carry no response payload. Deliver the later commit first.
+  for(const receipt of [r2,r1]){a.ok(receipt);a.equal((await api.afterCommit(ticket)).status,'synced');a.deepEqual(ui,committed,x+' / '+y);}
+  a.deepEqual(JSON.parse(cache.get(reconciler.cacheKey(uid))),committed);
+  a.deepEqual(ui.storyStates.book,history.book);
+  a.equal(ui.storyStates.historical.keep,true);
+  a.equal(reads,2);a.equal(publishes,2);a.equal(h.writes,writes);
+  a.deepEqual(h.snapshot(),committed);
+  pairs++;
+ }
+ a.equal(pairs,30);
 });

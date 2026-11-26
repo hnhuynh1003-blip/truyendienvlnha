@@ -866,6 +866,8 @@
    noticeUntil=now()+5000;error=true;syncRetryAt=now()+12000;
    if(visible())render();return false;
   }
+  const canonical=root.DuduCanonicalProfileP4A3A2,ticket=canonical?.capture();
+  if(!ticket){notice='Hãy tải lại để đồng bộ hồ sơ.';error=true;noticeUntil=now()+5000;syncRetryAt=now()+12000;if(visible())render();return false;}
   syncBusy=true;
   const prior=state,time=now(),isFirst=syncReadyKey!==key;
   try{
@@ -883,15 +885,17 @@
     elapsedMs:isFirst?0:Math.max(0,Math.min(60000,time-syncLastAt)),
     roll:Math.random()
    });
-   if(generation!==syncGeneration||activeKey!==key||identity()!==uid)return false;
+   if(generation!==syncGeneration||activeKey!==key||identity()!==uid||!canonical.current(ticket))return false;
    syncReadyKey=key;syncLastAt=now();syncRetryAt=0;
    if(!result.ok){
     notice=result.reason||'Không thể thực hiện giao dịch Xu.';
     noticeUntil=now()+4000;error=true;
     if(visible())render();return false;
    }
-   if(typeof userProfile!=='undefined'&&userProfile)userProfile.currency=result.balance;
-   root.updatePhoneUI?.();
+   // Action/init always reconcile. A periodic tick with unchanged whole-Xu
+   // balance must not add an idle profile read just for game-only state.
+   if(mode!=='tick'||typeof userProfile==='undefined'||userProfile?.currency!==result.balance)
+    void canonical.afterCommit(ticket).catch(e=>console.warn('Arcade profile reconciliation:',e));
    if(mode==='action'){
     return finishAction(action,result,prior,action==='reel-line'?prior.garden.line?.fishId:null);
    }
@@ -1060,6 +1064,8 @@
   if(!uid||!pendingKey||!settledKey||auth?.currentUser?.uid!==uid||!firestore){
    notice='Hãy đăng nhập trước khi đổi Xu.';error=true;noticeUntil=now()+4500;render();return false;
   }
+  const canonical=root.DuduCanonicalProfileP4A3A2,ticket=canonical?.capture();
+  if(!ticket)return false;
   let pending=readPending();
   if(!pending){
    const q=quoteForExchange();if(!q.ok)return false;
@@ -1072,7 +1078,7 @@
   try{
    const result=await sparkBridge.transfer({db:firestore,auth,uid,id:pending.id,
     gameXu:pending.gameXu,availableTenths:pending.availableTenths});
-   if(identity()!==uid||activeKey!==keyFor(uid))return false;
+   if(identity()!==uid||activeKey!==keyFor(uid)||!canonical.current(ticket))return false;
    const settled=root.localStorage.getItem(settledKey);
    if(settled!==pending.id){
     state=core.advance(state,now(),0);
@@ -1081,11 +1087,7 @@
     root.localStorage.setItem(settledKey,pending.id);
    }
    root.localStorage.removeItem(pendingKey);
-   if(typeof userProfile!=='undefined'&&userProfile){
-    userProfile.currency=result.balance;
-    if(typeof saveCurrentAccount==='function')saveCurrentAccount();
-   }
-   root.renderWallet?.();
+   void canonical.afterCommit(ticket).catch(e=>console.warn('Arcade exchange reconciliation:',e));
    exchangeOpen=false;notice='✓ Đã chuyển 🟡 '+result.walletXu+' vào Ví Xu.';
    error=false;noticeUntil=now()+4500;return true;
   }catch(e){
@@ -1341,6 +1343,12 @@
   return true;
  }
  function openGarden(){return openGame('garden');}
- root.DuduPersonalArcadeUIV1=Object.freeze({init,render,interact,tick,peekBalance,openExchange,openSeason,openGarden,openGame});
+ function refreshCanonicalWallet(data){
+  if(!unifiedMode()||!state||activeKey!==keyFor(identity())||!Number.isSafeInteger(data?.currency))return;
+  const remainder=data.storyStates?.[unifiedBridge?.META]?.remainder;
+  state.coins=data.currency*10+(Number.isSafeInteger(remainder)&&remainder>=0&&remainder<10?remainder:0);
+  if(visible())render();else updateWalletHeader(state);
+ }
+ root.DuduPersonalArcadeUIV1=Object.freeze({init,render,interact,tick,peekBalance,openExchange,openSeason,openGarden,openGame,refreshCanonicalWallet});
  init();
 })(typeof window!=='undefined'?window:{});

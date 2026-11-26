@@ -80,6 +80,7 @@
   }
   function resetSession() {
     window.DuduProfileSaveC23?.reset?.();
+    window.DuduCanonicalProfileP4A3A2?.reset();
     ready = false;
     admin = false;
     currentUsername = '';
@@ -395,6 +396,7 @@
       // The server document is the comparison baseline. Local defaults or
       // device backups are never authority to overwrite a newer profile.
       window.DuduProfileSaveC23?.begin?.(account.uid, cloudData);
+      window.DuduCanonicalProfileP4A3A2?.begin(account.uid,account);
       profileError = '';
       if (btn) btn.textContent = '👤 ' + label;
       if (prof) prof.textContent = 'Firebase UID: ' + account.uid.slice(0, 8) + '…';

@@ -25,7 +25,13 @@ test('R3.2 live Arcade purchases debit profiles_v2 currency, never legacy local 
    storyStates:{...doc.storyStates,...patch.storyStates}};numberOfWrites++;}
   return result;
  }};
- const profile={currency:30};
+ const profile={currency:30};let reads=0;
+ const coordinator=require('../js/profile-reconciliation-p4a3a2.js').create({
+  isCurrent:(u,identity)=>u===uid&&identity===auth.currentUser,
+  read:async()=>{reads++;return {exists:true,fromCache:false,hasPendingWrites:false,data:structuredClone(doc)};},
+  apply:(_,data)=>Object.assign(profile,data)
+ });
+ coordinator.begin(uid,auth.currentUser);
  const notice={textContent:''},scroll={scrollTop:0};
  const host={innerHTML:'',scrollTop:0,listeners:{},
   querySelector:selector=>selector==='.arcade-scroll'?scroll:notice,querySelectorAll:()=>[],
@@ -37,6 +43,7 @@ test('R3.2 live Arcade purchases debit profiles_v2 currency, never legacy local 
  let onTick;
  const root={document:docBrowser,DuduPersonalArcadeCoreV1:core,
   DuduArcadeUnifiedXuR32:bridge,DUDU_ARCADE_UNIFIED_XU_R32_READY:true,
+  DuduCanonicalProfileP4A3A2:{capture:coordinator.capture,current:t=>coordinator.capture()===t,afterCommit:coordinator.afterCommit},
   DuduAuth:{uid:()=>uid,isReady:()=>true},crypto:{randomUUID:()=>{
    id++;return String(id).padStart(8,'0')+'-1234-1234-1234-123456789abc';}},
   localStorage:{getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,v),
@@ -62,5 +69,6 @@ test('R3.2 live Arcade purchases debit profiles_v2 currency, never legacy local 
  assert.equal(profile.currency,20);
  assert.equal(doc.storyStates[bridge.META].game.garden.seeds,12);
  assert.equal(numberOfWrites,2);
+ assert.equal(reads,2,'init and explicit action each reconcile once');
  assert.match(host.innerHTML,/dudu-money-icon--gold/);
 });

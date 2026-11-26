@@ -24,7 +24,9 @@ test('real Codex NPC actions are no longer sandbox-only; save only committed fie
  const handler=html.slice(html.indexOf('async function personalNpcActionV1('),
   html.indexOf('// V43.4: confirmed interactions only;',html.indexOf('async function personalNpcActionV1(')));
  assert.ok(handler.includes('DuduPersonalNpcSocialV1.run'));
- assert.ok(handler.includes("localStorage.setItem('profile_'+uid"));
+ assert.match(handler,/canonical\.current\(ticket\)/);
+ assert.match(handler,/canonical\.afterCommit\(ticket\)/);
+ assert.ok(!handler.includes("localStorage.setItem('profile_'+uid"));
  assert.ok(!handler.includes('saveCurrentAccount()'),'Do not issue a stale full-profile cloud write');
 });
 test('NPC portrait viewer remains read-only and requires unlock or author permission',()=>{
@@ -41,4 +43,13 @@ test('shared check-in panel returns to Liên lạc after being used from Codex',
  const switcher=html.slice(html.indexOf('function switchChatCharacter()'),
   html.indexOf('function renderChatMessages('));
  assert.match(switcher,/restoreNpcProgressToChatV31\(\)/);
+});
+
+test('legacy NPC gift and envelope use canonical projection without enabling new contacts',()=>{
+ const start=html.indexOf('async function commitPersonalNpcExchangeV1('),end=html.indexOf('window.commitPersonalNpcExchangeV1=',start),handler=html.slice(start,end);
+ assert.match(handler,/!isNpcUnlocked\(storyId,npcId\)/);
+ assert.match(handler,/canonical\.current\(ticket\)/);
+ assert.match(handler,/canonical\.afterCommit\(ticket\)/);
+ assert.doesNotMatch(handler,/userProfile\.(currency|inventory|storyStates|quests)\s*=/);
+ assert.doesNotMatch(handler,/localStorage\.setItem\('profile_'/);
 });
