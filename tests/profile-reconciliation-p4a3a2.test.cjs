@@ -60,3 +60,18 @@ test('projection failure remains pending and a subsequent read can recover',asyn
  const ticket=api.begin('A',identity);a.equal((await api.afterCommit(ticket)).status,'apply-failed');fails=false;
  a.equal((await api.retry(ticket)).status,'synced');a.equal(reads,2);
 });
+
+test('confirmed cache is UID-scoped, isolated from legacy UI backup and retains unknown roots',()=>{
+ const {cacheKey,storeConfirmed}=require('../js/profile-reconciliation-p4a3a2.js');
+ const values=new Map([['profile_A','historical-device-backup']]);
+ const storage={setItem:(k,v)=>values.set(k,v)};
+ const profile={currency:20,storyStates:{historical:{npc:'preserved'}},unknown:{keep:true}};
+ a.equal(storeConfirmed(storage,'A',profile),true);
+ a.equal(values.get('profile_A'),'historical-device-backup');
+ a.deepEqual(JSON.parse(values.get(cacheKey('A'))),profile);
+ storage.setItem('profile_A','stale UI');
+ a.deepEqual(JSON.parse(values.get(cacheKey('A'))),profile);
+ a.equal(storeConfirmed(storage,'B',{currency:3}),true);
+ a.equal(JSON.parse(values.get(cacheKey('B'))).currency,3);
+ a.equal(storeConfirmed({setItem(){throw Error('quota');}},'A',profile),false);
+});
