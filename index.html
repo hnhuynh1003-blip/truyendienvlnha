@@ -3570,7 +3570,8 @@
             ()=>window.DuduWallpaperStudioV38?.sync?.(),
             ()=>window.DuduFunUIV43?.render?.(),
             ()=>window.DuduPersonalArcadeUIV1?.refreshCanonicalWallet?.(data),
-            ()=>window.DuduHonorUIV46?.refresh?.()]){
+            ()=>window.DuduHonorUIV46?.refresh?.(),
+            ()=>refreshNpcViewsAfterLibraryUpdate()]){
             try{refresh();}catch(error){console.warn('DUDU canonical cosmetic render:',error);}
           }
           if(document.getElementById('phone-app-shop')?.style.display==='flex'){
@@ -4415,7 +4416,8 @@
       const npc=novel?.characters?.find(c=>c.id===npcId&&!c.archived);
       if(!npc||!isNpcUnlocked(storyId,npcId))return false;
       const uid=currentUsername,key=uid+':'+storyId+':'+npcId+':'+action;
-      if(personalNpcActionsInFlight.has(key))return false;
+      const canonical=window.DuduCanonicalProfileP4A3A2,ticket=canonical?.capture();
+      if(!ticket||personalNpcActionsInFlight.has(key))return false;
       personalNpcActionsInFlight.add(key);
       try{
         const time=Date.now();
@@ -4423,29 +4425,9 @@
           db,auth:firebase.auth(),uid,storyId,npcId,action,choiceId,now:time,
           eventId:'checkin-'+time+'-'+Math.random().toString(36).slice(2,10)
         });
-        if(DuduAuth.uid()!==uid||currentUsername!==uid)return false;
-        const state=getStoryProgress(storyId);
-        if(action==='favorite'){
-          state.favoriteNpcV43=result.favoriteNpcV43;
-        }else{
-          const record=state.collectedCharacters[npcId];
-          if(!record)return false;
-          record.relationshipV2=result.relationshipV2;
-          if(result.npcBondV43)record.npcBondV43=result.npcBondV43;
-          if(result.quests){
-            userProfile.quests=result.quests;
-            userProfile.questV437=result.questV437;
-            userProfile.questsDayV43=result.questsDayV43;
-          }
-        }
-        try{localStorage.setItem('profile_'+uid,JSON.stringify(userProfile));}
-        catch(error){console.warn('NPC personal local backup unavailable:',error);}
-        renderCodexList();
-        if(action==='checkin')renderQuests();
-        if(document.getElementById('phone-app-chat')?.style.display==='flex'&&
-           activeChatNovelId===storyId&&
-           document.getElementById('chat-character-selector')?.value===npcId)
-          switchChatCharacter();
+        if(!canonical.current(ticket))return false;
+        void canonical.afterCommit(ticket).catch(error=>console.warn('NPC social reconciliation:',error));
+        try{
         if(action==='favorite'){
           showSystemAlert('NPC YÊU THÍCH',result.favoriteNpcV43?
             'Đã chọn '+npc.name+' làm NPC yêu thích.':
@@ -4455,8 +4437,10 @@
           const response=choiceId==='thoughtful'?scenario.replyThoughtful:scenario.replyCasual;
           showSystemAlert(npc.name,response+' · +'+result.trustGain+' Tin tưởng.');
         }
+        }catch(error){console.warn('NPC social notification:',error);}
         return true;
       }catch(error){
+        if(!canonical.current(ticket))return false;
         const reason=error?.code||error?.message||'unknown';
         showSystemAlert('CHƯA LƯU ĐƯỢC',reason==='already-checked-in'?
           'Hôm nay bạn đã hỏi thăm người này rồi.':
@@ -5426,6 +5410,8 @@
       const npc=novel?.characters?.find(c=>c.id===npcId&&!c.archived);
       if(!npc||!isNpcUnlocked(storyId,npcId))return null;
       const uid=currentUsername,engine=DuduPersonalNpcExchangeV1;
+      const canonical=window.DuduCanonicalProfileP4A3A2,ticket=canonical?.capture();
+      if(!ticket)return null;
       const key='dudu:npc-exchange:pending:'+uid+':'+kind+':'+storyId+':'+npcId+':'+
         (kind==='gift'?details.instanceId:details.amount);
       let eventId;
@@ -5440,34 +5426,15 @@
       window.DUDU_PERSONAL_NPC_EXCHANGE_BUSY=true;
       try{
         await Promise.allSettled([...pendingLiveProfileWrites]);
-        if(DuduAuth.uid()!==uid||currentUsername!==uid)return null;
+        if(!canonical.current(ticket))return null;
         const result=await engine.run({db,auth:firebase.auth(),uid,storyId,npcId,
           npc,kind,eventId,...details});
-        if(DuduAuth.uid()!==uid||currentUsername!==uid)return null;
-        const progress=getStoryProgress(storyId);
-        if(kind==='gift'){
-          userProfile.inventory=result.inventory;
-          progress.collectedCharacters[npcId]=result.progress;
-          if(result.quests){
-            userProfile.quests=result.quests;
-            userProfile.questV437=result.questV437;
-            userProfile.questsDayV43=result.questsDayV43;
-          }
-          if(result.collectionState&&window.DuduPersonalCollectionC24){
-            userProfile.storyStates[DuduPersonalCollectionC24.META]=result.collectionState;
-          }
-        }else{
-          userProfile.currency=result.balance;
-          progress.redPacketsV32={...(progress.redPacketsV32||{}),[npcId]:result.redPacket};
-        }
-        try{
-          localStorage.setItem('profile_'+uid,JSON.stringify(userProfile));
-          localStorage.removeItem(key);
-        }catch(error){console.warn('NPC local cache unavailable:',error);}
-        updatePhoneUI();
-        if(kind==='gift')renderQuests();
+        if(!canonical.current(ticket))return null;
+        try{localStorage.removeItem(key);}catch(error){console.warn('NPC receipt cleanup:',error);}
+        void canonical.afterCommit(ticket).catch(error=>console.warn('NPC exchange reconciliation:',error));
         return result;
       }catch(error){
+        if(!canonical.current(ticket))return null;
         console.warn('NPC Firestore exchange:',error?.code||error?.message);
         const reason=error?.code||'';
         const message=reason==='npc-not-unlocked'?'Liên lạc NPC lịch sử tạm chưa hỗ trợ. Quan hệ và lịch sử vẫn được bảo toàn.':
