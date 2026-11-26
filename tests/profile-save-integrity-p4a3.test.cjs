@@ -245,3 +245,32 @@ test('actual avatar editor emits only its validated selection intent',()=>{
  }
  a.match(source.slice(source.indexOf('async function deletePlayerAvatarLocalV23()')),/saveCurrentAccount\(\{playerAvatar:userProfile\.playerAvatar\}\)/);
 });
+
+test('confirmed preference read rebases only clean editor fields, preserves metadata and dirty edits',async()=>{
+ const h=saverEnv({name:'Original',playerAvatar:{kind:'initials',frameId:'none',presetId:'',uploadId:'',historic:{keep:true}}});
+ save.begin(uid,h.snapshot());
+ const fence=save.capturePreferenceFence(uid);
+ const remote={...h.snapshot(),name:'Other Device',playerAvatar:{...h.snapshot().playerAvatar,frameId:'moon'}};
+ const patch=save.reconcileConfirmedPreferences(uid,remote,{...h.snapshot(),name:'Unsaved Draft'},fence);
+ a.equal(Object.hasOwn(patch,'name'),false);
+ a.deepEqual(patch.playerAvatar,remote.playerAvatar);
+ h.setRemote(remote);
+ const conflict=await edit(h,{name:'Unsaved Draft'});
+ a.deepEqual(conflict.conflicts,[['name']]);a.equal(h.snapshot().name,'Other Device');
+ save.reset();
+});
+test('old confirmed read cannot rebase after a queued editor edit or session replacement',async()=>{
+ const h=saverEnv({name:'Original',currency:100});save.begin(uid,h.snapshot());
+ const before=save.capturePreferenceFence(uid);
+ const queued=edit(h,{name:'New Name'});
+ a.equal(save.capturePreferenceFence(uid),null);
+ await queued;
+ a.deepEqual(save.reconcileConfirmedPreferences(uid,{name:'Original'},{name:'New Name'},before),{});
+ const fresh=save.capturePreferenceFence(uid);
+ a.deepEqual(save.reconcileConfirmedPreferences(uid,{name:'Other Device'},{name:'New Name'},fresh),{name:'Other Device'});
+ h.setRemote({name:'Other Device',currency:100});
+ a.equal((await edit(h,{name:'Next Name'})).saved,true);
+ save.begin(uid,h.snapshot());
+ a.deepEqual(save.reconcileConfirmedPreferences(uid,{name:'Stale'},{name:'Next Name'},fresh),{});
+ save.reset();
+});
