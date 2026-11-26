@@ -75,3 +75,33 @@ test('confirmed cache is UID-scoped, isolated from legacy UI backup and retains 
  a.equal(JSON.parse(values.get(cacheKey('B'))).currency,3);
  a.equal(storeConfirmed({setItem(){throw Error('quota');}},'A',profile),false);
 });
+
+test('actual canonical runtime repaints only the authenticated market and does not activate hidden FUN',async()=>{
+ const vm=require('node:vm'),fs=require('node:fs'),path=require('node:path');
+ const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+ const start=html.indexOf('    (function installCanonicalProfileP4A3A2(){'),end=html.indexOf('    const pendingLiveProfileWrites=',start);
+ a.ok(start>=0&&end>start);
+ const identity={uid:'A'},app={shop:{style:{display:'flex'}},fun:{style:{display:'none'}}},storage=new Map();
+ let reads=0,market=0,legacy=0,fun=0;
+ const canonical={currency:77,inventory:[{id:'owned'}],storyStates:{historical:{keep:true},__duduPersonalProgressC23:{lastGlobalLootAt:0}}};
+ const userProfile={currency:100,inventory:[],storyStates:{},phoneAppearanceV568:{local:true}};
+ const root={DuduProfileReconciliationP4A3A2:require('../js/profile-reconciliation-p4a3a2.js'),
+  DuduEconomyLiveV52:{refreshPersonalMarket(){market++;}},
+  DuduFunUIV43:{render(){fun++;}}};
+ const ctx={window:root,userProfile,currentUsername:'A',IS_SANDBOX_MODE:false,
+  DuduAuth:{uid:()=>identity.uid,isReady:()=>true},firebase:{auth:()=>({currentUser:identity})},
+  db:{collection:name=>{a.equal(name,'profiles_v2');return {doc:uid=>{a.equal(uid,'A');return {get:async opts=>{a.equal(opts.source,'server');reads++;return {exists:true,metadata:{fromCache:false,hasPendingWrites:false},data:()=>structuredClone(canonical)};}};}};}},
+  document:{getElementById:id=>app[id.replace('phone-app-','')],querySelectorAll:()=>[]},
+  localStorage:{setItem:(k,v)=>storage.set(k,v)},lastLootTimestamp:123,scopedLocalKey:k=>k,startCooldownTicker(){},
+  updatePhoneUI(){},renderWallet(){},renderQuests(){},renderInventory(){},updateChapterLootButtonState(){},refreshNpcViewsAfterLibraryUpdate(){},
+  renderShop(){legacy++;},console};
+ vm.runInNewContext(html.slice(start,end),ctx);
+ const api=root.DuduCanonicalProfileP4A3A2,ticket=api.begin('A',identity);
+ a.equal((await api.afterCommit(ticket)).status,'synced');
+ a.equal(userProfile.currency,77);a.equal(userProfile.inventory.length,1);a.equal(ctx.lastLootTimestamp,0);
+ a.deepEqual(userProfile.phoneAppearanceV568,{local:true});
+ a.equal(market,1);a.equal(legacy,0);a.equal(fun,0);a.equal(reads,1);
+ app.shop.style.display='none';app.fun.style.display='flex';
+ a.equal((await api.afterCommit(ticket)).status,'synced');
+ a.equal(market,1);a.equal(legacy,0);a.equal(fun,1);a.equal(reads,2);
+});
