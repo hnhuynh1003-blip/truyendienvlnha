@@ -120,8 +120,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-check-compat.js"></script>
   <script src="js/appcheck-sitekey-v52.js?v=52-3"></script>
   <script src="js/firestore-profile-fallback-v56-7.js?v=56-7"></script>
-  <script src="js/profile-save-c23.js?v=c416-1-p4a3-1"></script>
-  <script src="js/profile-reconciliation-p4a3a2.js?v=p4a3a2-1"></script>
+  <script src="js/profile-save-c23.js?v=c416-1-p4a3-1&amp;cache=p4a3a2-3"></script>
+  <script src="js/profile-reconciliation-p4a3a2.js?v=p4a3a2-1&amp;cache=p4a3a2-3"></script>
   <script src="js/account-approval-v1.js?v=auth-a1"></script>
   <script src="js/account-invite-r11.js?v=r11-1"></script>
   <script src="js/auth-v2.js?v=epub-perf-r1-p4a3a2-1"></script>
@@ -3543,14 +3543,17 @@
         isCurrent:(uid,identity)=>!IS_SANDBOX_MODE&&!window.DUDU_RESET_IN_PROGRESS&&
           DuduAuth.isReady()&&DuduAuth.uid()===uid&&currentUsername===uid&&firebase.auth().currentUser===identity,
         async read(uid){
+          const preferenceFence=window.DuduProfileSaveC23?.capturePreferenceFence?.(uid);
           const snap=await db.collection('profiles_v2').doc(uid).get({source:'server'});
           return {exists:snap.exists,fromCache:snap.metadata?.fromCache,
-            hasPendingWrites:snap.metadata?.hasPendingWrites,data:snap.exists?snap.data():null};
+            hasPendingWrites:snap.metadata?.hasPendingWrites,data:snap.exists?snap.data():null,preferenceFence};
         },
-        apply(uid,data){
+        apply(uid,data,identity,preferenceFence){
           // Only domain-owned roots in this phase; leave local bookmark,
           // phone appearance and unsaved editor preferences untouched.
           for(const key of fields)if(Object.hasOwn(data,key))userProfile[key]=data[key];
+          const preferences=window.DuduProfileSaveC23?.reconcileConfirmedPreferences?.(uid,data,userProfile,preferenceFence);
+          if(preferences)Object.assign(userProfile,preferences);
           const cooldown=data.storyStates?.__duduPersonalProgressC23?.lastGlobalLootAt;
           if(Number.isSafeInteger(cooldown)&&cooldown>=0){
             lastLootTimestamp=cooldown;
@@ -3558,8 +3561,8 @@
             catch(error){console.warn('DUDU canonical cooldown cache:',error);}
             try{startCooldownTicker();}catch(error){console.warn('DUDU cooldown render:',error);}
           }
-          try{localStorage.setItem('profile_'+uid,JSON.stringify(data));}
-          catch(error){console.warn('DUDU canonical backup:',error);}
+          if(!engine.storeConfirmed(localStorage,uid,data))
+            console.warn('DUDU canonical backup unavailable');
           for(const render of [updatePhoneUI,renderWallet,renderQuests,renderInventory,updateChapterLootButtonState]){
             try{render();}catch(error){console.warn('DUDU canonical render:',error);}
           }
@@ -3666,6 +3669,11 @@
           });
           if(!write)throw Error('Safe profile saver not loaded');
           pendingLiveProfileWrites.add(write);
+          const canonical=window.DuduCanonicalProfileP4A3A2,ticket=canonical?.capture();
+          write.then(result=>{
+            if(canonical?.current(ticket)&&(result.saved||result.conflicts?.length||result.stale?.length))
+              void canonical.afterCommit(ticket).catch(error=>console.warn('DUDU preference reconciliation:',error));
+          }).catch(()=>{});
           write.catch(err=>{
             console.warn('Không lưu được hồ sơ:',err);
             if(Date.now()-lastLiveProfileSaveWarningAt>20000){
