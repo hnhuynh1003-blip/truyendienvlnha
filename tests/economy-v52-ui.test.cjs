@@ -21,7 +21,7 @@ test('V52.3 Enterprise App Check uses a configured public key while retaining ba
  assert.doesNotMatch(keySource,/SECRET_KEY|PRIVATE_KEY|serviceAccount/);
  assert.match(backend,/enforceAppCheck:true/);
 });
-test('V52 legacy backend remains gated; personal Spark shop uses returned transaction state',()=>{
+test('V52 legacy backend remains gated; personal Spark shop reconciles after confirmed transaction',()=>{
  assert.match(html,/js\/economy-live-v52\.js\?v=(?:52-2|c416-1|f34-1)/);
  for(const app of ['shop','quests','inventory']){
   assert.match(html,new RegExp('window\\.DuduEconomyLiveV52\\?\\.open'+app[0].toUpperCase()+app.slice(1)+'\\(\\)'));
@@ -31,8 +31,12 @@ test('V52 legacy backend remains gated; personal Spark shop uses returned transa
  assert.match(client,/duduEconomyStatus/);
  assert.match(client,/const account=uid\(\)/);
  assert.match(client,/functions\('asia-southeast1'\)\.httpsCallable/);
- assert.match(client,/userProfile\.currency=result\.balance/);
- assert.match(client,/userProfile\.inventory=result\.inventory/);
+ assert.match(client,/canonical\.current\(ticket\)/);
+ assert.match(client,/canonical\.afterCommit\(ticket\)/);
+ assert.doesNotMatch(client,/userProfile\.currency=result\.balance/);
+ assert.doesNotMatch(client,/userProfile\.inventory=result\.inventory/);
+ assert.match(html,/get\(\{source:'server'\}\)/);
+ assert.match(html,/DuduProfileReconciliationP4A3A2/);
  assert.match(client,/personalMode:true,readOnly:false/);
  assert.doesNotMatch(client,/userProfile\.currency\s*\+=/);
  assert.doesNotMatch(client,/userProfile\.exp\s*=/);
