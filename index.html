@@ -3564,7 +3564,8 @@
             try{render();}catch(error){console.warn('DUDU canonical render:',error);}
           }
           for(const refresh of [()=>window.DuduReaderBackgroundR1?.refresh?.(),
-            ()=>window.DuduWallpaperStudioV38?.sync?.()]){
+            ()=>window.DuduWallpaperStudioV38?.sync?.(),
+            ()=>window.DuduFunUIV43?.render?.()]){
             try{refresh();}catch(error){console.warn('DUDU canonical cosmetic render:',error);}
           }
           if(document.getElementById('phone-app-shop')?.style.display==='flex'){
@@ -6351,18 +6352,19 @@ document.getElementById('phone-home-screen').style.display = 'none';
       const bridge=window.DuduVantVatLockBridgeF33;
       if(!bridge?.ready?.()||favoriteBusyF33||!item?.instanceId)return false;
       const uid=currentUsername;
+      const canonical=window.DuduCanonicalProfileP4A3A2,ticket=canonical?.capture();
+      if(!ticket)return false;
       const locked=window.DuduPersonalVantVatF33?.locked(userProfile.storyStates,item.instanceId);
       favoriteBusyF33=true;
       try{
-        const result=await bridge.run({kind:locked?'unlock':'lock',instanceId:item.instanceId});
-        if(uid!==currentUsername)return false;
-        userProfile.storyStates=result.storyStates;
-        renderInventory();
+        await bridge.run({kind:locked?'unlock':'lock',instanceId:item.instanceId});
+        if(uid!==currentUsername||!canonical.current(ticket))return false;
         return true;
       }catch(error){
+        if(!canonical.current(ticket))return false;
         showSystemAlert('CHƯA ĐỔI ĐƯỢC KHÓA',error?.reason||error?.message||'Thử lại sau nhé.');
         return false;
-      }finally{favoriteBusyF33=false;renderInventory();}
+      }finally{favoriteBusyF33=false;if(canonical.current(ticket))renderInventory();}
     }
     const personalItemsReady=()=>!IS_SANDBOX_MODE&&
       window.DUDU_SPARK_ITEMS_V1_READY===true&&!!window.DuduPersonalSparkItemsV1&&
@@ -6373,21 +6375,26 @@ document.getElementById('phone-home-screen').style.display = 'none';
       const engine=DuduCollectionQuestsF43,rows=engine.preview(userProfile),box=document.createElement('details');box.className='f43-collection-quests';
       const summary=document.createElement('summary');summary.textContent='Hành trình sưu tầm · '+rows.filter(x=>x.complete).length+'/'+rows.length;box.append(summary);
       for(const q of rows){const card=document.createElement('section');card.className='f43-quest-card';const title=document.createElement('strong');title.textContent=q.title;const label=document.createElement('small');label.textContent=(q.mode==='receive'||q.mode==='realms'?'Lượt nhận từ F4.3':q.mode==='deliver'?'Giao nộp '+DuduItemCatalog.byId(q.itemId).name:'Đang sở hữu · '+(q.mode==='own-types'?'Loại khác nhau':'Trọn bộ vị diện'))+' · '+Math.min(q.current,q.target)+'/'+q.target;const meter=document.createElement('progress');meter.max=q.target;meter.value=Math.min(q.current,q.target);const prize=document.createElement('small');prize.textContent=q.exp+' EXP · '+q.badge;const button=document.createElement('button');button.type='button';button.className='btn';button.textContent=q.complete?'✓ '+q.badge:q.mode==='deliver'?'Giao nộp ×'+q.target:'Nhận thành tựu';button.disabled=q.complete||!q.ready||collectionQuestBusyF43;
-       button.onclick=async()=>{if(collectionQuestBusyF43||!personalItemsReady())return;const uid=DuduAuth.uid();if(q.mode==='deliver'&&!confirm('Giao nộp '+q.target+' '+DuduItemCatalog.byId(q.itemId).name+' để nhận '+q.exp+' EXP? Các bản này sẽ rời Kho.'))return;collectionQuestBusyF43=true;button.disabled=true;try{await Promise.allSettled([...pendingLiveProfileWrites]);if(!personalItemsReady()||DuduAuth.uid()!==uid)return;const result=await engine.claim({db,auth:firebase.auth(),uid,questId:q.id,instanceIds:q.instanceIds,confirmed:q.mode==='deliver'});if(!personalItemsReady()||DuduAuth.uid()!==uid)return;for(const key of ['currency','exp','level','inventory','storyStates'])userProfile[key]=result[key];collectionQuestBusyF43=false;renderInventory();renderQuests();renderWallet();window.DuduFunUIV43?.render?.();}catch(error){if(DuduAuth.uid()===uid)showSystemAlert('CHƯA HOÀN THÀNH',error?.message||'Thử lại để xác nhận giao dịch.');}finally{collectionQuestBusyF43=false;if(DuduAuth.uid()===uid){button.disabled=q.complete||!q.ready;}}};card.append(title,label,meter,prize,button);box.append(card);
+       button.onclick=async()=>{if(collectionQuestBusyF43||!personalItemsReady())return;const uid=DuduAuth.uid();const canonical=window.DuduCanonicalProfileP4A3A2,ticket=canonical?.capture();if(!ticket)return;if(q.mode==='deliver'&&!confirm('Giao nộp '+q.target+' '+DuduItemCatalog.byId(q.itemId).name+' để nhận '+q.exp+' EXP? Các bản này sẽ rời Kho.'))return;collectionQuestBusyF43=true;button.disabled=true;try{await Promise.allSettled([...pendingLiveProfileWrites]);if(!personalItemsReady()||DuduAuth.uid()!==uid||!canonical.current(ticket))return;await engine.claim({db,auth:firebase.auth(),uid,questId:q.id,instanceIds:q.instanceIds,confirmed:q.mode==='deliver'});if(!canonical.current(ticket))return;void canonical.afterCommit(ticket).catch(error=>console.warn('DUDU domain reconciliation:',error));}catch(error){if(canonical.current(ticket))showSystemAlert('CHƯA HOÀN THÀNH',error?.message||'Thử lại để xác nhận giao dịch.');}finally{collectionQuestBusyF43=false;if(canonical.current(ticket)){button.disabled=q.complete||!q.ready;}}};card.append(title,label,meter,prize,button);box.append(card);
       }host.append(box);
     }
     async function sellQuantityF43(item,instanceIds){
       if(!personalItemsReady()||personalItemBusy)return false;
       const uid=DuduAuth.uid(),key='dudu-f43-sale:'+uid+':'+item.id;
+      const canonical=window.DuduCanonicalProfileP4A3A2,ticket=canonical?.capture();
+      if(!ticket)return false;
       let pending;try{pending=JSON.parse(localStorage.getItem(key)||'null');}catch(_){}
       if(pending&&(pending.itemId!==item.id||!Array.isArray(pending.instanceIds)))return false;
       if(pending&&JSON.stringify(pending.instanceIds)!==JSON.stringify(instanceIds)&&!confirm('Xác nhận lại giao dịch bán '+pending.instanceIds.length+' bản đang chờ phản hồi?'))return false;
       if(!pending)pending={itemId:item.id,instanceIds,requestId:'sell-'+crypto.randomUUID()};
       try{localStorage.setItem(key,JSON.stringify(pending));}catch(_){return false;}
       personalItemBusy=true;
-      try{await Promise.allSettled([...pendingLiveProfileWrites]);if(!personalItemsReady()||DuduAuth.uid()!==uid)return false;const result=await DuduCollectionTransactionsF43.sell({...pending,db,auth:firebase.auth(),uid});if(!personalItemsReady()||DuduAuth.uid()!==uid)return false;
-        userProfile.currency=result.balance;userProfile.inventory=result.inventory;userProfile.storyStates=result.storyStates;inventoryDetailSelection=result.inventory.find(i=>i.id===item.id)||null;localStorage.removeItem(key);renderInventory();renderWallet();renderQuests();return true;
-      }catch(error){showSystemAlert('CHƯA BÁN ĐƯỢC',error?.message||'Hãy thử lại để xác nhận cùng giao dịch.');return false;}finally{personalItemBusy=false;if(DuduAuth.uid()===uid)renderInventory();}
+      try{await Promise.allSettled([...pendingLiveProfileWrites]);if(!personalItemsReady()||DuduAuth.uid()!==uid||!canonical.current(ticket))return false;await DuduCollectionTransactionsF43.sell({...pending,db,auth:firebase.auth(),uid});if(!canonical.current(ticket))return false;
+        inventoryDetailSelection=null;
+        try{localStorage.removeItem(key);}catch(error){console.warn('DUDU quantity receipt cleanup:',error);}
+        void canonical.afterCommit(ticket).catch(error=>console.warn('DUDU domain reconciliation:',error));
+        return true;
+      }catch(error){if(!canonical.current(ticket))return false;showSystemAlert('CHƯA BÁN ĐƯỢC',error?.message||'Hãy thử lại để xác nhận cùng giao dịch.');return false;}finally{personalItemBusy=false;if(canonical.current(ticket))renderInventory();}
     }
     async function personalInventoryAction(kind,item){
       if(!personalItemsReady()||personalItemBusy||!item?.instanceId)return false;
@@ -7520,18 +7527,16 @@ document.getElementById('phone-home-screen').style.display = 'none';
         if(options?.type==='ticket'&&options?.kind==='begin')
           throw Error('Vé số miễn phí đã chuyển thành Vé Cào Vạn Phúc');
         const uid=currentUsername;
+        const canonical=window.DuduCanonicalProfileP4A3A2,ticket=canonical?.capture();
+        if(!ticket)throw Error('profile-reconciliation-unavailable');
         await Promise.allSettled([...pendingLiveProfileWrites]);
         if(!personalFunReadyC25()||currentUsername!==uid)throw Error('Tài khoản đã thay đổi');
+        if(!canonical.current(ticket))throw Error('account-changed');
         const result=await DuduPersonalFunC25.run({
           db,auth:firebase.auth(),uid,...options});
         if(!personalFunReadyC25()||currentUsername!==uid)throw Error('Tài khoản đã thay đổi');
-        if(options.kind==='claim'&&result.status==='applied'){
-          for(const field of ['currency','inventory','quests','questV437',
-            'questsDayV43','storyStates'])userProfile[field]=result[field];
-          try{localStorage.setItem('profile_'+uid,JSON.stringify(userProfile));}
-          catch(error){console.warn('DUDU FUN device backup:',error);}
-          updatePhoneUI();renderWallet();renderInventory();renderQuests();
-        }
+        if(!canonical.current(ticket))throw Error('account-changed');
+        void canonical.afterCommit(ticket).catch(error=>console.warn('DUDU domain reconciliation:',error));
         return result;
       }
     });
@@ -7552,21 +7557,16 @@ document.getElementById('phone-home-screen').style.display = 'none';
       async run(options){
         if(!scratchReadyC28())throw Error('Chưa sẵn sàng');
         const uid=currentUsername;
+        const canonical=window.DuduCanonicalProfileP4A3A2,ticket=canonical?.capture();
+        if(!ticket)throw Error('profile-reconciliation-unavailable');
         await Promise.allSettled([...pendingLiveProfileWrites]);
         if(!scratchReadyC28()||currentUsername!==uid)throw Error('Tài khoản đã thay đổi');
+        if(!canonical.current(ticket))throw Error('account-changed');
         const result=await DuduPersonalScratchC28.run({
           db,auth:firebase.auth(),uid,...options});
         if(!scratchReadyC28()||currentUsername!==uid)throw Error('Tài khoản đã thay đổi');
-        userProfile.currency=result.currency;
-        userProfile.storyStates=result.storyStates;
-        if(result.quests){
-          userProfile.quests=result.quests;
-          userProfile.questV437=result.questV437;
-          userProfile.questsDayV43=result.questsDayV43;
-        }
-        try{localStorage.setItem('profile_'+uid,JSON.stringify(userProfile));}
-        catch(error){console.warn('Lucky card device backup:',error);}
-        updatePhoneUI();renderWallet();renderQuests();
+        if(!canonical.current(ticket))throw Error('account-changed');
+        void canonical.afterCommit(ticket).catch(error=>console.warn('DUDU domain reconciliation:',error));
         return result;
       }
     });
@@ -7587,33 +7587,27 @@ document.getElementById('phone-home-screen').style.display = 'none';
       async run(options){
         if(!blindBoxReadyC29())throw Error('Chưa sẵn sàng');
         const uid=currentUsername;
+        const canonical=window.DuduCanonicalProfileP4A3A2,ticket=canonical?.capture();
+        if(!ticket)throw Error('profile-reconciliation-unavailable');
         await Promise.allSettled([...pendingLiveProfileWrites]);
         if(!blindBoxReadyC29()||currentUsername!==uid)throw Error('Tài khoản đã thay đổi');
+        if(!canonical.current(ticket))throw Error('account-changed');
         const result=await DuduPersonalBlindBoxC29.run({
           db,auth:firebase.auth(),uid,...options});
         if(!blindBoxReadyC29()||currentUsername!==uid)throw Error('Tài khoản đã thay đổi');
-        userProfile.currency=result.currency;
-        userProfile.inventory=result.inventory;
-        userProfile.storyStates=result.storyStates;
-        if(result.quests){
-          userProfile.quests=result.quests;
-          userProfile.questV437=result.questV437;
-          userProfile.questsDayV43=result.questsDayV43;
-        }
-        try{localStorage.setItem('profile_'+uid,JSON.stringify(userProfile));}
-        catch(error){console.warn('Blind box device backup:',error);}
-        updatePhoneUI();renderWallet();renderInventory();renderQuests();
+        if(!canonical.current(ticket))throw Error('account-changed');
+        void canonical.afterCommit(ticket).catch(error=>console.warn('DUDU domain reconciliation:',error));
         return result;
       }
     });
     const vantVatReadyF31=()=>!IS_SANDBOX_MODE&&DuduAuth.isReady()&&
       DuduAuth.uid()===currentUsername&&!!window.DuduPersonalVantVatF31;
     window.DuduCultivationIdentityT0=Object.freeze({snapshot:()=>({uid:IS_SANDBOX_MODE?'sandbox:'+currentUsername:DuduAuth.uid(),name:userProfile.name||currentUsername||'Khách',exp:userProfile.exp||0,level:userProfile.level||1,inventoryCount:userProfile.inventory?.length||0}),avatar:node=>window.renderPlayerAvatarV16?.(node)});
-    window.DuduVanBaoEndlessBridgeF44=Object.freeze({snapshot:()=>({inventory:userProfile.inventory||[],storyStates:userProfile.storyStates||{},currency:userProfile.currency}),uid:()=>IS_SANDBOX_MODE?'sandbox:'+currentUsername:DuduAuth.uid(),ready:()=>!IS_SANDBOX_MODE&&personalItemsReady()&&!!window.DuduVanBaoSessionsF44,async load(){if(!this.ready())throw Error('invalid-account');const uid=DuduAuth.uid();await Promise.allSettled([...pendingLiveProfileWrites]);return DuduVanBaoSessionsF44.load({db,auth:firebase.auth(),uid});},async run(options){if(!this.ready())throw Error('invalid-account');const uid=DuduAuth.uid();await Promise.allSettled([...pendingLiveProfileWrites]);if(!this.ready()||DuduAuth.uid()!==uid)throw Error('account-changed');const result=await DuduVanBaoSessionsF44.run({...options,db,auth:firebase.auth(),uid});if(!this.ready()||DuduAuth.uid()!==uid)throw Error('account-changed');for(const key of ['currency','inventory','storyStates'])if(result[key]!==undefined)userProfile[key]=result[key];updatePhoneUI();renderInventory();renderWallet();return result;}});
+    window.DuduVanBaoEndlessBridgeF44=Object.freeze({snapshot:()=>({inventory:userProfile.inventory||[],storyStates:userProfile.storyStates||{},currency:userProfile.currency}),uid:()=>IS_SANDBOX_MODE?'sandbox:'+currentUsername:DuduAuth.uid(),ready:()=>!IS_SANDBOX_MODE&&personalItemsReady()&&!!window.DuduVanBaoSessionsF44,async load(){if(!this.ready())throw Error('invalid-account');const uid=DuduAuth.uid();await Promise.allSettled([...pendingLiveProfileWrites]);return DuduVanBaoSessionsF44.load({db,auth:firebase.auth(),uid});},async run(options){if(!this.ready())throw Error('invalid-account');const uid=DuduAuth.uid();const canonical=window.DuduCanonicalProfileP4A3A2,ticket=canonical?.capture();if(!ticket)throw Error('profile-reconciliation-unavailable');await Promise.allSettled([...pendingLiveProfileWrites]);if(!this.ready()||DuduAuth.uid()!==uid)throw Error('account-changed');if(!canonical.current(ticket))throw Error('account-changed');const result=await DuduVanBaoSessionsF44.run({...options,db,auth:firebase.auth(),uid});if(!this.ready()||DuduAuth.uid()!==uid)throw Error('account-changed');if(!canonical.current(ticket))throw Error('account-changed');void canonical.afterCommit(ticket).catch(error=>console.warn('DUDU domain reconciliation:',error));return result;}});
     window.DuduVanBaoBridgeF44=Object.freeze({
       uid:()=>IS_SANDBOX_MODE?'sandbox:'+currentUsername:DuduAuth.uid(),ready:()=>!IS_SANDBOX_MODE&&personalItemsReady()&&!!window.DuduVanBaoRewardsF44,
       async load(){if(!this.ready())throw Error('invalid-account');const uid=DuduAuth.uid();await Promise.allSettled([...pendingLiveProfileWrites]);if(!this.ready()||DuduAuth.uid()!==uid)throw Error('account-changed');return DuduVanBaoRewardsF44.load({db,auth:firebase.auth(),uid});},
-      async run(options){if(!this.ready())throw Error('invalid-account');const uid=DuduAuth.uid();await Promise.allSettled([...pendingLiveProfileWrites]);if(!this.ready()||DuduAuth.uid()!==uid)throw Error('account-changed');const result=await DuduVanBaoRewardsF44.run({...options,db,auth:firebase.auth(),uid});if(!this.ready()||DuduAuth.uid()!==uid)throw Error('account-changed');for(const key of ['currency','inventory','storyStates','exp','level'])if(result[key]!==undefined)userProfile[key]=result[key];updatePhoneUI();renderInventory();renderWallet();renderQuests();return result;}
+      async run(options){if(!this.ready())throw Error('invalid-account');const uid=DuduAuth.uid();const canonical=window.DuduCanonicalProfileP4A3A2,ticket=canonical?.capture();if(!ticket)throw Error('profile-reconciliation-unavailable');await Promise.allSettled([...pendingLiveProfileWrites]);if(!this.ready()||DuduAuth.uid()!==uid)throw Error('account-changed');if(!canonical.current(ticket))throw Error('account-changed');const result=await DuduVanBaoRewardsF44.run({...options,db,auth:firebase.auth(),uid});if(!this.ready()||DuduAuth.uid()!==uid)throw Error('account-changed');if(!canonical.current(ticket))throw Error('account-changed');void canonical.afterCommit(ticket).catch(error=>console.warn('DUDU domain reconciliation:',error));return result;}
     });
     window.DuduVantVatLiveBridgeF31=Object.freeze({
       ready:vantVatReadyF31,
@@ -7628,33 +7622,31 @@ document.getElementById('phone-home-screen').style.display = 'none';
       async run(options){
         if(!vantVatReadyF31())throw Error('Chưa sẵn sàng');
         const uid=currentUsername;
+        const canonical=window.DuduCanonicalProfileP4A3A2,ticket=canonical?.capture();
+        if(!ticket)throw Error('profile-reconciliation-unavailable');
         await Promise.allSettled([...pendingLiveProfileWrites]);
         if(!vantVatReadyF31()||currentUsername!==uid)throw Error('Tài khoản đã thay đổi');
+        if(!canonical.current(ticket))throw Error('account-changed');
         const result=await DuduPersonalVantVatF31.run({
           db,auth:firebase.auth(),uid,...options});
         if(!vantVatReadyF31()||currentUsername!==uid)throw Error('Tài khoản đã thay đổi');
-        userProfile.currency=result.currency;
-        userProfile.inventory=result.inventory;
-        userProfile.storyStates=result.storyStates;
-        try{localStorage.setItem('profile_'+uid,JSON.stringify(userProfile));}
-        catch(error){console.warn('Vạn Vật backup:',error);}
-        updatePhoneUI();renderWallet();renderInventory();
+        if(!canonical.current(ticket))throw Error('account-changed');
+        void canonical.afterCommit(ticket).catch(error=>console.warn('DUDU domain reconciliation:',error));
         return result;
       },
       async runBatch(options){
         if(!vantVatReadyF31())throw Error('Chưa sẵn sàng');
         const uid=currentUsername;
+        const canonical=window.DuduCanonicalProfileP4A3A2,ticket=canonical?.capture();
+        if(!ticket)throw Error('profile-reconciliation-unavailable');
         await Promise.allSettled([...pendingLiveProfileWrites]);
         if(!vantVatReadyF31()||currentUsername!==uid)throw Error('Tài khoản đã thay đổi');
+        if(!canonical.current(ticket))throw Error('account-changed');
         const result=await DuduPersonalVantVatF31.runBatch({
           db,auth:firebase.auth(),uid,...options});
         if(!vantVatReadyF31()||currentUsername!==uid)throw Error('Tài khoản đã thay đổi');
-        userProfile.currency=result.currency;
-        userProfile.inventory=result.inventory;
-        userProfile.storyStates=result.storyStates;
-        try{localStorage.setItem('profile_'+uid,JSON.stringify(userProfile));}
-        catch(error){console.warn('Vạn Tượng backup:',error);}
-        updatePhoneUI();renderWallet();renderInventory();
+        if(!canonical.current(ticket))throw Error('account-changed');
+        void canonical.afterCommit(ticket).catch(error=>console.warn('DUDU domain reconciliation:',error));
         return result;
       }
     });
@@ -7665,14 +7657,15 @@ document.getElementById('phone-home-screen').style.display = 'none';
       async run(options){
         if(!favoriteReadyF33())throw Error('Chưa sẵn sàng');
         const uid=currentUsername;
+        const canonical=window.DuduCanonicalProfileP4A3A2,ticket=canonical?.capture();
+        if(!ticket)throw Error('profile-reconciliation-unavailable');
         await Promise.allSettled([...pendingLiveProfileWrites]);
         if(!favoriteReadyF33()||currentUsername!==uid)throw Error('Tài khoản đã thay đổi');
+        if(!canonical.current(ticket))throw Error('account-changed');
         const result=await DuduPersonalVantVatF33.run({db,auth:firebase.auth(),uid,...options});
         if(!favoriteReadyF33()||currentUsername!==uid)throw Error('Tài khoản đã thay đổi');
-        userProfile.storyStates=result.storyStates;
-        try{localStorage.setItem('profile_'+uid,JSON.stringify(userProfile));}
-        catch(error){console.warn('Vạn Vật favorites backup:',error);}
-        renderInventory();
+        if(!canonical.current(ticket))throw Error('account-changed');
+        void canonical.afterCommit(ticket).catch(error=>console.warn('DUDU domain reconciliation:',error));
         return result;
       }
     });
@@ -7682,18 +7675,17 @@ document.getElementById('phone-home-screen').style.display = 'none';
       async run({requestId,instanceIds}){
         if(!this.ready())throw Error('Tài khoản chưa sẵn sàng');
         const uid=currentUsername;
+        const canonical=window.DuduCanonicalProfileP4A3A2,ticket=canonical?.capture();
+        if(!ticket)throw Error('profile-reconciliation-unavailable');
         await Promise.allSettled([...pendingLiveProfileWrites]);
         if(!this.ready()||uid!==currentUsername)throw Error('Tài khoản đã thay đổi');
+        if(!canonical.current(ticket))throw Error('account-changed');
         const result=await DuduPersonalBulkSaleF34.run({db,auth:firebase.auth(),uid,
           requestId,instanceIds});
         if(!this.ready()||uid!==currentUsername)throw Error('Tài khoản đã thay đổi');
-        userProfile.currency=result.balance;
-        userProfile.inventory=result.inventory;
-        userProfile.storyStates=result.storyStates;
+        if(!canonical.current(ticket))throw Error('account-changed');
         inventoryDetailSelection=null;
-        try{localStorage.setItem('profile_'+uid,JSON.stringify(userProfile));}
-        catch(error){console.warn('F3.4 quick-sale backup:',error);}
-        renderInventory();renderWallet();
+        void canonical.afterCommit(ticket).catch(error=>console.warn('DUDU domain reconciliation:',error));
         return result;
       }
     });
