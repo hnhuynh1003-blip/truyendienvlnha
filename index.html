@@ -236,7 +236,7 @@
   <script src="js/player-avatar-v16.js?v=identity-1"></script>
   <script src="js/roleplay-identity-v56.js?v=56-1"></script>
   <script src="js/personal-sync-v56-8.js?v=56-8-v39-1"></script>
-  <script src="js/personal-cloud-v56-9.js?v=56-9"></script>
+  <script src="js/personal-cloud-v56-9.js?v=56-9-cp013b"></script>
   <script src="js/npc-premium-v40.js?v=1"></script>
   <script src="js/player-avatar-compress-v41.js?v=1"></script>
   <script src="js/phone-wallpaper-v27-r4.js?v=39-1"></script>
@@ -3012,6 +3012,7 @@
     // a pending local Firestore SDK write as proof of cross-device sync.
     let v569Migrations=[];
     let v569Pending=0;
+    let v569StatusTicket=null;
     function v569Status(message){
       const el=document.getElementById('dudu-v569-sync-status');
       if(el)el.textContent=message;
@@ -3022,25 +3023,31 @@
       const account=firebase.auth().currentUser;
       if(!account||account.uid!==currentUsername)return false;
       const uid=account.uid;
+      const canonical=window.DuduCanonicalProfileP4A3A2;
+      const session=canonical?.capture();
+      if(!session)return false;
+      const active=owner=>DuduAuth.isReady()&&DuduAuth.uid()===owner&&
+        currentUsername===owner&&firebase.auth().currentUser===account&&canonical.current(session);
+      const statusTicket={};v569StatusTicket=statusTicket;
+      const show=message=>{if(active(uid)&&v569StatusTicket===statusTicket)v569Status(message);};
       const projectId=firebase.app().options.projectId;
       v569Pending++;
-      v569Status('☁️ Đang lưu thay đổi…');
+      show('☁️ Đang lưu thay đổi…');
       try{
-        const opts={account,projectId,fetchFn:fetch,
-          isCurrent:owner=>DuduAuth.isReady()&&
-            DuduAuth.uid()===owner&&currentUsername===owner};
+        const opts={account,projectId,fetchFn:fetch,isCurrent:active};
         if(kind==='bookmark'){opts.storyId=storyId;opts.bookmark=value;}
         else if(kind==='phone')opts.appearance=value;
         else return false;
         const result=await DuduPersonalCloudV569.patch(opts);
         if(result.saved){
-          v569Status('☁️ Đã lưu thay đổi.');
+          show('☁️ Đã lưu thay đổi.');
           return true;
         }
+        if(result.superseded)show('☁️ Máy chủ đã có tùy chọn cùng thời điểm hoặc mới hơn. Không ghi đè.');
         return false;
       }catch(error){
-        console.warn('DUDU personal sync:',error?.code||error?.name||'failed');
-        v569Status('⚠️ Chưa lưu được. Thay đổi vẫn còn trên thiết bị này.');
+        if(active(uid))console.warn('DUDU personal sync:',error?.code||error?.name||'failed');
+        show('⚠️ Chưa lưu được. Thay đổi vẫn còn trên thiết bị này.');
         return false;
       }finally{v569Pending=Math.max(0,v569Pending-1);}
     }
