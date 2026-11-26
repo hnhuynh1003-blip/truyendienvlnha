@@ -120,7 +120,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-check-compat.js"></script>
   <script src="js/appcheck-sitekey-v52.js?v=52-3"></script>
   <script src="js/firestore-profile-fallback-v56-7.js?v=56-7"></script>
-  <script src="js/profile-save-c23.js?v=c416-1"></script>
+  <script src="js/profile-save-c23.js?v=c416-1-p4a3-1"></script>
   <script src="js/account-approval-v1.js?v=auth-a1"></script>
   <script src="js/account-invite-r11.js?v=r11-1"></script>
   <script src="js/auth-v2.js?v=epub-perf-r1"></script>
@@ -243,7 +243,7 @@
   <script src="js/red-packet-v32.js?v=timeline-1"></script>
   <script src="js/chat-social-v32.js?v=copy-1"></script>
   <script src="js/dudu-multiverse-ui-v28-r5.js"></script>
-  <script src="js/player-avatar-ui-v16.js?v=identity-final-1"></script>
+  <script src="js/player-avatar-ui-v16.js?v=identity-final-1-p4a3-1"></script>
   <script src="js/player-avatar-sync-plan-v20.js"></script>
   <script src="js/player-avatar-conflict-ui-v21.js"></script>
   <script src="js/player-avatar-sync-v17.js"></script>
@@ -3530,6 +3530,7 @@
     const pendingLiveProfileWrites=new Set();
     let lastLiveProfileSaveWarningAt=0;
     function saveCurrentAccount() {
+      const intents=arguments[0]; // Explicit editor payload; absent for legacy callers.
       if (window.DUDU_RESET_IN_PROGRESS) return;
       if (!currentUsername || (!IS_SANDBOX_MODE && (!DuduAuth.isReady() || DuduAuth.uid() !== currentUsername))) return;
 
@@ -3544,6 +3545,7 @@
       localStorage.setItem(localKey, JSON.stringify(nextProfile));
       if(hasCollection)userProfile.collectionV441=nextCollection;
 
+      // Legacy normalization retained for compatibility; never submitted as update authority.
       const cloudData = {
         username: currentUsername || "guest",
         name: userProfile.name || currentUsername || "Kẻ Lang Bạt",
@@ -3577,11 +3579,14 @@
         console.warn('Đang giao dịch NPC: tạm hoãn lưu hồ sơ.');
       }else{
         try {
-          // C2.3: changed fields only, merged against the latest profile in a
-          // Firestore transaction. Newer wallet/item/NPC receipts win conflicts.
+          // P4A.3: validated preference intents only, merged against the latest
+          // profile. Domain transactions exclusively own progress and entitlements.
           // Never fall back to a broad .set() if this safety layer is absent.
           const write=window.DuduProfileSaveC23?.enqueue?.({
-            uid:DuduAuth.uid(),db,auth:firebase.auth(),data:cloudData,
+            uid:DuduAuth.uid(),db,auth:firebase.auth(),
+            // Only an explicit editor submission can create preference intents.
+            // Unrelated no-argument saves never project the full UI snapshot.
+            intents:intents||{},
             isCurrent:uid=>!IS_SANDBOX_MODE&&!window.DUDU_RESET_IN_PROGRESS&&
               DuduAuth.isReady()&&DuduAuth.uid()===uid&&currentUsername===uid,
             onConflict:()=>showSystemAlert('CẦN TẢI LẠI',
@@ -4376,7 +4381,7 @@
         showSystemAlert('CHƯA LƯU ĐƯỢC',reason==='already-checked-in'?
           'Hôm nay bạn đã hỏi thăm người này rồi.':
           reason==='npc-not-unlocked'?
-            'Bạn chưa kết nối với NPC này.':
+            'Liên lạc NPC lịch sử tạm chưa hỗ trợ. Quan hệ và lịch sử vẫn được bảo toàn.':
             'Lời hỏi thăm chưa được gửi. Hãy thử lại.');
         console.warn('DUDU personal NPC social:',reason);
         return false;
@@ -5385,7 +5390,7 @@
       }catch(error){
         console.warn('NPC Firestore exchange:',error?.code||error?.message);
         const reason=error?.code||'';
-        const message=reason==='npc-not-unlocked'?'Bạn chưa kết nối với NPC này.':
+        const message=reason==='npc-not-unlocked'?'Liên lạc NPC lịch sử tạm chưa hỗ trợ. Quan hệ và lịch sử vẫn được bảo toàn.':
           reason==='item-not-owned'?'Món đồ này không còn trong Kho.':
           reason==='item-not-giftable'?'Món này không thể tặng.':
           reason.startsWith('gift-daily-limit')?'Đã tặng đủ 3 quà cho NPC hôm nay.':
@@ -9246,6 +9251,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
           <div>
             ${isUnlocked 
               ? `<button class="btn btn-primary" style="padding:4px 8px; font-size:10px;" onclick="connectSoulAndChat('${c.id}', '${novel.id}')">💬 Trò Chuyện</button>`
+              : !IS_SANDBOX_MODE ? `<button class="btn btn-gold" disabled aria-disabled="true" style="padding:4px 8px; font-size:10px;">Tạm ngưng kết nối NPC mới</button>`
               : `<button class="btn btn-gold" style="padding:4px 8px; font-size:10px;" onclick="unlockChapterCharacter('${c.id}', '${escapeHtml(novel.title)}')">⚡ Kết Nối Linh Hồn</button>`
             }
           </div>
@@ -9266,6 +9272,10 @@ document.getElementById('phone-home-screen').style.display = 'none';
     }
 
     function unlockChapterCharacter(charId, novelTitle) {
+      if(!IS_SANDBOX_MODE){
+        showSystemAlert('TẠM NGƯNG KẾT NỐI NPC MỚI','Liên lạc NPC đang tạm hoãn phát triển. Toàn bộ NPC, quan hệ và lịch sử hiện có được bảo toàn.');
+        return;
+      }
       const novel = novels[selectedNovelIndex];
       const char = (novel.characters || []).find(c => c.id === charId);
       if (!char || char.archived) return;
