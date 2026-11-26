@@ -104,3 +104,31 @@ test('Spark shop UI uses canonical server projection, not a delayed receipt; no 
  assert.deepEqual(Array.from(marketConfig.saleIds),[],
   'an absent whitelist must render no purchasable SKUs');
 });
+
+test('Personal bulk sale: committed receipt remains successful despite journal and render failure; stale session cannot notify',async()=>{
+ const storage=new Map(),account={uid:'A'},calls=[],alerts=[];
+ let active={},config,failRender=false,failRemove=false,release;
+ const document={getElementById:id=>id==='shop-items-container'?{}:null};
+ const window={document,DUDU_SPARK_ITEMS_V1_READY:true,DuduAuth:{uid:()=>account.uid,isReady:()=>true},
+  DuduEconomyCoreV43:require('../js/economy-core-v43.js'),
+  DuduCanonicalProfileP4A3A2:{capture:()=>active,current:t=>t===active},
+  DuduPersonalSparkItemsV1:{requestId:()=> 'sale-fixed'},
+  DuduBulkSaleBridgeF34:{ready:()=>true,async run(pending){calls.push(pending);if(release)await new Promise(r=>{release=r;});return {status:'applied',count:1,price:4};}},
+  DuduMarketUIV43:{render:cfg=>{config=cfg;if(failRender)throw Error('render unavailable');return true;}},
+  showSystemAlert:(head)=>alerts.push(head)};
+ const localStorage={getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),
+  removeItem:k=>{if(failRemove)throw Error('storage unavailable');storage.delete(k);}};
+ vm.runInNewContext(source('js/economy-live-v52.js'),{window,document,localStorage,userProfile:{currency:20},IS_SANDBOX_MODE:false,console:{warn(){}}});
+ await window.DuduEconomyLiveV52.openShop();
+ failRender=true;failRemove=true;
+ assert.equal(await config.onBulkSell(['item-1']),true);
+ assert.equal(calls.length,1);assert.equal(alerts.length,1);assert.equal(alerts[0],'BÁN NHANH THÀNH CÔNG');
+ assert.ok(storage.has('dudu-personal-bulk:pending:A'),'retain original request when cleanup fails');
+ failRender=false;failRemove=false;release=()=>{};
+ const pending=config.onBulkSell(['item-2']);await new Promise(r=>setImmediate(r));
+ active={};release();
+ assert.equal(await pending,false);
+ assert.equal(alerts.length,1,'old session may not notify new session');
+ assert.equal(calls.length,2);
+ assert.equal(calls[0].requestId,calls[1].requestId,'retry exact pending request');
+});
