@@ -108,6 +108,11 @@
   const account=uid(),bridge=root.DuduBulkSaleBridgeF34;
   if(!personal()||personalBusy||!account||!bridge?.ready?.()||
     !Array.isArray(instanceIds)||!instanceIds.length)return false;
+  const canonical=root.DuduCanonicalProfileP4A3A2,ticket=canonical?.capture();
+  if(!ticket)return false;
+  const current=()=>uid()===account&&canonical.current(ticket);
+  const repaint=()=>{try{if(current())showPersonalMarket();}catch(error){console.warn('DUDU bulk repaint:',error);}};
+  const cleanup=key=>{try{localStorage.removeItem(key);}catch(error){console.warn('DUDU bulk journal cleanup:',error);}};
   const key=bulkPendingKey(account),engine=root.DuduPersonalSparkItemsV1;
   let pending=null;
   try{pending=JSON.parse(localStorage.getItem(key)||'null');}catch(_){}
@@ -115,29 +120,30 @@
    pending={instanceIds:[...instanceIds],requestId:engine.requestId('sell')};
   try{localStorage.setItem(key,JSON.stringify(pending));}
   catch(_){root.showSystemAlert?.('CHƯA BÁN ĐƯỢC','Chưa thể lưu mã giao dịch.');return false;}
-  personalBusy=true;showPersonalMarket();
+  personalBusy=true;repaint();
   try{
    // A retry first reconciles the exact original batch. Never mint a second payout.
    const result=await bridge.run(pending);
-   if(uid()!==account)return false;
-   localStorage.removeItem(key);
-   showPersonalMarket();
-   root.showSystemAlert?.(result.status==='already-applied'?
+   if(!current())return false;
+   cleanup(key);
+   try{root.showSystemAlert?.(result.status==='already-applied'?
     'ĐÃ XÁC MINH GIAO DỊCH':'BÁN NHANH THÀNH CÔNG',
-     'Đã ghi nhận '+result.count+' món · +'+result.price+' Xu Vàng.');
+     'Đã ghi nhận '+result.count+' món · +'+result.price+' Xu Vàng.');}
+   catch(error){console.warn('DUDU bulk notification:',error);}
    return true;
   }catch(e){
+   if(!current())return false;
    // A permanent ownership change cannot be retried with the old batch.
    // Removing the pending key never credits money; the server still enforces
    // physical ownership and receipt identity on the next request.
    if(/vật phẩm đã đổi|không thể bán|không hợp lệ|Mã giao dịch đã dùng/.test(e?.message||''))
-    localStorage.removeItem(key);
+    cleanup(key);
    root.showSystemAlert?.('CHƯA XÁC NHẬN BÁN NHANH',
      root.DuduPersonalErrorC416?.message(e,
       'Chưa thể xác nhận giao dịch. Mã bán được giữ để thử lại, không cộng Xu hai lần.')||
       'Mã bán được giữ để thử lại.');
    return false;
-  }finally{personalBusy=false;showPersonalMarket();}
+  }finally{personalBusy=false;repaint();}
  }
  async function personalPurchase(itemId){
   const account=uid(),engine=root.DuduPersonalSparkItemsV1;
@@ -169,6 +175,7 @@
    return true;
   }catch(e){
    console.warn('DUDU Spark personal shop:',e?.code||e?.message||'unavailable');
+   if(uid()!==account||!canonical.current(ticket))return false;
    root.showSystemAlert?.('CHƯA XÁC NHẬN ĐƠN MUA',
     root.DuduPersonalErrorC416?.message(e,
      'Chưa nhận được xác nhận. Kiểm tra kết nối rồi mua lại đúng món này; mã đơn cũ được giữ để tránh trừ hai lần.')||
