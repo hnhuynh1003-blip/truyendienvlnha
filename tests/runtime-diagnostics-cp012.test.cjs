@@ -51,3 +51,37 @@ test('CP012 runtime adapter uses only local observation and textContent',()=>{
  a.match(source,/dudu-auth-state-changed/);
  a.doesNotMatch(source,/getIdToken|getToken\(|fetch\(|\.get\(|\.setItem\(|\.removeItem\(|\.retry\(|\.afterCommit\(|\.flush\(|\.innerHTML/);
 });
+
+test('CP012 executes account modal adapter on demand, clears on auth transition, and never requests tokens or writes',()=>{
+ const vm=require('node:vm'),fs=require('node:fs'),path=require('node:path');
+ const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+ const start=html.indexOf('    function clearRuntimeDiagnosticsCP012()'),end=html.indexOf('    function openAuthModal()',start);
+ a.ok(start>=0&&end>start);
+ let account=uid,ready=true,reads=0,forbiddenCalls=0,click,authChanged;
+ const forbid=()=>{forbiddenCalls++;throw Error('unexpected side effect');};
+ const output={textContent:''},panel={hidden:true,open:false},button={addEventListener:(event,fn)=>{a.equal(event,'click');click=fn;}};
+ const nodes={'cp012-output':output,'cp012-diagnostics':panel,'cp012-inspect':button};
+ const keys=['dudu-personal-shop:pending:'+uid,'dudu-personal-shop:pending:'+other];
+ const local={length:keys.length,key(i){reads++;return keys[i];},getItem:forbid,setItem:forbid,removeItem:forbid};
+ const win={DuduRuntimeDiagnosticsCP012:require('../js/runtime-diagnostics-cp012.js'),
+  DuduAuth:{uid:()=>account,isReady:()=>ready,retry:forbid},
+  DuduCanonicalProfileP4A3A2:{diagnosticStatus:()=> 'synced',retry:forbid,afterCommit:forbid},
+  DuduPersonalReadingRuntimeP2A:{pendingStatus:()=>({uid:account,pending:0,durable:true}),stop:forbid},
+  DuduPersonalReadingPolicyP2C:{policy:{id:'personal-reading-v1'}},
+  localStorage:local,sessionStorage:storage([]),addEventListener:(event,fn)=>{a.equal(event,'dudu-auth-state-changed');authChanged=fn;}};
+ const ctx={window:win,document:{getElementById:id=>nodes[id]},
+  firebase:{auth:()=>({currentUser:account?{uid:account,getIdToken:forbid,getIdTokenResult:forbid}:null}),appCheck:forbid,firestore:forbid},
+  IS_SANDBOX_MODE:false,currentUsername:uid,userProfile:{username:uid},cp012AppCheckActivation:'activation-returned',
+  pendingLiveProfileWrites:new Set(),fetch:forbid};
+ vm.runInNewContext(html.slice(start,end),ctx);
+ a.equal(reads,0,'mount must not inspect storage');
+ authChanged();a.equal(panel.hidden,false);a.equal(reads,0);
+ click();let report=JSON.parse(output.textContent);
+ a.equal(report.identity,'match');a.equal(report.local.journals,1);a.equal(report.appCheckHealth,'not-verified');a.equal(reads,2);
+ a.ok(!output.textContent.includes(uid));
+ account=other;authChanged();a.equal(output.textContent,'');a.equal(panel.open,false);
+ click();report=JSON.parse(output.textContent);a.equal(report.identity,'mismatch');a.equal(Object.hasOwn(report,'local'),false);a.equal(reads,2);
+ ready=false;account=null;authChanged();a.equal(panel.hidden,true);click();a.equal(output.textContent,'');
+ ctx.IS_SANDBOX_MODE=true;ready=true;account=uid;authChanged();a.equal(panel.hidden,true);click();a.equal(output.textContent,'');
+ a.equal(forbiddenCalls,0);
+});
