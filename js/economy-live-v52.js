@@ -283,5 +283,5 @@
     (label?.icon||'🎁')+' '+(label?.name||row.itemId)+' · Máy chủ xác nhận'));
   }
  }
- root.DuduEconomyLiveV52=Object.freeze({openShop,openQuests,openInventory,load});
+ root.DuduEconomyLiveV52=Object.freeze({openShop,openQuests,openInventory,load,refreshPersonalMarket:showPersonalMarket});
 })(typeof window!=='undefined'?window:null);
