@@ -22,7 +22,16 @@ test('Live inventory has functional use and common-item sale controls only for o
  assert.match(html,/personalInventoryAction\('use',item\)/);
  assert.match(html,/personalInventoryAction\('sell',item\)/);
  assert.match(html,/DuduLootCadenceV42\.phoneRemainingMs/);
- assert.match(html,/localStorage\.setItem\('profile_'\+uid,JSON\.stringify\(userProfile\)\)/);
+ const start=html.indexOf('async function personalInventoryAction('),end=html.indexOf('function renderInventoryDetail()',start);
+ assert.ok(start>=0&&end>start);
+ const handler=html.slice(start,end);
+ assert.match(handler,/if\(!personalItemsReady\(\)/);
+ assert.match(handler,/canonical\.current\(ticket\)/);
+ assert.match(handler,/canonical\.afterCommit\(ticket\)/);
+ assert.match(handler,/localStorage\.removeItem\(key\)/);
+ assert.doesNotMatch(handler,/userProfile\.(inventory|currency|storyStates)\s*=/);
+ assert.doesNotMatch(handler,/localStorage\.setItem\('profile_'/);
+ assert.match(html,/engine\.storeConfirmed\(localStorage,uid,data\)/);
 });
 test('Spark shop UI uses canonical server projection, not a delayed receipt; no Cloud Functions call',async()=>{
  let removedStatus=false;
