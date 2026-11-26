@@ -126,7 +126,14 @@ test('Main wiring keeps the shop, catalog, inventory and blind-box receipts conn
  assert.match(html,/personal-blind-box-c29\.js\?v=c29-box-1/);
  assert.match(html,/DuduBlindBoxLiveBridgeC29=Object\.freeze/);
  assert.match(html,/DuduPersonalBlindBoxC29\.run/);
- assert.match(html,/userProfile\.inventory=result\.inventory/);
+ const start=html.indexOf('window.DuduBlindBoxLiveBridgeC29=Object.freeze'),end=html.indexOf('const vantVatReadyF31',start);
+ assert.ok(start>=0&&end>start);
+ const handler=html.slice(start,end);
+ assert.match(handler,/const result=await DuduPersonalBlindBoxC29\.run/);
+ assert.match(handler,/canonical\.current\(ticket\)/);
+ assert.match(handler,/canonical\.afterCommit\(ticket\)/);
+ assert.doesNotMatch(handler,/userProfile\.(inventory|currency|storyStates)\s*=/);
+ assert.match(html,/engine\.storeConfirmed\(localStorage,uid,data\)/);
  assert.match(ui,/function blindBoxes\(rootNode\)/);
  assert.match(ui,/blindAction\('start','paid'\)/);
  assert.match(ui,/blindAction\('claim'\)/);
