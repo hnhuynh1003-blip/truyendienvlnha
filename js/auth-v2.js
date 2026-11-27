@@ -85,6 +85,10 @@
     admin = false;
     currentUsername = '';
     userProfile = JSON.parse(defaultProfile);
+    window.DuduReadingJourneyG1?.clear(document);
+    window.DuduCultivationGearG3?.clear(document.getElementById('cultivation-gear-g3'));
+    window.DuduPersonalCultivationGearG3B?.clear(document.getElementById('cultivation-gear-g3'));
+    window.DuduTuTienIntegT0?.refreshSharedInventory?.();
     chatHistories = {};
     activeChatNovelId = null;
     lastInviteCode = '';

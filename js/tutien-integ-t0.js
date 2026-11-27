@@ -31,7 +31,7 @@
    for(const file of ['tutien-integ-t0-frame.css?v=vis-ux-r2','tutien-qiankun-vis-t2.css?v=1','tutien-nav-skin-r1.css?v=1','tutien-equipment-vis-t2e.css?v=1']){
     const link=child.createElement('link');link.rel='stylesheet';link.href=new URL('css/'+file,appBase).href;link.onload=()=>styles++;link.onerror=fail;child.head.append(link);
    }
-   const skin=child.createElement('script');skin.type='module';skin.src=new URL('js/tutien-vis-t1.mjs?v=exploration-layout-20261117',appBase).href;skin.onerror=fail;child.head.append(skin);
+   const skin=child.createElement('script');skin.type='module';skin.src=new URL('js/tutien-vis-t1.mjs?v=game-g3b-1',appBase).href;skin.onerror=fail;child.head.append(skin);
    interval=root.setInterval(()=>{
     if(!active||decoding||styles!==4||child.getElementById('home-screen')?.dataset.visualReady!=='true')return;
     const images=[child.querySelector('.vis-cave'),child.querySelector('.vis-character')];
@@ -45,5 +45,5 @@
  }
  function sync(){const phone=doc.getElementById('cyber-phone'),panel=doc.getElementById('phone-app-system');if(frame&&(phone?.style.display!=='flex'||panel?.style.display!=='flex'))unmount();}
  doc.addEventListener('DOMContentLoaded',()=>{for(const id of ['cyber-phone','phone-app-system']){const e=doc.getElementById(id);if(e)new MutationObserver(sync).observe(e,{attributes:true,attributeFilter:['style']});}},{once:true});
- root.addEventListener('pagehide',unmount);root.DuduTuTienIntegT0=Object.freeze({render,unmount});
+ root.addEventListener('pagehide',unmount);root.DuduTuTienIntegT0=Object.freeze({render,unmount,refreshSharedInventory(){try{frame?.contentWindow?.DuduSharedInventoryRefreshG2?.();}catch{/* Frame not ready or already detached. */}}});
 })(window);

@@ -169,7 +169,8 @@
   <script src="js/personal-arcade-exchange-v1.js?v=xu-quote-2"></script>
   <script src="js/personal-spark-exchange-v1.js?v=spark-bridge-1"></script>
   <script src="js/story-market-v43.js?v=1"></script>
-  <script src="js/inventory-model-v42.js?v=44-1&amp;f43=1&amp;f44=1"></script>
+  <script src="js/personal-cultivation-gear-g3b.js?v=1"></script>
+  <script src="js/inventory-model-v42.js?v=44-1-g3b-1&amp;f43=1&amp;f44=1"></script>
   <script src="js/item-profile-s1b4.js?v=s1b4-p0-1"></script>
   <script src="js/inventory-trade-v43-9.js?v=44-9"></script>
   <script src="js/gift-recipient-v44.js?v=1"></script>
@@ -1350,6 +1351,28 @@
           <div class="dudu-v27-stat"><span>Cấp độ</span><b id="stat-personal-level">1</b></div>
           <div class="dudu-v27-stat"><span>Xu</span><b id="stat-personal-coins">0</b></div>
         </div>
+        <section id="reading-journey-g1" aria-labelledby="reading-journey-g1-title" style="margin:12px 0;padding:12px;border:1px solid #516b83;border-radius:14px;background:rgba(18,34,51,.88);color:#e2edf8">
+          <h3 id="reading-journey-g1-title" style="margin:0 0 6px;font-size:14px;color:#ffe2a4">✦ Hành trình đọc &amp; game</h3>
+          <p data-journey-status role="status" style="font-size:12px;margin:0 0 10px">Đăng nhập để xem tiến trình cá nhân.</p>
+          <div data-journey-account hidden>
+            <div class="dudu-v27-stats" role="group" aria-label="Tài sản nhân vật chung">
+              <div class="dudu-v27-stat"><span>Cấp / EXP</span><b data-journey-level>—</b></div>
+              <div class="dudu-v27-stat"><span>Xu Vàng</span><b data-journey-coins>—</b></div>
+              <div class="dudu-v27-stat"><span>Kho chung</span><b data-journey-items>—</b></div>
+            </div>
+            <p data-journey-day style="font-size:12px;margin:10px 0 4px"></p>
+            <progress data-journey-bar aria-label="Thời gian đọc được ghi nhận trong ngày UTC" max="1" value="0" style="width:100%;accent-color:#dfb86b" hidden></progress>
+            <p data-journey-total style="font-size:11px;margin:5px 0 10px"></p>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
+            <button type="button" class="btn" style="min-height:44px;white-space:normal" onclick="openPhoneApp('stories')">📚 Đọc truyện</button>
+            <button type="button" class="btn" style="min-height:44px;white-space:normal" data-journey-personal disabled onclick="openPhoneApp('inventory')">🎒 Kho chung</button>
+            <button type="button" class="btn" style="min-height:44px;white-space:normal" data-journey-personal disabled onclick="openPhoneApp('quests')">✦ Nhiệm vụ</button>
+            <button type="button" class="btn" style="min-height:44px;white-space:normal" data-journey-personal disabled onclick="openPhoneApp('system')">⚔ Tu Tiên (thử)</button>
+          </div>
+          <button type="button" class="btn" style="width:100%;min-height:44px;margin-top:8px" onclick="openPhoneApp('cultivation-gear')">✦ Pháp Khí Các · Mua &amp; trang bị</button>
+          <p style="font-size:10px;margin:8px 0 0;color:#b8c9db">Cùng hồ sơ nhân vật, không tạo ví mới. Tu Tiên vẫn là bản thử; chưa tiêu tài sản thật hoặc quy đổi Tu Vi.</p>
+        </section>
         <div id="profile-guest-tip" class="dudu-v27-profile-tip" style="display:none;">Đang xem với tư cách khách; đăng nhập để đồng bộ tiến trình.</div>
         <details class="dudu-v27-details dudu-v27-library">
           <summary>📚 Thống kê thư viện <span class="dudu-v27-more-hint">Dùng chung</span></summary>
@@ -1381,6 +1404,15 @@
           <span class="dudu-c438-header-mark">DUDU ARCADE</span>
         </div>
         <div id="dudu-treasure-content-c438" aria-label="Danh mục báu vật bốn game"></div>
+      </div>
+
+      <!-- G3B personal gear: existing profile currency/inventory, no combat or power formula. -->
+      <div class="phone-sub-app" id="phone-app-cultivation-gear">
+        <div class="phone-app-header">
+          <button type="button" class="phone-back-btn" onclick="openPhoneApp('profile')" aria-label="Về hồ sơ">‹</button>
+          <span>Pháp Khí Các</span><span></span>
+        </div>
+        <div id="cultivation-gear-g3" style="padding:12px;overflow-y:auto;flex:1;min-height:0"></div>
       </div>
 
       <!-- APP: KHO ĐỒ -->
@@ -6171,6 +6203,11 @@ document.getElementById('phone-home-screen').style.display = 'none';
 
       if (appName === 'stories') {
         renderPhoneStoryListV29();
+      } else if (appName === 'cultivation-gear') {
+        const host=document.getElementById('cultivation-gear-g3');
+        if(window.DuduPersonalCultivationGearG3B?.mount)window.DuduPersonalCultivationGearG3B.mount(host,window.DuduCultivationGearBridgeG3B);
+      } else if (appName === 'profile') {
+        refreshReadingJourneyG1();
       } else if (appName === 'codex') {
         moveNpcProgressV31();
         renderCodexDropdown();
@@ -7438,6 +7475,43 @@ document.getElementById('phone-home-screen').style.display = 'none';
       }catch(_){/* Malformed external storage data never erases the local library. */}
     });
 
+    // G3B uses the same owner transaction and canonical reconciliation as personal Market.
+    window.DuduCultivationGearBridgeG3B=Object.freeze({
+      ready:()=>personalItemsReady()&&!!window.DuduCanonicalProfileP4A3A2?.capture()&&!window.DUDU_RESET_IN_PROGRESS,
+      snapshot(){return this.ready()?window.DuduPersonalCultivationGearG3B.snapshot(userProfile):null;},
+      async run(options){
+        if(!this.ready())throw Error('Chưa tải hồ sơ');
+        const uid=DuduAuth.uid(),canonical=window.DuduCanonicalProfileP4A3A2,ticket=canonical.capture();
+        const active=()=>this.ready()&&DuduAuth.uid()===uid&&canonical.current(ticket);
+        await Promise.allSettled([...pendingLiveProfileWrites]);
+        if(!active())throw Error('Phiên đã thay đổi');
+        const result=await window.DuduPersonalCultivationGearG3B.run({...options,db,auth:firebase.auth(),uid,isCurrent:active});
+        if(!active())throw Error('Phiên đã thay đổi');
+        const sync=await canonical.afterCommit(ticket);
+        if(!active())throw Error('Phiên đã thay đổi');
+        return {status:result.status,synced:sync.status==='synced'};
+      }
+    });
+    // Read-only projection of the current UID; no transfer into mock Tu Tien.
+    window.DuduSharedInventoryBridgeG2=Object.freeze({
+      snapshot(){
+        const ready=!IS_SANDBOX_MODE&&DuduAuth.isReady()&&!!currentUsername&&DuduAuth.uid()===currentUsername;
+        return window.DuduSharedInventoryG2?.project({ready,inventory:ready?userProfile.inventory:null,model:window.DuduInventoryV42});
+      },
+      open(){
+        if(IS_SANDBOX_MODE||!DuduAuth.isReady()||!currentUsername||DuduAuth.uid()!==currentUsername)return false;
+        openPhoneApp('inventory');return true;
+      },
+      openGearPreview(){openPhoneApp('cultivation-gear');}
+    });
+    function refreshReadingJourneyG1(){
+      const api=window.DuduReadingJourneyG1;
+      if(!api)return;
+      const sandbox=IS_SANDBOX_MODE;
+      const ready=!sandbox&&DuduAuth.isReady()&&!!currentUsername&&DuduAuth.uid()===currentUsername;
+      api.render(document,{ready,sandbox,profile:ready?userProfile:null,
+        policy:window.DuduPersonalReadingPolicyP2C?.policy,now:Date.now()});
+    }
     function updatePhoneUI() {
       renderPhoneWallpaperV27();
       userProfile.level = Math.max(1, parseInt(userProfile.level) || 1);
@@ -7521,6 +7595,9 @@ document.getElementById('phone-home-screen').style.display = 'none';
       // should never be described as "Khách" solely due to a slow Firestore read.
       if (guestTip) guestTip.style.display = (!IS_SANDBOX_MODE && !DuduAuth.uid()) ? 'block' : 'none';
       window.DuduHonorUIV46?.refresh?.();
+      refreshReadingJourneyG1();
+      window.DuduTuTienIntegT0?.refreshSharedInventory?.();
+      window.DuduPersonalCultivationGearG3B?.refresh(document.getElementById('cultivation-gear-g3'));
     }
 
     // Main rewards are applied ONLY after an owner-scoped transaction. Sandbox
@@ -10192,6 +10269,9 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/personal-reading-clock-p2a.js?v=1"></script>
 <script src="js/personal-reading-reward-p2b.js?v=2"></script>
 <script src="js/personal-reading-policy-p2c.js?v=2"></script>
+  <script src="js/reading-journey-g1.js?v=1"></script>
+  <script src="js/shared-inventory-g2.js?v=1"></script>
+  <script src="js/cultivation-gear-g3.js?v=1"></script>
 <script src="js/personal-reading-slots-p2c.js?v=4"></script>
 <script src="js/personal-r2-chapter-loot-p3.js?v=2-cp013"></script>
 <script src="js/personal-reading-runtime-p2a.js?v=7"></script>
@@ -10202,7 +10282,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <link rel="stylesheet" href="css/tutien-integ-t0.css?v=exploration-layout-20261117">
 <link rel="stylesheet" href="css/cyber-phone-host-ui-r1.css?v=tutien-only-1">
 <script src="js/cyber-phone-host-ui-r1.js?v=1"></script>
-<script src="js/tutien-integ-t0.js?v=exploration-layout-20261117"></script>
+<script src="js/tutien-integ-t0.js?v=game-g3b-1"></script>
 <script src="js/phone-app-contract-v67.js?v=67-arcade-wallet-1&amp;t0=1"></script>
 <script src="js/phone-lifecycle-v67-1.js?v=67-arcade-wallet-1"></script>
 <script src="js/dudu-messenger-v67-2.js?v=67-2"></script>
