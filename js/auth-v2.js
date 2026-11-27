@@ -86,6 +86,7 @@
     currentUsername = '';
     userProfile = JSON.parse(defaultProfile);
     window.DuduReadingJourneyG1?.clear(document);
+    window.DuduTuTienIntegT0?.refreshSharedInventory?.();
     chatHistories = {};
     activeChatNovelId = null;
     lastInviteCode = '';

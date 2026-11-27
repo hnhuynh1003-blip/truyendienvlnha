@@ -1,4 +1,5 @@
 import {mountHomeIdentity} from './tutien-character-view.mjs';
+import {mountSharedInventory} from './tutien-shared-inventory-g2.mjs?v=1';
 // VIS-T1: presentation only, inside the integrated iframe. No repository or write API.
 import {CHARACTER} from '../prototypes/tutien-combat-s/fixture.mjs';
 import {actionIcon} from '../prototypes/tutien-combat-s/ui-icons.mjs';
@@ -79,6 +80,7 @@ if(home&&!doc.getElementById('vis-t1-hero')){
    node.querySelector('.vis-read-error')?.remove();
    if(key==='inventory'){
     node.querySelector('p').textContent='Đang đọc vật tư mock…';
+    sharedInventory.refresh();
    }
    if(key==='stats'){delete stats.dataset.snapshotRevision;for(const card of statValues.values()){card.querySelector('dd').textContent='Đang đọc…';card.querySelector('progress')?.removeAttribute('value');}}
    dialog.showModal();panelBody.scrollTop=0;dismiss.focus();
@@ -90,8 +92,10 @@ if(home&&!doc.getElementById('vis-t1-hero')){
  }
  const statPanel=el('div');condition.hidden=true;statPanel.append(stats,$('home-rest'));info.append(condition);
  dock.append(addPanel('stats','Thuộc tính',statPanel),addPanel('equipment','Trang bị',equipment));
- const inventory=el('div');inventory.append(el('p','','Vật tư mock'),el('p','vis-note','Chỉ đọc vật tư của prototype. Không kết nối Kho hoặc Ví DUDU; không nhận hay tiêu vật phẩm tại đây.'));
- dock.append(addPanel('inventory','Kho nhanh · mock',inventory,'Kho'));
+ const inventory=el('div');inventory.append(el('p','','Vật tư mock'),el('p','vis-note','Chỉ đọc vật tư của prototype. Không kết nối Kho hoặc Ví DUDU vào trận mock; không nhận hay tiêu vật phẩm tại đây.'));
+ const sharedInventory=mountSharedInventory(inventory);
+ window.DuduSharedInventoryRefreshG2=sharedInventory.refresh;
+ dock.append(addPanel('inventory','Kho chung & vật tư thử',inventory,'Kho'));
  const bag=createQiankunBag(doc);
  dock.append(addPanel('bag','Túi Phó Bản',bag));
  for(const [key,title,license]of [['alchemy','Luyện Đan','Giấy phép Luyện Đan'],['forge','Rèn Khí','Giấy phép Rèn Khí']]){
