@@ -73,6 +73,44 @@
   }
   return chapters[value.chIdx]?value:null;
  }
+ // Compare valid resume positions, preserving the existing deleted-chapter guard.
+ function chooseBookmark(local,remote,novel){
+  const a=bookmarkForNovel(local,novel),b=bookmarkForNovel(remote,novel);
+  return b&&(!a||b.updatedAt>=a.updatedAt)?b:a;
+ }
+ // A response must not overwrite a different local intent, even at the same
+ // millisecond or after a device clock rollback. A missing cache is harmless.
+ function canReconcile(kind,candidate,current,remote){
+  const clean=kind==='bookmark'?cleanBookmark:kind==='phone'?cleanAppearance:null;
+  if(!clean)return false;
+  const a=clean(candidate),b=clean(remote),v=clean(current);
+  return !!a&&!!b&&b.updatedAt>=a.updatedAt&&
+   (current==null||!!v&&JSON.stringify(v)===JSON.stringify(a));
+ }
+ // Track latest intent per target, not a single global success indicator.
+ // Completed successful targets are removed; failures remain until retried.
+ function createStatus(){
+  let session=null,rows=new Map(),seen=new Set();
+  function reset(next=null){session=next;rows=new Map();seen=new Set();}
+  function begin(next,kind,id){
+   if(next!==session)reset(next);
+   const key=JSON.stringify([kind,id]),ticket={session:next,key,kind};
+   seen.add(kind);rows.set(key,{ticket,state:'pending'});return ticket;
+  }
+  function current(ticket){return !!ticket&&ticket.session===session&&rows.get(ticket.key)?.ticket===ticket;}
+  function finish(ticket,state){
+   if(!current(ticket))return false;
+   if(state==='saved')rows.delete(ticket.key);
+   else rows.set(ticket.key,{ticket,state});
+   return true;
+  }
+  function summary(kind){
+   const out={seen:seen.has(kind),pending:0,failed:0,superseded:0,reconciled:0};
+   for(const {ticket,state} of rows.values())if(ticket.kind===kind&&Object.hasOwn(out,state))out[state]++;
+   return out;
+  }
+  return Object.freeze({reset,begin,current,finish,summary});
+ }
  function captureChapter(novel,chIdx,scrollTop=0){
   const chapter=novel?.chapters?.[chIdx];
   if(!validStory(novel?.id)||!chapter||!Number.isInteger(chIdx))return null;
@@ -127,5 +165,5 @@
   return migrated;
  }
  return Object.freeze({cleanBookmark,safeBookmarks,localBookmark,cleanAppearance,
-  bookmarkForNovel,captureChapter,hydrateBookmarks,WALLPAPERS});
+  bookmarkForNovel,chooseBookmark,canReconcile,createStatus,captureChapter,hydrateBookmarks,WALLPAPERS});
 });

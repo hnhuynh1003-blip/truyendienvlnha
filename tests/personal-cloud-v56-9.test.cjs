@@ -110,7 +110,7 @@ test('CP013B A-03 delayed old bookmark cannot overwrite newer server preference'
  }});
  await started;
  assert.equal((await cloud.patch({...opts,storyId,bookmark:bookmark(2000,3),fetchFn:m.fetchFn})).saved,true);
- release();assert.deepEqual(await old,{saved:false,superseded:true});
+ release();assert.deepEqual(await old,{saved:false,superseded:true,remote:sync.cleanBookmark(bookmark(2000,3))});
  const value=m.get().readingBookmarksV568.mapValue.fields.novel.mapValue.fields;
  assert.equal(value.updatedAt.integerValue,'2000');assert.equal(value.chIdx.integerValue,'3');
  assert.equal(m.requests.filter(x=>x.method==='PATCH').length,2);
@@ -118,7 +118,7 @@ test('CP013B A-03 delayed old bookmark cannot overwrite newer server preference'
 test('CP013B A-03 old appearance and equal timestamps are superseded without patch',async()=>{
  const m=model({phoneAppearanceV568:cloud.fieldsAppearance({theme:'oled',updatedAt:2000})});
  for(const updatedAt of [1000,2000]){
-  assert.deepEqual(await cloud.patch({...opts,appearance:{theme:'warm',updatedAt},fetchFn:m.fetchFn}),{saved:false,superseded:true});
+  assert.deepEqual(await cloud.patch({...opts,appearance:{theme:'warm',updatedAt},fetchFn:m.fetchFn}),{saved:false,superseded:true,remote:sync.cleanAppearance({theme:'oled',updatedAt:2000})});
  }
  assert.equal(m.requests.length,2);assert.ok(m.requests.every(x=>x.method==='GET'));
  assert.equal(m.get().phoneAppearanceV568.mapValue.fields.theme.stringValue,'oled');
@@ -167,6 +167,13 @@ test('CP013B A-03 session change during GET or conflict prevents further writes'
 test('CP013B A-03 legacy timestamp zero can initialize absent target but cannot replace existing tie',async()=>{
  const m=model();
  assert.equal((await cloud.patch({...opts,storyId:'novel',bookmark:{chIdx:1},fetchFn:m.fetchFn})).saved,true);
- assert.deepEqual(await cloud.patch({...opts,storyId:'novel',bookmark:{chIdx:2},fetchFn:m.fetchFn}),{saved:false,superseded:true});
+ assert.deepEqual(await cloud.patch({...opts,storyId:'novel',bookmark:{chIdx:2},fetchFn:m.fetchFn}),{saved:false,superseded:true,remote:sync.cleanBookmark({chIdx:1})});
  assert.equal(m.get().readingBookmarksV568.mapValue.fields.novel.mapValue.fields.chIdx.integerValue,'1');
+});
+
+test('CP013B-R2 malformed superseding preference is not projected into device state',async()=>{
+ const m=model({phoneAppearanceV568:{mapValue:{fields:{updatedAt:{integerValue:'2000'},theme:{stringValue:'bad'}}}}});
+ const result=await cloud.patch({...opts,appearance:{theme:'warm',updatedAt:1000},fetchFn:m.fetchFn});
+ assert.deepEqual(result,{saved:false,superseded:true,remote:null});
+ assert.equal(m.requests.length,1);
 });

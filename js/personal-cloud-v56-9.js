@@ -55,6 +55,33 @@
       throw Object.assign(Error('Invalid remote preference timestamp'),{code:'personal-sync/invalid-remote'});
     return Number(raw);
   }
+  // Decode only the known preference schema. Unknown fields remain on the
+  // server; malformed data must never be projected into device settings.
+  function decodePreference(value,storyId){
+    const fields=mapFields(value),raw={updatedAt:timestamp(value)};
+    const keys=storyId===undefined
+      ?['wallpaper','mode','font','size','readerFontSize','theme']
+      :['chIdx','chapterId','scrollTop'];
+    for(const key of keys){
+      if(!Object.hasOwn(fields,key)){
+        if(storyId===undefined||key==='chIdx')return null;
+        continue;
+      }
+      if(['chIdx','scrollTop','readerFontSize'].includes(key)){
+        const n=fields[key]?.integerValue;
+        if(typeof n!=='string'||!/^\d+$/.test(n)||!Number.isSafeInteger(Number(n)))return null;
+        raw[key]=Number(n);
+      }else{
+        if(typeof fields[key]?.stringValue!=='string')return null;
+        raw[key]=fields[key].stringValue;
+      }
+    }
+    const sync=globalThis?.DuduPersonalSyncV568||
+      (typeof require==='function'?require('./personal-sync-v56-8.js'):null);
+    const clean=storyId===undefined?sync?.cleanAppearance(raw):sync?.cleanBookmark(raw);
+    if(!clean||Object.keys(raw).some(key=>clean[key]!==raw[key]))return null;
+    return clean;
+  }
   function readPreference(doc,storyId){
     if(!doc||typeof doc!=='object'||typeof doc.updateTime!=='string'||
       !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?Z$/.test(doc.updateTime)||
@@ -109,7 +136,7 @@
         const snapshot=readPreference(await read.json(),storyId);
         if(!active())return {skipped:true};
         if(snapshot.value!==undefined&&timestamp(snapshot.value)>=candidateTime)
-          return {saved:false,superseded:true};
+          return {saved:false,superseded:true,remote:decodePreference(snapshot.value,storyId)};
         // Preserve unknown fields of an existing preference; don't touch sibling
         // bookmarks, historical ownership, or any other profile field.
         const merged={mapValue:{fields:{...(snapshot.value===undefined?{}:mapFields(snapshot.value)),...mapFields(candidate)}}};
