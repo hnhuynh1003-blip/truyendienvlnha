@@ -1350,6 +1350,27 @@
           <div class="dudu-v27-stat"><span>Cấp độ</span><b id="stat-personal-level">1</b></div>
           <div class="dudu-v27-stat"><span>Xu</span><b id="stat-personal-coins">0</b></div>
         </div>
+        <section id="reading-journey-g1" aria-labelledby="reading-journey-g1-title" style="margin:12px 0;padding:12px;border:1px solid #516b83;border-radius:14px;background:rgba(18,34,51,.88);color:#e2edf8">
+          <h3 id="reading-journey-g1-title" style="margin:0 0 6px;font-size:14px;color:#ffe2a4">✦ Hành trình đọc &amp; game</h3>
+          <p data-journey-status role="status" style="font-size:12px;margin:0 0 10px">Đăng nhập để xem tiến trình cá nhân.</p>
+          <div data-journey-account hidden>
+            <div class="dudu-v27-stats" role="group" aria-label="Tài sản nhân vật chung">
+              <div class="dudu-v27-stat"><span>Cấp / EXP</span><b data-journey-level>—</b></div>
+              <div class="dudu-v27-stat"><span>Xu Vàng</span><b data-journey-coins>—</b></div>
+              <div class="dudu-v27-stat"><span>Kho chung</span><b data-journey-items>—</b></div>
+            </div>
+            <p data-journey-day style="font-size:12px;margin:10px 0 4px"></p>
+            <progress data-journey-bar aria-label="Thời gian đọc được ghi nhận trong ngày UTC" max="1" value="0" style="width:100%;accent-color:#dfb86b" hidden></progress>
+            <p data-journey-total style="font-size:11px;margin:5px 0 10px"></p>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
+            <button type="button" class="btn" style="min-height:44px;white-space:normal" onclick="openPhoneApp('stories')">📚 Đọc truyện</button>
+            <button type="button" class="btn" style="min-height:44px;white-space:normal" data-journey-personal disabled onclick="openPhoneApp('inventory')">🎒 Kho chung</button>
+            <button type="button" class="btn" style="min-height:44px;white-space:normal" data-journey-personal disabled onclick="openPhoneApp('quests')">✦ Nhiệm vụ</button>
+            <button type="button" class="btn" style="min-height:44px;white-space:normal" data-journey-personal disabled onclick="openPhoneApp('system')">⚔ Tu Tiên (thử)</button>
+          </div>
+          <p style="font-size:10px;margin:8px 0 0;color:#b8c9db">Cùng hồ sơ nhân vật, không tạo ví mới. Tu Tiên vẫn là bản thử; chưa tiêu tài sản thật hoặc quy đổi Tu Vi.</p>
+        </section>
         <div id="profile-guest-tip" class="dudu-v27-profile-tip" style="display:none;">Đang xem với tư cách khách; đăng nhập để đồng bộ tiến trình.</div>
         <details class="dudu-v27-details dudu-v27-library">
           <summary>📚 Thống kê thư viện <span class="dudu-v27-more-hint">Dùng chung</span></summary>
@@ -6171,6 +6192,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
 
       if (appName === 'stories') {
         renderPhoneStoryListV29();
+      } else if (appName === 'profile') {
+        refreshReadingJourneyG1();
       } else if (appName === 'codex') {
         moveNpcProgressV31();
         renderCodexDropdown();
@@ -7438,6 +7461,14 @@ document.getElementById('phone-home-screen').style.display = 'none';
       }catch(_){/* Malformed external storage data never erases the local library. */}
     });
 
+    function refreshReadingJourneyG1(){
+      const api=window.DuduReadingJourneyG1;
+      if(!api)return;
+      const sandbox=IS_SANDBOX_MODE;
+      const ready=!sandbox&&DuduAuth.isReady()&&!!currentUsername&&DuduAuth.uid()===currentUsername;
+      api.render(document,{ready,sandbox,profile:ready?userProfile:null,
+        policy:window.DuduPersonalReadingPolicyP2C?.policy,now:Date.now()});
+    }
     function updatePhoneUI() {
       renderPhoneWallpaperV27();
       userProfile.level = Math.max(1, parseInt(userProfile.level) || 1);
@@ -7521,6 +7552,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
       // should never be described as "Khách" solely due to a slow Firestore read.
       if (guestTip) guestTip.style.display = (!IS_SANDBOX_MODE && !DuduAuth.uid()) ? 'block' : 'none';
       window.DuduHonorUIV46?.refresh?.();
+      refreshReadingJourneyG1();
     }
 
     // Main rewards are applied ONLY after an owner-scoped transaction. Sandbox
@@ -10192,6 +10224,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/personal-reading-clock-p2a.js?v=1"></script>
 <script src="js/personal-reading-reward-p2b.js?v=2"></script>
 <script src="js/personal-reading-policy-p2c.js?v=2"></script>
+  <script src="js/reading-journey-g1.js?v=1"></script>
 <script src="js/personal-reading-slots-p2c.js?v=4"></script>
 <script src="js/personal-r2-chapter-loot-p3.js?v=2-cp013"></script>
 <script src="js/personal-reading-runtime-p2a.js?v=7"></script>
