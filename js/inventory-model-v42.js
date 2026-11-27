@@ -8,10 +8,11 @@
   const api=factory(typeof module==='object'&&module.exports?
     require('./item-catalog-v2.js'):root?.DuduItemCatalog,
     typeof module==='object'&&module.exports?
-    require('./economy-core-v43.js'):root?.DuduEconomyCoreV43);
+    require('./economy-core-v43.js'):root?.DuduEconomyCoreV43,
+    typeof module==='object'&&module.exports?require('./personal-cultivation-gear-g3b.js'):root?.DuduPersonalCultivationGearG3B);
   if(typeof module==='object'&&module.exports)module.exports=api;
   if(root)root.DuduInventoryV42=api;
-})(typeof window!=='undefined'?window:null,function(catalog,core){
+})(typeof window!=='undefined'?window:null,function(catalog,core,gear){
   'use strict';
   const VERSION=42;
   const CATEGORIES=Object.freeze({
@@ -83,6 +84,7 @@
   }
   function categoryFor(record){
     if(!plain(record))return 'OTHER';
+    if(record.scope==='CULTIVATION_GEAR'&&gear?.productFor(record))return 'EQUIPMENT';
     if(record.scope==='DUDU')return 'COLLECTIBLE';
     if(record.type==='FOOD')return 'CONSUMABLE';
     if(record.type==='WEAPON')return 'EQUIPMENT';
@@ -96,7 +98,8 @@
     if(!plain(record))return null;
     const id=idOf(record);
     const alias=starterAlias(record);
-    const approved=catalog?.byId(alias||id)||null;
+    const cultivation=gear?.productFor(record)||null;
+    const approved=cultivation||catalog?.byId(alias||id)||null;
     const source=approved||record;
     const rank=RANKS.includes(source.rank)?source.rank:
       RANKS.includes(record.rank)?record.rank:'F';
@@ -119,7 +122,7 @@
       origin.storyId:typeof record.storyId==='string'&&record.storyId?record.storyId:null;
     const chapterId=typeof origin.chapterId==='string'&&origin.chapterId?
       origin.chapterId:typeof record.chapterId==='string'&&record.chapterId?record.chapterId:null;
-    const category=functional?'TOOL':categoryFor({id:alias||id,type,scope});
+    const category=cultivation?'EQUIPMENT':functional?'TOOL':categoryFor({id:alias||id,type,scope});
     const name=String(record.name||approved?.name||'Vật phẩm chưa xác định');
     const description=String(record.desc||record.description||approved?.desc||'Chưa có mô tả.');
     return Object.freeze({

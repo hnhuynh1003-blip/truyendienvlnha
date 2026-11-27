@@ -31,7 +31,7 @@ export function mountSharedInventory(host,bridge=()=>host.ownerDocument.defaultV
   if(!count)list.append(el('li','Chưa có vật phẩm thuộc nhóm này.'));
  }
  open.onclick=()=>{try{bridge()?.open();}catch{/* account unavailable */}};
- const gear=el('button','Thử phối trang bị · Pháp Khí Các');gear.type='button';gear.style.cssText='min-height:44px;display:block;margin:8px 0';
+ const gear=el('button','Pháp Khí Các · Mua & trang bị');gear.type='button';gear.style.cssText='min-height:44px;display:block;margin:8px 0';
  gear.onclick=()=>{try{bridge()?.openGearPreview?.();}catch{/* preview unavailable */}};
  panel.append(title,status,filters,list,open,note,gear);host.append(panel);refresh();return {refresh};
 }
