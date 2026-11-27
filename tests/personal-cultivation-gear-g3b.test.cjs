@@ -22,8 +22,8 @@ test('G3B insufficient coins, full inventory, invalid/duplicate ownership fail c
  assert.throws(()=>g.plan({...base(),currency:19},{kind:'purchase',itemId:id}),/Không đủ/);
  assert.throws(()=>g.plan({...base(),inventory:Array(500).fill({id:'other'})},{kind:'purchase',itemId:id}),/Kho đã đầy/);
  const d=apply(base(),g.plan(base(),{kind:'purchase',itemId:id,now:1}));
- assert.throws(()=>g.plan({...d,inventory:[]},{kind:'purchase',itemId:id}),/không đồng nhất/);
- assert.throws(()=>g.plan({...d,inventory:[...d.inventory,...d.inventory]},{kind:'equip',itemId:id}),/không đồng nhất/);
+ assert.throws(()=>g.plan({...d,inventory:[]},{kind:'purchase',itemId:id}),/chưa đồng nhất/);
+ assert.throws(()=>g.plan({...d,inventory:[...d.inventory,...d.inventory]},{kind:'equip',itemId:id}),/chưa đồng nhất/);
 });
 test('G3B transaction uses existing profile, session fence and duplicate purchase no extra debit',async()=>{
  let data=base(),writes=0,active=true;const auth={currentUser:{uid:'reader'}};
