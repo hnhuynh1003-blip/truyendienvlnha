@@ -16,7 +16,7 @@ test('G3 source stays preview only, mount route and reset wiring present',()=>{
  const read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
  assert.doesNotMatch(read('js/cultivation-gear-g3.js'),/localStorage|sessionStorage|firebase|fetch\(|runTransaction/);
  assert.match(read('index.html'),/phone-app-cultivation-gear/);
- assert.match(read('index.html'),/DuduCultivationGearG3\?\.mount/);
+ assert.match(read('index.html'),/DuduPersonalCultivationGearG3B\.mount\(host,window\.DuduCultivationGearBridgeG3B\)/);
  assert.match(read('js/auth-v2.js'),/DuduCultivationGearG3\?\.clear/);
  assert.match(read('js/tutien-shared-inventory-g2.mjs'),/openGearPreview/);
 });

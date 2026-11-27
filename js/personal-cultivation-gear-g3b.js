@@ -128,11 +128,12 @@
   grid.style.cssText='display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px';
   header.append(summary,el('p','Lực Chiến: — · chờ công thức chính thức. Không dùng trang bị để chiến đấu.'));
   slots.append(grid);shop.append(el('p','Mỗi pháp khí mua tối đa một bản. Mua và lắp là hai thao tác riêng; hai ô cuối chưa mở.'),rows);
-  let busy=false,live=true;
+  let busy=false,live=true,confirmId=null;
   const button=(label,fn,disabled)=>{const b=el('button',label);b.type='button';b.className='btn';b.style.cssText='min-height:44px;white-space:normal';b.disabled=!!disabled;b.onclick=fn;return b;};
   async function action(kind,p){
    if(!live||busy||!bridge?.ready?.())return;
-   if(kind==='purchase'&&!doc.defaultView.confirm('Mua '+p.name+' với '+p.price+' Xu?'))return;
+   if(kind==='purchase'&&confirmId!==p.id){confirmId=p.id;status.textContent='Xác nhận mua '+p.name+' với '+p.price+' Xu.';paint();return;}
+   confirmId=null;
    busy=true;status.textContent='Đang xử lý…';paint();
    try{const result=await bridge.run({kind,itemId:p.id});
     if(live)status.textContent=result.synced?'Đã ghi nhận và đồng bộ.':'Đã ghi nhận; hồ sơ chưa đồng bộ. Không cần mua lại.';
@@ -155,8 +156,9 @@
     const row=el('div');row.style.cssText='padding:8px 0;border-bottom:1px solid #536e60';
     row.append(el('strong',p.icon+' '+p.name),el('p',p.quality+' · '+p.price+' Xu'));
     const open=unlocked(p.slot);
-    const label=!open?'Ô đang khóa':p.inconsistent?'Cần đối chiếu sở hữu':p.equipped?'Đang lắp':p.owned?'Lắp':'Mua';
+    const label=!open?'Ô đang khóa':p.inconsistent?'Cần đối chiếu sở hữu':p.equipped?'Đang lắp':p.owned?'Lắp':confirmId===p.id?'Xác nhận mua':'Mua';
     row.append(button(label,()=>action(p.owned?'equip':'purchase',p),busy||!view||!open||p.inconsistent||p.equipped||(!p.owned&&view.currency<p.price)));
+    if(confirmId===p.id&&!busy)row.append(button('Hủy',()=>{confirmId=null;status.textContent='Đã hủy mua.';paint();},false));
     rows.append(row);
    }
   }
