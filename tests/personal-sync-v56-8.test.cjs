@@ -52,7 +52,7 @@ test('V56.8 phone appearance whitelist never uploads custom images or arbitrary 
  assert.equal(invalid.readerFontSize,16);
 });
 test('V56.8 production wiring saves chapter separately from one-time reward and restores phone by verified UID',()=>{
- assert.match(html,/src="js\/personal-sync-v56-8\.js\?v=56-8-v39-1"/);
+ assert.match(html,/src="js\/personal-sync-v56-8\.js\?v=56-8-cp013b-r2"/);
  assert.match(auth,/window\.hydratePersonalSyncV568\(\)/);
  assert.match(html,/DuduPersonalSyncV568\.hydrateBookmarks\(localStorage,userProfile,novels/);
  assert.match(html,/DuduPersonalCloudV569\.patch\(opts\)/);
@@ -62,4 +62,72 @@ test('V56.8 production wiring saves chapter separately from one-time reward and 
  assert.match(html,/function v568SavePhoneAppearance\(\)/);
  assert.match(html,/DuduPhoneWallpaperV27\.write|image\.write\(localStorage,owner,cloud\.wallpaper\)/);
  assert.match(html,/wallpaper==='v36-custom'/);
+});
+
+test('CP013B-R2 bookmark resume uses newest valid timestamp, server wins ties',()=>{
+ const a={chIdx:0,chapterId:'intro',updatedAt:100};
+ const b={chIdx:2,chapterId:'chapter-3',updatedAt:200};
+ assert.equal(model.chooseBookmark(a,b,novel).chIdx,2);
+ assert.equal(model.chooseBookmark(b,a,novel).chIdx,2);
+ assert.equal(model.chooseBookmark({...a,updatedAt:200},b,novel).chIdx,2);
+ assert.equal(model.chooseBookmark(a,{...b,chapterId:'deleted'},novel).chIdx,0);
+});
+test('CP013B-R2 reconciliation rejects a newer local intent including equal timestamps and clock rollback',()=>{
+ const a={chIdx:0,chapterId:'intro',updatedAt:100},b={chIdx:1,chapterId:'chapter-2',updatedAt:200};
+ assert.equal(model.canReconcile('bookmark',a,a,b),true);
+ assert.equal(model.canReconcile('bookmark',a,null,b),true);
+ for(const t of [99,100,300])assert.equal(model.canReconcile('bookmark',a,{...b,updatedAt:t},b),false);
+ assert.equal(model.canReconcile('phone',{theme:'warm',updatedAt:100},{theme:'oled',updatedAt:100},{theme:'default',updatedAt:200}),false);
+});
+test('CP013B-R2 status tracks independent targets and fences A-B-A sessions',()=>{
+ const s=model.createStatus(),a={},b={},a2={};
+ const first=s.begin(a,'bookmark','one'),second=s.begin(a,'bookmark','two'),phone=s.begin(a,'phone',null);
+ s.finish(phone,'saved');s.finish(first,'failed');
+ assert.equal(s.summary('bookmark').failed,1);assert.equal(s.summary('bookmark').pending,1);
+ assert.equal(s.summary('phone').seen,true);assert.equal(s.summary('phone').failed,0);
+ const newer=s.begin(a,'bookmark','one');assert.equal(s.finish(first,'saved'),false);
+ s.finish(newer,'reconciled');s.finish(second,'saved');assert.equal(s.summary('bookmark').reconciled,1);
+ s.begin(b,'phone',null);s.begin(a2,'bookmark','one');
+ assert.equal(s.finish(newer,'failed'),false);assert.equal(s.summary('bookmark').failed,0);
+ s.reset();assert.equal(s.summary('bookmark').seen,false);
+});
+
+test('CP013B-R3 actual preference adapter reconciles cache, preserves newer local intent and fences old session status',async()=>{
+ const vm=require('node:vm');
+ const start=html.indexOf('    let v569Migrations=[];'),end=html.indexOf('    function v569SyncBookmark(',start);
+ assert.ok(start>=0&&end>start);
+ const localStorage=store(),status={textContent:''};
+ const old={chIdx:0,chapterId:'intro',scrollTop:0,updatedAt:100};
+ const remote={chIdx:2,chapterId:'chapter-3',scrollTop:50,updatedAt:200};
+ const fresh={chIdx:1,chapterId:'chapter-2',scrollTop:10,updatedAt:300};
+ const account={uid:'reader-A'},profile={readingBookmarksV568:{[novel.id]:old}};
+ let session={},complete;
+ const requests=[];
+ const transport={patch(opts){requests.push(opts);return new Promise(resolve=>{complete=resolve;});}};
+ const canonical={capture:()=>session,current:ticket=>ticket===session};
+ const ctx={window:{DuduPersonalSyncV568:model,DuduPersonalCloudV569:transport,DuduCanonicalProfileP4A3A2:canonical},
+  DuduPersonalSyncV568:model,DuduPersonalCloudV569:transport,IS_SANDBOX_MODE:false,currentUsername:account.uid,
+  DuduAuth:{isReady:()=>true,uid:()=>account.uid},firebase:{auth:()=>({currentUser:account}),app:()=>({options:{projectId:'fixture'}})},
+  localStorage,userProfile:profile,scopedLocalKey:(kind,id)=>key(id),fetch(){throw Error('unexpected fetch');},
+  document:{getElementById:id=>id==='dudu-v569-sync-status'?status:null},console};
+ const api=vm.runInNewContext(html.slice(start,end)+'\n({v569PatchPreference,v569ResetStatus})',ctx);
+ localStorage.setItem(key(novel.id),JSON.stringify(old));
+ let pending=api.v569PatchPreference('bookmark',novel.id,old);
+ complete({saved:false,superseded:true,remote});await pending;
+ assert.equal(profile.readingBookmarksV568[novel.id].chIdx,2);
+ assert.deepEqual(model.localBookmark(localStorage,key(novel.id)),remote);
+ assert.match(status.textContent,/đã nhận bản máy chủ/);
+ profile.readingBookmarksV568[novel.id]=old;localStorage.setItem(key(novel.id),JSON.stringify(old));
+ pending=api.v569PatchPreference('bookmark',novel.id,old);
+ profile.readingBookmarksV568[novel.id]=fresh;localStorage.setItem(key(novel.id),JSON.stringify(fresh));
+ complete({saved:false,superseded:true,remote});await pending;
+ assert.equal(profile.readingBookmarksV568[novel.id],fresh);
+ assert.deepEqual(model.localBookmark(localStorage,key(novel.id)),fresh);
+ pending=api.v569PatchPreference('bookmark',novel.id,fresh);
+ const previous=requests.at(-1);session={};api.v569ResetStatus();
+ assert.equal(previous.isCurrent(account.uid),false);
+ const resetText=status.textContent;
+ complete({saved:false,superseded:true,remote:{...remote,updatedAt:400}});await pending;
+ assert.equal(status.textContent,resetText);
+ assert.equal(profile.readingBookmarksV568[novel.id],fresh);
 });

@@ -85,7 +85,8 @@ test('actual canonical runtime repaints only the authenticated market and does n
  let reads=0,market=0,legacy=0,fun=0;
  const canonical={currency:77,inventory:[{id:'owned'}],storyStates:{historical:{keep:true},__duduPersonalProgressC23:{lastGlobalLootAt:0}}};
  const userProfile={currency:100,inventory:[],storyStates:{},phoneAppearanceV568:{local:true}};
- const root={DuduProfileReconciliationP4A3A2:require('../js/profile-reconciliation-p4a3a2.js'),
+ const root={DuduPersonalSyncV568:require('../js/personal-sync-v56-8.js'),
+  DuduProfileReconciliationP4A3A2:require('../js/profile-reconciliation-p4a3a2.js'),
   DuduEconomyLiveV52:{refreshPersonalMarket(){market++;}},
   DuduFunUIV43:{render(){fun++;}}};
  const ctx={window:root,userProfile,currentUsername:'A',IS_SANDBOX_MODE:false,
@@ -95,7 +96,9 @@ test('actual canonical runtime repaints only the authenticated market and does n
   localStorage:{setItem:(k,v)=>storage.set(k,v)},lastLootTimestamp:123,scopedLocalKey:k=>k,startCooldownTicker(){},
   updatePhoneUI(){},renderWallet(){},renderQuests(){},renderInventory(){},updateChapterLootButtonState(){},refreshNpcViewsAfterLibraryUpdate(){},
   renderShop(){legacy++;},console};
- vm.runInNewContext(html.slice(start,end),ctx);
+ const prefStart=html.indexOf('    let v569Migrations=[];'),prefEnd=html.indexOf('    function v569SyncBookmark(',prefStart);
+ a.ok(prefStart>=0&&prefEnd>prefStart);
+ vm.runInNewContext(html.slice(prefStart,prefEnd)+'\n'+html.slice(start,end),ctx);
  const api=root.DuduCanonicalProfileP4A3A2,ticket=api.begin('A',identity);
  a.equal((await api.afterCommit(ticket)).status,'synced');
  a.equal(userProfile.currency,77);a.equal(userProfile.inventory.length,1);a.equal(ctx.lastLootTimestamp,0);

@@ -235,8 +235,8 @@
   <script src="js/npc-anime-candidates-v14.js"></script>
   <script src="js/player-avatar-v16.js?v=identity-1"></script>
   <script src="js/roleplay-identity-v56.js?v=56-1"></script>
-  <script src="js/personal-sync-v56-8.js?v=56-8-v39-1"></script>
-  <script src="js/personal-cloud-v56-9.js?v=56-9"></script>
+  <script src="js/personal-sync-v56-8.js?v=56-8-cp013b-r2"></script>
+  <script src="js/personal-cloud-v56-9.js?v=56-9-cp013b-r2"></script>
   <script src="js/npc-premium-v40.js?v=1"></script>
   <script src="js/player-avatar-compress-v41.js?v=1"></script>
   <script src="js/phone-wallpaper-v27-r4.js?v=39-1"></script>
@@ -3012,6 +3012,46 @@
     // a pending local Firestore SDK write as proof of cross-device sync.
     let v569Migrations=[];
     let v569Pending=0;
+    const v569Statuses=window.DuduPersonalSyncV568?.createStatus();
+    function v569ResetStatus(){
+      v569Statuses?.reset();
+      v569Status('Tiến độ đọc và lựa chọn nền đi theo tài khoản. Ảnh tự tải chỉ có trên thiết bị này.');
+    }
+    function v569PaintStatus(){
+      const describe=(kind,label)=>{
+        const s=v569Statuses.summary(kind),parts=[];
+        if(s.pending)parts.push('đang lưu '+s.pending);
+        if(s.failed)parts.push('chưa lưu '+s.failed);
+        if(s.superseded)parts.push('máy chủ mới hơn; giữ bản thiết bị '+s.superseded);
+        if(s.reconciled)parts.push('đã nhận bản máy chủ '+s.reconciled);
+        return label+': '+(parts.length?parts.join(', '):s.seen?'đã lưu':'chưa có thay đổi');
+      };
+      v569Status(describe('bookmark','Tiến độ đọc')+' · '+describe('phone','Giao diện'));
+    }
+    function v569Reconcile(kind,storyId,candidate,remote){
+      const sync=window.DuduPersonalSyncV568;
+      if(!remote||!sync)return false;
+      if(kind==='bookmark'){
+        const key=scopedLocalKey('bookmark',storyId);
+        const current=userProfile.readingBookmarksV568?.[storyId];
+        const local=sync.localBookmark(localStorage,key);
+        if(!sync.canReconcile(kind,candidate,current,remote)||
+          !sync.canReconcile(kind,candidate,local,remote))return false;
+        // Do not navigate or scroll the current reader. Only future resume.
+        localStorage.setItem(key,JSON.stringify(remote));
+        userProfile.readingBookmarksV568 ||= {};
+        userProfile.readingBookmarksV568[storyId]=remote;
+        return true;
+      }
+      // Never change reader layout underneath an active reading session.
+      if(document.getElementById('reader-view')?.style.display==='block'||
+        !sync.canReconcile(kind,candidate,userProfile.phoneAppearanceV568,remote))return false;
+      if(!v568ApplyPhoneAppearance(remote))return false;
+      userProfile.phoneAppearanceV568=remote;
+      renderPhoneWallpaperV27();
+      syncPhoneDisplayOptionsV27();
+      return true;
+    }
     function v569Status(message){
       const el=document.getElementById('dudu-v569-sync-status');
       if(el)el.textContent=message;
@@ -3022,25 +3062,41 @@
       const account=firebase.auth().currentUser;
       if(!account||account.uid!==currentUsername)return false;
       const uid=account.uid;
+      const canonical=window.DuduCanonicalProfileP4A3A2;
+      const session=canonical?.capture();
+      if(!session)return false;
+      const active=owner=>DuduAuth.isReady()&&DuduAuth.uid()===owner&&
+        currentUsername===owner&&firebase.auth().currentUser===account&&canonical.current(session);
+      if(!v569Statuses||!['bookmark','phone'].includes(kind))return false;
+      const clean=kind==='bookmark'?DuduPersonalSyncV568.cleanBookmark:DuduPersonalSyncV568.cleanAppearance;
+      const candidate=clean(value);
+      if(!candidate)return false;
+      const statusTicket=v569Statuses.begin(session,kind,storyId);
+      const latest=()=>active(uid)&&v569Statuses.current(statusTicket);
+      const finish=state=>{if(latest()){v569Statuses.finish(statusTicket,state);v569PaintStatus();}};
       const projectId=firebase.app().options.projectId;
       v569Pending++;
-      v569Status('☁️ Đang lưu thay đổi…');
+      v569PaintStatus();
       try{
-        const opts={account,projectId,fetchFn:fetch,
-          isCurrent:owner=>DuduAuth.isReady()&&
-            DuduAuth.uid()===owner&&currentUsername===owner};
-        if(kind==='bookmark'){opts.storyId=storyId;opts.bookmark=value;}
-        else if(kind==='phone')opts.appearance=value;
+        const opts={account,projectId,fetchFn:fetch,isCurrent:active};
+        if(kind==='bookmark'){opts.storyId=storyId;opts.bookmark=candidate;}
+        else if(kind==='phone')opts.appearance=candidate;
         else return false;
         const result=await DuduPersonalCloudV569.patch(opts);
         if(result.saved){
-          v569Status('☁️ Đã lưu thay đổi.');
+          finish('saved');
           return true;
         }
+        if(result.superseded&&latest()){
+          let reconciled=false;
+          try{reconciled=v569Reconcile(kind,storyId,candidate,result.remote);}
+          catch(error){console.warn('DUDU preference local reconciliation:',error?.name||'failed');}
+          finish(reconciled?'reconciled':'superseded');
+        }else if(!result.superseded)finish('failed');
         return false;
       }catch(error){
-        console.warn('DUDU personal sync:',error?.code||error?.name||'failed');
-        v569Status('⚠️ Chưa lưu được. Thay đổi vẫn còn trên thiết bị này.');
+        if(active(uid))console.warn('DUDU personal sync:',error?.code||error?.name||'failed');
+        finish('failed');
         return false;
       }finally{v569Pending=Math.max(0,v569Pending-1);}
     }
@@ -3065,8 +3121,7 @@
     function v568ReadBookmarkForNovel(novel){
       if(!novel||!window.DuduPersonalSyncV568)return null;
       const local=DuduPersonalSyncV568.localBookmark(localStorage,scopedLocalKey('bookmark',novel.id));
-      return DuduPersonalSyncV568.bookmarkForNovel(local,novel)||
-        DuduPersonalSyncV568.bookmarkForNovel(userProfile.readingBookmarksV568?.[novel.id],novel);
+      return DuduPersonalSyncV568.chooseBookmark(local,userProfile.readingBookmarksV568?.[novel.id],novel);
     }
     function persistReaderBookmarkR1(novel,chIdx,scrollTop,syncR2=false){
       if(!novel||!window.DuduPersonalSyncV568)return null;
@@ -3104,6 +3159,21 @@
       const next=v568PhoneFromDevice();
       if(next){userProfile.phoneAppearanceV568=next;saveCurrentAccount();v569SyncPhone();}
     }
+    function v568ApplyPhoneAppearance(cloud){
+      const owner='live-'+currentUsername;
+      const image=window.DuduPhoneWallpaperV27,mode=window.DuduMultiverseArtV28;
+      const typography=window.DuduPhoneTypographyV31;
+      if(!image||!mode||!typography)return false;
+      // Retain device-only photos, as in login hydration.
+      const imageOk=image.read(localStorage,owner)==='v36-custom'||image.write(localStorage,owner,cloud.wallpaper);
+      const modeOk=mode.writeMode(localStorage,owner,cloud.mode);
+      const fontOk=typography.write(localStorage,owner,{font:cloud.font,size:cloud.size});
+      document.documentElement.style.setProperty('--read-size',cloud.readerFontSize+'px');
+      document.body.classList.remove('theme-warm','theme-oled');
+      if(cloud.theme==='warm')document.body.classList.add('theme-warm');
+      if(cloud.theme==='oled')document.body.classList.add('theme-oled');
+      return !!(imageOk&&modeOk&&fontOk);
+    }
     function hydratePersonalSyncV568(){
       if(IS_SANDBOX_MODE||!currentUsername||!window.DuduPersonalSyncV568)return false;
       const previous=DuduPersonalSyncV568.safeBookmarks(userProfile.readingBookmarksV568);
@@ -3121,15 +3191,7 @@
       const cloud=DuduPersonalSyncV568.cleanAppearance(userProfile.phoneAppearanceV568);
       if(cloud){
         userProfile.phoneAppearanceV568=cloud;
-        // Keep personal photos local. Other devices receive the built-in preset.
-        if(image.read(localStorage,owner)!=='v36-custom')
-          image.write(localStorage,owner,cloud.wallpaper);
-        mode.writeMode(localStorage,owner,cloud.mode);
-        typography.write(localStorage,owner,{font:cloud.font,size:cloud.size});
-        document.documentElement.style.setProperty('--read-size',cloud.readerFontSize+'px');
-        document.body.classList.remove('theme-warm','theme-oled');
-        if(cloud.theme==='warm')document.body.classList.add('theme-warm');
-        if(cloud.theme==='oled')document.body.classList.add('theme-oled');
+        v568ApplyPhoneAppearance(cloud);
       }else{
         const existing=[image.keyFor(owner),mode.keyFor(owner),typography.keyFor(owner)]
           .some(key=>{try{return !!key&&localStorage.getItem(key)!==null;}catch(_){return false;}});
@@ -3609,8 +3671,8 @@
         return promise.then(result=>{if(current(ticket))safePaint();return result;});
       }
       window.DuduCanonicalProfileP4A3A2=Object.freeze({
-        begin(uid,identity){const ticket=controller.begin(uid,identity);safePaint();return ticket;},
-        reset(){controller.reset();safePaint();},
+        begin(uid,identity){const ticket=controller.begin(uid,identity);v569ResetStatus();safePaint();return ticket;},
+        reset(){controller.reset();v569ResetStatus();safePaint();},
         capture:controller.capture,current,
         diagnosticStatus:()=>controller.status(controller.capture()).status==='session-changed'?'inactive':controller.status(controller.capture()).status,
         afterCommit(ticket){return show(controller.afterCommit(ticket),ticket);},
