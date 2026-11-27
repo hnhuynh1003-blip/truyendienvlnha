@@ -1369,6 +1369,7 @@
             <button type="button" class="btn" style="min-height:44px;white-space:normal" data-journey-personal disabled onclick="openPhoneApp('quests')">✦ Nhiệm vụ</button>
             <button type="button" class="btn" style="min-height:44px;white-space:normal" data-journey-personal disabled onclick="openPhoneApp('system')">⚔ Tu Tiên (thử)</button>
           </div>
+          <button type="button" class="btn" style="width:100%;min-height:44px;margin-top:8px" onclick="openPhoneApp('cultivation-gear')">✦ Pháp Khí Các · Thử phối trang bị</button>
           <p style="font-size:10px;margin:8px 0 0;color:#b8c9db">Cùng hồ sơ nhân vật, không tạo ví mới. Tu Tiên vẫn là bản thử; chưa tiêu tài sản thật hoặc quy đổi Tu Vi.</p>
         </section>
         <div id="profile-guest-tip" class="dudu-v27-profile-tip" style="display:none;">Đang xem với tư cách khách; đăng nhập để đồng bộ tiến trình.</div>
@@ -1402,6 +1403,15 @@
           <span class="dudu-c438-header-mark">DUDU ARCADE</span>
         </div>
         <div id="dudu-treasure-content-c438" aria-label="Danh mục báu vật bốn game"></div>
+      </div>
+
+      <!-- G3 design preview. No live purchase, inventory mutation or power calculation. -->
+      <div class="phone-sub-app" id="phone-app-cultivation-gear">
+        <div class="phone-app-header">
+          <button type="button" class="phone-back-btn" onclick="openPhoneApp('profile')" aria-label="Về hồ sơ">‹</button>
+          <span>Pháp Khí Các</span><span></span>
+        </div>
+        <div id="cultivation-gear-g3" style="padding:12px;overflow-y:auto;flex:1;min-height:0"></div>
       </div>
 
       <!-- APP: KHO ĐỒ -->
@@ -6192,6 +6202,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
 
       if (appName === 'stories') {
         renderPhoneStoryListV29();
+      } else if (appName === 'cultivation-gear') {
+        window.DuduCultivationGearG3?.mount(document.getElementById('cultivation-gear-g3'));
       } else if (appName === 'profile') {
         refreshReadingJourneyG1();
       } else if (appName === 'codex') {
@@ -7470,7 +7482,8 @@ document.getElementById('phone-home-screen').style.display = 'none';
       open(){
         if(IS_SANDBOX_MODE||!DuduAuth.isReady()||!currentUsername||DuduAuth.uid()!==currentUsername)return false;
         openPhoneApp('inventory');return true;
-      }
+      },
+      openGearPreview(){openPhoneApp('cultivation-gear');}
     });
     function refreshReadingJourneyG1(){
       const api=window.DuduReadingJourneyG1;
@@ -10238,6 +10251,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <script src="js/personal-reading-policy-p2c.js?v=2"></script>
   <script src="js/reading-journey-g1.js?v=1"></script>
   <script src="js/shared-inventory-g2.js?v=1"></script>
+  <script src="js/cultivation-gear-g3.js?v=1"></script>
 <script src="js/personal-reading-slots-p2c.js?v=4"></script>
 <script src="js/personal-r2-chapter-loot-p3.js?v=2-cp013"></script>
 <script src="js/personal-reading-runtime-p2a.js?v=7"></script>
@@ -10248,7 +10262,7 @@ document.getElementById('phone-home-screen').style.display = 'none';
 <link rel="stylesheet" href="css/tutien-integ-t0.css?v=exploration-layout-20261117">
 <link rel="stylesheet" href="css/cyber-phone-host-ui-r1.css?v=tutien-only-1">
 <script src="js/cyber-phone-host-ui-r1.js?v=1"></script>
-<script src="js/tutien-integ-t0.js?v=game-g2-1"></script>
+<script src="js/tutien-integ-t0.js?v=game-g3-1"></script>
 <script src="js/phone-app-contract-v67.js?v=67-arcade-wallet-1&amp;t0=1"></script>
 <script src="js/phone-lifecycle-v67-1.js?v=67-arcade-wallet-1"></script>
 <script src="js/dudu-messenger-v67-2.js?v=67-2"></script>

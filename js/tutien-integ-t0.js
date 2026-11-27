@@ -31,7 +31,7 @@
    for(const file of ['tutien-integ-t0-frame.css?v=vis-ux-r2','tutien-qiankun-vis-t2.css?v=1','tutien-nav-skin-r1.css?v=1','tutien-equipment-vis-t2e.css?v=1']){
     const link=child.createElement('link');link.rel='stylesheet';link.href=new URL('css/'+file,appBase).href;link.onload=()=>styles++;link.onerror=fail;child.head.append(link);
    }
-   const skin=child.createElement('script');skin.type='module';skin.src=new URL('js/tutien-vis-t1.mjs?v=game-g2-1',appBase).href;skin.onerror=fail;child.head.append(skin);
+   const skin=child.createElement('script');skin.type='module';skin.src=new URL('js/tutien-vis-t1.mjs?v=game-g3-1',appBase).href;skin.onerror=fail;child.head.append(skin);
    interval=root.setInterval(()=>{
     if(!active||decoding||styles!==4||child.getElementById('home-screen')?.dataset.visualReady!=='true')return;
     const images=[child.querySelector('.vis-cave'),child.querySelector('.vis-character')];

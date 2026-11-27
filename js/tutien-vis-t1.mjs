@@ -1,5 +1,5 @@
 import {mountHomeIdentity} from './tutien-character-view.mjs';
-import {mountSharedInventory} from './tutien-shared-inventory-g2.mjs?v=1';
+import {mountSharedInventory} from './tutien-shared-inventory-g2.mjs?v=2';
 // VIS-T1: presentation only, inside the integrated iframe. No repository or write API.
 import {CHARACTER} from '../prototypes/tutien-combat-s/fixture.mjs';
 import {actionIcon} from '../prototypes/tutien-combat-s/ui-icons.mjs';
