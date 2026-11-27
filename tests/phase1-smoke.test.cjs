@@ -33,6 +33,7 @@ test('V56 account, story, role and sandbox keys do not overlap', () => {
   assert.ok(roleplay.save(localStorage,'alice',novel,false,initial.state));
   const context={
     IS_SANDBOX_MODE:false,currentUsername:'alice',localStorage,
+    window:{DuduPersonalSyncV568:require('../js/personal-sync-v56-8.js')},
     DuduRoleplayV56:roleplay,
     DuduAuth:{isReady:()=>true,uid:()=>context.currentUsername},
     selectedNovelIndex:0,activeChatNovelId:'story-a',novels:[novel],
